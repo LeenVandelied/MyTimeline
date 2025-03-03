@@ -1,0 +1,87 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+.DS_Store
+
+# Ignorer les fichiers environnementaux
+.env
+.env.local
+.env.production
+.env.development
+
+# Ignorer les dépendances spécifiques à Java/Spring Boot
+*.log
+*.class
+
+# === BACKEND (Spring Boot) ===
+backend/target/
+backend/.mvn/
+backend/.idea/
+backend/*.iml
+backend/*.iws
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings/
+backend/build/
+backend/.sts4-cache
+backend/.springBeans
+
+# === BACKEND : Fichiers sensibles (Spring Boot) ===
+backend/.env
+backend/.env.local
+backend/.env.production
+backend/.env.development
+backend/application.properties
+backend/application.yml
+backend/application.yaml
+backend/logs/
+
+# === FRONTEND (Next.js / React) ===
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.idea/
+frontend/.vscode/
+frontend/dist/
+
+# === FRONTEND : Fichiers sensibles ===
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env.development
+
+
+# === GEENERAL : Fichiers sensibles ===
+node_modules/

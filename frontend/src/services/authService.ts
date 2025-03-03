@@ -1,0 +1,32 @@
+import apiClient from "@/services/apiClient";
+import { LoginData, LoginSchema } from "@/types/auth";
+import { UserSchema } from "@/types/user";
+
+export const login = async (username: string, password: string) => {
+  try {
+    const parsedData: LoginData = LoginSchema.parse({ username, password });
+    const response = await apiClient.post("/auth/login", parsedData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getUserProfile = async () => {
+  try {
+    const response = await apiClient.get("/auth/me");
+    return UserSchema.parse(response.data);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const logout = async () => {
+  try {
+    await apiClient.post("/auth/logout");
+    sessionStorage.removeItem("token");
+    window.location.href = "/login";
+  } catch (error) {
+    throw error;
+  }
+};
