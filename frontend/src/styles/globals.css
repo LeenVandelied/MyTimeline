@@ -113,7 +113,6 @@
 
 @layer base {
   * {
-    border: 1px solid var(--border);
     outline: 1px solid var(--ring);
   }
   body {

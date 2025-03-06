@@ -8,9 +8,9 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [calendarEvents] = useState([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -26,6 +26,10 @@ const Dashboard = () => {
     );
   }
 
+  const handleLogout = () => {
+    logout();
+  }; 
+
   if (!user) return null;
 
   return (
@@ -33,7 +37,6 @@ const Dashboard = () => {
       <div className="mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center">Dashboard</h1>
 
-        {/* Carte des informations utilisateur */}
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg">
           <CardHeader>
             <h2 className="text-xl font-semibold text-gray-300">Bienvenue, {user.username} 👋</h2>
@@ -41,10 +44,12 @@ const Dashboard = () => {
           <CardContent className="text-gray-400">
             <p>Email: {user.email}</p>
             <p>Rôle: {user.role}</p>
+            <Button onClick={handleLogout} type="button">
+              Se déconnecter
+            </Button>
           </CardContent>
         </Card>
 
-        {/* Calendrier */}
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg w-full">
           <CardHeader>
             <h2 className="text-xl font-semibold text-gray-300">Calendrier des événements</h2>
@@ -62,12 +67,10 @@ const Dashboard = () => {
                 right: "timeGridWeek,dayGridMonth,listMonth",
               }}
               height="500px"
-              className="rounded-lg bg-gray-700 text-gray-300 p-4"
             />
           </CardContent>
         </Card>
 
-        {/* Bouton d'ajout d'événement */}
         <div className="flex justify-center">
           <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
             Ajouter un événement
