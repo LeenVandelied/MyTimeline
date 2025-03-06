@@ -21,6 +21,14 @@ export const getUserProfile = async () => {
   }
 };
 
+export const registerUser = async (name: string, username: string, email: string, password: string) => {
+  try {
+    return apiClient.post("/auth/register", { name,username, email, password });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const logout = async () => {
   try {
     await apiClient.post("/auth/logout");

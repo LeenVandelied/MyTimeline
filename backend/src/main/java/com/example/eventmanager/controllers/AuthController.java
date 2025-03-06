@@ -3,10 +3,10 @@ package com.example.eventmanager.controllers;
 import com.example.eventmanager.security.JwtService;
 import com.example.eventmanager.security.CustomUserDetails;
 import com.example.eventmanager.security.CustomUserDetailsService;
-import com.example.eventmanager.security.JwtFilter;
 import com.example.eventmanager.domain.repositories.UserRepository;
 import com.example.eventmanager.domain.models.User;
 import com.example.eventmanager.dtos.AuthRequest;
+import com.example.eventmanager.dtos.RegisterRequest;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -15,18 +15,17 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Optional;
+import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,12 +34,13 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserRepository userRepository) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -92,6 +92,34 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+        try {
+            Optional<User> existingUser = userRepository.findDomainUserByUsername(registerRequest.getUsername());
+
+            if (existingUser.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+            }
+
+            String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
+
+            User newUser = new User(
+                UUID.randomUUID(),
+                registerRequest.getName(),
+                registerRequest.getUsername(),
+                hashedPassword,
+                "USER", 
+                registerRequest.getEmail()
+            );
+
+            userRepository.save(newUser);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during registration");
         }
     }
 
