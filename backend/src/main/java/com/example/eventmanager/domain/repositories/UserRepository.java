@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByUsername(String username);
+    Optional<UserEntity> findById(UUID id);
 
     default User save(User user) {
         UserEntity entity = UserEntity.fromDomainModel(user);
@@ -19,6 +20,10 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     
     default Optional<User> findDomainUserByUsername(String username) {
         return findByUsername(username).map(UserEntity::toDomainModel);
+    }
+
+    default Optional<User> findDomainUserById(UUID id) {
+        return findById(id).map(UserEntity::toDomainModel);
     }
 
 }

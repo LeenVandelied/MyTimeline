@@ -18,7 +18,7 @@ public class EventEntity {
     private Date endDate;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
 
     public Event toDomainModel() {

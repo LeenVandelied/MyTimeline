@@ -14,6 +14,7 @@ import com.example.eventmanager.infrastructure.persistence.entity.ProductEntity;
 @Repository
 public interface ProductRepositoryJpa extends JpaRepository<ProductEntity, UUID>, ProductRepository {
     Optional<ProductEntity> findByQrCode(String qrCode);
+    List<ProductEntity> findByEventsIsNotEmpty();
 
     @Override
     default Optional<Product> findDomainProductById(UUID id) {

@@ -5,10 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.eventmanager.application.services.ProductService;
 import com.example.eventmanager.domain.models.Event;
 import com.example.eventmanager.domain.models.Product;
 import com.example.eventmanager.domain.repositories.EventRepository;
 import com.example.eventmanager.domain.repositories.ProductRepository;
+import com.example.eventmanager.dtos.ProductCreationRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,17 +23,23 @@ public class ProductController {
     @Autowired
     private ProductRepository productRepository;
     private EventRepository eventRepository;
+    private final ProductService productService;
+
+    @Autowired
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product savedProduct = productRepository.save(product);
-        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    public ResponseEntity<Product> createProduct(@RequestBody ProductCreationRequest request) {
+        Product product = productService.createProduct(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productRepository.findAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    public ResponseEntity<List<Product>> getProductsWithEvents() {
+        List<Product> products = productService.getProductsWithEvents();
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{id}")

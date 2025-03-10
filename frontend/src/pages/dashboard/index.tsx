@@ -6,6 +6,7 @@ import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
+import AddProduct from "@/components/products/AddProducts";
 
 const Dashboard = () => {
   const { user, loading, logout } = useAuth();
@@ -38,8 +39,11 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold mb-6 text-center">Dashboard</h1>
 
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg">
-          <CardHeader>
-            <h2 className="text-xl font-semibold text-gray-300">Bienvenue, {user.username} 👋</h2>
+          <CardHeader className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-300">
+              Bienvenue, {user.username} 👋
+            </h2>
+            <AddProduct />
           </CardHeader>
           <CardContent className="text-gray-400">
             <p>Email: {user.email}</p>
