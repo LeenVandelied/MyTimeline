@@ -1,5 +1,8 @@
 package com.example.eventmanager.security;
 
+import java.util.List;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,7 +12,6 @@ import com.example.eventmanager.domain.repositories.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-
     private final UserRepository userRepository;
 
     public CustomUserDetailsService(UserRepository userRepository) {
@@ -21,6 +23,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findDomainUserByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return new CustomUserDetails(user);
+    return new CustomUserDetails(user, List.of(new SimpleGrantedAuthority(user.getRole())));
     }
 }

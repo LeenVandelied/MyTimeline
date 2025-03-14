@@ -1,7 +1,6 @@
 package com.example.eventmanager.infrastructure.persistence.jpa;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,16 +12,12 @@ import com.example.eventmanager.infrastructure.persistence.entity.EventEntity;
 
 @Repository
 public interface EventRepositoryJpa extends JpaRepository<EventEntity, UUID>, EventRepository {
-    Optional<EventEntity> findByProductId(UUID productId);
+    List<EventEntity> findAllByProductId(UUID productId);
     
+    @Override
     default List<Event> findDomainEventByProductId(UUID productId) {
-      return findByProductId(productId)
-      .stream()
-      .map(EventEntity::toDomainModel)
-      .toList();
-  }
-
-  default void saveDomainEvent(Event user) {
-      save(EventEntity.fromDomainModel(user));
-  }
+        return findAllByProductId(productId).stream()
+            .map(EventEntity::toDomainModel)
+            .toList();
+    }
 }

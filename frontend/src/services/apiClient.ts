@@ -10,10 +10,15 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("token");
+  const token = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("jwt="))
+    ?.split("=")[1];
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 

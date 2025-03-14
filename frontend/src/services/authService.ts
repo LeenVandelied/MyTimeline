@@ -32,7 +32,6 @@ export const registerUser = async (name: string, username: string, email: string
 export const logout = async () => {
   try {
     await apiClient.post("/auth/logout");
-    sessionStorage.removeItem("token");
     window.location.href = "/login";
   } catch (error) {
     throw error;

@@ -4,15 +4,14 @@ import java.util.UUID;
 
 public class User {
     private UUID id;
-    private String name;
     private String username;
+    private String name;
     private String password;
     private String role;
     private String email;
 
     public User(UUID id, String name, String username, String password, String role, String email) {
         this.id = id;
-        this.name = name;
         this.username = username;
         this.password = password;
         this.role = role;
@@ -26,7 +25,7 @@ public class User {
     public String getName() {
         return name;
     }
-    
+
     public String getUsername() {
         return username;
     }

@@ -63,6 +63,10 @@ public class Product {
         this.events = events;
     }
 
+    public void addEvent(Event event) {
+        this.events.add(event);
+    }
+
     public boolean hasEvents() {
         return events != null && !events.isEmpty();
     }

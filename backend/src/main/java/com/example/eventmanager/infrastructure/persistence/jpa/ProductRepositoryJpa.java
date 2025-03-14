@@ -32,8 +32,10 @@ public interface ProductRepositoryJpa extends JpaRepository<ProductEntity, UUID>
     }
 
     @Override
-    default Product save(Product product) {
-        return save(ProductEntity.fromDomainModel(product)).toDomainModel();
+    default Product save(Product domainProduct) {
+        ProductEntity entity = ProductEntity.fromDomainModel(domainProduct, true);
+        ProductEntity saved = save(entity);
+        return saved.toDomainModel();
     }
 
 }
