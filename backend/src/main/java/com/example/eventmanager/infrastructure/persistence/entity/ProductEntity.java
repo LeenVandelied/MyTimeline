@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import com.example.eventmanager.domain.models.Product;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -17,7 +15,6 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.AUTO) UUID id;
 
     private String name;
-    private String qrCode;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -34,10 +31,6 @@ public class ProductEntity {
     public UUID getId() {
         return id;
     }
-
-    public String getQrCode() {
-        return qrCode;
-    }
     
     public String getName() {
         return name;
@@ -50,35 +43,40 @@ public class ProductEntity {
     public UserEntity getUser() {
         return user;
     }
-
-    public Product toDomainModel() {
-        return new Product(id, name, qrCode, category.toDomainModel(), user.toDomainModel(), 
-            events.stream().map(EventEntity::toDomainModel).collect(Collectors.toList()));
+    
+    public List<EventEntity> getEvents() {
+        return events;
     }
-
+    
     public boolean hasEvents() {
         return !events.isEmpty();
     }
+    
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public void setCategory(CategoryEntity category) {
+        this.category = category;
+    }
+    
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+    
+    public void setEvents(List<EventEntity> events) {
+        this.events = events;
+    }
 
-    public static ProductEntity fromDomainModel(Product product, boolean includeEvents) {
-        ProductEntity entity = new ProductEntity();
-        if (product.getId() != null) {
-            entity.id = product.getId();
-        }
-        entity.name = product.getName();
-        entity.qrCode = product.getQrCode();
-        entity.category = CategoryEntity.fromDomainModel(product.getCategory());
-        entity.user = UserEntity.fromDomainModel(product.getUser());
+    public void addEvent(EventEntity event) {
+        this.events.add(event);
+    }
     
-        if (includeEvents) {
-            entity.events = product.getEvents().stream()
-                .map(ev -> {
-                    EventEntity evEntity = EventEntity.fromDomainModel(ev, entity);
-                    return evEntity;
-                })
-                .collect(Collectors.toList());
-        }
-    
-        return entity;
+    public void removeEvent(EventEntity event) {
+        this.events.remove(event);
     }
 }

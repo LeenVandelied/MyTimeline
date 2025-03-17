@@ -5,19 +5,14 @@ import java.util.UUID;
 
 public class ProductCreationRequest {
     private String name;
-    private String qrCode;
     private UUID category;
     private UUID userId;
-    private List<EventRequest> events;
+    private List<EventCreationRequest> events;
 
     public String getName() {
         return name;
     }
-
-    public String getQrCode() {
-        return qrCode;
-    }
-
+    
     public UUID getCategory() {
         return category;
     }
@@ -30,7 +25,7 @@ public class ProductCreationRequest {
         this.userId = userId;
     }
 
-    public List<EventRequest> getEvents() {
+    public List<EventCreationRequest> getEvents() {
         return events;
     }
 }

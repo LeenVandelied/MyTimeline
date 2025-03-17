@@ -3,7 +3,7 @@ package com.example.eventmanager.controllers;
 import com.example.eventmanager.security.JwtService;
 import com.example.eventmanager.security.CustomUserDetails;
 import com.example.eventmanager.security.CustomUserDetailsService;
-import com.example.eventmanager.domain.repositories.UserRepository;
+import com.example.eventmanager.application.services.UserService;
 import com.example.eventmanager.domain.models.User;
 import com.example.eventmanager.dtos.AuthRequest;
 import com.example.eventmanager.dtos.RegisterRequest;
@@ -34,13 +34,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserService userService, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -77,7 +77,7 @@ public class AuthController {
             }
 
             String username = jwtService.extractUsername(token);
-            Optional<User> user = userRepository.findDomainUserByUsername(username);
+            Optional<User> user = userService.findDomainUserByUsername(username);
 
             if (user.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
@@ -100,7 +100,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         try {
-            Optional<User> existingUser = userRepository.findDomainUserByUsername(registerRequest.getUsername());
+            Optional<User> existingUser = userService.findDomainUserByUsername(registerRequest.getUsername());
 
             if (existingUser.isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
@@ -117,7 +117,7 @@ public class AuthController {
                 registerRequest.getEmail()
             );
 
-            userRepository.save(newUser);
+            userService.save(newUser);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
         } catch (Exception e) {

@@ -1,16 +1,15 @@
 package com.example.eventmanager.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.example.eventmanager.domain.models.Event;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "events")
 public class EventEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -29,33 +28,83 @@ public class EventEntity {
     @JsonBackReference
     private ProductEntity product;
 
-    public Event toDomainModel() {
-        return new Event(
-            id,
-            title,
-            type,
-            durationValue,
-            durationUnit,
-            isRecurring,
-            recurrenceUnit,
-            startDate,
-            endDate,
-            product.getId()
-        );
+    public UUID getId() {
+        return id;
     }
 
-    public static EventEntity fromDomainModel(Event event, ProductEntity productEntity) {
-        EventEntity entity = new EventEntity();
-        entity.id = event.getId();
-        entity.title = event.getTitle();
-        entity.type = event.getType();
-        entity.durationValue = event.getDurationValue();
-        entity.durationUnit = event.getDurationUnit();
-        entity.isRecurring = event.getIsRecurring();
-        entity.recurrenceUnit = event.getRecurrenceUnit();
-        entity.startDate = (event.getStartDate() != null) ? event.getStartDate() : LocalDate.now();
-        entity.endDate = event.getEndDate();
-        entity.product = productEntity;
-        return entity;
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Integer getDurationValue() {
+        return durationValue;
+    }
+
+    public void setDurationValue(Integer durationValue) {
+        this.durationValue = durationValue;
+    }
+
+    public String getDurationUnit() {
+        return durationUnit;
+    }
+
+    public void setDurationUnit(String durationUnit) {
+        this.durationUnit = durationUnit;
+    }
+
+    public Boolean getIsRecurring() {
+        return isRecurring;
+    }
+
+    public void setIsRecurring(Boolean isRecurring) {
+        this.isRecurring = isRecurring;
+    }
+
+    public String getRecurrenceUnit() {
+        return recurrenceUnit;
+    }
+
+    public void setRecurrenceUnit(String recurrenceUnit) {
+        this.recurrenceUnit = recurrenceUnit;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public ProductEntity getProduct() {
+        return product;
+    }
+
+    public void setProduct(ProductEntity product) {
+        this.product = product;
     }
 }

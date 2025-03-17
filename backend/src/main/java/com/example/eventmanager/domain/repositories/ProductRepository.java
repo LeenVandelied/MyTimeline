@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public interface ProductRepository {
     Optional<Product> findDomainProductById(UUID id);
-    Optional<Product> findDomainProductByQrCode(String qrCode);
     List<Product> findAllProducts();
     Product save(Product product);
     void deleteById(UUID id);

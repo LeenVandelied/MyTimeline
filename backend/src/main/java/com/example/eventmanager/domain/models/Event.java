@@ -48,5 +48,5 @@ public class Event {
     public void setRecurrenceUnit(String recurrenceUnit) { this.recurrenceUnit = recurrenceUnit; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
-    public void setProduct(UUID productId) { this.productId = productId; }
+    public void setProduct(UUID productId) { this.productId = productId; }  
 }
