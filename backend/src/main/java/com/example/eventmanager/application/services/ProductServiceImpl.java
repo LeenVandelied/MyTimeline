@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.example.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.example.eventmanager.domain.exceptions.UserNotFoundException;
 import com.example.eventmanager.domain.models.Category;
 import com.example.eventmanager.domain.models.Event;
 import com.example.eventmanager.domain.models.Product;
@@ -43,10 +46,10 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public Product createProduct(ProductCreationRequest request) {
         Category category = categoryRepository.findDomainCategoryById(request.getCategory())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException(request.getCategory()));
     
         User user = userRepository.findDomainUserById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
     
         Product product = new Product(UUID.randomUUID(), request.getName(), category, user, new ArrayList<>());
     
@@ -68,11 +71,11 @@ public class ProductServiceImpl implements ProductService {
             product.addEvent(event);
         });
     
-        productRepository.save(product);
-        return product;
+        return productRepository.save(product);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Product> getProductsWithEvents() {
         return productRepository.findAllProducts().stream()
                 .filter(Product::hasEvents)
@@ -80,16 +83,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Product> findDomainProductById(UUID id) {
         return productRepository.findDomainProductById(id);
     }
 
     @Override
+    @Transactional
     public void deleteById(UUID id) {
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException(id);
+        }
         productRepository.deleteById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existsById(UUID id) {
         return productRepository.existsById(id);
     }
