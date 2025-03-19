@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.eventmanager.application.services.EventService;
-import com.example.eventmanager.application.services.ProductService;
-import com.example.eventmanager.application.services.UserService;
+import com.example.eventmanager.application.services.EventServiceImpl;
+import com.example.eventmanager.application.services.ProductServiceImpl;
+import com.example.eventmanager.application.services.UserServiceImpl;
 import com.example.eventmanager.domain.models.Event;
 import com.example.eventmanager.domain.models.Product;
 import com.example.eventmanager.domain.models.User;
@@ -22,15 +22,16 @@ import java.util.UUID;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    @Autowired
-    private final UserService userService;
-    private final EventService eventService;
-    private final ProductService productService;
+    private final UserServiceImpl userService;
+    private final EventServiceImpl eventService;
+    private final ProductServiceImpl productService;
     private final JwtService jwtService;
-    
 
     @Autowired
-    public ProductController(ProductService productService, EventService eventService, UserService userService, JwtService jwtService) {
+    public ProductController(ProductServiceImpl productService, 
+                           EventServiceImpl eventService, 
+                           UserServiceImpl userService, 
+                           JwtService jwtService) {
         this.productService = productService;
         this.eventService = eventService;
         this.userService = userService;

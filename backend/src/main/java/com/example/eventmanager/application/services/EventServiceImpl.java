@@ -12,22 +12,24 @@ import com.example.eventmanager.domain.models.Event;
 import com.example.eventmanager.domain.models.Product;
 import com.example.eventmanager.domain.repositories.EventRepository;
 import com.example.eventmanager.domain.repositories.ProductRepository;
+import com.example.eventmanager.domain.services.EventService;
 import com.example.eventmanager.dtos.EventCreationRequest;
 import com.example.eventmanager.utils.Utils;
 
 @Service
-public class EventService {
+public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final ProductRepository productRepository;
 
     @Autowired
-    public EventService(EventRepository eventRepository,
+    public EventServiceImpl(EventRepository eventRepository,
                         ProductRepository productRepository) {
         this.eventRepository = eventRepository;
         this.productRepository = productRepository;
     }
 
+    @Override
     public Event createEvent(EventCreationRequest eventCreationRequest) {
         Product product = productRepository.findDomainProductById(eventCreationRequest.getProductId())
             .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -49,20 +51,24 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    @Override
     public List<Event> findDomainEventByProductId(UUID productId) {
         return eventRepository.findDomainEventByProductId(productId);
     }
 
+    @Override
     public void deleteById(UUID id) {
         eventRepository.deleteById(id);
     }
 
+    @Override
     public boolean existsById(UUID id) {
         return eventRepository.existsById(id);
     }   
     
+    @Override
     @Transactional
     public Event save(Event event) {
         return eventRepository.save(event);
     }
-}
+} 

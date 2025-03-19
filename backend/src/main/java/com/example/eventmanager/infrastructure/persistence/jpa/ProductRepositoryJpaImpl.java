@@ -12,7 +12,6 @@ import com.example.eventmanager.domain.models.Product;
 import com.example.eventmanager.domain.repositories.ProductRepository;
 import com.example.eventmanager.infrastructure.persistence.entity.ProductEntity;
 import com.example.eventmanager.infrastructure.persistence.mapping.ProductMapper;
-import com.example.eventmanager.security.JwtFilter;
 
 import jakarta.persistence.EntityManager;
 

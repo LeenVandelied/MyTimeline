@@ -19,18 +19,18 @@ import com.example.eventmanager.domain.repositories.CategoryRepository;
 import com.example.eventmanager.domain.repositories.EventRepository;
 import com.example.eventmanager.domain.repositories.ProductRepository;
 import com.example.eventmanager.domain.repositories.UserRepository;
+import com.example.eventmanager.domain.services.ProductService;
 import com.example.eventmanager.dtos.ProductCreationRequest;
 import com.example.eventmanager.utils.Utils;
 
-
 @Service
-public class ProductService {
+public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, 
+    public ProductServiceImpl(ProductRepository productRepository, 
                           EventRepository eventRepository, 
                           CategoryRepository categoryRepository, 
                           UserRepository userRepository) {
@@ -39,6 +39,7 @@ public class ProductService {
         this.userRepository = userRepository;
     }
 
+    @Override
     @Transactional
     public Product createProduct(ProductCreationRequest request) {
         Category category = categoryRepository.findDomainCategoryById(request.getCategory())
@@ -71,22 +72,25 @@ public class ProductService {
         return product;
     }
 
+    @Override
     public List<Product> getProductsWithEvents() {
         return productRepository.findAllProducts().stream()
                 .filter(Product::hasEvents)
                 .collect(Collectors.toList());
     }
 
+    @Override
     public Optional<Product> findDomainProductById(UUID id) {
         return productRepository.findDomainProductById(id);
     }
 
+    @Override
     public void deleteById(UUID id) {
         productRepository.deleteById(id);
     }
 
+    @Override
     public boolean existsById(UUID id) {
         return productRepository.existsById(id);
     }
-
 }

@@ -13,17 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.eventmanager.application.services.EventService;
+import com.example.eventmanager.application.services.EventServiceImpl;
 import com.example.eventmanager.domain.models.Event;
-
 
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
 
-    private final EventService eventService;
+    private final EventServiceImpl eventService;
 
-    public EventController(EventService eventService) {
+    public EventController(EventServiceImpl eventService) {
         this.eventService = eventService;
     }
 

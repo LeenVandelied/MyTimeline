@@ -3,7 +3,7 @@ package com.example.eventmanager.controllers;
 import com.example.eventmanager.security.JwtService;
 import com.example.eventmanager.security.CustomUserDetails;
 import com.example.eventmanager.security.CustomUserDetailsService;
-import com.example.eventmanager.application.services.UserService;
+import com.example.eventmanager.application.services.UserServiceImpl;
 import com.example.eventmanager.domain.models.User;
 import com.example.eventmanager.dtos.AuthRequest;
 import com.example.eventmanager.dtos.RegisterRequest;
@@ -34,11 +34,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserService userService, PasswordEncoder passwordEncoder) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserServiceImpl userService, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtService = jwtService;
@@ -117,7 +117,7 @@ public class AuthController {
                 registerRequest.getEmail()
             );
 
-            userService.save(newUser);
+            userService.createUser(newUser);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
         } catch (Exception e) {
