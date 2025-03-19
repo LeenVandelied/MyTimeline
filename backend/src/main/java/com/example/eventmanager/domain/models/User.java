@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class User {
     private UUID id;
-    private String name;
     private String username;
+    private String name;
     private String password;
     private String role;
     private String email;
@@ -26,7 +26,7 @@ public class User {
     public String getName() {
         return name;
     }
-    
+
     public String getUsername() {
         return username;
     }

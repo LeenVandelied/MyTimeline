@@ -3,8 +3,6 @@ package com.example.eventmanager.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import java.util.UUID;
 
-import com.example.eventmanager.domain.models.Category;
-
 @Entity
 @Table(name = "categories")
 public class CategoryEntity {
@@ -14,14 +12,20 @@ public class CategoryEntity {
     private UUID id;
     private String name;
 
-    public Category toDomainModel() {
-        return new Category(id, name);
+    public UUID getId() {
+        return id;
+    }
+    
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public static CategoryEntity fromDomainModel(Category category) {
-        CategoryEntity entity = new CategoryEntity();
-        entity.id = category.getId();
-        entity.name = category.getName();
-        return entity;
-    }
 }

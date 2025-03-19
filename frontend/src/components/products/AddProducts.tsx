@@ -3,51 +3,21 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Form, FormField, FormItem, FormMessage, FormControl } from "@/components/ui/form";
-import apiClient from "@/services/apiClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-
-const eventSchema = z.object({
-  name: z.string().min(3, "Le nom de l'événement est requis"),
-  type: z.enum(["duration", "single"]),
-  durationValue: z.number().optional(),
-  durationUnit: z.enum(["days", "weeks", "months", "years"]).optional(),
-  date: z.date().optional(),
-  isRecurring: z.boolean().optional(),
-  recurrenceUnit: z.enum(["weeks", "months", "years"]).optional(),
-}).superRefine((data, ctx) => {
-  if (data.type === "duration" && (!data.durationValue || data.durationValue <= 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "La durée doit être supérieure à 0",
-      path: ["durationValue"],
-    });
-  }
-});
-
-const productSchema = z.object({
-  name: z.string().min(3, "Le nom doit contenir au moins 3 caractères"),
-  category: z.string().min(1, "Veuillez choisir une catégorie"),
-  events: z.array(eventSchema),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
-type EventFormValues = z.infer<typeof eventSchema>;
+import { createProduct } from "@/services/productService";
+import { EventCreate, eventSchema, ProductCreate, productSchema } from "@/types/product";
 
 export default function AddProduct() {
   const [open, setOpen] = useState(false);
-  const [events, setEvents] = useState<EventFormValues[]>([]);
+  const [events, setEvents] = useState<EventCreate[]>([]);
 
-  const productForm = useForm<ProductFormValues>({
+  const productForm = useForm<ProductCreate>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
@@ -56,7 +26,7 @@ export default function AddProduct() {
     },
   });
 
-  const eventForm = useForm<EventFormValues>({
+  const eventForm = useForm<EventCreate>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       name: "",
@@ -69,19 +39,26 @@ export default function AddProduct() {
     },
   });
 
-  const onSubmitProduct = async (data: ProductFormValues) => {
+  const onSubmitProduct = async (data: ProductCreate) => {
     try {
-      const finalData = { ...data, events };
-      await apiClient.post("/api/products", finalData);
+      const finalData: ProductCreate = { ...data, events };
+      productSchema.parse(finalData);
+      await createProduct(finalData);
       
       setOpen(false);
       setEvents([]);
       productForm.reset();
     } catch (error) {
       console.error("Erreur lors de l'ajout du produit", error);
+
+      productForm.setError("root", {
+        type: "server",
+        message: "Une erreur est survenue lors de l'ajout du produit.",
+      });
     }
   };
-  const onSubmitEvent = (data: EventFormValues) => {
+
+  const onSubmitEvent = (data: EventCreate) => {
     setEvents((prev) => [...prev, data]);
   
     eventForm.reset({
@@ -93,6 +70,8 @@ export default function AddProduct() {
       isRecurring: false,
       recurrenceUnit: undefined,
     });
+  
+    eventForm.setValue("type", "single"); 
   };
 
   const removeEvent = (index: number) => {
@@ -104,7 +83,7 @@ export default function AddProduct() {
       <DialogTrigger asChild>
         <Button variant="outline">Ajouter un produit</Button>
       </DialogTrigger>
-      <DialogContent className="p-6 bg-gray-900 border border-gray-700 shadow-xl">
+      <DialogContent className="p-6 bg-gray-900 border border-gray-700 shadow-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white text-lg font-semibold">Ajouter un produit</DialogTitle>
         </DialogHeader>
@@ -133,8 +112,18 @@ export default function AddProduct() {
                         <SelectValue placeholder="Sélectionnez une catégorie" />
                       </SelectTrigger>
                       <SelectContent className="text-gray-300 bg-gray-900">
-                        <SelectItem className="hover:text-white hover:bg-gray-700" value="vehicles">Véhicules</SelectItem>
-                        <SelectItem className="hover:text-white hover:bg-gray-700" value="insurance">Assurance</SelectItem>
+                        <SelectItem className="hover:text-white hover:bg-gray-700" value="7446a49c-4053-4751-837a-c968a3f568ba">
+                          Véhicules
+                        </SelectItem>
+                        <SelectItem className="hover:text-white hover:bg-gray-700" value="dbc134fb-9558-476d-88c7-75992a249adc">
+                          Assurance
+                        </SelectItem>
+                        <SelectItem className="hover:text-white hover:bg-gray-700" value="9817e487-b43a-47b8-9cc7-ba5bf785bcdd">
+                          Aliments
+                        </SelectItem>
+                        <SelectItem className="hover:text-white hover:bg-gray-700" value="ec088b7c-0a78-4c41-84f4-21c7626d9707">
+                          Médical
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -143,9 +132,9 @@ export default function AddProduct() {
               )}
             />
 
-            <div className="mt-6 p-4 border border-gray-700 rounded-md">
+            <div className="mt-6 p-4 border border-gray-700 rounded-md shadow-2xl bg-gray-800">
               <h3 className="text-lg font-semibold mb-4">Ajouter un événement</h3>
-              <Form {...eventForm}>
+              <Form {...eventForm} key={eventForm.watch("type")}>
                 <form onSubmit={eventForm.handleSubmit(onSubmitEvent)}>
                   <FormField control={eventForm.control} name="name"
                     render={({ field }) => (
@@ -180,14 +169,18 @@ export default function AddProduct() {
                   />
 
                   {eventForm.watch("type") === "duration" && (
-                    <>
+                    <div className="flex gap-4">
                       <FormField control={eventForm.control} name="durationValue"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex-1">
                             <Label>Durée</Label>
                             <FormControl>
-                              <Input type="number" placeholder="Valeur" {...field}
-                              onChange={(e) => field.onChange(e.target.valueAsNumber)} />
+                              <Input 
+                                type="number" 
+                                placeholder="Valeur" 
+                                {...field} 
+                                onChange={(e) => field.onChange(e.target.valueAsNumber)} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -195,7 +188,7 @@ export default function AddProduct() {
                       />
                       <FormField control={eventForm.control} name="durationUnit"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex-1">
                             <Label>Unité</Label>
                             <FormControl>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -214,25 +207,22 @@ export default function AddProduct() {
                           </FormItem>
                         )}
                       />
-                    </>
+                    </div>
                   )}
 
                   {eventForm.watch("type") === "single" && (
                     <>
                       <FormField control={eventForm.control} name="date"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex-1">
                             <Label>Date de l&apos;événement</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" className="ms-3 bg-slate-800">
-                                  {field.value ? field.value.toDateString() : "Sélectionner une date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent>
-                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} className="bg-gray-900 border-none" />
-                              </PopoverContent>
-                            </Popover>
+                            <FormControl>
+                              <Input 
+                                type="date" 
+                                defaultValue={new Date().toISOString().split("T")[0]} 
+                                onChange={(e) => field.onChange(new Date(e.target.value))}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -240,9 +230,11 @@ export default function AddProduct() {
 
                       <FormField control={eventForm.control} name="isRecurring"
                         render={({ field }) => (
-                          <FormItem className="mt-2 flex items-center gap-2">
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                            <Label>Récurrence</Label>
+                          <FormItem className="space-y-0 flex flex-row items-center gap-2 mt-3 mb-3">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-5 w-5" />
+                            </FormControl>
+                            <Label className="text-gray-300">Récurrence</Label>
                           </FormItem>
                         )}
                       />
@@ -302,6 +294,11 @@ export default function AddProduct() {
             <Button type="submit" className="w-full bg-blue-600 mt-4">
               Ajouter mon produit
             </Button>
+            {productForm.formState.errors.root && (
+              <p className="text-red-500 text-sm mt-2">
+                {productForm.formState.errors.root.message}
+              </p>
+            )}
           </form>
         </Form>
       </DialogContent>

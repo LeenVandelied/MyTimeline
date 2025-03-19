@@ -2,13 +2,12 @@ package com.example.eventmanager.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 
-import com.example.eventmanager.domain.models.User;
-
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -19,18 +18,51 @@ public class UserEntity {
     private String role;
     private String email;
 
-    public User toDomainModel() {
-        return new User(id, name, username, password, role, email);
+    public UUID getId() {
+        return id;
     }
 
-    public static UserEntity fromDomainModel(User user) {
-        UserEntity entity = new UserEntity();
-        entity.id = user.getId();
-        entity.name = user.getName();
-        entity.username = user.getUsername();
-        entity.password = user.getPassword();
-        entity.role = user.getRole();
-        entity.email = user.getEmail();
-        return entity;
+    public String getName() {
+        return name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

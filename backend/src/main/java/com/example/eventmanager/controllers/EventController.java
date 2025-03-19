@@ -13,29 +13,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.eventmanager.application.services.EventServiceImpl;
 import com.example.eventmanager.domain.models.Event;
-import com.example.eventmanager.domain.repositories.EventRepository;
-
 
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
 
-    private final EventRepository eventRepository;
+    private final EventServiceImpl eventService;
 
-    public EventController(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
+    public EventController(EventServiceImpl eventService) {
+        this.eventService = eventService;
     }
 
     @PostMapping
     public ResponseEntity<Event> createEvent(@RequestBody Event event) {
-        Event savedEvent = eventRepository.save(event);
+        Event savedEvent = eventService.save(event);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedEvent);
     }
 
     @GetMapping("/{productId}/events")
     public ResponseEntity<List<Event>> getEventsByProductId(@PathVariable UUID productId) {
-        List<Event> events = eventRepository.findDomainEventByProductId(productId);
+        List<Event> events = eventService.findDomainEventByProductId(productId);
         if (events.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -44,10 +43,10 @@ public class EventController {
 
     @DeleteMapping("/{eventId}")
     public ResponseEntity<Void> deleteEvent(@PathVariable UUID eventId) {
-        if (!eventRepository.existsById(eventId)) {
+        if (!eventService.existsById(eventId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        eventRepository.deleteById(eventId);
+        eventService.deleteById(eventId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -5,19 +5,16 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import com.example.eventmanager.domain.models.Product;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "products")
 public class ProductEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.AUTO) UUID id;
 
     private String name;
-    private String qrCode;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -28,27 +25,58 @@ public class ProductEntity {
     private UserEntity user;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<EventEntity> events = new ArrayList<>();
 
-public Product toDomainModel() {
-    return new Product(id, name, qrCode, category.toDomainModel(), user.toDomainModel(), 
-        events.stream().map(EventEntity::toDomainModel).collect(Collectors.toList()));
-}
-
+    public UUID getId() {
+        return id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public CategoryEntity getCategory() {
+        return category;
+    }
+    
+    public UserEntity getUser() {
+        return user;
+    }
+    
+    public List<EventEntity> getEvents() {
+        return events;
+    }
+    
     public boolean hasEvents() {
         return !events.isEmpty();
     }
+    
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public void setCategory(CategoryEntity category) {
+        this.category = category;
+    }
+    
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+    
+    public void setEvents(List<EventEntity> events) {
+        this.events = events;
+    }
 
-    public static ProductEntity fromDomainModel(Product product) {
-        ProductEntity entity = new ProductEntity();
-        entity.id = product.getId();
-        entity.name = product.getName();
-        entity.qrCode = product.getQrCode();
-        entity.category = CategoryEntity.fromDomainModel(product.getCategory());
-        entity.user = UserEntity.fromDomainModel(product.getUser());
-        entity.events = product.getEvents().stream()
-            .map(EventEntity::fromDomainModel)
-            .collect(Collectors.toList());
-        return entity;
+    public void addEvent(EventEntity event) {
+        this.events.add(event);
+    }
+    
+    public void removeEvent(EventEntity event) {
+        this.events.remove(event);
     }
 }

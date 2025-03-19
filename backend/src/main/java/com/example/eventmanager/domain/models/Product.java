@@ -6,15 +6,13 @@ import java.util.UUID;
 public class Product {
     private UUID id;
     private String name;
-    private String qrCode;
     private Category category;
     private User user;
     private List<Event> events;
 
-    public Product(UUID id, String name, String qrCode, Category category, User user, List<Event> events) {
+    public Product(UUID id, String name, Category category, User user, List<Event> events) {
         this.id = id;
         this.name = name;
-        this.qrCode = qrCode;
         this.category = category;
         this.user = user;
         this.events = events;
@@ -30,14 +28,6 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getQrCode() {
-        return qrCode;
-    }
-
-    public void setQrCode(String qrCode) {
-        this.qrCode = qrCode;
     }
 
     public Category getCategory() {
@@ -61,6 +51,10 @@ public class Product {
 
     public void setEvents(List<Event> events) {
         this.events = events;
+    }
+
+    public void addEvent(Event event) {
+        this.events.add(event);
     }
 
     public boolean hasEvents() {
