@@ -2,6 +2,7 @@ package com.example.eventmanager.application.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.eventmanager.domain.models.User;
 import com.example.eventmanager.domain.repositories.UserRepository;
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User createUser(User user) {
         return userRepository.save(user);
     }

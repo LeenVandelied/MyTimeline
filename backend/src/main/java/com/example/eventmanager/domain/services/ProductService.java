@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface ProductService {
     Product createProduct(ProductCreationRequest request);
     
-    List<Product> getProductsWithEvents();
+    List<Product> getProductsWithEvents(UUID userId);
     Optional<Product> findDomainProductById(UUID id);
     
     void deleteById(UUID id);

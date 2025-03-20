@@ -22,7 +22,7 @@ public class EventEntity {
     private String recurrenceUnit;
     private LocalDate startDate;
     private LocalDate endDate;
-
+    private Boolean isAllDay;
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
@@ -107,4 +107,13 @@ public class EventEntity {
     public void setProduct(ProductEntity product) {
         this.product = product;
     }
+
+    public Boolean getIsAllDay() {
+        return isAllDay;
+    }
+
+    public void setIsAllDay(Boolean isAllDay) {
+        this.isAllDay = isAllDay;
+    }
+    
 }

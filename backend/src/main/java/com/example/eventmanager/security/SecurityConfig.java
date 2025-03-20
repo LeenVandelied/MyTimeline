@@ -53,7 +53,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/users/{userId}/products/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/products/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/events/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -68,7 +71,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of("http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
         config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
         source.registerCorsConfiguration("/**", config);
         return source;

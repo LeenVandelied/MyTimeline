@@ -49,7 +49,8 @@ public class EventServiceImpl implements EventService {
                 eventCreationRequest.getRecurrenceUnit(),
                 startDate,
                 Utils.calculateEndDate(eventCreationRequest, startDate),
-                product.getId()
+                product.getId(),
+                eventCreationRequest.getIsAllDay()
         );
         return eventRepository.save(event);
     }

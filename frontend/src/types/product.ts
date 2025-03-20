@@ -1,29 +1,22 @@
 import { z } from "zod";
-
-export const eventSchema = z.object({
-  name: z.string().min(3, "Le nom de l'événement est requis"),
-  type: z.enum(["duration", "single"]),
-  durationValue: z.number().optional(),
-  durationUnit: z.enum(["days", "weeks", "months", "years"]).optional(),
-  date: z.date().optional(),
-  isRecurring: z.boolean().optional(),
-  recurrenceUnit: z.enum(["weeks", "months", "years"]).optional(),
-}).superRefine((data, ctx) => {
-  if (data.type === "duration" && (!data.durationValue || data.durationValue <= 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "La durée doit être supérieure à 0",
-      path: ["durationValue"],
-    });
-  }
-});
+import { eventCreationSchema, eventSchema } from "./event";
 
 export const productSchema = z.object({
-  name: z.string().min(3, "Le nom doit contenir au moins 3 caractères"),
-  category: z.string().min(1, "Veuillez choisir une catégorie"),
-  events: z.array(eventSchema),
+  id: z.string(),
+  name: z.string().min(3, "Le nom du produit est requis"),
+  category: z.object({
+    id: z.string(),
+    name: z.string()
+  }),
+  events: z.array(eventSchema)
 });
 
+export type Product = z.infer<typeof productSchema>;
 
-export type ProductCreate = z.infer<typeof productSchema>;
-export type EventCreate = z.infer<typeof eventSchema>;
+export const productCreateSchema = z.object({
+  name: z.string().min(3, "Le nom du produit est requis"),
+  category: z.string().uuid("La catégorie est requise"),
+  events: z.array(eventCreationSchema)
+});
+
+export type ProductCreate = z.infer<typeof productCreateSchema>;

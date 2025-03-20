@@ -66,7 +66,8 @@ public class ProductServiceImpl implements ProductService {
                     eventCreationRequest.getRecurrenceUnit(),
                     startDate,
                     Utils.calculateEndDate(eventCreationRequest, startDate),
-                    product.getId()
+                    product.getId(),
+                    eventCreationRequest.getIsAllDay()
             );
             product.addEvent(event);
         });
@@ -76,8 +77,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Product> getProductsWithEvents() {
+    public List<Product> getProductsWithEvents(UUID userId) {
         return productRepository.findAllProducts().stream()
+                .filter(product -> product.getUser().getId().equals(userId))
                 .filter(Product::hasEvents)
                 .collect(Collectors.toList());
     }
