@@ -31,5 +31,8 @@
   },
   "user": {
     "role": "Role"
+  },
+  "language": {
+    "change": "Change language"
   }
 }
