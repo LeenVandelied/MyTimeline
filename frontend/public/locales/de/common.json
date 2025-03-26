@@ -11,7 +11,7 @@
   },
   "logout": "Se déconnecter",
   "errors": {
-    "validation": "Erreur de validation, veuillez vérifier vos données.",
+    "validation": ".",
     "session_expired": "Session expirée, redirection vers la page de connexion...",
     "access_denied": "Votre session a expiré, redirection vers la page de connexion...",
     "server_error": "Erreur serveur, veuillez réessayer plus tard.",
@@ -21,7 +21,7 @@
   "products": {
     "title": "Produits",
     "add": "Ajouter un produit",
-    "name": "Nom du produit",
+    "name": "",
     "category": "Catégorie"
   },
   "events": {
