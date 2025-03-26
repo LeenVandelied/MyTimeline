@@ -58,7 +58,7 @@ public class AuthController {
             jwtCookie.setHttpOnly(true);
             jwtCookie.setSecure(false);
             jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(60 * 60 * 10);
+            jwtCookie.setMaxAge(60 * 60 * 24 * 2);
             jwtCookie.setDomain("localhost");
             jwtCookie.setAttribute("SameSite", "Lax");
     
@@ -140,6 +140,46 @@ public class AuthController {
             return ResponseEntity.ok("Logged out successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "jwt", required = false) String token, 
+                                         HttpServletResponse response) {
+        try {
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: No token provided");
+            }
+
+            String username = jwtService.extractUsername(token);
+            Optional<User> user = userService.findDomainUserByUsername(username);
+
+            if (user.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            CustomUserDetails userDetails = new CustomUserDetails(user.get(), 
+                List.of(new SimpleGrantedAuthority(user.get().getRole())));
+                
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+                
+            String newToken = jwtService.generateToken(authentication);
+
+            Cookie jwtCookie = new Cookie("jwt", newToken);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setSecure(false);
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(60 * 60 * 24 * 2);
+            jwtCookie.setDomain("localhost");
+            jwtCookie.setAttribute("SameSite", "Lax");
+
+            response.addCookie(jwtCookie);
+            return ResponseEntity.ok().body("Token refreshed successfully");
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Token expired");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
 }

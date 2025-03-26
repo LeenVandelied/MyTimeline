@@ -3,7 +3,7 @@ import { getUserProfile, login as loginService, logout as logoutService } from "
 import { User } from "@/types/user";
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);;
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -29,9 +29,20 @@ export const registerUser = async (name: string, username: string, email: string
   }
 };
 
+export const refreshToken = async () => {
+  try {
+    await apiClient.post("/auth/refresh");
+    return true;
+  } catch (error) {
+    console.error("Erreur lors du rafraîchissement du token:", error);
+    return false;
+  }
+};
+
 export const logout = async () => {
   try {
     await apiClient.post("/auth/logout");
+    localStorage.removeItem("user");
     window.location.href = "/login";
   } catch (error) {
     throw error;
