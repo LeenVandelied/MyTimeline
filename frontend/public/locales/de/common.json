@@ -1,15 +1,15 @@
 {
   "login": {
-    "title": "Connexion",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
-    "submit": "Se connecter",
-    "loading": "Connexion...",
-    "noAccount": "Pas encore de compte ?",
-    "register": "Inscrivez-vous"
+    "title": "Einloggen",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "loading": "Verbinde...",
+    "noAccount": "Sie haben noch kein Konto?",
+    "register": "Sich registrieren"
   },
   "validation": {
-    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "password": "Le mot de passe doit contenir au moins 6 caractères"
+    "username": "Der Nutzername muss mindestens 3 Zeichen lang sein",
+    "password": "Passwort muss mindestens 6 Zeichen enthalten"
   }
 }
