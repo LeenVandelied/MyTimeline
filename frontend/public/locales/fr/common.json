@@ -1,0 +1,35 @@
+{
+  "welcome": "Bienvenue",
+  "dashboard": "Tableau de bord",
+  "loading": "Chargement...",
+  "login": {
+    "title": "Connexion",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "Nom d'utilisateur ou mot de passe incorrect"
+  },
+  "logout": "Se déconnecter",
+  "errors": {
+    "validation": "Erreur de validation, veuillez vérifier vos données.",
+    "session_expired": "Session expirée, redirection vers la page de connexion...",
+    "access_denied": "Votre session a expiré, redirection vers la page de connexion...",
+    "server_error": "Erreur serveur, veuillez réessayer plus tard.",
+    "loading_data": "Erreur lors du chargement des données :",
+    "details_403": "Détails de l'erreur 403:"
+  },
+  "products": {
+    "title": "Produits",
+    "add": "Ajouter un produit",
+    "name": "Nom du produit",
+    "category": "Catégorie"
+  },
+  "events": {
+    "title": "Calendrier des événements",
+    "add": "Ajouter un événement",
+    "loading": "Chargement des événements..."
+  },
+  "user": {
+    "role": "Rôle"
+  }
+} 

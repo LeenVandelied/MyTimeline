@@ -1,0 +1,35 @@
+{
+  "welcome": "Welcome",
+  "dashboard": "Dashboard",
+  "loading": "Loading...",
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "error": "Invalid username or password"
+  },
+  "logout": "Sign out",
+  "errors": {
+    "validation": "Validation error, please check your data.",
+    "session_expired": "Session expired, redirecting to login page...",
+    "access_denied": "Your session has expired, redirecting to login page...",
+    "server_error": "Server error, please try again later.",
+    "loading_data": "Error loading data:",
+    "details_403": "403 error details:"
+  },
+  "products": {
+    "title": "Products",
+    "add": "Add product",
+    "name": "Product name",
+    "category": "Category"
+  },
+  "events": {
+    "title": "Events Calendar",
+    "add": "Add event",
+    "loading": "Loading events..."
+  },
+  "user": {
+    "role": "Role"
+  }
+} 

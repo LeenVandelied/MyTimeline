@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import frLocale from "@fullcalendar/core/locales/fr";
+import enLocale from "@fullcalendar/core/locales/en-gb";
 import FullCalendar from "@fullcalendar/react";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +11,8 @@ import AddProduct from "@/components/products/AddProducts";
 import { FullCalendarEvent, mapToFullCalendarEvent } from "@/types/event";
 import { getProducts } from "@/services/productService";
 import { Product } from "@/types/product";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/ui/language-selector";
 
 interface ApiError extends Error {
   response?: {
@@ -18,6 +21,7 @@ interface ApiError extends Error {
 }
 
 const Dashboard = () => {
+  const { t, i18n } = useTranslation();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([]);
@@ -36,11 +40,11 @@ const Dashboard = () => {
         )
       ));
     } catch (error) {
-      console.error("Erreur lors du chargement des données :", error);
+      console.error(t("errors.loading_data"), error);
       if (error instanceof Error && 'response' in error && 
           typeof (error as ApiError).response === 'object' && 
           (error as ApiError).response?.status === 403) {
-        console.error("Détails de l'erreur 403:", {
+        console.error(t("errors.details_403"), {
           userId: user?.id,
           user: user
         });
@@ -48,7 +52,7 @@ const Dashboard = () => {
     } finally {
       setLoadingEvents(false);
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -65,7 +69,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-900">
-        <p className="text-gray-400">Chargement...</p>
+        <p className="text-gray-400">{t("loading")}</p>
       </div>
     );
   }
@@ -82,42 +86,46 @@ const Dashboard = () => {
     category: product.category.name
   }));
 
-  console.log(calendarEvents);
+  // Sélection de la locale pour FullCalendar
+  const fullCalendarLocale = i18n.language === 'fr' ? frLocale : enLocale;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Dashboard</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-center">{t("dashboard")}</h1>
+          <LanguageSelector />
+        </div>
 
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg">
           <CardHeader className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-300">
-              Bienvenue, {user.username} 👋
+              {t("welcome")}, {user.username} 👋
             </h2>
             <AddProduct onProductAdded={fetchData} />
           </CardHeader>
           <CardContent className="text-gray-400">
             <p>Email: {user.email}</p>
-            <p>Rôle: {user.role}</p>
+            <p>{t("user.role")}: {user.role}</p>
             <Button onClick={handleLogout} type="button">
-              Se déconnecter
+              {t("logout")}
             </Button>
           </CardContent>
         </Card>
 
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg w-full">
           <CardHeader>
-            <h2 className="text-xl font-semibold text-gray-300">Calendrier des événements</h2>
+            <h2 className="text-xl font-semibold text-gray-300">{t("events.title")}</h2>
           </CardHeader>
           <CardContent>
             {loadingEvents ? (
               <div className="flex justify-center items-center h-[500px]">
-                <p className="text-gray-400">Chargement des événements...</p>
+                <p className="text-gray-400">{t("events.loading")}</p>
               </div>
             ) : (
               <FullCalendar
                 plugins={[resourceTimelinePlugin]}
-                locale={frLocale}
+                locale={fullCalendarLocale}
                 initialView="resourceTimelineMonth"
                 initialDate={new Date()}
                 dateAlignment="day"
@@ -147,7 +155,7 @@ const Dashboard = () => {
 
         <div className="flex justify-center">
           <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
-            Ajouter un événement
+            {t("events.add")}
           </Button>
         </div>
       </div>
