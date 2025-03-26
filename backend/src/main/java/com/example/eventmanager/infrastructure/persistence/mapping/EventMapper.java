@@ -21,7 +21,8 @@ public class EventMapper {
           eventEntity.getRecurrenceUnit(),
           eventEntity.getStartDate(),
           eventEntity.getEndDate(),
-          eventEntity.getProduct().getId()
+          eventEntity.getProduct().getId(),
+          eventEntity.getIsAllDay()
       );
   }
 

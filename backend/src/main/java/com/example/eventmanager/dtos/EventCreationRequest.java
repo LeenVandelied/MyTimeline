@@ -28,6 +28,8 @@ public class EventCreationRequest {
 
     private LocalDate date;
 
+    private Boolean isAllDay;
+
     @NotNull(message = "Product ID is required")
     private UUID productId;
 
@@ -93,5 +95,13 @@ public class EventCreationRequest {
 
     public void setProductId(UUID productId) {
         this.productId = productId;
+    }
+
+    public Boolean getIsAllDay() {
+        return isAllDay;
+    }
+
+    public void setIsAllDay(Boolean isAllDay) {
+        this.isAllDay = isAllDay;
     }
 }

@@ -14,9 +14,10 @@ public class Event {
     private LocalDate startDate;
     private LocalDate endDate;
     private UUID productId;
+    private Boolean isAllDay;
 
     public Event(UUID id, String title, String type, Integer durationValue, String durationUnit, 
-                 Boolean isRecurring, String recurrenceUnit, LocalDate startDate, LocalDate endDate, UUID productId) {
+                 Boolean isRecurring, String recurrenceUnit, LocalDate startDate, LocalDate endDate, UUID productId, Boolean isAllDay) {
         this.id = id;
         this.title = title;
         this.type = type;
@@ -27,6 +28,7 @@ public class Event {
         this.startDate = startDate;
         this.endDate = endDate;
         this.productId = productId;
+        this.isAllDay = isAllDay;
     }
 
     public UUID getId() { return id; }
@@ -39,6 +41,7 @@ public class Event {
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }
     public UUID getProductId() { return productId; }
+    public Boolean getIsAllDay() { return isAllDay; }
 
     public void setTitle(String title) { this.title = title; }
     public void setType(String type) { this.type = type; }

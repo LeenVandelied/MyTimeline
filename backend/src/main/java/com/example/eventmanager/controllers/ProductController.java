@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api")
 public class ProductController {
 
     private final UserServiceImpl userService;
@@ -38,9 +38,11 @@ public class ProductController {
         this.jwtService = jwtService;
     }
 
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody ProductCreationRequest request, 
-                                                 @CookieValue(value = "jwt", required = false) String token) {
+    @PostMapping("/users/{userId}/products")
+    public ResponseEntity<Product> createProduct(
+            @PathVariable UUID userId,
+            @RequestBody ProductCreationRequest request, 
+            @CookieValue(value = "jwt", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -48,40 +50,106 @@ public class ProductController {
         String username = jwtService.extractUsername(token);
         Optional<User> user = userService.findDomainUserByUsername(username);
     
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     
-        request.setUserId(user.get().getId());
+        request.setUserId(userId);
         Product product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Product>> getProductsWithEvents() {
-        List<Product> products = productService.getProductsWithEvents();
-        return ResponseEntity.ok(products);
+    @GetMapping("/users/{userId}/products")
+    public ResponseEntity<List<Product>> getProducts(
+            @PathVariable UUID userId,
+            @CookieValue(value = "jwt", required = false) String cookieToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        String token = cookieToken;
+        
+        if ((token == null || token.isEmpty()) && authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+        
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            String username = jwtService.extractUsername(token);
+            Optional<User> user = userService.findDomainUserByUsername(username);
+
+            if (user.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            if (!user.get().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            return ResponseEntity.ok(productService.getProductsWithEvents(userId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable UUID id) {
-        Optional<Product> product = productService.findDomainProductById(id);
+    @GetMapping("/users/{userId}/products/{productId}")
+    public ResponseEntity<Product> getProductById(
+            @PathVariable UUID userId,
+            @PathVariable UUID productId,
+            @CookieValue(value = "jwt", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = jwtService.extractUsername(token);
+        Optional<User> user = userService.findDomainUserByUsername(username);
+
+        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<Product> product = productService.findDomainProductById(productId);
         return product.map(ResponseEntity::ok)
                       .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
-        if (productService.existsById(id)) {
-            productService.deleteById(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    @DeleteMapping("/users/{userId}/products/{productId}")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable UUID userId,
+            @PathVariable UUID productId,
+            @CookieValue(value = "jwt", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        String username = jwtService.extractUsername(token);
+        Optional<User> user = userService.findDomainUserByUsername(username);
+
+        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        productService.deleteById(productId);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{productId}/events")
-    public ResponseEntity<List<Event>> getEventsByProductId(@PathVariable UUID productId) {
+    @GetMapping("/users/{userId}/products/{productId}/events")
+    public ResponseEntity<List<Event>> getEventsByProductId(
+            @PathVariable UUID userId,
+            @PathVariable UUID productId,
+            @CookieValue(value = "jwt", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = jwtService.extractUsername(token);
+        Optional<User> user = userService.findDomainUserByUsername(username);
+
+        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         List<Event> events = eventService.findDomainEventByProductId(productId);
         if (events.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

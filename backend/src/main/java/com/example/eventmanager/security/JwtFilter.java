@@ -70,7 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 } else {
-                    logger.warn("Invalid JWT token");
+                    logger.warn("Invalid JWT token for user: {}", username);
                 }
             }
         } catch (Exception e) {

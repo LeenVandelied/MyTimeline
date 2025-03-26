@@ -11,14 +11,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createProduct } from "@/services/productService";
-import { EventCreate, eventSchema, ProductCreate, productSchema } from "@/types/product";
+import { ProductCreate, productCreateSchema } from "@/types/product";
+import { EventCreate, eventCreationSchema } from "@/types/event";
+import { useAuth } from "@/hooks/useAuth";
 
-export default function AddProduct() {
+interface AddProductProps {
+  onProductAdded?: () => void;
+}
+
+export default function AddProduct({ onProductAdded }: AddProductProps) {
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState<EventCreate[]>([]);
+  const { user } = useAuth();
 
   const productForm = useForm<ProductCreate>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(productCreateSchema),
     defaultValues: {
       name: "",
       category: "",
@@ -27,7 +34,7 @@ export default function AddProduct() {
   });
 
   const eventForm = useForm<EventCreate>({
-    resolver: zodResolver(eventSchema),
+    resolver: zodResolver(eventCreationSchema),
     defaultValues: {
       name: "",
       type: "single",
@@ -42,12 +49,18 @@ export default function AddProduct() {
   const onSubmitProduct = async (data: ProductCreate) => {
     try {
       const finalData: ProductCreate = { ...data, events };
-      productSchema.parse(finalData);
-      await createProduct(finalData);
+      productCreateSchema.parse(finalData);
+      
+      if (!user || !user.id) {
+        throw new Error("Utilisateur non connecté");
+      }
+      
+      await createProduct(user.id, finalData);
       
       setOpen(false);
       setEvents([]);
       productForm.reset();
+      onProductAdded?.();
     } catch (error) {
       console.error("Erreur lors de l'ajout du produit", error);
 
