@@ -11,5 +11,33 @@
   "validation": {
     "username": "Der Nutzername muss mindestens 3 Zeichen lang sein",
     "password": "Passwort muss mindestens 6 Zeichen enthalten"
+  },
+  "buttons": {
+    "submit": "Valider",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "logout": "Se déconnecter"
+  },
+  "loading": {
+    "default": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression..."
+  },
+  "navigation": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "settings": "Paramètres"
+  },
+  "time": {
+    "year": "an",
+    "years": "ans",
+    "month": "mois",
+    "months": "mois",
+    "day": "jour",
+    "days": "jours",
+    "expired": "Expiré"
   }
 }
