@@ -7,11 +7,11 @@ preserve_hierarchy: true
 files:
   # Frontend translations
   - source: /frontend/public/locales/fr/**/*.json
-    translation: /frontend/public/locales/%locale%/%original_path%/%original_name%
+    translation: /frontend/public/locales/%two_letters_code%/%original_name%
     type: json
     update_option: update_as_unapproved
     update_method: update_without_changes
-    export_pattern: /frontend/public/locales/%locale%/%original_path%/%original_name%
+    export_pattern: /frontend/public/locales/%two_letters_code%/%original_name%
     ignore:
       - "**/node_modules/**"
       - "**/.git/**"
