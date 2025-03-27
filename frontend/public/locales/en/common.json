@@ -18,7 +18,8 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "back": "Back"
+    "back": "Back",
+    "logout": "Logout"
   },
   "loading": {
     "default": "Loading...",
@@ -29,5 +30,14 @@
     "home": "Home",
     "profile": "Profile",
     "settings": "Settings"
+  },
+  "time": {
+    "year": "year",
+    "years": "years",
+    "month": "month",
+    "months": "months",
+    "day": "day",
+    "days": "days",
+    "expired": "Expired"
   }
 }

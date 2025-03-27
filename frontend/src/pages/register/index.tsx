@@ -14,9 +14,18 @@ import { Button } from "@/components/ui/button";
 import { registerUser } from "@/services/authService";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
+import { LanguageSelector } from "@/components/ui/language-selector";
+
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale ?? 'fr', ['auth', 'validation', 'errors', 'common'])),
+    },
+  };
+};
 
 const RegisterForm = () => {
-  const { t } = useTranslation(['auth', 'validation', 'errors']);
+  const { t } = useTranslation(['auth', 'validation', 'errors', 'common']);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -61,6 +70,9 @@ const RegisterForm = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
       <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">{t('auth:register.title')}</h2>
 
@@ -141,14 +153,6 @@ const RegisterForm = () => {
       </div>
     </div>
   );
-};
-
-export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? 'fr', ['auth', 'validation', 'errors'])),
-    },
-  };
 };
 
 export default RegisterForm;

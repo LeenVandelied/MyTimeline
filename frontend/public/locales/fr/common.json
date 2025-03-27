@@ -18,7 +18,8 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "back": "Retour"
+    "back": "Retour",
+    "logout": "Se déconnecter"
   },
   "loading": {
     "default": "Chargement...",
@@ -29,5 +30,14 @@
     "home": "Accueil",
     "profile": "Profil",
     "settings": "Paramètres"
+  },
+  "time": {
+    "year": "an",
+    "years": "ans",
+    "month": "mois",
+    "months": "mois",
+    "day": "jour",
+    "days": "jours",
+    "expired": "Expiré"
   }
 } 

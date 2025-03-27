@@ -1,0 +1,20 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue sur votre tableau de bord",
+  "stats": {
+    "title": "Statistiques",
+    "totalEvents": "Total des événements",
+    "upcomingEvents": "Événements à venir",
+    "completedEvents": "Événements terminés"
+  },
+  "recentEvents": {
+    "title": "Événements récents",
+    "noEvents": "Aucun événement récent",
+    "viewAll": "Voir tout"
+  },
+  "actions": {
+    "createEvent": "Créer un événement",
+    "viewCalendar": "Voir le calendrier",
+    "manageProfile": "Gérer le profil"
+  }
+} 

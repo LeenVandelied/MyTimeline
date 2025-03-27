@@ -1,0 +1,52 @@
+{
+  "add": {
+    "title": "Add a product",
+    "form": {
+      "name": "Product name",
+      "namePlaceholder": "Product name",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "submit": "Add",
+      "error": "An error occurred while adding the product."
+    },
+    "categories": {
+      "vehicles": "Vehicles",
+      "insurance": "Insurance",
+      "food": "Food",
+      "medical": "Medical"
+    },
+    "event": {
+      "title": "Add an event",
+      "form": {
+        "name": "Event name",
+        "namePlaceholder": "Event name",
+        "type": "Type",
+        "typePlaceholder": "Choose a type",
+        "duration": "Duration",
+        "durationValue": "Value",
+        "durationUnit": "Unit",
+        "durationUnitPlaceholder": "Choose a unit",
+        "date": "Event date",
+        "recurring": "Recurring",
+        "recurrenceUnit": "Recurrence frequency",
+        "recurrenceUnitPlaceholder": "Choose a frequency",
+        "submit": "Add event"
+      },
+      "types": {
+        "duration": "Duration",
+        "single": "Single"
+      },
+      "units": {
+        "days": "Days",
+        "weeks": "Weeks",
+        "months": "Months",
+        "years": "Years"
+      }
+    },
+    "events": {
+      "list": "Added events",
+      "empty": "No events added",
+      "remove": "Remove"
+    }
+  }
+} 
