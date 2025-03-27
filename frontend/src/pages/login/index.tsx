@@ -15,12 +15,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoginData } from "@/types/auth";
 import { LanguageSelector } from "@/components/ui/language-selector";
 
-// Cette fonction est exécutée côté serveur à la construction
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     return {
       props: {
-        // Passe les traductions au client
         ...(await serverSideTranslations(locale || 'fr', ['common'])),
       },
     };
@@ -31,12 +29,10 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 };
 
 const LoginForm = () => {
-  // Initialisation de la traduction avec next-i18next
   const { t } = useTranslation('common');
   const router = useRouter();
   const { login, loading, user } = useAuth();
 
-  // Schéma de validation avec messages traduits
   const loginSchema = z.object({
     username: z.string().min(3, { message: t('validation.username') }),
     password: z.string().min(6, { message: t('validation.password') }),

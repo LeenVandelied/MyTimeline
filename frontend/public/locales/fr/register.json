@@ -1,0 +1,33 @@
+{
+  "title": "Créer un compte",
+  "form": {
+    "email": "Email",
+    "emailPlaceholder": "Email",
+    "name": "Nom",
+    "namePlaceholder": "Nom",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+    "submit": "S'inscrire",
+    "submitting": "Inscription...",
+    "alreadyAccount": "Déjà un compte ?",
+    "loginLink": "Connectez-vous"
+  },
+  "validation": {
+    "email": "L'email est invalide",
+    "name": "Le nom doit contenir au moins 3 caractères",
+    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "password": {
+      "min": "Le mot de passe doit contenir au moins 6 caractères",
+      "uppercase": "Le mot de passe doit contenir au moins une majuscule",
+      "number": "Le mot de passe doit contenir au moins un chiffre",
+      "match": "Les mots de passe ne correspondent pas"
+    }
+  },
+  "errors": {
+    "register": "Erreur lors de l'inscription"
+  }
+} 

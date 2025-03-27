@@ -11,5 +11,23 @@
   "validation": {
     "username": "Username must be at least 3 characters",
     "password": "Password must be at least 6 characters"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "loading": {
+    "default": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
+  },
+  "navigation": {
+    "home": "Home",
+    "profile": "Profile",
+    "settings": "Settings"
   }
 }
