@@ -1,52 +1,34 @@
 {
-  "add": {
-    "title": "Ajouter un produit",
+  "register": {
+    "title": "Créer un compte",
     "form": {
-      "name": "Nom du produit",
-      "namePlaceholder": "Nom du produit",
-      "category": "Catégorie",
-      "categoryPlaceholder": "Sélectionnez une catégorie",
-      "submit": "Ajouter",
-      "error": "Une erreur est survenue lors de l'ajout du produit."
-    },
-    "categories": {
-      "vehicles": "Véhicules",
-      "insurance": "Assurance",
-      "food": "Aliments",
-      "medical": "Médical"
-    },
-    "event": {
-      "title": "Ajouter un événement",
-      "form": {
-        "name": "Nom de l'événement",
-        "namePlaceholder": "Nom de l'événement",
-        "type": "Type",
-        "typePlaceholder": "Choisir le type",
-        "duration": "Durée",
-        "durationValue": "Valeur",
-        "durationUnit": "Unité",
-        "durationUnitPlaceholder": "Choisir une unité",
-        "date": "Date de l'événement",
-        "recurring": "Récurrent",
-        "recurrenceUnit": "Fréquence de récurrence",
-        "recurrenceUnitPlaceholder": "Choisir une fréquence",
-        "submit": "Ajouter l'événement"
-      },
-      "types": {
-        "duration": "Durée",
-        "single": "Ponctuel"
-      },
-      "units": {
-        "days": "Jours",
-        "weeks": "Semaines",
-        "months": "Mois",
-        "years": "Années"
-      }
-    },
-    "events": {
-      "list": "Événements ajoutés",
-      "empty": "Aucun événement ajouté",
-      "remove": "Supprimer"
+      "email": "Email",
+      "emailPlaceholder": "Email",
+      "name": "Nom",
+      "namePlaceholder": "Nom",
+      "username": "Nom d'utilisateur",
+      "usernamePlaceholder": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+      "submit": "S'inscrire",
+      "submitting": "Inscription...",
+      "alreadyAccount": "Déjà un compte ?",
+      "loginLink": "Connectez-vous"
+    }
+  },
+  "login": {
+    "title": "Se connecter",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "Email",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion...",
+      "noAccount": "Pas encore de compte ?",
+      "registerLink": "S'inscrire"
     }
   }
 }
