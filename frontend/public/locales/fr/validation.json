@@ -1,0 +1,21 @@
+{
+  "email": {
+    "invalid": "L'email est invalide",
+    "required": "L'email est requis"
+  },
+  "name": {
+    "min": "Le nom doit contenir au moins 3 caractères",
+    "required": "Le nom est requis"
+  },
+  "username": {
+    "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "required": "Le nom d'utilisateur est requis"
+  },
+  "password": {
+    "min": "Le mot de passe doit contenir au moins 6 caractères",
+    "uppercase": "Le mot de passe doit contenir au moins une majuscule",
+    "number": "Le mot de passe doit contenir au moins un chiffre",
+    "match": "Les mots de passe ne correspondent pas",
+    "required": "Le mot de passe est requis"
+  }
+} 

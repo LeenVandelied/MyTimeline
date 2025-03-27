@@ -1,0 +1,15 @@
+{
+  "login": {
+    "title": "Einloggen",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "loading": "Verbinde...",
+    "noAccount": "Sie haben noch kein Konto?",
+    "register": "Sich registrieren"
+  },
+  "validation": {
+    "username": "Der Nutzername muss mindestens 3 Zeichen lang sein",
+    "password": "Passwort muss mindestens 6 Zeichen enthalten"
+  }
+}

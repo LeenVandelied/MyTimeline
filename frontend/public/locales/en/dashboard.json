@@ -1,0 +1,20 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome to your dashboard",
+  "stats": {
+    "title": "Statistics",
+    "totalEvents": "Total events",
+    "upcomingEvents": "Upcoming events",
+    "completedEvents": "Completed events"
+  },
+  "recentEvents": {
+    "title": "Recent events",
+    "noEvents": "No recent events",
+    "viewAll": "View all"
+  },
+  "actions": {
+    "createEvent": "Create event",
+    "viewCalendar": "View calendar",
+    "manageProfile": "Manage profile"
+  }
+} 

@@ -10,24 +10,18 @@ const apiClient = axios.create({
   },
 });
 
-// Variable pour suivre si une redirection est en cours
 let isRedirecting = false;
 
-// Configurer un rafraîchissement périodique de session pour le mode monitoring
 const setupPeriodicRefresh = () => {
-  // Rafraîchir la session toutes les 6 heures
   setInterval(async () => {
     try {
-      // Tenter de rafraîchir le token silencieusement
       await refreshToken();
     } catch (error) {
-      // Ignorer les erreurs silencieusement - elles seront gérées par l'intercepteur si nécessaire
-      console.debug("Rafraîchissement périodique silencieux échoué");
+      console.debug("Rafraîchissement périodique silencieux échoué", error);
     }
   }, 6 * 60 * 60 * 1000); // 6 heures
 };
 
-// Initialiser le rafraîchissement périodique côté client
 if (typeof window !== 'undefined') {
   setupPeriodicRefresh();
 }
@@ -41,16 +35,13 @@ apiClient.interceptors.response.use(
       if (!isRedirecting) {
         isRedirecting = true;
         toast.error("Session expirée, redirection vers la page de connexion...");
-        // Nettoyer localStorage
         localStorage.removeItem("user");
-        // Rediriger après un court délai pour que le toast soit visible
         setTimeout(() => {
           window.location.href = "/login";
           isRedirecting = false;
         }, 1500);
       }
     } else if (error.response?.status === 403) {
-      // Pour les erreurs 403, considérer que la session a expiré
       if (!isRedirecting) {
         isRedirecting = true;
         console.error("Erreur 403 - Accès refusé:", {
@@ -59,7 +50,6 @@ apiClient.interceptors.response.use(
           headers: error.config?.headers,
           data: error.response?.data
         });
-        // Nettoyer localStorage
         localStorage.removeItem("user");
         toast.error("Votre session a expiré, redirection vers la page de connexion...");
         setTimeout(() => {

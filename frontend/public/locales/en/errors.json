@@ -1,0 +1,16 @@
+{
+  "auth": {
+    "register": "Error during registration",
+    "login": "Error during login",
+    "logout": "Error during logout",
+    "sessionExpired": "Your session has expired. Please login again"
+  },
+  "network": {
+    "offline": "You are offline. Please check your connection",
+    "timeout": "Request timeout. Please try again"
+  },
+  "server": {
+    "error": "Server error. Please try again later",
+    "maintenance": "Server is under maintenance. Please try again later"
+  }
+} 
