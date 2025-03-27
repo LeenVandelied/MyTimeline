@@ -1,34 +1,16 @@
 {
-  "register": {
-    "title": "Créer un compte",
-    "form": {
-      "email": "Email",
-      "emailPlaceholder": "Email",
-      "name": "Nom",
-      "namePlaceholder": "Nom",
-      "username": "Nom d'utilisateur",
-      "usernamePlaceholder": "Nom d'utilisateur",
-      "password": "Mot de passe",
-      "passwordPlaceholder": "Mot de passe",
-      "confirmPassword": "Confirmer le mot de passe",
-      "confirmPasswordPlaceholder": "Confirmer le mot de passe",
-      "submit": "S'inscrire",
-      "submitting": "Inscription...",
-      "alreadyAccount": "Déjà un compte ?",
-      "loginLink": "Connectez-vous"
-    }
+  "auth": {
+    "register": "Erreur lors de l'inscription",
+    "login": "Erreur lors de la connexion",
+    "logout": "Erreur lors de la déconnexion",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter"
   },
-  "login": {
-    "title": "Se connecter",
-    "form": {
-      "email": "Email",
-      "emailPlaceholder": "Email",
-      "password": "Mot de passe",
-      "passwordPlaceholder": "Mot de passe",
-      "submit": "Se connecter",
-      "submitting": "Connexion...",
-      "noAccount": "Pas encore de compte ?",
-      "registerLink": "S'inscrire"
-    }
+  "network": {
+    "offline": "Vous êtes hors ligne. Veuillez vérifier votre connexion",
+    "timeout": "Délai d'attente dépassé. Veuillez réessayer"
+  },
+  "server": {
+    "error": "Erreur serveur. Veuillez réessayer plus tard",
+    "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
   }
 }
