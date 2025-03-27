@@ -6,7 +6,7 @@ preserve_hierarchy: true
 
 files:
   # Frontend translations
-  - source: /frontend/public/locales/en/**/*.json
+  - source: /frontend/public/locales/fr/**/*.json
     translation: /frontend/public/locales/%locale%/%original_path%/%original_name%
     type: json
     update_option: update_as_unapproved
@@ -18,7 +18,7 @@ files:
       - "**/.next/**"
 
   # Backend translations
-  - source: /backend/src/main/resources/i18n/messages_en.properties
+  - source: /backend/src/main/resources/i18n/messages_fr.properties
     translation: /backend/src/main/resources/i18n/messages_%locale%.properties
     type: properties
     update_option: update_as_unapproved
