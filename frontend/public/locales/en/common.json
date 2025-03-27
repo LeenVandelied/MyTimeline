@@ -11,5 +11,33 @@
   "validation": {
     "username": "Username must be at least 3 characters",
     "password": "Password must be at least 6 characters"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "logout": "Logout"
+  },
+  "loading": {
+    "default": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
+  },
+  "navigation": {
+    "home": "Home",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "time": {
+    "year": "year",
+    "years": "years",
+    "month": "month",
+    "months": "months",
+    "day": "day",
+    "days": "days",
+    "expired": "Expired"
   }
 }
