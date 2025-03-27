@@ -1,0 +1,33 @@
+{
+  "login": {
+    "title": "Connexion",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "loading": "Connexion...",
+    "noAccount": "Pas encore de compte ?",
+    "register": "Inscrivez-vous"
+  },
+  "validation": {
+    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "password": "Le mot de passe doit contenir au moins 6 caractères"
+  },
+  "buttons": {
+    "submit": "Valider",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour"
+  },
+  "loading": {
+    "default": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression..."
+  },
+  "navigation": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "settings": "Paramètres"
+  }
+}
