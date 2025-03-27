@@ -1,20 +1,16 @@
 {
-  "title": "Tableau de bord",
-  "welcome": "Bienvenue sur votre tableau de bord",
-  "stats": {
-    "title": "Statistiques",
-    "totalEvents": "Total des événements",
-    "upcomingEvents": "Événements à venir",
-    "completedEvents": "Événements terminés"
+  "auth": {
+    "register": "Erreur lors de l'inscription",
+    "login": "Erreur lors de la connexion",
+    "logout": "Erreur lors de la déconnexion",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter"
   },
-  "recentEvents": {
-    "title": "Événements récents",
-    "noEvents": "Aucun événement récent",
-    "viewAll": "Voir tout"
+  "network": {
+    "offline": "Vous êtes hors ligne. Veuillez vérifier votre connexion",
+    "timeout": "Délai d'attente dépassé. Veuillez réessayer"
   },
-  "actions": {
-    "createEvent": "Créer un événement",
-    "viewCalendar": "Voir le calendrier",
-    "manageProfile": "Gérer le profil"
+  "server": {
+    "error": "Erreur serveur. Veuillez réessayer plus tard",
+    "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
   }
 }
