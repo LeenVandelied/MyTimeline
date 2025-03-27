@@ -1,21 +1,20 @@
 {
-  "email": {
-    "invalid": "L'email est invalide",
-    "required": "L'email est requis"
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue sur votre tableau de bord",
+  "stats": {
+    "title": "Statistiques",
+    "totalEvents": "Total des événements",
+    "upcomingEvents": "Événements à venir",
+    "completedEvents": "Événements terminés"
   },
-  "name": {
-    "min": "Le nom doit contenir au moins 3 caractères",
-    "required": "Le nom est requis"
+  "recentEvents": {
+    "title": "Événements récents",
+    "noEvents": "Aucun événement récent",
+    "viewAll": "Voir tout"
   },
-  "username": {
-    "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "required": "Le nom d'utilisateur est requis"
-  },
-  "password": {
-    "min": "Le mot de passe doit contenir au moins 6 caractères",
-    "uppercase": "Le mot de passe doit contenir au moins une majuscule",
-    "number": "Le mot de passe doit contenir au moins un chiffre",
-    "match": "Les mots de passe ne correspondent pas",
-    "required": "Le mot de passe est requis"
+  "actions": {
+    "createEvent": "Créer un événement",
+    "viewCalendar": "Voir le calendrier",
+    "manageProfile": "Gérer le profil"
   }
 }
