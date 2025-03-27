@@ -1,34 +1,33 @@
 {
-  "register": {
-    "title": "Create an account",
-    "form": {
-      "email": "Email",
-      "emailPlaceholder": "Email",
-      "name": "Name",
-      "namePlaceholder": "Name",
-      "username": "Username",
-      "usernamePlaceholder": "Username",
-      "password": "Password",
-      "passwordPlaceholder": "Password",
-      "confirmPassword": "Confirm password",
-      "confirmPasswordPlaceholder": "Confirm password",
-      "submit": "Sign up",
-      "submitting": "Signing up...",
-      "alreadyAccount": "Already have an account?",
-      "loginLink": "Sign in"
-    }
-  },
   "login": {
-    "title": "Sign in",
-    "form": {
-      "email": "Email",
-      "emailPlaceholder": "Email",
-      "password": "Password",
-      "passwordPlaceholder": "Password",
-      "submit": "Sign in",
-      "submitting": "Signing in...",
-      "noAccount": "Don't have an account?",
-      "registerLink": "Sign up"
-    }
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "loading": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "register": "Sign up"
+  },
+  "validation": {
+    "username": "Username must be at least 3 characters",
+    "password": "Password must be at least 6 characters"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "loading": {
+    "default": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
+  },
+  "navigation": {
+    "home": "Home",
+    "profile": "Profile",
+    "settings": "Settings"
   }
 }
