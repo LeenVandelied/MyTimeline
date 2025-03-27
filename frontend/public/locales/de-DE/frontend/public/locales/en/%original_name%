@@ -1,33 +1,16 @@
 {
-  "login": {
-    "title": "Login",
-    "username": "Username",
-    "password": "Password",
-    "submit": "Sign in",
-    "loading": "Signing in...",
-    "noAccount": "Don't have an account?",
-    "register": "Sign up"
+  "auth": {
+    "register": "Error during registration",
+    "login": "Error during login",
+    "logout": "Error during logout",
+    "sessionExpired": "Your session has expired. Please login again"
   },
-  "validation": {
-    "username": "Username must be at least 3 characters",
-    "password": "Password must be at least 6 characters"
+  "network": {
+    "offline": "You are offline. Please check your connection",
+    "timeout": "Request timeout. Please try again"
   },
-  "buttons": {
-    "submit": "Submit",
-    "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "back": "Back"
-  },
-  "loading": {
-    "default": "Loading...",
-    "saving": "Saving...",
-    "deleting": "Deleting..."
-  },
-  "navigation": {
-    "home": "Home",
-    "profile": "Profile",
-    "settings": "Settings"
+  "server": {
+    "error": "Server error. Please try again later",
+    "maintenance": "Server is under maintenance. Please try again later"
   }
 }
