@@ -1,33 +1,21 @@
 {
-  "title": "Create an account",
-  "form": {
-    "email": "Email",
-    "emailPlaceholder": "Email",
-    "name": "Name",
-    "namePlaceholder": "Name",
-    "username": "Username",
-    "usernamePlaceholder": "Username",
-    "password": "Password",
-    "passwordPlaceholder": "Password",
-    "confirmPassword": "Confirm password",
-    "confirmPasswordPlaceholder": "Confirm password",
-    "submit": "Sign up",
-    "submitting": "Signing up...",
-    "alreadyAccount": "Already have an account?",
-    "loginLink": "Sign in"
+  "email": {
+    "invalid": "Invalid email",
+    "required": "Email is required"
   },
-  "validation": {
-    "email": "Invalid email",
-    "name": "Name must be at least 3 characters",
-    "username": "Username must be at least 3 characters",
-    "password": {
-      "min": "Password must be at least 6 characters",
-      "uppercase": "Password must contain at least one uppercase letter",
-      "number": "Password must contain at least one number",
-      "match": "Passwords do not match"
-    }
+  "name": {
+    "min": "Name must be at least 3 characters",
+    "required": "Name is required"
   },
-  "errors": {
-    "register": "Error during registration"
+  "username": {
+    "min": "Username must be at least 3 characters",
+    "required": "Username is required"
+  },
+  "password": {
+    "min": "Password must be at least 6 characters",
+    "uppercase": "Password must contain at least one uppercase letter",
+    "number": "Password must contain at least one number",
+    "match": "Passwords do not match",
+    "required": "Password is required"
   }
 }
