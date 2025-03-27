@@ -1,52 +1,33 @@
 {
-  "add": {
-    "title": "Ajouter un produit",
-    "form": {
-      "name": "Nom du produit",
-      "namePlaceholder": "Nom du produit",
-      "category": "Catégorie",
-      "categoryPlaceholder": "Sélectionnez une catégorie",
-      "submit": "Ajouter",
-      "error": "Une erreur est survenue lors de l'ajout du produit."
-    },
-    "categories": {
-      "vehicles": "Véhicules",
-      "insurance": "Assurance",
-      "food": "Aliments",
-      "medical": "Médical"
-    },
-    "event": {
-      "title": "Ajouter un événement",
-      "form": {
-        "name": "Nom de l'événement",
-        "namePlaceholder": "Nom de l'événement",
-        "type": "Type",
-        "typePlaceholder": "Choisir le type",
-        "duration": "Durée",
-        "durationValue": "Valeur",
-        "durationUnit": "Unité",
-        "durationUnitPlaceholder": "Choisir une unité",
-        "date": "Date de l'événement",
-        "recurring": "Récurrent",
-        "recurrenceUnit": "Fréquence de récurrence",
-        "recurrenceUnitPlaceholder": "Choisir une fréquence",
-        "submit": "Ajouter l'événement"
-      },
-      "types": {
-        "duration": "Durée",
-        "single": "Ponctuel"
-      },
-      "units": {
-        "days": "Jours",
-        "weeks": "Semaines",
-        "months": "Mois",
-        "years": "Années"
-      }
-    },
-    "events": {
-      "list": "Événements ajoutés",
-      "empty": "Aucun événement ajouté",
-      "remove": "Supprimer"
+  "title": "Créer un compte",
+  "form": {
+    "email": "Email",
+    "emailPlaceholder": "Email",
+    "name": "Nom",
+    "namePlaceholder": "Nom",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+    "submit": "S'inscrire",
+    "submitting": "Inscription...",
+    "alreadyAccount": "Déjà un compte ?",
+    "loginLink": "Connectez-vous"
+  },
+  "validation": {
+    "email": "L'email est invalide",
+    "name": "Le nom doit contenir au moins 3 caractères",
+    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "password": {
+      "min": "Le mot de passe doit contenir au moins 6 caractères",
+      "uppercase": "Le mot de passe doit contenir au moins une majuscule",
+      "number": "Le mot de passe doit contenir au moins un chiffre",
+      "match": "Les mots de passe ne correspondent pas"
     }
+  },
+  "errors": {
+    "register": "Erreur lors de l'inscription"
   }
 }
