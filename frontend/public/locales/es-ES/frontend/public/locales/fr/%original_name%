@@ -1,33 +1,34 @@
 {
+  "register": {
+    "title": "Créer un compte",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "Email",
+      "name": "Nom",
+      "namePlaceholder": "Nom",
+      "username": "Nom d'utilisateur",
+      "usernamePlaceholder": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+      "submit": "S'inscrire",
+      "submitting": "Inscription...",
+      "alreadyAccount": "Déjà un compte ?",
+      "loginLink": "Connectez-vous"
+    }
+  },
   "login": {
-    "title": "Connexion",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
-    "submit": "Se connecter",
-    "loading": "Connexion...",
-    "noAccount": "Pas encore de compte ?",
-    "register": "Inscrivez-vous"
-  },
-  "validation": {
-    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "password": "Le mot de passe doit contenir au moins 6 caractères"
-  },
-  "buttons": {
-    "submit": "Valider",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "back": "Retour"
-  },
-  "loading": {
-    "default": "Chargement...",
-    "saving": "Enregistrement...",
-    "deleting": "Suppression..."
-  },
-  "navigation": {
-    "home": "Accueil",
-    "profile": "Profil",
-    "settings": "Paramètres"
+    "title": "Se connecter",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "Email",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion...",
+      "noAccount": "Pas encore de compte ?",
+      "registerLink": "S'inscrire"
+    }
   }
 }
