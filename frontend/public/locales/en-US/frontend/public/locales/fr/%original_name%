@@ -1,21 +1,43 @@
 {
-  "email": {
-    "invalid": "L'email est invalide",
-    "required": "L'email est requis"
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "loading": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "register": "Sign up"
   },
-  "name": {
-    "min": "Le nom doit contenir au moins 3 caractères",
-    "required": "Le nom est requis"
+  "validation": {
+    "username": "Username must be at least 3 characters",
+    "password": "Password must be at least 6 characters"
   },
-  "username": {
-    "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "required": "Le nom d'utilisateur est requis"
+  "buttons": {
+    "submit": "Valider",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "logout": "Se déconnecter"
   },
-  "password": {
-    "min": "Le mot de passe doit contenir au moins 6 caractères",
-    "uppercase": "Le mot de passe doit contenir au moins une majuscule",
-    "number": "Le mot de passe doit contenir au moins un chiffre",
-    "match": "Les mots de passe ne correspondent pas",
-    "required": "Le mot de passe est requis"
+  "loading": {
+    "default": "Chargement...",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression..."
+  },
+  "navigation": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "settings": "Paramètres"
+  },
+  "time": {
+    "year": "an",
+    "years": "ans",
+    "month": "mois",
+    "months": "mois",
+    "day": "jour",
+    "days": "jours",
+    "expired": "Expiré"
   }
 }
