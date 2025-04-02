@@ -7,5 +7,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   return <Component {...pageProps} />
 }
 
-// Wrapper l'application avec appWithTranslation pour activer l'internationalisation
 export default appWithTranslation(MyApp)

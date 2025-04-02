@@ -96,7 +96,6 @@ export default function Dashboard() {
   }, [user, fetchData]);
 
   useEffect(() => {
-    // Définir le titre de la vue après le premier rendu
     const timer = setTimeout(() => {
       if (calendarRef.current) {
         setCurrentViewTitle(calendarRef.current.getApi().view.title);
@@ -117,7 +116,6 @@ export default function Dashboard() {
   
   const updateCurrentDate = (calendarApi?: ReturnType<FullCalendar['getApi']>) => {
     if (!calendarApi) return;
-    // Mettre à jour le titre avec la vue actuelle
     setCurrentViewTitle(calendarApi.view.title);
   };
 
