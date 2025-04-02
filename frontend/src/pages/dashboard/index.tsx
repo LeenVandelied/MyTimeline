@@ -3,7 +3,7 @@
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { GetStaticProps } from 'next';
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import frLocale from "@fullcalendar/core/locales/fr";
 import enLocale from "@fullcalendar/core/locales/en-gb";
@@ -18,6 +18,8 @@ import { getProducts } from "@/services/productService";
 import { Product } from "@/types/product";
 import { LanguageSelector } from "@/components/ui/language-selector";
 import { calculateRemainingTime } from "@/utils/time-utils";
+import { getEventClassNames } from '@/utils/calendar-utils';
+import dayjs from 'dayjs';
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
@@ -40,8 +42,9 @@ export default function Dashboard() {
   const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const calendarRef = useRef<FullCalendar>(null);
+  const [currentViewTitle, setCurrentViewTitle] = useState<string>("");
 
-  // Détermine la locale à utiliser pour FullCalendar en fonction de la langue actuelle
   const getFullCalendarLocale = () => {
     const currentLanguage = i18n.language;
     switch (currentLanguage) {
@@ -50,7 +53,7 @@ export default function Dashboard() {
       case 'en':
         return enLocale;
       default:
-        return frLocale; // Par défaut en français
+        return frLocale;
     }
   };
 
@@ -92,6 +95,16 @@ export default function Dashboard() {
     }
   }, [user, fetchData]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (calendarRef.current) {
+        setCurrentViewTitle(calendarRef.current.getApi().view.title);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -99,6 +112,32 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error);
     }
+  };
+  
+  const updateCurrentDate = (calendarApi?: ReturnType<FullCalendar['getApi']>) => {
+    if (!calendarApi) return;
+    setCurrentViewTitle(calendarApi.view.title);
+  };
+
+  const handleCalendarNavigation = (direction: 'prev' | 'next') => {
+    const calendarApi = calendarRef.current?.getApi();
+
+    if (!calendarApi) return;
+
+    const newDate = dayjs(calendarApi.getDate());
+    const updatedDate =
+      direction === 'next' ? newDate.add(1, 'month') : newDate.subtract(1, 'month');
+    calendarApi.gotoDate(updatedDate.toDate());
+
+    updateCurrentDate(calendarApi);
+  };
+
+  const handleToday = () => {
+    const calendarApi = calendarRef.current?.getApi();
+    if (!calendarApi) return;
+    
+    calendarApi.today();
+    updateCurrentDate(calendarApi);
   };
 
   if (loading) {
@@ -168,45 +207,90 @@ export default function Dashboard() {
                 <p className="text-gray-400">{t('common:loading.default')}</p>
               </div>
             ) : (
-              <FullCalendar
-                plugins={[resourceTimelinePlugin]}
-                locale={currentLocale}
-                initialView="resourceTimelineMonth"
-                initialDate={new Date()}
-                dateAlignment="day"
-                schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
-                events={calendarEvents}
-                resources={resources}
-                resourceGroupField="category"
-                slotLabelFormat={[{ day: 'numeric' }, { weekday: 'short' }]}
-                headerToolbar={{
-                  left: "prev,next today",
-                  center: "title",
-                  right: "resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth",
-                }}
-                height="500px"
-                resourceAreaWidth="15%"
-                slotMinWidth={50}
-                eventContent={(eventInfo) => {
-                  const remainingTime = calculateRemainingTime(eventInfo.event.end || eventInfo.event.start, t);
-                  
-                  return (
-                    <div className="p-1">
-                      <div className="font-bold">{eventInfo.event.title}</div>
-                      <div className="text-sm">{remainingTime}</div>
-                    </div>
-                  );
-                }}
-              />
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleCalendarNavigation('prev')}
+                      className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                    >
+                      &lt; {t('common:buttons.previous')}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleToday}
+                      className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                    >
+                      {t('common:buttons.today')}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleCalendarNavigation('next')}
+                      className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                    >
+                      {t('common:buttons.next')} &gt;
+                    </Button>
+                  </div>
+                  <div className="text-xl font-semibold text-gray-300">
+                    {currentViewTitle}
+                  </div>
+                </div>
+                <FullCalendar
+                  ref={calendarRef}
+                  plugins={[resourceTimelinePlugin]}
+                  locale={currentLocale}
+                  initialView="resourceTimelineMonth"
+                  initialDate={new Date()}
+                  dateAlignment="day"
+                  schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
+                  events={calendarEvents}
+                  resources={resources}
+                  resourceGroupField="category"
+                  slotLabelFormat={[{ day: 'numeric' }, { weekday: 'short' }]}
+                  headerToolbar={false}
+                  height="460px"
+                  resourceAreaWidth="18%"
+                  slotMinWidth={50}
+                  datesSet={(dateInfo) => {
+                    setCurrentViewTitle(dateInfo.view.title);
+                  }}
+                  eventClassNames="rounded-md overflow-hidden shadow-sm border-0"
+                  resourceAreaHeaderClassNames="font-semibold text-gray-200 border-b border-gray-600"
+                  resourceLabelClassNames="font-medium pl-2 py-1"
+                  slotLabelClassNames="text-xs text-gray-400"
+                  resourceGroupLabelClassNames="font-bold text-white bg-gray-700 px-2 py-1 uppercase text-xs tracking-wider"
+                  dayHeaderClassNames="text-xs font-medium border-b border-gray-600"
+                  eventContent={(eventInfo) => {
+                    const remainingTime = calculateRemainingTime(eventInfo.event.end || eventInfo.event.start, t);
+                    const isExpired = remainingTime === t('common:time.expired');
+                    
+                    const eventClassNames = getEventClassNames(eventInfo.event, isExpired);
+                    
+                    return (
+                      <div className={eventClassNames}>
+                        <div className="font-bold text-white truncate text-sm relative z-10">
+                          {eventInfo.event.title}
+                        </div>
+                        <div className={`text-xs ${isExpired ? 'text-gray-300' : 'text-white font-medium'} relative z-10`}>
+                          {remainingTime}
+                        </div>
+                      </div>
+                    );
+                  }}
+                  viewClassNames="bg-gray-800"
+                  dayCellClassNames="border-gray-600"
+                  nowIndicatorClassNames="border-red-500 shadow-sm z-10"
+                  allDayClassNames="bg-gray-700"
+                  moreLinkClassNames="bg-blue-600 text-white px-1 rounded text-xs"
+                />
+              </>
             )}
           </CardContent>
         </Card>
-
-        <div className="flex justify-center">
-          <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
-            {t('dashboard:actions.createEvent')}
-          </Button>
-        </div>
       </main>
     </div>
   );

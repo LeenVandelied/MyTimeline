@@ -20,17 +20,17 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+        <Button variant="ghost" size="icon" className=" h-9 w-9 rounded-full">
           <Globe className="h-4 w-4" />
           <span className="sr-only">Changer de langue</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className='bg-gray-800'>
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
             onClick={() => changeLanguage(language.code)}
-            className={currentLocale === language.code ? 'bg-accent text-accent-foreground font-medium' : ''}
+            className={currentLocale === language.code ? 'bg-accent text-accent-foreground font-medium hover:bg-gray-700' : ' hover:bg-gray-700'}
           >
             {language.name}
           </DropdownMenuItem>
