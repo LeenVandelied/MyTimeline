@@ -19,7 +19,10 @@
     "delete": "Delete",
     "edit": "Edit",
     "back": "Back",
-    "logout": "Logout"
+    "logout": "Logout",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "today": "Aujourd'hui"
   },
   "loading": {
     "default": "Loading...",
