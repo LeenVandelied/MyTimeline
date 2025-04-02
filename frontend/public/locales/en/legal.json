@@ -1,0 +1,122 @@
+{
+  "terms": {
+    "title": "Terms of Service",
+    "meta": {
+      "description": "Review Ma Timeline's Terms of Service. Learn about the rules and conditions governing the use of our time management service."
+    },
+    "preamble": {
+      "title": "Preamble",
+      "content": "These Terms of Service (hereinafter \"ToS\") govern the access and use of the matimeline.fr website, published by Loïc de Laforcade, whose registered office is located at 321 Chemin de la Contraz, 74570 Filliere, France. The user acknowledges having read the ToS and agrees to comply with them."
+    },
+    "article1": {
+      "title": "Article 1 – Definitions",
+      "site": "Website: refers to the website accessible at www.matimeline.fr.",
+      "user": "User: any person accessing and browsing the Website, for any reason whatsoever.",
+      "content": "Content: refers to all elements present on the Website (texts, images, videos, logos, etc.)."
+    },
+    "article2": {
+      "title": "Article 2 – Purpose",
+      "content": "The purpose of these ToS is to define the conditions under which users can access and use the Website. By accessing the Website, the user unconditionally accepts these ToS."
+    },
+    "article3": {
+      "title": "Article 3 – Website access",
+      "content": "Access to the Website is open to any user with an Internet connection. The website is accessible free of charge, excluding connection and Internet subscription costs. Some sections of the website may, however, be reserved for registered users."
+    },
+    "article4": {
+      "title": "Article 4 – Intellectual property",
+      "content": "The content of the Website (texts, images, logos, etc.) is protected by applicable laws relating to intellectual property and copyright. Any reproduction, representation, modification, or adaptation, in whole or in part, of the content, without the prior written authorization of Loïc de Laforcade, is prohibited and constitutes infringement."
+    },
+    "article5": {
+      "title": "Article 5 – Personal data",
+      "content": "The Website may collect personal data such as name, email address, etc. In accordance with current regulations (GDPR), the user has the right to access, rectify and delete their personal data. For any request, contact loic.de.laforcade@hotmail.fr."
+    },
+    "article6": {
+      "title": "Article 6 – Liability",
+      "content": "The use of the Website is solely at the user's risk. Loïc de Laforcade cannot be held responsible for any direct or indirect damage, including loss of data or profit, resulting from access to or use of the Website."
+    },
+    "article7": {
+      "title": "Article 7 – Hyperlinks",
+      "content": "The Website may contain links to other websites. Loïc de Laforcade has no control over the content of these sites and cannot be held responsible for their availability or content."
+    },
+    "article8": {
+      "title": "Article 8 – Modification of ToS",
+      "content": "Loïc de Laforcade reserves the right to modify these ToS at any time. Users are invited to consult them regularly. The modifications take effect from the date of their publication on the Website."
+    },
+    "article9": {
+      "title": "Article 9 – Applicable law",
+      "content": "These ToS are governed by French law. In the event of a dispute, and after an attempt at amicable resolution, the courts of Annecy will have jurisdiction."
+    },
+    "article10": {
+      "title": "Article 10 – Contact",
+      "content": "For any questions regarding these ToS, you can contact Loïc de Laforcade at the following address: loic.de.laforcade@hotmail.fr."
+    },
+    "lastUpdated": "Last updated"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "meta": {
+      "description": "Review Ma Timeline's Privacy Policy. Discover how we collect, use, and protect your personal data."
+    },
+    "introduction": {
+      "title": "Introduction",
+      "content": "At Ma Timeline, we place great importance on protecting your personal data. This Privacy Policy explains how we collect, use, share, and protect your information when you use our service."
+    },
+    "dataCollection": {
+      "title": "Data collection",
+      "content": "We collect different types of information when you use our site:",
+      "items": {
+        "personal": "Personal information: name, first name, email address, etc. that you provide to us when registering or contacting us.",
+        "usage": "Usage data: information about how you interact with our service, the features used, pages visited, etc.",
+        "technical": "Technical information: IP address, browser type, device used, operating system, etc."
+      }
+    },
+    "dataUse": {
+      "title": "Data use",
+      "content": "We use your data for the following purposes:",
+      "items": {
+        "services": "To provide, maintain, and improve our services.",
+        "communication": "To communicate with you regarding your account, our services, or to respond to your requests.",
+        "improvement": "To improve our website and develop new features.",
+        "analytics": "To perform statistical analyses on the use of our site."
+      }
+    },
+    "dataSharing": {
+      "title": "Data sharing",
+      "content": "We do not sell your personal data. However, we may share it in the following circumstances:",
+      "items": {
+        "serviceProviders": "With service providers who help us operate our site (hosting, analytics, etc.).",
+        "legal": "If we are required to do so by law or in response to a valid legal request.",
+        "business": "In the context of a merger, acquisition, or sale of assets, provided that the confidentiality conditions remain unchanged."
+      }
+    },
+    "dataProtection": {
+      "title": "Data protection",
+      "content": "We implement technical and organizational security measures to protect your data against unauthorized access, modification, disclosure, or destruction."
+    },
+    "userRights": {
+      "title": "Your rights",
+      "content": "In accordance with current legislation, you have the following rights regarding your personal data:",
+      "items": {
+        "access": "Right of access: you can request a copy of the data we hold about you.",
+        "rectification": "Right to rectification: you can ask us to correct any inaccurate or incomplete information.",
+        "deletion": "Right to erasure: you can request the deletion of your data in certain circumstances.",
+        "restriction": "Right to restriction of processing: you can ask us to limit the use of your data in certain circumstances.",
+        "objection": "Right to object: you can object to the processing of your data for certain purposes.",
+        "portability": "Right to data portability: you can request to receive your data in a structured, commonly used, and machine-readable format."
+      }
+    },
+    "cookies": {
+      "title": "Cookies and similar technologies",
+      "content": "We use cookies and similar technologies to improve your experience on our site, analyze our traffic, and personalize our content. You can control the use of cookies through your browser settings."
+    },
+    "policyChanges": {
+      "title": "Policy changes",
+      "content": "We may update this privacy policy from time to time. We will inform you of any significant changes through a notice on our site or by email."
+    },
+    "contact": {
+      "title": "Contact",
+      "content": "If you have any questions or concerns about this privacy policy or the processing of your data, please contact us at the following address: loic.de.laforcade@hotmail.fr."
+    },
+    "lastUpdated": "Last updated"
+  }
+} 

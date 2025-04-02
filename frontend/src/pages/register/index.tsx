@@ -1,5 +1,3 @@
-"use client";
-
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { GetStaticProps } from 'next';
@@ -7,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +13,7 @@ import { registerUser } from "@/services/authService";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
 import { LanguageSelector } from "@/components/ui/language-selector";
+import { Footer } from "@/components/ui/footer";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
@@ -69,88 +68,93 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       <div className="absolute top-4 right-4">
         <LanguageSelector />
       </div>
-      <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6">{t('auth:register.title')}</h2>
+      
+      <div className="flex-grow flex items-center justify-center">
+        <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-center mb-6">{t('auth:register.title')}</h2>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField control={form.control} name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth:register.form.email')}</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder={t('auth:register.form.emailPlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField control={form.control} name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth:register.form.email')}</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder={t('auth:register.form.emailPlaceholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField control={form.control} name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth:register.form.name')}</FormLabel>
-                  <FormControl>
-                    <Input type="text" placeholder={t('auth:register.form.namePlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField control={form.control} name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth:register.form.name')}</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder={t('auth:register.form.namePlaceholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField control={form.control} name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth:register.form.username')}</FormLabel>
-                  <FormControl>
-                    <Input type="text" placeholder={t('auth:register.form.usernamePlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField control={form.control} name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth:register.form.username')}</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder={t('auth:register.form.usernamePlaceholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField control={form.control} name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth:register.form.password')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder={t('auth:register.form.passwordPlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField control={form.control} name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth:register.form.password')}</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={t('auth:register.form.passwordPlaceholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField control={form.control} name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth:register.form.confirmPassword')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder={t('auth:register.form.confirmPasswordPlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField control={form.control} name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth:register.form.confirmPassword')}</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={t('auth:register.form.confirmPasswordPlaceholder')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-              {loading ? t('auth:register.form.submitting') : t('auth:register.form.submit')}
-            </Button>
-          </form>
-        </Form>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                {loading ? t('auth:register.form.submitting') : t('auth:register.form.submit')}
+              </Button>
+            </form>
+          </Form>
 
-        <p className="text-center text-gray-400 text-sm mt-4">
-          {t('auth:register.form.alreadyAccount')}{" "}
-          <Link href="/login" className="text-blue-400 hover:underline">
-            {t('auth:register.form.loginLink')}
-          </Link>
-        </p>
+          <p className="text-center text-gray-400 text-sm mt-4">
+            {t('auth:register.form.alreadyAccount')}{" "}
+            <Link href="/login" className="text-blue-400 hover:underline">
+              {t('auth:register.form.loginLink')}
+            </Link>
+          </p>
+        </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

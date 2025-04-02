@@ -32,7 +32,9 @@
   "navigation": {
     "home": "Accueil",
     "profile": "Profil",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "back": "Retour",
+    "backToHome": "Retour à l'accueil"
   },
   "time": {
     "year": "an",
@@ -42,5 +44,80 @@
     "day": "jour",
     "days": "jours",
     "expired": "Expiré"
+  },
+  "landing": {
+    "title": "Ma Timeline | Votre assistant d'organisation personnel",
+    "navigation": {
+      "features": "Fonctionnalités",
+      "howItWorks": "Comment ça marche",
+      "testimonials": "Témoignages"
+    },
+    "buttons": {
+      "register": "Inscription"
+    },
+    "meta": {
+      "description": "Ma Timeline vous aide à gérer vos échéances, organiser votre temps et optimiser votre productivité. Simple, intuitif et personnalisable."
+    },
+    "images": {
+      "dashboard": "Aperçu du tableau de bord Ma Timeline",
+      "timeline": "Exemple de timeline"
+    },
+    "hero": {
+      "title": "Organisez votre vie avec Ma Timeline",
+      "subtitle": "Votre assistant personnel pour gérer vos échéances, optimiser votre temps et atteindre vos objectifs plus efficacement.",
+      "cta": "Commencer gratuitement",
+      "secondary": "Découvrir comment ça marche"
+    },
+    "features": {
+      "title": "Fonctionnalités principales",
+      "subtitle": "Ma Timeline combine les meilleurs outils de gestion du temps pour vous aider à atteindre une organisation optimale.",
+      "timeline": {
+        "title": "Visualisation temporelle",
+        "description": "Visualisez vos échéances et engagements sur une timeline intuitive. Obtenez une vue d'ensemble claire de vos projets."
+      },
+      "reminders": {
+        "title": "Rappels intelligents",
+        "description": "Recevez des notifications adaptées à vos habitudes et à l'importance de vos tâches. Ne manquez plus jamais une échéance."
+      },
+      "organization": {
+        "title": "Organisation par projet",
+        "description": "Groupez vos tâches par projet et catégorie. Suivez vos progrès et définissez des priorités pour chaque activité."
+      }
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "subtitle": "Ma Timeline simplifie votre organisation en quelques étapes simples",
+      "step1": {
+        "title": "Créez votre compte",
+        "description": "Inscrivez-vous en quelques secondes pour commencer votre parcours d'organisation."
+      },
+      "step2": {
+        "title": "Ajoutez vos projets",
+        "description": "Définissez vos projets, produits ou catégories que vous souhaitez suivre."
+      },
+      "step3": {
+        "title": "Créez vos échéances",
+        "description": "Ajoutez vos événements et définissez leur durée, type et importance."
+      },
+      "step4": {
+        "title": "Restez organisé",
+        "description": "Visualisez, suivez et modifiez facilement toutes vos échéances en un seul endroit."
+      }
+    },
+    "testimonials": {
+      "title": "Ce que disent nos utilisateurs",
+      "subtitle": "Découvrez comment Ma Timeline a transformé l'organisation quotidienne de nos utilisateurs"
+    },
+    "cta": {
+      "title": "Prêt à transformer votre organisation ?",
+      "subtitle": "Commencez dès maintenant et améliorez votre productivité",
+      "button": "Créer mon compte gratuitement",
+      "secondary": "En savoir plus"
+    }
+  },
+  "footer": {
+    "allRightsReserved": "Tous droits réservés.",
+    "termsOfService": "Conditions d'utilisation",
+    "privacyPolicy": "Politique de confidentialité"
   }
 } 

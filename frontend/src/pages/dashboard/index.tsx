@@ -20,6 +20,7 @@ import { LanguageSelector } from "@/components/ui/language-selector";
 import { calculateRemainingTime } from "@/utils/time-utils";
 import { getEventClassNames } from '@/utils/calendar-utils';
 import dayjs from 'dayjs';
+import { Footer } from '@/components/ui/footer';
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
@@ -292,6 +293,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </main>
+      
+      <Footer />
     </div>
   );
 }

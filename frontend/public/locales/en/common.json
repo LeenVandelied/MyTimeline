@@ -5,12 +5,12 @@
     "password": "Password",
     "submit": "Sign in",
     "loading": "Signing in...",
-    "noAccount": "Don't have an account?",
+    "noAccount": "Don't have an account yet?",
     "register": "Sign up"
   },
   "validation": {
-    "username": "Username must be at least 3 characters",
-    "password": "Password must be at least 6 characters"
+    "username": "Username must contain at least 3 characters",
+    "password": "Password must contain at least 6 characters"
   },
   "buttons": {
     "submit": "Submit",
@@ -20,9 +20,9 @@
     "edit": "Edit",
     "back": "Back",
     "logout": "Logout",
-    "previous": "Précédent",
-    "next": "Suivant",
-    "today": "Aujourd'hui"
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today"
   },
   "loading": {
     "default": "Loading...",
@@ -32,7 +32,9 @@
   "navigation": {
     "home": "Home",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "back": "Back",
+    "backToHome": "Back to home"
   },
   "time": {
     "year": "year",
@@ -42,5 +44,80 @@
     "day": "day",
     "days": "days",
     "expired": "Expired"
+  },
+  "landing": {
+    "title": "My Timeline | Your personal organization assistant",
+    "navigation": {
+      "features": "Features",
+      "howItWorks": "How it works",
+      "testimonials": "Testimonials"
+    },
+    "buttons": {
+      "register": "Sign up"
+    },
+    "meta": {
+      "description": "My Timeline helps you manage your deadlines, organize your time, and optimize your productivity. Simple, intuitive, and customizable."
+    },
+    "images": {
+      "dashboard": "My Timeline dashboard preview",
+      "timeline": "Timeline example"
+    },
+    "hero": {
+      "title": "Organize your life with My Timeline",
+      "subtitle": "Your personal assistant to manage deadlines, optimize your time, and achieve your goals more efficiently.",
+      "cta": "Start for free",
+      "secondary": "Discover how it works"
+    },
+    "features": {
+      "title": "Key Features",
+      "subtitle": "My Timeline combines the best time management tools to help you achieve optimal organization.",
+      "timeline": {
+        "title": "Time Visualization",
+        "description": "Visualize your deadlines and commitments on an intuitive timeline. Get a clear overview of your projects."
+      },
+      "reminders": {
+        "title": "Smart Reminders",
+        "description": "Receive notifications adapted to your habits and the importance of your tasks. Never miss a deadline again."
+      },
+      "organization": {
+        "title": "Project Organization",
+        "description": "Group your tasks by project and category. Track your progress and set priorities for each activity."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "My Timeline simplifies your organization in a few simple steps",
+      "step1": {
+        "title": "Create your account",
+        "description": "Sign up in seconds to start your organization journey."
+      },
+      "step2": {
+        "title": "Add your projects",
+        "description": "Define the projects, products, or categories you want to track."
+      },
+      "step3": {
+        "title": "Create your deadlines",
+        "description": "Add your events and define their duration, type, and importance."
+      },
+      "step4": {
+        "title": "Stay organized",
+        "description": "Visualize, track, and easily modify all your deadlines in one place."
+      }
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "subtitle": "Discover how My Timeline has transformed our users' daily organization"
+    },
+    "cta": {
+      "title": "Ready to transform your organization?",
+      "subtitle": "Start now and improve your productivity",
+      "button": "Create my free account",
+      "secondary": "Learn more"
+    }
+  },
+  "footer": {
+    "allRightsReserved": "Tous droits réservés.",
+    "termsOfService": "Conditions d'utilisation",
+    "privacyPolicy": "Politique de confidentialité"
   }
-}
+} 
