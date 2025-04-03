@@ -60,7 +60,8 @@
     },
     "images": {
       "dashboard": "Aperçu du tableau de bord Ma Timeline",
-      "timeline": "Exemple de timeline"
+      "timeline": "Exemple de timeline",
+      "mobileApp": "Application mobile Ma Timeline"
     },
     "hero": {
       "title": "Organisez votre vie avec Ma Timeline",
@@ -113,11 +114,41 @@
       "subtitle": "Commencez dès maintenant et améliorez votre productivité",
       "button": "Créer mon compte gratuitement",
       "secondary": "En savoir plus"
+    },
+    "mobileApp": {
+      "title": "Emportez votre organisation partout",
+      "subtitle": "Accédez à Ma Timeline sur tous vos appareils. Restez organisé où que vous soyez.",
+      "ios": "Bientôt sur iOS",
+      "android": "Bientôt sur Android"
+    },
+    "footer": {
+      "description": "Votre assistant personnel d'organisation et de gestion du temps",
+      "product": "Produit",
+      "features": "Fonctionnalités",
+      "howItWorks": "Comment ça marche",
+      "testimonials": "Témoignages",
+      "legal": "Légal",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité",
+      "legalNotice": "Mentions légales",
+      "account": "Compte",
+      "login": "Connexion",
+      "register": "Inscription"
     }
   },
   "footer": {
     "allRightsReserved": "Tous droits réservés.",
     "termsOfService": "Conditions d'utilisation",
-    "privacyPolicy": "Politique de confidentialité"
+    "privacyPolicy": "Politique de confidentialité",
+    "legalNotice": "Mentions légales",
+    "product": "Produits",
+    "features": "Fonctionnalités",
+    "howItWorks": "Comment ça marche",
+    "testimonials": "Témoignages",
+    "legal": "Légal"
+  },
+  "common": {
+    "showMore": "Voir plus",
+    "showLess": "Voir moins"
   }
 } 

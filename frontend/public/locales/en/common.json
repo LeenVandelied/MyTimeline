@@ -60,7 +60,8 @@
     },
     "images": {
       "dashboard": "My Timeline dashboard preview",
-      "timeline": "Timeline example"
+      "timeline": "Timeline example",
+      "mobileApp": "My Timeline mobile app"
     },
     "hero": {
       "title": "Organize your life with My Timeline",
@@ -113,11 +114,35 @@
       "subtitle": "Start now and improve your productivity",
       "button": "Create my free account",
       "secondary": "Learn more"
+    },
+    "mobileApp": {
+      "title": "Take your organization everywhere",
+      "subtitle": "Access My Timeline on all your devices. Stay organized wherever you are.",
+      "ios": "Coming soon on iOS",
+      "android": "Coming soon on Android"
+    },
+    "footer": {
+      "description": "Your personal time management and organization assistant",
+      "product": "Product",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "testimonials": "Testimonials",
+      "legal": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "legalNotice": "Legal Notice",
+      "account": "Account",
+      "login": "Login",
+      "register": "Sign up"
     }
   },
   "footer": {
     "allRightsReserved": "Tous droits réservés.",
     "termsOfService": "Conditions d'utilisation",
     "privacyPolicy": "Politique de confidentialité"
+  },
+  "common": {
+    "showMore": "Show more",
+    "showLess": "Show less"
   }
 } 

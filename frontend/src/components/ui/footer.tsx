@@ -14,7 +14,6 @@ export function Footer({ variant = 'light' }: FooterProps) {
   const isHomePage = router.pathname === '/';
   const isDashboard = router.pathname.startsWith('/dashboard');
   
-  // Version complète pour la landing page
   if (variant === 'full' || isHomePage) {
     return (
       <footer className="bg-gray-900 py-12 border-t border-gray-800">
@@ -24,7 +23,7 @@ export function Footer({ variant = 'light' }: FooterProps) {
               <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-indigo-600 mb-2">
                 Ma Timeline
               </div>
-              <p className="text-gray-400">Votre assistant d'organisation personnel</p>
+              <p className="text-gray-400">{t('landing.footer.description')}</p>
             </div>
             <div className="flex flex-wrap justify-center gap-8">
               <div>

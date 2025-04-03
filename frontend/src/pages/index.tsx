@@ -1,16 +1,16 @@
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, CheckCircle, Clock, LayoutList } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, LayoutList } from 'lucide-react';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Footer } from '@/components/ui/footer';
 import { LanguageSelector } from '@/components/ui/language-selector';
+import TestimonialSection from "@/components/TestimonialSection";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
@@ -23,7 +23,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 export default function LandingPage() {
   const { t } = useTranslation('common');
 
-  // Animation des sections au scroll
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -236,84 +235,22 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials Section */}
-        <section id="testimonials" className="bg-gray-800/50 py-20 section-animation">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.testimonials.title')}</h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                {t('landing.testimonials.subtitle')}
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="testimonial-card bg-gray-800 border-gray-700 shadow-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-lg font-bold text-purple-500">S</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white">Sophie Martin</h4>
-                      <p className="text-gray-400 text-sm">Entrepreneuse</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-300">
-                    "Ma Timeline a transformé ma façon de gérer mon entreprise. Je peux maintenant suivre tous mes projets et ne jamais manquer une échéance importante."
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="testimonial-card bg-gray-800 border-gray-700 shadow-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-lg font-bold text-indigo-500">T</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white">Thomas Dubois</h4>
-                      <p className="text-gray-400 text-sm">Chef de projet</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-300">
-                    "Simple et efficace ! L'affichage par timeline me permet d'avoir une vue d'ensemble de tous mes projets en cours et à venir."
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="testimonial-card bg-gray-800 border-gray-700 shadow-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-lg font-bold text-blue-500">L</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white">Léa Bernard</h4>
-                      <p className="text-gray-400 text-sm">Étudiante</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-300">
-                    "Grâce à Ma Timeline, je gère facilement tous mes devoirs, examens et projets universitaires. L'interface est intuitive et agréable à utiliser."
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+        <TestimonialSection />
 
         {/* Mobile App Preview */}
         <section className="py-20 section-animation">
           <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Emportez votre organisation partout</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('landing.mobileApp.title')}</h2>
               <p className="text-xl text-gray-300 mb-8">
-                Accédez à Ma Timeline sur tous vos appareils. Restez organisé où que vous soyez.
+                {t('landing.mobileApp.subtitle')}
               </p>
               <div className="flex space-x-4">
                 <Button className="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white">
-                  Bientôt sur iOS
+                  {t('landing.mobileApp.ios')}
                 </Button>
                 <Button className="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white">
-                  Bientôt sur Android
+                  {t('landing.mobileApp.android')}
                 </Button>
               </div>
             </div>
@@ -321,7 +258,7 @@ export default function LandingPage() {
               <div className="relative w-64 h-[500px]">
                 <Image 
                   src="/images/mobile-app.svg" 
-                  alt="Application mobile Ma Timeline" 
+                  alt={t('landing.images.mobileApp')} 
                   fill 
                   className="object-contain"
                 />
@@ -335,13 +272,13 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <Card className="card-gradient-border bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700 shadow-xl">
               <CardContent className="p-12 text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Prêt à transformer votre organisation ?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.cta.title')}</h2>
                 <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-                  Rejoignez des milliers d'utilisateurs qui ont amélioré leur productivité grâce à Ma Timeline.
+                  {t('landing.cta.subtitle')}
                 </p>
                 <Link href="/register" passHref>
                   <Button className="cta-button bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-lg py-6 px-10 rounded-lg transition-all">
-                    Commencer gratuitement
+                    {t('landing.cta.button')}
                   </Button>
                 </Link>
               </CardContent>
