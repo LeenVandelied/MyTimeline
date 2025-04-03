@@ -6,7 +6,7 @@ export function calculateRemainingTime(
   endDateValue: Date | string | null | undefined, 
   t: (key: string) => string
 ): string {
-  if (!endDateValue) return t('common:time.expired');
+  if (!endDateValue) return t('time.expired');
   
   const endDate = typeof endDateValue === 'string' 
     ? new Date(endDateValue) 
@@ -17,7 +17,7 @@ export function calculateRemainingTime(
   const diffTime = Math.max(0, endDate.getTime() - currentDate.getTime());
   
   if (diffTime === 0) {
-    return t('common:time.expired');
+    return t('time.expired');
   }
   
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -28,15 +28,15 @@ export function calculateRemainingTime(
   let remainingTime = "";
   
   if (years > 0) {
-    remainingTime += `${years} ${years === 1 ? t('common:time.year') : t('common:time.years')} `;
+    remainingTime += `${years} ${years === 1 ? t('time.year') : t('time.years')} `;
   }
   
   if (months > 0 || years > 0) {
-    remainingTime += `${months} ${months === 1 ? t('common:time.month') : t('common:time.months')} `;
+    remainingTime += `${months} ${months === 1 ? t('time.month') : t('time.months')} `;
   }
   
   if (days > 0 || months > 0 || years > 0) {
-    remainingTime += `${days} ${days === 1 ? t('common:time.day') : t('common:time.days')}`;
+    remainingTime += `${days} ${days === 1 ? t('time.day') : t('time.days')}`;
   }
   
   return remainingTime;

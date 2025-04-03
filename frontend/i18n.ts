@@ -2,19 +2,15 @@ import {getRequestConfig} from 'next-intl/server';
 import fs from 'fs';
 import path from 'path';
 
-// Fonction pour charger les traductions depuis le dossier public/locales
 async function loadMessages(locale: string) {
   const localeDir = path.join(process.cwd(), 'public', 'locales', locale);
   
-  // Vérifier si le dossier existe
   if (!fs.existsSync(localeDir)) {
-    return {}; // Dossier non trouvé
+    return {};
   }
   
-  // Lire tous les fichiers JSON du dossier
   const files = fs.readdirSync(localeDir).filter(file => file.endsWith('.json'));
   
-  // Charger et fusionner les contenus
   const messages: Record<string, Record<string, unknown>> = {};
   
   for (const file of files) {
@@ -30,7 +26,6 @@ async function loadMessages(locale: string) {
 }
 
 export default getRequestConfig(async ({locale}) => {
-  // Utiliser une valeur par défaut si locale est undefined
   const safeLocale = locale || 'fr';
   
   return {

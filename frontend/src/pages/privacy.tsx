@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
             <Link href="/" passHref>
               <Button variant="ghost" className="p-0 mr-4 hover:bg-transparent">
                 <ArrowLeft className="h-5 w-5 mr-2" />
-                <span>{t('common:navigation.back')}</span>
+                <span>{t('common.navigation.back')}</span>
               </Button>
             </Link>
             <h1 className="text-3xl font-bold gradient-text">{t('privacy.title')}</h1>
@@ -155,7 +155,7 @@ export default function PrivacyPolicy() {
             </p>
             <Link href="/" passHref>
               <Button variant="outline" className="mt-4 border-gray-700 hover:bg-gray-800">
-                {t('common:navigation.backToHome')}
+                {t('common.navigation.backToHome')}
               </Button>
             </Link>
           </div>

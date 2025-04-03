@@ -1,17 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
-interface FooterProps {
-  locale: string;
+export interface FooterProps {
+  locale?: string;
 }
 
-export function Footer({ locale }: FooterProps) {
+export function Footer({ locale }: FooterProps = {}) {
   const t = useTranslations();
+  const defaultLocale = useLocale();
+  const currentLocale = locale || defaultLocale;
   const currentYear = new Date().getFullYear();
-  
-  
+
   return (
     <footer className="bg-gray-900 py-12 border-t border-gray-800">
       <div className="container mx-auto px-4">
@@ -35,12 +36,12 @@ export function Footer({ locale }: FooterProps) {
               <h4 className="font-bold mb-3 text-white">{t('landing.footer.legal')}</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href={`/${locale}/terms`} className="hover:text-purple-400 transition">
+                  <Link href={`/${currentLocale}/terms`} className="hover:text-purple-400 transition">
                     {t('landing.footer.terms')}
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${locale}/privacy`} className="hover:text-purple-400 transition">
+                  <Link href={`/${currentLocale}/privacy`} className="hover:text-purple-400 transition">
                     {t('landing.footer.privacy')}
                   </Link>
                 </li>
@@ -51,12 +52,12 @@ export function Footer({ locale }: FooterProps) {
               <h4 className="font-bold mb-3 text-white">{t('landing.footer.account')}</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href={`/${locale}/login`} className="hover:text-purple-400 transition">
+                  <Link href={`/${currentLocale}/login`} className="hover:text-purple-400 transition">
                     {t('landing.footer.login')}
                   </Link>
                 </li>
                 <li>
-                  <Link href={`/${locale}/register`} className="hover:text-purple-400 transition">
+                  <Link href={`/${currentLocale}/register`} className="hover:text-purple-400 transition">
                     {t('landing.footer.register')}
                   </Link>
                 </li>
