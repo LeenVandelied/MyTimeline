@@ -1,6 +1,7 @@
 import '../src/styles/globals.css'
 import '../src/styles/calendar.css'
 import '../src/styles/landing.css'
+import ClientWrapper from '@/components/client-wrapper'
 
 export const metadata = {
   title: 'Ma Timeline',
@@ -12,5 +13,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return children;
+  return (
+    <html>
+      <body>
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
+      </body>
+    </html>
+  );
 } 

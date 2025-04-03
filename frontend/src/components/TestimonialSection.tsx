@@ -1,10 +1,16 @@
-import { useTranslation } from 'next-i18next';
+'use client';
+
 import TestimonialCard from '@/components/TestimonialCard';
 import testimonialData from '@/data/testimonials.json';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/app/i18n/client';
 
-export default function TestimonialSection() {
-  const { t } = useTranslation('common');
+interface TestimonialSectionProps {
+  locale: string;
+}
+
+export default function TestimonialSection({ locale }: TestimonialSectionProps) {
+  const { t } = useTranslation(locale, 'common');
   const [testimonials, setTestimonials] = useState(testimonialData.slice(0, 3));
   const [showAll, setShowAll] = useState(false);
 

@@ -1,0 +1,77 @@
+@tailwind utilities;
+
+/* Animations pour les sections */
+.section-animation {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.section-animation.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Bordure dégradée pour les cartes */
+.card-gradient-border {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.card-gradient-border::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-image: conic-gradient(transparent, rgba(124, 58, 237, 0.1), transparent 30%);
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.card-gradient-border:hover::before {
+  opacity: 1;
+  animation: rotate 4s linear infinite;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+/* Animation des icônes de fonctionnalités */
+.feature-icon {
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+/* Animation du CTA */
+.cta-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: width 0.3s ease;
+}
+
+.cta-button:hover::after {
+  width: 100%;
+} 
