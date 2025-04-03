@@ -43,7 +43,7 @@ export const logout = async () => {
   try {
     await apiClient.post("/auth/logout");
     localStorage.removeItem("user");
-    window.location.href = "/login";
+    // Nous ne faisons pas de redirection ici - elle sera gérée par les composants
   } catch (error) {
     throw error;
   }

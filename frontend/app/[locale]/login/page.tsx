@@ -111,6 +111,9 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
             <p className="text-gray-400">
               {t('login.noAccount')} <Link href={`/${locale}/register`} className="text-purple-400 hover:text-purple-300">{t('login.register')}</Link>
             </p>
+            <p className="text-gray-400 mt-2">
+              <Link href={`/${locale}`} className="text-purple-400 hover:text-purple-300">&larr; {t('navigation.backToHome')}</Link>
+            </p>
           </div>
         </div>
       </div>
