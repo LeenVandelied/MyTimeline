@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getUserProfile, login as loginService, logout as logoutService, register as registerService } from "../services/authService";
+import { getUserProfile, login as loginService, logout as logoutService, registerUser } from "../services/authService";
 import { User } from "@/types/auth";
 
 export const useAuth = () => {
@@ -51,8 +51,7 @@ export const useAuth = () => {
   const register = async (username: string, email: string, password: string) => {
     setLoading(true);
     try {
-      await registerService(username, email, password);
-      // Notez que nous n'appelons pas fetchUser ici car l'inscription ne connecte pas automatiquement l'utilisateur
+      await registerUser(username, username, email, password);
     } catch (error) {
       console.error("Registration failed", error);
     } finally {

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect } from "react";
-import * as React from 'react';
+import { use } from 'react';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -14,21 +14,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoginData } from "@/types/auth";
 import { LanguageSelector } from "@/components/ui/language-selector";
 import { AppFooter } from "@/components/ui/footer-app";
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
-export default function LoginPage({ params }: { params: { locale: string } }) {
+export default function LoginPage({ params }: { params: Promise<{ locale: string }>} ) {
   const t = useTranslations();
   const router = useRouter();
   const { login, loading, user } = useAuth();
-  const defaultLocale = useLocale();
   
-  // Utiliser l'opérateur optionnel pour accéder à locale de manière sécurisée 
-  // en tant que composant client
-  const locale = params?.locale || defaultLocale;
-
+  const { locale } = use(params);
+  
   const loginSchema = z.object({
-    username: z.string().min(3, { message: t('validation.username') }),
-    password: z.string().min(6, { message: t('validation.password') }),
+    username: z.string().min(3, { message: t('validation.username.min') }),
+    password: z.string().min(6, { message: t('validation.password.min') }),
   });
 
   type LoginFormValues = z.infer<typeof loginSchema>;
