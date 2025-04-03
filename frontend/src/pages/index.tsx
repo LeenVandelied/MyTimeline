@@ -23,7 +23,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 export default function LandingPage() {
   const { t } = useTranslation('common');
 
-  useEffect(() => {
+    useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -45,7 +45,7 @@ export default function LandingPage() {
         observer.unobserve(section);
       });
     };
-  }, []);
+    }, []);
 
   return (
     <>
