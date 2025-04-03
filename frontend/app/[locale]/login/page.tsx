@@ -12,7 +12,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { useAuth } from "@/hooks/useAuth";
 import { LoginData } from "@/types/auth";
 import { LanguageSelector } from "@/components/ui/language-selector";
-import { Footer } from "@/components/ui/footer";
+import { AppFooter } from "@/components/ui/footer-app";
 import { useTranslation } from '../../i18n/client';
 
 export default function LoginPage({ params: { locale } }: { params: { locale: string } }) {
@@ -100,7 +100,7 @@ export default function LoginPage({ params: { locale } }: { params: { locale: st
         </div>
       </div>
       
-      <Footer />
+      <AppFooter locale={locale} />
     </div>
   );
 } 
