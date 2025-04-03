@@ -6,3 +6,24 @@ export const LoginSchema = z.object({
 });
 
 export type LoginData = z.infer<typeof LoginSchema>;
+
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
+}

@@ -3,14 +3,14 @@
 import TestimonialCard from '@/components/TestimonialCard';
 import testimonialData from '@/data/testimonials.json';
 import { useState, useEffect } from 'react';
-import { useTranslation } from '@/app/i18n/client';
+import { useTranslations } from 'next-intl';
 
 interface TestimonialSectionProps {
   locale: string;
 }
 
 export default function TestimonialSection({ locale }: TestimonialSectionProps) {
-  const { t } = useTranslation(locale, 'common');
+  const t = useTranslations();
   const [testimonials, setTestimonials] = useState(testimonialData.slice(0, 3));
   const [showAll, setShowAll] = useState(false);
 

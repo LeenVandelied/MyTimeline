@@ -1,7 +1,6 @@
 "use client";
 
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslations, useLocale } from 'next-intl';
 import type { GetStaticProps } from 'next';
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -25,7 +24,7 @@ import { Footer } from '@/components/ui/footer';
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
     props: {
-      ...(await serverSideTranslations(locale ?? 'fr', ['dashboard', 'common', 'products'])),
+      messages: (await import(`../../../public/locales/${locale || 'fr'}/dashboard.json`)).default
     },
   };
 };
@@ -37,7 +36,8 @@ interface ApiError extends Error {
 }
 
 export default function Dashboard() {
-  const { t, i18n } = useTranslation(['dashboard', 'common', 'products']);
+  const t = useTranslations();
+  const locale = useLocale();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([]);
@@ -47,8 +47,7 @@ export default function Dashboard() {
   const [currentViewTitle, setCurrentViewTitle] = useState<string>("");
 
   const getFullCalendarLocale = () => {
-    const currentLanguage = i18n.language;
-    switch (currentLanguage) {
+    switch (locale) {
       case 'fr':
         return frLocale;
       case 'en':
@@ -60,7 +59,6 @@ export default function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      console.log("Fetching data for user:", user?.id);
       if (!user) return;
       const productsData = await getProducts(user.id);
       setProducts(productsData);
@@ -294,7 +292,7 @@ export default function Dashboard() {
         </Card>
       </main>
       
-      <Footer />
+      <Footer locale={locale} />
     </div>
   );
 }

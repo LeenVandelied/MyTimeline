@@ -3,8 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslations } from 'next-intl';
 import type { GetStaticProps } from 'next';
 
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     return {
       props: {
-        ...(await serverSideTranslations(locale || 'fr', ['common'])),
+        messages: (await import(`../../../public/locales/${locale || 'fr'}/common.json`)).default,
       },
     };
   } catch (error) {
@@ -30,7 +29,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 };
 
 const LoginForm = () => {
-  const { t } = useTranslation('common');
+  const t = useTranslations('common');
   const router = useRouter();
   const { login, loading, user } = useAuth();
 

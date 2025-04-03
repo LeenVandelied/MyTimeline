@@ -1,24 +1,22 @@
 import '../src/styles/globals.css'
 import '../src/styles/calendar.css'
 import '../src/styles/landing.css'
-import ClientWrapper from '@/components/client-wrapper'
+import { ReactNode } from 'react'
 
 export const metadata = {
   title: 'Ma Timeline',
-  description: 'Votre assistant personnel d\'organisation et de gestion du temps',
+  description: 'Application de gestion de temps et événements',
 }
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
-    <html>
+    <html suppressHydrationWarning>
       <body>
-        <ClientWrapper>
-          {children}
-        </ClientWrapper>
+        {children}
       </body>
     </html>
   );

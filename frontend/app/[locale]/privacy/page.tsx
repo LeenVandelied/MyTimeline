@@ -1,23 +1,26 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { AppFooter } from '@/components/ui/footer-app';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-import { getTranslations } from '../../i18n/translations';
-import type { PrivacyPageTranslations } from '../../i18n/types';
-
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
-  const translations = await getTranslations(locale, 'legal') as unknown as PrivacyPageTranslations;
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+  const paramsObj = await params;
+  const locale = paramsObj.locale;
+  
+  const t = await getTranslations({ locale, namespace: 'legal' });
   
   return {
-    title: `${translations.privacy.title} | Ma Timeline`,
-    description: translations.privacy.meta.description,
+    title: `${t('privacy.title')} | Ma Timeline`,
+    description: t('privacy.meta.description'),
   };
 }
 
-export default async function PrivacyPolicy({ params: { locale } }: { params: { locale: string } }) {
-  const translations = await getTranslations(locale, 'legal') as unknown as PrivacyPageTranslations;
+export default async function PrivacyPolicy({ params }: { params: { locale: string } }) {
+  const paramsObj = await params;
+  const locale = paramsObj.locale;
+  
+  const t = await getTranslations({ locale, namespace: 'legal' });
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -29,117 +32,117 @@ export default async function PrivacyPolicy({ params: { locale } }: { params: { 
               <span>Retour</span>
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold gradient-text">{translations.privacy.title}</h1>
+          <h1 className="text-3xl font-bold gradient-text">{t('privacy.title')}</h1>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-700 mb-8">
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.introduction.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.introduction.title')}</h2>
             <p className="text-gray-300 mb-2">
-              {translations.privacy.introduction.content}
+              {t('privacy.introduction.content')}
             </p>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.dataCollection.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.dataCollection.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.dataCollection.content}
+              {t('privacy.dataCollection.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-300">
-              <li>{translations.privacy.dataCollection.items.personal}</li>
-              <li>{translations.privacy.dataCollection.items.usage}</li>
-              <li>{translations.privacy.dataCollection.items.technical}</li>
+              <li>{t('privacy.dataCollection.items.personal')}</li>
+              <li>{t('privacy.dataCollection.items.usage')}</li>
+              <li>{t('privacy.dataCollection.items.technical')}</li>
             </ul>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.dataUse.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.dataUse.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.dataUse.content}
+              {t('privacy.dataUse.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-300">
-              <li>{translations.privacy.dataUse.items.services}</li>
-              <li>{translations.privacy.dataUse.items.communication}</li>
-              <li>{translations.privacy.dataUse.items.improvement}</li>
-              <li>{translations.privacy.dataUse.items.analytics}</li>
+              <li>{t('privacy.dataUse.items.services')}</li>
+              <li>{t('privacy.dataUse.items.communication')}</li>
+              <li>{t('privacy.dataUse.items.improvement')}</li>
+              <li>{t('privacy.dataUse.items.analytics')}</li>
             </ul>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.dataSharing.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.dataSharing.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.dataSharing.content}
+              {t('privacy.dataSharing.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-300">
-              <li>{translations.privacy.dataSharing.items.serviceProviders}</li>
-              <li>{translations.privacy.dataSharing.items.legal}</li>
-              <li>{translations.privacy.dataSharing.items.business}</li>
+              <li>{t('privacy.dataSharing.items.serviceProviders')}</li>
+              <li>{t('privacy.dataSharing.items.legal')}</li>
+              <li>{t('privacy.dataSharing.items.business')}</li>
             </ul>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.dataProtection.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.dataProtection.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.dataProtection.content}
+              {t('privacy.dataProtection.content')}
             </p>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.userRights.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.userRights.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.userRights.content}
+              {t('privacy.userRights.content')}
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-300">
-              <li>{translations.privacy.userRights.items.access}</li>
-              <li>{translations.privacy.userRights.items.rectification}</li>
-              <li>{translations.privacy.userRights.items.deletion}</li>
-              <li>{translations.privacy.userRights.items.restriction}</li>
-              <li>{translations.privacy.userRights.items.objection}</li>
-              <li>{translations.privacy.userRights.items.portability}</li>
+              <li>{t('privacy.userRights.items.access')}</li>
+              <li>{t('privacy.userRights.items.rectification')}</li>
+              <li>{t('privacy.userRights.items.deletion')}</li>
+              <li>{t('privacy.userRights.items.restriction')}</li>
+              <li>{t('privacy.userRights.items.objection')}</li>
+              <li>{t('privacy.userRights.items.portability')}</li>
             </ul>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.cookies.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.cookies.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.cookies.content}
+              {t('privacy.cookies.content')}
             </p>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.policyChanges.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.policyChanges.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.policyChanges.content}
+              {t('privacy.policyChanges.content')}
             </p>
           </section>
 
           <hr className="border-gray-700 my-6" />
 
           <section>
-            <h2 className="text-xl font-semibold mb-4">{translations.privacy.contact.title}</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.contact.title')}</h2>
             <p className="text-gray-300 mb-4">
-              {translations.privacy.contact.content}
+              {t('privacy.contact.content')}
             </p>
           </section>
         </div>
 
         <div className="text-center">
           <p className="text-gray-400 text-sm">
-            {translations.privacy.lastUpdated}: 01/06/2023
+            {t('privacy.lastUpdated')}: 01/06/2023
           </p>
           <Link href={`/${locale}`} passHref>
             <Button variant="outline" className="mt-4 border-gray-700 hover:bg-gray-800">
@@ -149,7 +152,7 @@ export default async function PrivacyPolicy({ params: { locale } }: { params: { 
         </div>
       </div>
       
-      <AppFooter locale={locale} />
+      {/* Footer */}
     </div>
   );
 } 

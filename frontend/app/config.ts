@@ -1,8 +1,8 @@
 export const APP_ROUTER_PAGES = {
+  home: true,
   login: true,
   register: true,
-  dashboard: false,
-  home: false,
+  dashboard: true,
   terms: true,
-  privacy: true,
+  privacy: true
 }; 

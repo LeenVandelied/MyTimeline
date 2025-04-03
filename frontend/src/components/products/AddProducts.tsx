@@ -14,7 +14,7 @@ import { createProduct } from "@/services/productService";
 import { ProductCreate, productCreateSchema } from "@/types/product";
 import { EventCreate, eventCreationSchema } from "@/types/event";
 import { useAuth } from "@/hooks/useAuth";
-import { useTranslation } from 'next-i18next';
+import { useTranslations } from 'next-intl';
 
 interface AddProductProps {
   onProductAdded?: () => void;
@@ -24,7 +24,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState<EventCreate[]>([]);
   const { user } = useAuth();
-  const { t } = useTranslation(['products', 'common']);
+  const t = useTranslations();
   const productForm = useForm<ProductCreate>({
     resolver: zodResolver(productCreateSchema),
     defaultValues: {

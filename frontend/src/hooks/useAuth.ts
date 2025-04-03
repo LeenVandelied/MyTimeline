@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getUserProfile, login as loginService, logout as logoutService } from "../services/authService";
-import { User } from "@/types/user";
+import { getUserProfile, login as loginService, logout as logoutService, register as registerService } from "../services/authService";
+import { User } from "@/types/auth";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,6 +48,18 @@ export const useAuth = () => {
     }
   };
 
+  const register = async (username: string, email: string, password: string) => {
+    setLoading(true);
+    try {
+      await registerService(username, email, password);
+      // Notez que nous n'appelons pas fetchUser ici car l'inscription ne connecte pas automatiquement l'utilisateur
+    } catch (error) {
+      console.error("Registration failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     logoutService();
     setUser(null);
@@ -56,5 +68,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, login, logout, loading };
+  return { user, login, register, logout, loading };
 };

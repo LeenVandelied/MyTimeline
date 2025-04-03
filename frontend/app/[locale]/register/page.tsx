@@ -1,37 +1,29 @@
 'use client';
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { registerUser } from "@/services/authService";
+import { useAuth } from "@/hooks/useAuth";
+import { RegisterData } from "@/types/auth";
 import { LanguageSelector } from "@/components/ui/language-selector";
 import { AppFooter } from "@/components/ui/footer-app";
-import { useTranslation } from '../../i18n/client';
+import { useTranslations } from 'next-intl';
 
-export default function RegisterPage({ params: { locale } }: { params: { locale: string } }) {
-  const { t } = useTranslation(locale, 'auth');
+export default function RegisterPage({ params }: { params: { locale: string } }) {
+  const t = useTranslations();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { register, loading, user } = useAuth();
 
   const registerSchema = z.object({
+    username: z.string().min(3, { message: t('validation.username') }),
     email: z.string().email({ message: "Email invalide" }),
-    name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
-    username: z.string().min(3, { message: "Le nom d'utilisateur doit contenir au moins 3 caractères" }),
-    password: z.string()
-      .min(6, { message: "Le mot de passe doit contenir au moins 6 caractères" })
-      .regex(/[A-Z]/, { message: "Le mot de passe doit contenir au moins une majuscule" })
-      .regex(/[0-9]/, { message: "Le mot de passe doit contenir au moins un chiffre" }),
-    confirmPassword: z.string(),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Les mots de passe ne correspondent pas",
-    path: ["confirmPassword"],
+    password: z.string().min(6, { message: t('validation.password') }),
   });
 
   type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -39,24 +31,20 @@ export default function RegisterPage({ params: { locale } }: { params: { locale:
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      email: "",
-      name: "",
       username: "",
+      email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (data: RegisterFormValues) => {
-    setLoading(true);
-    try {
-      await registerUser(data.name, data.username, data.email, data.password);
-      router.push(`/${locale}/login`);
-    } catch (error) {
-      console.error("Erreur lors de l'inscription", error);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (user) {
+      router.replace(`/${params.locale}/dashboard`);
     }
+  }, [user, router, params.locale]);
+
+  const onSubmit = async (data: RegisterData) => {
+    await register(data.username, data.email, data.password);
   };
 
   return (
@@ -67,86 +55,85 @@ export default function RegisterPage({ params: { locale } }: { params: { locale:
       
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-center mb-6">{t('register.title')}</h2>
+          <h2 className="text-2xl font-bold text-center mb-6">Inscription</h2>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="email"
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.form.email')}</FormLabel>
+                    <FormLabel>Nom d'utilisateur</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder={t('register.form.emailPlaceholder')} {...field} />
+                      <Input 
+                        placeholder="johndoe" 
+                        {...field} 
+                        className="bg-gray-700 border-gray-600"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField control={form.control} name="name"
+              <FormField
+                control={form.control}
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.form.name')}</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="text" placeholder={t('register.form.namePlaceholder')} {...field} />
+                      <Input 
+                        type="email" 
+                        placeholder="john@example.com" 
+                        {...field} 
+                        className="bg-gray-700 border-gray-600"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField control={form.control} name="username"
+              <FormField
+                control={form.control}
+                name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('register.form.username')}</FormLabel>
+                    <FormLabel>Mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="text" placeholder={t('register.form.usernamePlaceholder')} {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••" 
+                        {...field} 
+                        className="bg-gray-700 border-gray-600"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField control={form.control} name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.password')}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t('register.form.passwordPlaceholder')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField control={form.control} name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.confirmPassword')}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t('register.form.confirmPasswordPlaceholder')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-                {loading ? t('register.form.submitting') : t('register.form.submit')}
+              <Button 
+                type="submit" 
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                disabled={loading}
+              >
+                {loading ? "Inscription en cours..." : "S'inscrire"}
               </Button>
             </form>
           </Form>
 
-          <p className="text-center text-gray-400 text-sm mt-4">
-            {t('register.form.alreadyAccount')}{" "}
-            <Link href={`/${locale}/login`} className="text-blue-400 hover:underline">
-              {t('register.form.loginLink')}
-            </Link>
-          </p>
+          <div className="mt-6 text-center">
+            <p className="text-gray-400">
+              Déjà un compte ? <Link href={`/${params.locale}/login`} className="text-purple-400 hover:text-purple-300">Connexion</Link>
+            </p>
+          </div>
         </div>
       </div>
-      
-      <AppFooter locale={locale} />
+
+      <AppFooter />
     </div>
   );
 } 

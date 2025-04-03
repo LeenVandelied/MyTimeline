@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect } from "react";
+import * as React from 'react';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoginData } from "@/types/auth";
 import { LanguageSelector } from "@/components/ui/language-selector";
 import { AppFooter } from "@/components/ui/footer-app";
-import { useTranslation } from '../../i18n/client';
+import { useTranslations, useLocale } from 'next-intl';
 
-export default function LoginPage({ params: { locale } }: { params: { locale: string } }) {
-  const { t } = useTranslation(locale, 'common');
+export default function LoginPage({ params }: { params: { locale: string } }) {
+  const t = useTranslations();
   const router = useRouter();
   const { login, loading, user } = useAuth();
+  const defaultLocale = useLocale();
+  
+  // Utiliser l'opérateur optionnel pour accéder à locale de manière sécurisée 
+  // en tant que composant client
+  const locale = params?.locale || defaultLocale;
 
   const loginSchema = z.object({
     username: z.string().min(3, { message: t('validation.username') }),
@@ -56,51 +62,63 @@ export default function LoginPage({ params: { locale } }: { params: { locale: st
           <h2 className="text-2xl font-bold text-center mb-6">{t('login.title')}</h2>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('login.username')}</FormLabel>
-                  <FormControl>
-                    <Input type="text" placeholder={t('login.username')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('login.username')}</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="johndoe" 
+                        {...field} 
+                        className="bg-gray-700 border-gray-600"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('login.password')}</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder={t('login.password')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('login.password')}</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••" 
+                        {...field} 
+                        className="bg-gray-700 border-gray-600"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-              {loading ? t('login.loading') : t('login.submit')}
-            </Button>
+              <Button 
+                type="submit" 
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                disabled={loading}
+              >
+                {loading ? t('login.loading') : t('login.submit')}
+              </Button>
             </form>
           </Form>
 
-          <p className="text-center text-gray-400 text-sm mt-4">
-            {t('login.noAccount')}{" "}
-            <Link href={`/${locale}/register`} className="text-blue-400 hover:underline">
-              {t('login.register')}
-            </Link>
-          </p>
+          <div className="mt-6 text-center">
+            <p className="text-gray-400">
+              {t('login.noAccount')} <Link href={`/${locale}/register`} className="text-purple-400 hover:text-purple-300">{t('login.register')}</Link>
+            </p>
+          </div>
         </div>
       </div>
-      
-      <AppFooter locale={locale} />
+
+      <AppFooter />
     </div>
   );
 } 

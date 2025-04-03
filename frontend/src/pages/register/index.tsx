@@ -1,5 +1,4 @@
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslations } from 'next-intl';
 import type { GetStaticProps } from 'next';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -16,15 +15,25 @@ import { LanguageSelector } from "@/components/ui/language-selector";
 import { Footer } from "@/components/ui/footer";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? 'fr', ['auth', 'validation', 'errors', 'common'])),
-    },
-  };
+  try {
+    return {
+      props: {
+        messages: {
+          ...(await import(`../../../public/locales/${locale || 'fr'}/auth.json`)).default,
+          ...(await import(`../../../public/locales/${locale || 'fr'}/validation.json`)).default,
+          ...(await import(`../../../public/locales/${locale || 'fr'}/errors.json`)).default,
+          ...(await import(`../../../public/locales/${locale || 'fr'}/common.json`)).default,
+        }
+      },
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return { props: {} };
+  }
 };
 
 const RegisterForm = () => {
-  const { t } = useTranslation(['auth', 'validation', 'errors', 'common']);
+  const t = useTranslations();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 

@@ -1,5 +1,4 @@
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslations } from 'next-intl';
 import Head from 'next/head';
 import Link from 'next/link';
 import { GetStaticProps } from 'next';
@@ -8,15 +7,23 @@ import { ArrowLeft } from 'lucide-react';
 import { Footer } from '@/components/ui/footer';
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? 'fr', ['common', 'legal'])),
-    },
-  };
+  try {
+    return {
+      props: {
+        messages: {
+          ...(await import(`../../public/locales/${locale || 'fr'}/common.json`)).default,
+          ...(await import(`../../public/locales/${locale || 'fr'}/legal.json`)).default,
+        }
+      },
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return { props: {} };
+  }
 };
 
 export default function PrivacyPolicy() {
-  const { t } = useTranslation('legal');
+  const t = useTranslations();
 
   return (
     <>
