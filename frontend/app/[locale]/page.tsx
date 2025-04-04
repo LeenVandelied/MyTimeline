@@ -1,7 +1,8 @@
-import { redirect } from 'next/navigation'
+import HomePage from '@/components/pages/HomePage';
 
-export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
-  const locale = (await params).locale || 'fr'
+// Au lieu de rediriger, cette page fait la même chose que home/page.tsx
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const paramsObj = await params;
   
-  redirect(`/${locale}/home`);
+  return <HomePage params={paramsObj} />;
 } 

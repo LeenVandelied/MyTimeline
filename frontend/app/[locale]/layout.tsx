@@ -1,5 +1,3 @@
-import '../../src/styles/calendar.css'
-import '../../src/styles/landing.css'
 import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
