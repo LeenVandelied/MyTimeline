@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getUserProfile, login as loginService, logout as logoutService } from "../services/authService";
-import { User } from "@/types/user";
+import { getUserProfile, login as loginService, logout as logoutService, registerUser } from "../services/authService";
+import { User } from "@/types/auth";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,6 +48,17 @@ export const useAuth = () => {
     }
   };
 
+  const register = async (username: string, email: string, password: string) => {
+    setLoading(true);
+    try {
+      await registerUser(username, username, email, password);
+    } catch (error) {
+      console.error("Registration failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     logoutService();
     setUser(null);
@@ -56,5 +67,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, login, logout, loading };
+  return { user, login, register, logout, loading };
 };
