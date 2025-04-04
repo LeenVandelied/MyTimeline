@@ -4,9 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
-  const paramsObj = await params;
-  const locale = paramsObj.locale;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const locale = (await params).locale;
   
   const t = await getTranslations({ locale, namespace: 'legal' });
   
@@ -16,9 +15,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   };
 }
 
-export default async function TermsOfService({ params }: { params: { locale: string } }) {
-  const paramsObj = await params;
-  const locale = paramsObj.locale;
+export default async function TermsOfService({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = (await params).locale;
   
   const t = await getTranslations({ locale, namespace: 'legal' });
 

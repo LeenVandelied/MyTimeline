@@ -37,15 +37,6 @@ export default function Dashboard() {
   const calendarRef = useRef<FullCalendar>(null);
   const [currentViewTitle, setCurrentViewTitle] = useState<string>("");
 
-  // Fonction adaptateur pour transformer les appels time.expired en common.time.expired
-  const tTimeAdapter = (key: string) => {
-    // Si la clé commence par 'common.', on la laisse telle quelle
-    if (key.startsWith('common.')) {
-      return t(key.substring(7)); // Enlever le préfixe 'common.'
-    }
-    return t(key);
-  };
-
   const getFullCalendarLocale = () => {
     switch (locale) {
       case 'fr':
@@ -144,7 +135,7 @@ export default function Dashboard() {
       <div className="flex h-screen items-center justify-center bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t('loading.default')}</p>
+          <p className="mt-4 text-gray-600">{t('common.loading.default')}</p>
         </div>
       </div>
     );
@@ -175,7 +166,7 @@ export default function Dashboard() {
                 variant="outline"
                 className="text-white hover:text-gray-200"
               >
-                {t('buttons.logout')}
+                {t('common.buttons.logout')}
               </Button>
             </div>
           </div>
@@ -203,7 +194,7 @@ export default function Dashboard() {
           <CardContent>
             {loadingEvents ? (
               <div className="flex justify-center items-center h-[500px]">
-                <p className="text-gray-400">{t('loading.default')}</p>
+                <p className="text-gray-400">{t('common.loading.default')}</p>
               </div>
             ) : (
               <>
@@ -215,7 +206,7 @@ export default function Dashboard() {
                       onClick={() => handleCalendarNavigation('prev')}
                       className="bg-gray-700 hover:bg-gray-600 border-gray-600"
                     >
-                      &lt; {t('buttons.previous')}
+                      &lt; {t('common.buttons.previous')}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -223,7 +214,7 @@ export default function Dashboard() {
                       onClick={handleToday}
                       className="bg-gray-700 hover:bg-gray-600 border-gray-600"
                     >
-                      {t('buttons.today')}
+                      {t('common.buttons.today')}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -231,7 +222,7 @@ export default function Dashboard() {
                       onClick={() => handleCalendarNavigation('next')}
                       className="bg-gray-700 hover:bg-gray-600 border-gray-600"
                     >
-                      {t('buttons.next')} &gt;
+                      {t('common.buttons.next')} &gt;
                     </Button>
                   </div>
                   <div className="text-xl font-semibold text-gray-300">
@@ -262,7 +253,7 @@ export default function Dashboard() {
                     return getEventClassNames(event, isExpired);
                   }}
                   eventContent={({ event }) => {
-                    const countdown = calculateRemainingTime(new Date(event.start!), tTimeAdapter);
+                    const countdown = calculateRemainingTime(new Date(event.start!), t);
                     
                     return (
                       <div className="p-1 text-xs">

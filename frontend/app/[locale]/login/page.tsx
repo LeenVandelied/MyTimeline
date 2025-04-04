@@ -56,7 +56,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
       
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-center mb-6">{t('login.title')}</h2>
+          <h2 className="text-2xl font-bold text-center mb-6">{t('common.login.title')}</h2>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -65,7 +65,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('login.username')}</FormLabel>
+                    <FormLabel>{t('common.login.username')}</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="johndoe" 
@@ -83,7 +83,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('login.password')}</FormLabel>
+                    <FormLabel>{t('common.login.password')}</FormLabel>
                     <FormControl>
                       <Input 
                         type="password" 
@@ -102,17 +102,17 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                 className="w-full bg-purple-600 hover:bg-purple-700"
                 disabled={loading}
               >
-                {loading ? t('login.loading') : t('login.submit')}
+                {loading ? t('common.login.loading') : t('common.login.submit')}
               </Button>
             </form>
           </Form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-400">
-              {t('login.noAccount')} <Link href={`/${locale}/register`} className="text-purple-400 hover:text-purple-300">{t('login.register')}</Link>
+              {t('common.login.noAccount')} <Link href={`/${locale}/register`} className="text-purple-400 hover:text-purple-300">{t('common.login.register')}</Link>
             </p>
             <p className="text-gray-400 mt-2">
-              <Link href={`/${locale}`} className="text-purple-400 hover:text-purple-300">&larr; {t('navigation.backToHome')}</Link>
+              <Link href={`/${locale}`} className="text-purple-400 hover:text-purple-300">&larr; {t('common.navigation.backToHome')}</Link>
             </p>
           </div>
         </div>

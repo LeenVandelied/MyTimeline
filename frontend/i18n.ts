@@ -2,7 +2,7 @@ import {getRequestConfig} from 'next-intl/server';
 import fs from 'fs';
 import path from 'path';
 
-async function loadMessages(locale: string) {
+export async function loadMessages(locale: string) {
   const localeDir = path.join(process.cwd(), 'public', 'locales', locale);
   
   if (!fs.existsSync(localeDir)) {

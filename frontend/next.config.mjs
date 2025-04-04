@@ -6,11 +6,10 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
-    ignoreBuildErrors: true
+    ignoreBuildErrors: false
   },
   eslint: {
-    // Désactiver la vérification ESLint pendant la compilation
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false
   }
 };
 

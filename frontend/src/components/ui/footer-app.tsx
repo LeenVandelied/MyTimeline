@@ -12,17 +12,17 @@ export function AppFooter() {
     <footer className="bg-gray-800 py-4 text-gray-400 text-sm">
       <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
         <div>
-          <p>© {new Date().getFullYear()} Ma Timeline. {t('footer.allRightsReserved')}</p>
+          <p>© {new Date().getFullYear()} Ma Timeline. {t('common.footer.allRightsReserved')}</p>
         </div>
         <div className="flex space-x-4 mt-2 md:mt-0">
           <Link href={`/${locale}/terms`} className="hover:text-white transition-colors">
-            {t('footer.termsOfService')}
+            {t('common.footer.termsOfService')}
           </Link>
           <Link href={`/${locale}/privacy`} className="hover:text-white transition-colors">
-            {t('footer.privacyPolicy')}
+            {t('common.footer.privacyPolicy')}
           </Link>
         </div>
       </div>
     </footer>
   );
-} 
+}   
