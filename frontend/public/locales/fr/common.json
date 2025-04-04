@@ -22,7 +22,9 @@
     "logout": "Se déconnecter",
     "previous": "Précédent",
     "next": "Suivant",
-    "today": "Aujourd'hui"
+    "today": "Aujourd'hui",
+    "showMore": "Voir plus",
+    "showLess": "Voir moins"
   },
   "loading": {
     "default": "Chargement...",
@@ -146,9 +148,5 @@
     "howItWorks": "Comment ça marche",
     "testimonials": "Témoignages",
     "legal": "Légal"
-  },
-  "common": {
-    "showMore": "Voir plus",
-    "showLess": "Voir moins"
   }
 } 

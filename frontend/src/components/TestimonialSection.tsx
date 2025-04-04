@@ -42,7 +42,7 @@ export default function TestimonialSection() {
               onClick={() => setShowAll(!showAll)}
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition"
             >
-              {showAll ? "Voir moins" : "Voir plus"}
+              {showAll ? t('common.buttons.showLess') : t('common.buttons.showMore')}
             </button>
           </div>
         )}

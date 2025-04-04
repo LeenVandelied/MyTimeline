@@ -22,7 +22,9 @@
     "logout": "Logout",
     "previous": "Previous",
     "next": "Next",
-    "today": "Today"
+    "today": "Today",
+    "showMore": "Show more",
+    "showLess": "Show less"
   },
   "loading": {
     "default": "Loading...",
@@ -140,9 +142,5 @@
     "allRightsReserved": "Tous droits réservés.",
     "termsOfService": "Conditions d'utilisation",
     "privacyPolicy": "Politique de confidentialité"
-  },
-  "common": {
-    "showMore": "Show more",
-    "showLess": "Show less"
   }
 } 
