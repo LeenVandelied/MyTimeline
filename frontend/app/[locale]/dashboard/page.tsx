@@ -1,8 +1,6 @@
-"use client";
+'use client';
 
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import type { GetStaticProps } from 'next';
+import { useTranslations, useLocale } from 'next-intl';
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import frLocale from "@fullcalendar/core/locales/fr";
@@ -20,14 +18,7 @@ import { LanguageSelector } from "@/components/ui/language-selector";
 import { calculateRemainingTime } from "@/utils/time-utils";
 import { getEventClassNames } from '@/utils/calendar-utils';
 import dayjs from 'dayjs';
-
-export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? 'fr', ['dashboard', 'common', 'products'])),
-    },
-  };
-};
+import { AppFooter } from '@/components/ui/footer-app';
 
 interface ApiError extends Error {
   response?: {
@@ -36,7 +27,8 @@ interface ApiError extends Error {
 }
 
 export default function Dashboard() {
-  const { t, i18n } = useTranslation(['dashboard', 'common', 'products']);
+  const t = useTranslations();
+  const locale = useLocale();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([]);
@@ -46,8 +38,7 @@ export default function Dashboard() {
   const [currentViewTitle, setCurrentViewTitle] = useState<string>("");
 
   const getFullCalendarLocale = () => {
-    const currentLanguage = i18n.language;
-    switch (currentLanguage) {
+    switch (locale) {
       case 'fr':
         return frLocale;
       case 'en':
@@ -59,7 +50,6 @@ export default function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      console.log("Fetching data for user:", user?.id);
       if (!user) return;
       const productsData = await getProducts(user.id);
       setProducts(productsData);
@@ -85,9 +75,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      router.push(`/${locale}/login`);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, locale]);
 
   useEffect(() => {
     if (user) {
@@ -108,7 +98,7 @@ export default function Dashboard() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push("/login");
+      router.push(`/${locale}/login`);
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error);
     }
@@ -145,7 +135,7 @@ export default function Dashboard() {
       <div className="flex h-screen items-center justify-center bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t('common:loading.default')}</p>
+          <p className="mt-4 text-gray-600">{t('common.loading.default')}</p>
         </div>
       </div>
     );
@@ -167,7 +157,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-white">{t('dashboard:title')}</h1>
+              <h1 className="text-xl font-semibold text-white">{t('dashboard.title')}</h1>
             </div>
             <div className="flex items-center space-x-4">
               <LanguageSelector />
@@ -176,7 +166,7 @@ export default function Dashboard() {
                 variant="outline"
                 className="text-white hover:text-gray-200"
               >
-                {t('common:buttons.logout')}
+                {t('common.buttons.logout')}
               </Button>
             </div>
           </div>
@@ -187,7 +177,7 @@ export default function Dashboard() {
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg">
           <CardHeader className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-300">
-              {t('dashboard:welcome')}, {user.username} 👋
+              {t('dashboard.welcome')}, {user.username} 
             </h2>
             <AddProduct onProductAdded={fetchData} />
           </CardHeader>
@@ -199,12 +189,12 @@ export default function Dashboard() {
 
         <Card className="mb-6 bg-gray-800 border-gray-700 shadow-lg w-full">
           <CardHeader>
-            <h2 className="text-xl font-semibold text-gray-300">{t('dashboard:recentEvents.title')}</h2>
+            <h2 className="text-xl font-semibold text-gray-300">{t('dashboard.recentEvents.title')}</h2>
           </CardHeader>
           <CardContent>
             {loadingEvents ? (
               <div className="flex justify-center items-center h-[500px]">
-                <p className="text-gray-400">{t('common:loading.default')}</p>
+                <p className="text-gray-400">{t('common.loading.default')}</p>
               </div>
             ) : (
               <>
@@ -216,7 +206,7 @@ export default function Dashboard() {
                       onClick={() => handleCalendarNavigation('prev')}
                       className="bg-gray-700 hover:bg-gray-600 border-gray-600"
                     >
-                      &lt; {t('common:buttons.previous')}
+                      &lt; {t('common.buttons.previous')}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -224,7 +214,7 @@ export default function Dashboard() {
                       onClick={handleToday}
                       className="bg-gray-700 hover:bg-gray-600 border-gray-600"
                     >
-                      {t('common:buttons.today')}
+                      {t('common.buttons.today')}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -232,7 +222,7 @@ export default function Dashboard() {
                       onClick={() => handleCalendarNavigation('next')}
                       className="bg-gray-700 hover:bg-gray-600 border-gray-600"
                     >
-                      {t('common:buttons.next')} &gt;
+                      {t('common.buttons.next')} &gt;
                     </Button>
                   </div>
                   <div className="text-xl font-semibold text-gray-300">
@@ -249,49 +239,39 @@ export default function Dashboard() {
                   schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
                   events={calendarEvents}
                   resources={resources}
-                  resourceGroupField="category"
-                  slotLabelFormat={[{ day: 'numeric' }, { weekday: 'short' }]}
                   headerToolbar={false}
-                  height="460px"
-                  resourceAreaWidth="18%"
-                  slotMinWidth={50}
-                  datesSet={(dateInfo) => {
-                    setCurrentViewTitle(dateInfo.view.title);
+                  height="auto"
+                  resourceAreaHeaderContent="Produits"
+                  resourceGroupField="category"
+                  slotLabelFormat={{
+                    weekday: 'short',
+                    day: 'numeric',
+                    omitCommas: true
                   }}
-                  eventClassNames="rounded-md overflow-hidden shadow-sm border-0"
-                  resourceAreaHeaderClassNames="font-semibold text-gray-200 border-b border-gray-600"
-                  resourceLabelClassNames="font-medium pl-2 py-1"
-                  slotLabelClassNames="text-xs text-gray-400"
-                  resourceGroupLabelClassNames="font-bold text-white bg-gray-700 px-2 py-1 uppercase text-xs tracking-wider"
-                  dayHeaderClassNames="text-xs font-medium border-b border-gray-600"
-                  eventContent={(eventInfo) => {
-                    const remainingTime = calculateRemainingTime(eventInfo.event.end || eventInfo.event.start, t);
-                    const isExpired = remainingTime === t('common:time.expired');
-                    
-                    const eventClassNames = getEventClassNames(eventInfo.event, isExpired);
+                  eventClassNames={({ event }) => {
+                    const isExpired = false; // Détermine si l'événement est expiré
+                    return getEventClassNames(event, isExpired);
+                  }}
+                  eventContent={({ event }) => {
+                    const countdown = calculateRemainingTime(new Date(event.start!), t);
                     
                     return (
-                      <div className={eventClassNames}>
-                        <div className="font-bold text-white truncate text-sm relative z-10">
-                          {eventInfo.event.title}
-                        </div>
-                        <div className={`text-xs ${isExpired ? 'text-gray-300' : 'text-white font-medium'} relative z-10`}>
-                          {remainingTime}
+                      <div className="p-1 text-xs">
+                        <div className="font-bold truncate">{event.title}</div>
+                        <div className="truncate text-[10px]">
+                          {countdown}
                         </div>
                       </div>
                     );
                   }}
-                  viewClassNames="bg-gray-800"
-                  dayCellClassNames="border-gray-600"
-                  nowIndicatorClassNames="border-red-500 shadow-sm z-10"
-                  allDayClassNames="bg-gray-700"
-                  moreLinkClassNames="bg-blue-600 text-white px-1 rounded text-xs"
                 />
               </>
             )}
           </CardContent>
         </Card>
       </main>
+
+      <AppFooter />
     </div>
   );
-}
+} 

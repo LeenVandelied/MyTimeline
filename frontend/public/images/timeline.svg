@@ -1,0 +1,106 @@
+<svg width="600" height="300" viewBox="0 0 600 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fond de la timeline -->
+  <rect width="600" height="300" rx="12" fill="#111827" />
+  
+  <!-- Ligne de timeline principale -->
+  <line x1="40" y1="150" x2="560" y2="150" stroke="url(#lineGradient)" stroke-width="4" stroke-linecap="round" />
+  
+  <!-- Points de repère -->
+  <circle cx="100" cy="150" r="8" fill="#1F2937" stroke="#8B5CF6" stroke-width="3" />
+  <circle cx="200" cy="150" r="8" fill="#1F2937" stroke="#4F46E5" stroke-width="3" />
+  <circle cx="300" cy="150" r="8" fill="#1F2937" stroke="#EC4899" stroke-width="3" />
+  <circle cx="400" cy="150" r="8" fill="#1F2937" stroke="#10B981" stroke-width="3" />
+  <circle cx="500" cy="150" r="8" fill="#1F2937" stroke="#F59E0B" stroke-width="3" />
+  
+  <!-- Événement 1 -->
+  <rect x="70" y="80" width="60" height="40" rx="6" fill="url(#event1Gradient)" />
+  <line x1="100" y1="120" x2="100" y2="142" stroke="#8B5CF6" stroke-width="2" stroke-dasharray="2 2" />
+  <rect x="80" y="90" width="40" height="4" rx="2" fill="white" />
+  <rect x="80" y="100" width="30" height="3" rx="1.5" fill="white" opacity="0.7" />
+  
+  <!-- Date 1 -->
+  <rect x="80" y="170" width="40" height="20" rx="4" fill="#1F2937" />
+  <text x="100" y="184" text-anchor="middle" font-size="10" fill="#9CA3AF">Janv</text>
+  
+  <!-- Événement 2 -->
+  <rect x="170" y="50" width="60" height="40" rx="6" fill="url(#event2Gradient)" />
+  <line x1="200" y1="90" x2="200" y2="142" stroke="#4F46E5" stroke-width="2" stroke-dasharray="2 2" />
+  <rect x="180" y="60" width="40" height="4" rx="2" fill="white" />
+  <rect x="180" y="70" width="30" height="3" rx="1.5" fill="white" opacity="0.7" />
+  
+  <!-- Date 2 -->
+  <rect x="180" y="170" width="40" height="20" rx="4" fill="#1F2937" />
+  <text x="200" y="184" text-anchor="middle" font-size="10" fill="#9CA3AF">Mars</text>
+  
+  <!-- Événement 3 (point en cours) -->
+  <rect x="270" y="90" width="60" height="40" rx="6" fill="url(#event3Gradient)" />
+  <line x1="300" y1="130" x2="300" y2="142" stroke="#EC4899" stroke-width="2" stroke-dasharray="2 2" />
+  <rect x="280" y="100" width="40" height="4" rx="2" fill="white" />
+  <rect x="280" y="110" width="30" height="3" rx="1.5" fill="white" opacity="0.7" />
+  
+  <!-- Indicateur de point en cours -->
+  <circle cx="300" cy="150" r="12" fill="#EC4899" opacity="0.3">
+    <animate attributeName="r" values="12;18;12" dur="2s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite" />
+  </circle>
+  
+  <!-- Date 3 -->
+  <rect x="280" y="170" width="40" height="20" rx="4" fill="#1F2937" />
+  <text x="300" y="184" text-anchor="middle" font-size="10" fill="#E5E7EB">Juin</text>
+  
+  <!-- Événement 4 -->
+  <rect x="370" y="200" width="60" height="40" rx="6" fill="url(#event4Gradient)" />
+  <line x1="400" y1="158" x2="400" y2="200" stroke="#10B981" stroke-width="2" stroke-dasharray="2 2" />
+  <rect x="380" y="210" width="40" height="4" rx="2" fill="white" />
+  <rect x="380" y="220" width="30" height="3" rx="1.5" fill="white" opacity="0.7" />
+  
+  <!-- Date 4 -->
+  <rect x="380" y="170" width="40" height="20" rx="4" fill="#1F2937" />
+  <text x="400" y="184" text-anchor="middle" font-size="10" fill="#9CA3AF">Sept</text>
+  
+  <!-- Événement 5 -->
+  <rect x="470" y="60" width="60" height="40" rx="6" fill="url(#event5Gradient)" />
+  <line x1="500" y1="100" x2="500" y2="142" stroke="#F59E0B" stroke-width="2" stroke-dasharray="2 2" />
+  <rect x="480" y="70" width="40" height="4" rx="2" fill="white" />
+  <rect x="480" y="80" width="30" height="3" rx="1.5" fill="white" opacity="0.7" />
+  
+  <!-- Date 5 -->
+  <rect x="480" y="170" width="40" height="20" rx="4" fill="#1F2937" />
+  <text x="500" y="184" text-anchor="middle" font-size="10" fill="#9CA3AF">Déc</text>
+  
+  <!-- Définition des dégradés -->
+  <defs>
+    <linearGradient id="lineGradient" x1="40" y1="150" x2="560" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="25%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#EC4899" />
+      <stop offset="75%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    
+    <linearGradient id="event1Gradient" x1="70" y1="80" x2="130" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#6D28D9" />
+    </linearGradient>
+    
+    <linearGradient id="event2Gradient" x1="170" y1="50" x2="230" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#3730A3" />
+    </linearGradient>
+    
+    <linearGradient id="event3Gradient" x1="270" y1="90" x2="330" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#BE185D" />
+    </linearGradient>
+    
+    <linearGradient id="event4Gradient" x1="370" y1="200" x2="430" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    
+    <linearGradient id="event5Gradient" x1="470" y1="60" x2="530" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+</svg> 

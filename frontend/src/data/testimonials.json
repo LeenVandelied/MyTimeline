@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "name": "Sophie Martin",
+    "role": "Entrepreneuse",
+    "content": "Ma Timeline a transformé ma façon de gérer mon entreprise. Je peux maintenant suivre tous mes projets et ne jamais manquer une échéance importante.",
+    "avatar": {
+      "letter": "S",
+      "bgColor": "purple"
+    }
+  },
+  {
+    "id": "2",
+    "name": "Thomas Dubois",
+    "role": "Chef de projet",
+    "content": "Simple et efficace ! L'affichage par timeline me permet d'avoir une vue d'ensemble de tous mes projets en cours et à venir.",
+    "avatar": {
+      "letter": "T",
+      "bgColor": "indigo"
+    }
+  },
+  {
+    "id": "3",
+    "name": "Léa Bernard",
+    "role": "Étudiante",
+    "content": "Grâce à Ma Timeline, je gère facilement tous mes devoirs, examens et projets universitaires. L'interface est intuitive et agréable à utiliser.",
+    "avatar": {
+      "letter": "L",
+      "bgColor": "blue"
+    }
+  },
+  {
+    "id": "4",
+    "name": "Alexandre Durand",
+    "role": "Développeur freelance",
+    "content": "Cet outil m'a permis de mieux organiser mes différents projets clients. Je recommande à tous les freelances qui jonglent avec plusieurs missions.",
+    "avatar": {
+      "letter": "A",
+      "bgColor": "cyan"
+    }
+  },
+  {
+    "id": "5",
+    "name": "Marie Lefevre",
+    "role": "Responsable marketing",
+    "content": "Ma Timeline nous aide à coordonner toutes nos campagnes marketing. La visualisation graphique est particulièrement utile pour les présentations.",
+    "avatar": {
+      "letter": "M",
+      "bgColor": "pink"
+    }
+  }
+] 
