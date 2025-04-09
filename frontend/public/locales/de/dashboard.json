@@ -1,20 +1,24 @@
 {
-  "title": "Tableau de bord",
-  "welcome": "Bienvenue sur votre tableau de bord",
+  "title": "Dashboard",
+  "welcome": "Willkommen in Ihrem Dashboard",
+  "lastConnection": "Letzte Verbindung",
+  "email": "E-Mail",
+  "role": "Rolle",
+  "products": "Produkte",
   "stats": {
-    "title": "Statistiques",
-    "totalEvents": "Total des événements",
-    "upcomingEvents": "Événements à venir",
-    "completedEvents": "Événements terminés"
+    "title": "Statistiken",
+    "totalEvents": "Gesamtereignisse",
+    "upcomingEvents": "Kommende Ereignisse",
+    "completedEvents": "Abgeschlossene Ereignisse"
   },
   "recentEvents": {
-    "title": "Événements récents",
-    "noEvents": "Aucun événement récent",
-    "viewAll": "Voir tout"
+    "title": "Letzte Ereignisse",
+    "noEvents": "Keine aktuellen Ereignisse",
+    "viewAll": "Alle ansehen"
   },
   "actions": {
-    "createEvent": "Créer un événement",
-    "viewCalendar": "Voir le calendrier",
-    "manageProfile": "Gérer le profil"
+    "createEvent": "Ereignis erstellen",
+    "viewCalendar": "Kalender anzeigen",
+    "manageProfile": "Profil verwalten"
   }
 }

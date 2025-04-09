@@ -47,6 +47,13 @@
     "days": "jours",
     "expired": "Expiré"
   },
+  "events": {
+    "ongoing": "En cours",
+    "expired": "Expiré",
+    "upcoming": "À venir",
+    "duration": "Durée",
+    "single": "Date unique"
+  },
   "landing": {
     "title": "Ma Timeline | Votre assistant d'organisation personnel",
     "navigation": {

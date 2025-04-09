@@ -9,7 +9,7 @@ export function AppFooter() {
   const locale = useLocale();
   
   return (
-    <footer className="bg-gray-800 py-4 text-gray-400 text-sm">
+    <footer className="bg-gray-800 py-4 text-gray-400 text-sm mt-auto">
       <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
         <div>
           <p>© {new Date().getFullYear()} Ma Timeline. {t('common.footer.allRightsReserved')}</p>
