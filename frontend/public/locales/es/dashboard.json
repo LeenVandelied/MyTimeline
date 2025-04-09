@@ -1,20 +1,24 @@
 {
-  "title": "Tableau de bord",
-  "welcome": "Bienvenue sur votre tableau de bord",
+  "title": "Panel de control",
+  "welcome": "Bienvenido a tu panel de control",
+  "lastConnection": "Última conexión",
+  "email": "Correo electrónico",
+  "role": "Rol",
+  "products": "Productos",
   "stats": {
-    "title": "Statistiques",
-    "totalEvents": "Total des événements",
-    "upcomingEvents": "Événements à venir",
-    "completedEvents": "Événements terminés"
+    "title": "Estadísticas",
+    "totalEvents": "Eventos totales",
+    "upcomingEvents": "Próximos eventos",
+    "completedEvents": "Eventos completados"
   },
   "recentEvents": {
-    "title": "Événements récents",
-    "noEvents": "Aucun événement récent",
-    "viewAll": "Voir tout"
+    "title": "Eventos recientes",
+    "noEvents": "No hay eventos recientes",
+    "viewAll": "Ver todo"
   },
   "actions": {
-    "createEvent": "Créer un événement",
-    "viewCalendar": "Voir le calendrier",
-    "manageProfile": "Gérer le profil"
+    "createEvent": "Crear evento",
+    "viewCalendar": "Ver calendario",
+    "manageProfile": "Administrar perfil"
   }
 }

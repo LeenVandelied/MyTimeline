@@ -1,6 +1,10 @@
 {
   "title": "Dashboard",
   "welcome": "Welcome to your dashboard",
+  "lastConnection": "Last connection",
+  "email": "Email",
+  "role": "Role",
+  "products": "Products",
   "stats": {
     "title": "Statistics",
     "totalEvents": "Total events",
