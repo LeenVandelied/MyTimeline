@@ -1,54 +1,158 @@
-/* Styles personnalisés pour FullCalendar */
-
-/* Suppression du fond bleu par défaut des événements */
-.fc-h-event {
-  background-color: transparent !important;
-  border: none !important;
+/* Styles de base pour FullCalendar */
+.fc {
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
+/* Reset des styles par défaut */
+.fc-h-event,
 .fc-timeline-event.fc-event {
   background-color: transparent !important;
   border: none !important;
+  justify-content: flex-start !important;
 }
 
-/* Bordure personnalisée de taille 3px */
-.border-l-3 {
-  border-left-width: 3px;
+.fc-h-event {
+  width: 100% !important;
 }
 
-/* Amélioration des en-têtes */
+/* Styles d'en-têtes et cellules */
 .fc .fc-col-header-cell-cushion {
   padding: 8px 4px;
   color: #e2e8f0;
 }
 
+.fc-col-header-cell-cushion {
+  color: rgb(241, 245, 249);
+  font-weight: 700;
+}
+
+.fc-timeline-slot-cushion {
+  color: rgb(226, 232, 240);
+  font-weight: 600;
+  padding: 6px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+/* Correction pour les sections sticky */
+.fc .fc-scrollgrid-section-sticky > * {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+.fc .fc-scrollgrid-section.fc-scrollgrid-section-header.fc-scrollgrid-section-sticky {
+  background-color: rgba(67, 56, 202, 0.3) !important;
+  z-index: 6;
+}
+
+.fc .fc-scrollgrid-section.fc-scrollgrid-section-header {
+  background-color: rgba(67, 56, 202, 0.3);
+}
+
 /* Style des ressources */
 .fc-timeline .fc-resource-area td {
-  border-color: rgba(75, 85, 99, 0.4);
+  border-color: rgba(79, 70, 229, 0.3);
   height: 65px !important;
   vertical-align: middle !important;
 }
 
-/* Bordure à droite pour la zone des ressources */
 .fc-resource-area .fc-resource-area-body, 
 .fc-resource-area thead .fc-widget-header {
-  border-right: 1px solid #4b5563;
+  border-right: 1px solid rgba(79, 70, 229, 0.4);
 }
 
-/* Style des cellules de jour */
+.fc-resource-lane .fc-resource-cell {
+  color: rgb(226, 232, 240);
+  font-weight: 600;
+  padding: 8px;
+  background-color: rgba(67, 56, 202, 0.3);
+}
+
+/* Styles pour les étiquettes de ressources */
+.resource-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  color: #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.resource-label:hover {
+  background-color: rgba(79, 70, 229, 0.4);
+}
+
+.fc-resource-area-header .fc-cell-content {
+  padding: 8px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  background-color: rgba(79, 70, 229, 0.5);
+  text-align: center;
+}
+
+.fc-resource-group-lane .fc-resource-group-cell {
+  color: rgb(241, 245, 249);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  background-color: rgba(67, 56, 202, 0.6);
+}
+
+/* Style des cellules */
 .fc-timeline .fc-divider {
-  background: #374151;
-  border-color: #4b5563;
+  background: rgba(79, 70, 229, 0.3);
+  border-color: rgba(79, 70, 229, 0.4);
 }
 
-/* Style pour le titre du calendrier */
+.fc th, .fc td {
+  border-width: 0.5px !important;
+  border-color: rgba(79, 70, 229, 0.2) !important;
+  border-radius: 0 !important;
+}
+
+.fc-timeline-slot.fc-day-today {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.fc-timeline .fc-cell-shaded {
+  background: rgba(79, 70, 229, 0.15);
+}
+
+.fc-timeline .fc-timeline-slot.fc-day-sat,
+.fc-timeline .fc-timeline-slot.fc-day-sun {
+  background-color: rgba(55, 48, 163, 0.15);
+}
+
+/* En-têtes et grilles */
+.fc .fc-timeline-header {
+  background-color: rgba(67, 56, 202, 0.3);
+  border-color: rgba(79, 70, 229, 0.4);
+}
+
 .fc .fc-toolbar-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: #f3f4f6;
 }
 
-/* Style pour les boutons du calendrier */
+.fc-timeline-slot.fc-timeline-slot-label {
+  border-right-color: rgba(79, 70, 229, 0.25) !important;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-radius: 0.5rem !important;
+  border-color: rgba(79, 70, 229, 0.4) !important;
+  overflow: hidden !important;
+}
+
+/* Boutons de navigation */
 .fc .fc-button-primary {
   color: white;
   font-weight: 500;
@@ -58,17 +162,16 @@
 }
 
 .fc .fc-button-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1e40af;
+  background-color: #4f46e5;
+  border-color: #4338ca;
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  background-color: #1e40af;
-  border-color: #1e3a8a;
+  background-color: #4338ca;
+  border-color: #3730a3;
 }
 
-/* Supprimer l'effet d'outline autour des boutons de navigation */
 .fc-button:focus,
 .fc .fc-button:focus,
 .fc-icon:focus,
@@ -77,7 +180,6 @@
   box-shadow: none !important;
 }
 
-/* Correction pour les boutons prev/next */
 .fc-prev-button, 
 .fc-next-button {
   opacity: 1 !important;
@@ -85,49 +187,182 @@
   pointer-events: auto !important;
 }
 
-/* S'assurer que le header toolbar reste visible et cliquable */
 .fc-header-toolbar {
   z-index: 10 !important;
   position: relative !important;
 }
 
-/* Améliorations pour les événements */
+/* Styles pour les événements */
 .fc-timeline-event {
   overflow: visible !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  top: 50% !important;
-  transform: translateY(10%) !important;
-  max-height: 80% !important;
-  height: auto !important;
+  z-index: 3 !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  animation: eventFadeIn 0.3s ease-out forwards;
 }
 
 .fc-timeline-event .fc-event-main {
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-}
-
-/* Ajuster la hauteur des cellules d'événements */
-.fc-timeline-slot-lane, 
-.fc-resource-timeline .fc-resource-lane {
-  height: 65px !important;
-}
-
-/* Faire en sorte que les événements s'adaptent à l'espace disponible */
-.fc-timeline-event .fc-event-main > div {
-  position: relative;
+  background: transparent !important;
+  border: none !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  left: 0 !important;
+  transform: none !important;
   width: 100% !important;
-  height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  padding: 2px !important;
-  border-radius: 0.375rem !important;
+  position: relative !important;
 }
 
-/* Animation d'effet de consumation pour l'indicateur de jour actuel */
+/* Style solide pour les événements */
+.event-solid-style {
+  border: none;
+  opacity: 1;
+  height: 100%;
+  width: 100%;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  color: white;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Forcer l'opacité et les backgrounds */
+.fc-timeline-event,
+.fc-timeline-event .fc-event-main,
+.fc-timeline-event .fc-event-main > div,
+.fc-event-mirror,
+.fc-event,
+.fc-timeline-event,
+.fc-h-event,
+.fc-timeline-event *,
+.fc-event * {
+  opacity: 1 !important;
+}
+
+.fc-timeline-event .fc-event-main > div {
+  height: 100% !important;
+  width: 100% !important;
+  background-color: #1e40af !important;
+  transition: all 0.2s ease;
+}
+
+/* Badges d'événements et types spécifiques */
+.bg-green-800 {
+  background-color: #065f46 !important;
+  opacity: 1 !important;
+}
+
+.bg-blue-800 {
+  background-color: #1e40af !important;
+  opacity: 1 !important;
+}
+
+.bg-gray-700 {
+  background-color: #374151 !important;
+  opacity: 1 !important;
+}
+
+/* Styles spécifiques pour les badges d'état */
+.bg-green-600 {
+  background-color: #059669 !important;
+  opacity: 1 !important;
+}
+
+.bg-blue-600 {
+  background-color: #2563eb !important;
+  opacity: 1 !important;
+}
+
+.bg-gray-600 {
+  background-color: #6d28d9 !important; 
+  opacity: 1 !important;
+}
+
+/* Badges d'événements */
+.fc-timeline-event .rounded-full {
+  border-radius: 9999px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* État des événements */
+.events-ongoing {
+  background-color: #059669 !important;
+  opacity: 1 !important;
+}
+
+.events-upcoming {
+  background-color: #2563eb !important;
+  opacity: 1 !important;
+}
+
+.events-expired {
+  background-color: #6d28d9 !important;
+  opacity: 1 !important;
+}
+
+/* Désactiver les effets de transparence */
+.fc-timeline-event[style*="opacity"] {
+  opacity: 1 !important;
+}
+
+.fc-timeline-event [class*="bg-"],
+#root .fc-timeline-event div[class*="bg-"],
+#root .fc-h-event div[class*="bg-"] {
+  opacity: 1 !important;
+  --tw-bg-opacity: 1 !important;
+}
+
+/* Animations */
+@keyframes eventFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eventPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+  50% { box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3); }
+}
+
+.fc-timeline-event:hover .fc-event-main {
+  animation: eventPulse 2s infinite;
+}
+
+.fc-timeline-event:hover .fc-event-main > div {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles pour les événements qui continuent (sans début ou fin) */
+.fc-timeline-event:not(.fc-event-end)::after,
+.fc-timeline-event:not(.fc-event-start)::before {
+  content: '';
+  position: relative;
+  width: 12px;
+  margin-top: 28px;
+  z-index: 3;
+}
+
+@keyframes moveLeftRight {
+  0% { transform: translate(-2.5px, -50%); }
+  50% { transform: translate(2.5px, -50%); }
+  100% { transform: translate(-2.5px, -50%); }
+}
+
+.fc-timeline-event:not(.fc-event-start)::before {
+  left: -6px;
+  animation: moveLeftRight 2s ease-in-out infinite;
+}
+
+.fc-timeline-event:not(.fc-event-end)::after {
+  right: -6px;
+  animation: moveLeftRight 2s ease-in-out infinite;
+}
+
+/* Indicateur de jour actuel */
 @keyframes consumeEffect {
   0% { opacity: 0.2; height: 100%; }
   15% { opacity: 1; filter: brightness(1.5); }
@@ -135,7 +370,6 @@
   100% { opacity: 0.7; }
 }
 
-/* Couleur de l'indicateur de jour actuel */
 .fc .fc-timeline-now-indicator-line {
   border-color: transparent;
   border-width: 0;
@@ -143,7 +377,6 @@
   overflow: visible;
 }
 
-/* Remplacer la ligne indicatrice par un élément personnalisé */
 .fc .fc-timeline-now-indicator-line::before {
   content: '';
   position: absolute;
@@ -152,12 +385,11 @@
   width: 2px;
   left: 50%;
   transform: translateX(-50%);
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+  background: #8b5cf6;
+  box-shadow: 0 0 10px #8b5cf6, 0 0 20px #8b5cf6;
   z-index: 10;
 }
 
-/* Ajouter un effet de consumation au-dessus de la ligne */
 .fc .fc-timeline-now-indicator-line::after {
   content: '';
   position: absolute;
@@ -166,51 +398,18 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(to bottom, rgba(239, 68, 68, 0.9), rgba(239, 68, 68, 0.2));
-  box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444;
+  background: linear-gradient(to bottom, rgba(139, 92, 246, 0.9), rgba(139, 92, 246, 0.2));
+  box-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6;
   animation: consumeEffect 2s infinite alternate;
   border-radius: 0 0 2px 2px;
   z-index: 11;
 }
 
-/* Supprimer la flèche par défaut */
 .fc .fc-timeline-now-indicator-arrow {
   display: none !important;
 }
 
-/* Style hover pour les cellules */
-.fc-timeline .fc-cell-shaded {
-  background: rgba(55, 65, 81, 0.4);
-}
-
-/* Animation subtile pour les événements */
-@keyframes eventPulse {
-  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
-  50% { box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3); }
-}
-
-.fc-timeline-event:hover .fc-event-main {
-  animation: eventPulse 2s infinite;
-}
-
-/* Styles globaux pour le calendrier */
-.fc {
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-/* Améliorations des cellules */
-.fc .fc-timeline-slot-frame {
-  border-color: rgba(75, 85, 99, 0.2) !important;
-}
-
-/* Effet de surbrillance subtil pour les jours de weekend */
-.fc-timeline .fc-timeline-slot.fc-day-sat,
-.fc-timeline .fc-timeline-slot.fc-day-sun {
-  background-color: rgba(55, 65, 81, 0.2);
-}
-
-/* Améliorations pour le mode mobile */
+/* Ajustements pour mobile */
 @media (max-width: 768px) {
   .fc .fc-toolbar {
     flex-direction: column;
@@ -226,65 +425,13 @@
   .fc .fc-resource-area-container {
     max-width: 35% !important;
   }
-}
-
-/* Animation d'entrée pour les événements au chargement */
-@keyframes eventFadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.fc-timeline-event {
-  animation: eventFadeIn 0.3s ease-out forwards;
-}
-
-/* Ajuster les noms des ressources pour les centrer */
-.fc-timeline .fc-resource-area .fc-resource-cell {
-  vertical-align: middle !important;
-  padding: 0 10px !important;
-}
-
-/* Réduire l'épaisseur des bordures */
-.fc th, .fc td {
-  border-width: 0.5px !important;
-  border-color: rgba(75, 85, 99, 0.3) !important;
-  border-radius: 0 !important;
-}
-
-/* Améliorer les en-têtes des groupes de ressources */
-.fc-resource-group-cell {
-  background-color: rgba(55, 65, 81, 0.5) !important;
-}
-
-/* Rendre les grilles plus discrètes */
-.fc-timeline-slot.fc-timeline-slot-label {
-  border-right-color: rgba(75, 85, 99, 0.2) !important;
-}
-
-/* Arrondir uniquement les bordures externes du calendrier */
-.fc-theme-standard .fc-scrollgrid {
-  border-radius: 0.5rem !important;
-  border-color: rgba(75, 85, 99, 0.4) !important;
-  overflow: hidden !important;
-}
-
-/* Optimiser l'espacement des libellés des ressources */
-.fc .fc-resource-cell .fc-resource-cell-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-  width: 100%;
-}
-
-/* Améliorer l'apparence des titres des événements */
-.fc-timeline-event .fc-event-main .font-bold {
-  letter-spacing: 0.01em;
-  font-weight: 600 !important;
-}
-
-/* S'assurer que la carte contenant le calendrier a aussi des bords arrondis */
-.bg-gray-800:has(.fc) {
-  border-radius: 0.5rem !important;
-  overflow: hidden !important;
+  
+  .fc-timeline-event .compact-badge {
+    min-width: 35px !important;
+    max-width: 70px !important;
+  }
+  
+  .fc-timeline-event .event-content > div {
+    max-width: 150px !important;
+  }
 }

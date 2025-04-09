@@ -142,5 +142,12 @@
     "allRightsReserved": "Tous droits réservés.",
     "termsOfService": "Conditions d'utilisation",
     "privacyPolicy": "Politique de confidentialité"
+  },
+  "events": {
+    "ongoing": "Ongoing",
+    "expired": "Expired",
+    "upcoming": "Upcoming",
+    "duration": "Duration",
+    "single": "Single date"
   }
 } 

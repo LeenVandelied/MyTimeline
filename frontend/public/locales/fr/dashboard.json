@@ -1,6 +1,10 @@
 {
   "title": "Tableau de bord",
   "welcome": "Bienvenue sur votre tableau de bord",
+  "lastConnection": "Dernière connexion",
+  "email": "Email",
+  "role": "Rôle",
+  "products": "Produits",
   "stats": {
     "title": "Statistiques",
     "totalEvents": "Total des événements",
