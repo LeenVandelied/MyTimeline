@@ -18,11 +18,8 @@ export const PopoverPicker = ({
   }, []);
 
   const handleColorChange = useCallback((newColor: string) => {
-    setTimeout(() => {
-      onChange(newColor);
-      setTimeout(() => onToggle?.(false), 100);
-    }, 0);
-  }, [onChange, onToggle]);
+    onChange(newColor);
+  }, [onChange]);
 
   return (
     <Popover open={isOpen} onOpenChange={onToggle}>
@@ -37,9 +34,6 @@ export const PopoverPicker = ({
         className="w-auto p-0 border-none bg-transparent shadow-none"
         onMouseDown={handlePickerMouseDown}
         onClick={(e) => e.stopPropagation()}
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
       >
         <div onMouseDown={handlePickerMouseDown}>
           <HexColorPicker color={color} onChange={handleColorChange} />

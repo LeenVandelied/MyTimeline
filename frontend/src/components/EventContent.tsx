@@ -83,7 +83,6 @@ export const EventContent: React.FC<EventContentProps> = ({ eventInfo }) => {
   const handleColorChange = async (color: string) => {
     setColor(color);
     setIsSaving(true);
-    
     try {
       setTimeout(() => {
         event.setProp('backgroundColor', color);
