@@ -52,5 +52,20 @@
       "remove": "Supprimer"
     },
     "description": "Ajoutez un nouveau produit avec ses événements associés"
+  },
+  "details": {
+    "title": "Détails de l'événement",
+    "end": "Votre événement se termine dans ",
+    "duration": "Durée",
+    "color": "Couleur de l'événement :",
+    "edit": {
+      "title": "Modifier l'événement",
+      "success": "Événement modifié avec succès",
+      "error": "Erreur lors de la modification de l'événement"
+    }
+  },
+  "edit": {
+    "title": "Modifier l'événement",
+    "save": "Enregistrer les modifications"
   }
 } 

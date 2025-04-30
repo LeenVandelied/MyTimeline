@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.domain.ports.services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
@@ -11,6 +12,7 @@ public interface EventService {
     Event save(Event event);
     
     List<Event> findDomainEventByProductId(UUID productId);
+    Optional<Event> findEventById(UUID id);
 
     void deleteById(UUID id);
     

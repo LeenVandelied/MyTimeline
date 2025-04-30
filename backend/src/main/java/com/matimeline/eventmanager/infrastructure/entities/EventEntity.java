@@ -23,6 +23,10 @@ public class EventEntity {
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean isAllDay;
+    private String backgroundColor;
+    private String borderColor;
+    private String textColor;
+    
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
@@ -116,4 +120,27 @@ public class EventEntity {
         this.isAllDay = isAllDay;
     }
     
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    public String getBorderColor() {
+        return borderColor;
+    }
+
+    public void setBorderColor(String borderColor) {
+        this.borderColor = borderColor;
+    }
+
+    public String getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(String textColor) {
+        this.textColor = textColor;
+    }
 }

@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.repositories.jpa;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,5 +60,15 @@ public class EventRepositoryJpaImpl
         EventEntity saved = super.save(entity);
 
         return eventMapper.toDomain(saved);
+    }
+    
+    @Override
+    public Optional<Event> findEventById(UUID id) {
+        Optional<EventEntity> optionalEntity = super.findById(id);
+        if (optionalEntity.isPresent()) {
+            EventEntity entity = optionalEntity.get();
+            return Optional.of(eventMapper.toDomain(entity));
+        }
+        return Optional.empty();
     }
 }
