@@ -11,22 +11,34 @@ export const getEventsByProductId = async (userId: string, productId: string): P
   }
 };
 
-export const updateEventColor = async (eventId: string, color: string): Promise<Event> => {
+interface EventColors {
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+}
+
+export const updateEventColor = async (eventId: string, colors: EventColors): Promise<void> => {
   try {
-    const response = await apiClient.patch(`/events/${eventId}`, { backgroundColor: color });
-    return response.data;
+    const response = await apiClient.patch(`/events/${eventId}`, colors);
+    
+    if (!response.data) {
+      throw new Error('Failed to update event colors');
+    }
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de la couleur de l'événement :", error);
+    console.error('Error updating event colors:', error);
     throw error;
   }
 };
 
-export const updateEvent = async (eventId: string, data: EventEditFormValues): Promise<Event> => {
+export const updateEvent = async (eventId: string, data: EventEditFormValues): Promise<void> => {
   try {
     const response = await apiClient.patch(`/events/${eventId}`, data);
-    return response.data;
+    
+    if (!response.data) {
+      throw new Error('Failed to update event');
+    }
   } catch (error) {
-    console.error("Erreur lors de la mise à jour de l'événement :", error);
+    console.error('Error updating event:', error);
     throw error;
   }
 }; 

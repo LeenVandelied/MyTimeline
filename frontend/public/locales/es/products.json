@@ -1,52 +1,74 @@
 {
   "add": {
-    "title": "Ajouter un produit",
+    "title": "Añadir Producto",
     "form": {
-      "name": "Nom du produit",
-      "namePlaceholder": "Nom du produit",
-      "category": "Catégorie",
-      "categoryPlaceholder": "Sélectionnez une catégorie",
-      "submit": "Ajouter",
-      "error": "Une erreur est survenue lors de l'ajout du produit."
+      "name": "Nombre del Producto",
+      "namePlaceholder": "Ingrese el nombre del producto",
+      "category": "Categoría",
+      "categoryPlaceholder": "Seleccione una categoría",
+      "submit": "Añadir",
+      "error": "Ocurrió un error al añadir el producto."
     },
     "categories": {
-      "vehicles": "Véhicules",
-      "insurance": "Assurance",
-      "food": "Aliments",
-      "medical": "Médical"
+      "vehicles": "Vehículos",
+      "insurance": "Seguros",
+      "food": "Alimentos",
+      "medical": "Médico"
     },
     "event": {
-      "title": "Ajouter un événement",
+      "title": "Añadir Evento",
+      "list": "Eventos Añadidos",
+      "empty": "No hay eventos añadidos",
+      "remove": "Eliminar",
       "form": {
-        "name": "Nom de l'événement",
-        "namePlaceholder": "Nom de l'événement",
-        "type": "Type",
-        "typePlaceholder": "Choisir le type",
-        "duration": "Durée",
-        "durationValue": "Valeur",
-        "durationUnit": "Unité",
-        "durationUnitPlaceholder": "Choisir une unité",
-        "date": "Date de l'événement",
-        "recurring": "Récurrent",
-        "recurrenceUnit": "Fréquence de récurrence",
-        "recurrenceUnitPlaceholder": "Choisir une fréquence",
-        "submit": "Ajouter l'événement"
+        "name": "Nombre del Evento",
+        "namePlaceholder": "Ingrese el nombre del evento",
+        "type": "Tipo",
+        "typePlaceholder": "Elegir tipo",
+        "duration": "Duración",
+        "durationValue": "Valor",
+        "durationUnit": "Unidad",
+        "durationUnitPlaceholder": "Elegir una unidad",
+        "date": "Fecha del Evento",
+        "recurring": "Recurrente",
+        "recurrenceUnit": "Frecuencia de Recurrencia",
+        "recurrenceUnitPlaceholder": "Elegir frecuencia",
+        "submit": "Añadir Evento"
       },
       "types": {
-        "duration": "Durée",
-        "single": "Ponctuel"
+        "duration": "Duración",
+        "single": "Único"
       },
       "units": {
-        "days": "Jours",
-        "weeks": "Semaines",
-        "months": "Mois",
-        "years": "Années"
+        "days": "Días",
+        "weeks": "Semanas",
+        "months": "Meses",
+        "years": "Años"
       }
     },
     "events": {
-      "list": "Événements ajoutés",
-      "empty": "Aucun événement ajouté",
-      "remove": "Supprimer"
+      "list": "Eventos Añadidos",
+      "empty": "No hay eventos añadidos",
+      "remove": "Eliminar"
+    },
+    "description": "Añada un nuevo producto con sus eventos asociados"
+  },
+  "details": {
+    "title": "Detalles del Evento",
+    "end": "Su evento termina en ",
+    "duration": "Duración",
+    "colors": "Personalización de Colores",
+    "backgroundColor": "Color de Fondo",
+    "borderColor": "Color del Borde",
+    "textColor": "Color del Texto",
+    "edit": {
+      "title": "Editar Evento",
+      "success": "Evento modificado con éxito",
+      "error": "Error al modificar el evento"
     }
+  },
+  "edit": {
+    "title": "Editar Evento",
+    "save": "Guardar Cambios"
   }
 }
