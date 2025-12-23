@@ -2,6 +2,7 @@ package com.matimeline.eventmanager.application.services;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,5 +85,20 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public Event save(Event event) {
         return eventRepository.save(event);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Event> findEventById(UUID id) {
+        if (!eventRepository.existsById(id)) {
+            return Optional.empty();
+        }
+        
+        try {
+            return eventRepository.findEventById(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 } 

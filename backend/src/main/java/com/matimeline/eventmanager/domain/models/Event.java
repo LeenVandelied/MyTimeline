@@ -15,6 +15,9 @@ public class Event {
     private LocalDate endDate;
     private UUID productId;
     private Boolean isAllDay;
+    private String backgroundColor;
+    private String borderColor;
+    private String textColor;
 
     public Event(UUID id, String title, String type, Integer durationValue, String durationUnit, 
                  Boolean isRecurring, String recurrenceUnit, LocalDate startDate, LocalDate endDate, UUID productId, Boolean isAllDay) {
@@ -31,6 +34,15 @@ public class Event {
         this.isAllDay = isAllDay;
     }
 
+    public Event(UUID id, String title, String type, Integer durationValue, String durationUnit, 
+                 Boolean isRecurring, String recurrenceUnit, LocalDate startDate, LocalDate endDate, UUID productId, Boolean isAllDay,
+                 String backgroundColor, String borderColor, String textColor) {
+        this(id, title, type, durationValue, durationUnit, isRecurring, recurrenceUnit, startDate, endDate, productId, isAllDay);
+        this.backgroundColor = backgroundColor;
+        this.borderColor = borderColor;
+        this.textColor = textColor;
+    }
+
     public UUID getId() { return id; }
     public String getTitle() { return title; }
     public String getType() { return type; }
@@ -42,6 +54,9 @@ public class Event {
     public LocalDate getEndDate() { return endDate; }
     public UUID getProductId() { return productId; }
     public Boolean getIsAllDay() { return isAllDay; }
+    public String getBackgroundColor() { return backgroundColor; }
+    public String getBorderColor() { return borderColor; }
+    public String getTextColor() { return textColor; }
 
     public void setTitle(String title) { this.title = title; }
     public void setType(String type) { this.type = type; }
@@ -51,5 +66,8 @@ public class Event {
     public void setRecurrenceUnit(String recurrenceUnit) { this.recurrenceUnit = recurrenceUnit; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
-    public void setProduct(UUID productId) { this.productId = productId; }  
+    public void setProduct(UUID productId) { this.productId = productId; }
+    public void setBackgroundColor(String backgroundColor) { this.backgroundColor = backgroundColor; }
+    public void setBorderColor(String borderColor) { this.borderColor = borderColor; }
+    public void setTextColor(String textColor) { this.textColor = textColor; }
 }

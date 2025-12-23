@@ -22,7 +22,10 @@ public class EventMapper {
           eventEntity.getStartDate(),
           eventEntity.getEndDate(),
           eventEntity.getProduct().getId(),
-          eventEntity.getIsAllDay()
+          eventEntity.getIsAllDay(),
+          eventEntity.getBackgroundColor(),
+          eventEntity.getBorderColor(),
+          eventEntity.getTextColor()
       );
   }
 
@@ -38,6 +41,10 @@ public class EventMapper {
       entity.setStartDate((event.getStartDate() != null) ? event.getStartDate() : LocalDate.now());
       entity.setEndDate(event.getEndDate());
       entity.setProduct(productEntity);
+      entity.setIsAllDay(event.getIsAllDay());
+      entity.setBackgroundColor(event.getBackgroundColor());
+      entity.setBorderColor(event.getBorderColor());
+      entity.setTextColor(event.getTextColor());
       return entity;
   }
 }

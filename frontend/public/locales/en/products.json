@@ -1,9 +1,9 @@
 {
   "add": {
-    "title": "Add a product",
+    "title": "Add Product",
     "form": {
-      "name": "Product name",
-      "namePlaceholder": "Product name",
+      "name": "Product Name",
+      "namePlaceholder": "Enter product name",
       "category": "Category",
       "categoryPlaceholder": "Select a category",
       "submit": "Add",
@@ -16,21 +16,24 @@
       "medical": "Medical"
     },
     "event": {
-      "title": "Add an event",
+      "title": "Add Event",
+      "list": "Added Events",
+      "empty": "No events added",
+      "remove": "Remove",
       "form": {
-        "name": "Event name",
-        "namePlaceholder": "Event name",
+        "name": "Event Name",
+        "namePlaceholder": "Enter event name",
         "type": "Type",
-        "typePlaceholder": "Choose a type",
+        "typePlaceholder": "Choose type",
         "duration": "Duration",
         "durationValue": "Value",
         "durationUnit": "Unit",
         "durationUnitPlaceholder": "Choose a unit",
-        "date": "Event date",
+        "date": "Event Date",
         "recurring": "Recurring",
-        "recurrenceUnit": "Recurrence frequency",
-        "recurrenceUnitPlaceholder": "Choose a frequency",
-        "submit": "Add event"
+        "recurrenceUnit": "Recurrence Frequency",
+        "recurrenceUnitPlaceholder": "Choose frequency",
+        "submit": "Add Event"
       },
       "types": {
         "duration": "Duration",
@@ -44,9 +47,28 @@
       }
     },
     "events": {
-      "list": "Added events",
+      "list": "Added Events",
       "empty": "No events added",
       "remove": "Remove"
+    },
+    "description": "Add a new product with its associated events"
+  },
+  "details": {
+    "title": "Event Details",
+    "end": "Your event ends in ",
+    "duration": "Duration",
+    "colors": "Color Customization",
+    "backgroundColor": "Background Color",
+    "borderColor": "Border Color",
+    "textColor": "Text Color",
+    "edit": {
+      "title": "Edit Event",
+      "success": "Event successfully modified",
+      "error": "Error while modifying event"
     }
+  },
+  "edit": {
+    "title": "Edit Event",
+    "save": "Save Changes"
   }
 }
