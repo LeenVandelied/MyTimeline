@@ -1,7 +1,7 @@
 'use client';
 
 import { calculateRemainingTime } from '@/utils/time-utils';
-import { EventContentArg } from '@fullcalendar/core';
+import { FullCalendarEvent } from '@/types/event';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
@@ -27,11 +27,10 @@ const DEFAULT_COLORS = {
 };
 
 interface EventContentProps {
-  eventInfo: EventContentArg;
+  event: FullCalendarEvent;
 }
 
-export const EventContent: React.FC<EventContentProps> = ({ eventInfo }) => {
-  const event = eventInfo.event;
+export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   const t = useTranslations();
   const { user } = useAuth();
   const [isOpen, setOpen] = useState(false);
@@ -48,9 +47,9 @@ export const EventContent: React.FC<EventContentProps> = ({ eventInfo }) => {
     borderColor: event.borderColor || defaultColors.borderColor,
     textColor: event.textColor || defaultColors.textColor
   });
-
-  const countdown = event?._instance?.range?.end 
-    ? calculateRemainingTime(new Date(event._instance.range.end), t)
+  
+  const countdown = event?.end
+    ? calculateRemainingTime(new Date(event.end), t)
     : null;
 
   const handleClick = () => {
@@ -62,12 +61,6 @@ export const EventContent: React.FC<EventContentProps> = ({ eventInfo }) => {
     setColors(updatedColors);
     setIsSaving(true);
     try {
-      setTimeout(() => {
-        Object.entries(newColors).forEach(([key, value]) => {
-          event.setProp(key as 'backgroundColor' | 'borderColor' | 'textColor', value);
-        });
-      }, 0);
-      
       if (user && user.id) {
         await updateEventColor(event.id, updatedColors);
       }
@@ -82,8 +75,6 @@ export const EventContent: React.FC<EventContentProps> = ({ eventInfo }) => {
     setIsSaving(true);
     
     try {
-      event.setProp('title', data.title);
-      
       const colorChanges = {
         backgroundColor: data.backgroundColor,
         borderColor: data.borderColor,
@@ -256,10 +247,10 @@ export const EventContent: React.FC<EventContentProps> = ({ eventInfo }) => {
                 defaultValues={{
                   title: event.title,
                   type: event.extendedProps?.type || 'duration',
-                  durationValue: event._def.extendedProps?.durationValue,
-                  durationUnit: event._def.extendedProps?.durationUnit,
-                  isRecurring: event._def.extendedProps?.isRecurring || false,
-                  recurrenceUnit: event._def.extendedProps?.recurrenceUnit,
+                  durationValue: undefined,
+                  durationUnit: undefined,
+                  isRecurring: false,
+                  recurrenceUnit: undefined,
                   backgroundColor: colors.backgroundColor,
                   borderColor: colors.borderColor,
                   textColor: colors.textColor
