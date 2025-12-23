@@ -1,12 +1,8 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import frLocale from "@fullcalendar/core/locales/fr";
-import enLocale from "@fullcalendar/core/locales/en-gb";
-import FullCalendar from "@fullcalendar/react";
-import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -32,7 +28,7 @@ import {
   RefreshCw 
 } from 'lucide-react';
 import '@/styles/calendar.css';
-import EventContent from '@/components/EventContent';
+import TimelineCalendar from '@/components/calendar/TimelineCalendar';
 
 interface ApiError extends Error {
   response?: {
@@ -51,19 +47,7 @@ export default function Dashboard() {
   const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
-  const calendarRef = useRef<FullCalendar>(null);
-  const [currentViewTitle, setCurrentViewTitle] = useState<string>("");
-
-  const getFullCalendarLocale = () => {
-    switch (locale) {
-      case 'fr':
-        return frLocale;
-      case 'en':
-        return enLocale;
-      default:
-        return frLocale;
-    }
-  };
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   const fetchData = useCallback(async () => {
     try {
@@ -102,16 +86,6 @@ export default function Dashboard() {
     }
   }, [user, fetchData]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (calendarRef.current) {
-        setCurrentViewTitle(calendarRef.current.getApi().view.title);
-      }
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -120,31 +94,19 @@ export default function Dashboard() {
       console.error("Erreur lors de la déconnexion :", error);
     }
   };
-  
-  const updateCurrentDate = (calendarApi?: ReturnType<FullCalendar['getApi']>) => {
-    if (!calendarApi) return;
-    setCurrentViewTitle(calendarApi.view.title);
-  };
 
   const handleCalendarNavigation = (direction: 'prev' | 'next') => {
-    const calendarApi = calendarRef.current?.getApi();
-
-    if (!calendarApi) return;
-
-    const newDate = dayjs(calendarApi.getDate());
-    const updatedDate =
-      direction === 'next' ? newDate.add(1, 'month') : newDate.subtract(1, 'month');
-    calendarApi.gotoDate(updatedDate.toDate());
-
-    updateCurrentDate(calendarApi);
+    setCurrentDate(prev => {
+      const base = prev || new Date();
+      const newDate = dayjs(base);
+      const updatedDate =
+        direction === 'next' ? newDate.add(1, 'month') : newDate.subtract(1, 'month');
+      return updatedDate.toDate();
+    });
   };
 
   const handleToday = () => {
-    const calendarApi = calendarRef.current?.getApi();
-    if (!calendarApi) return;
-    
-    calendarApi.today();
-    updateCurrentDate(calendarApi);
+    setCurrentDate(new Date());
   };
 
   if (loading) {
@@ -185,8 +147,6 @@ export default function Dashboard() {
     title: product.name,
     category: product.category.name
   }));
-
-  const currentLocale = getFullCalendarLocale();
 
   const fadeIn = {
     hidden: { opacity: 0, y: 10 },
@@ -340,53 +300,14 @@ export default function Dashboard() {
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
-                    <div className="text-xl font-bold text-white bg-indigo-800/30 px-4 py-1 rounded-full">
-                      {currentViewTitle}
-                    </div>
                   </div>
                   <div className="fullcalendar-container p-3 bg-gray-800/40">
-                    <FullCalendar
-                      ref={calendarRef}
-                      plugins={[resourceTimelinePlugin]}
-                      locale={currentLocale}
-                      initialView="resourceTimelineMonth"
-                      initialDate={new Date()}
-                      dateAlignment="day"
-                      schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
+                    <TimelineCalendar
                       events={calendarEvents}
                       resources={resources}
-                      headerToolbar={false}
-                      height="auto"
-                      resourceAreaWidth="15%"
-                      resourceAreaHeaderContent={t('dashboard.products')}
-                      resourceGroupField="category"
-                      slotLabelFormat={{
-                        weekday: 'short',
-                        day: 'numeric',
-                        omitCommas: true
-                      }}
-                      resourceLabelDidMount={arg => {
-                        const el = arg.el;
-                        if (el) {
-                          el.classList.add('resource-label');
-                          el.title = arg.resource.title;
-                        }
-                      }}
-                      eventClassNames={({ event }) => {
-                        const now = new Date();
-                        const startDate = event.start || now;
-                        const endDate = event.end || now;
-                        
-                        if (endDate < now) {
-                          return ['events-expired'];
-                        } else if (startDate <= now && now <= endDate) {
-                          return ['events-ongoing'];
-                        } else {
-                          return ['events-upcoming'];
-                        }
-                      }}
-                      eventContent={(eventInfo) => <EventContent eventInfo={eventInfo} />}
-                      nowIndicator={true}
+                      currentDate={currentDate}
+                      locale={locale}
+                      showNowIndicator
                     />
                   </div>
                 </>
