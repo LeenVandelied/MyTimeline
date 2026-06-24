@@ -1,16 +1,16 @@
 {
   "auth": {
-    "register": "Erreur lors de l'inscription",
-    "login": "Erreur lors de la connexion",
-    "logout": "Erreur lors de la déconnexion",
-    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter"
+    "register": "Error al registrarse",
+    "login": "Error al iniciar sesión",
+    "logout": "Error al cerrar sesión",
+    "sessionExpired": "Su sesión ha expirado. Por favor, vuelva a conectarse"
   },
   "network": {
-    "offline": "Vous êtes hors ligne. Veuillez vérifier votre connexion",
-    "timeout": "Délai d'attente dépassé. Veuillez réessayer"
+    "offline": "Está desconectado. Por favor, verifique su conexión",
+    "timeout": "Se acabó el tiempo de espera. Por favor, inténtelo de nuevo"
   },
   "server": {
-    "error": "Erreur serveur. Veuillez réessayer plus tard",
-    "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
+    "error": "Error del servidor. Por favor, inténtelo más tarde",
+    "maintenance": "El servidor está en mantenimiento. Por favor, inténtelo más tarde"
   }
 }

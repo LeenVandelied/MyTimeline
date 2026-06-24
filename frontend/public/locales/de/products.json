@@ -61,6 +61,9 @@
     "backgroundColor": "Hintergrundfarbe",
     "borderColor": "Rahmenfarbe",
     "textColor": "Textfarbe",
+    "preview": "Ereignisvorschau",
+    "sampleEvent": "Beispielereignis",
+    "sampleDescription": "Ereignisbeschreibung mit ausgewählten Farben",
     "edit": {
       "title": "Ereignis bearbeiten",
       "success": "Ereignis erfolgreich geändert",

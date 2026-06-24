@@ -47,6 +47,13 @@
     "days": "days",
     "expired": "Expired"
   },
+  "events": {
+    "ongoing": "Ongoing",
+    "expired": "Expired",
+    "upcoming": "Upcoming",
+    "duration": "Duration",
+    "single": "Single date"
+  },
   "landing": {
     "title": "My Timeline | Your personal organization assistant",
     "navigation": {
@@ -139,15 +146,14 @@
     }
   },
   "footer": {
-    "allRightsReserved": "Tous droits réservés.",
-    "termsOfService": "Conditions d'utilisation",
-    "privacyPolicy": "Politique de confidentialité"
-  },
-  "events": {
-    "ongoing": "Ongoing",
-    "expired": "Expired",
-    "upcoming": "Upcoming",
-    "duration": "Duration",
-    "single": "Single date"
+    "allRightsReserved": "All rights reserved.",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "legalNotice": "Legal Notice",
+    "product": "Product",
+    "features": "Features",
+    "howItWorks": "How it works",
+    "testimonials": "Testimonials",
+    "legal": "Legal"
   }
-} 
+}

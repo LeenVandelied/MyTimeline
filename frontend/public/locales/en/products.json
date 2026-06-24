@@ -61,6 +61,9 @@
     "backgroundColor": "Background Color",
     "borderColor": "Border Color",
     "textColor": "Text Color",
+    "preview": "Event Preview",
+    "sampleEvent": "Sample Event",
+    "sampleDescription": "Event description with selected colors",
     "edit": {
       "title": "Edit Event",
       "success": "Event successfully modified",
