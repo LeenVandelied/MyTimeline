@@ -110,6 +110,24 @@ class AuthControllerSecurityTest {
                 .andExpect(cookie().httpOnly("jwt", true));
     }
 
+    /**
+     * Issue #116 — BR-AUT-005 : sur mauvais credentials, le login renvoie un 401
+     * avec un body JSON {"error":"Invalid username or password"} (cohérent avec les
+     * autres réponses d'erreur du contrôleur, plus de texte brut). Le message reste
+     * neutre : il ne distingue pas username inconnu vs mot de passe incorrect.
+     */
+    @Test
+    void login_withBadCredentials_returns401WithJsonError() throws Exception {
+        when(authenticationManager.authenticate(any()))
+                .thenThrow(new org.springframework.security.authentication.BadCredentialsException("bad"));
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"alice\",\"password\":\"wrongpass\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid username or password"));
+    }
+
     @Test
     void me_doesNotExposePasswordHash() throws Exception {
         User user = sampleUser();

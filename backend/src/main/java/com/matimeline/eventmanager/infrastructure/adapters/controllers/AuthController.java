@@ -102,7 +102,11 @@ public class AuthController {
             // un script XSS pourrait le lire et annuler le bénéfice du HttpOnly.
             return ResponseEntity.ok(java.util.Map.of("message", "Authentification réussie"));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            // BR-AUT-005 : message neutre (ne distingue pas username inconnu vs
+            // mot de passe faux) et body JSON {"error":...} cohérent avec les
+            // autres réponses d'erreur du contrôleur (register/refresh).
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("error", "Invalid username or password"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("error", "authentication_failed"));
