@@ -27,7 +27,6 @@ import {
   Zap, 
   RefreshCw 
 } from 'lucide-react';
-import '@/styles/calendar.css';
 import TimelineCalendar from '@/components/calendar/TimelineCalendar';
 
 interface ApiError extends Error {
