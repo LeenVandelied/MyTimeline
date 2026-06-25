@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.matimeline.eventmanager.application.dtos.AuthRequest;
 import com.matimeline.eventmanager.application.dtos.RegisterRequest;
+import com.matimeline.eventmanager.application.dtos.UserResponse;
 import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetails;
@@ -47,6 +49,32 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private static final String JWT_COOKIE = "jwt";
+    private static final boolean COOKIE_SECURE = false;
+    private static final String COOKIE_PATH = "/";
+    private static final String COOKIE_DOMAIN = "localhost";
+    private static final String COOKIE_SAME_SITE = "Lax";
+    private static final int COOKIE_MAX_AGE = 60 * 60 * 24 * 2;
+
+    /**
+     * Construit le cookie {@code jwt} avec des attributs IDENTIQUES pour la pose
+     * et la suppression (BR-AUT-010 / A6). Sans cette identité (HttpOnly, Secure,
+     * Path, Domain, SameSite), le navigateur ne matche pas le cookie à effacer.
+     *
+     * @param value   valeur du token (vide pour suppression)
+     * @param maxAge  durée de vie en secondes ; 0 pour supprimer
+     */
+    private Cookie buildJwtCookie(String value, int maxAge) {
+        Cookie jwtCookie = new Cookie(JWT_COOKIE, value);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(COOKIE_SECURE);
+        jwtCookie.setPath(COOKIE_PATH);
+        jwtCookie.setDomain(COOKIE_DOMAIN);
+        jwtCookie.setMaxAge(maxAge);
+        jwtCookie.setAttribute("SameSite", COOKIE_SAME_SITE);
+        return jwtCookie;
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest, HttpServletResponse response) {
         try {
@@ -55,16 +83,8 @@ public class AuthController {
                     
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwtToken = jwtService.generateToken(authentication);
-    
-            Cookie jwtCookie = new Cookie("jwt", jwtToken);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(false);
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(60 * 60 * 24 * 2);
-            jwtCookie.setDomain("localhost");
-            jwtCookie.setAttribute("SameSite", "Lax");
-    
-            response.addCookie(jwtCookie);
+
+            response.addCookie(buildJwtCookie(jwtToken, COOKIE_MAX_AGE));
             return ResponseEntity.ok().body(jwtToken);
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
@@ -91,7 +111,7 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
             }
 
-            return ResponseEntity.ok(user.get());
+            return ResponseEntity.ok(UserResponse.fromDomain(user.get()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Token expired");
         } catch (MalformedJwtException e) {
@@ -124,6 +144,16 @@ public class AuthController {
             userService.createUser(newUser);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        } catch (DataIntegrityViolationException e) {
+            // BR-AUT-001 : violation de contrainte unique (username/email).
+            // Couvre la course concurrente non rattrapée par le pré-check applicatif
+            // ainsi que l'unicité de l'email (aucun pré-check applicatif).
+            String detail = e.getMostSpecificCause().getMessage();
+            String field = detail != null && detail.toLowerCase().contains("email")
+                    ? "email"
+                    : "username";
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(java.util.Map.of("error", field + " already taken"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during registration");
         }
@@ -132,13 +162,9 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         try {
-            Cookie jwtCookie = new Cookie("jwt", "");
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(true);
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(0);
-    
-            response.addCookie(jwtCookie);
+            // BR-AUT-010 : attributs identiques à la pose (login/refresh) pour
+            // que le navigateur matche et efface le cookie. maxAge=0 = suppression.
+            response.addCookie(buildJwtCookie("", 0));
             return ResponseEntity.ok("Logged out successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
@@ -168,15 +194,7 @@ public class AuthController {
                 
             String newToken = jwtService.generateToken(authentication);
 
-            Cookie jwtCookie = new Cookie("jwt", newToken);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(false);
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(60 * 60 * 24 * 2);
-            jwtCookie.setDomain("localhost");
-            jwtCookie.setAttribute("SameSite", "Lax");
-
-            response.addCookie(jwtCookie);
+            response.addCookie(buildJwtCookie(newToken, COOKIE_MAX_AGE));
             return ResponseEntity.ok().body("Token refreshed successfully");
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Token expired");

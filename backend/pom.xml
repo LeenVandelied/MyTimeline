@@ -87,6 +87,19 @@
 				<version>0.11.5</version>
 				<scope>runtime</scope>
 		</dependency>
+		<!--
+			Bucket4j core — in-memory token-bucket rate limiting (no Redis/JCache).
+			Buckets live in a ConcurrentHashMap inside RateLimitingFilter, so the
+			limits are PER JVM INSTANCE: behind a load balancer with N replicas the
+			effective ceiling is N x the configured rate. Acceptable for the current
+			single-instance deployment; move to a distributed backend (Redis +
+			bucket4j-redis) when scaling out.
+		-->
+		<dependency>
+				<groupId>com.bucket4j</groupId>
+				<artifactId>bucket4j-core</artifactId>
+				<version>8.10.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>

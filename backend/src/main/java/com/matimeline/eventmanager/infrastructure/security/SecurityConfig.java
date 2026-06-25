@@ -21,7 +21,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
 
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.http.MediaType;
 
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -30,9 +36,12 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
-    public SecurityConfig(UserDetailsService userDetailsService, @Lazy JwtFilter jwtFilter) {
+    public SecurityConfig(UserDetailsService userDetailsService, @Lazy JwtFilter jwtFilter,
+                          RateLimitingFilter rateLimitingFilter) {
         this.jwtFilter = jwtFilter;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
     @Bean
@@ -54,6 +63,27 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .headers(headers -> headers
+                // X-Frame-Options: DENY — block clickjacking via framing.
+                .frameOptions(frame -> frame.deny())
+                // X-Content-Type-Options: nosniff — on by default, kept explicit.
+                .contentTypeOptions(opts -> {})
+                // Strict-Transport-Security — force HTTPS for a year, incl. subdomains.
+                // requestMatcher(any) so the header is emitted even when the request
+                // reaching the app is plain HTTP (TLS terminated at the reverse proxy);
+                // Spring's default only writes HSTS on already-secure requests.
+                .httpStrictTransportSecurity(hsts -> hsts
+                        .includeSubDomains(true)
+                        .maxAgeInSeconds(31536000)
+                        .requestMatcher(request -> true))
+                // Referrer-Policy: strict-origin-when-cross-origin.
+                .referrerPolicy(referrer -> referrer
+                        .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                // CSP: deliberately permissive so the Next.js front (localhost:3000)
+                // is not broken. To be hardened in a later wave.
+                .contentSecurityPolicy(csp -> csp
+                        .policyDirectives("default-src 'self'"))
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
@@ -63,8 +93,18 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) ->
+                        writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, "unauthorized"))
+                .accessDeniedHandler((request, response, accessDeniedException) ->
+                        writeJsonError(response, HttpServletResponse.SC_FORBIDDEN, "forbidden"))
+            )
+            // Rate-limit BEFORE jwtFilter: jwtFilter skips /api/auth/**, but the
+            // sensitive auth POSTs are exactly what must be throttled, so the
+            // rate-limit filter has to run on them ahead of everything.
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-    
+
         return http.build();
     }
 
@@ -84,5 +124,20 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
         return new CustomUserDetailsService(userRepository);
+    }
+
+    /**
+     * Writes a minimal JSON error body directly to the servlet response.
+     * Used by the authenticationEntryPoint (401) and accessDeniedHandler (403):
+     * these fire inside the security filter chain, BEFORE the DispatcherServlet,
+     * so they never reach the @RestControllerAdvice. No internal message or
+     * stack trace is exposed — only the stable "error" code.
+     */
+    private static void writeJsonError(HttpServletResponse response, int status, String error)
+            throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write("{\"error\":\"" + error + "\"}");
     }
 }

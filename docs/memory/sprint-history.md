@@ -26,14 +26,31 @@
   - Cookie Secure conditionné env [S | auth] → fusionné dans #32 (commentaire, évite doublon)
   Bilan : 6 issues créées, 1 fusionné, 0 discardé, 0 absorbé (ratio discard 0%).
 
-## Sprint 2 — (PLANIFIE — cohésion ~1.0, Sécurité auth : fuite /me, rate-limit, 401/403)
+## Sprint 2 — 2026-06-25 → 2026-06-25 (Terminé — merge PR #98 dans dev — cohésion ~1.0, Sécurité auth : fuite /me, rate-limit, 401/403)
 **Objectif :** Compléter le durcissement auth (fuite password, brute-force, codes HTTP).
-**Milestone GitHub :** #2
-**Issues :** #32, #33, #51
-**Vagues :** V1 = #32 + #51 (disjoints) | V2 = #33 (SecurityConfig après #32)
-**Migrations Flyway :** aucune (contrainte unique #32 posée en S3 via #42)
-**Dépend de :** Sprint 1 (#51 requiert le ControllerAdvice de #30)
-**Status :** Planifié
+**Milestone GitHub :** #2 (fermé après merge)
+**Issues livrées (3) :** #32, #33, #51
+**Vagues exécutées :** V1 = #32 ∥ #51 (parallèles, fichiers disjoints) | V2 = #33 (SecurityConfig partagé avec #51)
+**Cohésion score :** ~1.0 (3 issues epic:auth)
+**Commits :** 4 — f650d9d (#32 UserResponse/cookie/unique) · 5896fa7 (#51 401/403 exceptionHandling) · 74b88d2 (#33 rate-limit Bucket4j + headers) · 53175da (#33 fix XFF spoofing post-review)
+**Migrations Flyway :** aucune (contrainte unique #32 posée JPA-only, migration DB coordonnée S3 via #42)
+**Dépend de :** Sprint 1 (#51 requiert le ControllerAdvice de #30 — présent sur dev)
+**BR impactées :** BR-AUT-008 (no password leak /me), BR-AUT-001 (unique→409), BR-AUT-010 (cookie logout cohérent), BR-AUT-005 (401 sans fuite), BR-EVT-001 (ownership→403), BR-AUT-002 (rate-limit + headers).
+**Reviews :** reviewer batch — 0 CRITIQUE / 4 MAJEUR / 5 MINEURS. 1 MAJEUR résolu (XFF spoofing, commit 53175da) ; 2 MAJEUR pré-existants (JWT body login A3, refresh sans validation A5) → dette S3 ; MINEURS = dette connue (follow-ups).
+**Tests :** Backend 29/29 verts (`SKIP_DELEGATION=1 mvn test`, BUILD SUCCESS). Pas de CI repo → garantie = run local. Frontend : aucun changement → pas d'E2E.
+**Nouveaux pitfalls/patterns/décisions :** PIT-S2-001..005, PAT-S2-001..003, DEC-S2-001/002 (voir docs/memory/{pitfalls,patterns,decisions}.md).
+**Saturation contexte lead (mesure) :** ~modérée — fan-out 2 vagues + review + fix, purge contexte via done.md (pas de retour brut subagent conservé).
+**Absorbé en cours (XS) :** aucun (périmètre tenu strict par issue).
+**Follow-ups arbitrés (Phase 4 triage — 7 créés en backlog, 0 discard, 0 absorbé) :**
+  - Externaliser config cookies JWT Secure/Domain [S | auth] → issue #99
+  - Uniformiser body 403 ownership EventController [S | events] → issue #100
+  - Durcir la CSP [S | auth] → issue #101
+  - Rate-limit par compte + Redis distribué [M | auth] → issue #102
+  - Endpoint reset-password [M | auth] → issue #103
+  - Retirer JWT brut du body de login (A3) [S | auth] → issue #104
+  - Valider expiration token avant /auth/refresh (A5/BR-AUT-009) [S | auth] → issue #105
+  Note PM : pas de labels stack `backend/frontend/fullstack` dans le repo (scope porté par epics + titres). Ratio discard 0%.
+**Status :** Terminé
 
 ## Sprint 3 — (PLANIFIE — cohésion ~0.4, Fondations infra & DB : secrets, Flyway, audit JPA)
 **Objectif :** Externaliser les secrets, versionner le schéma (Flyway), poser l'audit JPA (@Version/timestamps).

@@ -13,3 +13,18 @@ Un PATCH partiel légitime peut omettre un champ (ex: endpoint « couleurs seule
 
 ## PIT-S1-004 — `git add -A` dans un worktree sprint capture les artefacts d'orchestration
 Le worktree sprint contient des fichiers untracked d'orchestration (`docs/memory/sprints/sprint-N/*` briefings/done.md). `git add -A` les capture par erreur. Stager explicitement les fichiers source/test (`git add <paths>` ciblés). (Sprint 1 correction post-review)
+
+## PIT-S2-001 — Build backend = `cd backend && mvn`, pas de `./mvnw` ni `scripts/test-quiet.sh`
+Le `mvnw` racine est cassé (`.mvn/wrapper` manquant) et le `pom.xml` vit dans `backend/`. Toujours `cd backend && mvn ...` (mvn système). Un hook PreToolUse bloque `mvn test` nu → préfixer `SKIP_DELEGATION=1 mvn test` pour les petites suites. Les tests d'intégration tapent une vraie Postgres (HikariPool au boot du contexte). (Sprint 2 #32/#33)
+
+## PIT-S2-002 — Tester un contrat 401/403 Spring Security exige le full filter chain
+`MockMvcBuilders.standaloneSetup` (utilisé par des tests existants) bypasse Spring Security → 401/403 jamais déclenchés = faux verts. Pour valider entryPoint/accessDeniedHandler et l'ownership, utiliser `@SpringBootTest` + `@AutoConfigureMockMvc`. Corollaire : les exceptions levées DANS un filtre ne traversent pas le `@RestControllerAdvice` (hors DispatcherServlet). (Sprint 2 #51)
+
+## PIT-S2-003 — `@Bean` injecté par un filtre lui-même injecté dans la `@Configuration` qui le déclare → cycle
+`TimeMeter @Bean` dans `SecurityConfig` → `SecurityConfig` dépend de `RateLimitingFilter` qui dépend du `TimeMeter` produit par `SecurityConfig` en cours de création → `UnsatisfiedDependency "currently in creation"`. Fix : extraire le `@Bean` dans une `@Configuration` dédiée (`RateLimitConfig`). (Sprint 2 #33)
+
+## PIT-S2-004 — `getServletPath()` vide en MockHttpServletRequest → matcher de Filter cassé
+Dans un `Filter` testé via MockMvc, `request.getServletPath()` retourne `""` → le path-matching échoue silencieusement. Utiliser `getRequestURI()` (rempli en test ET prod, context path vide ici). (Sprint 2 #33)
+
+## PIT-S2-005 — Ne jamais faire confiance à `X-Forwarded-For` par défaut pour une clé de sécurité
+Rate-limit keyé sur `X-Forwarded-For` sur endpoint `permitAll` non authentifié → l'attaquant fait tourner le header à chaque requête → bucket neuf à chaque appel → contournement trivial. Keyer sur `getRemoteAddr()`, confiance XFF opt-in par config (`app.rate-limit.trust-forwarded-header`, défaut false, n'honorer que derrière reverse proxy de confiance). Vaut pour toute IP-allowlist/rate-limit. (Sprint 2 #33 fix review)

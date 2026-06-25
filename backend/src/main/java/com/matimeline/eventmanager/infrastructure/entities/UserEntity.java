@@ -13,9 +13,14 @@ public class UserEntity {
     private UUID id;
 
     private String name;
+
+    @Column(unique = true)
     private String username;
+
     private String password;
     private String role;
+
+    @Column(unique = true)
     private String email;
 
     public UUID getId() {
