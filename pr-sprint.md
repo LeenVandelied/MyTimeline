@@ -1,46 +1,56 @@
-## Sprint 5 — Durcissement DB & profils + dette reviews auth (S1–S4)
+## Sprint 6 — Fondations outillage & CI
 
-Sprint backend-only. Plan architect = 3 issues DB/profils ; **scope élargi par décision dev aux 8 issues du milestone** (ajout des 5 follow-ups auth/infra du triage S4). Cohésion volontairement dégradée (2 domaines), arbitrage assumé.
+Sprint d'**enablers purs** (cohésion 0.55) : débloque tout le frontend futur. Zéro BR fonctionnelle, zéro changement backend.
 
-### Issues livrées (8)
+### Issues livrées
+| # | Titre | Commit |
+|---|-------|--------|
+| #45 (+ #35 absorbé) | Tokens Graphite (Tailwind 4 `@theme`) + thème clair/sombre + dead code | `1012034`, `4f5da4a` |
+| #29 | Infra test frontend (Vitest+RTL+Playwright+Storybook+Prettier+Husky+commitlint) | `6ca0b13` |
+| #38 | CI GitHub Actions + Dependabot + CODEOWNERS | `343461b` |
+| review | Corrections theme-correctness + deps | `2f02142` |
 
-**DB / profils (epic:devops)**
-- **#108** — `V4__reconcile_events_constraints.sql` : CHECK + NOT NULL + varchar(20) sur `events.type/duration_unit/recurrence_unit`, absents de la baseline V1 (générée ex-métadonnées Hibernate). Idempotent (DROP IF EXISTS), enums croisés sur 3 sources (Utils backend + Zod frontend).
-- **#110** — `V5__fk_indexes.sql` : index sur les colonnes FK (`products.category_id/user_id`, `events.product_id`) — PG ne les crée pas automatiquement.
-- **#111** — `ProfileSafetyGuard` (ApplicationListener via `spring.factories`) : fail-fast si profil `dev` actif alors qu'un marqueur `ENVIRONMENT/APP_ENV=production` est présent. Garde le confort dev local intact.
+### Changements clés
 
-**Auth / config (epic:auth, dette reviews S1–S4)**
-- **#116** — body 401 BadCredentials → JSON `{"error":...}` (BR-AUT-005, message neutre). Frontend vérifié (0 usage en dur).
-- **#117** — test profil dev : cookie JWT `Secure=false` + domaine `localhost` (classe dédiée, charge le vrai `application-dev.properties`).
-- **#118** — doc `COOKIE_DOMAIN` prod : runbook consolidé en hub unique (`deploiement-profils.md`) listant toutes les env prod obligatoires.
-- **#119** — 403 unifié sur `SecurityConfig.accessDeniedHandler` (suppression du handler mort dans `GlobalExceptionHandler`) ; test migré `standaloneSetup` → `@SpringBootTest` (chaîne Security réelle).
-- **#120** — CORS externalisé (`app.cors.allowed-origins`, default fail-safe localhost, prod `${CORS_ALLOWED_ORIGINS}` fail-fast), `Authorization` retiré de `exposedHeaders`, SameSite maintenu `Lax` (justifié + runbook).
+**#45 — Design system Graphite**
+- Tokens récupérés du **hand-off Claude Design** (« Refonte graphique MyTimeline ») et déposés dans `frontend/src/styles/ds/` (source unique) + `docs/design/graphite-handoff.md`. *Ils n'existaient pas dans le repo — décision dev : porter les vraies valeurs validées.*
+- Exposition Tailwind 4 via `@theme` (rampe graphite 12 paliers, accent bleu électrique, 12 couleurs event AA, surfaces clair/sombre, typo Archivo/IBM Plex Mono, spacing base-4, tokens timeline).
+- `next-themes` (`attribute="class"`, system) — bascule clair/sombre sans reload ; ordre providers Theme>Auth>Query préparé (Auth/Query en S7).
+- Polices via `next/font` (self-host, zéro requête Google en prod).
+- Audit classes hardcodées : ~180 occurrences sur 15 fichiers → tokens sémantiques (0 résidu gray/purple).
 
-### Vagues d'exécution
-- **V1** (∥) : #108 + #111 + #116 + #119
-- **V2** (∥) : #110 + #117
-- **V3** : #120 (solo — `SecurityConfig` + properties partagées)
-- **V4** : #118 (solo — `application-prod.properties` partagé avec #120)
+**#35 absorbé (fermeture à la clôture du sprint)**
+- Deps mortes retirées : `next-auth`, `@formatjs/intl-localematcher`, `negotiator`, `date-fns`, `react-day-picker` (vérif grep : i18n via `next-intl/middleware` ; `calendar.tsx` mort).
+- Fichiers morts supprimés : `ui/calendar.tsx`, `client-only.tsx`, `client-wrapper.tsx`, `calendar.css`. Rename `tailwing.config.ts`→`tailwind.config.ts`.
+- `FullCalendarEvent` **gardé** (vivant — pas un vestige, divergence assumée vs brief).
 
-Matrice conflits respectée : `AuthControllerSecurityTest` (#116→#117), `SecurityConfig` (#119→#120), `application.properties` (#111), `application-prod.properties` (#120→#118), migrations (#108→#110).
+**#29 — Infra test**
+- Vitest 2.1.9 + RTL 16 + Playwright 1.61 + Storybook 8.6 (builder **Vite** — webpack `@storybook/nextjs` casse sur Next 15.2) + Prettier + Husky 9 + lint-staged + commitlint gitmoji.
+- Scripts : `test`, `test:e2e`, `typecheck`, `format`, `storybook` (+ `build-storybook`).
+- Husky résolu pour le **worktree** : `core.hooksPath` en scope `--worktree`.
 
-### Migrations Flyway
-`V4__reconcile_events_constraints.sql` + `V5__fk_indexes.sql` (schéma `public` → version 5). V1/V2/V3 intacts (checksum).
+**#38 — CI**
+- `.github/workflows/ci.yml` : 2 jobs parallèles — backend `./mvnw verify` (Java 21, Testcontainers, cache Maven) + frontend `npm ci`→`build`/`test`/`typecheck`/`lint` (Node 20, cache npm). Triggers PR+push sur `dev`/`main`, `concurrency.cancel-in-progress`.
+- Dependabot (maven `/backend` + npm `/frontend` + github-actions) ; CODEOWNERS (`@LeenVandelied`).
+- ⚠ **Branch protection NON activée** (volontaire — l'activer avant le 1er run vert bloquerait cette PR). Procédure `gh api` documentée en tête de `ci.yml`. À activer après le 1er vert.
 
-> **Pré-déploiement (base dev peuplée uniquement)** — avant V4 : `SELECT count(*) FROM events WHERE type IS NULL;` et `SELECT max(length(type)) FROM events;` (sinon `SET NOT NULL` / `varchar(20)` échouent proprement). Base fraîche (CI/Testcontainers) : aucun blocage.
+### BR impactées
+Aucune (sprint outillage).
 
-### Reviews
-- **db-expert** : V4/V5 mergeable, **0 CRITIQUE**.
-- **security-expert** : **0 CRITIQUE**, BR-AUT-005 / 403 / CORS / SameSite conformes.
-- **reviewer** : **0 CRITIQUE**, 3 MAJEUR + MINEURs — tous **pré-existants hors scope** (aucune régression S5), **déférés en follow-ups** (décision dev). Détail : `docs/memory/sprints/sprint-5/review-batch.md`.
+### Audit tests (Phase 6) — `docs/memory/audits/sprint-6-test-coverage.md`
+- Frontend re-vérifié vert par le lead : **Vitest 1/1 · typecheck 0 · lint clean · `next build` OK**.
+- Backend non impacté (0 fichier modifié). E2E : aucune spec (1ʳᵉ E2E métier en S8).
+- ⚠ La CI elle-même n'est **pas exécutable en local** → 1er vrai run = à l'ouverture de cette PR. À surveiller : Testcontainers/Docker runner, durée < 10 min.
 
-### Tests
-**Backend 56/56 verts** (Testcontainers Postgres, BUILD SUCCESS ~11.6s). Baseline S4 = 41 → +15 (ProfileSafetyGuard 6, cookie dev 1, 401 JSON 1, ownership migré, etc.). Frontend : aucun changement → pas d'E2E. Audit : `docs/memory/audits/sprint-5-test-coverage.md` (0 `[MISSING]`).
+### Review (Phase 7) — résolu
+Reviewer : 0 CRITIQUE / 5 MAJEUR / 4 MINEUR, **tous résolus** (`2f02142`) : couleurs hardcodées hors DS (TimelineCalendar violet/emerald/indigo, status pills), `text-ink`→`text-accent-ink` (contraste sombre), deps commitlint en direct.
 
-### Follow-ups identifiés (à trier au `/sprint end`)
-- Contrat erreur `/me`+`/register`+`/logout` → JSON (S | auth)
-- `users.role` enum sans CHECK DB → V6 (S | devops)
-- `writeJsonError` concat / `buildBody` reasonPhrase (XS | auth/events)
-- BR-PRO-006 full scan (idx_products_user inexploité tant que requête non réécrite)
+### Cohésion
+0.55 (epic:design + epic:devops ×2 — liés par « débloquer le frontend »).
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+### Suivi (follow-ups à trier en clôture)
+- Activer branch protection après 1er run CI vert.
+- Porter `landing.css`/`animations.css` (hex de marque) + `TestimonialCard` (blue/cyan/pink) sur tokens.
+- Consommer `ds/components/{core,timeline,i18n}.css` lors de l'intégration des écrans (S7/S8).
+- `toLocaleDateString` sans locale (AddProducts) ; `commitlint-config-gitmoji` non utilisé (candidat suppression).
+- Vrais tests RTL + premières specs Playwright quand le socle S7 atterrit.

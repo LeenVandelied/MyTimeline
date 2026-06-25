@@ -130,15 +130,22 @@
   - Log config cookie/CORS effective au boot prod [S | infra] → #130
 **Status :** Terminé
 
-## Sprint 6 — 2026-06-25 (PLANIFIÉ — cohésion 0.55, Fondations outillage & CI)
+## Sprint 6 — 2026-06-25 (Terminé — merge PR #131 dans dev — cohésion 0.55, Fondations outillage & CI)
 **Objectif :** Débloquer tout le frontend futur — tokens DS (Graphite/Tailwind 4 @theme), infra de test frontend (Vitest+RTL+Playwright+Storybook+Husky), CI GitHub Actions. Enablers purs, zéro greenfield bloqué.
-**Milestone GitHub :** #6
-**Issues :** #45, #29, #38
-**Vagues :** V1 (∥) = #45 + #29 (sérialiser package.json) | V2 = #38 (CI, dépend des scripts de #29)
+**Milestone GitHub :** #6 (fermé après merge)
+**Issues livrées (4) :** #45, #29, #38 + **#35 absorbé** (fermé)
+**Vagues exécutées :** V1 = #45 (+#35) | V2 = #29 | V3 = #38 — **sérialisé** (package.json partagé #45/#29 → `npm install` concurrent corromprait le lock ; chaîne #45→#29→#38).
+**Cohésion score :** 0.55 (epic:design + epic:devops ×2)
+**Commits :** `1012034` (#35 dead code) · `4f5da4a` (#45 tokens Graphite) · `6ca0b13` (#29 infra test) · `343461b` (#38 CI) · `2f02142` (fix review intra-sprint) · `2e223ca` (artefacts) · `bb05ec0` (fix /review-pr) · `f3051d4` (traçabilité)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (point d'entrée de l'arc frontend)
-**Note :** #35 (typo tailwing.config.ts + deps mortes next-auth/date-fns) absorbé comme tâche-zéro de #45. layout.tsx : ordre providers imposé Theme(#45) > Auth(S7) > Query(S7).
-**Status :** Planifié
+**BR impactées :** aucune (sprint outillage).
+**Source DS :** tokens Graphite récupérés du hand-off Claude Design (n'existaient pas dans le repo) → `frontend/src/styles/ds/` + `docs/design/graphite-handoff.md`. Cf. mémoire `mytimeline-graphite-ds-source`.
+**Reviews :** 2 passes — intra-sprint (5 MAJEUR/4 MINEUR, fix `2f02142`) + /review-pr #131 indépendante post-fix (4 MAJEUR/2 MINEUR : 3 fix `bb05ec0`, 3 déférés follow-up). Tous résolus/tracés.
+**Tests/CI :** 1ʳᵉ CI du projet ✅ — run sprint/6 **vert** : frontend 58s + backend 42s (Testcontainers OK), < 10 min. Build/test/typecheck/lint re-vérifiés verts par le lead. E2E : aucune spec (1ʳᵉ E2E métier S8).
+**Note :** layout.tsx ordre providers Theme(#45) > Auth(S7) > Query(S7) préparé. `FullCalendarEvent` gardé (vivant). Husky `core.hooksPath` en scope `--worktree`. Storybook builder Vite (webpack @storybook/nextjs casse sur Next 15.2).
+**Follow-ups (à trier) :** activer branch protection (CI verte dispo) ; porter landing.css/animations.css + types/event.ts DEFAULT_COLORS + TimelineCalendar:221 sur tokens ; scoper landing CSS aux pages publiques ; consommer ds/components/* (S7/S8) ; vrais tests RTL + specs Playwright ; commitlint-config-gitmoji inutilisé.
+**Status :** Terminé
 
 ## Sprint 7 — 2026-06-25 (PLANIFIÉ — cohésion 0.45, Socle frontend : état serveur + auth context)
 **Objectif :** Couche d'accès données + contexte auth, pré-requis de tout écran — Auth Context React (#40), TanStack Query (#48), backend profil /me PATCH + change-password (#70). Premier usage des tokens S6.
