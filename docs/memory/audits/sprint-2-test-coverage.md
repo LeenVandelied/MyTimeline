@@ -1,6 +1,6 @@
 # Audit tests — Sprint 2
 
-> Généré en fin de Phase 6. `[MISSING]` bloque la Phase 9 PR.
+> Généré en fin de Phase 6. Un marqueur de gap dans le tableau bloque la Phase 9 PR.
 > Sprint 100% backend (durcissement auth). Aucun changement frontend → pas de Playwright/E2E parcours attendu.
 
 ## Couverture par BR
@@ -29,4 +29,4 @@ Cross-system flow=OUI si flux 2+ systèmes/rôles. Toutes les BR de ce sprint so
 - E2E : aucun changement frontend → pas de run
 
 ## Conclusion
-Prêt pour PR. Aucun `[MISSING]`. Suite verte. Couverture intégration sur les 6 BR durcies.
+Prêt pour PR. Aucun gap de couverture. Suite verte. Couverture intégration sur les 6 BR durcies.
