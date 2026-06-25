@@ -16,3 +16,9 @@ Deux étages complémentaires : (1) `http.exceptionHandling(authenticationEntryP
 
 ## PAT-S2-003 — Tester un rate-limit à fenêtre temporelle sans `Thread.sleep`
 Bucket4j `.withCustomTimePrecision(TimeMeter)` + bean `TimeMeter` overridable en test (`@TestConfiguration` + `advance(Duration)`) → avancer le temps de façon déterministe. Anti-pattern : `Thread.sleep(60s)` pour attendre le reset de fenêtre. (Sprint 2 #33)
+
+## PAT-S3-001 — Secrets : profil prod fail-fast (aucun default), profil dev avec default jetable
+`application.properties` commun lit `${JWT_SECRET}` / `${DB_PASSWORD}` sans default ; `application-prod.properties` n'ajoute AUCUN default → le boot prod échoue (`Could not resolve placeholder`) si la variable manque. `application-dev.properties` fournit un default local non-secret explicitement marqué dev-only. Le fichier reste tracké mais secret-free. Anti-pattern : default secret partagé tous profils. (Sprint 3 #34)
+
+## PAT-S3-002 — equals/hashCode d'entité JPA à PK `@GeneratedValue` (id transient avant flush)
+Id assigné au flush → un equals/hashCode sur id direct casse en collection avant persist. Pattern Vlad Mihalcea : `hashCode()` = constante (`getClass().hashCode()`, stable avant/après persist) ; `equals()` = même `getClass()` + `id != null && Objects.equals(id, that.id)`. Deux entités neuves ne sont jamais égales par accident. Anti-pattern : `Objects.hash(id)` ou equals sur id nu. (Sprint 3 #43)
