@@ -1,0 +1,14 @@
+# Relecteurs obligatoires par zone.
+# Syntaxe : <pattern> <@owner>. La dernière règle qui matche gagne.
+
+# Défaut — tout le dépôt
+*               @LeenVandelied
+
+# Backend (Spring Boot / Java)
+/backend/       @LeenVandelied
+
+# Frontend (Next.js / TypeScript)
+/frontend/      @LeenVandelied
+
+# CI / config dépôt
+/.github/       @LeenVandelied
