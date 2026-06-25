@@ -47,6 +47,19 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!--
+			Flyway (#42) — migrations versionnées. Spring Boot 3.2.2 gère la version
+			via son BOM : Flyway 9.22.3. En Flyway 9.x, le support Postgres est
+			INCLUS dans flyway-core ; le module dédié flyway-database-postgresql
+			n'existe pas en 9.x (il n'apparaît qu'à partir de Flyway 10). On garde
+			donc uniquement flyway-core, sans surcharger la version (alignée BOM).
+			NB : si migration future vers Spring Boot 3.3+/Flyway 10+, AJOUTER
+			flyway-database-postgresql (le support Postgres quitte le core en 10).
+		-->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
