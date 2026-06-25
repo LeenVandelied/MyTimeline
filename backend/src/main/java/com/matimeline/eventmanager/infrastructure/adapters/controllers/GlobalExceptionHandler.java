@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,11 +38,39 @@ public class GlobalExceptionHandler {
                 .body(buildBody(HttpStatus.BAD_REQUEST, "Validation failed"));
     }
 
+    /**
+     * Authenticated caller lacking the required ownership/authority. The "error"
+     * field is the literal code "forbidden" (acceptance criterion #51), never an
+     * internal exception message or stack trace.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(buildBody(HttpStatus.FORBIDDEN, "forbidden", "forbidden"));
+    }
+
+    /**
+     * Unauthenticated caller (missing/invalid/expired token) when the exception
+     * reaches the DispatcherServlet. The "error" field is the literal code
+     * "unauthorized" (acceptance criterion #51), no internal detail leaked.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(buildBody(HttpStatus.UNAUTHORIZED, "unauthorized", "unauthorized"));
+    }
+
     private Map<String, Object> buildBody(HttpStatus status, String message) {
+        return buildBody(status, status.getReasonPhrase(), message);
+    }
+
+    private Map<String, Object> buildBody(HttpStatus status, String error, String message) {
         return Map.of(
                 "timestamp", Instant.now().toString(),
                 "status", status.value(),
-                "error", status.getReasonPhrase(),
+                "error", error,
                 "message", message
         );
     }

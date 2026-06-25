@@ -21,7 +21,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
 
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.http.MediaType;
 
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -63,8 +68,14 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) ->
+                        writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, "unauthorized"))
+                .accessDeniedHandler((request, response, accessDeniedException) ->
+                        writeJsonError(response, HttpServletResponse.SC_FORBIDDEN, "forbidden"))
+            )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-    
+
         return http.build();
     }
 
@@ -84,5 +95,20 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
         return new CustomUserDetailsService(userRepository);
+    }
+
+    /**
+     * Writes a minimal JSON error body directly to the servlet response.
+     * Used by the authenticationEntryPoint (401) and accessDeniedHandler (403):
+     * these fire inside the security filter chain, BEFORE the DispatcherServlet,
+     * so they never reach the @RestControllerAdvice. No internal message or
+     * stack trace is exposed — only the stable "error" code.
+     */
+    private static void writeJsonError(HttpServletResponse response, int status, String error)
+            throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write("{\"error\":\"" + error + "\"}");
     }
 }
