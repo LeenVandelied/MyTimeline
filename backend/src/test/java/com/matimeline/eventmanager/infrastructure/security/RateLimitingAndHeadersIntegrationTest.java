@@ -22,6 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
+
 import io.github.bucket4j.TimeMeter;
 
 /**
@@ -36,7 +38,7 @@ import io.github.bucket4j.TimeMeter;
  */
 @SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
 @AutoConfigureMockMvc
-class RateLimitingAndHeadersIntegrationTest {
+class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

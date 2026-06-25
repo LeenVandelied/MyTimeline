@@ -28,6 +28,24 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!--
+			Testcontainers : on surcharge la version managée par le BOM Spring Boot
+			3.2.2 (1.19.3) vers 1.20.6. La 1.19.3 embarque docker-java 3.3.4 qui
+			négocie une version d'API trop ancienne et se fait rejeter en HTTP 400
+			par les moteurs Docker récents (Docker Desktop ≥ 4.x, Engine 29.x,
+			MinAPIVersion 1.44). La 1.20.6 embarque un docker-java récent compatible.
+		-->
+		<testcontainers.version>1.20.6</testcontainers.version>
+		<!--
+			Épingle la version d'API Docker utilisée par docker-java (le client de
+			Testcontainers). Sa valeur par défaut tombe HORS de la plage supportée
+			par les moteurs Docker récents (Docker Desktop 4.x / Engine 29.x exposent
+			MinAPIVersion 1.44) : la requête /v1.xx/info renvoie alors HTTP 400 et
+			Testcontainers conclut « Could not find a valid Docker environment ».
+			1.44 = plancher supporté par tout moteur ≥ 25.0. Injectée dans le JVM
+			forké par surefire (cf. build/plugins). Surcharge : -Ddocker.api.version=1.51.
+		-->
+		<docker.api.version>1.44</docker.api.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -73,6 +91,23 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!--
+			Testcontainers (#…) — les tests @SpringBootTest démarrent désormais
+			contre un conteneur Postgres JETABLE (même dialecte que la prod, Flyway
+			rejoue V1/V2 from scratch), plus contre la base dev partagée localhost:5432.
+			Version pilotée par la property testcontainers.version (cf. <properties>,
+			surchargée à 1.20.6 pour compatibilité moteur Docker récent).
+		-->
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -132,6 +167,20 @@
 									</path>
 							</annotationProcessorPaths>
 					</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<!--
+							Passé au JVM de test pour que docker-java (Testcontainers)
+							négocie une version d'API Docker supportée par le moteur
+							local. Sans ça, détection Docker en échec (HTTP 400 sur /info).
+						-->
+						<api.version>${docker.api.version}</api.version>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
