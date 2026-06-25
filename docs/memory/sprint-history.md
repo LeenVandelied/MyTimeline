@@ -52,11 +52,27 @@
   Note PM : pas de labels stack `backend/frontend/fullstack` dans le repo (scope porté par epics + titres). Ratio discard 0%.
 **Status :** Terminé
 
-## Sprint 3 — (PLANIFIE — cohésion ~0.4, Fondations infra & DB : secrets, Flyway, audit JPA)
+## Sprint 3 — 2026-06-25 (Terminé — merge PR #106 dans dev, cohésion ~0.4, Fondations infra & DB)
 **Objectif :** Externaliser les secrets, versionner le schéma (Flyway), poser l'audit JPA (@Version/timestamps).
-**Milestone GitHub :** #3
-**Issues :** #34, #42, #43
-**Vagues :** V1 = #34 | V2 = #42 (absorbe contraintes uniques #32) | V3 = #43 (après migration #42)
-**Migrations Flyway :** V1__baseline.sql + V2 (version/timestamps + unique)
-**Dépend de :** Sprint 2 (coordination contraintes uniques)
-**Status :** Planifié
+**Milestone GitHub :** #3 (fermé après merge)
+**Issues livrées (3) :** #34 (secrets externalisés + profils dev/prod), #42 (Flyway baseline V1 + uniques V2 + ddl-auto=validate), #43 (audit JPA : createdAt/updatedAt + @Version + equals/hashCode sur 4 entités)
+**Vagues exécutées :** V1 = #34 | V2 = #42 (absorbe contraintes uniques #32) | V3 = #43 (après migration #42) — chaîne strictement séquentielle (fichiers/migrations partagés)
+**Migrations Flyway :** V1__baseline.sql + V2__unique_constraints.sql + V3__add_audit_columns.sql (schéma `public` version 3)
+**Cohésion score :** ~0.4 (epic:devops ×2 + epic:transversal ×1)
+**Commits :** 8 (3 issues + 1 fix review ProductEntity.id + 1 fix review couverture test + 3 artefacts/PR body)
+**BR impactées :** BR-AUT-001 (unicité username via contrainte DB), BR-AUT-002 (JWT signé via clé configurée)
+**Reviews :** 3 reviewers /sprint start (reviewer + db-expert + security-expert) + review intent /review-pr (--against sprint 3, blind) — 0 CRITIQUE, findings MAJEUR : faux positif DB_PASSWORD (écarté) + drift baseline events (→ issue #108) ; 2 MINEURS corrigés (ProductEntity.id private, couverture test 4 entités).
+**Tests :** Backend 41/41 verts (était 32 ; +9 couverture audit User/Product/Event). Flyway « 4 migrations validated », Hibernate `validate` OK. Pas de frontend testable, pas d'E2E (issues infra).
+**Nouveaux pitfalls / décisions / patterns :** PIT-S3-001..005, DEC-S3-001..004, PAT-S3-001..002.
+**Données dev assainies :** 3 users à email dupliqué (`loic.de-laforcade@emgsa.ch`) dédupliqués par UPDATE plus-addressing (réversible, validé par le dev) — débloquait V2.
+**Note workflow :** commit #34 initialement égaré sur `dev` (checkout principal) → recovery cherry-pick sur sprint/3 + reset dev (WIP playwright préservé). Vagues #42/#43 épinglées au worktree.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Drift baseline events (CHECK/NOT NULL absents de V1) [M | devops] → issue #108
+  - Isolation tests (Testcontainers / profil test) [M | devops] → issue #109
+  - Index sur colonnes FK products/events [S | devops] → issue #110
+  - Durcissement SPRING_PROFILES_ACTIVE (fallback prod→dev) [S | devops/sécu] → issue #111
+  - Nettoyage historique git anciens secrets (BFG) [S | sécu] → issue #112
+  - `scripts/test-quiet.sh` absent [XS | tooling] → consigné seulement (nit)
+  - Default DB password dev ≠ vrai mdp local [XS | tooling] → consigné seulement (nit)
+  - Chip task_d9b2cff4 (dédup emails dev) → FAIT pendant le sprint
+**Status :** Terminé
