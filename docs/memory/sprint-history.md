@@ -103,12 +103,29 @@
   - Outillage test cassé (mvnw + test-quiet.sh) [S | devops] → discard du triage GitHub (déjà couvert par chip task_16249110)
 **Status :** Terminé
 
-## Sprint 5 — 2026-06-25 (PLANIFIÉ — cohésion 0.50, DB & profils : dette reviews S1-S3)
-**Objectif :** Réconcilier la baseline Flyway (CHECK/NOT NULL events manquants), ajouter les index sur colonnes FK, durcir SPRING_PROFILES_ACTIVE (fallback prod→dev silencieux).
-**Milestone GitHub :** #5
-**Issues :** #111, #108, #110
-**Vagues :** V1 (parallèle) = #111 (application.properties) | V2 (séquentielle, migrations) = #108 (V4 contraintes) → #110 (V5 index)
-**Migrations Flyway :** V4__reconcile_events_constraints.sql, V5__fk_indexes.sql
-**Dépend de :** aucune
-**Note :** #112 (purge historique git) DÉFÉRÉE hors sprint — opération ops one-shot (secrets déjà rotatés #34, repo public donc déjà aspirés + cache GitHub, 11 worktrees actifs ⇒ force-push disruptif). Issue ouverte sans milestone.
-**Status :** Planifié
+## Sprint 5 — 2026-06-25 (Terminé — merge PR #121 dans dev, DB & profils + dette reviews auth S1-S4)
+**Objectif :** Réconcilier la baseline Flyway (CHECK/NOT NULL events), index FK, durcir SPRING_PROFILES_ACTIVE, + dette reviews auth (401 JSON, 403 unifié, CORS/cookie par profil, COOKIE_DOMAIN).
+**Milestone GitHub :** #5 (fermé après merge)
+**Scope élargi (décision dev) :** plan architect = 3 issues DB/profils (#108,#110,#111) ; le dev a choisi d'exécuter **les 8 issues du milestone** en ajoutant les 5 follow-ups auth/infra du triage S4 (#116,#117,#118,#119,#120). 2 domaines (db+auth), au-delà du cap 3 issues/10pts — cohésion volontairement dégradée, arbitrage assumé.
+**Issues livrées (8) :** #108, #110, #111, #116, #117, #118, #119, #120
+**Vagues exécutées :** V1 (∥4) = #108+#111+#116+#119 | V2 (∥2) = #110+#117 | V3 = #120 (solo) | V4 = #118 (solo). Matrice conflits : AuthControllerSecurityTest (#116→#117), SecurityConfig (#119→#120), application.properties (#111), application-prod.properties (#120→#118), migrations (#108→#110).
+**Migrations Flyway :** V4__reconcile_events_constraints.sql (CHECK/NOT NULL events + **pré-vol PL/pgSQL self-safe** sur base peuplée, ajouté review #121) + V5__fk_indexes.sql (index FK). Schéma → version 5. V1/V2/V3 intacts.
+**Commits :** 11 — 66f1b96 (#108) · 0a0973c (#111) · 41759b5 (#116) · 136915b (#119) · b9818d2 (#110) · cd5ee90 (#117) · ac8363f (#120) · 0f01b4b (#118) · acc13e2 (artefacts) · de35b95 (wording audit) · 5773b6d (fixes review #121).
+**Dépend de :** aucune. #112 (purge historique git) DÉFÉRÉE hors sprint (issue ouverte sans milestone).
+**BR impactées :** BR-AUT-005 (401 neutre anti-énumération), BR-AUT-007 (403 forbidden unifié), BR-AUT-010 (cookies cohérents — test profil dev), contraintes events (CHECK type/units), index FK products/events. Anti-pattern A8 confirmé (follow-up #123).
+**Reviews :** sprint Phase 7 (reviewer + db-expert + security-expert : 0 CRITIQUE) + **/review-pr #121** (3 reviewers indépendants : **4 escalations CRITIQUE/MAJEUR = faux positifs** lectures périmées, vérifiés contre HEAD ; 1 finding réel V4 base peuplée + 3 nits → tous corrigés). Détail : docs/memory/sprints/sprint-5/review-batch.md.
+**Tests :** Backend **56/56 verts** (Testcontainers, BUILD SUCCESS ~11.6s). Baseline S4 41 → +15. Pas de frontend → pas d'E2E. Pas de CI repo → garantie = run local. Audit : docs/memory/audits/sprint-5-test-coverage.md (0 couverture manquante).
+**Nouveaux pitfalls/patterns/décisions :** PIT-S5-001..004, PAT-S5-001..006, DEC-S5-001..005.
+**Saturation contexte lead (mesure) :** modérée-haute — 4 vagues fan-out (jusqu'à 4 ∥) + Phase 5/6 specialists + /review-pr 3 reviewers + 1 cycle de fix, purge via done.md (pas de retour brut conservé). Incident notable : pollution working tree partagé en V1 (4 agents ∥) → résolu commits par chemins explicites (PIT-S5-004) ; test-runner a mal-rapporté 41 vs 56 (vérifié direct).
+**Absorbé en cours :** 2 follow-ups résolus dans le sprint (doc ENVIRONMENT=production + CORS_ALLOWED_ORIGINS consolidés dans le runbook hub #118). 4 fixes review #121 (V4 self-safe, handler 401 mort, param inutilisé, assert test).
+**Follow-ups arbitrés (Phase 4 triage — 9 issues créées en backlog libre, 0 discard, 0 absorbé tardif) :**
+  - users.role CHECK+NOT NULL DB [S | devops] → #122
+  - Refactor contrôleurs → interfaces (A8/DIP) [M | transversal] → #123
+  - BR-PRO-006 JPQL WHERE user_id (exploiter idx_products_user) [S | products] → #124
+  - Contrat erreur JSON /me+register+logout [S | auth] → #125
+  - writeJsonError sans concat JSON [XS | auth] → #126
+  - buildBody codes stables (not_found/validation_failed) [XS | events] → #127
+  - CHECK conditionnels cross-field events DB [XS | events] → #128
+  - Test profil prod cookie Secure=true [XS | auth] → #129
+  - Log config cookie/CORS effective au boot prod [S | infra] → #130
+**Status :** Terminé

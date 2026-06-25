@@ -28,3 +28,21 @@ Un controller qui retourne `ResponseEntity.status(FORBIDDEN).build()` (body vide
 
 ## PAT-S4-002 — Contrat d'erreur d'un controller : toujours JSON `{"error":...}`, jamais String brut
 Mélanger `ResponseEntity.body("message texte")` et `body(Map.of("error",...))` sur les chemins d'erreur d'un même controller casse le contrat côté client. Tous les bodies d'échec en `Map.of("error", "<code>")`. Corollaire sécurité : pour ne pas créer d'oracle d'énumération, deux échecs sémantiquement distincts mais non divulgables (token invalide vs compte inexistant) doivent renvoyer un body **byte-identique** + même status. (Sprint 4 #105, fix review #113)
+
+## PAT-S5-001 — Garde-fou démarrage fail-fast testable sans Docker
+`ApplicationListener<ApplicationEnvironmentPreparedEvent>` enregistré via `META-INF/spring.factories` (clé `org.springframework.context.ApplicationListener`) s'exécute AVANT la création du contexte → peut refuser le boot tôt. Test unitaire avec `org.springframework.mock.env.MockEnvironment` + event mocké (0 Docker, 0 contexte). Anti-pattern `@PostConstruct` (trop tard, beans déjà créés). (Sprint 5 #111)
+
+## PAT-S5-002 — Externalisation CORS par profil, default fail-safe
+Origines via `@Value("${app.cors.allowed-origins:http://localhost:3000}") List<String>` au constructeur → `setAllowedOrigins`. Default fail-safe = localhost dev (JAMAIS `*`, incompatible `allowCredentials=true`). Prod SANS default → `${CORS_ALLOWED_ORIGINS}` ⇒ boot fail-fast si env var absente. Même esprit que PAT-S3-001/DEC-S4-001 (secrets/cookies). (Sprint 5 #120)
+
+## PAT-S5-003 — Tester des valeurs de profil chargées d'un vrai fichier sans booter la DB
+Pour vérifier qu'un `@Value` (ex `app.cookie.secure`) prend bien la valeur du fichier de profil : `@SpringJUnitWebConfig(config)` + `@TestPropertySource("classpath:application-dev.properties")` + bean controller réel + collaborateurs mockés → `@Value` résolus, `MockMvc` standalone sur le bean, aucune auto-config Boot (pas de datasource/Flyway). Anti-pattern `@SpringBootTest @ActiveProfiles("dev")` : exige Postgres `localhost:5432` hors Testcontainers → non déterministe. (Sprint 5 #117)
+
+## PAT-S5-004 — Index sur colonnes FK : à créer explicitement
+PostgreSQL ne crée PAS d'index sur les colonnes FK (≠ PK/UNIQUE) → migration dédiée `CREATE INDEX IF NOT EXISTS` sur chaque colonne FK, sinon scans séquentiels sur jointures et `DELETE` en cascade. (Sprint 5 #110)
+
+## PAT-S5-005 — Valeurs CHECK SQL alignées sur l'enum applicatif, jamais devinées
+Avant de figer un `CHECK (col IN (...))`, croiser ≥2 sources de vérité applicatives (logique backend + schéma Zod frontend) pour la liste autorisée. Anti-pattern : deviner les valeurs ou ne lire qu'une source. (Sprint 5 #108)
+
+## PAT-S5-006 — @MockBean sur le type concret quand le contrôleur injecte le concret (A8)
+Sous `@SpringBootTest`, si les contrôleurs injectent les `*ServiceImpl` concrets (anti-pattern A8 repo-wide) : `@MockBean` sur le type CONCRET (`*ServiceImpl`), pas l'interface, sinon `UnsatisfiedDependency` au boot. Boot 3.2 = `@MockBean` (pas `@MockitoBean`). (Sprint 5 #119)
