@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,17 +37,13 @@ public class GlobalExceptionHandler {
                 .body(buildBody(HttpStatus.BAD_REQUEST, "Validation failed"));
     }
 
-    /**
-     * Authenticated caller lacking the required ownership/authority. The "error"
-     * field is the literal code "forbidden" (acceptance criterion #51), never an
-     * internal exception message or stack trace.
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(buildBody(HttpStatus.FORBIDDEN, "forbidden", "forbidden"));
-    }
+    // NOTE (#119) : aucun @ExceptionHandler(AccessDeniedException) ici. Les accès
+    // refusés (403) — règle hasAuthority OU AccessDeniedException métier levée dans
+    // un contrôleur (ownership) — remontent jusqu'au ExceptionTranslationFilter de
+    // Spring Security, qui les route vers SecurityConfig.accessDeniedHandler.
+    // Ce dernier est l'UNIQUE point de vérité du corps 403 {"error":"forbidden"}.
+    // Un handler ici créait un chemin jamais exécuté en prod : le @RestControllerAdvice
+    // n'est pas atteint pour les 403 interceptés par la chaîne de filtres Security.
 
     /**
      * Unauthenticated caller (missing/invalid/expired token) when the exception
