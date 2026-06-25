@@ -51,16 +51,24 @@ public class AuthController {
     }
 
     private static final String JWT_COOKIE = "jwt";
-    private static final boolean COOKIE_SECURE = false;
     private static final String COOKIE_PATH = "/";
-    private static final String COOKIE_DOMAIN = "localhost";
     private static final String COOKIE_SAME_SITE = "Lax";
     private static final int COOKIE_MAX_AGE = 60 * 60 * 24 * 2;
+
+    // BR-AUT-007 / A6 / A7 : attributs Secure et Domain externalisés par profil
+    // (application-{dev,prod}.properties). En dur, Secure=false exposait le token
+    // hors HTTPS et domain="localhost" cassait tout déploiement non-localhost.
+    @org.springframework.beans.factory.annotation.Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
+    @org.springframework.beans.factory.annotation.Value("${app.cookie.domain}")
+    private String cookieDomain;
 
     /**
      * Construit le cookie {@code jwt} avec des attributs IDENTIQUES pour la pose
      * et la suppression (BR-AUT-010 / A6). Sans cette identité (HttpOnly, Secure,
      * Path, Domain, SameSite), le navigateur ne matche pas le cookie à effacer.
+     * Secure et Domain proviennent du profil actif ({@code app.cookie.*}).
      *
      * @param value   valeur du token (vide pour suppression)
      * @param maxAge  durée de vie en secondes ; 0 pour supprimer
@@ -68,9 +76,11 @@ public class AuthController {
     private Cookie buildJwtCookie(String value, int maxAge) {
         Cookie jwtCookie = new Cookie(JWT_COOKIE, value);
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(COOKIE_SECURE);
+        jwtCookie.setSecure(cookieSecure);
         jwtCookie.setPath(COOKIE_PATH);
-        jwtCookie.setDomain(COOKIE_DOMAIN);
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            jwtCookie.setDomain(cookieDomain);
+        }
         jwtCookie.setMaxAge(maxAge);
         jwtCookie.setAttribute("SameSite", COOKIE_SAME_SITE);
         return jwtCookie;

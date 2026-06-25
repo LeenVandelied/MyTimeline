@@ -64,6 +64,12 @@ class AuthControllerSecurityTest {
     void setUp() {
         AuthController controller = new AuthController(
                 authenticationManager, jwtService, userDetailsService, userService, passwordEncoder);
+        // #99 — les attributs cookie Secure/Domain sont désormais injectés par @Value
+        // (app.cookie.*). En setup standalone, Spring ne les renseigne pas : on simule
+        // le profil prod (Secure=true, Domain défini) pour vérifier la COHÉRENCE des
+        // attributs entre pose (login/refresh) et suppression (logout).
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "cookieSecure", true);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "cookieDomain", "mytimeline.example");
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -209,5 +215,58 @@ class AuthControllerSecurityTest {
 
         org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
                 .generateToken(any(Authentication.class));
+    }
+
+    /**
+     * Issue #99 — BR-AUT-007 / BR-AUT-010 / A6+A7 : les attributs Secure et Domain
+     * du cookie jwt sont externalisés (@Value app.cookie.*) et IDENTIQUES entre la
+     * pose (login, refresh) et la suppression (logout). Sans cette identité, le
+     * navigateur ne matche pas le cookie à effacer (BR-AUT-010).
+     */
+    @Test
+    void jwtCookieAttributes_areCoherent_acrossLoginRefreshLogout() throws Exception {
+        // login
+        Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(jwtService.generateToken(any(Authentication.class))).thenReturn("login-token");
+        Cookie loginCookie = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"alice\",\"password\":\"secret6\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("jwt");
+
+        // refresh
+        User user = sampleUser();
+        when(jwtService.extractUsername("valid-token")).thenReturn("alice");
+        when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
+        when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        Cookie refreshCookie = mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "valid-token")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("jwt");
+
+        // logout (suppression : maxAge=0)
+        Cookie logoutCookie = mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("jwt");
+
+        org.junit.jupiter.api.Assertions.assertNotNull(loginCookie);
+        org.junit.jupiter.api.Assertions.assertNotNull(refreshCookie);
+        org.junit.jupiter.api.Assertions.assertNotNull(logoutCookie);
+
+        // Secure cohérent (= valeur injectée true) sur les 3 points.
+        org.junit.jupiter.api.Assertions.assertTrue(loginCookie.getSecure());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getSecure(), refreshCookie.getSecure());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getSecure(), logoutCookie.getSecure());
+
+        // Domain cohérent (= valeur injectée) sur les 3 points.
+        org.junit.jupiter.api.Assertions.assertEquals("mytimeline.example", loginCookie.getDomain());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getDomain(), refreshCookie.getDomain());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getDomain(), logoutCookie.getDomain());
+
+        // HttpOnly + Path cohérents.
+        org.junit.jupiter.api.Assertions.assertTrue(logoutCookie.isHttpOnly());
+        org.junit.jupiter.api.Assertions.assertEquals("/", logoutCookie.getPath());
+        // logout efface bien le cookie.
+        org.junit.jupiter.api.Assertions.assertEquals(0, logoutCookie.getMaxAge());
     }
 }
