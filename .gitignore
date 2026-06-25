@@ -62,6 +62,12 @@ backend/.env
 backend/.env.local
 backend/.env.production
 backend/.env.development
+# application.properties + profils dev/prod restent TRACKÉS mais SANS secret en clair
+# (valeurs via ${VAR} / variables d'environnement). Cf. issue #34.
+# On ignore uniquement les overrides LOCAUX susceptibles de contenir des secrets :
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application.yml
+backend/src/main/resources/application.yaml
 backend/application.properties
 backend/application.yml
 backend/application.yaml

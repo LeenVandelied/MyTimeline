@@ -1,0 +1,23 @@
+# =============================================================
+# EXEMPLE de configuration — documente TOUTES les variables d'env attendues.
+# Copier les valeurs réelles dans l'environnement (shell, .env, secret manager),
+# JAMAIS dans un fichier committé. Ce fichier ne contient AUCUNE vraie valeur.
+# =============================================================
+
+# --- Profil Spring ---
+# Profil actif : dev (defaut) | prod
+SPRING_PROFILES_ACTIVE=
+
+# --- Base de données PostgreSQL ---
+# URL JDBC complete (default dev : jdbc:postgresql://localhost:5432/eventmanager)
+DB_URL=
+# Utilisateur DB (default dev : eventuser)
+DB_USERNAME=
+# Mot de passe DB — OBLIGATOIRE en prod, sinon le boot echoue
+DB_PASSWORD=
+
+# --- Securite JWT ---
+# Cle secrete de signature des JWT (128 hex recommandes).
+# OBLIGATOIRE. Generer : openssl rand -hex 64
+# Toute rotation invalide TOUS les tokens existants (deconnexion globale).
+JWT_SECRET=
