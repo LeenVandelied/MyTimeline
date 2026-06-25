@@ -85,7 +85,10 @@ public class AuthController {
             String jwtToken = jwtService.generateToken(authentication);
 
             response.addCookie(buildJwtCookie(jwtToken, COOKIE_MAX_AGE));
-            return ResponseEntity.ok().body(jwtToken);
+            // BR-AUT-007 / anti-pattern A3 : le JWT est transmis UNIQUEMENT via le
+            // cookie HttpOnly. Ne jamais renvoyer le token brut dans le body, sinon
+            // un script XSS pourrait le lire et annuler le bénéfice du HttpOnly.
+            return ResponseEntity.ok(java.util.Map.of("message", "Authentification réussie"));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         } catch (Exception e) {

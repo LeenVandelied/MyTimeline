@@ -5,8 +5,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.containsString;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -67,6 +72,33 @@ class AuthControllerSecurityTest {
                 "$2a$10$bcryptHashThatMustNeverLeak",
                 "ROLE_USER",
                 "alice@example.com");
+    }
+
+    /**
+     * Issue #104 — BR-AUT-007 / anti-pattern A3 : le login ne renvoie plus le JWT
+     * brut dans le body. Le token est posé UNIQUEMENT dans le cookie HttpOnly.
+     */
+    @Test
+    void login_doesNotReturnJwtInBody_andSetsHttpOnlyCookie() throws Exception {
+        String jwt = "eyJhbGciOiJIUzI1NiJ9.payload.signature";
+        Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(jwtService.generateToken(any(Authentication.class))).thenReturn(jwt);
+
+        String body = "{\"username\":\"alice\",\"password\":\"secret6\"}";
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                // Le body ne doit PAS contenir le JWT brut.
+                .andExpect(content().string(not(containsString(jwt))))
+                // Réponse neutre.
+                .andExpect(jsonPath("$.message").value("Authentification réussie"))
+                // Le cookie HttpOnly reste présent et porte le token.
+                .andExpect(cookie().exists("jwt"))
+                .andExpect(cookie().value("jwt", jwt))
+                .andExpect(cookie().httpOnly("jwt", true));
     }
 
     @Test
