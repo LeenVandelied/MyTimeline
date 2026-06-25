@@ -52,11 +52,11 @@
   Note PM : pas de labels stack `backend/frontend/fullstack` dans le repo (scope porté par epics + titres). Ratio discard 0%.
 **Status :** Terminé
 
-## Sprint 3 — (PLANIFIE — cohésion ~0.4, Fondations infra & DB : secrets, Flyway, audit JPA)
+## Sprint 3 — 2026-06-25 (En cours — cohésion ~0.4, Fondations infra & DB : secrets, Flyway, audit JPA)
 **Objectif :** Externaliser les secrets, versionner le schéma (Flyway), poser l'audit JPA (@Version/timestamps).
 **Milestone GitHub :** #3
 **Issues :** #34, #42, #43
 **Vagues :** V1 = #34 | V2 = #42 (absorbe contraintes uniques #32) | V3 = #43 (après migration #42)
 **Migrations Flyway :** V1__baseline.sql + V2 (version/timestamps + unique)
 **Dépend de :** Sprint 2 (coordination contraintes uniques)
-**Status :** Planifié
+**Status :** En cours
