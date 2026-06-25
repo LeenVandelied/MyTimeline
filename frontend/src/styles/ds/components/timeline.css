@@ -1,0 +1,78 @@
+/* MyTimeline · Timeline component styles (Graphite)
+   The core product surface. Lanes = products, x-axis = time, events = bars. */
+
+/* ---------------- TimelineRuler ---------------- */
+.mt-tl-ruler{display:flex; height:var(--ruler-height); background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); overflow:hidden;}
+.mt-tl-ruler__maj{flex:1; border-right:1px solid var(--color-rule-strong); position:relative;}
+.mt-tl-ruler__maj:last-child{border-right:0;}
+.mt-tl-ruler__maj--weekend{background:color-mix(in srgb, var(--color-ink) 3.5%, transparent);}
+.mt-tl-ruler__maj--month{border-right-color:var(--color-ink-faint);}
+.mt-tl-ruler__date{position:absolute; top:7px; left:8px; font-family:var(--font-mono); font-size:10px; color:var(--color-ink); letter-spacing:.02em;}
+.mt-tl-ruler__min{position:absolute; bottom:0; height:6px; border-left:1px solid var(--color-rule);}
+.mt-tl-ruler__min:nth-child(2){left:25%;} .mt-tl-ruler__min:nth-child(3){left:50%;} .mt-tl-ruler__min:nth-child(4){left:75%;}
+
+/* ---------------- TimelineLane ---------------- */
+.mt-lane{display:flex; border:1px solid var(--color-rule); border-top:0;}
+.mt-lane:first-of-type{border-top:1px solid var(--color-rule);}
+.mt-lane__head{width:var(--lane-header-w); flex:0 0 auto; padding:11px 14px; border-right:1px solid var(--color-rule); background:var(--color-surface); display:flex; flex-direction:column; justify-content:center; gap:2px;}
+.mt-lane__name{font-family:var(--font-display); font-size:15px; font-weight:var(--weight-semibold); color:var(--color-ink); line-height:1.2;}
+.mt-lane__cat{font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-lane__track{flex:1; position:relative; min-height:var(--lane-height); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px); background-size:var(--mt-grid-step, 12.5%) 100%;}
+
+/* ---------------- TimelineEventBar ----------------
+   Solid, calendar-grade bars (modernised): the event colour reads as a real
+   filled pill rather than a washed 15% tint. Text defaults to white; for the
+   light end of the curated 12 (amber, citron, orange) pass a dark ink via
+   style: `--mt-evt-ink:#16181D` (or compute by luminance, as the Timeline view
+   does). Recurrence is shown by ghost occurrences (--draft) + a dotted
+   connector / RecurrenceBadge — NOT by a stripe fill. */
+.mt-evt{
+  position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px;
+  border-radius:6px;
+  background:var(--mt-evt, var(--color-accent));
+  color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+  box-shadow:var(--shadow-sm);
+  transition:filter var(--dur-micro), box-shadow var(--dur-micro);
+}
+.mt-evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
+.dark .mt-evt:hover, [data-theme="dark"] .mt-evt:hover{filter:brightness(1.12);}
+/* recurring: solid bar (rhythm carried by ghost occurrences, not a fill pattern) */
+.mt-evt--recurring{}
+/* ghost / upcoming occurrence: dashed outline, faint tint, no solid fill */
+.mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt, var(--color-rule-strong)); color:var(--color-ink-muted); opacity:.8; box-shadow:none;}
+.mt-evt--archived{opacity:.45; filter:grayscale(.5);}
+
+/* ---------------- TimelineCursor (TODAY) ---------------- */
+.mt-cursor{position:absolute; top:-6px; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}
+.mt-cursor__label{position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; letter-spacing:.12em; color:var(--color-accent-ink); background:var(--color-accent); padding:2px 6px; border-radius:var(--radius-xs); white-space:nowrap;}
+
+/* ---------------- TimelineMinimap ---------------- */
+.mt-minimap{position:relative; display:flex; align-items:flex-end; gap:2px; height:40px; padding:5px 6px; background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); overflow:hidden;}
+.mt-minimap__bar{flex:1; background:var(--color-rule-strong); border-radius:1px; min-height:3px;}
+.mt-minimap__vp{position:absolute; top:0; bottom:0; border:1.5px solid var(--color-accent); border-radius:var(--radius-sm); background:color-mix(in srgb, var(--color-accent) 10%, transparent); cursor:grab;}
+.mt-minimap__vp:active{cursor:grabbing;}
+
+/* ---------------- TimelineZoomControls ---------------- */
+.mt-zoom{display:inline-flex; align-items:stretch; border:1px solid var(--color-rule-strong); border-radius:var(--radius-md); overflow:hidden;}
+.mt-zoom__btn{width:30px; background:var(--color-surface); border:0; color:var(--color-ink); font-family:var(--font-mono); font-size:15px; cursor:pointer; transition:background var(--dur-micro);}
+.mt-zoom__btn:first-child{border-right:1px solid var(--color-rule);}
+.mt-zoom__btn:last-child{border-left:1px solid var(--color-rule);}
+.mt-zoom__btn:hover{background:var(--color-surface-2);}
+.mt-zoom__level{display:flex; align-items:center; padding:0 12px; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-muted); white-space:nowrap;}
+
+/* ---------------- DateStamp ---------------- */
+.mt-stamp{display:inline-block; text-align:center; min-width:58px; padding:6px 11px 7px; background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-md);}
+.mt-stamp__wd{font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-stamp__day{font-family:var(--font-mono); font-size:26px; font-weight:var(--weight-semibold); line-height:1.05; color:var(--color-ink);}
+.mt-stamp__mo{font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-accent); margin-top:2px;}
+.mt-stamp--sm .mt-stamp__day{font-size:20px;}
+.mt-stamp--sm{min-width:48px; padding:5px 9px 6px;}
+
+/* ---------------- EventPill ---------------- */
+.mt-pill{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; padding:5px 10px; border-radius:var(--radius-sm); border:1px solid var(--color-rule); border-left:3px solid var(--mt-evt, var(--color-accent)); background:var(--color-surface); color:var(--color-ink);}
+.mt-pill__meta{font-family:var(--font-mono); font-size:10px; color:var(--color-ink-muted);}
+
+/* ---------------- RecurrenceBadge ---------------- */
+.mt-recur{display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10px; letter-spacing:.02em; text-transform:uppercase; color:var(--color-accent); border:1px solid var(--color-accent); border-radius:var(--radius-sm); padding:3px 8px;}
+.mt-recur svg{width:11px; height:11px;}

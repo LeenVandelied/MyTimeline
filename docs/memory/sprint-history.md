@@ -129,3 +129,33 @@
   - Test profil prod cookie Secure=true [XS | auth] → #129
   - Log config cookie/CORS effective au boot prod [S | infra] → #130
 **Status :** Terminé
+
+## Sprint 6 — 2026-06-25 (PLANIFIÉ — cohésion 0.55, Fondations outillage & CI)
+**Objectif :** Débloquer tout le frontend futur — tokens DS (Graphite/Tailwind 4 @theme), infra de test frontend (Vitest+RTL+Playwright+Storybook+Husky), CI GitHub Actions. Enablers purs, zéro greenfield bloqué.
+**Milestone GitHub :** #6
+**Issues :** #45, #29, #38
+**Vagues :** V1 (∥) = #45 + #29 (sérialiser package.json) | V2 = #38 (CI, dépend des scripts de #29)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (point d'entrée de l'arc frontend)
+**Note :** #35 (typo tailwing.config.ts + deps mortes next-auth/date-fns) absorbé comme tâche-zéro de #45. layout.tsx : ordre providers imposé Theme(#45) > Auth(S7) > Query(S7).
+**Status :** Planifié
+
+## Sprint 7 — 2026-06-25 (PLANIFIÉ — cohésion 0.45, Socle frontend : état serveur + auth context)
+**Objectif :** Couche d'accès données + contexte auth, pré-requis de tout écran — Auth Context React (#40), TanStack Query (#48), backend profil /me PATCH + change-password (#70). Premier usage des tokens S6.
+**Milestone GitHub :** #7
+**Issues :** #40, #48, #70
+**Vagues :** V1 (∥) = #70 (backend, disjoint) + #40 | V2 = #48 (après #40 — layout.tsx partagé, wrap Query autour Auth)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 6 (#45 tokens, #29 infra test)
+**Note :** layout.tsx = fichier le plus à risque (ordre Theme>Auth>Query). #70 corrige BR-AUT-008 (/me PATCH sans fuite password).
+**Status :** Planifié
+
+## Sprint 8 — 2026-06-25 (PLANIFIÉ — cohésion 0.70, Premier vertical Auth bout-en-bout)
+**Objectif :** Flux mot de passe oublié complet (back Brevo #49 + front DS #53) — 1er flux cross-system → bascule stratégie E2E Playwright (1ʳᵉ E2E métier du projet).
+**Milestone GitHub :** #8
+**Issues :** #49, #53
+**Vagues :** V1 (∥) = #49 (backend) + #53 (frontend écrans) | V2 = câblage #53→#49 | V3 = 1ʳᵉ E2E Playwright (forgot→reset)
+**Migrations Flyway :** V6__create_password_reset_tokens.sql (renumérotée depuis V4 périmé — UNE plage S8)
+**Dépend de :** Sprint 6 (#45 tokens, #29 Playwright) + Sprint 7 (#40 AuthContext, #48 TanStack, #70 DTO/contrat)
+**Décision dev (cadrage) :** #103 fermée comme doublon de #49 ; #49 porte le flux ; durée token = 15 min ; BR-AUT-011 + tests intégration de #103 absorbés dans #49.
+**Status :** Planifié

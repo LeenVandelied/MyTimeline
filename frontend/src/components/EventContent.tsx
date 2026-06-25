@@ -137,10 +137,10 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
         </div>
       </div>
       <Dialog open={isOpen} onOpenChange={setOpen}>
-        <DialogContent className="p-0 bg-gray-900 border border-gray-700 shadow-xl max-h-[90vh] overflow-y-auto sm:max-w-[650px] rounded-xl">
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-purple-900 to-indigo-900 p-5 rounded-t-xl shadow-md">
+        <DialogContent className="p-0 bg-bg border border-rule shadow-xl max-h-[90vh] overflow-y-auto sm:max-w-[650px] rounded-xl">
+          <div className="sticky top-0 z-10 bg-surface p-5 rounded-t-xl shadow-md">
             <DialogHeader>
-              <DialogTitle className="text-white text-xl font-bold flex items-center justify-between">
+              <DialogTitle className="text-ink text-xl font-bold flex items-center justify-between">
                 <div className="flex items-center">
                   <Calendar className="mr-2 h-5 w-5" />
                   {event.title}
@@ -149,7 +149,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   variant="ghost" 
                   size="icon" 
                   onClick={toggleEditMode} 
-                  className="text-white hover:bg-purple-800"
+                  className="text-ink hover:bg-accent-soft"
                   title={isEditing ? t('common.buttons.save') : t('products.edit.title')}
                 >
                   {isEditing ? <Save className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
@@ -160,26 +160,26 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
           
           <div className="p-5">
             {!isEditing ? (
-              <Card className="bg-gray-800 border-gray-700 shadow-md">
+              <Card className="bg-surface border-rule shadow-md">
                 <CardContent className="p-4">
                 
                   <div className="space-y-6">
-                    <div className="flex items-center mb-4 text-gray-200">
-                      <Clock className="mr-2 h-4 w-4 text-indigo-400" />
+                    <div className="flex items-center mb-4 text-ink">
+                      <Clock className="mr-2 h-4 w-4 text-accent" />
                       <span className="font-medium">
                         {t('products.details.end')} {countdown}
                       </span>
                     </div>
 
-                    <div className="mt-4 border-t border-gray-700 pt-4">
+                    <div className="mt-4 border-t border-rule pt-4">
                       <div className="space-y-6">
                         <div className="flex items-center justify-between mb-4">
-                          <div className="text-white font-medium">{t('products.details.colors')}</div>
+                          <div className="text-ink font-medium">{t('products.details.colors')}</div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="bg-gray-800/50 rounded-xl p-4 hover:bg-gray-800/70 transition-colors">
+                          <div className="bg-surface rounded-xl p-4 hover:bg-surface transition-colors">
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="text-gray-200 font-medium">{t('products.details.backgroundColor')}</div>
+                              <div className="text-ink font-medium">{t('products.details.backgroundColor')}</div>
                             </div>
                             <PopoverPicker 
                               isOpen={colorStates.backgroundColor} 
@@ -188,9 +188,9 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                               onToggle={() => handleColorToggle('backgroundColor')}
                             />
                           </div>
-                          <div className="bg-gray-800/50 rounded-xl p-4 hover:bg-gray-800/70 transition-colors">
+                          <div className="bg-surface rounded-xl p-4 hover:bg-surface transition-colors">
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="text-gray-200 font-medium">{t('products.details.borderColor')}</div>
+                              <div className="text-ink font-medium">{t('products.details.borderColor')}</div>
                             </div>
                             <PopoverPicker 
                               isOpen={colorStates.borderColor} 
@@ -199,9 +199,9 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                               onToggle={() => handleColorToggle('borderColor')}
                             />
                           </div>
-                          <div className="bg-gray-800/50 rounded-xl p-4 hover:bg-gray-800/70 transition-colors">
+                          <div className="bg-surface rounded-xl p-4 hover:bg-surface transition-colors">
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="text-gray-200 font-medium">{t('products.details.textColor')}</div>
+                              <div className="text-ink font-medium">{t('products.details.textColor')}</div>
                             </div>
                             <PopoverPicker 
                               isOpen={colorStates.textColor} 
@@ -211,7 +211,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                             />
                           </div>
                         </div>
-                        <div className="mt-6 bg-gray-800/30 rounded-xl p-6">
+                        <div className="mt-6 bg-surface rounded-xl p-6">
                           <div 
                             className="w-full rounded-lg p-4 transition-all"
                             style={{
@@ -236,7 +236,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                             )}
                           </div>
                         </div>
-                        {isSaving && <span className="block mt-2 text-xs text-indigo-300">{t('common.loading.saving')}</span>}
+                        {isSaving && <span className="block mt-2 text-xs text-accent">{t('common.loading.saving')}</span>}
                       </div>
                     </div>
                   </div>

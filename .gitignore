@@ -83,6 +83,8 @@ frontend/build/
 frontend/.idea/
 frontend/.vscode/
 frontend/dist/
+frontend/*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
 
 # === FRONTEND : Fichiers sensibles ===
 frontend/.env

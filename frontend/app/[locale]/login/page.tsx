@@ -49,13 +49,13 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
+    <div className="flex flex-col min-h-screen bg-bg text-ink">
       <div className="absolute top-4 right-4">
         <LanguageSelector />
       </div>
       
       <div className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div className="w-full max-w-md bg-surface p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-6">{t('common.login.title')}</h2>
 
           <Form {...form}>
@@ -70,7 +70,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                       <Input 
                         placeholder="johndoe" 
                         {...field} 
-                        className="bg-gray-700 border-gray-600"
+                        className="bg-surface-2 border-rule-strong"
                       />
                     </FormControl>
                     <FormMessage />
@@ -89,7 +89,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                         type="password" 
                         placeholder="••••••" 
                         {...field} 
-                        className="bg-gray-700 border-gray-600"
+                        className="bg-surface-2 border-rule-strong"
                       />
                     </FormControl>
                     <FormMessage />
@@ -99,7 +99,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
 
               <Button 
                 type="submit" 
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-accent hover:bg-accent-hover"
                 disabled={loading}
               >
                 {loading ? t('common.login.loading') : t('common.login.submit')}
@@ -108,11 +108,11 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              {t('common.login.noAccount')} <Link href={`/${locale}/register`} className="text-purple-400 hover:text-purple-300">{t('common.login.register')}</Link>
+            <p className="text-ink-muted">
+              {t('common.login.noAccount')} <Link href={`/${locale}/register`} className="text-accent hover:text-accent">{t('common.login.register')}</Link>
             </p>
-            <p className="text-gray-400 mt-2">
-              <Link href={`/${locale}`} className="text-purple-400 hover:text-purple-300">&larr; {t('common.navigation.backToHome')}</Link>
+            <p className="text-ink-muted mt-2">
+              <Link href={`/${locale}`} className="text-accent hover:text-accent">&larr; {t('common.navigation.backToHome')}</Link>
             </p>
           </div>
         </div>
