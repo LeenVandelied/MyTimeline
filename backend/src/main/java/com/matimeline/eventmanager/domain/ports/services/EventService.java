@@ -5,10 +5,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
+import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.models.Event;
 
 public interface EventService {
     Event createEvent(EventCreationRequest eventCreationRequest);
+    Event updateEvent(UUID id, EventUpdateRequest updateRequest);
     Event save(Event event);
     
     List<Event> findDomainEventByProductId(UUID productId);
