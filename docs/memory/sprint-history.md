@@ -10,7 +10,9 @@
 **Vagues :** V1 = #28 | V2 = #30 | V3 = #31 (séquentiel — fichiers partagés EventController/SecurityConfig)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
-**Status :** Planifié
+**Status :** En cours (implémenté, PR ouverte — V1/V2/V3 livrées + correction post-review)
+**Commits :** 1c308ba (#28) · b606af8 (#30) · de0c095 (#31) · ec1e399 (fix post-review IDOR createEvent + JwtException 401)
+**Tests :** Backend 16/16 verts (mvn test). Frontend : aucun changement.
 
 ## Sprint 2 — (PLANIFIE — cohésion ~1.0, Sécurité auth : fuite /me, rate-limit, 401/403)
 **Objectif :** Compléter le durcissement auth (fuite password, brute-force, codes HTTP).
