@@ -76,3 +76,22 @@
   - Default DB password dev ≠ vrai mdp local [XS | tooling] → consigné seulement (nit)
   - Chip task_d9b2cff4 (dédup emails dev) → FAIT pendant le sprint
 **Status :** Terminé
+
+## Sprint 4 — 2026-06-25 (PLANIFIÉ — cohésion 0.71, Auth & CSP : dette reviews S1-S3)
+**Objectif :** Durcir l'auth (fuite JWT en body de login, refresh sans validation d'expiration, cookies en dur), uniformiser le 403 d'ownership via le handler central, durcir la CSP.
+**Milestone GitHub :** #4
+**Issues :** #104, #105, #99, #100, #101
+**Vagues :** V1 (parallèle, fichiers disjoints) = #100 (EventController) + #101 (SecurityConfig) | V2 (séquentielle, même `AuthController.java`) = #104 → #105 → #99
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Status :** Planifié
+
+## Sprint 5 — 2026-06-25 (PLANIFIÉ — cohésion 0.50, DB & profils : dette reviews S1-S3)
+**Objectif :** Réconcilier la baseline Flyway (CHECK/NOT NULL events manquants), ajouter les index sur colonnes FK, durcir SPRING_PROFILES_ACTIVE (fallback prod→dev silencieux).
+**Milestone GitHub :** #5
+**Issues :** #111, #108, #110
+**Vagues :** V1 (parallèle) = #111 (application.properties) | V2 (séquentielle, migrations) = #108 (V4 contraintes) → #110 (V5 index)
+**Migrations Flyway :** V4__reconcile_events_constraints.sql, V5__fk_indexes.sql
+**Dépend de :** aucune
+**Note :** #112 (purge historique git) DÉFÉRÉE hors sprint — opération ops one-shot (secrets déjà rotatés #34, repo public donc déjà aspirés + cache GitHub, 11 worktrees actifs ⇒ force-push disruptif). Issue ouverte sans milestone.
+**Status :** Planifié
