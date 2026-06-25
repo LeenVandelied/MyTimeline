@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
+import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Event;
@@ -53,6 +54,49 @@ public class EventServiceImpl implements EventService {
                 product.getId(),
                 eventCreationRequest.getIsAllDay()
         );
+        return eventRepository.save(event);
+    }
+
+    @Override
+    @Transactional
+    public Event updateEvent(UUID id, EventUpdateRequest updateRequest) {
+        Event event = findEventById(id)
+            .orElseThrow(() -> new EventNotFoundException(id));
+
+        // Préserve le lien produit existant (le DTO ne porte pas productId).
+        UUID originalProductId = event.getProductId();
+
+        // PATCH partiel : chaque champ n'est appliqué que s'il est fourni (non null).
+        if (updateRequest.getTitle() != null) {
+            event.setTitle(updateRequest.getTitle());
+        }
+        if (updateRequest.getType() != null) {
+            event.setType(updateRequest.getType());
+        }
+        if (updateRequest.getDurationValue() != null) {
+            event.setDurationValue(updateRequest.getDurationValue());
+        }
+        if (updateRequest.getDurationUnit() != null) {
+            event.setDurationUnit(updateRequest.getDurationUnit());
+        }
+        if (updateRequest.getIsRecurring() != null) {
+            event.setIsRecurring(updateRequest.getIsRecurring());
+        }
+        if (updateRequest.getRecurrenceUnit() != null) {
+            event.setRecurrenceUnit(updateRequest.getRecurrenceUnit());
+        }
+        if (updateRequest.getBackgroundColor() != null) {
+            event.setBackgroundColor(updateRequest.getBackgroundColor());
+        }
+        if (updateRequest.getBorderColor() != null) {
+            event.setBorderColor(updateRequest.getBorderColor());
+        }
+        if (updateRequest.getTextColor() != null) {
+            event.setTextColor(updateRequest.getTextColor());
+        }
+
+        event.setProduct(originalProductId);
+
         return eventRepository.save(event);
     }
 

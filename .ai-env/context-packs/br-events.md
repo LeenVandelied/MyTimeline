@@ -24,9 +24,9 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 
 | Action                                                        | ROLE_USER | Anonymous | system | Notes                                                                                  |
 |--------------------------------------------------------------|:---------:|:---------:|:------:|----------------------------------------------------------------------------------------|
-| `POST /api/events` (créer)                                    | ✅        | ❌        | —      | Bloqué anonyme via `SecurityConfig`. ⚠️ `@Valid` absent → DTO non validé.              |
-| `PATCH /api/events/{id}` (maj partielle)                      | ⚠️        | ❌        | —      | ⚠️ IDOR : aucun contrôle d'ownership, tout `ROLE_USER` modifie n'importe quel event.   |
-| `DELETE /api/events/{id}` (supprimer)                         | ⚠️        | ❌        | —      | ⚠️ IDOR : aucun contrôle d'ownership, suppression physique.                            |
+| `POST /api/events` (créer)                                    | ✅        | ❌        | —      | Bloqué anonyme via `SecurityConfig`. ✅ `@Valid` + ownership productId (Sprint 1 #31/#91). |
+| `PATCH /api/events/{id}` (maj partielle)                      | ✅        | ❌        | —      | ✅ Ownership event→product→user (403) + DTO typé `@Valid` (Sprint 1 #28/#30).           |
+| `DELETE /api/events/{id}` (supprimer)                         | ✅        | ❌        | —      | ✅ Ownership (403 si event d'autrui) implémenté Sprint 1 #30. Suppression physique.     |
 | `GET /api/users/{userId}/products/{productId}/events` (lister)| ✅        | ❌        | —      | Endpoint porté par `ProductController`. `userId` vérifié vs JWT via `JwtService`.      |
 | Calcul `endDate`                                             | —         | —         | ✅     | `Utils.calculateEndDate` à la création uniquement (pas recalculé au PATCH).            |
 | Défaut `startDate = LocalDate.now()`                          | —         | —         | ✅     | Appliqué dans `EventServiceImpl.createEvent` si `date` null.                            |
@@ -39,7 +39,7 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 **Règle** : un `ROLE_USER` MUST fournir un `name` non vide (1–100 caractères) à la création.
 **Pourquoi** : intégrité des données, le `name` est mappé vers `Event.title` (champ d'affichage).
 **Implémentation** : `EventCreationRequest.name` (`@NotBlank` + `@Size(min=1, max=100)`).
-**⚠️ NON IMPLÉMENTÉ EFFECTIVEMENT** : `@Valid` absent sur `EventController.createEvent(@RequestBody ...)` → la contrainte n'est **jamais déclenchée** côté backend. Seul le frontend (`eventCreationSchema.name.min(3)`) filtre, avec un seuil divergent (3 vs 1).
+**✅ IMPLÉMENTÉ Sprint 1 (#31/#91)** : `@Valid` ajouté sur `EventController.createEvent(@RequestBody ...)` → la contrainte `@Size(min=1,max=100)` est désormais déclenchée (titre vide → 400). Reste un seuil divergent avec le frontend (`eventCreationSchema.name.min(3)` vs back min=1) à harmoniser.
 **Test attendu** : `EventControllerTest.shouldReject400WhenNameBlankOrTooLong` (à créer — échouera tant que `@Valid` absent).
 
 ### BR-EVE-002 — Produit cible obligatoire et existant
@@ -77,13 +77,13 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 **Règle** : un `ROLE_USER` MUST fournir `isRecurring` (non null) à la création.
 **Pourquoi** : le flag pilote la logique de récurrence côté affichage.
 **Implémentation** : `EventCreationRequest.isRecurring` (`@NotNull`).
-**⚠️ NON IMPLÉMENTÉ EFFECTIVEMENT** : `@Valid` absent → contrainte jamais déclenchée (voir BR-EVE-001).
+**✅ IMPLÉMENTÉ Sprint 1 (#31)** : `@Valid` présent → `@NotNull` sur `isRecurring` désormais déclenché (voir BR-EVE-001).
 **Test attendu** : `EventControllerTest.shouldReject400WhenIsRecurringNull`.
 
 ### BR-EVE-008 — Ownership requis sur PATCH / DELETE
 **Règle** : un `ROLE_USER` MUST NOT modifier ou supprimer un event qui n'appartient pas à l'un de ses produits.
 **Pourquoi** : isolation des données entre utilisateurs (confidentialité, intégrité).
-**⚠️ NON IMPLÉMENTÉ (IDOR critique)** : `EventController.updateEvent` et `deleteEvent` n'effectuent aucun contrôle d'ownership ; tout `ROLE_USER` agit sur n'importe quel `id`. Contraste avec le GET liste qui, lui, vérifie `userId` vs JWT.
+**✅ IMPLÉMENTÉ Sprint 1 (#30/#91)** : `EventController` vérifie l'ownership sur `createEvent` (productId du caller), `updateEvent` et `deleteEvent` via le helper `checkEventOwnership` (`event → productId → product.getUser().getId() == caller.getId()`, sinon 403). Identité dérivée du JWT (`resolveCaller`), jamais d'un path param. `JwtException` → 401 (pas 500).
 **Test attendu** : `EventControllerSecurityTest.shouldReturn403WhenPatchingForeignEvent` + `shouldReturn403WhenDeletingForeignEvent`.
 
 ### BR-EVE-009 — Couleurs cohérentes sur le formulaire d'édition
@@ -119,8 +119,8 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 
 ## 5. Anti-patterns documentés
 
-- **IDOR (PATCH & DELETE)** : aucun contrôle d'ownership sur `EventController.updateEvent` / `deleteEvent` → modification/suppression de l'event d'autrui. (cf. BR-EVE-008)
-- **`@Valid` manquant** sur `POST /api/events` `@RequestBody` → toutes les annotations Bean Validation de `EventCreationRequest` silencieusement ignorées. (cf. BR-EVE-001/007)
+- ~~**IDOR (PATCH & DELETE)**~~ : ✅ RÉSOLU Sprint 1 #30/#91 — ownership sur create/update/delete (cf. BR-EVE-008).
+- ~~**`@Valid` manquant** sur `POST /api/events`~~ : ✅ RÉSOLU Sprint 1 #31 — `@Valid` posé sur tous les `@RequestBody` + `@EnableMethodSecurity` + session STATELESS (cf. BR-EVE-001/007).
 - **Fuite du modèle domaine en réponse REST** : `Event` (domaine) renvoyé directement par POST/PATCH et par le GET liste — aucun response DTO.
 - **Logique métier dans le controller** : `EventController.updateEvent` contient la boucle de mise à jour champ-par-champ avec `instanceof` (parsing `durationValue`/`isRecurring`) — devrait être en couche service.
 - **Mismatch sémantique name↔title** : `EventCreationRequest.name` mappé vers `Event.title`.
@@ -129,7 +129,7 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 - **Check vide dupliqué** : `EventServiceImpl.findDomainEventByProductId` lève `EventNotFoundException` sur liste vide, puis `ProductController` re-teste `isEmpty()` après coup.
 - **NPE potentielle** : `Utils.calculateEndDate` `switch(durationUnit)` sans null-guard quand `type='duration'`. (cf. BR-EVE-004)
 - **Suppression physique** : `deleteById` supprime réellement la ligne — pas de soft-delete (divergence avec la convention soft-delete du projet).
-- **`@CrossOrigin(origins="*")`** sur `EventController` en conflit avec `SecurityConfig` (CORS `allowCredentials=true` + `allowedOrigins localhost:3000`) — wildcard + credentials invalide selon la spec CORS.
+- ~~**`@CrossOrigin(origins="*")`** sur `EventController`~~ : ✅ RETIRÉ Sprint 1 #30 — CORS gérée uniquement par `SecurityConfig` (`allowCredentials=true` + `allowedOrigins localhost:3000`).
 - **Schémas Zod dupliqués/divergents** : `eventEditSchema` défini deux fois (cf. BR-EVE-009) ; champ `allDay` vs `isAllDay` (cf. BR-EVE-010) ; `name.min(3)` front vs `@Size(min=1)` back ; `type` enum strict front vs `@NotBlank` libre back.
 
 ---

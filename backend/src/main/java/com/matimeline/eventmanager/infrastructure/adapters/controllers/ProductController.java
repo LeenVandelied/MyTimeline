@@ -14,6 +14,9 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
+import io.jsonwebtoken.JwtException;
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,19 +44,24 @@ public class ProductController {
     @PostMapping("/users/{userId}/products")
     public ResponseEntity<Product> createProduct(
             @PathVariable UUID userId,
-            @RequestBody ProductCreationRequest request, 
+            @Valid @RequestBody ProductCreationRequest request,
             @CookieValue(value = "jwt", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-    
-        String username = jwtService.extractUsername(token);
+
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
-    
+
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-    
+
         request.setUserId(userId);
         Product product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
@@ -102,7 +110,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
@@ -110,8 +123,13 @@ public class ProductController {
         }
 
         Optional<Product> product = productService.findDomainProductById(productId);
-        return product.map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!productBelongsToUser(product.get(), userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(product.get());
     }
 
     @DeleteMapping("/users/{userId}/products/{productId}")
@@ -123,10 +141,23 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<Product> product = productService.findDomainProductById(productId);
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!productBelongsToUser(product.get(), userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -143,10 +174,23 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<Product> product = productService.findDomainProductById(productId);
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!productBelongsToUser(product.get(), userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -155,5 +199,15 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(events);
+    }
+
+    /**
+     * Verifies the product is owned by the given user (product.user.id == userId).
+     * Guards against IDOR where a valid userId==jwt holder accesses another user's product.
+     */
+    private boolean productBelongsToUser(Product product, UUID userId) {
+        return product.getUser() != null
+                && product.getUser().getId() != null
+                && product.getUser().getId().equals(userId);
     }
 }
