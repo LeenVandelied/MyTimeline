@@ -1,6 +1,6 @@
 # Audit tests — Sprint 5
 
-> Généré en fin de Phase 6. `[MISSING]` bloque la Phase 9 PR.
+> Généré en fin de Phase 6. Un marqueur de couverture manquante en cellule de tableau bloque la Phase 9 PR.
 > Sprint backend-only (DB/profils + auth/config). Aucun changement frontend → pas de parcours E2E UI introduit.
 
 ## Couverture par changement
@@ -40,4 +40,4 @@ Sur base fraîche (CI/Testcontainers) : aucun blocage. Sur **base dev déjà peu
 ALTER échoue proprement (pas de perte silencieuse) — risque borné.
 
 ## Conclusion
-Prêt pour PR. 0 [MISSING]. Suite 56/56 verte. Reviews db-expert (0 CRITIQUE) + security-expert (0 CRITIQUE) passées. Findings MINEUR/MAJEUR = follow-ups hors scope (users.role drift, /me plain text, BR-PRO-006 full scan, CHECK conditionnels).
+Prêt pour PR. Aucune couverture manquante. Suite 56/56 verte. Reviews db-expert (0 CRITIQUE) + security-expert (0 CRITIQUE) passées. Findings MINEUR/MAJEUR = follow-ups hors scope (users.role drift, /me plain text, BR-PRO-006 full scan, CHECK conditionnels).
