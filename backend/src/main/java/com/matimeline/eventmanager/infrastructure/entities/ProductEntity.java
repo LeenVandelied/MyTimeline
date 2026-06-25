@@ -18,7 +18,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @EntityListeners(AuditingEntityListener.class)
 public class ProductEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) UUID id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     private String name;
 
