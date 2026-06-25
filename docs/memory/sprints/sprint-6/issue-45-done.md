@@ -21,6 +21,12 @@
 ## Recommandations suite (→ triage Phase 4 /sprint end)
 - RECOMMAND_FOLLOWUP : `frontend/src/styles/{landing,animations}.css` hex de marque hardcodés (`#8B5CF6`/`#4F46E5`/gradients) hors scope #45 (CSS brut) → porter sur tokens Graphite. [triage S | frontend]
 - RECOMMAND_FOLLOWUP : composants DS `ds/components/{core,timeline,i18n}.css` déposés mais non consommés → intégration écrans (timeline/dashboard) sprints suivants. [triage L | frontend]
-- RECOMMAND_FOLLOWUP : `TestimonialCard` colormap garde `blue/cyan/pink` (hors AC strict gray/purple) → mapper palette event si refonte landing. [triage XS | frontend]
+- RECOMMAND_FOLLOWUP : `TestimonialCard` colormap garde `blue/cyan/pink` (hors AC strict gray/purple) → ✅ TRAITÉ en review-pr (commit `bb05ec0`, mappé evt-sky/teal/rose).
+
+## Findings /review-pr #131 (2ᵉ review indépendante, état post-`2f02142`)
+4 MAJEUR / 2 MINEUR. **3 corrigés** (commit `bb05ec0`) : TestimonialSection `text-ink`→`text-accent-ink` (régression #45, contraste sombre), AddProducts `bg-opacity-70`→`bg-surface/70` (utilité supprimée en TW4), TestimonialCard blue/cyan/pink→evt-*. **3 déférés** (code pré-existant NON touché ce sprint — pas de scope-creep) :
+- RECOMMAND_FOLLOWUP : `frontend/src/types/event.ts` DEFAULT_COLORS hex hardcodés `#6366f1/#4f46e5/#ec4899/#db2777` (indigo/pink hors palette Graphite) → tokens evt-*. [triage S | frontend]
+- RECOMMAND_FOLLOWUP : `TimelineCalendar.tsx:221` fallback `borderColor: 'rgba(15,23,42,0.8)'` hardcodé, invisible en sombre → `var(--color-rule-strong)`. [triage XS | frontend]
+- RECOMMAND_FOLLOWUP : `frontend/app/layout.tsx` importe `landing.css`+`animations.css` au root layout (toutes routes incl. dashboard) → scoper aux pages publiques. [triage S | frontend/perf]
 
 STATUS: COMPLETED
