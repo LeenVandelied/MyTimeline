@@ -110,8 +110,13 @@ public class ProductController {
         }
 
         Optional<Product> product = productService.findDomainProductById(productId);
-        return product.map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!productBelongsToUser(product.get(), userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(product.get());
     }
 
     @DeleteMapping("/users/{userId}/products/{productId}")
@@ -127,6 +132,14 @@ public class ProductController {
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<Product> product = productService.findDomainProductById(productId);
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!productBelongsToUser(product.get(), userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -150,10 +163,28 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
+        Optional<Product> product = productService.findDomainProductById(productId);
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!productBelongsToUser(product.get(), userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         List<Event> events = eventService.findDomainEventByProductId(productId);
         if (events.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(events);
+    }
+
+    /**
+     * Verifies the product is owned by the given user (product.user.id == userId).
+     * Guards against IDOR where a valid userId==jwt holder accesses another user's product.
+     */
+    private boolean productBelongsToUser(Product product, UUID userId) {
+        return product.getUser() != null
+                && product.getUser().getId() != null
+                && product.getUser().getId().equals(userId);
     }
 }
