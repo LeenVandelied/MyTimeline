@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
+
 import jakarta.persistence.EntityManager;
 
 /**
@@ -16,11 +18,13 @@ import jakarta.persistence.EntityManager;
  * peuple createdAt/updatedAt/version au persist, et que equals/hashCode sont
  * robustes face à l'id transient (PK @GeneratedValue assignée au flush).
  *
- * @Transactional → rollback après chaque test : ne pollue pas la base dev.
+ * Étend AbstractPostgresIntegrationTest → conteneur Postgres Testcontainers
+ * (profil test), comme les autres @SpringBootTest. Plus aucun contact avec la
+ * base dev. @Transactional → rollback après chaque test.
  */
 @SpringBootTest
 @Transactional
-class AuditingAndEqualityTest {
+class AuditingAndEqualityTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private EntityManager em;
