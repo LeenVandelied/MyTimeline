@@ -91,3 +91,6 @@ frontend/.env.development
 
 # === GEENERAL : Fichiers sensibles ===
 node_modules/
+
+# === Outillage local Claude Code (métriques tokens, worktrees, cache — non projet) ===
+.claude/
