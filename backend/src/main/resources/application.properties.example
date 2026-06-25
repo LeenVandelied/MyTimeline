@@ -6,7 +6,18 @@
 
 # --- Profil Spring ---
 # Profil actif : dev (defaut) | prod
+# Si absent, fallback SILENCIEUX vers 'dev' (confort dev). EN PRODUCTION, poser
+# explicitement SPRING_PROFILES_ACTIVE=prod.
 SPRING_PROFILES_ACTIVE=
+
+# --- Marqueur d'environnement (garde-fou #111) ---
+# Sert UNIQUEMENT au garde-fou fail-fast ProfileSafetyGuard : si ce marqueur vaut
+# 'production' (ou 'prod') ALORS que le profil Spring actif est 'dev', le boot est
+# REFUSE (IllegalStateException) pour empecher le fallback dev silencieux en prod.
+# Valeurs : production | prod (declenchent le garde) ; staging/autre/vide = ignore.
+# En PROD : poser ENVIRONMENT=production EN PLUS de SPRING_PROFILES_ACTIVE=prod.
+# Alternative acceptee : APP_ENV (meme semantique).
+ENVIRONMENT=
 
 # --- Base de données PostgreSQL ---
 # URL JDBC complete (default dev : jdbc:postgresql://localhost:5432/eventmanager)

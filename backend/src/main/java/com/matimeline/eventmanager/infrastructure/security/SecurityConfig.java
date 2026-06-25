@@ -20,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.http.MediaType;
@@ -38,10 +39,22 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final RateLimitingFilter rateLimitingFilter;
 
-    public SecurityConfig(UserDetailsService userDetailsService, @Lazy JwtFilter jwtFilter,
-                          RateLimitingFilter rateLimitingFilter) {
+    // CORS (#120) — origines autorisées externalisées par profil
+    // (app.cors.allowed-origins, liste séparée par virgules). En dur,
+    // "http://localhost:3000" cassait la prod et mélangeait dev/prod.
+    // Default FAIL-SAFE intentionnel : si la propriété est absente, on retombe
+    // sur localhost dev (jamais un wildcard, incompatible avec allowCredentials=true).
+    // Profils : dev = http://localhost:3000 ; prod = origine(s) via env CORS_ALLOWED_ORIGINS.
+    private final List<String> allowedOrigins;
+
+    // userDetailsService n'est pas injecté ici : il est fourni en paramètre du @Bean
+    // authenticationManager(...) (où Spring le résout), pas via ce constructeur.
+    public SecurityConfig(@Lazy JwtFilter jwtFilter,
+                          RateLimitingFilter rateLimitingFilter,
+                          @Value("${app.cors.allowed-origins:http://localhost:3000}") List<String> allowedOrigins) {
         this.jwtFilter = jwtFilter;
         this.rateLimitingFilter = rateLimitingFilter;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Bean
@@ -138,10 +151,25 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        // Origines externalisées par profil (#120) — voir champ allowedOrigins.
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cookie"));
-        config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+        // exposedHeaders (#120) : "Authorization" retiré — depuis le passage
+        // cookie-only JWT (#104) le front ne lit plus jamais ce header de réponse
+        // (le token vit dans le cookie HttpOnly, illisible en JS). Seul Set-Cookie
+        // reste exposé.
+        config.setExposedHeaders(List.of("Set-Cookie"));
+        // --- Décision SameSite (#120) ---
+        // Le cookie `jwt` reste posé en SameSite=Lax (AuthController.COOKIE_SAME_SITE),
+        // NON passé à Strict. Justification : le front Next.js (localhost:3000 en dev,
+        // origine distincte en prod) est une origine SÉPARÉE de l'API ; ses requêtes
+        // authentifiées sont cross-site (CORS + allowCredentials), or Strict bloque
+        // l'envoi du cookie sur toute requête initiée par une autre origine (y compris
+        // les navigations entrantes depuis un lien externe / email de confirmation).
+        // La protection CSRF est assurée autrement : pas de form-POST navigateur sur
+        // l'API (cookie HttpOnly + clients fetch CORS), donc Lax suffit sans casser
+        // le flux SPA. Runbook : docs/runbook/cors-cookie-samesite.md.
         source.registerCorsConfiguration("/**", config);
         return source;
     }

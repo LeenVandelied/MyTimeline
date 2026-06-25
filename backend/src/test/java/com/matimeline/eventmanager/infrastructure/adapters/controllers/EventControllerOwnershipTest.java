@@ -1,11 +1,12 @@
 package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,38 +15,69 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
-
+import com.matimeline.eventmanager.application.services.EventServiceImpl;
+import com.matimeline.eventmanager.application.services.ProductServiceImpl;
+import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
-import com.matimeline.eventmanager.domain.ports.services.EventService;
-import com.matimeline.eventmanager.domain.ports.services.ProductService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
 
 import jakarta.servlet.http.Cookie;
 
-@ExtendWith(MockitoExtension.class)
-class EventControllerOwnershipTest {
+/**
+ * Contrat d'intégration #119 — réponse 403 ownership servie EN CONTEXTE SECURITY RÉEL.
+ *
+ * <p>Le test précédent montait le contrôleur en {@code standaloneSetup} avec
+ * {@code GlobalExceptionHandler} branché manuellement comme {@code @ControllerAdvice}.
+ * Il validait donc un chemin qui n'existe PAS en production : le 403 d'ownership y
+ * était produit par le {@code @RestControllerAdvice}. En prod, la chaîne de filtres
+ * Spring Security est active — l'{@code AccessDeniedException} métier levée dans le
+ * contrôleur (ownership) remonte jusqu'au {@code ExceptionTranslationFilter}, qui la
+ * route vers {@code SecurityConfig.accessDeniedHandler}, UNIQUE émetteur du corps
+ * {@code {"error":"forbidden"}}. Le handler du {@code @RestControllerAdvice} a été
+ * supprimé (#119) ; ce test garantit que le corps réellement servi reste correct.
+ *
+ * <p>Montage : {@code @SpringBootTest} + {@code @AutoConfigureMockMvc} → filtre Security
+ * réel. {@code @WithMockUser(authorities=ROLE_USER)} franchit la règle
+ * {@code hasAuthority("ROLE_USER")} de {@code authorizeHttpRequests} pour ATTEINDRE le
+ * contrôleur (sans elle on obtiendrait un 403 d'autorité, pas le 403 d'ownership testé).
+ * Le {@code JwtFilter} ne réécrit pas le contexte déjà posé par {@code @WithMockUser}
+ * (garde {@code getAuthentication() == null}). Les services métier sont mockés
+ * ({@code @MockBean}) pour piloter le scénario attaquant ≠ propriétaire sans DB ;
+ * {@code AbstractPostgresIntegrationTest} fournit le conteneur Postgres requis par le
+ * démarrage du contexte (Flyway/Hibernate validate).
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+class EventControllerOwnershipTest extends AbstractPostgresIntegrationTest {
 
-    @Mock
-    private EventService eventService;
-    @Mock
-    private ProductService productService;
-    @Mock
-    private UserService userService;
-    @Mock
-    private JwtService jwtService;
-
+    @Autowired
     private MockMvc mockMvc;
+
+    // On mocke les types CONCRETS *ServiceImpl (et non les interfaces) : plusieurs
+    // contrôleurs (Auth/Product/Category) injectent le concret (anti-pattern A8 repo-wide).
+    // Un mock du concret satisfait à la fois ces contrôleurs ET EventController qui dépend
+    // des interfaces (Impl implements l'interface). Mocker l'interface laisserait les
+    // contrôleurs à injection concrète sans bean → ApplicationContext KO.
+    @MockBean
+    private EventServiceImpl eventService;
+    @MockBean
+    private ProductServiceImpl productService;
+    @MockBean
+    private UserServiceImpl userService;
+    @MockBean
+    private JwtService jwtService;
 
     private UUID eventId;
     private UUID productId;
@@ -54,19 +86,13 @@ class EventControllerOwnershipTest {
 
     @BeforeEach
     void setUp() {
-        EventController controller = new EventController(eventService, productService, userService, jwtService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
-
         eventId = UUID.randomUUID();
         productId = UUID.randomUUID();
         ownerId = UUID.randomUUID();
         attackerId = UUID.randomUUID();
     }
 
-    @Test
-    void deleteEvent_crossUser_returns403_andDoesNotDelete() throws Exception {
+    private void stubCrossUserOwnership() {
         User attacker = new User(attackerId, "Attacker", "attacker", "pwd", "ROLE_USER", "a@a.com");
         User owner = new User(ownerId, "Owner", "owner", "pwd", "ROLE_USER", "o@o.com");
 
@@ -77,38 +103,55 @@ class EventControllerOwnershipTest {
         when(userService.findDomainUserByUsername("attacker")).thenReturn(Optional.of(attacker));
         when(eventService.findEventById(eventId)).thenReturn(Optional.of(event));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
+    }
+
+    /**
+     * DELETE cross-user : l'attaquant (ROLE_USER mais ≠ propriétaire) déclenche
+     * l'{@code AccessDeniedException} métier dans le contrôleur. Le 403 réellement
+     * servi par la chaîne Security DOIT porter {@code {"error":"forbidden"}} ; la
+     * suppression ne doit jamais être exécutée.
+     */
+    @Test
+    @WithMockUser(username = "attacker", authorities = {"ROLE_USER"})
+    void deleteEvent_crossUser_returns403ForbiddenJson_andDoesNotDelete() throws Exception {
+        stubCrossUserOwnership();
 
         mockMvc.perform(delete("/api/events/" + eventId).cookie(new Cookie("jwt", "attacker-token")))
                 .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("forbidden"));
 
         verify(eventService, never()).deleteById(eventId);
     }
 
+    /**
+     * PATCH cross-user : même garantie sur l'endpoint de mise à jour — 403
+     * {@code {"error":"forbidden"}} servi par {@code accessDeniedHandler}, aucune
+     * mutation appliquée.
+     */
     @Test
-    void patchEvent_crossUser_returns403_andDoesNotUpdate() throws Exception {
-        User attacker = new User(attackerId, "Attacker", "attacker", "pwd", "ROLE_USER", "a@a.com");
-        User owner = new User(ownerId, "Owner", "owner", "pwd", "ROLE_USER", "o@o.com");
-
-        Event event = new Event(eventId, "title", "type", 1, "DAY", false, null, null, null, productId, false);
-        Product product = new Product(productId, "prod", null, owner, java.util.List.of());
-
-        when(jwtService.extractUsername("attacker-token")).thenReturn("attacker");
-        when(userService.findDomainUserByUsername("attacker")).thenReturn(Optional.of(attacker));
-        when(eventService.findEventById(eventId)).thenReturn(Optional.of(event));
-        when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
+    @WithMockUser(username = "attacker", authorities = {"ROLE_USER"})
+    void patchEvent_crossUser_returns403ForbiddenJson_andDoesNotUpdate() throws Exception {
+        stubCrossUserOwnership();
 
         mockMvc.perform(patch("/api/events/" + eventId)
                         .cookie(new Cookie("jwt", "attacker-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"hacked\"}"))
                 .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("forbidden"));
 
         verify(eventService, never()).updateEvent(any(UUID.class), any(EventUpdateRequest.class));
     }
 
+    /**
+     * Chemin propriétaire (contrôle négatif) : le caller EST le propriétaire,
+     * aucune {@code AccessDeniedException}, la suppression aboutit (200) et est
+     * bien déléguée au service.
+     */
     @Test
+    @WithMockUser(username = "owner", authorities = {"ROLE_USER"})
     void deleteEvent_owner_returns200_andDeletes() throws Exception {
         User owner = new User(ownerId, "Owner", "owner", "pwd", "ROLE_USER", "o@o.com");
         Event event = new Event(eventId, "title", "type", 1, "DAY", false, null, null, null, productId, false);

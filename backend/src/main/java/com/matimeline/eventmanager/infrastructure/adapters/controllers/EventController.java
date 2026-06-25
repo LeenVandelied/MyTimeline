@@ -93,9 +93,10 @@ public class EventController {
     /**
      * Verifies the authenticated user owns the event (event -> product -> product.user).
      * Returns a non-null ResponseEntity carrying a 401/404 status, or null when ownership is
-     * confirmed. An ownership violation throws AccessDeniedException so the centralized
-     * @RestControllerAdvice emits the uniform {"error":"forbidden"} 403 body (BR-AUT-007).
-     * Identity is derived from the JWT, never from a path param.
+     * confirmed. An ownership violation throws AccessDeniedException, qui remonte jusqu'au
+     * ExceptionTranslationFilter de Spring Security et est routée vers
+     * SecurityConfig.accessDeniedHandler — l'unique émetteur du corps 403 {"error":"forbidden"}
+     * (#119, BR-AUT-007). Identity is derived from the JWT, never from a path param.
      */
     private ResponseEntity<Event> checkEventOwnership(UUID eventId, String token) {
         if (token == null || token.isEmpty()) {

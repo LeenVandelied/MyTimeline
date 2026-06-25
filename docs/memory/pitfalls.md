@@ -62,3 +62,15 @@ Avant de relâcher `'unsafe-inline'` sur `style-src`/`script-src` « à cause de
 
 ## PIT-S4-005 — `git add -A` dans un worktree `/sprint` aspire les artefacts d'orchestration du lead
 Un subagent qui fait `git add -A`/`git add .` capture les fichiers scratch non suivis du lead (`docs/memory/sprints/sprint-N/*`, `sprint-history.md` modifié) → commit pollué. Staging explicite par chemin OBLIGATOIRE (`git add <paths>`). Récurrent S4 (#105, #99, fix review). Corollaire rtk : `git add file1 \<newline> file2` casse (pathspec) → commande mono-ligne. (Sprint 4)
+
+## PIT-S5-001 — Baseline Flyway générée depuis Hibernate metadata = drift silencieux
+`ddl-auto=validate` ne valide ni CHECK, ni NOT NULL, ni longueur varchar → une baseline V1 générée depuis les métadonnées Hibernate (pas `pg_dump`) omet ces garde-fous présents sur la base dev legacy. Sur déploiement frais (CI/prod 1er run) la table est créée sans eux → divergence inter-environnements. Fix : réconcilier via migration séparée (DROP CONSTRAINT IF EXISTS + ADD ; CHECK nullable `col is null or col in (...)` pour colonnes conditionnellement requises). Idéal : générer toute baseline depuis `pg_dump --schema-only` de la base réelle. (Sprint 5 #108)
+
+## PIT-S5-002 — Migration durcissante + `baseline-on-migrate=true` s'applique aux bases PEUPLÉES
+`SET NOT NULL` / `varchar(255)→varchar(20)` / `ADD CHECK` posés par une migration s'exécutent aussi sur la base dev réelle (et prod), pas seulement sur les bases fraîches CI/Testcontainers vides. Données non conformes (NULL, >20 chars, hors enum) → échec ALTER cryptique → boot KO. Fix : bloc PL/pgSQL pré-vol en tête de migration qui `RAISE EXCEPTION` avec compteurs actionnables (NULL/oversize/hors-enum) si données sales — SANS coercition silencieuse (une ligne non conforme est un bug de données, le dev tranche). Base vide → compteurs 0 → continue. (Sprint 5 #108, review #121)
+
+## PIT-S5-003 — Exception Security jamais routée vers le `@RestControllerAdvice` (corollaire 401)
+Étend PIT-S4-001/PAT-S2-002 à `AuthenticationException` : en prod l'`ExceptionTranslationFilter` intercepte AVANT le `DispatcherServlet` → un `@ExceptionHandler(AuthenticationException|AccessDeniedException)` dans l'advice est du dead code, même pour une exception métier levée en contrôleur. Uniques points de vérité : `SecurityConfig.authenticationEntryPoint` (401) et `accessDeniedHandler` (403). Tester en `@SpringBootTest` (filtre actif), jamais `standaloneSetup`. Risque additionnel : l'advice produit un corps de forme différente → divergence de contrat. (Sprint 5 #119, review #121)
+
+## PIT-S5-004 — Worktree partagé multi-agents (fan-out /sprint, même working tree)
+`git stash` global aspire les fichiers des issues sœurs en vol + `./mvnw test` régénère `application.properties` (conflit au `stash pop`). Récupérer ses fichiers par chemin (`git checkout stash@{0} -- <f>`), commit TOUJOURS par chemins explicites, jamais `git add -A` ni stash global. Corollaire : le linter du repo revert les commentaires ajoutés à `application.properties` après Edit → re-Read + ré-Edit. (Étend PIT-S4-005.) (Sprint 5)

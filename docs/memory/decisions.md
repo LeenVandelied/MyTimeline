@@ -34,3 +34,18 @@ Sous `ddl-auto=validate` + tables peuplées : `@Version` = `Integer` mappé `ver
 
 ## DEC-S4-002 — CSP backend stricte par directives explicites
 Remplacer `default-src 'self'` permissif par directives explicites : `script-src 'self'`, `style-src 'self'` (sans `unsafe-inline`/`unsafe-eval`, cf. PIT-S4-003), `connect-src 'self'` (CORS n'autorise que localhost:3000, aucune origine API cross-origin), `img-src 'self' data:`, `font-src 'self'`, `base-uri 'self'` (NON hérité de default-src en CSP3), `object-src 'none'`, `frame-ancestors 'none'`. Assertion exacte de la chaîne CSP en test d'intégration (anti-régression). Externaliser connect-src par profil si SSR cross-origin un jour. (Sprint 4 #101 + fix review #113)
+
+## DEC-S5-001 — Drift de contraintes corrigé par migration séparée
+Réconciliation des CHECK/NOT NULL absents de la baseline via une migration V4 dédiée — jamais éditer V1/V2/V3 déjà appliquées (checksum mismatch Flyway → boot KO). V5 réservé aux index FK (#110). (Sprint 5 #108)
+
+## DEC-S5-002 — SPRING_PROFILES_ACTIVE : default dev + garde-fou fail-fast (pas suppression)
+Garder `${SPRING_PROFILES_ACTIVE:dev}` (confort dev local) + `ProfileSafetyGuard` (ApplicationListener) qui refuse le boot si profil `dev` actif ET marqueur `ENVIRONMENT/APP_ENV=production|prod`. Double signal prod requis. Choisi plutôt que suppression sèche du default (casserait mvn/IDE/tests) ou doc-only (défense passive). (Sprint 5 #111)
+
+## DEC-S5-003 — SameSite cookie JWT maintenu Lax (pas Strict)
+Front Next.js sur origine séparée (localhost:3000 dev, distinct prod) → `Strict` casserait les requêtes auth cross-site et navigations entrantes (lien/email). CSRF déjà couvert (API JSON + cookie HttpOnly + CORS allowCredentials). Reconsidérer si front+API passent sur le même eTLD+1 en prod. `COOKIE_SAME_SITE` vit dans AuthController (helper cookie #99). (Sprint 5 #120)
+
+## DEC-S5-004 — Runbook de déploiement consolidé en hub unique
+`docs/runbook/deploiement-profils.md` = source unique listant les env prod obligatoires (SPRING_PROFILES_ACTIVE=prod, ENVIRONMENT=production, CORS_ALLOWED_ORIGINS, COOKIE_DOMAIN, secrets DB/JWT) ; `cors-cookie-samesite.md` référence le hub. Évite la dérive doc (variable « optionnelle » ici, absente là). (Sprint 5 #118)
+
+## DEC-S5-005 — Test 403 d'ownership : @WithMockUser(authorities=ROLE_USER)
+Requis pour franchir `hasAuthority("ROLE_USER")` et atteindre le contrôleur où se lève le 403 d'ownership (sans, on teste un 403 d'autorité, pas d'ownership). `JwtFilter` ne réécrit pas un contexte d'authentification déjà posé. (Sprint 5 #119)
