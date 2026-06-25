@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import com.matimeline.eventmanager.application.services.CategoryServiceImpl;
 import com.matimeline.eventmanager.domain.models.Category;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,7 +27,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+    public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) {
         Category savedCategory = categoryService.createCategory(category);
         return new ResponseEntity<>(savedCategory, HttpStatus.CREATED);
     }

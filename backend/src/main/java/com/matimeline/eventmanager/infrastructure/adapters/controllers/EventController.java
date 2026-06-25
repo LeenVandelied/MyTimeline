@@ -41,7 +41,7 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<Event> createEvent(@RequestBody EventCreationRequest request) {
+    public ResponseEntity<Event> createEvent(@Valid @RequestBody EventCreationRequest request) {
         Event event = eventService.createEvent(request);
         return ResponseEntity.ok(event);
     }

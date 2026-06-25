@@ -14,6 +14,8 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,7 +43,7 @@ public class ProductController {
     @PostMapping("/users/{userId}/products")
     public ResponseEntity<Product> createProduct(
             @PathVariable UUID userId,
-            @RequestBody ProductCreationRequest request, 
+            @Valid @RequestBody ProductCreationRequest request,
             @CookieValue(value = "jwt", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
