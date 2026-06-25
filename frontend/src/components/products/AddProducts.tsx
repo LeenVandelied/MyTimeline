@@ -225,7 +225,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                 animate="visible"
                 variants={fadeIn}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="border-rule bg-surface bg-opacity-70 mt-8 rounded-xl border p-5 shadow-lg backdrop-blur-sm"
+                className="border-rule bg-surface/70 mt-8 rounded-xl border p-5 shadow-lg backdrop-blur-sm"
               >
                 <h3 className="text-ink mb-4 flex items-center text-lg font-semibold">
                   <Clock className="text-accent mr-2 h-5 w-5" />
