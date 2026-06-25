@@ -1,6 +1,6 @@
 # Issue #33 — done
 
-commits: 435b583
+commits: 74b88d2 (sprint/2)
 
 ## resume
 objectif: rate limiting per-IP sur POST auth sensibles + security headers HTTP standard. Anti brute-force/credential-stuffing.
@@ -37,3 +37,24 @@ tests: 28/28 verts (5 nouveaux, 0 regression incl. #51 AuthErrorContract). BUILD
 - PAS de RECOMMAND_DB_EXPERT.
 
 STATUS: COMPLETED
+
+## Fix post-review (XFF)
+
+MAJEUR review : clientIp() faisait confiance inconditionnelle a X-Forwarded-For.
+Endpoints /api/auth/* = permitAll non authentifies -> attaquant rotait XFF a chaque
+requete -> bucket neuf a chaque appel -> rate-limit contournable (brute-force illimite).
+
+Correctif :
+- RateLimitingFilter.clientIp() : getRemoteAddr() par defaut, XFF ignore.
+- Confiance XFF opt-in via @Value("${app.rate-limit.trust-forwarded-header:false}").
+  1er hop XFF honore UNIQUEMENT si propriete=true (reverse proxy de confiance).
+- application.properties : app.rate-limit.trust-forwarded-header=false (documente + risque spoofing).
+- Commentaire Javadoc : risque spoofing XFF.
+
+Test : RateLimitingAndHeadersIntegrationTest
+- requetes keyees sur remoteAddr (via .with(req -> setRemoteAddr)) au lieu de XFF.
+- NOUVEAU login_spoofedForwardedHeader_doesNotBypassRateLimit : meme socket, XFF different
+  a chaque appel -> 10 OK puis 11e = 429 (XFF variable n'octroie aucun quota supplementaire).
+
+Suite : 29 tests, 0 failure, 0 error, BUILD SUCCESS.
+Perimetre : RateLimitingFilter.java + application.properties + test uniquement. RateLimitConfig non modifie (@Value suffit).

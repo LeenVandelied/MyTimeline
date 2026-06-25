@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -57,12 +58,24 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final TimeMeter timeMeter;
 
     /**
-     * @param timeMeter time source backing every bucket. Production wires the real
-     *                  nanotime meter; tests inject a controllable one to advance
-     *                  the window deterministically without {@code Thread.sleep}.
+     * When {@code true}, the first hop of {@code X-Forwarded-For} is used as the
+     * rate-limit key. Defaults to {@code false} and MUST stay false unless the
+     * service runs behind a trusted reverse proxy that overwrites the header.
      */
-    public RateLimitingFilter(TimeMeter timeMeter) {
+    private final boolean trustForwardedHeader;
+
+    /**
+     * @param timeMeter            time source backing every bucket. Production wires the
+     *                             real nanotime meter; tests inject a controllable one to
+     *                             advance the window deterministically without {@code Thread.sleep}.
+     * @param trustForwardedHeader opt-in trust of {@code X-Forwarded-For}
+     *                             ({@code app.rate-limit.trust-forwarded-header}, default false).
+     */
+    public RateLimitingFilter(
+            TimeMeter timeMeter,
+            @Value("${app.rate-limit.trust-forwarded-header:false}") boolean trustForwardedHeader) {
         this.timeMeter = timeMeter;
+        this.trustForwardedHeader = trustForwardedHeader;
     }
 
     @Override
@@ -109,14 +122,25 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Best-effort client IP. Honours the first hop of {@code X-Forwarded-For} when
-     * present (deployment is expected behind a trusted reverse proxy); falls back to
-     * the socket remote address otherwise.
+     * Client IP used as the rate-limit key.
+     *
+     * <p><b>Security:</b> {@code X-Forwarded-For} is fully client-controllable. The
+     * throttled endpoints ({@code /api/auth/*}) are {@code permitAll} and unauthenticated,
+     * so honouring XFF unconditionally would let an attacker rotate the header on every
+     * request, land in a fresh bucket each time, and brute-force without limit. We therefore
+     * key on the socket {@link HttpServletRequest#getRemoteAddr() remoteAddr} by default and
+     * ignore XFF entirely.
+     *
+     * <p>The first XFF hop is honoured ONLY when {@code app.rate-limit.trust-forwarded-header}
+     * is explicitly set to {@code true} — i.e. the service is deployed behind a trusted reverse
+     * proxy that strips/overwrites any client-supplied XFF. Do not enable this otherwise.
      */
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
+        if (trustForwardedHeader) {
+            String forwarded = request.getHeader("X-Forwarded-For");
+            if (forwarded != null && !forwarded.isBlank()) {
+                return forwarded.split(",")[0].trim();
+            }
         }
         return request.getRemoteAddr();
     }

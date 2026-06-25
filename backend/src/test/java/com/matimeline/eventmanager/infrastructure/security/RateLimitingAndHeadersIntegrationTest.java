@@ -77,9 +77,15 @@ class RateLimitingAndHeadersIntegrationTest {
         }
     }
 
-    private MvcResult login(String ip) throws Exception {
+    /**
+     * Issues a login keyed on a socket {@code remoteAddr} (the real rate-limit key
+     * since XFF is ignored by default — see {@code app.rate-limit.trust-forwarded-header}).
+     * Each test uses a distinct socket IP so the shared singleton buckets never collide
+     * across test methods within the same Spring context.
+     */
+    private MvcResult login(String socketIp) throws Exception {
         return mockMvc.perform(post("/api/auth/login")
-                        .header("X-Forwarded-For", ip)
+                        .with(req -> { req.setRemoteAddr(socketIp); return req; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LOGIN_BODY))
                 .andReturn();
@@ -103,11 +109,40 @@ class RateLimitingAndHeadersIntegrationTest {
             login(ip);
         }
         mockMvc.perform(post("/api/auth/login")
-                        .header("X-Forwarded-For", ip)
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LOGIN_BODY))
                 .andExpect(status().is(429))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
+     * Regression for the post-review MAJOR: X-Forwarded-For is NOT trusted by default
+     * (app.rate-limit.trust-forwarded-header=false). An attacker rotating XFF on every
+     * request from the same socket must NOT escape throttling — all 10 land in the same
+     * bucket (keyed on remoteAddr), so the 11th is 429 despite a fresh XFF each time.
+     */
+    @Test
+    void login_spoofedForwardedHeader_doesNotBypassRateLimit() throws Exception {
+        String socketIp = "10.0.0.9";
+        for (int i = 1; i <= 10; i++) {
+            int spoof = i; // distinct XFF per request
+            int sc = mockMvc.perform(post("/api/auth/login")
+                            .with(req -> { req.setRemoteAddr(socketIp); return req; })
+                            .header("X-Forwarded-For", "203.0.113." + spoof)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(LOGIN_BODY))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "spoofed XFF must not grant extra quota (request #" + i + ")");
+        }
+        // 11th request, yet another fresh XFF, same socket -> throttled.
+        mockMvc.perform(post("/api/auth/login")
+                        .with(req -> { req.setRemoteAddr(socketIp); return req; })
+                        .header("X-Forwarded-For", "203.0.113.250")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOGIN_BODY))
+                .andExpect(status().is(429))
                 .andExpect(jsonPath("$.error").value("too_many_requests"));
     }
 
@@ -137,7 +172,7 @@ class RateLimitingAndHeadersIntegrationTest {
         String ip = "10.0.0.4";
         for (int i = 1; i <= 30; i++) {
             int sc = mockMvc.perform(post("/api/auth/logout")
-                            .header("X-Forwarded-For", ip))
+                            .with(req -> { req.setRemoteAddr(ip); return req; }))
                     .andReturn().getResponse().getStatus();
             assertNotEquals(429, sc, "logout must never be rate-limited (request #" + i + ")");
         }
