@@ -1,0 +1,17 @@
+# Artefacts outils de test / build frontend (#29).
+# (node_modules/ et .next/ sont déjà ignorés par le .gitignore racine.)
+
+# Storybook
+storybook-static/
+
+# Vitest / couverture
+coverage/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# TS build info
+*.tsbuildinfo

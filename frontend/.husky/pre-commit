@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Hook pre-commit (#29).
+# IMPORTANT — layout worktree + sous-dossier : git exécute les hooks depuis la
+# racine du worktree (cwd), pas depuis frontend/. lint-staged et les binaires
+# vivent dans frontend/node_modules → on se place dans frontend/ d'abord.
+# `cd` robuste : on dérive frontend/ depuis l'emplacement du hook (.husky/).
+cd "$(dirname "$0")/.." || exit 1
+exec npx --no-install lint-staged
