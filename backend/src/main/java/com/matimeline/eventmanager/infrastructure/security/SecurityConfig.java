@@ -94,6 +94,9 @@ public class SecurityConfig {
                 //   frame-ancestors 'none' : anti-clickjacking (complements X-Frame-Options).
                 //   default-src 'self'     : minimal fallback for any directive not listed
                 //                            above (e.g. object-src, base-uri).
+                //   base-uri 'self'        : NON hérité de default-src en CSP3 ;
+                //                            verrouille <base href> contre l'injection.
+                //   object-src 'none'      : bloque explicitement plugins/embed legacy.
                 .contentSecurityPolicy(csp -> csp
                         .policyDirectives(
                             "default-src 'self'; "
@@ -102,6 +105,8 @@ public class SecurityConfig {
                             + "connect-src 'self'; "
                             + "img-src 'self' data:; "
                             + "font-src 'self'; "
+                            + "base-uri 'self'; "
+                            + "object-src 'none'; "
                             + "frame-ancestors 'none'"))
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

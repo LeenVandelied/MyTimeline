@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,10 +59,10 @@ public class AuthController {
     // BR-AUT-007 / A6 / A7 : attributs Secure et Domain externalisés par profil
     // (application-{dev,prod}.properties). En dur, Secure=false exposait le token
     // hors HTTPS et domain="localhost" cassait tout déploiement non-localhost.
-    @org.springframework.beans.factory.annotation.Value("${app.cookie.secure}")
+    @Value("${app.cookie.secure}")
     private boolean cookieSecure;
 
-    @org.springframework.beans.factory.annotation.Value("${app.cookie.domain}")
+    @Value("${app.cookie.domain}")
     private String cookieDomain;
 
     /**
@@ -103,7 +104,8 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "authentication_failed"));
         }
     }
 
@@ -190,14 +192,20 @@ public class AuthController {
                                          HttpServletResponse response) {
         try {
             if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: No token provided");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "token expiré ou invalide"));
             }
 
             String username = jwtService.extractUsername(token);
             Optional<User> user = userService.findDomainUserByUsername(username);
 
             if (user.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+                // Anti-énumération de compte (review PR #113) : un username inexistant
+                // dans un token signé valide doit renvoyer le MÊME 401 générique qu'un
+                // token expiré/invalide. Un 404 distinct permettrait de distinguer
+                // "compte inexistant" de "token invalide" et d'énumérer les comptes.
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "token expiré ou invalide"));
             }
 
             CustomUserDetails userDetails = new CustomUserDetails(user.get(),
@@ -228,7 +236,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(java.util.Map.of("error", "token expiré ou invalide"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "an_error_occurred"));
         }
     }
 }

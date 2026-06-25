@@ -192,6 +192,8 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
             + "connect-src 'self'; "
             + "img-src 'self' data:; "
             + "font-src 'self'; "
+            + "base-uri 'self'; "
+            + "object-src 'none'; "
             + "frame-ancestors 'none'";
 
     /** (b) Standard security headers are present on an API response. */

@@ -218,6 +218,26 @@ class AuthControllerSecurityTest {
     }
 
     /**
+     * Review PR #113 — anti-énumération de compte : un token SIGNÉ VALIDE dont le
+     * username n'existe pas (user.isEmpty()) doit renvoyer le MÊME 401 générique
+     * {"error":"token expiré ou invalide"} qu'un token invalide/expiré — jamais un
+     * 404 "User not found" qui révélerait l'absence du compte. Aucune ré-émission.
+     */
+    @Test
+    void refresh_withUnknownUserInValidToken_returns401NotFound_andDoesNotReissue() throws Exception {
+        when(jwtService.extractUsername("ghost-token")).thenReturn("ghost");
+        when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "ghost-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
+    }
+
+    /**
      * Issue #99 — BR-AUT-007 / BR-AUT-010 / A6+A7 : les attributs Secure et Domain
      * du cookie jwt sont externalisés (@Value app.cookie.*) et IDENTIQUES entre la
      * pose (login, refresh) et la suppression (logout). Sans cette identité, le
