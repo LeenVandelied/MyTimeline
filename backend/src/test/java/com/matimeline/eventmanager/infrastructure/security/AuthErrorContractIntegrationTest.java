@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
+
 /**
  * Integration contract for issue #51: 401 vs 403 must be distinguished by the
  * real Spring Security filter chain, never collapse to 403-for-anonymous nor
@@ -24,7 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-class AuthErrorContractIntegrationTest {
+class AuthErrorContractIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
