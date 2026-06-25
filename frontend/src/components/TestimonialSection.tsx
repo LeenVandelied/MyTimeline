@@ -15,11 +15,11 @@ export default function TestimonialSection() {
   }, [showAll]);
 
   return (
-    <section id="testimonials" className="bg-gray-800/50 py-20 section-animation">
+    <section id="testimonials" className="bg-surface py-20 section-animation">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('common.landing.testimonials.title')}</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl text-ink-muted max-w-3xl mx-auto">
             {t('common.landing.testimonials.subtitle')}
           </p>
         </div>
@@ -40,7 +40,7 @@ export default function TestimonialSection() {
           <div className="text-center mt-10">
             <button
               onClick={() => setShowAll(!showAll)}
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition"
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-ink bg-accent hover:bg-accent-hover transition"
             >
               {showAll ? t('common.buttons.showLess') : t('common.buttons.showMore')}
             </button>

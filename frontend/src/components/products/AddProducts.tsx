@@ -109,19 +109,19 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white border-none">
+        <Button variant="outline" className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-ink border-none">
           <PlusCircle size={16} />
           <span>{t('products.add.title')}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 bg-gray-900 border border-gray-700 shadow-xl max-h-[90vh] overflow-y-auto sm:max-w-[600px] rounded-xl" aria-describedby="product-dialog-description">
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-purple-900 to-indigo-900 p-5 rounded-t-xl shadow-md">
+      <DialogContent className="p-0 bg-bg border border-rule shadow-xl max-h-[90vh] overflow-y-auto sm:max-w-[600px] rounded-xl" aria-describedby="product-dialog-description">
+        <div className="sticky top-0 z-10 bg-surface p-5 rounded-t-xl shadow-md">
           <DialogHeader>
-            <DialogTitle className="text-white text-xl font-bold flex items-center">
+            <DialogTitle className="text-ink text-xl font-bold flex items-center">
               <Package className="mr-2 h-6 w-6" />
               {t('products.add.title')}
             </DialogTitle>
-            <DialogDescription id="product-dialog-description" className="text-gray-200">
+            <DialogDescription id="product-dialog-description" className="text-ink">
               {t('products.add.description') || 'Ajoutez un nouveau produit avec ses événements associés'}
             </DialogDescription>
           </DialogHeader>
@@ -140,7 +140,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                 <FormField control={productForm.control} name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="text-gray-200 flex items-center">
+                      <Label className="text-ink flex items-center">
                         <Tag className="mr-2 h-4 w-4" />
                         {t('products.add.form.name')}
                       </Label>
@@ -148,10 +148,10 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                         <Input 
                           placeholder={t('products.add.form.namePlaceholder')} 
                           {...field} 
-                          className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500"
+                          className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent"
                         />
                       </FormControl>
-                      <FormMessage className="text-red-400" />
+                      <FormMessage className="text-danger" />
                     </FormItem>
                   )}
                 />
@@ -159,32 +159,32 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                 <FormField control={productForm.control} name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <Label className="text-gray-200 flex items-center">
+                      <Label className="text-ink flex items-center">
                         <Tag className="mr-2 h-4 w-4" />
                         {t('products.add.form.category')}
                       </Label>
                       <FormControl>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <SelectTrigger className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500">
+                          <SelectTrigger className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent">
                             <SelectValue placeholder={t('products.add.form.categoryPlaceholder')} />
                           </SelectTrigger>
-                          <SelectContent className="text-gray-300 bg-gray-800 border border-gray-700">
-                            <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="7446a49c-4053-4751-837a-c968a3f568ba">
+                          <SelectContent className="text-ink-muted bg-surface border border-rule">
+                            <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="7446a49c-4053-4751-837a-c968a3f568ba">
                               {t('products.add.categories.vehicles')}
                             </SelectItem>
-                            <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="dbc134fb-9558-476d-88c7-75992a249adc">
+                            <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="dbc134fb-9558-476d-88c7-75992a249adc">
                               {t('products.add.categories.insurance')}
                             </SelectItem>
-                            <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="9817e487-b43a-47b8-9cc7-ba5bf785bcdd">
+                            <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="9817e487-b43a-47b8-9cc7-ba5bf785bcdd">
                               {t('products.add.categories.food')}
                             </SelectItem>
-                            <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="ec088b7c-0a78-4c41-84f4-21c7626d9707">
+                            <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="ec088b7c-0a78-4c41-84f4-21c7626d9707">
                               {t('products.add.categories.medical')}
                             </SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
-                      <FormMessage className="text-red-400" />
+                      <FormMessage className="text-danger" />
                     </FormItem>
                   )}
                 />
@@ -195,16 +195,16 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                 animate="visible"
                 variants={fadeIn}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="mt-8 p-5 border border-gray-700 rounded-xl shadow-lg bg-gray-800 backdrop-blur-sm bg-opacity-70"
+                className="mt-8 p-5 border border-rule rounded-xl shadow-lg bg-surface backdrop-blur-sm bg-opacity-70"
               >
-                <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
-                  <Clock className="mr-2 h-5 w-5 text-purple-400" />
+                <h3 className="text-lg font-semibold mb-4 text-ink flex items-center">
+                  <Clock className="mr-2 h-5 w-5 text-accent" />
                   {t('products.add.event.title')}
                 </h3>
                 
                 {events.length > 0 && (
                   <div className="mb-6">
-                    <h4 className="text-sm font-medium mb-3 text-gray-300">{t('products.add.event.list')}</h4>
+                    <h4 className="text-sm font-medium mb-3 text-ink-muted">{t('products.add.event.list')}</h4>
                     <ul className="space-y-2">
                       {events.map((event, index) => (
                         <motion.li
@@ -212,21 +212,21 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.2 }}
                           key={index} 
-                          className="flex justify-between items-center p-3 bg-gray-700 rounded-lg border border-gray-600 group hover:border-purple-500 transition-all"
+                          className="flex justify-between items-center p-3 bg-surface-2 rounded-lg border border-rule-strong group hover:border-accent transition-all"
                         >
-                          <span className="text-gray-200 flex items-center">
+                          <span className="text-ink flex items-center">
                             {event.type === 'duration' ? 
                               <Timer className="mr-2 h-4 w-4 text-blue-400" /> : 
                               <Calendar className="mr-2 h-4 w-4 text-green-400" />
                             }
                             <span className="font-medium">{event.name}</span>
                             {event.type === 'duration' && event.durationValue && event.durationUnit && (
-                              <span className="ml-2 text-sm text-gray-400">
+                              <span className="ml-2 text-sm text-ink-muted">
                                 ({event.durationValue} {t(`products.add.event.units.${event.durationUnit}`)})
                               </span>
                             )}
                             {event.type === 'single' && event.date && (
-                              <span className="ml-2 text-sm text-gray-400">
+                              <span className="ml-2 text-sm text-ink-muted">
                                 ({new Date(event.date).toLocaleDateString()})
                               </span>
                             )}
@@ -236,7 +236,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                             variant="ghost" 
                             size="sm" 
                             onClick={() => removeEvent(index)}
-                            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 hover:bg-gray-600 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 text-danger hover:text-danger hover:bg-surface-2 transition-opacity"
                           >
                             <X size={16} />
                           </Button>
@@ -246,18 +246,18 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                   </div>
                 )}
                 
-                <div className="space-y-4 bg-gray-850 p-4 rounded-lg border border-gray-700">
+                <div className="space-y-4 bg-surface p-4 rounded-lg border border-rule">
                   <Form {...eventForm}>
                     <div className="space-y-4">
                       <FormField control={eventForm.control} name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <Label className="text-gray-200">{t('products.add.event.form.name')}</Label>
+                            <Label className="text-ink">{t('products.add.event.form.name')}</Label>
                             <FormControl>
                               <Input placeholder={t('products.add.event.form.namePlaceholder')} {...field} 
-                                className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500" />
+                                className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent" />
                             </FormControl>
-                            <FormMessage className="text-red-400" />
+                            <FormMessage className="text-danger" />
                           </FormItem>
                         )}
                       />
@@ -265,20 +265,20 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                       <FormField control={eventForm.control} name="type"
                         render={({ field }) => (
                           <FormItem>
-                            <Label className="text-gray-200">{t('products.add.event.form.type')}</Label>
+                            <Label className="text-ink">{t('products.add.event.form.type')}</Label>
                             <FormControl>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500">
+                                <SelectTrigger className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent">
                                   <SelectValue placeholder={t('products.add.event.form.typePlaceholder')} />
                                 </SelectTrigger>
-                                <SelectContent className="text-gray-300 bg-gray-800 border border-gray-700">
-                                  <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="duration">
+                                <SelectContent className="text-ink-muted bg-surface border border-rule">
+                                  <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="duration">
                                     <div className="flex items-center">
                                       <Timer className="mr-2 h-4 w-4 text-blue-400" />
                                       {t('products.add.event.types.duration')}
                                     </div>
                                   </SelectItem>
-                                  <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="single">
+                                  <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="single">
                                     <div className="flex items-center">
                                       <Calendar className="mr-2 h-4 w-4 text-green-400" />
                                       {t('products.add.event.types.single')}
@@ -287,7 +287,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                                 </SelectContent>
                               </Select>
                             </FormControl>
-                            <FormMessage className="text-red-400" />
+                            <FormMessage className="text-danger" />
                           </FormItem>
                         )}
                       />
@@ -303,7 +303,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                           <FormField control={eventForm.control} name="durationValue"
                             render={({ field }) => (
                               <FormItem className="flex-1">
-                                <Label className="text-gray-200">{t('products.add.event.form.durationValue')}</Label>
+                                <Label className="text-ink">{t('products.add.event.form.durationValue')}</Label>
                                 <FormControl>
                                   <Input 
                                     type="number" 
@@ -314,39 +314,39 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                                       const value = e.target.value === "" ? undefined : Number(e.target.value);
                                       field.onChange(value);
                                     }}
-                                    className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500"
+                                    className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent"
                                   />
                                 </FormControl>
-                                <FormMessage className="text-red-400" />
+                                <FormMessage className="text-danger" />
                               </FormItem>
                             )}
                           />
                           <FormField control={eventForm.control} name="durationUnit"
                             render={({ field }) => (
                               <FormItem className="flex-1">
-                                <Label className="text-gray-200">{t('products.add.event.form.durationUnit')}</Label>
+                                <Label className="text-ink">{t('products.add.event.form.durationUnit')}</Label>
                                 <FormControl>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500">
+                                    <SelectTrigger className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent">
                                       <SelectValue placeholder={t('products.add.event.form.durationUnitPlaceholder')} />
                                     </SelectTrigger>
-                                    <SelectContent className="text-gray-300 bg-gray-800 border border-gray-700">
-                                      <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="days">
+                                    <SelectContent className="text-ink-muted bg-surface border border-rule">
+                                      <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="days">
                                         {t('products.add.event.units.days')}
                                       </SelectItem>
-                                      <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="weeks">
+                                      <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="weeks">
                                         {t('products.add.event.units.weeks')}
                                       </SelectItem>
-                                      <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="months">
+                                      <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="months">
                                         {t('products.add.event.units.months')}
                                       </SelectItem>
-                                      <SelectItem className="hover:text-white hover:bg-gray-700 focus:bg-gray-700" value="years">
+                                      <SelectItem className="hover:text-ink hover:bg-surface-2 focus:bg-surface-2" value="years">
                                         {t('products.add.event.units.years')}
                                       </SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormControl>
-                                <FormMessage className="text-red-400" />
+                                <FormMessage className="text-danger" />
                               </FormItem>
                             )}
                           />
@@ -363,16 +363,16 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                           <FormField control={eventForm.control} name="date"
                             render={({ field }) => (
                               <FormItem className="flex-1">
-                                <Label className="text-gray-200">{t('products.add.event.form.date')}</Label>
+                                <Label className="text-ink">{t('products.add.event.form.date')}</Label>
                                 <FormControl>
                                   <Input 
                                     type="date" 
                                     defaultValue={new Date().toISOString().split("T")[0]} 
                                     onChange={(e) => field.onChange(new Date(e.target.value))}
-                                    className="bg-gray-800 border-gray-700 text-white focus:border-purple-500 focus:ring-purple-500"
+                                    className="bg-surface border-rule text-ink focus:border-accent focus:ring-accent"
                                   />
                                 </FormControl>
-                                <FormMessage className="text-red-400" />
+                                <FormMessage className="text-danger" />
                               </FormItem>
                             )}
                           />
@@ -382,7 +382,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
                       <div className="mt-4 flex justify-end">
                         <Button 
                           type="button" 
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 transition-all transform hover:translate-y-[-2px]"
+                          className="bg-accent hover:bg-accent-hover text-ink flex items-center gap-2 transition-all transform hover:translate-y-[-2px]"
                           onClick={() => onSubmitEvent()}
                         >
                           <PlusCircle size={16} />
@@ -403,7 +403,7 @@ export default function AddProduct({ onProductAdded }: AddProductProps) {
               >
                 <Button 
                   type="submit" 
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg hover:shadow-purple-500/30 transition-all transform hover:translate-y-[-2px]"
+                  className="bg-accent hover:bg-accent-hover text-ink px-6 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg hover:shadow-md transition-all transform hover:translate-y-[-2px]"
                 >
                   {t('products.add.form.submit')}
                   <ArrowRight size={16} />

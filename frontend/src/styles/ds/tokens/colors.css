@@ -1,0 +1,119 @@
+/* MyTimeline · Color tokens — "Graphite"
+   Near-monochrome graphite system. Colour appears only as event data plus a
+   single electric-blue accent for "today / active". Light + dark, AA-tuned. */
+
+:root {
+  /* ---- base neutrals (graphite ramp) ---- */
+  --gray-0:   #FFFFFF;
+  --gray-25:  #FCFCFD;
+  --gray-50:  #F3F4F6;
+  --gray-100: #E6E7EB;
+  --gray-200: #D1D3D9;
+  --gray-300: #B8BBC2;
+  --gray-400: #969AA3;
+  --gray-500: #5E626B;
+  --gray-600: #43464D;
+  --gray-800: #24262C;
+  --gray-900: #16181D;
+  --gray-950: #0B0C0E;
+
+  /* ---- brand accent (electric blue) ---- */
+  --blue-400: #4D9BFF;
+  --blue-500: #1170E4;
+  --blue-600: #0E5FC4;
+  --blue-soft:#DBE9FC;
+
+  /* ---- curated 12 event colours (calendar-grade) ---- */
+  --evt-red:        #E5484D;
+  --evt-orange:     #EE7B30;
+  --evt-amber:      #E3A82B;
+  --evt-citron:     #A7B83A;
+  --evt-grass:      #4FA459;
+  --evt-teal:       #2FA7A2;
+  --evt-sky:        #3E8BD6;
+  --evt-cobalt:     #3B62D4;
+  --evt-periwinkle: #6C7BE0;
+  --evt-orchid:     #B056A8;
+  --evt-rose:       #DD5C97;
+  --evt-graphite:   #6B7280;
+
+  /* ---- semantic surfaces & ink (LIGHT) ---- */
+  --color-bg:          var(--gray-25);
+  --color-surface:     var(--gray-0);
+  --color-surface-2:   var(--gray-50);
+  --color-surface-sunken: var(--gray-50);
+  --color-ink:         var(--gray-900);
+  --color-ink-muted:   var(--gray-500);
+  --color-ink-faint:   var(--gray-400);
+  --color-rule:        var(--gray-100);
+  --color-rule-strong: var(--gray-200);
+
+  /* primary = graphite (near-black buttons) */
+  --color-primary:       var(--gray-900);
+  --color-primary-ink:   #FFFFFF;
+  --color-primary-hover: #000000;
+  --color-primary-soft:  #E3E4E8;
+
+  /* accent = electric blue (today / active / links) */
+  --color-accent:      var(--blue-500);
+  --color-accent-ink:  #FFFFFF;
+  --color-accent-soft: var(--blue-soft);
+  --color-accent-hover:var(--blue-600);
+
+  /* status — desaturated, matte; AA (≥4.5:1) as text on light surfaces */
+  --color-success:      #237A38;
+  --color-success-soft: #DCF1E1;
+  --color-warning:      #8A6311;
+  --color-warning-soft: #FBEFD2;
+  --color-danger:       #D13B40;
+  --color-danger-soft:  #FBDDDE;
+  --color-info:         #246FB2;
+  --color-info-soft:    #DBEAF8;
+
+  /* focus ring */
+  --color-focus: var(--blue-500);
+
+  /* event status tints (for bars) */
+  --color-ongoing: var(--blue-500);
+  --color-expired: var(--gray-400);
+  --color-upcoming:var(--gray-500);
+}
+
+.dark,
+[data-theme="dark"] {
+  --color-bg:          var(--gray-950);
+  --color-surface:     #131519;
+  --color-surface-2:   #1B1E24;
+  --color-surface-sunken: #0E1013;
+  --color-ink:         #ECEDEF;
+  --color-ink-muted:   #8E9299;
+  --color-ink-faint:   #5E626B;
+  --color-rule:        #20232A;
+  --color-rule-strong: #2E323A;
+
+  /* primary inverts to light buttons on dark */
+  --color-primary:       #ECEDEF;
+  --color-primary-ink:   #0B0C0E;
+  --color-primary-hover: #FFFFFF;
+  --color-primary-soft:  #20232A;
+
+  --color-accent:      var(--blue-400);
+  --color-accent-ink:  #0B0C0E;
+  --color-accent-soft: #16263A;
+  --color-accent-hover:#76B0FF;
+
+  --color-success:      #4FB36A;
+  --color-success-soft: #14241A;
+  --color-warning:      #E0AE4A;
+  --color-warning-soft: #2A2113;
+  --color-danger:       #F0676B;
+  --color-danger-soft:  #2C1718;
+  --color-info:         #5BA3E6;
+  --color-info-soft:    #11212F;
+
+  --color-focus: var(--blue-400);
+
+  --color-ongoing: var(--blue-400);
+  --color-expired: var(--gray-500);
+  --color-upcoming:var(--gray-400);
+}

@@ -74,7 +74,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
       render={({ field }) => (
         <FormItem className="relative">
           <div className="flex items-center gap-3 mb-2">
-            <FormLabel className="text-white font-medium m-0">{label}</FormLabel>
+            <FormLabel className="text-ink font-medium m-0">{label}</FormLabel>
           </div>
           <div className="flex items-center gap-2">
             <PopoverPicker 
@@ -87,7 +87,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               type="text" 
               value={field.value}
               onChange={(e) => handleColorChange(colorKey, e.target.value, field)}
-              className="flex-1 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="flex-1 bg-surface-2 text-ink border border-rule-strong rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
           <FormMessage />
@@ -99,16 +99,16 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <Card className="bg-gray-800 border-gray-700 shadow-md">
+        <Card className="bg-surface border-rule shadow-md">
           <CardContent className="p-4 space-y-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">{t('products.add.event.form.name')}</FormLabel>
+                  <FormLabel className="text-ink">{t('products.add.event.form.name')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('products.add.event.form.namePlaceholder')} {...field} className="bg-gray-700 text-white border-gray-600" />
+                    <Input placeholder={t('products.add.event.form.namePlaceholder')} {...field} className="bg-surface-2 text-ink border-rule-strong" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -120,17 +120,17 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">{t('products.add.event.form.type')}</FormLabel>
+                  <FormLabel className="text-ink">{t('products.add.event.form.type')}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="bg-gray-700 text-white border-gray-600">
+                      <SelectTrigger className="bg-surface-2 text-ink border-rule-strong">
                         <SelectValue placeholder={t('products.add.event.form.typePlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-gray-700 text-white border-gray-600">
+                    <SelectContent className="bg-surface-2 text-ink border-rule-strong">
                       <SelectItem value="duration">{t('products.add.event.types.duration')}</SelectItem>
                       <SelectItem value="single">{t('products.add.event.types.single')}</SelectItem>
                     </SelectContent>
@@ -147,9 +147,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   name="durationValue"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel className="text-white">{t('products.add.event.form.durationValue')}</FormLabel>
+                      <FormLabel className="text-ink">{t('products.add.event.form.durationValue')}</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="bg-gray-700 text-white border-gray-600" />
+                        <Input type="number" {...field} className="bg-surface-2 text-ink border-rule-strong" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -161,17 +161,17 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   name="durationUnit"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel className="text-white">{t('products.add.event.form.durationUnit')}</FormLabel>
+                      <FormLabel className="text-ink">{t('products.add.event.form.durationUnit')}</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="bg-gray-700 text-white border-gray-600">
+                          <SelectTrigger className="bg-surface-2 text-ink border-rule-strong">
                             <SelectValue placeholder={t('products.add.event.form.durationUnitPlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-gray-700 text-white border-gray-600">
+                        <SelectContent className="bg-surface-2 text-ink border-rule-strong">
                           <SelectItem value="days">{t('products.add.event.units.days')}</SelectItem>
                           <SelectItem value="weeks">{t('products.add.event.units.weeks')}</SelectItem>
                           <SelectItem value="months">{t('products.add.event.units.months')}</SelectItem>
@@ -194,10 +194,10 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      className="data-[state=checked]:bg-indigo-500"
+                      className="data-[state=checked]:bg-accent"
                     />
                   </FormControl>
-                  <FormLabel className="text-white font-normal cursor-pointer">
+                  <FormLabel className="text-ink font-normal cursor-pointer">
                     {t('products.add.event.form.recurring')}
                   </FormLabel>
                 </FormItem>
@@ -210,17 +210,17 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                 name="recurrenceUnit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">{t('products.add.event.form.recurrenceUnit')}</FormLabel>
+                    <FormLabel className="text-ink">{t('products.add.event.form.recurrenceUnit')}</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-gray-700 text-white border-gray-600">
+                        <SelectTrigger className="bg-surface-2 text-ink border-rule-strong">
                           <SelectValue placeholder={t('products.add.event.form.recurrenceUnitPlaceholder')} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-gray-700 text-white border-gray-600">
+                      <SelectContent className="bg-surface-2 text-ink border-rule-strong">
                         <SelectItem value="weeks">{t('products.add.event.units.weeks')}</SelectItem>
                         <SelectItem value="months">{t('products.add.event.units.months')}</SelectItem>
                         <SelectItem value="years">{t('products.add.event.units.years')}</SelectItem>
@@ -232,8 +232,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               />
             )}
             
-            <div className="space-y-6 border-t border-gray-700 pt-6">
-              <div className="text-white font-medium text-lg mb-4">{t('products.details.colors')}</div>
+            <div className="space-y-6 border-t border-rule pt-6">
+              <div className="text-ink font-medium text-lg mb-4">{t('products.details.colors')}</div>
               
               <div className="space-y-4">
                 {renderColorPicker('backgroundColor', t('products.details.backgroundColor'))}
@@ -242,8 +242,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               </div>
 
               <div className="mt-8 rounded-lg overflow-hidden">
-                <div className="text-white text-sm mb-2">{t('products.details.preview')}</div>
-                <div className="bg-gray-800 p-4 rounded-lg">
+                <div className="text-ink text-sm mb-2">{t('products.details.preview')}</div>
+                <div className="bg-surface p-4 rounded-lg">
                   <div 
                     className="w-full rounded-md p-4 transition-all"
                     style={{
@@ -269,18 +269,18 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               </div>
             </div>
             
-            <div className="flex justify-end pt-4 border-t border-gray-700">
+            <div className="flex justify-end pt-4 border-t border-rule">
               <Button 
                 type="button" 
                 variant="outline" 
-                className="mr-2 border-gray-600 text-gray-300 hover:bg-gray-700"
+                className="mr-2 border-rule-strong text-ink-muted hover:bg-surface-2"
                 onClick={onCancel}
               >
                 {t('common.buttons.cancel')}
               </Button>
               <Button 
                 type="submit" 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-accent hover:bg-accent-hover text-ink"
                 disabled={isSaving}
               >
                 {isSaving 

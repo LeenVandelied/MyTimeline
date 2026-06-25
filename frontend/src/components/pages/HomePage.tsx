@@ -49,28 +49,28 @@ export default function HomePage({ params }: HomePageProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-bg text-ink">
       {/* Header/Navigation */}
       <header className="container mx-auto py-6 px-4 flex justify-between items-center">
         <div className="flex items-center">
-          <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-indigo-600">
+          <div className="text-3xl font-bold text-accent">
             Ma Timeline
           </div>
         </div>
-        <nav className="hidden md:flex space-x-8 text-gray-300">
-          <a href="#features" className="nav-link hover:text-purple-400 transition duration-200">{t('common.landing.navigation.features')}</a>
-          <a href="#how-it-works" className="nav-link hover:text-purple-400 transition duration-200">{t('common.landing.navigation.howItWorks')}</a>
-          <a href="#testimonials" className="nav-link hover:text-purple-400 transition duration-200">{t('common.landing.navigation.testimonials')}</a>
+        <nav className="hidden md:flex space-x-8 text-ink-muted">
+          <a href="#features" className="nav-link hover:text-accent transition duration-200">{t('common.landing.navigation.features')}</a>
+          <a href="#how-it-works" className="nav-link hover:text-accent transition duration-200">{t('common.landing.navigation.howItWorks')}</a>
+          <a href="#testimonials" className="nav-link hover:text-accent transition duration-200">{t('common.landing.navigation.testimonials')}</a>
         </nav>
         <div className="flex items-center space-x-4">
           <LanguageSelector />
           <Link href={`/${locale}/login`} passHref>
-            <Button variant="outline" className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white transition-all">
+            <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-ink transition-all">
               {t('common.login.title')}
             </Button>
           </Link>
           <Link href={`/${locale}/register`} passHref>
-            <Button className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white transition-all">
+            <Button className="bg-accent hover:bg-accent-hover text-ink transition-all">
               {t('common.landing.buttons.register')}
             </Button>
           </Link>
@@ -83,24 +83,24 @@ export default function HomePage({ params }: HomePageProps) {
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
             {t('common.landing.hero.title')}
           </h1>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-ink-muted mb-8">
             {t('common.landing.hero.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <Link href={`/${locale}/register`} passHref>
-              <Button className="cta-button bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-lg py-6 px-8 rounded-lg transition-all">
+              <Button className="cta-button bg-accent hover:bg-accent-hover text-ink text-lg py-6 px-8 rounded-lg transition-all">
                 {t('common.landing.hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <a href="#how-it-works">
-              <Button variant="outline" className="border-gray-700 text-white hover:bg-gray-800 text-lg py-6 px-8 rounded-lg transition-all">
+              <Button variant="outline" className="border-rule text-ink hover:bg-surface text-lg py-6 px-8 rounded-lg transition-all">
                 {t('common.landing.hero.secondary')}
               </Button>
             </a>
           </div>
         </div>
         <div className="md:w-1/2 relative hero-image-container">
-          <div className="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700">
+          <div className="bg-surface rounded-xl overflow-hidden shadow-lg border border-rule">
             {/* Image de prévisualisation du tableau de bord */}
             <div className="w-full h-80 md:h-96 relative">
               <Image 
@@ -115,47 +115,47 @@ export default function HomePage({ params }: HomePageProps) {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="bg-gray-800/50 py-20 section-animation">
+      <section id="features" className="bg-surface py-20 section-animation">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('common.landing.features.title')}</h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-ink-muted max-w-3xl mx-auto">
               {t('common.landing.features.subtitle')}
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="feature-card card-gradient-border bg-gray-800 border-gray-700 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-purple-500/10">
+            <Card className="feature-card card-gradient-border bg-surface border-rule shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-md">
               <CardContent className="p-8">
-                <div className="bg-purple-500/10 p-3 rounded-lg w-max mb-6 feature-icon">
-                  <Calendar className="h-8 w-8 text-purple-500" />
+                <div className="bg-accent-soft p-3 rounded-lg w-max mb-6 feature-icon">
+                  <Calendar className="h-8 w-8 text-accent" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-white">{t('common.landing.features.timeline.title')}</h3>
-                <p className="text-gray-300">
+                <h3 className="text-xl font-bold mb-3 text-ink">{t('common.landing.features.timeline.title')}</h3>
+                <p className="text-ink-muted">
                   {t('common.landing.features.timeline.description')}
                 </p>
               </CardContent>
             </Card>
             
-            <Card className="feature-card card-gradient-border bg-gray-800 border-gray-700 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-indigo-500/10">
+            <Card className="feature-card card-gradient-border bg-surface border-rule shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-md">
               <CardContent className="p-8">
-                <div className="bg-indigo-500/10 p-3 rounded-lg w-max mb-6 feature-icon">
-                  <Clock className="h-8 w-8 text-indigo-500" />
+                <div className="bg-accent-soft p-3 rounded-lg w-max mb-6 feature-icon">
+                  <Clock className="h-8 w-8 text-accent" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-white">{t('common.landing.features.reminders.title')}</h3>
-                <p className="text-gray-300">
+                <h3 className="text-xl font-bold mb-3 text-ink">{t('common.landing.features.reminders.title')}</h3>
+                <p className="text-ink-muted">
                   {t('common.landing.features.reminders.description')}
                 </p>
               </CardContent>
             </Card>
             
-            <Card className="feature-card card-gradient-border bg-gray-800 border-gray-700 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-blue-500/10">
+            <Card className="feature-card card-gradient-border bg-surface border-rule shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-md">
               <CardContent className="p-8">
                 <div className="bg-blue-500/10 p-3 rounded-lg w-max mb-6 feature-icon">
                   <LayoutList className="h-8 w-8 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-white">{t('common.landing.features.organization.title')}</h3>
-                <p className="text-gray-300">
+                <h3 className="text-xl font-bold mb-3 text-ink">{t('common.landing.features.organization.title')}</h3>
+                <p className="text-ink-muted">
                   {t('common.landing.features.organization.description')}
                 </p>
               </CardContent>
@@ -169,49 +169,49 @@ export default function HomePage({ params }: HomePageProps) {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('common.landing.howItWorks.title')}</h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-ink-muted max-w-3xl mx-auto">
               {t('common.landing.howItWorks.subtitle')}
             </p>
           </div>
           
           <div className="grid md:grid-cols-4 gap-6">
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-purple-500">1</span>
+              <div className="w-16 h-16 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-accent">1</span>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">{t('common.landing.howItWorks.step1.title')}</h3>
-              <p className="text-gray-300">{t('common.landing.howItWorks.step1.description')}</p>
+              <h3 className="text-xl font-bold mb-2 text-ink">{t('common.landing.howItWorks.step1.title')}</h3>
+              <p className="text-ink-muted">{t('common.landing.howItWorks.step1.description')}</p>
             </div>
             
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-indigo-500">2</span>
+              <div className="w-16 h-16 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-accent">2</span>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">{t('common.landing.howItWorks.step2.title')}</h3>
-              <p className="text-gray-300">{t('common.landing.howItWorks.step2.description')}</p>
+              <h3 className="text-xl font-bold mb-2 text-ink">{t('common.landing.howItWorks.step2.title')}</h3>
+              <p className="text-ink-muted">{t('common.landing.howItWorks.step2.description')}</p>
             </div>
             
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl font-bold text-blue-500">3</span>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">{t('common.landing.howItWorks.step3.title')}</h3>
-              <p className="text-gray-300">{t('common.landing.howItWorks.step3.description')}</p>
+              <h3 className="text-xl font-bold mb-2 text-ink">{t('common.landing.howItWorks.step3.title')}</h3>
+              <p className="text-ink-muted">{t('common.landing.howItWorks.step3.description')}</p>
             </div>
             
             <div className="text-center p-6">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-purple-500">4</span>
+              <div className="w-16 h-16 bg-accent-soft rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-accent">4</span>
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">{t('common.landing.howItWorks.step4.title')}</h3>
-              <p className="text-gray-300">{t('common.landing.howItWorks.step4.description')}</p>
+              <h3 className="text-xl font-bold mb-2 text-ink">{t('common.landing.howItWorks.step4.title')}</h3>
+              <p className="text-ink-muted">{t('common.landing.howItWorks.step4.description')}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Timeline Section */}
-      <section className="py-10 bg-gray-800/30 section-animation">
+      <section className="py-10 bg-surface section-animation">
         <div className="container mx-auto px-4">
           <div className="relative w-full h-64 md:h-72 overflow-hidden rounded-xl timeline-preview">
             <Image 
@@ -232,14 +232,14 @@ export default function HomePage({ params }: HomePageProps) {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-10 md:mb-0">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('common.landing.mobileApp.title')}</h2>
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-xl text-ink-muted mb-8">
               {t('common.landing.mobileApp.subtitle')}
             </p>
             <div className="flex space-x-4">
-              <Button className="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white">
+              <Button className="bg-surface border border-rule hover:bg-surface-2 text-ink">
                 {t('common.landing.mobileApp.ios')}
               </Button>
-              <Button className="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white">
+              <Button className="bg-surface border border-rule hover:bg-surface-2 text-ink">
                 {t('common.landing.mobileApp.android')}
               </Button>
             </div>
@@ -258,14 +258,14 @@ export default function HomePage({ params }: HomePageProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-800 to-indigo-800 section-animation">
+      <section className="py-20 bg-accent section-animation">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('common.landing.cta.title')}</h2>
-          <p className="text-xl text-gray-200 mb-10 max-w-3xl mx-auto">
+          <p className="text-xl text-ink mb-10 max-w-3xl mx-auto">
             {t('common.landing.cta.subtitle')}
           </p>
           <Link href={`/${locale}/register`} passHref>
-            <Button className="bg-white text-purple-800 hover:bg-gray-100 text-lg px-10 py-6 rounded-lg transition-all">
+            <Button className="bg-primary text-primary-ink hover:bg-primary-hover text-lg px-10 py-6 rounded-lg transition-all">
               {t('common.landing.cta.button')}
             </Button>
           </Link>

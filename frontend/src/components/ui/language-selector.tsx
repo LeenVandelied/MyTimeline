@@ -29,7 +29,7 @@ export function LanguageSelector() {
           <span className="sr-only">Changer de langue</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-gray-800">
+      <DropdownMenuContent align="end" className="bg-surface">
         {languages.map((language) => (
           <Link
             key={language.code}
@@ -37,7 +37,7 @@ export function LanguageSelector() {
             className="w-full"
           >
             <DropdownMenuItem
-              className={locale === language.code ? 'bg-accent text-accent-foreground font-medium hover:bg-gray-700' : 'hover:bg-gray-700'}
+              className={locale === language.code ? 'bg-accent text-accent-foreground font-medium hover:bg-surface-2' : 'hover:bg-surface-2'}
             >
               {language.name}
             </DropdownMenuItem>

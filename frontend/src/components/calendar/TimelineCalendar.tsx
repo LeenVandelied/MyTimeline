@@ -131,20 +131,20 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
     <div className="relative w-full overflow-x-auto">
       <div className="min-w-[800px]">
         {/* Header: resources column + days */}
-        <div className="flex border-b border-indigo-900/60 bg-gradient-to-r from-indigo-900/70 to-purple-900/70">
-          <div className="w-[15%] px-4 py-3 border-r border-indigo-900/60 text-xs font-semibold uppercase tracking-wide text-indigo-100">
+        <div className="flex border-b border-rule bg-surface">
+          <div className="w-[15%] px-4 py-3 border-r border-rule text-xs font-semibold uppercase tracking-wide text-ink">
             {t('dashboard.products')}
           </div>
           <div className="flex-1 grid" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
             {days.map((day) => (
               <div
                 key={day.toISOString()}
-                className={`px-2 py-2 text-center text-xs font-medium text-slate-100 border-r border-indigo-900/40 ${
+                className={`px-2 py-2 text-center text-xs font-medium text-ink border-r border-rule ${
                   day.toDateString() === now.toDateString()
-                    ? 'bg-indigo-700/40'
+                    ? 'bg-accent-soft'
                     : (day.getDay() === 0 || day.getDay() === 6)
-                    ? 'bg-slate-900/40'
-                    : 'bg-slate-900/20'
+                    ? 'bg-surface-2'
+                    : 'bg-surface-2'
                 }`}
               >
                 {formatDay(day, locale)}
@@ -171,11 +171,11 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
             <div key={category}>
               {/* Category row */}
               <div className="flex">
-                <div className="w-[15%] px-4 py-2 border-r border-indigo-900/60 bg-indigo-900/70 text-xs font-semibold uppercase tracking-wide text-slate-100">
+                <div className="w-[15%] px-4 py-2 border-r border-rule bg-surface text-xs font-semibold uppercase tracking-wide text-ink">
                   {category}
                 </div>
                 <div
-                  className="flex-1 h-8 border-b border-indigo-900/60 bg-indigo-900/40"
+                  className="flex-1 h-8 border-b border-rule bg-surface-2"
                   style={{ borderLeft: '1px solid rgba(79,70,229,0.4)' }}
                 />
               </div>
@@ -186,11 +186,11 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
 
                 return (
                   <div key={resource.id} className="flex">
-                    <div className="w-[15%] px-4 py-3 border-r border-indigo-900/60 bg-indigo-900/40 text-sm font-medium text-slate-100 truncate">
+                    <div className="w-[15%] px-4 py-3 border-r border-rule bg-surface-2 text-sm font-medium text-ink truncate">
                       {resource.title}
                     </div>
                     <div
-                      className="relative flex-1 h-16 border-b border-indigo-900/60 bg-slate-900/40"
+                      className="relative flex-1 h-16 border-b border-rule bg-surface-2"
                       style={{ borderLeft: '1px solid rgba(79,70,229,0.4)' }}
                     >
                       {/* Vertical day separators */}
@@ -198,7 +198,7 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
                         {days.map((day) => (
                           <div
                             key={day.toISOString()}
-                            className="border-r border-indigo-900/30"
+                            className="border-r border-rule"
                           />
                         ))}
                       </div>
@@ -244,7 +244,7 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
         </div>
 
         {/* Footer with current view title (for cohérence UI) */}
-        <div className="mt-4 text-sm text-slate-300">
+        <div className="mt-4 text-sm text-ink-muted">
           {viewTitle}
         </div>
       </div>

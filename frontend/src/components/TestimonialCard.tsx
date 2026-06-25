@@ -12,26 +12,26 @@ interface TestimonialCardProps {
 
 const getBgColorClass = (color: string) => {
   const colorMap: Record<string, string> = {
-    purple: "bg-purple-500/20",
-    indigo: "bg-indigo-500/20",
+    purple: "bg-accent-soft",
+    indigo: "bg-accent-soft",
     blue: "bg-blue-500/20",
     cyan: "bg-cyan-500/20",
     pink: "bg-pink-500/20"
   };
   
-  return colorMap[color] || "bg-purple-500/20";
+  return colorMap[color] || "bg-accent-soft";
 };
 
 const getTextColorClass = (color: string) => {
   const colorMap: Record<string, string> = {
-    purple: "text-purple-500",
-    indigo: "text-indigo-500",
+    purple: "text-accent",
+    indigo: "text-accent",
     blue: "text-blue-500",
     cyan: "text-cyan-500",
     pink: "text-pink-500"
   };
   
-  return colorMap[color] || "text-purple-500";
+  return colorMap[color] || "text-accent";
 };
 
 export default function TestimonialCard({ name, role, content, avatar }: TestimonialCardProps) {
@@ -39,18 +39,18 @@ export default function TestimonialCard({ name, role, content, avatar }: Testimo
   const textColorClass = getTextColorClass(avatar.bgColor);
   
   return (
-    <Card className="testimonial-card bg-gray-800 border-gray-700 shadow-lg">
+    <Card className="testimonial-card bg-surface border-rule shadow-lg">
       <CardContent className="p-8">
         <div className="flex items-center mb-4">
           <div className={`w-12 h-12 ${bgColorClass} rounded-full flex items-center justify-center mr-3`}>
             <span className={`text-lg font-bold ${textColorClass}`}>{avatar.letter}</span>
           </div>
           <div>
-            <h4 className="font-bold text-white">{name}</h4>
-            <p className="text-gray-400 text-sm">{role}</p>
+            <h4 className="font-bold text-ink">{name}</h4>
+            <p className="text-ink-muted text-sm">{role}</p>
           </div>
         </div>
-        <p className="text-gray-300">
+        <p className="text-ink-muted">
           &quot;{content}&quot;
         </p>
       </CardContent>

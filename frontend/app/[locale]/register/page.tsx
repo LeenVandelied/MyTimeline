@@ -63,13 +63,13 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
+    <div className="flex flex-col min-h-screen bg-bg text-ink">
       <div className="absolute top-4 right-4">
         <LanguageSelector />
       </div>
       
       <div className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div className="w-full max-w-md bg-surface p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-6">{t('register.title')}</h2>
 
           <Form {...form}>
@@ -80,7 +80,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                     <FormLabel>{t('register.form.email')}</FormLabel>
                     <FormControl>
                       <Input type="email" placeholder={t('register.form.emailPlaceholder')} {...field} 
-                        className="bg-gray-700 border-gray-600" />
+                        className="bg-surface-2 border-rule-strong" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,7 +93,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                     <FormLabel>{t('register.form.name')}</FormLabel>
                     <FormControl>
                       <Input type="text" placeholder={t('register.form.namePlaceholder')} {...field} 
-                        className="bg-gray-700 border-gray-600" />
+                        className="bg-surface-2 border-rule-strong" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -106,7 +106,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                     <FormLabel>{t('register.form.username')}</FormLabel>
                     <FormControl>
                       <Input type="text" placeholder={t('register.form.usernamePlaceholder')} {...field} 
-                        className="bg-gray-700 border-gray-600" />
+                        className="bg-surface-2 border-rule-strong" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -119,7 +119,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                     <FormLabel>{t('register.form.password')}</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder={t('register.form.passwordPlaceholder')} {...field} 
-                        className="bg-gray-700 border-gray-600" />
+                        className="bg-surface-2 border-rule-strong" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -132,23 +132,23 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                     <FormLabel>{t('register.form.confirmPassword')}</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder={t('register.form.confirmPasswordPlaceholder')} {...field} 
-                        className="bg-gray-700 border-gray-600" />
+                        className="bg-surface-2 border-rule-strong" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={loading}>
+              <Button type="submit" className="w-full bg-accent hover:bg-accent-hover" disabled={loading}>
                 {loading ? t('register.form.submitting') : t('register.form.submit')}
               </Button>
             </form>
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
+            <p className="text-ink-muted">
               {t('register.form.alreadyAccount')}{" "}
-              <Link href={`/${locale.locale}/login`} className="text-purple-400 hover:text-purple-300">
+              <Link href={`/${locale.locale}/login`} className="text-accent hover:text-accent">
                 {t('register.form.loginLink')}
               </Link>
             </p>
