@@ -3,7 +3,9 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Optional;
@@ -14,8 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
@@ -74,6 +79,28 @@ class EventControllerOwnershipTest {
                 .andExpect(status().isForbidden());
 
         verify(eventService, never()).deleteById(eventId);
+    }
+
+    @Test
+    void patchEvent_crossUser_returns403_andDoesNotUpdate() throws Exception {
+        User attacker = new User(attackerId, "Attacker", "attacker", "pwd", "ROLE_USER", "a@a.com");
+        User owner = new User(ownerId, "Owner", "owner", "pwd", "ROLE_USER", "o@o.com");
+
+        Event event = new Event(eventId, "title", "type", 1, "DAY", false, null, null, null, productId, false);
+        Product product = new Product(productId, "prod", null, owner, java.util.List.of());
+
+        when(jwtService.extractUsername("attacker-token")).thenReturn("attacker");
+        when(userService.findDomainUserByUsername("attacker")).thenReturn(Optional.of(attacker));
+        when(eventService.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
+
+        mockMvc.perform(patch("/api/events/" + eventId)
+                        .cookie(new Cookie("jwt", "attacker-token"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"hacked\"}"))
+                .andExpect(status().isForbidden());
+
+        verify(eventService, never()).updateEvent(any(UUID.class), any(EventUpdateRequest.class));
     }
 
     @Test

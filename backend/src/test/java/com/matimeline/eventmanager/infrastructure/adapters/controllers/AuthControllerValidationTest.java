@@ -67,4 +67,14 @@ class AuthControllerValidationTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void login_blankUsernameAndPassword_returns400() throws Exception {
+        String body = "{\"username\":\"\",\"password\":\"\"}";
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
 }

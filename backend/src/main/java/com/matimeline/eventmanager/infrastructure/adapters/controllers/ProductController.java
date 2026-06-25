@@ -14,6 +14,7 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -48,14 +49,19 @@ public class ProductController {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-    
-        String username = jwtService.extractUsername(token);
+
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
-    
+
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-    
+
         request.setUserId(userId);
         Product product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
@@ -104,7 +110,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
@@ -130,7 +141,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {
@@ -158,7 +174,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Optional<User> user = userService.findDomainUserByUsername(username);
 
         if (user.isEmpty() || !user.get().getId().equals(userId)) {

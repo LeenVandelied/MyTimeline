@@ -18,6 +18,7 @@ import com.matimeline.eventmanager.domain.ports.services.ProductService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -41,7 +42,26 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<Event> createEvent(@Valid @RequestBody EventCreationRequest request) {
+    public ResponseEntity<Event> createEvent(@Valid @RequestBody EventCreationRequest request,
+                                             @CookieValue(value = "jwt", required = false) String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<Product> product = productService.findDomainProductById(request.getProductId());
+        if (product.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (product.get().getUser() == null
+                || !product.get().getUser().getId().equals(caller.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Event event = eventService.createEvent(request);
         return ResponseEntity.ok(event);
     }
@@ -79,9 +99,8 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtService.extractUsername(token);
-        Optional<User> user = userService.findDomainUserByUsername(username);
-        if (user.isEmpty()) {
+        User caller = resolveCaller(token);
+        if (caller == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -96,10 +115,24 @@ public class EventController {
         }
 
         if (product.get().getUser() == null
-                || !product.get().getUser().getId().equals(user.get().getId())) {
+                || !product.get().getUser().getId().equals(caller.getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         return null;
+    }
+
+    /**
+     * Resolves the authenticated User from the JWT, or null when the token is
+     * malformed/expired/invalid (JwtException) or the user is unknown.
+     * Identity is derived from the JWT, never from a path or body param.
+     */
+    private User resolveCaller(String token) {
+        try {
+            String username = jwtService.extractUsername(token);
+            return userService.findDomainUserByUsername(username).orElse(null);
+        } catch (JwtException e) {
+            return null;
+        }
     }
 }
