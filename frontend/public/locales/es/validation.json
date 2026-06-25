@@ -1,21 +1,21 @@
 {
   "email": {
-    "invalid": "L'email est invalide",
-    "required": "L'email est requis"
+    "invalid": "El email es inválido",
+    "required": "El email es requerido"
   },
   "name": {
-    "min": "Le nom doit contenir au moins 3 caractères",
-    "required": "Le nom est requis"
+    "min": "El nombre debe contener al menos 3 caracteres",
+    "required": "El nombre es requerido"
   },
   "username": {
-    "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "required": "Le nom d'utilisateur est requis"
+    "min": "El nombre de usuario debe contener al menos 3 caracteres",
+    "required": "El nombre de usuario es requerido"
   },
   "password": {
-    "min": "Le mot de passe doit contenir au moins 6 caractères",
-    "uppercase": "Le mot de passe doit contenir au moins une majuscule",
-    "number": "Le mot de passe doit contenir au moins un chiffre",
-    "match": "Les mots de passe ne correspondent pas",
-    "required": "Le mot de passe est requis"
+    "min": "La contraseña debe contener al menos 6 caracteres",
+    "uppercase": "La contraseña debe contener al menos una mayúscula",
+    "number": "La contraseña debe contener al menos un número",
+    "match": "Las contraseñas no coinciden",
+    "required": "La contraseña es requerida"
   }
 }

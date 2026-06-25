@@ -1,46 +1,159 @@
 {
   "login": {
-    "title": "Connexion",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
-    "submit": "Se connecter",
-    "loading": "Connexion...",
-    "noAccount": "Pas encore de compte ?",
-    "register": "Inscrivez-vous"
+    "title": "Iniciar sesión",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "loading": "Iniciando sesión...",
+    "noAccount": "¿Aún no tienes cuenta?",
+    "register": "Regístrate"
   },
   "validation": {
-    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "password": "Le mot de passe doit contenir au moins 6 caractères"
+    "username": "El nombre de usuario debe contener al menos 3 caracteres",
+    "password": "La contraseña debe contener al menos 6 caracteres"
   },
   "buttons": {
-    "submit": "Valider",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "back": "Retour",
-    "logout": "Se déconnecter",
-    "previous": "Précédent",
-    "next": "Suivant",
-    "today": "Aujourd'hui"
+    "submit": "Validar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "logout": "Cerrar sesión",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "today": "Hoy",
+    "showMore": "Ver más",
+    "showLess": "Ver menos"
   },
   "loading": {
-    "default": "Chargement...",
-    "saving": "Enregistrement...",
-    "deleting": "Suppression..."
+    "default": "Cargando...",
+    "saving": "Guardando...",
+    "deleting": "Eliminando..."
   },
   "navigation": {
-    "home": "Accueil",
-    "profile": "Profil",
-    "settings": "Paramètres"
+    "home": "Inicio",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "back": "Atrás",
+    "backToHome": "Volver al inicio"
   },
   "time": {
-    "year": "an",
-    "years": "ans",
-    "month": "mois",
-    "months": "mois",
-    "day": "jour",
-    "days": "jours",
-    "expired": "Expiré"
+    "year": "año",
+    "years": "años",
+    "month": "mes",
+    "months": "meses",
+    "day": "día",
+    "days": "días",
+    "expired": "Expirado"
+  },
+  "events": {
+    "ongoing": "En curso",
+    "expired": "Expirado",
+    "upcoming": "Próximo",
+    "duration": "Duración",
+    "single": "Fecha única"
+  },
+  "landing": {
+    "title": "Mi Timeline | Tu asistente personal de organización",
+    "navigation": {
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "testimonials": "Testimonios"
+    },
+    "buttons": {
+      "register": "Registrarse"
+    },
+    "meta": {
+      "description": "Mi Timeline te ayuda a gestionar tus plazos, organizar tu tiempo y optimizar tu productividad. Simple, intuitivo y personalizable."
+    },
+    "images": {
+      "dashboard": "Vista previa del panel de Mi Timeline",
+      "timeline": "Ejemplo de timeline",
+      "mobileApp": "Aplicación móvil Mi Timeline"
+    },
+    "hero": {
+      "title": "Organiza tu vida con Mi Timeline",
+      "subtitle": "Tu asistente personal para gestionar plazos, optimizar tu tiempo y alcanzar tus objetivos más eficientemente.",
+      "cta": "Comenzar gratis",
+      "secondary": "Descubre cómo funciona"
+    },
+    "features": {
+      "title": "Características principales",
+      "subtitle": "Mi Timeline combina las mejores herramientas de gestión del tiempo para ayudarte a alcanzar una organización óptima.",
+      "timeline": {
+        "title": "Visualización temporal",
+        "description": "Visualiza tus plazos y compromisos en una timeline intuitiva. Obtén una visión general clara de tus proyectos."
+      },
+      "reminders": {
+        "title": "Recordatorios inteligentes",
+        "description": "Recibe notificaciones adaptadas a tus hábitos y a la importancia de tus tareas. Nunca más pierdas una fecha límite."
+      },
+      "organization": {
+        "title": "Organización por proyecto",
+        "description": "Agrupa tus tareas por proyecto y categoría. Sigue tu progreso y establece prioridades para cada actividad."
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "subtitle": "Mi Timeline simplifica tu organización en pocos pasos sencillos",
+      "step1": {
+        "title": "Crea tu cuenta",
+        "description": "Regístrate en pocos segundos para comenzar tu viaje de organización."
+      },
+      "step2": {
+        "title": "Añade tus proyectos",
+        "description": "Define tus proyectos, productos o categorías que deseas seguir."
+      },
+      "step3": {
+        "title": "Crea tus plazos",
+        "description": "Añade tus eventos y define su duración, tipo e importancia."
+      },
+      "step4": {
+        "title": "Mantente organizado",
+        "description": "Visualiza, sigue y modifica fácilmente todos tus plazos en un único lugar."
+      }
+    },
+    "testimonials": {
+      "title": "Qué dicen nuestros usuarios",
+      "subtitle": "Descubre cómo Mi Timeline ha transformado la organización diaria de nuestros usuarios"
+    },
+    "cta": {
+      "title": "¿Listo para transformar tu organización?",
+      "subtitle": "Comienza ahora y mejora tu productividad",
+      "button": "Crear mi cuenta gratis",
+      "secondary": "Obtener más información"
+    },
+    "mobileApp": {
+      "title": "Lleva tu organización contigo",
+      "subtitle": "Accede a Mi Timeline en todos tus dispositivos. Mantente organizado dondequiera que estés.",
+      "ios": "Próximamente en iOS",
+      "android": "Próximamente en Android"
+    },
+    "footer": {
+      "description": "Tu asistente personal de organización y gestión del tiempo",
+      "product": "Producto",
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "testimonials": "Testimonios",
+      "legal": "Legal",
+      "terms": "Términos de servicio",
+      "privacy": "Política de privacidad",
+      "legalNotice": "Aviso legal",
+      "account": "Cuenta",
+      "login": "Iniciar sesión",
+      "register": "Registrarse"
+    }
+  },
+  "footer": {
+    "allRightsReserved": "Todos los derechos reservados.",
+    "termsOfService": "Términos de servicio",
+    "privacyPolicy": "Política de privacidad",
+    "legalNotice": "Aviso legal",
+    "product": "Productos",
+    "features": "Características",
+    "howItWorks": "Cómo funciona",
+    "testimonials": "Testimonios",
+    "legal": "Legal"
   }
 }

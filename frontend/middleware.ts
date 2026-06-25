@@ -3,7 +3,7 @@ import createMiddleware from 'next-intl/middleware';
 // Ce middleware gère la redirection basée sur la langue
 export default createMiddleware({
   // Liste des langues supportées
-  locales: ['fr', 'en'],
+  locales: ['fr', 'en', 'es', 'de'],
   
   // Langue par défaut
   defaultLocale: 'fr',

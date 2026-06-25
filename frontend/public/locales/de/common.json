@@ -9,38 +9,151 @@
     "register": "Sich registrieren"
   },
   "validation": {
-    "username": "Der Nutzername muss mindestens 3 Zeichen lang sein",
-    "password": "Passwort muss mindestens 6 Zeichen enthalten"
+    "username": "Der Benutzername muss mindestens 3 Zeichen lang sein",
+    "password": "Das Passwort muss mindestens 6 Zeichen enthalten"
   },
   "buttons": {
-    "submit": "Valider",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "back": "Retour",
-    "logout": "Se déconnecter",
-    "previous": "Précédent",
-    "next": "Suivant",
-    "today": "Aujourd'hui"
+    "submit": "Bestätigen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "back": "Zurück",
+    "logout": "Abmelden",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "today": "Heute",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "loading": {
-    "default": "Chargement...",
-    "saving": "Enregistrement...",
-    "deleting": "Suppression..."
+    "default": "Lädt...",
+    "saving": "Speichert...",
+    "deleting": "Löscht..."
   },
   "navigation": {
-    "home": "Accueil",
+    "home": "Startseite",
     "profile": "Profil",
-    "settings": "Paramètres"
+    "settings": "Einstellungen",
+    "back": "Zurück",
+    "backToHome": "Zurück zur Startseite"
   },
   "time": {
-    "year": "an",
-    "years": "ans",
-    "month": "mois",
-    "months": "mois",
-    "day": "jour",
-    "days": "jours",
-    "expired": "Expiré"
+    "year": "Jahr",
+    "years": "Jahre",
+    "month": "Monat",
+    "months": "Monate",
+    "day": "Tag",
+    "days": "Tage",
+    "expired": "Abgelaufen"
+  },
+  "events": {
+    "ongoing": "Läuft",
+    "expired": "Abgelaufen",
+    "upcoming": "Bevorstehend",
+    "duration": "Dauer",
+    "single": "Einzelnes Datum"
+  },
+  "landing": {
+    "title": "Meine Timeline | Ihr persönlicher Organisationsassistent",
+    "navigation": {
+      "features": "Funktionen",
+      "howItWorks": "So funktioniert es",
+      "testimonials": "Bewertungen"
+    },
+    "buttons": {
+      "register": "Registrieren"
+    },
+    "meta": {
+      "description": "Meine Timeline hilft Ihnen, Ihre Termine zu verwalten, Ihre Zeit zu organisieren und Ihre Produktivität zu optimieren. Einfach, intuitiv und anpassbar."
+    },
+    "images": {
+      "dashboard": "Vorschau des Meine Timeline Dashboards",
+      "timeline": "Beispiel einer Timeline",
+      "mobileApp": "Meine Timeline Mobilanwendung"
+    },
+    "hero": {
+      "title": "Organisieren Sie Ihr Leben mit Meine Timeline",
+      "subtitle": "Ihr persönlicher Assistent zur Verwaltung von Terminen, Optimierung Ihrer Zeit und effizienterem Erreichen Ihrer Ziele.",
+      "cta": "Kostenlos starten",
+      "secondary": "Entdecken Sie, wie es funktioniert"
+    },
+    "features": {
+      "title": "Hauptfunktionen",
+      "subtitle": "Meine Timeline kombiniert die besten Zeitmanagement-Tools, um Ihnen optimale Organisation zu ermöglichen.",
+      "timeline": {
+        "title": "Zeitliche Visualisierung",
+        "description": "Visualisieren Sie Ihre Termine und Verpflichtungen auf einer intuitiven Timeline. Erhalten Sie einen klaren Überblick über Ihre Projekte."
+      },
+      "reminders": {
+        "title": "Intelligente Erinnerungen",
+        "description": "Erhalten Sie Benachrichtigungen, die Ihren Gewohnheiten und der Wichtigkeit Ihrer Aufgaben entsprechen. Verpassen Sie keine Frist mehr."
+      },
+      "organization": {
+        "title": "Organisation nach Projekt",
+        "description": "Gruppieren Sie Ihre Aufgaben nach Projekt und Kategorie. Verfolgen Sie Ihre Fortschritte und setzen Sie Prioritäten für jede Aktivität."
+      }
+    },
+    "howItWorks": {
+      "title": "So funktioniert es",
+      "subtitle": "Meine Timeline vereinfacht Ihre Organisation in wenigen einfachen Schritten",
+      "step1": {
+        "title": "Erstellen Sie Ihr Konto",
+        "description": "Registrieren Sie sich in wenigen Sekunden, um Ihre Organisationsreise zu beginnen."
+      },
+      "step2": {
+        "title": "Fügen Sie Ihre Projekte hinzu",
+        "description": "Definieren Sie Ihre Projekte, Produkte oder Kategorien, die Sie verfolgen möchten."
+      },
+      "step3": {
+        "title": "Erstellen Sie Ihre Fristen",
+        "description": "Fügen Sie Ihre Ereignisse hinzu und definieren Sie deren Dauer, Typ und Wichtigkeit."
+      },
+      "step4": {
+        "title": "Bleiben Sie organisiert",
+        "description": "Visualisieren, verfolgen und ändern Sie alle Ihre Fristen einfach an einem Ort."
+      }
+    },
+    "testimonials": {
+      "title": "Das sagen unsere Nutzer",
+      "subtitle": "Erfahren Sie, wie Meine Timeline die tägliche Organisation unserer Nutzer verändert hat"
+    },
+    "cta": {
+      "title": "Bereit, Ihre Organisation zu transformieren?",
+      "subtitle": "Beginnen Sie jetzt und verbessern Sie Ihre Produktivität",
+      "button": "Erstellen Sie jetzt kostenlos Ihr Konto",
+      "secondary": "Weitere Informationen"
+    },
+    "mobileApp": {
+      "title": "Bringen Sie Ihre Organisation überall hin mit",
+      "subtitle": "Greifen Sie auf Meine Timeline auf allen Ihren Geräten zu. Bleiben Sie überall organisiert.",
+      "ios": "Bald auf iOS",
+      "android": "Bald auf Android"
+    },
+    "footer": {
+      "description": "Ihr persönlicher Assistent für Organisation und Zeitmanagement",
+      "product": "Produkt",
+      "features": "Funktionen",
+      "howItWorks": "So funktioniert es",
+      "testimonials": "Bewertungen",
+      "legal": "Rechtliches",
+      "terms": "Nutzungsbedingungen",
+      "privacy": "Datenschutzrichtlinie",
+      "legalNotice": "Impressum",
+      "account": "Konto",
+      "login": "Einloggen",
+      "register": "Registrieren"
+    }
+  },
+  "footer": {
+    "allRightsReserved": "Alle Rechte vorbehalten.",
+    "termsOfService": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "legalNotice": "Impressum",
+    "product": "Produkte",
+    "features": "Funktionen",
+    "howItWorks": "So funktioniert es",
+    "testimonials": "Bewertungen",
+    "legal": "Rechtliches"
   }
 }
