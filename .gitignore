@@ -1,6 +1,5 @@
 HELP.md
 target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -45,7 +44,10 @@ build/
 
 # === BACKEND (Spring Boot) ===
 backend/target/
-backend/.mvn/
+# Maven wrapper TRACKÉ (cd backend && ./mvnw) — type only-script, pas de jar.
+# On garde le wrapper versionné mais on ignore les éventuels artefacts .mvn locaux.
+backend/.mvn/*
+!backend/.mvn/wrapper/
 backend/.idea/
 backend/*.iml
 backend/*.iws

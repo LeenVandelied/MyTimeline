@@ -14,8 +14,12 @@ Un PATCH partiel légitime peut omettre un champ (ex: endpoint « couleurs seule
 ## PIT-S1-004 — `git add -A` dans un worktree sprint capture les artefacts d'orchestration
 Le worktree sprint contient des fichiers untracked d'orchestration (`docs/memory/sprints/sprint-N/*` briefings/done.md). `git add -A` les capture par erreur. Stager explicitement les fichiers source/test (`git add <paths>` ciblés). (Sprint 1 correction post-review)
 
-## PIT-S2-001 — Build backend = `cd backend && mvn`, pas de `./mvnw` ni `scripts/test-quiet.sh`
-Le `mvnw` racine est cassé (`.mvn/wrapper` manquant) et le `pom.xml` vit dans `backend/`. Toujours `cd backend && mvn ...` (mvn système). Un hook PreToolUse bloque `mvn test` nu → préfixer `SKIP_DELEGATION=1 mvn test` pour les petites suites. Les tests d'intégration tapent une vraie Postgres (HikariPool au boot du contexte). (Sprint 2 #32/#33)
+## PIT-S2-001 — Build backend = `cd backend && mvn` (wrapper + helper réparés Sprint 4)
+~~Le `mvnw` racine est cassé (`.mvn/wrapper` manquant)~~ **RÉSOLU (Sprint 4, PR #113)** : le wrapper vit désormais dans `backend/` (`backend/mvnw` + `backend/.mvn/wrapper/maven-wrapper.properties`, type `only-script`, Maven 3.9.9, tracké). Le `mvnw`/`mvnw.cmd` racine orphelins (pas de `pom.xml` racine) ont été supprimés. Lancer les tests de l'une de ces façons :
+- `./scripts/test-quiet.sh unit` (depuis la racine) — sortie condensée, agrège `Tests run:` + verdict, log complet en `/tmp` ; scopes : `unit|backend|coverage|e2e|frontend|all`.
+- `cd backend && ./mvnw test` (wrapper) ou `cd backend && SKIP_DELEGATION=1 mvn -q test` (mvn système).
+
+Un hook PreToolUse bloque `mvn test` nu → préfixer `SKIP_DELEGATION=1` (le helper le fait déjà). Les tests d'intégration tapent une **Postgres jetable Testcontainers** (`@DynamicPropertySource`, port aléatoire) — pas la base dev, et **aucun `DB_PASSWORD` requis** sur le profil `test`. Docker doit tourner. (Sprint 2 #32/#33, réparé Sprint 4)
 
 ## PIT-S2-002 — Tester un contrat 401/403 Spring Security exige le full filter chain
 `MockMvcBuilders.standaloneSetup` (utilisé par des tests existants) bypasse Spring Security → 401/403 jamais déclenchés = faux verts. Pour valider entryPoint/accessDeniedHandler et l'ownership, utiliser `@SpringBootTest` + `@AutoConfigureMockMvc`. Corollaire : les exceptions levées DANS un filtre ne traversent pas le `@RestControllerAdvice` (hors DispatcherServlet). (Sprint 2 #51)
