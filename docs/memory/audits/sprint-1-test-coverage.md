@@ -1,6 +1,6 @@
 # Audit tests — Sprint 1
 
-> Généré en fin de Phase 6. Aucun `[MISSING]` → Phase 9 PR débloquée.
+> Généré en fin de Phase 6. Aucune couverture manquante → Phase 9 PR débloquée.
 > Sprint backend sécurité P0 (IDOR, validation, DTO). Aucun changement frontend.
 
 ## Couverture par BR
@@ -14,7 +14,7 @@
 | Auth validation | login payload vide → 400 (`@NotBlank`) | NON | ✅ | ✅ | ⚠ N/A | ⚠ N/A |
 | Sécurité config | STATELESS + @EnableMethodSecurity (pas de JSESSIONID) | NON | — | ✅ (boot contexte) | ⚠ N/A | ⚠ N/A |
 
-> Cross-system flow = NON pour tout le sprint : contrôle d'accès backend mono-système (REST + JWT), pas de flux multi-services/rôles. → Pas d'E2E métier obligatoire. Aucun `[MISSING]`.
+> Cross-system flow = NON pour tout le sprint : contrôle d'accès backend mono-système (REST + JWT), pas de flux multi-services/rôles. → Pas d'E2E métier obligatoire. Aucune couverture manquante.
 
 ## Tests créés / modifiés
 - `EventServiceImplTest` (#28, créé — 5 tests : PATCH partiel, all-fields, lien produit, color-only, not-found)
