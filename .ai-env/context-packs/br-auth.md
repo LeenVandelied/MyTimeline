@@ -17,7 +17,7 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 |------|-------------|-----------------------|
 | `ANONYME` | Aucun cookie `jwt` / pas de Bearer | → `AUTHENTIFIÉ` via `POST /login` (succès) ou `POST /register` puis login |
 | `AUTHENTIFIÉ` | Token valide présent (cookie ou header), `validateToken` OK | → `EXPIRÉ` après MaxAge (2 jours) ; → `ANONYME` via `POST /logout` ; → `AUTHENTIFIÉ` (renouvelé) via `POST /refresh` |
-| `EXPIRÉ` | `ExpiredJwtException` levée à l'extraction | → devrait forcer `ANONYME` ; ⚠️ `POST /refresh` ré-émet un token sans bloquer l'expiré (voir BR-AUT-009) |
+| `EXPIRÉ` | `ExpiredJwtException` levée à l'extraction | → `ANONYME` ; ✅ depuis S4 #105 `POST /refresh` bloque le token expiré/invalide (401, voir BR-AUT-009) |
 
 > ⚠️ `CustomUserDetails.isAccountNonExpired / isAccountNonLocked / isCredentialsNonExpired / isEnabled` renvoient tous `true` en dur (commentaire `need to implement logic`). Aucun verrouillage / désactivation de compte n'existe.
 
@@ -28,9 +28,9 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 | Action | anonymous | ROLE_USER | ROLE_ADMIN | system | Notes |
 |--------|:--------:|:---------:|:----------:|:------:|-------|
 | `POST /api/auth/register` | ✅ | ✅ | ✅ | — | `permitAll`, rôle forcé `ROLE_USER` (BR-AUT-006) |
-| `POST /api/auth/login` | ✅ | ✅ | ✅ | — | `permitAll`, pose cookie + renvoie JWT brut en body (BR-AUT-007) |
+| `POST /api/auth/login` | ✅ | ✅ | ✅ | — | `permitAll`, pose cookie HttpOnly ; body = `{"message":...}` sans JWT depuis S4 #104 (BR-AUT-007) |
 | `POST /api/auth/logout` | ✅ | ✅ | ✅ | — | `permitAll`, efface cookie (MaxAge=0) |
-| `POST /api/auth/refresh` | ⚠️ | ✅ | ✅ | ✅ (toutes les 6h frontend) | `permitAll`, ne vérifie pas l'expiration (BR-AUT-009) |
+| `POST /api/auth/refresh` | ⚠️ | ✅ | ✅ | ✅ (toutes les 6h frontend) | `permitAll` ; valide expiration+signature avant ré-émission depuis S4 #105 (BR-AUT-009) |
 | `GET /api/auth/me` | ❌ | ✅ | ✅ | — | `permitAll` mais exige cookie `jwt` ; ⚠️ renvoie l'objet `User` domaine avec mot de passe hashé (BR-AUT-008) |
 | Accès `/api/users/**`, `/api/products/**`, `/api/events/**` | ❌ | ✅ | ✅ | — | exige token valide (JwtFilter) |
 | Endpoints `hasAuthority('ROLE_ADMIN')` | ❌ | ❌ | ❌ | — | ⚠️ rôle ADMIN mort, aucun endpoint ne l'utilise |
@@ -85,7 +85,7 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 **Pourquoi** : Session navigateur protégée contre l'accès JS (XSS).
 **Implémentation** : `AuthController.login` (l.56-66) ; `JwtService.generateToken(Authentication)` embarque les authorities.
 **Test attendu** : `AuthControllerTest#login_shouldSetHttpOnlyJwtCookie`.
-> ⚠️ **VIOLATIONS** : (a) le JWT brut est aussi renvoyé dans le body (l.67) → double exposition du token, annule l'intérêt du HttpOnly ; (b) `Secure=false` en dur (l.60) → token transmis en clair hors HTTPS ; (c) `domain="localhost"` en dur (l.63) → casse tout déploiement non-localhost.
+> ✅ **RÉSOLU Sprint 4** : (a) #104 — le login renvoie `{"message":"Authentification réussie"}`, plus de JWT en body (token en cookie HttpOnly seul) ; (b)+(c) #99 — `Secure`/`Domain` externalisés en `@Value("${app.cookie.*}")`, defaults base fail-safe (`secure=${COOKIE_SECURE:true}`, `domain=${COOKIE_DOMAIN:}` host-only), profils dev (false/localhost) / prod (true). Helper unique `buildJwtCookie` → attributs cohérents login/refresh/logout (cf. BR-AUT-010). (Sprint 4 #104/#99)
 
 ### BR-AUT-008 — `/me` retourne l'utilisateur courant sans secret
 **Règle** : `GET /me` MUST renvoyer les données de l'utilisateur identifié par le token et NE MUST PAS exposer le mot de passe (même hashé).
@@ -99,7 +99,7 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 **Pourquoi** : Un token expiré ne doit pas pouvoir prolonger indéfiniment une session.
 **Implémentation** : `AuthController.refreshToken` (l.147-185).
 **Test attendu** : `AuthControllerTest#refresh_shouldReturn401_whenTokenExpired`.
-> ⚠️ **NON IMPLÉMENTÉ** : aucune vérification de validité/expiration avant `generateToken` (l.168). `ExpiredJwtException` n'est attrapée que si `extractUsername` échoue ; un token techniquement parsable mais expiré peut être renouvelé silencieusement. **À corriger.**
+> ✅ **RÉSOLU Sprint 4 (#105)** : `refreshToken` appelle `jwtService.validateToken(token, userDetails)` AVANT `generateToken` (→ 401 si false) ; catch élargi à `JwtException` (couvre Expired/Signature/Malformed) → 401 `{"error":"token expiré ou invalide"}`, plus de 500. Le cas `user.isEmpty()` renvoie le MÊME 401 générique (anti-énumération, fix review #113) au lieu d'un 404. Tests : `AuthControllerSecurityTest` (valide/expiré/signature/user-inconnu).
 
 ### BR-AUT-010 — Logout invalide la session navigateur
 **Règle** : `POST /logout` MUST effacer le cookie `jwt` (MaxAge=0) pour terminer la session côté navigateur.
@@ -131,11 +131,11 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 |---|--------------|--------------|:-------:|
 | A1 | `/me` renvoie l'objet domaine `User` → hash de mot de passe exposé en HTTP | `AuthController` l.93 | CRITIQUE |
 | A2 | `@Valid` absent sur `@RequestBody RegisterRequest` → toutes les Bean Validations sont du code mort | `AuthController` l.104 | CRITIQUE |
-| A3 | JWT brut renvoyé dans le body du login en plus du cookie HttpOnly → double exposition | `AuthController` l.67 | HAUTE |
-| A4 | `catch (Exception)` renvoie l'objet exception dans le body (500) → fuite d'internes | `AuthController` l.71 | HAUTE |
-| A5 | `refresh` n'invalide pas un token expiré avant ré-émission | `AuthController` l.148-185 | HAUTE |
-| A6 | `Secure=false` en dur au login/refresh, `Secure=true` au logout → config asymétrique, token en clair hors HTTPS | l.60 / 172 / 136 | HAUTE |
-| A7 | `domain="localhost"` en dur → casse tout déploiement non-localhost | l.63 / 175 | HAUTE |
+| A3 | ~~JWT brut renvoyé dans le body du login~~ → ✅ RÉSOLU S4 #104 (body `{"message":...}`) | `AuthController` | ~~HAUTE~~ |
+| A4 | `catch (Exception)` renvoie l'objet exception dans le body (500) → fuite d'internes ⚠️ partiel : login/refresh renvoient désormais `{"error":...}` générique (#113) mais `catch` toujours présent | `AuthController` | MOYENNE |
+| A5 | ~~`refresh` n'invalide pas un token expiré avant ré-émission~~ → ✅ RÉSOLU S4 #105 (`validateToken` avant `generateToken`) | `AuthController` | ~~HAUTE~~ |
+| A6 | ~~`Secure=false` en dur, config asymétrique~~ → ✅ RÉSOLU S4 #99 (`@Value` externalisé, defaults fail-safe, helper unique) | `AuthController` | ~~HAUTE~~ |
+| A7 | ~~`domain="localhost"` en dur~~ → ✅ RÉSOLU S4 #99 (`@Value("${app.cookie.domain}")`, prod host-only) | `AuthController` | ~~HAUTE~~ |
 | A8 | `AuthController` injecte `UserServiceImpl` concret + importe classes infra → viole hexagonal/DIP | l.24-28, 38 | MOYENNE |
 | A9 | `role` stocké en `String` (domaine + entité) ; enum `Role` inutilisée → pas de type safety ni contrainte DB | `UserEntity`, `User` | MOYENNE |
 | A10 | `UserEntity` sans `@Column(unique=true)` ni contraintes (nullable, length) → doublons username/email possibles, VARCHAR(255) nullable par défaut | `UserEntity` | MOYENNE |

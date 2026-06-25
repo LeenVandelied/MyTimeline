@@ -77,14 +77,31 @@
   - Chip task_d9b2cff4 (dédup emails dev) → FAIT pendant le sprint
 **Status :** Terminé
 
-## Sprint 4 — 2026-06-25 (PLANIFIÉ — cohésion 0.71, Auth & CSP : dette reviews S1-S3)
+## Sprint 4 — 2026-06-25 (Terminé — merge PR #113 dans dev, cohésion 0.71, Auth & CSP : dette reviews S1-S3)
 **Objectif :** Durcir l'auth (fuite JWT en body de login, refresh sans validation d'expiration, cookies en dur), uniformiser le 403 d'ownership via le handler central, durcir la CSP.
-**Milestone GitHub :** #4
-**Issues :** #104, #105, #99, #100, #101
-**Vagues :** V1 (parallèle, fichiers disjoints) = #100 (EventController) + #101 (SecurityConfig) | V2 (séquentielle, même `AuthController.java`) = #104 → #105 → #99
+**Milestone GitHub :** #4 (fermé après merge)
+**Issues livrées (5) :** #100, #101, #104, #105, #99
+**Vagues exécutées :** V1 (parallèle) = #100 (EventController 403) + #101 (CSP) | V2 (séquentielle `AuthController.java`) = #104 → #105 → #99
+**Cohésion score :** 0.71
+**Commits :** 7 — 3c36a7f (#100) · 6a58832 (#101) · 707e136 (#104) · 4b6a85d (#105) · 46b628b (#99) · 2e39e08 (fix review : défaut cookie fail-safe) · 36772b4 (fix review : contrat erreur + anti-énumération /refresh + CSP base-uri/object-src)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
-**Status :** Planifié
+**BR impactées :** BR-EVE-008/BR-EVT-005 (ownership 403 uniforme), BR-SEC-003 (CSP XSS), BR-AUT-007 (login cookie/body), BR-AUT-009 (refresh expiration), BR-AUT-010 (cohérence cookies). Anti-patterns résolus : A3, A5, A6, A7.
+**Reviews :** reviewer batch + security-expert (×2, sprint + `/review-pr 113`) — 0 CRITIQUE / 1 MAJEUR convergent (défaut cookie non fail-safe, RÉSOLU 2e39e08) + 2 MAJEUR contrat/énumération (RÉSOLUS 36772b4) / MINEURS (CSP durcie + @Value, RÉSOLUS ; reste en follow-ups).
+**Tests :** Backend 41/41 verts (Testcontainers Postgres, BUILD SUCCESS ~11s). Pas de CI repo → garantie = run local. Frontend : aucun changement → pas d'E2E.
+**Nouveaux pitfalls/patterns/décisions :** PIT-S4-001..005, PAT-S4-001/002, DEC-S4-001/002, BUG-S4-001 (voir docs/memory/{pitfalls,patterns,decisions,bugs-resolved}.md). Pack `br-auth.md` mis à jour (BR-AUT-007/009 + A3/A5/A6/A7 marqués résolus).
+**Saturation contexte lead (mesure) :** modérée — fan-out 2 vagues + audit + 2 reviews + 2 fix, purge via done.md (pas de retour brut subagent conservé en contexte).
+**Absorbé en cours (XS) :** aucun (périmètre tenu strict par issue).
+**Follow-ups arbitrés (Phase 4 triage — 6 issues créées, 2 discard, 0 absorbé) :**
+  - Uniformiser body 401 BadCredentials login [XS | auth] → issue #116 (Sprint 5)
+  - Test profil dev cookieSecure=false [XS | auth] → issue #117 (Sprint 5)
+  - Définir COOKIE_DOMAIN prod avant déploiement [XS | infra] → issue #118 (Sprint 5)
+  - **Unifier réponse 403 AccessDeniedException (handler unique + test d'intégration réel) [S | auth, P1]** → issue #119 (Sprint 5) — fidélité test #100
+  - Externaliser/durcir CORS + cookie par profil (origins, exposedHeaders, SameSite) [S | auth] → issue #120 (Sprint 5)
+  - Externaliser connect-src CSP par profil si API cross-origin futur [S | auth] → issue #115 (backlog)
+  - `Map.of` en FQN inline [XS | auth] → discard (cosmétique)
+  - Outillage test cassé (mvnw + test-quiet.sh) [S | devops] → discard du triage GitHub (déjà couvert par chip task_16249110)
+**Status :** Terminé
 
 ## Sprint 5 — 2026-06-25 (PLANIFIÉ — cohésion 0.50, DB & profils : dette reviews S1-S3)
 **Objectif :** Réconcilier la baseline Flyway (CHECK/NOT NULL events manquants), ajouter les index sur colonnes FK, durcir SPRING_PROFILES_ACTIVE (fallback prod→dev silencieux).

@@ -22,3 +22,9 @@ Bucket4j `.withCustomTimePrecision(TimeMeter)` + bean `TimeMeter` overridable en
 
 ## PAT-S3-002 — equals/hashCode d'entité JPA à PK `@GeneratedValue` (id transient avant flush)
 Id assigné au flush → un equals/hashCode sur id direct casse en collection avant persist. Pattern Vlad Mihalcea : `hashCode()` = constante (`getClass().hashCode()`, stable avant/après persist) ; `equals()` = même `getClass()` + `id != null && Objects.equals(id, that.id)`. Deux entités neuves ne sont jamais égales par accident. Anti-pattern : `Objects.hash(id)` ou equals sur id nu. (Sprint 3 #43)
+
+## PAT-S4-001 — 403 d'ownership : lever l'exception, ne pas construire le ResponseEntity
+Un controller qui retourne `ResponseEntity.status(FORBIDDEN).build()` (body vide) court-circuite le contrat d'erreur centralisé. Lever `throw new AccessDeniedException("forbidden")` → le handler (advice ControllerAdvice OU `accessDeniedHandler` Security selon le chemin, cf. PAT-S2-002) produit le body uniforme `{"error":"forbidden"}`. Vaut pour 401/404 aussi : préférer l'exception au `ResponseEntity` ad hoc pour garder un contrat JSON cohérent. (Sprint 4 #100)
+
+## PAT-S4-002 — Contrat d'erreur d'un controller : toujours JSON `{"error":...}`, jamais String brut
+Mélanger `ResponseEntity.body("message texte")` et `body(Map.of("error",...))` sur les chemins d'erreur d'un même controller casse le contrat côté client. Tous les bodies d'échec en `Map.of("error", "<code>")`. Corollaire sécurité : pour ne pas créer d'oracle d'énumération, deux échecs sémantiquement distincts mais non divulgables (token invalide vs compte inexistant) doivent renvoyer un body **byte-identique** + même status. (Sprint 4 #105, fix review #113)

@@ -28,3 +28,9 @@ Plutôt que `git rm --cached`, le fichier commun garde `${VAR}` (non disruptif, 
 
 ## DEC-S3-004 — Audit JPA : `@Version Integer` + colonnes `NOT NULL DEFAULT`
 Sous `ddl-auto=validate` + tables peuplées : `@Version` = `Integer` mappé `version integer NOT NULL DEFAULT 0` ; `createdAt`/`updatedAt` (LocalDateTime) mappés `timestamp NOT NULL DEFAULT now()`. Les DEFAULT backfillent les lignes existantes ; type/nullability identiques entité↔colonne sinon `validate` casse. `@EnableJpaAuditing` sur `EventmanagerApplication`. (Sprint 3 #43)
+
+## DEC-S4-001 — Cookies JWT : attributs externalisés par profil + defaults de base fail-safe
+`app.cookie.secure` / `app.cookie.domain` lus en `@Value`, appliqués via un helper unique `buildJwtCookie` (login/refresh/logout → attributs cohérents, BR-AUT-010). Defaults : `application-dev` = `false`/`localhost`, `application-prod` = `true`/host-only (`${COOKIE_DOMAIN:}`). Le default de base `application.properties` est **fail-safe** (`${COOKIE_SECURE:true}`, `${COOKIE_DOMAIN:}`) → un boot sans profil ni env var ne dégrade jamais en clair. Garde `if domain non blank` pour éviter `setDomain("")`. (Sprint 4 #99 + fix review)
+
+## DEC-S4-002 — CSP backend stricte par directives explicites
+Remplacer `default-src 'self'` permissif par directives explicites : `script-src 'self'`, `style-src 'self'` (sans `unsafe-inline`/`unsafe-eval`, cf. PIT-S4-003), `connect-src 'self'` (CORS n'autorise que localhost:3000, aucune origine API cross-origin), `img-src 'self' data:`, `font-src 'self'`, `base-uri 'self'` (NON hérité de default-src en CSP3), `object-src 'none'`, `frame-ancestors 'none'`. Assertion exacte de la chaîne CSP en test d'intégration (anti-régression). Externaliser connect-src par profil si SSR cross-origin un jour. (Sprint 4 #101 + fix review #113)
