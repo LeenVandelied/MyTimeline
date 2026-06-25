@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
 
 import jakarta.servlet.http.Cookie;
@@ -189,18 +190,33 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
 
-            CustomUserDetails userDetails = new CustomUserDetails(user.get(), 
+            CustomUserDetails userDetails = new CustomUserDetails(user.get(),
                 List.of(new SimpleGrantedAuthority(user.get().getRole())));
-                
+
+            // BR-AUT-009 / anti-pattern A5 : valider l'expiration ET la signature
+            // du token courant AVANT toute ré-émission. Sans ce contrôle, un token
+            // expiré pourrait être renouvelé indéfiniment, contournant la durée de
+            // vie des sessions. validateToken renvoie false sur expiration ou
+            // signature invalide ; ExpiredJwtException (levée plus haut par
+            // extractUsername) et toute JwtException sont rattrapées ci-dessous.
+            if (!jwtService.validateToken(token, userDetails)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "token expiré ou invalide"));
+            }
+
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
-                
+
             String newToken = jwtService.generateToken(authentication);
 
             response.addCookie(buildJwtCookie(newToken, COOKIE_MAX_AGE));
             return ResponseEntity.ok().body("Token refreshed successfully");
-        } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Token expired");
+        } catch (JwtException e) {
+            // BR-AUT-009 : token expiré (ExpiredJwtException) ou signature/format
+            // invalide (SignatureException, MalformedJwtException...) levé par
+            // extractUsername -> 401, jamais de ré-émission ni de 500.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("error", "token expiré ou invalide"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }

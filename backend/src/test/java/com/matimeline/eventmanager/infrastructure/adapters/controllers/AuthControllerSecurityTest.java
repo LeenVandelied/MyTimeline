@@ -12,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -149,5 +152,62 @@ class AuthControllerSecurityTest {
                         .content(body))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("email already taken"));
+    }
+
+    /**
+     * Issue #105 — BR-AUT-009 / anti-pattern A5 : comportement nominal inchangé.
+     * Un token valide est renouvelé (200) et un nouveau cookie jwt est posé.
+     */
+    @Test
+    void refresh_withValidToken_reissuesTokenAnd200() throws Exception {
+        User user = sampleUser();
+        when(jwtService.extractUsername("valid-token")).thenReturn("alice");
+        when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
+        when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        when(jwtService.generateToken(any(Authentication.class))).thenReturn("new-token");
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "valid-token")))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("jwt"))
+                .andExpect(cookie().value("jwt", "new-token"))
+                .andExpect(cookie().httpOnly("jwt", true));
+    }
+
+    /**
+     * Issue #105 — BR-AUT-009 : un token EXPIRÉ ne doit jamais être ré-émis.
+     * extractUsername lève ExpiredJwtException -> 401 {"error":"token expiré ou invalide"},
+     * aucun nouveau token généré ni cookie posé.
+     */
+    @Test
+    void refresh_withExpiredToken_returns401AndDoesNotReissue() throws Exception {
+        when(jwtService.extractUsername("expired-token"))
+                .thenThrow(new ExpiredJwtException(null, null, "expired"));
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "expired-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
+    }
+
+    /**
+     * Issue #105 — BR-AUT-009 : un token à signature invalide ne doit jamais être
+     * ré-émis. extractUsername lève SignatureException (sous-type de JwtException)
+     * -> 401, jamais de 500 ni de ré-émission.
+     */
+    @Test
+    void refresh_withInvalidSignature_returns401AndDoesNotReissue() throws Exception {
+        when(jwtService.extractUsername("tampered-token"))
+                .thenThrow(new SignatureException("invalid signature"));
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "tampered-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
     }
 }
