@@ -1,55 +1,46 @@
-# Sprint 3 — Fondations infra & DB : secrets, Flyway, audit JPA
+## Sprint 5 — Durcissement DB & profils + dette reviews auth (S1–S4)
 
-Milestone : **Sprint 3** (#3) · Cohésion ~0.4 · Base : `dev`
+Sprint backend-only. Plan architect = 3 issues DB/profils ; **scope élargi par décision dev aux 8 issues du milestone** (ajout des 5 follow-ups auth/infra du triage S4). Cohésion volontairement dégradée (2 domaines), arbitrage assumé.
 
-## Objectif
-Durcir les fondations : externaliser les secrets compromis, versionner le schéma avec Flyway (fin du `ddl-auto=update`), poser l'audit JPA (timestamps + verrou optimiste `@Version`) prérequis de la gestion de conflit 409 (Wave 6).
+### Issues livrées (8)
 
-## Issues livrées (3)
+**DB / profils (epic:devops)**
+- **#108** — `V4__reconcile_events_constraints.sql` : CHECK + NOT NULL + varchar(20) sur `events.type/duration_unit/recurrence_unit`, absents de la baseline V1 (générée ex-métadonnées Hibernate). Idempotent (DROP IF EXISTS), enums croisés sur 3 sources (Utils backend + Zod frontend).
+- **#110** — `V5__fk_indexes.sql` : index sur les colonnes FK (`products.category_id/user_id`, `events.product_id`) — PG ne les crée pas automatiquement.
+- **#111** — `ProfileSafetyGuard` (ApplicationListener via `spring.factories`) : fail-fast si profil `dev` actif alors qu'un marqueur `ENVIRONMENT/APP_ENV=production` est présent. Garde le confort dev local intact.
 
-### #34 — Externaliser les secrets + rotation jwt.secret (P0, sécurité)
-- `spring.datasource.password` et `jwt.secret` lus via `${DB_PASSWORD}` / `${JWT_SECRET}` (plus de secret en clair dans `application.properties`).
-- Profils `application-dev.properties` (defaults locaux) / `application-prod.properties` (fail-fast : aucun default → boot prod refusé sans secret).
-- `application.properties.example` + `frontend/.env.example` (doc des variables, sans valeurs).
-- `.gitignore` corrigé (vrai chemin `backend/src/main/resources/application.properties`). Fichier gardé tracké mais secret-free (corriger l'ignore ne dé-tracke pas un fichier déjà suivi).
-- ⚠️ Rotation effective des vraies valeurs = hors-repo. Les anciens secrets restent dans l'historique git → follow-up BFG.
+**Auth / config (epic:auth, dette reviews S1–S4)**
+- **#116** — body 401 BadCredentials → JSON `{"error":...}` (BR-AUT-005, message neutre). Frontend vérifié (0 usage en dur).
+- **#117** — test profil dev : cookie JWT `Secure=false` + domaine `localhost` (classe dédiée, charge le vrai `application-dev.properties`).
+- **#118** — doc `COOKIE_DOMAIN` prod : runbook consolidé en hub unique (`deploiement-profils.md`) listant toutes les env prod obligatoires.
+- **#119** — 403 unifié sur `SecurityConfig.accessDeniedHandler` (suppression du handler mort dans `GlobalExceptionHandler`) ; test migré `standaloneSetup` → `@SpringBootTest` (chaîne Security réelle).
+- **#120** — CORS externalisé (`app.cors.allowed-origins`, default fail-safe localhost, prod `${CORS_ALLOWED_ORIGINS}` fail-fast), `Authorization` retiré de `exposedHeaders`, SameSite maintenu `Lax` (justifié + runbook).
 
-### #42 — Adopter Flyway + baseline + contraintes uniques (P1)
-- `flyway-core` (BOM Boot 3.2.2 = Flyway 9.22.3 ; `flyway-database-postgresql` n'existe qu'en Flyway 10+, non ajouté).
-- `V1__baseline.sql` (schéma Hibernate : users/products/events/categories, PK uuid, FK nommées).
-- `V2__unique_constraints.sql` : `uq_users_username` + `uq_users_email` (Option A : V1 omet les uniques inline, V2 les pose nommées ; `@Column(unique=true)` conservé, `validate` n'audite pas les uniques → 0 redondance).
-- `ddl-auto=validate` (dev + prod) + `baseline-on-migrate=true`.
-- 🔧 **Donnée dev assainie** (validée avec le mainteneur) : 3 comptes partageaient `loic.de-laforcade@emgsa.ch` → 3 UPDATE (plus-addressing, réversible, aucune perte — les comptes possèdent des produits). Sans ça, V2 cassait au boot.
+### Vagues d'exécution
+- **V1** (∥) : #108 + #111 + #116 + #119
+- **V2** (∥) : #110 + #117
+- **V3** : #120 (solo — `SecurityConfig` + properties partagées)
+- **V4** : #118 (solo — `application-prod.properties` partagé avec #120)
 
-### #43 — Audit JPA : timestamps + @Version + equals/hashCode (P1, transversal)
-- `@EnableJpaAuditing` + sur les 4 entités : `@EntityListeners(AuditingEntityListener.class)`, `@CreatedDate createdAt`, `@LastModifiedDate updatedAt`, `@Version Integer`, `equals/hashCode`.
-- `equals/hashCode` = pattern Vlad Mihalcea (id `@GeneratedValue` transient) : `hashCode()=getClass().hashCode()`, `equals()` compare l'id non-null + même type.
-- `V3__add_audit_columns.sql` : `created_at`/`updated_at timestamp NOT NULL DEFAULT now()`, `version integer NOT NULL DEFAULT 0` (DEFAULT = backfill des lignes existantes ; types alignés sur `validate`).
+Matrice conflits respectée : `AuthControllerSecurityTest` (#116→#117), `SecurityConfig` (#119→#120), `application.properties` (#111), `application-prod.properties` (#120→#118), migrations (#108→#110).
 
-## Vagues d'exécution
-Chaîne strictement séquentielle (fichiers/migrations partagés) : V1 #34 → V2 #42 → V3 #43.
+### Migrations Flyway
+`V4__reconcile_events_constraints.sql` + `V5__fk_indexes.sql` (schéma `public` → version 5). V1/V2/V3 intacts (checksum).
 
-## Tests
-- Backend : **32 / 32 verts, 0 failure, 0 error** (`cd backend && SKIP_DELEGATION=1 DB_PASSWORD=motdepasse mvn test`).
-- Flyway : « Successfully validated 4 migrations », schéma `public` version 3, Hibernate `validate` OK.
-- Nouveaux tests : `AuditingAndEqualityTest` (3, `@Transactional`).
-- Audit complet : `docs/memory/audits/sprint-3-test-coverage.md`.
+> **Pré-déploiement (base dev peuplée uniquement)** — avant V4 : `SELECT count(*) FROM events WHERE type IS NULL;` et `SELECT max(length(type)) FROM events;` (sinon `SET NOT NULL` / `varchar(20)` échouent proprement). Base fraîche (CI/Testcontainers) : aucun blocage.
 
-## Review (3 reviewers : général + db-expert + security-expert)
-- **Corrigé** : `ProductEntity.id` → `private` (cohérence des 4 entités).
-- **Faux positif** : « DB_PASSWORD commun sans default casse le boot dev » — le profil dev surcharge (`${DB_PASSWORD:…}`), boot vérifié vert.
-- **Non corrigeable sans violer Flyway** : rollback-comments sur V1/V2/V3 (déjà appliquées → checksum) → convention pour migrations futures.
-- **Follow-ups** (voir ci-dessous).
+### Reviews
+- **db-expert** : V4/V5 mergeable, **0 CRITIQUE**.
+- **security-expert** : **0 CRITIQUE**, BR-AUT-005 / 403 / CORS / SameSite conformes.
+- **reviewer** : **0 CRITIQUE**, 3 MAJEUR + MINEURs — tous **pré-existants hors scope** (aucune régression S5), **déférés en follow-ups** (décision dev). Détail : `docs/memory/sprints/sprint-5/review-batch.md`.
 
-## Follow-ups identifiés (à trier au `/sprint end`)
-- Isolation des tests d'intégration (Testcontainers / profil test) — les `@SpringBootTest` tapent la base dev réelle (gap pré-existant).
-- Index sur les colonnes FK (`products.category_id/user_id`, `events.product_id`) → nouvelle migration V4 (perf).
-- `SPRING_PROFILES_ACTIVE` défaut `dev` : durcir pour qu'un prod sans la variable ne tombe pas sur le profil dev (mitigé : DB URL dev = localhost).
-- `.gitignore` : convention « jamais de vraie valeur » dans `application-dev/prod.properties` (tracking par convention, pas par protection git).
-- Nettoyage historique git des anciens secrets (BFG/filter-branch — validation requise).
-- Default DB password du profil dev (`motdepasse_dev_local`) ≠ vrai mot de passe local (`motdepasse`).
+### Tests
+**Backend 56/56 verts** (Testcontainers Postgres, BUILD SUCCESS ~11.6s). Baseline S4 = 41 → +15 (ProfileSafetyGuard 6, cookie dev 1, 401 JSON 1, ownership migré, etc.). Frontend : aucun changement → pas d'E2E. Audit : `docs/memory/audits/sprint-5-test-coverage.md` (0 `[MISSING]`).
 
-## Note workflow
-Le subagent #34 a initialement committé dans le checkout principal (`dev`) ; recovery par cherry-pick propre sur `sprint/3` (conflit rate-limit #33 résolu, fichiers `mobile/gradlew*` hors-scope écartés). Les vagues #42/#43 ont été épinglées au worktree (commits corrects sur `sprint/3`).
+### Follow-ups identifiés (à trier au `/sprint end`)
+- Contrat erreur `/me`+`/register`+`/logout` → JSON (S | auth)
+- `users.role` enum sans CHECK DB → V6 (S | devops)
+- `writeJsonError` concat / `buildBody` reasonPhrase (XS | auth/events)
+- BR-PRO-006 full scan (idx_products_user inexploité tant que requête non réécrite)
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
