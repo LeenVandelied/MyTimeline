@@ -79,10 +79,35 @@ public class SecurityConfig {
                 // Referrer-Policy: strict-origin-when-cross-origin.
                 .referrerPolicy(referrer -> referrer
                         .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                // CSP: deliberately permissive so the Next.js front (localhost:3000)
-                // is not broken. To be hardened in a later wave.
+                // CSP hardened (#101): explicit per-resource directives instead of the
+                // permissive default-src 'self'. This header is emitted on the backend's
+                // own responses (a JSON API); the directives shrink the XSS surface of any
+                // HTML the API could ever render (error pages, future SSR) — BR-SEC-003.
+                //   script-src 'self'      : no inline/eval JS, no remote scripts.
+                //   style-src 'self'       : no inline CSS. The Next.js front (Tailwind)
+                //                            runs on its OWN origin (localhost:3000) under
+                //                            ITS OWN CSP, so Tailwind's build-time CSS is
+                //                            never governed by THIS header — no 'unsafe-inline'.
+                //   connect-src 'self'     : XHR/fetch/WS only back to the API origin.
+                //   img-src 'self' data:   : self + inline data URIs (favicons, tiny SVGs).
+                //   font-src 'self'        : fonts from the API origin only.
+                //   frame-ancestors 'none' : anti-clickjacking (complements X-Frame-Options).
+                //   default-src 'self'     : minimal fallback for any directive not listed
+                //                            above (e.g. object-src, base-uri).
+                //   base-uri 'self'        : NON hérité de default-src en CSP3 ;
+                //                            verrouille <base href> contre l'injection.
+                //   object-src 'none'      : bloque explicitement plugins/embed legacy.
                 .contentSecurityPolicy(csp -> csp
-                        .policyDirectives("default-src 'self'"))
+                        .policyDirectives(
+                            "default-src 'self'; "
+                            + "script-src 'self'; "
+                            + "style-src 'self'; "
+                            + "connect-src 'self'; "
+                            + "img-src 'self' data:; "
+                            + "font-src 'self'; "
+                            + "base-uri 'self'; "
+                            + "object-src 'none'; "
+                            + "frame-ancestors 'none'"))
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth

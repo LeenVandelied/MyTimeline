@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Optional;
@@ -54,7 +55,9 @@ class EventControllerOwnershipTest {
     @BeforeEach
     void setUp() {
         EventController controller = new EventController(eventService, productService, userService, jwtService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
 
         eventId = UUID.randomUUID();
         productId = UUID.randomUUID();
@@ -76,7 +79,8 @@ class EventControllerOwnershipTest {
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
 
         mockMvc.perform(delete("/api/events/" + eventId).cookie(new Cookie("jwt", "attacker-token")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
 
         verify(eventService, never()).deleteById(eventId);
     }
@@ -98,7 +102,8 @@ class EventControllerOwnershipTest {
                         .cookie(new Cookie("jwt", "attacker-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"hacked\"}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
 
         verify(eventService, never()).updateEvent(any(UUID.class), any(EventUpdateRequest.class));
     }

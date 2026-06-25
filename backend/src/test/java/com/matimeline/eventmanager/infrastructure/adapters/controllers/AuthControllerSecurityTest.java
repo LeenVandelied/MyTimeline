@@ -5,8 +5,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.containsString;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -56,6 +64,12 @@ class AuthControllerSecurityTest {
     void setUp() {
         AuthController controller = new AuthController(
                 authenticationManager, jwtService, userDetailsService, userService, passwordEncoder);
+        // #99 — les attributs cookie Secure/Domain sont désormais injectés par @Value
+        // (app.cookie.*). En setup standalone, Spring ne les renseigne pas : on simule
+        // le profil prod (Secure=true, Domain défini) pour vérifier la COHÉRENCE des
+        // attributs entre pose (login/refresh) et suppression (logout).
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "cookieSecure", true);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "cookieDomain", "mytimeline.example");
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -67,6 +81,33 @@ class AuthControllerSecurityTest {
                 "$2a$10$bcryptHashThatMustNeverLeak",
                 "ROLE_USER",
                 "alice@example.com");
+    }
+
+    /**
+     * Issue #104 — BR-AUT-007 / anti-pattern A3 : le login ne renvoie plus le JWT
+     * brut dans le body. Le token est posé UNIQUEMENT dans le cookie HttpOnly.
+     */
+    @Test
+    void login_doesNotReturnJwtInBody_andSetsHttpOnlyCookie() throws Exception {
+        String jwt = "eyJhbGciOiJIUzI1NiJ9.payload.signature";
+        Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(jwtService.generateToken(any(Authentication.class))).thenReturn(jwt);
+
+        String body = "{\"username\":\"alice\",\"password\":\"secret6\"}";
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                // Le body ne doit PAS contenir le JWT brut.
+                .andExpect(content().string(not(containsString(jwt))))
+                // Réponse neutre.
+                .andExpect(jsonPath("$.message").value("Authentification réussie"))
+                // Le cookie HttpOnly reste présent et porte le token.
+                .andExpect(cookie().exists("jwt"))
+                .andExpect(cookie().value("jwt", jwt))
+                .andExpect(cookie().httpOnly("jwt", true));
     }
 
     @Test
@@ -117,5 +158,135 @@ class AuthControllerSecurityTest {
                         .content(body))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("email already taken"));
+    }
+
+    /**
+     * Issue #105 — BR-AUT-009 / anti-pattern A5 : comportement nominal inchangé.
+     * Un token valide est renouvelé (200) et un nouveau cookie jwt est posé.
+     */
+    @Test
+    void refresh_withValidToken_reissuesTokenAnd200() throws Exception {
+        User user = sampleUser();
+        when(jwtService.extractUsername("valid-token")).thenReturn("alice");
+        when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
+        when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        when(jwtService.generateToken(any(Authentication.class))).thenReturn("new-token");
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "valid-token")))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("jwt"))
+                .andExpect(cookie().value("jwt", "new-token"))
+                .andExpect(cookie().httpOnly("jwt", true));
+    }
+
+    /**
+     * Issue #105 — BR-AUT-009 : un token EXPIRÉ ne doit jamais être ré-émis.
+     * extractUsername lève ExpiredJwtException -> 401 {"error":"token expiré ou invalide"},
+     * aucun nouveau token généré ni cookie posé.
+     */
+    @Test
+    void refresh_withExpiredToken_returns401AndDoesNotReissue() throws Exception {
+        when(jwtService.extractUsername("expired-token"))
+                .thenThrow(new ExpiredJwtException(null, null, "expired"));
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "expired-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
+    }
+
+    /**
+     * Issue #105 — BR-AUT-009 : un token à signature invalide ne doit jamais être
+     * ré-émis. extractUsername lève SignatureException (sous-type de JwtException)
+     * -> 401, jamais de 500 ni de ré-émission.
+     */
+    @Test
+    void refresh_withInvalidSignature_returns401AndDoesNotReissue() throws Exception {
+        when(jwtService.extractUsername("tampered-token"))
+                .thenThrow(new SignatureException("invalid signature"));
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "tampered-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
+    }
+
+    /**
+     * Review PR #113 — anti-énumération de compte : un token SIGNÉ VALIDE dont le
+     * username n'existe pas (user.isEmpty()) doit renvoyer le MÊME 401 générique
+     * {"error":"token expiré ou invalide"} qu'un token invalide/expiré — jamais un
+     * 404 "User not found" qui révélerait l'absence du compte. Aucune ré-émission.
+     */
+    @Test
+    void refresh_withUnknownUserInValidToken_returns401NotFound_andDoesNotReissue() throws Exception {
+        when(jwtService.extractUsername("ghost-token")).thenReturn("ghost");
+        when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "ghost-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
+    }
+
+    /**
+     * Issue #99 — BR-AUT-007 / BR-AUT-010 / A6+A7 : les attributs Secure et Domain
+     * du cookie jwt sont externalisés (@Value app.cookie.*) et IDENTIQUES entre la
+     * pose (login, refresh) et la suppression (logout). Sans cette identité, le
+     * navigateur ne matche pas le cookie à effacer (BR-AUT-010).
+     */
+    @Test
+    void jwtCookieAttributes_areCoherent_acrossLoginRefreshLogout() throws Exception {
+        // login
+        Authentication authentication = org.mockito.Mockito.mock(Authentication.class);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(jwtService.generateToken(any(Authentication.class))).thenReturn("login-token");
+        Cookie loginCookie = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"alice\",\"password\":\"secret6\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("jwt");
+
+        // refresh
+        User user = sampleUser();
+        when(jwtService.extractUsername("valid-token")).thenReturn("alice");
+        when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
+        when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        Cookie refreshCookie = mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "valid-token")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("jwt");
+
+        // logout (suppression : maxAge=0)
+        Cookie logoutCookie = mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("jwt");
+
+        org.junit.jupiter.api.Assertions.assertNotNull(loginCookie);
+        org.junit.jupiter.api.Assertions.assertNotNull(refreshCookie);
+        org.junit.jupiter.api.Assertions.assertNotNull(logoutCookie);
+
+        // Secure cohérent (= valeur injectée true) sur les 3 points.
+        org.junit.jupiter.api.Assertions.assertTrue(loginCookie.getSecure());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getSecure(), refreshCookie.getSecure());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getSecure(), logoutCookie.getSecure());
+
+        // Domain cohérent (= valeur injectée) sur les 3 points.
+        org.junit.jupiter.api.Assertions.assertEquals("mytimeline.example", loginCookie.getDomain());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getDomain(), refreshCookie.getDomain());
+        org.junit.jupiter.api.Assertions.assertEquals(loginCookie.getDomain(), logoutCookie.getDomain());
+
+        // HttpOnly + Path cohérents.
+        org.junit.jupiter.api.Assertions.assertTrue(logoutCookie.isHttpOnly());
+        org.junit.jupiter.api.Assertions.assertEquals("/", logoutCookie.getPath());
+        // logout efface bien le cookie.
+        org.junit.jupiter.api.Assertions.assertEquals(0, logoutCookie.getMaxAge());
     }
 }

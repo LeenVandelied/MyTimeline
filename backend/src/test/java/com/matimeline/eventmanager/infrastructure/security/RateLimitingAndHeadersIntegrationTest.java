@@ -180,6 +180,22 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
         }
     }
 
+    /**
+     * The hardened CSP (#101): explicit per-resource directives, no permissive
+     * default-src catch-all granting scripts/styles. Asserted as the exact policy
+     * string so any accidental loosening (e.g. re-adding 'unsafe-inline') fails CI.
+     */
+    private static final String EXPECTED_CSP =
+            "default-src 'self'; "
+            + "script-src 'self'; "
+            + "style-src 'self'; "
+            + "connect-src 'self'; "
+            + "img-src 'self' data:; "
+            + "font-src 'self'; "
+            + "base-uri 'self'; "
+            + "object-src 'none'; "
+            + "frame-ancestors 'none'";
+
     /** (b) Standard security headers are present on an API response. */
     @Test
     void securityHeaders_arePresentOnResponse() throws Exception {
@@ -188,6 +204,22 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"))
                 .andExpect(header().exists("Strict-Transport-Security"))
                 .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
-                .andExpect(header().string("Content-Security-Policy", "default-src 'self'"));
+                .andExpect(header().string("Content-Security-Policy", EXPECTED_CSP));
+    }
+
+    /**
+     * Issue #101 contract: the hardened CSP header is present on PUBLIC (unauthenticated)
+     * endpoints too — the security filter chain writes headers before authn, so an
+     * anonymous hit on the permitAll /api/auth/** path must still carry the strict CSP.
+     */
+    @Test
+    void hardenedCsp_isPresentOnPublicEndpoint() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .with(req -> { req.setRemoteAddr("10.0.0.101"); return req; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOGIN_BODY))
+                .andExpect(header().string("Content-Security-Policy", EXPECTED_CSP))
+                .andExpect(header().string("Content-Security-Policy",
+                        org.hamcrest.Matchers.containsString("frame-ancestors 'none'")));
     }
 }
