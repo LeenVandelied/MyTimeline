@@ -1,5 +1,9 @@
 # Runbook — CORS, cookie JWT & SameSite (#120)
 
+> Liste consolidée des variables d'environnement prod obligatoires :
+> [`deploiement-profils.md`](deploiement-profils.md) (hub déploiement). Ce
+> document détaille uniquement CORS, cookie `jwt` et SameSite.
+
 ## Contexte
 
 Trois durcissements appliqués à `infrastructure/security/SecurityConfig`
