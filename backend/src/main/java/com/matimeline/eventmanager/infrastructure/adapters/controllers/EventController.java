@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
@@ -59,7 +60,7 @@ public class EventController {
         }
         if (product.get().getUser() == null
                 || !product.get().getUser().getId().equals(caller.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new AccessDeniedException("forbidden");
         }
 
         Event event = eventService.createEvent(request);
@@ -91,8 +92,10 @@ public class EventController {
 
     /**
      * Verifies the authenticated user owns the event (event -> product -> product.user).
-     * Returns a non-null ResponseEntity carrying the error status when access must be denied,
-     * or null when ownership is confirmed. Identity is derived from the JWT, never from a path param.
+     * Returns a non-null ResponseEntity carrying a 401/404 status, or null when ownership is
+     * confirmed. An ownership violation throws AccessDeniedException so the centralized
+     * @RestControllerAdvice emits the uniform {"error":"forbidden"} 403 body (BR-AUT-007).
+     * Identity is derived from the JWT, never from a path param.
      */
     private ResponseEntity<Event> checkEventOwnership(UUID eventId, String token) {
         if (token == null || token.isEmpty()) {
@@ -116,7 +119,7 @@ public class EventController {
 
         if (product.get().getUser() == null
                 || !product.get().getUser().getId().equals(caller.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new AccessDeniedException("forbidden");
         }
 
         return null;
