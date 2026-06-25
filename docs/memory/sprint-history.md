@@ -33,7 +33,7 @@
 **Vagues :** V1 = #32 + #51 (disjoints) | V2 = #33 (SecurityConfig après #32)
 **Migrations Flyway :** aucune (contrainte unique #32 posée en S3 via #42)
 **Dépend de :** Sprint 1 (#51 requiert le ControllerAdvice de #30)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-06-25 — branche sprint/2 depuis dev e687ab9)
 
 ## Sprint 3 — (PLANIFIE — cohésion ~0.4, Fondations infra & DB : secrets, Flyway, audit JPA)
 **Objectif :** Externaliser les secrets, versionner le schéma (Flyway), poser l'audit JPA (@Version/timestamps).
