@@ -50,7 +50,9 @@ class ProfileSafetyGuardTest {
                 .withProperty("spring.profiles.active", "dev");
 
         assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#111")
+                .hasMessageContaining("SPRING_PROFILES_ACTIVE=prod");
     }
 
     @Test

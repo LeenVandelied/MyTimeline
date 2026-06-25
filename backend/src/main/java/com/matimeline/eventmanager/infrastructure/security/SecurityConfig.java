@@ -47,7 +47,9 @@ public class SecurityConfig {
     // Profils : dev = http://localhost:3000 ; prod = origine(s) via env CORS_ALLOWED_ORIGINS.
     private final List<String> allowedOrigins;
 
-    public SecurityConfig(UserDetailsService userDetailsService, @Lazy JwtFilter jwtFilter,
+    // userDetailsService n'est pas injecté ici : il est fourni en paramètre du @Bean
+    // authenticationManager(...) (où Spring le résout), pas via ce constructeur.
+    public SecurityConfig(@Lazy JwtFilter jwtFilter,
                           RateLimitingFilter rateLimitingFilter,
                           @Value("${app.cors.allowed-origins:http://localhost:3000}") List<String> allowedOrigins) {
         this.jwtFilter = jwtFilter;

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -45,17 +44,14 @@ public class GlobalExceptionHandler {
     // Un handler ici créait un chemin jamais exécuté en prod : le @RestControllerAdvice
     // n'est pas atteint pour les 403 interceptés par la chaîne de filtres Security.
 
-    /**
-     * Unauthenticated caller (missing/invalid/expired token) when the exception
-     * reaches the DispatcherServlet. The "error" field is the literal code
-     * "unauthorized" (acceptance criterion #51), no internal detail leaked.
-     */
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex) {
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(buildBody(HttpStatus.UNAUTHORIZED, "unauthorized", "unauthorized"));
-    }
+    // NOTE (review PR #121) : aucun @ExceptionHandler(AuthenticationException) ici.
+    // Même raisonnement que le 403 (#119) : les 401 d'authentification levés dans la
+    // chaîne de filtres Spring Security sont interceptés par ExceptionTranslationFilter
+    // et routés vers SecurityConfig.authenticationEntryPoint, UNIQUE point de vérité du
+    // corps 401 {"error":"unauthorized"}. AuthController gère lui-même ses exceptions
+    // d'auth (BadCredentials, JWT expiré/invalide) et renvoie directement. Un handler ici
+    // produisait un corps de forme différente ({timestamp,status,error,message}) sur un
+    // chemin jamais atteint en prod — supprimé pour éviter la divergence de contrat 401.
 
     private Map<String, Object> buildBody(HttpStatus status, String message) {
         return buildBody(status, status.getReasonPhrase(), message);
