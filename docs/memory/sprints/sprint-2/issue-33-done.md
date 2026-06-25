@@ -58,3 +58,39 @@ Test : RateLimitingAndHeadersIntegrationTest
 
 Suite : 29 tests, 0 failure, 0 error, BUILD SUCCESS.
 Perimetre : RateLimitingFilter.java + application.properties + test uniquement. RateLimitConfig non modifie (@Value suffit).
+
+## MAJ #101 — durcissement CSP (Sprint 4)
+
+Le RECOMMAND_FOLLOWUP ligne 33 (durcir CSP) est traite par l'issue #101.
+
+Avant (permissif) : `Content-Security-Policy: default-src 'self'`.
+Apres (strict, par directive) :
+```
+default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self';
+img-src 'self' data:; font-src 'self'; frame-ancestors 'none'
+```
+- SecurityConfig.java:84 `.contentSecurityPolicy(...)` — directives explicites, commentees.
+- `default-src 'self'` conserve comme fallback minimal (object-src/base-uri non listes).
+- `frame-ancestors 'none'` = anti-clickjacking (complete X-Frame-Options DENY).
+
+Choix style-src 'self' STRICT (PAS 'unsafe-inline') : ce header CSP est emis par le
+BACKEND sur ses propres reponses (API JSON). Le front Next.js/Tailwind tourne sur SON
+PROPRE origine (localhost:3000) sous SA PROPRE CSP — le CSS inline genere par Tailwind
+n'est jamais regi par CE header. Donc aucun risque de violation style-src cote front,
+aucune justification pour relacher 'unsafe-inline'. (Si l'API servait un jour du SSR/HTML
+inline, il faudra nonce/hash plutot que 'unsafe-inline'.)
+
+script-src 'self' : jamais 'unsafe-inline'/'unsafe-eval' (defense XSS BR-SEC-003).
+
+Tests (RateLimitingAndHeadersIntegrationTest) :
+- securityHeaders_arePresentOnResponse : assert CSP = chaine stricte exacte (constante
+  EXPECTED_CSP) — toute reintroduction de 'unsafe-inline' fait echouer le CI.
+- NOUVEAU hardenedCsp_isPresentOnPublicEndpoint : CSP strict present sur endpoint PUBLIC
+  (/api/auth/login, permitAll, anonyme) — les headers sont ecrits avant l'authn.
+Suite : 7 tests, 0 failure, 0 error, BUILD SUCCESS.
+
+RECOMMAND_FOLLOWUP residuel : `connect-src 'self'` suffit tant que ce CSP couvre des
+reponses API consommees same-origin. Si une page HTML servie par le backend doit appeler
+une API cross-origin en prod (domaine distinct du front), externaliser l'origine API et
+l'ajouter a connect-src/img-src/font-src par profil (dev vs prod). Aucune origine API
+externe n'est configuree aujourd'hui (CORS n'autorise que http://localhost:3000).
