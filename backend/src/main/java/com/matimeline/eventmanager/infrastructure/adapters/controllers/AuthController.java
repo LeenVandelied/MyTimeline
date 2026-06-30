@@ -24,10 +24,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import com.matimeline.eventmanager.application.dtos.AuthRequest;
+import com.matimeline.eventmanager.application.dtos.ForgotPasswordRequest;
 import com.matimeline.eventmanager.application.dtos.RegisterRequest;
+import com.matimeline.eventmanager.application.dtos.ResetPasswordRequest;
 import com.matimeline.eventmanager.application.dtos.UserResponse;
 import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.User;
+import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetails;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetailsService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
@@ -43,12 +46,15 @@ public class AuthController {
     private final UserServiceImpl userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    // A8/DIP : injection via le PORT (interface domaine), pas l'impl concrète.
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserServiceImpl userService, PasswordEncoder passwordEncoder) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserServiceImpl userService, PasswordEncoder passwordEncoder, PasswordResetService passwordResetService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.passwordResetService = passwordResetService;
     }
 
     private static final String JWT_COOKIE = "jwt";
@@ -243,5 +249,34 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("error", "an_error_occurred"));
         }
+    }
+
+    /**
+     * Mot de passe oublié (#49). Génère + envoie un token de réinitialisation si
+     * l'email correspond à un compte existant.
+     *
+     * <p>BR-AUT-005 (anti-énumération) : répond TOUJOURS 200 quel que soit le
+     * résultat du lookup — le service ne lève aucune exception révélant l'existence
+     * du compte. Le seul 400 possible vient de la validation @Valid (corps malformé /
+     * email absent), traité par GlobalExceptionHandler.
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.requestReset(request.getEmail());
+        // Message neutre identique dans tous les cas (compte trouvé ou non).
+        return ResponseEntity.ok(java.util.Map.of(
+                "message", "Si un compte correspond à cet email, un lien de réinitialisation a été envoyé."));
+    }
+
+    /**
+     * Réinitialise le mot de passe (#49). Token valide (existant, non expiré >15 min,
+     * non consommé) -> met à jour le hash BCrypt + marque consommé -> 200. Token
+     * invalide/expiré/déjà utilisé -> InvalidPasswordResetTokenException -> 400
+     * (GlobalExceptionHandler).
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(java.util.Map.of("message", "Mot de passe réinitialisé avec succès."));
     }
 }

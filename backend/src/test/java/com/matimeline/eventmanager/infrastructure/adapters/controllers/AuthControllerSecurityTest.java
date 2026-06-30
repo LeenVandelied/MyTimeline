@@ -57,13 +57,16 @@ class AuthControllerSecurityTest {
     private UserServiceImpl userService;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         AuthController controller = new AuthController(
-                authenticationManager, jwtService, userDetailsService, userService, passwordEncoder);
+                authenticationManager, jwtService, userDetailsService, userService, passwordEncoder,
+                passwordResetService);
         // #99 — les attributs cookie Secure/Domain sont désormais injectés par @Value
         // (app.cookie.*). En setup standalone, Spring ne les renseigne pas : on simule
         // le profil prod (Secure=true, Domain défini) pour vérifier la COHÉRENCE des

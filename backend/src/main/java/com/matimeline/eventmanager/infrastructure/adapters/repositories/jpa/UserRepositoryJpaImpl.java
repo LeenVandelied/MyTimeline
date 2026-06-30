@@ -44,6 +44,24 @@ public class UserRepositoryJpaImpl
     }
 
     @Override
+    public Optional<User> findDomainUserByEmail(String email) {
+        // BR-AUT-001 : email porte une contrainte unique DB (uq_users_email, V2),
+        // donc au plus un résultat. On garde getResultList()+premier élément (comme
+        // findDomainUserByUsername) plutôt que getSingleResult() pour ne pas lever
+        // sur 0 résultat (cas nominal de forgot-password avec email inconnu).
+        String jpql = "SELECT u FROM UserEntity u WHERE u.email = :email";
+        var results = entityManager
+            .createQuery(jpql, UserEntity.class)
+            .setParameter("email", email)
+            .getResultList();
+
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(userMapper.toDomain(results.get(0)));
+    }
+
+    @Override
     public Optional<User> findDomainUserById(UUID id) {
         return super.findById(id).map(userMapper::toDomain);
     }

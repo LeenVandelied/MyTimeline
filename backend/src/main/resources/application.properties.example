@@ -32,3 +32,18 @@ DB_PASSWORD=
 # OBLIGATOIRE. Generer : openssl rand -hex 64
 # Toute rotation invalide TOUS les tokens existants (deconnexion globale).
 JWT_SECRET=
+
+# --- Email Brevo / mot de passe oublie (#49) ---
+# Cle API Brevo (POST https://api.brevo.com/v3/smtp/email).
+# OBLIGATOIRE en PROD pour que les emails de reinitialisation partent reellement.
+# Absente (dev/test) : BrevoEmailService passe en no-op (warning), le flux ne casse pas.
+# JAMAIS committer la vraie valeur.
+BREVO_API_KEY=
+# Expediteur affiche dans l'email (defaults : no-reply@mytimeline.app / MyTimeline)
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=
+# Base de l'URL de reinitialisation cote front (#53). Le token est ajoute en ?token=...
+# Default dev : http://localhost:3000/reset-password
+RESET_URL_BASE=
+# Duree de validite du token de reinitialisation en minutes (cadrage S8 : 15)
+PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=

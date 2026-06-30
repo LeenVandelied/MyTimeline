@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
@@ -48,6 +49,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "new password must differ"));
+    }
+
+    @ExceptionHandler(InvalidPasswordResetTokenException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPasswordResetToken(InvalidPasswordResetTokenException ex) {
+        // #49 : token de réinitialisation inexistant / mal formé / expiré (>15 min) /
+        // déjà consommé -> 400. Corps plat {"error":...} générique (anti-énumération :
+        // ne distingue pas les causes), cohérent avec les autres erreurs métier.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "invalid or expired token"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -74,4 +74,9 @@ public class UserServiceImpl implements UserService {
     public Optional<User> findDomainUserByUsername(String username) {
         return userRepository.findDomainUserByUsername(username);
     }
+
+    @Override
+    public Optional<User> findDomainUserByEmail(String email) {
+        return userRepository.findDomainUserByEmail(email);
+    }
 } 

@@ -36,13 +36,16 @@ class AuthControllerValidationTest {
     private UserServiceImpl userService;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         AuthController controller = new AuthController(
-                authenticationManager, jwtService, userDetailsService, userService, passwordEncoder);
+                authenticationManager, jwtService, userDetailsService, userService, passwordEncoder,
+                passwordResetService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

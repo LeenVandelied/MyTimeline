@@ -48,7 +48,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             "/api/auth/login", 10,
             "/api/auth/register", 5,
             "/api/auth/refresh", 20,
-            // Reserved slot: endpoint not implemented yet, limit ready for when it is.
+            // #49 : forgot-password est une cible d'abus (spam mail / énumération).
+            // Throttle strict par IP, cohérent avec le slot reset-password (#33).
+            "/api/auth/forgot-password", 5,
             "/api/auth/reset-password", 5
     );
 

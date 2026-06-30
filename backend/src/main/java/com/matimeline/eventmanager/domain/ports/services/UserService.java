@@ -20,5 +20,6 @@ public interface UserService {
 
     Optional<User> findDomainUserById(UUID id);
     Optional<User> findDomainUserByUsername(String username);
+    Optional<User> findDomainUserByEmail(String email);
 
 } 
