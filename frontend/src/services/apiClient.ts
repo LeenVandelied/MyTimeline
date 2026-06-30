@@ -62,10 +62,12 @@ apiClient.interceptors.response.use(
     } else if (error.response?.status === 403) {
       if (!isRedirecting) {
         isRedirecting = true
+        // NE PAS logger error.config.headers : contient l'en-tête Authorization
+        // (jeton porteur) + cookies → fuite de credentials dans la console / les
+        // agrégateurs de logs. On se limite aux métadonnées non sensibles.
         console.error('Erreur 403 - Accès refusé:', {
           url: error.config?.url,
           method: error.config?.method,
-          headers: error.config?.headers,
           data: error.response?.data,
         })
         localStorage.removeItem('user')

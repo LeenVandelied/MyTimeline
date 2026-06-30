@@ -24,6 +24,7 @@ vi.mock('@/services/authService', () => ({
 
 const FAKE_USER: User = {
   id: '018f3a2b-0000-7000-8000-000000000001',
+  name: 'Alice Liddell',
   username: 'alice',
   email: 'alice@example.com',
   role: 'ROLE_USER',
