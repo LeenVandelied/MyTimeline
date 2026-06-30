@@ -7,7 +7,17 @@ import {
   logout as logoutService,
   registerUser,
 } from '@/services/authService'
-import { AuthContextType, User } from '@/types/auth'
+import type { AuthContextType, User } from '@/types/auth'
+
+/**
+ * Extrait un message de log assaini d'une erreur arbitraire (souvent une erreur axios).
+ * Ne JAMAIS logger l'objet `error` brut : `error.config.data` contient le body de la
+ * requête, donc le mot de passe en clair sur login/register (review PR #132, même classe
+ * que la fuite déjà corrigée dans apiClient au commit 7e58162).
+ */
+function safeErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'unknown error'
+}
 
 /**
  * Contexte d'authentification — source unique de l'état `user`.
@@ -47,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data)
       localStorage.setItem('user', JSON.stringify(data))
     } catch (error) {
-      console.error('User fetch failed', error)
+      console.error('User fetch failed', safeErrorMessage(error))
       setUser(null)
       localStorage.removeItem('user')
     } finally {
@@ -62,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loginService(username, password)
         await fetchUser()
       } catch (error) {
-        console.error('Login failed', error)
+        console.error('Login failed', safeErrorMessage(error))
       } finally {
         setLoading(false)
       }
@@ -76,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await registerUser(name, username, email, password)
       } catch (error) {
-        console.error('Registration failed', error)
+        console.error('Registration failed', safeErrorMessage(error))
       } finally {
         setLoading(false)
       }
@@ -88,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await logoutService()
     } catch (error) {
-      console.error('Logout failed', error)
+      console.error('Logout failed', safeErrorMessage(error))
     } finally {
       setUser(null)
       localStorage.removeItem('user')
