@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
+import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
@@ -47,6 +48,11 @@ public class UserServiceImpl implements UserService {
         // plus dans le contrôleur. BR-AUT-005 : échec -> InvalidCredentialsException (400).
         if (!passwordEncoder.matches(oldPassword, caller.getPassword())) {
             throw new InvalidCredentialsException();
+        }
+        // Le nouveau mot de passe doit différer de l'ancien (vérif APRÈS le contrôle
+        // BCrypt de l'ancien, donc seul un appelant légitime peut déclencher ce 400).
+        if (passwordEncoder.matches(newPassword, caller.getPassword())) {
+            throw new SamePasswordException();
         }
         String newHash = passwordEncoder.encode(newPassword);
         User updated = new User(

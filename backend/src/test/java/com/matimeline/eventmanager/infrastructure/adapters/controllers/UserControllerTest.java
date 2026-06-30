@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
+import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
@@ -181,6 +182,23 @@ class UserControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(userService).changePassword(eq(caller), eq("rightold"), eq("newsecret"));
+    }
+
+    @Test
+    void changePassword_returns400_whenNewPasswordSameAsOld() throws Exception {
+        stubAuthenticatedCaller();
+        // Review PR #132 : new == old (après validation BCrypt de l'ancien) -> 400.
+        doThrow(new SamePasswordException())
+                .when(userService).changePassword(eq(caller), eq("rightold"), eq("rightold"));
+
+        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"rightold\"}";
+
+        mockMvc.perform(post("/api/me/change-password")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("new password must differ"));
     }
 
     @Test
