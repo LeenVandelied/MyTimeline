@@ -1,71 +1,7 @@
-import { useEffect, useState } from "react";
-import { getUserProfile, login as loginService, logout as logoutService, registerUser } from "../services/authService";
-import { User } from "@/types/auth";
-
-export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchUser = async () => {
-    try {
-      const data = await getUserProfile();
-      setUser(data);
-
-      if (typeof window !== "undefined") {
-        localStorage.setItem("user", JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error("User fetch failed", error);
-      setUser(null);
-
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("user");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (username: string, password: string) => {
-    setLoading(true);
-    try {
-      await loginService(username, password);
-      await fetchUser();
-    } catch (error) {
-      console.error("Login failed", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (username: string, email: string, password: string) => {
-    setLoading(true);
-    try {
-      await registerUser(username, username, email, password);
-    } catch (error) {
-      console.error("Registration failed", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = () => {
-    logoutService();
-    setUser(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("user");
-    }
-  };
-
-  return { user, login, register, logout, loading };
-};
+/**
+ * #40 — `useAuth` ne gère plus son propre état : il lit le contexte partagé
+ * exposé par `<AuthProvider>`. Ce ré-export conserve l'import historique
+ * `@/hooks/useAuth` des 4 consumers (dashboard / login / AddProducts /
+ * EventContent) sans toucher leurs call-sites.
+ */
+export { useAuth } from '@/contexts/AuthContext'

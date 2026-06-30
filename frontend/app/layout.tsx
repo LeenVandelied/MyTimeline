@@ -3,7 +3,9 @@ import '../src/styles/landing.css'
 import '../src/styles/animations.css'
 import { ReactNode, CSSProperties } from 'react'
 import { Archivo, IBM_Plex_Mono } from 'next/font/google'
+import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 /**
  * Polices self-hostées via next/font (zéro requête Google en prod).
@@ -30,11 +32,7 @@ export const metadata = {
   description: 'Application de gestion de temps et événements',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="fr"
@@ -43,11 +41,20 @@ export default function RootLayout({
       style={{ '--font-ui': 'var(--font-display)' } as CSSProperties}
     >
       <body>
-        {/* Ordre providers : Theme > Auth (S7 #40) > Query (S7 #48). */}
+        {/*
+          Ordre des providers (imposé) : Theme (S6 #45) > Auth (S7 #40)
+          > Query (S7 #48, inséré entre AuthProvider et {children}).
+          #48 : envelopper {children} d'un <QueryClientProvider> ici, sous
+          <AuthProvider>, sans déplacer Theme ni Auth.
+        */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <AuthProvider>
+            {/* <QueryClientProvider> (#48) viendra ici */}
+            {children}
+          </AuthProvider>
         </ThemeProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
-  );
+  )
 }
