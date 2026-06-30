@@ -46,3 +46,15 @@ Avant de figer un `CHECK (col IN (...))`, croiser ≥2 sources de vérité appli
 
 ## PAT-S5-006 — @MockBean sur le type concret quand le contrôleur injecte le concret (A8)
 Sous `@SpringBootTest`, si les contrôleurs injectent les `*ServiceImpl` concrets (anti-pattern A8 repo-wide) : `@MockBean` sur le type CONCRET (`*ServiceImpl`), pas l'interface, sinon `UnsatisfiedDependency` au boot. Boot 3.2 = `@MockBean` (pas `@MockitoBean`). (Sprint 5 #119)
+
+## PAT-S7-001 — Tester un intercepteur axios sans réseau
+`vi.mock('axios')` expose `create()` → l'instance dont `interceptors.response.use` capture le `rejectionHandler` dans une var module-scope ; on l'appelle directement avec un faux `error {response:{status}}`. Anti-pattern : monter un vrai apiClient et déclencher de vraies requêtes HTTP. (Sprint 7 #40)
+
+## PAT-S7-002 — Conventions query-keys TanStack : factory par domaine
+Factory par domaine, clé liste = préfixe de la clé détail, `as const` → `invalidateQueries` ciblé. Anti-pattern : littéraux de clés éparpillés dans les hooks. (Sprint 7 #48)
+
+## PAT-S7-003 — Erreur métier en contrôleur → exception domain mappée par le handler global
+Lever une exception domain (ex `InvalidCredentialsException`, `SamePasswordException`) mappée par `GlobalExceptionHandler` en corps plat `{error}`, distinct du `buildBody` détaillé des 404/validation. Garde la logique métier hors du contrôleur (hexagonal). (Sprint 7 #70)
+
+## PAT-S7-004 — Migration progressive vers TanStack sans dupliquer le flux auth
+AuthContext = source unique de l'utilisateur courant ; `useCurrentUser` = pont read-only sur le contexte (`queryFn` sans HTTP) → pas de double-fetch `/me`. NE PAS coupler ce hook aux écrans déjà sur `useAuth()`. Pattern réutilisable pour migrer progressivement vers Query. (Sprint 7 #48)

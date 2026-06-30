@@ -147,15 +147,27 @@
 **Follow-ups (à trier) :** activer branch protection (CI verte dispo) ; porter landing.css/animations.css + types/event.ts DEFAULT_COLORS + TimelineCalendar:221 sur tokens ; scoper landing CSS aux pages publiques ; consommer ds/components/* (S7/S8) ; vrais tests RTL + specs Playwright ; commitlint-config-gitmoji inutilisé.
 **Status :** Terminé
 
-## Sprint 7 — 2026-06-25 → en cours (EN COURS — cohésion 0.45, Socle frontend : état serveur + auth context)
+## Sprint 7 — 2026-06-25 → 2026-06-30 (Terminé — merge PR #132 dans dev — cohésion 0.45, Socle frontend : état serveur + auth context)
 **Objectif :** Couche d'accès données + contexte auth, pré-requis de tout écran — Auth Context React (#40), TanStack Query (#48), backend profil /me PATCH + change-password (#70). Premier usage des tokens S6.
-**Milestone GitHub :** #7
-**Issues :** #40, #48, #70
-**Vagues :** V1 (∥) = #70 (backend, disjoint) + #40 | V2 = #48 (après #40 — layout.tsx partagé, wrap Query autour Auth)
+**Milestone GitHub :** #7 (fermé après merge)
+**Issues livrées (3) :** #40, #48, #70
+**Vagues exécutées :** V1 (∥) = #70 (backend) + #40 (frontend, disjoints) | V2 = #48 (après #40 — layout.tsx partagé, wrap Theme>Auth>Query>children)
+**Cohésion score :** 0.45
+**Commits :** 24807b1 (#40 AuthContext+Toaster+redirections) · b9b334c (#70 /me PATCH+change-password, changePassword derrière le port = correction A8) · 464128f (#48 TanStack Query v5) · 7e58162 (fix-review : fuite credentials logs + User.name) · 235f3f3+0aae019 (review PR #132 : log password assaini + newPassword≠oldPassword + import type)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 6 (#45 tokens, #29 infra test)
-**Note :** layout.tsx = fichier le plus à risque (ordre Theme>Auth>Query). #70 corrige BR-AUT-008 (/me PATCH sans fuite password).
-**Status :** En cours
+**BR impactées :** BR-AUT-001 (409 username PATCH /me), BR-AUT-008 (aucun password en réponse), BR-AUTH-003 (ROLE_USER dans contexte), change-password (400/204).
+**Reviews :** sprint Phase 7 (1 CRITIQUE fuite headers + 2 MAJEUR, CRITIQUE+1 MAJEUR corrigés) ; /review-pr #132 batch 3 agents (0 CRITIQUE, MAJEUR connus reportés, MINEURs corrigés) — tous RESOLU.
+**Tests :** Backend 68/68 green | Frontend 12/12 green (vitest) | E2E reporté S8 (Playwright login).
+**Nouveaux pitfalls / decisions / patterns :** PIT-S7-001..003, PAT-S7-001..004, DEC-S7-001..002.
+**Note :** layout.tsx = fichier le plus à risque (ordre Theme>Auth>Query respecté). 2 crashs subagents V1 récupérés depuis travail non commité. Tooling : `test-quiet.sh frontend` est un no-op (vitest non câblé) → follow-up.
+**Follow-ups arbitrés (Phase 4 triage — 4/4 créés en backlog libre) :**
+  - Câbler vitest dans test-quiet.sh + CI [S | transversal] → issue #133
+  - Anti-énumération username 409 + rate-limit /api/me [S | auth] → issue #134 (complète #102 qui couvre /api/auth/*)
+  - localStorage PII A17 (sortir user du localStorage) [M | auth] → issue #135
+  - Qualité /me : audit log change-password + DRY resolveCaller + propagation erreur login/register [XS | auth] → issue #136
+  - (Annexe taxonomie : labels `frontend`/`fullstack` créés par project-manager, absents du repo — à valider.)
+**Status :** Terminé
 
 ## Sprint 8 — 2026-06-25 (PLANIFIÉ — cohésion 0.70, Premier vertical Auth bout-en-bout)
 **Objectif :** Flux mot de passe oublié complet (back Brevo #49 + front DS #53) — 1er flux cross-system → bascule stratégie E2E Playwright (1ʳᵉ E2E métier du projet).

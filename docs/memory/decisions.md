@@ -49,3 +49,9 @@ Front Next.js sur origine séparée (localhost:3000 dev, distinct prod) → `Str
 
 ## DEC-S5-005 — Test 403 d'ownership : @WithMockUser(authorities=ROLE_USER)
 Requis pour franchir `hasAuthority("ROLE_USER")` et atteindre le contrôleur où se lève le 403 d'ownership (sans, on teste un 403 d'autorité, pas d'ownership). `JwtFilter` ne réécrit pas un contexte d'authentification déjà posé. (Sprint 5 #119)
+
+## DEC-S7-001 — change-password derrière le port UserService (correction A8)
+La logique change-password (vérif BCrypt + re-hash) violait A8 en vivant dans le contrôleur (infra). Décision : `UserService.changePassword` (port domain) + logique dans `UserServiceImpl`, `InvalidCredentialsException`/`SamePasswordException` → 400. Pas de port d'encodage créé (scope min : `PasswordEncoder` = interface légère déjà tolérée en application). (Sprint 7 #70)
+
+## DEC-S7-002 — Coexistence axios brut / TanStack Query (migration progressive)
+Le transport reste axios (le `queryFn` appelle le service axios existant) ; TanStack n'ajoute que cache/dédup/refetch. Migration progressive, 2 hooks pilotes seulement (`useCurrentUser`, `useProductsWithEvents`), le reste des appels reste axios brut documenté. (Sprint 7 #48)
