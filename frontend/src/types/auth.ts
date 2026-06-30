@@ -1,26 +1,9 @@
-import { z } from 'zod'
-
-export const LoginSchema = z.object({
-  username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères"),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-})
-
-export type LoginData = z.infer<typeof LoginSchema>
-
 /**
- * Payload d'inscription aligné sur le DTO backend `RegisterRequest`
- * {name, username, email, password} (cf. .claude/rules-jit/zod-dto-sync.md).
- * `name` ≠ `username` : champs distincts (bug pré-#40 où `username` était
- * envoyé comme `name`, désormais corrigé dans `useAuth.register`).
+ * #53 — Les schémas Zod auth ont migré vers `@/lib/schemas/auth` (source unique,
+ * corrige A12). On les ré-exporte ici pour préserver les imports historiques
+ * (`@/types/auth` → `LoginSchema`, `LoginData`, `RegisterSchema`, `RegisterData`).
  */
-export const RegisterSchema = z.object({
-  name: z.string().min(3),
-  username: z.string().min(3),
-  email: z.string().email(),
-  password: z.string().min(6),
-})
-
-export type RegisterData = z.infer<typeof RegisterSchema>
+export { LoginSchema, RegisterSchema, type LoginData, type RegisterData } from '@/lib/schemas/auth'
 
 export interface User {
   id: string

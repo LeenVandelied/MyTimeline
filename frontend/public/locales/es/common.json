@@ -6,7 +6,12 @@
     "submit": "Iniciar sesión",
     "loading": "Iniciando sesión...",
     "noAccount": "¿Aún no tienes cuenta?",
-    "register": "Regístrate"
+    "register": "Regístrate",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "errors": {
+      "invalidCredentials": "Nombre de usuario o contraseña incorrectos",
+      "generic": "Ha ocurrido un error, inténtalo de nuevo"
+    }
   },
   "validation": {
     "username": "El nombre de usuario debe contener al menos 3 caracteres",
@@ -155,5 +160,45 @@
     "howItWorks": "Cómo funciona",
     "testimonials": "Testimonios",
     "legal": "Legal"
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "El nombre de usuario ya está en uso",
+      "generic": "Ha ocurrido un error durante el registro, inténtalo de nuevo"
+    },
+    "success": "Cuenta creada, redirigiendo al inicio de sesión..."
+  },
+  "forgotPassword": {
+    "title": "Contraseña olvidada",
+    "description": "Introduce tu dirección de correo para recibir un enlace de restablecimiento.",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "submit": "Enviar enlace",
+    "loading": "Enviando...",
+    "neutralMessage": "Si existe una cuenta para esta dirección, se ha enviado un correo de restablecimiento.",
+    "backToLogin": "Volver al inicio de sesión",
+    "errors": {
+      "generic": "Ha ocurrido un error, inténtalo de nuevo"
+    }
+  },
+  "resetPassword": {
+    "title": "Nueva contraseña",
+    "description": "Elige una nueva contraseña para tu cuenta.",
+    "newPassword": "Nueva contraseña",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Restablecer contraseña",
+    "loading": "Restableciendo...",
+    "success": "Contraseña restablecida. Ya puedes iniciar sesión.",
+    "goToLogin": "Iniciar sesión",
+    "missingToken": "Enlace de restablecimiento inválido o incompleto.",
+    "errors": {
+      "invalidToken": "Este enlace de restablecimiento no es válido o ha caducado.",
+      "generic": "Ha ocurrido un error, inténtalo de nuevo"
+    }
+  },
+  "spinner": {
+    "loading": "Cargando"
   }
 }

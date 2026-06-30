@@ -44,9 +44,30 @@ if (typeof window !== 'undefined') {
   setupPeriodicRefresh()
 }
 
+/**
+ * #53 — Endpoints des formulaires auth : leurs erreurs (400/401/409) sont
+ * gérées INLINE par les écrans Login/Register/Reset. On exclut donc ces routes
+ * du traitement global (toast + redirect vers /login) — sinon un 401 sur
+ * /auth/login déclencherait une redirection vers la page de login elle-même
+ * (boucle visuelle) au lieu d'afficher « identifiants invalides » sous le champ.
+ */
+const INLINE_AUTH_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+]
+
+const isInlineAuthRequest = (url?: string): boolean =>
+  typeof url === 'string' && INLINE_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint))
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (isInlineAuthRequest(error.config?.url)) {
+      // Géré inline par le formulaire : on relaie l'erreur sans effet de bord global.
+      return Promise.reject(error)
+    }
     if (error.response?.status === 400) {
       toast.error('Erreur de validation, veuillez vérifier vos données.')
     } else if (error.response?.status === 401) {
