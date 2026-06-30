@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 
 @RestControllerAdvice
@@ -27,6 +29,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(buildBody(HttpStatus.NOT_FOUND, "Resource not found"));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
+        // #70 : ancien mot de passe faux (POST /api/me/change-password) -> 400.
+        // Corps plat {"error":...} cohérent avec les autres erreurs métier des
+        // contrôleurs (login/register), distinct du corps détaillé buildBody.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "invalid current password"));
+    }
+
+    @ExceptionHandler(SamePasswordException.class)
+    public ResponseEntity<Map<String, Object>> handleSamePassword(SamePasswordException ex) {
+        // Review PR #132 : nouveau mot de passe identique à l'ancien -> 400.
+        // Même corps plat {"error":...} que InvalidCredentialsException.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "new password must differ"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

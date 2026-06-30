@@ -147,7 +147,7 @@
 **Follow-ups (à trier) :** activer branch protection (CI verte dispo) ; porter landing.css/animations.css + types/event.ts DEFAULT_COLORS + TimelineCalendar:221 sur tokens ; scoper landing CSS aux pages publiques ; consommer ds/components/* (S7/S8) ; vrais tests RTL + specs Playwright ; commitlint-config-gitmoji inutilisé.
 **Status :** Terminé
 
-## Sprint 7 — 2026-06-25 (PLANIFIÉ — cohésion 0.45, Socle frontend : état serveur + auth context)
+## Sprint 7 — 2026-06-25 → en cours (EN COURS — cohésion 0.45, Socle frontend : état serveur + auth context)
 **Objectif :** Couche d'accès données + contexte auth, pré-requis de tout écran — Auth Context React (#40), TanStack Query (#48), backend profil /me PATCH + change-password (#70). Premier usage des tokens S6.
 **Milestone GitHub :** #7
 **Issues :** #40, #48, #70
@@ -155,7 +155,7 @@
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 6 (#45 tokens, #29 infra test)
 **Note :** layout.tsx = fichier le plus à risque (ordre Theme>Auth>Query). #70 corrige BR-AUT-008 (/me PATCH sans fuite password).
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 8 — 2026-06-25 (PLANIFIÉ — cohésion 0.70, Premier vertical Auth bout-en-bout)
 **Objectif :** Flux mot de passe oublié complet (back Brevo #49 + front DS #53) — 1er flux cross-system → bascule stratégie E2E Playwright (1ʳᵉ E2E métier du projet).

@@ -1,56 +1,47 @@
-## Sprint 6 — Fondations outillage & CI
+## Sprint 7 — Socle frontend : état serveur + auth context
 
-Sprint d'**enablers purs** (cohésion 0.55) : débloque tout le frontend futur. Zéro BR fonctionnelle, zéro changement backend.
+Couche d'accès données + contexte auth, pré-requis de tout écran. Cohésion 0.45, milestone #7. Aucune migration Flyway.
 
-### Issues livrées
-| # | Titre | Commit |
-|---|-------|--------|
-| #45 (+ #35 absorbé) | Tokens Graphite (Tailwind 4 `@theme`) + thème clair/sombre + dead code | `1012034`, `4f5da4a` |
-| #29 | Infra test frontend (Vitest+RTL+Playwright+Storybook+Prettier+Husky+commitlint) | `6ca0b13` |
-| #38 | CI GitHub Actions + Dependabot + CODEOWNERS | `343461b` |
-| review | Corrections theme-correctness + deps | `2f02142` |
+### Issues livrées (3)
+
+| # | Type | Résumé |
+|---|------|--------|
+| #70 | feature | Backend : endpoints profil `/api/me` (GET / PATCH + POST `/me/change-password`), `UserResponse` sans password, `@Transactional` sur `updateUser`, `changePassword` derrière le port `UserService` |
+| #40 | refactor | `AuthContext` React (source unique), montage `<Toaster/>`, redirections 401 locale-aware, fix signature `register(name, username, …)`, migration des 4 consumers |
+| #48 | chore | Introduction TanStack Query v5 (`QueryClientProvider`, conventions `query-keys.ts`, hooks pilotes `useCurrentUser`/`useProductsWithEvents`) |
+
+**Vagues exécutées :** V1 (∥) = #70 (backend) + #40 (frontend) · V2 = #48 (après #40, `layout.tsx` partagé, ordre wrap Theme>Auth>Query>children).
 
 ### Changements clés
-
-**#45 — Design system Graphite**
-- Tokens récupérés du **hand-off Claude Design** (« Refonte graphique MyTimeline ») et déposés dans `frontend/src/styles/ds/` (source unique) + `docs/design/graphite-handoff.md`. *Ils n'existaient pas dans le repo — décision dev : porter les vraies valeurs validées.*
-- Exposition Tailwind 4 via `@theme` (rampe graphite 12 paliers, accent bleu électrique, 12 couleurs event AA, surfaces clair/sombre, typo Archivo/IBM Plex Mono, spacing base-4, tokens timeline).
-- `next-themes` (`attribute="class"`, system) — bascule clair/sombre sans reload ; ordre providers Theme>Auth>Query préparé (Auth/Query en S7).
-- Polices via `next/font` (self-host, zéro requête Google en prod).
-- Audit classes hardcodées : ~180 occurrences sur 15 fichiers → tokens sémantiques (0 résidu gray/purple).
-
-**#35 absorbé (fermeture à la clôture du sprint)**
-- Deps mortes retirées : `next-auth`, `@formatjs/intl-localematcher`, `negotiator`, `date-fns`, `react-day-picker` (vérif grep : i18n via `next-intl/middleware` ; `calendar.tsx` mort).
-- Fichiers morts supprimés : `ui/calendar.tsx`, `client-only.tsx`, `client-wrapper.tsx`, `calendar.css`. Rename `tailwing.config.ts`→`tailwind.config.ts`.
-- `FullCalendarEvent` **gardé** (vivant — pas un vestige, divergence assumée vs brief).
-
-**#29 — Infra test**
-- Vitest 2.1.9 + RTL 16 + Playwright 1.61 + Storybook 8.6 (builder **Vite** — webpack `@storybook/nextjs` casse sur Next 15.2) + Prettier + Husky 9 + lint-staged + commitlint gitmoji.
-- Scripts : `test`, `test:e2e`, `typecheck`, `format`, `storybook` (+ `build-storybook`).
-- Husky résolu pour le **worktree** : `core.hooksPath` en scope `--worktree`.
-
-**#38 — CI**
-- `.github/workflows/ci.yml` : 2 jobs parallèles — backend `./mvnw verify` (Java 21, Testcontainers, cache Maven) + frontend `npm ci`→`build`/`test`/`typecheck`/`lint` (Node 20, cache npm). Triggers PR+push sur `dev`/`main`, `concurrency.cancel-in-progress`.
-- Dependabot (maven `/backend` + npm `/frontend` + github-actions) ; CODEOWNERS (`@LeenVandelied`).
-- ⚠ **Branch protection NON activée** (volontaire — l'activer avant le 1er run vert bloquerait cette PR). Procédure `gh api` documentée en tête de `ci.yml`. À activer après le 1er vert.
+- **Backend** : `UserController` (`/api/me`), `UserServiceImpl.changePassword` (BCrypt verify + re-hash), `InvalidCredentialsException` → 400 via `GlobalExceptionHandler`, DTOs `UserResponse`/`UserUpdateRequest`/`ChangePasswordRequest`. Logique change-password placée **derrière le port** (correction DIP / anti-pattern A8 décidée en cours de sprint).
+- **Frontend** : `AuthContext` + `QueryProvider` (client), `layout.tsx` réordonné (Theme>Auth>Query>children, `<Toaster/>` au root), `apiClient` redirections `/[locale]/login`, `useCurrentUser` lit AuthContext (**zéro double-fetch `/me`**), type `User` aligné sur le DTO backend (champ `name`).
 
 ### BR impactées
-Aucune (sprint outillage).
+- **BR-AUT-001** — unicité username : PATCH `/me` → 409 si pris par un autre compte.
+- **BR-AUT-008** — aucun password (même hashé) dans les réponses `/me`.
+- **change-password** — 400 ancien pwd faux / 204 succès (≥6 car.).
+- **BR-AUTH-003** — ROLE_USER visible dans le contexte auth.
 
-### Audit tests (Phase 6) — `docs/memory/audits/sprint-6-test-coverage.md`
-- Frontend re-vérifié vert par le lead : **Vitest 1/1 · typecheck 0 · lint clean · `next build` OK**.
-- Backend non impacté (0 fichier modifié). E2E : aucune spec (1ʳᵉ E2E métier en S8).
-- ⚠ La CI elle-même n'est **pas exécutable en local** → 1er vrai run = à l'ouverture de cette PR. À surveiller : Testcontainers/Docker runner, durée < 10 min.
+### Audit tests (`docs/memory/audits/sprint-7-test-coverage.md`)
+- **Backend** : 56/56 verts, 0 failed.
+- **Frontend** : 6 fichiers / 12 tests verts (`vitest run`), `tsc --noEmit` clean.
+- **E2E** : aucun nouveau spec — Playwright login **reporté Sprint 8** (report planifié dès la planification). Endpoints `/me` sans UI consommatrice ce sprint (Wave 3+).
 
-### Review (Phase 7) — résolu
-Reviewer : 0 CRITIQUE / 5 MAJEUR / 4 MINEUR, **tous résolus** (`2f02142`) : couleurs hardcodées hors DS (TimelineCalendar violet/emerald/indigo, status pills), `text-ink`→`text-accent-ink` (contraste sombre), deps commitlint en direct.
+### Sécurité (security-expert)
+Aucun CRITIQUE. Pas d'IDOR (identité dérivée du cookie jwt seul), pas de fuite de hash, change-password BCrypt constant-time. Findings traités/reportés ci-dessous.
 
-### Cohésion
-0.55 (epic:design + epic:devops ×2 — liés par « débloquer le frontend »).
+### Review (reviewer batch) — findings traités
+- ✅ **[CRITIQUE]** `apiClient.ts` loggait `error.config.headers` (Authorization/cookie) en console → corrigé (`7e58162`), ne logge plus que url/method/status.
+- ✅ **[MAJEUR]** drift DTO : type `User` frontend sans champ `name` → ajouté (interface + schéma Zod).
+- ⏭ **[MAJEUR reporté]** `AuthContext` stocke le user en localStorage (lisible XSS) — pattern pré-existant (A17), changement du modèle de persistance hors scope → **follow-up** arbitré à la clôture.
+- MINEURs acceptés : TOCTOU username (→ #42 contrainte DB), pas d'optimistic lock (risque faible), `authService` encore sur `/auth/me` (wiring FE des nouveaux endpoints prévu sprint suivant).
 
-### Suivi (follow-ups à trier en clôture)
-- Activer branch protection après 1er run CI vert.
-- Porter `landing.css`/`animations.css` (hex de marque) + `TestimonialCard` (blue/cyan/pink) sur tokens.
-- Consommer `ds/components/{core,timeline,i18n}.css` lors de l'intégration des écrans (S7/S8).
-- `toLocaleDateString` sans locale (AddProducts) ; `commitlint-config-gitmoji` non utilisé (candidat suppression).
-- Vrais tests RTL + premières specs Playwright quand le socle S7 atterrit.
+### Follow-ups identifiés (triage à `/sprint end`)
+1. **Tooling** : `scripts/test-quiet.sh frontend` est un no-op (vitest non câblé) → les tests frontend ne tournent pas via l'outillage standard ni la CI. À câbler.
+2. **Sécurité** : modèle de persistance auth (localStorage user → httpOnly-only) — décision A17.
+3. **Anti-énumération** : 409 username (PATCH `/me` + register) révèle l'existence d'un compte — politique globale à décider.
+
+### Coverage E2E
+OK — aucun nouveau `data-testid` orphelin (sprint = providers/hooks, pas de nouvel élément UI).
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
