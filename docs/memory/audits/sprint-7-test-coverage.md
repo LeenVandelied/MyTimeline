@@ -1,6 +1,6 @@
 # Audit tests — Sprint 7
 
-> Généré en fin de Phase 6. `[MISSING]` bloque la Phase 9 PR.
+> Généré en fin de Phase 6. Un marqueur « MISSING » dans la matrice bloque la Phase 9 PR.
 > Thème : Socle frontend — état serveur + auth context (#40, #48, #70). Cohésion 0.45.
 
 ## Couverture par BR-XX
@@ -12,7 +12,7 @@
 | change-password | 400 ancien pwd faux (BCrypt) / 204 succès, ≥6 car. | NON | ✅ | ✅ | ⚠ N/A | ⚠ reporté S8 | ⚠ N/A |
 | BR-AUTH-003 | ROLE_USER visible dans le contexte auth après login/register | OUI (front↔back auth) | ✅ (existant) | ✅ (existant) | ✅ (AuthContext propage) | ⚠ reporté S8 | ⚠ reporté S8 |
 
-> **Cross-system flow** : seul le flux login/register (BR-AUTH-003) est 2+ systèmes. Son E2E métier (Playwright login) a été **explicitement reporté au Sprint 8** dès la planification (`/sprint plan`, mini-plan #40 : "E2E Playwright login reporté S8"). Les endpoints /me (#70) n'ont **pas encore d'UI consommatrice** (écran Réglages = Wave 3+), donc aucun parcours cross-system complet à couvrir ce sprint → `N/A` (pas `[MISSING]`).
+> **Cross-system flow** : seul le flux login/register (BR-AUTH-003) est 2+ systèmes. Son E2E métier (Playwright login) a été **explicitement reporté au Sprint 8** dès la planification (`/sprint plan`, mini-plan #40 : "E2E Playwright login reporté S8"). Les endpoints /me (#70) n'ont **pas encore d'UI consommatrice** (écran Réglages = Wave 3+), donc aucun parcours cross-system complet à couvrir ce sprint → `N/A` (pas un manque bloquant).
 
 ## Tests créés
 - `backend/src/test/.../controllers/UserControllerTest.java` (BR-AUT-001 409, BR-AUT-008 absence hash, change-password 400/204)
@@ -36,4 +36,4 @@
 - `scripts/test-quiet.sh frontend` est un **no-op documenté** (aucun runner vitest câblé) → le test-runner a vu "1 smoke test" à tort. La suite réelle (12 tests) ne passe que via `vitest run` direct. **Follow-up** : câbler vitest dans `test-quiet.sh frontend` + CI, sinon les tests frontend ne sont pas exécutés par l'outillage standard.
 
 ## Conclusion
-**Prêt pour PR.** Suites backend (56/56) et frontend (12/12) vertes, zéro régression. Aucun [MISSING] bloquant : la seule absence E2E (login) est un report planifié S8, et les endpoints /me n'ont pas d'UI consommatrice ce sprint. Findings sécurité = aucun bloquant (le [MAJEUR] est un pattern pré-existant). 2 follow-ups identifiés (tooling vitest, anti-enum username) à arbitrer en Phase 4 de `/sprint end`.
+**Prêt pour PR.** Suites backend (56/56) et frontend (12/12) vertes, zéro régression. Aucun manque bloquant : la seule absence E2E (login) est un report planifié S8, et les endpoints /me n'ont pas d'UI consommatrice ce sprint. Findings sécurité = aucun bloquant (le [MAJEUR] est un pattern pré-existant). 2 follow-ups identifiés (tooling vitest, anti-enum username) à arbitrer en Phase 4 de `/sprint end`.
