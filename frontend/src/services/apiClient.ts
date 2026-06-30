@@ -58,8 +58,30 @@ const INLINE_AUTH_ENDPOINTS = [
   '/auth/reset-password',
 ]
 
-const isInlineAuthRequest = (url?: string): boolean =>
-  typeof url === 'string' && INLINE_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint))
+/**
+ * Extrait le pathname d'une URL axios (absolue ou relative à baseURL) afin de
+ * matcher la whitelist de façon ANCRÉE (pas en sous-chaîne). `url.includes(endpoint)`
+ * était fragile : un futur endpoint partageant une sous-chaîne (ex.
+ * `/auth/login-history`) aurait été exclu à tort du handler 401 global, avalant un
+ * vrai 401. On compare le pathname par égalité stricte OU suffixe ancré.
+ */
+const pathnameOf = (url: string): string => {
+  try {
+    // 2e arg = base : gère les URLs relatives (config.url axios sans baseURL absolu).
+    return new URL(url, 'http://x').pathname
+  } catch {
+    // URL non parsable : on retombe sur la chaîne brute (sans query string).
+    return url.split('?')[0]
+  }
+}
+
+const isInlineAuthRequest = (url?: string): boolean => {
+  if (typeof url !== 'string') return false
+  const pathname = pathnameOf(url)
+  return INLINE_AUTH_ENDPOINTS.some(
+    (endpoint) => pathname === endpoint || pathname.endsWith(endpoint),
+  )
+}
 
 apiClient.interceptors.response.use(
   (response) => response,

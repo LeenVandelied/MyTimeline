@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.util.HtmlUtils;
 
 import com.matimeline.eventmanager.domain.ports.services.EmailService;
 
@@ -93,8 +94,14 @@ public class BrevoEmailService implements EmailService {
      */
     private Map<String, Object> buildPayload(String recipientEmail, String recipientName, String resetLink) {
         String safeName = recipientName == null || recipientName.isBlank() ? "" : recipientName;
+        // XSS : le nom est contrôlé par l'utilisateur (saisi à l'inscription). Échapper
+        // AVANT insertion dans le HTML de l'email, sinon un nom contenant du markup
+        // (ex. <img onerror=...>) s'exécuterait dans le client mail du destinataire.
+        // On garde safeName brut pour le champ JSON "to.name" (sérialisé par Brevo,
+        // pas du HTML) ; on n'échappe que la branche htmlContent.
+        String escapedName = HtmlUtils.htmlEscape(safeName);
         String htmlContent =
-                "<p>Bonjour " + safeName + ",</p>"
+                "<p>Bonjour " + escapedName + ",</p>"
                 + "<p>Vous avez demandé la réinitialisation de votre mot de passe MyTimeline. "
                 + "Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe :</p>"
                 + "<p><a href=\"" + resetLink + "\">Réinitialiser mon mot de passe</a></p>"

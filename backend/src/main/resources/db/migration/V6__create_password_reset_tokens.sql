@@ -11,7 +11,7 @@
 --
 -- Schéma reflétant EXACTEMENT l'entité PasswordResetTokenEntity (ddl-auto=validate
 -- en dev/test → tout écart entité/DDL casse le boot). Types : `uuid` pour PK/FK/token,
--- `timestamp` pour les LocalDateTime (createdAt / expiresAt / usedAt).
+-- `timestamp` pour les LocalDateTime (expires_at / used_at).
 --
 -- FK user_id -> users(id), ON DELETE CASCADE : si un compte est supprimé, ses
 -- tokens en attente n'ont plus de sens et sont purgés avec lui.
