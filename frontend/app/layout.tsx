@@ -6,6 +6,7 @@ import { Archivo, IBM_Plex_Mono } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { QueryProvider } from '@/contexts/QueryProvider'
 
 /**
  * Polices self-hostées via next/font (zéro requête Google en prod).
@@ -49,8 +50,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            {/* <QueryClientProvider> (#48) viendra ici */}
-            {children}
+            {/* #48 : QueryClientProvider entre AuthProvider et {children}.
+                Ordre final imposé : Theme > Auth > Query > children. */}
+            <QueryProvider>{children}</QueryProvider>
           </AuthProvider>
         </ThemeProvider>
         <Toaster position="top-right" />
