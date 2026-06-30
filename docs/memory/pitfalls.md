@@ -74,3 +74,12 @@ Un subagent qui fait `git add -A`/`git add .` capture les fichiers scratch non s
 
 ## PIT-S5-004 — Worktree partagé multi-agents (fan-out /sprint, même working tree)
 `git stash` global aspire les fichiers des issues sœurs en vol + `./mvnw test` régénère `application.properties` (conflit au `stash pop`). Récupérer ses fichiers par chemin (`git checkout stash@{0} -- <f>`), commit TOUJOURS par chemins explicites, jamais `git add -A` ni stash global. Corollaire : le linter du repo revert les commentaires ajoutés à `application.properties` après Edit → re-Read + ré-Edit. (Étend PIT-S4-005.) (Sprint 5)
+
+## PIT-S7-001 — jsdom n'exécute pas `window.location.href=` (no-op silencieux)
+En test jsdom, assigner `window.location.href` ne déclenche aucune navigation ni erreur → asserter `window.location.pathname` après coup échoue silencieusement. Fix : stub `window.location` via `Object.defineProperty(configurable)` + setter `href` capturant la cible, restaurer le descriptor en `finally`. (Sprint 7 #40)
+
+## PIT-S7-002 — TanStack Query v5 : `staleTime:Infinity` + `initialData` fige la valeur du premier render
+Avec `initialData` valant `null` (AuthContext pas encore réhydraté) + `staleTime:Infinity`, la query fige `null` et ne re-run jamais `queryFn` → data reste null. Fix : `placeholderData` + `enabled:!loading`, `queryFn` relit l'état courant. (Sprint 7 #48)
+
+## PIT-S7-003 — Logger l'objet axios `error` brut expose le password en clair
+`console.error(msg, error)` sérialise `error.config.data` = body de la requête → sur login/register, le password plaintext finit dans la console navigateur (et breadcrumbs Sentry), même après avoir nettoyé `error.config.headers`. Fix : logger un message assaini (`error.message` / `{status}`), jamais `error` ni `error.config`. (Sprint 7 review PR #132)
