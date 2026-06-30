@@ -177,4 +177,4 @@
 **Migrations Flyway :** V6__create_password_reset_tokens.sql (renumérotée depuis V4 périmé — UNE plage S8)
 **Dépend de :** Sprint 6 (#45 tokens, #29 Playwright) + Sprint 7 (#40 AuthContext, #48 TanStack, #70 DTO/contrat)
 **Décision dev (cadrage) :** #103 fermée comme doublon de #49 ; #49 porte le flux ; durée token = 15 min ; BR-AUT-011 + tests intégration de #103 absorbés dans #49.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-06-30)
