@@ -44,9 +44,52 @@ if (typeof window !== 'undefined') {
   setupPeriodicRefresh()
 }
 
+/**
+ * #53 — Endpoints des formulaires auth : leurs erreurs (400/401/409) sont
+ * gérées INLINE par les écrans Login/Register/Reset. On exclut donc ces routes
+ * du traitement global (toast + redirect vers /login) — sinon un 401 sur
+ * /auth/login déclencherait une redirection vers la page de login elle-même
+ * (boucle visuelle) au lieu d'afficher « identifiants invalides » sous le champ.
+ */
+const INLINE_AUTH_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+]
+
+/**
+ * Extrait le pathname d'une URL axios (absolue ou relative à baseURL) afin de
+ * matcher la whitelist de façon ANCRÉE (pas en sous-chaîne). `url.includes(endpoint)`
+ * était fragile : un futur endpoint partageant une sous-chaîne (ex.
+ * `/auth/login-history`) aurait été exclu à tort du handler 401 global, avalant un
+ * vrai 401. On compare le pathname par égalité stricte OU suffixe ancré.
+ */
+const pathnameOf = (url: string): string => {
+  try {
+    // 2e arg = base : gère les URLs relatives (config.url axios sans baseURL absolu).
+    return new URL(url, 'http://x').pathname
+  } catch {
+    // URL non parsable : on retombe sur la chaîne brute (sans query string).
+    return url.split('?')[0]
+  }
+}
+
+const isInlineAuthRequest = (url?: string): boolean => {
+  if (typeof url !== 'string') return false
+  const pathname = pathnameOf(url)
+  return INLINE_AUTH_ENDPOINTS.some(
+    (endpoint) => pathname === endpoint || pathname.endsWith(endpoint),
+  )
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (isInlineAuthRequest(error.config?.url)) {
+      // Géré inline par le formulaire : on relaie l'erreur sans effet de bord global.
+      return Promise.reject(error)
+    }
     if (error.response?.status === 400) {
       toast.error('Erreur de validation, veuillez vérifier vos données.')
     } else if (error.response?.status === 401) {

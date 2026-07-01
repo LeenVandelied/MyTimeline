@@ -72,7 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loginService(username, password)
         await fetchUser()
       } catch (error) {
+        // #53 — on relance après log assaini : la page Login mappe l'erreur
+        // (401 = identifiants invalides) vers un message inline. Sans rethrow,
+        // l'écran ne pourrait pas distinguer succès/échec.
         console.error('Login failed', safeErrorMessage(error))
+        throw error
       } finally {
         setLoading(false)
       }
@@ -86,7 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await registerUser(name, username, email, password)
       } catch (error) {
+        // #53 — rethrow : la page Register mappe le 409 (BR-AUT-001, username
+        // déjà pris) vers un message inline sous le champ username.
         console.error('Registration failed', safeErrorMessage(error))
+        throw error
       } finally {
         setLoading(false)
       }

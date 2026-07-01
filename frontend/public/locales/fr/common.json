@@ -6,7 +6,52 @@
     "submit": "Se connecter",
     "loading": "Connexion...",
     "noAccount": "Pas encore de compte ?",
-    "register": "Inscrivez-vous"
+    "register": "Inscrivez-vous",
+    "forgotPassword": "Mot de passe oublié ?",
+    "errors": {
+      "invalidCredentials": "Nom d'utilisateur ou mot de passe incorrect",
+      "generic": "Une erreur est survenue, veuillez réessayer"
+    }
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "Nom d'utilisateur déjà pris",
+      "generic": "Une erreur est survenue lors de l'inscription, veuillez réessayer"
+    },
+    "success": "Compte créé, redirection vers la connexion..."
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié",
+    "description": "Saisissez votre adresse email pour recevoir un lien de réinitialisation.",
+    "email": "Email",
+    "emailPlaceholder": "vous@exemple.com",
+    "submit": "Envoyer le lien",
+    "loading": "Envoi...",
+    "neutralMessage": "Si un compte existe pour cette adresse, un email de réinitialisation a été envoyé.",
+    "backToLogin": "Retour à la connexion",
+    "errors": {
+      "generic": "Une erreur est survenue, veuillez réessayer"
+    }
+  },
+  "resetPassword": {
+    "title": "Nouveau mot de passe",
+    "description": "Choisissez un nouveau mot de passe pour votre compte.",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirmer le mot de passe",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Réinitialiser le mot de passe",
+    "loading": "Réinitialisation...",
+    "success": "Mot de passe réinitialisé. Vous pouvez maintenant vous connecter.",
+    "goToLogin": "Se connecter",
+    "missingToken": "Lien de réinitialisation invalide ou incomplet.",
+    "errors": {
+      "invalidToken": "Ce lien de réinitialisation est invalide ou expiré.",
+      "generic": "Une erreur est survenue, veuillez réessayer"
+    }
+  },
+  "spinner": {
+    "loading": "Chargement en cours"
   },
   "validation": {
     "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",

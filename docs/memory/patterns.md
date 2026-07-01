@@ -58,3 +58,15 @@ Lever une exception domain (ex `InvalidCredentialsException`, `SamePasswordExcep
 
 ## PAT-S7-004 — Migration progressive vers TanStack sans dupliquer le flux auth
 AuthContext = source unique de l'utilisateur courant ; `useCurrentUser` = pont read-only sur le contexte (`queryFn` sans HTTP) → pas de double-fetch `/me`. NE PAS coupler ce hook aux écrans déjà sur `useAuth()`. Pattern réutilisable pour migrer progressivement vers Query. (Sprint 7 #48)
+
+## PAT-S8-001 — Anti-énumération par déport `@Async` sur endpoint « toujours 200 »
+Pour neutraliser le side-channel de timing (PIT-S8-002) : rendre la méthode de service `@Async` (`@EnableAsync` + `ThreadPoolTaskExecutor` en `infrastructure/config/`), le contrôleur répond 200 immédiatement, tout le travail branche-dépendant (lookup/INSERT/HTTP externe) part sur un worker. L'exception async est catchée EN INTERNE (log sans PII/token), jamais propagée au thread requête. (Sprint 8 #49fix)
+
+## PAT-S8-002 — Port domaine pur pour service externe (email/secret)
+`PasswordResetService` + `EmailService` = ports en `domain/ports/services`, impls en `application`/`infrastructure` (`BrevoEmailService` RestClient). Le domaine ignore Brevo/Spring. Référence pour futurs flux à effet de bord externe (SMS/2FA/webhook). (Sprint 8 #49)
+
+## PAT-S8-003 — Erreurs serveur auth inline via whitelist d'endpoints exclus du 401 global
+L'intercepteur axios global (toast + redirect `/login` sur 401) empêche le mapping inline des erreurs de formulaire auth. Fix : liste blanche d'endpoints auth (login/register/forgot/reset) exclus du handler global (match **ancré** sur le pathname, `=== || endsWith` — pas `includes`), le contexte relance l'erreur (après log assaini) pour affichage inline. (Sprint 8 #53)
+
+## PAT-S8-004 — `<Suspense>` wrapper pour page lisant `useSearchParams`
+Page App Router lisant le query-param (ex token reset) : sous-composant client `XxxForm` qui appelle `useSearchParams()`, enveloppé `<Suspense fallback={<Spinner/>}>` dans le default export (qui reste le point de montage des tests). Garde le SSG (`next build` OK) et l'accessibilité du fallback. (Sprint 8 #53 CI)

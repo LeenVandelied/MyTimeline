@@ -8,6 +8,7 @@ import com.matimeline.eventmanager.domain.models.User;
 
 public interface UserRepository {
     Optional<User> findDomainUserByUsername(String username);
+    Optional<User> findDomainUserByEmail(String email);
     Optional<User> findDomainUserById(UUID id);
     User save(User user);
 }

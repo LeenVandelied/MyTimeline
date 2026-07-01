@@ -44,7 +44,7 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 **Pourquoi** : Le username est l'identifiant de connexion ; un doublon rendrait l'authentification ambiguë.
 **Implémentation** : `AuthController.register` (l.106-110) via `userService.findDomainUserByUsername`.
 **Test attendu** : `AuthControllerTest#register_shouldReturn409_whenUsernameAlreadyExists`.
-> ⚠️ **NON IMPLÉMENTÉ au niveau DB** : `UserEntity` n'a pas de `@Column(unique=true)` sur `username` → doublon possible en cas de course concurrente (check applicatif seul, non atomique). `email` n'a aucun contrôle d'unicité ni applicatif ni DB.
+> ⚠️ **PARTIEL au niveau DB** : `UserEntity` n'a pas de `@Column(unique=true)` sur `username` → doublon possible en cas de course concurrente (check applicatif seul, non atomique). En revanche `email` a une contrainte DB `uq_users_email` (migration V2 #32) → lookup email NON ambigu (corrigé S8 : l'ancienne note « email sans unicité » était périmée).
 
 ### BR-AUT-002 — Hachage du mot de passe avant persistance
 **Règle** : Le `system` MUST hacher le mot de passe (BCrypt) avant de construire et persister le `User`.
@@ -114,6 +114,13 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 **Implémentation** : `JwtFilter.shouldNotFilter` (bypass `/api/auth/**`) + lecture cookie/Bearer.
 **Test attendu** : `JwtFilterTest#shouldAuthenticate_fromCookieOrBearer` / `shouldSkip_authPaths`.
 
+### BR-AUT-012 — Mot de passe oublié : token à usage unique, expiration courte, anti-énumération (Sprint 8 #49)
+**Règle** : `POST /api/auth/forgot-password {email}` MUST répondre **200 systématiquement** (email connu ou non) et sans side-channel de timing (traitement `@Async` — lookup/INSERT/envoi email déportés). `POST /api/auth/reset-password {token,newPassword}` MUST vérifier token existant + non expiré (**15 min**) + non consommé (`used_at`), re-hasher le mot de passe (BCrypt, BR-AUT-002), marquer `used_at` ; token invalide/expiré/consommé/non-UUID → **400 générique unique** (pas de distinction = anti-énumération).
+**Pourquoi** : ne pas divulguer l'existence d'un compte (ni par code retour, ni par timing) ; token éphémère et non rejouable.
+**Implémentation** : `PasswordResetService` (port domaine) + `PasswordResetServiceImpl` (`@Async requestReset`, `Clock` injectable), `BrevoEmailService` (port `EmailService`, RestClient), table `password_reset_tokens` (migration V6, FK CASCADE, `token` UUID unique). `RateLimitingFilter` : forgot 5/min/IP. Config `brevo.api.key=${BREVO_API_KEY}` (jamais en dur). Durée configurable `app.password-reset.token-validity-minutes`.
+**Test attendu** : `PasswordResetServiceImplTest` (inexistant/expiré/consommé), `ForgotPasswordAsyncTest` (retour immédiat), `PasswordResetEndpointsIntegrationTest`.
+> Follow-ups ouverts : fail-fast prod si `BREVO_API_KEY` absente, lockout par token, TTL/purge des tokens, i18n template email. Cf. DEC-S8-001/002.
+
 ---
 
 ## 4. Dépendances inter-domaines
@@ -138,7 +145,7 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 | A7 | ~~`domain="localhost"` en dur~~ → ✅ RÉSOLU S4 #99 (`@Value("${app.cookie.domain}")`, prod host-only) | `AuthController` | ~~HAUTE~~ |
 | A8 | `AuthController` injecte `UserServiceImpl` concret + importe classes infra → viole hexagonal/DIP | l.24-28, 38 | MOYENNE |
 | A9 | `role` stocké en `String` (domaine + entité) ; enum `Role` inutilisée → pas de type safety ni contrainte DB | `UserEntity`, `User` | MOYENNE |
-| A10 | `UserEntity` sans `@Column(unique=true)` ni contraintes (nullable, length) → doublons username/email possibles, VARCHAR(255) nullable par défaut | `UserEntity` | MOYENNE |
+| A10 | `UserEntity` sans `@Column(unique=true)` sur `username` (doublon possible en course concurrente). `email` OK : `uq_users_email` (V2 #32). VARCHAR(255) nullable par défaut. | `UserEntity` | MOYENNE |
 | A11 | `useAuth.register` passe `username` comme `name` ET premier argument → le champ `name` vaut toujours `username`, l'input `name` réel est ignoré | `useAuth.ts` l.54 | MOYENNE |
 | A12 | `RegisterData` sans schéma Zod → aucune validation client à l'inscription | frontend register flow | MOYENNE |
 | A13 | Refresh périodique via `setInterval` (6h) au chargement du module, sans cleanup ni vérif d'auth réelle | `apiClient.ts` l.22 | BASSE |

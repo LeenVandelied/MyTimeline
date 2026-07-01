@@ -5,10 +5,12 @@
   },
   "name": {
     "min": "Le nom doit contenir au moins 3 caractères",
+    "max": "Le nom ne doit pas dépasser 20 caractères",
     "required": "Le nom est requis"
   },
   "username": {
     "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "max": "Le nom d'utilisateur ne doit pas dépasser 20 caractères",
     "required": "Le nom d'utilisateur est requis"
   },
   "password": {

@@ -55,3 +55,9 @@ La logique change-password (vérif BCrypt + re-hash) violait A8 en vivant dans l
 
 ## DEC-S7-002 — Coexistence axios brut / TanStack Query (migration progressive)
 Le transport reste axios (le `queryFn` appelle le service axios existant) ; TanStack n'ajoute que cache/dédup/refetch. Migration progressive, 2 hooks pilotes seulement (`useCurrentUser`, `useProductsWithEvents`), le reste des appels reste axios brut documenté. (Sprint 7 #48)
+
+## DEC-S8-001 — `BrevoEmailService` no-op + swallow si `BREVO_API_KEY` absente
+Sans clé : `log.warn` + no-op ; `RestClientException` avalée (log sans token/clé). Raison : (1) forgot-password ne doit pas leaker l'existence d'un compte via timing/erreur (BR-AUT-005) ; (2) dev/test bootent sans le secret. Corollaire (follow-up ouvert) : en prod ce no-op silencieux = emails jamais envoyés sans alerte → fail-fast prod / health indicator à ajouter. (Sprint 8 #49)
+
+## DEC-S8-002 — Token reset : validité 15 min, usage unique
+Durée de validité du token de reset = **15 minutes** (override dev, pas 2h) ; usage unique via `used_at` ; token invalide/expiré/consommé/non-UUID → 400 générique unique (anti-énum). Configurable `app.password-reset.token-validity-minutes`. #103 fermée comme doublon, ses éléments (BR-AUT-011 + tests intégration) absorbés dans #49. (Sprint 8 #49)

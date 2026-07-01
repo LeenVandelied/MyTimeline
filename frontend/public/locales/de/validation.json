@@ -5,11 +5,13 @@
   },
   "name": {
     "min": "Der Name muss mindestens 3 Zeichen enthalten",
-    "required": "Name ist erforderlich"
+    "required": "Name ist erforderlich",
+    "max": "Der Name darf höchstens 20 Zeichen lang sein"
   },
   "username": {
     "min": "Der Benutzername muss mindestens 3 Zeichen enthalten",
-    "required": "Benutzername ist erforderlich"
+    "required": "Benutzername ist erforderlich",
+    "max": "Der Benutzername darf höchstens 20 Zeichen lang sein"
   },
   "password": {
     "min": "Das Passwort muss mindestens 6 Zeichen enthalten",

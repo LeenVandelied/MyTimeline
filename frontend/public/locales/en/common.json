@@ -6,7 +6,12 @@
     "submit": "Sign in",
     "loading": "Signing in...",
     "noAccount": "Don't have an account yet?",
-    "register": "Sign up"
+    "register": "Sign up",
+    "forgotPassword": "Forgot password?",
+    "errors": {
+      "invalidCredentials": "Incorrect username or password",
+      "generic": "Something went wrong, please try again"
+    }
   },
   "validation": {
     "username": "Username must contain at least 3 characters",
@@ -155,5 +160,45 @@
     "howItWorks": "How it works",
     "testimonials": "Testimonials",
     "legal": "Legal"
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "Username already taken",
+      "generic": "Something went wrong during sign up, please try again"
+    },
+    "success": "Account created, redirecting to login..."
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "description": "Enter your email address to receive a reset link.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send link",
+    "loading": "Sending...",
+    "neutralMessage": "If an account exists for this address, a reset email has been sent.",
+    "backToLogin": "Back to login",
+    "errors": {
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "resetPassword": {
+    "title": "New password",
+    "description": "Choose a new password for your account.",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Reset password",
+    "loading": "Resetting...",
+    "success": "Password reset. You can now sign in.",
+    "goToLogin": "Sign in",
+    "missingToken": "Invalid or incomplete reset link.",
+    "errors": {
+      "invalidToken": "This reset link is invalid or expired.",
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "spinner": {
+    "loading": "Loading"
   }
 }
