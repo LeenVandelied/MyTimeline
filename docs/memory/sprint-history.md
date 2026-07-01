@@ -169,12 +169,20 @@
   - (Annexe taxonomie : labels `frontend`/`fullstack` créés par project-manager, absents du repo — à valider.)
 **Status :** Terminé
 
-## Sprint 8 — 2026-06-25 (PLANIFIÉ — cohésion 0.70, Premier vertical Auth bout-en-bout)
-**Objectif :** Flux mot de passe oublié complet (back Brevo #49 + front DS #53) — 1er flux cross-system → bascule stratégie E2E Playwright (1ʳᵉ E2E métier du projet).
-**Milestone GitHub :** #8
-**Issues :** #49, #53
-**Vagues :** V1 (∥) = #49 (backend) + #53 (frontend écrans) | V2 = câblage #53→#49 | V3 = 1ʳᵉ E2E Playwright (forgot→reset)
-**Migrations Flyway :** V6__create_password_reset_tokens.sql (renumérotée depuis V4 périmé — UNE plage S8)
+## Sprint 8 — 2026-06-30 → 2026-07-01 (Terminé — merge PR #138 dans dev)
+**Objectif :** Flux mot de passe oublié complet (back Brevo #49 + front DS #53) — 1er flux cross-system.
+**Milestone GitHub :** #8 (fermé après merge)
+**Issues livrées (2) :** #49, #53
+**Vagues exécutées :** V1 (∥) = #49 (backend) + #53 (frontend) | V2 = specialists (db-expert, security, reviewer, test-runner) | fix review + fix CI build
+**Cohésion score :** 0.70
+**Commits :** 5 — ffa91ad (#49) · 1900fae (#53) · 23c9938 (fix review anti-énum/apiClient/XSS/doc) · 95c8833 (fix CI Suspense reset-password) · b3cae4c (artefacts)
+**Migrations Flyway :** V6__create_password_reset_tokens.sql (renumérotée depuis V4 périmé)
 **Dépend de :** Sprint 6 (#45 tokens, #29 Playwright) + Sprint 7 (#40 AuthContext, #48 TanStack, #70 DTO/contrat)
-**Décision dev (cadrage) :** #103 fermée comme doublon de #49 ; #49 porte le flux ; durée token = 15 min ; BR-AUT-011 + tests intégration de #103 absorbés dans #49.
-**Status :** En cours (démarré 2026-06-30)
+**Décision dev (cadrage) :** #103 fermée doublon ; durée token = 15 min ; BR-AUT-011 + tests intégration de #103 absorbés dans #49.
+**BR impactées :** BR-AUT-001/002/003/005/011, **BR-AUT-012 (nouveau — flux reset)**.
+**Reviews :** security 1 CRITIQUE (timing leak) RÉSOLU ; reviewer checklist tout OK (2 MINEUR résolus/follow-up) ; db-expert V6 mergeable (1 MAJEUR TTL→follow-up).
+**Tests :** Backend 84/84 verts · Frontend 23/23 verts · `next build` SSG OK · E2E 0 (V3 planifié post-merge `/create-e2e`). Vérifiés directement par le lead (test-runner Haiku non fiable 2×).
+**Nouveaux pitfalls/patterns/décisions :** PIT-S8-001..005, PAT-S8-001..004, DEC-S8-001/002 ; pack br-auth BR-AUT-012 + note A10/email corrigée.
+**Incident tooling :** test-runner Haiku 2 rapports erronés (mauvais checkout cwd, puis échec halluciné) → validation manuelle. CI a rattrapé un build cassé invisible aux tests RTL (PIT-S8-001/004). Mémoire perso : cd worktree explicite pour subagents.
+**Status :** Terminé
+**Follow-ups arbitrés (Phase 4 triage) :** _(à compléter — triage en cours)_

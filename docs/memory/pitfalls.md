@@ -83,3 +83,18 @@ Avec `initialData` valant `null` (AuthContext pas encore réhydraté) + `staleTi
 
 ## PIT-S7-003 — Logger l'objet axios `error` brut expose le password en clair
 `console.error(msg, error)` sérialise `error.config.data` = body de la requête → sur login/register, le password plaintext finit dans la console navigateur (et breadcrumbs Sentry), même après avoir nettoyé `error.config.headers`. Fix : logger un message assaini (`error.message` / `{status}`), jamais `error` ni `error.config`. (Sprint 7 review PR #132)
+
+## PIT-S8-001 — `next build` CSR bailout : `useSearchParams()` sans `<Suspense>`
+Un composant client lisant `useSearchParams()`/`usePathname()` sans frontière `<Suspense>` fait échouer `next build` (prerender, "missing-suspense-with-csr-bailout") ALORS QUE les tests RTL passent (mock synchrone) → détecté seulement en CI. Fix : extraire la lecture query-params dans un sous-composant enveloppé `<Suspense fallback={<Spinner/>}>`, garder le default export comme wrapper (préserve le montage des tests). Préférer à `force-dynamic` (garde le SSG). (Sprint 8 #53 CI)
+
+## PIT-S8-002 — Anti-énumération : vérifier le TIMING, pas que le code retour
+Un endpoint « toujours 200 » (forgot-password) fuite quand même l'existence d'un compte si la branche « trouvé » fait un travail synchrone lourd (lookup + INSERT + HTTP externe) vs « inconnu » qui retourne vite → délai mesurable = side-channel. Fix : déporter le travail branche-dépendant en `@Async` (retour immédiat, temps quasi constant). Chercher ce pattern dans tout flux similaire (invite, magic-link). (Sprint 8 #49 security)
+
+## PIT-S8-003 — Tester `@Async` : mocker les ports + latch, pas de DB réelle
+Vérifier un `@Async` en seedant une DB réelle échoue (`@Version` null sur entité détachée, 409 register sur données partagées entre classes — conteneur Postgres singleton sans cleanup). Fix : tester le proxy `@Async` via contexte Spring avec ports `@MockBean` + latch sur l'effet asynchrone, asserter le retour-avant-latch. (Sprint 8 #49fix)
+
+## PIT-S8-004 — (orchestration) L'audit tests ne lance PAS `next build`
+Le test-runner/audit Phase 6 lance les tests unitaires/RTL mais pas le build de production → un build cassé (ex PIT-S8-001) passe tous les tests et n'est détecté qu'en CI (merge bloqué tardivement). Ajouter `npm run build` (frontend) à l'audit quand des pages App Router / query-params sont touchées. (Sprint 8 méta)
+
+## PIT-S8-005 — `React.use(params)` (Next async params) incassable en vitest
+React 18.3.1 n'expose pas `use` → un test de page App Router avec `params`/`searchParams` async plante. Fix : `vi.mock('react', ...{ use: () => ({locale:'fr'}) })` + mocker aussi `useLocale` de next-intl (utilisé par les composants layout type `LanguageSelector`). (Sprint 8 #53)
