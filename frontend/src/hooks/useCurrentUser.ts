@@ -32,7 +32,7 @@ export function useCurrentUser() {
     // Pas de requête HTTP : on relit l'état d'AuthContext (source unique).
     // `Promise.resolve(user)` capture la valeur courante à chaque exécution.
     queryFn: () => Promise.resolve(user),
-    // Tant qu'AuthContext rehydrate (localStorage / login), on n'expose rien.
+    // Tant qu'AuthContext réhydrate la session (re-fetch /me au mount), on n'expose rien.
     enabled: !loading,
     // L'état vient d'AuthContext : on relit à chaque montage/changement, jamais
     // de fetch réseau. `placeholderData` garde l'ancienne valeur le temps que la

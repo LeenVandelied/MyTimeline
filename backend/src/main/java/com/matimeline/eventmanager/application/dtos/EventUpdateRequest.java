@@ -13,8 +13,8 @@ import jakarta.validation.constraints.Size;
  * Validation conditionnelle "si présent alors valide" :
  * - {@code title} utilise {@code @Size(min = 1)} (et non {@code @NotBlank}) pour
  *   rejeter une chaîne vide ("" -> HTTP 400) tout en autorisant l'absence (null),
- *   indispensable car certains PATCH (mise à jour des couleurs seules via
- *   {@code updateEventColor}) n'envoient pas de title.
+ *   indispensable car certains PATCH (mise à jour des couleurs seules, par
+ *   exemple) n'envoient pas de title.
  *
  * Le contrat JSON sur le wire est inchangé (mêmes noms de champs que le Map précédent).
  */
