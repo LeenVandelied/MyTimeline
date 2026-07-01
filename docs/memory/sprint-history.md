@@ -195,3 +195,56 @@
   - E2E Playwright flux reset (V3, 1ʳᵉ E2E métier) [M | frontend] → issue #145 (via /create-e2e 138 post-merge)
   - Vérifier rendu clair/sombre 4 écrans en navigateur [S | frontend] → issue #146
   - Écartés d'office : merge #48 (caduc — react-query déjà présent), rafraîchir br-auth A10 (fait en consolidation).
+
+## Sprint 9 — 2026-07-01 (PLANIFIÉ — cohésion 0.55, Socle modèle v3 + PII localStorage)
+**Objectif :** Aligner le modèle métier sur le design v3 (blocker racine Wave 3/4) + sécuriser la persistance auth.
+**Milestone GitHub :** #9
+**Issues :** #44 (modèle v3 : couleurs/archived/enum RecurrenceUnit/avatar, migration IRRÉVERSIBLE), #135 (sortir user PII du localStorage, A17)
+**Vagues :** V1 = #44 ‖ #135 (100% disjoints, Java/SQL vs TS — pas de V2)
+**Migrations Flyway :** V7__design_v3_schema.sql (migration couleurs bg/border/text→color **IRRÉVERSIBLE**)
+**Dépend de :** aucune (débloque S10, S12, S13)
+**Points durs :** migration irréversible (ADR + confirmation avant run prod) ; sync Zod frontend reportée S10/S11.
+**Status :** Planifié
+
+## Sprint 10 — 2026-07-01 (PLANIFIÉ — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
+**Objectif :** CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation) pour débloquer le frontend Wave 3.
+**Milestone GitHub :** #10
+**Issues :** #50 (Product PATCH + archive), #52 (CRUD catégorie + suppression/réassignation)
+**Vagues :** V1 = #50 ‖ #52 (début) — séquencement sur `ProductRepository` + migrations séparées
+**Migrations Flyway :** V8 (#50 résiduel archived) + V9 (#52 contraintes catégorie) — plage V8–V9
+**Dépend de :** Sprint 9 (#44 : colonne archived)
+**Blocker conception :** ownership catégorie (référentiel global vs ownerId) — ADR avant implémentation.
+**Status :** Planifié
+
+## Sprint 11 — 2026-07-01 (PLANIFIÉ — cohésion 0.42, Frontend Produits + Dialogs — Wave 3 front)
+**Objectif :** Drawer Produit (fin des UUID hardcodés + fix desync Zod) + dialogs de confirmation partagés.
+**Milestone GitHub :** #11
+**Issues :** #61 (Drawer Produit desktop+mobile), #65 (Dialogs de confirmation)
+**Vagues :** V1 = #65 ‖ #61 (début) | V2 = #61 branche le DeleteConfirmDialog de #65
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 10 (#50 PATCH produit, #52 GET /api/categories)
+**Alternative non retenue :** #61 + #62 (Drawer Catégorie) au lieu de #61 + #65.
+**Status :** Planifié
+
+## Sprint 12 — 2026-07-01 (PLANIFIÉ — cohésion 0.60, Backend récurrence events — Wave 4 back)
+**Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl.
+**Milestone GitHub :** #12
+**Issues :** #54 (service récurrence), #95 (findEventById double-hit + printStackTrace), #67 (flag `capped` limite 4000)
+**Vagues :** V1 = #54 puis #95 (même EventServiceImpl.java, séquentiel) | V2 = #67 (consomme #54)
+**Migrations Flyway :** V10__neutralize_invalid_recurrence_unit.sql
+**Dépend de :** Sprint 9 (#44 : enum RecurrenceUnit + recurrenceEndDate)
+**Reporté :** #55/#63/#64/#66 (Timeline + form event frontend) — dépendent de #47 (extraction composants, NON planifié).
+**Status :** Planifié
+
+## Sprint 13 — 2026-07-01 (PLANIFIÉ — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
+**Objectif :** Sessions actives (jti + révocation) + suppression de compte (DELETE /me cascade).
+**Milestone GitHub :** #13
+**Issues :** #73 (sessions actives jti), #78 (suppression compte DELETE /me)
+**Vagues :** V1 = #73 (fondation révocation) | V2 = #78 (consomme la révocation jti de #73)
+**Migrations Flyway :** V11__create_sessions.sql (index sur jti obligatoire) + V12 si cascade DB requise (#78)
+**Dépend de :** Sprint 9 (#44 avatar — cohérence User)
+**Reporté :** #75 (avatar — infra MinIO/S3), #86/#87 (Réglages frontend).
+**Status :** Planifié
+
+> **⚠ Gap connu du plan S9–S13 :** la Timeline frontend (#55/#63/#64/#66) n'est PAS couverte — elle dépend de #47 (extraction composants Timeline, non planifié). Prévoir un 6e sprint dédié #47 pour débloquer le domaine events frontend.
+> **Plan généré le 2026-07-01** (`/ai-env:sprint plan 5`, cohésion moyenne 0.55). Backlog restant : dette review backend (#92-#94/#123-#134/#139-#148), Waves 6/7 (#58/#69/#72/#76/#77/#81/#82…), #62/#68/#75/#80/#83/#86/#87/#102.
