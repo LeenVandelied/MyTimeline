@@ -29,8 +29,14 @@ function safeErrorMessage(error: unknown): string {
  * même contexte via `useAuth()`.
  *
  * SSR : `user` démarre à `null` côté serveur ET au premier rendu client
- * (lecture `localStorage` déplacée dans `useEffect`) pour éviter tout
- * mismatch d'hydratation.
+ * pour éviter tout mismatch d'hydratation.
+ *
+ * #135 (A17) — Sécurité : le user (PII : email, name) N'EST PLUS miroité dans
+ * `localStorage` (lisible par tout payload XSS). La session est portée par le
+ * seul cookie JWT HttpOnly (invisible pour JS). Au montage, on re-fetch
+ * `GET /api/auth/me` (le cookie voyage automatiquement, `withCredentials`)
+ * pour restaurer l'état d'auth depuis la source de vérité serveur. `loading`
+ * reste `true` le temps de ce re-fetch → pas de flash non-authentifié.
  */
 const AuthContext = createContext<AuthContextType | null>(null)
 
@@ -38,32 +44,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Réhydratation depuis localStorage — uniquement côté client, post-montage.
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser) as User)
-      } catch {
-        localStorage.removeItem('user')
-      }
-    }
-    setLoading(false)
-  }, [])
-
   const fetchUser = useCallback(async () => {
     try {
       const data = await getUserProfile()
       setUser(data)
-      localStorage.setItem('user', JSON.stringify(data))
     } catch (error) {
+      // Pas de session valide (401/pas de cookie) OU /me en erreur : anonyme.
       console.error('User fetch failed', safeErrorMessage(error))
       setUser(null)
-      localStorage.removeItem('user')
     } finally {
       setLoading(false)
     }
   }, [])
+
+  // Restauration de session au montage depuis la source de vérité serveur (/me),
+  // et non depuis un miroir localStorage (#135). Le cookie JWT HttpOnly suffit.
+  useEffect(() => {
+    void fetchUser()
+  }, [fetchUser])
 
   const login = useCallback(
     async (username: string, password: string) => {
@@ -107,8 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout failed', safeErrorMessage(error))
     } finally {
+      // #135 — plus de miroir localStorage à purger : l'état vit en mémoire (React)
+      // et la session dans le cookie JWT HttpOnly (invalidé par POST /auth/logout).
       setUser(null)
-      localStorage.removeItem('user')
     }
   }, [])
 

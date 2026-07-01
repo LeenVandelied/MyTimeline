@@ -10,9 +10,10 @@ import type { User } from '@/types/auth'
  *
  * ⚠️ ANTI DOUBLE-FETCH /me — décision d'architecture (cf. issue-48-done.md).
  * `AuthContext` (#40) reste la SOURCE UNIQUE de l'utilisateur authentifié : il
- * gère le fetch `/api/auth/me`, le localStorage et la propagation à tous les
- * écrans. Ce hook NE refait PAS d'appel réseau `/me` — sa `queryFn` se contente
- * de relire le `user` déjà détenu par `AuthContext`. Il sert de PONT vers le
+ * gère le fetch `/api/auth/me` (restauration de session au montage, #135 — plus
+ * de miroir localStorage) et la propagation à tous les écrans. Ce hook NE refait
+ * PAS d'appel réseau `/me` — sa `queryFn` se contente de relire le `user` déjà
+ * détenu par `AuthContext`. Il sert de PONT vers le
  * pattern Query (clé `['auth', 'me']` disponible au cache pour usages futurs)
  * sans dupliquer le flux d'auth de #40.
  *

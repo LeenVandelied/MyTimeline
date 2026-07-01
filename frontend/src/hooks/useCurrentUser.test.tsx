@@ -8,9 +8,13 @@ import type { User } from '@/types/auth'
 
 /**
  * #48 — Point dur : PAS de double-fetch /me. `useCurrentUser` doit relire l'état
- * d'AuthContext (#40), pas appeler `getUserProfile` (= `GET /api/auth/me`).
- * On mocke authService et on asserte que `getUserProfile` n'est JAMAIS appelé,
- * tout en exposant le user issu du localStorage rehydraté par AuthContext.
+ * d'AuthContext (#40), pas déclencher son PROPRE `getUserProfile` (= `GET /api/auth/me`).
+ *
+ * #135 — AuthContext restaure désormais la session via un unique re-fetch /me au
+ * montage (le miroir localStorage du user a été supprimé, PII hors storage). On
+ * mocke `getUserProfile` pour simuler cette réponse serveur et on asserte que
+ * `useCurrentUser` N'AJOUTE PAS d'appel /me supplémentaire (exactement 1 appel,
+ * celui d'AuthContext), tout en exposant le user restauré.
  */
 
 const getUserProfileMock = vi.fn()
@@ -53,8 +57,9 @@ describe('useCurrentUser', () => {
     localStorage.clear()
   })
 
-  it("expose le user d'AuthContext sans refetch /me (pas de double-fetch)", async () => {
-    localStorage.setItem('user', JSON.stringify(FAKE_USER))
+  it('expose le user restauré par AuthContext sans double-fetch /me', async () => {
+    // AuthContext (#135) restaure la session via un unique /me au montage.
+    getUserProfileMock.mockResolvedValue(FAKE_USER)
 
     const { result } = renderHook(() => useCurrentUser(), {
       wrapper: makeWrapper(),
@@ -64,11 +69,14 @@ describe('useCurrentUser', () => {
       expect(result.current.data).toEqual(FAKE_USER)
     })
 
-    // AuthContext est la source unique : aucun GET /api/auth/me déclenché ici.
-    expect(getUserProfileMock).not.toHaveBeenCalled()
+    // AuthContext est la source unique : le hook n'ajoute AUCUN /me supplémentaire.
+    expect(getUserProfileMock).toHaveBeenCalledTimes(1)
   })
 
-  it('reflète user=null quand AuthContext est anonyme', async () => {
+  it('reflète user=null quand AuthContext est anonyme (/me échoue)', async () => {
+    getUserProfileMock.mockRejectedValue(new Error('401'))
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
     const { result } = renderHook(() => useCurrentUser(), {
       wrapper: makeWrapper(),
     })
@@ -78,6 +86,8 @@ describe('useCurrentUser', () => {
     })
 
     expect(result.current.data).toBeNull()
-    expect(getUserProfileMock).not.toHaveBeenCalled()
+    // Un seul /me (celui d'AuthContext), pas de double-fetch depuis le hook.
+    expect(getUserProfileMock).toHaveBeenCalledTimes(1)
+    spy.mockRestore()
   })
 })

@@ -96,7 +96,7 @@ apiClient.interceptors.response.use(
       if (!isRedirecting) {
         isRedirecting = true
         toast.error('Session expirée, redirection vers la page de connexion...')
-        localStorage.removeItem('user')
+        // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
         setTimeout(() => {
           window.location.href = loginUrlForCurrentLocale()
           isRedirecting = false
@@ -113,7 +113,7 @@ apiClient.interceptors.response.use(
           method: error.config?.method,
           data: error.response?.data,
         })
-        localStorage.removeItem('user')
+        // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
         toast.error('Votre session a expiré, redirection vers la page de connexion...')
         setTimeout(() => {
           window.location.href = loginUrlForCurrentLocale()
