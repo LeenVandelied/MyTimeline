@@ -61,10 +61,11 @@ import { productCreateSchema, productUpdateSchema } from '@/types/product'
  *   - Desktop (sm+) : drawer latéral ancré à droite, largeur 452px, pleine hauteur.
  *   - Mobile : bottom sheet plein écran, swipe-down = Escape/overlay natif Radix.
  *
- * Couleur : héritée de la catégorie sélectionnée (`category.color`),
- * surchargeable au niveau produit (état local). NB : le backend n'expose PAS de
- * champ couleur produit (`ProductResponse` / `ProductUpdateRequest` sans `color`)
- * → la surcharge est un aperçu visuel local, non persisté côté produit.
+ * Couleur (#158) : héritée de la catégorie sélectionnée (`category.color`),
+ * surchargeable au niveau produit et PERSISTÉE côté backend (`ProductCreationRequest`/
+ * `ProductUpdateRequest.color` + `ProductResponse.color`, colonne `products.color` V7).
+ * `colorOverride` (état local) est initialisé depuis `product.color` en édition ; le
+ * submit envoie `color` (surcharge) ou `clearColor` (reset -> ré-héritage catégorie).
  */
 
 export type ProductDrawerMode = 'create' | 'edit'
@@ -139,7 +140,8 @@ export function ProductDrawer({
     setSubmitError(null)
     if (isEdit && product) {
       form.reset({ name: product.name, category: product.category.id, firstEventDate: '' })
-      setColorOverride(null)
+      // #158 : pré-remplir la surcharge couleur persistée (null = héritage catégorie).
+      setColorOverride(product.color ?? null)
     } else {
       form.reset({ name: '', category: '', firstEventDate: '' })
       setColorOverride(null)
@@ -169,7 +171,20 @@ export function ProductDrawer({
         const patch: ProductUpdate = {}
         if (values.name !== product.name) patch.name = values.name
         if (values.category !== product.category.id) patch.categoryId = values.category
-        if (patch.name === undefined && patch.categoryId === undefined) {
+        // #158 : diff couleur. `colorOverride` = surcharge courante (null = héritage).
+        // - override non-null ≠ couleur persistée -> pose la surcharge (patch.color)
+        // - override repassé à null alors qu'une surcharge existait -> reset (clearColor)
+        const currentColor = product.color ?? null
+        if (colorOverride !== currentColor) {
+          if (colorOverride !== null) patch.color = colorOverride
+          else patch.clearColor = true
+        }
+        if (
+          patch.name === undefined &&
+          patch.categoryId === undefined &&
+          patch.color === undefined &&
+          patch.clearColor === undefined
+        ) {
           onOpenChange(false)
           return
         }
@@ -180,6 +195,8 @@ export function ProductDrawer({
           name: values.name,
           category: values.category,
         }
+        // #158 : surcharge couleur produit optionnelle (omise = héritage catégorie).
+        if (colorOverride !== null) payload.color = colorOverride
         // Création couplée : premier événement ponctuel optionnel. Jamais
         // `events: null` (NPE backend, BR-PRO-005) → omis si absent.
         if (values.firstEventDate) {

@@ -55,7 +55,9 @@ public class ProductServiceImpl implements ProductService {
         Category category = resolveAssignableCategory(request.getCategory(), user.getId());
 
         Product product = new Product(UUID.randomUUID(), request.getName(), category, user, new ArrayList<>());
-    
+        // #158 : surcharge couleur produit (null = héritage de la catégorie côté front).
+        product.setColor(request.getColor());
+
         request.getEvents().forEach(eventCreationRequest -> {
             LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
     
@@ -103,6 +105,14 @@ public class ProductServiceImpl implements ProductService {
             // propriétaire du produit chargé -> catégorie d'autrui traitée comme inexistante (404).
             Category category = resolveAssignableCategory(request.getCategoryId(), product.getUser().getId());
             product.setCategory(category);
+        }
+
+        // #158 : surcharge couleur produit. clearColor prime (reset -> null = ré-héritage
+        // catégorie) ; sinon un color non-null pose la surcharge ; color null = inchangé.
+        if (request.isClearColor()) {
+            product.setColor(null);
+        } else if (request.getColor() != null) {
+            product.setColor(request.getColor());
         }
 
         return productRepository.save(product);

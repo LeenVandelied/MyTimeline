@@ -162,6 +162,44 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
         assertThat(productRepository.findDomainProductById(product.getId())).isEmpty();
     }
 
+    // NB #158 : la persistance de `color` à la CRÉATION est couverte au niveau unitaire
+    // (ProductServiceImplTest#createProduct_withColor_persistsOverride, via ArgumentCaptor)
+    // + la recopie mapper->entity->colonne V7 est validée end-to-end par le PATCH ci-dessous
+    // (même colonne `products.color`). On n'ajoute pas d'intégration create-through-service :
+    // le chemin create relie une CategoryEntity reconstruite par le mapper (détachée) et
+    // n'utilise pas getReference (contrairement à l'update, PIT-S10-003) — non lié à #158.
+
+    /** #158 — updateProduct pose puis réinitialise la surcharge couleur (clearColor) de bout en bout. */
+    @Test
+    void updateProduct_setThenClearColor_endToEnd() {
+        UserEntity user = persistUser();
+        CategoryEntity category = persistCategory();
+        ProductEntity product = persistProduct(user, category, false);
+        UUID id = product.getId();
+        em.flush();
+        em.clear();
+
+        // Set override.
+        ProductUpdateRequest setColor = new ProductUpdateRequest();
+        setColor.setColor("#abcdef");
+        productService.updateProduct(id, setColor);
+        em.flush();
+        em.clear();
+
+        assertThat(productRepository.findDomainProductById(id))
+                .isPresent().get().extracting(Product::getColor).isEqualTo("#abcdef");
+
+        // Clear override -> null (ré-héritage).
+        ProductUpdateRequest clear = new ProductUpdateRequest();
+        clear.setClearColor(true);
+        productService.updateProduct(id, clear);
+        em.flush();
+        em.clear();
+
+        assertThat(productRepository.findDomainProductById(id))
+                .isPresent().get().extracting(Product::getColor).isNull();
+    }
+
     /** updateProduct() renomme un produit actif (BR-PRO-001). */
     @Test
     void updateProduct_renamesActiveProduct() {

@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.mockito.ArgumentCaptor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -186,6 +188,121 @@ class ProductServiceImplTest {
         service.updateProduct(productId, request);
 
         assertThat(product.getCategory()).isSameAs(ownCategory);
+        verify(productRepository).save(product);
+    }
+
+    // -------------------------------------------------------------------------
+    // #158 — couleur produit (BR-PRO-001/002/009/010, follow-up S11 #61)
+    // -------------------------------------------------------------------------
+
+    /** color null à la création -> produit persisté avec color=null (héritage catégorie côté front). */
+    @Test
+    void createProduct_nullColor_persistsNullColor_inheritsCategory() {
+        Category ownCategory = new Category(categoryId, "Mienne", "#abcdef", "desc", callerId);
+
+        when(userRepository.findDomainUserById(callerId)).thenReturn(Optional.of(caller));
+        when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.createProduct(creationRequest()); // creationRequest() ne pose pas de color
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+        assertThat(captor.getValue().getColor()).isNull();
+    }
+
+    /** color fournie à la création -> surcharge persistée telle quelle. */
+    @Test
+    void createProduct_withColor_persistsOverride() {
+        Category ownCategory = new Category(categoryId, "Mienne", "#abcdef", "desc", callerId);
+
+        when(userRepository.findDomainUserById(callerId)).thenReturn(Optional.of(caller));
+        when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ProductCreationRequest request = creationRequest();
+        request.setColor("#123456");
+
+        service.createProduct(request);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+        assertThat(captor.getValue().getColor()).isEqualTo("#123456");
+    }
+
+    /** PATCH color non-null -> pose la surcharge sur l'entité chargée. */
+    @Test
+    void updateProduct_withColor_setsOverride() {
+        Category currentCategory = new Category(UUID.randomUUID(), "Actuelle", "#000000", "desc", callerId);
+        Product product = new Product(productId, "Produit", currentCategory, caller, new ArrayList<>());
+
+        when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        ProductUpdateRequest request = new ProductUpdateRequest();
+        request.setColor("#ff8800");
+
+        service.updateProduct(productId, request);
+
+        assertThat(product.getColor()).isEqualTo("#ff8800");
+        verify(productRepository).save(product);
+    }
+
+    /** PATCH clearColor=true -> réinitialise la surcharge (color -> null, ré-héritage). */
+    @Test
+    void updateProduct_clearColor_resetsToInherit() {
+        Category currentCategory = new Category(UUID.randomUUID(), "Actuelle", "#000000", "desc", callerId);
+        Product product = new Product(productId, "Produit", currentCategory, caller, new ArrayList<>());
+        product.setColor("#ff8800"); // surcharge existante
+
+        when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        ProductUpdateRequest request = new ProductUpdateRequest();
+        request.setClearColor(true);
+
+        service.updateProduct(productId, request);
+
+        assertThat(product.getColor()).isNull();
+        verify(productRepository).save(product);
+    }
+
+    /** PATCH sans color ni clearColor -> couleur inchangée. */
+    @Test
+    void updateProduct_colorAbsent_leavesColorUnchanged() {
+        Category currentCategory = new Category(UUID.randomUUID(), "Actuelle", "#000000", "desc", callerId);
+        Product product = new Product(productId, "Produit", currentCategory, caller, new ArrayList<>());
+        product.setColor("#ff8800");
+
+        when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        ProductUpdateRequest request = new ProductUpdateRequest();
+        request.setName("Renommé");
+
+        service.updateProduct(productId, request);
+
+        assertThat(product.getColor()).isEqualTo("#ff8800");
+        verify(productRepository).save(product);
+    }
+
+    /** clearColor=true prime sur un color fourni simultanément (reset). */
+    @Test
+    void updateProduct_clearColorWinsOverProvidedColor() {
+        Category currentCategory = new Category(UUID.randomUUID(), "Actuelle", "#000000", "desc", callerId);
+        Product product = new Product(productId, "Produit", currentCategory, caller, new ArrayList<>());
+        product.setColor("#ff8800");
+
+        when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        ProductUpdateRequest request = new ProductUpdateRequest();
+        request.setColor("#123456");
+        request.setClearColor(true);
+
+        service.updateProduct(productId, request);
+
+        assertThat(product.getColor()).isNull();
         verify(productRepository).save(product);
     }
 }

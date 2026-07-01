@@ -54,6 +54,25 @@ describe('productCreateSchema', () => {
     })
     expect(result.success).toBe(true)
   })
+
+  // #158 — couleur produit optionnelle (hex #RRGGBB).
+  it('accepte une couleur hex #RRGGBB (surcharge produit)', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Voiture',
+      category: '018f3a2b-0000-7000-8000-0000000000c1',
+      color: '#ff8800',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejette une couleur non-hex', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'Voiture',
+      category: '018f3a2b-0000-7000-8000-0000000000c1',
+      color: 'red',
+    })
+    expect(result.success).toBe(false)
+  })
 })
 
 describe('productUpdateSchema', () => {
@@ -75,14 +94,43 @@ describe('productUpdateSchema', () => {
   it('rejette un name vide dans le patch', () => {
     expect(productUpdateSchema.safeParse({ name: '' }).success).toBe(false)
   })
+
+  // #158 — couleur produit en PATCH : `color` (surcharge) ou `clearColor` (reset).
+  it('accepte un patch color seul (surcharge)', () => {
+    expect(productUpdateSchema.safeParse({ color: '#123456' }).success).toBe(true)
+  })
+
+  it('accepte un patch clearColor:true seul (reset -> ré-héritage)', () => {
+    expect(productUpdateSchema.safeParse({ clearColor: true }).success).toBe(true)
+  })
+
+  it('rejette une couleur non-hex dans le patch', () => {
+    expect(productUpdateSchema.safeParse({ color: 'blue' }).success).toBe(false)
+  })
+
+  it('rejette clearColor:false (non porteur de mutation, doit être omis)', () => {
+    expect(productUpdateSchema.safeParse({ clearColor: false }).success).toBe(false)
+  })
 })
 
 describe('productSchema (lecture)', () => {
-  it('accepte un nom de 1 caractère renvoyé par le backend (min(1))', () => {
+  it('accepte un produit avec color null + category.color null (héritage)', () => {
     const result = productSchema.safeParse({
       id: 'p1',
       name: 'A',
-      category: { id: 'c1', name: 'Cat' },
+      color: null,
+      category: { id: 'c1', name: 'Cat', color: null },
+      events: [],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepte un produit avec surcharge color + couleur catégorie hex (#158)', () => {
+    const result = productSchema.safeParse({
+      id: 'p1',
+      name: 'A',
+      color: '#ff8800',
+      category: { id: 'c1', name: 'Cat', color: '#112233' },
       events: [],
     })
     expect(result.success).toBe(true)
