@@ -1,39 +1,20 @@
-# Coverage : `products`
+# Coverage — products (màj post-S10)
 
-> État de couverture du domaine `products` au 2026-06-25.
+> Énumération réelle des tests. Remplace la version 2026-06-25 (« zéro test backend products » — faux positif).
 
----
+## Tests backend présents
+- `ProductServiceImplTest` (6 tests, unit Mockito) — création/lecture/modification/archivage, règles métier service.
+- `ProductControllerOwnershipTest` (13 tests, slice Mockito + standaloneSetup) — contrôle d'ownership sur GET/PUT/DELETE sécurisés, 403 cross-user.
+- `ProductArchivedFilterIntegrationTest` (6 tests, intégration @SpringBootTest + Testcontainers Postgres) — filtre soft-delete/archivé au niveau repository.
 
-## 1. Matrice de couverture par action
+## Tests frontend / E2E
+- `src/hooks/useProductsWithEvents.test.tsx` (2) — hook front produits+événements (transverse products/events).
+- Aucun autre test frontend dédié products.
+- E2E : aucun (`frontend/e2e/` = `.gitkeep` seul).
 
-| Action | `user` | `admin` | Notes |
-|---|---|---|---|
-| Créer un produit | ⚠️ | n/a | Backend implémenté, pas de test |
-| Lister les produits | ⚠️ | n/a | Backend implémenté, pas de test |
-| Modifier un produit | ⚠️ | n/a | Backend implémenté, pas de test |
-| Supprimer un produit | ⚠️ | n/a | Backend implémenté, pas de test |
+## Gaps restants (non couverts)
+- Aucun E2E « créer un produit → voir dans la liste ».
+- Validation Bean des payloads produit non couverte par un test controller dédié (pas de `ProductControllerValidationTest`).
+- Composants UI produits (formulaires) sans test RTL.
 
----
-
-## 2. Gaps prioritisés
-
-### P0 — Zéro test backend products
-- **BR concernée** : BR-PROD-001, BR-PROD-002
-- **Action** : `ProductServiceImplTest`
-
-### P2 — Pas d'E2E produits
-- **Action** : `e2e/products/create.spec.ts`
-
----
-
-## 3. Coverage E2E
-
-| Scénario | Fichier test | Statut |
-|---|---|---|
-| Créer un produit, voir dans la liste | `e2e/products/create.spec.ts` | ❌ non créé |
-
----
-
-## Référence
-
-- Pack métier stable : `br-products.md`
+## Total : 25 tests backend
