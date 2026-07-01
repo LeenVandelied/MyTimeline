@@ -33,14 +33,15 @@ BR-PRO-001, BR-PRO-004, BR-PRO-007 · BR-CAT-001/002/003/004/006 + nouvelle BR o
 - **V8** `category_ownership.sql` : `owner_id` (FK users, NULLABLE), index `ix_categories_owner_id`, `UNIQUE(owner_id, name)`. Backfill : catégories existantes → owner NULL (système). Rollback commenté. Audité db-expert (OK).
 
 ### Audit tests
-- Backend : **136/136 verts** (0 failed, 0 errors, 0 skipped), intégration Testcontainers (Postgres) incluse (réassignation atomique + rollback, filtre archived, unicité scoped-owner).
+- Backend : **146/146 verts** (0 failed, 0 errors, 0 skipped), intégration Testcontainers (Postgres) incluse (réassignation atomique + rollback, filtre archived, unicité scoped-owner, listing scopé owner∪système).
 - E2E : N/A (sprint backend pur ; parcours produit/catégorie livré avec le frontend Wave 3, #61).
 - Détail : `docs/memory/audits/sprint-10-test-coverage.md`.
 
 ### Reviews
 - **db-expert** (V8) : OK — 2 MINEUR déférés (#78 FK RESTRICT vs DELETE /me ; dette UUID-AUTO préexistante).
 - **security-expert** : 1 CRITIQUE + 1 MAJEUR (cross-tenant) → corrigés.
-- **reviewer batch** : 1 MAJEUR bloquant (self-reassign) + 2 MINEUR → corrigés. 2 MAJEUR de dette préexistante déférés en follow-ups.
+- **reviewer batch** (mi-sprint) : 1 MAJEUR bloquant (self-reassign) + 2 MINEUR → corrigés. 2 MAJEUR de dette préexistante déférés en follow-ups.
+- **/review-pr #153** (état final) : durcissement cross-tenant sur la lecture — `GET /api/categories` (liste + par-id) scopé à `owner == caller ∪ système`, `CategoryResponse` n'expose plus l'`ownerId` (booléen `system`), handler `DataIntegrityViolationException` restreint au niveau service (plus de 409 fourre-tout). `78c633b`.
 
 ### Follow-ups (triage à `/sprint end`)
 - Extraire `resolveCaller` dans `ProductController` (boilerplate JWT dupliqué ~6×) `[S | products]`.

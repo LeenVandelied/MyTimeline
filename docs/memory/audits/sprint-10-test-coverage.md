@@ -33,14 +33,15 @@
 - `infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java` (nouveau — réassignation atomique)
 
 ## Résultats runs
-- Backend (surefire) : **136 tests, 136 passed, 0 failed, 0 errors, 0 skipped** (125 après impl + 6 fix cross-tenant + 5 fix review)
+- Backend (surefire, 23 classes) : **146 tests, 146 passed, 0 failed, 0 errors, 0 skipped** (125 impl + 6 fix cross-tenant + 5 fix review sprint + 10 fix review PR #153)
 - Integration Testcontainers (Postgres) : inclus (surefire, `*IntegrationTest` matché par `**/*Test.java`), exécutés et verts
 - Frontend / E2E : aucun (sprint backend pur)
 
 ## Reviews / audits
 - db-expert (V8) : OK — 2 MINEUR déférés (#78 FK RESTRICT vs DELETE /me ; dette UUID-AUTO préexistante).
 - security-expert : 1 CRITIQUE + 1 MAJEUR (cross-tenant catégorie sur produit) → **corrigés** (`a94b279`, helper `resolveAssignableCategory`, 404 anti-énumération).
-- reviewer batch : 1 MAJEUR bloquant (self-reassign FK) + 2 MINEUR bundlés → **corrigés** (`28a8a74`). 2 MAJEUR de dette préexistante déférés en follow-ups (dup `resolveCaller`, `ProductResponse` DTO).
+- reviewer batch (mi-sprint) : 1 MAJEUR bloquant (self-reassign FK) + 2 MINEUR bundlés → **corrigés** (`28a8a74`). 2 MAJEUR de dette préexistante déférés en follow-ups (dup `resolveCaller`, `ProductResponse` DTO).
+- /review-pr #153 (état final, reviewer + security-expert) : 2 MAJEUR (handler DataIntegrity trop large ; GET catégories fuite cross-tenant + `ownerId` exposé) + 2 MINEUR → **corrigés** (`78c633b`). GET list/by-id scopés owner∪système, `CategoryResponse.ownerId`→booléen `system`, catch DataIntegrity au niveau service.
 
 ## Conclusion
 Prêt pour PR. Couverture complète, aucune ligne manquante dans le tableau. Follow-ups (triage /sprint end) : dup `resolveCaller` ProductController [S], `ProductResponse` DTO / AP-CAT-03 produit [M], E2E métier + UUID hardcodés front → #61 (S11).
