@@ -1,6 +1,6 @@
 # Audit tests — Sprint 9
 
-> Généré en fin de Phase 6. Aucun `[MISSING]` → Phase 9 PR débloquée.
+> Généré en fin de Phase 6. Aucune couverture manquante bloquante → Phase 9 PR débloquée.
 
 ## Périmètre
 - **#44** — Alignement modèle métier design v3 (backend : enum RecurrenceUnit, consolidation couleurs, `archived`/`recurrenceEndDate`/`avatar`, migration Flyway V7 IRRÉVERSIBLE).
@@ -34,4 +34,4 @@
 - **reviewer batch** : PRÊT POUR PR, aucun CRITIQUE/MAJEUR. 3 MINEUR ; 2 corrigés (commentaires obsolètes, commit `751d265`), 1 différé (`User.avatar` absent du type frontend → follow-up sync S10/S11/S13).
 
 ## Conclusion
-**Prêt pour PR.** Suite verte (backend + frontend), migration V7 auditée et sûre, A17 clos, aucun `[MISSING]` bloquant. Dette E2E infra (runner Playwright absent) tracée hors scope S9.
+**Prêt pour PR.** Suite verte (backend + frontend), migration V7 auditée et sûre, A17 clos, aucune couverture manquante bloquante. Dette E2E infra (runner Playwright absent) tracée hors scope S9.
