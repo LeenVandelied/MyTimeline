@@ -79,3 +79,9 @@ Pour un soft delete (champ `archived`/`deleted`) : poser `@SQLRestriction("archi
 
 ## PAT-S10-002 — Unicité applicative + contrainte DB : mapper la violation en 409, au niveau service
 Unicité métier (ex : nom par owner) = check applicatif (`findByOwnerAndName` → 409 explicite) DOUBLÉ d'une contrainte DB `UNIQUE` (filet anti-race). Pour que la race DB ne fuite pas en 500 : `try/catch DataIntegrityViolationException → <MetierConflictException>` (409) AUTOUR du seul `save()` concerné, DANS le service — PAS un `@ExceptionHandler(DataIntegrityViolationException)` global (qui masquerait toutes les autres violations FK/contrainte, cf. [[PIT-S10-002]]). (Sprint 10 #52, review PR #153)
+
+## PAT-S11-001 — Mock next-intl dans les tests de composant : asserter sur les CLÉS, pas les libellés
+`vi.mock('next-intl', () => ({ useTranslations: (ns) => (k) => \`${ns}.${k}\` }))` → le composant rend `ns.key` au lieu du libellé traduit ; les assertions portent sur la clé i18n, indépendantes de la locale. Anti-pattern : asserter sur un libellé FR (`getByText('Supprimer')`) → couple le test à la locale, casse au moindre changement de wording. (Sprint 11 #65)
+
+## PAT-S11-002 — Schémas Zod distincts pour create vs update quand le contrat DTO diverge
+Le contrat backend peut nommer/structurer différemment création et mise à jour (produit : `POST` attend `category` (UUID), `PATCH` attend `categoryId` (UUID) ; update partiel = champs `.optional()`). Définir DEUX schémas (`productCreateSchema` / `productUpdateSchema`), pas un seul réutilisé. Anti-pattern : `productCreateSchema.partial()` pour le PATCH → mauvais nom de champ envoyé (`category` au lieu de `categoryId`) + validations create indésirables. (Sprint 11 #61)
