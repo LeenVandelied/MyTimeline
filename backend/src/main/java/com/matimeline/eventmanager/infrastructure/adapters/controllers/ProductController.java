@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
+import com.matimeline.eventmanager.application.dtos.ProductResponse;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.application.services.EventServiceImpl;
 import com.matimeline.eventmanager.application.services.ProductServiceImpl;
@@ -43,7 +45,7 @@ public class ProductController {
     }
 
     @PostMapping("/users/{userId}/products")
-    public ResponseEntity<Product> createProduct(
+    public ResponseEntity<ProductResponse> createProduct(
             @PathVariable UUID userId,
             @Valid @RequestBody ProductCreationRequest request,
             @CookieValue(value = "jwt", required = false) String token) {
@@ -65,11 +67,11 @@ public class ProductController {
 
         request.setUserId(userId);
         Product product = productService.createProduct(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.fromDomain(product));
     }
 
     @GetMapping("/users/{userId}/products")
-    public ResponseEntity<List<Product>> getProducts(
+    public ResponseEntity<List<ProductResponse>> getProducts(
             @PathVariable UUID userId,
             @CookieValue(value = "jwt", required = false) String cookieToken,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -96,14 +98,17 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            return ResponseEntity.ok(productService.getProductsWithEvents(userId));
+            List<ProductResponse> response = productService.getProductsWithEvents(userId).stream()
+                    .map(ProductResponse::fromDomain)
+                    .toList();
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
     @GetMapping("/users/{userId}/products/{productId}")
-    public ResponseEntity<Product> getProductById(
+    public ResponseEntity<ProductResponse> getProductById(
             @PathVariable UUID userId,
             @PathVariable UUID productId,
             @CookieValue(value = "jwt", required = false) String token) {
@@ -130,11 +135,11 @@ public class ProductController {
         if (!productBelongsToUser(product.get(), userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(product.get());
+        return ResponseEntity.ok(ProductResponse.fromDomain(product.get()));
     }
 
     @PatchMapping("/users/{userId}/products/{productId}")
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable UUID userId,
             @PathVariable UUID productId,
             @Valid @RequestBody ProductUpdateRequest request,
@@ -166,7 +171,7 @@ public class ProductController {
         // BR-PRO-001/002 : validation (name bounds, category existence) enforced in the
         // service ; a missing product / unknown category surfaces via GlobalExceptionHandler (404).
         Product updated = productService.updateProduct(productId, request);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(ProductResponse.fromDomain(updated));
     }
 
     @DeleteMapping("/users/{userId}/products/{productId}")
@@ -204,7 +209,7 @@ public class ProductController {
     }
 
     @GetMapping("/users/{userId}/products/{productId}/events")
-    public ResponseEntity<List<Event>> getEventsByProductId(
+    public ResponseEntity<List<EventResponse>> getEventsByProductId(
             @PathVariable UUID userId,
             @PathVariable UUID productId,
             @CookieValue(value = "jwt", required = false) String token) {
@@ -236,7 +241,10 @@ public class ProductController {
         if (events.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(events);
+        List<EventResponse> response = events.stream()
+                .map(EventResponse::fromDomain)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     /**

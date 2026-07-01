@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,10 +25,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.application.services.EventServiceImpl;
 import com.matimeline.eventmanager.application.services.ProductServiceImpl;
 import com.matimeline.eventmanager.application.services.UserServiceImpl;
+import com.matimeline.eventmanager.domain.models.Category;
+import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
@@ -256,5 +260,75 @@ class ProductControllerOwnershipTest {
                 .andExpect(status().isNoContent());
 
         verify(productService).archiveById(productId);
+    }
+
+    // ---------------------------------------------------------------------
+    // Absorb S10 (AP-CAT-03) — ProductResponse DTO : forme JSON préservée
+    // {id, name, category:{id,name}, events:[...]} + PAS de fuite du User/owner.
+    // ---------------------------------------------------------------------
+
+    /**
+     * GET produit possédé : la réponse respecte {@code {id, name, category:{id,name},
+     * events:[...]}} ET n'expose NI {@code user}/owner NI le mot de passe du propriétaire
+     * (fin de la fuite du domain model produit). La catégorie est réduite à {id, name}.
+     */
+    @Test
+    void getProductById_ownProduct_returnsResponseShape_withoutUserLeak() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "s3cr3t", "ROLE_USER", "c@c.com");
+        UUID categoryId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
+        Category category = new Category(categoryId, "Travail", "#fff", "desc", callerId);
+        Event event = new Event(eventId, "Sortie", "single", null, null,
+                Boolean.FALSE, null, null, null, productId, Boolean.TRUE);
+        Product ownProduct = new Product(productId, "mine", category, caller, List.of(event));
+
+        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
+        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
+
+        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId)
+                        .cookie(new Cookie("jwt", "caller-token")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(productId.toString()))
+                .andExpect(jsonPath("$.name").value("mine"))
+                .andExpect(jsonPath("$.category.id").value(categoryId.toString()))
+                .andExpect(jsonPath("$.category.name").value("Travail"))
+                .andExpect(jsonPath("$.events[0].id").value(eventId.toString()))
+                .andExpect(jsonPath("$.events[0].title").value("Sortie"))
+                // Anti-fuite : aucun objet user/owner, ni PII, ni ownerId de catégorie.
+                .andExpect(jsonPath("$.user").doesNotExist())
+                .andExpect(jsonPath("$.owner").doesNotExist())
+                .andExpect(jsonPath("$.category.ownerId").doesNotExist())
+                .andExpect(jsonPath("$.category.description").doesNotExist());
+    }
+
+    /**
+     * POST création : 201 + même forme {@code {id, name, category:{id,name}, events:[...]}}
+     * SANS champ {@code user}/owner exposé.
+     */
+    @Test
+    void createProduct_returns201_withResponseShape_withoutUserLeak() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "s3cr3t", "ROLE_USER", "c@c.com");
+        UUID categoryId = UUID.randomUUID();
+        Category category = new Category(categoryId, "Travail");
+        Product created = new Product(productId, "nouveau", category, caller, List.of());
+
+        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
+        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(productService.createProduct(any(ProductCreationRequest.class))).thenReturn(created);
+
+        mockMvc.perform(post("/api/users/" + callerId + "/products")
+                        .cookie(new Cookie("jwt", "caller-token"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"nouveau\",\"category\":\"" + categoryId
+                                + "\",\"userId\":\"" + callerId + "\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(productId.toString()))
+                .andExpect(jsonPath("$.name").value("nouveau"))
+                .andExpect(jsonPath("$.category.id").value(categoryId.toString()))
+                .andExpect(jsonPath("$.category.name").value("Travail"))
+                .andExpect(jsonPath("$.events").isArray())
+                .andExpect(jsonPath("$.user").doesNotExist())
+                .andExpect(jsonPath("$.owner").doesNotExist());
     }
 }
