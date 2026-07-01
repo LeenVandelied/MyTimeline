@@ -61,3 +61,9 @@ Sans clé : `log.warn` + no-op ; `RestClientException` avalée (log sans token/c
 
 ## DEC-S8-002 — Token reset : validité 15 min, usage unique
 Durée de validité du token de reset = **15 minutes** (override dev, pas 2h) ; usage unique via `used_at` ; token invalide/expiré/consommé/non-UUID → 400 générique unique (anti-énum). Configurable `app.password-reset.token-validity-minutes`. #103 fermée comme doublon, ses éléments (BR-AUT-011 + tests intégration) absorbés dans #49. (Sprint 8 #49)
+
+## DEC-S9-001 — Migration couleurs v3 : `backgroundColor` survivant, irréversible (ADR-001)
+Modèle events design v3 = 1 seule couleur/événement. Migration V7 consolide `backgroundColor`+`borderColor`+`textColor` → `color` (= `backgroundColor`) ; `border_color`/`text_color` **DROP définitif** (Flyway Community sans undo → rollback manuel ne les restaure pas). Backfill `archived=false`. Sauvegarde DB + confirmation obligatoire avant prod. Détail : `docs/adr/ADR-001-migration-couleurs-v3.md`. (Sprint 9 #44)
+
+## DEC-S9-002 — Persistance auth : re-fetch /me au mount (Option 1), plus de miroir localStorage
+#135 (A17) : suppression totale du miroir localStorage du `user` (PII email/name), re-fetch `GET /api/auth/me` au montage depuis le cookie JWT HttpOnly (source de vérité serveur). Choisi vs Option 2 (restreindre les champs persistés) car `/me` renvoie déjà un DTO propre (`UserResponse`, sans password — BR-AUT-008), le pont existe ([[PAT-S7-004]]), et retirer 100 % de la PII > garder des champs désynchronisés. `loading` guard → pas de flash non-authentifié. (Sprint 9 #135)
