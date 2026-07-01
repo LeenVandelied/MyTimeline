@@ -247,7 +247,7 @@
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 10 (#50 PATCH produit, #52 GET /api/categories)
 **Alternative non retenue :** #61 + #62 (Drawer Catégorie) au lieu de #61 + #65.
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 12 — 2026-07-01 (PLANIFIÉ — cohésion 0.60, Backend récurrence events — Wave 4 back)
 **Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl.
