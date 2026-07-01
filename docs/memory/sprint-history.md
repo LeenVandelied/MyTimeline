@@ -253,7 +253,10 @@
 **Tests :** Frontend 60/60 green (Vitest) | Backend non modifié | E2E : harness absent projet (gap pré-existant, plan `/create-e2e` post-merge)
 **Nouveaux pitfalls / patterns :** PIT-S11-001 (Radix jsdom stubs), PIT-S11-002 (TanStack v5 mutation isolation test), PIT-S11-003 (désync Zod schémas dérivés), PIT-S7-003 enrichi (récurrence log brut + helper `safeErrorMessage`) ; PAT-S11-001 (mock next-intl sur clés), PAT-S11-002 (schémas Zod create≠update)
 **Alternative non retenue :** #61 + #62 (Drawer Catégorie) au lieu de #61 + #65.
-**Status :** Clôture en cours (mémoire consolidée ; triage follow-ups + merge Phase 5)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Persister une couleur propre au produit (champ backend + migration) [triage M | domaine products] → issue #158 (Sprint 12)
+  - Scrub log axios brut `authService.ts:61` (refreshToken) [triage XS | domaine auth] → traité hors sprint (background task, session séparée)
+**Status :** Clôture en cours (mémoire consolidée ; triage follow-ups fait ; merge Phase 5)
 
 ## Sprint 12 — 2026-07-01 (PLANIFIÉ — cohésion 0.60, Backend récurrence events — Wave 4 back)
 **Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl.
