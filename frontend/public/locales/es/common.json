@@ -13,6 +13,32 @@
       "generic": "Ha ocurrido un error, inténtalo de nuevo"
     }
   },
+  "deleteDialog": {
+    "cancel": "Cancelar",
+    "confirm": "Eliminar",
+    "deleting": "Eliminando",
+    "event": {
+      "title": "¿Eliminar este evento?",
+      "description": "Esta acción no se puede deshacer.",
+      "recurringWarning": "Esto elimina únicamente este evento, no la serie."
+    },
+    "product": {
+      "title": "¿Eliminar este producto?",
+      "description": "El producto se archivará y dejará de aparecer en tus listas."
+    },
+    "category": {
+      "title": "¿Eliminar esta categoría?",
+      "description": "Esta acción no se puede deshacer.",
+      "reassignLabel": "Mover los productos a…",
+      "reassignPlaceholder": "Elige una categoría de destino",
+      "noOtherCategory": "No hay otra categoría disponible para reasignar los productos. Crea primero otra categoría."
+    },
+    "errors": {
+      "notFound": "Esta categoría ya no existe.",
+      "conflict": "No se pueden reasignar los productos a esta categoría.",
+      "generic": "Ocurrió un error al eliminar, inténtalo de nuevo."
+    }
+  },
   "validation": {
     "username": "El nombre de usuario debe contener al menos 3 caracteres",
     "password": "La contraseña debe contener al menos 6 caracteres"

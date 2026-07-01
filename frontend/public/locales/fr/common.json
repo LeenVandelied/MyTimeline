@@ -53,6 +53,32 @@
   "spinner": {
     "loading": "Chargement en cours"
   },
+  "deleteDialog": {
+    "cancel": "Annuler",
+    "confirm": "Supprimer",
+    "deleting": "Suppression en cours",
+    "event": {
+      "title": "Supprimer cet événement ?",
+      "description": "Cette action est irréversible.",
+      "recurringWarning": "Cette action supprime uniquement cet événement, pas la série."
+    },
+    "product": {
+      "title": "Supprimer ce produit ?",
+      "description": "Le produit sera archivé et n'apparaîtra plus dans vos listes."
+    },
+    "category": {
+      "title": "Supprimer cette catégorie ?",
+      "description": "Cette action est irréversible.",
+      "reassignLabel": "Déplacer les produits vers…",
+      "reassignPlaceholder": "Choisissez une catégorie de destination",
+      "noOtherCategory": "Aucune autre catégorie disponible pour réassigner les produits. Créez d'abord une autre catégorie."
+    },
+    "errors": {
+      "notFound": "Cette catégorie n'existe plus.",
+      "conflict": "Impossible de réassigner les produits vers cette catégorie.",
+      "generic": "Une erreur est survenue lors de la suppression, veuillez réessayer."
+    }
+  },
   "validation": {
     "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
     "password": "Le mot de passe doit contenir au moins 6 caractères"
