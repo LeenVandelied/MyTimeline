@@ -150,6 +150,45 @@ class ProductControllerOwnershipTest {
         verify(productService, never()).updateProduct(any(), any());
     }
 
+    /**
+     * FIX review S10 (BR-PRO-001) : un nom purement blanc (" ", longueur 1) passait @Size(min=1)
+     * mais viole BR-PRO-001. Le @Pattern(".*\\S.*") le rejette -> 400, avant le corps du
+     * contrôleur (aucun stub requis). Le service update n'est jamais appelé.
+     */
+    @Test
+    void patchProduct_blankName_returns400() throws Exception {
+        mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
+                        .cookie(new Cookie("jwt", "caller-token"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\" \"}"))
+                .andExpect(status().isBadRequest());
+
+        verify(productService, never()).updateProduct(any(), any());
+    }
+
+    /**
+     * FIX review S10 : patch partiel SANS name (name = null / champ absent) reste valide —
+     * @Pattern et @Size ignorent null. Ici seul categoryId change ; pas de 400 sur le motif nom.
+     */
+    @Test
+    void patchProduct_nameAbsent_categoryOnly_returns200() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        Product ownProduct = new Product(productId, "kept", null, caller, List.of());
+        Product updated = new Product(productId, "kept", null, caller, List.of());
+        UUID newCategoryId = UUID.randomUUID();
+
+        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
+        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
+        when(productService.updateProduct(eq(productId), any(ProductUpdateRequest.class))).thenReturn(updated);
+
+        mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
+                        .cookie(new Cookie("jwt", "caller-token"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"categoryId\":\"" + newCategoryId + "\"}"))
+                .andExpect(status().isOk());
+    }
+
     /** BR-PRO-001 : nom > 100 caractères -> 400 via @Valid (@Size max=100), avant le corps. */
     @Test
     void patchProduct_nameTooLong_returns400() throws Exception {

@@ -259,6 +259,27 @@ class CategoryControllerTest {
         verify(categoryService).deleteCategory(id, targetId);
     }
 
+    /**
+     * FIX review S10 : DELETE avec reassignToCategoryId == id (cible == source) sur une
+     * catégorie référencée -> 409 (CategoryInUseException), catégorie NON supprimée. Le
+     * service rejette avant réassignation/suppression ; ici on vérifie le contrat HTTP
+     * end-to-end (le service mocké lève l'exception mappée en 409 par le handler).
+     */
+    @Test
+    void deleteCategory_reassignToSelf_referenced_returns409_andDoesNotDelete() throws Exception {
+        stubCaller();
+        UUID id = UUID.randomUUID();
+        when(categoryService.getCategoryById(id)).thenReturn(Optional.of(owned(id, "src")));
+        doThrow(new CategoryInUseException(2))
+                .when(categoryService).deleteCategory(id, id);
+
+        mockMvc.perform(delete("/api/categories/" + id + "?reassignToCategoryId=" + id)
+                        .cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error")
+                        .value("La catégorie est utilisée par 2 produits. Fournissez reassignToCategoryId."));
+    }
+
     @Test
     void deleteCategory_reassignTargetOwnedByAnotherUser_returns403() throws Exception {
         stubCaller();

@@ -99,6 +99,12 @@ public class CategoryServiceImpl implements CategoryService {
             if (reassignToCategoryId == null) {
                 throw new CategoryInUseException(referencing);
             }
+            // FIX review S10 : réassigner vers la catégorie en cours de suppression est
+            // un no-op suivi d'un deleteById -> violation FK / produits orphelins. On
+            // rejette AVANT toute réassignation. Réutilise CategoryInUseException -> 409.
+            if (id.equals(reassignToCategoryId)) {
+                throw new CategoryInUseException(referencing);
+            }
             // La cible doit exister (l'ownership de la cible est vérifié en amont par
             // le contrôleur). Réassignation AVANT suppression, DANS la même transaction :
             // si le delete échoue, le bulk update est rollback -> aucun produit orphelin.

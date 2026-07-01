@@ -3,6 +3,7 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 import java.time.Instant;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -80,6 +81,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "invalid or expired token"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        // FIX review S10 : race d'unicité. Le check applicatif findByOwnerAndName ->
+        // CategoryNameConflictException (409) ne protège pas contre deux inserts
+        // concurrents ; la contrainte DB UNIQUE(owner_id, name) lève alors une
+        // DataIntegrityViolationException NON mappée -> 500 brut avec fuite SQL.
+        // On la mappe en 409 avec un message métier générique, sans divulguer le détail SQL.
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "Conflit d'intégrité (nom déjà utilisé ou contrainte violée)."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

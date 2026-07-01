@@ -165,6 +165,25 @@ class CategoryServiceImplTest {
         inOrder.verify(categoryRepository).deleteById(id);
     }
 
+    /**
+     * FIX review S10 : réassigner vers la catégorie en cours de suppression (cible == source)
+     * serait un no-op suivi d'un deleteById -> violation FK / produits orphelins. Le service
+     * doit rejeter (409 CategoryInUseException) AVANT toute réassignation ou suppression.
+     */
+    @Test
+    void deleteCategory_reassignToSelf_throwsInUse_andDoesNotReassignOrDelete() {
+        UUID id = UUID.randomUUID();
+        when(categoryRepository.existsById(id)).thenReturn(true);
+        when(productRepository.countByCategoryId(id)).thenReturn(3L);
+
+        CategoryInUseException ex = assertThrows(CategoryInUseException.class,
+                () -> service.deleteCategory(id, id));
+        assertEquals(3L, ex.getProductCount());
+
+        verify(productRepository, never()).updateCategoryForProducts(any(), any());
+        verify(categoryRepository, never()).deleteById(any());
+    }
+
     @Test
     void deleteCategory_reassignTargetUnknown_throwsNotFound_andDoesNotReassignOrDelete() {
         UUID id = UUID.randomUUID();
