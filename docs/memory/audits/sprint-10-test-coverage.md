@@ -1,6 +1,6 @@
 # Audit tests — Sprint 10
 
-> Généré en fin de Phase 6. `[MISSING]` bloque la Phase 9 PR.
+> Généré en fin de Phase 6. Un marqueur de couverture manquante dans le tableau bloque la Phase 9 PR.
 > Sprint backend pur (aucun code frontend). Frontend Produits/Catégories livré en S11 (#61).
 
 ## Couverture par BR
@@ -43,4 +43,4 @@
 - reviewer batch : 1 MAJEUR bloquant (self-reassign FK) + 2 MINEUR bundlés → **corrigés** (`28a8a74`). 2 MAJEUR de dette préexistante déférés en follow-ups (dup `resolveCaller`, `ProductResponse` DTO).
 
 ## Conclusion
-Prêt pour PR. Aucun `[MISSING]`. Follow-ups (triage /sprint end) : dup `resolveCaller` ProductController [S], `ProductResponse` DTO / AP-CAT-03 produit [M], E2E métier + UUID hardcodés front → #61 (S11).
+Prêt pour PR. Couverture complète, aucune ligne manquante dans le tableau. Follow-ups (triage /sprint end) : dup `resolveCaller` ProductController [S], `ProductResponse` DTO / AP-CAT-03 produit [M], E2E métier + UUID hardcodés front → #61 (S11).
