@@ -1,40 +1,20 @@
-# Coverage : `categories`
+# Coverage — categories (màj post-S10)
 
-> État de couverture du domaine `categories` au 2026-06-25.
+> Énumération réelle des tests. Remplace la version 2026-06-25 (« zéro test backend categories » — faux positif).
 
----
+## Tests backend présents
+- `CategoryServiceImplTest` (15 tests, unit Mockito) — CRUD service, règles métier (unicité, rejet suppression si utilisée).
+- `CategoryControllerTest` (22 tests, slice Mockito + standaloneSetup) — endpoints CRUD, codes d'erreur, ownership.
+- `CategoryDeleteReassignIntegrationTest` (5 tests, intégration @SpringBootTest + Testcontainers Postgres) — suppression avec réassignation des événements liés.
+- `GlobalExceptionHandlerValidationTest` (1 test, slice Mockito + standaloneSetup) — mapping validation → réponse HTTP (transverse, partiellement pertinent categories).
 
-## 1. Matrice de couverture par action
+## Tests frontend / E2E
+- Aucun test frontend dédié categories.
+- E2E : aucun (`frontend/e2e/` = `.gitkeep` seul).
 
-| Action | `user` | `admin` | Notes |
-|---|---|---|---|
-| Créer une catégorie | ⚠️ | n/a | Backend implémenté, pas de test |
-| Lister les catégories | ⚠️ | n/a | Backend implémenté, pas de test |
-| Modifier une catégorie | ⚠️ | n/a | Backend implémenté, pas de test |
-| Supprimer une catégorie | ⚠️ | n/a | Backend implémenté, pas de test |
+## Gaps restants (non couverts)
+- Aucun E2E « créer une catégorie → l'assigner à un événement ».
+- Aucun test frontend (formulaire/liste catégories).
 
----
-
-## 2. Gaps prioritisés
-
-### P0 — Zéro test backend categories
-- **BR concernée** : BR-CAT-001, BR-CAT-002
-- **Action** : `CategoryServiceImplTest`
-
-### P1 — Contrainte suppression non vérifiée
-- **BR concernée** : BR-CAT-002
-- **Action** : Vérifier que `CategoryServiceImpl.delete()` rejette si catégorie utilisée
-
----
-
-## 3. Coverage E2E
-
-| Scénario | Fichier test | Statut |
-|---|---|---|
-| Créer une catégorie, l'assigner à un événement | `e2e/categories/assign.spec.ts` | ❌ non créé |
-
----
-
-## Référence
-
-- Pack métier stable : `br-categories.md`
+## Total : 42 tests backend
+> `GlobalExceptionHandlerValidationTest` (1) est transverse ; les 42 incluent les 3 classes categories (15+22+5) + ce test transverse.

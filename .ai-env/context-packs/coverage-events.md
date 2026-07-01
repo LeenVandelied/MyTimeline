@@ -1,43 +1,20 @@
-# Coverage : `events`
+# Coverage — events (màj post-S10)
 
-> État de couverture du domaine `events` au 2026-06-25.
+> Énumération réelle des tests. Remplace la version 2026-06-25 (« zéro test backend events » — faux positif).
 
----
+## Tests backend présents
+- `EventServiceImplTest` (5 tests, unit Mockito) — CRUD service, règles métier événement.
+- `EventControllerOwnershipTest` (3 tests, intégration @SpringBootTest + Testcontainers Postgres + standaloneSetup) — contrôle d'ownership sur GET/PUT/DELETE, 403 cross-user.
+- `EventControllerValidationTest` (1 test, slice Mockito + standaloneSetup) — validation Bean sur payload événement.
 
-## 1. Matrice de couverture par action
+## Tests frontend / E2E
+- `src/hooks/useProductsWithEvents.test.tsx` (2) — hook front produits+événements (transverse products/events).
+- Aucun autre test frontend dédié events (intégration FullCalendar non testée).
+- E2E : aucun (`frontend/e2e/` = `.gitkeep` seul).
 
-| Action | `user` | `admin` | Notes |
-|---|---|---|---|
-| Créer un événement | ⚠️ | n/a | Backend implémenté, pas de test |
-| Lister ses événements | ⚠️ | n/a | Backend implémenté, pas de test |
-| Modifier un événement | ⚠️ | n/a | Backend implémenté, pas de test |
-| Supprimer un événement | ⚠️ | n/a | Backend implémenté, pas de test |
-| Afficher sur calendrier | ⚠️ | n/a | Frontend FullCalendar intégré, pas d'E2E |
+## Gaps restants (non couverts)
+- Aucun E2E « créer un événement → voir sur calendrier » ni édition depuis calendrier.
+- Intégration FullCalendar (rendu, drag) non couverte.
+- Couverture controller events plus légère que categories/products (1 seul test validation, ownership à 3 cas).
 
----
-
-## 2. Gaps prioritisés
-
-### P0 — Zéro test backend events
-- **Symptôme** : EventServiceImpl non testée
-- **BR concernée** : BR-EVT-001, BR-EVT-002, BR-EVT-003
-- **Action** : `EventServiceImplTest` + `EventControllerIntegrationTest`
-
-### P1 — Pas d'E2E calendrier
-- **Symptôme** : Intégration FullCalendar non couverte
-- **Action** : `e2e/events/calendar.spec.ts`
-
----
-
-## 3. Coverage E2E
-
-| Scénario | Fichier test | Statut |
-|---|---|---|
-| Créer un événement, voir sur calendrier | `e2e/events/create.spec.ts` | ❌ non créé |
-| Modifier un événement depuis le calendrier | `e2e/events/edit.spec.ts` | ❌ non créé |
-
----
-
-## Référence
-
-- Pack métier stable : `br-events.md`
+## Total : 9 tests backend
