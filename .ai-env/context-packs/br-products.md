@@ -7,14 +7,14 @@
 
 ## 1. Lifecycles (machines à états)
 
-**Product** — CRUD simple, pas de lifecycle d'état métier (aucun champ `status`/`active`/`ARCHIVED` sur `ProductEntity`).
+**Product** — soft delete depuis Sprint 10 (#50). Champ `archived` (booléen, défaut `false`, ajouté V7/#44) sur `ProductEntity` + `@SQLRestriction("archived = false")` sur l'entité → les produits archivés sont invisibles de TOUTES les lectures Hibernate (listings produits ET join-fetch events).
 
 | Etat | Description | Transitions sortantes |
 | --- | --- | --- |
-| (Created) | Produit créé via `POST`, événements créés en cascade | -> (Deleted) via `DELETE` |
-| (Deleted) | Suppression PHYSIQUE (`existsById` puis delete) | aucune |
+| (Created) | Produit créé via `POST`, événements créés en cascade | modifiable via `PATCH` ; -> (Archived) via `DELETE` |
+| (Archived) | Soft delete : `archived = true`, `DELETE` retourne **204**. Invisible partout via `@SQLRestriction` | définitif pour cette wave (pas d'endpoint de restauration) |
 
-⚠️ Suppression PHYSIQUE observée (`deleteById` après `existsById`) — **pas de soft delete**, contraire à la convention projet. Aucun champ `deletedAt`/`active` sur `ProductEntity`.
+✅ Soft delete implémenté S10 (#50). Historique (avant S10) : suppression PHYSIQUE (`deleteById`) — corrigé.
 
 **Event** (entité agrégée) — pas de lifecycle propre côté `products` ; cycle de vie piloté par le produit (`cascade=ALL`, `orphanRemoval=true`).
 
@@ -24,10 +24,11 @@
 
 | Action | user (authentifié) | admin | system | Notes |
 | --- | --- | --- | --- | --- |
-| `POST` créer produit + events | ✅ self uniquement | ❌ inexistant | ⚠️ résout Category & User, calcule end dates | userId du body ignoré, écrasé par path `{userId}` |
-| `GET` lister produits (avec events) | ✅ self uniquement | ❌ | ⚠️ full table scan + filtre in-memory | accepte cookie JWT **OU** header Bearer (incohérent) |
-| `GET` produit par id | ✅ self uniquement | ❌ | — | 404 si absent |
-| `DELETE` produit | ✅ self uniquement | ❌ | — | retourne 200 (devrait être 204) |
+| `POST` créer produit + events | ✅ self uniquement | ❌ inexistant | ⚠️ résout Category & User, calcule end dates | userId body ignoré (écrasé par path). Catégorie cible validée par ownership (S10, cf. BR-PRO-010) |
+| `GET` lister produits (avec events) | ✅ self uniquement | ❌ | ⚠️ filtre user in-memory (perf) ; archived filtrés en SQL (`@SQLRestriction`) | accepte cookie JWT **OU** header Bearer (incohérent) |
+| `GET` produit par id | ✅ self uniquement | ❌ | — | 404 si absent/archivé |
+| `PATCH` produit (S10 #50) | ✅ self uniquement | ❌ | — | maj partielle nom/catégorie. 200/400/404/403. Catégorie cible validée (BR-PRO-010) |
+| `DELETE` produit | ✅ self uniquement | ❌ | — | soft delete `archived=true`, retourne **204** (S10 #50) |
 | `GET` events d'un produit | ✅ self uniquement | ❌ | — | ⚠️ 404 si liste vide (sémantique erronée) |
 
 ⚠️ Contrôle d'ownership fait **manuellement** dans le controller (extraction username depuis JWT cookie -> load User -> compare `user.getId()` au path `{userId}`), sans `@PreAuthorize` ni Spring Security method security.
@@ -39,8 +40,8 @@
 ### BR-PRO-001 — Nom de produit obligatoire et borné
 **Règle** : un utilisateur MUST fournir un `name` non vide, longueur 1..100, à la création d'un produit.
 **Pourquoi** : intégrité des données, un produit anonyme n'a pas de sens métier.
-**Implémentation** : `ProductCreationRequest.name` — `@NotBlank` + `@Size(min=1, max=100)`. Front : `productCreateSchema.name = z.string().min(3)`.
-**Test attendu** : `ProductControllerTest#createProduct_rejectsBlankName`, `#createProduct_rejectsNameOver100`.
+**Implémentation** : création = `ProductCreationRequest.name` (`@NotBlank` + `@Size(min=1, max=100)`). Update (S10) = `ProductUpdateRequest.name` nullable pour patch partiel : `@Size(min=1,max=100)` + `@Pattern(".*\\S.*")` (le `@Pattern` skip null mais rejette `" "` blanc — un `@NotBlank` casserait le patch partiel). Front : `productCreateSchema.name = z.string().min(3)`.
+**Test attendu** : `ProductControllerTest#createProduct_rejectsBlankName`, `#createProduct_rejectsNameOver100`, `#patchProduct_blankName_returns400`.
 **⚠️ DESYNC** : Zod impose `min(3)`, backend impose `min(1)` — noms de 1-2 caractères acceptés backend mais refusés front. Voir `.claude/rules-jit/zod-dto-sync.md`.
 **⚠️ Entité non protégée** : `ProductEntity.name` sans `@Column(nullable=false)` ni Bean Validation — un nom NULL peut être persisté si le DTO est contourné.
 
@@ -79,12 +80,23 @@
 **Test attendu** : `ProductServiceImplTest#getProductsWithEvents_filtersByUserAndHasEvents`.
 **⚠️ PERF (anti-pattern)** : aucun filtre SQL `WHERE user_id = ?` — scan complet de la table puis filtre Java (O(N)). Ne passe pas à l'échelle. -> requête JPQL/Panache avec filtre DB.
 
-### BR-PRO-007 — Suppression conditionnée à l'existence
-**Règle** : `DELETE` MUST vérifier l'existence (`existsById`) avant suppression ; lève `ProductNotFoundException` sinon.
-**Pourquoi** : retour d'erreur explicite plutôt que delete silencieux.
-**Implémentation** : `ProductServiceImpl.deleteById`.
-**Test attendu** : `ProductServiceImplTest#deleteById_throwsWhenMissing`.
-**⚠️ Soft delete NON IMPLÉMENTÉ** : suppression physique alors que la convention impose le soft delete. **⚠️ Code HTTP** : retourne 200 au lieu de 204.
+### BR-PRO-007 — Soft delete (archive) conditionné à l'existence ✅ (S10 #50)
+**Règle** : `DELETE` MUST vérifier l'existence (`orElseThrow(ProductNotFoundException)`) puis positionner `archived = true` (soft delete, PAS de suppression physique) ; retourne **204**.
+**Pourquoi** : réversibilité + convention projet soft-delete ; retour d'erreur explicite si absent.
+**Implémentation** : `ProductServiceImpl.archiveById` (ex-`deleteById`) + `@SQLRestriction("archived = false")` sur `ProductEntity` (invisibilité globale). Ownership vérifié en amont (BR-PRO-004).
+**Test attendu** : `ProductServiceImplTest`, `ProductControllerOwnershipTest`, `ProductArchivedFilterIntegrationTest` (archived invisible partout).
+**⚠️ Pitfall JPA (PIT-S10-003)** : l'update-in-place charge l'entité gérée et recopie les champs (le domaine sans `@Version` casse un `save(mapper.toEntity(domain))` détaché).
+
+### BR-PRO-009 — Mise à jour partielle produit (PATCH) ✅ (S10 #50)
+**Règle** : `PATCH /users/{userId}/products/{productId}` met à jour nom et/ou catégorie (partiel). 200 / 400 (nom vide/>100, BR-PRO-001) / 404 (absent ou pas au user) / 403 (ownership path≠JWT).
+**Implémentation** : `ProductUpdateRequest` (name/categoryId nullable), `ProductServiceImpl.updateProduct` (update-in-place de l'entité gérée). Ownership path==JWT (BR-PRO-004).
+**Test attendu** : `ProductControllerOwnershipTest#patchProduct_*`.
+
+### BR-PRO-010 — Catégorie cible d'un produit : ownership validé (anti cross-tenant) ✅ (S10 #50 review)
+**Règle** : à la création ET à l'update d'un produit, la catégorie cible (`categoryId`) n'est assignable QUE si elle appartient à l'appelant (`ownerId == caller`) OU est système (`ownerId == null`). Sinon → `CategoryNotFoundException` (**404**, pas 403 : anti-énumération d'UUID d'autrui).
+**Pourquoi** : sans ce check, un user rattache son produit à la catégorie d'un autre (linkage cross-tenant) + oracle 404/200 pour énumérer les catégories d'autrui.
+**Implémentation** : helper `ProductServiceImpl.resolveAssignableCategory(categoryId, callerId)` (callerId = `user.getId()` en create, `product.getUser().getId()` en update). Voir [[PIT-S10-005]].
+**Test attendu** : `ProductServiceImplTest` (create/update vers catégorie d'autrui → 404 ; système/propre → OK).
 
 ### BR-PRO-008 — Sémantique 404 sur collection d'events vide (NON CONFORME)
 **Règle attendue** : `GET /products/{productId}/events` DEVRAIT retourner `200` avec une liste (éventuellement vide).
@@ -106,7 +118,7 @@
 
 ## 5. Anti-patterns documentés
 
-1. **Fuite du modèle de domaine** : `ResponseEntity<Product>`, `ResponseEntity<List<Product>>`, `ResponseEntity<List<Event>>` renvoyés directement — aucun DTO de réponse, expose la structure interne y compris l'objet `User`. -> introduire des response DTO.
+1. ~~**Fuite du modèle de domaine**~~ ✅ RÉSOLU (S10, absorb PR #153) : `ProductController` renvoie désormais `ProductResponse`/`EventResponse` (catégorie réduite à `{id,name}`), l'objet `User`/owner n'est plus exposé.
 2. **Dépendance hexagonale inversée** : `ProductService` (port domaine) importe `ProductCreationRequest` (DTO application).
 3. **Annotation infra dans le domaine** : `ProductRepository` (port domaine) annoté `@Repository` (Spring).
 4. **Couplage aux implémentations** : `ProductController` injecte `ProductServiceImpl`, `EventServiceImpl`, `UserServiceImpl` au lieu des interfaces de port.
@@ -114,7 +126,7 @@
 6. **NPE non gardé** : `createProduct` appelle `request.getEvents().forEach()` sans null check (cf. BR-PRO-005).
 7. **UUID hard-codés au front** : le sélecteur de catégorie embarque des UUID en dur (`7446a49c...`, `dbc134fb...`) — casse à tout changement DB. -> charger les catégories via API.
 8. **Desync Zod/DTO** : `name` Zod `min(3)` vs backend `@Size(min=1)` (cf. BR-PRO-001).
-9. **Codes HTTP incorrects** : `DELETE` renvoie 200 au lieu de 204 ; events vides renvoient 404 (cf. BR-PRO-008).
+9. **Codes HTTP** : ~~`DELETE` renvoie 200~~ ✅ RÉSOLU S10 (204 + soft delete) ; RESTE : events vides renvoient 404 (cf. BR-PRO-008, non traité).
 10. **Annotation Jackson sur entité de persistance** : `@JsonManagedReference` sur `ProductEntity.events` — concern présentation sur entité infra.
 11. **`@Valid` manquant** : pas de `@Valid` visible sur le `@RequestBody` de `ProductController` — la Bean Validation de `ProductCreationRequest` peut ne pas être déclenchée.
 12. **Authentification incohérente** : `getProducts` accepte cookie JWT **ou** header Bearer ; les autres endpoints sont cookie-only.
@@ -125,5 +137,6 @@
 ## Référence
 
 - Coverage actuelle : `coverage-products.md`
-- Backend : `backend/src/main/java/com/matimeline/eventmanager/` — `domain/ports/services/ProductService.java`, `domain/ports/repositories/ProductRepository.java`, `application/.../ProductServiceImpl.java`, `infrastructure/.../ProductEntity.java`, `infrastructure/.../ProductController.java`, DTO `ProductCreationRequest`
+- Backend : `backend/src/main/java/com/matimeline/eventmanager/` — `domain/ports/services/ProductService.java`, `domain/ports/repositories/ProductRepository.java`, `application/.../ProductServiceImpl.java` (`resolveAssignableCategory`, `updateProduct`, `archiveById`), `infrastructure/.../ProductEntity.java` (`@SQLRestriction`), `infrastructure/.../ProductController.java`, DTOs `ProductCreationRequest` / `ProductUpdateRequest` / `ProductResponse` / `EventResponse` (S10)
+- Conventions transverses backend : voir `cp-backend.md` §Conventions MyTimeline (DTO en HTTP, ownership cible + 404, update-in-place JPA, DataIntegrity→409 scopé)
 - Frontend : `frontend/src/components/products/` — sélecteur de catégorie + schémas Zod `productCreateSchema` / `productSchema` (`eventCreationSchema` réutilisé)
