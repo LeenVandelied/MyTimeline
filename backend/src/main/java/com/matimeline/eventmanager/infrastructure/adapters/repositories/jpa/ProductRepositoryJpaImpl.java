@@ -77,4 +77,29 @@ public class ProductRepositoryJpaImpl
         return productMapper.toDomain(savedEntity);
     }
 
+    // #52 — Requêtes NATIVES volontaires : ProductEntity porte @SQLRestriction
+    // ("archived = false"), qui masque les lignes archivées des lectures et des bulk
+    // ops HQL générés par Hibernate. Or pour l'intégrité FK on doit compter ET
+    // réassigner AUSSI les produits archivés (sinon suppression de la catégorie =
+    // violation FK sur une ligne archivée invisible). Le SQL natif contourne le
+    // @SQLRestriction et opère sur TOUTES les lignes.
+
+    @Override
+    public long countByCategoryId(UUID categoryId) {
+        Number count = (Number) entityManager
+                .createNativeQuery("SELECT count(*) FROM products WHERE category_id = :cat")
+                .setParameter("cat", categoryId)
+                .getSingleResult();
+        return count.longValue();
+    }
+
+    @Override
+    public int updateCategoryForProducts(UUID fromCategoryId, UUID toCategoryId) {
+        return entityManager
+                .createNativeQuery("UPDATE products SET category_id = :to WHERE category_id = :from")
+                .setParameter("to", toCategoryId)
+                .setParameter("from", fromCategoryId)
+                .executeUpdate();
+    }
+
 }

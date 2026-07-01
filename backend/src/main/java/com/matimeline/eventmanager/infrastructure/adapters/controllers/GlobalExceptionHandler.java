@@ -9,6 +9,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
+import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
@@ -30,6 +32,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(buildBody(HttpStatus.NOT_FOUND, "Resource not found"));
+    }
+
+    @ExceptionHandler(CategoryNameConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoryNameConflict(CategoryNameConflictException ex) {
+        // BR-CAT-004 (#52) : nom de catégorie déjà pris par CET utilisateur -> 409.
+        // Corps plat {"error":...} cohérent avec les autres erreurs métier.
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "category name already used"));
+    }
+
+    @ExceptionHandler(CategoryInUseException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoryInUse(CategoryInUseException ex) {
+        // AP-CAT-05 (#52) : suppression d'une catégorie référencée sans réassignation
+        // -> 409. Le message métier explicite (nombre de produits + marche à suivre)
+        // est renvoyé tel quel pour guider le client (critère d'acceptation).
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

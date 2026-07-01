@@ -21,6 +21,14 @@ public class CategoryEntity {
     private String color;
     private String description;
 
+    // #52 (ADR-002) : propriétaire. NULLABLE -> owner_id NULL = catégorie « système »
+    // (lisible de tous, non modifiable). Mapping aligné sur V8__category_ownership.sql
+    // (owner_id uuid, FK users). LAZY : la lecture d'une catégorie ne charge pas
+    // systématiquement le user proxy (l'ownership se compare via getOwnerId()).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private UserEntity owner;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -63,6 +71,14 @@ public class CategoryEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public UserEntity getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UserEntity owner) {
+        this.owner = owner;
     }
 
     public LocalDateTime getCreatedAt() {
