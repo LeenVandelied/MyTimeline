@@ -217,15 +217,15 @@
   - Index partiel `WHERE archived=false` [XS | db] → déjà couvert par #88 (enforcement quota)
 **Status :** Terminé
 
-## Sprint 10 — 2026-07-01 (PLANIFIÉ — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
+## Sprint 10 — 2026-07-01 (EN COURS — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
 **Objectif :** CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation) pour débloquer le frontend Wave 3.
 **Milestone GitHub :** #10
 **Issues :** #50 (Product PATCH + archive), #52 (CRUD catégorie + suppression/réassignation)
-**Vagues :** V1 = #50 ‖ #52 (début) — séquencement sur `ProductRepository` + migrations séparées
+**Vagues :** V1 = #50 (filtrage archived sur ProductRepository) | V2 = #52 (findByCategoryId + réassignation) — séquencé sur `ProductRepository.java` partagé, migrations séparées V8/V9
 **Migrations Flyway :** V8 (#50 résiduel archived) + V9 (#52 contraintes catégorie) — plage V8–V9
 **Dépend de :** Sprint 9 (#44 : colonne archived)
 **Blocker conception :** ownership catégorie (référentiel global vs ownerId) — ADR avant implémentation.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-01)
 
 ## Sprint 11 — 2026-07-01 (PLANIFIÉ — cohésion 0.42, Frontend Produits + Dialogs — Wave 3 front)
 **Objectif :** Drawer Produit (fin des UUID hardcodés + fix desync Zod) + dialogs de confirmation partagés.
