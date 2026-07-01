@@ -140,8 +140,7 @@ class CategoryControllerTest {
         stubCaller();
         UUID sysId = UUID.randomUUID();
         // Le service scopé ne renvoie QUE le caller + système ; le contrôleur délègue
-        // le filtre au service (getCategoriesForOwner). On vérifie ici que le contrôleur
-        // n'appelle PAS getAllCategories (non scopé) et sérialise system sans ownerId.
+        // le filtre au service (getCategoriesForOwner) et sérialise system sans ownerId.
         when(categoryService.getCategoriesForOwner(callerId)).thenReturn(List.of(
                 owned(UUID.randomUUID(), "Mine"),
                 new Category(sysId, "Système", null, null, null)));
@@ -156,7 +155,7 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$[1].system").value(true))
                 .andExpect(jsonPath("$[1].ownerId").doesNotExist());
 
-        verify(categoryService, never()).getAllCategories();
+        verify(categoryService).getCategoriesForOwner(callerId);
     }
 
     @Test

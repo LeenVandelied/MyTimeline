@@ -25,8 +25,6 @@ public interface CategoryService {
      */
     Category updateCategory(UUID id, String name, String color, String description);
 
-    List<Category> getAllCategories();
-
     /**
      * FIX review #153 : listing scopé (anti fuite cross-tenant). Renvoie UNIQUEMENT les
      * catégories possédées par {@code callerId} OU système (owner NULL). Utilisé par

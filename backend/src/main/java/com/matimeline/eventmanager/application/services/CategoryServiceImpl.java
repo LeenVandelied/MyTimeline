@@ -83,12 +83,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAllCategories();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Category> getCategoriesForOwner(UUID callerId) {
         // FIX review #153 : listing scopé au caller + catégories système (owner NULL).
         return categoryRepository.findByOwnerIdOrSystem(callerId);

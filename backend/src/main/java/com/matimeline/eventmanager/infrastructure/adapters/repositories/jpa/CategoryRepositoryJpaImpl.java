@@ -73,13 +73,6 @@ public class CategoryRepositoryJpaImpl
     }
 
     @Override
-    public List<Category> findAllCategories() {
-        return super.findAll().stream()
-            .map(categoryMapper::toDomain)
-            .toList();
-    }
-
-    @Override
     public List<Category> findByOwnerIdOrSystem(UUID ownerId) {
         // FIX review #153 : scoping cross-tenant. Renvoie les catégories du caller OU
         // système (owner NULL). Filtre en JPQL bindé (pas de scan complet + filtre applicatif).

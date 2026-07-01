@@ -116,7 +116,7 @@ class CategoryServiceImplTest {
         List<Category> result = service.getCategoriesForOwner(ownerId);
 
         assertEquals(2, result.size());
-        verify(categoryRepository, never()).findAllCategories();
+        verify(categoryRepository).findByOwnerIdOrSystem(ownerId);
     }
 
     // ---- update ----
