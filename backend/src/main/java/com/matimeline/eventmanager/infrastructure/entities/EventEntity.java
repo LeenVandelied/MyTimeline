@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 
 @Entity
 @Table(name = "events")
@@ -38,14 +39,22 @@ public class EventEntity {
     private Integer durationValue;
     private String durationUnit;
     private Boolean isRecurring;
-    private String recurrenceUnit;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recurrence_unit")
+    private RecurrenceUnit recurrenceUnit;
+
+    @Column(name = "recurrence_end_date")
+    private LocalDate recurrenceEndDate;
+
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean isAllDay;
-    private String backgroundColor;
-    private String borderColor;
-    private String textColor;
-    
+    private String color;
+
+    @Column(nullable = false)
+    private boolean archived = false;
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
@@ -99,12 +108,20 @@ public class EventEntity {
         this.isRecurring = isRecurring;
     }
 
-    public String getRecurrenceUnit() {
+    public RecurrenceUnit getRecurrenceUnit() {
         return recurrenceUnit;
     }
 
-    public void setRecurrenceUnit(String recurrenceUnit) {
+    public void setRecurrenceUnit(RecurrenceUnit recurrenceUnit) {
         this.recurrenceUnit = recurrenceUnit;
+    }
+
+    public LocalDate getRecurrenceEndDate() {
+        return recurrenceEndDate;
+    }
+
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
     }
 
     public LocalDate getStartDate() {
@@ -139,28 +156,20 @@ public class EventEntity {
         this.isAllDay = isAllDay;
     }
     
-    public String getBackgroundColor() {
-        return backgroundColor;
+    public String getColor() {
+        return color;
     }
 
-    public void setBackgroundColor(String backgroundColor) {
-        this.backgroundColor = backgroundColor;
+    public void setColor(String color) {
+        this.color = color;
     }
 
-    public String getBorderColor() {
-        return borderColor;
+    public boolean isArchived() {
+        return archived;
     }
 
-    public void setBorderColor(String borderColor) {
-        this.borderColor = borderColor;
-    }
-
-    public String getTextColor() {
-        return textColor;
-    }
-
-    public void setTextColor(String textColor) {
-        this.textColor = textColor;
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 
     public LocalDateTime getCreatedAt() {

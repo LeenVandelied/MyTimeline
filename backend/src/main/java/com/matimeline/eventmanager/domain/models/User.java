@@ -9,6 +9,7 @@ public class User {
     private String password;
     private String role;
     private String email;
+    private String avatar;
 
     public User(UUID id, String name, String username, String password, String role, String email) {
         this.id = id;
@@ -17,6 +18,11 @@ public class User {
         this.password = password;
         this.role = role;
         this.email = email;
+    }
+
+    public User(UUID id, String name, String username, String password, String role, String email, String avatar) {
+        this(id, name, username, password, role, email);
+        this.avatar = avatar;
     }
 
     public UUID getId() {
@@ -41,5 +47,13 @@ public class User {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

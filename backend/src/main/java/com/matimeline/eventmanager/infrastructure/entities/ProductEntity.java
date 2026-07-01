@@ -23,6 +23,11 @@ public class ProductEntity {
 
     private String name;
 
+    @Column(nullable = false)
+    private boolean archived = false;
+
+    private String color;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
@@ -78,7 +83,23 @@ public class ProductEntity {
     public void setName(String name) {
         this.name = name;
     }
-    
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     public void setCategory(CategoryEntity category) {
         this.category = category;
     }

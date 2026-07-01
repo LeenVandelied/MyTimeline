@@ -18,6 +18,7 @@ import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -63,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
                     eventCreationRequest.getDurationValue(),
                     eventCreationRequest.getDurationUnit(),
                     eventCreationRequest.getIsRecurring(),
-                    eventCreationRequest.getRecurrenceUnit(),
+                    RecurrenceUnit.fromString(eventCreationRequest.getRecurrenceUnit()),
                     startDate,
                     Utils.calculateEndDate(eventCreationRequest, startDate),
                     product.getId(),

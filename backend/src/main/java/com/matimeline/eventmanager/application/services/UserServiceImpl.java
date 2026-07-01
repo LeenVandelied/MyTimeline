@@ -61,7 +61,8 @@ public class UserServiceImpl implements UserService {
                 caller.getUsername(),
                 newHash,
                 caller.getRole(),
-                caller.getEmail());
+                caller.getEmail(),
+                caller.getAvatar());
         userRepository.save(updated);
     }
 

@@ -8,13 +8,20 @@ import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
 @Component
 public class CategoryMapper {
       public Category toDomain(CategoryEntity categoryEntity) {
-        return new Category(categoryEntity.getId(), categoryEntity.getName());
+        return new Category(
+            categoryEntity.getId(),
+            categoryEntity.getName(),
+            categoryEntity.getColor(),
+            categoryEntity.getDescription()
+        );
     }
 
     public CategoryEntity toEntity(Category category) {
         CategoryEntity entity = new CategoryEntity();
         entity.setId(category.getId());
         entity.setName(category.getName());
+        entity.setColor(category.getColor());
+        entity.setDescription(category.getDescription());
         return entity;
     }
 }

@@ -89,7 +89,8 @@ public class UserController {
                 request.getUsername(),
                 caller.getPassword(),
                 caller.getRole(),
-                request.getEmail());
+                request.getEmail(),
+                caller.getAvatar());
 
         User saved = userService.updateUser(updated);
         return ResponseEntity.ok(UserResponse.fromDomain(saved));

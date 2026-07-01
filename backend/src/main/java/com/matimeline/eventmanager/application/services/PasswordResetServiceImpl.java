@@ -147,7 +147,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 user.getUsername(),
                 newHash,
                 user.getRole(),
-                user.getEmail());
+                user.getEmail(),
+                user.getAvatar());
         userRepository.save(updated);
 
         // Usage unique : marquer consommé APRÈS la mise à jour réussie du mot de passe.

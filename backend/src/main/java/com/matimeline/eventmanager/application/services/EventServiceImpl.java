@@ -15,6 +15,7 @@ import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
@@ -48,7 +49,7 @@ public class EventServiceImpl implements EventService {
                 eventCreationRequest.getDurationValue(),
                 eventCreationRequest.getDurationUnit(),
                 eventCreationRequest.getIsRecurring(),
-                eventCreationRequest.getRecurrenceUnit(),
+                RecurrenceUnit.fromString(eventCreationRequest.getRecurrenceUnit()),
                 startDate,
                 Utils.calculateEndDate(eventCreationRequest, startDate),
                 product.getId(),
@@ -83,16 +84,16 @@ public class EventServiceImpl implements EventService {
             event.setIsRecurring(updateRequest.getIsRecurring());
         }
         if (updateRequest.getRecurrenceUnit() != null) {
-            event.setRecurrenceUnit(updateRequest.getRecurrenceUnit());
+            event.setRecurrenceUnit(RecurrenceUnit.fromString(updateRequest.getRecurrenceUnit()));
         }
-        if (updateRequest.getBackgroundColor() != null) {
-            event.setBackgroundColor(updateRequest.getBackgroundColor());
+        if (updateRequest.getRecurrenceEndDate() != null) {
+            event.setRecurrenceEndDate(updateRequest.getRecurrenceEndDate());
         }
-        if (updateRequest.getBorderColor() != null) {
-            event.setBorderColor(updateRequest.getBorderColor());
+        if (updateRequest.getColor() != null) {
+            event.setColor(updateRequest.getColor());
         }
-        if (updateRequest.getTextColor() != null) {
-            event.setTextColor(updateRequest.getTextColor());
+        if (updateRequest.getArchived() != null) {
+            event.setArchived(updateRequest.getArchived());
         }
 
         event.setProduct(originalProductId);

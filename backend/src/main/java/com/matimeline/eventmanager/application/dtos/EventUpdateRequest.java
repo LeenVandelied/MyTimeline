@@ -1,5 +1,7 @@
 package com.matimeline.eventmanager.application.dtos;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.Size;
 
 /**
@@ -31,11 +33,11 @@ public class EventUpdateRequest {
 
     private String recurrenceUnit;
 
-    private String backgroundColor;
+    private LocalDate recurrenceEndDate;
 
-    private String borderColor;
+    private String color;
 
-    private String textColor;
+    private Boolean archived;
 
     public String getTitle() {
         return title;
@@ -85,27 +87,27 @@ public class EventUpdateRequest {
         this.recurrenceUnit = recurrenceUnit;
     }
 
-    public String getBackgroundColor() {
-        return backgroundColor;
+    public LocalDate getRecurrenceEndDate() {
+        return recurrenceEndDate;
     }
 
-    public void setBackgroundColor(String backgroundColor) {
-        this.backgroundColor = backgroundColor;
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
     }
 
-    public String getBorderColor() {
-        return borderColor;
+    public String getColor() {
+        return color;
     }
 
-    public void setBorderColor(String borderColor) {
-        this.borderColor = borderColor;
+    public void setColor(String color) {
+        this.color = color;
     }
 
-    public String getTextColor() {
-        return textColor;
+    public Boolean getArchived() {
+        return archived;
     }
 
-    public void setTextColor(String textColor) {
-        this.textColor = textColor;
+    public void setArchived(Boolean archived) {
+        this.archived = archived;
     }
 }

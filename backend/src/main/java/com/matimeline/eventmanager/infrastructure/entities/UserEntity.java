@@ -29,6 +29,8 @@ public class UserEntity {
     @Column(unique = true)
     private String email;
 
+    private String avatar;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -87,6 +89,14 @@ public class UserEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public LocalDateTime getCreatedAt() {
