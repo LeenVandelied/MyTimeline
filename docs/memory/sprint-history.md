@@ -185,4 +185,13 @@
 **Nouveaux pitfalls/patterns/décisions :** PIT-S8-001..005, PAT-S8-001..004, DEC-S8-001/002 ; pack br-auth BR-AUT-012 + note A10/email corrigée.
 **Incident tooling :** test-runner Haiku 2 rapports erronés (mauvais checkout cwd, puis échec halluciné) → validation manuelle. CI a rattrapé un build cassé invisible aux tests RTL (PIT-S8-001/004). Mémoire perso : cd worktree explicite pour subagents.
 **Status :** Terminé
-**Follow-ups arbitrés (Phase 4 triage) :** _(à compléter — triage en cours)_
+**Follow-ups arbitrés (Phase 4 triage — 8 issues créées backlog, 0 discard, 0 absorbé) :**
+  - Purge/TTL tokens reset [S | backend] → issue #139
+  - Fail-fast/health si BREVO_API_KEY absente prod [S | backend] → issue #140
+  - Rate-limit/lockout par token reset [S | backend] → issue #141
+  - i18n template email EN/DE/ES [S | backend] → issue #142
+  - Verrou anti-TOCTOU consume token [XS | backend] → issue #143
+  - Test unitaire dédié BrevoEmailService [XS | backend] → issue #144
+  - E2E Playwright flux reset (V3, 1ʳᵉ E2E métier) [M | frontend] → issue #145 (via /create-e2e 138 post-merge)
+  - Vérifier rendu clair/sombre 4 écrans en navigateur [S | frontend] → issue #146
+  - Écartés d'office : merge #48 (caduc — react-query déjà présent), rafraîchir br-auth A10 (fait en consolidation).
