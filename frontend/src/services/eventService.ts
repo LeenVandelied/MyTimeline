@@ -1,12 +1,13 @@
 import { Event, EventEditFormValues } from "@/types/event";
 import apiClient from "./apiClient";
+import { safeErrorMessage } from "@/lib/safe-error";
 
 export const getEventsByProductId = async (userId: string, productId: string): Promise<Event[]> => {
   try {
     const response = await apiClient.get(`/users/${userId}/products/${productId}/events`);
     return response.data;
   } catch (error) {
-    console.error("Erreur lors de la récupération des événements :", error);
+    console.error("Erreur lors de la récupération des événements :", safeErrorMessage(error));
     throw error;
   }
 };
@@ -25,7 +26,7 @@ export const updateEventColor = async (eventId: string, colors: EventColors): Pr
       throw new Error('Failed to update event colors');
     }
   } catch (error) {
-    console.error('Error updating event colors:', error);
+    console.error('Error updating event colors:', safeErrorMessage(error));
     throw error;
   }
 };
@@ -38,7 +39,7 @@ export const updateEvent = async (eventId: string, data: EventEditFormValues): P
       throw new Error('Failed to update event');
     }
   } catch (error) {
-    console.error('Error updating event:', error);
+    console.error('Error updating event:', safeErrorMessage(error));
     throw error;
   }
 }; 
