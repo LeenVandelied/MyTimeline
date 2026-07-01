@@ -41,7 +41,8 @@
 - db-expert (V8) : OK — 2 MINEUR déférés (#78 FK RESTRICT vs DELETE /me ; dette UUID-AUTO préexistante).
 - security-expert : 1 CRITIQUE + 1 MAJEUR (cross-tenant catégorie sur produit) → **corrigés** (`a94b279`, helper `resolveAssignableCategory`, 404 anti-énumération).
 - reviewer batch (mi-sprint) : 1 MAJEUR bloquant (self-reassign FK) + 2 MINEUR bundlés → **corrigés** (`28a8a74`). 2 MAJEUR de dette préexistante déférés en follow-ups (dup `resolveCaller`, `ProductResponse` DTO).
-- /review-pr #153 (état final, reviewer + security-expert) : 2 MAJEUR (handler DataIntegrity trop large ; GET catégories fuite cross-tenant + `ownerId` exposé) + 2 MINEUR → **corrigés** (`78c633b`). GET list/by-id scopés owner∪système, `CategoryResponse.ownerId`→booléen `system`, catch DataIntegrity au niveau service.
+- /review-pr #153 (T1, reviewer + security-expert) : 2 MAJEUR (handler DataIntegrity trop large ; GET catégories fuite cross-tenant + `ownerId` exposé) + 2 MINEUR → **corrigés** (`78c633b`). GET list/by-id scopés owner∪système, `CategoryResponse.ownerId`→booléen `system`, catch DataIntegrity au niveau service.
+- /review-pr #153 (T2, re-review indépendante du fix) : verdicts READY + SÉCURISÉ. 1 MINEUR convergent (2 reviewers) — port `getAllCategories`/`findAllCategories` NON scopé orphelin (footgun réintroduction leak) → **retiré** (`4d208f2`). Suite 146/146.
 
 ## Conclusion
 Prêt pour PR. Couverture complète, aucune ligne manquante dans le tableau. Follow-ups (triage /sprint end) : dup `resolveCaller` ProductController [S], `ProductResponse` DTO / AP-CAT-03 produit [M], E2E métier + UUID hardcodés front → #61 (S11).
