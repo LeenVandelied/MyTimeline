@@ -15,6 +15,7 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
@@ -100,6 +101,18 @@ public class GlobalExceptionHandler {
     // un message trompeur. La protection anti-race d'unicité est désormais SCOPÉE au save
     // dans CategoryServiceImpl (try/catch -> CategoryNameConflictException). Les autres
     // violations remontent normalement (500 générique) sans être masquées.
+
+    @ExceptionHandler(InvalidDurationUnitException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidDurationUnit(InvalidDurationUnitException ex) {
+        // BR-EVE-004 (#54) : durationUnit null/inconnu pour type='duration' -> 422
+        // Unprocessable Entity. La requête est bien formée (400 = Bean Validation en amont)
+        // mais le calcul d'endDate est impossible. Enveloppe l'ancienne NPE(500)/
+        // IllegalArgumentException brute de Utils.calculateEndDate. Corps détaillé buildBody
+        // (même forme que les 400/404) — message métier explicite pour guider le client.
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {

@@ -96,6 +96,23 @@ public class EventServiceImpl implements EventService {
             event.setArchived(updateRequest.getArchived());
         }
 
+        // BR-EVE-002 (#54) : recalcul de endDate dès qu'un facteur de calcul change au PATCH
+        // (type, durationValue, durationUnit). Avant #54, endDate restait figée à sa valeur de
+        // création -> bug silencieux (une durée modifiée n'étendait jamais la fin). startDate
+        // n'est pas modifiable via EventUpdateRequest : on recalcule sur la startDate persistée.
+        // Le recalcul lève InvalidDurationUnitException (-> 422) si durationUnit est null/inconnu
+        // pour un type 'duration', au lieu de persister une endDate silencieusement fausse.
+        boolean durationFactorsChanged = updateRequest.getType() != null
+                || updateRequest.getDurationValue() != null
+                || updateRequest.getDurationUnit() != null;
+        if (durationFactorsChanged) {
+            event.setEndDate(Utils.calculateEndDate(
+                    event.getType(),
+                    event.getDurationValue(),
+                    event.getDurationUnit(),
+                    event.getStartDate()));
+        }
+
         event.setProduct(originalProductId);
 
         return eventRepository.save(event);

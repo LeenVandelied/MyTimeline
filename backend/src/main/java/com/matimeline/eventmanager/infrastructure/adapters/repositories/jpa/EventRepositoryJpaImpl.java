@@ -56,10 +56,42 @@ public class EventRepositoryJpaImpl
             .findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        // PIT-S10-003 / convention 4 (#54) : le domaine ne porte pas @Version. Reconstruire
+        // l'EventEntity via le mapper produit une entité DÉTACHÉE (version=null) : sur un
+        // UPDATE, SimpleJpaRepository.save la route vers persist() (isNew=true) -> échec
+        // "uninitialized version value", ou merge() -> OptimisticLock. Pour une MISE À JOUR
+        // (id existant en base) on charge donc l'entité GÉRÉE et on recopie les champs
+        // mutables ; l'audit (@Version/updated_at) reste piloté par Hibernate. Aligné sur
+        // ProductRepositoryJpaImpl.save. La CRÉATION garde le chemin persist du mapper.
+        if (domainEvent.getId() != null) {
+            EventEntity managed = super.findById(domainEvent.getId()).orElse(null);
+            if (managed != null) {
+                copyMutableFields(domainEvent, managed, productEntity);
+                EventEntity flushed = super.save(managed);
+                return eventMapper.toDomain(flushed);
+            }
+        }
+
         EventEntity entity = eventMapper.toEntity(domainEvent, productEntity);
         EventEntity saved = super.save(entity);
 
         return eventMapper.toDomain(saved);
+    }
+
+    private void copyMutableFields(Event source, EventEntity target, ProductEntity productEntity) {
+        target.setTitle(source.getTitle());
+        target.setType(source.getType());
+        target.setDurationValue(source.getDurationValue());
+        target.setDurationUnit(source.getDurationUnit());
+        target.setIsRecurring(source.getIsRecurring());
+        target.setRecurrenceUnit(source.getRecurrenceUnit());
+        target.setRecurrenceEndDate(source.getRecurrenceEndDate());
+        target.setStartDate(source.getStartDate());
+        target.setEndDate(source.getEndDate());
+        target.setIsAllDay(source.getIsAllDay());
+        target.setColor(source.getColor());
+        target.setArchived(source.isArchived());
+        target.setProduct(productEntity);
     }
     
     @Override

@@ -130,6 +130,88 @@ class EventServiceImplTest {
     }
 
     @Test
+    void updateEvent_newDurationValue_recalculatesEndDate() {
+        // BR-EVE-002 (#54) : un nouveau durationValue recalcule endDate sur la startDate persistée.
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        Event event = new Event(
+                eventId, "T", "duration", 5, "days",
+                false, null, null, start, start.plusDays(5),
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setDurationValue(10);
+
+        when(eventRepository.existsById(eventId)).thenReturn(true);
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getEndDate()).isEqualTo(start.plusDays(10));
+    }
+
+    @Test
+    void updateEvent_newDurationUnit_recalculatesEndDate() {
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        Event event = new Event(
+                eventId, "T", "duration", 3, "days",
+                false, null, null, start, start.plusDays(3),
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setDurationUnit("weeks");
+
+        when(eventRepository.existsById(eventId)).thenReturn(true);
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getEndDate()).isEqualTo(start.plusWeeks(3));
+    }
+
+    @Test
+    void updateEvent_typeToSingle_collapsesEndDateToStartDate() {
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        Event event = new Event(
+                eventId, "T", "duration", 5, "days",
+                false, null, null, start, start.plusDays(5),
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setType("single");
+
+        when(eventRepository.existsById(eventId)).thenReturn(true);
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getEndDate()).isEqualTo(start);
+    }
+
+    @Test
+    void updateEvent_colorOnlyPatch_doesNotRecalculateEndDate() {
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        LocalDate originalEnd = start.plusDays(5);
+        Event event = new Event(
+                eventId, "T", "duration", 5, "days",
+                false, null, null, start, originalEnd,
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setColor("#ffffff");
+
+        when(eventRepository.existsById(eventId)).thenReturn(true);
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getEndDate()).isEqualTo(originalEnd);
+    }
+
+    @Test
     void updateEvent_notFound_throwsEventNotFoundException() {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setTitle("New");
