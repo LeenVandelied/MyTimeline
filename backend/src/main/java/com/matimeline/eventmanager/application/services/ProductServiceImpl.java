@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
+import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
@@ -86,6 +87,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
+    public Product updateProduct(UUID id, ProductUpdateRequest request) {
+        Product product = productRepository.findDomainProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        if (request.getName() != null) {
+            product.setName(request.getName());
+        }
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findDomainCategoryById(request.getCategoryId())
+                    .orElseThrow(() -> new CategoryNotFoundException(request.getCategoryId()));
+            product.setCategory(category);
+        }
+
+        return productRepository.save(product);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<Product> findDomainProductById(UUID id) {
         return productRepository.findDomainProductById(id);
@@ -93,11 +113,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void deleteById(UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
-        }
-        productRepository.deleteById(id);
+    public void archiveById(UUID id) {
+        Product product = productRepository.findDomainProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        product.setArchived(true);
+        productRepository.save(product);
     }
 
     @Override
