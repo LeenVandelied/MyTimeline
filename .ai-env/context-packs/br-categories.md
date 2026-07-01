@@ -79,7 +79,7 @@ CRUD simple — pas de lifecycle d'état.
 ## 4. Dépendances inter-domaines
 
 - **`products` dépend de `categories`** : `CategoryEntity -> ProductEntity` en `OneToMany` (côté inverse), `ProductEntity.category` en `@ManyToOne @JoinColumn(name='category_id', nullable=false)`. FK requise en base, mais **aucun cascade** côté `Category` : supprimer une catégorie référencée par des produits provoque une violation de contrainte FK (suppression physique non protégée — voir AP-CAT-05).
-- **`categories` dépend de `auth`** : tout accès passe par le fallthrough `.anyRequest().authenticated()` (JWT ROLE_USER). Pas de notion de propriétaire (`ownerId`) sur `Category` — c'est un référentiel partagé.
+- **`categories` dépend de `auth`** : tout accès passe par le fallthrough `.anyRequest().authenticated()` (JWT ROLE_USER). **Depuis Sprint 10 (#52, ADR-002) : ownership PAR UTILISATEUR** — `Category.ownerId` (FK users, NULLABLE) ; `owner NULL` = catégorie « système » (lisible de tous, non modifiable/supprimable → 403). PATCH/DELETE exigent `owner_id == JWT` (403 sinon). Lecture scopée : `GET` liste ne renvoie que `owner == caller ∪ système`, `GET /{id}` d'autrui → 404 (anti-énumération), DTO `CategoryResponse` n'expose PAS l'`ownerId` (booléen `system`).
 - **`Category` (domain model)** : value object pur `id` + `name`, sans champ de relation. Le lien vers les produits n'existe qu'au niveau infrastructure (`CategoryEntity`/`ProductEntity`).
 
 ---
@@ -94,7 +94,9 @@ CRUD simple — pas de lifecycle d'état.
 - **AP-CAT-06 — Champ `name` sans contrainte** : `CategoryEntity:13` n'a ni `@Column(nullable=false)`, ni `@Column(unique=true)`, ni `@NotBlank`. Colonne nullable et dupliquable malgré une sémantique « requis et unique ».
 - **AP-CAT-07 — Création sans check de doublon** : `CategoryServiceImpl.createCategory:28-29` `save` sans vérifier l'existence d'un même nom — doublons silencieux (cf. BR-CAT-004).
 - **AP-CAT-08 — Résolution par nom non déterministe** : `CategoryRepositoryJpaImpl.findDomainCategoryByName:40-52` renvoie `results.get(0)` parmi plusieurs lignes possibles, sans contrainte UNIQUE garantissant l'unicité.
-- **AP-CAT-09 — Absence de garde admin** : `SecurityConfig` ne liste pas `/api/categories/**` explicitement ; tout ROLE_USER peut créer/supprimer des catégories (référentiel global) via le fallthrough `.anyRequest().authenticated()`.
+- **AP-CAT-09 — ~~Absence de garde admin~~ SUPERSEDÉ (Sprint 10, ADR-002)** : le référentiel global est remplacé par l'ownership par utilisateur (`owner_id == JWT` sur PATCH/DELETE). Voir la dépendance `auth` en §4.
+
+> **MàJ Sprint 10 (#52 + review PR #153)** — anti-patterns RÉSOLUS : AP-CAT-01/02 (port `CategoryService` injecté), AP-CAT-03 (DTOs `CategoryRequest`/`CategoryResponse`), AP-CAT-04 (double `existsById` retiré), AP-CAT-05 (réassignation atomique `?reassignToCategoryId=` + garde self-target), AP-CAT-06/07 (`@NotBlank` + `UNIQUE(owner_id,name)` + check applicatif → 409), AP-CAT-08 (`findByOwnerAndName` + `setMaxResults(1)`). RESTENT ouverts : AP-CAT-10 (partiel), AP-CAT-11 (front, #61/S11).
 - **AP-CAT-10 — Code mort** : `CategoryNotFoundException(String name):10` n'est jamais utilisé ; `CategoryServiceImpl.updateCategory` est implémenté mais non exposé par un endpoint (cf. BR-CAT-006).
 - **AP-CAT-11 — UUID de catégories codés en dur dans le JSX** : `AddProducts.tsx:172-184` (4 UUID littéraux) court-circuite `GET /api/categories` (cf. BR-CAT-007).
 

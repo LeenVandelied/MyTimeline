@@ -73,3 +73,9 @@ Page App Router lisant le query-param (ex token reset) : sous-composant client `
 
 ## PAT-S9-001 — Propager un nouveau champ dans TOUTES les reconstructions d'un domain model immuable
 Ajouter un champ à un domain model immuable reconstruit par `new X(...)` (read-modify-persist) : auditer TOUS les sites `new X(` (`grep -rn "new User("`) et propager le champ, sinon data-loss silencieuse au save (ex : `avatar` remis à null par `changePassword`/`resetPassword`/`updateProfile`). Anti-pattern : n'ajouter que getter/setter en supposant que les reconstructions passent le champ. Garder l'ancien constructeur + surcharge délégante pour limiter la casse d'appelants. (Sprint 9 #44)
+
+## PAT-S10-001 — Soft delete + invisibilité globale via `@SQLRestriction`
+Pour un soft delete (champ `archived`/`deleted`) : poser `@SQLRestriction("archived = false")` sur l'entité JPA → Hibernate filtre TOUTES les lectures (findAll/findById/associations join-fetch) sans toucher aux queries. Anti-pattern : filtrer en mémoire ou répéter `WHERE archived=false` dans chaque query (oubli garanti sur une query nommée). ⚠ Corollaire : les opérations transverses qui DOIVENT voir les lignes filtrées (réassignation, comptage avant purge) doivent passer en SQL natif pour contourner le `@SQLRestriction` (cf. [[PIT-S10-004]]). (Sprint 10 #50)
+
+## PAT-S10-002 — Unicité applicative + contrainte DB : mapper la violation en 409, au niveau service
+Unicité métier (ex : nom par owner) = check applicatif (`findByOwnerAndName` → 409 explicite) DOUBLÉ d'une contrainte DB `UNIQUE` (filet anti-race). Pour que la race DB ne fuite pas en 500 : `try/catch DataIntegrityViolationException → <MetierConflictException>` (409) AUTOUR du seul `save()` concerné, DANS le service — PAS un `@ExceptionHandler(DataIntegrityViolationException)` global (qui masquerait toutes les autres violations FK/contrainte, cf. [[PIT-S10-002]]). (Sprint 10 #52, review PR #153)
