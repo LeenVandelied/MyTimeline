@@ -58,3 +58,25 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   }),
 })
+
+/**
+ * jsdom n'implémente pas les Pointer Capture APIs ni `scrollIntoView`, requis
+ * par Radix Select (et d'autres primitives Radix) au clic sur le trigger. Sans
+ * ces stubs, le rendu du menu déroulant lève `hasPointerCapture is not a
+ * function`. On les neutralise globalement (aucun composant ne dépend de leur
+ * comportement réel en test).
+ */
+if (typeof window !== 'undefined') {
+  if (!window.HTMLElement.prototype.hasPointerCapture) {
+    window.HTMLElement.prototype.hasPointerCapture = () => false
+  }
+  if (!window.HTMLElement.prototype.setPointerCapture) {
+    window.HTMLElement.prototype.setPointerCapture = () => {}
+  }
+  if (!window.HTMLElement.prototype.releasePointerCapture) {
+    window.HTMLElement.prototype.releasePointerCapture = () => {}
+  }
+  if (!window.HTMLElement.prototype.scrollIntoView) {
+    window.HTMLElement.prototype.scrollIntoView = () => {}
+  }
+}

@@ -132,6 +132,11 @@
 12. **Authentification incohérente** : `getProducts` accepte cookie JWT **ou** header Bearer ; les autres endpoints sont cookie-only.
 13. **Autorisation manuelle** : extraction/validation JWT et comparaison d'ownership codées à la main dans le controller, sans `@PreAuthorize`.
 
+> **MàJ Sprint 11 (#61, PR #157)** — anti-patterns front RÉSOLUS : #7 (UUID catégories hardcodés → combobox câblée sur `GET /api/categories` via `useCategories`, `AddProducts.tsx` supprimé au profit de `ProductDrawer.tsx`), #8 (desync Zod `name` → `productCreateSchema.name` aligné `min(1).max(100)` sur `@Size` backend). Désync jumelle corrigée : `eventCreationSchema.name` était resté `min(3)` alors que `EventCreationRequest @Size(min=1,max=100)` → aligné `min(1).max(100)` (cf. [[PIT-S11-003]]).
+
+### Limitation — couleur produit NON persistée backend (S11 #61)
+Le produit n'a AUCUN champ `color` côté backend : `ProductResponse` / `ProductCreationRequest` / `ProductUpdateRequest` ne portent pas de couleur ; seule la **catégorie** porte `color` (`CategoryResponse.color`). Le front hérite la couleur de la catégorie et permet une surcharge produit **UI-only** (aperçu local, non persistée). Toute persistance d'une couleur au niveau produit nécessite d'abord un champ backend (DTO + migration) — cf. follow-up ouvert S11.
+
 ---
 
 ## Référence

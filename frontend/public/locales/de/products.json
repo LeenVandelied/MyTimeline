@@ -73,5 +73,40 @@
   "edit": {
     "title": "Ereignis bearbeiten",
     "save": "Änderungen speichern"
+  },
+  "drawer": {
+    "createTitle": "Neues Produkt",
+    "editTitle": "Produkt bearbeiten",
+    "createDescription": "Erstellen Sie ein Produkt und optional sein erstes Ereignis.",
+    "editDescription": "Aktualisieren Sie Name oder Kategorie dieses Produkts.",
+    "fields": {
+      "name": "Produktname",
+      "namePlaceholder": "Produktname",
+      "category": "Kategorie",
+      "categoryPlaceholder": "Kategorie auswählen",
+      "noCategory": "Keine Kategorie verfügbar, erstellen Sie zuerst eine.",
+      "color": "Farbe",
+      "resetColor": "Zurücksetzen",
+      "firstEvent": "Erstes Ereignis (optional)"
+    },
+    "preview": {
+      "label": "Vorschau",
+      "placeholderName": "Produktname",
+      "sparklineLabel": "Vorschau der letzten 90 Tage"
+    },
+    "actions": {
+      "create": "Erstellen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "submitting": "Wird gespeichert"
+    },
+    "errors": {
+      "noUser": "Sie sind nicht angemeldet.",
+      "conflict": "Die ausgewählte Kategorie existiert nicht mehr. Liste neu laden.",
+      "notFound": "Produkt nicht gefunden.",
+      "forbidden": "Aktion nicht erlaubt.",
+      "generic": "Ein Fehler ist aufgetreten. Bitte erneut versuchen."
+    }
   }
 }

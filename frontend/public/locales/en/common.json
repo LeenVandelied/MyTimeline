@@ -13,6 +13,32 @@
       "generic": "Something went wrong, please try again"
     }
   },
+  "deleteDialog": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "deleting": "Deleting",
+    "event": {
+      "title": "Delete this event?",
+      "description": "This action cannot be undone.",
+      "recurringWarning": "This only deletes this event, not the series."
+    },
+    "product": {
+      "title": "Delete this product?",
+      "description": "The product will be archived and no longer appear in your lists."
+    },
+    "category": {
+      "title": "Delete this category?",
+      "description": "This action cannot be undone.",
+      "reassignLabel": "Move products to…",
+      "reassignPlaceholder": "Choose a destination category",
+      "noOtherCategory": "No other category available to reassign the products. Create another category first."
+    },
+    "errors": {
+      "notFound": "This category no longer exists.",
+      "conflict": "Cannot reassign the products to this category.",
+      "generic": "An error occurred while deleting, please try again."
+    }
+  },
   "validation": {
     "username": "Username must contain at least 3 characters",
     "password": "Password must contain at least 6 characters"

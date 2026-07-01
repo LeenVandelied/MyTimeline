@@ -239,15 +239,24 @@
 **Saturation contexte lead (mesure) :** ~élevée (sprint long : 2 impl + 4 cycles de fix sécurité/review + absorption ; ~10 subagents spawnés sur la durée /start+/review-pr×2+/end).
 **Status :** Terminé
 
-## Sprint 11 — 2026-07-01 (PLANIFIÉ — cohésion 0.42, Frontend Produits + Dialogs — Wave 3 front)
+## Sprint 11 — 2026-07-01 (Terminé — merge PR #157 dans dev — cohésion 0.42, Frontend Produits + Dialogs — Wave 3 front)
 **Objectif :** Drawer Produit (fin des UUID hardcodés + fix desync Zod) + dialogs de confirmation partagés.
-**Milestone GitHub :** #11
-**Issues :** #61 (Drawer Produit desktop+mobile), #65 (Dialogs de confirmation)
-**Vagues :** V1 = #65 ‖ #61 (début) | V2 = #61 branche le DeleteConfirmDialog de #65
+**Milestone GitHub :** #11 (fermé après merge)
+**Issues livrées (2) :** #65 (Dialogs de confirmation), #61 (Drawer Produit desktop+mobile)
+**Vagues exécutées :** V1 = #65 (DeleteConfirmDialog) | V2 = #61 (ProductDrawer, consomme le dialog) — exécuté séquentiel (V2 dépend de la sortie V1) plutôt que parallèle.
+**Cohésion score :** 0.42
+**Commits :** 5 — `4dcc2ae` (#65) · `34342b9` (#61) · `1f33d24` (review sprint : scrub logs axios) · `d0852d0` (review PR #157 : log logout + désync événement couplé) · `58eecf8` (mémoire pitfall) [+ artefacts]
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 10 (#50 PATCH produit, #52 GET /api/categories)
+**BR impactées :** BR-CAT-002, BR-CAT-007, BR-PRO-001, BR-PRO-002, BR-PRO-009, BR-PRO-010
+**Reviews :** batch sprint (0 CRIT / 2 MAJ / 4 MIN, tous RÉSOLU) + `/review-pr #157` (passage indépendant → 1 CRIT + 1 MAJ que le batch avait manqués, tous RÉSOLU en 1 cycle). CRIT = log axios brut logout (fuite) ; MAJ = désync `eventCreationSchema.name` min(3) vs événement couplé.
+**Tests :** Frontend 60/60 green (Vitest) | Backend non modifié | E2E : harness absent projet (gap pré-existant, plan `/create-e2e` post-merge)
+**Nouveaux pitfalls / patterns :** PIT-S11-001 (Radix jsdom stubs), PIT-S11-002 (TanStack v5 mutation isolation test), PIT-S11-003 (désync Zod schémas dérivés), PIT-S7-003 enrichi (récurrence log brut + helper `safeErrorMessage`) ; PAT-S11-001 (mock next-intl sur clés), PAT-S11-002 (schémas Zod create≠update)
 **Alternative non retenue :** #61 + #62 (Drawer Catégorie) au lieu de #61 + #65.
-**Status :** Planifié
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Persister une couleur propre au produit (champ backend + migration) [triage M | domaine products] → issue #158 (Sprint 12)
+  - Scrub log axios brut `authService.ts:61` (refreshToken) [triage XS | domaine auth] → traité hors sprint (background task, session séparée)
+**Status :** Clôture en cours (mémoire consolidée ; triage follow-ups fait ; merge Phase 5)
 
 ## Sprint 12 — 2026-07-01 (PLANIFIÉ — cohésion 0.60, Backend récurrence events — Wave 4 back)
 **Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl.
