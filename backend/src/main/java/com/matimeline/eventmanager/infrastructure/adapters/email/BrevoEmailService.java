@@ -84,7 +84,7 @@ public class BrevoEmailService implements EmailService {
             // l'exception jusqu'au contrôleur (BR-AUT-005 : la réponse 200 ne doit
             // pas dépendre de la disponibilité de Brevo, sinon on fuit l'existence
             // du compte via un timing/erreur différent).
-            log.error("Échec de l'envoi de l'email de réinitialisation via Brevo : {}", ex.getMessage());
+            log.error("Échec de l'envoi de l'email de réinitialisation via Brevo : {}", ex.getClass().getSimpleName());
         }
     }
 
@@ -100,11 +100,15 @@ public class BrevoEmailService implements EmailService {
         // On garde safeName brut pour le champ JSON "to.name" (sérialisé par Brevo,
         // pas du HTML) ; on n'échappe que la branche htmlContent.
         String escapedName = HtmlUtils.htmlEscape(safeName);
+        // Defense-in-depth : le lien est sûr aujourd'hui (token UUID + base configurée),
+        // mais on échappe l'URL avant insertion dans l'attribut href pour ne pas dépendre
+        // d'une base future non contrôlée (cohérent avec l'échappement de safeName).
+        String escapedResetLink = HtmlUtils.htmlEscape(resetLink);
         String htmlContent =
                 "<p>Bonjour " + escapedName + ",</p>"
                 + "<p>Vous avez demandé la réinitialisation de votre mot de passe MyTimeline. "
                 + "Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe :</p>"
-                + "<p><a href=\"" + resetLink + "\">Réinitialiser mon mot de passe</a></p>"
+                + "<p><a href=\"" + escapedResetLink + "\">Réinitialiser mon mot de passe</a></p>"
                 + "<p>Ce lien est valable 15 minutes. Si vous n'êtes pas à l'origine de cette demande, "
                 + "ignorez simplement cet email.</p>"
                 + "<p>L'équipe MyTimeline</p>";

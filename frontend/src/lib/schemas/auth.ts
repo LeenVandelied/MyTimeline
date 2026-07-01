@@ -110,15 +110,17 @@ export const ResetPasswordSchema = z.object({
 
 export type ResetPasswordData = z.infer<typeof ResetPasswordSchema>
 
-/** Schéma formulaire : `newPassword` + confirmation (le token est hors formulaire). */
+/**
+ * Schéma formulaire : `newPassword` + confirmation (le token est hors formulaire).
+ * Contrainte alignée sur le register ET le backend (`ResetPasswordRequest` =
+ * min 6, BR-AUT-003) : PAS d'exigence majuscule/chiffre ici, sinon le form reset
+ * serait plus strict que l'inscription (un compte `abcdef` ne pourrait pas se
+ * réinitialiser). Cf. pit-auth : le client ne doit pas surcontraindre le contrat backend.
+ */
 export const createResetPasswordFormSchema = (t: Translate) =>
   z
     .object({
-      newPassword: z
-        .string()
-        .min(6, { message: t('validation.password.min') })
-        .regex(/[A-Z]/, { message: t('validation.password.uppercase') })
-        .regex(/[0-9]/, { message: t('validation.password.number') }),
+      newPassword: z.string().min(6, { message: t('validation.password.min') }),
       confirmPassword: z.string(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {

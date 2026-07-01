@@ -20,7 +20,9 @@ import java.util.UUID;
 public class PasswordResetTokenEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    // Pas de @GeneratedValue : l'id UUID est assigné applicativement avant persist
+    // (PasswordResetServiceImpl -> new PasswordResetToken(UUID.randomUUID(), ...)).
+    // super.save() (SimpleJpaRepository) fait alors un merge/INSERT sur id non nul.
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
