@@ -73,5 +73,40 @@
   "edit": {
     "title": "Edit Event",
     "save": "Save Changes"
+  },
+  "drawer": {
+    "createTitle": "New product",
+    "editTitle": "Edit product",
+    "createDescription": "Create a product and, optionally, its first event.",
+    "editDescription": "Update this product's name or category.",
+    "fields": {
+      "name": "Product name",
+      "namePlaceholder": "Product name",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "noCategory": "No category available, create one first.",
+      "color": "Color",
+      "resetColor": "Reset",
+      "firstEvent": "First event (optional)"
+    },
+    "preview": {
+      "label": "Preview",
+      "placeholderName": "Product name",
+      "sparklineLabel": "Last 90 days preview"
+    },
+    "actions": {
+      "create": "Create",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "submitting": "Saving"
+    },
+    "errors": {
+      "noUser": "You are not signed in.",
+      "conflict": "The selected category no longer exists. Reload the list.",
+      "notFound": "Product not found.",
+      "forbidden": "Action not allowed.",
+      "generic": "Something went wrong. Please try again."
+    }
   }
 }

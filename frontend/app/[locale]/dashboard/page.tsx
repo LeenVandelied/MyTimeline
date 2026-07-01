@@ -1,172 +1,177 @@
-'use client';
+'use client'
 
-import { useTranslations, useLocale } from 'next-intl';
-import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import AddProduct from "@/components/products/AddProducts";
-import { FullCalendarEvent, mapToFullCalendarEvent } from "@/types/event";
-import { getProducts } from "@/services/productService";
-import { Product } from "@/types/product";
-import { LanguageSelector } from "@/components/ui/language-selector";
-import dayjs from 'dayjs';
-import { AppFooter } from '@/components/ui/footer-app';
-import { motion } from 'framer-motion';
-import { 
-  CalendarDays, 
-  User, 
-  Mail, 
-  Shield, 
-  LogOut, 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar, 
-  Package, 
-  Zap, 
-  RefreshCw 
-} from 'lucide-react';
-import TimelineCalendar from '@/components/calendar/TimelineCalendar';
+import { useTranslations, useLocale } from 'next-intl'
+import { useEffect, useState, useCallback } from 'react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import AddProductButton from '@/components/products/AddProductButton'
+import { FullCalendarEvent, mapToFullCalendarEvent } from '@/types/event'
+import { getProducts } from '@/services/productService'
+import { Product } from '@/types/product'
+import { LanguageSelector } from '@/components/ui/language-selector'
+import dayjs from 'dayjs'
+import { AppFooter } from '@/components/ui/footer-app'
+import { motion } from 'framer-motion'
+import {
+  CalendarDays,
+  User,
+  Mail,
+  Shield,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Package,
+  Zap,
+  RefreshCw,
+} from 'lucide-react'
+import TimelineCalendar from '@/components/calendar/TimelineCalendar'
 
 interface ApiError extends Error {
   response?: {
-    status: number;
+    status: number
     data?: {
-      message?: string;
-    };
-  };
+      message?: string
+    }
+  }
 }
 
 export default function Dashboard() {
-  const t = useTranslations();
-  const locale = useLocale();
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-  const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const t = useTranslations()
+  const locale = useLocale()
+  const { user, loading, logout } = useAuth()
+  const router = useRouter()
+  const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(true)
+  const [currentDate, setCurrentDate] = useState<Date>(new Date())
 
   const fetchData = useCallback(async () => {
     try {
-      if (!user) return;
-      const productsData = await getProducts(user.id);
-      setProducts(productsData);
-      setCalendarEvents(productsData.flatMap(product => 
-        (product.events || []).map(event => 
-          mapToFullCalendarEvent(event, product.name, product.category.name, product.id)
-        )
-      ));
+      if (!user) return
+      const productsData = await getProducts(user.id)
+      setProducts(productsData)
+      setCalendarEvents(
+        productsData.flatMap((product) =>
+          (product.events || []).map((event) =>
+            mapToFullCalendarEvent(event, product.name, product.category.name, product.id),
+          ),
+        ),
+      )
     } catch (error) {
-      console.error("Erreur lors du chargement des données :", error);
-      if (error instanceof Error && 'response' in error && 
-          typeof (error as ApiError).response === 'object' && 
-          (error as ApiError).response?.status === 403) {
+      console.error('Erreur lors du chargement des données :', error)
+      if (
+        error instanceof Error &&
+        'response' in error &&
+        typeof (error as ApiError).response === 'object' &&
+        (error as ApiError).response?.status === 403
+      ) {
         console.error("Détails de l'erreur 403:", {
           userId: user?.id,
-          user: user
-        });
+          user: user,
+        })
       }
     } finally {
-      setLoadingEvents(false);
+      setLoadingEvents(false)
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push(`/${locale}/login`);
+      router.push(`/${locale}/login`)
     }
-  }, [user, loading, router, locale]);
+  }, [user, loading, router, locale])
 
   useEffect(() => {
     if (user) {
-      fetchData();
+      fetchData()
     }
-  }, [user, fetchData]);
+  }, [user, fetchData])
 
   const handleLogout = async () => {
     try {
-      await logout();
-      router.push(`/${locale}/login`);
+      await logout()
+      router.push(`/${locale}/login`)
     } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
+      console.error('Erreur lors de la déconnexion :', error)
     }
-  };
+  }
 
   const handleCalendarNavigation = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
-      const base = prev || new Date();
-      const newDate = dayjs(base);
+    setCurrentDate((prev) => {
+      const base = prev || new Date()
+      const newDate = dayjs(base)
       const updatedDate =
-        direction === 'next' ? newDate.add(1, 'month') : newDate.subtract(1, 'month');
-      return updatedDate.toDate();
-    });
-  };
+        direction === 'next' ? newDate.add(1, 'month') : newDate.subtract(1, 'month')
+      return updatedDate.toDate()
+    })
+  }
 
   const handleToday = () => {
-    setCurrentDate(new Date());
-  };
+    setCurrentDate(new Date())
+  }
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-bg">
-        <motion.div 
+      <div className="bg-bg flex h-screen items-center justify-center">
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <div className="relative w-16 h-16 mx-auto">
-            <motion.div 
-              animate={{ 
+          <div className="relative mx-auto h-16 w-16">
+            <motion.div
+              animate={{
                 rotate: 360,
-                transition: { 
-                  repeat: Infinity, 
-                  duration: 1.5, 
-                  ease: "linear" 
-                } 
+                transition: {
+                  repeat: Infinity,
+                  duration: 1.5,
+                  ease: 'linear',
+                },
               }}
-              className="absolute inset-0 rounded-full border-t-2 border-b-2 border-accent"
+              className="border-accent absolute inset-0 rounded-full border-t-2 border-b-2"
             />
-            <div className="absolute inset-3 rounded-full bg-bg flex items-center justify-center">
-              <CalendarDays className="h-6 w-6 text-accent" />
+            <div className="bg-bg absolute inset-3 flex items-center justify-center rounded-full">
+              <CalendarDays className="text-accent h-6 w-6" />
             </div>
           </div>
-          <p className="mt-4 text-ink-muted font-medium">{t('common.loading.default')}</p>
+          <p className="text-ink-muted mt-4 font-medium">{t('common.loading.default')}</p>
         </motion.div>
       </div>
-    );
+    )
   }
 
-  if (!user) return null;
+  if (!user) return null
 
-  const resources = products.map(product => ({
+  const resources = products.map((product) => ({
     id: product.id,
     title: product.name,
-    category: product.category.name
-  }));
+    category: product.category.name,
+  }))
 
   const fadeIn = {
     hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
-  };
+    visible: { opacity: 1, y: 0 },
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg text-ink">
-      <header className="bg-surface shadow-lg backdrop-blur-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+    <div className="bg-bg text-ink flex min-h-screen flex-col">
+      <header className="bg-surface sticky top-0 z-30 shadow-lg backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 justify-between">
             <div className="flex items-center">
-              <CalendarDays className="h-6 w-6 mr-2 text-accent" />
-              <h1 className="text-xl font-bold text-ink">{t('dashboard.title')}</h1>
+              <CalendarDays className="text-accent mr-2 h-6 w-6" />
+              <h1 className="text-ink text-xl font-bold">{t('dashboard.title')}</h1>
             </div>
             <div className="flex items-center space-x-4">
               <LanguageSelector />
               <Button
                 onClick={handleLogout}
                 variant="ghost"
-                className="text-ink hover:text-ink hover:bg-accent-soft rounded-lg flex items-center gap-2 transition-all duration-300"
+                className="text-ink hover:text-ink hover:bg-accent-soft flex items-center gap-2 rounded-lg transition-all duration-300"
               >
                 <LogOut className="h-4 w-4" />
                 <span>{t('common.buttons.logout')}</span>
@@ -176,58 +181,60 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+      <main className="mx-auto max-w-7xl flex-1 space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeIn}
           transition={{ duration: 0.3 }}
         >
-          <Card className="overflow-hidden bg-surface border-none shadow-xl backdrop-blur-sm rounded-xl">
-            <CardHeader className="flex flex-row justify-between items-center bg-surface pb-6">
+          <Card className="bg-surface overflow-hidden rounded-xl border-none shadow-xl backdrop-blur-sm">
+            <CardHeader className="bg-surface flex flex-row items-center justify-between pb-6">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-full bg-accent-soft flex items-center justify-center shadow-inner">
-                  <User className="h-6 w-6 text-accent" />
+                <div className="bg-accent-soft flex h-12 w-12 items-center justify-center rounded-full shadow-inner">
+                  <User className="text-accent h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-ink flex items-center gap-2">
+                  <h2 className="text-ink flex items-center gap-2 text-xl font-bold">
                     {t('dashboard.welcome')}, {user.username}
-                    <motion.div 
+                    <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ 
-                        type: "spring", 
-                        stiffness: 260, 
-                        damping: 20, 
-                        delay: 0.3 
+                      transition={{
+                        type: 'spring',
+                        stiffness: 260,
+                        damping: 20,
+                        delay: 0.3,
                       }}
                     >
-                      <Zap className="h-5 w-5 text-accent" />
+                      <Zap className="text-accent h-5 w-5" />
                     </motion.div>
                   </h2>
-                  <p className="text-ink-muted opacity-90">{t('dashboard.lastConnection')}: {new Date().toLocaleDateString()}</p>
+                  <p className="text-ink-muted opacity-90">
+                    {t('dashboard.lastConnection')}: {new Date().toLocaleDateString()}
+                  </p>
                 </div>
               </div>
-              <AddProduct onProductAdded={fetchData} />
+              <AddProductButton onProductAdded={fetchData} />
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-center space-x-3 p-4 bg-surface-2 rounded-lg border border-rule">
-                  <Mail className="h-5 w-5 text-accent" />
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="bg-surface-2 border-rule flex items-center space-x-3 rounded-lg border p-4">
+                  <Mail className="text-accent h-5 w-5" />
                   <div>
                     <p className="text-ink-muted text-sm">{t('dashboard.email')}</p>
                     <p className="text-ink font-medium">{user.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 p-4 bg-surface-2 rounded-lg border border-rule">
-                  <Shield className="h-5 w-5 text-accent" />
+                <div className="bg-surface-2 border-rule flex items-center space-x-3 rounded-lg border p-4">
+                  <Shield className="text-accent h-5 w-5" />
                   <div>
                     <p className="text-ink-muted text-sm">{t('dashboard.role')}</p>
                     <p className="text-ink font-medium">{user.role}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 p-4 bg-surface-2 rounded-lg border border-rule">
-                  <Package className="h-5 w-5 text-accent" />
+                <div className="bg-surface-2 border-rule flex items-center space-x-3 rounded-lg border p-4">
+                  <Package className="text-accent h-5 w-5" />
                   <div>
                     <p className="text-ink-muted text-sm">{t('dashboard.products')}</p>
                     <p className="text-ink font-medium">{products.length}</p>
@@ -244,63 +251,63 @@ export default function Dashboard() {
           variants={fadeIn}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <Card className="overflow-hidden bg-surface border-none shadow-xl backdrop-blur-sm rounded-xl">
+          <Card className="bg-surface overflow-hidden rounded-xl border-none shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-surface pb-6">
               <div className="flex items-center space-x-3">
-                <Calendar className="h-6 w-6 text-accent" />
-                <h2 className="text-xl font-bold text-ink">{t('dashboard.recentEvents.title')}</h2>
+                <Calendar className="text-accent h-6 w-6" />
+                <h2 className="text-ink text-xl font-bold">{t('dashboard.recentEvents.title')}</h2>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               {loadingEvents ? (
-                <div className="flex justify-center items-center h-[500px] bg-surface backdrop-blur-sm">
-                  <motion.div 
-                    animate={{ 
-                      rotate: 360 
+                <div className="bg-surface flex h-[500px] items-center justify-center backdrop-blur-sm">
+                  <motion.div
+                    animate={{
+                      rotate: 360,
                     }}
-                    transition={{ 
-                      repeat: Infinity, 
-                      duration: 2, 
-                      ease: "linear" 
+                    transition={{
+                      repeat: Infinity,
+                      duration: 2,
+                      ease: 'linear',
                     }}
                   >
-                    <RefreshCw className="h-8 w-8 text-accent" />
+                    <RefreshCw className="text-accent h-8 w-8" />
                   </motion.div>
-                  <p className="ml-3 text-ink-muted">{t('common.loading.default')}</p>
+                  <p className="text-ink-muted ml-3">{t('common.loading.default')}</p>
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center justify-between py-4 px-6 bg-surface-2 border-b border-rule">
+                  <div className="bg-surface-2 border-rule flex items-center justify-between border-b px-6 py-4">
                     <div className="flex space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleCalendarNavigation('prev')}
-                        className="bg-surface-2 hover:bg-surface-2 border-rule-strong text-ink hover:text-ink transition-all duration-300 flex items-center gap-1"
+                        className="bg-surface-2 hover:bg-surface-2 border-rule-strong text-ink hover:text-ink flex items-center gap-1 transition-all duration-300"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         <span>{t('common.buttons.previous')}</span>
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={handleToday}
                         className="bg-accent hover:bg-accent-hover border-accent text-ink hover:text-ink transition-all duration-300"
                       >
                         {t('common.buttons.today')}
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleCalendarNavigation('next')}
-                        className="bg-surface-2 hover:bg-surface-2 border-rule-strong text-ink hover:text-ink transition-all duration-300 flex items-center gap-1"
+                        className="bg-surface-2 hover:bg-surface-2 border-rule-strong text-ink hover:text-ink flex items-center gap-1 transition-all duration-300"
                       >
                         <span>{t('common.buttons.next')}</span>
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                  <div className="fullcalendar-container p-3 bg-surface">
+                  <div className="fullcalendar-container bg-surface p-3">
                     <TimelineCalendar
                       events={calendarEvents}
                       resources={resources}
@@ -318,5 +325,5 @@ export default function Dashboard() {
 
       <AppFooter />
     </div>
-  );
-} 
+  )
+}
