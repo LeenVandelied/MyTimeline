@@ -217,15 +217,27 @@
   - Index partiel `WHERE archived=false` [XS | db] → déjà couvert par #88 (enforcement quota)
 **Status :** Terminé
 
-## Sprint 10 — 2026-07-01 (PLANIFIÉ — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
+## Sprint 10 — 2026-07-01 (Terminé — merge PR #153 dans dev — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
 **Objectif :** CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation) pour débloquer le frontend Wave 3.
-**Milestone GitHub :** #10
-**Issues :** #50 (Product PATCH + archive), #52 (CRUD catégorie + suppression/réassignation)
-**Vagues :** V1 = #50 ‖ #52 (début) — séquencement sur `ProductRepository` + migrations séparées
-**Migrations Flyway :** V8 (#50 résiduel archived) + V9 (#52 contraintes catégorie) — plage V8–V9
-**Dépend de :** Sprint 9 (#44 : colonne archived)
-**Blocker conception :** ownership catégorie (référentiel global vs ownerId) — ADR avant implémentation.
-**Status :** Planifié
+**Milestone GitHub :** #10 (fermé après merge)
+**Issues livrées (2) :** #50 (Product PATCH + soft delete archived), #52 (CRUD catégorie + réassignation + ownership ownerId)
+**Vagues exécutées :** V1 = #50 | V2 = #52 — séquencé sur `ProductRepository.java` partagé (fichiers disjoints par ailleurs)
+**Migrations Flyway :** **V8** `category_ownership.sql` (owner_id + FK users + index + UNIQUE(owner_id,name), backfill owner NULL=système). #50 n'a PAS eu besoin de migration (archived déjà en V7) → pas de V9.
+**Dépend de :** Sprint 9 (#44 : colonne archived, enum, etc.)
+**Décision conception :** ownership catégorie tranchée = **PAR UTILISATEUR (ownerId)** → ADR-002 / [[DEC-S10-001]]. Supersede AP-CAT-09 (référentiel global).
+**Cohésion score :** 0.50
+**Commits :** 15 (2 impl + fixs sécurité/review + absorption + consolidation mémoire)
+**BR impactées :** BR-PRO-001/004/007, BR-CAT-001/002/003/004/006 + nouvelle BR ownership catégorie.
+**Reviews :** db-expert (V8) OK · security-expert 1 CRITIQUE + 1 MAJEUR (cross-tenant produit→catégorie) RÉSOLUS · reviewer batch 1 MAJEUR (self-reassign FK) + 2 MINEUR RÉSOLUS · **/review-pr #153 (2 tours)** : T1 = 2 MAJEUR (handler DataIntegrity trop large ; GET catégories fuite cross-tenant + ownerId exposé) + 2 MINEUR RÉSOLUS ; T2 = 1 MINEUR (port non scopé orphelin) RÉSOLU. Tous verdicts finaux READY/SÉCURISÉ.
+**Tests :** Backend **148/148 green** (surefire, dont intégration Testcontainers Postgres : réassignation atomique+rollback, filtre archived, unicité scoped-owner, listing scopé) | Frontend `next build` OK (CI) | E2E N/A (sprint backend pur ; parcours produit/catégorie → Wave 3 front #61 S11).
+**Nouveaux pitfalls / patterns / décisions :** PIT-S10-001..005 (scope reads+writes après ajout ownership, handler DataIntegrity pas fourre-tout, save détaché sans @Version, @SQLRestriction masque les transverses, valider ownership de la cible) · PAT-S10-001/002 (soft delete @SQLRestriction ; unicité applicative+DB→409 scopé service) · DEC-S10-001 (ADR-002 ownership catégorie).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Extraire `resolveCaller` dans ProductController [S | products] → issue #154 (backlog)
+  - `ProductResponse`/`EventResponse` DTO (fuite domain model produit, AP-CAT-03) [M | products] → **absorbé** (commit 36e9e6f, +2 tests)
+  - FK RESTRICT owner_id avant DELETE /me [note | auth] → commenté sur #78 (S13)
+  - UUID hardcodés front AddProducts.tsx [M | front] → déjà tracé #61 (S11), pas de doublon
+**Saturation contexte lead (mesure) :** ~élevée (sprint long : 2 impl + 4 cycles de fix sécurité/review + absorption ; ~10 subagents spawnés sur la durée /start+/review-pr×2+/end).
+**Status :** Terminé
 
 ## Sprint 11 — 2026-07-01 (PLANIFIÉ — cohésion 0.42, Frontend Produits + Dialogs — Wave 3 front)
 **Objectif :** Drawer Produit (fin des UUID hardcodés + fix desync Zod) + dialogs de confirmation partagés.

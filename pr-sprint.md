@@ -1,47 +1,55 @@
-## Sprint 7 — Socle frontend : état serveur + auth context
+## Sprint 10 — Backend Produits + Catégories (Wave 3 back)
 
-Couche d'accès données + contexte auth, pré-requis de tout écran. Cohésion 0.45, milestone #7. Aucune migration Flyway.
+Débloque le frontend Wave 3 (S11) : CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation), avec un modèle d'ownership catégorie par utilisateur.
 
-### Issues livrées (3)
-
-| # | Type | Résumé |
-|---|------|--------|
-| #70 | feature | Backend : endpoints profil `/api/me` (GET / PATCH + POST `/me/change-password`), `UserResponse` sans password, `@Transactional` sur `updateUser`, `changePassword` derrière le port `UserService` |
-| #40 | refactor | `AuthContext` React (source unique), montage `<Toaster/>`, redirections 401 locale-aware, fix signature `register(name, username, …)`, migration des 4 consumers |
-| #48 | chore | Introduction TanStack Query v5 (`QueryClientProvider`, conventions `query-keys.ts`, hooks pilotes `useCurrentUser`/`useProductsWithEvents`) |
-
-**Vagues exécutées :** V1 (∥) = #70 (backend) + #40 (frontend) · V2 = #48 (après #40, `layout.tsx` partagé, ordre wrap Theme>Auth>Query>children).
+### Issues traitées
+- **#50** — Product PATCH partiel + suppression logique (`archived` / soft delete)
+- **#52** — CRUD catégorie complet + suppression avec réassignation atomique + ownership
 
 ### Changements clés
-- **Backend** : `UserController` (`/api/me`), `UserServiceImpl.changePassword` (BCrypt verify + re-hash), `InvalidCredentialsException` → 400 via `GlobalExceptionHandler`, DTOs `UserResponse`/`UserUpdateRequest`/`ChangePasswordRequest`. Logique change-password placée **derrière le port** (correction DIP / anti-pattern A8 décidée en cours de sprint).
-- **Frontend** : `AuthContext` + `QueryProvider` (client), `layout.tsx` réordonné (Theme>Auth>Query>children, `<Toaster/>` au root), `apiClient` redirections `/[locale]/login`, `useCurrentUser` lit AuthContext (**zéro double-fetch `/me`**), type `User` aligné sur le DTO backend (champ `name`).
+
+**Produits (#50)**
+- `PATCH /users/{userId}/products/{productId}` : mise à jour partielle (nom et/ou catégorie), 200/400/404/403.
+- Soft delete : `DELETE` positionne `archived = true`, retourne **204** (corrigé de 200). `@SQLRestriction("archived = false")` sur `ProductEntity` → produits archivés invisibles dans tous les listings (produits + events).
+- Ownership `path {userId} == JWT` sur PATCH et DELETE (403 sur mismatch).
+
+**Catégories (#52) — ADR-002 ownership par utilisateur**
+- `PATCH /api/categories/{id}` (name/color/description), DTOs `CategoryRequest`/`CategoryResponse`/`CategoryUpdateRequest` (fin de l'exposition du domain model).
+- Ownership : colonne `owner_id` (migration **V8**), `owner NULL` = catégorie « système » (lisible de tous, non modifiable → 403). PATCH/DELETE exigent `owner_id == JWT`.
+- Unicité du nom **par utilisateur** : `UNIQUE(owner_id, name)` + check métier (409).
+- `DELETE /api/categories/{id}?reassignToCategoryId={uuid}` : réassignation atomique des produits (SQL natif contournant `@SQLRestriction` pour inclure les archivés) AVANT suppression, dans une seule `@Transactional` ; 409 explicite si suppression tentée sans réassignation.
+- Nettoyage hexagonal : injection du port `CategoryService`, retrait du double `existsById`.
+
+**Corrections sécurité & review (post-audit)**
+- 🔒 Cross-tenant (security-expert) : `resolveAssignableCategory` — une catégorie n'est assignable à un produit (create + update) que si possédée par l'appelant ou système, sinon **404** (anti-énumération d'UUID).
+- 🐛 Self-reassign (reviewer) : `deleteCategory` rejette `reassignToCategoryId == id` (409) — évitait une violation FK / des orphelins.
+- 🐛 Nom blanc sur PATCH produit : `@Pattern` rejette `" "` (400, BR-PRO-001) sans casser le patch partiel.
+- 🐛 `DataIntegrityViolationException` → 409 générique (plus de 500 avec fuite SQL sur race d'unicité).
 
 ### BR impactées
-- **BR-AUT-001** — unicité username : PATCH `/me` → 409 si pris par un autre compte.
-- **BR-AUT-008** — aucun password (même hashé) dans les réponses `/me`.
-- **change-password** — 400 ancien pwd faux / 204 succès (≥6 car.).
-- **BR-AUTH-003** — ROLE_USER visible dans le contexte auth.
+BR-PRO-001, BR-PRO-004, BR-PRO-007 · BR-CAT-001/002/003/004/006 + nouvelle BR ownership catégorie (owner_id == JWT).
 
-### Audit tests (`docs/memory/audits/sprint-7-test-coverage.md`)
-- **Backend** : 56/56 verts, 0 failed.
-- **Frontend** : 6 fichiers / 12 tests verts (`vitest run`), `tsc --noEmit` clean.
-- **E2E** : aucun nouveau spec — Playwright login **reporté Sprint 8** (report planifié dès la planification). Endpoints `/me` sans UI consommatrice ce sprint (Wave 3+).
+### Migration
+- **V8** `category_ownership.sql` : `owner_id` (FK users, NULLABLE), index `ix_categories_owner_id`, `UNIQUE(owner_id, name)`. Backfill : catégories existantes → owner NULL (système). Rollback commenté. Audité db-expert (OK).
 
-### Sécurité (security-expert)
-Aucun CRITIQUE. Pas d'IDOR (identité dérivée du cookie jwt seul), pas de fuite de hash, change-password BCrypt constant-time. Findings traités/reportés ci-dessous.
+### Audit tests
+- Backend : **146/146 verts** (0 failed, 0 errors, 0 skipped), intégration Testcontainers (Postgres) incluse (réassignation atomique + rollback, filtre archived, unicité scoped-owner, listing scopé owner∪système).
+- E2E : N/A (sprint backend pur ; parcours produit/catégorie livré avec le frontend Wave 3, #61).
+- Détail : `docs/memory/audits/sprint-10-test-coverage.md`.
 
-### Review (reviewer batch) — findings traités
-- ✅ **[CRITIQUE]** `apiClient.ts` loggait `error.config.headers` (Authorization/cookie) en console → corrigé (`7e58162`), ne logge plus que url/method/status.
-- ✅ **[MAJEUR]** drift DTO : type `User` frontend sans champ `name` → ajouté (interface + schéma Zod).
-- ⏭ **[MAJEUR reporté]** `AuthContext` stocke le user en localStorage (lisible XSS) — pattern pré-existant (A17), changement du modèle de persistance hors scope → **follow-up** arbitré à la clôture.
-- MINEURs acceptés : TOCTOU username (→ #42 contrainte DB), pas d'optimistic lock (risque faible), `authService` encore sur `/auth/me` (wiring FE des nouveaux endpoints prévu sprint suivant).
+### Reviews
+- **db-expert** (V8) : OK — 2 MINEUR déférés (#78 FK RESTRICT vs DELETE /me ; dette UUID-AUTO préexistante).
+- **security-expert** : 1 CRITIQUE + 1 MAJEUR (cross-tenant) → corrigés.
+- **reviewer batch** (mi-sprint) : 1 MAJEUR bloquant (self-reassign) + 2 MINEUR → corrigés. 2 MAJEUR de dette préexistante déférés en follow-ups.
+- **/review-pr #153** (état final) : durcissement cross-tenant sur la lecture — `GET /api/categories` (liste + par-id) scopé à `owner == caller ∪ système`, `CategoryResponse` n'expose plus l'`ownerId` (booléen `system`), handler `DataIntegrityViolationException` restreint au niveau service (plus de 409 fourre-tout). `78c633b`.
 
-### Follow-ups identifiés (triage à `/sprint end`)
-1. **Tooling** : `scripts/test-quiet.sh frontend` est un no-op (vitest non câblé) → les tests frontend ne tournent pas via l'outillage standard ni la CI. À câbler.
-2. **Sécurité** : modèle de persistance auth (localStorage user → httpOnly-only) — décision A17.
-3. **Anti-énumération** : 409 username (PATCH `/me` + register) révèle l'existence d'un compte — politique globale à décider.
+### Follow-ups (triage à `/sprint end`)
+- Extraire `resolveCaller` dans `ProductController` (boilerplate JWT dupliqué ~6×) `[S | products]`.
+- `ProductResponse` DTO — stopper la fuite du domain model produit en HTTP (AP-CAT-03 non rétrofit) `[M | products]`.
+- Front Wave 3 #61 (S11) : remplacer les 4 UUID hardcodés `AddProducts.tsx`, E2E métier, sync Zod.
+- #78 : réassigner/nullifier `owner_id` avant suppression d'un user (FK RESTRICT).
 
-### Coverage E2E
-OK — aucun nouveau `data-testid` orphelin (sprint = providers/hooks, pas de nouvel élément UI).
+### Décision d'architecture
+**ADR-002** (`docs/adr/ADR-002-ownership-categorie.md`) : catégories par utilisateur (`ownerId`), backfill owner NULL = système, `UNIQUE(owner_id, name)`, 403 sur mismatch. Casse les 4 UUID hardcodés du front jusqu'à la Wave 3 (#61). Décision tranchée par le dev en début de sprint.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+**Cohésion sprint : 0.50** · Vagues : V1 = #50, V2 = #52 (séquencé sur `ProductRepository.java` partagé).

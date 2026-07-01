@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
+import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
@@ -46,12 +47,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Product createProduct(ProductCreationRequest request) {
-        Category category = categoryRepository.findDomainCategoryById(request.getCategory())
-                .orElseThrow(() -> new CategoryNotFoundException(request.getCategory()));
-    
         User user = userRepository.findDomainUserById(request.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
-    
+
+        // #50 (faille cross-tenant) : la catégorie cible doit appartenir à l'appelant
+        // OU être système (ownerId == null). Sinon -> 404 (anti-énumération).
+        Category category = resolveAssignableCategory(request.getCategory(), user.getId());
+
         Product product = new Product(UUID.randomUUID(), request.getName(), category, user, new ArrayList<>());
     
         request.getEvents().forEach(eventCreationRequest -> {
@@ -86,6 +88,44 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
+    public Product updateProduct(UUID id, ProductUpdateRequest request) {
+        Product product = productRepository.findDomainProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        if (request.getName() != null) {
+            product.setName(request.getName());
+        }
+
+        if (request.getCategoryId() != null) {
+            // #50 (faille cross-tenant) : l'ownership du produit est déjà garanti au niveau
+            // controller (path == JWT). On valide donc la catégorie cible contre le
+            // propriétaire du produit chargé -> catégorie d'autrui traitée comme inexistante (404).
+            Category category = resolveAssignableCategory(request.getCategoryId(), product.getUser().getId());
+            product.setCategory(category);
+        }
+
+        return productRepository.save(product);
+    }
+
+    /**
+     * #50 (faille cross-tenant + oracle d'énumération) : une catégorie n'est assignable
+     * à un produit que si elle est possédée par l'appelant OU système (ownerId == null).
+     * Une catégorie possédée par un autre utilisateur est traitée comme INEXISTANTE du
+     * point de vue de l'appelant -> {@link CategoryNotFoundException} (404). Le choix du
+     * 404 (et non 403) ferme l'oracle : un 403 confirmerait l'existence de l'UUID.
+     */
+    private Category resolveAssignableCategory(UUID categoryId, UUID callerId) {
+        Category category = categoryRepository.findDomainCategoryById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        UUID owner = category.getOwnerId();
+        if (owner != null && !owner.equals(callerId)) {
+            throw new CategoryNotFoundException(categoryId);
+        }
+        return category;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<Product> findDomainProductById(UUID id) {
         return productRepository.findDomainProductById(id);
@@ -93,11 +133,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void deleteById(UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
-        }
-        productRepository.deleteById(id);
+    public void archiveById(UUID id) {
+        Product product = productRepository.findDomainProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        product.setArchived(true);
+        productRepository.save(product);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,6 +17,12 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name = "products")
 @EntityListeners(AuditingEntityListener.class)
+// BR-PRO-006/BR-PRO-007 : soft delete. Archived products are hidden from every
+// Hibernate-generated read (findAll/findById, associations). The listing
+// (getProductsWithEvents -> findAll) and getProductById/archiveById lookups
+// (findById) therefore never surface archived rows. Reference GET events endpoint
+// resolves the product via findById first, so archived products' events are 404.
+@SQLRestriction("archived = false")
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

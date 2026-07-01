@@ -7,6 +7,9 @@ public class Category {
     private String name;
     private String color;
     private String description;
+    // #52 (ADR-002) : propriétaire de la catégorie. NULL == catégorie « système »
+    // (lisible de tous, non modifiable — cf. V8__category_ownership.sql).
+    private UUID ownerId;
 
     public Category(UUID id, String name) {
         this.id = id;
@@ -18,6 +21,11 @@ public class Category {
         this.name = name;
         this.color = color;
         this.description = description;
+    }
+
+    public Category(UUID id, String name, String color, String description, UUID ownerId) {
+        this(id, name, color, description);
+        this.ownerId = ownerId;
     }
 
     public UUID getId() {
@@ -46,5 +54,13 @@ public class Category {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(UUID ownerId) {
+        this.ownerId = ownerId;
     }
 }
