@@ -98,3 +98,12 @@ Le test-runner/audit Phase 6 lance les tests unitaires/RTL mais pas le build de 
 
 ## PIT-S8-005 — `React.use(params)` (Next async params) incassable en vitest
 React 18.3.1 n'expose pas `use` → un test de page App Router avec `params`/`searchParams` async plante. Fix : `vi.mock('react', ...{ use: () => ({locale:'fr'}) })` + mocker aussi `useLocale` de next-intl (utilisé par les composants layout type `LanguageSelector`). (Sprint 8 #53)
+
+## PIT-S9-001 — CHECK constraint legacy bloque la conversion d'une colonne vers un enum
+Migrer une colonne texte-libre vers un `@Enumerated(STRING)` : si une `CHECK (col IN ('weeks','months','years'))` existe (posée par une migration antérieure, ici V4), tout `UPDATE` de conversion vers les nouvelles valeurs (`WEEK/MONTH/YEAR`) est rejeté. Fix : `DROP CONSTRAINT IF EXISTS` AVANT l'UPDATE, convertir, puis reposer un CHECK aligné sur `name()` de l'enum. Prévention : `grep -rn "ck_\|CHECK" db/migration/` avant de migrer une colonne enum-isée. (Sprint 9 #44)
+
+## PIT-S9-002 — br-auth pack pointe `useAuth.ts` mais la vraie source PII est `AuthContext.tsx`
+Le pack `br-auth.md` cite `useAuth.ts` / `localStorage` pour l'anti-pattern A17, mais `useAuth.ts` n'est qu'un ré-export du contexte : la persistance réelle vit dans `frontend/src/contexts/AuthContext.tsx`. Toujours `grep -rn "localStorage" frontend/src/` pour localiser la vraie source avant de traiter — ne pas se fier au chemin cité par le pack. (Sprint 9 #135)
+
+## PIT-S9-003 — Audit PII : `grep localStorage` seul insuffisant avec TanStack Query
+Un cache TanStack Query peut ré-introduire silencieusement de la PII sur disque via `persistQueryClient`/`createSyncStoragePersister`. Un audit « aucune PII persistée » doit vérifier `localStorage`/`sessionStorage` ET l'absence de persister TanStack (ici : `QueryClient` in-memory pur → OK). Étendre à tout store persistant (redux-persist, zustand persist). (Sprint 9 #135 security)

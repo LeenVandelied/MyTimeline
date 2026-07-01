@@ -70,3 +70,6 @@ L'intercepteur axios global (toast + redirect `/login` sur 401) empêche le mapp
 
 ## PAT-S8-004 — `<Suspense>` wrapper pour page lisant `useSearchParams`
 Page App Router lisant le query-param (ex token reset) : sous-composant client `XxxForm` qui appelle `useSearchParams()`, enveloppé `<Suspense fallback={<Spinner/>}>` dans le default export (qui reste le point de montage des tests). Garde le SSG (`next build` OK) et l'accessibilité du fallback. (Sprint 8 #53 CI)
+
+## PAT-S9-001 — Propager un nouveau champ dans TOUTES les reconstructions d'un domain model immuable
+Ajouter un champ à un domain model immuable reconstruit par `new X(...)` (read-modify-persist) : auditer TOUS les sites `new X(` (`grep -rn "new User("`) et propager le champ, sinon data-loss silencieuse au save (ex : `avatar` remis à null par `changePassword`/`resetPassword`/`updateProfile`). Anti-pattern : n'ajouter que getter/setter en supposant que les reconstructions passent le champ. Garder l'ancien constructeur + surcharge délégante pour limiter la casse d'appelants. (Sprint 9 #44)

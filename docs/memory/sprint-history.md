@@ -196,15 +196,26 @@
   - Vérifier rendu clair/sombre 4 écrans en navigateur [S | frontend] → issue #146
   - Écartés d'office : merge #48 (caduc — react-query déjà présent), rafraîchir br-auth A10 (fait en consolidation).
 
-## Sprint 9 — 2026-07-01 (EN COURS — cohésion 0.55, Socle modèle v3 + PII localStorage)
+## Sprint 9 — 2026-07-01 → 2026-07-01 (Terminé — merge PR #149 dans dev)
 **Objectif :** Aligner le modèle métier sur le design v3 (blocker racine Wave 3/4) + sécuriser la persistance auth.
-**Milestone GitHub :** #9
-**Issues :** #44 (modèle v3 : couleurs/archived/enum RecurrenceUnit/avatar, migration IRRÉVERSIBLE), #135 (sortir user PII du localStorage, A17)
-**Vagues :** V1 = #44 ‖ #135 (100% disjoints, Java/SQL vs TS — pas de V2)
-**Migrations Flyway :** V7__design_v3_schema.sql (migration couleurs bg/border/text→color **IRRÉVERSIBLE**)
-**Dépend de :** aucune (débloque S10, S12, S13)
-**Points durs :** migration irréversible (ADR + confirmation avant run prod) ; sync Zod frontend reportée S10/S11.
-**Status :** En cours (démarré 2026-07-01)
+**Milestone GitHub :** #9 (fermé après merge)
+**Issues livrées (2) :** #44 (modèle v3 : couleurs/archived/enum RecurrenceUnit/avatar, migration IRRÉVERSIBLE), #135 (sortir user PII du localStorage, A17)
+**Vagues exécutées :** V1 = #44 ‖ #135 (100% disjoints, Java/SQL vs TS — pas de V2)
+**Cohésion score :** 0.55
+**Migrations Flyway :** V7__design_v3_schema.sql (couleurs bg/border/text→color + enum recurrence_unit + archived — **IRRÉVERSIBLE**, ADR-001)
+**Dépend de :** aucune (débloque S10 colonne archived, S12 enum/recurrenceEndDate, S13 avatar)
+**Commits :** 5 (#44 eb3621b, #135 584b2ae, fix-review 751d265, artefacts 322847a, audit a7cf04b) + merge f0b1c89
+**BR impactées :** BR-EVT-001, BR-CAT-001, BR-EVE-006, BR-EVE-011 ; A17 clos
+**Reviews :** Phase 5 db-expert (V7) 0 CRITIQUE/0 MAJEUR · security-expert (A17) 0/0 · reviewer batch 0 CRITIQUE/0 MAJEUR/3 MINEUR (2 corrigés 751d265, 1 différé)
+**Tests :** Backend 84/84 green | Frontend 23/23 green | E2E N/A (runner Playwright absent du package.json — dette infra)
+**Nouveaux decisions/pitfalls/patterns :** DEC-S9-001/002, PIT-S9-001/002/003, PAT-S9-001
+**Points durs :** migration irréversible (ADR-001 + confirmation avant run prod) ; sync Zod frontend reportée S10/S11.
+**Absorbé en cours (XS) :** 2 corrections review (commentaires obsolètes) — commit 751d265.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Sync Zod/types frontend sur contrat DTO events v3 (couleurs/recurrenceUnit enum/archived) [M | events frontend] → issue #150 (Sprint 11)
+  - Exposer `avatar` dans le type User frontend [XS | auth frontend] → issue #151 (Sprint 13)
+  - Index partiel `WHERE archived=false` [XS | db] → déjà couvert par #88 (enforcement quota)
+**Status :** Terminé
 
 ## Sprint 10 — 2026-07-01 (PLANIFIÉ — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
 **Objectif :** CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation) pour débloquer le frontend Wave 3.
