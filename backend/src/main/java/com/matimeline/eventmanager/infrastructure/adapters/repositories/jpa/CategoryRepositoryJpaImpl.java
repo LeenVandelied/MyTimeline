@@ -80,6 +80,21 @@ public class CategoryRepositoryJpaImpl
     }
 
     @Override
+    public List<Category> findByOwnerIdOrSystem(UUID ownerId) {
+        // FIX review #153 : scoping cross-tenant. Renvoie les catégories du caller OU
+        // système (owner NULL). Filtre en JPQL bindé (pas de scan complet + filtre applicatif).
+        return entityManager
+            .createQuery(
+                "SELECT c FROM CategoryEntity c WHERE c.owner.id = :ownerId OR c.owner IS NULL",
+                CategoryEntity.class)
+            .setParameter("ownerId", ownerId)
+            .getResultList()
+            .stream()
+            .map(categoryMapper::toDomain)
+            .toList();
+    }
+
+    @Override
     public Category save(Category domainCategory) {
         // Pitfall hérité de #50 : le domaine Category ne porte pas @Version. Reconstruire
         // une CategoryEntity détachée (version=null) et la router vers save()/merge()

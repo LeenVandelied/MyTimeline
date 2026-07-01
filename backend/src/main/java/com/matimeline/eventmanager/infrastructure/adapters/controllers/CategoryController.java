@@ -59,17 +59,35 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        List<CategoryResponse> body = categoryService.getAllCategories().stream()
+    public ResponseEntity<?> getAllCategories(
+            @CookieValue(value = "jwt", required = false) String token) {
+        // FIX review #153 : listing SCOPÉ au caller + catégories système (owner NULL).
+        // Sans ce filtre, GET renvoyait les catégories de TOUS les utilisateurs (fuite
+        // cross-tenant). Identité dérivée du JWT (401 si absent/invalide).
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<CategoryResponse> body = categoryService.getCategoriesForOwner(caller.getId()).stream()
                 .map(CategoryResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(body);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable UUID id) {
+    public ResponseEntity<?> getCategoryById(
+            @PathVariable UUID id,
+            @CookieValue(value = "jwt", required = false) String token) {
+        // FIX review #153 : lecture au singulier SCOPÉE. 401 si non authentifié ; 404 si
+        // la catégorie n'est ni possédée par le caller ni système (anti fuite cross-tenant
+        // + anti-énumération : on ne distingue pas « inexistante » de « appartient à autrui »).
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         return categoryService.getCategoryById(id)
-                .map(c -> ResponseEntity.ok(CategoryResponse.fromDomain(c)))
+                .filter(c -> isVisibleTo(c, caller.getId()))
+                .<ResponseEntity<?>>map(c -> ResponseEntity.ok(CategoryResponse.fromDomain(c)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -135,6 +153,15 @@ public class CategoryController {
     /** Ownership : la catégorie appartient au caller (owner NON NULL == callerId). */
     private boolean isOwnedBy(Category category, UUID callerId) {
         return category.getOwnerId() != null && category.getOwnerId().equals(callerId);
+    }
+
+    /**
+     * Visibilité en LECTURE (FIX review #153) : la catégorie est possédée par le caller
+     * OU système (owner NULL, visible de tous). Plus permissif que {@link #isOwnedBy}
+     * (qui exclut le système car non modifiable).
+     */
+    private boolean isVisibleTo(Category category, UUID callerId) {
+        return category.getOwnerId() == null || category.getOwnerId().equals(callerId);
     }
 
     /**

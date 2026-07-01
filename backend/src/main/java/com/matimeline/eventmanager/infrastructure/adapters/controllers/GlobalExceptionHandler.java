@@ -3,7 +3,6 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 import java.time.Instant;
 import java.util.Map;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
@@ -83,17 +83,23 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", "invalid or expired token"));
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        // FIX review S10 : race d'unicité. Le check applicatif findByOwnerAndName ->
-        // CategoryNameConflictException (409) ne protège pas contre deux inserts
-        // concurrents ; la contrainte DB UNIQUE(owner_id, name) lève alors une
-        // DataIntegrityViolationException NON mappée -> 500 brut avec fuite SQL.
-        // On la mappe en 409 avec un message métier générique, sans divulguer le détail SQL.
+    @ExceptionHandler(CategoryReassignTargetInvalidException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoryReassignTargetInvalid(
+            CategoryReassignTargetInvalidException ex) {
+        // FIX review #153 : DELETE avec reassignToCategoryId == id (cible == source) -> 409
+        // avec un message DÉDIÉ (au lieu de réutiliser CategoryInUseException, dont le
+        // message « fournissez reassignToCategoryId » était trompeur pour ce cas).
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "Conflit d'intégrité (nom déjà utilisé ou contrainte violée)."));
+                .body(Map.of("error", ex.getMessage()));
     }
+
+    // FIX review #153 : SUPPRESSION du @ExceptionHandler(DataIntegrityViolationException)
+    // global. Il mappait TOUTE violation de contrainte en 409 « nom déjà utilisé »,
+    // masquant des violations non liées (FK RESTRICT owner_id, autres contraintes) sous
+    // un message trompeur. La protection anti-race d'unicité est désormais SCOPÉE au save
+    // dans CategoryServiceImpl (try/catch -> CategoryNameConflictException). Les autres
+    // violations remontent normalement (500 générique) sans être masquées.
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {

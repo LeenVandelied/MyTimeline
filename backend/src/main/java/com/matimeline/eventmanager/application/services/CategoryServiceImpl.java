@@ -1,12 +1,14 @@
 package com.matimeline.eventmanager.application.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
@@ -38,7 +40,15 @@ public class CategoryServiceImpl implements CategoryService {
             throw new CategoryNameConflictException(name);
         });
         Category toCreate = new Category(null, name, color, description, ownerId);
-        return categoryRepository.save(toCreate);
+        // FIX review #153 : filet anti-race d'unicité SCOPÉ au save. La contrainte DB
+        // UNIQUE(owner_id, name) lève une DataIntegrityViolationException si deux inserts
+        // concurrents passent le check applicatif -> on la mappe en 409 ICI (nom en
+        // conflit), sans handler global qui masquerait TOUTE autre violation (FK, etc.).
+        try {
+            return categoryRepository.save(toCreate);
+        } catch (DataIntegrityViolationException e) {
+            throw new CategoryNameConflictException(name);
+        }
     }
 
     @Override
@@ -62,13 +72,26 @@ public class CategoryServiceImpl implements CategoryService {
         existing.setColor(color);
         existing.setDescription(description);
         // owner inchangé (l'update-in-place du repo recopie l'ownerId courant).
-        return categoryRepository.save(existing);
+        // FIX review #153 : même filet anti-race que createCategory (contrainte
+        // UNIQUE(owner_id, name)) mappé en 409 localement, sans handler global masquant.
+        try {
+            return categoryRepository.save(existing);
+        } catch (DataIntegrityViolationException e) {
+            throw new CategoryNameConflictException(name);
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Category> getAllCategories() {
         return categoryRepository.findAllCategories();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Category> getCategoriesForOwner(UUID callerId) {
+        // FIX review #153 : listing scopé au caller + catégories système (owner NULL).
+        return categoryRepository.findByOwnerIdOrSystem(callerId);
     }
 
     @Override
@@ -99,11 +122,13 @@ public class CategoryServiceImpl implements CategoryService {
             if (reassignToCategoryId == null) {
                 throw new CategoryInUseException(referencing);
             }
-            // FIX review S10 : réassigner vers la catégorie en cours de suppression est
-            // un no-op suivi d'un deleteById -> violation FK / produits orphelins. On
-            // rejette AVANT toute réassignation. Réutilise CategoryInUseException -> 409.
+            // FIX review S10/#153 : réassigner vers la catégorie en cours de suppression
+            // est un no-op suivi d'un deleteById -> violation FK / produits orphelins. On
+            // rejette AVANT toute réassignation. Exception DÉDIÉE (cible == source) au lieu
+            // de CategoryInUseException dont le message « fournissez reassignToCategoryId »
+            // était trompeur ici. Toujours mappée en 409.
             if (id.equals(reassignToCategoryId)) {
-                throw new CategoryInUseException(referencing);
+                throw new CategoryReassignTargetInvalidException();
             }
             // La cible doit exister (l'ownership de la cible est vérifié en amont par
             // le contrôleur). Réassignation AVANT suppression, DANS la même transaction :

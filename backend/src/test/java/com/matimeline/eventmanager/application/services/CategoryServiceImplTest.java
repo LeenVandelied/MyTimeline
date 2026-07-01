@@ -9,8 +9,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.dao.DataIntegrityViolationException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
@@ -70,6 +74,49 @@ class CategoryServiceImplTest {
                 () -> service.createCategory("Travail", null, null, ownerId));
 
         verify(categoryRepository, never()).save(any());
+    }
+
+    /**
+     * FIX review #153 : filet anti-race d'unicité SCOPÉ au save (au lieu d'un handler
+     * global DataIntegrityViolationException qui masquait toute autre violation). Deux
+     * inserts concurrents passent le check applicatif -> la contrainte DB UNIQUE(owner_id,
+     * name) lève DataIntegrityViolationException, mappée ICI en CategoryNameConflictException.
+     */
+    @Test
+    void createCategory_uniqueRace_dataIntegrity_mappedToNameConflict() {
+        when(categoryRepository.findByOwnerAndName(ownerId, "Travail")).thenReturn(Optional.empty());
+        when(categoryRepository.save(any(Category.class)))
+                .thenThrow(new DataIntegrityViolationException("uq_categories_owner_name"));
+
+        assertThrows(CategoryNameConflictException.class,
+                () -> service.createCategory("Travail", null, null, ownerId));
+    }
+
+    @Test
+    void updateCategory_uniqueRace_dataIntegrity_mappedToNameConflict() {
+        UUID id = UUID.randomUUID();
+        Category current = new Category(id, "old", null, null, ownerId);
+        when(categoryRepository.findDomainCategoryById(id)).thenReturn(Optional.of(current));
+        when(categoryRepository.findByOwnerAndName(ownerId, "new")).thenReturn(Optional.empty());
+        when(categoryRepository.save(any(Category.class)))
+                .thenThrow(new DataIntegrityViolationException("uq_categories_owner_name"));
+
+        assertThrows(CategoryNameConflictException.class,
+                () -> service.updateCategory(id, "new", null, null));
+    }
+
+    // ---- listing scopé (FIX review #153) ----
+
+    @Test
+    void getCategoriesForOwner_delegatesToScopedRepoQuery() {
+        Category mine = new Category(UUID.randomUUID(), "Mine", null, null, ownerId);
+        Category system = new Category(UUID.randomUUID(), "Système", null, null, null);
+        when(categoryRepository.findByOwnerIdOrSystem(ownerId)).thenReturn(List.of(mine, system));
+
+        List<Category> result = service.getCategoriesForOwner(ownerId);
+
+        assertEquals(2, result.size());
+        verify(categoryRepository, never()).findAllCategories();
     }
 
     // ---- update ----
@@ -166,19 +213,19 @@ class CategoryServiceImplTest {
     }
 
     /**
-     * FIX review S10 : réassigner vers la catégorie en cours de suppression (cible == source)
+     * FIX review #153 : réassigner vers la catégorie en cours de suppression (cible == source)
      * serait un no-op suivi d'un deleteById -> violation FK / produits orphelins. Le service
-     * doit rejeter (409 CategoryInUseException) AVANT toute réassignation ou suppression.
+     * doit rejeter avec une exception DÉDIÉE (CategoryReassignTargetInvalidException, 409)
+     * AVANT toute réassignation ou suppression — plus l'ambigu CategoryInUseException.
      */
     @Test
-    void deleteCategory_reassignToSelf_throwsInUse_andDoesNotReassignOrDelete() {
+    void deleteCategory_reassignToSelf_throwsReassignTargetInvalid_andDoesNotReassignOrDelete() {
         UUID id = UUID.randomUUID();
         when(categoryRepository.existsById(id)).thenReturn(true);
         when(productRepository.countByCategoryId(id)).thenReturn(3L);
 
-        CategoryInUseException ex = assertThrows(CategoryInUseException.class,
+        assertThrows(CategoryReassignTargetInvalidException.class,
                 () -> service.deleteCategory(id, id));
-        assertEquals(3L, ex.getProductCount());
 
         verify(productRepository, never()).updateCategoryForProducts(any(), any());
         verify(categoryRepository, never()).deleteById(any());

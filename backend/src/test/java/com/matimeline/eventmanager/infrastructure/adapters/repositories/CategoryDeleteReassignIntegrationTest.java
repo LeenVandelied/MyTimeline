@@ -61,6 +61,15 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         return category;
     }
 
+    /** Catégorie système (owner NULL) — visible de tous en lecture (FIX review #153). */
+    private CategoryEntity persistSystemCategory(String name) {
+        CategoryEntity category = new CategoryEntity();
+        category.setName(name);
+        category.setOwner(null);
+        em.persist(category);
+        return category;
+    }
+
     private ProductEntity persistProduct(UserEntity user, CategoryEntity category, boolean archived) {
         ProductEntity product = new ProductEntity();
         product.setName("c52-product-" + UUID.randomUUID());
@@ -84,6 +93,32 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         assertThat(categoryRepository.findByOwnerAndName(a.getId(), "Voiture")).isPresent();
         assertThat(categoryRepository.findByOwnerAndName(b.getId(), "Voiture")).isPresent();
         assertThat(categoryRepository.findByOwnerAndName(UUID.randomUUID(), "Voiture")).isEmpty();
+    }
+
+    /**
+     * FIX review #153 : scoping cross-tenant du listing. findByOwnerIdOrSystem(caller)
+     * ne renvoie QUE les catégories du caller + système (owner NULL, ex. les 4 seed V8),
+     * JAMAIS celles d'un autre utilisateur. Vérifié contre un vrai Postgres.
+     */
+    @Test
+    void findByOwnerIdOrSystem_returnsOwnAndSystem_notOtherUsers() {
+        UserEntity a = persistUser();
+        UserEntity b = persistUser();
+        CategoryEntity mineA = persistCategory(a, "Mine-A-" + UUID.randomUUID());
+        CategoryEntity mineB = persistCategory(b, "Mine-B-" + UUID.randomUUID());
+        CategoryEntity system = persistSystemCategory("System-" + UUID.randomUUID());
+        em.flush();
+        em.clear();
+
+        var forA = categoryRepository.findByOwnerIdOrSystem(a.getId());
+
+        // La catégorie de A et la catégorie système sont présentes ; celle de B est
+        // ABSENTE (pas de fuite cross-tenant).
+        assertThat(forA).anyMatch(c -> c.getId().equals(mineA.getId()));
+        assertThat(forA).anyMatch(c -> c.getId().equals(system.getId()));
+        assertThat(forA).noneMatch(c -> c.getId().equals(mineB.getId()));
+        // Toute catégorie retournée est soit à A, soit système (owner NULL).
+        assertThat(forA).allMatch(c -> c.getOwnerId() == null || c.getOwnerId().equals(a.getId()));
     }
 
     /** AP-CAT-05 : suppression d'une catégorie référencée sans cible -> 409, rien supprimé. */

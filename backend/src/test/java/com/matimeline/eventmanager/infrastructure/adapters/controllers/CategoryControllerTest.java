@@ -8,11 +8,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
+import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
@@ -103,7 +106,9 @@ class CategoryControllerTest {
                         .content("{\"name\":\"Travail\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Travail"))
-                .andExpect(jsonPath("$.ownerId").value(callerId.toString()));
+                // FIX review #153 : ownerId n'est PLUS exposé ; un booléen system dérivé le remplace.
+                .andExpect(jsonPath("$.ownerId").doesNotExist())
+                .andExpect(jsonPath("$.system").value(false));
     }
 
     @Test
@@ -118,6 +123,94 @@ class CategoryControllerTest {
                         .content("{\"name\":\"Travail\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("category name already used"));
+    }
+
+    // ---------------- GET (scoping cross-tenant, FIX review #153) ----------------
+
+    @Test
+    void getAllCategories_noJwt_returns401() throws Exception {
+        mockMvc.perform(get("/api/categories"))
+                .andExpect(status().isUnauthorized());
+
+        verify(categoryService, never()).getCategoriesForOwner(any());
+    }
+
+    @Test
+    void getAllCategories_returnsOnlyOwnAndSystem_notOtherUsers() throws Exception {
+        stubCaller();
+        UUID sysId = UUID.randomUUID();
+        // Le service scopé ne renvoie QUE le caller + système ; le contrôleur délègue
+        // le filtre au service (getCategoriesForOwner). On vérifie ici que le contrôleur
+        // n'appelle PAS getAllCategories (non scopé) et sérialise system sans ownerId.
+        when(categoryService.getCategoriesForOwner(callerId)).thenReturn(List.of(
+                owned(UUID.randomUUID(), "Mine"),
+                new Category(sysId, "Système", null, null, null)));
+
+        mockMvc.perform(get("/api/categories").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Mine"))
+                .andExpect(jsonPath("$[0].system").value(false))
+                .andExpect(jsonPath("$[0].ownerId").doesNotExist())
+                .andExpect(jsonPath("$[1].name").value("Système"))
+                .andExpect(jsonPath("$[1].system").value(true))
+                .andExpect(jsonPath("$[1].ownerId").doesNotExist());
+
+        verify(categoryService, never()).getAllCategories();
+    }
+
+    @Test
+    void getCategoryById_noJwt_returns401() throws Exception {
+        mockMvc.perform(get("/api/categories/" + UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getCategoryById_own_returns200() throws Exception {
+        stubCaller();
+        UUID id = UUID.randomUUID();
+        when(categoryService.getCategoryById(id)).thenReturn(Optional.of(owned(id, "Mine")));
+
+        mockMvc.perform(get("/api/categories/" + id).cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Mine"))
+                .andExpect(jsonPath("$.system").value(false))
+                .andExpect(jsonPath("$.ownerId").doesNotExist());
+    }
+
+    @Test
+    void getCategoryById_system_returns200() throws Exception {
+        stubCaller();
+        UUID id = UUID.randomUUID();
+        when(categoryService.getCategoryById(id))
+                .thenReturn(Optional.of(new Category(id, "Système", null, null, null)));
+
+        mockMvc.perform(get("/api/categories/" + id).cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.system").value(true))
+                .andExpect(jsonPath("$.ownerId").doesNotExist());
+    }
+
+    @Test
+    void getCategoryById_ownedByAnotherUser_returns404() throws Exception {
+        stubCaller();
+        UUID id = UUID.randomUUID();
+        // Catégorie d'un AUTRE user : ni possédée ni système -> 404 (anti fuite + anti-énumération).
+        when(categoryService.getCategoryById(id))
+                .thenReturn(Optional.of(new Category(id, "Foreign", null, null, UUID.randomUUID())));
+
+        mockMvc.perform(get("/api/categories/" + id).cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getCategoryById_unknown_returns404() throws Exception {
+        stubCaller();
+        UUID id = UUID.randomUUID();
+        when(categoryService.getCategoryById(id)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/categories/" + id).cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isNotFound());
     }
 
     // ---------------- PATCH ----------------
@@ -260,24 +353,23 @@ class CategoryControllerTest {
     }
 
     /**
-     * FIX review S10 : DELETE avec reassignToCategoryId == id (cible == source) sur une
-     * catégorie référencée -> 409 (CategoryInUseException), catégorie NON supprimée. Le
-     * service rejette avant réassignation/suppression ; ici on vérifie le contrat HTTP
-     * end-to-end (le service mocké lève l'exception mappée en 409 par le handler).
+     * FIX review #153 : DELETE avec reassignToCategoryId == id (cible == source) -> 409
+     * avec un message DÉDIÉ (CategoryReassignTargetInvalidException), plus le message
+     * trompeur « fournissez reassignToCategoryId ». On vérifie le contrat HTTP end-to-end.
      */
     @Test
-    void deleteCategory_reassignToSelf_referenced_returns409_andDoesNotDelete() throws Exception {
+    void deleteCategory_reassignToSelf_returns409_withDedicatedMessage() throws Exception {
         stubCaller();
         UUID id = UUID.randomUUID();
         when(categoryService.getCategoryById(id)).thenReturn(Optional.of(owned(id, "src")));
-        doThrow(new CategoryInUseException(2))
+        doThrow(new CategoryReassignTargetInvalidException())
                 .when(categoryService).deleteCategory(id, id);
 
         mockMvc.perform(delete("/api/categories/" + id + "?reassignToCategoryId=" + id)
                         .cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error")
-                        .value("La catégorie est utilisée par 2 produits. Fournissez reassignToCategoryId."));
+                        .value("The reassignment target category cannot be the category being deleted."));
     }
 
     @Test

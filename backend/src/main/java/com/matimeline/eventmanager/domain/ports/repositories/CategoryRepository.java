@@ -19,6 +19,14 @@ public interface CategoryRepository {
   Optional<Category> findByOwnerAndName(UUID ownerId, String name);
 
   List<Category> findAllCategories();
+
+  /**
+   * FIX review #153 : scoping cross-tenant du listing. Renvoie UNIQUEMENT les catégories
+   * possédées par {@code ownerId} OU système ({@code owner_id IS NULL}). Filtre en SQL
+   * (pas de scan complet + filtre applicatif). Utilisé par {@code GET /api/categories}.
+   */
+  List<Category> findByOwnerIdOrSystem(UUID ownerId);
+
   Category save(Category category);
   void deleteById(UUID id);
   boolean existsById(UUID id);
