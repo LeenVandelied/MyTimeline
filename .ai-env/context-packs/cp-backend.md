@@ -1,80 +1,104 @@
-# Context-pack : Backend le langage backend / Quarkus
+# Context-pack : Backend (MyTimeline — Spring Boot 3 / Java 21)
 
-> ⚠️ EXEMPLE Layer B (instance EdelWheels / Quarkus-Next). À RÉGÉNÉRER par /ai-env:setup pour ta stack. Voir REBUILD-PLAN.md §2.2.
+> Référence maître : `.claude/rules-jit/backend.md`
+> À charger pour TOUTE tâche backend. Package racine : `com.matimeline.eventmanager`.
 
-> Reference maitre : `.claude/rules-jit/backend.md`
-> A charger pour TOUTE tache backend
+## Stack réelle
 
-## Stack
+Java 21 + Spring Boot 3.2.2 + Spring Web (MVC) + Spring Data JPA (Hibernate) + PostgreSQL 16 +
+Flyway 9.22.3 (core, support Postgres inclus) + Spring Security (JWT cookie HttpOnly, jjwt 0.11.5) +
+Lombok (DTOs uniquement) + Bucket4j (rate limiting in-memory) + Testcontainers 1.20.6 (tests).
+PAS de Quarkus / Panache / CDI. Aucun `io.quarkus.*`, `@ApplicationScoped`, `@QuarkusTest`, `persist()`.
 
-le langage backend + le framework backend + l'ORM + l'outil de migration + le provider d'identité + la base de données
+## Conventions MyTimeline (source de vérité projet — issues des reviews S10)
 
-## Conventions le langage backend
+Ces 4 conventions transverses sont revenues comme BUGS en review. Les respecter par défaut. Détail :
+`docs/memory/pitfalls.md` (PIT-S10-*) et `docs/memory/patterns.md` (PAT-S10-*).
 
-- **Records** pour DTOs (request/response immuables)
-- **Sealed Classes** pour etats metier
-- **Pattern Matching**, Streams
-- **Validation** : `@Valid` + Bean Validation sur tous les `@RequestBody`
-- **Reponses** : `Response.ok(dto).build()` ou `Response.created(uri).build()`
-- **Erreurs** : le format d'erreur
-- **Logging** : le logger injecte — jamais `System.out`
-- **Config** : `@ConfigProperty` pour valeurs externalisees
-- **JPA constructeurs** : `public Entity() {}` (pas protected)
+1. **Jamais de domain model / entité JPA renvoyé par un `@RestController`** — toujours un `*Response` DTO
+   (record ou classe Lombok `@Getter`/`@AllArgsConstructor`, méthode `fromDomain(...)`). Réduire la
+   catégorie et les sous-objets au strict minimum. NE JAMAIS exposer l'objet `User`/owner ni les champs
+   internes (`archived`, `ownerId`, `version`). Ex : `ProductResponse` masque user/archived/color et réduit
+   la catégorie à `{id,name}` ; `CategoryResponse` remplace `ownerId` par un booléen dérivé `system`.
+   AP récurrent : catégories (#52) ET produits — vu 2×. Réf PAT-S10 / `CategoryResponse`, `ProductResponse`.
+2. **Ownership : vérifier la ressource CIBLE, pas seulement la ressource parente ; 404 (pas 403) pour une
+   ressource d'autrui** (anti-énumération d'UUID — un 403 confirmerait l'existence de l'id). Ex : à
+   l'assignation d'une `categoryId` à un produit, valider `category.ownerId == caller || ownerId == null`,
+   sinon `CategoryNotFoundException` -> 404 (cf. `ProductServiceImpl.resolveAssignableCategory`). Résolution
+   du caller depuis le cookie JWT : helper `resolveCaller(token)` (cf. `CategoryController`). Réf PIT-S10-005.
+3. **`DataIntegrityViolationException` -> 409 mappé au niveau SERVICE, dans un `try/catch` autour du SEUL
+   `save()` concerné** — JAMAIS un `@ExceptionHandler(DataIntegrityViolationException)` global : il
+   masquerait toute violation FK/contrainte sous un 409 trompeur. Ex : `CategoryServiceImpl.createCategory`
+   et `updateCategory` catchent localement -> `CategoryNameConflictException`. Le handler global a été
+   SUPPRIMÉ (cf. note dans `GlobalExceptionHandler`). Réf PAT-S10-002 / PIT-S10-002.
+4. **Update JPA = charger l'entité gérée (`findById`) + recopier les champs mutables (update-in-place)** —
+   ne PAS faire `repository.save(mapper.toEntity(domain))` en UPDATE : les domain models n'ont pas de
+   `@Version`, l'entité reconstruite est détachée (version=null) -> `persist()` échoue ("uninitialized
+   version") ou `merge()` lève un OptimisticLock. Charger le managed, recopier name/color/etc., laisser
+   Hibernate piloter `@Version`/`updated_at`. Cible d'une FK : `entityManager.getReference(...)` (pas une
+   entité détachée). Cf. `CategoryRepositoryJpaImpl.save`, `ProductRepositoryJpaImpl.save`. Réf PIT-S10-003.
+5. **Soft delete via `@SQLRestriction("archived = false")` sur l'entité** — filtre TOUTES les lectures
+   Hibernate (findById/findAll/associations) automatiquement (cf. `ProductEntity`). Pour les opérations
+   transverses qui doivent voir les lignes filtrées (réassignation avant delete de catégorie, comptage
+   avant purge), utiliser du SQL NATIF bindé pour contourner le `@SQLRestriction` (cf.
+   `ProductRepositoryJpaImpl.countByCategoryId` / `updateCategoryForProducts`). Réf PAT-S10-001 / PIT-S10-004.
 
-## Regles transversales entites
+## Conventions Spring Boot
 
-- **Soft delete** (règle métier suppression) : champ `deleted_at` obligatoire, JAMAIS de DELETE physique
-- **UUID v7** (règle métier clés primaires) sur toutes les cles primaires
-- **Ownership** (règle métier ownership) : verifier l'identifiant propriétaire sur chaque endpoint GET/PUT/DELETE securise, admins bypassent via `isAdmin`
+- Controllers : `@RestController` + `@RequestMapping("/api/...")`, verbes `@GetMapping`/`@PostMapping`/
+  `@PatchMapping`/`@DeleteMapping`. Injecter les PORTS (interfaces), pas les `*Impl`.
+- Services : `@Service` sur `*Impl` (dans `application/services/`), constructeur `@Autowired`.
+- `@Transactional` de `org.springframework.transaction.annotation` ; `@Transactional(readOnly = true)` sur
+  les lectures. La réassignation + delete de catégorie doit rester dans UNE transaction atomique.
+- Repos JPA : `@Repository` + `extends SimpleJpaRepository<Entity, UUID> implements <PortDomaine>`,
+  requêtes JPQL/native via `EntityManager` bindé (`.setParameter`), `.setMaxResults(1)` au lieu d'un `get(0)`.
+- DTOs : `application/dtos/` (Lombok `@Getter`/`@AllArgsConstructor` ou records). `@Valid` + Bean Validation
+  sur tout `@RequestBody`.
+- Erreurs : `GlobalExceptionHandler` (`@RestControllerAdvice`) mappe les exceptions DOMAINE
+  (`*NotFoundException` -> 404, `CategoryNameConflictException`/`CategoryInUseException` -> 409...). Corps
+  plat `{"error": "..."}` pour les erreurs métier. Les 401/403 de la chaîne Security sont gérés par
+  `SecurityConfig` (authenticationEntryPoint / accessDeniedHandler), PAS par le handler — ne pas dupliquer.
+- Entités : `@Entity`, `@GeneratedValue(strategy = AUTO)` UUID, `@Version`, audit `@CreatedDate`/
+  `@LastModifiedDate` + `@EntityListeners(AuditingEntityListener.class)`, `equals/hashCode` sur l'id.
 
-## Securite
+## Migrations Flyway
 
-- `@RolesAllowed` sur chaque endpoint protege
-- Aucune donnee sensible dans les logs
-- Aucune concatenation SQL
-- `l'identité de sécurité` (pas `JsonWebToken`) avec le provider d'identite
+- `backend/src/main/resources/db/migration/V{n}__description.sql`. Dernière : `V8__category_ownership.sql`.
+  Prochaine = `V{n+1}`. Vérifier : `ls db/migration/V*.sql | sort -V | tail -1`.
+- JAMAIS rééditer une migration déjà appliquée (checksum) -> créer `V{n+1}`. Rollback commenté dans le fichier.
+- Flyway 9.x : support Postgres DANS `flyway-core`, ne PAS ajouter `flyway-database-postgresql` (Flyway 10+).
+- `ddl-auto=validate` (dev, prod, test) : Hibernate ne modifie jamais le schéma, Flyway est la source de
+  vérité. Une entité désalignée du schéma -> échec au boot. `baseline-on-migrate=true`.
 
-## Migrations l'outil de migration
+## Sécurité
 
-- `db/migration/V{n}__{description}.sql`
-- Rollback commente dans chaque fichier
-- JAMAIS modifier une migration deja appliquee
-- Derniere migration : `ls {{MIGRATIONS_DIR}}/V*.sql | sort -V | tail -1` (hook `check-stack-drift.sh` avertit en cas de drift)
+- `SecurityConfig` (Spring Security), JWT signé (jjwt) porté par un cookie HttpOnly `jwt`. `JwtService`
+  (extractUsername...), `JwtFilter`, `RateLimitingFilter` (Bucket4j, par IP — `trust-forwarded-header=false`).
+- Identité dérivée du JWT, JAMAIS d'un param. Ownership vérifié manuellement dans les controllers via
+  `resolveCaller(token)` -> compare l'id (403 pour la ressource possédée d'autrui côté catégorie ;
+  404 pour la ressource-cible d'autrui, cf. convention 2).
+- Secrets via env (`JWT_SECRET`, `DB_PASSWORD`, `BREVO_API_KEY`) — aucun default en profil prod (fail-fast).
+  `ProfileSafetyGuard` refuse le boot si profil `dev` actif avec marqueur d'env prod. Aucune concat SQL.
 
-## l'ORM
+## Null-safety & qualité
 
-- `persist()` = INSERT only. Pour upsert → `getEntityManager().merge()`
-- `TranslationRepository` implemente directement par `l'ORMRepository`
+- `orElseThrow(() -> new XxxNotFoundException(id))` quand l'entité DOIT exister — jamais `orElse(null)` +
+  null-check en aval (NPE caché). `getReference` pour attacher une FK sans charger l'entité.
+- Méthodes > 20 lignes -> décomposer ; complexité > 5 -> refactorer ; pas de magic values ; risque N+1 ->
+  `fetch join`/`@BatchSize` ; index DB sur colonnes filtrées/triées (cf. `V5__fk_indexes.sql`).
 
-## Null safety
+## Tests
 
-- `orElseThrow()` quand l'entite DOIT exister — jamais `orElse(null)` + null checks downstream
-- Fallback explicite obligatoire pour les valeurs nullable externes (locale, enum)
+- Lancer via le WRAPPER OBLIGATOIRE : `./scripts/test-quiet.sh backend` (ou `backend/./mvnw`). Docker
+  REQUIS (Testcontainers). Property `docker.api.version=1.44` dans le pom (pipe `api.version` vers surefire)
+  — pièce docker-java : sans elle, "Could not find a valid Docker environment".
+- Slices controllers : `@ExtendWith(MockitoExtension.class)` + `MockMvcBuilders.standaloneSetup(...)` +
+  mocks Mockito (cf. `CategoryControllerTest`). Services : test unitaire `@ExtendWith(MockitoExtension.class)`.
+- Intégration : `@SpringBootTest` + `@Transactional` (rollback) + `extends AbstractPostgresIntegrationTest`
+  (singleton container Postgres 16, profil `test`, Flyway rejoue V1..Vn from scratch). PAS de H2.
+- Surefire matche `**/*Test.java` (les `*IntegrationTest` inclus). Données de test uniques par test (UUID),
+  pas de constantes partagées.
 
-## Tests `@QuarkusTest`
+## Référence pour approfondir
 
-- **`@TestTransaction`** (pas `@Transactional`) pour rollback automatique — `@Transactional` commit et pollue les tests suivants. **PIT recurrent**.
-- Test data : valeurs uniques par test (generateur AtomicInteger ou UUID), jamais de constantes partagees entre tests
-
-## Qualite du code
-
-- Methodes > 20 lignes → decomposer
-- Complexite cyclomatique > 5 → refactorer
-- Pas de magic numbers/strings
-- Nommage explicite
-- **Risque N+1** : `fetch join` ou `@BatchSize`
-- Toute liste paginee
-- Index DB prevus pour colonnes filtrees/triees
-
-## Pitfalls backend frequents
-
-- `@Transactional` dans tests → pollue tests suivants. Toujours `@TestTransaction`.
-- `orElse(null)` + null check downstream → NPE cache. `orElseThrow()`.
-- `persist()` pour update → INSERT duplique. `getEntityManager().merge()`.
-- Concatenation SQL → injection. Query params obligatoires.
-- Migration modifiee apres deploiement → cluster inconsistant. Creer V{n+1}.
-
-## Reference pour approfondir
-
-`.claude/rules-jit/backend.md` (rule versionnee)
-`docs/memory/pitfalls.md` (filtre par PIT-XX backend)
+`.claude/rules-jit/backend.md` · `docs/memory/pitfalls.md` (PIT-S10-*) · `docs/memory/patterns.md` (PAT-S10-*)
