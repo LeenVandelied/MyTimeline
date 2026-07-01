@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 
@@ -47,8 +48,8 @@ class EventServiceImplTest {
         productId = UUID.randomUUID();
         existingEvent = new Event(
                 eventId, "Original title", "duration", 5, "days",
-                false, null, LocalDate.now(), LocalDate.now().plusDays(5),
-                productId, false, "#000000", "#111111", "#ffffff");
+                false, null, null, LocalDate.now(), LocalDate.now().plusDays(5),
+                productId, false, "#000000", false);
     }
 
     @Test
@@ -94,9 +95,8 @@ class EventServiceImplTest {
         request.setDurationUnit("weeks");
         request.setIsRecurring(true);
         request.setRecurrenceUnit("months");
-        request.setBackgroundColor("#aaaaaa");
-        request.setBorderColor("#bbbbbb");
-        request.setTextColor("#cccccc");
+        request.setColor("#aaaaaa");
+        request.setArchived(true);
 
         when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
@@ -109,16 +109,15 @@ class EventServiceImplTest {
         assertThat(result.getDurationValue()).isEqualTo(10);
         assertThat(result.getDurationUnit()).isEqualTo("weeks");
         assertThat(result.getIsRecurring()).isTrue();
-        assertThat(result.getRecurrenceUnit()).isEqualTo("months");
-        assertThat(result.getBackgroundColor()).isEqualTo("#aaaaaa");
-        assertThat(result.getBorderColor()).isEqualTo("#bbbbbb");
-        assertThat(result.getTextColor()).isEqualTo("#cccccc");
+        assertThat(result.getRecurrenceUnit()).isEqualTo(RecurrenceUnit.MONTH);
+        assertThat(result.getColor()).isEqualTo("#aaaaaa");
+        assertThat(result.isArchived()).isTrue();
     }
 
     @Test
     void updateEvent_colorOnlyPatch_doesNotTouchTitle() {
         EventUpdateRequest request = new EventUpdateRequest();
-        request.setBackgroundColor("#123456");
+        request.setColor("#123456");
 
         when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
@@ -126,7 +125,7 @@ class EventServiceImplTest {
 
         Event result = eventService.updateEvent(eventId, request);
 
-        assertThat(result.getBackgroundColor()).isEqualTo("#123456");
+        assertThat(result.getColor()).isEqualTo("#123456");
         assertThat(result.getTitle()).isEqualTo("Original title");
     }
 

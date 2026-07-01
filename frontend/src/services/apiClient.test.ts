@@ -44,7 +44,6 @@ describe('apiClient response interceptor', () => {
   beforeEach(async () => {
     vi.useFakeTimers()
     toastErrorMock.mockReset()
-    localStorage.setItem('user', JSON.stringify({ id: 'x' }))
     rejectionHandler = undefined
     vi.resetModules()
     // L'import déclenche l'enregistrement de l'intercepteur (et setupPeriodicRefresh).
@@ -58,8 +57,8 @@ describe('apiClient response interceptor', () => {
 
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
     expect(toastErrorMock.mock.calls[0][0]).toMatch(/session expirée/i)
-    // Le user local est purgé immédiatement.
-    expect(localStorage.getItem('user')).toBeNull()
+    // #135 — l'intercepteur ne touche plus à localStorage (aucun miroir user
+    // n'y est écrit) : le user PII est sorti du storage. Rien à purger côté client.
     vi.useRealTimers()
   })
 

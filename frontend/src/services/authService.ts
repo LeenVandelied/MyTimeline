@@ -66,7 +66,7 @@ export const refreshToken = async () => {
 export const logout = async () => {
   try {
     await apiClient.post('/auth/logout')
-    localStorage.removeItem('user')
+    // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
     // Nous ne faisons pas de redirection ici - elle sera gérée par les composants
   } catch (error) {
     throw error

@@ -1,5 +1,7 @@
 package com.matimeline.eventmanager.application.dtos;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.Size;
 
 /**
@@ -11,8 +13,8 @@ import jakarta.validation.constraints.Size;
  * Validation conditionnelle "si présent alors valide" :
  * - {@code title} utilise {@code @Size(min = 1)} (et non {@code @NotBlank}) pour
  *   rejeter une chaîne vide ("" -> HTTP 400) tout en autorisant l'absence (null),
- *   indispensable car certains PATCH (mise à jour des couleurs seules via
- *   {@code updateEventColor}) n'envoient pas de title.
+ *   indispensable car certains PATCH (mise à jour des couleurs seules, par
+ *   exemple) n'envoient pas de title.
  *
  * Le contrat JSON sur le wire est inchangé (mêmes noms de champs que le Map précédent).
  */
@@ -31,11 +33,11 @@ public class EventUpdateRequest {
 
     private String recurrenceUnit;
 
-    private String backgroundColor;
+    private LocalDate recurrenceEndDate;
 
-    private String borderColor;
+    private String color;
 
-    private String textColor;
+    private Boolean archived;
 
     public String getTitle() {
         return title;
@@ -85,27 +87,27 @@ public class EventUpdateRequest {
         this.recurrenceUnit = recurrenceUnit;
     }
 
-    public String getBackgroundColor() {
-        return backgroundColor;
+    public LocalDate getRecurrenceEndDate() {
+        return recurrenceEndDate;
     }
 
-    public void setBackgroundColor(String backgroundColor) {
-        this.backgroundColor = backgroundColor;
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
     }
 
-    public String getBorderColor() {
-        return borderColor;
+    public String getColor() {
+        return color;
     }
 
-    public void setBorderColor(String borderColor) {
-        this.borderColor = borderColor;
+    public void setColor(String color) {
+        this.color = color;
     }
 
-    public String getTextColor() {
-        return textColor;
+    public Boolean getArchived() {
+        return archived;
     }
 
-    public void setTextColor(String textColor) {
-        this.textColor = textColor;
+    public void setArchived(Boolean archived) {
+        this.archived = archived;
     }
 }

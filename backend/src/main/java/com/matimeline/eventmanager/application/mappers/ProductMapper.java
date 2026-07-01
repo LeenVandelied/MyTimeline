@@ -24,8 +24,9 @@ public class ProductMapper {
   }
 
   public Product toDomain(ProductEntity productEntity) {
-    return new Product(productEntity.getId(), productEntity.getName(), categoryMapper.toDomain(productEntity.getCategory()), userMapper.toDomain(productEntity.getUser()), 
-        productEntity.getEvents().stream().map(eventMapper::toDomain).collect(Collectors.toList()));
+    return new Product(productEntity.getId(), productEntity.getName(), categoryMapper.toDomain(productEntity.getCategory()), userMapper.toDomain(productEntity.getUser()),
+        productEntity.getEvents().stream().map(eventMapper::toDomain).collect(Collectors.toList()),
+        productEntity.isArchived(), productEntity.getColor());
   }
 
   public ProductEntity toEntity(Product product) {
@@ -34,6 +35,8 @@ public class ProductMapper {
         entity.setId(product.getId());
     }
     entity.setName(product.getName());
+    entity.setArchived(product.isArchived());
+    entity.setColor(product.getColor());
     entity.setCategory(categoryMapper.toEntity(product.getCategory()));
     entity.setUser(userMapper.toEntity(product.getUser()));
     entity.setEvents(product.getEvents().stream()

@@ -19,13 +19,13 @@ public class EventMapper {
           eventEntity.getDurationUnit(),
           eventEntity.getIsRecurring(),
           eventEntity.getRecurrenceUnit(),
+          eventEntity.getRecurrenceEndDate(),
           eventEntity.getStartDate(),
           eventEntity.getEndDate(),
           eventEntity.getProduct().getId(),
           eventEntity.getIsAllDay(),
-          eventEntity.getBackgroundColor(),
-          eventEntity.getBorderColor(),
-          eventEntity.getTextColor()
+          eventEntity.getColor(),
+          eventEntity.isArchived()
       );
   }
 
@@ -38,13 +38,13 @@ public class EventMapper {
       entity.setDurationUnit(event.getDurationUnit());
       entity.setIsRecurring(event.getIsRecurring());
       entity.setRecurrenceUnit(event.getRecurrenceUnit());
+      entity.setRecurrenceEndDate(event.getRecurrenceEndDate());
       entity.setStartDate((event.getStartDate() != null) ? event.getStartDate() : LocalDate.now());
       entity.setEndDate(event.getEndDate());
       entity.setProduct(productEntity);
       entity.setIsAllDay(event.getIsAllDay());
-      entity.setBackgroundColor(event.getBackgroundColor());
-      entity.setBorderColor(event.getBorderColor());
-      entity.setTextColor(event.getTextColor());
+      entity.setColor(event.getColor());
+      entity.setArchived(event.isArchived());
       return entity;
   }
 }
