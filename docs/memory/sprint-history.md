@@ -196,7 +196,7 @@
   - Vérifier rendu clair/sombre 4 écrans en navigateur [S | frontend] → issue #146
   - Écartés d'office : merge #48 (caduc — react-query déjà présent), rafraîchir br-auth A10 (fait en consolidation).
 
-## Sprint 9 — 2026-07-01 (PLANIFIÉ — cohésion 0.55, Socle modèle v3 + PII localStorage)
+## Sprint 9 — 2026-07-01 (EN COURS — cohésion 0.55, Socle modèle v3 + PII localStorage)
 **Objectif :** Aligner le modèle métier sur le design v3 (blocker racine Wave 3/4) + sécuriser la persistance auth.
 **Milestone GitHub :** #9
 **Issues :** #44 (modèle v3 : couleurs/archived/enum RecurrenceUnit/avatar, migration IRRÉVERSIBLE), #135 (sortir user PII du localStorage, A17)
@@ -204,7 +204,7 @@
 **Migrations Flyway :** V7__design_v3_schema.sql (migration couleurs bg/border/text→color **IRRÉVERSIBLE**)
 **Dépend de :** aucune (débloque S10, S12, S13)
 **Points durs :** migration irréversible (ADR + confirmation avant run prod) ; sync Zod frontend reportée S10/S11.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-01)
 
 ## Sprint 10 — 2026-07-01 (PLANIFIÉ — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
 **Objectif :** CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation) pour débloquer le frontend Wave 3.
