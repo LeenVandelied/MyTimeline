@@ -42,6 +42,18 @@ describe('productCreateSchema', () => {
     })
     expect(result.success).toBe(true)
   })
+
+  // #157 review — désync min(3) vs min(1) : un produit "AB" (2 car., valide
+  // BR-PRO-001) AVEC un premier événement couplé dont le nom dérive du nom
+  // produit ne doit PLUS throw (ZodError générique → produit non créé).
+  it('accepte un nom produit de 2 caractères AVEC un premier événement couplé', () => {
+    const result = productCreateSchema.safeParse({
+      name: 'AB',
+      category: '018f3a2b-0000-7000-8000-0000000000c1',
+      events: [{ name: 'AB', type: 'single', date: new Date('2026-01-01') }],
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe('productUpdateSchema', () => {

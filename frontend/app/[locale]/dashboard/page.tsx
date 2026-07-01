@@ -95,7 +95,7 @@ export default function Dashboard() {
       await logout()
       router.push(`/${locale}/login`)
     } catch (error) {
-      console.error('Erreur lors de la déconnexion :', error)
+      console.error('Erreur lors de la déconnexion :', safeErrorMessage(error))
     }
   }
 
