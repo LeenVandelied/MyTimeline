@@ -273,7 +273,7 @@ export function ProductDrawer({
                         disabled={categoriesQuery.isPending || submitting}
                       >
                         <FormControl>
-                          <SelectTrigger aria-label={t('fields.category')}>
+                          <SelectTrigger>
                             <SelectValue placeholder={t('fields.categoryPlaceholder')} />
                           </SelectTrigger>
                         </FormControl>

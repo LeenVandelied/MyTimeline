@@ -10,6 +10,7 @@ import AddProductButton from '@/components/products/AddProductButton'
 import { FullCalendarEvent, mapToFullCalendarEvent } from '@/types/event'
 import { getProducts } from '@/services/productService'
 import { Product } from '@/types/product'
+import { safeErrorMessage } from '@/lib/safe-error'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import dayjs from 'dayjs'
 import { AppFooter } from '@/components/ui/footer-app'
@@ -61,17 +62,16 @@ export default function Dashboard() {
         ),
       )
     } catch (error) {
-      console.error('Erreur lors du chargement des données :', error)
+      console.error('Erreur lors du chargement des données :', safeErrorMessage(error))
       if (
         error instanceof Error &&
         'response' in error &&
         typeof (error as ApiError).response === 'object' &&
         (error as ApiError).response?.status === 403
       ) {
-        console.error("Détails de l'erreur 403:", {
-          userId: user?.id,
-          user: user,
-        })
+        // NE PAS logger l'objet `user` brut (PII : email/username). Seul l'id
+        // suffit à corréler un 403 côté observabilité.
+        console.error("Détails de l'erreur 403:", { userId: user?.id })
       }
     } finally {
       setLoadingEvents(false)

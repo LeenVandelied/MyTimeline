@@ -1,12 +1,15 @@
 import apiClient from './apiClient'
 import { Product, ProductCreate, ProductUpdate } from '@/types/product'
+import { safeErrorMessage } from '@/lib/safe-error'
 
 export const getProducts = async (userId: string): Promise<Product[]> => {
   try {
     const response = await apiClient.get(`/users/${userId}/products`)
     return response.data
   } catch (error) {
-    console.error('Erreur lors de la récupération des produits :', error)
+    // NE JAMAIS logger l'objet axios brut (error.config.data/headers = body +
+    // Authorization/cookies). On se limite à un message assaini.
+    console.error('Erreur lors de la récupération des produits :', safeErrorMessage(error))
     throw error
   }
 }
@@ -19,7 +22,7 @@ export const createProduct = async (
     const response = await apiClient.post(`/users/${userId}/products`, productData)
     return response.data
   } catch (error) {
-    console.error('Erreur lors de la création du produit :', error)
+    console.error('Erreur lors de la création du produit :', safeErrorMessage(error))
     throw error
   }
 }
@@ -41,7 +44,7 @@ export const updateProduct = async (
     const response = await apiClient.patch(`/users/${userId}/products/${productId}`, productData)
     return response.data
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du produit :', error)
+    console.error('Erreur lors de la mise à jour du produit :', safeErrorMessage(error))
     throw error
   }
 }
@@ -57,7 +60,7 @@ export const deleteProduct = async (userId: string, productId: string): Promise<
   try {
     await apiClient.delete(`/users/${userId}/products/${productId}`)
   } catch (error) {
-    console.error('Erreur lors de la suppression du produit :', error)
+    console.error('Erreur lors de la suppression du produit :', safeErrorMessage(error))
     throw error
   }
 }
