@@ -43,8 +43,13 @@ public class EventServiceImpl implements EventService {
         
         LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
 
+        // PIT-S10-003 / convention create : id NULL à la création. EventEntity porte
+        // @Version + @GeneratedValue(AUTO) ; un id pré-assigné route persist() vers l'état
+        // « détaché » (Hibernate 6.4 : "detached entity with generated id has an
+        // uninitialized version value null") et casse l'INSERT réel Postgres. @GeneratedValue
+        // attribue l'id, @Version s'initialise (aligné sur CategoryServiceImpl).
         Event event = new Event(
-                UUID.randomUUID(),
+                null,
                 eventCreationRequest.getName(),
                 eventCreationRequest.getType(),
                 eventCreationRequest.getDurationValue(),

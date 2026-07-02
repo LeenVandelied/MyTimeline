@@ -54,15 +54,26 @@ public class ProductServiceImpl implements ProductService {
         // OU être système (ownerId == null). Sinon -> 404 (anti-énumération).
         Category category = resolveAssignableCategory(request.getCategory(), user.getId());
 
-        Product product = new Product(UUID.randomUUID(), request.getName(), category, user, new ArrayList<>());
+        // PIT-S10-003 / convention create : id NULL à la création. ProductEntity porte
+        // @Version + @GeneratedValue(AUTO) ; un id pré-assigné route persist() vers l'état
+        // « détaché » (Hibernate 6.4 : "detached entity with generated id has an
+        // uninitialized version value null") et casse l'INSERT réel Postgres. En laissant
+        // l'id à null, @GeneratedValue l'attribue et @Version s'initialise (aligné sur
+        // CategoryServiceImpl : new Category(null, ...)).
+        Product product = new Product(null, request.getName(), category, user, new ArrayList<>());
         // #158 : surcharge couleur produit (null = héritage de la catégorie côté front).
         product.setColor(request.getColor());
 
         request.getEvents().forEach(eventCreationRequest -> {
             LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
     
+            // id NULL (idem product) : l'EventEntity imbriquée est persistée en cascade,
+            // @GeneratedValue attribue l'id et @Version l'initialise. Un id pré-assigné
+            // reproduirait la PropertyValueException "detached entity ... uninitialized
+            // version" sur l'insert de l'event. Le lien au produit passe par l'objet parent
+            // (ProductMapper.toEntity), pas par ce productId (null ici, sans effet).
             Event event = new Event(
-                    UUID.randomUUID(),
+                    null,
                     eventCreationRequest.getName(),
                     eventCreationRequest.getType(),
                     eventCreationRequest.getDurationValue(),
