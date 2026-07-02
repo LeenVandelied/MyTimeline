@@ -17,9 +17,10 @@
 --      effacée ; un event à recurrence_unit NULL reste valide, cf. CHECK),
 --   4. repose le CHECK aligné sur l'enum.
 --
--- IDEMPOTENTE / SÛRE sur base déjà propre (post-V7) : les valeurs déjà en
--- WEEK/MONTH/YEAR ne matchent aucune branche d'alias -> inchangées ; aucune
--- valeur invalide -> le UPDATE de neutralisation ne touche rien.
+-- IDEMPOTENTE / SÛRE sur base déjà propre (post-V7) : une valeur déjà en enum
+-- (ex. 'WEEK') passe par lower(trim())='week' et matche la branche 'week' ->
+-- réécrite à l'identique 'WEEK' (aucune corruption, pas de double-conversion) ;
+-- aucune valeur invalide -> le UPDATE de neutralisation ne touche rien.
 --
 -- ddl-auto=validate : V9 ne modifie AUCUNE colonne/type (schéma inchangé),
 -- uniquement des données + le CHECK. Aucun impact mapping JPA.
