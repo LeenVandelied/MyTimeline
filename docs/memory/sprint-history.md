@@ -298,5 +298,52 @@
 **Dette identifiée (hors scope, non ticketée) :** purge sessions expirées (croissance table), A8 AuthController→UserServiceImpl (port), JwtCookieFactory à factoriser. **Bug préexistant hors sprint :** inscription réelle cassée (UserMapper setId + @Version null → Detached entity, PIT-S10-003) → tâche spawn dédiée par fullstack-dev #73, impacte le register en prod.
 **Status :** Terminé
 
-> **⚠ Gap connu du plan S9–S13 :** la Timeline frontend (#55/#63/#64/#66) n'est PAS couverte — elle dépend de #47 (extraction composants Timeline, non planifié). Prévoir un 6e sprint dédié #47 pour débloquer le domaine events frontend.
+> **✅ Gap S9–S13 adressé par le plan S14–S18 :** #47 (extraction Timeline) est planifié en S16, unbloqueur explicite de la Timeline frontend (#55 en S17, #66 en S18). Les autres vues Timeline (#63/#64) restent au backlog post-S18.
 > **Plan généré le 2026-07-01** (`/ai-env:sprint plan 5`, cohésion moyenne 0.55). Backlog restant : dette review backend (#92-#94/#123-#134/#139-#148), Waves 6/7 (#58/#69/#72/#76/#77/#81/#82…), #62/#68/#75/#80/#83/#86/#87/#102.
+
+## Sprint 14 — 2026-07-03 (PLANIFIÉ — cohésion 0.42, Sécurité backend + hygiène events)
+**Objectif :** Upgrade Spring Boot 3.3/3.4 LTS (CVE P0) + cluster hygiène events (NPE, validations Bean, contraintes CHECK DB).
+**Milestone GitHub :** #14
+**Issues :** #162 (Boot upgrade P0), #161 (CVE frontend P0), #164 (NPE calculateEndDate), #168 (validations Bean BR-EVE), #128 (CHECK DB V11)
+**Vagues :** V1 = #161 + #164 + #162 parallèles (fichiers disjoints) | V2 = #168 (après build stable) | V3 = #128 (V11, après validation applicative)
+**Migrations Flyway :** V11 (contraintes CHECK events, #128)
+**Dépend de :** aucune
+**Status :** Planifié
+
+## Sprint 15 — (PLANIFIÉ — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
+**Objectif :** DTO EventResponse + port EventService pur (backend) → sync Zod frontend → E2E golden path Playwright + job CI.
+**Milestone GitHub :** #15
+**Issues :** #165 (DTO EventResponse + port), #150 (sync Zod events v3), #163 (E2E golden-path + CI)
+**Vagues :** V1 = #165 (backend fixe le contrat) → V2 = #150 (frontend suit) → V3 = #163 (E2E valide) — séquentiel strict
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 14 (#162 CI stable, #168 `color` au DTO création)
+**Status :** Planifié
+
+## Sprint 16 — (PLANIFIÉ — cohésion 0.55, Fondations design + extraction Timeline #47)
+**Objectif :** ArchUnit hexagonal (backend) + Storybook core DS + **extraction composants Timeline (#47, unbloqueur events frontend)**.
+**Milestone GitHub :** #16
+**Issues :** #166 (ArchUnit), #46 (Storybook core DS), #47 (extraction Timeline)
+**Vagues :** V1 = #166 (backend) ‖ #46 (Storybook) | V2 = #47 (après config Storybook de #46)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 15 (#150 contrat consommé par composants extraits)
+**Status :** Planifié
+
+## Sprint 17 — (PLANIFIÉ — cohésion 0.72, Timeline events desktop)
+**Objectif :** Vue Timeline desktop (zoom/minimap/drawer/clavier), réécriture sur les sous-composants #47.
+**Milestone GitHub :** #17
+**Issues :** #55 (Timeline desktop) — **#63 (mobile portrait) dé-scopé → backlog** (tenir ~8 pts)
+**Vagues :** V1 = #55 seul
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 16 (#47 obligatoire) + Sprint 15 (#150 contrat)
+**Status :** Planifié
+
+## Sprint 18 — (PLANIFIÉ — cohésion 1.0 après dé-scope, Formulaire événement)
+**Objectif :** Formulaire événement complet (desktop + mobile portrait + paysage), schéma Zod unifié.
+**Milestone GitHub :** #18
+**Issues :** #66 (formulaire événement) — **#62 (Drawer Catégorie) dé-scopé → backlog** (cohésion 0.34 → 1.0, futur sprint categories/products avec #68)
+**Vagues :** V1 = #66 seul
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 17 (Timeline pour preview/intégration) + Sprint 15 (#150 contrat)
+**Status :** Planifié
+
+> **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
