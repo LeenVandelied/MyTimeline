@@ -59,7 +59,11 @@ public class SessionServiceImpl implements SessionService {
             // (cf. commentaire dans JwtFilter). Ici, absence de jti != révoqué.
             return true;
         }
+        // Cohérence avec findActiveByUserId (GET /sessions) : une session non révoquée
+        // mais expirée n'est pas active. En pratique le JWT expiré est déjà rejeté par
+        // validateToken en amont ; ce filtre aligne les deux chemins de lecture (defense-in-depth).
         return sessionRepository.findByJti(jti)
+                .filter(s -> s.getExpiresAt() == null || s.getExpiresAt().isAfter(LocalDateTime.now()))
                 .map(Session::isActive)
                 .orElse(false);
     }

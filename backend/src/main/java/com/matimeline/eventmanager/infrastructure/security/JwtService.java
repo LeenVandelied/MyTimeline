@@ -62,6 +62,9 @@ public class JwtService {
      * et les {@link JwtException} de signature/format, comme {@link #extractUsername}.
      */
     public String extractJti(String token) {
+        if (token == null) {
+            return null;
+        }
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
