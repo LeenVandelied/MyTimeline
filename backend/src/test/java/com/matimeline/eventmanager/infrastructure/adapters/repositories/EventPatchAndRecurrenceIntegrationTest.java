@@ -12,7 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
@@ -96,6 +98,72 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
         assertThat(reloaded.getEndDate()).isEqualTo(start.plusDays(10));
         assertThat(reloaded.getDurationValue()).isEqualTo(10);
+    }
+
+    /**
+     * BR-EVE-006 (#95fix) : PATCH isRecurring=true sur un event dont recurrence_unit est
+     * null en base (jamais fourni) -> RecurrenceUnitRequiredException (mappée 400), état
+     * incohérent NON persisté.
+     */
+    @Test
+    void patchIsRecurringTrue_onEventWithoutRecurrenceUnit_isRejected() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i95-event-" + UUID.randomUUID());
+        entity.setType("single");
+        entity.setIsRecurring(false);
+        entity.setRecurrenceUnit(null);
+        entity.setStartDate(start);
+        entity.setEndDate(start);
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+
+        assertThatThrownBy(() -> {
+            eventService.updateEvent(eventId, request);
+            em.flush();
+        }).isInstanceOf(RecurrenceUnitRequiredException.class);
+    }
+
+    /**
+     * NON-RÉGRESSION BR-EVE-006 (#95fix) : PATCH isRecurring=true SANS recurrenceUnit dans
+     * le payload, mais l'event porte DÉJÀ recurrence_unit=WEEK en base -> accepté, persisté.
+     * C'est le cas que la garde état-fusionné ne DOIT pas casser.
+     */
+    @Test
+    void patchIsRecurringTrue_onEventWithExistingRecurrenceUnit_isAccepted() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i95-event-" + UUID.randomUUID());
+        entity.setType("single");
+        entity.setIsRecurring(false);
+        entity.setRecurrenceUnit(RecurrenceUnit.WEEK);
+        entity.setStartDate(start);
+        entity.setEndDate(start);
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+        eventService.updateEvent(eventId, request);
+        em.flush();
+        em.clear();
+
+        Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
+        assertThat(reloaded.getIsRecurring()).isTrue();
+        assertThat(reloaded.getRecurrenceUnit().name()).isEqualTo("WEEK");
     }
 
     /** V9 : le CHECK ck_events_recurrence_unit rejette une valeur invalide au niveau DB. */

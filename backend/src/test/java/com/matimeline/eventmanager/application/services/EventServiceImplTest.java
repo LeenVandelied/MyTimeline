@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -202,6 +203,61 @@ class EventServiceImplTest {
         Event result = eventService.updateEvent(eventId, request);
 
         assertThat(result.getEndDate()).isEqualTo(originalEnd);
+    }
+
+    @Test
+    void updateEvent_setIsRecurringTrue_onEventWithoutRecurrenceUnit_throws() {
+        // BR-EVE-006 (#95fix) : PATCH {isRecurring:true} sur un event dont recurrenceUnit
+        // est null en base (jamais fourni) -> état fusionné incohérent -> exception (400).
+        // existingEvent a recurrenceUnit=null (voir setUp).
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+
+        assertThatThrownBy(() -> eventService.updateEvent(eventId, request))
+                .isInstanceOf(RecurrenceUnitRequiredException.class);
+
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_setIsRecurringTrue_onEventWithExistingRecurrenceUnit_accepts() {
+        // NON-RÉGRESSION BR-EVE-006 (#95fix) : PATCH {isRecurring:true} SANS recurrenceUnit
+        // dans le payload, mais l'event a DÉJÀ un recurrenceUnit valide en base -> 200, PAS
+        // de rejet. C'est le cas que la garde ne DOIT pas casser (état fusionné valide).
+        Event recurringEvent = new Event(
+                eventId, "T", "single", 0, null,
+                false, RecurrenceUnit.WEEK, null, LocalDate.now(), LocalDate.now(),
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(recurringEvent));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getIsRecurring()).isTrue();
+        assertThat(result.getRecurrenceUnit()).isEqualTo(RecurrenceUnit.WEEK);
+        verify(eventRepository, times(1)).save(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_setIsRecurringTrueAndRecurrenceUnitTogether_accepts() {
+        // BR-EVE-006 (#95fix) : payload fournissant isRecurring=true + recurrenceUnit -> 200.
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+        request.setRecurrenceUnit("WEEK");
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getIsRecurring()).isTrue();
+        assertThat(result.getRecurrenceUnit()).isEqualTo(RecurrenceUnit.WEEK);
     }
 
     @Test

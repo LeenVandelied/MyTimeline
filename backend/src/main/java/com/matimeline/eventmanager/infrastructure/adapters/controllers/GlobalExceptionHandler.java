@@ -18,6 +18,7 @@ import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException
 import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 
@@ -112,6 +113,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RecurrenceUnitRequiredException.class)
+    public ResponseEntity<Map<String, Object>> handleRecurrenceUnitRequired(RecurrenceUnitRequiredException ex) {
+        // BR-EVE-006 (#95fix) : PATCH /api/events/{id} amenant l'état fusionné à
+        // isRecurring=true / recurrenceUnit=null -> 400. Le chemin CREATE l'impose déjà via
+        // @AssertTrue (400) ; ici la garde est côté service (état fusionné, pas payload) car
+        // un PATCH partiel peut légitimement s'appuyer sur un recurrenceUnit déjà en base.
+        // Corps plat {"error":...} cohérent avec les autres erreurs métier 400.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "recurrenceUnit is required when isRecurring is true"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
