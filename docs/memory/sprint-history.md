@@ -306,9 +306,9 @@
 **Milestone GitHub :** #14
 **Issues :** #162 (Boot upgrade P0), #161 (CVE frontend P0), #164 (NPE calculateEndDate), #168 (validations Bean BR-EVE), #128 (CHECK DB V11)
 **Vagues :** V1 = #161 + #164 + #162 parallèles (fichiers disjoints) | V2 = #168 (après build stable) | V3 = #128 (V11, après validation applicative)
-**Migrations Flyway :** V11 (contraintes CHECK events, #128)
+**Migrations Flyway :** V11 (contraintes CHECK events, #128) — dernière migration réelle = V10__create_sessions.sql, prochain numéro libre = V11 (l'architect avait raison)
 **Dépend de :** aucune
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 15 — (PLANIFIÉ — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
 **Objectif :** DTO EventResponse + port EventService pur (backend) → sync Zod frontend → E2E golden path Playwright + job CI.
