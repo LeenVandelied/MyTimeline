@@ -2,7 +2,7 @@
 
 RETOUR :
 
-- commits: [à compléter après commit]
+- commits: [d3a776f]
 
 - resume:
   OBJECTIF: registre de sessions DB (Redis absent) rendant les JWT stateless révocables.

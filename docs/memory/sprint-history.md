@@ -280,7 +280,7 @@
   - Bilan : 1 issue créée (backlog), 0 discard, 0 absorbé. Le follow-up #54 (ProductArchivedFilter version=null) était déjà résolu par #158 (pas un follow-up vivant).
 **Status :** Terminé
 
-## Sprint 13 — 2026-07-01 (PLANIFIÉ — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
+## Sprint 13 — 2026-07-01 (EN COURS — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
 **Objectif :** Sessions actives (jti + révocation) + suppression de compte (DELETE /me cascade).
 **Milestone GitHub :** #13
 **Issues :** #73 (sessions actives jti), #78 (suppression compte DELETE /me)
@@ -288,7 +288,7 @@
 **Migrations Flyway :** V11__create_sessions.sql (index sur jti obligatoire) + V12 si cascade DB requise (#78)
 **Dépend de :** Sprint 9 (#44 avatar — cohérence User)
 **Reporté :** #75 (avatar — infra MinIO/S3), #86/#87 (Réglages frontend).
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-02)
 
 > **⚠ Gap connu du plan S9–S13 :** la Timeline frontend (#55/#63/#64/#66) n'est PAS couverte — elle dépend de #47 (extraction composants Timeline, non planifié). Prévoir un 6e sprint dédié #47 pour débloquer le domaine events frontend.
 > **Plan généré le 2026-07-01** (`/ai-env:sprint plan 5`, cohésion moyenne 0.55). Backlog restant : dette review backend (#92-#94/#123-#134/#139-#148), Waves 6/7 (#58/#69/#72/#76/#77/#81/#82…), #62/#68/#75/#80/#83/#86/#87/#102.
