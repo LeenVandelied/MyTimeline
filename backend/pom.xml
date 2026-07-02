@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.2</version>
+		<version>3.4.4</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.matimeline</groupId>
@@ -46,6 +46,16 @@
 			forké par surefire (cf. build/plugins). Surcharge : -Ddocker.api.version=1.51.
 		-->
 		<docker.api.version>1.44</docker.api.version>
+		<!--
+			jjwt (#162) — NON géré par le BOM Spring Boot : version fixée ici.
+			Passage 0.11.5 → 0.13.0 (correctif CVE + fin de support 0.11.x).
+			⚠ API BREAKING depuis 0.12.0 : Jwts.parserBuilder()→Jwts.parser(),
+			setSigningKey(Key)→verifyWith(SecretKey), parseClaimsJws()→parseSignedClaims(),
+			getBody()→getPayload(), builder setSubject/setId/... dépréciés au profit de
+			subject()/id()/issuedAt()/expiration(), signWith(key, SignatureAlgorithm)→
+			signWith(SecretKey) (algo HS256 déduit de la taille de clé). Cf. JwtService.
+		-->
+		<jjwt.version>0.13.0</jjwt.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -66,17 +76,20 @@
 			<scope>runtime</scope>
 		</dependency>
 		<!--
-			Flyway (#42) — migrations versionnées. Spring Boot 3.2.2 gère la version
-			via son BOM : Flyway 9.22.3. En Flyway 9.x, le support Postgres est
-			INCLUS dans flyway-core ; le module dédié flyway-database-postgresql
-			n'existe pas en 9.x (il n'apparaît qu'à partir de Flyway 10). On garde
-			donc uniquement flyway-core, sans surcharger la version (alignée BOM).
-			NB : si migration future vers Spring Boot 3.3+/Flyway 10+, AJOUTER
-			flyway-database-postgresql (le support Postgres quitte le core en 10).
+			Flyway (#42, #162) — migrations versionnées. Spring Boot 3.4.4 gère la
+			version via son BOM : Flyway 10.20.1. En Flyway 10+, le support Postgres
+			a QUITTÉ flyway-core → il faut ajouter le module dédié
+			flyway-database-postgresql, sinon le démarrage Flyway casse
+			("Unsupported Database: PostgreSQL" / "no database module"). DEC-S3-001.
+			Version alignée sur le BOM Boot (pas de surcharge).
 		-->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -121,18 +134,18 @@
 		<dependency>
 				<groupId>io.jsonwebtoken</groupId>
 				<artifactId>jjwt-api</artifactId>
-				<version>0.11.5</version>
+				<version>${jjwt.version}</version>
 		</dependency>
 		<dependency>
 				<groupId>io.jsonwebtoken</groupId>
 				<artifactId>jjwt-impl</artifactId>
-				<version>0.11.5</version>
+				<version>${jjwt.version}</version>
 				<scope>runtime</scope>
 		</dependency>
 		<dependency>
 				<groupId>io.jsonwebtoken</groupId>
 				<artifactId>jjwt-jackson</artifactId>
-				<version>0.11.5</version>
+				<version>${jjwt.version}</version>
 				<scope>runtime</scope>
 		</dependency>
 		<!--

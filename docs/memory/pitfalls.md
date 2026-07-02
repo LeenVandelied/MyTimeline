@@ -153,3 +153,9 @@ Aucun test n'exerçait le login RÉEL avant #73 ; le premier test qui émet un t
 
 ## PIT-S13-004 — `SecurityContext` thread-local fuité d'un test slice pollue les tests full-chain suivants
 Un test `standaloneSetup` qui pose une `Authentication` laisse le `SecurityContextHolder` thread-local rempli → un test `@AutoConfigureMockMvc` suivant hérite du contexte et le `JwtFilter` saute la vérif de révocation (faux vert). Fix/Prévention : `SecurityContextHolder.clearContext()` en `@BeforeEach`/`@AfterEach` des tests full-chain qui suivent des slices posant une Authentication. (Sprint 13 #73)
+
+## PIT-S14-001 — jjwt 0.12+ : `signWith(key)` seul déduit l'algo selon la taille de clé → figer l'algo
+Depuis jjwt 0.12, `signWith(key)` sans algo explicite déduit HS256/384/512 de la taille de la clé HMAC → un changement de secret peut faire dériver l'algo et casser la vérification des tokens déjà émis. Fix/Prévention : toujours figer explicitement `signWith(key, Jwts.SIG.HS256)` à l'upgrade jjwt. API 0.13 breaking : `parserBuilder()`→`parser()`, `setSigningKey`→`verifyWith`, `parseClaimsJws`→`parseSignedClaims`, `getBody`→`getPayload`, `Key`→`SecretKey`. (Sprint 14 #162)
+
+## PIT-S14-002 — Architect Phase 0.5 « aucune evidence » faux négatif : lire le fichier cible réel, pas grep du nom d'exception
+Sur S14, l'architect a marqué #164 (et partiellement #168) `possibly_done: false` / « aucune evidence » alors que le fix existait déjà en `dev` (commit #54). Le pack `br-events.md` (annoté « ✅ RÉSOLU ») avait raison ; l'architect avait tort (grep du nom d'exception ≠ lecture du code). Coût évité grâce aux garde-fous fullstack-dev qui vérifient `git log`/le fichier réel avant de coder → aucun faux respawn, mais l'annotation reste trompeuse. Prévention : Phase 0.5 doit lire le fichier cible réel + `git log -- <fichier>` avant de conclure « aucune evidence ». (Sprint 14 #164/#168)
