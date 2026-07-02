@@ -314,13 +314,14 @@
 **Tests :** Backend 237/237 green | Frontend 70/70 green | E2E : `frontend/e2e/` vide (préexistant).
 **Nouveaux pitfalls / decisions / patterns :** PIT-S14-001 (jjwt HS256 figé), PIT-S14-002 (architect Phase 0.5 lire fichier réel), DEC-S14-001 (BR-EVE-012 422), DEC-S14-002 (Boot 3.4.4/flyway-pg), PAT-S14-001 (CHECK conditionnel IS NOT TRUE + neutralisation).
 **Absorbé en cours (XS) :** aucun. #164 = no-op (fix préexistant #54).
-**Follow-ups proposés (NON-XS) — à arbitrer Phase 4 :**
-  - Contrat HTTP 400-vs-422 erreurs métier events (#164/#168 exposent 422) [décision produit | events]
-  - #150 (S15) : color au create + refine recurrenceEndDate côté frontend Zod [triage S | events/frontend]
-  - 5 CVE CRITICAL postérieures à Boot 3.4.4 → bump patch-release [triage M | devops]
-  - npm audit devDeps (chaîne Storybook/Vitest) [triage S | devops]
-  - next-env.d.ts non commitable (ESLint triple-slash) → ignore ESLint/lint-staged [triage XS | devops]
-  - Pré-prod (db-expert) : flyway validate sur dump réel + comptage lignes non conformes avant V11 [triage S | devops]
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Contrat HTTP 400-vs-422 erreurs métier events → **décision : garder 422** (dev, coh. DEC-S12-001/DEC-S14-001). Question fermée, aucun changement de code.
+  - 5 CVE CRITICAL postérieures à Boot 3.4.4 → **issue #180** (P1, M, devops/sécurité, backlog)
+  - Validation pré-prod Flyway 10/V11 sur base réelle (checksum + comptage lignes) → **issue #181** (P2, S, devops, backlog)
+  - npm audit devDeps (chaîne Storybook/Vitest) → **issue #182** (P3, S, devops, backlog)
+  - next-env.d.ts non commitable (ESLint triple-slash) → **issue #183** (P3, XS, devops, backlog)
+  - #150 (S15) : color au create + refine recurrenceEndDate côté frontend Zod → déjà tracké (issue existante S15), non recréé
+**Bilan triage :** 4 issues créées (backlog libre : #180-#183) · 0 discard · 0 absorbée · 1 décision produit fermée (422)
 **Status :** Terminé (merge en cours de clôture)
 
 ## Sprint 15 — (PLANIFIÉ — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
