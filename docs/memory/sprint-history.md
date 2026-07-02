@@ -258,15 +258,27 @@
   - Scrub log axios brut `authService.ts:61` (refreshToken) [triage XS | domaine auth] → traité hors sprint (background task, session séparée)
 **Status :** Clôture en cours (mémoire consolidée ; triage follow-ups fait ; merge Phase 5)
 
-## Sprint 12 — 2026-07-01 → (En cours — démarré 2026-07-02, cohésion 0.60, Backend récurrence events — Wave 4 back)
+## Sprint 12 — 2026-07-01 → 2026-07-02 (Terminé — merge PR #174 dans dev, cohésion 0.60, Backend récurrence events — Wave 4 back)
 **Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl + persistance couleur produit (#158, follow-up S11 rattaché au milestone).
-**Milestone GitHub :** #12
-**Issues :** #54 (service récurrence), #95 (findEventById double-hit + printStackTrace), #67 (flag `capped` limite 4000), #158 (champ `color` produit + migration — follow-up S11, label sprint-12 ajouté au démarrage)
-**Vagues :** V1 = #54 + #158 parallèles (events vs products, fichiers disjoints) | V2 = #95 (même EventServiceImpl.java que #54) + #67 (consomme `capped` de #54) parallèles
-**Migrations Flyway :** V9__neutralize_invalid_recurrence_unit.sql (#54) + V10__add_product_color.sql (#158) — max constaté sur dev = V8, numérotation réassignée au démarrage (le plan disait V10 pour #54)
-**Dépend de :** Sprint 9 (#44 : enum RecurrenceUnit + recurrenceEndDate) — vérifié livré (#28/#30/#44 CLOSED, enum présent dans le code)
-**Reporté :** #55/#63/#64/#66 (Timeline + form event frontend) — dépendent de #47 (extraction composants, NON planifié).
-**Status :** En cours
+**Milestone GitHub :** #12 (fermé après merge)
+**Issues livrées (3) :** #54 (service récurrence + V9), #95 (findEventById mono-hit + printStackTrace), #158 (champ `color` produit — follow-up S11)
+**Issue retirée (bloquée) :** #67 (hint frontend `capped`) — dé-scopée : le formulaire événement n'a ni champ `recurrenceEndDate`, ni hook de mutation exposant la réponse, ni endpoint exposant `capped` ; dépend de l'issue 4.5 (form event complet, reportée car dépend de #47 non planifié). Label sprint-12 retiré, à reséquencer après un sprint frontend events.
+**Vagues exécutées :** V1 = #54 + #158 parallèles (events vs products) | V2 = #95 seul (#67 skippée) | + 1 cycle correctif post-review
+**Migrations Flyway :** V9__neutralize_invalid_recurrence_unit.sql (#54). **Pas de V10** : colonne `products.color` préexistante (V7/#44), #158 sans migration (cf. [[DEC-S12-002]]). Numérotation réassignée au démarrage (plan disait V10 pour #54 ; max réel sur dev = V8).
+**Cohésion score :** 0.60
+**Commits :** 6 — fa55669 (#54), e01e7de (#158), c50a341 (#95), d711ea8 (fix review BR-EVE-006 PATCH), 534c901 (commentaire V9), e0d617b (artefacts+audit)
+**BR impactées :** BR-EVE-002/004/006, BR-PRO-001/002/009/010
+**Reviews :** db-expert V9 [OK] ; reviewer batch = **1 CRITIQUE RÉSOLU** (BR-EVE-006 non appliquée au PATCH → garde service `RecurrenceUnitRequiredException`→400, +5 tests) / 2 MAJEUR auto-rétractés (faux positifs) / 1 MINEUR (commentaire V9) résolu.
+**Tests :** Backend 187/187 green (Testcontainers) | Frontend 70/70 green (Vitest) + tsc propre | E2E : harness absent (gap pré-existant, non régressif — plan /create-e2e post-merge, testid `pick-color`).
+**Nouveaux pitfalls / patterns / décisions :** PIT-S12-001 (RepoJpaImpl.save version=null au PATCH), PIT-S12-002 (existsById retiré casse stubs Mockito strict), PIT-S12-003 (git add -A worktree partagé) ; PAT-S12-001 (validation conditionnelle create @AssertTrue + PATCH garde service), PAT-S12-002 (flag clearXxx reset nullable PATCH) ; DEC-S12-001 (exceptions 422/400 dédiées), DEC-S12-002 (pas de migration si colonne préexiste).
+**Incidents orchestration :** subagent #158 coupé par limite session avant rapport (commit propre, done.md reconstruit) ; test-runner a sous-compté (148/60 vs réel 187/70, re-vérifié par le lead).
+**Dépend de :** Sprint 9 (#44 : enum RecurrenceUnit + recurrenceEndDate) — vérifié livré (#28/#30/#44 CLOSED).
+**Reporté :** #55/#63/#64/#66/#67 (Timeline + form event frontend) — dépendent de #47 (extraction composants, NON planifié).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `EventServiceImpl.deleteById` double-hit (existsById+deleteById, nuance 404) [triage XS | domaine events] → **issue #175** (backlog libre, sans milestone)
+  - #67 (hint frontend `capped`) bloquée → gardée ouverte, **label sprint-12 retiré** (reséquencer après sprint frontend events)
+  - Bilan : 1 issue créée (backlog), 0 discard, 0 absorbé. Le follow-up #54 (ProductArchivedFilter version=null) était déjà résolu par #158 (pas un follow-up vivant).
+**Status :** Terminé
 
 ## Sprint 13 — 2026-07-01 (PLANIFIÉ — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
 **Objectif :** Sessions actives (jti + révocation) + suppression de compte (DELETE /me cascade).
