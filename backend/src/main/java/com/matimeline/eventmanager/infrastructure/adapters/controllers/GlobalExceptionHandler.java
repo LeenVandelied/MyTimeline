@@ -19,6 +19,7 @@ import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException
 import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.exceptions.SessionNotFoundException;
@@ -138,6 +139,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "recurrenceUnit is required when isRecurring is true"));
+    }
+
+    @ExceptionHandler(RecurrenceEndDateBeforeStartException.class)
+    public ResponseEntity<Map<String, Object>> handleRecurrenceEndDateBeforeStart(
+            RecurrenceEndDateBeforeStartException ex) {
+        // BR-EVE-012 (#168) : PATCH amenant l'état fusionné à recurrenceEndDate < startDate
+        // -> 422 Unprocessable Entity. Requête bien formée (400 = Bean Validation en amont)
+        // mais sémantiquement incohérente. Même statut que InvalidDurationUnitException
+        // (erreur métier events, cf. DEC-S12-001) plutôt que 400. Corps détaillé buildBody.
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

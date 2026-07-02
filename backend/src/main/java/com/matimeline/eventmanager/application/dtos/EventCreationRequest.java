@@ -33,6 +33,16 @@ public class EventCreationRequest {
 
     private Boolean isAllDay;
 
+    /**
+     * BR-EVE-014 (#168) : couleur d'affichage de l'événement, fournie DÈS la création
+     * (auparavant seul {@code EventUpdateRequest} l'exposait -> il fallait créer puis PATCH).
+     * Champ ADDITIF optionnel (nullable) : les clients existants qui ne l'envoient pas
+     * restent valides (non-cassant). Aligné sur {@code EventUpdateRequest.color} (String
+     * libre, aucune contrainte de format hex côté backend — cf. BR-EVE-009). Le refine Zod
+     * frontend correspondant reste à répercuter (#150, S15).
+     */
+    private String color;
+
     @NotNull(message = "Product ID is required")
     private UUID productId;
 
@@ -123,5 +133,13 @@ public class EventCreationRequest {
 
     public void setIsAllDay(Boolean isAllDay) {
         this.isAllDay = isAllDay;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

@@ -13,6 +13,7 @@ import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
@@ -48,6 +49,10 @@ public class EventServiceImpl implements EventService {
         // « détaché » (Hibernate 6.4 : "detached entity with generated id has an
         // uninitialized version value null") et casse l'INSERT réel Postgres. @GeneratedValue
         // attribue l'id, @Version s'initialise (aligné sur CategoryServiceImpl).
+        // BR-EVE-014 (#168) : color est désormais fournissable dès la création (aligné sur
+        // EventUpdateRequest). Constructeur 14-arg pour porter color ; recurrenceEndDate=null
+        // (non exposé au create, seul le PATCH le règle) et archived=false (BR-EVE-013 : un
+        // event ne peut pas naître archivé).
         Event event = new Event(
                 null,
                 eventCreationRequest.getName(),
@@ -56,10 +61,13 @@ public class EventServiceImpl implements EventService {
                 eventCreationRequest.getDurationUnit(),
                 eventCreationRequest.getIsRecurring(),
                 RecurrenceUnit.fromString(eventCreationRequest.getRecurrenceUnit()),
+                null,
                 startDate,
                 Utils.calculateEndDate(eventCreationRequest, startDate),
                 product.getId(),
-                eventCreationRequest.getIsAllDay()
+                eventCreationRequest.getIsAllDay(),
+                eventCreationRequest.getColor(),
+                false
         );
         return eventRepository.save(event);
     }
@@ -110,6 +118,17 @@ public class EventServiceImpl implements EventService {
         // Le chemin CREATE reste couvert par EventCreationRequest.@AssertTrue (inchangé).
         if (Boolean.TRUE.equals(event.getIsRecurring()) && event.getRecurrenceUnit() == null) {
             throw new RecurrenceUnitRequiredException(id);
+        }
+
+        // BR-EVE-012 (#168) : garde sur l'ÉTAT FUSIONNÉ. recurrenceEndDate borne la fin d'une
+        // récurrence ; une date de fin AVANT startDate est incohérente (auparavant acceptée en
+        // silence). startDate n'est pas modifiable via EventUpdateRequest : on compare la
+        // recurrenceEndDate fusionnée à la startDate persistée. -> RecurrenceEndDateBeforeStartException
+        // (422, cohérent avec InvalidDurationUnitException). isBefore stricte : end == start toléré.
+        if (event.getRecurrenceEndDate() != null
+                && event.getStartDate() != null
+                && event.getRecurrenceEndDate().isBefore(event.getStartDate())) {
+            throw new RecurrenceEndDateBeforeStartException(id, event.getRecurrenceEndDate(), event.getStartDate());
         }
 
         // BR-EVE-002 (#54) : recalcul de endDate dès qu'un facteur de calcul change au PATCH

@@ -20,10 +20,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
@@ -294,6 +297,115 @@ class EventServiceImplTest {
         assertThat(result).isEmpty();
         verify(eventRepository, times(1)).findEventById(eventId);
         verify(eventRepository, never()).existsById(any(UUID.class));
+    }
+
+    // ---- BR-EVE-014 (#168) : color fournissable dès la création ----
+
+    @Test
+    void createEvent_withColor_persistsColorFromCreationRequest() {
+        // BR-EVE-014 : color fourni au create -> porté par l'Event persisté (auparavant
+        // impossible, il fallait créer puis PATCH). Constructeur 14-arg côté service.
+        EventCreationRequest request = new EventCreationRequest();
+        request.setName("Colored");
+        request.setType("single");
+        request.setDurationValue(1);
+        request.setDurationUnit("days");
+        request.setIsRecurring(false);
+        request.setProductId(productId);
+        request.setColor("#abcdef");
+
+        when(productRepository.findDomainProductById(productId))
+                .thenReturn(Optional.of(new Product(productId, "P", null, null, null)));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.createEvent(request);
+
+        assertThat(result.getColor()).isEqualTo("#abcdef");
+        assertThat(result.isArchived()).isFalse();
+    }
+
+    @Test
+    void createEvent_withoutColor_keepsNullColor_nonBreaking() {
+        // BR-EVE-014 : color est ADDITIF optionnel — un client existant qui ne l'envoie pas
+        // reste valide, color reste null (non-cassant).
+        EventCreationRequest request = new EventCreationRequest();
+        request.setName("NoColor");
+        request.setType("single");
+        request.setDurationValue(1);
+        request.setDurationUnit("days");
+        request.setIsRecurring(false);
+        request.setProductId(productId);
+
+        when(productRepository.findDomainProductById(productId))
+                .thenReturn(Optional.of(new Product(productId, "P", null, null, null)));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.createEvent(request);
+
+        assertThat(result.getColor()).isNull();
+    }
+
+    // ---- BR-EVE-012 (#168) : recurrenceEndDate < startDate rejetée (422) ----
+
+    @Test
+    void updateEvent_recurrenceEndDateBeforeStartDate_throws() {
+        // BR-EVE-012 : PATCH recurrenceEndDate antérieure à la startDate persistée -> rejet
+        // (RecurrenceEndDateBeforeStartException -> 422). Auparavant accepté silencieusement.
+        LocalDate start = LocalDate.of(2026, 6, 1);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setRecurrenceEndDate(start.minusDays(1));
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> eventService.updateEvent(eventId, request))
+                .isInstanceOf(RecurrenceEndDateBeforeStartException.class);
+
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_recurrenceEndDateEqualsStartDate_accepts() {
+        // BR-EVE-012 : borne inférieure — end == start est toléré (isBefore stricte).
+        LocalDate start = LocalDate.of(2026, 6, 1);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setRecurrenceEndDate(start);
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getRecurrenceEndDate()).isEqualTo(start);
+    }
+
+    @Test
+    void updateEvent_recurrenceEndDateAfterStartDate_accepts() {
+        // NON-RÉGRESSION BR-EVE-012 : une recurrenceEndDate postérieure au début -> 200.
+        LocalDate start = LocalDate.of(2026, 6, 1);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setRecurrenceEndDate(start.plusMonths(3));
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getRecurrenceEndDate()).isEqualTo(start.plusMonths(3));
     }
 
     @Test
