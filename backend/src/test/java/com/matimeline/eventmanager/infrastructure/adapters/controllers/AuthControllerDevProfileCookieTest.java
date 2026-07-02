@@ -91,16 +91,22 @@ class AuthControllerDevProfileCookieTest {
         }
 
         @Bean
+        com.matimeline.eventmanager.domain.ports.services.SessionService sessionService() {
+            return mock(com.matimeline.eventmanager.domain.ports.services.SessionService.class);
+        }
+
+        @Bean
         AuthController authController(
                 AuthenticationManager authenticationManager,
                 JwtService jwtService,
                 CustomUserDetailsService customUserDetailsService,
                 UserServiceImpl userService,
                 PasswordEncoder passwordEncoder,
-                com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService) {
+                com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService,
+                com.matimeline.eventmanager.domain.ports.services.SessionService sessionService) {
             return new AuthController(
                     authenticationManager, jwtService, customUserDetailsService, userService, passwordEncoder,
-                    passwordResetService);
+                    passwordResetService, sessionService);
         }
     }
 

@@ -141,3 +141,15 @@ Supprimer un `existsById` d'une méthode service (#95 findEventById) a fait éch
 
 ## PIT-S12-003 — `git add -A` / `git add .` dans un worktree sprint partagé
 Un subagent a fait `git add -A` avant de committer son fix → bundlé du travail lead non committé (commentaire V9, `docs/memory/sprints/**`, `sprint-history.md`) dans son commit. Corrigé via `git reset --soft HEAD~1` + staging explicite. Prévention : JAMAIS `git add -A`/`git add .` dans un worktree sprint où le lead a des modifs en cours — toujours `git add <fichiers explicites>` de son scope. À rappeler dans les briefings fullstack-dev. (Sprint 12 #54-fix)
+
+## PIT-S13-001 — Purge multi-tables d'un user : `@SQLRestriction` masque les lignes archivées → FK résiduelle bloque le DELETE
+`DELETE /api/me` (#78) : `ProductEntity` porte `@SQLRestriction("archived = false")` → toute lecture JPA (findAll/findByUserId) IGNORE les produits archivés. Supprimer via une lecture JPA puis `delete` laisse les produits archivés en base → leur FK `user_id` fait échouer le `DELETE users`. Fix : **SQL NATIF bindé** (`entityManager.createNativeQuery("delete from products where user_id=:uid")`) pour products ET events (events via sous-select `product_id` car pas de `user_id`). Prévention : toute purge transverse d'une entité soft-delete → natif, jamais HQL/JPA. (Sprint 13 #78)
+
+## PIT-S13-002 — Nouvel appel de port dans un handler → stub Mockito manquant = 401 faux négatif
+Le fix révocation `/me` (#73/review) ajoute `sessionService.isSessionActive(jti)` dans `AuthController.getUserDetails`. Les tests slice `standaloneSetup`/Mockito de `/me` et `/refresh` nominaux ne stubbaient pas ce mock → `isSessionActive(any())` renvoie `false` par défaut → 401 faux négatif. Fix : `when(sessionService.isSessionActive(any())).thenReturn(true)` dans les tests nominaux. Prévention : à chaque nouvel appel de port ajouté dans un handler, auditer les tests slice/unit qui le couvrent. (Sprint 13 #73)
+
+## PIT-S13-003 — `jwt.secret` de profil test non-Base64 → `generateToken` DecodingException
+Aucun test n'exerçait le login RÉEL avant #73 ; le premier test qui émet un token a révélé que le `jwt.secret` du profil test (`'-'`) n'est pas Base64 valide → `generateToken` lève `DecodingException`. Fix : override d'un secret Base64 valide via `@SpringBootTest(properties="jwt.secret=...")`. Prévention : tout test exerçant l'ÉMISSION d'un token doit fournir un secret Base64 valide. (Sprint 13 #73)
+
+## PIT-S13-004 — `SecurityContext` thread-local fuité d'un test slice pollue les tests full-chain suivants
+Un test `standaloneSetup` qui pose une `Authentication` laisse le `SecurityContextHolder` thread-local rempli → un test `@AutoConfigureMockMvc` suivant hérite du contexte et le `JwtFilter` saute la vérif de révocation (faux vert). Fix/Prévention : `SecurityContextHolder.clearContext()` en `@BeforeEach`/`@AfterEach` des tests full-chain qui suivent des slices posant une Authentication. (Sprint 13 #73)

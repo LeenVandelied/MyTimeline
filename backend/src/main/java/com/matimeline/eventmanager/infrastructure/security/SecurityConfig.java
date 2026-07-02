@@ -129,6 +129,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/products/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/events/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/sessions/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/me/**").hasAuthority("ROLE_USER")
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex

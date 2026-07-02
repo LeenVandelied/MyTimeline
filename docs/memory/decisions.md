@@ -76,3 +76,9 @@ Deux exceptions dédiées créées plutôt qu'un mapping large : `InvalidDuratio
 
 ## DEC-S12-002 — Pas de migration si la colonne préexiste (grep migrations avant de créer)
 #158 (couleur produit) ne crée AUCUNE migration : la colonne `products.color` existait déjà depuis V7 (#44, `add column color varchar(255)`), ainsi que `ProductEntity.color` / `Product.color`. Le gap réel était l'exposition DTO + persistance service + branchement front, pas le schéma. Règle : toujours `grep` les migrations existantes (`grep -r "add column <champ>" db/migration/`) avant d'en créer une pour un champ « à ajouter » — une migration no-op est du bruit et un risque de collision de numérotation. (Sprint 12 #158)
+
+## DEC-S13-001 — Attributs cookie dupliqués dans `UserController` plutôt qu'un `CookieFactory` partagé
+`DELETE /api/me` (#78) doit effacer le cookie `jwt` (MaxAge=0). Décision : dupliquer les attributs cookie (`@Value("${app.cookie.*}")` + helper local `buildExpiredJwtCookie`) dans `UserController`, comme `AuthController`, PLUTÔT que factoriser un `JwtCookieFactory` partagé. Pourquoi : scope #78 minimal ; la factorisation cross-controller (`buildJwtCookie` dupliqué AuthController/UserController) est un refacto hors périmètre → dette tracée, candidate tâche suivante. (Sprint 13 #78)
+
+## DEC-S13-002 — IP RGPD : ne stocker que l'IPv4 tronquée / IPv6 non compressé, sinon `null`
+`ClientIpAnonymizer` (#73) : IPv4 → dernier octet à zéro ; IPv6 non compressé → 3 premiers hextets ; **IPv6 compressé (`::1`, `fe80::1`) → `null`** (non tronquable positionnellement de façon fiable). Pourquoi : préférer ne RIEN stocker à une donnée personnelle non anonymisée (RGPD). Conséquence assumée : `ip_address`/`device_info` souvent `null` pour clients IPv6 → dégrade l'UX « sessions actives » mais jamais la conformité. (Sprint 13 #73)

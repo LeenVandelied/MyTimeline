@@ -2,11 +2,13 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.matimeline.eventmanager.application.dtos.ChangePasswordRequest;
+import com.matimeline.eventmanager.application.dtos.DeleteAccountRequest;
 import com.matimeline.eventmanager.application.dtos.UserResponse;
 import com.matimeline.eventmanager.application.dtos.UserUpdateRequest;
 import com.matimeline.eventmanager.domain.models.User;
@@ -14,6 +16,8 @@ import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 /**
@@ -43,6 +47,19 @@ public class UserController {
         this.userService = userService;
         this.jwtService = jwtService;
     }
+
+    private static final String JWT_COOKIE = "jwt";
+    private static final String COOKIE_PATH = "/";
+    private static final String COOKIE_SAME_SITE = "Lax";
+
+    // BR-AUT-007 / A6/A7 : attributs Secure et Domain externalisés par profil, IDENTIQUES
+    // à la pose du cookie dans AuthController. Sans cette identité (HttpOnly/Secure/Path/
+    // Domain/SameSite), le navigateur ne matche pas le cookie à effacer (BR-AUT-010).
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
 
     /**
      * GET /api/me — profil de l'utilisateur courant SANS hash (BR-AUT-008).
@@ -112,6 +129,56 @@ public class UserController {
 
         userService.changePassword(caller, request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * DELETE /api/me — supprime DÉFINITIVEMENT le compte du caller (#78, RGPD droit à
+     * l'effacement). Confirmation par re-saisie du {@code username} (double-sécurité UX) :
+     * l'identité vient TOUJOURS du JWT ({@code resolveCaller}), jamais du body.
+     *
+     * <p>Flux : 401 si non authentifié ; 400 si body absent/vide (@Valid) ou username !=
+     * caller ({@code AccountDeletionMismatchException}, GlobalExceptionHandler) ; sinon la
+     * purge ordonnée (events -> products archivés inclus -> catégories possédées -> user)
+     * + révocation des sessions s'exécute dans UNE transaction ({@code UserService}). En
+     * cas de succès : cookie {@code jwt} effacé (MaxAge=0, BR-AUT-010) + 204 sans body.
+     * Un 2e appel avec le même token -> {@code resolveCaller} renvoie null (user purgé) ->
+     * 401 (BR-AUT-011).
+     */
+    @DeleteMapping
+    public ResponseEntity<?> deleteCurrentUser(@Valid @RequestBody DeleteAccountRequest request,
+                                               @CookieValue(value = "jwt", required = false) String token,
+                                               HttpServletResponse response) {
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Mismatch username -> AccountDeletionMismatchException (400) levée ici, AVANT toute
+        // écriture. Sinon suppression ordonnée + révocation sessions dans la transaction.
+        userService.deleteAccount(caller, request.getUsername());
+
+        // BR-AUT-010 : effacer le cookie avec des attributs IDENTIQUES à la pose (login),
+        // pour que le navigateur matche et supprime. MaxAge=0 = suppression immédiate.
+        response.addCookie(buildExpiredJwtCookie());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Construit le cookie {@code jwt} de SUPPRESSION (valeur vide, MaxAge=0) avec des
+     * attributs identiques à la pose (AuthController.buildJwtCookie) — HttpOnly, Secure,
+     * Path, Domain, SameSite — sans quoi le navigateur ne matche pas le cookie (BR-AUT-010).
+     */
+    private Cookie buildExpiredJwtCookie() {
+        Cookie jwtCookie = new Cookie(JWT_COOKIE, "");
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(cookieSecure);
+        jwtCookie.setPath(COOKIE_PATH);
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            jwtCookie.setDomain(cookieDomain);
+        }
+        jwtCookie.setMaxAge(0);
+        jwtCookie.setAttribute("SameSite", COOKIE_SAME_SITE);
+        return jwtCookie;
     }
 
     /**

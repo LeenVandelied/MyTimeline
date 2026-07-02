@@ -280,15 +280,23 @@
   - Bilan : 1 issue créée (backlog), 0 discard, 0 absorbé. Le follow-up #54 (ProductArchivedFilter version=null) était déjà résolu par #158 (pas un follow-up vivant).
 **Status :** Terminé
 
-## Sprint 13 — 2026-07-01 (PLANIFIÉ — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
-**Objectif :** Sessions actives (jti + révocation) + suppression de compte (DELETE /me cascade).
-**Milestone GitHub :** #13
-**Issues :** #73 (sessions actives jti), #78 (suppression compte DELETE /me)
-**Vagues :** V1 = #73 (fondation révocation) | V2 = #78 (consomme la révocation jti de #73)
-**Migrations Flyway :** V11__create_sessions.sql (index sur jti obligatoire) + V12 si cascade DB requise (#78)
-**Dépend de :** Sprint 9 (#44 avatar — cohérence User)
+## Sprint 13 — 2026-07-02 (Terminé — merge PR #176 dans dev — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
+**Objectif :** Sessions actives (jti + révocation) + suppression de compte (DELETE /me cascade RGPD).
+**Milestone GitHub :** #13 (fermé après merge)
+**Issues livrées (2) :** #73 (sessions actives + révocation JWT jti), #78 (suppression compte DELETE /api/me)
+**Vagues exécutées :** V1 = #73 (fondation révocation, `d3a776f`) | V2 = #78 (consomme `revokeAllSessions`, `e5c8ffd`) — séquentiel (dépendance + conflit AuthController/UserController).
+**Cohésion score :** 0.70 (mono-domaine epic:auth)
+**Commits :** 7 — 2 impl (#73, #78) + fd91d9f (fix review sécu/logs) + adfe55f (fix review-pr durcissement) + 3 mémoire/PR.
+**Migrations Flyway :** **V10** `create_sessions.sql` (index UNIQUE jti, FK users ON DELETE CASCADE, index user_id). ⚠ le plan disait V11 : recalé sur V10 (dernière réelle = V9). #78 = suppression applicative ordonnée (SQL natif), **aucune migration**.
+**BR impactées :** BR-AUT-002/009/010/011 (révocation, refresh, logout, JwtFilter+/me), BR-AUT-001 (ownership suppression).
+**Reviews :** db-expert (V10 APPROUVÉ) · security-expert 1 MAJEUR (/me ignorait révocation) RÉSOLU (fd91d9f) · reviewer batch 2 MAJEUR (logs JwtFilter stderr MEMO-007) + MINEURs RÉSOLUS · **/review-pr #176** : 0 CRITIQUE, 1 MAJEUR cohérence (SecurityConfig /api/sessions|me hasAuthority) + 2 MINEUR (extractJti null, isSessionActive expiry) RÉSOLUS (adfe55f). Tous verdicts finaux READY/SÉCURISÉ.
+**Tests :** Backend 220/220 green (Testcontainers Postgres 16) — +33 sur baseline S12 (187). Frontend inchangé. E2E N/A (backend pur). CI verte (backend+frontend) sur adfe55f.
+**Nouveaux pitfalls / décisions / bugs :** PIT-S13-001..004 (purge natif @SQLRestriction, stub port nouveau, jwt.secret Base64, SecurityContext leak) · DEC-S13-001/002 (cookie dupliqué, IPv6→null RGPD) · BUG-S13-001 (/me révocation, clôt l'oracle noté BUG-S4-001) · BR events sans user_id (pack br-events).
+**Dépend de :** Sprint 9 (#44 avatar — cohérence User).
 **Reporté :** #75 (avatar — infra MinIO/S3), #86/#87 (Réglages frontend).
-**Status :** Planifié
+**Absorbé en cours :** aucun (0 RECOMMAND_FOLLOWUP).
+**Dette identifiée (hors scope, non ticketée) :** purge sessions expirées (croissance table), A8 AuthController→UserServiceImpl (port), JwtCookieFactory à factoriser. **Bug préexistant hors sprint :** inscription réelle cassée (UserMapper setId + @Version null → Detached entity, PIT-S10-003) → tâche spawn dédiée par fullstack-dev #73, impacte le register en prod.
+**Status :** Terminé
 
 > **⚠ Gap connu du plan S9–S13 :** la Timeline frontend (#55/#63/#64/#66) n'est PAS couverte — elle dépend de #47 (extraction composants Timeline, non planifié). Prévoir un 6e sprint dédié #47 pour débloquer le domaine events frontend.
 > **Plan généré le 2026-07-01** (`/ai-env:sprint plan 5`, cohésion moyenne 0.55). Backlog restant : dette review backend (#92-#94/#123-#134/#139-#148), Waves 6/7 (#58/#69/#72/#76/#77/#81/#82…), #62/#68/#75/#80/#83/#86/#87/#102.

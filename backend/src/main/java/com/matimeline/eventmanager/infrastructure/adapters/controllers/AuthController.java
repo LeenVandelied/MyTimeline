@@ -5,9 +5,11 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +33,8 @@ import com.matimeline.eventmanager.application.dtos.UserResponse;
 import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
+import com.matimeline.eventmanager.domain.ports.services.SessionService;
+import com.matimeline.eventmanager.infrastructure.security.ClientIpAnonymizer;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetails;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetailsService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
@@ -48,13 +52,16 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     // A8/DIP : injection via le PORT (interface domaine), pas l'impl concrète.
     private final PasswordResetService passwordResetService;
+    // #73 : enregistrement/révocation des sessions (jti). Port métier, pas l'impl.
+    private final SessionService sessionService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserServiceImpl userService, PasswordEncoder passwordEncoder, PasswordResetService passwordResetService) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserServiceImpl userService, PasswordEncoder passwordEncoder, PasswordResetService passwordResetService, SessionService sessionService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.passwordResetService = passwordResetService;
+        this.sessionService = sessionService;
     }
 
     private static final String JWT_COOKIE = "jwt";
@@ -94,13 +101,20 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest,
+                                   HttpServletRequest request, HttpServletResponse response) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-                    
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwtToken = jwtService.generateToken(authentication);
+
+            // #73 : enregistrer la session pour rendre le token révocable. Le jti est
+            // porté par le token (généré dans generateToken) ; on l'extrait pour la clé
+            // de session. deviceInfo = User-Agent (borné) ; IP TRONQUÉE (RGPD) avant
+            // persistance (jamais l'IP complète en clair). Résolution du user pour l'id.
+            registerSession(jwtToken, authentication.getName(), request);
 
             response.addCookie(buildJwtCookie(jwtToken, COOKIE_MAX_AGE));
             // BR-AUT-007 / anti-pattern A3 : le JWT est transmis UNIQUEMENT via le
@@ -135,6 +149,16 @@ public class AuthController {
 
             if (!jwtService.validateToken(token, new CustomUserDetails(user.get(), List.of(new SimpleGrantedAuthority(user.get().getRole()))))) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
+            }
+
+            // #73 (BR-AUT-011) : /api/auth/** est bypassé par JwtFilter, la révocation
+            // n'est donc PAS vérifiée par la chaîne Security. Sans ce contrôle, un token
+            // RÉVOQUÉ (logout / DELETE session) lirait encore /me (200) et le frontend
+            // croirait la session active. isSessionActive : false si jti révoqué/inconnu ;
+            // true si token legacy sans jti (compatibilité descendante préservée).
+            String jti = jwtService.extractJti(token);
+            if (!sessionService.isSessionActive(jti)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: session révoquée");
             }
 
             return ResponseEntity.ok(UserResponse.fromDomain(user.get()));
@@ -186,8 +210,13 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(@CookieValue(name = "jwt", required = false) String token,
+                                    HttpServletResponse response) {
         try {
+            // #73 (BR-AUT-010) : logout révoque désormais le jti courant EN BASE — le
+            // token capturé avant expiration est neutralisé côté serveur, pas seulement
+            // effacé du navigateur. Idempotent : jti inconnu/déjà révoqué/absent -> no-op.
+            revokeSessionSilently(token);
             // BR-AUT-010 : attributs identiques à la pose (login/refresh) pour
             // que le navigateur matche et efface le cookie. maxAge=0 = suppression.
             response.addCookie(buildJwtCookie("", 0));
@@ -198,7 +227,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@CookieValue(name = "jwt", required = false) String token, 
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "jwt", required = false) String token,
+                                         HttpServletRequest request,
                                          HttpServletResponse response) {
         try {
             if (token == null) {
@@ -232,10 +262,26 @@ public class AuthController {
                         .body(java.util.Map.of("error", "token expiré ou invalide"));
             }
 
+            // #73 (BR-AUT-009 étendue) : refuser un token dont le jti est RÉVOQUÉ, même
+            // s'il est encore valide (non expiré, signé). Sans ce contrôle, un token
+            // révoqué (logout / DELETE session) pourrait être renouvelé indéfiniment,
+            // contournant la révocation. isSessionActive : false si jti révoqué/inconnu ;
+            // true si token legacy sans jti (n'entrave pas la compatibilité descendante).
+            String currentJti = jwtService.extractJti(token);
+            if (!sessionService.isSessionActive(currentJti)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "token expiré ou invalide"));
+            }
+
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
 
             String newToken = jwtService.generateToken(authentication);
+
+            // Rotation de session : révoquer l'ancien jti et enregistrer le nouveau, pour
+            // que la liste des sessions reste cohérente et que l'ancien token soit neutralisé.
+            revokeSessionSilently(token);
+            registerSession(newToken, user.get().getUsername(), request);
 
             response.addCookie(buildJwtCookie(newToken, COOKIE_MAX_AGE));
             return ResponseEntity.ok().body("Token refreshed successfully");
@@ -278,5 +324,53 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(java.util.Map.of("message", "Mot de passe réinitialisé avec succès."));
+    }
+
+    /**
+     * #73 : enregistre la session correspondant au token émis (jti extrait du token).
+     * deviceInfo = User-Agent borné à 255 caractères ; IP TRONQUÉE (RGPD) — l'IP
+     * complète n'est JAMAIS persistée. expiresAt aligné sur la durée de vie du JWT.
+     * Best-effort : un jti absent (ne devrait pas arriver) ou un user introuvable ne
+     * casse pas le login.
+     */
+    private void registerSession(String token, String username, HttpServletRequest request) {
+        Optional<User> user = userService.findDomainUserByUsername(username);
+        if (user.isEmpty()) {
+            return;
+        }
+        String jti = jwtService.extractJti(token);
+        if (jti == null) {
+            return;
+        }
+        sessionService.createSession(
+                jti,
+                user.get().getId(),
+                deviceInfo(request),
+                ClientIpAnonymizer.anonymize(request.getRemoteAddr()),
+                LocalDateTime.now().plusSeconds(COOKIE_MAX_AGE));
+    }
+
+    /**
+     * Révoque le jti porté par {@code token}. Silencieux : un token null/malformé/expiré
+     * ou sans jti est un no-op (logout doit toujours réussir côté cookie).
+     */
+    private void revokeSessionSilently(String token) {
+        if (token == null || token.isEmpty()) {
+            return;
+        }
+        try {
+            sessionService.revokeCurrentSession(jwtService.extractJti(token));
+        } catch (JwtException e) {
+            // token expiré/malformé -> rien à révoquer (déjà inutilisable).
+        }
+    }
+
+    /** User-Agent borné (255 car., taille de la colonne device_info). */
+    private String deviceInfo(HttpServletRequest request) {
+        String ua = request.getHeader("User-Agent");
+        if (ua == null) {
+            return null;
+        }
+        return ua.length() > 255 ? ua.substring(0, 255) : ua;
     }
 }

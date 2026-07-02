@@ -38,6 +38,8 @@ class AuthControllerValidationTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService;
+    @Mock
+    private com.matimeline.eventmanager.domain.ports.services.SessionService sessionService;
 
     private MockMvc mockMvc;
 
@@ -45,7 +47,7 @@ class AuthControllerValidationTest {
     void setUp() {
         AuthController controller = new AuthController(
                 authenticationManager, jwtService, userDetailsService, userService, passwordEncoder,
-                passwordResetService);
+                passwordResetService, sessionService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

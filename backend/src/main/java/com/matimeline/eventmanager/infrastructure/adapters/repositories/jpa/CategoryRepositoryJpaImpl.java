@@ -114,6 +114,18 @@ public class CategoryRepositoryJpaImpl
         return categoryMapper.toDomain(saved);
     }
 
+    // #78 (RGPD) : purge des catégories POSSÉDÉES par le user. WHERE owner_id = :ownerId
+    // exclut naturellement les catégories système (owner_id IS NULL != :ownerId), qui
+    // restent intactes. Natif bindé (cohérent avec les autres purges #78) ; owner_id NOT
+    // NULL requis (jamais :ownerId null ici, le caller est résolu depuis le JWT).
+    @Override
+    public int deleteAllByOwnerId(UUID ownerId) {
+        return entityManager
+                .createNativeQuery("DELETE FROM categories WHERE owner_id = :ownerId")
+                .setParameter("ownerId", ownerId)
+                .executeUpdate();
+    }
+
     /**
      * Rattache (ou détache) le propriétaire à partir de son id, via une référence
      * gérée. ownerId NULL -> catégorie système (owner NULL).

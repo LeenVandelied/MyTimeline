@@ -102,4 +102,16 @@ public class ProductRepositoryJpaImpl
                 .executeUpdate();
     }
 
+    // #78 — SQL NATIF volontaire (même raison que countByCategoryId) : @SQLRestriction
+    // ("archived = false") masque les produits archivés d'un bulk DELETE HQL. Pour purger
+    // TOUS les produits du user (archivés inclus) et libérer leur FK user_id avant le
+    // DELETE users, on contourne le filtre en natif.
+    @Override
+    public int deleteAllByUserId(UUID userId) {
+        return entityManager
+                .createNativeQuery("DELETE FROM products WHERE user_id = :uid")
+                .setParameter("uid", userId)
+                .executeUpdate();
+    }
+
 }
