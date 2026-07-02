@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +59,6 @@ class EventServiceImplTest {
         request.setTitle("New title");
         // type, durationValue, etc. left null -> must NOT change existing values
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -75,7 +75,6 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setTitle("Whatever");
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -98,7 +97,6 @@ class EventServiceImplTest {
         request.setColor("#aaaaaa");
         request.setArchived(true);
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -119,7 +117,6 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setColor("#123456");
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -141,7 +138,6 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setDurationValue(10);
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -161,7 +157,6 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setDurationUnit("weeks");
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -181,7 +176,6 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setType("single");
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -202,7 +196,6 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setColor("#ffffff");
 
-        when(eventRepository.existsById(eventId)).thenReturn(true);
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -216,11 +209,44 @@ class EventServiceImplTest {
         EventUpdateRequest request = new EventUpdateRequest();
         request.setTitle("New");
 
-        when(eventRepository.existsById(eventId)).thenReturn(false);
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> eventService.updateEvent(eventId, request))
                 .isInstanceOf(EventNotFoundException.class);
 
         verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void findEventById_singleDbHit_delegatesToRepository() {
+        // #95 : plus de double-hit (existsById supprimé), délégation directe au repo.
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+
+        Optional<Event> result = eventService.findEventById(eventId);
+
+        assertThat(result).containsSame(existingEvent);
+        verify(eventRepository, times(1)).findEventById(eventId);
+        verify(eventRepository, never()).existsById(any(UUID.class));
+    }
+
+    @Test
+    void findEventById_notFound_returnsRepositoryEmptyOptional() {
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.empty());
+
+        Optional<Event> result = eventService.findEventById(eventId);
+
+        assertThat(result).isEmpty();
+        verify(eventRepository, times(1)).findEventById(eventId);
+        verify(eventRepository, never()).existsById(any(UUID.class));
+    }
+
+    @Test
+    void findEventById_repositoryThrows_propagatesInsteadOfSwallowing() {
+        // #95 : plus de try/catch + printStackTrace ; l'erreur remonte au lieu d'un Optional.empty() masquant.
+        RuntimeException boom = new RuntimeException("db down");
+        when(eventRepository.findEventById(eventId)).thenThrow(boom);
+
+        assertThatThrownBy(() -> eventService.findEventById(eventId))
+                .isSameAs(boom);
     }
 }

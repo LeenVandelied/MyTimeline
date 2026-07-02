@@ -152,15 +152,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Event> findEventById(UUID id) {
-        if (!eventRepository.existsById(id)) {
-            return Optional.empty();
-        }
-        
-        try {
-            return eventRepository.findEventById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        return eventRepository.findEventById(id);
     }
 } 
