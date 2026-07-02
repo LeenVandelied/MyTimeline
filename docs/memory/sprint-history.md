@@ -258,15 +258,15 @@
   - Scrub log axios brut `authService.ts:61` (refreshToken) [triage XS | domaine auth] → traité hors sprint (background task, session séparée)
 **Status :** Clôture en cours (mémoire consolidée ; triage follow-ups fait ; merge Phase 5)
 
-## Sprint 12 — 2026-07-01 (PLANIFIÉ — cohésion 0.60, Backend récurrence events — Wave 4 back)
-**Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl.
+## Sprint 12 — 2026-07-01 → (En cours — démarré 2026-07-02, cohésion 0.60, Backend récurrence events — Wave 4 back)
+**Objectif :** Service de récurrence (hebdo/mensuel/annuel + cap 4000) + nettoyage EventServiceImpl + persistance couleur produit (#158, follow-up S11 rattaché au milestone).
 **Milestone GitHub :** #12
-**Issues :** #54 (service récurrence), #95 (findEventById double-hit + printStackTrace), #67 (flag `capped` limite 4000)
-**Vagues :** V1 = #54 puis #95 (même EventServiceImpl.java, séquentiel) | V2 = #67 (consomme #54)
-**Migrations Flyway :** V10__neutralize_invalid_recurrence_unit.sql
-**Dépend de :** Sprint 9 (#44 : enum RecurrenceUnit + recurrenceEndDate)
+**Issues :** #54 (service récurrence), #95 (findEventById double-hit + printStackTrace), #67 (flag `capped` limite 4000), #158 (champ `color` produit + migration — follow-up S11, label sprint-12 ajouté au démarrage)
+**Vagues :** V1 = #54 + #158 parallèles (events vs products, fichiers disjoints) | V2 = #95 (même EventServiceImpl.java que #54) + #67 (consomme `capped` de #54) parallèles
+**Migrations Flyway :** V9__neutralize_invalid_recurrence_unit.sql (#54) + V10__add_product_color.sql (#158) — max constaté sur dev = V8, numérotation réassignée au démarrage (le plan disait V10 pour #54)
+**Dépend de :** Sprint 9 (#44 : enum RecurrenceUnit + recurrenceEndDate) — vérifié livré (#28/#30/#44 CLOSED, enum présent dans le code)
 **Reporté :** #55/#63/#64/#66 (Timeline + form event frontend) — dépendent de #47 (extraction composants, NON planifié).
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 13 — 2026-07-01 (PLANIFIÉ — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
 **Objectif :** Sessions actives (jti + révocation) + suppression de compte (DELETE /me cascade).
