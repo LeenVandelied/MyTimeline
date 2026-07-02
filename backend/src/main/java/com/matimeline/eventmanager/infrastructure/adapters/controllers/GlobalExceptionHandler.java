@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.matimeline.eventmanager.domain.exceptions.AccountDeletionMismatchException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
@@ -75,6 +76,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "new password must differ"));
+    }
+
+    @ExceptionHandler(AccountDeletionMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountDeletionMismatch(AccountDeletionMismatchException ex) {
+        // #78 (BR-AUT-001 variante) : username de confirmation != caller (dérivé du JWT)
+        // -> 400. Message neutre {"error":...} (anti-énumération : ne révèle pas si un
+        // autre compte porte ce username), cohérent avec les autres erreurs métier 400.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "username confirmation does not match"));
     }
 
     @ExceptionHandler(InvalidPasswordResetTokenException.class)

@@ -12,4 +12,15 @@ public interface EventRepository {
   void deleteById(UUID id);
   boolean existsById(UUID id);
   Optional<Event> findEventById(UUID id);
+
+  /**
+   * #78 (RGPD) : supprime DÉFINITIVEMENT tous les événements appartenant à
+   * {@code userId}. La table {@code events} n'a PAS de colonne {@code user_id} :
+   * l'appartenance est TRANSITIVE via {@code product_id -> products.user_id}. La purge
+   * cible donc les events dont le produit appartient au user, ARCHIVÉS INCLUS (le
+   * {@code @SQLRestriction} de ProductEntity masquerait les produits archivés d'un
+   * sous-select JPQL -> SQL NATIF requis). À appeler EN PREMIER, avant les produits
+   * ({@code events.product_id} NOT NULL). Retourne le nombre de lignes supprimées.
+   */
+  int deleteAllByUserId(UUID userId);
 }

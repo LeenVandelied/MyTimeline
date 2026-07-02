@@ -75,4 +75,17 @@ public class UserRepositoryJpaImpl
         return userMapper.toDomain(saved);
     }
 
+    // #78 (RGPD) : suppression physique du compte. Natif bindé pour éviter le
+    // select+delete de SimpleJpaRepository.deleteById (pas de @SQLRestriction sur users,
+    // mais on reste cohérent avec les purges enfants). Les FK ON DELETE CASCADE
+    // (sessions V10, password_reset_tokens V6) sont purgées par Postgres ; les FK
+    // non-cascade (products/events/categories) DOIVENT déjà être vidées par le service.
+    @Override
+    public void deleteById(UUID userId) {
+        entityManager
+                .createNativeQuery("DELETE FROM users WHERE id = :uid")
+                .setParameter("uid", userId)
+                .executeUpdate();
+    }
+
 }

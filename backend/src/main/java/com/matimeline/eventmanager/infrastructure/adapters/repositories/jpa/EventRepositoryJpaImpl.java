@@ -94,6 +94,21 @@ public class EventRepositoryJpaImpl
         target.setProduct(productEntity);
     }
     
+    // #78 — SQL NATIF volontaire. events n'a PAS de user_id : l'appartenance passe par
+    // product_id -> products.user_id. Un sous-select JPQL sur ProductEntity serait filtré
+    // par son @SQLRestriction("archived = false"), laissant les events des produits
+    // archivés (dont le product_id resterait, bloquant ensuite le DELETE products). Le
+    // natif voit TOUS les produits du user, archivés inclus.
+    @Override
+    public int deleteAllByUserId(UUID userId) {
+        return entityManager
+                .createNativeQuery(
+                        "DELETE FROM events WHERE product_id IN "
+                        + "(SELECT id FROM products WHERE user_id = :uid)")
+                .setParameter("uid", userId)
+                .executeUpdate();
+    }
+
     @Override
     public Optional<Event> findEventById(UUID id) {
         Optional<EventEntity> optionalEntity = super.findById(id);

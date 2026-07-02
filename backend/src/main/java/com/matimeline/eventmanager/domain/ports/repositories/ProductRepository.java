@@ -30,4 +30,17 @@ public interface ProductRepository {
      * Retourne le nombre de lignes déplacées.
      */
     int updateCategoryForProducts(UUID fromCategoryId, UUID toCategoryId);
+
+    /**
+     * #78 (RGPD) : supprime DÉFINITIVEMENT tous les produits de {@code userId},
+     * ARCHIVÉS INCLUS. Suppression physique volontaire (pas de soft delete) — le
+     * compte disparaît. Retourne le nombre de lignes supprimées.
+     *
+     * <p>ProductEntity porte {@code @SQLRestriction("archived = false")} : une purge
+     * via lecture/bulk JPQL IGNORERAIT les produits archivés, laissant leur FK
+     * {@code user_id} et bloquant le DELETE users. L'implémentation DOIT contourner le
+     * filtre (SQL NATIF bindé), cf. PIT-S10-004 / countByCategoryId. À appeler AVANT
+     * la suppression des catégories ({@code products.category_id} NOT NULL).
+     */
+    int deleteAllByUserId(UUID userId);
 }

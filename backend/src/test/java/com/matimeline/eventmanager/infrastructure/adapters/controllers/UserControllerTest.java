@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.matimeline.eventmanager.domain.exceptions.AccountDeletionMismatchException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.models.User;
@@ -211,5 +213,86 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
+    }
+
+    // ----- DELETE /api/me (#78, RGPD) -----
+
+    @Test
+    void deleteMe_withoutToken_returns401() throws Exception {
+        String body = "{\"username\":\"alice\"}";
+
+        mockMvc.perform(delete("/api/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized());
+
+        verify(userService, never()).deleteAccount(any(User.class), any());
+    }
+
+    @Test
+    void deleteMe_withoutBody_returns400() throws Exception {
+        // Corps absent -> HttpMessageNotReadable -> 400 AVANT le corps de méthode (donc
+        // avant resolveCaller) : pas besoin de stubber le caller. Le port n'est jamais appelé.
+        mockMvc.perform(delete("/api/me")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(""))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).deleteAccount(any(User.class), any());
+    }
+
+    @Test
+    void deleteMe_withBlankUsername_returns400() throws Exception {
+        // @NotBlank -> MethodArgumentNotValid -> 400 pendant le binding @Valid, AVANT le
+        // corps de méthode (donc avant resolveCaller) : pas besoin de stubber le caller.
+        String body = "{\"username\":\"\"}";
+
+        mockMvc.perform(delete("/api/me")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).deleteAccount(any(User.class), any());
+    }
+
+    @Test
+    void deleteMe_withWrongUsername_returns400() throws Exception {
+        // Mismatch -> le port lève AccountDeletionMismatchException -> 400 (message neutre).
+        stubAuthenticatedCaller();
+        doThrow(new AccountDeletionMismatchException())
+                .when(userService).deleteAccount(eq(caller), eq("bob"));
+
+        String body = "{\"username\":\"bob\"}";
+
+        mockMvc.perform(delete("/api/me")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("username confirmation does not match"));
+    }
+
+    @Test
+    void deleteMe_withCorrectUsername_returns204_andClearsCookie() throws Exception {
+        stubAuthenticatedCaller();
+        doNothing().when(userService).deleteAccount(eq(caller), eq("alice"));
+
+        String body = "{\"username\":\"alice\"}";
+
+        mockMvc.perform(delete("/api/me")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent())
+                .andExpect(result -> {
+                    Cookie cleared = result.getResponse().getCookie("jwt");
+                    org.junit.jupiter.api.Assertions.assertNotNull(cleared, "le cookie jwt doit être posé pour effacement");
+                    org.junit.jupiter.api.Assertions.assertEquals(0, cleared.getMaxAge(), "MaxAge=0 = suppression");
+                    org.junit.jupiter.api.Assertions.assertEquals("", cleared.getValue(), "valeur vidée");
+                });
+
+        verify(userService).deleteAccount(eq(caller), eq("alice"));
     }
 }

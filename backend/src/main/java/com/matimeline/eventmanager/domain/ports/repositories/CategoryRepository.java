@@ -28,4 +28,13 @@ public interface CategoryRepository {
   Category save(Category category);
   void deleteById(UUID id);
   boolean existsById(UUID id);
+
+  /**
+   * #78 (RGPD) : supprime les catégories POSSÉDÉES par {@code ownerId}
+   * ({@code owner_id = :ownerId}). NE TOUCHE PAS aux catégories SYSTÈME
+   * ({@code owner_id IS NULL}), partagées et non rattachées à un compte. À appeler
+   * APRÈS la purge des produits ({@code products.category_id} NOT NULL référence
+   * categories). Retourne le nombre de lignes supprimées.
+   */
+  int deleteAllByOwnerId(UUID ownerId);
 }
