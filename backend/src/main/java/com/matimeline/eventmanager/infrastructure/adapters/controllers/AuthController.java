@@ -151,6 +151,16 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
             }
 
+            // #73 (BR-AUT-011) : /api/auth/** est bypassé par JwtFilter, la révocation
+            // n'est donc PAS vérifiée par la chaîne Security. Sans ce contrôle, un token
+            // RÉVOQUÉ (logout / DELETE session) lirait encore /me (200) et le frontend
+            // croirait la session active. isSessionActive : false si jti révoqué/inconnu ;
+            // true si token legacy sans jti (compatibilité descendante préservée).
+            String jti = jwtService.extractJti(token);
+            if (!sessionService.isSessionActive(jti)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: session révoquée");
+            }
+
             return ResponseEntity.ok(UserResponse.fromDomain(user.get()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Token expired");

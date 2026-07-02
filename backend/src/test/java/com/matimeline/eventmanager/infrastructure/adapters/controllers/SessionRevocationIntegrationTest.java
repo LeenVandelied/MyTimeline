@@ -243,6 +243,28 @@ class SessionRevocationIntegrationTest extends AbstractPostgresIntegrationTest {
     }
 
     @Test
+    void me_afterRevocation_returns401_revokedJtiRejected() throws Exception {
+        // Non-régression correctif review S13 (fix #1) : /api/auth/** est bypassé par
+        // JwtFilter, GET /me doit donc vérifier LUI-MÊME la révocation du jti. Avant le
+        // fix, /me renvoyait 200 avec un token révoqué (session paraissait active côté
+        // frontend, vidant #73 de sa substance). Après révocation -> 401.
+        Cookie jwt = login(seedUser());
+
+        // Le token valide lit /me (200) tant que sa session est active.
+        mockMvc.perform(get("/api/auth/me").cookie(jwt))
+                .andExpect(status().isOk());
+
+        // Révocation de la session courante via un DELETE de la session listée.
+        UUID sessionId = UUID.fromString(firstSessionId(jwt));
+        mockMvc.perform(delete("/api/sessions/" + sessionId).cookie(jwt))
+                .andExpect(status().isNoContent());
+
+        // Même token, jti désormais révoqué -> /me renvoie 401 (et non plus 200).
+        mockMvc.perform(get("/api/auth/me").cookie(jwt))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void refresh_afterLogout_returns401_revokedJtiRejected() throws Exception {
         Cookie jwt = login(seedUser());
 

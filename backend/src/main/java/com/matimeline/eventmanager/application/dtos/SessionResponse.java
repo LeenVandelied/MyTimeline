@@ -32,6 +32,6 @@ public record SessionResponse(
                 session.getIpAddress(),
                 session.getLastActivity(),
                 session.getCreatedAt(),
-                session.getJti().equals(currentJti));
+                java.util.Objects.equals(session.getJti(), currentJti));
     }
 }

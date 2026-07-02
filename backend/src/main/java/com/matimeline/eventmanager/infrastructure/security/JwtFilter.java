@@ -60,7 +60,9 @@ public class JwtFilter extends OncePerRequestFilter {
         }
     
         if (token == null) {
-            logger.warn("JWT Token not found in request");
+            // MEMO-007 zero-stderr : requête anonyme = cas NOMINAL (pages publiques,
+            // health checks). debug, pas warn, pour ne pas polluer stderr.
+            logger.debug("JWT Token not found in request");
             chain.doFilter(request, response);
             return;
         }
@@ -82,11 +84,19 @@ public class JwtFilter extends OncePerRequestFilter {
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 } else {
-                    logger.warn("Invalid or revoked JWT token for user: {}", username);
+                    // MEMO-007 : token expiré/révoqué côté client = cas nominal, pas une
+                    // anomalie technique. debug pour éviter le bruit stderr.
+                    logger.debug("Invalid or revoked JWT token for user: {}", username);
                 }
             }
+        } catch (io.jsonwebtoken.JwtException e) {
+            // MEMO-007 : JwtException (ExpiredJwtException/MalformedJwtException/
+            // SignatureException) = token expiré/malformé côté client = cas NOMINAL.
+            // Le contexte reste anonyme -> 401 via SecurityConfig. debug, pas error.
+            logger.debug("JWT invalide/expiré (cas nominal): {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("JWT processing error", e);
+            // Vraie anomalie technique inattendue (I/O, NPE...) -> error légitime.
+            logger.error("Erreur technique inattendue dans JwtFilter", e);
         }
     
         chain.doFilter(request, response);

@@ -139,6 +139,10 @@ class AuthControllerSecurityTest {
         when(jwtService.extractUsername("valid-token")).thenReturn("alice");
         when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
         when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        // Correctif review S13 (fix #1) : /me vérifie désormais la révocation du jti.
+        // Session active -> 200 (cas nominal). Cf. me_afterRevocation_* (intégration)
+        // pour le cas révoqué -> 401.
+        when(sessionService.isSessionActive(any())).thenReturn(true);
 
         mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "valid-token")))
                 .andExpect(status().isOk())
