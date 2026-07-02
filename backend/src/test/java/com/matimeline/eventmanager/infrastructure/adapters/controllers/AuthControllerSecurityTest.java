@@ -59,6 +59,8 @@ class AuthControllerSecurityTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService;
+    @Mock
+    private com.matimeline.eventmanager.domain.ports.services.SessionService sessionService;
 
     private MockMvc mockMvc;
 
@@ -66,7 +68,7 @@ class AuthControllerSecurityTest {
     void setUp() {
         AuthController controller = new AuthController(
                 authenticationManager, jwtService, userDetailsService, userService, passwordEncoder,
-                passwordResetService);
+                passwordResetService, sessionService);
         // #99 — les attributs cookie Secure/Domain sont désormais injectés par @Value
         // (app.cookie.*). En setup standalone, Spring ne les renseigne pas : on simule
         // le profil prod (Secure=true, Domain défini) pour vérifier la COHÉRENCE des
@@ -191,6 +193,8 @@ class AuthControllerSecurityTest {
         when(jwtService.extractUsername("valid-token")).thenReturn("alice");
         when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
         when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        // #73 : le jti courant doit être ACTIF pour autoriser le refresh (BR-AUT-009 étendue).
+        when(sessionService.isSessionActive(any())).thenReturn(true);
         when(jwtService.generateToken(any(Authentication.class))).thenReturn("new-token");
 
         mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "valid-token")))
@@ -281,6 +285,7 @@ class AuthControllerSecurityTest {
         when(jwtService.extractUsername("valid-token")).thenReturn("alice");
         when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(user));
         when(jwtService.validateToken(anyString(), any(CustomUserDetails.class))).thenReturn(true);
+        when(sessionService.isSessionActive(any())).thenReturn(true);
         Cookie refreshCookie = mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "valid-token")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getCookie("jwt");

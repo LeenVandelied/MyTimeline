@@ -20,6 +20,7 @@ import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenEx
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
+import com.matimeline.eventmanager.domain.exceptions.SessionNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 
 @RestControllerAdvice
@@ -29,7 +30,8 @@ public class GlobalExceptionHandler {
             EventNotFoundException.class,
             ProductNotFoundException.class,
             CategoryNotFoundException.class,
-            UserNotFoundException.class
+            UserNotFoundException.class,
+            SessionNotFoundException.class
     })
     public ResponseEntity<Map<String, Object>> handleNotFound(RuntimeException ex) {
         return ResponseEntity
