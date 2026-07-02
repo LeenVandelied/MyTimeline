@@ -13,6 +13,7 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
 import com.matimeline.eventmanager.infrastructure.entities.ProductEntity;
+import com.matimeline.eventmanager.infrastructure.entities.UserEntity;
 
 import jakarta.persistence.EntityManager;
 
@@ -71,8 +72,22 @@ public class ProductRepositoryJpaImpl
             }
         }
 
-        // CRÉATION : entité neuve, persist géré par SimpleJpaRepository.
+        // CRÉATION : entité neuve, persist géré par SimpleJpaRepository. Le mapper recopie
+        // les associations category/user en entités DÉTACHÉES (id set, version null) :
+        // persist() les voit comme "detached entity with generated id / uninitialized
+        // version" et échoue (même pitfall PIT-S10-003 que la branche UPDATE côté catégorie).
+        // On rattache donc des références GÉRÉES (getReference) sur les lignes existantes
+        // avant persist. Les events imbriqués (id null, cf. ProductServiceImpl) restent
+        // persistés en cascade sur ce parent.
         ProductEntity entity = productMapper.toEntity(domainProduct);
+        if (domainProduct.getCategory() != null && domainProduct.getCategory().getId() != null) {
+            entity.setCategory(entityManager.getReference(
+                    CategoryEntity.class, domainProduct.getCategory().getId()));
+        }
+        if (domainProduct.getUser() != null && domainProduct.getUser().getId() != null) {
+            entity.setUser(entityManager.getReference(
+                    UserEntity.class, domainProduct.getUser().getId()));
+        }
         ProductEntity savedEntity = super.save(entity);
         return productMapper.toDomain(savedEntity);
     }
