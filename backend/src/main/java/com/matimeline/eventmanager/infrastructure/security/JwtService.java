@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.UUID;
 
@@ -23,17 +23,20 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String username) {
         return Jwts.builder()
-                   .setSubject(username)
-                   .setIssuedAt(new Date())
-                   .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
-                   .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                   .subject(username)
+                   .issuedAt(new Date())
+                   .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
+                   // Algo HS256 explicite : en jjwt 0.12+, signWith(key) seul déduirait
+                   // HS256/384/512 de la taille de la clé → un secret > 256 bits changerait
+                   // l'algo et invaliderait les tokens legacy. On fige HS256 (inchangé).
+                   .signWith(getSigningKey(), Jwts.SIG.HS256)
                    .compact();
     }
 
@@ -46,12 +49,12 @@ public class JwtService {
     public String generateToken(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         return Jwts.builder()
-                .setSubject(authentication.getName())
-                .setId(UUID.randomUUID().toString()) // claim "jti"
+                .subject(authentication.getName())
+                .id(UUID.randomUUID().toString()) // claim "jti"
                 .claim("role", userDetails.getAuthorities())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
+                .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
@@ -65,20 +68,20 @@ public class JwtService {
         if (token == null) {
             return null;
         }
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getId();
     }
 
     public String extractUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
     }
 
@@ -96,11 +99,11 @@ public class JwtService {
     }
 
     private Date extractExpiration(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getExpiration();
     }
 }
