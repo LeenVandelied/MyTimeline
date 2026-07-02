@@ -1,0 +1,190 @@
+package com.matimeline.eventmanager.infrastructure.adapters.repositories;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
+import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
+import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
+import com.matimeline.eventmanager.domain.ports.services.EventService;
+import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
+import com.matimeline.eventmanager.infrastructure.entities.EventEntity;
+import com.matimeline.eventmanager.infrastructure.entities.ProductEntity;
+import com.matimeline.eventmanager.infrastructure.entities.UserEntity;
+import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
+
+import jakarta.persistence.EntityManager;
+
+/**
+ * #54 — Vérifie de bout en bout (Postgres jetable + Flyway V1..V9) :
+ *   - PATCH recalcule endDate EN BASE quand durationValue change (BR-EVE-002) ;
+ *   - le CHECK ck_events_recurrence_unit (reposé par V9) rejette une valeur
+ *     recurrence_unit hors {WEEK,MONTH,YEAR} au niveau DB.
+ *
+ * @Transactional -> rollback après chaque test ; données uniques par UUID.
+ */
+@SpringBootTest
+@Transactional
+class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegrationTest {
+
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    private EventService eventService;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    private ProductEntity persistProductGraph() {
+        UserEntity user = new UserEntity();
+        String suffix = UUID.randomUUID().toString();
+        user.setName("i54-user-" + suffix);
+        user.setUsername("i54-user-" + suffix);
+        user.setEmail("i54-user-" + suffix + "@example.test");
+        user.setPassword("x");
+        user.setRole("USER");
+        em.persist(user);
+
+        CategoryEntity category = new CategoryEntity();
+        category.setName("i54-cat-" + UUID.randomUUID());
+        em.persist(category);
+
+        ProductEntity product = new ProductEntity();
+        product.setName("i54-product-" + UUID.randomUUID());
+        product.setCategory(category);
+        product.setUser(user);
+        product.setArchived(false);
+        em.persist(product);
+        return product;
+    }
+
+    /** Critère d'acceptation : PATCH durationValue -> endDate recalculée et persistée en base. */
+    @Test
+    void patchDurationValue_recalculatesEndDate_inDatabase() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i54-event-" + UUID.randomUUID());
+        entity.setType("duration");
+        entity.setDurationValue(5);
+        entity.setDurationUnit("days");
+        entity.setIsRecurring(false);
+        entity.setStartDate(start);
+        entity.setEndDate(start.plusDays(5));
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setDurationValue(10);
+        eventService.updateEvent(eventId, request);
+        em.flush();
+        em.clear();
+
+        Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
+        assertThat(reloaded.getEndDate()).isEqualTo(start.plusDays(10));
+        assertThat(reloaded.getDurationValue()).isEqualTo(10);
+    }
+
+    /**
+     * BR-EVE-006 (#95fix) : PATCH isRecurring=true sur un event dont recurrence_unit est
+     * null en base (jamais fourni) -> RecurrenceUnitRequiredException (mappée 400), état
+     * incohérent NON persisté.
+     */
+    @Test
+    void patchIsRecurringTrue_onEventWithoutRecurrenceUnit_isRejected() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i95-event-" + UUID.randomUUID());
+        entity.setType("single");
+        entity.setIsRecurring(false);
+        entity.setRecurrenceUnit(null);
+        entity.setStartDate(start);
+        entity.setEndDate(start);
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+
+        assertThatThrownBy(() -> {
+            eventService.updateEvent(eventId, request);
+            em.flush();
+        }).isInstanceOf(RecurrenceUnitRequiredException.class);
+    }
+
+    /**
+     * NON-RÉGRESSION BR-EVE-006 (#95fix) : PATCH isRecurring=true SANS recurrenceUnit dans
+     * le payload, mais l'event porte DÉJÀ recurrence_unit=WEEK en base -> accepté, persisté.
+     * C'est le cas que la garde état-fusionné ne DOIT pas casser.
+     */
+    @Test
+    void patchIsRecurringTrue_onEventWithExistingRecurrenceUnit_isAccepted() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i95-event-" + UUID.randomUUID());
+        entity.setType("single");
+        entity.setIsRecurring(false);
+        entity.setRecurrenceUnit(RecurrenceUnit.WEEK);
+        entity.setStartDate(start);
+        entity.setEndDate(start);
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        EventUpdateRequest request = new EventUpdateRequest();
+        request.setIsRecurring(true);
+        eventService.updateEvent(eventId, request);
+        em.flush();
+        em.clear();
+
+        Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
+        assertThat(reloaded.getIsRecurring()).isTrue();
+        assertThat(reloaded.getRecurrenceUnit().name()).isEqualTo("WEEK");
+    }
+
+    /** V9 : le CHECK ck_events_recurrence_unit rejette une valeur invalide au niveau DB. */
+    @Test
+    void invalidRecurrenceUnit_rejectedByCheckConstraint() {
+        ProductEntity product = persistProductGraph();
+        em.flush();
+        UUID productId = product.getId();
+
+        assertThatThrownBy(() -> {
+            em.createNativeQuery(
+                    "INSERT INTO events "
+                    + "(id, created_at, updated_at, version, title, type, is_recurring, "
+                    + " recurrence_unit, start_date, archived, product_id) "
+                    + "VALUES (:id, now(), now(), 0, 'bad', 'single', false, "
+                    + " 'weekly', :start, false, :pid)")
+                    .setParameter("id", UUID.randomUUID())
+                    .setParameter("start", LocalDate.of(2026, 1, 1))
+                    .setParameter("pid", productId)
+                    .executeUpdate();
+            em.flush();
+        }).isInstanceOf(Exception.class);
+    }
+}

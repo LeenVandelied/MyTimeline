@@ -134,8 +134,8 @@
 
 > **MàJ Sprint 11 (#61, PR #157)** — anti-patterns front RÉSOLUS : #7 (UUID catégories hardcodés → combobox câblée sur `GET /api/categories` via `useCategories`, `AddProducts.tsx` supprimé au profit de `ProductDrawer.tsx`), #8 (desync Zod `name` → `productCreateSchema.name` aligné `min(1).max(100)` sur `@Size` backend). Désync jumelle corrigée : `eventCreationSchema.name` était resté `min(3)` alors que `EventCreationRequest @Size(min=1,max=100)` → aligné `min(1).max(100)` (cf. [[PIT-S11-003]]).
 
-### Limitation — couleur produit NON persistée backend (S11 #61)
-Le produit n'a AUCUN champ `color` côté backend : `ProductResponse` / `ProductCreationRequest` / `ProductUpdateRequest` ne portent pas de couleur ; seule la **catégorie** porte `color` (`CategoryResponse.color`). Le front hérite la couleur de la catégorie et permet une surcharge produit **UI-only** (aperçu local, non persistée). Toute persistance d'une couleur au niveau produit nécessite d'abord un champ backend (DTO + migration) — cf. follow-up ouvert S11.
+### Couleur produit persistée ✅ (S12 #158 — ex-limitation S11 #61)
+Le produit porte désormais un `color` propre persisté : `ProductCreationRequest.color` (hex `#RRGGBB`, nullable = héritage catégorie), `ProductUpdateRequest.color` + `clearColor` (reset explicite car `color=null` = inchangé en PATCH partiel, cf. [[PAT-S12-002]]), `ProductResponse` expose `color` produit + `category.color` (le front calcule l'effective `product.color ?? product.category.color`). Colonne `products.color` préexistante (V7/#44) → AUCUNE migration S12 (cf. [[DEC-S12-002]]). `ProductEntity.color`/`Product.color` déjà présents (S9/S10). Front `ProductDrawer` : surcharge persistée (plus UI-only), schémas Zod read `.nullable()` / create `.optional()` / update `color + clearColor`.
 
 ---
 

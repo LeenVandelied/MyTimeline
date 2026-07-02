@@ -15,8 +15,10 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 
@@ -100,6 +102,30 @@ public class GlobalExceptionHandler {
     // un message trompeur. La protection anti-race d'unicité est désormais SCOPÉE au save
     // dans CategoryServiceImpl (try/catch -> CategoryNameConflictException). Les autres
     // violations remontent normalement (500 générique) sans être masquées.
+
+    @ExceptionHandler(InvalidDurationUnitException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidDurationUnit(InvalidDurationUnitException ex) {
+        // BR-EVE-004 (#54) : durationUnit null/inconnu pour type='duration' -> 422
+        // Unprocessable Entity. La requête est bien formée (400 = Bean Validation en amont)
+        // mais le calcul d'endDate est impossible. Enveloppe l'ancienne NPE(500)/
+        // IllegalArgumentException brute de Utils.calculateEndDate. Corps détaillé buildBody
+        // (même forme que les 400/404) — message métier explicite pour guider le client.
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RecurrenceUnitRequiredException.class)
+    public ResponseEntity<Map<String, Object>> handleRecurrenceUnitRequired(RecurrenceUnitRequiredException ex) {
+        // BR-EVE-006 (#95fix) : PATCH /api/events/{id} amenant l'état fusionné à
+        // isRecurring=true / recurrenceUnit=null -> 400. Le chemin CREATE l'impose déjà via
+        // @AssertTrue (400) ; ici la garde est côté service (état fusionné, pas payload) car
+        // un PATCH partiel peut légitimement s'appuyer sur un recurrenceUnit déjà en base.
+        // Corps plat {"error":...} cohérent avec les autres erreurs métier 400.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "recurrenceUnit is required when isRecurring is true"));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {

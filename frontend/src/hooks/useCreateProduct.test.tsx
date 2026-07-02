@@ -18,7 +18,8 @@ vi.mock('@/services/productService', () => ({
 const FAKE: Product = {
   id: 'p1',
   name: 'Voiture',
-  category: { id: 'c1', name: 'Véhicules' },
+  color: null,
+  category: { id: 'c1', name: 'Véhicules', color: '#112233' },
   events: [],
 }
 

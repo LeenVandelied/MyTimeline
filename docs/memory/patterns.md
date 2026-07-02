@@ -85,3 +85,9 @@ Unicité métier (ex : nom par owner) = check applicatif (`findByOwnerAndName` �
 
 ## PAT-S11-002 — Schémas Zod distincts pour create vs update quand le contrat DTO diverge
 Le contrat backend peut nommer/structurer différemment création et mise à jour (produit : `POST` attend `category` (UUID), `PATCH` attend `categoryId` (UUID) ; update partiel = champs `.optional()`). Définir DEUX schémas (`productCreateSchema` / `productUpdateSchema`), pas un seul réutilisé. Anti-pattern : `productCreateSchema.partial()` pour le PATCH → mauvais nom de champ envoyé (`category` au lieu de `categoryId`) + validations create indésirables. (Sprint 11 #61)
+
+## PAT-S12-001 — Validation conditionnelle d'un invariant : `@AssertTrue` au CREATE + garde service au PATCH
+Un invariant inter-champs (BR-EVE-006 : `recurrenceUnit` requis si `isRecurring=true`) doit être gardé sur les DEUX chemins d'écriture. CREATE : getter dérivé `@AssertTrue @JsonIgnore isXxxConsistent()` sur le `*CreationRequest` → 400 via `MethodArgumentNotValidException` (le DTO voit l'objet complet). PATCH : un `@AssertTrue` DTO serait FAUX (le payload partiel ignore l'état déjà en base) → garde au niveau SERVICE sur l'**état fusionné de l'entité gérée** (après application des champs partiels, avant save) → exception domaine dédiée → 400. Anti-pattern : n'enforcer l'invariant qu'au CREATE → contournable via PATCH. (Sprint 12 #54 + review)
+
+## PAT-S12-002 — Reset d'un champ nullable en PATCH partiel : flag booléen `clearXxx` explicite
+En PATCH partiel, `champ=null` signifie « inchangé » et ne peut donc PAS exprimer un reset → null en base. Introduire un flag booléen dédié (`clearColor`) mutuellement exclusif avec le champ (`clearColor` prime > `color!=null` surcharge > sinon inchangé). Généralisable à tout champ nullable surchargeable en PATCH partiel (couleur produit héritée de la catégorie, etc.). (Sprint 12 #158)

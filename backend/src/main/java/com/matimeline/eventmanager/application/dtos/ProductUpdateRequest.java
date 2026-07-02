@@ -15,6 +15,15 @@ import jakarta.validation.constraints.Size;
  * reject null. Instead @Pattern(".*\\S.*") rejects a supplied-but-blank name (e.g. " ") which
  * would otherwise slip past @Size(min = 1) and violate BR-PRO-001. @Pattern skips null values,
  * so partial patches without a name stay valid.
+ *
+ * #158 — Couleur produit (follow-up S11 #61) :
+ *   - color     : quand présent (hex #RRGGBB), pose une surcharge couleur produit.
+ *                 Absent (null) = couleur inchangée. @Pattern skip null.
+ *   - clearColor: {@code true} = réinitialise la surcharge (color -> null en base,
+ *                 le produit ré-hérite alors de la couleur de sa catégorie côté front).
+ *                 Nécessaire car {@code color=null} signifie déjà « inchangé » et ne
+ *                 peut donc PAS exprimer un reset. {@code color} et {@code clearColor}
+ *                 sont mutuellement exclusifs (clearColor prime, cf. service).
  */
 public class ProductUpdateRequest {
 
@@ -23,6 +32,11 @@ public class ProductUpdateRequest {
     private String name;
 
     private UUID categoryId;
+
+    @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Color must be a #RRGGBB hex value")
+    private String color;
+
+    private boolean clearColor;
 
     public String getName() {
         return name;
@@ -38,5 +52,21 @@ public class ProductUpdateRequest {
 
     public void setCategoryId(UUID categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public boolean isClearColor() {
+        return clearColor;
+    }
+
+    public void setClearColor(boolean clearColor) {
+        this.clearColor = clearColor;
     }
 }

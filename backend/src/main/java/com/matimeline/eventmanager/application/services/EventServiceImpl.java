@@ -13,6 +13,7 @@ import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
@@ -96,6 +97,33 @@ public class EventServiceImpl implements EventService {
             event.setArchived(updateRequest.getArchived());
         }
 
+        // BR-EVE-006 (#95fix) : garde sur l'ÉTAT FUSIONNÉ (pas le payload). Le PATCH étant
+        // partiel, {"isRecurring":true} peut s'appuyer sur un recurrenceUnit déjà valide en
+        // base (non renvoyé) : la validation ne peut donc pas vivre au niveau DTO. On vérifie
+        // ici l'entité après application des champs partiels : isRecurring=true impose un
+        // recurrenceUnit non-null (WEEK/MONTH/YEAR), sinon -> RecurrenceUnitRequiredException (400).
+        // Le chemin CREATE reste couvert par EventCreationRequest.@AssertTrue (inchangé).
+        if (Boolean.TRUE.equals(event.getIsRecurring()) && event.getRecurrenceUnit() == null) {
+            throw new RecurrenceUnitRequiredException(id);
+        }
+
+        // BR-EVE-002 (#54) : recalcul de endDate dès qu'un facteur de calcul change au PATCH
+        // (type, durationValue, durationUnit). Avant #54, endDate restait figée à sa valeur de
+        // création -> bug silencieux (une durée modifiée n'étendait jamais la fin). startDate
+        // n'est pas modifiable via EventUpdateRequest : on recalcule sur la startDate persistée.
+        // Le recalcul lève InvalidDurationUnitException (-> 422) si durationUnit est null/inconnu
+        // pour un type 'duration', au lieu de persister une endDate silencieusement fausse.
+        boolean durationFactorsChanged = updateRequest.getType() != null
+                || updateRequest.getDurationValue() != null
+                || updateRequest.getDurationUnit() != null;
+        if (durationFactorsChanged) {
+            event.setEndDate(Utils.calculateEndDate(
+                    event.getType(),
+                    event.getDurationValue(),
+                    event.getDurationUnit(),
+                    event.getStartDate()));
+        }
+
         event.setProduct(originalProductId);
 
         return eventRepository.save(event);
@@ -135,15 +163,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Event> findEventById(UUID id) {
-        if (!eventRepository.existsById(id)) {
-            return Optional.empty();
-        }
-        
-        try {
-            return eventRepository.findEventById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        return eventRepository.findEventById(id);
     }
 } 

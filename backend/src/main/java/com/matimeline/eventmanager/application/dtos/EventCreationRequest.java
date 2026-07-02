@@ -3,6 +3,9 @@ package com.matimeline.eventmanager.application.dtos;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,6 +35,23 @@ public class EventCreationRequest {
 
     @NotNull(message = "Product ID is required")
     private UUID productId;
+
+    /**
+     * BR-EVE-006 (#54) : validation conditionnelle — {@code recurrenceUnit} MUST être non-null
+     * (et non vide) quand {@code isRecurring=true}. Une récurrence sans unité est inexploitable.
+     * {@code @AssertTrue} sur ce getter dérivé : déclenché par {@code @Valid} -> HTTP 400 si violé.
+     * {@code @JsonIgnore} pour ne pas exposer/attendre ce champ calculé sur le wire.
+     * Retourne {@code true} (valide) quand {@code isRecurring} est null/false : la contrainte
+     * ne s'applique qu'à la récurrence active.
+     */
+    @JsonIgnore
+    @AssertTrue(message = "recurrenceUnit is required when isRecurring is true")
+    public boolean isRecurrenceUnitConsistent() {
+        if (!Boolean.TRUE.equals(isRecurring)) {
+            return true;
+        }
+        return recurrenceUnit != null && !recurrenceUnit.trim().isEmpty();
+    }
 
     public String getName() {
         return name;

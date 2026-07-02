@@ -72,8 +72,8 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 ### BR-EVE-006 — recurrenceUnit requis quand isRecurring=true
 **Règle** : quand `isRecurring=true`, `recurrenceUnit` DEVRAIT être obligatoire (`weeks/months/years`).
 **Pourquoi** : une récurrence sans unité est inexploitable.
-**✅ RÉSOLU partiel (Sprint 9, #44)** : enum `RecurrenceUnit` (WEEK/MONTH/YEAR) livré backend (`RecurrenceUnit.java`), parsing tolérant legacy via `RecurrenceUnit.fromString`, conversion au service (`EventServiceImpl.java:52,83`). Le DTO `EventCreationRequest.recurrenceUnit` reste `String` en façade puis converti en enum. **ENCORE VALIDE** : aucune contrainte « obligatoire si `isRecurring=true` » (`@NotBlank`/refine conditionnel toujours manquant back + front) → `recurrenceUnit` reste librement null même avec `isRecurring=true`.
-**Test attendu** : `EventCreationRequestValidationTest.shouldRequireRecurrenceUnitWhenRecurring` (à créer après ajout de la règle).
+**✅ RÉSOLU BACKEND (Sprint 9 #44 + Sprint 12 #54)** : enum `RecurrenceUnit` (WEEK/MONTH/YEAR) livré S9 (`RecurrenceUnit.java`, parsing tolérant `fromString`). S12 #54 ajoute la contrainte « requis si `isRecurring=true` » sur les DEUX chemins d'écriture : CREATE via `EventCreationRequest.isRecurrenceUnitConsistent()` (`@AssertTrue @JsonIgnore` → 400) ; PATCH via garde service dans `EventServiceImpl.updateEvent` sur l'état fusionné (`isRecurring=true && recurrenceUnit==null` → `RecurrenceUnitRequiredException` → 400, review S12). Cf. [[PAT-S12-001]]. ⚠ FRONT : refine conditionnel Zod encore à répercuter au sprint frontend events.
+**Test** : `EventControllerValidationTest` (create 400) + `EventServiceImplTest`/`EventPatchAndRecurrenceIntegrationTest` (PATCH 400 + non-régression « recurrenceUnit préexistant → 200 »).
 
 ### BR-EVE-007 — isRecurring obligatoire à la création
 **Règle** : un `ROLE_USER` MUST fournir `isRecurring` (non null) à la création.
@@ -144,10 +144,10 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 - **Fuite du modèle domaine en réponse REST** : `Event` (domaine) renvoyé directement par POST/PATCH et par le GET liste — aucun response DTO.
 - **Logique métier dans le controller** : `EventController.updateEvent` contient la boucle de mise à jour champ-par-champ avec `instanceof` (parsing `durationValue`/`isRecurring`) — devrait être en couche service.
 - **Mismatch sémantique name↔title** : `EventCreationRequest.name` mappé vers `Event.title`.
-- **Exception avalée** : `EventServiceImpl.findEventById` fait `e.printStackTrace()` puis retourne `Optional.empty()` → masque les vraies erreurs.
-- **Double round-trip DB** : `deleteById` fait `existsById` puis `deleteById` (2 requêtes) ; `findEventById` fait `existsById` puis `findEventById` (2 requêtes).
+- ~~**Exception avalée** : `findEventById` fait `printStackTrace` + `Optional.empty()`~~ ✅ RÉSOLU S12 #95 : corps réduit à `return eventRepository.findEventById(id);` (1 hit, plus de swallow, MEMO-007).
+- **Double round-trip DB** : ~~`findEventById`~~ ✅ RÉSOLU S12 #95 ; RESTE `deleteById` (`existsById` puis `deleteById`) — cf. RECOMMAND_FOLLOWUP #95 (nuance : `existsById` sert le 404, fix ≠ simple suppression). [triage XS]
 - **Check vide dupliqué** : `EventServiceImpl.findDomainEventByProductId` lève `EventNotFoundException` sur liste vide, puis `ProductController` re-teste `isEmpty()` après coup.
-- **NPE potentielle** : `Utils.calculateEndDate` `switch(durationUnit)` sans null-guard quand `type='duration'`. (cf. BR-EVE-004)
+- ~~**NPE potentielle** : `Utils.calculateEndDate` `switch(durationUnit)` sans null-guard~~ ✅ RÉSOLU S12 #54 : null-guard + `InvalidDurationUnitException` → 422 (cf. BR-EVE-004, [[DEC-S12-001]]).
 - **Suppression physique** : `deleteById` supprime réellement la ligne. Nuance (S9 #44) : un champ `archived` (`EventEntity.java:57-58`, `Event.java`) existe désormais (soft-delete amorcé) mais `DELETE` reste un hard-delete — le flag n'est pas encore branché sur la suppression.
 - ~~**`@CrossOrigin(origins="*")`** sur `EventController`~~ : ✅ RETIRÉ Sprint 1 #30 — CORS gérée uniquement par `SecurityConfig` (`allowCredentials=true` + `allowedOrigins localhost:3000`).
 - **Schémas Zod dupliqués/divergents** : `eventEditSchema` défini deux fois (cf. BR-EVE-009) ; champ `allDay` vs `isAllDay` (cf. BR-EVE-010) ; `name.min(3)` front vs `@Size(min=1)` back ; `type` enum strict front vs `@NotBlank` libre back.

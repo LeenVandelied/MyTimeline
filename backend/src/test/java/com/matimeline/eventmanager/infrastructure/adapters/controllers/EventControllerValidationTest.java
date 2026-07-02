@@ -41,13 +41,32 @@ class EventControllerValidationTest {
     @BeforeEach
     void setUp() {
         EventController controller = new EventController(eventService, productService, userService, jwtService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        // GlobalExceptionHandler enregistré pour que MethodArgumentNotValidException -> 400
+        // (le standaloneSetup n'embarque pas l'advice par défaut).
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
     void createEvent_blankName_returns400_andServiceNotCalled() throws Exception {
         String body = "{\"name\":\"\",\"type\":\"BIRTHDAY\",\"durationValue\":1,"
                 + "\"durationUnit\":\"DAY\",\"isRecurring\":false,"
+                + "\"productId\":\"" + java.util.UUID.randomUUID() + "\"}";
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verify(eventService, never()).createEvent(org.mockito.ArgumentMatchers.any(EventCreationRequest.class));
+    }
+
+    @Test
+    void createEvent_recurringWithoutRecurrenceUnit_returns400_andServiceNotCalled() throws Exception {
+        // BR-EVE-006 (#54) : isRecurring=true + recurrenceUnit=null -> 400 (@AssertTrue).
+        String body = "{\"name\":\"Anniv\",\"type\":\"single\",\"durationValue\":1,"
+                + "\"durationUnit\":\"days\",\"isRecurring\":true,"
                 + "\"productId\":\"" + java.util.UUID.randomUUID() + "\"}";
 
         mockMvc.perform(post("/api/events")

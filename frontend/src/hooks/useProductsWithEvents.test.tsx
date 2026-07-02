@@ -21,7 +21,8 @@ const FAKE_PRODUCTS: Product[] = [
   {
     id: '018f3a2b-0000-7000-8000-000000000010',
     name: 'Projet Alpha',
-    category: { id: '018f3a2b-0000-7000-8000-0000000000c1', name: 'Travail' },
+    color: null,
+    category: { id: '018f3a2b-0000-7000-8000-0000000000c1', name: 'Travail', color: '#334455' },
     events: [],
   },
 ]
