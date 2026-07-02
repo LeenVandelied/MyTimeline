@@ -1,55 +1,50 @@
-## Sprint 10 — Backend Produits + Catégories (Wave 3 back)
+## Sprint 13 — Backend Auth/Sessions & Compte (Wave 5 back)
 
-Débloque le frontend Wave 3 (S11) : CRUD backend Produits (PATCH + soft delete) et Catégories (+ réassignation), avec un modèle d'ownership catégorie par utilisateur.
+Révocation des JWT stateless (registre de sessions + jti) et suppression de compte RGPD. Cohésion 0.70 (100 % `epic:auth`).
 
-### Issues traitées
-- **#50** — Product PATCH partiel + suppression logique (`archived` / soft delete)
-- **#52** — CRUD catégorie complet + suppression avec réassignation atomique + ownership
+### Issues livrées
+- **#73 — Sessions actives + révocation JWT (jti)** (L) — `d3a776f`
+- **#78 — Suppression de compte `DELETE /api/me` (RGPD)** (M) — `e5c8ffd`
+
+### Vagues exécutées
+- **V1** : #73 (fondation révocation) — expose `SessionService.revokeAllSessions()`.
+- **V2** : #78 (consomme la révocation de #73) — séquencé car dépendance + conflit `AuthController`/`UserController`.
 
 ### Changements clés
 
-**Produits (#50)**
-- `PATCH /users/{userId}/products/{productId}` : mise à jour partielle (nom et/ou catégorie), 200/400/404/403.
-- Soft delete : `DELETE` positionne `archived = true`, retourne **204** (corrigé de 200). `@SQLRestriction("archived = false")` sur `ProductEntity` → produits archivés invisibles dans tous les listings (produits + events).
-- Ownership `path {userId} == JWT` sur PATCH et DELETE (403 sur mismatch).
+**#73 — Révocation de session**
+- Table `sessions` (jti, user_id, device_info, ip_address tronquée, last_activity, created_at, expires_at, revoked_at) — migration **V10** (index UNIQUE `jti`, FK `user_id` ON DELETE CASCADE, index `user_id`).
+- `JwtService.generateToken` embarque un `jti` (UUID) + `extractJti`. `JwtFilter` vérifie `isSessionActive(jti)` à chaque requête authentifiée (lookup indexé, BR-AUT-011).
+- `GET /api/sessions` (sessions du caller), `DELETE /api/sessions/{id}` (ownership → 404 anti-énumération), `DELETE /api/sessions/others`. `POST /logout` révoque le jti courant (BR-AUT-010) ; `POST /refresh` rejette un jti révoqué (BR-AUT-009).
+- RGPD : `ClientIpAnonymizer` tronque le dernier octet IPv4 ; IPv6 non anonymisable → null. `jti` jamais exposé (DTO).
+- Architecture hexagonale stricte : port `SessionService`/`SessionRepository` (domain), impl `@Service`/`@Repository`, `SessionController` injecte les PORTS.
 
-**Catégories (#52) — ADR-002 ownership par utilisateur**
-- `PATCH /api/categories/{id}` (name/color/description), DTOs `CategoryRequest`/`CategoryResponse`/`CategoryUpdateRequest` (fin de l'exposition du domain model).
-- Ownership : colonne `owner_id` (migration **V8**), `owner NULL` = catégorie « système » (lisible de tous, non modifiable → 403). PATCH/DELETE exigent `owner_id == JWT`.
-- Unicité du nom **par utilisateur** : `UNIQUE(owner_id, name)` + check métier (409).
-- `DELETE /api/categories/{id}?reassignToCategoryId={uuid}` : réassignation atomique des produits (SQL natif contournant `@SQLRestriction` pour inclure les archivés) AVANT suppression, dans une seule `@Transactional` ; 409 explicite si suppression tentée sans réassignation.
-- Nettoyage hexagonal : injection du port `CategoryService`, retrait du double `existsById`.
-
-**Corrections sécurité & review (post-audit)**
-- 🔒 Cross-tenant (security-expert) : `resolveAssignableCategory` — une catégorie n'est assignable à un produit (create + update) que si possédée par l'appelant ou système, sinon **404** (anti-énumération d'UUID).
-- 🐛 Self-reassign (reviewer) : `deleteCategory` rejette `reassignToCategoryId == id` (409) — évitait une violation FK / des orphelins.
-- 🐛 Nom blanc sur PATCH produit : `@Pattern` rejette `" "` (400, BR-PRO-001) sans casser le patch partiel.
-- 🐛 `DataIntegrityViolationException` → 409 générique (plus de 500 avec fuite SQL sur race d'unicité).
+**#78 — Suppression de compte**
+- `DELETE /api/me` (`UserController` existant, #70) avec confirmation par re-saisie du username. Identité dérivée du JWT, jamais du body. Mismatch/absent → 400 ; succès → 204 + cookie effacé (MaxAge=0) ; 2e appel → 401.
+- Suppression cascade transactionnelle : `revokeAllSessions` → events → products → categories(owner) → user. **SQL natif bindé** pour purger products/events y compris archivés (contourne `@SQLRestriction(archived=false)` qui laisserait des FK résiduelles bloquant le DELETE user). Catégories système (`owner_id NULL`) préservées.
+- Découverte schéma : `events` n'a pas de colonne `user_id` — appartenance transitive via `product_id → products.user_id` (sous-select natif). Aucune migration nécessaire.
 
 ### BR impactées
-BR-PRO-001, BR-PRO-004, BR-PRO-007 · BR-CAT-001/002/003/004/006 + nouvelle BR ownership catégorie (owner_id == JWT).
+- BR-AUT-002/009/010/011 (révocation, refresh, logout, JwtFilter), BR-AUT-001 (ownership suppression).
 
-### Migration
-- **V8** `category_ownership.sql` : `owner_id` (FK users, NULLABLE), index `ix_categories_owner_id`, `UNIQUE(owner_id, name)`. Backfill : catégories existantes → owner NULL (système). Rollback commenté. Audité db-expert (OK).
+### Review & corrections (`fd91d9f`)
+- **security-expert** — 1 MAJEUR : `GET /api/auth/me` ne vérifiait pas la révocation (route sous le bypass `/api/auth/**` du JwtFilter) → un token révoqué/déconnecté restait accepté, vidant #73 de sa substance. **Corrigé** + test de non-régression.
+- **reviewer** — 2 MAJEUR : `JwtFilter` loggait en `error`/`warn` sur des cas nominaux (token expiré côté client, requête anonyme) → pollution stderr (MEMO-007). **Corrigés** (distinction `JwtException` attendue → debug vs anomalie technique → error). MINEUR NPE guard `SessionResponse` (`Objects.equals`) corrigé.
+- **db-expert** — migration V10 APPROUVÉE.
 
 ### Audit tests
-- Backend : **146/146 verts** (0 failed, 0 errors, 0 skipped), intégration Testcontainers (Postgres) incluse (réassignation atomique + rollback, filtre archived, unicité scoped-owner, listing scopé owner∪système).
-- E2E : N/A (sprint backend pur ; parcours produit/catégorie livré avec le frontend Wave 3, #61).
-- Détail : `docs/memory/audits/sprint-10-test-coverage.md`.
+- **Backend : 220 / 220 verts, 0 échec** (`./scripts/test-quiet.sh backend`, Testcontainers Postgres 16). +33 tests sur la baseline S12 (187).
+- Nouveaux : `SessionServiceImplTest`, `ClientIpAnonymizerTest`, `SessionRevocationIntegrationTest` (dont `/me` après révocation → 401), `UserControllerTest`, `AccountDeletionIntegrationTest`.
+- Frontend inchangé (aucun `.tsx`/`.ts`) → coverage E2E N/A ce sprint.
+- Détail : `docs/memory/audits/sprint-13-test-coverage.md`.
 
-### Reviews
-- **db-expert** (V8) : OK — 2 MINEUR déférés (#78 FK RESTRICT vs DELETE /me ; dette UUID-AUTO préexistante).
-- **security-expert** : 1 CRITIQUE + 1 MAJEUR (cross-tenant) → corrigés.
-- **reviewer batch** (mi-sprint) : 1 MAJEUR bloquant (self-reassign) + 2 MINEUR → corrigés. 2 MAJEUR de dette préexistante déférés en follow-ups.
-- **/review-pr #153** (état final) : durcissement cross-tenant sur la lecture — `GET /api/categories` (liste + par-id) scopé à `owner == caller ∪ système`, `CategoryResponse` n'expose plus l'`ownerId` (booléen `system`), handler `DataIntegrityViolationException` restreint au niveau service (plus de 409 fourre-tout). `78c633b`.
+### Dette identifiée (hors scope, à ticketer)
+- Purge des sessions expirées/révoquées (croissance monotone de la table) — db-expert.
+- A8 : `AuthController` injecte `UserServiceImpl` concret (port manquant) — préexistant.
+- Extraction d'un `JwtCookieFactory` partagé (`buildJwtCookie` dupliqué AuthController/UserController).
+- **Bug préexistant hors sprint** : inscription réelle cassée (`UserMapper.toEntity` setId + `@Version` null → « Detached entity », PIT-S10-003) — signalé en tâche séparée par le fullstack-dev #73, impacte le flux register en prod.
 
-### Follow-ups (triage à `/sprint end`)
-- Extraire `resolveCaller` dans `ProductController` (boilerplate JWT dupliqué ~6×) `[S | products]`.
-- `ProductResponse` DTO — stopper la fuite du domain model produit en HTTP (AP-CAT-03 non rétrofit) `[M | products]`.
-- Front Wave 3 #61 (S11) : remplacer les 4 UUID hardcodés `AddProducts.tsx`, E2E métier, sync Zod.
-- #78 : réassigner/nullifier `owner_id` avant suppression d'un user (FK RESTRICT).
+### Cohésion
+0.70 — mono-domaine `epic:auth`.
 
-### Décision d'architecture
-**ADR-002** (`docs/adr/ADR-002-ownership-categorie.md`) : catégories par utilisateur (`ownerId`), backfill owner NULL = système, `UNIQUE(owner_id, name)`, 403 sur mismatch. Casse les 4 UUID hardcodés du front jusqu'à la Wave 3 (#61). Décision tranchée par le dev en début de sprint.
-
-**Cohésion sprint : 0.50** · Vagues : V1 = #50, V2 = #52 (séquencé sur `ProductRepository.java` partagé).
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
