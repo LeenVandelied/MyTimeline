@@ -91,3 +91,6 @@ Un invariant inter-champs (BR-EVE-006 : `recurrenceUnit` requis si `isRecurring=
 
 ## PAT-S12-002 — Reset d'un champ nullable en PATCH partiel : flag booléen `clearXxx` explicite
 En PATCH partiel, `champ=null` signifie « inchangé » et ne peut donc PAS exprimer un reset → null en base. Introduire un flag booléen dédié (`clearColor`) mutuellement exclusif avec le champ (`clearColor` prime > `color!=null` surcharge > sinon inchangé). Généralisable à tout champ nullable surchargeable en PATCH partiel (couleur produit héritée de la catégorie, etc.). (Sprint 12 #158)
+
+## PAT-S14-001 — Contrainte CHECK de présence conditionnelle sur discriminant NULLABLE : `IS NOT TRUE` + neutralisation avant ADD
+Exiger la présence d'une colonne selon un discriminant : `CHECK (discriminant <> 'x' OR col IS NOT NULL)`. Si le discriminant est un booléen NULLABLE, utiliser `discriminant IS NOT TRUE OR col IS NOT NULL` — JAMAIS `= false` (`NULL = false` vaut NULL, la contrainte laisse passer les NULL non voulus). Toujours précéder l'`ADD CONSTRAINT` d'une neutralisation défensive idempotente des lignes legacy non conformes (pattern V9), sinon la migration avorte sur base prod peuplée. Filet DB complémentaire à la validation applicative (Bean), pas substitut. (Sprint 14 #128, V11)

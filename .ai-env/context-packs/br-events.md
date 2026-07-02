@@ -111,8 +111,8 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 ### BR-EVE-012 — recurrenceEndDate (champ #44, non couvert par une règle antérieure)
 **Règle** : `recurrenceEndDate` borne la fin d'une récurrence.
 **Implémentation** : champ réel `EventEntity.java:47-48`, `Event.java` ; exposé en PATCH `EventUpdateRequest.java:37`.
-**⚠️ GAP validation** : AUCUNE contrainte `recurrenceEndDate > startDate` (backend) → une date de fin antérieure au début est acceptée silencieusement.
-**Test attendu** : `EventValidationTest.shouldRejectRecurrenceEndDateBeforeStart` (à créer).
+**✅ RÉSOLU BACKEND (Sprint 14 #168)** : garde au niveau service sur l'état fusionné du PATCH (`recurrenceEndDate < startDate` → `RecurrenceEndDateBeforeStartException` → **422**, cohérent [[DEC-S12-001]]/[[DEC-S14-001]]). `isBefore` stricte (`end == start` toléré). Portée update uniquement (`recurrenceEndDate` absent du DTO create). ⚠ FRONT : refine Zod `recurrenceEndDate >= startDate` encore dû (#150, S15).
+**Test** : `EventServiceImplTest` (bornes </==/> startDate). Filet DB complémentaire : contrainte de présence #128/V11 (pas la comparaison de dates).
 
 ### BR-EVE-013 — archived en PATCH uniquement (asymétrie create/update)
 **Règle** : `archived` (flag soft-delete amorcé) est modifiable via PATCH mais pas fixable à la création.
@@ -120,9 +120,9 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 **Test attendu** : `EventServiceImplTest.shouldToggleArchivedOnPatch`.
 
 ### BR-EVE-014 — Asymétrie DTO create vs update (bug produit potentiel)
-**Règle (constat)** : `EventCreationRequest` n'expose PAS `color`/`archived`/`recurrenceEndDate` — seul `EventUpdateRequest` les supporte.
-**Conséquence** : impossible de créer un event coloré directement → il faut créer puis PATCH. Asymétrie non documentée côté contrat, source de bug produit / friction UX.
-**Test attendu** : `EventCreationRequestContractTest.shouldExposeColorAtCreation` (après harmonisation).
+**Règle (constat historique)** : `EventCreationRequest` n'exposait PAS `color`/`archived`/`recurrenceEndDate` — seul `EventUpdateRequest` les supportait.
+**✅ RÉSOLU PARTIEL (Sprint 14 #168)** : `color` (String nullable, additif non-cassant) désormais fournissable à `POST /api/events` et threadé dans `EventServiceImpl.createEvent`. `archived`/`recurrenceEndDate` restent PATCH-only par choix (BR-EVE-013 : pas de création déjà archivée ; recurrenceEndDate hors scope create). ⚠ FRONT : répercuter `color` au create côté Zod/eventService (#150, S15). Aucune validation format hex backend (color String libre, assumé — le backend reste source tolérante).
+**Test** : `EventCreationRequestContractTest` (color exposé au create / absent non-cassant).
 
 ---
 

@@ -301,14 +301,27 @@
 > **✅ Gap S9–S13 adressé par le plan S14–S18 :** #47 (extraction Timeline) est planifié en S16, unbloqueur explicite de la Timeline frontend (#55 en S17, #66 en S18). Les autres vues Timeline (#63/#64) restent au backlog post-S18.
 > **Plan généré le 2026-07-01** (`/ai-env:sprint plan 5`, cohésion moyenne 0.55). Backlog restant : dette review backend (#92-#94/#123-#134/#139-#148), Waves 6/7 (#58/#69/#72/#76/#77/#81/#82…), #62/#68/#75/#80/#83/#86/#87/#102.
 
-## Sprint 14 — 2026-07-03 (PLANIFIÉ — cohésion 0.42, Sécurité backend + hygiène events)
-**Objectif :** Upgrade Spring Boot 3.3/3.4 LTS (CVE P0) + cluster hygiène events (NPE, validations Bean, contraintes CHECK DB).
-**Milestone GitHub :** #14
-**Issues :** #162 (Boot upgrade P0), #161 (CVE frontend P0), #164 (NPE calculateEndDate), #168 (validations Bean BR-EVE), #128 (CHECK DB V11)
-**Vagues :** V1 = #161 + #164 + #162 parallèles (fichiers disjoints) | V2 = #168 (après build stable) | V3 = #128 (V11, après validation applicative)
-**Migrations Flyway :** V11 (contraintes CHECK events, #128) — dernière migration réelle = V10__create_sessions.sql, prochain numéro libre = V11 (l'architect avait raison)
-**Dépend de :** aucune
-**Status :** En cours
+## Sprint 14 — 2026-07-03 (Terminé — merge PR #179 dans dev — cohésion 0.42, Sécurité backend + hygiène events)
+**Objectif :** Upgrade Spring Boot 3.4.4 LTS (CVE P0) + cluster hygiène events (NPE, validations Bean, contraintes CHECK DB) + CVE frontend.
+**Milestone GitHub :** #14 (fermé après merge)
+**Issues livrées (5) :** #161 (CVE frontend P0), #162 (Boot 3.4.4 P0), #164 (NPE — no-op, déjà résolu #54), #168 (validations Bean BR-EVE-012/014), #128 (CHECK DB V11)
+**Vagues exécutées :** V1 = #161 (frontend) ∥ #164 (backend Utils) parallèles | V1b = #162 (Boot upgrade, SOLO — détaché de V1 pour éviter corruption build concurrent) | V2 = #168 | V3 = #128
+**Cohésion score :** 0.42
+**Commits :** 5 — d6745f5 (#161) · 3a4f6ae (#162) · 0802d71 (#168) · 8494edc (#128) · aa6c6b6 (artefacts). #164 = 0 commit (déjà livré #54).
+**Migrations Flyway :** V11 (contraintes CHECK conditionnelles events, #128) — dernière réelle = V10__create_sessions, V11 = prochain libre (l'architect avait raison).
+**BR impactées :** BR-EVE-004 (déjà couverte), BR-EVE-006 (déjà), BR-EVE-012 (422, [[DEC-S14-001]]), BR-EVE-014 (color au create), BR-AUT-011 (jti non régressé), DEC-S3-001 (confirmée).
+**Reviews :** reviewer batch OUI (0 CRITIQUE / 0 MAJEUR / 3 MINEUR non bloquants) · security-expert JWT OUI · db-expert V11+Flyway OUI (réserves pré-prod, pas merge).
+**Tests :** Backend 237/237 green | Frontend 70/70 green | E2E : `frontend/e2e/` vide (préexistant).
+**Nouveaux pitfalls / decisions / patterns :** PIT-S14-001 (jjwt HS256 figé), PIT-S14-002 (architect Phase 0.5 lire fichier réel), DEC-S14-001 (BR-EVE-012 422), DEC-S14-002 (Boot 3.4.4/flyway-pg), PAT-S14-001 (CHECK conditionnel IS NOT TRUE + neutralisation).
+**Absorbé en cours (XS) :** aucun. #164 = no-op (fix préexistant #54).
+**Follow-ups proposés (NON-XS) — à arbitrer Phase 4 :**
+  - Contrat HTTP 400-vs-422 erreurs métier events (#164/#168 exposent 422) [décision produit | events]
+  - #150 (S15) : color au create + refine recurrenceEndDate côté frontend Zod [triage S | events/frontend]
+  - 5 CVE CRITICAL postérieures à Boot 3.4.4 → bump patch-release [triage M | devops]
+  - npm audit devDeps (chaîne Storybook/Vitest) [triage S | devops]
+  - next-env.d.ts non commitable (ESLint triple-slash) → ignore ESLint/lint-staged [triage XS | devops]
+  - Pré-prod (db-expert) : flyway validate sur dump réel + comptage lignes non conformes avant V11 [triage S | devops]
+**Status :** Terminé (merge en cours de clôture)
 
 ## Sprint 15 — (PLANIFIÉ — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
 **Objectif :** DTO EventResponse + port EventService pur (backend) → sync Zod frontend → E2E golden path Playwright + job CI.
