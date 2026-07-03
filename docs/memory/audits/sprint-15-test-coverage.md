@@ -28,7 +28,7 @@ Cross-system flow=OUI uniquement pour le golden path #163 (flux 4 étapes multi-
 - Backend : 238 tests, 238 passed, 0 failed (`./scripts/test-quiet.sh backend`, Testcontainers Postgres, Docker OK)
 - Frontend : 85 tests / 16 fichiers, 85 passed, 0 failed (`npm run test` Vitest)
 - Statique frontend #163 : `tsc --noEmit` OK, `npm run lint` OK, `next build` OK, `playwright test --list` = 1 test collecté
-- E2E golden path : **run complet NON exécuté en local** (nécessite Postgres + backend + frontend simultanés hors contexte lead). Validation réelle = job CI `e2e` au 1er run de la PR. Spec vérifié statiquement (compile + collecte + testids présents dans les composants).
+- E2E golden path : **5/5 verts en local** (stack complète Postgres Docker isolé + backend jar + next dev proxy, validé par le subagent #163 après reprise). A nécessité le fix `b7d0d02` (event couplé). Gate canonique = job CI `e2e` sur la PR.
 
 ## Conclusion
 Suites unit/integration backend + frontend **VERTES**. Aucun `[MISSING]`. Golden path E2E : test + harness CI livrés, validation end-to-end déléguée au job CI `e2e` sur la PR (à surveiller au 1er run). Prêt pour review batch (Phase 7) puis PR.

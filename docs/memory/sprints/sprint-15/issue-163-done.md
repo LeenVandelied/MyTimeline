@@ -2,8 +2,8 @@
 
 **Titre :** [FEATURE] E2E Playwright golden-path + job CI
 **Vague :** V3 | **Taille :** M | **Modèle :** opus-high
-**Commits :** 952533a
-**Note recovery :** subagent crashé 2× (API Error: Overloaded). Travail partiel récupéré depuis le working tree + finalisé/vérifié par le lead (spawn-ref-163.txt + briefing conservés).
+**Commits :** 952533a, 07ab0d3 (proxy/userId/JWT), b7d0d02 (fix event couplé ProductDrawer)
+**Note recovery :** subagent crashé 2× (API Error: Overloaded). Travail partiel finalisé par le lead ; le subagent d'origine a ensuite repris et complété (fix ProductDrawer + run E2E local 5/5 vert).
 
 ## Résumé
 Golden path E2E full-stack : inscription → connexion → produit + événement (single) → vérif timeline. Plus job CI `e2e` qui lève la stack complète.
@@ -33,14 +33,21 @@ Aucune catégorie seedée par Flyway + pas d'UI de création de catégorie → u
 - `npm run lint` : OK (après revert d'un churn auto-généré `next-env.d.ts`)
 - `next build` : OK (warning bénin workspace-root multi-lockfiles)
 - `playwright test --list` : 1 test collecté OK
-- ⚠ **Run E2E complet NON exécuté en local** (nécessite Docker Postgres + backend + frontend simultanés ; non monté dans le contexte lead). Validation réelle = job CI `e2e` sur la PR. À surveiller au 1er run PR.
+- ✅ **Run E2E complet exécuté en local : 5/5 verts** (stack complète : Postgres Docker isolé :55432 + backend jar profil dev + next dev proxy) — validé par le subagent d'origine après reprise. Nécessitait le fix `b7d0d02` (sans lui, l'event couplé n'était jamais envoyé → assertion `timeline-event` KO). Le job CI `e2e` reste le gate canonique sur la PR.
 
 ## [MEMORY:*] signaux
 - [MEMORY:pattern] E2E full-stack en CI GitHub Actions : Postgres service container + backend jar en fond (profil dev, DB_*/JWT_SECRET explicites) + readiness poll sur endpoint 401 + frontend via webServer Playwright. NEXT_PUBLIC_* lu au runtime en `next dev`.
 - [MEMORY:pitfall] `next dev`/`next build` réécrit `next-env.d.ts` (ajout `/// <reference path="./.next/types/routes.d.ts" />`) → casse `npm run lint` (@typescript-eslint/triple-slash-reference). Revert le fichier avant commit.
+- [MEMORY:pitfall] E2E full-stack cross-port (:3000→:8080) : cookie JWT `SameSite=Lax` PAS envoyé sur POST/PATCH/DELETE cross-site XHR (GET passe) → 401 sur création. Fix : proxy Next `rewrites` same-origin gaté par `E2E_API_PROXY_TARGET`.
+- [MEMORY:pitfall] CI backend E2E : `JwtService` fait `Decoders.BASE64.decode(secret)` → `JWT_SECRET` DOIT être Base64 valide ≥32 octets, sinon `generateToken` lève → login 500. Secret CI = chaîne Base64 (pas de `-`/`_`).
+- [MEMORY:bug] `ProductCreationRequest.userId` `@NotNull` + `@Valid` sur le `@RequestBody` (ProductController:50) validé AVANT `request.setUserId(path)` (ligne 68) → body POST /products sans `userId` = 400. Le front DOIT inclure `userId` dans le body (backend le réécrit depuis le path = pas d'élévation). **Vérifié contre le code (finding review "dead code" = FAUX positif).**
+- [MEMORY:bug] `ProductDrawer` event couplé cassé : `zodResolver(schema.pick({name,category}))` STRIPPE `firstEventDate` de `values` passé à onSubmit → event jamais envoyé (produit créé sans event, silencieux). Fix : `form.getValues('firstEventDate')` (état RHF brut). Anti-pattern : lire dans onSubmit un champ absent du schéma resolver.
 
 ## Recommandations suite
 - RECOMMAND_FOLLOWUP: pas d'UI de création de catégorie — un user neuf ne peut pas créer de produit sans seed API. Envisager une catégorie système seedée par Flyway OU une UI de création de catégorie. [triage M | domaine categories]
-- RECOMMAND_FOLLOWUP: surveiller le 1er run du job `e2e` sur la PR (flaky potentiel, run E2E jamais exécuté end-to-end en local). [triage S | domaine transversal]
+- RECOMMAND_FOLLOWUP: backend `ProductServiceImpl.createProduct` NPE potentielle si `getEvents()==null` (BR-PRO-005 non gardé) → 500 sur create produit SANS event. Null-guard à ajouter côté backend. [triage S | domaine products]
+- RECOMMAND_FOLLOWUP: quirk UX register → `/auth/me` 401 → redirect interceptor vers login (course visible). Sans impact E2E. [triage S | domaine auth]
+- RECOMMAND_FOLLOWUP (review front-reviewer): `EventContent.tsx` `if (data.color)` skip l'update sur color vide (pré-existant) ; `next.config.mjs` `E2E_API_PROXY_TARGET` sans validation format URL (acceptable, var CI interne). [triage XS | domaine events]
+- RECOMMAND_FOLLOWUP: surveiller le 1er run du job `e2e` sur la PR (canonique ; local déjà 5/5 vert). [triage S | domaine transversal]
 
 STATUS: COMPLETED
