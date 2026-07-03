@@ -171,3 +171,15 @@ Front :3000 → API :8080 = cross-site pour les cookies. `SameSite=Lax` envoie l
 
 ## PIT-S15-004 — `next build` (ESLint strict) échoue là où vitest+tsc passent ; commitlint header ≤100
 Un run vitest + `tsc --noEmit` verts ne garantissent PAS `next build` (ESLint strict, ex. `no-unused-vars` sur destructure `{k: _k, ...rest}` → préférer `delete obj.k`). Vérifier `next build` avant de conclure. Aussi : commitlint `header-max-length:100` (gitmoji) → header de commit ≤100 caractères. (Sprint 15 #150)
+
+## PIT-S16-001 — ArchUnit : exception croisée = UN prédicat combiné, pas deux `dependOnClassesThat` chaînés
+`noClasses().should(A).andShould(B)` signale une classe qui satisfait A ET B. Pour "interdire spring/jakarta SAUF jakarta.validation", chaîner `resideInAnyPackage(...).andShould().dependOnClassesThat().resideOutsideOfPackage("jakarta.validation..")` NE marche PAS : la 2e condition ("dépend d'≥1 classe hors jakarta.validation") est trivialement vraie (java.lang.*) → exception neutralisée, et `FreezingArchRule` gèle le faux positif silencieusement. Utiliser un `DescribedPredicate` unique : `resideInAnyPackage(X).and(DescribedPredicate.not(resideInAPackage(Y)))`. Toujours valider une exception ArchUnit par un probe qui la FAIT échouer avant de geler. (Sprint 16 #166)
+
+## PIT-S16-002 — Subagent en worktree : `cd` Bash résout sur le repo principal
+Un subagent lancé depuis un worktree peut voir son `Bash cd <chemin relatif>` résoudre sur le repo principal (`dev`) au lieu du worktree → fichiers écrits au mauvais endroit, faux KO. Solution : chemins ABSOLUS du worktree + `git -C <worktree>`, vérifier `git branch --show-current` AVANT chaque écriture (pas seulement avant commit). (Sprint 16 #166)
+
+## PIT-S16-003 — Codemod `storybook upgrade` laisse des packages périmés dans package.json
+`npx storybook@latest upgrade` renomme le framework dans main.ts et réduit les addons, MAIS laisse les anciens packages (`@storybook/experimental-nextjs-vite`, `@storybook/test`) dans package.json (`storybook doctor` "Incompatible Packages"). Solution : retirer à la main + ajouter `@storybook/nextjs-vite`/`@storybook/react-vite`, `npm install`. Prévention : `git diff package.json` post-codemod, grep global `@storybook/react`/`@storybook/test` pour les imports stories. (Sprint 16 #46)
+
+## PIT-S16-004 — id généré via compteur module-level → mismatch d'hydratation SSR
+Un id (ex. `aria-describedby`) construit via `let seq = 0` + `++seq` au render diverge entre serveur et client (Next SSR) → mismatch d'hydratation. `useMemo` ne garantit pas la stabilité et un `++` en effet de bord y est un anti-pattern. Utiliser `React.useId()` (dispo React 18.3.1). (Sprint 16 #46, review PR#189)
