@@ -218,8 +218,8 @@ export function buildRulerTicks(
   const ticks: RulerTick[] = []
   const end = addDays(rangeStart, totalDays)
 
+  // Jours et semaines partagent le même format (numéro + mois court).
   const dayFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' })
-  const weekFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' })
   const monthFmt = new Intl.DateTimeFormat(locale, { month: 'short', year: '2-digit' })
 
   if (unit === 'day') {
@@ -238,7 +238,7 @@ export function buildRulerTicks(
     for (let d = new Date(first); d < end; d = addDays(d, 7)) {
       ticks.push({
         leftPx: daysBetween(rangeStart, d) * dayWidth,
-        label: weekFmt.format(d),
+        label: dayFmt.format(d),
         weekend: false,
         monthBoundary: d.getDate() <= 7,
       })

@@ -142,6 +142,33 @@ describe('TimelineView', () => {
     )
   })
 
+  it('le zoom (in/out) ne déclenche AUCUN appel réseau (BR-EVE-001, client-only)', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null))
+    const user = userEvent.setup()
+    setup()
+    const level = screen.getByTestId('timeline-zoom-level')
+
+    const before = level.textContent
+    await user.keyboard('+')
+    await waitFor(() => expect(level.textContent).not.toBe(before))
+    await user.keyboard('-')
+    await user.keyboard('-')
+    await user.click(screen.getByTestId('timeline-zoom-in'))
+    await user.click(screen.getByTestId('timeline-zoom-out'))
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    fetchSpy.mockRestore()
+  })
+
+  it('le bloc event expose un aria-label riche (titre + statut + dates + produit)', () => {
+    setup()
+    const first = screen.getAllByTestId('timeline-event')[0]
+    const label = first.getAttribute('aria-label') || ''
+    expect(label).toContain('Péremption lait')
+    expect(label).toContain('dashboard.timeline.status.')
+    expect(label).toContain('Lait bio')
+  })
+
   it('le drawer expose les métadonnées de l’event', async () => {
     const user = userEvent.setup()
     setup()

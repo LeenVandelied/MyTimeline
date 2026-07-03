@@ -49,7 +49,7 @@ export const Minimap: React.FC<MinimapProps> = ({
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       draggingRef.current = true
-      ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+      trackRef.current?.setPointerCapture?.(e.pointerId)
       seekFromClientX(e.clientX)
     },
     [seekFromClientX],
@@ -66,6 +66,17 @@ export const Minimap: React.FC<MinimapProps> = ({
   const onPointerUp = useCallback(() => {
     draggingRef.current = false
   }, [])
+
+  // Saisie du handle lui-même : arme le drag + capture le pointeur sur la track
+  // sans recentrer immédiatement (on garde la position, le move fera le seek).
+  const onHandlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      e.stopPropagation()
+      draggingRef.current = true
+      trackRef.current?.setPointerCapture?.(e.pointerId)
+    },
+    [],
+  )
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -112,7 +123,7 @@ export const Minimap: React.FC<MinimapProps> = ({
         aria-valuenow={Math.round(clampedStart * 100)}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        onPointerDown={(e) => e.stopPropagation()}
+        onPointerDown={onHandlePointerDown}
         style={{ left: `${clampedStart * 100}%`, width: `${ratio * 100}%` }}
         data-testid="timeline-minimap-viewport"
       />

@@ -42,6 +42,26 @@ export interface TimelineViewProps {
   today?: Date
 }
 
+/**
+ * Label a11y d'un bloc event : titre + statut + dates (+ produit si dispo).
+ * Réutilise le format de date medium et la clé i18n de statut du drawer, pour
+ * que les lecteurs d'écran aient le même contexte au focus qu'à l'ouverture.
+ */
+function buildEventAriaLabel(
+  event: PositionedEvent,
+  locale: string,
+  t: (key: string) => string,
+): string {
+  const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
+  const start = fmt.format(new Date(event.start))
+  const end = fmt.format(new Date(event.end || event.start))
+  const status = t(`dashboard.timeline.status.${event.status}`)
+  const product = event.extendedProps?.productName
+  const parts = [event.title, status, `${start} – ${end}`]
+  if (product) parts.push(product)
+  return parts.join(', ')
+}
+
 export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, locale, today }) => {
   const t = useTranslations()
   const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
@@ -370,6 +390,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                             className="mt-tlv__evt"
                             data-testid="timeline-event"
                             data-event-title={event.title}
+                            aria-label={buildEventAriaLabel(event, locale, t)}
                             onClick={() => setSelected(event)}
                             style={{
                               left: `${event.leftPx}px`,

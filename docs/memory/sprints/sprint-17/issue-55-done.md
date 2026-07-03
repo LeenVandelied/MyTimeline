@@ -1,6 +1,6 @@
 # Issue #55 — Vue Timeline desktop — RETOUR
 
-commits: [voir SHA du commit sprint/17 ci-dessous]
+commits: [c46c936]
 
 resume:
 - Objectif LIVRÉ : frise horizontale continue scrollable (plus de fenêtre 30j figée), zoom Cmd+molette 5 niveaux (jour/semaine/mois/trimestre/année) sans refetch, règle sticky adaptative (graduations dynamiques par zoom), minimap waveform draggable (souris + clavier flèches/Home/End), accordéons catégorie (expand/collapse), drawer détail (clic bloc, trap-focus + Échap), raccourcis T/[/]/+/-/F/Échap + tooltip `?`, overlay week-end continu (jour/semaine), indicateur TODAY (ligne + badge sur règle).

@@ -373,7 +373,7 @@
 **Vagues :** V1 = #55 seul
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 16 (#47 obligatoire) + Sprint 15 (#150 contrat)
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 18 — (PLANIFIÉ — cohésion 1.0 après dé-scope, Formulaire événement)
 **Objectif :** Formulaire événement complet (desktop + mobile portrait + paysage), schéma Zod unifié.

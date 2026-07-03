@@ -123,7 +123,6 @@
 /* Drawer détail événement — dérivé de .mt-dialog en slide-in droite. */
 .mt-drawer__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); z-index:var(--z-modal); backdrop-filter:blur(2px);}
 .mt-drawer{position:fixed; right:0; top:0; bottom:0; z-index:var(--z-modal); width:min(420px, 92vw); display:flex; flex-direction:column; background:var(--color-surface); border-left:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-bottom-left-radius:var(--radius-xl); transform:translateX(0); transition:transform var(--dur-base) var(--ease-quart);}
-.mt-drawer[data-closing="true"]{transform:translateX(100%);}
 @media (prefers-reduced-motion:reduce){ .mt-drawer{transition:none;} }
 .mt-drawer__header{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:var(--space-5) var(--space-5) var(--space-4); border-bottom:1px solid var(--color-rule);}
 .mt-drawer__title{font-family:var(--font-display); font-size:19px; letter-spacing:-.01em; color:var(--color-ink);}
