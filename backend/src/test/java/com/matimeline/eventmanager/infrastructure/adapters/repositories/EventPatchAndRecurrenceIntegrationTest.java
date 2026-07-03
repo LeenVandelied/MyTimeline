@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
@@ -89,8 +89,8 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         UUID eventId = entity.getId();
         em.clear();
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setDurationValue(10);
+        EventUpdateCommand request = new EventUpdateCommand(
+                null, null, 10, null, null, null, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();
@@ -123,8 +123,8 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         UUID eventId = entity.getId();
         em.clear();
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setIsRecurring(true);
+        EventUpdateCommand request = new EventUpdateCommand(
+                null, null, null, null, true, null, null, null, null);
 
         assertThatThrownBy(() -> {
             eventService.updateEvent(eventId, request);
@@ -155,8 +155,8 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         UUID eventId = entity.getId();
         em.clear();
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setIsRecurring(true);
+        EventUpdateCommand request = new EventUpdateCommand(
+                null, null, null, null, true, null, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();

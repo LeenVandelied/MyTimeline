@@ -23,18 +23,15 @@ public class EventRepositoryJpaImpl
 
     private final EntityManager entityManager;
     private final EventMapper eventMapper;
-    private final ProductRepositoryJpaImpl productRepositoryJpa;
 
     @Autowired
     public EventRepositoryJpaImpl(
         EntityManager em,
-        EventMapper eventMapper,
-        ProductRepositoryJpaImpl productRepositoryJpa
+        EventMapper eventMapper
     ) {
         super(EventEntity.class, em);
         this.entityManager = em;
         this.eventMapper = eventMapper;
-        this.productRepositoryJpa = productRepositoryJpa;
     }
     
     @Override
@@ -51,10 +48,16 @@ public class EventRepositoryJpaImpl
 
     @Override
     public Event save(Event domainEvent) {
+        // #165 : découplage infra-infra. On dépendait de la classe concrète
+        // ProductRepositoryJpaImpl pour charger la ProductEntity FK. On récupère désormais
+        // une RÉFÉRENCE GÉRÉE (proxy) via l'EntityManager — même pattern que
+        // ProductRepositoryJpaImpl.save (getReference pour attacher une FK sans charger la
+        // ligne). L'existence du produit est déjà validée en amont (ProductNotFoundException
+        // dans EventServiceImpl.createEvent / ownership dans EventController), donc pas de
+        // findById redondant ici. getReference lève EntityNotFoundException à l'usage si l'id
+        // n'existe pas (défense en profondeur).
         UUID productId = domainEvent.getProductId();
-        ProductEntity productEntity = productRepositoryJpa
-            .findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductEntity productEntity = entityManager.getReference(ProductEntity.class, productId);
 
         // PIT-S10-003 / convention 4 (#54) : le domaine ne porte pas @Version. Reconstruire
         // l'EventEntity via le mapper produit une entité DÉTACHÉE (version=null) : sur un

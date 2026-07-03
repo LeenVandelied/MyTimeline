@@ -15,9 +15,11 @@ import lombok.Getter;
  *
  * <p>Changement de FORME uniquement : les champs et leurs noms JSON reproduisent
  * exactement ce que le front lit aujourd'hui (cf. {@code frontend/src/types/event.ts}
- * {@code eventSchema} + {@code mapToFullCalendarEvent}). Le seul champ retiré est
- * {@code archived} : bit interne de soft delete (BR-PRO-007), jamais lu côté client
- * et hors contrat — inutile de le divulguer.
+ * {@code eventSchema} + {@code mapToFullCalendarEvent}).
+ *
+ * <p>#165 : {@code archived} est désormais EXPOSÉ (BR-EVE-013). Le flag de soft-delete
+ * fait partie du contrat de sortie que #150 type côté frontend (asymétrie assumée :
+ * absent de la création, réglable au PATCH, lisible en réponse).
  */
 @Getter
 @AllArgsConstructor
@@ -35,6 +37,7 @@ public class EventResponse {
     private UUID productId;
     private Boolean isAllDay;
     private String color;
+    private boolean archived;
 
     public static EventResponse fromDomain(Event event) {
         return new EventResponse(
@@ -50,6 +53,7 @@ public class EventResponse {
                 event.getEndDate(),
                 event.getProductId(),
                 event.getIsAllDay(),
-                event.getColor());
+                event.getColor(),
+                event.isArchived());
     }
 }

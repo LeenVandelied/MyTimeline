@@ -20,12 +20,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
-import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
+import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -57,10 +57,43 @@ class EventServiceImplTest {
                 productId, false, "#000000", false);
     }
 
+    /**
+     * Builder de commande PATCH partielle : tous les champs à null par défaut
+     * (= "non fourni"), setters fluides pour ne poser que les champs sous test.
+     * Miroir de l'ancien {@code new EventUpdateRequest()}.
+     */
+    private static final class Upd {
+        private String title;
+        private String type;
+        private Integer durationValue;
+        private String durationUnit;
+        private Boolean isRecurring;
+        private String recurrenceUnit;
+        private LocalDate recurrenceEndDate;
+        private String color;
+        private Boolean archived;
+
+        Upd title(String v) { this.title = v; return this; }
+        Upd type(String v) { this.type = v; return this; }
+        Upd durationValue(Integer v) { this.durationValue = v; return this; }
+        Upd durationUnit(String v) { this.durationUnit = v; return this; }
+        Upd isRecurring(Boolean v) { this.isRecurring = v; return this; }
+        Upd recurrenceUnit(String v) { this.recurrenceUnit = v; return this; }
+        Upd recurrenceEndDate(LocalDate v) { this.recurrenceEndDate = v; return this; }
+        Upd color(String v) { this.color = v; return this; }
+        Upd archived(Boolean v) { this.archived = v; return this; }
+
+        EventUpdateCommand build() {
+            return new EventUpdateCommand(title, type, durationValue, durationUnit,
+                    isRecurring, recurrenceUnit, recurrenceEndDate, color, archived);
+        }
+    }
+
+    private static Upd upd() { return new Upd(); }
+
     @Test
     void updateEvent_appliesOnlyProvidedFields_partialPatch() {
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setTitle("New title");
+        EventUpdateCommand request = upd().title("New title").build();
         // type, durationValue, etc. left null -> must NOT change existing values
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
@@ -76,8 +109,7 @@ class EventServiceImplTest {
 
     @Test
     void updateEvent_preservesProductLink() {
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setTitle("Whatever");
+        EventUpdateCommand request = upd().title("Whatever").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -91,15 +123,16 @@ class EventServiceImplTest {
 
     @Test
     void updateEvent_appliesAllProvidedFields() {
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setTitle("Updated");
-        request.setType("single");
-        request.setDurationValue(10);
-        request.setDurationUnit("weeks");
-        request.setIsRecurring(true);
-        request.setRecurrenceUnit("months");
-        request.setColor("#aaaaaa");
-        request.setArchived(true);
+        EventUpdateCommand request = upd()
+                .title("Updated")
+                .type("single")
+                .durationValue(10)
+                .durationUnit("weeks")
+                .isRecurring(true)
+                .recurrenceUnit("months")
+                .color("#aaaaaa")
+                .archived(true)
+                .build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -118,8 +151,7 @@ class EventServiceImplTest {
 
     @Test
     void updateEvent_colorOnlyPatch_doesNotTouchTitle() {
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setColor("#123456");
+        EventUpdateCommand request = upd().color("#123456").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -139,8 +171,7 @@ class EventServiceImplTest {
                 false, null, null, start, start.plusDays(5),
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setDurationValue(10);
+        EventUpdateCommand request = upd().durationValue(10).build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -158,8 +189,7 @@ class EventServiceImplTest {
                 false, null, null, start, start.plusDays(3),
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setDurationUnit("weeks");
+        EventUpdateCommand request = upd().durationUnit("weeks").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -177,8 +207,7 @@ class EventServiceImplTest {
                 false, null, null, start, start.plusDays(5),
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setType("single");
+        EventUpdateCommand request = upd().type("single").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -197,8 +226,7 @@ class EventServiceImplTest {
                 false, null, null, start, originalEnd,
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setColor("#ffffff");
+        EventUpdateCommand request = upd().color("#ffffff").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -213,8 +241,7 @@ class EventServiceImplTest {
         // BR-EVE-006 (#95fix) : PATCH {isRecurring:true} sur un event dont recurrenceUnit
         // est null en base (jamais fourni) -> état fusionné incohérent -> exception (400).
         // existingEvent a recurrenceUnit=null (voir setUp).
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setIsRecurring(true);
+        EventUpdateCommand request = upd().isRecurring(true).build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
 
@@ -234,8 +261,7 @@ class EventServiceImplTest {
                 false, RecurrenceUnit.WEEK, null, LocalDate.now(), LocalDate.now(),
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setIsRecurring(true);
+        EventUpdateCommand request = upd().isRecurring(true).build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(recurringEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -250,9 +276,7 @@ class EventServiceImplTest {
     @Test
     void updateEvent_setIsRecurringTrueAndRecurrenceUnitTogether_accepts() {
         // BR-EVE-006 (#95fix) : payload fournissant isRecurring=true + recurrenceUnit -> 200.
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setIsRecurring(true);
-        request.setRecurrenceUnit("WEEK");
+        EventUpdateCommand request = upd().isRecurring(true).recurrenceUnit("WEEK").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -265,8 +289,7 @@ class EventServiceImplTest {
 
     @Test
     void updateEvent_notFound_throwsEventNotFoundException() {
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setTitle("New");
+        EventUpdateCommand request = upd().title("New").build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.empty());
 
@@ -305,14 +328,8 @@ class EventServiceImplTest {
     void createEvent_withColor_persistsColorFromCreationRequest() {
         // BR-EVE-014 : color fourni au create -> porté par l'Event persisté (auparavant
         // impossible, il fallait créer puis PATCH). Constructeur 14-arg côté service.
-        EventCreationRequest request = new EventCreationRequest();
-        request.setName("Colored");
-        request.setType("single");
-        request.setDurationValue(1);
-        request.setDurationUnit("days");
-        request.setIsRecurring(false);
-        request.setProductId(productId);
-        request.setColor("#abcdef");
+        EventCreateCommand request = new EventCreateCommand(
+                "Colored", "single", 1, "days", false, null, null, null, "#abcdef", productId);
 
         when(productRepository.findDomainProductById(productId))
                 .thenReturn(Optional.of(new Product(productId, "P", null, null, null)));
@@ -328,13 +345,8 @@ class EventServiceImplTest {
     void createEvent_withoutColor_keepsNullColor_nonBreaking() {
         // BR-EVE-014 : color est ADDITIF optionnel — un client existant qui ne l'envoie pas
         // reste valide, color reste null (non-cassant).
-        EventCreationRequest request = new EventCreationRequest();
-        request.setName("NoColor");
-        request.setType("single");
-        request.setDurationValue(1);
-        request.setDurationUnit("days");
-        request.setIsRecurring(false);
-        request.setProductId(productId);
+        EventCreateCommand request = new EventCreateCommand(
+                "NoColor", "single", 1, "days", false, null, null, null, null, productId);
 
         when(productRepository.findDomainProductById(productId))
                 .thenReturn(Optional.of(new Product(productId, "P", null, null, null)));
@@ -357,8 +369,7 @@ class EventServiceImplTest {
                 false, null, null, start, start,
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setRecurrenceEndDate(start.minusDays(1));
+        EventUpdateCommand request = upd().recurrenceEndDate(start.minusDays(1)).build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
 
@@ -377,8 +388,7 @@ class EventServiceImplTest {
                 false, null, null, start, start,
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setRecurrenceEndDate(start);
+        EventUpdateCommand request = upd().recurrenceEndDate(start).build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -397,8 +407,7 @@ class EventServiceImplTest {
                 false, null, null, start, start,
                 productId, false, "#000000", false);
 
-        EventUpdateRequest request = new EventUpdateRequest();
-        request.setRecurrenceEndDate(start.plusMonths(3));
+        EventUpdateCommand request = upd().recurrenceEndDate(start.plusMonths(3)).build();
 
         when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));

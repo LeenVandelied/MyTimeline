@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
@@ -147,15 +148,10 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
         Product product = productService.createProduct(productReq);
         em.flush();
 
-        EventCreationRequest eventReq = new EventCreationRequest();
-        eventReq.setName("standalone-event-" + UUID.randomUUID());
-        eventReq.setType("single");
-        eventReq.setDurationValue(2);
-        eventReq.setDurationUnit("days");
-        eventReq.setIsRecurring(false);
-        eventReq.setDate(LocalDate.of(2026, 7, 2));
-        eventReq.setIsAllDay(false);
-        eventReq.setProductId(product.getId());
+        String eventName = "standalone-event-" + UUID.randomUUID();
+        EventCreateCommand eventReq = new EventCreateCommand(
+                eventName, "single", 2, "days", false, null,
+                LocalDate.of(2026, 7, 2), false, null, product.getId());
 
         Event created = eventService.createEvent(eventReq);
 
@@ -168,6 +164,6 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
                 .isPresent()
                 .get()
                 .extracting(Event::getTitle)
-                .isEqualTo(eventReq.getName());
+                .isEqualTo(eventName);
     }
 }

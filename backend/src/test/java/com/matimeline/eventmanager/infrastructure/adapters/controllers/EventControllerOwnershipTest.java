@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,11 +24,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.application.services.EventServiceImpl;
 import com.matimeline.eventmanager.application.services.ProductServiceImpl;
 import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
+import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
@@ -142,7 +144,7 @@ class EventControllerOwnershipTest extends AbstractPostgresIntegrationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("forbidden"));
 
-        verify(eventService, never()).updateEvent(any(UUID.class), any(EventUpdateRequest.class));
+        verify(eventService, never()).updateEvent(any(UUID.class), any(EventUpdateCommand.class));
     }
 
     /**
@@ -166,5 +168,49 @@ class EventControllerOwnershipTest extends AbstractPostgresIntegrationTest {
                 .andExpect(status().isOk());
 
         verify(eventService).deleteById(eventId);
+    }
+
+    /**
+     * #165 : POST /api/events (propriétaire) DOIT répondre 201 Created (auparavant 200)
+     * avec un corps {@code EventResponse} (plus le modèle domaine brut). Ce test verrouille
+     * le nouveau contrat consommé par #150 : code 201 + champs/noms JSON exacts
+     * (title, isAllDay, color, archived, recurrenceUnit sérialisé en nom d'enum...).
+     */
+    @Test
+    @WithMockUser(username = "owner", authorities = {"ROLE_USER"})
+    void createEvent_owner_returns201_withEventResponseBody() throws Exception {
+        User owner = new User(ownerId, "Owner", "owner", "pwd", "ROLE_USER", "o@o.com");
+        Product product = new Product(productId, "prod", null, owner, java.util.List.of());
+
+        Event created = new Event(
+                eventId, "Anniv", "single", 1, "days",
+                false, null, null,
+                java.time.LocalDate.of(2026, 7, 2), java.time.LocalDate.of(2026, 7, 2),
+                productId, true, "#abcdef", false);
+
+        when(jwtService.extractUsername("owner-token")).thenReturn("owner");
+        when(userService.findDomainUserByUsername("owner")).thenReturn(Optional.of(owner));
+        when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(eventService.createEvent(any(EventCreateCommand.class))).thenReturn(created);
+
+        String body = "{\"name\":\"Anniv\",\"type\":\"single\",\"durationValue\":1,"
+                + "\"durationUnit\":\"days\",\"isRecurring\":false,\"isAllDay\":true,"
+                + "\"color\":\"#abcdef\",\"productId\":\"" + productId + "\"}";
+
+        mockMvc.perform(post("/api/events")
+                        .cookie(new Cookie("jwt", "owner-token"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(eventId.toString()))
+                .andExpect(jsonPath("$.title").value("Anniv"))
+                .andExpect(jsonPath("$.type").value("single"))
+                .andExpect(jsonPath("$.isAllDay").value(true))
+                .andExpect(jsonPath("$.color").value("#abcdef"))
+                .andExpect(jsonPath("$.archived").value(false))
+                .andExpect(jsonPath("$.productId").value(productId.toString()));
+
+        verify(eventService).createEvent(any(EventCreateCommand.class));
     }
 }
