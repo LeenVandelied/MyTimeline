@@ -20,5 +20,40 @@
     "createEvent": "Ereignis erstellen",
     "viewCalendar": "Kalender anzeigen",
     "manageProfile": "Profil verwalten"
+  },
+  "timeline": {
+    "zoom": {
+      "label": "Zoomstufe",
+      "in": "Vergrößern",
+      "out": "Verkleinern",
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat",
+      "quarter": "Quartal",
+      "year": "Jahr"
+    },
+    "minimap": {
+      "label": "Zeitleisten-Übersicht"
+    },
+    "status": {
+      "expired": "Beendet",
+      "ongoing": "Laufend",
+      "upcoming": "Bevorstehend"
+    },
+    "drawer": {
+      "product": "Produkt",
+      "category": "Kategorie",
+      "start": "Beginn",
+      "end": "Ende",
+      "status": "Status"
+    },
+    "help": {
+      "label": "Tastenkürzel",
+      "today": "Zu heute springen",
+      "period": "Vorheriger / nächster Zeitraum",
+      "zoom": "Vergrößern / verkleinern",
+      "fullscreen": "Vollbild",
+      "escape": "Panel schließen"
+    }
   }
 }

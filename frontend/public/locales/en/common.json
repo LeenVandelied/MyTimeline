@@ -55,7 +55,8 @@
     "next": "Next",
     "today": "Today",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "close": "Close"
   },
   "loading": {
     "default": "Loading...",
