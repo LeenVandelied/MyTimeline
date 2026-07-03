@@ -250,7 +250,11 @@ export function ProductDrawer({
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-5"
+              data-testid="product-drawer-form"
+            >
               {/* Nom (BR-PRO-001). */}
               <FormField
                 control={form.control}
@@ -262,7 +266,11 @@ export function ProductDrawer({
                       {t('fields.name')}
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder={t('fields.namePlaceholder')} {...field} />
+                      <Input
+                        placeholder={t('fields.namePlaceholder')}
+                        data-testid="product-name-input"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -290,13 +298,17 @@ export function ProductDrawer({
                         disabled={categoriesQuery.isPending || submitting}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger data-testid="product-category-trigger">
                             <SelectValue placeholder={t('fields.categoryPlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
+                            <SelectItem
+                              key={category.id}
+                              value={category.id}
+                              data-testid={`product-category-option-${category.id}`}
+                            >
                               {category.name}
                             </SelectItem>
                           ))}
@@ -343,7 +355,7 @@ export function ProductDrawer({
                         {t('fields.firstEvent')}
                       </FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" data-testid="product-first-event-date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -406,7 +418,11 @@ export function ProductDrawer({
                   >
                     {t('actions.cancel')}
                   </Button>
-                  <Button type="submit" disabled={submitting || noCategory}>
+                  <Button
+                    type="submit"
+                    disabled={submitting || noCategory}
+                    data-testid="product-submit"
+                  >
                     {submitting && (
                       <Spinner label={t('actions.submitting')} className="text-current" />
                     )}
