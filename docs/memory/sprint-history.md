@@ -339,7 +339,16 @@
 **Nouveaux signaux :** PAT-S15-001/002, DEC-S15-001, PIT-S15-001/002/003/004, BUG-S15-001/002
 **Incidents :** #163 subagent crashé 2× (API Overloaded) — récupéré (transcript resume + finalisation lead). 2 vrais bugs produit découverts par l'E2E (userId body, event couplé strippé).
 **Recovery notable :** finalisation lead concurrente au subagent repris → reconciliation git (push b7d0d02 tardif).
-**Status :** Terminé (merge en attente confirmation dev + CI e2e verte)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - ProductService port importe encore application.dtos [S | products] → issue #185 (Sprint 16)
+  - NPE ProductServiceImpl.createProduct si getEvents()==null [S | products] → issue #186 (Sprint 16)
+  - Pas d'UI création catégorie (blocage produit user neuf) [M | categories] → issue #187 (Sprint 16, recoupe #62 — à vérifier au planning)
+  - EventEditForm sans widget recurrenceEndDate/archived [S | events] → issue #188 (Sprint 16)
+  - Quirk UX register /auth/me 401 [S | auth] → discard (mineur)
+  - EventContent color vide + next.config URL non validée [XS | events] → discard (pré-existant/acceptable)
+  - clés i18n mortes → déjà résolu (commit review b160b51) ; surveillance e2e → fait (CI verte)
+**Bilan triage :** 4 issues créées (milestone S16), 2 discardées, 2 déjà résolues. Ratio discard 33% (2/6 actionnables).
+**Status :** Terminé (merge en attente confirmation dev)
 
 ## Sprint 16 — (PLANIFIÉ — cohésion 0.55, Fondations design + extraction Timeline #47)
 **Objectif :** ArchUnit hexagonal (backend) + Storybook core DS + **extraction composants Timeline (#47, unbloqueur events frontend)**.
