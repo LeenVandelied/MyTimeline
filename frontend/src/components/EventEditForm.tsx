@@ -9,23 +9,10 @@ import { Card, CardContent } from './ui/card'
 import { PopoverPicker } from './ui/popoverPicker'
 import { useForm, ControllerRenderProps } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { eventEditSchema, EventEditFormValues } from '@/types/event'
 
-const eventEditSchema = z.object({
-  title: z.string().min(3, 'Le titre doit comporter au moins 3 caractères'),
-  type: z.string(),
-  durationValue: z.coerce.number().min(1).optional(),
-  durationUnit: z.enum(['days', 'weeks', 'months', 'years']).optional(),
-  isRecurring: z.boolean().default(false),
-  recurrenceUnit: z.enum(['weeks', 'months', 'years']).optional(),
-  backgroundColor: z.string(),
-  borderColor: z.string(),
-  textColor: z.string(),
-})
-
-export type EventEditFormValues = z.infer<typeof eventEditSchema>
-type ColorKey = 'backgroundColor' | 'borderColor' | 'textColor'
-type FormField = ControllerRenderProps<EventEditFormValues, ColorKey>
+export type { EventEditFormValues } from '@/types/event'
+type FormField = ControllerRenderProps<EventEditFormValues, 'color'>
 
 interface EventEditFormProps {
   defaultValues: EventEditFormValues
@@ -46,33 +33,16 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
     defaultValues,
   })
 
-  const [colorStates, setColorStates] = React.useState<
-    Record<ColorKey, { isOpen: boolean; value: string }>
-  >({
-    backgroundColor: { isOpen: false, value: defaultValues.backgroundColor },
-    borderColor: { isOpen: false, value: defaultValues.borderColor },
-    textColor: { isOpen: false, value: defaultValues.textColor },
-  })
+  const [isColorOpen, setIsColorOpen] = React.useState(false)
 
-  const handleColorToggle = (colorKey: ColorKey, isOpen: boolean) => {
-    setColorStates((prev) => ({
-      ...prev,
-      [colorKey]: { ...prev[colorKey], isOpen },
-    }))
-  }
-
-  const handleColorChange = (colorKey: ColorKey, color: string, field: FormField) => {
+  const handleColorChange = (color: string, field: FormField) => {
     field.onChange({ target: { value: color } })
-    setColorStates((prev) => ({
-      ...prev,
-      [colorKey]: { ...prev[colorKey], value: color },
-    }))
   }
 
-  const renderColorPicker = (colorKey: ColorKey, label: string) => (
+  const renderColorPicker = (label: string) => (
     <FormField
       control={form.control}
-      name={colorKey}
+      name="color"
       render={({ field }) => (
         <FormItem className="relative">
           <div className="mb-2 flex items-center gap-3">
@@ -80,15 +50,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <PopoverPicker
-              isOpen={colorStates[colorKey].isOpen}
-              color={field.value}
-              onChange={(color) => handleColorChange(colorKey, color, field)}
-              onToggle={(isOpen) => handleColorToggle(colorKey, isOpen)}
+              isOpen={isColorOpen}
+              color={field.value ?? ''}
+              onChange={(color) => handleColorChange(color, field)}
+              onToggle={(isOpen) => setIsColorOpen(isOpen)}
             />
             <input
               type="text"
-              value={field.value}
-              onChange={(e) => handleColorChange(colorKey, e.target.value, field)}
+              value={field.value ?? ''}
+              onChange={(e) => handleColorChange(e.target.value, field)}
               className="bg-surface-2 text-ink border-rule-strong focus:ring-accent flex-1 rounded-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none"
             />
           </div>
@@ -240,11 +210,11 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-surface-2 text-ink border-rule-strong">
-                        <SelectItem value="weeks">{t('products.add.event.units.weeks')}</SelectItem>
-                        <SelectItem value="months">
+                        <SelectItem value="WEEK">{t('products.add.event.units.weeks')}</SelectItem>
+                        <SelectItem value="MONTH">
                           {t('products.add.event.units.months')}
                         </SelectItem>
-                        <SelectItem value="years">{t('products.add.event.units.years')}</SelectItem>
+                        <SelectItem value="YEAR">{t('products.add.event.units.years')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -258,11 +228,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                 {t('products.details.colors')}
               </div>
 
-              <div className="space-y-4">
-                {renderColorPicker('backgroundColor', t('products.details.backgroundColor'))}
-                {renderColorPicker('borderColor', t('products.details.borderColor'))}
-                {renderColorPicker('textColor', t('products.details.textColor'))}
-              </div>
+              <div className="space-y-4">{renderColorPicker(t('products.details.color'))}</div>
 
               <div className="mt-8 overflow-hidden rounded-lg">
                 <div className="text-ink mb-2 text-sm">{t('products.details.preview')}</div>
@@ -270,18 +236,18 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   <div
                     className="w-full rounded-md p-4 transition-all"
                     style={{
-                      backgroundColor: form.watch('backgroundColor'),
-                      borderColor: form.watch('borderColor'),
+                      backgroundColor: form.watch('color'),
+                      borderColor: form.watch('color'),
                       borderWidth: '2px',
                       borderStyle: 'solid',
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <span style={{ color: form.watch('textColor') }} className="font-medium">
+                      <span className="font-medium text-white">
                         {t('products.details.sampleEvent')}
                       </span>
                     </div>
-                    <div className="mt-2 text-sm" style={{ color: form.watch('textColor') }}>
+                    <div className="mt-2 text-sm text-white">
                       {t('products.details.sampleDescription')}
                     </div>
                   </div>

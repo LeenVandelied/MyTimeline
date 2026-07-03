@@ -88,3 +88,139 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+  # ---------------------------------------------------------------------------
+  # E2E (#163) — golden path Playwright full-stack : inscription -> connexion ->
+  # produit + événement -> timeline. Lève la stack COMPLÈTE (Postgres + backend
+  # Spring Boot + frontend Next.js) car register/login/create sont de vrais appels
+  # API. N'ajoute PAS de dépendance aux jobs backend/frontend (tourne en parallèle,
+  # sans les casser). N'active AUCUNE branch protection.
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    # Postgres 16 en service container : le backend s'y connecte (DB `eventmanager`,
+    # user `eventuser`). Flyway rejoue V1..Vn au boot du backend (schéma vide au départ).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: eventmanager
+          POSTGRES_USER: eventuser
+          POSTGRES_PASSWORD: eventpass_ci
+        ports:
+          - 5432:5432
+        # Healthcheck : GitHub attend que Postgres soit prêt avant les steps.
+        options: >-
+          --health-cmd "pg_isready -U eventuser -d eventmanager"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Backend : build du jar (skip tests, déjà couverts par le job `backend`).
+      - name: Build backend (package, skip tests)
+        working-directory: backend
+        env:
+          SKIP_DELEGATION: "1"
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package
+
+      # Démarrage du backend en tâche de fond (profil dev : cookie Secure=false,
+      # Domain=localhost, CORS http://localhost:3000 déjà autorisé). JWT_SECRET passé
+      # explicitement (le profil dev a un default, mais on ne s'appuie pas dessus en CI).
+      - name: Start backend (Spring Boot, profil dev, :8080)
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          DB_URL: jdbc:postgresql://localhost:5432/eventmanager
+          DB_USERNAME: eventuser
+          DB_PASSWORD: eventpass_ci
+          # JwtService décode le secret en Base64 (Decoders.BASE64.decode) puis exige
+          # >= 32 octets (HS256). Le secret DOIT donc être une chaîne Base64 valide
+          # (pas de '-'/'_' ni de caractères hors alphabet Base64) — sinon generateToken
+          # lève et /auth/login renvoie 500. Ci-dessous : 48 octets Base64 (CI-only, non secret).
+          JWT_SECRET: Q0lPbmx5SW5zZWN1cmVKd3RTZWNyZXRGb3JFMkVUZXN0c09ubHkwMTIzNDU2Nzg5
+        run: |
+          java -jar target/*.jar > backend.log 2>&1 &
+          echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
+
+      # Attente de la disponibilité RÉELLE du backend avant de lancer Playwright
+      # (évite le flaky). Pas d'actuator : on poll un endpoint connu — `/api/auth/me`
+      # renvoie 401 sans cookie, ce qui prouve que l'app répond (tout code HTTP < 500
+      # non vide = up). Timeout ~90s (boot Spring + Flyway).
+      - name: Wait for backend readiness
+        working-directory: backend
+        run: |
+          for i in $(seq 1 45); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/me || echo 000)
+            if [ "$code" != "000" ] && [ "$code" -lt 500 ]; then
+              echo "Backend up (HTTP $code) après ${i} tentative(s)."
+              exit 0
+            fi
+            echo "Attente backend... (tentative ${i}, code=$code)"
+            sleep 2
+          done
+          echo "Backend indisponible après timeout — logs :"
+          tail -n 200 backend.log || true
+          exit 1
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browser (chromium)
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      # Playwright lance lui-même le frontend via `webServer` (npm run dev). En
+      # `next dev`, les NEXT_PUBLIC_* et E2E_API_PROXY_TARGET sont lus au RUNTIME
+      # depuis l'env du process ; on les pose donc au niveau du step.
+      #
+      # APPELS API MÊME-ORIGINE (indispensable — cf. next.config.mjs) : le cookie
+      # `jwt` est SameSite=Lax et ne serait PAS envoyé sur un POST cross-port
+      # (:3000 -> :8080) -> 401 sur la création produit/événement. On route donc
+      # tout via le proxy Next : NEXT_PUBLIC_API_URL=/api (origine :3000) +
+      # E2E_API_PROXY_TARGET=http://localhost:8080 (rewrite /api/* -> backend).
+      # CI=true active retries:2 / workers:1 (playwright.config.ts).
+      - name: Run E2E (Playwright golden path)
+        working-directory: frontend
+        env:
+          CI: "true"
+          NEXT_PUBLIC_API_URL: /api
+          E2E_API_PROXY_TARGET: http://localhost:8080
+        run: npm run test:e2e
+
+      - name: Upload Playwright report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+      - name: Dump backend log (on failure)
+        if: failure()
+        working-directory: backend
+        run: tail -n 300 backend.log || true
+
+      # Hygiène : arrêt du backend en fond (le runner éphémère le tuerait de toute
+      # façon, mais évite un process orphelin sur d'éventuels reruns / self-hosted).
+      - name: Stop backend
+        if: always()
+        run: kill "$BACKEND_PID" 2>/dev/null || true

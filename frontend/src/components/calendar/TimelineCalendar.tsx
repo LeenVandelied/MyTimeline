@@ -127,7 +127,7 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
   }, [currentDate, locale])
 
   return (
-    <div className="relative w-full overflow-x-auto">
+    <div className="relative w-full overflow-x-auto" data-testid="timeline-calendar">
       <div className="min-w-[800px]">
         {/* Header: resources column + days */}
         <div className="border-rule bg-surface flex border-b">
@@ -183,8 +183,11 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
                 const resourceEvents = eventsByResource.get(resource.id) || []
 
                 return (
-                  <div key={resource.id} className="flex">
-                    <div className="border-rule bg-surface-2 text-ink w-[15%] truncate border-r px-4 py-3 text-sm font-medium">
+                  <div key={resource.id} className="flex" data-testid="timeline-resource-row">
+                    <div
+                      className="border-rule bg-surface-2 text-ink w-[15%] truncate border-r px-4 py-3 text-sm font-medium"
+                      data-testid="timeline-resource-title"
+                    >
                       {resource.title}
                     </div>
                     <div
@@ -214,11 +217,13 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
                           return (
                             <div
                               key={event.id}
+                              data-testid="timeline-event"
+                              data-event-title={event.title}
                               className={`absolute top-1 bottom-1 flex cursor-pointer items-stretch overflow-hidden rounded-md shadow-md transition-transform hover:-translate-y-0.5`}
                               style={{
                                 left: `${event.leftPercent}%`,
                                 width: `${Math.max(event.widthPercent, 2)}%`,
-                                borderColor: event.borderColor || 'rgba(15,23,42,0.8)',
+                                borderColor: event.color || 'rgba(15,23,42,0.8)',
                                 borderWidth: 1,
                                 borderStyle: 'solid',
                               }}

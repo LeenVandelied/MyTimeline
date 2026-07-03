@@ -10,8 +10,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
+import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
+import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
@@ -43,7 +46,7 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<Event> createEvent(@Valid @RequestBody EventCreationRequest request,
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreationRequest request,
                                              @CookieValue(value = "jwt", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -63,31 +66,64 @@ public class EventController {
             throw new AccessDeniedException("forbidden");
         }
 
-        Event event = eventService.createEvent(request);
-        return ResponseEntity.ok(event);
+        // #165 : traduction DTO HTTP -> commande domaine PURE (le port n'importe plus
+        // application.dtos). Le controller (infra) est le seul point de couplage au DTO.
+        Event event = eventService.createEvent(toCreateCommand(request));
+        // #165 : POST renvoie 201 Created (auparavant 200) + EventResponse (plus l'entité
+        // domaine brute). Contrat consommé par #150.
+        return ResponseEntity.status(HttpStatus.CREATED).body(EventResponse.fromDomain(event));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Event> updateEvent(@PathVariable UUID id,
+    public ResponseEntity<EventResponse> updateEvent(@PathVariable UUID id,
                                              @Valid @RequestBody EventUpdateRequest request,
                                              @CookieValue(value = "jwt", required = false) String token) {
-        ResponseEntity<Event> denied = checkEventOwnership(id, token);
+        ResponseEntity<EventResponse> denied = checkEventOwnership(id, token);
         if (denied != null) {
             return denied;
         }
-        Event updatedEvent = eventService.updateEvent(id, request);
-        return ResponseEntity.ok(updatedEvent);
+        Event updatedEvent = eventService.updateEvent(id, toUpdateCommand(request));
+        return ResponseEntity.ok(EventResponse.fromDomain(updatedEvent));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable UUID id,
                                             @CookieValue(value = "jwt", required = false) String token) {
-        ResponseEntity<Event> denied = checkEventOwnership(id, token);
+        ResponseEntity<EventResponse> denied = checkEventOwnership(id, token);
         if (denied != null) {
             return ResponseEntity.status(denied.getStatusCode()).build();
         }
         eventService.deleteById(id);
         return ResponseEntity.ok().build();
+    }
+
+    /** #165 : mappe le DTO HTTP de création vers la commande domaine pure. */
+    private EventCreateCommand toCreateCommand(EventCreationRequest request) {
+        return new EventCreateCommand(
+                request.getName(),
+                request.getType(),
+                request.getDurationValue(),
+                request.getDurationUnit(),
+                request.getIsRecurring(),
+                request.getRecurrenceUnit(),
+                request.getDate(),
+                request.getIsAllDay(),
+                request.getColor(),
+                request.getProductId());
+    }
+
+    /** #165 : mappe le DTO HTTP de mise à jour partielle vers la commande domaine pure. */
+    private EventUpdateCommand toUpdateCommand(EventUpdateRequest request) {
+        return new EventUpdateCommand(
+                request.getTitle(),
+                request.getType(),
+                request.getDurationValue(),
+                request.getDurationUnit(),
+                request.getIsRecurring(),
+                request.getRecurrenceUnit(),
+                request.getRecurrenceEndDate(),
+                request.getColor(),
+                request.getArchived());
     }
 
     /**
@@ -98,7 +134,7 @@ public class EventController {
      * SecurityConfig.accessDeniedHandler — l'unique émetteur du corps 403 {"error":"forbidden"}
      * (#119, BR-AUT-007). Identity is derived from the JWT, never from a path param.
      */
-    private ResponseEntity<Event> checkEventOwnership(UUID eventId, String token) {
+    private ResponseEntity<EventResponse> checkEventOwnership(UUID eventId, String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

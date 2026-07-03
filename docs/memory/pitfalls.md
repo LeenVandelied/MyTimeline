@@ -159,3 +159,15 @@ Depuis jjwt 0.12, `signWith(key)` sans algo explicite déduit HS256/384/512 de l
 
 ## PIT-S14-002 — Architect Phase 0.5 « aucune evidence » faux négatif : lire le fichier cible réel, pas grep du nom d'exception
 Sur S14, l'architect a marqué #164 (et partiellement #168) `possibly_done: false` / « aucune evidence » alors que le fix existait déjà en `dev` (commit #54). Le pack `br-events.md` (annoté « ✅ RÉSOLU ») avait raison ; l'architect avait tort (grep du nom d'exception ≠ lecture du code). Coût évité grâce aux garde-fous fullstack-dev qui vérifient `git log`/le fichier réel avant de coder → aucun faux respawn, mais l'annotation reste trompeuse. Prévention : Phase 0.5 doit lire le fichier cible réel + `git log -- <fichier>` avant de conclure « aucune evidence ». (Sprint 14 #164/#168)
+
+## PIT-S15-001 — `next dev`/`next build` réécrit `next-env.d.ts` → casse `npm run lint`
+Next régénère `next-env.d.ts` en ajoutant `/// <reference path="./.next/types/routes.d.ts" />` → `@typescript-eslint/triple-slash-reference` fait échouer `npm run lint`. Revert le fichier (`git checkout frontend/next-env.d.ts`) APRÈS tout build/dev, AVANT commit. (Sprint 15 #163)
+
+## PIT-S15-002 — E2E full-stack cross-port : cookie JWT SameSite=Lax non envoyé sur POST
+Front :3000 → API :8080 = cross-site pour les cookies. `SameSite=Lax` envoie le cookie `jwt` sur les GET mais PAS sur POST/PATCH/DELETE XHR → 401 sur toute création. Fix E2E : proxy Next `rewrites` same-origin gaté par `E2E_API_PROXY_TARGET` (absent en prod/build → comportement inchangé). En prod, front+API même domaine = pas de souci. (Sprint 15 #163)
+
+## PIT-S15-003 — `JWT_SECRET` CI doit être Base64 valide ≥32 octets
+`JwtService` fait `Decoders.BASE64.decode(secret)` puis exige ≥32 octets (HS256). Un secret non-Base64 (`-`/`_` ou hors alphabet) fait lever `generateToken` → `/auth/login` renvoie 500 générique. Le secret CI doit être une chaîne Base64 valide. (Sprint 15 #163)
+
+## PIT-S15-004 — `next build` (ESLint strict) échoue là où vitest+tsc passent ; commitlint header ≤100
+Un run vitest + `tsc --noEmit` verts ne garantissent PAS `next build` (ESLint strict, ex. `no-unused-vars` sur destructure `{k: _k, ...rest}` → préférer `delete obj.k`). Vérifier `next build` avant de conclure. Aussi : commitlint `header-max-length:100` (gitmoji) → header de commit ≤100 caractères. (Sprint 15 #150)

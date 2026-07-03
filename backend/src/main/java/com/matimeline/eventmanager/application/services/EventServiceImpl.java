@@ -9,13 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
-import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
+import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -38,11 +38,11 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public Event createEvent(EventCreationRequest eventCreationRequest) {
-        Product product = productRepository.findDomainProductById(eventCreationRequest.getProductId())
-            .orElseThrow(() -> new ProductNotFoundException(eventCreationRequest.getProductId()));
-        
-        LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
+    public Event createEvent(EventCreateCommand command) {
+        Product product = productRepository.findDomainProductById(command.productId())
+            .orElseThrow(() -> new ProductNotFoundException(command.productId()));
+
+        LocalDate startDate = (command.date() != null) ? command.date() : LocalDate.now();
 
         // PIT-S10-003 / convention create : id NULL à la création. EventEntity porte
         // @Version + @GeneratedValue(AUTO) ; un id pré-assigné route persist() vers l'état
@@ -55,18 +55,18 @@ public class EventServiceImpl implements EventService {
         // event ne peut pas naître archivé).
         Event event = new Event(
                 null,
-                eventCreationRequest.getName(),
-                eventCreationRequest.getType(),
-                eventCreationRequest.getDurationValue(),
-                eventCreationRequest.getDurationUnit(),
-                eventCreationRequest.getIsRecurring(),
-                RecurrenceUnit.fromString(eventCreationRequest.getRecurrenceUnit()),
+                command.name(),
+                command.type(),
+                command.durationValue(),
+                command.durationUnit(),
+                command.isRecurring(),
+                RecurrenceUnit.fromString(command.recurrenceUnit()),
                 null,
                 startDate,
-                Utils.calculateEndDate(eventCreationRequest, startDate),
+                Utils.calculateEndDate(command.type(), command.durationValue(), command.durationUnit(), startDate),
                 product.getId(),
-                eventCreationRequest.getIsAllDay(),
-                eventCreationRequest.getColor(),
+                command.isAllDay(),
+                command.color(),
                 false
         );
         return eventRepository.save(event);
@@ -74,40 +74,40 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public Event updateEvent(UUID id, EventUpdateRequest updateRequest) {
+    public Event updateEvent(UUID id, EventUpdateCommand command) {
         Event event = findEventById(id)
             .orElseThrow(() -> new EventNotFoundException(id));
 
-        // Préserve le lien produit existant (le DTO ne porte pas productId).
+        // Préserve le lien produit existant (la commande ne porte pas productId).
         UUID originalProductId = event.getProductId();
 
         // PATCH partiel : chaque champ n'est appliqué que s'il est fourni (non null).
-        if (updateRequest.getTitle() != null) {
-            event.setTitle(updateRequest.getTitle());
+        if (command.title() != null) {
+            event.setTitle(command.title());
         }
-        if (updateRequest.getType() != null) {
-            event.setType(updateRequest.getType());
+        if (command.type() != null) {
+            event.setType(command.type());
         }
-        if (updateRequest.getDurationValue() != null) {
-            event.setDurationValue(updateRequest.getDurationValue());
+        if (command.durationValue() != null) {
+            event.setDurationValue(command.durationValue());
         }
-        if (updateRequest.getDurationUnit() != null) {
-            event.setDurationUnit(updateRequest.getDurationUnit());
+        if (command.durationUnit() != null) {
+            event.setDurationUnit(command.durationUnit());
         }
-        if (updateRequest.getIsRecurring() != null) {
-            event.setIsRecurring(updateRequest.getIsRecurring());
+        if (command.isRecurring() != null) {
+            event.setIsRecurring(command.isRecurring());
         }
-        if (updateRequest.getRecurrenceUnit() != null) {
-            event.setRecurrenceUnit(RecurrenceUnit.fromString(updateRequest.getRecurrenceUnit()));
+        if (command.recurrenceUnit() != null) {
+            event.setRecurrenceUnit(RecurrenceUnit.fromString(command.recurrenceUnit()));
         }
-        if (updateRequest.getRecurrenceEndDate() != null) {
-            event.setRecurrenceEndDate(updateRequest.getRecurrenceEndDate());
+        if (command.recurrenceEndDate() != null) {
+            event.setRecurrenceEndDate(command.recurrenceEndDate());
         }
-        if (updateRequest.getColor() != null) {
-            event.setColor(updateRequest.getColor());
+        if (command.color() != null) {
+            event.setColor(command.color());
         }
-        if (updateRequest.getArchived() != null) {
-            event.setArchived(updateRequest.getArchived());
+        if (command.archived() != null) {
+            event.setArchived(command.archived());
         }
 
         // BR-EVE-006 (#95fix) : garde sur l'ÉTAT FUSIONNÉ (pas le payload). Le PATCH étant
@@ -137,9 +137,9 @@ public class EventServiceImpl implements EventService {
         // n'est pas modifiable via EventUpdateRequest : on recalcule sur la startDate persistée.
         // Le recalcul lève InvalidDurationUnitException (-> 422) si durationUnit est null/inconnu
         // pour un type 'duration', au lieu de persister une endDate silencieusement fausse.
-        boolean durationFactorsChanged = updateRequest.getType() != null
-                || updateRequest.getDurationValue() != null
-                || updateRequest.getDurationUnit() != null;
+        boolean durationFactorsChanged = command.type() != null
+                || command.durationValue() != null
+                || command.durationUnit() != null;
         if (durationFactorsChanged) {
             event.setEndDate(Utils.calculateEndDate(
                     event.getType(),

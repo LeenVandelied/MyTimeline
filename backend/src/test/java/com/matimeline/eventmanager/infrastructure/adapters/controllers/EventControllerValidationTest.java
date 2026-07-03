@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
@@ -59,7 +59,7 @@ class EventControllerValidationTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
 
-        verify(eventService, never()).createEvent(org.mockito.ArgumentMatchers.any(EventCreationRequest.class));
+        verify(eventService, never()).createEvent(org.mockito.ArgumentMatchers.any(EventCreateCommand.class));
     }
 
     @Test
@@ -74,6 +74,6 @@ class EventControllerValidationTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
 
-        verify(eventService, never()).createEvent(org.mockito.ArgumentMatchers.any(EventCreationRequest.class));
+        verify(eventService, never()).createEvent(org.mockito.ArgumentMatchers.any(EventCreateCommand.class));
     }
 }

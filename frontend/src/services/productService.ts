@@ -19,7 +19,17 @@ export const createProduct = async (
   productData: ProductCreate,
 ): Promise<Product> => {
   try {
-    const response = await apiClient.post(`/users/${userId}/products`, productData)
+    // #163 — `ProductCreationRequest.userId` est `@NotNull` et validé par `@Valid`
+    // AVANT que le contrôleur ne le réécrive depuis le path (ProductController :
+    // `request.setUserId(userId)` s'exécute APRÈS la Bean Validation). Sans `userId`
+    // dans le body, la validation rejette la requête en 400 — contrat confirmé par
+    // `ProductControllerOwnershipTest` (le body POST inclut `userId`). On l'injecte
+    // donc ici. L'ownership reste dérivé du path/JWT (le userId du body est écrasé
+    // côté backend) : aucune élévation de privilège possible.
+    const response = await apiClient.post(`/users/${userId}/products`, {
+      ...productData,
+      userId,
+    })
     return response.data
   } catch (error) {
     console.error('Erreur lors de la création du produit :', safeErrorMessage(error))

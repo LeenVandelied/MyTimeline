@@ -1,154 +1,115 @@
-'use client';
+'use client'
 
-import { calculateRemainingTime } from '@/utils/time-utils';
-import { FullCalendarEvent } from '@/types/event';
-import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Card, CardContent } from './ui/card';
-import { PopoverPicker } from './ui/popoverPicker';
-import { Calendar, Edit, Save, Clock } from 'lucide-react';
-import { updateEventColor, updateEvent } from '@/services/eventService';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from './ui/button';
-import { EventEditForm, EventEditFormValues } from './EventEditForm';
+import { calculateRemainingTime } from '@/utils/time-utils'
+import { FullCalendarEvent } from '@/types/event'
+import { useTranslations } from 'next-intl'
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
+import { Card, CardContent } from './ui/card'
+import { PopoverPicker } from './ui/popoverPicker'
+import { Calendar, Edit, Save, Clock } from 'lucide-react'
+import { updateEventColor, updateEvent } from '@/services/eventService'
+import { useAuth } from '@/hooks/useAuth'
+import { Button } from './ui/button'
+import { EventEditForm, EventEditFormValues } from './EventEditForm'
 
-const DEFAULT_COLORS = {
-  duration: {
-    backgroundColor: '#6366f1',
-    borderColor: '#4f46e5',
-    textColor: '#ffffff'
-  },
-  single: {
-    backgroundColor: '#ec4899',
-    borderColor: '#db2777',
-    textColor: '#ffffff'
-  }
-};
+// #150 — modèle couleur unique `color` (BR-EVE-009).
+const DEFAULT_COLOR = '#6366f1'
 
 interface EventContentProps {
-  event: FullCalendarEvent;
+  event: FullCalendarEvent
 }
 
 export const EventContent: React.FC<EventContentProps> = ({ event }) => {
-  const t = useTranslations();
-  const { user } = useAuth();
-  const [isOpen, setOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [colorStates, setColorStates] = useState({
-    backgroundColor: false,
-    borderColor: false,
-    textColor: false
-  });
-  const defaultColors = DEFAULT_COLORS[event.extendedProps?.type as keyof typeof DEFAULT_COLORS] || DEFAULT_COLORS.duration;
-  const [colors, setColors] = useState({
-    backgroundColor: event.backgroundColor || defaultColors.backgroundColor,
-    borderColor: event.borderColor || defaultColors.borderColor,
-    textColor: event.textColor || defaultColors.textColor
-  });
-  
-  const countdown = event?.end
-    ? calculateRemainingTime(new Date(event.end), t)
-    : null;
+  const t = useTranslations()
+  const { user } = useAuth()
+  const [isOpen, setOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isColorOpen, setIsColorOpen] = useState(false)
+  const [color, setColor] = useState(event.color || DEFAULT_COLOR)
+
+  const countdown = event?.end ? calculateRemainingTime(new Date(event.end), t) : null
 
   const handleClick = () => {
-    setOpen(true);
+    setOpen(true)
   }
-  
-  const handleColorChange = async (newColors: Partial<typeof colors>) => {
-    const updatedColors = { ...colors, ...newColors };
-    setColors(updatedColors);
-    setIsSaving(true);
-    try {
-      if (user && user.id) {
-        await updateEventColor(event.id, updatedColors);
-      }
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour des couleurs :", error);
-    } finally {
-      setIsSaving(false);
-    }
-  }
-  
-  const onSubmit = async (data: EventEditFormValues) => {
-    setIsSaving(true);
-    
-    try {
-      const colorChanges = {
-        backgroundColor: data.backgroundColor,
-        borderColor: data.borderColor,
-        textColor: data.textColor
-      };
-      
-      await handleColorChange(colorChanges);
-      
-      if (user && user.id) {
-        await updateEvent(event.id, data);
-      }
-      
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'événement :", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-  
-  const toggleEditMode = () => {
-    setIsEditing(!isEditing);
-  };
 
-  const handleColorToggle = (colorKey: keyof typeof colors) => {
-    setColorStates(prev => ({
-      ...prev,
-      [colorKey]: !prev[colorKey]
-    }));
-  };
+  const handleColorChange = async (newColor: string) => {
+    setColor(newColor)
+    setIsSaving(true)
+    try {
+      if (user && user.id) {
+        await updateEventColor(event.id, newColor)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des couleurs :', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const onSubmit = async (data: EventEditFormValues) => {
+    setIsSaving(true)
+
+    try {
+      if (data.color) {
+        await handleColorChange(data.color)
+      }
+
+      if (user && user.id) {
+        await updateEvent(event.id, data)
+      }
+
+      setIsEditing(false)
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'événement :", error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const toggleEditMode = () => {
+    setIsEditing(!isEditing)
+  }
 
   return (
     <>
-      <div 
-        className="event-solid-style" 
+      <div
+        className="event-solid-style"
         onClick={handleClick}
         style={{
-          backgroundColor: colors.backgroundColor,
-          borderColor: colors.borderColor,
+          backgroundColor: color,
+          borderColor: color,
           borderWidth: '2px',
           borderStyle: 'solid',
-          color: colors.textColor,
+          color: '#ffffff',
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           borderRadius: '6px',
           padding: '4px 8px',
-          height: '100%'
+          height: '100%',
         }}
       >
         <div className="z-10 w-full">
-          <div className="flex flex-col items-left space-x-2">
-            <span className="font-medium truncate" style={{color: colors.textColor}}>
-              {event.title}
-            </span>
-            {countdown && (
-              <span className="text-sm truncate" style={{color: colors.textColor}}>
-                {countdown}
-              </span>
-            )}
+          <div className="items-left flex flex-col space-x-2">
+            <span className="truncate font-medium text-white">{event.title}</span>
+            {countdown && <span className="truncate text-sm text-white">{countdown}</span>}
           </div>
         </div>
       </div>
       <Dialog open={isOpen} onOpenChange={setOpen}>
-        <DialogContent className="p-0 bg-bg border border-rule shadow-xl max-h-[90vh] overflow-y-auto sm:max-w-[650px] rounded-xl">
-          <div className="sticky top-0 z-10 bg-surface p-5 rounded-t-xl shadow-md">
+        <DialogContent className="bg-bg border-rule max-h-[90vh] overflow-y-auto rounded-xl border p-0 shadow-xl sm:max-w-[650px]">
+          <div className="bg-surface sticky top-0 z-10 rounded-t-xl p-5 shadow-md">
             <DialogHeader>
-              <DialogTitle className="text-ink text-xl font-bold flex items-center justify-between">
+              <DialogTitle className="text-ink flex items-center justify-between text-xl font-bold">
                 <div className="flex items-center">
                   <Calendar className="mr-2 h-5 w-5" />
                   {event.title}
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={toggleEditMode} 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleEditMode}
                   className="text-ink hover:bg-accent-soft"
                   title={isEditing ? t('common.buttons.save') : t('products.edit.title')}
                 >
@@ -157,86 +118,62 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
               </DialogTitle>
             </DialogHeader>
           </div>
-          
+
           <div className="p-5">
             {!isEditing ? (
               <Card className="bg-surface border-rule shadow-md">
                 <CardContent className="p-4">
-                
                   <div className="space-y-6">
-                    <div className="flex items-center mb-4 text-ink">
-                      <Clock className="mr-2 h-4 w-4 text-accent" />
+                    <div className="text-ink mb-4 flex items-center">
+                      <Clock className="text-accent mr-2 h-4 w-4" />
                       <span className="font-medium">
                         {t('products.details.end')} {countdown}
                       </span>
                     </div>
 
-                    <div className="mt-4 border-t border-rule pt-4">
+                    <div className="border-rule mt-4 border-t pt-4">
                       <div className="space-y-6">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="mb-4 flex items-center justify-between">
                           <div className="text-ink font-medium">{t('products.details.colors')}</div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="bg-surface rounded-xl p-4 hover:bg-surface transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="text-ink font-medium">{t('products.details.backgroundColor')}</div>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="bg-surface hover:bg-surface rounded-xl p-4 transition-colors">
+                            <div className="mb-3 flex items-center gap-3">
+                              <div className="text-ink font-medium">
+                                {t('products.details.color')}
+                              </div>
                             </div>
-                            <PopoverPicker 
-                              isOpen={colorStates.backgroundColor} 
-                              color={colors.backgroundColor} 
-                              onChange={(color) => handleColorChange({ backgroundColor: color })} 
-                              onToggle={() => handleColorToggle('backgroundColor')}
-                            />
-                          </div>
-                          <div className="bg-surface rounded-xl p-4 hover:bg-surface transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="text-ink font-medium">{t('products.details.borderColor')}</div>
-                            </div>
-                            <PopoverPicker 
-                              isOpen={colorStates.borderColor} 
-                              color={colors.borderColor} 
-                              onChange={(color) => handleColorChange({ borderColor: color })} 
-                              onToggle={() => handleColorToggle('borderColor')}
-                            />
-                          </div>
-                          <div className="bg-surface rounded-xl p-4 hover:bg-surface transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="text-ink font-medium">{t('products.details.textColor')}</div>
-                            </div>
-                            <PopoverPicker 
-                              isOpen={colorStates.textColor} 
-                              color={colors.textColor} 
-                              onChange={(color) => handleColorChange({ textColor: color })} 
-                              onToggle={() => handleColorToggle('textColor')}
+                            <PopoverPicker
+                              isOpen={isColorOpen}
+                              color={color}
+                              onChange={(c) => handleColorChange(c)}
+                              onToggle={() => setIsColorOpen((prev) => !prev)}
                             />
                           </div>
                         </div>
-                        <div className="mt-6 bg-surface rounded-xl p-6">
-                          <div 
+                        <div className="bg-surface mt-6 rounded-xl p-6">
+                          <div
                             className="w-full rounded-lg p-4 transition-all"
                             style={{
-                              backgroundColor: colors.backgroundColor,
-                              borderColor: colors.borderColor,
+                              backgroundColor: color,
+                              borderColor: color,
                               borderWidth: '2px',
-                              borderStyle: 'solid'
+                              borderStyle: 'solid',
                             }}
                           >
                             <div className="flex items-center gap-3">
-                              <span style={{ color: colors.textColor }} className="font-medium">
-                                {event.title}
-                              </span>
+                              <span className="font-medium text-white">{event.title}</span>
                             </div>
                             {countdown && (
-                              <div 
-                                className="mt-2 text-sm opacity-80"
-                                style={{ color: colors.textColor }}
-                              >
-                                {countdown}
-                              </div>
+                              <div className="mt-2 text-sm text-white opacity-80">{countdown}</div>
                             )}
                           </div>
                         </div>
-                        {isSaving && <span className="block mt-2 text-xs text-accent">{t('common.loading.saving')}</span>}
+                        {isSaving && (
+                          <span className="text-accent mt-2 block text-xs">
+                            {t('common.loading.saving')}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -251,9 +188,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   durationUnit: undefined,
                   isRecurring: false,
                   recurrenceUnit: undefined,
-                  backgroundColor: colors.backgroundColor,
-                  borderColor: colors.borderColor,
-                  textColor: colors.textColor
+                  color: color,
                 }}
                 onSubmit={onSubmit}
                 onCancel={() => setIsEditing(false)}
@@ -264,7 +199,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
         </DialogContent>
       </Dialog>
     </>
-  );
-};
+  )
+}
 
-export default EventContent; 
+export default EventContent

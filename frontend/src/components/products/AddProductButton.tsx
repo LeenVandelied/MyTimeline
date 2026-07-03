@@ -29,6 +29,7 @@ export default function AddProductButton({ onProductAdded }: AddProductButtonPro
         variant="outline"
         className="bg-accent hover:bg-accent-hover text-accent-ink flex items-center gap-2 border-none"
         onClick={() => setOpen(true)}
+        data-testid="add-product-button"
       >
         <PlusCircle size={16} />
         <span>{t('drawer.createTitle')}</span>

@@ -158,7 +158,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="bg-bg text-ink flex min-h-screen flex-col">
+    <div className="bg-bg text-ink flex min-h-screen flex-col" data-testid="dashboard">
       <header className="bg-surface sticky top-0 z-30 shadow-lg backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between">
@@ -237,7 +237,9 @@ export default function Dashboard() {
                   <Package className="text-accent h-5 w-5" />
                   <div>
                     <p className="text-ink-muted text-sm">{t('dashboard.products')}</p>
-                    <p className="text-ink font-medium">{products.length}</p>
+                    <p className="text-ink font-medium" data-testid="dashboard-products-count">
+                      {products.length}
+                    </p>
                   </div>
                 </div>
               </div>
