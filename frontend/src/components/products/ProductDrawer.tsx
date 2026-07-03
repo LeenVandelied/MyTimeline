@@ -199,10 +199,15 @@ export function ProductDrawer({
         if (colorOverride !== null) payload.color = colorOverride
         // Création couplée : premier événement ponctuel optionnel. Jamais
         // `events: null` (NPE backend, BR-PRO-005) → omis si absent.
-        if (values.firstEventDate) {
-          payload.events = [
-            { name: values.name, type: 'single', date: new Date(values.firstEventDate) },
-          ]
+        //
+        // #163 — `firstEventDate` est ABSENT de `values` : le resolver ne valide que
+        // `productCreateSchema.pick({name, category})`, or zodResolver STRIPPE les clés
+        // hors schéma des valeurs passées à onSubmit. On lit donc la date via
+        // `form.getValues` (état brut du formulaire, non filtré). Sans ce correctif,
+        // aucun événement couplé n'était jamais envoyé (parcours création produit+event cassé).
+        const firstEventDate = form.getValues('firstEventDate')
+        if (firstEventDate) {
+          payload.events = [{ name: values.name, type: 'single', date: new Date(firstEventDate) }]
         }
         productCreateSchema.parse(payload)
         await createMutation.mutateAsync(payload)
