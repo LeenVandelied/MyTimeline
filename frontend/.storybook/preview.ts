@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react'
+import type { Preview } from '@storybook/react-vite'
 import '../src/styles/globals.css'
 // Classes composants DS « Graphite » (.mt-*) — chargées UNIQUEMENT en Storybook.
 // `globals.css` (app runtime) reste volontairement lean (décision #45 : ne charge
