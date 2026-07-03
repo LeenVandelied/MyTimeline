@@ -324,14 +324,14 @@
 **Bilan triage :** 4 issues créées (backlog libre : #180-#183) · 0 discard · 0 absorbée · 1 décision produit fermée (422)
 **Status :** Terminé (merge en cours de clôture)
 
-## Sprint 15 — (PLANIFIÉ — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
+## Sprint 15 — (EN COURS depuis 2026-07-03 — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
 **Objectif :** DTO EventResponse + port EventService pur (backend) → sync Zod frontend → E2E golden path Playwright + job CI.
 **Milestone GitHub :** #15
 **Issues :** #165 (DTO EventResponse + port), #150 (sync Zod events v3), #163 (E2E golden-path + CI)
 **Vagues :** V1 = #165 (backend fixe le contrat) → V2 = #150 (frontend suit) → V3 = #163 (E2E valide) — séquentiel strict
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 14 (#162 CI stable, #168 `color` au DTO création)
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 16 — (PLANIFIÉ — cohésion 0.55, Fondations design + extraction Timeline #47)
 **Objectif :** ArchUnit hexagonal (backend) + Storybook core DS + **extraction composants Timeline (#47, unbloqueur events frontend)**.
