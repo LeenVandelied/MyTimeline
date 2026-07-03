@@ -118,7 +118,9 @@ export const mapToFullCalendarEvent = (
 // (PATCH-only, BR-EVE-013). Refines conditionnels BR-EVE-006 / BR-EVE-012.
 export const eventEditSchema = z
   .object({
-    title: z.string().min(3, 'Le titre doit comporter au moins 3 caractères'),
+    // Aligné sur le contrat backend (EventCreationRequest.name min=1, BR-EVE-001)
+    // et sur eventCreationSchema.name (min(1)) — le client ne surcontraint pas le back.
+    title: z.string().min(1).max(100, "Le titre de l'événement est requis"),
     type: z.string(),
     durationValue: z.coerce.number().min(1).optional(),
     durationUnit: durationUnitEnum.optional(),

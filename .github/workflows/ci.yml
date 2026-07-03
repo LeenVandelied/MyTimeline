@@ -211,3 +211,9 @@ jobs:
         if: failure()
         working-directory: backend
         run: tail -n 300 backend.log || true
+
+      # Hygiène : arrêt du backend en fond (le runner éphémère le tuerait de toute
+      # façon, mais évite un process orphelin sur d'éventuels reruns / self-hosted).
+      - name: Stop backend
+        if: always()
+        run: kill "$BACKEND_PID" 2>/dev/null || true
