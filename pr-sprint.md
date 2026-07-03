@@ -1,50 +1,50 @@
-## Sprint 13 — Backend Auth/Sessions & Compte (Wave 5 back)
+## Sprint 16 — Fondations design + extraction Timeline
 
-Révocation des JWT stateless (registre de sessions + jti) et suppression de compte RGPD. Cohésion 0.70 (100 % `epic:auth`).
+Cohésion 0.55. Fondations design (ArchUnit hexagonal backend + Storybook core DS) + extraction des sous-composants Timeline (débloque S17 Timeline events desktop).
 
-### Issues livrées
-- **#73 — Sessions actives + révocation JWT (jti)** (L) — `d3a776f`
-- **#78 — Suppression de compte `DELETE /api/me` (RGPD)** (M) — `e5c8ffd`
+### Issues livrées (3)
+- **#166** [CHORE] Test ArchUnit verrouillant les 4 règles hexagonales + baseline gelée (`FreezingArchRule`).
+- **#46** [CHORE] Composants core du DS portés dans Storybook (11 composants + 17 stories).
+- **#47** [FEATURE] Extraction des sous-composants Timeline du monolithe + stories Storybook.
 
-### Vagues exécutées
-- **V1** : #73 (fondation révocation) — expose `SessionService.revokeAllSessions()`.
-- **V2** : #78 (consomme la révocation de #73) — séquencé car dépendance + conflit `AuthController`/`UserController`.
+### Travail infra absorbé (décision dev)
+- **Migration Storybook 8.6 → 10.4.6** — `build-storybook` était cassé (pré-existant, hérité de `dev`) par le bump Next 15.2→15.5 du fix CVE #161 (`define-env-plugin.js` supprimé). Migré vers le framework `@storybook/nextjs-vite` **sans downgrader Next** (CVE #161 intact). Débloque l'AC build-storybook de #46 et #47.
+
+### Vagues d'exécution
+- **V1** (parallèle) : #166 (backend) ‖ #46 (Storybook DS)
+- **V1.5** : migration infra Storybook 8→10 (débloque V2)
+- **V2** : #47 (extraction Timeline, après convention stories #46)
+- **V3** : audit test-runner + review batch
 
 ### Changements clés
+**Backend (#166)**
+- `archunit-junit5:1.3.0` (scope test) + `ArchitectureTest.java` : 4 règles (domain sans spring/jakarta hors validation ; domain+application sans infrastructure ; controllers→ports ; adapters JPA sans couplage inter-impl).
+- `FreezingArchRule` : baseline versionnée (`archunit_store/`), `allowStoreCreation=false` en CI — seule une NOUVELLE violation casse le build. Dégel progressif au fil de l'hygiène hexagonale (follow-up).
 
-**#73 — Révocation de session**
-- Table `sessions` (jti, user_id, device_info, ip_address tronquée, last_activity, created_at, expires_at, revoked_at) — migration **V10** (index UNIQUE `jti`, FK `user_id` ON DELETE CASCADE, index `user_id`).
-- `JwtService.generateToken` embarque un `jti` (UUID) + `extractJti`. `JwtFilter` vérifie `isSessionActive(jti)` à chaque requête authentifiée (lookup indexé, BR-AUT-011).
-- `GET /api/sessions` (sessions du caller), `DELETE /api/sessions/{id}` (ownership → 404 anti-énumération), `DELETE /api/sessions/others`. `POST /logout` révoque le jti courant (BR-AUT-010) ; `POST /refresh` rejette un jti révoqué (BR-AUT-009).
-- RGPD : `ClientIpAnonymizer` tronque le dernier octet IPv4 ; IPv6 non anonymisable → null. `jti` jamais exposé (DTO).
-- Architecture hexagonale stricte : port `SessionService`/`SessionRepository` (domain), impl `@Service`/`@Repository`, `SessionController` injecte les PORTS.
+**Frontend (#46 + migration SB)**
+- 11 composants DS (icon-button, textarea, radio, switch, badge, tag, avatar, tabs, table, toast, tooltip) consommant les classes `.mt-*` / tokens Graphite (zéro hex/px hardcodé) + 17 stories colocalisées CSF3.
+- Storybook 10 : framework `@storybook/nextjs-vite`, imports `@storybook/react-vite`, `core.css` chargé côté Storybook uniquement (décision #45).
 
-**#78 — Suppression de compte**
-- `DELETE /api/me` (`UserController` existant, #70) avec confirmation par re-saisie du username. Identité dérivée du JWT, jamais du body. Mismatch/absent → 400 ; succès → 204 + cookie effacé (MaxAge=0) ; 2e appel → 401.
-- Suppression cascade transactionnelle : `revokeAllSessions` → events → products → categories(owner) → user. **SQL natif bindé** pour purger products/events y compris archivés (contourne `@SQLRestriction(archived=false)` qui laisserait des FK résiduelles bloquant le DELETE user). Catégories système (`owner_id NULL`) préservées.
-- Découverte schéma : `events` n'a pas de colonne `user_id` — appartenance transitive via `product_id → products.user_id` (sous-select natif). Aucune migration nécessaire.
+**Frontend (#47)**
+- `frontend/src/components/timeline/` : `lib.ts` (fonctions pures) + `DateStamp`/`Ruler`/`Cursor`/`EventBar`/`Lane` + `fixtures.tsx` + 5 stories.
+- `TimelineCalendar.tsx` réécrit en orchestrateur délégant. **Contrat de props inchangé** (`events,resources,currentDate,locale,showNowIndicator`), **data-testid préservés** (`timeline-calendar/resource-row/resource-title/event`). Point d'injection `renderContent` sur EventBar (défaut = EventContent réel → runtime dashboard identique).
+- `calendar.css` / sélecteurs `.fc-*` : déjà absents du projet → AC N/A (aucun fichier à supprimer).
 
 ### BR impactées
-- BR-AUT-002/009/010/011 (révocation, refresh, logout, JwtFilter), BR-AUT-001 (ownership suppression).
+- **BR-EVE-001** (events appartiennent au user connecté) : touchée indirectement — extraction purement présentationnelle, aucun changement de flux/filtrage.
 
-### Review & corrections (`fd91d9f`)
-- **security-expert** — 1 MAJEUR : `GET /api/auth/me` ne vérifiait pas la révocation (route sous le bypass `/api/auth/**` du JwtFilter) → un token révoqué/déconnecté restait accepté, vidant #73 de sa substance. **Corrigé** + test de non-régression.
-- **reviewer** — 2 MAJEUR : `JwtFilter` loggait en `error`/`warn` sur des cas nominaux (token expiré côté client, requête anonyme) → pollution stderr (MEMO-007). **Corrigés** (distinction `JwtException` attendue → debug vs anomalie technique → error). MINEUR NPE guard `SessionResponse` (`Objects.equals`) corrigé.
-- **db-expert** — migration V10 APPROUVÉE.
+### Review batch
+- **[CRITIQUE]** Règle 1 ArchUnit : chaînage `andShould` neutralisait l'exception `jakarta.validation` (2 conditions ET, la 2e triviale) + baseline polluée → **RÉSOLU** (d38aef0) : prédicat unique `resideInAnyPackage(spring,jakarta).and(not(resideInAPackage(jakarta.validation)))`, validé par 2 probes (validation tolérée / spring rejeté), baseline nettoyée.
+- **[MAJEUR]** baseline opaque : satisfait par CI verte + `allowStoreCreation=false`.
+- **[MINEUR]** (non bloquants → follow-up) : tabs sans Home/End (WAI-ARIA APG) ; commentaire `main.ts` mentionnant `@storybook/test`.
+- **[OK]** : #47 (props/testids/logique préservés), #46 (a11y/tokens), migration SB.
 
 ### Audit tests
-- **Backend : 220 / 220 verts, 0 échec** (`./scripts/test-quiet.sh backend`, Testcontainers Postgres 16). +33 tests sur la baseline S12 (187).
-- Nouveaux : `SessionServiceImplTest`, `ClientIpAnonymizerTest`, `SessionRevocationIntegrationTest` (dont `/me` après révocation → 401), `UserControllerTest`, `AccountDeletionIntegrationTest`.
-- Frontend inchangé (aucun `.tsx`/`.ts`) → coverage E2E N/A ce sprint.
-- Détail : `docs/memory/audits/sprint-13-test-coverage.md`.
+- Backend : **242/242** vert (inclut ArchitectureTest 4/4 en mode gelé).
+- Frontend vitest : **85/85** vert.
+- Storybook build : **vert** (22 stories).
+- E2E golden-path : ⚠ **non concluant (échec infra** — backend Java down dans le harness ; **pas une régression de code**). Testids Timeline pré-existants et préservés (vérif statique + reviewer + vitest). À re-vérifier post-merge stack levée.
 
-### Dette identifiée (hors scope, à ticketer)
-- Purge des sessions expirées/révoquées (croissance monotone de la table) — db-expert.
-- A8 : `AuthController` injecte `UserServiceImpl` concret (port manquant) — préexistant.
-- Extraction d'un `JwtCookieFactory` partagé (`buildJwtCookie` dupliqué AuthController/UserController).
-- **Bug préexistant hors sprint** : inscription réelle cassée (`UserMapper.toEntity` setId + `@Version` null → « Detached entity », PIT-S10-003) — signalé en tâche séparée par le fullstack-dev #73, impacte le flux register en prod.
-
-### Cohésion
-0.70 — mono-domaine `epic:auth`.
+Détail : `docs/memory/audits/sprint-16-test-coverage.md`.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
