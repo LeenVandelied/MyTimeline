@@ -1,5 +1,9 @@
 import type { Preview } from '@storybook/react'
 import '../src/styles/globals.css'
+// Classes composants DS « Graphite » (.mt-*) — chargées UNIQUEMENT en Storybook.
+// `globals.css` (app runtime) reste volontairement lean (décision #45 : ne charge
+// pas core.css). Les stories/composants core du DS consomment ces classes ici.
+import '../src/styles/ds/components/core.css'
 
 /**
  * Preview global Storybook — importe les styles Tailwind 4 / DS « Graphite »
