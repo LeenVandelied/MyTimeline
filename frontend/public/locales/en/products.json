@@ -58,6 +58,7 @@
     "end": "Your event ends in ",
     "duration": "Duration",
     "colors": "Color Customization",
+    "color": "Color",
     "backgroundColor": "Background Color",
     "borderColor": "Border Color",
     "textColor": "Text Color",

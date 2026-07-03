@@ -218,7 +218,7 @@ export const TimelineCalendar: React.FC<TimelineCalendarProps> = ({
                               style={{
                                 left: `${event.leftPercent}%`,
                                 width: `${Math.max(event.widthPercent, 2)}%`,
-                                borderColor: event.borderColor || 'rgba(15,23,42,0.8)',
+                                borderColor: event.color || 'rgba(15,23,42,0.8)',
                                 borderWidth: 1,
                                 borderStyle: 'solid',
                               }}

@@ -58,6 +58,7 @@
     "end": "Ihr Ereignis endet in ",
     "duration": "Dauer",
     "colors": "Farbanpassung",
+    "color": "Farbe",
     "backgroundColor": "Hintergrundfarbe",
     "borderColor": "Rahmenfarbe",
     "textColor": "Textfarbe",

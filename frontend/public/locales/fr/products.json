@@ -58,6 +58,7 @@
     "end": "Votre événement se termine dans ",
     "duration": "Durée",
     "colors": "Personnalisation des couleurs",
+    "color": "Couleur",
     "backgroundColor": "Couleur de fond",
     "borderColor": "Couleur de bordure",
     "textColor": "Couleur du texte",
