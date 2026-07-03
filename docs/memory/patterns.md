@@ -94,3 +94,9 @@ En PATCH partiel, `champ=null` signifie « inchangé » et ne peut donc PAS expr
 
 ## PAT-S14-001 — Contrainte CHECK de présence conditionnelle sur discriminant NULLABLE : `IS NOT TRUE` + neutralisation avant ADD
 Exiger la présence d'une colonne selon un discriminant : `CHECK (discriminant <> 'x' OR col IS NOT NULL)`. Si le discriminant est un booléen NULLABLE, utiliser `discriminant IS NOT TRUE OR col IS NOT NULL` — JAMAIS `= false` (`NULL = false` vaut NULL, la contrainte laisse passer les NULL non voulus). Toujours précéder l'`ADD CONSTRAINT` d'une neutralisation défensive idempotente des lignes legacy non conformes (pattern V9), sinon la migration avorte sur base prod peuplée. Filet DB complémentaire à la validation applicative (Bean), pas substitut. (Sprint 14 #128, V11)
+
+## PAT-S15-001 — Port domaine pur : records commande, pas de DTO applicatif dans `domain/ports`
+Un port domaine (`EventService`) ne doit PAS référencer des DTOs `application.dtos.*` (inversion de dépendance). Introduire des records commande purs dans `domain/models` (`EventCreateCommand`/`EventUpdateCommand`) ; le controller mappe le DTO HTTP → commande domaine. Contre-exemple sain préexistant : `CategoryService` (params domaine). (Sprint 15 #165)
+
+## PAT-S15-002 — Harness E2E full-stack en CI GitHub Actions (Playwright)
+Job `e2e` : Postgres 16 service container (healthcheck pg_isready) → `mvnw -DskipTests package` + `java -jar` en fond (profil dev, `DB_*`/`JWT_SECRET` explicites) → readiness poll sur `GET /api/auth/me` (401 = up) avant Playwright → frontend via `webServer` Playwright (`npm run dev`) → `npx playwright install --with-deps chromium`. `NEXT_PUBLIC_*` lu au runtime en `next dev`. (Sprint 15 #163)

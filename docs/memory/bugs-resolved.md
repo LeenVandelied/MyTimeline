@@ -7,3 +7,9 @@
 
 ## BUG-S13-001 — `/api/auth/me` acceptait un token révoqué/déconnecté (révocation contournable)
 `JwtFilter` bypasse `/api/auth/**` (BR-AUT-011) ; `AuthController.getUserDetails` validait signature+expiration mais PAS `isSessionActive(jti)` → un token révoqué (logout, DELETE session) lisait encore `/me` (200). Comme le frontend `AuthContext` déduit l'état d'auth de `/me`, la révocation de #73 était vidée de sa substance. Fix : `extractJti` + `isSessionActive` après `validateToken`, avant `ok()` → 401 si révoqué (commit fd91d9f). Clôt le « oracle subsiste sur /me » noté dans [[BUG-S4-001]]. (Sprint 13, review PR #176)
+
+## BUG-S15-001 — POST /users/{id}/products sans `userId` au body → 400
+`ProductCreationRequest.userId` est `@NotNull` et le `@RequestBody` a `@Valid` (`ProductController:50`) → la Bean Validation s'exécute AVANT `request.setUserId(path)` (ligne 68). Un body sans `userId` échoue en 400. Le front DOIT inclure `userId` dans le body (`productService.createProduct`) ; le backend le réécrit depuis le path (pas d'élévation de privilège). Vérifié contre le code (un finding review "dead code" était un FAUX positif). (Sprint 15 #163)
+
+## BUG-S15-002 — `ProductDrawer` : événement couplé jamais envoyé (zodResolver strippe le champ)
+`onSubmit` lisait `values.firstEventDate`, mais `zodResolver(schema.pick({name,category}))` STRIPPE les clés hors schéma des `values` passées à onSubmit → l'événement couplé n'était jamais envoyé (produit créé sans event, silencieux). Fix : `form.getValues('firstEventDate')` (état RHF brut, non filtré). Anti-pattern : lire dans onSubmit un champ absent du schéma resolver. (Sprint 15 #163)

@@ -88,3 +88,6 @@ Nouvelle `RecurrenceEndDateBeforeStartException` → **422** (donnée bien form�
 
 ## DEC-S14-002 — Upgrade Boot 3.4.4 LTS : flyway-database-postgresql obligatoire + jjwt HS256 figé (confirme DEC-S3-001)
 L'upgrade Spring Boot 3.2.2 → 3.4.4 (sortie EOL) tire Flyway 10.20.1 : le support PostgreSQL quitte `flyway-core` → module `flyway-database-postgresql` OBLIGATOIRE (sinon boot Flyway KO). Confirme DEC-S3-001. jjwt 0.11.5 → 0.13.0 (API breaking absorbée dans `JwtService`), algo **HS256 figé explicitement** (`signWith(key, Jwts.SIG.HS256)`) pour compat tokens legacy — cf. [[PIT-S14-001]]. 5 CVE CRITICAL postérieures à 3.4.4 restent (bump patch-release = follow-up). (Sprint 14 #162)
+
+## DEC-S15-001 — FK via `entityManager.getReference` plutôt qu'injecter le port repository
+Pour attacher une FK (`EventEntity.product`) sans couplage infra-infra, utiliser `entityManager.getReference(ProductEntity.class, id)` — PAS injecter le port `ProductRepository` (qui ne renvoie que le domaine `Product`, inutilisable comme entité gérée). Aligné sur `ProductRepositoryJpaImpl.save` ; l'existence est déjà garantie en amont (service + ownership controller). (Sprint 15 #165)

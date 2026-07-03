@@ -324,14 +324,22 @@
 **Bilan triage :** 4 issues créées (backlog libre : #180-#183) · 0 discard · 0 absorbée · 1 décision produit fermée (422)
 **Status :** Terminé (merge en cours de clôture)
 
-## Sprint 15 — (EN COURS depuis 2026-07-03 — cohésion 0.38, Contrat events v3 end-to-end + E2E golden path)
+## Sprint 15 — 2026-07-03 (Terminé — PR #184 sprint/15 → dev, merge après CI e2e verte)
 **Objectif :** DTO EventResponse + port EventService pur (backend) → sync Zod frontend → E2E golden path Playwright + job CI.
-**Milestone GitHub :** #15
-**Issues :** #165 (DTO EventResponse + port), #150 (sync Zod events v3), #163 (E2E golden-path + CI)
-**Vagues :** V1 = #165 (backend fixe le contrat) → V2 = #150 (frontend suit) → V3 = #163 (E2E valide) — séquentiel strict
+**Milestone GitHub :** #15 (fermé après merge)
+**Issues livrées (3) :** #165 (DTO EventResponse + port pur + adapter découplé), #150 (sync Zod events v3), #163 (E2E golden-path + job CI)
+**Vagues exécutées :** V1 = #165 → V2 = #150 → V3 = #163 — séquentiel strict (contrat propagé backend→frontend→E2E)
+**Cohésion score :** 0.38 (events + transversal E2E)
+**Commits :** 7 — b9878ca (#165), 874c757 (#150), 952533a + 07ab0d3 + b7d0d02 (#163), b160b51 (fixes review), 5e40806 + 0ef43a7 (artefacts)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 14 (#162 CI stable, #168 `color` au DTO création)
-**Status :** En cours
+**BR impactées :** BR-EVE-006/008/009/010/012/013/014 + refactor hexagonal events
+**Reviews :** batch Phase 7 (1 MAJEUR corrigé titre min, minors i18n/CI) + /review-pr TEAM (0 CRITIQUE, 1 MAJEUR = faux positif réfuté contre le code, minors → follow-ups)
+**Tests :** Backend 238/238 | Frontend 85/85 (16 fichiers) | E2E golden-path 5/5 local (job CI e2e = gate canonique)
+**Nouveaux signaux :** PAT-S15-001/002, DEC-S15-001, PIT-S15-001/002/003/004, BUG-S15-001/002
+**Incidents :** #163 subagent crashé 2× (API Overloaded) — récupéré (transcript resume + finalisation lead). 2 vrais bugs produit découverts par l'E2E (userId body, event couplé strippé).
+**Recovery notable :** finalisation lead concurrente au subagent repris → reconciliation git (push b7d0d02 tardif).
+**Status :** Terminé (merge en attente confirmation dev + CI e2e verte)
 
 ## Sprint 16 — (PLANIFIÉ — cohésion 0.55, Fondations design + extraction Timeline #47)
 **Objectif :** ArchUnit hexagonal (backend) + Storybook core DS + **extraction composants Timeline (#47, unbloqueur events frontend)**.
