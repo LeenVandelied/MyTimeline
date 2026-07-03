@@ -105,6 +105,8 @@ export const Minimap: React.FC<MinimapProps> = ({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      onLostPointerCapture={onPointerUp}
       data-testid="timeline-minimap"
     >
       {buckets.map((h, i) => (

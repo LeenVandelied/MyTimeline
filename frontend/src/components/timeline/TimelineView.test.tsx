@@ -160,6 +160,21 @@ describe('TimelineView', () => {
     fetchSpy.mockRestore()
   })
 
+  it('le raccourci "F" ne hijacke pas Cmd/Ctrl+F (recherche navigateur)', async () => {
+    const user = userEvent.setup()
+    setup()
+    const fsSpy = Element.prototype.requestFullscreen as ReturnType<typeof vi.fn>
+
+    // Cmd+F et Ctrl+F ne doivent PAS déclencher le plein écran.
+    await user.keyboard('{Meta>}f{/Meta}')
+    await user.keyboard('{Control>}f{/Control}')
+    expect(fsSpy).not.toHaveBeenCalled()
+
+    // "f" seul déclenche bien le plein écran.
+    await user.keyboard('f')
+    await waitFor(() => expect(fsSpy).toHaveBeenCalled())
+  })
+
   it('le bloc event expose un aria-label riche (titre + statut + dates + produit)', () => {
     setup()
     const first = screen.getAllByTestId('timeline-event')[0]

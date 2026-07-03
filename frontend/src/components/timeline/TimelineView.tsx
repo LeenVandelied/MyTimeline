@@ -77,7 +77,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
 
   const { rangeStart, totalDays } = useMemo(() => computeRange(events, now), [events, now])
 
-  const railWidth = totalDays * dayWidth
+  const railWidth = useMemo(() => totalDays * dayWidth, [totalDays, dayWidth])
 
   const ticks = useMemo(
     () => buildRulerTicks(rangeStart, totalDays, zoom.level, dayWidth, locale),
@@ -101,7 +101,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
     [rangeStart, totalDays, zoom.level, dayWidth],
   )
 
-  const todayLeftPx = daysBetween(rangeStart, now) * dayWidth
+  const todayLeftPx = useMemo(
+    () => daysBetween(rangeStart, now) * dayWidth,
+    [rangeStart, now, dayWidth],
+  )
 
   // Fenêtre visible (fraction) pour la minimap : dérivée du scroll + largeur.
   const [viewportRatio, setViewportRatio] = useState(1)
@@ -183,6 +186,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
         return
       }
       if (typing) return
+      // Ne pas intercepter les raccourcis OS/navigateur (Cmd+F, Ctrl+F, etc.).
+      // Le zoom Cmd+molette est un handler `wheel` séparé, non concerné ici.
+      if (e.metaKey || e.ctrlKey || e.altKey) return
       switch (e.key) {
         case 't':
         case 'T':
