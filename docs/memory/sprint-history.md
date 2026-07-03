@@ -350,14 +350,21 @@
 **Bilan triage :** 4 issues créées (milestone S16), 2 discardées, 2 déjà résolues. Ratio discard 33% (2/6 actionnables).
 **Status :** Terminé (merge en attente confirmation dev)
 
-## Sprint 16 — (PLANIFIÉ — cohésion 0.55, Fondations design + extraction Timeline #47)
-**Objectif :** ArchUnit hexagonal (backend) + Storybook core DS + **extraction composants Timeline (#47, unbloqueur events frontend)**.
-**Milestone GitHub :** #16
-**Issues :** #166 (ArchUnit), #46 (Storybook core DS), #47 (extraction Timeline)
-**Vagues :** V1 = #166 (backend) ‖ #46 (Storybook) | V2 = #47 (après config Storybook de #46)
+## Sprint 16 — 2026-07-03 (Terminé — merge PR #189 dans dev — cohésion 0.55, Fondations design + extraction Timeline)
+**Objectif :** ArchUnit hexagonal (backend) + Storybook core DS + extraction composants Timeline (#47, unbloqueur events frontend S17).
+**Milestone GitHub :** #16 (fermé après merge)
+**Issues livrées (3) :** #166 (ArchUnit), #46 (Storybook core DS), #47 (extraction Timeline)
+**Vagues exécutées :** V1 = #166 (backend) ‖ #46 (Storybook) | V1.5 = migration infra Storybook 8→10 (absorbée) | V2 = #47
+**Cohésion score :** 0.55
+**Commits :** a5ccb6d (#166) · b6a9b9e (#46 stories) · 06dfc4c (migration SB 8.6→10) · 80113e3 (#47) · d38aef0 (fix Règle 1 ArchUnit, review) · e2e5499 (fix review PR#189 : tooltip useId + a11y) + artefacts mémoire
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 15 (#150 contrat consommé par composants extraits)
-**Status :** En cours (démarré 2026-07-03)
+**Travail infra absorbé :** migration Storybook 8.6→10.4.6 (build-storybook cassé pré-existant par bump Next 15.5 du CVE #161 ; migré framework `@storybook/nextjs-vite` sans downgrader Next) — décision dev, cf. [[DEC-S16-001]].
+**BR impactées :** BR-EVE-001 (indirect — extraction présentationnelle, aucun changement de flux).
+**Reviews :** batch sprint + /review-pr #189 (TEAM back+front) — 1 CRITIQUE (Règle 1 ArchUnit, d38aef0) + 1 MAJEUR (tooltip SSR useId, e2e5499) + 4 MINEURS → tous RÉSOLUS (1 MINEUR pom indentation accepté = style pré-existant).
+**Tests :** Backend 242/242 green | Frontend vitest 85/85 green | Storybook build green (22 stories) | E2E golden-path ⚠ non concluant (échec infra harness backend, PAS régression — à re-vérifier post-merge).
+**Nouveaux pitfalls / decisions / patterns :** PIT-S16-001..004, PAT-S16-001/002, DEC-S16-001/002, BUG-S16-001.
+**Status :** Terminé (merge PR #189)
 
 ## Sprint 17 — (PLANIFIÉ — cohésion 0.72, Timeline events desktop)
 **Objectif :** Vue Timeline desktop (zoom/minimap/drawer/clavier), réécriture sur les sous-composants #47.

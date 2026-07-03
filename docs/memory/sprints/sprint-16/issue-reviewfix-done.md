@@ -18,4 +18,7 @@ commits: [e2e5499] (poussé origin/sprint/16)
 
 Re-review lead : les 4 findings RESOLU (diff e2e5499 confirmé). Périmètre respecté (4 fichiers UI, backend non touché).
 
+## Recommandations suite
+Néant — correction ciblée (fix review), aucun RECOMMAND_* actionnable, pas de dette introduite.
+
 STATUS: COMPLETED

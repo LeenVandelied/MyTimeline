@@ -21,4 +21,7 @@ commits: [d38aef0]
 ## [MEMORY:pitfall]
 Context: ArchUnit — exprimer une exception ("interdire X SAUF sous-package Y") avec `noClasses().should().dependOnClassesThat().resideInAnyPackage(X).andShould().dependOnClassesThat().resideOutsideOfPackage(Y)`. Solution: 2 `dependOnClassesThat` chaînés ≠ exclusion croisée — `noClasses.should(A).andShould(B)` signale A ET B, et B="dépend d'≥1 classe hors Y" est trivialement vrai (java.lang/util), neutralisant l'exception silencieusement (Freeze gèle le faux positif). Utiliser UN `DescribedPredicate` combiné : `resideInAnyPackage(X).and(DescribedPredicate.not(resideInAPackage(Y)))` via l'overload `dependOnClassesThat(DescribedPredicate)`. Prevention: pour toute exception dans une règle ArchUnit, un seul prédicat combiné, jamais deux conditions chaînées.
 
+## Recommandations suite
+Néant — correction ciblée (fix review), aucun RECOMMAND_* actionnable, pas de dette introduite.
+
 STATUS: COMPLETED

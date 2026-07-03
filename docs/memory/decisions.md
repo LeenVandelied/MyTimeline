@@ -91,3 +91,9 @@ L'upgrade Spring Boot 3.2.2 → 3.4.4 (sortie EOL) tire Flyway 10.20.1 : le supp
 
 ## DEC-S15-001 — FK via `entityManager.getReference` plutôt qu'injecter le port repository
 Pour attacher une FK (`EventEntity.product`) sans couplage infra-infra, utiliser `entityManager.getReference(ProductEntity.class, id)` — PAS injecter le port `ProductRepository` (qui ne renvoie que le domaine `Product`, inutilisable comme entité gérée). Aligné sur `ProductRepositoryJpaImpl.save` ; l'existence est déjà garantie en amont (service + ownership controller). (Sprint 15 #165)
+
+## DEC-S16-001 — Migration Storybook 8.6 → 10 plutôt que repin Next (build-storybook cassé)
+`build-storybook` cassé par le bump Next 15.2→15.5 (fix CVE #161) : `define-env-plugin.js` supprimé de Next, importé par `@storybook/experimental-nextjs-vite@8.6` (transitif). Décision : migrer Storybook 8.6→10.4.6 (codemod `@latest`, framework `@storybook/nextjs-vite`) plutôt que downgrader Next. Why : `nextjs-vite` compatible Next 15.5, garde le builder Vite (cohérent Vitest), préserve le fix CVE #161 intact. (Sprint 16 #46)
+
+## DEC-S16-002 — Convention stories Storybook DS
+Stories `*.stories.tsx` colocalisées à côté du composant sous `src/components/**`, format CSF3 (`satisfies Meta<typeof X>`, `tags:['autodocs']`, titres `UI/<Composant>` ou `Timeline/<Composant>`), imports `@storybook/react-vite` (post-SB10). Les composants consomment les classes `.mt-*` de `ds/components/core.css` ; les composants shadcn/Radix existants sont alignés via le remap `@theme` de globals.css (pas de réécriture). `core.css` chargé côté Storybook uniquement (`.storybook/preview.ts`), pas dans globals.css app (décision #45). (Sprint 16 #46/#47)

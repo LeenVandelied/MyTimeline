@@ -13,3 +13,6 @@
 
 ## BUG-S15-002 — `ProductDrawer` : événement couplé jamais envoyé (zodResolver strippe le champ)
 `onSubmit` lisait `values.firstEventDate`, mais `zodResolver(schema.pick({name,category}))` STRIPPE les clés hors schéma des `values` passées à onSubmit → l'événement couplé n'était jamais envoyé (produit créé sans event, silencieux). Fix : `form.getValues('firstEventDate')` (état RHF brut, non filtré). Anti-pattern : lire dans onSubmit un champ absent du schéma resolver. (Sprint 15 #163)
+
+## BUG-S16-001 — Bump Next 15.2→15.5 (#161) casse le preset Storybook Vite
+Le bump `next` 15.2.4→15.5.20 (caret, fix CVE #161) supprime `next/dist/build/webpack/plugins/define-env-plugin.js`, requis par `vite-plugin-storybook-nextjs@1.1.5` (transitif de `@storybook/experimental-nextjs-vite@8.6`) → `build-storybook` échoue en `CriticalPresetLoadError` AVANT le parsing des stories. Résolu par migration Storybook 8.6→10 (cf. [[DEC-S16-001]]). Règle : après tout bump `next`, relancer `build-storybook` — vitest ne couvre pas le preset SB. (Sprint 16 #46)
