@@ -33,10 +33,14 @@ import { test, expect, type Page } from '@playwright/test'
  *   login -> produit+event -> timeline reste piloté à 100% par l'UI).
  */
 
-/** Base API dérivée de l'env front. Les services axios utilisent baseURL =
- *  NEXT_PUBLIC_API_URL et appellent `/auth/...`, `/categories`, `/users/...` :
- *  la baseURL inclut donc le préfixe `/api` (contrôleurs `@RequestMapping("/api/...")`). */
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api'
+/**
+ * Le SETUP de seed catégorie passe par `page.request` (contexte partageant le
+ * cookie de session). On cible l'API en MÊME ORIGINE que le front (`/api` relatif
+ * résolu sur la baseURL Playwright) : c'est le proxy Next (`E2E_API_PROXY_TARGET`,
+ * cf. next.config.mjs) qui réécrit `/api/*` vers le backend Spring. Same-origin =>
+ * le cookie `jwt` SameSite=Lax est envoyé même sur un POST (indispensable : un POST
+ * cross-port n'enverrait pas le cookie Lax, cf. next.config.mjs). */
+const API_PATH = '/api'
 
 /** Identité unique par run (évite les collisions username/email en cas de retry CI). */
 function uniqueSuffix(): string {
@@ -90,7 +94,9 @@ test.describe('Golden path : inscription -> connexion -> produit+événement -> 
 
     // ---- SETUP : seed d'une catégorie via API authentifiée (cf. entête) -----
     const categoryName = `Cat E2E ${suffix}`
-    const seedResponse = await page.request.post(`${API_URL}/categories`, {
+    // URL absolue (même origine que la page) : page.request résout `/api` relatif
+    // sur la baseURL, ce qui traverse le proxy Next et porte le cookie de session.
+    const seedResponse = await page.request.post(`${API_PATH}/categories`, {
       data: { name: categoryName, color: '#3366ff' },
     })
     expect(

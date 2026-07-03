@@ -189,14 +189,21 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       # Playwright lance lui-même le frontend via `webServer` (npm run dev). En
-      # `next dev`, les NEXT_PUBLIC_* sont lus au RUNTIME depuis l'env du process ;
-      # on les pose donc au niveau du step. La baseURL inclut `/api` (préfixe des
-      # contrôleurs Spring). CI=true active retries:2 / workers:1 (playwright.config.ts).
+      # `next dev`, les NEXT_PUBLIC_* et E2E_API_PROXY_TARGET sont lus au RUNTIME
+      # depuis l'env du process ; on les pose donc au niveau du step.
+      #
+      # APPELS API MÊME-ORIGINE (indispensable — cf. next.config.mjs) : le cookie
+      # `jwt` est SameSite=Lax et ne serait PAS envoyé sur un POST cross-port
+      # (:3000 -> :8080) -> 401 sur la création produit/événement. On route donc
+      # tout via le proxy Next : NEXT_PUBLIC_API_URL=/api (origine :3000) +
+      # E2E_API_PROXY_TARGET=http://localhost:8080 (rewrite /api/* -> backend).
+      # CI=true active retries:2 / workers:1 (playwright.config.ts).
       - name: Run E2E (Playwright golden path)
         working-directory: frontend
         env:
           CI: "true"
-          NEXT_PUBLIC_API_URL: http://localhost:8080/api
+          NEXT_PUBLIC_API_URL: /api
+          E2E_API_PROXY_TARGET: http://localhost:8080
         run: npm run test:e2e
 
       - name: Upload Playwright report (on failure)
