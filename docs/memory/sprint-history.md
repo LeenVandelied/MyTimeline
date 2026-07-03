@@ -357,7 +357,7 @@
 **Vagues :** V1 = #166 (backend) ‖ #46 (Storybook) | V2 = #47 (après config Storybook de #46)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 15 (#150 contrat consommé par composants extraits)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-03)
 
 ## Sprint 17 — (PLANIFIÉ — cohésion 0.72, Timeline events desktop)
 **Objectif :** Vue Timeline desktop (zoom/minimap/drawer/clavier), réécriture sur les sous-composants #47.
