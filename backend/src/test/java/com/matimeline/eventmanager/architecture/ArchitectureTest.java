@@ -1,7 +1,11 @@
 package com.matimeline.eventmanager.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -56,16 +60,21 @@ class ArchitectureTest {
      */
     @Test
     void domainShouldNotDependOnSpringOrJakarta() {
+        // Prédicat UNIQUE et combiné : "réside dans (org.springframework OU jakarta) ET PAS dans
+        // jakarta.validation". Deux `dependOnClassesThat` chaînés via `andShould` NE fonctionnent
+        // PAS comme une exclusion croisée : `andShould(B)` avec B = "dépend d'au moins une classe
+        // hors jakarta.validation" est trivialement vrai (toute classe dépend de java.lang/util),
+        // ce qui neutralise l'exception. Cf. review #166.
+        DescribedPredicate<JavaClass> frameworkExceptValidation =
+                resideInAnyPackage("org.springframework..", "jakarta..")
+                        .and(DescribedPredicate.not(resideInAPackage("jakarta.validation..")));
+
         ArchRule rule =
                 noClasses()
                         .that()
                         .resideInAPackage(DOMAIN)
                         .should()
-                        .dependOnClassesThat()
-                        .resideInAnyPackage("org.springframework..", "jakarta..")
-                        .andShould()
-                        .dependOnClassesThat()
-                        .resideOutsideOfPackage("jakarta.validation..")
+                        .dependOnClassesThat(frameworkExceptValidation)
                         .because(
                                 "le domaine doit rester du Java pur (seul jakarta.validation est toléré)");
 
