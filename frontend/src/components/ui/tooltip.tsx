@@ -15,10 +15,10 @@ export interface TooltipProps {
   className?: string
 }
 
-let tooltipSeq = 0
-
 const Tooltip = ({ content, children, className }: TooltipProps) => {
-  const id = React.useMemo(() => `mt-tooltip-${++tooltipSeq}`, [])
+  // `useId` : id stable SSR/CSR (React 18.3.1) — évite le mismatch d'hydratation
+  // que provoquait un compteur module-level incrémenté au render.
+  const id = React.useId()
   return (
     <span className={cn('mt-tooltip', className)}>
       {React.cloneElement(children, { 'aria-describedby': id })}

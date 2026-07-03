@@ -35,11 +35,21 @@ const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
       onValueChange?.(next)
     }
 
+    // Navigation clavier WAI-ARIA APG tablist : ←/→ cyclique + Home/End.
+    // NB : le câblage aria-controls / panneaux associés est à la charge du consommateur.
     const onKeyDown = (e: React.KeyboardEvent, index: number) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+      let next: TabItem | undefined
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const dir = e.key === 'ArrowRight' ? 1 : -1
+        next = items[(index + dir + items.length) % items.length]
+      } else if (e.key === 'Home') {
+        next = items[0]
+      } else if (e.key === 'End') {
+        next = items[items.length - 1]
+      } else {
+        return
+      }
       e.preventDefault()
-      const dir = e.key === 'ArrowRight' ? 1 : -1
-      const next = items[(index + dir + items.length) % items.length]
       if (next) select(next.value)
     }
 

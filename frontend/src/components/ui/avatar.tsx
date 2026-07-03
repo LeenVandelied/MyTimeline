@@ -28,6 +28,8 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
       {...props}
     >
       {src ? (
+        // alt défaut '' = image décorative assumée (le sens est porté par le
+        // contexte / le texte adjacent). Passer `alt` explicite si informative.
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={alt} />
       ) : (

@@ -13,8 +13,9 @@ import type { StorybookConfig } from '@storybook/nextjs-vite'
  * Next/font, next/image, alias et Tailwind 4 restent gérés par le framework.
  *
  * SB10 : addon-essentials/interactions fusionnés dans le core ; `docs.autodocs`
- * retiré (autodocs via tag `autodocs` sur les stories). `@storybook/test` →
- * `storybook/test`. Imports stories `@storybook/react` → `@storybook/react-vite`.
+ * retiré (autodocs via tag `autodocs` sur les stories). Imports stories
+ * `@storybook/react` → `@storybook/react-vite` (le helper de test `@storybook/test`
+ * a été retiré à la migration SB10, plus référencé ici).
  */
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
