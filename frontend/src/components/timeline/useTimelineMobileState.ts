@@ -166,7 +166,7 @@ export function useTimelineMobileState(
     onMinimapSeek,
     scrollToToday,
     onPinchZoom,
-  } as TimelineMobileState
+  }
 }
 
 export default useTimelineMobileState
