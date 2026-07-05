@@ -33,7 +33,8 @@
       "year": "Año"
     },
     "minimap": {
-      "label": "Vista general de la cronología"
+      "label": "Vista general de la cronología",
+      "toggle": "Mostrar u ocultar la vista general"
     },
     "status": {
       "expired": "Finalizado",
@@ -54,6 +55,9 @@
       "zoom": "Acercar / alejar",
       "fullscreen": "Pantalla completa",
       "escape": "Cerrar panel"
+    },
+    "actions": {
+      "label": "Acciones del evento"
     }
   }
 }

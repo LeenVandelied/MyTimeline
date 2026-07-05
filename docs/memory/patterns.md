@@ -112,3 +112,9 @@ Choisir la couleur de texte sur un fond arbitraire (barre event, badge, chip) : 
 
 ## PAT-S18-002 — Stub global `ResizeObserver` pour tester les composants Radix Select/Popover en jsdom
 Radix Select/Popover lèvent `ResizeObserver is not defined` en jsdom → tout test RTL d'un composant qui en contient échoue. Fix durable : stub global dans `frontend/vitest.setup.ts` (`globalThis.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} }`), bénéficie à tous les futurs tests. Anti-pattern : le stubber par test (répétition, oublis). (Sprint 18 #66)
+
+## PAT-S19-001 — Tester une rotation d'orientation (`matchMedia`) sans démonter l'arbre React
+Pour tester une transition portrait↔paysage sans perte d'état, il faut faire varier `matchMedia` SANS `rerender` d'un nouveau mock global (qui démonte l'état et invalide le test). Solution : un mock `matchMedia` qui stocke les listeners par query, + un helper `rotate()` qui ré-évalue les matches et émet un event `'change'` dans `act()`. `useMediaQuery` ne relit qu'au changement du string de query → l'émission `change` propage sans remount. (Sprint 19 #64)
+
+## PAT-S19-002 — Encre event lisible : `contrastInk`/`textOn` (lib/color.ts) propagé sur toutes les surfaces de rendu
+Le pattern BR-EVE-009 (encre calculée par contraste WCAG, [[PAT-S18-001]]) est désormais appliqué de façon cohérente sur les 3 composants qui rendent un event coloré : `EventPill` (frise desktop, via `--mt-evt-ink`), `TimelineMobilePortrait` et `TimelineMobileLandscape` (via `textOn`). Règle : tout nouveau composant qui peint un fond couleur d'event DOIT pousser l'encre via `lib/color.ts`, jamais de `text-white`/`#fff` hardcodé. (Sprint 19 #192/#63/#64)

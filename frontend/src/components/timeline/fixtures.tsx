@@ -1,4 +1,5 @@
 import { EventWithComputedPosition, Resource } from './lib'
+import { PositionedEvent } from './zoom'
 
 /**
  * #47 — Fixtures partagées par les stories Timeline.
@@ -41,6 +42,32 @@ export function makeEvent(
     },
     leftPercent: 12,
     widthPercent: 18,
+    status: 'upcoming',
+    ...overrides,
+  }
+}
+
+/**
+ * #192 — Event positionné en px (échelle de la frise continue #55), sans passer
+ * par `positionEvents`. Sert aux stories/tests d'`EventPill`.
+ */
+export function makePositionedEvent(overrides: Partial<PositionedEvent> = {}): PositionedEvent {
+  return {
+    id: 'evt-1',
+    title: 'Péremption',
+    start: '2026-07-05T00:00:00.000Z',
+    end: '2026-07-10T00:00:00.000Z',
+    allDay: true,
+    resourceId: 'prod-1',
+    color: '#6366f1',
+    extendedProps: {
+      productId: 'prod-1',
+      productName: 'Lait entier bio',
+      category: 'Produits frais',
+      type: 'duration',
+    },
+    leftPx: 40,
+    widthPx: 120,
     status: 'upcoming',
     ...overrides,
   }

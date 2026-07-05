@@ -33,7 +33,8 @@
       "year": "Année"
     },
     "minimap": {
-      "label": "Vue d’ensemble de la timeline"
+      "label": "Vue d’ensemble de la timeline",
+      "toggle": "Afficher ou masquer la vue d’ensemble"
     },
     "status": {
       "expired": "Terminé",
@@ -54,6 +55,9 @@
       "zoom": "Zoom avant / arrière",
       "fullscreen": "Plein écran",
       "escape": "Fermer le panneau"
+    },
+    "actions": {
+      "label": "Actions de l’événement"
     }
   }
 }

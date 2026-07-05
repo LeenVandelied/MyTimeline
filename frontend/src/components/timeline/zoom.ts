@@ -304,6 +304,27 @@ export function buildWeekendSegments(
   return segments
 }
 
+/**
+ * Label a11y d'un bloc event : titre + statut + dates (+ produit si dispo).
+ * Extrait de `TimelineView` (#63) pour partage desktop ↔ mobile sans importer le
+ * composant. Réutilise le format de date medium + la clé i18n de statut du
+ * drawer → même contexte au focus qu'à l'ouverture.
+ */
+export function buildEventAriaLabel(
+  event: PositionedEvent,
+  locale: string,
+  t: (key: string) => string,
+): string {
+  const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
+  const start = fmt.format(new Date(event.start))
+  const end = fmt.format(new Date(event.end || event.start))
+  const status = t(`dashboard.timeline.status.${event.status}`)
+  const product = event.extendedProps?.productName
+  const parts = [event.title, status, `${start} – ${end}`]
+  if (product) parts.push(product)
+  return parts.join(', ')
+}
+
 /** Classe de fond de la pastille de statut (tokens DS, réutilise `.mt-evt`). */
 export function statusToVar(status: PositionedEvent['status']): string {
   switch (status) {

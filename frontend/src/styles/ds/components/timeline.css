@@ -145,3 +145,119 @@
 .mt-tlv__help:hover .mt-tlv__help-pop, .mt-tlv__help:focus-within .mt-tlv__help-pop{opacity:1; pointer-events:auto;}
 .mt-tlv__help-row{display:flex; justify-content:space-between; gap:16px; font-size:11.5px; line-height:1.7;}
 .mt-tlv__kbd{font-family:var(--font-mono); font-size:10px; background:color-mix(in srgb, var(--color-surface) 18%, transparent); border-radius:var(--radius-xs); padding:1px 5px;}
+
+/* ============================================================================
+   #63 — Vue Timeline MOBILE PORTRAIT (`.mt-tlm*`) + bottom sheet (`.mt-sheet`)
+   + action sheet (`.mt-actionsheet`).
+   Aucun token nouveau : compose colors/spacing/motion/z existants. Breakpoint
+   portrait piloté côté JS (matchMedia max-width:640px, cf. TimelineResponsive) —
+   pas de token `--bp-*` dans le DS (réserve ui-design #3, [MEMORY:decision]).
+   ============================================================================ */
+
+.mt-tlm{position:relative; display:flex; flex-direction:column; width:100%; border:1px solid var(--color-rule); border-radius:var(--radius-md); background:var(--color-surface); overflow:hidden;}
+.mt-tlm__toolbar{display:flex; align-items:center; gap:var(--space-2); padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--color-rule); background:var(--color-surface-2);}
+
+/* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll
+   horizontal natif mais laisse le composant gérer le pinch (2 doigts). */
+.mt-tlm__scroll{position:relative; overflow-x:auto; overflow-y:hidden; touch-action:pan-x; -webkit-overflow-scrolling:touch;}
+.mt-tlm__rail{position:relative;}
+
+/* Règle sticky. ⚠ iOS Safari 16+ : `position:sticky` DANS un conteneur
+   `overflow-x:auto` est fragile en WebKit. On double avec `-webkit-sticky` et
+   on garde la règle en flux (pas de transform ancêtre) pour maximiser le support.
+   Fallback : si le sticky lâche sur un device réel, la règle scrolle avec le
+   contenu (dégradation acceptable, non bloquante — réserve ui-design #2). */
+.mt-tlm__ruler{position:-webkit-sticky; position:sticky; top:0; z-index:var(--z-sticky); height:var(--ruler-height); background:var(--color-surface); border-bottom:1px solid var(--color-rule-strong);}
+.mt-tlm__tick{position:absolute; top:0; bottom:0; border-left:1px solid var(--color-rule);}
+.mt-tlm__tick--month{border-left-color:var(--color-ink-faint);}
+.mt-tlm__tick--weekend{background:color-mix(in srgb, var(--color-ink) 3.5%, transparent);}
+.mt-tlm__tick-label{position:absolute; top:6px; left:5px; font-family:var(--font-mono); font-size:9px; color:var(--color-ink); letter-spacing:.02em; white-space:nowrap; pointer-events:none;}
+
+.mt-tlm__weekend{position:absolute; top:0; bottom:0; background:color-mix(in srgb, var(--color-ink) 3.5%, transparent); pointer-events:none;}
+.mt-tlm__today{position:absolute; top:0; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}
+.mt-tlm__today-badge{position:absolute; top:2px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:8px; letter-spacing:.08em; color:var(--color-accent-ink); background:var(--color-accent); padding:1px 5px; border-radius:var(--radius-xs); white-space:nowrap;}
+
+/* En-tête de catégorie (sticky à gauche). */
+.mt-tlm__group-head{position:sticky; left:0; display:flex; align-items:center; padding:var(--space-1) var(--space-3); background:var(--color-surface-2); border-top:1px solid var(--color-rule); border-bottom:1px solid var(--color-rule); font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted); z-index:calc(var(--z-sticky) + 1);}
+
+/* Lane compacte : densité réduite mais hauteur >= 44px (contrainte a11y PRIME
+   sur la densité, réserve ui-design #1). */
+.mt-tlm__lane{position:relative; height:44px; border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+.mt-tlm__lane-label{position:-webkit-sticky; position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:120px; height:100%; padding:0 var(--space-2); background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:11px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+
+/* Bloc event compact + son bouton `⋯`. Le wrap positionne (left absolu), le
+   bouton event porte la largeur. Hitbox verticale = toute la lane (44px). */
+.mt-tlm__evt-wrap{position:absolute; top:0; bottom:0; display:flex; align-items:center; gap:2px;}
+.mt-tlm__evt{position:relative; display:flex; align-items:center; gap:5px; height:28px; min-height:28px; padding:0 8px; border-radius:6px; font-size:11px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); border:0;}
+/* Pseudo-élément : étend la zone tap à 44px de haut sans agrandir le visuel. */
+.mt-tlm__evt::before{content:""; position:absolute; top:-8px; bottom:-8px; left:0; right:0;}
+.mt-tlm__evt:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+.mt-tlm__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
+.mt-tlm__evt-title{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+/* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px. */
+.mt-tlm__evt-more{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:-2px; background:transparent; border:0; border-radius:var(--radius-sm); cursor:pointer; flex:0 0 auto;}
+.mt-tlm__evt-more:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Minimap compacte (hauteur réduite vs desktop, JS Minimap inchangé). */
+.mt-tlm__minimap{padding:var(--space-2) var(--space-3); border-top:1px solid var(--color-rule); background:var(--color-surface-2);}
+.mt-tlm__minimap .mt-minimap{height:28px;}
+
+/* -------- Bottom sheet détail (`.mt-sheet`) -------- */
+.mt-sheet__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); z-index:var(--z-modal); backdrop-filter:blur(2px);}
+.mt-sheet{position:fixed; left:0; right:0; bottom:0; z-index:var(--z-modal); max-height:80vh; display:flex; flex-direction:column; background:var(--color-surface); border-top:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-top-right-radius:var(--radius-xl); transform:translateY(0); animation:mt-sheet-in var(--dur-base) var(--ease-quart);}
+@keyframes mt-sheet-in{from{transform:translateY(100%);} to{transform:translateY(0);}}
+@media (prefers-reduced-motion:reduce){ .mt-sheet{animation:none;} }
+.mt-sheet__grabber-zone{display:flex; justify-content:center; align-items:center; height:28px; touch-action:none; cursor:grab;}
+.mt-sheet__grabber{width:36px; height:4px; border-radius:var(--radius-pill); background:var(--color-rule-strong);}
+.mt-sheet__header{display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-4); padding:0 var(--space-5) var(--space-3); border-bottom:1px solid var(--color-rule);}
+.mt-sheet__title{font-family:var(--font-display); font-size:18px; letter-spacing:-.01em; color:var(--color-ink);}
+.mt-sheet__body{padding:var(--space-4) var(--space-5) var(--space-5); overflow:auto; flex:1;}
+/* Bouton fermer : cible >= 44px (le drawer desktop = 28px, NON conforme mobile —
+   réserve ui-design). */
+.mt-sheet__close{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); color:var(--color-ink-muted); cursor:pointer; flex:0 0 auto;}
+.mt-sheet__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* -------- Action sheet (`.mt-actionsheet`) -------- */
+.mt-actionsheet{position:fixed; left:0; right:0; bottom:0; z-index:var(--z-modal); display:flex; flex-direction:column; gap:var(--space-1); padding:var(--space-2) var(--space-3) var(--space-4); background:var(--color-surface); border-top:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-top-right-radius:var(--radius-xl); animation:mt-sheet-in var(--dur-base) var(--ease-quart);}
+@media (prefers-reduced-motion:reduce){ .mt-actionsheet{animation:none;} }
+.mt-actionsheet__grabber{align-self:center; width:36px; height:4px; margin-bottom:var(--space-2); border-radius:var(--radius-pill); background:var(--color-rule-strong);}
+.mt-actionsheet__item{display:flex; align-items:center; gap:var(--space-3); width:100%; min-height:48px; padding:0 var(--space-4); background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:var(--radius-md); font-family:var(--font-ui); font-size:15px; color:var(--color-ink); cursor:pointer;}
+.mt-actionsheet__item:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+.mt-actionsheet__item--danger{color:var(--color-danger); border-color:var(--color-danger-soft);}
+.mt-actionsheet__item--cancel{justify-content:center; color:var(--color-ink-muted); background:transparent;}
+
+/* ============================================================================
+   #64 — Vue Timeline MOBILE PAYSAGE (`.mt-tlm--landscape`) + drawer latéral
+   touch (`.mt-drawer--landscape`) + toggle minimap masquable.
+   Réutilise 100% des `.mt-tlm*` #63 ; SEULE la densité (hauteurs de ligne) et le
+   conteneur de détail (drawer latéral vs bottom sheet) changent. Aucun token
+   nouveau. Breakpoints pilotés côté JS (orientation + hauteur, cf.
+   TimelineResponsive) — pas de token `--bp-*` (réserve ui-design #3).
+   ============================================================================ */
+
+/* Lanes DENSES : dérive --lane-height/--ruler-height LOCALEMENT (scope au
+   conteneur paysage → n'affecte ni portrait ni desktop). Plus de catégories
+   visibles sans scroll vertical (hauteur d'écran réduite en paysage).
+   Valeurs ad hoc : ruler 34px (vs 44), lane 34px (vs 44). */
+.mt-tlm--landscape{--ruler-height:34px; --lane-height:34px;}
+.mt-tlm--landscape .mt-tlm__lane{height:var(--lane-height);}
+.mt-tlm--landscape .mt-tlm__ruler{height:var(--ruler-height);}
+/* Bloc event compacté visuellement (24px) MAIS hitbox ≥ 44px conservée via le
+   pseudo `::before` (touch target PRIME sur la densité — réserve ui-design #1). */
+.mt-tlm--landscape .mt-tlm__evt{height:24px; min-height:24px; font-size:10.5px;}
+.mt-tlm--landscape .mt-tlm__evt::before{top:-10px; bottom:-10px;}
+.mt-tlm--landscape .mt-tlm__lane-label{font-size:10px;}
+.mt-tlm--landscape .mt-tlm__group-head{padding-top:2px; padding-bottom:2px;}
+
+/* Toggle minimap masquable : interactif → focus ring + état aria-pressed. */
+.mt-tlm__minimap-toggle{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-md); color:var(--color-ink-muted); cursor:pointer; transition:background var(--dur-micro), color var(--dur-micro);}
+.mt-tlm__minimap-toggle:hover{background:var(--color-surface-2);}
+.mt-tlm__minimap-toggle[aria-pressed="true"]{color:var(--color-accent); border-color:var(--color-accent);}
+.mt-tlm__minimap-toggle:disabled{opacity:.4; cursor:not-allowed;}
+.mt-tlm__minimap-toggle:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Drawer latéral variante PAYSAGE : largeur adaptée à un écran bas et large
+   (plafonne à 44vw pour laisser la frise visible derrière), bouton fermer ≥ 44px
+   (le desktop 28px n'est pas conforme touch — réserve ui-design). */
+.mt-drawer--landscape{width:min(360px, 44vw);}
+.mt-drawer__close--touch{width:44px; height:44px;}

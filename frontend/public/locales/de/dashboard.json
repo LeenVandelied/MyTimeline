@@ -33,7 +33,8 @@
       "year": "Jahr"
     },
     "minimap": {
-      "label": "Zeitleisten-Übersicht"
+      "label": "Zeitleisten-Übersicht",
+      "toggle": "Übersicht ein- oder ausblenden"
     },
     "status": {
       "expired": "Beendet",
@@ -54,6 +55,9 @@
       "zoom": "Vergrößern / verkleinern",
       "fullscreen": "Vollbild",
       "escape": "Panel schließen"
+    },
+    "actions": {
+      "label": "Ereignisaktionen"
     }
   }
 }

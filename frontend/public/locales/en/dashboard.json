@@ -33,7 +33,8 @@
       "year": "Year"
     },
     "minimap": {
-      "label": "Timeline overview"
+      "label": "Timeline overview",
+      "toggle": "Show or hide the overview"
     },
     "status": {
       "expired": "Ended",
@@ -54,6 +55,9 @@
       "zoom": "Zoom in / out",
       "fullscreen": "Fullscreen",
       "escape": "Close panel"
+    },
+    "actions": {
+      "label": "Event actions"
     }
   }
 }

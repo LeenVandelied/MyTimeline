@@ -25,7 +25,7 @@ import {
   Zap,
   RefreshCw,
 } from 'lucide-react'
-import { TimelineView } from '@/components/timeline'
+import { TimelineResponsive } from '@/components/timeline'
 
 interface ApiError extends Error {
   response?: {
@@ -261,10 +261,15 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="bg-surface p-3">
-                  {/* #55 — Vue Timeline desktop : frise continue, zoom Cmd+molette,
-                      minimap, drawer, raccourcis (T/[/]/+/-/F/Échap/?). Navigation
-                      temporelle intégrée à la vue → toolbar mois prev/next retirée. */}
-                  <TimelineView events={calendarEvents} resources={resources} locale={locale} />
+                  {/* #55 desktop / #63 mobile portrait — `TimelineResponsive`
+                      choisit la variante via `matchMedia` (max-width:640px). Desktop :
+                      frise continue, zoom Cmd+molette, minimap, drawer, raccourcis.
+                      Mobile : règle sticky, bottom sheet, action sheet, pinch-zoom. */}
+                  <TimelineResponsive
+                    events={calendarEvents}
+                    resources={resources}
+                    locale={locale}
+                  />
                 </div>
               )}
             </CardContent>
