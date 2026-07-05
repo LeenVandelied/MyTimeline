@@ -50,6 +50,9 @@ test.describe('Réglages — Compte : export (stub)', () => {
 // register par test. Aucun autre test ne réutilise ce compte.
 test.describe('Réglages — Compte : suppression', () => {
   test.use({ storageState: DEL.storageState })
+  // fullyParallel global : le test lit/DÉTRUIT le compte DEL. Un futur 2e test lisant
+  // ce même compte s'entrelacerait avec la suppression -> serial (cf. settings-profile).
+  test.describe.configure({ mode: 'serial' })
 
   test('suppression : mauvais username bloqué, bon username -> DELETE /me + redirect login', async ({
     page,

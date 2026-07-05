@@ -32,8 +32,18 @@ import path from 'node:path'
  * username/name/email. Identités bornées 3..20 (BR-AUT-003 + schéma register).
  */
 
-/** Suffixe unique figé au chargement du module (fallback : 1er process = `setup`). */
-const RUN = `${Date.now().toString().slice(-9)}${Math.floor(Math.random() * 100)}`
+/**
+ * Suffixe unique figé au chargement du module (fallback : 1er process = `setup`).
+ *
+ * ISOLATION INTER-PROCESS : deux jobs CI sur le MÊME runner peuvent partager l'horloge
+ * -> `Date.now()` + `random(100)` risquent la collision d'identités. On mélange donc
+ * `process.pid` (+ `CI_JOB_ID` s'il existe) dans la graine. Le résultat reste BORNÉ :
+ * `RUN` est tronqué à 16 chars et `makeAccount` re-tronque `prefix+RUN` à 20 (contrainte
+ * username/name 3..20, BR-AUT-003 + schéma register). prefix (2) + RUN (16) = 18 <= 20.
+ */
+const RUN = `${process.env.CI_JOB_ID ?? ''}${process.pid}${Date.now().toString().slice(-6)}${Math.floor(
+  Math.random() * 100,
+)}`.slice(0, 16)
 
 export interface E2eAccount {
   /** Clé logique (sert au nom de fichier storageState). */

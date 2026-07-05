@@ -54,7 +54,12 @@ async function provision(account: E2eAccount, page: Page): Promise<void> {
       // pas, c'est probablement un 429 (l'app reste sur /fr/register).
       await expect(page.getByTestId('login-form')).toBeVisible({ timeout: 8_000 })
       registered = true
-    } catch {
+    } catch (err) {
+      // Log AVANT retry : distingue un 429 réel (rate-limit) d'une régression UI
+      // que le retry masquerait autrement silencieusement.
+      console.warn(
+        `[setup] register/login ${account.key} retry (tentative ${attempt}/${REGISTER_RETRIES}) après erreur: ${err}`,
+      )
       if (attempt === REGISTER_RETRIES) throw new Error(
         `register ${account.key} échoué après ${REGISTER_RETRIES} tentatives ` +
           `(rate-limit register 5/min/IP probable — bucket non rechargé)`,
