@@ -387,13 +387,13 @@
   - Re-valider patterns clavier a11y via ui-design (ux-patterns.md absent) [S | events] → issue #197 (backlog)
 **Status :** Terminé
 
-## Sprint 18 — (PLANIFIÉ — cohésion 1.0 après dé-scope, Formulaire événement)
+## Sprint 18 — 2026-07-05 (En cours — cohésion 1.0 après dé-scope, Formulaire événement)
 **Objectif :** Formulaire événement complet (desktop + mobile portrait + paysage), schéma Zod unifié.
 **Milestone GitHub :** #18
 **Issues :** #66 (formulaire événement) — **#62 (Drawer Catégorie) dé-scopé → backlog** (cohésion 0.34 → 1.0, futur sprint categories/products avec #68)
 **Vagues :** V1 = #66 seul
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 17 (Timeline pour preview/intégration) + Sprint 15 (#150 contrat)
-**Status :** Planifié
+**Status :** En cours
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
