@@ -76,12 +76,17 @@ test.describe('Réglages — Compte : suppression', () => {
     await expect(page.getByTestId('delete-account-form')).toBeVisible()
     await expect(page).toHaveURL(/\/fr\/settings/)
 
-    // ---- Bon username : DELETE /api/me -> logout -> redirect /fr/login -------
+    // ---- Bon username : DELETE /api/me -> logout -> redirect login ----------
     await page.getByTestId('delete-account-username').fill('')
     await page.getByTestId('delete-account-username').fill(identity.username)
     await page.getByTestId('delete-account-confirm').click()
 
-    await expect(page).toHaveURL(/\/fr\/login/)
+    // Redirection vers login : `useDeleteAccountFlow` fait `router.replace('/fr/login')`
+    // (locale courante), mais un 401 concurrent (polling /me après logout) peut
+    // aussi router via l'intercepteur apiClient (`window.location.href`) — les deux
+    // pointent vers login. On assouplit le préfixe locale et on laisse le temps au
+    // logout + redirection (401 avec setTimeout 1500ms dans l'intercepteur).
+    await expect(page).toHaveURL(/\/(fr\/)?login/, { timeout: 15_000 })
     await expect(page.getByTestId('login-form')).toBeVisible()
   })
 })

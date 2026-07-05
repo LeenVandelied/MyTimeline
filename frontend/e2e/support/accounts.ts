@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import path from 'node:path'
 
 /**
@@ -15,12 +16,23 @@ import path from 'node:path'
  * de TOUTE la suite settings à 3 (les 3 comptes ci-dessous), auxquels s'ajoute le
  * register du golden-path (self-register, hors settings) = 4 registers TOTAL < 5/min.
  *
- * IDENTITÉS DÉTERMINISTES par run : suffixe `Date.now()` unique au démarrage du
- * process de test -> pas de collision username/email entre runs, et pas de re-register
- * au retry (le setup ne se rejoue pas). Bornées 3..20 (BR-AUT-003 + schéma register).
+ * IDENTITÉS PARTAGÉES setup <-> specs — CORRECTION (bug run 28752565466) :
+ * `Date.now()` au chargement du module n'est PAS déterministe ENTRE PROCESSUS.
+ * Le projet `setup` et CHAQUE worker/retry du projet `chromium` sont des process
+ * Node DISTINCTS : chacun réimportait ce module et recalculait un `RUN` différent
+ * -> `SHARED.username` (côté spec) != username réellement enregistré (côté setup) ->
+ * `toHaveValue(SHARED.username)` échouait avec un Expected qui CHANGEAIT à chaque
+ * retry (nouveau process) tandis que le Received (DOM) restait constant (compte réel).
+ *
+ * SOLUTION : le setup PERSISTE les identités générées dans `.auth/accounts.json`
+ * (même dossier que les storageState, gitignoré). `accounts.ts` charge ce fichier
+ * s'il existe (cas des process de specs, `setup` ayant déjà tourné en dépendance) ;
+ * sinon il génère des identités fraîches (cas du 1er process `setup`) que ce dernier
+ * persistera via `persistAccounts()`. Tous les process partagent ainsi les MÊMES
+ * username/name/email. Identités bornées 3..20 (BR-AUT-003 + schéma register).
  */
 
-/** Suffixe unique figé au chargement du module (partagé setup + specs du même run). */
+/** Suffixe unique figé au chargement du module (fallback : 1er process = `setup`). */
 const RUN = `${Date.now().toString().slice(-9)}${Math.floor(Math.random() * 100)}`
 
 export interface E2eAccount {
@@ -34,17 +46,57 @@ export interface E2eAccount {
   storageState: string
 }
 
-/** Répertoire des storageState (gitignore recommandé). */
+/** Répertoire des storageState + identités persistées (gitignoré : `/e2e/.auth/`). */
 const STATE_DIR = path.join(__dirname, '..', '.auth')
 
+/** Fichier des identités partagées setup <-> specs (écrit par le projet `setup`). */
+const ACCOUNTS_FILE = path.join(STATE_DIR, 'accounts.json')
+
+/** Champs d'identité persistés (le password est constant, le storageState dérivé de `key`). */
+type PersistedIdentity = Pick<E2eAccount, 'username' | 'name' | 'email'>
+
+/**
+ * Identités persistées par un run précédent du projet `setup` (dépendance de
+ * `chromium`). Absent lors du 1er process `setup` -> on génère puis on persiste.
+ */
+const PERSISTED: Partial<Record<E2eAccount['key'], PersistedIdentity>> = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(ACCOUNTS_FILE, 'utf-8')) as Partial<
+      Record<E2eAccount['key'], PersistedIdentity>
+    >
+  } catch {
+    // Fichier absent (globalSetup l'a purgé avant le projet `setup`) ou illisible :
+    // identités générées ci-dessous, puis persistées par le projet `setup`.
+    return {}
+  }
+})()
+
+/**
+ * Purge le fichier d'identités partagées. Appelé par le `globalSetup` Playwright
+ * AVANT tout projet : garantit que le process `setup` régénère des identités
+ * fraîches (`RUN`) plutôt que de relire un `accounts.json` d'un run PRÉCÉDENT
+ * (qui ferait ré-enregistrer un compte déjà en base -> 409). En CI `.auth/` est
+ * recréé à chaque job (gitignoré), mais on sécurise aussi les runs locaux répétés.
+ */
+export function clearPersistedAccounts(): void {
+  try {
+    fs.rmSync(ACCOUNTS_FILE, { force: true })
+  } catch {
+    // Rien à purger.
+  }
+}
+
 function makeAccount(key: E2eAccount['key'], prefix: string): E2eAccount {
-  // username/name bornés à 20 (schéma register name.max=20).
+  // Identité PARTAGÉE si le setup l'a déjà persistée (process de specs) ; sinon
+  // générée à partir de `RUN` (process setup, qui la persistera). username/name
+  // bornés à 20 (schéma register name.max=20).
   const base = `${prefix}${RUN}`.slice(0, 20)
+  const persisted = PERSISTED[key]
   return {
     key,
-    username: base,
-    name: base,
-    email: `${prefix}_${RUN}@example.com`,
+    username: persisted?.username ?? base,
+    name: persisted?.name ?? base,
+    email: persisted?.email ?? `${prefix}_${RUN}@example.com`,
     // Password : >=6 + une MAJ + un chiffre (createRegisterFormSchema, plus strict
     // que le backend). Sans ces classes, RHF bloque le submit (aucun POST register).
     password: 'E2ePass123',
@@ -68,3 +120,22 @@ export const DEL = makeAccount('del', 'dl')
 
 /** Tous les comptes à provisionner par le setup (ordre = ordre de register). */
 export const ALL_ACCOUNTS: readonly E2eAccount[] = [SHARED, PWD, DEL]
+
+/**
+ * Persiste sur disque les identités des comptes (username/name/email) pour que les
+ * process de specs (workers/retries `chromium`) réutilisent EXACTEMENT celles que
+ * le projet `setup` vient d'enregistrer. À appeler UNE fois par le setup après avoir
+ * provisionné les comptes. Idempotent : écrase le fichier à chaque run du setup.
+ */
+export function persistAccounts(accounts: readonly E2eAccount[] = ALL_ACCOUNTS): void {
+  fs.mkdirSync(STATE_DIR, { recursive: true })
+  const payload: Record<string, PersistedIdentity> = {}
+  for (const account of accounts) {
+    payload[account.key] = {
+      username: account.username,
+      name: account.name,
+      email: account.email,
+    }
+  }
+  fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify(payload, null, 2), 'utf-8')
+}

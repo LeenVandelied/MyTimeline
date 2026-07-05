@@ -12,6 +12,9 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`
 
 export default defineConfig({
   testDir: './e2e',
+  // Purge `.auth/accounts.json` d'un run précédent avant le projet `setup`
+  // (identités partagées setup <-> specs régénérées à chaque run). Cf. e2e/global-setup.ts.
+  globalSetup: './e2e/global-setup.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

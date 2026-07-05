@@ -44,17 +44,27 @@ test.describe('Réglages — Profil : avatar + champs', () => {
     await expect(page.getByTestId('avatar-cropper')).toBeVisible()
     await expect(page.getByTestId('avatar-zoom')).toBeVisible()
 
-    // Confirmer le crop -> POST /api/me/avatar -> AuthContext resync (avatarUrl).
+    // Confirmer le crop -> POST /api/me/avatar -> onSuccess `refreshUser()` qui
+    // re-fetch GET /api/auth/me (avatarUrl désormais posé). On ATTEND explicitement
+    // cette réponse /me : `<img>` ne se monte qu'après que `currentAvatarUrl` (issu
+    // du user resynchronisé) devienne non-null. En CI, POST multipart authentifié +
+    // refetch /me peuvent dépasser le timeout `expect` par défaut (5 s) -> flake.
+    const meResync = page.waitForResponse(
+      (res) => /\/api\/auth\/me$/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15_000 },
+    )
     await page.getByTestId('avatar-confirm').click()
+    await meResync
 
     // Le cropper se ferme et l'avatar (<img src=/api/me/avatar>) apparaît.
     await expect(page.getByTestId('avatar-cropper')).toHaveCount(0)
     // Attente DÉTERMINISTE sur l'état DOM (pas le rendu pixel) : le <img> est monté
     // et porte un src d'avatar. `currentAvatarUrl` (AuthContext resync post-upload)
     // est non-null -> ProfileSection rend le <img src={avatarUrl}>. On n'exige PAS
-    // que l'image ait fini de charger (GET authentifié potentiellement lent).
+    // que l'image ait fini de charger (GET authentifié potentiellement lent) ; on
+    // laisse une marge de timeout au re-render post-resync.
     const uploadedImg = avatar.locator('img')
-    await expect(uploadedImg).toHaveCount(1)
+    await expect(uploadedImg).toHaveCount(1, { timeout: 10_000 })
     await expect(uploadedImg).toHaveAttribute('src', /\S/)
     // Le bouton de suppression n'apparaît que lorsqu'un avatar existe.
     await expect(page.getByTestId('avatar-delete')).toBeVisible()

@@ -1,5 +1,5 @@
 import { test as setup, expect } from '@playwright/test'
-import { ALL_ACCOUNTS, type E2eAccount } from './support/accounts'
+import { ALL_ACCOUNTS, persistAccounts, type E2eAccount } from './support/accounts'
 
 /**
  * PROJET `setup` (dépendance de `chromium`, cf. playwright.config.ts).
@@ -38,6 +38,13 @@ async function provision(account: E2eAccount, page: import('@playwright/test').P
   // Login OK -> cookie JWT HttpOnly posé, AuthContext restaure -> dashboard.
   await expect(page.getByTestId('dashboard')).toBeVisible()
 }
+
+// Persiste d'abord les identités (username/name/email) sur disque : les process de
+// specs (workers/retries `chromium`) réimportent `accounts.ts` et DOIVENT lire ces
+// mêmes identités (sinon `Date.now()` recalculé -> username divergent, cf. accounts.ts).
+setup('persist account identities', async () => {
+  persistAccounts()
+})
 
 for (const account of ALL_ACCOUNTS) {
   setup(`provision ${account.key}`, async ({ browser }) => {
