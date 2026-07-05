@@ -127,3 +127,12 @@ Décliner une page en desktop/portrait/paysage : hook `useMediaQuery` SSR-safe (
 
 ## PAT-S20-003 — Fermeture Escape d'un dialog : mutualiser dans `useFocusTrap(onEscape?)` plutôt qu'un listener parallèle
 Un dialog/drawer qui ajoute son propre `document.addEventListener('keydown', escapeHandler)` À CÔTÉ de `useFocusTrap` (qui gère déjà Tab sur `document`) duplique un listener pour le même overlay → smell de coordination. Fix : paramètre OPTIONNEL `onEscape?: () => void` dans `useFocusTrap` (branché sur son listener `keydown` existant, défaut no-op → non-cassant pour les consommateurs en 2 args). Un seul point de vérité clavier pour le dialog. (Sprint 20 #208 review, `useFocusTrap.ts`)
+
+## PAT-S21-001 — Factories Zod i18n `create*Schema(t)` : passer le traducteur RACINE, jamais scopé
+Les factories de schémas Zod i18n (`create*Schema(t)`) doivent recevoir le traducteur RACINE `useTranslations()` (clés préfixées en dur `validation.*`, `settings.*`), JAMAIS un traducteur scopé `useTranslations('validation')` → sinon double préfixe `validation.validation.*` et clés introuvables. Aligné convention existante `schemas/auth.ts`. (Sprint 21 #86)
+
+## PAT-S21-002 — Bottom sheet mobile réutilisant un flux dialog desktop sans duplication
+Pour qu'un flux (ex. suppression compte 2 étapes) marche à la fois en Dialog (desktop) et en BottomSheet (mobile) sans dupliquer form+mutation : extraire état+form+mutation dans un hook (`useDeleteAccountFlow`) + un composant présentationnel wrapper-agnostic (`DeleteAccountSteps`) ; le composant parent choisit le conteneur via une prop (`deleteContainer='dialog'|'sheet'`, défaut = desktop rétro-compatible). Anti-pattern : dupliquer le formulaire/flux dans un composant mobile séparé. (Sprint 21 #87)
+
+## PAT-S21-003 — Upload de fichier authentifié = modèle de référence (security-expert GO S21)
+Modèle validé pour tout upload utilisateur : validation type par MAGIC BYTES uniquement (jamais Content-Type client ni extension) ; nom stocké = UUID généré (jamais le filename client) ; résolution de chemin bornée `resolveWithinBase` (rejette `/`,`\`,`..` + `startsWith(baseDir)` post-normalize) ; limite taille serveur (config multipart + contrôle applicatif, defense in depth) ; ownership dérivé du JWT (jamais un id param) ; cleanup de l'ancien objet au remplacement/DELETE ; aucune fuite d'exception dans le body. Réutilisable pour futurs uploads (export, pièces jointes). (Sprint 21 #75, `AvatarServiceImpl`/`LocalStorageAdapter`)
