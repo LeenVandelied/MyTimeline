@@ -44,16 +44,40 @@ test.describe('Réglages — Profil : avatar + champs', () => {
     await expect(page.getByTestId('avatar-cropper')).toBeVisible()
     await expect(page.getByTestId('avatar-zoom')).toBeVisible()
 
-    // Confirmer le crop -> POST /api/me/avatar -> onSuccess `refreshUser()` qui
-    // re-fetch GET /api/auth/me (avatarUrl désormais posé). On ATTEND explicitement
-    // cette réponse /me : `<img>` ne se monte qu'après que `currentAvatarUrl` (issu
-    // du user resynchronisé) devienne non-null. En CI, POST multipart authentifié +
-    // refetch /me peuvent dépasser le timeout `expect` par défaut (5 s) -> flake.
+    // Confirmer le crop -> `canvas.toBlob('image/png')` -> POST /api/me/avatar
+    // (multipart part `file`) -> onSuccess `refreshUser()` re-fetch GET /api/auth/me
+    // (avatarUrl posé) -> ProfileSection rend `<img src={avatarUrl}>`.
+    //
+    // DIAGNOSTIC (run 28752900622 : <img> count 0) : on CAPTURE la réponse RÉELLE du
+    // POST avatar pour trancher la cause d'un échec éventuel — et on l'assert :
+    //   - toBlob a-t-il produit un blob (sinon confirmCrop est un no-op -> AUCUN POST) ?
+    //   - le blob PNG passe-t-il les MAGIC BYTES backend (200) ou est-il rejeté (400) ?
+    // Chromium headless produit un PNG conforme via `canvas.toBlob('image/png')` (en-tête
+    // 89 50 4E 47…), donc on ATTEND 200. Un statut != 200 fait échouer le test avec un
+    // message actionnable (au lieu d'un opaque « <img> count 0 »).
+    const avatarPost = page.waitForResponse(
+      (res) => /\/api\/me\/avatar$/.test(res.url()) && res.request().method() === 'POST',
+      { timeout: 15_000 },
+    )
+    // Le refetch /me qui SUIT le POST (onSuccess) : c'est lui qui hydrate `avatarUrl`
+    // et déclenche le montage du <img>. On l'attend explicitement (CI lente).
     const meResync = page.waitForResponse(
       (res) => /\/api\/auth\/me$/.test(res.url()) && res.request().method() === 'GET',
       { timeout: 15_000 },
     )
+
     await page.getByTestId('avatar-confirm').click()
+
+    const postResp = await avatarPost
+    // Assertion explicite du statut : trace le statut observé et échoue proprement si
+    // le blob de crop headless était invalide (400) ou absent (pas de POST -> timeout).
+    expect(
+      postResp.status(),
+      `POST /api/me/avatar attendu 200 (blob PNG issu du crop canvas headless) ; ` +
+        `reçu ${postResp.status()} — 400 = magic bytes rejetés (crop invalide), ` +
+        `5xx = backend, timeout = toBlob null (aucun POST).`,
+    ).toBe(200)
+
     await meResync
 
     // Le cropper se ferme et l'avatar (<img src=/api/me/avatar>) apparaît.
@@ -64,7 +88,7 @@ test.describe('Réglages — Profil : avatar + champs', () => {
     // que l'image ait fini de charger (GET authentifié potentiellement lent) ; on
     // laisse une marge de timeout au re-render post-resync.
     const uploadedImg = avatar.locator('img')
-    await expect(uploadedImg).toHaveCount(1, { timeout: 10_000 })
+    await expect(uploadedImg).toHaveCount(1, { timeout: 15_000 })
     await expect(uploadedImg).toHaveAttribute('src', /\S/)
     // Le bouton de suppression n'apparaît que lorsqu'un avatar existe.
     await expect(page.getByTestId('avatar-delete')).toBeVisible()
