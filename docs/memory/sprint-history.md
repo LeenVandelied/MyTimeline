@@ -487,7 +487,7 @@
 **Migrations Flyway :** aucune (backend produits/catégories déjà livré #50/#52)
 **Dépend de :** Sprint 10 (#50/#52 backend) — sur dev
 **Note :** #186 = bug NPE réel confirmé `ProductServiceImpl.java:67` (`request.getEvents().forEach` sans null-check). Risque duplication : ProductDrawer #61 existe → **component-guardian** avant nouveau composant. #187 (UI création catégorie) recoupe #62 → à fusionner/fermer après S22.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-05)
 
 ## Sprint 23 — 2026-07-05 (PLANIFIÉ — cohésion 0.55 ⚠ WARNING, Sécurité/DevOps durcissement + DIP)
 **Objectif :** Bump CVE post-Boot 3.4.4 (#180) + refactor contrôleurs vers interfaces service DIP (#123) + durcissement CI pin SHA (#167).

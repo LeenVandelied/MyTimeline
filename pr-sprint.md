@@ -1,58 +1,42 @@
-# Sprint 21 — Réglages utilisateur (avatar + écrans desktop/mobile)
+## Sprint 22 — Page Produits + Drawer Catégorie + fix NPE backend
 
-Epic `auth` · cohésion 0.75 · milestone #21
+Cohésion 0.67 · Milestone #22 · base `dev`
 
-## Objectif
-Doter MyTimeline d'une page **Réglages** complète : upload d'avatar (backend), écrans desktop 4 chapitres, et déclinaison mobile drill-down.
+### Objectif
+Livrer la surface de gestion produits/catégories (Wave 3 frontend) et corriger un bug serveur découvert par l'E2E golden path.
 
-## Issues livrées
+### Issues livrées
+| # | Titre | Type | Commits |
+|---|-------|------|---------|
+| #186 | NPE `ProductServiceImpl.createProduct` si liste d'événements nulle | bug backend | `fb12091` |
+| #62 | Drawer Catégorie (desktop + mobile, create/edit + réassignation) | feature frontend | `3e15440` |
+| #68 | Page Produits (liste + détail + catégories) | feature frontend | `fb329dd` `0f50719` `0058e85` `e6bd60f` `66173b9` |
 
-| # | Titre | Commit |
-|---|-------|--------|
-| #75 | Backend upload avatar `POST/GET/DELETE /api/me/avatar` (stockage local + `StoragePort` hexagonal) | `ea89f59` |
-| #86 | Frontend Réglages desktop — 4 chapitres (Profil / Sécurité / Préférences / Compte) | `43d9e14` |
-| #87 | Frontend Réglages mobile — drill-down + bottom sheet suppression | `5b5bba6` |
-| — | Correction review : branchement avatar frontend bout-en-bout | `d10e4a3` |
+**Vagues** : V1 = #62 ∥ #186 (fichiers disjoints) · V2 = #68 (embarque le CategoryDrawer de #62).
 
-**Vagues** : V1 = #75 (backend) ∥ #86 (frontend desktop) · V2 = #87 (réutilise #86 + #75) · Correction post-review.
+### Changements clés
+- **#186** : `Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(...)` — garde localisée, convention create id=null intacte, cascade events inchangée. Vérifié : aucun autre service ne présente le même défaut (`updateProduct` n'a pas de champ events).
+- **#62** : `CategoryDrawer.tsx` (pattern copié de `ProductDrawer` #61 — Dialog Radix + classes responsives), `categoryService` (+create/update/delete), hooks `useCreateCategory`/`useUpdateCategory` (TanStack Query v5), schémas Zod `types/category.ts`, namespace i18n `categories` (fr/en/es/de). Réutilise `PopoverPicker`, `DeleteConfirmDialog variant="category"` (réassignation), `useCategories` — **aucune primitive dupliquée**.
+- **#68** : routes `app/[locale]/products/page.tsx` + `[productId]/page.tsx`, vues `ProductsListView` / `ProductDetailView` / `CategoriesView`. Recherche/tri locaux, sparkline 90j réutilisée, sous-frise détail par **filtrage amont** des events/resources (TimelineView non forké). Embarque ProductDrawer, CategoryDrawer (#62), DeleteConfirmDialog.
 
-## Changements clés
+### BR impactées
+BR-PRO-005 (produit sans événement), BR-PRO-001/006, BR-CAT-001/002/004/007, ADR-002 (catégorie système = lecture seule).
 
-### Backend (#75)
-- Endpoints `POST` (multipart, part `file`) / `GET` (stream authentifié) / `DELETE` (204) `/api/me/avatar`.
-- Architecture hexagonale : `StoragePort` (domaine) + `LocalStorageAdapter` (infra) + `AvatarService`/`AvatarServiceImpl`. Le swap MinIO/S3 futur = nouvelle impl derrière le port.
-- `UserResponse` expose désormais `avatarUrl` (débloque la dette #151).
-- **Aucune migration** : la colonne `avatar` existait déjà (V7 #44). Dernière migration reste V11.
+### Anti-duplication
+Carte de réutilisation produite en pré-vague par **component-guardian** : dirige #62/#68 vers les composants existants (ProductDrawer, DeleteConfirmDialog, PopoverPicker, ProductSparkline). Seuls manques réels créés : hooks/service catégorie (calqués sur le pattern produit) et les routes produits.
 
-### Frontend (#86 / #87 / correction)
-- Page `/settings` : rendu conditionnel desktop (`SettingsShell` tablist) vs mobile (`MobileSettings` drill-down) via `useMediaQuery`.
-- 4 chapitres réutilisables (sections + hooks séparés présentation/logique) ; `BottomSheet` accessible (focus trap, Escape, swipe-down, safe-area iOS).
-- Avatar branché bout-en-bout : `userService.uploadAvatar/deleteAvatar`, `UserSchema.avatarUrl` (nullable), mutations TanStack Query + `refreshUser` (AuthContext), i18n 4 locales.
+### Tests
+- **Backend** : 270/270 verts (`./scripts/test-quiet.sh backend`).
+- **Frontend** : 305/305 verts (`./scripts/test-quiet.sh frontend`) — dont 34 nouveaux tests (8 CategoryDrawer + 26 vues produits).
+- **Build** : `next build` OK (le commit `e6bd60f` débloque un lint hérité de #62 : `nameConflict` consommé en `aria-invalid`).
+- Audit complet : `docs/memory/audits/sprint-22-test-coverage.md`.
 
-## BR impactées
-- **BR-AUT-001** — Le profil (dont avatar) appartient à l'utilisateur identifié ; seul lui peut le modifier/supprimer. Ownership dérivé du cookie JWT côté backend (jamais un id client). Suppression compte = re-saisie username.
+### Review
+Reviewer batch : **0 CRITIQUE / 0 MAJEUR**, 4 MINEURs non bloquants (arg par défaut redondant `useCategories(true)`, `console.error` dans les catch service, absence de test unitaire dédié des clés d'invalidation, divergence documentée color=String libre côté catégorie). Aucun cycle de correction requis.
 
-## Décision d'architecture (ADR)
-**Stockage avatar en local privé** (`STORAGE_AVATAR_PATH`, hors webroot, servi via endpoint authentifié) plutôt que MinIO/S3 + URL signée. Motif : aucune infra objet dans le repo (pas de docker-compose, pas de dépendance Maven, pas de `STORAGE_*`) → la monter mid-sprint = scope creep. `StoragePort` isole le choix ; migration objet différée en follow-up. **Déviation assumée** du critère d'acceptation initial de #75 (validée par security-expert).
+### Suivi post-merge (non bloquant)
+- **E2E** : 46 nouveaux `data-testid` produits/catégories sans spec Playwright → planifier `/create-e2e <PR>` après merge (parcours CRUD catégorie, navigation liste↔détail, création/édition produit). Invocation manuelle (bug nested-skills).
+- MINEURs reviewer à absorber au fil de l'eau si souhaité.
+- #187 (UI création catégorie) recoupe #62 → à fermer/fusionner.
 
-## Sécurité (audit OWASP upload — GO)
-Validation MIME par **magic bytes** (jamais Content-Type/extension), limite 5 Mo (config multipart + applicatif), nom stocké = UUID (anti path-traversal, `resolveWithinBase` double-check), endpoint authentifié, cleanup des orphelins, aucune fuite d'exception. 0 CRITIQUE / 0 MAJEUR.
-
-## Tests
-- Backend : **268/268** verts (magic bytes, ownership, path-traversal, cleanup, DELETE idempotent).
-- Frontend : **271/271** verts (261 baseline + 10 correction avatar) ; `tsc` + `next build` 0 erreur.
-- Détail : `docs/memory/audits/sprint-21-test-coverage.md`.
-
-## Review
-- security-expert : **GO** (upload cité comme modèle de référence).
-- reviewer batch : 0 CRITIQUE / 3 MAJEUR / 3 MINEUR → **3 MAJEUR résolus** (`d10e4a3`), MINEUR non bloquants.
-
-## Coverage E2E — action post-merge
-54 nouveaux `data-testid` (flux avatar/password/delete/export/sessions) sans spec E2E dédiée. Infra E2E naissante + wrapper sans backend orchestré. **Plan : `/create-e2e` après merge** (le contrat cross-system est couvert en intégration MockMvc + composant).
-
-## Follow-ups identifiés (triage en `/sprint end`)
-- Brancher l'export données RGPD (`GET /api/me/export` non livré backend, stub UI).
-- Migration stockage objet (MinIO/S3) derrière `StoragePort`.
-- Resize/normalisation image (ré-encodage anti-EXIF), cache/ETag sur `GET /api/me/avatar`.
-- Documenter `STORAGE_AVATAR_PATH` dans le runbook déploiement.
-- Gestion clavier virtuel Android (`visualViewport`) — vérifier sur device réel.
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
