@@ -22,6 +22,28 @@
     "label": "Agenda de la semaine courante",
     "empty": "Aucun événement cette semaine"
   },
+  "mobile": {
+    "menu": "Ouvrir le menu",
+    "drawer": {
+      "title": "Réglages",
+      "close": "Fermer le menu",
+      "language": "Langue",
+      "theme": "Thème",
+      "themeLight": "Clair",
+      "themeDark": "Sombre"
+    },
+    "scrollHint": "Faire défiler horizontalement",
+    "compactAgenda": {
+      "title": "Aujourd'hui et demain",
+      "label": "Agenda compact du jour et du lendemain",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "empty": "Aucun événement aujourd'hui ni demain"
+    },
+    "carousel": {
+      "label": "Produits, défilement horizontal"
+    }
+  },
   "kpi": {
     "title": "En bref",
     "label": "Indicateurs clés",

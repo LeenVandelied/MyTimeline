@@ -22,6 +22,28 @@
     "label": "Current week agenda",
     "empty": "No events this week"
   },
+  "mobile": {
+    "menu": "Open menu",
+    "drawer": {
+      "title": "Settings",
+      "close": "Close menu",
+      "language": "Language",
+      "theme": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark"
+    },
+    "scrollHint": "Scroll horizontally",
+    "compactAgenda": {
+      "title": "Today and tomorrow",
+      "label": "Compact agenda for today and tomorrow",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "empty": "No events today or tomorrow"
+    },
+    "carousel": {
+      "label": "Products, horizontal scroll"
+    }
+  },
   "kpi": {
     "title": "At a glance",
     "label": "Key indicators",

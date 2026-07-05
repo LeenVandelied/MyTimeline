@@ -1,33 +1,40 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import AddProductButton from '@/components/products/AddProductButton'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { AppFooter } from '@/components/ui/footer-app'
-import { CalendarDays, LogOut } from 'lucide-react'
+import { CalendarDays, LogOut, Menu } from 'lucide-react'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { TimelineResponsive } from '@/components/timeline'
 import { useDashboardData } from '@/hooks/useDashboardData'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import {
   GreetingHeader,
   DensityRibbon,
   WeekAgenda,
   KpiMarginalia,
   ProductList,
+  CompactAgenda,
+  ProductCarousel,
+  MobileDrawer,
 } from '@/components/dashboard'
 
 /**
  * #80 — Dashboard desktop (Design System Graphite).
+ * #83 — Variante mobile portrait (< 768px) : mise en page mobile-first
+ * single-column (ordre : greeting > ruban scrollable > agenda compact jour+lendemain
+ * > produits swipeables) + drawer off-canvas (langue / thème / déconnexion) ouvert
+ * par le hamburger. Le rendu DESKTOP #80 est INCHANGÉ : les composants #80 sont
+ * réutilisés (variantes / props), aucune donnée n'est chargée hors `useDashboardData`.
  *
- * La page ne fait plus QUE : garde d'authentification, shell (header auth +
- * footer) et composition des composants dashboard isolés. Aucune donnée n'est
- * chargée ici directement : `useDashboardData` (TanStack Query) est l'unique
- * source (produits + events + KPIs dérivés). Chaque bloc visuel est délégué à
- * un composant ≤ 80 lignes de `components/dashboard/` (réutilisés par #83/#85).
+ * Bascule via `useMediaQuery` (SSR-safe : rend `false` au 1er rendu → desktop par
+ * défaut, pas de hydration mismatch). Les contrôles header desktop (langue + logout)
+ * sont masqués sur mobile (`hidden md:flex`), remplacés par le hamburger (`md:hidden`).
  */
 export default function Dashboard() {
   const t = useTranslations()
@@ -35,6 +42,8 @@ export default function Dashboard() {
   const { user, loading, logout } = useAuth()
   const router = useRouter()
   const { events, products, kpis, isLoading, resources, refetch } = useDashboardData(user?.id)
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -44,6 +53,7 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
+      setDrawerOpen(false)
       await logout()
       router.push(`/${locale}/login`)
     } catch (error) {
@@ -71,7 +81,8 @@ export default function Dashboard() {
             <CalendarDays className="text-accent h-5 w-5" />
             <span className="text-ink text-xs font-semibold tracking-tight">{t('dashboard.title')}</span>
           </div>
-          <div className="flex items-center gap-3">
+          {/* Contrôles desktop (langue + logout) — masqués sur mobile portrait. */}
+          <div className="hidden items-center gap-3 md:flex">
             <LanguageSelector />
             <Button
               onClick={handleLogout}
@@ -82,40 +93,78 @@ export default function Dashboard() {
               <span>{t('common.buttons.logout')}</span>
             </Button>
           </div>
+          {/* Hamburger mobile — ouvre le drawer off-canvas (#83). */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label={t('dashboard.mobile.menu')}
+            aria-haspopup="dialog"
+            aria-expanded={drawerOpen}
+            data-testid="dashboard-mobile-menu-button"
+            className="text-ink hover:bg-accent-soft focus-visible:ring-focus flex h-11 w-11 items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:outline-none md:hidden"
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex items-start justify-between gap-4">
-          <GreetingHeader name={user.username} />
-          <AddProductButton onProductAdded={refetch} />
-        </div>
-
-        <DensityRibbon events={events} locale={locale} />
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <WeekAgenda events={events} locale={locale} variant="table" />
-          <aside className="flex flex-col gap-6">
-            <KpiMarginalia kpis={kpis} />
-            <ProductList products={products} locale={locale} />
-          </aside>
-        </div>
-
-        <section
-          className="bg-surface border-rule rounded-lg border p-3"
-          aria-label={t('dashboard.recentEvents.title')}
+      {isMobile ? (
+        // -------- Mobile portrait single-column (#83) --------
+        <main
+          className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6"
+          data-testid="dashboard-mobile-portrait"
         >
-          {isLoading ? (
-            <div className="flex h-64 items-center justify-center" role="status">
-              <span className="text-ink-muted text-xs">{t('common.loading.default')}</span>
-            </div>
-          ) : (
-            <TimelineResponsive events={events} resources={resources} locale={locale} />
-          )}
-        </section>
-      </main>
+          <div className="flex items-start justify-between gap-4">
+            <GreetingHeader name={user.username} variant="compact" />
+            <AddProductButton onProductAdded={refetch} />
+          </div>
+
+          <DensityRibbon events={events} locale={locale} scrollable />
+
+          <CompactAgenda events={events} />
+
+          <ProductCarousel products={products} locale={locale} />
+        </main>
+      ) : (
+        // -------- Desktop (#80, inchangé) --------
+        <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex items-start justify-between gap-4">
+            <GreetingHeader name={user.username} />
+            <AddProductButton onProductAdded={refetch} />
+          </div>
+
+          <DensityRibbon events={events} locale={locale} />
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <WeekAgenda events={events} locale={locale} variant="table" />
+            <aside className="flex flex-col gap-6">
+              <KpiMarginalia kpis={kpis} />
+              <ProductList products={products} locale={locale} />
+            </aside>
+          </div>
+
+          <section
+            className="bg-surface border-rule rounded-lg border p-3"
+            aria-label={t('dashboard.recentEvents.title')}
+          >
+            {isLoading ? (
+              <div className="flex h-64 items-center justify-center" role="status">
+                <span className="text-ink-muted text-xs">{t('common.loading.default')}</span>
+              </div>
+            ) : (
+              <TimelineResponsive events={events} resources={resources} locale={locale} />
+            )}
+          </section>
+        </main>
+      )}
 
       <AppFooter />
+
+      <MobileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onLogout={handleLogout}
+      />
     </div>
   )
 }

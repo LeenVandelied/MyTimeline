@@ -22,6 +22,28 @@
     "label": "Agenda der aktuellen Woche",
     "empty": "Keine Ereignisse diese Woche"
   },
+  "mobile": {
+    "menu": "Menü öffnen",
+    "drawer": {
+      "title": "Einstellungen",
+      "close": "Menü schließen",
+      "language": "Sprache",
+      "theme": "Design",
+      "themeLight": "Hell",
+      "themeDark": "Dunkel"
+    },
+    "scrollHint": "Horizontal scrollen",
+    "compactAgenda": {
+      "title": "Heute und morgen",
+      "label": "Kompakte Agenda für heute und morgen",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "empty": "Keine Ereignisse heute oder morgen"
+    },
+    "carousel": {
+      "label": "Produkte, horizontales Scrollen"
+    }
+  },
   "kpi": {
     "title": "Kurzüberblick",
     "label": "Kennzahlen",

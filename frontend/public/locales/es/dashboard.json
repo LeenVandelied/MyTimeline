@@ -22,6 +22,28 @@
     "label": "Agenda de la semana actual",
     "empty": "Sin eventos esta semana"
   },
+  "mobile": {
+    "menu": "Abrir menú",
+    "drawer": {
+      "title": "Ajustes",
+      "close": "Cerrar menú",
+      "language": "Idioma",
+      "theme": "Tema",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro"
+    },
+    "scrollHint": "Desplázate horizontalmente",
+    "compactAgenda": {
+      "title": "Hoy y mañana",
+      "label": "Agenda compacta de hoy y mañana",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "empty": "Sin eventos hoy ni mañana"
+    },
+    "carousel": {
+      "label": "Productos, desplazamiento horizontal"
+    }
+  },
   "kpi": {
     "title": "En resumen",
     "label": "Indicadores clave",
