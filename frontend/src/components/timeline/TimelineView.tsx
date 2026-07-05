@@ -7,10 +7,10 @@ import { FullCalendarEvent } from '@/types/event'
 import { Resource, groupResourcesByCategory } from './lib'
 import { Minimap } from './Minimap'
 import { EventDrawer } from './EventDrawer'
-import { EventPill } from './EventPill'
 import {
   DAY_WIDTH_PX,
   ZOOM_LEVELS,
+  buildEventAriaLabel,
   buildMinimapBuckets,
   buildRulerTicks,
   buildWeekendSegments,
@@ -18,6 +18,7 @@ import {
   daysBetween,
   initialZoomState,
   positionEvents,
+  statusToVar,
   zoomReducer,
   type PositionedEvent,
 } from './zoom'
@@ -40,26 +41,6 @@ export interface TimelineViewProps {
   resources: Resource[]
   locale: string
   today?: Date
-}
-
-/**
- * Label a11y d'un bloc event : titre + statut + dates (+ produit si dispo).
- * Réutilise le format de date medium et la clé i18n de statut du drawer, pour
- * que les lecteurs d'écran aient le même contexte au focus qu'à l'ouverture.
- */
-function buildEventAriaLabel(
-  event: PositionedEvent,
-  locale: string,
-  t: (key: string) => string,
-): string {
-  const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
-  const start = fmt.format(new Date(event.start))
-  const end = fmt.format(new Date(event.end || event.start))
-  const status = t(`dashboard.timeline.status.${event.status}`)
-  const product = event.extendedProps?.productName
-  const parts = [event.title, status, `${start} – ${end}`]
-  if (product) parts.push(product)
-  return parts.join(', ')
 }
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, locale, today }) => {
@@ -399,12 +380,28 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                           {resource.title}
                         </span>
                         {laneEvents.map((event) => (
-                          <EventPill
+                          <button
                             key={event.id}
-                            event={event}
-                            ariaLabel={buildEventAriaLabel(event, locale, t)}
-                            onSelect={setSelected}
-                          />
+                            type="button"
+                            className="mt-tlv__evt"
+                            data-testid="timeline-event"
+                            data-event-title={event.title}
+                            aria-label={buildEventAriaLabel(event, locale, t)}
+                            onClick={() => setSelected(event)}
+                            style={{
+                              left: `${event.leftPx}px`,
+                              width: `${event.widthPx}px`,
+                              ['--mt-evt' as string]: event.color || 'var(--color-accent)',
+                              ['--mt-evt-status' as string]: statusToVar(event.status),
+                            }}
+                          >
+                            <span
+                              className="mt-tlv__evt-dot"
+                              style={{ background: statusToVar(event.status) }}
+                              aria-hidden="true"
+                            />
+                            {event.title}
+                          </button>
                         ))}
                       </div>
                     )

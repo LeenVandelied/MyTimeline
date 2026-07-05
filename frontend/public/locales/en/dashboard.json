@@ -54,6 +54,9 @@
       "zoom": "Zoom in / out",
       "fullscreen": "Fullscreen",
       "escape": "Close panel"
+    },
+    "actions": {
+      "label": "Event actions"
     }
   }
 }

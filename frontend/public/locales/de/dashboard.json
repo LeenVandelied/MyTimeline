@@ -54,6 +54,9 @@
       "zoom": "Vergrößern / verkleinern",
       "fullscreen": "Vollbild",
       "escape": "Panel schließen"
+    },
+    "actions": {
+      "label": "Ereignisaktionen"
     }
   }
 }

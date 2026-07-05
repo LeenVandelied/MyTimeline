@@ -54,6 +54,9 @@
       "zoom": "Zoom avant / arrière",
       "fullscreen": "Plein écran",
       "escape": "Fermer le panneau"
+    },
+    "actions": {
+      "label": "Actions de l’événement"
     }
   }
 }

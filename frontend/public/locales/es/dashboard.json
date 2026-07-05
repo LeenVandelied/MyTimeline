@@ -54,6 +54,9 @@
       "zoom": "Acercar / alejar",
       "fullscreen": "Pantalla completa",
       "escape": "Cerrar panel"
+    },
+    "actions": {
+      "label": "Acciones del evento"
     }
   }
 }
