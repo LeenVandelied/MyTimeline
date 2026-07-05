@@ -7,11 +7,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.matimeline.eventmanager.application.dtos.ChangePasswordRequest;
 import com.matimeline.eventmanager.application.dtos.DeleteAccountRequest;
 import com.matimeline.eventmanager.application.dtos.UserResponse;
 import com.matimeline.eventmanager.application.dtos.UserUpdateRequest;
+import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
+import com.matimeline.eventmanager.domain.models.AvatarContent;
 import com.matimeline.eventmanager.domain.models.User;
+import com.matimeline.eventmanager.domain.ports.services.AvatarService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
@@ -41,11 +49,15 @@ public class UserController {
 
     private final UserService userService;
     private final JwtService jwtService;
+    // #75 : gestion avatar via le PORT (A8/DIP), jamais l'impl concrète.
+    private final AvatarService avatarService;
 
     public UserController(UserService userService,
-                          JwtService jwtService) {
+                          JwtService jwtService,
+                          AvatarService avatarService) {
         this.userService = userService;
         this.jwtService = jwtService;
+        this.avatarService = avatarService;
     }
 
     private static final String JWT_COOKIE = "jwt";
@@ -160,6 +172,75 @@ public class UserController {
         // BR-AUT-010 : effacer le cookie avec des attributs IDENTIQUES à la pose (login),
         // pour que le navigateur matche et supprime. MaxAge=0 = suppression immédiate.
         response.addCookie(buildExpiredJwtCookie());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * POST /api/me/avatar — upload de l'avatar de l'utilisateur COURANT (#75, BR-AUT-001).
+     *
+     * <p>Multipart mono-fichier (part {@code file}). Le service valide le type par MAGIC
+     * BYTES (pas le Content-Type client) + la taille (5 Mo), stocke via {@code StoragePort}
+     * (nom généré, jamais le filename client), met à jour {@code User.avatar} et nettoie
+     * l'ancien fichier. Ownership STRUCTUREL : l'action porte sur {@code caller} (JWT),
+     * jamais sur un id client. 400 si fichier invalide/absent/trop lourd
+     * ({@code InvalidAvatarException} -> GlobalExceptionHandler) ; 401 si non authentifié.
+     * Succès -> 200 + {@code UserResponse} (contient {@code avatarUrl} = /api/me/avatar).
+     */
+    @PostMapping(path = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file,
+                                          @CookieValue(value = "jwt", required = false) String token) {
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        byte[] content;
+        try {
+            // Un part présent mais vide (file.isEmpty()) est traité comme fichier invalide
+            // par le service (content vide -> 400), pas comme une erreur technique.
+            content = file.isEmpty() ? new byte[0] : file.getBytes();
+        } catch (IOException e) {
+            // Lecture du part impossible -> 400 message générique (aucune fuite de détail).
+            throw new InvalidAvatarException("fichier illisible");
+        }
+
+        avatarService.uploadAvatar(caller, content);
+
+        // Relire le caller pour renvoyer un UserResponse à jour (avatarUrl désormais posé).
+        User refreshed = userService.findDomainUserById(caller.getId()).orElse(caller);
+        return ResponseEntity.ok(UserResponse.fromDomain(refreshed));
+    }
+
+    /**
+     * GET /api/me/avatar — streame les octets de l'avatar du caller (#75). AUTHENTIFIÉ :
+     * pas de resource statique publique, pas d'URL permanente. Ownership structurel
+     * (BR-AUT-001). 404 si aucun avatar ({@code AvatarNotFoundException}) ; 401 si non
+     * authentifié. Content-Type dérivé du type réel stocké (jpeg/png/webp).
+     */
+    @GetMapping("/avatar")
+    public ResponseEntity<?> getAvatar(@CookieValue(value = "jwt", required = false) String token) {
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        AvatarContent avatar = avatarService.getAvatar(caller);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(avatar.contentType()))
+                .body(avatar.bytes());
+    }
+
+    /**
+     * DELETE /api/me/avatar — réinitialise {@code User.avatar} à null + supprime le fichier
+     * stocké (#75, BR-AUT-001). Idempotent (caller sans avatar -> no-op). 401 si non
+     * authentifié ; 204 sinon. Ownership structurel : agit sur le caller (JWT) uniquement.
+     */
+    @DeleteMapping("/avatar")
+    public ResponseEntity<?> deleteAvatar(@CookieValue(value = "jwt", required = false) String token) {
+        User caller = resolveCaller(token);
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        avatarService.deleteAvatar(caller);
         return ResponseEntity.noContent().build();
     }
 
