@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Button } from '@/components/ui/button'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { AppFooter } from '@/components/ui/footer-app'
 import { SettingsShell } from '@/components/settings/SettingsShell'
+import { MobileSettings } from '@/components/settings/mobile/MobileSettings'
 
 /**
  * #86 — Page Réglages (desktop >= 1024px). 4 chapitres (Profil / Sécurité /
@@ -24,6 +26,11 @@ export default function SettingsPage() {
   const locale = useLocale()
   const router = useRouter()
   const { user, loading } = useAuth()
+  // #87 — < 768px : drill-down mobile ; sinon coquille desktop #86. Même
+  // convention que le dashboard (#85). Le hook rend `false` en SSR -> desktop
+  // au premier paint, puis bascule mobile après hydratation (pas de double
+  // montage des sections).
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   useEffect(() => {
     if (!loading && !user) {
@@ -60,8 +67,8 @@ export default function SettingsPage() {
         <LanguageSelector />
       </header>
 
-      <main className="flex-grow px-6 py-8" data-testid="settings-page">
-        <SettingsShell />
+      <main className="flex-grow px-4 py-6 md:px-6 md:py-8" data-testid="settings-page">
+        {isMobile ? <MobileSettings /> : <SettingsShell />}
       </main>
 
       <AppFooter />

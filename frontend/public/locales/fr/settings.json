@@ -9,7 +9,8 @@
     "back": "Retour",
     "next": "Suivant",
     "continue": "Continuer",
-    "genericError": "Une erreur est survenue, veuillez réessayer."
+    "genericError": "Une erreur est survenue, veuillez réessayer.",
+    "close": "Fermer"
   },
   "nav": {
     "aria": "Chapitres des réglages",
@@ -129,5 +130,8 @@
       "mismatch": "Le nom d'utilisateur ne correspond pas",
       "done": "Compte supprimé"
     }
+  },
+  "mobile": {
+    "backToIndex": "Retour aux réglages"
   }
 }

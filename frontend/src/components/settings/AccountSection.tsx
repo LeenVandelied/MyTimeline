@@ -1,31 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useLocale, useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import toast from 'react-hot-toast'
 import { Download, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -34,8 +15,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useSettings } from '@/hooks/useSettings'
-import { useAuth } from '@/contexts/AuthContext'
-import { createDeleteAccountSchema, type DeleteAccountFormValues } from '@/lib/schemas/settings'
+import { useDeleteAccountFlow } from './useDeleteAccountFlow'
+import { DeleteAccountSteps } from './DeleteAccountSteps'
+import { BottomSheet } from './mobile/BottomSheet'
 import type { ExportFormat } from '@/services/userService'
 
 /**
@@ -48,13 +30,19 @@ import type { ExportFormat } from '@/services/userService'
  */
 type ExportStep = 'format' | 'confirm' | 'done'
 
-export function AccountSection() {
+/**
+ * `deleteContainer` — conteneur du flux de suppression :
+ *  - `'dialog'` (défaut) : Dialog centré Radix (desktop #86, rétro-compatible).
+ *  - `'sheet'`  : BottomSheet ancrée bas (mobile #87). Même contenu partagé
+ *    (`DeleteAccountSteps` + `useDeleteAccountFlow`), seul le conteneur change.
+ */
+interface AccountSectionProps {
+  deleteContainer?: 'dialog' | 'sheet'
+}
+
+export function AccountSection({ deleteContainer = 'dialog' }: AccountSectionProps) {
   const t = useTranslations('settings')
-  const tRoot = useTranslations()
-  const { deleteAccount, exportData } = useSettings()
-  const { logout, user } = useAuth()
-  const router = useRouter()
-  const locale = useLocale()
+  const { exportData } = useSettings()
 
   /* -------------------------------- Export -------------------------------- */
   const [exportStep, setExportStep] = useState<ExportStep>('format')
@@ -78,32 +66,14 @@ export function AccountSection() {
   }
 
   /* ------------------------------- Delete --------------------------------- */
+  // #87 — Logique de suppression partagée (hook) rendue ici dans un Dialog
+  // (desktop) et dans un BottomSheet côté mobile. Voir `useDeleteAccountFlow`.
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleteStep, setDeleteStep] = useState<'warn' | 'confirm'>('warn')
-
-  const deleteForm = useForm<DeleteAccountFormValues>({
-    resolver: zodResolver(createDeleteAccountSchema(tRoot, user?.username ?? '')),
-    defaultValues: { confirmUsername: '' },
-  })
-
-  const onDelete = async (values: DeleteAccountFormValues) => {
-    try {
-      await deleteAccount.mutateAsync(values.confirmUsername)
-      toast.success(t('account.delete.done'))
-      // Cookie effacé côté backend ; on nettoie l'état client puis on redirige.
-      await logout()
-      router.replace(`/${locale}/login`)
-    } catch {
-      deleteForm.setError('confirmUsername', { message: t('common.genericError') })
-    }
-  }
+  const deleteFlow = useDeleteAccountFlow()
 
   const closeDeleteDialog = (open: boolean) => {
     setDeleteOpen(open)
-    if (!open) {
-      setDeleteStep('warn')
-      deleteForm.reset({ confirmUsername: '' })
-    }
+    if (!open) deleteFlow.reset()
   }
 
   return (
@@ -197,82 +167,25 @@ export function AccountSection() {
         </Button>
       </div>
 
-      <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
-        <DialogContent data-testid="delete-account-dialog">
-          {deleteStep === 'warn' && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-danger">{t('account.delete.warnTitle')}</DialogTitle>
-                <DialogDescription>{t('account.delete.warnBody')}</DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button type="button" variant="ghost" onClick={() => closeDeleteDialog(false)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => setDeleteStep('confirm')}
-                  data-testid="delete-account-continue"
-                >
-                  {t('common.continue')}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-
-          {deleteStep === 'confirm' && (
-            <Form {...deleteForm}>
-              <form onSubmit={deleteForm.handleSubmit(onDelete)} data-testid="delete-account-form">
-                <DialogHeader>
-                  <DialogTitle className="text-danger">
-                    {t('account.delete.confirmTitle')}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {t('account.delete.confirmBody', { username: user?.username ?? '' })}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  <FormField
-                    control={deleteForm.control}
-                    name="confirmUsername"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('account.delete.usernameLabel')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            autoComplete="off"
-                            data-testid="delete-account-username"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="ghost" onClick={() => setDeleteStep('warn')}>
-                    {t('common.back')}
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="destructive"
-                    disabled={deleteAccount.isPending}
-                    data-testid="delete-account-confirm"
-                  >
-                    {deleteAccount.isPending ? (
-                      <Spinner label={t('account.delete.deleting')} />
-                    ) : (
-                      t('account.delete.confirmButton')
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          )}
-        </DialogContent>
-      </Dialog>
+      {deleteContainer === 'sheet' ? (
+        <BottomSheet
+          open={deleteOpen}
+          onClose={() => closeDeleteDialog(false)}
+          title={t('account.delete.title')}
+          testId="delete-account-sheet"
+        >
+          <DeleteAccountSteps flow={deleteFlow} onCancel={() => closeDeleteDialog(false)} />
+        </BottomSheet>
+      ) : (
+        <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
+          <DialogContent data-testid="delete-account-dialog">
+            {/* Titre Radix requis pour l'a11y ; le titre visible (h2) est rendu
+                par `DeleteAccountSteps` -> on masque celui-ci aux lecteurs. */}
+            <DialogTitle className="sr-only">{t('account.delete.title')}</DialogTitle>
+            <DeleteAccountSteps flow={deleteFlow} onCancel={() => closeDeleteDialog(false)} />
+          </DialogContent>
+        </Dialog>
+      )}
     </section>
   )
 }

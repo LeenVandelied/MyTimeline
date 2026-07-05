@@ -9,7 +9,8 @@
     "back": "Atrás",
     "next": "Siguiente",
     "continue": "Continuar",
-    "genericError": "Ha ocurrido un error, inténtalo de nuevo."
+    "genericError": "Ha ocurrido un error, inténtalo de nuevo.",
+    "close": "Cerrar"
   },
   "nav": {
     "aria": "Capítulos de ajustes",
@@ -129,5 +130,8 @@
       "mismatch": "El nombre de usuario no coincide",
       "done": "Cuenta eliminada"
     }
+  },
+  "mobile": {
+    "backToIndex": "Volver a los ajustes"
   }
 }

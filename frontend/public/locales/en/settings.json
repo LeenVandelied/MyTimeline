@@ -9,7 +9,8 @@
     "back": "Back",
     "next": "Next",
     "continue": "Continue",
-    "genericError": "Something went wrong, please try again."
+    "genericError": "Something went wrong, please try again.",
+    "close": "Close"
   },
   "nav": {
     "aria": "Settings chapters",
@@ -129,5 +130,8 @@
       "mismatch": "The username does not match",
       "done": "Account deleted"
     }
+  },
+  "mobile": {
+    "backToIndex": "Back to settings"
   }
 }

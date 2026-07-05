@@ -9,7 +9,8 @@
     "back": "Zurück",
     "next": "Weiter",
     "continue": "Fortfahren",
-    "genericError": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut."
+    "genericError": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut.",
+    "close": "Schließen"
   },
   "nav": {
     "aria": "Einstellungskapitel",
@@ -129,5 +130,8 @@
       "mismatch": "Der Benutzername stimmt nicht überein",
       "done": "Konto gelöscht"
     }
+  },
+  "mobile": {
+    "backToIndex": "Zurück zu den Einstellungen"
   }
 }
