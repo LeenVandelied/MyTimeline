@@ -38,3 +38,14 @@ export const updateEvent = async (eventId: string, data: EventEditFormValues): P
     throw error
   }
 }
+
+// #66 — DELETE /api/events/{id} (suppression physique, ownership 403). L'erreur
+// est propagée pour affichage inline par DeleteConfirmDialog (pitfall #65).
+export const deleteEvent = async (eventId: string): Promise<void> => {
+  try {
+    await apiClient.delete(`/events/${eventId}`)
+  } catch (error) {
+    console.error('Error deleting event:', safeErrorMessage(error))
+    throw error
+  }
+}

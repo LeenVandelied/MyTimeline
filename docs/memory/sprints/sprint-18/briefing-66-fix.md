@@ -1,3 +1,137 @@
+[BRIEFING CORRECTIONS REVIEW — Sprint 18, Issue #66]
+
+## Contexte
+Le formulaire événement (#66) a été livré (commit e128e51) puis reviewé (reviewer + ui-design). Les tests unit sont verts (backend 242/242, frontend vitest 117/117). MAIS la review a relevé des corrections **bloquantes** avant merge, principalement une **formule de contraste WCAG fausse** et une **migration incomplète du modèle 1-couleur dans `EventContent.tsx`** (la vue lecture/calendrier, pas le formulaire). Ta mission : corriger ces findings, sans régresser les tests existants.
+
+Tu travailles dans le worktree `/Users/herrh/VSProjects/MyTimeline/.claude/worktrees/magical-hypatia-0e9903`, branche `sprint/18` (déjà checkout). Vérifie `git rev-parse --abbrev-ref HEAD` = sprint/18 AVANT tout ; sinon cd dans le worktree.
+
+## Findings à corriger (par priorité)
+
+### BLOQUANT 1 — Formule de contraste `contrastInk` FAUSSE (a11y BR-EVE-009)
+`frontend/src/components/EventEditForm.tsx:74-83` : `contrastInk()` choisit l'encre via un seuil naïf `luminance > 0.5`, PAS un vrai ratio WCAG. Conséquence mesurée sur la palette 12 couleurs : **10/12 couleurs** reçoivent du texte blanc avec un contraste réel de seulement ~2.1–4.4:1 → **FAIL AA 4.5:1** (ex : `citron #A7B83A`=2.20, `ambre`=2.12, `orange`=2.80 ; seuls `cobalt`=5.41 et `graphite`=4.83 passent). C'est exactement le bug que le remplacement de `text-white` devait corriger.
+**Fix** : implémenter le vrai calcul WCAG :
+- luminance relative sRGB (linéarisation gamma : `c/255`, si `<=0.03928` → `/12.92`, sinon `((c+0.055)/1.055)^2.4`, puis `0.2126 R + 0.7152 G + 0.0722 B`).
+- ratio de contraste `(Lclair + 0.05) / (Lsombre + 0.05)`.
+- **choisir l'encre (noir `#0B0C0E` vs blanc `#FFFFFF`) qui MAXIMISE le ratio** contre le fond de l'événement — pas un seuil de luminance brut.
+- Si aucune encre n'atteint 4.5:1 pour une couleur donnée, choisir la meilleure (le "moins pire") ET ne PAS inventer de halo/text-shadow non prévu par la charte — signaler ce résidu en `[MEMORY:*]`/RECOMMAND_FOLLOWUP plutôt que bricoler.
+
+### BLOQUANT 2 — Extraire `contrastInk` vers un helper partagé (charte : mutualiser, pas dupliquer)
+La charte (`docs/design/graphite-handoff.md`, §Helpers) exige un `textOn(hex)` mutualisé. Actuellement `contrastInk` est réimplémenté localement dans `EventEditForm.tsx`. **Fix** : extraire vers `frontend/src/lib/color.ts` (ou module équivalent existant — vérifie d'abord s'il existe déjà un `lib/color*.ts`/`utils` adapté), exporter une fonction unique (ex `contrastInk(hex)`/`textOn(hex)`), et l'importer dans `EventEditForm.tsx` ET `EventContent.tsx`. Ajouter un test unitaire sur la palette (au moins citron/ambre/orange/cobalt) validant le ratio choisi.
+
+### BLOQUANT 3 — `EventContent.tsx` non migré au modèle 1-couleur + contraste (BR-EVE-009)
+`frontend/src/components/EventContent.tsx` est la vue **lecture/rendu réel** de l'événement (barre calendrier + bloc non-édition), modifiée ce sprint mais migration incomplète :
+- **lignes ~117,201** : `borderColor: color` résiduel du modèle 3-couleurs → **retirer** `borderColor`/`borderWidth`/`borderStyle`, garder `backgroundColor` seul (BR-EVE-009 : 1 couleur unique).
+- **lignes ~120,129,130,207** : `color:'#ffffff'` / `text-white` hardcodé illisible sur couleurs claires → utiliser le helper `contrastInk(color)` extrait (BLOQUANT 2). La charte §"Traitement visuel des barres" exige `textOn` PARTOUT, pas seulement dans le preview du formulaire.
+
+### MAJEUR 4 — Pas d'invalidation de cache après update/delete (données stale)
+`frontend/src/components/EventContent.tsx:76-103` : après `updateEvent`/`deleteEvent`, aucune invalidation TanStack Query ni remontée de callback → le calendrier affiche des données périmées (l'event vient d'une prop parent figée). **Fix** : remonter un callback `onChanged`/`onDeleted` au parent OU brancher `queryClient.invalidateQueries` avec la bonne query key (`src/lib/query-keys.ts`). Suivre le pattern TanStack v5 du projet (forme objet).
+
+### MINEUR 5 — `console.error` direct au lieu de `safeErrorMessage`
+`frontend/src/components/EventContent.tsx:58-59,86-88` : `console.error` direct (risque fuite objet axios brut, viole MEMO-007 zéro-stderr). `eventService.ts` utilise déjà `safeErrorMessage`. **Fix** : aligner sur `safeErrorMessage(error)`.
+
+### MINEUR 6 — Parité edit vs create schema sur `durationUnit`/`recurrenceUnit`
+`frontend/src/types/event.ts` (~ligne 159) : le edit schema n'exige pas `durationUnit` requis quand `type='duration'` (le create schema le fait) → incohérence create/edit, une durée sans unité passe en édition. **Fix** : ajouter le refine conditionnel équivalent au edit schema. Ajouter un test couvrant `durationValue` vide + `type=duration` sur le edit schema (le reviewer note que seul le create schema est testé sur ce cas).
+
+## Ce qui est déjà VALIDÉ (ne pas retoucher)
+- Responsive `sm:` unique (bottom-sheet/drawer) — OK, pattern ProductDrawer réutilisé.
+- Réutilisation `DeleteConfirmDialog` + `Spinner` — OK, aucune dépendance ajoutée.
+- Testids `event-form-*` — OK.
+- Refines Zod BR-EVE-002/003/006 (bornes `>=`), i18n 4 locales, a11y `Form` primitive (aria-describedby/invalid centralisé), debounce 150ms cleanup — OK.
+- Absence d'annotation `@track` — CONFIRMÉE correcte (aucune convention Track/§16 dans la charte, grep vide). Ne pas ajouter.
+- `submitState` 4 états, pas de reload auto sur 4xx/5xx générique — OK.
+
+## Triage
+Taille: M (corrections ciblées) | Modèle: opus | Effort: high
+
+## Context-pack domaine (lire EN PRIORITE avant tout code)
+
+<!-- ===== cp-frontend.md ===== -->
+# Context-pack : Frontend MyTimeline (Next.js 15 App Router / React 18)
+
+> À charger pour TOUTE tâche frontend. Décrit la stack RÉELLE (scan code, sprint 9).
+> Versions = source de vérité `frontend/package.json`. Ce pack ne réplique pas les
+> valeurs mineures : en cas de doute, relire le `package.json`.
+
+## Stack réelle (versions du package.json)
+
+- **Next.js `^15.2.4`** — App Router, dev `next dev --turbopack`, build `next build`.
+- **React `^18.3.1`** + React DOM 18.3.1. ⚠ **PAS React 19** malgré `@types/react@^19`.
+- **TypeScript `^5`** strict (`strict: true`, `noEmit`), alias `@/* → src/*`, `@/app/* → app/*`.
+- **TanStack Query `^5.101.2`** (+ devtools) — état serveur. API v5 STRICT (forme objet, `gcTime`).
+- **Zod `^3.24.2`** — validation + inférence de types.
+- **React Hook Form `^7.54.2`** + `@hookform/resolvers@^4` (zodResolver).
+- **next-intl `^4.0.2`** — i18n, 4 locales `['fr','en','es','de']`, `localePrefix: 'always'`.
+- **Tailwind `^4.0.12`** (`@tailwindcss/postcss`) + `tailwind.config.ts` minimal + `postcss.config.mjs`.
+- **shadcn/ui** style `new-york`, `rsc: true`, icônes **lucide-react**, Radix (dialog, select, popover, dropdown, checkbox, label, slot).
+- **axios `^1.8.1`** (client HTTP), **react-hot-toast** (toasts globaux), **next-themes** (clair/sombre), **framer-motion**, **dayjs**, **react-colorful**.
+- Tests : **Vitest `^2.1.9`** + **RTL `^16`** + jest-dom (jsdom). **Playwright `^1.61`** configuré mais `frontend/e2e/` = `.gitkeep` VIDE → aucun E2E réel. Storybook 8 présent.
+
+## Structure `frontend/`
+
+- **`app/`** (App Router, PAS `src/app/`) : `layout.tsx` (root, Server Component), `app/[locale]/` avec `dashboard/ login/ register/ forgot-password/ reset-password/ home/ privacy/ terms/`.
+- **`i18n.ts`** (racine) : `getRequestConfig`, charge les messages depuis **`public/locales/<locale>/<namespace>.json`** (fichiers par namespace : `auth common dashboard errors legal products register validation`).
+- **`middleware.ts`** : `next-intl/middleware`, `localePrefix: 'always'`, matcher exclut `api|_next|*.*`.
+- **`src/components/`** : `ui/` (shadcn : button, card, dialog, select, form, input, spinner, dropdown-menu, popover, language-selector…), `calendar/`, `pages/`, `products/`, + composants métier (`EventContent`, `EventEditForm`, `Testimonial*`, `theme-provider`).
+- **`src/contexts/`** : `AuthContext.tsx` (source unique du user), `QueryProvider.tsx`.
+- **`src/services/`** : `apiClient.ts` (axios + intercepteurs), `authService.ts`, `eventService.ts`, `productService.ts`.
+- **`src/hooks/`** : `useAuth.ts`, `useCurrentUser.ts`, `useProductsWithEvents.ts`.
+- **`src/lib/`** : `schemas/auth.ts` (Zod), `query-keys.ts`, `utils.ts`.
+- **`src/types/`** : `auth.ts` `user.ts` `event.ts` `product.ts` (schémas Zod + types, ré-exports).
+- **`src/styles/`** : `globals.css` `landing.css` `animations.css` + **`ds/`** (design tokens Graphite).
+
+## Conventions
+
+- **Server Components par défaut** ; `'use client'` UNIQUEMENT si hooks/état/handlers (ex. `AuthContext`, `QueryProvider`, `useCurrentUser`). Le root `layout.tsx` reste serveur ; `QueryProvider` isole `QueryClientProvider` côté client.
+- **TypeScript strict** : zéro `any`, zéro `as` non justifié.
+- **État serveur = TanStack Query v5** (forme objet `useQuery({ queryKey, queryFn })`, `gcTime` pas `cacheTime`). Query keys centralisées : `src/lib/query-keys.ts` (factory hiérarchique par domaine, `as const`). NE PAS éparpiller les clés en littéraux → invalidations qui ratent leur cible. `QueryClient` créé via `useState` (une instance/durée de vie, jamais au niveau module en App Router).
+- **Auth = `AuthContext` source UNIQUE du user** (`useAuth()`). **#135 / DEC-S9-002** : PII (email, name) N'EST PLUS en `localStorage`. Session = cookie **JWT HttpOnly** (invisible JS). Restauration au montage par **re-fetch `GET /api/auth/me`** (`withCredentials`), `loading:true` le temps du re-fetch (pas de flash anonyme). `logout` ne purge aucun storage. `useCurrentUser` NE refait PAS d'appel `/me` : sa `queryFn` relit le user d'`AuthContext` (anti double-fetch). **Ne jamais réintroduire de PII persistée** → renvoyer vers DEC-S9-002.
+- **Sécurité logs** : ne JAMAIS logger l'objet axios brut (`error.config.data` = body → password en clair ; `error.config.headers` = Authorization/cookies). Utiliser un extracteur assaini (`safeErrorMessage`) — cf. `AuthContext`, `apiClient`.
+- **Formulaires = RHF + Zod** via `zodResolver`. Deux familles de schémas : « bruts » `*Schema` (service, parse payload, sans message) et factories i18n `create*Schema(t)` (form, messages traduits). Le token/param hors formulaire n'entre pas dans le schéma form (cf. reset-password).
+- **Redirections auth localisées** : construire l'URL avec la locale courante (`/${locale}/login`) — `localePrefix: 'always'` casse tout chemin non préfixé.
+
+## Sync Zod ↔ DTO backend (piège récurrent)
+
+Les schémas Zod front doivent rester alignés sur les DTO backend (Spring Boot). Désalignement = strip silencieux ou ZodError runtime.
+- `.nullable()` pour un champ nullable backend ; `.optional()` pour un champ absent. JAMAIS `.nullish()` en code manuel.
+- Endpoint paginé : `paginatedSchema(itemSchema)`, jamais `schema.array()` (le body est `{items,total,page,size}`).
+- Contraintes alignées BR-AUT-003 : username 3..20, email valide, password ≥ 6. Le client ne doit PAS surcontraindre le contrat backend (ex. reset ≠ register).
+- DTO connus : login `{username,password}`, register `{name,username,email,password}`, forgot `{email}`, reset `{token,newPassword}`, `/auth/me` → `UserSchema {id(uuid),name,username,email,role}`.
+- ⚠ Il n'existe PAS de règle `.claude/rules-jit/zod-dto-sync.md` à ce jour — appliquer cette checklist directement.
+
+## i18n (next-intl 4)
+
+- `useTranslations("namespace")` — JAMAIS de strings FR hardcodées. Pas de `t("key",{ns})` : un `useTranslations` par namespace.
+- Messages = `public/locales/<locale>/<namespace>.json` (mock/validation data en JSON, pas de FR inline).
+- Zod i18n : factory `create*Schema(t)` (option `useMemo` côté form pour stabilité).
+
+## Design system « Graphite » (`src/styles/ds/`)
+
+- Direction B validée (S6, source projet Claude Design) : quasi-monochrome, accent bleu électrique unique pour *today/active*, type mono (Archivo display/ui + IBM Plex Mono) via `next/font` self-hosté (variables `--font-display/--font-mono`). Clair + sombre complets.
+- Tokens : `ds/tokens/` (`colors base spacing typography fonts`) + `ds/components/`, `ds/timeline.css`, `ds/i18n.css`, `ds/a11y-audit.md`, `ds/readme.md`.
+- **Theme-aware** : chaque composant doit fonctionner clair ET sombre (`next-themes`). Consulter `ds/readme.md` avant de créer un composant.
+- Éviter les hex inline → passer par les tokens CSS du DS.
+
+## Accessibilité
+
+- Spinners : `role="status"` + `aria-label` + `<span class="sr-only">`.
+- Tables : `aria-label`, `scope="col"`. Interactifs custom : `role` + `tabIndex` + `onKeyDown` (Enter/Space) + `focus:ring-2`.
+- Cf. `src/styles/ds/a11y-audit.md`.
+
+## Tests (Vitest + RTL) — pièges
+
+- **`React.use()` N'EXISTE PAS en React 18.3.1** (PIT-S8-005) — ne pas s'appuyer dessus dans code ou tests.
+- **`useSearchParams` exige un `<Suspense>`** englobant (PAT-S8-004).
+- **`next build` en CI attrape des erreurs invisibles aux tests RTL** (types/build strict, `ignoreBuildErrors:false`) — un run vitest vert ne garantit pas le build.
+- Setup `vitest.setup.ts` : jest-dom, cleanup RTL, mocks `next/font/google`, `next/navigation`, `matchMedia`. `useAuth` hors `<AuthProvider>` lève.
+- Objectif : run vitest sans ligne stderr. `act()` warning → test `async` + `await waitFor(...)`. Logs d'erreur intentionnels → `vi.spyOn(console,'error').mockImplementation(()=>{})` + `mockRestore()`.
+- ⚠ `frontend/e2e/` VIDE : `npm run test:e2e` sort 0 sans spec. Aucun parcours E2E couvert — ne pas présumer de garde-fou Playwright.
+
+## Références
+
+- `docs/memory/decisions.md` (DEC-S9-002 : PII hors localStorage), `docs/memory/patterns.md`, `docs/memory/pitfalls.md` (PIT-S8-005, PAT-S8-004).
+- `frontend/src/styles/ds/readme.md` (charte Graphite), `ds/a11y-audit.md`.
+
+<!-- ===== br-events.md ===== -->
 # Context-pack domaine : `events`
 
 > Domaine : `events` — gestion des événements d'une timeline (création, mise à jour partielle, suppression, listing par produit), chaque événement étant rattaché à un `Product` et porteur de dates calculées (durée ou date unique).
@@ -72,8 +206,8 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 ### BR-EVE-006 — recurrenceUnit requis quand isRecurring=true
 **Règle** : quand `isRecurring=true`, `recurrenceUnit` DEVRAIT être obligatoire (`weeks/months/years`).
 **Pourquoi** : une récurrence sans unité est inexploitable.
-**✅ RÉSOLU BACKEND (Sprint 9 #44 + Sprint 12 #54)** : enum `RecurrenceUnit` (WEEK/MONTH/YEAR) livré S9 (`RecurrenceUnit.java`, parsing tolérant `fromString`). S12 #54 ajoute la contrainte « requis si `isRecurring=true` » sur les DEUX chemins d'écriture : CREATE via `EventCreationRequest.isRecurrenceUnitConsistent()` (`@AssertTrue @JsonIgnore` → 400) ; PATCH via garde service dans `EventServiceImpl.updateEvent` sur l'état fusionné (`isRecurring=true && recurrenceUnit==null` → `RecurrenceUnitRequiredException` → 400, review S12). Cf. [[PAT-S12-001]]. **✅ FRONT RÉSOLU (Sprint 18 #66)** : refine conditionnel Zod `seriesErr` (`recurrenceUnit` requis si `isRecurring=true`) dans `EventEditForm`/`types/event.ts`.
-**Test** : `EventControllerValidationTest` (create 400) + `EventServiceImplTest`/`EventPatchAndRecurrenceIntegrationTest` (PATCH 400 + non-régression « recurrenceUnit préexistant → 200 »). Front : `EventEditForm.test.tsx` (`seriesErr`).
+**✅ RÉSOLU BACKEND (Sprint 9 #44 + Sprint 12 #54)** : enum `RecurrenceUnit` (WEEK/MONTH/YEAR) livré S9 (`RecurrenceUnit.java`, parsing tolérant `fromString`). S12 #54 ajoute la contrainte « requis si `isRecurring=true` » sur les DEUX chemins d'écriture : CREATE via `EventCreationRequest.isRecurrenceUnitConsistent()` (`@AssertTrue @JsonIgnore` → 400) ; PATCH via garde service dans `EventServiceImpl.updateEvent` sur l'état fusionné (`isRecurring=true && recurrenceUnit==null` → `RecurrenceUnitRequiredException` → 400, review S12). Cf. [[PAT-S12-001]]. ⚠ FRONT : refine conditionnel Zod encore à répercuter au sprint frontend events.
+**Test** : `EventControllerValidationTest` (create 400) + `EventServiceImplTest`/`EventPatchAndRecurrenceIntegrationTest` (PATCH 400 + non-régression « recurrenceUnit préexistant → 200 »).
 
 ### BR-EVE-007 — isRecurring obligatoire à la création
 **Règle** : un `ROLE_USER` MUST fournir `isRecurring` (non null) à la création.
@@ -92,8 +226,8 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 **Règle** : l'event porte UNE couleur unique cohérente entre backend et frontend.
 **Pourquoi** : éviter des erreurs de validation/runtime divergentes ; le modèle 3-couleurs était redondant.
 **✅ BACKEND RÉSOLU (Sprint 9, #44)** : colonne UNIQUE `color` (`EventEntity.java:59`, `V7__design_v3_schema.sql:67-79`) ; `border_color`/`text_color` **DROP définitif** (migration irréversible).
-**✅ FRONTEND RÉSOLU (Sprint 18 #66)** : migration modèle **1-couleur** (`backgroundColor`/`color` seul, fin de `borderColor`/`textColor`) sur `types/event.ts` (schéma Zod unifié + `HEX_COLOR_REGEX`, validation hex `colorErr`), `EventEditForm.tsx` (preview) ET `EventContent.tsx` (barre calendrier / vue lecture — migration complète, PIT-S18-001). Encre de texte calculée par contraste WCAG via helper mutualisé `frontend/src/lib/color.ts` (`contrastInk`/`textOn`, cf. [[PAT-S18-001]]) — remplace `text-white` hardcodé illisible. Aucune validation format hex côté backend (`color` String libre → validation front uniquement).
-**Test** : `frontend/src/lib/color.test.ts` (contraste AA), `types/event.test.ts` (hex), `EventEditForm.test.tsx` (`colorErr`).
+**⚠️ FRONTEND NON migré** : `frontend/src/types/event.ts:13-15` + `EventEditForm.tsx:262-264` conservent le modèle 3-couleurs (`backgroundColor`/`borderColor`/`textColor`) → désync front/back, dette **issue #150 (sync Zod, non livrée)**. Aucune validation format hex côté backend (`color` String libre).
+**Test attendu** : `eventEditSchema.test.ts.shouldValidateColorsConsistently` (après migration front sur `color` unique).
 
 ### BR-EVE-010 — Champ allDay : nom de sérialisation
 **Règle** : le frontend MUST lire le champ booléen "journée entière" sous la clé sérialisée par le backend.
@@ -151,7 +285,7 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 - ~~**NPE potentielle** : `Utils.calculateEndDate` `switch(durationUnit)` sans null-guard~~ ✅ RÉSOLU S12 #54 : null-guard + `InvalidDurationUnitException` → 422 (cf. BR-EVE-004, [[DEC-S12-001]]).
 - **Suppression physique** : `deleteById` supprime réellement la ligne. Nuance (S9 #44) : un champ `archived` (`EventEntity.java:57-58`, `Event.java`) existe désormais (soft-delete amorcé) mais `DELETE` reste un hard-delete — le flag n'est pas encore branché sur la suppression.
 - ~~**`@CrossOrigin(origins="*")`** sur `EventController`~~ : ✅ RETIRÉ Sprint 1 #30 — CORS gérée uniquement par `SecurityConfig` (`allowCredentials=true` + `allowedOrigins localhost:3000`).
-- **Schémas Zod dupliqués/divergents** : ~~`eventEditSchema` défini deux fois~~ ✅ RÉSOLU (doublon supprimé #150, source unique `types/event.ts` — confirmé S18 #66) ; ~~`name.min(3)` front vs `@Size(min=1)` back~~ ✅ harmonisé 1–100 front (S18 #66) ; RESTE : champ `allDay` vs `isAllDay` (cf. BR-EVE-010, non traité) ; `type` enum strict front vs `@NotBlank` libre back.
+- **Schémas Zod dupliqués/divergents** : `eventEditSchema` défini deux fois (cf. BR-EVE-009) ; champ `allDay` vs `isAllDay` (cf. BR-EVE-010) ; `name.min(3)` front vs `@Size(min=1)` back ; `type` enum strict front vs `@NotBlank` libre back.
 
 ---
 
@@ -170,3 +304,22 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
   - Schémas/types : `frontend/src/types/event.ts`
   - Formulaire édition : `frontend/src/components/EventEditForm.tsx`
   - Service API : `frontend/src/services/eventService.ts`
+
+<!-- CACHE_CONTROL_BREAKPOINT -->
+
+## Contraintes
+- Branche cible : `sprint/18` (déjà checkout, worktree). Vérifie `git rev-parse --abbrev-ref HEAD` = `sprint/18` avant tout.
+- Commit : 1 commit de correction dédié, gitmoji français (ex: `:bug: Corrections review #66 — contraste WCAG réel + migration 1-couleur EventContent + invalidation cache (#66)`). NE PAS amender le commit e128e51 (garder l'historique review lisible).
+- **Ordre de fix suggéré** : (1) extraire helper contraste WCAG correct dans `lib/color.ts` + test → (2) brancher dans `EventEditForm.tsx` (remplacer l'ancienne formule) → (3) migrer `EventContent.tsx` (borderColor retiré + contrastInk + cache invalidation + safeErrorMessage) → (4) parité edit schema durationUnit/recurrenceUnit + test.
+- Tests OBLIGATOIRES inline via `./scripts/test-quiet.sh unit` (backend + frontend vitest). Objectif : rester vert (backend 242, frontend >=117) + nouveaux tests contraste/edit-schema, run sans stderr. `next build` doit passer (types stricts — le wrapper vitest ne le couvre PAS, lance `npm run build` côté frontend si tu modifies des types partagés).
+- **Ne PAS toucher** : backend, login/dashboard/auth (hors scope — l'échec E2E golden-path login→dashboard est environnemental, pas lié à #66), tokens DS (`styles/ds/`), le pattern responsive `sm:` déjà validé.
+- **NE PAS** régresser les findings déjà OK listés dans le HEAD.
+- Mettre à jour l'artefact `docs/memory/sprints/sprint-18/issue-66-done.md` (append section "Corrections review" + commit de fix) ; dernière ligne `STATUS: COMPLETED` ou `STATUS: PARTIAL`.
+
+## Livrable attendu (format strict, MAX 500 tokens caveman)
+RETOUR :
+- commits: [SHA fix]
+- resume: <findings corrigés (1..6) + fichiers + méthode contraste WCAG + résultat tests passed/failed + next build OK/KO>
+- [MEMORY:*] signaux: <pattern helper contraste partagé, pitfall migration vue lecture oubliée, décision si une couleur palette reste sous AA, etc.>
+- recommandations suite: <RECOMMAND_FOLLOWUP si résidu (ex: couleur palette < AA même avec meilleure encre → halo/charte à trancher ; dark mode contrast non testé)>
+- STATUS: COMPLETED en dernière ligne du done.md (ou STATUS: PARTIAL + BLOQUE_SUR)

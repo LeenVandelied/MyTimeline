@@ -19,5 +19,18 @@
     "number": "La contraseña debe contener al menos un número",
     "match": "Las contraseñas no coinciden",
     "required": "La contraseña es requerida"
+  },
+  "event": {
+    "titleRequired": "El título del evento es obligatorio",
+    "titleMax": "El título no puede superar los 100 caracteres",
+    "durationMin": "La duración debe ser mayor que 0",
+    "durationUnitRequired": "La unidad de duración es obligatoria",
+    "recurrenceUnitRequired": "La frecuencia de recurrencia es obligatoria",
+    "recurrenceEndBeforeStart": "La fecha de fin de recurrencia debe ser posterior o igual a la fecha de inicio",
+    "endBeforeStart": "La fecha de fin debe ser posterior o igual a la fecha de inicio",
+    "colorInvalid": "Color inválido (se espera formato hexadecimal, p. ej. #3B82F6)",
+    "submitError": "Se produjo un error al guardar, inténtalo de nuevo.",
+    "conflict": "Este evento se modificó mientras tanto. Recarga para ver la última versión.",
+    "reload": "Recargar"
   }
 }

@@ -19,5 +19,18 @@
     "number": "Le mot de passe doit contenir au moins un chiffre",
     "match": "Les mots de passe ne correspondent pas",
     "required": "Le mot de passe est requis"
+  },
+  "event": {
+    "titleRequired": "Le titre de l'événement est requis",
+    "titleMax": "Le titre ne peut dépasser 100 caractères",
+    "durationMin": "La durée doit être supérieure à 0",
+    "durationUnitRequired": "L'unité de durée est requise",
+    "recurrenceUnitRequired": "La fréquence de récurrence est requise",
+    "recurrenceEndBeforeStart": "La date de fin de récurrence doit être postérieure à la date de début",
+    "endBeforeStart": "La date de fin doit être postérieure ou égale à la date de début",
+    "colorInvalid": "Couleur invalide (format hexadécimal attendu, ex. #3B82F6)",
+    "submitError": "Une erreur est survenue lors de l'enregistrement, veuillez réessayer.",
+    "conflict": "Cet événement a été modifié entre-temps. Rechargez pour voir la dernière version.",
+    "reload": "Recharger"
   }
-} 
+}

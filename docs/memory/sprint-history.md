@@ -387,13 +387,28 @@
   - Re-valider patterns clavier a11y via ui-design (ux-patterns.md absent) [S | events] → issue #197 (backlog)
 **Status :** Terminé
 
-## Sprint 18 — (PLANIFIÉ — cohésion 1.0 après dé-scope, Formulaire événement)
+## Sprint 18 — 2026-07-05 (Terminé — merge PR #199 dans dev — cohésion 1.0 après dé-scope, Formulaire événement)
 **Objectif :** Formulaire événement complet (desktop + mobile portrait + paysage), schéma Zod unifié.
-**Milestone GitHub :** #18
-**Issues :** #66 (formulaire événement) — **#62 (Drawer Catégorie) dé-scopé → backlog** (cohésion 0.34 → 1.0, futur sprint categories/products avec #68)
-**Vagues :** V1 = #66 seul
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 17 (Timeline pour preview/intégration) + Sprint 15 (#150 contrat)
-**Status :** Planifié
+**Milestone GitHub :** #18 (fermé après merge)
+**Issues livrées (1) :** #66 (formulaire événement) — **#62 (Drawer Catégorie) dé-scopé → backlog** (cohésion 0.34 → 1.0, futur sprint categories/products avec #68)
+**Vagues exécutées :** V1 = #66 seul (fullstack-dev L/opus) — pré-check ui-design (3 viewports + contraste) en amont.
+**Cohésion score :** 1.0 (single-issue epic:events)
+**Commits :** 3 — e128e51 (#66 formulaire) · 860d6cf (corrections review : contraste WCAG + migration 1-couleur EventContent + invalidation cache) · 1845a8c (artefacts audit/briefings)
+**Migrations Flyway :** aucune (sprint frontend-only)
+**Dépend de :** Sprint 17 (Timeline) + Sprint 15 (#150 contrat) + #45 (tokens) + #48 (TanStack) — tous sur dev.
+**BR impactées :** BR-EVE-002 (endErr), BR-EVE-003 (titleErr 1–100), BR-EVE-004 (durationUnit parité edit), BR-EVE-006 (seriesErr), BR-EVE-009 (modèle 1-couleur + contraste WCAG — front enfin migré).
+**Reviews :** reviewer (3 MAJEUR / 2 MINEUR) + ui-design (BLOQUANT contraste WCAG faux) — TOUS RÉSOLUS (commit 860d6cf). Le finding clé (formule `luminance>0.5` → 10/12 couleurs FAIL AA) n'a été attrapé que par ui-design, pas par la review statique.
+**Tests :** Backend 242/242 verts | Frontend vitest 153/153 verts | E2E golden-path vert **en CI full-stack** (échec runner isolé = environnemental, backend/DB non démarrés). `next build` OK.
+**Nouveaux patterns / pitfalls / décisions :** PAT-S18-001 (helper contraste WCAG `lib/color.ts`), PAT-S18-002 (stub ResizeObserver jsdom/Radix), PIT-S18-001 (migration 1-couleur à appliquer à la vue lecture aussi), DEC-S18-001 (ne pas inventer EventBlock/@track absents).
+**Couverture E2E nouveau formulaire :** ~20 testids `event-form-*` sans spec dédiée → `/create-e2e 199` post-merge (le flux create reste couvert par golden-path via ProductDrawer).
+**Saturation contexte lead (mesure) :** modérée — fan-out 1 vague + ui-design + review batch (3 agents) + 1 fix, purge via done.md (retours bruts non conservés).
+**Follow-ups arbitrés (Phase 4 triage — 3 créés backlog, 2 discardés) :**
+  - Câbler état conflict 409 quand backend l'émettra [S | events] → issue #200
+  - Aligner contrat startDate/endDate form vs DTO create/PATCH [S | events] → issue #201
+  - Désync sérialisation allDay/isAllDay (BR-EVE-010) [XS | events] → issue #202
+  - EventBlock #47 canonique [S | events] → discard (décomposition #47 déjà livrée S16, preview local suffit)
+  - Contraste dark-mode non testé [XS | events] → discard (couleurs event indépendantes du thème, risque faible)
+  Ratio discard 2/5 = 40%.
+**Status :** Terminé
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).

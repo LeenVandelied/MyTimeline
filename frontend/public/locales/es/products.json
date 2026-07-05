@@ -33,7 +33,11 @@
         "recurring": "Recurrente",
         "recurrenceUnit": "Frecuencia de Recurrencia",
         "recurrenceUnitPlaceholder": "Elegir frecuencia",
-        "submit": "Añadir Evento"
+        "submit": "Añadir Evento",
+        "startDate": "Fecha de inicio",
+        "endDate": "Fecha de fin",
+        "recurrenceEndDate": "Fin de recurrencia",
+        "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha."
       },
       "types": {
         "duration": "Duración",

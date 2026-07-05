@@ -1,20 +1,34 @@
 'use client'
 
 import { calculateRemainingTime } from '@/utils/time-utils'
+import { cn } from '@/lib/utils'
+import { contrastInk } from '@/lib/color'
+import { safeErrorMessage } from '@/lib/safe-error'
+import { queryKeys } from '@/lib/query-keys'
 import { FullCalendarEvent } from '@/types/event'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Card, CardContent } from './ui/card'
 import { PopoverPicker } from './ui/popoverPicker'
 import { Calendar, Edit, Save, Clock } from 'lucide-react'
-import { updateEventColor, updateEvent } from '@/services/eventService'
+import { updateEventColor, updateEvent, deleteEvent } from '@/services/eventService'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from './ui/button'
-import { EventEditForm, EventEditFormValues } from './EventEditForm'
+import { EventEditForm, EventEditFormValues, EventSubmitState } from './EventEditForm'
 
 // #150 — modèle couleur unique `color` (BR-EVE-009).
 const DEFAULT_COLOR = '#6366f1'
+
+/** Lit `error.response.status` (axios ou générique) sans `any` (cf. #65). */
+function httpStatusOf(error: unknown): number | undefined {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { status?: unknown } }).response
+    if (response && typeof response.status === 'number') return response.status
+  }
+  return undefined
+}
 
 interface EventContentProps {
   event: FullCalendarEvent
@@ -23,13 +37,30 @@ interface EventContentProps {
 export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   const t = useTranslations()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [isOpen, setOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [isColorOpen, setIsColorOpen] = useState(false)
   const [color, setColor] = useState(event.color || DEFAULT_COLOR)
+  // #66 — état de soumission 4 états (idle/submitting/error/conflict) piloté ici
+  // et passé au formulaire. Le 409 events n'est pas encore émis backend → défensif.
+  const [submitState, setSubmitState] = useState<EventSubmitState>('idle')
 
   const countdown = event?.end ? calculateRemainingTime(new Date(event.end), t) : null
+
+  // BR-EVE-009 — encre calculée par contraste WCAG (helper mutualisé), jamais
+  // `text-white` hardcodé : lisible sur les couleurs claires de la palette.
+  const inkColor = contrastInk(color)
+
+  // MAJEUR 4 (#66 review) — après update/delete/couleur, le calendrier lit ses
+  // events depuis `useProductsWithEvents` (produits + events imbriqués). On invalide
+  // cette query key pour éviter l'affichage de données périmées (prop parent figée).
+  const invalidateEvents = () => {
+    if (user?.id) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.withEvents(user.id) })
+    }
+  }
 
   const handleClick = () => {
     setOpen(true)
@@ -41,35 +72,59 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
     try {
       if (user && user.id) {
         await updateEventColor(event.id, newColor)
+        invalidateEvents()
       }
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des couleurs :', error)
+      console.error('Erreur lors de la mise à jour des couleurs :', safeErrorMessage(error))
     } finally {
       setIsSaving(false)
     }
   }
 
   const onSubmit = async (data: EventEditFormValues) => {
-    setIsSaving(true)
+    setSubmitState('submitting')
 
     try {
       if (data.color) {
-        await handleColorChange(data.color)
+        setColor(data.color)
+        if (user && user.id) {
+          await updateEventColor(event.id, data.color)
+        }
       }
 
       if (user && user.id) {
         await updateEvent(event.id, data)
       }
 
+      invalidateEvents()
+      setSubmitState('idle')
       setIsEditing(false)
     } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'événement :", error)
-    } finally {
-      setIsSaving(false)
+      // 409 (conflit d'édition concurrente) : message spécifique + rechargement.
+      // Backend ne l'émet pas encore pour les events → branche défensive (#66).
+      const status = httpStatusOf(error)
+      setSubmitState(status === 409 ? 'conflict' : 'error')
+      console.error("Erreur lors de la mise à jour de l'événement :", safeErrorMessage(error))
     }
   }
 
+  // Rechargement sur conflit 409 : recharge la page (pas de query cache event isolé
+  // ici — l'événement provient d'une prop parent). Défensif tant que le backend
+  // n'émet pas de 409 events.
+  const onReload = () => {
+    if (typeof window !== 'undefined') window.location.reload()
+  }
+
+  // Suppression déléguée à DeleteConfirmDialog (via EventEditForm). L'erreur DOIT
+  // rejeter pour affichage inline (pitfall #65).
+  const onDelete = async () => {
+    await deleteEvent(event.id)
+    invalidateEvents()
+    setOpen(false)
+  }
+
   const toggleEditMode = () => {
+    if (isEditing) setSubmitState('idle')
     setIsEditing(!isEditing)
   }
 
@@ -79,11 +134,9 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
         className="event-solid-style"
         onClick={handleClick}
         style={{
+          // BR-EVE-009 : 1 couleur unique (fond seul, plus de border/text hardcodé).
           backgroundColor: color,
-          borderColor: color,
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          color: '#ffffff',
+          color: inkColor,
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           borderRadius: '6px',
           padding: '4px 8px',
@@ -92,13 +145,27 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
       >
         <div className="z-10 w-full">
           <div className="items-left flex flex-col space-x-2">
-            <span className="truncate font-medium text-white">{event.title}</span>
-            {countdown && <span className="truncate text-sm text-white">{countdown}</span>}
+            <span className="truncate font-medium" style={{ color: inkColor }}>
+              {event.title}
+            </span>
+            {countdown && (
+              <span className="truncate text-sm" style={{ color: inkColor }}>
+                {countdown}
+              </span>
+            )}
           </div>
         </div>
       </div>
       <Dialog open={isOpen} onOpenChange={setOpen}>
-        <DialogContent className="bg-bg border-rule max-h-[90vh] overflow-y-auto rounded-xl border p-0 shadow-xl sm:max-w-[650px]">
+        {/* #66 responsive (pattern ProductDrawer #61) : bottom-sheet < 640px (portrait
+            ET paysage), drawer latéral droit >= 640px. `sm:` unique, aucun breakpoint custom. */}
+        <DialogContent
+          className={cn(
+            'bg-bg border-rule overflow-y-auto p-0 shadow-xl',
+            'top-auto right-0 bottom-0 left-0 max-h-[92vh] max-w-full translate-x-0 translate-y-0 rounded-t-2xl rounded-b-none',
+            'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[480px] sm:max-w-[480px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',
+          )}
+        >
           <div className="bg-surface sticky top-0 z-10 rounded-t-xl p-5 shadow-md">
             <DialogHeader>
               <DialogTitle className="text-ink flex items-center justify-between text-xl font-bold">
@@ -155,17 +222,20 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                           <div
                             className="w-full rounded-lg p-4 transition-all"
                             style={{
+                              // BR-EVE-009 : fond unique + encre de contraste (plus de border/text-white).
                               backgroundColor: color,
-                              borderColor: color,
-                              borderWidth: '2px',
-                              borderStyle: 'solid',
+                              color: inkColor,
                             }}
                           >
                             <div className="flex items-center gap-3">
-                              <span className="font-medium text-white">{event.title}</span>
+                              <span className="font-medium" style={{ color: inkColor }}>
+                                {event.title}
+                              </span>
                             </div>
                             {countdown && (
-                              <div className="mt-2 text-sm text-white opacity-80">{countdown}</div>
+                              <div className="mt-2 text-sm opacity-80" style={{ color: inkColor }}>
+                                {countdown}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -188,11 +258,20 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   durationUnit: undefined,
                   isRecurring: false,
                   recurrenceUnit: undefined,
+                  recurrenceEndDate: null,
+                  // `type=date` attend `YYYY-MM-DD` ; event.start/end sont ISO.
+                  startDate: event.start ? event.start.slice(0, 10) : undefined,
+                  endDate: event.end ? event.end.slice(0, 10) : undefined,
                   color: color,
                 }}
                 onSubmit={onSubmit}
-                onCancel={() => setIsEditing(false)}
-                isSaving={isSaving}
+                onCancel={() => {
+                  setSubmitState('idle')
+                  setIsEditing(false)
+                }}
+                submitState={submitState}
+                onReload={onReload}
+                onDelete={onDelete}
               />
             )}
           </div>

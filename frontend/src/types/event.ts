@@ -115,39 +115,114 @@ export const mapToFullCalendarEvent = (
 
 // #150 — schéma unique édition (dédup : ancien doublon dans EventEditForm supprimé).
 // `color` unique, `recurrenceUnit` enum WEEK/MONTH/YEAR, `recurrenceEndDate` + `archived`
-// (PATCH-only, BR-EVE-013). Refines conditionnels BR-EVE-006 / BR-EVE-012.
-export const eventEditSchema = z
-  .object({
-    // Aligné sur le contrat backend (EventCreationRequest.name min=1, BR-EVE-001)
-    // et sur eventCreationSchema.name (min(1)) — le client ne surcontraint pas le back.
-    title: z.string().min(1).max(100, "Le titre de l'événement est requis"),
-    type: z.string(),
-    durationValue: z.coerce.number().min(1).optional(),
-    durationUnit: durationUnitEnum.optional(),
-    isRecurring: z.boolean().default(false),
-    recurrenceUnit: recurrenceUnitEnum.optional(),
-    recurrenceEndDate: z.string().nullable().optional(),
-    startDate: z.string().optional(),
-    archived: z.boolean().optional(),
-    color: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    // BR-EVE-006 : recurrenceUnit requis quand isRecurring=true.
-    if (data.isRecurring === true && !data.recurrenceUnit) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La fréquence de récurrence est requise',
-        path: ['recurrenceUnit'],
-      })
-    }
-    // BR-EVE-012 : recurrenceEndDate >= startDate (garde service backend → 422).
-    if (data.recurrenceEndDate && data.startDate && data.recurrenceEndDate < data.startDate) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La date de fin de récurrence doit être postérieure à la date de début',
-        path: ['recurrenceEndDate'],
-      })
-    }
+// (PATCH-only, BR-EVE-013). Refines conditionnels BR-EVE-002 / BR-EVE-006 / BR-EVE-009 / BR-EVE-012.
+//
+// #66 — validations inline supplémentaires portées côté formulaire :
+//   - BR-EVE-002 : `endDate >= startDate` (refine `endErr`).
+//   - BR-EVE-009 : format hex valide `#RGB`/`#RRGGBB` (refine `colorErr`). Le backend
+//     stocke `color` en String libre (aucune validation format) → la garde est FRONT.
+//
+// Factory i18n `createEventEditSchema(t)` : messages traduits (convention frontend,
+// cf. cp-frontend « create*Schema(t) »). `eventEditSchema` reste exporté (messages FR
+// bruts) pour le service et la rétro-compat des tests contrat.
+
+/** Hex #RGB ou #RRGGBB (BR-EVE-009). Validation front — backend accepte String libre. */
+export const HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
+
+type EventEditMessages = {
+  titleRequired: string
+  titleMax: string
+  durationMin: string
+  durationUnitRequired: string
+  recurrenceUnitRequired: string
+  recurrenceEndBeforeStart: string
+  endBeforeStart: string
+  colorInvalid: string
+}
+
+const FR_MESSAGES: EventEditMessages = {
+  titleRequired: "Le titre de l'événement est requis",
+  titleMax: 'Le titre ne peut dépasser 100 caractères',
+  durationMin: 'La durée doit être supérieure à 0',
+  durationUnitRequired: "L'unité de durée est requise",
+  recurrenceUnitRequired: 'La fréquence de récurrence est requise',
+  recurrenceEndBeforeStart: 'La date de fin de récurrence doit être postérieure à la date de début',
+  endBeforeStart: 'La date de fin doit être postérieure ou égale à la date de début',
+  colorInvalid: 'Couleur invalide (format hexadécimal attendu, ex. #3B82F6)',
+}
+
+const buildEventEditSchema = (m: EventEditMessages) =>
+  z
+    .object({
+      // Aligné sur le contrat backend (EventCreationRequest.name min=1, BR-EVE-001/003)
+      // et sur eventCreationSchema.name (min(1)) — le client ne surcontraint pas le back.
+      title: z.string().min(1, m.titleRequired).max(100, m.titleMax),
+      type: z.string(),
+      durationValue: z.coerce.number().min(1, m.durationMin).optional(),
+      durationUnit: durationUnitEnum.optional(),
+      isRecurring: z.boolean().default(false),
+      recurrenceUnit: recurrenceUnitEnum.optional(),
+      recurrenceEndDate: z.string().nullable().optional(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      archived: z.boolean().optional(),
+      // BR-EVE-009 : hex valide si fourni (chaîne vide tolérée → couleur non modifiée).
+      color: z
+        .string()
+        .optional()
+        .refine((v) => !v || HEX_COLOR_REGEX.test(v), { message: m.colorInvalid }),
+    })
+    .superRefine((data, ctx) => {
+      // BR-EVE-004/006 (#66 review — parité create/edit) : durationUnit requis
+      // quand type='duration'. Le create schema le sous-entendait via durationValue ;
+      // l'edit schema laissait passer une durée sans unité. On l'aligne.
+      if (data.type === 'duration' && !data.durationUnit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: m.durationUnitRequired,
+          path: ['durationUnit'],
+        })
+      }
+      // BR-EVE-006 : recurrenceUnit requis quand isRecurring=true.
+      if (data.isRecurring === true && !data.recurrenceUnit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: m.recurrenceUnitRequired,
+          path: ['recurrenceUnit'],
+        })
+      }
+      // BR-EVE-002 : endDate >= startDate (garde service backend → 400/422).
+      if (data.startDate && data.endDate && data.endDate < data.startDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: m.endBeforeStart,
+          path: ['endDate'],
+        })
+      }
+      // BR-EVE-012 : recurrenceEndDate >= startDate (garde service backend → 422).
+      if (data.recurrenceEndDate && data.startDate && data.recurrenceEndDate < data.startDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: m.recurrenceEndBeforeStart,
+          path: ['recurrenceEndDate'],
+        })
+      }
+    })
+
+/** Schéma « brut » (messages FR) — service + tests contrat. */
+export const eventEditSchema = buildEventEditSchema(FR_MESSAGES)
+
+/** Factory i18n : messages traduits pour le formulaire (RHF + zodResolver). */
+export const createEventEditSchema = (t: (key: string) => string) =>
+  buildEventEditSchema({
+    titleRequired: t('titleRequired'),
+    titleMax: t('titleMax'),
+    durationMin: t('durationMin'),
+    durationUnitRequired: t('durationUnitRequired'),
+    recurrenceUnitRequired: t('recurrenceUnitRequired'),
+    recurrenceEndBeforeStart: t('recurrenceEndBeforeStart'),
+    endBeforeStart: t('endBeforeStart'),
+    colorInvalid: t('colorInvalid'),
   })
 
 export type EventEditFormValues = z.infer<typeof eventEditSchema>

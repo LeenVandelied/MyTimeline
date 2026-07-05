@@ -19,5 +19,18 @@
     "number": "Password must contain at least one number",
     "match": "Passwords do not match",
     "required": "Password is required"
+  },
+  "event": {
+    "titleRequired": "The event title is required",
+    "titleMax": "The title cannot exceed 100 characters",
+    "durationMin": "Duration must be greater than 0",
+    "durationUnitRequired": "The duration unit is required",
+    "recurrenceUnitRequired": "The recurrence frequency is required",
+    "recurrenceEndBeforeStart": "The recurrence end date must be on or after the start date",
+    "endBeforeStart": "The end date must be on or after the start date",
+    "colorInvalid": "Invalid color (hexadecimal format expected, e.g. #3B82F6)",
+    "submitError": "An error occurred while saving, please try again.",
+    "conflict": "This event was modified in the meantime. Reload to see the latest version.",
+    "reload": "Reload"
   }
 }
