@@ -277,6 +277,7 @@ export function CategoryDrawer({
                         placeholder={t('fields.namePlaceholder')}
                         data-testid="category-name-input"
                         disabled={readOnly || submitting}
+                        aria-invalid={nameConflict || undefined}
                         {...field}
                         onChange={(e) => {
                           setNameConflict(false)
