@@ -83,6 +83,18 @@ describe('TimelineView', () => {
     expect(events[0]).toHaveAttribute('data-event-title', 'Péremption lait')
   })
 
+  it('affiche le nom du produit (resource.title) dans chaque lane via timeline-resource-title', () => {
+    // Garde-fou anti-régression (#55) : l'e2e golden-path assert que le nom du
+    // produit créé figure dans un `timeline-resource-title`. Le test ne vérifiait
+    // que le NOMBRE de lanes → il a laissé passer la perte du label produit.
+    setup()
+    const titles = screen.getAllByTestId('timeline-resource-title')
+    expect(titles).toHaveLength(RESOURCES.length)
+    const rendered = titles.map((el) => el.textContent)
+    expect(rendered).toContain('Lait bio')
+    expect(rendered).toContain('Pain')
+  })
+
   it('affiche l’indicateur TODAY et la minimap', () => {
     setup()
     expect(screen.getByTestId('timeline-today')).toBeInTheDocument()

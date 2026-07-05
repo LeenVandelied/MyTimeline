@@ -137,7 +137,7 @@ test.describe('Golden path : inscription -> connexion -> produit+événement -> 
  * événement. data-testid uniquement.
  */
 async function assertTimelineShowsProductAndEvent(page: Page, productName: string): Promise<void> {
-  const timeline = page.getByTestId('timeline-calendar')
+  const timeline = page.getByTestId('timeline-view')
   await expect(timeline).toBeVisible()
 
   // Le produit devient une ressource (ligne) de la timeline. Sélection par testid

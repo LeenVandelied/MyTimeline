@@ -389,6 +389,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                         style={{ backgroundSize: `${dayWidth}px 100%` }}
                         data-testid="timeline-resource-row"
                       >
+                        {/* Label produit sticky à gauche : reste visible pendant le
+                            scroll horizontal de la frise (identifie la lane). */}
+                        <span
+                          className="mt-tlv__lane-label"
+                          data-testid="timeline-resource-title"
+                          title={resource.title}
+                        >
+                          {resource.title}
+                        </span>
                         {laneEvents.map((event) => (
                           <button
                             key={event.id}

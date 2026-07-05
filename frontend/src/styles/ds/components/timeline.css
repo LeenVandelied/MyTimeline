@@ -111,6 +111,10 @@
 .mt-tlv__chev--open{transform:rotate(90deg);}
 @media (prefers-reduced-motion:reduce){ .mt-tlv__chev{transition:none;} }
 .mt-tlv__lane{position:relative; height:var(--lane-height); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+/* Label produit sticky à gauche : identifie la lane, reste ancré pendant le
+   scroll horizontal. Fond opaque + z-index pour passer au-dessus des event bars
+   sans casser leur positionnement absolu (left:leftPx). */
+.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
 .mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
 .mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
 .mt-tlv__evt:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
