@@ -48,11 +48,16 @@ Les nouveaux testids **mobiles** (`timeline-mobile-portrait/landscape`, `timelin
 → **Plan : `/create-e2e` post-merge** (parcours mobile portrait/paysage).
 
 ## Review batch
-Reviewer sur diff frontend complet — **VERDICT : 0 CRITIQUE / 0 MAJEUR / 3 MINEUR**.
-- 8 checks `[OK]` : EventPill câblé sans régression, testids préservés, a11y dialogs (role/aria/Escape/focus-trap/close 44px), tokens design (pas de hex inline, `prefers-reduced-motion`), React 18 (cleanup listeners, pas de `React.use()`), état hissé sans ré-instanciation, i18n 4 locales, build/tests verts.
-- MINEUR 1 (cast `as TimelineMobileState` redondant) → **corrigé** (`03dde79`).
-- MINEUR 2 (`onEditEvent`/`onDeleteEvent` non câblés au dashboard) → follow-up (parité desktop, tracké).
-- MINEUR 3 (pinch sans `setPointerCapture`, edge case rare) → follow-up.
+Deux passes reviewer indépendantes (Phase 7 sprint + `/review-pr 203`).
+
+**Phase 7 (implémentation)** — 0 CRIT / 0 MAJ / 3 MIN. MINEUR corrigé : cast `as TimelineMobileState` redondant (`03dde79`).
+
+**`/review-pr 203` (pass fraîche post-fixes)** — **0 CRIT / 1 MAJ / 3 MIN, aucun bloquant** :
+- **[MAJEUR]** `TimelineActionSheet` rend Modifier/Supprimer mais les callbacks ne sont pas câblés au dashboard → boutons inertes sur mobile (dead-end). **Décision dev : follow-up non bloquant** (parité desktop — la timeline desktop n'édite/supprime pas non plus). Câblage services (updateEvent/deleteEvent + ownership BR-EVE-008) = issue de suivi, triage `/sprint end`.
+- [MINEUR] encre `textOn` inline vs `--mt-evt-ink` : pattern BR-EVE-009 cohérent (PAT-S18-001) → nit.
+- [MINEUR] `useFocusTrap` capture `previousFocus` : pattern focus-trap standard, pas de bug → aucune action.
+- [MINEUR] hooks instanciés en desktop (no-op documenté) → aucune action.
+- [OK] non-régression desktop, testids préservés, a11y dialogs, tokens, TS strict, état hissé, i18n 4 locales, tsc/vitest verts.
 
 ## Follow-ups détectés (triage en /sprint end)
 - `EventBar.tsx` + `Lane.tsx` désormais orphelins (briques #47 sans consommateur runtime) — statuer retrait/déprécation. [S]
