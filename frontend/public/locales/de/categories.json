@@ -1,0 +1,39 @@
+{
+  "drawer": {
+    "createTitle": "Neue Kategorie",
+    "editTitle": "Kategorie bearbeiten",
+    "createDescription": "Erstelle eine Kategorie, um deine Produkte zu organisieren.",
+    "editDescription": "Aktualisiere Name, Farbe oder Beschreibung.",
+    "systemDescription": "Systemkategorie: einsehbar, aber nicht bearbeitbar.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Name der Kategorie",
+      "color": "Farbe",
+      "resetColor": "Zurücksetzen",
+      "contrastWarning": "Geringer Kontrast: Text könnte auf dieser Farbe schwer lesbar sein.",
+      "description": "Beschreibung (optional)",
+      "descriptionPlaceholder": "Beschreibe diese Kategorie…"
+    },
+    "preview": {
+      "label": "Vorschau",
+      "placeholderName": "Name der Kategorie"
+    },
+    "actions": {
+      "create": "Erstellen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "submitting": "Wird gespeichert"
+    },
+    "errors": {
+      "forbidden": "Aktion für diese Kategorie nicht erlaubt.",
+      "notFound": "Kategorie nicht gefunden.",
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+    }
+  },
+  "validation": {
+    "nameRequired": "Name ist erforderlich",
+    "nameTooLong": "Der Name darf 255 Zeichen nicht überschreiten",
+    "nameConflict": "Eine Kategorie mit diesem Namen existiert bereits."
+  }
+}
