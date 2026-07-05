@@ -434,15 +434,15 @@
   - test-quiet.sh alias e2e lance vitest [tooling] → issue #207 (backlog, epic:devops)
 **Status :** Terminé (post-merge)
 
-## Sprint 20 — 2026-07-05 (PLANIFIÉ — cohésion 0.80, Dashboard responsive)
+## Sprint 20 — 2026-07-05 (EN COURS — cohésion 0.80, Dashboard responsive)
 **Objectif :** Dashboard desktop (#80) + déclinaisons mobile portrait (#83) et paysage (#85, rail 64px + 2 colonnes).
 **Milestone GitHub :** #20
 **Issues :** #80, #83, #85
 **Vagues :** V1 = #80 (pose structure) | V2 = #83 | V3 = #85 — strictement séquentiels (même dossier `components/dashboard/` neuf)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 19 (dashboard mobile embarque la frise Timeline mobile #63)
-**Note capacité :** 3×M = 12 pts > cap 10. Si vélocité serrée, sortir #85 (P2) au backlog → #80+#83 (~8 pts). Risque : #80/#85 touchent `components/layout/` (fichier partagé) → vérifier non-collision header auth.
-**Status :** Planifié
+**Note capacité :** 3×M = 12 pts > cap 10. Décision /sprint start : dev a validé les 3 issues (périmètre complet). Risque : #80/#85 touchent `components/layout/` (fichier partagé) → vérifier non-collision header auth.
+**Status :** En cours (démarré 2026-07-05)
 
 ## Sprint 21 — 2026-07-05 (PLANIFIÉ — cohésion 0.75, Réglages utilisateur avatar + écrans)
 **Objectif :** Backend upload avatar (#75, POST /me/avatar + V12) + écrans Réglages desktop 4 chapitres (#86) et mobile drill-down (#87).
