@@ -20,5 +20,40 @@
     "createEvent": "Crear evento",
     "viewCalendar": "Ver calendario",
     "manageProfile": "Administrar perfil"
+  },
+  "timeline": {
+    "zoom": {
+      "label": "Nivel de zoom",
+      "in": "Acercar",
+      "out": "Alejar",
+      "day": "Día",
+      "week": "Semana",
+      "month": "Mes",
+      "quarter": "Trimestre",
+      "year": "Año"
+    },
+    "minimap": {
+      "label": "Vista general de la cronología"
+    },
+    "status": {
+      "expired": "Finalizado",
+      "ongoing": "En curso",
+      "upcoming": "Próximo"
+    },
+    "drawer": {
+      "product": "Producto",
+      "category": "Categoría",
+      "start": "Inicio",
+      "end": "Fin",
+      "status": "Estado"
+    },
+    "help": {
+      "label": "Atajos de teclado",
+      "today": "Ir a hoy",
+      "period": "Periodo anterior / siguiente",
+      "zoom": "Acercar / alejar",
+      "fullscreen": "Pantalla completa",
+      "escape": "Cerrar panel"
+    }
   }
 }

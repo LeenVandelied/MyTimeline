@@ -12,7 +12,6 @@ import { getProducts } from '@/services/productService'
 import { Product } from '@/types/product'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { LanguageSelector } from '@/components/ui/language-selector'
-import dayjs from 'dayjs'
 import { AppFooter } from '@/components/ui/footer-app'
 import { motion } from 'framer-motion'
 import {
@@ -21,14 +20,12 @@ import {
   Mail,
   Shield,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   Calendar,
   Package,
   Zap,
   RefreshCw,
 } from 'lucide-react'
-import TimelineCalendar from '@/components/calendar/TimelineCalendar'
+import { TimelineView } from '@/components/timeline'
 
 interface ApiError extends Error {
   response?: {
@@ -47,7 +44,6 @@ export default function Dashboard() {
   const [calendarEvents, setCalendarEvents] = useState<FullCalendarEvent[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loadingEvents, setLoadingEvents] = useState(true)
-  const [currentDate, setCurrentDate] = useState<Date>(new Date())
 
   const fetchData = useCallback(async () => {
     try {
@@ -97,20 +93,6 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Erreur lors de la déconnexion :', safeErrorMessage(error))
     }
-  }
-
-  const handleCalendarNavigation = (direction: 'prev' | 'next') => {
-    setCurrentDate((prev) => {
-      const base = prev || new Date()
-      const newDate = dayjs(base)
-      const updatedDate =
-        direction === 'next' ? newDate.add(1, 'month') : newDate.subtract(1, 'month')
-      return updatedDate.toDate()
-    })
-  }
-
-  const handleToday = () => {
-    setCurrentDate(new Date())
   }
 
   if (loading) {
@@ -278,47 +260,12 @@ export default function Dashboard() {
                   <p className="text-ink-muted ml-3">{t('common.loading.default')}</p>
                 </div>
               ) : (
-                <>
-                  <div className="bg-surface-2 border-rule flex items-center justify-between border-b px-6 py-4">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCalendarNavigation('prev')}
-                        className="bg-surface-2 hover:bg-surface-2 border-rule-strong text-ink hover:text-ink flex items-center gap-1 transition-all duration-300"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                        <span>{t('common.buttons.previous')}</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleToday}
-                        className="bg-accent hover:bg-accent-hover border-accent text-ink hover:text-ink transition-all duration-300"
-                      >
-                        {t('common.buttons.today')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCalendarNavigation('next')}
-                        className="bg-surface-2 hover:bg-surface-2 border-rule-strong text-ink hover:text-ink flex items-center gap-1 transition-all duration-300"
-                      >
-                        <span>{t('common.buttons.next')}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="fullcalendar-container bg-surface p-3">
-                    <TimelineCalendar
-                      events={calendarEvents}
-                      resources={resources}
-                      currentDate={currentDate}
-                      locale={locale}
-                      showNowIndicator
-                    />
-                  </div>
-                </>
+                <div className="bg-surface p-3">
+                  {/* #55 — Vue Timeline desktop : frise continue, zoom Cmd+molette,
+                      minimap, drawer, raccourcis (T/[/]/+/-/F/Échap/?). Navigation
+                      temporelle intégrée à la vue → toolbar mois prev/next retirée. */}
+                  <TimelineView events={calendarEvents} resources={resources} locale={locale} />
+                </div>
               )}
             </CardContent>
           </Card>
