@@ -24,6 +24,7 @@
     "titleRequired": "Der Titel des Ereignisses ist erforderlich",
     "titleMax": "Der Titel darf höchstens 100 Zeichen lang sein",
     "durationMin": "Die Dauer muss größer als 0 sein",
+    "durationUnitRequired": "Die Dauereinheit ist erforderlich",
     "recurrenceUnitRequired": "Die Wiederholungsfrequenz ist erforderlich",
     "recurrenceEndBeforeStart": "Das Enddatum der Wiederholung muss am oder nach dem Startdatum liegen",
     "endBeforeStart": "Das Enddatum muss am oder nach dem Startdatum liegen",

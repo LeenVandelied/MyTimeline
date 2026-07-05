@@ -133,6 +133,7 @@ type EventEditMessages = {
   titleRequired: string
   titleMax: string
   durationMin: string
+  durationUnitRequired: string
   recurrenceUnitRequired: string
   recurrenceEndBeforeStart: string
   endBeforeStart: string
@@ -143,6 +144,7 @@ const FR_MESSAGES: EventEditMessages = {
   titleRequired: "Le titre de l'événement est requis",
   titleMax: 'Le titre ne peut dépasser 100 caractères',
   durationMin: 'La durée doit être supérieure à 0',
+  durationUnitRequired: "L'unité de durée est requise",
   recurrenceUnitRequired: 'La fréquence de récurrence est requise',
   recurrenceEndBeforeStart: 'La date de fin de récurrence doit être postérieure à la date de début',
   endBeforeStart: 'La date de fin doit être postérieure ou égale à la date de début',
@@ -171,6 +173,16 @@ const buildEventEditSchema = (m: EventEditMessages) =>
         .refine((v) => !v || HEX_COLOR_REGEX.test(v), { message: m.colorInvalid }),
     })
     .superRefine((data, ctx) => {
+      // BR-EVE-004/006 (#66 review — parité create/edit) : durationUnit requis
+      // quand type='duration'. Le create schema le sous-entendait via durationValue ;
+      // l'edit schema laissait passer une durée sans unité. On l'aligne.
+      if (data.type === 'duration' && !data.durationUnit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: m.durationUnitRequired,
+          path: ['durationUnit'],
+        })
+      }
       // BR-EVE-006 : recurrenceUnit requis quand isRecurring=true.
       if (data.isRecurring === true && !data.recurrenceUnit) {
         ctx.addIssue({
@@ -206,6 +218,7 @@ export const createEventEditSchema = (t: (key: string) => string) =>
     titleRequired: t('titleRequired'),
     titleMax: t('titleMax'),
     durationMin: t('durationMin'),
+    durationUnitRequired: t('durationUnitRequired'),
     recurrenceUnitRequired: t('recurrenceUnitRequired'),
     recurrenceEndBeforeStart: t('recurrenceEndBeforeStart'),
     endBeforeStart: t('endBeforeStart'),

@@ -24,6 +24,7 @@
     "titleRequired": "Le titre de l'événement est requis",
     "titleMax": "Le titre ne peut dépasser 100 caractères",
     "durationMin": "La durée doit être supérieure à 0",
+    "durationUnitRequired": "L'unité de durée est requise",
     "recurrenceUnitRequired": "La fréquence de récurrence est requise",
     "recurrenceEndBeforeStart": "La date de fin de récurrence doit être postérieure à la date de début",
     "endBeforeStart": "La date de fin doit être postérieure ou égale à la date de début",

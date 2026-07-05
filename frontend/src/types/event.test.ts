@@ -127,6 +127,7 @@ describe('eventEditSchema', () => {
     const parsed = eventEditSchema.parse({
       title: 'Titre long',
       type: 'duration',
+      durationUnit: 'days',
       color: '#000000',
       recurrenceEndDate: '2026-06-01',
       archived: true,
@@ -140,6 +141,7 @@ describe('eventEditSchema', () => {
     const parsed = eventEditSchema.parse({
       title: 'Titre long',
       type: 'duration',
+      durationUnit: 'days',
       recurrenceEndDate: null,
     })
     expect(parsed.recurrenceEndDate).toBeNull()
@@ -171,6 +173,7 @@ describe('eventEditSchema', () => {
     const res = eventEditSchema.safeParse({
       title: 'Titre long',
       type: 'duration',
+      durationUnit: 'days',
       startDate: '2026-05-10',
       recurrenceEndDate: '2026-05-10',
     })
@@ -195,6 +198,7 @@ describe('eventEditSchema', () => {
     const res = eventEditSchema.safeParse({
       title: 'Titre',
       type: 'duration',
+      durationUnit: 'days',
       startDate: '2026-05-10',
       endDate: '2026-05-10',
     })
@@ -235,5 +239,32 @@ describe('eventEditSchema', () => {
 
   it('BR-EVE-009 : couleur vide tolérée (couleur non modifiée)', () => {
     expect(eventEditSchema.safeParse({ title: 'T', type: 'single', color: '' }).success).toBe(true)
+  })
+
+  // #66 review (MINEUR 6) — parité create/edit : durationUnit requis si type='duration'.
+  it('refine BR-EVE-004 : rejette type=duration sans durationUnit', () => {
+    const res = eventEditSchema.safeParse({
+      title: 'Titre',
+      type: 'duration',
+      durationValue: 3,
+    })
+    expect(res.success).toBe(false)
+    if (!res.success) {
+      expect(res.error.issues.some((i) => i.path.includes('durationUnit'))).toBe(true)
+    }
+  })
+
+  it('refine BR-EVE-004 : accepte type=duration avec durationUnit', () => {
+    const res = eventEditSchema.safeParse({
+      title: 'Titre',
+      type: 'duration',
+      durationValue: 3,
+      durationUnit: 'days',
+    })
+    expect(res.success).toBe(true)
+  })
+
+  it('refine BR-EVE-004 : type=single n’exige pas durationUnit', () => {
+    expect(eventEditSchema.safeParse({ title: 'T', type: 'single' }).success).toBe(true)
   })
 })

@@ -15,6 +15,7 @@ import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
 import { PopoverPicker } from './ui/popoverPicker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
+import { contrastInk } from '@/lib/color'
 import {
   createEventEditSchema,
   HEX_COLOR_REGEX,
@@ -64,23 +65,6 @@ interface EventEditFormProps {
   onDelete?: () => Promise<void>
   /** Récurrence de l'événement édité → warning suppression « seul cet événement ». */
   isRecurring?: boolean
-}
-
-/**
- * Ink de contraste (noir/blanc) pour un fond hex, ratio WCAG AA approché via
- * luminance relative sRGB. Évite le `text-white` hardcodé illisible sur les
- * couleurs claires du DS (`--evt-citron:#A7B83A`, etc.). Fallback ink si hex invalide.
- */
-function contrastInk(hex: string | undefined): string {
-  if (!hex || !HEX_COLOR_REGEX.test(hex)) return 'var(--color-ink)'
-  let h = hex.slice(1)
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('')
-  const r = parseInt(h.slice(0, 2), 16) / 255
-  const g = parseInt(h.slice(2, 4), 16) / 255
-  const b = parseInt(h.slice(4, 6), 16) / 255
-  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
-  const luminance = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-  return luminance > 0.5 ? '#0B0C0E' : '#FFFFFF'
 }
 
 /** Valeur debouncée (perf preview live, BR-EVE-009 — 150 ms). */

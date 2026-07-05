@@ -1,0 +1,69 @@
+/**
+ * #66 (corrections review) — Helper contraste WCAG mutualisé (charte
+ * `docs/design/graphite-handoff.md` §Helpers : `textOn(hex)` unique, pas de
+ * duplication). Remplace l'ancienne formule naïve `luminance > 0.5` de
+ * `EventEditForm.tsx` qui faisait échouer 10/12 couleurs de la palette event à
+ * AA 4.5:1 (ex. citron #A7B83A → texte blanc à 2.20:1).
+ *
+ * Modèle 1-couleur (BR-EVE-009) : l'event porte UNE couleur de fond ; l'encre
+ * (noir/blanc) est CALCULÉE par contraste réel, jamais hardcodée `text-white`.
+ */
+
+/** Hex #RGB ou #RRGGBB (aligné `HEX_COLOR_REGEX` de types/event.ts). */
+const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
+
+/** Encres candidates (charte Graphite : `--color-ink` / blanc pur). */
+export const INK_DARK = '#0B0C0E'
+export const INK_LIGHT = '#FFFFFF'
+
+/** Seuil WCAG AA texte normal. */
+export const WCAG_AA_NORMAL = 4.5
+
+/**
+ * Luminance relative sRGB d'une couleur `#RGB`/`#RRGGBB` (WCAG 2.x).
+ * Linéarisation gamma par canal puis pondération 0.2126/0.7152/0.0722.
+ */
+export function relativeLuminance(hex: string): number {
+  let h = hex.slice(1)
+  if (h.length === 3) {
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('')
+  }
+  const channel = (start: number) => {
+    const c = parseInt(h.slice(start, start + 2), 16) / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4)
+}
+
+/**
+ * Ratio de contraste WCAG entre deux couleurs hex : `(Lclair + 0.05) /
+ * (Lsombre + 0.05)`, valeur dans [1, 21].
+ */
+export function contrastRatio(hexA: string, hexB: string): number {
+  const la = relativeLuminance(hexA)
+  const lb = relativeLuminance(hexB)
+  const lighter = Math.max(la, lb)
+  const darker = Math.min(la, lb)
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
+/**
+ * Encre (noir `INK_DARK` vs blanc `INK_LIGHT`) qui MAXIMISE le ratio de
+ * contraste WCAG contre le fond `hex`. Choisit le « moins pire » si aucune
+ * n'atteint 4.5:1 — le résidu AA est signalé côté charte, pas bricolé ici
+ * (pas de halo/text-shadow non prévu).
+ *
+ * Fallback `var(--color-ink)` si `hex` absent/invalide (préserve le theming DS).
+ */
+export function contrastInk(hex: string | undefined | null): string {
+  if (!hex || !HEX_RE.test(hex)) return 'var(--color-ink)'
+  const withDark = contrastRatio(hex, INK_DARK)
+  const withLight = contrastRatio(hex, INK_LIGHT)
+  return withDark >= withLight ? INK_DARK : INK_LIGHT
+}
+
+/** Alias sémantique charte (`textOn(hex)`). */
+export const textOn = contrastInk
