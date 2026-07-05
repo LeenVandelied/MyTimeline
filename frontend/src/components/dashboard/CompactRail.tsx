@@ -24,9 +24,8 @@ import { Home, Package, LogOut, type LucideIcon } from 'lucide-react'
  * l'E2E paysage #85.
  */
 export interface CompactRailItem {
+  /** Sert d'id `data-testid` ET de clé i18n sous `dashboard.landscape.rail`. */
   id: string
-  /** Clé i18n sous `dashboard.landscape.rail` pour aria-label + title. */
-  labelKey: string
   icon: LucideIcon
   onSelect: () => void
 }
@@ -56,7 +55,7 @@ const RailButton: React.FC<{ item: CompactRailItem; active: boolean; label: stri
       data-testid={`dashboard-rail-item-${item.id}`}
       className={[
         'flex h-12 w-12 items-center justify-center rounded-sm',
-        'hover:bg-accent-soft focus-visible:ring-focus focus-visible:ring-2 focus-visible:outline-none',
+        'hover:bg-accent-soft focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
         'transition-colors duration-150',
         active ? 'text-accent' : 'text-ink-muted',
       ].join(' ')}
@@ -75,8 +74,8 @@ export const CompactRail: React.FC<CompactRailProps> = ({
   const t = useTranslations('dashboard.landscape.rail')
 
   const items: CompactRailItem[] = [
-    { id: 'home', labelKey: 'home', icon: Home, onSelect: onHome },
-    { id: 'products', labelKey: 'products', icon: Package, onSelect: onProducts },
+    { id: 'home', icon: Home, onSelect: onHome },
+    { id: 'products', icon: Package, onSelect: onProducts },
   ]
 
   return (
@@ -91,14 +90,14 @@ export const CompactRail: React.FC<CompactRailProps> = ({
             key={item.id}
             item={item}
             active={item.id === activeId}
-            label={t(item.labelKey)}
+            label={t(item.id)}
           />
         ))}
       </div>
 
       {/* Déconnexion — pied du rail, même flux logout que MobileDrawer #83. */}
       <RailButton
-        item={{ id: 'logout', labelKey: 'logout', icon: LogOut, onSelect: onLogout }}
+        item={{ id: 'logout', icon: LogOut, onSelect: onLogout }}
         active={false}
         label={t('logout')}
       />

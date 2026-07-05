@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import { X, Sun, Moon, LogOut } from 'lucide-react'
@@ -35,20 +35,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
   const { resolvedTheme, setTheme } = useTheme()
   const panelRef = useRef<HTMLDivElement>(null)
 
-  useFocusTrap(panelRef, open)
-
-  // Escape ferme le drawer (alternative clavier à l'overlay / bouton fermer).
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        onClose()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [open, onClose])
+  // Focus-trap mutualisé (S19) + fermeture Escape via `onEscape` (#208 review).
+  useFocusTrap(panelRef, open, onClose)
 
   if (!open) return null
 
@@ -82,7 +70,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
             onClick={onClose}
             aria-label={t('close')}
             data-testid="dashboard-mobile-drawer-close"
-            className="text-ink-muted border-rule hover:bg-accent-soft focus-visible:ring-focus flex h-11 w-11 items-center justify-center rounded-sm border focus-visible:ring-2 focus-visible:outline-none"
+            className="text-ink-muted border-rule hover:bg-accent-soft focus-visible:ring-ring flex h-11 w-11 items-center justify-center rounded-sm border focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

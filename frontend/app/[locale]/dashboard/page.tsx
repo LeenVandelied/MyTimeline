@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -57,6 +57,8 @@ export default function Dashboard() {
   // le hamburger portrait. Prioritaire sur `isMobile` dans le switch ternaire.
   const isLandscape = useMediaQuery('(orientation: landscape) and (max-height: 500px)')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // #85 — Réf sur la colonne produits paysage (scroll ciblé sans querySelector DOM).
+  const landscapeProductsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -79,9 +81,7 @@ export default function Dashboard() {
   // produits vivent dans le dashboard).
   const handleHome = () => router.push(`/${locale}/home`)
   const handleProducts = () => {
-    document
-      .querySelector('[data-testid="dashboard-landscape-products"]')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    landscapeProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
   if (loading) {
@@ -126,7 +126,7 @@ export default function Dashboard() {
               aria-haspopup="dialog"
               aria-expanded={drawerOpen}
               data-testid="dashboard-mobile-menu-button"
-              className="text-ink hover:bg-accent-soft focus-visible:ring-focus flex h-11 w-11 items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:outline-none md:hidden"
+              className="text-ink hover:bg-accent-soft focus-visible:ring-ring flex h-11 w-11 items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:outline-none md:hidden"
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -150,6 +150,7 @@ export default function Dashboard() {
             </div>
             {/* Colonne droite : ruban densité (scrollable) + produits. */}
             <div
+              ref={landscapeProductsRef}
               className="flex min-w-0 flex-col gap-4"
               data-testid="dashboard-landscape-products"
             >

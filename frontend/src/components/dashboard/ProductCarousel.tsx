@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
+import { nextEvent } from './lib'
 
 /**
  * #83 — Carousel produits swipeable (mobile portrait). CSS NATIF UNIQUEMENT :
@@ -23,15 +24,6 @@ export interface ProductCarouselProps {
   products: Product[]
   locale: string
   now?: Date
-}
-
-/** Prochain event (début >= now) le plus proche, non archivé. */
-function nextEvent(product: Product, now: Date): { title: string; start: string } | null {
-  const upcoming = (product.events ?? [])
-    .filter((e) => !e.archived && new Date(e.startDate) >= now)
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-  const first = upcoming[0]
-  return first ? { title: first.title, start: first.startDate } : null
 }
 
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({
