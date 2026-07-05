@@ -39,7 +39,10 @@
       "delete": "Supprimer l'avatar",
       "errorType": "Le fichier doit être une image",
       "errorSize": "L'image ne doit pas dépasser 5 Mo",
-      "comingSoon": "L'envoi d'avatar arrive bientôt"
+      "uploaded": "Avatar mis à jour",
+      "uploadError": "Impossible d'envoyer l'avatar, veuillez réessayer",
+      "deleted": "Avatar supprimé",
+      "deleteError": "Impossible de supprimer l'avatar, veuillez réessayer"
     }
   },
   "security": {

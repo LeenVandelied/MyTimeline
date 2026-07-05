@@ -11,8 +11,11 @@ import { UserSchema, type User } from '@/types/user'
  *  - POST   /api/me/change-password body {oldPassword,newPassword} -> 204
  *  - DELETE /api/me                 body {username} -> 204 (+ cookie effacé)
  *
- * Endpoints NON encore livrés (stub + TODO, cf. STATUS PARTIAL) :
- *  - POST/DELETE /api/me/avatar  (#75, même sprint — pas présent au scan backend)
+ * Avatar (#75, livré) :
+ *  - POST   /api/me/avatar  multipart `file` -> UserResponse (avatarUrl)
+ *  - DELETE /api/me/avatar                    -> 204
+ *
+ * Endpoint NON encore livré (stub) :
  *  - GET  /api/me/export         (export RGPD — aucun endpoint backend à ce jour)
  */
 
@@ -28,8 +31,7 @@ export interface ProfileUpdatePayload {
  */
 export const updateProfile = async (payload: ProfileUpdatePayload): Promise<User> => {
   const response = await apiClient.patch('/me', payload)
-  // Le backend renvoie UserResponse (sans avatar — dette #151/#75). On parse au
-  // contrat frontend courant ; le champ avatar sera ajouté quand #75 l'exposera.
+  // Le backend renvoie UserResponse (avec `avatarUrl` depuis #75).
   return UserSchema.parse(response.data)
 }
 
@@ -57,39 +59,31 @@ export const deleteAccount = async (username: string): Promise<void> => {
 }
 
 /* ---------------------------------------------------------------------------
-   Avatar — TODO backend: POST/DELETE /api/me/avatar (#75, même sprint vague 1).
-   Contrat attendu : multipart `file` -> { avatarUrl }. Non présent au scan du
-   backend au moment de l'implémentation (#86). On stub pour ne pas bloquer la
-   chaîne UI (upload + crop). À rebrancher dès la livraison de #75.
+   Avatar — #75 livré (backend `AvatarController`). Contrat :
+     POST   /api/me/avatar  multipart part `file` -> 200 UserResponse (avatarUrl)
+     DELETE /api/me/avatar                          -> 204 (avatar remis à null)
+   L'identité vient du cookie JWT (`withCredentials`), jamais d'un id client.
    --------------------------------------------------------------------------- */
 
-export interface AvatarUploadResponse {
-  avatarUrl: string
-}
-
 /**
- * POST /api/me/avatar (multipart). STUB : l'endpoint n'existe pas encore côté
- * backend (#75). Laisse l'appel réel en place (commenté) pour rebranchement ;
- * en attendant, rejette pour que l'UI affiche l'erreur « fonctionnalité à venir ».
+ * POST /api/me/avatar (multipart/form-data, part `file`). 200 -> UserResponse
+ * à jour (avec `avatarUrl`). 400 si type non autorisé / trop volumineux / vide.
+ *
+ * On NE force PAS le header `Content-Type` : axios pose lui-même
+ * `multipart/form-data` avec la boundary quand le body est un `FormData`.
  */
-export const uploadAvatar = async (file: File): Promise<AvatarUploadResponse> => {
-  // TODO backend: POST /api/me/avatar (issue #75) — décommenter au rebranchement.
-  // const formData = new FormData()
-  // formData.append('file', file)
-  // const response = await apiClient.post('/me/avatar', formData, {
-  //   headers: { 'Content-Type': 'multipart/form-data' },
-  // })
-  // return AvatarUploadResponseSchema.parse(response.data)
-  void file
-  return Promise.reject(new Error('AVATAR_ENDPOINT_UNAVAILABLE'))
+export const uploadAvatar = async (file: File): Promise<User> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await apiClient.post('/me/avatar', formData)
+  return UserSchema.parse(response.data)
 }
 
 /**
- * DELETE /api/me/avatar. STUB (#75). Voir uploadAvatar.
+ * DELETE /api/me/avatar — 204, l'avatar est remis à null côté backend.
  */
 export const deleteAvatar = async (): Promise<void> => {
-  // TODO backend: DELETE /api/me/avatar (issue #75).
-  return Promise.reject(new Error('AVATAR_ENDPOINT_UNAVAILABLE'))
+  await apiClient.delete('/me/avatar')
 }
 
 /* ---------------------------------------------------------------------------

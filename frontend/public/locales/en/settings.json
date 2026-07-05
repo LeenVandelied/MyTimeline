@@ -39,7 +39,10 @@
       "delete": "Remove avatar",
       "errorType": "The file must be an image",
       "errorSize": "The image must not exceed 5 MB",
-      "comingSoon": "Avatar upload is coming soon"
+      "uploaded": "Avatar updated",
+      "uploadError": "Could not upload the avatar, please try again",
+      "deleted": "Avatar removed",
+      "deleteError": "Could not remove the avatar, please try again"
     }
   },
   "security": {

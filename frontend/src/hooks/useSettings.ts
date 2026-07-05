@@ -5,8 +5,10 @@ import { useAuth } from '@/contexts/AuthContext'
 import {
   changePassword,
   deleteAccount,
+  deleteAvatar,
   exportData,
   updateProfile,
+  uploadAvatar,
   type ChangePasswordPayload,
   type ExportFormat,
   type ProfileUpdatePayload,
@@ -24,7 +26,7 @@ import type { User } from '@/types/user'
  */
 export function useSettings() {
   const queryClient = useQueryClient()
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
 
   /**
    * Après un PATCH /me réussi, `AuthContext` (source unique du user) doit
@@ -61,11 +63,38 @@ export function useSettings() {
     mutationFn: (format) => exportData(format),
   })
 
+  /**
+   * #75 — Upload avatar. Le backend renvoie le UserResponse à jour ; on
+   * resynchronise `AuthContext` (source unique du user, `avatarUrl` inclus) via
+   * `refreshUser` et on invalide le pont Query `auth.me`.
+   */
+  const uploadAvatarMutation = useMutation<User, unknown, File>({
+    mutationFn: (file) => uploadAvatar(file),
+    onSuccess: async () => {
+      await refreshUser()
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me })
+    },
+  })
+
+  /**
+   * #75 — Suppression avatar (204). Même resynchro que l'upload : l'`avatarUrl`
+   * du user repasse à `null`.
+   */
+  const deleteAvatarMutation = useMutation<void, unknown, void>({
+    mutationFn: () => deleteAvatar(),
+    onSuccess: async () => {
+      await refreshUser()
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me })
+    },
+  })
+
   return {
     user,
     updateProfile: updateProfileMutation,
     changePassword: changePasswordMutation,
     deleteAccount: deleteAccountMutation,
     exportData: exportMutation,
+    uploadAvatar: uploadAvatarMutation,
+    deleteAvatar: deleteAvatarMutation,
   }
 }

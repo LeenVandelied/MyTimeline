@@ -39,7 +39,10 @@
       "delete": "Avatar entfernen",
       "errorType": "Die Datei muss ein Bild sein",
       "errorSize": "Das Bild darf 5 MB nicht überschreiten",
-      "comingSoon": "Avatar-Upload folgt in Kürze"
+      "uploaded": "Avatar aktualisiert",
+      "uploadError": "Avatar konnte nicht hochgeladen werden, bitte erneut versuchen",
+      "deleted": "Avatar entfernt",
+      "deleteError": "Avatar konnte nicht entfernt werden, bitte erneut versuchen"
     }
   },
   "security": {

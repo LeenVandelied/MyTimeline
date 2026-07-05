@@ -23,16 +23,14 @@ import { createProfileSchema, type ProfileFormValues } from '@/lib/schemas/setti
 import { AvatarUpload } from './AvatarUpload'
 
 /**
- * #86 — Chapitre Profil. Formulaire name/username/email (PATCH /api/me) +
- * upload/recadrage d'avatar. Découplé de la page : réutilisable en mobile (#87).
- *
- * L'avatar dépend de #75 (endpoint non livré) : l'upload est stubé côté service
- * -> on affiche un toast « à venir » plutôt que de bloquer le chapitre.
+ * #86 / #75 — Chapitre Profil. Formulaire name/username/email (PATCH /api/me) +
+ * upload/recadrage/suppression d'avatar (POST/DELETE /api/me/avatar). Découplé de
+ * la page : réutilisable en mobile (#87).
  */
 export function ProfileSection() {
   const t = useTranslations('settings')
   const tRoot = useTranslations()
-  const { user, updateProfile } = useSettings()
+  const { user, updateProfile, uploadAvatar, deleteAvatar } = useSettings()
   const [saved, setSaved] = useState(false)
 
   const form = useForm<ProfileFormValues>({
@@ -68,9 +66,25 @@ export function ProfileSection() {
     }
   }
 
-  const onAvatarCropped = () => {
-    // #75 non livré : le service rejette. On informe sans bloquer.
-    toast.error(t('profile.avatar.comingSoon'))
+  // #75 — Upload du fichier recadré : POST /api/me/avatar, resynchro AuthContext
+  // au succès (mutation useSettings), toast succès/erreur réel.
+  const onAvatarCropped = async (file: File) => {
+    try {
+      await uploadAvatar.mutateAsync(file)
+      toast.success(t('profile.avatar.uploaded'))
+    } catch {
+      toast.error(t('profile.avatar.uploadError'))
+    }
+  }
+
+  // #75 — Suppression de l'avatar existant : DELETE /api/me/avatar.
+  const onAvatarDelete = async () => {
+    try {
+      await deleteAvatar.mutateAsync()
+      toast.success(t('profile.avatar.deleted'))
+    } catch {
+      toast.error(t('profile.avatar.deleteError'))
+    }
   }
 
   return (
@@ -84,7 +98,12 @@ export function ProfileSection() {
 
       <div>
         <h3 className="mb-2 text-sm font-medium">{t('profile.avatar.title')}</h3>
-        <AvatarUpload currentAvatarUrl={null} onCropped={onAvatarCropped} />
+        <AvatarUpload
+          currentAvatarUrl={user?.avatarUrl ?? null}
+          onCropped={onAvatarCropped}
+          onDelete={onAvatarDelete}
+          disabled={uploadAvatar.isPending || deleteAvatar.isPending}
+        />
       </div>
 
       <Form {...form}>

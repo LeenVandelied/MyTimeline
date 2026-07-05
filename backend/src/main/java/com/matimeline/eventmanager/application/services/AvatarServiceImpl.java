@@ -79,8 +79,10 @@ public class AvatarServiceImpl implements AvatarService {
 
         // Recharger l'entité gérée : le caller vient du contrôleur (relu par username), on
         // repart de l'id pour rester cohérent avec l'état en base (et récupérer l'ancienne
-        // référence à nettoyer). Absence = compte supprimé entre-temps -> traité comme no-op
-        // défensif (le contrôleur a déjà résolu un caller non-null, cas improbable).
+        // référence à nettoyer). Cas limite (compte supprimé entre-temps -> `current` vide,
+        // improbable car le contrôleur a déjà résolu un caller non-null) : on retombe sur la
+        // référence portée par le caller. Ce n'est PAS un no-op — le nouvel avatar est stocké
+        // et sauvegardé quand même ; seul l'ancien fichier à nettoyer peut différer.
         Optional<User> current = userRepository.findDomainUserById(caller.getId());
         String previousReference = current.map(User::getAvatar).orElse(caller.getAvatar());
 
