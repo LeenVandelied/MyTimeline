@@ -434,15 +434,27 @@
   - test-quiet.sh alias e2e lance vitest [tooling] → issue #207 (backlog, epic:devops)
 **Status :** Terminé (post-merge)
 
-## Sprint 20 — 2026-07-05 (EN COURS — cohésion 0.80, Dashboard responsive)
-**Objectif :** Dashboard desktop (#80) + déclinaisons mobile portrait (#83) et paysage (#85, rail 64px + 2 colonnes).
-**Milestone GitHub :** #20
-**Issues :** #80, #83, #85
-**Vagues :** V1 = #80 (pose structure) | V2 = #83 | V3 = #85 — strictement séquentiels (même dossier `components/dashboard/` neuf)
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 19 (dashboard mobile embarque la frise Timeline mobile #63)
-**Note capacité :** 3×M = 12 pts > cap 10. Décision /sprint start : dev a validé les 3 issues (périmètre complet). Risque : #80/#85 touchent `components/layout/` (fichier partagé) → vérifier non-collision header auth.
-**Status :** En cours (démarré 2026-07-05)
+## Sprint 20 — 2026-07-05 (Terminé — merge PR #208 dans dev — cohésion 0.80, Dashboard responsive)
+**Objectif :** Dashboard desktop (#80) + déclinaisons mobile portrait (#83) et paysage (#85, rail 64px + 2 colonnes) sur DS Graphite.
+**Milestone GitHub :** #20 (fermé après merge)
+**Issues livrées (3) :** #80, #83, #85
+**Vagues exécutées :** V1 = #80 (fondation) | V2 = #83 | V3 = #85 — strictement séquentiels (même dossier `components/dashboard/` neuf)
+**Cohésion score :** 0.80
+**Commits :** baafb27 (#80 desktop, extraction monolithe 283→121 l. + 5 composants + useDashboardData + helpers lib.ts) · 943b0ce (#83 mobile portrait, MobileDrawer/CompactAgenda/ProductCarousel + useMediaQuery) · abdce23 (#85 mobile paysage, CompactRail 64px + grille 2 col, switch ternaire) · 792ce7c (fix review PR #208 : extraction nextEvent + ref scroll + useFocusTrap onEscape + ring-ring + nettoyage labelKey)
+**Migrations Flyway :** aucune (sprint 100% frontend, 0 diff backend)
+**Dépend de :** Sprint 19 (réutilise Timeline mobile #63/#64 + EventPill/DateStamp)
+**BR impactées :** aucune (agrégation lecture seule events/products existants).
+**Design :** ui-design pre-pass sur #80 → REJET initial, 6 corrections intégrées (densité = hauteur/count et non gradient, helper bucket partagé, chiffres mono inline, filets vs Card, sentence-case sans spring, contrats props responsive). Charte de vérité = `docs/design/graphite-handoff.md`.
+**Reviews :** batch (Phase 7) + /review-pr #208 (indépendant) — 0 CRITIQUE / 1 MAJEUR / 4 MINEUR, TOUS RÉSOLUS (commit 792ce7c). MAJEUR = `nextEvent` dupliqué verbatim → extrait.
+**Tests :** Frontend Vitest 218/218 verts (0 fail), tsc clean, `next build` OK, ESLint clean. Backend inchangé. CI verte (backend+frontend+e2e). Non-régression golden-path desktop préservée (`data-testid="dashboard"` + `TimelineResponsive`).
+**Nouveaux pitfalls/patterns :** PIT-S20-001 (i18n string→objet collision), PIT-S20-002 (`scrollbar-none` utility vs webkit global), PIT-S20-003 (rtk git diff 3-dots vide), PAT-S20-001 (buildDensityBuckets vs Minimap), PAT-S20-002 (switch responsive useMediaQuery source unique), PAT-S20-003 (useFocusTrap onEscape).
+**Dette E2E (non bloquant) :** 28 nouveaux data-testid dashboard sans spec E2E (`frontend/e2e/` = golden-path desktop seulement) → issue #209.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - E2E Playwright dashboard mobile portrait+paysage [S | frontend] → issue #209 (backlog)
+  - Shell applicatif nav latérale 248px, handoff §8 [M | frontend] → issue #210 (backlog)
+  - Validation visuelle Chrome 1280/1440 live [XS | frontend] → discard (QA manuelle, non trackable)
+  - 4 MINEUR review (nextEvent dup, querySelector, Escape listener, ring naming, labelKey) → absorbés commit 792ce7c (cycle /review-pr)
+**Status :** Terminé
 
 ## Sprint 21 — 2026-07-05 (PLANIFIÉ — cohésion 0.75, Réglages utilisateur avatar + écrans)
 **Objectif :** Backend upload avatar (#75, POST /me/avatar + V12) + écrans Réglages desktop 4 chapitres (#86) et mobile drill-down (#87).
