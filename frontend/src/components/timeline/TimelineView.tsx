@@ -7,6 +7,7 @@ import { FullCalendarEvent } from '@/types/event'
 import { Resource, groupResourcesByCategory } from './lib'
 import { Minimap } from './Minimap'
 import { EventDrawer } from './EventDrawer'
+import { EventPill } from './EventPill'
 import {
   DAY_WIDTH_PX,
   ZOOM_LEVELS,
@@ -18,7 +19,6 @@ import {
   daysBetween,
   initialZoomState,
   positionEvents,
-  statusToVar,
   zoomReducer,
   type PositionedEvent,
 } from './zoom'
@@ -380,28 +380,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                           {resource.title}
                         </span>
                         {laneEvents.map((event) => (
-                          <button
+                          <EventPill
                             key={event.id}
-                            type="button"
-                            className="mt-tlv__evt"
-                            data-testid="timeline-event"
-                            data-event-title={event.title}
-                            aria-label={buildEventAriaLabel(event, locale, t)}
-                            onClick={() => setSelected(event)}
-                            style={{
-                              left: `${event.leftPx}px`,
-                              width: `${event.widthPx}px`,
-                              ['--mt-evt' as string]: event.color || 'var(--color-accent)',
-                              ['--mt-evt-status' as string]: statusToVar(event.status),
-                            }}
-                          >
-                            <span
-                              className="mt-tlv__evt-dot"
-                              style={{ background: statusToVar(event.status) }}
-                              aria-hidden="true"
-                            />
-                            {event.title}
-                          </button>
+                            event={event}
+                            ariaLabel={buildEventAriaLabel(event, locale, t)}
+                            onSelect={setSelected}
+                          />
                         ))}
                       </div>
                     )

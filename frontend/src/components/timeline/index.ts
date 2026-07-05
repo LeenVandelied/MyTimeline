@@ -22,6 +22,8 @@ export { Minimap } from './Minimap'
 export type { MinimapProps } from './Minimap'
 export { EventDrawer } from './EventDrawer'
 export type { EventDrawerProps } from './EventDrawer'
+export { EventPill } from './EventPill'
+export type { EventPillProps } from './EventPill'
 export * from './zoom'
 
 // #63 — Vue Timeline mobile portrait + switch responsive (base réutilisable #64).
