@@ -27,10 +27,13 @@ Aucun signalé par le dev. (Pitfall test-quiet.sh frontend stale → à consigne
 ## Recommandations suite (RECOMMAND_FOLLOWUP → triage /sprint end Phase 4)
 - RECOMMAND_FOLLOWUP: E2E Playwright viewport 812x375 paysage (data-testid `dashboard-landscape`, `dashboard-rail`, `dashboard-rail-item-*` déjà en place) — mutualiser avec l'E2E portrait #83 [triage S | domaine frontend]
 
-## Follow-ups review batch (Phase 7 reviewer — cf. review-batch.md)
-- RECOMMAND_FOLLOWUP: page.tsx handleProducts utilise document.querySelector (DOM impératif) pour scroll colonne produits paysage — passer un ref depuis le parent [triage XS | domaine frontend]
-- RECOMMAND_FOLLOWUP: MobileDrawer Escape listener au document + stopPropagation sans coordination Radix — vérifier event.defaultPrevented ou restreindre au panel [triage XS | domaine frontend]
-- RECOMMAND_FOLLOWUP: CompactRail/MobileDrawer focus-visible:ring-focus outline-none diverge de l'anneau global base.css — harmoniser pattern focus DS [triage XS | domaine frontend]
-- RECOMMAND_FOLLOWUP: nextEvent dupliquée ProductCarousel+ProductList — extraire vers timeline/lib.ts [triage XS | domaine frontend]
+## Follow-ups review batch (Phase 7 + /review-pr) — TOUS RÉSOLUS commit 792ce7c
+Les findings review (1 MAJEUR + 4 MINEUR) ont été corrigés en cycle auto-correction /review-pr :
+- ✅ nextEvent extrait vers `dashboard/lib.ts` (MAJEUR)
+- ✅ handleProducts → `useRef` + scrollIntoView (plus de document.querySelector)
+- ✅ MobileDrawer Escape mutualisé dans `useFocusTrap(onEscape?)` (listener séparé retiré)
+- ✅ focus ring `ring-focus`→`ring-ring` (aligné button.tsx)
+- ✅ CompactRail `labelKey` mort retiré
+Aucun follow-up review ouvert restant. (Voir review-batch.md §Résolution.)
 
 STATUS: COMPLETED
