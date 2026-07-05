@@ -3,12 +3,13 @@
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import AddProductButton from '@/components/products/AddProductButton'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { AppFooter } from '@/components/ui/footer-app'
-import { CalendarDays, LogOut, Menu } from 'lucide-react'
+import { CalendarDays, LogOut, Menu, Settings } from 'lucide-react'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { TimelineResponsive } from '@/components/timeline'
 import { useDashboardData } from '@/hooks/useDashboardData'
@@ -86,8 +87,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="bg-bg flex h-screen items-center justify-center" data-testid="dashboard-loading">
-        <div className="border-accent h-10 w-10 animate-spin rounded-full border-2 border-t-transparent" role="status">
+      <div
+        className="bg-bg flex h-screen items-center justify-center"
+        data-testid="dashboard-loading"
+      >
+        <div
+          className="border-accent h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
+          role="status"
+        >
           <span className="sr-only">{t('common.loading.default')}</span>
         </div>
       </div>
@@ -102,11 +109,24 @@ export default function Dashboard() {
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <CalendarDays className="text-accent h-5 w-5" />
-            <span className="text-ink text-xs font-semibold tracking-tight">{t('dashboard.title')}</span>
+            <span className="text-ink text-xs font-semibold tracking-tight">
+              {t('dashboard.title')}
+            </span>
           </div>
           {/* Contrôles desktop (langue + logout) — masqués sur mobile portrait. */}
           <div className="hidden items-center gap-3 md:flex">
             <LanguageSelector />
+            {/* #86 — Accès aux Réglages (page /settings, 4 chapitres). */}
+            <Button
+              asChild
+              variant="ghost"
+              className="text-ink hover:bg-accent-soft flex items-center gap-2"
+            >
+              <Link href={`/${locale}/settings`} data-testid="dashboard-settings-link">
+                <Settings className="h-4 w-4" />
+                <span>{t('common.buttons.settings')}</span>
+              </Link>
+            </Button>
             <Button
               onClick={handleLogout}
               variant="ghost"

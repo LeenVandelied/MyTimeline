@@ -35,6 +35,7 @@ const FAKE_USER: User = {
   username: 'alice',
   email: 'alice@example.com',
   role: 'ROLE_USER',
+  avatarUrl: null,
 }
 
 /** Consumer A : déclenche le login. */

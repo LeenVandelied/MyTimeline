@@ -1,0 +1,140 @@
+{
+  "pageTitle": "Réglages",
+  "loading": "Chargement…",
+  "backToDashboard": "Retour au tableau de bord",
+  "common": {
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "next": "Suivant",
+    "continue": "Continuer",
+    "genericError": "Une erreur est survenue, veuillez réessayer.",
+    "close": "Fermer"
+  },
+  "nav": {
+    "aria": "Chapitres des réglages",
+    "profile": "Profil",
+    "security": "Sécurité",
+    "preferences": "Préférences",
+    "account": "Compte"
+  },
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Gérez vos informations personnelles.",
+    "name": "Nom",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "saved": "Profil enregistré",
+    "errors": {
+      "usernameTaken": "Ce nom d'utilisateur est déjà pris"
+    },
+    "avatar": {
+      "title": "Avatar",
+      "current": "Avatar actuel",
+      "dropzone": "Glissez une image ou cliquez pour choisir",
+      "hint": "PNG ou JPG, 5 Mo maximum",
+      "zoom": "Zoom",
+      "apply": "Appliquer",
+      "delete": "Supprimer l'avatar",
+      "errorType": "Le fichier doit être une image",
+      "errorSize": "L'image ne doit pas dépasser 5 Mo",
+      "uploaded": "Avatar mis à jour",
+      "uploadError": "Impossible d'envoyer l'avatar, veuillez réessayer",
+      "deleted": "Avatar supprimé",
+      "deleteError": "Impossible de supprimer l'avatar, veuillez réessayer"
+    }
+  },
+  "security": {
+    "title": "Sécurité",
+    "subtitle": "Mot de passe et sessions actives.",
+    "password": {
+      "title": "Changer le mot de passe",
+      "old": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "submit": "Mettre à jour le mot de passe",
+      "changed": "Mot de passe mis à jour",
+      "wrongOld": "Le mot de passe actuel est incorrect"
+    },
+    "strength": {
+      "weak": "Faible",
+      "medium": "Moyen",
+      "strong": "Fort"
+    },
+    "sessions": {
+      "title": "Sessions actives",
+      "loading": "Chargement des sessions…",
+      "error": "Impossible de charger les sessions",
+      "empty": "Aucune session active",
+      "current": "Session actuelle",
+      "unknownDevice": "Appareil inconnu",
+      "unknownIp": "IP inconnue",
+      "revoke": "Révoquer",
+      "revokeOne": "Révoquer cette session",
+      "revoked": "Session révoquée",
+      "revokeOthers": "Révoquer toutes les autres sessions",
+      "revokedOthers": "Autres sessions révoquées"
+    }
+  },
+  "preferences": {
+    "title": "Préférences",
+    "subtitle": "Langue, thème et densité d'affichage.",
+    "language": {
+      "label": "Langue",
+      "options": {
+        "fr": "Français",
+        "en": "English",
+        "es": "Español",
+        "de": "Deutsch"
+      }
+    },
+    "theme": {
+      "label": "Thème",
+      "options": {
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système"
+      }
+    },
+    "density": {
+      "label": "Densité",
+      "options": {
+        "compact": "Compact",
+        "normal": "Normal",
+        "comfortable": "Confortable"
+      }
+    }
+  },
+  "account": {
+    "title": "Compte",
+    "subtitle": "Exportez vos données ou supprimez votre compte.",
+    "export": {
+      "title": "Exporter mes données",
+      "description": "Téléchargez une copie de vos données au format JSON ou CSV.",
+      "confirm": "Générer l'export au format {format} ?",
+      "generating": "Génération…",
+      "download": "Télécharger",
+      "done": "Export généré et téléchargé.",
+      "again": "Nouvel export",
+      "comingSoon": "L'export de données arrive bientôt"
+    },
+    "delete": {
+      "title": "Supprimer mon compte",
+      "description": "Cette action est définitive et irréversible.",
+      "button": "Supprimer le compte",
+      "warnTitle": "Supprimer définitivement votre compte ?",
+      "warnBody": "Toutes vos données (produits, événements, catégories) seront supprimées de façon irréversible.",
+      "confirmTitle": "Confirmez la suppression",
+      "confirmBody": "Pour confirmer, saisissez votre nom d'utilisateur « {username} ».",
+      "usernameLabel": "Nom d'utilisateur",
+      "confirmButton": "Supprimer définitivement",
+      "deleting": "Suppression…",
+      "mismatch": "Le nom d'utilisateur ne correspond pas",
+      "done": "Compte supprimé"
+    }
+  },
+  "mobile": {
+    "backToIndex": "Retour aux réglages"
+  }
+}

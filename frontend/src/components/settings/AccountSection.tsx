@@ -1,0 +1,191 @@
+'use client'
+
+import { useState } from 'react'
+import { useTranslations } from 'next-intl'
+import toast from 'react-hot-toast'
+import { Download, AlertTriangle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useSettings } from '@/hooks/useSettings'
+import { useDeleteAccountFlow } from './useDeleteAccountFlow'
+import { DeleteAccountSteps } from './DeleteAccountSteps'
+import { BottomSheet } from './mobile/BottomSheet'
+import type { ExportFormat } from '@/services/userService'
+
+/**
+ * #86 — Chapitre Compte : export des données (3 étapes) + suppression du compte
+ * (2 étapes, confirmation par re-saisie du username -> DELETE /api/me, BR-AUT-001).
+ *
+ * Export & delete via hooks (`useSettings`). L'export dépend d'un endpoint backend
+ * non livré (stub) : l'étape téléchargement affiche « à venir ». La suppression
+ * utilise l'endpoint confirmé DELETE /api/me.
+ */
+type ExportStep = 'format' | 'confirm' | 'done'
+
+/**
+ * `deleteContainer` — conteneur du flux de suppression :
+ *  - `'dialog'` (défaut) : Dialog centré Radix (desktop #86, rétro-compatible).
+ *  - `'sheet'`  : BottomSheet ancrée bas (mobile #87). Même contenu partagé
+ *    (`DeleteAccountSteps` + `useDeleteAccountFlow`), seul le conteneur change.
+ */
+interface AccountSectionProps {
+  deleteContainer?: 'dialog' | 'sheet'
+}
+
+export function AccountSection({ deleteContainer = 'dialog' }: AccountSectionProps) {
+  const t = useTranslations('settings')
+  const { exportData } = useSettings()
+
+  /* -------------------------------- Export -------------------------------- */
+  const [exportStep, setExportStep] = useState<ExportStep>('format')
+  const [format, setFormat] = useState<ExportFormat>('json')
+
+  const runExport = async () => {
+    try {
+      const blob = await exportData.mutateAsync(format)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `mytimeline-export.${format}`
+      a.click()
+      URL.revokeObjectURL(url)
+      setExportStep('done')
+    } catch {
+      // #NN — endpoint export non livré (stub) : on informe sans casser le flux.
+      toast.error(t('account.export.comingSoon'))
+      setExportStep('format')
+    }
+  }
+
+  /* ------------------------------- Delete --------------------------------- */
+  // #87 — Logique de suppression partagée (hook) rendue ici dans un Dialog
+  // (desktop) et dans un BottomSheet côté mobile. Voir `useDeleteAccountFlow`.
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const deleteFlow = useDeleteAccountFlow()
+
+  const closeDeleteDialog = (open: boolean) => {
+    setDeleteOpen(open)
+    if (!open) deleteFlow.reset()
+  }
+
+  return (
+    <section aria-labelledby="account-heading" className="space-y-8">
+      <div>
+        <h2 id="account-heading" className="text-lg font-semibold">
+          {t('account.title')}
+        </h2>
+        <p className="text-ink-muted text-sm">{t('account.subtitle')}</p>
+      </div>
+
+      {/* Export des données (3 étapes) */}
+      <div className="border-rule max-w-md space-y-3 rounded-md border p-4">
+        <h3 className="text-sm font-medium">{t('account.export.title')}</h3>
+        <p className="text-ink-muted text-sm">{t('account.export.description')}</p>
+
+        {exportStep === 'format' && (
+          <div className="space-y-3" data-testid="export-step-format">
+            <Select value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
+              <SelectTrigger data-testid="export-format">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="json">JSON</SelectItem>
+                <SelectItem value="csv">CSV</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setExportStep('confirm')}
+              data-testid="export-next"
+            >
+              {t('common.next')}
+            </Button>
+          </div>
+        )}
+
+        {exportStep === 'confirm' && (
+          <div className="space-y-3" data-testid="export-step-confirm">
+            <p className="text-sm">
+              {t('account.export.confirm', { format: format.toUpperCase() })}
+            </p>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={() => setExportStep('format')}>
+                {t('common.back')}
+              </Button>
+              <Button
+                type="button"
+                onClick={runExport}
+                disabled={exportData.isPending}
+                data-testid="export-confirm"
+              >
+                {exportData.isPending ? (
+                  <Spinner label={t('account.export.generating')} />
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    {t('account.export.download')}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {exportStep === 'done' && (
+          <div className="space-y-2" data-testid="export-step-done">
+            <p className="text-success text-sm">{t('account.export.done')}</p>
+            <Button type="button" variant="ghost" onClick={() => setExportStep('format')}>
+              {t('account.export.again')}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Suppression du compte (2 étapes) */}
+      <div className="border-danger/40 bg-danger-soft/20 max-w-md space-y-3 rounded-md border p-4">
+        <h3 className="text-danger flex items-center gap-2 text-sm font-medium">
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+          {t('account.delete.title')}
+        </h3>
+        <p className="text-ink-muted text-sm">{t('account.delete.description')}</p>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => setDeleteOpen(true)}
+          data-testid="delete-account-open"
+        >
+          {t('account.delete.button')}
+        </Button>
+      </div>
+
+      {deleteContainer === 'sheet' ? (
+        <BottomSheet
+          open={deleteOpen}
+          onClose={() => closeDeleteDialog(false)}
+          title={t('account.delete.title')}
+          testId="delete-account-sheet"
+        >
+          <DeleteAccountSteps flow={deleteFlow} onCancel={() => closeDeleteDialog(false)} />
+        </BottomSheet>
+      ) : (
+        <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
+          <DialogContent data-testid="delete-account-dialog">
+            {/* Titre Radix requis pour l'a11y ; le titre visible (h2) est rendu
+                par `DeleteAccountSteps` -> on masque celui-ci aux lecteurs. */}
+            <DialogTitle className="sr-only">{t('account.delete.title')}</DialogTitle>
+            <DeleteAccountSteps flow={deleteFlow} onCancel={() => closeDeleteDialog(false)} />
+          </DialogContent>
+        </Dialog>
+      )}
+    </section>
+  )
+}

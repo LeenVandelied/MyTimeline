@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,9 +30,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.domain.exceptions.AccountDeletionMismatchException;
+import com.matimeline.eventmanager.domain.exceptions.AvatarNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
+import com.matimeline.eventmanager.domain.models.AvatarContent;
 import com.matimeline.eventmanager.domain.models.User;
+import com.matimeline.eventmanager.domain.ports.services.AvatarService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
@@ -51,6 +56,8 @@ class UserControllerTest {
     private UserService userService;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private AvatarService avatarService;
 
     private MockMvc mockMvc;
 
@@ -61,7 +68,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        UserController controller = new UserController(userService, jwtService);
+        UserController controller = new UserController(userService, jwtService, avatarService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -294,5 +301,107 @@ class UserControllerTest {
                 });
 
         verify(userService).deleteAccount(eq(caller), eq("alice"));
+    }
+
+    // ----- Avatar (#75, BR-AUT-001) -----
+
+    /** Petit JPEG factice (magic bytes FF D8 FF) — le service réel valide, ici mocké. */
+    private static org.springframework.mock.web.MockMultipartFile jpegPart() {
+        return new org.springframework.mock.web.MockMultipartFile(
+                "file", "photo.jpg", "image/jpeg",
+                new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00, 0x11, 0x22});
+    }
+
+    @Test
+    void uploadAvatar_withoutToken_returns401() throws Exception {
+        mockMvc.perform(multipart("/api/me/avatar").file(jpegPart()))
+                .andExpect(status().isUnauthorized());
+
+        verify(avatarService, never()).uploadAvatar(any(User.class), any());
+    }
+
+    @Test
+    void uploadAvatar_success_returns200_withAvatarUrl_andDelegatesToPort() throws Exception {
+        stubAuthenticatedCaller();
+        doNothing().when(avatarService).uploadAvatar(eq(caller), any(byte[].class));
+        // Après upload, le contrôleur relit le user : renvoie un caller AVEC avatar posé.
+        User withAvatar = new User(caller.getId(), "Alice", "alice", HASH, "ROLE_USER",
+                "alice@example.com", "generated-ref.jpg");
+        when(userService.findDomainUserById(caller.getId())).thenReturn(Optional.of(withAvatar));
+
+        mockMvc.perform(multipart("/api/me/avatar")
+                        .file(jpegPart())
+                        .cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.avatarUrl").value("/api/me/avatar"))
+                .andExpect(jsonPath("$.password").doesNotExist());
+
+        verify(avatarService).uploadAvatar(eq(caller), any(byte[].class));
+    }
+
+    @Test
+    void uploadAvatar_invalidFile_returns400() throws Exception {
+        stubAuthenticatedCaller();
+        // Le service (magic bytes / taille) lève -> 400 via GlobalExceptionHandler.
+        doThrow(new InvalidAvatarException("type de fichier non autorisé (JPEG, PNG ou WebP attendu)"))
+                .when(avatarService).uploadAvatar(eq(caller), any(byte[].class));
+
+        mockMvc.perform(multipart("/api/me/avatar")
+                        .file(new org.springframework.mock.web.MockMultipartFile(
+                                "file", "evil.exe", "application/octet-stream",
+                                new byte[] {0x4D, 0x5A, 0x00}))
+                        .cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("type de fichier non autorisé (JPEG, PNG ou WebP attendu)"));
+    }
+
+    @Test
+    void getAvatar_success_streamsBytes_withContentType() throws Exception {
+        stubAuthenticatedCaller();
+        byte[] bytes = new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x01};
+        when(avatarService.getAvatar(caller)).thenReturn(new AvatarContent(bytes, "image/jpeg"));
+
+        mockMvc.perform(get("/api/me/avatar").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(result -> org.junit.jupiter.api.Assertions.assertEquals(
+                        "image/jpeg", result.getResponse().getContentType()))
+                .andExpect(result -> org.junit.jupiter.api.Assertions.assertArrayEquals(
+                        bytes, result.getResponse().getContentAsByteArray()));
+    }
+
+    @Test
+    void getAvatar_whenNone_returns404() throws Exception {
+        stubAuthenticatedCaller();
+        doThrow(new AvatarNotFoundException()).when(avatarService).getAvatar(caller);
+
+        mockMvc.perform(get("/api/me/avatar").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAvatar_withoutToken_returns401() throws Exception {
+        mockMvc.perform(get("/api/me/avatar"))
+                .andExpect(status().isUnauthorized());
+
+        verify(avatarService, never()).getAvatar(any(User.class));
+    }
+
+    @Test
+    void deleteAvatar_success_returns204_andDelegatesToPort() throws Exception {
+        stubAuthenticatedCaller();
+        doNothing().when(avatarService).deleteAvatar(caller);
+
+        mockMvc.perform(delete("/api/me/avatar").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isNoContent());
+
+        verify(avatarService).deleteAvatar(caller);
+    }
+
+    @Test
+    void deleteAvatar_withoutToken_returns401() throws Exception {
+        mockMvc.perform(delete("/api/me/avatar"))
+                .andExpect(status().isUnauthorized());
+
+        verify(avatarService, never()).deleteAvatar(any(User.class));
     }
 }

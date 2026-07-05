@@ -8,13 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.matimeline.eventmanager.domain.exceptions.AccountDeletionMismatchException;
+import com.matimeline.eventmanager.domain.exceptions.AvatarNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
@@ -33,7 +36,8 @@ public class GlobalExceptionHandler {
             ProductNotFoundException.class,
             CategoryNotFoundException.class,
             UserNotFoundException.class,
-            SessionNotFoundException.class
+            SessionNotFoundException.class,
+            AvatarNotFoundException.class
     })
     public ResponseEntity<Map<String, Object>> handleNotFound(RuntimeException ex) {
         return ResponseEntity
@@ -68,6 +72,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "invalid current password"));
+    }
+
+    @ExceptionHandler(InvalidAvatarException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidAvatar(InvalidAvatarException ex) {
+        // #75 : upload avatar invalide (fichier absent/vide, type non autorisé détecté par
+        // magic bytes, ou taille > 5 Mo) -> 400. Message métier explicite (guide le client,
+        // critère d'acceptation) mais SANS fuite d'interne (chemin de stockage, stack).
+        // Corps plat {"error":...} cohérent avec les autres erreurs métier 400.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(SamePasswordException.class)
@@ -151,6 +166,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        // #75 : la limite servlet multipart (spring.servlet.multipart.max-file-size=5MB)
+        // déclenche AVANT le contrôleur (parsing). On la mappe au MÊME 400 + message que la
+        // limite applicative (defense in depth : les deux gardent le rejet cohérent).
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "fichier trop volumineux (max 5 Mo)"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

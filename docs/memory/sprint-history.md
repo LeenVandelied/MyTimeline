@@ -456,15 +456,28 @@
   - 4 MINEUR review (nextEvent dup, querySelector, Escape listener, ring naming, labelKey) → absorbés commit 792ce7c (cycle /review-pr)
 **Status :** Terminé
 
-## Sprint 21 — 2026-07-05 (PLANIFIÉ — cohésion 0.75, Réglages utilisateur avatar + écrans)
-**Objectif :** Backend upload avatar (#75, POST /me/avatar + V12) + écrans Réglages desktop 4 chapitres (#86) et mobile drill-down (#87).
+## Sprint 21 — 2026-07-05 (cohésion 0.75, Réglages utilisateur avatar + écrans — PR #211 vers dev)
+**Objectif :** Backend upload avatar (#75, POST/GET/DELETE /me/avatar) + écrans Réglages desktop 4 chapitres (#86) et mobile drill-down (#87).
 **Milestone GitHub :** #21
-**Issues :** #75, #86, #87
-**Vagues :** V1 = #75 (backend) ∥ #86 (frontend desktop) | V2 = #87 (consomme #75 avatar + chapitres #86)
-**Migrations Flyway :** **V12** (users.avatar_url) — SEULE migration de la série S19-S23, isolée ici
-**Dépend de :** aucune bloquante ; #75 (backend) précède #86/#87 (consomment POST /me/avatar) — intra-sprint
-**Risque clé :** #75 upload multipart = surface OWASP (MIME/taille/path-traversal) → **security-expert AVANT implémentation** + décision stockage (local vs objet) = ADR.
-**Status :** Planifié
+**Issues livrées (3) :** #75, #86, #87
+**Vagues exécutées :** V1 = #75 (backend) ∥ #86 (frontend desktop) | V2 = #87 (réutilise #86 + #75) | Correction post-review = avatar branché bout-en-bout
+**Cohésion score :** 0.75
+**Commits :** 5 (ea89f59 #75, 43d9e14 #86, 5b5bba6 #87, d10e4a3 correction avatar, 1da0827 artefacts)
+**Migrations Flyway :** **AUCUNE** finalement — la colonne `avatar` existait déjà (V7 #44), pas de V12 nécessaire. Dernière migration reste V11.
+**Décision clé (DEC-S21-001) :** stockage avatar **local privé + StoragePort** (PAS MinIO/S3 — infra objet absente) servi via endpoint authentifié. Déviation ADR assumée, validée security-expert (GO).
+**BR impactées :** BR-AUT-001 (ownership profil/avatar + suppression compte).
+**Reviews :** security-expert GO (upload cité comme modèle) ; reviewer batch — 0 CRITIQUE / 3 MAJEUR / 3 MINEUR (3 MAJEUR = avatar non branché → RÉSOLUS d10e4a3 ; MINEUR non bloquants).
+**Tests :** Backend 268/268 green | Frontend 271/271 green | E2E specs amorcées (non exécutées wrapper) → /create-e2e post-merge.
+**Nouveaux pitfalls / décisions / patterns :** DEC-S21-001 (ADR stockage) ; PIT-S21-001 (garde-fou worktree efficace), PIT-S21-002 (swipe pointer jsdom), PIT-S21-003 (AuthContext refreshUser) ; PAT-S21-001 (Zod i18n racine), PAT-S21-002 (bottom sheet hook extraction), PAT-S21-003 (modèle upload OWASP).
+**Absorbé en cours :** branchement avatar frontend bout-en-bout (correction d10e4a3 post-review, findings MAJEUR).
+**Piège orchestration :** worktree-cwd a frappé #75 et #86 (auto-corrigés, résidus nettoyés sur dev via clean -fd scopé) ; garde-fou renforcé efficace pour #87 + correction (cf. PIT-S21-001).
+**Follow-ups proposés (NON-XS) :** export RGPD `GET /me/export` [S | auth] · migration stockage objet MinIO/S3 [M | auth] · resize/anti-EXIF image [S | auth] · cache/ETag GET avatar [XS | auth] · doc `STORAGE_AVATAR_PATH` runbook [XS | infra] · clavier virtuel Android visualViewport [S | frontend].
+**Follow-ups arbitrés (Phase 4 triage — « créer les prioritaires ») :**
+  - Migration stockage objet MinIO/S3 [M | auth] → issue **#212** (backlog libre)
+  - Doc `STORAGE_AVATAR_PATH` runbook [XS | infra] → issue **#213** (backlog libre)
+  - Export RGPD [S | auth] → doublon des issues existantes **#58** (backend) / **#59** (frontend) → contexte S21 lié en commentaire, pas de nouvelle issue
+  - resize/anti-EXIF image [S], cache/ETag GET avatar [XS], clavier virtuel Android [S] → consignés ici seulement (non créés, choix dev)
+**Status :** Clôture en cours (PR #211 prête, CI verte, triage follow-ups fait, merge en attente confirmation)
 
 ## Sprint 22 — 2026-07-05 (PLANIFIÉ — cohésion 0.67, Page Produits + Catégories frontend)
 **Objectif :** Page Produits (#68, liste+détail+catégories) + Drawer Catégorie (#62, desktop+mobile) + fix NPE backend (#186).

@@ -1,0 +1,140 @@
+{
+  "pageTitle": "Settings",
+  "loading": "Loading…",
+  "backToDashboard": "Back to dashboard",
+  "common": {
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "genericError": "Something went wrong, please try again.",
+    "close": "Close"
+  },
+  "nav": {
+    "aria": "Settings chapters",
+    "profile": "Profile",
+    "security": "Security",
+    "preferences": "Preferences",
+    "account": "Account"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your personal information.",
+    "name": "Name",
+    "username": "Username",
+    "email": "Email",
+    "saved": "Profile saved",
+    "errors": {
+      "usernameTaken": "This username is already taken"
+    },
+    "avatar": {
+      "title": "Avatar",
+      "current": "Current avatar",
+      "dropzone": "Drag an image or click to choose",
+      "hint": "PNG or JPG, 5 MB maximum",
+      "zoom": "Zoom",
+      "apply": "Apply",
+      "delete": "Remove avatar",
+      "errorType": "The file must be an image",
+      "errorSize": "The image must not exceed 5 MB",
+      "uploaded": "Avatar updated",
+      "uploadError": "Could not upload the avatar, please try again",
+      "deleted": "Avatar removed",
+      "deleteError": "Could not remove the avatar, please try again"
+    }
+  },
+  "security": {
+    "title": "Security",
+    "subtitle": "Password and active sessions.",
+    "password": {
+      "title": "Change password",
+      "old": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Update password",
+      "changed": "Password updated",
+      "wrongOld": "The current password is incorrect"
+    },
+    "strength": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong"
+    },
+    "sessions": {
+      "title": "Active sessions",
+      "loading": "Loading sessions…",
+      "error": "Unable to load sessions",
+      "empty": "No active session",
+      "current": "Current session",
+      "unknownDevice": "Unknown device",
+      "unknownIp": "Unknown IP",
+      "revoke": "Revoke",
+      "revokeOne": "Revoke this session",
+      "revoked": "Session revoked",
+      "revokeOthers": "Revoke all other sessions",
+      "revokedOthers": "Other sessions revoked"
+    }
+  },
+  "preferences": {
+    "title": "Preferences",
+    "subtitle": "Language, theme and display density.",
+    "language": {
+      "label": "Language",
+      "options": {
+        "fr": "Français",
+        "en": "English",
+        "es": "Español",
+        "de": "Deutsch"
+      }
+    },
+    "theme": {
+      "label": "Theme",
+      "options": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      }
+    },
+    "density": {
+      "label": "Density",
+      "options": {
+        "compact": "Compact",
+        "normal": "Normal",
+        "comfortable": "Comfortable"
+      }
+    }
+  },
+  "account": {
+    "title": "Account",
+    "subtitle": "Export your data or delete your account.",
+    "export": {
+      "title": "Export my data",
+      "description": "Download a copy of your data in JSON or CSV format.",
+      "confirm": "Generate the export in {format} format?",
+      "generating": "Generating…",
+      "download": "Download",
+      "done": "Export generated and downloaded.",
+      "again": "New export",
+      "comingSoon": "Data export is coming soon"
+    },
+    "delete": {
+      "title": "Delete my account",
+      "description": "This action is permanent and irreversible.",
+      "button": "Delete account",
+      "warnTitle": "Permanently delete your account?",
+      "warnBody": "All your data (products, events, categories) will be permanently deleted.",
+      "confirmTitle": "Confirm deletion",
+      "confirmBody": "To confirm, enter your username \"{username}\".",
+      "usernameLabel": "Username",
+      "confirmButton": "Delete permanently",
+      "deleting": "Deleting…",
+      "mismatch": "The username does not match",
+      "done": "Account deleted"
+    }
+  },
+  "mobile": {
+    "backToIndex": "Back to settings"
+  }
+}

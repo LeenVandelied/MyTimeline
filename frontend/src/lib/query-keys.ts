@@ -38,4 +38,11 @@ export const queryKeys = {
   auth: {
     me: ['auth', 'me'] as const,
   },
+  /**
+   * #73 / #86 — Sessions actives de l'utilisateur courant (`GET /api/sessions`).
+   * Clé plate : l'identité est dérivée du cookie côté backend, pas d'un param.
+   */
+  sessions: {
+    all: ['sessions'] as const,
+  },
 } as const
