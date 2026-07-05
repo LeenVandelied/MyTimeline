@@ -156,6 +156,11 @@ jobs:
           # (pas de '-'/'_' ni de caractères hors alphabet Base64) — sinon generateToken
           # lève et /auth/login renvoie 500. Ci-dessous : 48 octets Base64 (CI-only, non secret).
           JWT_SECRET: Q0lPbmx5SW5zZWN1cmVKd3RTZWNyZXRGb3JFMkVUZXN0c09ubHkwMTIzNDU2Nzg5
+          # E2E-ONLY : désactive le rate-limit auth. La suite provisionne plusieurs
+          # comptes depuis l'IP unique du runner -> déclencherait le throttle par IP
+          # (register 5/min, login 10/min) et ferait échouer le projet Playwright `setup`.
+          # Défaut TOUJOURS true partout ailleurs (prod + jobs backend/frontend intacts).
+          RATE_LIMIT_ENABLED: false
         run: |
           java -jar target/*.jar > backend.log 2>&1 &
           echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
