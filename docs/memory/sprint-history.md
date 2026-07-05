@@ -412,3 +412,55 @@
 **Status :** Terminé
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
+
+## Sprint 19 — 2026-07-05 (PLANIFIÉ — cohésion 0.71, Timeline mobile + finitions desktop)
+**Objectif :** Vues Timeline mobile (portrait #63, paysage #64) + finalisation sous-composants desktop (Minimap déjà livré, extraction EventPill #192).
+**Milestone GitHub :** #19
+**Issues :** #63, #64, #192
+**Vagues :** V1 = #192 ∥ #63 (disjoints) | V2 = #64 (dérive du conteneur mobile #63)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (#47 extraction Timeline livrée S16 = débloqueur)
+**Note :** #192 réduit M→S (Minimap.tsx déjà présent+câblé dans TimelineView ; reste EventPill à extraire de EventBar). Risque : switch desktop/mobile par breakpoint peut régresser TimelineView #55 → isoler le conditionnel + Playwright multi-viewport. Préserver `data-testid=timeline-event`/`data-event-title` (E2E golden-path #163).
+**Status :** Planifié
+
+## Sprint 20 — 2026-07-05 (PLANIFIÉ — cohésion 0.80, Dashboard responsive)
+**Objectif :** Dashboard desktop (#80) + déclinaisons mobile portrait (#83) et paysage (#85, rail 64px + 2 colonnes).
+**Milestone GitHub :** #20
+**Issues :** #80, #83, #85
+**Vagues :** V1 = #80 (pose structure) | V2 = #83 | V3 = #85 — strictement séquentiels (même dossier `components/dashboard/` neuf)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 19 (dashboard mobile embarque la frise Timeline mobile #63)
+**Note capacité :** 3×M = 12 pts > cap 10. Si vélocité serrée, sortir #85 (P2) au backlog → #80+#83 (~8 pts). Risque : #80/#85 touchent `components/layout/` (fichier partagé) → vérifier non-collision header auth.
+**Status :** Planifié
+
+## Sprint 21 — 2026-07-05 (PLANIFIÉ — cohésion 0.75, Réglages utilisateur avatar + écrans)
+**Objectif :** Backend upload avatar (#75, POST /me/avatar + V12) + écrans Réglages desktop 4 chapitres (#86) et mobile drill-down (#87).
+**Milestone GitHub :** #21
+**Issues :** #75, #86, #87
+**Vagues :** V1 = #75 (backend) ∥ #86 (frontend desktop) | V2 = #87 (consomme #75 avatar + chapitres #86)
+**Migrations Flyway :** **V12** (users.avatar_url) — SEULE migration de la série S19-S23, isolée ici
+**Dépend de :** aucune bloquante ; #75 (backend) précède #86/#87 (consomment POST /me/avatar) — intra-sprint
+**Risque clé :** #75 upload multipart = surface OWASP (MIME/taille/path-traversal) → **security-expert AVANT implémentation** + décision stockage (local vs objet) = ADR.
+**Status :** Planifié
+
+## Sprint 22 — 2026-07-05 (PLANIFIÉ — cohésion 0.67, Page Produits + Catégories frontend)
+**Objectif :** Page Produits (#68, liste+détail+catégories) + Drawer Catégorie (#62, desktop+mobile) + fix NPE backend (#186).
+**Milestone GitHub :** #22
+**Issues :** #68, #62, #186
+**Vagues :** V1 = #62 (drawer) ∥ #186 (backend pur) | V2 = #68 (page produits embarque le drawer #62)
+**Migrations Flyway :** aucune (backend produits/catégories déjà livré #50/#52)
+**Dépend de :** Sprint 10 (#50/#52 backend) — sur dev
+**Note :** #186 = bug NPE réel confirmé `ProductServiceImpl.java:67` (`request.getEvents().forEach` sans null-check). Risque duplication : ProductDrawer #61 existe → **component-guardian** avant nouveau composant. #187 (UI création catégorie) recoupe #62 → à fusionner/fermer après S22.
+**Status :** Planifié
+
+## Sprint 23 — 2026-07-05 (PLANIFIÉ — cohésion 0.55 ⚠ WARNING, Sécurité/DevOps durcissement + DIP)
+**Objectif :** Bump CVE post-Boot 3.4.4 (#180) + refactor contrôleurs vers interfaces service DIP (#123) + durcissement CI pin SHA (#167).
+**Milestone GitHub :** #23
+**Issues :** #180, #123, #167
+**Vagues :** V1 = #180 ∥ #123 ∥ #167 (3 fichiers disjoints : pom.xml / Java contrôleurs / YAML CI) — aucune V2
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (dette technique, non bloquant produit → placé en dernier)
+**WARNING cohésion 0.55 :** sprint de consolidation dette. Alternative si cohésion prioritaire : substituer #123 → #181 (valider Flyway V11 prod) → sprint 100% devops. Risque : #180 bump peut casser auth/sessions jti #73 → suite complète + smoke boot prod avant merge.
+**Status :** Planifié
+
+> **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).
