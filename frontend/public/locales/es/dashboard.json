@@ -5,6 +5,36 @@
   "email": "Correo electrónico",
   "role": "Rol",
   "products": "Productos",
+  "greeting": {
+    "eyebrow": "Resumen",
+    "morning": "Buenos días {name}, aquí está tu día",
+    "afternoon": "Buenas tardes {name}, aquí está tu día",
+    "evening": "Buenas noches {name}, aquí está tu día",
+    "subtitle": "Tus próximos vencimientos, de un vistazo."
+  },
+  "density": {
+    "label": "Densidad de eventos en {days} días",
+    "eyebrow": "Densidad · {days} días",
+    "empty": "Sin eventos en este período"
+  },
+  "week": {
+    "title": "Esta semana",
+    "label": "Agenda de la semana actual",
+    "empty": "Sin eventos esta semana"
+  },
+  "kpi": {
+    "title": "En resumen",
+    "label": "Indicadores clave",
+    "activeProducts": "{count, plural, one {producto activo} other {productos activos}}",
+    "eventsThisMonth": "{count, plural, one {evento este mes} other {eventos este mes}}",
+    "currentStreak": "{count, plural, one {día de racha} other {días de racha}}"
+  },
+  "productList": {
+    "title": "Tus productos",
+    "label": "Lista de productos",
+    "empty": "Aún no hay productos",
+    "noUpcoming": "Sin vencimientos"
+  },
   "stats": {
     "title": "Estadísticas",
     "totalEvents": "Eventos totales",

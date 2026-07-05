@@ -132,3 +132,93 @@ export function statusBarClass(status: EventStatus): string {
       return 'bg-[var(--color-upcoming)]'
   }
 }
+
+/**
+ * #80 — Un jour du ruban de densité dashboard.
+ * `height` ∈ [0..1] : hauteur normalisée de la barre = densité (nombre d'events
+ * ce jour / max sur la fenêtre). `color` = couleur de l'event le plus « chargé »
+ * du jour (palette curatée `--evt-*` via la couleur portée par l'event, BR-EVE-009).
+ */
+export type DensityBucket = {
+  date: Date
+  count: number
+  height: number
+  /** Couleur dominante du jour (hex event) ou `null` si aucun event. */
+  color: string | null
+  isToday: boolean
+}
+
+/**
+ * #80 — Bucketing de densité PAR JOUR pour le `DensityRibbon` du dashboard.
+ *
+ * Distinct de `buildMinimapBuckets` (zoom.ts) qui produit une waveform de 60
+ * tranches NORMALISÉES SANS couleur pour la minimap de la frise desktop : ici on
+ * garde un bucket = un jour calendaire sur `rangeDays` (30 par défaut), on conserve
+ * le compte réel ET la couleur dominante pour colorer chaque barre par catégorie
+ * d'event (spec Designer : densité = hauteur, couleur = catégorie `--evt-*`).
+ * Fonction pure → testable/mémoïsable côté composant. Fenêtre glissante
+ * `[from, from+rangeDays-1]` calée sur `getDaysRange`.
+ */
+export function buildDensityBuckets(
+  events: FullCalendarEvent[],
+  from: Date,
+  now: Date,
+  rangeDays = 30,
+): DensityBucket[] {
+  const { days } = getDaysRange(from, rangeDays)
+  const counts = new Array<number>(days.length).fill(0)
+  const colors = new Array<string | null>(days.length).fill(null)
+  const windowStart = days[0]
+
+  for (const event of events) {
+    const s = new Date(event.start)
+    if (Number.isNaN(s.getTime())) continue
+    const dayStart = new Date(s.getFullYear(), s.getMonth(), s.getDate())
+    const idx = Math.round((dayStart.getTime() - windowStart.getTime()) / 86_400_000)
+    if (idx < 0 || idx >= days.length) continue
+    counts[idx] += 1
+    // Première couleur rencontrée = dominante (ordre chronologique d'entrée).
+    if (!colors[idx] && event.color) colors[idx] = event.color
+  }
+
+  const max = Math.max(1, ...counts)
+  return days.map((date, i) => ({
+    date,
+    count: counts[i],
+    height: counts[i] / max,
+    color: colors[i],
+    isToday: date.toDateString() === now.toDateString(),
+  }))
+}
+
+/**
+ * #80 — Bornes de la semaine courante (lundi 00:00 → dimanche 23:59:59.999),
+ * ISO 8601 (lundi = premier jour). Utilisé par `WeekAgenda` et le KPI « série ».
+ */
+export function getWeekRange(now: Date): { start: Date; end: Date } {
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  // getDay(): 0=dimanche..6=samedi → décalage vers lundi.
+  const daysSinceMonday = (start.getDay() + 6) % 7
+  start.setDate(start.getDate() - daysSinceMonday)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 6)
+  end.setHours(23, 59, 59, 999)
+  return { start, end }
+}
+
+/**
+ * #80 — Events dont le début tombe dans `[start, end]`, triés chronologiquement.
+ * Pure : consommée par `WeekAgenda` (agenda de la semaine courante).
+ */
+export function getEventsInRange(
+  events: FullCalendarEvent[],
+  start: Date,
+  end: Date,
+): FullCalendarEvent[] {
+  return events
+    .filter((e) => {
+      const s = new Date(e.start)
+      return !Number.isNaN(s.getTime()) && s >= start && s <= end
+    })
+    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+}
