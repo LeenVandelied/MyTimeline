@@ -201,3 +201,12 @@ Un fullstack-dev spawné dans un worktree lit bien le worktree (Read initial OK)
 
 ## PIT-S19-002 — Imports inutilisés dans un test : vitest vert mais `next build` (eslint strict) rouge en CI
 `import { ..., beforeEach, afterEach } from 'vitest'` non utilisés passent `vitest run` ET `tsc --noEmit` sans broncher, mais `next build` (qui lance `next lint`, `ignoreDuringBuilds:false`) échoue sur `@typescript-eslint/no-unused-vars` → "Failed to compile", CI rouge. En Sprint 19 le test-runner rapportait "eslint 0 issue" (scope/config différents de `next lint`). Prévention : avant push, lancer `npx next lint --max-warnings=0` (= le lint du build) OU `next build` complet ; `tsc --noEmit` + vitest verts ne garantissent PAS le build. Cf. cp-frontend. (Sprint 19, CI build)
+
+## PIT-S20-001 — Convertir une clé i18n string→objet casse les autres consommateurs (next-intl)
+Passer une clé `dashboard.products` de string à objet (`dashboard.products.list`, ...) fait échouer next-intl si un autre composant consomme encore la clé comme string (interdit string+objet sur la même clé). En Sprint 20, `dashboard.products` était encore lu par `TimelineCalendar.tsx` → collision. Fix : namespace séparé (`dashboard.productList`). Prévention : `grep -rn "dashboard.products"` (tous les consommateurs) AVANT de convertir la forme d'une clé i18n. (Sprint 20 #80)
+
+## PIT-S20-002 — Masquer une scrollbar scroll-x : `scrollbar-width:none` seul ne suffit pas sous Chromium
+`base.css` impose une scrollbar webkit globale (`*::-webkit-scrollbar` 10px) → `scrollbar-width:none` (ou `scrollbarWidth:none` inline) est ignoré côté Chromium, la scrollbar reste visible sur les carousels/rubans scroll-x. Fix durable : utility dédiée `@utility scrollbar-none { scrollbar-width:none; &::-webkit-scrollbar { display:none } }` (globals.css). Prévention : pour tout conteneur `overflow-x:auto` sans scrollbar, utiliser l'utility, pas la propriété seule. (Sprint 20 #83)
+
+## PIT-S20-003 — Wrapper `rtk git diff` en 3-dots renvoie vide silencieusement (outillage review)
+Sur ce repo/env, `git diff a...b` passé via le wrapper `rtk` retourne une sortie VIDE sans erreur → un reviewer/agent croit à tort qu'il n'y a aucun changement. Prévention : pour les diffs de review (surtout 3-dots `origin/dev...HEAD`), utiliser `/usr/bin/git` directement (bypass wrapper), ou `gh pr diff <PR>`. (Sprint 20, review PR #208)

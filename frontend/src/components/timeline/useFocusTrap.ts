@@ -11,10 +11,18 @@ import { RefObject, useEffect } from 'react'
  * bottom sheet (#63) et action sheet (#63) — 3e duplication évitée (réserve
  * ui-design). `EventDrawer.tsx` (desktop) n'est PAS modifié : garder son
  * comportement intact évite toute régression desktop (dépendance intra-sprint).
+ *
+ * #208 (review) — Paramètre OPTIONNEL `onEscape` : mutualise aussi la fermeture
+ * clavier Escape (consommé par `MobileDrawer` #83). Défaut no-op → non-cassant
+ * pour les consommateurs S19 existants (TimelineBottomSheet, etc.).
  */
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
-export function useFocusTrap(containerRef: RefObject<HTMLElement | null>, active: boolean): void {
+export function useFocusTrap(
+  containerRef: RefObject<HTMLElement | null>,
+  active: boolean,
+  onEscape?: () => void,
+): void {
   useEffect(() => {
     if (!active) return
     const container = containerRef.current
@@ -25,6 +33,11 @@ export function useFocusTrap(containerRef: RefObject<HTMLElement | null>, active
     first?.focus()
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onEscape) {
+        e.stopPropagation()
+        onEscape()
+        return
+      }
       if (e.key !== 'Tab' || !container) return
       const items = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE))
       if (items.length === 0) return
@@ -45,7 +58,7 @@ export function useFocusTrap(containerRef: RefObject<HTMLElement | null>, active
       // Restaure le focus sur l'élément déclencheur (bloc event / bouton ⋯).
       previousFocus?.focus()
     }
-  }, [containerRef, active])
+  }, [containerRef, active, onEscape])
 }
 
 export default useFocusTrap

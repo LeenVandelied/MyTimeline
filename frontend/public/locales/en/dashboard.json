@@ -5,6 +5,66 @@
   "email": "Email",
   "role": "Role",
   "products": "Products",
+  "greeting": {
+    "eyebrow": "Overview",
+    "morning": "Good morning {name}, here's your day",
+    "afternoon": "Good afternoon {name}, here's your day",
+    "evening": "Good evening {name}, here's your day",
+    "subtitle": "Your upcoming deadlines, at a glance."
+  },
+  "density": {
+    "label": "Event density over {days} days",
+    "eyebrow": "Density · {days} days",
+    "empty": "No events in this period"
+  },
+  "week": {
+    "title": "This week",
+    "label": "Current week agenda",
+    "empty": "No events this week"
+  },
+  "mobile": {
+    "menu": "Open menu",
+    "drawer": {
+      "title": "Settings",
+      "close": "Close menu",
+      "language": "Language",
+      "theme": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark"
+    },
+    "scrollHint": "Scroll horizontally",
+    "compactAgenda": {
+      "title": "Today and tomorrow",
+      "label": "Compact agenda for today and tomorrow",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "empty": "No events today or tomorrow"
+    },
+    "carousel": {
+      "label": "Products, horizontal scroll"
+    }
+  },
+  "landscape": {
+    "rail": {
+      "label": "Navigation",
+      "home": "Home",
+      "products": "Products",
+      "logout": "Log out"
+    }
+  },
+  "kpi": {
+    "title": "At a glance",
+    "label": "Key indicators",
+    "activeProducts": "{count, plural, one {active product} other {active products}}",
+    "eventsThisMonth": "{count, plural, one {event this month} other {events this month}}",
+    "currentStreak": "{count, plural, one {day streak} other {days streak}}"
+  },
+  "productList": {
+    "title": "Your products",
+    "label": "Product list",
+    "empty": "No products yet",
+    "noUpcoming": "No upcoming"
+  },
   "stats": {
     "title": "Statistics",
     "totalEvents": "Total events",

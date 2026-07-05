@@ -5,6 +5,66 @@
   "email": "Correo electrónico",
   "role": "Rol",
   "products": "Productos",
+  "greeting": {
+    "eyebrow": "Resumen",
+    "morning": "Buenos días {name}, aquí está tu día",
+    "afternoon": "Buenas tardes {name}, aquí está tu día",
+    "evening": "Buenas noches {name}, aquí está tu día",
+    "subtitle": "Tus próximos vencimientos, de un vistazo."
+  },
+  "density": {
+    "label": "Densidad de eventos en {days} días",
+    "eyebrow": "Densidad · {days} días",
+    "empty": "Sin eventos en este período"
+  },
+  "week": {
+    "title": "Esta semana",
+    "label": "Agenda de la semana actual",
+    "empty": "Sin eventos esta semana"
+  },
+  "mobile": {
+    "menu": "Abrir menú",
+    "drawer": {
+      "title": "Ajustes",
+      "close": "Cerrar menú",
+      "language": "Idioma",
+      "theme": "Tema",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro"
+    },
+    "scrollHint": "Desplázate horizontalmente",
+    "compactAgenda": {
+      "title": "Hoy y mañana",
+      "label": "Agenda compacta de hoy y mañana",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "empty": "Sin eventos hoy ni mañana"
+    },
+    "carousel": {
+      "label": "Productos, desplazamiento horizontal"
+    }
+  },
+  "landscape": {
+    "rail": {
+      "label": "Navegación",
+      "home": "Inicio",
+      "products": "Productos",
+      "logout": "Cerrar sesión"
+    }
+  },
+  "kpi": {
+    "title": "En resumen",
+    "label": "Indicadores clave",
+    "activeProducts": "{count, plural, one {producto activo} other {productos activos}}",
+    "eventsThisMonth": "{count, plural, one {evento este mes} other {eventos este mes}}",
+    "currentStreak": "{count, plural, one {día de racha} other {días de racha}}"
+  },
+  "productList": {
+    "title": "Tus productos",
+    "label": "Lista de productos",
+    "empty": "Aún no hay productos",
+    "noUpcoming": "Sin vencimientos"
+  },
   "stats": {
     "title": "Estadísticas",
     "totalEvents": "Eventos totales",

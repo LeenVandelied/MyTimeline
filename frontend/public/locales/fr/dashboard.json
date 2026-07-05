@@ -5,6 +5,66 @@
   "email": "Email",
   "role": "Rôle",
   "products": "Produits",
+  "greeting": {
+    "eyebrow": "Aperçu",
+    "morning": "Bonjour {name}, voici ta matinée",
+    "afternoon": "Bon après-midi {name}, voici ta journée",
+    "evening": "Bonsoir {name}, voici ta soirée",
+    "subtitle": "Tes échéances des prochains jours, en un coup d'œil."
+  },
+  "density": {
+    "label": "Densité des événements sur {days} jours",
+    "eyebrow": "Densité · {days} jours",
+    "empty": "Aucun événement sur la période"
+  },
+  "week": {
+    "title": "Cette semaine",
+    "label": "Agenda de la semaine courante",
+    "empty": "Aucun événement cette semaine"
+  },
+  "mobile": {
+    "menu": "Ouvrir le menu",
+    "drawer": {
+      "title": "Réglages",
+      "close": "Fermer le menu",
+      "language": "Langue",
+      "theme": "Thème",
+      "themeLight": "Clair",
+      "themeDark": "Sombre"
+    },
+    "scrollHint": "Faire défiler horizontalement",
+    "compactAgenda": {
+      "title": "Aujourd'hui et demain",
+      "label": "Agenda compact du jour et du lendemain",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "empty": "Aucun événement aujourd'hui ni demain"
+    },
+    "carousel": {
+      "label": "Produits, défilement horizontal"
+    }
+  },
+  "landscape": {
+    "rail": {
+      "label": "Navigation",
+      "home": "Accueil",
+      "products": "Produits",
+      "logout": "Déconnexion"
+    }
+  },
+  "kpi": {
+    "title": "En bref",
+    "label": "Indicateurs clés",
+    "activeProducts": "{count, plural, one {produit actif} other {produits actifs}}",
+    "eventsThisMonth": "{count, plural, one {événement ce mois} other {événements ce mois}}",
+    "currentStreak": "{count, plural, one {jour de série} other {jours de série}}"
+  },
+  "productList": {
+    "title": "Tes produits",
+    "label": "Liste des produits",
+    "empty": "Aucun produit pour le moment",
+    "noUpcoming": "Aucune échéance"
+  },
   "stats": {
     "title": "Statistiques",
     "totalEvents": "Total des événements",
