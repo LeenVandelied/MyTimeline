@@ -4,6 +4,9 @@
 # Storybook
 storybook-static/
 
+# ESLint
+.eslintcache
+
 # Vitest / couverture
 coverage/
 
