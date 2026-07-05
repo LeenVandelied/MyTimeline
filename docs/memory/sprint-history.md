@@ -366,14 +366,26 @@
 **Nouveaux pitfalls / decisions / patterns :** PIT-S16-001..004, PAT-S16-001/002, DEC-S16-001/002, BUG-S16-001.
 **Status :** Terminé (merge PR #189)
 
-## Sprint 17 — (PLANIFIÉ — cohésion 0.72, Timeline events desktop)
-**Objectif :** Vue Timeline desktop (zoom/minimap/drawer/clavier), réécriture sur les sous-composants #47.
-**Milestone GitHub :** #17
-**Issues :** #55 (Timeline desktop) — **#63 (mobile portrait) dé-scopé → backlog** (tenir ~8 pts)
-**Vagues :** V1 = #55 seul
+## Sprint 17 — 2026-07-03 → 2026-07-05 (Terminé — merge PR #194 dans dev — cohésion 0.72, Timeline events desktop)
+**Objectif :** Vue Timeline desktop (frise continue, zoom Cmd+molette 5 niveaux, minimap waveform, drawer détail, raccourcis clavier), réécriture sur les sous-composants #47.
+**Milestone GitHub :** #17 (fermé après merge)
+**Issues livrées (1) :** #55 (Timeline desktop) — **#63 (mobile portrait) dé-scopé → backlog** (tenir ~8 pts)
+**Vagues exécutées :** V1 = #55 seul
+**Cohésion score :** 0.72
+**Commits :** 6 (impl `c46c936` · correctifs review `388511c` · audit `8436d0c` · body PR `90f618c` · correctifs review PR194 `523d447` · fix régression e2e `e99279c`)
+**BR impactées :** BR-EVE-001 (frise = events user only, enforcement backend inchangé, zoom sans refetch)
 **Migrations Flyway :** aucune
-**Dépend de :** Sprint 16 (#47 obligatoire) + Sprint 15 (#150 contrat)
-**Status :** En cours
+**Décision structurelle :** migration 100 % classes DS `.mt-*` (Designer S17), ancien `TimelineCalendar.tsx` #47 préservé. Pas de dep npm ajoutée (useReducer local, pas de Zustand ni react-virtual — cf. [[DEC-S17-001]]).
+**Reviews :** 1re passe (durant start) 0 CRIT/1 MAJEUR/4 MINEUR tous résolus · 2e passe (review-pr #194) 0 CRIT/0 MAJEUR/4 MINEUR (3 résolus, 1 note-only écarté). MAJEUR = drag handle minimap cassé (stopPropagation).
+**Régression rattrapée par CI :** golden-path E2E rouge post-review (nom produit `resource.title`/`timeline-resource-title` droppé à la réécriture, non couvert par l'unit qui ne comptait que les lanes → [[PIT-S17-003]]). Fix `e99279c` : label produit restauré + spec racine `timeline-view` + assertion unitaire ajoutée.
+**Tests :** Frontend 117/117 green (Vitest) · tsc 0 err · next build 22/22 · **CI finale : e2e ✅ backend ✅ frontend ✅**
+**Nouveaux pitfalls / décisions :** [[PIT-S17-001]] (globals.css @import DS), [[PIT-S17-002]] (concat classes template), [[PIT-S17-003]] (rewrite droppe testid couvert e2e) · [[DEC-S17-001]] (pas de virtualisation avant >500 events)
+**Dépend de :** Sprint 16 (#47) + Sprint 15 (#150 contrat)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Accordéon collapse par produit (AC #55 partiel) [M | events] → issue #195 (backlog)
+  - Virtualisation Timeline >500 events (Wave 7) [L | events] → issue #196 (backlog, P3 anticipation)
+  - Re-valider patterns clavier a11y via ui-design (ux-patterns.md absent) [S | events] → issue #197 (backlog)
+**Status :** Terminé
 
 ## Sprint 18 — (PLANIFIÉ — cohésion 1.0 après dé-scope, Formulaire événement)
 **Objectif :** Formulaire événement complet (desktop + mobile portrait + paysage), schéma Zod unifié.
