@@ -413,15 +413,26 @@
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
 
-## Sprint 19 — 2026-07-05 (En cours — cohésion 0.71, Timeline mobile + finitions desktop)
-**Objectif :** Vues Timeline mobile (portrait #63, paysage #64) + finalisation sous-composants desktop (Minimap déjà livré, extraction EventPill #192).
-**Milestone GitHub :** #19
-**Issues :** #63, #64, #192
-**Vagues :** V1 = #192 ∥ #63 (disjoints) | V2 = #64 (dérive du conteneur mobile #63)
+## Sprint 19 — 2026-07-05 (Terminé — merge PR #203 dans dev — cohésion 0.71, Timeline mobile + finitions desktop)
+**Objectif :** Vues Timeline mobile (portrait #63, paysage #64) + extraction EventPill desktop #192.
+**Milestone GitHub :** #19 (fermé après merge)
+**Issues livrées (3) :** #63, #64, #192
+**Vagues exécutées :** V1 = #192 ∥ #63 (parallèles, fichiers disjoints) | V2 = #64 (dérive base mobile #63). Gate ui-design pré-implém (APPROUVE avec réserves).
+**Cohésion score :** 0.71
+**Commits :** 5fd7fcd (#192 EventPill) · 962e6b7 (#63 portrait) · a0a94f1 (fix réintégration EventPill post-clobber) · ac935f8 (#64 paysage) · 03dde79 (fix review cast) · dc1ccbb (fix build CI eslint) + commits mémoire.
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (#47 extraction Timeline livrée S16 = débloqueur)
-**Note :** #192 réduit M→S (Minimap.tsx déjà présent+câblé dans TimelineView ; reste EventPill à extraire de EventBar). Risque : switch desktop/mobile par breakpoint peut régresser TimelineView #55 → isoler le conditionnel + Playwright multi-viewport. Préserver `data-testid=timeline-event`/`data-event-title` (E2E golden-path #163).
-**Status :** Planifié
+**BR impactées :** BR-EVE-001 (présentation, ownership backend inchangé), BR-EVE-009 (encre contraste EventPill + rendus mobiles).
+**Reviews :** Phase 7 (0 CRIT / 0 MAJ / 3 MIN, 1 corrigé) + /review-pr #203 (0 CRIT / 1 MAJ / 3 MIN, aucun bloquant). MAJEUR = action sheet edit/delete inertes → follow-up #204 (dev acté). MINEURs = non-bugs vérifiés.
+**Tests :** Frontend 153/153 verts (timeline 64/64), tsc + eslint OK. Backend non modifié. Build `next build` vert après fix dc1ccbb. E2E : golden-path #163 préservé ; testids mobiles non couverts → follow-up #205.
+**Incident :** #63 a clobbé l'intégration EventPill de #192 (pitfall worktree-cwd : écriture repo principal + recopie) → détecté vérif post-vague, corrigé a0a94f1. Cf. PIT-S19-001.
+**Nouveaux pitfalls / décisions / patterns :** PIT-S19-001 (worktree write derailment), PIT-S19-002 (vitest vert ≠ next build) ; DEC-S19-001 (EventPill dédié), DEC-S19-002 (breakpoints mobile), DEC-S19-003 (état hissé) ; PAT-S19-001 (test rotation matchMedia), PAT-S19-002 (encre event propagée).
+**Follow-ups arbitrés (Phase 4 triage — 4/4 créés, 0 discard) :**
+  - Câbler edit/delete action sheet [S | events] → issue #204 (Sprint 20)
+  - Storybook paysage + E2E rotation mobile [S | events] → issue #205 (Sprint 20)
+  - EventBar/Lane orphelins — statuer retrait [S | events] → issue #206 (Sprint 20)
+  - test-quiet.sh alias e2e lance vitest [tooling] → issue #207 (backlog, epic:devops)
+**Status :** Terminé (post-merge)
 
 ## Sprint 20 — 2026-07-05 (PLANIFIÉ — cohésion 0.80, Dashboard responsive)
 **Objectif :** Dashboard desktop (#80) + déclinaisons mobile portrait (#83) et paysage (#85, rail 64px + 2 colonnes).
