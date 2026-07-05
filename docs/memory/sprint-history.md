@@ -413,7 +413,7 @@
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
 
-## Sprint 19 — 2026-07-05 (PLANIFIÉ — cohésion 0.71, Timeline mobile + finitions desktop)
+## Sprint 19 — 2026-07-05 (En cours — cohésion 0.71, Timeline mobile + finitions desktop)
 **Objectif :** Vues Timeline mobile (portrait #63, paysage #64) + finalisation sous-composants desktop (Minimap déjà livré, extraction EventPill #192).
 **Milestone GitHub :** #19
 **Issues :** #63, #64, #192
