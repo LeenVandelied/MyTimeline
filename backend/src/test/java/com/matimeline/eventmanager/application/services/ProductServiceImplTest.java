@@ -127,6 +127,29 @@ class ProductServiceImplTest {
         verify(productRepository).save(any(Product.class));
     }
 
+    /**
+     * #186 (BR-PRO-005) : produit SANS événement autorisé. events == null ne doit PAS
+     * lever de NPE -> null traité comme liste vide, produit persisté avec 0 event.
+     */
+    @Test
+    void createProduct_nullEvents_doesNotThrow_savesProductWithNoEvents() {
+        Category ownCategory = new Category(categoryId, "Mienne", "#abcdef", "desc", callerId);
+
+        when(userRepository.findDomainUserById(callerId)).thenReturn(Optional.of(caller));
+        when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ProductCreationRequest request = creationRequest();
+        request.setEvents(null); // BR-PRO-005 : liste nulle tolérée (0 event)
+
+        Product result = service.createProduct(request);
+
+        assertThat(result).isNotNull();
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+        assertThat(captor.getValue().hasEvents()).isFalse();
+    }
+
     // -------------------------------------------------------------------------
     // updateProduct (PATCH categoryId)
     // -------------------------------------------------------------------------
