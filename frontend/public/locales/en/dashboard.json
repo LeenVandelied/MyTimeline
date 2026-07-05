@@ -33,7 +33,8 @@
       "year": "Year"
     },
     "minimap": {
-      "label": "Timeline overview"
+      "label": "Timeline overview",
+      "toggle": "Show or hide the overview"
     },
     "status": {
       "expired": "Ended",

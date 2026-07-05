@@ -33,7 +33,8 @@
       "year": "Année"
     },
     "minimap": {
-      "label": "Vue d’ensemble de la timeline"
+      "label": "Vue d’ensemble de la timeline",
+      "toggle": "Afficher ou masquer la vue d’ensemble"
     },
     "status": {
       "expired": "Terminé",

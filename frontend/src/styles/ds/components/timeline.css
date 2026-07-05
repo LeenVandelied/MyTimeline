@@ -225,3 +225,39 @@
 .mt-actionsheet__item:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 .mt-actionsheet__item--danger{color:var(--color-danger); border-color:var(--color-danger-soft);}
 .mt-actionsheet__item--cancel{justify-content:center; color:var(--color-ink-muted); background:transparent;}
+
+/* ============================================================================
+   #64 — Vue Timeline MOBILE PAYSAGE (`.mt-tlm--landscape`) + drawer latéral
+   touch (`.mt-drawer--landscape`) + toggle minimap masquable.
+   Réutilise 100% des `.mt-tlm*` #63 ; SEULE la densité (hauteurs de ligne) et le
+   conteneur de détail (drawer latéral vs bottom sheet) changent. Aucun token
+   nouveau. Breakpoints pilotés côté JS (orientation + hauteur, cf.
+   TimelineResponsive) — pas de token `--bp-*` (réserve ui-design #3).
+   ============================================================================ */
+
+/* Lanes DENSES : dérive --lane-height/--ruler-height LOCALEMENT (scope au
+   conteneur paysage → n'affecte ni portrait ni desktop). Plus de catégories
+   visibles sans scroll vertical (hauteur d'écran réduite en paysage).
+   Valeurs ad hoc : ruler 34px (vs 44), lane 34px (vs 44). */
+.mt-tlm--landscape{--ruler-height:34px; --lane-height:34px;}
+.mt-tlm--landscape .mt-tlm__lane{height:var(--lane-height);}
+.mt-tlm--landscape .mt-tlm__ruler{height:var(--ruler-height);}
+/* Bloc event compacté visuellement (24px) MAIS hitbox ≥ 44px conservée via le
+   pseudo `::before` (touch target PRIME sur la densité — réserve ui-design #1). */
+.mt-tlm--landscape .mt-tlm__evt{height:24px; min-height:24px; font-size:10.5px;}
+.mt-tlm--landscape .mt-tlm__evt::before{top:-10px; bottom:-10px;}
+.mt-tlm--landscape .mt-tlm__lane-label{font-size:10px;}
+.mt-tlm--landscape .mt-tlm__group-head{padding-top:2px; padding-bottom:2px;}
+
+/* Toggle minimap masquable : interactif → focus ring + état aria-pressed. */
+.mt-tlm__minimap-toggle{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-md); color:var(--color-ink-muted); cursor:pointer; transition:background var(--dur-micro), color var(--dur-micro);}
+.mt-tlm__minimap-toggle:hover{background:var(--color-surface-2);}
+.mt-tlm__minimap-toggle[aria-pressed="true"]{color:var(--color-accent); border-color:var(--color-accent);}
+.mt-tlm__minimap-toggle:disabled{opacity:.4; cursor:not-allowed;}
+.mt-tlm__minimap-toggle:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Drawer latéral variante PAYSAGE : largeur adaptée à un écran bas et large
+   (plafonne à 44vw pour laisser la frise visible derrière), bouton fermer ≥ 44px
+   (le desktop 28px n'est pas conforme touch — réserve ui-design). */
+.mt-drawer--landscape{width:min(360px, 44vw);}
+.mt-drawer__close--touch{width:44px; height:44px;}

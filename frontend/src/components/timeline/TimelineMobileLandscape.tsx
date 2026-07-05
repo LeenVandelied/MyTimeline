@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import { Minus, MoreHorizontal, Plus } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
+import { Minus, MoreHorizontal, Plus, Map as MapIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
 import { textOn } from '@/lib/color'
 import { Resource } from './lib'
 import { Minimap } from './Minimap'
-import { TimelineBottomSheet } from './TimelineBottomSheet'
+import { TimelineLandscapeDrawer } from './TimelineLandscapeDrawer'
 import { TimelineActionSheet } from './TimelineActionSheet'
 import { useTimelineMobileState, type TimelineMobileState } from './useTimelineMobileState'
 import { useTimelineMobileSelection, type TimelineMobileSelection } from './useTimelineMobileSelection'
@@ -15,43 +15,46 @@ import { useTimelineMobileGestures, type TimelineMobileGestures } from './useTim
 import { buildEventAriaLabel, statusToVar, ZOOM_LEVELS, type PositionedEvent } from './zoom'
 
 /**
- * #63 — Vue Timeline mobile portrait.
+ * #64 — Vue Timeline mobile PAYSAGE.
  *
- * Transposition mobile de `TimelineView` (desktop) SANS la modifier : partage la
- * logique via `useTimelineMobileState` (zoom `zoom.ts`, positions `lib.ts`,
- * scroll↔minimap) et réutilise `Minimap` en variante CSS compacte. Le switch
- * desktop/mobile vit au niveau du wrapper `TimelineResponsive`, pas ici.
+ * Dérivée de `TimelineMobilePortrait` (#63) : MÊME logique d'état
+ * (`useTimelineMobileState`), MÊMES gestes (`useTimelineMobileGestures` :
+ * pinch-zoom, long-press, `⋯`) et MÊMES data-testid E2E (#163). Diffère par la
+ * DISPOSITION uniquement (réserve architect : la régression viendrait d'une
+ * factorisation commune mal faite → on partage par hooks, pas par héritage CSS
+ * accidentel) :
+ *  - Lanes DENSES : hauteur de ligne réduite (variante CSS `.mt-tlm--landscape`,
+ *    dérive `--lane-height`/`--ruler-height`) → plus de catégories sans scroll
+ *    vertical. Touch target ≥ 44px PRÉSERVÉ via hitbox `::before` (comme portrait).
+ *  - Détail événement : DRAWER LATÉRAL DROIT (`.mt-drawer`) AU LIEU du bottom
+ *    sheet portrait (l'espace vertical réduit rend le sheet inadapté).
+ *  - Minimap MASQUABLE : togglable (bouton `aria-pressed`) + masquée d'office si
+ *    la hauteur dispo < seuil (~400px, décidé par `TimelineResponsive`).
  *
- * Interactions mobiles :
- *  - Scroll horizontal natif, règle sticky (top) pendant le scroll.
- *  - Tap sur bloc → bottom sheet détail. Blocs tronqués → titre complet au tap.
- *  - Long-press OU bouton `⋯` → action sheet (modifier/supprimer). Le `⋯` est
- *    l'alternative a11y visible au long-press (réserve ui-design).
- *  - Pinch-zoom (2 doigts) → mêmes niveaux/actions que desktop (`zoom.ts`), sans
- *    rechargement. Boutons +/- fournissent l'alternative accessible.
- *
- * #64 — État HISSABLE : `state`/`selection`/`gestures` sont injectables par
- * `TimelineResponsive` pour partager le zoom/scroll/sélection avec la variante
- * paysage (transition sans perte d'état). En usage autonome (stories/tests), le
- * composant s'auto-instancie → signature #63 préservée.
- *
- * data-testid `timeline-event` + `data-event-title` PRÉSERVÉS (dépendance E2E #163).
+ * État HISSÉ par `TimelineResponsive` (props `state`/`selection`/`gestures`) →
+ * transition portrait ↔ paysage SANS perte de scroll/zoom/sélection. En usage
+ * autonome (stories/tests), s'auto-instancie.
  */
-export interface TimelineMobilePortraitProps {
+export interface TimelineMobileLandscapeProps {
   events: FullCalendarEvent[]
   resources: Resource[]
   locale: string
   today?: Date
-  /** Câblage optionnel édition/suppression depuis l'action sheet. */
   onEditEvent?: (event: PositionedEvent) => void
   onDeleteEvent?: (event: PositionedEvent) => void
-  /** #64 — État partagé injecté par TimelineResponsive (sinon auto-instancié). */
+  /** État partagé injecté par TimelineResponsive (sinon auto-instancié). */
   state?: TimelineMobileState
   selection?: TimelineMobileSelection
   gestures?: TimelineMobileGestures
+  /**
+   * Force le masquage de la minimap (hauteur dispo < seuil). Quand `true`, le
+   * toggle utilisateur est neutralisé et la minimap reste cachée (contrainte
+   * d'espace prime sur la préférence). Défaut : `false`.
+   */
+  minimapForcedHidden?: boolean
 }
 
-export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
+export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = ({
   events,
   resources,
   locale,
@@ -61,11 +64,10 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
   state: injectedState,
   selection: injectedSelection,
   gestures: injectedGestures,
+  minimapForcedHidden = false,
 }) => {
   const t = useTranslations()
 
-  // #64 — Auto-instanciation en usage autonome ; sinon consomme l'état hissé.
-  // Les hooks sont TOUJOURS appelés (règles des hooks) ; on choisit la source.
   const ownState = useTimelineMobileState(events, resources, locale, today)
   const ownSelection = useTimelineMobileSelection()
   const state = injectedState ?? ownState
@@ -78,16 +80,20 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
   const gestures = injectedGestures ?? ownGestures
 
   const { selected, actionTarget, setSelected, setActionTarget } = selection
-  const levelLabel = t(`dashboard.timeline.zoom.${state.zoomLevel}`)
 
+  // Toggle utilisateur de la minimap. Masquage EFFECTIF = forcé (hauteur) OU choix.
+  const [userHidden, setUserHidden] = useState(false)
+  const minimapHidden = minimapForcedHidden || userHidden
+
+  const levelLabel = t(`dashboard.timeline.zoom.${state.zoomLevel}`)
   const groups = useMemo(
     () => Object.entries(state.resourcesByCategory),
     [state.resourcesByCategory],
   )
 
   return (
-    <div className="mt-tlm" data-testid="timeline-mobile-portrait">
-      {/* Toolbar compacte : zoom +/- + niveau. */}
+    <div className="mt-tlm mt-tlm--landscape" data-testid="timeline-mobile-landscape">
+      {/* Toolbar compacte : zoom +/- + niveau + toggle minimap masquable. */}
       <div className="mt-tlm__toolbar">
         <div className="mt-zoom" role="group" aria-label={t('dashboard.timeline.zoom.label')}>
           <button
@@ -114,9 +120,23 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
             <Plus size={14} strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
+
+        {/* Toggle minimap : masquable par l'utilisateur. Neutralisé (désactivé)
+            si la hauteur force déjà le masquage (contrainte d'espace prime). */}
+        <button
+          type="button"
+          className="mt-tlm__minimap-toggle"
+          aria-pressed={!minimapHidden}
+          aria-label={t('dashboard.timeline.minimap.toggle')}
+          disabled={minimapForcedHidden}
+          onClick={() => setUserHidden((v) => !v)}
+          data-testid="timeline-minimap-toggle"
+        >
+          <MapIcon size={14} strokeWidth={1.5} aria-hidden="true" />
+        </button>
       </div>
 
-      {/* Frise scrollable : règle sticky + lanes compactes. */}
+      {/* Frise scrollable : règle sticky + lanes DENSES. */}
       <div
         className="mt-tlm__scroll"
         ref={state.scrollRef}
@@ -128,7 +148,6 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
         data-testid="timeline-scroll"
       >
         <div className="mt-tlm__rail" style={{ width: `${state.railWidth}px` }}>
-          {/* Règle sticky adaptative. */}
           <div className="mt-tlm__ruler" data-testid="timeline-ruler">
             {state.ticks.map((tick, i) => (
               <div
@@ -152,7 +171,6 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
             </div>
           </div>
 
-          {/* Overlay week-end (niveaux fins uniquement). */}
           {state.weekendSegments.map((seg, i) => (
             <div
               key={i}
@@ -163,14 +181,12 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
             />
           ))}
 
-          {/* Ligne TODAY verticale. */}
           <div
             className="mt-tlm__today"
             style={{ left: `${state.todayLeftPx}px`, top: 'var(--ruler-height)' }}
             aria-hidden="true"
           />
 
-          {/* Lanes groupées par catégorie. */}
           {groups.map(([category, resList]) => (
             <div key={category} data-testid="timeline-group">
               <div className="mt-tlm__group-head" data-testid="timeline-group-head">
@@ -242,18 +258,22 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
         </div>
       </div>
 
-      {/* Minimap compacte (variante hauteur réduite). */}
-      <div className="mt-tlm__minimap">
-        <Minimap
-          buckets={state.buckets}
-          viewportStart={state.viewportStart}
-          viewportRatio={state.viewportRatio}
-          onSeek={state.onMinimapSeek}
-          ariaLabel={t('dashboard.timeline.minimap.label')}
-        />
-      </div>
+      {/* Minimap compacte MASQUABLE (hauteur ou choix utilisateur). */}
+      {!minimapHidden && (
+        <div className="mt-tlm__minimap" data-testid="timeline-minimap-wrap">
+          <Minimap
+            buckets={state.buckets}
+            viewportStart={state.viewportStart}
+            viewportRatio={state.viewportRatio}
+            onSeek={state.onMinimapSeek}
+            ariaLabel={t('dashboard.timeline.minimap.label')}
+          />
+        </div>
+      )}
 
-      <TimelineBottomSheet event={selected} locale={locale} onClose={() => setSelected(null)} />
+      {/* Détail : DRAWER LATÉRAL DROIT (remplace le bottom sheet portrait). */}
+      <TimelineLandscapeDrawer event={selected} locale={locale} onClose={() => setSelected(null)} />
+      {/* Action sheet réutilisé tel quel (parité gestes portrait/paysage). */}
       <TimelineActionSheet
         event={actionTarget}
         onClose={() => setActionTarget(null)}
@@ -264,4 +284,4 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
   )
 }
 
-export default TimelineMobilePortrait
+export default TimelineMobileLandscape

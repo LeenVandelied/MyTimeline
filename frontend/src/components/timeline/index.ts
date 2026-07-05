@@ -38,3 +38,13 @@ export type { TimelineActionSheetProps } from './TimelineActionSheet'
 export { useTimelineMobileState } from './useTimelineMobileState'
 export type { TimelineMobileState } from './useTimelineMobileState'
 export { useFocusTrap } from './useFocusTrap'
+
+// #64 — Vue Timeline mobile paysage (drawer latéral + lanes denses + minimap masquable).
+export { TimelineMobileLandscape } from './TimelineMobileLandscape'
+export type { TimelineMobileLandscapeProps } from './TimelineMobileLandscape'
+export { TimelineLandscapeDrawer } from './TimelineLandscapeDrawer'
+export type { TimelineLandscapeDrawerProps } from './TimelineLandscapeDrawer'
+export { useTimelineMobileSelection } from './useTimelineMobileSelection'
+export type { TimelineMobileSelection } from './useTimelineMobileSelection'
+export { useTimelineMobileGestures } from './useTimelineMobileGestures'
+export type { TimelineMobileGestures } from './useTimelineMobileGestures'

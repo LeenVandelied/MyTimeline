@@ -200,10 +200,13 @@ describe('TimelineResponsive (switch)', () => {
     expect(screen.queryByTestId('timeline-mobile-portrait')).not.toBeInTheDocument()
   })
 
-  it('bascule sur la vue mobile quand matchMedia matches:true', () => {
+  it('bascule sur la vue mobile portrait quand la media query portrait matche', () => {
     const original = window.matchMedia
+    // #64 : le switch distingue désormais portrait / paysage. On ne matche QUE
+    // la query portrait (matcher ciblé) — un `matches:true` global rendrait la
+    // variante paysage (priorité dans TimelineResponsive).
     window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-      matches: true,
+      matches: query.includes('portrait'),
       media: query,
       onchange: null,
       addEventListener: vi.fn(),
