@@ -464,7 +464,7 @@
 **Migrations Flyway :** **V12** (users.avatar_url) — SEULE migration de la série S19-S23, isolée ici
 **Dépend de :** aucune bloquante ; #75 (backend) précède #86/#87 (consomment POST /me/avatar) — intra-sprint
 **Risque clé :** #75 upload multipart = surface OWASP (MIME/taille/path-traversal) → **security-expert AVANT implémentation** + décision stockage (local vs objet) = ADR.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-05)
 
 ## Sprint 22 — 2026-07-05 (PLANIFIÉ — cohésion 0.67, Page Produits + Catégories frontend)
 **Objectif :** Page Produits (#68, liste+détail+catégories) + Drawer Catégorie (#62, desktop+mobile) + fix NPE backend (#186).

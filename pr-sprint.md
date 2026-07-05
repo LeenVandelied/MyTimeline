@@ -1,68 +1,58 @@
-# Sprint 19 — Timeline mobile + finitions desktop
+# Sprint 21 — Réglages utilisateur (avatar + écrans desktop/mobile)
 
-Vues Timeline mobiles (portrait #63, paysage #64) + finalisation des sous-composants desktop (extraction EventPill #192). Cohésion 0.71, epic `events`, aucune migration.
+Epic `auth` · cohésion 0.75 · milestone #21
+
+## Objectif
+Doter MyTimeline d'une page **Réglages** complète : upload d'avatar (backend), écrans desktop 4 chapitres, et déclinaison mobile drill-down.
 
 ## Issues livrées
 
-| # | Titre | Size | Commit |
-|---|-------|------|--------|
-| #192 | Timeline desktop — extraction EventPill | S (M→S) | `5fd7fcd` (+ fix `a0a94f1`) |
-| #63 | Vue Timeline mobile portrait | M | `962e6b7` |
-| #64 | Vue Timeline mobile paysage | M | `ac935f8` |
+| # | Titre | Commit |
+|---|-------|--------|
+| #75 | Backend upload avatar `POST/GET/DELETE /api/me/avatar` (stockage local + `StoragePort` hexagonal) | `ea89f59` |
+| #86 | Frontend Réglages desktop — 4 chapitres (Profil / Sécurité / Préférences / Compte) | `43d9e14` |
+| #87 | Frontend Réglages mobile — drill-down + bottom sheet suppression | `5b5bba6` |
+| — | Correction review : branchement avatar frontend bout-en-bout | `d10e4a3` |
 
-## Vagues d'exécution
-- **V1 (parallèle)** : #192 (extraction EventPill) ∥ #63 (conteneur mobile portrait) — fichiers disjoints.
-- **V2** : #64 (paysage) dérivé de la base mobile #63.
-- Pré-implémentation : `ui-design` a validé l'approche layout mobile (APPROUVE avec réserves — tokens, a11y, 3 gaps tranchés).
+**Vagues** : V1 = #75 (backend) ∥ #86 (frontend desktop) · V2 = #87 (réutilise #86 + #75) · Correction post-review.
 
 ## Changements clés
 
-### #192 — EventPill (desktop)
-- Extraction du rendu compact d'event en composant dédié `EventPill.tsx` (décision : composant dédié, PAS réutilisation d'`EventContent`). Branché dans `TimelineView`, stories + tests.
-- **BR-EVE-009** : encre de texte calculée par contraste WCAG (`contrastInk` → `--mt-evt-ink`) — fin du `#fff` hardcodé illisible sur fonds clairs.
+### Backend (#75)
+- Endpoints `POST` (multipart, part `file`) / `GET` (stream authentifié) / `DELETE` (204) `/api/me/avatar`.
+- Architecture hexagonale : `StoragePort` (domaine) + `LocalStorageAdapter` (infra) + `AvatarService`/`AvatarServiceImpl`. Le swap MinIO/S3 futur = nouvelle impl derrière le port.
+- `UserResponse` expose désormais `avatarUrl` (débloque la dette #151).
+- **Aucune migration** : la colonne `avatar` existait déjà (V7 #44). Dernière migration reste V11.
 
-### #63 — Mobile portrait
-- `TimelineResponsive` (switch desktop/mobile via `useMediaQuery`, breakpoint `max-width:640px`, SSR-safe), `TimelineMobilePortrait`, `TimelineBottomSheet` (`.mt-sheet`), `TimelineActionSheet` (long-press + `⋯`).
-- Règle sticky + scroll horizontal, minimap compacte, pinch-zoom (réutilise `zoom.ts`), hooks `useTimelineMobileState`/`useFocusTrap`.
-
-### #64 — Mobile paysage
-- `TimelineMobileLandscape` + `TimelineLandscapeDrawer` (drawer latéral droit au lieu du bottom sheet), lanes denses, minimap masquable (forcée si `max-height<400px` + toggle).
-- Breakpoint `orientation:landscape AND max-height:600px` (distingue mobile retourné d'un iPad Pro).
-- **Transition portrait↔paysage sans perte d'état** : état hissé dans `TimelineResponsive` (`useTimelineMobileState`/`Selection`/`Gestures`), non reset au resize.
+### Frontend (#86 / #87 / correction)
+- Page `/settings` : rendu conditionnel desktop (`SettingsShell` tablist) vs mobile (`MobileSettings` drill-down) via `useMediaQuery`.
+- 4 chapitres réutilisables (sections + hooks séparés présentation/logique) ; `BottomSheet` accessible (focus trap, Escape, swipe-down, safe-area iOS).
+- Avatar branché bout-en-bout : `userService.uploadAvatar/deleteAvatar`, `UserSchema.avatarUrl` (nullable), mutations TanStack Query + `refreshUser` (AuthContext), i18n 4 locales.
 
 ## BR impactées
-- **BR-EVE-001** (event↔user) : présentation seule, ownership enforced backend (inchangé) + parcours golden-path E2E.
-- **BR-EVE-009** (couleur/encre event) : appliquée dans EventPill + rendus mobiles via `lib/color.ts`.
+- **BR-AUT-001** — Le profil (dont avatar) appartient à l'utilisateur identifié ; seul lui peut le modifier/supprimer. Ownership dérivé du cookie JWT côté backend (jamais un id client). Suppression compte = re-saisie username.
 
-## ⚠ Incident merge résolu
-Le commit #63 (`962e6b7`) avait réécrit `TimelineView.tsx` depuis un état pré-#192 (pitfall worktree : écriture dans le repo principal puis recopie), clobbant l'intégration `<EventPill>`. **Détecté et corrigé par le lead** (`a0a94f1`) : réintégration `<EventPill>`, conservation du move `buildEventAriaLabel`→`zoom.ts`, rétablissement de l'export barrel. Ancestry #64 vérifiée propre.
+## Décision d'architecture (ADR)
+**Stockage avatar en local privé** (`STORAGE_AVATAR_PATH`, hors webroot, servi via endpoint authentifié) plutôt que MinIO/S3 + URL signée. Motif : aucune infra objet dans le repo (pas de docker-compose, pas de dépendance Maven, pas de `STORAGE_*`) → la monter mid-sprint = scope creep. `StoragePort` isole le choix ; migration objet différée en follow-up. **Déviation assumée** du critère d'acceptation initial de #75 (validée par security-expert).
 
-## Audit tests
-- **Frontend Vitest : 153/153 verts, 0 failed, 0 erreur TS** (timeline dir 64/64). tsc + eslint OK.
-- Backend non modifié.
-- `data-testid=timeline-event`/`data-event-title` préservés (golden-path E2E #163 intact, ligne 152).
-- Détail : `docs/memory/audits/sprint-19-test-coverage.md`.
+## Sécurité (audit OWASP upload — GO)
+Validation MIME par **magic bytes** (jamais Content-Type/extension), limite 5 Mo (config multipart + applicatif), nom stocké = UUID (anti path-traversal, `resolveWithinBase` double-check), endpoint authentifié, cleanup des orphelins, aucune fuite d'exception. 0 CRITIQUE / 0 MAJEUR.
 
-## Coverage E2E (Phase 8) — MAJEUR non bloquant
-Les nouveaux testids **mobiles** (`timeline-mobile-portrait/landscape`, `timeline-sheet*`, `timeline-actionsheet*`, `timeline-landscape-drawer*`, `timeline-minimap-toggle`) n'ont pas de spec E2E (dossier e2e minimal, gestes pinch/pointer peu fiables headless).
-→ **Plan : `/create-e2e` post-merge** (parcours mobile portrait/paysage).
+## Tests
+- Backend : **268/268** verts (magic bytes, ownership, path-traversal, cleanup, DELETE idempotent).
+- Frontend : **271/271** verts (261 baseline + 10 correction avatar) ; `tsc` + `next build` 0 erreur.
+- Détail : `docs/memory/audits/sprint-21-test-coverage.md`.
 
-## Review batch
-Deux passes reviewer indépendantes (Phase 7 sprint + `/review-pr 203`).
+## Review
+- security-expert : **GO** (upload cité comme modèle de référence).
+- reviewer batch : 0 CRITIQUE / 3 MAJEUR / 3 MINEUR → **3 MAJEUR résolus** (`d10e4a3`), MINEUR non bloquants.
 
-**Phase 7 (implémentation)** — 0 CRIT / 0 MAJ / 3 MIN. MINEUR corrigé : cast `as TimelineMobileState` redondant (`03dde79`).
+## Coverage E2E — action post-merge
+54 nouveaux `data-testid` (flux avatar/password/delete/export/sessions) sans spec E2E dédiée. Infra E2E naissante + wrapper sans backend orchestré. **Plan : `/create-e2e` après merge** (le contrat cross-system est couvert en intégration MockMvc + composant).
 
-**`/review-pr 203` (pass fraîche post-fixes)** — **0 CRIT / 1 MAJ / 3 MIN, aucun bloquant** :
-- **[MAJEUR]** `TimelineActionSheet` rend Modifier/Supprimer mais les callbacks ne sont pas câblés au dashboard → boutons inertes sur mobile (dead-end). **Décision dev : follow-up non bloquant** (parité desktop — la timeline desktop n'édite/supprime pas non plus). Câblage services (updateEvent/deleteEvent + ownership BR-EVE-008) = issue de suivi, triage `/sprint end`.
-- [MINEUR] encre `textOn` inline vs `--mt-evt-ink` : pattern BR-EVE-009 cohérent (PAT-S18-001) → nit.
-- [MINEUR] `useFocusTrap` capture `previousFocus` : pattern focus-trap standard, pas de bug → aucune action.
-- [MINEUR] hooks instanciés en desktop (no-op documenté) → aucune action.
-- [OK] non-régression desktop, testids préservés, a11y dialogs, tokens, TS strict, état hissé, i18n 4 locales, tsc/vitest verts.
-
-## Follow-ups détectés (triage en /sprint end)
-- `EventBar.tsx` + `Lane.tsx` désormais orphelins (briques #47 sans consommateur runtime) — statuer retrait/déprécation. [S]
-- Stories Storybook paysage + spec E2E rotation. [S]
-- `test-quiet.sh` alias `e2e` exécute vitest au lieu de playwright (limitation lib plugin). [tooling]
-- Câblage service `onEdit`/`onDelete` action sheet (parité desktop). [S]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+## Follow-ups identifiés (triage en `/sprint end`)
+- Brancher l'export données RGPD (`GET /api/me/export` non livré backend, stub UI).
+- Migration stockage objet (MinIO/S3) derrière `StoragePort`.
+- Resize/normalisation image (ré-encodage anti-EXIF), cache/ETag sur `GET /api/me/avatar`.
+- Documenter `STORAGE_AVATAR_PATH` dans le runbook déploiement.
+- Gestion clavier virtuel Android (`visualViewport`) — vérifier sur device réel.
