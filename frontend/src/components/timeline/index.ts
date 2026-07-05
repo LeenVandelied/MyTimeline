@@ -14,3 +14,12 @@ export type { EventBarProps } from './EventBar'
 export { Cursor } from './Cursor'
 export type { CursorProps } from './Cursor'
 export * from './lib'
+
+// #55 — Vue Timeline desktop (frise continue, zoom, minimap, drawer, raccourcis).
+export { TimelineView } from './TimelineView'
+export type { TimelineViewProps } from './TimelineView'
+export { Minimap } from './Minimap'
+export type { MinimapProps } from './Minimap'
+export { EventDrawer } from './EventDrawer'
+export type { EventDrawerProps } from './EventDrawer'
+export * from './zoom'

@@ -95,7 +95,8 @@
     "next": "Suivant",
     "today": "Aujourd'hui",
     "showMore": "Voir plus",
-    "showLess": "Voir moins"
+    "showLess": "Voir moins",
+    "close": "Fermer"
   },
   "loading": {
     "default": "Chargement...",
@@ -227,4 +228,4 @@
     "testimonials": "Témoignages",
     "legal": "Légal"
   }
-} 
+}

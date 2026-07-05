@@ -97,3 +97,6 @@ Pour attacher une FK (`EventEntity.product`) sans couplage infra-infra, utiliser
 
 ## DEC-S16-002 — Convention stories Storybook DS
 Stories `*.stories.tsx` colocalisées à côté du composant sous `src/components/**`, format CSF3 (`satisfies Meta<typeof X>`, `tags:['autodocs']`, titres `UI/<Composant>` ou `Timeline/<Composant>`), imports `@storybook/react-vite` (post-SB10). Les composants consomment les classes `.mt-*` de `ds/components/core.css` ; les composants shadcn/Radix existants sont alignés via le remap `@theme` de globals.css (pas de réécriture). `core.css` chargé côté Storybook uniquement (`.storybook/preview.ts`), pas dans globals.css app (décision #45). (Sprint 16 #46/#47)
+
+## DEC-S17-001 — Timeline desktop : pas de virtualisation avant seuil >500 events actifs
+La Vue Timeline (#55) rend les événements en blocs positionnés en absolu (`left:${px}px`), coût lié au NOMBRE d'events, pas au nombre de jours. Décision : NE PAS introduire `@tanstack/react-virtual` au MVP — complexité non justifiée avant mesure, et la virtualisation horizontale rentre en tension avec l'a11y (nœuds hors DOM cassent le tab). Seuil de re-décision : >500 events actifs (tier PRO, BR-EVE-011). Zoom = `useReducer` local (pas de Zustand). (Sprint 17 #55)

@@ -183,3 +183,12 @@ Un subagent lancé depuis un worktree peut voir son `Bash cd <chemin relatif>` r
 
 ## PIT-S16-004 — id généré via compteur module-level → mismatch d'hydratation SSR
 Un id (ex. `aria-describedby`) construit via `let seq = 0` + `++seq` au render diverge entre serveur et client (Next SSR) → mismatch d'hydratation. `useMemo` ne garantit pas la stabilité et un `++` en effet de bord y est un anti-pattern. Utiliser `React.useId()` (dispo React 18.3.1). (Sprint 16 #46, review PR#189)
+
+## PIT-S17-001 — Migration vers classes DS `.mt-*` : vérifier que `globals.css` importe la feuille DS
+Migrer un composant vers les classes `.mt-*` (`ds/components/*.css`) ne suffit pas si `globals.css` n'`@import`e pas ces feuilles : les classes existent mais ne sont PAS stylées au runtime (le composant paraît nu, aucune erreur). La feuille DS `styles.css` n'est pas linkée par l'app (décision #45 : chargée côté Storybook seulement). Fix : ajouter les `@import` `ds/components/core.css`+`timeline.css` dans `globals.css`. Prévention : avant migration `.mt-*`, confirmer que la feuille correspondante est chargée par `globals.css`. (Sprint 17 #55)
+
+## PIT-S17-002 — Concat de classes CSS en template string : l'espace séparateur saute silencieusement
+`` `base${cond ? ' mod' : ''}` `` peut produire `basemod` (espace perdu) → classe invalide `mt-xmt-y` non appliquée, sans erreur. Préférer un ternaire renvoyant la classe complète ou `[...].filter(Boolean).join(' ')`. (Sprint 17 #55)
+
+## PIT-S17-003 — Réécriture de composant : un `data-testid`/contenu couvert par E2E mais pas par l'unit se perd silencieusement
+La réécriture `TimelineCalendar`→`TimelineView` (#55) a droppé le rendu de `resource.title` + son `data-testid="timeline-resource-title"`, couvert par le golden-path E2E mais PAS par l'unit test (qui n'assertait que le NOMBRE de lanes). Vitest+tsc verts, mais CI e2e rouge post-push. Prévention : lors d'une réécriture/extraction, grep les `data-testid` de l'ancien composant et vérifier qu'ils survivent OU que l'e2e/unit est mis à jour dans le même commit ; un unit test qui COMPTE des éléments sans asserter leur CONTENU ne protège pas contre une perte de contenu. (Sprint 17 #55, review PR#194)
