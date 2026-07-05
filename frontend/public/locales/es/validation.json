@@ -18,7 +18,8 @@
     "uppercase": "La contraseña debe contener al menos una mayúscula",
     "number": "La contraseña debe contener al menos un número",
     "match": "Las contraseñas no coinciden",
-    "required": "La contraseña es requerida"
+    "required": "La contraseña es requerida",
+    "same": "La nueva contraseña debe ser diferente de la anterior"
   },
   "event": {
     "titleRequired": "El título del evento es obligatorio",

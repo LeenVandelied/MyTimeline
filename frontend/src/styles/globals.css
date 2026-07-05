@@ -153,6 +153,17 @@
 /* base.css du DS gère déjà body { background:var(--color-bg); color:var(--color-ink) }.
    On ne hardcode plus aucune couleur ici. */
 
+/* #86 — Densité d'affichage (Réglages > Préférences). `useDensity` pose
+   `data-density` sur <html> ; on ajuste la taille de base (rem) pour un rendu
+   plus dense ou plus aéré, sans rechargement. `normal` = défaut (aucun override).
+   Effet volontairement modéré (±6 %) pour ne pas casser les mises en page. */
+html[data-density='compact'] {
+  font-size: 15px;
+}
+html[data-density='comfortable'] {
+  font-size: 17px;
+}
+
 /* #83 — Masque la scrollbar (ruban densité scrollable + carousel produits mobile).
    base.css impose une scrollbar webkit 10px globale ; `scrollbar-width:none` seul
    ne suffit pas sous Chromium → on neutralise aussi `::-webkit-scrollbar`. Le

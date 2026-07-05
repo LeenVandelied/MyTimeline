@@ -18,7 +18,8 @@
     "uppercase": "Le mot de passe doit contenir au moins une majuscule",
     "number": "Le mot de passe doit contenir au moins un chiffre",
     "match": "Les mots de passe ne correspondent pas",
-    "required": "Le mot de passe est requis"
+    "required": "Le mot de passe est requis",
+    "same": "Le nouveau mot de passe doit être différent de l'ancien"
   },
   "event": {
     "titleRequired": "Le titre de l'événement est requis",

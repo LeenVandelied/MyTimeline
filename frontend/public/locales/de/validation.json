@@ -18,7 +18,8 @@
     "uppercase": "Das Passwort muss mindestens einen Großbuchstaben enthalten",
     "number": "Das Passwort muss mindestens eine Zahl enthalten",
     "match": "Die Passwörter stimmen nicht überein",
-    "required": "Passwort ist erforderlich"
+    "required": "Passwort ist erforderlich",
+    "same": "Das neue Passwort muss sich vom alten unterscheiden"
   },
   "event": {
     "titleRequired": "Der Titel des Ereignisses ist erforderlich",

@@ -1,0 +1,133 @@
+{
+  "pageTitle": "Einstellungen",
+  "loading": "Wird geladen…",
+  "backToDashboard": "Zurück zum Dashboard",
+  "common": {
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "cancel": "Abbrechen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "continue": "Fortfahren",
+    "genericError": "Ein Fehler ist aufgetreten, bitte versuchen Sie es erneut."
+  },
+  "nav": {
+    "aria": "Einstellungskapitel",
+    "profile": "Profil",
+    "security": "Sicherheit",
+    "preferences": "Einstellungen",
+    "account": "Konto"
+  },
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Verwalten Sie Ihre persönlichen Informationen.",
+    "name": "Name",
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "saved": "Profil gespeichert",
+    "errors": {
+      "usernameTaken": "Dieser Benutzername ist bereits vergeben"
+    },
+    "avatar": {
+      "title": "Avatar",
+      "current": "Aktueller Avatar",
+      "dropzone": "Bild hierher ziehen oder klicken zum Auswählen",
+      "hint": "PNG oder JPG, maximal 5 MB",
+      "zoom": "Zoom",
+      "apply": "Anwenden",
+      "delete": "Avatar entfernen",
+      "errorType": "Die Datei muss ein Bild sein",
+      "errorSize": "Das Bild darf 5 MB nicht überschreiten",
+      "comingSoon": "Avatar-Upload folgt in Kürze"
+    }
+  },
+  "security": {
+    "title": "Sicherheit",
+    "subtitle": "Passwort und aktive Sitzungen.",
+    "password": {
+      "title": "Passwort ändern",
+      "old": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "confirm": "Neues Passwort bestätigen",
+      "submit": "Passwort aktualisieren",
+      "changed": "Passwort aktualisiert",
+      "wrongOld": "Das aktuelle Passwort ist falsch"
+    },
+    "strength": {
+      "weak": "Schwach",
+      "medium": "Mittel",
+      "strong": "Stark"
+    },
+    "sessions": {
+      "title": "Aktive Sitzungen",
+      "loading": "Sitzungen werden geladen…",
+      "error": "Sitzungen können nicht geladen werden",
+      "empty": "Keine aktive Sitzung",
+      "current": "Aktuelle Sitzung",
+      "unknownDevice": "Unbekanntes Gerät",
+      "unknownIp": "Unbekannte IP",
+      "revoke": "Widerrufen",
+      "revokeOne": "Diese Sitzung widerrufen",
+      "revoked": "Sitzung widerrufen",
+      "revokeOthers": "Alle anderen Sitzungen widerrufen",
+      "revokedOthers": "Andere Sitzungen widerrufen"
+    }
+  },
+  "preferences": {
+    "title": "Einstellungen",
+    "subtitle": "Sprache, Design und Anzeigedichte.",
+    "language": {
+      "label": "Sprache",
+      "options": {
+        "fr": "Français",
+        "en": "English",
+        "es": "Español",
+        "de": "Deutsch"
+      }
+    },
+    "theme": {
+      "label": "Design",
+      "options": {
+        "light": "Hell",
+        "dark": "Dunkel",
+        "system": "System"
+      }
+    },
+    "density": {
+      "label": "Dichte",
+      "options": {
+        "compact": "Kompakt",
+        "normal": "Normal",
+        "comfortable": "Komfortabel"
+      }
+    }
+  },
+  "account": {
+    "title": "Konto",
+    "subtitle": "Exportieren Sie Ihre Daten oder löschen Sie Ihr Konto.",
+    "export": {
+      "title": "Meine Daten exportieren",
+      "description": "Laden Sie eine Kopie Ihrer Daten im JSON- oder CSV-Format herunter.",
+      "confirm": "Export im Format {format} erstellen?",
+      "generating": "Wird erstellt…",
+      "download": "Herunterladen",
+      "done": "Export erstellt und heruntergeladen.",
+      "again": "Neuer Export",
+      "comingSoon": "Datenexport folgt in Kürze"
+    },
+    "delete": {
+      "title": "Mein Konto löschen",
+      "description": "Diese Aktion ist dauerhaft und unumkehrbar.",
+      "button": "Konto löschen",
+      "warnTitle": "Ihr Konto dauerhaft löschen?",
+      "warnBody": "Alle Ihre Daten (Produkte, Ereignisse, Kategorien) werden unwiderruflich gelöscht.",
+      "confirmTitle": "Löschung bestätigen",
+      "confirmBody": "Geben Sie zur Bestätigung Ihren Benutzernamen „{username}“ ein.",
+      "usernameLabel": "Benutzername",
+      "confirmButton": "Dauerhaft löschen",
+      "deleting": "Wird gelöscht…",
+      "mismatch": "Der Benutzername stimmt nicht überein",
+      "done": "Konto gelöscht"
+    }
+  }
+}
