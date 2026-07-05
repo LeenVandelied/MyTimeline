@@ -44,6 +44,15 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
 }))
 
+// ResizeObserver non implémenté dans jsdom — requis par Radix (Select, Popover…).
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}
+
 // matchMedia non implémenté dans jsdom — requis par next-themes / composants responsive.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

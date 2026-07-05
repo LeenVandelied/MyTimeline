@@ -33,7 +33,11 @@
         "recurring": "Recurring",
         "recurrenceUnit": "Recurrence Frequency",
         "recurrenceUnitPlaceholder": "Choose frequency",
-        "submit": "Add Event"
+        "submit": "Add Event",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "recurrenceEndDate": "Recurrence end",
+        "recurrenceEndHint": "Optional — the recurrence will be capped at this date."
       },
       "types": {
         "duration": "Duration",

@@ -176,4 +176,64 @@ describe('eventEditSchema', () => {
     })
     expect(res.success).toBe(true)
   })
+
+  // #66 — BR-EVE-002 : endDate >= startDate.
+  it('refine BR-EVE-002 : rejette endDate < startDate', () => {
+    const res = eventEditSchema.safeParse({
+      title: 'Titre',
+      type: 'duration',
+      startDate: '2026-05-10',
+      endDate: '2026-05-01',
+    })
+    expect(res.success).toBe(false)
+    if (!res.success) {
+      expect(res.error.issues.some((i) => i.path.includes('endDate'))).toBe(true)
+    }
+  })
+
+  it('refine BR-EVE-002 : endDate == startDate accepté (>=)', () => {
+    const res = eventEditSchema.safeParse({
+      title: 'Titre',
+      type: 'duration',
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
+    })
+    expect(res.success).toBe(true)
+  })
+
+  // #66 — BR-EVE-003 : titre 1..100.
+  it('refine BR-EVE-003 : rejette titre vide', () => {
+    const res = eventEditSchema.safeParse({ title: '', type: 'single' })
+    expect(res.success).toBe(false)
+    if (!res.success) {
+      expect(res.error.issues.some((i) => i.path.includes('title'))).toBe(true)
+    }
+  })
+
+  it('refine BR-EVE-003 : rejette titre > 100 caractères', () => {
+    const res = eventEditSchema.safeParse({ title: 'x'.repeat(101), type: 'single' })
+    expect(res.success).toBe(false)
+  })
+
+  // #66 — BR-EVE-009 : format hex.
+  it('refine BR-EVE-009 : rejette une couleur hex invalide', () => {
+    const res = eventEditSchema.safeParse({ title: 'T', type: 'single', color: 'bleu' })
+    expect(res.success).toBe(false)
+    if (!res.success) {
+      expect(res.error.issues.some((i) => i.path.includes('color'))).toBe(true)
+    }
+  })
+
+  it('refine BR-EVE-009 : accepte #RGB et #RRGGBB', () => {
+    expect(eventEditSchema.safeParse({ title: 'T', type: 'single', color: '#fff' }).success).toBe(
+      true,
+    )
+    expect(
+      eventEditSchema.safeParse({ title: 'T', type: 'single', color: '#3B82F6' }).success,
+    ).toBe(true)
+  })
+
+  it('BR-EVE-009 : couleur vide tolérée (couleur non modifiée)', () => {
+    expect(eventEditSchema.safeParse({ title: 'T', type: 'single', color: '' }).success).toBe(true)
+  })
 })

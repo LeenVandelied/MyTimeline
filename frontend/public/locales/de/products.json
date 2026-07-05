@@ -33,7 +33,11 @@
         "recurring": "Wiederkehrend",
         "recurrenceUnit": "Wiederholungsfrequenz",
         "recurrenceUnitPlaceholder": "Frequenz auswählen",
-        "submit": "Ereignis hinzufügen"
+        "submit": "Ereignis hinzufügen",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "recurrenceEndDate": "Wiederholungsende",
+        "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt."
       },
       "types": {
         "duration": "Dauer",
