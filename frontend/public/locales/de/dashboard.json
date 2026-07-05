@@ -44,6 +44,14 @@
       "label": "Produkte, horizontales Scrollen"
     }
   },
+  "landscape": {
+    "rail": {
+      "label": "Navigation",
+      "home": "Startseite",
+      "products": "Produkte",
+      "logout": "Abmelden"
+    }
+  },
   "kpi": {
     "title": "Kurzüberblick",
     "label": "Kennzahlen",

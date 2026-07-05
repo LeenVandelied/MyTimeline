@@ -44,6 +44,14 @@
       "label": "Productos, desplazamiento horizontal"
     }
   },
+  "landscape": {
+    "rail": {
+      "label": "Navegación",
+      "home": "Inicio",
+      "products": "Productos",
+      "logout": "Cerrar sesión"
+    }
+  },
   "kpi": {
     "title": "En resumen",
     "label": "Indicadores clave",

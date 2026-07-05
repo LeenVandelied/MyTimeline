@@ -44,6 +44,14 @@
       "label": "Produits, défilement horizontal"
     }
   },
+  "landscape": {
+    "rail": {
+      "label": "Navigation",
+      "home": "Accueil",
+      "products": "Produits",
+      "logout": "Déconnexion"
+    }
+  },
   "kpi": {
     "title": "En bref",
     "label": "Indicateurs clés",

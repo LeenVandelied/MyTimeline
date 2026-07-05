@@ -22,6 +22,7 @@ import {
   CompactAgenda,
   ProductCarousel,
   MobileDrawer,
+  CompactRail,
 } from '@/components/dashboard'
 
 /**
@@ -32,9 +33,18 @@ import {
  * par le hamburger. Le rendu DESKTOP #80 est INCHANGÉ : les composants #80 sont
  * réutilisés (variantes / props), aucune donnée n'est chargée hors `useDashboardData`.
  *
+ * #85 — Variante mobile PAYSAGE (orientation landscape, hauteur < 500px, largeur
+ * > 667px) : rail vertical persistant 64px (`CompactRail`) au bord gauche +
+ * contenu en 2 colonnes (CSS Grid) à droite. Le hamburger portrait est masqué
+ * (remplacé par le rail). Aucun composant recréé : `CompactAgenda`, `DensityRibbon`
+ * (scrollable), `ProductCarousel` réutilisés tels quels ; même source data
+ * `useDashboardData` (pas de remount coûteux au switch d'orientation).
+ *
  * Bascule via `useMediaQuery` (SSR-safe : rend `false` au 1er rendu → desktop par
- * défaut, pas de hydration mismatch). Les contrôles header desktop (langue + logout)
- * sont masqués sur mobile (`hidden md:flex`), remplacés par le hamburger (`md:hidden`).
+ * défaut, pas de hydration mismatch). Le switch d'affichage est TERNAIRE :
+ * paysage > portrait > desktop. Les contrôles header desktop (langue + logout)
+ * sont masqués sur mobile (`hidden md:flex`) ; le hamburger n'apparaît qu'en
+ * portrait (`md:hidden` + masqué en paysage), remplacé par le rail en paysage.
  */
 export default function Dashboard() {
   const t = useTranslations()
@@ -43,6 +53,9 @@ export default function Dashboard() {
   const router = useRouter()
   const { events, products, kpis, isLoading, resources, refetch } = useDashboardData(user?.id)
   const isMobile = useMediaQuery('(max-width: 767px)')
+  // #85 — Paysage mobile : hauteur contrainte impose le rail vertical plutôt que
+  // le hamburger portrait. Prioritaire sur `isMobile` dans le switch ternaire.
+  const isLandscape = useMediaQuery('(orientation: landscape) and (max-height: 500px)')
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
@@ -59,6 +72,16 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Erreur lors de la déconnexion :', safeErrorMessage(error))
     }
+  }
+
+  // #85 — Handlers du rail paysage. `accueil` navigue vers la landing localisée ;
+  // `produits` fait défiler vers la colonne produits (pas de route dédiée — les
+  // produits vivent dans le dashboard).
+  const handleHome = () => router.push(`/${locale}/home`)
+  const handleProducts = () => {
+    document
+      .querySelector('[data-testid="dashboard-landscape-products"]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
   if (loading) {
@@ -93,22 +116,49 @@ export default function Dashboard() {
               <span>{t('common.buttons.logout')}</span>
             </Button>
           </div>
-          {/* Hamburger mobile — ouvre le drawer off-canvas (#83). */}
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label={t('dashboard.mobile.menu')}
-            aria-haspopup="dialog"
-            aria-expanded={drawerOpen}
-            data-testid="dashboard-mobile-menu-button"
-            className="text-ink hover:bg-accent-soft focus-visible:ring-focus flex h-11 w-11 items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:outline-none md:hidden"
-          >
-            <Menu className="h-5 w-5" aria-hidden="true" />
-          </button>
+          {/* Hamburger mobile portrait — ouvre le drawer off-canvas (#83).
+              #85 : masqué en paysage (remplacé par le rail vertical). */}
+          {!isLandscape && (
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-label={t('dashboard.mobile.menu')}
+              aria-haspopup="dialog"
+              aria-expanded={drawerOpen}
+              data-testid="dashboard-mobile-menu-button"
+              className="text-ink hover:bg-accent-soft focus-visible:ring-focus flex h-11 w-11 items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:outline-none md:hidden"
+            >
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </header>
 
-      {isMobile ? (
+      {isLandscape ? (
+        // -------- Mobile paysage : rail 64px + grille 2 colonnes (#85) --------
+        <div className="flex flex-1 overflow-hidden" data-testid="dashboard-landscape">
+          <CompactRail
+            onHome={handleHome}
+            onProducts={handleProducts}
+            onLogout={handleLogout}
+            activeId="home"
+          />
+          <main className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 overflow-y-auto px-4 py-4">
+            {/* Colonne gauche : agenda compact jour + lendemain. */}
+            <div className="min-w-0" data-testid="dashboard-landscape-agenda">
+              <CompactAgenda events={events} />
+            </div>
+            {/* Colonne droite : ruban densité (scrollable) + produits. */}
+            <div
+              className="flex min-w-0 flex-col gap-4"
+              data-testid="dashboard-landscape-products"
+            >
+              <DensityRibbon events={events} locale={locale} scrollable />
+              <ProductCarousel products={products} locale={locale} />
+            </div>
+          </main>
+        </div>
+      ) : isMobile ? (
         // -------- Mobile portrait single-column (#83) --------
         <main
           className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6"

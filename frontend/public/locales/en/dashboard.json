@@ -44,6 +44,14 @@
       "label": "Products, horizontal scroll"
     }
   },
+  "landscape": {
+    "rail": {
+      "label": "Navigation",
+      "home": "Home",
+      "products": "Products",
+      "logout": "Log out"
+    }
+  },
   "kpi": {
     "title": "At a glance",
     "label": "Key indicators",
