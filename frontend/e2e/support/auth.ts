@@ -68,15 +68,50 @@ export async function registerAndLogin(page: Page, prefix = 'e2e'): Promise<E2eI
 }
 
 /**
- * Ouvre les Réglages (desktop) via le lien du dashboard et se place sur le
+ * Attend que la session (cookie storageState) soit RESTAURÉE côté client avant de
+ * naviguer vers une route protégée. Avec `storageState`, la page démarre anonyme :
+ * `AuthProvider` re-fetch `GET /api/auth/me` au montage, et tant que ce fetch n'a
+ * pas abouti une route protégée peut redirect vers /fr/login (redirection
+ * concurrente -> `net::ERR_ABORTED` sur un `goto` lancé trop tôt).
+ *
+ * On stabilise donc l'auth sur le DASHBOARD (route protégée simple) : une fois
+ * `dashboard` visible, le cookie est validé et l'état auth est restauré ; les
+ * navigations suivantes (`/fr/settings`) ne redirigent plus vers login.
+ */
+export async function ensureAuthenticated(page: Page): Promise<void> {
+  await page.goto('/fr/dashboard', { waitUntil: 'domcontentloaded' })
+  await expect(page.getByTestId('dashboard')).toBeVisible()
+}
+
+/**
+ * Ouvre les Réglages (desktop) via navigation directe et se place sur le
  * chapitre désiré (tablist WAI-ARIA). Suppose une viewport >= 768px.
+ *
+ * Fiabilisation (BUG navigation `ERR_ABORTED`) :
+ *  - on s'assure d'abord que l'auth est restaurée (`ensureAuthenticated`) pour
+ *    éviter une redirection concurrente vers /fr/login pendant le `goto` ;
+ *  - `waitUntil: 'domcontentloaded'` (ne bloque pas sur les requêtes réseau
+ *    tardives, ex. image d'avatar) puis attente explicite de `settings-page` ;
+ *  - petit retry de navigation si la page settings n'apparaît pas (redirection
+ *    résiduelle rare au tout premier rendu).
  */
 export async function openSettingsChapter(
   page: Page,
   chapter: 'profile' | 'security' | 'preferences' | 'account',
 ): Promise<void> {
-  await page.goto('/fr/settings')
-  await expect(page.getByTestId('settings-page')).toBeVisible()
+  await ensureAuthenticated(page)
+
+  await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
+  try {
+    await expect(page.getByTestId('settings-page')).toBeVisible({ timeout: 10_000 })
+  } catch {
+    // Redirection résiduelle (retour sur login le temps de la restauration) : on
+    // re-stabilise l'auth et on retente une fois la navigation vers les réglages.
+    await ensureAuthenticated(page)
+    await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('settings-page')).toBeVisible()
+  }
+
   await expect(page.getByTestId('settings-tablist')).toBeVisible()
   await page.getByTestId(`settings-tab-${chapter}`).click()
   await expect(page.getByTestId(`settings-tab-${chapter}`)).toHaveAttribute(

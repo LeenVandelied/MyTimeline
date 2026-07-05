@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { registerAndLogin, openSettingsChapter, minimalPngBuffer } from './support/auth'
+import { openSettingsChapter, minimalPngBuffer } from './support/auth'
+import { SHARED } from './support/accounts'
 
 /**
  * #86 / #75 — E2E chapitre Profil (desktop) : upload/recadrage/suppression
@@ -15,9 +16,14 @@ import { registerAndLogin, openSettingsChapter, minimalPngBuffer } from './suppo
  * jamais sur du texte de toast.
  */
 
+// Compte partagé fixe (storageState) : ZÉRO register par test (anti rate-limit).
+// Ce fichier MUTE l'état backend du compte partagé (nom, avatar) -> `serial` pour
+// éviter tout entrelacement entre tests (et clobber du compte partagé).
+test.use({ storageState: SHARED.storageState })
+test.describe.configure({ mode: 'serial' })
+
 test.describe('Réglages — Profil : avatar + champs', () => {
   test('upload avatar (crop -> confirm), puis suppression', async ({ page }) => {
-    await registerAndLogin(page, 'pa')
     await openSettingsChapter(page, 'profile')
 
     const avatar = page.getByTestId('avatar-upload')
@@ -43,7 +49,13 @@ test.describe('Réglages — Profil : avatar + champs', () => {
 
     // Le cropper se ferme et l'avatar (<img src=/api/me/avatar>) apparaît.
     await expect(page.getByTestId('avatar-cropper')).toHaveCount(0)
-    await expect(avatar.locator('img')).toBeVisible()
+    // Attente DÉTERMINISTE sur l'état DOM (pas le rendu pixel) : le <img> est monté
+    // et porte un src d'avatar. `currentAvatarUrl` (AuthContext resync post-upload)
+    // est non-null -> ProfileSection rend le <img src={avatarUrl}>. On n'exige PAS
+    // que l'image ait fini de charger (GET authentifié potentiellement lent).
+    const uploadedImg = avatar.locator('img')
+    await expect(uploadedImg).toHaveCount(1)
+    await expect(uploadedImg).toHaveAttribute('src', /\S/)
     // Le bouton de suppression n'apparaît que lorsqu'un avatar existe.
     await expect(page.getByTestId('avatar-delete')).toBeVisible()
 
@@ -54,7 +66,6 @@ test.describe('Réglages — Profil : avatar + champs', () => {
   })
 
   test('fichier non-image -> message d’erreur avatar', async ({ page }) => {
-    await registerAndLogin(page, 'pae')
     await openSettingsChapter(page, 'profile')
 
     // Un fichier texte (mimeType non image) : loadFile rejette avant tout upload.
@@ -70,14 +81,14 @@ test.describe('Réglages — Profil : avatar + champs', () => {
   })
 
   test('édition du nom -> PATCH /me -> persistance après reload', async ({ page }) => {
-    const identity = await registerAndLogin(page, 'pf')
     await openSettingsChapter(page, 'profile')
 
     await expect(page.getByTestId('profile-form')).toBeVisible()
-    // Le formulaire est pré-rempli depuis AuthContext.
-    await expect(page.getByTestId('profile-username')).toHaveValue(identity.username)
+    // Le formulaire est pré-rempli depuis AuthContext (compte partagé fixe).
+    await expect(page.getByTestId('profile-username')).toHaveValue(SHARED.username)
 
-    const newName = `New ${identity.suffix}`.slice(0, 20)
+    // Nouveau nom unique par run (borné 20) : PATCH /me modifie SEULEMENT `name`.
+    const newName = `N${Date.now().toString().slice(-8)}`.slice(0, 20)
     await page.getByTestId('profile-name').fill(newName)
     await page.getByTestId('profile-submit').click()
 
@@ -86,7 +97,7 @@ test.describe('Réglages — Profil : avatar + champs', () => {
     await openSettingsChapter(page, 'profile')
     await expect(page.getByTestId('profile-name')).toHaveValue(newName)
     // username/email inchangés.
-    await expect(page.getByTestId('profile-username')).toHaveValue(identity.username)
-    await expect(page.getByTestId('profile-email')).toHaveValue(identity.email)
+    await expect(page.getByTestId('profile-username')).toHaveValue(SHARED.username)
+    await expect(page.getByTestId('profile-email')).toHaveValue(SHARED.email)
   })
 })

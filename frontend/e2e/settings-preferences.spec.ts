@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { registerAndLogin, openSettingsChapter } from './support/auth'
+import { openSettingsChapter } from './support/auth'
+import { SHARED } from './support/accounts'
 
 /**
  * #86 — E2E chapitre Préférences (desktop) : thème (classe `.dark` sur <html>
@@ -13,9 +14,12 @@ import { registerAndLogin, openSettingsChapter } from './support/auth'
  * dérogation que golden-path. Le reste reste `data-testid`.
  */
 
+// Comptes fixes réutilisés (storageState) : ZÉRO register par test (anti rate-limit).
+// Mutations client-only (thème/densité/langue) : aucun conflit d'état backend.
+test.use({ storageState: SHARED.storageState })
+
 test.describe('Réglages — Préférences', () => {
   test('thème sombre appliqué sans reload (classe .dark sur <html>)', async ({ page }) => {
-    await registerAndLogin(page, 'pt')
     await openSettingsChapter(page, 'preferences')
 
     const html = page.locator('html')
@@ -35,7 +39,6 @@ test.describe('Réglages — Préférences', () => {
   })
 
   test('densité appliquée via data-density sur <html>', async ({ page }) => {
-    await registerAndLogin(page, 'pd')
     await openSettingsChapter(page, 'preferences')
 
     const html = page.locator('html')
@@ -51,7 +54,6 @@ test.describe('Réglages — Préférences', () => {
   })
 
   test('langue -> navigation localisée vers /en/settings', async ({ page }) => {
-    await registerAndLogin(page, 'pl')
     await openSettingsChapter(page, 'preferences')
 
     await expect(page.getByTestId('pref-language')).toBeVisible()

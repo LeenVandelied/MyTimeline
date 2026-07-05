@@ -22,9 +22,20 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
+    // Projet `setup` : provisionne UNE fois les comptes E2E fixes (register+login)
+    // et sauvegarde leur storageState. Anti rate-limit register (5/min/IP) : les
+    // specs réutilisent ces cookies via `test.use({ storageState })` au lieu de
+    // register par test. Ne se rejoue PAS sur retry de test. Cf. e2e/auth.setup.ts.
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      // N'exécute les specs qu'après provisioning des comptes.
+      dependencies: ['setup'],
     },
   ],
   // webServer démarré uniquement si on n'utilise pas un baseURL externe.

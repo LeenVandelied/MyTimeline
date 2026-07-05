@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { registerAndLogin, openSettingsChapter } from './support/auth'
+import { openSettingsChapter } from './support/auth'
+import { SHARED, DEL } from './support/accounts'
 
 /**
  * #86 — E2E chapitre Compte (desktop) : export des données (navigation 3 étapes,
@@ -13,11 +14,13 @@ import { registerAndLogin, openSettingsChapter } from './support/auth'
  * utilisateur dédié (identité unique) -> pas de dépendance d'état entre tests.
  */
 
-test.describe('Réglages — Compte : export (stub) + suppression', () => {
+// Export = lecture seule (stub) : compte partagé fixe (aucune mutation). storageState.
+test.describe('Réglages — Compte : export (stub)', () => {
+  test.use({ storageState: SHARED.storageState })
+
   test('export : navigation format -> confirmation (endpoint stub non livré)', async ({
     page,
   }) => {
-    await registerAndLogin(page, 'ax')
     await openSettingsChapter(page, 'account')
 
     // Étape 1 : choix du format (Select JSON/CSV).
@@ -41,12 +44,17 @@ test.describe('Réglages — Compte : export (stub) + suppression', () => {
     // NOTE: quand l'endpoint export sera livré (RECOMMAND_FOLLOWUP), remplacer la
     // vérification ci-dessus par l'attente de `export-step-done` + téléchargement.
   })
+})
+
+// Suppression = compte THROWAWAY dédié `DEL` (se détruit) : storageState, pas de
+// register par test. Aucun autre test ne réutilise ce compte.
+test.describe('Réglages — Compte : suppression', () => {
+  test.use({ storageState: DEL.storageState })
 
   test('suppression : mauvais username bloqué, bon username -> DELETE /me + redirect login', async ({
     page,
   }) => {
-    // Utilisateur DÉDIÉ : ce test supprime définitivement le compte.
-    const identity = await registerAndLogin(page, 'del')
+    const identity = DEL
     await openSettingsChapter(page, 'account')
 
     // Ouverture du dialog de suppression (desktop = Dialog Radix).

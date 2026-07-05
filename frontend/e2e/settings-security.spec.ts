@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { registerAndLogin, openSettingsChapter } from './support/auth'
+import { openSettingsChapter } from './support/auth'
+import { SHARED, PWD } from './support/accounts'
 
 /**
  * #86 — E2E chapitre Sécurité (desktop) : changement de mot de passe
@@ -15,12 +16,15 @@ import { registerAndLogin, openSettingsChapter } from './support/auth'
  * repasse à '' ; en cas d'erreur (400 ancien mdp faux) il conserve sa valeur.
  */
 
-// Le mot de passe créé par le helper (cf. support/auth) : 'E2ePass123'.
-const INITIAL_PASSWORD = 'E2ePass123'
+// Le mot de passe initial des comptes fixes (cf. support/accounts) : 'E2ePass123'.
+const INITIAL_PASSWORD = PWD.password
 
-test.describe('Réglages — Sécurité : mot de passe', () => {
+// Le changement de mot de passe MODIFIE définitivement le compte -> compte DÉDIÉ
+// `PWD` (jamais réutilisé par un autre test). storageState = ZÉRO register.
+test.describe('Réglages — Sécurité : mot de passe (changement réussi)', () => {
+  test.use({ storageState: PWD.storageState })
+
   test('force réactive + changement réussi (ancien correct)', async ({ page }) => {
-    await registerAndLogin(page, 'se')
     await openSettingsChapter(page, 'security')
 
     await expect(page.getByTestId('password-form')).toBeVisible()
@@ -44,9 +48,14 @@ test.describe('Réglages — Sécurité : mot de passe', () => {
     await expect(page.getByTestId('password-new')).toHaveValue('')
     await expect(page.getByTestId('password-strength')).toHaveCount(0)
   })
+})
+
+// Ces tests ne MODIFIENT PAS le mot de passe (ancien-mdp-faux -> 400 ; sessions ->
+// révoque au plus les AUTRES sessions, jamais la courante) : compte partagé fixe.
+test.describe('Réglages — Sécurité : erreur mot de passe + sessions', () => {
+  test.use({ storageState: SHARED.storageState })
 
   test('ancien mot de passe faux -> erreur, formulaire conservé', async ({ page }) => {
-    await registerAndLogin(page, 'sew')
     await openSettingsChapter(page, 'security')
 
     const wrongNew = 'AnotherPass456'
@@ -57,14 +66,14 @@ test.describe('Réglages — Sécurité : mot de passe', () => {
 
     // Erreur 400 -> setError('oldPassword') : PAS de reset, la valeur saisie reste.
     await expect(page.getByTestId('password-old')).toHaveValue('MauvaisMdp999')
-    // Un message d'erreur (role=alert) est présent dans le formulaire.
-    await expect(page.getByTestId('password-form').getByRole('alert').first()).toBeVisible()
+    // Le champ oldPassword passe en état invalide (FormControl pose aria-invalid=true
+    // quand une erreur de champ est présente). NB : `<FormMessage>` ne porte PAS
+    // `role="alert"` -> on cible l'état DOM déterministe (aria-invalid) plutôt que
+    // le rôle ARIA. Voir RECOMMAND (composant Form) pour ajouter role="alert".
+    await expect(page.getByTestId('password-old')).toHaveAttribute('aria-invalid', 'true')
   })
-})
 
-test.describe('Réglages — Sécurité : sessions actives', () => {
   test('la liste charge (session courante) + révocation des autres', async ({ page }) => {
-    await registerAndLogin(page, 'ss')
     await openSettingsChapter(page, 'security')
 
     // La liste charge et contient au moins la session courante.
