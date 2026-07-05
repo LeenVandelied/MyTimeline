@@ -402,6 +402,13 @@
 **Nouveaux patterns / pitfalls / décisions :** PAT-S18-001 (helper contraste WCAG `lib/color.ts`), PAT-S18-002 (stub ResizeObserver jsdom/Radix), PIT-S18-001 (migration 1-couleur à appliquer à la vue lecture aussi), DEC-S18-001 (ne pas inventer EventBlock/@track absents).
 **Couverture E2E nouveau formulaire :** ~20 testids `event-form-*` sans spec dédiée → `/create-e2e 199` post-merge (le flux create reste couvert par golden-path via ProductDrawer).
 **Saturation contexte lead (mesure) :** modérée — fan-out 1 vague + ui-design + review batch (3 agents) + 1 fix, purge via done.md (retours bruts non conservés).
+**Follow-ups arbitrés (Phase 4 triage — 3 créés backlog, 2 discardés) :**
+  - Câbler état conflict 409 quand backend l'émettra [S | events] → issue #200
+  - Aligner contrat startDate/endDate form vs DTO create/PATCH [S | events] → issue #201
+  - Désync sérialisation allDay/isAllDay (BR-EVE-010) [XS | events] → issue #202
+  - EventBlock #47 canonique [S | events] → discard (décomposition #47 déjà livrée S16, preview local suffit)
+  - Contraste dark-mode non testé [XS | events] → discard (couleurs event indépendantes du thème, risque faible)
+  Ratio discard 2/5 = 40%.
 **Status :** Terminé
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
