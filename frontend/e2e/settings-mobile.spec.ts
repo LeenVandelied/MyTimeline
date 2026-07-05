@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test'
+import { ensureAuthenticated } from './support/auth'
+import { SHARED } from './support/accounts'
 
 /**
  * #87 — E2E Réglages MOBILE (375px, iPhone 14 ~390 / Android réf ~360) :
@@ -6,42 +8,20 @@ import { test, expect } from '@playwright/test'
  * (2 étapes). Piloté par `data-testid`, i18n `/fr/...` (localePrefix always).
  *
  * PRÉREQUIS RUNTIME (job CI `e2e`) : backend Spring Boot (:8080) + Postgres,
- * frontend Next (:3000). On crée un utilisateur frais puis on se connecte (les
- * Réglages sont protégés). On NE va PAS jusqu'à confirmer la suppression pour ne
- * pas détruire le compte : on vérifie l'ouverture du sheet + le passage à
- * l'étape confirmation, puis la fermeture par backdrop.
+ * frontend Next (:3000). Auth via `storageState` (compte fixe, projet `setup`) ->
+ * ZÉRO register par test (anti rate-limit register 5/min/IP). On NE confirme PAS la
+ * suppression (le compte partagé ne doit pas être détruit) : on vérifie l'ouverture
+ * du sheet + le passage à l'étape confirmation, puis la fermeture par backdrop.
  */
-test.use({ viewport: { width: 375, height: 812 } })
-
-function uniqueSuffix(): string {
-  return `${Date.now()}${Math.floor(Math.random() * 1000)}`
-}
+test.use({ viewport: { width: 375, height: 812 }, storageState: SHARED.storageState })
 
 test.describe('Réglages mobile : drill-down + bottom sheet suppression', () => {
   test('index -> détail -> retour, puis bottom sheet suppression compte', async ({ page }) => {
-    const suffix = uniqueSuffix()
-    const username = `m${suffix}`.slice(0, 20)
-    const name = `m${suffix}`.slice(0, 20)
-    const email = `m_${suffix}@example.com`
-    const password = 'SetPass123'
-
-    // ---- Inscription + connexion ------------------------------------------
-    await page.goto('/fr/register')
-    await page.getByTestId('register-email').fill(email)
-    await page.getByTestId('register-name').fill(name)
-    await page.getByTestId('register-username').fill(username)
-    await page.getByTestId('register-password').fill(password)
-    await page.getByTestId('register-confirm-password').fill(password)
-    await page.getByTestId('register-submit').click()
-
-    await expect(page.getByTestId('login-form')).toBeVisible()
-    await page.getByTestId('login-username').fill(username)
-    await page.getByTestId('login-password').fill(password)
-    await page.getByTestId('login-submit').click()
-    await expect(page.getByTestId('dashboard')).toBeVisible()
+    // Auth restaurée depuis le cookie (storageState) sur le dashboard.
+    await ensureAuthenticated(page)
 
     // ---- Accès Réglages : index mobile visible (drill-down) ---------------
-    await page.goto('/fr/settings')
+    await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('settings-index')).toBeVisible()
     // La coquille desktop (tablist) ne doit PAS être montée en mobile.
     await expect(page.getByTestId('settings-tablist')).toHaveCount(0)
@@ -49,7 +29,7 @@ test.describe('Réglages mobile : drill-down + bottom sheet suppression', () => 
     // ---- Drill-down : Profil -> retour ------------------------------------
     await page.getByTestId('settings-index-profile').click()
     await expect(page.getByTestId('mobile-settings-detail-profile')).toBeVisible()
-    await expect(page.getByTestId('profile-username')).toHaveValue(username)
+    await expect(page.getByTestId('profile-username')).toHaveValue(SHARED.username)
     await page.getByTestId('mobile-settings-back').click()
     await expect(page.getByTestId('settings-index')).toBeVisible()
 

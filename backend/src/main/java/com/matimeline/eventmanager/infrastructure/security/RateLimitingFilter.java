@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -43,6 +45,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(RateLimitingFilter.class);
+
     /** Requests per minute per IP, per throttled POST path. */
     private static final Map<String, Integer> PATH_LIMITS = Map.of(
             "/api/auth/login", 10,
@@ -67,22 +71,45 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final boolean trustForwardedHeader;
 
     /**
+     * Master switch for the whole filter. Defaults to {@code true} (fail-safe): rate
+     * limiting is always ON unless explicitly disabled via
+     * {@code app.rate-limit.enabled=false}. The ONLY intended use of {@code false} is
+     * the ephemeral CI/e2e job, whose Playwright setup provisions several accounts from
+     * the single runner IP and would otherwise trip the per-IP throttle. Never disable
+     * this in prod or any long-lived environment.
+     */
+    private final boolean rateLimitEnabled;
+
+    /**
      * @param timeMeter            time source backing every bucket. Production wires the
      *                             real nanotime meter; tests inject a controllable one to
      *                             advance the window deterministically without {@code Thread.sleep}.
      * @param trustForwardedHeader opt-in trust of {@code X-Forwarded-For}
      *                             ({@code app.rate-limit.trust-forwarded-header}, default false).
+     * @param rateLimitEnabled     master switch ({@code app.rate-limit.enabled}, default true).
+     *                             {@code false} bypasses the filter entirely — CI/e2e only.
      */
     public RateLimitingFilter(
             TimeMeter timeMeter,
-            @Value("${app.rate-limit.trust-forwarded-header:false}") boolean trustForwardedHeader) {
+            @Value("${app.rate-limit.trust-forwarded-header:false}") boolean trustForwardedHeader,
+            @Value("${app.rate-limit.enabled:true}") boolean rateLimitEnabled) {
         this.timeMeter = timeMeter;
         this.trustForwardedHeader = trustForwardedHeader;
+        this.rateLimitEnabled = rateLimitEnabled;
+        if (!rateLimitEnabled) {
+            log.warn("rate limiting DISABLED (app.rate-limit.enabled=false) — CI/e2e only. "
+                    + "Do NOT run this configuration in prod or any long-lived environment.");
+        }
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        if (!rateLimitEnabled) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         Integer limit = throttledLimitFor(request);
         if (limit == null) {

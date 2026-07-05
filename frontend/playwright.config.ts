@@ -12,6 +12,9 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`
 
 export default defineConfig({
   testDir: './e2e',
+  // Purge `.auth/accounts.json` d'un run précédent avant le projet `setup`
+  // (identités partagées setup <-> specs régénérées à chaque run). Cf. e2e/global-setup.ts.
+  globalSetup: './e2e/global-setup.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -22,9 +25,20 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
+    // Projet `setup` : provisionne UNE fois les comptes E2E fixes (register+login)
+    // et sauvegarde leur storageState. Anti rate-limit register (5/min/IP) : les
+    // specs réutilisent ces cookies via `test.use({ storageState })` au lieu de
+    // register par test. Ne se rejoue PAS sur retry de test. Cf. e2e/auth.setup.ts.
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      // N'exécute les specs qu'après provisioning des comptes.
+      dependencies: ['setup'],
     },
   ],
   // webServer démarré uniquement si on n'utilise pas un baseURL externe.
