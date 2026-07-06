@@ -1,58 +1,50 @@
-## Sprint 24 — a11y Timeline (frise clavier + lecteur d'écran)
+## Sprint 25 — Finalisation Events (conflit 409 + contrat DTO dates + form)
 
-Rend la Vue Timeline — seul écran classé « réellement bloquant » par l'audit a11y — navigable au clavier et exposée aux lecteurs d'écran (conformité RGAA/WCAG). Sprint **100 % frontend**, cohésion **0.78**, aucune migration.
+Câble le conflit d'édition concurrente (optimistic locking) de bout en bout, aligne le contrat `startDate`/`endDate` entre le formulaire et le backend, et complète le formulaire d'événement. Cohésion **0.82**, base `dev`, **aucune migration**.
 
-### Issues livrées (3)
+### Issues livrées (4)
 
 | # | Titre | Size |
 |---|-------|------|
-| #81 | a11y : frise Timeline clavier + lecteur d'écran (**BLOQUANT**) | L |
-| #197 | a11y Timeline : formaliser les patterns clavier (`ux-patterns.md`) + re-validation ui-design | S |
-| #82 | a11y : cible tactile close EventDrawer ≥44px + audit final | S |
+| #201 | Aligner le contrat `startDate`/`endDate` du formulaire avec les DTO create/PATCH | S |
+| #200 | Câbler l'état conflit (409) — handler `ObjectOptimisticLockingFailureException` | S |
+| #188 | EventEditForm : exposer le toggle UI `archived` | S |
+| #77 | Modale de résolution de conflit (409 — optimistic locking) partagée | M |
 
-**Vagues** : V1 = #81 (pose le pattern) → V2 = #197 ∥ #82 (fichiers disjoints).
+**Vagues** : V1 = #201 ∥ #200 ∥ #188 (fichiers disjoints) → V2 = #77 (dépend du contrat 409 de #200 + EventEditForm de #188).
 
 ### Changements clés
 
-- **#81 — Navigation clavier de la frise** : region landmark (`role="region"` + aria-label/describedby), **roving tabindex resource-keyé** (`activeNav {resourceId,evt}` + index dérivé via Map — résiste au collapse de catégorie), navigation flèches ←→ (dans/entre lanes) ↑↓ (colonne clampée) Home/End, Enter/Espace natifs, **aria-live polite** (annonces zoom/sélection, silencieux au montage), `aria-label` agrégé (`buildEventAriaLabel` : titre + dates + récurrence + statut en une phrase), garde-fou contraste (libellé hors barre si < 4.5:1), focus ring `outline: 2px var(--color-accent)`, `scrollIntoView` après `.focus()`.
-- **#197 — Référentiel** : `.claude/rules-jit/ux-patterns.md` (10 sections) documentant les patterns RÉELS livrés par #81 (roving, focus-trap drawer, raccourcis T/[/]/+/-/F/Échap). Lève la réserve S17 (« APPROUVE_AVEC_RESERVES faute de référentiel »).
-- **#82 — Cible tactile** : hitbox close EventDrawer 28→44px via `::before` (visuel de l'icône inchangé, charte Graphite respectée).
+- **#201 — Contrat dates** : `EventUpdateRequest` câble enfin `startDate`/`endDate` (avant : envoyés par le front mais **silencieusement ignorés** = faux contrôle). Décision de contrat : `type=duration` → la durée reste source de vérité (endDate re-dérivée, BR-EVE-003) ; `type=single` → endDate explicite persistée. Garde `endDate ≥ startDate` montée backend : `@AssertTrue` DTO (paire du payload → 400) **+ garde service sur l'état fusionné** (`EndDateBeforeStartException` → 422) qui ferme le cas d'un PATCH `endDate` seul passant sous le `startDate` en base (miroir de BR-EVE-012).
+- **#200 — Handler 409** : `@ExceptionHandler(ObjectOptimisticLockingFailureException)` scopé au **type précis** (pas de fourre-tout `DataIntegrityViolation`, cf. convention backend #3) → **HTTP 409**, corps `{"error":"resource was modified concurrently, please retry"}`. Nouvelle **BR-EVE-015** (édition concurrente `@Version` → 409). Contrat consommé par #77.
+- **#188 — Toggle `archived`** : composant DS `Switch` (1er usage réel) via FormField RHF, i18n 4 locales, pré-rempli depuis l'état réel de l'event (`archived` propagé jusqu'aux `defaultValues` — corrigé en review). `recurrenceEndDate` était déjà livré (S15) → hors scope.
+- **#77 — `ConflictDialog` partagé** : extraction de la gestion inline de conflit vers un composant accessible réutilisable (Dialog DS Radix, `role=dialog` + focus-trap + Échap). Interception du 409 **scopée au flux event** (pas dans le client axios global → aucun autre 409 name-conflict requalifié). `window.location.reload()` remplacé par une **invalidation ciblée** TanStack Query. `data-testid=event-form-conflict` préservé.
 
 ### BR impactées
-
-- **BR-EVT-001** (ownership/lecture events) — contrat inchangé, couche a11y purement additive.
-- Aucune règle métier P0/P1 cross-système → pas d'E2E métier requis.
-
-### Audit tests (`docs/memory/audits/sprint-24-test-coverage.md`)
-
-- **Frontend : 44 fichiers, 325/325 tests verts, 0 failed** (vérifié en run direct — `npx vitest run`). Nouveau `lib-a11y.test.ts` (8 tests `buildEventAriaLabel` + contraste), +195 lignes `TimelineView.test.tsx` (roving, flèches, aria-live, **non-régression remap collapse resource-keyé**).
-- Backend : N/A (0 fichier backend).
-- E2E Playwright : non exécuté (bug connu #207 : alias `e2e` lance vitest).
-
-### Validation ui-design (`docs/memory/sprints/sprint-24/ui-design-validation.md`)
-
-**Verdict GO PR** — conformité 100 % des 10 points de `ux-patterns.md §10` (satisfait le critère #197 de re-validation formelle). Réserves S17 levées.
+- **BR-EVE-002** (endDate ≥ startDate) — garde montée backend (DTO + service état-fusionné).
+- **BR-EVE-003** (dérivation endDate selon type) — étendue au PATCH (startDate déplacée re-dérive endDate en duration).
+- **BR-EVE-013** (archived PATCH-only) — exposée dans l'UI.
+- **BR-EVE-015 (nouvelle)** — édition concurrente → 409, corps `{"error":...}`.
 
 ### Review batch
+Reviewers backend + frontend parallèles : **3 MAJEUR, tous RÉSOLU** :
+- MAJEUR (backend) : PATCH `endDate` seul < startDate persisté échappait au `@AssertTrue` → garde service état-fusionné (422). ✅
+- MAJEUR (backend) : flip `type` duration→single via `type` seul → comportement acté + testé. ✅
+- MAJEUR (frontend) : toggle `archived` toujours décoché en édition réelle → `archived` propagé aux `defaultValues`. ✅
+- MINEURS (rollback couleur optimiste sur dismiss, double-clic reload) : notés, non bloquants.
 
-- **0 CRITIQUE / 1 MAJEUR / 2 MINEUR.**
-- MAJEUR (token focus ring `--color-accent` vs `--color-focus`) → **résolu** : écart documenté en commentaire (token exigé par le critère #81 + `ux-patterns.md §6` + validé ui-design ; rendu identique). Commit `19714f6`.
-- 2 MINEUR → follow-ups non bloquants (voir ci-dessous).
+### Audit tests (`docs/memory/audits/sprint-25-test-coverage.md`)
+- Backend : **280/280** vert, **stable sur 3 runs** (test optimistic-lock rendu déterministe — simulation de version stale sans threads, après une instabilité 2/4 détectée par le test-runner).
+- Frontend : **344/344** vert.
+- Chaque BR couverte par unit + integration + RTL.
 
-### Couverture E2E (Phase 8)
+### ⚠ Coverage E2E — plan post-merge
+Nouveaux `data-testid` de production sans spec E2E : `event-form-archived-toggle`, `event-form-conflict`, `conflict-dialog`, `conflict-dialog-reload`.
+→ **Plan : `/create-e2e` après merge** — spec Playwright « variante conflit 409 » (édition concurrente → dialog → recharger) + vérif toggle archived. Le comportement est déjà couvert par l'intégration déterministe + le slice handler + les tests RTL ; l'E2E 2-onglets est un complément différé.
 
-⚠ 2 nouveaux testids sans spec Playwright (`timeline-event-outside-label`, `timeline-live-region`) → **`/create-e2e` post-merge** (non bloquant). `timeline-view`/`timeline-event` déjà couverts (golden-path).
-
-### Follow-ups proposés (à trancher au `/sprint end`)
-
-- **RECOMMAND_FOLLOWUP** : statuer sur le raccourci `?` (câbler `case '?'` vs acter le tooltip hover-only) [S | frontend].
-- **RECOMMAND_FOLLOWUP** : `.mt-zoom__btn` (30px) < 44px sur surface touch mobile → override scopé `.mt-tlm` [S | frontend] (audit #82).
-- MINEUR review : `data-evt-nav` dead attribute (EventPill) ; fallback `color=null` non testé (`lib.ts`) — XS.
-
-### Nouveaux signaux mémoire
-
-- **PAT-S24-roving-resource-keyed** : roving tabindex sur liste mutable → keyer l'état actif par ID stable, dériver l'index via Map id→index. Anti-pattern : index bruts en state (cause de la régression MAJEUR-2 corrigée).
-- **PIT-S24-scrollintoview-focus** : `.focus()` seul ne défile pas les conteneurs scrollables imbriqués → `scrollIntoView` explicite requis.
-- **PIT-S24-worktree-cwd** (rappel) : Read/Edit en chemin relatif dans un subagent peut résoudre sur le repo principal — garde-fou `git rev-parse --show-toplevel` avant exploration, pas seulement avant commit.
+### Follow-ups (à arbitrer en `/sprint end`)
+- **Modale comparative complète** (« Garder mes modifications » vs « Prendre la version serveur » + diff des champs) — **bloquée** : nécessite que le backend enrichisse le corps du 409 (serverVersion + yourVersion). Enhancement backend d'abord, puis frontend. (#77)
+- Spec E2E Playwright « variante conflit ». (#77)
+- Clarifier l'UX de `archived=true` (effet sur le quota BR-EVE-011 « events actifs »). (#188)
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

@@ -39,6 +39,12 @@
       "generic": "An error occurred while deleting, please try again."
     }
   },
+  "conflictDialog": {
+    "title": "Modified elsewhere",
+    "description": "This item was modified from another tab or by someone else. Reload the up-to-date data before continuing; your unsaved changes will be lost.",
+    "reload": "Reload up-to-date data",
+    "dismiss": "Cancel"
+  },
   "validation": {
     "username": "Username must contain at least 3 characters",
     "password": "Password must contain at least 6 characters"

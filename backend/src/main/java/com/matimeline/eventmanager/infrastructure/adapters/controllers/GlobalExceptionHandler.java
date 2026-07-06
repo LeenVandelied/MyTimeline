@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,6 +17,7 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
+import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
@@ -163,6 +165,38 @@ public class GlobalExceptionHandler {
         // -> 422 Unprocessable Entity. Requête bien formée (400 = Bean Validation en amont)
         // mais sémantiquement incohérente. Même statut que InvalidDurationUnitException
         // (erreur métier events, cf. DEC-S12-001) plutôt que 400. Corps détaillé buildBody.
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        // #200 (BR-EVE-015) : édition concurrente d'une entité versionnée (@Version) —
+        // deux updates s'appuyant sur la même version : le 2e flush détecte le décalage et
+        // Hibernate lève ObjectOptimisticLockingFailureException -> HTTP 409 Conflict (au
+        // lieu du 500 générique non mappé). SCOPÉ au type PRÉCIS de Spring
+        // (org.springframework.orm), PAS à un supertype fourre-tout : contrairement à un
+        // @ExceptionHandler(DataIntegrityViolationException) global (retiré #153, PIT-S10-002),
+        // ce type ne recouvre QUE le conflit de version optimiste — il ne masque aucune autre
+        // violation. S'applique donc uniformément à toute entité @Version (Event, Product,
+        // Category, User) sans requalifier d'erreurs non liées.
+        // Contrat consommé par #77 (Vague 2) : statut 409, corps plat {"error":"..."} —
+        // message générique neutre (pas de fuite de version/entité interne).
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "resource was modified concurrently, please retry"));
+    }
+
+    @ExceptionHandler(EndDateBeforeStartException.class)
+    public ResponseEntity<Map<String, Object>> handleEndDateBeforeStart(
+            EndDateBeforeStartException ex) {
+        // BR-EVE-002 (#201) : PATCH amenant l'état fusionné à endDate < startDate -> 422
+        // Unprocessable Entity. Requête bien formée (400 = Bean Validation en amont, cf.
+        // @AssertTrue DTO qui garde la paire dans le payload) mais sémantiquement incohérente
+        // sur l'état fusionné (cas endDate-seule < startDate persistée). Même statut que
+        // RecurrenceEndDateBeforeStartException / InvalidDurationUnitException (cohérence
+        // DEC-S12-001). Corps détaillé buildBody.
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));

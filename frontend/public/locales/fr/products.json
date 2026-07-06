@@ -37,7 +37,8 @@
         "startDate": "Date de début",
         "endDate": "Date de fin",
         "recurrenceEndDate": "Fin de récurrence",
-        "recurrenceEndHint": "Optionnel — la récurrence sera bornée à cette date."
+        "recurrenceEndHint": "Optionnel — la récurrence sera bornée à cette date.",
+        "archived": "Archivé"
       },
       "types": {
         "duration": "Durée",

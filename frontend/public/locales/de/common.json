@@ -39,6 +39,12 @@
       "generic": "Beim Löschen ist ein Fehler aufgetreten, bitte versuchen Sie es erneut."
     }
   },
+  "conflictDialog": {
+    "title": "Anderswo geändert",
+    "description": "Dieses Element wurde in einem anderen Tab oder von jemand anderem geändert. Lade die aktuellen Daten neu, bevor du fortfährst; nicht gespeicherte Änderungen gehen verloren.",
+    "reload": "Aktuelle Daten neu laden",
+    "dismiss": "Abbrechen"
+  },
   "validation": {
     "username": "Der Benutzername muss mindestens 3 Zeichen lang sein",
     "password": "Das Passwort muss mindestens 6 Zeichen enthalten"

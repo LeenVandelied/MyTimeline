@@ -37,7 +37,8 @@
         "startDate": "Start date",
         "endDate": "End date",
         "recurrenceEndDate": "Recurrence end",
-        "recurrenceEndHint": "Optional — the recurrence will be capped at this date."
+        "recurrenceEndHint": "Optional — the recurrence will be capped at this date.",
+        "archived": "Archived"
       },
       "types": {
         "duration": "Duration",

@@ -48,6 +48,7 @@ const baseDefaults: EventEditFormValues = {
   startDate: '2026-05-01',
   endDate: '2026-05-04',
   color: '#3B82F6',
+  archived: false,
 }
 
 function setup(props: Partial<React.ComponentProps<typeof EventEditForm>> = {}) {
@@ -102,19 +103,42 @@ describe('EventEditForm — submitState (4 états)', () => {
     expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
   })
 
-  it('conflict : message 409 spécifique + bouton recharger distinct de error', () => {
+  it('conflict : ouvre le ConflictDialog partagé (event-form-conflict) + bouton recharger, distinct de error', () => {
     const onReload = vi.fn()
     setup({ submitState: 'conflict', onReload })
+    // #77 — le conflit 409 optimistic ouvre un Dialog partagé (role=dialog Radix)
+    // dont le conteneur préserve data-testid=event-form-conflict (tests #66).
     expect(screen.getByTestId('event-form-conflict')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.queryByTestId('event-form-error')).not.toBeInTheDocument()
-    expect(screen.getByTestId('event-form-reload')).toBeInTheDocument()
+    expect(screen.getByTestId('conflict-dialog-reload')).toBeInTheDocument()
+  })
+
+  it("conflict : le dialog n'est PAS monté pour idle/error", () => {
+    const { rerender } = render(
+      <EventEditForm defaultValues={baseDefaults} onSubmit={vi.fn()} onCancel={vi.fn()} submitState="error" />,
+    )
+    expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
+    rerender(
+      <EventEditForm defaultValues={baseDefaults} onSubmit={vi.fn()} onCancel={vi.fn()} submitState="idle" />,
+    )
+    expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
   })
 
   it('conflict : clic recharger appelle onReload', async () => {
     const onReload = vi.fn()
     setup({ submitState: 'conflict', onReload })
-    await userEvent.click(screen.getByTestId('event-form-reload'))
+    await userEvent.click(screen.getByTestId('conflict-dialog-reload'))
     expect(onReload).toHaveBeenCalledOnce()
+  })
+
+  it('conflict : Échap ferme le dialog et appelle onConflictDismiss (pas onReload)', async () => {
+    const onReload = vi.fn()
+    const onConflictDismiss = vi.fn()
+    setup({ submitState: 'conflict', onReload, onConflictDismiss })
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(onConflictDismiss).toHaveBeenCalledOnce())
+    expect(onReload).not.toHaveBeenCalled()
   })
 })
 
@@ -190,6 +214,31 @@ describe('EventEditForm — récurrence', () => {
     await waitFor(() =>
       expect(screen.getByTestId('event-form-recurrence-end-date')).toBeInTheDocument(),
     )
+  })
+})
+
+describe('EventEditForm — archivage (BR-EVE-013)', () => {
+  it('toggle archived visible et pré-rempli depuis defaultValues', () => {
+    setup({ defaultValues: { ...baseDefaults, archived: true } })
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    expect(toggle).toBeInTheDocument()
+    expect(toggle).toBeChecked()
+  })
+
+  it('toggle archived est modifiable (non conditionnel à isRecurring)', async () => {
+    setup()
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    expect(toggle).not.toBeChecked()
+    await userEvent.click(toggle)
+    expect(toggle).toBeChecked()
+  })
+
+  it('la soumission (PATCH) transmet archived après toggle', async () => {
+    const { onSubmit } = setup()
+    await userEvent.click(screen.getByTestId('event-form-archived-toggle'))
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ archived: true })
   })
 })
 

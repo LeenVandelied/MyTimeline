@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
@@ -103,6 +104,17 @@ public class EventServiceImpl implements EventService {
         if (command.recurrenceEndDate() != null) {
             event.setRecurrenceEndDate(command.recurrenceEndDate());
         }
+        // #201 : startDate/endDate désormais réellement consommés au PATCH (avant : ignorés,
+        // le formulaire les envoyait pour rien). startDate appliquée AVANT les recalculs (elle
+        // est une entrée du calcul d'endDate pour type='duration'). endDate explicite du payload
+        // appliquée ici ; pour type='duration', le recalcul par la durée (bloc BR-EVE-003 plus
+        // bas) reste prioritaire et écrase cette valeur (durée = source de vérité, BR-EVE-003).
+        if (command.startDate() != null) {
+            event.setStartDate(command.startDate());
+        }
+        if (command.endDate() != null) {
+            event.setEndDate(command.endDate());
+        }
         if (command.color() != null) {
             event.setColor(command.color());
         }
@@ -131,21 +143,47 @@ public class EventServiceImpl implements EventService {
             throw new RecurrenceEndDateBeforeStartException(id, event.getRecurrenceEndDate(), event.getStartDate());
         }
 
-        // BR-EVE-002 (#54) : recalcul de endDate dès qu'un facteur de calcul change au PATCH
-        // (type, durationValue, durationUnit). Avant #54, endDate restait figée à sa valeur de
-        // création -> bug silencieux (une durée modifiée n'étendait jamais la fin). startDate
-        // n'est pas modifiable via EventUpdateRequest : on recalcule sur la startDate persistée.
-        // Le recalcul lève InvalidDurationUnitException (-> 422) si durationUnit est null/inconnu
-        // pour un type 'duration', au lieu de persister une endDate silencieusement fausse.
-        boolean durationFactorsChanged = command.type() != null
+        // BR-EVE-002/003 (#54, #201) : (re)dérivation de endDate quand un facteur de calcul change
+        // au PATCH (type, durationValue, durationUnit, ET DÉSORMAIS startDate — #201). Avant #54,
+        // endDate restait figée à sa valeur de création -> bug silencieux (durée modifiée jamais
+        // reflétée sur la fin). #201 rend startDate modifiable et câble endDate.
+        //
+        // Contrat de dates #201 (documenté dans issue-201-done) :
+        //   - type='duration' (état fusionné) : la DURÉE est la source de vérité de endDate
+        //     (BR-EVE-003). endDate = startDate + durée. Une endDate explicite du payload est
+        //     volontairement écrasée par cette dérivation (elle serait incohérente avec la durée
+        //     affichée). Lève InvalidDurationUnitException (-> 422) si durationUnit null/inconnu.
+        //   - type != 'duration' (single...) : endDate EXPLICITE du payload persistée telle quelle
+        //     (déjà appliquée plus haut). En l'absence d'endDate explicite, endDate SUIT startDate
+        //     (BR-EVE-003 : un single ne dure qu'un jour) dès qu'un facteur (type/startDate) bouge.
+        boolean dateFactorsChanged = command.type() != null
                 || command.durationValue() != null
-                || command.durationUnit() != null;
-        if (durationFactorsChanged) {
-            event.setEndDate(Utils.calculateEndDate(
-                    event.getType(),
-                    event.getDurationValue(),
-                    event.getDurationUnit(),
-                    event.getStartDate()));
+                || command.durationUnit() != null
+                || command.startDate() != null;
+        if (dateFactorsChanged) {
+            if ("duration".equals(event.getType())) {
+                event.setEndDate(Utils.calculateEndDate(
+                        event.getType(),
+                        event.getDurationValue(),
+                        event.getDurationUnit(),
+                        event.getStartDate()));
+            } else if (command.endDate() == null) {
+                // single/autre sans endDate explicite : endDate collée à startDate.
+                event.setEndDate(event.getStartDate());
+            }
+        }
+
+        // BR-EVE-002 (#201 review MAJEUR-2) : garde sur l'ÉTAT FUSIONNÉ, en complément du
+        // @AssertTrue DTO (fail-fast payload). Un PATCH partiel peut n'envoyer que endDate SEULE
+        // (sans startDate) : pour type != 'duration' elle est persistée telle quelle et peut être
+        // antérieure à la startDate DÉJÀ en base -> le @AssertTrue (qui ne voit que le payload)
+        // est contourné. On revérifie donc endDate >= startDate sur l'entité fusionnée, après
+        // (re)dérivation. isBefore stricte : endDate == startDate toléré (event d'un jour).
+        // -> EndDateBeforeStartException (422, aligné sur RecurrenceEndDateBeforeStartException).
+        if (event.getEndDate() != null
+                && event.getStartDate() != null
+                && event.getEndDate().isBefore(event.getStartDate())) {
+            throw new EndDateBeforeStartException(id, event.getEndDate(), event.getStartDate());
         }
 
         event.setProduct(originalProductId);

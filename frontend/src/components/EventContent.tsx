@@ -43,8 +43,9 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isColorOpen, setIsColorOpen] = useState(false)
   const [color, setColor] = useState(event.color || DEFAULT_COLOR)
-  // #66 — état de soumission 4 états (idle/submitting/error/conflict) piloté ici
-  // et passé au formulaire. Le 409 events n'est pas encore émis backend → défensif.
+  // #66/#77 — état de soumission 4 états (idle/submitting/error/conflict) piloté
+  // ici et passé au formulaire. Le 409 optimistic locking est désormais émis
+  // backend (#200, corps plat) → l'état `conflict` ouvre le ConflictDialog partagé.
   const [submitState, setSubmitState] = useState<EventSubmitState>('idle')
 
   const countdown = event?.end ? calculateRemainingTime(new Date(event.end), t) : null
@@ -100,19 +101,32 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
       setSubmitState('idle')
       setIsEditing(false)
     } catch (error) {
-      // 409 (conflit d'édition concurrente) : message spécifique + rechargement.
-      // Backend ne l'émet pas encore pour les events → branche défensive (#66).
+      // #77 — 409 (optimistic locking, conflit d'édition concurrente, contrat #200)
+      // → état `conflict` qui ouvre le ConflictDialog partagé. Tout autre statut
+      // (400/404/403/500…) → `error` inline générique : aucun autre 409 ne transite
+      // par ce flux (les 409 name-conflict Category/Product sont gérés ailleurs).
       const status = httpStatusOf(error)
       setSubmitState(status === 409 ? 'conflict' : 'error')
       console.error("Erreur lors de la mise à jour de l'événement :", safeErrorMessage(error))
     }
   }
 
-  // Rechargement sur conflit 409 : recharge la page (pas de query cache event isolé
-  // ici — l'événement provient d'une prop parent). Défensif tant que le backend
-  // n'émet pas de 409 events.
+  // #77 — Rechargement sur conflit 409 optimistic : invalidation CIBLÉE de la
+  // query TanStack qui alimente le calendrier (`products.withEvents`) plutôt qu'un
+  // `window.location.reload()`. L'événement provient d'une prop parent hydratée par
+  // `useProductsWithEvents` : invalider cette clé re-fetch les données à jour sans
+  // rechargement complet de page. On sort du mode édition et on repasse à idle.
   const onReload = () => {
-    if (typeof window !== 'undefined') window.location.reload()
+    invalidateEvents()
+    setSubmitState('idle')
+    setIsEditing(false)
+  }
+
+  // #77 — Fermeture du ConflictDialog sans recharger (annuler / Échap / overlay) :
+  // on repasse simplement `submitState` à idle (le formulaire reste ouvert avec les
+  // saisies de l'utilisateur, qui peut réessayer ou recharger manuellement).
+  const onConflictDismiss = () => {
+    setSubmitState('idle')
   }
 
   // Suppression déléguée à DeleteConfirmDialog (via EventEditForm). L'erreur DOIT
@@ -263,6 +277,8 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   startDate: event.start ? event.start.slice(0, 10) : undefined,
                   endDate: event.end ? event.end.slice(0, 10) : undefined,
                   color: color,
+                  // #188 — pré-remplir le toggle archivé depuis l'event (BR-EVE-013).
+                  archived: event.extendedProps?.archived ?? false,
                 }}
                 onSubmit={onSubmit}
                 onCancel={() => {
@@ -271,6 +287,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                 }}
                 submitState={submitState}
                 onReload={onReload}
+                onConflictDismiss={onConflictDismiss}
                 onDelete={onDelete}
               />
             )}

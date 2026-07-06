@@ -20,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
@@ -70,6 +71,8 @@ class EventServiceImplTest {
         private Boolean isRecurring;
         private String recurrenceUnit;
         private LocalDate recurrenceEndDate;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String color;
         private Boolean archived;
 
@@ -80,12 +83,14 @@ class EventServiceImplTest {
         Upd isRecurring(Boolean v) { this.isRecurring = v; return this; }
         Upd recurrenceUnit(String v) { this.recurrenceUnit = v; return this; }
         Upd recurrenceEndDate(LocalDate v) { this.recurrenceEndDate = v; return this; }
+        Upd startDate(LocalDate v) { this.startDate = v; return this; }
+        Upd endDate(LocalDate v) { this.endDate = v; return this; }
         Upd color(String v) { this.color = v; return this; }
         Upd archived(Boolean v) { this.archived = v; return this; }
 
         EventUpdateCommand build() {
             return new EventUpdateCommand(title, type, durationValue, durationUnit,
-                    isRecurring, recurrenceUnit, recurrenceEndDate, color, archived);
+                    isRecurring, recurrenceUnit, recurrenceEndDate, startDate, endDate, color, archived);
         }
     }
 
@@ -201,6 +206,10 @@ class EventServiceImplTest {
 
     @Test
     void updateEvent_typeToSingle_collapsesEndDateToStartDate() {
+        // #201 review MAJEUR-1 : DÉCISION actée. Un PATCH ne fournissant QUE type='single' (aucune
+        // date) sur un event 'duration' fait collapser endDate sur la startDate PERSISTÉE
+        // (BR-EVE-003 : un single ne dure qu'un jour). Comportement volontaire (pas un effet de
+        // bord) et explicitement couvert par ce test qui l'atteste (type + endDate asserts).
         LocalDate start = LocalDate.of(2026, 1, 1);
         Event event = new Event(
                 eventId, "T", "duration", 5, "days",
@@ -214,6 +223,7 @@ class EventServiceImplTest {
 
         Event result = eventService.updateEvent(eventId, request);
 
+        assertThat(result.getType()).isEqualTo("single");
         assertThat(result.getEndDate()).isEqualTo(start);
     }
 
@@ -234,6 +244,118 @@ class EventServiceImplTest {
         Event result = eventService.updateEvent(eventId, request);
 
         assertThat(result.getEndDate()).isEqualTo(originalEnd);
+    }
+
+    @Test
+    void updateEvent_singleWithExplicitEndDate_persistsEndDateAsIs() {
+        // #201 : contrat de dates. Pour un event NON 'duration' (single), une endDate EXPLICITE
+        // fournie au PATCH est persistée telle quelle (elle n'est plus silencieusement ignorée).
+        LocalDate start = LocalDate.of(2026, 3, 1);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        LocalDate newStart = LocalDate.of(2026, 3, 10);
+        LocalDate newEnd = LocalDate.of(2026, 3, 20);
+        EventUpdateCommand request = upd().startDate(newStart).endDate(newEnd).build();
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getStartDate()).isEqualTo(newStart);
+        assertThat(result.getEndDate()).isEqualTo(newEnd);
+    }
+
+    @Test
+    void updateEvent_durationStartDateMoved_reDerivesEndDateFromDuration() {
+        // #201 / BR-EVE-003 : pour type='duration', la DURÉE reste la source de vérité. Déplacer
+        // startDate re-dérive endDate = newStart + durée, ET écrase toute endDate explicite fournie
+        // (incohérente avec la durée). Ici durée=5 days, endDate explicite volontairement fausse.
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        Event event = new Event(
+                eventId, "T", "duration", 5, "days",
+                false, null, null, start, start.plusDays(5),
+                productId, false, "#000000", false);
+
+        LocalDate newStart = LocalDate.of(2026, 2, 1);
+        EventUpdateCommand request = upd()
+                .startDate(newStart)
+                .endDate(LocalDate.of(2099, 12, 31)) // volontairement incohérente -> ignorée
+                .build();
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getStartDate()).isEqualTo(newStart);
+        assertThat(result.getEndDate()).isEqualTo(newStart.plusDays(5));
+    }
+
+    @Test
+    void updateEvent_singleStartDateMovedWithoutEndDate_collapsesEndDateToStartDate() {
+        // #201 : type='single' + startDate déplacée SANS endDate explicite -> endDate suit startDate.
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        LocalDate newStart = LocalDate.of(2026, 4, 15);
+        EventUpdateCommand request = upd().startDate(newStart).build();
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getStartDate()).isEqualTo(newStart);
+        assertThat(result.getEndDate()).isEqualTo(newStart);
+    }
+
+    @Test
+    void updateEvent_endDateOnlyBeforePersistedStartDate_throwsEndDateBeforeStart() {
+        // #201 review MAJEUR-2 : trou de validation. Un PATCH n'envoyant QUE endDate (sans
+        // startDate) sur un event single, avec une endDate ANTÉRIEURE à la startDate DÉJÀ en base,
+        // contourne le @AssertTrue DTO (qui ne voit que le payload). La garde état-fusionné du
+        // service doit rejeter -> EndDateBeforeStartException (mappée 422). Rien n'est persisté.
+        LocalDate start = LocalDate.of(2026, 5, 10);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        // endDate seule, antérieure à startDate persistée (10 mai) -> incohérent.
+        EventUpdateCommand request = upd().endDate(LocalDate.of(2026, 5, 1)).build();
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> eventService.updateEvent(eventId, request))
+                .isInstanceOf(EndDateBeforeStartException.class);
+
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_endDateEqualsStartDate_isTolerated() {
+        // #201 : borne inclusive (endDate == startDate accepté, event d'un jour).
+        LocalDate start = LocalDate.of(2026, 5, 10);
+        Event event = new Event(
+                eventId, "T", "single", 0, null,
+                false, null, null, start, start,
+                productId, false, "#000000", false);
+
+        EventUpdateCommand request = upd().endDate(start).build();
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getEndDate()).isEqualTo(start);
     }
 
     @Test

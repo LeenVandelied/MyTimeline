@@ -122,6 +122,8 @@ public class EventController {
                 request.getIsRecurring(),
                 request.getRecurrenceUnit(),
                 request.getRecurrenceEndDate(),
+                request.getStartDate(),
+                request.getEndDate(),
                 request.getColor(),
                 request.getArchived());
     }
