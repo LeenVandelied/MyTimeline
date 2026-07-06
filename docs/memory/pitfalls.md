@@ -228,3 +228,9 @@ Quand un composant enfant load-bearing est mocké dans un test (ex. `DeleteConfi
 
 ## PIT-S22-003 — Garde-fou cwd worktree : le bloc EN TÊTE reste indispensable (récurrence S22)
 Confirme PIT-S21-001 : en S22, #62 (garde cwd reléguée dans « Contraintes », pas en tête) a ENCORE écrit dans le repo principal avant rapatriement manuel. À l'inverse #68 et le fix review217 (bloc `⚠️ GARDE CWD WORKTREE` en TOUT PREMIER + chemins absolus + `git -C <worktree>`) n'ont eu AUCUNE fuite. Règle : le bloc worktree va en première ligne du briefing, jamais dans une section basse. (Sprint 22 #62 vs #68)
+
+## PIT-S23-001 — CVE spring-security-web non backportée sur la ligne 6.4.x (rester sur Boot 3.4.x impose override 6.5.x)
+En S23 #180, l'issue supposait « spring-security 6.4.6+ résout CVE-2025-41232 ET CVE-2026-22732 » → FAUX : CVE-2026-22732 n'est PAS backportée sur 6.4.x (6.4.13 encore vulnérable, vérifié trivy). Fix réel = spring-security 6.5.9+/7.0.4. Rester sur la ligne Boot 3.4.x (pas de montée minor) impose un override `spring-security.version=6.5.x` + aligner `spring-framework.version` sur le floor requis (6.2.19, sinon skew avec le pin BOM Boot 6.2.15). Règle : ne JAMAIS croire un « X.Y.Z+ résout la CVE » sur parole — vérifier la version corrigée réelle (advisory + re-scan trivy après bump). (Sprint 23 #180)
+
+## PIT-S23-002 — `@MockBean`/`@Mock` sur `*ServiceImpl` concret masque une violation DIP (fonctionne mais ment)
+En S23 #123, des tests de contrôleurs mockaient le `*ServiceImpl` concret : ça « fonctionne » (l'impl IS-A le port) mais viole le critère DIP et laisse un commentaire trompeur justifiant l'ancien câblage concret. Après un refactor DIP repo-wide : basculer les mocks sur l'INTERFACE (port) ET purger les commentaires justifiant l'impl concrète. Vérif offenders : `grep -rln "import .*application.services\..*ServiceImpl" backend/src/main/java`. (Sprint 23 #123)
