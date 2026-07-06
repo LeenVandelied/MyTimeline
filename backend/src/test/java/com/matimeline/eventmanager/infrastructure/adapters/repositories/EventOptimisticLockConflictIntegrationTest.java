@@ -1,12 +1,10 @@
 package com.matimeline.eventmanager.infrastructure.adapters.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.hibernate.StaleStateException;
 import org.junit.jupiter.api.Test;
@@ -27,28 +25,26 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 
 /**
- * #200 (BR-EVE-015) — Vérifie de bout en bout (Postgres jetable + Flyway) que deux mises à jour
- * VRAIMENT CONCURRENTES du même event, chacune dans SA transaction, produisent un CONFLIT
- * OPTIMISTE sur la seconde à committer : l'update perdant est REJETÉ et n'écrase PAS le gagnant.
+ * #200 (BR-EVE-015) — Vérifie de bout en bout (Postgres jetable + Flyway) qu'un 2e update
+ * s'appuyant sur une VERSION PÉRIMÉE (@Version) d'un event est REJETÉ par un conflit optimiste
+ * et n'écrase PAS le 1er update — l'invariant métier "édition concurrente -> conflit -> 409".
  *
- * <p>Course réelle sur DEUX threads : chaque thread ouvre sa propre transaction, appelle
- * {@code eventService.updateEvent} (qui charge l'entité gérée v0 via le repository) et attend une
- * barrière AVANT de committer, garantissant que les deux ont lu la version 0. Le premier commit
- * passe (v0 -> v1) ; le second, dont le flush exécute {@code UPDATE ... WHERE version = 0}, touche
- * 0 ligne -> conflit optimiste.
+ * <p>SIMULATION DÉTERMINISTE (aucun thread, aucun timing) : c'est l'équivalent reproductible
+ * de deux éditions concurrentes. On matérialise une VUE PÉRIMÉE de l'entité (détachée à la
+ * version N), on applique un PREMIER update committé (N -> N+1 en base), puis on ré-attache la
+ * vue périmée (toujours version N) et on force un {@code flush()} : Hibernate exécute
+ * {@code UPDATE ... WHERE version = N}, touche 0 ligne et lève le conflit de façon systématique
+ * — à chaque exécution, indépendamment de l'ordonnancement.
  *
- * <p>ASSERTION DÉTERMINISTE (fix flakiness suite complète) : selon le moment exact du flush,
- * l'exception qui SURFACE au bord du {@code TransactionTemplate} peut être soit la Spring
- * {@code OptimisticLockingFailureException} (traduite par le PersistenceExceptionTranslationPostProcessor
- * sur le @Repository), soit l'exception JPA/Hibernate brute ({@code OptimisticLockException} /
- * {@code StaleStateException}) quand la détection se produit au commit de la transaction plutôt
- * qu'au save du repository. Les DEUX prouvent le même comportement métier. On assert donc sur la
- * FAMILLE d'exception optimiste (peu importe la couche qui l'émet) + sur le RÉSULTAT OBSERVABLE
- * (non-écrasement : titre gagnant persisté, version=1). Le mapping HTTP 409 lui-même est verrouillé
- * de façon déterministe par {@code GlobalExceptionHandlerOptimisticLockTest} (slice MockMvc).
+ * <p>ASSERTION : l'exception qui surface au flush est la JPA {@code OptimisticLockException} /
+ * Hibernate {@code StaleStateException} ; via un @Repository elle serait traduite en Spring
+ * {@code OptimisticLockingFailureException} (mappée 409). {@code isOptimisticLockFailure} accepte
+ * la FAMILLE (peu importe la couche émettrice, parcours de la chaîne de causes). Le mapping HTTP
+ * 409 lui-même est verrouillé, lui, par {@code GlobalExceptionHandlerOptimisticLockTest} (slice
+ * MockMvc). On vérifie aussi le RÉSULTAT OBSERVABLE : non-écrasement (version N+1, 1er update gardé).
  *
- * <p>PAS de {@code @Transactional} classe : commits réels requis. Nettoyage natif en fin de test
- * (conteneur Postgres partagé entre classes).
+ * <p>PAS de {@code @Transactional} classe : commits réels requis pour matérialiser le bump de
+ * version. Nettoyage natif en fin de test (conteneur Postgres partagé entre classes).
  */
 @SpringBootTest
 class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegrationTest {
@@ -63,59 +59,42 @@ class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegra
     private TransactionTemplate txTemplate;
 
     /**
-     * Critère d'acceptation #200 : 2 updates concurrents -> le 2e est rejeté par un conflit
-     * optimiste (famille mappée 409 par GlobalExceptionHandler) et n'écrase PAS le gagnant.
+     * Critère d'acceptation #200 : un 2e update sur version périmée -> conflit optimiste
+     * (famille mappée 409 par GlobalExceptionHandler), sans écraser le 1er update.
      */
     @Test
-    void twoConcurrentUpdates_secondFailsWithOptimisticLock() throws Exception {
+    void staleVersionUpdate_isRejectedByOptimisticLock_withoutOverwriting() {
         UUID eventId = persistEventGraph();
 
-        // Deux transactions ouvrent, lisent (v0), puis attendent la barrière avant de committer.
-        CountDownLatch bothLoaded = new CountDownLatch(2);
-        CountDownLatch firstCommitted = new CountDownLatch(1);
-        AtomicReference<Throwable> secondError = new AtomicReference<>();
-
-        Runnable winner = () -> txTemplate.executeWithoutResult(status -> {
-            eventService.updateEvent(eventId, titleCommand("titre-WINNER"));
-            bothLoaded.countDown();
-            await(bothLoaded);         // s'assure que le perdant a lu v0 AVANT ce commit
-            // fin du lambda -> commit (v0 -> v1)
+        // (1) Vue PÉRIMÉE : charge l'entité à la version 0 puis la détache (elle fige version=0).
+        EventEntity staleView = txTemplate.execute(status -> {
+            EventEntity managed = em.find(EventEntity.class, eventId);
+            em.detach(managed);
+            return managed;
         });
+        assertThat(staleView.getVersion()).isEqualTo(0);
 
-        Runnable loser = () -> {
-            try {
+        // (2) 1er update committé via le service réel : version 0 -> 1 en base.
+        txTemplate.executeWithoutResult(status ->
+                eventService.updateEvent(eventId, titleCommand("titre-WINNER")));
+
+        // (3) 2e update s'appuyant sur la version périmée 0 : merge de la vue détachée + flush
+        //     -> UPDATE ... WHERE version = 0 -> 0 ligne -> conflit optimiste DÉTERMINISTE.
+        Throwable secondError = catchThrowable(() ->
                 txTemplate.executeWithoutResult(status -> {
-                    eventService.updateEvent(eventId, titleCommand("titre-LOSER"));
-                    bothLoaded.countDown();
-                    await(bothLoaded);     // les deux ont lu v0
-                    await(firstCommitted); // laisse le gagnant committer d'abord
-                    status.flush();        // force le flush -> UPDATE ... WHERE version=0 -> conflit
-                });
-            } catch (Throwable t) {
-                secondError.set(t);
-            }
-        };
+                    staleView.setTitle("titre-LOSER");
+                    em.merge(staleView);
+                    em.flush();
+                }));
 
-        Thread tLoser = new Thread(loser, "opt-lock-loser");
-        tLoser.start();
-
-        Thread tWinner = new Thread(winner, "opt-lock-winner");
-        tWinner.start();
-        tWinner.join(10_000);
-        firstCommitted.countDown(); // le gagnant a committé, le perdant peut tenter son flush
-        tLoser.join(10_000);
-
-        // Le 2e update est REJETÉ par un conflit optimiste — famille acceptée (Spring OU JPA/Hibernate),
-        // insensible au moment exact du flush qui décide de la couche émettrice.
-        assertThat(secondError.get())
-                .as("le 2e update concurrent doit être rejeté par un conflit optimiste")
+        assertThat(secondError)
+                .as("le 2e update sur version périmée doit être rejeté par un conflit optimiste")
                 .isNotNull();
-        assertThat(isOptimisticLockFailure(secondError.get()))
-                .as("l'exception du 2e update (%s) doit appartenir à la famille optimistic-lock",
-                        secondError.get())
+        assertThat(isOptimisticLockFailure(secondError))
+                .as("l'exception (%s) doit appartenir à la famille optimistic-lock", secondError)
                 .isTrue();
 
-        // Résultat observable (déterministe) : non-écrasement. Le gagnant a survécu, version bumpée.
+        // (4) Résultat observable : non-écrasement. Le 1er update a survécu, version bumpée à 1.
         txTemplate.executeWithoutResult(status -> {
             EventEntity reloaded = em.find(EventEntity.class, eventId);
             assertThat(reloaded.getTitle()).isEqualTo("titre-WINNER");
@@ -187,14 +166,5 @@ class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegra
                 em.createNativeQuery("DELETE FROM events WHERE id = :id")
                         .setParameter("id", eventId)
                         .executeUpdate());
-    }
-
-    private static void await(CountDownLatch latch) {
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(e);
-        }
     }
 }
