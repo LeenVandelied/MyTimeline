@@ -85,6 +85,13 @@ export type FullCalendarEvent = {
     productName: string
     category: string
     type: string
+    // #81 (a11y) — récurrence remontée au view-model pour l'`aria-label` agrégé
+    // de la frise (BR-EVE-006). AJOUT purement frontend : le contrat Zod/DTO
+    // (`eventSchema`) reste inchangé (zod_dto_sync: NON), on ne fait que ne plus
+    // JETER `isRecurring`/`recurrenceUnit` au mapping. Optionnels : `undefined`
+    // = event non récurrent (annonce vocale silencieuse sur la récurrence).
+    isRecurring?: boolean
+    recurrenceUnit?: RecurrenceUnit | null
   }
 }
 
@@ -109,6 +116,10 @@ export const mapToFullCalendarEvent = (
       productName,
       category,
       type: event.type,
+      // #81 — propage la récurrence au view-model (BR-EVE-006) pour l'aria-label
+      // agrégé de la frise. Ne modifie ni le DTO ni le schéma Zod.
+      isRecurring: event.isRecurring,
+      recurrenceUnit: event.recurrenceUnit,
     },
   }
 }

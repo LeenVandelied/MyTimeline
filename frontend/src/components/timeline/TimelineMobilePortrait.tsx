@@ -5,14 +5,14 @@ import { Minus, MoreHorizontal, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
 import { textOn } from '@/lib/color'
-import { Resource } from './lib'
+import { buildEventAriaLabel, Resource } from './lib'
 import { Minimap } from './Minimap'
 import { TimelineBottomSheet } from './TimelineBottomSheet'
 import { TimelineActionSheet } from './TimelineActionSheet'
 import { useTimelineMobileState, type TimelineMobileState } from './useTimelineMobileState'
 import { useTimelineMobileSelection, type TimelineMobileSelection } from './useTimelineMobileSelection'
 import { useTimelineMobileGestures, type TimelineMobileGestures } from './useTimelineMobileGestures'
-import { buildEventAriaLabel, statusToVar, ZOOM_LEVELS, type PositionedEvent } from './zoom'
+import { statusToVar, ZOOM_LEVELS, type PositionedEvent } from './zoom'
 
 /**
  * #63 — Vue Timeline mobile portrait.
