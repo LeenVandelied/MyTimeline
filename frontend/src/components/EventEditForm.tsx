@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from './ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Checkbox } from './ui/checkbox'
+import { Switch } from './ui/switch'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
@@ -405,6 +406,28 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Archivage — BR-EVE-013 (archived PATCH-only, toujours visible). */}
+              <div className="border-rule space-y-4 border-t pt-4">
+                <FormField
+                  control={form.control}
+                  name="archived"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-y-0 space-x-3">
+                      <FormControl>
+                        <Switch
+                          checked={field.value ?? false}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          data-testid="event-form-archived-toggle"
+                        />
+                      </FormControl>
+                      <FormLabel className="text-ink cursor-pointer font-normal">
+                        {t('archived')}
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* États submit error/conflict (409 distinct des 4xx/5xx). */}

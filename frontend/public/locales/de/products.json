@@ -37,7 +37,8 @@
         "startDate": "Startdatum",
         "endDate": "Enddatum",
         "recurrenceEndDate": "Wiederholungsende",
-        "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt."
+        "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt.",
+        "archived": "Archiviert"
       },
       "types": {
         "duration": "Dauer",

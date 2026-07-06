@@ -48,6 +48,7 @@ const baseDefaults: EventEditFormValues = {
   startDate: '2026-05-01',
   endDate: '2026-05-04',
   color: '#3B82F6',
+  archived: false,
 }
 
 function setup(props: Partial<React.ComponentProps<typeof EventEditForm>> = {}) {
@@ -190,6 +191,31 @@ describe('EventEditForm — récurrence', () => {
     await waitFor(() =>
       expect(screen.getByTestId('event-form-recurrence-end-date')).toBeInTheDocument(),
     )
+  })
+})
+
+describe('EventEditForm — archivage (BR-EVE-013)', () => {
+  it('toggle archived visible et pré-rempli depuis defaultValues', () => {
+    setup({ defaultValues: { ...baseDefaults, archived: true } })
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    expect(toggle).toBeInTheDocument()
+    expect(toggle).toBeChecked()
+  })
+
+  it('toggle archived est modifiable (non conditionnel à isRecurring)', async () => {
+    setup()
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    expect(toggle).not.toBeChecked()
+    await userEvent.click(toggle)
+    expect(toggle).toBeChecked()
+  })
+
+  it('la soumission (PATCH) transmet archived après toggle', async () => {
+    const { onSubmit } = setup()
+    await userEvent.click(screen.getByTestId('event-form-archived-toggle'))
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ archived: true })
   })
 })
 

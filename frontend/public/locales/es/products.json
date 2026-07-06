@@ -37,7 +37,8 @@
         "startDate": "Fecha de inicio",
         "endDate": "Fecha de fin",
         "recurrenceEndDate": "Fin de recurrencia",
-        "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha."
+        "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha.",
+        "archived": "Archivado"
       },
       "types": {
         "duration": "Duración",
