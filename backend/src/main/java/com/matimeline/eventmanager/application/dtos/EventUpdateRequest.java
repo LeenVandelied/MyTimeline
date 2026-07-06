@@ -2,6 +2,9 @@ package com.matimeline.eventmanager.application.dtos;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -15,6 +18,16 @@ import jakarta.validation.constraints.Size;
  *   rejeter une chaîne vide ("" -> HTTP 400) tout en autorisant l'absence (null),
  *   indispensable car certains PATCH (mise à jour des couleurs seules, par
  *   exemple) n'envoient pas de title.
+ *
+ * #201 : {@code startDate}/{@code endDate} sont désormais EXPOSÉS et RÉELLEMENT
+ * consommés (auparavant le formulaire les envoyait mais le DTO les ignorait
+ * silencieusement -> faux contrôle frontend). Contrat de dates (cf. issue-201-done) :
+ * pour {@code type='duration'} la durée reste la source de vérité de {@code endDate}
+ * (BR-EVE-003, l'endDate du payload est ignorée pour ce type) ; pour tout autre type
+ * (single...) une {@code endDate} explicite est persistée telle quelle. La cohérence
+ * inter-champ {@code endDate >= startDate} est portée par {@code @AssertTrue} ci-dessous
+ * (400) quand les DEUX dates sont présentes dans le payload — parité avec le refine Zod
+ * frontend ({@code buildEventEditSchema} endErr, BR-EVE-002).
  *
  * Le contrat JSON sur le wire est inchangé (mêmes noms de champs que le Map précédent).
  */
@@ -35,9 +48,32 @@ public class EventUpdateRequest {
 
     private LocalDate recurrenceEndDate;
 
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
     private String color;
 
     private Boolean archived;
+
+    /**
+     * BR-EVE-002 (#201) : cohérence inter-champ {@code endDate >= startDate}. La garde ne
+     * s'applique que lorsque les DEUX dates sont présentes DANS LE PAYLOAD (PATCH partiel :
+     * une date seule s'appuie sur l'état persisté, invisible au niveau DTO). Le formulaire
+     * d'édition envoie toujours les deux ensemble (cf. EventEditForm), c'est le scénario ciblé.
+     * Violé -> {@code @Valid} -> {@code MethodArgumentNotValidException} -> HTTP 400 (handler
+     * existant, aucun nouveau mapping dans GlobalExceptionHandler). {@code @JsonIgnore} : champ
+     * dérivé, non attendu sur le wire. Retourne {@code true} (valide) si l'une des deux dates
+     * est absente.
+     */
+    @JsonIgnore
+    @AssertTrue(message = "endDate must be on or after startDate")
+    public boolean isEndDateConsistent() {
+        if (startDate == null || endDate == null) {
+            return true;
+        }
+        return !endDate.isBefore(startDate);
+    }
 
     public String getTitle() {
         return title;
@@ -93,6 +129,22 @@ public class EventUpdateRequest {
 
     public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
         this.recurrenceEndDate = recurrenceEndDate;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
     public String getColor() {

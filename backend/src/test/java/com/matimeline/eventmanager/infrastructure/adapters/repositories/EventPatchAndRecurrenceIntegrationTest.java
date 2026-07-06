@@ -90,7 +90,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         em.clear();
 
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, 10, null, null, null, null, null, null);
+                null, null, 10, null, null, null, null, null, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();
@@ -98,6 +98,79 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
         assertThat(reloaded.getEndDate()).isEqualTo(start.plusDays(10));
         assertThat(reloaded.getDurationValue()).isEqualTo(10);
+    }
+
+    /**
+     * #201 — Critère d'acceptation : scénario de DÉSACCORD dates saisies vs enregistrées.
+     * Un event 'single' reçoit startDate/endDate EXPLICITES au PATCH ; auparavant le DTO les
+     * ignorait (le formulaire les envoyait pour rien). On vérifie qu'elles sont désormais
+     * réellement PERSISTÉES telles quelles en base (contrat #201, type != 'duration').
+     */
+    @Test
+    void patchSingleWithExplicitDates_persistsThemInDatabase() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i201-event-" + UUID.randomUUID());
+        entity.setType("single");
+        entity.setIsRecurring(false);
+        entity.setStartDate(start);
+        entity.setEndDate(start);
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        LocalDate newStart = LocalDate.of(2026, 6, 10);
+        LocalDate newEnd = LocalDate.of(2026, 6, 20);
+        EventUpdateCommand request = new EventUpdateCommand(
+                null, null, null, null, null, null, null, newStart, newEnd, null, null);
+        eventService.updateEvent(eventId, request);
+        em.flush();
+        em.clear();
+
+        Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
+        assertThat(reloaded.getStartDate()).isEqualTo(newStart);
+        assertThat(reloaded.getEndDate()).isEqualTo(newEnd);
+    }
+
+    /**
+     * #201 / BR-EVE-003 — Pour type='duration', déplacer startDate au PATCH re-dérive endDate
+     * depuis la durée EN BASE (la durée reste la source de vérité, l'endDate explicite fournie
+     * est volontairement écrasée).
+     */
+    @Test
+    void patchDurationMovesStartDate_reDerivesEndDate_inDatabase() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i201-event-" + UUID.randomUUID());
+        entity.setType("duration");
+        entity.setDurationValue(5);
+        entity.setDurationUnit("days");
+        entity.setIsRecurring(false);
+        entity.setStartDate(start);
+        entity.setEndDate(start.plusDays(5));
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        LocalDate newStart = LocalDate.of(2026, 2, 1);
+        EventUpdateCommand request = new EventUpdateCommand(
+                null, null, null, null, null, null, null,
+                newStart, LocalDate.of(2099, 12, 31), null, null);
+        eventService.updateEvent(eventId, request);
+        em.flush();
+        em.clear();
+
+        Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
+        assertThat(reloaded.getStartDate()).isEqualTo(newStart);
+        assertThat(reloaded.getEndDate()).isEqualTo(newStart.plusDays(5));
     }
 
     /**
@@ -124,7 +197,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         em.clear();
 
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, null, null, true, null, null, null, null);
+                null, null, null, null, true, null, null, null, null, null, null);
 
         assertThatThrownBy(() -> {
             eventService.updateEvent(eventId, request);
@@ -156,7 +229,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         em.clear();
 
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, null, null, true, null, null, null, null);
+                null, null, null, null, true, null, null, null, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();

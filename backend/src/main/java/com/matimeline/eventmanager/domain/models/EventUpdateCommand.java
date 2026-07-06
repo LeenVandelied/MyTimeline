@@ -13,6 +13,12 @@ import java.time.LocalDate;
  * {@code null} = "non fourni" et n'est PAS appliqué (cf. {@code EventServiceImpl.updateEvent}).
  * {@code recurrenceUnit} est une chaîne brute convertie en {@link RecurrenceUnit} par le
  * service. La validation d'entrée (@Size sur title, etc.) reste portée par le DTO HTTP en amont.
+ *
+ * <p>#201 : {@code startDate}/{@code endDate} sont désormais portés jusqu'au service (avant,
+ * le formulaire les envoyait mais le DTO ne les câblait pas -> ignorés silencieusement). Le
+ * service applique {@code startDate}, puis dérive/persiste {@code endDate} selon le type
+ * (BR-EVE-003 : durée = source de vérité pour {@code type='duration'} ; endDate explicite
+ * persistée sinon).
  */
 public record EventUpdateCommand(
         String title,
@@ -22,6 +28,8 @@ public record EventUpdateCommand(
         Boolean isRecurring,
         String recurrenceUnit,
         LocalDate recurrenceEndDate,
+        LocalDate startDate,
+        LocalDate endDate,
         String color,
         Boolean archived) {
 }
