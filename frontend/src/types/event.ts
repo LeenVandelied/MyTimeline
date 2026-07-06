@@ -92,6 +92,10 @@ export type FullCalendarEvent = {
     // = event non récurrent (annonce vocale silencieuse sur la récurrence).
     isRecurring?: boolean
     recurrenceUnit?: RecurrenceUnit | null
+    // #188 — `archived` (soft-delete amorcé, BR-EVE-013) remonté au view-model
+    // pour pré-remplir le toggle d'édition. AJOUT frontend : contrat Zod/DTO
+    // (`eventSchema.archived`) inchangé, on ne fait que ne plus le JETER au mapping.
+    archived?: boolean
   }
 }
 
@@ -120,6 +124,8 @@ export const mapToFullCalendarEvent = (
       // agrégé de la frise. Ne modifie ni le DTO ni le schéma Zod.
       isRecurring: event.isRecurring,
       recurrenceUnit: event.recurrenceUnit,
+      // #188 — propage `archived` pour pré-remplir le toggle d'édition (BR-EVE-013).
+      archived: event.archived,
     },
   }
 }

@@ -43,14 +43,18 @@ vi.mock('./EventEditForm', () => ({
     submitState,
     onReload,
     onConflictDismiss,
+    defaultValues,
   }: {
     onSubmit: (data: unknown) => Promise<void>
     submitState?: string
     onReload?: () => void
     onConflictDismiss?: () => void
+    defaultValues?: { archived?: boolean }
   }) => (
     <div>
       <span data-testid="submit-state">{submitState}</span>
+      {/* #188 — expose la valeur pré-remplie du toggle archivé (BR-EVE-013). */}
+      <span data-testid="default-archived">{String(defaultValues?.archived)}</span>
       <button type="button" data-testid="do-submit" onClick={() => onSubmit({ title: 'x' })}>
         submit
       </button>
@@ -85,9 +89,9 @@ function axiosLikeError(status: number) {
 }
 
 /** Ouvre le drawer puis passe en mode édition (bouton edit du header). */
-async function openEditor() {
-  render(<EventContent event={baseEvent} />)
-  await userEvent.click(screen.getAllByText('Mon événement')[0])
+async function openEditor(event: FullCalendarEvent = baseEvent) {
+  render(<EventContent event={event} />)
+  await userEvent.click(screen.getAllByText(event.title)[0])
   // Bouton edit/save du header (title = products.edit.title en mode lecture).
   const editButton = screen.getByTitle('products.edit.title')
   await userEvent.click(editButton)
@@ -101,6 +105,21 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks()
+})
+
+describe('EventContent — pré-remplissage archived (#188 / BR-EVE-013)', () => {
+  it('event archived=true → defaultValues.archived pré-rempli à true', async () => {
+    await openEditor({
+      ...baseEvent,
+      extendedProps: { ...baseEvent.extendedProps, archived: true },
+    })
+    expect(screen.getByTestId('default-archived')).toHaveTextContent('true')
+  })
+
+  it('event non archivé → defaultValues.archived = false (fallback)', async () => {
+    await openEditor()
+    expect(screen.getByTestId('default-archived')).toHaveTextContent('false')
+  })
 })
 
 describe('EventContent — interception 409 optimistic (#77)', () => {

@@ -87,6 +87,12 @@ describe('mapToFullCalendarEvent', () => {
     expect(mapped.color).toBe('#6366f1')
     expect(mapped.allDay).toBe(false)
   })
+
+  it('#188 — propage archived au view-model (BR-EVE-013)', () => {
+    const ev: Event = eventSchema.parse({ ...baseResponse, archived: true })
+    const mapped = mapToFullCalendarEvent(ev, 'Prod', 'cat', 'p1')
+    expect(mapped.extendedProps.archived).toBe(true)
+  })
 })
 
 describe('eventCreationSchema', () => {

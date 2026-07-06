@@ -277,6 +277,8 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   startDate: event.start ? event.start.slice(0, 10) : undefined,
                   endDate: event.end ? event.end.slice(0, 10) : undefined,
                   color: color,
+                  // #188 — pré-remplir le toggle archivé depuis l'event (BR-EVE-013).
+                  archived: event.extendedProps?.archived ?? false,
                 }}
                 onSubmit={onSubmit}
                 onCancel={() => {
