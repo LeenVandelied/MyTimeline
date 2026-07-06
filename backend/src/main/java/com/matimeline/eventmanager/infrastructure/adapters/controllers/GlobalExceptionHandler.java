@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -166,6 +167,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        // #200 (BR-EVE-015) : édition concurrente d'une entité versionnée (@Version) —
+        // deux updates s'appuyant sur la même version : le 2e flush détecte le décalage et
+        // Hibernate lève ObjectOptimisticLockingFailureException -> HTTP 409 Conflict (au
+        // lieu du 500 générique non mappé). SCOPÉ au type PRÉCIS de Spring
+        // (org.springframework.orm), PAS à un supertype fourre-tout : contrairement à un
+        // @ExceptionHandler(DataIntegrityViolationException) global (retiré #153, PIT-S10-002),
+        // ce type ne recouvre QUE le conflit de version optimiste — il ne masque aucune autre
+        // violation. S'applique donc uniformément à toute entité @Version (Event, Product,
+        // Category, User) sans requalifier d'erreurs non liées.
+        // Contrat consommé par #77 (Vague 2) : statut 409, corps plat {"error":"..."} —
+        // message générique neutre (pas de fuite de version/entité interne).
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "resource was modified concurrently, please retry"));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
