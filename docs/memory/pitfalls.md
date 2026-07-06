@@ -234,3 +234,9 @@ En S23 #180, l'issue supposait « spring-security 6.4.6+ résout CVE-2025-41232 
 
 ## PIT-S23-002 — `@MockBean`/`@Mock` sur `*ServiceImpl` concret masque une violation DIP (fonctionne mais ment)
 En S23 #123, des tests de contrôleurs mockaient le `*ServiceImpl` concret : ça « fonctionne » (l'impl IS-A le port) mais viole le critère DIP et laisse un commentaire trompeur justifiant l'ancien câblage concret. Après un refactor DIP repo-wide : basculer les mocks sur l'INTERFACE (port) ET purger les commentaires justifiant l'impl concrète. Vérif offenders : `grep -rln "import .*application.services\..*ServiceImpl" backend/src/main/java`. (Sprint 23 #123)
+
+## PIT-S24-001 — `.focus()` seul ne défile pas des conteneurs scrollables imbriqués → `scrollIntoView` explicite
+Sur la frise (lanes vertical + rail horizontal), `element.focus()` seul ne fait pas défiler fiablement la pastille dans le viewport → focus clavier sur un item hors écran. Solution : `element.scrollIntoView({block:'nearest',inline:'nearest'})` explicite APRÈS `.focus()`. Prévention tests : jsdom n'implémente pas `scrollIntoView` → stub dans `vitest.setup.ts` (déjà présent) sinon les tests clavier throw. (Sprint 24 #81)
+
+## PIT-S24-002 — Subagent worktree : Read/Edit en chemin RELATIF (et `cd` compound) résolvent sur le repo PRINCIPAL
+Prolonge PIT-S22-003 (au-delà du seul `cd`) : en S24 #82, un `Read`/`Edit` en chemin relatif a résolu sur le repo principal (`dev`), pas le worktree (`sprint/24`) → édition livrée au mauvais endroit, invisible au commit worktree, détectée seulement via `git rev-parse --show-toplevel`. Règle : TOUJOURS chemins absolus préfixés worktree pour Read/Edit ; `git -C <worktree>` jamais `cd` ; vérifier `--show-toplevel == worktree` AVANT toute écriture, pas seulement avant commit. (Sprint 24 #82)

@@ -117,8 +117,18 @@
 .mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
 .mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
 .mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
-.mt-tlv__evt:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+/* #81 — Focus ring (point 5). ÉCART INTENTIONNEL de token : les pastilles
+   d'événement utilisent `--color-accent` (et non `--color-focus` comme les
+   autres interactifs de la frise) — exigé par le critère d'acceptation #81
+   « outline: 2px solid var(--color-accent) », référencé dans ux-patterns.md §6,
+   validé par ui-design (S24). Les deux tokens rendent la même valeur (blue-500
+   clair / blue-400 sombre). On réutilise le `:focus-visible` fourni par le DS. */
+.mt-tlv__evt:focus-visible{outline:2px solid var(--color-accent); outline-offset:2px;}
 .mt-tlv__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
+/* #81 point 6 — libellé de secours HORS barre : rendu quand le contraste du
+   titre À L'INTÉRIEUR de la barre est < 4.5:1 (fond clair + barre étroite). Posé
+   sur le fond de lane (ink lisible), aligné verticalement sur la barre. */
+.mt-tlv__evt-outside{position:absolute; top:9px; height:26px; display:inline-flex; align-items:center; padding:0 4px; font-size:12px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; pointer-events:none;}
 
 /* Minimap waveform : barres de densité + fenêtre draggable focusable. */
 .mt-minimap__bar--filled{background:var(--color-accent);}
@@ -134,7 +144,11 @@
 .mt-drawer__row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--color-rule); font-size:13px;}
 .mt-drawer__k{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-drawer__v{color:var(--color-ink); text-align:right;}
-.mt-drawer__close{background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
+.mt-drawer__close{position:relative; background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
+/* #82 a11y — hitbox tap >= 44x44px sans agrandir le visuel (28px conservé).
+   Pseudo centré qui déborde de (44-28)/2=8px sur chaque bord. Même technique
+   que `.mt-tlm__evt::before`. N'affecte pas le layout du header flex. */
+.mt-drawer__close::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 .mt-drawer__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* Tooltip d'aide (?) — liste des raccourcis clavier. */

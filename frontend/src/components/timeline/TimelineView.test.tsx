@@ -204,4 +204,199 @@ describe('TimelineView', () => {
     expect(drawer).toHaveTextContent('Lait bio')
     expect(drawer).toHaveTextContent('Frais')
   })
+
+  // ==================== #81 — a11y ====================
+  describe('#81 accessibilité (region landmark + roving + clavier + aria-live)', () => {
+    it('expose la frise comme région landmark (role=region + aria-label + description)', () => {
+      setup()
+      const region = screen.getByTestId('timeline-view')
+      expect(region.tagName).toBe('SECTION')
+      expect(region).toHaveAttribute('role', 'region')
+      expect(region).toHaveAttribute('aria-label', 'dashboard.timeline.region.label')
+      expect(region).toHaveAttribute('aria-describedby', 'timeline-region-desc')
+      expect(document.getElementById('timeline-region-desc')).toHaveTextContent(
+        'dashboard.timeline.region.description',
+      )
+    })
+
+    it('roving tabindex : UNE seule pastille focusable (tabIndex=0), les autres -1', () => {
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      const focusables = pills.filter((p) => p.getAttribute('tabindex') === '0')
+      expect(focusables).toHaveLength(1)
+      expect(pills.filter((p) => p.getAttribute('tabindex') === '-1')).toHaveLength(pills.length - 1)
+    })
+
+    it('↓ déplace le focus vers la lane suivante, ↑ revient (navigation clavier)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      // 2 lanes, 1 event chacune (e1 lane0, e2 lane1).
+      pills[0].focus()
+      await user.keyboard('{ArrowDown}')
+      expect(pills[1]).toHaveFocus()
+      await user.keyboard('{ArrowUp}')
+      expect(pills[0]).toHaveFocus()
+    })
+
+    it('End va à la dernière pastille, Home à la première', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      pills[0].focus()
+      await user.keyboard('{End}')
+      expect(pills[pills.length - 1]).toHaveFocus()
+      await user.keyboard('{Home}')
+      expect(pills[0]).toHaveFocus()
+    })
+
+    it('Entrée sur une pastille ouvre le drawer (activation native du bouton)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      pills[0].focus()
+      await user.keyboard('{Enter}')
+      expect(await screen.findByTestId('timeline-drawer')).toBeInTheDocument()
+    })
+
+    it('aria-live annonce le changement de zoom', async () => {
+      const user = userEvent.setup()
+      setup()
+      const live = screen.getByTestId('timeline-live-region')
+      expect(live).toHaveAttribute('aria-live', 'polite')
+      expect(live.textContent).toBe('') // silencieux au montage (pas d'annonce parasite)
+      await user.keyboard('+')
+      await waitFor(() => expect(live.textContent).toContain('dashboard.timeline.live.zoom'))
+    })
+
+    it('aria-live annonce l’event sélectionné à l’ouverture du drawer', async () => {
+      const user = userEvent.setup()
+      setup()
+      const live = screen.getByTestId('timeline-live-region')
+      await user.click(screen.getAllByTestId('timeline-event')[0])
+      await waitFor(() =>
+        expect(live.textContent).toContain('dashboard.timeline.live.selected'),
+      )
+      expect(live.textContent).toContain('Péremption lait')
+    })
+
+    it('la pastille active reste focusable après collapse d’une catégorie (roving recalculé)', async () => {
+      const user = userEvent.setup()
+      setup()
+      // Collapse la 1re catégorie → sa lane disparaît, le roving retombe sur la 1re
+      // pastille visible restante (pas de crash, tabIndex=0 toujours unique).
+      await user.click(screen.getAllByTestId('timeline-group-head')[0])
+      await waitFor(() => {
+        const pills = screen.getAllByTestId('timeline-event')
+        expect(pills.filter((p) => p.getAttribute('tabindex') === '0')).toHaveLength(1)
+      })
+    })
+
+    it('MAJEUR-2 : le roving suit la RESSOURCE (pas un index) quand une catégorie AU-DESSUS se collapse', async () => {
+      // Régression MAJEUR-2 : `activeNav` était keyé par index de lane. Collapser
+      // une catégorie AU-DESSUS de la lane active rétrécit `navLanes` → l'index
+      // glissait vers une AUTRE ressource. Fixture : 3 catégories × 1 event.
+      // On active la pastille de la 3e ressource (cat C, index 2), on collapse la
+      // 1re catégorie (cat A) → les index remontent, MAIS le tabIndex=0 doit
+      // rester sur l'event de la ressource C, PAS sauter sur celui de B.
+      const events: FullCalendarEvent[] = [
+        {
+          id: 'ea',
+          title: 'Event A',
+          start: '2026-07-10',
+          end: '2026-07-10',
+          allDay: true,
+          resourceId: 'pa',
+          color: '#3B62D4',
+          extendedProps: { productId: 'pa', productName: 'Prod A', category: 'Cat A', type: 'single' },
+        },
+        {
+          id: 'eb',
+          title: 'Event B',
+          start: '2026-07-12',
+          end: '2026-07-12',
+          allDay: true,
+          resourceId: 'pb',
+          color: '#3B62D4',
+          extendedProps: { productId: 'pb', productName: 'Prod B', category: 'Cat B', type: 'single' },
+        },
+        {
+          id: 'ec',
+          title: 'Event C',
+          start: '2026-07-14',
+          end: '2026-07-14',
+          allDay: true,
+          resourceId: 'pc',
+          color: '#3B62D4',
+          extendedProps: { productId: 'pc', productName: 'Prod C', category: 'Cat C', type: 'single' },
+        },
+      ]
+      const resources: Resource[] = [
+        { id: 'pa', title: 'Prod A', category: 'Cat A' },
+        { id: 'pb', title: 'Prod B', category: 'Cat B' },
+        { id: 'pc', title: 'Prod C', category: 'Cat C' },
+      ]
+      const user = userEvent.setup()
+      render(
+        <TimelineView events={events} resources={resources} locale="fr-FR" today={new Date(2026, 6, 15)} />,
+      )
+
+      const pillFor = (title: string) =>
+        screen
+          .getAllByTestId('timeline-event')
+          .find((p) => p.getAttribute('data-event-title') === title)!
+
+      // Active la pastille de la ressource C (la plus basse) via focus clavier.
+      pillFor('Event A').focus()
+      await user.keyboard('{ArrowDown}{ArrowDown}') // → lane B → lane C
+      expect(pillFor('Event C')).toHaveFocus()
+      expect(pillFor('Event C')).toHaveAttribute('tabindex', '0')
+
+      // Collapse la catégorie A (au-dessus de la lane active) → glissement d'index.
+      await user.click(screen.getAllByTestId('timeline-group-head')[0])
+
+      await waitFor(() => {
+        // Le tabIndex=0 DOIT rester sur l'event C (même ressource), pas sur B.
+        expect(pillFor('Event C')).toHaveAttribute('tabindex', '0')
+        expect(pillFor('Event B')).toHaveAttribute('tabindex', '-1')
+      })
+    })
+  })
+
+  describe('#81 garde-fou contraste (libellé extérieur si < 4.5:1)', () => {
+    it('rend un libellé EXTÉRIEUR pour un event dont la couleur n’atteint pas AA dedans', () => {
+      render(
+        <TimelineView
+          events={[
+            {
+              id: 'e3',
+              title: 'Contraste faible',
+              start: '2026-07-12',
+              end: '2026-07-12',
+              allDay: true,
+              resourceId: 'p3',
+              color: '#6366f1', // 4.47:1 max → fallback dehors
+              extendedProps: {
+                productId: 'p3',
+                productName: 'Prod3',
+                category: 'Cat3',
+                type: 'single',
+              },
+            },
+          ]}
+          resources={[{ id: 'p3', title: 'Prod3', category: 'Cat3' }]}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+        />,
+      )
+      expect(screen.getByTestId('timeline-event-outside-label')).toHaveTextContent(
+        'Contraste faible',
+      )
+    })
+
+    it('ne rend PAS de libellé extérieur quand le contraste passe AA dedans', () => {
+      setup() // events #3B62D4 (5.41) et #4FA459 → lisibles dedans
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+  })
 })

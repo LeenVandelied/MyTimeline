@@ -118,6 +118,19 @@
     },
     "actions": {
       "label": "Actions de l’événement"
+    },
+    "region": {
+      "label": "Frise chronologique des événements",
+      "description": "Utilisez les flèches gauche et droite pour parcourir les événements d’une ligne, haut et bas pour changer de ligne, Début et Fin pour aller au premier ou dernier événement, Entrée ou Espace pour ouvrir le détail."
+    },
+    "live": {
+      "zoom": "Niveau de zoom :",
+      "selected": "Événement sélectionné :"
+    },
+    "recurrence": {
+      "week": "récurrent chaque semaine",
+      "month": "récurrent chaque mois",
+      "year": "récurrent chaque année"
     }
   }
 }

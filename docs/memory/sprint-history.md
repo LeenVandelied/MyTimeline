@@ -521,3 +521,66 @@
 **Status :** Terminé
 
 > **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).
+
+## Sprint 24 — 2026-07-06 → 2026-07-06 (Terminé — merge PR #225 dans dev — cohésion 0.78, a11y Timeline frise clavier + lecteur d'écran)
+**Objectif :** Rendre la frise Timeline navigable au clavier + accessible lecteur d'écran (dette a11y prévue depuis le plan S19-S23).
+**Milestone GitHub :** #24 (fermé après merge)
+**Issues livrées (3) :** #81 (BLOQUANT, L), #82 (S, résiduel M→S), #197 (S)
+**Vagues exécutées :** V1 = #81 (pose le pattern roving/live-region) | V2 = #197 + #82 (parallèles, fichiers disjoints)
+**Cohésion score :** 0.78
+**Commits :** 518aa86 (#81 roving/aria-live) · 19714f6 (#81 review focus ring) · b113fef + f5f58ef (#197 ux-patterns.md) · 99e85d7 (#82 cible tactile 44px) · 6281770 (artefacts mémoire) — hors 1a4ec51 (commit plan S24-S28)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (démarrage propre sur dev S23)
+**BR impactées :** BR-EVT-001 (contrat lecture events inchangé, zoom/nav pur client, aucun refetch — respecté #81). #82/#197 sans BR formelle.
+**Reviews :** reviewer batch #81 — 2 MAJEUR (focusNav sans scroll ; activeNav index-keyé glissait au collapse) + 1 MINEUR (double import), tous RÉSOLU. ui-design re-validation #197 = GO PR.
+**Tests :** Frontend 325/325 vert (44 fichiers) — inclut test non-régression MAJEUR-2 (roving resource-keyed) + lib-a11y.test.ts. Backend/E2E inchangés (sprint 100% frontend doc/a11y). CI PR #225 : backend + frontend + e2e + security tous SUCCESS.
+**Nouveaux pitfalls / décisions / patterns :** PAT-S24-001 (roving keyé par ID stable), PAT-S24-002 (hitbox ≥44px via ::before), PIT-S24-001 (scrollIntoView après focus), PIT-S24-002 (subagent worktree chemin relatif → repo principal), DEC-S24-001 (ux-patterns.md force-add, seul rules-jit tracké).
+**Note code-state :** #82 quasi-livré (focus-trap 7 modaux + cibles ≥44px déjà là S16-S20) → downsizé, reste close EventDrawer 28→44px.
+**Follow-ups arbitrés (Phase 4 triage) :** 3 items, tous → issue GitHub (milestone Sprint 25) :
+  - `.mt-zoom__btn` <44px sur touch mobile [S | events/frontend] → issue #226 (Sprint 25)
+  - Statuer raccourci `?` aide Timeline (câbler vs hover-only) [XS | events/frontend] → issue #227 (Sprint 25)
+  - EventPill aria-hidden conditionnel + couverture tests clavier §9 [S | events/frontend] → issue #228 (Sprint 25)
+  (item « formaliser PAT-S24 dans ux-patterns.md » déjà livré par #197 → résolu, non re-tracé)
+**Status :** Terminé (merge PR #225)
+
+## Sprint 25 — 2026-07-06 (PLANIFIE — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
+**Objectif :** Câbler le conflit 409 optimistic-lock côté backend + aligner le contrat startDate/endDate DTO + finitions form.
+**Milestone GitHub :** #25
+**Issues :** #201 (S), #200 (S), #188 (S — archived résiduel), #77 (M)
+**Vagues :** V1 = #201 puis #200 (même EventUpdateRequest.java, séquentiels) ∥ #188 (frontend seul) | V2 = #77
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (fichiers disjoints de S24)
+**Note code-state :** frontend gère déjà le 409, mais backend renvoie 500 (pas de handler ObjectOptimisticLockingFailureException) et EventUpdateRequest ignore startDate/endDate. recurrenceEndDate (#188) déjà livré.
+**Status :** Planifié
+
+## Sprint 26 — 2026-07-06 (PLANIFIE — cohésion 0.71, Résilience réseau + pages d'états système)
+**Objectif :** Bus d'état réseau + bannière offline/timeout + pages 404/403/500/vide/loading clair+sombre.
+**Milestone GitHub :** #26
+**Issues :** #76 (M), #57 (M)
+**Vagues :** V1 = #76 ∥ #57 (fichiers disjoints : apiClient/context vs app/[locale]/*.tsx neufs)
+**Migrations Flyway :** aucune
+**Dépend de :** #77/S25 (soft — réutilise le pattern dialog partagé)
+**Note code-state :** apiClient a des handlers 400/401/403/500 mais aucun navigator.onLine/timeout/bannière ; app/[locale]/ n'a ni not-found ni error ni loading.
+**Status :** Planifié
+
+## Sprint 27 — 2026-07-06 (PLANIFIE — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
+**Objectif :** Unifier l'extraction d'identité (SecurityContextHolder) + durcir sécurité contrôleurs + CHECK/NOT NULL users.role.
+**Milestone GitHub :** #27
+**Issues :** #93 (M), #154 (S), #92 (S), #122 (S — V12)
+**Vagues :** V1 = #93 ∥ #122 (migration DB disjointe) | V2 = #154 puis #92 (même ProductController.java)
+**Migrations Flyway :** **V12** (users.role NOT NULL + CHECK) — SEULE migration du plan S24-S28
+**Dépend de :** aucune (100% backend). ⚠ ALTER TABLE sensible : UPDATE role NULL avant SET NOT NULL, confirmation avant exec prod.
+**Note code-state :** #94 retiré du plan (déjà fait #123/46f2adf, issue fermée). 4-5 resolveCaller dupliqués à unifier.
+**Status :** Planifié
+
+## Sprint 28 — 2026-07-06 (PLANIFIE — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
+**Objectif :** Corriger l'alias e2e (Playwright vs vitest) + câbler CI + specs E2E Produits/Catégories + requête produits SQL indexée.
+**Milestone GitHub :** #28
+**Issues :** #207 (S), #133 (S), #218 (M), #41 (XS) + #124 (S) combinés
+**Vagues :** V1 = #207+#133 (même script, fusionnés séquentiel) ∥ #41+#124 (backend) | V2 = #218 (après scope e2e corrigé)
+**Migrations Flyway :** aucune
+**Dépend de :** #207 débloque un vrai run Playwright pour #218 (ordre intra-sprint strict)
+**Note code-state :** test-quiet.sh lance vitest pour scope e2e (bug #207) ; test:e2e Playwright jamais appelé ; requête produits filtrée en mémoire (pas SQL indexé). ⚠ #41 scope ambigu à préciser par fullstack-dev.
+**Status :** Planifié
+
+> **Plan S24–S28 généré le 2026-07-06** (`/ai-env:sprint plan 5`, cohésion moyenne **0.77**). Aucun sprint < 0.3 (plus bas = S28 à 0.68). Ordre : a11y Timeline → Events 409/DTO → Résilience réseau/UI → Refactor auth (V12) → Qualité E2E/tests. **Vérif code-state architect (35 tool calls, 4 sous-agents)** a évité un Sprint-213-bis : **4 issues fermées car déjà faites** (#94 ports domaine #123, #202 isAllDay cohérent, #204 action sheet câblée, #206 EventBar/Lane utilisés). #82/#188 downsizés (résiduels déjà livrés). **Reportés au backlog (à surveiller) :** #69/#196/#219 virtualisation (Wave 7) ; #88 monétisation (ADR requis) ; #102 rate-limit Redis (nouvelle infra + ADR) ; #56 Landing DS (L) + #210 shell nav 248px (M) → candidats **S29 « design shell » dédié** ; #221 ArchUnit strict (dépend dégel #190) ; **#195 collapse par produit → re-spec nécessaire** (collapse catégorie déjà livré, viserait un toggle keyé resource.id).

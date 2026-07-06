@@ -1,10 +1,66 @@
 import { FullCalendarEvent } from '@/types/event'
+import { contrastRatio, WCAG_AA_NORMAL, INK_DARK, INK_LIGHT } from '@/lib/color'
 
 /**
  * #47 — Logique de calcul partagée par les sous-composants Timeline.
  * Extraite telle quelle du monolithe `TimelineCalendar.tsx` (aucun changement
  * de comportement : mêmes signatures, mêmes formules de positionnement).
  */
+
+/** Statut temporel d'un event (dupliqué de zoom.ts pour éviter un cycle d'import). */
+type EventLabelStatus = 'expired' | 'ongoing' | 'upcoming'
+
+/**
+ * #81 (a11y) — Libellé `aria-label` AGRÉGÉ d'un bloc event, annoncé en UNE
+ * SEULE phrase au focus clavier / lecteur d'écran (VoiceOver, NVDA).
+ *
+ * Ordre : titre, statut (À venir / En cours / Terminé), plage de dates, produit,
+ * puis — si présent — le statut de RÉCURRENCE (BR-EVE-006). Réutilise le format
+ * de date `medium` + les clés i18n de statut du drawer → même contexte au focus
+ * qu'à l'ouverture. Récurrence localisée via `dashboard.timeline.recurrence.*`
+ * (fallback silencieux si l'event n'est pas récurrent).
+ *
+ * ⚠ Extrait ici (`lib.ts`) depuis `zoom.ts` (#63) pour centraliser les helpers
+ * NON liés au zoom et rester réutilisable desktop ↔ mobile. `zoom.ts` ré-exporte
+ * pour la rétro-compat des imports existants. Consommé par `EventPill` (#81) et
+ * documenté pour #197 (formalisation du pattern clavier/annonces).
+ */
+export function buildEventAriaLabel(
+  event: FullCalendarEvent & { status: EventLabelStatus },
+  locale: string,
+  t: (key: string) => string,
+): string {
+  const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
+  const start = fmt.format(new Date(event.start))
+  const end = fmt.format(new Date(event.end || event.start))
+  const status = t(`dashboard.timeline.status.${event.status}`)
+  const product = event.extendedProps?.productName
+  const parts = [event.title, status, `${start} – ${end}`]
+  if (product) parts.push(product)
+  // BR-EVE-006 : n'annonce la récurrence QUE si l'event est récurrent avec une
+  // fréquence connue. `recurrenceUnit` = enum MAJUSCULE WEEK/MONTH/YEAR.
+  if (event.extendedProps?.isRecurring && event.extendedProps.recurrenceUnit) {
+    const unitKey = event.extendedProps.recurrenceUnit.toLowerCase()
+    parts.push(t(`dashboard.timeline.recurrence.${unitKey}`))
+  }
+  return parts.join(', ')
+}
+
+/**
+ * #81 (a11y, point 6) — Garde-fou contraste WCAG AA (4.5:1) pour le LIBELLÉ
+ * porté À L'INTÉRIEUR d'une barre. `true` = l'encre calculée passe AA sur le
+ * fond `color` → le titre reste lisible dans la barre. `false` = aucune encre
+ * (noir/blanc) n'atteint 4.5:1 → l'appelant doit afficher le libellé À L'EXTÉRIEUR.
+ *
+ * Réutilise `contrastRatio` de `lib/color.ts` (BR-EVE-009, pas de chroma-js).
+ * Fond absent/invalide (theming DS `var(--color-accent)`) → considéré lisible
+ * (le DS garantit son propre contraste `--color-accent-ink`).
+ */
+export function eventLabelReadableInside(color: string | undefined | null): boolean {
+  if (!color) return true
+  const best = Math.max(contrastRatio(color, INK_DARK), contrastRatio(color, INK_LIGHT))
+  return best >= WCAG_AA_NORMAL
+}
 
 /** Ressource affichée dans une Lane (produit + sa catégorie). */
 export type Resource = {

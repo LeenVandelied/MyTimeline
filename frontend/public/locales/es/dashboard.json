@@ -118,6 +118,19 @@
     },
     "actions": {
       "label": "Acciones del evento"
+    },
+    "region": {
+      "label": "Línea de tiempo de eventos",
+      "description": "Use las flechas izquierda y derecha para desplazarse entre los eventos de una fila, arriba y abajo para cambiar de fila, Inicio y Fin para ir al primer o último evento, Entrar o Espacio para abrir el detalle."
+    },
+    "live": {
+      "zoom": "Nivel de zoom:",
+      "selected": "Evento seleccionado:"
+    },
+    "recurrence": {
+      "week": "se repite cada semana",
+      "month": "se repite cada mes",
+      "year": "se repite cada año"
     }
   }
 }

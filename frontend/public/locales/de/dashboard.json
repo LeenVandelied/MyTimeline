@@ -118,6 +118,19 @@
     },
     "actions": {
       "label": "Ereignisaktionen"
+    },
+    "region": {
+      "label": "Ereignis-Zeitleiste",
+      "description": "Verwenden Sie die Pfeiltasten links und rechts, um zwischen Ereignissen einer Zeile zu wechseln, hoch und runter, um die Zeile zu wechseln, Pos1 und Ende für das erste oder letzte Ereignis, Eingabe oder Leertaste, um die Details zu öffnen."
+    },
+    "live": {
+      "zoom": "Zoomstufe:",
+      "selected": "Ausgewähltes Ereignis:"
+    },
+    "recurrence": {
+      "week": "wöchentlich wiederkehrend",
+      "month": "monatlich wiederkehrend",
+      "year": "jährlich wiederkehrend"
     }
   }
 }

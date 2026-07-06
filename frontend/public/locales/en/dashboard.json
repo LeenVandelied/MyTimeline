@@ -118,6 +118,19 @@
     },
     "actions": {
       "label": "Event actions"
+    },
+    "region": {
+      "label": "Events timeline",
+      "description": "Use the left and right arrows to move between events in a row, up and down to switch rows, Home and End to jump to the first or last event, Enter or Space to open the details."
+    },
+    "live": {
+      "zoom": "Zoom level:",
+      "selected": "Selected event:"
+    },
+    "recurrence": {
+      "week": "recurring weekly",
+      "month": "recurring monthly",
+      "year": "recurring yearly"
     }
   }
 }
