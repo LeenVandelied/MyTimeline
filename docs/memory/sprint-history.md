@@ -536,6 +536,11 @@
 **Tests :** Frontend 325/325 vert (44 fichiers) — inclut test non-régression MAJEUR-2 (roving resource-keyed) + lib-a11y.test.ts. Backend/E2E inchangés (sprint 100% frontend doc/a11y). CI PR #225 : backend + frontend + e2e + security tous SUCCESS.
 **Nouveaux pitfalls / décisions / patterns :** PAT-S24-001 (roving keyé par ID stable), PAT-S24-002 (hitbox ≥44px via ::before), PIT-S24-001 (scrollIntoView après focus), PIT-S24-002 (subagent worktree chemin relatif → repo principal), DEC-S24-001 (ux-patterns.md force-add, seul rules-jit tracké).
 **Note code-state :** #82 quasi-livré (focus-trap 7 modaux + cibles ≥44px déjà là S16-S20) → downsizé, reste close EventDrawer 28→44px.
+**Follow-ups arbitrés (Phase 4 triage) :** 3 items, tous → issue GitHub (milestone Sprint 25) :
+  - `.mt-zoom__btn` <44px sur touch mobile [S | events/frontend] → issue #226 (Sprint 25)
+  - Statuer raccourci `?` aide Timeline (câbler vs hover-only) [XS | events/frontend] → issue #227 (Sprint 25)
+  - EventPill aria-hidden conditionnel + couverture tests clavier §9 [S | events/frontend] → issue #228 (Sprint 25)
+  (item « formaliser PAT-S24 dans ux-patterns.md » déjà livré par #197 → résolu, non re-tracé)
 **Status :** Terminé (merge PR #225)
 
 ## Sprint 25 — 2026-07-06 (PLANIFIE — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
