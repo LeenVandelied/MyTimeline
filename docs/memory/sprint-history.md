@@ -505,6 +505,6 @@
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (dette technique, non bloquant produit → placé en dernier)
 **WARNING cohésion 0.55 :** sprint de consolidation dette. Alternative si cohésion prioritaire : substituer #123 → #181 (valider Flyway V11 prod) → sprint 100% devops. Risque : #180 bump peut casser auth/sessions jti #73 → suite complète + smoke boot prod avant merge.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-06, branche sprint/23 sur dev 7e088a4)
 
 > **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).
