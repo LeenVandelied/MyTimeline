@@ -1,42 +1,58 @@
-## Sprint 22 — Page Produits + Drawer Catégorie + fix NPE backend
+## Sprint 24 — a11y Timeline (frise clavier + lecteur d'écran)
 
-Cohésion 0.67 · Milestone #22 · base `dev`
+Rend la Vue Timeline — seul écran classé « réellement bloquant » par l'audit a11y — navigable au clavier et exposée aux lecteurs d'écran (conformité RGAA/WCAG). Sprint **100 % frontend**, cohésion **0.78**, aucune migration.
 
-### Objectif
-Livrer la surface de gestion produits/catégories (Wave 3 frontend) et corriger un bug serveur découvert par l'E2E golden path.
+### Issues livrées (3)
 
-### Issues livrées
-| # | Titre | Type | Commits |
-|---|-------|------|---------|
-| #186 | NPE `ProductServiceImpl.createProduct` si liste d'événements nulle | bug backend | `fb12091` |
-| #62 | Drawer Catégorie (desktop + mobile, create/edit + réassignation) | feature frontend | `3e15440` |
-| #68 | Page Produits (liste + détail + catégories) | feature frontend | `fb329dd` `0f50719` `0058e85` `e6bd60f` `66173b9` |
+| # | Titre | Size |
+|---|-------|------|
+| #81 | a11y : frise Timeline clavier + lecteur d'écran (**BLOQUANT**) | L |
+| #197 | a11y Timeline : formaliser les patterns clavier (`ux-patterns.md`) + re-validation ui-design | S |
+| #82 | a11y : cible tactile close EventDrawer ≥44px + audit final | S |
 
-**Vagues** : V1 = #62 ∥ #186 (fichiers disjoints) · V2 = #68 (embarque le CategoryDrawer de #62).
+**Vagues** : V1 = #81 (pose le pattern) → V2 = #197 ∥ #82 (fichiers disjoints).
 
 ### Changements clés
-- **#186** : `Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(...)` — garde localisée, convention create id=null intacte, cascade events inchangée. Vérifié : aucun autre service ne présente le même défaut (`updateProduct` n'a pas de champ events).
-- **#62** : `CategoryDrawer.tsx` (pattern copié de `ProductDrawer` #61 — Dialog Radix + classes responsives), `categoryService` (+create/update/delete), hooks `useCreateCategory`/`useUpdateCategory` (TanStack Query v5), schémas Zod `types/category.ts`, namespace i18n `categories` (fr/en/es/de). Réutilise `PopoverPicker`, `DeleteConfirmDialog variant="category"` (réassignation), `useCategories` — **aucune primitive dupliquée**.
-- **#68** : routes `app/[locale]/products/page.tsx` + `[productId]/page.tsx`, vues `ProductsListView` / `ProductDetailView` / `CategoriesView`. Recherche/tri locaux, sparkline 90j réutilisée, sous-frise détail par **filtrage amont** des events/resources (TimelineView non forké). Embarque ProductDrawer, CategoryDrawer (#62), DeleteConfirmDialog.
+
+- **#81 — Navigation clavier de la frise** : region landmark (`role="region"` + aria-label/describedby), **roving tabindex resource-keyé** (`activeNav {resourceId,evt}` + index dérivé via Map — résiste au collapse de catégorie), navigation flèches ←→ (dans/entre lanes) ↑↓ (colonne clampée) Home/End, Enter/Espace natifs, **aria-live polite** (annonces zoom/sélection, silencieux au montage), `aria-label` agrégé (`buildEventAriaLabel` : titre + dates + récurrence + statut en une phrase), garde-fou contraste (libellé hors barre si < 4.5:1), focus ring `outline: 2px var(--color-accent)`, `scrollIntoView` après `.focus()`.
+- **#197 — Référentiel** : `.claude/rules-jit/ux-patterns.md` (10 sections) documentant les patterns RÉELS livrés par #81 (roving, focus-trap drawer, raccourcis T/[/]/+/-/F/Échap). Lève la réserve S17 (« APPROUVE_AVEC_RESERVES faute de référentiel »).
+- **#82 — Cible tactile** : hitbox close EventDrawer 28→44px via `::before` (visuel de l'icône inchangé, charte Graphite respectée).
 
 ### BR impactées
-BR-PRO-005 (produit sans événement), BR-PRO-001/006, BR-CAT-001/002/004/007, ADR-002 (catégorie système = lecture seule).
 
-### Anti-duplication
-Carte de réutilisation produite en pré-vague par **component-guardian** : dirige #62/#68 vers les composants existants (ProductDrawer, DeleteConfirmDialog, PopoverPicker, ProductSparkline). Seuls manques réels créés : hooks/service catégorie (calqués sur le pattern produit) et les routes produits.
+- **BR-EVT-001** (ownership/lecture events) — contrat inchangé, couche a11y purement additive.
+- Aucune règle métier P0/P1 cross-système → pas d'E2E métier requis.
 
-### Tests
-- **Backend** : 270/270 verts (`./scripts/test-quiet.sh backend`).
-- **Frontend** : 305/305 verts (`./scripts/test-quiet.sh frontend`) — dont 34 nouveaux tests (8 CategoryDrawer + 26 vues produits).
-- **Build** : `next build` OK (le commit `e6bd60f` débloque un lint hérité de #62 : `nameConflict` consommé en `aria-invalid`).
-- Audit complet : `docs/memory/audits/sprint-22-test-coverage.md`.
+### Audit tests (`docs/memory/audits/sprint-24-test-coverage.md`)
 
-### Review
-Reviewer batch : **0 CRITIQUE / 0 MAJEUR**, 4 MINEURs non bloquants (arg par défaut redondant `useCategories(true)`, `console.error` dans les catch service, absence de test unitaire dédié des clés d'invalidation, divergence documentée color=String libre côté catégorie). Aucun cycle de correction requis.
+- **Frontend : 44 fichiers, 325/325 tests verts, 0 failed** (vérifié en run direct — `npx vitest run`). Nouveau `lib-a11y.test.ts` (8 tests `buildEventAriaLabel` + contraste), +195 lignes `TimelineView.test.tsx` (roving, flèches, aria-live, **non-régression remap collapse resource-keyé**).
+- Backend : N/A (0 fichier backend).
+- E2E Playwright : non exécuté (bug connu #207 : alias `e2e` lance vitest).
 
-### Suivi post-merge (non bloquant)
-- **E2E** : 46 nouveaux `data-testid` produits/catégories sans spec Playwright → planifier `/create-e2e <PR>` après merge (parcours CRUD catégorie, navigation liste↔détail, création/édition produit). Invocation manuelle (bug nested-skills).
-- MINEURs reviewer à absorber au fil de l'eau si souhaité.
-- #187 (UI création catégorie) recoupe #62 → à fermer/fusionner.
+### Validation ui-design (`docs/memory/sprints/sprint-24/ui-design-validation.md`)
+
+**Verdict GO PR** — conformité 100 % des 10 points de `ux-patterns.md §10` (satisfait le critère #197 de re-validation formelle). Réserves S17 levées.
+
+### Review batch
+
+- **0 CRITIQUE / 1 MAJEUR / 2 MINEUR.**
+- MAJEUR (token focus ring `--color-accent` vs `--color-focus`) → **résolu** : écart documenté en commentaire (token exigé par le critère #81 + `ux-patterns.md §6` + validé ui-design ; rendu identique). Commit `19714f6`.
+- 2 MINEUR → follow-ups non bloquants (voir ci-dessous).
+
+### Couverture E2E (Phase 8)
+
+⚠ 2 nouveaux testids sans spec Playwright (`timeline-event-outside-label`, `timeline-live-region`) → **`/create-e2e` post-merge** (non bloquant). `timeline-view`/`timeline-event` déjà couverts (golden-path).
+
+### Follow-ups proposés (à trancher au `/sprint end`)
+
+- **RECOMMAND_FOLLOWUP** : statuer sur le raccourci `?` (câbler `case '?'` vs acter le tooltip hover-only) [S | frontend].
+- **RECOMMAND_FOLLOWUP** : `.mt-zoom__btn` (30px) < 44px sur surface touch mobile → override scopé `.mt-tlm` [S | frontend] (audit #82).
+- MINEUR review : `data-evt-nav` dead attribute (EventPill) ; fallback `color=null` non testé (`lib.ts`) — XS.
+
+### Nouveaux signaux mémoire
+
+- **PAT-S24-roving-resource-keyed** : roving tabindex sur liste mutable → keyer l'état actif par ID stable, dériver l'index via Map id→index. Anti-pattern : index bruts en state (cause de la régression MAJEUR-2 corrigée).
+- **PIT-S24-scrollintoview-focus** : `.focus()` seul ne défile pas les conteneurs scrollables imbriqués → `scrollIntoView` explicite requis.
+- **PIT-S24-worktree-cwd** (rappel) : Read/Edit en chemin relatif dans un subagent peut résoudre sur le repo principal — garde-fou `git rev-parse --show-toplevel` avant exploration, pas seulement avant commit.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

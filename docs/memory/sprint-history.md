@@ -522,15 +522,21 @@
 
 > **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).
 
-## Sprint 24 — 2026-07-06 (PLANIFIE — cohésion 0.78, a11y Timeline frise clavier + lecteur d'écran)
+## Sprint 24 — 2026-07-06 → 2026-07-06 (Terminé — merge PR #225 dans dev — cohésion 0.78, a11y Timeline frise clavier + lecteur d'écran)
 **Objectif :** Rendre la frise Timeline navigable au clavier + accessible lecteur d'écran (dette a11y prévue depuis le plan S19-S23).
-**Milestone GitHub :** #24
-**Issues :** #81 (BLOQUANT, L), #82 (S, résiduel — M→S), #197 (S)
-**Vagues :** V1 = #81 (pose le pattern roving/live-region) | V2 = #197 + #82 (parallèles, fichiers disjoints)
+**Milestone GitHub :** #24 (fermé après merge)
+**Issues livrées (3) :** #81 (BLOQUANT, L), #82 (S, résiduel M→S), #197 (S)
+**Vagues exécutées :** V1 = #81 (pose le pattern roving/live-region) | V2 = #197 + #82 (parallèles, fichiers disjoints)
+**Cohésion score :** 0.78
+**Commits :** 518aa86 (#81 roving/aria-live) · 19714f6 (#81 review focus ring) · b113fef + f5f58ef (#197 ux-patterns.md) · 99e85d7 (#82 cible tactile 44px) · 6281770 (artefacts mémoire) — hors 1a4ec51 (commit plan S24-S28)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (démarrage propre sur dev S23)
+**BR impactées :** BR-EVT-001 (contrat lecture events inchangé, zoom/nav pur client, aucun refetch — respecté #81). #82/#197 sans BR formelle.
+**Reviews :** reviewer batch #81 — 2 MAJEUR (focusNav sans scroll ; activeNav index-keyé glissait au collapse) + 1 MINEUR (double import), tous RÉSOLU. ui-design re-validation #197 = GO PR.
+**Tests :** Frontend 325/325 vert (44 fichiers) — inclut test non-régression MAJEUR-2 (roving resource-keyed) + lib-a11y.test.ts. Backend/E2E inchangés (sprint 100% frontend doc/a11y). CI PR #225 : backend + frontend + e2e + security tous SUCCESS.
+**Nouveaux pitfalls / décisions / patterns :** PAT-S24-001 (roving keyé par ID stable), PAT-S24-002 (hitbox ≥44px via ::before), PIT-S24-001 (scrollIntoView après focus), PIT-S24-002 (subagent worktree chemin relatif → repo principal), DEC-S24-001 (ux-patterns.md force-add, seul rules-jit tracké).
 **Note code-state :** #82 quasi-livré (focus-trap 7 modaux + cibles ≥44px déjà là S16-S20) → downsizé, reste close EventDrawer 28→44px.
-**Status :** Planifié
+**Status :** Terminé (merge PR #225)
 
 ## Sprint 25 — 2026-07-06 (PLANIFIE — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
 **Objectif :** Câbler le conflit 409 optimistic-lock côté backend + aligner le contrat startDate/endDate DTO + finitions form.
