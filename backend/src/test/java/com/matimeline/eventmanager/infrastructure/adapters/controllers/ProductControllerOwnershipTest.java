@@ -27,13 +27,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
-import com.matimeline.eventmanager.application.services.EventServiceImpl;
-import com.matimeline.eventmanager.application.services.ProductServiceImpl;
-import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
+import com.matimeline.eventmanager.domain.ports.services.EventService;
+import com.matimeline.eventmanager.domain.ports.services.ProductService;
+import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
 import jakarta.servlet.http.Cookie;
@@ -42,11 +42,11 @@ import jakarta.servlet.http.Cookie;
 class ProductControllerOwnershipTest {
 
     @Mock
-    private ProductServiceImpl productService;
+    private ProductService productService;
     @Mock
-    private EventServiceImpl eventService;
+    private EventService eventService;
     @Mock
-    private UserServiceImpl userService;
+    private UserService userService;
     @Mock
     private JwtService jwtService;
 

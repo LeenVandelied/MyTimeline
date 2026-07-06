@@ -497,14 +497,27 @@
 **Follow-ups proposés (NON-XS) :** aucun `RECOMMAND_FOLLOWUP` actionnable (tous négations explicites). Suivi hors-signal : `/create-e2e 217` (E2E post-merge) ; virtualisation liste si >50 produits (TODO en code) ; #187 UI création catégorie recoupe #62 → à fermer/fusionner.
 **Status :** Terminé (merge en cours via `/sprint end`)
 
-## Sprint 23 — 2026-07-05 (PLANIFIÉ — cohésion 0.55 ⚠ WARNING, Sécurité/DevOps durcissement + DIP)
+## Sprint 23 — 2026-07-06 (Terminé — merge PR #220 dans dev, cohésion 0.55, Sécurité/DevOps durcissement + DIP)
 **Objectif :** Bump CVE post-Boot 3.4.4 (#180) + refactor contrôleurs vers interfaces service DIP (#123) + durcissement CI pin SHA (#167).
-**Milestone GitHub :** #23
-**Issues :** #180, #123, #167
-**Vagues :** V1 = #180 ∥ #123 ∥ #167 (3 fichiers disjoints : pom.xml / Java contrôleurs / YAML CI) — aucune V2
+**Milestone GitHub :** #23 (fermé après merge)
+**Issues livrées (3) :** #180, #123, #167
+**Vagues exécutées :** V1 = #180 ∥ #167 (pom.xml / YAML CI — disjoints build ET source) | V2 = #123 (contrôleurs Java). ⚠ Resequencé vs plan initial (V1=3∥) : #180 et #123 buildent tous deux le backend Maven/Testcontainers dans le worktree partagé → risque de collision `target/` ; #167 (YAML, pas de build) parallélisé avec #180, #123 séquencé après.
+**Cohésion score :** 0.55 (WARNING borderline assumé — consolidation dette)
+**Commits :** 6 — `5bcdf3a` #167 pin SHA / `094e5ae` #180 bump CVE / `46f2adf` #123 DIP / `4f3c2c6` #167 npm --omit=dev / `da5dc11` :memo: artefacts / (+ merge)
+**BR impactées :** aucune (dette technique, non-régression sécurité validée)
 **Migrations Flyway :** aucune
-**Dépend de :** aucune (dette technique, non bloquant produit → placé en dernier)
-**WARNING cohésion 0.55 :** sprint de consolidation dette. Alternative si cohésion prioritaire : substituer #123 → #181 (valider Flyway V11 prod) → sprint 100% devops. Risque : #180 bump peut casser auth/sessions jti #73 → suite complète + smoke boot prod avant merge.
-**Status :** Planifié
+**Reviews :** Phase 7 sprint (0C/1M résolu/2m) + `/review-pr` TEAM (reviewer + security-expert) sur PR#220 = 0 CRITIQUE / 1 MAJEUR (freeze→strict, follow-up) / 4 MINEURS (tous follow-up ou décision assumée) — aucun défaut de code.
+**Tests :** Backend **270/270 green** (Testcontainers, validé test-runner indépendant) | Frontend inchangé (0 code front) | E2E N/A (0 testid). trivy 5 → 0 CVE CRITICAL. CI PR#220 = success.
+**Nouveaux pitfalls/decisions/patterns :** PIT-S23-001 (CVE non backportée 6.4.x), PIT-S23-002 (@MockBean sur Impl masque DIP), PAT-S23-001 (DIP contrôleur→port), PAT-S23-002 (FreezingArchRule baseline 0→strict), DEC-S23-001 (ligne Boot 3.4.x + overrides), DEC-S23-002 (gate CI npm --omit=dev + pin all SHA).
+**Décision dev en cours de sprint :** gate `npm audit --omit=dev` (bloquer prod only) — arbitré via AskUserQuestion.
+**Absorbé en cours (XS) :** commit `4f3c2c6` (npm --omit=dev) intégré pendant le sprint pour débloquer la CI (surface du diff #167 élargie vs scope initial).
+**Follow-ups arbitrés (Phase 4 triage — dev a validé les 4 en issues backlog, sans milestone) :**
+  - ArchUnit DIP `FreezingArchRule.freeze` → stricte (baseline 0) [S | transversal] (#123 + MAJEUR review PR#220) → **issue #221**
+  - Bump dev-deps frontend (vitest/vite chain) pour lever HIGH/CRITICAL npm dev [M | frontend/devops] (#167) → **issue #222**
+  - Trier les 4 CVE HIGH backend résiduelles (hors gate CRITICAL) [S | devops] (#180) → **issue #223**
+  - Garde CI anti-drift du BOM Boot (overrides SS/tomcat/SF) [S | devops] (review PR#220 MINEUR) → **issue #224**
+  - (Résolus en cours, non issue-ifiés : gate npm `--omit=dev` appliqué `4f3c2c6` ; vérif CI post-merge = CI PR#220 déjà success.)
+**Bilan triage :** 4 créées (backlog) / 0 discard / 0 absorbé tardif / ratio discard 0%.
+**Status :** Terminé
 
 > **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).

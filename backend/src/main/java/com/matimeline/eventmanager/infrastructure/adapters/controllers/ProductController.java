@@ -9,12 +9,12 @@ import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductResponse;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
-import com.matimeline.eventmanager.application.services.EventServiceImpl;
-import com.matimeline.eventmanager.application.services.ProductServiceImpl;
-import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
+import com.matimeline.eventmanager.domain.ports.services.EventService;
+import com.matimeline.eventmanager.domain.ports.services.ProductService;
+import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
 import io.jsonwebtoken.JwtException;
@@ -28,15 +28,15 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class ProductController {
 
-    private final UserServiceImpl userService;
-    private final EventServiceImpl eventService;
-    private final ProductServiceImpl productService;
+    private final UserService userService;
+    private final EventService eventService;
+    private final ProductService productService;
     private final JwtService jwtService;
 
     @Autowired
-    public ProductController(ProductServiceImpl productService, 
-                           EventServiceImpl eventService, 
-                           UserServiceImpl userService, 
+    public ProductController(ProductService productService,
+                           EventService eventService,
+                           UserService userService,
                            JwtService jwtService) {
         this.productService = productService;
         this.eventService = eventService;

@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.matimeline.eventmanager.application.services.UserServiceImpl;
+import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetailsService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
@@ -76,8 +76,8 @@ class AuthControllerDevProfileCookieTest {
         }
 
         @Bean
-        UserServiceImpl userService() {
-            return mock(UserServiceImpl.class);
+        UserService userService() {
+            return mock(UserService.class);
         }
 
         @Bean
@@ -100,7 +100,7 @@ class AuthControllerDevProfileCookieTest {
                 AuthenticationManager authenticationManager,
                 JwtService jwtService,
                 CustomUserDetailsService customUserDetailsService,
-                UserServiceImpl userService,
+                UserService userService,
                 PasswordEncoder passwordEncoder,
                 com.matimeline.eventmanager.domain.ports.services.PasswordResetService passwordResetService,
                 com.matimeline.eventmanager.domain.ports.services.SessionService sessionService) {
