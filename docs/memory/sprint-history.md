@@ -543,15 +543,18 @@
   (item « formaliser PAT-S24 dans ux-patterns.md » déjà livré par #197 → résolu, non re-tracé)
 **Status :** Terminé (merge PR #225)
 
-## Sprint 25 — 2026-07-06 (PLANIFIE — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
+## Sprint 25 — 2026-07-06 → 2026-07-06 (Terminé — merge PR #229 dans dev — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
 **Objectif :** Câbler le conflit 409 optimistic-lock côté backend + aligner le contrat startDate/endDate DTO + finitions form.
-**Milestone GitHub :** #25
-**Issues :** #201 (S), #200 (S), #188 (S — archived résiduel), #77 (M)
-**Vagues :** V1 = #201 puis #200 (même EventUpdateRequest.java, séquentiels) ∥ #188 (frontend seul) | V2 = #77
-**Migrations Flyway :** aucune
-**Dépend de :** aucune (fichiers disjoints de S24)
-**Note code-state :** frontend gère déjà le 409, mais backend renvoie 500 (pas de handler ObjectOptimisticLockingFailureException) et EventUpdateRequest ignore startDate/endDate. recurrenceEndDate (#188) déjà livré.
-**Status :** En cours (démarré 2026-07-06, branche sprint/25 depuis dev a1d4d51)
+**Milestone GitHub :** #25 (fermé après merge)
+**Issues livrées (4) :** #201 (S), #200 (S), #188 (S — archived résiduel), #77 (M)
+**Vagues exécutées :** V1 = #201 ∥ #200 ∥ #188 (fichiers disjoints — le mini-plan a confirmé #200 sur GlobalExceptionHandler/EventRepositoryJpaImpl, disjoint de #201) | V2 = #77 (dépend contrat 409 #200 + EventEditForm #188)
+**Cohésion score :** 0.82
+**Commits :** 8 — dac7735 (#188 toggle) + 88d2937 (#188 fix defaultValues) · 276e3ca (#200 handler 409) + 050176b + a0401ad (#200 test déterministe) · 38f8c65 (#201 dates) + 204dae2 (#201 garde service 422) · d8bd85f (#77 ConflictDialog) · ae57b0f (artefacts)
+**BR impactées :** BR-EVE-003 (dérivation étendue au PATCH), BR-EVE-013 (archived exposé UI), BR-EVE-015 (NOUVELLE — édition concurrente → 409), BR-EVE-016 (NOUVELLE — endDate≥startDate backend DTO+service).
+**Reviews :** 2 reviewers parallèles (backend + frontend) — 0 CRITIQUE / **3 MAJEUR** (trou validation endDate-seul<startDate, flip type non testé, toggle archived toujours décoché) / 3 MINEURS — tous les MAJEUR RÉSOLU, MINEURS notés non bloquants.
+**Tests :** Backend 280/280 vert (test optimistic-lock rendu DÉTERMINISTE après flakiness 2/4 détectée par test-runner — cf. PIT-S25-002) | Frontend 344/344 vert | E2E 0 spec sur périmètre (gap planifié /create-e2e). CI PR #229 : backend+frontend+e2e+security tous SUCCESS.
+**Nouveaux pitfalls / décisions / patterns :** PAT-S25-001 (Switch FormField flag), PAT-S25-002 (optimistic-lock handler scopé), PAT-S25-003 (ConflictDialog présentationnel + interception scopée), PIT-S25-001 (record élargi casse constructeurs positionnels), PIT-S25-002 (test optimistic-lock 2-threads flaky → déterministe), DEC-S25-001 (contrat PATCH dates).
+**Status :** Terminé (merge PR #229)
 
 ## Sprint 26 — 2026-07-06 (PLANIFIE — cohésion 0.71, Résilience réseau + pages d'états système)
 **Objectif :** Bus d'état réseau + bannière offline/timeout + pages 404/403/500/vide/loading clair+sombre.
