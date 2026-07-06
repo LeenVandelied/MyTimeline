@@ -234,6 +234,7 @@ export function ProductsListView() {
               </tr>
             </thead>
             <tbody>
+              {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}
               {visible.map((product) => {
                 const effectiveColor =
                   product.color ?? product.category?.color ?? null

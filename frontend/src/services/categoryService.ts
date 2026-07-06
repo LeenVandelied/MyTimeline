@@ -8,6 +8,28 @@ import {
 import { safeErrorMessage } from '@/lib/safe-error'
 
 /**
+ * Statuts métier attendus (surfacés inline par l'UI) : ne PAS polluer la console.
+ * 409 = nom dupliqué / catégorie liée, 403 = ownership, 404 = inexistante.
+ */
+const EXPECTED_STATUSES = new Set([403, 404, 409])
+
+/** Lit `error.response.status` défensivement (axios ou générique, sans `any`). */
+function httpStatusOf(error: unknown): number | undefined {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { status?: unknown } }).response
+    if (response && typeof response.status === 'number') return response.status
+  }
+  return undefined
+}
+
+/** Ne log QUE les erreurs inattendues : les statuts métier remontent au composant. */
+function logUnexpected(message: string, error: unknown): void {
+  if (EXPECTED_STATUSES.has(httpStatusOf(error) ?? -1)) return
+  // NE JAMAIS logger l'objet axios brut (Authorization/cookies/PII). Message assaini.
+  console.error(message, safeErrorMessage(error))
+}
+
+/**
  * #65 / S10 #52 — Transport axios pour le domaine catégories.
  *
  * `GET /api/categories` renvoie l'union `owner == caller ∪ système` (br-categories).
@@ -20,8 +42,7 @@ export const getCategories = async (): Promise<Category[]> => {
     const response = await apiClient.get('/categories')
     return categorySchema.array().parse(response.data)
   } catch (error) {
-    // NE JAMAIS logger l'objet axios brut (Authorization/cookies/PII). Message assaini.
-    console.error('Erreur lors de la récupération des catégories :', safeErrorMessage(error))
+    logUnexpected('Erreur lors de la récupération des catégories :', error)
     throw error
   }
 }
@@ -39,8 +60,7 @@ export const createCategory = async (data: CategoryCreate): Promise<Category> =>
     const response = await apiClient.post('/categories', data)
     return categorySchema.parse(response.data)
   } catch (error) {
-    // NE JAMAIS logger l'objet axios brut (Authorization/cookies/PII). Message assaini.
-    console.error('Erreur lors de la création de la catégorie :', safeErrorMessage(error))
+    logUnexpected('Erreur lors de la création de la catégorie :', error)
     throw error
   }
 }
@@ -60,7 +80,7 @@ export const updateCategory = async (
     const response = await apiClient.patch(`/categories/${id}`, data)
     return categorySchema.parse(response.data)
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de la catégorie :', safeErrorMessage(error))
+    logUnexpected('Erreur lors de la mise à jour de la catégorie :', error)
     throw error
   }
 }
@@ -82,7 +102,7 @@ export const deleteCategory = async (
       params: reassignToCategoryId ? { reassignToCategoryId } : undefined,
     })
   } catch (error) {
-    console.error('Erreur lors de la suppression de la catégorie :', safeErrorMessage(error))
+    logUnexpected('Erreur lors de la suppression de la catégorie :', error)
     throw error
   }
 }

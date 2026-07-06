@@ -99,6 +99,7 @@ export function CategoriesView() {
         </p>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}
           {categories.map((category) => {
             const count = countByCategory.get(category.id) ?? 0
             const color = category.color ?? null
@@ -190,6 +191,7 @@ export function CategoriesView() {
           }}
           mode="edit"
           category={editCategory}
+          linkedProductsCount={countByCategory.get(editCategory.id) ?? 0}
         />
       )}
 

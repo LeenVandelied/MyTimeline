@@ -89,6 +89,8 @@ export interface CategoryDrawerProps {
   onSuccess?: () => void
   /** Callback post-suppression (mode edit). */
   onDeleted?: () => void
+  /** Variante category : nb de produits liés, pour forcer le select de réassignation à la suppression. */
+  linkedProductsCount?: number
 }
 
 /** Lit `error.response.status` défensivement (axios ou générique, sans `any`). */
@@ -109,6 +111,7 @@ export function CategoryDrawer({
   category,
   onSuccess,
   onDeleted,
+  linkedProductsCount = 0,
 }: CategoryDrawerProps) {
   const t = useTranslations('categories.drawer')
   const tValidation = useTranslations('categories.validation')
@@ -459,6 +462,7 @@ export function CategoryDrawer({
           onOpenChange={setDeleteOpen}
           variant="category"
           categoryId={category.id}
+          linkedProductsCount={linkedProductsCount}
           onConfirm={handleDeleteConfirm}
         />
       )}

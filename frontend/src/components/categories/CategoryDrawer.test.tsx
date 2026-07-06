@@ -42,16 +42,25 @@ vi.mock('@/components/ui/popoverPicker', () => ({
 }))
 // DeleteConfirmDialog utilise useCategories (fetch) : on le mocke par un bouton
 // « confirmer » qui appelle onConfirm() sans réassignation (chemin nominal).
+// On EXPOSE `linkedProductsCount` reçu (data-attr) pour vérifier le threading de
+// la prop depuis le drawer (review PR#217 : sinon 409 sans select de réassignation).
 vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
   DeleteConfirmDialog: ({
     open,
     onConfirm,
+    linkedProductsCount,
   }: {
     open: boolean
     onConfirm: (id?: string) => void | Promise<void>
+    linkedProductsCount?: number
   }) =>
     open ? (
-      <button type="button" data-testid="confirm-delete" onClick={() => onConfirm()}>
+      <button
+        type="button"
+        data-testid="confirm-delete"
+        data-linked-count={linkedProductsCount}
+        onClick={() => onConfirm()}
+      >
         confirm
       </button>
     ) : null,
@@ -191,6 +200,23 @@ describe('CategoryDrawer', () => {
 
     await waitFor(() => expect(deleteCategoryMock).toHaveBeenCalledWith('cat-1', undefined))
     await waitFor(() => expect(onDeleted).toHaveBeenCalled())
+  })
+
+  it('mode édition avec produits liés : linkedProductsCount threadé au DeleteConfirmDialog (force la réassignation, review PR#217)', async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
+    render(
+      <CategoryDrawer
+        open
+        onOpenChange={noop}
+        mode="edit"
+        category={editableCategory}
+        linkedProductsCount={2}
+      />,
+    )
+
+    await user.click(screen.getByTestId('category-delete-button'))
+    // Le drawer doit transmettre le compteur (>0) → needsReassign true côté dialog.
+    expect(screen.getByTestId('confirm-delete')).toHaveAttribute('data-linked-count', '2')
   })
 
   it('catégorie système : actions modifier/supprimer masquées (ADR-002)', () => {
