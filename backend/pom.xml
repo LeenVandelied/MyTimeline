@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.4</version>
+		<version>3.4.13</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.matimeline</groupId>
@@ -56,6 +56,30 @@
 			signWith(SecretKey) (algo HS256 déduit de la taille de clé). Cf. JwtService.
 		-->
 		<jjwt.version>0.13.0</jjwt.version>
+		<!--
+			CVE CRITICAL post-3.4.4 (#180) — overrides du BOM Spring Boot 3.4.13.
+			Le BOM 3.4.13 (ligne 3.4.x) manage spring-security 6.4.13 et tomcat
+			10.1.50, INSUFFISANT pour 2 CVE CRITICAL confirmées par trivy 0.69.4 :
+
+			• CVE-2026-22732 (spring-security-web) : corrigée en 6.5.9+ / 7.0.4
+			  UNIQUEMENT. La branche 6.4.x N'EST PAS patchée (6.4.13 encore
+			  vulnérable — vérifié trivy). Le brief supposait 6.4.6+ : FAUX pour
+			  cette CVE. → override spring-security 6.4.13 → 6.5.11.
+			• CVE-2026-41293 / CVE-2026-43512 / CVE-2026-43515 (tomcat-embed) :
+			  corrigées en 10.1.55+. Le BOM 3.4.13 pin 10.1.50. → override 10.1.56.
+			• CVE-2025-41232 (spring-security method-security) : corrigée en 6.4.6+,
+			  donc déjà couverte par 6.5.11.
+
+			spring-security 6.5.x cible Spring Framework 6.2.x (même minor que Boot
+			3.4.13, qui pin SF 6.2.15) ; SS 6.5.11 requiert SF 6.2.19 → on aligne
+			spring-framework.version=6.2.19 pour éviter tout skew d'API. Tout reste
+			patch-level dans sa ligne (Boot 3.4.x, SS 6.5.x, SF 6.2.x, tomcat 10.1.x).
+			On ne monte PAS vers Boot 3.5 (minor, hors périmètre "patch-release" #180).
+			Versions effectives à revalider via `./mvnw dependency:tree`.
+		-->
+		<spring-security.version>6.5.11</spring-security.version>
+		<tomcat.version>10.1.56</tomcat.version>
+		<spring-framework.version>6.2.19</spring-framework.version>
 	</properties>
 	<dependencies>
 		<dependency>
