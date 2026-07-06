@@ -521,3 +521,55 @@
 **Status :** Terminé
 
 > **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).
+
+## Sprint 24 — 2026-07-06 (PLANIFIE — cohésion 0.78, a11y Timeline frise clavier + lecteur d'écran)
+**Objectif :** Rendre la frise Timeline navigable au clavier + accessible lecteur d'écran (dette a11y prévue depuis le plan S19-S23).
+**Milestone GitHub :** #24
+**Issues :** #81 (BLOQUANT, L), #82 (S, résiduel — M→S), #197 (S)
+**Vagues :** V1 = #81 (pose le pattern roving/live-region) | V2 = #197 + #82 (parallèles, fichiers disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (démarrage propre sur dev S23)
+**Note code-state :** #82 quasi-livré (focus-trap 7 modaux + cibles ≥44px déjà là S16-S20) → downsizé, reste close EventDrawer 28→44px.
+**Status :** Planifié
+
+## Sprint 25 — 2026-07-06 (PLANIFIE — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
+**Objectif :** Câbler le conflit 409 optimistic-lock côté backend + aligner le contrat startDate/endDate DTO + finitions form.
+**Milestone GitHub :** #25
+**Issues :** #201 (S), #200 (S), #188 (S — archived résiduel), #77 (M)
+**Vagues :** V1 = #201 puis #200 (même EventUpdateRequest.java, séquentiels) ∥ #188 (frontend seul) | V2 = #77
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (fichiers disjoints de S24)
+**Note code-state :** frontend gère déjà le 409, mais backend renvoie 500 (pas de handler ObjectOptimisticLockingFailureException) et EventUpdateRequest ignore startDate/endDate. recurrenceEndDate (#188) déjà livré.
+**Status :** Planifié
+
+## Sprint 26 — 2026-07-06 (PLANIFIE — cohésion 0.71, Résilience réseau + pages d'états système)
+**Objectif :** Bus d'état réseau + bannière offline/timeout + pages 404/403/500/vide/loading clair+sombre.
+**Milestone GitHub :** #26
+**Issues :** #76 (M), #57 (M)
+**Vagues :** V1 = #76 ∥ #57 (fichiers disjoints : apiClient/context vs app/[locale]/*.tsx neufs)
+**Migrations Flyway :** aucune
+**Dépend de :** #77/S25 (soft — réutilise le pattern dialog partagé)
+**Note code-state :** apiClient a des handlers 400/401/403/500 mais aucun navigator.onLine/timeout/bannière ; app/[locale]/ n'a ni not-found ni error ni loading.
+**Status :** Planifié
+
+## Sprint 27 — 2026-07-06 (PLANIFIE — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
+**Objectif :** Unifier l'extraction d'identité (SecurityContextHolder) + durcir sécurité contrôleurs + CHECK/NOT NULL users.role.
+**Milestone GitHub :** #27
+**Issues :** #93 (M), #154 (S), #92 (S), #122 (S — V12)
+**Vagues :** V1 = #93 ∥ #122 (migration DB disjointe) | V2 = #154 puis #92 (même ProductController.java)
+**Migrations Flyway :** **V12** (users.role NOT NULL + CHECK) — SEULE migration du plan S24-S28
+**Dépend de :** aucune (100% backend). ⚠ ALTER TABLE sensible : UPDATE role NULL avant SET NOT NULL, confirmation avant exec prod.
+**Note code-state :** #94 retiré du plan (déjà fait #123/46f2adf, issue fermée). 4-5 resolveCaller dupliqués à unifier.
+**Status :** Planifié
+
+## Sprint 28 — 2026-07-06 (PLANIFIE — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
+**Objectif :** Corriger l'alias e2e (Playwright vs vitest) + câbler CI + specs E2E Produits/Catégories + requête produits SQL indexée.
+**Milestone GitHub :** #28
+**Issues :** #207 (S), #133 (S), #218 (M), #41 (XS) + #124 (S) combinés
+**Vagues :** V1 = #207+#133 (même script, fusionnés séquentiel) ∥ #41+#124 (backend) | V2 = #218 (après scope e2e corrigé)
+**Migrations Flyway :** aucune
+**Dépend de :** #207 débloque un vrai run Playwright pour #218 (ordre intra-sprint strict)
+**Note code-state :** test-quiet.sh lance vitest pour scope e2e (bug #207) ; test:e2e Playwright jamais appelé ; requête produits filtrée en mémoire (pas SQL indexé). ⚠ #41 scope ambigu à préciser par fullstack-dev.
+**Status :** Planifié
+
+> **Plan S24–S28 généré le 2026-07-06** (`/ai-env:sprint plan 5`, cohésion moyenne **0.77**). Aucun sprint < 0.3 (plus bas = S28 à 0.68). Ordre : a11y Timeline → Events 409/DTO → Résilience réseau/UI → Refactor auth (V12) → Qualité E2E/tests. **Vérif code-state architect (35 tool calls, 4 sous-agents)** a évité un Sprint-213-bis : **4 issues fermées car déjà faites** (#94 ports domaine #123, #202 isAllDay cohérent, #204 action sheet câblée, #206 EventBar/Lane utilisés). #82/#188 downsizés (résiduels déjà livrés). **Reportés au backlog (à surveiller) :** #69/#196/#219 virtualisation (Wave 7) ; #88 monétisation (ADR requis) ; #102 rate-limit Redis (nouvelle infra + ADR) ; #56 Landing DS (L) + #210 shell nav 248px (M) → candidats **S29 « design shell » dédié** ; #221 ArchUnit strict (dépend dégel #190) ; **#195 collapse par produit → re-spec nécessaire** (collapse catégorie déjà livré, viserait un toggle keyé resource.id).
