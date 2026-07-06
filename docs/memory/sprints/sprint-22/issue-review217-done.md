@@ -3,7 +3,7 @@
 STATUS: COMPLETED
 
 ## Commit
-SHA: (voir git log — commit ci-dessous)
+SHA: 116f419c89d3d8fa6f1223ad97c8c2efcd017c1f
 
 ## Fix MAJEUR — réassignation catégorie depuis le drawer
 Cause: `CategoryDrawer` instanciait `DeleteConfirmDialog variant="category"` sans `linkedProductsCount` → défaut 0 → `needsReassign` false → aucun `<Select>` → 409 backend (`CategoryInUseException`) sans cible.
