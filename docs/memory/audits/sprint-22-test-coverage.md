@@ -44,6 +44,13 @@
 → **MAJEUR non bloquant** : planifier `/create-e2e <PR>` **après merge** (invocation manuelle, bug nested-skills connu).
 Parcours à couvrir : CRUD catégorie (drawer create/edit/delete+réassignation), navigation liste↔détail produit, création/édition produit via drawer depuis la page.
 
+## Review PR #217 (`/review-pr`, MODE TEAM)
+
+Reviewers indépendants backend + frontend (post-`/sprint start`). **1 défaut réel corrigé** :
+- **[MAJEUR] résolu** (`116f419`) : `CategoryDrawer` supprimait une catégorie liée sans passer `linkedProductsCount` au `DeleteConfirmDialog` → pas de select de réassignation → 409 backend en impasse (BR-CAT-002). Fix = threading `linkedProductsCount` `CategoriesView → CategoryDrawer → DeleteConfirmDialog` + test de régression. Frontend **306/306**, `next build` OK.
+- **[MAJEUR] écarté** (faux positif) : « reset couleur non persisté » — vérif backend `CategoryServiceImpl.updateCategory` (`setColor` inconditionnel + DTO `String` → clé omise = null Jackson = effacement). Le `undefined`-on-reset fonctionne.
+- MINEURs : `console.error` gaté sur erreurs inattendues (`logUnexpected`), TODO virtualisation ajoutés ; `.optional()` catégorie et lambda backend jugés non-défauts.
+
 ## Conclusion
 
 **Prêt pour PR.** Suites backend + frontend vertes, aucune régression, aucune couche de test manquante bloquante.
