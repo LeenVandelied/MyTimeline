@@ -30,10 +30,10 @@ import com.matimeline.eventmanager.application.dtos.ForgotPasswordRequest;
 import com.matimeline.eventmanager.application.dtos.RegisterRequest;
 import com.matimeline.eventmanager.application.dtos.ResetPasswordRequest;
 import com.matimeline.eventmanager.application.dtos.UserResponse;
-import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
 import com.matimeline.eventmanager.domain.ports.services.SessionService;
+import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.ClientIpAnonymizer;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetails;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetailsService;
@@ -47,7 +47,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     // A8/DIP : injection via le PORT (interface domaine), pas l'impl concrète.
@@ -55,7 +55,7 @@ public class AuthController {
     // #73 : enregistrement/révocation des sessions (jti). Port métier, pas l'impl.
     private final SessionService sessionService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserServiceImpl userService, PasswordEncoder passwordEncoder, PasswordResetService passwordResetService, SessionService sessionService) {
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, CustomUserDetailsService userDetailsService, UserService userService, PasswordEncoder passwordEncoder, PasswordResetService passwordResetService, SessionService sessionService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtService = jwtService;

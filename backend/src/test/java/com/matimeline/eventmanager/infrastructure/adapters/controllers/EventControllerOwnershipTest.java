@@ -24,14 +24,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.matimeline.eventmanager.application.services.EventServiceImpl;
-import com.matimeline.eventmanager.application.services.ProductServiceImpl;
-import com.matimeline.eventmanager.application.services.UserServiceImpl;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
+import com.matimeline.eventmanager.domain.ports.services.EventService;
+import com.matimeline.eventmanager.domain.ports.services.ProductService;
+import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
 
@@ -67,17 +67,16 @@ class EventControllerOwnershipTest extends AbstractPostgresIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // On mocke les types CONCRETS *ServiceImpl (et non les interfaces) : plusieurs
-    // contrôleurs (Auth/Product/Category) injectent le concret (anti-pattern A8 repo-wide).
-    // Un mock du concret satisfait à la fois ces contrôleurs ET EventController qui dépend
-    // des interfaces (Impl implements l'interface). Mocker l'interface laisserait les
-    // contrôleurs à injection concrète sans bean → ApplicationContext KO.
+    // #123 (DIP) : TOUS les contrôleurs injectent désormais les PORTS (interfaces),
+    // plus aucun ne câble un *ServiceImpl concret. On mocke donc les interfaces —
+    // le @MockBean sur le port remplace l'unique impl @Service et satisfait chaque
+    // contrôleur du contexte (Event/Product/Auth/Category).
     @MockBean
-    private EventServiceImpl eventService;
+    private EventService eventService;
     @MockBean
-    private ProductServiceImpl productService;
+    private ProductService productService;
     @MockBean
-    private UserServiceImpl userService;
+    private UserService userService;
     @MockBean
     private JwtService jwtService;
 

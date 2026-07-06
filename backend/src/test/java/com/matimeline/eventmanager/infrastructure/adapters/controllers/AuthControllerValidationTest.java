@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.matimeline.eventmanager.application.services.UserServiceImpl;
+import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.security.CustomUserDetailsService;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 
@@ -33,7 +33,7 @@ class AuthControllerValidationTest {
     @Mock
     private CustomUserDetailsService userDetailsService;
     @Mock
-    private UserServiceImpl userService;
+    private UserService userService;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
