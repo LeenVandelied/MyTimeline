@@ -140,7 +140,11 @@
 .mt-drawer__row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--color-rule); font-size:13px;}
 .mt-drawer__k{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-drawer__v{color:var(--color-ink); text-align:right;}
-.mt-drawer__close{background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
+.mt-drawer__close{position:relative; background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
+/* #82 a11y — hitbox tap >= 44x44px sans agrandir le visuel (28px conservé).
+   Pseudo centré qui déborde de (44-28)/2=8px sur chaque bord. Même technique
+   que `.mt-tlm__evt::before`. N'affecte pas le layout du header flex. */
+.mt-drawer__close::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 .mt-drawer__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* Tooltip d'aide (?) — liste des raccourcis clavier. */
