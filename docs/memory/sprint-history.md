@@ -554,6 +554,12 @@
 **Reviews :** 2 reviewers parallèles (backend + frontend) — 0 CRITIQUE / **3 MAJEUR** (trou validation endDate-seul<startDate, flip type non testé, toggle archived toujours décoché) / 3 MINEURS — tous les MAJEUR RÉSOLU, MINEURS notés non bloquants.
 **Tests :** Backend 280/280 vert (test optimistic-lock rendu DÉTERMINISTE après flakiness 2/4 détectée par test-runner — cf. PIT-S25-002) | Frontend 344/344 vert | E2E 0 spec sur périmètre (gap planifié /create-e2e). CI PR #229 : backend+frontend+e2e+security tous SUCCESS.
 **Nouveaux pitfalls / décisions / patterns :** PAT-S25-001 (Switch FormField flag), PAT-S25-002 (optimistic-lock handler scopé), PAT-S25-003 (ConflictDialog présentationnel + interception scopée), PIT-S25-001 (record élargi casse constructeurs positionnels), PIT-S25-002 (test optimistic-lock 2-threads flaky → déterministe), DEC-S25-001 (contrat PATCH dates).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Clarifier UX archived=true vs quota BR-EVE-011 [S | events] → issue #230 (Sprint 26)
+  - Modale conflit comparative complète (bloquée : enrichir corps 409 backend) [M | events/fullstack] → issue #231 (Sprint 26)
+  - Spec E2E « variante conflit 409 » + toggle archived (gap coverage-E2E) [S | events/frontend] → issue #232 (Sprint 26)
+  - eventCreationSchema startDate/endDate au create [XS | events] → discard (non requis, create déjà cohérent)
+  - 2 follow-ups obsolètes (résolus en cours de sprint, non re-tracés) : test optimistic-lock flaky → rendu déterministe (a0401ad, cf. PIT-S25-002) ; note ctor EventEntity du slice test (mineur, absorbé par la réécriture déterministe)
 **Status :** Terminé (merge PR #229)
 
 ## Sprint 26 — 2026-07-06 (PLANIFIE — cohésion 0.71, Résilience réseau + pages d'états système)
