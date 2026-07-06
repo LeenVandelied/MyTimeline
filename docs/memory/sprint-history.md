@@ -551,7 +551,7 @@
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (fichiers disjoints de S24)
 **Note code-state :** frontend gère déjà le 409, mais backend renvoie 500 (pas de handler ObjectOptimisticLockingFailureException) et EventUpdateRequest ignore startDate/endDate. recurrenceEndDate (#188) déjà livré.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-06, branche sprint/25 depuis dev a1d4d51)
 
 ## Sprint 26 — 2026-07-06 (PLANIFIE — cohésion 0.71, Résilience réseau + pages d'états système)
 **Objectif :** Bus d'état réseau + bannière offline/timeout + pages 404/403/500/vide/loading clair+sombre.
