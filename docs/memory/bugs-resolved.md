@@ -16,3 +16,9 @@
 
 ## BUG-S16-001 — Bump Next 15.2→15.5 (#161) casse le preset Storybook Vite
 Le bump `next` 15.2.4→15.5.20 (caret, fix CVE #161) supprime `next/dist/build/webpack/plugins/define-env-plugin.js`, requis par `vite-plugin-storybook-nextjs@1.1.5` (transitif de `@storybook/experimental-nextjs-vite@8.6`) → `build-storybook` échoue en `CriticalPresetLoadError` AVANT le parsing des stories. Résolu par migration Storybook 8.6→10 (cf. [[DEC-S16-001]]). Règle : après tout bump `next`, relancer `build-storybook` — vitest ne couvre pas le preset SB. (Sprint 16 #46)
+
+## BUG-S22-001 — `next build` lint casse sur `nameConflict` useState non lu (CategoryDrawer)
+`CategoryDrawer.tsx` (#62) : `nameConflict` géré par `useState` mais jamais LU dans le JSX (le 409 est surfacé via `form.setError('name')`) → `@typescript-eslint/no-unused-vars` → `next build` rouge. Invisible tsc/vitest. Fix (#68, commit `e6bd60f`) : consommer la valeur en `aria-invalid={nameConflict}` sur le champ nom (lint OK + a11y correcte, zéro changement comportement). (Sprint 22 #62→#68)
+
+## BUG-S22-002 — Suppression catégorie liée depuis `CategoryDrawer` : impasse 409 (réassignation absente)
+`CategoryDrawer` instanciait `DeleteConfirmDialog variant="category"` SANS `linkedProductsCount` → défaut 0 → `needsReassign=false` → aucun `<Select>` de réassignation → supprimer une catégorie AVEC produits liés depuis le drawer heurtait `CategoryInUseException` (409) sans cible possible (backend exige `reassignToCategoryId`). `CategoriesView` le faisait bien. Détecté par `/review-pr` (raté au batch `/sprint start`). Fix (commit `116f419`) : threader `linkedProductsCount` `CategoriesView → CategoryDrawer → DeleteConfirmDialog` + test régression. (Sprint 22 #62, review PR#217)

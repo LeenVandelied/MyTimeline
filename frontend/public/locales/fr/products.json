@@ -110,5 +110,73 @@
       "forbidden": "Action non autorisée.",
       "generic": "Une erreur est survenue. Réessayez."
     }
+  },
+  "list": {
+    "title": "Produits",
+    "subtitle": "Tes produits et leur activité récente.",
+    "newProduct": "Nouveau produit",
+    "search": "Rechercher un produit",
+    "searchPlaceholder": "Filtrer par nom…",
+    "sortBy": "Trier par",
+    "loading": "Chargement des produits…",
+    "empty": "Aucun produit pour le moment.",
+    "emptySearch": "Aucun produit ne correspond à ta recherche.",
+    "error": "Impossible de charger les produits.",
+    "count": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "columns": {
+      "name": "Nom",
+      "category": "Catégorie",
+      "activity": "Activité (90 j)",
+      "lastActivity": "Dernière activité",
+      "actions": "Actions"
+    },
+    "noCategory": "Sans catégorie",
+    "noActivity": "Aucune activité",
+    "sort": {
+      "nameAsc": "Nom (A→Z)",
+      "nameDesc": "Nom (Z→A)",
+      "categoryAsc": "Catégorie (A→Z)",
+      "lastActivityDesc": "Activité récente",
+      "lastActivityAsc": "Activité ancienne"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "archive": "Archiver",
+      "openDetail": "Ouvrir le détail"
+    },
+    "sparklineLabel": "Activité des 90 derniers jours de {name}"
+  },
+  "detail": {
+    "back": "Retour aux produits",
+    "notFound": "Produit introuvable ou archivé.",
+    "loading": "Chargement du produit…",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "timelineTitle": "Frise du produit",
+    "timelineEmpty": "Aucun événement à afficher pour ce produit.",
+    "historyTitle": "Historique des événements",
+    "historyEmpty": "Aucun événement enregistré.",
+    "fields": {
+      "name": "Nom",
+      "category": "Catégorie",
+      "description": "Description",
+      "color": "Couleur",
+      "noDescription": "Aucune description",
+      "noCategory": "Sans catégorie"
+    },
+    "eventsCount": "{count, plural, =0 {aucun événement} one {# événement} other {# événements}}"
+  },
+  "categories": {
+    "title": "Catégories",
+    "subtitle": "Organise tes produits par catégorie.",
+    "newCategory": "Nouvelle catégorie",
+    "loading": "Chargement des catégories…",
+    "empty": "Aucune catégorie pour le moment.",
+    "error": "Impossible de charger les catégories.",
+    "system": "Système",
+    "productCount": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "openEdit": "Modifier {name}"
   }
 }

@@ -1,0 +1,39 @@
+{
+  "drawer": {
+    "createTitle": "Nouvelle catégorie",
+    "editTitle": "Modifier la catégorie",
+    "createDescription": "Créez une catégorie pour organiser vos produits.",
+    "editDescription": "Mettez à jour le nom, la couleur ou la description.",
+    "systemDescription": "Catégorie système : consultable mais non modifiable.",
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Nom de la catégorie",
+      "color": "Couleur",
+      "resetColor": "Réinitialiser",
+      "contrastWarning": "Contraste faible : le texte peut être difficile à lire sur cette couleur.",
+      "description": "Description (optionnelle)",
+      "descriptionPlaceholder": "Décrivez cette catégorie…"
+    },
+    "preview": {
+      "label": "Aperçu",
+      "placeholderName": "Nom de la catégorie"
+    },
+    "actions": {
+      "create": "Créer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "submitting": "Enregistrement en cours"
+    },
+    "errors": {
+      "forbidden": "Action non autorisée sur cette catégorie.",
+      "notFound": "Catégorie introuvable.",
+      "generic": "Une erreur est survenue. Réessayez."
+    }
+  },
+  "validation": {
+    "nameRequired": "Le nom est requis",
+    "nameTooLong": "Le nom ne doit pas dépasser 255 caractères",
+    "nameConflict": "Une catégorie porte déjà ce nom."
+  }
+}

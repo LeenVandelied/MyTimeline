@@ -110,5 +110,73 @@
       "forbidden": "Aktion nicht erlaubt.",
       "generic": "Ein Fehler ist aufgetreten. Bitte erneut versuchen."
     }
+  },
+  "list": {
+    "title": "Produkte",
+    "subtitle": "Deine Produkte und ihre jüngste Aktivität.",
+    "newProduct": "Neues Produkt",
+    "search": "Produkt suchen",
+    "searchPlaceholder": "Nach Name filtern…",
+    "sortBy": "Sortieren nach",
+    "loading": "Produkte werden geladen…",
+    "empty": "Noch keine Produkte.",
+    "emptySearch": "Kein Produkt entspricht deiner Suche.",
+    "error": "Produkte konnten nicht geladen werden.",
+    "count": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
+    "columns": {
+      "name": "Name",
+      "category": "Kategorie",
+      "activity": "Aktivität (90 T)",
+      "lastActivity": "Letzte Aktivität",
+      "actions": "Aktionen"
+    },
+    "noCategory": "Keine Kategorie",
+    "noActivity": "Keine Aktivität",
+    "sort": {
+      "nameAsc": "Name (A→Z)",
+      "nameDesc": "Name (Z→A)",
+      "categoryAsc": "Kategorie (A→Z)",
+      "lastActivityDesc": "Neueste Aktivität",
+      "lastActivityAsc": "Älteste Aktivität"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "openDetail": "Detail öffnen"
+    },
+    "sparklineLabel": "Aktivität der letzten 90 Tage von {name}"
+  },
+  "detail": {
+    "back": "Zurück zu den Produkten",
+    "notFound": "Produkt nicht gefunden oder archiviert.",
+    "loading": "Produkt wird geladen…",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "timelineTitle": "Produkt-Zeitleiste",
+    "timelineEmpty": "Keine Ereignisse für dieses Produkt anzuzeigen.",
+    "historyTitle": "Ereignisverlauf",
+    "historyEmpty": "Keine Ereignisse erfasst.",
+    "fields": {
+      "name": "Name",
+      "category": "Kategorie",
+      "description": "Beschreibung",
+      "color": "Farbe",
+      "noDescription": "Keine Beschreibung",
+      "noCategory": "Keine Kategorie"
+    },
+    "eventsCount": "{count, plural, =0 {keine Ereignisse} one {# Ereignis} other {# Ereignisse}}"
+  },
+  "categories": {
+    "title": "Kategorien",
+    "subtitle": "Organisiere deine Produkte nach Kategorie.",
+    "newCategory": "Neue Kategorie",
+    "loading": "Kategorien werden geladen…",
+    "empty": "Noch keine Kategorien.",
+    "error": "Kategorien konnten nicht geladen werden.",
+    "system": "System",
+    "productCount": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "openEdit": "{name} bearbeiten"
   }
 }

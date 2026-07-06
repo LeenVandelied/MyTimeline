@@ -219,3 +219,12 @@ React synthetic pointer events ne propagent PAS `clientY` sous jsdom/RTL (retour
 
 ## PIT-S21-003 — AuthContext détient son user en useState : `invalidateQueries` ne le rafraîchit PAS
 Après une mutation qui modifie le user courant (PATCH profil, upload avatar), invalider `queryKeys.auth.me` ne rafraîchit PAS l'UI : `AuthContext` détient son propre `useState` et ne relit pas la query key (le pont `useCurrentUser` ne refait pas de fetch réseau). Fix : exposer `refreshUser` (re-fetch `/me`) depuis `AuthContext` et l'appeler dans `onSuccess` des mutations. Prévention : toute mutation modifiant le user courant appelle `refreshUser`, pas seulement `invalidateQueries`. (Sprint 21 #75 correction)
+
+## PIT-S22-001 — `next build` (lint bloquant) attrape des erreurs invisibles à tsc + vitest
+En S22 #68, `next build` échouait sur `no-unused-vars` (`nameConflict` en `useState` jamais lu, le 409 étant surfacé via `form.setError`) — INVISIBLE à `tsc --noEmit` et à la suite Vitest (306 verts). Seul le lint gate de `next build` l'attrape. Règle : `npm run build` OBLIGATOIRE en fin de TOUTE tâche frontend, pas seulement tests+tsc. Fix S22 : consommer la valeur en `aria-invalid` (lint OK + a11y). (Sprint 22 #68)
+
+## PIT-S22-002 — Tester le threading d'une prop vers un enfant MOCKÉ : exposer la prop en data-attr
+Quand un composant enfant load-bearing est mocké dans un test (ex. `DeleteConfirmDialog` mocké dans `CategoryDrawer.test.tsx`), le mock masque les régressions de câblage de props. Le bug S22 (review PR#217) = `linkedProductsCount` jamais passé → réassignation cassée, non couvert car le mock ignorait la prop. Prévention : dans le mock, réémettre les props critiques en `data-<attr>` (ex. `data-linked-count`) et asserter l'attribut → couvre le threading sans dé-mocker. (Sprint 22 review PR#217)
+
+## PIT-S22-003 — Garde-fou cwd worktree : le bloc EN TÊTE reste indispensable (récurrence S22)
+Confirme PIT-S21-001 : en S22, #62 (garde cwd reléguée dans « Contraintes », pas en tête) a ENCORE écrit dans le repo principal avant rapatriement manuel. À l'inverse #68 et le fix review217 (bloc `⚠️ GARDE CWD WORKTREE` en TOUT PREMIER + chemins absolus + `git -C <worktree>`) n'ont eu AUCUNE fuite. Règle : le bloc worktree va en première ligne du briefing, jamais dans une section basse. (Sprint 22 #62 vs #68)

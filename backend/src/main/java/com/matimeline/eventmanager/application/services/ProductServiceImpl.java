@@ -64,7 +64,10 @@ public class ProductServiceImpl implements ProductService {
         // #158 : surcharge couleur produit (null = héritage de la catégorie côté front).
         product.setColor(request.getColor());
 
-        request.getEvents().forEach(eventCreationRequest -> {
+        // #186 (BR-PRO-005) : un produit SANS événement est autorisé. getEvents() peut être
+        // null (pas de @NotNull sur le DTO ; Zod z.array sans .min(1)) -> null traité comme
+        // liste vide pour éviter la NPE (500). Le produit est déjà construit avec 0 event (L63).
+        Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {
             LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
     
             // id NULL (idem product) : l'EventEntity imbriquée est persistée en cascade,

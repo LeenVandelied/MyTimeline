@@ -110,5 +110,73 @@
       "forbidden": "Action not allowed.",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "list": {
+    "title": "Products",
+    "subtitle": "Your products and their recent activity.",
+    "newProduct": "New product",
+    "search": "Search a product",
+    "searchPlaceholder": "Filter by name…",
+    "sortBy": "Sort by",
+    "loading": "Loading products…",
+    "empty": "No products yet.",
+    "emptySearch": "No product matches your search.",
+    "error": "Unable to load products.",
+    "count": "{count, plural, =0 {no products} one {# product} other {# products}}",
+    "columns": {
+      "name": "Name",
+      "category": "Category",
+      "activity": "Activity (90 d)",
+      "lastActivity": "Last activity",
+      "actions": "Actions"
+    },
+    "noCategory": "No category",
+    "noActivity": "No activity",
+    "sort": {
+      "nameAsc": "Name (A→Z)",
+      "nameDesc": "Name (Z→A)",
+      "categoryAsc": "Category (A→Z)",
+      "lastActivityDesc": "Recent activity",
+      "lastActivityAsc": "Oldest activity"
+    },
+    "actions": {
+      "edit": "Edit",
+      "archive": "Archive",
+      "openDetail": "Open detail"
+    },
+    "sparklineLabel": "Last 90 days activity of {name}"
+  },
+  "detail": {
+    "back": "Back to products",
+    "notFound": "Product not found or archived.",
+    "loading": "Loading product…",
+    "edit": "Edit",
+    "delete": "Delete",
+    "timelineTitle": "Product timeline",
+    "timelineEmpty": "No events to display for this product.",
+    "historyTitle": "Event history",
+    "historyEmpty": "No events recorded.",
+    "fields": {
+      "name": "Name",
+      "category": "Category",
+      "description": "Description",
+      "color": "Color",
+      "noDescription": "No description",
+      "noCategory": "No category"
+    },
+    "eventsCount": "{count, plural, =0 {no events} one {# event} other {# events}}"
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Organize your products by category.",
+    "newCategory": "New category",
+    "loading": "Loading categories…",
+    "empty": "No categories yet.",
+    "error": "Unable to load categories.",
+    "system": "System",
+    "productCount": "{count, plural, =0 {no products} one {# product} other {# products}}",
+    "delete": "Delete",
+    "edit": "Edit",
+    "openEdit": "Edit {name}"
   }
 }
