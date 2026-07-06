@@ -103,19 +103,42 @@ describe('EventEditForm — submitState (4 états)', () => {
     expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
   })
 
-  it('conflict : message 409 spécifique + bouton recharger distinct de error', () => {
+  it('conflict : ouvre le ConflictDialog partagé (event-form-conflict) + bouton recharger, distinct de error', () => {
     const onReload = vi.fn()
     setup({ submitState: 'conflict', onReload })
+    // #77 — le conflit 409 optimistic ouvre un Dialog partagé (role=dialog Radix)
+    // dont le conteneur préserve data-testid=event-form-conflict (tests #66).
     expect(screen.getByTestId('event-form-conflict')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.queryByTestId('event-form-error')).not.toBeInTheDocument()
-    expect(screen.getByTestId('event-form-reload')).toBeInTheDocument()
+    expect(screen.getByTestId('conflict-dialog-reload')).toBeInTheDocument()
+  })
+
+  it("conflict : le dialog n'est PAS monté pour idle/error", () => {
+    const { rerender } = render(
+      <EventEditForm defaultValues={baseDefaults} onSubmit={vi.fn()} onCancel={vi.fn()} submitState="error" />,
+    )
+    expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
+    rerender(
+      <EventEditForm defaultValues={baseDefaults} onSubmit={vi.fn()} onCancel={vi.fn()} submitState="idle" />,
+    )
+    expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
   })
 
   it('conflict : clic recharger appelle onReload', async () => {
     const onReload = vi.fn()
     setup({ submitState: 'conflict', onReload })
-    await userEvent.click(screen.getByTestId('event-form-reload'))
+    await userEvent.click(screen.getByTestId('conflict-dialog-reload'))
     expect(onReload).toHaveBeenCalledOnce()
+  })
+
+  it('conflict : Échap ferme le dialog et appelle onConflictDismiss (pas onReload)', async () => {
+    const onReload = vi.fn()
+    const onConflictDismiss = vi.fn()
+    setup({ submitState: 'conflict', onReload, onConflictDismiss })
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(onConflictDismiss).toHaveBeenCalledOnce())
+    expect(onReload).not.toHaveBeenCalled()
   })
 })
 

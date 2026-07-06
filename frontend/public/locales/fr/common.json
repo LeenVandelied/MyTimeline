@@ -79,6 +79,12 @@
       "generic": "Une erreur est survenue lors de la suppression, veuillez réessayer."
     }
   },
+  "conflictDialog": {
+    "title": "Modifié ailleurs",
+    "description": "Cet élément a été modifié depuis un autre onglet ou par une autre personne. Rechargez les données à jour avant de continuer, vos modifications non enregistrées seront perdues.",
+    "reload": "Recharger les données à jour",
+    "dismiss": "Annuler"
+  },
   "validation": {
     "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
     "password": "Le mot de passe doit contenir au moins 6 caractères"

@@ -16,6 +16,7 @@ import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
 import { PopoverPicker } from './ui/popoverPicker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
+import { ConflictDialog } from './shared/ConflictDialog'
 import { contrastInk } from '@/lib/color'
 import {
   createEventEditSchema,
@@ -41,8 +42,12 @@ export type { EventEditFormValues } from '@/types/event'
  *
  * `submitState` (piloté par le parent, ex. mutation TanStack) à 4 états :
  *   idle | submitting (spinner + bouton désactivé) | error (message inline) |
- *   conflict (message 409 spécifique + option de rechargement). Le 409 n'est pas
- *   encore émis backend pour les events → l'état reste défensif (RECOMMAND_FOLLOWUP).
+ *   conflict (409 optimistic locking). Depuis #77, l'état `conflict` ouvre le
+ *   `ConflictDialog` partagé (Dialog DS Radix : role=dialog, focus-trap, Échap) au
+ *   lieu d'un bloc inline. Le conteneur du dialog préserve
+ *   `data-testid="event-form-conflict"` (tests existants #66). Le contrat 409 #200
+ *   étant un corps plat sans serverVersion/yourVersion, seule l'action « recharger »
+ *   est proposée (la modale comparative reste un follow-up backend, RECOMMAND_FOLLOWUP).
  *
  * Preview live : recalcul debounce 150 ms (perf, cohérent `--dur-base:200ms`).
  *
@@ -60,8 +65,18 @@ interface EventEditFormProps {
   onCancel: () => void
   /** État de soumission (idle/submitting/error/conflict). Défaut `idle`. */
   submitState?: EventSubmitState
-  /** Rechargement (état `conflict`) : recharge l'événement depuis le serveur. */
+  /**
+   * Rechargement (état `conflict`) : recharge/invalide l'événement à jour.
+   * Déclenché par le bouton « recharger » du `ConflictDialog` partagé (#77).
+   */
   onReload?: () => void
+  /**
+   * Fermeture du `ConflictDialog` sans recharger (bouton annuler / Échap /
+   * overlay). Le parent DOIT réinitialiser `submitState` à `idle` pour que le
+   * dialog puisse se refermer (l'ouverture est dérivée de `submitState`). Défaut
+   * no-op → si omis, le dialog reste ouvert tant que le parent n'a pas changé
+   * l'état (RECOMMAND : toujours fournir ce callback). */
+  onConflictDismiss?: () => void
   /** Mode édition : supprime l'événement (ouvre le dialog de confirmation). */
   onDelete?: () => Promise<void>
   /** Récurrence de l'événement édité → warning suppression « seul cet événement ». */
@@ -84,6 +99,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   onCancel,
   submitState = 'idle',
   onReload,
+  onConflictDismiss,
   onDelete,
   isRecurring: eventIsRecurring = false,
 }) => {
@@ -430,32 +446,11 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                 />
               </div>
 
-              {/* États submit error/conflict (409 distinct des 4xx/5xx). */}
+              {/* Erreur générique 4xx/5xx (le 409 optimistic ouvre le ConflictDialog). */}
               {submitState === 'error' && (
                 <p role="alert" className="text-destructive text-sm" data-testid="event-form-error">
                   {tErr('submitError')}
                 </p>
-              )}
-              {submitState === 'conflict' && (
-                <div
-                  role="alert"
-                  className="text-destructive space-y-2 text-sm"
-                  data-testid="event-form-conflict"
-                >
-                  <p>{tErr('conflict')}</p>
-                  {onReload && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="border-rule-strong text-ink"
-                      onClick={onReload}
-                      data-testid="event-form-reload"
-                    >
-                      {tErr('reload')}
-                    </Button>
-                  )}
-                </div>
               )}
 
               <div className="border-rule flex items-center justify-between border-t pt-4">
@@ -512,6 +507,19 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           onConfirm={onDelete}
         />
       )}
+
+      {/* Conflit d'édition concurrente (409 optimistic, #77) — Dialog DS partagé.
+          Ouverture dérivée de `submitState`. Fermeture (Échap/annuler/après reload)
+          → `onConflictDismiss` pour que le parent repasse `submitState` à idle.
+          `testId` préservé = `event-form-conflict` (tests existants #66). */}
+      <ConflictDialog
+        open={submitState === 'conflict'}
+        onOpenChange={(next) => {
+          if (!next) onConflictDismiss?.()
+        }}
+        onReload={() => onReload?.()}
+        testId="event-form-conflict"
+      />
     </>
   )
 }

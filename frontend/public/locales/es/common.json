@@ -39,6 +39,12 @@
       "generic": "Ocurrió un error al eliminar, inténtalo de nuevo."
     }
   },
+  "conflictDialog": {
+    "title": "Modificado en otro lugar",
+    "description": "Este elemento se modificó desde otra pestaña o por otra persona. Vuelve a cargar los datos actualizados antes de continuar; se perderán los cambios no guardados.",
+    "reload": "Recargar los datos actualizados",
+    "dismiss": "Cancelar"
+  },
   "validation": {
     "username": "El nombre de usuario debe contener al menos 3 caracteres",
     "password": "La contraseña debe contener al menos 6 caracteres"
