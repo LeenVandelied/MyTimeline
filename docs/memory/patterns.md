@@ -136,3 +136,12 @@ Pour qu'un flux (ex. suppression compte 2 étapes) marche à la fois en Dialog (
 
 ## PAT-S21-003 — Upload de fichier authentifié = modèle de référence (security-expert GO S21)
 Modèle validé pour tout upload utilisateur : validation type par MAGIC BYTES uniquement (jamais Content-Type client ni extension) ; nom stocké = UUID généré (jamais le filename client) ; résolution de chemin bornée `resolveWithinBase` (rejette `/`,`\`,`..` + `startsWith(baseDir)` post-normalize) ; limite taille serveur (config multipart + contrôle applicatif, defense in depth) ; ownership dérivé du JWT (jamais un id param) ; cleanup de l'ancien objet au remplacement/DELETE ; aucune fuite d'exception dans le body. Réutilisable pour futurs uploads (export, pièces jointes). (Sprint 21 #75, `AvatarServiceImpl`/`LocalStorageAdapter`)
+
+## PAT-S22-001 — Contrat couleur catégorie = String libre (≠ produit hex `@Pattern`)
+`CategoryRequest`/`CategoryUpdateRequest.color` = `@Size(max=255)` SANS `@Pattern` hex (contrairement aux produits #158). Côté front : `categoryCreate/UpdateSchema.color = z.string().max(255).optional()` — NE PAS réutiliser un `hexColorSchema` produit ni sur-contraindre en `#RRGGBB` (le backend accepte toute string ≤255 ; sur-contraindre rejette des valeurs valides serveur). Le picker émet du hex mais le contrat reste libre. (Sprint 22 #62)
+
+## PAT-S22-002 — Sous-frise filtrée par entité = filtrage EN AMONT, jamais forker le composant central
+Pour une vue « timeline d'un seul produit » : filtrer `events`/`resources` au niveau de la PAGE (map de l'entité unique → `FullCalendarEvent`) et passer le sous-ensemble à `TimelineResponsive`/`TimelineView` tel quel. Anti-pattern : ajouter un prop `productId`/`filterBy` à `TimelineView` (composant central du dashboard → risque de régression sur tous les appelants). (Sprint 22 #68)
+
+## PAT-S22-003 — PATCH « clear-via-clé-omise » : repose sur DTO `String` simple + setter inconditionnel
+Le PATCH catégorie efface `color`/`description` quand le front OMET la clé JSON : `CategoryUpdateRequest` a des champs `String` simples → Jackson null-binde une clé absente → `CategoryServiceImpl.updateCategory` fait `setColor(color)`/`setDescription(...)` INCONDITIONNEL → null persiste (efface). Donc `effectiveColor = color ?? undefined` côté front (reset couleur) FONCTIONNE. ⚠ Fragile : refactorer le DTO en `Optional<String>` ou passer le service en « update si non-null » casserait SILENCIEUSEMENT le reset. Documenté dans br-categories. (Sprint 22, review PR#217 — faux positif écarté après vérif backend)

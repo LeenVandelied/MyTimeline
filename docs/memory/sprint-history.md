@@ -479,15 +479,23 @@
   - resize/anti-EXIF image [S], cache/ETag GET avatar [XS], clavier virtuel Android [S] → consignés ici seulement (non créés, choix dev)
 **Status :** Clôture en cours (PR #211 prête, CI verte, triage follow-ups fait, merge en attente confirmation)
 
-## Sprint 22 — 2026-07-05 (PLANIFIÉ — cohésion 0.67, Page Produits + Catégories frontend)
+## Sprint 22 — 2026-07-05 → 2026-07-06 (Terminé — merge PR #217 dans dev — cohésion 0.67, Page Produits + Catégories frontend)
 **Objectif :** Page Produits (#68, liste+détail+catégories) + Drawer Catégorie (#62, desktop+mobile) + fix NPE backend (#186).
-**Milestone GitHub :** #22
-**Issues :** #68, #62, #186
-**Vagues :** V1 = #62 (drawer) ∥ #186 (backend pur) | V2 = #68 (page produits embarque le drawer #62)
-**Migrations Flyway :** aucune (backend produits/catégories déjà livré #50/#52)
-**Dépend de :** Sprint 10 (#50/#52 backend) — sur dev
-**Note :** #186 = bug NPE réel confirmé `ProductServiceImpl.java:67` (`request.getEvents().forEach` sans null-check). Risque duplication : ProductDrawer #61 existe → **component-guardian** avant nouveau composant. #187 (UI création catégorie) recoupe #62 → à fusionner/fermer après S22.
-**Status :** En cours (démarré 2026-07-05)
+**Milestone GitHub :** #22 (fermé après merge)
+**Issues livrées (3) :** #68, #62, #186
+**Vagues exécutées :** Pré-vague = component-guardian (carte réutilisation) | V1 = #62 (drawer) ∥ #186 (backend pur) | V2 = #68 (page produits embarque le drawer #62)
+**Cohésion score :** 0.67
+**Commits :** 8 — `fb12091` (#186 null-guard) · `3e15440` (#62 CategoryDrawer) · `fb329dd`/`0f50719`/`0058e85`/`e6bd60f`/`66173b9` (#68 liste/détail/catégories/fix-build/done) · `116f419` (fix review PR#217 réassignation) + artefacts mémoire.
+**Migrations Flyway :** aucune (backend produits/catégories déjà livré #50/#52).
+**Dépend de :** Sprint 10 (#50/#52 backend) — sur dev.
+**BR impactées :** BR-PRO-005 (produit sans event), BR-PRO-001/006, BR-CAT-001/002/004/007, ADR-002 (catégorie système lecture seule).
+**Reviews :** batch `/sprint start` (0 CRITIQUE/0 MAJEUR) PUIS `/review-pr` TEAM back+front — 1 MAJEUR réel RÉSOLU (`116f419`, suppression catégorie liée depuis drawer sans réassignation, BR-CAT-002) + 1 MAJEUR écarté (faux positif reset couleur, vérif backend) + MINEURs (console.error gaté, TODO virtualisation). Le batch sprint avait manqué le MAJEUR → valeur du 2e passage adverse.
+**Tests :** Backend 270/270 verts | Frontend 306/306 verts | `next build` OK | E2E : parcours produits/catégories NON couverts (→ `/create-e2e 217` post-merge).
+**Nouveaux pitfalls / patterns / bugs :** PIT-S22-001 (`next build` lint invisible tsc/vitest) · PIT-S22-002 (mock enfant → data-attr pour tester threading prop) · PIT-S22-003 (récurrence cwd worktree, bloc en tête indispensable) · PAT-S22-001 (color catégorie String libre) · PAT-S22-002 (sous-frise filtrée amont) · PAT-S22-003 (PATCH clear-via-clé-omise) · BUG-S22-001 (nameConflict useState non lu) · BUG-S22-002 (réassignation drawer). br-categories pack mis à jour.
+**Saturation contexte lead (mesure) :** ~55-60 % du budget contexte (opus) — briefings inline #186/#62 + reviews + fix ; briefings #68 passés en prompt dense (pack non re-Read).
+**Absorbé en cours (XS) :** correction lint build #62 absorbée par #68 (`e6bd60f`) ; MINEURs review absorbés (`116f419`).
+**Follow-ups proposés (NON-XS) :** aucun `RECOMMAND_FOLLOWUP` actionnable (tous négations explicites). Suivi hors-signal : `/create-e2e 217` (E2E post-merge) ; virtualisation liste si >50 produits (TODO en code) ; #187 UI création catégorie recoupe #62 → à fermer/fusionner.
+**Status :** Terminé (merge en cours via `/sprint end`)
 
 ## Sprint 23 — 2026-07-05 (PLANIFIÉ — cohésion 0.55 ⚠ WARNING, Sécurité/DevOps durcissement + DIP)
 **Objectif :** Bump CVE post-Boot 3.4.4 (#180) + refactor contrôleurs vers interfaces service DIP (#123) + durcissement CI pin SHA (#167).

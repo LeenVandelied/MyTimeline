@@ -107,3 +107,11 @@ CRUD simple — pas de lifecycle d'état.
 - Coverage actuelle : `coverage-categories.md`
 - Backend : `backend/src/main/java/com/matimeline/eventmanager/` (`infrastructure/adapters/controllers/CategoryController.java`, `application/services/CategoryServiceImpl.java`, `infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java`, `infrastructure/entities/CategoryEntity.java`, `domain/models/Category.java`, `domain/exceptions/CategoryNotFoundException.java`)
 - Frontend : `frontend/src/types/product.ts` (schémas Zod), `frontend/src/components/.../AddProducts.tsx` (formulaire de création produit)
+
+---
+
+## MàJ Sprint 22 (#62/#68) — UI catégories + sémantique PATCH-clear
+
+- **Front livré** : `CategoryDrawer` (create/edit desktop+mobile, réassignation via `DeleteConfirmDialog variant="category"`), page catégories (`CategoriesView`), hooks `useCreateCategory`/`useUpdateCategory` + `categoryService` (create/update/delete). Color = **String libre** côté Zod (`.max(255).optional()`, PAS de `@Pattern` hex — cf. PAT-S22-001).
+- **PATCH clear-via-clé-omise (⚠ contrat implicite, cf. PAT-S22-003)** : `CategoryServiceImpl.updateCategory` fait `existing.setColor(color)` / `setDescription(...)` **INCONDITIONNEL** ; `CategoryUpdateRequest` a des champs `String` simples → une clé JSON absente arrive `null` (Jackson) → le champ est **effacé**. Conséquence : le front DOIT toujours porter `name` + toute valeur à conserver ; omettre `color` = l'effacer (c'est ainsi que le bouton « reset couleur » du drawer fonctionne). **NE PAS** refactorer le DTO en `Optional<String>` ni passer le service en « update-si-non-null » sans casser silencieusement le reset.
+- **Suppression catégorie liée** : exige `reassignToCategoryId` (sinon `CategoryInUseException` → 409). Tout appelant de `DeleteConfirmDialog variant="category"` DOIT passer `linkedProductsCount` pour armer le select de réassignation (cf. BUG-S22-002).
