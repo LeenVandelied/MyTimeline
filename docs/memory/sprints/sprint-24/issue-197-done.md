@@ -1,6 +1,6 @@
 # Issue #197 — ux-patterns.md (formalisation patterns clavier Timeline)
 
-commits: [c2d1e27283b323380e20529134032aa06af93951]
+commits: [b113fef] (HEAD sprint/24 après amend ; message identique)
 
 ## resume
 Créé `.claude/rules-jit/ux-patterns.md` (10 sections) documentant le pattern RÉEL
