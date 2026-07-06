@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
@@ -170,6 +171,19 @@ public class EventServiceImpl implements EventService {
                 // single/autre sans endDate explicite : endDate collée à startDate.
                 event.setEndDate(event.getStartDate());
             }
+        }
+
+        // BR-EVE-002 (#201 review MAJEUR-2) : garde sur l'ÉTAT FUSIONNÉ, en complément du
+        // @AssertTrue DTO (fail-fast payload). Un PATCH partiel peut n'envoyer que endDate SEULE
+        // (sans startDate) : pour type != 'duration' elle est persistée telle quelle et peut être
+        // antérieure à la startDate DÉJÀ en base -> le @AssertTrue (qui ne voit que le payload)
+        // est contourné. On revérifie donc endDate >= startDate sur l'entité fusionnée, après
+        // (re)dérivation. isBefore stricte : endDate == startDate toléré (event d'un jour).
+        // -> EndDateBeforeStartException (422, aligné sur RecurrenceEndDateBeforeStartException).
+        if (event.getEndDate() != null
+                && event.getStartDate() != null
+                && event.getEndDate().isBefore(event.getStartDate())) {
+            throw new EndDateBeforeStartException(id, event.getEndDate(), event.getStartDate());
         }
 
         event.setProduct(originalProductId);

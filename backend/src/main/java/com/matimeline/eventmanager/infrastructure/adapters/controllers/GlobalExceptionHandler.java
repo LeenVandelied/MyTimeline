@@ -17,6 +17,7 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
+import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
@@ -185,6 +186,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "resource was modified concurrently, please retry"));
+    }
+
+    @ExceptionHandler(EndDateBeforeStartException.class)
+    public ResponseEntity<Map<String, Object>> handleEndDateBeforeStart(
+            EndDateBeforeStartException ex) {
+        // BR-EVE-002 (#201) : PATCH amenant l'état fusionné à endDate < startDate -> 422
+        // Unprocessable Entity. Requête bien formée (400 = Bean Validation en amont, cf.
+        // @AssertTrue DTO qui garde la paire dans le payload) mais sémantiquement incohérente
+        // sur l'état fusionné (cas endDate-seule < startDate persistée). Même statut que
+        // RecurrenceEndDateBeforeStartException / InvalidDurationUnitException (cohérence
+        // DEC-S12-001). Corps détaillé buildBody.
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

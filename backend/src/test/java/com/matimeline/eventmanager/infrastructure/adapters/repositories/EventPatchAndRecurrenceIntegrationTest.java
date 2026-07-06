@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
@@ -171,6 +172,44 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
         assertThat(reloaded.getStartDate()).isEqualTo(newStart);
         assertThat(reloaded.getEndDate()).isEqualTo(newStart.plusDays(5));
+    }
+
+    /**
+     * #201 review MAJEUR-2 — trou de validation fermé. Un PATCH n'envoyant QUE endDate (sans
+     * startDate) sur un event 'single', avec une endDate ANTÉRIEURE à la startDate DÉJÀ en base,
+     * contourne le @AssertTrue DTO. La garde état-fusionné du service doit rejeter (422) et NE
+     * RIEN persister : on vérifie que la ligne en base conserve son endDate d'origine.
+     */
+    @Test
+    void patchEndDateOnly_beforePersistedStartDate_isRejected_andNotPersisted() {
+        ProductEntity product = persistProductGraph();
+        LocalDate start = LocalDate.of(2026, 5, 10);
+
+        EventEntity entity = new EventEntity();
+        entity.setTitle("i201-event-" + UUID.randomUUID());
+        entity.setType("single");
+        entity.setIsRecurring(false);
+        entity.setStartDate(start);
+        entity.setEndDate(start);
+        entity.setProduct(product);
+        em.persist(entity);
+        em.flush();
+        UUID eventId = entity.getId();
+        em.clear();
+
+        // endDate seule, antérieure à la startDate persistée (10 mai).
+        EventUpdateCommand request = new EventUpdateCommand(
+                null, null, null, null, null, null, null,
+                null, LocalDate.of(2026, 5, 1), null, null);
+
+        assertThatThrownBy(() -> {
+            eventService.updateEvent(eventId, request);
+            em.flush();
+        }).isInstanceOf(EndDateBeforeStartException.class);
+
+        em.clear();
+        Event reloaded = eventRepository.findEventById(eventId).orElseThrow();
+        assertThat(reloaded.getEndDate()).isEqualTo(start);
     }
 
     /**
