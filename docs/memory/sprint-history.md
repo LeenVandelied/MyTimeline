@@ -639,3 +639,55 @@
   - Re-sync context-pack cp-frontend (périmé : prétend e2e/ vide + 12 tests ; réel 6+ specs, 383 Vitest) [XS | infra] → issue #246 (backlog)
 
 > **Plan S24–S28 généré le 2026-07-06** (`/ai-env:sprint plan 5`, cohésion moyenne **0.77**). Aucun sprint < 0.3 (plus bas = S28 à 0.68). Ordre : a11y Timeline → Events 409/DTO → Résilience réseau/UI → Refactor auth (V12) → Qualité E2E/tests. **Vérif code-state architect (35 tool calls, 4 sous-agents)** a évité un Sprint-213-bis : **4 issues fermées car déjà faites** (#94 ports domaine #123, #202 isAllDay cohérent, #204 action sheet câblée, #206 EventBar/Lane utilisés). #82/#188 downsizés (résiduels déjà livrés). **Reportés au backlog (à surveiller) :** #69/#196/#219 virtualisation (Wave 7) ; #88 monétisation (ADR requis) ; #102 rate-limit Redis (nouvelle infra + ADR) ; #56 Landing DS (L) + #210 shell nav 248px (M) → candidats **S29 « design shell » dédié** ; #221 ArchUnit strict (dépend dégel #190) ; **#195 collapse par produit → re-spec nécessaire** (collapse catégorie déjà livré, viserait un toggle keyé resource.id).
+
+---
+
+## Sprint 29 — 2026-07-07 (PLANIFIÉ — cohésion 0.53, Conteneurisation & déploiement)
+**Objectif :** Rendre le projet déployable (Docker) + valider migrations Flyway prod + purger secrets historique.
+**Milestone GitHub :** #29
+**Issues :** #37 (M), #181 (S), #112 (S — DESTRUCTIF)
+**Vagues :** V1 = #37 ∥ #181 (fichiers disjoints) | V2 = #112 ISOLÉ en dernier (force-push historique, exige "oui" dev + fenêtre)
+**Migrations Flyway :** aucune (head = V12 ; #181 = validate sur l'existant)
+**Dépend de :** aucune
+**Status :** Planifié
+
+## Sprint 30 — 2026-07-07 (PLANIFIÉ — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
+**Objectif :** Fail-fast prod (rate-limit off, BREVO absente) + log config cookie/CORS + test profil prod.
+**Milestone GitHub :** #30
+**Issues :** #216 (S), #130 (S), #140 (S), #129 (XS)
+**Vagues :** V1 = #140 ∥ #129 | V2 = #216 → #130 (touchent infrastructure/config)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 29 (#37 fournit le profil prod conteneurisé)
+**Status :** Planifié
+
+## Sprint 31 — 2026-07-07 (PLANIFIÉ — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
+**Objectif :** Solder CVE HIGH/CRITICAL front (#222) + back (#223) + assainir logs axios résiduels (#160).
+**Milestone GitHub :** #31
+**Issues :** #222 (M), #223 (S), #160 (XS — possibly_done, 2/4 sites déjà faits)
+**Vagues :** V1 tout parallèle (front/back/logs disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Note :** cohésion 0.37 = point faible du plan (> 0.3, pas de split). Split optionnel : #223 → S30. #160 : grep AddProducts+authService avant respawn (risque sprint à vide).
+**Status :** Planifié
+
+## Sprint 32 — 2026-07-07 (PLANIFIÉ — cohésion 1.00, Portabilité RGPD backend)
+**Objectif :** Endpoint export RGPD (profil+produits+événements+catégories ; JSON/MD sync + ZIP/CSV async).
+**Milestone GitHub :** #32
+**Issues :** #58 (L — mono-issue, sprint dédié)
+**Vagues :** V1 = #58 seul
+**Migrations Flyway :** possiblement V13 (table suivi jobs async — à déterminer)
+**Dépend de :** aucune (mais BLOQUE #59 en S33)
+**Note :** ⚠ ADR requis (aucune infra jobs async aujourd'hui). Chemin sync (JSON/MD) livrable même si async glisse. RGPD = complétude légale exhaustive.
+**Status :** Planifié
+
+## Sprint 33 — 2026-07-07 (PLANIFIÉ — cohésion 0.40, Conformité EU frontend : export + locales)
+**Objectif :** Flux export RGPD frontend (Réglages, 3 étapes) + aligner locales layout es/de (fix 404).
+**Milestone GitHub :** #33
+**Issues :** #59 (M), #235 (M)
+**Vagues :** V1 tout parallèle (#59 settings ∥ #235 i18n — disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 32 (#59 ⟵ #58, contrat/DTO export figé en fin de S32)
+**Note :** #235 = 404 es/de live ; peut être tiré en avant en S31 si exposition inacceptable.
+**Status :** Planifié
+
+> **Plan S29–S33 généré le 2026-07-07** (`/ai-env:sprint plan 5 -c focus MVP`, cohésion moyenne **0.61**, aucun sprint < 0.3). Fil directeur MVP = **shippable en prod** : déploiement (S29) → garde-fous boot (S30) → sécurité exposition (S31) → légal RGPD backend (S32) → conformité EU frontend (S33). Le cœur fonctionnel étant déjà livré (S1–S28), ces 5 sprints n'ajoutent quasiment aucune feature. **Vérif code-state Phase 0.5** : #235 confirmé ouvert (es/de 404), #160 possibly_done (2/4 sites déjà faits). **Backlog HORS MVP explicite :** #88/#102 (monétisation + Redis = ADR post-MVP), #212 (avatar MinIO — LocalStorageAdapter + volume Docker suffisent pour ship), #56/#210 (design-shell MVP-adjacent), #69/#196/#219 (scale), #145/#234/#209/#232 (tests non bloquants), #125/#127/#148 (polish), #215 (à requalifier : test.fixme, vrai bug prod ?). **Ajustements possibles au démarrage :** tirer #235 en S31, sortir #223 en S30, remonter #212 dans S29 (même docker-compose.yml que #37).
