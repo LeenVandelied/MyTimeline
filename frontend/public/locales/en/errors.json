@@ -12,5 +12,21 @@
   "server": {
     "error": "Server error. Please try again later",
     "maintenance": "Server is under maintenance. Please try again later"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for doesn't exist or has been moved.",
+    "backHome": "Back to home"
+  },
+  "forbidden": {
+    "title": "Access denied",
+    "description": "You don't have the required permissions to view this page.",
+    "backHome": "Back to home"
+  },
+  "crash": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Try again or go back home.",
+    "retry": "Try again",
+    "backHome": "Back to home"
   }
 }

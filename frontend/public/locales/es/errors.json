@@ -12,5 +12,21 @@
   "server": {
     "error": "Error del servidor. Por favor, inténtelo más tarde",
     "maintenance": "El servidor está en mantenimiento. Por favor, inténtelo más tarde"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o ha sido movida.",
+    "backHome": "Volver al inicio"
+  },
+  "forbidden": {
+    "title": "Acceso denegado",
+    "description": "No tienes los permisos necesarios para acceder a esta página.",
+    "backHome": "Volver al inicio"
+  },
+  "crash": {
+    "title": "Se produjo un error",
+    "description": "Ocurrió un problema inesperado. Inténtalo de nuevo o vuelve al inicio.",
+    "retry": "Reintentar",
+    "backHome": "Volver al inicio"
   }
 }

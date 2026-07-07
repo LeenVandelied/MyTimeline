@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { nextEvent } from './lib'
 
 /**
@@ -27,9 +28,9 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
     <section className="flex flex-col gap-3" data-testid="dashboard-product-list" aria-label={t('label')}>
       <h2 className="text-ink-faint font-mono text-2xs tracking-widest uppercase">{t('title')}</h2>
       {products.length === 0 ? (
-        <p className="text-ink-muted text-xs" data-testid="dashboard-product-list-empty">
-          {t('empty')}
-        </p>
+        // #57 — État vide partagé (remplace le <p> inline). testId préservé pour
+        // les tests #80 existants (dashboard-product-list-empty).
+        <EmptyState compact title={t('empty')} testId="dashboard-product-list-empty" />
       ) : (
         <ul className="flex flex-col">
           {products.map((product) => {
