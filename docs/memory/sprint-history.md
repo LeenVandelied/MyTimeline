@@ -562,15 +562,28 @@
   - 2 follow-ups obsolètes (résolus en cours de sprint, non re-tracés) : test optimistic-lock flaky → rendu déterministe (a0401ad, cf. PIT-S25-002) ; note ctor EventEntity du slice test (mineur, absorbé par la réécriture déterministe)
 **Status :** Terminé (merge PR #229)
 
-## Sprint 26 — 2026-07-06 (PLANIFIE — cohésion 0.71, Résilience réseau + pages d'états système)
+## Sprint 26 — 2026-07-06 → 2026-07-07 (Terminé — merge PR #233 dans dev)
 **Objectif :** Bus d'état réseau + bannière offline/timeout + pages 404/403/500/vide/loading clair+sombre.
-**Milestone GitHub :** #26
-**Issues :** #76 (M), #57 (M)
-**Vagues :** V1 = #76 ∥ #57 (fichiers disjoints : apiClient/context vs app/[locale]/*.tsx neufs)
+**Milestone GitHub :** #26 (fermé après merge)
+**Issues livrées (2) :** #76 (M), #57 (M)
+**Vagues exécutées :** V1 = #76 ∥ #57 (parallèles, fichiers disjoints : apiClient/context vs app/[locale]/*.tsx neufs)
+**Cohésion score :** 0.71
+**Commits :** 5 (#76 initial `492000a`, #57 `a748982`, fix SSG #76 `7ad5f36`, fixups review `6032d97`, audit `4cf0c77`)
 **Migrations Flyway :** aucune
-**Dépend de :** #77/S25 (soft — réutilise le pattern dialog partagé)
-**Note code-state :** apiClient a des handlers 400/401/403/500 mais aucun navigator.onLine/timeout/bannière ; app/[locale]/ n'a ni not-found ni error ni loading.
-**Status :** Planifié
+**BR impactées :** aucune (features transversales frontend)
+**Correctif chemins (démarrage S26) :** app router réel = `frontend/app/[locale]/` (PAS `frontend/src/app/`). contexts = `frontend/src/contexts/`, shared = `frontend/src/components/shared/`.
+**Régression majeure détectée+corrigée par le lead :** `next build` cassé par #76 (OfflineBanner `useTranslations` monté au layout RACINE hors `NextIntlClientProvider` → crash prerender SSG 0/26). Les 2 fullstack-dev + le test-runner l'ont rapporté à tort « pré-existant / pages auth ». Contrôle `origin/dev` (build vert même env) → régression S26 confirmée. Fix `7ad5f36` (provider+bannière sous `[locale]/layout`), build revenu 26/26. Cf. [[PIT-S26-001]].
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (locales layout fr,en vs middleware fr,en,es,de — PRÉ-EXISTANT → follow-up) / 4 MINEUR (3 corrigés `6032d97`, 2 → follow-up). ui-design : APPROUVÉ avec réserves (RÉSERVE 1 corrigée ; RÉSERVE 2 → [[DEC-S26-003]]).
+**Tests :** Backend 280/280 green | Frontend 383/383 green (base 344 → +39) | `next build` 26/26 pages green | E2E : 10 nouveaux testids sans spec (→ /create-e2e post-merge) ; suite E2E existante tourne en CI.
+**Nouveaux pitfalls / decisions / patterns :** PIT-S26-001 (i18n au root layout → crash SSG), PIT-S26-002 (timeout global exempte multipart), PAT-S26-001 (bus réseau axios↔React observable store), PAT-S26-002 (écrans d'état App Router locale-aware), DEC-S26-001 (token z-netbanner), DEC-S26-002 (403 dans error.tsx), DEC-S26-003 (exception i18n root error boundary).
+**Follow-ups arbitrés (Phase 4 triage — 4 issues créées, milestone Sprint 27) :**
+  - E2E offline réel + pages 404/500 (10 testids sans spec) [S | frontend] → issue #234 (Sprint 27) (#76 + Phase 8 coverage)
+  - Aligner locales `[locale]/layout` (fr,en) ↔ middleware (fr,en,es,de) : es/de inatteignables, JSON S26 dead [M | frontend/i18n] → issue #235 (Sprint 27) (PRÉ-EXISTANT, reviewer MAJEUR)
+  - Helper locale partagé (dédup résolution locale apiClient/error.tsx) [S | frontend] → issue #236 (Sprint 27) (reviewer MINEUR ; lié #235)
+  - Filtre `refetchQueries` du retry bannière (ne refetch que les queries en erreur) [XS | frontend] → issue #237 (Sprint 27) (reviewer MINEUR)
+**Follow-up obsolète (discard, 0 action) :** « prerender pages auth pré-existant » (RECOMMAND_FOLLOWUP #57) — MISDIAGNOSTIC : c'était le crash OfflineBanner (corrigé `7ad5f36`), build désormais 26/26 vert (CI success). Aucune issue.
+**Absorbé en cours :** aucun (3 MINEUR review corrigés inline dans le scope, cf. `6032d97`).
+**Status :** Terminé
 
 ## Sprint 27 — 2026-07-06 (PLANIFIE — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
 **Objectif :** Unifier l'extraction d'identité (SecurityContextHolder) + durcir sécurité contrôleurs + CHECK/NOT NULL users.role.

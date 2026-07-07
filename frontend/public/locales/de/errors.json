@@ -12,5 +12,21 @@
   "server": {
     "error": "Serverfehler. Bitte versuchen Sie es später erneut",
     "maintenance": "Der Server wird gewartet. Bitte versuchen Sie es später erneut"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "backHome": "Zurück zur Startseite"
+  },
+  "forbidden": {
+    "title": "Zugriff verweigert",
+    "description": "Sie haben nicht die erforderlichen Berechtigungen für diese Seite.",
+    "backHome": "Zurück zur Startseite"
+  },
+  "crash": {
+    "title": "Ein Fehler ist aufgetreten",
+    "description": "Ein unerwartetes Problem ist aufgetreten. Versuchen Sie es erneut oder kehren Sie zur Startseite zurück.",
+    "retry": "Erneut versuchen",
+    "backHome": "Zurück zur Startseite"
   }
 }

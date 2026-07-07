@@ -2,6 +2,8 @@ import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
 import { loadMessages } from '../../i18n'
+import { NetworkStatusProvider } from '@/contexts/NetworkStatusContext'
+import { OfflineBanner } from '@/components/shared/OfflineBanner'
 
 const locales = ['fr', 'en']
 
@@ -26,7 +28,13 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
+      {/* #76 : bus réseau + bannière SOUS le provider i18n (useTranslations
+          exige NextIntlClientProvider). QueryProvider (racine) reste ancêtre
+          → useQueryClient du bus résout. */}
+      <NetworkStatusProvider>
+        <OfflineBanner />
+        {children}
+      </NetworkStatusProvider>
     </NextIntlClientProvider>
   )
 }

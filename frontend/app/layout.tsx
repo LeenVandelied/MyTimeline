@@ -51,7 +51,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             {/* #48 : QueryClientProvider entre AuthProvider et {children}.
-                Ordre final imposé : Theme > Auth > Query > children. */}
+                #76 : le bus réseau (NetworkStatusProvider + OfflineBanner) vit
+                dans app/[locale]/layout.tsx, SOUS NextIntlClientProvider —
+                OfflineBanner appelle useTranslations('network') qui exige ce
+                provider (sinon throw au prerender SSG). QueryProvider reste
+                ancêtre → useQueryClient du bus résout toujours. */}
             <QueryProvider>{children}</QueryProvider>
           </AuthProvider>
         </ThemeProvider>

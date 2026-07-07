@@ -21,6 +21,10 @@
    déjà chargés en amont → les variables `--mt-*`/`--z-*`/`--dur-*` résolvent. */
 @import './ds/components/core.css';
 @import './ds/components/timeline.css';
+/* #76 — utilitaires i18n du DS pour la bannière système réseau (`.mt-sysbanner*`,
+   section 6). Règles OPT-IN (classes) : aucun effet de bord sur l'existant ; les
+   autres sections (seg/eyebrow/intl/RTL) restent inertes sans leurs classes. */
+@import './ds/components/i18n.css';
 
 /* next-themes pilote la classe sur <html> ; on garde data-theme en miroir. */
 @custom-variant dark (&:where(.dark, .dark *));

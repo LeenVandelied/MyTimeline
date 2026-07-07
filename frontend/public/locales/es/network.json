@@ -1,0 +1,16 @@
+{
+  "offline": {
+    "message": "Estás sin conexión. Comprueba tu red.",
+    "hint": "No disponible sin conexión"
+  },
+  "retrying": {
+    "message": "Reintentando la conexión…"
+  },
+  "timeout": {
+    "message": "El servidor tarda demasiado en responder."
+  },
+  "server-error": {
+    "message": "Se ha producido un error del servidor."
+  },
+  "retry": "Reintentar"
+}

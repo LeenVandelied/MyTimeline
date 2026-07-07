@@ -1,13 +1,37 @@
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { refreshToken } from './authService'
+import { networkStatusStore } from './networkStatus'
+
+/**
+ * #76 — Timeout par défaut (15 s). Couvre les requêtes API JSON normales sans
+ * requalifier une réponse lente légitime. ⚠ Les uploads multipart (avatar #215)
+ * sont EXEMPTÉS (timeout désactivé) via l'intercepteur de requête plus bas —
+ * ne pas casser les uploads longs.
+ */
+const DEFAULT_TIMEOUT_MS = 15_000
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
+  timeout: DEFAULT_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
+})
+
+/**
+ * #76 — Les uploads multipart peuvent légitimement durer longtemps (fichiers
+ * volumineux, réseau lent). On neutralise le timeout global pour ces requêtes
+ * afin de ne pas requalifier un upload en cours en « timeout réseau ».
+ */
+apiClient.interceptors.request.use((config) => {
+  const isMultipart =
+    typeof FormData !== 'undefined' && config.data instanceof FormData
+  if (isMultipart) {
+    config.timeout = 0
+  }
+  return config
 })
 
 let isRedirecting = false
@@ -84,8 +108,24 @@ const isInlineAuthRequest = (url?: string): boolean => {
 }
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // #76 — toute réponse OK atteste que la connectivité serveur est rétablie :
+    // on éteint un éventuel état timeout/5xx résiduel (retour en ligne implicite).
+    networkStatusStore.clear()
+    return response
+  },
   (error) => {
+    // #76 — Classification réseau AVANT tout court-circuit : la santé réseau est
+    // globale (même sur les endpoints auth gérés inline). Un timeout se reconnaît
+    // au seul code `ECONNABORTED` (signal axios fiable d'un dépassement de `timeout`) ;
+    // une 5xx à `response.status >= 500`. On n'utilise PAS le message d'erreur
+    // (regex trop large : requalifierait des erreurs métier contenant "timeout").
+    const isTimeout = error.code === 'ECONNABORTED'
+    if (isTimeout) {
+      networkStatusStore.reportTimeout()
+    } else if (typeof error.response?.status === 'number' && error.response.status >= 500) {
+      networkStatusStore.reportServerError()
+    }
     if (isInlineAuthRequest(error.config?.url)) {
       // Géré inline par le formulaire : on relaie l'erreur sans effet de bord global.
       return Promise.reject(error)

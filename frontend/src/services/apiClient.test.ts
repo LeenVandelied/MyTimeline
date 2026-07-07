@@ -24,7 +24,12 @@ let rejectionHandler: ((error: unknown) => unknown) | undefined
 
 vi.mock('axios', () => {
   const instance = {
+    // #76 — apiClient enregistre désormais aussi un intercepteur de requête
+    // (exemption timeout multipart) : le mock doit l'exposer sinon l'import lève.
     interceptors: {
+      request: {
+        use: () => {},
+      },
       response: {
         use: (_onFulfilled: unknown, onRejected: (error: unknown) => unknown) => {
           rejectionHandler = onRejected
@@ -97,6 +102,30 @@ describe('apiClient response interceptor', () => {
     await expect(rejectionHandler!(makeError(500))).rejects.toBeDefined()
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
     expect(toastErrorMock.mock.calls[0][0]).toMatch(/serveur/i)
+    vi.useRealTimers()
+  })
+
+  // #76 — classification vers le bus d'état réseau (store transport).
+  it('classe un ECONNABORTED en timeout dans le store réseau', async () => {
+    const { networkStatusStore } = await import('./networkStatus')
+    networkStatusStore.clear()
+    const timeoutError = {
+      code: 'ECONNABORTED',
+      message: 'timeout of 15000ms exceeded',
+      config: { url: '/api/slow', method: 'get' },
+    }
+    await expect(rejectionHandler!(timeoutError)).rejects.toBeDefined()
+    expect(networkStatusStore.getIssue()).toBe('timeout')
+    networkStatusStore.clear()
+    vi.useRealTimers()
+  })
+
+  it('classe une 5xx en server-error dans le store réseau', async () => {
+    const { networkStatusStore } = await import('./networkStatus')
+    networkStatusStore.clear()
+    await expect(rejectionHandler!(makeError(503))).rejects.toBeDefined()
+    expect(networkStatusStore.getIssue()).toBe('server-error')
+    networkStatusStore.clear()
     vi.useRealTimers()
   })
 })
