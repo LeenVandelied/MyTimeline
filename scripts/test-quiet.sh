@@ -14,8 +14,10 @@
 # Scopes :
 #   unit | backend   (défaut) → suite backend Spring Boot (Testcontainers Postgres, Docker requis)
 #   coverage                  → idem + rapport de couverture si jacoco est configuré
-#   e2e | frontend            → tests frontend (aucun runner configuré à ce jour → skip explicite)
-#   all                       → backend puis frontend
+#   frontend                  → tests unitaires frontend Vitest (npm test = "vitest run")
+#   e2e                       → tests E2E Playwright (npm run test:e2e ; navigateurs + stack requis)
+#   all                       → backend puis frontend unitaires (Vitest). E2E NON inclus
+#                               (nécessite la stack complète — lancer `e2e` séparément).
 #
 # Commande sous-jacente backend (la sortie verbeuse part dans un log, seul
 # l'agrégat "Tests run:" + le verdict sont affichés) :
@@ -84,17 +86,45 @@ run_backend() {
   return 0
 }
 
+# --- Frontend unitaires : Vitest ("test" = "vitest run") ---------------------
 run_frontend() {
-  # Aucun runner de test configuré dans frontend/package.json (ni Playwright,
-  # ni Jest/Vitest) au moment de l'écriture. On skippe explicitement plutôt que
-  # de remonter un faux échec. À câbler ici quand un script "test"/"e2e" existera.
+  # Suite unitaire Vitest. Skip explicite si aucun script "test" (plutôt qu'un
+  # faux échec). Code de sortie de Vitest propagé : un test rouge => script rouge
+  # (critère #133).
   if [ -f "${FRONTEND_DIR}/package.json" ] \
-     && grep -qE '"(test|e2e|test:e2e)"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
-    echo "▶ Frontend : npm test"
-    ( cd "${FRONTEND_DIR}" && npm test --silent )
-    echo "✓ Frontend : OK"
+     && grep -qE '"test"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
+    echo "▶ Frontend (unitaires) : npm test  (vitest run, cwd=frontend)"
+    local status=0
+    ( cd "${FRONTEND_DIR}" && npm test --silent ) || status=$?
+    if [ "${status}" -ne 0 ]; then
+      echo "✗ Frontend (unitaires) : échec Vitest (exit ${status})." >&2
+      return "${status}"
+    fi
+    echo "✓ Frontend (unitaires) : OK"
   else
-    echo "⊘ Frontend : aucun runner de test configuré (package.json sans script test/e2e) — skip."
+    echo "⊘ Frontend : aucun script \"test\" (Vitest) dans package.json — skip."
+  fi
+  return 0
+}
+
+# --- E2E : Playwright ("test:e2e" = "playwright test") -----------------------
+run_e2e() {
+  # Suite E2E Playwright. Nécessite les navigateurs Playwright ET la stack
+  # (backend + frontend) accessibles là où le script tourne (local + CI, cf. job
+  # `e2e` de .github/workflows/ci.yml). Skip explicite si aucun script "test:e2e".
+  # Code de sortie de Playwright propagé (critère #207).
+  if [ -f "${FRONTEND_DIR}/package.json" ] \
+     && grep -qE '"test:e2e"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
+    echo "▶ E2E : npm run test:e2e  (Playwright, cwd=frontend)"
+    local status=0
+    ( cd "${FRONTEND_DIR}" && npm run test:e2e ) || status=$?
+    if [ "${status}" -ne 0 ]; then
+      echo "✗ E2E : échec Playwright (exit ${status}). Vérifier navigateurs (npx playwright install) et stack up." >&2
+      return "${status}"
+    fi
+    echo "✓ E2E : OK"
+  else
+    echo "⊘ E2E : aucun script \"test:e2e\" (Playwright) dans package.json — skip."
   fi
   return 0
 }
@@ -113,8 +143,11 @@ case "${SCOPE}" in
       run_backend test
     fi
     ;;
-  e2e|frontend)
+  frontend)
     run_frontend
+    ;;
+  e2e)
+    run_e2e
     ;;
   all)
     run_backend test
