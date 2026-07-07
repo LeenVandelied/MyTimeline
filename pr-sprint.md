@@ -1,50 +1,46 @@
-## Sprint 25 — Finalisation Events (conflit 409 + contrat DTO dates + form)
+## Sprint 26 — Résilience réseau + pages d'états système
 
-Câble le conflit d'édition concurrente (optimistic locking) de bout en bout, aligne le contrat `startDate`/`endDate` entre le formulaire et le backend, et complète le formulaire d'événement. Cohésion **0.82**, base `dev`, **aucune migration**.
+Cohésion 0.71 · 2 issues (transversal frontend, 0 BR métier) · migrations Flyway : aucune.
 
-### Issues livrées (4)
-
-| # | Titre | Size |
-|---|-------|------|
-| #201 | Aligner le contrat `startDate`/`endDate` du formulaire avec les DTO create/PATCH | S |
-| #200 | Câbler l'état conflit (409) — handler `ObjectOptimisticLockingFailureException` | S |
-| #188 | EventEditForm : exposer le toggle UI `archived` | S |
-| #77 | Modale de résolution de conflit (409 — optimistic locking) partagée | M |
-
-**Vagues** : V1 = #201 ∥ #200 ∥ #188 (fichiers disjoints) → V2 = #77 (dépend du contrat 409 de #200 + EventEditForm de #188).
+### Issues livrées
+- **#76** — Bus d'état réseau + bannière offline/timeout/erreur serveur
+- **#57** — Pages d'états système (404/403/500/vide/loading) clair + sombre
 
 ### Changements clés
 
-- **#201 — Contrat dates** : `EventUpdateRequest` câble enfin `startDate`/`endDate` (avant : envoyés par le front mais **silencieusement ignorés** = faux contrôle). Décision de contrat : `type=duration` → la durée reste source de vérité (endDate re-dérivée, BR-EVE-003) ; `type=single` → endDate explicite persistée. Garde `endDate ≥ startDate` montée backend : `@AssertTrue` DTO (paire du payload → 400) **+ garde service sur l'état fusionné** (`EndDateBeforeStartException` → 422) qui ferme le cas d'un PATCH `endDate` seul passant sous le `startDate` en base (miroir de BR-EVE-012).
-- **#200 — Handler 409** : `@ExceptionHandler(ObjectOptimisticLockingFailureException)` scopé au **type précis** (pas de fourre-tout `DataIntegrityViolation`, cf. convention backend #3) → **HTTP 409**, corps `{"error":"resource was modified concurrently, please retry"}`. Nouvelle **BR-EVE-015** (édition concurrente `@Version` → 409). Contrat consommé par #77.
-- **#188 — Toggle `archived`** : composant DS `Switch` (1er usage réel) via FormField RHF, i18n 4 locales, pré-rempli depuis l'état réel de l'event (`archived` propagé jusqu'aux `defaultValues` — corrigé en review). `recurrenceEndDate` était déjà livré (S15) → hors scope.
-- **#77 — `ConflictDialog` partagé** : extraction de la gestion inline de conflit vers un composant accessible réutilisable (Dialog DS Radix, `role=dialog` + focus-trap + Échap). Interception du 409 **scopée au flux event** (pas dans le client axios global → aucun autre 409 name-conflict requalifié). `window.location.reload()` remplacé par une **invalidation ciblée** TanStack Query. `data-testid=event-form-conflict` préservé.
+**#76 — Résilience réseau**
+- `NetworkStatusContext` (bus React, `useSyncExternalStore`, SSR-safe) + store observable `networkStatus.ts` pont axios↔React.
+- `OfflineBanner` : 4 états (offline / retrying / timeout / server-error), sticky, `role=status` (offline/retrying) vs `role=alert` (timeout/server-error), « Réessayer » sur timeout/5xx uniquement.
+- `apiClient` : timeout 15s, **exemption uploads multipart** (`FormData` → pas de timeout, préserve #215), classification `ECONNABORTED`→timeout / `≥500`→server-error, clear sur réponse OK.
+- Boutons submit/delete `disabled` hors ligne (avec hint a11y).
+- Namespace i18n `network` (fr/en/es/de).
+
+**#57 — Pages d'états**
+- `app/[locale]/not-found.tsx` (404 locale-aware), `app/[locale]/error.tsx` (crash boundary `'use client'`, branche 403/500), `app/error.tsx` (filet global racine), `dashboard/loading.tsx`.
+- Composants partagés `StateScreen`, `EmptyState`, `LoadingSkeleton` (variants list/cards/timeline).
+- Intégrations réelles : `ProductList` (EmptyState), écran de chargement dashboard (LoadingSkeleton). Tokens Graphite, clair + sombre.
+
+### Correctif notable (détecté en review lead)
+Régression SSG introduite par #76 puis corrigée (`7ad5f36`) : `OfflineBanner` (`useTranslations`) était monté au **layout racine**, hors `NextIntlClientProvider` → `next build` plantait au prerender (0/26 pages). Provider + bannière déplacés sous `[locale]/layout.tsx`. Build revenu à **26/26 pages**. (La base `origin/dev` build proprement dans le même env — régression confirmée S26, non pré-existante.)
 
 ### BR impactées
-- **BR-EVE-002** (endDate ≥ startDate) — garde montée backend (DTO + service état-fusionné).
-- **BR-EVE-003** (dérivation endDate selon type) — étendue au PATCH (startDate déplacée re-dérive endDate en duration).
-- **BR-EVE-013** (archived PATCH-only) — exposée dans l'UI.
-- **BR-EVE-015 (nouvelle)** — édition concurrente → 409, corps `{"error":...}`.
+Aucune (features transversales, hors domaine métier).
 
-### Review batch
-Reviewers backend + frontend parallèles : **3 MAJEUR, tous RÉSOLU** :
-- MAJEUR (backend) : PATCH `endDate` seul < startDate persisté échappait au `@AssertTrue` → garde service état-fusionné (422). ✅
-- MAJEUR (backend) : flip `type` duration→single via `type` seul → comportement acté + testé. ✅
-- MAJEUR (frontend) : toggle `archived` toujours décoché en édition réelle → `archived` propagé aux `defaultValues`. ✅
-- MINEURS (rollback couleur optimiste sur dismiss, double-clic reload) : notés, non bloquants.
+### Tests
+- Backend : **280/280** (inchangé, sprint 100% frontend).
+- Frontend (Vitest/RTL) : **383/383** (base 344 → +39 tests S26).
+- `next build` : **exit 0, 26/26 pages statiques**, 0 erreur prerender.
+- E2E Playwright : non exécuté en local (binaire absent) → tourne en CI. **Aucun spec ne couvre encore les écrans S26.**
 
-### Audit tests (`docs/memory/audits/sprint-25-test-coverage.md`)
-- Backend : **280/280** vert, **stable sur 3 runs** (test optimistic-lock rendu déterministe — simulation de version stale sans threads, après une instabilité 2/4 détectée par le test-runner).
-- Frontend : **344/344** vert.
-- Chaque BR couverte par unit + integration + RTL.
+### Reviews (batch)
+- **reviewer** : 0 CRITIQUE / 1 MAJEUR / 4 MINEUR. 3 MINEUR corrigés (`6032d97` : token skeleton, timeout `ECONNABORTED`, parité a11y delete). MAJEUR (mismatch locales layout `fr,en` vs middleware `fr,en,es,de`) = **pré-existant** → follow-up.
+- **ui-design** : APPROUVÉ AVEC RÉSERVES. RÉSERVE 1 corrigée ; RÉSERVE 2 (strings inline `app/error.tsx` hors provider i18n) = exception justifiée à documenter.
 
-### ⚠ Coverage E2E — plan post-merge
-Nouveaux `data-testid` de production sans spec E2E : `event-form-archived-toggle`, `event-form-conflict`, `conflict-dialog`, `conflict-dialog-reload`.
-→ **Plan : `/create-e2e` après merge** — spec Playwright « variante conflit 409 » (édition concurrente → dialog → recharger) + vérif toggle archived. Le comportement est déjà couvert par l'intégration déterministe + le slice handler + les tests RTL ; l'E2E 2-onglets est un complément différé.
+### Suivi post-merge (non bloquant)
+- **`/create-e2e`** : 10 nouveaux `data-testid` sans spec E2E (parcours offline réel + pages 404/500).
+- Follow-ups à trancher en triage `/sprint end` : alignement locales layout↔middleware (es/de inatteignables), helper locale partagé, filtre `refetchQueries` du retry, documentation exception i18n root error boundary.
 
-### Follow-ups (à arbitrer en `/sprint end`)
-- **Modale comparative complète** (« Garder mes modifications » vs « Prendre la version serveur » + diff des champs) — **bloquée** : nécessite que le backend enrichisse le corps du 409 (serverVersion + yourVersion). Enhancement backend d'abord, puis frontend. (#77)
-- Spec E2E Playwright « variante conflit ». (#77)
-- Clarifier l'UX de `archived=true` (effet sur le quota BR-EVE-011 « events actifs »). (#188)
+### Audit détaillé
+`docs/memory/audits/sprint-26-test-coverage.md`
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
