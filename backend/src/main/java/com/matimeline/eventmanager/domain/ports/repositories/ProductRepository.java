@@ -12,6 +12,18 @@ import com.matimeline.eventmanager.domain.models.Product;
 public interface ProductRepository {
     Optional<Product> findDomainProductById(UUID id);
     List<Product> findAllProducts();
+
+    /**
+     * #124 : liste les produits d'un utilisateur en filtrant EN SQL
+     * ({@code WHERE user_id = :userId}) au lieu de charger toute la table puis filtrer
+     * en Java. Exploite l'index {@code idx_products_user} (posé Sprint 5, #110).
+     * #41 : retourne TOUS les produits du user, y compris ceux SANS événement — la
+     * liste d'événements est éventuellement vide, jamais {@code null}. Les produits
+     * archivés restent exclus via {@code @SQLRestriction("archived = false")} sur
+     * {@code ProductEntity}.
+     */
+    List<Product> findByUserId(UUID userId);
+
     Product save(Product product);
     void deleteById(UUID id);
     boolean existsById(UUID id);
