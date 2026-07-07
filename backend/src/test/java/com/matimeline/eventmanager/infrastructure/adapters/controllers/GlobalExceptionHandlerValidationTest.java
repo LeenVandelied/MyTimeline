@@ -15,8 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 /**
  * Validates that MethodArgumentNotValidException (@Valid failures) is mapped by
@@ -32,15 +31,13 @@ class GlobalExceptionHandlerValidationTest {
     @Mock
     private ProductService productService;
     @Mock
-    private UserService userService;
-    @Mock
-    private JwtService jwtService;
+    private CallerResolver callerResolver;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        EventController controller = new EventController(eventService, productService, userService, jwtService);
+        EventController controller = new EventController(eventService, productService, callerResolver);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();

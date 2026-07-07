@@ -48,7 +48,7 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         user.setUsername("c52-" + suffix);
         user.setEmail("c52-" + suffix + "@example.test");
         user.setPassword("x");
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
         em.persist(user);
         return user;
     }

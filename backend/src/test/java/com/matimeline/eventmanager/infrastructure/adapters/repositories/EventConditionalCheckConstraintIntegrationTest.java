@@ -45,7 +45,7 @@ class EventConditionalCheckConstraintIntegrationTest extends AbstractPostgresInt
         user.setUsername("i128-user-" + suffix);
         user.setEmail("i128-user-" + suffix + "@example.test");
         user.setPassword("x");
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
         em.persist(user);
 
         CategoryEntity category = new CategoryEntity();

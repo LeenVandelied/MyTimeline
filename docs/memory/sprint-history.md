@@ -585,15 +585,30 @@
 **Absorbé en cours :** aucun (3 MINEUR review corrigés inline dans le scope, cf. `6032d97`).
 **Status :** Terminé
 
-## Sprint 27 — 2026-07-06 (PLANIFIE — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
+## Sprint 27 — 2026-07-06 → 2026-07-07 (Terminé — merge PR #238 dans dev — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
 **Objectif :** Unifier l'extraction d'identité (SecurityContextHolder) + durcir sécurité contrôleurs + CHECK/NOT NULL users.role.
-**Milestone GitHub :** #27
-**Issues :** #93 (M), #154 (S), #92 (S), #122 (S — V12)
-**Vagues :** V1 = #93 ∥ #122 (migration DB disjointe) | V2 = #154 puis #92 (même ProductController.java)
-**Migrations Flyway :** **V12** (users.role NOT NULL + CHECK) — SEULE migration du plan S24-S28
-**Dépend de :** aucune (100% backend). ⚠ ALTER TABLE sensible : UPDATE role NULL avant SET NOT NULL, confirmation avant exec prod.
-**Note code-state :** #94 retiré du plan (déjà fait #123/46f2adf, issue fermée). 4-5 resolveCaller dupliqués à unifier.
-**Status :** Planifié
+**Milestone GitHub :** #27 (fermé après merge)
+**Issues livrées (4) :** #93 (M), #122 (S — V12), #154 (S), #92 (S)
+**Vagues exécutées :** V1 = #93 ∥ #122 (migration DB disjointe) | V2 = #154 → #92 (même ProductController.java, séquentiel)
+**Cohésion score :** 0.85
+**Commits :** 8 — `2ce265c` (#122 V12) · `b95710a` (#93 CallerResolver) · `4286670` (#154 ProductController adopte helper) · `548169c` (#92 catch→propagation) · `26d5056` (fix review javadoc UserController) · `43df6db` (artefacts) · `e2580d1` (fix /review-pr : self-DoS session Bearer + garde anonyme) · `feb004d` (artefacts review)
+**Migrations Flyway :** **V12** (users.role NOT NULL + CHECK) — SEULE migration du plan S24-S28. ⚠ Bascule PROD = décision humaine (UPDATE non réversible + ALTER lock ACCESS EXCLUSIVE ; validée Testcontainers seul).
+**Dépend de :** aucune (100% backend).
+**BR impactées :** BR-AUT-005 (401 sans fuite), BR-AUT-011 (cookie OU Bearer), BR-EVT-001 (ownership 403), BR-PRO-004/BR-PRO-010 (ownership produit + anti cross-tenant), users.role NOT NULL + CHECK.
+**Reviews :** intra-sprint (db-expert MERGEABLE + security-expert RAS + reviewer batch : 1 MAJEUR javadoc obsolète → corrigé `26d5056`, 2 MINEUR pré-existants) + **`/review-pr 238`** (3 reviewers INDÉPENDANTS : **1 MAJEUR self-DoS session** — Bearer + jti cookie-only → revoke-all — CORRIGÉ `e2580d1` ; + MINEURs). La review indépendante a rattrapé un MAJEUR raté par le batch intra-sprint.
+**Tests :** Backend **295/295 verts** (Testcontainers Postgres 16). CI sprint/27 verte (feb004d). Pas de frontend → pas d'E2E. Audit : docs/memory/audits/sprint-27-test-coverage.md (0 [MISSING]).
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S27-001 (jti hors SecurityContext = même source que JwtFilter), PIT-S27-002 (RTK git diff non-parsable), PIT-S27-003 (worktree chemins absolus → repo principal, renforce PIT-S24-002), PAT-S27-001 (CallerResolver), PAT-S27-002 (retrait catch→401), DEC-S27-001 (coercition role ROLE_USER), BUG-S27-001 (self-DoS session).
+**Saturation contexte lead (mesure) :** modérée-haute — 2 vagues fan-out (V1 ∥2) + 3 specialists intra-sprint + /review-pr 3 reviewers indépendants + 2 cycles de fix (javadoc, self-DoS), purge via done.md.
+**Incident récurrent :** 3/5 subagents ont initialement écrit sur le repo principal `dev` (cwd worktree, cf. PIT-S27-003) — tous auto-récupérés, `dev` vérifié propre.
+**Absorbé en cours :** fix review self-DoS session (e2580d1) = le RECOMMAND_FOLLOWUP #93 (SessionController Bearer) traité pendant `/review-pr`, pas reporté.
+**Follow-ups arbitrés (Phase 4 triage — 4 issues créées backlog libre, 0 discard, 1 absorbé) :**
+  - Absorbé : self-DoS session Bearer (RECOMMAND_FOLLOWUP #93) → fix `e2580d1` pendant /review-pr.
+  - Mapping 500 réel getProducts (test @SpringBootTest, clôt boucle #92) [XS | auth] → issue #239
+  - Extraire requireOwner(UUID) ProductController (dédup ownership 5×) [S | products] → issue #240
+  - Expliciter hasAuthority ROLE_USER sur /api/categories/** (SecurityConfig, hors-diff) [XS | auth] → issue #241
+  - V12 lock NOT VALID/VALIDATE si users volumineuse prod (db-expert) [S | devops] → issue #242
+  Backlog libre (pas milestone S28 — thème E2E distinct). Ratio discard 0%.
+**Status :** Terminé
 
 ## Sprint 28 — 2026-07-06 (PLANIFIE — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
 **Objectif :** Corriger l'alias e2e (Playwright vs vitest) + câbler CI + specs E2E Produits/Catégories + requête produits SQL indexée.

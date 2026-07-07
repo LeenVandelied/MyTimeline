@@ -27,9 +27,8 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
 import com.matimeline.eventmanager.infrastructure.entities.EventEntity;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 import jakarta.servlet.http.Cookie;
 
@@ -50,15 +49,13 @@ class GlobalExceptionHandlerOptimisticLockTest {
     @Mock
     private ProductService productService;
     @Mock
-    private UserService userService;
-    @Mock
-    private JwtService jwtService;
+    private CallerResolver callerResolver;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        EventController controller = new EventController(eventService, productService, userService, jwtService);
+        EventController controller = new EventController(eventService, productService, callerResolver);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -75,9 +72,9 @@ class GlobalExceptionHandlerOptimisticLockTest {
         Event event = new Event(eventId, "t", "single", null, null, false, null, null,
                 null, null, productId, null, null, false);
 
-        // Ownership chain (checkEventOwnership) : jwt -> username -> caller -> event -> product owner == caller.
-        when(jwtService.extractUsername("valid-token")).thenReturn("owner-username");
-        when(userService.findDomainUserByUsername("owner-username")).thenReturn(Optional.of(caller));
+        // Ownership chain (checkEventOwnership) : caller (SecurityContext via CallerResolver)
+        // -> event -> product owner == caller.
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(eventService.findEventById(eventId)).thenReturn(Optional.of(event));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
 
