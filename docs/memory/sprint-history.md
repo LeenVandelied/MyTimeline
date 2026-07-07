@@ -585,7 +585,7 @@
 **Absorbé en cours :** aucun (3 MINEUR review corrigés inline dans le scope, cf. `6032d97`).
 **Status :** Terminé
 
-## Sprint 27 — 2026-07-06 (PLANIFIE — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
+## Sprint 27 — 2026-07-06 (EN COURS — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
 **Objectif :** Unifier l'extraction d'identité (SecurityContextHolder) + durcir sécurité contrôleurs + CHECK/NOT NULL users.role.
 **Milestone GitHub :** #27
 **Issues :** #93 (M), #154 (S), #92 (S), #122 (S — V12)
@@ -593,7 +593,7 @@
 **Migrations Flyway :** **V12** (users.role NOT NULL + CHECK) — SEULE migration du plan S24-S28
 **Dépend de :** aucune (100% backend). ⚠ ALTER TABLE sensible : UPDATE role NULL avant SET NOT NULL, confirmation avant exec prod.
 **Note code-state :** #94 retiré du plan (déjà fait #123/46f2adf, issue fermée). 4-5 resolveCaller dupliqués à unifier.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-07)
 
 ## Sprint 28 — 2026-07-06 (PLANIFIE — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
 **Objectif :** Corriger l'alias e2e (Playwright vs vitest) + câbler CI + specs E2E Produits/Catégories + requête produits SQL indexée.
