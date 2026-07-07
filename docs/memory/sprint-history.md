@@ -570,7 +570,8 @@
 **Migrations Flyway :** aucune
 **Dépend de :** #77/S25 (soft — réutilise le pattern dialog partagé)
 **Note code-state :** apiClient a des handlers 400/401/403/500 mais aucun navigator.onLine/timeout/bannière ; app/[locale]/ n'a ni not-found ni error ni loading.
-**Status :** Planifié
+**Correctif chemins (démarrage S26) :** app router réel = `frontend/app/[locale]/` (PAS `frontend/src/app/`). contexts = `frontend/src/contexts/`, shared = `frontend/src/components/shared/`.
+**Status :** En cours
 
 ## Sprint 27 — 2026-07-06 (PLANIFIE — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
 **Objectif :** Unifier l'extraction d'identité (SecurityContextHolder) + durcir sécurité contrôleurs + CHECK/NOT NULL users.role.
