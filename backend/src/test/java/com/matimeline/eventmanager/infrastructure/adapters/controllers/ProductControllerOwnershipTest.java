@@ -33,11 +33,14 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
-import jakarta.servlet.http.Cookie;
-
+/**
+ * Slice contrôleur (standaloneSetup) : Spring Security est bypassé, donc l'identité du caller
+ * est fournie en mockant directement {@link CallerResolver#currentUser()} (le point d'extraction
+ * JWT centralisé, #93/#154). {@code empty()} -> 401 ; {@code caller.id != {userId}} -> 403 ;
+ * produit d'autrui -> 403 (anti-IDOR, BR-PRO-004).
+ */
 @ExtendWith(MockitoExtension.class)
 class ProductControllerOwnershipTest {
 
@@ -46,9 +49,7 @@ class ProductControllerOwnershipTest {
     @Mock
     private EventService eventService;
     @Mock
-    private UserService userService;
-    @Mock
-    private JwtService jwtService;
+    private CallerResolver callerResolver;
 
     private MockMvc mockMvc;
 
@@ -58,7 +59,7 @@ class ProductControllerOwnershipTest {
 
     @BeforeEach
     void setUp() {
-        ProductController controller = new ProductController(productService, eventService, userService, jwtService);
+        ProductController controller = new ProductController(productService, eventService, callerResolver);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
         callerId = UUID.randomUUID();
@@ -68,18 +69,16 @@ class ProductControllerOwnershipTest {
 
     @Test
     void getProductById_productOwnedByAnotherUser_returns403() throws Exception {
-        // Caller is authenticated and userId in path matches caller (passes the legacy check),
+        // Caller is authenticated and userId in path matches caller (passes the ownership check),
         // but the product actually belongs to another user -> IDOR must be blocked.
         User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
         User realOwner = new User(otherUserId, "Other", "other", "pwd", "ROLE_USER", "o@o.com");
         Product foreignProduct = new Product(productId, "foreign", null, realOwner, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(foreignProduct));
 
-        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token")))
+        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId))
                 .andExpect(status().isForbidden());
     }
 
@@ -89,12 +88,10 @@ class ProductControllerOwnershipTest {
         User realOwner = new User(otherUserId, "Other", "other", "pwd", "ROLE_USER", "o@o.com");
         Product foreignProduct = new Product(productId, "foreign", null, realOwner, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(foreignProduct));
 
-        mockMvc.perform(delete("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token")))
+        mockMvc.perform(delete("/api/users/" + callerId + "/products/" + productId))
                 .andExpect(status().isForbidden());
 
         verify(productService, never()).archiveById(productId);
@@ -105,12 +102,10 @@ class ProductControllerOwnershipTest {
         User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
         Product ownProduct = new Product(productId, "mine", null, caller, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
 
-        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token")))
+        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId))
                 .andExpect(status().isOk());
     }
 
@@ -125,13 +120,11 @@ class ProductControllerOwnershipTest {
         Product ownProduct = new Product(productId, "old", null, caller, List.of());
         Product updated = new Product(productId, "renamed", null, caller, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
         when(productService.updateProduct(eq(productId), any(ProductUpdateRequest.class))).thenReturn(updated);
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"renamed\"}"))
                 .andExpect(status().isOk())
@@ -140,13 +133,12 @@ class ProductControllerOwnershipTest {
 
     /**
      * BR-PRO-001 : nom vide -> 400 via @Valid (@Size min=1). La validation @RequestBody
-     * échoue AVANT le corps du contrôleur : aucun stub JWT/user requis (sinon
+     * échoue AVANT le corps du contrôleur : aucun stub d'identité requis (sinon
      * UnnecessaryStubbingException). Le service n'est jamais appelé.
      */
     @Test
     void patchProduct_emptyName_returns400() throws Exception {
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"\"}"))
                 .andExpect(status().isBadRequest());
@@ -162,7 +154,6 @@ class ProductControllerOwnershipTest {
     @Test
     void patchProduct_blankName_returns400() throws Exception {
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\" \"}"))
                 .andExpect(status().isBadRequest());
@@ -181,13 +172,11 @@ class ProductControllerOwnershipTest {
         Product updated = new Product(productId, "kept", null, caller, List.of());
         UUID newCategoryId = UUID.randomUUID();
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
         when(productService.updateProduct(eq(productId), any(ProductUpdateRequest.class))).thenReturn(updated);
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"categoryId\":\"" + newCategoryId + "\"}"))
                 .andExpect(status().isOk());
@@ -199,7 +188,6 @@ class ProductControllerOwnershipTest {
         String longName = "a".repeat(101);
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + longName + "\"}"))
                 .andExpect(status().isBadRequest());
@@ -212,12 +200,10 @@ class ProductControllerOwnershipTest {
     void patchProduct_productNotFound_returns404() throws Exception {
         User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.empty());
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"renamed\"}"))
                 .andExpect(status().isNotFound());
@@ -232,12 +218,10 @@ class ProductControllerOwnershipTest {
         User realOwner = new User(otherUserId, "Other", "other", "pwd", "ROLE_USER", "o@o.com");
         Product foreignProduct = new Product(productId, "foreign", null, realOwner, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(foreignProduct));
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"renamed\"}"))
                 .andExpect(status().isForbidden());
@@ -251,12 +235,10 @@ class ProductControllerOwnershipTest {
         User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
         Product ownProduct = new Product(productId, "mine", null, caller, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
 
-        mockMvc.perform(delete("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token")))
+        mockMvc.perform(delete("/api/users/" + callerId + "/products/" + productId))
                 .andExpect(status().isNoContent());
 
         verify(productService).archiveById(productId);
@@ -282,12 +264,10 @@ class ProductControllerOwnershipTest {
                 Boolean.FALSE, null, null, null, productId, Boolean.TRUE);
         Product ownProduct = new Product(productId, "mine", category, caller, List.of(event));
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
 
-        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId)
-                        .cookie(new Cookie("jwt", "caller-token")))
+        mockMvc.perform(get("/api/users/" + callerId + "/products/" + productId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(productId.toString()))
                 .andExpect(jsonPath("$.name").value("mine"))
@@ -313,12 +293,10 @@ class ProductControllerOwnershipTest {
         Category category = new Category(categoryId, "Travail");
         Product created = new Product(productId, "nouveau", category, caller, List.of());
 
-        when(jwtService.extractUsername("caller-token")).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.createProduct(any(ProductCreationRequest.class))).thenReturn(created);
 
         mockMvc.perform(post("/api/users/" + callerId + "/products")
-                        .cookie(new Cookie("jwt", "caller-token"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"nouveau\",\"category\":\"" + categoryId
                                 + "\",\"userId\":\"" + callerId + "\"}"))

@@ -14,90 +14,67 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * CRUD des produits (self-service). L'identité du caller est dérivée du JWT via le
+ * {@link CallerResolver} (#93/#154) — cookie {@code jwt} OU {@code Authorization: Bearer}
+ * résolus uniformément depuis le SecurityContext, jamais d'un param. {@code currentUser()}
+ * vide -> 401 (BR-AUT-005) ; l'ownership (path {userId} vs caller, cf. BR-PRO-004, et
+ * propriété du produit ciblé anti-IDOR) reste porté par ce contrôleur (403/404).
+ */
 @RestController
 @RequestMapping("/api")
 public class ProductController {
 
-    private final UserService userService;
     private final EventService eventService;
     private final ProductService productService;
-    private final JwtService jwtService;
+    private final CallerResolver callerResolver;
 
     @Autowired
     public ProductController(ProductService productService,
                            EventService eventService,
-                           UserService userService,
-                           JwtService jwtService) {
+                           CallerResolver callerResolver) {
         this.productService = productService;
         this.eventService = eventService;
-        this.userService = userService;
-        this.jwtService = jwtService;
+        this.callerResolver = callerResolver;
     }
 
     @PostMapping("/users/{userId}/products")
     public ResponseEntity<ProductResponse> createProduct(
             @PathVariable UUID userId,
-            @Valid @RequestBody ProductCreationRequest request,
-            @CookieValue(value = "jwt", required = false) String token) {
-        if (token == null || token.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-
-        String username;
-        try {
-            username = jwtService.extractUsername(token);
-        } catch (JwtException e) {
+            @Valid @RequestBody ProductCreationRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Optional<User> user = userService.findDomainUserByUsername(username);
-
-        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+        if (!callerOpt.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
+        // BR-PRO-004 : le {userId} du path fait autorité, il écrase l'éventuel userId du body.
         request.setUserId(userId);
         Product product = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.fromDomain(product));
     }
 
     @GetMapping("/users/{userId}/products")
-    public ResponseEntity<List<ProductResponse>> getProducts(
-            @PathVariable UUID userId,
-            @CookieValue(value = "jwt", required = false) String cookieToken,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        
-        String token = cookieToken;
-        
-        if ((token == null || token.isEmpty()) && authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        }
-        
-        if (token == null || token.isEmpty()) {
+    public ResponseEntity<List<ProductResponse>> getProducts(@PathVariable UUID userId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!callerOpt.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         try {
-            String username = jwtService.extractUsername(token);
-            Optional<User> user = userService.findDomainUserByUsername(username);
-
-            if (user.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            if (!user.get().getId().equals(userId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             List<ProductResponse> response = productService.getProductsWithEvents(userId).stream()
                     .map(ProductResponse::fromDomain)
                     .toList();
@@ -110,21 +87,12 @@ public class ProductController {
     @GetMapping("/users/{userId}/products/{productId}")
     public ResponseEntity<ProductResponse> getProductById(
             @PathVariable UUID userId,
-            @PathVariable UUID productId,
-            @CookieValue(value = "jwt", required = false) String token) {
-        if (token == null || token.isEmpty()) {
+            @PathVariable UUID productId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        String username;
-        try {
-            username = jwtService.extractUsername(token);
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Optional<User> user = userService.findDomainUserByUsername(username);
-
-        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+        if (!callerOpt.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -142,21 +110,12 @@ public class ProductController {
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable UUID userId,
             @PathVariable UUID productId,
-            @Valid @RequestBody ProductUpdateRequest request,
-            @CookieValue(value = "jwt", required = false) String token) {
-        if (token == null || token.isEmpty()) {
+            @Valid @RequestBody ProductUpdateRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        String username;
-        try {
-            username = jwtService.extractUsername(token);
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Optional<User> user = userService.findDomainUserByUsername(username);
-
-        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+        if (!callerOpt.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -177,21 +136,12 @@ public class ProductController {
     @DeleteMapping("/users/{userId}/products/{productId}")
     public ResponseEntity<Void> deleteProduct(
             @PathVariable UUID userId,
-            @PathVariable UUID productId,
-            @CookieValue(value = "jwt", required = false) String token) {
-        if (token == null || token.isEmpty()) {
+            @PathVariable UUID productId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        String username;
-        try {
-            username = jwtService.extractUsername(token);
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Optional<User> user = userService.findDomainUserByUsername(username);
-
-        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+        if (!callerOpt.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -211,21 +161,12 @@ public class ProductController {
     @GetMapping("/users/{userId}/products/{productId}/events")
     public ResponseEntity<List<EventResponse>> getEventsByProductId(
             @PathVariable UUID userId,
-            @PathVariable UUID productId,
-            @CookieValue(value = "jwt", required = false) String token) {
-        if (token == null || token.isEmpty()) {
+            @PathVariable UUID productId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        String username;
-        try {
-            username = jwtService.extractUsername(token);
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Optional<User> user = userService.findDomainUserByUsername(username);
-
-        if (user.isEmpty() || !user.get().getId().equals(userId)) {
+        if (!callerOpt.get().getId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
