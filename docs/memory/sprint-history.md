@@ -610,7 +610,7 @@
   Backlog libre (pas milestone S28 — thème E2E distinct). Ratio discard 0%.
 **Status :** Terminé
 
-## Sprint 28 — 2026-07-06 (PLANIFIE — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
+## Sprint 28 — 2026-07-06 → 2026-07-07 (Terminé — merge PR #243 dans dev — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
 **Objectif :** Corriger l'alias e2e (Playwright vs vitest) + câbler CI + specs E2E Produits/Catégories + requête produits SQL indexée.
 **Milestone GitHub :** #28
 **Issues :** #207 (S), #133 (S), #218 (M), #41 (XS) + #124 (S) combinés
@@ -618,6 +618,24 @@
 **Migrations Flyway :** aucune
 **Dépend de :** #207 débloque un vrai run Playwright pour #218 (ordre intra-sprint strict)
 **Note code-state :** test-quiet.sh lance vitest pour scope e2e (bug #207) ; test:e2e Playwright jamais appelé ; requête produits filtrée en mémoire (pas SQL indexé). ⚠ #41 scope ambigu à préciser par fullstack-dev.
-**Status :** Planifié
+**Branche :** sprint/28 (créée depuis origin/dev le 2026-07-07)
+**Milestone GitHub :** #28 (fermé après merge)
+**Status :** Terminé (2026-07-07 — merge PR #243)
+
+### Bilan exécution (2026-07-07)
+**Issues livrées (5) :** #207, #133, #124, #41 (Vague 1) ; #218 (Vague 2)
+**Vagues exécutées :** V1 = #207+#133 (devops, agent A) ∥ #124+#41 (backend, agent B), parallèles fichiers disjoints | V2 = #218 (E2E, agent C)
+**Commits (8) :** da745b8 (#207/#133) · e2e7744 (#124) · 7f56fb7 (#41) · 0548cec (done) · d0541fd (#218 specs) · 52b9c83 (artefacts) · cc73cb0 (consolidation) · b2b304a (fix e2e CI)
+**BR impactées :** BR-PRO-006 (#124 filtre SQL user_id), BR-PROD-001 (#41 produit sans event visible)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEUR (non bloquants → follow-ups)
+**Tests :** Backend 301/301 ✅ | Frontend 383/383 ✅ | E2E CI 25 pass ✅ (1er run rouge sur 2 tests catégories #218 — sélecteurs texte devinés collision titre dialog — réparé b2b304a : data-testid DeleteConfirmDialog + rewire specs)
+**CI de clôture :** 4/4 verte (backend, frontend, e2e, security) sur run 28861922835
+**Nouveaux pitfalls / patterns :** PIT-S28-001 (case-arm test partagé = faux vert) ; PAT-S28-001 (filtre @ManyToOne par id JPQL index-friendly) ; PAT-S28-002 (seed E2E storageState + page.request.post)
+**Décision scope #41 :** `getProductsWithEvents` = listing principal → fix appliqué là (nom gardé, renommage en follow-up)
+**Absorbé en cours (fix CI) :** `DeleteConfirmDialog` data-testid (RF1 issue-218) + `RECOMMAND_TEST_RUNNER` (E2E prouvées vertes en CI) — résolus par b2b304a.
+**Follow-ups arbitrés (Phase 4 triage — 3 créés issues, 0 discard) :**
+  - Renommer `getProductsWithEvents` → `getProductsByUser` [S | backend/products] → issue #244 (backlog)
+  - `deleteCategory` sans invalidation TanStack (categories.all + products.withEvents) [S | frontend/categories] → issue #245 (backlog)
+  - Re-sync context-pack cp-frontend (périmé : prétend e2e/ vide + 12 tests ; réel 6+ specs, 383 Vitest) [XS | infra] → issue #246 (backlog)
 
 > **Plan S24–S28 généré le 2026-07-06** (`/ai-env:sprint plan 5`, cohésion moyenne **0.77**). Aucun sprint < 0.3 (plus bas = S28 à 0.68). Ordre : a11y Timeline → Events 409/DTO → Résilience réseau/UI → Refactor auth (V12) → Qualité E2E/tests. **Vérif code-state architect (35 tool calls, 4 sous-agents)** a évité un Sprint-213-bis : **4 issues fermées car déjà faites** (#94 ports domaine #123, #202 isAllDay cohérent, #204 action sheet câblée, #206 EventBar/Lane utilisés). #82/#188 downsizés (résiduels déjà livrés). **Reportés au backlog (à surveiller) :** #69/#196/#219 virtualisation (Wave 7) ; #88 monétisation (ADR requis) ; #102 rate-limit Redis (nouvelle infra + ADR) ; #56 Landing DS (L) + #210 shell nav 248px (M) → candidats **S29 « design shell » dédié** ; #221 ArchUnit strict (dépend dégel #190) ; **#195 collapse par produit → re-spec nécessaire** (collapse catégorie déjà livré, viserait un toggle keyé resource.id).

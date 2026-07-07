@@ -179,7 +179,11 @@ export function DeleteConfirmDialog({
         {/* Variante category : réassignation obligatoire des produits liés. */}
         {needsReassign && (
           <div className="space-y-2">
-            <label htmlFor="reassign-select" className="text-foreground text-sm font-medium">
+            <label
+              htmlFor="reassign-select"
+              className="text-foreground text-sm font-medium"
+              data-testid="delete-reassign-label"
+            >
               {t('category.reassignLabel')}
             </label>
 
@@ -193,7 +197,11 @@ export function DeleteConfirmDialog({
                 onValueChange={setReassignTo}
                 disabled={deleting || categoriesQuery.isPending}
               >
-                <SelectTrigger id="reassign-select" aria-label={t('category.reassignLabel')}>
+                <SelectTrigger
+                  id="reassign-select"
+                  aria-label={t('category.reassignLabel')}
+                  data-testid="delete-reassign-select"
+                >
                   <SelectValue placeholder={t('category.reassignPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -224,6 +232,7 @@ export function DeleteConfirmDialog({
             variant="destructive"
             onClick={handleConfirm}
             disabled={confirmDisabled}
+            data-testid="delete-confirm-button"
           >
             {deleting && <Spinner label={t('deleting')} className="text-current" />}
             {t('confirm')}

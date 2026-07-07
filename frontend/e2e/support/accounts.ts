@@ -47,7 +47,7 @@ const RUN = `${process.env.CI_JOB_ID ?? ''}${process.pid}${Date.now().toString()
 
 export interface E2eAccount {
   /** Clé logique (sert au nom de fichier storageState). */
-  key: 'shared' | 'pwd' | 'del'
+  key: 'shared' | 'pwd' | 'del' | 'prod'
   username: string
   name: string
   email: string
@@ -128,8 +128,16 @@ export const PWD = makeAccount('pwd', 'pw')
 /** Compte THROWAWAY pour la suppression de compte (se détruit en fin de test). */
 export const DEL = makeAccount('del', 'dl')
 
+/**
+ * Compte DÉDIÉ aux parcours Produits & Catégories (#218). Les tests y seedent des
+ * catégories/produits via l'API authentifiée puis assertent sur des ids/noms UNIQUES
+ * (namespacés par timestamp) : pas de clobber inter-tests, pas besoin de `serial`.
+ * Compte séparé de SHARED pour ne pas entrelacer avec les mutations de profil settings.
+ */
+export const PROD = makeAccount('prod', 'pr')
+
 /** Tous les comptes à provisionner par le setup (ordre = ordre de register). */
-export const ALL_ACCOUNTS: readonly E2eAccount[] = [SHARED, PWD, DEL]
+export const ALL_ACCOUNTS: readonly E2eAccount[] = [SHARED, PWD, DEL, PROD]
 
 /**
  * Persiste sur disque les identités des comptes (username/name/email) pour que les

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,13 +93,28 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(product);
     }
 
+    /**
+     * Liste des produits de l'utilisateur (endpoint principal {@code GET
+     * /users/{userId}/products}).
+     *
+     * <p>#124 : le filtrage par {@code userId} est fait EN SQL via
+     * {@link ProductRepository#findByUserId} ({@code WHERE user_id = ?}, index
+     * {@code idx_products_user}) — remplace l'ancien {@code findAllProducts()} + filtre
+     * Java (full scan O(N)).
+     *
+     * <p>#41 : le filtre {@code Product::hasEvents} est SUPPRIMÉ — un produit existe
+     * indépendamment de ses événements (règle métier), donc un produit SANS événement
+     * est désormais visible. Sa liste {@code events} est vide (jamais {@code null} :
+     * garanti par {@code ProductMapper.toDomain} puis {@code ProductResponse.fromDomain}).
+     *
+     * <p>Le nom {@code getProductsWithEvents} devient un léger abus (la méthode liste
+     * TOUS les produits) — conservé pour ne pas propager un renommage au port/controller/
+     * tests dans ce sprint ; renommage possible en follow-up.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Product> getProductsWithEvents(UUID userId) {
-        return productRepository.findAllProducts().stream()
-                .filter(product -> product.getUser().getId().equals(userId))
-                .filter(Product::hasEvents)
-                .collect(Collectors.toList());
+        return productRepository.findByUserId(userId);
     }
 
     @Override

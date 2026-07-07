@@ -77,6 +77,96 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
         return product;
     }
 
+    private EventEntity persistEvent(ProductEntity product) {
+        EventEntity event = new EventEntity();
+        event.setTitle("p124-event-" + UUID.randomUUID());
+        event.setType("single");
+        event.setProduct(product);
+        em.persist(event);
+        return event;
+    }
+
+    // -------------------------------------------------------------------------
+    // #124 / #41 — findByUserId : filtre user_id EN SQL + produits sans event visibles
+    // -------------------------------------------------------------------------
+
+    /**
+     * #124 : findByUserId ne retourne QUE les produits du user ciblé (filtre SQL
+     * WHERE user_id = ?), jamais ceux d'un autre utilisateur.
+     */
+    @Test
+    void findByUserId_returnsOnlyOwnProducts_excludesOtherUser() {
+        UserEntity user = persistUser();
+        UserEntity other = persistUser();
+        CategoryEntity category = persistCategory();
+        ProductEntity mine = persistProduct(user, category, false);
+        ProductEntity foreign = persistProduct(other, category, false);
+        em.flush();
+        em.clear();
+
+        List<UUID> ids = productRepository.findByUserId(user.getId()).stream().map(Product::getId).toList();
+
+        assertThat(ids).contains(mine.getId());
+        assertThat(ids).doesNotContain(foreign.getId());
+    }
+
+    /**
+     * #41 : un produit SANS événement apparaît dans la liste, avec events == [] (pas null).
+     * L'ancien filter(hasEvents) le masquait.
+     */
+    @Test
+    void findByUserId_includesProductWithoutEvents_eventsEmptyNotNull() {
+        UserEntity user = persistUser();
+        CategoryEntity category = persistCategory();
+        ProductEntity noEvents = persistProduct(user, category, false);
+        em.flush();
+        em.clear();
+
+        List<Product> products = productRepository.findByUserId(user.getId());
+
+        Product found = products.stream()
+                .filter(p -> p.getId().equals(noEvents.getId()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(found.getEvents()).isNotNull().isEmpty();
+    }
+
+    /** #41 non-régression : un produit AVEC événements expose bien ses events. */
+    @Test
+    void findByUserId_productWithEvents_eventsPopulated() {
+        UserEntity user = persistUser();
+        CategoryEntity category = persistCategory();
+        ProductEntity withEvents = persistProduct(user, category, false);
+        persistEvent(withEvents);
+        persistEvent(withEvents);
+        em.flush();
+        em.clear();
+
+        List<Product> products = productRepository.findByUserId(user.getId());
+
+        Product found = products.stream()
+                .filter(p -> p.getId().equals(withEvents.getId()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(found.getEvents()).hasSize(2);
+    }
+
+    /** #124 + soft delete : findByUserId n'expose pas les produits archivés (@SQLRestriction). */
+    @Test
+    void findByUserId_excludesArchivedProducts() {
+        UserEntity user = persistUser();
+        CategoryEntity category = persistCategory();
+        ProductEntity active = persistProduct(user, category, false);
+        ProductEntity archived = persistProduct(user, category, true);
+        em.flush();
+        em.clear();
+
+        List<UUID> ids = productRepository.findByUserId(user.getId()).stream().map(Product::getId).toList();
+
+        assertThat(ids).contains(active.getId());
+        assertThat(ids).doesNotContain(archived.getId());
+    }
+
     /** Un produit archivé n'apparaît pas dans findAllProducts() (base du listing GET). */
     @Test
     void archivedProduct_isHiddenFromFindAllProducts() {

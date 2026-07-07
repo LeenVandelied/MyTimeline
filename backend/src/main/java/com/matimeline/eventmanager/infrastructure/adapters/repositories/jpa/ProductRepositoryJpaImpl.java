@@ -45,6 +45,29 @@ public class ProductRepositoryJpaImpl
         return findAll().stream().map(productMapper::toDomain).toList();
     }
 
+    // #124 — Filtrage user_id EN SQL (remplace findAllProducts() + filtre Java du
+    // service). Le prédicat p.user.id se compile sur la colonne FK user_id (pas de
+    // jointure vers users), donc le WHERE porte directement sur user_id -> l'index
+    // idx_products_user (Sprint 5, #110) est éligible. @SQLRestriction("archived =
+    // false") de ProductEntity ajoute automatiquement archived = false au WHERE.
+    // #41 — LEFT JOIN FETCH p.events : ramène les produits SANS événement (INNER
+    // JOIN les exclurait) et pré-charge la collection (@OneToMany LAZY) pour éviter
+    // le N+1 au mapping. SELECT DISTINCT : dé-duplique le parent quand la jointure
+    // multiplie les lignes (produit à N events).
+    @Override
+    public List<Product> findByUserId(UUID userId) {
+        return entityManager.createQuery(
+                        "SELECT DISTINCT p FROM ProductEntity p "
+                                + "LEFT JOIN FETCH p.events "
+                                + "WHERE p.user.id = :userId",
+                        ProductEntity.class)
+                .setParameter("userId", userId)
+                .getResultList()
+                .stream()
+                .map(productMapper::toDomain)
+                .toList();
+    }
+
     @Override
     public Product save(Product domainProduct) {
         // Le domaine ne porte PAS @Version : une entité reconstruite par le mapper est

@@ -151,6 +151,47 @@ class ProductServiceImplTest {
     }
 
     // -------------------------------------------------------------------------
+    // getProductsWithEvents (#124 filtre SQL user_id / #41 produits sans event visibles)
+    // -------------------------------------------------------------------------
+
+    /**
+     * #124 : le service délègue à findByUserId (filtre user_id EN SQL) et n'appelle
+     * PLUS findAllProducts() (ex-full scan + filtre Java par userId).
+     */
+    @Test
+    void getProductsWithEvents_delegatesToFindByUserId_notFindAll() {
+        when(productRepository.findByUserId(callerId)).thenReturn(new ArrayList<>());
+
+        service.getProductsWithEvents(callerId);
+
+        verify(productRepository).findByUserId(callerId);
+        verify(productRepository, never()).findAllProducts();
+    }
+
+    /**
+     * #41 : un produit SANS événement (events == []) reste dans la liste — plus de
+     * filter(hasEvents) qui l'excluait. Le service renvoie tel quel ce que le repo
+     * (déjà filtré par user en SQL) retourne, sans re-filtrer.
+     */
+    @Test
+    void getProductsWithEvents_returnsProductWithoutEvents() {
+        Category ownCategory = new Category(categoryId, "Mienne", "#000", "desc", callerId);
+        Product noEvents = new Product(productId, "SansEvent", ownCategory, caller, new ArrayList<>());
+        Product withEvents = new Product(UUID.randomUUID(), "AvecEvent", ownCategory, caller, new ArrayList<>());
+        withEvents.addEvent(new com.matimeline.eventmanager.domain.models.Event(
+                UUID.randomUUID(), "e", "single", null, null, false, null, null, null, withEvents.getId(), false));
+
+        when(productRepository.findByUserId(callerId)).thenReturn(List.of(noEvents, withEvents));
+
+        List<Product> result = service.getProductsWithEvents(callerId);
+
+        assertThat(result).containsExactly(noEvents, withEvents);
+        assertThat(result.get(0).hasEvents()).isFalse();
+        assertThat(result.get(0).getEvents()).isEmpty(); // events == [] (pas null)
+        assertThat(result.get(1).hasEvents()).isTrue();   // non-régression produit avec events
+    }
+
+    // -------------------------------------------------------------------------
     // updateProduct (PATCH categoryId)
     // -------------------------------------------------------------------------
 
