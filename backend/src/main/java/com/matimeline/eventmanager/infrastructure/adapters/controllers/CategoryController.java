@@ -14,10 +14,8 @@ import com.matimeline.eventmanager.application.dtos.CategoryUpdateRequest;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 
 /**
@@ -26,48 +24,46 @@ import jakarta.validation.Valid;
  * (ownerId NULL) sont lisibles de tous mais modifiables par personne.
  *
  * <p>Hexagonal (AP-CAT-01/02) : dépend du PORT {@code CategoryService} (pas de l'impl)
- * et de {@code JwtService}/{@code UserService} pour dériver l'identité du JWT (cookie
- * {@code jwt}), jamais d'un param. AP-CAT-03 : entrées/sorties = DTOs, jamais le domain
- * model brut. AP-CAT-04 : plus de double {@code existsById} — le service porte le 404.
+ * et de {@code CallerResolver} (infra/security) pour dériver l'identité du JWT via le
+ * SecurityContext (cookie {@code jwt} OU Bearer, #93), jamais d'un param. AP-CAT-03 :
+ * entrées/sorties = DTOs, jamais le domain model brut. AP-CAT-04 : plus de double
+ * {@code existsById} — le service porte le 404.
  */
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final UserService userService;
-    private final JwtService jwtService;
+    private final CallerResolver callerResolver;
 
     public CategoryController(CategoryService categoryService,
-                              UserService userService,
-                              JwtService jwtService) {
+                              CallerResolver callerResolver) {
         this.categoryService = categoryService;
-        this.userService = userService;
-        this.jwtService = jwtService;
+        this.callerResolver = callerResolver;
     }
 
     @PostMapping
-    public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequest request,
-                                            @CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
         Category created = categoryService.createCategory(
                 request.getName(), request.getColor(), request.getDescription(), caller.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(CategoryResponse.fromDomain(created));
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllCategories(
-            @CookieValue(value = "jwt", required = false) String token) {
+    public ResponseEntity<?> getAllCategories() {
         // FIX review #153 : listing SCOPÉ au caller + catégories système (owner NULL).
         // Sans ce filtre, GET renvoyait les catégories de TOUS les utilisateurs (fuite
         // cross-tenant). Identité dérivée du JWT (401 si absent/invalide).
-        User caller = resolveCaller(token);
-        if (caller == null) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
         List<CategoryResponse> body = categoryService.getCategoriesForOwner(caller.getId()).stream()
                 .map(CategoryResponse::fromDomain)
                 .toList();
@@ -75,16 +71,15 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCategoryById(
-            @PathVariable UUID id,
-            @CookieValue(value = "jwt", required = false) String token) {
+    public ResponseEntity<?> getCategoryById(@PathVariable UUID id) {
         // FIX review #153 : lecture au singulier SCOPÉE. 401 si non authentifié ; 404 si
         // la catégorie n'est ni possédée par le caller ni système (anti fuite cross-tenant
         // + anti-énumération : on ne distingue pas « inexistante » de « appartient à autrui »).
-        User caller = resolveCaller(token);
-        if (caller == null) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
         return categoryService.getCategoryById(id)
                 .filter(c -> isVisibleTo(c, caller.getId()))
                 .<ResponseEntity<?>>map(c -> ResponseEntity.ok(CategoryResponse.fromDomain(c)))
@@ -93,12 +88,12 @@ public class CategoryController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateCategory(@PathVariable UUID id,
-                                            @Valid @RequestBody CategoryUpdateRequest request,
-                                            @CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+                                            @Valid @RequestBody CategoryUpdateRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
 
         Optional<Category> existing = categoryService.getCategoryById(id);
         if (existing.isEmpty()) {
@@ -117,12 +112,12 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(
             @PathVariable UUID id,
-            @RequestParam(value = "reassignToCategoryId", required = false) UUID reassignToCategoryId,
-            @CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+            @RequestParam(value = "reassignToCategoryId", required = false) UUID reassignToCategoryId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
 
         Optional<Category> target = categoryService.getCategoryById(id);
         if (target.isEmpty()) {
@@ -162,22 +157,5 @@ public class CategoryController {
      */
     private boolean isVisibleTo(Category category, UUID callerId) {
         return category.getOwnerId() == null || category.getOwnerId().equals(callerId);
-    }
-
-    /**
-     * Résout le {@code User} authentifié depuis le JWT (cookie {@code jwt}), ou
-     * {@code null} si absent/malformé/expiré/invalide ou utilisateur inconnu.
-     * Identité dérivée du JWT, jamais d'un param — même principe que UserController.
-     */
-    private User resolveCaller(String token) {
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-        try {
-            String username = jwtService.extractUsername(token);
-            return userService.findDomainUserByUsername(username).orElse(null);
-        } catch (JwtException e) {
-            return null;
-        }
     }
 }

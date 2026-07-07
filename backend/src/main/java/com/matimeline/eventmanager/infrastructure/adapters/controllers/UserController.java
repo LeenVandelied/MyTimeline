@@ -21,9 +21,8 @@ import com.matimeline.eventmanager.domain.models.AvatarContent;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.AvatarService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -36,9 +35,10 @@ import jakarta.validation.Valid;
  * {@code .anyRequest().authenticated()} de {@code SecurityConfig} + {@code JwtFilter}
  * (qui ne bypass QUE {@code /api/auth/**}).
  *
- * <p>Hexagonal (A8) : dépend des PORTS ({@code UserService}) et de {@code JwtService}
- * (infra), pas du concret {@code UserServiceImpl}. La logique de change-password
- * (vérif ancien hash + re-hash) vit dans {@code UserServiceImpl} via le port, pas ici.
+ * <p>Hexagonal (A8) : dépend des PORTS ({@code UserService}) et de {@code CallerResolver}
+ * (infra/security, identité via SecurityContext #93), pas du concret {@code UserServiceImpl}.
+ * La logique de change-password (vérif ancien hash + re-hash) vit dans {@code UserServiceImpl}
+ * via le port, pas ici.
  *
  * <p>BR-AUT-008 : aucune réponse n'expose le hash — {@code GET}/{@code PATCH} renvoient
  * {@code UserResponse} (projection sans {@code password}).
@@ -48,15 +48,15 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
-    private final JwtService jwtService;
+    private final CallerResolver callerResolver;
     // #75 : gestion avatar via le PORT (A8/DIP), jamais l'impl concrète.
     private final AvatarService avatarService;
 
     public UserController(UserService userService,
-                          JwtService jwtService,
+                          CallerResolver callerResolver,
                           AvatarService avatarService) {
         this.userService = userService;
-        this.jwtService = jwtService;
+        this.callerResolver = callerResolver;
         this.avatarService = avatarService;
     }
 
@@ -77,12 +77,12 @@ public class UserController {
      * GET /api/me — profil de l'utilisateur courant SANS hash (BR-AUT-008).
      */
     @GetMapping
-    public ResponseEntity<?> getCurrentUser(@CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> getCurrentUser() {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(UserResponse.fromDomain(caller));
+        return ResponseEntity.ok(UserResponse.fromDomain(callerOpt.get()));
     }
 
     /**
@@ -91,12 +91,12 @@ public class UserController {
      * BR-AUT-008 : renvoie {@code UserResponse} (jamais le hash).
      */
     @PatchMapping
-    public ResponseEntity<?> updateCurrentUser(@Valid @RequestBody UserUpdateRequest request,
-                                               @CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> updateCurrentUser(@Valid @RequestBody UserUpdateRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
 
         // BR-AUT-001 : unicité du username. On rejette si le username demandé est déjà
         // pris par un AUTRE compte (id différent). Le changement vers son propre username
@@ -132,12 +132,12 @@ public class UserController {
      * mappée par {@code GlobalExceptionHandler}), 204 en cas de succès.
      */
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request,
-                                            @CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
 
         userService.changePassword(caller, request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.noContent().build();
@@ -158,12 +158,12 @@ public class UserController {
      */
     @DeleteMapping
     public ResponseEntity<?> deleteCurrentUser(@Valid @RequestBody DeleteAccountRequest request,
-                                               @CookieValue(value = "jwt", required = false) String token,
                                                HttpServletResponse response) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
 
         // Mismatch username -> AccountDeletionMismatchException (400) levée ici, AVANT toute
         // écriture. Sinon suppression ordonnée + révocation sessions dans la transaction.
@@ -187,12 +187,12 @@ public class UserController {
      * Succès -> 200 + {@code UserResponse} (contient {@code avatarUrl} = /api/me/avatar).
      */
     @PostMapping(path = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file,
-                                          @CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
 
         byte[] content;
         try {
@@ -218,11 +218,12 @@ public class UserController {
      * authentifié. Content-Type dérivé du type réel stocké (jpeg/png/webp).
      */
     @GetMapping("/avatar")
-    public ResponseEntity<?> getAvatar(@CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> getAvatar() {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        User caller = callerOpt.get();
         AvatarContent avatar = avatarService.getAvatar(caller);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(avatar.contentType()))
@@ -235,12 +236,12 @@ public class UserController {
      * authentifié ; 204 sinon. Ownership structurel : agit sur le caller (JWT) uniquement.
      */
     @DeleteMapping("/avatar")
-    public ResponseEntity<?> deleteAvatar(@CookieValue(value = "jwt", required = false) String token) {
-        User caller = resolveCaller(token);
-        if (caller == null) {
+    public ResponseEntity<?> deleteAvatar() {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        avatarService.deleteAvatar(caller);
+        avatarService.deleteAvatar(callerOpt.get());
         return ResponseEntity.noContent().build();
     }
 
@@ -260,22 +261,5 @@ public class UserController {
         jwtCookie.setMaxAge(0);
         jwtCookie.setAttribute("SameSite", COOKIE_SAME_SITE);
         return jwtCookie;
-    }
-
-    /**
-     * Résout le {@code User} authentifié depuis le JWT, ou {@code null} si le token
-     * est absent/malformé/expiré/invalide ({@code JwtException}) ou l'utilisateur
-     * inconnu. Identité dérivée du JWT, jamais d'un param.
-     */
-    private User resolveCaller(String token) {
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-        try {
-            String username = jwtService.extractUsername(token);
-            return userService.findDomainUserByUsername(username).orElse(null);
-        } catch (JwtException e) {
-            return null;
-        }
     }
 }

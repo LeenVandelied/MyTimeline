@@ -35,8 +35,7 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInval
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 /**
  * Issue #52 — CRUD catégorie + ownership (ADR-002).
@@ -49,8 +48,7 @@ import com.matimeline.eventmanager.infrastructure.security.JwtService;
 class CategoryControllerTest {
 
     @Mock private CategoryService categoryService;
-    @Mock private UserService userService;
-    @Mock private JwtService jwtService;
+    @Mock private CallerResolver callerResolver;
 
     private MockMvc mockMvc;
 
@@ -60,7 +58,7 @@ class CategoryControllerTest {
 
     @BeforeEach
     void setUp() {
-        CategoryController controller = new CategoryController(categoryService, userService, jwtService);
+        CategoryController controller = new CategoryController(categoryService, callerResolver);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -69,9 +67,11 @@ class CategoryControllerTest {
         caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
     }
 
+    // #93 : identité résolue via CallerResolver (SecurityContext), plus via le cookie brut.
+    // Les tests noJwt n'appellent pas stubCaller() -> currentUser() renvoie Optional.empty()
+    // par défaut (Mockito) -> 401, préservant le contrat.
     private void stubCaller() {
-        when(jwtService.extractUsername(TOKEN)).thenReturn("caller");
-        when(userService.findDomainUserByUsername("caller")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
     }
 
     private Category owned(UUID id, String name) {

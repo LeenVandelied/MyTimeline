@@ -19,10 +19,8 @@ import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
-import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 
 @RestController
@@ -31,31 +29,24 @@ public class EventController {
 
     private final EventService eventService;
     private final ProductService productService;
-    private final UserService userService;
-    private final JwtService jwtService;
+    private final CallerResolver callerResolver;
 
     @Autowired
     public EventController(EventService eventService,
                            ProductService productService,
-                           UserService userService,
-                           JwtService jwtService) {
+                           CallerResolver callerResolver) {
         this.eventService = eventService;
         this.productService = productService;
-        this.userService = userService;
-        this.jwtService = jwtService;
+        this.callerResolver = callerResolver;
     }
 
     @PostMapping
-    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreationRequest request,
-                                             @CookieValue(value = "jwt", required = false) String token) {
-        if (token == null || token.isEmpty()) {
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreationRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        User caller = resolveCaller(token);
-        if (caller == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        User caller = callerOpt.get();
 
         Optional<Product> product = productService.findDomainProductById(request.getProductId());
         if (product.isEmpty()) {
@@ -76,9 +67,8 @@ public class EventController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<EventResponse> updateEvent(@PathVariable UUID id,
-                                             @Valid @RequestBody EventUpdateRequest request,
-                                             @CookieValue(value = "jwt", required = false) String token) {
-        ResponseEntity<EventResponse> denied = checkEventOwnership(id, token);
+                                             @Valid @RequestBody EventUpdateRequest request) {
+        ResponseEntity<EventResponse> denied = checkEventOwnership(id);
         if (denied != null) {
             return denied;
         }
@@ -87,9 +77,8 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable UUID id,
-                                            @CookieValue(value = "jwt", required = false) String token) {
-        ResponseEntity<EventResponse> denied = checkEventOwnership(id, token);
+    public ResponseEntity<Void> deleteEvent(@PathVariable UUID id) {
+        ResponseEntity<EventResponse> denied = checkEventOwnership(id);
         if (denied != null) {
             return ResponseEntity.status(denied.getStatusCode()).build();
         }
@@ -134,17 +123,15 @@ public class EventController {
      * confirmed. An ownership violation throws AccessDeniedException, qui remonte jusqu'au
      * ExceptionTranslationFilter de Spring Security et est routée vers
      * SecurityConfig.accessDeniedHandler — l'unique émetteur du corps 403 {"error":"forbidden"}
-     * (#119, BR-AUT-007). Identity is derived from the JWT, never from a path param.
+     * (#119, BR-AUT-007). Identité résolue via {@link CallerResolver} (SecurityContext peuplé par
+     * JwtFilter, cookie OU Bearer), jamais d'un path param.
      */
-    private ResponseEntity<EventResponse> checkEventOwnership(UUID eventId, String token) {
-        if (token == null || token.isEmpty()) {
+    private ResponseEntity<EventResponse> checkEventOwnership(UUID eventId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        User caller = resolveCaller(token);
-        if (caller == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        User caller = callerOpt.get();
 
         Optional<Event> event = eventService.findEventById(eventId);
         if (event.isEmpty()) {
@@ -162,19 +149,5 @@ public class EventController {
         }
 
         return null;
-    }
-
-    /**
-     * Resolves the authenticated User from the JWT, or null when the token is
-     * malformed/expired/invalid (JwtException) or the user is unknown.
-     * Identity is derived from the JWT, never from a path or body param.
-     */
-    private User resolveCaller(String token) {
-        try {
-            String username = jwtService.extractUsername(token);
-            return userService.findDomainUserByUsername(username).orElse(null);
-        } catch (JwtException e) {
-            return null;
-        }
     }
 }

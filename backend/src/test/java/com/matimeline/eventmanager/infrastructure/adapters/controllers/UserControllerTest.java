@@ -38,7 +38,7 @@ import com.matimeline.eventmanager.domain.models.AvatarContent;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.AvatarService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
-import com.matimeline.eventmanager.infrastructure.security.JwtService;
+import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 /**
  * Issue #70 — endpoints profil (/api/me).
@@ -55,7 +55,7 @@ class UserControllerTest {
     @Mock
     private UserService userService;
     @Mock
-    private JwtService jwtService;
+    private CallerResolver callerResolver;
     @Mock
     private AvatarService avatarService;
 
@@ -68,7 +68,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        UserController controller = new UserController(userService, jwtService, avatarService);
+        UserController controller = new UserController(userService, callerResolver, avatarService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -76,9 +76,11 @@ class UserControllerTest {
         caller = new User(UUID.randomUUID(), "Alice", "alice", HASH, "ROLE_USER", "alice@example.com");
     }
 
+    // #93 : identité résolue via CallerResolver (SecurityContext), plus via le cookie brut.
+    // Les tests sans auth n'appellent pas ce helper -> currentUser() = Optional.empty()
+    // (défaut Mockito) -> 401.
     private void stubAuthenticatedCaller() {
-        when(jwtService.extractUsername(TOKEN)).thenReturn("alice");
-        when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(caller));
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
     }
 
     // ----- BR-AUT-008 : aucun hash exposé -----
