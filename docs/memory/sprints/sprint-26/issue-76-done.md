@@ -1,6 +1,12 @@
 # Issue #76 — Bus d'état réseau + bannière offline/timeout/erreur serveur
 
-commits: [979c6d7]
+commits: [492000a, <fixup-prerender>]
+
+## FIX prerender SSG (coordinateur)
+Régression build : `OfflineBanner` (useTranslations('network')) était monté dans le layout RACINE `frontend/app/layout.tsx`, hors `NextIntlClientProvider` (présent uniquement dans `app/[locale]/layout.tsx`) → throw au prerender SSG (0/26 pages).
+Correctif : `NetworkStatusProvider` + `<OfflineBanner/>` déplacés du layout racine vers `app/[locale]/layout.tsx`, SOUS `NextIntlClientProvider`. `QueryProvider` reste à la racine (ancêtre → `useQueryClient` OK).
+Validation : `npm run build` exit 0, **26/26 pages statiques générées** ; `npx vitest run` = **383/383 verts**.
+[MEMORY:pitfall] Context: composant `useTranslations` monté au layout racine Next App Router. Solution: tout composant i18n doit vivre sous `NextIntlClientProvider` (= layout `[locale]`), jamais au root layout, sinon prerender SSG throw. Prevention: providers i18n-dépendants → layout `[locale]`.
 
 ## resume
 Objectif : détecter perte réseau / timeout / 5xx et l'exposer via une bannière système DS + désactiver les submits offline.
