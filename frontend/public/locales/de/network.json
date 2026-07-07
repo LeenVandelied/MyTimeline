@@ -1,0 +1,16 @@
+{
+  "offline": {
+    "message": "Sie sind offline. Prüfen Sie Ihre Verbindung.",
+    "hint": "Offline nicht verfügbar"
+  },
+  "retrying": {
+    "message": "Verbindung wird erneut versucht…"
+  },
+  "timeout": {
+    "message": "Der Server antwortet zu langsam."
+  },
+  "server-error": {
+    "message": "Ein Serverfehler ist aufgetreten."
+  },
+  "retry": "Erneut versuchen"
+}

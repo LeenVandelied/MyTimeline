@@ -7,6 +7,8 @@ import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/contexts/QueryProvider'
+import { NetworkStatusProvider } from '@/contexts/NetworkStatusContext'
+import { OfflineBanner } from '@/components/shared/OfflineBanner'
 
 /**
  * Polices self-hostées via next/font (zéro requête Google en prod).
@@ -51,8 +53,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             {/* #48 : QueryClientProvider entre AuthProvider et {children}.
-                Ordre final imposé : Theme > Auth > Query > children. */}
-            <QueryProvider>{children}</QueryProvider>
+                #76 : NetworkStatusProvider sous Query (dépend de useQueryClient
+                pour le re-essai). La bannière est rendue en tête de l'app —
+                sticky top:0, au-dessus des sheets (z-netbanner) → visible sur
+                tous les écrans (Timeline, formulaire événement…). */}
+            <QueryProvider>
+              <NetworkStatusProvider>
+                <OfflineBanner />
+                {children}
+              </NetworkStatusProvider>
+            </QueryProvider>
           </AuthProvider>
         </ThemeProvider>
         <Toaster position="top-right" />

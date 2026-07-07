@@ -17,6 +17,7 @@ import { Spinner } from './ui/spinner'
 import { PopoverPicker } from './ui/popoverPicker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
 import { ConflictDialog } from './shared/ConflictDialog'
+import { useNetworkStatus } from '@/contexts/NetworkStatusContext'
 import { contrastInk } from '@/lib/color'
 import {
   createEventEditSchema,
@@ -109,6 +110,10 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   const tDetails = useTranslations('products.details')
   const tCommon = useTranslations('common')
   const tErr = useTranslations('validation.event')
+  const tNet = useTranslations('network')
+  // #76 — hors ligne : on désactive les actions mutantes (submit/suppression)
+  // pour éviter une soumission « dans le vide ». La bannière réseau explique le pourquoi.
+  const { isOnline } = useNetworkStatus()
 
   const form = useForm<EventEditFormValues>({
     resolver: zodResolver(createEventEditSchema((key) => tErr(key))),
@@ -460,7 +465,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     variant="ghost"
                     className="text-destructive"
                     onClick={() => setDeleteOpen(true)}
-                    disabled={submitting}
+                    disabled={submitting || !isOnline}
                     data-testid="event-form-delete"
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
@@ -482,7 +487,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   <Button
                     type="submit"
                     className="bg-accent hover:bg-accent-hover text-accent-ink"
-                    disabled={submitting}
+                    disabled={submitting || !isOnline}
+                    title={!isOnline ? tNet('offline.hint') : undefined}
                     data-testid="event-form-submit"
                   >
                     {submitting && (

@@ -54,6 +54,7 @@
   --z-popover: 50; /* @kind other */
   --z-toast:   60; /* @kind other */
   --z-modal:   70; /* @kind other */
+  --z-netbanner: 80; /* #76 bannière réseau : AU-DESSUS des sheets/modales (z-modal) @kind other */
 }
 
 .dark,

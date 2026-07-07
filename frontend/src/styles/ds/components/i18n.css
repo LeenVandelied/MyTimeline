@@ -116,8 +116,10 @@
 .mt-sysbanner{transform:none; transition:transform .2s cubic-bezier(.32,.72,0,1);}
 .mt-sysbanner--enter{transform:translateY(-100%);}
 @media (prefers-reduced-motion:reduce){ .mt-sysbanner{transition:none;} }
-/* Au-dessus des bottom sheets : la bannière reste visible quand un sheet est ouvert. */
-.mt-sysbanner--sticky{position:sticky; top:0; z-index:60;}
+/* Au-dessus des bottom sheets : la bannière reste visible quand un sheet est ouvert.
+   #76 — z-index via token --z-netbanner (80) > --z-modal (70, sheets/modales).
+   L'ancienne valeur 60 (= --z-toast) passait SOUS les sheets : corrigé. */
+.mt-sysbanner--sticky{position:sticky; top:0; z-index:var(--z-netbanner);}
 /* Sous-état des boutons submit quand offline : mat + non cliquable (le title porte le hint). */
 .mt-btn[data-net="offline"], [data-net="offline"] .mt-btn--net{
   opacity:.5; cursor:not-allowed; filter:grayscale(.35); pointer-events:none;
