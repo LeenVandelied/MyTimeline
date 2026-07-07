@@ -41,10 +41,11 @@ import {
 
 test.use({ storageState: PROD.storageState })
 
-// Libellés i18n (fr figé) là où DeleteConfirmDialog n'expose PAS de data-testid.
-// Source : public/locales/fr/common.json > deleteDialog.
-const CONFIRM_DELETE = 'Supprimer' // deleteDialog.confirm
-const REASSIGN_LABEL = 'Déplacer les produits vers…' // deleteDialog.category.reassignLabel
+// DeleteConfirmDialog expose des data-testid stables (RF1 #218) : on cible ces
+// hooks plutôt que des libellés i18n devinés (anti-fragilité, cf. fix CI e2e).
+//   - `delete-confirm-button`  : bouton de confirmation de suppression.
+//   - `delete-reassign-label`  : libellé du bloc de réassignation (rendu ssi produits liés).
+//   - `delete-reassign-select` : trigger du <Select> de réassignation.
 
 test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
   // Critère 1 — création via le drawer.
@@ -96,10 +97,11 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await page.getByTestId(`categories-delete-${cat.id}`).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
-    // 0 produit lié -> pas de select de réassignation.
-    await expect(dialog.getByText(REASSIGN_LABEL)).toHaveCount(0)
+    // 0 produit lié -> ni libellé ni select de réassignation.
+    await expect(page.getByTestId('delete-reassign-label')).toHaveCount(0)
+    await expect(page.getByTestId('delete-reassign-select')).toHaveCount(0)
 
-    await dialog.getByRole('button', { name: CONFIRM_DELETE }).click()
+    await page.getByTestId('delete-confirm-button').click()
 
     // deleteCategory direct (pas d'invalidation) -> reload pour observer l'état backend.
     await openCategoriesTab(page)
@@ -126,15 +128,15 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await page.getByTestId(`categories-delete-${source.id}`).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
-    // Produits liés -> le select de réassignation est requis.
-    await expect(dialog.getByText(REASSIGN_LABEL)).toBeVisible()
+    // Produits liés -> le bloc de réassignation est requis.
+    await expect(page.getByTestId('delete-reassign-label')).toBeVisible()
 
-    // Select de réassignation : id stable (`#reassign-select`, DeleteConfirmDialog).
+    // Select de réassignation ciblé par data-testid stable (DeleteConfirmDialog).
     // Cible = uniquement `target` (la source est exclue des cibles).
-    await page.locator('#reassign-select').click()
+    await page.getByTestId('delete-reassign-select').click()
     await page.getByRole('option', { name: target.name }).click()
 
-    await dialog.getByRole('button', { name: CONFIRM_DELETE }).click()
+    await page.getByTestId('delete-confirm-button').click()
 
     // API réelle : produits de `source` réassignés atomiquement vers `target`.
     // Reload (deleteCategory sans invalidation) puis vérif de l'état persistant.

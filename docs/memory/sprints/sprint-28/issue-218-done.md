@@ -32,3 +32,19 @@ recommandations suite:
 
 STATUS: PARTIAL
 BLOQUE_SUR: run e2e réel impossible (front dev MyTimeline absent de :3000); specs écrites+listées (7/7), non exécutées live → RECOMMAND_TEST_RUNNER.
+
+## Fix CI e2e (post-review)
+
+Contexte : CI e2e ROUGE sur 2 tests `categories.spec.ts` (l.90 suppression sans produits → timeout click confirm ; l.110 réassignation → `getByText(REASSIGN_LABEL)` introuvable). Cause : sélecteurs fragiles (role/name + libellé i18n) sur `DeleteConfirmDialog` sans data-testid. Résout aussi RF1 du follow-up.
+
+Résolution : data-testid stables ajoutés au composant + specs rewirées.
+
+Fichiers touchés :
+- `frontend/src/components/shared/DeleteConfirmDialog.tsx` : ajout `data-testid="delete-confirm-button"` (Button confirmer), `data-testid="delete-reassign-label"` (label réassignation, rendu ssi `needsReassign`), `data-testid="delete-reassign-select"` (SelectTrigger). Attributs plats forwardés via `...props` (Button/SelectTrigger) — non-breaking.
+- `frontend/e2e/categories.spec.ts` : suppression des constantes fragiles `CONFIRM_DELETE`/`REASSIGN_LABEL` et du selector `#reassign-select`. Test l.90 (sans produits) : assert `delete-reassign-label` ET `delete-reassign-select` `toHaveCount(0)`, puis click direct `delete-confirm-button`. Test l.110 (avec produits) : `delete-reassign-label` visible, ouverture du select via `delete-reassign-select`, sélection option, confirm via `delete-confirm-button`.
+
+Comment les 2 tests sont réparés :
+- l.90 : le click ne dépend plus de `getByRole('button',{name:'Supprimer'})` (ambigu avec le titre « Supprimer cette catégorie ? ») → cible unique `delete-confirm-button`, plus de timeout.
+- l.110 : l'attente ne dépend plus d'un libellé i18n exact (ellipsis U+2026) → cible `delete-reassign-label` (testid stable), rendu dès `linkedProductsCount > 0`.
+
+Vérif locale : `--list` playwright → compilation OK, 0 erreur ; aucune réf résiduelle `CONFIRM_DELETE`/`REASSIGN_LABEL`/`#reassign-select`. Run live non exécuté (:3000 occupé par serveur étranger) → validation finale par CI post-push.
