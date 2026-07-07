@@ -146,15 +146,15 @@ public class UserController {
     /**
      * DELETE /api/me — supprime DÉFINITIVEMENT le compte du caller (#78, RGPD droit à
      * l'effacement). Confirmation par re-saisie du {@code username} (double-sécurité UX) :
-     * l'identité vient TOUJOURS du JWT ({@code resolveCaller}), jamais du body.
+     * l'identité vient TOUJOURS du JWT ({@code CallerResolver#currentUser()}), jamais du body.
      *
      * <p>Flux : 401 si non authentifié ; 400 si body absent/vide (@Valid) ou username !=
      * caller ({@code AccountDeletionMismatchException}, GlobalExceptionHandler) ; sinon la
      * purge ordonnée (events -> products archivés inclus -> catégories possédées -> user)
      * + révocation des sessions s'exécute dans UNE transaction ({@code UserService}). En
      * cas de succès : cookie {@code jwt} effacé (MaxAge=0, BR-AUT-010) + 204 sans body.
-     * Un 2e appel avec le même token -> {@code resolveCaller} renvoie null (user purgé) ->
-     * 401 (BR-AUT-011).
+     * Un 2e appel avec le même token -> {@code CallerResolver#currentUser()} renvoie
+     * {@code Optional.empty()} (user purgé) -> 401 (BR-AUT-011).
      */
     @DeleteMapping
     public ResponseEntity<?> deleteCurrentUser(@Valid @RequestBody DeleteAccountRequest request,
