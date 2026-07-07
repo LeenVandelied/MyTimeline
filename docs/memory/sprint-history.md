@@ -624,17 +624,17 @@
 ### Bilan exécution (2026-07-07)
 **Issues livrées (5) :** #207, #133, #124, #41 (Vague 1) ; #218 (Vague 2)
 **Vagues exécutées :** V1 = #207+#133 (devops, agent A) ∥ #124+#41 (backend, agent B), parallèles fichiers disjoints | V2 = #218 (E2E, agent C)
-**Commits (6) :** da745b8 (#207/#133) · e2e7744 (#124) · 7f56fb7 (#41) · 0548cec (done) · d0541fd (#218 specs) · 52b9c83 (artefacts)
+**Commits (8) :** da745b8 (#207/#133) · e2e7744 (#124) · 7f56fb7 (#41) · 0548cec (done) · d0541fd (#218 specs) · 52b9c83 (artefacts) · cc73cb0 (consolidation) · b2b304a (fix e2e CI)
 **BR impactées :** BR-PRO-006 (#124 filtre SQL user_id), BR-PROD-001 (#41 produit sans event visible)
 **Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEUR (non bloquants → follow-ups)
-**Tests :** Backend 301/301 ✅ | Frontend 383/383 ✅ | E2E 7 specs authored+listées, run live différé (env :3000 occupé)
+**Tests :** Backend 301/301 ✅ | Frontend 383/383 ✅ | E2E CI 25 pass ✅ (1er run rouge sur 2 tests catégories #218 — sélecteurs texte devinés collision titre dialog — réparé b2b304a : data-testid DeleteConfirmDialog + rewire specs)
+**CI de clôture :** 4/4 verte (backend, frontend, e2e, security) sur run 28861922835
 **Nouveaux pitfalls / patterns :** PIT-S28-001 (case-arm test partagé = faux vert) ; PAT-S28-001 (filtre @ManyToOne par id JPQL index-friendly) ; PAT-S28-002 (seed E2E storageState + page.request.post)
 **Décision scope #41 :** `getProductsWithEvents` = listing principal → fix appliqué là (nom gardé, renommage en follow-up)
-**Follow-ups proposés (NON-XS) :**
+**Absorbé en cours (fix CI) :** `DeleteConfirmDialog` data-testid (RF1 issue-218) + `RECOMMAND_TEST_RUNNER` (E2E prouvées vertes en CI) — résolus par b2b304a.
+**Follow-ups proposés restants (NON-XS, à trancher Phase 4) :**
   - Renommer `getProductsWithEvents` → `getProductsByUser` [S | backend/products] (issue-41-124)
-  - `DeleteConfirmDialog` (#65) sans data-testid (confirmer/select réassignation) [S | frontend/categories] (issue-218)
   - `deleteCategory` sans invalidation TanStack (categories.all + products.withEvents) [S | frontend/categories] (issue-218)
-  - Exécuter les 7 specs E2E en live sur stack full-stack propre — RECOMMAND_TEST_RUNNER [XS | devops] (issue-218)
   - Re-sync context-pack cp-frontend (périmé : prétend e2e/ vide + 12 tests ; réel 6+ specs, 383 Vitest) [XS | infra] (issue-207-133)
 
 > **Plan S24–S28 généré le 2026-07-06** (`/ai-env:sprint plan 5`, cohésion moyenne **0.77**). Aucun sprint < 0.3 (plus bas = S28 à 0.68). Ordre : a11y Timeline → Events 409/DTO → Résilience réseau/UI → Refactor auth (V12) → Qualité E2E/tests. **Vérif code-state architect (35 tool calls, 4 sous-agents)** a évité un Sprint-213-bis : **4 issues fermées car déjà faites** (#94 ports domaine #123, #202 isAllDay cohérent, #204 action sheet câblée, #206 EventBar/Lane utilisés). #82/#188 downsizés (résiduels déjà livrés). **Reportés au backlog (à surveiller) :** #69/#196/#219 virtualisation (Wave 7) ; #88 monétisation (ADR requis) ; #102 rate-limit Redis (nouvelle infra + ADR) ; #56 Landing DS (L) + #210 shell nav 248px (M) → candidats **S29 « design shell » dédié** ; #221 ArchUnit strict (dépend dégel #190) ; **#195 collapse par produit → re-spec nécessaire** (collapse catégorie déjà livré, viserait un toggle keyé resource.id).
