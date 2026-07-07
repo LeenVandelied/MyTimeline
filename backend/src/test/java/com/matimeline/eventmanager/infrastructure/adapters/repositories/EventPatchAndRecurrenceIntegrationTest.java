@@ -54,7 +54,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         user.setUsername("i54-user-" + suffix);
         user.setEmail("i54-user-" + suffix + "@example.test");
         user.setPassword("x");
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
         em.persist(user);
 
         CategoryEntity category = new CategoryEntity();

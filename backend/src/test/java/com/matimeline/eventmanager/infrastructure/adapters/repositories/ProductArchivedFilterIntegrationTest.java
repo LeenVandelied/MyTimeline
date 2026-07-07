@@ -55,7 +55,7 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
         user.setUsername("p50-user-" + suffix);
         user.setEmail("p50-user-" + suffix + "@example.test");
         user.setPassword("x");
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
         em.persist(user);
         return user;
     }

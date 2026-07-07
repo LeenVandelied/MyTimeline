@@ -87,7 +87,7 @@ class AuditingAndEqualityTest extends AbstractPostgresIntegrationTest {
         user.setUsername("user-" + suffix);
         user.setEmail("user-" + suffix + "@example.test");
         user.setPassword("x");
-        user.setRole("USER");
+        user.setRole("ROLE_USER");
         return user;
     }
 
@@ -161,7 +161,7 @@ class AuditingAndEqualityTest extends AbstractPostgresIntegrationTest {
         a.setUsername("user-" + suffix);
         a.setEmail("user-" + suffix + "@example.test");
         a.setPassword("x");
-        a.setRole("USER");
+        a.setRole("ROLE_USER");
         return a;
     }
 

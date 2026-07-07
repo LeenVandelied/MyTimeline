@@ -135,7 +135,7 @@ class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegra
             user.setUsername("i200-user-" + suffix);
             user.setEmail("i200-user-" + suffix + "@example.test");
             user.setPassword("x");
-            user.setRole("USER");
+            user.setRole("ROLE_USER");
             em.persist(user);
 
             CategoryEntity category = new CategoryEntity();
