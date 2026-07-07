@@ -74,14 +74,13 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        try {
-            List<ProductResponse> response = productService.getProductsWithEvents(userId).stream()
-                    .map(ProductResponse::fromDomain)
-                    .toList();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        // #92 : PAS de try/catch ici. L'auth (401) est déjà résolue en amont via currentUser().
+        // L'appel service ne lève aucune JwtException ; toute erreur (NPE BR-PRO-005, DataAccess)
+        // DOIT se propager au GlobalExceptionHandler (500), jamais être masquée en 401 (BR-AUT-005).
+        List<ProductResponse> response = productService.getProductsWithEvents(userId).stream()
+                .map(ProductResponse::fromDomain)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/users/{userId}/products/{productId}")

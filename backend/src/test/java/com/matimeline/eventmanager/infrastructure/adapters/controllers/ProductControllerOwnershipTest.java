@@ -1,5 +1,6 @@
 package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -95,6 +96,41 @@ class ProductControllerOwnershipTest {
                 .andExpect(status().isForbidden());
 
         verify(productService, never()).archiveById(productId);
+    }
+
+    // ---------------------------------------------------------------------
+    // #92 — getProducts : le catch(Exception)->401 est retiré. Un vrai échec d'auth
+    // reste 401 (currentUser vide, hors try) ; une erreur non-JWT du service ne doit
+    // PLUS être masquée en 401 mais se propager au GlobalExceptionHandler (BR-AUT-005).
+    // ---------------------------------------------------------------------
+
+    /** BR-AUT-005 : caller non authentifié -> 401 (inchangé, géré avant l'appel service). */
+    @Test
+    void getProducts_unauthenticated_returns401() throws Exception {
+        when(callerResolver.currentUser()).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/users/" + callerId + "/products"))
+                .andExpect(status().isUnauthorized());
+
+        verify(productService, never()).getProductsWithEvents(any());
+    }
+
+    /**
+     * #92 (cœur) : une erreur serveur (RuntimeException du service) NE DOIT PLUS être avalée
+     * en 401. Avec le try/catch retiré, l'exception se propage (elle atteindrait le
+     * GlobalExceptionHandler -> 500 en runtime, absent du standaloneSetup ici). On prouve
+     * la propagation : la requête lève, elle NE renvoie PAS un 401 trompeur.
+     */
+    @Test
+    void getProducts_serviceThrows_propagates_notMaskedAs401() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+        when(productService.getProductsWithEvents(callerId))
+                .thenThrow(new RuntimeException("boom DB/NPE non-JWT"));
+
+        // L'exception remonte au lieu d'être transformée en 401 (avant #92 : ResponseEntity 401).
+        assertThrows(Exception.class, () ->
+                mockMvc.perform(get("/api/users/" + callerId + "/products")));
     }
 
     @Test
