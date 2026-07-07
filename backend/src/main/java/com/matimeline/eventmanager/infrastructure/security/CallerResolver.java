@@ -2,6 +2,7 @@ package com.matimeline.eventmanager.infrastructure.security;
 
 import java.util.Optional;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -57,15 +58,19 @@ public class CallerResolver {
      */
     public Optional<User> currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        // Court-circuit EXPLICITE : pas d'auth, non authentifié, ou principal anonyme. Sans ce garde,
+        // le rejet des anonymes ne reposait QUE sur l'absence d'un User "anonymousUser" en base
+        // (coïncidence fragile : un vrai compte nommé "anonymousUser" contournerait le check).
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
             return Optional.empty();
         }
         String username = authentication.getName();
         if (username == null || username.isEmpty()) {
             return Optional.empty();
         }
-        // Un principal anonyme (AnonymousAuthenticationToken, getName()="anonymousUser") ou un
-        // compte purgé ne matche aucun User -> Optional.empty() -> 401 côté contrôleur.
+        // Un compte purgé ne matche aucun User -> Optional.empty() -> 401 côté contrôleur.
         return userService.findDomainUserByUsername(username);
     }
 }

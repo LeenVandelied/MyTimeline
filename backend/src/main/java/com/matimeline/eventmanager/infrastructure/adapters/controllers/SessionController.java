@@ -48,13 +48,14 @@ public class SessionController {
 
     @GetMapping
     public ResponseEntity<?> getActiveSessions(
-            @CookieValue(value = "jwt", required = false) String token) {
+            @CookieValue(value = "jwt", required = false) String cookieToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Optional<User> callerOpt = callerResolver.currentUser();
         if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User caller = callerOpt.get();
-        String currentJti = extractJtiOrNull(token);
+        String currentJti = extractJtiOrNull(resolveToken(cookieToken, authHeader));
         List<SessionResponse> body = sessionService.getActiveSessions(caller.getId()).stream()
                 .map(s -> SessionResponse.fromDomain(s, currentJti))
                 .toList();
@@ -63,14 +64,18 @@ public class SessionController {
 
     @DeleteMapping("/others")
     public ResponseEntity<?> revokeOtherSessions(
-            @CookieValue(value = "jwt", required = false) String token) {
+            @CookieValue(value = "jwt", required = false) String cookieToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         // NB : mappé AVANT /{id} par Spring (chemin littéral prioritaire sur variable),
         // mais on garde /others explicite pour lever toute ambiguïté de routage.
         Optional<User> callerOpt = callerResolver.currentUser();
         if (callerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String currentJti = extractJtiOrNull(token);
+        // Résout le jti COURANT comme JwtFilter (cookie PUIS Bearer, BR-AUT-011) : sinon un client
+        // Bearer-only aurait token=null -> currentJti=null -> revokeAllByUserIdExcept(userId, null)
+        // dégénère en revoke-all et révoque la session de l'appel elle-même (self-DoS).
+        String currentJti = extractJtiOrNull(resolveToken(cookieToken, authHeader));
         sessionService.revokeOtherSessions(callerOpt.get().getId(), currentJti);
         return ResponseEntity.noContent().build();
     }
@@ -85,6 +90,21 @@ public class SessionController {
         // est inconnue OU appartient à autrui (anti-énumération, cf. GlobalExceptionHandler).
         sessionService.revokeSession(id, callerOpt.get().getId());
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Résout le token JWT courant à la MÊME source que {@link JwtFilter} (BR-AUT-011) : cookie
+     * {@code jwt} en priorité, sinon header {@code Authorization: Bearer <token>}, sinon {@code null}.
+     * Garantit que {@code extractJtiOrNull} fonctionne dans les DEUX modes d'auth (cookie ET Bearer).
+     */
+    private String resolveToken(String cookieToken, String authHeader) {
+        if (cookieToken != null && !cookieToken.isEmpty()) {
+            return cookieToken;
+        }
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
     /** jti du token courant, ou {@code null} si absent/illisible (token legacy). */
