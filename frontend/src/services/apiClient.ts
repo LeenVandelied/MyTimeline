@@ -117,9 +117,10 @@ apiClient.interceptors.response.use(
   (error) => {
     // #76 — Classification réseau AVANT tout court-circuit : la santé réseau est
     // globale (même sur les endpoints auth gérés inline). Un timeout se reconnaît
-    // au code `ECONNABORTED` (axios) ; une 5xx à `response.status >= 500`.
-    const isTimeout =
-      error.code === 'ECONNABORTED' || /timeout/i.test(String(error.message ?? ''))
+    // au seul code `ECONNABORTED` (signal axios fiable d'un dépassement de `timeout`) ;
+    // une 5xx à `response.status >= 500`. On n'utilise PAS le message d'erreur
+    // (regex trop large : requalifierait des erreurs métier contenant "timeout").
+    const isTimeout = error.code === 'ECONNABORTED'
     if (isTimeout) {
       networkStatusStore.reportTimeout()
     } else if (typeof error.response?.status === 'number' && error.response.status >= 500) {

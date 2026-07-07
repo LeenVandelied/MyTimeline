@@ -466,6 +466,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     className="text-destructive"
                     onClick={() => setDeleteOpen(true)}
                     disabled={submitting || !isOnline}
+                    title={!isOnline ? tNet('offline.hint') : undefined}
                     data-testid="event-form-delete"
                   >
                     <Trash2 className="size-4" aria-hidden="true" />

@@ -80,7 +80,7 @@ function Lanes({ rows }: { rows: number }) {
           style={{ height: 'var(--lane-height)' }}
           data-testid="loading-skeleton-item"
         >
-          <Bar className="h-full w-[168px] shrink-0" />
+          <Bar className="h-full w-[var(--lane-header-w)] shrink-0" />
           <Bar className="h-6 flex-1" />
         </div>
       ))}
