@@ -642,14 +642,19 @@
 
 ---
 
-## Sprint 29 — 2026-07-07 (PLANIFIÉ — cohésion 0.53, Conteneurisation & déploiement)
+## Sprint 29 — 2026-07-07 → en cours (démarré 2026-07-11 — cohésion 0.53, Conteneurisation & déploiement)
 **Objectif :** Rendre le projet déployable (Docker) + valider migrations Flyway prod + purger secrets historique.
 **Milestone GitHub :** #29
 **Issues :** #37 (M), #181 (S), #112 (S — DESTRUCTIF)
-**Vagues :** V1 = #37 ∥ #181 (fichiers disjoints) | V2 = #112 ISOLÉ en dernier (force-push historique, exige "oui" dev + fenêtre)
-**Migrations Flyway :** aucune (head = V12 ; #181 = validate sur l'existant)
+**Vagues (initial) :** V1 = #37 ∥ #181 | V2 = #112 ISOLÉ (force-push historique).
+**Vagues (exécuté) :** V1 unique = #37 ∥ #181 ∥ #112 — après arbitrage dev, #181 et #112 recadrés en TOOLING/DOC uniquement (aucune exécution destructive), donc disjoints et parallélisables.
+**Arbitrage dev (2026-07-11) :**
+  - #181 → livraison outillage : `scripts/flyway-validate.sh` + `docs/ops/flyway-v11-validation.md`. La validation sur base prod réelle reste à exécuter par le dev/ops (pas d'accès DB en session). Critères "sur données réelles" restent ouverts.
+  - #112 → runbook documenté uniquement : `docs/ops/purge-git-secrets-runbook.md`. AUCUN filter-repo / force-push exécuté. Exécution destructive déléguée à une session ops dédiée + fenêtre planifiée + "oui" dev.
+**Branche de travail :** `claude/sprint-29-start-052110` (≡ sprint/29 local @ 732f0c6 ; origin/sprint/29 encore à dev).
+**Migrations Flyway :** aucune (head = V12).
 **Dépend de :** aucune
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 30 — 2026-07-07 (PLANIFIÉ — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
 **Objectif :** Fail-fast prod (rate-limit off, BREVO absente) + log config cookie/CORS + test profil prod.
