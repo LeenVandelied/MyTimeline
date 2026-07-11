@@ -684,12 +684,12 @@
 **Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 1 MINEUR (#130 test négatif no-warn manquant, non bloquant → follow-up). VERDICT RAS.
 **Tests :** Backend 318/318 green (+17 ce sprint : 4 #140, 1 #129, 5 #130, 7 #216) | Frontend N/A | E2E N/A (sprint 100% backend, coverage-E2E OK).
 **Nouveaux patterns :** PAT-S30-001 (HealthIndicator @Profile prod), PAT-S30-002 (test fichier config sans boot complet), PAT-S30-003 (multi-invariant fail-fast, 1 listener N checks disjoints).
-**Follow-ups proposés (NON-XS/XS) :**
-  - Validation dure fail-fast si COOKIE_DOMAIN/CORS vides en prod [S | infrastructure] (issue-130)
-  - Fail-fast sur app.cookie.secure=false en prod effectif [S | auth/sécurité] (issue-216)
-  - Alerting réel composant `brevo` de /actuator/health [XS | devops/observability] (issue-140)
-  - Symétrie filet-régression fichier pour CORS/storage prod [XS | auth] (issue-129)
-  - Test négatif "no-warn quand config valide" pour ProdConfigStartupLogger [XS | test] (reviewer MINEUR #130)
+**Follow-ups arbitrés (Phase 4 triage — dev a choisi « créer les 5 ») :**
+  - Fail-fast si COOKIE_DOMAIN/CORS vides en prod [S | infrastructure] → issue #253 (milestone Sprint 31)
+  - Fail-fast sur app.cookie.secure=false en prod effectif [S | auth/sécurité] → issue #254 (milestone Sprint 31)
+  - Alerting réel composant `brevo` de /actuator/health [XS | devops/observability] → issue #255 (backlog)
+  - Symétrie filet-régression fichier pour CORS/storage prod [XS | auth] → issue #256 (backlog)
+  - Test négatif "no-warn quand config valide" pour ProdConfigStartupLogger [XS | test, reviewer MINEUR] → issue #257 (backlog)
 **Status :** Terminé
 
 ## Sprint 31 — 2026-07-07 (PLANIFIÉ — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
