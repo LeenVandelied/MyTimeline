@@ -40,4 +40,21 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * Executor des jobs d'export RGPD asynchrones (#58, ADR-003 — ZIP/CSV). Pool borné : la
+     * génération (agrégation + rendu + écriture disque) est modérément coûteuse et le volume
+     * faible (action manuelle utilisateur). La queue absorbe les pics ; à saturation, la
+     * politique par défaut (CallerRunsPolicy) applique un backpressure sans perdre de job.
+     */
+    @Bean(name = "exportExecutor")
+    public Executor exportExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("export-");
+        executor.initialize();
+        return executor;
+    }
 }

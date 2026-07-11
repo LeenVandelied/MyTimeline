@@ -19,6 +19,7 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.ExportFormatNotSupportedException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
@@ -64,6 +65,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ExportFormatNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleExportFormatNotSupported(ExportFormatNotSupportedException ex) {
+        // #58 : format d'export inconnu, ou format demandé sur le mauvais verbe HTTP
+        // (sync en POST / async en GET) -> 400. Corps plat {"error":...}.
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "unsupported export format"));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
