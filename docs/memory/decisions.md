@@ -142,3 +142,9 @@ En S27 #122, durcir `users.role` (NOT NULL + CHECK) sur base peuplée impose de 
 
 ## DEC-S29-001 — `NEXT_PUBLIC_API_URL` = URL hôte (pas nom de service compose)
 En S29 (#37), dans `docker-compose.yml` le frontend Next reçoit `NEXT_PUBLIC_API_URL=http://localhost:8080/api` (URL de l'HÔTE) en ARG de build, PAS `http://backend:8080/api`. Motif : `NEXT_PUBLIC_*` est bakée au build et l'appel API part du NAVIGATEUR (sur l'hôte), qui n'a aucun accès au réseau interne compose ni au nom de service `backend`. Vaut pour tout front conteneurisé dont les appels sont client-side. (Sprint 29 #37)
+
+## DEC-S31-001 — 3 CVE HIGH Spring Boot acceptées (non applicables), garde-fous testés
+En S31 (#223/#258), CVE-2026-40973 (session hijacking), CVE-2026-22731 (health group additional-path), CVE-2026-22733 (actuator CloudFoundry) acceptées car vecteurs non applicables (app stateless JWT cookie confirmé `SessionCreationPolicy.STATELESS` ; aucune config `management.*` ; pas de CloudFoundry), le correctif n'existant qu'en Boot 3.5.x (hors périmètre patch #180). Documentées dans `docs/security/cve-acceptance.md` + garde-fous ArchUnit/@SpringBootTest. Condition de réexamen : bump Boot 3.5.x. (Sprint 31 #223/#258)
+
+## DEC-S31-002 — Retrait de `--omit=dev` du job CI `security` (couverture dev+prod)
+En S31 (#222), une fois `npm audit --audit-level=high` à 0 HIGH/CRITICAL deps complètes (dev inclus, via bump vitest 2→3 + leaves ReDoS), retrait du `--omit=dev` posé en S23 (#167) : l'audit CI couvre désormais TOUT l'arbre (surface supply-chain dev incluse). Résiduel MODERATE PROD (next-intl, next→postcss) = follow-up, non bloquant. (Sprint 31 #222)

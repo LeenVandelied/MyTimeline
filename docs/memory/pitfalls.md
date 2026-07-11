@@ -267,3 +267,9 @@ En S28 (#207), `scripts/test-quiet.sh` faisait retomber les scopes `e2e` ET `fro
 
 ## PIT-S29-001 — RTK tronque/mélange la sortie de `docker compose build/ps`
 En S29 (#37), le proxy RTK altère le stdout de `docker compose build`/`ps` (lignes tronquées ou mélangées) — même symptôme que [[rtk-git-diff-empty-output]] pour `git diff`. L'exit code reste fiable, pas le stdout. Prévention : rediriger vers un fichier log puis `Read`/`tail`, ou `rtk proxy docker compose ...`. Ne jamais parser le stdout brut de docker sous RTK pour décider d'un vert/rouge. (Sprint 29 #37)
+
+## PIT-S31-001 — `npm audit fix` tire des majeurs transitifs non voulus
+En S31 (#222), `npm audit fix` (même sans `--force`) sur ce repo remonte storybook 10.4→10.5 (~242 pkgs), next-intl PROD 4.0→4.13 et eslint 9.23→9.39 — bien au-delà de la CVE ciblée. Pour un bump sécurité chirurgical : éditer la SEULE dep visée dans `package.json` (ex: vitest) + `npm update <leaves>` in-range pour les transitives (flatted/minimatch/picomatch), jamais `npm audit fix`. Vérifier via `npm audit --audit-level=high`. (Sprint 31 #222)
+
+## PIT-S31-002 — Garde ESLint anti-fuite `console.error` : couvrir le mono-arg
+En S31 (#160/#258), la 1re version de la règle `no-restricted-syntax` anti-`console.error(msg, errBrut)` ne matchait que le 2-arg (`arguments.length=2`) et RATAIT `console.error(error)` mono-arg — le vecteur de fuite le plus fréquent (dev oublie le message). Corrigé par un 2e sélecteur `arguments.length=1`. Effet de bord : flague les error-boundaries React légitimes (`app/error.tsx`, `app/[locale]/error.tsx`) qui logguent l'erreur React entière → `// eslint-disable-next-line no-restricted-syntax` inline justifié. Non couvrable par AST seul : template `${error}`, console.log/warn, wrap objet. Figer la règle par un test RuleTester/API-ESLint. (Sprint 31 #160/#258)
