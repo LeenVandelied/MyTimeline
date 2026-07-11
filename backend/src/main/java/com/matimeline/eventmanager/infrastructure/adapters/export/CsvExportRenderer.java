@@ -29,26 +29,42 @@ public class CsvExportRenderer implements ExportRenderer {
     @Override
     public RenderedExport render(UserDataExport data) {
         StringBuilder csv = new StringBuilder();
+        appendProfileSection(csv, data);
+        appendCategoriesSection(csv, data);
+        appendProductsSection(csv, data);
+        appendEventsSection(csv, data);
 
+        byte[] content = csv.toString().getBytes(StandardCharsets.UTF_8);
+        return new RenderedExport(content, ExportFormat.CSV.contentType(),
+                ExportFilenames.forFormat(ExportFormat.CSV, data.generatedAt()));
+    }
+
+    private static void appendProfileSection(StringBuilder csv, UserDataExport data) {
         csv.append("# PROFILE\n");
         csv.append("id,username,name,email,role,avatarPresent\n");
         UserDataExport.ExportedProfile p = data.profile();
         csv.append(row(str(p.id()), p.username(), p.name(), p.email(), p.role(),
                 String.valueOf(p.avatarPresent())));
+    }
 
+    private static void appendCategoriesSection(StringBuilder csv, UserDataExport data) {
         csv.append("\n# CATEGORIES\n");
         csv.append("id,name,color,description\n");
         for (ExportedCategory c : data.categories()) {
             csv.append(row(str(c.id()), c.name(), c.color(), c.description()));
         }
+    }
 
+    private static void appendProductsSection(StringBuilder csv, UserDataExport data) {
         csv.append("\n# PRODUCTS\n");
         csv.append("id,name,color,categoryId,categoryName\n");
         for (ExportedProduct product : data.products()) {
             csv.append(row(str(product.id()), product.name(), product.color(),
                     str(product.categoryId()), product.categoryName()));
         }
+    }
 
+    private static void appendEventsSection(StringBuilder csv, UserDataExport data) {
         csv.append("\n# EVENTS\n");
         csv.append("id,productId,title,type,durationValue,durationUnit,isRecurring,"
                 + "recurrenceUnit,recurrenceEndDate,startDate,endDate,isAllDay,color\n");
@@ -60,10 +76,6 @@ public class CsvExportRenderer implements ExportRenderer {
                         str(e.endDate()), str(e.isAllDay()), e.color()));
             }
         }
-
-        byte[] content = csv.toString().getBytes(StandardCharsets.UTF_8);
-        return new RenderedExport(content, ExportFormat.CSV.contentType(),
-                ExportFilenames.forFormat(ExportFormat.CSV, data.generatedAt()));
     }
 
     /** Assemble une ligne CSV terminée par un {@code \n}, chaque champ échappé RFC 4180. */

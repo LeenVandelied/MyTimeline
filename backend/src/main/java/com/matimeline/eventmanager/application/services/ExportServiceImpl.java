@@ -92,7 +92,6 @@ public class ExportServiceImpl implements ExportService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<RenderedExport> download(UUID jobId, UUID ownerId) {
         Optional<ExportJob> jobOpt = jobRepository.findByIdAndOwnerId(jobId, ownerId);
         if (jobOpt.isEmpty()) {
