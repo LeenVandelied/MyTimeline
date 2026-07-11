@@ -1,46 +1,47 @@
-## Sprint 26 — Résilience réseau + pages d'états système
+## Sprint 30 — Garde-fous de boot prod & fiabilité auth
 
-Cohésion 0.71 · 2 issues (transversal frontend, 0 BR métier) · migrations Flyway : aucune.
+Thème : durcir le démarrage en production et fiabiliser le parcours auth. Sprint 100 % backend,
+cohésion 0.76, aucune migration Flyway. Dépend du Sprint 29 (#37 fournit le profil prod conteneurisé
+où ces garde-fous s'activent).
 
-### Issues livrées
-- **#76** — Bus d'état réseau + bannière offline/timeout/erreur serveur
-- **#57** — Pages d'états système (404/403/500/vide/loading) clair + sombre
+### Issues livrées (4)
+
+| # | Type | Objet | Commit |
+|---|------|-------|--------|
+| #140 | bug | HealthIndicator Brevo : `/actuator/health` remonte DOWN si `BREVO_API_KEY` absente en prod (fini le NO-OP silencieux) | `fc92c7b` |
+| #129 | chore | Filet de régression : test chargeant `application-prod.properties` → cookie JWT `Secure=true` | `5b80967` |
+| #130 | feat | Log INFO au boot prod de la config cookie/CORS effective (diagnostic misconfig sans incident) | `55254fa` |
+| #216 | security | Fail-fast : refuse le boot si `app.rate-limit.enabled=false` en environnement prod effectif | `2433738` |
+
+### Vagues d'exécution
+- **Vague 1** (parallèle, fichiers disjoints) : #140 ∥ #129
+- **Vague 2** (parallèle, fichiers disjoints) : #216 ∥ #130
 
 ### Changements clés
-
-**#76 — Résilience réseau**
-- `NetworkStatusContext` (bus React, `useSyncExternalStore`, SSR-safe) + store observable `networkStatus.ts` pont axios↔React.
-- `OfflineBanner` : 4 états (offline / retrying / timeout / server-error), sticky, `role=status` (offline/retrying) vs `role=alert` (timeout/server-error), « Réessayer » sur timeout/5xx uniquement.
-- `apiClient` : timeout 15s, **exemption uploads multipart** (`FormData` → pas de timeout, préserve #215), classification `ECONNABORTED`→timeout / `≥500`→server-error, clear sur réponse OK.
-- Boutons submit/delete `disabled` hors ligne (avec hint a11y).
-- Namespace i18n `network` (fr/en/es/de).
-
-**#57 — Pages d'états**
-- `app/[locale]/not-found.tsx` (404 locale-aware), `app/[locale]/error.tsx` (crash boundary `'use client'`, branche 403/500), `app/error.tsx` (filet global racine), `dashboard/loading.tsx`.
-- Composants partagés `StateScreen`, `EmptyState`, `LoadingSkeleton` (variants list/cards/timeline).
-- Intégrations réelles : `ProductList` (EmptyState), écran de chargement dashboard (LoadingSkeleton). Tokens Graphite, clair + sombre.
-
-### Correctif notable (détecté en review lead)
-Régression SSG introduite par #76 puis corrigée (`7ad5f36`) : `OfflineBanner` (`useTranslations`) était monté au **layout racine**, hors `NextIntlClientProvider` → `next build` plantait au prerender (0/26 pages). Provider + bannière déplacés sous `[locale]/layout.tsx`. Build revenu à **26/26 pages**. (La base `origin/dev` build proprement dans le même env — régression confirmée S26, non pré-existante.)
-
-### BR impactées
-Aucune (features transversales, hors domaine métier).
+- `ProfileSafetyGuard` (#216) : un seul `ApplicationListener`, désormais 2 checks fail-fast indépendants
+  aux prédicats disjoints — #111 (marqueur prod + profil dev) inchangé et prioritaire, puis #216 (prod
+  effectif + rate-limit off). Le job CI e2e (dev/test + `enabled=false`) n'est jamais bloqué ; property
+  absente = défaut fail-safe `true`.
+- `BrevoHealthIndicator` (#140) et `ProdConfigStartupLogger` (#130) : beans `@Profile("prod")` stricts,
+  aucun effet en dev/test.
+- **Anti-fuite secret** (transversal, croise #160) : #130 et #140 n'exposent/loggent QUE des flags de
+  config non-sensibles ; aucun `DB_PASSWORD`/`JWT_SECRET`/`BREVO_API_KEY`. Test de non-fuite dédié (#140).
+- `AuthControllerProdProfileCookieTest` (#129) : contexte léger (`@SpringJUnitWebConfig` +
+  `@TestPropertySource`), pas de `@SpringBootTest`/Testcontainers — le test casse si `Secure` est retiré
+  du fichier prod.
 
 ### Tests
-- Backend : **280/280** (inchangé, sprint 100% frontend).
-- Frontend (Vitest/RTL) : **383/383** (base 344 → +39 tests S26).
-- `next build` : **exit 0, 26/26 pages statiques**, 0 erreur prerender.
-- E2E Playwright : non exécuté en local (binaire absent) → tourne en CI. **Aucun spec ne couvre encore les écrans S26.**
+- Backend : **318 tests, 0 failed** (`./scripts/test-quiet.sh backend`). +17 tests ce sprint
+  (4 #140, 1 #129, 5 #130, 7 #216).
+- Frontend / E2E : N/A (aucune modif frontend ; check coverage-E2E Phase 8 = OK).
+- Audit complet : `docs/memory/audits/sprint-30-test-coverage.md`.
 
-### Reviews (batch)
-- **reviewer** : 0 CRITIQUE / 1 MAJEUR / 4 MINEUR. 3 MINEUR corrigés (`6032d97` : token skeleton, timeout `ECONNABORTED`, parité a11y delete). MAJEUR (mismatch locales layout `fr,en` vs middleware `fr,en,es,de`) = **pré-existant** → follow-up.
-- **ui-design** : APPROUVÉ AVEC RÉSERVES. RÉSERVE 1 corrigée ; RÉSERVE 2 (strings inline `app/error.tsx` hors provider i18n) = exception justifiée à documenter.
+### Revue
+- Review batch reviewer sur le diff complet (résultat consigné dans les artefacts sprint).
 
-### Suivi post-merge (non bloquant)
-- **`/create-e2e`** : 10 nouveaux `data-testid` sans spec E2E (parcours offline réel + pages 404/500).
-- Follow-ups à trancher en triage `/sprint end` : alignement locales layout↔middleware (es/de inatteignables), helper locale partagé, filtre `refetchQueries` du retry, documentation exception i18n root error boundary.
-
-### Audit détaillé
-`docs/memory/audits/sprint-26-test-coverage.md`
+### Follow-ups détectés (à trier en /sprint end)
+- Validation dure fail-fast si `COOKIE_DOMAIN`/`CORS_ALLOWED_ORIGINS` vides en prod (#130 avertit mais ne bloque pas).
+- Fail-fast possible sur `app.cookie.secure=false` en prod effectif (même famille que #216).
+- Alerting réel sur le composant `brevo` de `/actuator/health` (le healthcheck Docker ne lit que le statut global).
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

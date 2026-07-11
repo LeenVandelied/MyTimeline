@@ -671,14 +671,26 @@
 **Commits (final) :** 7 — +f89d2f7 (follow-ups absorbés).
 **Status :** Prêt à merger (CI en revalidation sur f89d2f7 ; confirmation dev en attente)
 
-## Sprint 30 — 2026-07-07 (PLANIFIÉ — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
+## Sprint 30 — 2026-07-11 (TERMINÉ — merge PR #252 dans dev — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
 **Objectif :** Fail-fast prod (rate-limit off, BREVO absente) + log config cookie/CORS + test profil prod.
-**Milestone GitHub :** #30
-**Issues :** #216 (S), #130 (S), #140 (S), #129 (XS)
-**Vagues :** V1 = #140 ∥ #129 | V2 = #216 → #130 (touchent infrastructure/config)
+**Milestone GitHub :** #30 (fermé après merge)
+**Issues livrées (4) :** #140 (S), #129 (XS), #130 (S), #216 (S)
+**Vagues exécutées :** V1 = #140 ∥ #129 (parallèle, disjoints) | V2 = #216 ∥ #130 (parallèle, fichiers disjoints dans infrastructure/config)
+**Cohésion score :** 0.76
+**Commits :** 4 (1 par issue) + 1 consolidation mémoire — fc92c7b #140, 5b80967 #129, 55254fa #130, 2433738 #216
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 29 (#37 fournit le profil prod conteneurisé)
-**Status :** Planifié
+**BR impactées :** aucune BR métier (garde-fous boot/config, transversal auth/infra). Croise #160 (anti-fuite logs).
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 1 MINEUR (#130 test négatif no-warn manquant, non bloquant → follow-up). VERDICT RAS.
+**Tests :** Backend 318/318 green (+17 ce sprint : 4 #140, 1 #129, 5 #130, 7 #216) | Frontend N/A | E2E N/A (sprint 100% backend, coverage-E2E OK).
+**Nouveaux patterns :** PAT-S30-001 (HealthIndicator @Profile prod), PAT-S30-002 (test fichier config sans boot complet), PAT-S30-003 (multi-invariant fail-fast, 1 listener N checks disjoints).
+**Follow-ups arbitrés (Phase 4 triage — dev a choisi « créer les 5 ») :**
+  - Fail-fast si COOKIE_DOMAIN/CORS vides en prod [S | infrastructure] → issue #253 (milestone Sprint 31)
+  - Fail-fast sur app.cookie.secure=false en prod effectif [S | auth/sécurité] → issue #254 (milestone Sprint 31)
+  - Alerting réel composant `brevo` de /actuator/health [XS | devops/observability] → issue #255 (backlog)
+  - Symétrie filet-régression fichier pour CORS/storage prod [XS | auth] → issue #256 (backlog)
+  - Test négatif "no-warn quand config valide" pour ProdConfigStartupLogger [XS | test, reviewer MINEUR] → issue #257 (backlog)
+**Status :** Terminé
 
 ## Sprint 31 — 2026-07-07 (PLANIFIÉ — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
 **Objectif :** Solder CVE HIGH/CRITICAL front (#222) + back (#223) + assainir logs axios résiduels (#160).
