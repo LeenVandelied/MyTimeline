@@ -671,14 +671,14 @@
 **Commits (final) :** 7 — +f89d2f7 (follow-ups absorbés).
 **Status :** Prêt à merger (CI en revalidation sur f89d2f7 ; confirmation dev en attente)
 
-## Sprint 30 — 2026-07-07 (PLANIFIÉ — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
+## Sprint 30 — 2026-07-11 (EN COURS — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
 **Objectif :** Fail-fast prod (rate-limit off, BREVO absente) + log config cookie/CORS + test profil prod.
 **Milestone GitHub :** #30
 **Issues :** #216 (S), #130 (S), #140 (S), #129 (XS)
 **Vagues :** V1 = #140 ∥ #129 | V2 = #216 → #130 (touchent infrastructure/config)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 29 (#37 fournit le profil prod conteneurisé)
-**Status :** Planifié
+**Status :** En cours
 
 ## Sprint 31 — 2026-07-07 (PLANIFIÉ — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
 **Objectif :** Solder CVE HIGH/CRITICAL front (#222) + back (#223) + assainir logs axios résiduels (#160).
