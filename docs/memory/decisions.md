@@ -139,3 +139,6 @@ En S26 #57, le filet global `app/error.tsx` est rendu HORS de tout `NextIntlClie
 
 ## DEC-S27-001 — Migration V12 `users.role` : coercition NULL/hors-enum → `ROLE_USER` (moindre privilège), à l'opposé du fail-fast V4
 En S27 #122, durcir `users.role` (NOT NULL + CHECK) sur base peuplée impose de traiter les lignes NULL/hors-enum existantes AVANT l'`ALTER`. Décision : les COERCER vers `ROLE_USER` (`UPDATE ... WHERE role IS NULL OR role NOT IN (...)`), à l'inverse du pré-vol fail-safe de V4 qui rejetait/signalait. Motif : un downgrade vers le rôle le moins privilégié est le pire cas SÛR côté sécurité — jamais de promotion silencieuse vers `ROLE_ADMIN`. Documenté dans l'en-tête V12. La bascule PROD (UPDATE non réversible + ALTER lock ACCESS EXCLUSIVE) reste une décision humaine ; validée ici uniquement via Testcontainers. (Sprint 27 #122)
+
+## DEC-S29-001 — `NEXT_PUBLIC_API_URL` = URL hôte (pas nom de service compose)
+En S29 (#37), dans `docker-compose.yml` le frontend Next reçoit `NEXT_PUBLIC_API_URL=http://localhost:8080/api` (URL de l'HÔTE) en ARG de build, PAS `http://backend:8080/api`. Motif : `NEXT_PUBLIC_*` est bakée au build et l'appel API part du NAVIGATEUR (sur l'hôte), qui n'a aucun accès au réseau interne compose ni au nom de service `backend`. Vaut pour tout front conteneurisé dont les appels sont client-side. (Sprint 29 #37)

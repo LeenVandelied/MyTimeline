@@ -184,3 +184,6 @@ En S28 (#124/#41), remplacer `findAllProducts()` + `.filter(userId)` en Java (sc
 
 ## PAT-S28-002 — Seed E2E Playwright via `storageState` (compte fixe) + `page.request.post` same-origin
 En S28 (#218), pattern de seed des specs Produits/Catégories : réutiliser un compte fixe provisionné une fois (`auth.setup.ts` → `storageState`) au lieu de `register`+`login` par test (déclenche le rate-limit 429 register 5/min/IP). Poser l'état via `page.request.post` same-origin (cookie `Lax` porté par le proxy Next `:3000`→backend), pas via clics souris. Anti-pattern : `registerAndLogin` par test. Cf. `frontend/e2e/support/accounts.ts`, `products.ts`, config `playwright.config.ts` (projet `setup` → dependencies). (Sprint 28 #218)
+
+## PAT-S29-001 — Healthcheck Docker Spring Boot via Actuator (health seul, public)
+En S29 (#37), pour un `HEALTHCHECK` Docker/orchestrateur sur un backend Spring Boot sans endpoint santé : ajouter `spring-boot-starter-actuator` et whitelister UNIQUEMENT `/actuator/health` en `permitAll` dans `SecurityConfig` (l'exposition web par défaut = health seul ; `show-details=never` → corps `{"status":"UP"}` sans fuite env/heapdump/mappings ; le health inclut le check DB). Installer `curl` dans l'image `eclipse-temurin:*-jre` (absent par défaut, base Ubuntu). Anti-pattern : `HealthController` maison redondant. (Sprint 29 #37)

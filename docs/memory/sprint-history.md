@@ -651,10 +651,25 @@
 **Arbitrage dev (2026-07-11) :**
   - #181 → livraison outillage : `scripts/flyway-validate.sh` + `docs/ops/flyway-v11-validation.md`. La validation sur base prod réelle reste à exécuter par le dev/ops (pas d'accès DB en session). Critères "sur données réelles" restent ouverts.
   - #112 → runbook documenté uniquement : `docs/ops/purge-git-secrets-runbook.md`. AUCUN filter-repo / force-push exécuté. Exécution destructive déléguée à une session ops dédiée + fenêtre planifiée + "oui" dev.
-**Branche de travail :** `claude/sprint-29-start-052110` (≡ sprint/29 local @ 732f0c6 ; origin/sprint/29 encore à dev).
+**Branche de travail :** `claude/sprint-29-start-052110` poussée sur `origin/sprint/29`. PR #247 → dev.
 **Migrations Flyway :** aucune (head = V12).
 **Dépend de :** aucune
-**Status :** En cours
+**Commits :** 6 (dont plan 732f0c6) — #37 591e30b, #181 705c4ef, #112 22b6284, review b8a64d4, artefacts 4868f57.
+**Tests :** Backend 301/301 · Frontend 383/383 · E2E CI vert · 0 régression.
+**Reviews :** reviewer batch — 0 CRITIQUE / 2 MAJEUR / 4 MINEUR. Corrigés : count numérique GATE (#181) + `--chown` public (#37) [b8a64d4]. Différés → follow-ups.
+**CI PR #247 :** backend ✅ frontend ✅ e2e ✅ security ✅ — MERGEABLE.
+**Nouveaux patterns/pitfalls/décisions :** PAT-S29-001 (health Actuator Docker), PIT-S29-001 (RTK tronque stdout docker), DEC-S29-001 (NEXT_PUBLIC_API_URL = URL hôte).
+**Note :** stack réelle = Spring Boot 3.4.13 (corrigé dans CLAUDE.md, F6).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - F1 — script correction Flyway V11 conditionnel [S | backend/db] → issue #248 (backlog)
+  - F2 — rotation secrets DB_PASSWORD/JWT_SECRET/BREVO [S | ops/sécurité] → issue #249 (backlog, P1)
+  - F3 — créer external-services-inventory.md [XS | doc] → issue #250 (backlog)
+  - F4 — pin digest sha256 images Docker [S | devops] → issue #251 (backlog)
+  - F5 — durcissements (FLYWAY_PASSWORD die + healthcheck frontend) [XS] → absorbé (f89d2f7)
+  - F6 — version stack Spring Boot 3.4.13 dans CLAUDE.md [XS] → absorbé (f89d2f7)
+  Bilan : 4 issues créées (backlog), 2 absorbées, 0 discard.
+**Commits (final) :** 7 — +f89d2f7 (follow-ups absorbés).
+**Status :** Prêt à merger (CI en revalidation sur f89d2f7 ; confirmation dev en attente)
 
 ## Sprint 30 — 2026-07-07 (PLANIFIÉ — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
 **Objectif :** Fail-fast prod (rate-limit off, BREVO absente) + log config cookie/CORS + test profil prod.
