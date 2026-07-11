@@ -639,3 +639,75 @@
   - Re-sync context-pack cp-frontend (périmé : prétend e2e/ vide + 12 tests ; réel 6+ specs, 383 Vitest) [XS | infra] → issue #246 (backlog)
 
 > **Plan S24–S28 généré le 2026-07-06** (`/ai-env:sprint plan 5`, cohésion moyenne **0.77**). Aucun sprint < 0.3 (plus bas = S28 à 0.68). Ordre : a11y Timeline → Events 409/DTO → Résilience réseau/UI → Refactor auth (V12) → Qualité E2E/tests. **Vérif code-state architect (35 tool calls, 4 sous-agents)** a évité un Sprint-213-bis : **4 issues fermées car déjà faites** (#94 ports domaine #123, #202 isAllDay cohérent, #204 action sheet câblée, #206 EventBar/Lane utilisés). #82/#188 downsizés (résiduels déjà livrés). **Reportés au backlog (à surveiller) :** #69/#196/#219 virtualisation (Wave 7) ; #88 monétisation (ADR requis) ; #102 rate-limit Redis (nouvelle infra + ADR) ; #56 Landing DS (L) + #210 shell nav 248px (M) → candidats **S29 « design shell » dédié** ; #221 ArchUnit strict (dépend dégel #190) ; **#195 collapse par produit → re-spec nécessaire** (collapse catégorie déjà livré, viserait un toggle keyé resource.id).
+
+---
+
+## Sprint 29 — 2026-07-07 → en cours (démarré 2026-07-11 — cohésion 0.53, Conteneurisation & déploiement)
+**Objectif :** Rendre le projet déployable (Docker) + valider migrations Flyway prod + purger secrets historique.
+**Milestone GitHub :** #29
+**Issues :** #37 (M), #181 (S), #112 (S — DESTRUCTIF)
+**Vagues (initial) :** V1 = #37 ∥ #181 | V2 = #112 ISOLÉ (force-push historique).
+**Vagues (exécuté) :** V1 unique = #37 ∥ #181 ∥ #112 — après arbitrage dev, #181 et #112 recadrés en TOOLING/DOC uniquement (aucune exécution destructive), donc disjoints et parallélisables.
+**Arbitrage dev (2026-07-11) :**
+  - #181 → livraison outillage : `scripts/flyway-validate.sh` + `docs/ops/flyway-v11-validation.md`. La validation sur base prod réelle reste à exécuter par le dev/ops (pas d'accès DB en session). Critères "sur données réelles" restent ouverts.
+  - #112 → runbook documenté uniquement : `docs/ops/purge-git-secrets-runbook.md`. AUCUN filter-repo / force-push exécuté. Exécution destructive déléguée à une session ops dédiée + fenêtre planifiée + "oui" dev.
+**Branche de travail :** `claude/sprint-29-start-052110` poussée sur `origin/sprint/29`. PR #247 → dev.
+**Migrations Flyway :** aucune (head = V12).
+**Dépend de :** aucune
+**Commits :** 6 (dont plan 732f0c6) — #37 591e30b, #181 705c4ef, #112 22b6284, review b8a64d4, artefacts 4868f57.
+**Tests :** Backend 301/301 · Frontend 383/383 · E2E CI vert · 0 régression.
+**Reviews :** reviewer batch — 0 CRITIQUE / 2 MAJEUR / 4 MINEUR. Corrigés : count numérique GATE (#181) + `--chown` public (#37) [b8a64d4]. Différés → follow-ups.
+**CI PR #247 :** backend ✅ frontend ✅ e2e ✅ security ✅ — MERGEABLE.
+**Nouveaux patterns/pitfalls/décisions :** PAT-S29-001 (health Actuator Docker), PIT-S29-001 (RTK tronque stdout docker), DEC-S29-001 (NEXT_PUBLIC_API_URL = URL hôte).
+**Note :** stack réelle = Spring Boot 3.4.13 (corrigé dans CLAUDE.md, F6).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - F1 — script correction Flyway V11 conditionnel [S | backend/db] → issue #248 (backlog)
+  - F2 — rotation secrets DB_PASSWORD/JWT_SECRET/BREVO [S | ops/sécurité] → issue #249 (backlog, P1)
+  - F3 — créer external-services-inventory.md [XS | doc] → issue #250 (backlog)
+  - F4 — pin digest sha256 images Docker [S | devops] → issue #251 (backlog)
+  - F5 — durcissements (FLYWAY_PASSWORD die + healthcheck frontend) [XS] → absorbé (f89d2f7)
+  - F6 — version stack Spring Boot 3.4.13 dans CLAUDE.md [XS] → absorbé (f89d2f7)
+  Bilan : 4 issues créées (backlog), 2 absorbées, 0 discard.
+**Commits (final) :** 7 — +f89d2f7 (follow-ups absorbés).
+**Status :** Prêt à merger (CI en revalidation sur f89d2f7 ; confirmation dev en attente)
+
+## Sprint 30 — 2026-07-07 (PLANIFIÉ — cohésion 0.76, Garde-fous boot prod & fiabilité auth)
+**Objectif :** Fail-fast prod (rate-limit off, BREVO absente) + log config cookie/CORS + test profil prod.
+**Milestone GitHub :** #30
+**Issues :** #216 (S), #130 (S), #140 (S), #129 (XS)
+**Vagues :** V1 = #140 ∥ #129 | V2 = #216 → #130 (touchent infrastructure/config)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 29 (#37 fournit le profil prod conteneurisé)
+**Status :** Planifié
+
+## Sprint 31 — 2026-07-07 (PLANIFIÉ — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
+**Objectif :** Solder CVE HIGH/CRITICAL front (#222) + back (#223) + assainir logs axios résiduels (#160).
+**Milestone GitHub :** #31
+**Issues :** #222 (M), #223 (S), #160 (XS — possibly_done, 2/4 sites déjà faits)
+**Vagues :** V1 tout parallèle (front/back/logs disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Note :** cohésion 0.37 = point faible du plan (> 0.3, pas de split). Split optionnel : #223 → S30. #160 : grep AddProducts+authService avant respawn (risque sprint à vide).
+**Status :** Planifié
+
+## Sprint 32 — 2026-07-07 (PLANIFIÉ — cohésion 1.00, Portabilité RGPD backend)
+**Objectif :** Endpoint export RGPD (profil+produits+événements+catégories ; JSON/MD sync + ZIP/CSV async).
+**Milestone GitHub :** #32
+**Issues :** #58 (L — mono-issue, sprint dédié)
+**Vagues :** V1 = #58 seul
+**Migrations Flyway :** possiblement V13 (table suivi jobs async — à déterminer)
+**Dépend de :** aucune (mais BLOQUE #59 en S33)
+**Note :** ⚠ ADR requis (aucune infra jobs async aujourd'hui). Chemin sync (JSON/MD) livrable même si async glisse. RGPD = complétude légale exhaustive.
+**Status :** Planifié
+
+## Sprint 33 — 2026-07-07 (PLANIFIÉ — cohésion 0.40, Conformité EU frontend : export + locales)
+**Objectif :** Flux export RGPD frontend (Réglages, 3 étapes) + aligner locales layout es/de (fix 404).
+**Milestone GitHub :** #33
+**Issues :** #59 (M), #235 (M)
+**Vagues :** V1 tout parallèle (#59 settings ∥ #235 i18n — disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 32 (#59 ⟵ #58, contrat/DTO export figé en fin de S32)
+**Note :** #235 = 404 es/de live ; peut être tiré en avant en S31 si exposition inacceptable.
+**Status :** Planifié
+
+> **Plan S29–S33 généré le 2026-07-07** (`/ai-env:sprint plan 5 -c focus MVP`, cohésion moyenne **0.61**, aucun sprint < 0.3). Fil directeur MVP = **shippable en prod** : déploiement (S29) → garde-fous boot (S30) → sécurité exposition (S31) → légal RGPD backend (S32) → conformité EU frontend (S33). Le cœur fonctionnel étant déjà livré (S1–S28), ces 5 sprints n'ajoutent quasiment aucune feature. **Vérif code-state Phase 0.5** : #235 confirmé ouvert (es/de 404), #160 possibly_done (2/4 sites déjà faits). **Backlog HORS MVP explicite :** #88/#102 (monétisation + Redis = ADR post-MVP), #212 (avatar MinIO — LocalStorageAdapter + volume Docker suffisent pour ship), #56/#210 (design-shell MVP-adjacent), #69/#196/#219 (scale), #145/#234/#209/#232 (tests non bloquants), #125/#127/#148 (polish), #215 (à requalifier : test.fixme, vrai bug prod ?). **Ajustements possibles au démarrage :** tirer #235 en S31, sortir #223 en S30, remonter #212 dans S29 (même docker-compose.yml que #37).

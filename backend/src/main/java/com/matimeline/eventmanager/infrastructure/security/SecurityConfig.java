@@ -124,6 +124,10 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Actuator health (#37) — PUBLIC pour le healthcheck Docker/orchestrateur.
+                // Seul /actuator/health est whitelisté (les autres endpoints actuator
+                // ne sont pas exposés sur le web par défaut, et resteraient authenticated).
+                .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/{userId}/products/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/products/**").hasAuthority("ROLE_USER")

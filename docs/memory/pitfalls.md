@@ -264,3 +264,6 @@ S27 : 3 subagents sur 5 ont initialement écrit dans le repo principal (`dev`) �
 
 ## PIT-S28-001 — Un `case`-arm de test partagé entre scopes de nature différente = faux vert silencieux
 En S28 (#207), `scripts/test-quiet.sh` faisait retomber les scopes `e2e` ET `frontend` sur le même bras `npm test` (Vitest) → `npm run test:e2e` (Playwright) n'a JAMAIS tourné depuis la création du script. Les sprints croyaient couvrir les parcours E2E (`golden-path.spec.ts`) alors que rien ne s'exécutait. Règle : une fonction/bras par runner de nature distincte (unit vs e2e), jamais mutualiser un `case`-arm entre eux. Prévention : valider l'aiguillage RÉEL (shim `npm` en PATH + dry-run / `bash -x`) et pas seulement la lecture du code — un scope qui « passe » sans rien lancer est indétectable à l'œil. (Sprint 28 #207/#133)
+
+## PIT-S29-001 — RTK tronque/mélange la sortie de `docker compose build/ps`
+En S29 (#37), le proxy RTK altère le stdout de `docker compose build`/`ps` (lignes tronquées ou mélangées) — même symptôme que [[rtk-git-diff-empty-output]] pour `git diff`. L'exit code reste fiable, pas le stdout. Prévention : rediriger vers un fichier log puis `Read`/`tail`, ou `rtk proxy docker compose ...`. Ne jamais parser le stdout brut de docker sous RTK pour décider d'un vert/rouge. (Sprint 29 #37)
