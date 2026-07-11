@@ -262,15 +262,14 @@ jobs:
 
       # npm audit sur le lockfile frontend. --audit-level=high => code de sortie
       # non nul (donc échec du job) uniquement si une vuln HIGH ou CRITICAL existe.
-      # --omit=dev : on ne bloque QUE sur les dépendances de PRODUCTION (ce qui est
-      # réellement livré aux utilisateurs). Décision sprint 23 (#167) : les vulns
-      # HIGH/CRITICAL restantes portent uniquement sur des dev/test-deps (vitest,
-      # vite, minimatch, picomatch, flatted) qui ne shippent pas en prod ; les
-      # bloquer ici serait du bruit. Le bump de ces dev-deps est suivi en follow-up
-      # dédié. Le scan Trivy ci-dessous couvre le CRITICAL cross-stack (prod + dev).
-      - name: npm audit (frontend prod deps, >= high)
+      # Couvre TOUTES les deps (prod + dev). Le flag --omit=dev de #167 a été retiré
+      # en sprint 31 (#222) : la chaîne vitest (2.x -> 3.2.7) et les leaves ReDoS
+      # (minimatch/picomatch/flatted) ont été bumpées jusqu'à 0 HIGH/CRITICAL dev
+      # inclus. Reste uniquement du MODERATE (next-intl/next/postcss/esbuild) non
+      # bloquant à ce niveau. Le scan Trivy ci-dessous couvre le CRITICAL cross-stack.
+      - name: npm audit (frontend deps, >= high)
         working-directory: frontend
-        run: npm audit --audit-level=high --omit=dev
+        run: npm audit --audit-level=high
 
       # Scan filesystem de tout le repo (dépendances backend Maven + frontend npm +
       # secrets/misconfig). exit-code=1 + severity=CRITICAL => build rouge seulement
