@@ -33,14 +33,26 @@ const eslintConfig = [
     },
   },
   {
-    // #160 — garde anti-fuite credentials (PIT §85 / PIT-S7-003, 4e récurrence).
-    // `console.error('msg', error)` avec un objet erreur axios brut fuite
-    // error.config.headers (Authorization/cookies) et error.config.data (body,
-    // password en clair). Le 2e argument doit passer par safeErrorMessage(error)
-    // (un CallExpression) ou être un objet littéral assaini — jamais un
-    // identifiant brut. Limite connue : ne détecte que l'appel à 2 arguments
-    // directs ; un identifiant intermédiaire réassigné avant l'appel
-    // (`const e = error; console.error('msg', e)`) contournerait la règle.
+    // #160 / #258 — garde anti-fuite credentials (PIT §85 / PIT-S7-003, 4e récurrence).
+    // Logger un objet erreur axios brut fuite error.config.headers
+    // (Authorization/cookies) et error.config.data (body, password en clair).
+    // Un argument erreur doit passer par safeErrorMessage(error) (un
+    // CallExpression) ou être un objet littéral assaini — jamais un identifiant
+    // brut. DEUX selectors couvrent les deux formes réelles :
+    //   1. `console.error('msg', error)` — 2 args, le 2e brut ;
+    //   2. `console.error(error)` — mono-arg brut (le dev a oublié le message ;
+    //      #258 : vecteur le plus fréquent, non couvert avant).
+    //
+    // Limite connue (assumée, PAS d'exhaustivité) — restent NON détectés :
+    //   - interpolation en template literal (`console.error(`x ${error}`)`) ;
+    //   - console.log / console.warn (seul console.error est ciblé) ;
+    //   - wrap dans un objet (`console.error({ error })`) ;
+    //   - identifiant intermédiaire réassigné (`const e = error; console.error(e)`).
+    // Les deux error-boundaries React (app/error.tsx, app/[locale]/error.tsx)
+    // logguent LÉGITIMEMENT `console.error(error)` mono-arg (erreur de rendu
+    // React, pas un objet axios) : elles portent un eslint-disable inline localisé
+    // et justifié — cf. leurs commentaires. Aucun autre `console.error(error)`
+    // brut ne doit être toléré.
     files: ['**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     rules: {
@@ -51,6 +63,12 @@ const eslintConfig = [
             'CallExpression[callee.object.name="console"][callee.property.name="error"][arguments.length=2][arguments.1.type="Identifier"]',
           message:
             "Ne pas logger l'objet erreur brut (fuite credentials/PII : headers Authorization, cookies, password en clair). Utiliser console.error('msg', safeErrorMessage(error)) — cf. src/lib/safe-error.ts.",
+        },
+        {
+          selector:
+            'CallExpression[callee.object.name="console"][callee.property.name="error"][arguments.length=1][arguments.0.type="Identifier"]',
+          message:
+            "Ne pas logger l'objet erreur brut en mono-argument (fuite credentials/PII). Utiliser console.error('msg', safeErrorMessage(error)) — cf. src/lib/safe-error.ts. (Exception tolérée : error-boundary React avec eslint-disable justifié.)",
         },
       ],
     },

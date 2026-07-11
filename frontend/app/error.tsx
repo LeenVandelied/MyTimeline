@@ -73,6 +73,7 @@ export default function GlobalError({
   const m = MESSAGES[locale] ?? MESSAGES.fr
 
   useEffect(() => {
+    // eslint-disable-next-line no-restricted-syntax -- #258 : error-boundary React. `error` est l'erreur de rendu React (pas un objet axios), aucun header/credential/PII à fuiter. Log volontaire du filet global (#57).
     console.error(error)
   }, [error])
 

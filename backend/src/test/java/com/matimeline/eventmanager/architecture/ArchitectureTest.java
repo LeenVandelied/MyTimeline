@@ -152,4 +152,34 @@ class ArchitectureTest {
 
         FreezingArchRule.freeze(rule).check(classesUnderTest);
     }
+
+    /**
+     * Règle 5 — Garde-fou CVE-2026-40973 (session hijacking) : aucune classe de production
+     * n'utilise {@code jakarta.servlet.http.HttpSession}.
+     *
+     * <p>L'acceptation de CVE-2026-40973 (docs/security/cve-acceptance.md) repose sur la posture
+     * STATELESS de l'application (cookie JWT HttpOnly, {@code SessionCreationPolicy.STATELESS}) :
+     * aucune {@code HttpSession} serveur n'est créée. Réintroduire une {@code HttpSession}
+     * invaliderait silencieusement cette acceptation — ce test échoue alors AVANT le merge.
+     *
+     * <p>Complément comportemental : {@code StatelessSessionGuardTest} (aucune session/JSESSIONID
+     * matérialisée à l'exécution, ce qui couvre aussi un changement de {@code SessionCreationPolicy}
+     * vers ALWAYS).
+     */
+    @Test
+    void productionCodeShouldNotUseHttpSession() {
+        ArchRule rule =
+                noClasses()
+                        .that()
+                        .resideInAPackage(ROOT + "..")
+                        .should()
+                        .dependOnClassesThat()
+                        .haveFullyQualifiedName("jakarta.servlet.http.HttpSession")
+                        .because(
+                                "l'application est STATELESS (cookie JWT) ; introduire une HttpSession"
+                                        + " invaliderait l'acceptation de CVE-2026-40973 (session"
+                                        + " hijacking) — cf. docs/security/cve-acceptance.md");
+
+        rule.check(classesUnderTest);
+    }
 }

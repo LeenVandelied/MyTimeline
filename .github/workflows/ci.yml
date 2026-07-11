@@ -239,7 +239,8 @@ jobs:
   # ---------------------------------------------------------------------------
   # Security (#167) — scan de sécurité des dépendances. Tourne en parallèle des
   # autres jobs, n'ajoute AUCUNE dépendance et n'active AUCUNE branch protection.
-  #   - npm audit --audit-level=high : échoue si vuln npm >= high (frontend).
+  #   - npm audit --audit-level=high : échoue si vuln npm >= high (frontend,
+  #     dev+prod — #222 a retiré --omit=dev, l'audit couvre désormais TOUTES les deps).
   #   - trivy fs --severity CRITICAL --exit-code 1 : bloque UNIQUEMENT le critique
   #     (évite le bruit HIGH/MEDIUM ; les CVE CRITICAL sont résolues par #180).
   # permissions: contents: read hérité du niveau workflow (non élargi).
@@ -267,7 +268,7 @@ jobs:
       # (minimatch/picomatch/flatted) ont été bumpées jusqu'à 0 HIGH/CRITICAL dev
       # inclus. Reste uniquement du MODERATE (next-intl/next/postcss/esbuild) non
       # bloquant à ce niveau. Le scan Trivy ci-dessous couvre le CRITICAL cross-stack.
-      - name: npm audit (frontend deps, >= high)
+      - name: npm audit (frontend deps dev+prod, >= high)
         working-directory: frontend
         run: npm audit --audit-level=high
 
