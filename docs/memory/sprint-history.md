@@ -712,7 +712,7 @@
   - Untrack `frontend/.eslintcache` + gitignore (churn à chaque lint) [XS | devops] → issue #262
 **Status :** Terminé
 
-## Sprint 32 — 2026-07-07 (PLANIFIÉ — cohésion 1.00, Portabilité RGPD backend)
+## Sprint 32 — 2026-07-07 (En cours — cohésion 1.00, Portabilité RGPD backend)
 **Objectif :** Endpoint export RGPD (profil+produits+événements+catégories ; JSON/MD sync + ZIP/CSV async).
 **Milestone GitHub :** #32
 **Issues :** #58 (L — mono-issue, sprint dédié)
