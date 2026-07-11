@@ -36,7 +36,7 @@ RUN addgroup --system --gid 1001 nodejs \
 
 # Sortie standalone : serveur Node minimal + assets. `public` et `.next/static`
 # ne sont PAS inclus dans standalone -> copiés explicitement.
-COPY --from=build /app/public ./public
+COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 

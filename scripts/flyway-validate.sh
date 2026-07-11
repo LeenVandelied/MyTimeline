@@ -145,7 +145,11 @@ flyway_run info || true
 # =============================================================
 log "Étape (b) — diagnostic pré-V11 (lignes reclassées silencieusement par V11)…"
 RECLASS_COUNT="$(run_diagnostic_count | tr -d '[:space:]')"
-[ -n "${RECLASS_COUNT}" ] || die "Impossible de lire le count de diagnostic."
+[ -n "${RECLASS_COUNT}" ] || die "Impossible de lire le count de diagnostic (sortie vide)."
+# Le count DOIT être numérique : une sortie psql/docker non-numérique (erreur de
+# connexion, message d'auth, warning) ferait planter le GATE `-gt` sous `set -e`
+# en masquant le vrai problème. On échoue proprement à la place.
+[[ "${RECLASS_COUNT}" =~ ^[0-9]+$ ]] || die "Count de diagnostic non numérique (sortie inattendue) : '${RECLASS_COUNT}'. Vérifier la connexion DB / les identifiants."
 log "Lignes candidates à la reclassification silencieuse : ${RECLASS_COUNT}"
 
 # =============================================================
