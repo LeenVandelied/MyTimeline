@@ -4,6 +4,8 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +24,25 @@ public class JwtService {
 
     @Value("${jwt.secret}")
     private String secretKey;
+
+    /**
+     * Garde-fou de boot (fail-fast) : valide le secret AU DÉMARRAGE plutôt qu'à
+     * chaque requête. Un secret non Base64 (p.ex. contenant '-') ou trop court
+     * (< 32 octets décodés, insuffisant pour HS256) faisait échouer getSigningKey()
+     * à CHAQUE login/refresh -> 500 opaque en boucle. Ici l'app refuse de démarrer
+     * avec un message clair. Le message n'expose JAMAIS la valeur du secret.
+     */
+    @PostConstruct
+    void validateSecret() {
+        try {
+            getSigningKey();
+        } catch (RuntimeException e) {
+            throw new IllegalStateException(
+                    "jwt.secret invalide : attendu du Base64 STANDARD décodant à >= 32 octets "
+                    + "(HS256). Cause : " + e.getClass().getSimpleName() + " — " + e.getMessage(),
+                    e);
+        }
+    }
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
