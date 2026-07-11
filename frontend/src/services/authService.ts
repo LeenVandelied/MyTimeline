@@ -1,6 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { LoginData, LoginSchema } from '@/types/auth'
 import { UserSchema } from '@/types/user'
+import { safeErrorMessage } from '@/lib/safe-error'
 
 export const login = async (username: string, password: string) => {
   try {
@@ -58,7 +59,7 @@ export const refreshToken = async () => {
     await apiClient.post('/auth/refresh')
     return true
   } catch (error) {
-    console.error('Erreur lors du rafraîchissement du token:', error)
+    console.error('Erreur lors du rafraîchissement du token:', safeErrorMessage(error))
     return false
   }
 }

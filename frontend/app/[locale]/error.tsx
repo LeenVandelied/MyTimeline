@@ -37,6 +37,7 @@ export default function LocaleError({
 
   useEffect(() => {
     // Journalise l'erreur réelle (le message est masqué à l'utilisateur).
+    // eslint-disable-next-line no-restricted-syntax -- #258 : error-boundary React. `error` est l'erreur de rendu React (pas un objet axios), aucun header/credential/PII à fuiter. Log volontaire du crash boundary (#57).
     console.error(error)
   }, [error])
 

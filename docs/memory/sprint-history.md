@@ -692,15 +692,25 @@
   - Test négatif "no-warn quand config valide" pour ProdConfigStartupLogger [XS | test, reviewer MINEUR] → issue #257 (backlog)
 **Status :** Terminé
 
-## Sprint 31 — 2026-07-07 (PLANIFIÉ — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
+## Sprint 31 — 2026-07-07 → 2026-07-11 (Terminé — merge PR #258 dans dev — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
 **Objectif :** Solder CVE HIGH/CRITICAL front (#222) + back (#223) + assainir logs axios résiduels (#160).
-**Milestone GitHub :** #31
-**Issues :** #222 (M), #223 (S), #160 (XS — possibly_done, 2/4 sites déjà faits)
-**Vagues :** V1 tout parallèle (front/back/logs disjoints)
+**Milestone GitHub :** #31 (fermé après merge)
+**Issues livrées (3) :** #223 (S — 6 CVE HIGH triées), #222 (M — vitest 2→3, CI dev+prod), #160 (S — fuite token authService + garde ESLint)
+**Vagues exécutées :** V1 = #223 (backend) ∥ #222 (frontend deps) | V2 = #160 (frontend source, après stabilisation npm)
+**Cohésion score :** 0.37 (point faible du plan, > 0.3 → pas de split)
+**Commits :** 656ffa0 (#223) · 2abd4ac (#222) · bba7b97 (#160) · 1d8a842 (audit) · 7042638 (corrections review PR)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
-**Note :** cohésion 0.37 = point faible du plan (> 0.3, pas de split). Split optionnel : #223 → S30. #160 : grep AddProducts+authService avant respawn (risque sprint à vide).
-**Status :** Planifié
+**BR impactées :** aucune BR fonctionnelle (sprint deps + durcissement logging/sécurité).
+**Reviews :** /review-pr #258 (TEAM lean : reviewer + security-expert) — 0 CRITIQUE / 2 MAJEUR / 3 MINEUR, tous RÉSOLUS (commit 7042638 : garde ESLint mono-arg + RuleTester + ArchUnit stateless + resync CI).
+**Tests :** Backend 318/318 vert (CI 1m5s) | Frontend 390/390 vert (CI 1m31s, vitest 3) | security CI pass. E2E non requis (infra, pas de parcours métier S31).
+**Décisions notables (écarts au plan) :** #160 `possibly_done` RÉFUTÉ (fuite token réelle) → respawn forcé ; waves resséquencées (#160 en V2, node_modules partagé raté par matrice architect) ; branche worktree renommée `sprint/31`.
+**Nouveaux pitfalls/patterns/décisions :** PIT-S31-001/002, PAT-S31-001/002, DEC-S31-001/002.
+**Follow-ups arbitrés (Phase 4 triage — 3/3 créés en backlog, 0 discard) :**
+  - Upgrade plateforme Spring Boot 3.5.x (résout 3 CVE Boot acceptées) [M | devops] → issue #260
+  - CVE MODERATE PROD résiduelles : next-intl (open-redirect/proto-pollution) + next→postcss XSS [M | frontend] → issue #261
+  - Untrack `frontend/.eslintcache` + gitignore (churn à chaque lint) [XS | devops] → issue #262
+**Status :** Terminé
 
 ## Sprint 32 — 2026-07-07 (PLANIFIÉ — cohésion 1.00, Portabilité RGPD backend)
 **Objectif :** Endpoint export RGPD (profil+produits+événements+catégories ; JSON/MD sync + ZIP/CSV async).

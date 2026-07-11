@@ -80,6 +80,23 @@
 		<spring-security.version>6.5.11</spring-security.version>
 		<tomcat.version>10.1.56</tomcat.version>
 		<spring-framework.version>6.2.19</spring-framework.version>
+		<!--
+			CVE HIGH résiduelles post-#180 (#223) — overrides patch du BOM Spring
+			Boot 3.4.13. Deux dépendances gérées par le BOM restent vulnérables à
+			un niveau patch, corrigible SANS quitter la ligne 3.4.x :
+
+			• jackson-databind 2.18.5 → 2.18.8 (jackson-bom) : CVE-2026-54512 +
+			  CVE-2026-54513 (bypass PolymorphicTypeValidator → RCE). Corrigées en
+			  2.18.8 (patch même mineure). Le BOM 3.4.13 pin jackson-bom 2.18.5.
+			• postgresql (pgjdbc) 42.7.8 → 42.7.11 : CVE-2026-42198 (DoS
+			  client-side via SCRAM-SHA-256 malicieux). Corrigée en 42.7.11 (patch).
+
+			Les 3 autres HIGH (spring-boot CVE-2026-40973, actuator
+			CVE-2026-22731 / CVE-2026-22733) exigent un bump MINEUR 3.5.x et sont
+			acceptées + documentées : cf. docs/security/cve-acceptance.md.
+		-->
+		<jackson-bom.version>2.18.8</jackson-bom.version>
+		<postgresql.version>42.7.11</postgresql.version>
 	</properties>
 	<dependencies>
 		<dependency>
