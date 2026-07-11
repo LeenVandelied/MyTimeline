@@ -97,4 +97,90 @@ class ProfileSafetyGuardTest {
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
     }
+
+    // --- #216 : refuse le boot si rate-limit désactivé en prod effectif ---
+
+    @Test
+    @DisplayName("#216 profil prod + rate-limit false → refuse de booter")
+    void shouldFail_whenProdProfileAndRateLimitDisabled() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.enabled", "false");
+        env.setActiveProfiles("prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#216")
+                .hasMessageContaining("app.rate-limit.enabled");
+    }
+
+    @Test
+    @DisplayName("#216 marqueur prod + profil prod + rate-limit false → refuse de booter")
+    void shouldFail_whenProdMarkerAndRateLimitDisabled() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("ENVIRONMENT", "production")
+                .withProperty("app.rate-limit.enabled", "false");
+        env.setActiveProfiles("prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#216");
+    }
+
+    @Test
+    @DisplayName("#216 profil prod + rate-limit true → boot autorisé")
+    void shouldPass_whenProdProfileAndRateLimitEnabled() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.enabled", "true");
+        env.setActiveProfiles("prod");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#216 profil prod + property rate-limit absente → boot autorisé (défaut fail-safe true)")
+    void shouldPass_whenProdProfileAndRateLimitAbsent() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#216 profil dev + rate-limit false (CI e2e) → boot autorisé")
+    void shouldPass_whenDevProfileAndRateLimitDisabled() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.enabled", "false");
+        env.setActiveProfiles("dev");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#216 profil test + rate-limit false (CI e2e) → boot autorisé")
+    void shouldPass_whenTestProfileAndRateLimitDisabled() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.enabled", "false");
+        env.setActiveProfiles("test");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#216 marqueur prod (APP_ENV) sans profil + rate-limit false → refuse de booter")
+    void shouldFail_whenProdMarkerOnlyAndRateLimitDisabled() {
+        // Aucun profil actif : le fallback default 'dev' ne rend PAS prod effectif via profil,
+        // mais le marqueur APP_ENV=prod suffit à déclencher #216.
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("APP_ENV", "prod")
+                .withProperty("app.rate-limit.enabled", "false")
+                .withProperty("spring.profiles.active", "prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#216");
+    }
 }
