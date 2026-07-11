@@ -706,10 +706,10 @@
 **Tests :** Backend 318/318 vert (CI 1m5s) | Frontend 390/390 vert (CI 1m31s, vitest 3) | security CI pass. E2E non requis (infra, pas de parcours métier S31).
 **Décisions notables (écarts au plan) :** #160 `possibly_done` RÉFUTÉ (fuite token réelle) → respawn forcé ; waves resséquencées (#160 en V2, node_modules partagé raté par matrice architect) ; branche worktree renommée `sprint/31`.
 **Nouveaux pitfalls/patterns/décisions :** PIT-S31-001/002, PAT-S31-001/002, DEC-S31-001/002.
-**Follow-ups proposés (NON-XS) :**
-  - Upgrade plateforme Spring Boot 3.5.x (résout 3 CVE Boot acceptées) [triage M | devops] (issue-223 — RECOMMAND_FOLLOWUP)
-  - CVE MODERATE PROD résiduelles : next-intl (open-redirect/proto-pollution) + next→postcss XSS [triage M | frontend/devops] (issue-222 — RECOMMAND_FOLLOWUP)
-  - Untrack `frontend/.eslintcache` + gitignore (churn à chaque lint) [triage XS | devops] (review PR #258)
+**Follow-ups arbitrés (Phase 4 triage — 3/3 créés en backlog, 0 discard) :**
+  - Upgrade plateforme Spring Boot 3.5.x (résout 3 CVE Boot acceptées) [M | devops] → issue #260
+  - CVE MODERATE PROD résiduelles : next-intl (open-redirect/proto-pollution) + next→postcss XSS [M | frontend] → issue #261
+  - Untrack `frontend/.eslintcache` + gitignore (churn à chaque lint) [XS | devops] → issue #262
 **Status :** Terminé
 
 ## Sprint 32 — 2026-07-07 (PLANIFIÉ — cohésion 1.00, Portabilité RGPD backend)
