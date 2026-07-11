@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    // Diagnostic : les catch (Exception e) génériques renvoyaient 500 SANS trace,
+    // rendant tout incident (secret JWT invalide, DB HS...) aveugle. On loggue
+    // désormais la stacktrace. logger.error(msg, e) — jamais la valeur d'un secret.
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
@@ -128,6 +135,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(java.util.Map.of("error", "Invalid username or password"));
         } catch (Exception e) {
+            logger.error("Échec inattendu du login (username={})", authRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("error", "authentication_failed"));
         }
@@ -167,6 +175,7 @@ public class AuthController {
         } catch (MalformedJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
         } catch (Exception e) {
+            logger.error("Échec inattendu de /me", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
@@ -205,6 +214,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(java.util.Map.of("error", field + " already taken"));
         } catch (Exception e) {
+            logger.error("Échec inattendu de register (username={})", registerRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during registration");
         }
     }
@@ -222,6 +232,7 @@ public class AuthController {
             response.addCookie(buildJwtCookie("", 0));
             return ResponseEntity.ok("Logged out successfully");
         } catch (Exception e) {
+            logger.error("Échec inattendu du logout", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
         }
     }
@@ -292,6 +303,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(java.util.Map.of("error", "token expiré ou invalide"));
         } catch (Exception e) {
+            logger.error("Échec inattendu du refresh", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("error", "an_error_occurred"));
         }
