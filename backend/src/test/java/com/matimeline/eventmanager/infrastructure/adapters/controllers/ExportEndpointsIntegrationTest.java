@@ -59,7 +59,13 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  */
 @SpringBootTest(properties = {
         "jwt.secret=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
-        "spring.main.allow-bean-definition-overriding=true"
+        "spring.main.allow-bean-definition-overriding=true",
+        // #58 : ce test couvre le FLOW fonctionnel de l'export (soumission/polling/ownership),
+        // pas le throttling. Les POST /api/export partagent l'IP par défaut de MockMvc
+        // (127.0.0.1) et dépasseraient la limite 5/min introduite avec le rate-limit de
+        // soumission. On désactive le filtre ici (même usage que CI/e2e) ; le throttle 429 est
+        // couvert par RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429.
+        "app.rate-limit.enabled=false"
 })
 @AutoConfigureMockMvc
 @Import(ExportEndpointsIntegrationTest.SyncExportExecutorConfig.class)

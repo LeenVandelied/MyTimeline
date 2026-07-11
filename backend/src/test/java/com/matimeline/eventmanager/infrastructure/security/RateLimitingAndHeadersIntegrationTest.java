@@ -181,6 +181,31 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
     }
 
     /**
+     * Non-régression #58 (MAJEUR post-audit) : la soumission de job d'export
+     * (POST /api/export) est une opération lourde (pool async borné + écriture fichier).
+     * Elle DOIT être throttlée (limite 5/min/IP). Le RateLimitingFilter est placé avant
+     * l'AuthorizationFilter (addFilterBefore UsernamePasswordAuthenticationFilter), donc le
+     * 429 court-circuite même sans JWT valide : les 5 premières passent (rejetées plus loin
+     * par l'authz), la 6e depuis la même IP est throttlée. Les GET (téléchargement / statut /
+     * json|markdown) ne passent PAS par ce throttle — c'est attendu, hors périmètre du MAJEUR.
+     */
+    @Test
+    void exportSubmission_sixthWithinWindow_returns429() throws Exception {
+        String ip = "10.0.0.58";
+        for (int i = 1; i <= 5; i++) {
+            int sc = mockMvc.perform(post("/api/export")
+                            .with(req -> { req.setRemoteAddr(ip); return req; }))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "soumission #" + i + " sous la limite ne doit pas être throttlée");
+        }
+        mockMvc.perform(post("/api/export")
+                        .with(req -> { req.setRemoteAddr(ip); return req; }))
+                .andExpect(status().is(429))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
      * The hardened CSP (#101): explicit per-resource directives, no permissive
      * default-src catch-all granting scripts/styles. Asserted as the exact policy
      * string so any accidental loosening (e.g. re-adding 'unsafe-inline') fails CI.

@@ -55,7 +55,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             // #49 : forgot-password est une cible d'abus (spam mail / énumération).
             // Throttle strict par IP, cohérent avec le slot reset-password (#33).
             "/api/auth/forgot-password", 5,
-            "/api/auth/reset-password", 5
+            "/api/auth/reset-password", 5,
+            // #58 : soumission de job d'export RGPD (POST /api/export) — opération lourde
+            // (pool async borné + écriture fichier sur disque, aucun quota). Sans throttle un
+            // user authentifié peut spammer les soumissions → épuisement du pool + accumulation
+            // de fichiers. Limite basse (5/min/IP) alignée sur les slots coûteux forgot/reset.
+            "/api/export", 5
     );
 
     private static final Duration WINDOW = Duration.ofMinutes(1);

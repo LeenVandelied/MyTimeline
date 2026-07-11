@@ -93,6 +93,47 @@ class ExportRenderersTest {
         assertFalse(csv.contains(PASSWORD_HASH));
     }
 
+    /**
+     * Non-régression injection de formule (#58, MINEUR post-audit) : un champ user-controlled
+     * commençant par un caractère à risque (= + - @) doit être préfixé d'une apostrophe pour
+     * neutraliser l'interprétation en formule (Excel / Google Sheets), SANS casser l'échappement
+     * RFC 4180 existant (virgules / guillemets).
+     */
+    @Test
+    void csv_neutralizesFormulaInjectionOnUserControlledFields() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "Bob", "bob", PASSWORD_HASH, "ROLE_USER", "bob@example.test");
+        UUID categoryId = UUID.randomUUID();
+        // Description commençant par '=' (formule) + name commençant par '@'.
+        Category category = new Category(categoryId, "@cmd", "#ff0000",
+                "=1+1", userId);
+        UUID productId = UUID.randomUUID();
+        // Titre commençant par '=' ET contenant une virgule -> apostrophe PUIS guillemets.
+        Event event = new Event(UUID.randomUUID(), "=HYPERLINK(\"x\"),evil", "single", 1, "days",
+                false, RecurrenceUnit.WEEK, null,
+                LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 2), productId, false, "#00ff00", false);
+        // Nom produit commençant par '-' (formule négative).
+        Product product = new Product(productId, "-2+3", category, user,
+                new ArrayList<>(List.of(event)), false, "#0000ff");
+        UserDataExport export = UserDataExport.assemble(user, List.of(product), List.of(category),
+                LocalDateTime.of(2026, 7, 11, 10, 0));
+
+        RenderedExport rendered = new CsvExportRenderer().render(export);
+        String csv = new String(rendered.content(), StandardCharsets.UTF_8);
+
+        assertTrue(csv.contains("'@cmd"), "champ '@' neutralisé par apostrophe");
+        assertTrue(csv.contains("'=1+1"), "champ '=' neutralisé par apostrophe");
+        assertTrue(csv.contains("'-2+3"), "champ '-' neutralisé par apostrophe");
+        // Le titre est neutralisé (apostrophe) PUIS entouré de guillemets (contient virgule/guillemet).
+        assertTrue(csv.contains("\"'=HYPERLINK(\"\"x\"\"),evil\""),
+                "formule + virgule : apostrophe interne, guillemets RFC 4180 conservés");
+        // Aucune ligne de données ne commence par un caractère de formule brut.
+        for (String line : csv.split("\n")) {
+            assertFalse(line.startsWith("=") || line.startsWith("@"),
+                    "aucune valeur de formule non neutralisée en tête de champ: " + line);
+        }
+    }
+
     @Test
     void zip_bundlesThreeRepresentations() throws IOException {
         ZipExportRenderer renderer = new ZipExportRenderer(

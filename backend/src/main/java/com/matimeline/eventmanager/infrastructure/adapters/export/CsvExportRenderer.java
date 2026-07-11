@@ -78,17 +78,40 @@ public class CsvExportRenderer implements ExportRenderer {
         return line.append('\n').toString();
     }
 
-    /** Échappement RFC 4180 : entoure de guillemets si nécessaire, double les guillemets. */
+    /**
+     * Échappement RFC 4180 : entoure de guillemets si nécessaire, double les guillemets.
+     * Neutralise d'abord l'injection de formule (préfixe apostrophe) — cf. {@link #neutralizeFormula}.
+     */
     private static String escape(String value) {
         if (value == null) {
             return "";
         }
-        boolean needsQuoting = value.contains(",") || value.contains("\"")
-                || value.contains("\n") || value.contains("\r");
+        String sanitized = neutralizeFormula(value);
+        boolean needsQuoting = sanitized.contains(",") || sanitized.contains("\"")
+                || sanitized.contains("\n") || sanitized.contains("\r");
         if (!needsQuoting) {
+            return sanitized;
+        }
+        return "\"" + sanitized.replace("\"", "\"\"") + "\"";
+    }
+
+    /**
+     * Mitigation OWASP CSV injection : un champ user-controlled commençant par
+     * {@code = + - @} (ou une tabulation / un retour chariot) est interprété comme formule
+     * à la réouverture dans Excel / Google Sheets. On préfixe une apostrophe pour forcer
+     * l'interprétation en texte, AVANT l'échappement RFC 4180. Surface élargie par RGPD
+     * Art.20 (le fichier peut être transmis à un tiers). #58.
+     */
+    private static String neutralizeFormula(String value) {
+        if (value.isEmpty()) {
             return value;
         }
-        return "\"" + value.replace("\"", "\"\"") + "\"";
+        char first = value.charAt(0);
+        if (first == '=' || first == '+' || first == '-' || first == '@'
+                || first == '\t' || first == '\r') {
+            return "'" + value;
+        }
+        return value;
     }
 
     private static String str(Object value) {
