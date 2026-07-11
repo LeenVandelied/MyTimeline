@@ -700,7 +700,8 @@
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
 **Note :** cohésion 0.37 = point faible du plan (> 0.3, pas de split). Split optionnel : #223 → S30. #160 : grep AddProducts+authService avant respawn (risque sprint à vide).
-**Status :** Planifié
+**Vérif démarrage (2026-07-11) :** #160 possibly_done → RÉFUTÉ : `authService.ts:61` logge encore `error` brut (fuite token refresh) + garde ESLint absente → respawn forcé justifié. AddProducts déjà propre.
+**Status :** En cours
 
 ## Sprint 32 — 2026-07-07 (PLANIFIÉ — cohésion 1.00, Portabilité RGPD backend)
 **Objectif :** Endpoint export RGPD (profil+produits+événements+catégories ; JSON/MD sync + ZIP/CSV async).
