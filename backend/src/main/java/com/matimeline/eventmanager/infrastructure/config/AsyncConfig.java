@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +46,9 @@ public class AsyncConfig {
      * Executor des jobs d'export RGPD asynchrones (#58, ADR-003 — ZIP/CSV). Pool borné : la
      * génération (agrégation + rendu + écriture disque) est modérément coûteuse et le volume
      * faible (action manuelle utilisateur). La queue absorbe les pics ; à saturation, la
-     * politique par défaut (CallerRunsPolicy) applique un backpressure sans perdre de job.
+     * {@link ThreadPoolExecutor.CallerRunsPolicy} configurée explicitement applique un
+     * backpressure (la tâche s'exécute sur le thread appelant) sans perdre de job — le défaut
+     * Spring ({@code AbortPolicy}) rejetterait la tâche et laisserait le job PENDING orphelin.
      */
     @Bean(name = "exportExecutor")
     public Executor exportExecutor() {
@@ -54,6 +57,7 @@ public class AsyncConfig {
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("export-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();
         return executor;
     }

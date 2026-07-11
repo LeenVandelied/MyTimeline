@@ -8,7 +8,7 @@ import java.util.UUID;
  * JPA {@code ExportJobEntity} et le mapper vivent côté infrastructure/application.
  *
  * <p>Transitions pilotées par le use case ({@code ExportServiceImpl} / {@code AsyncExportRunner}) :
- * {@link #markRunning()}, {@link #markCompleted(String, LocalDateTime)},
+ * {@link #markRunning()}, {@link #markCompleted(String, LocalDateTime, LocalDateTime)},
  * {@link #markFailed(String)}. {@code storageRef} (référence opaque {@code StoragePort}),
  * {@code completedAt} et {@code expiresAt} ne sont renseignés qu'à la complétion.
  * {@code errorCode} est un code technique borné (jamais de PII ni de stack).
@@ -49,10 +49,10 @@ public class ExportJob {
         this.status = ExportJobStatus.RUNNING;
     }
 
-    public void markCompleted(String storageRef, LocalDateTime expiresAt) {
+    public void markCompleted(String storageRef, LocalDateTime completedAt, LocalDateTime expiresAt) {
         this.status = ExportJobStatus.COMPLETED;
         this.storageRef = storageRef;
-        this.completedAt = expiresAt.minusHours(24);
+        this.completedAt = completedAt;
         this.expiresAt = expiresAt;
     }
 

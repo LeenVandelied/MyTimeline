@@ -134,6 +134,33 @@ class ExportRenderersTest {
         }
     }
 
+    /**
+     * Non-régression injection de formule (#58, MINEUR post-review) : un champ user-controlled
+     * commençant par un saut de ligne {@code \n} est aussi un déclencheur Excel / Google Sheets.
+     * Il doit être préfixé d'une apostrophe (neutralisation) PUIS entouré de guillemets (RFC 4180
+     * car il contient un {@code \n}).
+     */
+    @Test
+    void csv_neutralizesLeadingNewlineFormulaTrigger() {
+        UUID userId = UUID.randomUUID();
+        User user = new User(userId, "Carol", "carol", PASSWORD_HASH, "ROLE_USER", "carol@example.test");
+        UUID categoryId = UUID.randomUUID();
+        // Nom de catégorie commençant par '\n' (déclencheur de formule à retardement).
+        Category category = new Category(categoryId, "\n=danger", "#ff0000", "desc", userId);
+        UUID productId = UUID.randomUUID();
+        Product product = new Product(productId, "Projet", category, user,
+                new ArrayList<>(), false, "#0000ff");
+        UserDataExport export = UserDataExport.assemble(user, List.of(product), List.of(category),
+                LocalDateTime.of(2026, 7, 11, 10, 0));
+
+        RenderedExport rendered = new CsvExportRenderer().render(export);
+        String csv = new String(rendered.content(), StandardCharsets.UTF_8);
+
+        // Apostrophe insérée en tête AVANT le '\n', le tout entouré de guillemets RFC 4180.
+        assertTrue(csv.contains("\"'\n=danger\""),
+                "champ à '\\n' en tête neutralisé par apostrophe puis quoté RFC 4180");
+    }
+
     @Test
     void zip_bundlesThreeRepresentations() throws IOException {
         ZipExportRenderer renderer = new ZipExportRenderer(

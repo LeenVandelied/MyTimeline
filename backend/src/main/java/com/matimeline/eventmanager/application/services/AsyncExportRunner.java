@@ -71,8 +71,9 @@ public class AsyncExportRunner {
             RenderedExport rendered = rendererRegistry.render(job.getFormat(), data);
             String storageRef = storagePort.store(rendered.content(), job.getFormat().extension());
 
-            LocalDateTime expiresAt = LocalDateTime.now(clock).plusHours(DOWNLOAD_TTL_HOURS);
-            job.markCompleted(storageRef, expiresAt);
+            LocalDateTime now = LocalDateTime.now(clock);
+            LocalDateTime expiresAt = now.plusHours(DOWNLOAD_TTL_HOURS);
+            job.markCompleted(storageRef, now, expiresAt);
             jobRepository.save(job);
             log.info("export job terminé: job={} format={}", jobId, job.getFormat());
         } catch (RuntimeException e) {

@@ -98,7 +98,8 @@ public class CsvExportRenderer implements ExportRenderer {
     /**
      * Mitigation OWASP CSV injection : un champ user-controlled commençant par
      * {@code = + - @} (ou une tabulation / un retour chariot) est interprété comme formule
-     * à la réouverture dans Excel / Google Sheets. On préfixe une apostrophe pour forcer
+     * à la réouverture dans Excel / Google Sheets. Un saut de ligne {@code \n} en tête est
+     * également un déclencheur. On préfixe une apostrophe pour forcer
      * l'interprétation en texte, AVANT l'échappement RFC 4180. Surface élargie par RGPD
      * Art.20 (le fichier peut être transmis à un tiers). #58.
      */
@@ -108,7 +109,7 @@ public class CsvExportRenderer implements ExportRenderer {
         }
         char first = value.charAt(0);
         if (first == '=' || first == '+' || first == '-' || first == '@'
-                || first == '\t' || first == '\r') {
+                || first == '\t' || first == '\r' || first == '\n') {
             return "'" + value;
         }
         return value;
