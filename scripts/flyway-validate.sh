@@ -62,6 +62,10 @@ case "${FLYWAY_URL}" in
        Ne JAMAIS le lancer contre la prod live."
     fi
     warn "URL non-locale confirmée (CONFIRM_PROD=yes) : ${FLYWAY_URL}"
+    # Sur une base non-locale, un mot de passe vide échouerait côté auth avec un
+    # message peu clair (psql/flyway). On échoue proprement en amont.
+    [ -n "${FLYWAY_PASSWORD}" ] || die "FLYWAY_PASSWORD vide sur une URL non-locale (${FLYWAY_URL}).
+       Fournir le mot de passe : FLYWAY_PASSWORD=... CONFIRM_PROD=yes ..."
     ;;
 esac
 

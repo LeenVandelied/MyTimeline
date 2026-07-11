@@ -63,6 +63,13 @@ services:
       - backend
     ports:
       - "3000:3000"
+    healthcheck:
+      # wget est fourni par busybox dans node:20-alpine.
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   postgres-data:
