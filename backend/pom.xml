@@ -94,6 +94,19 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<!--
+			Actuator (#37) — expose /actuator/health pour le healthcheck Docker
+			(docker-compose depends_on: condition: service_healthy). Par défaut,
+			seul l'endpoint `health` est exposé sur le web (management.endpoints.web.
+			exposure.include=health) et show-details=never : le corps se limite à
+			{"status":"UP"} sans fuite d'info interne. L'endpoint est whitelisté
+			PUBLIC dans SecurityConfig (permitAll sur /actuator/health) sinon le
+			probe reçoit 401.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>

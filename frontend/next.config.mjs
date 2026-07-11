@@ -24,6 +24,10 @@ const apiProxyTarget = process.env.E2E_API_PROXY_TARGET
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // #37 — build autonome pour l'image Docker : `.next/standalone` embarque un
+  // serveur Node minimal + uniquement les deps runtime nécessaires, sans copier
+  // tout node_modules dans l'image finale. Neutre hors conteneur (dev/CI inchangés).
+  output: 'standalone',
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: false,
