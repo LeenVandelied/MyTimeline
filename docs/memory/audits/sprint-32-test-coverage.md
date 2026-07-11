@@ -1,6 +1,6 @@
 # Audit tests — Sprint 32
 
-> Généré en fin de Phase 6. `[MISSING]` bloque la Phase 9 PR.
+> Généré en fin de Phase 6. Un marqueur de couverture manquante en cellule bloque la Phase 9 PR.
 > Thème : Portabilité RGPD backend (issue #58). Aucune BR métier formelle (BR impactées = aucune
 > selon l'issue) — l'export est une exigence légale RGPD Art.20, non une règle de calcul métier.
 > Couverture exprimée par exigence fonctionnelle (EF) plutôt que par BR-XX.
@@ -20,7 +20,7 @@
 
 Cross-system flow = NON : #58 est backend pur, aucun flux multi-systèmes/rôles frontend↔backend
 dans ce sprint. Le parcours utilisateur (Réglages → export) est livré en **S33 (#59)** — l'E2E
-métier du flux RGPD complet appartient à ce sprint, pas au 32. Pas de `[MISSING]` bloquant ici :
+métier du flux RGPD complet appartient à ce sprint, pas au 32. Aucune couverture manquante bloquante ici :
 le contrat DTO est figé et documenté pour l'alignement S33.
 
 ## Tests créés
@@ -49,5 +49,5 @@ le contrat DTO est figé et documenté pour l'alignement S33.
 
 ## Conclusion
 **Prêt pour PR.** Suite complète verte (353/353), findings sécurité MAJEUR/MINEUR résolus,
-migration validée, snapshot leak-proof. Aucun `[MISSING]` bloquant. L'E2E métier du parcours
+migration validée, snapshot leak-proof. Aucune couverture manquante bloquante. L'E2E métier du parcours
 RGPD utilisateur relève de S33 (#59), qui consomme le contrat DTO figé ici.
