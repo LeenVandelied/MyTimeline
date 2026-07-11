@@ -39,7 +39,10 @@ services:
       DB_USERNAME: ${DB_USERNAME:-eventuser}
       DB_PASSWORD: ${DB_PASSWORD:-motdepasse_dev_local}
       # Défaut dev insécurisé si absent du .env (profil dev tolère). À changer.
-      JWT_SECRET: ${JWT_SECRET:-dev-only-insecure-secret-change-me-0000000000000000000000000000000000000000000000000000000000000000}
+      # Base64 STANDARD valide (JwtService décode via Decoders.BASE64) : 48 octets
+      # décodés >= 32 requis pour HS256. L'ancien default à base de '-' cassait le
+      # décodage -> 500 sur tout login. Aligné sur application-dev.properties.
+      JWT_SECRET: ${JWT_SECRET:-ZGV2LW9ubHktaW5zZWN1cmUtand0LXNlY3JldC1jaGFuZ2UtbWUtcGVyLXBvc3Qh}
       # Avatars persistés sur le volume monté ci-dessous.
       STORAGE_AVATAR_PATH: /app/var/avatars
     ports:
