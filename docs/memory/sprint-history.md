@@ -764,7 +764,7 @@
 **Vagues :** V1 = #260 (pom) ∥ #261 (package.json) | V2 = #224 (après #260, asserte le BOM post-upgrade)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (racine)
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-12)
 
 ## Sprint 35 — 2026-07-12 (PLANIFIE — cohésion 0.45, Prod boot safety & secrets)
 **Objectif :** Fail-fast au boot prod (COOKIE_DOMAIN/CORS vides, cookie.secure=false) + rotation des secrets exposés.
