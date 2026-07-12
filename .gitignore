@@ -98,3 +98,9 @@ node_modules/
 
 # === Outillage local Claude Code (métriques tokens, worktrees, cache — non projet) ===
 .claude/
+
+# === Config MCP locale (contient des clés API — ne jamais committer) ===
+.mcp.json
+
+# === State local du plugin ai-env (régénérable, non projet) ===
+frontend/.ai-env/
