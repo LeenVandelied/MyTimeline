@@ -135,6 +135,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/sessions/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/me/**").hasAuthority("ROLE_USER")
+                // Export RGPD (#58) : inline (GET), soumission async (POST), suivi de job
+                // et téléchargement signé — tous réservés à l'utilisateur authentifié.
+                .requestMatchers("/api/export/**").hasAuthority("ROLE_USER")
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
