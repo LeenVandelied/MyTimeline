@@ -134,8 +134,8 @@
 			Testcontainers (#…) — les tests @SpringBootTest démarrent désormais
 			contre un conteneur Postgres JETABLE (même dialecte que la prod, Flyway
 			rejoue V1/V2 from scratch), plus contre la base dev partagée localhost:5432.
-			Version pilotée par la property testcontainers.version (cf. <properties>,
-			surchargée à 1.20.6 pour compatibilité moteur Docker récent).
+			Version 100% managée par le BOM Spring Boot 3.5.16 (1.21.4) — plus
+			aucun override testcontainers.version (retiré en #260, cf. note l.39).
 		-->
 		<dependency>
 			<groupId>org.testcontainers</groupId>
