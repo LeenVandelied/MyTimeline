@@ -41,7 +41,7 @@ test.describe('Réglages desktop : accès + navigation 4 chapitres', () => {
     // ---- Navigation Compte -------------------------------------------------
     await page.getByTestId('settings-tab-account').click()
     await expect(page.getByTestId('delete-account-open')).toBeVisible()
-    await expect(page.getByTestId('export-step-format')).toBeVisible()
+    await expect(page.getByTestId('export-flow')).toBeVisible()
 
     // ---- Navigation clavier (ArrowUp -> revient à Préférences) -------------
     await page.getByTestId('settings-tab-account').focus()
