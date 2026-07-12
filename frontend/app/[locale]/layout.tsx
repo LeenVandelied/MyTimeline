@@ -4,11 +4,10 @@ import { NextIntlClientProvider } from 'next-intl'
 import { loadMessages } from '../../i18n'
 import { NetworkStatusProvider } from '@/contexts/NetworkStatusContext'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
-
-const locales = ['fr', 'en']
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/locales'
 
 export function generateStaticParams() {
-  return locales.map(locale => ({ locale }))
+  return SUPPORTED_LOCALES.map(locale => ({ locale }))
 }
 
 export default async function LocaleLayout({
@@ -18,9 +17,9 @@ export default async function LocaleLayout({
   children: ReactNode
   params: Promise<{ locale: string }>;
 }) {
-  const locale = (await params).locale || 'fr'
-  
-  if (!locales.includes(locale)) {
+  const locale = (await params).locale || DEFAULT_LOCALE
+
+  if (!isSupportedLocale(locale)) {
     notFound()
   }
 

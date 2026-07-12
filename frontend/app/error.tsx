@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 import { StateScreen, stateActionPrimary, stateActionSecondary } from '@/components/shared/StateScreen'
+import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/locales'
 
 /**
  * #57 — Filet global à la racine `app/`. Attrape les erreurs des segments non
@@ -25,8 +26,6 @@ type GlobalErrorMessages = {
   retry: string
   backHome: string
 }
-
-const LOCALES = ['fr', 'en', 'es', 'de'] as const
 
 const MESSAGES: Record<string, GlobalErrorMessages> = {
   fr: {
@@ -57,9 +56,9 @@ const MESSAGES: Record<string, GlobalErrorMessages> = {
 }
 
 function resolveLocale(): string {
-  if (typeof window === 'undefined') return 'fr'
+  if (typeof window === 'undefined') return DEFAULT_LOCALE
   const segment = window.location.pathname.split('/')[1]
-  return (LOCALES as readonly string[]).includes(segment) ? segment : 'fr'
+  return isSupportedLocale(segment) ? segment : DEFAULT_LOCALE
 }
 
 export default function GlobalError({
