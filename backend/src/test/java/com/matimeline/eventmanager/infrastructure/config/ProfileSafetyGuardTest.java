@@ -70,7 +70,8 @@ class ProfileSafetyGuardTest {
     @DisplayName("Marqueur prod + profil prod → boot autorisé")
     void shouldPass_whenProdMarkerAndProdProfile() {
         MockEnvironment env = new MockEnvironment()
-                .withProperty("ENVIRONMENT", "production");
+                .withProperty("ENVIRONMENT", "production")
+                .withProperty("app.cookie.secure", "true"); // requis en prod effectif (#254)
         env.setActiveProfiles("prod");
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
@@ -130,7 +131,8 @@ class ProfileSafetyGuardTest {
     @DisplayName("#216 profil prod + rate-limit true → boot autorisé")
     void shouldPass_whenProdProfileAndRateLimitEnabled() {
         MockEnvironment env = new MockEnvironment()
-                .withProperty("app.rate-limit.enabled", "true");
+                .withProperty("app.rate-limit.enabled", "true")
+                .withProperty("app.cookie.secure", "true"); // requis en prod effectif (#254)
         env.setActiveProfiles("prod");
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
@@ -140,7 +142,8 @@ class ProfileSafetyGuardTest {
     @Test
     @DisplayName("#216 profil prod + property rate-limit absente → boot autorisé (défaut fail-safe true)")
     void shouldPass_whenProdProfileAndRateLimitAbsent() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "true"); // requis en prod effectif (#254)
         env.setActiveProfiles("prod");
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
@@ -182,5 +185,92 @@ class ProfileSafetyGuardTest {
         assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("#216");
+    }
+
+    // --- #254 : refuse le boot si cookie JWT non-Secure en prod effectif ---
+
+    @Test
+    @DisplayName("#254 profil prod + cookie.secure false → refuse de booter (message Secure)")
+    void shouldFail_whenProdProfileAndCookieInsecure() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "false");
+        env.setActiveProfiles("prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#254")
+                .hasMessageContaining("app.cookie.secure")
+                .hasMessageContaining("Secure");
+    }
+
+    @Test
+    @DisplayName("#254 marqueur prod + cookie.secure absente → refuse de booter (fail-safe exige true explicite)")
+    void shouldFail_whenProdMarkerAndCookieSecureAbsent() {
+        // app.cookie.secure absente : défaut fail-safe #254 = non-sécurisé → blocage en prod effectif.
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("ENVIRONMENT", "production");
+        env.setActiveProfiles("prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#254");
+    }
+
+    @Test
+    @DisplayName("#254 marqueur prod (APP_ENV) + cookie.secure false → refuse de booter")
+    void shouldFail_whenProdMarkerOnlyAndCookieInsecure() {
+        // spring.profiles.active=prod pour éviter le fallback 'dev' qui déclencherait #111 en amont ;
+        // le marqueur APP_ENV=prod rend l'env prod effectif pour #254.
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("APP_ENV", "prod")
+                .withProperty("app.cookie.secure", "false")
+                .withProperty("spring.profiles.active", "prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#254");
+    }
+
+    @Test
+    @DisplayName("#254 profil prod + cookie.secure true → boot autorisé")
+    void shouldPass_whenProdProfileAndCookieSecure() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "true");
+        env.setActiveProfiles("prod");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#254 profil dev + cookie.secure false → boot autorisé (comportement dev inchangé)")
+    void shouldPass_whenDevProfileAndCookieInsecure() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "false");
+        env.setActiveProfiles("dev");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#254 profil test + cookie.secure false → boot autorisé (comportement test inchangé)")
+    void shouldPass_whenTestProfileAndCookieInsecure() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "false");
+        env.setActiveProfiles("test");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#254 aucun marqueur/profil prod + cookie.secure absente → boot autorisé")
+    void shouldPass_whenNoProdAndCookieSecureAbsent() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("dev");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
     }
 }

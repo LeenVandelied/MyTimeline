@@ -31,6 +31,14 @@ import java.util.Locale;
  * rate-limit en production ne doit jamais résulter d'une simple fuite de config.
  * Le job CI e2e qui pose légitimement {@code false} tourne en profil {@code test}/{@code dev}
  * SANS marqueur prod : il n'est donc jamais bloqué (pas de collision avec ce check).
+ *
+ * <p>Troisième garde-fou (#254) : refuse le boot si le cookie JWT n'est pas marqué
+ * {@code Secure} ({@code app.cookie.secure} absent OU {@code false}) ALORS que
+ * l'environnement est <em>prod effectif</em>. Contrairement au rate-limit (#216) dont
+ * le défaut fail-safe est {@code true}, le défaut d'{@code app.cookie.secure} est
+ * {@code false} (cf. {@code ProdConfigStartupLogger}). Un cookie non-{@code Secure} en
+ * prod peut être transmis en clair (risque MITM) : on exige donc un {@code true}
+ * EXPLICITE en prod effectif, et on traite {@code absent OU false} comme non-sécurisé.
  */
 public class ProfileSafetyGuard
         implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
@@ -44,12 +52,16 @@ public class ProfileSafetyGuard
     /** Master-switch du rate-limit (défaut fail-safe {@code true}). */
     static final String RATE_LIMIT_ENABLED_KEY = "app.rate-limit.enabled";
 
+    /** Flag {@code Secure} du cookie JWT (défaut applicatif {@code false}, cf. ProdConfigStartupLogger). */
+    static final String COOKIE_SECURE_KEY = "app.cookie.secure";
+
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment env = event.getEnvironment();
 
         checkDevProfileInProduction(env);       // #111 (inchangé, prioritaire)
         checkRateLimitDisabledInProduction(env); // #216
+        checkCookieInsecureInProduction(env);   // #254
     }
 
     /**
@@ -91,6 +103,40 @@ public class ProfileSafetyGuard
                 + "ou profil Spring 'prod' actif). Désactiver le rate-limit en production est "
                 + "refusé (protection anti-abus). Retirer cette property ou la remettre à 'true' "
                 + "en prod ; la désactivation n'est légitime que dans le job CI e2e (profil test/dev).");
+    }
+
+    /**
+     * Check #254 : en prod effectif, un cookie JWT non-{@code Secure}
+     * ({@code app.cookie.secure} absent OU {@code false}) → refuse de booter. Un cookie
+     * transmissible en clair exposerait le token à une interception (MITM). Le blocage
+     * ne concerne que la prod effective ; dev/test (cookie localhost non sécurisé)
+     * reste autorisé.
+     */
+    private void checkCookieInsecureInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isCookieInsecure(env)) {
+            return; // Cookie Secure explicitement activé → configuration sûre.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#254) : le cookie JWT doit être marqué 'Secure' en "
+                + "production ('" + COOKIE_SECURE_KEY + "=true'). Valeur absente ou 'false' "
+                + "détectée en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Un cookie non-Secure peut être transmis en clair "
+                + "sur une connexion non chiffrée (risque d'interception du token). Définir "
+                + "explicitement '" + COOKIE_SECURE_KEY + "=true' en prod.");
+    }
+
+    /**
+     * Vrai si le cookie JWT n'est PAS sécurisé : {@code app.cookie.secure} absent OU
+     * explicitement {@code false}. Défaut fail-safe {@code false} (property absente =
+     * non-sécurisé), à l'inverse du rate-limit (#216) : ici on EXIGE un {@code true}
+     * explicite en prod, cohérent avec le défaut applicatif {@code false} du flag.
+     */
+    private boolean isCookieInsecure(ConfigurableEnvironment env) {
+        return !env.getProperty(COOKIE_SECURE_KEY, Boolean.class, Boolean.FALSE);
     }
 
     /** Vrai si une des variables marqueur vaut une valeur "prod" (casse ignorée). */
