@@ -206,6 +206,7 @@ class ProfileSafetyGuardTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("#254")
                 .hasMessageContaining("app.cookie.secure")
+                .hasMessageContaining("COOKIE_SECURE")
                 .hasMessageContaining("Secure");
     }
 

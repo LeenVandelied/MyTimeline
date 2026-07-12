@@ -32,11 +32,19 @@ import java.util.Locale;
  * Le job CI e2e qui pose légitimement {@code false} tourne en profil {@code test}/{@code dev}
  * SANS marqueur prod : il n'est donc jamais bloqué (pas de collision avec ce check).
  *
+ * <p>Note de numérotation : les ordinaux ci-dessous (Troisième, Quatrième...) reflètent
+ * l'ORDRE D'EXÉCUTION dans {@link #onApplicationEvent}, PAS la chronologie des numéros
+ * d'issue (#254 s'exécute avant #253 bien que 254 > 253) — ne pas s'y fier pour le
+ * cross-référencement tracker, se fier uniquement au tag {@code #NNN} entre parenthèses.
+ *
  * <p>Troisième garde-fou (#254) : refuse le boot si le cookie JWT n'est pas marqué
  * {@code Secure} ({@code app.cookie.secure} absent OU {@code false}) ALORS que
  * l'environnement est <em>prod effectif</em>. Contrairement au rate-limit (#216) dont
- * le défaut fail-safe est {@code true}, le défaut d'{@code app.cookie.secure} est
- * {@code false} (cf. {@code ProdConfigStartupLogger}). Un cookie non-{@code Secure} en
+ * le défaut fail-safe est {@code true}, le défaut FAIL-SAFE de ce garde-fou pour
+ * {@code app.cookie.secure} est {@code false} (property absente = traitée comme
+ * non-sécurisée) — à ne pas confondre avec le défaut applicatif réel de la property,
+ * qui est {@code true} (cf. {@code application.properties: app.cookie.secure=${COOKIE_SECURE:true}}
+ * et {@code application-prod.properties}). Un cookie non-{@code Secure} en
  * prod peut être transmis en clair (risque MITM) : on exige donc un {@code true}
  * EXPLICITE en prod effectif, et on traite {@code absent OU false} comme non-sécurisé.
  *
@@ -62,7 +70,7 @@ public class ProfileSafetyGuard
     /** Master-switch du rate-limit (défaut fail-safe {@code true}). */
     static final String RATE_LIMIT_ENABLED_KEY = "app.rate-limit.enabled";
 
-    /** Flag {@code Secure} du cookie JWT (défaut applicatif {@code false}, cf. ProdConfigStartupLogger). */
+    /** Flag {@code Secure} du cookie JWT (défaut fail-safe du garde-fou {@code false} ; défaut applicatif réel {@code true}, cf. application.properties). */
     static final String COOKIE_SECURE_KEY = "app.cookie.secure";
 
     /** Domaine du cookie JWT (vide = cookie host-only, auth multi-sous-domaines cassée). */
@@ -140,11 +148,11 @@ public class ProfileSafetyGuard
 
         throw new IllegalStateException(
                 "ARRÊT FAIL-FAST (#254) : le cookie JWT doit être marqué 'Secure' en "
-                + "production ('" + COOKIE_SECURE_KEY + "=true'). Valeur absente ou 'false' "
+                + "production ('" + COOKIE_SECURE_KEY + "' (COOKIE_SECURE) = true). Valeur absente ou 'false' "
                 + "détectée en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
                 + "ou profil Spring 'prod' actif). Un cookie non-Secure peut être transmis en clair "
                 + "sur une connexion non chiffrée (risque d'interception du token). Définir "
-                + "explicitement '" + COOKIE_SECURE_KEY + "=true' en prod.");
+                + "explicitement '" + COOKIE_SECURE_KEY + "' (COOKIE_SECURE) = true en prod.");
     }
 
     /**
