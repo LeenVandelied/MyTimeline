@@ -79,9 +79,37 @@ Exclus, avec justification tracée :
 ### 5. Stockage des fichiers async
 
 Réutilise `StoragePort` (store/load/delete blob privé hors webroot). Les extensions
-`zip`/`csv` passent le `sanitizeExtension` existant (`[a-z0-9]{1,5}`). **Dette** : le port
-est aujourd'hui paramétré par `app.storage.avatar-path` ; exports et avatars partagent le
-répertoire privé. Un préfixe/bucket dédié aux exports est un follow-up.
+`zip`/`csv` passent le `sanitizeExtension` existant (`[a-z0-9]{1,5}`). **Dette RÉSOLUE (#264)** :
+un chemin DÉDIÉ `app.storage.export-path` (bean `exportStorage`, `StorageConfig`) découple
+désormais les exports des avatars — répertoire distinct, convention #34 (fail-fast prod),
+sans hériter des hypothèses avatar (taille max, rétention). La purge TTL 24h de ce base-path
+reste le follow-up #267 (voir §3).
+
+### 6. Rate-limiting des endpoints export (DoS / consommation de ressources — #58, #265)
+
+`RateLimitingFilter` (Bucket4j, in-memory, **par IP**, cf. `infrastructure/security/`) throttle
+les opérations d'export **lourdes** :
+
+- `POST /api/export` (soumission de job async) — **5/min/IP** (#58) : pool async borné + écriture
+  fichier, sans quota → risque d'épuisement du pool / accumulation de fichiers.
+- `GET /api/export?format=json|markdown` (export **synchrone inline**) — **5/min/IP** (#265) :
+  recalcule l'export à chaque appel (requêtes DB User+Product+Category+Event répétées). Bucket
+  **séparé** du POST (la clé de bucket inclut la méthode HTTP).
+
+**Hors périmètre (décision tracée, #265)** — volontairement NON rate-limités :
+
+- `GET /api/export/job/{jobId}` — polling de statut **léger** ; un client légitime interroge un
+  job en cours plusieurs fois et ne doit pas être pénalisé.
+- `GET /api/export/download/{jobId}?token=…` — re-téléchargement d'un fichier **déjà** COMPLETED
+  (lecture d'octets d'un blob privé, aucun recalcul d'export).
+
+Justification de l'acceptation du résidu : ces deux endpoints sont **strictement self-service**
+(scopés au propriétaire ; job d'autrui → 404, pas d'énumération cross-user). La surface d'abus se
+borne à un utilisateur qui martèle ses **propres** artefacts déjà produits — coût faible, pas de
+faille d'accès. Si un abus réel émerge, les ajouter à `LIMITS` est une extension d'une ligne
+(le mécanisme est déjà méthode+chemin). Contrat verrouillé par
+`RateLimitingAndHeadersIntegrationTest` (429 sur GET/POST `/api/export` ; 200 non pénalisé sur
+`/job` et `/download`).
 
 ## Conséquences
 

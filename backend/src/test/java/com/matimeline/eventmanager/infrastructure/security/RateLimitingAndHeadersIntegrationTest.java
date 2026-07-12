@@ -186,8 +186,9 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
      * Elle DOIT être throttlée (limite 5/min/IP). Le RateLimitingFilter est placé avant
      * l'AuthorizationFilter (addFilterBefore UsernamePasswordAuthenticationFilter), donc le
      * 429 court-circuite même sans JWT valide : les 5 premières passent (rejetées plus loin
-     * par l'authz), la 6e depuis la même IP est throttlée. Les GET (téléchargement / statut /
-     * json|markdown) ne passent PAS par ce throttle — c'est attendu, hors périmètre du MAJEUR.
+     * par l'authz), la 6e depuis la même IP est throttlée. Depuis #265 le GET synchrone inline
+     * (json|markdown) est LUI AUSSI throttlé (bucket séparé, cf. exportInlineGet_* ci-dessous) ;
+     * seuls le polling /job et le re-download /download restent hors périmètre.
      */
     @Test
     void exportSubmission_sixthWithinWindow_returns429() throws Exception {
@@ -203,6 +204,84 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
                 .andExpect(status().is(429))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
+     * #265 : l'export SYNCHRONE inline (GET /api/export?format=json) recalcule l'export à chaque
+     * appel (requêtes DB répétées) → vecteur de DoS. Il DOIT être throttlé (5/min/IP), au même
+     * titre que la soumission POST. Le filtre court-circuite avant l'authz : les 5 premières
+     * passent (rejetées plus loin faute de JWT), la 6e depuis la même IP est 429 + JSON propre.
+     */
+    @Test
+    void exportInlineGet_sixthWithinWindow_returns429() throws Exception {
+        String ip = "10.2.0.1";
+        for (int i = 1; i <= 5; i++) {
+            int sc = mockMvc.perform(get("/api/export").param("format", "json")
+                            .with(req -> { req.setRemoteAddr(ip); return req; }))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "GET inline #" + i + " sous la limite ne doit pas être throttlé");
+        }
+        mockMvc.perform(get("/api/export").param("format", "json")
+                        .with(req -> { req.setRemoteAddr(ip); return req; }))
+                .andExpect(status().is(429))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
+     * #265 : GET et POST /api/export ont des buckets INDÉPENDANTS (la clé inclut la méthode).
+     * Épuiser le quota GET (5) depuis une IP ne doit PAS consommer le quota POST de la même IP :
+     * la 1re soumission POST juste après doit passer (jamais 429).
+     */
+    @Test
+    void exportGetAndPost_haveIndependentBuckets() throws Exception {
+        String ip = "10.2.0.2";
+        for (int i = 1; i <= 5; i++) {
+            mockMvc.perform(get("/api/export").param("format", "json")
+                    .with(req -> { req.setRemoteAddr(ip); return req; }));
+        }
+        // GET épuisé -> 429, mais le POST garde son propre quota intact.
+        assertEquals(429, mockMvc.perform(get("/api/export").param("format", "json")
+                        .with(req -> { req.setRemoteAddr(ip); return req; }))
+                .andReturn().getResponse().getStatus());
+        assertNotEquals(429, mockMvc.perform(post("/api/export")
+                        .with(req -> { req.setRemoteAddr(ip); return req; }))
+                .andReturn().getResponse().getStatus(),
+                "le bucket POST doit être indépendant du bucket GET épuisé");
+    }
+
+    /**
+     * #265 (décision tracée, ADR-003 § Rate-limiting) : le polling de statut
+     * GET /api/export/job/{jobId} est LÉGER et volontairement HORS rate-limit — un client
+     * légitime interroge un job en cours de nombreuses fois et ne doit jamais être throttlé.
+     */
+    @Test
+    void exportJobPolling_isNotRateLimited() throws Exception {
+        String ip = "10.2.0.3";
+        String jobUrl = "/api/export/job/00000000-0000-0000-0000-000000000265";
+        for (int i = 1; i <= 30; i++) {
+            int sc = mockMvc.perform(get(jobUrl)
+                            .with(req -> { req.setRemoteAddr(ip); return req; }))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "le polling /job ne doit jamais être throttlé (requête #" + i + ")");
+        }
+    }
+
+    /**
+     * #265 (décision tracée, ADR-003 § Rate-limiting) : le re-téléchargement d'un fichier déjà
+     * COMPLETED GET /api/export/download/{jobId} lit des octets d'un blob privé (aucun recalcul)
+     * et reste volontairement HORS rate-limit — self-service borné, pas d'énumération cross-user.
+     */
+    @Test
+    void exportDownload_isNotRateLimited() throws Exception {
+        String ip = "10.2.0.4";
+        String dlUrl = "/api/export/download/00000000-0000-0000-0000-000000000265";
+        for (int i = 1; i <= 30; i++) {
+            int sc = mockMvc.perform(get(dlUrl).param("token", "irrelevant")
+                            .with(req -> { req.setRemoteAddr(ip); return req; }))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "le re-download /download ne doit jamais être throttlé (requête #" + i + ")");
+        }
     }
 
     /**

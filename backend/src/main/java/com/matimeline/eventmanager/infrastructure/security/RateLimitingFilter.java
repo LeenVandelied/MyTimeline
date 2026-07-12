@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,17 +24,35 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * In-memory, per-IP rate limiting for the sensitive auth POST endpoints
- * (brute-force / credential-stuffing mitigation — issue #33, BR-AUT-002 family).
+ * In-memory, per-IP rate limiting for the sensitive / resource-heavy endpoints
+ * (brute-force / credential-stuffing mitigation — issue #33, BR-AUT-002 family ;
+ * resource-exhaustion mitigation for the RGPD export — issues #58, #265).
  *
- * <p>Only the POST endpoints listed in {@link #PATH_LIMITS} are throttled; every
- * other request (including {@code GET /api/auth/me}, {@code POST /api/auth/logout},
- * and the whole rest of the API) passes through untouched. On overflow the filter
- * short-circuits with HTTP 429 and a minimal JSON body — no stack trace, no
- * internal detail.
+ * <p>Only the {@code (method, exact-path)} pairs listed in {@link #LIMITS} are
+ * throttled; every other request (including {@code GET /api/auth/me},
+ * {@code POST /api/auth/logout}, and the whole rest of the API) passes through
+ * untouched. On overflow the filter short-circuits with HTTP 429 and a minimal
+ * JSON body — no stack trace, no internal detail.
+ *
+ * <p><b>Export endpoints (#265):</b> both {@code POST /api/export} (async job
+ * submission, #58) and {@code GET /api/export} (synchronous inline export —
+ * repeated User+Product+Category+Event DB reads per call) are throttled: they are
+ * the resource-heavy operations. The two other export GETs are DELIBERATELY left
+ * out of scope:
+ * <ul>
+ *   <li>{@code GET /api/export/job/{jobId}} — cheap status polling; a legitimate
+ *       client polls a running job several times and must not be penalised;</li>
+ *   <li>{@code GET /api/export/download/{jobId}} — re-download of an already
+ *       COMPLETED file (bytes read from a private blob, no export recomputation).</li>
+ * </ul>
+ * Both are strictly self-service (owner-scoped, job of another user → 404, no
+ * cross-user enumeration), so the abuse surface is bounded to a user hammering
+ * their own already-produced artefacts — an accepted residual, tracked in
+ * {@code docs/adr/ADR-003-export-rgpd-async-job.md} (§ Rate-limiting). Because the
+ * bucket key is exact-URI based, these two nested paths never match {@link #LIMITS}.
  *
  * <p><b>Scope of the limit:</b> buckets live in a {@link ConcurrentHashMap} inside
- * this single JVM, keyed by {@code clientIp + "|" + path}. The limits are therefore
+ * this single JVM, keyed by {@code clientIp + "|" + method + " " + path}. The limits are therefore
  * PER INSTANCE: behind a load balancer with N replicas the effective ceiling is
  * N x the configured rate. This is acceptable for the current single-instance
  * deployment; a distributed backend (Redis + bucket4j-redis) is required before
@@ -47,20 +64,32 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitingFilter.class);
 
-    /** Requests per minute per IP, per throttled POST path. */
-    private static final Map<String, Integer> PATH_LIMITS = Map.of(
-            "/api/auth/login", 10,
-            "/api/auth/register", 5,
-            "/api/auth/refresh", 20,
+    /**
+     * Requests per minute per IP, per throttled {@code "METHOD /exact/path"} pair.
+     * The key embeds the HTTP method so a single URI can be throttled on some verbs
+     * only (e.g. {@code /api/export} is limited on both POST and GET, while a bare
+     * path is otherwise POST-only here).
+     */
+    private static final Map<String, Integer> LIMITS = Map.of(
+            "POST /api/auth/login", 10,
+            "POST /api/auth/register", 5,
+            "POST /api/auth/refresh", 20,
             // #49 : forgot-password est une cible d'abus (spam mail / énumération).
             // Throttle strict par IP, cohérent avec le slot reset-password (#33).
-            "/api/auth/forgot-password", 5,
-            "/api/auth/reset-password", 5,
+            "POST /api/auth/forgot-password", 5,
+            "POST /api/auth/reset-password", 5,
             // #58 : soumission de job d'export RGPD (POST /api/export) — opération lourde
             // (pool async borné + écriture fichier sur disque, aucun quota). Sans throttle un
             // user authentifié peut spammer les soumissions → épuisement du pool + accumulation
             // de fichiers. Limite basse (5/min/IP) alignée sur les slots coûteux forgot/reset.
-            "/api/export", 5
+            "POST /api/export", 5,
+            // #265 : export SYNCHRONE inline (GET /api/export?format=json|markdown) — recalcule
+            // l'export à chaque appel (requêtes DB User+Product+Category+Event répétées, rendu
+            // inline). Vecteur de DoS/consommation CPU-IO par un user authentifié. Même limite
+            // basse (5/min/IP) et bucket SÉPARÉ du POST (la clé inclut la méthode). Le polling
+            // /job et le re-download /download restent volontairement hors périmètre (cf. javadoc
+            // de classe + ADR-003 § Rate-limiting).
+            "GET /api/export", 5
     );
 
     private static final Duration WINDOW = Duration.ofMinutes(1);
@@ -122,7 +151,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
-        String key = clientIp(request) + "|" + request.getRequestURI();
+        // Method is part of the key: GET and POST on the same URI (e.g. /api/export)
+        // get INDEPENDENT buckets, so their distinct limits never collide.
+        String key = clientIp(request) + "|" + request.getMethod() + " " + request.getRequestURI();
         Bucket bucket = buckets.computeIfAbsent(key, k -> newBucket(limit));
 
         if (bucket.tryConsume(1)) {
@@ -133,14 +164,13 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * @return the per-minute limit if this request targets a throttled POST path,
-     *         otherwise {@code null} (request must pass through).
+     * @return the per-minute limit if this request targets a throttled
+     *         {@code (method, exact-path)} pair, otherwise {@code null}
+     *         (request must pass through). Exact-URI match: nested export paths
+     *         ({@code /api/export/job/…}, {@code /api/export/download/…}) never match.
      */
     private Integer throttledLimitFor(HttpServletRequest request) {
-        if (!HttpMethod.POST.matches(request.getMethod())) {
-            return null;
-        }
-        return PATH_LIMITS.get(request.getRequestURI());
+        return LIMITS.get(request.getMethod() + " " + request.getRequestURI());
     }
 
     private Bucket newBucket(int permitsPerMinute) {
