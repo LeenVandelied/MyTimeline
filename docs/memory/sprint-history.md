@@ -735,14 +735,24 @@
   - Commentaire trompeur `passwordResetExecutor` (AsyncConfig, CallerRunsPolicy vs AbortPolicy) [XS | backend] → issue #268 (backlog)
 **Status :** Terminé
 
-## Sprint 33 — 2026-07-07 (PLANIFIÉ — cohésion 0.40, Conformité EU frontend : export + locales)
+## Sprint 33 — 2026-07-12 (Terminé — merge PR #269 dans dev, cohésion 0.40, Conformité EU frontend : export + locales)
 **Objectif :** Flux export RGPD frontend (Réglages, 3 étapes) + aligner locales layout es/de (fix 404).
-**Milestone GitHub :** #33
-**Issues :** #59 (M), #235 (M)
-**Vagues :** V1 tout parallèle (#59 settings ∥ #235 i18n — disjoints)
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 32 (#59 ⟵ #58, contrat/DTO export figé en fin de S32)
-**Note :** #235 = 404 es/de live ; peut être tiré en avant en S31 si exposition inacceptable.
-**Status :** En cours (démarré 2026-07-12)
+**Milestone GitHub :** #33 (fermé après merge)
+**Issues livrées (2) :** #59 (M — export RGPD UI), #235 (M — locales es/de)
+**Vagues exécutées :** V1 = #59 ∥ #235 (parallèle, fichiers disjoints) | V2 = ui-design + test-runner
+**Cohésion score :** 0.40
+**Commits :** 6 — `bed0d65` #235 · `e5fa89e` #59 · `985d40f` corrections charte · `5e2921e` fix e2e testid · `2403dcc` artefacts mémoire · `a303ccf` MINEUR review PR269. Merge `8f4c0b7`.
+**BR impactées :** aucune (frontend UI + routing ; consomme contrat backend #58 déjà testé S32).
+**Reviews :** ui-design APPROUVE_AVEC_RESERVES (2 MAJEUR + 1 MINEUR → corrigés 985d40f) · review batch sprint 1 CRITIQUE (testid e2e → 5e2921e) + 1 MAJEUR (e2e async → follow-up) · review PR #269 0 CRITIQUE / 0 MAJEUR / 2 MINEUR (→ corrigés a303ccf). Tous RÉSOLUS.
+**Tests :** Frontend 413/413 green (hors `console-error-guard` pré-existant `eslint-plugin-storybook`) | E2E happy-path export sync couvert | tsc 0 erreur fichiers sprint.
+**Nouveaux pitfalls / décisions / patterns :** PIT-S33-001 (`/api/api` double préfixe), PIT-S33-002 (locales dupliquées 5 fichiers, module Edge pur) ; DEC-S33-001 (Option 1 aligner 4 langues), DEC-S33-002 (migration export front → contrat #58) ; PAT-S33-001 (`rtk proxy gh pr diff`).
+**Note tooling :** pack `cp-frontend` corrigé (e2e non vide — 9 specs, info périmée S9). Worktrees de sprint sans `node_modules` (contournement symlink) → follow-up infra.
+**Absorbé en cours (XS) :** #235 a consolidé 5 tableaux de locales dupliqués (le plan n'en annonçait que 2) — decouverte au grep, intégrée.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - E2E export async (ZIP/CSV polling) + lien expiré + erreur/FAILED [S | auth/settings] → issue **#270** (backlog)
+  - E2E routing `/es` `/de` → 200 [XS | transversal] → issue **#271** (backlog)
+  - Infra : worktrees de sprint sans `node_modules` [S | infrastructure] → issue **#272** (backlog)
+  Bilan : 3 créées (0 discard, 0 absorbé) — triage discipliné, aucun sur-signalement.
+**Status :** Terminé
 
 > **Plan S29–S33 généré le 2026-07-07** (`/ai-env:sprint plan 5 -c focus MVP`, cohésion moyenne **0.61**, aucun sprint < 0.3). Fil directeur MVP = **shippable en prod** : déploiement (S29) → garde-fous boot (S30) → sécurité exposition (S31) → légal RGPD backend (S32) → conformité EU frontend (S33). Le cœur fonctionnel étant déjà livré (S1–S28), ces 5 sprints n'ajoutent quasiment aucune feature. **Vérif code-state Phase 0.5** : #235 confirmé ouvert (es/de 404), #160 possibly_done (2/4 sites déjà faits). **Backlog HORS MVP explicite :** #88/#102 (monétisation + Redis = ADR post-MVP), #212 (avatar MinIO — LocalStorageAdapter + volume Docker suffisent pour ship), #56/#210 (design-shell MVP-adjacent), #69/#196/#219 (scale), #145/#234/#209/#232 (tests non bloquants), #125/#127/#148 (polish), #215 (à requalifier : test.fixme, vrai bug prod ?). **Ajustements possibles au démarrage :** tirer #235 en S31, sortir #223 en S30, remonter #212 dans S29 (même docker-compose.yml que #37).
