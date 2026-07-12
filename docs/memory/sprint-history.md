@@ -770,6 +770,10 @@
 **Nouveaux decisions / pitfalls / patterns :** DEC-S34-001 (retrait overrides `<*.version>` post-Boot-3.5.16), DEC-S34-002 (next-intl intra-major + postcss XSS accepté car épinglé par next) ; PIT-S34-001 (`getRequestConfig({locale})` déprécié next-intl) ; PAT-S34-001 (garde anti-drift = test JUnit pur lisant versions effectives par réflexion + comparateur sémantique).
 **Note tooling (mémoire projet) :** branche `sprint/34` déjà checkout dans le worktree principal (créée par /sprint plan) → travail sur branche worktree pointée sur `origin/sprint/34`, push via refspec. Conflit à /sprint end : dev avait dupliqué le plan S34-S38 via PR #276 (`661d38d`) → merge origin/dev, conflit trivial sprint-history.md résolu. `build-briefing` gate frontend échoue pour domaine `unknown` (packs trop minces).
 **Dette résiduelle documentée :** postcss XSS (sans fix upstream, cve-acceptance.md).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - E2E Playwright i18n post-bump [S | i18n/transversal] (issue-261) → issue **#278** (backlog libre)
+  - Migration `getRequestConfig({locale})`→`requestLocale` [XS | i18n/frontend] (issue-261) → issue **#279** (milestone Sprint 35)
+  Bilan : 2 créées (0 discard, 0 absorbé) — triage discipliné.
 **Status :** Livré — PR #277 prête, attente CI verte + merge (Phase 5).
 
 ## Sprint 35 — 2026-07-12 (PLANIFIE — cohésion 0.45, Prod boot safety & secrets)
