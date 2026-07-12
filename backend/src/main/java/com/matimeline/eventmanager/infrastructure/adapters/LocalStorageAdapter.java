@@ -7,15 +7,16 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import com.matimeline.eventmanager.domain.ports.services.StoragePort;
 
 /**
  * Adapter de stockage LOCAL PRIVÉ (#75, DÉCISION STOCKAGE ADR Sprint 21). Écrit les
- * blobs dans un répertoire HORS webroot, chemin configurable {@code app.storage.avatar-path}
- * (convention #34 : default dev seulement, aucun default en prod = fail-fast).
+ * blobs dans un répertoire HORS webroot, dont le chemin de base est PARAMÉTRÉ PAR USAGE
+ * (constructeur {@code basePath}). Une instance sert les avatars (bean {@code avatarStorage},
+ * {@code app.storage.avatar-path}), une autre les exports RGPD (bean {@code exportStorage},
+ * {@code app.storage.export-path}, #264) — répertoires DISTINCTS, aucune hypothèse partagée
+ * (rétention, taille max, backup). Les beans sont déclarés par {@code StorageConfig} ; chaque
+ * clé suit la convention #34 (default dev seulement, aucun default en prod = fail-fast).
  *
  * <p>Un swap futur vers S3/MinIO = nouvelle impl de {@link StoragePort}, sans toucher au
  * service ni au contrôleur. Aucun SDK vendor n'est câblé ici.
@@ -25,12 +26,16 @@ import com.matimeline.eventmanager.domain.ports.services.StoragePort;
  * séparateur de chemin est rejetée et le chemin résolu doit rester sous le répertoire de
  * base (défense en profondeur, même si la référence vient de notre propre base).
  */
-@Component
 public class LocalStorageAdapter implements StoragePort {
 
     private final Path baseDir;
 
-    public LocalStorageAdapter(@Value("${app.storage.avatar-path}") String basePath) {
+    /**
+     * @param basePath répertoire de base LOCAL PRIVÉ (hors webroot) où sont écrits les blobs
+     *                 de CET usage ; injecté par {@code StorageConfig} depuis la clé de config
+     *                 propre à l'usage (avatar-path OU export-path).
+     */
+    public LocalStorageAdapter(String basePath) {
         this.baseDir = Path.of(basePath).toAbsolutePath().normalize();
     }
 
@@ -46,7 +51,7 @@ public class LocalStorageAdapter implements StoragePort {
         } catch (IOException e) {
             // Ne PAS fuiter le chemin/stack au client (A4) : le controller/handler renvoie
             // un message générique. On enveloppe pour propager l'échec technique (500).
-            throw new UncheckedIOException("stockage avatar indisponible", e);
+            throw new UncheckedIOException("stockage indisponible", e);
         }
         return reference;
     }
@@ -60,7 +65,7 @@ public class LocalStorageAdapter implements StoragePort {
         try {
             return Optional.of(Files.readAllBytes(target));
         } catch (IOException e) {
-            throw new UncheckedIOException("lecture avatar impossible", e);
+            throw new UncheckedIOException("lecture impossible", e);
         }
     }
 
@@ -69,7 +74,7 @@ public class LocalStorageAdapter implements StoragePort {
         try {
             Files.deleteIfExists(resolveWithinBase(reference)); // idempotent
         } catch (IOException e) {
-            throw new UncheckedIOException("suppression avatar impossible", e);
+            throw new UncheckedIOException("suppression impossible", e);
         }
     }
 
