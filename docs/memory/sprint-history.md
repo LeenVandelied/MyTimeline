@@ -757,14 +757,24 @@
 
 > **Plan S29–S33 généré le 2026-07-07** (`/ai-env:sprint plan 5 -c focus MVP`, cohésion moyenne **0.61**, aucun sprint < 0.3). Fil directeur MVP = **shippable en prod** : déploiement (S29) → garde-fous boot (S30) → sécurité exposition (S31) → légal RGPD backend (S32) → conformité EU frontend (S33). Le cœur fonctionnel étant déjà livré (S1–S28), ces 5 sprints n'ajoutent quasiment aucune feature. **Vérif code-state Phase 0.5** : #235 confirmé ouvert (es/de 404), #160 possibly_done (2/4 sites déjà faits). **Backlog HORS MVP explicite :** #88/#102 (monétisation + Redis = ADR post-MVP), #212 (avatar MinIO — LocalStorageAdapter + volume Docker suffisent pour ship), #56/#210 (design-shell MVP-adjacent), #69/#196/#219 (scale), #145/#234/#209/#232 (tests non bloquants), #125/#127/#148 (polish), #215 (à requalifier : test.fixme, vrai bug prod ?). **Ajustements possibles au démarrage :** tirer #235 en S31, sortir #223 en S30, remonter #212 dans S29 (même docker-compose.yml que #37).
 
-## Sprint 34 — 2026-07-12 (PLANIFIE — cohésion 0.55, Supply-chain / CVE platform upgrade)
+## Sprint 34 — 2026-07-12 (Terminé — livré, PR #277 → dev, cohésion 0.55, Supply-chain / CVE platform upgrade)
 **Objectif :** Résorber les CVE plateforme (Boot 3.5.x backend, next-intl/postcss frontend) + garde CI anti-drift BOM.
 **Milestone GitHub :** #34
-**Issues :** #260, #261, #224
-**Vagues :** V1 = #260 (pom) ∥ #261 (package.json) | V2 = #224 (après #260, asserte le BOM post-upgrade)
-**Migrations Flyway :** aucune
-**Dépend de :** aucune (racine)
-**Status :** Planifie
+**Issues livrées (3) :** #260 (Boot 3.4.13→3.5.16, 3 CVE HIGH résolues), #261 (next-intl 4.0.2→4.13.2, 2 CVE MODERATE résolues), #224 (BomDriftTest garde anti-drift BOM)
+**Vagues exécutées :** V1 = #260 (backend) ∥ #261 (frontend) | V2 = #224 (après #260)
+**Cohésion score :** 0.55
+**Commits :** 6 (a9fc47d #260 · a8b6081 #261 · cd03cf8 #224 · bb6120a+b455232 correctifs review/doc · 60eb216 merge dev)
+**Migrations Flyway :** aucune. **BR impactées :** aucune (durcissement supply-chain/build/sécurité pur).
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (commentaire pom obsolète testcontainers, RÉSOLU b455232) / 0 MINEUR. Verdict APPROVED.
+**Tests :** Backend 361/361 green (Testcontainers, BomDriftTest 6/6, StatelessSessionGuardTest 2/2) | Frontend 421/421 green | trivy 0 HIGH/CRITICAL backend. E2E non requis (bumps deps, 0 nouveau data-testid).
+**Nouveaux decisions / pitfalls / patterns :** DEC-S34-001 (retrait overrides `<*.version>` post-Boot-3.5.16), DEC-S34-002 (next-intl intra-major + postcss XSS accepté car épinglé par next) ; PIT-S34-001 (`getRequestConfig({locale})` déprécié next-intl) ; PAT-S34-001 (garde anti-drift = test JUnit pur lisant versions effectives par réflexion + comparateur sémantique).
+**Note tooling (mémoire projet) :** branche `sprint/34` déjà checkout dans le worktree principal (créée par /sprint plan) → travail sur branche worktree pointée sur `origin/sprint/34`, push via refspec. Conflit à /sprint end : dev avait dupliqué le plan S34-S38 via PR #276 (`661d38d`) → merge origin/dev, conflit trivial sprint-history.md résolu. `build-briefing` gate frontend échoue pour domaine `unknown` (packs trop minces).
+**Dette résiduelle documentée :** postcss XSS (sans fix upstream, cve-acceptance.md).
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - E2E Playwright i18n post-bump [S | i18n/transversal] (issue-261) → issue **#278** (backlog libre)
+  - Migration `getRequestConfig({locale})`→`requestLocale` [XS | i18n/frontend] (issue-261) → issue **#279** (milestone Sprint 35)
+  Bilan : 2 créées (0 discard, 0 absorbé) — triage discipliné.
+**Status :** Livré — PR #277 prête, attente CI verte + merge (Phase 5).
 
 ## Sprint 35 — 2026-07-12 (PLANIFIE — cohésion 0.45, Prod boot safety & secrets)
 **Objectif :** Fail-fast au boot prod (COOKIE_DOMAIN/CORS vides, cookie.secure=false) + rotation des secrets exposés.
