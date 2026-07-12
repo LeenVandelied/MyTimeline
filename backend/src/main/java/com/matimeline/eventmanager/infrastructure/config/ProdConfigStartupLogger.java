@@ -55,19 +55,11 @@ public class ProdConfigStartupLogger {
                 + "app.cookie.secure={} app.cookie.domain='{}' app.cors.allowed-origins={}",
                 cookieSecure, cookieDomain, allowedOrigins);
 
-        if (cookieDomain == null || cookieDomain.isBlank()) {
-            log.warn(
-                    "[BOOT prod] app.cookie.domain (COOKIE_DOMAIN) est VIDE : cookie host-only. "
-                    + "L'authentification multi-sous-domaines échouerait silencieusement. "
-                    + "Définir COOKIE_DOMAIN si l'app est servie sur plusieurs sous-domaines.");
-        }
-
-        if (allowedOrigins == null || allowedOrigins.isEmpty()
-                || allowedOrigins.stream().allMatch(o -> o == null || o.isBlank())) {
-            log.warn(
-                    "[BOOT prod] app.cors.allowed-origins (CORS_ALLOWED_ORIGINS) est VIDE : "
-                    + "aucune origine cross-site autorisée. Le frontend serait bloqué par CORS. "
-                    + "Vérifier la variable CORS_ALLOWED_ORIGINS.");
-        }
+        // Les WARN historiques sur COOKIE_DOMAIN / CORS_ALLOWED_ORIGINS vides ont été RETIRÉS
+        // (#253) : ces cas sont désormais des fail-fast dans ProfileSafetyGuard, exécutés au
+        // plus tôt (ApplicationEnvironmentPreparedEvent, avant création des beans). En prod
+        // effectif, un boot avec ces variables vides est déjà bloqué avant d'atteindre ce
+        // logger (ApplicationReadyEvent) : le WARN serait donc du code mort. Le log INFO de la
+        // config effective ci-dessus reste utile pour le diagnostic post-boot.
     }
 }

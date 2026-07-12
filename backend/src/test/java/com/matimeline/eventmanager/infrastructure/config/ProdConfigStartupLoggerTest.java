@@ -66,25 +66,10 @@ class ProdConfigStartupLoggerTest {
                 .contains("https://app.example.com");
     }
 
-    @Test
-    @DisplayName("avertit quand COOKIE_DOMAIN est vide (cookie host-only)")
-    void warnsWhenCookieDomainEmpty() {
-        new ProdConfigStartupLogger(List.of("https://app.example.com"), "", true)
-                .logEffectiveConfig();
-
-        assertThat(warnMessages()).anySatisfy(
-                m -> assertThat(m).contains("app.cookie.domain").contains("VIDE"));
-    }
-
-    @Test
-    @DisplayName("avertit quand les origines CORS sont vides")
-    void warnsWhenCorsOriginsEmpty() {
-        new ProdConfigStartupLogger(List.of(), "example.com", true)
-                .logEffectiveConfig();
-
-        assertThat(warnMessages()).anySatisfy(
-                m -> assertThat(m).contains("app.cors.allowed-origins").contains("VIDE"));
-    }
+    // Les tests des WARN COOKIE_DOMAIN / CORS_ALLOWED_ORIGINS vides ont été RETIRÉS (#253) :
+    // ces WARN ont disparu de ProdConfigStartupLogger, remplacés par un fail-fast au boot dans
+    // ProfileSafetyGuard (cf. ProfileSafetyGuardTest, checks #253). Ce logger ne conserve que
+    // le log INFO de la config effective.
 
     @Test
     @DisplayName("ne logge aucune valeur secrète")
@@ -100,13 +85,6 @@ class ProdConfigStartupLoggerTest {
                     .doesNotContain("DB_PASSWORD")
                     .doesNotContain("BREVO_API_KEY");
         });
-    }
-
-    private List<String> warnMessages() {
-        return appender.list.stream()
-                .filter(e -> e.getLevel() == Level.WARN)
-                .map(ILoggingEvent::getFormattedMessage)
-                .toList();
     }
 
     private ILoggingEvent firstEventAt(Level level) {

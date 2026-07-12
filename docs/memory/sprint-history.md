@@ -776,14 +776,20 @@
   Bilan : 2 créées (0 discard, 0 absorbé) — triage discipliné.
 **Status :** Livré — PR #277 prête, attente CI verte + merge (Phase 5).
 
-## Sprint 35 — 2026-07-12 (PLANIFIE — cohésion 0.45, Prod boot safety & secrets)
+## Sprint 35 — 2026-07-12 (Terminé — merge PR #280 dans dev)
 **Objectif :** Fail-fast au boot prod (COOKIE_DOMAIN/CORS vides, cookie.secure=false) + rotation des secrets exposés.
-**Milestone GitHub :** #35
-**Issues :** #253, #254, #249
-**Vagues :** V1 = #254 (ProfileSafetyGuard) ∥ #249 (ops) | V2 = #253 (même fichier ProfileSafetyGuard que #254)
-**Migrations Flyway :** aucune
-**Dépend de :** aucune (ordonné après S34 par prudence release)
-**Status :** Planifie
+**Milestone GitHub :** #35 (fermé après merge)
+**Issues livrées (2) :** #254, #253 — **#249 différée** (action OPS pure, hors PR ; runbook `docs/memory/devops/secret-rotation-runbook.md`, issue laissée ouverte, projet pas encore en prod)
+**Vagues exécutées :** V1 = #254 (ProfileSafetyGuard cookie.secure) | V2 = #253 (COOKIE_DOMAIN/CORS, même fichier → séquentiel)
+**Cohésion score :** 0.45
+**Commits :** 5 (3 code : `32c473a` #254, `b9e7596` #253, `5d21a57` fix review #254 ; 2 docs : `85b772a` artefacts, `5e309ae` runbook #249)
+**BR impactées :** aucune (durcissement boot-safety infrastructure/config ; adjacent BR-AUT-007 cookie JWT).
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 2 MINEUR (tous RÉSOLU, commit `5d21a57` : message #254 nomme `COOKIE_SECURE` + javadoc corrigée).
+**Tests :** Backend 374/374 green | Frontend 421/421 green | E2E N/A (0 fichier .tsx, 0 data-testid).
+**Nouveaux pitfalls / patterns :** PIT-S35-001 (property `${VAR}` sans inner-default → placeholder opaque avant message métier) ; PAT-S35-001 (extension ProfileSafetyGuard, défaut fail-safe selon sémantique de la property) ; PAT-S35-002 (durcir WARN démarrage → fail-fast dans garde pré-beans). Aucune décision nouvelle.
+**Follow-ups :** aucun RECOMMAND_FOLLOWUP signalé. #249 différée (OPS, runbook fourni).
+**Note tooling :** `detect-domain.sh` re-confirmé bloquant (zombies >1h en background) → domaines mappés à la main (`auth`). `check-sprint-completeness.sh` absent de ce projet (vérif complétude faite à la main).
+**Status :** Terminé (clôturé 2026-07-12)
 
 ## Sprint 36 — 2026-07-12 (PLANIFIE — cohésion 0.72, Export RGPD hardening)
 **Objectif :** Chemin de stockage dédié export + rate-limit GET export + scheduler de purge des exports expirés (index V14).
