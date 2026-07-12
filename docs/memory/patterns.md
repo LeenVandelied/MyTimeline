@@ -208,3 +208,6 @@ En S32 (#58), une règle ArchUnit (règle 2) gèle les mappers historiques de `a
 
 ## PAT-S32-002 — Déclencher un job @Async APRÈS commit de la ligne PENDING (pas de race findById côté worker)
 En S32 (#58), pour un job async persisté puis exécuté : la méthode `submit` NE doit PAS être `@Transactional` ; c'est le `repo.save` (PENDING) qui l'est (`REQUIRED`), de sorte que la ligne est committée AVANT l'appel `@Async`. Sinon le worker (autre thread/connexion) fait un `findById` sur une ligne encore non committée → `Optional.empty` → job fantôme. Pattern : save transactionnel de la ligne PENDING → retour au contrôleur → déclenchement async qui relit la ligne durable. (Sprint 32 #58)
+
+## PAT-S33-001 — Récupérer un diff PR complet sous RTK / `gh pr diff` multi-pathspec
+En S33 (review PR #269), deux pièges pour obtenir un diff : (a) `gh pr diff <N> -- '*.ts' '*.tsx'` avec PLUSIEURS pathspecs est rejeté par le CLI gh (« accepts at most 1 arg ») ; (b) le hook RTK tronque/vide aussi `gh pr diff` comme il le fait pour `git diff` (cf. mémoire `rtk-git-diff-empty-output`). Pattern fiable : `rtk proxy gh pr diff <N>` (diff complet, non tronqué) PUIS filtrer côté client (grep/awk), plutôt que de passer des pathspecs multiples à gh. (Sprint 33 #269)
