@@ -3,9 +3,9 @@ import { openSettingsChapter } from './support/auth'
 import { SHARED, DEL } from './support/accounts'
 
 /**
- * #86 — E2E chapitre Compte (desktop) : export des données (navigation 3 étapes,
- * endpoint stub) + suppression de compte (2 étapes, re-saisie username -> DELETE
- * /api/me, BR-AUT-001).
+ * #86 / #59 — E2E chapitre Compte (desktop) : export RGPD (flux 3 étapes, contrat
+ * backend #58 livré) + suppression de compte (2 étapes, re-saisie username ->
+ * DELETE /api/me, BR-AUT-001).
  *
  * Sélecteurs `data-testid` UNIQUEMENT, routes `/fr/...`. PRÉREQUIS RUNTIME
  * (job CI `e2e`) : backend Spring (:8080) + Postgres, front :3000.
@@ -14,35 +14,29 @@ import { SHARED, DEL } from './support/accounts'
  * utilisateur dédié (identité unique) -> pas de dépendance d'état entre tests.
  */
 
-// Export = lecture seule (stub) : compte partagé fixe (aucune mutation). storageState.
-test.describe('Réglages — Compte : export (stub)', () => {
+// Export = lecture seule (aucune mutation de compte) : compte partagé fixe. storageState.
+test.describe('Réglages — Compte : export RGPD (#59)', () => {
   test.use({ storageState: SHARED.storageState })
 
-  test('export : navigation format -> confirmation (endpoint stub non livré)', async ({
-    page,
-  }) => {
+  test('export JSON (sync) : confirmation -> téléchargement immédiat', async ({ page }) => {
     await openSettingsChapter(page, 'account')
 
-    // Étape 1 : choix du format (Select JSON/CSV).
-    await expect(page.getByTestId('export-step-format')).toBeVisible()
+    // Étape 1 : le flux d'export + le sélecteur de format sont visibles. JSON
+    // (format sync) est le choix par défaut -> téléchargement inline immédiat.
+    await expect(page.getByTestId('export-flow')).toBeVisible()
+    await expect(page.getByTestId('export-step-confirm')).toBeVisible()
     await expect(page.getByTestId('export-format')).toBeVisible()
 
-    // Étape 2 : confirmation.
-    await page.getByTestId('export-next').click()
-    await expect(page.getByTestId('export-step-confirm')).toBeVisible()
-    await expect(page.getByTestId('export-confirm')).toBeVisible()
+    // Déclenche l'export : GET /api/export?format=JSON renvoie le fichier inline.
+    // On attend l'événement de téléchargement navigateur (parcours réel #58).
+    const downloadPromise = page.waitForEvent('download')
+    await page.getByTestId('export-start').click()
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toContain('mytimeline-export')
 
-    // ⚠ STUB : GET /api/me/export N'EST PAS livré côté backend. `exportData`
-    // rejette -> `runExport` catch -> toast « à venir » + retour à l'étape format.
-    // On NE peut donc PAS atteindre `export-step-done` (téléchargement réel) tant
-    // que l'endpoint n'existe pas. On VÉRIFIE le comportement de repli du stub
-    // (retour à l'étape format), sans test rouge ni téléchargement.
-    await page.getByTestId('export-confirm').click()
-    await expect(page.getByTestId('export-step-format')).toBeVisible()
-    await expect(page.getByTestId('export-step-done')).toHaveCount(0)
-
-    // NOTE: quand l'endpoint export sera livré (RECOMMAND_FOLLOWUP), remplacer la
-    // vérification ci-dessus par l'attente de `export-step-done` + téléchargement.
+    // Étape 3 : succès sync (fichier déjà téléchargé), pas de lien/expiration.
+    await expect(page.getByTestId('export-step-ready')).toBeVisible()
+    await expect(page.getByTestId('export-ready-sync')).toBeVisible()
   })
 })
 

@@ -109,16 +109,6 @@
   "account": {
     "title": "Konto",
     "subtitle": "Exportieren Sie Ihre Daten oder löschen Sie Ihr Konto.",
-    "export": {
-      "title": "Meine Daten exportieren",
-      "description": "Laden Sie eine Kopie Ihrer Daten im JSON- oder CSV-Format herunter.",
-      "confirm": "Export im Format {format} erstellen?",
-      "generating": "Wird erstellt…",
-      "download": "Herunterladen",
-      "done": "Export erstellt und heruntergeladen.",
-      "again": "Neuer Export",
-      "comingSoon": "Datenexport folgt in Kürze"
-    },
     "delete": {
       "title": "Mein Konto löschen",
       "description": "Diese Aktion ist dauerhaft und unumkehrbar.",

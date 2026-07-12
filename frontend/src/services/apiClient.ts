@@ -2,6 +2,7 @@ import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { refreshToken } from './authService'
 import { networkStatusStore } from './networkStatus'
+import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/locales'
 
 /**
  * #76 — Timeout par défaut (15 s). Couvre les requêtes API JSON normales sans
@@ -36,9 +37,6 @@ apiClient.interceptors.request.use((config) => {
 
 let isRedirecting = false
 
-/** Locales préfixées (cf. middleware.ts, localePrefix: 'always'). */
-const SUPPORTED_LOCALES = ['fr', 'en', 'es', 'de'] as const
-
 /**
  * Cible de redirection 401/403 préfixée par la locale courante
  * (#40 : avant on redirigeait vers `/login` non préfixé, cassé par
@@ -47,7 +45,7 @@ const SUPPORTED_LOCALES = ['fr', 'en', 'es', 'de'] as const
  */
 const loginUrlForCurrentLocale = (): string => {
   const segment = window.location.pathname.split('/')[1]
-  const locale = (SUPPORTED_LOCALES as readonly string[]).includes(segment) ? segment : 'fr'
+  const locale = isSupportedLocale(segment) ? segment : DEFAULT_LOCALE
   return `/${locale}/login`
 }
 

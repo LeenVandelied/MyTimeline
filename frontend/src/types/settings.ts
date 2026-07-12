@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { SUPPORTED_LOCALES, type Locale } from '@/i18n/locales'
+
 /**
  * #86 — Types & schémas Zod des Réglages (Profil / Sécurité / Préférences / Compte).
  *
@@ -41,8 +43,9 @@ export type ThemeOption = (typeof THEME_OPTIONS)[number]
 export const DENSITY_OPTIONS = ['compact', 'normal', 'comfortable'] as const
 export type DensityOption = (typeof DENSITY_OPTIONS)[number]
 
-export const LOCALE_OPTIONS = ['fr', 'en', 'es', 'de'] as const
-export type LocaleOption = (typeof LOCALE_OPTIONS)[number]
+/** #235 — réexport de la source de vérité unique (cf. `@/i18n/locales`). */
+export const LOCALE_OPTIONS = SUPPORTED_LOCALES
+export type LocaleOption = Locale
 
 /** Clé localStorage de la densité (non-PII, cf. DEC-S9-002 : jamais de PII ici). */
 export const DENSITY_STORAGE_KEY = 'mt-density'

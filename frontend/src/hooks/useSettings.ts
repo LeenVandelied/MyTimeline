@@ -6,11 +6,9 @@ import {
   changePassword,
   deleteAccount,
   deleteAvatar,
-  exportData,
   updateProfile,
   uploadAvatar,
   type ChangePasswordPayload,
-  type ExportFormat,
   type ProfileUpdatePayload,
 } from '@/services/userService'
 import { queryKeys } from '@/lib/query-keys'
@@ -59,10 +57,6 @@ export function useSettings() {
     },
   })
 
-  const exportMutation = useMutation<Blob, unknown, ExportFormat>({
-    mutationFn: (format) => exportData(format),
-  })
-
   /**
    * #75 — Upload avatar. Le backend renvoie le UserResponse à jour ; on
    * resynchronise `AuthContext` (source unique du user, `avatarUrl` inclus) via
@@ -93,7 +87,6 @@ export function useSettings() {
     updateProfile: updateProfileMutation,
     changePassword: changePasswordMutation,
     deleteAccount: deleteAccountMutation,
-    exportData: exportMutation,
     uploadAvatar: uploadAvatarMutation,
     deleteAvatar: deleteAvatarMutation,
   }

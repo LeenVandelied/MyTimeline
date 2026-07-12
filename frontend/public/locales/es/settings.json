@@ -109,16 +109,6 @@
   "account": {
     "title": "Cuenta",
     "subtitle": "Exporta tus datos o elimina tu cuenta.",
-    "export": {
-      "title": "Exportar mis datos",
-      "description": "Descarga una copia de tus datos en formato JSON o CSV.",
-      "confirm": "¿Generar la exportación en formato {format}?",
-      "generating": "Generando…",
-      "download": "Descargar",
-      "done": "Exportación generada y descargada.",
-      "again": "Nueva exportación",
-      "comingSoon": "La exportación de datos llegará pronto"
-    },
     "delete": {
       "title": "Eliminar mi cuenta",
       "description": "Esta acción es permanente e irreversible.",

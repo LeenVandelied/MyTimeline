@@ -3,10 +3,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AccountSection } from './AccountSection'
 
 /**
- * #86 — Chapitre Compte. On couvre le flux de SUPPRESSION en 2 étapes
+ * #86 / #59 — Chapitre Compte. On couvre le flux de SUPPRESSION en 2 étapes
  * (avertissement -> confirmation par re-saisie du username) et la validation du
- * mismatch (BR-AUT-001). Export : le flux d'étapes est vérifié (format -> confirm).
+ * mismatch (BR-AUT-001). Le flux d'export RGPD (#59) est testé séparément dans
+ * `ExportDataFlow.test.tsx` ; on le stub ici pour isoler la suppression (évite un
+ * QueryClientProvider dans ces tests).
  */
+vi.mock('./ExportDataFlow', () => ({
+  ExportDataFlow: () => <div data-testid="export-flow-stub" />,
+}))
+
 vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => (key: string) =>
     namespace ? `${namespace}.${key}` : key,
@@ -23,14 +29,12 @@ vi.mock('next/navigation', () => ({
 }))
 
 const deleteAccountMutate = vi.fn()
-const exportMutate = vi.fn()
 const logoutMock = vi.fn()
 
 vi.mock('@/hooks/useSettings', () => ({
   useSettings: () => ({
     user: { id: 'u1', name: 'Jane', username: 'jane', email: 'jane@ex.com', role: 'ROLE_USER' },
     deleteAccount: { mutateAsync: deleteAccountMutate, isPending: false },
-    exportData: { mutateAsync: exportMutate, isPending: false },
   }),
 }))
 
@@ -82,15 +86,9 @@ describe('AccountSection — suppression du compte', () => {
     await waitFor(() => expect(deleteAccountMutate).toHaveBeenCalledWith('jane'))
     await waitFor(() => expect(logoutMock).toHaveBeenCalled())
   })
-})
 
-describe('AccountSection — export', () => {
-  afterEach(() => vi.clearAllMocks())
-
-  it("avance de l'étape format à confirmation", () => {
+  it("délègue l'export au flux dédié (#59)", () => {
     render(<AccountSection />)
-    expect(screen.getByTestId('export-step-format')).toBeInTheDocument()
-    fireEvent.click(screen.getByTestId('export-next'))
-    expect(screen.getByTestId('export-step-confirm')).toBeInTheDocument()
+    expect(screen.getByTestId('export-flow-stub')).toBeInTheDocument()
   })
 })
