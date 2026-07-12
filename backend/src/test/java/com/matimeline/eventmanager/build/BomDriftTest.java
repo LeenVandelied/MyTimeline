@@ -92,15 +92,22 @@ class BomDriftTest {
   }
 
   /**
-   * flyway. Plancher = 11.7.2 (pas de CVE ciblée : plancher d'alignement — le module
-   * {@code flyway-database-postgresql} requis en Flyway 10+/11+ doit rester présent, DEC-S3-001).
-   * Effectif courant : 11.7.2. Lu via {@link VersionPrinter#getVersion()} (API interne mais stable
-   * et statique).
+   * flyway. Plancher = 11.7.2 (pas de CVE ciblée : simple alignement de version sur le BOM Boot 3.5.16).
+   *
+   * <p>⚠ Portée : ce test vérifie UNIQUEMENT la version de flyway-core. Il NE garantit PAS la présence
+   * du module {@code flyway-database-postgresql} (requis en Flyway 10+/11+, DEC-S3-001) — cette garantie
+   * est portée par les tests Testcontainers (boot Flyway réel contre Postgres, qui échoue « Unsupported
+   * Database » si le module manque), pas par ce plancher de version.
+   *
+   * <p>Effectif courant : 11.7.2. Lu via {@link VersionPrinter#getVersion()} : API INTERNE de Flyway
+   * ({@code org.flywaydb.core.internal.*}), choisie faute d'accesseur public de version au runtime.
+   * Caveat assumé — un bump Flyway major qui déplace/supprime cette classe cassera la COMPILATION de ce
+   * test, ce qui force (volontairement) une revue du bump.
    */
   @Test
   void flywayStaysAboveFloor() {
     assertVersionAtLeast(
-        "flyway", VersionPrinter.getVersion(), "11.7.2", "alignement module flyway-database-postgresql");
+        "flyway", VersionPrinter.getVersion(), "11.7.2", "alignement version sur BOM Boot 3.5.16");
   }
 
   // ---------------------------------------------------------------------------
