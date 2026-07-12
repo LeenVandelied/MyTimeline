@@ -202,3 +202,9 @@ En S31 (#223), pour lever une CVE sur une sous-dépendance versionnée par le pa
 
 ## PAT-S31-002 — Rendre une acceptation de CVE auto-invalidante par un test garde-fou
 En S31 (#258), quand on accepte une CVE parce qu'un vecteur est « non applicable » sur une hypothèse d'architecture (ex: app STATELESS → CVE session hijacking N/A), ajouter un test qui ÉCHOUE si l'hypothèse tombe : règle ArchUnit `noClasses().should().useHttpSession()` + `@SpringBootTest` asserant l'absence de session/JSESSIONID matérialisée. L'acceptation documentée dans `docs/security/cve-acceptance.md` pointe vers le test. Sinon l'acceptation devient silencieusement fausse si un dev réintroduit `HttpSession`. (Sprint 31 #258)
+
+## PAT-S32-001 — Mapper entity↔domain d'une NOUVELLE feature → le placer en `infrastructure`, pas `application/mappers`
+En S32 (#58), une règle ArchUnit (règle 2) gèle les mappers historiques de `application/mappers` comme violations tolérées (freeze). Ajouter un NOUVEAU mapper dans `application/mappers` casse ce freeze (le compteur de violations gelées ne matche plus). Pour une nouvelle feature : placer le mapper entity↔domain en couche `infrastructure` (ex: `infrastructure/adapters/repositories/jpa/ExportJobMapper`), conforme au sens hexagonal (le mapping JPA est un détail d'infra) et hors périmètre du freeze. (Sprint 32 #58)
+
+## PAT-S32-002 — Déclencher un job @Async APRÈS commit de la ligne PENDING (pas de race findById côté worker)
+En S32 (#58), pour un job async persisté puis exécuté : la méthode `submit` NE doit PAS être `@Transactional` ; c'est le `repo.save` (PENDING) qui l'est (`REQUIRED`), de sorte que la ligne est committée AVANT l'appel `@Async`. Sinon le worker (autre thread/connexion) fait un `findById` sur une ligne encore non committée → `Optional.empty` → job fantôme. Pattern : save transactionnel de la ligne PENDING → retour au contrôleur → déclenchement async qui relit la ligne durable. (Sprint 32 #58)

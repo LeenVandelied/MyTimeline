@@ -712,15 +712,28 @@
   - Untrack `frontend/.eslintcache` + gitignore (churn à chaque lint) [XS | devops] → issue #262
 **Status :** Terminé
 
-## Sprint 32 — 2026-07-07 (En cours — cohésion 1.00, Portabilité RGPD backend)
+## Sprint 32 — 2026-07-07 → 2026-07-12 (Terminé — merge PR #263 dans dev)
 **Objectif :** Endpoint export RGPD (profil+produits+événements+catégories ; JSON/MD sync + ZIP/CSV async).
-**Milestone GitHub :** #32
-**Issues :** #58 (L — mono-issue, sprint dédié)
-**Vagues :** V1 = #58 seul
-**Migrations Flyway :** possiblement V13 (table suivi jobs async — à déterminer)
-**Dépend de :** aucune (mais BLOQUE #59 en S33)
-**Note :** ⚠ ADR requis (aucune infra jobs async aujourd'hui). Chemin sync (JSON/MD) livrable même si async glisse. RGPD = complétude légale exhaustive.
-**Status :** Planifié
+**Milestone GitHub :** #32 (fermé après merge)
+**Issues livrées (1) :** #58 (L — mono-issue, sprint dédié)
+**Vagues exécutées :** V1 = #58 seul
+**Cohésion score :** 1.00
+**Commits :** 7 (feature 0d1d739 ; secfix f663d98 ; revfix 9b9bf5c ; prfix review 57670a6 ; + 3 memo suivi)
+**Migrations Flyway :** V13 `export_jobs` (FK cascade, CHECK format/status, index user)
+**ADR :** ADR-003 (infra jobs async — DEC-S32-001)
+**BR impactées :** aucune BR métier formelle (exigence légale RGPD Art.20)
+**Reviews :** 2 passes. Sprint (Phase 7) — reviewer 1 MAJEUR + 2 MINEUR (tous RÉSOLU 9b9bf5c). PR #263 (/review-pr TEAM) — reviewer/security/db : 0 CRITIQUE, 1 « MAJEUR » requalifié follow-up (#264) + 2 MINEUR RÉSOLU (57670a6). security-expert & db-expert 2 passes chacun : 0 bloquant.
+**Tests :** Backend 355/355 green (baseline 351 + 4). E2E/frontend hors périmètre (backend pur).
+**Nouveaux mémoires :** DEC-S32-001 ; PAT-S32-001 (mapper new-feature en infra vs freeze ArchUnit), PAT-S32-002 (@Async après commit PENDING) ; PIT-S32-001 (findById collision → findDomainById), PIT-S32-002 (PATH_LIMITS casse tests POST via IP MockMvc partagée).
+**Contrat DTO export figé** (source de vérité #59/S33) : voir issue-58-done.md + body PR #263.
+**Absorbé en cours :** 3 cycles de correction post-review (secfix sécu, revfix review sprint, prfix review PR) intégrés avant merge — détail dans les done.md.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Chemin de stockage dédié export (`app.storage.export-path`) [S | transversal] → issue #264 (milestone S33)
+  - Rate-limit GET export ou tracer décision hors-scope [S | auth] → issue #265 (backlog)
+  - Export streaming/pagination gros comptes (dette scale ADR-003) [M | transversal] → issue #266 (backlog)
+  - Scheduler purge fichiers/jobs export expirés [S | transversal] → issue #267 (backlog)
+  - Commentaire trompeur `passwordResetExecutor` (AsyncConfig, CallerRunsPolicy vs AbortPolicy) [XS | backend] → issue #268 (backlog)
+**Status :** Terminé
 
 ## Sprint 33 — 2026-07-07 (PLANIFIÉ — cohésion 0.40, Conformité EU frontend : export + locales)
 **Objectif :** Flux export RGPD frontend (Réglages, 3 étapes) + aligner locales layout es/de (fix 404).
