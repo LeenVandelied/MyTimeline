@@ -39,6 +39,16 @@ import java.util.Locale;
  * {@code false} (cf. {@code ProdConfigStartupLogger}). Un cookie non-{@code Secure} en
  * prod peut être transmis en clair (risque MITM) : on exige donc un {@code true}
  * EXPLICITE en prod effectif, et on traite {@code absent OU false} comme non-sécurisé.
+ *
+ * <p>Quatrième garde-fou (#253) : refuse le boot si {@code app.cookie.domain}
+ * ({@code COOKIE_DOMAIN}) OU {@code app.cors.allowed-origins} ({@code CORS_ALLOWED_ORIGINS})
+ * sont vides/blancs ALORS que l'environnement est <em>prod effectif</em>. Ces deux valeurs
+ * étaient auparavant seulement journalisées en WARN par {@code ProdConfigStartupLogger}
+ * (#130) : l'app démarrait quand même, avec une auth multi-sous-domaines cassée
+ * silencieusement (domaine vide → cookie host-only) ou un frontend bloqué par CORS
+ * (origines vides). Le WARN devient un fail-fast, cohérent avec #111/#216/#254 et
+ * exécuté au plus tôt (avant création des beans). Les WARN redondants ont été retirés
+ * de {@code ProdConfigStartupLogger} (cf. commentaire pointant vers #253).
  */
 public class ProfileSafetyGuard
         implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
@@ -55,13 +65,21 @@ public class ProfileSafetyGuard
     /** Flag {@code Secure} du cookie JWT (défaut applicatif {@code false}, cf. ProdConfigStartupLogger). */
     static final String COOKIE_SECURE_KEY = "app.cookie.secure";
 
+    /** Domaine du cookie JWT (vide = cookie host-only, auth multi-sous-domaines cassée). */
+    static final String COOKIE_DOMAIN_KEY = "app.cookie.domain";
+
+    /** Origines CORS autorisées (CSV ; vide = frontend cross-site bloqué). */
+    static final String CORS_ALLOWED_ORIGINS_KEY = "app.cors.allowed-origins";
+
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment env = event.getEnvironment();
 
-        checkDevProfileInProduction(env);       // #111 (inchangé, prioritaire)
+        checkDevProfileInProduction(env);        // #111 (inchangé, prioritaire)
         checkRateLimitDisabledInProduction(env); // #216
-        checkCookieInsecureInProduction(env);   // #254
+        checkCookieInsecureInProduction(env);    // #254
+        checkMissingCookieDomainInProduction(env); // #253
+        checkMissingCorsOriginsInProduction(env);  // #253
     }
 
     /**
@@ -130,6 +148,50 @@ public class ProfileSafetyGuard
     }
 
     /**
+     * Check #253 (domaine) : en prod effectif, {@code app.cookie.domain} vide/blanc →
+     * refuse de booter. Un domaine vide produit un cookie host-only : l'authentification
+     * multi-sous-domaines échouerait silencieusement en production. Le blocage ne concerne
+     * que la prod effective ; dev/test (domaine localhost vide) reste autorisé.
+     */
+    private void checkMissingCookieDomainInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isBlankProperty(env, COOKIE_DOMAIN_KEY)) {
+            return; // Domaine renseigné → configuration cohérente.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#253) : '" + COOKIE_DOMAIN_KEY + "' (COOKIE_DOMAIN) est "
+                + "VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Un domaine vide produit un cookie host-only : "
+                + "l'authentification multi-sous-domaines échouerait silencieusement. Définir "
+                + "explicitement COOKIE_DOMAIN ('" + COOKIE_DOMAIN_KEY + "') en prod.");
+    }
+
+    /**
+     * Check #253 (CORS) : en prod effectif, {@code app.cors.allowed-origins} vide (property
+     * absente/blanche OU tous les tokens CSV blancs) → refuse de booter. Sans origine
+     * autorisée, le frontend serait bloqué par CORS. Le blocage ne concerne que la prod
+     * effective ; dev/test reste autorisé.
+     */
+    private void checkMissingCorsOriginsInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isCorsOriginsMissing(env)) {
+            return; // Au moins une origine renseignée → configuration cohérente.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#253) : '" + CORS_ALLOWED_ORIGINS_KEY + "' (CORS_ALLOWED_ORIGINS) "
+                + "est VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Sans origine cross-site autorisée, le frontend "
+                + "serait bloqué par CORS. Définir explicitement CORS_ALLOWED_ORIGINS "
+                + "('" + CORS_ALLOWED_ORIGINS_KEY + "') en prod.");
+    }
+
+    /**
      * Vrai si le cookie JWT n'est PAS sécurisé : {@code app.cookie.secure} absent OU
      * explicitement {@code false}. Défaut fail-safe {@code false} (property absente =
      * non-sécurisé), à l'inverse du rate-limit (#216) : ici on EXIGE un {@code true}
@@ -137,6 +199,28 @@ public class ProfileSafetyGuard
      */
     private boolean isCookieInsecure(ConfigurableEnvironment env) {
         return !env.getProperty(COOKIE_SECURE_KEY, Boolean.class, Boolean.FALSE);
+    }
+
+    /** Vrai si la property est absente, {@code null} ou uniquement composée de blancs. */
+    private boolean isBlankProperty(ConfigurableEnvironment env, String key) {
+        String value = env.getProperty(key);
+        return value == null || value.isBlank();
+    }
+
+    /**
+     * Vrai si {@code app.cors.allowed-origins} ne fournit aucune origine exploitable :
+     * property absente/blanche, OU chaque token CSV (séparé par virgule) est blanc après
+     * trim. Lecture en {@code String} brute (le CSV n'est pas encore résolu en {@code List}
+     * à ce stade du cycle de vie), cohérent avec le WARN historique de {@code ProdConfigStartupLogger}.
+     */
+    private boolean isCorsOriginsMissing(ConfigurableEnvironment env) {
+        String raw = env.getProperty(CORS_ALLOWED_ORIGINS_KEY);
+        if (raw == null || raw.isBlank()) {
+            return true;
+        }
+        return Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .allMatch(String::isEmpty);
     }
 
     /** Vrai si une des variables marqueur vaut une valeur "prod" (casse ignorée). */
