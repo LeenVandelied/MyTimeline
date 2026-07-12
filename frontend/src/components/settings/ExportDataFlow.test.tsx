@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ExportDataFlow } from './ExportDataFlow'
 import type { UseExportFlowResult } from '@/hooks/useExportFlow'
@@ -37,7 +37,10 @@ function makeFlow(overrides: Partial<UseExportFlowResult> = {}): UseExportFlowRe
 }
 
 describe('ExportDataFlow', () => {
-  afterEach(() => vi.clearAllMocks())
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.useRealTimers()
+  })
 
   it('étape 1 : affiche le sélecteur de format + explication et déclenche start', () => {
     const start = vi.fn()
@@ -108,6 +111,37 @@ describe('ExportDataFlow', () => {
     expect(screen.queryByTestId('export-download')).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId('export-relaunch'))
     expect(reset).toHaveBeenCalledOnce()
+  })
+
+  it('étape 3 async : bascule en état expiré après le TTL sans interaction', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-01-01T09:00:00Z'))
+    // Lien valide 30 min au moment du render (interprété UTC via suffixe `Z`).
+    flowState = makeFlow({
+      phase: 'ready',
+      format: 'ZIP',
+      completedJob: {
+        jobId: '11111111-1111-1111-1111-111111111111',
+        status: 'COMPLETED',
+        format: 'ZIP',
+        downloadUrl: '/api/export/download/abc?token=t',
+        expiresAt: '2026-01-01T09:30:00',
+      },
+    })
+    render(<ExportDataFlow />)
+
+    // Au render : lien disponible, pas encore expiré.
+    expect(screen.getByTestId('export-ready-async')).toBeInTheDocument()
+    expect(screen.queryByTestId('export-expired')).not.toBeInTheDocument()
+
+    // On dépasse le TTL sans aucune interaction : le tick périodique (60 s)
+    // recalcule l'expiration et bascule l'UI.
+    act(() => {
+      vi.advanceTimersByTime(31 * 60_000)
+    })
+
+    expect(screen.getByTestId('export-expired')).toBeInTheDocument()
+    expect(screen.queryByTestId('export-download')).not.toBeInTheDocument()
   })
 
   it('erreur : message alerte + réessayer', () => {

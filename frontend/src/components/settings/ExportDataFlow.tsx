@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useReducer, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { AlertTriangle, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -58,6 +58,18 @@ export function ExportDataFlow() {
   useEffect(() => {
     headingRef.current?.focus()
   }, [flow.phase])
+
+  // Re-check périodique de l'expiration : quand un lien async est affiché
+  // (phase 'ready' avec `expiresAt`), l'onglet Réglages peut rester ouvert
+  // au-delà du TTL 24h sans interaction. Un tick léger (60 s) force le
+  // recalcul de `expired` pour basculer l'UI en état « expiré ».
+  const [, tick] = useReducer((n: number) => n + 1, 0)
+  const asyncExpiresAt = flow.phase === 'ready' ? (flow.completedJob?.expiresAt ?? null) : null
+  useEffect(() => {
+    if (!asyncExpiresAt) return
+    const id = setInterval(tick, 60_000)
+    return () => clearInterval(id)
+  }, [asyncExpiresAt])
 
   const expired = flow.phase === 'ready' && isExpired(flow.completedJob?.expiresAt ?? null)
 

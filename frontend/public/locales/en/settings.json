@@ -109,16 +109,6 @@
   "account": {
     "title": "Account",
     "subtitle": "Export your data or delete your account.",
-    "export": {
-      "title": "Export my data",
-      "description": "Download a copy of your data in JSON or CSV format.",
-      "confirm": "Generate the export in {format} format?",
-      "generating": "Generating…",
-      "download": "Download",
-      "done": "Export generated and downloaded.",
-      "again": "New export",
-      "comingSoon": "Data export is coming soon"
-    },
     "delete": {
       "title": "Delete my account",
       "description": "This action is permanent and irreversible.",
