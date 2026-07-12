@@ -45,4 +45,12 @@ export const queryKeys = {
   sessions: {
     all: ['sessions'] as const,
   },
+  /**
+   * #59 — Export RGPD. Clé `job` scopée par `jobId` (polling du statut d'un job
+   * async, `GET /api/export/job/{jobId}`). L'identité vient du cookie JWT.
+   */
+  export: {
+    all: ['export'] as const,
+    job: (jobId: string) => ['export', 'job', jobId] as const,
+  },
 } as const

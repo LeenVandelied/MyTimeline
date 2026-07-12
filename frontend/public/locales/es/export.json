@@ -1,0 +1,50 @@
+{
+  "title": "Exportar mis datos",
+  "description": "Descargue una copia de sus datos personales (portabilidad RGPD).",
+  "formatLabel": "Formato de exportación",
+  "formats": {
+    "JSON": {
+      "label": "JSON",
+      "hint": "Archivo estructurado, ideal para reimportar sus datos o un uso técnico. Descarga inmediata."
+    },
+    "MARKDOWN": {
+      "label": "Markdown",
+      "hint": "Documento de texto legible, formateado para la lectura. Descarga inmediata."
+    },
+    "ZIP": {
+      "label": "ZIP (archivo completo)",
+      "hint": "Archivo que reúne todos sus datos y ficheros. Preparado en segundo plano."
+    },
+    "CSV": {
+      "label": "CSV (hoja de cálculo)",
+      "hint": "Tablas compatibles con Excel o Google Sheets. Preparado en segundo plano."
+    }
+  },
+  "actions": {
+    "download": "Descargar",
+    "prepare": "Preparar exportación",
+    "relaunch": "Volver a solicitar",
+    "again": "Nueva exportación",
+    "retry": "Reintentar"
+  },
+  "status": {
+    "PENDING": "en espera",
+    "RUNNING": "en curso",
+    "COMPLETED": "completada",
+    "FAILED": "fallida"
+  },
+  "preparing": {
+    "busy": "Preparando su exportación…",
+    "status": "Preparando su exportación: {status}. Esto puede tardar un momento."
+  },
+  "ready": {
+    "syncDone": "Su exportación se ha descargado.",
+    "asyncReady": "Su exportación está lista.",
+    "expiresAt": "Este enlace caduca el {date}.",
+    "expired": "Este enlace de descarga ha caducado. Vuelva a solicitarlo para generar una nueva exportación."
+  },
+  "errors": {
+    "network": "Se ha producido un error de red. Inténtelo de nuevo.",
+    "jobFailed": "La preparación de la exportación ha fallado. Inténtelo de nuevo."
+  }
+}

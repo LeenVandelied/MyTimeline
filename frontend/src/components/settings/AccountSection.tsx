@@ -2,33 +2,23 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import toast from 'react-hot-toast'
-import { Download, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useSettings } from '@/hooks/useSettings'
 import { useDeleteAccountFlow } from './useDeleteAccountFlow'
 import { DeleteAccountSteps } from './DeleteAccountSteps'
+import { ExportDataFlow } from './ExportDataFlow'
 import { BottomSheet } from './mobile/BottomSheet'
-import type { ExportFormat } from '@/services/userService'
 
 /**
- * #86 — Chapitre Compte : export des données (3 étapes) + suppression du compte
- * (2 étapes, confirmation par re-saisie du username -> DELETE /api/me, BR-AUT-001).
+ * #86 / #59 — Chapitre Compte : export des données RGPD (3 étapes, #59) +
+ * suppression du compte (2 étapes, confirmation par re-saisie du username ->
+ * DELETE /api/me, BR-AUT-001).
  *
- * Export & delete via hooks (`useSettings`). L'export dépend d'un endpoint backend
- * non livré (stub) : l'étape téléchargement affiche « à venir ». La suppression
- * utilise l'endpoint confirmé DELETE /api/me.
+ * L'export est délégué à `ExportDataFlow` (contrat backend figé #58 : formats sync
+ * JSON/MARKDOWN + async ZIP/CSV avec polling). La suppression utilise l'endpoint
+ * confirmé DELETE /api/me via `useDeleteAccountFlow`.
  */
-type ExportStep = 'format' | 'confirm' | 'done'
 
 /**
  * `deleteContainer` — conteneur du flux de suppression :
@@ -42,28 +32,6 @@ interface AccountSectionProps {
 
 export function AccountSection({ deleteContainer = 'dialog' }: AccountSectionProps) {
   const t = useTranslations('settings')
-  const { exportData } = useSettings()
-
-  /* -------------------------------- Export -------------------------------- */
-  const [exportStep, setExportStep] = useState<ExportStep>('format')
-  const [format, setFormat] = useState<ExportFormat>('json')
-
-  const runExport = async () => {
-    try {
-      const blob = await exportData.mutateAsync(format)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `mytimeline-export.${format}`
-      a.click()
-      URL.revokeObjectURL(url)
-      setExportStep('done')
-    } catch {
-      // #NN — endpoint export non livré (stub) : on informe sans casser le flux.
-      toast.error(t('account.export.comingSoon'))
-      setExportStep('format')
-    }
-  }
 
   /* ------------------------------- Delete --------------------------------- */
   // #87 — Logique de suppression partagée (hook) rendue ici dans un Dialog
@@ -85,70 +53,8 @@ export function AccountSection({ deleteContainer = 'dialog' }: AccountSectionPro
         <p className="text-ink-muted text-sm">{t('account.subtitle')}</p>
       </div>
 
-      {/* Export des données (3 étapes) */}
-      <div className="border-rule max-w-md space-y-3 rounded-md border p-4">
-        <h3 className="text-sm font-medium">{t('account.export.title')}</h3>
-        <p className="text-ink-muted text-sm">{t('account.export.description')}</p>
-
-        {exportStep === 'format' && (
-          <div className="space-y-3" data-testid="export-step-format">
-            <Select value={format} onValueChange={(v) => setFormat(v as ExportFormat)}>
-              <SelectTrigger data-testid="export-format">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="json">JSON</SelectItem>
-                <SelectItem value="csv">CSV</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setExportStep('confirm')}
-              data-testid="export-next"
-            >
-              {t('common.next')}
-            </Button>
-          </div>
-        )}
-
-        {exportStep === 'confirm' && (
-          <div className="space-y-3" data-testid="export-step-confirm">
-            <p className="text-sm">
-              {t('account.export.confirm', { format: format.toUpperCase() })}
-            </p>
-            <div className="flex gap-2">
-              <Button type="button" variant="ghost" onClick={() => setExportStep('format')}>
-                {t('common.back')}
-              </Button>
-              <Button
-                type="button"
-                onClick={runExport}
-                disabled={exportData.isPending}
-                data-testid="export-confirm"
-              >
-                {exportData.isPending ? (
-                  <Spinner label={t('account.export.generating')} />
-                ) : (
-                  <>
-                    <Download className="h-4 w-4" aria-hidden="true" />
-                    {t('account.export.download')}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {exportStep === 'done' && (
-          <div className="space-y-2" data-testid="export-step-done">
-            <p className="text-success text-sm">{t('account.export.done')}</p>
-            <Button type="button" variant="ghost" onClick={() => setExportStep('format')}>
-              {t('account.export.again')}
-            </Button>
-          </div>
-        )}
-      </div>
+      {/* Export des données RGPD (3 étapes) — #59 */}
+      <ExportDataFlow />
 
       {/* Suppression du compte (2 étapes) */}
       <div className="border-danger/40 bg-danger-soft/20 max-w-md space-y-3 rounded-md border p-4">

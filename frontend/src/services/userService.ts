@@ -87,25 +87,8 @@ export const deleteAvatar = async (): Promise<void> => {
 }
 
 /* ---------------------------------------------------------------------------
-   Export des données — TODO backend: GET /api/me/export?format=json|csv.
-   Aucun endpoint d'export au scan backend (#86). Stub qui rejette : l'UI garde
-   le flux 3 étapes (choix format -> confirmation -> téléchargement) et affiche
-   « à venir » à l'étape téléchargement.
+   Export des données RGPD — #59 (livré) : le flux vit désormais dans
+   `services/exportService.ts` (contrat backend figé #58, base path `/api/export`,
+   formats sync JSON/MARKDOWN + async ZIP/CSV). L'ancien stub `/api/me/export` a
+   été retiré.
    --------------------------------------------------------------------------- */
-
-export type ExportFormat = 'json' | 'csv'
-
-/**
- * GET /api/me/export — STUB. Renvoie un Blob téléchargeable une fois l'endpoint
- * livré (`responseType: 'blob'`). Rejette tant que le backend est absent.
- */
-export const exportData = async (format: ExportFormat): Promise<Blob> => {
-  // TODO backend: GET /api/me/export?format=... (RGPD portabilité) — non livré.
-  // const response = await apiClient.get('/me/export', {
-  //   params: { format },
-  //   responseType: 'blob',
-  // })
-  // return response.data as Blob
-  void format
-  return Promise.reject(new Error('EXPORT_ENDPOINT_UNAVAILABLE'))
-}
