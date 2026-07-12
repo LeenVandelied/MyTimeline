@@ -756,3 +756,51 @@
 **Status :** Terminé
 
 > **Plan S29–S33 généré le 2026-07-07** (`/ai-env:sprint plan 5 -c focus MVP`, cohésion moyenne **0.61**, aucun sprint < 0.3). Fil directeur MVP = **shippable en prod** : déploiement (S29) → garde-fous boot (S30) → sécurité exposition (S31) → légal RGPD backend (S32) → conformité EU frontend (S33). Le cœur fonctionnel étant déjà livré (S1–S28), ces 5 sprints n'ajoutent quasiment aucune feature. **Vérif code-state Phase 0.5** : #235 confirmé ouvert (es/de 404), #160 possibly_done (2/4 sites déjà faits). **Backlog HORS MVP explicite :** #88/#102 (monétisation + Redis = ADR post-MVP), #212 (avatar MinIO — LocalStorageAdapter + volume Docker suffisent pour ship), #56/#210 (design-shell MVP-adjacent), #69/#196/#219 (scale), #145/#234/#209/#232 (tests non bloquants), #125/#127/#148 (polish), #215 (à requalifier : test.fixme, vrai bug prod ?). **Ajustements possibles au démarrage :** tirer #235 en S31, sortir #223 en S30, remonter #212 dans S29 (même docker-compose.yml que #37).
+
+## Sprint 34 — 2026-07-12 (PLANIFIE — cohésion 0.55, Supply-chain / CVE platform upgrade)
+**Objectif :** Résorber les CVE plateforme (Boot 3.5.x backend, next-intl/postcss frontend) + garde CI anti-drift BOM.
+**Milestone GitHub :** #34
+**Issues :** #260, #261, #224
+**Vagues :** V1 = #260 (pom) ∥ #261 (package.json) | V2 = #224 (après #260, asserte le BOM post-upgrade)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (racine)
+**Status :** Planifie
+
+## Sprint 35 — 2026-07-12 (PLANIFIE — cohésion 0.45, Prod boot safety & secrets)
+**Objectif :** Fail-fast au boot prod (COOKIE_DOMAIN/CORS vides, cookie.secure=false) + rotation des secrets exposés.
+**Milestone GitHub :** #35
+**Issues :** #253, #254, #249
+**Vagues :** V1 = #254 (ProfileSafetyGuard) ∥ #249 (ops) | V2 = #253 (même fichier ProfileSafetyGuard que #254)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (ordonné après S34 par prudence release)
+**Status :** Planifie
+
+## Sprint 36 — 2026-07-12 (PLANIFIE — cohésion 0.72, Export RGPD hardening)
+**Objectif :** Chemin de stockage dédié export + rate-limit GET export + scheduler de purge des exports expirés (index V14).
+**Milestone GitHub :** #36
+**Issues :** #264, #265, #267
+**Vagues :** V1 = #264 (storage) ∥ #265 (rate-limit) | V2 = #267 (purge via port de #264 ; introduit @EnableScheduling)
+**Migrations Flyway :** V14 (idx_export_jobs_expires_at)
+**Dépend de :** aucune (mais introduit le scheduling réutilisé en S37)
+**Status :** Planifie
+
+## Sprint 37 — 2026-07-12 (PLANIFIE — cohésion 0.80, Reset-password hardening)
+**Objectif :** Durcir le flux reset-password : E2E Playwright, rate-limit/lockout par token, verrou anti-TOCTOU (@Version, V15), purge TTL des tokens.
+**Milestone GitHub :** #37
+**Issues :** #145, #141, #143, #139
+**Vagues :** V1 = #145 (e2e) ∥ #141 (rate-limit) ∥ #143 (V15) | V2 = #139 (même service que #143 ; réutilise @EnableScheduling de S36)
+**Migrations Flyway :** V15 (colonne version password_reset_tokens)
+**Dépend de :** S36 (dure — @EnableScheduling bootstrappé par #267, réutilisé par #139)
+**Note :** 4 issues (dépasse règle ≤3) mais 9 pts, #143 = XS — validé tel quel par le dev.
+**Status :** Planifie
+
+## Sprint 38 — 2026-07-12 (PLANIFIE — cohésion 0.78, Auth error contract)
+**Objectif :** Uniformiser le contrat d'erreur JSON auth : AuthController /me,/register,/logout + codes stables GlobalExceptionHandler + durcir writeJsonError.
+**Milestone GitHub :** #38
+**Issues :** #125, #127, #126
+**Vagues :** V1 = #127 (codes stables) ∥ #126 (writeJsonError) | V2 = #125 (route via codes stables de #127)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (ordonné dernier)
+**Status :** Planifie
+
+> **Plan S34–S38 généré le 2026-07-12** (`/ai-env:sprint plan 5`, cohésion moyenne **0.66**, aucun sprint < 0.3). Fil directeur = **durcissement MVP shippable prod** : supply-chain CVE (S34) → boot-safety/secrets (S35) → export RGPD (S36) → reset-password (S37) → contrat erreur auth (S38). **Vérif code-state Phase 0.5** : aucune issue `possibly_done` — tout vérifié comme travail réel restant (RateLimitingFilter POST-only, pas de @Version reset-token, pas d'index expires_at, pas de @EnableScheduling, pas de spec E2E forgot/reset). **Dépendance dure :** S36→S37 (@EnableScheduling). **Migrations :** S36=V14, S37=V15 (une plage/sprint). **Drift détecté :** CLAUDE.md prétend `db/migration/` vide + `ddl-auto=update` — FAUX (V1..V13 actifs + `ddl-auto=validate`) → correction lancée via chip séparé. **[MEMORY:decision] Flyway = source de vérité** (tout changement schéma = migration + mapping entité). **Backlog hors thème :** features lourdes (#210/#195/#56/#69/#212/#102/#231/#88), a11y events (#226/#227/#228 → S39), hygiène hexagonale (#170/#185/#190/#221/#240/#244 → S40), sprint E2E dédié (#205/#209/#232/#234/#270/#271/#215), i18n (#72/#74/#90/#142/#172).
