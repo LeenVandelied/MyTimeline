@@ -776,14 +776,14 @@
   Bilan : 2 créées (0 discard, 0 absorbé) — triage discipliné.
 **Status :** Livré — PR #277 prête, attente CI verte + merge (Phase 5).
 
-## Sprint 35 — 2026-07-12 (PLANIFIE — cohésion 0.45, Prod boot safety & secrets)
+## Sprint 35 — 2026-07-12 (En cours — cohésion 0.45, Prod boot safety & secrets)
 **Objectif :** Fail-fast au boot prod (COOKIE_DOMAIN/CORS vides, cookie.secure=false) + rotation des secrets exposés.
 **Milestone GitHub :** #35
 **Issues :** #253, #254, #249
-**Vagues :** V1 = #254 (ProfileSafetyGuard) ∥ #249 (ops) | V2 = #253 (même fichier ProfileSafetyGuard que #254)
+**Vagues :** V1 = #254 (ProfileSafetyGuard cookie.secure) | V2 = #253 (même fichier ProfileSafetyGuard/ProdConfigStartupLogger) | #249 = OPS (rotation secrets prod — hors code, arbitrage dev requis)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (ordonné après S34 par prudence release)
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-12)
 
 ## Sprint 36 — 2026-07-12 (PLANIFIE — cohésion 0.72, Export RGPD hardening)
 **Objectif :** Chemin de stockage dédié export + rate-limit GET export + scheduler de purge des exports expirés (index V14).
