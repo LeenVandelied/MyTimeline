@@ -72,12 +72,26 @@ if (typeof window !== 'undefined') {
  * du traitement global (toast + redirect vers /login) — sinon un 401 sur
  * /auth/login déclencherait une redirection vers la page de login elle-même
  * (boucle visuelle) au lieu d'afficher « identifiants invalides » sous le champ.
+ *
+ * `/auth/me` est la SONDE d'authentification anonyme : `AuthProvider` l'appelle au
+ * montage (racine de l'app, cf. app/layout.tsx) pour restaurer la session depuis le
+ * cookie (#135). Pour un visiteur NON connecté (aucun cookie), elle renvoie 401 —
+ * ce n'est PAS une session expirée mais la réponse normale « pas authentifié », déjà
+ * gérée par `AuthContext.fetchUser` (setUser(null)). Sans cette exclusion, ce 401 de
+ * sonde déclenchait le toast « Session expirée » + un `window.location.href=/login`
+ * différé de 1,5 s : sur une page publique (landing/login/register) le visiteur était
+ * rejeté vers /login, et en E2E le timer résiduel, encore en vol après un
+ * register->login->dashboard rapide (navigations SPA qui ne l'annulent pas), ramenait
+ * l'utilisateur fraîchement connecté sur /login (échec golden-path, 2026-07-11).
+ * L'expiration RÉELLE d'une session reste couverte par les endpoints de données
+ * authentifiés (produits/événements/...), eux non exclus.
  */
 const INLINE_AUTH_ENDPOINTS = [
   '/auth/login',
   '/auth/register',
   '/auth/forgot-password',
   '/auth/reset-password',
+  '/auth/me',
 ]
 
 /**

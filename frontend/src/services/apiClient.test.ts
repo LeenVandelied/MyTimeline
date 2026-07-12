@@ -98,6 +98,39 @@ describe('apiClient response interceptor', () => {
     }
   })
 
+  it("ne toast NI ne redirige sur un 401 de la sonde /auth/me (visiteur anonyme)", async () => {
+    // Régression golden-path E2E 2026-07-11 : AuthProvider sonde /auth/me au montage
+    // (racine app). Pour un visiteur non connecté -> 401 = « pas authentifié » (normal),
+    // géré inline par AuthContext (setUser null). Ce 401 NE DOIT PAS déclencher le toast
+    // « Session expirée » ni le window.location.href=/login différé (qui, encore en vol,
+    // ramenait un utilisateur fraîchement connecté sur /login).
+    const setHref = vi.fn()
+    const originalDescriptor = Object.getOwnPropertyDescriptor(window, 'location')
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        pathname: '/fr/login',
+        set href(value: string) {
+          setHref(value)
+        },
+      },
+    })
+
+    try {
+      const meError = { response: { status: 401 }, config: { url: '/api/auth/me', method: 'get' } }
+      await expect(rejectionHandler!(meError)).rejects.toBeDefined()
+
+      expect(toastErrorMock).not.toHaveBeenCalled()
+      vi.advanceTimersByTime(1500)
+      expect(setHref).not.toHaveBeenCalled()
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'location', originalDescriptor)
+      }
+      vi.useRealTimers()
+    }
+  })
+
   it('affiche un toast serveur sur 500 sans rediriger', async () => {
     await expect(rejectionHandler!(makeError(500))).rejects.toBeDefined()
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
