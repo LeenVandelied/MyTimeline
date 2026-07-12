@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.UrlPathHelper;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -98,6 +99,23 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final TimeMeter timeMeter;
 
     /**
+     * Decodes + normalises the request path before matching against {@link #LIMITS}.
+     *
+     * <p><b>Why (audit #265):</b> {@link HttpServletRequest#getRequestURI()} is the RAW,
+     * still-percent-encoded URI (Servlet contract). Matching {@code LIMITS} on it lets an
+     * attacker bypass the throttle with a trivially re-encoded path: {@code GET /api/%65xport}
+     * ({@code e} → {@code %65}) yields the raw string {@code "GET /api/%65xport"}, which does
+     * not equal {@code "GET /api/export"} → no bucket → unlimited hits, while Spring still
+     * decodes and routes the request to {@code ExportController} (the costly recompute). The
+     * default {@code StrictHttpFirewall} does not reject the encoding of an ordinary letter.
+     *
+     * <p>{@code getPathWithinApplication} URL-decodes and strips the context-path, so the
+     * encoded and canonical forms collapse to the same lookup/bucket key. The instance is
+     * stateless after construction and thread-safe.
+     */
+    private final UrlPathHelper pathHelper = new UrlPathHelper();
+
+    /**
      * When {@code true}, the first hop of {@code X-Forwarded-For} is used as the
      * rate-limit key. Defaults to {@code false} and MUST stay false unless the
      * service runs behind a trusted reverse proxy that overwrites the header.
@@ -145,7 +163,13 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
-        Integer limit = throttledLimitFor(request);
+        // Decoded + context-path-stripped path: matching on the RAW getRequestURI() would let
+        // a re-encoded path (e.g. /api/%65xport) dodge the throttle while still routing to the
+        // controller (audit #265). Both lookup and bucket key are built from this canonical path.
+        String path = pathHelper.getPathWithinApplication(request);
+        String methodAndPath = request.getMethod() + " " + path;
+
+        Integer limit = LIMITS.get(methodAndPath);
         if (limit == null) {
             chain.doFilter(request, response);
             return;
@@ -153,7 +177,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
         // Method is part of the key: GET and POST on the same URI (e.g. /api/export)
         // get INDEPENDENT buckets, so their distinct limits never collide.
-        String key = clientIp(request) + "|" + request.getMethod() + " " + request.getRequestURI();
+        String key = clientIp(request) + "|" + methodAndPath;
         Bucket bucket = buckets.computeIfAbsent(key, k -> newBucket(limit));
 
         if (bucket.tryConsume(1)) {
@@ -161,16 +185,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         } else {
             writeTooManyRequests(response);
         }
-    }
-
-    /**
-     * @return the per-minute limit if this request targets a throttled
-     *         {@code (method, exact-path)} pair, otherwise {@code null}
-     *         (request must pass through). Exact-URI match: nested export paths
-     *         ({@code /api/export/job/…}, {@code /api/export/download/…}) never match.
-     */
-    private Integer throttledLimitFor(HttpServletRequest request) {
-        return LIMITS.get(request.getMethod() + " " + request.getRequestURI());
     }
 
     private Bucket newBucket(int permitsPerMinute) {

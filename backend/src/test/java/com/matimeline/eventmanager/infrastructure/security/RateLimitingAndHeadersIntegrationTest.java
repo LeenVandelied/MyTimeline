@@ -229,6 +229,34 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
     }
 
     /**
+     * #265 (audit sécurité — bypass MAJEUR) : {@code getRequestURI()} n'est PAS décodé
+     * (contrat Servlet). Un chemin ré-encodé — {@code GET /api/%65xport} ({@code e} → {@code %65})
+     * — routait quand même vers {@code ExportController} (Spring décode l'URI), mais échappait
+     * TOTALEMENT au throttle car la clé brute {@code "GET /api/%65xport"} ne matchait pas
+     * {@code "GET /api/export"} dans LIMITS. Depuis la normalisation (UrlPathHelper) la clé est
+     * calculée sur le chemin DÉCODÉ : le chemin encodé retombe dans le même bucket que la forme
+     * canonique → la 6e requête est 429, plus de bypass. {@code setRequestURI} force l'URI brute
+     * encodée telle qu'un client la poserait.
+     */
+    @Test
+    void exportInlineGet_percentEncodedPath_isThrottled_noBypass() throws Exception {
+        String ip = "10.2.0.5";
+        String encodedUri = "/api/%65xport"; // "e" de "export" encodé -> /api/export après décodage
+        for (int i = 1; i <= 5; i++) {
+            int sc = mockMvc.perform(get("/api/export").param("format", "json")
+                            .with(req -> { req.setRemoteAddr(ip); req.setRequestURI(encodedUri); return req; }))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "GET encodé #" + i + " sous la limite ne doit pas être throttlé");
+        }
+        // 6e requête sur le MÊME chemin encodé -> throttlée : le bypass par ré-encodage est fermé.
+        mockMvc.perform(get("/api/export").param("format", "json")
+                        .with(req -> { req.setRemoteAddr(ip); req.setRequestURI(encodedUri); return req; }))
+                .andExpect(status().is(429))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
      * #265 : GET et POST /api/export ont des buckets INDÉPENDANTS (la clé inclut la méthode).
      * Épuiser le quota GET (5) depuis une IP ne doit PAS consommer le quota POST de la même IP :
      * la 1re soumission POST juste après doit passer (jamais 429).
