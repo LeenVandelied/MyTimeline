@@ -59,7 +59,7 @@ export function AccountSection({ deleteContainer = 'dialog' }: AccountSectionPro
       {/* Suppression du compte (2 étapes) */}
       <div className="border-danger/40 bg-danger-soft/20 max-w-md space-y-3 rounded-md border p-4">
         <h3 className="text-danger flex items-center gap-2 text-sm font-medium">
-          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+          <AlertTriangle className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
           {t('account.delete.title')}
         </h3>
         <p className="text-ink-muted text-sm">{t('account.delete.description')}</p>

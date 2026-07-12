@@ -2,6 +2,12 @@
   "title": "Exporter mes données",
   "description": "Téléchargez une copie de vos données personnelles (portabilité RGPD).",
   "formatLabel": "Format d'export",
+  "steps": {
+    "confirm": { "title": "Exporter mes données" },
+    "preparing": { "title": "Préparation de l'export…" },
+    "ready": { "title": "Votre export est prêt" },
+    "error": { "title": "Échec de l'export" }
+  },
   "formats": {
     "JSON": {
       "label": "JSON",

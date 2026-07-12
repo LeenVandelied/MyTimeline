@@ -73,7 +73,7 @@ export function ExportDataFlow() {
           className="text-sm font-medium outline-none"
           data-testid="export-heading"
         >
-          {t('title')}
+          {t(`steps.${flow.phase}.title`)}
         </h3>
         <p className="text-ink-muted text-sm">{t('description')}</p>
       </div>
@@ -111,7 +111,7 @@ export function ExportDataFlow() {
               <Spinner label={t('preparing.busy')} />
             ) : (
               <>
-                <Download className="h-4 w-4" aria-hidden="true" />
+                <Download className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                 {isSyncFormat(flow.format) ? t('actions.download') : t('actions.prepare')}
               </>
             )}
@@ -127,7 +127,9 @@ export function ExportDataFlow() {
           role="status"
           aria-live="polite"
         >
-          <Spinner label={t('preparing.busy')} />
+          {/* Spinner purement visuel : la live-region est portée par ce div
+              (texte de progression complet) → évite la double annonce SR. */}
+          <Spinner label={t('preparing.busy')} aria-hidden="true" />
           <p className="text-sm">
             {t('preparing.status', {
               status: t(`status.${flow.jobStatus ?? 'PENDING'}`),
@@ -167,7 +169,7 @@ export function ExportDataFlow() {
                     <Spinner label={t('preparing.busy')} />
                   ) : (
                     <>
-                      <Download className="h-4 w-4" aria-hidden="true" />
+                      <Download className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                       {t('actions.download')}
                     </>
                   )}
@@ -203,7 +205,7 @@ export function ExportDataFlow() {
       {flow.phase === 'error' && (
         <div className="space-y-2" data-testid="export-step-error" role="alert">
           <p className="text-danger flex items-center gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+            <AlertTriangle className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             {t(`errors.${flow.errorKey ?? 'network'}`)}
           </p>
           <Button

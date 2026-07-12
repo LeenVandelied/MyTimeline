@@ -2,6 +2,12 @@
   "title": "Export my data",
   "description": "Download a copy of your personal data (GDPR portability).",
   "formatLabel": "Export format",
+  "steps": {
+    "confirm": { "title": "Export my data" },
+    "preparing": { "title": "Preparing your export…" },
+    "ready": { "title": "Your export is ready" },
+    "error": { "title": "Export failed" }
+  },
   "formats": {
     "JSON": {
       "label": "JSON",

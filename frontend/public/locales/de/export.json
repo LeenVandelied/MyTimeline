@@ -2,6 +2,12 @@
   "title": "Meine Daten exportieren",
   "description": "Laden Sie eine Kopie Ihrer personenbezogenen Daten herunter (DSGVO-Portabilität).",
   "formatLabel": "Exportformat",
+  "steps": {
+    "confirm": { "title": "Meine Daten exportieren" },
+    "preparing": { "title": "Export wird vorbereitet…" },
+    "ready": { "title": "Ihr Export ist bereit" },
+    "error": { "title": "Export fehlgeschlagen" }
+  },
   "formats": {
     "JSON": {
       "label": "JSON",
