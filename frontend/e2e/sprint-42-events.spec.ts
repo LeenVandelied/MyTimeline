@@ -136,9 +136,11 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
         await expect(dialog).toBeVisible()
         await expect(pageB.getByTestId('conflict-dialog-diff')).toBeVisible()
         // Au moins la ligne `title` diffère (A a écrasé le titre côté serveur).
-        const titleRow = pageB
-          .getByTestId('conflict-dialog-diff-row')
-          .filter({ has: pageB.locator('[data-field="title"]') })
+        // `data-testid` ET `data-field` portés par le MÊME <li> (ConflictDialog l.168-169) :
+        // on cible la row par attributs combinés (un `filter({has})` chercherait un DESCENDANT).
+        const titleRow = pageB.locator(
+          '[data-testid="conflict-dialog-diff-row"][data-field="title"]',
+        )
         await expect(titleRow.getByTestId('conflict-dialog-diff-local')).toContainText(localTitleB)
 
         // --- « Garder mes modifications » : re-soumet SANS boucle 409 ----------
@@ -240,7 +242,11 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
     const patch = page.waitForResponse(
       (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
     )
-    await toggle.click()
+    // L'<input> qui porte le testid est visuellement masqué (`.mt-switch input`:
+    // position:absolute; opacity:0; width:0; height:0 — core.css) : non actionnable.
+    // On clique la surface VISIBLE (le <label> parent) comme un utilisateur ; l'état
+    // reste asserté sur l'input.
+    await toggle.locator('xpath=ancestor::label[1]').click()
     await expect(toggle).toBeChecked()
     await page.getByTestId('event-form-submit').click()
     expect((await patch).status(), 'PATCH archived doit réussir').toBe(200)
