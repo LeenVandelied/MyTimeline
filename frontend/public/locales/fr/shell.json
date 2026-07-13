@@ -4,6 +4,7 @@
   "settings": "Réglages",
   "profile": "Profil",
   "logout": "Se déconnecter",
+  "loading": "Chargement…",
   "nav": {
     "aria": "Navigation principale",
     "dashboard": "Tableau de bord",

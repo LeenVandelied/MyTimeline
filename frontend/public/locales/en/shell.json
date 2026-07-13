@@ -4,6 +4,7 @@
   "settings": "Settings",
   "profile": "Profile",
   "logout": "Logout",
+  "loading": "Loading…",
   "nav": {
     "aria": "Main navigation",
     "dashboard": "Dashboard",

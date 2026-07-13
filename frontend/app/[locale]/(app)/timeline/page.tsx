@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { GanttChartSquare } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 /**
  * #210 — Segment connecté `/timeline` enveloppé par le shell applicatif
@@ -18,15 +16,8 @@ import { useAuth } from '@/hooks/useAuth'
  */
 export default function TimelinePlaceholder() {
   const t = useTranslations('shell.timeline')
-  const locale = useLocale()
-  const router = useRouter()
-  const { user, loading } = useAuth()
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push(`/${locale}/login`)
-    }
-  }, [user, loading, router, locale])
+  // #210 — Garde d'auth factorisée (defense-in-depth : le shell garde aussi).
+  const { user, loading } = useAuthGuard()
 
   if (loading) {
     return (

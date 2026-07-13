@@ -4,6 +4,7 @@
   "settings": "Ajustes",
   "profile": "Perfil",
   "logout": "Cerrar sesión",
+  "loading": "Cargando…",
   "nav": {
     "aria": "Navegación principal",
     "dashboard": "Panel",

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { LanguageSelector } from '@/components/ui/language-selector'
@@ -75,7 +76,13 @@ export function AppShell({ children }: AppShellProps) {
   const locale = useLocale()
   const pathname = usePathname() || ''
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
+  // #210 — Garde au niveau du shell : la sidebar authentifiée (nav protégée,
+  // profil, déconnexion) ne doit jamais flasher pour un anonyme atteignant
+  // directement une route protégée. La garde (redirection incluse) DOIT vivre
+  // ici : le shell enveloppe `children`, donc un spinner anticipé sans monter
+  // `children` empêcherait la garde d'une page enfant de se déclencher.
+  const { user, loading } = useAuthGuard()
   const { resolvedTheme, setTheme } = useTheme()
   const [showCreate, setShowCreate] = useState(false)
 
@@ -99,6 +106,25 @@ export function AppShell({ children }: AppShellProps) {
       .map((word) => word[0])
       .join('')
       .toUpperCase() || undefined
+
+  // Anti-flash anonyme : tant que la session se restaure (`loading`) ou qu'aucun
+  // `user` n'est présent (anonyme, avant la redirection déclenchée par la garde),
+  // on rend un spinner plein écran — jamais la chrome authentifiée.
+  if (loading || !user) {
+    return (
+      <div
+        className="bg-bg flex h-screen items-center justify-center"
+        data-testid="app-shell-loading"
+      >
+        <div
+          className="border-accent h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
+          role="status"
+        >
+          <span className="sr-only">{t('loading')}</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-bg text-ink flex min-h-screen" data-testid="app-shell">
@@ -166,7 +192,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-pressed={isDark}
               aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
               data-testid="shell-sidebar-theme-toggle"
-              className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-9 w-9 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               {isDark ? (
                 <Sun className="h-4 w-4" aria-hidden="true" />
@@ -203,7 +229,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-label={t('logout')}
               title={t('logout')}
               data-testid="shell-sidebar-logout"
-              className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
             </button>

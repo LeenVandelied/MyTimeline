@@ -1,10 +1,11 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { Button } from '@/components/ui/button'
 import AddProductButton from '@/components/products/AddProductButton'
 import { LanguageSelector } from '@/components/ui/language-selector'
@@ -50,7 +51,10 @@ import {
 export default function Dashboard() {
   const t = useTranslations()
   const locale = useLocale()
-  const { user, loading, logout } = useAuth()
+  // #210 — Garde d'auth factorisée (defense-in-depth : le shell garde aussi,
+  // la page conserve la sienne). `logout` reste lu via `useAuth`.
+  const { user, loading } = useAuthGuard()
+  const { logout } = useAuth()
   const router = useRouter()
   const { events, products, kpis, isLoading, resources, refetch } = useDashboardData(user?.id)
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -60,12 +64,6 @@ export default function Dashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   // #85 — Réf sur la colonne produits paysage (scroll ciblé sans querySelector DOM).
   const landscapeProductsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push(`/${locale}/login`)
-    }
-  }, [user, loading, router, locale])
 
   const handleLogout = async () => {
     try {

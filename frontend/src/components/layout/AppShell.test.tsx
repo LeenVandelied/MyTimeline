@@ -40,11 +40,16 @@ const mockUser = {
   role: 'USER',
   avatarUrl: null,
 }
+// #210 — état d'auth mutable : le shell porte désormais sa propre garde
+// (`useAuthGuard`, qui lit ce même mock). Permet de couvrir les cas anonyme
+// (spinner + redirection) et restauration de session (spinner).
+let mockAuthUser: typeof mockUser | null = mockUser
+let mockAuthLoading = false
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({
-    user: mockUser,
+    user: mockAuthUser,
     logout,
-    loading: false,
+    loading: mockAuthLoading,
     login: vi.fn(),
     register: vi.fn(),
     refreshUser: vi.fn(),
@@ -57,6 +62,13 @@ const renderShell = () =>
       <div data-testid="child-content">Contenu écran</div>
     </AppShell>,
   )
+
+// Réinitialise l'état d'auth mutable + les spies avant chaque test (défaut : connecté).
+beforeEach(() => {
+  mockAuthUser = mockUser
+  mockAuthLoading = false
+  push.mockClear()
+})
 
 describe('AppShell — nav persistante', () => {
   beforeEach(() => {
@@ -192,5 +204,36 @@ describe('AppShell — délégation mobile', () => {
     // déléguée à l'écran enveloppé (zéro duplication).
     expect(screen.queryByTestId('dashboard-rail')).not.toBeInTheDocument()
     expect(screen.queryByTestId('dashboard-mobile-drawer')).not.toBeInTheDocument()
+  })
+})
+
+describe('AppShell — garde auth (anti-flash anonyme, #210)', () => {
+  it('anonyme (user=null) : rend un spinner, jamais la chrome authentifiée', () => {
+    mockAuthUser = null
+    mockAuthLoading = false
+    renderShell()
+    // Spinner plein écran a11y (role="status"), aucune sidebar / contenu enfant.
+    expect(screen.getByTestId('app-shell-loading')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
+    expect(screen.queryByTestId('shell-sidebar')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('shell-main')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('child-content')).not.toBeInTheDocument()
+  })
+
+  it('anonyme : redirige vers /login localisé (garde au niveau du shell)', async () => {
+    mockAuthUser = null
+    mockAuthLoading = false
+    renderShell()
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/fr/login'))
+  })
+
+  it('session en cours de restauration (loading) : rend un spinner, pas de flash', () => {
+    mockAuthUser = null
+    mockAuthLoading = true
+    renderShell()
+    expect(screen.getByTestId('app-shell-loading')).toBeInTheDocument()
+    expect(screen.queryByTestId('shell-sidebar')).not.toBeInTheDocument()
+    // Pas de redirection tant que la session se restaure.
+    expect(push).not.toHaveBeenCalled()
   })
 })
