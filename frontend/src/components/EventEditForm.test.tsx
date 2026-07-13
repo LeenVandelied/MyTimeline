@@ -245,6 +245,24 @@ describe('EventEditForm — validations inline (BR-EVE)', () => {
   })
 })
 
+describe('EventEditForm — threading version (#review S42 / BR-EVE-015)', () => {
+  it('soumission sans toucher version → payload conserve la version d’origine', async () => {
+    // `version` n'est pas éditable : lue au chargement, renvoyée telle quelle (arme le 409
+    // déterministe #231). Désormais registered (Controller hidden) → robuste à reset()/setValue.
+    const { onSubmit } = setup({ defaultValues: { ...baseDefaults, version: 7 } })
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ version: 7 })
+  })
+
+  it('version=null (event sans version connue) → null transmis tel quel (pas de coercion)', async () => {
+    const { onSubmit } = setup({ defaultValues: { ...baseDefaults, version: null } })
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ version: null })
+  })
+})
+
 describe('EventEditForm — récurrence', () => {
   it("n'affiche recurrenceEndDate que si récurrence activée", async () => {
     setup({ submitState: 'idle' })

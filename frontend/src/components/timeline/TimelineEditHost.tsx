@@ -39,6 +39,11 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
 
   const closeEditor = useCallback(() => setEditing(null), [])
 
+  // INVARIANT (#review S42) : ce host DOIT être monté sous un <AuthProvider>.
+  // `useEventEditConflict` appelle `useAuth()` (invalidation ciblée `products.withEvents`
+  // par userId), qui LÈVE hors provider. OK aujourd'hui (dashboard + ProductDetailView
+  // rendent sous AuthProvider) ; verrouillé par TimelineEditHost.test.tsx (montage sous
+  // AuthProvider). Toute nouvelle page routant cette frise doit préserver l'ancêtre.
   const conflict = useEventEditConflict(editing?.id, closeEditor)
 
   const defaultValues = useMemo<EventEditFormValues | null>(() => {

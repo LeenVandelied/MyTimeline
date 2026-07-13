@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useTranslations } from 'next-intl'
-import { useForm, ControllerRenderProps } from 'react-hook-form'
+import { Controller, useForm, ControllerRenderProps } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash2 } from 'lucide-react'
 
@@ -177,6 +177,25 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           className="space-y-4"
           data-testid="event-form"
         >
+          {/* #review S42 (BR-EVE-015) — `version` optimiste rendue EXPLICITE : champ
+              registered (Controller) plutôt que survie via `defaultValues` non-enregistré.
+              Robuste à un futur `reset()`/`setValue`. Non éditable (hidden), Controller
+              conserve le type (number|null) sans coercion DOM → threadée telle quelle
+              dans le PATCH (arme le 409 déterministe #231). */}
+          <Controller
+            control={form.control}
+            name="version"
+            render={({ field }) => (
+              <input
+                type="hidden"
+                name={field.name}
+                ref={field.ref}
+                value={field.value ?? ''}
+                readOnly
+                data-testid="event-form-version"
+              />
+            )}
+          />
           <Card className="bg-surface border-rule shadow-md">
             <CardContent className="space-y-4 p-4">
               {/* Titre — BR-EVE-003 (required, 1..100). */}
