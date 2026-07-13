@@ -90,4 +90,20 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-submit')).toHaveAttribute('aria-busy', 'true')
     expect(screen.getByRole('status')).toBeInTheDocument()
   })
+
+  // #146 — garde-fou lisibilité clair/sombre : les tokens Graphite theme-aware
+  // doivent être présents (jsdom ne calcule pas les ratios, on vérifie les classes).
+  it('utilise les tokens Graphite theme-aware (pas de couleur hardcodée, pas de tier décoratif)', () => {
+    const { container } = render(<LoginPage params={params} />)
+
+    expect(container.querySelector('.bg-bg.text-ink')).not.toBeNull()
+    expect(container.querySelector('.bg-surface')).not.toBeNull()
+    expect(container.querySelector('.bg-surface-2.border-rule-strong')).not.toBeNull()
+
+    const submit = screen.getByTestId('login-submit')
+    expect(submit).toHaveClass('bg-accent', 'text-accent-ink')
+
+    // text-ink-faint (~2.8:1) interdit pour du texte essentiel.
+    expect(container.querySelector('.text-ink-faint')).toBeNull()
+  })
 })

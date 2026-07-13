@@ -104,4 +104,18 @@ describe('RegisterPage', () => {
     })
     expect(registerMock).not.toHaveBeenCalled()
   })
+
+  // #146 — garde-fou lisibilité clair/sombre : tokens Graphite theme-aware présents.
+  it('utilise les tokens Graphite theme-aware (pas de couleur hardcodée, pas de tier décoratif)', () => {
+    const { container } = render(<RegisterPage params={params} />)
+
+    expect(container.querySelector('.bg-bg.text-ink')).not.toBeNull()
+    expect(container.querySelector('.bg-surface')).not.toBeNull()
+    expect(container.querySelector('.bg-surface-2.border-rule-strong')).not.toBeNull()
+
+    const submit = screen.getByTestId('register-submit')
+    expect(submit).toHaveClass('bg-accent', 'text-accent-ink')
+
+    expect(container.querySelector('.text-ink-faint')).toBeNull()
+  })
 })
