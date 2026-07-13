@@ -46,6 +46,40 @@ const pool = new Pool({
 })
 
 /**
+ * Filet de sécurité : ferme le pool à la sortie du process même si un spec crashe AVANT
+ * son `test.afterAll` (une exception non gérée peut court-circuiter le hook et laisser la
+ * connexion ouverte → warning "handle open" / process qui traîne en CI). `closeDbPool`
+ * est idempotent (cf. plus bas), donc ce filet et l'appel explicite en `afterAll` peuvent
+ * coexister sans double-`end`. `beforeExit` autorise le travail async (event loop encore
+ * vivante), contrairement à `exit`.
+ */
+process.once('beforeExit', () => {
+  void closeDbPool()
+})
+
+/**
+ * Codes d'erreur Postgres/réseau ATTENDUS pendant la fenêtre de warmup : la DB démarre
+ * encore, ou la migration V6 n'a pas fini de créer `password_reset_tokens`. On retente
+ * silencieusement (au plus un warn de bas niveau). Toute AUTRE erreur (permission `42501`,
+ * auth `28P01`, requête invalide `42601`…) est une vraie faute de config qui ne se
+ * résoudra pas d'elle-même : on la logge tôt et distinctement pour la visibilité CI.
+ */
+const TRANSIENT_DB_ERROR_CODES = new Set<string>([
+  'ECONNREFUSED', // Postgres pas encore à l'écoute
+  'ETIMEDOUT', // handshake réseau lent au démarrage
+  '57P03', // cannot_connect_now (DB en cours de démarrage)
+  '42P01', // undefined_table (migration V6 pas encore appliquée)
+])
+
+function pgErrorCode(err: unknown): string | undefined {
+  if (typeof err === 'object' && err !== null && 'code' in err) {
+    const code = (err as { code?: unknown }).code
+    if (typeof code === 'string') return code
+  }
+  return undefined
+}
+
+/**
  * Récupère le token de réinitialisation le plus récent, ENCORE utilisable (non
  * consommé), du compte identifié par `email`.
  *
@@ -71,14 +105,38 @@ export async function waitForResetToken(email: string, timeoutMs = 10_000): Prom
     limit 1
   `
   let lastError: unknown = null
+  let warnedTransient = false
+  const warnedCodes = new Set<string>()
   while (Date.now() < deadline) {
     try {
       const result = await pool.query<{ token: string }>(query, [email])
       const token = result.rows[0]?.token
       if (token) return token
     } catch (err) {
-      // Ex. table pas encore migrée / DB pas prête : on retente jusqu'au timeout.
+      // On retente jusqu'au timeout, MAIS on ne veut plus avaler l'erreur en silence
+      // pendant 10s (masquait la vraie cause en CI). On distingue :
+      //  - erreur transiente (DB/migration pas prête) → un seul warn de bas niveau ;
+      //  - vraie erreur SQL/perm/auth → warn immédiat et distinct par code (ne se
+      //    résoudra pas, autant la voir dès la 1re occurrence).
       lastError = err
+      const code = pgErrorCode(err)
+      if (code && TRANSIENT_DB_ERROR_CODES.has(code)) {
+        if (!warnedTransient) {
+          warnedTransient = true
+          console.warn(
+            `[e2e/db] canal DB pas encore prêt pour ${email} (code=${code}) — poll en cours…`,
+          )
+        }
+      } else {
+        const key = code ?? String(err)
+        if (!warnedCodes.has(key)) {
+          warnedCodes.add(key)
+          console.warn(
+            `[e2e/db] erreur SQL anormale en attendant le token pour ${email} ` +
+              `(code=${code ?? 'n/a'}) : ${String(err)}`,
+          )
+        }
+      }
     }
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
@@ -89,7 +147,17 @@ export async function waitForResetToken(email: string, timeoutMs = 10_000): Prom
   )
 }
 
-/** Ferme le pool (appelé en `test.afterAll` pour ne pas laisser la connexion ouverte). */
+/**
+ * Ferme le pool (appelé en `test.afterAll` pour ne pas laisser la connexion ouverte).
+ *
+ * IDEMPOTENT : `pg` lève « Called end on pool more than once » si `end()` est invoqué deux
+ * fois. Comme un filet `beforeExit` peut aussi tenter la fermeture, on garde une trace du
+ * premier appel et on renvoie la même promesse aux suivants — double fermeture sûre.
+ */
+let closePromise: Promise<void> | null = null
 export async function closeDbPool(): Promise<void> {
-  await pool.end()
+  if (!closePromise) {
+    closePromise = pool.end()
+  }
+  await closePromise
 }

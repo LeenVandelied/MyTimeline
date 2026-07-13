@@ -13,8 +13,8 @@
 -- transaction). Deux consommations concurrentes -> une seule affecte une ligne,
 -- l'autre déclenche ObjectOptimisticLockingFailureException -> rejet 400 générique.
 --
--- Cohérence projet : les 5 autres @Version (users/categories/products/events V3,
--- sessions V10) sont `integer NOT NULL DEFAULT 0` <-> `@Version Integer`. On garde
+-- Cohérence projet : les 4 autres @Version (users/categories/products/events, V3)
+-- sont `integer NOT NULL DEFAULT 0` <-> `@Version Integer`. On garde
 -- ce type. ddl-auto=validate (dev/test/prod) : le mapping @Version Integer DOIT
 -- correspondre EXACTEMENT à cette colonne, sinon SchemaManagementException au boot.
 --

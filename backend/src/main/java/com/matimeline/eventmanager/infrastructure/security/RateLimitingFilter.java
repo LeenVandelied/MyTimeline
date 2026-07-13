@@ -268,40 +268,54 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         // re-servi au controller via un wrapper — l'InputStream d'origine n'est
         // consommable qu'une seule fois.
         if (RESET_PASSWORD_KEY.equals(methodAndPath)) {
-            // Anti-OOM (#141) : le corps d'un reset légitime fait quelques centaines d'octets.
-            // Si Content-Length annonce déjà un corps hors norme, on ne bufferise RIEN : on
-            // saute le throttle-par-token et on laisse le controller lire le corps lui-même.
-            // Le throttle par IP ci-dessus a déjà statué sur cette requête.
-            if (request.getContentLengthLong() > MAX_RESET_BODY_BYTES) {
-                chain.doFilter(request, response);
-                return;
-            }
-            // Lecture BORNÉE : défense en profondeur si Content-Length est absent (chunked)
-            // ou ment sur la taille réelle. Jamais plus de MAX_RESET_BODY_BYTES+1 octets en
-            // mémoire (vs StreamUtils.copyToByteArray qui lisait tout le corps sans borne).
-            byte[] body = readBounded(request.getInputStream(), MAX_RESET_BODY_BYTES);
-            if (body == null) {
-                // Corps dépassant la borne alors que Content-Length ne l'annonçait pas :
-                // requête illégitime pour un reset ; le stream est déjà partiellement
-                // consommé, on ne peut le re-servir -> 400 générique.
-                writeBadRequest(response);
-                return;
-            }
-            String token = extractToken(body);
-            // Throttle par token UNIQUEMENT si le token a une longueur plausible (une clé
-            // de plusieurs Mo saturerait le cap volumétrique MAX_TRACKED_TOKENS). Sinon on
-            // saute le throttle-par-token (repli sur le throttle par IP), corps re-servi.
-            if (token != null && !token.isBlank() && isPlausibleTokenKey(token) && !tryConsumeToken(token)) {
-                // Même 429 générique que le throttle par IP : aucune distinction
-                // "token inconnu" vs "trop de tentatives" (anti-énumération, critère #141).
-                writeTooManyRequests(response);
-                return;
-            }
-            chain.doFilter(new CachedBodyHttpServletRequest(request, body), response);
+            handleResetPasswordTokenThrottle(request, response, chain);
             return;
         }
 
         chain.doFilter(request, response);
+    }
+
+    /**
+     * #141 — per-token throttle branch of {@link #doFilterInternal} for
+     * {@code POST /api/auth/reset-password}. The per-IP limit has ALREADY been applied
+     * upstream; this method reads the (bounded) body, extracts the token, and — when the
+     * token is a plausible key — applies the second, per-token throttle before re-serving
+     * the cached body downstream. It always terminates the request (short-circuits with
+     * 400/429, or forwards via the cached-body wrapper); the caller just returns after it.
+     */
+    private void handleResetPasswordTokenThrottle(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        // Anti-OOM (#141) : le corps d'un reset légitime fait quelques centaines d'octets.
+        // Si Content-Length annonce déjà un corps hors norme, on ne bufferise RIEN : on
+        // saute le throttle-par-token et on laisse le controller lire le corps lui-même.
+        // Le throttle par IP ci-dessus a déjà statué sur cette requête.
+        if (request.getContentLengthLong() > MAX_RESET_BODY_BYTES) {
+            chain.doFilter(request, response);
+            return;
+        }
+        // Lecture BORNÉE : défense en profondeur si Content-Length est absent (chunked)
+        // ou ment sur la taille réelle. Jamais plus de MAX_RESET_BODY_BYTES+1 octets en
+        // mémoire (vs StreamUtils.copyToByteArray qui lisait tout le corps sans borne).
+        byte[] body = readBounded(request.getInputStream(), MAX_RESET_BODY_BYTES);
+        if (body == null) {
+            // Corps dépassant la borne alors que Content-Length ne l'annonçait pas :
+            // requête illégitime pour un reset ; le stream est déjà partiellement
+            // consommé, on ne peut le re-servir -> 400 générique.
+            writeBadRequest(response);
+            return;
+        }
+        String token = extractToken(body);
+        // Throttle par token UNIQUEMENT si le token a une longueur plausible (une clé
+        // de plusieurs Mo saturerait le cap volumétrique MAX_TRACKED_TOKENS). Sinon on
+        // saute le throttle-par-token (repli sur le throttle par IP), corps re-servi.
+        if (token != null && !token.isBlank() && isPlausibleTokenKey(token) && !tryConsumeToken(token)) {
+            // Même 429 générique que le throttle par IP : aucune distinction
+            // "token inconnu" vs "trop de tentatives" (anti-énumération, critère #141).
+            writeTooManyRequests(response);
+            return;
+        }
+        chain.doFilter(new CachedBodyHttpServletRequest(request, body), response);
     }
 
     /**
