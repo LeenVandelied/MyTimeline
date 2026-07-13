@@ -863,14 +863,31 @@
   - Nettoyage a11y `<a><Button>` HomePage (header/hero/CTA) [S | frontend/a11y] → issue **#295** (backlog ; absorbable par #56)
 **Status :** Terminé (clôturé 2026-07-13)
 
-## Sprint 40 — 2026-07-13 (PLANIFIÉ — cohésion 0.18, Shell applicatif)
+## Sprint 40 — 2026-07-13 → 2026-07-13 (Terminé — merge PR #297 dans dev)
 **Objectif :** Fondation navigation — nav latérale persistante 248px (#210) + quick-win bug catégories (#245).
-**Milestone GitHub :** #40
-**Issues :** #210, #245
-**Vagues :** V1 = #210 ∥ #245 (fichiers disjoints)
-**Migrations :** aucune
-**Dépend de :** aucune (débloque la navigation des écrans connectés)
-**Status :** Planifié — ⚠ cohésion 0.18 (epics design≠categories), pairing assumé (fichiers disjoints, valeur démo) — dev a validé garder #245.
+**Milestone GitHub :** #40 (fermé après merge)
+**Issues livrées (2) :** #210 (shell applicatif), #245 (invalidation cache catégories)
+**Vagues exécutées :** V1 = #210 ∥ #245 (fichiers disjoints, parallèle)
+**Cohésion score :** 0.18 (⚠ cross-epic design≠categories, pairing assumé — fichiers disjoints, valeur démo ; dev a validé garder #245)
+**Migrations :** aucune (sprint 100 % frontend)
+**Commits :** 8 (5 code : 8183d1a #245, f48234a #210 shell, c3b1b9f review-fix produits-sous-shell, 27193ed review-fix garde auth, 9c1ccb6 fix e2e settings-nav ; 3 mémoire/artefacts)
+**BR impactées :** aucune (bug fix + layout, hors périmètre règles métier)
+**Reviews :**
+  - ui-design #210 (pré-implem) : REJET conditionnel (3 blocking : token 248px, wrap nav mobile, tablette) → résolus par le lead avant spawn.
+  - Reviewer tour 1 (sprint start) : 1 MAJEUR (nav Produits hors-shell) → RESOLU (c3b1b9f).
+  - Reviewer tour 2 (/review-pr indépendant) : 1 MAJEUR (flash de chrome anonyme, garde shell) + 3 MINEUR (cibles tactiles, garde dupliquée, e2e testids) → tous RESOLU (27193ed).
+  - CI e2e : 1 régression (settings-navigation cliquait `dashboard-settings-link` devenu `lg:hidden`) → RESOLU (9c1ccb6, cf. PIT-S40-003).
+**Tests :** Frontend 446/446 vitest green | E2E CI 26/26 green | Backend inchangé (non touché) | tsc/next build/eslint 0.
+**Nouveaux pitfalls / decisions / patterns :** DEC-S40-001 (tablette→mobile, seuil lg) ; PAT-S40-001 (invalidation préfixe query-key), PAT-S40-002 (token layout), PAT-S40-003 (enveloppement shell route-group) ; PIT-S40-001 (.next/types stale post git-mv), PIT-S40-002 (garde auth dans le shell), PIT-S40-003 (E2E desktop cassé par nav consolidée lg:hidden).
+**Follow-ups arbitrés (Phase 4 triage — dev : créer les 6) :**
+  - Tablette sidebar repliable icon-only [S | frontend] → issue #298 (backlog)
+  - Intégrer settings/ sous le shell [S | frontend] → issue #299 (backlog)
+  - Flux création événement réel drawer 452px [M | events] → issue #300 (Sprint 41)
+  - Écran frise/timeline complet [L | events] → issue #301 (Sprint 41)
+  - Garde serveur middleware routes (app) [M | auth] → issue #302 (Sprint 41)
+  - `.eslintcache` tracké [XS | infra] → doublon détecté, issue existante #262 (pas de création)
+**Saturation contexte lead (mesure) :** non instrumentée cette session (orchestration + 2 tours review + CI dans une seule session lead).
+**Status :** Terminé.
 
 ## Sprint 41 — 2026-07-13 (PLANIFIÉ — cohésion 0.66, UX & a11y Timeline)
 **Objectif :** UX timeline (accordéon collapse par produit) + a11y (cibles tactiles, aria, clavier).

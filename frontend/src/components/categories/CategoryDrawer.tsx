@@ -32,7 +32,7 @@ import { PopoverPicker } from '@/components/ui/popoverPicker'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { useCreateCategory } from '@/hooks/useCreateCategory'
 import { useUpdateCategory } from '@/hooks/useUpdateCategory'
-import { deleteCategory } from '@/services/categoryService'
+import { useDeleteCategory } from '@/hooks/useDeleteCategory'
 import type { Category, CategoryCreate, CategoryUpdate } from '@/types/category'
 import { createCategoryFormSchema, type CategoryFormValues } from '@/types/category'
 
@@ -122,6 +122,7 @@ export function CategoryDrawer({
 
   const createMutation = useCreateCategory()
   const updateMutation = useUpdateCategory()
+  const deleteMutation = useDeleteCategory()
 
   const [color, setColor] = React.useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = React.useState(false)
@@ -227,7 +228,8 @@ export function CategoryDrawer({
   // L'erreur DOIT rejeter pour que le dialog l'affiche inline (pitfall #65).
   const handleDeleteConfirm = async (reassignToCategoryId?: string) => {
     if (!category) throw new Error('catégorie manquante')
-    await deleteCategory(category.id, reassignToCategoryId)
+    // useMutation → invalide categories.all + products.all onSuccess (#245).
+    await deleteMutation.mutateAsync({ id: category.id, reassignToCategoryId })
     setDeleteOpen(false)
     onDeleted?.()
     onOpenChange(false)

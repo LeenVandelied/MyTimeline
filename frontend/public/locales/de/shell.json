@@ -1,0 +1,29 @@
+{
+  "brand": "MyTimeline",
+  "newEvent": "Neues Ereignis",
+  "settings": "Einstellungen",
+  "profile": "Profil",
+  "logout": "Abmelden",
+  "loading": "Wird geladen…",
+  "nav": {
+    "aria": "Hauptnavigation",
+    "dashboard": "Übersicht",
+    "timeline": "Zeitachse",
+    "products": "Produkte"
+  },
+  "theme": {
+    "toLight": "Zum hellen Design wechseln",
+    "toDark": "Zum dunklen Design wechseln"
+  },
+  "createDialog": {
+    "title": "Neues Ereignis",
+    "description": "Erstelle ein Ereignis für eines deiner Produkte.",
+    "body": "Das vollständige Formular zum Erstellen von Ereignissen folgt in Kürze."
+  },
+  "timeline": {
+    "eyebrow": "Zeitachse",
+    "title": "Zeitachse",
+    "comingSoon": "Die vollständige Zeitachse folgt in Kürze.",
+    "loading": "Wird geladen…"
+  }
+}

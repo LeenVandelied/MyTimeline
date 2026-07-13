@@ -17,9 +17,10 @@ import { CategoryDrawer } from './CategoryDrawer'
 
 const createMutateAsync = vi.fn()
 const updateMutateAsync = vi.fn()
+const deleteMutateAsync = vi.fn()
 const createState = { mutateAsync: createMutateAsync, isPending: false }
 const updateState = { mutateAsync: updateMutateAsync, isPending: false }
-const deleteCategoryMock = vi.fn()
+const deleteState = { mutateAsync: deleteMutateAsync, isPending: false }
 
 vi.mock('@/hooks/useCreateCategory', () => ({
   useCreateCategory: () => createState,
@@ -27,8 +28,9 @@ vi.mock('@/hooks/useCreateCategory', () => ({
 vi.mock('@/hooks/useUpdateCategory', () => ({
   useUpdateCategory: () => updateState,
 }))
-vi.mock('@/services/categoryService', () => ({
-  deleteCategory: (...args: unknown[]) => deleteCategoryMock(...args),
+// #245 : la suppression passe par useDeleteCategory (useMutation + invalidation).
+vi.mock('@/hooks/useDeleteCategory', () => ({
+  useDeleteCategory: () => deleteState,
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
@@ -92,7 +94,7 @@ describe('CategoryDrawer', () => {
     updateState.isPending = false
     createMutateAsync.mockReset()
     updateMutateAsync.mockReset()
-    deleteCategoryMock.mockReset()
+    deleteMutateAsync.mockReset()
   })
   afterEach(() => vi.clearAllMocks())
 
@@ -179,11 +181,11 @@ describe('CategoryDrawer', () => {
     )
   })
 
-  it('mode édition : bouton supprimer ouvre le dialog puis appelle deleteCategory', async () => {
+  it('mode édition : bouton supprimer ouvre le dialog puis déclenche la mutation', async () => {
     // pointerEventsCheck désactivé : le Dialog Radix ouvert pose pointer-events:none
     // sur body, or le bouton confirmer mocké rend hors du DialogContent portal.
     const user = userEvent.setup({ pointerEventsCheck: 0 })
-    deleteCategoryMock.mockResolvedValue(undefined)
+    deleteMutateAsync.mockResolvedValue(undefined)
     const onDeleted = vi.fn()
     render(
       <CategoryDrawer
@@ -198,7 +200,10 @@ describe('CategoryDrawer', () => {
     await user.click(screen.getByTestId('category-delete-button'))
     await user.click(screen.getByTestId('confirm-delete'))
 
-    await waitFor(() => expect(deleteCategoryMock).toHaveBeenCalledWith('cat-1', undefined))
+    // #245 : passe par la mutation (qui invalide categories.all + products.all).
+    await waitFor(() =>
+      expect(deleteMutateAsync).toHaveBeenCalledWith({ id: 'cat-1', reassignToCategoryId: undefined }),
+    )
     await waitFor(() => expect(onDeleted).toHaveBeenCalled())
   })
 

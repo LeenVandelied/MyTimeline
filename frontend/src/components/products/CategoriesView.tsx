@@ -11,8 +11,8 @@ import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { useCategories } from '@/hooks/useCategories'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
+import { useDeleteCategory } from '@/hooks/useDeleteCategory'
 import { useAuth } from '@/hooks/useAuth'
-import { deleteCategory } from '@/services/categoryService'
 import type { Category } from '@/types/category'
 
 /**
@@ -40,6 +40,7 @@ export function CategoriesView() {
 
   const categoriesQuery = useCategories(true)
   const productsQuery = useProductsWithEvents(userId)
+  const deleteMutation = useDeleteCategory()
 
   const categories = React.useMemo(
     () => categoriesQuery.data ?? [],
@@ -63,7 +64,9 @@ export function CategoriesView() {
 
   const handleDeleteConfirm = async (reassignToCategoryId?: string) => {
     if (!deleteCategoryState) throw new Error('catégorie manquante')
-    await deleteCategory(deleteCategoryState.id, reassignToCategoryId)
+    // useMutation → invalide categories.all + products.all onSuccess (#245).
+    // mutateAsync REJETTE en cas d'erreur pour l'affichage inline du dialog (#65).
+    await deleteMutation.mutateAsync({ id: deleteCategoryState.id, reassignToCategoryId })
     setDeleteCategoryState(null)
   }
 

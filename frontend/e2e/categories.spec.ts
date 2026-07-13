@@ -33,10 +33,9 @@ import {
  *     `linkedProductsCount > 0` (bouton confirmer désactivé tant qu'aucune cible),
  *     cible = toutes catégories SAUF celle supprimée (systèmes incluses).
  *
- * ⚠ Le service `deleteCategory` est appelé en DIRECT (pas via mutation hook) :
- *   AUCUNE invalidation TanStack -> la liste ne se rafraîchit pas seule après
- *   suppression. Les assertions de disparition RELOADENT donc la vue pour observer
- *   l'état backend persistant (cf. RECOMMAND_FOLLOWUP : invalidation manquante).
+ * #245 — La suppression passe par `useDeleteCategory` (useMutation) qui invalide
+ *   `categories.all` + `products.all` sur succès : la liste se rafraîchit SEULE, sans
+ *   reload. Les assertions de disparition observent donc la vue courante directement.
  */
 
 test.use({ storageState: PROD.storageState })
@@ -103,8 +102,9 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
 
     await page.getByTestId('delete-confirm-button').click()
 
-    // deleteCategory direct (pas d'invalidation) -> reload pour observer l'état backend.
-    await openCategoriesTab(page)
+    // #245 : useDeleteCategory invalide categories.all -> la carte disparaît
+    // automatiquement, SANS reload de la vue.
+    await expect(dialog).toBeHidden()
     await expect(page.getByTestId(`categories-card-${cat.id}`)).toHaveCount(0)
   })
 
@@ -138,16 +138,17 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
 
     await page.getByTestId('delete-confirm-button').click()
 
+    // #245 : useDeleteCategory invalide categories.all -> la source disparaît de la
+    // vue courante SANS reload ; la cible demeure.
+    await expect(dialog).toBeHidden()
+    await expect(page.getByTestId(`categories-card-${source.id}`)).toHaveCount(0)
+    await expect(page.getByTestId(`categories-card-${target.id}`)).toBeVisible()
+
     // API réelle : produits de `source` réassignés atomiquement vers `target`.
-    // Reload (deleteCategory sans invalidation) puis vérif de l'état persistant.
+    // Navigation vers la vue Produits (route distincte) pour vérifier la persistance.
     await gotoProducts(page)
     await expect(page.getByTestId(`products-row-category-${product.id}`)).toContainText(
       target.name,
     )
-
-    // La catégorie source a disparu ; la cible demeure.
-    await openCategoriesTab(page)
-    await expect(page.getByTestId(`categories-card-${source.id}`)).toHaveCount(0)
-    await expect(page.getByTestId(`categories-card-${target.id}`)).toBeVisible()
   })
 })

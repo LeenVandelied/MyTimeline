@@ -14,7 +14,9 @@ import { CategoriesView } from './CategoriesView'
 
 const useCategoriesMock = vi.fn()
 const useProductsMock = vi.fn()
-const deleteCategoryMock = vi.fn()
+// #245 : la suppression passe désormais par le hook useDeleteCategory (useMutation
+// + invalidation categories.all/products.all), plus par le service brut.
+const deleteMutateAsync = vi.fn()
 
 vi.mock('@/hooks/useCategories', () => ({
   useCategories: (...args: unknown[]) => useCategoriesMock(...args),
@@ -25,8 +27,8 @@ vi.mock('@/hooks/useProductsWithEvents', () => ({
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }))
-vi.mock('@/services/categoryService', () => ({
-  deleteCategory: (...args: unknown[]) => deleteCategoryMock(...args),
+vi.mock('@/hooks/useDeleteCategory', () => ({
+  useDeleteCategory: () => ({ mutateAsync: deleteMutateAsync, isPending: false }),
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
@@ -146,9 +148,9 @@ describe('CategoriesView', () => {
     expect(screen.getByTestId('category-drawer-edit')).toHaveAttribute('data-category', 'c-1')
   })
 
-  it('supprime une catégorie en passant categoryId + linkedProductsCount', async () => {
+  it('supprime une catégorie via la mutation en passant categoryId + linkedProductsCount', async () => {
     const user = userEvent.setup()
-    deleteCategoryMock.mockResolvedValue(undefined)
+    deleteMutateAsync.mockResolvedValue(undefined)
     render(<CategoriesView />)
     await user.click(screen.getByTestId('categories-delete-c-1'))
     const dialog = screen.getByTestId('delete-dialog-category')
@@ -156,7 +158,11 @@ describe('CategoriesView', () => {
     expect(dialog).toHaveAttribute('data-category-id', 'c-1')
     expect(dialog).toHaveAttribute('data-linked', '2')
     await user.click(dialog)
-    expect(deleteCategoryMock).toHaveBeenCalledWith('c-1', 'reassign-target')
+    // #245 : passe par la mutation (qui invalide categories.all + products.all).
+    expect(deleteMutateAsync).toHaveBeenCalledWith({
+      id: 'c-1',
+      reassignToCategoryId: 'reassign-target',
+    })
   })
 
   it('affiche l’état vide', () => {

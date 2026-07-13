@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { AppFooter } from '@/components/ui/footer-app'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductsListView } from '@/components/products/ProductsListView'
@@ -20,9 +19,8 @@ import { CategoriesView } from '@/components/products/CategoriesView'
  */
 export default function ProductsPage() {
   const t = useTranslations('products')
-  const locale = useLocale()
-  const router = useRouter()
-  const { user, loading } = useAuth()
+  // #210 — Garde d'auth factorisée (defense-in-depth : le shell garde aussi).
+  const { user, loading } = useAuthGuard()
 
   const [tab, setTab] = useState<'products' | 'categories'>('products')
 
@@ -33,12 +31,6 @@ export default function ProductsPage() {
     ],
     [t],
   )
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push(`/${locale}/login`)
-    }
-  }, [user, loading, router, locale])
 
   if (loading) {
     return (
