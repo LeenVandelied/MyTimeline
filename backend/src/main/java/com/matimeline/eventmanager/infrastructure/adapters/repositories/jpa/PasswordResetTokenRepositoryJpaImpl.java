@@ -31,11 +31,31 @@ public class PasswordResetTokenRepositoryJpaImpl
 
     @Override
     public PasswordResetToken save(PasswordResetToken token) {
-        // Aligné sur UserRepositoryJpaImpl : l'id du domaine est posé en amont
-        // (UUID v à la création) ; merge fait l'INSERT du nouvel enregistrement et
-        // l'UPDATE lors de la consommation (used_at).
+        // Deux chemins distincts (le domaine ne porte pas @Version, verrou en infra) :
+        //  - INSERT (forgot-password) : id inconnu en base -> persist d'une entité neuve.
+        //  - UPDATE / consommation (reset-password) : id déjà présent. On charge l'entité
+        //    MANAGÉE (convention #4, cp-backend) et on recopie le SEUL champ mutable
+        //    (used_at). Dans la transaction de resetPassword, findByToken a déjà chargé
+        //    cette entité dans le contexte de persistance : findById renvoie la MÊME
+        //    instance avec la version lue au CHECK (cache L1 = lecture répétable). Le
+        //    UPDATE porte donc WHERE version=<version-du-CHECK> -> anti-TOCTOU (#143).
+        return super.findById(token.getId())
+            .map(managed -> updateManaged(managed, token))
+            .orElseGet(() -> insertNew(token));
+    }
+
+    private PasswordResetToken insertNew(PasswordResetToken token) {
         PasswordResetTokenEntity entity = mapper.toEntity(token);
-        PasswordResetTokenEntity saved = super.save(entity);
+        return mapper.toDomain(super.save(entity));
+    }
+
+    private PasswordResetToken updateManaged(PasswordResetTokenEntity managed, PasswordResetToken token) {
+        managed.setUsedAt(token.getUsedAt());
+        // saveAndFlush : force le flush ICI (dans le try/catch de resetPassword) pour que
+        // l'ObjectOptimisticLockingFailureException remonte de façon SYNCHRONE et non au
+        // commit (hors de portée du catch). NE PAS repasser par mapper.toEntity : une
+        // entité reconstruite serait détachée (version=null) -> merge fragile (cf. #4).
+        PasswordResetTokenEntity saved = super.saveAndFlush(managed);
         return mapper.toDomain(saved);
     }
 
