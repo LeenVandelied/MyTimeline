@@ -161,6 +161,16 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         // -> ObjectOptimisticLockingFailureException. On la convertit en 400 générique
         // (anti-énumération, aucune info exploitable) ; la transaction rollback annule
         // le changement de mot de passe de la requête perdante (atomicité).
+        //
+        // ⚠ ROBUSTESSE — pourquoi ce try/catch autour du SEUL save suffit : l'impl JPA
+        // (PasswordResetTokenRepositoryJpaImpl.save) fait un saveAndFlush, donc le flush
+        // JPA — et donc la détection du conflit optimiste — se produit de façon SYNCHRONE
+        // ICI, dans le try. C'est le SEUL point de flush garanti avant la fin de méthode :
+        // sans ce flush explicite, Hibernate reporterait l'UPDATE au commit de la
+        // transaction (@Transactional), HORS de ce try/catch, et l'exception échapperait au
+        // handler (elle remonterait en 500 au lieu du 400 générique). Ne pas remplacer
+        // saveAndFlush par un simple persist/merge sans flush sous peine de casser ce
+        // contrat. Chemin couvert par PasswordResetTokenConcurrencyIntegrationTest (#143).
         try {
             tokenRepository.save(token.consume(LocalDateTime.now(clock)));
         } catch (ObjectOptimisticLockingFailureException | OptimisticLockException ex) {

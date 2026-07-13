@@ -22,13 +22,24 @@ import { Pool } from 'pg'
  * Connexion DB de test. Défauts alignés sur le service Postgres du job CI `e2e`
  * (`.github/workflows/ci.yml` : DB `eventmanager`, user `eventuser`) ET sur le dev
  * local (Postgres @ localhost:5432). Surchargeable par env (`E2E_DB_*`) sans recompiler.
- * Le mot de passe n'est PAS un secret : base de test jetable (valeur CI publique).
+ *
+ * Le mot de passe n'a PAS de valeur par défaut littérale (best-practice, même en test) :
+ * il DOIT être fourni via `E2E_DB_PASSWORD` (CI et dev local). En son absence on échoue
+ * tôt et clairement plutôt que de coder un credential en dur dans le dépôt.
  */
+const dbPassword = process.env.E2E_DB_PASSWORD
+if (!dbPassword) {
+  throw new Error(
+    'E2E_DB_PASSWORD manquant : définissez la variable pour la connexion DB de test ' +
+      '(cf. .github/workflows/ci.yml et votre Postgres local).',
+  )
+}
+
 const pool = new Pool({
   host: process.env.E2E_DB_HOST ?? 'localhost',
   port: Number(process.env.E2E_DB_PORT ?? 5432),
   user: process.env.E2E_DB_USER ?? 'eventuser',
-  password: process.env.E2E_DB_PASSWORD ?? 'eventpass_ci',
+  password: dbPassword,
   database: process.env.E2E_DB_NAME ?? 'eventmanager',
   // Petit pool : un seul lecteur (le helper) sur toute la durée du run.
   max: 2,
