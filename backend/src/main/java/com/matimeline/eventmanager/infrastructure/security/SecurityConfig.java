@@ -25,17 +25,25 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.http.MediaType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    // Sérialisation JSON des réponses d'erreur (#126) — instance dédiée et
+    // sans état, indépendante de l'ObjectMapper applicatif (aucune config
+    // custom requise pour un corps aussi simple qu'un Map<String,String>).
+    private static final ObjectMapper ERROR_RESPONSE_MAPPER = new ObjectMapper();
+
     private final JwtFilter jwtFilter;
     private final RateLimitingFilter rateLimitingFilter;
 
@@ -194,12 +202,18 @@ public class SecurityConfig {
      * these fire inside the security filter chain, BEFORE the DispatcherServlet,
      * so they never reach the @RestControllerAdvice. No internal message or
      * stack trace is exposed — only the stable "error" code.
+     *
+     * Sérialisé via Jackson (#126) plutôt que par concaténation de chaîne :
+     * tous les appelants actuels passent des constantes ("unauthorized",
+     * "forbidden"), mais une concaténation manuelle produirait un JSON
+     * invalide/injectable si un futur appelant passait une valeur dynamique
+     * contenant des guillemets ou un backslash.
      */
     private static void writeJsonError(HttpServletResponse response, int status, String error)
             throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.getWriter().write("{\"error\":\"" + error + "\"}");
+        ERROR_RESPONSE_MAPPER.writeValue(response.getWriter(), Map.of("error", error));
     }
 }
