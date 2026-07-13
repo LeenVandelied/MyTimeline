@@ -95,13 +95,16 @@ export const EventPill: React.FC<EventPillProps> = ({
           style={{ background: statusVar }}
           aria-hidden="true"
         />
-        {/* Titre interne. `aria-hidden` CONDITIONNEL (#228) :
+        {/* Titre interne. `aria-hidden` CONDITIONNEL (#228). Le nom accessible du
+            bouton vient TOUJOURS de son `aria-label` (il prime sur le sous-arbre) →
+            démasquer ce span ne change PAS l'annonce vocale : pas de double lecture
+            dans les deux cas. La bascule sert la COHÉRENCE sémantique du DOM (le
+            texte visible n'est pas masqué à tort), pas le rendu lecteur d'écran :
             - `readableInside` vrai → ce span est le SEUL rendu visible du titre →
-              on le DÉMASQUE aux lecteurs d'écran. Pas de double annonce : l'`aria-label`
-              du bouton fournit le nom accessible (il PRIME sur le sous-arbre) et
-              contient déjà le titre → Label-in-Name (WCAG 2.5.3) satisfait.
+              on le laisse non masqué (aria-hidden absent). Le texte visible est
+              inclus dans l'`aria-label` du bouton → Label-in-Name (WCAG 2.5.3) OK.
             - `readableInside` faux → le titre est répété DEHORS (garde-fou contraste
-              #81) → ce span interne est purement décoratif → `aria-hidden`. */}
+              #81) → ce span interne devient purement décoratif → `aria-hidden`. */}
         <span aria-hidden={readableInside ? undefined : true}>{event.title}</span>
       </button>
       {/* #81 point 6 — libellé extérieur de secours si contraste < 4.5:1 dedans.

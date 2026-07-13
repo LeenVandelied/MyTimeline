@@ -626,7 +626,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                             className={
                               isResCollapsed ? 'mt-tlv__chev' : 'mt-tlv__chev mt-tlv__chev--open'
                             }
-                            size={12}
+                            size={13}
                             strokeWidth={1.5}
                             aria-hidden="true"
                           />

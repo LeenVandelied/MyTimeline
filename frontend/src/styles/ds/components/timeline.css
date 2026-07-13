@@ -177,13 +177,27 @@
 .mt-tlm{position:relative; display:flex; flex-direction:column; width:100%; border:1px solid var(--color-rule); border-radius:var(--radius-md); background:var(--color-surface); overflow:hidden;}
 .mt-tlm__toolbar{display:flex; align-items:center; gap:var(--space-2); padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--color-rule); background:var(--color-surface-2);}
 
-/* #226 — a11y WCAG 2.5.5 : cible tactile ≥44×44px pour le zoom sur surfaces
-   touch mobile. Scope `.mt-tlm` (couvre portrait + paysage `.mt-tlm--landscape`) :
-   le bouton desktop `.mt-zoom__btn` (hors `.mt-tlm`) reste 30px, hauteur dérivée
-   du groupe. La hitbox s'étend hors flux via `::before` (PAT-S24-002) : n'altère
-   ni l'icône (font-size inchangée) ni le flex du groupe. Les deux hitboxes ne se
-   chevauchent pas (séparées par `.mt-zoom__level`). */
+/* #226 — a11y WCAG 2.5.5 : cible tactile RÉELLE ≥44×44px pour le zoom sur
+   surfaces touch mobile. Scope `.mt-tlm` (couvre portrait + paysage
+   `.mt-tlm--landscape`) : le bouton desktop `.mt-zoom__btn` (hors `.mt-tlm`)
+   reste 30px + groupe `overflow:hidden` inchangé. La hitbox s'étend hors flux
+   via `::before` 44×44px centré (PAT-S24-002) : n'altère ni l'icône (font-size
+   inchangée) ni le flex du groupe.
+   ⚠ PIT PAT-S24-002 : le `::before` déborde de (44-30)/2 = 7px de chaque côté du
+   bouton. Le groupe `.mt-zoom` a `overflow:hidden` (arrondi desktop) → sur le
+   1er (bord gauche) et le dernier (bord droit) bouton, ces 7px extérieurs
+   étaient CLIPPÉS → cible réelle ~37×44px sur les bords extrêmes. Fix : passer le
+   groupe en `overflow:visible` UNIQUEMENT en contexte `.mt-tlm` pour libérer la
+   hitbox. Le `::before` est transparent → aucun rendu n'apparaît. On réarrondit
+   les coins extérieurs des boutons de bord (`:first-child` / `:last-child`) à
+   `--radius-md` pour préserver la silhouette arrondie du groupe (sans le clip, le
+   fond hover carré déborderait de l'arrondi). Les 7px libérés côté gauche
+   tiennent dans le padding `--space-3` (12px) de la toolbar → aucun re-clip par
+   le `overflow:hidden` de `.mt-tlm`. */
+.mt-tlm .mt-zoom{overflow:visible;}
 .mt-tlm .mt-zoom__btn{position:relative; min-height:44px;}
+.mt-tlm .mt-zoom__btn:first-child{border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
+.mt-tlm .mt-zoom__btn:last-child{border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
 .mt-tlm .mt-zoom__btn::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 
 /* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll
