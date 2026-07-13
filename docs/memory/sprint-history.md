@@ -843,14 +843,14 @@
 
 > **Plan S34–S38 généré le 2026-07-12** (`/ai-env:sprint plan 5`, cohésion moyenne **0.66**, aucun sprint < 0.3). Fil directeur = **durcissement MVP shippable prod** : supply-chain CVE (S34) → boot-safety/secrets (S35) → export RGPD (S36) → reset-password (S37) → contrat erreur auth (S38). **Vérif code-state Phase 0.5** : aucune issue `possibly_done` — tout vérifié comme travail réel restant (RateLimitingFilter POST-only, pas de @Version reset-token, pas d'index expires_at, pas de @EnableScheduling, pas de spec E2E forgot/reset). **Dépendance dure :** S36→S37 (@EnableScheduling). **Migrations :** S36=V14, S37=V15 (une plage/sprint). **Drift détecté :** CLAUDE.md prétend `db/migration/` vide + `ddl-auto=update` — FAUX (V1..V13 actifs + `ddl-auto=validate`) → correction lancée via chip séparé. **[MEMORY:decision] Flyway = source de vérité** (tout changement schéma = migration + mapping entité). **Backlog hors thème :** features lourdes (#210/#195/#56/#69/#212/#102/#231/#88), a11y events (#226/#227/#228 → S39), hygiène hexagonale (#170/#185/#190/#221/#240/#244 → S40), sprint E2E dédié (#205/#209/#232/#234/#270/#271/#215), i18n (#72/#74/#90/#142/#172).
 
-## Sprint 39 — 2026-07-13 (PLANIFIÉ — cohésion 0.30, Lisibilité Landing)
+## Sprint 39 — 2026-07-13 (EN COURS — cohésion 0.30, Lisibilité Landing)
 **Objectif :** Corriger la première impression démo (contraste hero landing illisible observé en live + rendu clair/sombre des 4 écrans auth).
 **Milestone GitHub :** #39
 **Issues :** #56 (slice contraste hero, pas toute la L), #146
-**Vagues :** V1 = #56 ∥ #146 (fichiers disjoints)
+**Vagues :** V1 = #56 ∥ #146 (implémentation parallèle, fichiers disjoints ; commits sérialisés par le lead — pitfall shared-worktree index race)
 **Migrations :** aucune
 **Dépend de :** aucune (racine)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-13)
 
 ## Sprint 40 — 2026-07-13 (PLANIFIÉ — cohésion 0.18, Shell applicatif)
 **Objectif :** Fondation navigation — nav latérale persistante 248px (#210) + quick-win bug catégories (#245).
