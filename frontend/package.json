@@ -61,6 +61,7 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.7.0",
@@ -69,9 +70,11 @@
     "commitlint-plugin-gitmoji": "^2.2.6",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
+    "eslint-plugin-storybook": "^10.4.6",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "lint-staged": "^15.5.2",
+    "pg": "^8.22.0",
     "postcss": "^8.5.3",
     "prettier": "^3.8.4",
     "prettier-plugin-tailwindcss": "^0.6.14",
@@ -79,7 +82,6 @@
     "tailwindcss": "^4.0.12",
     "typescript": "^5",
     "vite": "^6.4.3",
-    "vitest": "^3.2.7",
-    "eslint-plugin-storybook": "^10.4.6"
+    "vitest": "^3.2.7"
   }
 }

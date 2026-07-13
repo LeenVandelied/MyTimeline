@@ -10,10 +10,15 @@ import java.util.UUID;
  * Entité JPA du token de réinitialisation (issue #49). Mappe la table
  * {@code password_reset_tokens} (migration V6).
  *
- * <p>ddl-auto=validate (dev/test) : ce mapping DOIT correspondre EXACTEMENT à V6
- * (colonnes id, user_id, token, expires_at, used_at ; token unique non nul). Aucune
- * annotation d'audit ici (table technique à durée de vie courte, pas de createdAt
- * versionné requis).
+ * <p>ddl-auto=validate (dev/test) : ce mapping DOIT correspondre EXACTEMENT au schéma
+ * (colonnes id, user_id, token, expires_at, used_at de V6 + version de V15 ; token
+ * unique non nul). Pas d'audit created_at/updated_at (table technique éphémère).
+ *
+ * <p>{@code version} (@Version, V15/#143) : verrou optimiste anti-TOCTOU sur la
+ * consommation. Le UPDATE de {@code used_at} porte {@code WHERE version=?} avec la
+ * version lue au CHECK -> une seule de deux consommations concurrentes réussit,
+ * l'autre lève {@code ObjectOptimisticLockingFailureException} (cf.
+ * {@code PasswordResetServiceImpl.resetPassword}).
  */
 @Entity
 @Table(name = "password_reset_tokens")
@@ -36,6 +41,11 @@ public class PasswordResetTokenEntity {
 
     @Column(name = "used_at")
     private LocalDateTime usedAt;
+
+    // Verrou optimiste (V15, #143) : anti-TOCTOU sur la consommation du token.
+    @Version
+    @Column(nullable = false)
+    private Integer version;
 
     public UUID getId() {
         return id;
@@ -75,6 +85,11 @@ public class PasswordResetTokenEntity {
 
     public void setUsedAt(LocalDateTime usedAt) {
         this.usedAt = usedAt;
+    }
+
+    /** Version du verrou optimiste (gérée par Hibernate, pas de setter). */
+    public Integer getVersion() {
+        return version;
     }
 
     @Override

@@ -1,8 +1,15 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,14 +21,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import io.github.bucket4j.TimeMeter;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -95,7 +107,71 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final Duration WINDOW = Duration.ofMinutes(1);
 
+    /**
+     * #141 — the single {@code (method, path)} pair that additionally triggers the
+     * PER-TOKEN throttle branch below (body is parsed to extract the reset token).
+     */
+    private static final String RESET_PASSWORD_KEY = "POST /api/auth/reset-password";
+
+    /**
+     * #141 — max validation attempts allowed against ANY single reset-token value
+     * within {@link #WINDOW}. Defense-in-depth on top of the per-IP limit: an attacker
+     * rotating source IPs (or distributed across a botnet) still cannot hammer one
+     * given token beyond this ceiling. A legitimate user submits a token once; the
+     * token is single-use, so repeated submissions of the same value are retries after
+     * failure — throttling them is safe.
+     */
+    private static final int TOKEN_ATTEMPT_LIMIT = 5;
+
+    /**
+     * #141 — hard cap on the number of distinct per-token buckets held in memory. The
+     * token value-space is attacker-influenced (any string can be POSTed), so — unlike
+     * the bounded auth-path IP map — this map could otherwise grow without limit
+     * (memory-exhaustion vector). When the cap is reached the LRU {@link #tokenBuckets}
+     * EVICTS its oldest entry to make room for the new one (rather than refusing to add
+     * it — which would silently let every fresh token, including a legitimate victim's,
+     * dodge the per-token throttle once the map filled up). Memory stays bounded while the
+     * most-recently-seen tokens remain throttled. Entries are tiny; sized generously.
+     */
+    private static final int MAX_TRACKED_TOKENS = 100_000;
+
+    /**
+     * #141 — upper bound (in bytes) on the reset-password request body the filter will
+     * buffer to extract the token. A legitimate body ({@code {"token":"<uuid>",
+     * "newPassword":"…"}}) is a few hundred bytes; 8 KiB is comfortably above any honest
+     * request. Beyond this the filter does NOT buffer (anti-OOM): it skips the per-token
+     * throttle and lets the per-IP limit (already applied) govern the request.
+     */
+    private static final int MAX_RESET_BODY_BYTES = 8 * 1024;
+
+    /**
+     * #141 — max length of a token value still treated as a per-token throttle KEY. The
+     * token is an attacker-controlled JSON string; without a bound, a multi-megabyte
+     * value would become a map key and blow the {@link #MAX_TRACKED_TOKENS} volume cap in
+     * real memory. A real reset token is a UUID (36 chars); 128 leaves generous slack.
+     * Longer values skip the per-token throttle (per-IP limit still applies).
+     */
+    private static final int MAX_TOKEN_KEY_LENGTH = 128;
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+
+    /**
+     * #141 — per reset-token buckets, keyed by the token value. Bounded LRU: a
+     * synchronized access-order map that evicts its eldest entry once it exceeds
+     * {@link #MAX_TRACKED_TOKENS} (see that constant). {@code synchronizedMap} makes
+     * {@code computeIfAbsent} atomic and its {@code removeEldestEntry} eviction runs
+     * under the same lock, so the size ceiling holds under concurrency.
+     */
+    private final Map<String, Bucket> tokenBuckets = Collections.synchronizedMap(
+            new LinkedHashMap<>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Bucket> eldest) {
+                    return size() > MAX_TRACKED_TOKENS;
+                }
+            });
+
     private final TimeMeter timeMeter;
 
     /**
@@ -180,11 +256,127 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String key = clientIp(request) + "|" + methodAndPath;
         Bucket bucket = buckets.computeIfAbsent(key, k -> newBucket(limit));
 
-        if (bucket.tryConsume(1)) {
-            chain.doFilter(request, response);
-        } else {
+        if (!bucket.tryConsume(1)) {
             writeTooManyRequests(response);
+            return;
         }
+
+        // #141 : sur reset-password un SECOND throttle, PAR TOKEN, s'ajoute au throttle
+        // par IP ci-dessus. Il plafonne les tentatives de validation d'un MÊME token,
+        // indépendamment de l'IP source (défense en profondeur : une rotation d'IP ne
+        // permet pas de marteler un token donné). Le corps de la requête est lu ici puis
+        // re-servi au controller via un wrapper — l'InputStream d'origine n'est
+        // consommable qu'une seule fois.
+        if (RESET_PASSWORD_KEY.equals(methodAndPath)) {
+            handleResetPasswordTokenThrottle(request, response, chain);
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    /**
+     * #141 — per-token throttle branch of {@link #doFilterInternal} for
+     * {@code POST /api/auth/reset-password}. The per-IP limit has ALREADY been applied
+     * upstream; this method reads the (bounded) body, extracts the token, and — when the
+     * token is a plausible key — applies the second, per-token throttle before re-serving
+     * the cached body downstream. It always terminates the request (short-circuits with
+     * 400/429, or forwards via the cached-body wrapper); the caller just returns after it.
+     */
+    private void handleResetPasswordTokenThrottle(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        // Anti-OOM (#141) : le corps d'un reset légitime fait quelques centaines d'octets.
+        // Si Content-Length annonce déjà un corps hors norme, on ne bufferise RIEN : on
+        // saute le throttle-par-token et on laisse le controller lire le corps lui-même.
+        // Le throttle par IP ci-dessus a déjà statué sur cette requête.
+        if (request.getContentLengthLong() > MAX_RESET_BODY_BYTES) {
+            chain.doFilter(request, response);
+            return;
+        }
+        // Lecture BORNÉE : défense en profondeur si Content-Length est absent (chunked)
+        // ou ment sur la taille réelle. Jamais plus de MAX_RESET_BODY_BYTES+1 octets en
+        // mémoire (vs StreamUtils.copyToByteArray qui lisait tout le corps sans borne).
+        byte[] body = readBounded(request.getInputStream(), MAX_RESET_BODY_BYTES);
+        if (body == null) {
+            // Corps dépassant la borne alors que Content-Length ne l'annonçait pas :
+            // requête illégitime pour un reset ; le stream est déjà partiellement
+            // consommé, on ne peut le re-servir -> 400 générique.
+            writeBadRequest(response);
+            return;
+        }
+        String token = extractToken(body);
+        // Throttle par token UNIQUEMENT si le token a une longueur plausible (une clé
+        // de plusieurs Mo saturerait le cap volumétrique MAX_TRACKED_TOKENS). Sinon on
+        // saute le throttle-par-token (repli sur le throttle par IP), corps re-servi.
+        if (token != null && !token.isBlank() && isPlausibleTokenKey(token) && !tryConsumeToken(token)) {
+            // Même 429 générique que le throttle par IP : aucune distinction
+            // "token inconnu" vs "trop de tentatives" (anti-énumération, critère #141).
+            writeTooManyRequests(response);
+            return;
+        }
+        chain.doFilter(new CachedBodyHttpServletRequest(request, body), response);
+    }
+
+    /**
+     * Extracts the {@code token} field from a reset-password JSON body. Returns
+     * {@code null} when the body is absent/empty/not JSON or the field is missing — the
+     * per-token throttle is then skipped and the request proceeds (the controller's
+     * {@code @Valid} handles a malformed body with a 400). Never throws.
+     */
+    private String extractToken(byte[] body) {
+        if (body == null || body.length == 0) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readTree(body).path("token").asText(null);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Consumes one permit from the per-token bucket. Returns {@code true} when the attempt
+     * is within {@link #TOKEN_ATTEMPT_LIMIT}. The lookup/create is atomic on the
+     * synchronized LRU {@code tokenBuckets}; if adding this token pushes the map past
+     * {@link #MAX_TRACKED_TOKENS}, its eldest entry is evicted (bounded memory) while the
+     * freshly-seen token stays throttled. {@code tryConsume} runs off-lock (the bucket is
+     * thread-safe); a concurrent eviction of the entry only forfeits its history — the
+     * accepted LRU trade-off.
+     */
+    private boolean tryConsumeToken(String token) {
+        Bucket bucket = tokenBuckets.computeIfAbsent(token, k -> newBucket(TOKEN_ATTEMPT_LIMIT));
+        return bucket.tryConsume(1);
+    }
+
+    /**
+     * #141 — {@code true} when the extracted token is short enough to be used as a
+     * per-token bucket key. Guards against a multi-megabyte JSON {@code token} value
+     * neutralising the {@link #MAX_TRACKED_TOKENS} volume cap. A real token is a 36-char
+     * UUID; anything over {@link #MAX_TOKEN_KEY_LENGTH} is not a legitimate token and is
+     * left to the per-IP throttle.
+     */
+    private static boolean isPlausibleTokenKey(String token) {
+        return token.length() <= MAX_TOKEN_KEY_LENGTH;
+    }
+
+    /**
+     * #141 — reads at most {@code max} bytes from {@code in}. Returns the exact bytes read
+     * when the stream ends within the bound, or {@code null} when the body exceeds
+     * {@code max} (overflow). Allocates {@code max + 1} bytes at most, so a hostile body
+     * can never exhaust memory here (unlike an unbounded {@code copyToByteArray}).
+     */
+    private static byte[] readBounded(InputStream in, int max) throws IOException {
+        byte[] buf = new byte[max + 1];
+        int total = 0;
+        int read;
+        while (total <= max && (read = in.read(buf, total, buf.length - total)) != -1) {
+            total += read;
+        }
+        if (total > max) {
+            return null; // dépassement : corps plus gros que la borne
+        }
+        return Arrays.copyOf(buf, total);
     }
 
     private Bucket newBucket(int permitsPerMinute) {
@@ -228,5 +420,63 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.getWriter().write("{\"error\":\"too_many_requests\"}");
+    }
+
+    /**
+     * #141 — generic 400 for a reset-password body exceeding {@link #MAX_RESET_BODY_BYTES}
+     * without declaring it via Content-Length (the stream is then partially consumed and
+     * cannot be re-served downstream). No detail leaked.
+     */
+    private void writeBadRequest(HttpServletResponse response) throws IOException {
+        response.setStatus(400);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write("{\"error\":\"bad_request\"}");
+    }
+
+    /**
+     * #141 — wraps a request whose body was already consumed in the filter (to read the
+     * reset token) so the downstream {@code HttpMessageConverter} can still deserialize
+     * it. The {@link ServletInputStream} is backed by the cached byte array.
+     */
+    private static final class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
+
+        private final byte[] body;
+
+        CachedBodyHttpServletRequest(HttpServletRequest request, byte[] body) {
+            super(request);
+            this.body = body;
+        }
+
+        @Override
+        public ServletInputStream getInputStream() {
+            ByteArrayInputStream buffer = new ByteArrayInputStream(body);
+            return new ServletInputStream() {
+                @Override
+                public int read() {
+                    return buffer.read();
+                }
+
+                @Override
+                public boolean isFinished() {
+                    return buffer.available() == 0;
+                }
+
+                @Override
+                public boolean isReady() {
+                    return true;
+                }
+
+                @Override
+                public void setReadListener(ReadListener readListener) {
+                    // synchronous read only — no async listener needed
+                }
+            };
+        }
+
+        @Override
+        public BufferedReader getReader() {
+            return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
+        }
     }
 }

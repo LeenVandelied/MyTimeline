@@ -9,10 +9,13 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.OptimisticLockException;
 
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.models.PasswordResetToken;
@@ -152,7 +155,27 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         userRepository.save(updated);
 
         // Usage unique : marquer consommé APRÈS la mise à jour réussie du mot de passe.
-        tokenRepository.save(token.consume(LocalDateTime.now(clock)));
+        // Anti-TOCTOU (#143) : le verrou optimiste @Version (V15) sur le token porte le
+        // UPDATE en WHERE version=<version-lue-au-CHECK>. Si une requête concurrente a
+        // consommé ce même token entre findByToken et ici, le flush n'affecte aucune ligne
+        // -> ObjectOptimisticLockingFailureException. On la convertit en 400 générique
+        // (anti-énumération, aucune info exploitable) ; la transaction rollback annule
+        // le changement de mot de passe de la requête perdante (atomicité).
+        //
+        // ⚠ ROBUSTESSE — pourquoi ce try/catch autour du SEUL save suffit : l'impl JPA
+        // (PasswordResetTokenRepositoryJpaImpl.save) fait un saveAndFlush, donc le flush
+        // JPA — et donc la détection du conflit optimiste — se produit de façon SYNCHRONE
+        // ICI, dans le try. C'est le SEUL point de flush garanti avant la fin de méthode :
+        // sans ce flush explicite, Hibernate reporterait l'UPDATE au commit de la
+        // transaction (@Transactional), HORS de ce try/catch, et l'exception échapperait au
+        // handler (elle remonterait en 500 au lieu du 400 générique). Ne pas remplacer
+        // saveAndFlush par un simple persist/merge sans flush sous peine de casser ce
+        // contrat. Chemin couvert par PasswordResetTokenConcurrencyIntegrationTest (#143).
+        try {
+            tokenRepository.save(token.consume(LocalDateTime.now(clock)));
+        } catch (ObjectOptimisticLockingFailureException | OptimisticLockException ex) {
+            throw new InvalidPasswordResetTokenException();
+        }
     }
 
     private UUID parseToken(String rawToken) {

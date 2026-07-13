@@ -215,6 +215,14 @@ jobs:
           CI: "true"
           NEXT_PUBLIC_API_URL: /api
           E2E_API_PROXY_TARGET: http://localhost:8080
+          # #145 — le spec forgot-password lit le token de reset directement en base
+          # (aucun autre canal : email NO-OP en test, pas d'endpoint test-only). Même
+          # service Postgres que le backend (localhost:5432, DB/user ci-dessus).
+          E2E_DB_HOST: localhost
+          E2E_DB_PORT: "5432"
+          E2E_DB_NAME: eventmanager
+          E2E_DB_USER: eventuser
+          E2E_DB_PASSWORD: eventpass_ci
         run: npm run test:e2e
 
       - name: Upload Playwright report (on failure)
