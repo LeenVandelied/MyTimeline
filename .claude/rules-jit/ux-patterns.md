@@ -97,7 +97,7 @@ ne sont pas couverts par un test unitaire dédié.
 
 ---
 
-## 5. Raccourcis clavier globaux — [LIVRÉ] (sauf `?`)
+## 5. Raccourcis clavier globaux — [LIVRÉ]
 
 Handler `keydown` sur `window`. Gardes :
 - ignore si un champ a le focus (`INPUT` / `TEXTAREA` / `isContentEditable`) ;
@@ -114,13 +114,12 @@ Handler `keydown` sur `window`. Gardes :
 | `-` | zoom arrière | [LIVRÉ] |
 | `F` / `f` | plein écran (toggle) | [LIVRÉ] |
 | `Échap` | ferme le drawer (priorité), sinon sort du plein écran | [LIVRÉ] |
-| `?` | ouvrir l'aide raccourcis | **[PRÉVU]** — voir ci-dessous |
 
-**`?` (aide) — [PRÉVU / NON IMPLÉMENTÉ AU CLAVIER]** :
-il n'existe PAS de `case '?'` dans le handler global. L'aide est un **tooltip**
+**Aide raccourcis — hover/focus-only PAR DÉCISION (option B, S41 #227)** :
+`?` n'est **PAS** un raccourci clavier et il n'existe volontairement PAS de
+`case '?'` dans le handler global. La surface d'aide est un **tooltip**
 (`.mt-tlv__help-pop`, `role="tooltip"`) affiché au **hover/focus** du bouton `?`
-de la toolbar — pas de dialog déclenché par la touche `?`. Écart formel avec le
-Sprint 17 (raccourci `?` listé). Suivi : cf. §9 (RECOMMAND_FOLLOWUP).
+de la toolbar. Ce choix est acté (pas d'écart, pas de dialog déclenché au clavier).
 
 Réf. code : `TimelineView.tsx` `useEffect(onKey …)` + bloc `.mt-tlv__help`.
 Réf. test : « le raccourci "+" zoome », « le raccourci "F" ne hijacke pas Cmd/Ctrl+F ».
@@ -168,10 +167,10 @@ Réf. test : « le bloc event expose un aria-label riche », bloc « garde-fou c
 
 ## 9. Écarts connus vs code livré #81 & suivi
 
-- **`?` non câblé au clavier** (§5) : aide en tooltip hover/focus uniquement.
-  → RECOMMAND_FOLLOWUP : câbler `case '?'` (ouvrir le pop d'aide) OU acter
-    officiellement l'aide « hover/focus only » et retirer `?` de la liste des
-    raccourcis annoncés.
+- **Aide `?` — TRANCHÉ (option B actée, S41 #227)** : l'aide reste en tooltip
+  hover/focus uniquement (`.mt-tlv__help-pop`) PAR DÉCISION. `?` n'est pas un
+  raccourci clavier et a été retiré de la liste des raccourcis (§5). Pas de
+  `case '?'` à câbler, pas de follow-up ouvert.
 - **`EventPill.tsx:100`** — `<span aria-hidden="true">{event.title}</span>` reste
   `aria-hidden` **même quand c'est le seul texte visible** (cas contraste OK, pas
   de libellé extérieur). Aujourd'hui inoffensif : l'`aria-label` du bouton couvre
