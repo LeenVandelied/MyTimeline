@@ -152,6 +152,9 @@
   --spacing-lane: var(--lane-height);
   --spacing-lane-header: var(--lane-header-w);
   --spacing-ruler: var(--ruler-height);
+
+  /* ---- layout applicatif (shell #210) → utilitaire `w-sidebar` ---- */
+  --spacing-sidebar: var(--sidebar-width);
 }
 
 /* base.css du DS gère déjà body { background:var(--color-bg); color:var(--color-ink) }.

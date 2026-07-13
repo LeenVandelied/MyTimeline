@@ -1,0 +1,28 @@
+{
+  "brand": "MyTimeline",
+  "newEvent": "New event",
+  "settings": "Settings",
+  "profile": "Profile",
+  "logout": "Logout",
+  "nav": {
+    "aria": "Main navigation",
+    "dashboard": "Dashboard",
+    "timeline": "Timeline",
+    "products": "Products"
+  },
+  "theme": {
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "createDialog": {
+    "title": "New event",
+    "description": "Create an event linked to one of your products.",
+    "body": "The full event creation form is coming soon."
+  },
+  "timeline": {
+    "eyebrow": "Timeline",
+    "title": "Timeline",
+    "comingSoon": "The full chronological timeline is coming soon.",
+    "loading": "Loading…"
+  }
+}

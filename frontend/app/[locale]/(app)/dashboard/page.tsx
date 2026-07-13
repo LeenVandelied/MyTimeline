@@ -105,7 +105,12 @@ export default function Dashboard() {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col" data-testid="dashboard">
-      <header className="bg-surface border-rule sticky top-0 z-10 border-b">
+      {/* #210 — Enveloppé par le shell applicatif (`(app)/layout.tsx`). En desktop
+          (>= lg) la nav latérale du shell fournit langue / thème / réglages /
+          profil / déconnexion : ce header propre à l'écran est donc masqué à
+          partir de `lg` pour éviter la double chrome. En < lg le shell délègue :
+          ce header (hamburger #83 / contrôles) reste la nav mobile de l'écran. */}
+      <header className="bg-surface border-rule sticky top-0 z-10 border-b lg:hidden">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <CalendarDays className="text-accent h-5 w-5" />

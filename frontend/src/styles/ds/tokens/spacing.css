@@ -48,6 +48,9 @@
   --lane-header-w: 168px;
   --ruler-height:  44px;
 
+  /* layout-specific (#210 shell applicatif — nav latérale persistante) */
+  --sidebar-width: 248px;
+
   /* layers */
   --z-sticky:  10; /* @kind other */
   --z-cursor:  20; /* @kind other */

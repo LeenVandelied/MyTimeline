@@ -1,0 +1,28 @@
+{
+  "brand": "MyTimeline",
+  "newEvent": "Nouvel événement",
+  "settings": "Réglages",
+  "profile": "Profil",
+  "logout": "Se déconnecter",
+  "nav": {
+    "aria": "Navigation principale",
+    "dashboard": "Tableau de bord",
+    "timeline": "Timeline",
+    "products": "Produits"
+  },
+  "theme": {
+    "toLight": "Passer au thème clair",
+    "toDark": "Passer au thème sombre"
+  },
+  "createDialog": {
+    "title": "Nouvel événement",
+    "description": "Créer un événement rattaché à l'un de vos produits.",
+    "body": "Le formulaire complet de création d'événement arrive prochainement."
+  },
+  "timeline": {
+    "eyebrow": "Frise",
+    "title": "Timeline",
+    "comingSoon": "La frise chronologique complète arrive prochainement.",
+    "loading": "Chargement…"
+  }
+}
