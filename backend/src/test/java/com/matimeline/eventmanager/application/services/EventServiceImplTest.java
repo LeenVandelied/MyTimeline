@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidEventTypeException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
 import com.matimeline.eventmanager.domain.models.Event;
@@ -477,6 +478,34 @@ class EventServiceImplTest {
         Event result = eventService.createEvent(request);
 
         assertThat(result.getColor()).isNull();
+    }
+
+    // ---- BR-EVE-002 : type ∈ {duration, single} validé côté appli (422, pas 401) ----
+
+    @Test
+    void createEvent_invalidType_throwsInvalidEventType_beforePersist() {
+        // Garde-fou applicatif : un type hors {duration, single} est rejeté AVANT la contrainte
+        // DB ck_events_type. Sans lui, la DataIntegrityViolationException non gérée ressortait
+        // en 401 « unauthorized » (dispatch /error). save() ne doit jamais être atteint.
+        EventCreateCommand request = new EventCreateCommand(
+                "Bad", "pouet", 1, "days", false, null, null, null, null, productId);
+        when(productRepository.findDomainProductById(productId))
+                .thenReturn(Optional.of(new Product(productId, "P", null, null, null)));
+
+        assertThatThrownBy(() -> eventService.createEvent(request))
+                .isInstanceOf(InvalidEventTypeException.class);
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void updateEvent_invalidType_throwsInvalidEventType() {
+        // Même garde au PATCH : impossible de basculer un event vers un type invalide.
+        EventUpdateCommand request = upd().type("pouet").build();
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+
+        assertThatThrownBy(() -> eventService.updateEvent(eventId, request))
+                .isInstanceOf(InvalidEventTypeException.class);
+        verify(eventRepository, never()).save(any(Event.class));
     }
 
     // ---- BR-EVE-012 (#168) : recurrenceEndDate < startDate rejetée (422) ----
