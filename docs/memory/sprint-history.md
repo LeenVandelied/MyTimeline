@@ -843,14 +843,25 @@
 
 > **Plan S34–S38 généré le 2026-07-12** (`/ai-env:sprint plan 5`, cohésion moyenne **0.66**, aucun sprint < 0.3). Fil directeur = **durcissement MVP shippable prod** : supply-chain CVE (S34) → boot-safety/secrets (S35) → export RGPD (S36) → reset-password (S37) → contrat erreur auth (S38). **Vérif code-state Phase 0.5** : aucune issue `possibly_done` — tout vérifié comme travail réel restant (RateLimitingFilter POST-only, pas de @Version reset-token, pas d'index expires_at, pas de @EnableScheduling, pas de spec E2E forgot/reset). **Dépendance dure :** S36→S37 (@EnableScheduling). **Migrations :** S36=V14, S37=V15 (une plage/sprint). **Drift détecté :** CLAUDE.md prétend `db/migration/` vide + `ddl-auto=update` — FAUX (V1..V13 actifs + `ddl-auto=validate`) → correction lancée via chip séparé. **[MEMORY:decision] Flyway = source de vérité** (tout changement schéma = migration + mapping entité). **Backlog hors thème :** features lourdes (#210/#195/#56/#69/#212/#102/#231/#88), a11y events (#226/#227/#228 → S39), hygiène hexagonale (#170/#185/#190/#221/#240/#244 → S40), sprint E2E dédié (#205/#209/#232/#234/#270/#271/#215), i18n (#72/#74/#90/#142/#172).
 
-## Sprint 39 — 2026-07-13 (EN COURS — cohésion 0.30, Lisibilité Landing)
+## Sprint 39 — 2026-07-13 (Terminé — merge PR #292 dans dev, cohésion 0.30, Lisibilité Landing)
 **Objectif :** Corriger la première impression démo (contraste hero landing illisible observé en live + rendu clair/sombre des 4 écrans auth).
-**Milestone GitHub :** #39
-**Issues :** #56 (slice contraste hero, pas toute la L), #146
-**Vagues :** V1 = #56 ∥ #146 (implémentation parallèle, fichiers disjoints ; commits sérialisés par le lead — pitfall shared-worktree index race)
-**Migrations :** aucune
-**Dépend de :** aucune (racine)
-**Status :** En cours (démarré 2026-07-13)
+**Milestone GitHub :** #39 (fermé après merge)
+**Issues :** #146 (livrée + fermée) ; #56 = **slice contraste hero uniquement** — reste du L → backlog, #56 laissée OUVERTE + re-scopée (comment).
+**Vagues exécutées :** V1 = #56 ∥ #146 (implémentation parallèle, fichiers disjoints ; **commits sérialisés par le lead** — mitigation pitfall shared-worktree index race [[sprint-parallel-commits-shared-worktree]]).
+**Cohésion score :** 0.30 (cross-epic design+auth assumé, démo-first).
+**Commits :** 4 — `585e080` #56 (HeroSection + contraste), `0093430` #146 (garde-fous), `cab6b6a` review-fix ('use client'), `fcd0d77`+audit (artefacts/statut).
+**Migrations Flyway :** aucune. **BR impactées :** aucune (page marketing + vérif visuelle).
+**Reviews :** batch /sprint start (reviewer MERGE_OK + ui-design APPROUVÉ AVEC RÉSERVES + test-runner) puis /review-pr 292 SOLO (MERGE_OK) — 0 CRITIQUE / 0 MAJEUR / 2 MINEURS (1 corrigé `cab6b6a` 'use client' ; 1 pré-existant `<a><Button>` → follow-up #295).
+**Tests :** Frontend 429/429 ✅ (+8 garde-fous), 0 erreur TS, 0 stderr. Backend non touché. CI verte (backend/frontend/e2e/security). Contraste WCAG AA vérifié statiquement par 3 sources concordantes (dev/reviewer/ui-design).
+**Nouveaux pitfalls / décisions :** PIT-S39-001 (bordures UI Graphite `rule*` < 3:1) ; DEC-S39-001 (`border-ink-muted` pour bordures fonctionnelles outline en attendant `--color-rule-emphasis`).
+**Note tooling :** merge effectué HORS /sprint end (dev a lancé « merge » après /review-pr 292, tip `aaf414b`) → /sprint end a consolidé la mémoire a posteriori via PR de clôture `chore/sprint-39-close` (dev protégée : enforce_admins + required checks backend/frontend).
+**Résiduel :** contrôle visuel manuel navigateur clair/sombre (#146) non fait ; #146 fermée sur audit statique + garde-fous (choix dev) ; couverture durable → follow-up #294.
+**Follow-ups arbitrés (Phase 4 triage — 3 créés + 1 re-scopé, 0 discard) :**
+  - Reste du L #56 (décompo 7 sections, anim timeline, footer→légales, dédup routes) [L | design] → **#56 laissée ouverte + re-scopée** (pas de doublon)
+  - Token DS `--color-rule-emphasis` pour bordures fonctionnelles AA [S | design] → issue **#293** (backlog)
+  - E2E Playwright screenshots clair/sombre hero + 4 écrans auth [S | e2e/design] → issue **#294** (backlog)
+  - Nettoyage a11y `<a><Button>` HomePage (header/hero/CTA) [S | frontend/a11y] → issue **#295** (backlog ; absorbable par #56)
+**Status :** Terminé (clôturé 2026-07-13)
 
 ## Sprint 40 — 2026-07-13 (PLANIFIÉ — cohésion 0.18, Shell applicatif)
 **Objectif :** Fondation navigation — nav latérale persistante 248px (#210) + quick-win bug catégories (#245).
