@@ -20,7 +20,10 @@ test.describe('Réglages desktop : accès + navigation 4 chapitres', () => {
     await ensureAuthenticated(page)
 
     // ---- Accès aux Réglages depuis le dashboard ----------------------------
-    await page.getByTestId('dashboard-settings-link').click()
+    // #210 — Sur desktop (>= lg), le dashboard est enveloppé par le shell
+    // applicatif : sa nav propre (`dashboard-settings-link`) est `lg:hidden`,
+    // l'accès Réglages passe désormais par le lien de la sidebar persistante.
+    await page.getByTestId('shell-sidebar-settings-link').click()
     await expect(page.getByTestId('settings-page')).toBeVisible()
 
     // Chapitre Profil actif par défaut, formulaire pré-rempli avec le username.
