@@ -791,14 +791,14 @@
 **Note tooling :** `detect-domain.sh` re-confirmé bloquant (zombies >1h en background) → domaines mappés à la main (`auth`). `check-sprint-completeness.sh` absent de ce projet (vérif complétude faite à la main).
 **Status :** Terminé (clôturé 2026-07-12)
 
-## Sprint 36 — 2026-07-12 (PLANIFIE — cohésion 0.72, Export RGPD hardening)
+## Sprint 36 — 2026-07-12 (En cours — cohésion 0.72, Export RGPD hardening)
 **Objectif :** Chemin de stockage dédié export + rate-limit GET export + scheduler de purge des exports expirés (index V14).
 **Milestone GitHub :** #36
 **Issues :** #264, #265, #267
 **Vagues :** V1 = #264 (storage) ∥ #265 (rate-limit) | V2 = #267 (purge via port de #264 ; introduit @EnableScheduling)
 **Migrations Flyway :** V14 (idx_export_jobs_expires_at)
 **Dépend de :** aucune (mais introduit le scheduling réutilisé en S37)
-**Status :** Planifie
+**Status :** En cours
 
 ## Sprint 37 — 2026-07-12 (PLANIFIE — cohésion 0.80, Reset-password hardening)
 **Objectif :** Durcir le flux reset-password : E2E Playwright, rate-limit/lockout par token, verrou anti-TOCTOU (@Version, V15), purge TTL des tokens.

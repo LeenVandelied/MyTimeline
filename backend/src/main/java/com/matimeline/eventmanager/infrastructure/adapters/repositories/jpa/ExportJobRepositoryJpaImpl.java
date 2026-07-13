@@ -1,5 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.repositories.jpa;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -77,4 +79,24 @@ public class ExportJobRepositoryJpaImpl
                 .findFirst()
                 .map(mapper::toDomain);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ExportJob> findExpired(LocalDateTime now) {
+        // Balayage de purge (#267) : seuls les jobs AVEC un expires_at dépassé remontent.
+        // expires_at IS NOT NULL exclut PENDING/RUNNING ; < :now exclut les COMPLETED non expirés.
+        // Sert par l'index idx_export_jobs_expires_at (V14).
+        return entityManager.createQuery(
+                        "SELECT j FROM ExportJobEntity j "
+                                + "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+                        ExportJobEntity.class)
+                .setParameter("now", now)
+                .getResultList()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    // deleteById(UUID) : hérité de SimpleJpaRepository (findById().ifPresent(delete) -> idempotent,
+    // no-op si la ligne est déjà absente). Satisfait le port ExportJobRepository#deleteById.
 }

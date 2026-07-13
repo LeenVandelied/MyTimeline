@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class AsyncExportRunner {
     public AsyncExportRunner(ExportJobRepository jobRepository,
                              UserDataExportAssembler assembler,
                              ExportRendererRegistry rendererRegistry,
-                             StoragePort storagePort,
+                             @Qualifier("exportStorage") StoragePort storagePort,
                              Clock clock) {
         this.jobRepository = jobRepository;
         this.assembler = assembler;

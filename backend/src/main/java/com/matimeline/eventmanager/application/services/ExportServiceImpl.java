@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +51,7 @@ public class ExportServiceImpl implements ExportService {
                              ExportRendererRegistry rendererRegistry,
                              ExportJobRepository jobRepository,
                              AsyncExportRunner asyncRunner,
-                             StoragePort storagePort,
+                             @Qualifier("exportStorage") StoragePort storagePort,
                              Clock clock) {
         this.assembler = assembler;
         this.rendererRegistry = rendererRegistry;

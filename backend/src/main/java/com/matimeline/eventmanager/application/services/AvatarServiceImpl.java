@@ -2,6 +2,7 @@ package com.matimeline.eventmanager.application.services;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,7 @@ public class AvatarServiceImpl implements AvatarService {
     private final UserRepository userRepository;
     private final long maxBytes;
 
-    public AvatarServiceImpl(StoragePort storagePort,
+    public AvatarServiceImpl(@Qualifier("avatarStorage") StoragePort storagePort,
                              UserRepository userRepository,
                              @Value("${app.storage.avatar-max-bytes:5242880}") long maxBytes) {
         this.storagePort = storagePort;
