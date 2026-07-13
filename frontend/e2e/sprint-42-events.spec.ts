@@ -258,8 +258,17 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
       'archived doit être persisté à true',
     ).toBe(true)
 
-    // --- Réouverture : le toggle est PRÉ-REMPLI (checked) ----------------------
-    await openEventEditForm(page, product.id)
-    await expect(page.getByTestId('event-form-archived-toggle')).toBeChecked()
+    // --- Réouverture : l'event archivé est MASQUÉ de la frise ------------------
+    // `ProductDetailView` filtre `!archived` (l.59) : un event archivé disparaît de la
+    // timeline. Le pré-remplissage du toggle=checked n'est donc PAS vérifiable via la frise
+    // (l'event archivé n'est plus réouvrable par ce parcours — pas de vue « archivés »).
+    // La persistance de `archived=true` est déjà assertée ci-dessus via l'API (source de
+    // vérité). Ici on vérifie le pendant UI : la pastille a bien disparu de la frise.
+    // NB (follow-up) : impossibilité de ré-éditer/désarchiver un event via l'UI.
+    await page.goto(`/fr/products/${product.id}`, { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('product-detail-timeline')).toBeVisible()
+    // Frise vide (placeholder) : l'unique event, désormais archivé, a disparu.
+    await expect(page.getByTestId('product-detail-timeline-empty')).toBeVisible()
+    await expect(page.getByTestId('timeline-event')).toHaveCount(0)
   })
 })
