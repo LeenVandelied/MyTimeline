@@ -145,18 +145,21 @@ public class AuthController {
     public ResponseEntity<?> getUserDetails(@CookieValue(name = "jwt", required = false) String token) {
         try {
             if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: No token provided");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "Unauthorized: No token provided"));
             }
 
             String username = jwtService.extractUsername(token);
             Optional<User> user = userService.findDomainUserByUsername(username);
 
             if (user.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(java.util.Map.of("error", "User not found"));
             }
 
             if (!jwtService.validateToken(token, new CustomUserDetails(user.get(), List.of(new SimpleGrantedAuthority(user.get().getRole()))))) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "Unauthorized: Invalid token"));
             }
 
             // #73 (BR-AUT-011) : /api/auth/** est bypassé par JwtFilter, la révocation
@@ -166,17 +169,21 @@ public class AuthController {
             // true si token legacy sans jti (compatibilité descendante préservée).
             String jti = jwtService.extractJti(token);
             if (!sessionService.isSessionActive(jti)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: session révoquée");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(java.util.Map.of("error", "Unauthorized: session révoquée"));
             }
 
             return ResponseEntity.ok(UserResponse.fromDomain(user.get()));
         } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Token expired");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("error", "Unauthorized: Token expired"));
         } catch (MalformedJwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("error", "Unauthorized: Invalid token"));
         } catch (Exception e) {
             logger.error("Échec inattendu de /me", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "An error occurred"));
         }
     }
 
@@ -186,7 +193,8 @@ public class AuthController {
             Optional<User> existingUser = userService.findDomainUserByUsername(registerRequest.getUsername());
 
             if (existingUser.isPresent()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(java.util.Map.of("error", "User already exists"));
             }
 
             String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
@@ -202,7 +210,8 @@ public class AuthController {
 
             userService.createUser(newUser);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(java.util.Map.of("message", "User registered successfully"));
         } catch (DataIntegrityViolationException e) {
             // BR-AUT-001 : violation de contrainte unique (username/email).
             // Couvre la course concurrente non rattrapée par le pré-check applicatif
@@ -215,7 +224,8 @@ public class AuthController {
                     .body(java.util.Map.of("error", field + " already taken"));
         } catch (Exception e) {
             logger.error("Échec inattendu de register (username={})", registerRequest.getUsername(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during registration");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "An error occurred during registration"));
         }
     }
 
@@ -230,10 +240,11 @@ public class AuthController {
             // BR-AUT-010 : attributs identiques à la pose (login/refresh) pour
             // que le navigateur matche et efface le cookie. maxAge=0 = suppression.
             response.addCookie(buildJwtCookie("", 0));
-            return ResponseEntity.ok("Logged out successfully");
+            return ResponseEntity.ok(java.util.Map.of("message", "Logged out successfully"));
         } catch (Exception e) {
             logger.error("Échec inattendu du logout", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during logout");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "An error occurred during logout"));
         }
     }
 
@@ -295,7 +306,7 @@ public class AuthController {
             registerSession(newToken, user.get().getUsername(), request);
 
             response.addCookie(buildJwtCookie(newToken, COOKIE_MAX_AGE));
-            return ResponseEntity.ok().body("Token refreshed successfully");
+            return ResponseEntity.ok(java.util.Map.of("message", "Token refreshed successfully"));
         } catch (JwtException e) {
             // BR-AUT-009 : token expiré (ExpiredJwtException) ou signature/format
             // invalide (SignatureException, MalformedJwtException...) levé par
