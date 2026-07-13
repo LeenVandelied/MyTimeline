@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotFound(RuntimeException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(buildBody(HttpStatus.NOT_FOUND, "Resource not found"));
+                .body(buildBody(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Resource not found"));
     }
 
     @ExceptionHandler(CategoryNameConflictException.class)
@@ -153,7 +153,7 @@ public class GlobalExceptionHandler {
         // (même forme que les 400/404) — message métier explicite pour guider le client.
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.UNPROCESSABLE_ENTITY, ex.getMessage()));
     }
 
     @ExceptionHandler(RecurrenceUnitRequiredException.class)
@@ -177,7 +177,7 @@ public class GlobalExceptionHandler {
         // (erreur métier events, cf. DEC-S12-001) plutôt que 400. Corps détaillé buildBody.
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.UNPROCESSABLE_ENTITY, ex.getMessage()));
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
@@ -209,7 +209,7 @@ public class GlobalExceptionHandler {
         // DEC-S12-001). Corps détaillé buildBody.
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage()));
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.UNPROCESSABLE_ENTITY, ex.getMessage()));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -226,7 +226,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(buildBody(HttpStatus.BAD_REQUEST, "Validation failed"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED, "Validation failed"));
     }
 
     // NOTE (#119) : aucun @ExceptionHandler(AccessDeniedException) ici. Les accès
@@ -246,8 +246,12 @@ public class GlobalExceptionHandler {
     // produisait un corps de forme différente ({timestamp,status,error,message}) sur un
     // chemin jamais atteint en prod — supprimé pour éviter la divergence de contrat 401.
 
-    private Map<String, Object> buildBody(HttpStatus status, String message) {
-        return buildBody(status, status.getReasonPhrase(), message);
+    // #127 : le champ "error" MUST être un code stable snake_case (ErrorCode),
+    // JAMAIS status.getReasonPhrase() ("Not Found", "Bad Request"...) — non
+    // contractuel, dépend de l'implémentation HTTP, pas fait pour être parsé
+    // côté client. Voir ErrorCode pour la liste des codes disponibles.
+    private Map<String, Object> buildBody(HttpStatus status, ErrorCode code, String message) {
+        return buildBody(status, code.getCode(), message);
     }
 
     private Map<String, Object> buildBody(HttpStatus status, String error, String message) {
