@@ -120,7 +120,7 @@
    à gauche, cible cliquable (pointer-events réactivés). */
 .mt-tlv__lane-head{gap:6px; border-top:0; border-bottom:0; border-left:0; padding-left:8px; cursor:pointer; text-align:left; pointer-events:auto;}
 .mt-tlv__lane-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
-.mt-tlv__lane-head-text{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.mt-tlv__lane-head-text{min-width:0; flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
 .mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
 /* #81 — Focus ring (point 5). ÉCART INTENTIONNEL de token : les pastilles

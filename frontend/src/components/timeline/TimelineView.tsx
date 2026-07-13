@@ -639,30 +639,30 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                         </button>
                         {!isResCollapsed &&
                           laneEvents.map((event, evtIdx) => {
-                          const laneIdx = laneIndexByResource.get(resource.id) ?? -1
-                          const isRoving =
-                            rovingNav !== null &&
-                            rovingNav.lane === laneIdx &&
-                            rovingNav.evt === evtIdx
-                          const key = navKeyOf(laneIdx, evtIdx)
-                          return (
-                            <EventPill
-                              key={event.id}
-                              event={event}
-                              ariaLabel={buildEventAriaLabel(event, locale, t)}
-                              onSelect={setSelected}
-                              tabIndex={isRoving ? 0 : -1}
-                              navKey={key}
-                              onKeyDown={(e) => onPillKeyDown(e, laneIdx, evtIdx)}
-                              pillRef={(node) => {
-                                // Indexe le node pour `.focus()` défensif ; nettoie
-                                // à l'unmount (évite les refs pendantes au collapse).
-                                if (node) pillNodes.current.set(key, node)
-                                else pillNodes.current.delete(key)
-                              }}
-                            />
-                          )
-                        })}
+                            const laneIdx = laneIndexByResource.get(resource.id) ?? -1
+                            const isRoving =
+                              rovingNav !== null &&
+                              rovingNav.lane === laneIdx &&
+                              rovingNav.evt === evtIdx
+                            const key = navKeyOf(laneIdx, evtIdx)
+                            return (
+                              <EventPill
+                                key={event.id}
+                                event={event}
+                                ariaLabel={buildEventAriaLabel(event, locale, t)}
+                                onSelect={setSelected}
+                                tabIndex={isRoving ? 0 : -1}
+                                navKey={key}
+                                onKeyDown={(e) => onPillKeyDown(e, laneIdx, evtIdx)}
+                                pillRef={(node) => {
+                                  // Indexe le node pour `.focus()` défensif ; nettoie
+                                  // à l'unmount (évite les refs pendantes au collapse).
+                                  if (node) pillNodes.current.set(key, node)
+                                  else pillNodes.current.delete(key)
+                                }}
+                              />
+                            )
+                          })}
                       </div>
                     )
                   })}
