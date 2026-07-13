@@ -33,13 +33,17 @@ import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 import jakarta.servlet.http.Cookie;
 
 /**
- * #200 — Verrouille le CONTRAT 409 consommé par #77 (Vague 2) : quand la couche service
- * lève {@link ObjectOptimisticLockingFailureException} (édition concurrente d'une entité
- * {@code @Version}), GlobalExceptionHandler la mappe en HTTP 409 avec un corps plat
- * {@code {"error":"..."}} (même forme que CategoryNameConflict), et NON un 500 non mappé.
+ * #200/#231 — Verrouille le CONTRAT 409 event consommé par la modale comparative (#231) :
+ * quand {@code eventService.updateEvent} lève {@link ObjectOptimisticLockingFailureException}
+ * (édition concurrente d'une entité {@code @Version}), EventController recharge l'état serveur
+ * GAGNANT (ownership déjà vérifié en amont) et lève {@code EventConflictException} ->
+ * GlobalExceptionHandler la mappe en HTTP 409 ENRICHI : corps {@code {error, serverVersion,
+ * serverEvent{...}}} (et NON un 500 non mappé, ni le corps plat #200). Les clés {@code timestamp}
+ * / {@code status} du buildBody détaillé restent ABSENTES (contrat distinct).
  *
  * <p>Advice câblé explicitement (standaloneSetup). La chaîne d'ownership est mockée pour
- * atteindre eventService.updateEvent, qui lève l'exception simulant le 2e update concurrent.
+ * atteindre eventService.updateEvent, qui lève l'exception simulant le 2e update concurrent ;
+ * le rechargement d'état serveur (findEventById + findVersionById) est mocké.
  */
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerOptimisticLockTest {
@@ -62,21 +66,24 @@ class GlobalExceptionHandlerOptimisticLockTest {
     }
 
     @Test
-    void optimisticLockFailure_returns409_withFlatBody() throws Exception {
+    void optimisticLockFailure_returns409_withEnrichedBody() throws Exception {
         UUID eventId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
         UUID callerId = UUID.randomUUID();
 
         User caller = new User(callerId, "owner", "owner-username", "x", "USER", "owner@example.test");
         Product product = new Product(productId, "p", null, caller, List.of());
-        Event event = new Event(eventId, "t", "single", null, null, false, null, null,
-                null, null, productId, null, null, false);
+        // État serveur GAGNANT rechargé après le conflit (le titre committé par l'autre édition).
+        Event serverEvent = new Event(eventId, "titre-serveur", "single", null, null, false, null, null,
+                null, null, productId, false, "#3B82F6", false);
 
         // Ownership chain (checkEventOwnership) : caller (SecurityContext via CallerResolver)
-        // -> event -> product owner == caller.
+        // -> event -> product owner == caller. findEventById sert AUSSI le rechargement d'état
+        // serveur sur le chemin de conflit.
         when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
-        when(eventService.findEventById(eventId)).thenReturn(Optional.of(event));
+        when(eventService.findEventById(eventId)).thenReturn(Optional.of(serverEvent));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(eventService.findVersionById(eventId)).thenReturn(Optional.of(7));
 
         // Le 2e update concurrent : Hibernate a détecté le conflit de version -> exception.
         when(eventService.updateEvent(eq(eventId), any(EventUpdateCommand.class)))
@@ -87,7 +94,15 @@ class GlobalExceptionHandlerOptimisticLockTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"nouveau titre\"}"))
                 .andExpect(status().isConflict())
+                // Message neutre conservé (rétro-compat #77) — pas de fuite de version dans le texte.
                 .andExpect(jsonPath("$.error").exists())
+                // Contrat ENRICHI #231 : serverVersion + entité serveur (projection EventResponse).
+                .andExpect(jsonPath("$.serverVersion").value(7))
+                .andExpect(jsonPath("$.serverEvent.id").value(eventId.toString()))
+                .andExpect(jsonPath("$.serverEvent.title").value("titre-serveur"))
+                .andExpect(jsonPath("$.serverEvent.productId").value(productId.toString()))
+                .andExpect(jsonPath("$.serverEvent.archived").value(false))
+                // Forme distincte du buildBody détaillé : ni timestamp ni status.
                 .andExpect(jsonPath("$.timestamp").doesNotExist())
                 .andExpect(jsonPath("$.status").doesNotExist());
     }

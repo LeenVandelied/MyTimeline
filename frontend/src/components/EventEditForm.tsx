@@ -22,6 +22,7 @@ import { contrastInk } from '@/lib/color'
 import {
   createEventEditSchema,
   HEX_COLOR_REGEX,
+  type Event,
   type EventEditFormValues,
 } from '@/types/event'
 
@@ -78,6 +79,18 @@ interface EventEditFormProps {
    * no-op → si omis, le dialog reste ouvert tant que le parent n'a pas changé
    * l'état (RECOMMAND : toujours fournir ce callback). */
   onConflictDismiss?: () => void
+  /**
+   * #231 — Modale comparative : état serveur GAGNANT (corps 409 enrichi) + valeurs
+   * locales soumises. Fournis ensemble → le `ConflictDialog` bascule en mode comparatif
+   * (diff champ par champ + « garder mes modifications » / « prendre la version serveur »).
+   * Absents → mode legacy (bouton « recharger »).
+   */
+  conflictServerEvent?: Event
+  conflictLocalValues?: EventEditFormValues
+  /** #231 — « Garder mes modifications » : re-soumet les valeurs locales. */
+  onKeepMine?: () => void
+  /** #231 — « Prendre la version serveur » : abandonne le local + rafraîchit. */
+  onTakeServer?: () => void
   /** Mode édition : supprime l'événement (ouvre le dialog de confirmation). */
   onDelete?: () => Promise<void>
   /** Récurrence de l'événement édité → warning suppression « seul cet événement ». */
@@ -101,6 +114,10 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   submitState = 'idle',
   onReload,
   onConflictDismiss,
+  conflictServerEvent,
+  conflictLocalValues,
+  onKeepMine,
+  onTakeServer,
   onDelete,
   isRecurring: eventIsRecurring = false,
 }) => {
@@ -525,6 +542,10 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           if (!next) onConflictDismiss?.()
         }}
         onReload={() => onReload?.()}
+        serverEvent={conflictServerEvent}
+        localValues={conflictLocalValues}
+        onKeepMine={() => onKeepMine?.()}
+        onTakeServer={() => onTakeServer?.()}
         testId="event-form-conflict"
       />
     </>

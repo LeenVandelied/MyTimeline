@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { contrastInk } from '@/lib/color'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { queryKeys } from '@/lib/query-keys'
-import { FullCalendarEvent } from '@/types/event'
+import { eventConflictBodySchema, FullCalendarEvent, type Event } from '@/types/event'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -30,6 +30,20 @@ function httpStatusOf(error: unknown): number | undefined {
   return undefined
 }
 
+/**
+ * #231 — Extrait le corps 409 ENRICHI (serverVersion + serverEvent) d'une erreur axios.
+ * `safeParse` : un corps 409 legacy/plat (`{"error":...}`) → `null` → on retombe sur
+ * l'action « recharger » (mode legacy du ConflictDialog), pas de crash.
+ */
+function conflictServerEventOf(error: unknown): Event | null {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const data = (error as { response?: { data?: unknown } }).response?.data
+    const parsed = eventConflictBodySchema.safeParse(data)
+    if (parsed.success) return parsed.data.serverEvent
+  }
+  return null
+}
+
 interface EventContentProps {
   event: FullCalendarEvent
 }
@@ -47,6 +61,12 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   // ici et passé au formulaire. Le 409 optimistic locking est désormais émis
   // backend (#200, corps plat) → l'état `conflict` ouvre le ConflictDialog partagé.
   const [submitState, setSubmitState] = useState<EventSubmitState>('idle')
+  // #231 — Snapshot du conflit 409 comparatif : état serveur gagnant (corps enrichi) +
+  // valeurs locales soumises. Alimente le diff du ConflictDialog et le re-submit
+  // « garder mes modifications ».
+  const [conflict, setConflict] = useState<{ server: Event; local: EventEditFormValues } | null>(
+    null,
+  )
 
   const countdown = event?.end ? calculateRemainingTime(new Date(event.end), t) : null
 
@@ -98,15 +118,23 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
       }
 
       invalidateEvents()
+      setConflict(null)
       setSubmitState('idle')
       setIsEditing(false)
     } catch (error) {
-      // #77 — 409 (optimistic locking, conflit d'édition concurrente, contrat #200)
-      // → état `conflict` qui ouvre le ConflictDialog partagé. Tout autre statut
-      // (400/404/403/500…) → `error` inline générique : aucun autre 409 ne transite
-      // par ce flux (les 409 name-conflict Category/Product sont gérés ailleurs).
+      // #77/#231 — 409 (optimistic locking, conflit d'édition concurrente) → état
+      // `conflict` qui ouvre le ConflictDialog. Si le corps 409 est ENRICHI (#231), on
+      // capture l'état serveur + les valeurs locales pour la modale COMPARATIVE (diff +
+      // garder/prendre). Un corps plat legacy → `conflict` sans snapshot = mode
+      // « recharger ». Tout autre statut (400/404/403/500…) → `error` inline générique.
       const status = httpStatusOf(error)
-      setSubmitState(status === 409 ? 'conflict' : 'error')
+      if (status === 409) {
+        const server = conflictServerEventOf(error)
+        setConflict(server ? { server, local: data } : null)
+        setSubmitState('conflict')
+      } else {
+        setSubmitState('error')
+      }
       console.error("Erreur lors de la mise à jour de l'événement :", safeErrorMessage(error))
     }
   }
@@ -118,14 +146,30 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   // rechargement complet de page. On sort du mode édition et on repasse à idle.
   const onReload = () => {
     invalidateEvents()
+    setConflict(null)
     setSubmitState('idle')
     setIsEditing(false)
   }
 
+  // #231 — « Prendre la version serveur » : abandonne les modifications locales et
+  // rafraîchit les données (invalidation ciblée). Sémantiquement = onReload.
+  const onTakeServer = onReload
+
+  // #231 — « Garder mes modifications » : re-soumet les valeurs locales capturées.
+  // Le PATCH backend recharge l'entité gérée (pas de version cliente) → la re-soumission
+  // s'applique sur l'état serveur courant, PAS de boucle de 409. Succès → ferme ;
+  // nouveau conflit (rare) → ré-ouvre avec le diff frais.
+  const onKeepMine = () => {
+    if (conflict) {
+      void onSubmit(conflict.local)
+    }
+  }
+
   // #77 — Fermeture du ConflictDialog sans recharger (annuler / Échap / overlay) :
-  // on repasse simplement `submitState` à idle (le formulaire reste ouvert avec les
-  // saisies de l'utilisateur, qui peut réessayer ou recharger manuellement).
+  // on repasse `submitState` à idle et on purge le snapshot de conflit (le formulaire
+  // reste ouvert avec les saisies de l'utilisateur, qui peut réessayer).
   const onConflictDismiss = () => {
+    setConflict(null)
     setSubmitState('idle')
   }
 
@@ -288,6 +332,10 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                 submitState={submitState}
                 onReload={onReload}
                 onConflictDismiss={onConflictDismiss}
+                conflictServerEvent={conflict?.server}
+                conflictLocalValues={conflict?.local}
+                onKeepMine={onKeepMine}
+                onTakeServer={onTakeServer}
                 onDelete={onDelete}
               />
             )}

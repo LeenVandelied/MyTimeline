@@ -6,12 +6,15 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
+import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
+import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
@@ -72,8 +75,23 @@ public class EventController {
         if (denied != null) {
             return denied;
         }
-        Event updatedEvent = eventService.updateEvent(id, toUpdateCommand(request));
-        return ResponseEntity.ok(EventResponse.fromDomain(updatedEvent));
+        try {
+            Event updatedEvent = eventService.updateEvent(id, toUpdateCommand(request));
+            return ResponseEntity.ok(EventResponse.fromDomain(updatedEvent));
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            // BR-EVE-015 (#231) : édition concurrente détectée au flush (@Version). La
+            // transaction du update a rollbacké. L'OWNERSHIP a déjà été vérifié plus haut
+            // (checkEventOwnership) AVANT toute sérialisation de l'état serveur -> aucune
+            // fuite de données d'autrui (exigence sécurité). On recharge l'état serveur
+            // GAGNANT (version + entité) pour enrichir le 409 consommé par la modale
+            // comparative frontend. Les champs exposés sont STRICTEMENT ceux que le
+            // propriétaire voit déjà via son GET/PATCH (EventResponse) — pas de champ
+            // interne. Un event supprimé entre-temps -> 404 (EventNotFoundException).
+            Event serverEvent = eventService.findEventById(id)
+                    .orElseThrow(() -> new EventNotFoundException(id));
+            Integer serverVersion = eventService.findVersionById(id).orElse(null);
+            throw new EventConflictException(serverEvent, serverVersion);
+        }
     }
 
     @DeleteMapping("/{id}")

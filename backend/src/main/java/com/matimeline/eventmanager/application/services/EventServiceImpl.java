@@ -234,4 +234,12 @@ public class EventServiceImpl implements EventService {
     public Optional<Event> findEventById(UUID id) {
         return eventRepository.findEventById(id);
     }
-} 
+
+    // BR-EVE-015 (#231) : délégué au repo. Tx readOnly propre (le conflit optimiste a
+    // rollbacké la tx du update) -> lit l'état serveur gagnant committé.
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Integer> findVersionById(UUID id) {
+        return eventRepository.findVersionById(id);
+    }
+}

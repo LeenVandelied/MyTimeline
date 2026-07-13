@@ -34,6 +34,22 @@ export const eventSchema = z.object({
 
 export type Event = z.infer<typeof eventSchema>
 
+// #231 (BR-EVE-015) — Corps du 409 optimistic-lock ENRICHI, synchronisé MOT POUR MOT
+// avec le backend (GlobalExceptionHandler.handleEventConflict) :
+//   { error, serverVersion: number|null, serverEvent: EventResponse }
+// `serverEvent` réutilise `eventSchema` (même projection que le GET/PATCH event) → toute
+// dérive de champ casse le parse et donc le diff. `.nullable()` sur serverVersion (jamais
+// absent, mais défensif). Consommé par EventContent (interception 409) → ConflictDialog
+// comparative. Pitfall projet : parse via safeParse (un corps 409 legacy/plat = pas de diff,
+// on retombe sur l'action « recharger »).
+export const eventConflictBodySchema = z.object({
+  error: z.string(),
+  serverVersion: z.number().nullable(),
+  serverEvent: eventSchema,
+})
+
+export type EventConflictBody = z.infer<typeof eventConflictBodySchema>
+
 // #157 review — Sync Zod ↔ DTO (BR-PRO-001, même classe de désync que #61).
 // Backend `EventCreationRequest.name` = `@Size(min = 1, max = 100)`. L'ancien
 // `min(3)` rejetait à tort un événement couplé dont le nom dérive du nom produit
