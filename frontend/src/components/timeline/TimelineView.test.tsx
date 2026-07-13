@@ -480,4 +480,86 @@ describe('TimelineView', () => {
       await waitFor(() => expect(scroll.scrollLeft).toBe(420))
     })
   })
+
+  // ==================== #195 — accordéon collapse produit ====================
+  // 2e niveau d'accordéon imbriqué dans le collapse catégorie. Critères
+  // d'acceptation : collapse produit indépendant ; scroll conservé ; clavier/focus
+  // cohérent avec le pattern accordéon catégorie déjà en place.
+  describe('#195 accordéon collapse produit', () => {
+    it('replie un produit indépendamment (masque ses events, sans toucher les autres produits ni la catégorie)', async () => {
+      const user = userEvent.setup()
+      setup() // p1 (cat Frais) + p2 (cat Boulangerie), 1 event chacun
+      expect(screen.getAllByTestId('timeline-event')).toHaveLength(2)
+
+      const heads = screen.getAllByTestId('timeline-resource-head')
+      expect(heads).toHaveLength(2)
+      // État initial : les deux produits sont dépliés.
+      expect(heads[0]).toHaveAttribute('aria-expanded', 'true')
+      expect(heads[1]).toHaveAttribute('aria-expanded', 'true')
+
+      // Replie le 1er produit (p1 → event e1 masqué).
+      await user.click(heads[0])
+      await waitFor(() => expect(screen.getAllByTestId('timeline-event')).toHaveLength(1))
+
+      // Le produit replié : aria-expanded=false, mais son label/toggle reste rendu.
+      expect(screen.getAllByTestId('timeline-resource-head')[0]).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      )
+      expect(screen.getAllByTestId('timeline-resource-row')).toHaveLength(2)
+      // L'autre produit N'est PAS affecté (toujours déplié, son event visible).
+      expect(screen.getAllByTestId('timeline-resource-head')[1]).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      )
+      const remaining = screen.getAllByTestId('timeline-event')
+      expect(remaining[0]).toHaveAttribute('data-event-title', 'Livraison pain')
+      // La catégorie parente reste dépliée (accordéon catégorie inchangé).
+      screen
+        .getAllByTestId('timeline-group-head')
+        .forEach((h) => expect(h).toHaveAttribute('aria-expanded', 'true'))
+    })
+
+    it('conserve la position de scroll après un collapse produit (parité collapse catégorie)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const scroll = screen.getByTestId('timeline-scroll')
+      // Simule un défilement horizontal utilisateur.
+      scroll.scrollLeft = 360
+      expect(scroll.scrollLeft).toBe(360)
+
+      // Le collapse produit est un pur re-rendu (aucun reset de scroll, comme la
+      // catégorie) → le conteneur scrollable garde sa position.
+      await user.click(screen.getAllByTestId('timeline-resource-head')[0])
+      await waitFor(() => expect(screen.getAllByTestId('timeline-event')).toHaveLength(1))
+      expect(scroll.scrollLeft).toBe(360)
+    })
+
+    it('clavier/focus cohérent : la lane produit repliée est exclue de la nav, roving unique préservé', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      // Active la pastille de la 2e lane (p2) au clavier → activeNav suit p2.
+      pills[0].focus()
+      await user.keyboard('{ArrowDown}')
+      expect(pills[1]).toHaveFocus()
+
+      // Replie le produit p2 (la lane active) : sa pastille disparaît → le roving
+      // retombe sur la 1re pastille visible restante (e1), tabIndex=0 reste unique.
+      await user.click(screen.getAllByTestId('timeline-resource-head')[1])
+      await waitFor(() => {
+        const visible = screen.getAllByTestId('timeline-event')
+        expect(visible).toHaveLength(1)
+        expect(visible[0]).toHaveAttribute('data-event-title', 'Péremption lait')
+        expect(visible.filter((p) => p.getAttribute('tabindex') === '0')).toHaveLength(1)
+      })
+
+      // Nav clavier depuis la seule lane restante : ArrowDown ne cible PAS la lane
+      // repliée (elle n'est plus focusable) → le focus reste sur e1.
+      const only = screen.getAllByTestId('timeline-event')[0]
+      only.focus()
+      await user.keyboard('{ArrowDown}')
+      expect(only).toHaveFocus()
+    })
+  })
 })

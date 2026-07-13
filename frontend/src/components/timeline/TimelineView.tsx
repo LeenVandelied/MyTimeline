@@ -77,6 +77,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
   const t = useTranslations()
   const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  // #195 — Accordéon de 2e niveau : état collapse par PRODUIT (lane), keyé par
+  // `resource.id`. Indépendant de `collapsed` (catégorie) : replier un produit
+  // n'affecte ni les autres produits ni la catégorie parente. Même préservation
+  // de scroll que le collapse catégorie (aucun mécanisme explicite — le conteneur
+  // scrollable garde son scrollLeft/Top au re-rendu React).
+  const [collapsedResources, setCollapsedResources] = useState<Record<string, boolean>>({})
   const [selected, setSelected] = useState<PositionedEvent | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -111,11 +117,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
     for (const [category, resList] of Object.entries(resourcesByCategory)) {
       if (collapsed[category] ?? false) continue
       for (const resource of resList) {
+        // #195 — Une lane produit collapsée n'a plus de pastilles rendues → on
+        // l'exclut aussi de la nav clavier (comme les catégories collapsées),
+        // sinon ←→↑↓ cibleraient des pastilles masquées (bug focus).
+        if (collapsedResources[resource.id] ?? false) continue
         lanes.push({ resourceId: resource.id, events: eventsByResource.get(resource.id) || [] })
       }
     }
     return lanes
-  }, [resourcesByCategory, collapsed, eventsByResource])
+  }, [resourcesByCategory, collapsed, collapsedResources, eventsByResource])
 
   // #81 — Roving tabindex : la pastille active (celle qui porte tabIndex=0) est
   // repérée par sa RESSOURCE (`resourceId`) + son index d'event, PAS par un index
@@ -585,6 +595,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
 
                 {!isCollapsed &&
                   resList.map((resource) => {
+                    const isResCollapsed = collapsedResources[resource.id] ?? false
                     const laneEvents = eventsByResource.get(resource.id) || []
                     return (
                       <div
@@ -593,16 +604,41 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
                         style={{ backgroundSize: `${dayWidth}px 100%` }}
                         data-testid="timeline-resource-row"
                       >
-                        {/* Label produit sticky à gauche : reste visible pendant le
-                            scroll horizontal de la frise (identifie la lane). */}
-                        <span
-                          className="mt-tlv__lane-label"
-                          data-testid="timeline-resource-title"
+                        {/* #195 — Accordéon de 2e niveau : le label produit sticky
+                            devient un bouton toggle (mirror de `mt-tlv__group-head`).
+                            Bouton natif → clavier Enter/Espace + `aria-expanded`
+                            cohérents avec l'accordéon catégorie. Reste visible même
+                            collapsé (identifie la lane pendant le scroll horizontal). */}
+                        <button
+                          type="button"
+                          className="mt-tlv__lane-label mt-tlv__lane-head"
+                          aria-expanded={!isResCollapsed}
+                          onClick={() =>
+                            setCollapsedResources((prev) => ({
+                              ...prev,
+                              [resource.id]: !isResCollapsed,
+                            }))
+                          }
                           title={resource.title}
+                          data-testid="timeline-resource-head"
                         >
-                          {resource.title}
-                        </span>
-                        {laneEvents.map((event, evtIdx) => {
+                          <ChevronRight
+                            className={
+                              isResCollapsed ? 'mt-tlv__chev' : 'mt-tlv__chev mt-tlv__chev--open'
+                            }
+                            size={12}
+                            strokeWidth={1.5}
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="mt-tlv__lane-head-text"
+                            data-testid="timeline-resource-title"
+                          >
+                            {resource.title}
+                          </span>
+                        </button>
+                        {!isResCollapsed &&
+                          laneEvents.map((event, evtIdx) => {
                           const laneIdx = laneIndexByResource.get(resource.id) ?? -1
                           const isRoving =
                             rovingNav !== null &&
