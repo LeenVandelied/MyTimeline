@@ -92,4 +92,20 @@ describe('ResetPasswordPage', () => {
     expect(screen.getByTestId('reset-missing-token')).toBeInTheDocument()
     expect(screen.queryByTestId('reset-form')).not.toBeInTheDocument()
   })
+
+  // #146 — garde-fou lisibilité clair/sombre : tokens Graphite theme-aware présents
+  // (token valide => formulaire rendu).
+  it('utilise les tokens Graphite theme-aware (pas de couleur hardcodée, pas de tier décoratif)', () => {
+    searchToken = 'valid-token'
+    const { container } = render(<ResetPasswordPage params={params} />)
+
+    expect(container.querySelector('.bg-bg.text-ink')).not.toBeNull()
+    expect(container.querySelector('.bg-surface')).not.toBeNull()
+    expect(container.querySelector('.bg-surface-2.border-rule-strong')).not.toBeNull()
+
+    const submit = screen.getByTestId('reset-submit')
+    expect(submit).toHaveClass('bg-accent', 'text-accent-ink')
+
+    expect(container.querySelector('.text-ink-faint')).toBeNull()
+  })
 })
