@@ -889,14 +889,24 @@
 **Saturation contexte lead (mesure) :** non instrumentée cette session (orchestration + 2 tours review + CI dans une seule session lead).
 **Status :** Terminé.
 
-## Sprint 41 — 2026-07-13 (EN COURS — cohésion 0.66, UX & a11y Timeline)
+## Sprint 41 — 2026-07-13 (Terminé — merge PR #303 dans dev)
 **Objectif :** UX timeline (accordéon collapse par produit) + a11y (cibles tactiles, aria, clavier).
-**Milestone GitHub :** #41
-**Issues :** #195, #226, #228, #227
-**Vagues :** V1 = #226 ∥ #228 | V2 = #195 → #227 (convergent sur handler clavier TimelineView.tsx)
+**Milestone GitHub :** #41 (fermé après merge)
+**Issues livrées (4) :** #195, #226, #227, #228
+**Vagues exécutées :** V1 = #226 ∥ #228 (parallèles, fichiers disjoints) | V2 = #195 → #227
+**Cohésion score :** 0.66 (epic:events)
+**Commits :** 8 (4 issues + fix review MAJEUR `8de39ce` + 3 docs/CI : `0f0decc`, `bf30779`, `a6385f2`)
+**BR impactées :** aucune BR métier nouvelle (complète l'affichage timeline BR-EVE, #55)
 **Migrations :** aucune
 **Dépend de :** aucune (S40 shell recommandé, non bloquant)
-**Status :** En cours (démarré 2026-07-13, branche `sprint/41`) — #227 : dev a tranché **option B** (aide hover-only, retirer le raccourci `?` du référentiel ux-patterns.md, pas de code timeline). #227 = tooltip d'aide déjà existant (possibly_done partiel).
+**Reviews :** 2 passes (batch sprint + `/review-pr 303`) — 1 MAJEUR (hitbox `::before` clippée par `overflow:hidden`) + 3 MINEUR (ellipsis flex `min-width:0`, commentaire aria, chevron size) — **tous RÉSOLUS**. #227 : option B actée (aide hover-only, `?` retiré du référentiel).
+**Tests :** Frontend 456/456 vert | Backend non impacté | E2E CI vert (mais `timeline-resource-head` sans spec dédiée → #304)
+**CI :** 1 échec `frontend` rattrapé — `next build` (ESLint `no-unused-vars` sur var `user` inutilisée dans un test `fireEvent`) invisible à vitest → fix `a6385f2` (cf. [[PIT-S41-005]]).
+**Nouveaux pitfalls / patterns / décisions :** PIT-S41-001..005, PAT-S41-001/002, DEC-S41-001.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Couverture E2E accordéon produit `timeline-resource-head` [S | events] → **issue #304** (backlog libre)
+  - Hygiène milestone : #300/#301/#302 (parqués S40, non exécutés) → détachés du milestone 41 (retour backlog)
+**Status :** Terminé.
 
 ## Sprint 42 — 2026-07-13 (PLANIFIÉ — cohésion 0.60, Modale conflit 409)
 **Objectif :** Modale de conflit comparative sur 409 optimistic-lock (corps backend enrichi + diff serveur/local) + E2E.
