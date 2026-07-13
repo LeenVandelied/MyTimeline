@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
@@ -397,6 +397,87 @@ describe('TimelineView', () => {
     it('ne rend PAS de libellé extérieur quand le contraste passe AA dedans', () => {
       setup() // events #3B62D4 (5.41) et #4FA459 → lisibles dedans
       expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+  })
+
+  // ==================== #228 — couverture clavier §9 ====================
+  // Compléments de couverture repérés en ux-patterns.md §9. Ces tests reflètent
+  // le comportement clavier ACTUEL (garde-fou de non-régression avant #195) :
+  //  1. ← / → navigation INTER-lanes (débordement en bord de lane) ;
+  //  2. cyclage Tab/Shift+Tab dans le drawer + restauration du focus déclencheur ;
+  //  3. raccourcis globaux T / [ / ] / -.
+  describe('#228 couverture clavier §9', () => {
+    it('← / → naviguent ENTRE les lanes (débordement en bord de lane)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      // 2 lanes, 1 pastille chacune (e1 lane0, e2 lane1). En bord de lane, → passe
+      // à la 1re pastille de la lane suivante ; ← revient à la dernière précédente.
+      pills[0].focus()
+      await user.keyboard('{ArrowRight}')
+      expect(pills[1]).toHaveFocus()
+      await user.keyboard('{ArrowLeft}')
+      expect(pills[0]).toHaveFocus()
+    })
+
+    it('drawer : Tab/Shift+Tab piègent le focus + restauration du focus déclencheur à la fermeture', async () => {
+      const user = userEvent.setup()
+      setup()
+      const trigger = screen.getAllByTestId('timeline-event')[0]
+      // Ouvre le drawer au clavier depuis la pastille (elle devient le déclencheur).
+      trigger.focus()
+      await user.keyboard('{Enter}')
+      await screen.findByTestId('timeline-drawer')
+
+      // Focus initial déplacé sur le 1er focusable du panneau (bouton fermer).
+      const close = screen.getByTestId('timeline-drawer-close')
+      expect(close).toHaveFocus()
+
+      // Trap : le bouton fermer est le SEUL focusable du drawer → Tab et Shift+Tab
+      // bouclent et gardent le focus dans le panneau (jamais sur la frise derrière).
+      await user.keyboard('{Tab}')
+      expect(close).toHaveFocus()
+      await user.keyboard('{Shift>}{Tab}{/Shift}')
+      expect(close).toHaveFocus()
+
+      // Fermeture (Échap) → le focus revient sur la pastille déclencheuse.
+      await user.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByTestId('timeline-drawer')).not.toBeInTheDocument())
+      expect(trigger).toHaveFocus()
+    })
+
+    it('raccourci "-" dézoome (change le niveau affiché)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const level = screen.getByTestId('timeline-zoom-level')
+      const before = level.textContent // niveau initial = "month"
+      await user.keyboard('-')
+      // ZOOM_OUT : month → quarter → le libellé de niveau change.
+      await waitFor(() => expect(level.textContent).not.toBe(before))
+    })
+
+    it('raccourcis "[" / "]" décalent la fenêtre (période précédente / suivante)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const scroll = screen.getByTestId('timeline-scroll')
+      // ] = NEXT_PERIOD : offsetDays += 30 (niveau month) → scrollLeft = 30 × 12px = 360.
+      fireEvent.keyDown(window, { key: ']' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(360))
+      // [ = PREV_PERIOD : offsetDays revient à 0 → scrollLeft = 0.
+      fireEvent.keyDown(window, { key: '[' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(0))
+    })
+
+    it('raccourci "T" recentre la fenêtre sur aujourd’hui', async () => {
+      const user = userEvent.setup()
+      setup()
+      const scroll = screen.getByTestId('timeline-scroll')
+      // On éloigne d'abord la vue (] → offset 30 → scrollLeft 360).
+      fireEvent.keyDown(window, { key: ']' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(360))
+      // T = GO_TO_TODAY : offset = jours(rangeStart→today) = 35 → scrollLeft = 35 × 12 = 420.
+      await user.keyboard('t')
+      await waitFor(() => expect(scroll.scrollLeft).toBe(420))
     })
   })
 })

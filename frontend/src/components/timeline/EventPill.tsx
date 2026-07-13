@@ -95,9 +95,14 @@ export const EventPill: React.FC<EventPillProps> = ({
           style={{ background: statusVar }}
           aria-hidden="true"
         />
-        {/* Titre interne : masqué aux lecteurs d'écran (l'aria-label du bouton
-            porte déjà le titre) ; décoratif si illisible (garde-fou dehors). */}
-        <span aria-hidden="true">{event.title}</span>
+        {/* Titre interne. `aria-hidden` CONDITIONNEL (#228) :
+            - `readableInside` vrai → ce span est le SEUL rendu visible du titre →
+              on le DÉMASQUE aux lecteurs d'écran. Pas de double annonce : l'`aria-label`
+              du bouton fournit le nom accessible (il PRIME sur le sous-arbre) et
+              contient déjà le titre → Label-in-Name (WCAG 2.5.3) satisfait.
+            - `readableInside` faux → le titre est répété DEHORS (garde-fou contraste
+              #81) → ce span interne est purement décoratif → `aria-hidden`. */}
+        <span aria-hidden={readableInside ? undefined : true}>{event.title}</span>
       </button>
       {/* #81 point 6 — libellé extérieur de secours si contraste < 4.5:1 dedans.
           Décoratif (aria-hidden) : le bouton porte déjà l'annonce vocale complète. */}
