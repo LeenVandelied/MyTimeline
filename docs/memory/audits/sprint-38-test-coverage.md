@@ -1,6 +1,6 @@
 # Audit tests — Sprint 38
 
-> Généré en fin de Phase 6 (test-runner, 2026-07-13). `[MISSING]` bloque la Phase 9 PR.
+> Généré en fin de Phase 6 (test-runner, 2026-07-13). Un marqueur MISSING dans le tableau bloque la Phase 9 PR.
 
 ## Couverture par BR
 
