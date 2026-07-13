@@ -1,5 +1,6 @@
 package com.matimeline.eventmanager.infrastructure.adapters.repositories.jpa;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,5 +72,21 @@ public class PasswordResetTokenRepositoryJpaImpl
             return Optional.empty();
         }
         return Optional.of(mapper.toDomain(results.get(0)));
+    }
+
+    @Override
+    public int deleteConsumedOrExpiredBefore(LocalDateTime expiredBefore) {
+        // DELETE en masse (issue #139). Requête cible :
+        //   DELETE FROM password_reset_tokens WHERE used_at IS NOT NULL OR expires_at < :cutoff
+        // Un token valide (used_at nul ET expires_at futur) ne matche AUCUNE des deux
+        // conditions -> jamais supprimé. Bulk delete JPQL : contourne le @Version (#143)
+        // — sans intérêt sur une suppression — et ne charge pas les entités (pas de N+1).
+        // Le contexte de persistance n'est pas synchronisé par ce DELETE : acceptable ici,
+        // le scheduler ne lit aucun token dans la même transaction.
+        String jpql = "DELETE FROM PasswordResetTokenEntity t "
+                + "WHERE t.usedAt IS NOT NULL OR t.expiresAt < :cutoff";
+        return entityManager.createQuery(jpql)
+                .setParameter("cutoff", expiredBefore)
+                .executeUpdate();
     }
 }
