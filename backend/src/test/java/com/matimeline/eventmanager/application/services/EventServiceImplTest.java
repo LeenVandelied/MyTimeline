@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
+import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidEventTypeException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
@@ -76,6 +77,7 @@ class EventServiceImplTest {
         private LocalDate endDate;
         private String color;
         private Boolean archived;
+        private Integer version;
 
         Upd title(String v) { this.title = v; return this; }
         Upd type(String v) { this.type = v; return this; }
@@ -88,10 +90,12 @@ class EventServiceImplTest {
         Upd endDate(LocalDate v) { this.endDate = v; return this; }
         Upd color(String v) { this.color = v; return this; }
         Upd archived(Boolean v) { this.archived = v; return this; }
+        Upd version(Integer v) { this.version = v; return this; }
 
         EventUpdateCommand build() {
             return new EventUpdateCommand(title, type, durationValue, durationUnit,
-                    isRecurring, recurrenceUnit, recurrenceEndDate, startDate, endDate, color, archived);
+                    isRecurring, recurrenceUnit, recurrenceEndDate, startDate, endDate, color,
+                    archived, version);
         }
     }
 
@@ -166,6 +170,60 @@ class EventServiceImplTest {
 
         assertThat(result.getColor()).isEqualTo("#123456");
         assertThat(result.getTitle()).isEqualTo("Original title");
+    }
+
+    // #absorb (BR-EVE-015) — CHECK OPTIMISTE DÉTERMINISTE via l'API (pas d'em.detach) :
+    // une version cliente périmée face à la version serveur courante -> EventConflictException
+    // (contrat 409 enrichi #231). Prouve le scénario « 2 PATCH séquentiels, le 2e stale ».
+    @Test
+    void updateEvent_staleClientVersion_throwsEventConflictWithServerState() {
+        existingEvent.setVersion(4); // version serveur COURANTE (après un 1er PATCH concurrent)
+        EventUpdateCommand request = upd().title("Titre B").version(3).build(); // client stale
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+
+        assertThatThrownBy(() -> eventService.updateEvent(eventId, request))
+                .isInstanceOf(EventConflictException.class)
+                .satisfies(ex -> {
+                    EventConflictException conflict = (EventConflictException) ex;
+                    // Corps 409 enrichi #231 : version + entité serveur GAGNANTE transportées.
+                    assertThat(conflict.getServerVersion()).isEqualTo(4);
+                    assertThat(conflict.getServerEvent().getTitle()).isEqualTo("Original title");
+                });
+
+        // Conflit détecté AVANT toute écriture : rien n'est persisté (tx rollback).
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    // #absorb — version cliente ALIGNÉE sur le serveur -> pas de conflit, PATCH appliqué.
+    @Test
+    void updateEvent_matchingClientVersion_appliesUpdate() {
+        existingEvent.setVersion(7);
+        EventUpdateCommand request = upd().title("Aligné").version(7).build();
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getTitle()).isEqualTo("Aligné");
+        verify(eventRepository, times(1)).save(any(Event.class));
+    }
+
+    // #absorb — rétro-compat : version cliente absente (null) -> contrôle NON armé, PATCH
+    // appliqué même si la version serveur a bougé (ex. changement de couleur seul).
+    @Test
+    void updateEvent_nullClientVersion_skipsConflictCheck() {
+        existingEvent.setVersion(9);
+        EventUpdateCommand request = upd().color("#abcdef").build(); // version null
+
+        when(eventRepository.findEventById(eventId)).thenReturn(Optional.of(existingEvent));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Event result = eventService.updateEvent(eventId, request);
+
+        assertThat(result.getColor()).isEqualTo("#abcdef");
+        verify(eventRepository, times(1)).save(any(Event.class));
     }
 
     @Test

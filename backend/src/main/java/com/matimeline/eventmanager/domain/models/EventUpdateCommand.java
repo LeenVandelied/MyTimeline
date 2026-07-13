@@ -19,6 +19,10 @@ import java.time.LocalDate;
  * service applique {@code startDate}, puis dérive/persiste {@code endDate} selon le type
  * (BR-EVE-003 : durée = source de vérité pour {@code type='duration'} ; endDate explicite
  * persistée sinon).
+ *
+ * <p>#absorb (BR-EVE-015) : {@code version} (nullable) porte la version optimiste détenue par
+ * le client. {@code null} = contrôle non armé (rétro-compat). Non-null = check déterministe
+ * dans {@code EventServiceImpl.updateEvent} contre la version serveur courante.
  */
 public record EventUpdateCommand(
         String title,
@@ -31,5 +35,6 @@ public record EventUpdateCommand(
         LocalDate startDate,
         LocalDate endDate,
         String color,
-        Boolean archived) {
+        Boolean archived,
+        Integer version) {
 }

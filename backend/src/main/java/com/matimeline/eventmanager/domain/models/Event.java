@@ -18,6 +18,12 @@ public class Event {
     private Boolean isAllDay;
     private String color;
     private boolean archived;
+    // #absorb (BR-EVE-015) : version optimiste (@Version sur EventEntity) remontée au
+    // domaine pour (1) l'exposer dans EventResponse — le client la renvoie au PATCH —,
+    // (2) permettre le check optimiste DÉTERMINISTE dans EventServiceImpl.updateEvent.
+    // Nullable : un Event fraîchement construit (create, non persisté) ne la porte pas ;
+    // elle est renseignée par EventMapper.toDomain depuis l'entité gérée.
+    private Integer version;
 
     public Event(UUID id, String title, String type, Integer durationValue, String durationUnit,
                  Boolean isRecurring, RecurrenceUnit recurrenceUnit, LocalDate startDate, LocalDate endDate, UUID productId, Boolean isAllDay) {
@@ -59,6 +65,7 @@ public class Event {
     public Boolean getIsAllDay() { return isAllDay; }
     public String getColor() { return color; }
     public boolean isArchived() { return archived; }
+    public Integer getVersion() { return version; }
 
     public void setTitle(String title) { this.title = title; }
     public void setType(String type) { this.type = type; }
@@ -72,4 +79,5 @@ public class Event {
     public void setProduct(UUID productId) { this.productId = productId; }
     public void setColor(String color) { this.color = color; }
     public void setArchived(boolean archived) { this.archived = archived; }
+    public void setVersion(Integer version) { this.version = version; }
 }

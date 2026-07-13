@@ -132,7 +132,8 @@ public class EventController {
                 request.getStartDate(),
                 request.getEndDate(),
                 request.getColor(),
-                request.getArchived());
+                request.getArchived(),
+                request.getVersion());
     }
 
     /**

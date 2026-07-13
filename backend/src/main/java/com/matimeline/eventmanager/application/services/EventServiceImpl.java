@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
+import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
@@ -82,6 +83,25 @@ public class EventServiceImpl implements EventService {
     public Event updateEvent(UUID id, EventUpdateCommand command) {
         Event event = findEventById(id)
             .orElseThrow(() -> new EventNotFoundException(id));
+
+        // #absorb (BR-EVE-015) — CHECK OPTIMISTE DÉTERMINISTE. Le repo recharge l'entité
+        // MANAGÉE (findById -> version DB COURANTE) et copyMutableFields ne touche JAMAIS
+        // @Version : Hibernate émettrait toujours UPDATE ... WHERE version=<courant> = match,
+        // donc un PATCH SÉQUENTIEL avec une version périmée ne produit JAMAIS
+        // d'ObjectOptimisticLockingFailureException (ce filet #231 ne fire que sur un vrai race
+        // 2-transactions). On compare donc ici la version détenue par le client (état sur lequel
+        // il a édité) à la version serveur courante : décalage -> EventConflictException, qui
+        // réutilise le contrat 409 ENRICHI de #231 (handler handleEventConflict, corps
+        // serverVersion + serverEvent). Le catch ObjectOptimisticLockingFailureException du
+        // controller reste le filet des vrais races concurrents. Nullable = contrôle non armé
+        // (PATCH partiel legacy, ex. couleur seule) -> comportement inchangé. L'OWNERSHIP est
+        // déjà vérifié par EventController.checkEventOwnership AVANT cet appel (invariant #231 :
+        // aucune sérialisation d'état serveur avant le contrôle de propriété).
+        if (command.version() != null
+                && event.getVersion() != null
+                && !event.getVersion().equals(command.version())) {
+            throw new EventConflictException(event, event.getVersion());
+        }
 
         // Préserve le lien produit existant (la commande ne porte pas productId).
         UUID originalProductId = event.getProductId();

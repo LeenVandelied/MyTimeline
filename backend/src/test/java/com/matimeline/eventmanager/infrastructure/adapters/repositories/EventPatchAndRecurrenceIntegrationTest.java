@@ -91,7 +91,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         em.clear();
 
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, 10, null, null, null, null, null, null, null, null);
+                null, null, 10, null, null, null, null, null, null, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();
@@ -127,7 +127,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         LocalDate newStart = LocalDate.of(2026, 6, 10);
         LocalDate newEnd = LocalDate.of(2026, 6, 20);
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, null, null, null, null, null, newStart, newEnd, null, null);
+                null, null, null, null, null, null, null, newStart, newEnd, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();
@@ -164,7 +164,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         LocalDate newStart = LocalDate.of(2026, 2, 1);
         EventUpdateCommand request = new EventUpdateCommand(
                 null, null, null, null, null, null, null,
-                newStart, LocalDate.of(2099, 12, 31), null, null);
+                newStart, LocalDate.of(2099, 12, 31), null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();
@@ -200,7 +200,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         // endDate seule, antérieure à la startDate persistée (10 mai).
         EventUpdateCommand request = new EventUpdateCommand(
                 null, null, null, null, null, null, null,
-                null, LocalDate.of(2026, 5, 1), null, null);
+                null, LocalDate.of(2026, 5, 1), null, null, null);
 
         assertThatThrownBy(() -> {
             eventService.updateEvent(eventId, request);
@@ -236,7 +236,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         em.clear();
 
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, null, null, true, null, null, null, null, null, null);
+                null, null, null, null, true, null, null, null, null, null, null, null);
 
         assertThatThrownBy(() -> {
             eventService.updateEvent(eventId, request);
@@ -268,7 +268,7 @@ class EventPatchAndRecurrenceIntegrationTest extends AbstractPostgresIntegration
         em.clear();
 
         EventUpdateCommand request = new EventUpdateCommand(
-                null, null, null, null, true, null, null, null, null, null, null);
+                null, null, null, null, true, null, null, null, null, null, null, null);
         eventService.updateEvent(eventId, request);
         em.flush();
         em.clear();

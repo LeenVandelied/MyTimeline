@@ -20,6 +20,12 @@ import lombok.Getter;
  * <p>#165 : {@code archived} est désormais EXPOSÉ (BR-EVE-013). Le flag de soft-delete
  * fait partie du contrat de sortie que #150 type côté frontend (asymétrie assumée :
  * absent de la création, réglable au PATCH, lisible en réponse).
+ *
+ * <p>#absorb (BR-EVE-015) : {@code version} (optimiste, @Version) est désormais EXPOSÉE.
+ * Contrairement à la convention « ne pas exposer version » (masquage d'interne), c'est ici
+ * un CHAMP DE CONTRAT délibéré : le client la relit au chargement et la renvoie dans le PATCH
+ * pour armer le contrôle de concurrence optimiste (409 déterministe). Déjà transportée par le
+ * corps 409 enrichi #231 ({@code serverVersion}) — l'exposer sur le GET/PATCH ferme la boucle.
  */
 @Getter
 @AllArgsConstructor
@@ -38,6 +44,7 @@ public class EventResponse {
     private Boolean isAllDay;
     private String color;
     private boolean archived;
+    private Integer version;
 
     public static EventResponse fromDomain(Event event) {
         return new EventResponse(
@@ -54,6 +61,7 @@ public class EventResponse {
                 event.getProductId(),
                 event.getIsAllDay(),
                 event.getColor(),
-                event.isArchived());
+                event.isArchived(),
+                event.getVersion());
     }
 }

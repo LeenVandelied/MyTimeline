@@ -124,7 +124,7 @@ class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegra
     }
 
     private EventUpdateCommand titleCommand(String title) {
-        return new EventUpdateCommand(title, null, null, null, null, null, null, null, null, null, null);
+        return new EventUpdateCommand(title, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     private UUID persistEventGraph() {
