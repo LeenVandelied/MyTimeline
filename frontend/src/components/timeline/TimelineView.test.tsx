@@ -457,7 +457,6 @@ describe('TimelineView', () => {
     })
 
     it('raccourcis "[" / "]" décalent la fenêtre (période précédente / suivante)', async () => {
-      const user = userEvent.setup()
       setup()
       const scroll = screen.getByTestId('timeline-scroll')
       // ] = NEXT_PERIOD : offsetDays += 30 (niveau month) → scrollLeft = 30 × 12px = 360.
