@@ -842,3 +842,50 @@
 **Fin du plan S34–S38** (durcissement MVP shippable prod). Backlog milestone #38 non traité ce sprint : #283–#286 (follow-ups S37, sans label sprint-38) → à replanifier.
 
 > **Plan S34–S38 généré le 2026-07-12** (`/ai-env:sprint plan 5`, cohésion moyenne **0.66**, aucun sprint < 0.3). Fil directeur = **durcissement MVP shippable prod** : supply-chain CVE (S34) → boot-safety/secrets (S35) → export RGPD (S36) → reset-password (S37) → contrat erreur auth (S38). **Vérif code-state Phase 0.5** : aucune issue `possibly_done` — tout vérifié comme travail réel restant (RateLimitingFilter POST-only, pas de @Version reset-token, pas d'index expires_at, pas de @EnableScheduling, pas de spec E2E forgot/reset). **Dépendance dure :** S36→S37 (@EnableScheduling). **Migrations :** S36=V14, S37=V15 (une plage/sprint). **Drift détecté :** CLAUDE.md prétend `db/migration/` vide + `ddl-auto=update` — FAUX (V1..V13 actifs + `ddl-auto=validate`) → correction lancée via chip séparé. **[MEMORY:decision] Flyway = source de vérité** (tout changement schéma = migration + mapping entité). **Backlog hors thème :** features lourdes (#210/#195/#56/#69/#212/#102/#231/#88), a11y events (#226/#227/#228 → S39), hygiène hexagonale (#170/#185/#190/#221/#240/#244 → S40), sprint E2E dédié (#205/#209/#232/#234/#270/#271/#215), i18n (#72/#74/#90/#142/#172).
+
+## Sprint 39 — 2026-07-13 (PLANIFIÉ — cohésion 0.30, Lisibilité Landing)
+**Objectif :** Corriger la première impression démo (contraste hero landing illisible observé en live + rendu clair/sombre des 4 écrans auth).
+**Milestone GitHub :** #39
+**Issues :** #56 (slice contraste hero, pas toute la L), #146
+**Vagues :** V1 = #56 ∥ #146 (fichiers disjoints)
+**Migrations :** aucune
+**Dépend de :** aucune (racine)
+**Status :** Planifié
+
+## Sprint 40 — 2026-07-13 (PLANIFIÉ — cohésion 0.18, Shell applicatif)
+**Objectif :** Fondation navigation — nav latérale persistante 248px (#210) + quick-win bug catégories (#245).
+**Milestone GitHub :** #40
+**Issues :** #210, #245
+**Vagues :** V1 = #210 ∥ #245 (fichiers disjoints)
+**Migrations :** aucune
+**Dépend de :** aucune (débloque la navigation des écrans connectés)
+**Status :** Planifié — ⚠ cohésion 0.18 (epics design≠categories), pairing assumé (fichiers disjoints, valeur démo) — dev a validé garder #245.
+
+## Sprint 41 — 2026-07-13 (PLANIFIÉ — cohésion 0.66, UX & a11y Timeline)
+**Objectif :** UX timeline (accordéon collapse par produit) + a11y (cibles tactiles, aria, clavier).
+**Milestone GitHub :** #41
+**Issues :** #195, #226, #228, #227
+**Vagues :** V1 = #226 ∥ #228 | V2 = #195 → #227 (convergent sur handler clavier TimelineView.tsx)
+**Migrations :** aucune
+**Dépend de :** aucune (S40 shell recommandé, non bloquant)
+**Status :** Planifié — #227 : dev a tranché **option B** (aide hover-only, retirer le raccourci `?` du référentiel ux-patterns.md, pas de code timeline). #227 = tooltip d'aide déjà existant (possibly_done partiel).
+
+## Sprint 42 — 2026-07-13 (PLANIFIÉ — cohésion 0.60, Modale conflit 409)
+**Objectif :** Modale de conflit comparative sur 409 optimistic-lock (corps backend enrichi + diff serveur/local) + E2E.
+**Milestone GitHub :** #42
+**Issues :** #231, #232
+**Vagues :** V2 séquentiel strict (backend 409 → frontend diff → E2E #232)
+**Migrations :** aucune
+**Dépend de :** aucune | **Précède S43** (partage GlobalExceptionHandler.java avec #290)
+**Status :** Planifié — ⚠ **sécurité** : enrichir le 409 avec l'entité serveur peut fuiter des données d'autrui si ownership vérifié APRÈS sérialisation → security-expert requis sur #231.
+
+## Sprint 43 — 2026-07-13 (PLANIFIÉ — cohésion 0.70, Auth cleanup léger)
+**Objectif :** Solder la dette contrat d'erreur / hygiène auth S37-S38 (follow-ups #288/#290/#289/#286/#285).
+**Milestone GitHub :** #43
+**Issues :** #288, #290, #289, #286, #285
+**Vagues :** V1 = #286 ∥ #285 ∥ #289 | V2 = #288 → #290 (enum ErrorCode + buildBody partagés)
+**Migrations :** aucune
+**Dépend de :** S42 (partage GlobalExceptionHandler.java ; #290 rebase sur le 409 enrichi de #231). PR #291 (fix 401) **mergée dans dev le 2026-07-13** (tip d4144bd) — pré-requis satisfait.
+**Status :** Planifié — garde-fou : ne PAS re-toucher SecurityConfig `/error` ni la validation event type (corrigés par #291).
+
+> **Plan S39–S43 généré le 2026-07-13** (`/ai-env:sprint plan 5`, cohésion moyenne **0.49**). Fil directeur = **démo-first** (recadrage dev : « loin de la prod, jamais lancé avant aujourd'hui ») : lisibilité landing (S39) → shell nav (S40) → UX/a11y timeline (S41) → modale conflit 409 (S42) → auth cleanup (S43). **Contexte déclencheur :** premier lancement live du site le 2026-07-13 (docker compose) — ça boote, parcours cœur OK end-to-end, un seul bug réel trouvé (event type invalide → 401) corrigé via PR #291. **Phase 0.5 :** helper check-issue-state bruyant sur ce repo (faux positif #245 = commit de clôture sprint) ; ancrage code architecte fiable — #227 seul partiellement fait (tooltip existe). **Migrations :** AUCUNE sur les 5 sprints (plage V16 réservée, non consommée). **[MEMORY:decision] Hardening prod reporté** (11 issues : #212/#102/#251/#266/#270/#182/#242/#248/#115/#250/#255/#213/#256/#84/#88) — durcissement prématuré avant démo fonctionnelle. **[MEMORY:decision] Dérive doc :** schéma réel V15, prochaine migration **V16** (CLAUDE.md dit à tort V13/V14) — à corriger. **Cohésion faible assumée S39/S40** (cross-epic démo) ; S41/S42/S43 mono-epic solides.
