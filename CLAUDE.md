@@ -6,7 +6,7 @@
 ## État du projet
 
 - Sprint en cours : voir `docs/memory/sprint-history.md` (si créé)
-- Migrations : Flyway actif (source de vérité), `backend/src/main/resources/db/migration/` contient V1..V13 (dernier : `V13__export_jobs.sql`) ; `ddl-auto=validate` (dev + prod). Tout changement de schéma exige une migration V{N} + un mapping entité exact, sinon `SchemaManagementException` au boot. **Prochaine migration : V14.**
+- Migrations : Flyway actif (source de vérité), `backend/src/main/resources/db/migration/` contient V1..V15 (dernier : `V15__password_reset_tokens_version.sql`) ; `ddl-auto=validate` (dev + prod). Tout changement de schéma exige une migration V{N} + un mapping entité exact, sinon `SchemaManagementException` au boot. **Prochaine migration : V16.**
 
 ## Stack
 
