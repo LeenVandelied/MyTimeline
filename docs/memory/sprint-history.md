@@ -808,7 +808,7 @@
 **Migrations Flyway :** V15 (colonne version password_reset_tokens)
 **Dépend de :** S36 (dure — @EnableScheduling bootstrappé par #267, réutilisé par #139)
 **Note :** 4 issues (dépasse règle ≤3) mais 9 pts, #143 = XS — validé tel quel par le dev.
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-13)
 
 ## Sprint 38 — 2026-07-12 (PLANIFIE — cohésion 0.78, Auth error contract)
 **Objectif :** Uniformiser le contrat d'erreur JSON auth : AuthController /me,/register,/logout + codes stables GlobalExceptionHandler + durcir writeJsonError.
