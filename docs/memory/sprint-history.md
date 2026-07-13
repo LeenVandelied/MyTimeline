@@ -800,15 +800,27 @@
 **Dépend de :** aucune (mais introduit le scheduling réutilisé en S37)
 **Status :** En cours
 
-## Sprint 37 — 2026-07-12 (PLANIFIE — cohésion 0.80, Reset-password hardening)
+## Sprint 37 — 2026-07-12 → 2026-07-13 (Terminé — PR #282 dans dev)
 **Objectif :** Durcir le flux reset-password : E2E Playwright, rate-limit/lockout par token, verrou anti-TOCTOU (@Version, V15), purge TTL des tokens.
-**Milestone GitHub :** #37
-**Issues :** #145, #141, #143, #139
-**Vagues :** V1 = #145 (e2e) ∥ #141 (rate-limit) ∥ #143 (V15) | V2 = #139 (même service que #143 ; réutilise @EnableScheduling de S36)
-**Migrations Flyway :** V15 (colonne version password_reset_tokens)
+**Milestone GitHub :** #37 (fermé après merge)
+**Issues livrées (4) :** #145, #141, #143, #139
+**Vagues exécutées :** V1 = #145 (e2e) ∥ #141 (rate-limit) ∥ #143 (V15) | V2 = #139 (même service que #143 ; réutilise @EnableScheduling de S36)
+**Cohésion score :** 0.80
+**Commits :** 6 — #143 `9c4e60d`, #145 `c4137c9`, #141 `ee69c11` + hardening `f7210e1`, #139 `310756e`, review-fix `8f4ea7b`, artefacts `f4b75eb`
+**Migrations Flyway :** V15 (colonne `version` sur `password_reset_tokens`)
 **Dépend de :** S36 (dure — @EnableScheduling bootstrappé par #267, réutilisé par #139)
-**Note :** 4 issues (dépasse règle ≤3) mais 9 pts, #143 = XS — validé tel quel par le dev.
-**Status :** En cours (démarré 2026-07-13)
+**BR impactées :** aucune BR fonctionnelle (durcissement technique du flux #138)
+**Reviews :** batch `/sprint start` (reviewer+security+db) + `/review-pr 282` (TEAM 4 agents) — 0 CRITIQUE / 3 MAJEUR (2 corrigés `f7210e1`+`8f4ea7b`, 1 déféré=SELECT save/findById) / MINEURS (3 corrigés, 3 trade-offs acceptés). Convergence sécurité MAJEUR sur RateLimitingFilter (body/clé non bornés) → corrigé avant merge.
+**Tests :** Backend 390/390 green | E2E métier #145 6 passed (auteur, DB jetable) | CI verte sur `8f4ea7b`
+**Nouveaux pitfalls / patterns / bugs :** PIT-S37-001..004, PAT-S37-001..003, BUG-S37-001
+**Note capacité :** 4 issues (dépasse règle ≤3) mais 9 pts, #143 = XS — validé par le dev.
+**Status :** Terminé
+**Follow-ups arbitrés (Phase 4 triage — 4 créés, 0 discard) :**
+  - Découpler canal capture token E2E ↔ schéma DB [M | backend/auth] → issue #283 (Sprint 38)
+  - Spec E2E cas d'échec reset (ancien mdp, token rejoué) [S | e2e] → issue #284 (Sprint 38)
+  - Cap hikari.maximum-pool-size profil test [XS | backend] → issue #285 (Sprint 38)
+  - SELECT superflu save()/findById avant insert [S | backend/auth] → issue #286 (Sprint 38)
+**RECOMMAND traités :** RECOMMAND_SECURITY #141 (audité + validé en /review-pr, hardening f7210e1 suffisant) ; RECOMMAND_DB_EXPERT #139 → issue #285.
 
 ## Sprint 38 — 2026-07-12 (PLANIFIE — cohésion 0.78, Auth error contract)
 **Objectif :** Uniformiser le contrat d'erreur JSON auth : AuthController /me,/register,/logout + codes stables GlobalExceptionHandler + durcir writeJsonError.
