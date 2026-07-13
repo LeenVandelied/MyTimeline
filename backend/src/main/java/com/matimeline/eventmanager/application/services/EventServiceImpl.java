@@ -43,6 +43,10 @@ public class EventServiceImpl implements EventService {
         Product product = productRepository.findDomainProductById(command.productId())
             .orElseThrow(() -> new ProductNotFoundException(command.productId()));
 
+        // BR-EVE-002 : type ∈ {duration, single} validé côté appli -> 422 propre, plutôt
+        // que de laisser la contrainte DB ck_events_type lever une violation masquée en 401.
+        Utils.validateEventType(command.type());
+
         LocalDate startDate = (command.date() != null) ? command.date() : LocalDate.now();
 
         // PIT-S10-003 / convention create : id NULL à la création. EventEntity porte
@@ -87,6 +91,9 @@ public class EventServiceImpl implements EventService {
             event.setTitle(command.title());
         }
         if (command.type() != null) {
+            // BR-EVE-002 : même garde qu'au create — un PATCH ne peut pas basculer le type
+            // vers une valeur hors {duration, single} (sinon violation ck_events_type -> 401).
+            Utils.validateEventType(command.type());
             event.setType(command.type());
         }
         if (command.durationValue() != null) {

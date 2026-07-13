@@ -136,6 +136,11 @@ public class SecurityConfig {
                 // Seul /actuator/health est whitelisté (les autres endpoints actuator
                 // ne sont pas exposés sur le web par défaut, et resteraient authenticated).
                 .requestMatchers("/actuator/health").permitAll()
+                // Dispatch d'erreur Spring : DOIT être public. Les OncePerRequestFilter (dont
+                // jwtFilter) sautent le dispatch ERROR par défaut -> contexte de sécurité vide.
+                // Sans permitAll, TOUTE exception non gérée (500) se redispatche sur /error,
+                // échoue l'auth et ressort en 401 « unauthorized » trompeur (masque l'erreur réelle).
+                .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/{userId}/products/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/products/**").hasAuthority("ROLE_USER")

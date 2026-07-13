@@ -1,11 +1,31 @@
 package com.matimeline.eventmanager.utils;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidEventTypeException;
 
 public class Utils {
+
+    /** Valeurs de {@code type} autorisées (contrainte DB {@code ck_events_type}, V4). */
+    private static final Set<String> ALLOWED_EVENT_TYPES = Set.of("duration", "single");
+
+    /**
+     * Valide le {@code type} d'un événement AVANT la persistance (BR-EVE-002).
+     *
+     * <p>Symétrique de la validation {@code durationUnit} de {@link #calculateEndDate}. Un
+     * {@code type} null ou hors {@code duration/single} lève une {@link InvalidEventTypeException}
+     * (mappée en 422), au lieu de laisser la contrainte DB {@code ck_events_type} produire une
+     * {@code DataIntegrityViolationException} non gérée — cette dernière étant masquée en 401 par
+     * le dispatch {@code /error} (voir SecurityConfig). Appelée au create ET au PATCH (si fourni).
+     */
+    public static void validateEventType(String type) {
+        if (type == null || !ALLOWED_EVENT_TYPES.contains(type)) {
+            throw new InvalidEventTypeException(type);
+        }
+    }
 
     /**
      * Calcule l'{@code endDate} à partir d'un {@link EventCreationRequest} (façade création).

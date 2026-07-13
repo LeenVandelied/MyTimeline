@@ -23,6 +23,7 @@ import com.matimeline.eventmanager.domain.exceptions.ExportFormatNotSupportedExc
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidDurationUnitException;
+import com.matimeline.eventmanager.domain.exceptions.InvalidEventTypeException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidPasswordResetTokenException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
@@ -143,6 +144,17 @@ public class GlobalExceptionHandler {
     // un message trompeur. La protection anti-race d'unicité est désormais SCOPÉE au save
     // dans CategoryServiceImpl (try/catch -> CategoryNameConflictException). Les autres
     // violations remontent normalement (500 générique) sans être masquées.
+
+    @ExceptionHandler(InvalidEventTypeException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidEventType(InvalidEventTypeException ex) {
+        // BR-EVE-002 : type hors {duration, single}. Symétrique de InvalidDurationUnit -> 422
+        // Unprocessable Entity (corps bien formé mais valeur métier invalide). Sans ce handler,
+        // la violation ck_events_type remontait en DataIntegrityViolationException non gérée,
+        // masquée en 401 par le dispatch /error.
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
 
     @ExceptionHandler(InvalidDurationUnitException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidDurationUnit(InvalidDurationUnitException ex) {
