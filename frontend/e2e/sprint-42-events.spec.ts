@@ -11,43 +11,23 @@ import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './su
  * `localePrefix:'always'`).
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * ⚠ SPECS STAGED (`test.fixme`) — BLOQUÉ PAR DEUX MANQUES APPLICATIFS RÉELS
+ * ✅ SPECS ACTIVES (#absorb, Sprint 42 Vague 3) — les deux blocages sont levés
  * ─────────────────────────────────────────────────────────────────────────────
- * Ces deux scénarios encodent le contrat #231 (testids modale comparative, corps 409
- * enrichi) et le toggle archived. Ils sont marqués `test.fixme` — donc SKIPPÉS (CI
- * reste verte) — car le flux qu'ils exercent N'EST PAS ATTEIGNABLE via l'UI routée
- * en l'état. Deux causes distinctes, remontées en RECOMMAND_FOLLOWUP :
+ * Historique : ces scénarios étaient `test.fixme` (skippés) car le flux n'était pas
+ * atteignable. Deux causes, désormais corrigées :
  *
- *   (1) SURFACE D'ÉDITION NON MONTÉE. Le formulaire d'édition d'un event
- *       (`EventEditForm` : `event-form`, `event-form-archived-toggle`) et la modale
- *       comparative (`ConflictDialog` : `event-form-conflict`, `conflict-dialog-*`)
- *       ne vivent QUE dans `EventContent`, lui-même monté UNIQUEMENT via
- *       `TimelineCalendar` -> `Lane` -> `EventBar`. Or `TimelineCalendar` n'est
- *       importé par AUCUNE page/route (grep 0). Les timelines réellement routées
- *       (`dashboard`, détail produit `/[locale]/products/[id]`) rendent
- *       `TimelineResponsive` -> desktop `TimelineView` (pastille `EventPill` ->
- *       `EventDrawer` en LECTURE SEULE, aucune édition) et mobile
- *       `TimelineMobilePortrait/Landscape` (callbacks `onEditEvent`/`onDeleteEvent`
- *       NON câblés par les pages). Conséquence : cliquer un `timeline-event` n'ouvre
- *       jamais `event-form`. Régression probable de la réécriture timeline S17
- *       (EventContent orphelin depuis l'extraction TimelineView/EventPill).
+ *   (1) SURFACE D'ÉDITION MONTÉE (gap A). `TimelineEditHost` wrappe `TimelineResponsive`
+ *       sur les pages routées (`dashboard`, détail produit) et câble `onEditEvent` :
+ *       desktop `EventDrawer` -> bouton `event-drawer-edit` -> `EventEditForm`
+ *       (`event-form`), mobile via `TimelineActionSheet`. `ConflictDialog`
+ *       (`event-form-conflict`, `conflict-dialog-*`) réutilisé tel quel.
  *
- *   (2) 409 OPTIMISTIC-LOCK NON DÉCLENCHABLE DEPUIS L'UI. `eventService.updateEvent`
- *       envoie `PATCH /events/{id}` SANS champ `version`. Le backend recharge donc
- *       l'entité (version courante) à chaque requête -> une simple édition séquentielle
- *       (ou un bump de `version` en base entre load et save) ne produit PAS de 409 :
- *       il faudrait une VRAIE concurrence entre deux flush transactionnels. Le contrat
- *       #231 (corps 409 enrichi `serverVersion` + `serverEvent` alimentant le diff) ne
- *       peut donc pas être exercé de bout en bout tant que le client ne thread pas la
- *       `version` détenue au chargement du form. Le test conflit ci-dessous utilise
- *       l'approche DEUX CONTEXTES (la seule susceptible de produire un vrai 409 backend
- *       une fois la `version` threadée), avec attente EXPLICITE des réponses réseau
- *       (`waitForResponse`, anti-flaky) — jamais de `waitForTimeout`.
- *
- * Une fois (1) le surface d'édition recâblé et (2) la `version` threadée dans le
- * PATCH, retirer les `test.fixme` : les assertions ci-dessous deviennent exécutables
- * telles quelles (testids déjà alignés sur `ConflictDialog.tsx` / `EventEditForm.tsx`,
- * commit 0bc144f).
+ *   (2) 409 OPTIMISTIC-LOCK DÉTERMINISTE (gap B). `version` est threadée de bout en bout
+ *       (EventResponse -> form -> PATCH). `EventServiceImpl.updateEvent` compare la version
+ *       cliente à la version serveur courante APRÈS ownership et lève
+ *       `EventConflictException` (contrat 409 enrichi #231) en cas de décalage. Deux
+ *       contextes sur le même compte suffisent donc à produire un vrai 409 via l'API,
+ *       avec attente EXPLICITE des réponses réseau (`waitForResponse`, anti-flaky).
  *
  * PRÉREQUIS RUNTIME (job CI `e2e`) : backend Spring (:8080) + Postgres migré, front :3000.
  */
@@ -82,12 +62,10 @@ async function fetchProductEvents(
 /**
  * Ouvre le détail produit puis le FORMULAIRE d'édition d'un event depuis la frise.
  *
- * ⚠ POINT DE BLOCAGE (cause (1) ci-dessus) : aujourd'hui `timeline-event` ouvre le
- * `EventDrawer` LECTURE SEULE (desktop) — aucun `event-form`. Le bouton bascule
- * « éditer » d'`EventContent` n'a d'ailleurs PAS de `data-testid` (à ajouter lors du
- * recâblage). Ce helper encode le parcours CIBLE : détail produit -> clic event ->
- * `event-form` visible. Il time-out tant que le surface d'édition n'est pas monté
- * (d'où `test.fixme` sur les tests appelants).
+ * #absorb (gap A) — flux désormais ATTEIGNABLE. Desktop : clic sur la pastille
+ * `timeline-event` -> `EventDrawer` -> bouton « Éditer » (`event-drawer-edit`, câblé par
+ * `TimelineEditHost` via `TimelineResponsive`/`TimelineView`) -> `EventEditForm`
+ * (`event-form`). Sélecteurs `data-testid` uniquement (4 locales, `localePrefix:'always'`).
  */
 async function openEventEditForm(page: Page, productId: string): Promise<void> {
   await page.goto(`/fr/products/${productId}`, { waitUntil: 'domcontentloaded' })
@@ -95,7 +73,9 @@ async function openEventEditForm(page: Page, productId: string): Promise<void> {
   await expect(page.getByTestId('product-detail-timeline')).toBeVisible()
 
   await page.getByTestId('timeline-event').first().click()
-  // Cible : l'ouverture de l'event bascule/expose le formulaire d'édition.
+  // Le drawer de détail expose l'affordance d'édition (gap A).
+  await page.getByTestId('event-drawer-edit').click()
+  // L'édition monte `EventEditForm` dans le Dialog `timeline-edit-dialog`.
   await expect(page.getByTestId('event-form')).toBeVisible()
 }
 
@@ -108,7 +88,7 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
    *   - `conflict-dialog-keep-mine` : re-soumet, PAS de boucle 409, succès ;
    *   - `conflict-dialog-take-server` : abandonne le local + rafraîchit.
    */
-  test.fixme(
+  test(
     'conflit 409 concurrent -> modale comparative (diff + garder/prendre)',
     async ({ browser }) => {
       // --- SETUP état partagé via API (contexte A) --------------------------
@@ -186,7 +166,7 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
    * SCÉNARIO 1bis — action « prendre la version serveur ».
    * Isolé du keep-mine pour une assertion nette (un seul chemin par test).
    */
-  test.fixme(
+  test(
     'conflit 409 -> « prendre la version serveur » rafraîchit les données',
     async ({ browser }) => {
       const ctxA = await browser.newContext({ storageState: PROD.storageState })
@@ -241,7 +221,7 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
    * Bascule `event-form-archived-toggle`, sauvegarde (PATCH 200), vérifie la
    * persistance côté serveur, puis rouvre le form et vérifie le PRÉ-REMPLISSAGE.
    */
-  test.fixme('toggle archived : bascule persistée + pré-remplie à la réouverture', async ({ page }) => {
+  test('toggle archived : bascule persistée + pré-remplie à la réouverture', async ({ page }) => {
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Archived Cat'))
     const product = await seedProduct(page, {
