@@ -36,6 +36,13 @@ import { safeErrorMessage } from '@/lib/safe-error'
  * (`w-sidebar`, token `--sidebar-width`) enveloppant les segments connectés via
  * le layout de groupe de routes `app/[locale]/(app)/layout.tsx`.
  *
+ * Segments enveloppés par le shell (sous `(app)/`) : dashboard, timeline et
+ * produits (`products` + détail `products/[productId]`). Le route group `(app)`
+ * est transparent → les URLs publiques restent inchangées.
+ * `settings` est VOLONTAIREMENT hors-shell : la page Réglages porte son propre
+ * `SettingsShell` (sidebar 220px) ; l'imbriquer sous `(app)/` créerait une double
+ * sidebar. Le lien « Réglages » du pied de cette nav y navigue légitimement.
+ *
  * Responsive (décisions Designer, cf. briefing) :
  *  - `>= lg` (1024px, même seuil que `SettingsShell`) : sidebar persistante 248px
  *    (logo, nav Tableau de bord / Timeline / Produits, bouton Nouvel événement,
