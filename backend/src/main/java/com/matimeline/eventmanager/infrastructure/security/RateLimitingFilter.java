@@ -1,6 +1,9 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
@@ -11,8 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -20,8 +26,11 @@ import io.github.bucket4j.Refill;
 import io.github.bucket4j.TimeMeter;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -95,7 +104,39 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final Duration WINDOW = Duration.ofMinutes(1);
 
+    /**
+     * #141 — the single {@code (method, path)} pair that additionally triggers the
+     * PER-TOKEN throttle branch below (body is parsed to extract the reset token).
+     */
+    private static final String RESET_PASSWORD_KEY = "POST /api/auth/reset-password";
+
+    /**
+     * #141 — max validation attempts allowed against ANY single reset-token value
+     * within {@link #WINDOW}. Defense-in-depth on top of the per-IP limit: an attacker
+     * rotating source IPs (or distributed across a botnet) still cannot hammer one
+     * given token beyond this ceiling. A legitimate user submits a token once; the
+     * token is single-use, so repeated submissions of the same value are retries after
+     * failure — throttling them is safe.
+     */
+    private static final int TOKEN_ATTEMPT_LIMIT = 5;
+
+    /**
+     * #141 — hard cap on the number of distinct per-token buckets held in memory. The
+     * token value-space is attacker-influenced (any string can be POSTed), so — unlike
+     * the bounded auth-path IP map — this map could otherwise grow without limit
+     * (memory-exhaustion vector). Beyond this size a not-yet-seen token is NOT tracked
+     * (the per-IP limit still guards that request); existing counters are preserved so
+     * a flood cannot reset a victim token's tally. Entries are tiny; sized generously.
+     */
+    private static final int MAX_TRACKED_TOKENS = 100_000;
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+
+    /** #141 — per reset-token buckets, keyed by the token value (bounded, see above). */
+    private final ConcurrentHashMap<String, Bucket> tokenBuckets = new ConcurrentHashMap<>();
+
     private final TimeMeter timeMeter;
 
     /**
@@ -180,11 +221,65 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String key = clientIp(request) + "|" + methodAndPath;
         Bucket bucket = buckets.computeIfAbsent(key, k -> newBucket(limit));
 
-        if (bucket.tryConsume(1)) {
-            chain.doFilter(request, response);
-        } else {
+        if (!bucket.tryConsume(1)) {
             writeTooManyRequests(response);
+            return;
         }
+
+        // #141 : sur reset-password un SECOND throttle, PAR TOKEN, s'ajoute au throttle
+        // par IP ci-dessus. Il plafonne les tentatives de validation d'un MÊME token,
+        // indépendamment de l'IP source (défense en profondeur : une rotation d'IP ne
+        // permet pas de marteler un token donné). Le corps de la requête est lu ici puis
+        // re-servi au controller via un wrapper — l'InputStream d'origine n'est
+        // consommable qu'une seule fois.
+        if (RESET_PASSWORD_KEY.equals(methodAndPath)) {
+            byte[] body = StreamUtils.copyToByteArray(request.getInputStream());
+            String token = extractToken(body);
+            if (token != null && !token.isBlank() && !tryConsumeToken(token)) {
+                // Même 429 générique que le throttle par IP : aucune distinction
+                // "token inconnu" vs "trop de tentatives" (anti-énumération, critère #141).
+                writeTooManyRequests(response);
+                return;
+            }
+            chain.doFilter(new CachedBodyHttpServletRequest(request, body), response);
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    /**
+     * Extracts the {@code token} field from a reset-password JSON body. Returns
+     * {@code null} when the body is absent/empty/not JSON or the field is missing — the
+     * per-token throttle is then skipped and the request proceeds (the controller's
+     * {@code @Valid} handles a malformed body with a 400). Never throws.
+     */
+    private String extractToken(byte[] body) {
+        if (body == null || body.length == 0) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readTree(body).path("token").asText(null);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Consumes one permit from the per-token bucket. Returns {@code true} when the
+     * attempt is within {@link #TOKEN_ATTEMPT_LIMIT}. When the map has reached
+     * {@link #MAX_TRACKED_TOKENS}, a not-yet-tracked token is left untracked
+     * (returns {@code true}) to keep memory bounded — the per-IP limit still applies.
+     */
+    private boolean tryConsumeToken(String token) {
+        Bucket bucket = tokenBuckets.get(token);
+        if (bucket == null) {
+            if (tokenBuckets.size() >= MAX_TRACKED_TOKENS) {
+                return true;
+            }
+            bucket = tokenBuckets.computeIfAbsent(token, k -> newBucket(TOKEN_ATTEMPT_LIMIT));
+        }
+        return bucket.tryConsume(1);
     }
 
     private Bucket newBucket(int permitsPerMinute) {
@@ -228,5 +323,51 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.getWriter().write("{\"error\":\"too_many_requests\"}");
+    }
+
+    /**
+     * #141 — wraps a request whose body was already consumed in the filter (to read the
+     * reset token) so the downstream {@code HttpMessageConverter} can still deserialize
+     * it. The {@link ServletInputStream} is backed by the cached byte array.
+     */
+    private static final class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
+
+        private final byte[] body;
+
+        CachedBodyHttpServletRequest(HttpServletRequest request, byte[] body) {
+            super(request);
+            this.body = body;
+        }
+
+        @Override
+        public ServletInputStream getInputStream() {
+            ByteArrayInputStream buffer = new ByteArrayInputStream(body);
+            return new ServletInputStream() {
+                @Override
+                public int read() {
+                    return buffer.read();
+                }
+
+                @Override
+                public boolean isFinished() {
+                    return buffer.available() == 0;
+                }
+
+                @Override
+                public boolean isReady() {
+                    return true;
+                }
+
+                @Override
+                public void setReadListener(ReadListener readListener) {
+                    // synchronous read only — no async listener needed
+                }
+            };
+        }
+
+        @Override
+        public BufferedReader getReader() {
+            return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
+        }
     }
 }
