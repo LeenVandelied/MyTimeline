@@ -870,7 +870,7 @@
 **Vagues :** V1 = #210 ∥ #245 (fichiers disjoints)
 **Migrations :** aucune
 **Dépend de :** aucune (débloque la navigation des écrans connectés)
-**Status :** Planifié — ⚠ cohésion 0.18 (epics design≠categories), pairing assumé (fichiers disjoints, valeur démo) — dev a validé garder #245.
+**Status :** En cours (démarré 2026-07-13) — ⚠ cohésion 0.18 (epics design≠categories), pairing assumé (fichiers disjoints, valeur démo) — dev a validé garder #245.
 
 ## Sprint 41 — 2026-07-13 (PLANIFIÉ — cohésion 0.66, UX & a11y Timeline)
 **Objectif :** UX timeline (accordéon collapse par produit) + a11y (cibles tactiles, aria, clavier).
