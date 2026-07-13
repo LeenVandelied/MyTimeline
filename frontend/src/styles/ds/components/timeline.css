@@ -115,6 +115,12 @@
    scroll horizontal. Fond opaque + z-index pour passer au-dessus des event bars
    sans casser leur positionnement absolu (left:leftPx). */
 .mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+/* #195 — Accordéon de 2e niveau (produit) : le label sticky devient un bouton
+   toggle, mirror de .mt-tlv__group-head. Reset des styles bouton natifs, chevron
+   à gauche, cible cliquable (pointer-events réactivés). */
+.mt-tlv__lane-head{gap:6px; border-top:0; border-bottom:0; border-left:0; padding-left:8px; cursor:pointer; text-align:left; pointer-events:auto;}
+.mt-tlv__lane-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
+.mt-tlv__lane-head-text{min-width:0; flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
 .mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
 /* #81 — Focus ring (point 5). ÉCART INTENTIONNEL de token : les pastilles
@@ -170,6 +176,29 @@
 
 .mt-tlm{position:relative; display:flex; flex-direction:column; width:100%; border:1px solid var(--color-rule); border-radius:var(--radius-md); background:var(--color-surface); overflow:hidden;}
 .mt-tlm__toolbar{display:flex; align-items:center; gap:var(--space-2); padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--color-rule); background:var(--color-surface-2);}
+
+/* #226 — a11y WCAG 2.5.5 : cible tactile RÉELLE ≥44×44px pour le zoom sur
+   surfaces touch mobile. Scope `.mt-tlm` (couvre portrait + paysage
+   `.mt-tlm--landscape`) : le bouton desktop `.mt-zoom__btn` (hors `.mt-tlm`)
+   reste 30px + groupe `overflow:hidden` inchangé. La hitbox s'étend hors flux
+   via `::before` 44×44px centré (PAT-S24-002) : n'altère ni l'icône (font-size
+   inchangée) ni le flex du groupe.
+   ⚠ PIT PAT-S24-002 : le `::before` déborde de (44-30)/2 = 7px de chaque côté du
+   bouton. Le groupe `.mt-zoom` a `overflow:hidden` (arrondi desktop) → sur le
+   1er (bord gauche) et le dernier (bord droit) bouton, ces 7px extérieurs
+   étaient CLIPPÉS → cible réelle ~37×44px sur les bords extrêmes. Fix : passer le
+   groupe en `overflow:visible` UNIQUEMENT en contexte `.mt-tlm` pour libérer la
+   hitbox. Le `::before` est transparent → aucun rendu n'apparaît. On réarrondit
+   les coins extérieurs des boutons de bord (`:first-child` / `:last-child`) à
+   `--radius-md` pour préserver la silhouette arrondie du groupe (sans le clip, le
+   fond hover carré déborderait de l'arrondi). Les 7px libérés côté gauche
+   tiennent dans le padding `--space-3` (12px) de la toolbar → aucun re-clip par
+   le `overflow:hidden` de `.mt-tlm`. */
+.mt-tlm .mt-zoom{overflow:visible;}
+.mt-tlm .mt-zoom__btn{position:relative; min-height:44px;}
+.mt-tlm .mt-zoom__btn:first-child{border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
+.mt-tlm .mt-zoom__btn:last-child{border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
+.mt-tlm .mt-zoom__btn::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 
 /* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll
    horizontal natif mais laisse le composant gérer le pinch (2 doigts). */

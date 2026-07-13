@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
@@ -397,6 +397,168 @@ describe('TimelineView', () => {
     it('ne rend PAS de libellé extérieur quand le contraste passe AA dedans', () => {
       setup() // events #3B62D4 (5.41) et #4FA459 → lisibles dedans
       expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+  })
+
+  // ==================== #228 — couverture clavier §9 ====================
+  // Compléments de couverture repérés en ux-patterns.md §9. Ces tests reflètent
+  // le comportement clavier ACTUEL (garde-fou de non-régression avant #195) :
+  //  1. ← / → navigation INTER-lanes (débordement en bord de lane) ;
+  //  2. cyclage Tab/Shift+Tab dans le drawer + restauration du focus déclencheur ;
+  //  3. raccourcis globaux T / [ / ] / -.
+  describe('#228 couverture clavier §9', () => {
+    it('← / → naviguent ENTRE les lanes (débordement en bord de lane)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      // 2 lanes, 1 pastille chacune (e1 lane0, e2 lane1). En bord de lane, → passe
+      // à la 1re pastille de la lane suivante ; ← revient à la dernière précédente.
+      pills[0].focus()
+      await user.keyboard('{ArrowRight}')
+      expect(pills[1]).toHaveFocus()
+      await user.keyboard('{ArrowLeft}')
+      expect(pills[0]).toHaveFocus()
+    })
+
+    it('drawer : Tab/Shift+Tab piègent le focus + restauration du focus déclencheur à la fermeture', async () => {
+      const user = userEvent.setup()
+      setup()
+      const trigger = screen.getAllByTestId('timeline-event')[0]
+      // Ouvre le drawer au clavier depuis la pastille (elle devient le déclencheur).
+      trigger.focus()
+      await user.keyboard('{Enter}')
+      await screen.findByTestId('timeline-drawer')
+
+      // Focus initial déplacé sur le 1er focusable du panneau (bouton fermer).
+      const close = screen.getByTestId('timeline-drawer-close')
+      expect(close).toHaveFocus()
+
+      // Trap : le bouton fermer est le SEUL focusable du drawer → Tab et Shift+Tab
+      // bouclent et gardent le focus dans le panneau (jamais sur la frise derrière).
+      await user.keyboard('{Tab}')
+      expect(close).toHaveFocus()
+      await user.keyboard('{Shift>}{Tab}{/Shift}')
+      expect(close).toHaveFocus()
+
+      // Fermeture (Échap) → le focus revient sur la pastille déclencheuse.
+      await user.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByTestId('timeline-drawer')).not.toBeInTheDocument())
+      expect(trigger).toHaveFocus()
+    })
+
+    it('raccourci "-" dézoome (change le niveau affiché)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const level = screen.getByTestId('timeline-zoom-level')
+      const before = level.textContent // niveau initial = "month"
+      await user.keyboard('-')
+      // ZOOM_OUT : month → quarter → le libellé de niveau change.
+      await waitFor(() => expect(level.textContent).not.toBe(before))
+    })
+
+    it('raccourcis "[" / "]" décalent la fenêtre (période précédente / suivante)', async () => {
+      setup()
+      const scroll = screen.getByTestId('timeline-scroll')
+      // ] = NEXT_PERIOD : offsetDays += 30 (niveau month) → scrollLeft = 30 × 12px = 360.
+      fireEvent.keyDown(window, { key: ']' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(360))
+      // [ = PREV_PERIOD : offsetDays revient à 0 → scrollLeft = 0.
+      fireEvent.keyDown(window, { key: '[' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(0))
+    })
+
+    it('raccourci "T" recentre la fenêtre sur aujourd’hui', async () => {
+      const user = userEvent.setup()
+      setup()
+      const scroll = screen.getByTestId('timeline-scroll')
+      // On éloigne d'abord la vue (] → offset 30 → scrollLeft 360).
+      fireEvent.keyDown(window, { key: ']' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(360))
+      // T = GO_TO_TODAY : offset = jours(rangeStart→today) = 35 → scrollLeft = 35 × 12 = 420.
+      await user.keyboard('t')
+      await waitFor(() => expect(scroll.scrollLeft).toBe(420))
+    })
+  })
+
+  // ==================== #195 — accordéon collapse produit ====================
+  // 2e niveau d'accordéon imbriqué dans le collapse catégorie. Critères
+  // d'acceptation : collapse produit indépendant ; scroll conservé ; clavier/focus
+  // cohérent avec le pattern accordéon catégorie déjà en place.
+  describe('#195 accordéon collapse produit', () => {
+    it('replie un produit indépendamment (masque ses events, sans toucher les autres produits ni la catégorie)', async () => {
+      const user = userEvent.setup()
+      setup() // p1 (cat Frais) + p2 (cat Boulangerie), 1 event chacun
+      expect(screen.getAllByTestId('timeline-event')).toHaveLength(2)
+
+      const heads = screen.getAllByTestId('timeline-resource-head')
+      expect(heads).toHaveLength(2)
+      // État initial : les deux produits sont dépliés.
+      expect(heads[0]).toHaveAttribute('aria-expanded', 'true')
+      expect(heads[1]).toHaveAttribute('aria-expanded', 'true')
+
+      // Replie le 1er produit (p1 → event e1 masqué).
+      await user.click(heads[0])
+      await waitFor(() => expect(screen.getAllByTestId('timeline-event')).toHaveLength(1))
+
+      // Le produit replié : aria-expanded=false, mais son label/toggle reste rendu.
+      expect(screen.getAllByTestId('timeline-resource-head')[0]).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      )
+      expect(screen.getAllByTestId('timeline-resource-row')).toHaveLength(2)
+      // L'autre produit N'est PAS affecté (toujours déplié, son event visible).
+      expect(screen.getAllByTestId('timeline-resource-head')[1]).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      )
+      const remaining = screen.getAllByTestId('timeline-event')
+      expect(remaining[0]).toHaveAttribute('data-event-title', 'Livraison pain')
+      // La catégorie parente reste dépliée (accordéon catégorie inchangé).
+      screen
+        .getAllByTestId('timeline-group-head')
+        .forEach((h) => expect(h).toHaveAttribute('aria-expanded', 'true'))
+    })
+
+    it('conserve la position de scroll après un collapse produit (parité collapse catégorie)', async () => {
+      const user = userEvent.setup()
+      setup()
+      const scroll = screen.getByTestId('timeline-scroll')
+      // Simule un défilement horizontal utilisateur.
+      scroll.scrollLeft = 360
+      expect(scroll.scrollLeft).toBe(360)
+
+      // Le collapse produit est un pur re-rendu (aucun reset de scroll, comme la
+      // catégorie) → le conteneur scrollable garde sa position.
+      await user.click(screen.getAllByTestId('timeline-resource-head')[0])
+      await waitFor(() => expect(screen.getAllByTestId('timeline-event')).toHaveLength(1))
+      expect(scroll.scrollLeft).toBe(360)
+    })
+
+    it('clavier/focus cohérent : la lane produit repliée est exclue de la nav, roving unique préservé', async () => {
+      const user = userEvent.setup()
+      setup()
+      const pills = screen.getAllByTestId('timeline-event')
+      // Active la pastille de la 2e lane (p2) au clavier → activeNav suit p2.
+      pills[0].focus()
+      await user.keyboard('{ArrowDown}')
+      expect(pills[1]).toHaveFocus()
+
+      // Replie le produit p2 (la lane active) : sa pastille disparaît → le roving
+      // retombe sur la 1re pastille visible restante (e1), tabIndex=0 reste unique.
+      await user.click(screen.getAllByTestId('timeline-resource-head')[1])
+      await waitFor(() => {
+        const visible = screen.getAllByTestId('timeline-event')
+        expect(visible).toHaveLength(1)
+        expect(visible[0]).toHaveAttribute('data-event-title', 'Péremption lait')
+        expect(visible.filter((p) => p.getAttribute('tabindex') === '0')).toHaveLength(1)
+      })
+
+      // Nav clavier depuis la seule lane restante : ArrowDown ne cible PAS la lane
+      // repliée (elle n'est plus focusable) → le focus reste sur e1.
+      const only = screen.getAllByTestId('timeline-event')[0]
+      only.focus()
+      await user.keyboard('{ArrowDown}')
+      expect(only).toHaveFocus()
     })
   })
 })

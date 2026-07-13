@@ -889,14 +889,14 @@
 **Saturation contexte lead (mesure) :** non instrumentée cette session (orchestration + 2 tours review + CI dans une seule session lead).
 **Status :** Terminé.
 
-## Sprint 41 — 2026-07-13 (PLANIFIÉ — cohésion 0.66, UX & a11y Timeline)
+## Sprint 41 — 2026-07-13 (EN COURS — cohésion 0.66, UX & a11y Timeline)
 **Objectif :** UX timeline (accordéon collapse par produit) + a11y (cibles tactiles, aria, clavier).
 **Milestone GitHub :** #41
 **Issues :** #195, #226, #228, #227
 **Vagues :** V1 = #226 ∥ #228 | V2 = #195 → #227 (convergent sur handler clavier TimelineView.tsx)
 **Migrations :** aucune
 **Dépend de :** aucune (S40 shell recommandé, non bloquant)
-**Status :** Planifié — #227 : dev a tranché **option B** (aide hover-only, retirer le raccourci `?` du référentiel ux-patterns.md, pas de code timeline). #227 = tooltip d'aide déjà existant (possibly_done partiel).
+**Status :** En cours (démarré 2026-07-13, branche `sprint/41`) — #227 : dev a tranché **option B** (aide hover-only, retirer le raccourci `?` du référentiel ux-patterns.md, pas de code timeline). #227 = tooltip d'aide déjà existant (possibly_done partiel).
 
 ## Sprint 42 — 2026-07-13 (PLANIFIÉ — cohésion 0.60, Modale conflit 409)
 **Objectif :** Modale de conflit comparative sur 409 optimistic-lock (corps backend enrichi + diff serveur/local) + E2E.
