@@ -822,13 +822,23 @@
   - SELECT superflu save()/findById avant insert [S | backend/auth] → issue #286 (Sprint 38)
 **RECOMMAND traités :** RECOMMAND_SECURITY #141 (audité + validé en /review-pr, hardening f7210e1 suffisant) ; RECOMMAND_DB_EXPERT #139 → issue #285.
 
-## Sprint 38 — 2026-07-12 (PLANIFIE — cohésion 0.78, Auth error contract)
+## Sprint 38 — 2026-07-13 (Terminé — merge PR #287 dans dev, cohésion 0.78, Auth error contract)
 **Objectif :** Uniformiser le contrat d'erreur JSON auth : AuthController /me,/register,/logout + codes stables GlobalExceptionHandler + durcir writeJsonError.
-**Milestone GitHub :** #38
-**Issues :** #125, #127, #126
-**Vagues :** V1 = #127 (codes stables) ∥ #126 (writeJsonError) | V2 = #125 (route via codes stables de #127)
+**Milestone GitHub :** #38 (fermé après merge)
+**Issues livrées (3) :** #125, #126, #127
+**Vagues exécutées :** V1 = #127 (codes stables) ∥ #126 (writeJsonError) | V2 = #125 (route via codes stables de #127)
 **Migrations Flyway :** aucune
-**Dépend de :** aucune (ordonné dernier)
-**Status :** Planifie
+**Dépend de :** aucune (ordonné dernier du plan S34–S38)
+**Commits :** 4 code (c8fc800 #127, 5cf7b2a #126, 8e9e0fd #125, 6474c91 absorption review) + artefacts/clôture
+**BR impactées :** BR-AUT-001 (register 409), BR-AUT-005 (pas de fuite interne), BR-AUT-008 (/me), BR-AUT-010 (logout). Anti-pattern A4 réduit (bodies 500 = strings statiques JSON).
+**Reviews :** interne pré-PR (MERGE_OK, 2 MINEURS absorbés en 6474c91) + `/review-pr 287` mode TEAM (back-reviewer + security-expert contre-audit) = MERGE_OK, 0 CRITIQUE, 1 MAJEUR + 1 MINEUR arbitrés follow-up. Sécurité : RAS (échappement Jackson testé payload malveillant, statuts/contrôle d'accès inchangés, pas de PII).
+**Tests :** Backend 398/398 ✅ | Frontend 421/421 ✅ | E2E vert en CI (skippés en local, `E2E_DB_PASSWORD` absent). Audit : `docs/memory/audits/sprint-38-test-coverage.md`.
+**Nouveaux patterns :** PAT-S38-001 (ErrorCode enum vs getReasonPhrase dans contrat JSON).
+**Incident worktree :** subagent #125 a commité sur `sprint/34` local du repo principal (pitfall [[sprint-subagent-worktree-cwd]]) → cherry-pick propre en 8e9e0fd + revalidation 398/398, `sprint/34` local reset à 5c8809a (origin intact, ccf9280 en reflog).
+**Follow-ups arbitrés (Phase 4 triage — dev : créer les 3 en backlog) :**
+  - Unifier le vocabulaire du champ `error` d'AuthController sur ErrorCode [S | auth] → issue #288 (review #287 MAJEUR)
+  - Vérifier l'énumération /me 404 vs 401 [S | auth, security] → issue #289 (audit sécurité, pré-existant)
+  - Étendre ErrorCode/buildBody aux 7 handlers restants de GlobalExceptionHandler [S | infrastructure] → issue #290 (review #287 MINEUR pré-existant)
+**Fin du plan S34–S38** (durcissement MVP shippable prod). Backlog milestone #38 non traité ce sprint : #283–#286 (follow-ups S37, sans label sprint-38) → à replanifier.
 
 > **Plan S34–S38 généré le 2026-07-12** (`/ai-env:sprint plan 5`, cohésion moyenne **0.66**, aucun sprint < 0.3). Fil directeur = **durcissement MVP shippable prod** : supply-chain CVE (S34) → boot-safety/secrets (S35) → export RGPD (S36) → reset-password (S37) → contrat erreur auth (S38). **Vérif code-state Phase 0.5** : aucune issue `possibly_done` — tout vérifié comme travail réel restant (RateLimitingFilter POST-only, pas de @Version reset-token, pas d'index expires_at, pas de @EnableScheduling, pas de spec E2E forgot/reset). **Dépendance dure :** S36→S37 (@EnableScheduling). **Migrations :** S36=V14, S37=V15 (une plage/sprint). **Drift détecté :** CLAUDE.md prétend `db/migration/` vide + `ddl-auto=update` — FAUX (V1..V13 actifs + `ddl-auto=validate`) → correction lancée via chip séparé. **[MEMORY:decision] Flyway = source de vérité** (tout changement schéma = migration + mapping entité). **Backlog hors thème :** features lourdes (#210/#195/#56/#69/#212/#102/#231/#88), a11y events (#226/#227/#228 → S39), hygiène hexagonale (#170/#185/#190/#221/#240/#244 → S40), sprint E2E dédié (#205/#209/#232/#234/#270/#271/#215), i18n (#72/#74/#90/#142/#172).
