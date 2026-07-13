@@ -35,6 +35,12 @@ vi.mock('next-intl', () => ({
 // TimelineResponsive mocké : on capture events/resources reçus pour prouver le
 // filtrage amont (ce produit uniquement, pas toute la liste).
 vi.mock('@/components/timeline', () => ({
+  // #absorb — ProductDetailView monte désormais TimelineEditHost (surface d'édition
+  // câblée, gap A). Le mock conserve le spy de props + le testid attendu par les tests.
+  TimelineEditHost: (props: { events: unknown[]; resources: unknown[] }) => {
+    timelineSpy(props)
+    return <div data-testid="timeline-responsive">timeline</div>
+  },
   TimelineResponsive: (props: { events: unknown[]; resources: unknown[] }) => {
     timelineSpy(props)
     return <div data-testid="timeline-responsive">timeline</div>

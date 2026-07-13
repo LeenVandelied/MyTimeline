@@ -9,7 +9,7 @@ import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { ProductDrawer } from './ProductDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
-import { TimelineResponsive } from '@/components/timeline'
+import { TimelineEditHost } from '@/components/timeline'
 import type { Resource } from '@/components/timeline'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useAuth } from '@/hooks/useAuth'
@@ -216,7 +216,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
             {t('timelineEmpty')}
           </p>
         ) : (
-          <TimelineResponsive events={events} resources={resources} locale={locale} />
+          <TimelineEditHost events={events} resources={resources} locale={locale} />
         )}
       </section>
 

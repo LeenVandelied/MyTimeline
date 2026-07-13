@@ -29,6 +29,8 @@ export * from './zoom'
 // #63 — Vue Timeline mobile portrait + switch responsive (base réutilisable #64).
 export { TimelineResponsive } from './TimelineResponsive'
 export type { TimelineResponsiveProps } from './TimelineResponsive'
+export { TimelineEditHost } from './TimelineEditHost'
+export type { TimelineEditHostProps } from './TimelineEditHost'
 export { TimelineMobilePortrait } from './TimelineMobilePortrait'
 export type { TimelineMobilePortraitProps } from './TimelineMobilePortrait'
 export { TimelineBottomSheet } from './TimelineBottomSheet'

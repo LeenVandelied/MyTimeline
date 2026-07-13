@@ -30,6 +30,11 @@ export const eventSchema = z.object({
   isAllDay: z.boolean().nullable().optional(),
   color: z.string().nullable().optional(),
   archived: z.boolean(),
+  // #absorb (BR-EVE-015) — version optimiste exposée par EventResponse. Relue au
+  // chargement du formulaire et renvoyée dans le PATCH pour armer le 409 déterministe.
+  // `.nullable().optional()` : défensif (corps 409 enrichi #231 la porte via serverEvent ;
+  // rétro-compat d'un GET legacy sans le champ).
+  version: z.number().nullable().optional(),
 })
 
 export type Event = z.infer<typeof eventSchema>
@@ -112,6 +117,9 @@ export type FullCalendarEvent = {
     // pour pré-remplir le toggle d'édition. AJOUT frontend : contrat Zod/DTO
     // (`eventSchema.archived`) inchangé, on ne fait que ne plus le JETER au mapping.
     archived?: boolean
+    // #absorb (BR-EVE-015) — version optimiste propagée au view-model pour la threader
+    // dans le PATCH d'édition (409 déterministe). Le formulaire la renvoie telle quelle.
+    version?: number | null
   }
 }
 
@@ -142,6 +150,8 @@ export const mapToFullCalendarEvent = (
       recurrenceUnit: event.recurrenceUnit,
       // #188 — propage `archived` pour pré-remplir le toggle d'édition (BR-EVE-013).
       archived: event.archived,
+      // #absorb — propage `version` pour armer le 409 déterministe au PATCH (BR-EVE-015).
+      version: event.version,
     },
   }
 }
@@ -199,6 +209,12 @@ const buildEventEditSchema = (m: EventEditMessages) =>
       startDate: z.string().optional(),
       endDate: z.string().optional(),
       archived: z.boolean().optional(),
+      // #absorb (BR-EVE-015) — version optimiste threadée dans le PATCH. Portée par le
+      // formulaire (non éditable) : lue au chargement, renvoyée telle quelle → le backend
+      // détecte un décalage avec la version serveur courante (409 déterministe #231). Sur
+      // « garder mes modifications », le parent la réécrit avec la version serveur pour
+      // éviter une boucle de 409.
+      version: z.number().nullable().optional(),
       // BR-EVE-009 : hex valide si fourni (chaîne vide tolérée → couleur non modifiée).
       color: z
         .string()

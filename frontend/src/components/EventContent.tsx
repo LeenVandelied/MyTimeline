@@ -155,13 +155,14 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   // rafraîchit les données (invalidation ciblée). Sémantiquement = onReload.
   const onTakeServer = onReload
 
-  // #231 — « Garder mes modifications » : re-soumet les valeurs locales capturées.
-  // Le PATCH backend recharge l'entité gérée (pas de version cliente) → la re-soumission
-  // s'applique sur l'état serveur courant, PAS de boucle de 409. Succès → ferme ;
-  // nouveau conflit (rare) → ré-ouvre avec le diff frais.
+  // #231/#absorb — « Garder mes modifications » : re-soumet les valeurs locales en
+  // ADOPTANT la version serveur (corps 409 enrichi). Depuis le check optimiste déterministe
+  // (gap B), re-soumettre avec la version cliente PÉRIMÉE redéclencherait le même 409
+  // (boucle) : on réécrit donc `version` avec `conflict.server.version` → le check backend
+  // passe et le local gagne. Succès → ferme ; nouveau conflit (rare) → ré-ouvre le diff frais.
   const onKeepMine = () => {
     if (conflict) {
-      void onSubmit(conflict.local)
+      void onSubmit({ ...conflict.local, version: conflict.server.version ?? null })
     }
   }
 
@@ -323,6 +324,9 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   color: color,
                   // #188 — pré-remplir le toggle archivé depuis l'event (BR-EVE-013).
                   archived: event.extendedProps?.archived ?? false,
+                  // #absorb (BR-EVE-015) — version détenue au chargement → threadée dans
+                  // le PATCH pour armer le 409 déterministe (gap B).
+                  version: event.extendedProps?.version ?? null,
                 }}
                 onSubmit={onSubmit}
                 onCancel={() => {
