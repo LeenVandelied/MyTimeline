@@ -9,9 +9,12 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
  * locale/impl du statut HTTP, pas fait pour être parsé). Ces codes sont le
  * contrat d'API attendu côté frontend depuis le Sprint 5.
  *
- * <p>Public (pas package-private) : réutilisable par d'autres controllers de ce
- * package (ex. #125 - AuthController) qui construisent leur propre corps
- * {@code {"error": "..."}} sans passer par {@code buildBody}.
+ * <p>Public (pas package-private) : réutilisable par les controllers de ce
+ * package qui construisent leur propre corps {@code {"error": "..."}} sans
+ * passer par {@code buildBody}. NOTE : {@code AuthController} (#125) renvoie
+ * volontairement des messages lisibles dans {@code error} (AC de l'issue) et
+ * n'utilise pas encore cet enum — unification des vocabulaires à arbitrer
+ * (follow-up Sprint 38).
  */
 public enum ErrorCode {
 
