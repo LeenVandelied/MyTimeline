@@ -908,14 +908,18 @@
   - Hygiène milestone : #300/#301/#302 (parqués S40, non exécutés) → détachés du milestone 41 (retour backlog)
 **Status :** Terminé.
 
-## Sprint 42 — 2026-07-13 (PLANIFIÉ — cohésion 0.60, Modale conflit 409)
+## Sprint 42 — 2026-07-13 (En cours — cohésion 0.60, Modale conflit 409)
 **Objectif :** Modale de conflit comparative sur 409 optimistic-lock (corps backend enrichi + diff serveur/local) + E2E.
 **Milestone GitHub :** #42
+**Branche :** `sprint/42` (créée depuis origin/dev @ 1a87d6f, 2026-07-13)
 **Issues :** #231, #232
-**Vagues :** V2 séquentiel strict (backend 409 → frontend diff → E2E #232)
+**Vagues :** V1 = #231 (backend 409 enrichi → frontend modale comparative) ✅ `0bc144f` | V2 = #232 (E2E) ⚠ `fcbf64e` specs `test.fixme` | V3 = ABSORPTION A+B (flux atteignable) | V4 = finaliser E2E + gates
 **Migrations :** aucune
 **Dépend de :** aucune | **Précède S43** (partage GlobalExceptionHandler.java avec #290)
-**Status :** Planifié — ⚠ **sécurité** : enrichir le 409 avec l'entité serveur peut fuiter des données d'autrui si ownership vérifié APRÈS sérialisation → security-expert requis sur #231.
+**Sécurité :** audit #231 = **SÛR** (ownership avant sérialisation OK, serverEvent sans champ interne). Détail : `sprints/sprint-42/security-audit-231.md`.
+**⚠ BLOCKER découvert V2 (vérifié) :** prémisse cassée — (A) surface d'édition event orpheline (aucune route ne monte `EventContent`/`EventEditForm`, régression S17, timeline routée = lecture seule) ; (B) `updateEvent` PATCH sans `version` + update-in-place managed → 409 optimistic-lock **jamais déclenchable via UI**. #231 = code correct mais latent/mort ; #232 skippé. Détail : `sprints/sprint-42/BLOCKER-premise-broken.md`.
+**Décision dev (2026-07-13) :** ÉTENDRE le sprint — absorber A (monter l'edit surface, câbler `onEditEvent`) + B (threader `version` → conflit déterministe via `EventConflictException` de #231) pour rendre la feature réelle et les E2E exécutables.
+**Status :** En cours — V3 absorption A+B.
 
 ## Sprint 43 — 2026-07-13 (PLANIFIÉ — cohésion 0.70, Auth cleanup léger)
 **Objectif :** Solder la dette contrat d'erreur / hygiène auth S37-S38 (follow-ups #288/#290/#289/#286/#285).
