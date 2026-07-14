@@ -79,7 +79,7 @@ class PasswordResetTokenPurgeSchedulerIntegrationTest extends AbstractPostgresIn
     private UUID seedToken(UUID ownerId, LocalDateTime expiresAt, LocalDateTime usedAt) {
         UUID tokenValue = UUID.randomUUID();
         new TransactionTemplate(txManager).executeWithoutResult(status ->
-                tokenRepository.save(new PasswordResetToken(
+                tokenRepository.create(new PasswordResetToken(
                         UUID.randomUUID(), ownerId, tokenValue, expiresAt, usedAt)));
         return tokenValue;
     }

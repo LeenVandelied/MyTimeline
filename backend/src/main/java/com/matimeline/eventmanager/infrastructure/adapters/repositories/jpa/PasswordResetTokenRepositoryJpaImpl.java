@@ -31,26 +31,26 @@ public class PasswordResetTokenRepositoryJpaImpl
     }
 
     @Override
-    public PasswordResetToken save(PasswordResetToken token) {
-        // Deux chemins distincts (le domaine ne porte pas @Version, verrou en infra) :
-        //  - INSERT (forgot-password) : id inconnu en base -> persist d'une entité neuve.
-        //  - UPDATE / consommation (reset-password) : id déjà présent. On charge l'entité
-        //    MANAGÉE (convention #4, cp-backend) et on recopie le SEUL champ mutable
-        //    (used_at). Dans la transaction de resetPassword, findByToken a déjà chargé
-        //    cette entité dans le contexte de persistance : findById renvoie la MÊME
-        //    instance avec la version lue au CHECK (cache L1 = lecture répétable). Le
-        //    UPDATE porte donc WHERE version=<version-du-CHECK> -> anti-TOCTOU (#143).
-        return super.findById(token.getId())
-            .map(managed -> updateManaged(managed, token))
-            .orElseGet(() -> insertNew(token));
-    }
-
-    private PasswordResetToken insertNew(PasswordResetToken token) {
+    public PasswordResetToken create(PasswordResetToken token) {
+        // Chemin CREATE (forgot-password) : token NEUF, id inconnu en base par construction.
+        // PUR INSERT — AUCUN findById préalable (issue #286 : le SELECT était superflu sur ce
+        // chemin). L'entité neuve porte version=null -> super.save() (SimpleJpaRepository)
+        // route vers em.persist() (pas de merge, pas de SELECT).
         PasswordResetTokenEntity entity = mapper.toEntity(token);
         return mapper.toDomain(super.save(entity));
     }
 
-    private PasswordResetToken updateManaged(PasswordResetTokenEntity managed, PasswordResetToken token) {
+    @Override
+    public PasswordResetToken markConsumed(PasswordResetToken token) {
+        // Chemin CONSUME (reset-password) : verrou optimiste anti-TOCTOU (#143 / PAT-S37-001).
+        // On charge l'entité MANAGÉE via findById (convention #4, cp-backend) et on recopie le
+        // SEUL champ mutable (used_at). Dans la transaction de resetPassword, findByToken a déjà
+        // chargé cette entité dans le contexte de persistance : findById renvoie la MÊME instance
+        // avec la version lue au CHECK (cache L1 = lecture répétable). Le UPDATE porte donc
+        // WHERE version=<version-du-CHECK>.
+        PasswordResetTokenEntity managed = super.findById(token.getId())
+            .orElseThrow(() -> new IllegalStateException(
+                "markConsumed sur un token absent : " + token.getId()));
         managed.setUsedAt(token.getUsedAt());
         // saveAndFlush : force le flush ICI (dans le try/catch de resetPassword) pour que
         // l'ObjectOptimisticLockingFailureException remonte de façon SYNCHRONE et non au

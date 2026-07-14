@@ -74,7 +74,8 @@ class PasswordResetServiceImplTest {
         newService().requestReset("ghost@example.com");
 
         // BR-AUT-005 : aucun token persisté, aucun email envoyé, aucune exception.
-        verify(tokenRepository, never()).save(any());
+        verify(tokenRepository, never()).create(any());
+        verify(tokenRepository, never()).markConsumed(any());
         verifyNoInteractions(emailService);
     }
 
@@ -86,7 +87,9 @@ class PasswordResetServiceImplTest {
         newService().requestReset("alice@example.com");
 
         ArgumentCaptor<PasswordResetToken> tokenCaptor = ArgumentCaptor.forClass(PasswordResetToken.class);
-        verify(tokenRepository).save(tokenCaptor.capture());
+        // Chemin CREATE (#286) : route vers create() (pur INSERT), JAMAIS markConsumed().
+        verify(tokenRepository).create(tokenCaptor.capture());
+        verify(tokenRepository, never()).markConsumed(any());
         PasswordResetToken saved = tokenCaptor.getValue();
         assertThat(saved.getUserId()).isEqualTo(userId);
         assertThat(saved.getUsedAt()).isNull();
@@ -167,9 +170,11 @@ class PasswordResetServiceImplTest {
         assertThat(userCaptor.getValue().getPassword()).isEqualTo("$2a$10$newHash");
         assertThat(userCaptor.getValue().getId()).isEqualTo(userId);
 
-        // Usage unique : token marqué consommé (used_at posé).
+        // Usage unique : token marqué consommé (used_at posé). Chemin CONSUME (#286) :
+        // route vers markConsumed() (entité managée + verrou #143), JAMAIS create().
         ArgumentCaptor<PasswordResetToken> tokenCaptor = ArgumentCaptor.forClass(PasswordResetToken.class);
-        verify(tokenRepository).save(tokenCaptor.capture());
+        verify(tokenRepository).markConsumed(tokenCaptor.capture());
+        verify(tokenRepository, never()).create(any());
         assertThat(tokenCaptor.getValue().getUsedAt()).isEqualTo(now());
     }
 

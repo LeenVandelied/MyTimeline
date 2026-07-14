@@ -107,7 +107,7 @@ class ForgotPasswordAsyncTest extends com.matimeline.eventmanager.support.Abstra
         // La tâche async s'exécute bien et appelle l'envoi (timeout = attente async).
         verify(emailService, timeout(5000))
                 .sendPasswordResetEmail(anyString(), anyString(), anyString());
-        verify(tokenRepository, timeout(5000)).save(org.mockito.ArgumentMatchers.any());
+        verify(tokenRepository, timeout(5000)).create(org.mockito.ArgumentMatchers.any());
 
         sendBlock.countDown();
     }
