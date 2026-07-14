@@ -43,7 +43,30 @@
     "title": "Modified elsewhere",
     "description": "This item was modified from another tab or by someone else. Reload the up-to-date data before continuing; your unsaved changes will be lost.",
     "reload": "Reload up-to-date data",
-    "dismiss": "Cancel"
+    "dismiss": "Cancel",
+    "comparativeDescription": "This event was modified elsewhere while you were editing. Compare your changes with the server version, then choose which one to keep.",
+    "field": "Field",
+    "yourValue": "Your changes",
+    "serverValue": "Server version",
+    "keepMine": "Keep my changes",
+    "takeServer": "Use the server version",
+    "empty": "—",
+    "yes": "Yes",
+    "no": "No",
+    "noChanges": "No visible field difference.",
+    "fields": {
+      "title": "Title",
+      "type": "Type",
+      "durationValue": "Duration",
+      "durationUnit": "Duration unit",
+      "isRecurring": "Recurring",
+      "recurrenceUnit": "Frequency",
+      "recurrenceEndDate": "Recurrence end",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "color": "Color",
+      "archived": "Archived"
+    }
   },
   "validation": {
     "username": "Username must contain at least 3 characters",

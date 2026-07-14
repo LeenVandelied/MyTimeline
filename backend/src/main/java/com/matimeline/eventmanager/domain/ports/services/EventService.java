@@ -23,6 +23,12 @@ public interface EventService {
     List<Event> findDomainEventByProductId(UUID productId);
     Optional<Event> findEventById(UUID id);
 
+    /**
+     * BR-EVE-015 (#231) : version optimiste courante de l'event (ou vide). Exposée pour
+     * enrichir le corps 409 d'une édition concurrente sans faire remonter l'entité JPA.
+     */
+    Optional<Integer> findVersionById(UUID id);
+
     void deleteById(UUID id);
 
     boolean existsById(UUID id);

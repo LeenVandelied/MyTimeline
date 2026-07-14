@@ -12,7 +12,7 @@ import { LanguageSelector } from '@/components/ui/language-selector'
 import { AppFooter } from '@/components/ui/footer-app'
 import { CalendarDays, LogOut, Menu, Settings } from 'lucide-react'
 import { safeErrorMessage } from '@/lib/safe-error'
-import { TimelineResponsive } from '@/components/timeline'
+import { TimelineEditHost } from '@/components/timeline'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import {
@@ -226,7 +226,7 @@ export default function Dashboard() {
                 <span className="text-ink-muted text-xs">{t('common.loading.default')}</span>
               </div>
             ) : (
-              <TimelineResponsive events={events} resources={resources} locale={locale} />
+              <TimelineEditHost events={events} resources={resources} locale={locale} />
             )}
           </section>
         </main>

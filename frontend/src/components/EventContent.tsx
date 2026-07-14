@@ -13,22 +13,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Card, CardContent } from './ui/card'
 import { PopoverPicker } from './ui/popoverPicker'
 import { Calendar, Edit, Save, Clock } from 'lucide-react'
-import { updateEventColor, updateEvent, deleteEvent } from '@/services/eventService'
+import { updateEventColor, deleteEvent } from '@/services/eventService'
 import { useAuth } from '@/hooks/useAuth'
+import { useEventEditConflict } from '@/hooks/useEventEditConflict'
 import { Button } from './ui/button'
-import { EventEditForm, EventEditFormValues, EventSubmitState } from './EventEditForm'
+import { EventEditForm, EventEditFormValues } from './EventEditForm'
 
 // #150 — modèle couleur unique `color` (BR-EVE-009).
 const DEFAULT_COLOR = '#6366f1'
-
-/** Lit `error.response.status` (axios ou générique) sans `any` (cf. #65). */
-function httpStatusOf(error: unknown): number | undefined {
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const response = (error as { response?: { status?: unknown } }).response
-    if (response && typeof response.status === 'number') return response.status
-  }
-  return undefined
-}
 
 interface EventContentProps {
   event: FullCalendarEvent
@@ -43,10 +35,13 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isColorOpen, setIsColorOpen] = useState(false)
   const [color, setColor] = useState(event.color || DEFAULT_COLOR)
-  // #66/#77 — état de soumission 4 états (idle/submitting/error/conflict) piloté
-  // ici et passé au formulaire. Le 409 optimistic locking est désormais émis
-  // backend (#200, corps plat) → l'état `conflict` ouvre le ConflictDialog partagé.
-  const [submitState, setSubmitState] = useState<EventSubmitState>('idle')
+
+  // #review S42 — la machine à états 409 (submitState, capture du serverEvent enrichi,
+  // onKeepMine/onTakeServer/onReload, invalidation ciblée) est DÉLÉGUÉE au hook partagé
+  // `useEventEditConflict` : source unique de vérité, plus de copie inline (le hook a été
+  // extrait du flux #231 précisément pour être réutilisé sans dupliquer). `onDone` sort du
+  // mode édition après un succès ou un rechargement.
+  const conflict = useEventEditConflict(event.id, () => setIsEditing(false))
 
   const countdown = event?.end ? calculateRemainingTime(new Date(event.end), t) : null
 
@@ -82,51 +77,18 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
     }
   }
 
+  // Soumission du formulaire d'édition. Le PATCH complet (`data` inclut `color`) ET la
+  // gestion 409 (capture du serverEvent enrichi, keep-mine, take-server) sont délégués au
+  // hook partagé (#review S42). On ne fait QUE mettre à jour l'état d'affichage read-mode
+  // (`setColor`) — l'ancien `updateEventColor` ici était un DOUBLE-WRITE redondant (le PATCH
+  // principal persiste déjà `color`) et son await hors try/catch figeait le form sur rejet
+  // (régression #77). La persistance couleur read-mode SANS ouvrir le form reste gérée par
+  // `handleColorChange` (try/catch propre).
   const onSubmit = async (data: EventEditFormValues) => {
-    setSubmitState('submitting')
-
-    try {
-      if (data.color) {
-        setColor(data.color)
-        if (user && user.id) {
-          await updateEventColor(event.id, data.color)
-        }
-      }
-
-      if (user && user.id) {
-        await updateEvent(event.id, data)
-      }
-
-      invalidateEvents()
-      setSubmitState('idle')
-      setIsEditing(false)
-    } catch (error) {
-      // #77 — 409 (optimistic locking, conflit d'édition concurrente, contrat #200)
-      // → état `conflict` qui ouvre le ConflictDialog partagé. Tout autre statut
-      // (400/404/403/500…) → `error` inline générique : aucun autre 409 ne transite
-      // par ce flux (les 409 name-conflict Category/Product sont gérés ailleurs).
-      const status = httpStatusOf(error)
-      setSubmitState(status === 409 ? 'conflict' : 'error')
-      console.error("Erreur lors de la mise à jour de l'événement :", safeErrorMessage(error))
+    if (data.color) {
+      setColor(data.color)
     }
-  }
-
-  // #77 — Rechargement sur conflit 409 optimistic : invalidation CIBLÉE de la
-  // query TanStack qui alimente le calendrier (`products.withEvents`) plutôt qu'un
-  // `window.location.reload()`. L'événement provient d'une prop parent hydratée par
-  // `useProductsWithEvents` : invalider cette clé re-fetch les données à jour sans
-  // rechargement complet de page. On sort du mode édition et on repasse à idle.
-  const onReload = () => {
-    invalidateEvents()
-    setSubmitState('idle')
-    setIsEditing(false)
-  }
-
-  // #77 — Fermeture du ConflictDialog sans recharger (annuler / Échap / overlay) :
-  // on repasse simplement `submitState` à idle (le formulaire reste ouvert avec les
-  // saisies de l'utilisateur, qui peut réessayer ou recharger manuellement).
-  const onConflictDismiss = () => {
-    setSubmitState('idle')
+    await conflict.onSubmit(data)
   }
 
   // Suppression déléguée à DeleteConfirmDialog (via EventEditForm). L'erreur DOIT
@@ -138,7 +100,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
   }
 
   const toggleEditMode = () => {
-    if (isEditing) setSubmitState('idle')
+    if (isEditing) conflict.reset()
     setIsEditing(!isEditing)
   }
 
@@ -279,15 +241,22 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                   color: color,
                   // #188 — pré-remplir le toggle archivé depuis l'event (BR-EVE-013).
                   archived: event.extendedProps?.archived ?? false,
+                  // #absorb (BR-EVE-015) — version détenue au chargement → threadée dans
+                  // le PATCH pour armer le 409 déterministe (gap B).
+                  version: event.extendedProps?.version ?? null,
                 }}
                 onSubmit={onSubmit}
                 onCancel={() => {
-                  setSubmitState('idle')
+                  conflict.reset()
                   setIsEditing(false)
                 }}
-                submitState={submitState}
-                onReload={onReload}
-                onConflictDismiss={onConflictDismiss}
+                submitState={conflict.submitState}
+                onReload={conflict.onReload}
+                onConflictDismiss={conflict.onConflictDismiss}
+                conflictServerEvent={conflict.conflict?.server}
+                conflictLocalValues={conflict.conflict?.local}
+                onKeepMine={conflict.onKeepMine}
+                onTakeServer={conflict.onTakeServer}
                 onDelete={onDelete}
               />
             )}

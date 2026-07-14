@@ -140,6 +140,45 @@ describe('EventEditForm — submitState (4 états)', () => {
     await waitFor(() => expect(onConflictDismiss).toHaveBeenCalledOnce())
     expect(onReload).not.toHaveBeenCalled()
   })
+
+  it('conflict COMPARATIF (#231) : serverEvent+localValues → boutons garder/prendre (pas recharger)', async () => {
+    const onKeepMine = vi.fn()
+    const onTakeServer = vi.fn()
+    setup({
+      submitState: 'conflict',
+      onKeepMine,
+      onTakeServer,
+      conflictLocalValues: { ...baseDefaults, title: 'Titre local' },
+      conflictServerEvent: {
+        id: 'evt-1',
+        title: 'Titre serveur',
+        type: 'duration',
+        durationValue: 3,
+        durationUnit: 'days',
+        isRecurring: false,
+        recurrenceUnit: null,
+        recurrenceEndDate: null,
+        startDate: '2026-05-01',
+        endDate: '2026-05-04',
+        productId: 'prod-1',
+        isAllDay: false,
+        color: '#3B82F6',
+        archived: false,
+      },
+    })
+    expect(screen.getByTestId('event-form-conflict')).toBeInTheDocument()
+    expect(screen.getByTestId('conflict-dialog-keep-mine')).toBeInTheDocument()
+    expect(screen.getByTestId('conflict-dialog-take-server')).toBeInTheDocument()
+    expect(screen.queryByTestId('conflict-dialog-reload')).not.toBeInTheDocument()
+    // Diff = seul le titre diffère (le reste des champs est identique).
+    const rows = screen.getAllByTestId('conflict-dialog-diff-row')
+    expect(rows.map((r) => r.getAttribute('data-field'))).toEqual(['title'])
+
+    await userEvent.click(screen.getByTestId('conflict-dialog-keep-mine'))
+    expect(onKeepMine).toHaveBeenCalledOnce()
+    await userEvent.click(screen.getByTestId('conflict-dialog-take-server'))
+    expect(onTakeServer).toHaveBeenCalledOnce()
+  })
 })
 
 describe('EventEditForm — validations inline (BR-EVE)', () => {
@@ -203,6 +242,24 @@ describe('EventEditForm — validations inline (BR-EVE)', () => {
     await userEvent.click(screen.getByTestId('event-form-submit'))
     await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
     expect(onSubmit.mock.calls[0][0]).toMatchObject({ title: 'Mon événement', color: '#3B82F6' })
+  })
+})
+
+describe('EventEditForm — threading version (#review S42 / BR-EVE-015)', () => {
+  it('soumission sans toucher version → payload conserve la version d’origine', async () => {
+    // `version` n'est pas éditable : lue au chargement, renvoyée telle quelle (arme le 409
+    // déterministe #231). Désormais registered (Controller hidden) → robuste à reset()/setValue.
+    const { onSubmit } = setup({ defaultValues: { ...baseDefaults, version: 7 } })
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ version: 7 })
+  })
+
+  it('version=null (event sans version connue) → null transmis tel quel (pas de coercion)', async () => {
+    const { onSubmit } = setup({ defaultValues: { ...baseDefaults, version: null } })
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ version: null })
   })
 })
 

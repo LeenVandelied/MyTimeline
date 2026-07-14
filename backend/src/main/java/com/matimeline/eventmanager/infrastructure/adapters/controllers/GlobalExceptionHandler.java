@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,9 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
+import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
+import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ExportFormatNotSupportedException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
@@ -190,6 +193,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(buildBody(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.UNPROCESSABLE_ENTITY, ex.getMessage()));
+    }
+
+    @ExceptionHandler(EventConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleEventConflict(EventConflictException ex) {
+        // BR-EVE-015 (#231) : édition concurrente d'un EVENT (@Version) -> 409 ENRICHI.
+        // Levée par EventController.updateEvent APRÈS le check d'ownership : l'entité
+        // serveur transportée appartient donc au caller légitime (pas de fuite d'autrui).
+        // Corps = message neutre (rétro-compat #77) + serverVersion + serverEvent projeté
+        // en EventResponse (STRICTEMENT les champs du GET/PATCH propriétaire, aucun champ
+        // interne). Consommé par la modale comparative frontend (#231, câblage E2E #232).
+        // Distinct du handler générique ci-dessous (Product/Category/User @Version -> 409
+        // PLAT inchangé) : on n'enrichit QUE le contrat event, le reste reste chirurgical.
+        // HashMap (pas Map.of) : serverVersion peut être null (défense en profondeur).
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "resource was modified concurrently, please retry");
+        body.put("serverVersion", ex.getServerVersion());
+        body.put("serverEvent", EventResponse.fromDomain(ex.getServerEvent()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)

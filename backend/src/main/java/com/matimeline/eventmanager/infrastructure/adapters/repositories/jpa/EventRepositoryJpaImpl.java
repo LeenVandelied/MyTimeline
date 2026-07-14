@@ -121,4 +121,13 @@ public class EventRepositoryJpaImpl
         }
         return Optional.empty();
     }
+
+    // BR-EVE-015 (#231) : la version @Version vit sur EventEntity (infra) ; on l'extrait
+    // ici sans laisser fuiter l'entité JPA vers le domaine. Utilisé sur le chemin de
+    // conflit optimiste (rare) pour enrichir le 409 — la transaction du update ayant
+    // rollbacké, ce find lit l'état serveur GAGNANT committé.
+    @Override
+    public Optional<Integer> findVersionById(UUID id) {
+        return super.findById(id).map(EventEntity::getVersion);
+    }
 }

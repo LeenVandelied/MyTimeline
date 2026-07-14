@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { Pencil, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { PositionedEvent } from './zoom'
 
@@ -11,16 +11,22 @@ import { PositionedEvent } from './zoom'
  * Trap-focus + fermeture Échap (a11y : la RÉSERVE ui-design impose de garantir
  * ces patterns nous-mêmes, `ux-patterns.md` absent). L'Échap global est géré
  * par le parent (`TimelineView`) ; ce composant gère le trap + le focus initial.
+ *
+ * #absorb (gap A) — affordance « Éditer » optionnelle : quand `onEdit` est câblé
+ * (via `TimelineEditHost`), un bouton ouvre `EventEditForm` pré-rempli. Sans `onEdit`
+ * (usage lecture seule historique), le bouton n'est pas rendu → aucune régression.
  */
 export interface EventDrawerProps {
   event: PositionedEvent | null
   locale: string
   onClose: () => void
+  /** #absorb — ouvre l'édition de l'event (mount `EventEditForm` côté parent). */
+  onEdit?: (event: PositionedEvent) => void
 }
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
-export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose }) => {
+export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose, onEdit }) => {
   const t = useTranslations()
   const panelRef = useRef<HTMLDivElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
@@ -107,6 +113,19 @@ export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose
             <span className="mt-drawer__v">{statusLabel}</span>
           </div>
         </div>
+        {onEdit && (
+          <div className="mt-drawer__footer">
+            <button
+              type="button"
+              className="mt-drawer__action"
+              onClick={() => onEdit(event)}
+              data-testid="event-drawer-edit"
+            >
+              <Pencil size={16} strokeWidth={1.5} aria-hidden="true" />
+              {t('common.buttons.edit')}
+            </button>
+          </div>
+        )}
       </div>
     </>
   )

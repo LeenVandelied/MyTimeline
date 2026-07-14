@@ -71,9 +71,20 @@ export interface TimelineViewProps {
   resources: Resource[]
   locale: string
   today?: Date
+  /**
+   * #absorb (gap A) — ouvre l'édition d'un event depuis le drawer desktop. Câblé par
+   * `TimelineEditHost`. Absent → drawer lecture seule historique (aucune régression).
+   */
+  onEditEvent?: (event: PositionedEvent) => void
 }
 
-export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, locale, today }) => {
+export const TimelineView: React.FC<TimelineViewProps> = ({
+  events,
+  resources,
+  locale,
+  today,
+  onEditEvent,
+}) => {
   const t = useTranslations()
   const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -672,7 +683,19 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ events, resources, l
         </div>
       </div>
 
-      <EventDrawer event={selected} locale={locale} onClose={() => setSelected(null)} />
+      <EventDrawer
+        event={selected}
+        locale={locale}
+        onClose={() => setSelected(null)}
+        onEdit={
+          onEditEvent
+            ? (event) => {
+                setSelected(null)
+                onEditEvent(event)
+              }
+            : undefined
+        }
+      />
     </section>
   )
 }

@@ -43,7 +43,30 @@
     "title": "Anderswo geändert",
     "description": "Dieses Element wurde in einem anderen Tab oder von jemand anderem geändert. Lade die aktuellen Daten neu, bevor du fortfährst; nicht gespeicherte Änderungen gehen verloren.",
     "reload": "Aktuelle Daten neu laden",
-    "dismiss": "Abbrechen"
+    "dismiss": "Abbrechen",
+    "comparativeDescription": "Dieses Ereignis wurde während deiner Bearbeitung anderswo geändert. Vergleiche deine Änderungen mit der Serverversion und wähle, welche du behalten möchtest.",
+    "field": "Feld",
+    "yourValue": "Deine Änderungen",
+    "serverValue": "Serverversion",
+    "keepMine": "Meine Änderungen behalten",
+    "takeServer": "Serverversion übernehmen",
+    "empty": "—",
+    "yes": "Ja",
+    "no": "Nein",
+    "noChanges": "Keine sichtbaren Feldunterschiede.",
+    "fields": {
+      "title": "Titel",
+      "type": "Typ",
+      "durationValue": "Dauer",
+      "durationUnit": "Dauereinheit",
+      "isRecurring": "Wiederkehrend",
+      "recurrenceUnit": "Häufigkeit",
+      "recurrenceEndDate": "Wiederholungsende",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "color": "Farbe",
+      "archived": "Archiviert"
+    }
   },
   "validation": {
     "username": "Der Benutzername muss mindestens 3 Zeichen lang sein",

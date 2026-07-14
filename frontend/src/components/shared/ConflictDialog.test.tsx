@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ConflictDialog } from './ConflictDialog'
+import type { Event, EventEditFormValues } from '@/types/event'
 
 /**
  * #77 — Tests ConflictDialog (Dialog DS partagé, 409 optimistic locking).
@@ -66,5 +67,161 @@ describe('ConflictDialog', () => {
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
     expect(onReload).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * #231 — Mode COMPARATIF : quand `serverEvent` + `localValues` sont fournis (corps 409
+ * enrichi), le dialog affiche un diff champ par champ + deux actions
+ * (« garder mes modifications » / « prendre la version serveur ») au lieu de « recharger ».
+ */
+const localValues: EventEditFormValues = {
+  title: 'Titre local',
+  type: 'single',
+  durationValue: undefined,
+  durationUnit: undefined,
+  isRecurring: false,
+  recurrenceUnit: undefined,
+  recurrenceEndDate: null,
+  startDate: '2026-05-01',
+  endDate: '2026-05-02',
+  color: '#111111',
+  archived: false,
+}
+
+const serverEvent: Event = {
+  id: 'evt-1',
+  title: 'Titre serveur',
+  type: 'single',
+  durationValue: null,
+  durationUnit: null,
+  isRecurring: false,
+  recurrenceUnit: null,
+  recurrenceEndDate: null,
+  startDate: '2026-05-01',
+  endDate: '2026-05-02',
+  productId: 'prod-1',
+  isAllDay: false,
+  color: '#222222',
+  archived: false,
+}
+
+describe('ConflictDialog — mode comparatif (#231)', () => {
+  it('affiche le diff des champs modifiés + boutons garder/prendre (pas recharger)', () => {
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={vi.fn()}
+        onTakeServer={vi.fn()}
+      />,
+    )
+    // Seuls title + color diffèrent (dates/booléens/durée identiques ou vides).
+    const rows = screen.getAllByTestId('conflict-dialog-diff-row')
+    expect(rows).toHaveLength(2)
+    const fields = rows.map((r) => r.getAttribute('data-field'))
+    expect(fields).toEqual(expect.arrayContaining(['title', 'color']))
+    // Actions comparatives présentes, action legacy « recharger » absente.
+    expect(screen.getByTestId('conflict-dialog-keep-mine')).toBeInTheDocument()
+    expect(screen.getByTestId('conflict-dialog-take-server')).toBeInTheDocument()
+    expect(screen.queryByTestId('conflict-dialog-reload')).not.toBeInTheDocument()
+  })
+
+  it('affiche les valeurs locale et serveur côte à côte pour un champ modifié', () => {
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={vi.fn()}
+        onTakeServer={vi.fn()}
+      />,
+    )
+    const titleRow = screen
+      .getAllByTestId('conflict-dialog-diff-row')
+      .find((r) => r.getAttribute('data-field') === 'title')!
+    expect(titleRow).toHaveTextContent('Titre local')
+    expect(titleRow).toHaveTextContent('Titre serveur')
+  })
+
+  it('clic « garder mes modifications » : appelle onKeepMine', async () => {
+    const onKeepMine = vi.fn()
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={onKeepMine}
+        onTakeServer={vi.fn()}
+      />,
+    )
+    await userEvent.click(screen.getByTestId('conflict-dialog-keep-mine'))
+    expect(onKeepMine).toHaveBeenCalledOnce()
+  })
+
+  it('clic « prendre la version serveur » : appelle onTakeServer', async () => {
+    const onTakeServer = vi.fn()
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={vi.fn()}
+        onTakeServer={onTakeServer}
+      />,
+    )
+    await userEvent.click(screen.getByTestId('conflict-dialog-take-server'))
+    expect(onTakeServer).toHaveBeenCalledOnce()
+  })
+
+  it('isSubmitting : désactive garder/prendre → pas de double-clic = 2 updateEvent', async () => {
+    const onKeepMine = vi.fn()
+    const onTakeServer = vi.fn()
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={onKeepMine}
+        onTakeServer={onTakeServer}
+        isSubmitting
+      />,
+    )
+    const keepMine = screen.getByTestId('conflict-dialog-keep-mine')
+    const takeServer = screen.getByTestId('conflict-dialog-take-server')
+    expect(keepMine).toBeDisabled()
+    expect(takeServer).toBeDisabled()
+    await userEvent.click(keepMine)
+    await userEvent.click(takeServer)
+    expect(onKeepMine).not.toHaveBeenCalled()
+    expect(onTakeServer).not.toHaveBeenCalled()
+  })
+
+  it('aucun champ modifié : note « aucune différence » + actions comparatives', () => {
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={{ ...localValues, title: 'Titre serveur', color: '#222222' }}
+        onKeepMine={vi.fn()}
+        onTakeServer={vi.fn()}
+      />,
+    )
+    expect(screen.queryAllByTestId('conflict-dialog-diff-row')).toHaveLength(0)
+    expect(screen.getByTestId('conflict-dialog-no-changes')).toBeInTheDocument()
+    expect(screen.getByTestId('conflict-dialog-keep-mine')).toBeInTheDocument()
   })
 })

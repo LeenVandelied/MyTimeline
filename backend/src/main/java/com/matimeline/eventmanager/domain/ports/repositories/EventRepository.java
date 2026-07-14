@@ -14,6 +14,15 @@ public interface EventRepository {
   Optional<Event> findEventById(UUID id);
 
   /**
+   * BR-EVE-015 (#231) : version optimiste (@Version) COURANTE de l'event, ou vide s'il
+   * n'existe pas. Le domain model {@link Event} ne porte pas la version (concept JPA
+   * infrastructure) ; ce point d'accès l'expose comme simple {@link Integer} pour enrichir
+   * le corps 409 d'une édition concurrente (serverVersion), sans faire remonter l'entité
+   * JPA au domaine. Lecture seule.
+   */
+  Optional<Integer> findVersionById(UUID id);
+
+  /**
    * #78 (RGPD) : supprime DÉFINITIVEMENT tous les événements appartenant à
    * {@code userId}. La table {@code events} n'a PAS de colonne {@code user_id} :
    * l'appartenance est TRANSITIVE via {@code product_id -> products.user_id}. La purge

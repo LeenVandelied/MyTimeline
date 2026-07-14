@@ -96,7 +96,9 @@ export const TimelineResponsive: React.FC<TimelineResponsiveProps> = ({
     )
   }
 
-  return <TimelineView {...props} />
+  // #absorb (gap A) — le desktop reçoit aussi onEditEvent (drawer → bouton « Éditer »).
+  // Avant, seules les variantes mobiles le recevaient → édition desktop inatteignable.
+  return <TimelineView {...props} onEditEvent={onEditEvent} />
 }
 
 export default TimelineResponsive

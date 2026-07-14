@@ -83,7 +83,30 @@
     "title": "Modifié ailleurs",
     "description": "Cet élément a été modifié depuis un autre onglet ou par une autre personne. Rechargez les données à jour avant de continuer, vos modifications non enregistrées seront perdues.",
     "reload": "Recharger les données à jour",
-    "dismiss": "Annuler"
+    "dismiss": "Annuler",
+    "comparativeDescription": "Cet événement a été modifié ailleurs pendant votre édition. Comparez vos modifications à la version serveur, puis choisissez laquelle conserver.",
+    "field": "Champ",
+    "yourValue": "Vos modifications",
+    "serverValue": "Version serveur",
+    "keepMine": "Garder mes modifications",
+    "takeServer": "Prendre la version serveur",
+    "empty": "—",
+    "yes": "Oui",
+    "no": "Non",
+    "noChanges": "Aucune différence de champ visible.",
+    "fields": {
+      "title": "Titre",
+      "type": "Type",
+      "durationValue": "Durée",
+      "durationUnit": "Unité de durée",
+      "isRecurring": "Récurrent",
+      "recurrenceUnit": "Fréquence",
+      "recurrenceEndDate": "Fin de récurrence",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "color": "Couleur",
+      "archived": "Archivé"
+    }
   },
   "validation": {
     "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",

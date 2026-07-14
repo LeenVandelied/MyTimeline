@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useTranslations } from 'next-intl'
-import { useForm, ControllerRenderProps } from 'react-hook-form'
+import { Controller, useForm, ControllerRenderProps } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash2 } from 'lucide-react'
 
@@ -22,6 +22,7 @@ import { contrastInk } from '@/lib/color'
 import {
   createEventEditSchema,
   HEX_COLOR_REGEX,
+  type Event,
   type EventEditFormValues,
 } from '@/types/event'
 
@@ -78,6 +79,18 @@ interface EventEditFormProps {
    * no-op → si omis, le dialog reste ouvert tant que le parent n'a pas changé
    * l'état (RECOMMAND : toujours fournir ce callback). */
   onConflictDismiss?: () => void
+  /**
+   * #231 — Modale comparative : état serveur GAGNANT (corps 409 enrichi) + valeurs
+   * locales soumises. Fournis ensemble → le `ConflictDialog` bascule en mode comparatif
+   * (diff champ par champ + « garder mes modifications » / « prendre la version serveur »).
+   * Absents → mode legacy (bouton « recharger »).
+   */
+  conflictServerEvent?: Event
+  conflictLocalValues?: EventEditFormValues
+  /** #231 — « Garder mes modifications » : re-soumet les valeurs locales. */
+  onKeepMine?: () => void
+  /** #231 — « Prendre la version serveur » : abandonne le local + rafraîchit. */
+  onTakeServer?: () => void
   /** Mode édition : supprime l'événement (ouvre le dialog de confirmation). */
   onDelete?: () => Promise<void>
   /** Récurrence de l'événement édité → warning suppression « seul cet événement ». */
@@ -101,6 +114,10 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   submitState = 'idle',
   onReload,
   onConflictDismiss,
+  conflictServerEvent,
+  conflictLocalValues,
+  onKeepMine,
+  onTakeServer,
   onDelete,
   isRecurring: eventIsRecurring = false,
 }) => {
@@ -160,6 +177,25 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           className="space-y-4"
           data-testid="event-form"
         >
+          {/* #review S42 (BR-EVE-015) — `version` optimiste rendue EXPLICITE : champ
+              registered (Controller) plutôt que survie via `defaultValues` non-enregistré.
+              Robuste à un futur `reset()`/`setValue`. Non éditable (hidden), Controller
+              conserve le type (number|null) sans coercion DOM → threadée telle quelle
+              dans le PATCH (arme le 409 déterministe #231). */}
+          <Controller
+            control={form.control}
+            name="version"
+            render={({ field }) => (
+              <input
+                type="hidden"
+                name={field.name}
+                ref={field.ref}
+                value={field.value ?? ''}
+                readOnly
+                data-testid="event-form-version"
+              />
+            )}
+          />
           <Card className="bg-surface border-rule shadow-md">
             <CardContent className="space-y-4 p-4">
               {/* Titre — BR-EVE-003 (required, 1..100). */}
@@ -525,6 +561,11 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           if (!next) onConflictDismiss?.()
         }}
         onReload={() => onReload?.()}
+        serverEvent={conflictServerEvent}
+        localValues={conflictLocalValues}
+        onKeepMine={() => onKeepMine?.()}
+        onTakeServer={() => onTakeServer?.()}
+        isSubmitting={submitting}
         testId="event-form-conflict"
       />
     </>

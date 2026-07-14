@@ -43,18 +43,26 @@ vi.mock('./EventEditForm', () => ({
     submitState,
     onReload,
     onConflictDismiss,
+    conflictServerEvent,
+    onKeepMine,
+    onTakeServer,
     defaultValues,
   }: {
     onSubmit: (data: unknown) => Promise<void>
     submitState?: string
     onReload?: () => void
     onConflictDismiss?: () => void
+    conflictServerEvent?: { title?: string }
+    onKeepMine?: () => void
+    onTakeServer?: () => void
     defaultValues?: { archived?: boolean }
   }) => (
     <div>
       <span data-testid="submit-state">{submitState}</span>
       {/* #188 — expose la valeur pré-remplie du toggle archivé (BR-EVE-013). */}
       <span data-testid="default-archived">{String(defaultValues?.archived)}</span>
+      {/* #231 — expose le titre serveur capturé (corps 409 enrichi) pour l'observer. */}
+      <span data-testid="conflict-server-title">{conflictServerEvent?.title ?? ''}</span>
       <button type="button" data-testid="do-submit" onClick={() => onSubmit({ title: 'x' })}>
         submit
       </button>
@@ -63,6 +71,12 @@ vi.mock('./EventEditForm', () => ({
       </button>
       <button type="button" data-testid="do-dismiss" onClick={() => onConflictDismiss?.()}>
         dismiss
+      </button>
+      <button type="button" data-testid="do-keep-mine" onClick={() => onKeepMine?.()}>
+        keep-mine
+      </button>
+      <button type="button" data-testid="do-take-server" onClick={() => onTakeServer?.()}>
+        take-server
       </button>
     </div>
   ),
@@ -86,6 +100,38 @@ const baseEvent: FullCalendarEvent = {
 
 function axiosLikeError(status: number) {
   return { response: { status } }
+}
+
+/** #231 — 409 avec corps ENRICHI (serverVersion + serverEvent conforme à eventSchema). */
+function enrichedConflictError(serverTitle: string) {
+  return {
+    response: {
+      status: 409,
+      data: {
+        error: 'resource was modified concurrently, please retry',
+        serverVersion: 3,
+        serverEvent: {
+          id: 'evt-1',
+          title: serverTitle,
+          type: 'single',
+          durationValue: null,
+          durationUnit: null,
+          isRecurring: false,
+          recurrenceUnit: null,
+          recurrenceEndDate: null,
+          startDate: '2026-05-01',
+          endDate: '2026-05-02',
+          productId: 'prod-1',
+          isAllDay: false,
+          color: '#222222',
+          archived: false,
+          // #review S42 (BR-EVE-015) — version serveur portée par le corps 409 enrichi :
+          // `onKeepMine` doit la RÉ-ARMER dans le 2e PATCH (sinon boucle de 409).
+          version: 3,
+        },
+      },
+    },
+  }
 }
 
 /** Ouvre le drawer puis passe en mode édition (bouton edit du header). */
@@ -169,5 +215,58 @@ describe('EventContent — interception 409 optimistic (#77)', () => {
     await userEvent.click(screen.getByTestId('do-dismiss'))
     await waitFor(() => expect(screen.getByTestId('submit-state')).toHaveTextContent('idle'))
     expect(invalidateQueriesMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('EventContent — conflit 409 COMPARATIF (#231)', () => {
+  it('409 enrichi : capture le serverEvent et le transmet au formulaire', async () => {
+    updateEventMock.mockRejectedValue(enrichedConflictError('Titre serveur'))
+    await openEditor()
+    await userEvent.click(screen.getByTestId('do-submit'))
+    await waitFor(() => expect(screen.getByTestId('submit-state')).toHaveTextContent('conflict'))
+    expect(screen.getByTestId('conflict-server-title')).toHaveTextContent('Titre serveur')
+  })
+
+  it('409 plat (corps legacy) : conflict SANS serverEvent (fallback recharger)', async () => {
+    updateEventMock.mockRejectedValue(axiosLikeError(409))
+    await openEditor()
+    await userEvent.click(screen.getByTestId('do-submit'))
+    await waitFor(() => expect(screen.getByTestId('submit-state')).toHaveTextContent('conflict'))
+    expect(screen.getByTestId('conflict-server-title')).toHaveTextContent('')
+  })
+
+  it('« garder mes modifications » (onKeepMine) : re-soumet (updateEvent rappelé)', async () => {
+    // 1er submit → 409 enrichi ; keep-mine re-soumet et réussit (pas de boucle).
+    updateEventMock
+      .mockRejectedValueOnce(enrichedConflictError('Titre serveur'))
+      .mockResolvedValueOnce({ id: 'evt-1' })
+    await openEditor()
+    await userEvent.click(screen.getByTestId('do-submit'))
+    await waitFor(() => expect(screen.getByTestId('submit-state')).toHaveTextContent('conflict'))
+
+    expect(updateEventMock).toHaveBeenCalledTimes(1)
+    await userEvent.click(screen.getByTestId('do-keep-mine'))
+    // Re-soumission : updateEvent rappelé (pas de boucle de 409). Succès → l'éditeur
+    // se referme (mode lecture) donc le formulaire mocké est démonté.
+    await waitFor(() => expect(updateEventMock).toHaveBeenCalledTimes(2))
+    // #review S42 — anti-boucle 409 : le 2e PATCH porte la VERSION SERVEUR (corps 409),
+    // pas la version locale périmée → le check backend passe (plus de décalage).
+    expect(updateEventMock.mock.calls[1][1].version).toBe(3)
+    await waitFor(() => expect(screen.queryByTestId('submit-state')).not.toBeInTheDocument())
+  })
+
+  it('« prendre la version serveur » (onTakeServer) : invalidation ciblée + éditeur fermé', async () => {
+    updateEventMock.mockRejectedValue(enrichedConflictError('Titre serveur'))
+    await openEditor()
+    await userEvent.click(screen.getByTestId('do-submit'))
+    await waitFor(() => expect(screen.getByTestId('submit-state')).toHaveTextContent('conflict'))
+
+    invalidateQueriesMock.mockClear()
+    await userEvent.click(screen.getByTestId('do-take-server'))
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ['products', { userId: 'user-1', withEvents: true }],
+    })
+    // Abandon du local → sortie du mode édition (formulaire démonté).
+    await waitFor(() => expect(screen.queryByTestId('submit-state')).not.toBeInTheDocument())
   })
 })

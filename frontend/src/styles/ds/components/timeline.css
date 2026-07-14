@@ -156,6 +156,12 @@
    que `.mt-tlm__evt::before`. N'affecte pas le layout du header flex. */
 .mt-drawer__close::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 .mt-drawer__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+/* #absorb (gap A) — pied du drawer + bouton « Éditer » (ouvre EventEditForm). Tokens DS,
+   theme clair+sombre via var(). Hitbox >= 44px (min-height). */
+.mt-drawer__footer{padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-rule); display:flex; justify-content:flex-end;}
+.mt-drawer__action{display:inline-flex; align-items:center; gap:var(--space-2); min-height:44px; padding:0 var(--space-4); background:var(--color-accent); color:var(--color-accent-ink); border:none; border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px; font-weight:500; cursor:pointer;}
+.mt-drawer__action:hover{background:var(--color-accent-hover);}
+.mt-drawer__action:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* Tooltip d'aide (?) — liste des raccourcis clavier. */
 .mt-tlv__help{position:relative; display:inline-flex;}

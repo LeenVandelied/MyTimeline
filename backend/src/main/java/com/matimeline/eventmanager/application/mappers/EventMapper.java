@@ -11,7 +11,7 @@ import com.matimeline.eventmanager.infrastructure.entities.ProductEntity;
 @Component
 public class EventMapper {
   public Event toDomain(EventEntity eventEntity) {
-      return new Event(
+      Event event = new Event(
           eventEntity.getId(),
           eventEntity.getTitle(),
           eventEntity.getType(),
@@ -27,6 +27,10 @@ public class EventMapper {
           eventEntity.getColor(),
           eventEntity.isArchived()
       );
+      // #absorb (BR-EVE-015) : la version @Version (infra) est remontée au domaine pour
+      // l'exposer en sortie (EventResponse) et alimenter le check optimiste déterministe.
+      event.setVersion(eventEntity.getVersion());
+      return event;
   }
 
   public EventEntity toEntity(Event event, ProductEntity productEntity) {

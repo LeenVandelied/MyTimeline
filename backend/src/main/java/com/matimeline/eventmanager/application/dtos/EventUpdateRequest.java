@@ -57,6 +57,15 @@ public class EventUpdateRequest {
     private Boolean archived;
 
     /**
+     * #absorb (BR-EVE-015) : version optimiste détenue par le client au chargement du
+     * formulaire. NULLABLE pour rétro-compat (un PATCH partiel legacy sans version — ex.
+     * changement de couleur seul — n'arme pas le contrôle). Quand présente, le service
+     * compare à la version serveur COURANTE et lève {@code EventConflictException} (409
+     * enrichi #231) en cas de décalage : conflit d'édition DÉTERMINISTE via l'API.
+     */
+    private Integer version;
+
+    /**
      * BR-EVE-002 (#201) : cohérence inter-champ {@code endDate >= startDate}. La garde ne
      * s'applique que lorsque les DEUX dates sont présentes DANS LE PAYLOAD (PATCH partiel :
      * une date seule s'appuie sur l'état persisté, invisible au niveau DTO). Le formulaire
@@ -161,5 +170,13 @@ public class EventUpdateRequest {
 
     public void setArchived(Boolean archived) {
         this.archived = archived;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }
