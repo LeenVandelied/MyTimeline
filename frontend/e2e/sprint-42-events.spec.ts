@@ -221,9 +221,10 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
   /**
    * SCÉNARIO 2 — Toggle `archived` (BR-EVE-013, PATCH-only).
    * Bascule `event-form-archived-toggle`, sauvegarde (PATCH 200), vérifie la
-   * persistance côté serveur, puis rouvre le form et vérifie le PRÉ-REMPLISSAGE.
+   * persistance côté serveur, puis vérifie que l'event archivé est MASQUÉ de la frise
+   * (le pré-remplissage n'est pas vérifiable : event archivé non réouvrable via la frise).
    */
-  test('toggle archived : bascule persistée + pré-remplie à la réouverture', async ({ page }) => {
+  test('toggle archived : bascule persistée + masquée de la frise', async ({ page }) => {
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Archived Cat'))
     const product = await seedProduct(page, {
