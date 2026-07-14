@@ -153,6 +153,25 @@ class AuthControllerSecurityTest {
                 .andExpect(jsonPath("$.name").value("Alice"));
     }
 
+    /**
+     * Issue #289 — anti-énumération de compte sur /me : un token à SIGNATURE VALIDE
+     * (extractUsername ne lève pas) dont le username n'existe pas (user.isEmpty())
+     * renvoie le MÊME 401 générique {"error":"token expiré ou invalide"} que /refresh,
+     * jamais un 404 "User not found" qui révélerait l'ABSENCE du compte. Aucune
+     * distinction observable entre "compte inexistant" et "token invalide".
+     */
+    @Test
+    void me_withUnknownUserInValidToken_returns401Generic_notFound() throws Exception {
+        when(jwtService.extractUsername("ghost-token")).thenReturn("ghost");
+        when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "ghost-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                // Aucune fuite d'existence de compte : pas de 404 ni de "User not found".
+                .andExpect(content().string(not(containsString("User not found"))));
+    }
+
     @Test
     void register_duplicateUsername_returns409() throws Exception {
         when(userService.findDomainUserByUsername(anyString())).thenReturn(Optional.empty());

@@ -154,8 +154,15 @@ public class AuthController {
             Optional<User> user = userService.findDomainUserByUsername(username);
 
             if (user.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "User not found"));
+                // Anti-énumération de compte (#289, cohérence avec /refresh #113) : un
+                // username inexistant dans un token SIGNÉ VALIDE renvoie le MÊME 401
+                // générique qu'un token invalide/expiré, jamais un 404 "User not found"
+                // distinct. Un 404 distinct permettrait de distinguer "compte inexistant"
+                // de "token invalide" et d'énumérer les comptes. Atteindre cette branche
+                // exige déjà un token à signature valide (extractUsername vérifie la
+                // signature), donc le secret ; le durcissement est défensif.
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "token expiré ou invalide"));
             }
 
             if (!jwtService.validateToken(token, new CustomUserDetails(user.get(), List.of(new SimpleGrantedAuthority(user.get().getRole()))))) {

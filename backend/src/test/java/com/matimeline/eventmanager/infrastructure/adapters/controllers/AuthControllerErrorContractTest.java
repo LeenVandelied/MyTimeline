@@ -82,15 +82,17 @@ class AuthControllerErrorContractTest {
                 .andExpect(jsonPath("$.error").value("Unauthorized: No token provided"));
     }
 
+    // #289 : anti-énumération — un username inexistant dans un token signé valide
+    // renvoie le MÊME 401 générique que /refresh (plus de 404 "User not found" distinct).
     @Test
-    void me_unknownUser_returns404JsonError() throws Exception {
+    void me_unknownUser_returns401Generic() throws Exception {
         when(jwtService.extractUsername(anyString())).thenReturn("ghost");
         when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "dummy-token")))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("User not found"));
+                .andExpect(jsonPath("$.error").value("token expiré ou invalide"));
     }
 
     // ----- /register -----
