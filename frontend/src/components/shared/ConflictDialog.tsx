@@ -58,6 +58,11 @@ export interface ConflictDialogProps {
   onKeepMine?: () => void
   /** COMPARATIF : « Prendre la version serveur » — abandonne le local + rafraîchit. */
   onTakeServer?: () => void
+  /**
+   * Soumission en cours (409 → re-soumission keep-mine). Désactive TOUS les boutons
+   * d'action pour empêcher un double-clic = 2 `updateEvent` concurrents. Défaut `false`.
+   */
+  isSubmitting?: boolean
 }
 
 /** Champs comparables local ↔ serveur (kind pilote la comparaison/affichage). */
@@ -94,6 +99,7 @@ export function ConflictDialog({
   localValues,
   onKeepMine,
   onTakeServer,
+  isSubmitting = false,
 }: ConflictDialogProps) {
   const t = useTranslations('conflictDialog')
 
@@ -192,6 +198,7 @@ export function ConflictDialog({
                 variant="outline"
                 className="border-rule-strong text-ink-muted hover:bg-surface-2"
                 onClick={() => onTakeServer?.()}
+                disabled={isSubmitting}
                 data-testid="conflict-dialog-take-server"
               >
                 {t('takeServer')}
@@ -200,6 +207,7 @@ export function ConflictDialog({
                 type="button"
                 className="bg-accent hover:bg-accent-hover text-accent-ink"
                 onClick={() => onKeepMine?.()}
+                disabled={isSubmitting}
                 data-testid="conflict-dialog-keep-mine"
               >
                 {t('keepMine')}
@@ -211,6 +219,7 @@ export function ConflictDialog({
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
                 className="border-rule-strong text-ink-muted hover:bg-surface-2"
               >
                 {t('dismiss')}
@@ -219,6 +228,7 @@ export function ConflictDialog({
                 type="button"
                 className="bg-accent hover:bg-accent-hover text-accent-ink"
                 onClick={handleReload}
+                disabled={isSubmitting}
                 data-testid="conflict-dialog-reload"
               >
                 {t('reload')}

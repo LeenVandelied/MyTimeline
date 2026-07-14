@@ -125,6 +125,9 @@ function enrichedConflictError(serverTitle: string) {
           isAllDay: false,
           color: '#222222',
           archived: false,
+          // #review S42 (BR-EVE-015) — version serveur portée par le corps 409 enrichi :
+          // `onKeepMine` doit la RÉ-ARMER dans le 2e PATCH (sinon boucle de 409).
+          version: 3,
         },
       },
     },
@@ -246,6 +249,9 @@ describe('EventContent — conflit 409 COMPARATIF (#231)', () => {
     // Re-soumission : updateEvent rappelé (pas de boucle de 409). Succès → l'éditeur
     // se referme (mode lecture) donc le formulaire mocké est démonté.
     await waitFor(() => expect(updateEventMock).toHaveBeenCalledTimes(2))
+    // #review S42 — anti-boucle 409 : le 2e PATCH porte la VERSION SERVEUR (corps 409),
+    // pas la version locale périmée → le check backend passe (plus de décalage).
+    expect(updateEventMock.mock.calls[1][1].version).toBe(3)
     await waitFor(() => expect(screen.queryByTestId('submit-state')).not.toBeInTheDocument())
   })
 

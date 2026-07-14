@@ -80,7 +80,9 @@ export function useEventEditConflict(
     async (data: EventEditFormValues) => {
       setSubmitState('submitting')
       try {
-        if (eventId) {
+        // Garde `user?.id` cohérente avec le reste du flux (`invalidateEvents`,
+        // color-path d'EventContent) : pas de PATCH sans utilisateur authentifié.
+        if (eventId && user?.id) {
           await updateEvent(eventId, data)
         }
         invalidateEvents()
@@ -99,7 +101,7 @@ export function useEventEditConflict(
         console.error("Erreur lors de la mise à jour de l'événement :", safeErrorMessage(error))
       }
     },
-    [eventId, invalidateEvents, onDone],
+    [eventId, invalidateEvents, onDone, user?.id],
   )
 
   const onReload = useCallback(() => {

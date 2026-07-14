@@ -183,6 +183,31 @@ describe('ConflictDialog — mode comparatif (#231)', () => {
     expect(onTakeServer).toHaveBeenCalledOnce()
   })
 
+  it('isSubmitting : désactive garder/prendre → pas de double-clic = 2 updateEvent', async () => {
+    const onKeepMine = vi.fn()
+    const onTakeServer = vi.fn()
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={onKeepMine}
+        onTakeServer={onTakeServer}
+        isSubmitting
+      />,
+    )
+    const keepMine = screen.getByTestId('conflict-dialog-keep-mine')
+    const takeServer = screen.getByTestId('conflict-dialog-take-server')
+    expect(keepMine).toBeDisabled()
+    expect(takeServer).toBeDisabled()
+    await userEvent.click(keepMine)
+    await userEvent.click(takeServer)
+    expect(onKeepMine).not.toHaveBeenCalled()
+    expect(onTakeServer).not.toHaveBeenCalled()
+  })
+
   it('aucun champ modifié : note « aucune différence » + actions comparatives', () => {
     render(
       <ConflictDialog

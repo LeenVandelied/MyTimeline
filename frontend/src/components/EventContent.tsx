@@ -77,16 +77,16 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
     }
   }
 
-  // Soumission du formulaire d'édition. La couleur reste une responsabilité PROPRE à
-  // `EventContent` : mise à jour de l'état d'affichage read-mode (`setColor`) + persistance
-  // via l'endpoint dédié. Le PATCH complet ET la gestion 409 (capture du serverEvent
-  // enrichi, keep-mine, take-server) sont délégués au hook partagé (#review S42).
+  // Soumission du formulaire d'édition. Le PATCH complet (`data` inclut `color`) ET la
+  // gestion 409 (capture du serverEvent enrichi, keep-mine, take-server) sont délégués au
+  // hook partagé (#review S42). On ne fait QUE mettre à jour l'état d'affichage read-mode
+  // (`setColor`) — l'ancien `updateEventColor` ici était un DOUBLE-WRITE redondant (le PATCH
+  // principal persiste déjà `color`) et son await hors try/catch figeait le form sur rejet
+  // (régression #77). La persistance couleur read-mode SANS ouvrir le form reste gérée par
+  // `handleColorChange` (try/catch propre).
   const onSubmit = async (data: EventEditFormValues) => {
     if (data.color) {
       setColor(data.color)
-      if (user && user.id) {
-        await updateEventColor(event.id, data.color)
-      }
     }
     await conflict.onSubmit(data)
   }

@@ -565,6 +565,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         localValues={conflictLocalValues}
         onKeepMine={() => onKeepMine?.()}
         onTakeServer={() => onTakeServer?.()}
+        isSubmitting={submitting}
         testId="event-form-conflict"
       />
     </>
