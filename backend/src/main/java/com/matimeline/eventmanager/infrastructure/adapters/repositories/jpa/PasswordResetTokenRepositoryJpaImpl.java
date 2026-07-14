@@ -48,6 +48,13 @@ public class PasswordResetTokenRepositoryJpaImpl
         // chargé cette entité dans le contexte de persistance : findById renvoie la MÊME instance
         // avec la version lue au CHECK (cache L1 = lecture répétable). Le UPDATE porte donc
         // WHERE version=<version-du-CHECK>.
+        // orElseThrow = ASSERTION d'invariant, PAS un chemin d'erreur client. markConsumed
+        // est TOUJOURS appelé après findByToken DANS LA MÊME transaction resetPassword :
+        // l'entité est déjà dans le contexte de persistance (cache L1), findById la relit
+        // sans requête et ne peut donc pas renvoyer empty. C'est le MÊME invariant same-tx
+        // dont dépend le verrou anti-TOCTOU #143. Si jamais violé (rupture de frontière
+        // transactionnelle = bug), on fail-fast en 500 volontairement : masquer cette
+        // violation en 400/InvalidToken donnerait un contrat trompeur (revue Sprint 43).
         PasswordResetTokenEntity managed = super.findById(token.getId())
             .orElseThrow(() -> new IllegalStateException(
                 "markConsumed sur un token absent : " + token.getId()));
