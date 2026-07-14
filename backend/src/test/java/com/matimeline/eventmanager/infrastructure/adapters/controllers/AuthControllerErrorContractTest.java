@@ -79,7 +79,8 @@ class AuthControllerErrorContractTest {
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Unauthorized: No token provided"));
+                // #288 : vocabulaire unifié ErrorCode — 401 -> code "unauthorized".
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
     // #289 : anti-énumération — un username inexistant dans un token signé valide
@@ -92,7 +93,8 @@ class AuthControllerErrorContractTest {
         mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "dummy-token")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("token expiré ou invalide"));
+                // #288 : 401 générique -> code "unauthorized" (anti-énumération inchangée).
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
     // ----- /register -----
@@ -111,7 +113,8 @@ class AuthControllerErrorContractTest {
                         .content(body))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("User already exists"));
+                // #288 : 409 -> code "conflict".
+                .andExpect(jsonPath("$.error").value("conflict"));
     }
 
     @Test

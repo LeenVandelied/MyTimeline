@@ -11,16 +11,22 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
  *
  * <p>Public (pas package-private) : réutilisable par les controllers de ce
  * package qui construisent leur propre corps {@code {"error": "..."}} sans
- * passer par {@code buildBody}. NOTE : {@code AuthController} (#125) renvoie
- * volontairement des messages lisibles dans {@code error} (AC de l'issue) et
- * n'utilise pas encore cet enum — unification des vocabulaires à arbitrer
- * (follow-up Sprint 38).
+ * passer par {@code buildBody}. #288 : {@code AuthController} est désormais
+ * MIGRÉ sur cet enum — il renvoyait auparavant un vocabulaire mixte (anglais
+ * lisible, snake_case, français) dans {@code error}, contrat imprévisible. Le
+ * champ {@code error} d'AuthController porte maintenant un code stable choisi
+ * au niveau du STATUT HTTP ({@link #UNAUTHORIZED}, {@link #CONFLICT},
+ * {@link #INTERNAL_ERROR}), en conservant la forme plate {@code {"error": <code>}}.
  */
 public enum ErrorCode {
 
     NOT_FOUND("not_found"),
     VALIDATION_FAILED("validation_failed"),
-    UNPROCESSABLE_ENTITY("unprocessable_entity");
+    UNPROCESSABLE_ENTITY("unprocessable_entity"),
+    // #288 : codes stables pour AuthController (taxonomie au niveau du statut HTTP).
+    UNAUTHORIZED("unauthorized"),
+    CONFLICT("conflict"),
+    INTERNAL_ERROR("internal_error");
 
     private final String code;
 

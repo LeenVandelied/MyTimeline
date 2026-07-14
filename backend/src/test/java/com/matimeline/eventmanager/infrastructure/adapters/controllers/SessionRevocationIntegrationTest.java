@@ -272,8 +272,9 @@ class SessionRevocationIntegrationTest extends AbstractPostgresIntegrationTest {
                 .andExpect(status().isOk());
 
         // BR-AUT-009 étendue : refresh d'un token dont le jti est révoqué -> 401.
+        // #288 : vocabulaire unifié ErrorCode — 401 -> code "unauthorized".
         mockMvc.perform(post("/api/auth/refresh").cookie(jwt))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("token expiré ou invalide"));
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 }

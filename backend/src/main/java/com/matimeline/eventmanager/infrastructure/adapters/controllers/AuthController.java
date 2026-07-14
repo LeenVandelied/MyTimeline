@@ -130,15 +130,15 @@ public class AuthController {
             // un script XSS pourrait le lire et annuler le bénéfice du HttpOnly.
             return ResponseEntity.ok(Map.of("message", "Authentification réussie"));
         } catch (BadCredentialsException e) {
-            // BR-AUT-005 : message neutre (ne distingue pas username inconnu vs
-            // mot de passe faux) et body JSON {"error":...} cohérent avec les
-            // autres réponses d'erreur du contrôleur (register/refresh).
+            // BR-AUT-005 : code neutre (ne distingue pas username inconnu vs mot de
+            // passe faux). #288 : vocabulaire unifié sur ErrorCode, code au niveau du
+            // statut HTTP (401 -> "unauthorized"), forme plate {"error": <code>}.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid username or password"));
+                    .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
         } catch (Exception e) {
             logger.error("Échec inattendu du login (username={})", authRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "authentication_failed"));
+                    .body(Map.of("error", ErrorCode.INTERNAL_ERROR.getCode()));
         }
     }
 
@@ -147,7 +147,7 @@ public class AuthController {
         try {
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Unauthorized: No token provided"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             String username = jwtService.extractUsername(token);
@@ -162,12 +162,12 @@ public class AuthController {
                 // exige déjà un token à signature valide (extractUsername vérifie la
                 // signature), donc le secret ; le durcissement est défensif.
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "token expiré ou invalide"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             if (!jwtService.validateToken(token, new CustomUserDetails(user.get(), List.of(new SimpleGrantedAuthority(user.get().getRole()))))) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Unauthorized: Invalid token"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             // #73 (BR-AUT-011) : /api/auth/** est bypassé par JwtFilter, la révocation
@@ -178,20 +178,20 @@ public class AuthController {
             String jti = jwtService.extractJti(token);
             if (!sessionService.isSessionActive(jti)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Unauthorized: session révoquée"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             return ResponseEntity.ok(UserResponse.fromDomain(user.get()));
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized: Token expired"));
+                    .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
         } catch (MalformedJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized: Invalid token"));
+                    .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
         } catch (Exception e) {
             logger.error("Échec inattendu de /me", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An error occurred"));
+                    .body(Map.of("error", ErrorCode.INTERNAL_ERROR.getCode()));
         }
     }
 
@@ -202,7 +202,7 @@ public class AuthController {
 
             if (existingUser.isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(Map.of("error", "User already exists"));
+                        .body(Map.of("error", ErrorCode.CONFLICT.getCode()));
             }
 
             String hashedPassword = passwordEncoder.encode(registerRequest.getPassword());
@@ -224,16 +224,15 @@ public class AuthController {
             // BR-AUT-001 : violation de contrainte unique (username/email).
             // Couvre la course concurrente non rattrapée par le pré-check applicatif
             // ainsi que l'unicité de l'email (aucun pré-check applicatif).
-            String detail = e.getMostSpecificCause().getMessage();
-            String field = detail != null && detail.toLowerCase().contains("email")
-                    ? "email"
-                    : "username";
+            // #288 : discriminant username/email supprimé du body — le frontend
+            // (register/page.tsx) mappe le 409 par STATUT HTTP seul, jamais par le
+            // champ. Code unique "conflict" au niveau du statut, forme plate.
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", field + " already taken"));
+                    .body(Map.of("error", ErrorCode.CONFLICT.getCode()));
         } catch (Exception e) {
             logger.error("Échec inattendu de register (username={})", registerRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An error occurred during registration"));
+                    .body(Map.of("error", ErrorCode.INTERNAL_ERROR.getCode()));
         }
     }
 
@@ -252,7 +251,7 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("Échec inattendu du logout", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An error occurred during logout"));
+                    .body(Map.of("error", ErrorCode.INTERNAL_ERROR.getCode()));
         }
     }
 
@@ -263,7 +262,7 @@ public class AuthController {
         try {
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "token expiré ou invalide"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             String username = jwtService.extractUsername(token);
@@ -275,7 +274,7 @@ public class AuthController {
                 // token expiré/invalide. Un 404 distinct permettrait de distinguer
                 // "compte inexistant" de "token invalide" et d'énumérer les comptes.
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "token expiré ou invalide"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             CustomUserDetails userDetails = new CustomUserDetails(user.get(),
@@ -289,7 +288,7 @@ public class AuthController {
             // extractUsername) et toute JwtException sont rattrapées ci-dessous.
             if (!jwtService.validateToken(token, userDetails)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "token expiré ou invalide"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             // #73 (BR-AUT-009 étendue) : refuser un token dont le jti est RÉVOQUÉ, même
@@ -300,7 +299,7 @@ public class AuthController {
             String currentJti = jwtService.extractJti(token);
             if (!sessionService.isSessionActive(currentJti)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "token expiré ou invalide"));
+                        .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
             }
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -320,11 +319,11 @@ public class AuthController {
             // invalide (SignatureException, MalformedJwtException...) levé par
             // extractUsername -> 401, jamais de ré-émission ni de 500.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "token expiré ou invalide"));
+                    .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
         } catch (Exception e) {
             logger.error("Échec inattendu du refresh", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "an_error_occurred"));
+                    .body(Map.of("error", ErrorCode.INTERNAL_ERROR.getCode()));
         }
     }
 
