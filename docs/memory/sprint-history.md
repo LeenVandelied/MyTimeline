@@ -908,18 +908,28 @@
   - Hygiène milestone : #300/#301/#302 (parqués S40, non exécutés) → détachés du milestone 41 (retour backlog)
 **Status :** Terminé.
 
-## Sprint 42 — 2026-07-13 (En cours — cohésion 0.60, Modale conflit 409)
-**Objectif :** Modale de conflit comparative sur 409 optimistic-lock (corps backend enrichi + diff serveur/local) + E2E.
-**Milestone GitHub :** #42
-**Branche :** `sprint/42` (créée depuis origin/dev @ 1a87d6f, 2026-07-13)
-**Issues :** #231, #232
-**Vagues :** V1 = #231 (backend 409 enrichi → frontend modale comparative) ✅ `0bc144f` | V2 = #232 (E2E) ⚠ `fcbf64e` specs `test.fixme` | V3 = ABSORPTION A+B (flux atteignable) | V4 = finaliser E2E + gates
-**Migrations :** aucune
-**Dépend de :** aucune | **Précède S43** (partage GlobalExceptionHandler.java avec #290)
-**Sécurité :** audit #231 = **SÛR** (ownership avant sérialisation OK, serverEvent sans champ interne). Détail : `sprints/sprint-42/security-audit-231.md`.
-**⚠ BLOCKER découvert V2 (vérifié) :** prémisse cassée — (A) surface d'édition event orpheline (aucune route ne monte `EventContent`/`EventEditForm`, régression S17, timeline routée = lecture seule) ; (B) `updateEvent` PATCH sans `version` + update-in-place managed → 409 optimistic-lock **jamais déclenchable via UI**. #231 = code correct mais latent/mort ; #232 skippé. Détail : `sprints/sprint-42/BLOCKER-premise-broken.md`.
-**Décision dev (2026-07-13) :** ÉTENDRE le sprint — absorber A (monter l'edit surface, câbler `onEditEvent`) + B (threader `version` → conflit déterministe via `EventConflictException` de #231) pour rendre la feature réelle et les E2E exécutables.
-**Status :** En cours — V3 absorption A+B.
+## Sprint 42 — 2026-07-13 → 2026-07-14 (Terminé — merge PR #306 dans dev)
+**Objectif :** Modale de conflit comparative sur 409 optimistic-lock (corps backend enrichi + diff serveur/local) + édition d'event réellement atteignable + E2E.
+**Milestone GitHub :** #42 (fermé après merge)
+**Branche :** `sprint/42` (depuis origin/dev @ 1a87d6f) → PR **#306** → dev.
+**Issues livrées (2) :** #231 (modale 409 comparative), #232 (E2E conflit + archived).
+**Vagues exécutées :** V1 = #231 `0bc144f` | V2 = #232 `fcbf64e` (specs) | V3 = ABSORPTION A+B `2dd42ab`/`a5caa56`/`c1a8963` | fixes review `cd29644` + e2e `e54b5ea`/`f00940b` + review-pr `10291f4`/`dbf12eb`/`54f9d61`.
+**Cohésion :** 0.60 | **Migrations :** aucune | **Dépend de :** aucune | **Précède S43**.
+**Commits :** 11 (décomposés par issue/vague/fix).
+**BR impactées :** BR-EVE-015 (409 optimistic-lock, contrat enrichi + désormais déclenchable via API), BR-EVE-013 (archived).
+**⚠ BLOCKER découvert V2 (vérifié, corrigé) :** prémisse cassée — (A) surface d'édition orpheline (régression S17, timeline routée en lecture seule) ; (B) 409 jamais déclenchable via UI (pas de `version`, update-in-place managed). #231 livrait du code mort côté UI → **sprint étendu** (absorption A+B) pour rendre la feature réelle. Détail : `sprints/sprint-42/BLOCKER-premise-broken.md`.
+**Sécurité :** audit #231 = **SÛR** (ownership avant sérialisation, `serverEvent` sans champ interne, pas d'oracle 409 cross-owner) — re-confirmé en review. `sprints/sprint-42/security-audit-231.md`.
+**Reviews :** batch mid-sprint (1 MAJEUR duplication, RÉSOLU) + `/review-pr #306` TEAM (backend+e2e PRÊT MERGE ; frontend 8 findings dont 1 régression `cd29644` d'échec silencieux couleur — TOUS RÉSOLU `10291f4`/`dbf12eb`/`54f9d61`). Détail : `sprints/sprint-42/review-batch.md`.
+**Tests :** Backend 404/404 vert | Frontend 463 vert (1 échec dep-locale `eslint-plugin-storybook` isolé, vert CI) | **E2E 3 specs vertes en CI** (non exécutable local — cf. [[mytimeline-e2e-ci-only-gate]], 3 itérations de fix spec). Parcours CI : `sprints/sprint-42/e2e-ci-journey.md`.
+**Nouveaux pitfalls/patterns/décisions/bugs :** PIT-S42-001/002/003, PAT-S42-001/002, DEC-S42-001/002, BUG-S42-001/002.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Event archivé non réouvrable/désarchivable via UI (décision produit) [M | events] → **issue #307** (backlog)
+  - Dep `eslint-plugin-storybook` locale (test rouge) [S | infra] → **issue #308** (backlog)
+  - Mobile `onDeleteEvent` non câblé [XS | timeline] → **issue #309** (backlog)
+  - Rate-limit retry `onKeepMine` [XS | backend] → **issue #310** (backlog)
+  - Vrai race concurrent commit→catch→refetch non couvert e2e [XS] → consigné (déterministe couvert ; race réel = intégration + filet Hibernate)
+  - Revue mainteneur freeze-list ArchUnit `EventMapper→getVersion` [XS] → consigné
+**Status :** Terminé.
 
 ## Sprint 43 — 2026-07-13 (PLANIFIÉ — cohésion 0.70, Auth cleanup léger)
 **Objectif :** Solder la dette contrat d'erreur / hygiène auth S37-S38 (follow-ups #288/#290/#289/#286/#285).
