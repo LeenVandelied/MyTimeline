@@ -176,7 +176,9 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("invalid current password"));
+                // #290 : contrat structuré — `error`=code stable, texte humain en `message`.
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("invalid current password"));
     }
 
     @Test
@@ -209,7 +211,9 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("new password must differ"));
+                // #290 : `error`=code stable, texte humain en `message`.
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("new password must differ"));
     }
 
     @Test
@@ -280,7 +284,9 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("username confirmation does not match"));
+                // #290 : `error`=code stable, texte neutre en `message`.
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("username confirmation does not match"));
     }
 
     @Test
@@ -354,7 +360,9 @@ class UserControllerTest {
                                 new byte[] {0x4D, 0x5A, 0x00}))
                         .cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("type de fichier non autorisé (JPEG, PNG ou WebP attendu)"));
+                // #290 : `error`=code stable, message dynamique lisible en `message`.
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("type de fichier non autorisé (JPEG, PNG ou WebP attendu)"));
     }
 
     @Test

@@ -26,6 +26,9 @@ public enum ErrorCode {
     // #288 : codes stables pour AuthController (taxonomie au niveau du statut HTTP).
     UNAUTHORIZED("unauthorized"),
     CONFLICT("conflict"),
+    // #290 : code générique niveau STATUT pour les erreurs 400 métier migrées de
+    // {"error":<texte>} vers buildBody (le texte humain part dans `message`).
+    BAD_REQUEST("bad_request"),
     INTERNAL_ERROR("internal_error");
 
     private final String code;
