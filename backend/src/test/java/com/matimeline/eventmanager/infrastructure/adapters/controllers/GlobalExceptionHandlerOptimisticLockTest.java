@@ -76,6 +76,9 @@ class GlobalExceptionHandlerOptimisticLockTest {
         // État serveur GAGNANT rechargé après le conflit (le titre committé par l'autre édition).
         Event serverEvent = new Event(eventId, "titre-serveur", "single", null, null, false, null, null,
                 null, null, productId, false, "#3B82F6", false);
+        // Version optimiste portée par l'entité serveur rechargée (EventResponse l'expose ;
+        // le client la ré-arme sur « garder mes modifications »). Cohérente avec serverVersion.
+        serverEvent.setVersion(7);
 
         // Ownership chain (checkEventOwnership) : caller (SecurityContext via CallerResolver)
         // -> event -> product owner == caller. findEventById sert AUSSI le rechargement d'état
@@ -102,6 +105,9 @@ class GlobalExceptionHandlerOptimisticLockTest {
                 .andExpect(jsonPath("$.serverEvent.title").value("titre-serveur"))
                 .andExpect(jsonPath("$.serverEvent.productId").value(productId.toString()))
                 .andExpect(jsonPath("$.serverEvent.archived").value(false))
+                // Verrou contrat : la version optimiste de serverEvent est exposée (le client
+                // la ré-arme sur « garder mes modifications » pour éviter une boucle de 409).
+                .andExpect(jsonPath("$.serverEvent.version").value(7))
                 // Forme distincte du buildBody détaillé : ni timestamp ni status.
                 .andExpect(jsonPath("$.timestamp").doesNotExist())
                 .andExpect(jsonPath("$.status").doesNotExist());

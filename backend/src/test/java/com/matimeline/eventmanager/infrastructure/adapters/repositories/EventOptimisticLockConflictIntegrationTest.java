@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
@@ -105,6 +106,52 @@ class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegra
     }
 
     /**
+     * #review S42 (BR-EVE-015) — Vérifie le CHECK DÉTERMINISTE côté service (pas le filet
+     * Hibernate) : deux PATCH SÉQUENTIELS via le service réel, le 2e portant une {@code version}
+     * cliente PÉRIMÉE, lèvent {@link EventConflictException} AVANT tout flux Hibernate — sans
+     * {@code em.detach}/{@code merge}. C'est le chemin nominal du contrat 409 #231 (le formulaire
+     * renvoie la version détenue au chargement). L'exception transporte l'état serveur GAGNANT
+     * (version courante + entité), et le 1er update n'est pas écrasé.
+     */
+    @Test
+    void staleClientVersion_isRejectedByDeterministicCheck_withoutHibernateRace() {
+        UUID eventId = persistEventGraph();
+
+        // (1) 1er PATCH committé via le service (version cliente 0 = état au chargement) : 0 -> 1.
+        txTemplate.executeWithoutResult(status ->
+                eventService.updateEvent(eventId, titleCommandWithVersion("titre-WINNER", 0)));
+
+        // (2) 2e PATCH avec une version cliente PÉRIMÉE (0, alors que la base est à 1). Le service
+        //     recharge l'entité MANAGÉE (version 1) et compare à command.version()=0 -> décalage
+        //     -> EventConflictException DÉTERMINISTE, levée avant tout UPDATE (aucun em.detach).
+        Throwable secondError = catchThrowable(() ->
+                txTemplate.executeWithoutResult(status ->
+                        eventService.updateEvent(eventId, titleCommandWithVersion("titre-LOSER", 0))));
+
+        assertThat(secondError)
+                .as("le 2e PATCH sur version cliente périmée doit lever EventConflictException")
+                .isInstanceOf(EventConflictException.class);
+
+        EventConflictException conflict = (EventConflictException) secondError;
+        assertThat(conflict.getServerVersion())
+                .as("l'exception porte la version serveur COURANTE (1)")
+                .isEqualTo(1);
+        assertThat(conflict.getServerEvent().getVersion()).isEqualTo(1);
+        assertThat(conflict.getServerEvent().getTitle())
+                .as("l'état serveur gagnant reflète le 1er update, pas le LOSER")
+                .isEqualTo("titre-WINNER");
+
+        // (3) Résultat observable : non-écrasement (le LOSER n'a jamais atteint la base).
+        txTemplate.executeWithoutResult(status -> {
+            EventEntity reloaded = em.find(EventEntity.class, eventId);
+            assertThat(reloaded.getTitle()).isEqualTo("titre-WINNER");
+            assertThat(reloaded.getVersion()).isEqualTo(1);
+        });
+
+        cleanup(eventId);
+    }
+
+    /**
      * Reconnaît un conflit optimiste quelle que soit la couche émettrice, en parcourant la chaîne
      * de causes : Spring {@link OptimisticLockingFailureException} (dont dérive celle mappée en 409),
      * ou JPA {@link OptimisticLockException} / Hibernate {@link StaleStateException} brutes.
@@ -125,6 +172,10 @@ class EventOptimisticLockConflictIntegrationTest extends AbstractPostgresIntegra
 
     private EventUpdateCommand titleCommand(String title) {
         return new EventUpdateCommand(title, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    private EventUpdateCommand titleCommandWithVersion(String title, Integer version) {
+        return new EventUpdateCommand(title, null, null, null, null, null, null, null, null, null, null, version);
     }
 
     private UUID persistEventGraph() {

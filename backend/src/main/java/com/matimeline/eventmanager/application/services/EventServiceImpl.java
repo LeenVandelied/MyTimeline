@@ -84,24 +84,7 @@ public class EventServiceImpl implements EventService {
         Event event = findEventById(id)
             .orElseThrow(() -> new EventNotFoundException(id));
 
-        // #absorb (BR-EVE-015) — CHECK OPTIMISTE DÉTERMINISTE. Le repo recharge l'entité
-        // MANAGÉE (findById -> version DB COURANTE) et copyMutableFields ne touche JAMAIS
-        // @Version : Hibernate émettrait toujours UPDATE ... WHERE version=<courant> = match,
-        // donc un PATCH SÉQUENTIEL avec une version périmée ne produit JAMAIS
-        // d'ObjectOptimisticLockingFailureException (ce filet #231 ne fire que sur un vrai race
-        // 2-transactions). On compare donc ici la version détenue par le client (état sur lequel
-        // il a édité) à la version serveur courante : décalage -> EventConflictException, qui
-        // réutilise le contrat 409 ENRICHI de #231 (handler handleEventConflict, corps
-        // serverVersion + serverEvent). Le catch ObjectOptimisticLockingFailureException du
-        // controller reste le filet des vrais races concurrents. Nullable = contrôle non armé
-        // (PATCH partiel legacy, ex. couleur seule) -> comportement inchangé. L'OWNERSHIP est
-        // déjà vérifié par EventController.checkEventOwnership AVANT cet appel (invariant #231 :
-        // aucune sérialisation d'état serveur avant le contrôle de propriété).
-        if (command.version() != null
-                && event.getVersion() != null
-                && !event.getVersion().equals(command.version())) {
-            throw new EventConflictException(event, event.getVersion());
-        }
+        checkOptimisticVersion(event, command);
 
         // Préserve le lien produit existant (la commande ne porte pas productId).
         UUID originalProductId = event.getProductId();
@@ -216,6 +199,27 @@ public class EventServiceImpl implements EventService {
         event.setProduct(originalProductId);
 
         return eventRepository.save(event);
+    }
+
+    // #absorb (BR-EVE-015) — CHECK OPTIMISTE DÉTERMINISTE. Le repo recharge l'entité
+    // MANAGÉE (findById -> version DB COURANTE) et copyMutableFields ne touche JAMAIS
+    // @Version : Hibernate émettrait toujours UPDATE ... WHERE version=<courant> = match,
+    // donc un PATCH SÉQUENTIEL avec une version périmée ne produit JAMAIS
+    // d'ObjectOptimisticLockingFailureException (ce filet #231 ne fire que sur un vrai race
+    // 2-transactions). On compare donc ici la version détenue par le client (état sur lequel
+    // il a édité) à la version serveur courante : décalage -> EventConflictException, qui
+    // réutilise le contrat 409 ENRICHI de #231 (handler handleEventConflict, corps
+    // serverVersion + serverEvent). Le catch ObjectOptimisticLockingFailureException du
+    // controller reste le filet des vrais races concurrents. Nullable = contrôle non armé
+    // (PATCH partiel legacy, ex. couleur seule) -> comportement inchangé. L'OWNERSHIP est
+    // déjà vérifié par EventController.checkEventOwnership AVANT cet appel (invariant #231 :
+    // aucune sérialisation d'état serveur avant le contrôle de propriété).
+    private void checkOptimisticVersion(Event event, EventUpdateCommand command) {
+        if (command.version() != null
+                && event.getVersion() != null
+                && !event.getVersion().equals(command.version())) {
+            throw new EventConflictException(event, event.getVersion());
+        }
     }
 
     @Override
