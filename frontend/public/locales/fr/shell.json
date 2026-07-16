@@ -23,7 +23,8 @@
   "timeline": {
     "eyebrow": "Frise",
     "title": "Timeline",
-    "comingSoon": "La frise chronologique complète arrive prochainement.",
+    "emptyTitle": "Aucun produit pour l'instant",
+    "emptyBody": "Créez un produit et ajoutez-y des événements pour voir votre frise chronologique.",
     "loading": "Chargement…"
   }
 }

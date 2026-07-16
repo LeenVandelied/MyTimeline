@@ -131,6 +131,23 @@ describe('AppShell — lien actif', () => {
     )
   })
 
+  // #301 — L'écran frise réel remplace le placeholder sous `/timeline` ; le lien
+  // de nav « Timeline » doit être actif sur ce segment (critère d'acceptation).
+  it('marque le lien Timeline actif sur le segment /timeline', () => {
+    mockPathname = '/fr/timeline'
+    renderShell()
+    expect(screen.getByTestId('shell-sidebar-nav-link-timeline')).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.getByTestId('shell-sidebar-nav-link-dashboard')).not.toHaveAttribute(
+      'aria-current',
+    )
+    expect(screen.getByTestId('shell-sidebar-nav-link-products')).not.toHaveAttribute(
+      'aria-current',
+    )
+  })
+
   it('applique la classe active calquée sur SettingsShell (accent, pas .is-active)', () => {
     mockPathname = '/fr/dashboard'
     renderShell()

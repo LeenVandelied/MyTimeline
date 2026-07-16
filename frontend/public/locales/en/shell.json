@@ -23,7 +23,8 @@
   "timeline": {
     "eyebrow": "Timeline",
     "title": "Timeline",
-    "comingSoon": "The full chronological timeline is coming soon.",
+    "emptyTitle": "No products yet",
+    "emptyBody": "Create a product and add events to it to see your chronological timeline.",
     "loading": "Loading…"
   }
 }

@@ -23,7 +23,8 @@
   "timeline": {
     "eyebrow": "Zeitachse",
     "title": "Zeitachse",
-    "comingSoon": "Die vollständige Zeitachse folgt in Kürze.",
+    "emptyTitle": "Noch keine Produkte",
+    "emptyBody": "Erstellen Sie ein Produkt und fügen Sie Ereignisse hinzu, um Ihre Zeitachse zu sehen.",
     "loading": "Wird geladen…"
   }
 }
