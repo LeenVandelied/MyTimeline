@@ -989,3 +989,84 @@
   - **Déduplication** : les 2 signaux E2E (#300 « 8 testids drawer + 4 timeline » et #301 « 4 testids timeline ») portaient sur le même sujet → fusionnés en une seule issue #314. 0 discard.
 **Non retenu délibérément (piège documenté, PAS une issue) :** le « 400 probable sur la création couplée produit » signalé par un subagent est un **faux positif vérifié** — `ProductCreationRequest.events` n'a pas de `@Valid`, donc pas de cascade. Ajouter ce `@Valid` **casserait** le parcours (`productId` `@NotNull` insatisfiable sur un event imbriqué). Créer une issue aurait envoyé le prochain dev dans le mur → consigné en PIT-S44-002 + dans le pack.
 **Status :** Terminé.
+
+## Sprint 45 — 2026-07-16 (PLANIFIÉ — cohésion 0.57, Garde serveur auth + fiabilisation E2E auth)
+**Objectif :** Fermer le lot auth nommé par le plan S44 : garde serveur des routes connectées (#302) + découpler le canal de capture du token de reset en E2E (#283) et couvrir ses cas d'échec (#284).
+**Milestone GitHub :** #45
+**Issues :** #302 (P1/M), #283 (P1/M), #284 (P2/S) — 10 points
+**Vagues :** V1 = #302 ∥ #283 (fichiers disjoints) | V2 = #284 (consomme le canal livré par #283)
+**Migrations Flyway :** aucune (V16 non consommée)
+**Dépend de :** aucune
+**Mini-plans :** `docs/memory/sprints/sprint-45/architect-plans.md`
+**ADR bloquant :** `ADR-XXX-canal-token-reset-e2e` — le job CI e2e tourne `SPRING_PROFILES_ACTIVE=dev` (`ci.yml:156`), donc un endpoint `@Profile("e2e")` ne s'activerait JAMAIS en CI. À trancher avant de coder.
+**Status :** Planifié
+
+## Sprint 46 — 2026-07-16 (PLANIFIÉ — cohésion 0.50, Aperçu live drawer + dette focus S44)
+**Objectif :** Solder la dette S44 sur le drawer de création : aperçu live conforme au handoff §6 (#315), focus-trap dédupliqué (#316), suppression d'event câblée sur la frise mobile (#309).
+**Milestone GitHub :** #46
+**Issues :** #315 (P2/M), #316 (P3/XS), #309 (P3/XS) — 6 points
+**Vagues :** V1 = #315 ∥ #316 (fichiers disjoints) | V2 = #309 (`TimelineEditHost` monte `EventDrawer` → conflit avec #316)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (disjoint de S45)
+**Mini-plans :** `docs/memory/sprints/sprint-46/architect-plans.md`
+**Ordonnancement critique :** #315 DOIT précéder #314 (S47) — #314 asserte `event-form-preview-recurrence` que #315 réécrit. E2E d'abord = spec réécrite aussitôt.
+**Status :** Planifié
+
+## Sprint 47 — 2026-07-16 (PLANIFIÉ — cohésion 0.82, Couverture E2E frise (dette S44 + S41))
+**Objectif :** Solder l'écart COVERAGE-E2E assumé au S44 (11 testids sans spec) et la dette E2E frise : drawer + /timeline (#314), accordéon collapse par produit (#304), vues mobiles (#205).
+**Milestone GitHub :** #47
+**Issues :** #314 (P2/S), #304 (P2/S), #205 (P2/S) — 6 points
+**Vagues :** V1 = #314 → #304 SÉQUENTIELS dans une seule spec (prescrit par #314 : « UNE seule passe E2E timeline ») | V2 = #205 (fichier de spec distinct + stories)
+**Migrations Flyway :** aucune
+**Dépend de :** **S46** (#315 fige l'aperçu que #314 asserte ; #309 câble la suppression mobile que #205 exerce)
+**Mini-plans :** `docs/memory/sprints/sprint-47/architect-plans.md`
+**⚠ Risque délai :** sprint 100% E2E, non lançable en local (stack down) — le job CI est le SEUL gate. Budgéter 2-3 itérations.
+**Status :** Planifié
+
+## Sprint 48 — 2026-07-16 (PLANIFIÉ — cohésion 0.95, Landing page sur le DS)
+**Objectif :** Migrer la landing sur le Design System et décomposer le monolithe `HomePage.tsx` (274 l.) — token bordure AA (#293) puis décomposition en 7 sections (#56).
+**Milestone GitHub :** #48
+**Issues :** #293 (P2/S), #56 (P1/L) — 10 points
+**Vagues :** V1 = #293 | V2 = #56 (consomme le token ; les deux touchent `HeroSection.tsx`)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (zone disjointe de S45-S47)
+**Mini-plans :** `docs/memory/sprints/sprint-48/architect-plans.md`
+**#295 absorbée par #56** (son body l'autorise explicitement) — 4 imbrications `<Link passHref><Button>` vérifiées (`HomePage.tsx:75,83,262` + `HeroSection.tsx:32`) → critère d'acceptation de #56, puis fermer #295.
+**ADR :** `ADR-XXX-route-canonique-landing` — `/[locale]` vs `/[locale]/home` (redirection, pas suppression : SEO).
+**Status :** Planifié
+
+## Sprint 49 — 2026-07-16 (PLANIFIÉ — mono-issue, Virtualisation frise)
+**Objectif :** Virtualiser la frise pour >1000 événements (#69), sur le vrai chemin de rendu après correction du périmètre.
+**Milestone GitHub :** #49
+**Issues :** #69 (P1/L) — 8 points
+**Vagues :** mono-issue
+**Migrations Flyway :** aucune
+**Dépend de :** **S47** (couverture E2E frise = filet de non-régression ; « #69 après stabilisation /timeline », plan S44)
+**Mini-plans :** `docs/memory/sprints/sprint-49/architect-plans.md`
+**⚠ Périmètre corrigé sur l'issue (commentaire GitHub 2026-07-16) :** #69 désignait `TimelineCalendar.tsx` = **code mort** (aucune page ne le monte, `TimelineEditHost.tsx:18`). Virtualiser cette cible = 8 points sur du code mort. Vraie cible : `TimelineView.tsx` + `zoom.ts` + vues mobiles.
+**#219 écartée délibérément :** son body admet que les listes réelles restent courtes → valeur démo nulle ; ne servait qu'à atteindre 10 points (remplissage). Cohésion S49 remonte de 0.33 à mono-issue.
+**Status :** Planifié
+
+> **Plan S45–S49 généré le 2026-07-16** (`/ai-env:sprint plan 5`, cohésion moyenne **0.63** sur les 4 sprints multi-issues ; aucun < 0.3). Fil directeur = **démo-first** (continuité S39–S44) : après la boucle cœur livrée au S44 (`/timeline` + drawer), on ferme l'auth serveur (S45) → on solde la dette drawer (S46) → on couvre la frise en E2E (S47) → on migre la landing sur le DS (S48) → on virtualise (S49). **13 issues retenues sur 84 ouvertes** ; ~65 restent au backlog (attendu). **Migrations : AUCUNE sur les 5 sprints — V16 toujours non consommée (S39→S49 = 11 sprints sans migration ; risque de rouille du chemin Flyway signalé, suggérer un smoke `flyway migrate` sur base vierge).**
+>
+> **[MEMORY:pitfall] La détection Phase 0.5 automatique est INUTILISABLE sur ce repo — mesuré, pas supposé.** `closedByPullRequestsReferences` renvoie **vide même pour les issues prouvablement livrées** (#301, livrée via PR #313 → champ vide) : `/sprint end` ferme les issues à la main via `gh issue close`, jamais par mot-clé « Closes #N ». Le scan des bodies de PR mergées est bruyant **dans l'autre sens** : il matche les issues *créées* par les PR de clôture de sprint (#293/#294/#295 mentionnées dans « Clôture Sprint 39 » = follow-ups nés là, pas livrés) — même famille que le faux positif #245 déjà documenté. **⇒ « 0 NO-OP » ne veut rien dire ici ; le seul signal fiable est l'ancrage code de l'architecte** (qui avait déjà évité un Sprint-213-bis au plan S24–S28).
+>
+> **[MEMORY:pitfall] Label `sprint-*` périmé ≠ issue livrée.** 5 issues ouvertes portaient un label d'un sprint clos : **#56** (sprint-39), #249 (sprint-35), #264/#265/#267 (sprint-36). La règle du skill « exclure les issues labellisées `sprint-*` » les masquait **à tort** — cas prouvé : S39 n'a livré que la slice « contraste hero » de #56, le reste du L a été re-scopé et l'issue laissée ouverte **à dessein** (sprint-history L849/L860). **Label `sprint-39` retiré de #56** au moment du plan pour couper la boucle. Les 4 autres restent au backlog avec leur label périmé.
+>
+> **[MEMORY:pitfall] Chemins fantômes dans les issues ET dans le rapport architecte.** L'app router est `frontend/app/`, **PAS** `frontend/src/app/` ; le middleware est `frontend/middleware.ts`, **PAS** `frontend/src/middleware.ts` (l'architecte l'a annoncé « vérifié » à un chemin inexistant — il avait lu le bon fichier, contenu exact, mais mal reporté le chemin ; corrigé dans `sprint-45/architect-plans.md`). #293 annonce `frontend/src/app/globals.css` → réel `frontend/src/styles/globals.css`. #36 cite `domain/model/`+`application/dto/` → réels au pluriel (`domain/models/`, `application/dtos/`). **Vérifier tout chemin cité par une issue avant de briefer un dev.**
+>
+> **[MEMORY:pitfall] `TimelineCalendar.tsx` est mort depuis S42** (`TimelineEditHost.tsx:18` : « PLUS AUCUNE page ne rend », régression S17) mais reste cité comme piste technique dans le backlog (#69 au moins). Vrai chemin : `TimelineEditHost` → `TimelineResponsive` → `TimelineView` / `TimelineMobile*`. **Périmètre de #69 corrigé sur l'issue GitHub** (commentaire, 2026-07-16) — sans quoi S49 livrait 8 points sur du code mort. `TimelineCalendar.tsx` (114 l.) = candidat suppression, issue dédiée à ouvrir.
+>
+> **[MEMORY:decision] Séquencement démo-first :** #315 (aperçu) AVANT #314 (E2E de l'aperçu) — l'inverse fait réécrire la spec aussitôt ; #69 (virtualisation) APRÈS la couverture E2E S47 — sans filet, validation à l'aveugle. Alternatives rejetées : E2E d'abord, #69 en S45.
+>
+> **Décisions NON tranchées par le dev (validation globale « je valide », backlog par défaut — à re-arbitrer) :**
+> - **#249 (P1, rotation des secrets exposés dans l'historique git)** — classée « hardening reporté », donc backlog. **L'architecte ET le lead ont signalé leur inconfort : un secret exposé n'attend pas la démo.** À remonter explicitement.
+> - **#67** — annoncée XS/frontend, c'est en réalité un **S fullstack** : `capped` est livré en domaine (`RecurrenceExpansion.java`, `RecurrenceExpansionServiceImpl.java:40-55`) mais exposé dans **aucun** DTO (`EventResponse.java`), 0 hit frontend, `seriesInfo` inexistant. **Ne pas planifier sur l'estimation actuelle** — re-triager d'abord.
+>
+> **Écartées explicitement :** #307 (BLOQUÉE — décision produit Option A/B non tranchée), #295 (absorbée par #56), #310 (XS réel mais tire la cohésion S47 à 0.57 vs 0.82 sans lui), #219 (remplissage), #294/#191/#209/#298/#299 (capacité épuisée ; #299 exige un arbitrage ui-design non fait), hardening prod reporté (#212/#102/#251/#266/#270/#182/#242/#248/#115/#250/#255/#213/#256/#84/#88).
+>
+> **Non vérifié (à assumer) :** les bodies des ~65 issues backlog sont **tronqués à 1800 car** dans le dossier candidats — un candidat démo-first a pu échapper à la sélection. Ni le lead ni l'architecte n'ont lu `business-rules.md` / `decisions.md` / `patterns.md` intégraux (aucune BR backend touchée par les 13 issues retenues, ce qui limite l'exposition sans l'annuler — vaut surtout pour #67/#88 si réintégrées).
+>
+> **Pas de branche `sprint/45` créée** (étape 4 du skill volontairement sautée) : leçon S43/S44 — `sprint/43` existe mais n'a jamais servi, S44 a tourné sur un worktree `claude/sprint-44-start-*`. `/sprint start` crée son worktree lui-même.
+>
+> **Outillage :** `check-prereq.sh` du plugin ai-env est **cassé** (`DISABLED[@]: unbound variable` L61 — bash 3.2 macOS refuse d'étendre un tableau vide sous `set -u`). Contourné manuellement ; `gh` authentifié OK. Correctif à porter en amont du plugin.
