@@ -123,7 +123,9 @@ export type FullCalendarEvent = {
   }
 }
 
-const DEFAULT_COLOR = '#6366f1'
+/** Couleur de repli d'un event sans `color` (BR-EVE-009). #300 : exportée pour
+ *  pré-remplir le formulaire de création (le champ est optionnel côté DTO). */
+export const DEFAULT_COLOR = '#6366f1'
 
 export const mapToFullCalendarEvent = (
   event: Event,
@@ -275,3 +277,95 @@ export const createEventEditSchema = (t: (key: string) => string) =>
   })
 
 export type EventEditFormValues = z.infer<typeof eventEditSchema>
+
+/* ===========================================================================
+   #300 — Chemin CREATE (`POST /api/events`). Source UNIQUE du contrat, à côté
+   du contrat d'édition (aucun schéma dupliqué dans le composant).
+   =========================================================================== */
+
+/**
+ * Payload EXACT de `POST /api/events`, synchronisé champ par champ avec le DTO
+ * backend `EventCreationRequest` (S15 #168). Les PIÈGES de ce DTO, vérifiés sur
+ * le code Java (ne pas « corriger » sans relire `EventCreationRequest.java`) :
+ *
+ *  1. `name` (PAS `title`) — BR-EVE-001, `@NotBlank @Size(min=1,max=100)`. Le
+ *     mismatch sémantique name↔title est documenté (anti-pattern du pack events) :
+ *     le backend mappe `EventCreationRequest.name` vers `Event.title`.
+ *  2. `date` (PAS `startDate`) — BR-EVE-005 ; absent ⇒ le backend prend
+ *     `LocalDate.now()`. Format `YYYY-MM-DD` (LocalDate Java).
+ *  3. `durationValue` (`@NotNull`) et `durationUnit` (`@NotBlank`) sont requis
+ *     INCONDITIONNELLEMENT — y compris pour `type='single'`, où ils sont pourtant
+ *     IGNORÉS par `Utils.calculateEndDate` (qui renvoie `startDate` tel quel,
+ *     BR-EVE-003). C'est une asymétrie du DTO, pas une règle métier : les omettre
+ *     sur un event ponctuel ⇒ 400. D'où les valeurs neutres de `toEventCreationPayload`.
+ *  4. PAS d'`endDate` : calculée BACKEND (BR-EVE-003). Un `endDate` envoyé serait
+ *     ignoré → le formulaire de création ne le demande pas (`mode='create'`).
+ *  5. PAS d'`archived` (BR-EVE-013) ni de `recurrenceEndDate` (BR-EVE-012) :
+ *     PATCH-only. Les exposer au create serait un mensonge d'interface.
+ *  6. `recurrenceUnit` requis si `isRecurring=true` (BR-EVE-006/007,
+ *     `@AssertTrue isRecurrenceUnitConsistent` → 400).
+ *  7. `color` fournissable au create (BR-EVE-014) — String libre côté backend,
+ *     le format hex est gardé côté FRONT (BR-EVE-009).
+ *  8. `productId` requis + existant, ownership vérifiée (BR-EVE-002/008) → 404/403.
+ */
+export const eventCreationPayloadSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    type: z.enum(['duration', 'single']),
+    durationValue: z.number().int(),
+    durationUnit: durationUnitEnum,
+    isRecurring: z.boolean(),
+    recurrenceUnit: recurrenceUnitEnum.optional(),
+    date: z.string().optional(),
+    color: z.string().optional(),
+    productId: z.string().uuid(),
+  })
+  .superRefine((data, ctx) => {
+    // BR-EVE-006 : miroir de l'`@AssertTrue` backend (échec ici = 400 évité).
+    if (data.isRecurring && !data.recurrenceUnit) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La fréquence de récurrence est requise',
+        path: ['recurrenceUnit'],
+      })
+    }
+  })
+
+export type EventCreationPayload = z.infer<typeof eventCreationPayloadSchema>
+
+/**
+ * Valeurs neutres pour `durationValue`/`durationUnit` quand `type='single'` (piège 3
+ * ci-dessus). `0 days` est SANS effet métier : `calculateEndDate` court-circuite sur
+ * `!"duration".equals(type)` et renvoie `startDate` → `endDate = startDate`, ce
+ * qu'exige BR-EVE-003 pour un event ponctuel. Ces valeurs n'existent que pour
+ * satisfaire `@NotNull`/`@NotBlank`.
+ */
+const SINGLE_NEUTRAL_DURATION = { value: 0, unit: 'days' as const }
+
+/**
+ * Traduit les valeurs du FORMULAIRE (`EventEditFormValues`, partagé avec l'édition)
+ * + le produit ciblé en payload `POST /api/events`. C'est le SEUL endroit qui connaît
+ * les renommages title→name / startDate→date : le composant n'en sait rien.
+ *
+ * `endDate`, `archived`, `recurrenceEndDate` et `version` du formulaire sont
+ * volontairement JETÉS ici (points 4/5 : non exposés au create).
+ */
+export const toEventCreationPayload = (
+  values: EventEditFormValues,
+  productId: string,
+): EventCreationPayload => {
+  const isDuration = values.type === 'duration'
+  return {
+    name: values.title,
+    type: isDuration ? 'duration' : 'single',
+    durationValue: isDuration ? (values.durationValue ?? 0) : SINGLE_NEUTRAL_DURATION.value,
+    durationUnit: isDuration ? (values.durationUnit ?? 'days') : SINGLE_NEUTRAL_DURATION.unit,
+    isRecurring: values.isRecurring ?? false,
+    // BR-EVE-006 : n'envoyer l'unité QUE si la récurrence est active (sinon bruit).
+    recurrenceUnit: values.isRecurring ? values.recurrenceUnit : undefined,
+    date: values.startDate || undefined,
+    // BR-EVE-014/009 : hex validé FRONT ; chaîne vide ⇒ omis (pas de couleur imposée).
+    color: values.color || undefined,
+    productId,
+  }
+}

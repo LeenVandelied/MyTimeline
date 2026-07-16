@@ -31,6 +31,20 @@ vi.mock('next-themes', () => ({
   useTheme: () => ({ resolvedTheme: mockResolvedTheme, setTheme }),
 }))
 
+// #300 — le drawer réel monte TanStack Query + AuthContext + le formulaire complet ;
+// hors périmètre de ce fichier (couvert par NewEventDrawer.test.tsx). Le mock respecte
+// le contrat de props (`open` / `onClose`) pour verrouiller le câblage du shell.
+vi.mock('@/components/events/NewEventDrawer', () => ({
+  NewEventDrawer: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+    open ? (
+      <div data-testid="shell-new-event-drawer">
+        <button type="button" data-testid="mock-drawer-close" onClick={onClose}>
+          close
+        </button>
+      </div>
+    ) : null,
+}))
+
 const logout = vi.fn().mockResolvedValue(undefined)
 const mockUser = {
   id: 'u1',
@@ -197,14 +211,35 @@ describe('AppShell — sélecteurs intégrés', () => {
   })
 })
 
+// #300 — le Dialog placeholder (#210) est remplacé par le drawer de création réel.
+// `NewEventDrawer` est mocké : son comportement propre est couvert par
+// `NewEventDrawer.test.tsx` ; ici on ne verrouille QUE le câblage du shell
+// (ouverture/fermeture pilotées par le bouton de la sidebar).
 describe('AppShell — overlay Nouvel événement', () => {
-  it('ouvre un Dialog au clic sur Nouvel événement', async () => {
+  it('ouvre le drawer de création au clic sur Nouvel événement', async () => {
     mockResolvedTheme = 'light'
     renderShell()
-    expect(screen.queryByTestId('shell-new-event-dialog')).not.toBeInTheDocument()
+    // Fermé au montage.
+    expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+  })
+
+  it('ne rend plus le Dialog placeholder #210', () => {
+    mockResolvedTheme = 'light'
+    renderShell()
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    expect(screen.queryByTestId('shell-new-event-dialog')).not.toBeInTheDocument()
+  })
+
+  it('referme le drawer via onClose', async () => {
+    mockResolvedTheme = 'light'
+    renderShell()
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    fireEvent.click(screen.getByTestId('mock-drawer-close'))
     await waitFor(() =>
-      expect(screen.getByTestId('shell-new-event-dialog')).toBeInTheDocument(),
+      expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument(),
     )
   })
 })

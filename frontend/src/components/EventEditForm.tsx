@@ -59,12 +59,31 @@ export type { EventEditFormValues } from '@/types/event'
  */
 export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
 
+/**
+ * #300 — Mode du formulaire. Le composant reste mode-agnostique sur la mécanique
+ * (piloté par `defaultValues` + `onSubmit`) ; `mode` ne gouverne QUE les champs dont
+ * l'existence dépend du contrat backend (asymétrie create/update, BR-EVE-013/014) :
+ *
+ *   - `archived`  : PATCH-only (BR-EVE-013 — un event ne peut pas naître archivé,
+ *                   le champ est ABSENT d'`EventCreationRequest`).
+ *   - `endDate`   : CALCULÉE backend à la création (BR-EVE-003, `Utils.calculateEndDate`).
+ *                   L'afficher au create laisserait croire qu'elle est modifiable alors
+ *                   qu'elle serait ignorée.
+ *   - `recurrenceEndDate` : hors DTO create (BR-EVE-012).
+ *
+ * Défaut `'edit'` → les consommateurs existants (`EventContent`, `TimelineEditHost`)
+ * sont inchangés, aucun champ ne disparaît de l'édition.
+ */
+export type EventFormMode = 'create' | 'edit'
+
 type ColorField = ControllerRenderProps<EventEditFormValues, 'color'>
 
 interface EventEditFormProps {
   defaultValues: EventEditFormValues
   onSubmit: (data: EventEditFormValues) => Promise<void>
   onCancel: () => void
+  /** #300 — `'create'` masque les champs PATCH-only. Défaut `'edit'` (non-cassant). */
+  mode?: EventFormMode
   /** État de soumission (idle/submitting/error/conflict). Défaut `idle`. */
   submitState?: EventSubmitState
   /**
@@ -97,6 +116,13 @@ interface EventEditFormProps {
   isRecurring?: boolean
 }
 
+/**
+ * #300 — Pont enum récurrence (MAJUSCULE, `recurrenceUnit`) → clés i18n des unités
+ * (minuscule, `products.add.event.units.*`). Les deux vocabulaires sont distincts par
+ * contrat (cf. `types/event.ts`) : ne pas les confondre avec `durationUnit`.
+ */
+const RECURRENCE_UNIT_KEY = { WEEK: 'weeks', MONTH: 'months', YEAR: 'years' } as const
+
 /** Valeur debouncée (perf preview live, BR-EVE-009 — 150 ms). */
 function useDebounced<T>(value: T, delay = 150): T {
   const [debounced, setDebounced] = React.useState(value)
@@ -111,6 +137,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   defaultValues,
   onSubmit,
   onCancel,
+  mode = 'edit',
   submitState = 'idle',
   onReload,
   onConflictDismiss,
@@ -143,6 +170,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
   const submitting = submitState === 'submitting'
   const isEdit = Boolean(onDelete)
+  // #300 — champs gouvernés par l'asymétrie du contrat create/update (cf. `EventFormMode`).
+  const isCreate = mode === 'create'
 
   const handleColorChange = (color: string, field: ColorField) => {
     field.onChange(color)
@@ -168,6 +197,19 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
       : null
 
   const isRecurringWatch = form.watch('isRecurring')
+
+  // #300 — aperçu SIMPLE enrichi de la récurrence (couleur / durée / récurrence).
+  // SCOPE ACTÉ : c'est bien le bloc coloré existant, PAS la mini-frise du handoff §6
+  // (ruler + TODAY + occurrence fantôme pointillée + légende « prochaine occurrence »),
+  // qui reste un follow-up. Composé de clés i18n EXISTANTES (`form.recurring` +
+  // `units.*`) → aucune clé nouvelle, parité 4 locales préservée par construction.
+  const rawRecurrenceUnit = form.watch('recurrenceUnit')
+  const previewIsRecurring = useDebounced(isRecurringWatch)
+  const previewRecurrenceUnit = useDebounced(rawRecurrenceUnit)
+  const previewRecurrence =
+    previewIsRecurring && previewRecurrenceUnit
+      ? `${t('recurring')} · ${tUnits(RECURRENCE_UNIT_KEY[previewRecurrenceUnit])}`
+      : null
 
   return (
     <>
@@ -293,7 +335,11 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               )}
 
               {/* Dates début/fin — BR-EVE-002 (endErr). Champs optionnels : si les
-                  deux sont renseignés, la garde `endDate >= startDate` s'applique. */}
+                  deux sont renseignés, la garde `endDate >= startDate` s'applique.
+                  #300 — `endDate` MASQUÉE au create : le backend la CALCULE depuis
+                  `type`+durée (BR-EVE-003) et ignore toute valeur envoyée. La saisir
+                  serait sans effet. `startDate` reste offerte (BR-EVE-005 : absente ⇒
+                  `LocalDate.now()` backend) et occupe alors toute la largeur. */}
               <div className="flex space-x-4">
                 <FormField
                   control={form.control}
@@ -314,25 +360,27 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel className="text-ink">{t('endDate')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          data-testid="event-form-end-date"
-                          {...field}
-                          value={field.value ?? ''}
-                          className="bg-surface-2 text-ink border-rule-strong"
-                        />
-                      </FormControl>
-                      <FormMessage data-testid="event-form-end-error" />
-                    </FormItem>
-                  )}
-                />
+                {!isCreate && (
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel className="text-ink">{t('endDate')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            data-testid="event-form-end-date"
+                            {...field}
+                            value={field.value ?? ''}
+                            className="bg-surface-2 text-ink border-rule-strong"
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="event-form-end-error" />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               {/* Récurrence — BR-EVE-006 (seriesErr) + recurrenceEndDate (BR-EVE-012). */}
@@ -385,26 +433,29 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="recurrenceEndDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-ink">{t('recurrenceEndDate')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="date"
-                              data-testid="event-form-recurrence-end-date"
-                              {...field}
-                              value={field.value ?? ''}
-                              className="bg-surface-2 text-ink border-rule-strong"
-                            />
-                          </FormControl>
-                          <p className="text-ink-muted text-xs">{t('recurrenceEndHint')}</p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* #300 — hors DTO create (BR-EVE-012 : `recurrenceEndDate` PATCH-only). */}
+                    {!isCreate && (
+                      <FormField
+                        control={form.control}
+                        name="recurrenceEndDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-ink">{t('recurrenceEndDate')}</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                data-testid="event-form-recurrence-end-date"
+                                {...field}
+                                value={field.value ?? ''}
+                                className="bg-surface-2 text-ink border-rule-strong"
+                              />
+                            </FormControl>
+                            <p className="text-ink-muted text-xs">{t('recurrenceEndHint')}</p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -460,32 +511,45 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           {previewDuration}
                         </div>
                       )}
+                      {previewRecurrence && (
+                        <div
+                          className="mt-1 text-sm"
+                          style={{ color: previewInk }}
+                          data-testid="event-form-preview-recurrence"
+                        >
+                          {previewRecurrence}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Archivage — BR-EVE-013 (archived PATCH-only, toujours visible). */}
-              <div className="border-rule space-y-4 border-t pt-4">
-                <FormField
-                  control={form.control}
-                  name="archived"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-y-0 space-x-3">
-                      <FormControl>
-                        <Switch
-                          checked={field.value ?? false}
-                          onChange={(e) => field.onChange(e.target.checked)}
-                          data-testid="event-form-archived-toggle"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-ink cursor-pointer font-normal">
-                        {t('archived')}
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* Archivage — BR-EVE-013 (archived PATCH-only). #300 : MASQUÉ au create,
+                  le champ est absent d'`EventCreationRequest` (un event ne peut pas
+                  naître archivé) ; l'afficher promettrait une option inexistante. */}
+              {!isCreate && (
+                <div className="border-rule space-y-4 border-t pt-4">
+                  <FormField
+                    control={form.control}
+                    name="archived"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-y-0 space-x-3">
+                        <FormControl>
+                          <Switch
+                            checked={field.value ?? false}
+                            onChange={(e) => field.onChange(e.target.checked)}
+                            data-testid="event-form-archived-toggle"
+                          />
+                        </FormControl>
+                        <FormLabel className="text-ink cursor-pointer font-normal">
+                          {t('archived')}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
               {/* Erreur générique 4xx/5xx (le 409 optimistic ouvre le ConflictDialog). */}
               {submitState === 'error' && (
@@ -531,7 +595,13 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     {submitting && (
                       <Spinner label={tCommon('loading.saving')} className="text-current" />
                     )}
-                    {submitting ? tCommon('loading.saving') : tCommon('buttons.save')}
+                    {/* #300 — libellé create : clé EXISTANTE `form.submit`
+                        (« Ajouter l'événement »), déjà traduite dans les 4 locales. */}
+                    {submitting
+                      ? tCommon('loading.saving')
+                      : isCreate
+                        ? t('submit')
+                        : tCommon('buttons.save')}
                   </Button>
                 </div>
               </div>

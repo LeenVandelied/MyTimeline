@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -23,13 +23,7 @@ import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { LanguageSelector } from '@/components/ui/language-selector'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import { NewEventDrawer } from '@/components/events/NewEventDrawer'
 import { safeErrorMessage } from '@/lib/safe-error'
 
 /**
@@ -57,7 +51,8 @@ import { safeErrorMessage } from '@/lib/safe-error'
  * Lien actif : `aria-current="page"` + classe calquée sur `SettingsShell`
  * (`bg-accent-soft text-accent font-medium`), jamais la classe legacy `.is-active`.
  * Bouton Nouvel événement : `bg-primary` (Button défaut, graphite), overlay =
- * Dialog Radix minimal (le drawer 452px du handoff §6 est hors périmètre #210).
+ * `NewEventDrawer` (drawer 452px du handoff §6, #300 — remplace le Dialog minimal
+ * placeholder de #210).
  */
 type NavId = 'dashboard' | 'timeline' | 'products'
 
@@ -85,6 +80,12 @@ export function AppShell({ children }: AppShellProps) {
   const { user, loading } = useAuthGuard()
   const { resolvedTheme, setTheme } = useTheme()
   const [showCreate, setShowCreate] = useState(false)
+
+  // #300 — identité STABLE obligatoire : `NewEventDrawer` la passe en `onEscape` à
+  // `useFocusTrap`, dont l'effet a `onEscape` en dépendance. Une lambda inline
+  // recréerait l'effet à chaque rendu du shell (thème, pathname…) → re-focus du
+  // premier focusable, donc vol de focus pendant la saisie du formulaire.
+  const closeCreate = useCallback(() => setShowCreate(false), [])
 
   const isDark = resolvedTheme === 'dark'
 
@@ -242,17 +243,10 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
 
-      {/* Overlay Nouvel événement — Dialog minimal (#210). Le formulaire complet
-          (drawer 452px, handoff §6) est un follow-up. */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-surface border-rule" data-testid="shell-new-event-dialog">
-          <DialogHeader>
-            <DialogTitle>{t('createDialog.title')}</DialogTitle>
-            <DialogDescription>{t('createDialog.description')}</DialogDescription>
-          </DialogHeader>
-          <p className="text-ink-muted text-sm">{t('createDialog.body')}</p>
-        </DialogContent>
-      </Dialog>
+      {/* #300 — Flux de création réel : le Dialog placeholder (#210, testid
+          `shell-new-event-dialog`) est REMPLACÉ par le drawer 452px du handoff §6.
+          Le drawer se démonte à la fermeture → formulaire vierge à chaque ouverture. */}
+      <NewEventDrawer open={showCreate} onClose={closeCreate} />
     </div>
   )
 }

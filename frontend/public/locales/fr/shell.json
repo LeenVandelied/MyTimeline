@@ -15,10 +15,14 @@
     "toLight": "Passer au thème clair",
     "toDark": "Passer au thème sombre"
   },
-  "createDialog": {
+  "createDrawer": {
     "title": "Nouvel événement",
-    "description": "Créer un événement rattaché à l'un de vos produits.",
-    "body": "Le formulaire complet de création d'événement arrive prochainement."
+    "subtitle": "Rattaché à un produit",
+    "product": "Produit",
+    "productPlaceholder": "Choisir un produit",
+    "productRequired": "Sélectionnez un produit.",
+    "loadingProducts": "Chargement des produits…",
+    "emptyProducts": "Créez d'abord un produit : un événement est toujours rattaché à l'un d'eux."
   },
   "timeline": {
     "eyebrow": "Frise",
