@@ -962,4 +962,13 @@
 **Migrations :** aucune (POST /api/events existe déjà ; plage V16 non consommée).
 **Dépend de :** S42 (TimelineEditHost/TimelineResponsive) + S40 (shell) — tous mergés. S43 mergé (PR #311).
 **Écartées (plan) :** #302/#283 (lot auth → candidats S45), #307 (bloquée décision produit Option A/B), #69 (virtualisation après stabilisation /timeline ; doublon #196 fermé).
-**Status :** En cours (plan validé dev 2026-07-16, mini-plans : `sprints/sprint-44/architect-plans.md`).
+**Vagues exécutées :** V1 = #301 (`62558b6`) | V2 = #300 (`de5e147`) | fix revue a11y (`96c9854`).
+**Commits :** 4 (2 issues + 1 fix revue + artefacts).
+**BR impactées :** BR-EVE-014 (répercussion FRONT de `color` au create — dette #150 soldée sur ce chemin), BR-EVE-013 (`archived` non exposé au create), BR-EVE-002/006 (productId requis, récurrence conditionnelle), BR-EVE-011 (archivés exclus de la frise). Aucune BR backend modifiée (sprint frontend-only).
+**Designer :** ui-design REJET initial sur #300 (6 écarts vs handoff §6) → 6 corrections intégrées au briefing V2, toutes appliquées et vérifiées (`sprints/sprint-44/ui-design-300.md`).
+**Reviews :** batch reviewer — **0 CRITIQUE / 0 MAJEUR**, 2 MINEURS : double annonce spinner **CORRIGÉE** (`96c9854`, convention `ExportDataFlow.tsx:144`) ; `mt-drawer__subtitle` non conditionné **ACCEPTÉ+documenté** (classe autonome, sans effet visuel en mode sheet). ⚠ Numéros de ligne du reviewer non fiables (1127/1146 pour un fichier de 232 l.) — défauts réels, lignes fausses. Détail : `sprints/sprint-44/review-batch.md`.
+**Tests :** Frontend **496/496 vert** (477 après #301 → +19 avec #300) | `tsc --noEmit` OK | `eslint` OK (garde PIT-S41-005) | Backend non exécuté (0 fichier touché — CI couvre) | E2E gate CI. Audit : `audits/sprint-44-test-coverage.md`.
+**⚠ Phase 8 COVERAGE-E2E MAJEUR assumé :** 11 testids réellement nouveaux sans spec (8× `shell-new-event-drawer-*`, 3× `timeline-*`). Distinction faite avec 4 testids `event-form-*` seulement DÉPLACÉS par le refactor `mode` (gap antérieur au sprint). Plan `/create-e2e` post-merge, follow-up ouvert.
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S44-001, PAT-S44-001, BUG-S44-001, DEC-S44-001/002/003.
+**Incident :** subagent #301 tué par limite de session API (reset 14h) AVANT commit — travail retrouvé intact dans le working tree, vérifié/nettoyé/commité par le lead. 2 parasites nettoyés : arborescence fantôme `frontend/docs/` (dérive cwd subagent, cf. [[sprint-subagent-worktree-cwd]]) + `.eslintcache` supprimé par le run de lint (churn #262). Briefing V2 durci en conséquence (cd absolu, consigne de commit avant limite).
+**Status :** Terminé côté travail — PR ouverte, en attente CI + merge (`/sprint end 44`).
