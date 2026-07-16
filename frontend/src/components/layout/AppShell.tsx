@@ -245,8 +245,14 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* #300 — Flux de création réel : le Dialog placeholder (#210, testid
           `shell-new-event-dialog`) est REMPLACÉ par le drawer 452px du handoff §6.
-          Le drawer se démonte à la fermeture → formulaire vierge à chaque ouverture. */}
-      <NewEventDrawer open={showCreate} onClose={closeCreate} />
+          Montage CONDITIONNEL (et pas seulement `open={showCreate}`) : c'est LUI qui
+          démonte réellement le drawer à la fermeture, donc qui purge son état interne
+          (produit choisi, erreur produit, état de la mutation). Un `return null` interne
+          ne démonte PAS le composant — React garde l'instance et ses hooks vivants, et
+          une erreur de soumission réapparaissait telle quelle à la réouverture suivante
+          (revue PR #313). La restauration du focus reste assurée : `useFocusTrap` la fait
+          dans son cleanup, que React exécute au démontage. */}
+      {showCreate && <NewEventDrawer open onClose={closeCreate} />}
     </div>
   )
 }

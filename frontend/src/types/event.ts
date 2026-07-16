@@ -308,28 +308,34 @@ export type EventEditFormValues = z.infer<typeof eventEditSchema>
  *     le format hex est gardé côté FRONT (BR-EVE-009).
  *  8. `productId` requis + existant, ownership vérifiée (BR-EVE-002/008) → 404/403.
  */
-export const eventCreationPayloadSchema = z
-  .object({
-    name: z.string().min(1).max(100),
-    type: z.enum(['duration', 'single']),
-    durationValue: z.number().int(),
-    durationUnit: durationUnitEnum,
-    isRecurring: z.boolean(),
-    recurrenceUnit: recurrenceUnitEnum.optional(),
-    date: z.string().optional(),
-    color: z.string().optional(),
-    productId: z.string().uuid(),
-  })
-  .superRefine((data, ctx) => {
-    // BR-EVE-006 : miroir de l'`@AssertTrue` backend (échec ici = 400 évité).
-    if (data.isRecurring && !data.recurrenceUnit) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La fréquence de récurrence est requise',
-        path: ['recurrenceUnit'],
-      })
-    }
-  })
+/**
+ * PORTÉE — ce schéma est la SOURCE DE TYPE du payload (`z.infer` ci-dessous), pas un
+ * validateur d'exécution : `toEventCreationPayload` construit l'objet et personne ne
+ * le `parse()`. Ne PAS y remettre de `superRefine` « miroir du backend » : il ne
+ * s'exécuterait jamais et laisserait croire à une garde qui n'existe pas (revue PR #313).
+ *
+ * Où les règles sont RÉELLEMENT appliquées :
+ *  - BR-EVE-006 (`recurrenceUnit` requis si `isRecurring`) → refine `seriesErr` de
+ *    `buildEventEditSchema`, au niveau du FORMULAIRE (message par champ, testé) ;
+ *  - BR-EVE-002 (`productId` requis) → garde de `NewEventDrawer` avant submit ;
+ *  - filet ultime → `@Valid` backend (400).
+ *
+ * Un `parse()` ici serait piégeux en l'état : `toEventCreationPayload` est évalué DANS
+ * le `try` de `handleSubmit`, dont le `catch` s'appuie sur `createEvent.isError` pour
+ * afficher l'erreur ; une `ZodError` levée avant `mutateAsync` laisserait `isError` à
+ * false → submit silencieusement sans effet. Restructurer la gestion d'erreur d'abord.
+ */
+export const eventCreationPayloadSchema = z.object({
+  name: z.string().min(1).max(100),
+  type: z.enum(['duration', 'single']),
+  durationValue: z.number().int(),
+  durationUnit: durationUnitEnum,
+  isRecurring: z.boolean(),
+  recurrenceUnit: recurrenceUnitEnum.optional(),
+  date: z.string().optional(),
+  color: z.string().optional(),
+  productId: z.string().uuid(),
+})
 
 export type EventCreationPayload = z.infer<typeof eventCreationPayloadSchema>
 

@@ -42,8 +42,12 @@ import type { EventSubmitState } from '@/components/EventEditForm'
  * omettre l'hebdomadaire retirerait une unité pourtant supportée par le backend
  * (enum `RecurrenceUnit`) et créerait une asymétrie create/edit injustifiable.
  *
- * Le drawer est DÉMONTÉ à la fermeture (`if (!open) return null`) → chaque ouverture
- * repart d'un formulaire vierge (defaultValues frais), sans `reset()` manuel.
+ * CYCLE DE VIE — le parent monte ce drawer CONDITIONNELLEMENT (`AppShell.tsx`) : c'est
+ * ce qui le démonte à la fermeture et purge son état interne (produit choisi, erreur
+ * produit, état de la mutation), donc chaque ouverture repart vierge sans `reset()`
+ * manuel. Le `if (!open) return null` ci-dessous n'est qu'un filet : rendre `null` ne
+ * démonte PAS un composant (React garde l'instance et ses hooks vivants). Si un futur
+ * appelant le monte en permanence, l'état résiduel réapparaîtra (revue PR #313).
  */
 export interface NewEventDrawerProps {
   open: boolean
@@ -143,7 +147,9 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
         <div className={isCompact ? 'mt-sheet__header' : 'mt-drawer__header'}>
           <div>
             <h2 className={isCompact ? 'mt-sheet__title' : 'mt-drawer__title'}>{t('title')}</h2>
-            <p className="mt-drawer__subtitle">{t('subtitle')}</p>
+            <p className={isCompact ? 'mt-sheet__subtitle' : 'mt-drawer__subtitle'}>
+              {t('subtitle')}
+            </p>
           </div>
           <button
             type="button"
@@ -161,7 +167,16 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
 
         <div className={isCompact ? 'mt-sheet__body' : 'mt-drawer__body'}>
           {productsQuery.isLoading ? (
-            <div className="flex items-center gap-2" data-testid="shell-new-event-drawer-loading">
+            <div
+              className="flex items-center gap-2"
+              role="status"
+              aria-live="polite"
+              data-testid="shell-new-event-drawer-loading"
+            >
+              {/* Spinner purement visuel : la live-region est portée par ce div (texte
+                  visible complet) → une seule annonce, et l'état reste annoncé. Le
+                  `aria-hidden` seul, SANS live-region sur le wrapper, rendrait le
+                  chargement muet (pattern complet : ExportDataFlow.tsx:138-148). */}
               <Spinner label={t('loadingProducts')} aria-hidden="true" className="text-ink-muted" />
               <span className="text-ink-muted text-sm">{t('loadingProducts')}</span>
             </div>
