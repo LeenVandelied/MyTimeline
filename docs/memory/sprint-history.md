@@ -931,13 +931,24 @@
   - Revue mainteneur freeze-list ArchUnit `EventMapper→getVersion` [XS] → consigné
 **Status :** Terminé.
 
-## Sprint 43 — 2026-07-13 (PLANIFIÉ — cohésion 0.70, Auth cleanup léger)
+## Sprint 43 — 2026-07-14 → 2026-07-16 (Terminé — merge PR #311 dans dev)
 **Objectif :** Solder la dette contrat d'erreur / hygiène auth S37-S38 (follow-ups #288/#290/#289/#286/#285).
-**Milestone GitHub :** #43
-**Issues :** #288, #290, #289, #286, #285
-**Vagues :** V1 = #286 ∥ #285 ∥ #289 | V2 = #288 → #290 (enum ErrorCode + buildBody partagés)
+**Milestone GitHub :** #43 (fermé après merge)
+**Branche :** `claude/sprint-43-start-3ee192` (depuis origin/dev @ be9f6b4) → PR **#311** → dev. Branche distante `sprint/43` créée au start mais NON utilisée (vide) — supprimée à la clôture.
+**Issues livrées (5) :** #285, #286, #288, #289, #290
+**Vagues exécutées :** V1 = #286 ∥ #285 ∥ #289 | V2 = #288 → #290 (enum ErrorCode + buildBody partagés)
+**Cohésion score :** 0.70 (epic:auth dominant)
+**Commits :** 8 (b3d5555 #285, a541617 #286, cde2d76 #289, 863b866 #288, a9fe3bd #290, f0d033c doc invariant review, 30fe8e6 artefacts, + clôture)
+**BR impactées :** BR-AUT-008 **étendue** (anti-énumération /me : user-absent → 401 générique, aligné /refresh #113) ; contrat d'erreur homogénéisé (`error`=code ErrorCode niveau statut, texte→`message`) sur AuthController + 11 handlers plats du GlobalExceptionHandler, sémantique BR-CAT/BR-EVE inchangée ; anti-TOCTOU #143 préservé ; 409 enrichi EventConflict (#231/S42) NON migré, verrouillé par test de non-régression.
 **Migrations :** aucune
-**Dépend de :** S42 (partage GlobalExceptionHandler.java ; #290 rebase sur le 409 enrichi de #231). PR #291 (fix 401) **mergée dans dev le 2026-07-13** (tip d4144bd) — pré-requis satisfait.
-**Status :** En cours (démarré 2026-07-14, branche `claude/sprint-43-start-3ee192` dans le repo principal — worktree assigné vide, arbitrage dev) — garde-fou : ne PAS re-toucher SecurityConfig `/error` ni la validation event type (corrigés par #291).
+**Dépend de :** S42 (409 enrichi #231 respecté par #290)
+**Reviews :** batch reviewer + security-expert — **0 CRITIQUE / 0 MAJEUR**, 2 MINEURS (fail-fast `markConsumed` → documenté comme assertion d'invariant, f0d033c ; dérive doc /me → RAS). Audit sécurité : /me zéro canal d'énumération (statut + body identiques).
+**Tests :** Backend **411/411 vert** (suite complète, pool Hikari=2 sans deadlock ni « too many clients ») | Frontend non impacté (0 fichier) | E2E N/A (backend-only, aucun data-testid nouveau). Audit : `audits/sprint-43-test-coverage.md`.
+**CI :** 4/4 verts (backend, frontend, e2e, security) sur la PR #311.
+**Nouveaux pitfalls / patterns / décisions :** PAT-S43-001 (preuve no-SELECT via Statistics Hibernate), PAT-S43-002 (migration handlers plats → buildBody, exception corps enrichi), DEC-S43-001 (ErrorCode AuthController) ; BR-AUT-008 étendue dans `br-auth.md`.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `SignatureException` sur /me → 500 au lieu de 401 (catch JwtException manquant) [XS | auth] → **issue #312** (backlog libre)
+  - `coverage-auth.md` périmé (« refresh non implémenté », « E2E aucun ») [XS | doc] → **absorbé** (réécriture complète dans le commit de clôture : 123 tests backend / 50 frontend / E2E réels)
+**Status :** Terminé.
 
 > **Plan S39–S43 généré le 2026-07-13** (`/ai-env:sprint plan 5`, cohésion moyenne **0.49**). Fil directeur = **démo-first** (recadrage dev : « loin de la prod, jamais lancé avant aujourd'hui ») : lisibilité landing (S39) → shell nav (S40) → UX/a11y timeline (S41) → modale conflit 409 (S42) → auth cleanup (S43). **Contexte déclencheur :** premier lancement live du site le 2026-07-13 (docker compose) — ça boote, parcours cœur OK end-to-end, un seul bug réel trouvé (event type invalide → 401) corrigé via PR #291. **Phase 0.5 :** helper check-issue-state bruyant sur ce repo (faux positif #245 = commit de clôture sprint) ; ancrage code architecte fiable — #227 seul partiellement fait (tooltip existe). **Migrations :** AUCUNE sur les 5 sprints (plage V16 réservée, non consommée). **[MEMORY:decision] Hardening prod reporté** (11 issues : #212/#102/#251/#266/#270/#182/#242/#248/#115/#250/#255/#213/#256/#84/#88) — durcissement prématuré avant démo fonctionnelle. **[MEMORY:decision] Dérive doc :** schéma réel V15, prochaine migration **V16** (CLAUDE.md dit à tort V13/V14) — à corriger. **Cohésion faible assumée S39/S40** (cross-epic démo) ; S41/S42/S43 mono-epic solides.
