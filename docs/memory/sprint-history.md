@@ -952,3 +952,14 @@
 **Status :** Terminé.
 
 > **Plan S39–S43 généré le 2026-07-13** (`/ai-env:sprint plan 5`, cohésion moyenne **0.49**). Fil directeur = **démo-first** (recadrage dev : « loin de la prod, jamais lancé avant aujourd'hui ») : lisibilité landing (S39) → shell nav (S40) → UX/a11y timeline (S41) → modale conflit 409 (S42) → auth cleanup (S43). **Contexte déclencheur :** premier lancement live du site le 2026-07-13 (docker compose) — ça boote, parcours cœur OK end-to-end, un seul bug réel trouvé (event type invalide → 401) corrigé via PR #291. **Phase 0.5 :** helper check-issue-state bruyant sur ce repo (faux positif #245 = commit de clôture sprint) ; ancrage code architecte fiable — #227 seul partiellement fait (tooltip existe). **Migrations :** AUCUNE sur les 5 sprints (plage V16 réservée, non consommée). **[MEMORY:decision] Hardening prod reporté** (11 issues : #212/#102/#251/#266/#270/#182/#242/#248/#115/#250/#255/#213/#256/#84/#88) — durcissement prématuré avant démo fonctionnelle. **[MEMORY:decision] Dérive doc :** schéma réel V15, prochaine migration **V16** (CLAUDE.md dit à tort V13/V14) — à corriger. **Cohésion faible assumée S39/S40** (cross-epic démo) ; S41/S42/S43 mono-epic solides.
+
+## Sprint 44 — 2026-07-16 (En cours — cohésion 0.58, Boucle démo frise + création d'événement)
+**Objectif :** Rendre la boucle cœur démontrable : écran `/timeline` réel (#301, remplace le placeholder S40) + flux de création d'événement drawer 452px (#300, remplace le Dialog minimal).
+**Milestone GitHub :** #44
+**Branche :** `claude/sprint-44-start-7b5814` (worktree, depuis origin/dev @ e6d9c3a) — pas de branche `sprint/44` (leçon S43 : branche jamais utilisée).
+**Issues :** #301 (P0/L), #300 (P1/M) — 12 points (> cible 10, assumé ; fallback : #300 glisse en S45 si #301 dérape).
+**Vagues :** V1 = #301 seul → V2 = #300 seul (SÉQUENTIEL strict — conflit `AppShell.tsx` + zone timeline/events).
+**Migrations :** aucune (POST /api/events existe déjà ; plage V16 non consommée).
+**Dépend de :** S42 (TimelineEditHost/TimelineResponsive) + S40 (shell) — tous mergés. S43 mergé (PR #311).
+**Écartées (plan) :** #302/#283 (lot auth → candidats S45), #307 (bloquée décision produit Option A/B), #69 (virtualisation après stabilisation /timeline ; doublon #196 fermé).
+**Status :** En cours (plan validé dev 2026-07-16, mini-plans : `sprints/sprint-44/architect-plans.md`).
