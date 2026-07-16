@@ -162,7 +162,7 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
         <div className={isCompact ? 'mt-sheet__body' : 'mt-drawer__body'}>
           {productsQuery.isLoading ? (
             <div className="flex items-center gap-2" data-testid="shell-new-event-drawer-loading">
-              <Spinner label={t('loadingProducts')} className="text-ink-muted" />
+              <Spinner label={t('loadingProducts')} aria-hidden="true" className="text-ink-muted" />
               <span className="text-ink-muted text-sm">{t('loadingProducts')}</span>
             </div>
           ) : !hasProducts ? (
