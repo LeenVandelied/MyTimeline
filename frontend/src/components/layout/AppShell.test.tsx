@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import React from 'react'
 import { AppShell } from './AppShell'
 
 /**
@@ -29,6 +30,29 @@ const setTheme = vi.fn()
 let mockResolvedTheme = 'light'
 vi.mock('next-themes', () => ({
   useTheme: () => ({ resolvedTheme: mockResolvedTheme, setTheme }),
+}))
+
+// #300 — le drawer réel monte TanStack Query + AuthContext + le formulaire complet ;
+// hors périmètre de ce fichier (couvert par NewEventDrawer.test.tsx). Le mock respecte
+// le contrat de props (`open` / `onClose`) pour verrouiller le câblage du shell.
+// Le mock trace mount/unmount : le shell DOIT démonter le drawer à la fermeture (c'est
+// ce démontage qui purge l'état interne — revue PR #313). Un mock qui se contenterait de
+// rendre `null` ne distinguerait pas « démonté » de « monté mais invisible ».
+const drawerLifecycle = vi.hoisted(() => vi.fn())
+vi.mock('@/components/events/NewEventDrawer', () => ({
+  NewEventDrawer: ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+    React.useEffect(() => {
+      drawerLifecycle('mount')
+      return () => drawerLifecycle('unmount')
+    }, [])
+    return open ? (
+      <div data-testid="shell-new-event-drawer">
+        <button type="button" data-testid="mock-drawer-close" onClick={onClose}>
+          close
+        </button>
+      </div>
+    ) : null
+  },
 }))
 
 const logout = vi.fn().mockResolvedValue(undefined)
@@ -131,6 +155,23 @@ describe('AppShell — lien actif', () => {
     )
   })
 
+  // #301 — L'écran frise réel remplace le placeholder sous `/timeline` ; le lien
+  // de nav « Timeline » doit être actif sur ce segment (critère d'acceptation).
+  it('marque le lien Timeline actif sur le segment /timeline', () => {
+    mockPathname = '/fr/timeline'
+    renderShell()
+    expect(screen.getByTestId('shell-sidebar-nav-link-timeline')).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.getByTestId('shell-sidebar-nav-link-dashboard')).not.toHaveAttribute(
+      'aria-current',
+    )
+    expect(screen.getByTestId('shell-sidebar-nav-link-products')).not.toHaveAttribute(
+      'aria-current',
+    )
+  })
+
   it('applique la classe active calquée sur SettingsShell (accent, pas .is-active)', () => {
     mockPathname = '/fr/dashboard'
     renderShell()
@@ -180,14 +221,57 @@ describe('AppShell — sélecteurs intégrés', () => {
   })
 })
 
+// #300 — le Dialog placeholder (#210) est remplacé par le drawer de création réel.
+// `NewEventDrawer` est mocké : son comportement propre est couvert par
+// `NewEventDrawer.test.tsx` ; ici on ne verrouille QUE le câblage du shell
+// (ouverture/fermeture pilotées par le bouton de la sidebar).
 describe('AppShell — overlay Nouvel événement', () => {
-  it('ouvre un Dialog au clic sur Nouvel événement', async () => {
+  it('ouvre le drawer de création au clic sur Nouvel événement', async () => {
     mockResolvedTheme = 'light'
     renderShell()
-    expect(screen.queryByTestId('shell-new-event-dialog')).not.toBeInTheDocument()
+    // Fermé au montage.
+    expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+  })
+
+  // Non-régression (revue PR #313) : le shell doit DÉMONTER le drawer à la fermeture,
+  // pas seulement le rendre invisible. C'est le démontage qui purge l'état interne
+  // (produit choisi, erreur produit, état de la mutation) ; sans lui, une erreur de
+  // soumission réapparaissait à la réouverture suivante sur un formulaire vierge.
+  it('démonte le drawer à la fermeture (purge de son état interne)', async () => {
+    mockResolvedTheme = 'light'
+    renderShell()
+    drawerLifecycle.mockClear()
+
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    expect(drawerLifecycle).toHaveBeenCalledWith('mount')
+
+    fireEvent.click(screen.getByTestId('mock-drawer-close'))
+    await waitFor(() => expect(drawerLifecycle).toHaveBeenCalledWith('unmount'))
+
+    // Réouverture = instance NEUVE (donc état vierge), pas la précédente ressuscitée.
+    drawerLifecycle.mockClear()
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(drawerLifecycle).toHaveBeenCalledWith('mount'))
+  })
+
+  it('ne rend plus le Dialog placeholder #210', () => {
+    mockResolvedTheme = 'light'
+    renderShell()
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    expect(screen.queryByTestId('shell-new-event-dialog')).not.toBeInTheDocument()
+  })
+
+  it('referme le drawer via onClose', async () => {
+    mockResolvedTheme = 'light'
+    renderShell()
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    fireEvent.click(screen.getByTestId('mock-drawer-close'))
     await waitFor(() =>
-      expect(screen.getByTestId('shell-new-event-dialog')).toBeInTheDocument(),
+      expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument(),
     )
   })
 })

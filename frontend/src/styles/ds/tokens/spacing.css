@@ -50,6 +50,11 @@
 
   /* layout-specific (#210 shell applicatif — nav latérale persistante) */
   --sidebar-width: 248px;
+  /* #300 — drawer FORMULAIRE (création d'événement, handoff §6 : 452px). Token dédié
+     plutôt qu'un `w-[452px]` arbitraire (PAT-S40-002). NE remplace PAS le drawer de
+     DÉTAIL `.mt-drawer` (420px en dur, timeline.css) : deux surfaces distinctes, une
+     largeur commune casserait le détail (régression visuelle). */
+  --drawer-width-form: 452px;
 
   /* layers */
   --z-sticky:  10; /* @kind other */

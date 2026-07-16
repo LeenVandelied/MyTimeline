@@ -1,6 +1,29 @@
-import { Event, EventEditFormValues } from '@/types/event'
+import { Event, EventCreationPayload, EventEditFormValues } from '@/types/event'
 import apiClient from './apiClient'
 import { safeErrorMessage } from '@/lib/safe-error'
+
+/**
+ * #300 — Création d'un événement (`POST /api/events`, BR-EVE-001/002/006/007).
+ *
+ * Le chemin data manquait côté front (le service ne savait que lire/mettre à jour/
+ * supprimer) alors que l'endpoint backend existe depuis le Sprint 1. Le payload est
+ * construit par `toEventCreationPayload` (`types/event.ts`), seul détenteur des
+ * renommages title→name / startDate→date et des valeurs neutres de durée.
+ *
+ * Réponse : le backend renvoie le modèle domaine `Event` (fuite documentée en
+ * anti-pattern du pack events) — on le typait tel quel, sans le re-parser : aucun
+ * consommateur ne lit le retour aujourd'hui (l'UI se rafraîchit par invalidation).
+ * L'erreur est PROPAGÉE (jamais avalée) : le hook la mappe en état de soumission.
+ */
+export const createEvent = async (payload: EventCreationPayload): Promise<Event> => {
+  try {
+    const response = await apiClient.post('/events', payload)
+    return response.data
+  } catch (error) {
+    console.error("Erreur lors de la création de l'événement :", safeErrorMessage(error))
+    throw error
+  }
+}
 
 export const getEventsByProductId = async (userId: string, productId: string): Promise<Event[]> => {
   try {

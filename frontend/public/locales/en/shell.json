@@ -15,15 +15,20 @@
     "toLight": "Switch to light theme",
     "toDark": "Switch to dark theme"
   },
-  "createDialog": {
+  "createDrawer": {
     "title": "New event",
-    "description": "Create an event linked to one of your products.",
-    "body": "The full event creation form is coming soon."
+    "subtitle": "Linked to a product",
+    "product": "Product",
+    "productPlaceholder": "Choose a product",
+    "productRequired": "Please select a product.",
+    "loadingProducts": "Loading products…",
+    "emptyProducts": "Create a product first: an event is always linked to one of them."
   },
   "timeline": {
     "eyebrow": "Timeline",
     "title": "Timeline",
-    "comingSoon": "The full chronological timeline is coming soon.",
+    "emptyTitle": "No products yet",
+    "emptyBody": "Create a product and add events to it to see your chronological timeline.",
     "loading": "Loading…"
   }
 }

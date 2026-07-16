@@ -15,15 +15,20 @@
     "toLight": "Zum hellen Design wechseln",
     "toDark": "Zum dunklen Design wechseln"
   },
-  "createDialog": {
+  "createDrawer": {
     "title": "Neues Ereignis",
-    "description": "Erstelle ein Ereignis für eines deiner Produkte.",
-    "body": "Das vollständige Formular zum Erstellen von Ereignissen folgt in Kürze."
+    "subtitle": "Einem Produkt zugeordnet",
+    "product": "Produkt",
+    "productPlaceholder": "Produkt auswählen",
+    "productRequired": "Bitte wählen Sie ein Produkt aus.",
+    "loadingProducts": "Produkte werden geladen…",
+    "emptyProducts": "Erstellen Sie zuerst ein Produkt: Ein Ereignis ist immer einem Produkt zugeordnet."
   },
   "timeline": {
     "eyebrow": "Zeitachse",
     "title": "Zeitachse",
-    "comingSoon": "Die vollständige Zeitachse folgt in Kürze.",
+    "emptyTitle": "Noch keine Produkte",
+    "emptyBody": "Erstellen Sie ein Produkt und fügen Sie Ereignisse hinzu, um Ihre Zeitachse zu sehen.",
     "loading": "Wird geladen…"
   }
 }
