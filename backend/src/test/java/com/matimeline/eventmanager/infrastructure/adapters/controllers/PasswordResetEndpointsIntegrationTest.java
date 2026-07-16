@@ -60,7 +60,8 @@ class PasswordResetEndpointsIntegrationTest extends AbstractPostgresIntegrationT
 
     /**
      * #103/BR-AUT-011 : reset-password accessible sans token. Token inexistant
-     * (UUID aléatoire jamais émis) -> 400 {"error":"invalid or expired token"}.
+     * (UUID aléatoire jamais émis) -> 400. #290 : corps structuré
+     * {error:"bad_request", message:"invalid or expired token"}.
      */
     @Test
     void resetPassword_unknownToken_noAuth_returns400() throws Exception {
@@ -70,7 +71,9 @@ class PasswordResetEndpointsIntegrationTest extends AbstractPostgresIntegrationT
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("invalid or expired token"));
+                // #290 : `error`=code stable, message générique anti-énumération en `message`.
+                .andExpect(jsonPath("$.error").value("bad_request"))
+                .andExpect(jsonPath("$.message").value("invalid or expired token"));
     }
 
     /**

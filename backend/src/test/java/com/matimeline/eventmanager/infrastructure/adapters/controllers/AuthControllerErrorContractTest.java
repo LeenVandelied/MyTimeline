@@ -79,18 +79,22 @@ class AuthControllerErrorContractTest {
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Unauthorized: No token provided"));
+                // #288 : vocabulaire unifié ErrorCode — 401 -> code "unauthorized".
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
+    // #289 : anti-énumération — un username inexistant dans un token signé valide
+    // renvoie le MÊME 401 générique que /refresh (plus de 404 "User not found" distinct).
     @Test
-    void me_unknownUser_returns404JsonError() throws Exception {
+    void me_unknownUser_returns401Generic() throws Exception {
         when(jwtService.extractUsername(anyString())).thenReturn("ghost");
         when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "dummy-token")))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("User not found"));
+                // #288 : 401 générique -> code "unauthorized" (anti-énumération inchangée).
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
     // ----- /register -----
@@ -109,7 +113,8 @@ class AuthControllerErrorContractTest {
                         .content(body))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("User already exists"));
+                // #288 : 409 -> code "conflict".
+                .andExpect(jsonPath("$.error").value("conflict"));
     }
 
     @Test

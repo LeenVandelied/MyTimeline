@@ -122,7 +122,9 @@ class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Travail\"}"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("category name already used"));
+                // #290 : `error`=code stable CONFLICT, texte humain en `message`.
+                .andExpect(jsonPath("$.error").value("conflict"))
+                .andExpect(jsonPath("$.message").value("category name already used"));
     }
 
     // ---------------- GET (scoping cross-tenant, FIX review #153) ----------------
@@ -303,7 +305,9 @@ class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"dup\"}"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("category name already used"));
+                // #290 : `error`=code stable CONFLICT, texte humain en `message`.
+                .andExpect(jsonPath("$.error").value("conflict"))
+                .andExpect(jsonPath("$.message").value("category name already used"));
     }
 
     // ---------------- DELETE ----------------
@@ -332,7 +336,9 @@ class CategoryControllerTest {
         mockMvc.perform(delete("/api/categories/" + id)
                         .cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error")
+                // #290 : `error`=code stable CONFLICT, message métier dynamique en `message`.
+                .andExpect(jsonPath("$.error").value("conflict"))
+                .andExpect(jsonPath("$.message")
                         .value("La catégorie est utilisée par 3 produits. Fournissez reassignToCategoryId."));
     }
 
@@ -367,7 +373,9 @@ class CategoryControllerTest {
         mockMvc.perform(delete("/api/categories/" + id + "?reassignToCategoryId=" + id)
                         .cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error")
+                // #290 : `error`=code stable CONFLICT, message dédié en `message`.
+                .andExpect(jsonPath("$.error").value("conflict"))
+                .andExpect(jsonPath("$.message")
                         .value("The reassignment target category cannot be the category being deleted."));
     }
 

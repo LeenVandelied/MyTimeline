@@ -112,7 +112,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                     tokenValue,
                     now.plus(tokenValidity),
                     null);
-            tokenRepository.save(token);
+            // Chemin CREATE : token neuf -> pur INSERT (issue #286, aucun SELECT préalable).
+            tokenRepository.create(token);
 
             // L'envoi email passe par le port (adapter Brevo en infra). Le token brut est
             // transmis au mail mais JAMAIS loggé ici.
@@ -172,7 +173,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         // saveAndFlush par un simple persist/merge sans flush sous peine de casser ce
         // contrat. Chemin couvert par PasswordResetTokenConcurrencyIntegrationTest (#143).
         try {
-            tokenRepository.save(token.consume(LocalDateTime.now(clock)));
+            // Chemin CONSUME : entité managée + saveAndFlush -> WHERE version=<CHECK> (#143).
+            tokenRepository.markConsumed(token.consume(LocalDateTime.now(clock)));
         } catch (ObjectOptimisticLockingFailureException | OptimisticLockException ex) {
             throw new InvalidPasswordResetTokenException();
         }

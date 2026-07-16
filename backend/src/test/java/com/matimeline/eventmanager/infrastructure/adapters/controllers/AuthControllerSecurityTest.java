@@ -117,9 +117,9 @@ class AuthControllerSecurityTest {
 
     /**
      * Issue #116 — BR-AUT-005 : sur mauvais credentials, le login renvoie un 401
-     * avec un body JSON {"error":"Invalid username or password"} (cohérent avec les
-     * autres réponses d'erreur du contrôleur, plus de texte brut). Le message reste
-     * neutre : il ne distingue pas username inconnu vs mot de passe incorrect.
+     * avec un body JSON {"error":"unauthorized"} (#288 : code ErrorCode au niveau du
+     * statut, vocabulaire unifié). Le code reste neutre : il ne distingue pas username
+     * inconnu vs mot de passe incorrect.
      */
     @Test
     void login_withBadCredentials_returns401WithJsonError() throws Exception {
@@ -130,7 +130,8 @@ class AuthControllerSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"alice\",\"password\":\"wrongpass\"}"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Invalid username or password"));
+                // #288 : vocabulaire unifié ErrorCode — 401 -> code "unauthorized".
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
     @Test
@@ -153,6 +154,26 @@ class AuthControllerSecurityTest {
                 .andExpect(jsonPath("$.name").value("Alice"));
     }
 
+    /**
+     * Issue #289 — anti-énumération de compte sur /me : un token à SIGNATURE VALIDE
+     * (extractUsername ne lève pas) dont le username n'existe pas (user.isEmpty())
+     * renvoie le MÊME 401 générique {"error":"unauthorized"} que /refresh,
+     * jamais un 404 "User not found" qui révélerait l'ABSENCE du compte. Aucune
+     * distinction observable entre "compte inexistant" et "token invalide".
+     */
+    @Test
+    void me_withUnknownUserInValidToken_returns401Generic_notFound() throws Exception {
+        when(jwtService.extractUsername("ghost-token")).thenReturn("ghost");
+        when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "ghost-token")))
+                .andExpect(status().isUnauthorized())
+                // #288 : 401 générique -> code "unauthorized" (anti-énumération inchangée).
+                .andExpect(jsonPath("$.error").value("unauthorized"))
+                // Aucune fuite d'existence de compte : pas de 404 ni de "User not found".
+                .andExpect(content().string(not(containsString("User not found"))));
+    }
+
     @Test
     void register_duplicateUsername_returns409() throws Exception {
         when(userService.findDomainUserByUsername(anyString())).thenReturn(Optional.empty());
@@ -167,7 +188,9 @@ class AuthControllerSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("username already taken"));
+                // #288 : discriminant username/email supprimé du body (front mappe par
+                // statut seul) — code unique "conflict" pour tout 409 register.
+                .andExpect(jsonPath("$.error").value("conflict"));
     }
 
     @Test
@@ -184,7 +207,8 @@ class AuthControllerSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("email already taken"));
+                // #288 : email dupliqué -> même code générique "conflict" (pas de discriminant).
+                .andExpect(jsonPath("$.error").value("conflict"));
     }
 
     /**
@@ -210,7 +234,7 @@ class AuthControllerSecurityTest {
 
     /**
      * Issue #105 — BR-AUT-009 : un token EXPIRÉ ne doit jamais être ré-émis.
-     * extractUsername lève ExpiredJwtException -> 401 {"error":"token expiré ou invalide"},
+     * extractUsername lève ExpiredJwtException -> 401 {"error":"unauthorized"},
      * aucun nouveau token généré ni cookie posé.
      */
     @Test
@@ -220,7 +244,7 @@ class AuthControllerSecurityTest {
 
         mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "expired-token")))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(jsonPath("$.error").value("unauthorized"))
                 .andExpect(cookie().doesNotExist("jwt"));
 
         org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
@@ -239,7 +263,7 @@ class AuthControllerSecurityTest {
 
         mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "tampered-token")))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(jsonPath("$.error").value("unauthorized"))
                 .andExpect(cookie().doesNotExist("jwt"));
 
         org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
@@ -249,7 +273,7 @@ class AuthControllerSecurityTest {
     /**
      * Review PR #113 — anti-énumération de compte : un token SIGNÉ VALIDE dont le
      * username n'existe pas (user.isEmpty()) doit renvoyer le MÊME 401 générique
-     * {"error":"token expiré ou invalide"} qu'un token invalide/expiré — jamais un
+     * {"error":"unauthorized"} qu'un token invalide/expiré — jamais un
      * 404 "User not found" qui révélerait l'absence du compte. Aucune ré-émission.
      */
     @Test
@@ -259,7 +283,7 @@ class AuthControllerSecurityTest {
 
         mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "ghost-token")))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("token expiré ou invalide"))
+                .andExpect(jsonPath("$.error").value("unauthorized"))
                 .andExpect(cookie().doesNotExist("jwt"));
 
         org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())

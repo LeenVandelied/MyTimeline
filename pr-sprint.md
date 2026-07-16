@@ -1,47 +1,38 @@
-## Sprint 30 — Garde-fous de boot prod & fiabilité auth
+## Sprint 43 — Auth cleanup léger
 
-Thème : durcir le démarrage en production et fiabiliser le parcours auth. Sprint 100 % backend,
-cohésion 0.76, aucune migration Flyway. Dépend du Sprint 29 (#37 fournit le profil prod conteneurisé
-où ces garde-fous s'activent).
+Solde la dette contrat d'erreur / hygiène auth héritée des Sprints 37-38 (follow-ups). Sprint **backend-only**, **aucune migration**, cohésion 0.70 (epic dominant `auth`).
 
-### Issues livrées (4)
+### Issues livrées (5)
 
-| # | Type | Objet | Commit |
-|---|------|-------|--------|
-| #140 | bug | HealthIndicator Brevo : `/actuator/health` remonte DOWN si `BREVO_API_KEY` absente en prod (fini le NO-OP silencieux) | `fc92c7b` |
-| #129 | chore | Filet de régression : test chargeant `application-prod.properties` → cookie JWT `Secure=true` | `5b80967` |
-| #130 | feat | Log INFO au boot prod de la config cookie/CORS effective (diagnostic misconfig sans incident) | `55254fa` |
-| #216 | security | Fail-fast : refuse le boot si `app.rate-limit.enabled=false` en environnement prod effectif | `2433738` |
-
-### Vagues d'exécution
-- **Vague 1** (parallèle, fichiers disjoints) : #140 ∥ #129
-- **Vague 2** (parallèle, fichiers disjoints) : #216 ∥ #130
+| # | Objet | Type |
+|---|-------|------|
+| #285 | Cap `spring.datasource.hikari.maximum-pool-size=2` sur le profil test (évite « too many clients » Testcontainers, #139) | chore/config |
+| #286 | Split du port `PasswordResetTokenRepository` en `create` (pur INSERT) / `markConsumed` (findById→saveAndFlush) — supprime le SELECT superflu du chemin forgot-password | perf/refactor |
+| #289 | `GET /me` renvoie un **401 générique** au lieu de 404 « User not found » sur user-absent (anti-énumération, aligné `/refresh` #113) | security |
+| #288 | Unifie le vocabulaire du champ `error` d'`AuthController` sur l'enum `ErrorCode` (un seul vocabulaire snake_case) | refactor |
+| #290 | Route les 11 handlers plats restants de `GlobalExceptionHandler` via `buildBody` (`error`=code stable, `message`=texte) | refactor |
 
 ### Changements clés
-- `ProfileSafetyGuard` (#216) : un seul `ApplicationListener`, désormais 2 checks fail-fast indépendants
-  aux prédicats disjoints — #111 (marqueur prod + profil dev) inchangé et prioritaire, puis #216 (prod
-  effectif + rate-limit off). Le job CI e2e (dev/test + `enabled=false`) n'est jamais bloqué ; property
-  absente = défaut fail-safe `true`.
-- `BrevoHealthIndicator` (#140) et `ProdConfigStartupLogger` (#130) : beans `@Profile("prod")` stricts,
-  aucun effet en dev/test.
-- **Anti-fuite secret** (transversal, croise #160) : #130 et #140 n'exposent/loggent QUE des flags de
-  config non-sensibles ; aucun `DB_PASSWORD`/`JWT_SECRET`/`BREVO_API_KEY`. Test de non-fuite dédié (#140).
-- `AuthControllerProdProfileCookieTest` (#129) : contexte léger (`@SpringJUnitWebConfig` +
-  `@TestPropertySource`), pas de `@SpringBootTest`/Testcontainers — le test casse si `Secure` est retiré
-  du fichier prod.
+- `ErrorCode` étendu : `UNAUTHORIZED`, `CONFLICT`, `INTERNAL_ERROR` (#288), `BAD_REQUEST` (#290) — taxonomie au niveau statut HTTP, cohérente avec l'existant.
+- Contrat d'erreur backend désormais homogène (`{error: <code stable>, ...}`) sur `AuthController` + `GlobalExceptionHandler`.
+- `/me` ne distingue plus « compte inexistant » de « token invalide ».
+
+### Garde-fous respectés (vérifiés par revue + tests dédiés)
+- **Verrou anti-TOCTOU #143** (PAT-S37-001) intact : `markConsumed` charge toujours l'entité managée `findById → saveAndFlush` (même transaction).
+- **Corps enrichi 409 `EventConflict`** (#231 / S42, `serverVersion`+`serverEvent`) **non migré** — verrouillé par `GlobalExceptionHandlerContractTest`.
+- Aucun fichier hors périmètre : `SecurityConfig /error` et validation event type (PR #291) non touchés.
+- Register 409 : discriminant username/email retiré du body (frontend mappe par statut seul) — renforce l'anti-énumération.
 
 ### Tests
-- Backend : **318 tests, 0 failed** (`./scripts/test-quiet.sh backend`). +17 tests ce sprint
-  (4 #140, 1 #129, 5 #130, 7 #216).
-- Frontend / E2E : N/A (aucune modif frontend ; check coverage-E2E Phase 8 = OK).
-- Audit complet : `docs/memory/audits/sprint-30-test-coverage.md`.
+- **Suite backend complète : 411/411 verts** (0 failed / 0 error), pool=2 sans deadlock ni « too many clients ».
+- Nouveaux : `PasswordResetTokenCreateStatisticsIntegrationTest` (prouve `loadCount==0` sur create), `GlobalExceptionHandlerContractTest` (5, dont non-régression EventConflict enrichi).
+- Anti-TOCTOU #143 (`PasswordResetTokenConcurrencyIntegrationTest`) vert, comportement inchangé.
+- Audit : `docs/memory/audits/sprint-43-test-coverage.md`.
 
 ### Revue
-- Review batch reviewer sur le diff complet (résultat consigné dans les artefacts sprint).
+- Reviewer + security-expert : **0 CRITIQUE, 0 MAJEUR**. 1 MINEUR convergent (fail-fast `orElseThrow` de `markConsumed`) résolu par documentation d'invariant (commit `f0d033c`) — aucun changement de comportement.
 
-### Follow-ups détectés (à trier en /sprint end)
-- Validation dure fail-fast si `COOKIE_DOMAIN`/`CORS_ALLOWED_ORIGINS` vides en prod (#130 avertit mais ne bloque pas).
-- Fail-fast possible sur `app.cookie.secure=false` en prod effectif (même famille que #216).
-- Alerting réel sur le composant `brevo` de `/actuator/health` (le healthcheck Docker ne lit que le statut global).
+### Follow-up (triage sprint end)
+- `SignatureException` sur `/me` tombe en 500 (vs 401 sur `/refresh`) — side-channel mineur, hors scope #289 [XS | auth].
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

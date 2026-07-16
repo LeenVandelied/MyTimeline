@@ -76,7 +76,7 @@ class PasswordResetTokenConcurrencyIntegrationTest extends AbstractPostgresInteg
                 suffix + "@example.com")).getId());
 
         UUID tokenValue = UUID.randomUUID();
-        txTemplate.executeWithoutResult(status -> tokenRepository.save(new PasswordResetToken(
+        txTemplate.executeWithoutResult(status -> tokenRepository.create(new PasswordResetToken(
                 UUID.randomUUID(), userId, tokenValue, LocalDateTime.now().plusHours(1), null)));
 
         // --- Deux consommations concurrentes du MÊME token, relâchées simultanément ---

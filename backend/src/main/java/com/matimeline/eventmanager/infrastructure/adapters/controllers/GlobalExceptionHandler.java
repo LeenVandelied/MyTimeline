@@ -55,10 +55,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CategoryNameConflictException.class)
     public ResponseEntity<Map<String, Object>> handleCategoryNameConflict(CategoryNameConflictException ex) {
         // BR-CAT-004 (#52) : nom de catégorie déjà pris par CET utilisateur -> 409.
-        // Corps plat {"error":...} cohérent avec les autres erreurs métier.
+        // #290 : contrat structuré buildBody — `error`=code stable CONFLICT, texte humain
+        // en `message`. Le front lit le statut 409 (pas la valeur texte de `error`).
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "category name already used"));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT, "category name already used"));
     }
 
     @ExceptionHandler(CategoryInUseException.class)
@@ -66,28 +67,29 @@ public class GlobalExceptionHandler {
         // AP-CAT-05 (#52) : suppression d'une catégorie référencée sans réassignation
         // -> 409. Le message métier explicite (nombre de produits + marche à suivre)
         // est renvoyé tel quel pour guider le client (critère d'acceptation).
+        // #290 : buildBody — `error`=CONFLICT, message dynamique lisible en `message`.
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", ex.getMessage()));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT, ex.getMessage()));
     }
 
     @ExceptionHandler(ExportFormatNotSupportedException.class)
     public ResponseEntity<Map<String, Object>> handleExportFormatNotSupported(ExportFormatNotSupportedException ex) {
         // #58 : format d'export inconnu, ou format demandé sur le mauvais verbe HTTP
-        // (sync en POST / async en GET) -> 400. Corps plat {"error":...}.
+        // (sync en POST / async en GET) -> 400. #290 : buildBody — `error`=BAD_REQUEST,
+        // texte humain en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "unsupported export format"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, "unsupported export format"));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
         // #70 : ancien mot de passe faux (POST /api/me/change-password) -> 400.
-        // Corps plat {"error":...} cohérent avec les autres erreurs métier des
-        // contrôleurs (login/register), distinct du corps détaillé buildBody.
+        // #290 : buildBody — `error`=BAD_REQUEST, texte humain en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "invalid current password"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, "invalid current password"));
     }
 
     @ExceptionHandler(InvalidAvatarException.class)
@@ -95,39 +97,39 @@ public class GlobalExceptionHandler {
         // #75 : upload avatar invalide (fichier absent/vide, type non autorisé détecté par
         // magic bytes, ou taille > 5 Mo) -> 400. Message métier explicite (guide le client,
         // critère d'acceptation) mais SANS fuite d'interne (chemin de stockage, stack).
-        // Corps plat {"error":...} cohérent avec les autres erreurs métier 400.
+        // #290 : buildBody — `error`=BAD_REQUEST, message dynamique lisible en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", ex.getMessage()));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, ex.getMessage()));
     }
 
     @ExceptionHandler(SamePasswordException.class)
     public ResponseEntity<Map<String, Object>> handleSamePassword(SamePasswordException ex) {
         // Review PR #132 : nouveau mot de passe identique à l'ancien -> 400.
-        // Même corps plat {"error":...} que InvalidCredentialsException.
+        // #290 : buildBody — `error`=BAD_REQUEST, texte humain en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "new password must differ"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, "new password must differ"));
     }
 
     @ExceptionHandler(AccountDeletionMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleAccountDeletionMismatch(AccountDeletionMismatchException ex) {
         // #78 (BR-AUT-001 variante) : username de confirmation != caller (dérivé du JWT)
-        // -> 400. Message neutre {"error":...} (anti-énumération : ne révèle pas si un
-        // autre compte porte ce username), cohérent avec les autres erreurs métier 400.
+        // -> 400. Message neutre (anti-énumération : ne révèle pas si un autre compte porte
+        // ce username). #290 : buildBody — `error`=BAD_REQUEST, texte neutre en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "username confirmation does not match"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, "username confirmation does not match"));
     }
 
     @ExceptionHandler(InvalidPasswordResetTokenException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidPasswordResetToken(InvalidPasswordResetTokenException ex) {
         // #49 : token de réinitialisation inexistant / mal formé / expiré (>15 min) /
-        // déjà consommé -> 400. Corps plat {"error":...} générique (anti-énumération :
-        // ne distingue pas les causes), cohérent avec les autres erreurs métier.
+        // déjà consommé -> 400. Message générique (anti-énumération : ne distingue pas les
+        // causes). #290 : buildBody — `error`=BAD_REQUEST, texte générique en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "invalid or expired token"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, "invalid or expired token"));
     }
 
     @ExceptionHandler(CategoryReassignTargetInvalidException.class)
@@ -136,9 +138,10 @@ public class GlobalExceptionHandler {
         // FIX review #153 : DELETE avec reassignToCategoryId == id (cible == source) -> 409
         // avec un message DÉDIÉ (au lieu de réutiliser CategoryInUseException, dont le
         // message « fournissez reassignToCategoryId » était trompeur pour ce cas).
+        // #290 : buildBody — `error`=CONFLICT, message dédié lisible en `message`.
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", ex.getMessage()));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT, ex.getMessage()));
     }
 
     // FIX review #153 : SUPPRESSION du @ExceptionHandler(DataIntegrityViolationException)
@@ -177,10 +180,11 @@ public class GlobalExceptionHandler {
         // isRecurring=true / recurrenceUnit=null -> 400. Le chemin CREATE l'impose déjà via
         // @AssertTrue (400) ; ici la garde est côté service (état fusionné, pas payload) car
         // un PATCH partiel peut légitimement s'appuyer sur un recurrenceUnit déjà en base.
-        // Corps plat {"error":...} cohérent avec les autres erreurs métier 400.
+        // #290 : buildBody — `error`=BAD_REQUEST, texte humain en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "recurrenceUnit is required when isRecurring is true"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST,
+                        "recurrenceUnit is required when isRecurring is true"));
     }
 
     @ExceptionHandler(RecurrenceEndDateBeforeStartException.class)
@@ -224,11 +228,17 @@ public class GlobalExceptionHandler {
         // ce type ne recouvre QUE le conflit de version optimiste — il ne masque aucune autre
         // violation. S'applique donc uniformément à toute entité @Version (Event, Product,
         // Category, User) sans requalifier d'erreurs non liées.
-        // Contrat consommé par #77 (Vague 2) : statut 409, corps plat {"error":"..."} —
-        // message générique neutre (pas de fuite de version/entité interne).
+        // Contrat consommé par #77 (Vague 2) : statut 409, message générique neutre (pas de
+        // fuite de version/entité interne). #290 : ce chemin ne s'applique QU'aux entités
+        // Product/Category/User @Version — le conflit d'EVENT est intercepté en amont par
+        // EventController qui lève EventConflictException (corps ENRICHI, handler distinct
+        // NON migré, #231). Aucun consommateur frontend ne lit la VALEUR texte de `error`
+        // pour ce chemin (Product/Category → statut 409 seul) : migration non régressive
+        // vers buildBody — `error`=CONFLICT, texte neutre en `message`.
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "resource was modified concurrently, please retry"));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT,
+                        "resource was modified concurrently, please retry"));
     }
 
     @ExceptionHandler(EndDateBeforeStartException.class)
@@ -250,9 +260,10 @@ public class GlobalExceptionHandler {
         // #75 : la limite servlet multipart (spring.servlet.multipart.max-file-size=5MB)
         // déclenche AVANT le contrôleur (parsing). On la mappe au MÊME 400 + message que la
         // limite applicative (defense in depth : les deux gardent le rejet cohérent).
+        // #290 : buildBody — `error`=BAD_REQUEST, message utilisateur en `message`.
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "fichier trop volumineux (max 5 Mo)"));
+                .body(buildBody(HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST, "fichier trop volumineux (max 5 Mo)"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
