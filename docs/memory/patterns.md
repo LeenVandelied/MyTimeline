@@ -280,3 +280,42 @@ En S46 (#315), l'aperçu du drawer devait réutiliser `Ruler` et `Cursor`, conç
 
 ## PAT-S46-002 — Action destructive : le callback métier LAISSE REJETER, le dialog appelant `await` + `catch` + affiche
 En S46 (correctif de revue), `runDelete(id)` est devenu le point d'appel **unique** de `deleteEvent` pour desktop ET mobile, et il ne contient volontairement **aucun `try/catch`** : l'erreur remonte au `catch` de `DeleteConfirmDialog.handleConfirm`, qui possède la surface d'affichage (message inline 404/409/générique, dialog maintenu ouvert). Le nettoyage d'état (conflit, éditeur, cible) n'a lieu **qu'après** le `await` réussi. **Anti-pattern explicite : un `try/catch` local dans le host qui logge et poursuit — le dialog se referme alors comme si c'était un succès, exactement le défaut M2 trouvé en revue.** Corollaire : un point d'appel unique est aussi le bon endroit où accrocher l'invalidation de cache manquante. Cf. [[PIT-S46-002]]. (Sprint 46, review batch)
+
+## PAT-S47-001 — Asserter un accordéon en E2E : l'attribut `aria-expanded`, jamais `not.toBeVisible()`
+**Problème** : le masquage peut passer par une hauteur CSS animée → `expect(pill).not.toBeVisible()` est vert aussi bien sur un élément hors-écran que sur une animation en cours, donc intermittent.
+**Solution** : assertion primaire sur l'ATTRIBUT `aria-expanded` du bouton toggle, et contenu vérifié par `toHaveCount(0)` (démontage réel, pas invisibilité).
+**Anti-pattern** : `not.toBeVisible()` sur un contenu collapsible.
+(Sprint 47 #304 — `frontend/e2e/timeline.spec.ts`)
+
+## PAT-S47-002 — Asserter un état de chargement E2E : stub de route SUSPENDU, jamais de temporisation
+**Problème** : un `isLoading` dure quelques ms contre un backend local — inassertable ; et un `setTimeout(N)` dans le handler `page.route` casse dès que l'hydratation dépasse N en CI.
+**Solution** : le handler `await` une promesse que **le test** résout après avoir asserté l'état (`const release = await stubGated(page); … release()`). L'état reste stable tant que le test ne libère pas — déterministe par construction.
+**Anti-pattern** : temporisation fixe dans le handler, ou `waitForTimeout` côté test.
+(Sprint 47 #314)
+
+## PAT-S47-003 — Compte E2E jamais vierge : seeder avec des noms `unique()` et scoper les locators
+**Problème** : les comptes fixes de `accounts.ts` sont alimentés par les autres specs du run, dont l'ordre n'est pas un contrat. Les états « liste vide » sont donc inatteignables, et purger est destructif et racé.
+**Solution** : deux voies selon la nature de l'état. État **client** (`useState` non persisté) → seeder par API une catégorie dédiée + produits aux noms `unique()`, et scoper tous les locators (`filter({hasText})`/`filter({has})`). État **serveur** (liste vide, chargement) → `page.route` sur le seul GET de listing, `route.continue()` pour les écritures, le reste restant full-stack.
+**Anti-pattern** : stubber le listing pour un état que le vrai backend atteint déjà de façon déterministe ; supposer un compte vierge en début de fichier.
+(Sprint 47 #314 + #304)
+
+## PAT-S47-004 — Glob Playwright : préférer la RegExp dès qu'un segment frère plus profond existe
+**Problème** : `page.route('**/api/users/*/products')` — le `*` de Playwright ne garantit pas de ne pas franchir les `/`, donc risque de capter `/api/users/{id}/products/{pid}/events`.
+**Solution** : RegExp explicite, ancrée — `/\/api\/users\/[^/]+\/products(\?.*)?$/`.
+(Sprint 47 #314)
+
+## PAT-S47-005 — Story d'un composant `useTranslations` : le vrai provider i18n, jamais un stub
+**Problème** : un composant consommant `useTranslations()` de next-intl crashe au montage sans provider.
+**Solution** : décorateur partagé (`withTimelineIntl` dans `fixtures.tsx`) alimenté par les **vrais** fichiers `public/locales/fr/<namespace>.json` importés en JSON (namespace = nom de fichier, exactement l'indexation de `i18n.ts`), avec `timeZone` figé pour un rendu déterministe.
+**Anti-pattern** : stubber `useTranslations` — la story n'attraperait plus le renommage d'une clé i18n, alors que c'est précisément la régression que Storybook doit rendre visible.
+(Sprint 47 #205)
+
+## PAT-S47-006 — « La story build » ≠ « la story s'affiche » : servir `storybook-static` et asserter
+**Problème** : le critère d'acceptation « la story s'affiche correctement » est couramment validé par un `build-storybook` vert — qui ne prouve QUE la compilation, pas le montage runtime.
+**Solution** : servir `storybook-static`, charger `iframe.html?id=<storyId>` pour chaque story, et asserter la présence d'un testid + l'absence de `pageerror`. En S47 : 78 stories montées, ce qui a prouvé au passage la non-régression des 6 stories préexistantes partageant `fixtures.tsx`.
+(Sprint 47 #205)
+
+## PAT-S47-007 — Valider une horloge simulée par contrôle négatif
+**Problème** : remplacer un `waitForTimeout(800)` par `page.clock.fastForward(600)` peut donner un test vert **sans que l'horloge pilote quoi que ce soit** (le seuil étant franchi par le temps réel écoulé pendant les autres opérations).
+**Solution** : contrôle négatif systématique — `fastForward(300)` (sous le seuil) DOIT rendre le test rouge. Sans cette vérification, on ne sait pas si l'on a supprimé le flake ou seulement déplacé.
+(Sprint 47, corrections review)
