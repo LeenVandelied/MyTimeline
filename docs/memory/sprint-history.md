@@ -990,7 +990,7 @@
 **Non retenu délibérément (piège documenté, PAS une issue) :** le « 400 probable sur la création couplée produit » signalé par un subagent est un **faux positif vérifié** — `ProductCreationRequest.events` n'a pas de `@Valid`, donc pas de cascade. Ajouter ce `@Valid` **casserait** le parcours (`productId` `@NotNull` insatisfiable sur un event imbriqué). Créer une issue aurait envoyé le prochain dev dans le mur → consigné en PIT-S44-002 + dans le pack.
 **Status :** Terminé.
 
-## Sprint 45 — 2026-07-16 (PLANIFIÉ — cohésion 0.57, Garde serveur auth + fiabilisation E2E auth)
+## Sprint 45 — 2026-07-16 → 2026-07-27 (EN COURS — cohésion 0.57, Garde serveur auth + fiabilisation E2E auth)
 **Objectif :** Fermer le lot auth nommé par le plan S44 : garde serveur des routes connectées (#302) + découpler le canal de capture du token de reset en E2E (#283) et couvrir ses cas d'échec (#284).
 **Milestone GitHub :** #45
 **Issues :** #302 (P1/M), #283 (P1/M), #284 (P2/S) — 10 points
@@ -999,7 +999,7 @@
 **Dépend de :** aucune
 **Mini-plans :** `docs/memory/sprints/sprint-45/architect-plans.md`
 **ADR bloquant :** `ADR-XXX-canal-token-reset-e2e` — le job CI e2e tourne `SPRING_PROFILES_ACTIVE=dev` (`ci.yml:156`), donc un endpoint `@Profile("e2e")` ne s'activerait JAMAIS en CI. À trancher avant de coder.
-**Status :** Planifié
+**Status :** En cours (branche `sprint/45` créée depuis `origin/dev` le 2026-07-27, plan S45-S49 cherry-pické depuis `claude/sprint-plan-5-203bbc`)
 
 ## Sprint 46 — 2026-07-16 (PLANIFIÉ — cohésion 0.50, Aperçu live drawer + dette focus S44)
 **Objectif :** Solder la dette S44 sur le drawer de création : aperçu live conforme au handoff §6 (#315), focus-trap dédupliqué (#316), suppression d'event câblée sur la frise mobile (#309).
