@@ -32,8 +32,9 @@ describe('LocaleError — branche 500', () => {
     expect(screen.getByTestId('state-screen-code')).toHaveTextContent('500')
     expect(screen.getByText('errors.crash.title')).toBeInTheDocument()
     expect(screen.getByTestId('error-retry')).toBeInTheDocument()
+    // ADR-006 — landing canonique = racine de locale.
     const home = screen.getByTestId('error-home-link')
-    expect(home).toHaveAttribute('href', '/fr/home')
+    expect(home).toHaveAttribute('href', '/fr')
   })
 
   it('clic « réessayer » appelle reset', async () => {
@@ -56,6 +57,6 @@ describe('LocaleError — branche 403', () => {
     expect(screen.getByTestId('state-screen-code')).toHaveTextContent('403')
     expect(screen.getByText('errors.forbidden.title')).toBeInTheDocument()
     expect(screen.queryByTestId('error-retry')).not.toBeInTheDocument()
-    expect(screen.getByTestId('error-home-link')).toHaveAttribute('href', '/fr/home')
+    expect(screen.getByTestId('error-home-link')).toHaveAttribute('href', '/fr')
   })
 })

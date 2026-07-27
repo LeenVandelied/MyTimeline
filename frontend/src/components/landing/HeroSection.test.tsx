@@ -25,9 +25,7 @@ describe('HeroSection', () => {
 
   it('pointe le CTA primaire vers la page register de la locale', () => {
     render(<HeroSection locale="en" />)
-    const registerLink = screen
-      .getByText(/common\.landing\.hero\.cta/)
-      .closest('a')
+    const registerLink = screen.getByText(/common\.landing\.hero\.cta/).closest('a')
     expect(registerLink).toHaveAttribute('href', '/en/register')
   })
 

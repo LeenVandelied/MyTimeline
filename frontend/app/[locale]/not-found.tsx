@@ -14,8 +14,10 @@ import { StateScreen, stateActionPrimary } from '@/components/shared/StateScreen
  * et `useTranslations` résolvent. Client Component pour lire la locale courante
  * de façon fiable (pas de `params` fournis à `not-found.tsx`).
  *
- * Lien de retour préfixé locale (`/${locale}/home`) : `localePrefix: 'always'`
- * casse tout chemin non préfixé. Clair + sombre via tokens Graphite (StateScreen).
+ * Lien de retour préfixé locale (`/${locale}`) : `localePrefix: 'always'` casse tout
+ * chemin non préfixé. Cible = racine de locale, route canonique de la landing depuis
+ * l'ADR-006 (`/${locale}/home` redirige désormais en 308).
+ * Clair + sombre via tokens Graphite (StateScreen).
  */
 export default function LocaleNotFound() {
   const locale = useLocale()
@@ -29,7 +31,7 @@ export default function LocaleNotFound() {
       title={t('title')}
       description={t('description')}
       actions={
-        <Link href={`/${locale}/home`} className={stateActionPrimary} data-testid="not-found-home-link">
+        <Link href={`/${locale}`} className={stateActionPrimary} data-testid="not-found-home-link">
           {t('backHome')}
         </Link>
       }

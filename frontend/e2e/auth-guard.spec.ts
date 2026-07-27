@@ -27,8 +27,14 @@ import { SUPPORTED_LOCALES } from '../src/i18n/locales'
 /** Segments protégés — miroir de `src/lib/auth-guard-paths.ts` (ADR-004 §Limites). */
 const PROTECTED_PATHS = ['/fr/dashboard', '/fr/timeline', '/fr/products', '/fr/settings']
 
-/** Routes publiques : doivent rester accessibles à un anonyme (aucune boucle). */
-const PUBLIC_PATHS = ['/fr/login', '/fr/register', '/fr/forgot-password', '/fr/home']
+/**
+ * Routes publiques : doivent rester accessibles à un anonyme (aucune boucle).
+ *
+ * ⚠ La landing est `/fr` et NON `/fr/home` depuis l'ADR-006 : `/fr/home` répond
+ * désormais 308 vers `/fr`, ce qui ferait échouer l'assertion `status === 200`
+ * ci-dessous (les requêtes sont émises avec `maxRedirects: 0`).
+ */
+const PUBLIC_PATHS = ['/fr/login', '/fr/register', '/fr/forgot-password', '/fr']
 
 test.describe('Garde serveur — visiteur anonyme', () => {
   // Contexte SANS cookie : on n'hérite d'aucun storageState du projet `setup`.

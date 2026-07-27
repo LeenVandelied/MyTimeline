@@ -21,10 +21,11 @@ describe('LocaleNotFound', () => {
     expect(screen.getByText('errors.notFound.description')).toBeInTheDocument()
   })
 
-  it('lien de retour préfixé locale (/fr/home)', () => {
+  // ADR-006 — la landing canonique est la racine de locale `/fr`, plus `/fr/home`.
+  it('lien de retour préfixé locale (/fr)', () => {
     render(<LocaleNotFound />)
     const link = screen.getByTestId('not-found-home-link')
-    expect(link).toHaveAttribute('href', '/fr/home')
+    expect(link).toHaveAttribute('href', '/fr')
     expect(link).toHaveTextContent('errors.notFound.backHome')
   })
 })

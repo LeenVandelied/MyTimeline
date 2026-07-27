@@ -61,7 +61,7 @@ export default function LocaleError({
             </button>
           ) : null}
           <Link
-            href={`/${locale}/home`}
+            href={`/${locale}`}
             className={forbidden ? stateActionPrimary : stateActionSecondary}
             data-testid="error-home-link"
           >

@@ -28,18 +28,19 @@ describe('GlobalError', () => {
     expect(screen.getByTestId('global-error-home-link')).toBeInTheDocument()
   })
 
-  it('locale déduite de l\'URL (/es/...) → messages espagnols + lien /es/home', () => {
+  // ADR-006 — la landing canonique est la racine de locale (`/es`, `/fr`), plus `/…/home`.
+  it('locale déduite de l\'URL (/es/...) → messages espagnols + lien /es', () => {
     window.history.pushState({}, '', '/es/anything')
     render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
     expect(screen.getByText('Se produjo un error')).toBeInTheDocument()
-    expect(screen.getByTestId('global-error-home-link')).toHaveAttribute('href', '/es/home')
+    expect(screen.getByTestId('global-error-home-link')).toHaveAttribute('href', '/es')
   })
 
   it('segment inconnu → fallback fr', () => {
     window.history.pushState({}, '', '/zz/nope')
     render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
     expect(screen.getByText('Une erreur est survenue')).toBeInTheDocument()
-    expect(screen.getByTestId('global-error-home-link')).toHaveAttribute('href', '/fr/home')
+    expect(screen.getByTestId('global-error-home-link')).toHaveAttribute('href', '/fr')
   })
 
   it('clic « réessayer » appelle reset', async () => {

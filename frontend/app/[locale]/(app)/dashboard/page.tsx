@@ -78,7 +78,8 @@ export default function Dashboard() {
   // #85 — Handlers du rail paysage. `accueil` navigue vers la landing localisée ;
   // `produits` fait défiler vers la colonne produits (pas de route dédiée — les
   // produits vivent dans le dashboard).
-  const handleHome = () => router.push(`/${locale}/home`)
+  // Cible = `/${locale}`, route canonique de la landing (ADR-006).
+  const handleHome = () => router.push(`/${locale}`)
   const handleProducts = () => {
     landscapeProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
