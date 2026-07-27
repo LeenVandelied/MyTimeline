@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useCallback, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Calendar } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { queryKeys } from '@/lib/query-keys'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
@@ -50,6 +52,7 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   const [editing, setEditing] = useState<PositionedEvent | null>(null)
   // Cible de suppression MOBILE (action sheet) : non nulle ⇒ dialog de confirmation ouvert.
   const [deleteTarget, setDeleteTarget] = useState<PositionedEvent | null>(null)
+  const queryClient = useQueryClient()
 
   const closeEditor = useCallback(() => setEditing(null), [])
 
@@ -96,15 +99,27 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
    * inline (404 / 409 / générique) en gardant le dialog ouvert. Conséquence : plus aucun
    * appelant ne laisse la promesse orpheline (fini l'unhandled rejection sur 403/409/réseau),
    * et l'état local (conflit, éditeur, cible) n'est nettoyé QUE si le serveur a confirmé.
+   *
+   * INVALIDATION (absorption S46) : sans elle, l'event supprimé restait affiché sur la frise
+   * jusqu'à une navigation (gap PRÉEXISTANT côté desktop, exposé au mobile par #309). On
+   * invalide le PRÉFIXE `queryKeys.products.all` (`['products']`), qui COUVRE par matching
+   * TanStack v5 `products.withEvents(userId)` — la source réelle de la frise
+   * (`useProductsWithEvents`, dashboard ET détail produit) — ainsi que `products.detail`.
+   * Choix aligné sur les autres mutations destructives/créatrices du domaine
+   * (`useDeleteCategory` #245, `useCreateEvent` #300) : pas de `userId` threadé juste pour
+   * invalider (PAT-S40-001), donc AUCUNE garde `if (user?.id)` qui raterait silencieusement
+   * le rafraîchissement. Placée APRÈS l'`await` réussi uniquement : sur rejet, la promesse
+   * remonte à `DeleteConfirmDialog` (PAT-S46-002) et rien n'est invalidé.
    */
   const runDelete = useCallback(
     async (id: string) => {
       await deleteEvent(id)
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all })
       conflict.reset()
       closeEditor()
       setDeleteTarget(null)
     },
-    [conflict, closeEditor],
+    [conflict, closeEditor, queryClient],
   )
 
   /** Confirmation MOBILE : supprime la cible armée par l'action sheet. */

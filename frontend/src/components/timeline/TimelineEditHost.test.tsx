@@ -5,8 +5,10 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { TimelineEditHost } from './TimelineEditHost'
 import type { TimelineResponsiveProps } from './TimelineResponsive'
+import type { PositionedEvent } from './zoom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { deleteEvent } from '@/services/eventService'
+import { queryKeys } from '@/lib/query-keys'
 
 /**
  * #review S42 (MINEUR) — INVARIANT provider de TimelineEditHost.
@@ -34,32 +36,48 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'fr',
 }))
 
-vi.mock('./TimelineResponsive', () => ({
-  TimelineResponsive: (props: TimelineResponsiveProps) => (
-    <div data-testid="timeline-responsive-stub">
-      <button
-        type="button"
-        data-testid="mobile-delete-trigger"
-        onClick={() =>
-          props.onDeleteEvent?.({
-            id: 'evt-mobile',
-            title: 'Mobile event',
-            start: '2026-01-01',
-            end: '2026-01-02',
-            allDay: false,
-            resourceId: 'product-1',
-            extendedProps: { productId: 'product-1', productName: 'Produit', category: 'cat', type: 'single' },
-            leftPx: 0,
-            widthPx: 0,
-            status: 'upcoming',
-          })
-        }
-      >
-        delete
-      </button>
-    </div>
-  ),
-}))
+vi.mock('./TimelineResponsive', () => {
+  const positionedEvent = (id: string, title: string): PositionedEvent => ({
+    id,
+    title,
+    start: '2026-01-01',
+    end: '2026-01-02',
+    allDay: false,
+    resourceId: 'product-1',
+    extendedProps: {
+      productId: 'product-1',
+      productName: 'Produit',
+      category: 'cat',
+      type: 'single',
+    },
+    leftPx: 0,
+    widthPx: 0,
+    status: 'upcoming',
+  })
+
+  return {
+    TimelineResponsive: (props: TimelineResponsiveProps) => (
+      <div data-testid="timeline-responsive-stub">
+        <button
+          type="button"
+          data-testid="mobile-delete-trigger"
+          onClick={() => props.onDeleteEvent?.(positionedEvent('evt-mobile', 'Mobile event'))}
+        >
+          delete
+        </button>
+        {/* Chemin DESKTOP : `EventDrawer` ouvre l'éditeur (`editing`), la suppression part
+            ensuite d'`EventEditForm` → `DeleteConfirmDialog` → `deleteEditing`. */}
+        <button
+          type="button"
+          data-testid="desktop-edit-trigger"
+          onClick={() => props.onEditEvent?.(positionedEvent('evt-desktop', 'Desktop event'))}
+        >
+          edit
+        </button>
+      </div>
+    ),
+  }
+})
 
 vi.mock('@/services/authService', () => ({
   getUserProfile: vi.fn().mockResolvedValue({ id: 'user-1', name: 'Test', email: 't@e.st' }),
@@ -72,14 +90,23 @@ vi.mock('@/services/eventService', () => ({
   deleteEvent: vi.fn(),
 }))
 
+/**
+ * Rend le host sous un `QueryClientProvider` RÉEL (pas de mock de `@tanstack/react-query` :
+ * `AuthProvider` s'en sert aussi). `invalidateQueries` est espionné sur l'instance pour
+ * prouver l'invalidation de cache après suppression (absorption S46).
+ */
 function renderUnderAuth() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{children}</AuthProvider>
     </QueryClientProvider>
   )
-  return render(<TimelineEditHost events={[]} resources={[]} locale="fr" />, { wrapper })
+  return {
+    ...render(<TimelineEditHost events={[]} resources={[]} locale="fr" />, { wrapper }),
+    invalidateQueries,
+  }
 }
 
 beforeEach(() => {
@@ -168,5 +195,52 @@ describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () =
     fireEvent.click(await screen.findByTestId('delete-confirm-button'))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('deleteDialog.errors.notFound')
+  })
+})
+
+/**
+ * Absorption S46 — sans invalidation, la frise (`useProductsWithEvents`) gardait l'event
+ * supprimé à l'écran jusqu'à navigation. `runDelete` étant le point d'appel UNIQUE de
+ * `deleteEvent`, les deux chemins (mobile `confirmDeleteTarget`, desktop `deleteEditing`)
+ * doivent en bénéficier — et AUCUN chemin d'erreur (PAT-S46-002).
+ */
+describe('TimelineEditHost — invalidation du cache après suppression', () => {
+  it('mobile : succès → invalide le préfixe products (couvre products.withEvents)', async () => {
+    vi.mocked(deleteEvent).mockResolvedValue(undefined)
+    const { invalidateQueries } = renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await waitFor(() =>
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.products.all }),
+    )
+  })
+
+  it('desktop : succès via l’éditeur → même invalidation (point d’appel unique)', async () => {
+    vi.mocked(deleteEvent).mockResolvedValue(undefined)
+    const { invalidateQueries } = renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    // Le dialog d'édition monte `EventEditForm`, dont le bouton supprimer ouvre le même
+    // `DeleteConfirmDialog` (#65) branché sur `deleteEditing`.
+    fireEvent.click(await screen.findByTestId('event-form-delete'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-desktop'))
+    await waitFor(() =>
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.products.all }),
+    )
+  })
+
+  it('échec serveur → AUCUNE invalidation (le cache n’est pas touché sur rejet)', async () => {
+    vi.mocked(deleteEvent).mockRejectedValue({ response: { status: 403 } })
+    const { invalidateQueries } = renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await screen.findByRole('alert')
+    expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.products.all })
   })
 })
