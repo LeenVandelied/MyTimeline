@@ -39,7 +39,7 @@ Aucune cellule manquante. Les 4 BR touchées sont cross-system et disposent chac
 | Suite | Exit | Résultat |
 |---|:---:|---|
 | Backend `test-quiet.sh backend` | 0 | **433 tests**, 0 failure, 0 error |
-| Frontend `test-quiet.sh frontend` | 0 | **558 tests**, 67 fichiers, `success: true` |
+| Frontend `test-quiet.sh frontend` | 0 | **564 tests**, 67 fichiers, `success: true` |
 | `tsc --noEmit` | 0 | — |
 | `next lint` | 0 | « No ESLint warnings or errors » |
 | `prettier --check` | 0 | fichiers touchés |
@@ -53,28 +53,57 @@ Vérification **indépendante** par `test-runner` sur backend 433/433 et fronten
 « All files formatted » avec exit 1. Tous les chiffres ci-dessus proviennent de codes de sortie réels
 lus via `rtk proxy`, jamais d'un résumé RTK.
 
-## Réserve d'exécution — À LIRE AVANT MERGE
+## Exécution E2E — ce que la CI a réellement révélé
 
-**Aucune spec E2E de ce sprint n'a jamais été exécutée.** La stack docker applicative est down sur ce
-poste ; le job CI `e2e` est le **seul gate réel** pour les 3 specs.
+La réserve inscrite ici avant la PR (« aucune spec E2E jamais exécutée, gate = CI ») **s'est vérifiée
+et a payé** : le premier run CI a trouvé une régression que **toutes** les vérifications locales avaient
+manquée.
 
-Niveau de confiance réel sur l'E2E : **parse-level uniquement**.
-Deux mesures divergentes ont été obtenues sur la collecte Playwright — `--list` exit 0 avec 2 tests
-collectés (#284) vs 0 collecté / `webServer` bloqué (`test-runner`). La collectabilité n'est donc **pas**
-confirmée de façon indépendante.
+### Run CI #1 — `a56ffa1` (run 30269383403) — ROUGE
 
-Points à surveiller au premier run CI :
-1. Si `submitResetPassword` renvoie **429 dès le premier appel** → la cause est `RATE_LIMIT_ENABLED`
-   non transmis, **pas** la spec.
-2. `auth-guard.spec.ts` importe `../src/i18n/locales` en **relatif** (pas l'alias `@/`) : la résolution
-   Playwright diffère du bundler Next — à confirmer en CI.
-3. Les 4 cas d'ancrage du matcher (`/%66r/...`) ne sont prouvés qu'en CI : c'est le **seul** niveau où
-   Next évalue réellement `config.matcher`.
+`e2e` : **39 passed, 10 failed, 1 skipped**.
+Les 10 échecs sont **tous** dans `auth-guard.spec.ts`, tous **500 au lieu de 307**, y compris le cas
+trivial `/fr/dashboard`. Log serveur : `⨯ [Error [TypeError]: Invalid URL]` à chaque requête gardée.
 
-Budget réaliste : **1 à 2 itérations rouges** sur le job CI e2e.
+**Cause** : le correctif « `Location` relatif » (issu de l'audit sécurité) cassait le runtime. Next
+normalise les redirections de middleware via `new NextURL(redirect)` → `new URL('/fr/login')` **sans
+base** → `TypeError`. La garde renvoyait donc 500 sur **100 % des routes protégées**.
+
+**Ce que ça dit de la couverture** : `next build` vert, `tsc` vert, `eslint` vert, 33 tests unitaires de
+middleware verts — et la fonctionnalité totalement inopérante. Les tests assertaient sur l'objet
+`NextResponse` retourné, jamais sur le traitement que Next lui applique ensuite.
+`reset-password-failures.spec.ts` et `forgot-password.spec.ts` **passaient** → #283 et #284 sains,
+régression confinée à #302.
+
+### Correctif `2f5da3d`
+
+`request.nextUrl.clone()` + `NextResponse.redirect(url, 307)` (absolu), `search` vidé.
+Diagnostic confirmé par **3 preuves indépendantes** : lecture du code de l'adapter Next, `new URL()` en
+Node, et surtout **reproduction runtime réelle** (`next build` + `next start` → `/fr/dashboard` = 500,
+`ERR_INVALID_URL { input: '/fr/login' }`).
+
+Vérification runtime **post-correctif** (`next start`) : `/fr/{dashboard,timeline,products,settings}`,
+sous-route, `/%66r/dashboard`, `/%66r/products/photo.png` → **tous 307** vers `/fr/login` ; avec cookie
+`jwt` → 200 ; `/fr/login` → 200 ; zéro occurrence « Invalid URL » dans les logs.
+
+**Test anti-régression** (`middleware.test.ts`, 33 → 39 tests) : 5 cas
+`expect(() => new URL(location)).not.toThrow()` **sans base**, plus 1 cas via le `NextURL` **réel** de
+l'adapter. Efficacité **prouvée par revert temporaire** du middleware → 8 FAIL, exit 1.
+L'ancien test faisait `new URL(location, ORIGIN)` — **la base masquait exactement le bug**.
+
+### Statut
+
+Run CI #2 sur `2f5da3d` — en cours au moment de l'écriture. **Le verdict E2E appartient à ce run**, pas
+à la vérification locale ci-dessus, aussi convaincante soit-elle.
+
+Job `security` : **rouge, non imputable à ce sprint** — `npm audit` remonte 19 advisories `high` sur
+`next`/`postcss`/`sharp` (transitifs). Cette PR n'ajoute aucune dépendance, elle en **retire** (`pg`).
+`dev` était vert le 2026-07-16, soit 11 jours plus tôt, et les advisories sont récentes (CVE-2026-*) :
+faisceau d'indices en faveur d'une dérive temporelle, **non prouvé** — à confirmer en relançant la CI
+sur `dev`. Remédiation hors périmètre Sprint 45.
 
 ## Conclusion
 
-Suites unitaires et d'intégration **vertes et vérifiées indépendamment**. Aucune cellule de couverture manquante.
-**Prêt pour PR**, sous la réserve d'exécution E2E ci-dessus, qui doit être levée par la CI et non
-par un run local.
+Suites unitaires et d'intégration vertes et vérifiées indépendamment. Aucune cellule de couverture
+manquante. **Le premier run CI a invalidé la confiance locale** : la garde #302 était cassée à
+l'exécution. Correctif appliqué et vérifié en runtime réel ; **le gate reste le run CI #2**.
