@@ -67,6 +67,10 @@
     "preview": "Event Preview",
     "sampleEvent": "Sample Event",
     "sampleDescription": "Event description with selected colors",
+    "previewTimeline": {
+      "label": "Event timeline preview",
+      "nextOccurrence": "Next occurrence"
+    },
     "edit": {
       "title": "Edit Event",
       "success": "Event successfully modified",
