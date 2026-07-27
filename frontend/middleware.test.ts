@@ -3,8 +3,9 @@
 import { describe, it, expect } from 'vitest'
 import { NextRequest } from 'next/server'
 
-import middleware from './middleware'
+import middleware, { config } from './middleware'
 import { AUTH_COOKIE_NAME } from '@/lib/auth-guard-paths'
+import { SUPPORTED_LOCALES } from '@/i18n/locales'
 
 /**
  * #302 — Garde serveur COMPOSÉE avec next-intl (ADR-004).
@@ -141,5 +142,69 @@ describe('middleware — non-régression i18n (#235)', () => {
     // `/it/dashboard` : `it` n'est pas une locale → next-intl le préfixe.
     const response = middleware(request('/it/dashboard'))
     expect(redirectTarget(response)).toBe('/fr/it/dashboard')
+  })
+})
+
+describe('middleware — Location relatif (audit sécurité S45)', () => {
+  it('émet un Location RELATIF, jamais une URL absolue dérivée du Host', () => {
+    const response = middleware(request('/fr/dashboard'))
+
+    expect(response.headers.get('location')).toBe('/fr/login')
+  })
+
+  it('ignore un en-tête Host attaquant-contrôlable', () => {
+    const req = new NextRequest(new URL('/fr/dashboard', 'http://evil.example'), {
+      headers: { 'accept-language': 'fr' },
+    })
+    const location = middleware(req).headers.get('location')
+
+    expect(location).toBe('/fr/login')
+    expect(location).not.toContain('evil.example')
+  })
+
+  it('protège un segment percent-encodé (contournement corrigé S45)', () => {
+    const response = middleware(request('/fr/%64ashboard'))
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe('/fr/login')
+  })
+})
+
+describe('middleware — matcher (audit sécurité S45)', () => {
+  /** Entrée 1 du matcher, compilée telle que Next l'évalue sur un pathname. */
+  const assetExclusion = new RegExp(`^${config.matcher[0]}$`)
+
+  it('N’exclut PLUS un chemin applicatif contenant un point', () => {
+    // Avant correctif : `.*\..*` excluait tout chemin pointé → garde inactive
+    // sur `/fr/products/<id contenant un point>`.
+    expect(assetExclusion.test('/fr/products/foo.bar')).toBe(true)
+    expect(assetExclusion.test('/fr/dashboard')).toBe(true)
+  })
+
+  it('exclut toujours les assets réels et les internes Next', () => {
+    for (const pathname of [
+      '/favicon.ico',
+      '/images/logo.svg',
+      '/next.svg',
+      '/_next/static/chunk.js',
+      '/api/auth/me',
+    ]) {
+      expect(assetExclusion.test(pathname)).toBe(false)
+    }
+  })
+
+  it('ré-inclut tout chemin préfixé d’une locale, extension comprise', () => {
+    // L'entrée 1 exclut `/fr/products/photo.png` (extension d'asset en fin) ;
+    // l'entrée 2 le rattrape pour que la garde s'applique quand même.
+    expect(assetExclusion.test('/fr/products/photo.png')).toBe(false)
+    expect(config.matcher[1]).toBe('/:locale(fr|en|es|de)/:path*')
+  })
+
+  it('garde l’alternation de locales du matcher alignée sur SUPPORTED_LOCALES (#235)', () => {
+    // Le matcher NE PEUT PAS être calculé (analyse statique Next) : ce test est
+    // le seul filet contre une locale ajoutée à `SUPPORTED_LOCALES` et oubliée ici.
+    const alternation = /^\/:locale\(([^)]+)\)\/:path\*$/.exec(config.matcher[1])?.[1]
+
+    expect(alternation?.split('|').sort()).toEqual([...SUPPORTED_LOCALES].sort())
   })
 })

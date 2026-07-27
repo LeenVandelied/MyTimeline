@@ -51,18 +51,45 @@ export default function middleware(request: NextRequest): NextResponse {
     // mais on retombe sur `DEFAULT_LOCALE` plutôt que d'écrire un `!` non prouvable.
     const locale = splitLocalizedPathname(pathname)?.locale ?? DEFAULT_LOCALE
 
-    // `new URL(..., request.url)` conserve l'origine réelle (protocole/host) —
-    // indispensable derrière un proxy. La query string n'est PAS reportée :
-    // pas de `?redirect=` (surface d'open-redirect), cf. ADR-004 §Limites.
-    const loginUrl = new URL(buildLoginPathname(locale), request.url)
-
-    return NextResponse.redirect(loginUrl)
+    // `Location` RELATIF, délibérément. Construire une URL absolue à partir de
+    // `request.url` reviendrait à faire confiance à l'en-tête `Host`, que
+    // l'appelant contrôle : un `Host: evil.example` produirait un `Location:`
+    // absolu vers un domaine arbitraire (open-redirect, et empoisonnement de
+    // cache si un cache mutualisé mémorise la 307). Un chemin relatif est
+    // résolu par le client contre l'origine réellement contactée — donc juste
+    // derrière un proxy, sans dépendre d'un en-tête non fiable.
+    // La query string n'est PAS reportée : pas de `?redirect=` (surface
+    // d'open-redirect), cf. ADR-004 §Limites.
+    return new NextResponse(null, {
+      status: 307,
+      headers: { Location: buildLoginPathname(locale) },
+    })
   }
 
   return intlMiddleware(request)
 }
 
+/**
+ * ⚠ `matcher` doit rester une **littérale statique** : Next l'analyse au build,
+ * il ne peut PAS être calculé (d'où la liste de locales dupliquée ci-dessous,
+ * ancrée par un test contre `SUPPORTED_LOCALES` — #235).
+ *
+ * Entrée 1 — tout sauf `api`, les internes Next/Vercel et les **assets réels**.
+ * L'ancien motif `.*\..*` excluait TOUT chemin contenant un point : un
+ * `/fr/products/foo.bar` n'entrait jamais dans le middleware et échappait donc
+ * à la garde (le paramètre `[productId]` accepte un point — trivialement
+ * atteignable). L'exclusion est désormais limitée à une extension d'asset en
+ * FIN de chemin.
+ *
+ * Entrée 2 — ré-inclut inconditionnellement tout chemin préfixé d'une locale,
+ * extension ou non. Sans elle, `/fr/products/photo.png` resterait exclu par
+ * l'entrée 1 et rouvrirait le même trou. Les assets réels vivent sous
+ * `/public` et sont servis à la racine (`/favicon.ico`, `/images/logo.svg`) —
+ * jamais sous un préfixe de locale : les deux entrées ne se marchent pas dessus.
+ */
 export const config = {
-  // Intercepter toutes les requêtes qui commencent par / sauf celles liées à API, assets, etc.
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: [
+    '/((?!api|_next|_vercel|.*\\.(?:ico|png|jpg|jpeg|gif|webp|avif|svg|css|js|map|woff2?|ttf|otf|txt|xml|webmanifest)$).*)',
+    '/:locale(fr|en|es|de)/:path*',
+  ],
 }

@@ -105,6 +105,33 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
   `frontend/app/[locale]/(app)/` **sans** l'ajouter à `PROTECTED_APP_SEGMENTS`
   laisse la nouvelle route sans garde serveur, silencieusement. Un test unitaire
   ancre la liste, mais aucun mécanisme ne la synchronise automatiquement.
+- **Le `matcher` fait partie de la surface de sécurité, pas seulement de la perf.**
+  Un chemin exclu par `config.matcher` n'entre jamais dans le middleware : la garde
+  y est inactive, silencieusement. La formulation initiale
+  `'/((?!api|_next|.*\..*).*)'` excluait **tout chemin contenant un point** — donc
+  `/fr/products/foo.bar`, trivialement atteignable puisque le paramètre
+  `[productId]` accepte un point (relevé par l'audit sécurité du sprint 45).
+  **Résolution retenue** : l'exclusion ne porte plus que sur une extension d'asset
+  en **fin** de chemin, et une **seconde entrée** (`/:locale(fr|en|es|de)/:path*`)
+  ré-inclut inconditionnellement tout chemin préfixé d'une locale — y compris
+  `/fr/products/photo.png`. Les assets réels vivent sous `/public` et sont servis à
+  la racine, jamais sous un préfixe de locale : les deux entrées ne se recouvrent pas.
+  **Contrainte** : `matcher` doit rester une littérale statique (analyse au build
+  par Next), la liste des locales y est donc **dupliquée**. Un test de
+  `middleware.test.ts` l'ancre contre `SUPPORTED_LOCALES` (#235) — ajouter une locale
+  sans mettre le matcher à jour casse ce test.
+- **Le pathname vu par le middleware n'est PAS percent-décodé.** `/fr/%64ashboard`
+  arrive littéralement : comparer les segments bruts laissait passer la garde
+  (relevé par le même audit). Les segments sont désormais décodés **un par un et
+  sur un seul niveau** (ce que fait le routeur Next : `/fr/%2564ashboard` reste
+  `%64ashboard`, qui ne résout aucune route). Un segment au percent-encoding
+  **malformé** (`%zz`) est traité comme **protégé** (fail-closed).
+- **Le `Location` de la redirection est RELATIF, délibérément.** Une URL absolue
+  construite depuis `request.url` dériverait de l'en-tête `Host`, contrôlable par
+  l'appelant : un `Host` hostile produirait un `Location:` vers un domaine
+  arbitraire (open-redirect, empoisonnement de cache si un cache mutualisé mémorise
+  la 307). Un chemin relatif est résolu par le client contre l'origine réellement
+  contactée — correct derrière un proxy, sans faire confiance à un en-tête.
 - **Aucune mémorisation de la destination** (pas de `?redirect=`) : l'anonyme
   redirigé vers `/login` atterrit ensuite sur le dashboard, pas sur l'URL demandée.
   Choix délibéré — un paramètre de redirection est une surface d'open-redirect qui
