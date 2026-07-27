@@ -1146,7 +1146,13 @@ Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejet
 **Mini-plans :** `docs/memory/sprints/sprint-48/architect-plans.md`
 **#295 absorbée par #56** (son body l'autorise explicitement) — 4 imbrications `<Link passHref><Button>` vérifiées (`HomePage.tsx:75,83,262` + `HeroSection.tsx:32`) → critère d'acceptation de #56, puis fermer #295.
 **ADR :** `ADR-XXX-route-canonique-landing` — `/[locale]` vs `/[locale]/home` (redirection, pas suppression : SEO).
-**Status :** Planifié
+**Status :** En cours (démarré 2026-07-27, branche `sprint/48` depuis `origin/dev` @417e5d7)
+
+> **Périmètre réel ≠ milestone.** Le milestone GitHub #48 porte 6 issues ouvertes, mais 4 (#328, #329, #330, #331 — `epic:events`) sont les **follow-ups du Sprint 47** parqués là par `/sprint end` (piège connu, cf. mémoire `mytimeline-sprint-end-github-gotchas`). Le périmètre S48 = les 2 issues portant le label `sprint-48` : **#293 + #56** (`epic:design`).
+>
+> **Ancrage code pré-vague (lead, 2026-07-27) :** les 8 fichiers + 6 répertoires cités par `architect-plans.md` sont **tous vérifiés existants**. `grep rule-emphasis frontend/src` = **0 hit** → `possibly_done: false` confirmé pour #293. `HeroSection.tsx:40` utilise bien `border-ink-muted` (emprunt S39) et `HeroSection.tsx:32` porte bien une imbrication `<Link passHref><Button>` (#295).
+>
+> **[MEMORY:pitfall] Le token `gray-500` suggéré par le corps de #293 ÉCHOUE en sombre — mesuré, pas supposé.** Ratios WCAG calculés par le lead avant briefing : `--color-rule` = **1.24:1**, `--color-rule-strong` = **1.50:1** (confirme la prémisse de l'issue). Mais le candidat `gray-500 #5E626B` donne **2.99:1 vs `--color-surface` sombre (#131519)** → sous le seuil 3:1. Et `gray-400 #969AA3` échoue en clair (**2.75:1 vs bg**). La contrainte serrée est **`bg` en clair** et **`surface` en sombre** ; le token doit donc être **découplé clair/sombre** (une seule valeur pour les deux modes ne peut pas passer). Candidat sombre validé : `#6B7078` (3.93 vs bg / 3.67 vs surface).
 
 ## Sprint 49 — 2026-07-16 (PLANIFIÉ — mono-issue, Virtualisation frise)
 **Objectif :** Virtualiser la frise pour >1000 événements (#69), sur le vrai chemin de rendu après correction du périmètre.
