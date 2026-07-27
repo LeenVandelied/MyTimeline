@@ -248,8 +248,9 @@ jobs:
   # ---------------------------------------------------------------------------
   # Security (#167) — scan de sécurité des dépendances. Tourne en parallèle des
   # autres jobs, n'ajoute AUCUNE dépendance et n'active AUCUNE branch protection.
-  #   - npm audit --audit-level=high : échoue si vuln npm >= high (frontend,
-  #     dev+prod — #222 a retiré --omit=dev, l'audit couvre désormais TOUTES les deps).
+  #   - npm audit : BLOQUANT sur les deps de PROD (>= high) ; INFORMATIF sur dev+prod
+  #     (sprint 45 — cf. commentaire détaillé au-dessus de l'étape, blocage amont
+  #     brace-expansion/minimatch dans la chaîne eslint, non livrée au runtime).
   #   - trivy fs --severity CRITICAL --exit-code 1 : bloque UNIQUEMENT le critique
   #     (évite le bruit HIGH/MEDIUM ; les CVE CRITICAL sont résolues par #180).
   # permissions: contents: read hérité du niveau workflow (non élargi).
@@ -270,15 +271,37 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      # npm audit sur le lockfile frontend. --audit-level=high => code de sortie
-      # non nul (donc échec du job) uniquement si une vuln HIGH ou CRITICAL existe.
-      # Couvre TOUTES les deps (prod + dev). Le flag --omit=dev de #167 a été retiré
-      # en sprint 31 (#222) : la chaîne vitest (2.x -> 3.2.7) et les leaves ReDoS
-      # (minimatch/picomatch/flatted) ont été bumpées jusqu'à 0 HIGH/CRITICAL dev
-      # inclus. Reste uniquement du MODERATE (next-intl/next/postcss/esbuild) non
-      # bloquant à ce niveau. Le scan Trivy ci-dessous couvre le CRITICAL cross-stack.
-      - name: npm audit (frontend deps dev+prod, >= high)
+      # npm audit sur le lockfile frontend, en DEUX étapes depuis le sprint 45.
+      #
+      # HISTORIQUE — #167 auditait prod seul (--omit=dev) ; #222 (sprint 31) a retiré
+      # ce flag pour couvrir dev+prod, la chaîne vitest ayant été bumpée à 0 HIGH.
+      #
+      # POURQUOI LE SPLIT (sprint 45) — l'advisory brace-expansion GHSA-mh99-v99m-4gvg
+      # (DoS/OOM, HIGH) remonte en cascade via minimatch dans TOUTE la chaîne eslint
+      # (9 entrées HIGH, une seule cause racine). Elle est INCORRIGIBLE en aval :
+      #   - le seul brace-expansion corrigé est 5.0.8, qui change sa forme d'export ;
+      #     le forcer casse le lint (`expand is not a function`, minimatch@3 l'appelle
+      #     comme une fonction) — testé, puis annulé ;
+      #   - @eslint/eslintrc, DERNIÈRE version (3.3.6, celle installée), épingle
+      #     toujours `minimatch: ^3.1.5` -> aucune version amont vers laquelle monter ;
+      #   - minimatch@9 utiliserait brace-expansion@^2, toujours dans la plage vulnérable.
+      # Ces paquets ne sont PAS livrés au runtime : ils ne tournent qu'au lint/build.
+      #
+      # Étape BLOQUANTE = dépendances de PRODUCTION uniquement (0 vuln au sprint 45,
+      # après bump postcss 8.5.23 / sharp 0.35.3 via overrides / next 15.5.22).
+      # Étape INFORMATIVE = dev+prod, continue-on-error : la chaîne dev reste VISIBLE
+      # dans les logs à chaque run, sans bloquer le merge.
+      #
+      # À REVOIR dès que @eslint/eslintrc passe à minimatch@10 : refusionner les deux
+      # étapes en un seul `npm audit --audit-level=high` bloquant (= revenir à #222).
+      # Le scan Trivy ci-dessous couvre le CRITICAL cross-stack, inchangé.
+      - name: npm audit (frontend deps PROD, >= high) — BLOQUANT
         working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: npm audit (frontend deps dev+prod, >= high) — INFORMATIF
+        working-directory: frontend
+        continue-on-error: true
         run: npm audit --audit-level=high
 
       # Scan filesystem de tout le repo (dépendances backend Maven + frontend npm +
