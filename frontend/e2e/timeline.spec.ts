@@ -333,3 +333,142 @@ test.describe("#314 Drawer de création d'événement (shell)", () => {
     await expect(page.getByTestId('shell-new-event-drawer-empty')).toBeVisible()
   })
 })
+
+/**
+ * #304 (Sprint 47) — Accordéon collapse PAR PRODUIT (`timeline-resource-head`,
+ * livré #195/PR #303, 2e niveau imbriqué dans l'accordéon catégorie).
+ *
+ * Le testid n'était référencé par AUCUNE spec Playwright : seul
+ * `timeline-resource-title` (son enfant) était exercé par `golden-path.spec.ts`.
+ *
+ * ⚠ ASSERTION PRIMAIRE = l'ATTRIBUT `aria-expanded` du bouton, pas la seule
+ * visibilité : si le collapse devenait un jour une hauteur CSS animée, une
+ * assertion de visibilité seule produirait une race intermittente. `aria-expanded`
+ * est le contrat stable (et l'annonce lecteur d'écran). Le masquage des pastilles
+ * est asserté EN PLUS, par `toHaveCount(0)` (le rendu conditionnel les démonte,
+ * cf. `TimelineView.tsx` : `!isResCollapsed && laneEvents.map(...)`) — jamais par
+ * `not.toBeVisible()`, qui passerait aussi sur un élément simplement hors-écran.
+ *
+ * État seedé par API sur le compte PROD (jamais vierge, cf. en-tête de fichier) :
+ * UNE catégorie dédiée + DEUX produits dedans → un groupe isolé et déterministe
+ * au milieu des lanes des autres specs. Aucun stub : parcours contre le vrai
+ * backend, l'état replié/déplié étant purement local (`useState`, non persisté).
+ */
+
+/** Le bouton toggle de la lane d'un produit (le nom de produit est unique par test). */
+function resourceHead(page: Page, productName: string) {
+  return page.getByTestId('timeline-resource-head').filter({ hasText: productName })
+}
+
+/** La lane (`timeline-resource-row`) d'un produit, portée par son bouton toggle. */
+function resourceRow(page: Page, productName: string) {
+  return page
+    .getByTestId('timeline-resource-row')
+    .filter({ has: page.getByTestId('timeline-resource-head').filter({ hasText: productName }) })
+}
+
+/**
+ * Seede une catégorie et deux produits dedans (un événement du jour chacun, posé
+ * par `seedProduct`), puis ouvre la frise. Renvoie de quoi cibler le groupe.
+ */
+async function seedTwoProductsInOneCategory(
+  page: Page,
+): Promise<{ category: string; first: string; second: string }> {
+  const userId = await getUserId(page)
+  const cat = await seedCategory(page, unique('Collapse Cat'))
+  const first = await seedProduct(page, { userId, name: unique('Collapse P1'), categoryId: cat.id })
+  const second = await seedProduct(page, { userId, name: unique('Collapse P2'), categoryId: cat.id })
+  return { category: cat.name, first: first.name, second: second.name }
+}
+
+test.describe('#304 /timeline — accordéon collapse par produit', () => {
+  /**
+   * PARCOURS 1 (corps de l'issue) — le clic bascule `aria-expanded` et démonte /
+   * remonte les pastilles de la lane. Le bouton lui-même RESTE rendu une fois
+   * replié (il identifie la lane pendant le scroll horizontal, cf. #195).
+   */
+  test('clic sur timeline-resource-head : aria-expanded bascule, pastilles masquées puis réaffichées', async ({
+    page,
+  }) => {
+    const { first } = await seedTwoProductsInOneCategory(page)
+
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    const head = resourceHead(page, first)
+    const pill = resourceRow(page, first).locator(
+      `[data-testid="timeline-event"][data-event-title="${first}"]`,
+    )
+
+    // État initial : déplié, pastille de l'événement seedé présente.
+    await expect(head).toHaveAttribute('aria-expanded', 'true')
+    await expect(pill).toHaveCount(1)
+
+    // --- Repli --------------------------------------------------------------
+    await head.click()
+    await expect(head).toHaveAttribute('aria-expanded', 'false')
+    await expect(pill, 'les pastilles de la lane repliée sont démontées').toHaveCount(0)
+    // Le toggle et son libellé survivent au repli (la lane reste identifiable).
+    await expect(head).toBeVisible()
+    await expect(head.getByTestId('timeline-resource-title')).toHaveText(first)
+
+    // --- Dépli (retour à l'état initial) ------------------------------------
+    await head.click()
+    await expect(head).toHaveAttribute('aria-expanded', 'true')
+    await expect(pill, 'les pastilles sont réaffichées au dépli').toHaveCount(1)
+  })
+
+  /**
+   * PARCOURS 2 (corps de l'issue) — INDÉPENDANCE. Replier un produit ne touche
+   * ni la lane du produit voisin (même catégorie) ni l'accordéon de la catégorie
+   * parente : trois états `aria-expanded` distincts, un seul mute.
+   */
+  test('indépendance : replier un produit n’affecte ni le produit voisin ni la catégorie parente', async ({
+    page,
+  }) => {
+    const { category, first, second } = await seedTwoProductsInOneCategory(page)
+
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    const firstHead = resourceHead(page, first)
+    const secondHead = resourceHead(page, second)
+    const groupHead = page.getByTestId('timeline-group-head').filter({ hasText: category })
+    const secondPill = resourceRow(page, second).locator(
+      `[data-testid="timeline-event"][data-event-title="${second}"]`,
+    )
+
+    // Les deux produits partagent la MÊME catégorie (un seul groupe seedé).
+    await expect(groupHead).toHaveCount(1)
+    await expect(groupHead).toHaveAttribute('aria-expanded', 'true')
+    await expect(firstHead).toHaveAttribute('aria-expanded', 'true')
+    await expect(secondHead).toHaveAttribute('aria-expanded', 'true')
+
+    await firstHead.click()
+
+    // Seul le produit cliqué bascule.
+    await expect(firstHead).toHaveAttribute('aria-expanded', 'false')
+    await expect(secondHead, 'le produit voisin reste déplié').toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    await expect(secondPill, 'les pastilles du voisin restent montées').toHaveCount(1)
+    // La catégorie parente n'est pas repliée par le collapse d'un de ses produits.
+    await expect(groupHead, 'la catégorie parente reste dépliée').toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    // Les deux lanes restent rendues (le repli masque les pastilles, pas la lane).
+    await expect(resourceRow(page, first)).toHaveCount(1)
+    await expect(resourceRow(page, second)).toHaveCount(1)
+
+    // Symétrie : replier le voisin à son tour laisse le premier tel quel.
+    await secondHead.click()
+    await expect(secondHead).toHaveAttribute('aria-expanded', 'false')
+    await expect(firstHead, 'le premier produit ne se déplie pas tout seul').toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+    await expect(groupHead).toHaveAttribute('aria-expanded', 'true')
+  })
+})
