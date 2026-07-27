@@ -71,6 +71,29 @@ shadowed feature cards. The new system rejects all of that.
 - **Borders & cards:** the system **prefers 1px hairline rules to cards**. When a
   card is used: 1px border, radius ≤ 10px, **no** heavy shadow. Radius ramp
   3/5/7/10/14; pill reserved for switches.
+- **Border tiers — decorative vs functional (#293).** Three tokens, and the
+  choice is an accessibility decision, not a taste one:
+
+  | Token | Light / dark | vs `bg` · `surface` | Use for |
+  |---|---|---|---|
+  | `--color-rule` | `#E6E7EB` / `#20232A` | 1.21 · 1.24 (light) | **Decorative** separators: hairlines, dividers, card and image frames — anything whose removal costs no information. |
+  | `--color-rule-strong` | `#D1D3D9` / `#2E323A` | 1.46 · 1.50 (light) | **Decorative, emphasised**: nested panels, table gridlines that need to read a step stronger. |
+  | `--color-rule-emphasis` | `#7A7E87` (`--gray-450`), same both modes | 3.97 · 4.07 light · 4.81 · 4.49 dark | **Functional**: the border IS the affordance — outline buttons, unfilled inputs, checkbox/radio outlines, focusable chips. |
+
+  WCAG 2.1 **1.4.11 Non-text Contrast** requires **≥3:1** for the visual boundary
+  of a control. `rule` and `rule-strong` are far below it and are *meant* to be:
+  they carry no state. Whenever a border is the only thing telling the user a
+  control exists, use `rule-emphasis`.
+
+  Two rules of thumb:
+  - **Do not reach for a text token** (`ink-muted`, `ink-faint`) to get a visible
+    border. That was the S39 stopgap in `HeroSection` and it is now removed —
+    it couples control chrome to the text ramp and overshoots to ~6:1.
+  - `rule-emphasis` is **not inverted in dark**. `--gray-450` is the one ramp step
+    clearing 3:1 against both light surfaces (`#FCFCFD`/`#FFFFFF`) and both dark
+    ones (`#0B0C0E`/`#131519`); it also stays below `ink-muted` in both modes, so
+    border-quieter-than-text still holds. Re-measure all four ratios before
+    retuning it.
 - **Elevation:** shadows are subtle and rare (`--shadow-xs…lg`); popovers/modals
   get `md`/`lg`, resting surfaces get a hairline. No glow, no aurora.
 - **Motion:** `cubic-bezier(.32,.72,0,1)`, **no bounce**, 120–280ms. Micro-
@@ -154,6 +177,9 @@ render cleanly; `check_design_system` reports no issues.
   Radix primitives already in the codebase, the props line up 1:1.
 - **`--color-ink-faint`** (~2.8:1 on white) is a **decorative/faint tier** by design
   (eyebrows, placeholders, disabled hints) — do **not** use it for essential text.
+- **`--color-rule` / `--color-rule-strong`** are likewise a **decorative tier**
+  (1.2–1.5:1). Control boundaries take **`--color-rule-emphasis`** (≥3.97:1 both
+  modes, #293) — see *Borders & cards* above.
 - Component styling ships as plain CSS classes (`components/*.css`); there is no
   Tailwind/CSS-Modules build step — fine for these artifacts, scope per your stack
   for production.

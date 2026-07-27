@@ -14,9 +14,13 @@ interface HeroSectionProps {
  * Hero de la landing — extrait du monolithe HomePage (#56, slice contraste).
  * Extraction non destructive : HomePage rend <HeroSection locale=… /> à la place
  * du bloc inline. Contraste WCAG AA (clair + sombre) : la bordure du bouton
- * secondaire passe de `border-rule` (~1.2:1, invisible) à `border-ink-muted`
- * (~6:1) pour respecter le seuil UI ≥ 3:1. Tokens sémantiques DS uniquement,
- * zéro hex hardcodé — suit clair/sombre via les variables CSS.
+ * secondaire utilise `border-rule-emphasis` (#293), le tier « bordure
+ * fonctionnelle » du DS — 3.97:1 clair / 4.49:1 sombre, au-dessus du seuil UI
+ * ≥ 3:1. Elle remplace l'emprunt provisoire au tier TEXTE `ink-muted` fait en
+ * S39 faute de token de bordure conforme (nommer la classe ici suffirait à la
+ * faire regénérer par Tailwind : on cite le token, pas l'utilitaire). Le cadre de l'image reste sur
+ * `border-rule` : décoratif, non soumis au seuil. Tokens sémantiques DS
+ * uniquement, zéro hex hardcodé — suit clair/sombre via les variables CSS.
  */
 export function HeroSection({ locale }: HeroSectionProps) {
   const t = useTranslations()
@@ -37,7 +41,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
           <a href="#how-it-works">
             <Button
               variant="outline"
-              className="border-ink-muted text-ink hover:bg-surface rounded-lg px-8 py-6 text-lg transition-all"
+              className="border-rule-emphasis text-ink hover:bg-surface rounded-lg px-8 py-6 text-lg transition-all"
             >
               {t('common.landing.hero.secondary')}
             </Button>
