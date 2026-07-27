@@ -95,6 +95,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // scrollable garde son scrollLeft/Top au re-rendu React).
   const [collapsedResources, setCollapsedResources] = useState<Record<string, boolean>>({})
   const [selected, setSelected] = useState<PositionedEvent | null>(null)
+  // #316 — callback stabilisé (deps vides, `setSelected` est stable) : passé à
+  // `EventDrawer` → `useFocusTrap` qui liste `onEscape` en dépendance d'effet.
+  // Une lambda inline ici re-déclencherait le trap (focus initial) à CHAQUE
+  // rendu de `TimelineView` (BUG-S44-001, cf. `AppShell.closeCreate`).
+  const closeDrawer = useCallback(() => setSelected(null), [])
   const scrollRef = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const [viewportStart, setViewportStart] = useState(0)
@@ -686,7 +691,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       <EventDrawer
         event={selected}
         locale={locale}
-        onClose={() => setSelected(null)}
+        onClose={closeDrawer}
         onEdit={
           onEditEvent
             ? (event) => {

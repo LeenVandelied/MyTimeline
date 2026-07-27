@@ -1,16 +1,20 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { Pencil, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { PositionedEvent } from './zoom'
+import { useFocusTrap } from './useFocusTrap'
 
 /**
  * #55 — Drawer latéral de détail événement.
  * Dérivé de `.mt-dialog` (DS) en variante slide-in droite (`.mt-drawer`).
- * Trap-focus + fermeture Échap (a11y : la RÉSERVE ui-design impose de garantir
- * ces patterns nous-mêmes, `ux-patterns.md` absent). L'Échap global est géré
- * par le parent (`TimelineView`) ; ce composant gère le trap + le focus initial.
+ * Trap-focus + fermeture Échap : #316 remplace la copie inline (focus initial,
+ * boucle Tab/Shift+Tab, restauration au démontage, Échap) par `useFocusTrap`
+ * (#63), déjà consommé par `MobileDrawer`/`TimelineBottomSheet`/
+ * `TimelineActionSheet`/`NewEventDrawer`. L'Échap reste aussi géré par le
+ * listener global du parent (`TimelineView`) — double déclenchement idempotent
+ * (`onClose` → `setSelected(null)`).
  *
  * #absorb (gap A) — affordance « Éditer » optionnelle : quand `onEdit` est câblé
  * (via `TimelineEditHost`), un bouton ouvre `EventEditForm` pré-rempli. Sans `onEdit`
@@ -24,42 +28,13 @@ export interface EventDrawerProps {
   onEdit?: (event: PositionedEvent) => void
 }
 
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-
 export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose, onEdit }) => {
   const t = useTranslations()
   const panelRef = useRef<HTMLDivElement>(null)
-  const previousFocus = useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
-    if (!event) return
-    previousFocus.current = document.activeElement as HTMLElement | null
-    const panel = panelRef.current
-    // Focus initial sur le bouton fermer (premier focusable).
-    const first = panel?.querySelector<HTMLElement>(FOCUSABLE)
-    first?.focus()
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab' || !panel) return
-      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
-      if (items.length === 0) return
-      const firstEl = items[0]
-      const lastEl = items[items.length - 1]
-      if (e.shiftKey && document.activeElement === firstEl) {
-        e.preventDefault()
-        lastEl.focus()
-      } else if (!e.shiftKey && document.activeElement === lastEl) {
-        e.preventDefault()
-        firstEl.focus()
-      }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      // Restaure le focus sur l'élément déclencheur (bloc event).
-      previousFocus.current?.focus()
-    }
-  }, [event])
+  // BUG-S44-001 : `onClose` DOIT être stabilisé chez l'appelant (`TimelineView.closeDrawer`,
+  // `useCallback` deps vides) — sinon re-trap à chaque rendu = vol de focus.
+  useFocusTrap(panelRef, Boolean(event), onClose)
 
   if (!event) return null
 

@@ -9,8 +9,9 @@ import { RefObject, useEffect } from 'react'
  * focus initial sur le premier focusable, boucle Tab/Shift+Tab, restauration du
  * focus sur l'élément déclencheur à la désactivation. Mutualise le pattern entre
  * bottom sheet (#63) et action sheet (#63) — 3e duplication évitée (réserve
- * ui-design). `EventDrawer.tsx` (desktop) n'est PAS modifié : garder son
- * comportement intact évite toute régression desktop (dépendance intra-sprint).
+ * ui-design). `EventDrawer.tsx` (desktop) n'a PAS été migré au S44 (non-refactor
+ * volontaire, éviter toute régression desktop pendant un sprint qui touchait déjà
+ * cette zone) — consommateur ajouté au Sprint 46 (#316).
  *
  * #208 (review) — Paramètre OPTIONNEL `onEscape` : mutualise aussi la fermeture
  * clavier Escape (consommé par `MobileDrawer` #83). Défaut no-op → non-cassant
