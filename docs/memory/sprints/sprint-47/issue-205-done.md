@@ -1,6 +1,6 @@
 # Issue #205 — Couverture E2E + Storybook des vues Timeline mobiles
 
-commits: [SHA_PLACEHOLDER]
+commits: [41b8b15, 3bf4d8b]
 
 ## resume
 
@@ -13,8 +13,12 @@ réduit à « Storybook + E2E » (le RTL existait déjà, non retouché).
 - `frontend/e2e/timeline-mobile.spec.ts` (créé) — 9 tests, 3 `describe`
 - `frontend/src/components/timeline/TimelineMobilePortrait.stories.tsx` (créé) — 4 stories
 - `frontend/src/components/timeline/TimelineMobileLandscape.stories.tsx` (créé) — 4 stories
-- `frontend/src/components/timeline/fixtures.tsx` (**modifié, additif**) — fixtures
-  mobiles + décorateur i18n `withTimelineIntl`
+- `frontend/src/components/timeline/fixtures.tsx` (**modifié, STRICTEMENT additif**) —
+  fixtures mobiles + décorateur i18n `withTimelineIntl`. Ce fichier est partagé avec
+  les 6 stories timeline préexistantes : vérifié que le diff ne contient **aucune
+  ligne supprimée** (`git diff | grep '^-'` → vide) et qu'aucune signature existante
+  (`makeDays`, `sampleResource`, `makeEvent`, `makePositionedEvent`,
+  `stubEventContent`) n'est touchée. Non-régression prouvée au runtime ci-dessous.
 
 Aucun composant applicatif modifié.
 
@@ -37,12 +41,21 @@ asserté ABSENT dans les deux variantes mobiles.
 **Pièges rencontrés**
 
 1. **Deux affirmations du briefing étaient fausses.** (a) « Le repo contient ZÉRO
-   `.stories.tsx` » : il en contient **23**, dont **6 dans `components/timeline/`**
-   (`EventBar`, `EventPill`, `Lane`, `Ruler`, `Cursor`, `DateStamp`). Je n'ai donc
-   PAS établi la convention, je l'ai **suivie** (`@storybook/react-vite`, titre
-   `Timeline/<Composant>`, `tags:['autodocs']`, `satisfies Meta<typeof X>`,
-   fixtures dans `./fixtures`). Le budget « établir la convention » était inutile.
-   (b) Storybook build fonctionnait déjà — aucune réparation d'outillage requise.
+   `.stories.tsx` », « tes stories seront les premières du projet », « tu établis
+   la convention » : **faux**. Le repo contient **23 stories**, dont **6 dans mon
+   répertoire exact `components/timeline/`** (`EventBar`, `EventPill`, `Lane`,
+   `Ruler`, `Cursor`, `DateStamp`) + 17 dans `components/ui/`. Cause racine
+   (confirmée par le lead) : le `find` du briefing tournait depuis `frontend/` et
+   cherchait donc `frontend/frontend/src` → 0 résultat.
+   **Il n'y avait DONC rien à établir : je me suis aligné sur l'existant**, en
+   priorité `EventBar.stories.tsx` et `EventPill.stories.tsx` — `import type { Meta,
+   StoryObj } from '@storybook/react-vite'`, JSDoc d'en-tête référençant le numéro
+   d'issue, `title: 'Timeline/<Composant>'`, `tags: ['autodocs']`, `decorators`,
+   `args` dans le `meta`, clôture `satisfies Meta<typeof X>`, puis
+   `export default meta` + `type Story = StoryObj<typeof meta>` et stories nommées
+   commentées. Divergence repérée et **supprimée** lors de la revue : j'avais ajouté
+   un `parameters: { layout: 'centered' }` qu'aucune story timeline existante
+   n'utilise. (b) Storybook build fonctionnait déjà — aucune réparation d'outillage.
 2. **next-intl obligatoire en story** : contrairement à `EventBar` (isolé par
    `stubEventContent`), les vues mobiles appellent `useTranslations()` sans
    namespace avec des clés pleinement qualifiées → sans `NextIntlClientProvider`
@@ -107,14 +120,33 @@ OK   timeline-timelinemobilelandscape--with-actions
 STORIES OK (8) FAIL (0)
 ```
 
+**Non-régression des stories préexistantes** (mon `fixtures.tsx` est partagé avec
+elles) : le contrôle a été rejoué sur l'`index.json` COMPLET du build, soit toutes
+les stories du repo, pas seulement les miennes :
+
+```
+Total stories: 78 (dont Timeline/*: 28)
+ALL STORIES MOUNT OK (78) FAIL (0)
+```
+
+Les 28 stories `Timeline/*` incluent les 20 issues des 6 fichiers préexistants
+(`EventBar`, `EventPill`, `Lane`, `Ruler`, `Cursor`, `DateStamp`) : aucune ne
+régresse.
+
 ## Signaux mémoire
 
 **[MEMORY:pitfall]** Contexte : le briefing #205 affirmait « ZÉRO `.stories.tsx`
-dans le repo » (issue de `find frontend/src -name '*.stories.tsx'` → 0), alors que
-23 existent dont 6 dans `components/timeline/`. Solution : re-vérifier tout constat
-d'absence du briefing par un `find`/`grep` propre AVANT de budgéter le travail
-correspondant. Prévention : un constat « le repo ne contient aucun X » dans un
-briefing est une hypothèse, pas un fait — le coût de vérification est de 5 s.
+dans le repo » et en tirait « tu établis la convention », alors que 23 stories
+existent dont 6 dans le répertoire cible. **Cause racine** : le `find frontend/src
+-name '*.stories.tsx'` avait été lancé depuis `frontend/`, il interrogeait donc
+`frontend/frontend/src`, inexistant → 0 résultat, lu comme une absence réelle.
+Solution : re-vérifier tout constat d'ABSENCE par un `find`/`grep` relancé
+soi-même, depuis la racine du repo, AVANT de budgéter le travail correspondant.
+Prévention : un `find` qui renvoie 0 prouve seulement que la commande n'a rien
+trouvé — le premier réflexe est de vérifier que le chemin interrogé existe
+(`ls` du répertoire de recherche). Un « le repo ne contient aucun X » dans un
+briefing est une hypothèse, pas un fait ; le coût de vérification est de 5 s, celui
+de réinventer une convention existante se compte en heures et en revue.
 
 **[MEMORY:pattern]** Problème : monter en Storybook un composant qui consomme
 `useTranslations()` de next-intl (crash au montage sans provider). Solution :

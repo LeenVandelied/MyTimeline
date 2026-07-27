@@ -25,9 +25,6 @@ const meta = {
   title: 'Timeline/TimelineMobilePortrait',
   component: TimelineMobilePortrait,
   tags: ['autodocs'],
-  parameters: {
-    layout: 'centered',
-  },
   decorators: [
     withTimelineIntl,
     (Story) => (

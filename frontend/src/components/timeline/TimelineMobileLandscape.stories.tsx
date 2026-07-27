@@ -26,9 +26,6 @@ const meta = {
   title: 'Timeline/TimelineMobileLandscape',
   component: TimelineMobileLandscape,
   tags: ['autodocs'],
-  parameters: {
-    layout: 'centered',
-  },
   decorators: [
     withTimelineIntl,
     (Story) => (
