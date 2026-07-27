@@ -1,5 +1,7 @@
 // @vitest-environment node
 
+import { createRequire } from 'node:module'
+
 import { describe, it, expect } from 'vitest'
 import { NextRequest } from 'next/server'
 
@@ -131,8 +133,10 @@ describe('middleware — non-régression i18n (#235)', () => {
     expect(redirectTarget(second)).toBe('/fr/login')
   })
 
-  it('accepte les 4 locales supportées (es/de livrées S26)', () => {
-    for (const locale of ['fr', 'en', 'es', 'de']) {
+  it('accepte toutes les locales supportées (es/de livrées S26)', () => {
+    // Itère SUPPORTED_LOCALES — une liste en dur ici raterait une locale ajoutée
+    // à la source de vérité (régression #235).
+    for (const locale of SUPPORTED_LOCALES) {
       const response = middleware(request(`/${locale}/home`))
       expect(response.status).toBe(200)
     }
@@ -171,8 +175,34 @@ describe('middleware — Location relatif (audit sécurité S45)', () => {
 })
 
 describe('middleware — matcher (audit sécurité S45)', () => {
-  /** Entrée 1 du matcher, compilée telle que Next l'évalue sur un pathname. */
-  const assetExclusion = new RegExp(`^${config.matcher[0]}$`)
+  /**
+   * ⚠ Les entrées du matcher sont compilées par le path-to-regexp EMBARQUÉ de Next,
+   * avec les MÊMES options que `next/dist/lib/try-to-parse-path` — et non par un
+   * `new RegExp('^' + source + '$')` reconstruit à la main. La version reconstruite
+   * divergeait du moteur réel (pas de `[\/]?$` optionnel, `sensitive` non modélisé) :
+   * c'est précisément ce qui avait laissé passer le contournement percent-encodé.
+   *
+   * Le module compilé n'expose pas de typings → `createRequire` + type explicite
+   * (aucun `any`, aucun cast non prouvé).
+   */
+  const compileMatcher = ((): ((source: string) => RegExp) => {
+    const requireCjs = createRequire(import.meta.url)
+    const { pathToRegexp } = requireCjs('next/dist/compiled/path-to-regexp') as {
+      pathToRegexp: (
+        path: string,
+        keys: unknown[],
+        options: { delimiter: string; sensitive: boolean; strict: boolean },
+      ) => RegExp
+    }
+    return (source) => pathToRegexp(source, [], { delimiter: '/', sensitive: false, strict: false })
+  })()
+
+  const assetExclusion = compileMatcher(config.matcher[0])
+  const localeEntry = compileMatcher(config.matcher[1])
+
+  /** `true` si Next INVOQUE le middleware sur ce pathname (union des 2 entrées). */
+  const isHandled = (pathname: string): boolean =>
+    assetExclusion.test(pathname) || localeEntry.test(pathname)
 
   it('N’exclut PLUS un chemin applicatif contenant un point', () => {
     // Avant correctif : `.*\..*` excluait tout chemin pointé → garde inactive
@@ -186,10 +216,12 @@ describe('middleware — matcher (audit sécurité S45)', () => {
       '/favicon.ico',
       '/images/logo.svg',
       '/next.svg',
+      '/vercel.svg',
+      '/images/dashboard-preview.svg',
       '/_next/static/chunk.js',
       '/api/auth/me',
     ]) {
-      expect(assetExclusion.test(pathname)).toBe(false)
+      expect(isHandled(pathname), `${pathname} doit rester hors middleware`).toBe(false)
     }
   })
 
@@ -197,7 +229,43 @@ describe('middleware — matcher (audit sécurité S45)', () => {
     // L'entrée 1 exclut `/fr/products/photo.png` (extension d'asset en fin) ;
     // l'entrée 2 le rattrape pour que la garde s'applique quand même.
     expect(assetExclusion.test('/fr/products/photo.png')).toBe(false)
+    expect(isHandled('/fr/products/photo.png')).toBe(true)
     expect(config.matcher[1]).toBe('/:locale(fr|en|es|de)/:path*')
+  })
+
+  it('ne laisse AUCUN chemin non canonique passer entre les deux entrées', () => {
+    // Contournement RÉSIDUEL corrigé en revue S45 : l'entrée 2 ne rattrape que les
+    // locales LITTÉRALES. Tout chemin finissant par une extension d'asset mais dont
+    // la locale n'est pas littérale (percent-encodée, slash doublé) échappait aux
+    // DEUX entrées → middleware jamais invoqué → shell `(app)` servi à un anonyme,
+    // le routeur Next décodant ensuite `%66r` en `fr`.
+    for (const pathname of [
+      '/%66r/products/photo.png', // locale percent-encodée + extension
+      '/%66r/products/x.js',
+      '/%66r/settings/x.css',
+      '/%66r/timeline/a.svg',
+      '/%66r/products/x.woff2',
+      '/%66r/products/deep/nested/x.map',
+      '/%2566r/dashboard', // double encodage
+      '/%66r/products/photo%2Epng', // extension elle-même encodée
+      '/fr//products/photo.png', // slash doublé : ni entrée 1 ni entrée 2 avant correctif
+      '/fr//dashboard/x.png',
+      '/%66r//products/x.css',
+    ]) {
+      expect(isHandled(pathname), `${pathname} doit être pris en charge par le middleware`).toBe(
+        true,
+      )
+    }
+  })
+
+  it('couvre les chemins protégés canoniques, avec ou sans extension', () => {
+    for (const locale of SUPPORTED_LOCALES) {
+      for (const segment of ['dashboard', 'products', 'timeline', 'settings']) {
+        expect(isHandled(`/${locale}/${segment}`)).toBe(true)
+        expect(isHandled(`/${locale}/${segment}/photo.png`)).toBe(true)
+        expect(isHandled(`/${locale.toUpperCase()}/${segment}/photo.png`)).toBe(true)
+      }
+    }
   })
 
   it('garde l’alternation de locales du matcher alignée sur SUPPORTED_LOCALES (#235)', () => {

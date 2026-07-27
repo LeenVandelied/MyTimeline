@@ -86,10 +86,33 @@ export default function middleware(request: NextRequest): NextResponse {
  * l'entrée 1 et rouvrirait le même trou. Les assets réels vivent sous
  * `/public` et sont servis à la racine (`/favicon.ico`, `/images/logo.svg`) —
  * jamais sous un préfixe de locale : les deux entrées ne se marchent pas dessus.
+ *
+ * ⚠ POURQUOI `(?:[^%/]+/)*[^%/]+` ET NON `.*` DEVANT L'EXTENSION (revue S45) —
+ * l'entrée 2 rattrape l'entrée 1 uniquement sur une locale **littérale**
+ * (`fr|en|es|de`, l'alternation ne peut pas être calculée). Un `.*` laissait
+ * donc passer entre les deux entrées tout chemin qui (a) finit par une
+ * extension d'asset ET (b) porte une locale que l'entrée 2 ne reconnaît pas
+ * littéralement :
+ *   `/%66r/products/photo.png` → entrée 1 = exclu (finit par `.png`),
+ *   entrée 2 = pas de match (`%66r` ≠ `fr`) → **middleware jamais invoqué**,
+ *   puis le routeur Next décode `%66r` → `fr` et sert la page protégée.
+ * Le décodage segment-par-segment d'`auth-guard-paths` ne pouvait rien : il
+ * s'exécute APRÈS l'entrée dans le middleware.
+ * Le motif exige désormais des segments NON VIDES et SANS `%` :
+ *   - `[^%]` ferme le percent-encoding (`%66r`, `%2Epng`, double encodage) ;
+ *   - `[^/]` + segments non vides ferment les slashes répétés
+ *     (`/fr//products/photo.png`, non couvert par l'entrée 2 non plus).
+ * Tout chemin « non canonique » retombe donc dans le middleware (fail-closed),
+ * au prix d'un faux positif inoffensif : un asset de `/public` dont le nom
+ * contiendrait un `%` serait traité par le middleware (aucun aujourd'hui —
+ * vérifié sur l'arbre `public/`).
+ * Vérifié en compilant les deux entrées avec le path-to-regexp EMBARQUÉ de Next
+ * (`{ delimiter: '/', sensitive: false, strict: false }`), cf. les cas ancrés
+ * dans `middleware.test.ts` et le cas E2E de `e2e/auth-guard.spec.ts`.
  */
 export const config = {
   matcher: [
-    '/((?!api|_next|_vercel|.*\\.(?:ico|png|jpg|jpeg|gif|webp|avif|svg|css|js|map|woff2?|ttf|otf|txt|xml|webmanifest)$).*)',
+    '/((?!api|_next|_vercel|(?:[^%/]+/)*[^%/]+\\.(?:ico|png|jpg|jpeg|gif|webp|avif|svg|css|js|map|woff2?|ttf|otf|txt|xml|webmanifest)$).*)',
     '/:locale(fr|en|es|de)/:path*',
   ],
 }
