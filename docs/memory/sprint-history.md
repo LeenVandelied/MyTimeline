@@ -1017,6 +1017,16 @@
 
 **Nouveaux pitfalls :** PIT-S45-001..009 · **patterns :** PAT-S45-001..004 · **décisions :** DEC-S45-001..004 · **bugs :** BUG-S45-001
 
+**Follow-ups arbitrés (Phase 4 triage — 7 items, tous tracés) :**
+  - Synchroniser `PROTECTED_APP_SEGMENTS` avec l'arborescence des routes [S | auth] → issue #318 (Sprint 46)
+  - Refusionner le gate CI `security` quand `@eslint/eslintrc` → `minimatch@10` [S | infra] → issue #319 (Sprint 46)
+  - Statuer sur `RATE_LIMIT_ENABLED=false` dans le job CI e2e [S | infra] → issue #320 (Sprint 46)
+  - Règle ArchUnit ciblée sur `@RestController` plutôt que sur le package [S | backend] → issue #321 (Sprint 46)
+  - Durcir le risque résiduel d'en-tête `Host` (allow-list / Host canonique) [M | auth] → issue #322 (Sprint 46)
+  - JWT asymétrique RS256 pour vérification en Edge [M | auth] → issue #323 (Sprint 46)
+  - `frontend/.eslintcache` tracké [XS | infra] → **doublon : issue #262 existait déjà depuis le 2026-07-11 (Sprint 31)**, jamais traitée ; milestone Sprint 46 attaché plutôt que créer un doublon.
+    ⚠ Signal : un follow-up XS identifié il y a 16 jours a refait perdre du temps à **3 agents** ce sprint. Le coût cumulé d'un XS non traité dépasse largement son coût de correction.
+
 **Écarts de process constatés (à corriger au prochain sprint) :**
 - Collision de numérotation ADR entre les 2 agents de la vague 1 ([[PIT-S45-005]]) — le lead doit allouer les identifiants séquentiels AVANT le spawn.
 - `.claude/hooks/check-sprint-completeness.sh` **absent de ce repo** : le check de complétude Phase 1 a été fait manuellement.
