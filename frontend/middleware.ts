@@ -51,19 +51,26 @@ export default function middleware(request: NextRequest): NextResponse {
     // mais on retombe sur `DEFAULT_LOCALE` plutôt que d'écrire un `!` non prouvable.
     const locale = splitLocalizedPathname(pathname)?.locale ?? DEFAULT_LOCALE
 
-    // `Location` RELATIF, délibérément. Construire une URL absolue à partir de
-    // `request.url` reviendrait à faire confiance à l'en-tête `Host`, que
-    // l'appelant contrôle : un `Host: evil.example` produirait un `Location:`
-    // absolu vers un domaine arbitraire (open-redirect, et empoisonnement de
-    // cache si un cache mutualisé mémorise la 307). Un chemin relatif est
-    // résolu par le client contre l'origine réellement contactée — donc juste
-    // derrière un proxy, sans dépendre d'un en-tête non fiable.
+    // ⚠ `Location` ABSOLU, CONTRAINT PAR LE RUNTIME — ne pas « re-durcir » en
+    // relatif (retour arrière assumé sur l'audit S45, cf. ADR-004 §Limites).
+    // Next NORMALISE tout `Location` émis par un middleware :
+    // `adapter.js` fait `new NextURL(location, …)` → `new URL(location)` SANS
+    // base. Sur un chemin relatif, ce parse lève `TypeError: Invalid URL` et la
+    // requête finit en **500** — reproduit localement (`ERR_INVALID_URL`,
+    // `input: '/fr/login'`) et en CI (run 30269383403 : 10 specs `auth-guard`
+    // attendaient 307, recevaient 500). Une garde qui 500 sur TOUTES les routes
+    // protégées est une panne totale ; le `Host` hostile reste un risque
+    // théorique, tranché en ADR-004.
+    //
+    // On clone `request.nextUrl` (déjà parsé/normalisé par Next, `x-forwarded-*`
+    // pris en compte) plutôt que de concaténer `request.url` à la main.
     // La query string n'est PAS reportée : pas de `?redirect=` (surface
     // d'open-redirect), cf. ADR-004 §Limites.
-    return new NextResponse(null, {
-      status: 307,
-      headers: { Location: buildLoginPathname(locale) },
-    })
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = buildLoginPathname(locale)
+    loginUrl.search = ''
+
+    return NextResponse.redirect(loginUrl, 307)
   }
 
   return intlMiddleware(request)

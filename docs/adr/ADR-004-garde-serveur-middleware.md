@@ -126,12 +126,36 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
   sur un seul niveau** (ce que fait le routeur Next : `/fr/%2564ashboard` reste
   `%64ashboard`, qui ne résout aucune route). Un segment au percent-encoding
   **malformé** (`%zz`) est traité comme **protégé** (fail-closed).
-- **Le `Location` de la redirection est RELATIF, délibérément.** Une URL absolue
-  construite depuis `request.url` dériverait de l'en-tête `Host`, contrôlable par
-  l'appelant : un `Host` hostile produirait un `Location:` vers un domaine
-  arbitraire (open-redirect, empoisonnement de cache si un cache mutualisé mémorise
-  la 307). Un chemin relatif est résolu par le client contre l'origine réellement
-  contactée — correct derrière un proxy, sans faire confiance à un en-tête.
+- **Le `Location` de la redirection est ABSOLU — contrainte de runtime, pas un
+  choix de sécurité.** L'audit du sprint 45 avait imposé un `Location` **relatif**
+  (`/fr/login`) pour ne pas dériver l'URL de l'en-tête `Host`, contrôlable par
+  l'appelant. **Cette mise en œuvre casse Next** : l'adaptateur Edge normalise
+  toute redirection émise par un middleware via `new NextURL(location, …)`, soit
+  `new URL(location)` **sans base** ; sur un chemin relatif ce parse lève
+  `TypeError: Invalid URL` (`ERR_INVALID_URL`, `input: '/fr/login'`) et la requête
+  finit en **500**. Reproduit localement (`next build` + `next start` : 500 sur
+  `/fr/dashboard`) et en CI (run 30269383403 : les 10 specs `e2e/auth-guard.spec.ts`
+  attendaient 307, recevaient 500 — *toutes* les routes protégées étaient en panne).
+  Le build ne le détecte pas : il compile le middleware sans jamais exécuter la
+  normalisation. **Arbitrage** : une garde qui 500 sur l'intégralité des routes
+  connectées est strictement pire qu'un risque d'empoisonnement par `Host` — la
+  garde doit d'abord FONCTIONNER. La cible est donc construite par
+  `request.nextUrl.clone()` (URL déjà parsée et normalisée par Next, `x-forwarded-*`
+  pris en compte) plutôt que par concaténation sur `request.url` brut.
+  **Limite résiduelle assumée** : l'origine du `Location` suit celle de la requête,
+  donc l'en-tête `Host` / `x-forwarded-host`. Derrière un proxy qui ne normalise
+  pas `Host`, un `Host` hostile déplace la cible de la redirection (open-redirect,
+  et empoisonnement de cache si un cache mutualisé mémorise la 307). La mitigation
+  n'est PAS un retour au relatif (500) : elle est au niveau de l'infra (le reverse
+  proxy doit imposer un `Host` canonique) ou, à terme, dans une allow-list d'hôtes
+  côté middleware — cf. Follow-ups. Le comportement actuel est **ancré par un test**
+  de `middleware.test.ts` (« LIMITE ASSUMÉE : l'origine du Location suit celle de la
+  requête »), de sorte qu'un futur durcissement le fasse échouer visiblement.
+  **Angle mort corrigé au passage** : les tests unitaires assertaient l'égalité de
+  chaîne avec `/fr/login` et résolvaient tout via `new URL(location, ORIGIN)` — avec
+  une base. Ils restaient verts alors que la garde était totalement cassée. Ils
+  vérifient désormais que le `Location` est **exploitable par Next** : parsable par
+  `new URL(location)` sans base, et accepté par le `NextURL` réel de l'adaptateur.
 - **Aucune mémorisation de la destination** (pas de `?redirect=`) : l'anonyme
   redirigé vers `/login` atterrit ensuite sur le dashboard, pas sur l'URL demandée.
   Choix délibéré — un paramètre de redirection est une surface d'open-redirect qui
@@ -155,6 +179,10 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
   `frontend/app/[locale]/(app)/` (script de lint, ou test qui lit le FS côté
   Node uniquement).
 - Paramètre `?redirect=` avec allow-list de chemins internes.
+- **Neutraliser la limite `Host`** (cf. §Limites) : imposer un `Host` canonique au
+  reverse proxy, ou valider `request.nextUrl.host` contre une allow-list dans le
+  middleware avant d'émettre la 307. Un retour au `Location` relatif n'est PAS une
+  option — il rend un 500 sur toutes les routes protégées.
 
 ## Références
 

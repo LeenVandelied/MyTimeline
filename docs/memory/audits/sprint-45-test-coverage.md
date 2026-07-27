@@ -25,7 +25,8 @@ Aucune cellule manquante. Les 4 BR touchées sont cross-system et disposent chac
 - `ProfileSafetyGuardTest` — +7 cas : `prod,e2e` refusé, `dev,e2e`+marqueur refusé, property brute `spring.profiles.active=prod,e2e` refusée, **`dev,e2e` sans marqueur → BOOT OK (= config CI)**, `e2e` seul OK, staging OK, `prod` sans e2e OK
 
 **Frontend (Vitest)**
-- `frontend/middleware.test.ts` (33) — garde composée, matcher, Location relatif
+- `frontend/middleware.test.ts` — garde composée, matcher, **Location exploitable par
+  Next** (absolu + parsable sans base, cf. régression 500 du run CI 30269383403)
 - `frontend/src/lib/auth-guard-paths.test.ts` — segments protégés, percent-encoding, fail-closed
 
 **E2E (Playwright — versionnées, non exécutées)**

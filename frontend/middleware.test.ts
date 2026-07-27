@@ -149,28 +149,87 @@ describe('middleware — non-régression i18n (#235)', () => {
   })
 })
 
-describe('middleware — Location relatif (audit sécurité S45)', () => {
-  it('émet un Location RELATIF, jamais une URL absolue dérivée du Host', () => {
-    const response = middleware(request('/fr/dashboard'))
+describe('middleware — Location exploitable par Next (régression 500, S45)', () => {
+  /**
+   * ⚠ ANGLE MORT QUI A COÛTÉ UN RUN CI (30269383403 : 10 specs `auth-guard` en
+   * 500 au lieu de 307, vitest VERT).
+   *
+   * L'audit S45 avait rendu le `Location` RELATIF (`/fr/login`) pour ne pas
+   * dériver l'URL de l'en-tête `Host`. Les tests d'alors assertaient
+   * `expect(location).toBe('/fr/login')` et résolvaient tout via
+   * `new URL(location, ORIGIN)` — **avec une base**. Or Next NORMALISE la
+   * réponse ensuite (`adapter.js`) : `new NextURL(location, …)`, donc
+   * `new URL(location)` **SANS base** → `TypeError: Invalid URL` → 500.
+   * Asserter la chaîne relative reproduisait exactement l'angle mort : il faut
+   * asserter que le `Location` survit au TRAITEMENT DE NEXT.
+   *
+   * On charge le `NextURL` RÉEL (même module que l'adapter) plutôt que d'imiter
+   * son comportement : une imitation dérive du moteur, c'est déjà ce qui avait
+   * laissé passer le contournement du matcher. Pas de typings publics →
+   * `createRequire` + type explicite (aucun `any`).
+   */
+  const NextURL = ((): new (input: string, opts: { forceLocale: boolean }) => { href: string } => {
+    const requireCjs = createRequire(import.meta.url)
+    const mod = requireCjs('next/dist/server/web/next-url') as {
+      NextURL: new (input: string, opts: { forceLocale: boolean }) => { href: string }
+    }
+    return mod.NextURL
+  })()
 
-    expect(response.headers.get('location')).toBe('/fr/login')
+  const locationOf = (pathname: string): string => {
+    const location = middleware(request(pathname)).headers.get('location')
+    expect(location).not.toBeNull()
+    return location!
+  }
+
+  it.each(['/fr/dashboard', '/fr/timeline', '/fr/products', '/fr/settings', '/fr/%64ashboard'])(
+    'émet sur %s un Location ABSOLU, parsable sans base',
+    (pathname) => {
+      const location = locationOf(pathname)
+
+      // Le cœur du garde-fou : ce que Next fera du `Location`. Un chemin
+      // relatif lève ici, exactement comme en production.
+      expect(() => new URL(location)).not.toThrow()
+      expect(new URL(location).pathname).toBe('/fr/login')
+    },
+  )
+
+  it('survit à la normalisation RÉELLE de Next (adapter.js → new NextURL)', () => {
+    // Reproduction fidèle de `adapter.js` : c'est CETTE ligne qui jetait
+    // `ERR_INVALID_URL { input: '/fr/login' }` et transformait la 307 en 500.
+    expect(() => new NextURL(locationOf('/fr/dashboard'), { forceLocale: false })).not.toThrow()
   })
 
-  it('ignore un en-tête Host attaquant-contrôlable', () => {
+  it('ne reporte toujours PAS la query string (pas d’open-redirect)', () => {
+    const location = middleware(request('/fr/dashboard?redirect=https://evil.example')).headers.get(
+      'location',
+    )!
+
+    expect(new URL(location).search).toBe('')
+    expect(location).not.toContain('evil.example')
+  })
+
+  it('LIMITE ASSUMÉE : l’origine du Location suit celle de la requête (ADR-004)', () => {
+    // Le `Location` absolu est dérivé de `request.nextUrl`, donc de l'en-tête
+    // `Host`/`x-forwarded-host`. Derrière un proxy qui ne normalise PAS `Host`,
+    // un `Host` hostile déplace la cible de redirection. Test d'ANCRAGE, pas de
+    // validation : il documente le comportement réel pour qu'un futur durcissement
+    // (allow-list d'hôtes) le fasse échouer visiblement au lieu de passer inaperçu.
+    // Ne PAS « corriger » en repassant au relatif → 500 (cf. en-tête de ce bloc).
     const req = new NextRequest(new URL('/fr/dashboard', 'http://evil.example'), {
       headers: { 'accept-language': 'fr' },
     })
-    const location = middleware(req).headers.get('location')
+    const location = middleware(req).headers.get('location')!
 
-    expect(location).toBe('/fr/login')
-    expect(location).not.toContain('evil.example')
+    expect(new URL(location).pathname).toBe('/fr/login')
+    expect(new URL(location).host).toBe('evil.example')
   })
 
   it('protège un segment percent-encodé (contournement corrigé S45)', () => {
     const response = middleware(request('/fr/%64ashboard'))
 
     expect(response.status).toBe(307)
-    expect(response.headers.get('location')).toBe('/fr/login')
+    expect(redirectTarget(response)).toBe('/fr/login')
   })
 })
 
