@@ -38,11 +38,24 @@ public class E2eResetTokenFinderJpaAdapter implements E2eResetTokenFinder {
     public Optional<UUID> findLatestUsableToken(UUID userId, LocalDateTime now) {
         // Projection sur la SEULE colonne token : aucune entité chargée, aucun autre champ
         // du token (expiration, version, usedAt) ne quitte le backend.
+        // TRI — `expiresAt DESC` est un PROXY de « le plus récent » : la TTL étant
+        // constante (15 min, BR-AUT-012), un expiresAt plus grand = un token émis plus
+        // tard. La table ne porte AUCUNE colonne de création (`PasswordResetTokenEntity`
+        // : « Pas d'audit created_at/updated_at, table technique éphémère ») — vérifié,
+        // il n'existe donc pas de meilleur critère de récence à trier ici.
+        //
+        // `t.id DESC` en SECOND critère : purement DÉPARTAGEUR (revue S45). Sans lui,
+        // deux tokens de même expiresAt (même seconde ; ou TTL devenue variable un jour)
+        // sortent dans un ordre laissé au SGBD, non reproductible d'un run à l'autre —
+        // un E2E flaky dont le diagnostic pointerait à tort vers le flux de reset.
+        // ⚠ L'id est un UUID v4 aléatoire (`UUID.randomUUID()`) : il rend le résultat
+        // DÉTERMINISTE, il n'ordonne PAS par récence. Si la TTL devient variable, c'est
+        // une colonne de création qu'il faudra ajouter, pas ce tri qu'il faudra relire.
         String jpql = "SELECT t.token FROM " + PasswordResetTokenEntity.class.getSimpleName() + " t "
                 + "WHERE t.userId = :userId "
                 + "AND t.usedAt IS NULL "
                 + "AND t.expiresAt > :now "
-                + "ORDER BY t.expiresAt DESC";
+                + "ORDER BY t.expiresAt DESC, t.id DESC";
 
         return entityManager.createQuery(jpql, UUID.class)
                 .setParameter("userId", userId)
