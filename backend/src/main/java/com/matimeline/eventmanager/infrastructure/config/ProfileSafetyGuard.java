@@ -57,6 +57,17 @@ import java.util.Locale;
  * (origines vides). Le WARN devient un fail-fast, cohérent avec #111/#216/#254 et
  * exécuté au plus tôt (avant création des beans). Les WARN redondants ont été retirés
  * de {@code ProdConfigStartupLogger} (cf. commentaire pointant vers #253).
+ *
+ * <p>Cinquième garde-fou (#283, exécuté EN PREMIER) : refuse le boot si le profil
+ * {@code e2e} est actif ALORS que l'environnement est <em>prod effectif</em>. Le profil
+ * {@code e2e} active le package {@code infrastructure.adapters.testsupport} (ADR-005), qui
+ * expose {@code GET /api/test-support/password-reset-token?email=...} en ANONYME. Combiné à
+ * {@code POST /api/auth/forgot-password}, ce canal permet la prise de contrôle de n'importe
+ * quel compte et contourne intégralement BR-AUT-005 / BR-AUT-012. Ce check passe AVANT #111
+ * (et non après) volontairement : sur une config {@code dev,e2e} + marqueur prod, les deux
+ * checks se déclenchent, et le message qui doit remonter à l'exploitant est celui qui nomme
+ * la porte dérobée, pas celui qui nomme le fallback de profil. Le job CI e2e
+ * ({@code SPRING_PROFILES_ACTIVE=dev,e2e}, AUCUN marqueur prod) n'est pas concerné.
  */
 public class ProfileSafetyGuard
         implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
@@ -66,6 +77,9 @@ public class ProfileSafetyGuard
 
     /** Noms de variables d'env inspectées comme marqueur d'environnement. */
     static final List<String> ENV_MARKER_KEYS = List.of("ENVIRONMENT", "APP_ENV");
+
+    /** Profil activant le canal test-only {@code testsupport} (ADR-005) — interdit en prod. */
+    static final String E2E_PROFILE = "e2e";
 
     /** Master-switch du rate-limit (défaut fail-safe {@code true}). */
     static final String RATE_LIMIT_ENABLED_KEY = "app.rate-limit.enabled";
@@ -83,11 +97,37 @@ public class ProfileSafetyGuard
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment env = event.getEnvironment();
 
-        checkDevProfileInProduction(env);        // #111 (inchangé, prioritaire)
+        checkE2eProfileInProduction(env);        // #283 (porte dérobée test-support : priorité absolue)
+        checkDevProfileInProduction(env);        // #111 (inchangé)
         checkRateLimitDisabledInProduction(env); // #216
         checkCookieInsecureInProduction(env);    // #254
         checkMissingCookieDomainInProduction(env); // #253
         checkMissingCorsOriginsInProduction(env);  // #253
+    }
+
+    /**
+     * Check #283 : en prod effectif, profil {@code e2e} actif → refuse de booter. Le profil
+     * {@code e2e} conditionne le package {@code testsupport} (ADR-005), dont le controller
+     * révèle en anonyme le token de réinitialisation de mot de passe de n'importe quel email.
+     * Aucune combinaison {@code prod}+{@code e2e} n'est légitime ; le job CI e2e tourne en
+     * {@code dev,e2e} SANS marqueur prod et reste autorisé.
+     */
+    private void checkE2eProfileInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → CI/dev, canal test-only légitime.
+        }
+        if (!isProfileActive(env, E2E_PROFILE)) {
+            return; // Profil e2e inactif → package testsupport non chargé.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#283) : le profil Spring 'e2e' est ACTIF en environnement de "
+                + "production effective (marqueur ENVIRONMENT/APP_ENV=prod ou profil Spring 'prod' "
+                + "actif). Ce profil expose le canal test-only GET /api/test-support/"
+                + "password-reset-token en accès anonyme : il permet la prise de contrôle de "
+                + "n'importe quel compte (contournement de BR-AUT-005/BR-AUT-012). Retirer 'e2e' "
+                + "de SPRING_PROFILES_ACTIVE en production ; ce profil n'est légitime que dans le "
+                + "job CI e2e (dev,e2e sans marqueur d'environnement de production).");
     }
 
     /**
