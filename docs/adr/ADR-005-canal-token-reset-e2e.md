@@ -1,4 +1,4 @@
-# ADR-004 — Canal de capture du token de réinitialisation en E2E
+# ADR-005 — Canal de capture du token de réinitialisation en E2E
 
 - Statut : Accepté
 - Date : 2026-07-27

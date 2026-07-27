@@ -27,7 +27,7 @@ import { waitForResetToken } from './support/reset-token'
  *
  * PRÉREQUIS RUNTIME (levés par le job CI `e2e`) : backend Spring Boot :8080 démarré avec
  * `SPRING_PROFILES_ACTIVE=dev,e2e` (le profil `e2e` expose l'endpoint de capture du token,
- * #283/ADR-004), Postgres migré Flyway V1..Vn, frontend Next.js :3000 avec le proxy
+ * #283/ADR-005), Postgres migré Flyway V1..Vn, frontend Next.js :3000 avec le proxy
  * `/api/*` -> :8080. Plus AUCUN accès direct à la base depuis la suite E2E. Cf. ci.yml.
  */
 

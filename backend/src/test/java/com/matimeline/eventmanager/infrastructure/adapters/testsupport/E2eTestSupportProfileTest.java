@@ -18,7 +18,7 @@ import jakarta.persistence.EntityManager;
 /**
  * Garde-fou #283 : le canal de capture test-only N'EXISTE QUE en profil {@code e2e}.
  *
- * <p>Exigence de la décision d'architecture (ADR-004) : un endpoint qui rend un token de
+ * <p>Exigence de la décision d'architecture (ADR-005) : un endpoint qui rend un token de
  * réinitialisation ne doit jamais pouvoir répondre en {@code prod} — ni en {@code dev}, ni en
  * {@code test}. Ce test PROUVE l'absence des beans hors {@code e2e} plutôt que de s'en remettre
  * à la relecture d'une annotation.
@@ -102,7 +102,7 @@ class E2eTestSupportProfileTest {
     /**
      * Profil {@code e2e} ADDITIF (cas réel du job CI : {@code SPRING_PROFILES_ACTIVE=dev,e2e}) :
      * le canal est câblé, la config {@code dev} restant active par ailleurs. Verrouille la
-     * décision ADR-004 — si quelqu'un remplaçait {@code @Profile("e2e")} par une expression
+     * décision ADR-005 — si quelqu'un remplaçait {@code @Profile("e2e")} par une expression
      * excluant {@code dev}, ce test tomberait.
      */
     @Test

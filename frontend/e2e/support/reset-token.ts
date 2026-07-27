@@ -1,7 +1,7 @@
 import type { APIRequestContext } from '@playwright/test'
 
 /**
- * Canal de capture du token de réinitialisation en E2E (issue #283, ADR-004).
+ * Canal de capture du token de réinitialisation en E2E (issue #283, ADR-005).
  *
  * API PUBLIQUE DE CE MODULE (stable — consommée par `forgot-password.spec.ts` et par les
  * specs de cas d'échec du reset, issue #284) :

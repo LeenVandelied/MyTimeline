@@ -23,7 +23,7 @@ import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
 import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
 
 /**
- * Tests d'intégration du canal de capture test-only (issue #283, ADR-004).
+ * Tests d'intégration du canal de capture test-only (issue #283, ADR-005).
  *
  * <p>Profils {@code test,e2e} : {@code @ActiveProfiles("e2e")} s'AJOUTE au {@code "test"}
  * hérité d'{@link AbstractPostgresIntegrationTest} (Spring fusionne par défaut,

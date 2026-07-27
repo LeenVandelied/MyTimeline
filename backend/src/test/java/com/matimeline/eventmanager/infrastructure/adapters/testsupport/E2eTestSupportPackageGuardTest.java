@@ -13,7 +13,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
 
 /**
- * Garde-fou structurel du canal de capture test-only (issue #283, ADR-004).
+ * Garde-fou structurel du canal de capture test-only (issue #283, ADR-005).
  *
  * <p>Analyse bytecode pure (pattern {@code ArchitectureTest}) : aucun contexte Spring.
  * Deux invariants, tous deux destinés à survivre aux évolutions FUTURES du package —
