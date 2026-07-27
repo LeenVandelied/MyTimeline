@@ -146,6 +146,11 @@ test.describe('#205 Timeline mobile — portrait', () => {
   })
 
   test('bouton ⋯ et long-press ouvrent le MÊME action sheet', async ({ page }) => {
+    // Horloge simulée : le franchissement du seuil long-press ne doit pas dépendre
+    // de l'horloge murale (flake latent sous charge CI). `install()` DOIT précéder
+    // toute navigation ; `resume()` laisse l'app se charger en temps réel.
+    await page.clock.install()
+    await page.clock.resume()
     const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
 
     // --- Voie a11y visible : le bouton `⋯` ---------------------------------
@@ -165,8 +170,10 @@ test.describe('#205 Timeline mobile — portrait', () => {
     expect(box, 'le bloc seedé doit être positionné').not.toBeNull()
     await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
     await page.mouse.down()
-    // Seuil long-press = 500 ms (`useTimelineMobileGestures`) ; marge anti-flaky.
-    await page.waitForTimeout(800)
+    // Seuil long-press = `LONG_PRESS_MS` = 500 ms (`useTimelineMobileGestures.ts:21`).
+    // `fastForward` déclenche le `setTimeout` du hook sans attendre réellement :
+    // le franchissement est déterministe, indépendant de la charge machine.
+    await page.clock.fastForward(600)
     await page.mouse.up()
     await expect(page.getByTestId('timeline-actionsheet')).toBeVisible()
   })

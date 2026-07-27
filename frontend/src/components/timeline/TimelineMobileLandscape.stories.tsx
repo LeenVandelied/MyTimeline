@@ -56,6 +56,9 @@ export const Default: Story = {}
  */
 export const MinimapForcedHidden: Story = {
   args: { minimapForcedHidden: true },
+  // NB : Storybook COMPOSE les décorateurs (meta puis story), il ne les remplace
+  // pas. Ce cadre 320px s'ajoute donc DANS celui de 390px déclaré sur le meta —
+  // double wrapper volontaire ; `withTimelineIntl` reste appliqué.
   decorators: [
     (Story) => (
       <div className="bg-bg border-rule h-[320px] w-[844px] overflow-hidden border">

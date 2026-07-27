@@ -211,6 +211,11 @@ test.describe("#314 Drawer de création d'événement (shell)", () => {
 
     // --- Récurrence : l'option est ciblée par INDEX (libellés i18n interdits
     //     comme sélecteurs). Ordre du <Select> : WEEK, MONTH, YEAR → nth(1)=MONTH.
+    //     Ciblage par `value` IMPOSSIBLE : Radix `SelectItem` déstructure `value`
+    //     hors des props DOM (@radix-ui/react-select — value passe par le contexte
+    //     de collection, jamais par un attribut). Ce `nth(1)` DÉPEND donc de l'ordre
+    //     déclaré dans `src/components/EventEditForm.tsx:436-438` (WEEK/MONTH/YEAR) :
+    //     toute réorganisation de ces trois <SelectItem> casse silencieusement ce test.
     await page.getByTestId('event-form-recurring-toggle').click()
     await page.getByTestId('event-form-recurrence-trigger').click()
     await page.getByRole('listbox').getByRole('option').nth(1).click()
