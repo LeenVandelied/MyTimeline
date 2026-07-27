@@ -27,7 +27,14 @@ import type { PositionedEvent } from './zoom'
  * (gap B) rend le 409 déterministe.
  *
  * Props = celles de `TimelineResponsive` (events/resources/locale/today) ; le host injecte
- * `onEditEvent`. `onDeleteEvent` reste non câblé (hors périmètre A/B/C).
+ * `onEditEvent` ET `onDeleteEvent`.
+ *
+ * #309 — suppression mobile : `TimelineActionSheet` (mobile) appelle `onDelete(event)` avec
+ * l'event ciblé SANS passer par l'ouverture du dialog d'édition (contrairement au chemin
+ * desktop, qui supprime via `EventEditForm` → `editing` déjà en state). `onDelete` ci-dessous
+ * est donc RÉUTILISÉ tel quel pour les deux chemins (pas de second callback, cf. risque de
+ * divergence d'invalidation de cache noté au plan) : il accepte un `target` optionnel, retombe
+ * sur `editing` quand absent (chemin desktop).
  */
 export type TimelineEditHostProps = Omit<
   TimelineResponsiveProps,
@@ -68,12 +75,19 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
     }
   }, [editing])
 
-  const onDelete = useCallback(async () => {
-    if (!editing) return
-    await deleteEvent(editing.id)
-    conflict.reset()
-    closeEditor()
-  }, [editing, conflict, closeEditor])
+  // `target` optionnel : fourni par le chemin mobile (`TimelineActionSheet` → `onDeleteEvent`,
+  // suppression directe sans passer par le dialog d'édition) ; absent sur le chemin desktop
+  // (bouton « Supprimer » d'`EventEditForm`, qui cible l'event déjà ouvert dans `editing`).
+  const onDelete = useCallback(
+    async (target?: PositionedEvent) => {
+      const id = target?.id ?? editing?.id
+      if (!id) return
+      await deleteEvent(id)
+      conflict.reset()
+      closeEditor()
+    },
+    [editing, conflict, closeEditor],
+  )
 
   const handleClose = useCallback(() => {
     conflict.reset()
@@ -89,7 +103,7 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
 
   return (
     <>
-      <TimelineResponsive {...props} onEditEvent={setEditing} />
+      <TimelineResponsive {...props} onEditEvent={setEditing} onDeleteEvent={onDelete} />
 
       <Dialog open={Boolean(editing)} onOpenChange={handleOpenChange}>
         <DialogContent
