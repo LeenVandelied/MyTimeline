@@ -101,6 +101,94 @@ class ProfileSafetyGuardTest {
                 .doesNotThrowAnyException();
     }
 
+    // --- #283 : refuse le boot si le profil e2e (canal test-support) est actif en prod effectif ---
+
+    @Test
+    @DisplayName("#283 profils 'prod,e2e' → refuse de booter (canal test-support nommé)")
+    void shouldFail_whenProdAndE2eProfilesActive() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("prod", "e2e");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#283")
+                .hasMessageContaining("e2e")
+                .hasMessageContaining("/api/test-support/password-reset-token");
+    }
+
+    @Test
+    @DisplayName("#283 profils 'dev,e2e' + marqueur prod → refuse de booter (avant le check #111)")
+    void shouldFail_whenDevE2eProfilesAndProdMarker() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("ENVIRONMENT", "production");
+        env.setActiveProfiles("dev", "e2e");
+
+        // #111 se déclencherait AUSSI (dev + marqueur prod) : on vérifie que c'est bien le
+        // message #283 qui remonte — celui qui nomme la porte dérobée.
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#283")
+                .hasMessageNotContaining("#111");
+    }
+
+    @Test
+    @DisplayName("#283 marqueur prod (APP_ENV) sans profil actif + e2e en property brute → refuse de booter")
+    void shouldFail_whenProdMarkerAndE2eInRawProperty() {
+        // Aucun profil résolu : le garde-fou lit spring.profiles.active brute.
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("APP_ENV", "prod")
+                .withProperty("spring.profiles.active", "prod,e2e");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#283");
+    }
+
+    @Test
+    @DisplayName("#283 profils 'dev,e2e' SANS marqueur prod (job CI e2e) → boot autorisé")
+    void shouldPass_whenDevE2eProfilesWithoutProdMarker() {
+        // Configuration EXACTE du job CI e2e : ne doit jamais être bloquée.
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("dev", "e2e");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#283 profil 'e2e' seul sans marqueur prod → boot autorisé")
+    void shouldPass_whenE2eProfileAloneWithoutProdMarker() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("e2e");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#283 marqueur non-prod (staging) + 'dev,e2e' → boot autorisé")
+    void shouldPass_whenStagingMarkerAndE2eProfile() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("ENVIRONMENT", "staging");
+        env.setActiveProfiles("dev", "e2e");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#283 profil prod SANS e2e → check #283 non déclenché (pas de faux positif)")
+    void shouldPass_whenProdProfileWithoutE2e() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "true") // #254
+                .withProperty("app.cookie.domain", "example.com") // #253
+                .withProperty("app.cors.allowed-origins", "https://app.example.com"); // #253
+        env.setActiveProfiles("prod");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
     // --- #216 : refuse le boot si rate-limit désactivé en prod effectif ---
 
     @Test
