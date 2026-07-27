@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test'
 import { SHARED } from './support/accounts'
+// Import RELATIF (et non l'alias `@/`) : ce module est chargé par le transpileur
+// Playwright, qui n'a pas la même résolution que le bundler Next. `locales.ts` est
+// pur (aucun import Node/Next), il se charge donc tel quel. Source de vérité #235.
+import { SUPPORTED_LOCALES } from '../src/i18n/locales'
 
 /**
  * #302 — Garde SERVEUR des routes connectées (`middleware.ts`, cf. ADR-004).
@@ -68,6 +72,46 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     expect(response.headers()['location']).toContain('/fr/login')
   })
 
+  /**
+   * ANCRAGE RÉEL DU MATCHER (revue S45) — seul niveau où le matcher de
+   * `middleware.ts` est évalué par Next lui-même. `middleware.test.ts` compile les
+   * entrées avec le path-to-regexp embarqué de Next, ce qui est déjà bien plus
+   * fidèle qu'une regex reconstruite à la main, mais reste une SIMULATION : rien
+   * n'y prouve que Next applique ces entrées au moment où il route la requête.
+   *
+   * Le contournement corrigé : une locale percent-encodée (`%66r` → `fr`) COMBINÉE
+   * à une extension d'asset échappait aux DEUX entrées du matcher. Le middleware
+   * n'était jamais invoqué, le shell `(app)` était servi à un anonyme, et le
+   * routeur Next décodait ensuite `%66r` en `fr`. Aucun correctif à l'intérieur du
+   * middleware ne pouvait rattraper ça — on n'y entrait pas.
+   *
+   * ⚠ Si ce test se met à répondre 200, la garde serveur est RE-CONTOURNÉE : ne
+   * pas « réparer » l'assertion, corriger `config.matcher`.
+   */
+  for (const path of [
+    '/%66r/products/x.png', // locale encodée + extension d'asset
+    '/%66r/dashboard/logo.svg',
+    '/%66r/settings/x.css',
+    '/%66r/timeline', // locale encodée sans extension (déjà couvert, ancré ici aussi)
+  ]) {
+    test(`${path} (locale percent-encodée) reste gardé par le middleware`, async ({ page }) => {
+      const response = await page.request.get(path, { maxRedirects: 0 })
+
+      expect(response.status(), `${path} doit être intercepté par le middleware, pas servi`).toBe(
+        307,
+      )
+
+      const location = response.headers()['location']
+      expect(location).toBeDefined()
+      expect(new URL(location, 'http://localhost').pathname).toBe('/fr/login')
+
+      // Aucun octet du shell protégé.
+      const body = await response.text()
+      expect(body).not.toContain('data-testid="dashboard"')
+      expect(body).not.toContain('data-testid="app-shell"')
+    })
+  }
+
   test('un cookie jwt bidon suffit à passer la garde (limite assumée, ADR-004)', async ({
     page,
     context,
@@ -118,9 +162,10 @@ test.describe('Garde serveur — utilisateur authentifié', () => {
     }
   })
 
-  test('non-régression i18n : les 4 locales servent la page connectée', async ({ page }) => {
+  test('non-régression i18n : toutes les locales servent la page connectée', async ({ page }) => {
     // #235 — la composition avec next-intl ne doit pas restreindre les locales.
-    for (const locale of ['fr', 'en', 'es', 'de']) {
+    // Itère la SOURCE DE VÉRITÉ : une liste en dur raterait une locale ajoutée.
+    for (const locale of SUPPORTED_LOCALES) {
       const response = await page.request.get(`/${locale}/dashboard`, { maxRedirects: 0 })
       expect(response.status(), `/${locale}/dashboard doit être servi`).toBe(200)
     }
