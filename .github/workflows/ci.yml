@@ -150,10 +150,15 @@ jobs:
       # Démarrage du backend en tâche de fond (profil dev : cookie Secure=false,
       # Domain=localhost, CORS http://localhost:3000 déjà autorisé). JWT_SECRET passé
       # explicitement (le profil dev a un default, mais on ne s'appuie pas dessus en CI).
-      - name: Start backend (Spring Boot, profil dev, :8080)
+      - name: Start backend (Spring Boot, profils dev+e2e, :8080)
         working-directory: backend
         env:
-          SPRING_PROFILES_ACTIVE: dev
+          # #283 / ADR-004 — liste ADDITIVE : `dev` fournit toute la config dont ce job
+          # dépend déjà (datasource, cookie, CORS) ; `e2e` n'AJOUTE que le canal de capture
+          # du token de reset (GET /api/test-support/password-reset-token, @Profile("e2e")).
+          # Ce profil n'est demandé QUE dans ce job : en dev local (profil `dev` seul) comme
+          # en prod, le canal n'existe pas (garde-fous E2eTestSupport*Test côté backend).
+          SPRING_PROFILES_ACTIVE: dev,e2e
           DB_URL: jdbc:postgresql://localhost:5432/eventmanager
           DB_USERNAME: eventuser
           DB_PASSWORD: eventpass_ci
@@ -215,14 +220,10 @@ jobs:
           CI: "true"
           NEXT_PUBLIC_API_URL: /api
           E2E_API_PROXY_TARGET: http://localhost:8080
-          # #145 — le spec forgot-password lit le token de reset directement en base
-          # (aucun autre canal : email NO-OP en test, pas d'endpoint test-only). Même
-          # service Postgres que le backend (localhost:5432, DB/user ci-dessus).
-          E2E_DB_HOST: localhost
-          E2E_DB_PORT: "5432"
-          E2E_DB_NAME: eventmanager
-          E2E_DB_USER: eventuser
-          E2E_DB_PASSWORD: eventpass_ci
+          # #283 — le spec forgot-password capture le token via l'endpoint test-only du
+          # backend (profil `e2e`, cf. step de démarrage), à travers le proxy Next `/api/*`.
+          # Les anciennes variables E2E_DB_* (lecture directe de password_reset_tokens,
+          # #145) ont été retirées avec `e2e/support/db.ts` et la dépendance `pg`.
         run: npm run test:e2e
 
       - name: Upload Playwright report (on failure)

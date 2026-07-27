@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { uniqueIdentity, type E2eIdentity } from './support/auth'
-import { waitForResetToken, closeDbPool } from './support/db'
+import { waitForResetToken } from './support/reset-token'
 
 /**
  * #145 — E2E Playwright du flux "mot de passe oublié" (premier E2E cross-system
@@ -10,8 +10,8 @@ import { waitForResetToken, closeDbPool } from './support/db'
  *   1. Inscription d'un utilisateur frais (écran register) → login.
  *   2. Demande de réinitialisation (écran forgot-password) → message neutre 200
  *      (BR-AUT-005 : réponse indistincte email connu/inconnu).
- *   3. Capture du token de reset (canal DB, cf. support/db.ts : aucun autre canal
- *      n'existe — email NO-OP en test, pas d'endpoint test-only).
+ *   3. Capture du token de reset (endpoint test-only du backend, cf. support/reset-token.ts :
+ *      aucun autre canal n'existe — email NO-OP en test, token jamais loggé).
  *   4. Réinitialisation (écran reset-password?token=…) → succès.
  *   5. Connexion avec le NOUVEAU mot de passe → dashboard (prouve le changement
  *      de hash côté backend, BR-AUT-002/BR-AUT-012).
@@ -25,17 +25,14 @@ import { waitForResetToken, closeDbPool } from './support/db'
  *   - Parcours NOMINAL = 1 SEUL login réussi (aucune tentative échouée) → ne
  *     déclenche PAS le lockout ajouté par #141 (rate-limit/verrou reset).
  *
- * PRÉREQUIS RUNTIME (levés par le job CI `e2e`) : backend Spring Boot :8080 (Postgres
- * migré Flyway V1..Vn, table `password_reset_tokens` V6), frontend Next.js :3000,
- * DB `eventmanager` accessible depuis le runner (lecture token). Cf. ci.yml.
+ * PRÉREQUIS RUNTIME (levés par le job CI `e2e`) : backend Spring Boot :8080 démarré avec
+ * `SPRING_PROFILES_ACTIVE=dev,e2e` (le profil `e2e` expose l'endpoint de capture du token,
+ * #283/ADR-004), Postgres migré Flyway V1..Vn, frontend Next.js :3000 avec le proxy
+ * `/api/*` -> :8080. Plus AUCUN accès direct à la base depuis la suite E2E. Cf. ci.yml.
  */
 
 /** Nouveau mot de passe distinct de l'initial (createResetPasswordFormSchema : ≥6 + MAJ + chiffre). */
 const NEW_PASSWORD = 'E2eReset456'
-
-test.afterAll(async () => {
-  await closeDbPool()
-})
 
 /**
  * Inscrit un utilisateur frais puis revient sur /fr/login (register redirige vers
@@ -72,9 +69,10 @@ test.describe('Mot de passe oublié : forgot → lien tokenisé → reset → lo
     // BR-AUT-005 : message neutre systématique (200), pas de fuite d'existence.
     await expect(page.getByTestId('forgot-neutral')).toBeVisible()
 
-    // ---- 2. CAPTURE DU TOKEN (canal DB, cf. support/db.ts) ----------------
-    // L'INSERT du token est @Async : on POLL la table jusqu'à son apparition.
-    const token = await waitForResetToken(identity.email)
+    // ---- 2. CAPTURE DU TOKEN (endpoint test-only, cf. support/reset-token.ts) ----
+    // L'INSERT du token est @Async : on POLL l'endpoint jusqu'à ce qu'il le rende (404
+    // tant qu'il n'est pas écrit). `page.request` porte le baseURL -> appel same-origin.
+    const token = await waitForResetToken(page.request, identity.email)
     expect(token).toMatch(/^[0-9a-f-]{36}$/i)
 
     // ---- 3. RÉINITIALISATION (lien tokenisé) ------------------------------
