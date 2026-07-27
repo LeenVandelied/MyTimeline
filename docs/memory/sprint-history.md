@@ -1044,7 +1044,16 @@
 **Dépend de :** aucune (disjoint de S45)
 **Mini-plans :** `docs/memory/sprints/sprint-46/architect-plans.md`
 **Ordonnancement critique :** #315 DOIT précéder #314 (S47) — #314 asserte `event-form-preview-recurrence` que #315 réécrit. E2E d'abord = spec réécrite aussitôt.
-**Status :** Planifié
+**Commits (4) :** `7c108c0` (#315) · `85715b0` (#316) · `2d5f808` (#309) · `15fe038` (correctifs review)
+**Reviews :** reviewer batch — 0 CRITIQUE / 2 MAJEUR / 5 MINEUR — **tous RÉSOLU** en 1 cycle (`15fe038`)
+**Tests :** Backend 433/433 · Frontend 596/596 · `tsc` + ESLint clean · E2E = gate CI uniquement (stack locale down)
+**Audit tests :** `docs/memory/audits/sprint-46-test-coverage.md`
+**Écart E2E assumé :** 9 testids `event-form-preview*` sans spec → couverture = objet de #314 (S47) ; parcours suppression mobile → #205 (S47)
+**Follow-ups détectés (à arbitrer en `/sprint end`) :**
+  - Invalidation TanStack absente après `deleteEvent` — gap **préexistant**, exposé au mobile par #309 ; point d'accroche unique = `runDelete` [S | events]
+  - Aperçu sticky en haut du drawer (handoff §6) non implémenté par #315 [S | events/design]
+  - Aucun rendu visuel vérifié pour la mini-frise (tokens DS seuls, pas d'inspection navigateur)
+**Status :** En cours — PR ouverte
 
 ## Sprint 47 — 2026-07-16 (PLANIFIÉ — cohésion 0.82, Couverture E2E frise (dette S44 + S41))
 **Objectif :** Solder l'écart COVERAGE-E2E assumé au S44 (11 testids sans spec) et la dette E2E frise : drawer + /timeline (#314), accordéon collapse par produit (#304), vues mobiles (#205).
