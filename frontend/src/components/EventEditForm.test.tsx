@@ -14,6 +14,8 @@ import { EventEditForm, type EventEditFormValues } from './EventEditForm'
 
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  // #315 — la mini-frise d'aperçu formate ses dates via `useLocale()`.
+  useLocale: () => 'fr',
 }))
 
 vi.mock('@/components/ui/popoverPicker', () => ({
@@ -76,10 +78,35 @@ describe('EventEditForm — pré-remplissage & preview', () => {
 
   it('affiche le preview live avec la couleur choisie', async () => {
     setup()
-    const preview = screen.getByTestId('event-form-preview')
+    // #315 — l'aperçu est désormais une MINI-FRISE : la couleur porte la barre
+    // d'occurrence (`--mt-evt`, API du DS), plus le conteneur.
     await waitFor(() =>
-      expect(preview).toHaveStyle({ backgroundColor: '#3B82F6' }),
+      expect(
+        screen.getByTestId('event-form-preview-bar').style.getPropertyValue('--mt-evt'),
+      ).toBe('#3B82F6'),
     )
+    expect(screen.getByTestId('event-form-preview')).toBeInTheDocument()
+  })
+
+  it('#315 — la mini-frise expose règle, marqueur TODAY et légende « prochaine occurrence »', async () => {
+    setup()
+    await waitFor(() => expect(screen.getByTestId('event-form-preview-ruler')).toBeInTheDocument())
+    expect(screen.getByTestId('event-form-preview-today')).toBeInTheDocument()
+    expect(screen.getByTestId('event-form-preview-legend')).toHaveTextContent(
+      'products.details.previewTimeline.nextOccurrence',
+    )
+    // Événement non récurrent : ni fantôme ni connecteur.
+    expect(screen.queryByTestId('event-form-preview-ghost')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('event-form-preview-connector')).not.toBeInTheDocument()
+  })
+
+  it('#315 — un événement récurrent affiche le connecteur pointillé et l’occurrence fantôme', async () => {
+    setup({
+      defaultValues: { ...baseDefaults, isRecurring: true, recurrenceUnit: 'MONTH' },
+    })
+    await waitFor(() => expect(screen.getByTestId('event-form-preview-ghost')).toBeInTheDocument())
+    expect(screen.getByTestId('event-form-preview-connector')).toBeInTheDocument()
+    expect(screen.getByTestId('event-form-preview-recurrence')).toBeInTheDocument()
   })
 })
 

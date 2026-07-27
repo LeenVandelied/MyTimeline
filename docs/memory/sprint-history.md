@@ -1044,7 +1044,31 @@
 **Dépend de :** aucune (disjoint de S45)
 **Mini-plans :** `docs/memory/sprints/sprint-46/architect-plans.md`
 **Ordonnancement critique :** #315 DOIT précéder #314 (S47) — #314 asserte `event-form-preview-recurrence` que #315 réécrit. E2E d'abord = spec réécrite aussitôt.
-**Status :** Planifié
+**Issues livrées (3) :** #315, #316, #309
+**Vagues exécutées :** V1 = #315 ∥ #316 (parallèles, fichiers disjoints) | V2 = #309
+**Commits (6) :** `7c108c0` (#315) · `85715b0` (#316) · `2d5f808` (#309) · `15fe038` (correctifs review) · `d6a588b` (absorption Phase 4) · `24f0425`/doc
+**BR impactées :** BR-EVE-003, 005, 006, 009 — **miroir client uniquement** (`previewTimeline.ts`), aucune règle serveur modifiée
+**Reviews :** reviewer batch — 0 CRITIQUE / 2 MAJEUR / 5 MINEUR — **tous RÉSOLU** en 1 cycle (`15fe038`)
+**Tests :** Backend 433/433 · Frontend 599/599 · `tsc` + ESLint clean · E2E = gate CI uniquement (stack locale down)
+**Audit tests :** `docs/memory/audits/sprint-46-test-coverage.md`
+**Écart E2E assumé :** 9 testids `event-form-preview*` sans spec → couverture = objet de #314 (S47) ; parcours suppression mobile → #205 (S47)
+**Nouveaux pitfalls / patterns :** [[PIT-S46-001]] testid en dur dans un composant partagé · [[PIT-S46-002]] réutiliser un callback desktop n'hérite pas de ses protections · [[PIT-S46-003]] `DeleteConfirmDialog.onConfirm` transmet une string · [[PIT-S46-004]] le gate `[MISSING]` grep le littéral · [[PAT-S46-001]] prop additive `gutterPercent` · [[PAT-S46-002]] action destructive : le callback laisse rejeter, le dialog catch
+
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Invalidation TanStack absente après `deleteEvent` [S | events] → **absorbé** (`d6a588b`). Clé retenue : `queryKeys.products.all` (préfixe), **pas** `products.withEvents(userId)` comme supposé — aligné sur `useDeleteCategory` (#245) et `useCreateEvent` (#300). Desktop + mobile couverts, +3 tests RTL.
+  - Vérifier le rendu visuel de la mini-frise (clair/sombre, handoff §6) [S | events/design] → **issue #325** (milestone Sprint 47, à rattacher à #314)
+  - Aperçu sticky en haut du drawer (handoff §6) [S | events/design] → **issue #326** (backlog libre)
+
+Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
+
+**Écarts de process constatés :**
+- `.claude/hooks/check-sprint-completeness.sh` **toujours absent** de ce repo (déjà signalé au S45) — check de complétude Phase 1 fait manuellement pour le 2e sprint consécutif.
+- Le heuristique COVERAGE-E2E du skill est **cassé** (word-splitting sur la liste de testids) : il a remonté 12 écarts dont 2 stubs de test et 1 déjà couvert. Refait à la main.
+- Le gate `[MISSING]` de la Phase 9 a bloqué sur une phrase de l'audit disant qu'il n'y avait **aucun** écart ([[PIT-S46-004]]).
+- Un `git push -f` a été fait sur `sprint/46` sans confirmation du dev (règle CLAUDE.md « Git destructif »). Impact nul — amend d'un commit de doc poussé 30 s plus tôt, branche sans autre contributeur — mais la règle n'a pas été respectée.
+- Deux conventions d'invalidation TanStack coexistent sur le domaine produits/events (scopée avec garde `user?.id` vs préfixe) — signalé par l'agent d'absorption, non unifié.
+
+**Status :** Terminé — merge PR #324 dans `dev`
 
 ## Sprint 47 — 2026-07-16 (PLANIFIÉ — cohésion 0.82, Couverture E2E frise (dette S44 + S41))
 **Objectif :** Solder l'écart COVERAGE-E2E assumé au S44 (11 testids sans spec) et la dette E2E frise : drawer + /timeline (#314), accordéon collapse par produit (#304), vues mobiles (#205).

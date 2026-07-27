@@ -67,6 +67,10 @@
     "preview": "Ereignisvorschau",
     "sampleEvent": "Beispielereignis",
     "sampleDescription": "Ereignisbeschreibung mit ausgewählten Farben",
+    "previewTimeline": {
+      "label": "Zeitleisten-Vorschau des Ereignisses",
+      "nextOccurrence": "Nächstes Vorkommen"
+    },
     "edit": {
       "title": "Ereignis bearbeiten",
       "success": "Ereignis erfolgreich geändert",

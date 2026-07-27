@@ -22,6 +22,15 @@ export interface TimelineActionSheetProps {
   event: PositionedEvent | null
   onClose: () => void
   onEdit?: (event: PositionedEvent) => void
+  /**
+   * ⚠ CONTRAT (#review S46, MAJEUR) : ce callback DEMANDE la suppression, il ne
+   * l'exécute PAS. La suppression est un hard-delete serveur (`br-events` §5) —
+   * un tap ne doit jamais détruire une donnée sans confirmation. Le parent
+   * (`TimelineEditHost`) ouvre `DeleteConfirmDialog`, comme le chemin desktop.
+   *
+   * Retour `void` volontaire : rien à `await` ici, donc aucune promesse orpheline
+   * (la feuille se ferme sur une simple demande, pas sur un succès supposé).
+   */
   onDelete?: (event: PositionedEvent) => void
 }
 
@@ -53,6 +62,7 @@ export const TimelineActionSheet: React.FC<TimelineActionSheetProps> = ({
     onClose()
   }, [event, onEdit, onClose])
 
+  // Ferme la feuille et laisse le parent ouvrir la confirmation (cf. contrat `onDelete`).
   const handleDelete = useCallback(() => {
     if (event) onDelete?.(event)
     onClose()

@@ -67,6 +67,10 @@
     "preview": "Vista Previa del Evento",
     "sampleEvent": "Evento de Ejemplo",
     "sampleDescription": "Descripción del evento con los colores seleccionados",
+    "previewTimeline": {
+      "label": "Vista previa cronológica del evento",
+      "nextOccurrence": "Próxima ocurrencia"
+    },
     "edit": {
       "title": "Editar Evento",
       "success": "Evento modificado con éxito",

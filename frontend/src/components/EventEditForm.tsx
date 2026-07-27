@@ -17,8 +17,9 @@ import { Spinner } from './ui/spinner'
 import { PopoverPicker } from './ui/popoverPicker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
 import { ConflictDialog } from './shared/ConflictDialog'
+import { EventPreviewTimeline } from './events/EventPreviewTimeline'
+import type { PreviewEventType } from './events/previewTimeline'
 import { useNetworkStatus } from '@/contexts/NetworkStatusContext'
-import { contrastInk } from '@/lib/color'
 import {
   createEventEditSchema,
   HEX_COLOR_REGEX,
@@ -52,6 +53,10 @@ export type { EventEditFormValues } from '@/types/event'
  *   est proposée (la modale comparative reste un follow-up backend, RECOMMAND_FOLLOWUP).
  *
  * Preview live : recalcul debounce 150 ms (perf, cohérent `--dur-base:200ms`).
+ * #315 — le rendu de cet aperçu est délégué à `EventPreviewTimeline` (mini-frise
+ * du handoff §6 : règle + TODAY + occurrence fantôme + légende). Ce composant ne
+ * lui passe QUE des valeurs débouncées — y brancher les `watch()` bruts
+ * recalculerait la géométrie de la frise à chaque frappe.
  *
  * Responsive : le formulaire est rendu dans le drawer/bottom-sheet du parent
  * (`EventContent`, pattern `ProductDrawer.tsx:240-244`). Aucun breakpoint custom :
@@ -190,19 +195,24 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   const previewDurationUnit = useDebounced(rawDurationUnit)
 
   const validPreviewColor = previewColor && HEX_COLOR_REGEX.test(previewColor) ? previewColor : undefined
-  const previewInk = contrastInk(validPreviewColor)
-  const previewDuration =
-    previewType === 'duration' && previewDurationValue && previewDurationUnit
-      ? `${previewDurationValue} ${tUnits(previewDurationUnit)}`
-      : null
+
+  // #review S46 — `eventEditSchema.type` reste `z.string()` (le backend n'a AUCUNE
+  // contrainte d'enum sur `type` : toute valeur hors `duration` est traitée comme
+  // `single`, cf. br-events §1). L'aperçu, lui, expose le domaine FERMÉ : on normalise
+  // ici, à la frontière, plutôt que d'élargir le type du composant (ni de caster).
+  const previewEventType: PreviewEventType = previewType === 'duration' ? 'duration' : 'single'
 
   const isRecurringWatch = form.watch('isRecurring')
 
-  // #300 — aperçu SIMPLE enrichi de la récurrence (couleur / durée / récurrence).
-  // SCOPE ACTÉ : c'est bien le bloc coloré existant, PAS la mini-frise du handoff §6
-  // (ruler + TODAY + occurrence fantôme pointillée + légende « prochaine occurrence »),
-  // qui reste un follow-up. Composé de clés i18n EXISTANTES (`form.recurring` +
-  // `units.*`) → aucune clé nouvelle, parité 4 locales préservée par construction.
+  // #315 — dates débouncées elles aussi : la mini-frise recalcule sa fenêtre à
+  // partir de `startDate`/`endDate`, une saisie non débouncée la ferait glisser
+  // à chaque frappe (BR-EVE-009, cf. `useDebounced`).
+  const previewStartDate = useDebounced(form.watch('startDate'))
+  const previewEndDate = useDebounced(form.watch('endDate'))
+
+  // #300 — libellé de récurrence, composé de clés i18n EXISTANTES (`form.recurring`
+  // + `units.*`) → aucune clé nouvelle, parité 4 locales préservée par construction.
+  // #315 — désormais rendu DANS la légende de la mini-frise (testid inchangé).
   const rawRecurrenceUnit = form.watch('recurrenceUnit')
   const previewIsRecurring = useDebounced(isRecurringWatch)
   const previewRecurrenceUnit = useDebounced(rawRecurrenceUnit)
@@ -491,37 +501,26 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   )}
                 />
 
-                {/* Preview live (debounce 150 ms) : bloc coloré durée + couleur. */}
-                <div className="overflow-hidden rounded-lg">
+                {/* #315 — Preview live (debounce 150 ms) : MINI-FRISE du handoff §6
+                    (règle + TODAY + occurrence fantôme pointillée + légende
+                    « prochaine occurrence »). Remplace le bloc coloré simple du
+                    Sprint 44 (écart assumé DEC-S44-002). Les testids
+                    `event-form-preview` et `event-form-preview-recurrence` sont
+                    PRÉSERVÉS (tests #66/#300, E2E #314). */}
+                <div>
                   <div className="text-ink mb-2 text-sm">{tDetails('preview')}</div>
-                  <div className="bg-surface rounded-lg p-4">
-                    <div
-                      className="w-full rounded-md p-4 transition-all"
-                      data-testid="event-form-preview"
-                      style={{
-                        backgroundColor: validPreviewColor ?? 'var(--color-surface-2)',
-                        color: previewInk,
-                      }}
-                    >
-                      <span className="font-medium" style={{ color: previewInk }}>
-                        {previewTitle || tDetails('sampleEvent')}
-                      </span>
-                      {previewDuration && (
-                        <div className="mt-2 text-sm" style={{ color: previewInk }}>
-                          {previewDuration}
-                        </div>
-                      )}
-                      {previewRecurrence && (
-                        <div
-                          className="mt-1 text-sm"
-                          style={{ color: previewInk }}
-                          data-testid="event-form-preview-recurrence"
-                        >
-                          {previewRecurrence}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <EventPreviewTimeline
+                    title={previewTitle}
+                    color={validPreviewColor}
+                    type={previewEventType}
+                    durationValue={previewDurationValue}
+                    durationUnit={previewDurationUnit}
+                    startDate={previewStartDate}
+                    endDate={previewEndDate}
+                    isRecurring={previewIsRecurring}
+                    recurrenceUnit={previewRecurrenceUnit}
+                    recurrenceLabel={previewRecurrence}
+                  />
                 </div>
               </div>
 
