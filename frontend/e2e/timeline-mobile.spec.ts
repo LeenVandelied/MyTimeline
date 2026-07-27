@@ -1,0 +1,303 @@
+import { test, expect, type Locator, type Page } from '@playwright/test'
+import { PROD } from './support/accounts'
+import { ensureAuthenticated } from './support/auth'
+import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
+
+/**
+ * #205 (Sprint 47) — E2E des vues Timeline MOBILES (portrait #63 / paysage #64).
+ *
+ * Couvre le trou de couverture signalé par l'issue : les deux variantes mobiles
+ * sont instrumentées de `data-testid` depuis le Sprint 19 mais aucune spec ne les
+ * exerçait. Écran cible : `/fr/timeline` (#301), seul écran qui monte
+ * `TimelineEditHost` → `TimelineResponsive` quelle que soit la viewport (le
+ * dashboard, lui, ne monte PAS la frise en mobile portrait : il rend
+ * `dashboard-mobile-portrait`, cf. `dashboard/page.tsx`).
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * PIÈGE VIEWPORT (le seul qui compte ici)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * `TimelineResponsive` choisit sa variante via `useMediaQuery` :
+ *   portrait  : (max-width: 640px) and (orientation: portrait)
+ *   paysage   : (orientation: landscape) and (max-height: 600px)
+ *   minimap forcée masquée : (max-height: 400px)
+ * La viewport DOIT donc être fixée AVANT `page.goto` (`test.use`), sinon la
+ * variante desktop est montée et AUCUN testid mobile n'existe.
+ *
+ * En revanche la ROTATION en cours de test se fait bien par
+ * `page.setViewportSize()` sans navigation : `useMediaQuery` écoute l'événement
+ * `change` de `matchMedia` → la bascule est réactive (c'est précisément ce qui
+ * rend le scénario « rotation sans perte d'état » testable).
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * GESTES TACTILES — repli assumé
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Le pinch-zoom (2 pointeurs) n'est PAS automatisé : Playwright ne pilote qu'un
+ * pointeur et le repli « événements simulés » testerait le handler, pas le
+ * parcours (déjà couvert en RTL, `TimelineMobilePortrait.test.tsx`). On exerce
+ * ici l'alternative accessible officielle (boutons +/-), qui passe par le MÊME
+ * reducer de zoom. Le long-press EST automatisé (un seul pointeur, `mouse.down`
+ * + attente > 500 ms) car c'est un geste réellement mono-pointeur.
+ *
+ * Auth : compte fixe PROD (storageState) → zéro register par test. État seedé par
+ * API, assertions sur `data-testid` uniquement (4 locales, `localePrefix:'always'`).
+ * PRÉREQUIS RUNTIME : backend Spring (:8080) + Postgres migré + front Next.
+ */
+
+const PORTRAIT = { width: 390, height: 844 }
+/** Mobile retourné : hauteur 390 <= 400 → minimap FORCÉE masquée. */
+const LANDSCAPE_SHORT = { width: 844, height: 390 }
+/** Paysage plus haut (401..600) → minimap togglable par l'utilisateur. */
+const LANDSCAPE_TALL = { width: 844, height: 520 }
+
+interface SeededTimeline {
+  /** Titre de l'event seedé = nom du produit (cf. `seedProduct`). */
+  eventTitle: string
+  productName: string
+}
+
+/**
+ * Seede une catégorie + un produit portant UN event daté d'aujourd'hui, puis
+ * ouvre `/fr/timeline` et attend que la variante mobile attendue soit montée.
+ *
+ * L'event est daté d'aujourd'hui à dessein : la frise se centre sur « today » au
+ * montage (`scrollToToday`), donc le bloc est visible sans scroll manuel — le
+ * compte PROD accumule les produits des autres specs et le rail peut être large.
+ */
+async function seedAndOpenTimeline(
+  page: Page,
+  variant: 'portrait' | 'landscape',
+): Promise<SeededTimeline> {
+  await ensureAuthenticated(page)
+
+  const userId = await getUserId(page)
+  const productName = unique('TL Mobile')
+  const cat = await seedCategory(page, unique('TL Mobile Cat'))
+  await seedProduct(page, {
+    userId,
+    name: productName,
+    categoryId: cat.id,
+    eventDate: todayIsoDate(),
+  })
+
+  await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
+  await expect(page.getByTestId('timeline-screen')).toBeVisible()
+  // Le host n'est monté qu'une fois les données chargées ET non vides.
+  await expect(page.getByTestId('timeline-host')).toBeVisible()
+  await expect(page.getByTestId(`timeline-mobile-${variant}`)).toBeVisible()
+
+  return { eventTitle: productName, productName }
+}
+
+/** Le bloc de l'event seedé, ciblé par son titre (unique) plutôt que par index. */
+function seededEvent(page: Page, title: string): Locator {
+  return page.locator(`[data-testid="timeline-event"][data-event-title="${title}"]`)
+}
+
+/** Le bouton `⋯` voisin du bloc seedé (même `.mt-tlm__evt-wrap`). */
+function seededEventMore(page: Page, title: string): Locator {
+  return page
+    .locator('.mt-tlm__evt-wrap')
+    .filter({ has: page.locator(`[data-event-title="${title}"]`) })
+    .getByTestId('timeline-event-more')
+}
+
+/* ========================================================================== */
+/* PORTRAIT                                                                    */
+/* ========================================================================== */
+
+test.describe('#205 Timeline mobile — portrait', () => {
+  test.use({ storageState: PROD.storageState, viewport: PORTRAIT })
+
+  test('affiche la frise portrait (règle, lanes, minimap) et pas la vue desktop', async ({
+    page,
+  }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    // La variante desktop ne doit PAS être montée (sinon le switch est cassé).
+    await expect(page.getByTestId('timeline-view')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-mobile-landscape')).toHaveCount(0)
+
+    // Chrome de la frise.
+    await expect(page.getByTestId('timeline-ruler')).toBeVisible()
+    await expect(page.getByTestId('timeline-scroll')).toBeVisible()
+    await expect(page.getByTestId('timeline-minimap')).toBeVisible()
+    await expect(page.getByTestId('timeline-zoom-level')).toBeVisible()
+
+    // Lanes groupées par catégorie + le produit seedé présent.
+    expect(await page.getByTestId('timeline-group').count()).toBeGreaterThan(0)
+    expect(await page.getByTestId('timeline-resource-row').count()).toBeGreaterThan(0)
+    await expect(seededEvent(page, eventTitle)).toHaveCount(1)
+  })
+
+  test('tap sur un bloc ouvre le bottom sheet, fermé par le bouton close', async ({ page }) => {
+    const { eventTitle, productName } = await seedAndOpenTimeline(page, 'portrait')
+
+    await expect(page.getByTestId('timeline-sheet')).toHaveCount(0)
+    await seededEvent(page, eventTitle).click()
+
+    const sheet = page.getByTestId('timeline-sheet')
+    await expect(sheet).toBeVisible()
+    await expect(sheet).toHaveAttribute('role', 'dialog')
+    await expect(sheet).toHaveAttribute('aria-modal', 'true')
+    await expect(sheet).toContainText(productName)
+
+    await page.getByTestId('timeline-sheet-close').click()
+    await expect(sheet).toHaveCount(0)
+  })
+
+  test('bouton ⋯ et long-press ouvrent le MÊME action sheet', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    // --- Voie a11y visible : le bouton `⋯` ---------------------------------
+    await seededEventMore(page, eventTitle).click()
+    await expect(page.getByTestId('timeline-actionsheet')).toBeVisible()
+    await expect(page.getByTestId('timeline-actionsheet-edit')).toBeVisible()
+    await expect(page.getByTestId('timeline-actionsheet-delete')).toBeVisible()
+    // Le `⋯` n'ouvre PAS le bottom sheet détail (chemins disjoints).
+    await expect(page.getByTestId('timeline-sheet')).toHaveCount(0)
+    await page.getByTestId('timeline-actionsheet-cancel').click()
+    await expect(page.getByTestId('timeline-actionsheet')).toHaveCount(0)
+
+    // --- Geste mono-pointeur : long-press (> 500 ms, sans déplacement) ------
+    const block = seededEvent(page, eventTitle)
+    await block.scrollIntoViewIfNeeded()
+    const box = await block.boundingBox()
+    expect(box, 'le bloc seedé doit être positionné').not.toBeNull()
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    await page.mouse.down()
+    // Seuil long-press = 500 ms (`useTimelineMobileGestures`) ; marge anti-flaky.
+    await page.waitForTimeout(800)
+    await page.mouse.up()
+    await expect(page.getByTestId('timeline-actionsheet')).toBeVisible()
+  })
+
+  test('les boutons +/- changent le niveau de zoom (alternative au pinch)', async ({ page }) => {
+    await seedAndOpenTimeline(page, 'portrait')
+
+    const level = page.getByTestId('timeline-zoom-level')
+    const before = await level.textContent()
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(level).not.toHaveText(before ?? '')
+  })
+})
+
+/* ========================================================================== */
+/* ROTATION portrait → paysage → portrait                                      */
+/* ========================================================================== */
+
+test.describe('#205 Timeline mobile — rotation', () => {
+  test.use({ storageState: PROD.storageState, viewport: PORTRAIT })
+
+  /**
+   * Critère d'acceptation central de l'issue : la rotation démonte/remonte la
+   * VARIANTE, mais pas l'ÉTAT — `useTimelineMobileState` / `...Selection` sont
+   * hissés dans `TimelineResponsive`, qui reste monté. On vérifie donc que le
+   * ZOOM et la SÉLECTION traversent l'aller-retour, y compris le remplacement du
+   * bottom sheet (portrait) par le drawer latéral (paysage) sur le MÊME event.
+   */
+  test('portrait → paysage → portrait conserve zoom et sélection', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    // --- État à préserver : un zoom modifié + un event sélectionné ----------
+    const level = page.getByTestId('timeline-zoom-level')
+    const initialLevel = await level.textContent()
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(level).not.toHaveText(initialLevel ?? '')
+    const zoomedLevel = await level.textContent()
+
+    await seededEvent(page, eventTitle).click()
+    await expect(page.getByTestId('timeline-sheet')).toBeVisible()
+
+    // --- Rotation → PAYSAGE (sans navigation) ------------------------------
+    await page.setViewportSize(LANDSCAPE_SHORT)
+    await expect(page.getByTestId('timeline-mobile-landscape')).toBeVisible()
+    await expect(page.getByTestId('timeline-mobile-portrait')).toHaveCount(0)
+
+    // Sélection conservée : le bottom sheet cède la place au drawer latéral, qui
+    // affiche le MÊME event (titre en en-tête).
+    await expect(page.getByTestId('timeline-sheet')).toHaveCount(0)
+    const drawer = page.getByTestId('timeline-landscape-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(drawer).toContainText(eventTitle)
+    // Zoom conservé (le reducer vit au-dessus de la variante).
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(zoomedLevel ?? '')
+
+    // Hauteur 390 <= 400 → minimap forcée masquée ET toggle neutralisé.
+    await expect(page.getByTestId('timeline-minimap-wrap')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-minimap-toggle')).toBeDisabled()
+
+    // --- Rotation retour → PORTRAIT ----------------------------------------
+    await page.setViewportSize(PORTRAIT)
+    await expect(page.getByTestId('timeline-mobile-portrait')).toBeVisible()
+    await expect(page.getByTestId('timeline-mobile-landscape')).toHaveCount(0)
+
+    // Le drawer disparaît, le bottom sheet réaffiche la MÊME sélection.
+    await expect(page.getByTestId('timeline-landscape-drawer')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-sheet')).toBeVisible()
+    await expect(page.getByTestId('timeline-sheet')).toContainText(eventTitle)
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(zoomedLevel ?? '')
+  })
+})
+
+/* ========================================================================== */
+/* PAYSAGE                                                                     */
+/* ========================================================================== */
+
+test.describe('#205 Timeline mobile — paysage', () => {
+  // Hauteur 520 : au-dessus du seuil de forçage (400), sous le seuil paysage (600)
+  // → la minimap est présente ET le toggle utilisateur est actif.
+  test.use({ storageState: PROD.storageState, viewport: LANDSCAPE_TALL })
+
+  test('monte la variante paysage avec minimap et lanes denses', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'landscape')
+
+    await expect(page.getByTestId('timeline-view')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-mobile-portrait')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-ruler')).toBeVisible()
+    await expect(page.getByTestId('timeline-minimap-wrap')).toBeVisible()
+    await expect(seededEvent(page, eventTitle)).toHaveCount(1)
+  })
+
+  test('le toggle masque et réaffiche la minimap', async ({ page }) => {
+    await seedAndOpenTimeline(page, 'landscape')
+
+    const toggle = page.getByTestId('timeline-minimap-toggle')
+    await expect(toggle).toBeEnabled()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByTestId('timeline-minimap-wrap')).toBeVisible()
+
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await expect(page.getByTestId('timeline-minimap-wrap')).toHaveCount(0)
+
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByTestId('timeline-minimap-wrap')).toBeVisible()
+  })
+
+  test('tap sur un bloc ouvre le drawer latéral (et non le bottom sheet)', async ({ page }) => {
+    const { eventTitle, productName } = await seedAndOpenTimeline(page, 'landscape')
+
+    await seededEvent(page, eventTitle).click()
+    const drawer = page.getByTestId('timeline-landscape-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(drawer).toHaveAttribute('role', 'dialog')
+    await expect(drawer).toContainText(productName)
+    // Le bottom sheet portrait ne doit jamais être monté en paysage.
+    await expect(page.getByTestId('timeline-sheet')).toHaveCount(0)
+
+    await page.getByTestId('timeline-landscape-drawer-close').click()
+    await expect(drawer).toHaveCount(0)
+  })
+
+  test('le bouton ⋯ ouvre l’action sheet en paysage (parité avec le portrait)', async ({
+    page,
+  }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'landscape')
+
+    await seededEventMore(page, eventTitle).click()
+    await expect(page.getByTestId('timeline-actionsheet')).toBeVisible()
+    await expect(page.getByTestId('timeline-actionsheet-edit')).toBeVisible()
+    await expect(page.getByTestId('timeline-actionsheet-delete')).toBeVisible()
+  })
+})
