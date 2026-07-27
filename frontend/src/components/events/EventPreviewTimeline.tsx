@@ -7,7 +7,7 @@ import { Cursor } from '@/components/timeline/Cursor'
 import { Ruler } from '@/components/timeline/Ruler'
 import { contrastInk } from '@/lib/color'
 import type { DurationUnit, RecurrenceUnit } from '@/types/event'
-import { buildPreviewModel, type PreviewSegment } from './previewTimeline'
+import { buildPreviewModel, type PreviewEventType, type PreviewSegment } from './previewTimeline'
 
 /**
  * #315 — Aperçu live du formulaire d'événement : MINI-FRISE (handoff §6).
@@ -46,7 +46,8 @@ export interface EventPreviewTimelineProps {
   title?: string
   /** Couleur hex VALIDÉE (`HEX_COLOR_REGEX`) ou `undefined` ⇒ accent du DS. */
   color?: string
-  type?: string | null
+  /** Nature de l'événement (BR-EVE-003) — domaine fermé, cf. `eventEditSchema.type`. */
+  type?: PreviewEventType | null
   durationValue?: number | null
   durationUnit?: DurationUnit | null
   startDate?: string | null
@@ -155,7 +156,14 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
             />
           )}
 
-          <div className="mt-evt" style={barStyle(model.main, color)} data-testid="event-form-preview-bar">
+          {/* `--preview` : les barres de l'aperçu ne sont PAS cliquables — le
+              modificateur neutralise le `cursor:pointer` + le hover brightness
+              hérités de `.mt-evt` (affordance trompeuse, review S46). */}
+          <div
+            className="mt-evt mt-evt--preview"
+            style={barStyle(model.main, color)}
+            data-testid="event-form-preview-bar"
+          >
             {barLabel}
           </div>
 
@@ -163,7 +171,7 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
               (handoff « traitement visuel des barres » — pas de trame de stries). */}
           {model.ghost && (
             <div
-              className="mt-evt mt-evt--draft"
+              className="mt-evt mt-evt--draft mt-evt--preview"
               style={barStyle(model.ghost, color)}
               data-testid="event-form-preview-ghost"
             >

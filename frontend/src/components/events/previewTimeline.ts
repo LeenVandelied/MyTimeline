@@ -19,6 +19,13 @@ import type { DurationUnit, RecurrenceUnit } from '@/types/event'
  * ici n'est envoyé dans le payload.
  */
 
+/**
+ * Nature d'un événement (BR-EVE-003) — domaine FERMÉ, aligné sur `eventEditSchema.type`
+ * (`z.enum(['duration','single'])`, `types/event.ts`). Typer large (`string`) laissait
+ * passer n'importe quelle chaîne alors que seule `'duration'` change le calcul.
+ */
+export type PreviewEventType = 'duration' | 'single'
+
 /** Nombre de colonnes de la règle temporelle (graduations de la mini-frise). */
 export const PREVIEW_COLUMNS = 6
 
@@ -78,6 +85,38 @@ export function nextOccurrenceStart(start: Date, unit: RecurrenceUnit): Date {
 }
 
 /**
+ * Garde-fou de la recherche d'occurrence à venir : ~96 ans en hebdomadaire, la
+ * pire cadence. Empêche toute boucle infinie si une unité inattendue renvoyait
+ * une date qui n'avance pas.
+ */
+const MAX_OCCURRENCE_STEPS = 5000
+
+/**
+ * Première occurrence de la série qui n'est PAS dans le passé, en partant du
+ * fantôme (`start` + 1 période).
+ *
+ * En édition d'un événement récurrent ANCIEN (série démarrée il y a des mois),
+ * `start + 1 période` est déjà passé : la légende « Prochaine occurrence »
+ * annonçait alors une date révolue. On itère donc jusqu'à atteindre `today` ou
+ * au-delà — une occurrence tombant AUJOURD'HUI reste la prochaine (elle n'est
+ * pas passée).
+ *
+ * ⚠ Ne déplace PAS l'occurrence fantôme rendue sur la frise : celle-ci illustre
+ * la CADENCE juste après l'occurrence saisie ; la caler sur aujourd'hui
+ * étirerait la fenêtre sur toute l'ancienneté de la série et écraserait la barre
+ * pleine.
+ */
+function resolveNextOccurrence(ghostStart: Date, unit: RecurrenceUnit, today: Date): Date {
+  let occurrence = ghostStart
+  let steps = 0
+  while (occurrence < today && steps < MAX_OCCURRENCE_STEPS) {
+    occurrence = nextOccurrenceStart(occurrence, unit)
+    steps += 1
+  }
+  return occurrence
+}
+
+/**
  * Parse une date de formulaire `YYYY-MM-DD` en date LOCALE. `new Date('2026-05-01')`
  * serait interprétée en UTC → décalage d'un jour côté UTC−, exactement le piège
  * évité par `todayLocalIso()` dans `NewEventDrawer`.
@@ -114,14 +153,18 @@ export interface PreviewModel {
   connector: { leftPercent: number; widthPercent: number } | null
   /** Position de TODAY en %, `null` si hors fenêtre (ne devrait pas arriver). */
   todayPercent: number | null
-  /** Date de la légende « prochaine occurrence » (fantôme si récurrent, sinon le début). */
+  /**
+   * Date de la légende « prochaine occurrence » : pour une série, la première
+   * occurrence non passée à partir du fantôme (cf. `resolveNextOccurrence`) ;
+   * sinon le début de l'occurrence saisie.
+   */
   nextOccurrence: Date
 }
 
 export interface PreviewInput {
   startDate?: string | null
   endDate?: string | null
-  type?: string | null
+  type?: PreviewEventType | null
   durationValue?: number | null
   durationUnit?: DurationUnit | null
   isRecurring?: boolean
@@ -135,14 +178,19 @@ function clampPercent(value: number): number {
 }
 
 /**
- * Fin d'occurrence (BR-EVE-003). `type='duration'` avec une durée valide ⇒ la
+ * Fin d'occurrence (BR-EVE-003). `type='duration'` avec une durée fournie ⇒ la
  * DURÉE fait foi (le backend recalcule et ignorerait une `endDate` explicite) ;
  * sinon on retombe sur l'`endDate` saisie (mode édition, `type='single'`), puis
  * sur `startDate` (événement ponctuel).
+ *
+ * ⚠ Garde `!= null` et NON `> 0` : `Utils.calculateEndDate` (backend) branche sur
+ * `durationValue != null`, donc `durationValue=0` y renvoie `startDate`. Une garde
+ * `> 0` faisait retomber l'aperçu sur l'`endDate` saisie — l'aperçu mentait alors
+ * sur ce que le serveur allait calculer.
  */
 function resolveEnd(start: Date, input: PreviewInput): Date {
   const { type, durationValue, durationUnit, endDate } = input
-  if (type === 'duration' && durationValue && durationValue > 0 && durationUnit) {
+  if (type === 'duration' && durationValue != null && durationUnit) {
     return addDurationUnits(start, durationValue, durationUnit)
   }
   const explicitEnd = parseLocalIsoDate(endDate)
@@ -221,6 +269,7 @@ export function buildPreviewModel(input: PreviewInput): PreviewModel {
     ghost,
     connector,
     todayPercent: todayInWindow ? percentAt(today) : null,
-    nextOccurrence: ghostStart ?? start,
+    nextOccurrence:
+      ghostStart && recurrenceUnit ? resolveNextOccurrence(ghostStart, recurrenceUnit, today) : start,
   }
 }

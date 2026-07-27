@@ -42,6 +42,12 @@
 /* ghost / upcoming occurrence: dashed outline, faint tint, no solid fill */
 .mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt, var(--color-rule-strong)); color:var(--color-ink-muted); opacity:.8; box-shadow:none;}
 .mt-evt--archived{opacity:.45; filter:grayscale(.5);}
+/* preview (form live preview): non-interactive bars — drop the click affordance
+   (`cursor:pointer` + hover brightness) inherited from `.mt-evt`. */
+.mt-evt--preview{cursor:default;}
+.mt-evt--preview:hover{box-shadow:var(--shadow-sm); filter:none;}
+.mt-evt--draft.mt-evt--preview:hover{box-shadow:none; filter:none;}
+.dark .mt-evt--preview:hover, [data-theme="dark"] .mt-evt--preview:hover{filter:none;}
 
 /* ---------------- TimelineCursor (TODAY) ---------------- */
 .mt-cursor{position:absolute; top:-6px; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}

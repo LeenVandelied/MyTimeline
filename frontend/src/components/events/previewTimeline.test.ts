@@ -143,6 +143,38 @@ describe('previewTimeline — buildPreviewModel', () => {
     expect(model.nextOccurrence.getTime()).toBe(model.ghost!.start.getTime())
   })
 
+  it('série ANCIENNE : la légende « prochaine occurrence » n’est jamais dans le passé (#review S46)', () => {
+    const model = buildPreviewModel({
+      startDate: '2025-01-12', // série démarrée 16 mois avant NOW
+      type: 'single',
+      isRecurring: true,
+      recurrenceUnit: 'MONTH',
+      now: NOW,
+    })
+
+    // `start + 1 période` (12 févr. 2025) est révolu : on itère jusqu'à atteindre today.
+    expect(model.nextOccurrence.getTime()).toBeGreaterThanOrEqual(NOW.getTime())
+    expect(model.nextOccurrence.getFullYear()).toBe(2026)
+    expect(model.nextOccurrence.getMonth()).toBe(4) // mai
+    expect(model.nextOccurrence.getDate()).toBe(12)
+    // Le fantôme RENDU reste la cadence juste après l'occurrence saisie (fenêtre lisible).
+    expect(model.ghost!.start.getFullYear()).toBe(2025)
+    expect(model.ghost!.start.getMonth()).toBe(1)
+  })
+
+  it('durationValue=0 sur type=duration : fin = début, comme Utils.calculateEndDate (#review S46)', () => {
+    const model = buildPreviewModel({
+      startDate: '2026-05-12',
+      endDate: '2026-06-30', // endDate saisie IGNORÉE : la durée fait foi côté backend
+      type: 'duration',
+      durationValue: 0,
+      durationUnit: 'days',
+      now: NOW,
+    })
+
+    expect(model.main.end.getTime()).toBe(model.main.start.getTime())
+  })
+
   it('pas de fantôme si isRecurring sans recurrenceUnit (BR-EVE-006)', () => {
     const model = buildPreviewModel({
       startDate: '2026-05-12',

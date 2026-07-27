@@ -18,6 +18,7 @@ import { PopoverPicker } from './ui/popoverPicker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
 import { ConflictDialog } from './shared/ConflictDialog'
 import { EventPreviewTimeline } from './events/EventPreviewTimeline'
+import type { PreviewEventType } from './events/previewTimeline'
 import { useNetworkStatus } from '@/contexts/NetworkStatusContext'
 import {
   createEventEditSchema,
@@ -194,6 +195,12 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   const previewDurationUnit = useDebounced(rawDurationUnit)
 
   const validPreviewColor = previewColor && HEX_COLOR_REGEX.test(previewColor) ? previewColor : undefined
+
+  // #review S46 — `eventEditSchema.type` reste `z.string()` (le backend n'a AUCUNE
+  // contrainte d'enum sur `type` : toute valeur hors `duration` est traitée comme
+  // `single`, cf. br-events §1). L'aperçu, lui, expose le domaine FERMÉ : on normalise
+  // ici, à la frontière, plutôt que d'élargir le type du composant (ni de caster).
+  const previewEventType: PreviewEventType = previewType === 'duration' ? 'duration' : 'single'
 
   const isRecurringWatch = form.watch('isRecurring')
 
@@ -505,7 +512,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   <EventPreviewTimeline
                     title={previewTitle}
                     color={validPreviewColor}
-                    type={previewType}
+                    type={previewEventType}
                     durationValue={previewDurationValue}
                     durationUnit={previewDurationUnit}
                     startDate={previewStartDate}

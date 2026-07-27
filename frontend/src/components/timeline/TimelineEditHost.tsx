@@ -5,6 +5,7 @@ import { Calendar } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
 import { useEventEditConflict } from '@/hooks/useEventEditConflict'
 import { deleteEvent } from '@/services/eventService'
@@ -29,12 +30,16 @@ import type { PositionedEvent } from './zoom'
  * Props = celles de `TimelineResponsive` (events/resources/locale/today) ; le host injecte
  * `onEditEvent` ET `onDeleteEvent`.
  *
- * #309 — suppression mobile : `TimelineActionSheet` (mobile) appelle `onDelete(event)` avec
- * l'event ciblé SANS passer par l'ouverture du dialog d'édition (contrairement au chemin
- * desktop, qui supprime via `EventEditForm` → `editing` déjà en state). `onDelete` ci-dessous
- * est donc RÉUTILISÉ tel quel pour les deux chemins (pas de second callback, cf. risque de
- * divergence d'invalidation de cache noté au plan) : il accepte un `target` optionnel, retombe
- * sur `editing` quand absent (chemin desktop).
+ * #309 — suppression mobile : `TimelineActionSheet` (mobile) désigne l'event ciblé SANS
+ * passer par l'ouverture du dialog d'édition (contrairement au chemin desktop, qui supprime
+ * via `EventEditForm` → `editing` déjà en state).
+ *
+ * ⚠ #review S46 (MAJEUR) — la suppression est un HARD-DELETE serveur (`br-events` §5
+ * « Suppression physique » : `deleteById` supprime réellement la ligne, pas de corbeille,
+ * pas d'annulation). Les DEUX chemins passent donc par le MÊME `DeleteConfirmDialog` (#65,
+ * variante `event`) : le mobile arme seulement `deleteTarget`, il ne supprime jamais au tap.
+ * Les deux chemins convergent ensuite sur l'unique `runDelete` (pas de second callback →
+ * pas de divergence d'invalidation de cache entre desktop et mobile, cf. plan #309).
  */
 export type TimelineEditHostProps = Omit<
   TimelineResponsiveProps,
@@ -43,6 +48,8 @@ export type TimelineEditHostProps = Omit<
 
 export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   const [editing, setEditing] = useState<PositionedEvent | null>(null)
+  // Cible de suppression MOBILE (action sheet) : non nulle ⇒ dialog de confirmation ouvert.
+  const [deleteTarget, setDeleteTarget] = useState<PositionedEvent | null>(null)
 
   const closeEditor = useCallback(() => setEditing(null), [])
 
@@ -75,19 +82,51 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
     }
   }, [editing])
 
-  // `target` optionnel : fourni par le chemin mobile (`TimelineActionSheet` → `onDeleteEvent`,
-  // suppression directe sans passer par le dialog d'édition) ; absent sur le chemin desktop
-  // (bouton « Supprimer » d'`EventEditForm`, qui cible l'event déjà ouvert dans `editing`).
-  const onDelete = useCallback(
-    async (target?: PositionedEvent) => {
-      const id = target?.id ?? editing?.id
-      if (!id) return
+  // Chemin MOBILE : le tap sur « Supprimer » de l'action sheet ARME la cible (ouvre la
+  // confirmation) — il ne supprime rien. Stabilisé en `useCallback` : `TimelineActionSheet`
+  // monte `useFocusTrap`, dont les callbacks non stabilisés provoquent un vol de focus
+  // (BUG-S44-001).
+  const requestDelete = useCallback((target: PositionedEvent) => setDeleteTarget(target), [])
+
+  /**
+   * Suppression effective — SEUL point d'appel de `deleteEvent`, partagé desktop/mobile.
+   *
+   * #review S46 (MAJEUR) : l'erreur n'est PAS avalée ici, elle remonte à
+   * `DeleteConfirmDialog.handleConfirm`, qui l'`await` dans un `try/catch` et l'affiche
+   * inline (404 / 409 / générique) en gardant le dialog ouvert. Conséquence : plus aucun
+   * appelant ne laisse la promesse orpheline (fini l'unhandled rejection sur 403/409/réseau),
+   * et l'état local (conflit, éditeur, cible) n'est nettoyé QUE si le serveur a confirmé.
+   */
+  const runDelete = useCallback(
+    async (id: string) => {
       await deleteEvent(id)
       conflict.reset()
       closeEditor()
+      setDeleteTarget(null)
     },
-    [editing, conflict, closeEditor],
+    [conflict, closeEditor],
   )
+
+  /** Confirmation MOBILE : supprime la cible armée par l'action sheet. */
+  const confirmDeleteTarget = useCallback(async () => {
+    if (!deleteTarget) return
+    await runDelete(deleteTarget.id)
+  }, [deleteTarget, runDelete])
+
+  /**
+   * Confirmation DESKTOP : `EventEditForm.onDelete` est un `() => Promise<void>` (il est
+   * relayé à `DeleteConfirmDialog.onConfirm`, qui l'appelle avec un `reassignToCategoryId`
+   * — pertinent pour la seule variante `category`). La cible est l'event déjà ouvert dans
+   * `editing` : aucun argument ne doit fuiter jusqu'ici.
+   */
+  const deleteEditing = useCallback(async () => {
+    if (!editing) return
+    await runDelete(editing.id)
+  }, [editing, runDelete])
+
+  const handleDeleteOpenChange = useCallback((open: boolean) => {
+    if (!open) setDeleteTarget(null)
+  }, [])
 
   const handleClose = useCallback(() => {
     conflict.reset()
@@ -103,7 +142,19 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
 
   return (
     <>
-      <TimelineResponsive {...props} onEditEvent={setEditing} onDeleteEvent={onDelete} />
+      <TimelineResponsive {...props} onEditEvent={setEditing} onDeleteEvent={requestDelete} />
+
+      {/* Confirmation MOBILE — même composant que le chemin desktop (`EventEditForm` →
+          `DeleteConfirmDialog` #65). Monté seulement quand une cible est armée. */}
+      {deleteTarget && (
+        <DeleteConfirmDialog
+          open
+          onOpenChange={handleDeleteOpenChange}
+          variant="event"
+          isRecurring={deleteTarget.extendedProps?.isRecurring ?? false}
+          onConfirm={confirmDeleteTarget}
+        />
+      )}
 
       <Dialog open={Boolean(editing)} onOpenChange={handleOpenChange}>
         <DialogContent
@@ -136,7 +187,7 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
                 conflictLocalValues={conflict.conflict?.local}
                 onKeepMine={conflict.onKeepMine}
                 onTakeServer={conflict.onTakeServer}
-                onDelete={onDelete}
+                onDelete={deleteEditing}
                 isRecurring={editing?.extendedProps?.isRecurring ?? false}
               />
             )}

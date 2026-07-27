@@ -20,7 +20,19 @@ import { deleteEvent } from '@/services/eventService'
  * #309 — le stub expose un déclencheur `mobile-delete-trigger` qui invoque
  * `onDeleteEvent(event)` comme le ferait `TimelineActionSheet` (mobile), SANS passer
  * par `onEditEvent` (contrairement au chemin desktop `EventEditForm` → `editing`).
+ *
+ * #review S46 (MAJEUR) — le chemin mobile passe désormais par `DeleteConfirmDialog`
+ * (hard-delete serveur : pas de corbeille) et l'échec de `deleteEvent` doit être
+ * remonté à l'utilisateur au lieu de finir en unhandled rejection.
+ *
+ * next-intl mocké en chemin de clé (`namespace.key`) : `DeleteConfirmDialog` traduit
+ * ses libellés, on assert sur les clés (indépendant de la locale).
  */
+
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  useLocale: () => 'fr',
+}))
 
 vi.mock('./TimelineResponsive', () => ({
   TimelineResponsive: (props: TimelineResponsiveProps) => (
@@ -86,19 +98,75 @@ describe('TimelineEditHost — invariant AuthProvider (#review S42)', () => {
 })
 
 describe('TimelineEditHost — suppression mobile (#309)', () => {
-  it('onDeleteEvent (TimelineActionSheet mobile) supprime directement l’event ciblé, sans passer par le dialog d’édition', async () => {
+  it('onDeleteEvent (TimelineActionSheet mobile) ARME la confirmation sans supprimer', async () => {
     renderUnderAuth()
 
     fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
 
-    // Réutilise le callback `onDelete` desktop (branché sur `EventDrawer`/`EventEditForm`) :
-    // même chemin `deleteEvent`, pas de second callback (cf. risque de divergence de cache
-    // noté au plan d'implémentation).
-    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
-    expect(deleteEvent).toHaveBeenCalledTimes(1)
+    // #review S46 MAJEUR : hard-delete serveur → aucun appel réseau au tap.
+    await waitFor(() => expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument())
+    expect(deleteEvent).not.toHaveBeenCalled()
+    // Même dialog que le desktop, variante event.
+    expect(screen.getByText('deleteDialog.event.title')).toBeInTheDocument()
 
     // La suppression mobile ne passe jamais par `editing` → le dialog d'édition desktop
     // ne doit à aucun moment s'ouvrir.
     expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument()
+  })
+
+  it('confirmation → supprime l’event ciblé et referme le dialog', async () => {
+    vi.mocked(deleteEvent).mockResolvedValue(undefined)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    // Réutilise l'unique chemin `deleteEvent` du host (pas de second callback → pas de
+    // divergence d'invalidation de cache desktop/mobile, cf. plan d'implémentation).
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
+    expect(deleteEvent).toHaveBeenCalledTimes(1)
+    await waitFor(() =>
+      expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
+    )
+  })
+
+  it('annulation → ne supprime rien et referme le dialog', async () => {
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByText('deleteDialog.cancel'))
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
+    )
+    expect(deleteEvent).not.toHaveBeenCalled()
+  })
+})
+
+describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () => {
+  it('403 : erreur affichée à l’utilisateur, dialog maintenu ouvert (pas d’unhandled rejection)', async () => {
+    // Rejet typé axios-like : `DeleteConfirmDialog` lit `error.response.status`.
+    vi.mocked(deleteEvent).mockRejectedValue({ response: { status: 403 } })
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
+    // Feedback inline (mécanisme déjà en place sur le chemin desktop).
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('deleteDialog.errors.generic')
+    // Le dialog NE se referme PAS : l'utilisateur voit que rien n'a été supprimé.
+    expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
+  })
+
+  it('404 : message dédié (contrat d’erreur du dialog partagé)', async () => {
+    vi.mocked(deleteEvent).mockRejectedValue({ response: { status: 404 } })
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('deleteDialog.errors.notFound')
   })
 })
