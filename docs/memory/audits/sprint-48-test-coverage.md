@@ -50,8 +50,15 @@ Tests existants **mis à jour** suite à la bascule de route ADR-006 (`/[locale]
 |---|---|---|
 | Frontend unitaires (Vitest) | **641 passed / 641** — 79 fichiers, 16.57s | ✅ **relancé par le lead**, pas repris du rapport subagent |
 | `next build` | **0 erreur**, 2 warnings | ✅ relancé par le lead (le pack rappelle que vitest vert ≠ build vert) |
-| Backend (JUnit) | **non exécuté** | ⚠ justifié : **zéro fichier backend** dans le diff. La CI le relance de toute façon (4 jobs requis sur `dev`). |
-| E2E (Playwright) | **non exécuté** | ⚠ justifié : exige backend Spring + Postgres lancés. Voir §Limites. |
+| Backend (JUnit) | **vert en CI** | non lancé localement (**zéro fichier backend** dans le diff) — job `backend` de la PR #333 : SUCCESS |
+| E2E (Playwright) | **vert en CI** | non lançable localement (exige backend Spring + Postgres) — job `e2e` de la PR #333 : SUCCESS |
+
+**Mise à jour post-push (PR #333, head `a42e919`) : les 4 jobs requis sont verts** —
+`backend` · `frontend` · `e2e` · `security`. `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`.
+
+⚠ **Conséquence sur la limite n°2 ci-dessous : elle est levée.** Le job `e2e` vert **prouve** que la
+modification de `PUBLIC_PATHS` (`/fr/home` → `/fr`) est correcte et que la bascule de route ADR-006 ne casse
+aucune spec Playwright. Ce point n'est plus « raisonné mais non prouvé ».
 
 Référence de non-régression : la vague 1 laissait **599/599 sur 69 fichiers**. La vague 2 monte à
 **641/641 sur 79 fichiers** (+42 tests, +10 fichiers). Aucune régression.
@@ -92,12 +99,12 @@ Aucun dispatch de correction nécessaire.
 
 1. **Rendu visuel réel** — aucun navigateur ouvert. Le mode sombre, le viewport mobile et l'animation de frise
    hero sont **testés en assertions DOM uniquement**, jamais constatés à l'œil.
-2. **Suite Playwright non exécutée** (backend + Postgres requis). La modification de `PUBLIC_PATHS` dans
-   `e2e/auth-guard.spec.ts` est **raisonnée et cohérente** (`/fr/home` répond désormais 308, or les requêtes
-   partent en `maxRedirects: 0` et assertent `status === 200`), mais **non prouvée par un run**.
-   Atténuation : le lead a vérifié que `isProtectedPathname` retourne `false` quand `segment === null`
-   (`auth-guard-paths.ts:120`) → la racine de locale `/fr` est **publique par construction**, pas de régression
-   de garde. La CI exécutera les E2E.
+2. ~~**Suite Playwright non exécutée** localement (backend + Postgres requis).~~ **LEVÉE** — le job `e2e` de la
+   PR #333 est **vert**. La modification de `PUBLIC_PATHS` dans `e2e/auth-guard.spec.ts` (`/fr/home` répondant
+   désormais 308 alors que la spec assertait `status === 200` en `maxRedirects: 0`) est **prouvée par un run**,
+   plus seulement raisonnée. Vérification statique complémentaire du lead, toujours valable :
+   `isProtectedPathname` retourne `false` quand `segment === null` (`auth-guard-paths.ts:120`) → la racine de
+   locale `/fr` est **publique par construction**.
 3. **Comportement réel du 308 en navigateur** non constaté (mise en cache durable côté client).
 4. **Critère d'acceptation #3 de #56 (« zéro couleur hardcodée ») : satisfait dans le TSX, PAS dans le CSS.**
    `landing.css` injecte encore des hex **hors palette Graphite** (`#8B5CF6`, `#4F46E5` violet/indigo, `#374151`,
@@ -109,8 +116,11 @@ Aucun dispatch de correction nécessaire.
 
 ## Conclusion
 
-**Prêt pour PR.** Suite unitaire verte (641/641, relancée par le lead), build vert, review sans CRITIQUE ni
-MAJEUR imputable au diff, couverture E2E sans lacune (aucun testid nouveau à couvrir).
+**PR #333 ouverte et prête à merger.** Suite unitaire verte (641/641, relancée par le lead), build vert,
+**4 jobs CI requis verts** (`backend` · `frontend` · `e2e` · `security`), `mergeStateStatus: CLEAN`,
+review sans CRITIQUE ni MAJEUR imputable au diff, couverture E2E sans lacune (aucun testid nouveau à couvrir).
 
-Les 4 limites ci-dessus sont **documentées et arbitrées**, pas subies. Les critères #3, #4 et #8 de l'issue #56
-sont **partiellement satisfaits** et le sont explicitement — le follow-up `landing.css` les débloquera en entier.
+Sur les 4 limites listées, **la n°2 est levée par la CI**. Les 3 restantes (rendu visuel jamais constaté,
+comportement du 308 en navigateur, hex de `landing.css`) sont **documentées et arbitrées**, pas subies.
+Les critères #3, #4 et #8 de l'issue #56 sont **partiellement satisfaits** et le sont explicitement —
+le follow-up `landing.css` les débloquera en entier.
