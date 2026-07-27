@@ -1070,7 +1070,7 @@ Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
 
 **Status :** Terminé — merge PR #324 dans `dev`
 
-## Sprint 47 — 2026-07-16 → 2026-07-27 (EN COURS — cohésion 0.82, Couverture E2E frise (dette S44 + S41))
+## Sprint 47 — 2026-07-16 → 2026-07-27 (Terminé — merge PR #327 dans `dev`, commit `94cfd95`)
 **Objectif :** Solder l'écart COVERAGE-E2E assumé au S44 (11 testids sans spec) et la dette E2E frise : drawer + /timeline (#314), accordéon collapse par produit (#304), vues mobiles (#205).
 **Milestone GitHub :** #47
 **Issues :** #314 (P2/S), #304 (P2/S), #205 (P2/S) — 6 points
@@ -1113,7 +1113,28 @@ Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
 
 **Follow-ups détectés (à arbitrer en Phase 4 de `/sprint end`) :** `docs/memory/sprints/sprint-47/followups-lead.md` — 7 entrées (retry `auth.setup.ts`, scroll perdu à la rotation, pinch-zoom non couvert, 18 testids résiduels, `.eslintcache`, chemin `check-sprint-completeness.sh`, hook `pre-spawn-fullstack.sh`).
 
-**Status :** PR #327 ouverte — en attente CI, puis `/sprint end 47`
+**CI :** verte sur les **4 jobs** (`backend`, `frontend`, `e2e`, `security`) sur le SHA de tête `c8f6107`. Le job `e2e` a réellement exécuté les nouvelles specs — **69 tests lancés, 68 passed** en CI (`test:e2e` porte `--pass-with-no-tests`, un « success » vacuous était possible : vérifié dans le log du job, pas déduit du statut).
+
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Scroll horizontal perdu à la rotation, `scrollLeft` 400 → 0 [M | events] → **issue #328** (milestone Sprint 48, `priority:P1`, `bug`)
+  - Retry `auth.setup.ts` sur un 500 de rendu [S | events] → **issue #329** (Sprint 48)
+  - 18 testids frise sans spec E2E [M | events] → **issue #330** (Sprint 48)
+  - `data-testid` sur les `SelectItem` Radix [S | events] → **issue #331** (Sprint 48)
+  - Pinch-zoom non couvert bout-en-bout (CDP `Input.dispatchTouchEvent`) [M | tooling] → **consigné** (arbitrage coût/bénéfice, pas d'urgence)
+  - `.eslintcache` tracké malgré `.gitignore` [XS | tooling] → **consigné** (`git rm --cached`, une ligne)
+  - `pre-spawn-fullstack.sh` inopérant sur agents namespacés [XS | plugin] → **consigné**
+  - Heuristique COVERAGE-E2E cassée depuis le S46 [S | plugin] → **consigné**
+  - Chemin d'appel de `check-sprint-completeness.sh` [XS | plugin] → **consigné**
+
+Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejets — 3 visent le plugin `ai-env` et ne sont pas corrigeables depuis ce repo, les 2 autres sont triviaux ou sans urgence. Détail : `docs/memory/sprints/sprint-47/followups-lead.md`.
+
+> ⚠ **Piège connu reporté sur le S48** : le milestone Sprint 48 contient désormais 4 follow-ups du S47 (#328-#331) **sans label `sprint-48`**. C'est exactement la situation rencontrée au démarrage du S47 avec #325. `/sprint start 48` doit donc distinguer les issues **labellisées** `sprint-48` (le périmètre planifié : #293, #56) de celles simplement **attachées au milestone** (ces follow-ups), et trancher explicitement avec le dev.
+
+**Correctif de process validé ce sprint :** `check-sprint-completeness.sh` a tourné **sans erreur** depuis son chemin plugin (`~/.claude/plugins/cache/edel-projects/ai-env/<ver>/hooks/scripts/`) et a rendu « sprint-47 complet ». Les bilans S45 et S46 le déclaraient « absent du repo » et faisaient le check à la main : c'était le **chemin d'appel du skill** (`.claude/hooks/…`) qui était faux, pas le script qui manquait. Trois sprints de vérification manuelle évitables.
+
+**Mémoire consolidée :** 5 pitfalls ([[PIT-S47-001]] `find` vide ≠ absence · [[PIT-S47-002]] CORS `dev` figé sur `:3000` déguisé en rate-limit · [[PIT-S47-003]] base `eventmanager` inmigrable, V7 avant V9 · [[PIT-S47-004]] `workers>1` rougit 4 specs `settings-*` · [[PIT-S47-005]] `npm run build` tue le `next dev` + 500 fantôme Next 15.5.22) · 7 patterns ([[PAT-S47-001]] à [[PAT-S47-007]]).
+
+**Status :** Terminé — mergé dans `dev` (`94cfd95`), milestone #47 fermé, issues #314/#304/#205 fermées
 
 ## Sprint 48 — 2026-07-16 (PLANIFIÉ — cohésion 0.95, Landing page sur le DS)
 **Objectif :** Migrer la landing sur le Design System et décomposer le monolithe `HomePage.tsx` (274 l.) — token bordure AA (#293) puis décomposition en 7 sections (#56).
