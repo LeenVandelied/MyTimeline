@@ -1,6 +1,6 @@
 # Issue #205 — Couverture E2E + Storybook des vues Timeline mobiles
 
-commits: [41b8b15, 3bf4d8b]
+commits: [41b8b15 (couverture E2E + Storybook), 0885ddd (alignement convention + correction du done)]
 
 ## resume
 
