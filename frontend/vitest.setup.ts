@@ -54,19 +54,25 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 }
 
 // matchMedia non implémenté dans jsdom — requis par next-themes / composants responsive.
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }),
-})
+// Garde `typeof window` (#302) : ce setup s'applique AUSSI aux fichiers déclarant
+// `// @vitest-environment node` (ex. `middleware.test.ts`, qui a besoin des
+// primitives Fetch globales absentes de jsdom). Sans la garde, ils échouaient
+// à la collecte sur `window is not defined`. Même garde qu'au bloc Radix ci-dessous.
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  })
+}
 
 /**
  * jsdom n'implémente pas les Pointer Capture APIs ni `scrollIntoView`, requis

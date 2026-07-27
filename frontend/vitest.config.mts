@@ -24,7 +24,23 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     css: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'app/**/*.{test,spec}.{ts,tsx}'],
+    // #302 — `next-intl/middleware` est un ESM publié qui importe `next/server`
+    // SANS extension : en environnement `node`, Vitest l'externalise et la
+    // résolution ESM native de Node échoue ("Did you mean next/server.js ?").
+    // L'inliner le fait passer par le résolveur de Vite, qui honore les
+    // `exports` du package `next`.
+    // ⚠ Le motif est comparé à l'ID COMPLET du module (`/…/node_modules/next-intl/
+    // dist/…`) : une ancre `^next-intl` ne matche jamais. Ne pas « corriger ».
+    server: { deps: { inline: [/node_modules[\\/]next-intl[\\/]/] } },
+    // `middleware.test.ts` vit à la RACINE (à côté de `middleware.ts`, seul
+    // emplacement où Next reconnaît le middleware) — #302 / ADR-004. Il déclare
+    // `// @vitest-environment node` : `NextRequest` exige les primitives Fetch
+    // globales, absentes de jsdom.
+    include: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'app/**/*.{test,spec}.{ts,tsx}',
+      'middleware.{test,spec}.ts',
+    ],
     exclude: ['node_modules/**', '.next/**', 'e2e/**', '**/*.stories.{ts,tsx}'],
   },
 })
