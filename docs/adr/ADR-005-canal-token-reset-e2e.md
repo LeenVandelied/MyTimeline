@@ -120,6 +120,59 @@ maintient un accès Postgres + un mot de passe DB dans l'environnement du runner
   (message explicite émis par le module de capture). C'est le comportement voulu — le canal ne
   doit jamais être disponible par défaut.
 
+## Limites
+
+### 1. `E2eResetTokenController` injecte un port de PERSISTANCE en direct
+
+`E2eResetTokenController` injecte `UserRepository` (port de persistance,
+`domain/ports/repositories/`) et `E2eResetTokenFinder`, **sans passer par la couche
+`application`**. C'est un **écart assumé** à l'architecture hexagonale du projet : aucun autre
+controller ne fait ça — tous passent par un service applicatif.
+
+Justification (revue S45) :
+
+- il n'y a **aucune logique métier** à porter : l'endpoint résout un email en `userId` puis relit
+  un token. Un `E2eResetTokenService` applicatif ne ferait que retransmettre deux appels, en
+  ajoutant une classe test-only de plus dans une couche de production ;
+- la couche `application` est le lieu des **cas d'usage produit**. « Relire le dernier token
+  exploitable d'un compte » n'en est pas un (cf. §Décision 3, « aucun contrat de domaine n'est
+  étendu ») : l'y installer donnerait à un besoin d'outillage la même dignité qu'une règle métier ;
+- le confinement fait office de garde-fou : tout le canal est `@Profile("e2e")` et
+  `E2eTestSupportPackageGuardTest` (ArchUnit) vérifie que **rien en production ne dépend** de ce
+  package. L'écart ne peut donc pas contaminer le code réel.
+
+⚠ **Le prix**, explicite : la règle ArchUnit qui interdit à un controller d'atteindre un port de
+persistance est portée par le **package** (`ArchitectureTest.java`), pas par l'annotation
+`@RestController` — c'est ce qui laisse passer cette classe. Un durcissement de cette règle
+(cibler les `@RestController`) rendrait cet écart détectable ; il faudrait alors soit exempter
+explicitement `…adapters.testsupport`, soit introduire le service applicatif écarté ci-dessus.
+Ce durcissement touche une règle transverse et est **hors du périmètre** de #283 : suivi à part.
+
+### 2. Le port `E2eResetTokenFinder` vit hors de `domain/ports/`
+
+L'interface `E2eResetTokenFinder` est déclarée dans
+`infrastructure/adapters/testsupport/`, à côté de son unique implémentation, et **non** dans
+`domain/ports/repositories/` où vivent tous les autres ports.
+
+Là encore c'est **délibéré** : un port du domaine décrit un besoin du **métier**, et le domaine n'a
+aucune raison de connaître cette opération (elle n'existe dans aucun parcours utilisateur — le
+token ne sort que par email, BR-AUT-012). La déclarer dans `domain/ports/` exposerait un contrat
+test-only au code de production et rendrait la frontière du canal poreuse.
+
+L'interface existe malgré son implémentation unique pour que le controller dépende d'une
+**abstraction** et non d'un `*Impl` concret (convention projet). Conséquence à connaître : la
+lecture d'une seule couche ne suffit pas à voir ce canal — il faut lire le package en entier, ce
+que l'ArchUnit `E2eTestSupportPackageGuardTest` rend systématique.
+
+### 3. Tri du « dernier » token : déterminisme, pas récence
+
+`E2eResetTokenFinderJpaAdapter` trie par `expiresAt DESC, id DESC`. `expiresAt` n'est un proxy
+correct de « le plus récent » que **tant que la TTL est constante** (15 min, BR-AUT-012) ; la table
+ne porte aucune colonne de création (entité volontairement sans audit). Le `id DESC` ajouté en
+revue S45 ne fait que **départager les ex æquo** de façon reproductible — l'id étant un UUID v4
+aléatoire, il n'ordonne pas par récence. Si une TTL variable est un jour introduite, la correction
+attendue est l'ajout d'une colonne de création, pas un ajustement de ce tri.
+
 ## Références
 
 - Issue #283 (Sprint 45) ; issue #145 (Sprint 37, canal DB d'origine) ; issue #284 (consommateur).
