@@ -53,6 +53,42 @@ Le cookie `jwt` est `SameSite=Lax` : un POST cross-port (`:3100` → `:8080`) ne
 → 401 sur toute création produit/événement. Tout passe donc par le proxy Next (même origine),
 exactement comme en CI.
 
+## Instabilités du serveur de dev (constatées en cours de sprint, pas au démarrage)
+
+Ces deux modes de défaillance ont coûté des runs rouges qui **n'avaient rien à voir avec le code testé**.
+
+### 1. `npm run build` et `build-storybook` TUENT le `next dev` en cours
+
+Ils réécrivent `.next` sous les pieds du serveur, qui meurt sur :
+
+```
+ENOENT: no such file or directory, open '.../.next/static/development/_buildManifest.js.tmp.<hash>'
+```
+
+Sur un sprint où plusieurs agents partagent un working tree, c'est frappant : un agent lance un build,
+et la suite E2E d'un autre agent tombe. **Séquencer** builds et runs E2E, ou relancer le `next dev`
+après tout build.
+
+### 2. Next 15.5.22 : 500 transitoire après recompilation à chaud
+
+Le serveur de dev peut se mettre à renvoyer **500 sur `/fr/register`** après plusieurs recompilations
+à chaud, avec dans son log :
+
+```
+InvariantError: Expected clientReferenceManifest to be defined
+SyntaxError: Unexpected end of JSON input
+```
+
+C'est un bug de manifeste du serveur de dev, **pas le code applicatif**. Conséquence brutale :
+`auth.setup.ts:47` échoue, **0 spec ne s'exécute**, et le message d'erreur ne dit rien de la vraie cause.
+
+**Réflexe** : suite entièrement rouge dès le `setup` → `curl -s -o /dev/null -w "%{http_code}"
+http://localhost:3100/fr/register`. Si c'est 500, **redémarrer le `next dev`** et relancer. Ne cherche
+pas le bug dans la spec.
+
+> ⚠ `auth.setup.ts` ne retente que sur un **429** (rate-limit register), pas sur un 500 de rendu.
+> Un seul 500 transitoire tue donc tout le run. Follow-up ouvert (cf. `followups-lead.md`).
+
 ## Baseline au démarrage du sprint
 
 `49 passed / 0 failed / 38 s` — commit `8d97edd` (= `origin/dev`).
