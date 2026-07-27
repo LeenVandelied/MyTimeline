@@ -1070,7 +1070,7 @@ Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
 
 **Status :** Terminé — merge PR #324 dans `dev`
 
-## Sprint 47 — 2026-07-16 (PLANIFIÉ — cohésion 0.82, Couverture E2E frise (dette S44 + S41))
+## Sprint 47 — 2026-07-16 → 2026-07-27 (EN COURS — cohésion 0.82, Couverture E2E frise (dette S44 + S41))
 **Objectif :** Solder l'écart COVERAGE-E2E assumé au S44 (11 testids sans spec) et la dette E2E frise : drawer + /timeline (#314), accordéon collapse par produit (#304), vues mobiles (#205).
 **Milestone GitHub :** #47
 **Issues :** #314 (P2/S), #304 (P2/S), #205 (P2/S) — 6 points
@@ -1078,8 +1078,10 @@ Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
 **Migrations Flyway :** aucune
 **Dépend de :** **S46** (#315 fige l'aperçu que #314 asserte ; #309 câble la suppression mobile que #205 exerce)
 **Mini-plans :** `docs/memory/sprints/sprint-47/architect-plans.md`
-**⚠ Risque délai :** sprint 100% E2E, non lançable en local (stack down) — le job CI est le SEUL gate. Budgéter 2-3 itérations.
-**Status :** Planifié
+**⚠ Risque délai :** sprint 100% E2E. Le plan supposait « non lançable en local (stack down), CI = seul gate ». **Réévalué au démarrage (2026-07-27) : la boucle locale est récupérable** — Java 21 + Node OK, :8080 libre, Postgres natif sur :5432 (auth `trust`) avec la base `eventmanager`. Deux obstacles levés au démarrage : schéma local à V6 vs V15 du repo (Flyway rejoue V7→V15 au boot, base jugée jetable par le dev) et **:3000 squatté par le `next-server` d'un autre projet** (v16.2.11 ; MyTimeline est en Next 15) — avec `reuseExistingServer: true`, Playwright aurait lancé la suite contre la mauvaise app **sans rien signaler**. Contournement : port dédié + `PLAYWRIGHT_BASE_URL`.
+**Arbitrages démarrage (dev, 2026-07-27) :** #325 (vérif visuelle mini-frise) **détachée du milestone 47** — vérification navigateur, hors périmètre d'un sprint d'écriture de specs ; le sprint reste à 3 issues / 6 points.
+**⚠ Storybook :** `frontend/.storybook/main.ts` est configuré mais le repo contient **0 fichier `.stories.tsx`**. Le corps de #205 (« contrairement à d'autres composants ») est faux — sa story sera la **première** du projet, conventions à établir incluses.
+**Status :** En cours
 
 ## Sprint 48 — 2026-07-16 (PLANIFIÉ — cohésion 0.95, Landing page sur le DS)
 **Objectif :** Migrer la landing sur le Design System et décomposer le monolithe `HomePage.tsx` (274 l.) — token bordure AA (#293) puis décomposition en 7 sections (#56).
