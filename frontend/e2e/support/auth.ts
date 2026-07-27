@@ -37,13 +37,25 @@ export function uniqueIdentity(prefix = 'e2e'): E2eIdentity {
 }
 
 /**
- * Inscrit puis connecte un nouvel utilisateur, laissant `page` sur le dashboard
- * avec un cookie JWT valide. Retourne l'identité pour les assertions suivantes.
+ * Inscrit un utilisateur FRAIS et laisse `page` ANONYME sur /fr/login (register
+ * redirige vers login après succès, sans ouvrir de session).
+ *
+ * SEULE implémentation de l'interaction avec le formulaire d'inscription dans la
+ * suite E2E (revue S45). Elle existait auparavant en TROIS copies identiques
+ * (`registerAndLogin` ici, `registerFreshUser` dans `forgot-password.spec.ts` et
+ * dans `reset-password-failures.spec.ts`) : une dérive de `data-testid` du
+ * formulaire n'aurait été détectée que sur la copie touchée. Les specs ne peuvent
+ * pas s'importer entre elles (importer un `*.spec.ts` en enregistrerait les tests
+ * une seconde fois) — ce module, qui n'est PAS un fichier de spec, est le seul
+ * point de factorisation possible.
+ *
+ * ⚠ Ne fait AUCUN login : les parcours de reset de mot de passe testent
+ * précisément la (re)connexion, et un login superflu consommerait une tentative
+ * (rate-limit 5/min/IP, verrou #141).
  */
-export async function registerAndLogin(page: Page, prefix = 'e2e'): Promise<E2eIdentity> {
+export async function registerOnly(page: Page, prefix = 'e2e'): Promise<E2eIdentity> {
   const identity = uniqueIdentity(prefix)
 
-  // ---- Inscription -------------------------------------------------------
   await page.goto('/fr/register')
   await expect(page.getByTestId('register-form')).toBeVisible()
   await page.getByTestId('register-email').fill(identity.email)
@@ -55,6 +67,17 @@ export async function registerAndLogin(page: Page, prefix = 'e2e'): Promise<E2eI
 
   // Register OK -> redirection vers /fr/login (router.push après succès).
   await expect(page.getByTestId('login-form')).toBeVisible()
+
+  return identity
+}
+
+/**
+ * Inscrit puis connecte un nouvel utilisateur, laissant `page` sur le dashboard
+ * avec un cookie JWT valide. Retourne l'identité pour les assertions suivantes.
+ */
+export async function registerAndLogin(page: Page, prefix = 'e2e'): Promise<E2eIdentity> {
+  // ---- Inscription (implémentation unique, cf. `registerOnly`) ------------
+  const identity = await registerOnly(page, prefix)
 
   // ---- Connexion ---------------------------------------------------------
   await page.getByTestId('login-username').fill(identity.username)
@@ -114,10 +137,7 @@ export async function openSettingsChapter(
 
   await expect(page.getByTestId('settings-tablist')).toBeVisible()
   await page.getByTestId(`settings-tab-${chapter}`).click()
-  await expect(page.getByTestId(`settings-tab-${chapter}`)).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
+  await expect(page.getByTestId(`settings-tab-${chapter}`)).toHaveAttribute('aria-selected', 'true')
 }
 
 /**

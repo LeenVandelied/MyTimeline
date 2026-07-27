@@ -1,5 +1,7 @@
-import { test, expect, type Page } from '@playwright/test'
-import { uniqueIdentity, type E2eIdentity } from './support/auth'
+import { test, expect } from '@playwright/test'
+// `registerOnly` : implémentation UNIQUE du formulaire d'inscription (revue S45).
+// Le helper local `registerFreshUser` en était une copie mot pour mot.
+import { registerOnly } from './support/auth'
 import { waitForResetToken } from './support/reset-token'
 
 /**
@@ -34,31 +36,11 @@ import { waitForResetToken } from './support/reset-token'
 /** Nouveau mot de passe distinct de l'initial (createResetPasswordFormSchema : ≥6 + MAJ + chiffre). */
 const NEW_PASSWORD = 'E2eReset456'
 
-/**
- * Inscrit un utilisateur frais puis revient sur /fr/login (register redirige vers
- * login après succès). Laisse `page` ANONYME (pas de login) : le parcours de reset
- * teste précisément la (re)connexion. Retourne l'identité pour les étapes suivantes.
- */
-async function registerFreshUser(page: Page): Promise<E2eIdentity> {
-  const identity = uniqueIdentity('e2ereset')
-
-  await page.goto('/fr/register')
-  await expect(page.getByTestId('register-form')).toBeVisible()
-  await page.getByTestId('register-email').fill(identity.email)
-  await page.getByTestId('register-name').fill(identity.name)
-  await page.getByTestId('register-username').fill(identity.username)
-  await page.getByTestId('register-password').fill(identity.password)
-  await page.getByTestId('register-confirm-password').fill(identity.password)
-  await page.getByTestId('register-submit').click()
-
-  // Register OK → redirection vers /fr/login (router.push après succès).
-  await expect(page.getByTestId('login-form')).toBeVisible()
-  return identity
-}
-
 test.describe('Mot de passe oublié : forgot → lien tokenisé → reset → login', () => {
   test('parcours complet full-stack', async ({ page }) => {
-    const identity = await registerFreshUser(page)
+    // `registerOnly` laisse `page` ANONYME sur /fr/login (pas de login) : ce
+    // parcours teste précisément la (re)connexion après reset.
+    const identity = await registerOnly(page, 'e2ereset')
 
     // ---- 1. DEMANDE DE RÉINITIALISATION -----------------------------------
     await page.goto('/fr/forgot-password')

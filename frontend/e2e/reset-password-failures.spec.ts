@@ -1,5 +1,9 @@
 import { test, expect, type Page } from '@playwright/test'
-import { uniqueIdentity, type E2eIdentity } from './support/auth'
+// `registerOnly` : implémentation UNIQUE du formulaire d'inscription (revue S45).
+// Le helper local dupliquait mot pour mot celui de `support/auth.ts` -> une dérive
+// de `data-testid` serait passée inaperçue. `support/auth.ts` n'étant pas un fichier
+// de spec, l'importer n'enregistre aucun test en double.
+import { registerOnly } from './support/auth'
 import { waitForResetToken } from './support/reset-token'
 
 /**
@@ -63,31 +67,6 @@ const NEW_PASSWORD = 'E2eReset789'
  * été accepté, la connexion avec `NEW_PASSWORD` échouerait).
  */
 const REPLAY_PASSWORD = 'E2eReplay321'
-
-/**
- * Inscrit un utilisateur frais et laisse `page` ANONYME sur /fr/login (register
- * redirige vers login après succès, sans connecter).
- *
- * Helper LOCAL volontairement : `support/auth.ts#registerAndLogin` enchaîne un
- * login (session ouverte + tentative supplémentaire consommée), et le helper
- * équivalent de `forgot-password.spec.ts` n'est pas importable — importer un
- * fichier `*.spec.ts` en enregistrerait les tests une seconde fois.
- */
-async function registerFreshUser(page: Page, prefix: string): Promise<E2eIdentity> {
-  const identity = uniqueIdentity(prefix)
-
-  await page.goto('/fr/register')
-  await expect(page.getByTestId('register-form')).toBeVisible()
-  await page.getByTestId('register-email').fill(identity.email)
-  await page.getByTestId('register-name').fill(identity.name)
-  await page.getByTestId('register-username').fill(identity.username)
-  await page.getByTestId('register-password').fill(identity.password)
-  await page.getByTestId('register-confirm-password').fill(identity.password)
-  await page.getByTestId('register-submit').click()
-
-  await expect(page.getByTestId('login-form')).toBeVisible()
-  return identity
-}
 
 /**
  * Demande la réinitialisation depuis l'UI puis retourne le token capté par le canal
@@ -156,7 +135,7 @@ async function submitLogin(page: Page, username: string, password: string): Prom
 test.describe("Réinitialisation de mot de passe : cas d'échec", () => {
   test("l'ancien mot de passe est rejeté après un reset réussi", async ({ page }) => {
     // Compte DÉDIÉ à ce cas (aucun partage avec le test de rejeu -> pas de lockout croisé).
-    const identity = await registerFreshUser(page, 'e2eold')
+    const identity = await registerOnly(page, 'e2eold')
 
     const token = await requestResetToken(page, identity.email)
 
@@ -178,7 +157,7 @@ test.describe("Réinitialisation de mot de passe : cas d'échec", () => {
   test('un token de reset déjà consommé est rejeté au rejeu', async ({ page }) => {
     // Compte DÉDIÉ (cf. ci-dessus) : ce test consomme 2 tentatives sur SON token,
     // soit 2/5 du throttle par token (#141) — jamais mutualisé avec l'autre test.
-    const identity = await registerFreshUser(page, 'e2erpl')
+    const identity = await registerOnly(page, 'e2erpl')
 
     const token = await requestResetToken(page, identity.email)
 
