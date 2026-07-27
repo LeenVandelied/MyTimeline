@@ -1081,8 +1081,39 @@ Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
 **⚠ Risque délai :** sprint 100% E2E. Le plan supposait « non lançable en local (stack down), CI = seul gate ». **Réévalué au démarrage (2026-07-27) : la boucle locale est récupérable** — Java 21 + Node OK, :8080 libre, Postgres natif sur :5432 (auth `trust`) avec la base `eventmanager`. Deux obstacles levés au démarrage : schéma local à V6 vs V15 du repo (Flyway rejoue V7→V15 au boot, base jugée jetable par le dev) et **:3000 squatté par le `next-server` d'un autre projet** (v16.2.11 ; MyTimeline est en Next 15) — avec `reuseExistingServer: true`, Playwright aurait lancé la suite contre la mauvaise app **sans rien signaler**. Contournement : port dédié + `PLAYWRIGHT_BASE_URL`.
 **Arbitrages démarrage (dev, 2026-07-27) :** #325 (vérif visuelle mini-frise) **détachée du milestone 47** — vérification navigateur, hors périmètre d'un sprint d'écriture de specs ; le sprint reste à 3 issues / 6 points.
 **Storybook :** `frontend/.storybook/main.ts` est configuré et le repo contient **23 stories**, dont **6 dans `frontend/src/components/timeline/`** (`Cursor`, `DateStamp`, `EventBar`, `EventPill`, `Lane`, `Ruler`) + 17 dans `components/ui/`. Le corps de #205 (« contrairement à d'autres composants ») est donc **exact** : la convention existe, #205 s'y aligne, il n'y a rien à établir.
-**⚠ Erreur de lead corrigée en cours de vague 1 :** j'avais d'abord annoncé « 0 story dans le repo » et briefé #205 en conséquence (« tu établis la convention »). Le `find` avait tourné depuis `frontend/`, donc cherché `frontend/frontend/src` → 0 résultat. Même piège de répertoire courant que pour `.storybook`. Correction poussée à l'agent en cours d'exécution. **Leçon : ancrer tout `find`/`ls` de vérification sur un chemin absolu, le cwd du shell persiste entre les appels.**
-**Status :** En cours
+**⚠ Erreur de lead corrigée en cours de vague 1 :** j'avais d'abord annoncé « 0 story dans le repo » et briefé #205 en conséquence (« tu établis la convention »). Le `find` avait tourné depuis `frontend/`, donc cherché `frontend/frontend/src` → 0 résultat. Même piège de répertoire courant que pour `.storybook`. Correction poussée à l'agent en cours d'exécution ; il avait de lui-même déjà lu `EventBar`/`EventPill` et suivi la convention existante. **Leçon : ancrer tout `find`/`ls` de vérification sur un chemin absolu, le cwd du shell persiste entre les appels.**
+
+**Issues livrées (3) :** #314, #304, #205
+**Vagues exécutées :** V1 = #314 ∥ #205 (parallèles, fichiers disjoints) | V2 = #304 (étend `timeline.spec.ts` créé par #314)
+> Ordre resserré vs le plan (qui séquençait #314 → #304 en V1 et isolait #205 en V2) : #205 est disjoint de #314, donc parallélisable. Contrainte « UNE seule passe E2E timeline » respectée — #304 étend le fichier de #314 au lieu d'ouvrir une seconde spec.
+
+**Commits (12) :** `7a206d7` (#314) · `41b8b15`+`0885ddd`+`de17841` (#205) · `caa100f` (#304) · `3756504` (corrections review) · 6 de documentation d'orchestration
+**PR :** #327 → `dev`
+**Aucun composant applicatif modifié** — sprint 100 % couverture, vérifié sur le diff par la review.
+
+**Tests :** E2E **68/68** (baseline avant-sprint **49** → +19) · Backend **433/433** (inchangé) · Frontend unit **599/599** · `npm run build` OK (52 routes) · Storybook **78 stories montent** (montage runtime vérifié, pas seulement le build)
+**Audit tests :** `docs/memory/audits/sprint-47-test-coverage.md`
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 2 MINEUR — tous traités avant PR (`3756504`). Le MAJEUR était une attente à l'horloge murale (`waitForTimeout(800)` sur le seuil de long-press) : corrigé via `page.clock`, **validé par contrôle négatif** (`fastForward(300)` → rouge, donc l'horloge pilote bien le seuil). Le `.nth(1)` sur les options Radix a été **conservé sur preuve** que `value` n'est pas exposé au DOM (déstructuré hors des props dans la source Radix).
+
+**Couverture vérifiée par le lead** (grep sur `frontend/e2e/`, pas reprise des déclarations d'agents) : #314 **11/11** → l'écart « MAJEUR assumé » de la PR #313 (S44) est soldé · #304 `aria-expanded` sur l'**attribut** + pastilles + indépendance · #205 23 testids mobiles.
+
+**⚠ Écart résiduel assumé :** le sprint solde ses trois écarts, **il ne rend pas la frise couverte** — 18 testids frise restent sans spec (liste nominative §4 de l'audit). Tous préexistants au sprint, aucune régression introduite.
+
+**Le gain méthodologique du sprint : la boucle E2E locale a été récupérée.** Le plan la déclarait morte (« stack down, CI = seul gate, budgéter 2-3 itérations à l'aveugle ») ; elle a été remontée en ~40 min et les 3 issues ont été écrites ET vérifiées en local, zéro push à l'aveugle. Recette : `docs/memory/sprints/sprint-47/e2e-local-runbook.md`. Quatre pièges levés, dont **deux qui accusent la mauvaise cause** : le 403 CORS que `auth.setup.ts` maquille en « rate-limit 5/min/IP », et `workers>1` qui rougit 4 specs `settings-*` pour une divergence d'identité inter-process. Plus deux instabilités du serveur de dev découvertes en cours de route (`npm run build` tue le `next dev` ; 500 transitoire Next 15.5.22 après recompilation à chaud, non retenté par `auth.setup.ts`).
+
+**Nouveaux pitfalls / patterns :** accordéon E2E → asserter `aria-expanded` + `toHaveCount(0)`, jamais `not.toBeVisible()` (vert aussi hors-écran/animation) · état `loading` E2E → route suspendue libérée par le test, jamais `setTimeout` dans le handler · glob Playwright franchit les `/` → RegExp explicite · compte E2E jamais vierge → seeder avec noms `unique()` et scoper les locators plutôt que stubber · story sur composant `useTranslations` → vrai `NextIntlClientProvider` alimenté par les fichiers de locale réels, jamais un stub · « la story build » ≠ « la story monte » → servir `storybook-static` + `iframe.html?id=` et asserter.
+
+**Écarts de process constatés :**
+- `.claude/hooks/check-sprint-completeness.sh` réputé « absent » depuis le S45 : **le script existe**, dans le plugin (`~/.claude/plugins/cache/edel-projects/ai-env/<ver>/hooks/scripts/`). C'est le chemin d'appel du skill qui est faux. Troisième sprint consécutif de check manuel, pour rien.
+- `pre-spawn-fullstack.sh` **ne s'exécute jamais** ici : il filtre `subagent_type == "fullstack-dev"` exact, or les agents sont namespacés `ai-env:fullstack-dev`. Son garde-fou anti-régression « pack inline » est inactif.
+- L'heuristique COVERAGE-E2E du skill, déjà signalée cassée au S46, l'est toujours — contournée par `docs/memory/sprints/sprint-47/coverage-e2e-check.sh`.
+- `pr-sprint.md` est **tracké** et contenait encore le corps de la PR du S45 (non mis à jour au S46). Non écrasé ; le corps du S47 est passé en `--body-file` depuis le scratchpad.
+- `frontend/.eslintcache` est **tracké alors qu'il est gitignoré** : supprimé deux fois par les runs ESLint des agents, restauré à la main.
+- Le `DROP SCHEMA` envisagé pour réparer la base `eventmanager` a été **bloqué par `block-destructive.sh`** — non contourné, bascule sur la base dédiée `eventmanager_e2e`. La base de dev est intacte.
+
+**Follow-ups détectés (à arbitrer en Phase 4 de `/sprint end`) :** `docs/memory/sprints/sprint-47/followups-lead.md` — 7 entrées (retry `auth.setup.ts`, scroll perdu à la rotation, pinch-zoom non couvert, 18 testids résiduels, `.eslintcache`, chemin `check-sprint-completeness.sh`, hook `pre-spawn-fullstack.sh`).
+
+**Status :** PR #327 ouverte — en attente CI, puis `/sprint end 47`
 
 ## Sprint 48 — 2026-07-16 (PLANIFIÉ — cohésion 0.95, Landing page sur le DS)
 **Objectif :** Migrer la landing sur le Design System et décomposer le monolithe `HomePage.tsx` (274 l.) — token bordure AA (#293) puis décomposition en 7 sections (#56).
