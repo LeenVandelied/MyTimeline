@@ -125,6 +125,42 @@ describe('isProtectedPathname', () => {
     expect(isProtectedPathname('/fr/dashboards')).toBe(false)
     expect(isProtectedPathname('/fr/timeline-public')).toBe(false)
   })
+
+  // --- Contournement par percent-encoding (audit sécurité S45) ---
+  // `nextUrl.pathname` n'est pas décodé : sans décodage par segment, `%64ashboard`
+  // ne matchait aucun segment protégé et la garde sautait.
+
+  it('résiste à un contournement par percent-encoding du segment', () => {
+    expect(isProtectedPathname('/fr/%64ashboard')).toBe(true) // %64 = 'd'
+    expect(isProtectedPathname('/fr/%53ettings')).toBe(true) // %53 = 'S' (+ insensible casse)
+    expect(isProtectedPathname('/fr/%70roducts/9f4c1e2a')).toBe(true) // %70 = 'p'
+  })
+
+  it('résiste à un contournement par percent-encoding de la LOCALE', () => {
+    expect(isProtectedPathname('/%66r/dashboard')).toBe(true) // %66 = 'f'
+    expect(splitLocalizedPathname('/%66r/dashboard')).toEqual({
+      locale: 'fr',
+      segment: 'dashboard',
+    })
+  })
+
+  it('ne décode QU’UN niveau (aligné sur le routeur Next)', () => {
+    // `/fr/%2564ashboard` → segment réel `%64ashboard` : aucune route ne
+    // correspond. Le décoder deux fois divergerait du routage réel.
+    expect(isProtectedPathname('/fr/%2564ashboard')).toBe(false)
+  })
+
+  it('traite un segment au percent-encoding MALFORMÉ comme protégé (fail-closed)', () => {
+    expect(isProtectedPathname('/fr/%zz')).toBe(true)
+    expect(isProtectedPathname('/fr/%')).toBe(true)
+    expect(isProtectedPathname('/fr/dash%E0%A4board')).toBe(true)
+  })
+
+  it('ne fait pas dérailler les cas nominaux publics après décodage', () => {
+    expect(isProtectedPathname('/fr/login')).toBe(false)
+    expect(isProtectedPathname('/fr/forgot-password')).toBe(false)
+    expect(isProtectedPathname('/fr/reset-password')).toBe(false)
+  })
 })
 
 describe('buildLoginPathname', () => {

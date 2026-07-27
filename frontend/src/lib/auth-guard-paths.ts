@@ -69,11 +69,38 @@ export const LOGIN_SEGMENT = 'login'
 export function splitLocalizedPathname(
   pathname: string,
 ): { locale: Locale; segment: string | null } | null {
-  const [maybeLocale, ...rest] = pathname.split('/').filter(Boolean)
+  const [rawLocale, ...rest] = pathname.split('/').filter(Boolean)
 
-  if (maybeLocale === undefined || !isSupportedLocale(maybeLocale)) return null
+  if (rawLocale === undefined) return null
 
-  return { locale: maybeLocale, segment: rest[0] ?? null }
+  // `nextUrl.pathname` n'est PAS décodé : `/fr/%64ashboard` arrive tel quel.
+  // On décode SEGMENT PAR SEGMENT (jamais le pathname entier — un `%2F` décodé
+  // en `/` créerait un segment fantôme après coup).
+  const locale = decodeSegment(rawLocale)
+  if (locale === null || !isSupportedLocale(locale)) return null
+
+  const rawSegment = rest[0] ?? null
+  if (rawSegment === null) return { locale, segment: null }
+
+  // Segment malformé (`%zz`) : on conserve le BRUT. `isProtectedPathname` le
+  // reconnaît alors comme malformé et bascule fail-closed (= protégé).
+  return { locale, segment: decodeSegment(rawSegment) ?? rawSegment }
+}
+
+/**
+ * Décode UN segment de chemin — `null` si le percent-encoding est malformé
+ * (`decodeURIComponent` lève `URIError` sur `%zz`).
+ *
+ * ⚠ **Un seul niveau** de décodage, délibérément : c'est ce que fait le routeur
+ * Next. `/fr/%2564ashboard` se décode en `%64ashboard`, qui ne correspond à
+ * aucune route — le traiter comme `dashboard` divergerait du routage réel.
+ */
+function decodeSegment(segment: string): string | null {
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -82,10 +109,17 @@ export function splitLocalizedPathname(
  * Comparaison insensible à la casse : le routage App Router est sensible à la
  * casse (`/fr/Dashboard` → 404), mais on ne veut pas qu'une future normalisation
  * d'URL transforme la casse en contournement de garde.
+ *
+ * Le segment comparé est DÉCODÉ (`splitLocalizedPathname`) : `/fr/%64ashboard`
+ * est protégé au même titre que `/fr/dashboard`. Un segment au percent-encoding
+ * **malformé** est traité comme protégé (fail-closed) : on ignore ce que le
+ * routeur en fera, donc on refuse plutôt que de servir.
  */
 export function isProtectedPathname(pathname: string): boolean {
   const parsed = splitLocalizedPathname(pathname)
   if (parsed === null || parsed.segment === null) return false
+
+  if (decodeSegment(parsed.segment) === null) return true // fail-closed
 
   return PROTECTED_SEGMENTS.includes(parsed.segment.toLowerCase())
 }
