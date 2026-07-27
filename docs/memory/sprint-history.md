@@ -990,16 +990,40 @@
 **Non retenu délibérément (piège documenté, PAS une issue) :** le « 400 probable sur la création couplée produit » signalé par un subagent est un **faux positif vérifié** — `ProductCreationRequest.events` n'a pas de `@Valid`, donc pas de cascade. Ajouter ce `@Valid` **casserait** le parcours (`productId` `@NotNull` insatisfiable sur un event imbriqué). Créer une issue aurait envoyé le prochain dev dans le mur → consigné en PIT-S44-002 + dans le pack.
 **Status :** Terminé.
 
-## Sprint 45 — 2026-07-16 → 2026-07-27 (EN COURS — cohésion 0.57, Garde serveur auth + fiabilisation E2E auth)
+## Sprint 45 — 2026-07-16 → 2026-07-27 (Terminé — merge PR #317 dans dev)
 **Objectif :** Fermer le lot auth nommé par le plan S44 : garde serveur des routes connectées (#302) + découpler le canal de capture du token de reset en E2E (#283) et couvrir ses cas d'échec (#284).
-**Milestone GitHub :** #45
-**Issues :** #302 (P1/M), #283 (P1/M), #284 (P2/S) — 10 points
-**Vagues :** V1 = #302 ∥ #283 (fichiers disjoints) | V2 = #284 (consomme le canal livré par #283)
-**Migrations Flyway :** aucune (V16 non consommée)
-**Dépend de :** aucune
+**Milestone GitHub :** #45 (fermé après merge)
+**Issues livrées (3) :** #302 (P1/M), #283 (P1/M), #284 (P2/S) — 10 points
+**Vagues exécutées :** V1 = #302 ∥ #283 (fichiers disjoints) | V2 = #284 (consomme le canal livré par #283)
+**Cohésion score :** 0.57
+**Commits :** 22 (3 issues + 9 correctifs sécurité/review + 1 correctif régression CI + 1 correctif deps + artefacts)
+**Migrations Flyway :** aucune
+**BR impactées :** BR-AUT-005, BR-AUT-007, BR-AUT-011, BR-AUT-012
+**ADR produits :** `ADR-004-garde-serveur-middleware` (#302), `ADR-005-canal-token-reset-e2e` (#283)
 **Mini-plans :** `docs/memory/sprints/sprint-45/architect-plans.md`
-**ADR bloquant :** `ADR-XXX-canal-token-reset-e2e` — le job CI e2e tourne `SPRING_PROFILES_ACTIVE=dev` (`ci.yml:156`), donc un endpoint `@Profile("e2e")` ne s'activerait JAMAIS en CI. À trancher avant de coder.
-**Status :** En cours (branche `sprint/45` créée depuis `origin/dev` le 2026-07-27, plan S45-S49 cherry-pické depuis `claude/sprint-plan-5-203bbc`)
+**Audit tests :** `docs/memory/audits/sprint-45-test-coverage.md`
+
+**Reviews :** security-expert — 3 MAJEUR / 3 MINEUR (tous RÉSOLU) · reviewer batch — 2 MAJEUR / 6 MINEUR (tous RÉSOLU) · `/review-pr 317` — 1 CRITIQUE / 1 MAJEUR (tous RÉSOLU)
+**Tests :** Backend 433/433 · Frontend 564/564 · E2E CI 49 passed / 1 skipped · CI 4/4 verte
+
+**L'ADR bloquant du plan a été tranché** : le job CI e2e tournait bien en `SPRING_PROFILES_ACTIVE=dev` (vérifié) → profils **additifs** `dev,e2e` (cf. [[DEC-S45-002]]).
+
+**⚠ Fait marquant — la vérification locale a menti deux fois :**
+1. **Trou du matcher** (#302) : 4 passes nécessaires. Les 3 premières raisonnaient SUR la regex ; la 4e l'a **compilée avec le `path-to-regexp` de Next** et a révélé 2 familles de contournement encore ouvertes. Cf. [[PIT-S45-002]].
+2. **Régression 500** (#302) : la garde renvoyait 500 sur **100 % des routes protégées** avec `next build`, `tsc`, eslint et 33 tests unitaires VERTS. Trouvée uniquement par le **premier run CI e2e**. Cf. [[BUG-S45-001]], [[PIT-S45-001]].
+→ Leçon consolidée en [[PAT-S45-003]] : tester contre le module RÉEL du framework, et prouver un test anti-régression par revert.
+
+**Sécurité dépendances (hors périmètre initial, absorbé pour débloquer le merge) :** 19 HIGH → 0 en production (postcss 8.5.23, sharp 0.35.3 via override npm, next 15.5.22). 9 HIGH dev-only restantes, incorrigibles en aval (chaîne eslint → `brace-expansion`) → gate CI scindé (cf. [[DEC-S45-004]]).
+
+**Nouveaux pitfalls :** PIT-S45-001..009 · **patterns :** PAT-S45-001..004 · **décisions :** DEC-S45-001..004 · **bugs :** BUG-S45-001
+
+**Écarts de process constatés (à corriger au prochain sprint) :**
+- Collision de numérotation ADR entre les 2 agents de la vague 1 ([[PIT-S45-005]]) — le lead doit allouer les identifiants séquentiels AVANT le spawn.
+- `.claude/hooks/check-sprint-completeness.sh` **absent de ce repo** : le check de complétude Phase 1 a été fait manuellement.
+- Un commit de documentation poussé pendant l'attente CI a relancé un cycle complet (dont e2e 3 min) et brouillé le SHA suivi.
+- Le diff de la PR #317 dépasse le périmètre des 3 issues (correctif deps + politique CI).
+
+**Status :** Terminé
 
 ## Sprint 46 — 2026-07-16 (PLANIFIÉ — cohésion 0.50, Aperçu live drawer + dette focus S44)
 **Objectif :** Solder la dette S44 sur le drawer de création : aperçu live conforme au handoff §6 (#315), focus-trap dédupliqué (#316), suppression d'event câblée sur la frise mobile (#309).
