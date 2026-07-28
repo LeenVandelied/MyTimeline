@@ -21,8 +21,8 @@ import java.util.List;
  * résolue lisible dans les logs de boot, sans accès au code source.
  *
  * <p>ANTI-FUITE (#160) : SEULES ces valeurs de configuration NON sensibles sont journalisées.
- * Aucun secret ({@code JWT_SECRET}, {@code DB_PASSWORD}, {@code BREVO_API_KEY}...) n'est
- * lu ni loggé ici.
+ * Aucun secret ({@code JWT_PRIVATE_KEY}, {@code EXPORT_TOKEN_SECRET}, {@code DB_PASSWORD},
+ * {@code BREVO_API_KEY}...) n'est lu ni loggé ici.
  *
  * <p>Écoute {@link ApplicationReadyEvent} : s'exécute après la création du contexte, donc
  * après les garde-fous d'environnement fail-fast ({@link ProfileSafetyGuard}, #111). Bean

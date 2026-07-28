@@ -19,6 +19,7 @@ Bucket4j `.withCustomTimePrecision(TimeMeter)` + bean `TimeMeter` overridable en
 
 ## PAT-S3-001 — Secrets : profil prod fail-fast (aucun default), profil dev avec default jetable
 `application.properties` commun lit `${JWT_SECRET}` / `${DB_PASSWORD}` sans default ; `application-prod.properties` n'ajoute AUCUN default → le boot prod échoue (`Could not resolve placeholder`) si la variable manque. `application-dev.properties` fournit un default local non-secret explicitement marqué dev-only. Le fichier reste tracké mais secret-free. Anti-pattern : default secret partagé tous profils. (Sprint 3 #34)
+> ⚠️ **MIS À JOUR Sprint 50 (#323/#249).** `JWT_SECRET` n'existe plus — remplacé par `JWT_PRIVATE_KEY` (RSA PKCS#8) et `EXPORT_TOKEN_SECRET`, plus `AUTH_JWT_PUBLIC_KEY` (**non secrète**) côté frontend. La convention #34 « aucun default en prod » avait été **enfreinte** par `application-prod.properties` (`${JWT_PRIVATE_KEY:}`), ce qui ramenait le chemin profil-`prod` de 2 barrières à 1 ; rétablie au 2ᵉ cycle de review, cf. [[DEC-S50-005]] et [[PIT-S50-008]].
 
 ## PAT-S3-002 — equals/hashCode d'entité JPA à PK `@GeneratedValue` (id transient avant flush)
 Id assigné au flush → un equals/hashCode sur id direct casse en collection avant persist. Pattern Vlad Mihalcea : `hashCode()` = constante (`getClass().hashCode()`, stable avant/après persist) ; `equals()` = même `getClass()` + `id != null && Objects.equals(id, that.id)`. Deux entités neuves ne sont jamais égales par accident. Anti-pattern : `Objects.hash(id)` ou equals sur id nu. (Sprint 3 #43)
@@ -345,3 +346,40 @@ En S46 (correctif de revue), `runDelete(id)` est devenu le point d'appel **uniqu
 **Problème** : une migration de token (`rule-strong` → `rule-emphasis`) est réversible par inadvertance, et rien dans les tests unitaires ne distingue une bordure **fonctionnelle** d'une bordure **décorative**.
 **Solution** (S49 #336, réemploi de `PAT-S48-001` sur un autre axe) : liste blanche de sélecteurs de contrôle + parcours AST du CSS compilé + **témoin négatif** + **test de mutation**. Le test rougit si un contrôle retombe sur le tier décoratif **ou** si le pont `--color-input` change de tier.
 **Généralisation** (correctifs de review S49) : l'invariant le plus robuste n'est pas une interdiction absolue mais une **paire sanctionnée** — `landing.hover-pairing.test.ts` n'interdit pas tout `hover:text-*`, il exige que *si* surface et encre changent ensemble, ce soit la paire validée. Deux occurrences légitimes sont ainsi conservées au lieu d'être faussement signalées. **Le détecteur lui-même doit être testé** (3 tests). (Sprint 49 #336 + review)
+
+## PAT-S50-001 — Vérifier un JWT RS256 dans le runtime Edge sans ajouter de dépendance
+`crypto.subtle.importKey('spki', …)` + `crypto.subtle.verify('RSASSA-PKCS1-v1_5', …)` suffisent : ~60 lignes,
+disponibles nativement dans le runtime Edge, **zéro dépendance de production ajoutée**.
+**Anti-pattern : ajouter `jose`** — c'est une dépendance de PROD dans un runtime frontend partagé, qui se
+séquence et ne s'improvise pas au milieu d'un sprint. La lecture de la clé se fait en accès **littéral**
+(`process.env.AUTH_JWT_PUBLIC_KEY`, forme reconnue par l'analyse statique de Next) et **non** `NEXT_PUBLIC_*`,
+donc au runtime et non inlinée au build. (Sprint 50, #323)
+
+## PAT-S50-002 — Dégradé volontaire vs panne de configuration : deux cas, deux traitements
+Sur une variable d'environnement qui active une protection, distinguer :
+- **absente** → dégradé assumé, mais `console.warn` **one-shot** si `NODE_ENV === 'production'` ;
+- **présente mais inexploitable** → anomalie de configuration, `console.warn` one-shot toujours ;
+- jamais de `throw` — dans un middleware Next, une exception = 500 sur toutes les routes protégées (BUG-S45-001).
+**Anti-pattern : ne signaler que le cas rare.** Signaler uniquement « présente mais invalide » laisse l'oubli
+pur — de loin le plus probable en production — totalement invisible, et le test E2E qui *documente* le dégradé
+reste vert pendant que la protection est morte. Piège de comptage rencontré à l'implémentation : une condition
+`rawValue.trim() !== ''` crie sur `',,,'` (non vide, zéro entrée réelle) — compter les entrées **tentées**.
+(Sprint 50, #322/#323 + review)
+
+## PAT-S50-003 — Prouver qu'un test E2E de garde prouve réellement quelque chose
+Un E2E de garde d'authentification peut être **vert en mode dégradé** et ne rien démontrer. Trois preuves
+exigées avant d'accepter la couverture :
+1. la clé publique journalisée au boot du backend est **octet à octet** celle injectée au frontend, et le log
+   « paire éphémère » est absent ;
+2. une sonde `curl` avec un cookie bidon sur une route protégée renvoie **307** (un 200 signerait le dégradé) ;
+3. **fail-closed exécuté** : la même spec relancée contre une instance sans clé publique doit **rougir**
+   (mesuré : 5 échecs sur 7).
+Placer la garde anti-dégradé en **premier cas** du fichier. **Anti-pattern : une sonde qui auto-skippe** —
+elle skippe précisément dans le mode de panne qu'on veut détecter. (Sprint 50, #323)
+
+## PAT-S50-004 — Dériver la clé publique de la privée plutôt que de configurer les deux
+Une paire configurée en **deux** variables serveur est indétectablement dépareillable ; en dériver une supprime
+la moitié du mode de panne. Une seule variable serveur (`JWT_PRIVATE_KEY`), la publique est calculée au boot
+et **journalisée** (ce n'est pas un secret) pour être copiée vers le frontend sans re-dérivation manuelle.
+Reste ouvert : une clé publique **bien formée mais dépareillée** côté frontend fait boucler 100 % des sessions
+vers `/login` sans aucun signal — consigné en ADR-004 et au runbook, non détecté automatiquement. (Sprint 50, #323)

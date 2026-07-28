@@ -7,11 +7,12 @@ import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -22,11 +23,19 @@ import io.jsonwebtoken.security.Keys;
  * {@code /api/export/download/{jobId}?token=…} dont ce token porte la capacité bornée dans
  * le temps.
  *
- * <p>Réutilise le MÉCANISME de signature existant (jjwt HS256, même {@code jwt.secret} que
- * l'auth). Claims : {@code sub = jobId}, {@code uid = ownerId}, {@code typ = "export-download"}
+ * <p>Signature HMAC (jjwt HS256) sur un secret <strong>DÉDIÉ</strong>
+ * {@code app.export.token-secret} ({@code EXPORT_TOKEN_SECRET}). Jusqu'à #323 ce service
+ * partageait {@code jwt.secret} avec l'authentification ; la migration de l'auth vers RS256
+ * (#323) a séparé les deux usages. L'asymétrique n'apporterait RIEN ici : ces tokens ne sont
+ * vérifiés que par le backend lui-même (endpoint interne {@code /api/export/download/…}),
+ * jamais par un runtime tiers — aucune clé de vérification n'a à être distribuée.
+ *
+ * <p>Claims : {@code sub = jobId}, {@code uid = ownerId}, {@code typ = "export-download"}
  * (isole ces tokens des tokens d'authentification — un token d'auth ne peut pas servir de
- * token de download, et inversement). L'expiration ({@code exp}) est portée par le token ET
- * revérifiée contre le {@link Clock} injecté (déterminisme des tests d'expiration).
+ * token de download, et inversement ; depuis #323 les deux familles ne partagent même plus
+ * de matériel de signature, l'isolation ne repose donc plus sur le seul claim {@code typ}).
+ * L'expiration ({@code exp}) est portée par le token ET revérifiée contre le {@link Clock}
+ * injecté (déterminisme des tests d'expiration).
  *
  * <p>{@link #verify(String)} ne lève JAMAIS : un token invalide/expiré/altéré →
  * {@link Optional#empty()} (le contrôleur renvoie 404). Aucun détail d'erreur n'est exposé.
@@ -38,13 +47,39 @@ public class ExportTokenService {
     private static final String CLAIM_TYPE = "typ";
     private static final String CLAIM_UID = "uid";
 
-    @Value("${jwt.secret}")
+    @Value("${app.export.token-secret}")
     private String secretKey;
 
     private final Clock clock;
 
     public ExportTokenService(Clock clock) {
         this.clock = clock;
+    }
+
+    /**
+     * Garde-fou de boot (fail-fast), calqué sur {@link JwtService} : un secret non Base64 ou
+     * trop court échouerait sinon à chaque signature d'export. Le message n'expose JAMAIS la
+     * valeur. Ce garde-fou devient indispensable depuis #323 : le secret d'export n'est plus
+     * couvert par la validation de {@code jwt.secret}, qui n'existe plus.
+     */
+    @PostConstruct
+    void validateSecret() {
+        try {
+            getSigningKey();
+        } catch (RuntimeException e) {
+            throw new IllegalStateException(
+                    "app.export.token-secret (EXPORT_TOKEN_SECRET) invalide : attendu du Base64 "
+                    + "STANDARD décodant à >= 32 octets (HS256). Générer : openssl rand -base64 48. "
+                    // ⚠ `e.getMessage()` VOLONTAIREMENT EXCLU (revue S50), comme dans
+                    // JwtService.configuredKeyPair() : un décodeur Base64 bavard peut recracher
+                    // le fragment fautif — donc du matériel de secret HMAC — dans les logs de
+                    // boot. Le type d'exception suffit à diagnostiquer (DecodingException =
+                    // alphabet invalide, WeakKeyException = trop court). La cause complète
+                    // reste attachée en `cause` pour un debug local sous debugger.
+                    + "Cause : " + e.getClass().getSimpleName()
+                    + " (valeur et détail volontairement non journalisés).",
+                    e);
+        }
     }
 
     private SecretKey getSigningKey() {
@@ -88,8 +123,14 @@ public class ExportTokenService {
             UUID jobId = UUID.fromString(claims.getSubject());
             UUID ownerId = UUID.fromString(claims.get(CLAIM_UID, String.class));
             return Optional.of(new ExportDownloadToken(jobId, ownerId));
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             // Signature invalide, token expiré, format/claims corrompus -> capacité refusée.
+            // ⚠ `RuntimeException` et non `JwtException | IllegalArgumentException` (revue S50) :
+            // un token AUTHENTIQUEMENT signé, de `typ` correct mais SANS claim `sub`/`uid` fait
+            // lever une NullPointerException à `UUID.fromString(null)` — hors des deux types
+            // catchés, donc 500 au lieu du 404 contractuel (« verify() ne lève JAMAIS », cf.
+            // javadoc de classe), et oracle par différence d'erreur. Ancré par
+            // ExportTokenServiceTest#verify_missingSubjectOrUidClaim_returnsEmpty.
             return Optional.empty();
         }
     }

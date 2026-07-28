@@ -1365,3 +1365,139 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 > **Pas de branche `sprint/45` créée** (étape 4 du skill volontairement sautée) : leçon S43/S44 — `sprint/43` existe mais n'a jamais servi, S44 a tourné sur un worktree `claude/sprint-44-start-*`. `/sprint start` crée son worktree lui-même.
 >
 > **Outillage :** `check-prereq.sh` du plugin ai-env est **cassé** (`DISABLED[@]: unbound variable` L61 — bash 3.2 macOS refuse d'étendre un tableau vide sous `set -u`). Contourné manuellement ; `gh` authentifié OK. Correctif à porter en amont du plugin.
+
+---
+
+# Plan S50–S54 — généré le 2026-07-28 (`/ai-env:sprint plan 5`, cohésion moyenne 0.47, validé par le dev)
+
+> Fil directeur : **« Durcir avant d'élargir »** — S50–S52 soldent la dette sécurité (5 des 7 P1 non bloqués), S53–S54 la dette design/E2E. 15 issues / 39 pts retenues sur 98 ouvertes ; ~85 restent au backlog (attendu). **Toutes les issues retenues ancrées code par l'architecte** (grep/read, HEAD fc2a3a0), `possibly_done: false` partout. Rapport intégral : `docs/memory/sprints/plan-s50-s54/architect-report-raw.md`. Mini-plans : `docs/memory/sprints/sprint-{50..54}/architect-plans.md`.
+>
+> **Décisions dev actées à la validation (2026-07-28) :**
+> - **Flyway (RISQUE 1)** : option (a) — job CI smoke `flyway migrate` + `ddl-auto=validate` sur base vierge → **issue #356** (P2/XS, outillage, hors plafond sprint, à absorber en marge). L'option (b) « insérer #88 pour forcer une V16 » est rejetée.
+> - **#322** : option (a) **Host canonique au proxy** (pas d'allow-list applicative).
+> - **#307 reste BLOQUÉE** (décision produit Option A/B non sollicitée à ce stade) ; bloque aussi #232/#230.
+>
+> **Arbitrages notables :** #249 traité en S50 (PAS reporté — inconfort des 2 plans précédents purgé) : volets DB/BREVO en vague 1, volet JWT_SECRET fusionné dans la bascule RS256 de #323 (une seule déconnexion globale ; garde-fou : rotation HS256 immédiate si #323 dérape). #67 re-triagée par le code : « XS/frontend » faux → S fullstack, non retenue. #212 (P1) écartée : upload fonctionne, cible S3/MinIO indéterminée, #215 non résolu. #350 à absorber en marge du S51 (code mort vérifié). Labels `sprint-35` retiré de #249 ; milestone « Sprint 36 » = reliquat à ignorer.
+>
+> **Chemins fantômes corrigés par l'architecte :** #351 (`src/hooks/useTimelineViewport.ts` → `src/components/timeline/useTimelineViewport.ts`, lignes décalées de 2), #331 (`EventEditForm.tsx` à la racine de components/), #60 (préfixe `frontend/` manquant — à valider si planifiée).
+>
+> **Conflits backlog à respecter si insertion ultérieure :** #347+#348 jamais séparées, #342+#353 jamais séparées, #343/#352 en aval de #340 (S53), #354 groupée avec #347.
+
+## Sprint 50 — 2026-07-28 (Terminé — PR #357, cohésion 0.52, chaîne d'authentification : RS256 en Edge + origine canonique + audit des secrets)
+**Objectif :** Rotation des secrets exposés + garde Host + JWT RS256 vérifiable en Edge
+**Milestone GitHub :** #50
+**Issues :** #249 (P1/S), #322 (P1/M), #323 (P1/M) — 10 pts
+**Vagues :** V1 = #249 (audit + runbook + inventaire) ∥ #322 | V2 = #323 + volet JWT_SECRET de #249
+**Migrations Flyway :** aucune
+**Depend de :** aucune
+**Status :** Travail terminé — **PR #357** ouverte vers `dev` (branche `claude/sprint-50-start-9b7161`, pas de branche `sprint/50` — leçon S43/S44 reconduite). Clôture via `/sprint end 50`.
+**Commits (7) :** `3f0f1b2` #249 · `bf9dec0` #322 · `1758c0c` #323 · `d7b8049` correctifs review · `44bc3cc` E2E signature · + 2 commits docs
+**Tests :** Backend 450/450 · Frontend 788/788 · E2E signature 12/0 · E2E suite complète 96 passed / 8 skipped / 0 failed
+**CI :** run 30396766409 sur `b945f4d` — **4 jobs verts** (`backend`, `frontend`, `security`, `e2e`). La 2ᵉ passe E2E appairée a bien tourné sur runner GitHub (12 passed / 26,6 s), ce qui lève la réserve notée à l'audit. `e2e` reste **non requis** sur `dev`.
+**Review batch :** 0 CRITIQUE / 3 MAJEUR / 6 MINEUR — tous résolus (`d7b8049`)
+**Artefacts :** `docs/memory/sprints/sprint-50/` (4 `issue-*-done.md`, `review-batch.md`, 3 briefings, 3 spawn-refs) · `docs/memory/audits/sprint-50-test-coverage.md` · `docs/memory/audits/secret-exposure-audit.md` · `docs/memory/devops/external-services-inventory.md`
+**⚠ #249 reste OUVERTE** — ses 3 critères opérationnels sont inatteignables sans déploiement. Ne pas la fermer en Phase 3 de `/sprint end`.
+
+> **⚠ Trois prémisses du plan infirmées au démarrage — vérifiées, pas supposées. Arbitrages dev du 2026-07-28.**
+>
+> **1. `#249` n'a aucune cible de rotation.** `secret-rotation-runbook.md` le dit lui-même (« projet pas encore en production », noté 2026-07-12) ; `gh secret list` = **vide**, `gh api .../environments` = **vide** ; aucun secrets-manager, aucun backend déployé. L'exposition historique est en revanche **réelle** : `53175da` portait un `spring.datasource.password` littéral (10 car.) et un `jwt.secret` littéral (128 car.) dans `application.properties` ; `c6ea19e` un secret de test (68 car.). État actuel propre (`${DB_PASSWORD}` / `${JWT_SECRET}`). **`BREVO_API_KEY` n'a JAMAIS été exposée** — 75 fichiers d'historique scannés, aucune valeur littérale opaque, seulement des mentions en prose dans `docs/` (critère d'acceptation « vérifier si exposée » = répondu : non).
+> **⇒ Décision dev : périmètre agent = audit d'exposition + correction du runbook + création de l'inventaire manquant. La rotation effective reste au dev, au déploiement prod.** Les critères opérationnels de #249 restent non cochés ; l'issue reste ouverte.
+>
+> **2. `docs/memory/devops/external-services-inventory.md` N'EXISTE PAS.** Le rapport architecte affirme qu'il existe (« procédure §3quater → la dépendance F3 est levée ») ; `docs/memory/devops/` ne contient que `secret-rotation-runbook.md`. **Chemin fantôme — 3ᵉ sprint consécutif** (S45, S49, S50). Le fichier est créé par #249 dans ce sprint.
+>
+> **3. `#322` option (a) « Host canonique au proxy » est INAPPLICABLE.** Aucun reverse-proxy dans le repo : `docker-compose.yml` = postgres + backend + frontend, `.github/workflows/` = `ci.yml` seul, aucun nginx/Traefik/Caddy, aucun workflow de déploiement. L'option (a) se réduisait à documenter une exigence de déploiement future en laissant l'open-redirect vivant dans `frontend/middleware.ts:69-73`.
+> **⇒ Décision dev révisée : Host canonique par variable d'environnement**, validé **fail-closed** dans le middleware, testable sans infra (unit + E2E avec `Host` falsifié). L'option (b) allow-list reste écartée (maintenance preview/staging).
+>
+> **4. `#323` : périmètre RS256 plus large que le plan.** `ExportTokenService.java:41-66` est un **second** consommateur de `${jwt.secret}` (signature HS256 des jetons d'export RGPD) ; le plan ne cite que `JwtService.java` + `middleware.ts` + ADR-004. Migrer JwtService seul laisse `jwt.secret` vivant → l'étape « retirer JWT_SECRET de la config » du plan était **inexécutable telle qu'écrite**.
+> **⇒ Décision dev : `ExportTokenService` reste HS256 mais sur une clé dédiée `EXPORT_TOKEN_SECRET`** (jetons vérifiés côté serveur uniquement, l'asymétrique n'y apporte rien). Sépare les usages et permet de retirer réellement `JWT_SECRET`. Coût : +1 variable de config, 5 tests d'intégration à mettre à jour.
+>
+> **Outillage cassé confirmé :** `detect-domain.sh` **se bloque indéfiniment** (timeout 2 min sur #249, aucun retour) — inutilisable, domaines assignés à la main (`auth` pour les 3 issues). `check-prereq.sh` toujours cassé (S45). Aucun `.claude/hooks/` dans ce worktree → le garde-fou `pre-spawn-fullstack.sh` cité par le skill n'existe pas ici.
+
+## Sprint 51 — 2026-07-28 (PLANIFIE — cohésion 0.40, frise : bug de rotation + dette d'implémentation)
+**Objectif :** Restaurer le scroll à la rotation portrait↔paysage + perf + défauts de review
+**Milestone GitHub :** #51
+**Issues :** #328 (P1/M), #349 (P2/S), #351 (P3/XS) — 7 pts (+ #350 absorbée en marge, code mort)
+**Vagues :** V1 = #328 ∥ #349 | V2 = #351
+**Migrations Flyway :** aucune
+**Depend de :** aucune (indépendant de S50)
+**Status :** Planifie
+
+## Sprint 52 — 2026-07-28 (PLANIFIE — cohésion 0.47, rate-limiting distribué et politique d'authentification)
+**Objectif :** Rate-limiting Redis par compte + anti-énumération + harmonisation politique mdp (3 politiques divergentes)
+**Milestone GitHub :** #52
+**Issues :** #102 (P1/M), #134 (P2/S), #148 (P2/S) — 8 pts
+**Vagues :** V1 = #102 ∥ #148 | V2 = #134
+**Migrations Flyway :** aucune
+**Depend de :** Sprint 50 (#323 fige le contrat de jeton)
+**Status :** Planifie
+
+## Sprint 53 — 2026-07-28 (PLANIFIE — cohésion 0.48, dette de cascade CSS et couplage fond/encre du DS)
+**Objectif :** Découpler focus: dans 5 menus + layerisation h1..h6 + audit CSS non-layerisés
+**Milestone GitHub :** #53
+**Issues :** #346 (P1/S), #339 (P2/S), #340 (P2/S) — 6 pts
+**Vagues :** V1 = #346 ∥ #339 | V2 = #340
+**Migrations Flyway :** aucune
+**Depend de :** aucune — ⚠ vérification navigateur clair+sombre OBLIGATOIRE (jsdom aveugle, pitfall S48)
+**Status :** Planifie
+
+## Sprint 54 — 2026-07-28 (PLANIFIE — cohésion 0.46, réarmement du filet E2E de la frise)
+**Objectif :** data-testid SelectItem + couverture des 18 testids sans spec + retry rendu auth.setup
+**Milestone GitHub :** #54
+**Issues :** #331 (P2/S), #330 (P2/M), #329 (P2/S) — 8 pts
+**Vagues :** V1 = #331 ∥ #329 | V2 = #330
+**Migrations Flyway :** aucune
+**Depend de :** Sprint 51 (specs assertent le comportement de scroll corrigé)
+**Status :** Planifie
+
+> **Pas de branche `sprint/50` créée** (étape 4 du skill volontairement sautée, leçon S43/S44 reconduite S45–S49) : `/sprint start` crée son worktree lui-même.
+
+### Bilan de clôture Sprint 50 (2026-07-28)
+
+**Issues livrées (2) :** #322, #323 — **#249 laissée OUVERTE délibérément** (cf. DEC-S50-004 : aucune cible de rotation, ses 3 critères opérationnels sont inatteignables sans déploiement).
+**Vagues exécutées :** V1 = #249 ∥ #322 (fichiers disjoints) | V2 = #323 (+ volet `JWT_SECRET` de #249)
+**Commits :** 12 · **Volume :** 64 fichiers, +8269 / −354
+**BR impactées :** **BR-AUT-007 amendée** (cookie `jwt` signé RS256, signature et `exp` vérifiables par tout porteur de la clé publique) — pack `br-auth.md` mis à jour. Jetons d'export (#58/ADR-003) : mécanisme inchangé, **matériel de clé séparé**.
+**Tests :** Backend **452/452** · Frontend **806/806** · E2E signature **12/0** · E2E suite complète **96 passed / 8 skipped / 0 failed**
+**CI :** run 30399816138 sur `64df375` — **4 jobs verts** (`backend`, `frontend`, `security`, `e2e`)
+
+**Reviews — deux cycles, 0 CRITIQUE au total :**
+- Cycle 1 (`reviewer` batch, Phase 7) : **0 CRITIQUE / 3 MAJEUR / 6 MINEUR** → tous résolus (`d7b8049`)
+- Cycle 2 (`/review-pr 357`, 3 agents : backend + frontend + security-expert) : **0 CRITIQUE / 3 MAJEUR / 13 MINEUR** → tous résolus (`64df375`)
+
+**Nouveaux artefacts mémoire :** `PIT-S50-001` à `PIT-S50-008` · `PAT-S50-001` à `PAT-S50-004` · `DEC-S50-001` à `DEC-S50-005` · `PIT-S13-003`, `PIT-S15-003` et le pattern de config secrets S3 **annotés périmés** (`JWT_SECRET` n'existe plus).
+
+> **⚠ Quatre prémisses du plan architecte infirmées au démarrage — mesurées, pas supposées.**
+> Détail complet en tête d'entrée. Résumé : (1) #249 sans cible de rotation ; (2) `external-services-inventory.md` annoncé existant par l'architecte alors qu'il n'avait **jamais été écrit** — chemin fantôme, **4ᵉ sprint consécutif** ; (3) option (a) de #322 inapplicable, aucun reverse-proxy dans le dépôt ; (4) `ExportTokenService`, **second consommateur de `${jwt.secret}`** invisible au plan, sans lequel « retirer `JWT_SECRET` » était inexécutable.
+
+> **⚠ Deux affirmations d'agents qui ont infirmé l'énoncé des issues — conservées telles quelles.**
+> 1. **L'open-redirect de #322 ne se reproduit pas sur ce runtime.** `initURL` dérive de l'hôte de **bind** en self-hosting, pas de l'en-tête `Host` (mesuré au `curl`, 3 cas). Le correctif est de la **défense en profondeur** ; il redevient nécessaire avec `trustHostHeader` ou sur plateforme edge. Écrit ainsi dans ADR-004 plutôt que présenté comme une faille fermée.
+> 2. **`BREVO_API_KEY` n'a jamais été exposée** (scan 727 commits, 3 angles) — le critère « vérifier l'exposition » de #249 est répondu par la négative, avec preuve reproductible.
+
+> **⚠ Trois erreurs du lead, toutes rattrapées, consignées sans être effacées.**
+> 1. **Mesure fausse en review** : j'ai conclu « 0 bloc stderr » pour contester un reviewer frontend — c'était le hook RTK qui réduisait la sortie de `vitest` à une ligne. En direct : **2 blocs**, le reviewer avait raison. Voir `PIT-S50-007`.
+> 2. **Note mémoire erronée écrite le jour même** : j'avais consigné que `command gh` contourne RTK. Faux — RTK est un **hook Claude Code**, pas un alias shell. Corrigé avec les deux contournements réellement mesurés.
+> 3. **Gate `[MISSING]` déclenchée par ma propre prose** dans l'audit de couverture (4ᵉ récurrence connue : S9, S10, S48, S50).
+>
+> **En sens inverse, deux arbitrages du lead tenus après vérification :** (a) deux reviewers se contredisaient frontalement sur `application-prod.properties:21` — vérification ligne à ligne : **chacun avait raison sur une branche différente**, le finding tient comme régression de défense en profondeur, pas comme faille ; (b) le majeur « marqueur `ENVIRONMENT` non obligatoire » **écarté de la PR** car sa sévérité est **inchangée** par ce sprint (le profil dev utilisait déjà un secret committé avant #323) — trou pré-existant, traité par la réouverture de **#111**.
+
+> **Découverte du correcteur que personne n'avait anticipée :** retirer le défaut vide de `application-prod.properties` fait lever `env.getProperty()` **depuis l'intérieur** du garde-fou, ce qui aurait remplacé le message d'exploitation par un « Could not resolve placeholder » opaque. Résolu en traitant « placeholder irrésoluble » comme « non fournie » — 2 barrières **et** message lisible (`PIT-S50-008`, `DEC-S50-005`).
+
+> **Réserves assumées :** aucun **boot réel** observé (les `console.warn` de production et le message fail-fast sont couverts par tests unitaires seulement) · le job `e2e` **n'est pas un check requis** sur `dev` → une régression E2E ne bloquerait pas un merge (#361) · révocation `jti` toujours hors de l'Edge · **aucun garde-fou frontend** n'impose les deux variables en production (#359) · paire dépareillée sans détection automatique (#360, largement absorbée par #358) · repli Base64 GNU vérifié en alpine, pas sur l'image de déploiement finale · `exportService.test.ts` écrit encore sur stderr (#364, hors périmètre).
+
+> **Saturation contexte lead : non mesurée** (pas d'instrumentation dans cette session). Ordre de grandeur : 9 agents (2 fullstack V1, 1 fullstack V2, 1 test-runner, 1 reviewer batch, 1 fullstack correctifs, 1 fullstack E2E, 3 reviewers cycle 2, 1 fullstack correctifs cycle 2, 1 project-manager) ≈ **1,4 M tokens cumulés côté subagents**. Le pattern artefact + purge a tenu : le lead n'a jamais rechargé un retour brut. **Économie notable :** les briefings de 52–58 Ko n'ont pas été chargés en contexte lead — passés par lecture imposée du fichier committé + checkpoint vérifiable (`pack_lu: OUI — br-auth §<section réelle>`), les 4 agents ont cité une section réelle.
+
+**Follow-ups arbitrés (Phase 4 triage — 11 items, 0 discard) :**
+  - Endpoint JWKS + découverte de clé [M | auth] → **#358**
+  - Garde-fou frontend prod (`AUTH_JWT_PUBLIC_KEY` + `APP_CANONICAL_HOST`) [S | frontend] → **#359**
+  - Détection de paire dépareillée [M | auth] → **#360** (cross-référencée #358, caduque si #358 livrée)
+  - Job `e2e` requis sur `dev` [XS | devops] → **#361**
+  - Scan de secrets en CI (gitleaks/trufflehog) [S | devops] → **#362**
+  - E2E du mode « clé illisible » [S | frontend] → **#363** (valeur faible, à re-trancher avant planification)
+  - stderr Zod `exportService.test.ts` (MEMO-007) [XS | frontend] → **#364**
+  - `brevo.api.key` sans fail-fast prod [XS | backend] → **#365**
+  - `.env.example` sans `BREVO_API_KEY` [XS | infra] → **#366**
+  - Marqueur `ENVIRONMENT` obligatoire [S | backend] → **#111 RÉOUVERTE** (pas de doublon créé ; label `sprint-5` périmé retiré au passage)
+  - Compléter l'inventaire des services externes → **#250** commentée (socle livré, reste à faire listé)
+  - **Sans objet :** R3 et R5 de l'audit (`JWT_SECRET` supprimé par #323) · #112 (purge historique) déjà close
+  - **Ratio discard : 0/11** — aucun follow-up jugé non pertinent par le dev.
+  - **Aucun milestone attaché** : « Sprint 51 » contient déjà ses 3 issues planifiées (#328, #349, #351) et le plan plafonne à 3 issues / ~10 points.

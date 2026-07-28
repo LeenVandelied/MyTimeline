@@ -147,9 +147,39 @@ jobs:
           SKIP_DELEGATION: "1"
         run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package
 
+      # Paire RS256 JETABLE, générée À L'EXÉCUTION (audit de couverture S50). Le dépôt est
+      # PUBLIC : aucune clé n'y est committée, et celle-ci meurt avec le runner. Elle est ce
+      # qui rend la vérification de signature Edge (#323) exerçable en E2E — jusqu'ici, seule
+      # une paire ÉPHÉMÈRE générée par le backend existait, dont le frontend ne connaissait
+      # pas la clé publique.
+      #
+      # ⚠ Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance Next (la
+      # variable est lue au runtime) : la première passe E2E tourne DÉGRADÉE (frontend sans
+      # clé publique, contrat #302 -> `auth-guard.spec.ts`), la seconde tourne VÉRIFIANTE
+      # (`auth-signature.spec.ts`). Le BACKEND, lui, signe avec cette paire dans les deux cas.
+      #
+      # ⚠ `::add-mask::` posé AVANT l'écriture dans `GITHUB_ENV` (revue S50, 2e cycle) : le dépôt
+      # est PUBLIC, donc les logs de ce job le sont aussi. La paire meurt avec le runner et n'a
+      # aucune valeur — mais un step futur qui dumperait l'environnement (`set -x`, `printenv`,
+      # action tierce en mode debug) publierait du matériel de signature en clair. C'est le
+      # MOTIF qui est corrigé ici, pas un impact actuel. Seule la clé PRIVÉE est masquée : la
+      # clé publique n'est pas un secret, et la masquer caviarderait les diagnostics.
+      - name: Generate throwaway RS256 keypair (dev-only, never committed)
+        run: |
+          node -e 'const c=require("crypto"),f=require("fs");
+            const {privateKey,publicKey}=c.generateKeyPairSync("rsa",{modulusLength:2048,
+              privateKeyEncoding:{type:"pkcs8",format:"der"},
+              publicKeyEncoding:{type:"spki",format:"der"}});
+            const priv=privateKey.toString("base64");
+            console.log("::add-mask::"+priv);
+            f.appendFileSync(process.env.GITHUB_ENV,
+              "E2E_JWT_PRIVATE_KEY="+priv+"\n"+
+              "E2E_JWT_PUBLIC_KEY="+publicKey.toString("base64")+"\n")'
+
       # Démarrage du backend en tâche de fond (profil dev : cookie Secure=false,
-      # Domain=localhost, CORS http://localhost:3000 déjà autorisé). JWT_SECRET passé
-      # explicitement (le profil dev a un default, mais on ne s'appuie pas dessus en CI).
+      # Domain=localhost, CORS http://localhost:3000 déjà autorisé). EXPORT_TOKEN_SECRET
+      # passé explicitement (le profil dev a un default, mais on ne s'appuie pas dessus
+      # en CI) ; la signature d'auth utilise la paire jetable générée juste au-dessus.
       - name: Start backend (Spring Boot, profils dev+e2e, :8080)
         working-directory: backend
         env:
@@ -162,11 +192,15 @@ jobs:
           DB_URL: jdbc:postgresql://localhost:5432/eventmanager
           DB_USERNAME: eventuser
           DB_PASSWORD: eventpass_ci
-          # JwtService décode le secret en Base64 (Decoders.BASE64.decode) puis exige
-          # >= 32 octets (HS256). Le secret DOIT donc être une chaîne Base64 valide
-          # (pas de '-'/'_' ni de caractères hors alphabet Base64) — sinon generateToken
-          # lève et /auth/login renvoie 500. Ci-dessous : 48 octets Base64 (CI-only, non secret).
-          JWT_SECRET: Q0lPbmx5SW5zZWN1cmVKd3RTZWNyZXRGb3JFMkVUZXN0c09ubHkwMTIzNDU2Nzg5
+          # #323 — JWT_SECRET (HS256) supprimé. La clé PRIVÉE vient de la paire jetable
+          # générée au step précédent (rien n'est committé, rien ne survit au runner) : c'est
+          # elle qui permet à la 2e passe E2E de publier la clé PUBLIQUE appairée au frontend
+          # et d'exercer réellement la vérification de signature Edge (audit S50).
+          # Avant : paire ÉPHÉMÈRE générée par le backend, dont personne d'autre ne connaissait
+          # la clé publique -> vérification Edge jamais exercée hors tests unitaires.
+          JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
+          # Secret HMAC dédié aux tokens de download d'export (CI-only, non secret).
+          EXPORT_TOKEN_SECRET: Q0lPbmx5SW5zZWN1cmVFeHBvcnRUb2tlblNlY3JldEZvckUyRVRlc3RzMDEyMzQ1Njc4OQ==
           # E2E-ONLY : désactive le rate-limit auth. La suite provisionne plusieurs
           # comptes depuis l'IP unique du runner -> déclencherait le throttle par IP
           # (register 5/min, login 10/min) et ferait échouer le projet Playwright `setup`.
@@ -225,6 +259,31 @@ jobs:
           # Les anciennes variables E2E_DB_* (lecture directe de password_reset_tokens,
           # #145) ont été retirées avec `e2e/support/db.ts` et la dépendance `pg`.
         run: npm run test:e2e
+
+      # 2e passe — MODE VÉRIFIANT (audit de couverture S50). Playwright redémarre son propre
+      # `webServer`, cette fois AVEC `AUTH_JWT_PUBLIC_KEY` appairée à la clé privée du backend
+      # (qui, lui, tourne toujours depuis le 1er step) : le middleware vérifie alors vraiment
+      # la signature RS256. Sans cette passe, la chaîne backend -> Edge n'était prouvée que
+      # par des tests unitaires de part et d'autre, jamais bout à bout.
+      #
+      # Périmètre volontairement réduit à `auth-signature.spec.ts` : les autres specs sont
+      # indifférentes au mode, les rejouer doublerait la durée du job pour rien.
+      # `E2E_JWT_PRIVATE_KEY` sert au SEUL cas « jeton expiré », qui exige une signature
+      # authentique (sans elle, ce cas skippe au lieu de se déguiser en test d'expiration).
+      - name: Run E2E (vérification de signature RS256, stack appairée)
+        working-directory: frontend
+        env:
+          CI: "true"
+          NEXT_PUBLIC_API_URL: /api
+          E2E_API_PROXY_TARGET: http://localhost:8080
+          AUTH_JWT_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
+          E2E_JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
+        # ⚠ `auth.setup.ts` EXPLICITEMENT dans le filtre (revue S50, 2e cycle) : un filtre portant
+        # le seul nom de spec exclut aussi le projet `setup` (`testMatch /.*\.setup\.ts/`), dont
+        # `chromium` dépend. La passe consommait alors le `storageState` laissé sur disque par la
+        # passe 1 — `globalSetup` ne purge que `accounts.json` — soit un couplage implicite entre
+        # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
+        run: npx playwright test auth.setup.ts auth-signature.spec.ts
 
       - name: Upload Playwright report (on failure)
         if: failure()

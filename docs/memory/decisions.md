@@ -227,3 +227,46 @@ En S49 (#335), la cause racine s'est révélée plus grave que l'énoncé de l'i
 
 ## DEC-S49-334 — `MobileDrawer` NON généralisé : composant landing dédié, seul `useFocusTrap` mutualisé
 En S49 (#334), le menu mobile de la landing aurait pu réutiliser `frontend/src/components/dashboard/MobileDrawer.tsx`. **Rejeté** : ce composant est couplé au dashboard (logout, bascule de thème, clés i18n `dashboard.mobile.drawer`). Décision : créer `LandingMobileMenu.tsx` **calqué** dessus (overlay `z-40`, panneau `z-50`, `role="dialog"` + `aria-modal` + `aria-labelledby`) et **mutualiser uniquement `useFocusTrap`**. Généraliser `MobileDrawer` serait un refactor P1 hors périmètre d'un correctif de débordement. **Alternative rejetée — masquer les boutons auth sous `md`** (piste n°2 de l'issue) : le seul accès restant à `/login` serait `FooterSection.tsx:81`, en bas de page, ce qui ne remplit pas le critère « le header reste utilisable ». Bonus non prévu : les ancres nav, jusque-là `hidden md:flex` donc **inaccessibles en mobile**, sont récupérées dans le panneau. (Sprint 49 #334)
+
+## DEC-S50-001 — `#322` : Host canonique par variable d'environnement, pas par proxy
+Le plan actait l'option « garantir un `Host` canonique au niveau du proxy ». **Vérification au démarrage :
+aucun reverse-proxy n'existe dans le dépôt** (`docker-compose.yml` = postgres + backend + frontend ;
+`.github/workflows/` = `ci.yml` seul ; aucun workflow de déploiement). L'option se réduisait donc à documenter
+une exigence future en laissant l'open-redirect vivant dans le code.
+**Décision (dev, 2026-07-28) : `APP_CANONICAL_HOST`, validée fail-closed dans le middleware**, testable sans
+infra. Alternatives rejetées : allow-list applicative (maintenance preview/staging, risque signalé par l'issue
+elle-même) ; `CORS_ALLOWED_ORIGINS` (lue par Spring, **ne parvient pas** au conteneur frontend — mesuré) ;
+`NEXT_PUBLIC_*` (figerait la valeur au build).
+⚠ Nuance importante trouvée à l'implémentation : sur ce runtime self-hosté, `initURL` dérive de l'hôte de
+**bind**, pas de l'en-tête `Host` — un `Host` falsifié ne déplaçait **déjà pas** la redirection (mesuré au
+`curl`, 3 cas). **Le correctif est de la défense en profondeur**, et redevient nécessaire avec `trustHostHeader`
+ou sur plateforme edge. Écrit tel quel dans ADR-004 plutôt que présenté comme une faille fermée.
+
+## DEC-S50-002 — `#323` : bascule RS256 SÈCHE, sans double émission transitoire
+Pas de double émission HS256/RS256 pendant une fenêtre de transition. Deux raisons : (a) rien n'est déployé,
+le parc d'utilisateurs à ménager n'existe pas ; (b) **un vérificateur qui accepte deux algorithmes rouvre la
+confusion d'algorithme** qu'on vient précisément de fermer ([[PIT-S50-001]]). Le critère d'acceptation
+« stratégie de transition » est donc **documenté** (ADR-004 + runbook), pas exécuté.
+
+## DEC-S50-003 — `ExportTokenService` reste HS256, sur une clé DÉDIÉE `EXPORT_TOKEN_SECRET`
+Découvert au démarrage : `ExportTokenService` était un **second consommateur de `${jwt.secret}`** que le plan
+architecte ne voyait pas — sans le traiter, l'étape « retirer `JWT_SECRET` de la config » était inexécutable.
+Les jetons de téléchargement d'export sont vérifiés **côté serveur uniquement** : l'asymétrique n'y apporte
+rien. Clé dédiée plutôt que migration RS256 ⇒ l'isolation auth ↔ download devient **double** (claim `typ` +
+matériel de clé disjoint), et `JWT_SECRET` disparaît réellement de la configuration.
+
+## DEC-S50-004 — `#249` : livrer l'audit et les docs, laisser l'issue OUVERTE
+L'issue demandait une rotation de secrets. **Aucune cible n'existe** : `gh secret list` vide, aucun
+environnement GitHub, aucun workflow de déploiement, projet non déployé. Les trois critères opérationnels sont
+inatteignables. Décision : livrer l'audit d'exposition, l'inventaire des services externes manquant et le
+runbook corrigé ; **ne pas cocher les critères, ne pas fermer l'issue**. Dans un dépôt public, « rotationner »
+se réduit de toute façon à **ne jamais réutiliser** les valeurs exposées au premier provisionnement — la purge
+d'historique (#112) ne décompromet rien.
+
+## DEC-S50-005 — Deux barrières ET un message lisible sur le matériel de signature en prod
+Au 2ᵉ cycle de review : `application-prod.properties` déclarait `${JWT_PRIVATE_KEY:}` (défaut vide) là où
+`application.properties` impose la convention #34 « aucun default ⇒ le boot échoue ». Le chemin profil-`prod`
+était donc passé de **2 barrières à 1** (seul `ProfileSafetyGuard`). Défaut retiré — et comme
+`env.getProperty()` lève alors depuis l'intérieur du garde-fou, `isBlankProperty` traite « placeholder
+irrésoluble » comme « non fournie » : on conserve les deux barrières **et** le message d'exploitation.
+Cf. [[PIT-S50-008]].

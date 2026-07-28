@@ -150,6 +150,7 @@ Le fix révocation `/me` (#73/review) ajoute `sessionService.isSessionActive(jti
 
 ## PIT-S13-003 — `jwt.secret` de profil test non-Base64 → `generateToken` DecodingException
 Aucun test n'exerçait le login RÉEL avant #73 ; le premier test qui émet un token a révélé que le `jwt.secret` du profil test (`'-'`) n'est pas Base64 valide → `generateToken` lève `DecodingException`. Fix : override d'un secret Base64 valide via `@SpringBootTest(properties="jwt.secret=...")`. Prévention : tout test exerçant l'ÉMISSION d'un token doit fournir un secret Base64 valide. (Sprint 13 #73)
+> ⚠️ **PÉRIMÉ depuis le Sprint 50 (#323).** `jwt.secret` **n'existe plus** : la signature est passée en RS256 et le profil test laisse `jwt.private-key=` vide, ce qui fait générer une paire RSA **éphémère au boot**. Il n'y a donc plus de secret Base64 à fournir pour émettre un token en test. L'exigence Base64 ≥ 32 octets survit uniquement pour `EXPORT_TOKEN_SECRET` (HMAC dédié des jetons d'export). Voir [[DEC-S50-003]].
 
 ## PIT-S13-004 — `SecurityContext` thread-local fuité d'un test slice pollue les tests full-chain suivants
 Un test `standaloneSetup` qui pose une `Authentication` laisse le `SecurityContextHolder` thread-local rempli → un test `@AutoConfigureMockMvc` suivant hérite du contexte et le `JwtFilter` saute la vérif de révocation (faux vert). Fix/Prévention : `SecurityContextHolder.clearContext()` en `@BeforeEach`/`@AfterEach` des tests full-chain qui suivent des slices posant une Authentication. (Sprint 13 #73)
@@ -168,6 +169,7 @@ Front :3000 → API :8080 = cross-site pour les cookies. `SameSite=Lax` envoie l
 
 ## PIT-S15-003 — `JWT_SECRET` CI doit être Base64 valide ≥32 octets
 `JwtService` fait `Decoders.BASE64.decode(secret)` puis exige ≥32 octets (HS256). Un secret non-Base64 (`-`/`_` ou hors alphabet) fait lever `generateToken` → `/auth/login` renvoie 500 générique. Le secret CI doit être une chaîne Base64 valide. (Sprint 15 #163)
+> ⚠️ **PÉRIMÉ depuis le Sprint 50 (#323).** `JWT_SECRET` a été **supprimé** de la CI et de toute la configuration. La CI génère désormais une **paire RS256 jetable au run** (`ci.yml`, avec `::add-mask::` avant écriture dans `GITHUB_ENV` — dépôt public). La contrainte « Base64 valide ≥ 32 octets » ne s'applique plus qu'à `EXPORT_TOKEN_SECRET`.
 
 ## PIT-S15-004 — `next build` (ESLint strict) échoue là où vitest+tsc passent ; commitlint header ≤100
 Un run vitest + `tsc --noEmit` verts ne garantissent PAS `next build` (ESLint strict, ex. `no-unused-vars` sur destructure `{k: _k, ...rest}` → préférer `delete obj.k`). Vérifier `next build` avant de conclure. Aussi : commitlint `header-max-length:100` (gitmoji) → header de commit ≤100 caractères. (Sprint 15 #150)
@@ -471,3 +473,63 @@ l'encre `accent-ink` : **1,10:1 en clair, 1,17:1 en sombre**. État atteignable 
 s'appliquent**, et seul l'ordre de cascade tranche — ce qui ne se déduit pas, il faut mesurer.
 **Règle : sur un composant Radix à `focus:` concurrent, mesurer le survol souris seul ne prouve rien —
 tester aussi l'état `:hover` sans `:focus`.** Voir [[PIT-S49-001]]. (Sprint 49, correctifs de review)
+
+## PIT-S50-001 — L'`alg` d'un JWT est choisi par le PORTEUR du jeton, et une clé publique est publique
+Migrer en RS256 (#323) déplace le risque au lieu de le supprimer si la vérification accepte l'algorithme
+annoncé dans l'en-tête : **la clé publique étant distribuée à l'Edge, quiconque la connaît peut forger un
+jeton `alg: HS256` en s'en servant comme secret HMAC** — c'est-à-dire n'importe qui. Idem `alg: none`.
+**Règle : exiger `alg === "RS256"` AVANT de toucher à la signature, des DEUX côtés** (`auth-token-verify.ts`
+le fait avant tout appel `crypto.subtle`; côté backend jjwt `verifyWith(PublicKey)` rejette par typage de clé).
+Les deux forges sont exercées en unitaire ET en E2E (`e2e/support/rs256.ts`). Corollaire trouvé au 2ᵉ cycle
+de review : `Jwts.parser().verifyWith(publicKey)` ne **fige** pas l'algorithme non plus (RS384/RS512/PS256
+passeraient) — assertion d'en-tête ajoutée pour aligner les deux côtés. (Sprint 50, #323)
+
+## PIT-S50-002 — Un défaut « dégradé silencieux » n'échoue pas au boot : c'est exactement ce qui le rend dangereux
+Une `jwt.private-key` vide ne casse rien — `JwtService` génère une paire RS256 **éphémère** et l'application
+démarre normalement. En production, le symptôme est une **déconnexion globale à chaque redéploiement**, sans
+la moindre erreur. Même famille côté frontend : `AUTH_JWT_PUBLIC_KEY` absente ⇒ la garde retombe sur la seule
+présence du cookie, et `APP_CANONICAL_HOST` absente ⇒ le `Location` redevient dérivé de `Host`.
+**Règle : tout défaut dégradé a besoin d'un garde-fou de boot explicite** (`ProfileSafetyGuard` le fait côté
+backend) **et d'un signal côté frontend**, où aucun équivalent n'existe. Au 2ᵉ cycle de review, la
+signalisation s'est révélée **inversée** : le cas rare (variable typotée) était signalé, le cas le plus
+probable (variable oubliée) était muet — corrigé par un `console.warn` one-shot conditionné à
+`NODE_ENV === 'production'`. (Sprint 50, #322/#323 + review)
+
+## PIT-S50-003 — Passer une fonction en `async` casse les call sites de test EN SILENCE
+`middleware.ts` est devenu `async` au S50. Sans `await`, `response.status` vaut `undefined` et l'assertion
+ne lève pas d'erreur de type : **le test passe et ne prouve plus rien**. `tsc` seul ne l'attrape pas.
+**Règle : après un passage en async, grepper les appels non préfixés d'`await` dans les fichiers de test.**
+(Sprint 50, #323)
+
+## PIT-S50-004 — `url.host = 'h'` ne supprime PAS le port existant (WHATWG)
+En réécrivant l'origine d'une redirection (#322), la 307 sortait en `http://app.example.test:3133/fr/login`
+— le port interne du conteneur. **Écrire `hostname` PUIS `port`.** Invisible en unitaire tant qu'aucune URL
+de départ n'a de port : trouvé en interrogeant un `next start` réel, pas la suite Vitest. (Sprint 50, #322)
+
+## PIT-S50-005 — `openssl … | base64` replie à 76 colonnes sur GNU, pas sur BSD/macOS
+Une clé privée générée via la commande documentée sort **sur plusieurs lignes en conteneur Linux** (mesuré :
+6 lignes pour 300 octets) mais sur une seule depuis un poste macOS. Un fichier `.env` ne lit qu'une ligne
+⇒ **clé tronquée en production, invisible depuis le poste de dev**. Toujours suffixer `| tr -d '\n'`.
+Cas d'école d'un reviewer « faux sur la plateforme de test, vrai sur la plateforme cible ». (Sprint 50, review)
+
+## PIT-S50-006 — Un audit documentaire écrit en vague N est périmé par le code de la vague N+1 du MÊME sprint
+L'audit d'exposition des secrets (#249, vague 1) décrivait comme « en dur au HEAD » trois valeurs que #323
+avait supprimées en vague 2, **sur la même branche**. Auto-contradiction dans un dépôt public, sur la section
+la plus sensible du document. Un second résidu (`docker-compose.yml … JWT_SECRET:45`) a survécu au premier
+cycle de correction et n'a été vu qu'au second. **Règle : relire les sections « au HEAD » de tout document
+de vague N contre le HEAD réel avant clôture.** (Sprint 50, #249 + review)
+
+## PIT-S50-007 — Le hook RTK tronque les SORTIES, pas seulement les diffs : il fausse les MESURES
+Déjà connu pour `gh pr diff`, le filtre s'applique aussi à `npx vitest` : la sortie d'un run a été réduite à
+`PASS (62) FAIL (0)`, ce qui m'a fait conclure **« 0 bloc stderr »** et contester à tort un reviewer qui avait
+raison — il y en avait **2**. `command gh` ne contourne rien (RTK est un hook Claude Code, pas un alias shell).
+**Contournements mesurés : `rtk proxy <commande>` pour une sortie brute ; `gh api /repos/<org>/<repo>/pulls/<N>
+-H "Accept: application/vnd.github.v3.diff"` pour un diff complet** (9059 lignes rendues contre 512).
+Les 3 reviewers du sprint sont tombés dedans. **Briefer ce piège dans tout prompt de reviewer.** (Sprint 50)
+
+## PIT-S50-008 — Retirer un défaut vide d'`application-prod.properties` casse le message du garde-fou
+Corriger `${JWT_PRIVATE_KEY:}` en `${JWT_PRIVATE_KEY}` restaure bien la barrière « placeholder non résolu =
+boot refusé »… mais `env.getProperty()` **lève alors depuis l'intérieur** de `ProfileSafetyGuard`, remplaçant
+le message d'exploitation par un « Could not resolve placeholder » opaque. Solution : dans un
+`ApplicationListener` de fail-fast, envelopper la lecture et traiter « irrésoluble » comme « non fournie » —
+on garde **2 barrières ET** le message lisible. (Sprint 50, correctifs de review 2ᵉ cycle)

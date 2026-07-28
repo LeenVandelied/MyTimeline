@@ -8,6 +8,8 @@ import {
   isProtectedPathname,
   splitLocalizedPathname,
 } from '@/lib/auth-guard-paths'
+import { verifyAuthCookie } from '@/lib/auth-token-verify'
+import { canonicalizeLocation, canonicalOrigins } from '@/lib/canonical-host'
 
 // Ce middleware gère la redirection basée sur la langue
 const intlMiddleware = createMiddleware({
@@ -30,12 +32,17 @@ const intlMiddleware = createMiddleware({
  * amont : cookie `jwt` absent sur une route protégée → 307 vers `/<locale>/login`,
  * zéro octet de page protégée.
  *
- * ⚠ Ce n'est PAS une frontière d'autorisation : on ne vérifie que la PRÉSENCE du
- * cookie, jamais sa signature (le secret HMAC de `JwtService` est symétrique — le
- * partager avec l'Edge mettrait un secret de frappe de jetons côté frontend, cf.
- * ADR-004 §Option A). Un cookie `jwt` bidon ou expiré passe donc cette garde ;
- * `JwtFilter` répond alors 401 aux appels API et `useAuthGuard` redirige côté
- * client. Ne jamais rendre de donnée métier en se fiant à ce middleware.
+ * #323 — la garde vérifie désormais aussi la SIGNATURE et l'EXPIRATION du cookie.
+ * `JwtService` signe en RS256 : seule la clé PUBLIQUE (`AUTH_JWT_PUBLIC_KEY`) est
+ * exposée à l'Edge, donc aucun secret de frappe de jetons ne quitte le backend —
+ * ce qui levait le blocage de l'ADR-004 §Option A. Un cookie `jwt` forgé ou expiré
+ * est maintenant redirigé, plus servi.
+ *
+ * ⚠ Ce n'est TOUJOURS PAS une frontière d'autorisation. Deux raisons subsistent :
+ * (a) la RÉVOCATION de session (`jti`) n'est vérifiable qu'en base, donc côté
+ * backend ; (b) sans `AUTH_JWT_PUBLIC_KEY` configurée, la garde retombe en mode
+ * dégradé « présence seule » (cf. `auth-token-verify.ts`). `JwtFilter` reste le
+ * seul juge : ne jamais rendre de donnée métier en se fiant à ce middleware.
  *
  * ORDRE : le check d'auth s'exécute AVANT `intlMiddleware`, mais ne traite que
  * les chemins DÉJÀ préfixés d'une locale supportée. Un `/dashboard` nu passe donc
@@ -43,10 +50,74 @@ const intlMiddleware = createMiddleware({
  * cette nouvelle requête et applique alors la garde. Une seule implémentation de
  * la négociation de locale, celle de next-intl (pas de régression #235).
  */
-export default function middleware(request: NextRequest): NextResponse {
+/**
+ * #322 — Réécrit l'origine de TOUTE redirection émise ici vers l'origine
+ * canonique déclarée en configuration (`APP_CANONICAL_HOST`).
+ *
+ * S'applique aussi bien à la 307 de la garde qu'aux redirections de next-intl
+ * (`/` → `/fr`, `/dashboard` → `/fr/dashboard`) : elles dérivent TOUTES de
+ * `request.nextUrl`. N'en durcir qu'une laisserait le même vecteur ouvert sur
+ * l'autre, sur des chemins bien plus atteignables.
+ *
+ * Variable non configurée → renvoie la réponse telle quelle (dégradé assumé,
+ * cf. `canonical-host.ts` et ADR-004 §Limites). Ne lève jamais : une exception
+ * ici redeviendrait un 500 sur toutes les routes protégées (BUG-S45-001).
+ *
+ * ⚠ La lecture de `process.env.APP_CANONICAL_HOST` est écrite en accès LITTÉRAL
+ * (et non `process.env[CONST]`) : c'est la forme que l'analyse statique de Next
+ * reconnaît. La variable n'étant pas `NEXT_PUBLIC_*`, elle n'est PAS inlinée au
+ * build — elle est lue au RUNTIME depuis l'environnement du serveur Node
+ * (`buildEnvironmentVariablesFrom`, `next/dist/server/web/sandbox/context.js`),
+ * donc modifiable sans reconstruire l'image.
+ */
+function withCanonicalOrigin(response: NextResponse): NextResponse {
+  try {
+    // ⚠ DANS le `try` (revue S50) : ce `try` promet « ne lève jamais », or l'appel était
+    // AU-DESSUS de lui. `canonicalOrigins` est réputée non levante, mais elle lit
+    // `process.env` et parse de la configuration — la promesse doit couvrir toute la
+    // fonction, pas la moitié. Une exception ici = 500 sur toutes les routes protégées
+    // (BUG-S45-001), et la garantie ne doit pas dépendre de l'implémentation d'un appelé.
+    const origins = canonicalOrigins(process.env.APP_CANONICAL_HOST)
+    if (origins.length === 0) return response
+
+    const location = response.headers.get('location')
+    if (location === null) return response
+
+    const canonical = canonicalizeLocation(location, origins)
+    if (canonical !== location) response.headers.set('location', canonical)
+  } catch {
+    // Filet de sécurité : en-têtes non modifiables, valeur exotique… on préfère
+    // une redirection non durcie à une panne totale des routes protégées.
+  }
+
+  return response
+}
+
+/**
+ * #323 — `async` DEPUIS la vérification de signature : `crypto.subtle.verify` est
+ * asynchrone et aucune API WebCrypto synchrone n'existe. Next accepte un middleware
+ * qui renvoie une `Promise<NextResponse>` ; le coût est une vérification RSA (~0,1 ms)
+ * sur les seules routes protégées, la clé publique n'étant importée qu'une fois par
+ * instance (cache dans `auth-token-verify.ts`).
+ *
+ * ⚠ `verifyAuthCookie` ne LÈVE jamais, par construction : toute exception qui
+ * remonterait ici deviendrait un 500 sur toutes les routes protégées (BUG-S45-001).
+ */
+export default async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
-  if (isProtectedPathname(pathname) && !request.cookies.has(AUTH_COOKIE_NAME)) {
+  // ⚠ `process.env.AUTH_JWT_PUBLIC_KEY` en accès LITTÉRAL (et non `process.env[CONST]`) :
+  // c'est la forme reconnue par l'analyse statique de Next. Variable NON `NEXT_PUBLIC_*`,
+  // donc lue au RUNTIME, jamais inlinée au build ni envoyée au navigateur (mesure #322).
+  // Une clé publique n'est pas un secret, mais rien ne justifie de la baker dans le bundle.
+  const isRejected =
+    isProtectedPathname(pathname) &&
+    (await verifyAuthCookie(
+      request.cookies.get(AUTH_COOKIE_NAME)?.value,
+      process.env.AUTH_JWT_PUBLIC_KEY,
+    )) === 'rejected'
+
+  if (isRejected) {
     // `splitLocalizedPathname` est non-null ici (garanti par `isProtectedPathname`),
     // mais on retombe sur `DEFAULT_LOCALE` plutôt que d'écrire un `!` non prouvable.
     const locale = splitLocalizedPathname(pathname)?.locale ?? DEFAULT_LOCALE
@@ -59,21 +130,25 @@ export default function middleware(request: NextRequest): NextResponse {
     // requête finit en **500** — reproduit localement (`ERR_INVALID_URL`,
     // `input: '/fr/login'`) et en CI (run 30269383403 : 10 specs `auth-guard`
     // attendaient 307, recevaient 500). Une garde qui 500 sur TOUTES les routes
-    // protégées est une panne totale ; le `Host` hostile reste un risque
-    // théorique, tranché en ADR-004.
+    // protégées est une panne totale. Le `Host` hostile est désormais traité en
+    // AVAL par `withCanonicalOrigin` (#322), PAS en repassant au relatif.
     //
     // On clone `request.nextUrl` (déjà parsé/normalisé par Next, `x-forwarded-*`
     // pris en compte) plutôt que de concaténer `request.url` à la main.
     // La query string n'est PAS reportée : pas de `?redirect=` (surface
     // d'open-redirect), cf. ADR-004 §Limites.
+    //
+    // #322 — l'ORIGINE de cette URL n'est plus considérée comme digne de
+    // confiance : `withCanonicalOrigin` la remplace par l'origine canonique
+    // configurée avant que la réponse ne parte.
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = buildLoginPathname(locale)
     loginUrl.search = ''
 
-    return NextResponse.redirect(loginUrl, 307)
+    return withCanonicalOrigin(NextResponse.redirect(loginUrl, 307))
   }
 
-  return intlMiddleware(request)
+  return withCanonicalOrigin(intlMiddleware(request))
 }
 
 /**

@@ -11,6 +11,6 @@
 | ACK-002 | Identité résolue par `@CookieValue("jwt")` dans les controllers (pas `SecurityContextHolder`) | DEC-S1-003 | Follow-up #93 (migration actée) |
 | ACK-003 | Rate-limiting Bucket4j in-memory mono-instance | DEC-S2-001 | Au passage multi-replicas / load-balancer → bucket4j-redis |
 | ACK-004 | `BrevoEmailService` no-op silencieux sans clé API | DEC-S8-001 | Follow-up ouvert : fail-fast prod / health indicator |
-| ACK-005 | Fallbacks dev committés (`jwt.secret`, `DB_PASSWORD`) dans `application-dev.properties` | DEC-S3-003 (prod fail-fast sans default) | Si le profil dev devient accessible hors localhost |
+| ACK-005 | Fallbacks dev committés (`DB_PASSWORD`, `app.export.token-secret`) dans `application-dev.properties`. ⚠ MAJ #323 : plus aucun fallback de signature d'auth — `jwt.private-key` est VIDE en dev (paire RS256 éphémère générée au boot), aucune clé RSA n'est committée | DEC-S3-003 (prod fail-fast sans default) | Si le profil dev devient accessible hors localhost |
 | ACK-006 | BR-EVE-011 quota par tier no-op (`PlanPolicy` renvoie toujours `true`) | Anticipation monétisation, issue #88 | À l'activation de la monétisation |
 | ACK-007 | Valeurs legacy `recurrence_unit` invalides sous le CHECK V7 | PIT-S9-001 | Migration V10 planifiée S12 |

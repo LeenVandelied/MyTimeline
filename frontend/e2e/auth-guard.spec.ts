@@ -4,6 +4,7 @@ import { SHARED } from './support/accounts'
 // Playwright, qui n'a pas la même résolution que le bundler Next. `locales.ts` est
 // pur (aucun import Node/Next), il se charge donc tel quel. Source de vérité #235.
 import { SUPPORTED_LOCALES } from '../src/i18n/locales'
+import { SIGNATURE_VERIFICATION_CONFIGURED } from './support/rs256'
 
 /**
  * #302 — Garde SERVEUR des routes connectées (`middleware.ts`, cf. ADR-004).
@@ -118,14 +119,87 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     })
   }
 
-  test('un cookie jwt bidon suffit à passer la garde (limite assumée, ADR-004)', async ({
+  /**
+   * #322 — un en-tête d'hôte falsifié ne doit JAMAIS déplacer la cible de la
+   * redirection hors de l'origine servie.
+   *
+   * Ce que ce test ancre, et que `middleware.test.ts` ne peut pas ancrer : le
+   * comportement du RUNTIME Next complet (construction d'`initURL`, puis
+   * relativisation du `Location` par `resolve-routes.js`), pas celui d'une
+   * `NextRequest` fabriquée à la main.
+   *
+   * ⚠ Il PASSE aussi bien dans le mode dégradé (`APP_CANONICAL_HOST` absente —
+   * le cas de la CI) qu'avec la variable configurée : dans les deux cas la cible
+   * doit rester l'origine servie. Il vire au rouge si un futur changement rend
+   * `request.nextUrl` dépendant des en-têtes (p. ex. `trustHostHeader`) SANS
+   * origine canonique configurée. Ne pas « réparer » l'assertion dans ce cas :
+   * c'est l'open-redirect d'ADR-004 §Limites qui serait rouvert.
+   *
+   * `x-forwarded-host` est utilisé plutôt que `Host` : c'est l'en-tête que Next
+   * consulte en priorité, et le seul dont on soit certain qu'un client HTTP le
+   * transmette sans le réécrire.
+   */
+  const SPOOFED_HEADERS: Record<string, string>[] = [
+    { 'x-forwarded-host': 'evil.example' },
+    { 'x-forwarded-host': 'evil.example', 'x-forwarded-proto': 'http' },
+  ]
+
+  for (const headers of SPOOFED_HEADERS) {
+    test(`un hôte falsifié (${Object.keys(headers).join('+')}) ne déplace pas la cible`, async ({
+      page,
+      baseURL,
+    }) => {
+      const response = await page.request.get('/fr/dashboard', { maxRedirects: 0, headers })
+
+      expect(response.status()).toBe(307)
+
+      const location = response.headers()['location']
+      expect(location).toBeDefined()
+
+      const target = new URL(location, baseURL)
+      expect(target.pathname).toBe('/fr/login')
+      expect(target.host, 'la cible ne doit pas partir sur l’hôte injecté').toBe(
+        new URL(baseURL!).host,
+      )
+      expect(location).not.toContain('evil.example')
+    })
+  }
+
+  test('DÉGRADÉ : un cookie jwt bidon suffit à passer la garde (ADR-004)', async ({
     page,
     context,
   }) => {
-    // Documente noir sur blanc la limite du choix « présence du cookie » : la
-    // garde n'est PAS une frontière d'autorisation. Si ce test se met à échouer,
-    // c'est que la stratégie a changé (vérification de signature) -> mettre à
-    // jour l'ADR-004 plutôt que de « réparer » le test.
+    // ⚠ MISE À JOUR #323 (sprint 50) — ce test décrit désormais le mode DÉGRADÉ,
+    // pas le comportement nominal. Depuis #323, le middleware VÉRIFIE la signature
+    // RS256 du cookie quand `AUTH_JWT_PUBLIC_KEY` est configurée, et un cookie
+    // bidon est alors redirigé (307). L'environnement e2e ne pose PAS cette
+    // variable : le backend du job CI signe avec une paire ÉPHÉMÈRE (aucune clé
+    // privée n'est committable dans un dépôt PUBLIC), donc aucune clé publique
+    // stable n'est publiable au frontend. Le chemin dégradé reste donc le chemin
+    // exercé ici, et il doit continuer de fonctionner.
+    //
+    // La vérification de signature elle-même est couverte en UNITAIRE :
+    // `frontend/middleware.test.ts` (§ signature RS256) et
+    // `frontend/src/lib/auth-token-verify.test.ts`, et désormais en E2E par
+    // `e2e/auth-signature.spec.ts` sur une stack appairée (audit de couverture S50).
+    //
+    // ⚠ LES DEUX MODES SONT MUTUELLEMENT EXCLUSIFS sur une même instance Next : la
+    // variable est lue au RUNTIME par le middleware, une instance est donc soit
+    // dégradée, soit vérifiante. Ce cas ne peut pas rester inconditionnel — lancé
+    // contre une stack appairée, il échouait (200 attendu, 307 reçu) alors que le
+    // code se comportait CORRECTEMENT. On le conditionne donc à la configuration
+    // observable, plutôt que de le figer sur un seul des deux mondes :
+    //   - clé absente (config CI historique)  -> ce cas s'exécute (contrat #302) ;
+    //   - clé présente (stack appairée)       -> `auth-signature.spec.ts` prend le
+    //     relais et affirme la 307 sur ce même cookie bidon.
+    // Ne pas « réparer » ce test en durcissant l'assertion : ce serait supprimer la
+    // couverture du dégradé, qui reste le mode réellement déployé en CI.
+    test.skip(
+      SIGNATURE_VERIFICATION_CONFIGURED,
+      'AUTH_JWT_PUBLIC_KEY configurée : le middleware VÉRIFIE la signature, le cookie bidon ' +
+        'est donc rejeté (307). Cas couvert par e2e/auth-signature.spec.ts.',
+    )
+
     await context.addCookies([
       { name: 'jwt', value: 'ceci-n-est-pas-un-jwt', url: 'http://localhost:3000' },
     ])

@@ -16,9 +16,28 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 | `SPRING_PROFILES_ACTIVE=prod` | Active le profil prod (fail-fast secrets, `ddl-auto=validate`) | ✅ | Fallback `:dev` silencieux → bloqué par le garde-fou #111 si `ENVIRONMENT` posé |
 | `ENVIRONMENT=production` | Arme le garde-fou #111 (ceinture + bretelles) | ✅ | Pas de filet : un oubli de profil ferait tourner la config `dev` exposée |
 | `DB_PASSWORD` | Mot de passe datasource | ✅ | **Boot échoue** (fail-fast, aucun default secret) |
-| `JWT_SECRET` | Clé de signature JWT (`openssl rand -hex 64`) | ✅ | **Boot échoue** (fail-fast) |
+| `JWT_PRIVATE_KEY` | Clé PRIVÉE RS256 de signature des JWT, PKCS#8 Base64, ≥ 2048 bits (#323) | ✅ | **Boot échoue** (garde-fou #323). ⚠ Sans ce garde-fou l'app démarrerait sur une paire **éphémère** : déconnexion globale à chaque redéploiement, sans symptôme |
+| `EXPORT_TOKEN_SECRET` | Secret HMAC DÉDIÉ des tokens de download d'export RGPD (#323), Base64 ≥ 32 o. | ✅ | **Boot échoue** (garde-fou #323) |
+| `AUTH_JWT_PUBLIC_KEY` *(frontend)* | Clé PUBLIQUE SPKI Base64 — vérification de signature du cookie `jwt` dans le middleware Next (#323). **Pas un secret**. Valeur exacte = celle journalisée au boot du backend (`JwtService`), **jamais** une valeur re-dérivée à la main | ⚠️ recommandé | Garde **dégradée** : présence du cookie seule (comportement d'avant #323). Aucun garde-fou frontend ne fait échouer le démarrage ; un `console.warn` one-shot est émis en production (revue S50) |
+| `APP_CANONICAL_HOST` *(frontend)* | Origine(s) canonique(s) des redirections émises par `middleware.ts` (#322), liste CSV, **1re entrée = le canonique**. **Poser la forme `https://app.example.com`, PAS l'hôte nu** (voir note ci-dessous). **Pas un secret** | ⚠️ recommandé | **Open-redirect silencieux** : l'origine du `Location` reste héritée de `Host` / `x-forwarded-host`, donc contrôlable par l'appelant (+ empoisonnement de cache si un cache mutualisé mémorise la 307). Aucun garde-fou frontend ne fait échouer le démarrage ; un `console.warn` one-shot est émis en production (revue S50) |
 | `CORS_ALLOWED_ORIGINS` | Origine(s) front autorisée(s), liste CSV (#120) | ✅ | **Boot échoue** (bean CORS fail-fast) — détails : [`cors-cookie-samesite.md`](cors-cookie-samesite.md) §1 |
 | `COOKIE_DOMAIN` | Domaine du cookie `jwt` (#118), eTLD+1 pour les sous-domaines | ⚠️ conditionnel | Cookie **host-only** : OK en mono-domaine, **auth cassée silencieusement** en multi-sous-domaines |
+
+> **`APP_CANONICAL_HOST` : exiger la forme `https://…`** (revue S50). Une entrée en
+> **hôte nu** (`app.example.com`) ne fixe QUE l'hôte : le protocole de la requête est
+> conservé tel quel, donc un `x-forwarded-proto: http` menteur produit un `Location`
+> en `http://` alors même que le canonique est en HTTPS. La forme complète
+> (`https://app.example.com`) impose le schéma en plus de l'hôte. Ni credential ni
+> chemin ne sont acceptés (`https://u:p@app.example.com/x` est REJETÉ, donc signalé).
+
+> **`AUTH_JWT_PUBLIC_KEY` dépareillée = 100 % des sessions renvoyées vers `/login`, SANS
+> aucun signal** (revue S50, cf. ADR-004 §Limites). Une clé bien formée mais issue d'une
+> AUTRE paire s'importe sans erreur : ni l'avertissement « clé illisible » ni celui
+> « clé absente » ne se déclenchent, seules les vérifications de signature échouent.
+> Symptôme : l'utilisateur se connecte et rebondit aussitôt vers `/login`, l'API répondant
+> pourtant normalement. **Remède immédiat : VIDER `AUTH_JWT_PUBLIC_KEY`** (retour au
+> dégradé de #302, tout le monde repasse), puis recoller la valeur SPKI Base64 journalisée
+> au boot du backend en service.
 
 > `COOKIE_DOMAIN` est **obligatoire dès que** front et API sont sur des
 > sous-domaines distincts du même site (ex. `app.mytimeline.app` + `api.mytimeline.app`) :
@@ -71,7 +90,22 @@ export SPRING_PROFILES_ACTIVE=prod
 export ENVIRONMENT=production
 # Secrets obligatoires (sinon le profil prod échoue au boot) :
 export DB_PASSWORD=...      # via secret manager
-export JWT_SECRET=...       # openssl rand -hex 64
+# #323 — JWT_SECRET (HS256) N'EXISTE PLUS. Signature asymétrique RS256 :
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
+#   openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64 | tr -d '\n'  # -> JWT_PRIVATE_KEY
+#   openssl rsa -in jwt.pem -pubout -outform DER | base64 | tr -d '\n'            # -> AUTH_JWT_PUBLIC_KEY
+# ⚠ `tr -d '\n'` OBLIGATOIRE : le base64 de GNU coreutils (toute image Linux) replie à
+# 76 colonnes, et ni un fichier .env ni docker-compose n'acceptent une valeur multi-lignes
+# (la clé arriverait TRONQUÉE). Le base64 de macOS/BSD ne replie pas — l'écart ne se voit
+# donc pas depuis un poste de dev macOS.
+export JWT_PRIVATE_KEY=...       # via secret manager, JAMAIS committée
+export EXPORT_TOKEN_SECRET=...   # openssl rand -base64 48
+# Côté FRONTEND (variables de runtime, non secrètes). AUTH_JWT_PUBLIC_KEY doit correspondre
+# à JWT_PRIVATE_KEY, sinon tout utilisateur connecté boucle vers /login :
+export AUTH_JWT_PUBLIC_KEY=...
+# #322 — origine canonique des redirections. L'OMETTRE laisse un open-redirect silencieux
+# (le `Location` hérite de `Host` / `x-forwarded-host`). Liste CSV, 1re entrée = canonique :
+export APP_CANONICAL_HOST=https://app.mytimeline.app...
 # CORS — origine(s) front, obligatoire, aucun default (#120) :
 export CORS_ALLOWED_ORIGINS=https://app.mytimeline.app
 # Cookie — obligatoire dès qu'il y a des sous-domaines (#118), eTLD+1 :

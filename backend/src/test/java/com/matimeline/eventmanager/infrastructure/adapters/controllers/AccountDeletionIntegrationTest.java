@@ -51,8 +51,7 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * plutôt que via les endpoints CRUD, pour maîtriser exactement l'état (dont le produit
  * ARCHIVÉ masqué par {@code @SQLRestriction}, cas de non-régression central).
  */
-@SpringBootTest(properties =
-        "jwt.secret=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
+@SpringBootTest
 @AutoConfigureMockMvc
 class AccountDeletionIntegrationTest extends AbstractPostgresIntegrationTest {
 

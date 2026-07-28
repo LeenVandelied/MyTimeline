@@ -58,7 +58,6 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * est couverte par {@code ExportTokenServiceTest} (Clock fixe).
  */
 @SpringBootTest(properties = {
-        "jwt.secret=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
         "spring.main.allow-bean-definition-overriding=true",
         // #58 : ce test couvre le FLOW fonctionnel de l'export (soumission/polling/ownership),
         // pas le throttling. Les POST /api/export partagent l'IP par défaut de MockMvc

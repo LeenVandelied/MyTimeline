@@ -46,6 +46,14 @@ existant** (jjwt HS256, même `jwt.secret` que l'auth, `Clock` injecté pour une
 déterministe et testable). Claims : `sub = jobId`, `uid = ownerId`, `exp = job.expires_at`
 (24h), `typ = "export-download"` (isole ces tokens des tokens d'auth).
 
+> ⚠ **Amendement #323 (sprint 50)** — le partage de `jwt.secret` avec l'auth est ROMPU.
+> `JwtService` signe désormais en **RS256** (asymétrique, pour permettre la vérification en
+> Edge, cf. ADR-004) ; `ExportTokenService` conserve **HS256** mais sur un secret DÉDIÉ
+> `EXPORT_TOKEN_SECRET` (`app.export.token-secret`). Le choix de rester symétrique ici est
+> délibéré : ces tokens ne sont vérifiés que par le backend, aucune clé de vérification n'a
+> à être distribuée. Effet : compromettre l'un des deux ne compromet plus l'autre, et
+> l'isolation auth/download ne repose plus sur le seul claim `typ`.
+
 Vérification triple à la download (défense en profondeur) :
 1. L'endpoint `/api/export/**` est protégé par `JwtFilter` (cookie/Bearer `ROLE_USER`).
 2. Le token est valide (signature + non expiré) et porte `jobId`/`uid`.

@@ -73,7 +73,9 @@ class ProfileSafetyGuardTest {
                 .withProperty("ENVIRONMENT", "production")
                 .withProperty("app.cookie.secure", "true") // requis en prod effectif (#254)
                 .withProperty("app.cookie.domain", "example.com") // requis en prod effectif (#253)
-                .withProperty("app.cors.allowed-origins", "https://app.example.com"); // #253
+                .withProperty("app.cors.allowed-origins", "https://app.example.com") // #253
+                .withProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou") // #323
+                .withProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou"); // #323
         env.setActiveProfiles("prod");
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
@@ -184,6 +186,8 @@ class ProfileSafetyGuardTest {
                 .withProperty("app.cookie.domain", "example.com") // #253
                 .withProperty("app.cors.allowed-origins", "https://app.example.com"); // #253
         env.setActiveProfiles("prod");
+        env.setProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou"); // #323
+        env.setProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou"); // #323
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
@@ -226,6 +230,8 @@ class ProfileSafetyGuardTest {
                 .withProperty("app.cookie.domain", "example.com") // requis en prod effectif (#253)
                 .withProperty("app.cors.allowed-origins", "https://app.example.com"); // #253
         env.setActiveProfiles("prod");
+        env.setProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou"); // #323
+        env.setProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou"); // #323
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
@@ -239,6 +245,8 @@ class ProfileSafetyGuardTest {
                 .withProperty("app.cookie.domain", "example.com") // requis en prod effectif (#253)
                 .withProperty("app.cors.allowed-origins", "https://app.example.com"); // #253
         env.setActiveProfiles("prod");
+        env.setProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou"); // #323
+        env.setProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou"); // #323
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
@@ -334,6 +342,8 @@ class ProfileSafetyGuardTest {
                 .withProperty("app.cookie.domain", "example.com") // requis en prod effectif (#253)
                 .withProperty("app.cors.allowed-origins", "https://app.example.com"); // #253
         env.setActiveProfiles("prod");
+        env.setProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou"); // #323
+        env.setProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou"); // #323
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
@@ -461,6 +471,8 @@ class ProfileSafetyGuardTest {
                 .withProperty("app.cookie.domain", "example.com")
                 .withProperty("app.cors.allowed-origins", "https://app.example.com,https://admin.example.com");
         env.setActiveProfiles("prod");
+        env.setProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou"); // #323
+        env.setProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou"); // #323
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
@@ -485,6 +497,119 @@ class ProfileSafetyGuardTest {
                 .withProperty("app.cookie.domain", "")
                 .withProperty("app.cors.allowed-origins", "");
         env.setActiveProfiles("test");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    // --- #323 : refuse le boot si JWT_PRIVATE_KEY / EXPORT_TOKEN_SECRET vides en prod effectif ---
+    // Les checks antérieurs (#254/#253) sont satisfaits dans chaque cas pour isoler #323.
+
+    /** Environnement prod satisfaisant TOUS les garde-fous antérieurs à #323. */
+    private MockEnvironment prodEnvSatisfyingEarlierChecks() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "true")
+                .withProperty("app.cookie.domain", "example.com")
+                .withProperty("app.cors.allowed-origins", "https://app.example.com");
+        env.setActiveProfiles("prod");
+        return env;
+    }
+
+    @Test
+    @DisplayName("#323 profil prod + JWT_PRIVATE_KEY absente → refuse de booter (pas de paire éphémère en prod)")
+    void shouldFail_whenProdProfileAndJwtPrivateKeyMissing() {
+        MockEnvironment env = prodEnvSatisfyingEarlierChecks()
+                .withProperty("app.export.token-secret", "secret-factice");
+
+        // Sans ce garde-fou l'app démarrerait NORMALEMENT sur une paire éphémère : aucun
+        // symptôme au boot, mais déconnexion globale à chaque redéploiement.
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#323")
+                .hasMessageContaining("jwt.private-key")
+                .hasMessageContaining("JWT_PRIVATE_KEY")
+                .hasMessageContaining("ÉPHÉMÈRE");
+    }
+
+    @Test
+    @DisplayName("#323 marqueur prod + JWT_PRIVATE_KEY blanche → refuse de booter (blanc = vide)")
+    void shouldFail_whenProdMarkerAndJwtPrivateKeyBlank() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("ENVIRONMENT", "production")
+                .withProperty("app.cookie.secure", "true")
+                .withProperty("app.cookie.domain", "example.com")
+                .withProperty("app.cors.allowed-origins", "https://app.example.com")
+                .withProperty("jwt.private-key", "   ")
+                .withProperty("app.export.token-secret", "secret-factice");
+        env.setActiveProfiles("prod");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("JWT_PRIVATE_KEY");
+    }
+
+    @Test
+    @DisplayName("#323 placeholder JWT_PRIVATE_KEY IRRÉSOLUBLE → message #323 lisible, pas « Could not resolve placeholder »")
+    void shouldFail_withReadableMessage_whenJwtPrivateKeyPlaceholderIsUnresolvable() {
+        // Reproduit EXACTEMENT application-prod.properties depuis la revue S50 (2e cycle) :
+        // `jwt.private-key=${JWT_PRIVATE_KEY}` SANS default. Variable d'env absente ⇒ le
+        // placeholder est irrésoluble et `getProperty` LÈVE au lieu de renvoyer null.
+        // Les deux barrières doivent coexister : le boot échoue de toute façon (1re barrière,
+        // portée par le fichier de properties), MAIS l'exploitant garde le message qui nomme
+        // le problème plutôt qu'un « Could not resolve placeholder » opaque.
+        MockEnvironment env = prodEnvSatisfyingEarlierChecks()
+                .withProperty("jwt.private-key", "${JWT_PRIVATE_KEY}")
+                .withProperty("app.export.token-secret", "secret-factice");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#323")
+                .hasMessageContaining("JWT_PRIVATE_KEY");
+    }
+
+    @Test
+    @DisplayName("#323 profil prod + EXPORT_TOKEN_SECRET vide → refuse de booter (message EXPORT_TOKEN_SECRET)")
+    void shouldFail_whenProdProfileAndExportTokenSecretEmpty() {
+        MockEnvironment env = prodEnvSatisfyingEarlierChecks()
+                .withProperty("jwt.private-key", "cle-privee-factice")
+                .withProperty("app.export.token-secret", "");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#323")
+                .hasMessageContaining("app.export.token-secret")
+                .hasMessageContaining("EXPORT_TOKEN_SECRET");
+    }
+
+    @Test
+    @DisplayName("#323 profil dev + les deux valeurs vides → boot autorisé (paire éphémère légitime)")
+    void shouldPass_whenDevProfileAndSigningMaterialEmpty() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("jwt.private-key", "")
+                .withProperty("app.export.token-secret", "");
+        env.setActiveProfiles("dev");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#323 profil test + les deux valeurs absentes → boot autorisé (suites de tests intactes)")
+    void shouldPass_whenTestProfileAndSigningMaterialAbsent() {
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("test");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#323 job CI e2e (dev,e2e sans marqueur prod) + valeurs absentes → boot autorisé")
+    void shouldPass_whenCiE2eJobAndSigningMaterialAbsent() {
+        // Le job e2e démarre le backend SANS clé (paire éphémère) : le middleware frontend
+        // reste alors en mode dégradé. Ne doit jamais bloquer.
+        MockEnvironment env = new MockEnvironment();
+        env.setActiveProfiles("dev", "e2e");
 
         assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
                 .doesNotThrowAnyException();
