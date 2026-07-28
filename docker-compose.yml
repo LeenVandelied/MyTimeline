@@ -64,6 +64,12 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
     depends_on:
       - backend
+    environment:
+      # #322 — origine canonique des redirections du middleware. Lue au RUNTIME
+      # (pas un ARG de build : changer le domaine ne doit pas exiger un rebuild).
+      # VIDE par défaut => dégradé assumé, comportement d'avant #322 inchangé en
+      # dev local. À renseigner en prod/preview, cf. .env.example et ADR-004.
+      APP_CANONICAL_HOST: ${APP_CANONICAL_HOST:-}
     ports:
       - "3000:3000"
     healthcheck:

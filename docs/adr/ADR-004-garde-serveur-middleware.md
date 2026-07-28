@@ -4,7 +4,9 @@
 - Date : 2026-07-27
 - Contexte : Sprint 45, issue #302 (garde serveur pour les routes connectées `(app)`)
 - Follow-up de : review PR #297 (Sprint 40 — shell applicatif #210), réf. mémoire PIT-S40-002
-- Portée : `frontend/middleware.ts`, `frontend/src/lib/auth-guard-paths.ts`
+- Portée : `frontend/middleware.ts`, `frontend/src/lib/auth-guard-paths.ts`,
+  `frontend/src/lib/canonical-host.ts` (#322)
+- Complété par : issue #322 (sprint 50 — origine canonique du `Location`)
 - Ne supersede pas : `useAuthGuard` (#210) reste en place, cf. §Décision point 4
 
 ## Contexte
@@ -142,15 +144,8 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
   garde doit d'abord FONCTIONNER. La cible est donc construite par
   `request.nextUrl.clone()` (URL déjà parsée et normalisée par Next, `x-forwarded-*`
   pris en compte) plutôt que par concaténation sur `request.url` brut.
-  **Limite résiduelle assumée** : l'origine du `Location` suit celle de la requête,
-  donc l'en-tête `Host` / `x-forwarded-host`. Derrière un proxy qui ne normalise
-  pas `Host`, un `Host` hostile déplace la cible de la redirection (open-redirect,
-  et empoisonnement de cache si un cache mutualisé mémorise la 307). La mitigation
-  n'est PAS un retour au relatif (500) : elle est au niveau de l'infra (le reverse
-  proxy doit imposer un `Host` canonique) ou, à terme, dans une allow-list d'hôtes
-  côté middleware — cf. Follow-ups. Le comportement actuel est **ancré par un test**
-  de `middleware.test.ts` (« LIMITE ASSUMÉE : l'origine du Location suit celle de la
-  requête »), de sorte qu'un futur durcissement le fasse échouer visiblement.
+  **Limite résiduelle** : l'origine du `Location` suivait celle de la requête —
+  **traitée au sprint 50, cf. §Origine canonique du `Location` (#322)** ci-dessous.
   **Angle mort corrigé au passage** : les tests unitaires assertaient l'égalité de
   chaîne avec `/fr/login` et résolvaient tout via `new URL(location, ORIGIN)` — avec
   une base. Ils restaient verts alors que la garde était totalement cassée. Ils
@@ -160,6 +155,81 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
   redirigé vers `/login` atterrit ensuite sur le dashboard, pas sur l'URL demandée.
   Choix délibéré — un paramètre de redirection est une surface d'open-redirect qui
   demande sa propre validation, hors scope #302.
+
+### Origine canonique du `Location` (#322, sprint 50)
+
+> Section ajoutée par #322. Les sections de §Limites sont indépendantes : une
+> évolution ultérieure de la garde ajoute la sienne plutôt que de réécrire celle-ci.
+
+**Ce qui a été MESURÉ avant de décider** (`next build` + `next start`, requêtes
+curl avec `Host: evil.example` puis `X-Forwarded-Host: evil.example`) :
+
+- Next construit l'URL vue par le middleware depuis `initURL` =
+  `${proto}://${fetchHostname}:${port}${req.url}` (`attachRequestMeta`,
+  `next/dist/server/next-server.js`) — soit l'**hôte de bind du serveur**, PAS
+  l'en-tête `Host`. `experimental.trustHostHeader` n'est pas activé ici.
+- En sortie, `resolve-routes.js` applique `getRelativeURL(location, initUrl)` : si
+  l'origine du `Location` égale celle d'`initURL`, l'en-tête part **relatif**.
+- Conséquence : **sur ce runtime self-hosté, un `Host` falsifié ne déplaçait déjà
+  pas la redirection** (`location: /fr/login` dans les trois cas). Le risque décrit
+  par #322 n'était donc pas reproductible tel quel. Il le redevient dès que
+  `request.nextUrl` dérive des en-têtes : `trustHostHeader`, ou une plateforme edge
+  (Vercel & co.) qui construit l'URL depuis le `Host` reçu.
+
+**Décision — option (c), hôte canonique par variable d'environnement.**
+Les options écartées : (a) « imposer un `Host` canonique au reverse proxy » — il
+n'existe **aucun** reverse proxy dans ce dépôt (`docker-compose.yml` = postgres +
+backend + frontend, aucun workflow de déploiement), l'exigence serait purement
+documentaire ; (b) allow-list applicative en dur — non synchronisable avec les
+domaines de preview/staging, risque signalé par l'issue elle-même.
+
+- Variable : **`APP_CANONICAL_HOST`**, liste d'origines séparées par des virgules,
+  **la première étant le canonique**. Formes acceptées : `app.example.com`,
+  `app.example.com:8443`, `https://app.example.com` (la forme avec schéma impose
+  aussi le protocole, ce qui neutralise un `x-forwarded-proto` menteur).
+- **Non `NEXT_PUBLIC_*`** : lue au RUNTIME serveur (`process.env` du sandbox Edge
+  est alimenté depuis l'environnement du process Node, cf.
+  `buildEnvironmentVariablesFrom`), donc modifiable **sans reconstruire l'image** et
+  jamais exposée au navigateur. Un `NEXT_PUBLIC_*` aurait été figé au build.
+- **Non `CORS_ALLOWED_ORIGINS`** : cette variable est lue par **Spring** et n'est
+  aujourd'hui **pas transmise au conteneur frontend** (vérifié dans
+  `docker-compose.yml`). S'appuyer dessus aurait donné une garde silencieusement
+  inactive côté Next tout en laissant croire que le `ProfileSafetyGuard` backend la
+  couvrait.
+- **Portée** : le durcissement s'applique à **toutes** les redirections émises par
+  `middleware.ts`, garde #302 **et** next-intl (`/` → `/fr`, `/dashboard` →
+  `/fr/dashboard`). Ces dernières dérivent de la même `request.nextUrl` : n'en
+  durcir qu'une laisserait le vecteur ouvert sur des chemins plus atteignables.
+- **Fail-closed** : hôte entrant non déclaré → l'origine est réécrite vers la
+  première entrée. Hôte déclaré → conservé tel quel (preview/staging non cassés).
+- **Piège WHATWG rencontré** : écrire `url.host = 'app.example.com'` ne supprime
+  **pas** le port déjà présent — la 307 sortait en
+  `http://app.example.com:3133/fr/login`, soit le port interne du conteneur. La
+  réécriture porte donc sur `hostname` **puis** `port`, jamais sur `host`. Défaut
+  invisible en test unitaire tant qu'aucune URL de départ ne portait de port : il a
+  été trouvé en interrogeant un serveur réel, pas la suite Vitest.
+
+**Dégradé assumé — variable absente, vide ou invalide → AUCUNE réécriture**, le
+comportement d'avant #322 est conservé à l'identique. Délibéré : une garde qui 500
+ou boucle sur tous les environnements non configurés serait strictement pire que le
+risque qu'elle corrige (BUG-S45-001, cf. ci-dessus). Ancré par des tests
+(`APP_CANONICAL_HOST` valant `''`, `'   '`, `'pas valide'`, `',,,'` → 307 nominale).
+
+**Risques résiduels, non couverts par #322 :**
+
+- **Rien n'impose la variable en production.** Il n'existe pas d'équivalent frontend
+  au `ProfileSafetyGuard` backend : une prod qui oublie `APP_CANONICAL_HOST` ne
+  bénéficie de rien, **silencieusement**. Sur le runtime self-hosté actuel c'est sans
+  conséquence (mesure ci-dessus) ; sur une plateforme edge, ce serait l'open-redirect
+  d'origine.
+- **Une valeur syntaxiquement invalide désactive le durcissement** au lieu de le
+  signaler (même raison : interdiction de casser le boot / le rendu).
+- **Une liste mal synchronisée** avec les domaines réellement servis renvoie les
+  environnements non listés vers le canonique — comportement voulu (fail-closed),
+  mais qui se manifeste comme une redirection inattendue si un domaine légitime est
+  oublié.
+- Les littéraux **IPv6** ne sont acceptés que sous forme d'origine complète
+  (`http://[::1]:3000`), pas en hôte nu.
 
 ## Conséquences
 
@@ -179,10 +249,10 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
   `frontend/app/[locale]/(app)/` (script de lint, ou test qui lit le FS côté
   Node uniquement).
 - Paramètre `?redirect=` avec allow-list de chemins internes.
-- **Neutraliser la limite `Host`** (cf. §Limites) : imposer un `Host` canonique au
-  reverse proxy, ou valider `request.nextUrl.host` contre une allow-list dans le
-  middleware avant d'émettre la 307. Un retour au `Location` relatif n'est PAS une
-  option — il rend un 500 sur toutes les routes protégées.
+- ~~**Neutraliser la limite `Host`**~~ → **traité #322 (sprint 50)**, cf. §Limites
+  « Origine canonique du `Location` ». Reste ouvert : rendre `APP_CANONICAL_HOST`
+  **obligatoire en production** (équivalent frontend du `ProfileSafetyGuard`
+  backend), aujourd'hui son absence dégrade en silence.
 
 ## Références
 

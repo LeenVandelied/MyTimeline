@@ -118,6 +118,52 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     })
   }
 
+  /**
+   * #322 — un en-tête d'hôte falsifié ne doit JAMAIS déplacer la cible de la
+   * redirection hors de l'origine servie.
+   *
+   * Ce que ce test ancre, et que `middleware.test.ts` ne peut pas ancrer : le
+   * comportement du RUNTIME Next complet (construction d'`initURL`, puis
+   * relativisation du `Location` par `resolve-routes.js`), pas celui d'une
+   * `NextRequest` fabriquée à la main.
+   *
+   * ⚠ Il PASSE aussi bien dans le mode dégradé (`APP_CANONICAL_HOST` absente —
+   * le cas de la CI) qu'avec la variable configurée : dans les deux cas la cible
+   * doit rester l'origine servie. Il vire au rouge si un futur changement rend
+   * `request.nextUrl` dépendant des en-têtes (p. ex. `trustHostHeader`) SANS
+   * origine canonique configurée. Ne pas « réparer » l'assertion dans ce cas :
+   * c'est l'open-redirect d'ADR-004 §Limites qui serait rouvert.
+   *
+   * `x-forwarded-host` est utilisé plutôt que `Host` : c'est l'en-tête que Next
+   * consulte en priorité, et le seul dont on soit certain qu'un client HTTP le
+   * transmette sans le réécrire.
+   */
+  const SPOOFED_HEADERS: Record<string, string>[] = [
+    { 'x-forwarded-host': 'evil.example' },
+    { 'x-forwarded-host': 'evil.example', 'x-forwarded-proto': 'http' },
+  ]
+
+  for (const headers of SPOOFED_HEADERS) {
+    test(`un hôte falsifié (${Object.keys(headers).join('+')}) ne déplace pas la cible`, async ({
+      page,
+      baseURL,
+    }) => {
+      const response = await page.request.get('/fr/dashboard', { maxRedirects: 0, headers })
+
+      expect(response.status()).toBe(307)
+
+      const location = response.headers()['location']
+      expect(location).toBeDefined()
+
+      const target = new URL(location, baseURL)
+      expect(target.pathname).toBe('/fr/login')
+      expect(target.host, 'la cible ne doit pas partir sur l’hôte injecté').toBe(
+        new URL(baseURL!).host,
+      )
+      expect(location).not.toContain('evil.example')
+    })
+  }
+
   test('un cookie jwt bidon suffit à passer la garde (limite assumée, ADR-004)', async ({
     page,
     context,

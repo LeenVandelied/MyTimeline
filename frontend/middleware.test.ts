@@ -2,7 +2,7 @@
 
 import { createRequire } from 'node:module'
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
 import middleware, { config } from './middleware'
@@ -39,6 +39,26 @@ function redirectTarget(response: Response): string | null {
   const location = response.headers.get('location')
   return location === null ? null : new URL(location, ORIGIN).pathname
 }
+
+/**
+ * Requête arrivant sur un hôte ARBITRAIRE — modélise un `Host` /
+ * `x-forwarded-host` falsifié sur les plateformes où `request.nextUrl` en dérive
+ * (cf. le bloc « origine canonique » plus bas pour la mesure sur CE runtime).
+ */
+function requestFromHost(host: string, pathname = '/fr/dashboard'): NextRequest {
+  return new NextRequest(new URL(pathname, `http://${host}`), {
+    headers: { 'accept-language': 'fr', host },
+  })
+}
+
+/**
+ * #322 — la garde lit `APP_CANONICAL_HOST` au RUNTIME (pas au chargement du
+ * module) : chaque test pose sa propre valeur. Le nettoyage est global pour
+ * qu'une valeur oubliée ne contamine pas les blocs qui testent le DÉGRADÉ.
+ */
+afterEach(() => {
+  delete process.env.APP_CANONICAL_HOST
+})
 
 describe('middleware — anonyme sur route protégée', () => {
   it.each(['/fr/dashboard', '/fr/timeline', '/fr/products', '/fr/settings'])(
@@ -209,17 +229,12 @@ describe('middleware — Location exploitable par Next (régression 500, S45)', 
     expect(location).not.toContain('evil.example')
   })
 
-  it('LIMITE ASSUMÉE : l’origine du Location suit celle de la requête (ADR-004)', () => {
-    // Le `Location` absolu est dérivé de `request.nextUrl`, donc de l'en-tête
-    // `Host`/`x-forwarded-host`. Derrière un proxy qui ne normalise PAS `Host`,
-    // un `Host` hostile déplace la cible de redirection. Test d'ANCRAGE, pas de
-    // validation : il documente le comportement réel pour qu'un futur durcissement
-    // (allow-list d'hôtes) le fasse échouer visiblement au lieu de passer inaperçu.
-    // Ne PAS « corriger » en repassant au relatif → 500 (cf. en-tête de ce bloc).
-    const req = new NextRequest(new URL('/fr/dashboard', 'http://evil.example'), {
-      headers: { 'accept-language': 'fr' },
-    })
-    const location = middleware(req).headers.get('location')!
+  it('DÉGRADÉ (APP_CANONICAL_HOST absente) : l’origine du Location suit la requête', () => {
+    // Comportement d'AVANT #322, conservé tel quel quand la variable n'est pas
+    // configurée (dev local, CI, preview). C'est le dégradé assumé : une garde
+    // qui casse partout serait pire que le risque qu'elle corrige
+    // (BUG-S45-001). Ancré ici pour que le compromis reste VISIBLE.
+    const location = middleware(requestFromHost('evil.example')).headers.get('location')!
 
     expect(new URL(location).pathname).toBe('/fr/login')
     expect(new URL(location).host).toBe('evil.example')
@@ -230,6 +245,147 @@ describe('middleware — Location exploitable par Next (régression 500, S45)', 
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr/login')
+  })
+})
+
+describe('middleware — origine canonique du Location (#322)', () => {
+  /**
+   * ⚠ CE QUI A ÉTÉ MESURÉ SUR LE RUNTIME RÉEL, avant d'écrire ces tests
+   * (`next build` + `next start`, curl avec `Host: evil.example` puis
+   * `X-Forwarded-Host: evil.example`) :
+   *
+   *   `initURL` de Next = `${proto}://${fetchHostname}:${port}${req.url}` —
+   *   l'hôte de BIND du serveur, PAS l'en-tête `Host`
+   *   (`next/dist/server/next-server.js`, `attachRequestMeta`). En self-hosting
+   *   (`next start` / sortie `standalone`), un `Host` falsifié ne déplace donc
+   *   PAS `request.nextUrl` : le vecteur décrit par #322 n'est pas atteignable
+   *   TEL QUEL sur cette configuration.
+   *
+   * Il le redevient dès que `request.nextUrl` dérive des en-têtes : option
+   * `experimental.trustHostHeader`, ou une plateforme edge qui construit l'URL
+   * depuis le `Host` reçu. Les tests ci-dessous injectent donc l'hôte hostile
+   * DANS l'URL de la `NextRequest` — c'est-à-dire exactement l'état dans lequel
+   * le middleware se trouverait sur ces plateformes. C'est une défense en
+   * profondeur assumée, pas la correction d'un trou reproductible ici.
+   */
+  const CANONICAL = 'app.mytimeline.test'
+
+  const locationFor = (req: NextRequest): URL =>
+    new URL(middleware(req).headers.get('location')!)
+
+  it('réécrit l’origine quand la requête arrive sur un Host FALSIFIÉ', () => {
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    const location = locationFor(requestFromHost('evil.example'))
+
+    expect(location.host).toBe(CANONICAL)
+    expect(location.pathname).toBe('/fr/login')
+    // L'hôte hostile ne doit subsister NULLE PART dans l'en-tête.
+    expect(location.toString()).not.toContain('evil.example')
+  })
+
+  it('ne bouge PAS un Host légitime (non-régression du cas nominal)', () => {
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    expect(locationFor(requestFromHost(CANONICAL)).host).toBe(CANONICAL)
+  })
+
+  it('n’emporte PAS le port d’écoute interne dans la cible', () => {
+    // Cas réel du self-hosting : le serveur écoute sur :3000 dans le conteneur
+    // et `request.nextUrl` porte donc ce port, absent du domaine public.
+    // Régression trouvée en interrogeant un `next start` réel, pas en unitaire.
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    expect(locationFor(requestFromHost('0.0.0.0:3000')).toString()).toBe(
+      `http://${CANONICAL}/fr/login`,
+    )
+  })
+
+  it('conserve le port quand la configuration en déclare un (dev/preview)', () => {
+    process.env.APP_CANONICAL_HOST = 'localhost:3000'
+
+    expect(locationFor(requestFromHost('evil.example')).toString()).toBe(
+      'http://localhost:3000/fr/login',
+    )
+  })
+
+  it('conserve les hôtes secondaires déclarés (preview / staging non cassés)', () => {
+    // Le risque signalé par l'issue elle-même : une liste mal synchronisée qui
+    // renvoie les environnements non-prod vers la prod.
+    process.env.APP_CANONICAL_HOST = `${CANONICAL},preview.mytimeline.test`
+
+    expect(locationFor(requestFromHost('preview.mytimeline.test')).host).toBe(
+      'preview.mytimeline.test',
+    )
+  })
+
+  it('bascule vers la PREMIÈRE entrée quand l’hôte n’est dans aucune (fail-closed)', () => {
+    process.env.APP_CANONICAL_HOST = `${CANONICAL},preview.mytimeline.test`
+
+    expect(locationFor(requestFromHost('evil.example')).host).toBe(CANONICAL)
+  })
+
+  it('impose aussi le protocole quand la config déclare une origine complète', () => {
+    process.env.APP_CANONICAL_HOST = `https://${CANONICAL}`
+
+    expect(locationFor(requestFromHost('evil.example')).toString()).toBe(
+      `https://${CANONICAL}/fr/login`,
+    )
+  })
+
+  it('durcit AUSSI les redirections de next-intl, pas seulement la garde', () => {
+    // `/` → `/fr` et `/dashboard` → `/fr/dashboard` dérivent de la même
+    // `request.nextUrl`. Ne durcir que la 307 de la garde laisserait le même
+    // vecteur ouvert sur des chemins BIEN plus atteignables (la racine).
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    expect(locationFor(requestFromHost('evil.example', '/')).host).toBe(CANONICAL)
+    expect(locationFor(requestFromHost('evil.example', '/dashboard')).host).toBe(CANONICAL)
+  })
+
+  it.each(['', '   ', 'pas valide', ',,,'])(
+    'retombe sur le dégradé (jamais 500, jamais de boucle) pour APP_CANONICAL_HOST=%o',
+    (raw) => {
+      // Le risque de régression #1 de cette issue : une config cassée qui
+      // mettrait TOUTES les routes protégées en panne. Elle doit se contenter
+      // de désactiver le durcissement.
+      process.env.APP_CANONICAL_HOST = raw
+
+      const response = middleware(requestFromHost('evil.example'))
+
+      expect(response.status).toBe(307)
+      expect(new URL(response.headers.get('location')!).pathname).toBe('/fr/login')
+    },
+  )
+
+  it('laisse le Location ABSOLU et parsable sans base (non-régression BUG-S45-001)', () => {
+    // Le durcissement ne doit surtout pas ramener un `Location` relatif : Next
+    // le passe à `new URL(location)` SANS base → 500 sur toutes les routes
+    // protégées. Même garde-fou que le bloc précédent, mais AVEC la config.
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    const location = middleware(request('/fr/dashboard')).headers.get('location')!
+
+    expect(() => new URL(location)).not.toThrow()
+    expect(new URL(location).pathname).toBe('/fr/login')
+  })
+
+  it('ne reporte toujours PAS la query string une fois l’origine réécrite', () => {
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    const location = locationFor(requestFromHost('evil.example', '/fr/dashboard?redirect=https://evil.example'))
+
+    expect(location.search).toBe('')
+    expect(location.toString()).not.toContain('evil.example')
+  })
+
+  it('laisse passer sans redirection une route autorisée (aucun effet de bord)', () => {
+    process.env.APP_CANONICAL_HOST = CANONICAL
+
+    const response = middleware(request('/fr/dashboard', { authenticated: true }))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('location')).toBeNull()
   })
 })
 

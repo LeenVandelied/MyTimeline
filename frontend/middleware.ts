@@ -8,6 +8,7 @@ import {
   isProtectedPathname,
   splitLocalizedPathname,
 } from '@/lib/auth-guard-paths'
+import { canonicalizeLocation, canonicalOrigins } from '@/lib/canonical-host'
 
 // Ce middleware gère la redirection basée sur la langue
 const intlMiddleware = createMiddleware({
@@ -43,6 +44,44 @@ const intlMiddleware = createMiddleware({
  * cette nouvelle requête et applique alors la garde. Une seule implémentation de
  * la négociation de locale, celle de next-intl (pas de régression #235).
  */
+/**
+ * #322 — Réécrit l'origine de TOUTE redirection émise ici vers l'origine
+ * canonique déclarée en configuration (`APP_CANONICAL_HOST`).
+ *
+ * S'applique aussi bien à la 307 de la garde qu'aux redirections de next-intl
+ * (`/` → `/fr`, `/dashboard` → `/fr/dashboard`) : elles dérivent TOUTES de
+ * `request.nextUrl`. N'en durcir qu'une laisserait le même vecteur ouvert sur
+ * l'autre, sur des chemins bien plus atteignables.
+ *
+ * Variable non configurée → renvoie la réponse telle quelle (dégradé assumé,
+ * cf. `canonical-host.ts` et ADR-004 §Limites). Ne lève jamais : une exception
+ * ici redeviendrait un 500 sur toutes les routes protégées (BUG-S45-001).
+ *
+ * ⚠ La lecture de `process.env.APP_CANONICAL_HOST` est écrite en accès LITTÉRAL
+ * (et non `process.env[CONST]`) : c'est la forme que l'analyse statique de Next
+ * reconnaît. La variable n'étant pas `NEXT_PUBLIC_*`, elle n'est PAS inlinée au
+ * build — elle est lue au RUNTIME depuis l'environnement du serveur Node
+ * (`buildEnvironmentVariablesFrom`, `next/dist/server/web/sandbox/context.js`),
+ * donc modifiable sans reconstruire l'image.
+ */
+function withCanonicalOrigin(response: NextResponse): NextResponse {
+  const origins = canonicalOrigins(process.env.APP_CANONICAL_HOST)
+  if (origins.length === 0) return response
+
+  try {
+    const location = response.headers.get('location')
+    if (location === null) return response
+
+    const canonical = canonicalizeLocation(location, origins)
+    if (canonical !== location) response.headers.set('location', canonical)
+  } catch {
+    // Filet de sécurité : en-têtes non modifiables, valeur exotique… on préfère
+    // une redirection non durcie à une panne totale des routes protégées.
+  }
+
+  return response
+}
+
 export default function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl
 
@@ -59,21 +98,25 @@ export default function middleware(request: NextRequest): NextResponse {
     // requête finit en **500** — reproduit localement (`ERR_INVALID_URL`,
     // `input: '/fr/login'`) et en CI (run 30269383403 : 10 specs `auth-guard`
     // attendaient 307, recevaient 500). Une garde qui 500 sur TOUTES les routes
-    // protégées est une panne totale ; le `Host` hostile reste un risque
-    // théorique, tranché en ADR-004.
+    // protégées est une panne totale. Le `Host` hostile est désormais traité en
+    // AVAL par `withCanonicalOrigin` (#322), PAS en repassant au relatif.
     //
     // On clone `request.nextUrl` (déjà parsé/normalisé par Next, `x-forwarded-*`
     // pris en compte) plutôt que de concaténer `request.url` à la main.
     // La query string n'est PAS reportée : pas de `?redirect=` (surface
     // d'open-redirect), cf. ADR-004 §Limites.
+    //
+    // #322 — l'ORIGINE de cette URL n'est plus considérée comme digne de
+    // confiance : `withCanonicalOrigin` la remplace par l'origine canonique
+    // configurée avant que la réponse ne parte.
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = buildLoginPathname(locale)
     loginUrl.search = ''
 
-    return NextResponse.redirect(loginUrl, 307)
+    return withCanonicalOrigin(NextResponse.redirect(loginUrl, 307))
   }
 
-  return intlMiddleware(request)
+  return withCanonicalOrigin(intlMiddleware(request))
 }
 
 /**
