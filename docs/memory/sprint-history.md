@@ -1227,17 +1227,26 @@ Ratio discard 0/10 — les follow-ups de ce sprint viennent tous d'observations 
 >
 > **[MEMORY:pitfall] Le token `gray-500` suggéré par le corps de #293 ÉCHOUE en sombre — mesuré, pas supposé.** Ratios WCAG calculés par le lead avant briefing : `--color-rule` = **1.24:1**, `--color-rule-strong` = **1.50:1** (confirme la prémisse de l'issue). Mais le candidat `gray-500 #5E626B` donne **2.99:1 vs `--color-surface` sombre (#131519)** → sous le seuil 3:1. Et `gray-400 #969AA3` échoue en clair (**2.75:1 vs bg**). La contrainte serrée est **`bg` en clair** et **`surface` en sombre** ; le token doit donc être **découplé clair/sombre** (une seule valeur pour les deux modes ne peut pas passer). Candidat sombre validé : `#6B7078` (3.93 vs bg / 3.67 vs surface).
 
-## Sprint 49 — 2026-07-16 (PLANIFIÉ — mono-issue, Virtualisation frise)
-**Objectif :** Virtualiser la frise pour >1000 événements (#69), sur le vrai chemin de rendu après correction du périmètre.
+## Sprint 49 — 2026-07-16 → (EN COURS depuis 2026-07-28 — Virtualisation frise + solde dette landing)
+**Objectif :** Virtualiser la frise pour >1000 événements (#69) sur le vrai chemin de rendu, **et** solder la dette design laissée par le Sprint 48 (#334, #335, #336, #337).
 **Milestone GitHub :** #49
-**Issues :** #69 (P1/L) — 8 points
-**Vagues :** mono-issue
-**Migrations Flyway :** aucune
-**Dépend de :** **S47** (couverture E2E frise = filet de non-régression ; « #69 après stabilisation /timeline », plan S44)
+**Issues (5) :** #69 (P1/L) · #334 (P1/M) · #335 (P1/M) · #336 (P1/M) · #337 (P1/M) — ~24 points
+**Vagues :** V1 = #69 + #335 + #336 (parallèles, fichiers disjoints) | V2 = #334 (précédé d'un `ui-design`) | V3 = #337
+**Migrations Flyway :** aucune — **V16 toujours non consommée (12e sprint consécutif sans migration ; le chemin Flyway rouille, un smoke `flyway migrate` sur base vierge reste à faire)**
+**Dépend de :** **S47** (couverture E2E frise — satisfait : `timeline.spec.ts` 21.4K + `timeline-mobile.spec.ts` 15.5K sur `92c14c4`) · **S48/#293** pour #336 (token `--color-rule-emphasis` — satisfait : `colors.css:58` et `:106`)
+**Branche :** `sprint/49` depuis `origin/dev` @`92c14c4`
 **Mini-plans :** `docs/memory/sprints/sprint-49/architect-plans.md`
-**⚠ Périmètre corrigé sur l'issue (commentaire GitHub 2026-07-16) :** #69 désignait `TimelineCalendar.tsx` = **code mort** (aucune page ne le monte, `TimelineEditHost.tsx:18`). Virtualiser cette cible = 8 points sur du code mort. Vraie cible : `TimelineView.tsx` + `zoom.ts` + vues mobiles.
-**#219 écartée délibérément :** son body admet que les listes réelles restent courtes → valeur démo nulle ; ne servait qu'à atteindre 10 points (remplissage). Cohésion S49 remonte de 0.33 à mono-issue.
-**Status :** Planifié
+**Status :** **En cours**
+
+> **⚠ Périmètre élargi le 2026-07-28 — décision dev, le plan du 16/07 disait mono-issue.** Le triage de clôture S48 a versé 4 issues `epic:design` au milestone Sprint 49, dont **#334 et #335 remplissent les 2 critères d'acceptation de #56 restés non remplis** : sans elles, la landing du S48 n'est pas réellement livrée. Le dev a choisi de les prendre plutôt que de les renvoyer au backlog. **Cohésion volontairement sacrifiée** (2 domaines, `epic:events` + `epic:design`, cohésion ≈ 0.2 contre 1.0 en mono-issue) au profit du solde de dette. Label `sprint-49` posé sur #334-#337 le 2026-07-28.
+>
+> **⚠ Périmètre de #69 corrigé dès le plan (commentaire GitHub 2026-07-16) :** l'issue désignait `TimelineCalendar.tsx` = **code mort**. Vraie cible : `TimelineView.tsx` + `zoom.ts` + vues mobiles. **Re-vérifié le 2026-07-28** sur `92c14c4` : les 9 fichiers de l'ancrage existent tous, `grep virtual frontend/package.json` = **0 hit** (travail réel), et `TimelineCalendar.tsx` n'a que 4 références restantes, **toutes des commentaires** (`TimelineEditHost.tsx:21`, `lib.ts:6`, `index.ts:3`, `ds/readme.md:35`) — aucun import, aucun montage.
+>
+> **#219 écartée délibérément :** son body admet que les listes réelles restent courtes → valeur démo nulle ; ne servait qu'à atteindre 10 points (remplissage).
+>
+> **[MEMORY:pitfall] Le corps de #336 se trompe sur le mécanisme — mesuré au grep, pas supposé.** L'issue annonce les formulaires `login`/`register`/`reset-password`/`forgot-password` comme porteurs de `border-rule-strong` : ils en ont **ZÉRO** en TSX. Leurs bordures viennent de `frontend/src/styles/ds/components/core.css` (**14 déclarations** `var(--color-rule-strong)`, l. 18/34/49/71/84/100/109/123/135/154/163/183/211/220). Inventaire réel = **19 occurrences TSX + 14 déclarations CSS = 33** (le « ~30 » tient, le chemin non). Conséquence de périmètre : toucher `core.css` change les bordures de **toute l'app** d'un coup — chaque déclaration doit être arbitrée fonctionnelle (→ `rule-emphasis`) vs décorative (→ reste). L'issue annonce aussi « 4 tests » à mettre à jour ; le grep n'en trouve qu'**un** (`StateScreen.test.tsx`).
+>
+> **[MEMORY:pitfall] `detect-domain.sh` est inutilisable sur les issues design de ce repo.** Renvoie `products` pour #334, `auth` pour #335 et #336, `unknown` pour #337 — aucun rapport. Et **aucun pack `br-design.md` n'existe** dans `.ai-env/context-packs/`. Les briefings design sont donc composés avec `unknown/frontend` (`cp-frontend.md`, 8.9 Ko, sous le seuil de 15 Ko de `build-briefing.sh`) **+ `frontend/src/styles/ds/readme.md` inliné en HEAD** — c'est ce readme (11.9 Ko, tiers de bordure + contrat clair/sombre) qui joue le rôle de pack de domaine. Follow-up candidat : créer `br-design.md`.
 
 > **Plan S45–S49 généré le 2026-07-16** (`/ai-env:sprint plan 5`, cohésion moyenne **0.63** sur les 4 sprints multi-issues ; aucun < 0.3). Fil directeur = **démo-first** (continuité S39–S44) : après la boucle cœur livrée au S44 (`/timeline` + drawer), on ferme l'auth serveur (S45) → on solde la dette drawer (S46) → on couvre la frise en E2E (S47) → on migre la landing sur le DS (S48) → on virtualise (S49). **13 issues retenues sur 84 ouvertes** ; ~65 restent au backlog (attendu). **Migrations : AUCUNE sur les 5 sprints — V16 toujours non consommée (S39→S49 = 11 sprints sans migration ; risque de rouille du chemin Flyway signalé, suggérer un smoke `flyway migrate` sur base vierge).**
 >
