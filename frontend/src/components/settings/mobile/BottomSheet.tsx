@@ -129,7 +129,7 @@ export function BottomSheet({
             onClick={onClose}
             aria-label={t('common.close')}
             data-testid={`${testId}-close`}
-            className="border-rule-strong text-ink-muted focus-visible:ring-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-md border focus-visible:ring-2 focus-visible:outline-none"
+            className="border-rule-emphasis text-ink-muted focus-visible:ring-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-md border focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

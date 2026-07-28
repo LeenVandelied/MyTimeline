@@ -262,7 +262,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                         placeholder={t('namePlaceholder')}
                         data-testid="event-form-title-input"
                         {...field}
-                        className="bg-surface-2 text-ink border-rule-strong"
+                        className="bg-surface-2 text-ink border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage data-testid="event-form-title-error" />
@@ -280,7 +280,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger
-                          className="bg-surface-2 text-ink border-rule-strong"
+                          className="bg-surface-2 text-ink border-rule-emphasis"
                           data-testid="event-form-type-trigger"
                         >
                           <SelectValue placeholder={t('typePlaceholder')} />
@@ -310,7 +310,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                             data-testid="event-form-duration-value"
                             {...field}
                             value={field.value ?? ''}
-                            className="bg-surface-2 text-ink border-rule-strong"
+                            className="bg-surface-2 text-ink border-rule-emphasis"
                           />
                         </FormControl>
                         <FormMessage />
@@ -326,7 +326,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                         <FormLabel className="text-ink">{t('durationUnit')}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="bg-surface-2 text-ink border-rule-strong">
+                            <SelectTrigger className="bg-surface-2 text-ink border-rule-emphasis">
                               <SelectValue placeholder={t('durationUnitPlaceholder')} />
                             </SelectTrigger>
                           </FormControl>
@@ -363,7 +363,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           data-testid="event-form-start-date"
                           {...field}
                           value={field.value ?? ''}
-                          className="bg-surface-2 text-ink border-rule-strong"
+                          className="bg-surface-2 text-ink border-rule-emphasis"
                         />
                       </FormControl>
                       <FormMessage />
@@ -383,7 +383,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                             data-testid="event-form-end-date"
                             {...field}
                             value={field.value ?? ''}
-                            className="bg-surface-2 text-ink border-rule-strong"
+                            className="bg-surface-2 text-ink border-rule-emphasis"
                           />
                         </FormControl>
                         <FormMessage data-testid="event-form-end-error" />
@@ -426,7 +426,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger
-                                className="bg-surface-2 text-ink border-rule-strong"
+                                className="bg-surface-2 text-ink border-rule-emphasis"
                                 data-testid="event-form-recurrence-trigger"
                               >
                                 <SelectValue placeholder={t('recurrenceUnitPlaceholder')} />
@@ -457,7 +457,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                                 data-testid="event-form-recurrence-end-date"
                                 {...field}
                                 value={field.value ?? ''}
-                                className="bg-surface-2 text-ink border-rule-strong"
+                                className="bg-surface-2 text-ink border-rule-emphasis"
                               />
                             </FormControl>
                             <p className="text-ink-muted text-xs">{t('recurrenceEndHint')}</p>
@@ -493,7 +493,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           onChange={(e) => handleColorChange(e.target.value, field)}
                           onBlur={field.onBlur}
                           data-testid="event-form-color-input"
-                          className="bg-surface-2 text-ink border-rule-strong focus:ring-accent flex-1 rounded-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none"
+                          className="bg-surface-2 text-ink border-rule-emphasis focus:ring-accent flex-1 rounded-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none"
                         />
                       </div>
                       <FormMessage data-testid="event-form-color-error" />
@@ -578,7 +578,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-rule-strong text-ink-muted hover:bg-surface-2"
+                    className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
                     onClick={onCancel}
                     disabled={submitting}
                   >

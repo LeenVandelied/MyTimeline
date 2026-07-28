@@ -101,7 +101,10 @@ describe('ResetPasswordPage', () => {
 
     expect(container.querySelector('.bg-bg.text-ink')).not.toBeNull()
     expect(container.querySelector('.bg-surface')).not.toBeNull()
-    expect(container.querySelector('.bg-surface-2.border-rule-strong')).not.toBeNull()
+    // #336 — bordure de champ = tier FONCTIONNEL (WCAG 1.4.11, ≥3:1).
+    // `rule-strong` (1.46:1) est décoratif : sa présence sur un input est le bug.
+    expect(container.querySelector('.bg-surface-2.border-rule-emphasis')).not.toBeNull()
+    expect(container.querySelector('.border-rule-strong')).toBeNull()
 
     const submit = screen.getByTestId('reset-submit')
     expect(submit).toHaveClass('bg-accent', 'text-accent-ink')

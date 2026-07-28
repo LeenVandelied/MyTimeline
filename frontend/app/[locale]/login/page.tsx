@@ -87,7 +87,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                         autoComplete="username"
                         data-testid="login-username"
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />
@@ -108,7 +108,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
                         autoComplete="current-password"
                         data-testid="login-password"
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />

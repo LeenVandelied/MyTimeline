@@ -203,7 +203,7 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
                   }}
                 >
                   <SelectTrigger
-                    className="bg-surface-2 text-ink border-rule-strong"
+                    className="bg-surface-2 text-ink border-rule-emphasis"
                     aria-labelledby="new-event-product-label"
                     aria-invalid={productError || undefined}
                     data-testid="shell-new-event-drawer-product-trigger"

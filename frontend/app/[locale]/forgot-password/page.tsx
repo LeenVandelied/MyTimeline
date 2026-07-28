@@ -93,7 +93,7 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ local
                           data-testid="forgot-email"
                           placeholder={t('common.forgotPassword.emailPlaceholder')}
                           {...field}
-                          className="bg-surface-2 border-rule-strong"
+                          className="bg-surface-2 border-rule-emphasis"
                         />
                       </FormControl>
                       <FormMessage />

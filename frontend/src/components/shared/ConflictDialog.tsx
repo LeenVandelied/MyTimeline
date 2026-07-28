@@ -196,7 +196,7 @@ export function ConflictDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="border-rule-strong text-ink-muted hover:bg-surface-2"
+                className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
                 onClick={() => onTakeServer?.()}
                 disabled={isSubmitting}
                 data-testid="conflict-dialog-take-server"
@@ -220,7 +220,7 @@ export function ConflictDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
-                className="border-rule-strong text-ink-muted hover:bg-surface-2"
+                className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
               >
                 {t('dismiss')}
               </Button>

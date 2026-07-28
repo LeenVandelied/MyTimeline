@@ -170,8 +170,24 @@ Le tier **fonctionnel** est `--color-rule-emphasis` (`--gray-450` `#7A7E87`,
 
 - ✅ **Bouton secondaire du hero** (`HeroSection`) migré sur ce tier ; il
   n'emprunte plus `ink-muted` (tier texte).
-- ⚠️ **Reste à traiter** : les champs et boutons outline encore sur
-  `border-rule-strong` (`login`, `register`, `reset-password`,
-  `forgot-password`, `StateScreen`, `ConflictDialog`, `EventEditForm`,
-  `NewEventDrawer`, `BottomSheet`) — bordure de contrôle sous le seuil.
-  Migration hors périmètre #293 (impact visuel large, à évaluer par lot).
+- ✅ **Hors landing — migré en #336** (sprint 49) : `login`, `register`,
+  `reset-password`, `forgot-password`, `StateScreen`, `ConflictDialog`,
+  `EventEditForm`, `NewEventDrawer`, `BottomSheet`, plus les contrôles du DS
+  dans `ds/components/core.css` (bouton outline, bouton icône, input/textarea,
+  déclencheur de select, checkbox, radio, piste d'interrupteur).
+- ✅ **Pont shadcn** : `--color-input` (globals.css) — qui habille `Input`,
+  `SelectTrigger` et `Button variant="outline"` — pointe désormais sur
+  `rule-emphasis`. C'est le mécanisme réel derrière les formulaires d'auth ;
+  `--color-border` (décoratif) reste sur `--color-rule`.
+- ✅ **Conservés sur `rule-strong` — décision, pas oubli** : cadres de
+  panneaux flottants (`mt-select__menu`, `SelectContent`, `mt-toast`,
+  `mt-dialog`), `mt-badge` (marque statique non focusable), `mt-avatar`
+  (cadre d'image), survol de carte (`mt-card--hover`) et lignes d'en-tête de
+  tableau (`mt-table th`). Ces filets ne portent la limite d'aucun contrôle :
+  1.4.11 ne s'y applique pas.
+- 🔒 **Garde-fou** : `src/styles/__tests__/control-border-tier.test.ts`
+  (parcours AST PostCSS, PAT-S48-001) échoue si un contrôle retombe sur
+  `rule-strong` ou si `--color-input` change de tier.
+- ⚠️ **Reste à traiter** : `ds/components/timeline.css` (16 occurrences de
+  `rule-strong`) — non arbitré, la frise étant en refonte (#69). À trier
+  fonctionnel/décoratif dans un lot dédié.
