@@ -448,3 +448,26 @@ S'y ajoutent : `transition-all` **interpole** (injecter `transition: none` avant
 
 ## PIT-S49-006 — Deux agents ont déclaré la stack E2E morte alors qu'elle tournait ; et `test-quiet.sh e2e` contourne le `--workers=1` du runbook
 En S49, les agents de #69 et #334 ont rendu `PARTIAL` sur « E2E non exécutables, backend down » après un `docker compose up` bloqué >20 min sur « load metadata ». **Docker répondait (29.2.1) et les images `mytimeline-backend` / `mytimeline-frontend` / `postgres:16` étaient DÉJÀ en cache** — le blocage venait d'un *build* qui repartait interroger Docker Hub. Un troisième agent a monté la stack via le runbook S47 sans difficulté : **baseline 68/68 verte en 113 s**. **Vérifier `docker images` avant d'accepter un « stack down » d'un subagent.** Piège supplémentaire trouvé au passage : **`./scripts/test-quiet.sh e2e` ne passe PAS `--workers=1`**, contournant le réglage n°2 du runbook → 4 specs `settings-*` rouges sans rapport avec le code. Préfixer **`CI=1`** (la config force alors 1 worker). Autre symptôme trompeur : un clic E2E **avant hydratation** donne un « élément introuvable » erratique → `expect(async () => { click; toBeVisible }).toPass()`. (Sprint 49, #69/#334/#337)
+
+## PIT-S49-007 — Tailwind v4 scanne les fichiers `.test.ts` : un témoin de test peut générer du CSS invalide et mettre l'app en 500
+En S49 (correctifs de review), un **témoin négatif** de garde-fou AST contenant la chaîne
+`[&_svg:not([class*='size-'])]:size-4` (avec guillemets échappés) a été **scanné par Tailwind v4** depuis
+le fichier de test, générant du CSS invalide dans `globals.css` → **500 sur toute l'application**.
+Aggravation en boucle auto-entretenue : les `test-results/**/error-context.md` produits par Playwright
+**recopient le message d'erreur**, donc la classe fautive, et Tailwind les re-scanne **malgré le
+`.gitignore`**. Guérison : jetons inertes (`zz*`) dans les témoins, suppression des `error-context.md`
+empoisonnés, mise à l'écart de `.next`. **Symptôme trompeur** : ressemble trait pour trait au bug de
+manifeste du serveur de dev décrit au runbook S47 §Instabilités — on cherche donc du côté du serveur au
+lieu du CSS généré. **Règle : dans un témoin de test, n'écris jamais une classe utilitaire plausible ;
+utilise des jetons inertes.** (Sprint 49, correctifs de review)
+
+## PIT-S49-008 — Un défaut de contraste peut n'exister QUE dans un état mixte souris + clavier
+En S49, l'item de locale **active** de `LanguageSelector` porte `bg-accent text-accent-foreground` puis
+`hover:bg-surface-2`. Mesuré au **survol souris seul : 4,71:1 — conforme**, car Radix focalise l'item au
+`pointermove` et son `focus:bg-accent` (`ui/dropdown-menu.tsx:77`) restaure le fond. Mais dans l'état
+**souris posée + flèches clavier** (le focus part, `:hover` reste), le fond redevient `surface-2` avec
+l'encre `accent-ink` : **1,10:1 en clair, 1,17:1 en sombre**. État atteignable par un utilisateur réel.
+`tailwind-merge` ne fusionne pas `hover:bg-*` avec `focus:bg-*` (clés distinctes) : **les deux
+s'appliquent**, et seul l'ordre de cascade tranche — ce qui ne se déduit pas, il faut mesurer.
+**Règle : sur un composant Radix à `focus:` concurrent, mesurer le survol souris seul ne prouve rien —
+tester aussi l'état `:hover` sans `:focus`.** Voir [[PIT-S49-001]]. (Sprint 49, correctifs de review)
