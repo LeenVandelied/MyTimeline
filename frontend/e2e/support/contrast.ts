@@ -168,18 +168,55 @@ export async function readTextRendering(locator: Locator): Promise<TextRendering
     const style = getComputedStyle(el)
     const rect = el.getBoundingClientRect()
 
+    /** Repère lisible d'un noeud dans un message d'échec. */
+    const describeNode = (n: Element): string =>
+      `<${n.tagName.toLowerCase()}${n.id ? `#${n.id}` : ''}` +
+      `${n.classList.length > 0 ? `.${Array.from(n.classList).slice(0, 3).join('.')}` : ''}>`
+
+    // --- Opacité effective : elle se propage depuis la RACINE ----------------
+    // PIÈGE CORRIGÉ AU SPRINT 49 (revue de #337) : l'opacité était accumulée
+    // dans la MÊME boucle que le fond, donc arrêtée par le `break` du premier
+    // ancêtre opaque. Cette borne est valide pour le FOND — ce qui se trouve
+    // derrière un aplat opaque ne se voit pas — mais JAMAIS pour l'opacité, qui
+    // s'applique à tout le sous-arbre depuis la racine. Un `opacity: 0` posé
+    // AU-DESSUS d'un fond opaque intermédiaire était donc ignoré :
+    // `revealForMeasurement` validait une section jamais révélée et
+    // `expectReadable` mesurait l'encre PLEINE d'un élément invisible. Là encore
+    // l'erreur penchait du côté permissif, et sur le garde-fou lui-même.
+    // D'où deux boucles distinctes, chacune avec sa propre condition d'arrêt.
+    let effectiveOpacity = 1
+    for (let node: Element | null = el; node !== null; node = node.parentElement) {
+      const nodeOpacity = Number.parseFloat(getComputedStyle(node).opacity)
+      if (Number.isFinite(nodeOpacity)) effectiveOpacity *= nodeOpacity
+    }
+
     // --- Ancêtres : premier fond opaque + couches semi-transparentes ---------
     const layers: Rgba[] = []
-    let effectiveOpacity = 1
-    let node: Element | null = el
-    while (node !== null) {
+    for (let node: Element | null = el; node !== null; node = node.parentElement) {
       const nodeStyle = getComputedStyle(node)
-      const nodeOpacity = Number.parseFloat(nodeStyle.opacity)
-      effectiveOpacity *= Number.isFinite(nodeOpacity) ? nodeOpacity : 1
+      // DÉGRADÉS (revue du Sprint 49). Seul `backgroundColor` est composité. Un
+      // ancêtre dont le fond est un `background-image` a un `backgroundColor`
+      // TRANSPARENT : il n'était ni empilé, ni compté comme borne opaque — la
+      // remontée continuait et le fond mesuré était FAUX, sans aucun signal.
+      // Ce n'est pas théorique : `styles/landing.css` porte un
+      // `linear-gradient(to right, var(--color-ink), var(--color-accent))` sur
+      // `.gradient-text` et un halo flouté derrière le héros.
+      // On lève, comme pour une couleur non analysable (cf. `toRgba`) : un
+      // harnais de contraste doit échouer bruyamment plutôt que mesurer faux.
+      // Limite assumée : les dégradés portés par un PSEUDO-élément couvrant ne
+      // sont pas vus ici (leur `backgroundColor` transparent les fait ignorer
+      // plus bas) — aucun n'existe aujourd'hui sur un chemin mesuré.
+      if (nodeStyle.backgroundImage !== 'none') {
+        throw new Error(
+          `fond en dégradé/image sur une couche traversée ${describeNode(node)} : ` +
+            `« ${nodeStyle.backgroundImage} ». Seul \`background-color\` est composité, ` +
+            'le fond mesuré serait faux. Mesurer sur un ancêtre à fond uni, ou étendre ' +
+            'le compositage aux dégradés.',
+        )
+      }
       const bg = toRgba(nodeStyle.backgroundColor)
       if (bg[3] > 0) layers.push(bg)
       if (bg[3] >= 1) break
-      node = node.parentElement
     }
 
     // Fond de départ : le premier ancêtre opaque, sinon le blanc du canvas.

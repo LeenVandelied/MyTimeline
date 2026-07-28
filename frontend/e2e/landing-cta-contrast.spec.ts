@@ -7,6 +7,7 @@ import {
   readAtRest,
   readTextRendering,
   requiredRatio,
+  revealForMeasurement,
   waitForFonts,
 } from './support/contrast'
 
@@ -42,10 +43,47 @@ import {
 
 const SCHEMES = ['light', 'dark'] as const
 
+/**
+ * CTA attendus PAR VIEWPORT — et non un simple « au moins un ».
+ *
+ * DÉFAUT CORRIGÉ (revue du Sprint 49) : un CTA invisible était sauté par un
+ * `continue` SILENCIEUX, et la seule garde était `measured.length > 0`. Une
+ * régression masquant 4 CTA sur 5 (un `display:none` de trop, une section jamais
+ * révélée, un sélecteur cassé par un renommage) laissait donc la spec au VERT
+ * avec une seule mesure. On fige la LISTE des noms mesurés : tout CTA qui
+ * disparaît fait rougir, et tout CTA qui apparaît là où on ne l'attend pas
+ * aussi.
+ *
+ * `header/connexion` est en `display:none` sous `md` depuis #334 : sa copie du
+ * panneau burger est couverte par `landing-mobile-menu.spec.ts` (`menu/connexion`).
+ * C'est la SEULE absence légitime, et elle est déclarée ici plutôt que déduite.
+ */
 const VIEWPORTS = [
-  { label: 'desktop 1280', size: { width: 1280, height: 800 } },
-  { label: 'mobile 375', size: { width: 375, height: 812 } },
+  {
+    label: 'desktop 1280',
+    size: { width: 1280, height: 800 },
+    expected: [
+      'header/inscription',
+      'header/connexion',
+      'hero/primaire',
+      'hero/secondaire',
+      'bandeau-final/inscription',
+    ],
+  },
+  {
+    label: 'mobile 375',
+    size: { width: 375, height: 812 },
+    expected: [
+      'header/inscription',
+      'hero/primaire',
+      'hero/secondaire',
+      'bandeau-final/inscription',
+    ],
+  },
 ] as const
+
+/** Viewport par défaut des projets Playwright (`devices['Desktop Chrome']`). */
+const DEFAULT_VIEWPORT_EXPECTED = VIEWPORTS[0].expected
 
 for (const scheme of SCHEMES) {
   test.describe(`Landing — CTA, thème ${scheme}`, () => {
@@ -100,14 +138,21 @@ for (const scheme of SCHEMES) {
           await waitForFonts(page)
 
           const measured: string[] = []
+          const measuredNames: string[] = []
+          const skipped: string[] = []
           for (const cta of landingCtas(page)) {
             await expect(cta.locator).toHaveCount(1)
             // « Connexion » bascule dans le menu burger sous `md` : hors du DOM
-            // rendu visible, il n'y a rien à mesurer.
-            if (!(await cta.locator.isVisible())) continue
+            // rendu visible, il n'y a rien à mesurer. Le saut est TRACÉ, jamais
+            // silencieux — c'est la liste attendue ci-dessous qui l'arbitre.
+            if (!(await cta.locator.isVisible())) {
+              skipped.push(cta.name)
+              continue
+            }
 
             const rendering = await readAtRest(page, cta.locator)
             measured.push(describeRendering(cta.name, rendering))
+            measuredNames.push(cta.name)
 
             expect
               .soft(rendering.ratio, describeRendering(cta.name, rendering))
@@ -119,7 +164,15 @@ for (const scheme of SCHEMES) {
           test
             .info()
             .annotations.push({ type: 'contraste-repos', description: measured.join(' | ') })
-          expect(measured.length).toBeGreaterThan(0)
+          if (skipped.length > 0) {
+            test.info().annotations.push({ type: 'cta-sautés', description: skipped.join(' | ') })
+          }
+          expect(
+            measuredNames,
+            `CTA réellement mesurés à ${viewport.label} (sautés : ${skipped.join(', ') || 'aucun'}) — ` +
+              "un CTA manquant ici n'est PAS une absence de mesure anodine : c'est un CTA " +
+              'devenu invisible, donc une régression à part entière',
+          ).toEqual([...viewport.expected])
         })
       })
     }
@@ -128,13 +181,35 @@ for (const scheme of SCHEMES) {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
 
+      const hovered: string[] = []
+      const skipped: string[] = []
       for (const cta of landingCtas(page)) {
         // `hero/secondaire` n'est plus exclu : le défaut d'appariement du survol
         // qui le faisait disparaître a été corrigé dans `ui/button.tsx`.
-        if (!(await cta.locator.isVisible())) continue
+        if (!(await cta.locator.isVisible())) {
+          skipped.push(cta.name)
+          continue
+        }
+        // RÉVÉLER AVANT DE SURVOLER. Les sections montent à `opacity: 1` via un
+        // `IntersectionObserver` : hors de cette attente, on mesure une section
+        // encore à 0 et le texte a la couleur exacte du fond (1.00:1). Le défaut
+        // était MASQUÉ avant le Sprint 49 — `effectiveOpacity` s'arrêtait au
+        // premier ancêtre opaque, donc l'opacité de la section n'entrait pas
+        // dans le calcul. Le harnais devenu correct rend le manque d'attente
+        // visible : c'est une lacune de séquencement de la spec, pas un défaut
+        // de la page.
+        await revealForMeasurement(cta.locator)
         await cta.locator.hover()
         await expectReadable(cta.locator, `${cta.name} (survol)`)
+        hovered.push(cta.name)
       }
+      // Même garde qu'au repos : sans elle, un seul CTA survolé suffisait à
+      // rendre ce test vert. Ce test tourne au viewport par défaut du projet
+      // (`Desktop Chrome`), donc les cinq CTA sont attendus.
+      expect(
+        hovered,
+        `CTA réellement survolés (sautés : ${skipped.join(', ') || 'aucun'})`,
+      ).toEqual([...DEFAULT_VIEWPORT_EXPECTED])
     })
 
     /**
@@ -270,6 +345,9 @@ for (const scheme of SCHEMES) {
       await waitForFonts(page)
 
       const secondary = page.locator('section a[href="#how-it-works"]')
+      // Même attente qu'au-dessus : sans elle, le survol peut tomber pendant le
+      // fondu d'apparition de la section et mesurer 1.00:1 à `opacity: 0`.
+      await revealForMeasurement(secondary)
       await secondary.hover()
       await expectReadable(secondary, 'hero/secondaire (survol)', 1_500)
     })

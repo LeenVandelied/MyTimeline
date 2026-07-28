@@ -52,16 +52,65 @@ function landingComponents(): string[] {
 }
 
 /**
- * Valeurs de `className` d'un fichier — littéral, littéral gabarit ou chaîne
- * simple. On raisonne PAR `className` et non par ligne : le couplage est une
- * propriété d'un même élément, deux éléments voisins qui portent chacun une
- * moitié ne posent aucun problème.
+ * Contenu d'une expression accoladée, accolades ÉQUILIBRÉES.
+ * `start` pointe sur le `{` ouvrant ; renvoie le texte entre les accolades.
+ */
+function balancedBraces(source: string, start: number): string | null {
+  let depth = 0
+  for (let i = start; i < source.length; i += 1) {
+    const char = source[i]
+    if (char === '{') depth += 1
+    else if (char === '}') {
+      depth -= 1
+      if (depth === 0) return source.slice(start + 1, i)
+    }
+  }
+  return null
+}
+
+/** Concatène tous les littéraux de chaîne d'une expression (`'…'`, `"…"`, `` `…` ``). */
+function stringLiterals(expression: string): string {
+  const literals = expression.match(/'[^']*'|"[^"]*"|`[^`]*`/g) ?? []
+  return literals.map((literal) => literal.slice(1, -1)).join(' ')
+}
+
+/**
+ * Valeurs de `className` d'un fichier.
+ *
+ * DÉFAUT CORRIGÉ (revue du Sprint 49) : la version précédente n'acceptait que
+ * `className="…"`, `` className={`…`} `` et `className={'…'}`. Or
+ * `className={cn(…)}` est la forme DOMINANTE du dépôt (`ui/button.tsx`,
+ * `ui/language-selector.tsx`…) : le garde-fou était aveugle à la forme la plus
+ * probable d'une future régression — un garde-fou vert pour la mauvaise raison,
+ * exactement ce que ce sprint combat. On lit donc aussi toute expression
+ * accoladée, accolades équilibrées, en concaténant ses littéraux internes
+ * (`cn(…)`, `clsx(…)`, ternaires, gabarits avec substitutions).
+ *
+ * Deux limites ASSUMÉES, toutes deux du côté SÉVÈRE :
+ *  - les branches d'un ternaire sont concaténées, donc une surface posée dans
+ *    une branche et une encre dans l'autre sont signalées alors qu'elles ne
+ *    peuvent pas coexister. Un faux signalement se lève en trois secondes ; un
+ *    couplage manqué part en production (cf. l'en-tête) ;
+ *  - une classe calculée hors littéral (`hover:bg-${tone}`) reste invisible —
+ *    aucune analyse statique ne la résoudra, et le dépôt n'en contient pas.
+ *
+ * On raisonne PAR `className` et non par ligne : le couplage est une propriété
+ * d'un même élément, deux éléments voisins qui portent chacun une moitié ne
+ * posent aucun problème.
  */
 function classNameValues(source: string): string[] {
   const values: string[] = []
-  const pattern = /className=(?:"([^"]*)"|\{`([^`]*)`\}|\{'([^']*)'\})/g
-  for (const match of source.matchAll(pattern)) {
-    values.push(match[1] ?? match[2] ?? match[3] ?? '')
+  const marker = /className=/g
+  for (const match of source.matchAll(marker)) {
+    const at = (match.index ?? 0) + match[0].length
+    const char = source[at]
+    if (char === '"' || char === "'") {
+      const end = source.indexOf(char, at + 1)
+      if (end > -1) values.push(source.slice(at + 1, end))
+    } else if (char === '{') {
+      const expression = balancedBraces(source, at)
+      if (expression !== null) values.push(stringLiterals(expression))
+    }
   }
   return values
 }
@@ -116,6 +165,24 @@ describe('landing — appariement fond/encre au survol', () => {
     expect(regression).toHaveLength(1)
     expect(regression[0].surfaces).toEqual(['hover:bg-accent-soft'])
     expect(regression[0].inks).toEqual(['hover:text-accent'])
+  })
+
+  it('le détecteur voit un couplage écrit via `cn(...)` / `clsx(...)`', () => {
+    // Témoin de la forme DOMINANTE du dépôt : avant le Sprint 49, le détecteur
+    // ne lisait pas les expressions accoladées et rendait `[]` sur ces deux
+    // lignes — vert, alors que le couplage est là.
+    const viaHelpers = findHoverPairingOffences(
+      'ViaHelpers.tsx',
+      [
+        "className={cn('hover:bg-x', 'hover:text-y')}",
+        'className={clsx(base, { active: on }, `px-3 hover:bg-accent-soft hover:text-accent`)}',
+      ].join('\n'),
+    )
+    expect(viaHelpers).toHaveLength(2)
+    expect(viaHelpers[0].surfaces).toEqual(['hover:bg-x'])
+    expect(viaHelpers[0].inks).toEqual(['hover:text-y'])
+    expect(viaHelpers[1].surfaces).toEqual(['hover:bg-accent-soft'])
+    expect(viaHelpers[1].inks).toEqual(['hover:text-accent'])
   })
 
   it('la paire sanctionnée et les moitiés isolées ne sont pas signalées', () => {
