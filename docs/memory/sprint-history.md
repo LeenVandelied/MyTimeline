@@ -1146,7 +1146,11 @@ Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejet
 **Mini-plans :** `docs/memory/sprints/sprint-48/architect-plans.md`
 **#295 absorbée par #56** (son body l'autorise explicitement) — 4 imbrications `<Link passHref><Button>` vérifiées (`HomePage.tsx:75,83,262` + `HeroSection.tsx:32`) → critère d'acceptation de #56, puis fermer #295.
 **ADR :** `ADR-006-route-canonique-landing` — `/[locale]` retenue canonique, `/[locale]/home` en **308** (redirection, pas suppression : SEO).
-**Status :** Prêt à merger — PR **#333**, CI 4/4 verte, en attente du « oui » du dev (démarré 2026-07-27, branche `sprint/48` depuis `origin/dev` @417e5d7)
+**Status :** **Terminé** — mergé le 2026-07-28 dans `dev` via PR **#333** (commit de merge `11a7766`). Milestone #48 fermé (0 ouverte / 2 fermées). Issues #293, #56 et #295 fermées. Démarré 2026-07-27, branche `sprint/48` depuis `origin/dev` @417e5d7.
+
+> **Milestone nettoyé avant fermeture** — les 4 follow-ups du Sprint 47 (#328, #329, #330, #331, `epic:events`) qui y étaient parqués ont été **détachés vers le backlog libre**, pas enfouis dans un milestone clos. Ils n'ont PAS été versés au milestone Sprint 49 : celui-ci est délibérément mono-issue (#69, virtualisation) et les y ajouter aurait cassé sa cohésion. Piège récurrent, cf. mémoire `mytimeline-sprint-end-github-gotchas`.
+>
+> **Briefings conservés** (contrairement au nettoyage anti-bloat habituel de la Phase 6) : `briefing-293.md` et `briefing-56.md` documentent exactement ce qui a été dit aux subagents, ce qui a une valeur d'archive directe pour comprendre les 2 régressions `asChild` (le briefing #56 prescrivait la conversion sans mentionner ses effets de bord sur le `<a>` fusionné). ~58 Ko assumés.
 
 ### Bilan d'exécution (2026-07-27 → 2026-07-28)
 
