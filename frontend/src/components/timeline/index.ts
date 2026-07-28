@@ -50,3 +50,10 @@ export { useTimelineMobileSelection } from './useTimelineMobileSelection'
 export type { TimelineMobileSelection } from './useTimelineMobileSelection'
 export { useTimelineMobileGestures } from './useTimelineMobileGestures'
 export type { TimelineMobileGestures } from './useTimelineMobileGestures'
+
+// #69 — Virtualisation 2 axes de la frise (cœur pur + mesure de la fenêtre).
+// `stress-fixtures.ts` n'est VOLONTAIREMENT pas ré-exporté : c'est un générateur
+// de banc de mesure, il n'a rien à faire dans un bundle applicatif.
+export * from './virtualization'
+export { useTimelineViewport } from './useTimelineViewport'
+export type { TimelineViewport } from './useTimelineViewport'

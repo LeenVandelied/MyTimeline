@@ -203,9 +203,34 @@ export interface RulerTick {
 }
 
 /**
+ * #69 (absorption) — Cache des formateurs `Intl`. Leur CONSTRUCTION est le poste
+ * de coût dominant du calcul de la règle (~20 ms à froid, mesuré au banc #69),
+ * loin devant le parcours des events. `buildRulerTicks` étant rappelé à chaque
+ * changement de zoom / d'étendue, on les instancie une fois par locale.
+ * Un formateur `Intl.DateTimeFormat` est sans état côté formatage → partageable.
+ */
+const rulerFormatters = new Map<
+  string,
+  { dayFmt: Intl.DateTimeFormat; monthFmt: Intl.DateTimeFormat }
+>()
+
+function getRulerFormatters(locale: string) {
+  let cached = rulerFormatters.get(locale)
+  if (!cached) {
+    cached = {
+      // Jours et semaines partagent le même format (numéro + mois court).
+      dayFmt: new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
+      monthFmt: new Intl.DateTimeFormat(locale, { month: 'short', year: '2-digit' }),
+    }
+    rulerFormatters.set(locale, cached)
+  }
+  return cached
+}
+
+/**
  * Construit les graduations MAJEURES de la règle, adaptées au niveau de zoom
  * (jours en vue jour/semaine, semaines en vue mois, mois en vue trimestre/année).
- * Les libellés sont localisés via `Intl.DateTimeFormat`.
+ * Les libellés sont localisés via `Intl.DateTimeFormat` (formateurs mutualisés).
  */
 export function buildRulerTicks(
   rangeStart: Date,
@@ -218,9 +243,7 @@ export function buildRulerTicks(
   const ticks: RulerTick[] = []
   const end = addDays(rangeStart, totalDays)
 
-  // Jours et semaines partagent le même format (numéro + mois court).
-  const dayFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' })
-  const monthFmt = new Intl.DateTimeFormat(locale, { month: 'short', year: '2-digit' })
+  const { dayFmt, monthFmt } = getRulerFormatters(locale)
 
   if (unit === 'day') {
     for (let i = 0; i < totalDays; i++) {

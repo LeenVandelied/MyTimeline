@@ -3,6 +3,14 @@
 import { RefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { FullCalendarEvent } from '@/types/event'
 import { Resource, groupResourcesByCategory } from './lib'
+import { useTimelineViewport } from './useTimelineViewport'
+import {
+  Band,
+  LANE_VIRTUALIZATION_MIN_ROWS,
+  TimelineMetrics,
+  UNBOUNDED_BAND,
+  buildVerticalModel,
+} from './virtualization'
 import {
   DAY_WIDTH_PX,
   buildMinimapBuckets,
@@ -34,6 +42,16 @@ import {
  */
 export interface TimelineMobileState {
   scrollRef: RefObject<HTMLDivElement | null>
+  /** #69 — Rail interne : repère de mesure de la virtualisation. */
+  railRef: RefObject<HTMLDivElement | null>
+  /** #69 — Bande horizontale rendue (px), cf. `virtualization.ts`. */
+  horizontalBand: Band
+  /** #69 — Bande verticale rendue (px), `UNBOUNDED_BAND` sous le seuil de lanes. */
+  verticalBand: Band
+  /** #69 — Géométrie verticale mesurée (hauteur de règle / d'en-tête / de lane). */
+  metrics: TimelineMetrics
+  /** #69 — Top (px) de la liste de lanes de chaque catégorie. */
+  listTops: Record<string, number>
   /** Positions calculées + métadonnées de la frise (échelle du zoom courant). */
   rangeStart: Date
   totalDays: number
@@ -69,6 +87,7 @@ export function useTimelineMobileState(
 ): TimelineMobileState {
   const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const railRef = useRef<HTMLDivElement>(null)
   const [viewportStart, setViewportStart] = useState(0)
   const [viewportRatio, setViewportRatio] = useState(1)
 
@@ -101,18 +120,51 @@ export function useTimelineMobileState(
     [rangeStart, now, dayWidth],
   )
 
-  const onScroll = useCallback(() => {
+  // #69 — Virtualisation (mêmes primitives que desktop, `virtualization.ts`).
+  // Les vues mobiles n'ont PAS d'accordéon catégorie → aucune catégorie repliée.
+  const geometryKey = `${dayWidth}|${totalDays}|${resources.length}`
+  const viewport = useTimelineViewport(scrollRef, railRef, geometryKey)
+  const groups = useMemo(() => Object.entries(resourcesByCategory), [resourcesByCategory])
+  const verticalModel = useMemo(
+    () => buildVerticalModel(groups, {}, viewport.metrics),
+    [groups, viewport.metrics],
+  )
+  const verticalBand =
+    verticalModel.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS
+      ? viewport.vertical
+      : UNBOUNDED_BAND
+
+  const rawOnScroll = useCallback(() => {
     const el = scrollRef.current
     if (!el || railWidth === 0) return
     setViewportStart(el.scrollLeft / railWidth)
     setViewportRatio(Math.min(1, el.clientWidth / railWidth))
   }, [railWidth])
 
+  // #69 — Coalescence à une mesure par frame : `onScroll` déclenchait un rendu
+  // complet de la frise à CHAQUE événement de scroll (premier poste de coût du
+  // scroll horizontal, cf. ADR-007). La minimap reste à jour avant la peinture.
+  const scrollFrameRef = useRef<number | null>(null)
+  const onScroll = useCallback(() => {
+    if (scrollFrameRef.current !== null) return
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null
+      rawOnScroll()
+    })
+  }, [rawOnScroll])
+
+  useEffect(
+    () => () => {
+      if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current)
+    },
+    [],
+  )
+
   // Resynchronise la fenêtre minimap quand l'échelle change (zoom) SANS reset du
   // niveau (préparation #64 : rotation ne perd pas le contexte de zoom).
   useEffect(() => {
-    onScroll()
-  }, [onScroll, dayWidth, totalDays])
+    rawOnScroll()
+  }, [rawOnScroll, dayWidth, totalDays])
 
   const onMinimapSeek = useCallback(
     (start: number) => {
@@ -140,12 +192,18 @@ export function useTimelineMobileState(
   const zoomIn = useCallback(() => dispatch({ type: 'ZOOM_IN' }), [])
   const zoomOut = useCallback(() => dispatch({ type: 'ZOOM_OUT' }), [])
   const onPinchZoom = useCallback(
-    (direction: 'in' | 'out') => dispatch(direction === 'in' ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' }),
+    (direction: 'in' | 'out') =>
+      dispatch(direction === 'in' ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' }),
     [],
   )
 
   return {
     scrollRef,
+    railRef,
+    horizontalBand: viewport.horizontal,
+    verticalBand,
+    metrics: viewport.metrics,
+    listTops: verticalModel.listTops,
     rangeStart,
     totalDays,
     dayWidth,
