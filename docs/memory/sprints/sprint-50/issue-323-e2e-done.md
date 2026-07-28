@@ -98,4 +98,22 @@ Stack locale : backend `:8080` (profils `dev,e2e`, base `eventmanager_e2e`, `JWT
   Next pour un chemin qui, par construction, se comporte comme le dégradé déjà couvert.
 - **Aucune mesure de performance** de la vérification RSA sous charge réelle.
 
+## Recommandations suite
+
+- ~~La 2ᵉ passe CI n'a jamais tourné sur un runner GitHub~~ → **LEVÉ après ce lot** : run
+  30396766409 puis 30399816138, job `e2e` **vert** dans les deux cas (passe appairée 12 passed
+  en 26,6 s, passe dégradée 96 passed / 8 skipped).
+- `RECOMMAND_FOLLOWUP` — rendre le job `e2e` **requis** sur `dev` : aujourd'hui seuls `backend` et
+  `frontend` sont des checks requis, donc une régression E2E ne bloquerait pas un merge. C'est la
+  limite la plus concrète de la couverture livrée ici.
+- `RECOMMAND_FOLLOWUP` — couvrir en E2E le mode « clé présente mais illisible » (aujourd'hui
+  unitaire seulement). Exige une 3ᵉ instance Next ; faible valeur, à trancher.
+- `RECOMMAND_FOLLOWUP` — détection d'une paire **dépareillée** (clé publique bien formée mais ne
+  correspondant pas à la privée) : 100 % des sessions bouclent vers `/login` sans aucun signal.
+  Consigné dans `ADR-004` et le runbook au 2ᵉ cycle de review, mais aucune détection automatique.
+- **Pas de `RECOMMAND_TEST_RUNNER`** : la repasse complète a été faite, cf. `test-runner.md`.
+- **Pas de `RECOMMAND_DB_EXPERT`** : aucune migration Flyway dans ce sprint.
+- **Pas de `RECOMMAND_SECURITY`** : audit `security-expert` déjà réalisé sur la PR (2ᵉ cycle de
+  review), cf. `review-batch.md`.
+
 STATUS: COMPLETED
