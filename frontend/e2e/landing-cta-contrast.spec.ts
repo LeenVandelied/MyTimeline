@@ -189,6 +189,67 @@ for (const scheme of SCHEMES) {
       ).toBeGreaterThan(clipped.clientWidth + 1)
     })
 
+    /**
+     * Auto-contrôle des deux défauts qui rendaient le harnais PERMISSIF
+     * (trouvés à la revue du Sprint 49). Un test de contraste qui se trompe du
+     * côté indulgent est pire que pas de test : il donne un vert qui ne prouve
+     * rien. Ces deux assertions échouent si l'un des deux revient.
+     */
+    test('auto-contrôle : le harnais ne se trompe plus du côté permissif', async ({ page }) => {
+      await page.goto('/fr', { waitUntil: 'domcontentloaded' })
+      await waitForFonts(page)
+      const hero = page.locator('a.cta-button')
+      await readAtRest(page, hero)
+
+      // 1. OPACITÉ. `effectiveOpacity` était calculé mais jamais appliqué au
+      // compositage : seul `readAtRest` s'en servait, via son plancher à 0.99.
+      // `expectReadable` au survol lisait donc l'encre PLEINE d'un élément
+      // semi-transparent et rendait un ratio optimiste.
+      await page.addStyleTag({
+        content: '.cta-button { opacity: 0.3 !important; transition: none !important }',
+      })
+      const faded = await readTextRendering(hero)
+      expect(faded.effectiveOpacity, "l'opacité injectée n'est pas vue").toBeLessThan(0.4)
+      expect(
+        faded.ratio,
+        `un CTA à 30% d'opacité est mesuré ${faded.ratio.toFixed(2)}:1 : l'opacité n'est pas composée`,
+      ).toBeLessThan(3)
+      let opacityFlagged = false
+      try {
+        await expectReadable(hero, 'mutation/opacité', 500)
+      } catch {
+        opacityFlagged = true
+      }
+      expect(
+        opacityFlagged,
+        "l'assertion de contraste n'a pas rougi sur un élément à 30% d'opacité",
+      ).toBe(true)
+
+      // 2. COULEUR NON ANALYSABLE. `ctx.fillStyle = <syntaxe invalide>` est un
+      // NO-OP silencieux : le `fillStyle` gardait sa valeur par défaut et la
+      // couleur était composée comme un NOIR PLEIN — sur fond clair, un ratio
+      // faussement excellent. On empoisonne `getComputedStyle` pour ce seul
+      // élément et cette seule propriété : la mesure doit LEVER, pas deviner.
+      await page.evaluate(() => {
+        const original = window.getComputedStyle.bind(window)
+        window.getComputedStyle = ((element: Element, pseudo?: string | null) => {
+          const style = original(element, pseudo ?? undefined)
+          if (pseudo || !element.classList?.contains('cta-button')) return style
+          return new Proxy(style, {
+            get: (target, property) => {
+              if (property === 'color') return 'ceci-nest-pas-une-couleur(42)'
+              const value = Reflect.get(target, property) as unknown
+              return typeof value === 'function' ? value.bind(target) : value
+            },
+          })
+        }) as typeof window.getComputedStyle
+      })
+      await expect(
+        readTextRendering(hero),
+        'une couleur CSS non analysable est composée silencieusement au lieu de lever',
+      ).rejects.toThrow(/non analysable/)
+    })
+
     // DÉFAUT CORRIGÉ au Sprint 49 (il était PRÉEXISTANT, non introduit par
     // #334/#335/#336). `Button variant="outline"` portait
     // `hover:text-accent-foreground` dans `src/components/ui/button.tsx` ;

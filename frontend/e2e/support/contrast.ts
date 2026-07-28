@@ -97,13 +97,41 @@ export async function readTextRendering(locator: Locator): Promise<TextRendering
   return locator.evaluate((el: Element): TextRendering => {
     type Rgba = [number, number, number, number]
 
-    /** Normalise n'importe quelle syntaxe CSS de couleur en octets sRGB. */
+    /**
+     * Normalise n'importe quelle syntaxe CSS de couleur en octets sRGB.
+     *
+     * PIÈGE CORRIGÉ AU SPRINT 49 : `ctx.fillStyle = <syntaxe invalide>` est un
+     * NO-OP silencieux — la spécification exige d'ignorer l'affectation, pas de
+     * lever. Le `fillStyle` gardait donc sa valeur par défaut (`#000000`
+     * opaque), et une couleur non analysable était composée comme un NOIR PLEIN.
+     * Sur un fond clair, cela produit un ratio ÉLEVÉ : l'erreur penchait du côté
+     * permissif, c'est-à-dire qu'un défaut réel pouvait passer au vert.
+     *
+     * Détection : on tente l'analyse depuis deux sentinelles différentes. Une
+     * valeur valide donne la même sérialisation dans les deux cas ; une valeur
+     * ignorée laisse chaque sentinelle en place, donc deux résultats différents.
+     * Cette forme n'a pas d'angle mort — contrairement à « comparer au noir »,
+     * qui accuserait à tort une couleur réellement noire.
+     */
     const toRgba = (value: string): Rgba => {
       const canvas = document.createElement('canvas')
       canvas.width = 1
       canvas.height = 1
       const ctx = canvas.getContext('2d')
       if (ctx === null) throw new Error('contexte canvas 2d indisponible')
+      const parseFrom = (sentinel: string): string => {
+        ctx.fillStyle = sentinel
+        ctx.fillStyle = value
+        return String(ctx.fillStyle)
+      }
+      const fromBlack = parseFrom('#000000')
+      const fromWhite = parseFrom('#ffffff')
+      if (fromBlack !== fromWhite) {
+        throw new Error(
+          `couleur CSS non analysable par le canvas : « ${value} ». La mesure aurait ` +
+            'composité un noir opaque par défaut et rendu un ratio faussement bon.',
+        )
+      }
       ctx.clearRect(0, 0, 1, 1)
       ctx.fillStyle = value
       ctx.fillRect(0, 0, 1, 1)
@@ -182,7 +210,20 @@ export async function readTextRendering(locator: Locator): Promise<TextRendering
       overlayCount += 1
     }
 
-    const foreground = over(toRgba(style.color), background)
+    // --- Opacité effective -------------------------------------------------
+    // PIÈGE CORRIGÉ AU SPRINT 49 : `effectiveOpacity` était calculé mais jamais
+    // APPLIQUÉ. Seul `readAtRest` en tirait parti, via son plancher à 0.99 ;
+    // `expectReadable` au survol, lui, ne le regardait pas — un élément à
+    // `opacity: 0.4` rendait donc le ratio de son encre PLEINE, très au-dessus
+    // de ce que l'œil reçoit. Là encore l'erreur penchait du côté permissif.
+    //
+    // Modèle retenu : l'opacité accumulée réduit l'alpha de l'encre, qui est
+    // composée sur le fond mesuré. C'est une BORNE INFÉRIEURE du ratio réel
+    // (quand le fond appartient au même groupe d'opacité, il pâlit lui aussi et
+    // le contraste réel est un peu meilleur), et c'est le sens voulu : un
+    // harnais de contraste doit se tromper en étant trop sévère, jamais l'inverse.
+    const ink = toRgba(style.color)
+    const foreground = over([ink[0], ink[1], ink[2], ink[3] * effectiveOpacity], background)
     const fontSizePx = Number.parseFloat(style.fontSize)
     const fontWeight = Number.parseInt(style.fontWeight, 10)
     // WCAG 1.4.3 : « large scale » = >= 18pt (24px), ou >= 14pt (18.66px) en gras.
@@ -358,7 +399,10 @@ export interface CtaTarget {
  * casserait dans trois locales sur quatre.
  *
  * - `header a[href$="/register"]` — CTA primaire de l'en-tête.
- * - `header a[href$="/login"]` — « Connexion » (masqué sous `md`).
+ * - `header a[href$="/login"]` — « Connexion ». ⚠ En `display:none` sous `md`
+ *   depuis #334 : la spec des CTA le saute alors (`continue`), il n'était donc
+ *   mesuré dans AUCUN test à 375 px, dans aucun thème. C'est `mobileMenuTargets`
+ *   qui couvre sa copie du panneau burger — les deux sont nécessaires.
  * - `a.cta-button` — CTA primaire du hero (classe portée par lui seul).
  * - `section a[href="#how-it-works"]` — CTA secondaire du hero. Le `<header>`
  *   porte la même ancre dans sa navigation : la restreindre à `section` suffit
@@ -375,5 +419,34 @@ export function landingCtas(page: Page): CtaTarget[] {
       name: 'bandeau-final/inscription',
       locator: page.locator('section a[href$="/register"]:not(.cta-button)'),
     },
+  ]
+}
+
+/** Identifiants de test du menu burger de la landing (#334). */
+export const MOBILE_MENU = {
+  toggle: 'landing-header-menu-toggle',
+  panel: 'landing-header-menu',
+  close: 'landing-header-menu-close',
+  overlay: 'landing-header-menu-overlay',
+} as const
+
+/**
+ * Cibles textuelles du panneau burger OUVERT.
+ *
+ * Elles n'existent dans le DOM que menu ouvert et sous `md` : aucune spec des
+ * CTA ne pouvait les atteindre. « Connexion », déplacé ici par #334, n'était
+ * mesuré nulle part — c'est le trou que cette fonction ferme.
+ *
+ * Ancrage sur la structure et les `href`, jamais sur les libellés : la suite
+ * tourne en `fr`/`en`/`es`/`de`.
+ */
+export function mobileMenuTargets(page: Page): CtaTarget[] {
+  const panel = page.getByTestId(MOBILE_MENU.panel)
+  return [
+    { name: 'menu/titre', locator: panel.locator('h2') },
+    { name: 'menu/ancre-1', locator: panel.locator('nav a').nth(0) },
+    { name: 'menu/ancre-2', locator: panel.locator('nav a').nth(1) },
+    { name: 'menu/ancre-3', locator: panel.locator('nav a').nth(2) },
+    { name: 'menu/connexion', locator: panel.locator('a[href$="/login"]') },
   ]
 }
