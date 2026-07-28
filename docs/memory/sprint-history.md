@@ -1365,3 +1365,67 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 > **Pas de branche `sprint/45` créée** (étape 4 du skill volontairement sautée) : leçon S43/S44 — `sprint/43` existe mais n'a jamais servi, S44 a tourné sur un worktree `claude/sprint-44-start-*`. `/sprint start` crée son worktree lui-même.
 >
 > **Outillage :** `check-prereq.sh` du plugin ai-env est **cassé** (`DISABLED[@]: unbound variable` L61 — bash 3.2 macOS refuse d'étendre un tableau vide sous `set -u`). Contourné manuellement ; `gh` authentifié OK. Correctif à porter en amont du plugin.
+
+---
+
+# Plan S50–S54 — généré le 2026-07-28 (`/ai-env:sprint plan 5`, cohésion moyenne 0.47, validé par le dev)
+
+> Fil directeur : **« Durcir avant d'élargir »** — S50–S52 soldent la dette sécurité (5 des 7 P1 non bloqués), S53–S54 la dette design/E2E. 15 issues / 39 pts retenues sur 98 ouvertes ; ~85 restent au backlog (attendu). **Toutes les issues retenues ancrées code par l'architecte** (grep/read, HEAD fc2a3a0), `possibly_done: false` partout. Rapport intégral : `docs/memory/sprints/plan-s50-s54/architect-report-raw.md`. Mini-plans : `docs/memory/sprints/sprint-{50..54}/architect-plans.md`.
+>
+> **Décisions dev actées à la validation (2026-07-28) :**
+> - **Flyway (RISQUE 1)** : option (a) — job CI smoke `flyway migrate` + `ddl-auto=validate` sur base vierge → **issue #356** (P2/XS, outillage, hors plafond sprint, à absorber en marge). L'option (b) « insérer #88 pour forcer une V16 » est rejetée.
+> - **#322** : option (a) **Host canonique au proxy** (pas d'allow-list applicative).
+> - **#307 reste BLOQUÉE** (décision produit Option A/B non sollicitée à ce stade) ; bloque aussi #232/#230.
+>
+> **Arbitrages notables :** #249 traité en S50 (PAS reporté — inconfort des 2 plans précédents purgé) : volets DB/BREVO en vague 1, volet JWT_SECRET fusionné dans la bascule RS256 de #323 (une seule déconnexion globale ; garde-fou : rotation HS256 immédiate si #323 dérape). #67 re-triagée par le code : « XS/frontend » faux → S fullstack, non retenue. #212 (P1) écartée : upload fonctionne, cible S3/MinIO indéterminée, #215 non résolu. #350 à absorber en marge du S51 (code mort vérifié). Labels `sprint-35` retiré de #249 ; milestone « Sprint 36 » = reliquat à ignorer.
+>
+> **Chemins fantômes corrigés par l'architecte :** #351 (`src/hooks/useTimelineViewport.ts` → `src/components/timeline/useTimelineViewport.ts`, lignes décalées de 2), #331 (`EventEditForm.tsx` à la racine de components/), #60 (préfixe `frontend/` manquant — à valider si planifiée).
+>
+> **Conflits backlog à respecter si insertion ultérieure :** #347+#348 jamais séparées, #342+#353 jamais séparées, #343/#352 en aval de #340 (S53), #354 groupée avec #347.
+
+## Sprint 50 — 2026-07-28 (PLANIFIE — cohésion 0.52, chaîne d'authentification : rotation secrets + garde serveur)
+**Objectif :** Rotation des secrets exposés + garde Host + JWT RS256 vérifiable en Edge
+**Milestone GitHub :** #50
+**Issues :** #249 (P1/S), #322 (P1/M), #323 (P1/M) — 10 pts
+**Vagues :** V1 = #249 (volets DB_PASSWORD+BREVO) ∥ #322 | V2 = #323 + volet JWT_SECRET de #249 (fusionnés)
+**Migrations Flyway :** aucune
+**Depend de :** aucune
+**Status :** Planifie
+
+## Sprint 51 — 2026-07-28 (PLANIFIE — cohésion 0.40, frise : bug de rotation + dette d'implémentation)
+**Objectif :** Restaurer le scroll à la rotation portrait↔paysage + perf + défauts de review
+**Milestone GitHub :** #51
+**Issues :** #328 (P1/M), #349 (P2/S), #351 (P3/XS) — 7 pts (+ #350 absorbée en marge, code mort)
+**Vagues :** V1 = #328 ∥ #349 | V2 = #351
+**Migrations Flyway :** aucune
+**Depend de :** aucune (indépendant de S50)
+**Status :** Planifie
+
+## Sprint 52 — 2026-07-28 (PLANIFIE — cohésion 0.47, rate-limiting distribué et politique d'authentification)
+**Objectif :** Rate-limiting Redis par compte + anti-énumération + harmonisation politique mdp (3 politiques divergentes)
+**Milestone GitHub :** #52
+**Issues :** #102 (P1/M), #134 (P2/S), #148 (P2/S) — 8 pts
+**Vagues :** V1 = #102 ∥ #148 | V2 = #134
+**Migrations Flyway :** aucune
+**Depend de :** Sprint 50 (#323 fige le contrat de jeton)
+**Status :** Planifie
+
+## Sprint 53 — 2026-07-28 (PLANIFIE — cohésion 0.48, dette de cascade CSS et couplage fond/encre du DS)
+**Objectif :** Découpler focus: dans 5 menus + layerisation h1..h6 + audit CSS non-layerisés
+**Milestone GitHub :** #53
+**Issues :** #346 (P1/S), #339 (P2/S), #340 (P2/S) — 6 pts
+**Vagues :** V1 = #346 ∥ #339 | V2 = #340
+**Migrations Flyway :** aucune
+**Depend de :** aucune — ⚠ vérification navigateur clair+sombre OBLIGATOIRE (jsdom aveugle, pitfall S48)
+**Status :** Planifie
+
+## Sprint 54 — 2026-07-28 (PLANIFIE — cohésion 0.46, réarmement du filet E2E de la frise)
+**Objectif :** data-testid SelectItem + couverture des 18 testids sans spec + retry rendu auth.setup
+**Milestone GitHub :** #54
+**Issues :** #331 (P2/S), #330 (P2/M), #329 (P2/S) — 8 pts
+**Vagues :** V1 = #331 ∥ #329 | V2 = #330
+**Migrations Flyway :** aucune
+**Depend de :** Sprint 51 (specs assertent le comportement de scroll corrigé)
+**Status :** Planifie
+
+> **Pas de branche `sprint/50` créée** (étape 4 du skill volontairement sautée, leçon S43/S44 reconduite S45–S49) : `/sprint start` crée son worktree lui-même.
