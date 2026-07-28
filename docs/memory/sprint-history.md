@@ -1420,8 +1420,102 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 **Vagues :** V1 = #328 ∥ #349 | V2 = #351
 **Migrations Flyway :** aucune
 **Depend de :** aucune (indépendant de S50)
-**Status :** En cours
+**Status :** En cours — PR #367 ouverte (`sprint/51` → `dev`), en attente de CI puis de `/sprint end 51`
 **Branche :** `sprint/51` (créée depuis `origin/dev` @ `47730f9`, poussée 2026-07-29)
+**Commits :** 9 — 5 de code (#328, #349, #350, #351 + corrections post-review), 4 d'artefacts
+**Tests :** Frontend 821/821 · Backend 452/452 · typecheck OK · `next build` OK · **E2E non exécuté en local**
+**Reviews :** reviewer batch — **0 CRITIQUE / 2 MAJEUR / 5 MINEUR** ; 1 MAJEUR + 1 MINEUR corrigés (`8e5e2a8`), le reste en follow-up assumé
+
+### Bilan d'exécution
+
+| Issue | Commit | Objet |
+|---|---|---|
+| #328 | `5210ed5` | `scrollLeft` hissé hors du DOM via ref callback stable (snapshot au détachement / restore à l'attachement) |
+| #349 | `1cb6031` | `React.memo` sur les lanes + `zoom.ts` scindé (passe invariante / passe d'échelle) + cache par niveau |
+| #350 | `72e74e7` | Suppression de `TimelineCalendar.tsx` (114 l.) + 4 références |
+| #351 | `c75efd7` | `role="presentation"` sur les cales + tri de l'écouteur `scroll` par `contains` |
+| — | `8e5e2a8` | Corrections post-review : clé de cache de zoom composite + test de présence |
+
+**Vagues exécutées :** V1 = #328 ∥ #349 (fichiers disjoints, commits vérifiés **isolés**, aucune contamination croisée) · V2 = #351 ∥ #350 · puis test-runner → reviewer batch → correctif.
+
+> **⚠ Deux énoncés d'issue infirmés par la mesure — conservés tels quels.**
+> 1. **Le correctif prescrit par #351 était FAUX.** L'issue demandait de cibler `scrollEl` plutôt que
+>    de capturer sur `window`. Implémenté puis mesuré : **2 tests rouges** — cibler le scroller seul
+>    perd la page ET tout ancêtre défilant, or la position visible dépend des trois. Livré à la
+>    place : capture `window` conservée + tri par `target.contains(scrollEl)` dans le handler.
+>    **Le risque que l'issue nommait elle-même s'est matérialisé sur la solution qu'elle proposait.**
+> 2. **Le diagnostic de #349 était partiel.** L'issue postulait un coût au franchissement de bande de
+>    virtualisation. Mesure : le re-rendu complet a lieu **à chaque frame de scroll** (synchronisation
+>    de la minimap). Le correctif porte sur la bonne cause.
+
+> **⚠ Prémisses du plan architecte : toutes vérifiées, toutes confirmées — première fois depuis 4 sprints.**
+> Contrôle systématique après S45/S49/S50 (chemins fantômes). Les 10 fichiers cités existent, et les
+> 3 mesures clés (`useTimelineViewport.ts:206`, cales à `TimelineView.tsx:757`/`:850`, `viewportStart`
+> hissé ligne 91) sont exactes. Le seul chemin fantôme — `frontend/src/hooks/useTimelineViewport.ts`
+> dans l'énoncé de #351 — **avait déjà été corrigé par l'architecte au plan**.
+> **En revanche les numéros de ligne ont dérivé en cours de sprint** : #349 a fait passer
+> `TimelineView.tsx` de 879 à 1113 lignes, invalidant les positions données à #351. Consigne de
+> localiser par `grep` et non par numéro injectée dans le briefing de la vague 2 — piège évité.
+
+> **Découvertes non anticipées par le plan :**
+> 1. **#328 — l'effet de centrage initial était déjà inopérant.** `useEffect(..., [])` dans
+>    `useTimelineMobileState` s'exécutait sur le DOM **desktop** (`useMediaQuery` SSR-safe rend `false`
+>    au 1er rendu → `scrollRef` null) : no-op silencieux, jamais détecté.
+> 2. **#350 contredit une note d'archive du S42.** `Lane`/`EventBar`/`EventContent` **ne sont pas
+>    orphelins** : montés via `TimelineEditHost` → `dashboard/page.tsx` et `timeline/page.tsx`.
+>    L'archive n'a pas été réécrite.
+> 3. **MAJEUR de review — fausseté silencieuse évitée.** Le cache des graduations était clé sur
+>    `dayWidth` seul alors que `buildRulerTicks` consomme aussi `zoom.level` ; la justesse ne tenait
+>    qu'à un invariant tacite non gardé (valeurs de `DAY_WIDTH_PX` deux à deux distinctes). Corrigé
+>    par clé composite + test qui **échoue avec l'ancienne clé** (vérifié par revert : 10 graduations
+>    au lieu de 63).
+
+> **⚠ Réserves assumées — E2E jamais exécuté en local.** Blocage d'**environnement hérité du S50**,
+> pas un défaut du code de ce sprint : build docker impossible (métadonnées `eclipse-temurin:21-jre`
+> et `node:20-alpine` non chargeables), images `mytimeline-*` du 2026-07-11 **antérieures au passage
+> RS256 de #323**, et base locale à **V6** contre **V15** au dépôt (démarrer le backend hors docker
+> appliquerait 9 migrations à la base de dev — non fait sans arbitrage). **Le critère d'acceptation
+> n°4 de #328 n'est donc pas validé en local** ; la CI comporte un job `e2e` qui peut le lever.
+> Autres réserves : **jsdom ne clampe pas `scrollLeft` et rend `scrollWidth = 0`** → le test unitaire
+> de restauration passe **trivialement sans rien prouver** · `role="presentation"` non couvert (cales
+> jamais montées en jsdom) · **aucun outil d'audit a11y** dans `frontend/package.json`, critère n°2 de
+> #351 non tenu · #351 **partielle à l'échelle de l'app** (4 cales mobiles non corrigées) · mesures de
+> #349 prises en **Storybook dev**, pas sur un build de production.
+
+> **Piège d'outillage — RTK, 3 manifestations distinctes ce sprint** (après `git diff` au S50) :
+> `git diff`, `wc -c`, et `vitest`/`grep` **même redirigés** renvoient vide ou 0. Contournement :
+> `rtk proxy <cmd>`. A produit **une mesure fausse du lead ce sprint** : l'heuristique de couverture
+> E2E de la Phase 8 a d'abord signalé 10 testids « sans spec » — analyse refaite en Python : les 10
+> apparaissent **aussi en ligne `-`**, ce sont des **déplacements** dus à la réécriture de #349, pas
+> des ajouts. Aucun testid réellement nouveau.
+> Confirmé également : `detect-domain.sh` **bloque indéfiniment** et `check-prereq.sh` est cassé
+> (domaine `events` assigné à la main) · **aucun `.claude/hooks/`** dans ce worktree → le garde-fou
+> `pre-spawn-fullstack.sh` cité par le skill **n'existe pas ici** · **aucun `.ai-env/rules-jit/`** et
+> **aucun pack `pit-*`** → les briefings sortent sans pitfalls injectés (lacune préexistante).
+
+> **Hygiène :** `frontend/.eslintcache` est **tracké par git alors qu'il figure dans
+> `frontend/.gitignore:8`** (le `.gitignore` ne s'applique pas rétroactivement). Il a dérivé **3 fois**
+> pendant le sprint ; restauré à chaque fois, jamais commité.
+
+> **Saturation contexte lead : non mesurée** (pas d'instrumentation). Ordre de grandeur : 7 agents
+> (4 fullstack-dev, 1 test-runner, 1 reviewer, 1 fullstack correctifs) ≈ **700 K tokens** côté
+> subagents. Le pattern artefact + purge a tenu : aucun retour brut rechargé. Les briefings de 43-45 Ko
+> n'ont pas été chargés en contexte lead — passés par lecture imposée du fichier committé + checkpoint
+> `pack_lu: OUI — <pack> §<section réelle>` ; **les 4 agents ont cité une section réelle**.
+
+**Follow-ups détectés (à arbitrer en Phase 4 de `/sprint end 51`) :**
+  - Défaut a11y identique **non corrigé sur 4 cales mobiles** (`TimelineMobilePortrait.tsx` ~203/~281, `TimelineMobileLandscape.tsx` ~216/~294) [XS | frontend] (#351)
+  - **[MAJEUR de review, non corrigé]** mutation de refs **pendant le rendu** (`cache.current`, `windowCacheRef`, `tRef`, `metricsRef`) — bénin aujourd'hui, fragile en mode concurrent réel [S | frontend]
+  - Committer le **pilote Playwright du banc perf** sous `frontend/scripts/` — protocole ADR-007 décrit mais **non versionné**, donc non rejouable [XS | frontend] (#349)
+  - `syncViewportFromScroll` déclenche un `setState` **par frame** de scroll ; `viewportStart` en variable CSS supprimerait le re-rendu résiduel [S | frontend] (#349)
+  - Doublon `sameMetrics`/`metricsRef` (`TimelineView.tsx`) vs `metricsEqual` (`useTimelineViewport.ts:171`) — ceinture volontaire, à réduire après mesure [XS | frontend] (review)
+  - Redondance `role="presentation"` + `aria-hidden` sur les cales — retirer `aria-hidden` exige une vérification navigateur [XS | frontend] (review)
+  - Identité figée de `translate` : catalogue i18n changeant sans changement de `locale` → `aria-label` périmés sur les lanes mémoïsées [XS | frontend] (review)
+  - Branche de report **par fraction** (`useTimelineMobileState.ts:239-245`) non couverte par les 4 tests de rotation [XS | frontend] (review)
+  - **Aucun outil d'audit a11y** dans `frontend/package.json` — bloque le critère n°2 de #351 [S | frontend]
+  - `frontend/.eslintcache` **tracké malgré le `.gitignore`** → `git rm --cached` [XS | infra]
+  - **Images docker antérieures au RS256** + base locale en V6 contre V15 : la recette E2E locale du 2026-07-27 est **périmée depuis le S50** [M | devops] — bloque toute vérification E2E locale
+  - Note d'archive S42 à annoter : `Lane`/`EventBar`/`EventContent` **ne sont pas orphelins** [XS | doc]
 
 > **Note de démarrage — la commande demandée était `/sprint start 60`.** Le Sprint 60 n'existe pas :
 > aucun label `sprint-60` (les labels s'arrêtent à `sprint-54`), aucun milestone « Sprint 60 »
