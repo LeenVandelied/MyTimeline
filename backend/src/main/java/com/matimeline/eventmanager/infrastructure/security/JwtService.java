@@ -1,52 +1,97 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 
 import jakarta.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
 public class JwtService {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
     // Durée de vie du token = 2 jours (BR-AUT-007). Extrait en constante pour
     // aligner l'expiration du JWT et celle enregistrée en base (SessionEntity.expiresAt).
     public static final long TOKEN_VALIDITY_MS = 1000L * 60 * 60 * 24 * 2;
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    /**
+     * Clé privée de signature, PKCS#8 Base64 (armure PEM tolérée), via {@code JWT_PRIVATE_KEY}.
+     * VIDE = paire éphémère générée au boot (dev/test uniquement, cf. {@link #initKeyMaterial()}).
+     * Le profil {@code prod} exige une valeur explicite (garde-fou {@code ProfileSafetyGuard} #323).
+     */
+    @Value("${jwt.private-key:}")
+    private String privateKeyMaterial;
+
+    private PrivateKey signingKey;
+    private PublicKey verificationKey;
 
     /**
-     * Garde-fou de boot (fail-fast) : valide le secret AU DÉMARRAGE plutôt qu'à
-     * chaque requête. Un secret non Base64 (p.ex. contenant '-') ou trop court
-     * (< 32 octets décodés, insuffisant pour HS256) faisait échouer getSigningKey()
-     * à CHAQUE login/refresh -> 500 opaque en boucle. Ici l'app refuse de démarrer
-     * avec un message clair. Le message n'expose JAMAIS la valeur du secret.
+     * Garde-fou de boot (fail-fast) : charge et valide le matériel de signature AU DÉMARRAGE
+     * plutôt qu'à chaque requête. Une clé mal formée faisait auparavant échouer la signature à
+     * CHAQUE login/refresh -> 500 opaque en boucle ; ici l'app refuse de démarrer.
+     *
+     * <p>⚠ Le message d'erreur ne reprend NI la valeur configurée NI le message de l'exception
+     * sous-jacente (seulement son type) : sur une clé privée, un décodeur bavard pourrait
+     * recracher du matériel dans les logs. C'est un durcissement par rapport à HS256 (#323).
+     *
+     * <p>Matériel absent -> paire ÉPHÉMÈRE : le dépôt étant PUBLIC, aucune clé RSA, même
+     * « de dev », n'y est committée. Conséquence assumée et journalisée en WARN : les sessions
+     * ne survivent pas à un redémarrage local.
      */
     @PostConstruct
-    void validateSecret() {
+    void initKeyMaterial() {
+        KeyPair keyPair = privateKeyMaterial == null || privateKeyMaterial.isBlank()
+                ? ephemeralKeyPair()
+                : configuredKeyPair();
+        this.signingKey = keyPair.getPrivate();
+        this.verificationKey = keyPair.getPublic();
+    }
+
+    private KeyPair configuredKeyPair() {
         try {
-            getSigningKey();
-        } catch (RuntimeException e) {
+            return RsaKeyMaterial.fromPkcs8(privateKeyMaterial);
+        } catch (Exception e) {
             throw new IllegalStateException(
-                    "jwt.secret invalide : attendu du Base64 STANDARD décodant à >= 32 octets "
-                    + "(HS256). Cause : " + e.getClass().getSimpleName() + " — " + e.getMessage(),
+                    "jwt.private-key (JWT_PRIVATE_KEY) invalide : attendu une clé privée RSA "
+                    + "PKCS#8 en Base64 (corps d'un PEM '-----BEGIN PRIVATE KEY-----', armure et "
+                    + "sauts de ligne tolérés), de modulus >= " + RsaKeyMaterial.MIN_MODULUS_BITS
+                    + " bits (RS256). Générer : openssl genpkey -algorithm RSA "
+                    + "-pkeyopt rsa_keygen_bits:" + RsaKeyMaterial.MIN_MODULUS_BITS
+                    + ". Cause : " + e.getClass().getSimpleName()
+                    + " (valeur et détail volontairement non journalisés).",
                     e);
         }
     }
 
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+    private KeyPair ephemeralKeyPair() {
+        KeyPair keyPair = RsaKeyMaterial.generateEphemeral();
+        log.warn("jwt.private-key (JWT_PRIVATE_KEY) non configurée : paire RS256 ÉPHÉMÈRE générée "
+                 + "au démarrage. Tous les jetons émis seront invalidés au prochain redémarrage. "
+                 + "Acceptable en dev/test UNIQUEMENT — le profil 'prod' refuse ce mode.");
+        log.info("Clé publique de vérification (à publier dans AUTH_JWT_PUBLIC_KEY côté frontend "
+                 + "pour activer la vérification de signature du middleware) : {}",
+                 RsaKeyMaterial.toSpkiBase64(keyPair.getPublic()));
+        return keyPair;
+    }
+
+    /**
+     * Clé PUBLIQUE de vérification au format SPKI Base64 — valeur à publier telle quelle dans
+     * {@code AUTH_JWT_PUBLIC_KEY} côté frontend (#323). Ce n'est PAS un secret.
+     */
+    public String getPublicKeySpkiBase64() {
+        return RsaKeyMaterial.toSpkiBase64(verificationKey);
     }
 
     public String generateToken(String username) {
@@ -54,10 +99,11 @@ public class JwtService {
                    .subject(username)
                    .issuedAt(new Date())
                    .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
-                   // Algo HS256 explicite : en jjwt 0.12+, signWith(key) seul déduirait
-                   // HS256/384/512 de la taille de la clé → un secret > 256 bits changerait
-                   // l'algo et invaliderait les tokens legacy. On fige HS256 (inchangé).
-                   .signWith(getSigningKey(), Jwts.SIG.HS256)
+                   // Algo RS256 explicite (#323) : la vérification se fait aussi dans le
+                   // middleware Next (Edge), qui exige `alg: RS256` dans l'en-tête et rejette
+                   // tout autre algorithme (défense contre la confusion d'algorithme). Figer
+                   // l'algo ici garantit que les deux côtés ne peuvent pas diverger.
+                   .signWith(signingKey, Jwts.SIG.RS256)
                    .compact();
     }
 
@@ -75,7 +121,7 @@ public class JwtService {
                 .claim("role", userDetails.getAuthorities())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
+                .signWith(signingKey, Jwts.SIG.RS256)
                 .compact();
     }
 
@@ -90,7 +136,7 @@ public class JwtService {
             return null;
         }
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(verificationKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -99,7 +145,7 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(verificationKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -121,7 +167,7 @@ public class JwtService {
 
     private Date extractExpiration(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(verificationKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()

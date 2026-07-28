@@ -68,6 +68,16 @@ import java.util.Locale;
  * checks se déclenchent, et le message qui doit remonter à l'exploitant est celui qui nomme
  * la porte dérobée, pas celui qui nomme le fallback de profil. Le job CI e2e
  * ({@code SPRING_PROFILES_ACTIVE=dev,e2e}, AUCUN marqueur prod) n'est pas concerné.
+ *
+ * <p>Sixième garde-fou (#323) : refuse le boot si {@code jwt.private-key}
+ * ({@code JWT_PRIVATE_KEY}) OU {@code app.export.token-secret} ({@code EXPORT_TOKEN_SECRET})
+ * sont vides/blancs en <em>prod effectif</em>. Ces deux valeurs remplacent l'unique
+ * {@code JWT_SECRET} supprimé par la migration RS256. Le danger propre à
+ * {@code jwt.private-key} : contrairement aux autres secrets, une valeur vide ne fait PAS
+ * échouer l'application — {@code JwtService} bascule sur une paire RSA <em>éphémère</em> et
+ * démarre normalement. En production, cela déconnecterait silencieusement tous les
+ * utilisateurs à chaque redéploiement, sans le moindre symptôme au boot. C'est exactement
+ * le type de panne muette que ce listener existe pour interdire.
  */
 public class ProfileSafetyGuard
         implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
@@ -93,6 +103,12 @@ public class ProfileSafetyGuard
     /** Origines CORS autorisées (CSV ; vide = frontend cross-site bloqué). */
     static final String CORS_ALLOWED_ORIGINS_KEY = "app.cors.allowed-origins";
 
+    /** Clé privée RS256 de signature des JWT (#323 ; vide = paire éphémère, interdite en prod). */
+    static final String JWT_PRIVATE_KEY_KEY = "jwt.private-key";
+
+    /** Secret HMAC dédié aux tokens de download d'export (#323). */
+    static final String EXPORT_TOKEN_SECRET_KEY = "app.export.token-secret";
+
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment env = event.getEnvironment();
@@ -103,6 +119,37 @@ public class ProfileSafetyGuard
         checkCookieInsecureInProduction(env);    // #254
         checkMissingCookieDomainInProduction(env); // #253
         checkMissingCorsOriginsInProduction(env);  // #253
+        checkMissingSigningMaterialInProduction(env); // #323
+    }
+
+    /**
+     * Check #323 : en prod effectif, {@code jwt.private-key} ou {@code app.export.token-secret}
+     * vides/blancs → refuse de booter. Voir le javadoc de classe : une {@code jwt.private-key}
+     * vide ne casse rien au démarrage (paire éphémère) — c'est précisément ce qui la rend
+     * dangereuse en production, d'où un fail-fast explicite ici plutôt qu'un WARN.
+     */
+    private void checkMissingSigningMaterialInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, paire éphémère légitime.
+        }
+        if (isBlankProperty(env, JWT_PRIVATE_KEY_KEY)) {
+            throw new IllegalStateException(
+                    "ARRÊT FAIL-FAST (#323) : '" + JWT_PRIVATE_KEY_KEY + "' (JWT_PRIVATE_KEY) est "
+                    + "VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                    + "ou profil Spring 'prod' actif). Sans clé configurée, JwtService génère une paire "
+                    + "RS256 ÉPHÉMÈRE : l'application démarre normalement mais TOUS les utilisateurs "
+                    + "sont déconnectés à chaque redémarrage, sans symptôme visible. Fournir une clé "
+                    + "privée RSA PKCS#8 en Base64 (modulus >= 2048 bits) via JWT_PRIVATE_KEY. "
+                    + "NB : JWT_SECRET (HS256) a été supprimé par #323, il n'est plus lu.");
+        }
+        if (isBlankProperty(env, EXPORT_TOKEN_SECRET_KEY)) {
+            throw new IllegalStateException(
+                    "ARRÊT FAIL-FAST (#323) : '" + EXPORT_TOKEN_SECRET_KEY + "' (EXPORT_TOKEN_SECRET) "
+                    + "est VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                    + "ou profil Spring 'prod' actif). Ce secret HMAC dédié signe les tokens de "
+                    + "téléchargement d'export RGPD ; il ne partage plus jwt.secret depuis #323. "
+                    + "Fournir une valeur Base64 décodant à >= 32 octets (openssl rand -base64 48).");
+        }
     }
 
     /**

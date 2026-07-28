@@ -41,7 +41,6 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * invoque {@link ExportPurgeScheduler#purgeExpired()} directement pour un contrôle déterministe.
  */
 @SpringBootTest(properties = {
-        "jwt.secret=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
         // Empêche le tick automatique d'interférer avec les assertions (on appelle purgeExpired() nous-mêmes).
         "app.export.purge.initial-delay-ms=3600000",
         "app.export.purge.interval-ms=3600000"

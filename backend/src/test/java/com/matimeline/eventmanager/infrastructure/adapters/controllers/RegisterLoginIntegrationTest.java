@@ -36,8 +36,7 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * generated id ... uninitialized version value"). Le contrôleur enrobe l'exception en 500, donc
  * ce test échouait en 500 avant le correctif.
  */
-@SpringBootTest(properties =
-        "jwt.secret=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
+@SpringBootTest
 @AutoConfigureMockMvc
 class RegisterLoginIntegrationTest extends AbstractPostgresIntegrationTest {
 

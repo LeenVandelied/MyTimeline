@@ -52,12 +52,10 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * assigné, cf. tâche spawn dédiée) hors périmètre de #73. Le {@code POST /login} réel
  * EST exercé (c'est lui qui émet le jti et crée la session).
  */
-@SpringBootTest(properties =
-        // Le jwt.secret par défaut du profil test contient des '-' (non Base64) : il
-        // suffit aux tests qui ne signent jamais de token, mais generateToken() le
-        // décode en Base64 -> DecodingException. On fournit ici une clé 256 bits
-        // valide Base64 pour exercer le VRAI login (émission + signature du jti).
-        "jwt.secret=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
+// #323 : plus aucune property de signature ici. L'auth signe désormais en RS256 sur une
+// paire ÉPHÉMÈRE générée au boot du contexte (jwt.private-key vide en profil test) — le
+// VRAI login est donc exercé sans clé committée, et ce test partage le contexte de base.
+@SpringBootTest
 @AutoConfigureMockMvc
 class SessionRevocationIntegrationTest extends AbstractPostgresIntegrationTest {
 

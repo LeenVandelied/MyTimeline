@@ -74,7 +74,7 @@ Bucket4j, Lombok, ArchUnit et Testcontainers.
 | Rôle | Hébergement du dépôt (**PUBLIC**) et unique pipeline CI |
 | Constaté dans | `.github/workflows/ci.yml` (seul workflow ; 4 jobs requis sur `dev`) |
 | Secrets du dépôt | **aucun** — `gh secret list` vide, `gh api …/environments` → `total_count: 0` |
-| Identifiants en dur | conteneur de service Postgres du job CI : `POSTGRES_PASSWORD`, `DB_PASSWORD`, `E2E_DB_PASSWORD` (même valeur, longueur 12) et `JWT_SECRET` (longueur 64) — éphémères, audit §4.3 |
+| Identifiants en dur | conteneur de service Postgres du job CI : `POSTGRES_PASSWORD`, `DB_PASSWORD`, `E2E_DB_PASSWORD` (même valeur, longueur 12) et `EXPORT_TOKEN_SECRET` — éphémères, audit §4.3. ⚠ **MAJ #323** : le `JWT_SECRET` (longueur 64) que citait l'audit a été RETIRÉ de `ci.yml` ; le backend du job e2e signe désormais avec une paire RS256 **éphémère** (aucune clé privée n'est committable dans un dépôt public), et le middleware frontend y tourne en mode dégradé |
 | Console d'admin | Settings → Secrets and variables (à créer au premier déploiement) |
 
 ---
@@ -146,19 +146,41 @@ Pas d'interruption pour l'utilisateur : seul le flux « mot de passe oublié » 
 5. Vérifier aussi `BREVO_SENDER_EMAIL` / `BREVO_SENDER_NAME` (non secrets, mais un expéditeur non
    validé côté Brevo fait échouer l'envoi).
 
-### 3quater.3 — Signature des jetons (`JWT_SECRET` → RS256, cf. #323)
+### 3quater.3 — Signature des jetons (RS256 — ✅ `JWT_SECRET` supprimé par #323, Sprint 50)
 
-⚠ **Ne pas appliquer une rotation HS256.** L'issue **#323** (Sprint 50, vague 2) supprime
-`JWT_SECRET` au profit d'une **paire de clés RS256** et introduit `EXPORT_TOKEN_SECRET` pour
-`ExportTokenService`. La procédure ci-dessous sera à réécrire une fois #323 livrée.
+⚠ **`JWT_SECRET` n'existe plus** : il n'y a aucune rotation HS256 à appliquer sur l'auth.
+#323 l'a remplacé par une **paire RS256** et un secret d'export **dédié**. Trois variables :
 
-Ce qui reste vrai dans tous les cas :
+| Variable | Rôle | Secret ? | Service |
+|---|---|---|---|
+| `JWT_PRIVATE_KEY` | signe les jetons d'auth (RS256), PKCS#8 Base64, ≥ 2048 bits | **OUI** | backend |
+| `AUTH_JWT_PUBLIC_KEY` | vérifie la signature du cookie `jwt` en Edge, SPKI Base64 | **NON** | frontend |
+| `EXPORT_TOKEN_SECRET` | signe les tokens de download d'export (HS256), Base64 ≥ 32 o. | **OUI** | backend |
 
-1. Tout changement de matériel de signature **invalide tous les jetons émis** → déconnexion globale.
-   Planifier une fenêtre de faible usage et **communiquer en amont**.
-2. Vérification post-changement : login complet (nouveau cookie `jwt` HttpOnly émis puis accepté par
-   `JwtFilter`/`JwtService`), plus `POST /api/auth/refresh` sur le nouveau jeton.
-3. La clé **privée** RS256 ne quitte jamais le secrets-manager ; seule la clé publique peut circuler.
+La clé **publique backend est DÉRIVÉE** de la privée au boot : elle n'est pas configurable, donc
+pas dépareillable côté serveur. Le seul risque de désynchronisation est côté frontend (§5 ci-dessous).
+
+1. **Générer** :
+   `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem`, puis
+   `openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64` (→ `JWT_PRIVATE_KEY`) et
+   `openssl rsa -in jwt.pem -pubout -outform DER | base64` (→ `AUTH_JWT_PUBLIC_KEY`).
+   `EXPORT_TOKEN_SECRET` : `openssl rand -base64 48`.
+2. **Ordre de déploiement** : vider `AUTH_JWT_PUBLIC_KEY` (mode dégradé assumé, ADR-004) OU
+   déployer backend + frontend **atomiquement** ; jamais la privée seule avec l'ancienne publique.
+3. Tout changement de matériel de signature **invalide tous les jetons émis** → déconnexion globale.
+   Planifier une fenêtre de faible usage et **communiquer en amont**. Aucune double émission
+   transitoire n'existe (choix de #323 : un vérificateur bi-algorithme rouvrirait la confusion
+   d'algorithme). Le symptôme utilisateur est propre : redirection vers `/login`, pas de 500.
+4. **Vérification post-changement** : login complet (nouveau cookie `jwt` HttpOnly émis puis accepté
+   par `JwtFilter`/`JwtService`), `POST /api/auth/refresh` sur le nouveau jeton, un téléchargement
+   d'export de bout en bout, et **absence du WARN « paire RS256 ÉPHÉMÈRE »** dans les logs de boot
+   (sa présence = `JWT_PRIVATE_KEY` non prise en compte).
+5. **Panne à connaître** : `AUTH_JWT_PUBLIC_KEY` dépareillée ⇒ tout utilisateur connecté est renvoyé
+   vers `/login` en boucle, alors que l'API répond normalement. Remède immédiat : vider la variable.
+6. La clé **privée** ne quitte jamais le secrets-manager. La clé **publique** peut circuler librement
+   (c'est tout l'intérêt de l'asymétrique) et se déploie comme une config ordinaire.
+7. Le boot prod **échoue** (`ProfileSafetyGuard` #323) si `JWT_PRIVATE_KEY` ou `EXPORT_TOKEN_SECRET`
+   sont vides — nécessaire car une clé privée absente ne casse rien visiblement (paire éphémère).
 
 ### 3quater.4 — Crowdin / `api_token`
 

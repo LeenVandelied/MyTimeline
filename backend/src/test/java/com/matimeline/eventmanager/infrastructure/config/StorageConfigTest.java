@@ -59,7 +59,7 @@ class StorageConfigTest {
     @Test
     void missingExportPath_failsFast_perConvention34() {
         // Aucun default en prod : sans app.storage.export-path, le placeholder ne se résout pas
-        // et le contexte échoue au démarrage (fail-fast, cohérent avatar-path/JWT_SECRET).
+        // et le contexte échoue au démarrage (fail-fast, cohérent avatar-path/jwt.private-key).
         runner.withPropertyValues("app.storage.avatar-path=/tmp/mytimeline-avatars-test")
                 .run(context -> assertTrue(context.getStartupFailure() != null,
                         "le boot doit échouer si app.storage.export-path est absent"));

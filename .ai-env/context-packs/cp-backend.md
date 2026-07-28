@@ -77,7 +77,10 @@ Ces 4 conventions transverses sont revenues comme BUGS en review. Les respecter 
 - Identité dérivée du JWT, JAMAIS d'un param. Ownership vérifié manuellement dans les controllers via
   `resolveCaller(token)` -> compare l'id (403 pour la ressource possédée d'autrui côté catégorie ;
   404 pour la ressource-cible d'autrui, cf. convention 2).
-- Secrets via env (`JWT_SECRET`, `DB_PASSWORD`, `BREVO_API_KEY`) — aucun default en profil prod (fail-fast).
+- Secrets via env (`JWT_PRIVATE_KEY` — clé privée RS256 PKCS#8 Base64 depuis #323, `EXPORT_TOKEN_SECRET`,
+  `DB_PASSWORD`, `BREVO_API_KEY`) — aucun default en profil prod (fail-fast). ⚠ `JWT_SECRET` (HS256) a été
+  SUPPRIMÉ par #323 : ne pas le réintroduire. La clé publique de vérification est DÉRIVÉE de la privée et
+  publiée côté frontend via `AUTH_JWT_PUBLIC_KEY` (non secrète).
   `ProfileSafetyGuard` refuse le boot si profil `dev` actif avec marqueur d'env prod. Aucune concat SQL.
 
 ## Null-safety & qualité

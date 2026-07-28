@@ -148,8 +148,9 @@ jobs:
         run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package
 
       # Démarrage du backend en tâche de fond (profil dev : cookie Secure=false,
-      # Domain=localhost, CORS http://localhost:3000 déjà autorisé). JWT_SECRET passé
-      # explicitement (le profil dev a un default, mais on ne s'appuie pas dessus en CI).
+      # Domain=localhost, CORS http://localhost:3000 déjà autorisé). EXPORT_TOKEN_SECRET
+      # passé explicitement (le profil dev a un default, mais on ne s'appuie pas dessus
+      # en CI) ; la signature d'auth utilise une paire RS256 éphémère, cf. #323 plus bas.
       - name: Start backend (Spring Boot, profils dev+e2e, :8080)
         working-directory: backend
         env:
@@ -162,11 +163,16 @@ jobs:
           DB_URL: jdbc:postgresql://localhost:5432/eventmanager
           DB_USERNAME: eventuser
           DB_PASSWORD: eventpass_ci
-          # JwtService décode le secret en Base64 (Decoders.BASE64.decode) puis exige
-          # >= 32 octets (HS256). Le secret DOIT donc être une chaîne Base64 valide
-          # (pas de '-'/'_' ni de caractères hors alphabet Base64) — sinon generateToken
-          # lève et /auth/login renvoie 500. Ci-dessous : 48 octets Base64 (CI-only, non secret).
-          JWT_SECRET: Q0lPbmx5SW5zZWN1cmVKd3RTZWNyZXRGb3JFMkVUZXN0c09ubHkwMTIzNDU2Nzg5
+          # #323 — JWT_SECRET (HS256) supprimé. AUCUNE JWT_PRIVATE_KEY n'est fournie ici :
+          # le backend génère une paire RS256 ÉPHÉMÈRE au boot. Le job est mono-processus
+          # et éphémère, donc l'absence de persistance des sessions est sans effet.
+          # ⚠ Corollaire ASSUMÉ : le frontend n'a donc pas de AUTH_JWT_PUBLIC_KEY à
+          # publier, et son middleware tourne en mode DÉGRADÉ (garde sur la présence du
+          # cookie). La vérification de signature Edge est couverte en UNITAIRE
+          # (`frontend/middleware.test.ts`, `src/lib/auth-token-verify.test.ts`), pas en E2E.
+          # Fournir une paire ici exigerait de committer une clé privée dans un dépôt PUBLIC.
+          # Secret HMAC dédié aux tokens de download d'export (CI-only, non secret).
+          EXPORT_TOKEN_SECRET: Q0lPbmx5SW5zZWN1cmVFeHBvcnRUb2tlblNlY3JldEZvckUyRVRlc3RzMDEyMzQ1Njc4OQ==
           # E2E-ONLY : désactive le rate-limit auth. La suite provisionne plusieurs
           # comptes depuis l'IP unique du runner -> déclencherait le throttle par IP
           # (register 5/min, login 10/min) et ferait échouer le projet Playwright `setup`.

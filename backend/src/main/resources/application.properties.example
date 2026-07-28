@@ -27,11 +27,22 @@ DB_USERNAME=
 # Mot de passe DB — OBLIGATOIRE en prod, sinon le boot echoue
 DB_PASSWORD=
 
-# --- Securite JWT ---
-# Cle secrete de signature des JWT (128 hex recommandes).
-# OBLIGATOIRE. Generer : openssl rand -hex 64
+# --- Securite JWT (#323 — RS256 asymetrique, JWT_SECRET SUPPRIME) ---
+# Cle PRIVEE RSA PKCS#8 en Base64, modulus >= 2048 bits. OBLIGATOIRE en prod.
+# Generer :
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
+#   openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64
+# La cle PUBLIQUE est DERIVEE au boot (pas de seconde variable cote backend). Le pendant
+# public a publier cote frontend (AUTH_JWT_PUBLIC_KEY, NON secret) :
+#   openssl rsa -in jwt.pem -pubout -outform DER | base64
+# Vide en dev/test : paire EPHEMERE generee au demarrage (sessions perdues au redemarrage).
 # Toute rotation invalide TOUS les tokens existants (deconnexion globale).
-JWT_SECRET=
+JWT_PRIVATE_KEY=
+
+# --- Tokens de telechargement d'export RGPD (#58 / #323) ---
+# Secret HMAC DEDIE (plus de partage avec la signature d'auth). Base64, >= 32 octets.
+# OBLIGATOIRE. Generer : openssl rand -base64 48
+EXPORT_TOKEN_SECRET=
 
 # --- Email Brevo / mot de passe oublie (#49) ---
 # Cle API Brevo (POST https://api.brevo.com/v3/smtp/email).

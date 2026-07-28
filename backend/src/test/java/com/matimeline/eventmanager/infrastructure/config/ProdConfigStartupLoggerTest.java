@@ -81,7 +81,8 @@ class ProdConfigStartupLoggerTest {
         assertThat(appender.list).allSatisfy(event -> {
             String m = event.getFormattedMessage();
             assertThat(m)
-                    .doesNotContain("JWT_SECRET")
+                    .doesNotContain("JWT_PRIVATE_KEY")
+                    .doesNotContain("EXPORT_TOKEN_SECRET")
                     .doesNotContain("DB_PASSWORD")
                     .doesNotContain("BREVO_API_KEY");
         });

@@ -164,14 +164,26 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     })
   }
 
-  test('un cookie jwt bidon suffit à passer la garde (limite assumée, ADR-004)', async ({
+  test('DÉGRADÉ : un cookie jwt bidon suffit à passer la garde (ADR-004)', async ({
     page,
     context,
   }) => {
-    // Documente noir sur blanc la limite du choix « présence du cookie » : la
-    // garde n'est PAS une frontière d'autorisation. Si ce test se met à échouer,
-    // c'est que la stratégie a changé (vérification de signature) -> mettre à
-    // jour l'ADR-004 plutôt que de « réparer » le test.
+    // ⚠ MISE À JOUR #323 (sprint 50) — ce test décrit désormais le mode DÉGRADÉ,
+    // pas le comportement nominal. Depuis #323, le middleware VÉRIFIE la signature
+    // RS256 du cookie quand `AUTH_JWT_PUBLIC_KEY` est configurée, et un cookie
+    // bidon est alors redirigé (307). L'environnement e2e ne pose PAS cette
+    // variable : le backend du job CI signe avec une paire ÉPHÉMÈRE (aucune clé
+    // privée n'est committable dans un dépôt PUBLIC), donc aucune clé publique
+    // stable n'est publiable au frontend. Le chemin dégradé reste donc le chemin
+    // exercé ici, et il doit continuer de fonctionner.
+    //
+    // La vérification de signature elle-même est couverte en UNITAIRE :
+    // `frontend/middleware.test.ts` (§ signature RS256) et
+    // `frontend/src/lib/auth-token-verify.test.ts`.
+    //
+    // Si ce test se met à échouer, c'est que `AUTH_JWT_PUBLIC_KEY` a été posée
+    // dans l'environnement e2e -> réécrire ce cas pour attendre une 307, et
+    // mettre à jour ADR-004, plutôt que de « réparer » le test.
     await context.addCookies([
       { name: 'jwt', value: 'ceci-n-est-pas-un-jwt', url: 'http://localhost:3000' },
     ])

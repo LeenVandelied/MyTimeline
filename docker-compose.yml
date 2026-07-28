@@ -38,11 +38,17 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventmanager}
       DB_USERNAME: ${DB_USERNAME:-eventuser}
       DB_PASSWORD: ${DB_PASSWORD:-motdepasse_dev_local}
-      # Défaut dev insécurisé si absent du .env (profil dev tolère). À changer.
-      # Base64 STANDARD valide (JwtService décode via Decoders.BASE64) : 48 octets
-      # décodés >= 32 requis pour HS256. L'ancien default à base de '-' cassait le
-      # décodage -> 500 sur tout login. Aligné sur application-dev.properties.
-      JWT_SECRET: ${JWT_SECRET:-ZGV2LW9ubHktaW5zZWN1cmUtand0LXNlY3JldC1jaGFuZ2UtbWUtcGVyLXBvc3Qh}
+      # Signature JWT RS256 (#323). JWT_SECRET (HS256) n'existe PLUS.
+      # AUCUNE clé RSA n'est fournie en dur ici : le dépôt est PUBLIC. Vide (défaut) =>
+      # le backend génère une paire ÉPHÉMÈRE au boot et journalise la clé publique
+      # correspondante — pratique en local, mais les sessions ne survivent pas à un
+      # `docker compose restart`. Poser JWT_PRIVATE_KEY dans .env pour les figer
+      # (clé privée RSA PKCS#8 en Base64, cf. .env.example).
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+      # Secret HMAC DÉDIÉ des tokens de téléchargement d'export RGPD (#323) — ne partage
+      # plus la clé d'auth. Base64 STANDARD, 49 octets décodés (>= 32 requis pour HS256).
+      # Défaut dev manifestement jetable, aligné sur application-dev.properties.
+      EXPORT_TOKEN_SECRET: ${EXPORT_TOKEN_SECRET:-ZGV2LW9ubHktaW5zZWN1cmUtZXhwb3J0LXRva2VuLXNlY3JldC1jaGFuZ2UtbWUhIQ==}
       # Avatars persistés sur le volume monté ci-dessous.
       STORAGE_AVATAR_PATH: /app/var/avatars
     ports:
@@ -70,6 +76,13 @@ services:
       # VIDE par défaut => dégradé assumé, comportement d'avant #322 inchangé en
       # dev local. À renseigner en prod/preview, cf. .env.example et ADR-004.
       APP_CANONICAL_HOST: ${APP_CANONICAL_HOST:-}
+      # #323 — clé PUBLIQUE RS256 (SPKI Base64) de vérification de signature du cookie
+      # `jwt`. Lue au RUNTIME comme APP_CANONICAL_HOST. Ce n'est PAS un secret, mais
+      # elle DOIT correspondre à la JWT_PRIVATE_KEY du backend : une clé dépareillée
+      # renverrait tout utilisateur connecté vers /login. VIDE (défaut) => dégradé
+      # assumé, garde sur la seule présence du cookie (comportement d'avant #323).
+      # En dev avec paire éphémère, la valeur à coller est journalisée au boot backend.
+      AUTH_JWT_PUBLIC_KEY: ${AUTH_JWT_PUBLIC_KEY:-}
     ports:
       - "3000:3000"
     healthcheck:

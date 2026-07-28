@@ -42,7 +42,7 @@ import com.matimeline.eventmanager.infrastructure.security.JwtService;
  * ses collaborateurs mockés — pour que les fields {@code @Value("${app.cookie.*}")}
  * soient résolus par Spring SANS démarrer Postgres / Flyway / le secret JWT.
  * {@code application-prod.properties} référence {@code ${DB_PASSWORD}},
- * {@code ${JWT_SECRET}}, {@code ${CORS_ALLOWED_ORIGINS}}, {@code ${STORAGE_AVATAR_PATH}}
+ * {@code ${CORS_ALLOWED_ORIGINS}}, {@code ${STORAGE_AVATAR_PATH}}
  * SANS default : un {@code @SpringBootTest} + {@code @ActiveProfiles("prod")} complet
  * exigerait Testcontainers + toutes ces env. Ici, ces placeholders ne sont jamais
  * injectés (aucun bean ne les consomme), donc le contexte boote sans eux — seuls

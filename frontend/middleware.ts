@@ -8,6 +8,7 @@ import {
   isProtectedPathname,
   splitLocalizedPathname,
 } from '@/lib/auth-guard-paths'
+import { verifyAuthCookie } from '@/lib/auth-token-verify'
 import { canonicalizeLocation, canonicalOrigins } from '@/lib/canonical-host'
 
 // Ce middleware gère la redirection basée sur la langue
@@ -31,12 +32,17 @@ const intlMiddleware = createMiddleware({
  * amont : cookie `jwt` absent sur une route protégée → 307 vers `/<locale>/login`,
  * zéro octet de page protégée.
  *
- * ⚠ Ce n'est PAS une frontière d'autorisation : on ne vérifie que la PRÉSENCE du
- * cookie, jamais sa signature (le secret HMAC de `JwtService` est symétrique — le
- * partager avec l'Edge mettrait un secret de frappe de jetons côté frontend, cf.
- * ADR-004 §Option A). Un cookie `jwt` bidon ou expiré passe donc cette garde ;
- * `JwtFilter` répond alors 401 aux appels API et `useAuthGuard` redirige côté
- * client. Ne jamais rendre de donnée métier en se fiant à ce middleware.
+ * #323 — la garde vérifie désormais aussi la SIGNATURE et l'EXPIRATION du cookie.
+ * `JwtService` signe en RS256 : seule la clé PUBLIQUE (`AUTH_JWT_PUBLIC_KEY`) est
+ * exposée à l'Edge, donc aucun secret de frappe de jetons ne quitte le backend —
+ * ce qui levait le blocage de l'ADR-004 §Option A. Un cookie `jwt` forgé ou expiré
+ * est maintenant redirigé, plus servi.
+ *
+ * ⚠ Ce n'est TOUJOURS PAS une frontière d'autorisation. Deux raisons subsistent :
+ * (a) la RÉVOCATION de session (`jti`) n'est vérifiable qu'en base, donc côté
+ * backend ; (b) sans `AUTH_JWT_PUBLIC_KEY` configurée, la garde retombe en mode
+ * dégradé « présence seule » (cf. `auth-token-verify.ts`). `JwtFilter` reste le
+ * seul juge : ne jamais rendre de donnée métier en se fiant à ce middleware.
  *
  * ORDRE : le check d'auth s'exécute AVANT `intlMiddleware`, mais ne traite que
  * les chemins DÉJÀ préfixés d'une locale supportée. Un `/dashboard` nu passe donc
@@ -82,10 +88,31 @@ function withCanonicalOrigin(response: NextResponse): NextResponse {
   return response
 }
 
-export default function middleware(request: NextRequest): NextResponse {
+/**
+ * #323 — `async` DEPUIS la vérification de signature : `crypto.subtle.verify` est
+ * asynchrone et aucune API WebCrypto synchrone n'existe. Next accepte un middleware
+ * qui renvoie une `Promise<NextResponse>` ; le coût est une vérification RSA (~0,1 ms)
+ * sur les seules routes protégées, la clé publique n'étant importée qu'une fois par
+ * instance (cache dans `auth-token-verify.ts`).
+ *
+ * ⚠ `verifyAuthCookie` ne LÈVE jamais, par construction : toute exception qui
+ * remonterait ici deviendrait un 500 sur toutes les routes protégées (BUG-S45-001).
+ */
+export default async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
-  if (isProtectedPathname(pathname) && !request.cookies.has(AUTH_COOKIE_NAME)) {
+  // ⚠ `process.env.AUTH_JWT_PUBLIC_KEY` en accès LITTÉRAL (et non `process.env[CONST]`) :
+  // c'est la forme reconnue par l'analyse statique de Next. Variable NON `NEXT_PUBLIC_*`,
+  // donc lue au RUNTIME, jamais inlinée au build ni envoyée au navigateur (mesure #322).
+  // Une clé publique n'est pas un secret, mais rien ne justifie de la baker dans le bundle.
+  const isRejected =
+    isProtectedPathname(pathname) &&
+    (await verifyAuthCookie(
+      request.cookies.get(AUTH_COOKIE_NAME)?.value,
+      process.env.AUTH_JWT_PUBLIC_KEY,
+    )) === 'rejected'
+
+  if (isRejected) {
     // `splitLocalizedPathname` est non-null ici (garanti par `isProtectedPathname`),
     // mais on retombe sur `DEFAULT_LOCALE` plutôt que d'écrire un `!` non prouvable.
     const locale = splitLocalizedPathname(pathname)?.locale ?? DEFAULT_LOCALE
