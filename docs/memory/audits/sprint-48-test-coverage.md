@@ -114,13 +114,50 @@ Aucun dispatch de correction nécessaire.
    CSS était explicitement exclue) → follow-up [M] consigné. Le reviewer a confirmé que **le diff n'aggrave pas**
    la situation : aucune nouvelle classe hardcodée ajoutée.
 
+## ⚠ ADDENDUM CLÔTURE — 3 défauts trouvés APRÈS cet audit, par contrôle navigateur
+
+Cet audit concluait « prêt pour PR » avec CI 4/4 verte, review sans CRITIQUE et 641/641 tests verts.
+**Il est passé à côté de 2 régressions user-visible et d'un échec WCAG.** Trouvés en Phase 1 de
+`/sprint end` en ouvrant réellement la page (`next dev` + navigateur) :
+
+| # | Défaut | Mesure | Correctif |
+|---|---|---|---|
+| 1 | **2 CTA primaires INVISIBLES** (bleu sur bleu) | contraste **1.00:1** → 6.94:1 | `842a46c` |
+| 2 | **CTA du hero TRONQUÉ en plein mot** (« cer gratuit ») | 125px rendus / 266px de contenu → 406/406 | `903fc3e` |
+| 3 | Bandeau CTA débordant du viewport mobile | 465px dans 375px → 343/343 | `6a34480` |
+| 4 | `<h2>` du bandeau CTA sous le seuil AA | **2.41:1** → **6.94:1** | `32d555c` |
+
+Défauts 1 et 2 = **régressions de ce sprint** (conversion `asChild` de #295). Défauts 3 et 4 = **pré-existants**
+(classes identiques sur `origin/dev`, vérifié), corrigés parce qu'ils tombaient sous les critères #4 et #8 de #56.
+
+**Pourquoi le harnais ne les a pas vus** — c'est le point à retenir :
+- `jsdom` ne résout **ni la précédence des `@layer` ni aucune mise en page** → aucun test RTL ne pouvait
+  les attraper ; les `className` étaient **inchangées et correctes**, seul le rendu était faux.
+- `next build` ne contrôle aucun style au runtime.
+- Le reviewer lit le code et ne voit pas l'interaction de cascade entre deux fichiers CSS.
+
+**Suite après correctifs :** **646/646, 81 fichiers** (+5 tests, +2 fichiers vs cet audit) · `next build` **0 erreur**.
+Nouveaux garde-fous : 2 tests AST PostCSS qui compilent le vrai CSS et verrouillent l'invariant de cascade et
+celui de taille minimale flex (test de mutation fait dans les deux cas — cf. `PAT-S48-001`).
+
+**Reste NON corrigé et assumé — critère #8 de #56 NON rempli :** à 375px la page garde un **scroll horizontal
+de 173px**, dû au groupe de boutons du header (`flex items-center space-x-4`, 299px) qui ne se replie pas.
+**Pré-existant** (classes identiques sur `origin/dev`). Exige une décision de design mobile (burger, ou masquer
+les boutons auth sous `md`) — hors périmètre d'une clôture. Le header déborde sur **tout viewport < ~565px**.
+
 ## Conclusion
 
-**PR #333 ouverte et prête à merger.** Suite unitaire verte (641/641, relancée par le lead), build vert,
-**4 jobs CI requis verts** (`backend` · `frontend` · `e2e` · `security`), `mergeStateStatus: CLEAN`,
-review sans CRITIQUE ni MAJEUR imputable au diff, couverture E2E sans lacune (aucun testid nouveau à couvrir).
+**PR #333 prête à merger, APRÈS les 4 correctifs de l'addendum ci-dessus.**
+Suite unitaire **646/646** (relancée par le lead), `next build` **0 erreur**, review sans CRITIQUE ni MAJEUR
+imputable au diff, couverture E2E sans lacune (aucun testid nouveau à couvrir).
+CI à re-vérifier sur le nouveau head avant merge (les 4 correctifs sont postérieurs au dernier run vert).
 
-Sur les 4 limites listées, **la n°2 est levée par la CI**. Les 3 restantes (rendu visuel jamais constaté,
-comportement du 308 en navigateur, hex de `landing.css`) sont **documentées et arbitrées**, pas subies.
-Les critères #3, #4 et #8 de l'issue #56 sont **partiellement satisfaits** et le sont explicitement —
-le follow-up `landing.css` les débloquera en entier.
+Des 4 limites initialement listées : la **n°2 est levée par la CI** (job `e2e` vert), et la **n°1 est levée par
+le contrôle navigateur** — le rendu a été constaté en clair ET en sombre, ce qui a justement révélé les
+défauts de l'addendum. Restent la mise en cache du 308 côté navigateur (non constatée) et les hex de
+`landing.css` (follow-up [M]).
+
+**Bilan honnête des critères de #56 : 6/8 remplis.** Le **#3** (zéro couleur hardcodée) et le **#8**
+(responsive mobile) sont **NON remplis** — détail et justification dans `sprint-history.md`. Ce ne sont pas
+des « partiellement satisfaits » diplomatiques : le CSS contient toujours des hex hors palette Graphite, et
+la page scrolle horizontalement sur téléphone.
