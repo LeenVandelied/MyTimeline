@@ -1,7 +1,7 @@
 /**
- * #47 — Barrel des sous-composants Timeline extraits du monolithe
- * `TimelineCalendar.tsx`. Débloque leur réutilisation (S17 : Timeline events
- * desktop réécrite sur ces briques).
+ * #47 — Barrel des sous-composants Timeline extraits de l'ancien composant
+ * calendrier monolithique (supprimé #350). Débloque leur réutilisation (S17 :
+ * Timeline events desktop réécrite sur ces briques).
  */
 export { DateStamp } from './DateStamp'
 export type { DateStampProps } from './DateStamp'

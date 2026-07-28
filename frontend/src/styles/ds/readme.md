@@ -32,9 +32,9 @@ shadowed feature cards. The new system rejects all of that.
 ## Sources given
 
 - **Codebase (read-only, mounted):** `MyTimeline/` (Next.js `frontend/` + Java
-  `backend/`). Key files: `frontend/src/components/calendar/TimelineCalendar.tsx`,
-  `pages/HomePage.tsx`, `EventEditForm.tsx`, `products/ProductDrawer.tsx`,
-  `types/{event,product}.ts`, `styles/globals.css`, `public/locales/**`.
+  `backend/`). Key files: `pages/HomePage.tsx`, `EventEditForm.tsx`,
+  `products/ProductDrawer.tsx`, `types/{event,product}.ts`, `styles/globals.css`,
+  `public/locales/**`.
 - **Written brief:** "Design System — MyTimeline" (art-direction spec) from the
   kickoff message — anti-slop guardrails, palette/type options, component scope.
 
