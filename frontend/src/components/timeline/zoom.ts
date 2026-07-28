@@ -156,19 +156,32 @@ export interface PositionedEvent extends FullCalendarEvent {
 }
 
 /**
- * Positionne les events sur l'axe px (échelle = dayWidth). Ne clampe PAS à une
- * fenêtre de 30 j (contrairement à `buildEventsByResource` de #47) : la frise
- * #55 est continue → un event garde sa position absolue sur toute l'étendue, le
- * scroll horizontal révèle le reste. Statut dérivé vs `now`.
+ * #349 — Géométrie d'un event INDÉPENDANTE du zoom : offsets exprimés en JOURS,
+ * pas en pixels. C'est la moitié chère du positionnement (parsing de dates,
+ * `daysBetween` — deux `Date` allouées par appel, dérivation du statut) et elle
+ * ne dépend QUE de `events` / `rangeStart` / `now`. Le zoom, lui, ne change que
+ * l'échelle px/jour : il n'a aucune raison de la recalculer.
  */
-export function positionEvents(
+export interface EventGeometry {
+  event: FullCalendarEvent
+  /** Décalage en jours depuis `rangeStart`. */
+  dayOffset: number
+  /** Durée en jours (≥ 1). */
+  spanDays: number
+  status: PositionedEvent['status']
+}
+
+/**
+ * #349 — Passe INVARIANTE AU ZOOM de `positionEvents` : parse les dates une fois
+ * et produit une géométrie en jours par ressource. À mémoïser sur
+ * `[events, rangeStart, now]` (cf. `TimelineView`).
+ */
+export function indexEventsByResource(
   events: FullCalendarEvent[],
   rangeStart: Date,
-  dayWidth: number,
   now: Date,
-  minWidth = 6,
-): Map<string, PositionedEvent[]> {
-  const map = new Map<string, PositionedEvent[]>()
+): Map<string, EventGeometry[]> {
+  const map = new Map<string, EventGeometry[]>()
   for (const event of events) {
     const resourceId = event.resourceId
     if (!resourceId) continue
@@ -177,19 +190,68 @@ export function positionEvents(
     const eventEnd = new Date(event.end || event.start)
     if (Number.isNaN(eventStart.getTime())) continue
 
-    const leftPx = daysBetween(rangeStart, eventStart) * dayWidth
+    const dayOffset = daysBetween(rangeStart, eventStart)
     const spanDays = Math.max(1, daysBetween(eventStart, eventEnd))
-    const widthPx = Math.max(minWidth, spanDays * dayWidth)
 
     let status: PositionedEvent['status'] = 'upcoming'
     if (eventEnd < now) status = 'expired'
     else if (eventStart <= now && now <= eventEnd) status = 'ongoing'
 
-    const positioned: PositionedEvent = { ...event, leftPx, widthPx, status }
-    if (!map.has(resourceId)) map.set(resourceId, [])
-    map.get(resourceId)!.push(positioned)
+    let bucket = map.get(resourceId)
+    if (!bucket) {
+      bucket = []
+      map.set(resourceId, bucket)
+    }
+    bucket.push({ event, dayOffset, spanDays, status })
   }
   return map
+}
+
+/**
+ * #349 — Passe DÉPENDANTE DU ZOOM : pure arithmétique (jours × px/jour), aucune
+ * `Date` construite, aucun parsing. C'est la seule chose qu'un changement de
+ * niveau de zoom doit refaire.
+ */
+export function scaleEventPositions(
+  indexed: Map<string, EventGeometry[]>,
+  dayWidth: number,
+  minWidth = 6,
+): Map<string, PositionedEvent[]> {
+  const map = new Map<string, PositionedEvent[]>()
+  for (const [resourceId, geometries] of indexed) {
+    const positioned: PositionedEvent[] = new Array(geometries.length)
+    for (let i = 0; i < geometries.length; i++) {
+      const g = geometries[i]
+      positioned[i] = {
+        ...g.event,
+        leftPx: g.dayOffset * dayWidth,
+        widthPx: Math.max(minWidth, g.spanDays * dayWidth),
+        status: g.status,
+      }
+    }
+    map.set(resourceId, positioned)
+  }
+  return map
+}
+
+/**
+ * Positionne les events sur l'axe px (échelle = dayWidth). Ne clampe PAS à une
+ * fenêtre de 30 j (contrairement à `buildEventsByResource` de #47) : la frise
+ * #55 est continue → un event garde sa position absolue sur toute l'étendue, le
+ * scroll horizontal révèle le reste. Statut dérivé vs `now`.
+ *
+ * #349 — Composition des deux passes ci-dessus (comportement INCHANGÉ). Les
+ * appelants sensibles au zoom (`TimelineView`) appellent les deux passes
+ * séparément pour ne refaire que la seconde.
+ */
+export function positionEvents(
+  events: FullCalendarEvent[],
+  rangeStart: Date,
+  dayWidth: number,
+  now: Date,
+  minWidth = 6,
+): Map<string, PositionedEvent[]> {
+  return scaleEventPositions(indexEventsByResource(events, rangeStart, now), dayWidth, minWidth)
 }
 
 export interface RulerTick {
