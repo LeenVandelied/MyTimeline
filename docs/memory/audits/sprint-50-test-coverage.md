@@ -55,9 +55,12 @@ Trois preuves ont été exigées et produites avant de considérer la couverture
 
 ## Ce qui n'est PAS couvert (assumé, listé)
 
-- **La 2ᵉ passe E2E ajoutée à `ci.yml` n'a jamais tourné sur un runner GitHub** — le step de
-  génération de paire a été exécuté verbatim en local. À observer au premier push ; `e2e` n'est pas
-  un check requis sur `dev`.
+- ~~La 2ᵉ passe E2E ajoutée à `ci.yml` n'a jamais tourné sur un runner GitHub~~ → **LEVÉ**.
+  Run [30396766409](https://github.com/LeenVandelied/MyTimeline/actions/runs/30396766409) sur
+  `b945f4d` : les 4 jobs verts (`backend`, `frontend`, `security`, `e2e`), la passe appairée
+  **12 passed en 26,6 s** et la passe dégradée **96 passed / 8 skipped** en 3,6 min.
+  Reste vrai : `e2e` **n'est pas un check requis** sur `dev` (seuls `backend` et `frontend` le sont),
+  donc une régression E2E ne bloquerait pas un merge.
 - **Mode « clé publique présente mais illisible »** : couvert en unitaire, pas en E2E (exigerait une
   3ᵉ instance Next pour un chemin qui se comporte comme le dégradé déjà couvert).
 - **Révocation `jti` en Edge** : non vérifiable côté middleware, `JwtFilter` reste seul juge.

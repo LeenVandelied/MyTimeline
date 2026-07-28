@@ -1393,6 +1393,7 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 **Status :** Travail terminé — **PR #357** ouverte vers `dev` (branche `claude/sprint-50-start-9b7161`, pas de branche `sprint/50` — leçon S43/S44 reconduite). Clôture via `/sprint end 50`.
 **Commits (7) :** `3f0f1b2` #249 · `bf9dec0` #322 · `1758c0c` #323 · `d7b8049` correctifs review · `44bc3cc` E2E signature · + 2 commits docs
 **Tests :** Backend 450/450 · Frontend 788/788 · E2E signature 12/0 · E2E suite complète 96 passed / 8 skipped / 0 failed
+**CI :** run 30396766409 sur `b945f4d` — **4 jobs verts** (`backend`, `frontend`, `security`, `e2e`). La 2ᵉ passe E2E appairée a bien tourné sur runner GitHub (12 passed / 26,6 s), ce qui lève la réserve notée à l'audit. `e2e` reste **non requis** sur `dev`.
 **Review batch :** 0 CRITIQUE / 3 MAJEUR / 6 MINEUR — tous résolus (`d7b8049`)
 **Artefacts :** `docs/memory/sprints/sprint-50/` (4 `issue-*-done.md`, `review-batch.md`, 3 briefings, 3 spawn-refs) · `docs/memory/audits/sprint-50-test-coverage.md` · `docs/memory/audits/secret-exposure-audit.md` · `docs/memory/devops/external-services-inventory.md`
 **⚠ #249 reste OUVERTE** — ses 3 critères opérationnels sont inatteignables sans déploiement. Ne pas la fermer en Phase 3 de `/sprint end`.
