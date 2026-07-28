@@ -1,0 +1,379 @@
+import { expect, type Locator, type Page } from '@playwright/test'
+
+/**
+ * Mesure de contraste WCAG et de troncature, sur le rendu RÉEL (#337).
+ *
+ * Pourquoi ce module existe : le Sprint 48 a livré deux régressions visibles
+ * (deux CTA bleu-sur-bleu à 1.00:1, un libellé coupé en plein mot) qu'AUCUN
+ * harnais en place ne pouvait voir. `jsdom` ne résout ni la précédence des
+ * `@layer` CSS ni la moindre mise en page ; `next build` ne contrôle aucun style
+ * à l'exécution ; une relecture de diff ne devine pas une interaction de cascade
+ * entre deux fichiers CSS. Seul un vrai moteur de rendu répond à la question
+ * « qu'est-ce que l'utilisateur voit ». D'où : Playwright + `getComputedStyle`.
+ *
+ * Trois exigences de justesse, chacune correspondant à une erreur classique :
+ *
+ * 1. **Luminance relative WCAG 2.x** — linéarisation sRGB canal par canal
+ *    (`c <= 0.04045 ? c/12.92 : ((c+0.055)/1.055)^2.4`), PAS une moyenne de
+ *    canaux ni la luminosité HSL. Une moyenne naïve donne un ratio faux d'un
+ *    facteur ~2 sur les bleus, précisément la teinte de l'accent du DS.
+ * 2. **Fond composité** — `getComputedStyle(el).backgroundColor` vaut
+ *    `rgba(0,0,0,0)` sur la plupart des éléments : la couleur réellement
+ *    derrière le texte est celle du premier ancêtre opaque, sur laquelle on
+ *    ré-empile les couches semi-transparentes traversées. Sans ce ré-empilement,
+ *    un voile `rgba()` sur un parent est ignoré et le ratio mesuré est faux.
+ * 3. **Pseudo-éléments couvrants** — le voile de survol de `.cta-button` est un
+ *    `::after` (`width: 0` au repos, `100%` au survol, teinte `ink` à 8 %). Il
+ *    passe SOUS le texte et modifie donc le fond effectif. On le lit via
+ *    `getComputedStyle(el, '::after')` et on ne le composite que s'il couvre
+ *    réellement la boîte — c'est ce qui permet d'attraper la famille de
+ *    régressions « survol qui écrase le contraste » (cf. le CTA tombé à 4.01:1
+ *    avant #335).
+ *
+ * Normalisation des couleurs : on passe par un `<canvas>` 1×1
+ * (`fillStyle` + `getImageData`) plutôt que par une regex. Chromium sérialise
+ * `getComputedStyle` en `rgb()`/`rgba()` la plupart du temps, mais pas toujours
+ * (`color-mix()`, `oklch()`, `color(srgb …)` ressortent tels quels selon
+ * l'espace de couleur d'origine) — et le DS utilise `color-mix()`. Le canvas
+ * accepte toutes ces syntaxes et rend des octets sRGB : un seul chemin, aucune
+ * syntaxe oubliée.
+ */
+
+/** Seuil WCAG 2.1 AA — texte normal (1.4.3). */
+export const WCAG_AA_NORMAL = 4.5
+/** Seuil WCAG 2.1 AA — grand texte : >= 24px, ou >= 18.66px en gras (>= 700). */
+export const WCAG_AA_LARGE = 3
+
+/**
+ * Plancher de projet appliqué aux appels à l'action, au-dessus du seuil WCAG.
+ *
+ * Les CTA de la landing sont rendus à 27px (échelle DS : `text-lg` = 27px, PAS
+ * les 18px de l'échelle Tailwind par défaut) : ils tombent donc dans la case
+ * « grand texte » et WCAG ne leur impose que 3:1. On exige quand même 4.5:1,
+ * pour deux raisons factuelles :
+ *  - la régression pré-#335 mesurait 4.01:1 au survol ; à 3:1 elle passerait le
+ *    test, or c'est exactement le défaut que cette issue doit attraper ;
+ *  - la marge sur le CTA primaire est déjà mince (4.71:1 sur l'accent en clair),
+ *    tout assombrissement de fond doit rougir AVANT d'être livré.
+ * Un CTA sous 4.5:1 est donc un échec ici même s'il reste conforme AA.
+ */
+export const CTA_MIN_RATIO = 4.5
+
+/** Tolérance de troncature, en px : sub-pixels de rendu et arrondis de bordure. */
+export const TRUNCATION_TOLERANCE_PX = 1
+
+export interface TextRendering {
+  /** Ratio de contraste WCAG entre la couleur du texte et le fond composité. */
+  ratio: number
+  /** Couleur de texte effective, `#rrggbb` (aplatie si semi-transparente). */
+  foreground: string
+  /** Fond effectif sous le texte, `#rrggbb` (ancêtres + voiles composités). */
+  background: string
+  fontSizePx: number
+  fontWeight: number
+  /** Vrai si le texte relève du seuil « grand texte » WCAG (3:1). */
+  isLargeText: boolean
+  /** Seuil WCAG applicable compte tenu de la taille et de la graisse. */
+  wcagThreshold: number
+  /** Produit des `opacity` de l'élément et de tous ses ancêtres. */
+  effectiveOpacity: number
+  /** Nombre de pseudo-éléments couvrants composités dans le fond. */
+  overlayCount: number
+  scrollWidth: number
+  clientWidth: number
+  scrollHeight: number
+  clientHeight: number
+  boxWidth: number
+  boxHeight: number
+  text: string
+}
+
+/**
+ * Lit le rendu effectif d'un élément textuel. Tout le calcul se fait DANS la
+ * page : le style calculé n'existe pas côté Node, et rapatrier l'arbre des
+ * ancêtres pour le recomposer ici serait à la fois plus lent et plus fragile.
+ */
+export async function readTextRendering(locator: Locator): Promise<TextRendering> {
+  return locator.evaluate((el: Element): TextRendering => {
+    type Rgba = [number, number, number, number]
+
+    /** Normalise n'importe quelle syntaxe CSS de couleur en octets sRGB. */
+    const toRgba = (value: string): Rgba => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 1
+      canvas.height = 1
+      const ctx = canvas.getContext('2d')
+      if (ctx === null) throw new Error('contexte canvas 2d indisponible')
+      ctx.clearRect(0, 0, 1, 1)
+      ctx.fillStyle = value
+      ctx.fillRect(0, 0, 1, 1)
+      const d = ctx.getImageData(0, 0, 1, 1).data
+      return [d[0], d[1], d[2], d[3] / 255]
+    }
+
+    /** Composition « source-over » d'une couche sur un fond opaque. */
+    const over = (src: Rgba, dst: Rgba): Rgba => [
+      src[0] * src[3] + dst[0] * (1 - src[3]),
+      src[1] * src[3] + dst[1] * (1 - src[3]),
+      src[2] * src[3] + dst[2] * (1 - src[3]),
+      1,
+    ]
+
+    /** Luminance relative WCAG 2.x (linéarisation sRGB, pondération 709). */
+    const luminance = (c: Rgba): number => {
+      const channel = (v: number): number => {
+        const s = v / 255
+        return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+      }
+      return 0.2126 * channel(c[0]) + 0.7152 * channel(c[1]) + 0.0722 * channel(c[2])
+    }
+
+    const contrast = (a: Rgba, b: Rgba): number => {
+      const la = luminance(a)
+      const lb = luminance(b)
+      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+    }
+
+    const hex = (c: Rgba): string =>
+      `#${[c[0], c[1], c[2]].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`
+
+    const style = getComputedStyle(el)
+    const rect = el.getBoundingClientRect()
+
+    // --- Ancêtres : premier fond opaque + couches semi-transparentes ---------
+    const layers: Rgba[] = []
+    let effectiveOpacity = 1
+    let node: Element | null = el
+    while (node !== null) {
+      const nodeStyle = getComputedStyle(node)
+      const nodeOpacity = Number.parseFloat(nodeStyle.opacity)
+      effectiveOpacity *= Number.isFinite(nodeOpacity) ? nodeOpacity : 1
+      const bg = toRgba(nodeStyle.backgroundColor)
+      if (bg[3] > 0) layers.push(bg)
+      if (bg[3] >= 1) break
+      node = node.parentElement
+    }
+
+    // Fond de départ : le premier ancêtre opaque, sinon le blanc du canvas.
+    let background: Rgba =
+      layers.length > 0 && layers[layers.length - 1][3] >= 1
+        ? (layers.pop() as Rgba)
+        : [255, 255, 255, 1]
+    // Ré-empilement du plus profond au plus proche de l'élément.
+    for (let i = layers.length - 1; i >= 0; i -= 1) background = over(layers[i], background)
+
+    // --- Pseudo-éléments couvrants (voile de survol de `.cta-button`) --------
+    // Ne comptent que s'ils recouvrent effectivement la boîte : au repos le
+    // voile fait `width: 0`, il ne doit alors rien changer au fond mesuré.
+    let overlayCount = 0
+    for (const pseudo of ['::before', '::after']) {
+      const ps = getComputedStyle(el, pseudo)
+      if (ps.content === 'none' || ps.display === 'none') continue
+      const w = Number.parseFloat(ps.width)
+      const h = Number.parseFloat(ps.height)
+      if (!Number.isFinite(w) || !Number.isFinite(h)) continue
+      const covers = w >= rect.width * 0.95 && h >= rect.height * 0.95
+      if (!covers) continue
+      const color = toRgba(ps.backgroundColor)
+      const pseudoOpacity = Number.parseFloat(ps.opacity)
+      const alpha = color[3] * (Number.isFinite(pseudoOpacity) ? pseudoOpacity : 1)
+      if (alpha <= 0) continue
+      background = over([color[0], color[1], color[2], alpha], background)
+      overlayCount += 1
+    }
+
+    const foreground = over(toRgba(style.color), background)
+    const fontSizePx = Number.parseFloat(style.fontSize)
+    const fontWeight = Number.parseInt(style.fontWeight, 10)
+    // WCAG 1.4.3 : « large scale » = >= 18pt (24px), ou >= 14pt (18.66px) en gras.
+    const isLargeText = fontSizePx >= 24 || (fontSizePx >= 18.66 && fontWeight >= 700)
+
+    return {
+      ratio: contrast(foreground, background),
+      foreground: hex(foreground),
+      background: hex(background),
+      fontSizePx,
+      fontWeight,
+      isLargeText,
+      wcagThreshold: isLargeText ? 3 : 4.5,
+      effectiveOpacity,
+      overlayCount,
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+      boxWidth: rect.width,
+      boxHeight: rect.height,
+      text: (el.textContent ?? '').trim(),
+    }
+  })
+}
+
+/**
+ * Attend que les polices soient chargées.
+ *
+ * Obligatoire AVANT toute mesure de largeur : les libellés sont mesurés avec la
+ * police de repli tant que le swap n'a pas eu lieu, et l'écart de métriques
+ * produit des faux positifs de troncature intermittents.
+ */
+export async function waitForFonts(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    await document.fonts.ready
+  })
+}
+
+/**
+ * Amène l'élément dans le viewport et attend que la section qui le porte soit
+ * réellement révélée.
+ *
+ * `useSectionAnimation` pose `.visible` (donc `opacity: 1`) via un
+ * `IntersectionObserver` au défilement : mesurer un contraste sur une section
+ * encore à `opacity: 0` ne veut rien dire. On attend donc l'opacité effective,
+ * pas un simple `toBeVisible()` (Playwright considère « visible » un élément à
+ * `opacity: 0` — seuls `display:none`, `visibility:hidden` et une boîte nulle le
+ * masquent à ses yeux).
+ */
+export async function revealForMeasurement(locator: Locator): Promise<void> {
+  await locator.scrollIntoViewIfNeeded()
+  await expect
+    .poll(async () => (await readTextRendering(locator)).effectiveOpacity, {
+      message: "la section portant le CTA n'atteint pas opacity 1",
+      timeout: 5_000,
+    })
+    .toBeGreaterThan(0.99)
+}
+
+/**
+ * Mesure APRÈS avoir écarté la souris.
+ *
+ * Le curseur reste là où Playwright l'a laissé : après un défilement, un
+ * élément peut se retrouver sous le pointeur et être mesuré dans son état
+ * `:hover` au lieu de son état de repos. Constaté en mesurant : à 375px, le CTA
+ * secondaire du hero passe sous le curseur après `scrollIntoViewIfNeeded` et
+ * renvoie 1.00:1 (état de survol) au lieu de 17.32:1.
+ */
+export async function readAtRest(page: Page, locator: Locator): Promise<TextRendering> {
+  await page.mouse.move(0, 0)
+  await revealForMeasurement(locator)
+  return readStable(locator)
+}
+
+/**
+ * Mesure une fois le rendu STABILISÉ (deux lectures consécutives identiques).
+ *
+ * Indispensable, et pas seulement pour le confort : les CTA portent
+ * `transition-all` / `transition-colors`, et le voile de `.cta-button` anime sa
+ * largeur sur 300ms. Une mesure prise juste après `hover()` renvoie encore
+ * l'ancienne couleur.
+ *
+ * Pourquoi PAS `expect.poll(...).toBeGreaterThanOrEqual(seuil)` : le poll
+ * s'arrête dès que la condition est vraie, donc il valide l'état de DÉPART
+ * (encore conforme) et ne voit jamais la dégradation qui arrive 200ms plus tard.
+ * Constaté en développant cette spec : le défaut de survol du CTA secondaire
+ * passait « vert » un run sur deux. On attend donc la stabilité, PUIS on juge.
+ */
+export async function readStable(locator: Locator, timeout = 3_000): Promise<TextRendering> {
+  const deadline = Date.now() + timeout
+  let previous = await readTextRendering(locator)
+  for (;;) {
+    await locator.page().waitForTimeout(120)
+    const current = await readTextRendering(locator)
+    const settled =
+      Math.abs(current.ratio - previous.ratio) < 0.005 &&
+      current.background === previous.background &&
+      current.foreground === previous.foreground &&
+      current.clientWidth === previous.clientWidth &&
+      current.scrollWidth === previous.scrollWidth &&
+      current.clientHeight === previous.clientHeight &&
+      current.scrollHeight === previous.scrollHeight
+    if (settled || Date.now() > deadline) return current
+    previous = current
+  }
+}
+
+/** Seuil applicable : le plus exigeant entre WCAG et le plancher projet. */
+export function requiredRatio(rendering: TextRendering): number {
+  return Math.max(rendering.wcagThreshold, CTA_MIN_RATIO)
+}
+
+/** Ligne de diagnostic lisible dans le rapport d'échec. */
+export function describeRendering(label: string, r: TextRendering): string {
+  return (
+    `${label} — ${r.ratio.toFixed(2)}:1 (seuil ${requiredRatio(r)}) ` +
+    `texte ${r.foreground} sur fond ${r.background}, ` +
+    `${r.fontSizePx}px/${r.fontWeight}${r.isLargeText ? ' (grand texte)' : ''}, ` +
+    `opacité ${r.effectiveOpacity}, ${r.overlayCount} voile(s) composité(s)`
+  )
+}
+
+/** Contraste >= seuil, mesuré une fois les transitions arrivées à destination. */
+export async function expectReadable(
+  locator: Locator,
+  label: string,
+  timeout = 3_000,
+): Promise<TextRendering> {
+  const rendering = await readStable(locator, timeout)
+  expect(rendering.ratio, describeRendering(label, rendering)).toBeGreaterThanOrEqual(
+    requiredRatio(rendering),
+  )
+  return rendering
+}
+
+/**
+ * Aucune troncature : `scrollWidth`/`scrollHeight` ne dépassent pas la boîte.
+ *
+ * `.cta-button` porte `overflow: hidden` (nécessaire au clipping du voile) :
+ * un libellé trop long y est coupé SILENCIEUSEMENT — aucune erreur, aucun
+ * changement de layout, juste un mot tronqué. C'est le défaut livré au S48 et
+ * la seule métrique qui le voit est cet écart de largeur.
+ */
+export function expectNotTruncated(label: string, r: TextRendering): void {
+  expect
+    .soft(
+      r.scrollWidth,
+      `${label} : libellé tronqué horizontalement (« ${r.text} » — scrollWidth ${r.scrollWidth} > clientWidth ${r.clientWidth})`,
+    )
+    .toBeLessThanOrEqual(r.clientWidth + TRUNCATION_TOLERANCE_PX)
+  expect
+    .soft(
+      r.scrollHeight,
+      `${label} : libellé rogné verticalement (« ${r.text} » — scrollHeight ${r.scrollHeight} > clientHeight ${r.clientHeight})`,
+    )
+    .toBeLessThanOrEqual(r.clientHeight + TRUNCATION_TOLERANCE_PX)
+}
+
+export interface CtaTarget {
+  /** Identifiant stable dans les messages d'échec. */
+  name: string
+  locator: Locator
+}
+
+/**
+ * Les appels à l'action de la landing.
+ *
+ * Aucun de ces boutons ne porte de `data-testid` à ce jour et les ajouter
+ * sortait du périmètre de #337 (les composants `landing/` étaient modifiés en
+ * parallèle). On s'ancre donc sur la STRUCTURE et sur les `href`, jamais sur les
+ * libellés : la suite tourne en `fr`/`en`/`es`/`de` et un texte français en dur
+ * casserait dans trois locales sur quatre.
+ *
+ * - `header a[href$="/register"]` — CTA primaire de l'en-tête.
+ * - `header a[href$="/login"]` — « Connexion » (masqué sous `md`).
+ * - `a.cta-button` — CTA primaire du hero (classe portée par lui seul).
+ * - `section a[href="#how-it-works"]` — CTA secondaire du hero. Le `<header>`
+ *   porte la même ancre dans sa navigation : la restreindre à `section` suffit
+ *   à les distinguer sans dépendre d'un ordre.
+ * - `section a[href$="/register"]:not(.cta-button)` — CTA du bandeau final.
+ */
+export function landingCtas(page: Page): CtaTarget[] {
+  return [
+    { name: 'header/inscription', locator: page.locator('header a[href$="/register"]') },
+    { name: 'header/connexion', locator: page.locator('header a[href$="/login"]') },
+    { name: 'hero/primaire', locator: page.locator('a.cta-button') },
+    { name: 'hero/secondaire', locator: page.locator('section a[href="#how-it-works"]') },
+    {
+      name: 'bandeau-final/inscription',
+      locator: page.locator('section a[href$="/register"]:not(.cta-button)'),
+    },
+  ]
+}
