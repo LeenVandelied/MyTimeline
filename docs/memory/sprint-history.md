@@ -1413,14 +1413,34 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 >
 > **Outillage cassé confirmé :** `detect-domain.sh` **se bloque indéfiniment** (timeout 2 min sur #249, aucun retour) — inutilisable, domaines assignés à la main (`auth` pour les 3 issues). `check-prereq.sh` toujours cassé (S45). Aucun `.claude/hooks/` dans ce worktree → le garde-fou `pre-spawn-fullstack.sh` cité par le skill n'existe pas ici.
 
-## Sprint 51 — 2026-07-28 (PLANIFIE — cohésion 0.40, frise : bug de rotation + dette d'implémentation)
+## Sprint 51 — 2026-07-28 → en cours (démarré 2026-07-29 — cohésion 0.40, frise : bug de rotation + dette d'implémentation)
 **Objectif :** Restaurer le scroll à la rotation portrait↔paysage + perf + défauts de review
 **Milestone GitHub :** #51
 **Issues :** #328 (P1/M), #349 (P2/S), #351 (P3/XS) — 7 pts (+ #350 absorbée en marge, code mort)
 **Vagues :** V1 = #328 ∥ #349 | V2 = #351
 **Migrations Flyway :** aucune
 **Depend de :** aucune (indépendant de S50)
-**Status :** Planifie
+**Status :** En cours
+**Branche :** `sprint/51` (créée depuis `origin/dev` @ `47730f9`, poussée 2026-07-29)
+
+> **Note de démarrage — la commande demandée était `/sprint start 60`.** Le Sprint 60 n'existe pas :
+> aucun label `sprint-60` (les labels s'arrêtent à `sprint-54`), aucun milestone « Sprint 60 »
+> (milestones ouverts : 36, 51, 52, 53, 54), aucune issue, aucune entrée d'historique.
+> Dernier sprint terminé = S50 (PR #357). Bascule sur **S51**, prochain de la séquence, sur arbitrage dev.
+
+> **Prémisses du plan architecte vérifiées au démarrage — toutes confirmées, aucun chemin fantôme.**
+> Contrôle systématique après 4 sprints consécutifs de chemins inventés (S45, S49, S50, S51-plan) :
+> `useTimelineMobileState.ts` (230 l.), `TimelineResponsive.tsx` (104 l.), `TimelineView.tsx` (879 l.),
+> `useTimelineViewport.ts` (282 l.), `TimelineView.perf.stories.tsx`, `stress-fixtures.ts`,
+> `TimelineCalendar.tsx` (114 l.), `ADR-007-virtualisation-timeline.md` — **tous présents**.
+> Mesures exactes : `window.addEventListener('scroll', schedule, { passive: true, capture: true })`
+> bien à `useTimelineViewport.ts:206` · cales `data-testid="timeline-lane-spacer"` à `TimelineView.tsx:757`
+> et `:850` (l'issue #351 annonce 754/847 — décalage de 3, l'architecte annonçait 756/849) ·
+> `viewportStart` hissé à `useTimelineMobileState.ts:91`, `scrollLeft` resté DOM-only (lignes 140, 173, 183),
+> `scrollToToday` câblé au seul montage (ligne 188) — **cause du bug #328 confirmée par lecture, pas supposée**.
+> **Chemin fantôme de l'issue #351 confirmé et déjà corrigé par l'architecte :** l'issue cite
+> `frontend/src/hooks/useTimelineViewport.ts` qui **n'existe pas** ; le vrai chemin est
+> `frontend/src/components/timeline/useTimelineViewport.ts`.
 
 ## Sprint 52 — 2026-07-28 (PLANIFIE — cohésion 0.47, rate-limiting distribué et politique d'authentification)
 **Objectif :** Rate-limiting Redis par compte + anti-énumération + harmonisation politique mdp (3 politiques divergentes)
