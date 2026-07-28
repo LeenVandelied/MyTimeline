@@ -150,24 +150,33 @@ function sameMetrics(a: TimelineMetrics, b: TimelineMetrics): boolean {
 }
 
 /**
- * #349 — Mémoïsation par NIVEAU DE ZOOM (clé = `dayWidth`), purgée dès que la
- * `source` change d'identité (nouveaux events, nouvelle étendue). `useMemo`
- * n'a qu'UN seul emplacement : un aller-retour de zoom recalculait donc tout à
- * chaque passage. Ici, revenir à un niveau déjà visité est gratuit — le cache
- * est borné par le nombre de niveaux de zoom (5).
+ * #349 — Mémoïsation par NIVEAU DE ZOOM, purgée dès que la `source` change
+ * d'identité (nouveaux events, nouvelle étendue). `useMemo` n'a qu'UN seul
+ * emplacement : un aller-retour de zoom recalculait donc tout à chaque
+ * passage. Ici, revenir à un niveau déjà visité est gratuit — le cache est
+ * borné par le nombre de niveaux de zoom (5).
+ *
+ * La clé est fournie par l'APPELANT et doit couvrir TOUTES les entrées de
+ * `compute`. Clé sur le seul `dayWidth` = piège : `buildRulerTicks` consomme
+ * aussi `zoom.level`, et deux niveaux partageant une largeur de jour se
+ * seraient alors volé leurs graduations SANS erreur ni test rouge.
+ *
+ * La valeur est BOÎTÉE (`{ value }`) : la présence en cache se teste sur
+ * l'entrée, jamais sur la valeur — un `compute()` retournant légitimement
+ * `undefined` reste un hit au lieu d'être recalculé à chaque rendu.
  */
-function useZoomCache<T>(source: unknown, dayWidth: number, compute: () => T): T {
-  const cache = useRef<{ source: unknown; byWidth: Map<number, T> }>({
+function useZoomCache<T>(source: unknown, key: string, compute: () => T): T {
+  const cache = useRef<{ source: unknown; byKey: Map<string, { value: T }> }>({
     source,
-    byWidth: new Map<number, T>(),
+    byKey: new Map<string, { value: T }>(),
   })
   if (cache.current.source !== source) {
-    cache.current = { source, byWidth: new Map<number, T>() }
+    cache.current = { source, byKey: new Map<string, { value: T }>() }
   }
-  const hit = cache.current.byWidth.get(dayWidth)
-  if (hit !== undefined) return hit
+  const hit = cache.current.byKey.get(key)
+  if (hit) return hit.value
   const value = compute()
-  cache.current.byWidth.set(dayWidth, value)
+  cache.current.byKey.set(key, { value })
   return value
 }
 
@@ -425,7 +434,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // #349 — La règle est dominée par les `Intl.format` (une par graduation,
   // jusqu'à ~460 au zoom `day`) : mémoïsée PAR niveau, pas seulement pour le
   // dernier niveau visité.
-  const ticks = useZoomCache(zoomSource, dayWidth, () =>
+  // Clé COMPOSITE : `buildRulerTicks` dépend du niveau (granularité des
+  // graduations) ET de la largeur de jour. Clé sur `dayWidth` seul, deux
+  // niveaux de même largeur se voleraient leurs graduations.
+  const ticks = useZoomCache(zoomSource, `${zoom.level}|${dayWidth}`, () =>
     buildRulerTicks(rangeStart, totalDays, zoom.level, dayWidth, locale),
   )
 
@@ -437,7 +449,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     () => indexEventsByResource(events, rangeStart, now),
     [events, rangeStart, now],
   )
-  const eventsByResource = useZoomCache(indexedEvents, dayWidth, () =>
+  // `scaleEventPositions` ne consomme que la largeur de jour → clé suffisante.
+  const eventsByResource = useZoomCache(indexedEvents, `${dayWidth}`, () =>
     scaleEventPositions(indexedEvents, dayWidth),
   )
 
