@@ -1236,7 +1236,57 @@ Ratio discard 0/10 — les follow-ups de ce sprint viennent tous d'observations 
 **Dépend de :** **S47** (couverture E2E frise — satisfait : `timeline.spec.ts` 21.4K + `timeline-mobile.spec.ts` 15.5K sur `92c14c4`) · **S48/#293** pour #336 (token `--color-rule-emphasis` — satisfait : `colors.css:58` et `:106`)
 **Branche :** `sprint/49` depuis `origin/dev` @`92c14c4`
 **Mini-plans :** `docs/memory/sprints/sprint-49/architect-plans.md`
-**Status :** **En cours — PR #345 ouverte le 2026-07-28** (`sprint/49` → `dev`), en attente de CI et de `/sprint end 49`
+**Status :** **Terminé** (clôture 2026-07-28) — PR **#345** `sprint/49` → `dev`, CI 4/4 verte, `mergeState=CLEAN`. Les 5 issues fermées.
+
+### Bilan d'exécution Sprint 49 (2026-07-28)
+
+**Issues livrées (5) :** #69 · #334 · #335 · #336 · #337 — toutes fermées.
+**Vagues exécutées :** V1 = #69 + #335 + #336 (3 agents parallèles, fichiers disjoints) | V2 = #334 (précédé d'un `ui-design`) | V3 = #337 | + 3 lots hors plan : correctif typo `h2`, correctif `button.tsx`, correctifs de review.
+**Cohésion :** ~0.2 — **volontairement sacrifiée** (2 domaines, `epic:events` + `epic:design`) au profit du solde de la dette landing du S48.
+**Commits :** 16 · **Volume :** 70 fichiers, +7447 / −451 · **Migrations :** aucune (**V16 non consommée, 12e sprint consécutif**).
+**Tests :** frontend 677 → **688 / 0 échec** · E2E 68 → **92 passed / 0 failed / 1 skip** (pré-existant) · backend **non exécutée : zéro fichier backend au diff**.
+**Review batch :** 1 CRITIQUE / 3 MAJEURS / 7 MINEURS / 8 `[OK]` — verdict initial **BLOQUANT**, tous les bloquants et majeurs résolus (`8d2ccdd`, `b1ebed4`).
+**Agents :** 8 `fullstack-dev`, 3 `ui-design`, 1 `reviewer`, 1 `project-manager`.
+
+**Le sprint a corrigé 5 défauts visibles par l'utilisateur que la CI ne pouvait pas voir** — famille identifiée au S48 (`jsdom` ne résout ni la précédence des `@layer` ni aucune mise en page) :
+1. **4 CTA invisibles au survol** (1,00 / 1,03 / 1,07 / 3,83:1 mesurés) — couple `hover:bg-*`+`hover:text-*` cassable par construction.
+2. **`landing.css` non layerisé** battait les classes du S48 → **la migration DS du sprint précédent n'avait jamais pris effet**.
+3. **`@keyframes pulse` non préfixé** écrasait `animate-pulse` de Tailwind dans toute l'application.
+4. **Hiérarchie typo inversée** — `md:text-4xl` rétrécissait au desktop, `h1` (36 px) < `h2` (57 px) en mobile.
+5. **Le harnais de contraste lui-même se trompait du côté permissif.**
+
+**5 garde-fous AST** créés, dont 3 avec leur **détecteur testé**, et **2 tests validés par mutation**.
+
+**Nouveaux pitfalls / patterns / décisions / bugs :** `PIT-S49-001` à `-006` · `PAT-S49-001` à `-003` · `DEC-S49-069`, `-335`, `-336`, `-334` · `BUG-S49-001`, `-002`.
+
+**Absorbé en cours (XS) :** formateurs `Intl` mutualisés par locale (#69) · `@keyframes pulse` renommé, 3 classes mortes supprimées, `@tailwind utilities` v3 retiré, 7 `rgba` hors inventaire (#335).
+
+**Follow-ups arbitrés (Phase 4 — décision dev : créer en groupant) :** 9 issues créées, aucun milestone.
+
+| Issue | Sujet | Triage |
+|---|---|---|
+| **#346** | Même couplage fond/encre sous `focus:` — 5 occurrences | P1 / S |
+| **#347** | Header landing déborde entre 768 et ~1000 px | P2 / S |
+| **#348** | 3 incohérences de hiérarchie typographique | P2 / S |
+| **#349** | Frise : saccades résiduelles + recalculs de zoom O(n) | P2 / S |
+| **#350** | Supprimer `TimelineCalendar.tsx` (mort depuis S42) | P3 / XS |
+| **#351** | Frise : `role=presentation` + listener `scroll` en capture | P3 / XS |
+| **#352** | Dette WCAG restante : `timeline.css` + checkbox DS | P3 / S |
+| **#353** | `LanguageSelector` : cible 36 px + libellé FR en dur | P3 / XS |
+| **#354** | `data-testid` des CTA + `.eslintcache` tracké | P3 / XS |
+
+**2 discards argumentés :** « landing invisible » (**formellement infirmé** sous Playwright — cf. `PIT-S49-004`) et « dépôt pas prettier-propre » (`prettier --check` passe désormais). Ratio discard 2/17.
+
+> **⚠ 3 erreurs du lead, toutes rattrapées par des agents et consignées sans être effacées.**
+> 1. **#336** — grep restreint à `frontend/src`, ratant `frontend/app` (App Router). J'ai « corrigé » l'issue **dans le mauvais sens** : elle avait raison. Le piège était **déjà en mémoire** — rechute quand même (`PIT-S49-003`).
+> 2. **#335** — inventaire limité aux hex, manquant **7 `rgba()`** hors palette.
+> 3. **Contrôle de couverture E2E (Phase 8)** — a renvoyé un **faux `OK`** : les 4 `data-testid` du menu burger n'avaient **aucune** référence dans `frontend/e2e/`. Boucle shell dont l'extraction de variable ne fonctionnait pas. Rattrapé par le reviewer ; couverture créée depuis (`landing-mobile-menu.spec.ts`, 10 tests).
+>
+> **En sens inverse, deux jugements du lead confirmés :** ne pas « corriger » le « landing invisible » sur une cause non démontrée (infirmé ensuite), et ne pas accepter le « stack E2E morte » de 2 agents (elle tournait — baseline 68/68 en 113 s).
+
+> **Réserves assumées, reportées ou documentées :** #69 critère 3 partiel (60 fps non tenus en continu) → #349 · #69 budget redéfini et `aria-rowcount` remplacé, **écarts aux termes écrits de l'issue**, justifiés en ADR-007 · #336 `EventEditForm` non ouvert en navigateur (contrainte créée par le briefing du lead) · dégradation acceptée 4,76 → **3,87:1** sur l'icône corbeille (reste ≥3:1) · débordement à 768 px pré-existant → #347 · lecteur d'écran réel non testé.
+
+> **Saturation contexte lead : non mesurée précisément** (pas d'instrumentation disponible dans cette session). Ordre de grandeur observé : sprint long, 13 agents, ~1,3 M tokens cumulés côté subagents. Le pattern artefact + purge a tenu — le lead n'a jamais rechargé un retour brut.
 **Commits :** 16 · **Volume :** 70 fichiers, +7447 / −451 · **Tests :** 688 unitaires / 92 E2E, 0 échec (baseline avant sprint : 677 / 68)
 **Review batch :** 1 CRITIQUE / 3 MAJEURS / 7 MINEURS — bloquants et majeurs tous résolus (`8d2ccdd`, `b1ebed4`)
 **Artefacts :** `docs/memory/sprints/sprint-49/` (5 `issue-*-done.md`, 2 verdicts design, `review-batch.md`) · `docs/memory/audits/sprint-49-test-coverage.md` · `docs/adr/ADR-007-virtualisation-timeline.md`

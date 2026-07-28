@@ -152,3 +152,24 @@ dédoublonnés en plus des 2 demandés.
 - Le **rendu mobile (< 768 px) n'a pas été contrôlé** visuellement.
 
 STATUS: COMPLETED
+
+---
+
+## Traitement du `RECOMMAND_UI_DESIGN` — clôture 2026-07-28
+
+**Non spawné, et voici pourquoi.** Les 2 arbitrages signalés ne bloquent ni un critère d'acceptation ni le
+merge : les couleurs retenues sont **mesurées conformes** dans les 4 états, et l'agent a explicitement
+choisi le « minimum de risque » en ne supprimant **rien de visible** unilatéralement — ce qui est la bonne
+posture pour un sprint de migration.
+
+Ce qui reste ouvert relève de la **charte**, pas de la conformité :
+- le halo conique tournant `.card-gradient-border` et le halo flou du héros **survivent retintés**, alors
+  que le DS énonce « No glow, no aurora » ;
+- `.gradient-text` reste un dégradé décoratif, également proscrit (le retirer imposerait de toucher
+  `privacy/page.tsx` et `terms/page.tsx`, donc d'élargir le périmètre).
+
+⇒ **Reporté en follow-up** plutôt que tranché en fin de sprint par un agent qui n'aurait pas le temps de
+mesurer l'impact visuel. Deux revues `ui-design` ont déjà tourné sur ce sprint (header #334, échelle typo)
+— celle-ci porte sur un choix esthétique assumé, pas sur un défaut.
+
+**Signal considéré comme traité par report explicite.**

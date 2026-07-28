@@ -146,3 +146,22 @@ avant merge »). Deux cas limites assumés par l'agent : `.mt-switch__track` (mi
 **ABSORBED :** aucune.
 
 STATUS: PARTIAL
+
+---
+
+## Traitement du `RECOMMAND_UI_DESIGN` — clôture 2026-07-28
+
+**Non spawné, et voici pourquoi.** L'impact visuel large était **anticipé et accepté par l'issue
+elle-même** (« à valider auprès du design avant merge »), et il va dans le sens de la **conformité** :
+les bordures de contrôle passent de 1,46:1 à ≥ 3,70:1, mesuré sur 6 fonds. Aucun arbitrage n'annule ce
+gain.
+
+Les 2 cas limites signalés par l'agent ont été **revus par le reviewer batch** (`review-batch.md`), qui
+juge l'arbitrage fonctionnel/décoratif **cohérent** et le choix de laisser `SelectContent` /
+`.mt-select__menu` décoratifs **défendable** (cadre de popover, l'élévation porte la présence).
+
+Une **dégradation** est apparue plus tard, du fait du correctif `button.tsx` et non de cette issue :
+icône corbeille des catégories 4,76 → **3,87:1** en clair. Reste ≥ 3:1 (WCAG 1.4.11, non-texte).
+**Signalée, non masquée**, et consignée dans le corps de la PR.
+
+⇒ **Signal traité par revue croisée**, pas par spawn d'un `ui-design` supplémentaire.

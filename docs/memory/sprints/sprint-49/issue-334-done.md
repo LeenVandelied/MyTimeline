@@ -117,3 +117,27 @@ STATUS: PARTIAL
 BLOQUE_SUR: critères 1 et 3 — débordement résiduel 29 px (fr) / 62 px (de) causé par le h2 `text-3xl` de
 FeaturesSection, hors périmètre header et non couvert par le verdict design (changement de taille visible
 sur 5 sections). Remède mesuré, prêt à trancher.
+
+---
+
+## ✅ BLOCAGE LEVÉ — 2026-07-28, en fin de sprint
+
+Le `BLOQUE_SUR` ci-dessus est **périmé**. Décision dev : corriger dans le sprint.
+
+- `8d615e2` — les 5 `h2` passent de `text-3xl md:text-4xl` (57 → 36 px, **inversé**) à
+  `text-lg leading-tight md:text-xl` (27 → 35 px, tokens DS). 5 accroches et 2 `h3` de carte démotés en
+  `text-md md:text-lg` — sans quoi le `h2` serait passé **sous** son propre sous-titre.
+  Arbitrage : `design-h2-verdict.md`.
+- `4442006` — dernière source de débordement isolée par mesure : `MobileAppSection` avait une rangée
+  `flex space-x-4` non wrappable (min-content 347 px en `fr`, **450 px en `es`**). Passée en
+  `flex flex-wrap gap-4`.
+
+**Mesure Playwright finale** (`document.fonts.ready`, `scrollWidth`/`clientWidth`) :
+`fr`/`de`/`es` × 320/375/390 px → **tous exactement N/N**.
+
+⇒ **Critères 1 et 3 de #334 REMPLIS. Critère n°8 de #56 fermé.**
+
+Reste hors périmètre : débordement à **768 px** (+90 à +108 px selon la locale), groupe droit du header
+au palier `md`. **Pré-existant**, vérifié inchangé par ce sprint → follow-up.
+
+STATUS: COMPLETED

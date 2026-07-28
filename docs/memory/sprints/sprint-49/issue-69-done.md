@@ -155,3 +155,30 @@ STATUS: PARTIAL
 BLOQUE_SUR: E2E Playwright non exécutés (build de l'image backend bloqué >20 min sur « load metadata »
 Docker Hub, aucun conteneur créé) + critère 3 tenu sur « aucun freeze » mais PAS sur « 60 fps en
 continu » (7–10 frames/89 > 16,7 ms sur fling à 7200 px/s).
+
+---
+
+## ⚠ MISE À JOUR — 2026-07-28, en fin de sprint
+
+**La moitié du `BLOQUE_SUR` ci-dessus est périmée.**
+
+**E2E : le blocage n'existait pas.** Le lead a vérifié que Docker répondait (29.2.1) et que les images
+`mytimeline-backend`, `mytimeline-frontend` et `postgres:16` étaient **déjà en cache** — le blocage venait
+d'un *build* qui repartait chercher des métadonnées sur Docker Hub, pas d'une stack absente. L'agent #337
+a monté la stack via le runbook S47 **sans difficulté** : baseline **68 passed / 0 failed en 113 s**.
+
+⇒ **`timeline.spec.ts` est VERTE.** Le risque signalé ici (virtualisation verticale masquant une lane
+au-delà de 60 produits, `LANE_VIRTUALIZATION_MIN_ROWS = 60`) **ne se déclenche pas** sur le jeu de test
+actuel. Suite finale du sprint : **92 passed / 0 failed**.
+⇒ **`RECOMMAND_TEST_RUNNER` de cette issue est SATISFAIT.**
+
+**Ce qui reste vrai :** le critère 3 n'est tenu que sur « aucun freeze » (frame max 33,4 ms contre
+133,4 en baseline), pas sur « 60 fps en continu » — 7 à 10 frames sur 89 dépassent 16,7 ms sur fling à
+7200 px/s. Remède identifié (mémoïsation des lanes, `React.memo`) → follow-up.
+
+**Confirmations apportées par la review batch** (`review-batch.md`) sur des points que cet artefact ne
+pouvait pas garantir : fenêtrage correct **sans trou de frontière** (aucun événement manqué en bord de
+bande), **aucune fuite** de rAF/listeners/timer, et le débounce de 400 ms laisse la bande **trop large**,
+jamais trop étroite — donc surcoût de rendu, pas de perte de focus.
+
+STATUS: PARTIAL
