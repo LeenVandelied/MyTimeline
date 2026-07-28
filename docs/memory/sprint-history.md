@@ -1383,14 +1383,29 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 >
 > **Conflits backlog à respecter si insertion ultérieure :** #347+#348 jamais séparées, #342+#353 jamais séparées, #343/#352 en aval de #340 (S53), #354 groupée avec #347.
 
-## Sprint 50 — 2026-07-28 (PLANIFIE — cohésion 0.52, chaîne d'authentification : rotation secrets + garde serveur)
+## Sprint 50 — 2026-07-28 (EN COURS — cohésion 0.52, chaîne d'authentification : rotation secrets + garde serveur)
 **Objectif :** Rotation des secrets exposés + garde Host + JWT RS256 vérifiable en Edge
 **Milestone GitHub :** #50
 **Issues :** #249 (P1/S), #322 (P1/M), #323 (P1/M) — 10 pts
-**Vagues :** V1 = #249 (volets DB_PASSWORD+BREVO) ∥ #322 | V2 = #323 + volet JWT_SECRET de #249 (fusionnés)
+**Vagues :** V1 = #249 (audit + runbook + inventaire) ∥ #322 | V2 = #323 + volet JWT_SECRET de #249
 **Migrations Flyway :** aucune
 **Depend de :** aucune
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-28, branche `claude/sprint-50-start-9b7161`, pas de branche `sprint/50` — leçon S43/S44 reconduite)
+
+> **⚠ Trois prémisses du plan infirmées au démarrage — vérifiées, pas supposées. Arbitrages dev du 2026-07-28.**
+>
+> **1. `#249` n'a aucune cible de rotation.** `secret-rotation-runbook.md` le dit lui-même (« projet pas encore en production », noté 2026-07-12) ; `gh secret list` = **vide**, `gh api .../environments` = **vide** ; aucun secrets-manager, aucun backend déployé. L'exposition historique est en revanche **réelle** : `53175da` portait un `spring.datasource.password` littéral (10 car.) et un `jwt.secret` littéral (128 car.) dans `application.properties` ; `c6ea19e` un secret de test (68 car.). État actuel propre (`${DB_PASSWORD}` / `${JWT_SECRET}`). **`BREVO_API_KEY` n'a JAMAIS été exposée** — 75 fichiers d'historique scannés, aucune valeur littérale opaque, seulement des mentions en prose dans `docs/` (critère d'acceptation « vérifier si exposée » = répondu : non).
+> **⇒ Décision dev : périmètre agent = audit d'exposition + correction du runbook + création de l'inventaire manquant. La rotation effective reste au dev, au déploiement prod.** Les critères opérationnels de #249 restent non cochés ; l'issue reste ouverte.
+>
+> **2. `docs/memory/devops/external-services-inventory.md` N'EXISTE PAS.** Le rapport architecte affirme qu'il existe (« procédure §3quater → la dépendance F3 est levée ») ; `docs/memory/devops/` ne contient que `secret-rotation-runbook.md`. **Chemin fantôme — 3ᵉ sprint consécutif** (S45, S49, S50). Le fichier est créé par #249 dans ce sprint.
+>
+> **3. `#322` option (a) « Host canonique au proxy » est INAPPLICABLE.** Aucun reverse-proxy dans le repo : `docker-compose.yml` = postgres + backend + frontend, `.github/workflows/` = `ci.yml` seul, aucun nginx/Traefik/Caddy, aucun workflow de déploiement. L'option (a) se réduisait à documenter une exigence de déploiement future en laissant l'open-redirect vivant dans `frontend/middleware.ts:69-73`.
+> **⇒ Décision dev révisée : Host canonique par variable d'environnement**, validé **fail-closed** dans le middleware, testable sans infra (unit + E2E avec `Host` falsifié). L'option (b) allow-list reste écartée (maintenance preview/staging).
+>
+> **4. `#323` : périmètre RS256 plus large que le plan.** `ExportTokenService.java:41-66` est un **second** consommateur de `${jwt.secret}` (signature HS256 des jetons d'export RGPD) ; le plan ne cite que `JwtService.java` + `middleware.ts` + ADR-004. Migrer JwtService seul laisse `jwt.secret` vivant → l'étape « retirer JWT_SECRET de la config » du plan était **inexécutable telle qu'écrite**.
+> **⇒ Décision dev : `ExportTokenService` reste HS256 mais sur une clé dédiée `EXPORT_TOKEN_SECRET`** (jetons vérifiés côté serveur uniquement, l'asymétrique n'y apporte rien). Sépare les usages et permet de retirer réellement `JWT_SECRET`. Coût : +1 variable de config, 5 tests d'intégration à mettre à jour.
+>
+> **Outillage cassé confirmé :** `detect-domain.sh` **se bloque indéfiniment** (timeout 2 min sur #249, aucun retour) — inutilisable, domaines assignés à la main (`auth` pour les 3 issues). `check-prereq.sh` toujours cassé (S45). Aucun `.claude/hooks/` dans ce worktree → le garde-fou `pre-spawn-fullstack.sh` cité par le skill n'existe pas ici.
 
 ## Sprint 51 — 2026-07-28 (PLANIFIE — cohésion 0.40, frise : bug de rotation + dette d'implémentation)
 **Objectif :** Restaurer le scroll à la rotation portrait↔paysage + perf + défauts de review
