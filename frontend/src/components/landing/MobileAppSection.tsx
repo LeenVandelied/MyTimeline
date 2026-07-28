@@ -25,11 +25,14 @@ export function MobileAppSection() {
     <section className="section-animation py-20">
       <div className="container mx-auto flex flex-col items-center px-4 md:flex-row">
         <div className="mb-10 md:mb-0 md:w-1/2">
-          <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+          <h2 className="mb-6 text-lg leading-tight font-bold md:text-xl">
             {t('common.landing.mobileApp.title')}
           </h2>
-          <p className="text-ink-muted mb-8 text-xl">{t('common.landing.mobileApp.subtitle')}</p>
-          <div className="flex space-x-4">
+          <p className="text-ink-muted text-md mb-8 md:text-lg">{t('common.landing.mobileApp.subtitle')}</p>
+          {/* `flex-wrap` + `gap` : les 2 libellés de store sont `whitespace-nowrap`, donc une rangée
+              non wrappable impose un min-content de 347 px (fr) à 450 px (es) — au-delà des 343 px
+              disponibles à 375 px. `space-x-*` ne gère pas l'interligne quand ça passe à la ligne. */}
+          <div className="flex flex-wrap gap-4">
             <Button className="bg-surface border-rule-emphasis hover:bg-surface-2 text-ink border">
               {t('common.landing.mobileApp.ios')}
             </Button>

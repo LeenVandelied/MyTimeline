@@ -1,117 +1,76 @@
-## Sprint 45 — Garde serveur auth + fiabilisation E2E auth
+## Objectif
 
-Cohésion 0.57 · 10 points · Milestone **Sprint 45**
+Virtualiser la frise pour les gros volumes d'événements (**#69**) **et** solder la dette design laissée par le Sprint 48 (**#334**, **#335**, **#336**, **#337**).
 
-Ferme le lot auth nommé par le plan S44 : garde serveur des routes connectées, découplage du canal de
-capture du token de reset en E2E, et couverture de ses cas d'échec.
+> **Périmètre élargi en cours de route.** Le plan du 16/07 prévoyait un sprint mono-issue (#69 seul). Le triage de clôture du S48 avait versé 4 issues `epic:design` au milestone Sprint 49, dont **#334 et #335 remplissent les 2 critères d'acceptation de #56 restés non remplis** : sans elles, la landing du S48 n'était pas réellement livrée. Décision dev au démarrage : les prendre. Cohésion volontairement sacrifiée (2 domaines) au profit du solde de dette.
 
-### Issues livrées (3)
+## Issues traitées
 
-| # | Objet | P | Size |
-|---|-------|---|------|
-| #302 | Garde serveur (middleware) pour les routes connectées | P1 | M |
-| #283 | Découpler le canal de capture du token de reset en E2E du schéma DB | P1 | M |
-| #284 | Spec E2E des cas d'échec du flux reset-password | P2 | S |
+| Issue | Sujet | État |
+|---|---|---|
+| **#69** | Virtualisation de la frise (> 1000 événements) | Livrée, 2 réserves perf/a11y |
+| **#334** | Header de la landing non responsive | Livrée — **critère n°8 de #56 enfin fermé** |
+| **#335** | `landing.css` hors palette + règles dupliquées | Livrée, 5/5 critères |
+| **#336** | Dette WCAG AA sur les bordures de contrôle | Livrée, 1 réserve de validation |
+| **#337** | Contrôle de contraste automatisé sur les CTA (E2E) | Livrée, 4/4 critères |
 
-Vagues : **V1** = #302 ∥ #283 (fichiers disjoints) · **V2** = #284 (consomme le canal livré par #283).
+**Zéro fichier backend, zéro migration Flyway** (vérifié). Sprint intégralement frontend.
 
-### Changements clés
+## Ce que la CI ne pouvait pas voir — 5 défauts trouvés en rendu réel
 
-**#302 — garde serveur.** `frontend/middleware.ts` **compose** avec next-intl (ne le remplace pas) et
-vérifie la présence du cookie `jwt` avant tout rendu des routes `(app)` : un anonyme reçoit un 307 vers
-`/<locale>/login` au lieu du shell applicatif. Logique de chemins extraite dans
-`src/lib/auth-guard-paths.ts` (Edge-safe, testable sans mock).
+Le Sprint 48 avait livré des défauts visibles par l'utilisateur avec une **CI entièrement verte** : `jsdom` ne résout ni la précédence des `@layer` CSS ni aucune mise en page. Ce sprint en a trouvé cinq de plus, tous par mesure en navigateur :
 
-**#283 — canal E2E test-only.** Nouveau package backend `infrastructure/adapters/testsupport/`,
-4 classes toutes `@Profile("e2e")`, avec sa **propre** `SecurityFilterChain @Order(1)` limitée à
-`/api/test-support/**` — le `SecurityConfig` de production n'est pas modifié. `frontend/e2e/support/db.ts`
-supprimé, `pg` + `@types/pg` désinstallés (0 résidu dans le lockfile). Job CI e2e en `dev,e2e`.
+1. **4 CTA invisibles au survol** — 1,00 / 1,03 / 1,07 / 3,83:1. Héros de la landing, `/fr/privacy`, `/fr/terms`, et les ancres du menu burger. Cause commune : la paire `hover:bg-*` + `hover:text-*` est **cassable par construction** — `tailwind-merge` ne fusionne pas deux propriétés distinctes, donc un consommateur qui surcharge le fond conserve l'encre et obtient du texte de la couleur du fond.
+2. **`landing.css` n'était pas layerisé** : ses littéraux **battaient** les classes `border-rule` posées au S48 → **la migration DS du sprint précédent n'avait jamais pris effet** sur ces cartes.
+3. **`@keyframes pulse` non préfixé** écrasait `animate-pulse` de Tailwind **pour toute l'application** (squelettes de chargement).
+4. **L'échelle typo du DS écrase celle de Tailwind** : `--text-3xl` vaut **57 px** et `--text-4xl` n'existe pas, donc `md:text-4xl` **rétrécissait** les titres au desktop, et `h1` (36 px) était plus petit que `h2` (57 px) en mobile — hiérarchie inversée.
+5. **Le harnais de contraste lui-même se trompait du côté permissif** (un `fillStyle` invalide compositait un noir opaque en silence ; `effectiveOpacity` n'était jamais appliqué).
 
-**#284 — cas d'échec.** Spec dédiée : ancien mdp rejeté (401), token rejoué (400 générique BR-AUT-012),
-**1 compte dédié par test** pour ne pas déclencher le lockout #141. Les assertions portent sur le
-**statut HTTP réel** et non sur le `data-testid` d'erreur : l'UI rend le même testid pour un rejet métier
-et pour un 429, donc une spec basée sur le message serait passée au vert **sous lockout**.
+## Changements clés
 
-### Décisions d'architecture
+**Frise (#69)** — virtualisation **maison sur 2 axes**, `package.json` **inchangé** : ni `@tanstack/react-virtual` ni `react-window` ne conviennent (leur modèle `index → estimateSize` ne s'applique pas à des intervalles absolus chevauchants). Décision et mesures dans **`docs/adr/ADR-007-virtualisation-timeline.md`**.
 
-- **ADR-004** — Garde serveur = **présence** du cookie `jwt` seule. `JwtService` signe en HMAC
-  **symétrique** : le secret de vérification est aussi celui d'**émission**, le placer dans le runtime Edge
-  élargirait la surface d'attaque. `/api/auth/me` écarté (aller-retour réseau à chaque navigation).
-  **Limite assumée et documentée** : un cookie présent mais expiré/forgé passe le middleware ; `JwtFilter`
-  (401) et `useAuthGuard` rattrapent. **Ce middleware n'est pas une frontière d'autorisation.**
-- **ADR-005** — Profils Spring **additifs** (`dev,e2e`). Le job CI e2e tournait en profil `dev` : un
-  `@Profile("e2e")` nu n'aurait **jamais** été actif en CI. Alternatives rejetées : mock `EmailService`
-  in-memory (processus séparé → nécessiterait quand même un canal HTTP), endpoint `@Profile("dev")`
-  (exposition inutile en dev local).
+À 1000 événements : commit **145,9 → 52,0 ms**, peint **301,7 → 81,5 ms**, pastilles montées **1000 → 51**, nœuds DOM **3889 → 584**, scroll horizontal p95 **108,3 → ~17 ms**. Hauteur de page identique avant/après (5995 px) — virtualisation géométriquement transparente.
 
-### BR impactées
+**Landing (#334, #335)** — `landing.css` et `animations.css` entièrement sur tokens DS, 4 règles dédoublonnées ; header responsive avec menu burger off-canvas (focus-trap, Escape, overlay, 4 locales) ; échelle typographique réalignée sur le DS. **Aucun scroll horizontal** à 320 / 375 / 390 px en `fr`, `de` et `es`.
 
-BR-AUT-005, BR-AUT-007, BR-AUT-011, BR-AUT-012. **Aucune migration Flyway.**
+**Accessibilité (#336)** — bordures de contrôle migrées vers `--color-rule-emphasis`, y compris via le pont shadcn `--color-input`. Arbitrage **fonctionnel / décoratif documenté in-situ** dans `core.css` (7 migrées, 7 laissées volontairement). Bouton outline : **1,46 → 3,97:1**.
 
-### Revues
+**Harnais (#337)** — helper de contraste (luminance WCAG 2.x, fond composité, normalisation canvas pour `color-mix()`) + 22 tests E2E. **Deux tests validés par mutation** : ils rougissent bien quand on régresse.
 
-**`security-expert` → GO_AVEC_CORRECTIFS.** 5 constats, tous corrigés :
-1. `[MAJEUR]` `ProfileSafetyGuard` ne refusait pas `e2e` en production — `prod,e2e` bootait en silence,
-   exposant un lecteur de token de reset anonyme (prise de contrôle de n'importe quel compte).
-   → fail-fast ajouté ; `dev,e2e` sans marqueur de prod continue de booter (= config CI, testé).
-2. `[MAJEUR]` `nextUrl.pathname` n'est pas percent-décodé → `/fr/%64ashboard` contournait la garde.
-   → décodage par segment, **fail-closed** sur segment malformé.
-3. `[MAJEUR]` Le matcher `.*\..*` faisait sauter le middleware sur toute URL contenant un point
-   (`products/[productId]` accepte un point → trivialement atteignable).
-4. `[MINEUR]` `Location:` absolu construit depuis un `Host` attaquant-contrôlable → Location relatif.
-5. `[MINEUR]` Garde ArchUnit élargie : le préfixe `/api/test-support` est réservé à son package.
+## Tests
 
-**`reviewer` → GO_AVEC_CORRECTIFS.** 2 MAJEUR + 6 MINEUR, corrigés en 1 cycle :
-- Contournement **résiduel** du matcher (locale percent-encodée + extension d'asset).
-- Duplication de l'inscription E2E → `registerOnly` extrait dans `support/auth.ts`, 3 appelants migrés.
-- Tri déterministe du dernier token, écarts hexagonaux documentés en ADR-005 §Limites, locales itérées
-  depuis `SUPPORTED_LOCALES`.
+| Suite | Avant | Après |
+|---|---|---|
+| Frontend unitaire | 677 | **688 passed / 0 failed** |
+| E2E Playwright | 68 | **92 passed / 0 failed / 1 skipped** (skip pré-existant) |
+| Backend | — | **non exécutée : zéro fichier backend dans le diff** |
 
-> Le trou du matcher a demandé **4 passes**. Les 3 premières raisonnaient sur la regex ; la dernière l'a
-> **compilée avec le `path-to-regexp` embarqué de Next**, révélant deux familles de contournement encore
-> ouvertes (`/%66r/products/photo.png` et `/fr//products/photo.png`). Motif retenu
-> `(?:[^%/]+/)*[^%/]+` — 20/20 cas vérifiés par exécution.
+`tsc --noEmit` OK · eslint OK · prettier OK. **+24 tests E2E, zéro régression.**
 
-### Audit tests
+**5 garde-fous AST créés** : palette de la landing, tier des bordures de contrôle, appariement de survol (`button` et `landing`), cascade `@layer`. Trois d'entre eux ont leur **détecteur testé**.
 
-`docs/memory/audits/sprint-45-test-coverage.md` — aucune cellule de couverture manquante.
+Audit complet : `docs/memory/audits/sprint-49-test-coverage.md`.
 
-| Suite | Exit | Résultat |
-|---|:---:|---|
-| Backend | 0 | **433** tests, 0 failure, 0 error |
-| Frontend | 0 | **558** tests, 67 fichiers |
-| `tsc --noEmit` / `next lint` / `prettier --check` | 0 | — |
+## Review
 
-Vérification **indépendante** par `test-runner` — aucune divergence constatée sur ces runs.
+Review batch : **1 critique, 3 majeurs, 7 mineurs, 8 points `[OK]`** — verdict initial `BLOQUANT`.
 
-### ⚠ Réserve à lever par cette CI
+Le critique était que **le sprint réintroduisait le défaut qu'il corrigeait** (`LandingMobileMenu.tsx`, 3,83:1 mesuré en clair). Corrigé, avec extension du garde-fou AST à `components/landing/`. Les 3 majeurs (menu burger sans couverture E2E, CTA « Connexion » mesuré par aucun test, harnais permissif) sont fermés. Détail : `docs/memory/sprints/sprint-49/review-batch.md`.
 
-**Aucune spec E2E de ce sprint n'a jamais été exécutée** — stack docker down en local. Le job CI `e2e`
-est le seul gate réel pour les 3 specs (`auth-guard`, `reset-password-failures`, `forgot-password`).
-Confiance actuelle : **parse-level uniquement** ; la collectabilité Playwright n'a pas pu être confirmée
-de façon indépendante (mesures divergentes entre agents).
+## Réserves assumées — à trancher au triage de clôture
 
-Au premier run rouge, vérifier dans cet ordre :
-1. `submitResetPassword` en 429 dès le 1er appel → `RATE_LIMIT_ENABLED` non transmis, **pas** la spec.
-2. `auth-guard.spec.ts` importe `../src/i18n/locales` en **relatif** — résolution Playwright ≠ bundler Next.
-3. Les 4 cas d'ancrage `/%66r/...` : seul niveau où Next évalue réellement `config.matcher`.
+1. **#69, critère 3 partiel** : aucun freeze (frame max 33,4 ms contre 133,4), mais 60 fps pas tenus en continu sur fling à 7200 px/s (7–10 frames sur 89 > 16,7 ms).
+2. **#69, budget redéfini** : l'issue demandait « < 16 ms par frame » ; retenu ≤100 ms commit / ≤150 ms peint, au motif que 16 ms est un budget de frame et non de montage. **Écart aux termes écrits.**
+3. **#69, a11y** : `aria-rowcount`/`aria-rowindex` demandés par l'issue, remplacés par `role="list"` + `aria-setsize` (les premiers exigent un rôle `grid` incompatible avec le pattern de #81). Justifié en ADR-007. **Écart aux termes écrits.**
+4. **#336** : `EventEditForm` non ouvert en navigateur (session requise → backend). Contraste **prouvé** par mesure du couple utilitaire/fond identique ; mise en page du formulaire non validée.
+5. **Dégradation acceptée** : icône corbeille des catégories 4,76 → **3,87:1** en clair. Reste ≥ 3:1 (WCAG 1.4.11, non-texte) mais sous 4,5. Coût direct du découplage de survol.
+6. **Débordement à 768 px** (+90 à +108 px selon la locale) — groupe droit du header au palier `md`. **Pré-existant**, vérifié inchangé par ce sprint, hors périmètre de #334.
+7. **Lecteur d'écran réel non testé** (#69) : rôles et labels vérifiés au code et au DOM uniquement.
+8. **V16 toujours non consommée — 12e sprint sans migration.** Le chemin Flyway n'a pas tourné à froid depuis le S39 ; un smoke `flyway migrate` sur base vierge reste à faire.
 
-Budget réaliste : **1 à 2 itérations**.
+## Follow-ups identifiés (à créer au triage)
 
-### Fiabilité de l'outillage
-
-Le hook RTK a été pris en défaut deux fois ce sprint : vitest affiché « PASS (23) FAIL (0) » alors que
-`success:false` avec une suite en échec de **collecte**, et prettier « All files formatted » avec exit 1.
-Tous les chiffres de cette PR proviennent de **codes de sortie réels** lus via `rtk proxy`.
-
-### Follow-ups identifiés (non traités ici)
-
-- `frontend/.eslintcache` est **tracké** : tout run eslint pollue le working tree partagé (rencontré par
-  3 agents) → à gitignore/détracker.
-- Rien ne synchronise `PROTECTED_APP_SEGMENTS` avec le système de fichiers : une nouvelle route sous
-  `(app)` serait non gardée **silencieusement**.
-- Élargir la règle ArchUnit n°3 aux classes `@RestController` plutôt qu'au package.
-- JWT asymétrique (RS256) rendrait la vérification de signature possible côté Edge.
-- Le job CI e2e démarre le backend avec `RATE_LIMIT_ENABLED=false`.
+`ui/dropdown-menu.tsx` (4) + `ui/select.tsx` (1) : **même couplage sous `focus:`**, confirmé au grep · `TimelineView.tsx` cales sans `role="presentation"` · `useTimelineViewport.ts` listener `scroll` en capture sur `window` · `TimelineCalendar.tsx` (114 l., mort depuis le S42) à supprimer · mémoïsation des lanes · accroche du héros et numéros d'étape désormais plus gros que les `h2` · logo du header (57 px) plus gros que le `h1` (48 px) · `LanguageSelector` : cible 36 px < 44 px **et** chaîne française en dur · `.eslintcache` tracké à gitignorer · pas de `data-testid` sur les 5 CTA de la landing.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

@@ -102,7 +102,11 @@
   --color-destructive: var(--color-danger);
   --color-destructive-foreground: var(--color-primary-ink);
   --color-border: var(--color-rule);
-  --color-input: var(--color-rule-strong);
+  /* #336 — `border-input` habille les contrôles shadcn (Input, SelectTrigger,
+     Button variant="outline") : c'est un tier FONCTIONNEL, il doit tenir le
+     seuil WCAG 1.4.11 (≥3:1). `rule-strong` (1.46:1) ne le tenait pas.
+     `border` (décoratif, `--color-rule`) reste inchangé. */
+  --color-input: var(--color-rule-emphasis);
   --color-ring: var(--color-focus);
 
   /* ---- polices (next/font expose --font-display / --font-ui / --font-mono) ---- */

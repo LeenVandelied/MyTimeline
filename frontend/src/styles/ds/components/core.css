@@ -1,6 +1,16 @@
 /* MyTimeline · Core component styles (Graphite)
    Shipped via styles.css so consumers + cards get them automatically.
-   Components emit these classNames; all states (hover/focus/checked) live here. */
+   Components emit these classNames; all states (hover/focus/checked) live here.
+
+   Border tiers (#293 / #336) — see `../readme.md` § "Border tiers":
+   - `--color-rule` / `--color-rule-strong` = DECORATIVE. Separators, panel and
+     card frames, table gridlines. 1.21:1 / 1.46:1 — deliberately below 3:1,
+     they carry no state and WCAG 1.4.11 does not apply to them.
+   - `--color-rule-emphasis` = FUNCTIONAL. The border IS the affordance:
+     outline buttons, unfilled inputs, select triggers, checkbox/radio/switch
+     outlines. ≥3.97:1 on every surface, both modes. WCAG 1.4.11 applies.
+   Every `rule-strong` left below is an explicit decorative call, not an
+   oversight. Do not sweep them without re-reading the readme. */
 
 /* ---------------- Button ---------------- */
 .mt-btn{
@@ -15,7 +25,8 @@
 .mt-btn--lg{padding:12px 22px; font-size:14px;}
 .mt-btn--primary{background:var(--color-primary); color:var(--color-primary-ink);}
 .mt-btn--primary:hover{background:var(--color-primary-hover);}
-.mt-btn--secondary{background:var(--color-surface); color:var(--color-ink); border-color:var(--color-rule-strong);}
+/* Outline button: the border is the only thing marking the hit area → functional. */
+.mt-btn--secondary{background:var(--color-surface); color:var(--color-ink); border-color:var(--color-rule-emphasis);}
 .mt-btn--secondary:hover{background:var(--color-surface-2); border-color:var(--color-ink-faint);}
 .mt-btn--ghost{background:transparent; color:var(--color-ink-muted);}
 .mt-btn--ghost:hover{background:var(--color-surface-2); color:var(--color-ink);}
@@ -31,7 +42,8 @@
 .mt-iconbtn{
   display:inline-flex; align-items:center; justify-content:center;
   width:34px; height:34px; border-radius:var(--radius-md);
-  border:1px solid var(--color-rule-strong); background:var(--color-surface);
+  /* Icon-only button: no label, the border carries the whole affordance → functional. */
+  border:1px solid var(--color-rule-emphasis); background:var(--color-surface);
   color:var(--color-ink-muted); cursor:pointer;
   transition:background var(--dur-micro), border-color var(--dur-micro), color var(--dur-micro);
 }
@@ -46,7 +58,8 @@
 .mt-label{font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-input, .mt-textarea{
   font-family:var(--font-ui); font-size:14px; color:var(--color-ink);
-  background:var(--color-surface); border:1px solid var(--color-rule-strong);
+  /* Unfilled input: readme names this case explicitly → functional. */
+  background:var(--color-surface); border:1px solid var(--color-rule-emphasis);
   border-radius:var(--radius-md); padding:9px 11px; outline:none; width:100%;
   transition:border-color var(--dur-micro), box-shadow var(--dur-micro);
 }
@@ -68,7 +81,8 @@
 .mt-select__trigger{
   display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
   font-family:var(--font-ui); font-size:14px; color:var(--color-ink);
-  background:var(--color-surface); border:1px solid var(--color-rule-strong);
+  /* Select trigger: input-equivalent control, same boundary duty → functional. */
+  background:var(--color-surface); border:1px solid var(--color-rule-emphasis);
   border-radius:var(--radius-md); padding:9px 11px; cursor:pointer; text-align:left;
   transition:border-color var(--dur-micro), box-shadow var(--dur-micro);
 }
@@ -81,6 +95,8 @@
 .mt-select__trigger[aria-expanded="true"] .mt-select__chev{transform:rotate(180deg);}
 .mt-select__menu{
   position:absolute; z-index:var(--z-popover); top:calc(100% + 6px); left:0; right:0;
+  /* Popover panel frame, not a control boundary (the options are the controls);
+     its presence reads from the elevation + surface → decorative, stays strong. */
   background:var(--color-surface); border:1px solid var(--color-rule-strong);
   border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:5px;
 }
@@ -97,7 +113,8 @@
 .mt-check, .mt-radio{display:inline-flex; align-items:center; gap:9px; font-size:14px; color:var(--color-ink); cursor:pointer; position:relative;}
 .mt-check input, .mt-radio input{position:absolute; opacity:0; width:0; height:0;}
 .mt-check__box{
-  width:18px; height:18px; border:1.5px solid var(--color-rule-strong); border-radius:var(--radius-sm);
+  /* Unchecked checkbox: the outline IS the control → functional. */
+  width:18px; height:18px; border:1.5px solid var(--color-rule-emphasis); border-radius:var(--radius-sm);
   background:var(--color-surface); display:flex; align-items:center; justify-content:center;
   color:transparent; transition:all var(--dur-micro) var(--ease-quart); flex:0 0 auto;
 }
@@ -106,7 +123,8 @@
 .mt-check input:focus-visible + .mt-check__box{box-shadow:var(--shadow-focus);}
 .mt-check input:disabled ~ *{opacity:.5;}
 .mt-radio__dot{
-  width:18px; height:18px; border:1.5px solid var(--color-rule-strong); border-radius:50%;
+  /* Unchecked radio: same, the ring IS the control → functional. */
+  width:18px; height:18px; border:1.5px solid var(--color-rule-emphasis); border-radius:50%;
   background:var(--color-surface); display:flex; align-items:center; justify-content:center; flex:0 0 auto;
   transition:all var(--dur-micro) var(--ease-quart);
 }
@@ -120,7 +138,9 @@
 .mt-switch input{position:absolute; opacity:0; width:0; height:0;}
 .mt-switch__track{
   width:38px; height:22px; border-radius:var(--radius-pill);
-  background:var(--color-surface-2); border:1.5px solid var(--color-rule-strong);
+  /* Off-state switch: the `surface-2` fill is ~1.03:1 against the page, so the
+     track outline is the only boundary of the control → functional. */
+  background:var(--color-surface-2); border:1.5px solid var(--color-rule-emphasis);
   position:relative; transition:all var(--dur-micro) var(--ease-quart); flex:0 0 auto;
 }
 .mt-switch__thumb{position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--color-ink-faint); transition:all var(--dur-micro) var(--ease-quart);}
@@ -132,6 +152,7 @@
 .mt-badge{
   display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono);
   font-size:10px; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px;
+  /* Badge is a static display mark (no role, not focusable) → decorative. */
   border-radius:var(--radius-sm); border:1px solid var(--color-rule-strong); color:var(--color-ink-muted); background:transparent;
 }
 .mt-badge--solid{background:var(--color-primary); color:var(--color-primary-ink); border-color:var(--color-primary);}
@@ -151,6 +172,7 @@
 .mt-tag__x svg{width:13px; height:13px;}
 
 /* ---------------- Avatar ---------------- */
+/* Image frame → decorative (readme: "card and image frames"). */
 .mt-avatar{display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:var(--radius-md); background:var(--color-surface-2); border:1px solid var(--color-rule-strong); font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--color-ink-muted); overflow:hidden; flex:0 0 auto;}
 .mt-avatar img{width:100%; height:100%; object-fit:cover;}
 .mt-avatar--sm{width:24px; height:24px; font-size:10px;}
@@ -160,6 +182,8 @@
 /* ---------------- Card ---------------- */
 .mt-card{background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-lg);}
 .mt-card--hover{transition:border-color var(--dur-micro), box-shadow var(--dur-micro), transform var(--dur-micro) var(--ease-quart); cursor:pointer;}
+/* Hover step-up from `rule` to `rule-strong` on a card frame. A clickable card
+   is identified by its content and cursor, not by its outline → decorative. */
 .mt-card--hover:hover{border-color:var(--color-rule-strong); box-shadow:var(--shadow-sm);}
 .mt-card__header{padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--color-rule);}
 .mt-card__body{padding:var(--space-5);}
@@ -180,6 +204,7 @@
 /* ---------------- Toast ---------------- */
 .mt-toast{
   display:flex; gap:11px; align-items:flex-start; background:var(--color-surface);
+  /* Floating panel frame, not a control → decorative. */
   border:1px solid var(--color-rule-strong); border-left:3px solid var(--color-accent);
   border-radius:var(--radius-lg); padding:12px 14px; box-shadow:var(--shadow-md); max-width:340px;
 }
@@ -208,6 +233,7 @@
 
 /* ---------------- Dialog ---------------- */
 .mt-dialog__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); display:flex; align-items:center; justify-content:center; z-index:var(--z-modal); padding:24px; backdrop-filter:blur(2px);}
+/* Modal panel frame, not a control → decorative. */
 .mt-dialog{background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); max-width:520px; width:100%; max-height:88vh; display:flex; flex-direction:column; overflow:hidden;}
 .mt-dialog__header{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:var(--space-5) var(--space-5) var(--space-4); border-bottom:1px solid var(--color-rule);}
 .mt-dialog__title{font-family:var(--font-display); font-size:21px; letter-spacing:-.01em; color:var(--color-ink);}
@@ -216,6 +242,8 @@
 .mt-dialog__footer{display:flex; justify-content:flex-end; gap:10px; padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-rule);}
 
 /* ---------------- Table ---------------- */
+/* Header rule = gridline; the readme names table gridlines as the canonical
+   `rule-strong` case → decorative. */
 .mt-table{width:100%; border-collapse:collapse; font-size:13px;}
 .mt-table th{font-family:var(--font-mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-ink-muted); text-align:left; padding:8px 11px; border-bottom:1.5px solid var(--color-rule-strong); font-weight:var(--weight-medium);}
 .mt-table td{padding:8px 11px; border-bottom:1px solid var(--color-rule); color:var(--color-ink);}

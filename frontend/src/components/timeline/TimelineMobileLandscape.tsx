@@ -10,9 +10,13 @@ import { Minimap } from './Minimap'
 import { TimelineLandscapeDrawer } from './TimelineLandscapeDrawer'
 import { TimelineActionSheet } from './TimelineActionSheet'
 import { useTimelineMobileState, type TimelineMobileState } from './useTimelineMobileState'
-import { useTimelineMobileSelection, type TimelineMobileSelection } from './useTimelineMobileSelection'
+import {
+  useTimelineMobileSelection,
+  type TimelineMobileSelection,
+} from './useTimelineMobileSelection'
 import { useTimelineMobileGestures, type TimelineMobileGestures } from './useTimelineMobileGestures'
 import { statusToVar, ZOOM_LEVELS, type PositionedEvent } from './zoom'
+import { windowEvents, windowLanes } from './virtualization'
 
 /**
  * #64 — Vue Timeline mobile PAYSAGE.
@@ -147,7 +151,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
         onPointerCancel={gestures.onScrollPointerUp}
         data-testid="timeline-scroll"
       >
-        <div className="mt-tlm__rail" style={{ width: `${state.railWidth}px` }}>
+        <div className="mt-tlm__rail" ref={state.railRef} style={{ width: `${state.railWidth}px` }}>
           <div className="mt-tlm__ruler" data-testid="timeline-ruler">
             {state.ticks.map((tick, i) => (
               <div
@@ -175,7 +179,11 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
             <div
               key={i}
               className="mt-tlm__weekend"
-              style={{ left: `${seg.leftPx}px`, width: `${seg.widthPx}px`, top: 'var(--ruler-height)' }}
+              style={{
+                left: `${seg.leftPx}px`,
+                width: `${seg.widthPx}px`,
+                top: 'var(--ruler-height)',
+              }}
               aria-hidden="true"
               data-testid="timeline-weekend"
             />
@@ -187,74 +195,109 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
             aria-hidden="true"
           />
 
-          {groups.map(([category, resList]) => (
-            <div key={category} data-testid="timeline-group">
-              <div className="mt-tlm__group-head" data-testid="timeline-group-head">
-                {category}
+          {/* #69 — virtualisation 2 axes, identique au portrait (mêmes primitives). */}
+          {groups.map(([category, resList]) => {
+            const laneWindow = windowLanes(
+              resList.length,
+              state.metrics.laneHeight,
+              state.listTops[category] ?? 0,
+              state.verticalBand,
+            )
+            return (
+              <div key={category} data-testid="timeline-group">
+                <div className="mt-tlm__group-head" data-testid="timeline-group-head">
+                  {category}
+                </div>
+                <div role="list" aria-label={category} data-testid="timeline-lane-list">
+                  {laneWindow.topSpacerPx > 0 && (
+                    <div
+                      aria-hidden="true"
+                      data-testid="timeline-lane-spacer"
+                      style={{ height: `${laneWindow.topSpacerPx}px` }}
+                    />
+                  )}
+                  {resList.slice(laneWindow.startIndex, laneWindow.endIndex).map((resource, i) => {
+                    const laneEvents = windowEvents(
+                      state.eventsByResource.get(resource.id) || [],
+                      state.horizontalBand,
+                    ).map((w) => w.event)
+                    return (
+                      <div
+                        key={resource.id}
+                        className="mt-tlm__lane"
+                        role="listitem"
+                        aria-posinset={laneWindow.startIndex + i + 1}
+                        aria-setsize={resList.length}
+                        data-testid="timeline-resource-row"
+                      >
+                        <span
+                          className="mt-tlm__lane-label"
+                          data-testid="timeline-resource-title"
+                          title={resource.title}
+                        >
+                          {resource.title}
+                        </span>
+                        {laneEvents.map((event) => {
+                          const color = event.color || 'var(--color-accent)'
+                          const ink = event.color ? textOn(event.color) : 'var(--color-accent-ink)'
+                          return (
+                            <div
+                              key={event.id}
+                              className="mt-tlm__evt-wrap"
+                              style={{ left: `${event.leftPx}px` }}
+                            >
+                              <button
+                                type="button"
+                                className="mt-tlm__evt"
+                                data-testid="timeline-event"
+                                data-event-title={event.title}
+                                aria-label={buildEventAriaLabel(event, locale, t)}
+                                onClick={gestures.onEvtClick(event)}
+                                onPointerDown={gestures.onEvtPointerDown(event)}
+                                onPointerMove={gestures.onEvtPointerMove}
+                                onPointerUp={gestures.clearLongPress}
+                                onPointerCancel={gestures.clearLongPress}
+                                style={{
+                                  width: `${event.widthPx}px`,
+                                  background: color,
+                                  color: ink,
+                                  ['--mt-evt-status' as string]: statusToVar(event.status),
+                                }}
+                              >
+                                <span
+                                  className="mt-tlm__evt-dot"
+                                  style={{ background: statusToVar(event.status) }}
+                                  aria-hidden="true"
+                                />
+                                <span className="mt-tlm__evt-title">{event.title}</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="mt-tlm__evt-more"
+                                onClick={() => setActionTarget(event)}
+                                aria-label={t('dashboard.timeline.actions.label')}
+                                data-testid="timeline-event-more"
+                                style={{ color: ink }}
+                              >
+                                <MoreHorizontal size={16} strokeWidth={2} aria-hidden="true" />
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                  {laneWindow.bottomSpacerPx > 0 && (
+                    <div
+                      aria-hidden="true"
+                      data-testid="timeline-lane-spacer"
+                      style={{ height: `${laneWindow.bottomSpacerPx}px` }}
+                    />
+                  )}
+                </div>
               </div>
-              {resList.map((resource) => {
-                const laneEvents = state.eventsByResource.get(resource.id) || []
-                return (
-                  <div
-                    key={resource.id}
-                    className="mt-tlm__lane"
-                    data-testid="timeline-resource-row"
-                  >
-                    <span
-                      className="mt-tlm__lane-label"
-                      data-testid="timeline-resource-title"
-                      title={resource.title}
-                    >
-                      {resource.title}
-                    </span>
-                    {laneEvents.map((event) => {
-                      const color = event.color || 'var(--color-accent)'
-                      const ink = event.color ? textOn(event.color) : 'var(--color-accent-ink)'
-                      return (
-                        <div key={event.id} className="mt-tlm__evt-wrap" style={{ left: `${event.leftPx}px` }}>
-                          <button
-                            type="button"
-                            className="mt-tlm__evt"
-                            data-testid="timeline-event"
-                            data-event-title={event.title}
-                            aria-label={buildEventAriaLabel(event, locale, t)}
-                            onClick={gestures.onEvtClick(event)}
-                            onPointerDown={gestures.onEvtPointerDown(event)}
-                            onPointerMove={gestures.onEvtPointerMove}
-                            onPointerUp={gestures.clearLongPress}
-                            onPointerCancel={gestures.clearLongPress}
-                            style={{
-                              width: `${event.widthPx}px`,
-                              background: color,
-                              color: ink,
-                              ['--mt-evt-status' as string]: statusToVar(event.status),
-                            }}
-                          >
-                            <span
-                              className="mt-tlm__evt-dot"
-                              style={{ background: statusToVar(event.status) }}
-                              aria-hidden="true"
-                            />
-                            <span className="mt-tlm__evt-title">{event.title}</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="mt-tlm__evt-more"
-                            onClick={() => setActionTarget(event)}
-                            aria-label={t('dashboard.timeline.actions.label')}
-                            data-testid="timeline-event-more"
-                            style={{ color: ink }}
-                          >
-                            <MoreHorizontal size={16} strokeWidth={2} aria-hidden="true" />
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              })}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

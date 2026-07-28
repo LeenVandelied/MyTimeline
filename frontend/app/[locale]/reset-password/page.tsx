@@ -110,7 +110,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
                   data-testid="reset-password"
                   placeholder={t('common.resetPassword.newPasswordPlaceholder')}
                   {...field}
-                  className="bg-surface-2 border-rule-strong"
+                  className="bg-surface-2 border-rule-emphasis"
                 />
               </FormControl>
               <FormMessage />
@@ -131,7 +131,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
                   data-testid="reset-confirm-password"
                   placeholder={t('common.resetPassword.confirmPasswordPlaceholder')}
                   {...field}
-                  className="bg-surface-2 border-rule-strong"
+                  className="bg-surface-2 border-rule-emphasis"
                 />
               </FormControl>
               <FormMessage />

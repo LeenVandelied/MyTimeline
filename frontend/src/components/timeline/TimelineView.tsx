@@ -21,6 +21,14 @@ import {
   zoomReducer,
   type PositionedEvent,
 } from './zoom'
+import { useTimelineViewport } from './useTimelineViewport'
+import {
+  LANE_VIRTUALIZATION_MIN_ROWS,
+  UNBOUNDED_BAND,
+  buildVerticalModel,
+  windowEvents,
+  windowLanes,
+} from './virtualization'
 
 /**
  * #55 — Vue Timeline desktop.
@@ -65,7 +73,31 @@ import {
  *  - Minimap NON concernée : elle est DÉJÀ roving (`role=slider`, #55). Ne pas la
  *    refaire ici.
  * ============================================================================
+ *
+ * ============================================================================
+ * #69 — VIRTUALISATION (2 axes, cf. `virtualization.ts` + ADR-007) :
+ *
+ *  - HORIZONTAL (toujours actif) : seules les pastilles dont l'intervalle
+ *    `[leftPx, leftPx+widthPx]` croise la plage temporelle visible (+ overscan)
+ *    sont montées. C'est l'axe qui porte le gain : à 1000 events, 96,7 % des
+ *    pastilles étaient hors écran (mesure baseline).
+ *
+ *  - VERTICAL (au-delà de `LANE_VIRTUALIZATION_MIN_ROWS` lanes) : seules les
+ *    lanes de la fenêtre sont montées, encadrées de deux CALES qui préservent la
+ *    hauteur totale → scrollbar, ligne TODAY et overlays week-end inchangés.
+ *
+ *  - INVARIANTS PRÉSERVÉS : les index de navigation (`navLanes`, index d'event)
+ *    restent ceux du modèle COMPLET ; le roving tabindex reste resource-keyé ;
+ *    `focusNav` élargit la fenêtre puis focalise la pastille dès son montage
+ *    (`pendingFocusRef`) → aucune cible clavier « sautée ».
+ *
+ *  - MESURE IMPOSSIBLE (jsdom, conteneur masqué) → bandes non bornées, TOUT est
+ *    rendu : comportement identique à l'avant-#69.
+ * ============================================================================
  */
+/** #69 — Durée de validité d'une cible de focus clavier en attente de montage. */
+const PENDING_FOCUS_TTL_MS = 1000
+
 export interface TimelineViewProps {
   events: FullCalendarEvent[]
   resources: Resource[]
@@ -101,6 +133,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // rendu de `TimelineView` (BUG-S44-001, cf. `AppShell.closeCreate`).
   const closeDrawer = useCallback(() => setSelected(null), [])
   const scrollRef = useRef<HTMLDivElement>(null)
+  const railRef = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const [viewportStart, setViewportStart] = useState(0)
 
@@ -124,13 +157,40 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   const resourcesByCategory = useMemo(() => groupResourcesByCategory(resources), [resources])
 
+  const groups = useMemo(() => Object.entries(resourcesByCategory), [resourcesByCategory])
+
+  // #69 — VIRTUALISATION. `geometryKey` force une remesure quand la géométrie du
+  // rail change sans qu'aucun scroll ne survienne (zoom, étendue, collapse d'une
+  // catégorie, arrivée de nouveaux events).
+  const geometryKey = useMemo(
+    () => `${dayWidth}|${totalDays}|${resources.length}|${JSON.stringify(collapsed)}`,
+    [dayWidth, totalDays, resources.length, collapsed],
+  )
+  const viewport = useTimelineViewport(scrollRef, railRef, geometryKey)
+  const { ensureVisible, resync } = viewport
+  const laneHeight = viewport.metrics.laneHeight
+
+  // Modèle vertical (tops en px de chaque liste de lanes / de chaque lane).
+  const verticalModel = useMemo(
+    () => buildVerticalModel(groups, collapsed, viewport.metrics),
+    [groups, collapsed, viewport.metrics],
+  )
+
+  // #69 — La virtualisation VERTICALE ne s'enclenche qu'au-delà du seuil : en
+  // dessous, monter toutes les lanes coûte moins cher que les fenêtrer (et les
+  // parcours E2E / frises modestes gardent un DOM complet, cf. ADR-007).
+  const verticalBand =
+    verticalModel.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS
+      ? viewport.vertical
+      : UNBOUNDED_BAND
+
   // #81 — Modèle plat de navigation clavier : la « grille » des lanes VISIBLES
   // (catégorie non collapsée) → chaque entrée = { resourceId, events[] }. L'ordre
   // suit le rendu (catégories puis ressources). Les lanes des catégories
   // collapsées sont EXCLUES (pastilles non rendues → non focusables).
   const navLanes = useMemo(() => {
     const lanes: Array<{ resourceId: string; events: PositionedEvent[] }> = []
-    for (const [category, resList] of Object.entries(resourcesByCategory)) {
+    for (const [category, resList] of groups) {
       if (collapsed[category] ?? false) continue
       for (const resource of resList) {
         // #195 — Une lane produit collapsée n'a plus de pastilles rendues → on
@@ -141,7 +201,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       }
     }
     return lanes
-  }, [resourcesByCategory, collapsed, collapsedResources, eventsByResource])
+  }, [groups, collapsed, collapsedResources, eventsByResource])
 
   // #81 — Roving tabindex : la pastille active (celle qui porte tabIndex=0) est
   // repérée par sa RESSOURCE (`resourceId`) + son index d'event, PAS par un index
@@ -183,24 +243,66 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     return firstNav
   }, [activeNav, navLanes, laneIndexByResource, firstNav])
 
+  // #69 — Cible de focus EN ATTENTE. La virtualisation démonte les pastilles hors
+  // fenêtre : une cible clavier peut ne pas encore exister dans le DOM au moment
+  // où on veut la focaliser. On mémorise la coordonnée, on élargit la fenêtre de
+  // rendu (`ensureVisible`), et on focalise dès que le node apparaît (effet
+  // post-rendu ci-dessous). Sans ce relais, ↑↓←→ « sauteraient » les événements
+  // hors fenêtre (critère d'acceptation n°5).
+  // La cible PÉRIME (`PENDING_FOCUS_TTL_MS`) : sans cela, une cible jamais montée
+  // (lane repliée entre-temps, données rafraîchies) resterait armée et volerait le
+  // focus bien plus tard, au moment où le node réapparaîtrait.
+  const pendingFocusRef = useRef<{ key: string; at: number } | null>(null)
+  const flushPendingFocus = useCallback(() => {
+    const pending = pendingFocusRef.current
+    if (pending === null) return
+    if (performance.now() - pending.at > PENDING_FOCUS_TTL_MS) {
+      pendingFocusRef.current = null
+      return
+    }
+    const node = pillNodes.current.get(pending.key)
+    if (!node) return
+    pendingFocusRef.current = null
+    node.focus()
+    node.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    // La cible est atteinte : on recale la fenêtre de rendu sur ce qui est
+    // réellement visible, sinon les élargissements successifs d'`ensureVisible`
+    // finiraient par remonter toute la frise.
+    resync()
+  }, [resync])
+
+  // Volontairement SANS tableau de dépendances : rejoue après CHAQUE rendu, donc
+  // aussi après celui qui monte enfin la pastille visée. No-op (une lecture de
+  // ref) quand aucune cible n'est en attente.
+  useEffect(flushPendingFocus)
+
   // Déplace le focus. Reçoit des coordonnées (lane, evt) — inchangé pour
   // `onPillKeyDown` — mais mémorise l'état en resource-keyé (MAJEUR-2 : stable au
-  // collapse). Défensif : ne `.focus()` que si le node est présent (la
-  // virtualisation Wave 7, non livrée, pourrait recycler le DOM plus tard).
+  // collapse).
   // MAJEUR-1 : `scrollIntoView` explicite — le scroll natif de `.focus()` ne
   // garantit pas le défilement du conteneur de lanes vertical NI du rail
   // horizontal → sans ça la pastille focalisée peut rester hors écran sur ↑↓←→.
   const focusNav = useCallback(
     (lane: number, evt: number) => {
-      const resourceId = navLanes[lane]?.resourceId
-      if (resourceId != null) setActiveNav({ resourceId, evt })
-      const node = pillNodes.current.get(`${lane}:${evt}`)
-      if (node) {
-        node.focus()
-        node.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      const target = navLanes[lane]
+      if (!target) return
+      setActiveNav({ resourceId: target.resourceId, evt })
+
+      // Élargit la fenêtre de rendu à la cible AVANT de tenter le focus.
+      const event = target.events[evt]
+      if (event) {
+        const laneTop = verticalModel.laneTops.get(target.resourceId) ?? 0
+        ensureVisible(
+          { start: event.leftPx, end: event.leftPx + event.widthPx },
+          { start: laneTop, end: laneTop + laneHeight },
+        )
       }
+
+      pendingFocusRef.current = { key: `${lane}:${evt}`, at: performance.now() }
+      // Cas nominal (cible déjà montée) : focus immédiat, aucun rendu supplémentaire.
+      flushPendingFocus()
     },
-    [navLanes],
+    [navLanes, verticalModel, ensureVisible, laneHeight, flushPendingFocus],
   )
 
   // #81 — Navigation clavier déléguée par `EventPill`. ←→ dans/entre lanes,
@@ -295,6 +397,27 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     setViewportStart(el.scrollLeft / railWidth)
     setViewportRatio(Math.min(1, el.clientWidth / railWidth))
   }, [railWidth])
+
+  // #69 — La synchronisation de la minimap déclenchait un `setState` (donc un
+  // re-rendu COMPLET de la frise) à CHAQUE événement `scroll` : c'était le premier
+  // poste de coût du scroll horizontal mesuré en baseline (33,8 ms/frame à 1000
+  // events). On la coalesce à une fois par frame ; la minimap reste synchrone à
+  // l'œil (elle est mise à jour avant la peinture suivante).
+  const scrollFrameRef = useRef<number | null>(null)
+  const onScrollThrottled = useCallback(() => {
+    if (scrollFrameRef.current !== null) return
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null
+      syncViewportFromScroll()
+    })
+  }, [syncViewportFromScroll])
+
+  useEffect(
+    () => () => {
+      if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current)
+    },
+    [],
+  )
 
   useEffect(() => {
     syncViewportFromScroll()
@@ -535,11 +658,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       <div
         className="mt-tlv__scroll"
         ref={scrollRef}
-        onScroll={syncViewportFromScroll}
+        onScroll={onScrollThrottled}
         onWheel={onWheel}
         data-testid="timeline-scroll"
       >
-        <div className="mt-tlv__rail" style={{ width: `${railWidth}px` }}>
+        <div className="mt-tlv__rail" ref={railRef} style={{ width: `${railWidth}px` }}>
           {/* Règle sticky adaptative */}
           <div className="mt-tlv__ruler" data-testid="timeline-ruler">
             {ticks.map((tick, i) => (
@@ -588,8 +711,18 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           />
 
           {/* Lanes groupées par catégorie (accordéons) */}
-          {Object.entries(resourcesByCategory).map(([category, resList]) => {
+          {groups.map(([category, resList]) => {
             const isCollapsed = collapsed[category] ?? false
+            // #69 — Fenêtre verticale de CE groupe. Les en-têtes de catégorie
+            // restent TOUJOURS montés (peu nombreux, et ils portent l'accordéon) ;
+            // seules les lanes sont fenêtrées, avec des cales qui préservent la
+            // hauteur totale (scrollbar et ligne TODAY inchangées).
+            const laneWindow = windowLanes(
+              resList.length,
+              viewport.metrics.laneHeight,
+              verticalModel.listTops[category] ?? 0,
+              verticalBand,
+            )
             return (
               <div key={category} data-testid="timeline-group">
                 <button
@@ -609,79 +742,117 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                   {category}
                 </button>
 
-                {!isCollapsed &&
-                  resList.map((resource) => {
-                    const isResCollapsed = collapsedResources[resource.id] ?? false
-                    const laneEvents = eventsByResource.get(resource.id) || []
-                    return (
+                {/* #69 (a11y) — `role="list"` + `aria-setsize`/`aria-posinset` sur
+                    chaque lane : le lecteur d'écran annonce « lane 37 sur 120 »
+                    MÊME quand seules ~15 lanes sont montées. C'est l'équivalent
+                    valide d'`aria-rowcount`/`aria-rowindex` évoqués par l'issue :
+                    ces deux attributs exigent un rôle `grid`/`table`, que la frise
+                    n'a pas (pattern région + roving tabindex #81) et qu'on ne
+                    change pas ici — cf. ADR-007. */}
+                {!isCollapsed && (
+                  <div role="list" aria-label={category} data-testid="timeline-lane-list">
+                    {laneWindow.topSpacerPx > 0 && (
                       <div
-                        key={resource.id}
-                        className="mt-tlv__lane"
-                        style={{ backgroundSize: `${dayWidth}px 100%` }}
-                        data-testid="timeline-resource-row"
-                      >
-                        {/* #195 — Accordéon de 2e niveau : le label produit sticky
+                        aria-hidden="true"
+                        data-testid="timeline-lane-spacer"
+                        style={{ height: `${laneWindow.topSpacerPx}px` }}
+                      />
+                    )}
+                    {resList
+                      .slice(laneWindow.startIndex, laneWindow.endIndex)
+                      .map((resource, i) => {
+                        const laneOrdinal = laneWindow.startIndex + i
+                        const isResCollapsed = collapsedResources[resource.id] ?? false
+                        const laneEvents = eventsByResource.get(resource.id) || []
+                        // #69 — Fenêtre HORIZONTALE : seuls les événements dont
+                        // l'intervalle croise la plage temporelle visible sont montés.
+                        // L'index d'origine est conservé (coordonnée clavier #81).
+                        const windowedEvents = isResCollapsed
+                          ? []
+                          : windowEvents(laneEvents, viewport.horizontal)
+                        return (
+                          <div
+                            key={resource.id}
+                            className="mt-tlv__lane"
+                            role="listitem"
+                            aria-posinset={laneOrdinal + 1}
+                            aria-setsize={resList.length}
+                            style={{ backgroundSize: `${dayWidth}px 100%` }}
+                            data-testid="timeline-resource-row"
+                          >
+                            {/* #195 — Accordéon de 2e niveau : le label produit sticky
                             devient un bouton toggle (mirror de `mt-tlv__group-head`).
                             Bouton natif → clavier Enter/Espace + `aria-expanded`
                             cohérents avec l'accordéon catégorie. Reste visible même
                             collapsé (identifie la lane pendant le scroll horizontal). */}
-                        <button
-                          type="button"
-                          className="mt-tlv__lane-label mt-tlv__lane-head"
-                          aria-expanded={!isResCollapsed}
-                          onClick={() =>
-                            setCollapsedResources((prev) => ({
-                              ...prev,
-                              [resource.id]: !isResCollapsed,
-                            }))
-                          }
-                          title={resource.title}
-                          data-testid="timeline-resource-head"
-                        >
-                          <ChevronRight
-                            className={
-                              isResCollapsed ? 'mt-tlv__chev' : 'mt-tlv__chev mt-tlv__chev--open'
-                            }
-                            size={13}
-                            strokeWidth={1.5}
-                            aria-hidden="true"
-                          />
-                          <span
-                            className="mt-tlv__lane-head-text"
-                            data-testid="timeline-resource-title"
-                          >
-                            {resource.title}
-                          </span>
-                        </button>
-                        {!isResCollapsed &&
-                          laneEvents.map((event, evtIdx) => {
-                            const laneIdx = laneIndexByResource.get(resource.id) ?? -1
-                            const isRoving =
-                              rovingNav !== null &&
-                              rovingNav.lane === laneIdx &&
-                              rovingNav.evt === evtIdx
-                            const key = navKeyOf(laneIdx, evtIdx)
-                            return (
-                              <EventPill
-                                key={event.id}
-                                event={event}
-                                ariaLabel={buildEventAriaLabel(event, locale, t)}
-                                onSelect={setSelected}
-                                tabIndex={isRoving ? 0 : -1}
-                                navKey={key}
-                                onKeyDown={(e) => onPillKeyDown(e, laneIdx, evtIdx)}
-                                pillRef={(node) => {
-                                  // Indexe le node pour `.focus()` défensif ; nettoie
-                                  // à l'unmount (évite les refs pendantes au collapse).
-                                  if (node) pillNodes.current.set(key, node)
-                                  else pillNodes.current.delete(key)
-                                }}
+                            <button
+                              type="button"
+                              className="mt-tlv__lane-label mt-tlv__lane-head"
+                              aria-expanded={!isResCollapsed}
+                              onClick={() =>
+                                setCollapsedResources((prev) => ({
+                                  ...prev,
+                                  [resource.id]: !isResCollapsed,
+                                }))
+                              }
+                              title={resource.title}
+                              data-testid="timeline-resource-head"
+                            >
+                              <ChevronRight
+                                className={
+                                  isResCollapsed
+                                    ? 'mt-tlv__chev'
+                                    : 'mt-tlv__chev mt-tlv__chev--open'
+                                }
+                                size={13}
+                                strokeWidth={1.5}
+                                aria-hidden="true"
                               />
-                            )
-                          })}
-                      </div>
-                    )
-                  })}
+                              <span
+                                className="mt-tlv__lane-head-text"
+                                data-testid="timeline-resource-title"
+                              >
+                                {resource.title}
+                              </span>
+                            </button>
+                            {windowedEvents.map(({ event, index: evtIdx }) => {
+                              const laneIdx = laneIndexByResource.get(resource.id) ?? -1
+                              const isRoving =
+                                rovingNav !== null &&
+                                rovingNav.lane === laneIdx &&
+                                rovingNav.evt === evtIdx
+                              const key = navKeyOf(laneIdx, evtIdx)
+                              return (
+                                <EventPill
+                                  key={event.id}
+                                  event={event}
+                                  ariaLabel={buildEventAriaLabel(event, locale, t)}
+                                  onSelect={setSelected}
+                                  tabIndex={isRoving ? 0 : -1}
+                                  navKey={key}
+                                  onKeyDown={(e) => onPillKeyDown(e, laneIdx, evtIdx)}
+                                  pillRef={(node) => {
+                                    // Indexe le node pour `.focus()` ; nettoie à
+                                    // l'unmount (refs pendantes au collapse ET au
+                                    // démontage par la virtualisation, #69).
+                                    if (node) pillNodes.current.set(key, node)
+                                    else pillNodes.current.delete(key)
+                                  }}
+                                />
+                              )
+                            })}
+                          </div>
+                        )
+                      })}
+                    {laneWindow.bottomSpacerPx > 0 && (
+                      <div
+                        aria-hidden="true"
+                        data-testid="timeline-lane-spacer"
+                        style={{ height: `${laneWindow.bottomSpacerPx}px` }}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}

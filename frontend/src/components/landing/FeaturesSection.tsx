@@ -26,10 +26,10 @@ export function FeaturesSection() {
     <section id="features" className="bg-surface section-animation py-20">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+          <h2 className="mb-4 text-lg leading-tight font-bold md:text-xl">
             {t('common.landing.features.title')}
           </h2>
-          <p className="text-ink-muted mx-auto max-w-3xl text-xl">
+          <p className="text-ink-muted text-md mx-auto max-w-3xl md:text-lg">
             {t('common.landing.features.subtitle')}
           </p>
         </div>
@@ -44,7 +44,7 @@ export function FeaturesSection() {
                 <div className="bg-accent-soft feature-icon mb-6 w-max rounded-lg p-3">
                   <Icon className="text-accent h-8 w-8" />
                 </div>
-                <h3 className="text-ink mb-3 text-xl font-bold">
+                <h3 className="text-ink text-md mb-3 font-bold md:text-lg">
                   {t(`common.landing.features.${key}.title`)}
                 </h3>
                 <p className="text-ink-muted">{t(`common.landing.features.${key}.description`)}</p>

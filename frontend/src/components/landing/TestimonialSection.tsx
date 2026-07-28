@@ -18,10 +18,10 @@ export default function TestimonialSection() {
     <section id="testimonials" className="bg-surface section-animation py-20">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+          <h2 className="mb-4 text-lg leading-tight font-bold md:text-xl">
             {t('common.landing.testimonials.title')}
           </h2>
-          <p className="text-ink-muted mx-auto max-w-3xl text-xl">
+          <p className="text-ink-muted text-md mx-auto max-w-3xl md:text-lg">
             {t('common.landing.testimonials.subtitle')}
           </p>
         </div>

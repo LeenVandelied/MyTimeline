@@ -90,7 +90,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                         data-testid="register-email"
                         placeholder={t('register.form.emailPlaceholder')}
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />
@@ -111,7 +111,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                         data-testid="register-name"
                         placeholder={t('register.form.namePlaceholder')}
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />
@@ -132,7 +132,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                         data-testid="register-username"
                         placeholder={t('register.form.usernamePlaceholder')}
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />
@@ -153,7 +153,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                         data-testid="register-password"
                         placeholder={t('register.form.passwordPlaceholder')}
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />
@@ -174,7 +174,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
                         data-testid="register-confirm-password"
                         placeholder={t('register.form.confirmPasswordPlaceholder')}
                         {...field}
-                        className="bg-surface-2 border-rule-strong"
+                        className="bg-surface-2 border-rule-emphasis"
                       />
                     </FormControl>
                     <FormMessage />

@@ -35,6 +35,10 @@ describe('StateScreen', () => {
 
   it('classes d\'action exposées (accent primaire / bordure secondaire)', () => {
     expect(stateActionPrimary).toContain('bg-accent')
-    expect(stateActionSecondary).toContain('border-rule-strong')
+    // #336 — l'action secondaire est un bouton outline : sa bordure EST
+    // l'affordance, donc tier fonctionnel `rule-emphasis` (≥3:1, WCAG 1.4.11)
+    // et non le tier décoratif `rule-strong` (1.46:1).
+    expect(stateActionSecondary).toContain('border-rule-emphasis')
+    expect(stateActionSecondary).not.toMatch(/\bborder-rule-strong\b/)
   })
 })

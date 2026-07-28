@@ -121,7 +121,10 @@
     "navigation": {
       "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials"
+      "testimonials": "Testimonials",
+      "menuOpen": "Open menu",
+      "menuClose": "Close menu",
+      "menuTitle": "Menu"
     },
     "buttons": {
       "register": "Sign up"
