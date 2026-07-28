@@ -319,3 +319,12 @@ En S46 (correctif de revue), `runDelete(id)` est devenu le point d'appel **uniqu
 **Problème** : remplacer un `waitForTimeout(800)` par `page.clock.fastForward(600)` peut donner un test vert **sans que l'horloge pilote quoi que ce soit** (le seuil étant franchi par le temps réel écoulé pendant les autres opérations).
 **Solution** : contrôle négatif systématique — `fastForward(300)` (sous le seuil) DOIT rendre le test rouge. Sans cette vérification, on ne sait pas si l'on a supprimé le flake ou seulement déplacé.
 (Sprint 47, corrections review)
+
+## PAT-S48-001 — Tester une propriété de CASCADE ou de LAYOUT sans navigateur
+**Problème** : jsdom ne résout ni la précédence des `@layer` ni aucune mise en page. Les deux régressions du S48 (CTA invisibles, CTA tronqué) laissaient les `className` **inchangées** — un `expect(el).toHaveClass('text-accent-ink')` passait au vert alors que le bouton était illisible. L'assertion RTL sur les classes ne prouve donc **rien** sur ce type de défaut.
+**Solution** : compiler le VRAI CSS avec PostCSS + `@tailwindcss/postcss` sur `globals.css`, puis asserter sur l'**AST** :
+- cascade → la règle `a` est bien dans `@layer base`, `.text-accent-ink` dans `@layer utilities`, et `@layer …;` déclare `base` avant `utilities` (~450 ms) ;
+- layout → extraire du CSS réel les classes déclarant `overflow` non-`visible`, puis vérifier que tout élément du markup rendu qui en porte une porte aussi un plancher (`min-w-*` / `shrink-0`). Invariant **générique** : une future classe `overflow:hidden` posée sur un `Button` fera rougir le test sans réécriture.
+**Indispensable** : (a) un **cas témoin négatif** (même déclaration hors layer sur un `from` distinct — le plugin mémoïse par chemin) pour prouver que le détecteur n'est pas vide ; (b) un **test de mutation** manuel (retirer le correctif → le test DOIT rougir). Les deux ont été faits en S48.
+**Anti-pattern rencontré** : un faux vert causé par `[&_svg]:shrink-0` (posé par le variant `Button`) qui satisfaisait une regex `shrink-0` — les variantes à **sélecteur arbitraire ciblent un DESCENDANT**, il faut les exclure de ce genre de détection.
+(Sprint 48, corrections de clôture)

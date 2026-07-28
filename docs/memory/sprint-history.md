@@ -1145,8 +1145,58 @@ Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejet
 **Dépend de :** aucune (zone disjointe de S45-S47)
 **Mini-plans :** `docs/memory/sprints/sprint-48/architect-plans.md`
 **#295 absorbée par #56** (son body l'autorise explicitement) — 4 imbrications `<Link passHref><Button>` vérifiées (`HomePage.tsx:75,83,262` + `HeroSection.tsx:32`) → critère d'acceptation de #56, puis fermer #295.
-**ADR :** `ADR-XXX-route-canonique-landing` — `/[locale]` vs `/[locale]/home` (redirection, pas suppression : SEO).
-**Status :** En cours (démarré 2026-07-27, branche `sprint/48` depuis `origin/dev` @417e5d7)
+**ADR :** `ADR-006-route-canonique-landing` — `/[locale]` retenue canonique, `/[locale]/home` en **308** (redirection, pas suppression : SEO).
+**Status :** Prêt à merger — PR **#333**, CI 4/4 verte, en attente du « oui » du dev (démarré 2026-07-27, branche `sprint/48` depuis `origin/dev` @417e5d7)
+
+### Bilan d'exécution (2026-07-27 → 2026-07-28)
+
+**Issues livrées (2 + 1 absorbée) :** #293, #56, **#295 absorbée** (5 imbrications corrigées, une de plus que les 4 prévues — `HeroSection.tsx:37` `<a><Button variant="outline">` avait le même défaut).
+**Vagues exécutées :** V1 = #293 seul | V2 = #56 seul (séquentiel strict, conforme au plan).
+**Commits (6) :** `e9a56df` (#293) · `48b9e01` (#56) · `a42e919` + `0401f28` (artefacts lead) · `842a46c` + `903fc3e` (**2 corrections de régression trouvées à la clôture**).
+**BR impactées :** **aucune** — les 2 issues sont `epic:design`, zéro fichier backend, zéro migration, zéro schéma Zod.
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (doublon `.section-animation`, **pré-existant**, non imputable au diff) / 2 MINEURS. ui-design (spawné en Phase 1 de `/sprint end` pour traiter `RECOMMAND_UI_DESIGN`) — **APPROUVÉ SOUS RÉSERVE**, rien de bloquant, 2 écarts motion en follow-up.
+**Tests :** Frontend **646/646** vert, 81 fichiers (avant sprint : 599/599, 69 fichiers → **+47 tests, +12 fichiers**) · `next build` 0 erreur · Backend & E2E : verts **en CI** (non lancés en local — zéro fichier backend touché).
+**Corrections de sécurité :** `git add` ciblé respecté par les 4 subagents — aucun n'a commité `docs/memory/**`.
+
+> ### ⚠ Deux régressions USER-VISIBLE trouvées SEULEMENT par un contrôle navigateur, après CI verte
+>
+> La CI était **4/4 verte** et le reviewer n'avait rien signalé de bloquant. C'est en ouvrant réellement la page
+> (`next dev` + navigateur, en Phase 1 de `/sprint end`) que le lead a trouvé **deux bugs en production**, tous
+> deux causés par la conversion `asChild` de #295 et **structurellement indétectables par la suite unitaire** :
+>
+> 1. **Les 2 CTA primaires de la landing étaient INVISIBLES** — texte bleu sur fond bleu, contraste **1.00:1**.
+>    Cause : `ds/tokens/base.css:35` déclare `a { color: var(--color-accent) }` **hors `@layer`**, et le CSS
+>    non-layerisé bat le CSS layerisé (Tailwind `@layer utilities`) quelle que soit la spécificité. Avant #295 le
+>    texte vivait dans un `<button>` interne ; après, le `<a>` **est** le bouton. Corrigé par `842a46c`
+>    (→ 6.94:1). Effet de bord découvert : `StateScreen.stateActionPrimary` était **lui aussi invisible** dans
+>    `error.tsx`/`not-found.tsx` — le bug dépassait la landing.
+> 2. **Le CTA du hero était TRONQUÉ EN PLEIN MOT** — « cer gratuit » au lieu de « Commencer gratuitement »
+>    (125px rendus pour 266px de contenu). Cause : `.cta-button` porte `overflow: hidden` (brillance `::before`),
+>    or **un flex item dont l'`overflow` n'est pas `visible` a une taille minimale automatique de 0** → il
+>    absorbe toute la compression. Corrigé par `903fc3e` (`min-w-min` + rangée `flex-wrap`/`gap-*`).
+>
+> **Leçon transférable : CI verte + review OK ≠ page correcte.** `jsdom` ne résout **ni la précédence des
+> `@layer` ni aucune mise en page** ; `next build` ne contrôle aucun style au runtime ; un reviewer lit le code
+> et ne voit pas l'interaction de cascade. Toute la classe de bugs « la classe est là mais le rendu est faux »
+> échappe au harnais actuel. **Un sprint qui touche au rendu doit inclure un contrôle navigateur explicite
+> avant merge.** Cf. `PIT-S48-005` et `PAT-S48-001`.
+
+**Critères d'acceptation de #56 — 6/8 remplis, 2 NON remplis (assumés et documentés) :**
+
+| # | Critère | État |
+|---|---|---|
+| 1 | `HomePage.tsx` ≤ 50 lignes | ✅ **49** |
+| 2 | Chaque section dans son fichier | ✅ 6 blocs extraits (+2 déjà extraits avant le sprint) |
+| 3 | Zéro couleur hardcodée | ❌ **NON** — zéro hex dans le TSX (asserté), mais `landing.css` injecte encore `#8B5CF6`/`#4F46E5` (violet/indigo, **hors palette Graphite**), `#374151`, `#4B5563`, `#6D28D9` via `.feature-card`, `.timeline-preview`, `.testimonial-card`, `.card-gradient-border`, `.nav-link` |
+| 4 | Clair/sombre fonctionnels | ⚠ **partiel** — vérifié au navigateur dans les 2 thèmes (lisible, contrastes OK), mais les hex de `landing.css` sont **theme-blind** |
+| 5 | Animation de frise hero visible | ✅ constatée au navigateur (rail + 5 jalons + marqueur « aujourd'hui » accent) |
+| 6 | Footer → pages légales | ✅ `terms` + `privacy` (existaient déjà) ; entrée `legalNotice` **retirée** (lien mort `href="#"`, contenu juridique non inventable) |
+| 7 | Une seule route affiche la landing | ✅ 308, redirection `/` → `/fr` constatée au navigateur |
+| 8 | Page responsive mobile | ❌ **NON** — à 375px la page garde un **scroll horizontal de 173px** : le groupe de boutons du header (`flex items-center space-x-4`, 299px) ne se replie pas. **Pré-existant, PAS une régression** (classes identiques sur `origin/dev`, vérifié) — la landing n'a jamais eu de header responsive. Exige un vrai menu mobile, hors périmètre de clôture. |
+
+**Absorbé en cours (XS) :** repli `IntersectionObserver` · `unobserve` après révélation · chaîne `/` → `/fr/home` → `/fr` réduite à 1 saut · lien mort `href="#"` du footer supprimé · nav header et features/steps pilotés par données · §6 ajoutée à `ds/a11y-audit.md` (tableau des 3 tiers + inventaire de dette).
+
+**Nouveaux pitfalls / décisions / patterns :** `PIT-S48-001` (contraste bi-mode, 4 fonds à valider) · `PIT-S48-002` (Tailwind scanne les commentaires ; `\bborder-rule\b` matche `border-rule-emphasis`) · `PIT-S48-003` (reveal-on-scroll sans repli = page invisible) · `PIT-S48-004` (bascule d'URL vs constantes E2E) · `PIT-S48-005` (`asChild` remonte `overflow`/cascade sur le `<a>` — les 2 régressions) · `PAT-S48-001` (tester cascade/layout sans navigateur via AST PostCSS) · `DEC-S48-293` (tier bordure fonctionnelle) · `DEC-S48-056` (route canonique) · `DEC-S48-002` (layerisation ciblée de `base.css`).
 
 > **Périmètre réel ≠ milestone.** Le milestone GitHub #48 porte 6 issues ouvertes, mais 4 (#328, #329, #330, #331 — `epic:events`) sont les **follow-ups du Sprint 47** parqués là par `/sprint end` (piège connu, cf. mémoire `mytimeline-sprint-end-github-gotchas`). Le périmètre S48 = les 2 issues portant le label `sprint-48` : **#293 + #56** (`epic:design`).
 >
