@@ -161,7 +161,14 @@ export function useTimelineViewport(
         end: Math.max(clipTop, clipBottom) - railTop,
       }
 
-      const metrics = readMetrics(railEl, previous.metrics)
+      // #351 — On préserve l'IDENTITÉ de `metrics` quand les trois hauteurs
+      // sont inchangées (cas quasi permanent). `readMetrics` construit toujours
+      // un objet neuf : le republier à chaque franchissement de bande faisait
+      // changer l'identité de `metrics` en aval, donc celle de `verticalModel`
+      // et de tout ce qui en dérive, ce qui cassait `React.memo` sur les lanes
+      // (constat de #349, contourné à l'époque côté `TimelineView`).
+      const measured = readMetrics(railEl, previous.metrics)
+      const metrics = metricsEqual(measured, previous.metrics) ? previous.metrics : measured
       const wasUnmeasurable = !previous.measurable
       const horizontal =
         force || wasUnmeasurable || !bandCovers(previous.horizontal, visibleHorizontal)
@@ -199,21 +206,48 @@ export function useTimelineViewport(
     sync()
   }, [sync, geometryKey])
 
+  /**
+   * #351 — Ne planifie une mesure que si le défilement peut RÉELLEMENT déplacer
+   * la frise. Trois sources la déplacent, et trois seulement :
+   *   (a) le scroller horizontal de la frise (`scrollLeft` → bande horizontale) ;
+   *   (b) le défilement de la PAGE (cible `document`/`documentElement`) ;
+   *   (c) le défilement de N'IMPORTE QUEL ANCÊTRE défilant — tiroir, panneau
+   *       plein écran — qui translate la frise à l'écran sans qu'elle bouge
+   *       elle-même.
+   * Les trois satisfont `target.contains(scrollEl)` (`Node.contains` est vrai
+   * pour le nœud lui-même, et `document.contains` est vrai pour tout nœud monté)
+   * — d'où ce prédicat unique plutôt qu'un ciblage sur `scrollEl` seul, qui
+   * aurait perdu (b) et (c) : c'est le risque de régression nommé par l'issue.
+   * Un dialogue, un tiroir ou une liste de réglages qui ne CONTIENT pas la frise
+   * ne la déplace pas → plus de rafales de `requestAnimationFrame` + lecture de
+   * layout pendant qu'on fait défiler tout autre chose dans l'application.
+   */
+  const onScroll = useCallback(
+    (event: Event) => {
+      const scrollEl = scrollRef.current
+      if (!scrollEl) return
+      const target = event.target
+      if (!(target instanceof Node) || !target.contains(scrollEl)) return
+      schedule()
+    },
+    [scrollRef, schedule],
+  )
+
   useEffect(() => {
-    // `capture: true` : les événements `scroll` ne remontent pas, mais la phase
-    // de capture sur `window` les voit — un seul écouteur couvre le scroll de la
-    // page ET celui du conteneur horizontal.
-    window.addEventListener('scroll', schedule, { passive: true, capture: true })
+    // `capture: true` reste nécessaire : les événements `scroll` ne remontent
+    // pas, seule la phase de capture sur `window` permet de voir le défilement
+    // d'un conteneur quelconque. Le tri se fait dans `onScroll`, pas ici.
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true })
     window.addEventListener('resize', schedule)
     return () => {
-      window.removeEventListener('scroll', schedule, { capture: true })
+      window.removeEventListener('scroll', onScroll, { capture: true })
       window.removeEventListener('resize', schedule)
       if (frameRef.current !== null) {
         cancelAnimationFrame(frameRef.current)
         frameRef.current = null
       }
     }
-  }, [schedule])
+  }, [onScroll, schedule])
 
   /**
    * Recalage complet APRÈS stabilisation : la bande revient à la fenêtre

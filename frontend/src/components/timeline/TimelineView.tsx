@@ -1055,6 +1055,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                 <div role="list" aria-label={category} data-testid="timeline-lane-list">
                   {laneWindow.topSpacerPx > 0 && (
                     <div
+                      role="presentation"
                       aria-hidden="true"
                       data-testid="timeline-lane-spacer"
                       style={{ height: `${laneWindow.topSpacerPx}px` }}
@@ -1081,6 +1082,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                   ))}
                   {laneWindow.bottomSpacerPx > 0 && (
                     <div
+                      role="presentation"
                       aria-hidden="true"
                       data-testid="timeline-lane-spacer"
                       style={{ height: `${laneWindow.bottomSpacerPx}px` }}
