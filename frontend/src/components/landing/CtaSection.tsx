@@ -22,6 +22,12 @@ interface CtaSectionProps {
  * hauteur fixe du variant. Défaut PRÉEXISTANT au sprint (mêmes classes dans le
  * monolithe `HomePage` d'origine), pas une régression du passage à `asChild` — ce
  * bouton n'est pas un flex item et n'a donc jamais souffert de la troncature du hero.
+ *
+ * Contraste du titre : le `<h2>` ne portait AUCUNE classe de couleur et héritait donc
+ * de `text-ink` sur le fond `bg-accent` → **2.41:1 mesuré au navigateur**, sous le seuil
+ * WCAG AA de 3:1 applicable au grand texte (≥24px gras). Le `<p>` juste en dessous
+ * utilisait déjà `text-accent-ink` (6.94:1) : l'omission sur le titre était un oubli.
+ * Aligné sur `text-accent-ink`. Défaut PRÉEXISTANT (même classe dans le monolithe).
  */
 export function CtaSection({ locale }: CtaSectionProps) {
   const t = useTranslations()
@@ -29,7 +35,9 @@ export function CtaSection({ locale }: CtaSectionProps) {
   return (
     <section className="bg-accent section-animation py-20">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="mb-6 text-3xl font-bold md:text-4xl">{t('common.landing.cta.title')}</h2>
+        <h2 className="text-accent-ink mb-6 text-3xl font-bold md:text-4xl">
+          {t('common.landing.cta.title')}
+        </h2>
         <p className="text-accent-ink mx-auto mb-10 max-w-3xl text-xl">
           {t('common.landing.cta.subtitle')}
         </p>
