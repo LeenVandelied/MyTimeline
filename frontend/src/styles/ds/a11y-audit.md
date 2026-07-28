@@ -157,3 +157,21 @@ naviguer caractère par caractère ni élément décoratif par élément décora
    drill-down, touch targets 44×44, garde-fou de contraste sur couleur custom.
 3. **Vérifications continues** — relancer le contrôle de contraste à chaque
    ajout de teinte et sur les variantes dark (matière qui se perd).
+
+---
+
+## 6 · Bordures de contrôle — WCAG 1.4.11 (≥3:1)
+
+`--color-rule` (1.21:1) et `--color-rule-strong` (1.46:1) sont un tier
+**décoratif** : ils ne peuvent pas porter la limite visuelle d'un composant.
+Le tier **fonctionnel** est `--color-rule-emphasis` (`--gray-450` `#7A7E87`,
+#293) — mesuré **3.97:1** vs `bg` et **4.07:1** vs `surface` en clair,
+**4.81:1** / **4.49:1** en sombre.
+
+- ✅ **Bouton secondaire du hero** (`HeroSection`) migré sur ce tier ; il
+  n'emprunte plus `ink-muted` (tier texte).
+- ⚠️ **Reste à traiter** : les champs et boutons outline encore sur
+  `border-rule-strong` (`login`, `register`, `reset-password`,
+  `forgot-password`, `StateScreen`, `ConflictDialog`, `EventEditForm`,
+  `NewEventDrawer`, `BottomSheet`) — bordure de contrôle sous le seuil.
+  Migration hors périmètre #293 (impact visuel large, à évaluer par lot).

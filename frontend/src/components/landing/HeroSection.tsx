@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { HeroTimelineAnimation } from '@/components/landing/HeroTimelineAnimation'
 
 interface HeroSectionProps {
   locale: string
@@ -14,49 +15,85 @@ interface HeroSectionProps {
  * Hero de la landing — extrait du monolithe HomePage (#56, slice contraste).
  * Extraction non destructive : HomePage rend <HeroSection locale=… /> à la place
  * du bloc inline. Contraste WCAG AA (clair + sombre) : la bordure du bouton
- * secondaire passe de `border-rule` (~1.2:1, invisible) à `border-ink-muted`
- * (~6:1) pour respecter le seuil UI ≥ 3:1. Tokens sémantiques DS uniquement,
- * zéro hex hardcodé — suit clair/sombre via les variables CSS.
+ * secondaire utilise `border-rule-emphasis` (#293), le tier « bordure
+ * fonctionnelle » du DS — 3.97:1 clair / 4.49:1 sombre, au-dessus du seuil UI
+ * ≥ 3:1. Elle remplace l'emprunt provisoire au tier TEXTE `ink-muted` fait en
+ * S39 faute de token de bordure conforme (nommer la classe ici suffirait à la
+ * faire regénérer par Tailwind : on cite le token, pas l'utilitaire). Le cadre de l'image reste sur
+ * `border-rule` : décoratif, non soumis au seuil. Tokens sémantiques DS
+ * uniquement, zéro hex hardcodé — suit clair/sombre via les variables CSS.
+ *
+ * #295 — les deux appels à l'action passent par `<Button asChild>` avec le lien À
+ * L'INTÉRIEUR. Le motif précédent (`<Link passHref><Button>` et `<a><Button>`)
+ * imbriquait un `<button>` dans un `<a>` : HTML invalide, double cible de tabulation,
+ * sémantique cassée pour les lecteurs d'écran. `asChild` (Radix `Slot`) reporte les
+ * classes du bouton sur l'ancre — un seul élément interactif, rendu identique.
+ *
+ * Sprint 48 — corollaire de mise en page du passage à `asChild`. Le `<a>` étant
+ * désormais le flex item ET le porteur de `.cta-button`, il hérite de son
+ * `overflow: hidden` (nécessaire pour clipper la brillance `.cta-button::before`) :
+ * par la spec flexbox, un flex item dont l'`overflow` n'est pas `visible` a une
+ * taille minimale automatique de ZÉRO. Le CTA primaire absorbait donc toute la
+ * compression de la rangée — 130 px rendus pour 268 px de contenu à 1280 px, soit
+ * « cer gratuit » coupé en plein mot. `min-w-min` rétablit le plancher `min-content`
+ * sans toucher à `overflow`, donc sans casser la brillance. En complément :
+ * `whitespace-normal` + `h-auto` (le variant Button impose `whitespace-nowrap` et
+ * `h-9`) laissent les libellés se replier au lieu de forcer une largeur supérieure
+ * au viewport mobile, et la rangée passe en `gap-4` + `sm:flex-wrap` — les deux
+ * boutons demandent ~860 px pour 584 px disponibles à 1280 px, ils doivent donc
+ * pouvoir revenir à la ligne. `gap-*` et non `space-x-*` : les marges de ce dernier
+ * ne se réinitialisent pas en début de ligne. Garde-fou : `HeroSection.flex-min-size.test.tsx`.
+ *
+ * #56 — la frise horizontale animée vit dans `HeroTimelineAnimation`, sous les deux
+ * colonnes. La mise en page flex d'origine descend d'un cran (du `<section>` vers un
+ * `<div>` interne) pour que la frise occupe toute la largeur au lieu de devenir une
+ * troisième colonne.
  */
 export function HeroSection({ locale }: HeroSectionProps) {
   const t = useTranslations()
 
   return (
-    <section className="section-animation container mx-auto flex flex-col items-center px-4 py-20 md:flex-row">
-      <div className="mb-10 md:mb-0 md:w-1/2 md:pr-10">
-        <h1 className="mb-6 text-4xl leading-tight font-bold md:text-5xl">
-          {t('common.landing.hero.title')}
-        </h1>
-        <p className="text-ink-muted mb-8 text-xl">{t('common.landing.hero.subtitle')}</p>
-        <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-          <Link href={`/${locale}/register`} passHref>
-            <Button className="cta-button bg-accent hover:bg-accent-hover text-accent-ink rounded-lg px-8 py-6 text-lg transition-all">
-              {t('common.landing.hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <a href="#how-it-works">
+    <section className="section-animation container mx-auto px-4 py-20">
+      <div className="flex flex-col items-center md:flex-row">
+        <div className="mb-10 md:mb-0 md:w-1/2 md:pr-10">
+          <h1 className="mb-6 text-4xl leading-tight font-bold md:text-5xl">
+            {t('common.landing.hero.title')}
+          </h1>
+          <p className="text-ink-muted mb-8 text-xl">{t('common.landing.hero.subtitle')}</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <Button
-              variant="outline"
-              className="border-ink-muted text-ink hover:bg-surface rounded-lg px-8 py-6 text-lg transition-all"
+              asChild
+              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
             >
-              {t('common.landing.hero.secondary')}
+              <Link href={`/${locale}/register`}>
+                {t('common.landing.hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </Button>
-          </a>
+            <Button
+              asChild
+              variant="outline"
+              className="border-rule-emphasis text-ink hover:bg-surface h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
+            >
+              <a href="#how-it-works">{t('common.landing.hero.secondary')}</a>
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="hero-image-container relative md:w-1/2">
-        <div className="bg-surface border-rule overflow-hidden rounded-xl border shadow-lg">
-          {/* Image de prévisualisation du tableau de bord */}
-          <div className="relative h-80 w-full md:h-96">
-            <Image
-              src="/images/dashboard-preview.svg"
-              alt={t('common.landing.images.dashboard')}
-              fill
-              className="object-cover"
-            />
+        <div className="hero-image-container relative md:w-1/2">
+          <div className="bg-surface border-rule overflow-hidden rounded-xl border shadow-lg">
+            {/* Image de prévisualisation du tableau de bord */}
+            <div className="relative h-80 w-full md:h-96">
+              <Image
+                src="/images/dashboard-preview.svg"
+                alt={t('common.landing.images.dashboard')}
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>
+
+      <HeroTimelineAnimation />
     </section>
   )
 }

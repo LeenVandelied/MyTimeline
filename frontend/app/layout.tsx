@@ -1,6 +1,8 @@
 import '../src/styles/globals.css'
 import '../src/styles/landing.css'
 import '../src/styles/animations.css'
+// #56 — mouvement de la frise du Hero, isolé pour être remplaçable (aucune couleur).
+import '../src/styles/hero-timeline.css'
 import { ReactNode, CSSProperties } from 'react'
 import { Archivo, IBM_Plex_Mono } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'

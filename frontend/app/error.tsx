@@ -88,7 +88,7 @@ export default function GlobalError({
           <button type="button" onClick={reset} className={stateActionPrimary} data-testid="global-error-retry">
             {m.retry}
           </button>
-          <a href={`/${locale}/home`} className={stateActionSecondary} data-testid="global-error-home-link">
+          <a href={`/${locale}`} className={stateActionSecondary} data-testid="global-error-home-link">
             {m.backHome}
           </a>
         </>

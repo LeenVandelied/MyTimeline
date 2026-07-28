@@ -25,9 +25,7 @@ describe('HeroSection', () => {
 
   it('pointe le CTA primaire vers la page register de la locale', () => {
     render(<HeroSection locale="en" />)
-    const registerLink = screen
-      .getByText(/common\.landing\.hero\.cta/)
-      .closest('a')
+    const registerLink = screen.getByText(/common\.landing\.hero\.cta/).closest('a')
     expect(registerLink).toHaveAttribute('href', '/en/register')
   })
 
@@ -42,9 +40,15 @@ describe('HeroSection', () => {
     expect(html).toMatch(/\bbg-accent\b/)
     expect(html).toMatch(/\btext-accent-ink\b/)
 
-    // Bordure du bouton secondaire corrigée : border-ink-muted (≥3:1 UI) au lieu
-    // de border-rule (~1.2:1, invisible). (Le cadre déco de l'image garde border-rule.)
-    expect(html).toMatch(/\bborder-ink-muted\b/)
+    // #293 — bordure fonctionnelle du bouton secondaire : tier dédié
+    // `border-rule-emphasis` (≥3:1 UI, clair + sombre). Il remplace l'emprunt
+    // S39 au tier TEXTE `border-ink-muted`, qui ne doit plus réapparaître.
+    expect(html).toMatch(/\bborder-rule-emphasis\b/)
+    expect(html).not.toMatch(/\bborder-ink-muted\b/)
+
+    // Le cadre de l'image est décoratif → il reste sur `border-rule` nu.
+    // (négative lookahead : `border-rule-emphasis` ne doit pas satisfaire ce test)
+    expect(html).toMatch(/\bborder-rule(?![-\w])/)
   })
 
   it('ne contient aucune couleur hex hardcodée', () => {

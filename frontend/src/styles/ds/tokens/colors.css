@@ -11,6 +11,10 @@
   --gray-200: #D1D3D9;
   --gray-300: #B8BBC2;
   --gray-400: #969AA3;
+  /* pas intermédiaire (#293) : milieu arithmétique exact de gray-400/gray-500,
+     mêmes écarts de teinte que le reste de la rampe (+4 / +9). Support du tier
+     « bordure fonctionnelle » : seul palier qui franchit 3:1 dans les DEUX modes. */
+  --gray-450: #7A7E87;
   --gray-500: #5E626B;
   --gray-600: #43464D;
   --gray-800: #24262C;
@@ -47,6 +51,11 @@
   --color-ink-faint:   var(--gray-400);
   --color-rule:        var(--gray-100);
   --color-rule-strong: var(--gray-200);
+  /* bordure FONCTIONNELLE (#293) — affordance de contrôle sans remplissage
+     (bouton outline, champ, case). `rule`/`rule-strong` sont décoratifs et
+     plafonnent à 1.2:1 / 1.5:1 : ils échouent le seuil WCAG AA composant UI
+     (≥3:1). Mesures : 3.97:1 vs bg, 4.07:1 vs surface (clair). */
+  --color-rule-emphasis: var(--gray-450);
 
   /* primary = graphite (near-black buttons) */
   --color-primary:       var(--gray-900);
@@ -90,6 +99,11 @@
   --color-ink-faint:   #5E626B;
   --color-rule:        #20232A;
   --color-rule-strong: #2E323A;
+  /* NON inversé volontairement (#293) : `gray-450` est le seul palier qui tient
+     ≥3:1 des deux côtés. Mesures sombre : 4.81:1 vs bg, 4.49:1 vs surface — donc
+     sous `ink-muted` (5.85:1), la hiérarchie bordure < texte est préservée.
+     Déclaré explicitement ici pour signaler que le cas sombre a été mesuré. */
+  --color-rule-emphasis: var(--gray-450);
 
   /* primary inverts to light buttons on dark */
   --color-primary:       #ECEDEF;

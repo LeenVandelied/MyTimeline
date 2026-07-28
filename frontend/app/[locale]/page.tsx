@@ -1,8 +1,14 @@
-import HomePage from '@/components/pages/HomePage';
+import HomePage from '@/components/pages/HomePage'
 
-// Au lieu de rediriger, cette page fait la même chose que home/page.tsx
+/**
+ * Landing — route CANONIQUE (ADR-006).
+ *
+ * `/[locale]/home` redirige ici en 308. Ne pas y réintroduire de rendu de `HomePage` :
+ * deux URLs servant le même contenu en 200, c'est exactement le doublon que l'ADR-006
+ * a supprimé.
+ */
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-  const paramsObj = await params;
-  
-  return <HomePage params={paramsObj} />;
-} 
+  const paramsObj = await params
+
+  return <HomePage params={paramsObj} />
+}

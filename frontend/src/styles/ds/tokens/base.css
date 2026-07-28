@@ -32,8 +32,19 @@ time, .mono, [data-mono] {
   font-feature-settings: var(--mono-features);
 }
 
-a { color: var(--color-accent); text-decoration: none; }
-a:hover { color: var(--color-accent-hover); }
+/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`.
+   Le CSS non-layerisé bat TOUJOURS le CSS layerisé, quelle que soit la
+   spécificité : hors layer, `a` (0-0-1) écrasait les utilitaires Tailwind
+   (`@layer utilities`) posées sur un `<a>`, p. ex. `text-accent-ink`. Depuis
+   `<Button asChild><Link>` (#295), le `<a>` EST le bouton et portait donc
+   l'utilitaire → texte accent sur fond accent, contraste 1:1, invisible.
+   Dans `@layer base`, le défaut d'élément reste gagnant par héritage (liens de
+   nav/footer : aucune utilitaire `text-*` sur eux) mais cède devant une
+   utilitaire explicite — sémantique attendue. Cf. test base-layer.test.ts. */
+@layer base {
+  a { color: var(--color-accent); text-decoration: none; }
+  a:hover { color: var(--color-accent-hover); }
+}
 
 ::selection { background: var(--color-accent-soft); color: var(--color-ink); }
 

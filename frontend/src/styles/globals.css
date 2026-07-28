@@ -46,6 +46,8 @@
   --color-ink-faint: var(--color-ink-faint);
   --color-rule: var(--color-rule);
   --color-rule-strong: var(--color-rule-strong);
+  /* #293 — tier bordure fonctionnelle (≥3:1, clair + sombre) → `border-rule-emphasis` */
+  --color-rule-emphasis: var(--color-rule-emphasis);
 
   --color-primary: var(--color-primary);
   --color-primary-ink: var(--color-primary-ink);
