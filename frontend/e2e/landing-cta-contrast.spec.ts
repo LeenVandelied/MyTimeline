@@ -129,8 +129,8 @@ for (const scheme of SCHEMES) {
       await waitForFonts(page)
 
       for (const cta of landingCtas(page)) {
-        // Défaut connu, isolé dans le test suivant.
-        if (cta.name === 'hero/secondaire') continue
+        // `hero/secondaire` n'est plus exclu : le défaut d'appariement du survol
+        // qui le faisait disparaître a été corrigé dans `ui/button.tsx`.
         if (!(await cta.locator.isVisible())) continue
         await cta.locator.hover()
         await expectReadable(cta.locator, `${cta.name} (survol)`)
@@ -189,21 +189,22 @@ for (const scheme of SCHEMES) {
       ).toBeGreaterThan(clipped.clientWidth + 1)
     })
 
-    // DÉFAUT CONNU, PRÉEXISTANT à ce sprint (non introduit par #334/#335/#336).
-    // `Button variant="outline"` porte `hover:text-accent-foreground` dans
-    // `src/components/ui/button.tsx` ; `--color-accent-foreground` vaut
-    // `--color-accent-ink`, la couleur de texte prévue SUR l'accent. Au survol,
-    // `HeroSection` remplace bien le fond (`hover:bg-surface`) mais pas la
-    // couleur de texte du variant (`text-ink` n'entre pas en conflit avec un
-    // utilitaire `hover:text-*`, tailwind-merge ne les fusionne pas) : le
-    // libellé devient blanc sur blanc en clair (1.00:1) et quasi-noir sur
-    // anthracite en sombre (1.07:1) — il DISPARAÎT au survol dans les deux
-    // thèmes. Correction hors périmètre de #337 (composants `landing/` et `ui/`
-    // modifiés en parallèle) : suivi en follow-up.
-    // `test.fail()` documente l'écart sans peindre la suite en rouge ET rougit
-    // le jour où le défaut est corrigé — signal pour retirer cette annotation.
-    test('DÉFAUT CONNU — le CTA secondaire du hero reste lisible au survol', async ({ page }) => {
-      test.fail()
+    // DÉFAUT CORRIGÉ au Sprint 49 (il était PRÉEXISTANT, non introduit par
+    // #334/#335/#336). `Button variant="outline"` portait
+    // `hover:text-accent-foreground` dans `src/components/ui/button.tsx` ;
+    // `--color-accent-foreground` vaut `--color-accent-ink`, la couleur de texte
+    // prévue SUR l'accent. Au survol, `HeroSection` remplaçait bien le fond
+    // (`hover:bg-surface`) mais pas la couleur de texte du variant (`text-ink`
+    // n'entre pas en conflit avec un utilitaire `hover:text-*`, tailwind-merge
+    // ne les fusionne pas) : le libellé devenait blanc sur blanc en clair
+    // (1.00:1) et quasi-noir sur anthracite en sombre (1.07:1) — il
+    // DISPARAISSAIT au survol dans les deux thèmes.
+    // Correctif : les variants `outline` et `ghost` ne posent plus AUCUNE
+    // couleur de texte au survol ; le survol ne change que la surface
+    // (`hover:bg-accent-soft`), l'encre de repos reste en place. L'invariant est
+    // tenu par `src/components/ui/button.hover-pairing.test.ts`.
+    // Ce test est désormais une assertion normale : plus de `test.fail()`.
+    test('le CTA secondaire du hero reste lisible au survol', async ({ page }) => {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
 
