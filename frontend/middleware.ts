@@ -71,10 +71,15 @@ const intlMiddleware = createMiddleware({
  * donc modifiable sans reconstruire l'image.
  */
 function withCanonicalOrigin(response: NextResponse): NextResponse {
-  const origins = canonicalOrigins(process.env.APP_CANONICAL_HOST)
-  if (origins.length === 0) return response
-
   try {
+    // ⚠ DANS le `try` (revue S50) : ce `try` promet « ne lève jamais », or l'appel était
+    // AU-DESSUS de lui. `canonicalOrigins` est réputée non levante, mais elle lit
+    // `process.env` et parse de la configuration — la promesse doit couvrir toute la
+    // fonction, pas la moitié. Une exception ici = 500 sur toutes les routes protégées
+    // (BUG-S45-001), et la garantie ne doit pas dépendre de l'implémentation d'un appelé.
+    const origins = canonicalOrigins(process.env.APP_CANONICAL_HOST)
+    if (origins.length === 0) return response
+
     const location = response.headers.get('location')
     if (location === null) return response
 

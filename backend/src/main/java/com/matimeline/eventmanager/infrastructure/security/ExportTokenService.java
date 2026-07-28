@@ -71,7 +71,14 @@ public class ExportTokenService {
             throw new IllegalStateException(
                     "app.export.token-secret (EXPORT_TOKEN_SECRET) invalide : attendu du Base64 "
                     + "STANDARD décodant à >= 32 octets (HS256). Générer : openssl rand -base64 48. "
-                    + "Cause : " + e.getClass().getSimpleName() + " — " + e.getMessage(),
+                    // ⚠ `e.getMessage()` VOLONTAIREMENT EXCLU (revue S50), comme dans
+                    // JwtService.configuredKeyPair() : un décodeur Base64 bavard peut recracher
+                    // le fragment fautif — donc du matériel de secret HMAC — dans les logs de
+                    // boot. Le type d'exception suffit à diagnostiquer (DecodingException =
+                    // alphabet invalide, WeakKeyException = trop court). La cause complète
+                    // reste attachée en `cause` pour un debug local sous debugger.
+                    + "Cause : " + e.getClass().getSimpleName()
+                    + " (valeur et détail volontairement non journalisés).",
                     e);
         }
     }

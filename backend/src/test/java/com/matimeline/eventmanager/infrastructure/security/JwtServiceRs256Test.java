@@ -146,6 +146,34 @@ class JwtServiceRs256Test {
                 .isInstanceOf(io.jsonwebtoken.JwtException.class);
     }
 
+    @Test
+    void validateToken_rejectsUnsecuredNoneAlgorithmToken() {
+        JwtService service = serviceWithKey(privateKeyBase64);
+
+        // Confusion d'algorithme, variante `none` : un JWT « non sécurisé » (RFC 7519 §6) porte
+        // `alg: none` et une signature VIDE. L'accepter revient à laisser n'importe qui écrire
+        // l'identité de son choix.
+        //
+        // POURQUOI CE TEST (revue S50) : le middleware Edge ancre déjà ce rejet côté frontend
+        // (`auth-token-verify.ts` exige `alg === 'RS256'`), mais le backend — qui reste le SEUL
+        // juge — n'y opposait que le DÉFAUT de jjwt, non testé. Un `.unsecured()` ajouté un jour
+        // au parseur ouvrirait la porte SANS faire rougir un seul test.
+        //
+        // Le token est forgé À LA MAIN plutôt qu'avec `Jwts.builder().unsecured()` : on veut
+        // ancrer le rejet de la valeur SUR LE FIL, pas la façon dont jjwt la produit.
+        Base64.Encoder b64 = Base64.getUrlEncoder().withoutPadding();
+        String header = b64.encodeToString(
+                "{\"alg\":\"none\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
+        String payload = b64.encodeToString(
+                ("{\"sub\":\"mallory\",\"exp\":" + (System.currentTimeMillis() / 1000 + 60) + "}")
+                        .getBytes(StandardCharsets.UTF_8));
+        String unsecured = header + "." + payload + ".";
+
+        assertThatThrownBy(() -> service.extractUsername(unsecured))
+                .as("un JWT `alg: none` ne doit jamais être accepté")
+                .isInstanceOf(io.jsonwebtoken.JwtException.class);
+    }
+
     // ------------------------------------------------------- garde-fou de boot
 
     @Test

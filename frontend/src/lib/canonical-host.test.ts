@@ -1,12 +1,20 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 
 import {
   applyCanonicalOrigin,
   canonicalizeLocation,
   canonicalOrigins,
+  CANONICAL_HOST_ENV_VAR,
   parseCanonicalOrigins,
+  resetCanonicalHostWarning,
   resolveCanonicalOrigin,
 } from './canonical-host'
+
+// Le verrou d'avertissement est un état de MODULE : sans remise à zéro, un seul cas de tout le
+// fichier pourrait observer le `console.warn` (revue S50).
+beforeEach(() => {
+  resetCanonicalHostWarning()
+})
 
 /**
  * #322 — Origine canonique des redirections du middleware (ADR-004 §Limites).
@@ -60,6 +68,19 @@ describe('parseCanonicalOrigins — formes acceptées', () => {
 })
 
 describe('parseCanonicalOrigins — entrées rejetées (jamais d’exception)', () => {
+  // Ces cas déclenchent LÉGITIMEMENT l'avertissement « configuration inexploitable » ajouté à la
+  // revue S50 — ce n'est pas leur objet, et 9 warns pollueraient la sortie de la suite. Le
+  // comportement du warn lui-même est couvert par le bloc « signalement du dégradé » ci-dessous.
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    warn.mockRestore()
+  })
+
   it.each([undefined, null, '', '   ', ',,,'])('renvoie une liste vide pour %o', (raw) => {
     expect(parseCanonicalOrigins(raw)).toEqual([])
   })
@@ -89,6 +110,68 @@ describe('parseCanonicalOrigins — entrées rejetées (jamais d’exception)', 
     for (const raw of ['%', 'http://%', '::::', '\u0000', 'a'.repeat(5000)]) {
       expect(() => parseCanonicalOrigins(raw)).not.toThrow()
     }
+  })
+})
+
+/**
+ * Revue S50 — même angle mort que `auth-token-verify.ts` : une `APP_CANONICAL_HOST` non vide
+ * mais entièrement invalide désactivait la réécriture d'origine EN SILENCE. L'opérateur croit
+ * avoir fermé l'open-redirect, il ne l'a pas fermé, et rien ne le lui dit.
+ */
+describe('parseCanonicalOrigins — signalement du dégradé (revue S50)', () => {
+  function spyOnWarn() {
+    return vi.spyOn(console, 'warn').mockImplementation(() => {})
+  }
+
+  it('AVERTIT quand la valeur est non vide mais qu’aucune entrée n’est exploitable', () => {
+    const warn = spyOnWarn()
+
+    expect(parseCanonicalOrigins('user@app.example.com,ftp://x')).toEqual([])
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0]?.[0]).toContain(CANONICAL_HOST_ENV_VAR)
+    warn.mockRestore()
+  })
+
+  it('n’avertit qu’UNE FOIS (appelée à chaque requête matchée)', () => {
+    const warn = spyOnWarn()
+
+    for (let i = 0; i < 5; i += 1) parseCanonicalOrigins('pas valide')
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
+  })
+
+  it.each([undefined, null, '', '   ', ',,,'])(
+    'reste SILENCIEUX pour %o (dégradé volontaire, pas une anomalie)',
+    (raw) => {
+      const warn = spyOnWarn()
+
+      expect(parseCanonicalOrigins(raw)).toEqual([])
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    },
+  )
+
+  it('reste SILENCIEUX dès qu’UNE entrée est valide, même en liste mixte', () => {
+    const warn = spyOnWarn()
+
+    // Une entrée valide suffit à armer la réécriture : il n'y a pas de dégradé à signaler.
+    expect(parseCanonicalOrigins('pas valide,app.example.com')).toHaveLength(1)
+
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('ne LÈVE pas si console.warn lui-même lève (BUG-S45-001)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
+      throw new Error('transport de log en panne')
+    })
+
+    expect(() => parseCanonicalOrigins('pas valide')).not.toThrow()
+
+    warn.mockRestore()
   })
 })
 

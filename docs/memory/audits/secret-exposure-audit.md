@@ -23,9 +23,11 @@
 Les valeurs exposées ont donc été lisibles par n'importe qui pendant ~16 mois. Elles doivent être
 traitées comme **compromises sans réserve**, y compris après une purge d'historique (#112).
 
-**Trois constats supplémentaires non prévus au périmètre initial** — voir §4 (valeurs de forme
-« secret réel » encore présentes au HEAD dans `.env.example`, `application-test.properties` et
-`.github/workflows/ci.yml`).
+**Constats supplémentaires non prévus au périmètre initial** — voir §4. ⚠️ Cette section a été
+**ré-ancrée après `1758c0c`** : les trois valeurs de `JWT_SECRET` qu'elle signalait « en dur au
+HEAD » ont été **supprimées par #323 en vague 2 du même sprint**. Le seul matériel HMAC encore
+committé est `EXPORT_TOKEN_SECRET` (valeurs dev / test / CI, explicitement marquées jetables) et
+le mot de passe du conteneur Postgres éphémère de la CI.
 
 ---
 
@@ -181,38 +183,63 @@ l'exposition » du runbook est **close**.
 Ces trois points sortent du périmètre littéral de #249 mais sont établis par le même audit. Aucun
 fichier concerné n'a été modifié (hors périmètre de l'agent) → voir §7 recommandations.
 
-### 4.1 `.env.example:26` — `JWT_SECRET`, **indéterminé**
+> ⚠️ **SECTION RÉ-ANCRÉE APRÈS `1758c0c` (revue de fin de sprint).** Le corps de §4 avait été
+> rédigé en **vague 1** du Sprint 50 et décrivait « en dur au HEAD » trois valeurs de `JWT_SECRET`
+> que **#323 a supprimées en vague 2, sur cette même branche** : `.env.example:26`,
+> `application-test.properties:28` et `ci.yml:169`. Les trois ont disparu. Les constats périmés
+> sont remplacés ci-dessous par l'état réel — la version d'origine reste consultable dans
+> l'historique git de ce fichier. **§1 à §3 (audit historique) sont INCHANGÉS** : le constat
+> d'exposition passée (`53175da`, `c6ea19e`, `ff5dca3`) reste vrai et ne bouge pas.
 
-- Forme : `MIXTE-OPAQUE`, **longueur 64**, alphabet base64url, composition
-  26 minuscules / 29 majuscules / 9 chiffres / 0 spécial.
-- **Aucun marqueur lexical de placeholder** (ni `change`, ni `your`, ni `example`, ni `xxx`…).
-- Présent depuis `da929b6` (2026-07-11) **jusqu'au HEAD `d78454e`** (234 commits).
-- Une valeur antérieure existait ligne 25 (longueur 99, `591e30b` → `ecd56e2`, 21 commits, retirée).
+### 4.1 `JWT_SECRET` au HEAD — **PLUS AUCUNE OCCURRENCE**
 
-**Statut : indéterminé.** Sa forme est **indiscernable d'un secret réellement généré**. Impossible
-de conclure « placeholder » sans inspecter la valeur, ce que la règle interdit. Risque concret et
-indépendant de cette ambiguïté : un développeur copie `.env.example` en `.env` **sans changer la
-valeur**, et le secret d'un déploiement réel devient une chaîne publiée sur un dépôt public.
-Par contraste, `.env.example:18` (`DB_PASSWORD`, longueur 20) porte bien les marqueurs `dev` et
-`local` → placeholder documenté, sans ambiguïté.
+La variable elle-même n'existe plus. #323 (`1758c0c`) a migré la signature d'authentification de
+HS256 vers **RS256**, ce qui supprime tout matériel de frappe de jetons du dépôt :
 
-### 4.2 `backend/src/test/resources/application-test.properties:28` — `jwt.secret` en dur au HEAD
+| Emplacement décrit en vague 1 | État après `1758c0c` |
+|---|---|
+| `.env.example:26` (`JWT_SECRET=`, longueur 64, aucun marqueur) | **supprimé** — remplacé par `JWT_PRIVATE_KEY=` **vide** (`.env.example:37`) |
+| `backend/src/test/resources/application-test.properties:28` (`jwt.secret`, longueur 68) | **supprimé** — remplacé par `jwt.private-key=` **vide** (ligne 30) |
+| `.github/workflows/ci.yml:169` (`JWT_SECRET`, longueur 64) | **supprimé** — la CI ne pose plus aucune clé d'auth |
 
-- Forme : `MIXTE-OPAQUE`, **longueur 68**, base64url, marqueur lexical faible `ci` présent.
-- Présent de `da929b6` (2026-07-11) **au HEAD** (234 commits).
-- Portée : profil `test` uniquement (Testcontainers, CI). Impact opérationnel **nul** tant que la
-  valeur n'est pas réutilisée hors tests — mais c'est un littéral en clair sur un dépôt public.
+Le mécanisme de remplacement ne peut structurellement pas réintroduire le problème : la clé
+**privée** est absente du dépôt (vide par défaut → paire **éphémère** générée au boot, `JwtService`),
+et la clé **publique** (`AUTH_JWT_PUBLIC_KEY`) n'est pas un secret. La recommandation R3 de la
+version initiale (« remplacer `.env.example:26` par un placeholder marqué ») et R5 (« sortir le
+`jwt.secret` de `application-test.properties` ») sont donc **sans objet** — voir §7.
 
-### 4.3 `.github/workflows/ci.yml` — identifiants de service en dur au HEAD
+### 4.2 `EXPORT_TOKEN_SECRET` — seul matériel HMAC encore committé, **jetable et marqué**
 
-- `POSTGRES_PASSWORD:114` / `DB_PASSWORD:164` : forme `mot-alpha`, longueur **12**, marqueur `ci`.
-  Même `vid` sur les trois clés (`POSTGRES_PASSWORD`, `DB_PASSWORD`, `E2E_DB_PASSWORD`) → une seule
-  et même valeur, conteneur de service éphémère.
-- `JWT_SECRET:169` : `MIXTE-OPAQUE`, longueur **64**, base64url, **aucun marqueur lexical**.
+C'est le seul secret symétrique qui subsiste au HEAD. Il est introduit par #323 lui-même
+(`ExportTokenService` ne partage plus la clé d'auth : compromettre l'un ne compromet plus l'autre).
+Contrairement aux `JWT_SECRET` de vague 1, ces trois valeurs sont **explicitement marquées jetables
+dans leur propre contenu** — l'ambiguïté « placeholder ou vrai secret ? » ne se pose pas :
 
-Ces valeurs ne protègent qu'un conteneur Postgres jetable créé et détruit dans le job CI : le
-risque direct est faible. Le risque réel est la **réutilisation** de `JWT_SECRET` (§4.1/§4.3, même
-longueur 64, `vid` différents → **valeurs distinctes**, ce qui est le bon comportement).
+| Emplacement | Forme | Marqueurs lexicaux (dans la valeur **décodée**) |
+|---|---|---|
+| `.env.example:43` | Base64 standard | `dev`, `only`, `insecure`, `change` |
+| `backend/src/test/resources/application-test.properties:35` | Base64 standard | `test`, `only`, `insecure` |
+| `.github/workflows/ci.yml:175` | Base64 standard | `ci`, `only`, `insecure`, `e2e`, `tests` |
+
+Trois `vid` **distincts** → trois valeurs différentes, aucune réutilisation croisée : le bon
+comportement. Portée : signature des tokens de download d'export RGPD en **dev / test / CI**
+uniquement. En prod, `EXPORT_TOKEN_SECRET` est **obligatoire** et le boot échoue s'il manque
+(garde-fou #323, cf. `docs/runbook/deploiement-profils.md`) — aucune de ces valeurs ne peut donc
+devenir un secret de production par simple oubli.
+
+**Statut : accepté, pas de suite.** Committer un secret dont la valeur dit « insecure, change me »
+et qui ne peut pas fuiter en prod est un choix d'ergonomie, pas une exposition.
+
+### 4.3 `.github/workflows/ci.yml` — identifiants du conteneur Postgres de service
+
+- `POSTGRES_PASSWORD:114` / `DB_PASSWORD:165` : forme `mot-alpha`, longueur **12**, marqueur `ci`.
+  Même `vid` sur les clés (`POSTGRES_PASSWORD`, `DB_PASSWORD`, `E2E_DB_PASSWORD`) → une seule et
+  même valeur, conteneur de service éphémère.
+- Aucune clé d'authentification n'est plus posée par le workflow (cf. §4.1).
+
+Ces valeurs ne protègent qu'un conteneur Postgres jetable créé et détruit dans le job CI, joignable
+sur le seul réseau du runner : le risque est **résiduel**. Le risque de réutilisation identifié en
+vague 1 (`JWT_SECRET` partagé entre `.env.example` et la CI) **n'existe plus**.
 
 ### 4.4 Faux positifs écartés
 
@@ -263,10 +290,10 @@ des **obligations différées au premier déploiement**, pas des actions exécut
 | # | Action | Pourquoi | Qui |
 |---|---|---|---|
 | R1 | Au premier provisionnement prod : générer `DB_PASSWORD` neuf, ne jamais réutiliser la valeur historique | §3.1, dépôt public | dev / opérateur |
-| R2 | Laisser #323 (RS256) remplacer `JWT_SECRET` ; ne pas régénérer de secret HS256 | §3.2 | agent #323, vague 2 |
-| R3 | Remplacer `.env.example:26` par un placeholder explicitement marqué (ex. `JWT_SECRET=<generer: openssl rand -base64 48>`) | §4.1 — ambiguïté + risque de copie telle quelle | follow-up |
+| R2 | ~~Laisser #323 (RS256) remplacer `JWT_SECRET`~~ — **FAIT** (`1758c0c`). Reste valable : ne jamais réintroduire de secret HS256 d'authentification | §3.2 / §4.1 | ✅ #323, vague 2 |
+| ~~R3~~ | ~~Remplacer `.env.example:26` par un placeholder explicitement marqué~~ | **SANS OBJET** — `JWT_SECRET` supprimé par #323 (`1758c0c`), cf. §4.1 | — |
 | R4 | Ajouter `BREVO_API_KEY` à `.env.example` (absent : le fichier ne liste que `SPRING_PROFILES_ACTIVE`, `DB_USERNAME`, `DB_PASSWORD`, `POSTGRES_DB`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`) | divergence avec `application.properties.example` | follow-up |
-| R5 | Sortir le `jwt.secret` de `application-test.properties:28` vers une valeur générée au run ou une variable CI | §4.2 | follow-up |
+| ~~R5~~ | ~~Sortir le `jwt.secret` de `application-test.properties:28`~~ | **SANS OBJET** — la clé n'existe plus ; `jwt.private-key=` est vide et la paire de test est générée au run (#323), cf. §4.1 | — |
 | R6 | Poser un scan de secrets en CI (`gitleaks`/`trufflehog`) pour empêcher toute réintroduction | aucun garde-fou automatique aujourd'hui | follow-up |
 | R7 | Exécuter la purge d'historique #112 **après** avoir acté que R1/R2 rendent les valeurs inutiles | la purge seule ne « décompromet » rien | dev |
 

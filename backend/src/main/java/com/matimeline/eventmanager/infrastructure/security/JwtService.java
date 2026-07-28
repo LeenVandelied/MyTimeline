@@ -57,6 +57,17 @@ public class JwtService {
                 : configuredKeyPair();
         this.signingKey = keyPair.getPrivate();
         this.verificationKey = keyPair.getPublic();
+
+        // ⚠ Journalisée dans LES DEUX cas (revue S50), pas seulement sur le chemin éphémère.
+        // Avec JWT_PRIVATE_KEY posée (prod), c'était le SEUL moyen d'obtenir la valeur de
+        // AUTH_JWT_PUBLIC_KEY sans re-dériver la clé à la main en openssl depuis le secret —
+        // manipulation risquée qui produit une paire dépareillée au moindre écart. Le symptôme
+        // d'une paire dépareillée est muet et coûteux : le middleware rejette tout cookie
+        // authentique, donc l'utilisateur boucle vers /login sans message d'erreur.
+        // Une clé PUBLIQUE n'est pas un secret : la publier dans les logs est sans risque.
+        log.info("Clé PUBLIQUE de vérification RS256 — valeur à poser dans AUTH_JWT_PUBLIC_KEY "
+                 + "côté frontend pour activer la vérification de signature du middleware : {}",
+                 RsaKeyMaterial.toSpkiBase64(this.verificationKey));
     }
 
     private KeyPair configuredKeyPair() {
@@ -80,9 +91,7 @@ public class JwtService {
         log.warn("jwt.private-key (JWT_PRIVATE_KEY) non configurée : paire RS256 ÉPHÉMÈRE générée "
                  + "au démarrage. Tous les jetons émis seront invalidés au prochain redémarrage. "
                  + "Acceptable en dev/test UNIQUEMENT — le profil 'prod' refuse ce mode.");
-        log.info("Clé publique de vérification (à publier dans AUTH_JWT_PUBLIC_KEY côté frontend "
-                 + "pour activer la vérification de signature du middleware) : {}",
-                 RsaKeyMaterial.toSpkiBase64(keyPair.getPublic()));
+        // La clé publique est journalisée par `initKeyMaterial`, commune aux deux chemins.
         return keyPair;
     }
 

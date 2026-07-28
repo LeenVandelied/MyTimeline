@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   AUTH_PUBLIC_KEY_ENV_VAR,
@@ -183,18 +183,100 @@ describe('verifyAuthCookie — dégradé (clé non exploitable)', () => {
   })
 
   it('DÉGRADE au lieu de tout bloquer quand la clé configurée est illisible', async () => {
-    // Fail-closed ici déconnecterait 100 % des utilisateurs sur une faute de frappe, sans
-    // qu'aucun signal ne l'explique — alors que le backend continue de refuser les jetons
-    // invalides. Limite assumée, documentée dans ADR-004.
+    // Fail-closed ici déconnecterait 100 % des utilisateurs sur une faute de frappe — alors que
+    // le backend continue de refuser les jetons invalides. Limite assumée, documentée dans
+    // ADR-004. Depuis la revue S50 ce dégradé n'est plus SILENCIEUX (cf. bloc « signalement du
+    // dégradé ») : on absorbe le `console.warn` ici pour ne pas polluer la sortie de la suite.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
     await expect(verifyAuthCookie('cookie-bidon', 'ceci-n-est-pas-une-cle', NOW)).resolves.toBe(
       'accepted',
     )
+
+    warn.mockRestore()
   })
 
   it('ne LÈVE jamais, quelle que soit l’entrée (une exception = 500 sur toutes les routes)', async () => {
+    // Clé non vide et illisible → avertissement attendu, absorbé (cf. test précédent).
+    // `mockRestore` explicite : aucun `restoreMocks` global n'est configuré côté Vitest, un
+    // espion laissé en place fuirait sur les `describe` suivants.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
     await expect(
       verifyAuthCookie(' ￿', ' -cle-corrompue', NOW),
     ).resolves.toBeDefined()
+
+    warn.mockRestore()
+  })
+})
+
+/**
+ * Revue S50 — le dégradé sur clé ILLISIBLE était totalement muet : 100 % des cookies acceptés,
+ * et le spec E2E qui documente le dégradé reste VERT dans cet état. Rien dans le pipeline ne
+ * pouvait détecter la panne de configuration. Ces tests sont le filet manquant.
+ */
+describe('verifyAuthCookie — signalement du dégradé (revue S50)', () => {
+  const UNREADABLE_KEY = 'ceci-n-est-pas-une-cle'
+
+  function spyOnWarn() {
+    return vi.spyOn(console, 'warn').mockImplementation(() => {})
+  }
+
+  it('AVERTIT quand la clé est configurée mais inexploitable', async () => {
+    const warn = spyOnWarn()
+
+    await expect(verifyAuthCookie('cookie-bidon', UNREADABLE_KEY, NOW)).resolves.toBe('accepted')
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    // Le message doit nommer la variable, sinon il est inexploitable en exploitation.
+    expect(warn.mock.calls[0]?.[0]).toContain(AUTH_PUBLIC_KEY_ENV_VAR)
+    warn.mockRestore()
+  })
+
+  it('n’avertit qu’UNE FOIS (le middleware tourne sur chaque navigation)', async () => {
+    const warn = spyOnWarn()
+
+    for (let i = 0; i < 5; i += 1) {
+      await verifyAuthCookie('cookie-bidon', UNREADABLE_KEY, NOW)
+    }
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
+  })
+
+  it('reste SILENCIEUX quand la variable est absente ou vide (dégradé volontaire)', async () => {
+    const warn = spyOnWarn()
+
+    // C'est la décision de dev : aucune clé n'est committée dans ce dépôt public. Crier à
+    // chaque boot ferait ignorer le message par habitude, y compris quand il compte.
+    await verifyAuthCookie('cookie-bidon', undefined, NOW)
+    await verifyAuthCookie('cookie-bidon', '', NOW)
+    await verifyAuthCookie('cookie-bidon', '   ', NOW)
+
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('reste SILENCIEUX quand la clé est valide', async () => {
+    const warn = spyOnWarn()
+
+    await expect(verifyAuthCookie(await makeToken(), publicKeyBase64, NOW)).resolves.toBe(
+      'accepted',
+    )
+
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('ne LÈVE pas si console.warn lui-même lève (BUG-S45-001)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
+      throw new Error('transport de log en panne')
+    })
+
+    // Un logger cassé ne doit pas transformer un dégradé en 500 sur toutes les routes protégées.
+    await expect(verifyAuthCookie('cookie-bidon', UNREADABLE_KEY, NOW)).resolves.toBe('accepted')
+
+    warn.mockRestore()
   })
 })
 

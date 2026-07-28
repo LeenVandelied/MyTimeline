@@ -19,6 +19,7 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 | `JWT_PRIVATE_KEY` | Clé PRIVÉE RS256 de signature des JWT, PKCS#8 Base64, ≥ 2048 bits (#323) | ✅ | **Boot échoue** (garde-fou #323). ⚠ Sans ce garde-fou l'app démarrerait sur une paire **éphémère** : déconnexion globale à chaque redéploiement, sans symptôme |
 | `EXPORT_TOKEN_SECRET` | Secret HMAC DÉDIÉ des tokens de download d'export RGPD (#323), Base64 ≥ 32 o. | ✅ | **Boot échoue** (garde-fou #323) |
 | `AUTH_JWT_PUBLIC_KEY` *(frontend)* | Clé PUBLIQUE SPKI Base64 — vérification de signature du cookie `jwt` dans le middleware Next (#323). **Pas un secret** | ⚠️ recommandé | Garde **dégradée** : présence du cookie seule (comportement d'avant #323). Aucun garde-fou frontend ne le détecte |
+| `APP_CANONICAL_HOST` *(frontend)* | Origine(s) canonique(s) des redirections émises par `middleware.ts` (#322), liste CSV, **1re entrée = le canonique**. **Pas un secret** | ⚠️ recommandé | **Open-redirect silencieux** : l'origine du `Location` reste héritée de `Host` / `x-forwarded-host`, donc contrôlable par l'appelant (+ empoisonnement de cache si un cache mutualisé mémorise la 307). Aucun garde-fou frontend ne le détecte |
 | `CORS_ALLOWED_ORIGINS` | Origine(s) front autorisée(s), liste CSV (#120) | ✅ | **Boot échoue** (bean CORS fail-fast) — détails : [`cors-cookie-samesite.md`](cors-cookie-samesite.md) §1 |
 | `COOKIE_DOMAIN` | Domaine du cookie `jwt` (#118), eTLD+1 pour les sous-domaines | ⚠️ conditionnel | Cookie **host-only** : OK en mono-domaine, **auth cassée silencieusement** en multi-sous-domaines |
 
@@ -75,12 +76,20 @@ export ENVIRONMENT=production
 export DB_PASSWORD=...      # via secret manager
 # #323 — JWT_SECRET (HS256) N'EXISTE PLUS. Signature asymétrique RS256 :
 #   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
-#   openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64   # -> JWT_PRIVATE_KEY
-#   openssl rsa -in jwt.pem -pubout -outform DER | base64             # -> AUTH_JWT_PUBLIC_KEY
+#   openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64 | tr -d '\n'  # -> JWT_PRIVATE_KEY
+#   openssl rsa -in jwt.pem -pubout -outform DER | base64 | tr -d '\n'            # -> AUTH_JWT_PUBLIC_KEY
+# ⚠ `tr -d '\n'` OBLIGATOIRE : le base64 de GNU coreutils (toute image Linux) replie à
+# 76 colonnes, et ni un fichier .env ni docker-compose n'acceptent une valeur multi-lignes
+# (la clé arriverait TRONQUÉE). Le base64 de macOS/BSD ne replie pas — l'écart ne se voit
+# donc pas depuis un poste de dev macOS.
 export JWT_PRIVATE_KEY=...       # via secret manager, JAMAIS committée
 export EXPORT_TOKEN_SECRET=...   # openssl rand -base64 48
-# Côté FRONTEND (variable de runtime, non secrète — doit correspondre à JWT_PRIVATE_KEY) :
+# Côté FRONTEND (variables de runtime, non secrètes). AUTH_JWT_PUBLIC_KEY doit correspondre
+# à JWT_PRIVATE_KEY, sinon tout utilisateur connecté boucle vers /login :
 export AUTH_JWT_PUBLIC_KEY=...
+# #322 — origine canonique des redirections. L'OMETTRE laisse un open-redirect silencieux
+# (le `Location` hérite de `Host` / `x-forwarded-host`). Liste CSV, 1re entrée = canonique :
+export APP_CANONICAL_HOST=https://app.mytimeline.app...
 # CORS — origine(s) front, obligatoire, aucun default (#120) :
 export CORS_ALLOWED_ORIGINS=https://app.mytimeline.app
 # Cookie — obligatoire dès qu'il y a des sous-domaines (#118), eTLD+1 :

@@ -23,6 +23,20 @@
  * signal ne l'explique, alors que le backend, lui, continue de refuser les jetons invalides.
  * Même logique de dégradé que `APP_CANONICAL_HOST` (#322).
  *
+ * ⚠ DEUX dégradés distincts, à ne pas confondre (revue S50) :
+ *
+ * - variable **ABSENTE / vide** → dégradé VOLONTAIRE, silencieux. C'est la décision de dev
+ *   (aucune clé n'est committée dans ce dépôt public) : la journaliser à chaque boot
+ *   entraînerait l'ignorance du message par habitude.
+ * - variable **PRÉSENTE mais inexploitable** (tronquée, typo, mauvais format) → ANOMALIE DE
+ *   CONFIGURATION. Personne ne l'a voulue, et son effet est que 100 % des cookies sont acceptés
+ *   sans qu'aucun signal n'existe : le spec E2E qui documente le dégradé reste VERT dans cet
+ *   état, donc rien dans le pipeline ne peut détecter la panne. D'où le `console.warn`
+ *   ci-dessous — le seul indice disponible.
+ *
+ * L'avertissement est **one-shot** : le middleware tourne sur CHAQUE navigation, un warn par
+ * requête noierait les logs. Et il est enveloppé dans un `try` : voir l'avertissement final.
+ *
  * ⚠ Aucune fonction de ce module ne LÈVE. Une exception non catchée dans `middleware.ts`
  * produit un 500 sur TOUTES les routes protégées (BUG-S45-001).
  */
@@ -46,6 +60,38 @@ const RS256_PARAMS = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' } as const
  * sans logique d'éviction. `null` mémorise aussi les clés illisibles (pas de retry en boucle).
  */
 const keyCache = new Map<string, Promise<CryptoKey | null>>()
+
+/**
+ * Mémorise qu'on a déjà crié « clé illisible ». Le middleware s'exécute sur chaque navigation
+ * vers une route protégée : sans ce verrou, l'anomalie produirait une ligne de log par requête.
+ */
+let unreadableKeyWarned = false
+
+/**
+ * Signale UNE FOIS une clé publique configurée mais inexploitable.
+ *
+ * ⚠ Tout est enveloppé : un `console` absent ou monkey-patché sur un runtime exotique ne doit
+ * pas transformer un dégradé en 500 sur toutes les routes protégées (BUG-S45-001). Le verrou est
+ * posé AVANT l'appel, pour qu'un `console.warn` qui lève ne rejoue pas à chaque requête.
+ */
+function warnUnreadableKeyOnce(): void {
+  if (unreadableKeyWarned) return
+  unreadableKeyWarned = true
+
+  try {
+    console.warn(
+      `[auth-token-verify] ${AUTH_PUBLIC_KEY_ENV_VAR} est définie mais INEXPLOITABLE ` +
+        '(Base64/SPKI invalide, clé tronquée, ou algorithme non RSA). La vérification de ' +
+        'signature du cookie `jwt` est DÉSACTIVÉE : la garde du middleware retombe sur la seule ' +
+        'présence du cookie, donc un cookie forgé passe. Le backend continue de refuser les ' +
+        'jetons invalides — ce n’est pas une brèche d’autorisation, mais la configuration est ' +
+        'à corriger. Valeur attendue : la sortie de `JwtService.getPublicKeySpkiBase64()` ' +
+        '(SPKI Base64, armure PEM tolérée). La valeur n’est PAS journalisée.',
+    )
+  } catch {
+    // Journaliser est un confort d'exploitation, jamais une condition de service.
+  }
+}
 
 /** Décodage base64url (alphabet JWT) vers octets. Renvoie `null` sur entrée non décodable. */
 function decodeBase64Url(value: string): Uint8Array | null {
@@ -167,7 +213,12 @@ export async function verifyAuthCookie(
   try {
     const key = await importVerificationKey(rawPublicKey)
     // Clé configurée mais ILLISIBLE : dégradé plutôt que déconnexion globale (cf. en-tête).
-    if (key === null) return 'accepted'
+    // On dégrade toujours, mais plus en SILENCE : la variable est non vide (testé ci-dessus),
+    // donc quelqu'un a voulu activer la vérification et elle ne s'active pas.
+    if (key === null) {
+      warnUnreadableKeyOnce()
+      return 'accepted'
+    }
 
     return (await isTokenAuthentic(token, key, nowMs)) ? 'accepted' : 'rejected'
   } catch {
@@ -176,7 +227,11 @@ export async function verifyAuthCookie(
   }
 }
 
-/** Vide le cache d'import de clés. Réservé aux tests (isolation entre cas). */
+/**
+ * Vide le cache d'import de clés ET le verrou d'avertissement. Réservé aux tests (isolation
+ * entre cas : sans la remise à zéro du verrou, un seul cas pourrait observer le `console.warn`).
+ */
 export function resetVerificationKeyCache(): void {
   keyCache.clear()
+  unreadableKeyWarned = false
 }

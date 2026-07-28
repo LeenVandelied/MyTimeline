@@ -38,6 +38,44 @@
 /** Nom de la variable d'environnement (runtime serveur, JAMAIS `NEXT_PUBLIC_*`). */
 export const CANONICAL_HOST_ENV_VAR = 'APP_CANONICAL_HOST'
 
+/**
+ * Mémorise qu'on a déjà crié « configuration inexploitable ». `parseCanonicalOrigins` est sur le
+ * chemin de CHAQUE requête matchée par le middleware : un warn par requête noierait les logs.
+ */
+let unusableConfigWarned = false
+
+/**
+ * Signale UNE FOIS une `APP_CANONICAL_HOST` non vide dont AUCUNE entrée n'est exploitable
+ * (revue S50 — même raisonnement que `auth-token-verify.ts`).
+ *
+ * Distinguer les deux dégradés est tout l'intérêt :
+ * - variable ABSENTE / vide → dégradé VOLONTAIRE, silencieux (décision assumée, cf. en-tête) ;
+ * - variable PRÉSENTE mais entièrement invalide → ANOMALIE : l'opérateur a cru durcir les
+ *   redirections, elles restent héritées de `Host` / `x-forwarded-host` (open-redirect), et
+ *   RIEN ne le lui dit.
+ *
+ * ⚠ Enveloppé et non levant : une exception ici deviendrait un 500 sur toutes les routes
+ * protégées (BUG-S45-001). Verrou posé AVANT l'appel pour ne pas rejouer si `console` lève.
+ */
+function warnUnusableConfigOnce(attemptedCount: number): void {
+  if (unusableConfigWarned) return
+  unusableConfigWarned = true
+
+  try {
+    console.warn(
+      `[canonical-host] ${CANONICAL_HOST_ENV_VAR} est définie mais AUCUNE de ses ` +
+        `${attemptedCount} entrée(s) n'est exploitable. La réécriture d'origine des ` +
+        'redirections est DÉSACTIVÉE : le `Location` reste dérivé de `Host` / ' +
+        '`x-forwarded-host`, donc contrôlable par l’appelant (open-redirect, empoisonnement de ' +
+        'cache). Formes acceptées : `app.example.com`, `app.example.com:8443`, ' +
+        '`https://app.example.com` — séparées par des virgules, protocole http/https ' +
+        'uniquement, ni chemin ni credential. La valeur n’est PAS journalisée.',
+    )
+  } catch {
+    // Journaliser est un confort d'exploitation, jamais une condition de service.
+  }
+}
+
 /** Une origine de confiance déclarée en configuration. */
 export interface CanonicalOrigin {
   /**
@@ -126,21 +164,37 @@ function parseEntry(entry: string): CanonicalOrigin | null {
  * Une entrée invalide est IGNORÉE (pas d'exception : le middleware ne doit
  * jamais lever, cf. BUG-S45-001). Si AUCUNE entrée n'est valide, le résultat est
  * vide et la réécriture est désactivée — c'est le dégradé, pas une erreur.
+ *
+ * ⚠ Ce dégradé-là n'est plus SILENCIEUX quand la variable est non vide : cf.
+ * `warnUnusableConfigOnce`. Une valeur absente reste, elle, totalement muette.
  */
 export function parseCanonicalOrigins(rawValue: string | null | undefined): readonly CanonicalOrigin[] {
   if (rawValue === null || rawValue === undefined) return []
 
   const parsed: CanonicalOrigin[] = []
+  // ⚠ On compte les entrées RÉELLEMENT TENTÉES, pas `rawValue.trim() !== ''` (revue S50) :
+  // `',,,'` ou `'  ,  '` sont non vides après `trim()` mais ne portent AUCUNE entrée — c'est une
+  // valeur vide écrite maladroitement, donc le dégradé volontaire, pas une anomalie à signaler.
+  let attempted = 0
 
   for (const chunk of rawValue.split(',')) {
     const entry = chunk.trim()
     if (entry === '') continue
 
+    attempted += 1
     const origin = parseEntry(entry)
     if (origin !== null) parsed.push(origin)
   }
 
+  // Au moins une entrée tentée, aucune retenue = l'opérateur a voulu quelque chose qui n'a pas pris.
+  if (attempted > 0 && parsed.length === 0) warnUnusableConfigOnce(attempted)
+
   return parsed
+}
+
+/** Remet à zéro le verrou d'avertissement. Réservé aux tests (isolation entre cas). */
+export function resetCanonicalHostWarning(): void {
+  unusableConfigWarned = false
 }
 
 /**
