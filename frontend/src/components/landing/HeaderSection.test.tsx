@@ -92,13 +92,26 @@ describe('HeaderSection', () => {
     expect(toggle.classList.contains('w-11')).toBe(true)
   })
 
-  it('expose un burger correctement câblé en ARIA (#334)', () => {
+  it('expose un burger correctement câblé en ARIA (#334)', async () => {
+    const user = userEvent.setup()
     render(<HeaderSection locale="fr" />)
     const toggle = screen.getByTestId('landing-header-menu-toggle')
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
-    expect(toggle).toHaveAttribute('aria-controls', 'landing-header-menu')
     expect(toggle).toHaveAttribute('aria-label', 'common.landing.navigation.menuOpen')
     expect(screen.queryByTestId('landing-header-menu')).not.toBeInTheDocument()
+
+    // `aria-controls` ne doit PAS être posé à l'état fermé : le panneau n'est
+    // alors pas rendu (`if (!open) return null`), l'attribut pointerait vers un
+    // id absent du DOM — une référence pendante, invalide pour les technologies
+    // d'assistance. Il apparaît avec sa cible et disparaît avec elle.
+    expect(toggle).not.toHaveAttribute('aria-controls')
+
+    await user.click(toggle)
+    expect(screen.getByTestId('landing-header-menu-toggle')).toHaveAttribute(
+      'aria-controls',
+      'landing-header-menu',
+    )
+    expect(document.getElementById('landing-header-menu')).not.toBeNull()
   })
 
   it('ouvre le panneau et y expose nav + Connexion + langue (#334)', async () => {

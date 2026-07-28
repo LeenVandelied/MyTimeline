@@ -28,6 +28,19 @@ import { useFocusTrap } from '@/components/timeline/useFocusTrap'
  *
  * Les liens sont stylés PAR TOKENS et non via `.nav-link` (demande de la revue
  * design #334) : `.nav-link` porte le soulignement animé propre au header desktop.
+ *
+ * APPARIEMENT FOND/ENCRE AU SURVOL (invariant du Sprint 49, cf. `ui/button.tsx`).
+ * Les ancres de navigation ne changent QUE leur surface au survol
+ * (`hover:bg-accent-soft`) : l'encre de repos `text-ink` reste en place. La
+ * version livrée posait aussi `hover:text-accent` — mesuré AU NAVIGATEUR à
+ * 375 px, cela donnait `#1170e4` sur `#dbe9fc` = **3.83:1** en thème clair pour
+ * du 15 px non gras (seuil WCAG 1.4.3 AA = 4.5:1) : NON CONFORME. En sombre le
+ * même couplage mesurait 5.43:1, donc le défaut n'était visible que dans un seul
+ * thème — d'où l'invariant plutôt que le rustinage au cas par cas.
+ * Le CTA « Connexion » ci-dessous, lui, écrit LUI-MÊME les deux moitiés de la
+ * paire sanctionnée (`hover:bg-accent` + `hover:text-accent-ink`, mesuré 4.71:1
+ * en clair / 6.94:1 en sombre) et en assume donc les deux.
+ * Garde-fou : `landing.hover-pairing.test.ts`.
  */
 export interface LandingMobileMenuNavLink {
   href: string
@@ -103,7 +116,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
               key={link.href}
               href={link.href}
               onClick={onClose}
-              className={`text-ink hover:bg-accent-soft hover:text-accent flex min-h-11 items-center rounded-sm px-3 text-xs transition-colors duration-200 ${FOCUS_RING}`}
+              className={`text-ink hover:bg-accent-soft flex min-h-11 items-center rounded-sm px-3 text-xs transition-colors duration-200 ${FOCUS_RING}`}
             >
               {link.label}
             </a>

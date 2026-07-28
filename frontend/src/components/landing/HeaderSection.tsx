@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { LandingMobileMenu } from './LandingMobileMenu'
 
@@ -34,9 +35,40 @@ interface HeaderSectionProps {
  * logo 121 px + groupe 178 px (de) = 299 px pour 343 px disponibles.
  * À `md:` et au-dessus, le header est rendu strictement à l'identique d'avant #334.
  */
+/**
+ * Point de bascule `md` de Tailwind — le panneau mobile est en `md:hidden`.
+ * Codé ici parce qu'un `matchMedia` ne peut pas lire une classe utilitaire ; si
+ * le thème redéfinit `--breakpoint-md`, les deux doivent bouger ensemble.
+ */
+const MD_BREAKPOINT_QUERY = '(min-width: 48rem)'
+
 export function HeaderSection({ locale }: HeaderSectionProps) {
   const t = useTranslations()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  /**
+   * Référence STABLE : `onClose` est passé en `onEscape` à `useFocusTrap`, qui
+   * l'a en dépendance d'effet. Une fonction recréée à chaque rendu rejouait donc
+   * le cleanup du trap (`previousFocus.focus()`) puis le refocus du premier
+   * élément à chaque re-rendu du parent — un saut de focus visible.
+   */
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+
+  /**
+   * Fermeture au passage en `md` et au-delà.
+   *
+   * Sans cela, `menuOpen` reste vrai : le panneau est bien masqué par
+   * `md:hidden`, mais `useFocusTrap` continue de tourner sur un panneau
+   * invisible — il avale l'Escape de toute la page et piège la tabulation dans
+   * un dialogue que personne ne voit, pendant que le burger, lui, a disparu.
+   *
+   * `useMediaQuery` (#63) plutôt qu'un `matchMedia` réécrit ici : il est déjà
+   * SSR-safe et déjà moqué dans `vitest.setup.ts`.
+   */
+  const isDesktop = useMediaQuery(MD_BREAKPOINT_QUERY)
+  useEffect(() => {
+    if (isDesktop) setMenuOpen(false)
+  }, [isDesktop])
 
   /** Ancres de navigation — même ordre que les sections rendues par `HomePage`. */
   const navLinks = [
@@ -90,11 +122,14 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
           <Link href={`/${locale}/register`}>{t('common.landing.buttons.register')}</Link>
         </Button>
 
+        {/* `aria-controls` n'est posé QUE si la cible existe : le panneau n'est
+            pas rendu à l'état fermé (`if (!open) return null`), et un idref
+            pendant est une référence invalide pour les technologies d'assistance. */}
         <button
           type="button"
           onClick={() => setMenuOpen(true)}
           aria-expanded={menuOpen}
-          aria-controls="landing-header-menu"
+          aria-controls={menuOpen ? 'landing-header-menu' : undefined}
           aria-label={t('common.landing.navigation.menuOpen')}
           data-testid="landing-header-menu-toggle"
           className="text-ink-muted border-rule-emphasis hover:bg-accent-soft focus-visible:ring-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:hidden"
@@ -105,7 +140,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
 
       <LandingMobileMenu
         open={menuOpen}
-        onClose={() => setMenuOpen(false)}
+        onClose={closeMenu}
         locale={locale}
         navLinks={navLinks}
       />
