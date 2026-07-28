@@ -94,8 +94,22 @@ describe('parseCanonicalOrigins — entrées rejetées (jamais d’exception)', 
     'javascript:alert(1)', // schéma dangereux
     '//app.example.com', // protocol-relative
     '-app.example.com', // label commençant par un tiret
+    // Revue S50 (2e cycle) — forme URL COMPLÈTE : `new URL` acceptait ces entrées et jetait
+    // silencieusement credential et chemin, alors que le message d'aide annonce « ni chemin
+    // ni credential ». Une config fautive doit être rejetée (donc signalée), pas rabotée.
+    'https://user:pass@app.example.com', // credential complet
+    'https://user@app.example.com', // credential partiel
+    'https://app.example.com/login', // chemin
   ])('ignore l’entrée invalide %s', (entry) => {
     expect(parseCanonicalOrigins(entry)).toEqual([])
+  })
+
+  it('accepte la forme URL complète terminée par le slash racine', () => {
+    // `https://app.example.com/` est la forme que produit un copier-coller depuis un navigateur :
+    // `pathname === '/'` n'est PAS un chemin, la rejeter serait un faux positif hostile.
+    expect(parseCanonicalOrigins('https://app.example.com/')).toEqual([
+      { host: 'app.example.com', hostname: 'app.example.com', port: '', protocol: 'https:' },
+    ])
   })
 
   it('ignore UNIQUEMENT les entrées invalides d’une liste mixte', () => {
@@ -143,7 +157,7 @@ describe('parseCanonicalOrigins — signalement du dégradé (revue S50)', () =>
   })
 
   it.each([undefined, null, '', '   ', ',,,'])(
-    'reste SILENCIEUX pour %o (dégradé volontaire, pas une anomalie)',
+    'reste SILENCIEUX HORS production pour %o (dégradé volontaire, pas une anomalie)',
     (raw) => {
       const warn = spyOnWarn()
 
@@ -171,6 +185,53 @@ describe('parseCanonicalOrigins — signalement du dégradé (revue S50)', () =>
 
     expect(() => parseCanonicalOrigins('pas valide')).not.toThrow()
 
+    warn.mockRestore()
+  })
+})
+
+/**
+ * Revue S50, 2e cycle — SIGNALISATION INVERSÉE. Le cas rare (valeur présente mais inexploitable)
+ * criait ; le mode de panne le plus probable — variable oubliée au premier déploiement — était
+ * muet. Une prod sans `APP_CANONICAL_HOST` n'a AUCUNE protection #322 et aucun symptôme.
+ */
+describe('parseCanonicalOrigins — variable absente EN PRODUCTION (revue S50, 2e cycle)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it.each([undefined, null, '', '   ', ',,,'])(
+    'AVERTIT (une seule fois) pour %o quand NODE_ENV=production',
+    (raw) => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      // Appelée à CHAQUE requête matchée : le verrou one-shot est la moitié du contrat.
+      for (let i = 0; i < 3; i += 1) expect(parseCanonicalOrigins(raw)).toEqual([])
+
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]?.[0]).toContain(CANONICAL_HOST_ENV_VAR)
+      warn.mockRestore()
+    },
+  )
+
+  it('ne LÈVE pas si console.warn lui-même lève (BUG-S45-001)', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
+      throw new Error('transport de log en panne')
+    })
+
+    expect(() => parseCanonicalOrigins(undefined)).not.toThrow()
+
+    warn.mockRestore()
+  })
+
+  it('n’avertit PAS quand la configuration est exploitable', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    expect(parseCanonicalOrigins('https://app.example.com')).toHaveLength(1)
+
+    expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })
 })

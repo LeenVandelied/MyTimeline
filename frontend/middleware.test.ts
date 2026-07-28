@@ -2,7 +2,7 @@
 
 import { createRequire } from 'node:module'
 
-import { describe, it, expect, afterEach, beforeAll } from 'vitest'
+import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 
 import middleware, { config } from './middleware'
@@ -353,12 +353,23 @@ describe('middleware — origine canonique du Location (#322)', () => {
       // Le risque de régression #1 de cette issue : une config cassée qui
       // mettrait TOUTES les routes protégées en panne. Elle doit se contenter
       // de désactiver le durcissement.
-      process.env.APP_CANONICAL_HOST = raw
+      //
+      // ⚠ `console.warn` MOCKÉ (MEMO-007, revue S50 2e cycle) : `'pas valide'` traverse
+      // `warnUnusableConfigOnce`, qui écrivait un bloc `stderr |` dans la sortie de la suite.
+      // Un test vert ne doit rien écrire sur stderr, sinon le bruit devient la norme et une
+      // vraie anomalie passe inaperçue. `canonical-host.test.ts` couvre le CONTENU du message ;
+      // ici on ne fait que taire le canal.
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        process.env.APP_CANONICAL_HOST = raw
 
-      const response = await middleware(requestFromHost('evil.example'))
+        const response = await middleware(requestFromHost('evil.example'))
 
-      expect(response.status).toBe(307)
-      expect(new URL(response.headers.get('location')!).pathname).toBe('/fr/login')
+        expect(response.status).toBe(307)
+        expect(new URL(response.headers.get('location')!).pathname).toBe('/fr/login')
+      } finally {
+        warn.mockRestore()
+      }
     },
   )
 
@@ -504,11 +515,21 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   it('DÉGRADE sans erreur quand la clé publique configurée est ILLISIBLE', async () => {
     // Fail-closed déconnecterait tout le monde sur une faute de frappe ; le backend
     // reste seul juge (401). Limite assumée, ADR-004 §Vérification de signature RS256.
-    process.env.AUTH_JWT_PUBLIC_KEY = 'pas-une-cle-publique'
+    //
+    // ⚠ `console.warn` MOCKÉ (MEMO-007, revue S50 2e cycle) : ce cas traverse
+    // `warnUnreadableKeyOnce`, qui écrivait un bloc `stderr |` dans la sortie de la suite.
+    // Le CONTENU du message est couvert par `auth-token-verify.test.ts` ; ici on ne fait
+    // que taire le canal, pour qu'un run vert reste silencieux.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      process.env.AUTH_JWT_PUBLIC_KEY = 'pas-une-cle-publique'
 
-    const response = await middleware(requestWithToken('cookie-arbitraire'))
+      const response = await middleware(requestWithToken('cookie-arbitraire'))
 
-    expect(response.status).toBe(200)
+      expect(response.status).toBe(200)
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('n’applique la vérification QUE sur les routes protégées', async () => {

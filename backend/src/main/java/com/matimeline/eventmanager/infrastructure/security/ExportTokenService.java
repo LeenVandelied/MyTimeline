@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -124,8 +123,14 @@ public class ExportTokenService {
             UUID jobId = UUID.fromString(claims.getSubject());
             UUID ownerId = UUID.fromString(claims.get(CLAIM_UID, String.class));
             return Optional.of(new ExportDownloadToken(jobId, ownerId));
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             // Signature invalide, token expiré, format/claims corrompus -> capacité refusée.
+            // ⚠ `RuntimeException` et non `JwtException | IllegalArgumentException` (revue S50) :
+            // un token AUTHENTIQUEMENT signé, de `typ` correct mais SANS claim `sub`/`uid` fait
+            // lever une NullPointerException à `UUID.fromString(null)` — hors des deux types
+            // catchés, donc 500 au lieu du 404 contractuel (« verify() ne lève JAMAIS », cf.
+            // javadoc de classe), et oracle par différence d'erreur. Ancré par
+            // ExportTokenServiceTest#verify_missingSubjectOrUidClaim_returnsEmpty.
             return Optional.empty();
         }
     }

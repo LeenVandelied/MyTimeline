@@ -119,16 +119,22 @@ public class ProfileSafetyGuard
         checkCookieInsecureInProduction(env);    // #254
         checkMissingCookieDomainInProduction(env); // #253
         checkMissingCorsOriginsInProduction(env);  // #253
-        checkMissingSigningMaterialInProduction(env); // #323
+        checkMissingJwtPrivateKeyInProduction(env);   // #323
+        checkMissingExportTokenSecretInProduction(env); // #323
     }
 
     /**
-     * Check #323 : en prod effectif, {@code jwt.private-key} ou {@code app.export.token-secret}
-     * vides/blancs → refuse de booter. Voir le javadoc de classe : une {@code jwt.private-key}
-     * vide ne casse rien au démarrage (paire éphémère) — c'est précisément ce qui la rend
-     * dangereuse en production, d'où un fail-fast explicite ici plutôt qu'un WARN.
+     * Check #323 (clé de signature) : en prod effectif, {@code jwt.private-key} vide/blanche →
+     * refuse de booter. Voir le javadoc de classe : une {@code jwt.private-key} vide ne casse
+     * rien au démarrage (paire éphémère) — c'est précisément ce qui la rend dangereuse en
+     * production, d'où un fail-fast explicite ici plutôt qu'un WARN.
+     *
+     * <p>⚠ Cette barrière est la SECONDE, pas la seule : {@code application-prod.properties}
+     * déclare {@code ${JWT_PRIVATE_KEY}} SANS default, donc une variable absente fait déjà
+     * échouer la résolution du placeholder. Ce check couvre le cas qu'elle laisse passer —
+     * variable présente mais BLANCHE — et fournit le message d'exploitation lisible.
      */
-    private void checkMissingSigningMaterialInProduction(ConfigurableEnvironment env) {
+    private void checkMissingJwtPrivateKeyInProduction(ConfigurableEnvironment env) {
         if (!isProductionEffective(env)) {
             return; // Ni marqueur prod ni profil prod → dev/test, paire éphémère légitime.
         }
@@ -141,6 +147,17 @@ public class ProfileSafetyGuard
                     + "sont déconnectés à chaque redémarrage, sans symptôme visible. Fournir une clé "
                     + "privée RSA PKCS#8 en Base64 (modulus >= 2048 bits) via JWT_PRIVATE_KEY. "
                     + "NB : JWT_SECRET (HS256) a été supprimé par #323, il n'est plus lu.");
+        }
+    }
+
+    /**
+     * Check #323 (secret d'export) : en prod effectif, {@code app.export.token-secret}
+     * vide/blanc → refuse de booter. Même dispositif à deux barrières que la clé de signature
+     * (cf. {@link #checkMissingJwtPrivateKeyInProduction}).
+     */
+    private void checkMissingExportTokenSecretInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, secret de dev légitime.
         }
         if (isBlankProperty(env, EXPORT_TOKEN_SECRET_KEY)) {
             throw new IllegalStateException(
@@ -296,10 +313,25 @@ public class ProfileSafetyGuard
         return !env.getProperty(COOKIE_SECURE_KEY, Boolean.class, Boolean.FALSE);
     }
 
-    /** Vrai si la property est absente, {@code null} ou uniquement composée de blancs. */
+    /**
+     * Vrai si la property est absente, {@code null} ou uniquement composée de blancs.
+     *
+     * <p>⚠ Le {@code catch} n'est pas décoratif (revue S50, 2e cycle) : depuis que
+     * {@code application-prod.properties} déclare {@code ${JWT_PRIVATE_KEY}} SANS default,
+     * une variable d'environnement absente rend le placeholder IRRÉSOLUBLE, et
+     * {@code getProperty} lève une {@link IllegalArgumentException} au lieu de renvoyer
+     * {@code null}. Sans ce catch, le boot échouerait bien (c'est le but de la 1re barrière)
+     * mais sur un « Could not resolve placeholder » opaque, en perdant le message
+     * d'exploitation de la 2e. On traite donc « irrésoluble » comme « non fournie » : les deux
+     * barrières restent disjointes ET l'exploitant garde le message lisible.
+     */
     private boolean isBlankProperty(ConfigurableEnvironment env, String key) {
-        String value = env.getProperty(key);
-        return value == null || value.isBlank();
+        try {
+            String value = env.getProperty(key);
+            return value == null || value.isBlank();
+        } catch (IllegalArgumentException e) {
+            return true; // Placeholder non résolu = valeur non fournie.
+        }
     }
 
     /**

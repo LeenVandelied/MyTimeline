@@ -292,16 +292,30 @@ aux deux points d'émission. Ancré par test des deux côtés.
   `Location` absolu ci-dessus : **la garde doit d'abord FONCTIONNER**.
 - **Aucun garde-fou frontend n'impose la variable en production.** Comme pour
   `APP_CANONICAL_HOST`, il n'existe pas d'équivalent frontend au `ProfileSafetyGuard`
-  backend : son absence dégrade en silence. Follow-up commun aux deux variables.
+  backend : rien ne fait échouer le démarrage. Depuis la revue S50 (2e cycle), l'absence
+  n'est plus **muette** pour autant : `verifyAuthCookie` (et `parseCanonicalOrigins` pour
+  #322) émettent un `console.warn` **one-shot** quand la variable est absente **et**
+  `NODE_ENV === 'production'`. Ce n'est PAS un fail-closed — aucune exception n'est levée
+  (BUG-S45-001) — juste le signal qui manquait : sans lui, le seul symptôme d'un #322/#323
+  intégralement inerte était l'*absence* d'un avertissement. Un vrai garde-fou (refus de
+  démarrage) reste un follow-up commun aux deux variables.
 - **Une clé publique DÉPAREILLÉE renvoie tout le monde vers `/login`.** C'est le mode
   de panne propre à cette évolution : la clé frontend et la clé privée backend sont
   deux variables distinctes, sans mécanisme de découverte (pas de JWKS). Le symptôme
   est une boucle « je me connecte, je suis redirigé » — non bloquante (l'API répond
   normalement) mais très déroutante. Mitigations retenues : (a) le backend n'expose
   qu'**une** variable, la clé publique étant DÉRIVÉE de la privée (`RsaKeyMaterial`),
-  ce qui supprime la moitié du risque ; (b) en mode éphémère, le backend **journalise
-  au boot** la valeur exacte à coller. Un endpoint JWKS supprimerait le reste — hors
-  scope, noté en follow-up.
+  ce qui supprime la moitié du risque ; (b) le backend **journalise au boot** la valeur
+  exacte à coller (dans les DEUX modes, configuré comme éphémère). Un endpoint JWKS
+  supprimerait le reste — hors scope, noté en follow-up.
+  **⚠ AUCUN signal ne couvre ce cas** (revue S50, 2e cycle) : une clé BIEN FORMÉE mais
+  dépareillée s'importe sans erreur, donc ni `warnUnreadableKeyOnce` (clé illisible) ni
+  l'avertissement d'absence ne se déclenchent — seules les signatures échouent, une par une.
+  C'est la panne la plus visible pour l'utilisateur (100 % des sessions renvoyées vers
+  `/login`) et la moins diagnosticable. **Remède immédiat : VIDER `AUTH_JWT_PUBLIC_KEY`**
+  (retour au dégradé de #302, tout le monde repasse), puis recoller la valeur journalisée
+  au boot du backend actuellement en service — et non une valeur re-dérivée à la main en
+  `openssl`, manipulation qui produit précisément une paire dépareillée au moindre écart.
 - **CI e2e en mode dégradé.** Le job e2e démarre le backend sans clé (paire éphémère,
   car aucune clé privée ne peut être committée dans un dépôt **public**) et ne publie
   donc pas de `AUTH_JWT_PUBLIC_KEY`. La vérification de signature est couverte en

@@ -19,7 +19,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.matimeline.eventmanager.infrastructure.security.ExportTokenService.ExportDownloadToken;
 
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 /**
  * Test unitaire du token de download d'export (#58, ADR-003). Couvre le critère
@@ -146,5 +150,42 @@ class ExportTokenServiceTest {
         jwtService.initKeyMaterial();
 
         assertThrows(JwtException.class, () -> jwtService.extractUsername(downloadToken));
+    }
+
+    // ----------------------------------------------------------- revue S50 (2e cycle)
+
+    /**
+     * Contrat documenté « {@code verify()} ne lève JAMAIS » (javadoc de classe). Un jeton
+     * AUTHENTIQUEMENT signé avec {@code EXPORT_TOKEN_SECRET}, de {@code typ} correct, mais
+     * dépourvu de {@code sub} ou de {@code uid}, atteignait {@code UUID.fromString(null)} :
+     * NullPointerException, hors du {@code catch (JwtException | IllegalArgumentException)}
+     * d'alors → 500 au lieu du 404 contractuel (oracle par différence d'erreur).
+     */
+    @Test
+    void verify_missingSubjectOrUidClaim_returnsEmpty() {
+        String withoutUid = signedWithExportSecret(JOB_ID.toString(), null);
+        String withoutSubject = signedWithExportSecret(null, OWNER_ID.toString());
+
+        assertTrue(assertDoesNotThrow(() -> serviceAt(T0).verify(withoutUid)).isEmpty(),
+                "claim 'uid' absent -> capacité refusée, jamais d'exception");
+        assertTrue(assertDoesNotThrow(() -> serviceAt(T0).verify(withoutSubject)).isEmpty(),
+                "claim 'sub' absent -> capacité refusée, jamais d'exception");
+    }
+
+    /** Forge un jeton de download authentiquement signé, claims {@code sub}/{@code uid} au choix. */
+    private String signedWithExportSecret(String subject, String uid) {
+        JwtBuilder builder = Jwts.builder()
+                .claim("typ", "export-download")
+                .issuedAt(Date.from(T0))
+                .expiration(Date.from(T0.plus(Duration.ofHours(24))));
+        if (subject != null) {
+            builder.subject(subject);
+        }
+        if (uid != null) {
+            builder.claim("uid", uid);
+        }
+        return builder
+                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET)), Jwts.SIG.HS256)
+                .compact();
     }
 }

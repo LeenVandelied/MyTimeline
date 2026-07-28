@@ -157,14 +157,23 @@ jobs:
       # variable est lue au runtime) : la première passe E2E tourne DÉGRADÉE (frontend sans
       # clé publique, contrat #302 -> `auth-guard.spec.ts`), la seconde tourne VÉRIFIANTE
       # (`auth-signature.spec.ts`). Le BACKEND, lui, signe avec cette paire dans les deux cas.
+      #
+      # ⚠ `::add-mask::` posé AVANT l'écriture dans `GITHUB_ENV` (revue S50, 2e cycle) : le dépôt
+      # est PUBLIC, donc les logs de ce job le sont aussi. La paire meurt avec le runner et n'a
+      # aucune valeur — mais un step futur qui dumperait l'environnement (`set -x`, `printenv`,
+      # action tierce en mode debug) publierait du matériel de signature en clair. C'est le
+      # MOTIF qui est corrigé ici, pas un impact actuel. Seule la clé PRIVÉE est masquée : la
+      # clé publique n'est pas un secret, et la masquer caviarderait les diagnostics.
       - name: Generate throwaway RS256 keypair (dev-only, never committed)
         run: |
           node -e 'const c=require("crypto"),f=require("fs");
             const {privateKey,publicKey}=c.generateKeyPairSync("rsa",{modulusLength:2048,
               privateKeyEncoding:{type:"pkcs8",format:"der"},
               publicKeyEncoding:{type:"spki",format:"der"}});
+            const priv=privateKey.toString("base64");
+            console.log("::add-mask::"+priv);
             f.appendFileSync(process.env.GITHUB_ENV,
-              "E2E_JWT_PRIVATE_KEY="+privateKey.toString("base64")+"\n"+
+              "E2E_JWT_PRIVATE_KEY="+priv+"\n"+
               "E2E_JWT_PUBLIC_KEY="+publicKey.toString("base64")+"\n")'
 
       # Démarrage du backend en tâche de fond (profil dev : cookie Secure=false,
@@ -269,7 +278,12 @@ jobs:
           E2E_API_PROXY_TARGET: http://localhost:8080
           AUTH_JWT_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
           E2E_JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
-        run: npx playwright test auth-signature.spec.ts
+        # ⚠ `auth.setup.ts` EXPLICITEMENT dans le filtre (revue S50, 2e cycle) : un filtre portant
+        # le seul nom de spec exclut aussi le projet `setup` (`testMatch /.*\.setup\.ts/`), dont
+        # `chromium` dépend. La passe consommait alors le `storageState` laissé sur disque par la
+        # passe 1 — `globalSetup` ne purge que `accounts.json` — soit un couplage implicite entre
+        # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
+        run: npx playwright test auth.setup.ts auth-signature.spec.ts
 
       - name: Upload Playwright report (on failure)
         if: failure()

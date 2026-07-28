@@ -25,9 +25,11 @@
  *
  * ⚠ DEUX dégradés distincts, à ne pas confondre (revue S50) :
  *
- * - variable **ABSENTE / vide** → dégradé VOLONTAIRE, silencieux. C'est la décision de dev
- *   (aucune clé n'est committée dans ce dépôt public) : la journaliser à chaque boot
- *   entraînerait l'ignorance du message par habitude.
+ * - variable **ABSENTE / vide** → dégradé VOLONTAIRE. Silencieux HORS production (décision de
+ *   dev : aucune clé n'est committée dans ce dépôt public, et journaliser à chaque boot local
+ *   entraînerait l'ignorance du message par habitude) ; **signalé une fois EN production**
+ *   (revue S50, 2e cycle) : c'est le mode de panne le plus probable — variable oubliée au
+ *   premier déploiement — et il rendait #323 intégralement inerte sans le moindre symptôme.
  * - variable **PRÉSENTE mais inexploitable** (tronquée, typo, mauvais format) → ANOMALIE DE
  *   CONFIGURATION. Personne ne l'a voulue, et son effet est que 100 % des cookies sont acceptés
  *   sans qu'aucun signal n'existe : le spec E2E qui documente le dégradé reste VERT dans cet
@@ -66,6 +68,44 @@ const keyCache = new Map<string, Promise<CryptoKey | null>>()
  * vers une route protégée : sans ce verrou, l'anomalie produirait une ligne de log par requête.
  */
 let unreadableKeyWarned = false
+
+/** Idem pour « clé absente en production » (signalisation ajoutée à la revue S50, 2e cycle). */
+let missingKeyWarned = false
+
+/**
+ * Signale UNE FOIS une clé publique ABSENTE **en production uniquement**.
+ *
+ * ⚠ Correction d'une signalisation INVERSÉE (revue S50, 2e cycle) : jusqu'ici seul le cas RARE
+ * (variable présente mais illisible) criait, tandis que le mode de panne le PLUS PROBABLE — la
+ * variable simplement oubliée au premier déploiement — restait totalement muet. Aucun garde-fou
+ * frontend n'impose ces variables et aucune étape de déploiement ne les vérifie : le seul
+ * symptôme d'un #323 intégralement inerte était l'ABSENCE d'un avertissement.
+ *
+ * Le silence reste le comportement voulu hors production : en dev et en test, aucune clé n'est
+ * configurée (le dépôt est PUBLIC, rien n'y est committé) — crier à chaque boot local rendrait
+ * le message invisible par habitude, et polluerait la sortie des suites de tests.
+ *
+ * Enveloppé et non levant, même raison que `warnUnreadableKeyOnce` (BUG-S45-001).
+ */
+function warnMissingKeyInProductionOnce(): void {
+  if (missingKeyWarned) return
+  if (process.env.NODE_ENV !== 'production') return
+  missingKeyWarned = true
+
+  try {
+    console.warn(
+      `[auth-token-verify] ${AUTH_PUBLIC_KEY_ENV_VAR} n’est PAS définie en production. La ` +
+        'vérification de signature RS256 du cookie `jwt` (#323) est INACTIVE : la garde du ' +
+        'middleware retombe sur la seule présence du cookie (comportement d’avant #323), donc ' +
+        'un cookie forgé passe la garde. Le backend reste seul juge et continue de refuser les ' +
+        'jetons invalides — ce n’est pas une brèche d’autorisation, mais la protection attendue ' +
+        'n’existe pas. Poser la clé PUBLIQUE SPKI Base64 journalisée au boot du backend ' +
+        '(`JwtService`), APPAIRÉE à la JWT_PRIVATE_KEY en service.',
+    )
+  } catch {
+    // Journaliser est un confort d'exploitation, jamais une condition de service.
+  }
+}
 
 /**
  * Signale UNE FOIS une clé publique configurée mais inexploitable.
@@ -141,7 +181,56 @@ function importVerificationKey(raw: string): Promise<CryptoKey | null> {
 }
 
 /** Charge utile minimale dont dépend la garde. Les autres claims ne l'intéressent pas. */
-type TokenClaims = { exp?: unknown; nbf?: unknown }
+type TokenClaims = { sub?: unknown; exp?: unknown; nbf?: unknown }
+
+/** Segments d'un JWT compact, décodés et désérialisés. */
+interface JwtParts {
+  /** `header.payload` en Base64url — l'octet-à-octet exact qui a été signé. */
+  readonly signingInput: string
+  readonly header: { alg?: unknown }
+  readonly claims: TokenClaims
+  readonly signature: Uint8Array
+}
+
+/**
+ * Découpe et décode un JWT compact — `null` dès que la forme est invalide (nombre de segments,
+ * Base64url indécodable, JSON illisible). Aucune décision de sécurité ici : uniquement du
+ * décodage, pour que `isTokenAuthentic` ne porte plus que les vérifications.
+ */
+function parseJwtParts(token: string): JwtParts | null {
+  const parts = token.split('.')
+  if (parts.length !== 3) return null
+  const [rawHeader, rawPayload, rawSignature] = parts
+
+  const headerBytes = decodeBase64Url(rawHeader)
+  const payloadBytes = decodeBase64Url(rawPayload)
+  const signature = decodeBase64Url(rawSignature)
+  if (headerBytes === null || payloadBytes === null || signature === null) return null
+
+  try {
+    return {
+      signingInput: `${rawHeader}.${rawPayload}`,
+      header: JSON.parse(new TextDecoder().decode(headerBytes)) as { alg?: unknown },
+      claims: JSON.parse(new TextDecoder().decode(payloadBytes)) as TokenClaims,
+      signature,
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Fenêtre temporelle du jeton.
+ *
+ * `exp` est OBLIGATOIRE : un token sans expiration serait éternel côté garde. `JwtService` en
+ * pose toujours un (BR-AUT-007, 2 jours). `nbf` n'est vérifié que s'il est présent.
+ */
+function isWithinTimeWindow(claims: TokenClaims, nowMs: number): boolean {
+  if (typeof claims.exp !== 'number' || Number.isNaN(claims.exp)) return false
+  if (claims.exp * 1000 <= nowMs) return false
+  if (typeof claims.nbf === 'number' && claims.nbf * 1000 > nowMs) return false
+  return true
+}
 
 /**
  * Vérifie signature + fenêtre temporelle d'un JWT RS256.
@@ -150,42 +239,29 @@ type TokenClaims = { exp?: unknown; nbf?: unknown }
  * le `Clock` de `ExportTokenService` côté backend).
  */
 async function isTokenAuthentic(token: string, key: CryptoKey, nowMs: number): Promise<boolean> {
-  const parts = token.split('.')
-  if (parts.length !== 3) return false
-  const [rawHeader, rawPayload, rawSignature] = parts
-
-  const headerBytes = decodeBase64Url(rawHeader)
-  const payloadBytes = decodeBase64Url(rawPayload)
-  const signature = decodeBase64Url(rawSignature)
-  if (headerBytes === null || payloadBytes === null || signature === null) return false
-
-  let header: { alg?: unknown }
-  let claims: TokenClaims
-  try {
-    header = JSON.parse(new TextDecoder().decode(headerBytes)) as { alg?: unknown }
-    claims = JSON.parse(new TextDecoder().decode(payloadBytes)) as TokenClaims
-  } catch {
-    return false
-  }
+  const parts = parseJwtParts(token)
+  if (parts === null) return false
 
   // CONFUSION D'ALGORITHME — barrière n°1. `alg` est choisi par le PORTEUR du token : accepter
   // `none` (aucune signature) ou `HS256` (HMAC avec la clé publique, qui est publique par
   // construction) laisserait n'importe qui forger une identité. On exige RS256, le seul
   // algorithme que `JwtService` émet, AVANT même de toucher à la signature.
-  if (header.alg !== 'RS256') return false
+  if (parts.header.alg !== 'RS256') return false
 
-  // `exp` OBLIGATOIRE : un token sans expiration serait éternel côté garde. `JwtService` en
-  // pose toujours un (BR-AUT-007, 2 jours).
-  if (typeof claims.exp !== 'number' || Number.isNaN(claims.exp)) return false
-  if (claims.exp * 1000 <= nowMs) return false
-  if (typeof claims.nbf === 'number' && claims.nbf * 1000 > nowMs) return false
+  // `sub` OBLIGATOIRE et non vide (revue S50) : sans lui, TOUT jeton RS256 signé par cette clé
+  // ouvre la garde, y compris un jeton d'un autre usage qui n'identifie personne. Sans effet
+  // aujourd'hui (`JwtService` est le seul émetteur et pose toujours un `sub`), mais la garde
+  // cesse de dépendre de cette exclusivité.
+  if (typeof parts.claims.sub !== 'string' || parts.claims.sub.length === 0) return false
+
+  if (!isWithinTimeWindow(parts.claims, nowMs)) return false
 
   try {
-    const signed = new TextEncoder().encode(`${rawHeader}.${rawPayload}`)
+    const signed = new TextEncoder().encode(parts.signingInput)
     return await crypto.subtle.verify(
       RS256_PARAMS.name,
       key,
-      signature as BufferSource,
+      parts.signature as BufferSource,
       signed as BufferSource,
     )
   } catch {
@@ -208,7 +284,11 @@ export async function verifyAuthCookie(
   if (token === undefined || token.length === 0) return 'rejected'
 
   // Vérification non configurée → on retombe sur le contrat de #302 (présence seule).
-  if (rawPublicKey === undefined || rawPublicKey.trim().length === 0) return 'accepted'
+  // Muet en dev/test, signalé UNE fois en production (cf. `warnMissingKeyInProductionOnce`).
+  if (rawPublicKey === undefined || rawPublicKey.trim().length === 0) {
+    warnMissingKeyInProductionOnce()
+    return 'accepted'
+  }
 
   try {
     const key = await importVerificationKey(rawPublicKey)
@@ -234,4 +314,5 @@ export async function verifyAuthCookie(
 export function resetVerificationKeyCache(): void {
   keyCache.clear()
   unreadableKeyWarned = false
+  missingKeyWarned = false
 }

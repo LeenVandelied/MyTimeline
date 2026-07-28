@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   AUTH_PUBLIC_KEY_ENV_VAR,
@@ -121,6 +121,19 @@ describe('verifyAuthCookie — rejets', () => {
     const eternal = await makeToken({ claims: { sub: 'alice' } })
 
     await expect(verifyAuthCookie(eternal, publicKeyBase64, NOW)).resolves.toBe('rejected')
+  })
+
+  it.each([
+    { label: 'sans claim sub', claims: { exp: Math.floor(NOW / 1000) + 3600 } },
+    { label: 'sub vide', claims: { sub: '', exp: Math.floor(NOW / 1000) + 3600 } },
+    { label: 'sub non-string', claims: { sub: 42, exp: Math.floor(NOW / 1000) + 3600 } },
+  ])('rejette un jeton $label (revue S50, 2e cycle)', async ({ claims }) => {
+    // Sans cette exigence, TOUT jeton RS256 signé par cette clé ouvre la garde — y compris un
+    // jeton d'un autre usage qui n'identifie personne. `JwtService` pose toujours un `sub` :
+    // la garde cesse de dépendre du fait qu'il soit aujourd'hui le seul émetteur.
+    const anonymous = await makeToken({ claims })
+
+    await expect(verifyAuthCookie(anonymous, publicKeyBase64, NOW)).resolves.toBe('rejected')
   })
 
   it('rejette un jeton pas encore valide (nbf dans le futur)', async () => {
@@ -244,7 +257,7 @@ describe('verifyAuthCookie — signalement du dégradé (revue S50)', () => {
     warn.mockRestore()
   })
 
-  it('reste SILENCIEUX quand la variable est absente ou vide (dégradé volontaire)', async () => {
+  it('reste SILENCIEUX HORS production quand la variable est absente ou vide', async () => {
     const warn = spyOnWarn()
 
     // C'est la décision de dev : aucune clé n'est committée dans ce dépôt public. Crier à
@@ -275,6 +288,45 @@ describe('verifyAuthCookie — signalement du dégradé (revue S50)', () => {
 
     // Un logger cassé ne doit pas transformer un dégradé en 500 sur toutes les routes protégées.
     await expect(verifyAuthCookie('cookie-bidon', UNREADABLE_KEY, NOW)).resolves.toBe('accepted')
+
+    warn.mockRestore()
+  })
+})
+
+/**
+ * Revue S50, 2e cycle — SIGNALISATION INVERSÉE. Seul le cas rare (clé présente mais illisible)
+ * criait ; la clé simplement OUBLIÉE au déploiement — mode de panne le plus probable, puisque
+ * rien côté frontend ni côté pipeline ne l'exige — laissait #323 intégralement inerte sans le
+ * moindre symptôme observable.
+ */
+describe('verifyAuthCookie — clé absente EN PRODUCTION (revue S50, 2e cycle)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it.each([undefined, '', '   '])(
+    'AVERTIT (une seule fois) pour %o quand NODE_ENV=production',
+    async (raw) => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      for (let i = 0; i < 3; i += 1) {
+        await expect(verifyAuthCookie('cookie-bidon', raw, NOW)).resolves.toBe('accepted')
+      }
+
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]?.[0]).toContain(AUTH_PUBLIC_KEY_ENV_VAR)
+      warn.mockRestore()
+    },
+  )
+
+  it('ne LÈVE pas si console.warn lui-même lève (BUG-S45-001)', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {
+      throw new Error('transport de log en panne')
+    })
+
+    await expect(verifyAuthCookie('cookie-bidon', undefined, NOW)).resolves.toBe('accepted')
 
     warn.mockRestore()
   })

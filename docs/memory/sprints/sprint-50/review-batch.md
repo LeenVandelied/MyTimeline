@@ -128,4 +128,104 @@ Aucune régression. Les deux suites étaient vertes avant, elles le restent.
   Une variable oubliée en prod reste silencieuse — c'est la décision assumée d'ADR-004, mais elle
   n'est adossée à aucune détection. Un équivalent frontend au `ProfileSafetyGuard` reste à écrire.
 
+---
+
+# Second cycle de review (3 agents indépendants, post-`d7b8049`)
+
+> Findings NOUVEAUX, sur le code déjà corrigé par le 1er cycle.
+> Verdict : **0 CRITIQUE / 3 MAJEUR / 13 MINEUR**. Tous traités dans un commit unique.
+> Deux reviewers se contredisaient frontalement sur M1 — arbitré par le lead (voir ci-dessous).
+
+## 5. MAJEURS du 2e cycle
+
+### M1 — `application-prod.properties` écrasait la convention « aucun default » — **APPLIQUÉ**
+
+**Constat.** `application.properties:40,48` déclare `${JWT_PRIVATE_KEY}` / `${EXPORT_TOKEN_SECRET}`
+**sans default**, avec un commentaire posant la convention #34. Le fichier **prod** les réécrivait
+avec un default vide (`${JWT_PRIVATE_KEY:}`) : variable absente ⇒ résolution en `""` au lieu d'un
+échec, et **seul `ProfileSafetyGuard` s'y opposait**. Deux barrières disjointes ramenées à une.
+
+**Correctif.** Defaults retirés du fichier prod. Les deux barrières redeviennent disjointes :
+(1) placeholder irrésoluble ⇒ le boot échoue même si le listener venait à ne plus s'exécuter
+(`spring.factories` cassé, listener exclu) ; (2) `ProfileSafetyGuard` couvre la valeur **blanche**.
+
+**Ce que le correctif seul aurait coûté, et comment c'est traité.** Sans default, `getProperty`
+**lève** (« Could not resolve placeholder ») **depuis l'intérieur du garde-fou** : le boot échoue
+bien, mais sur un message opaque, et le message d'exploitation #323 est perdu. C'était l'argument
+du reviewer opposé, et il était exact. `isBlankProperty` traite donc désormais « placeholder
+irrésoluble » comme « valeur non fournie » ⇒ les deux barrières **et** le message lisible. Ancré
+par `shouldFail_withReadableMessage_whenJwtPrivateKeyPlaceholderIsUnresolvable`.
+
+### M2 — 2 `console.warn` non mockés dans `middleware.test.ts` (MEMO-007) — **APPLIQUÉ**
+
+`d7b8049` avait mocké `canonical-host.test.ts` et `auth-token-verify.test.ts`, pas
+`middleware.test.ts` — seul fichier traversant ces chemins sans mock. **Mesuré avant** (`rtk proxy
+npx vitest run middleware.test.ts`) : **2 blocs `stderr |`** (`APP_CANONICAL_HOST='pas valide'` et
+clé publique illisible). `vi.spyOn(console, 'warn')` posé sur les 2 cas, en `try/finally`.
+**Mesuré après : 0 bloc.** Le contenu des messages reste couvert par les tests unitaires dédiés.
+
+### M3 — Signalisation INVERSÉE des deux dégradés — **APPLIQUÉ**
+
+**Constat.** Le cas RARE (variable présente mais inexploitable) criait ; le mode de panne le plus
+PROBABLE — variable oubliée au premier déploiement, qu'aucun garde-fou frontend ni aucune étape de
+déploiement ne vérifie — était **volontairement muet**. Un premier déploiement oubliant les deux
+variables rend #322 et #323 **intégralement inertes**, et le seul symptôme observable est
+l'**absence** d'un warn.
+
+**Correctif.** `console.warn` **one-shot** sur variable absente **et** `NODE_ENV === 'production'`,
+dans `auth-token-verify.ts` et `canonical-host.ts`. Hors production : silence inchangé (sinon M2 est
+réintroduit partout). **Aucun fail-closed, aucun throw** (BUG-S45-001). Côté `canonical-host`, le
+signal couvre aussi la valeur vide-équivalente (`''`, `'   '`, `',,,'`) : c'est le même dégradé.
+
+## 6. MINEURS du 2e cycle — tous APPLIQUÉS
+
+| # | Fichier | Traitement |
+|---|---|---|
+| **m1** | `ExportTokenService.java:127` | `catch (RuntimeException)` : un jeton authentiquement signé, `typ` correct, sans `sub`/`uid`, atteignait `UUID.fromString(null)` ⇒ **NPE non catchée**, 500 au lieu du 404 contractuel. Contrat « `verify()` ne lève JAMAIS » rétabli, ancré par `verify_missingSubjectOrUidClaim_returnsEmpty`. |
+| **m2** | `JwtService.java` | Algorithme FIGÉ à RS256 à la lecture. `verifyWith(PublicKey)` seul laissait passer RS384/RS512/PS256, alors que l'Edge exige strictement RS256 : deux vérificateurs, deux contrats. Implémenté par **assertion d'en-tête** après `parseSignedClaims` (`Header.getAlgorithm()`, API vérifiée sur le jar jjwt 0.13.0) — et non en devinant une API de restriction. Les 3 chemins de parsing passent par le même `parseClaims`. |
+| **m3** | `JwtService.java:102` | `getPublicKeySpkiBase64()` n'avait aucun appelant dans `main/`. Le log de boot le consomme désormais (au lieu de rappeler `RsaKeyMaterial.toSpkiBase64`) : la valeur journalisée est celle que la doc d'exploitation cite. |
+| **m4** | `ProfileSafetyGuard.java` | `checkMissingSigningMaterialInProduction` (~22 l., 2 vérifications) scindé en `checkMissingJwtPrivateKeyInProduction` + `checkMissingExportTokenSecretInProduction`. |
+| **m5** | `auth-token-verify.ts` | `isTokenAuthentic` (42 l., complexité ~11) scindé : `parseJwtParts()` (décodage pur) + `isWithinTimeWindow()` (fenêtre temporelle). La fonction ne porte plus que les décisions. |
+| **m6** | `auth-token-verify.ts` | `sub` exigé (string non vide). Sans lui, tout jeton RS256 signé par cette clé ouvrait la garde. Sans impact aujourd'hui (émetteur unique) — la garde cesse d'en dépendre. 3 cas ajoutés (absent / vide / non-string). |
+| **m7** | `canonical-host.ts` | Forme URL complète : `url.username`, `url.password`, `url.pathname !== '/'` ⇒ entrée REJETÉE (donc signalée). `new URL` acceptait `https://u:p@app.example.com/x` en jetant silencieusement credential et chemin, contre l'annonce du message d'aide. `https://app.example.com/` (slash racine, copier-coller navigateur) reste accepté — cas dédié. |
+| **m8** | `docs/runbook/deploiement-profils.md` | Note ajoutée : **exiger la forme `https://…`**. Un hôte nu laisse `protocol: null`, donc un `x-forwarded-proto: http` menteur produit un `Location` en http même si le canonique est https. C'était documenté dans le code seulement. |
+| **m9** | ADR-004 §Limites + runbook | Clé publique **bien formée mais dépareillée** : 100 % des sessions renvoyées vers `/login`, **aucun signal** (ni « illisible » ni « absente » ne se déclenchent). Consignée des deux côtés **avec le remède : VIDER `AUTH_JWT_PUBLIC_KEY`**, puis recoller la valeur journalisée au boot du backend en service (jamais une valeur re-dérivée à la main). |
+| **m10** | `.github/workflows/ci.yml` | `::add-mask::` sur la clé privée jetable **avant** l'écriture dans `GITHUB_ENV`. Dépôt PUBLIC ⇒ logs publics : un step futur qui dumperait l'environnement publierait du matériel de signature. Aucun impact actuel (paire morte avec le runner) — c'est le **motif** qui est corrigé. La clé publique n'est pas masquée (pas un secret, et masquer caviarderait les diagnostics). |
+| **m11** | `.github/workflows/ci.yml` | `auth.setup.ts` ajouté au filtre de la 2e passe E2E. Le filtre sur la seule spec excluait le projet `setup` (`testMatch /.*\.setup\.ts/`), et la passe consommait le `storageState` laissé par la passe 1 (`globalSetup` ne purge que `accounts.json`) — couplage implicite entre deux steps. |
+| **m12** | `secret-exposure-audit.md:250` | §4.4 ré-ancré : `docker-compose.yml:45` portait `JWT_SECRET` (supprimé par #323) ; la zone porte aujourd'hui `JWT_PRIVATE_KEY:47` et `EXPORT_TOKEN_SECRET:51`. |
+| **m13** | `secret-exposure-audit.md:295` | R4 ré-ancré : énumération réelle de `.env.example` (ajout de `JWT_PRIVATE_KEY`, `EXPORT_TOKEN_SECRET`, `APP_CANONICAL_HOST`, `AUTH_JWT_PUBLIC_KEY`, retrait de `JWT_SECRET`). Le fond (`BREVO_API_KEY` absent) reste exact. |
+
+**Aucun mineur écarté.**
+
+**Hors périmètre, sur consigne du lead** : le marqueur `ENVIRONMENT`/`APP_ENV` non obligatoire
+(trou pré-existant #111, sévérité inchangée par cette PR) — follow-up séparé.
+
+## 7. Vérifications du 2e cycle (mesurées via `rtk proxy`)
+
+| Suite | Avant | Après | Mesure |
+|---|---|---|---|
+| Backend | 450 | **452** (+2 : NPE claims manquants, placeholder irrésoluble) | `./mvnw clean test` → BUILD SUCCESS, `Failures: 0, Errors: 0, Skipped: 0` |
+| Frontend | 788 | **806** (+18 : warns production, `sub`, formes URL rejetées) | `npx vitest run` → `Test Files 88 passed (88)`, `Tests 806 passed (806)` |
+| `stderr` de `middleware.test.ts` | 2 blocs | **0 bloc** | `rtk proxy npx vitest run middleware.test.ts \| grep -c '^stderr \|'` |
+| Lint / types | — | vert | `npm run lint` (0 warning), `npx tsc --noEmit` (0 sortie) |
+
+**Non vérifié — à ne pas confondre avec « validé » :**
+- **E2E Playwright non relancés localement.** m11 (ajout de `auth.setup.ts` au filtre) et m10
+  (`::add-mask::`) ne sont exercés que par la CI ; aucun des deux ne change une assertion de spec.
+- **Aucun boot réel** : les warns de production (M3) et le message #323 sur placeholder irrésoluble
+  (M1) sont couverts par des tests unitaires, pas observés sur une stack démarrée avec
+  `SPRING_PROFILES_ACTIVE=prod`.
+- **Bruit `stderr` résiduel ailleurs** : `src/services/exportService.test.ts` écrit encore des
+  erreurs Zod sur `stderr`. Hors périmètre de cette review (MEMO-007 non traité globalement).
+
+## 8. Reste ouvert après le 2e cycle
+
+- **Aucun garde-fou frontend bloquant.** M3 pose un *signal*, pas un fail-fast : rien n'empêche un
+  déploiement sans `APP_CANONICAL_HOST` / `AUTH_JWT_PUBLIC_KEY`. L'équivalent frontend du
+  `ProfileSafetyGuard` reste à écrire.
+- **Paire dépareillée toujours sans détection automatique** (m9) : seule la documentation couvre le
+  cas. Un endpoint JWKS le supprimerait — hors scope, noté en follow-up ADR-004.
+- **#111** (marqueur d'environnement non obligatoire) : follow-up séparé, écarté du périmètre.
+- **R1 / R4 / R6 / R7** de l'audit restent des follow-ups (inchangés).
+
 STATUS: COMPLETED

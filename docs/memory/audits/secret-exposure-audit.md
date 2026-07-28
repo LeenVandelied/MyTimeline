@@ -247,8 +247,10 @@ vague 1 (`JWT_SECRET` partagé entre `.env.example` et la CI) **n'existe plus**.
   (`YOUR_API_TOKEN`-like). Présent depuis `38d3467` (2025-03-27), 649 commits. Non exposé.
 - `scripts/flyway-validate.sh` (`FLYWAY_PASSWORD`, `PGPASSWORD`) : `ref-env-pure` / expressions
   shell composées → aucune valeur en dur.
-- `docker-compose.yml` (`POSTGRES_PASSWORD:15`, `DB_PASSWORD:40`, `JWT_SECRET:45`) :
-  `ref-env-pure` → aucune valeur en dur.
+- `docker-compose.yml` (`POSTGRES_PASSWORD:15`, `DB_PASSWORD:40`, `JWT_PRIVATE_KEY:47`,
+  `EXPORT_TOKEN_SECRET:51`) : `ref-env-pure` → aucune valeur en dur. *(Ré-ancré à la revue S50 :
+  la ligne 45 citait `JWT_SECRET`, variable SUPPRIMÉE par #323 ; c'est aujourd'hui
+  `JWT_PRIVATE_KEY` qui occupe cette zone du fichier.)*
 - `application-dev.properties` / `application-prod.properties` : `ref-env-pure` sur toutes les
   clés sensibles, sur les 558 commets concernés → aucune valeur en dur.
 
@@ -292,7 +294,7 @@ des **obligations différées au premier déploiement**, pas des actions exécut
 | R1 | Au premier provisionnement prod : générer `DB_PASSWORD` neuf, ne jamais réutiliser la valeur historique | §3.1, dépôt public | dev / opérateur |
 | R2 | ~~Laisser #323 (RS256) remplacer `JWT_SECRET`~~ — **FAIT** (`1758c0c`). Reste valable : ne jamais réintroduire de secret HS256 d'authentification | §3.2 / §4.1 | ✅ #323, vague 2 |
 | ~~R3~~ | ~~Remplacer `.env.example:26` par un placeholder explicitement marqué~~ | **SANS OBJET** — `JWT_SECRET` supprimé par #323 (`1758c0c`), cf. §4.1 | — |
-| R4 | Ajouter `BREVO_API_KEY` à `.env.example` (absent : le fichier ne liste que `SPRING_PROFILES_ACTIVE`, `DB_USERNAME`, `DB_PASSWORD`, `POSTGRES_DB`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`) | divergence avec `application.properties.example` | follow-up |
+| R4 | Ajouter `BREVO_API_KEY` à `.env.example` (absent : le fichier liste `SPRING_PROFILES_ACTIVE`, `DB_USERNAME`, `DB_PASSWORD`, `POSTGRES_DB`, `JWT_PRIVATE_KEY`, `EXPORT_TOKEN_SECRET`, `NEXT_PUBLIC_API_URL`, `APP_CANONICAL_HOST`, `AUTH_JWT_PUBLIC_KEY` — énumération ré-ancrée à la revue S50 : `JWT_SECRET` n'y figure plus depuis #323) | divergence avec `application.properties.example` | follow-up |
 | ~~R5~~ | ~~Sortir le `jwt.secret` de `application-test.properties:28`~~ | **SANS OBJET** — la clé n'existe plus ; `jwt.private-key=` est vide et la paire de test est générée au run (#323), cf. §4.1 | — |
 | R6 | Poser un scan de secrets en CI (`gitleaks`/`trufflehog`) pour empêcher toute réintroduction | aucun garde-fou automatique aujourd'hui | follow-up |
 | R7 | Exécuter la purge d'historique #112 **après** avoir acté que R1/R2 rendent les valeurs inutiles | la purge seule ne « décompromet » rien | dev |

@@ -549,6 +549,25 @@ class ProfileSafetyGuardTest {
     }
 
     @Test
+    @DisplayName("#323 placeholder JWT_PRIVATE_KEY IRRÉSOLUBLE → message #323 lisible, pas « Could not resolve placeholder »")
+    void shouldFail_withReadableMessage_whenJwtPrivateKeyPlaceholderIsUnresolvable() {
+        // Reproduit EXACTEMENT application-prod.properties depuis la revue S50 (2e cycle) :
+        // `jwt.private-key=${JWT_PRIVATE_KEY}` SANS default. Variable d'env absente ⇒ le
+        // placeholder est irrésoluble et `getProperty` LÈVE au lieu de renvoyer null.
+        // Les deux barrières doivent coexister : le boot échoue de toute façon (1re barrière,
+        // portée par le fichier de properties), MAIS l'exploitant garde le message qui nomme
+        // le problème plutôt qu'un « Could not resolve placeholder » opaque.
+        MockEnvironment env = prodEnvSatisfyingEarlierChecks()
+                .withProperty("jwt.private-key", "${JWT_PRIVATE_KEY}")
+                .withProperty("app.export.token-secret", "secret-factice");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#323")
+                .hasMessageContaining("JWT_PRIVATE_KEY");
+    }
+
+    @Test
     @DisplayName("#323 profil prod + EXPORT_TOKEN_SECRET vide → refuse de booter (message EXPORT_TOKEN_SECRET)")
     void shouldFail_whenProdProfileAndExportTokenSecretEmpty() {
         MockEnvironment env = prodEnvSatisfyingEarlierChecks()

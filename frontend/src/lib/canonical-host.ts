@@ -44,6 +44,42 @@ export const CANONICAL_HOST_ENV_VAR = 'APP_CANONICAL_HOST'
  */
 let unusableConfigWarned = false
 
+/** Idem pour « variable absente en production » (signalisation ajoutée à la revue S50, 2e cycle). */
+let missingConfigWarned = false
+
+/**
+ * Signale UNE FOIS une `APP_CANONICAL_HOST` ABSENTE **en production uniquement**.
+ *
+ * ⚠ Correction d'une signalisation INVERSÉE (revue S50, 2e cycle) : seul le cas RARE (variable
+ * présente mais inexploitable) criait, alors que le mode de panne le plus PROBABLE — variable
+ * simplement oubliée au premier déploiement — restait muet. Aucun garde-fou frontend n'impose
+ * cette variable, aucune étape de déploiement ne la vérifie : le seul symptôme d'un #322
+ * intégralement inerte était l'ABSENCE d'un avertissement.
+ *
+ * Hors production, le silence reste le comportement voulu (dev/test n'ont pas d'origine
+ * canonique, et un warn par suite de tests noierait les sorties).
+ *
+ * ⚠ Enveloppé et non levant : cf. `warnUnusableConfigOnce` (BUG-S45-001).
+ */
+function warnMissingConfigInProductionOnce(): void {
+  if (missingConfigWarned) return
+  if (process.env.NODE_ENV !== 'production') return
+  missingConfigWarned = true
+
+  try {
+    console.warn(
+      `[canonical-host] ${CANONICAL_HOST_ENV_VAR} n’est PAS définie en production. La ` +
+        'réécriture d’origine des redirections (#322) est INACTIVE : le `Location` reste dérivé ' +
+        'de `Host` / `x-forwarded-host`, donc contrôlable par l’appelant (open-redirect, ' +
+        'empoisonnement de cache si un cache mutualisé mémorise la 307). Poser l’origine ' +
+        'canonique sous la forme `https://app.example.com` (le schéma explicite protège aussi ' +
+        'contre un `x-forwarded-proto` menteur).',
+    )
+  } catch {
+    // Journaliser est un confort d'exploitation, jamais une condition de service.
+  }
+}
+
 /**
  * Signale UNE FOIS une `APP_CANONICAL_HOST` non vide dont AUCUNE entrée n'est exploitable
  * (revue S50 — même raisonnement que `auth-token-verify.ts`).
@@ -141,6 +177,13 @@ function parseEntry(entry: string): CanonicalOrigin | null {
     const url = new URL(source)
     if (!ALLOWED_PROTOCOLS.has(url.protocol) || url.hostname === '') return null
 
+    // La forme URL complète doit être une ORIGINE NUE, comme l'annonce le message d'aide
+    // (« ni chemin ni credential ») — revue S50, 2e cycle. `new URL` acceptait sans broncher
+    // `https://u:p@app.example.com/x` : seuls le protocole et l'hôte étaient retenus, le reste
+    // silencieusement jeté. Une config fautive passait donc muette, alors que la présence d'un
+    // credential ou d'un chemin signale que l'opérateur a écrit autre chose que ce qu'il croit.
+    if (url.username !== '' || url.password !== '' || url.pathname !== '/') return null
+
     return {
       host: url.host,
       hostname: url.hostname,
@@ -169,7 +212,10 @@ function parseEntry(entry: string): CanonicalOrigin | null {
  * `warnUnusableConfigOnce`. Une valeur absente reste, elle, totalement muette.
  */
 export function parseCanonicalOrigins(rawValue: string | null | undefined): readonly CanonicalOrigin[] {
-  if (rawValue === null || rawValue === undefined) return []
+  if (rawValue === null || rawValue === undefined) {
+    warnMissingConfigInProductionOnce()
+    return []
+  }
 
   const parsed: CanonicalOrigin[] = []
   // ⚠ On compte les entrées RÉELLEMENT TENTÉES, pas `rawValue.trim() !== ''` (revue S50) :
@@ -186,6 +232,10 @@ export function parseCanonicalOrigins(rawValue: string | null | undefined): read
     if (origin !== null) parsed.push(origin)
   }
 
+  // Aucune entrée tentée = valeur vide (ou vide écrite maladroitement, `',,,'`) : même dégradé
+  // volontaire qu'une variable absente, donc même signalisation (production uniquement).
+  if (attempted === 0) warnMissingConfigInProductionOnce()
+
   // Au moins une entrée tentée, aucune retenue = l'opérateur a voulu quelque chose qui n'a pas pris.
   if (attempted > 0 && parsed.length === 0) warnUnusableConfigOnce(attempted)
 
@@ -195,6 +245,7 @@ export function parseCanonicalOrigins(rawValue: string | null | undefined): read
 /** Remet à zéro le verrou d'avertissement. Réservé aux tests (isolation entre cas). */
 export function resetCanonicalHostWarning(): void {
   unusableConfigWarned = false
+  missingConfigWarned = false
 }
 
 /**

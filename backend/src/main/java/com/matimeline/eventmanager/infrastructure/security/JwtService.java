@@ -65,9 +65,13 @@ public class JwtService {
         // d'une paire dépareillée est muet et coûteux : le middleware rejette tout cookie
         // authentique, donc l'utilisateur boucle vers /login sans message d'erreur.
         // Une clé PUBLIQUE n'est pas un secret : la publier dans les logs est sans risque.
+        // ⚠ Passe par l'accesseur PUBLIC (revue S50) plutôt que de rappeler
+        // `RsaKeyMaterial.toSpkiBase64` : sans cela `getPublicKeySpkiBase64()` n'avait aucun
+        // appelant dans `main/`, et rien ne garantissait que la valeur journalisée reste bien
+        // celle que l'accesseur — seule référence citée dans la doc d'exploitation — produit.
         log.info("Clé PUBLIQUE de vérification RS256 — valeur à poser dans AUTH_JWT_PUBLIC_KEY "
                  + "côté frontend pour activer la vérification de signature du middleware : {}",
-                 RsaKeyMaterial.toSpkiBase64(this.verificationKey));
+                 getPublicKeySpkiBase64());
     }
 
     private KeyPair configuredKeyPair() {
@@ -144,21 +148,40 @@ public class JwtService {
         if (token == null) {
             return null;
         }
-        return Jwts.parser()
-                .verifyWith(verificationKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getId();
+        return parseClaims(token).getId();
     }
 
     public String extractUsername(String token) {
-        return Jwts.parser()
+        return parseClaims(token).getSubject();
+    }
+
+    /**
+     * Vérifie la signature ET FIGE l'algorithme à {@code RS256} (revue S50).
+     *
+     * <p>{@code verifyWith(PublicKey)} seul laisse jjwt accepter tout algorithme compatible
+     * avec une clé RSA — {@code RS384}, {@code RS512}, {@code PS256}… — alors que le
+     * middleware Edge (`auth-token-verify.ts`) exige STRICTEMENT {@code alg: RS256}. Les deux
+     * moitiés de la garde divergeaient donc sur leur définition de « jeton acceptable ». Non
+     * exploitable en l'état (forger un tel jeton exige la clé PRIVÉE), mais une divergence de
+     * contrat entre deux vérificateurs n'a pas à exister : {@link #generateToken} n'émet que
+     * du RS256, la lecture n'accepte que du RS256.
+     *
+     * <p>Lève une {@link JwtException} (comme le reste du chemin de parsing) : les appelants
+     * — {@code JwtFilter}, {@link #validateToken} — la traitent déjà comme « jeton refusé ».
+     */
+    private Claims parseClaims(String token) {
+        Jws<Claims> jws = Jwts.parser()
                 .verifyWith(verificationKey)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .parseSignedClaims(token);
+
+        String algorithm = jws.getHeader().getAlgorithm();
+        if (!Jwts.SIG.RS256.getId().equals(algorithm)) {
+            throw new UnsupportedJwtException(
+                    "Algorithme de signature refusé : seul " + Jwts.SIG.RS256.getId()
+                    + " est accepté (cohérence avec la vérification du middleware Edge, #323).");
+        }
+        return jws.getPayload();
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
@@ -175,11 +198,6 @@ public class JwtService {
     }
 
     private Date extractExpiration(String token) {
-        return Jwts.parser()
-                .verifyWith(verificationKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration();
+        return parseClaims(token).getExpiration();
     }
 }
