@@ -13,6 +13,15 @@ interface CtaSectionProps {
  *
  * #295 : `<Button asChild>` + `<Link>` interne, au lieu de `<Link passHref><Button>`
  * qui produisait un `<button>` dans un `<a>` (HTML invalide, double tabulation).
+ *
+ * Sprint 48 — critère d'acceptation n°8 de #56 (« la page est responsive mobile »).
+ * Le variant Button impose `whitespace-nowrap` et `h-9` : combiné à `px-10 py-6
+ * text-lg`, le libellé forçait une largeur de 465 px, soit plus que les 375 px du
+ * viewport mobile — la PAGE entière gagnait un scroll horizontal. `whitespace-normal`
+ * laisse le libellé se replier ; `h-auto` évite que la 2ᵉ ligne soit rognée par la
+ * hauteur fixe du variant. Défaut PRÉEXISTANT au sprint (mêmes classes dans le
+ * monolithe `HomePage` d'origine), pas une régression du passage à `asChild` — ce
+ * bouton n'est pas un flex item et n'a donc jamais souffert de la troncature du hero.
  */
 export function CtaSection({ locale }: CtaSectionProps) {
   const t = useTranslations()
@@ -26,7 +35,7 @@ export function CtaSection({ locale }: CtaSectionProps) {
         </p>
         <Button
           asChild
-          className="bg-primary text-primary-ink hover:bg-primary-hover rounded-lg px-10 py-6 text-lg transition-all"
+          className="bg-primary text-primary-ink hover:bg-primary-hover h-auto rounded-lg px-10 py-6 text-lg whitespace-normal transition-all"
         >
           <Link href={`/${locale}/register`}>{t('common.landing.cta.button')}</Link>
         </Button>
