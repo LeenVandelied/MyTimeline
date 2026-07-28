@@ -244,6 +244,53 @@ test.describe('#205 Timeline mobile — rotation', () => {
     await expect(page.getByTestId('timeline-sheet')).toContainText(eventTitle)
     await expect(page.getByTestId('timeline-zoom-level')).toHaveText(zoomedLevel ?? '')
   })
+
+  /**
+   * #328 — Le `scrollLeft` est le SEUL état qui ne traversait pas la rotation :
+   * porté par le DOM de la variante démontée (mesuré 400 → 0), là où zoom et
+   * sélection vivent en state React au-dessus. Ce test l'asserte explicitement
+   * (l'ancien test de rotation ne couvrait que zoom + sélection).
+   *
+   * Nuance NON contournable : le navigateur CLAMPE `scrollLeft` à
+   * `scrollWidth - clientWidth`, et `clientWidth` grandit en paysage (390 → 844).
+   * La cible attendue est donc `min(position portrait, max de scroll paysage)`.
+   */
+  test('portrait → paysage → portrait conserve le scroll horizontal (#328)', async ({ page }) => {
+    await seedAndOpenTimeline(page, 'portrait')
+
+    const geometry = (locator: Locator) =>
+      locator.evaluate((el) => ({
+        scrollLeft: el.scrollLeft,
+        maxScroll: el.scrollWidth - el.clientWidth,
+      }))
+
+    const portraitScroll = page.getByTestId('timeline-scroll')
+    // Défilement utilisateur : on vise 400px, borné par l'étendue réelle du rail.
+    await portraitScroll.evaluate((el) => {
+      el.scrollLeft = Math.min(400, el.scrollWidth - el.clientWidth)
+    })
+    const before = await geometry(portraitScroll)
+    expect(before.scrollLeft).toBeGreaterThan(0)
+
+    // --- Rotation → PAYSAGE -------------------------------------------------
+    await page.setViewportSize(LANDSCAPE_SHORT)
+    await expect(page.getByTestId('timeline-mobile-landscape')).toBeVisible()
+
+    const landscapeScroll = page.getByTestId('timeline-scroll')
+    const afterRotate = await geometry(landscapeScroll)
+    expect(afterRotate.scrollLeft).toBeGreaterThan(0)
+    expect(afterRotate.scrollLeft).toBeCloseTo(
+      Math.min(before.scrollLeft, afterRotate.maxScroll),
+      0,
+    )
+
+    // --- Rotation retour → PORTRAIT -----------------------------------------
+    await page.setViewportSize(PORTRAIT)
+    await expect(page.getByTestId('timeline-mobile-portrait')).toBeVisible()
+
+    const back = await geometry(page.getByTestId('timeline-scroll'))
+    expect(back.scrollLeft).toBeCloseTo(Math.min(afterRotate.scrollLeft, back.maxScroll), 0)
+  })
 })
 
 /* ========================================================================== */

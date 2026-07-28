@@ -39,9 +39,28 @@ import {
  *
  * `viewportStart` / `zoom.level` restent en state React et NE sont PAS réinitialisés
  * au resize (préparation #64 : rotation portrait↔paysage sans perte de contexte).
+ *
+ * #328 — `scrollLeft` était le SEUL morceau d'état resté purement DOM : il vivait
+ * sur l'élément de la variante (portrait OU paysage), donc la rotation le
+ * détruisait avec le démontage de cette variante (mesuré : 400 → 0). Il est
+ * désormais mémorisé au DÉTACHEMENT de la ref et restauré à l'ATTACHEMENT de la
+ * variante suivante, via la ref CALLBACK `setScrollNode` (à câbler sur le
+ * conteneur scrollable À LA PLACE de `scrollRef`). Le déclencheur est le
+ * changement de variante lui-même, pas le montage du hook — `scrollToToday` ne
+ * rejoue donc PAS et n'écrase pas la position utilisateur (inversion du bug).
  */
 export interface TimelineMobileState {
+  /**
+   * Lecture seule : l'élément scrollable actuellement monté. Le câblage JSX passe
+   * par `setScrollNode` (#328), pas par cette ref.
+   */
   scrollRef: RefObject<HTMLDivElement | null>
+  /**
+   * #328 — Ref CALLBACK du conteneur scrollable (`ref={state.setScrollNode}`).
+   * Mémorise `scrollLeft` au démontage d'une variante et le restaure sur la
+   * suivante ; au tout premier attachement, centre sur aujourd'hui.
+   */
+  setScrollNode: (node: HTMLDivElement | null) => void
   /** #69 — Rail interne : repère de mesure de la virtualisation. */
   railRef: RefObject<HTMLDivElement | null>
   /** #69 — Bande horizontale rendue (px), cf. `virtualization.ts`. */
@@ -86,7 +105,7 @@ export function useTimelineMobileState(
   today?: Date,
 ): TimelineMobileState {
   const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   const railRef = useRef<HTMLDivElement>(null)
   const [viewportStart, setViewportStart] = useState(0)
   const [viewportRatio, setViewportRatio] = useState(1)
@@ -183,10 +202,55 @@ export function useTimelineMobileState(
     el.scrollLeft = Math.max(0, target)
   }, [todayLeftPx])
 
-  // Centrage initial sur aujourd'hui (une fois au montage).
-  useEffect(() => {
-    scrollToToday()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // #328 — Valeurs fraîches lisibles depuis `setScrollNode`, dont l'identité doit
+  // rester STABLE (une ref callback re-créée serait rappelée null→node à chaque
+  // rendu, ce qui rejouerait une restauration parasite).
+  const railWidthRef = useRef(railWidth)
+  railWidthRef.current = railWidth
+  const todayLeftPxRef = useRef(todayLeftPx)
+  todayLeftPxRef.current = todayLeftPx
+  const rawOnScrollRef = useRef(rawOnScroll)
+  rawOnScrollRef.current = rawOnScroll
+
+  /** Position mémorisée au démontage de la variante précédente (px + échelle). */
+  const detachedScrollRef = useRef<{ scrollLeft: number; railWidth: number } | null>(null)
+  /** Le centrage initial sur aujourd'hui n'a lieu qu'au TOUT premier attachement. */
+  const anchoredRef = useRef(false)
+
+  const setScrollNode = useCallback((node: HTMLDivElement | null) => {
+    // Détachement : la variante est démontée, on sauve l'état DOM AVANT sa perte.
+    if (node === null) {
+      const previous = scrollRef.current
+      if (previous) {
+        detachedScrollRef.current = {
+          scrollLeft: previous.scrollLeft,
+          railWidth: railWidthRef.current,
+        }
+      }
+      scrollRef.current = null
+      return
+    }
+
+    scrollRef.current = node
+    const saved = detachedScrollRef.current
+    detachedScrollRef.current = null
+
+    if (saved) {
+      // Rotation : l'échelle du rail ne change pas avec l'orientation → report en
+      // px à l'identique. Si elle a changé malgré tout (zoom pendant le switch),
+      // on reporte la FRACTION pour rester cohérent avec `viewportStart`.
+      node.scrollLeft =
+        saved.railWidth > 0 && railWidthRef.current > 0 && saved.railWidth !== railWidthRef.current
+          ? (saved.scrollLeft / saved.railWidth) * railWidthRef.current
+          : saved.scrollLeft
+    } else if (!anchoredRef.current) {
+      node.scrollLeft = Math.max(0, todayLeftPxRef.current - node.clientWidth / 2)
+    }
+    anchoredRef.current = true
+
+    // Resynchronise la fenêtre minimap sur le scroll RÉEL de la variante montée :
+    // `clientWidth` change avec l'orientation → `viewportRatio` doit suivre.
+    rawOnScrollRef.current()
   }, [])
 
   const zoomIn = useCallback(() => dispatch({ type: 'ZOOM_IN' }), [])
@@ -199,6 +263,7 @@ export function useTimelineMobileState(
 
   return {
     scrollRef,
+    setScrollNode,
     railRef,
     horizontalBand: viewport.horizontal,
     verticalBand,
