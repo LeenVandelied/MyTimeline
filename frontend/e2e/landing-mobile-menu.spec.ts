@@ -241,6 +241,102 @@ test.describe('Landing — menu burger (375 px)', () => {
         test.info().annotations.push({ type: 'contraste-menu', description: measured.join(' | ') })
         expect(measured.length).toBeGreaterThan(0)
       })
+
+      /**
+       * Sélecteur de langue du panneau — item de la LOCALE ACTIVE.
+       *
+       * Il n'était couvert nulle part : la spec ne contenait aucune référence à
+       * `language`/`locale`, alors que #334 monte `LanguageSelector` DANS le
+       * panneau. L'item actif pose `bg-accent text-accent-foreground` ; il
+       * portait aussi `hover:bg-surface-2`, qui ne change QUE la surface et
+       * laisse l'encre d'accent en place.
+       *
+       * Le survol souris SEUL ne le montre pas : Radix focalise l'item au
+       * `pointermove` et le `focus:bg-accent` de `ui/dropdown-menu.tsx` gagne
+       * (mesuré 4.71:1 en clair / 6.94:1 en sombre). L'état qui découvre le
+       * défaut est MIXTE : souris posée sur l'item actif, puis navigation au
+       * CLAVIER vers un autre item — le focus part, le `:hover` reste. Mesuré
+       * AVANT correctif : **1.10:1 en clair** (#ffffff sur #f3f4f6) et
+       * **1.17:1 en sombre** (#0b0c0e sur #1b1e24). Ce test fige les trois
+       * états, car la conformité des deux premiers dépend d'un ordre de cascade
+       * (`focus:` vs `hover:`) que rien d'autre ne garantit.
+       *
+       * OUVERTURE AU CLAVIER, obligatoire : `trigger.click()` part en timeout et
+       * `element.click()` en JS ne déclenche rien — Radix ouvre sur
+       * `pointerdown`, pas sur `click`. `focus()` + `Enter` fonctionne.
+       */
+      test('sélecteur de langue : la locale active reste lisible (repos, survol, souris+clavier)', async ({
+        page,
+      }) => {
+        await gotoLanding(page)
+        const panel = await openMenu(page)
+
+        const trigger = panel.locator('button[data-slot="dropdown-menu-trigger"]')
+        await expect(trigger).toHaveCount(1)
+        await trigger.focus()
+        await page.keyboard.press('Enter')
+        const content = page.locator('[data-slot="dropdown-menu-content"]')
+        await expect(content).toBeVisible()
+
+        // Le menu est portalisé donc hors du panneau : les animations figées par
+        // `openMenu` l'ont été avant sa création. `nextjs-portal` est l'overlay
+        // du serveur de dev Next, en bas à gauche : il intercepte les événements
+        // pointeur exactement là où ce menu s'ouvre à 375 px (constaté : timeout
+        // sur `hover()`). Absent en CI, la règle y est sans effet.
+        await page.addStyleTag({
+          content:
+            '*, *::before, *::after { transition: none !important; animation: none !important } nextjs-portal { display: none !important }',
+        })
+
+        // Ancrage structurel : la locale active est celle dont le lien pointe
+        // vers le chemin courant (`/fr`). Aucun libellé en dur.
+        const active = content.locator('a[href="/fr"] [role="menuitem"]')
+        const other = content.locator('a[href="/en"] [role="menuitem"]')
+        await expect(active).toHaveCount(1)
+        await expect(other).toHaveCount(1)
+
+        const measured: string[] = []
+
+        const rest = await readAtRest(page, active)
+        measured.push(describeRendering('langue/active (repos)', rest))
+        expect
+          .soft(rest.ratio, describeRendering('langue/active (repos)', rest))
+          .toBeGreaterThanOrEqual(requiredRatio(rest))
+
+        await active.hover()
+        measured.push(
+          describeRendering(
+            'langue/active (survol)',
+            await expectReadable(active, 'langue/active (survol)'),
+          ),
+        )
+
+        // ÉTAT MIXTE : la souris reste sur l'item actif (elle y est depuis le
+        // `hover()`), le clavier déplace le focus ailleurs. C'est ici que le
+        // `hover:bg-*` s'applique SEUL, sans l'encre appariée du `focus:`.
+        await page.keyboard.press('ArrowDown')
+        await page.keyboard.press('ArrowDown')
+        await expect(active).not.toHaveAttribute('data-highlighted', /.*/)
+        measured.push(
+          describeRendering(
+            'langue/active (souris posée + clavier)',
+            await expectReadable(active, 'langue/active (souris posée + clavier)'),
+          ),
+        )
+
+        // L'item NON actif garde `hover:bg-surface-2` : il n'impose aucune
+        // encre, mais le même état mixte doit rester lisible.
+        await other.hover()
+        await page.keyboard.press('ArrowUp')
+        measured.push(
+          describeRendering(
+            'langue/inactive (souris posée + clavier)',
+            await expectReadable(other, 'langue/inactive (souris posée + clavier)'),
+          ),
+        )
+
+        test.info().annotations.push({ type: 'contraste-langue', description: measured.join(' | ') })
+      })
     })
   }
 })
