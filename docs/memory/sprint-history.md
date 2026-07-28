@@ -1236,7 +1236,10 @@ Ratio discard 0/10 — les follow-ups de ce sprint viennent tous d'observations 
 **Dépend de :** **S47** (couverture E2E frise — satisfait : `timeline.spec.ts` 21.4K + `timeline-mobile.spec.ts` 15.5K sur `92c14c4`) · **S48/#293** pour #336 (token `--color-rule-emphasis` — satisfait : `colors.css:58` et `:106`)
 **Branche :** `sprint/49` depuis `origin/dev` @`92c14c4`
 **Mini-plans :** `docs/memory/sprints/sprint-49/architect-plans.md`
-**Status :** **En cours**
+**Status :** **En cours — PR #345 ouverte le 2026-07-28** (`sprint/49` → `dev`), en attente de CI et de `/sprint end 49`
+**Commits :** 16 · **Volume :** 70 fichiers, +7447 / −451 · **Tests :** 688 unitaires / 92 E2E, 0 échec (baseline avant sprint : 677 / 68)
+**Review batch :** 1 CRITIQUE / 3 MAJEURS / 7 MINEURS — bloquants et majeurs tous résolus (`8d2ccdd`, `b1ebed4`)
+**Artefacts :** `docs/memory/sprints/sprint-49/` (5 `issue-*-done.md`, 2 verdicts design, `review-batch.md`) · `docs/memory/audits/sprint-49-test-coverage.md` · `docs/adr/ADR-007-virtualisation-timeline.md`
 
 > **⚠ Périmètre élargi le 2026-07-28 — décision dev, le plan du 16/07 disait mono-issue.** Le triage de clôture S48 a versé 4 issues `epic:design` au milestone Sprint 49, dont **#334 et #335 remplissent les 2 critères d'acceptation de #56 restés non remplis** : sans elles, la landing du S48 n'est pas réellement livrée. Le dev a choisi de les prendre plutôt que de les renvoyer au backlog. **Cohésion volontairement sacrifiée** (2 domaines, `epic:events` + `epic:design`, cohésion ≈ 0.2 contre 1.0 en mono-issue) au profit du solde de dette. Label `sprint-49` posé sur #334-#337 le 2026-07-28.
 >
