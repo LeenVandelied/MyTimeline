@@ -1198,6 +1198,25 @@ Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejet
 
 **Nouveaux pitfalls / décisions / patterns :** `PIT-S48-001` (contraste bi-mode, 4 fonds à valider) · `PIT-S48-002` (Tailwind scanne les commentaires ; `\bborder-rule\b` matche `border-rule-emphasis`) · `PIT-S48-003` (reveal-on-scroll sans repli = page invisible) · `PIT-S48-004` (bascule d'URL vs constantes E2E) · `PIT-S48-005` (`asChild` remonte `overflow`/cascade sur le `<a>` — les 2 régressions) · `PAT-S48-001` (tester cascade/layout sans navigateur via AST PostCSS) · `DEC-S48-293` (tier bordure fonctionnelle) · `DEC-S48-056` (route canonique) · `DEC-S48-002` (layerisation ciblée de `base.css`).
 
+**Follow-ups arbitrés (Phase 4 triage — décision dev : créer les 10) :**
+Aucun discard. 10 issues créées via `project-manager` (taxonomie complète appliquée, aucun label manquant) :
+
+| Issue | Sujet | Triage | Milestone |
+|---|---|---|---|
+| **#334** | Header landing non responsive — **c'est le critère #8 non rempli** | M / P1 | Sprint 49 |
+| **#335** | `landing.css` hex hors palette + doublons — **débloque le critère #3** | M / P1 | Sprint 49 |
+| **#336** | Dette WCAG AA `border-rule-strong` (~30 occurrences hors landing) | M / P1 | Sprint 49 |
+| **#337** | Contrôle de contraste CTA automatisé (E2E) | M / P1 | Sprint 49 |
+| **#338** | Page de mentions légales | S / P2 | backlog |
+| **#339** | `h1..h6 { margin: 0 }` non-layerisé annule les `mb-*` | S / P2 | backlog |
+| **#340** | Audit des CSS non-layerisés restants | S / P2 | backlog |
+| **#341** | SVG inline débordant ~30px à 375px | S / P2 | backlog |
+| **#342** | `LanguageSelector` — même famille a11y que #295 | XS / P3 | backlog |
+| **#343** | Frise hero — easing hors DS + import CSS mal scopé | XS / P3 | backlog |
+
+Ratio discard 0/10 — les follow-ups de ce sprint viennent tous d'observations mesurées (navigateur, AST CSS, revue ui-design), aucun signalement spéculatif.
+⚠ **#334 et #335 conditionnent les 2 critères d'acceptation de #56 restés non remplis** — les traiter avant de considérer la landing comme livrée.
+
 > **Périmètre réel ≠ milestone.** Le milestone GitHub #48 porte 6 issues ouvertes, mais 4 (#328, #329, #330, #331 — `epic:events`) sont les **follow-ups du Sprint 47** parqués là par `/sprint end` (piège connu, cf. mémoire `mytimeline-sprint-end-github-gotchas`). Le périmètre S48 = les 2 issues portant le label `sprint-48` : **#293 + #56** (`epic:design`).
 >
 > **Ancrage code pré-vague (lead, 2026-07-27) :** les 8 fichiers + 6 répertoires cités par `architect-plans.md` sont **tous vérifiés existants**. `grep rule-emphasis frontend/src` = **0 hit** → `possibly_done: false` confirmé pour #293. `HeroSection.tsx:40` utilise bien `border-ink-muted` (emprunt S39) et `HeroSection.tsx:32` porte bien une imbrication `<Link passHref><Button>` (#295).
