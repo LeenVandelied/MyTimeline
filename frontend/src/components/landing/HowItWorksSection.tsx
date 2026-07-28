@@ -19,10 +19,10 @@ export function HowItWorksSection() {
     <section id="how-it-works" className="section-animation py-20">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+          <h2 className="mb-4 text-lg leading-tight font-bold md:text-xl">
             {t('common.landing.howItWorks.title')}
           </h2>
-          <p className="text-ink-muted mx-auto max-w-3xl text-xl">
+          <p className="text-ink-muted text-md mx-auto max-w-3xl md:text-lg">
             {t('common.landing.howItWorks.subtitle')}
           </p>
         </div>
@@ -33,7 +33,7 @@ export function HowItWorksSection() {
               <div className="bg-accent-soft mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
                 <span className="text-accent text-2xl font-bold">{step}</span>
               </div>
-              <h3 className="text-ink mb-2 text-xl font-bold">
+              <h3 className="text-ink text-md mb-2 font-bold md:text-lg">
                 {t(`common.landing.howItWorks.step${step}.title`)}
               </h3>
               <p className="text-ink-muted">
