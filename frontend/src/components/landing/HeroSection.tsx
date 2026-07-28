@@ -29,6 +29,21 @@ interface HeroSectionProps {
  * sémantique cassée pour les lecteurs d'écran. `asChild` (Radix `Slot`) reporte les
  * classes du bouton sur l'ancre — un seul élément interactif, rendu identique.
  *
+ * Sprint 48 — corollaire de mise en page du passage à `asChild`. Le `<a>` étant
+ * désormais le flex item ET le porteur de `.cta-button`, il hérite de son
+ * `overflow: hidden` (nécessaire pour clipper la brillance `.cta-button::before`) :
+ * par la spec flexbox, un flex item dont l'`overflow` n'est pas `visible` a une
+ * taille minimale automatique de ZÉRO. Le CTA primaire absorbait donc toute la
+ * compression de la rangée — 130 px rendus pour 268 px de contenu à 1280 px, soit
+ * « cer gratuit » coupé en plein mot. `min-w-min` rétablit le plancher `min-content`
+ * sans toucher à `overflow`, donc sans casser la brillance. En complément :
+ * `whitespace-normal` + `h-auto` (le variant Button impose `whitespace-nowrap` et
+ * `h-9`) laissent les libellés se replier au lieu de forcer une largeur supérieure
+ * au viewport mobile, et la rangée passe en `gap-4` + `sm:flex-wrap` — les deux
+ * boutons demandent ~860 px pour 584 px disponibles à 1280 px, ils doivent donc
+ * pouvoir revenir à la ligne. `gap-*` et non `space-x-*` : les marges de ce dernier
+ * ne se réinitialisent pas en début de ligne. Garde-fou : `HeroSection.flex-min-size.test.tsx`.
+ *
  * #56 — la frise horizontale animée vit dans `HeroTimelineAnimation`, sous les deux
  * colonnes. La mise en page flex d'origine descend d'un cran (du `<section>` vers un
  * `<div>` interne) pour que la frise occupe toute la largeur au lieu de devenir une
@@ -45,10 +60,10 @@ export function HeroSection({ locale }: HeroSectionProps) {
             {t('common.landing.hero.title')}
           </h1>
           <p className="text-ink-muted mb-8 text-xl">{t('common.landing.hero.subtitle')}</p>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <Button
               asChild
-              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink rounded-lg px-8 py-6 text-lg transition-all"
+              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
             >
               <Link href={`/${locale}/register`}>
                 {t('common.landing.hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
@@ -57,7 +72,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
             <Button
               asChild
               variant="outline"
-              className="border-rule-emphasis text-ink hover:bg-surface rounded-lg px-8 py-6 text-lg transition-all"
+              className="border-rule-emphasis text-ink hover:bg-surface h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
             >
               <a href="#how-it-works">{t('common.landing.hero.secondary')}</a>
             </Button>
