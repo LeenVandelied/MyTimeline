@@ -25,8 +25,16 @@ cd backend && SKIP_DELEGATION=1 ./mvnw --batch-mode --no-transfer-progress -Dski
 ```
 
 ```bash
-cd backend && SPRING_PROFILES_ACTIVE=dev,e2e DB_URL=jdbc:postgresql://localhost:5432/eventmanager_e2e DB_USERNAME=eventuser DB_PASSWORD=motdepasse_dev_local JWT_SECRET=Q0lPbmx5SW5zZWN1cmVKd3RTZWNyZXRGb3JFMkVUZXN0c09ubHkwMTIzNDU2Nzg5 RATE_LIMIT_ENABLED=false java -jar target/eventmanager-0.0.1-SNAPSHOT.jar --app.cors.allowed-origins=http://localhost:3000,http://localhost:3100
+cd backend && SPRING_PROFILES_ACTIVE=dev,e2e DB_URL=jdbc:postgresql://localhost:5432/eventmanager_e2e DB_USERNAME=eventuser DB_PASSWORD=motdepasse_dev_local RATE_LIMIT_ENABLED=false java -jar target/eventmanager-0.0.1-SNAPSHOT.jar --app.cors.allowed-origins=http://localhost:3000,http://localhost:3100
 ```
+
+> ⚠ **Corrigé au Sprint 50** : `JWT_SECRET` (HS256) **n'existe plus** depuis #323 — la ligne
+> d'origine le posait encore, sans effet (Spring ignore une variable inconnue, l'auth marchait
+> quand même via la paire éphémère). L'auth signe désormais en **RS256** : sans variable, le
+> backend génère une paire ÉPHÉMÈRE au boot et **journalise la clé publique**. Pour exercer la
+> vérification de signature du middleware Edge, il faut une paire APPAIRÉE
+> (`JWT_PRIVATE_KEY` côté backend + `AUTH_JWT_PUBLIC_KEY` côté frontend) : recette complète en
+> tête de `frontend/e2e/auth-signature.spec.ts`.
 
 Prêt quand `GET http://localhost:8080/api/auth/me` renvoie **401** (et non `000`).
 

@@ -4,6 +4,7 @@ import { SHARED } from './support/accounts'
 // Playwright, qui n'a pas la même résolution que le bundler Next. `locales.ts` est
 // pur (aucun import Node/Next), il se charge donc tel quel. Source de vérité #235.
 import { SUPPORTED_LOCALES } from '../src/i18n/locales'
+import { SIGNATURE_VERIFICATION_CONFIGURED } from './support/rs256'
 
 /**
  * #302 — Garde SERVEUR des routes connectées (`middleware.ts`, cf. ADR-004).
@@ -179,11 +180,26 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     //
     // La vérification de signature elle-même est couverte en UNITAIRE :
     // `frontend/middleware.test.ts` (§ signature RS256) et
-    // `frontend/src/lib/auth-token-verify.test.ts`.
+    // `frontend/src/lib/auth-token-verify.test.ts`, et désormais en E2E par
+    // `e2e/auth-signature.spec.ts` sur une stack appairée (audit de couverture S50).
     //
-    // Si ce test se met à échouer, c'est que `AUTH_JWT_PUBLIC_KEY` a été posée
-    // dans l'environnement e2e -> réécrire ce cas pour attendre une 307, et
-    // mettre à jour ADR-004, plutôt que de « réparer » le test.
+    // ⚠ LES DEUX MODES SONT MUTUELLEMENT EXCLUSIFS sur une même instance Next : la
+    // variable est lue au RUNTIME par le middleware, une instance est donc soit
+    // dégradée, soit vérifiante. Ce cas ne peut pas rester inconditionnel — lancé
+    // contre une stack appairée, il échouait (200 attendu, 307 reçu) alors que le
+    // code se comportait CORRECTEMENT. On le conditionne donc à la configuration
+    // observable, plutôt que de le figer sur un seul des deux mondes :
+    //   - clé absente (config CI historique)  -> ce cas s'exécute (contrat #302) ;
+    //   - clé présente (stack appairée)       -> `auth-signature.spec.ts` prend le
+    //     relais et affirme la 307 sur ce même cookie bidon.
+    // Ne pas « réparer » ce test en durcissant l'assertion : ce serait supprimer la
+    // couverture du dégradé, qui reste le mode réellement déployé en CI.
+    test.skip(
+      SIGNATURE_VERIFICATION_CONFIGURED,
+      'AUTH_JWT_PUBLIC_KEY configurée : le middleware VÉRIFIE la signature, le cookie bidon ' +
+        'est donc rejeté (307). Cas couvert par e2e/auth-signature.spec.ts.',
+    )
+
     await context.addCookies([
       { name: 'jwt', value: 'ceci-n-est-pas-un-jwt', url: 'http://localhost:3000' },
     ])
