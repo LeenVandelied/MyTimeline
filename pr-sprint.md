@@ -1,76 +1,140 @@
 ## Objectif
 
-Virtualiser la frise pour les gros volumes d'événements (**#69**) **et** solder la dette design laissée par le Sprint 48 (**#334**, **#335**, **#336**, **#337**).
+Durcir la chaîne d'authentification : la garde serveur du S45 devient une **vraie barrière**
+(vérification de signature en Edge, pas seulement présence du cookie), l'origine des redirections
+cesse de dépendre d'un en-tête fourni par l'appelant, et la dette « secrets exposés » est enfin
+instruite avec des preuves.
 
-> **Périmètre élargi en cours de route.** Le plan du 16/07 prévoyait un sprint mono-issue (#69 seul). Le triage de clôture du S48 avait versé 4 issues `epic:design` au milestone Sprint 49, dont **#334 et #335 remplissent les 2 critères d'acceptation de #56 restés non remplis** : sans elles, la landing du S48 n'était pas réellement livrée. Décision dev au démarrage : les prendre. Cohésion volontairement sacrifiée (2 domaines) au profit du solde de dette.
+Milestone : **Sprint 50** (#50). Cohésion 0.52. Aucune migration Flyway.
 
 ## Issues traitées
 
-| Issue | Sujet | État |
+| # | Titre | État |
 |---|---|---|
-| **#69** | Virtualisation de la frise (> 1000 événements) | Livrée, 2 réserves perf/a11y |
-| **#334** | Header de la landing non responsive | Livrée — **critère n°8 de #56 enfin fermé** |
-| **#335** | `landing.css` hors palette + règles dupliquées | Livrée, 5/5 critères |
-| **#336** | Dette WCAG AA sur les bordures de contrôle | Livrée, 1 réserve de validation |
-| **#337** | Contrôle de contraste automatisé sur les CTA (E2E) | Livrée, 4/4 critères |
+| #322 | Durcir le risque résiduel d'en-tête `Host` dans la garde middleware | Livrée |
+| #323 | Passer le JWT en signature asymétrique RS256 pour vérification en Edge | Livrée |
+| #249 | Rotation des secrets exposés dans l'historique git | **Partielle — reste ouverte** |
 
-**Zéro fichier backend, zéro migration Flyway** (vérifié). Sprint intégralement frontend.
+> ⚠ **#249 ne doit pas être fermée par cette PR.** Les trois critères opérationnels (régénérer et
+> redéployer `DB_PASSWORD`, `JWT_SECRET`, tester post-rotation) sont **inatteignables** : le projet
+> n'est pas déployé (`gh secret list` vide, aucun environnement, aucun workflow de déploiement).
+> Cette PR livre l'audit, l'inventaire manquant et le runbook corrigé. La rotation effective revient
+> au dev au premier déploiement.
 
-## Ce que la CI ne pouvait pas voir — 5 défauts trouvés en rendu réel
+## Quatre prémisses du plan infirmées au démarrage (mesurées, pas supposées)
 
-Le Sprint 48 avait livré des défauts visibles par l'utilisateur avec une **CI entièrement verte** : `jsdom` ne résout ni la précédence des `@layer` CSS ni aucune mise en page. Ce sprint en a trouvé cinq de plus, tous par mesure en navigateur :
-
-1. **4 CTA invisibles au survol** — 1,00 / 1,03 / 1,07 / 3,83:1. Héros de la landing, `/fr/privacy`, `/fr/terms`, et les ancres du menu burger. Cause commune : la paire `hover:bg-*` + `hover:text-*` est **cassable par construction** — `tailwind-merge` ne fusionne pas deux propriétés distinctes, donc un consommateur qui surcharge le fond conserve l'encre et obtient du texte de la couleur du fond.
-2. **`landing.css` n'était pas layerisé** : ses littéraux **battaient** les classes `border-rule` posées au S48 → **la migration DS du sprint précédent n'avait jamais pris effet** sur ces cartes.
-3. **`@keyframes pulse` non préfixé** écrasait `animate-pulse` de Tailwind **pour toute l'application** (squelettes de chargement).
-4. **L'échelle typo du DS écrase celle de Tailwind** : `--text-3xl` vaut **57 px** et `--text-4xl` n'existe pas, donc `md:text-4xl` **rétrécissait** les titres au desktop, et `h1` (36 px) était plus petit que `h2` (57 px) en mobile — hiérarchie inversée.
-5. **Le harnais de contraste lui-même se trompait du côté permissif** (un `fillStyle` invalide compositait un noir opaque en silence ; `effectiveOpacity` n'était jamais appliqué).
+1. **`#249` n'avait aucune cible de rotation.** Projet non déployé, aucun secret configuré nulle
+   part. L'exposition historique est en revanche **réelle** : `53175da` portait un
+   `spring.datasource.password` (10 car.) et un `jwt.secret` (128 car.) littéraux ; `c6ea19e` un
+   secret de test (68 car.). **Le dépôt est PUBLIC** — ces valeurs sont définitivement compromises,
+   la purge d'historique (#112) n'y changera rien. `BREVO_API_KEY` n'a **jamais** été exposée
+   (scan sur 727 commits, 3 angles d'attaque).
+2. **`docs/memory/devops/external-services-inventory.md` n'existait pas**, alors que le rapport
+   architecte l'annonçait présent (« la dépendance F3 est levée ») et que le runbook S35 comme la
+   règle de sécurité globale le référencent par ce chemin exact. **Chemin fantôme, 4ᵉ sprint
+   consécutif.** Le fichier est créé ici, avec sa §3quater.
+3. **L'option (a) de `#322` — « Host canonique au proxy » — était inapplicable** : aucun
+   reverse-proxy dans le dépôt (`docker-compose.yml` = postgres + backend + frontend,
+   `.github/workflows/` = `ci.yml` seul). Remplacée, sur décision du dev, par un **Host canonique
+   par variable d'environnement** (`APP_CANONICAL_HOST`), fail-closed et testable sans infra.
+4. **Le périmètre RS256 était sous-estimé** : `ExportTokenService` est un **second** consommateur de
+   `${jwt.secret}` que le plan ne voyait pas. Sans le traiter, l'étape « retirer `JWT_SECRET` de la
+   config » était inexécutable. Décision : clé dédiée `EXPORT_TOKEN_SECRET`, HS256 conservé (ces
+   jetons ne sont vérifiés que côté serveur).
 
 ## Changements clés
 
-**Frise (#69)** — virtualisation **maison sur 2 axes**, `package.json` **inchangé** : ni `@tanstack/react-virtual` ni `react-window` ne conviennent (leur modèle `index → estimateSize` ne s'applique pas à des intervalles absolus chevauchants). Décision et mesures dans **`docs/adr/ADR-007-virtualisation-timeline.md`**.
+**#322 — origine canonique des redirections** (`bf9dec0`)
+- Nouveau module pur `frontend/src/lib/canonical-host.ts`, appliqué en aval via
+  `withCanonicalOrigin` — couvre la 307 de la garde **et** les redirections de next-intl, qui
+  dérivent toutes de `request.nextUrl`.
+- Variable non configurée ⇒ dégradé explicite (comportement d'avant #322), jamais un 500.
+- ⚠ **L'agent a infirmé une partie de l'énoncé de l'issue** : sur ce runtime self-hosté, `initURL`
+  dérive de l'hôte de *bind*, pas de l'en-tête `Host` — un `Host` falsifié ne déplaçait déjà pas la
+  redirection (mesuré au `curl`, 3 cas). Le correctif est de la **défense en profondeur**, et
+  redevient nécessaire avec `trustHostHeader` ou sur plateforme edge. Écrit tel quel dans l'ADR.
 
-À 1000 événements : commit **145,9 → 52,0 ms**, peint **301,7 → 81,5 ms**, pastilles montées **1000 → 51**, nœuds DOM **3889 → 584**, scroll horizontal p95 **108,3 → ~17 ms**. Hauteur de page identique avant/après (5995 px) — virtualisation géométriquement transparente.
+**#323 — signature RS256 vérifiable en Edge** (`1758c0c`)
+- `JwtService` migré en RS256 ; clé publique **dérivée** de la privée côté backend (pas de seconde
+  variable serveur). Signature publique de la classe inchangée ⇒ **aucun des 15 consommateurs
+  modifié**.
+- Vérification Edge en **WebCrypto natif** — aucune dépendance ajoutée. `alg === 'RS256'` exigé
+  avant tout appel cryptographique (`alg: none` et HS256-signé-avec-la-publique rejetés des deux
+  côtés).
+- `ExportTokenService` bascule sur `EXPORT_TOKEN_SECRET` : l'isolation auth ↔ download est
+  désormais **double** (claim `typ` + matériel de clé disjoint).
+- `ProfileSafetyGuard` gagne un 6ᵉ garde-fou : refus de boot en prod si les clés manquent.
+  Dev/test/CI : paire RS256 **éphémère générée au boot** — zéro clé committée (dépôt public).
+- Bascule **sèche**, sans double émission transitoire : rien n'est déployé, aucun parc
+  d'utilisateurs à ménager, et un double chemin de signature serait une surface d'attaque.
 
-**Landing (#334, #335)** — `landing.css` et `animations.css` entièrement sur tokens DS, 4 règles dédoublonnées ; header responsive avec menu burger off-canvas (focus-trap, Escape, overlay, 4 locales) ; échelle typographique réalignée sur le DS. **Aucun scroll horizontal** à 320 / 375 / 390 px en `fr`, `de` et `es`.
+**#249 — audit d'exposition** (`3f0f1b2`)
+- `docs/memory/audits/secret-exposure-audit.md`, `docs/memory/devops/external-services-inventory.md`
+  (nouveau, §3quater), runbook corrigé. Aucune valeur de secret n'apparaît nulle part.
 
-**Accessibilité (#336)** — bordures de contrôle migrées vers `--color-rule-emphasis`, y compris via le pont shadcn `--color-input`. Arbitrage **fonctionnel / décoratif documenté in-situ** dans `core.css` (7 migrées, 7 laissées volontairement). Bouton outline : **1,46 → 3,97:1**.
+**Correctifs de review** (`d7b8049`) · **Couverture E2E** (`44bc3cc`).
 
-**Harnais (#337)** — helper de contraste (luminance WCAG 2.x, fond composité, normalisation canvas pour `color-mix()`) + 22 tests E2E. **Deux tests validés par mutation** : ils rougissent bien quand on régresse.
+## BR impactées
 
-## Tests
+- **BR-AUT-007** amendée : le cookie d'authentification est désormais signé en **RS256** (émission
+  et validation), et sa signature est vérifiable côté Edge sans exposer de secret d'émission.
+- Jetons de téléchargement d'export (#58, ADR-003) : mécanisme inchangé, **matériel de clé séparé**.
+  Le contrat « `verify()` ne lève jamais » est préservé.
 
-| Suite | Avant | Après |
-|---|---|---|
-| Frontend unitaire | 677 | **688 passed / 0 failed** |
-| E2E Playwright | 68 | **92 passed / 0 failed / 1 skipped** (skip pré-existant) |
-| Backend | — | **non exécutée : zéro fichier backend dans le diff** |
+## Review batch
 
-`tsc --noEmit` OK · eslint OK · prettier OK. **+24 tests E2E, zéro régression.**
+**0 CRITIQUE / 3 MAJEUR / 6 MINEUR** — tous résolus (`d7b8049`).
 
-**5 garde-fous AST créés** : palette de la landing, tier des bordures de contrôle, appariement de survol (`button` et `landing`), cascade `@layer`. Trois d'entre eux ont leur **détecteur testé**.
+Majeurs :
+1. **Dégradé silencieux sur clé illisible** — une `AUTH_JWT_PUBLIC_KEY` tronquée faisait accepter
+   100 % des cookies sans aucun signal, et le test E2E qui documente le dégradé restait vert.
+   `console.warn` one-shot ajouté quand la variable est **présente mais inexploitable** (absente =
+   dégradé volontaire, reste muet).
+2. **Audit auto-contradictoire** — l'audit de vague 1 décrivait comme « en dur au HEAD » trois
+   valeurs que #323 avait supprimées en vague 2, sur la même branche. §4 ré-ancrée sur `1758c0c`.
+3. **`APP_CANONICAL_HOST` absente du runbook de déploiement** — oubli garanti au premier
+   déploiement, donc dégradé open-redirect silencieux.
 
-Audit complet : `docs/memory/audits/sprint-49-test-coverage.md`.
+Le correcteur a par ailleurs **infirmé une partie du mineur m1** : le repli Base64 à 76 colonnes
+n'existe pas sur BSD/macOS (donc invisible depuis le poste de dev) mais bien en conteneur Linux —
+mesuré, 6 lignes pour 300 octets. Correctif appliqué avec la nuance en commentaire.
 
-## Review
+## Audit tests
 
-Review batch : **1 critique, 3 majeurs, 7 mineurs, 8 points `[OK]`** — verdict initial `BLOQUANT`.
+`docs/memory/audits/sprint-50-test-coverage.md`
 
-Le critique était que **le sprint réintroduisait le défaut qu'il corrigeait** (`LandingMobileMenu.tsx`, 3,83:1 mesuré en clair). Corrigé, avec extension du garde-fou AST à `components/landing/`. Les 3 majeurs (menu burger sans couverture E2E, CTA « Connexion » mesuré par aucun test, harnais permissif) sont fermés. Détail : `docs/memory/sprints/sprint-49/review-batch.md`.
+| Suite | Résultat |
+|---|---|
+| Backend | **450 / 450** |
+| Frontend (Vitest) | **788 / 788**, 88 fichiers |
+| E2E signature (stack appairée) | **12 / 0** |
+| E2E suite complète (mode dégradé, config CI) | **96 passed / 8 skipped / 0 failed** |
 
-## Réserves assumées — à trancher au triage de clôture
+**Preuve anti-faux-positif** (leçon S49 — « CI verte ≠ page correcte ») : un E2E de garde peut être
+vert en mode dégradé et ne rien prouver. Trois preuves ont été exigées : clé publique du backend
+identique octet à octet à celle du frontend, sonde `curl` avec cookie bidon ⇒ 307, et **fail-closed
+exécuté** — la même spec relancée contre un Next sans clé passe à 5 rouges sur 7.
 
-1. **#69, critère 3 partiel** : aucun freeze (frame max 33,4 ms contre 133,4), mais 60 fps pas tenus en continu sur fling à 7200 px/s (7–10 frames sur 89 > 16,7 ms).
-2. **#69, budget redéfini** : l'issue demandait « < 16 ms par frame » ; retenu ≤100 ms commit / ≤150 ms peint, au motif que 16 ms est un budget de frame et non de montage. **Écart aux termes écrits.**
-3. **#69, a11y** : `aria-rowcount`/`aria-rowindex` demandés par l'issue, remplacés par `role="list"` + `aria-setsize` (les premiers exigent un rôle `grid` incompatible avec le pattern de #81). Justifié en ADR-007. **Écart aux termes écrits.**
-4. **#336** : `EventEditForm` non ouvert en navigateur (session requise → backend). Contraste **prouvé** par mesure du couple utilitaire/fond identique ; mise en page du formulaire non validée.
-5. **Dégradation acceptée** : icône corbeille des catégories 4,76 → **3,87:1** en clair. Reste ≥ 3:1 (WCAG 1.4.11, non-texte) mais sous 4,5. Coût direct du découplage de survol.
-6. **Débordement à 768 px** (+90 à +108 px selon la locale) — groupe droit du header au palier `md`. **Pré-existant**, vérifié inchangé par ce sprint, hors périmètre de #334.
-7. **Lecteur d'écran réel non testé** (#69) : rôles et labels vérifiés au code et au DOM uniquement.
-8. **V16 toujours non consommée — 12e sprint sans migration.** Le chemin Flyway n'a pas tourné à froid depuis le S39 ; un smoke `flyway migrate` sur base vierge reste à faire.
+## Risques résiduels assumés
 
-## Follow-ups identifiés (à créer au triage)
+- **Aucun garde-fou frontend n'impose `AUTH_JWT_PUBLIC_KEY` ni `APP_CANONICAL_HOST` en production**
+  (pas d'équivalent frontend au `ProfileSafetyGuard`) ⇒ un oubli dégrade silencieusement. Follow-up.
+- **La 2ᵉ passe E2E ajoutée à `ci.yml` n'a jamais tourné sur un runner GitHub** — step de keygen
+  exécuté verbatim en local. À observer au premier push ; `e2e` n'est pas un check requis.
+- **Révocation `jti` non vérifiable en Edge** — `JwtFilter` reste seul juge. Inchangé.
+- **Clé publique dépareillée ⇒ boucle vers `/login`** (remède : vider la variable). La clé publique
+  est désormais journalisée au boot dans les deux cas pour éviter la re-dérivation manuelle.
+- **Repli Base64 GNU** vérifié en alpine, pas sur l'image de déploiement finale.
+- **Aucun boot réel observé** pour le log de clé publique et les `console.warn` des correctifs.
 
-`ui/dropdown-menu.tsx` (4) + `ui/select.tsx` (1) : **même couplage sous `focus:`**, confirmé au grep · `TimelineView.tsx` cales sans `role="presentation"` · `useTimelineViewport.ts` listener `scroll` en capture sur `window` · `TimelineCalendar.tsx` (114 l., mort depuis le S42) à supprimer · mémoïsation des lanes · accroche du héros et numéros d'étape désormais plus gros que les `h2` · logo du header (57 px) plus gros que le `h1` (48 px) · `LanguageSelector` : cible 36 px < 44 px **et** chaîne française en dur · `.eslintcache` tracké à gitignorer · pas de `data-testid` sur les 5 CTA de la landing.
+## Follow-ups proposés (triage en `/sprint end`)
+
+Endpoint JWKS · garde-fou frontend prod pour les deux variables · couverture E2E du mode « clé
+présente mais illisible » · consolidation des pitfalls périmés (PIT-S13-003, PIT-S15-003, pattern
+`${JWT_SECRET}`) · `.env.example` sans `BREVO_API_KEY` · scan de secrets en CI
+(gitleaks/trufflehog) · `brevo.api.key` sans fail-fast prod · #250 (socle livré, à compléter) ·
+#112 purge d'historique, à séquencer après le premier provisionnement.
+
+---
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
