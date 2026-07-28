@@ -1236,7 +1236,48 @@ Ratio discard 0/10 — les follow-ups de ce sprint viennent tous d'observations 
 **Dépend de :** **S47** (couverture E2E frise — satisfait : `timeline.spec.ts` 21.4K + `timeline-mobile.spec.ts` 15.5K sur `92c14c4`) · **S48/#293** pour #336 (token `--color-rule-emphasis` — satisfait : `colors.css:58` et `:106`)
 **Branche :** `sprint/49` depuis `origin/dev` @`92c14c4`
 **Mini-plans :** `docs/memory/sprints/sprint-49/architect-plans.md`
-**Status :** **Terminé** (clôture 2026-07-28) — PR **#345** `sprint/49` → `dev`, CI 4/4 verte, `mergeState=CLEAN`. Les 5 issues fermées.
+**Status :** **Terminé et mergé** le 2026-07-28 — PR **#345** `sprint/49` → `dev`, commit de merge **`e30d4b0`**, CI 4/4 verte sur `7ef13d1`. Les 5 issues fermées, **milestone #49 fermé** (0 ouverte / 5 fermées — aucun follow-up orphelin n'y a été parqué, le piège récurrent est évité).
+
+### Addendum — review de PR post-sprint (`/ai-env:review-pr 345`)
+
+Une **seconde review**, en 3 zones parallèles (frise / harnais E2E / landing-DS), a tourné après l'audit
+de clôture. Verdict **`MERGEABLE`, aucun `[CRITIQUE]`** — mais **10 `[MAJEUR]` et 15 `[MINEUR]`**, dont
+**6 corrigés** sur arbitrage dev (`592dd4c`, `eb67781`), les autres partant en suivi.
+
+**Le finding principal : un 5e élément illisible, de la même famille que les 4 déjà corrigés.**
+`ui/language-selector.tsx` — l'item de locale **active** portait `bg-accent text-accent-foreground` puis
+`hover:bg-surface-2`. Mesuré : au **survol souris seul, 4,71:1 — CONFORME**, car Radix focalise l'item au
+`pointermove` et son `focus:bg-accent` restaure le fond. Mais dans l'état **souris posée + flèches
+clavier** (`:hover` reste, `:focus` part) : **1,10:1 en clair, 1,17:1 en sombre**. Les deux hypothèses
+étaient vraies simultanément — d'où la consigne « mesurer avant de corriger », qui a évité une rustine
+posée sur un défaut mal compris. Corrigé + assertion E2E (3 états × 2 thèmes).
+
+**Trois défauts de permissivité DANS le harnais lui-même** (un filet qui se trompe de ce côté est pire
+que pas de filet) : un `break` partagé qui tronquait l'accumulation d'opacité · les `background-image`
+traversés en silence (`landing.css:27` porte un `linear-gradient`) · `toBeGreaterThan(0)` laissant passer
+**1 CTA mesuré sur 5**. Plus 2 gardes AST aveugles à `cn()`/`clsx()` et à la chaîne de base du `cva`.
+
+**Signal de qualité :** le harnais durci a **immédiatement rougi** au premier run, sur 2 tests de survol
+qui mesuraient avant révélation de section. Corrigé par séquencement, **seuil non relâché**.
+
+**Nouveaux pièges :** `PIT-S49-007` (Tailwind v4 scanne les `.test.ts` → un témoin contenant une classe
+utilitaire plausible génère du CSS invalide et met l'app en **500**, avec boucle auto-entretenue via les
+`error-context.md` de Playwright) · `PIT-S49-008` (défaut de contraste n'existant que dans l'état mixte
+souris + clavier).
+
+**Tests finaux :** **691 unitaires** · **94 E2E** · 0 échec.
+
+**Non corrigé, à ouvrir en suivi :** `useTimelineViewport` sans `ResizeObserver` et son verrou
+`measurable:false` (déduits du code, **aucun déclencheur live trouvé**) · **zéro test sur les 282 lignes
+du hook** · `timeline-lane-list`/`timeline-lane-spacer` sans spec E2E — or ce sont les seuls marqueurs
+qui prouveraient le **critère 4 de #69**, celui que jsdom ne peut pas prouver · Escape du dropdown
+portalisé fermant tout le panneau du menu · verrou de scroll du body absent · les 15 `[MINEUR]`.
+
+> **Nettoyage des briefings — écart assumé au skill.** La Phase 6 prescrit de supprimer tous les
+> `briefing-*.md`. **`briefing-336.md` est CONSERVÉ** : il porte *verbatim* l'affirmation erronée du lead
+> (« les formulaires auth ont ZÉRO `border-rule-strong` en TSX »), source directe de `PIT-S49-003`. Même
+> raisonnement qu'au S48, qui avait conservé les siens pour documenter 2 régressions. Les 4 autres sont
+> supprimés (−150 Ko) : leur contenu est intégralement restitué par les `issue-*-done.md`.
 
 ### Bilan d'exécution Sprint 49 (2026-07-28)
 
