@@ -87,7 +87,18 @@ issue_336:
   couches_touchees: ["frontend"]
   strategie_test: "unit (mise à jour des assertions) + contrôle navigateur clair/sombre sur auth + formulaire d'événement"
   risque_regression: |
-    ⚠ LE CORPS DE L'ISSUE SE TROMPE SUR LE MÉCANISME — corrigé par grep du lead sur 92c14c4 :
+    ❌❌ CE BLOC ÉTAIT FAUX — INVALIDÉ LE 2026-07-28 par le fullstack-dev, vérifié par le lead.
+    Le grep du lead était lancé depuis `frontend/` sur `src` seul et a RATÉ `frontend/app/**`
+    (App Router hors de `src/`) — le piège « app router = frontend/app/ » DÉJÀ en mémoire projet.
+    Les formulaires auth portaient bien **10** occurrences de `border-rule-strong`
+    (login 2, register 5, reset-password 2, forgot-password 1). LE CORPS DE L'ISSUE AVAIT RAISON.
+    Inventaire réel sur la base 92c14c4 : `frontend/src` = 21 + `frontend/app` = 14 → **35** (pas 33).
+    Tests à mettre à jour : **5** (les 4 auth annoncés par l'issue + StateScreen.test.tsx), pas 1.
+    Mécanisme réel que NI l'issue NI le briefing ne citaient : `globals.css:105`
+    `--color-input: var(--color-rule-strong)` = pont shadcn de Input/SelectTrigger/Button outline.
+    Voir `issue-336-done.md` pour l'inventaire vérifié. Le texte d'origine est conservé ci-dessous
+    à titre de trace de l'erreur — NE PAS s'y fier.
+    ---- texte d'origine, ERRONÉ ----
     les formulaires login/register/reset-password/forgot-password ont **ZÉRO** occurrence de
     `border-rule-strong` en TSX. Leurs bordures viennent de `ds/components/core.css`
     (14 déclarations `var(--color-rule-strong)` aux l. 18, 34, 49, 71, 84, 100, 109, 123, 135, 154,
