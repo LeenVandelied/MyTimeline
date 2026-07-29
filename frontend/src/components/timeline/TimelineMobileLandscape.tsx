@@ -211,6 +211,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                 <div role="list" aria-label={category} data-testid="timeline-lane-list">
                   {laneWindow.topSpacerPx > 0 && (
                     <div
+                      role="presentation"
                       aria-hidden="true"
                       data-testid="timeline-lane-spacer"
                       style={{ height: `${laneWindow.topSpacerPx}px` }}
@@ -289,6 +290,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                   })}
                   {laneWindow.bottomSpacerPx > 0 && (
                     <div
+                      role="presentation"
                       aria-hidden="true"
                       data-testid="timeline-lane-spacer"
                       style={{ height: `${laneWindow.bottomSpacerPx}px` }}
