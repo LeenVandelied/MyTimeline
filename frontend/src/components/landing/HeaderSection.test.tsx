@@ -65,31 +65,72 @@ describe('HeaderSection', () => {
   })
 
   /**
-   * #334 — le groupe droit débordait de 173 px à 375 px. Sous `md`, seuls le CTA
-   * « Inscription » et le burger restent dans le header ; le sélecteur de langue et
-   * « Connexion » passent derrière la classe de bascule `hidden md:flex`.
+   * #334 — le groupe droit débordait de 173 px à 375 px. Sous le point de bascule, seuls
+   * le CTA « Inscription » et le burger restent dans le header ; le sélecteur de langue et
+   * « Connexion » passent derrière la classe `hidden lg:flex`.
+   * #347 — bascule remontée de `md` à `lg` : le palier tablette (768–1023 px) rendait la
+   * mise en page desktop et débordait de 90 à 108 px selon la locale.
    */
-  it('masque sous `md` le sélecteur de langue et « Connexion » (#334)', () => {
+  it('masque sous `lg` le sélecteur de langue et « Connexion » (#334, seuil #347)', () => {
     const { container } = render(<HeaderSection locale="fr" />)
     const secondary = container.querySelector('header > div:last-of-type > div')
     expect(secondary?.className).toContain('hidden')
-    expect(secondary?.className).toContain('md:flex')
+    expect(secondary?.className).toContain('lg:flex')
+    expect(secondary?.className).not.toContain('md:flex')
     expect(within(secondary as HTMLElement).getByText('common.login.title')).toBeInTheDocument()
   })
 
-  it('garde « Inscription » visible à toute largeur et le burger sous `md` (#334)', () => {
+  /**
+   * #347 — les ancres de navigation desktop suivent le MÊME palier que le reste du
+   * groupe secondaire : elles réapparaissaient à `md` et pesaient 302 à 322 px à elles
+   * seules, mesurées au navigateur, dans un conteneur de 736 px utiles.
+   */
+  it('ne fait réapparaître la navigation desktop qu’à `lg` (#347)', () => {
+    const { container } = render(<HeaderSection locale="fr" />)
+    const nav = container.querySelector('header nav')
+    expect(nav?.className).toContain('hidden')
+    expect(nav?.className).toContain('lg:flex')
+    expect(nav?.className).not.toContain('md:flex')
+  })
+
+  it('garde « Inscription » visible à toute largeur et le burger sous `lg` (#334, seuil #347)', () => {
     render(<HeaderSection locale="fr" />)
     const register = screen.getByText('common.landing.buttons.register')
     // `classList` et pas `className` : la classe utilitaire `focus-visible:outline-hidden`
     // du Button contient la sous-chaîne « hidden » et fausserait un `toContain`.
     expect(register.classList.contains('hidden')).toBe(false)
-    expect(register.classList.contains('md:hidden')).toBe(false)
+    expect(register.classList.contains('lg:hidden')).toBe(false)
 
     const toggle = screen.getByTestId('landing-header-menu-toggle')
-    expect(toggle.classList.contains('md:hidden')).toBe(true)
+    expect(toggle.classList.contains('lg:hidden')).toBe(true)
+    expect(toggle.classList.contains('md:hidden')).toBe(false)
     // Cible tactile 44x44 (h-11 w-11 = --space-11 = 44px).
     expect(toggle.classList.contains('h-11')).toBe(true)
     expect(toggle.classList.contains('w-11')).toBe(true)
+  })
+
+  /**
+   * #347 — GARDE-FOU DE SYNCHRONISATION. Le burger, l'overlay et le panneau doivent
+   * porter le MÊME palier que la requête `matchMedia` de `HeaderSection`. Désynchronisés,
+   * `useFocusTrap` tourne sur un panneau masqué : Escape avalé pour toute la page et
+   * tabulation piégée dans un dialogue invisible, burger disparu.
+   * Ce que ce test NE prouve PAS : que le palier CSS vaut bien 1024 px — jsdom ne résout
+   * aucune media query. La frontière 1023/1024 est mesurée au navigateur (E2E).
+   */
+  it('applique le même palier au burger, à l’overlay et au panneau (#347)', async () => {
+    const user = userEvent.setup()
+    render(<HeaderSection locale="fr" />)
+    await user.click(screen.getByTestId('landing-header-menu-toggle'))
+
+    for (const testId of [
+      'landing-header-menu-toggle',
+      'landing-header-menu-overlay',
+      'landing-header-menu',
+    ]) {
+      const el = screen.getByTestId(testId)
+      expect(el.classList.contains('lg:hidden'), `${testId} n’est pas en lg:hidden`).toBe(true)
+      expect(el.classList.contains('md:hidden'), `${testId} est resté en md:hidden`).toBe(false)
+    }
   })
 
   it('expose un burger correctement câblé en ARIA (#334)', async () => {

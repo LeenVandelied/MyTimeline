@@ -37,6 +37,19 @@ const MOBILE = { width: 375, height: 812 } as const
 const SCHEMES = ['light', 'dark'] as const
 
 /**
+ * #347 — paliers de largeur couverts par la mesure de débordement.
+ *
+ * `TABLET` est le palier ajouté : 768 et 820 px tombaient dans la mise en page
+ * desktop (bascule à `md`) tout en n'ayant que 736 px utiles. 1024 px est la borne
+ * haute, premier pixel où la navigation desktop revient légitimement.
+ * `PHONE` reprend les largeurs déjà propres depuis #334 : non-régression.
+ */
+const PHONE_WIDTHS = [320, 375, 390] as const
+const TABLET_WIDTHS = [768, 820] as const
+const DESKTOP_MIN = 1024
+const LOCALES = ['fr', 'en', 'de', 'es'] as const
+
+/**
  * Ouvre le panneau et fige les animations. Renvoie le panneau.
  *
  * Le clic est RÉESSAYÉ tant que le panneau n'apparaît pas. `HeaderSection` est
@@ -178,14 +191,17 @@ test.describe('Landing — menu burger (375 px)', () => {
     expect(opened.bodyScrollWidth).toBeLessThanOrEqual(opened.clientWidth)
   })
 
-  test('le passage en `md` referme le panneau au lieu de le masquer', async ({ page }) => {
+  test('le passage en `lg` referme le panneau au lieu de le masquer', async ({ page }) => {
     await gotoLanding(page)
     await openMenu(page)
 
-    // À `md`, `md:hidden` masque le panneau — mais si l'état restait vrai, le
+    // À `lg`, `lg:hidden` masque le panneau — mais si l'état restait vrai, le
     // focus-trap continuerait de tourner (Escape avalé pour toute la page,
     // tabulation piégée) sur un dialogue invisible, burger disparu.
-    await page.setViewportSize({ width: 1280, height: 800 })
+    // #347 : on franchit EXACTEMENT le premier pixel desktop (1024) et non 1280.
+    // À 1280 le test restait vert même si `LG_BREAKPOINT_QUERY` et les classes
+    // `lg:hidden` se désynchronisaient de quelques dizaines de pixels.
+    await page.setViewportSize({ width: DESKTOP_MIN, height: 800 })
     await expect(page.getByTestId(MOBILE_MENU.panel)).toHaveCount(0)
 
     // Preuve que l'ÉTAT a été remis à faux et pas seulement le rendu masqué :
@@ -337,6 +353,134 @@ test.describe('Landing — menu burger (375 px)', () => {
 
         test.info().annotations.push({ type: 'contraste-langue', description: measured.join(' | ') })
       })
+    })
+  }
+})
+
+/**
+ * #347 — DÉBORDEMENT HORIZONTAL DU HEADER, TOUS PALIERS × 4 LOCALES.
+ *
+ * POURQUOI CE BLOC EXISTE. L'assertion `scrollWidth <= clientWidth` de #334 ne
+ * tournait QU'À 375 px et QU'EN `fr`. Le palier tablette n'était donc mesuré par
+ * personne, et le défaut y est resté entier après #334 : mesuré au navigateur au
+ * HEAD 473ed65, à 768 px, `documentElement.scrollWidth` valait 871 (fr), 858 (de)
+ * et 876 (es) pour 768 de `clientWidth`.
+ *
+ * ⚠ CETTE MESURE EXIGE PLAYWRIGHT. jsdom ne clampe pas les métriques de
+ * défilement (on y écrit 400 dans `scrollLeft`, on relit 400) et ne résout ni la
+ * mise en page ni les media queries : un test unitaire serait vert quoi qu'il
+ * arrive. Cf. PIT « les tests de scroll sous jsdom ne prouvent rien » (S51) et
+ * « CI verte ≠ page correcte » (S48).
+ *
+ * La locale compte : `de` et `es` sont les plus larges, une mesure faite en `fr`
+ * seul sous-estime le débordement. `en` est le cas trompeur — il ne débordait PAS
+ * à 768 px avant correctif (mesuré 768/768), il tenait à 0,1 px près.
+ */
+test.describe('Landing — aucun débordement horizontal, tous paliers', () => {
+  const measureOverflow = (page: Page) =>
+    page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+    }))
+
+  for (const width of [...PHONE_WIDTHS, ...TABLET_WIDTHS, DESKTOP_MIN]) {
+    const tier = PHONE_WIDTHS.includes(width as (typeof PHONE_WIDTHS)[number])
+      ? 'non-régression #334'
+      : 'palier #347'
+
+    test(`${width} px — ${tier} — les 4 locales`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      const failures: string[] = []
+
+      for (const locale of LOCALES) {
+        await page.goto(`/${locale}`, { waitUntil: 'domcontentloaded' })
+        await waitForFonts(page)
+        const m = await measureOverflow(page)
+
+        // `expect.soft` : on veut le tableau COMPLET des locales fautives dans le
+        // rapport, pas seulement la première. Le débordement dépend de la longueur
+        // des libellés traduits — corriger `fr` sans regarder `de`/`es` a déjà
+        // produit un faux « corrigé » au S49.
+        expect
+          .soft(
+            m.scrollWidth,
+            `débordement à ${width} px en ${locale} : scrollWidth=${m.scrollWidth} > clientWidth=${m.clientWidth}`,
+          )
+          .toBeLessThanOrEqual(m.clientWidth)
+        expect
+          .soft(
+            m.bodyScrollWidth,
+            `débordement du body à ${width} px en ${locale} : ${m.bodyScrollWidth} > ${m.clientWidth}`,
+          )
+          .toBeLessThanOrEqual(m.clientWidth)
+
+        if (m.scrollWidth > m.clientWidth) {
+          failures.push(`${locale}:+${m.scrollWidth - m.clientWidth}px`)
+        }
+      }
+
+      test.info().annotations.push({
+        type: 'débordement',
+        description: `${width} px — ${failures.length === 0 ? 'aucun' : failures.join(', ')}`,
+      })
+    })
+  }
+
+  /**
+   * FRONTIÈRE EXACTE DU PALIER — le garde-fou de synchronisation.
+   *
+   * `LG_BREAKPOINT_QUERY` (`HeaderSection.tsx`) est un `matchMedia` écrit en JS ;
+   * le burger, l'overlay et le panneau sont masqués par des classes `lg:hidden`.
+   * Rien dans le typage ne relie les deux : ils peuvent diverger silencieusement.
+   * On vérifie donc qu'ils basculent au MÊME pixel — 1023 côté mobile, 1024 côté
+   * desktop. En cas de divergence, le focus-trap tourne sur un panneau masqué et
+   * avale l'`Escape` de toute la page, burger disparu : régression invisible.
+   */
+  test('le burger et la navigation desktop basculent au même pixel (1023/1024)', async ({
+    page,
+  }) => {
+    const toggle = page.getByTestId(MOBILE_MENU.toggle)
+    const nav = page.locator('header nav')
+
+    await page.setViewportSize({ width: DESKTOP_MIN - 1, height: 900 })
+    await page.goto('/fr', { waitUntil: 'domcontentloaded' })
+    await waitForFonts(page)
+    await expect(toggle, 'le burger doit être visible au dernier pixel du palier tablette').toBeVisible()
+    await expect(nav, 'la navigation desktop ne doit pas être visible à 1023 px').toBeHidden()
+    expect(await page.evaluate(() => window.matchMedia('(min-width: 64rem)').matches)).toBe(false)
+
+    await page.setViewportSize({ width: DESKTOP_MIN, height: 900 })
+    await expect(toggle, 'le burger doit disparaître au premier pixel desktop').toBeHidden()
+    await expect(nav, 'la navigation desktop doit revenir à 1024 px').toBeVisible()
+    expect(await page.evaluate(() => window.matchMedia('(min-width: 64rem)').matches)).toBe(true)
+  })
+
+  /**
+   * Le panneau doit rester ATTEIGNABLE sur tout le palier tablette : c'est lui qui
+   * porte désormais les ancres de navigation, « Connexion » et le sélecteur de
+   * langue entre 768 et 1023 px. Sans cela, le correctif de débordement rendrait
+   * la navigation inaccessible — le critère 4 de l'issue (tout reste atteignable).
+   */
+  for (const width of TABLET_WIDTHS) {
+    test(`${width} px — le panneau donne accès à la navigation et à « Connexion »`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/fr', { waitUntil: 'domcontentloaded' })
+      await waitForFonts(page)
+
+      const panel = await openMenu(page)
+      await expect(panel.locator('nav a')).toHaveCount(3)
+      await expect(panel.locator('a[href="/fr/login"]')).toHaveCount(1)
+
+      // Le panneau lui-même ne doit pas réintroduire de débordement : il est en
+      // `fixed`, mais `min(320px,85vw)` reste dans le cadre à toute largeur.
+      const m = await measureOverflow(page)
+      expect(
+        m.scrollWidth,
+        `débordement panneau ouvert à ${width} px : ${JSON.stringify(m)}`,
+      ).toBeLessThanOrEqual(m.clientWidth)
     })
   }
 })
