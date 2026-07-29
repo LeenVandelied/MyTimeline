@@ -83,6 +83,43 @@ ci-dessous.
 
 `[COVERAGE-E2E] OK` — **aucun `data-testid` ajouté** (aucun `.tsx` modifié). Rien à couvrir.
 
+## ⚠ Régression introduite par la 1ʳᵉ passe de #339, attrapée par la CI E2E — et ce qu'elle apprend
+
+**La vérification navigateur du lead sur la landing était VERTE, la suite unitaire aussi (834/834), et
+la régression est passée quand même.** Seule la CI E2E l'a vue.
+
+**Le défaut.** Layeriser les 5 propriétés en bloc faisait céder `line-height` devant l'appariement porté
+par les utilitaires `text-*` (Tailwind 4 pose `line-height: var(--tw-leading, var(--text-lg--line-height))`,
+défauts émis dans `@layer theme` que notre `@theme inline` ne remappe pas). Mesuré au navigateur :
+`h2.text-lg` **29,16px (1.08) → 42px (1,5556)**, `h1.text-xl` **37,8px → 49px**. **28 titres** du dépôt
+portent `text-*` sans `leading-*` explicite → **dérive systémique et silencieuse du rythme typographique.**
+
+**Le symptôme.** `e2e/settings-mobile.spec.ts:19` rouge : le sheet de suppression de compte, grandi
+d'environ 13px par titre, interceptait au centre du viewport (375×812) le clic destiné au backdrop.
+**Reproductible** — échec à la 1ʳᵉ passe, au retry Playwright *et* à un rerun complet du job — alors que
+`origin/dev` (`2966994`) était **vert 2 fois** sur ce même job, et que `settings-mobile` n'avait **jamais**
+échoué auparavant (S52 échouait sur `landing-mobile-menu`, S51 sur `timeline-mobile`).
+
+**Correctif** (`3bd635a`) : `line-height` **sorti du layer**, seul ; les 4 autres propriétés y restent
+(elles *doivent* céder, c'est l'objet de #339). Valeurs restaurées à 1.08, acquis de #339 préservés
+(`mb 12px` / `fw 700` / bascule mono vérifiés). Contrepartie assumée : un `leading-*` explicite sur un
+titre ne peut plus gagner — impact réel **nul**, les 6 titres concernés portent `leading-tight` = 1.08.
+
+**Trois leçons, dans l'ordre d'importance :**
+1. **`ui-design` avait raison et le lead l'a écrasé.** Son verdict disait `line-height : RESTE GAGNANTE`.
+   Le lead a imposé « layeriser les 5 en bloc » en croyant que mapper `--leading-*` dans `@theme`
+   suffisait. **C'est faux** : le mapping gouverne les utilitaires nommées `leading-*`, **pas**
+   l'appariement porté par `text-*`. Quand un spécialiste pose une réserve précise sur UNE propriété,
+   l'écraser demande une preuve — pas une inférence.
+2. **Le test AST de 11 tests n'a rien vu**, parce qu'il prouve l'*appartenance à un layer*, pas une
+   *valeur gagnante sur un élément réel*. Deux tests ont été ajoutés pour couvrir exactement ça
+   (rang de layer comparé entre `h1..h6` et `.text-lg`), **validés par mutation** : remettre
+   `line-height` dans `@layer base` les fait rougir.
+3. **Une vérification navigateur sur une seule page ne suffit pas** quand le rayon de souffle est
+   transverse. La landing était verte parce que ses titres portent `leading-tight` **explicite** — 
+   précisément les 6 seuls du dépôt qui étaient protégés. Les surfaces non vérifiables en local
+   (settings/dashboard/products) portaient tout le risque.
+
 ## Réserves (ne pas les perdre au merge)
 
 1. **Surfaces authentifiées jamais ouvertes** — dashboard, settings, products, timeline. C'est là que

@@ -1730,7 +1730,45 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 **Migrations Flyway :** aucune
 **Branche :** `sprint/53` créée sur `origin/dev` à `2966994` (merge PR #374)
 **Depend de :** aucune — ⚠ vérification navigateur clair+sombre OBLIGATOIRE (jsdom aveugle, pitfall S48)
-**Status :** En cours
+**Commits :** 4 — `40665fc` (#339) · `a4c4a6c` (#340) · `f5c09c8` (artefacts) · `3bd635a` (correctif régression)
+**Tests :** Frontend **836/836** · Backend **452/452** · **CI 4/4 verts** (dont `e2e`, 5m51s)
+**Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 1 MINEUR**
+**Status :** En cours — PR #382 ouverte, CI verte, en attente de `/sprint end 53`
+
+> **⚠ Régression introduite par la 1ʳᵉ passe de #339, attrapée par la SEULE CI E2E.** Layeriser les
+> **5** propriétés en bloc faisait céder `line-height` devant l'appariement porté par les utilitaires
+> `text-*` (Tailwind 4 pose `line-height: var(--tw-leading, var(--text-lg--line-height))`, défauts émis
+> dans `@layer theme` que notre `@theme inline` ne remappe pas). Mesuré : `h2.text-lg`
+> **29,16px (1.08) → 42px**, `h1.text-xl` **37,8px → 49px**. **28 titres** portent `text-*` sans
+> `leading-*` explicite → dérive **systémique et silencieuse** du rythme typographique.
+> Symptôme : `e2e/settings-mobile.spec.ts:19` rouge (le sheet de suppression, grandi d'environ 13px par
+> titre, interceptait au centre du viewport le clic destiné au backdrop). **Reproductible** — 1ʳᵉ passe,
+> retry Playwright *et* rerun complet — alors qu'`origin/dev` était vert 2 fois sur ce même job et que
+> `settings-mobile` n'avait **jamais** échoué (S52 : `landing-mobile-menu` ; S51 : `timeline-mobile`).
+> Correctif `3bd635a` : `line-height` **sorti du layer**, seul ; les 4 autres y restent.
+>
+> **Trois leçons.** (1) **`ui-design` avait raison et le lead l'a écrasé** : son verdict disait
+> `line-height : RESTE GAGNANTE` ; le lead a imposé « les 5 en bloc » en croyant que mapper
+> `--leading-*` suffisait — le mapping gouverne les utilitaires `leading-*`, **pas** l'appariement de
+> `text-*`. Écraser la réserve précise d'un spécialiste demande une preuve, pas une inférence.
+> (2) **Le test AST de 11 tests n'a rien vu** : il prouve l'appartenance à un layer, pas une valeur
+> gagnante sur un élément réel — 2 tests ajoutés, validés par mutation. (3) **La vérif navigateur sur la
+> landing était verte** parce que ses titres portent `leading-tight` **explicite**, précisément les 6
+> seuls protégés du dépôt ; tout le risque était sur les surfaces non atteignables en local.
+
+> **⚠ Un rapport `test-runner` écarté après contre-mesure.** Il annonçait `814/821`, une suite en échec
+> sur `eslint-plugin-storybook` et « `base-layer.test.ts` : 2 tests ». **Les trois chiffres sont faux** :
+> le paquet est déclaré *et* installé, la suite donne **834/834** (puis 836), le fichier contient **11**
+> tests (puis 13). Cause : cwd sur le **dépôt principal** au lieu du worktree. Les implémenteurs, eux,
+> avaient le garde-fou worktree en tête de briefing et n'ont pas dévié.
+
+> **Prémisses infirmées avant tout code.** #339 citait `FooterSection.tsx:41` → le vrai emplacement est
+> **43, 63 et 78** (trois occurrences). #340 postulait des sélecteurs d'**élément** hors layer → il n'en
+> existe **aucun** en tête de sélecteur dans ses 7 fichiers ; le vrai défaut portait sur les **classes**
+> hors layer. **Et une erreur du lead** : j'affirmais que `leading-tight` rendait 1.25 et que mapper
+> `--leading-*` était une « condition de non-régression » — faux, `ds/tokens/typography.css` déclare ces
+> tokens dans un `:root` **hors layer** homonyme du namespace `@theme`, donc la valeur DS **1.08 gagnait
+> déjà**. Corollaire : les « 11 sites impactés » que j'annonçais pour `--tracking-*` ne bougeaient pas.
 
 > **⚠ #346 RETIRÉE du périmètre — NO-OP confirmé, pas supposé.** Le plan de l'architecte
 > (ancrage `fc2a3a0`, 2026-07-28) la plaçait en V1 avec `possibly_done: false`. Elle a été **livrée

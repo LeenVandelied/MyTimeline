@@ -67,11 +67,44 @@ propriété différente donc jamais en conflit) ; **sous Firefox elle restait vi
    `--tracking-*` **ne bougeaient pas**. Confirmé ensuite **en navigateur** (`line-height` mesuré
    38,88px sur 36px = 1.08).
 
+## ⚠ Une régression introduite puis corrigée dans ce sprint — attrapée par la CI E2E seule
+
+La 1ʳᵉ passe de #339 layerisait les **5** propriétés en bloc. En Tailwind 4, une utilitaire `text-*` pose
+aussi un **`line-height` apparié** (`var(--tw-leading, var(--text-lg--line-height))`, défauts émis dans
+`@layer theme` que notre `@theme inline` ne remappe pas). Layerisé, le `line-height` du DS **cédait**
+devant cet appariement.
+
+Mesuré au navigateur, avant/après : `h2.text-lg` **29,16px (1.08) → 42px (1,5556)** ·
+`h1.text-xl` **37,8px → 49px**. **28 titres** portent `text-*` sans `leading-*` explicite → **dérive
+systémique et silencieuse du rythme typographique** (settings, landing, products, dashboard, shared).
+
+**Symptôme :** `e2e/settings-mobile.spec.ts:19` rouge — le sheet de suppression de compte, grandi
+d'environ 13px par titre, interceptait au centre du viewport le clic destiné au backdrop.
+**Reproductible** (1ʳᵉ passe + retry Playwright + rerun complet du job), alors qu'`origin/dev` était
+**vert 2 fois** sur ce même job et que `settings-mobile` n'avait **jamais** échoué.
+
+**Correctif `3bd635a` :** `line-height` **sorti du layer**, seul ; les 4 autres y restent (elles doivent
+céder, c'est l'objet de #339). Valeurs restaurées à 1.08, acquis de #339 préservés. Contrepartie
+assumée : un `leading-*` explicite ne peut plus gagner sur un titre — impact **nul** (les 6 titres
+concernés portent `leading-tight` = 1.08, soit la valeur déjà appliquée).
+
+**Ce que ça apprend :**
+1. **`ui-design` avait raison et je l'ai écrasé.** Son verdict disait `line-height : RESTE GAGNANTE` ;
+   j'ai imposé « layeriser les 5 en bloc » en croyant que mapper `--leading-*` suffisait. Le mapping
+   gouverne les utilitaires `leading-*`, **pas** l'appariement de `text-*`.
+2. **Le test AST de 11 tests n'a rien vu** : il prouve l'appartenance à un layer, pas une valeur gagnante
+   sur un élément réel. 2 tests ajoutés pour ça, **validés par mutation** (remettre `line-height` dans
+   `@layer base` les fait rougir).
+3. **La vérification navigateur sur la landing était verte** — parce que ses titres portent
+   `leading-tight` explicite, précisément les seuls protégés. Le risque était sur les surfaces
+   non atteignables en local.
+
 ## Tests
 
 | Suite | Résultat |
 |---|---|
-| Frontend | **92 fichiers, 834 passed / 0 failed** (12,87 s) |
+| Frontend | **92 fichiers, 836 passed / 0 failed** |
+| **CI complète** | **4/4 verts** — `backend` · `frontend` · `security` · `e2e` (5m51s) |
 | Backend | **452 tests, 0 failures, 0 errors** — BUILD SUCCESS |
 | `base-layer.test.ts` | **5 → 11 tests**, 11 passed |
 | Mutations (dé-layeriser, exiger le rouge) | 3/3 — **chaque mutation ne fait tomber que son test** |
