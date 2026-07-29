@@ -1605,14 +1605,42 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 > `frontend/src/hooks/useTimelineViewport.ts` qui **n'existe pas** ; le vrai chemin est
 > `frontend/src/components/timeline/useTimelineViewport.ts`.
 
-## Sprint 52 — 2026-07-28 (PLANIFIE — cohésion 0.47, rate-limiting distribué et politique d'authentification)
-**Objectif :** Rate-limiting Redis par compte + anti-énumération + harmonisation politique mdp (3 politiques divergentes)
-**Milestone GitHub :** #52
-**Issues :** #102 (P1/M), #134 (P2/S), #148 (P2/S) — 8 pts
-**Vagues :** V1 = #102 ∥ #148 | V2 = #134
+## Sprint 52 — RE-PLANIFIÉ le 2026-07-29 (En cours — cohésion 0.44, focus lisible, header tablette, README)
+**Objectif :** Découpler `focus:` dans 5 menus déroulants + solder le débordement du header au palier tablette + README racine de démarrage
+**Milestone GitHub :** #52 (« MVP local 1/3 — Cohérence visuelle, shell unifié, README de démarrage »)
+**Issues :** #346 (P1/S), #347 (P2/S), #372 (P2/S) — 6 pts
+**Vagues :** V1 = #346 ∥ #347 ∥ #372 (les 3 en parallèle, intersection des fichiers vide) — pas de V2
 **Migrations Flyway :** aucune
-**Depend de :** Sprint 50 (#323 fige le contrat de jeton)
-**Status :** Planifie
+**Depend de :** rien (S49/S50/S51 mergés)
+**Branche :** `sprint/52` créée sur `dev` à `473ed65`
+**Status :** En cours
+
+> **⚠ Le plan initial de ce sprint (2026-07-28, ancrage `fc2a3a0`) est PÉRIMÉ et a été remplacé.**
+> Il ciblait #102 (P1/M), #134 (P2/S), #148 (P2/S) — « rate-limiting distribué et politique
+> d'authentification », cohésion 0.47. Le **2026-07-29 à 10:47**, le milestone GitHub « Sprint 52 » a été
+> entièrement re-scopé : #102 et #134 déplacées vers « Mise en ligne (GELÉ — hébergeur à définir) »
+> (l'issue #369 conditionne explicitement le sort de #102 à la topologie d'hébergement retenue), #148
+> déplacée vers le milestone Sprint 53, et 9 issues design/frontend attachées à la place.
+> **Arbitrage du dev au lancement : le milestone fait foi** (MEMO-011 — source unique de tracking) ;
+> les labels `sprint-52` résiduels sur #102/#134/#148 ont été retirés, le label `sprint-53` résiduel
+> sur #346 également. Mini-plans re-générés dans `docs/memory/sprints/sprint-52/architect-plans.md`.
+
+> **Prémisses d'issues infirmées par l'architecte au HEAD `473ed65`, avant tout code :**
+> · **#372** — `HELP.md` **n'existe nulle part** dans le dépôt (son AC « HELP.md supprimé » est déjà
+>   satisfaite) et `docs/ops/deploiement-profils.md` **n'existe pas** : le renvoi demandé pointe dans le
+>   vide. **Chemin fantôme dans un plan/une issue pour le 5ᵉ sprint consécutif.**
+> · **#341** (écartée) — sa mesure de référence n'est **pas reproductible** : 0 `<g>` dans tout
+>   `frontend/src/`, 0 `<svg>` inline dans la landing (les 3 SVG passent par `<Image src>`, DOM non
+>   traversable). Budget d'investigation inconnu → non planifiée.
+> · **#348** (écartée) — le logo est à `HeaderSection.tsx:86`, **pas `:54`**. Et son AC « aucune classe
+>   `text-4xl`/`text-5xl` » entre en tension avec le `h1` du hero qui en porte déjà deux : `@theme`
+>   *étend* Tailwind au lieu de le remplacer, donc ces classes résolvent bien (36/48 px). À arbitrer.
+> · **#353** (écartée) — `h-9 w-9` ligne 52 et chaîne en dur ligne 54, **pas ligne 29**.
+> · **#338** (écartée) — `legal.json` ne contient que `terms`/`privacy` : **aucun corps juridique**.
+>   Bloquée hors périmètre technique, conforme à son propre body.
+> · **#299** (écartée) — *nuance en sa faveur* : `settings/` ne contient qu'un `page.tsx`, donc le risque
+>   « sous-routes profondes » de son body est **caduc**. À replanifier au S53 avec `ui-design` en vague 0.
+> · **#346** — mini-plan du S53 re-vérifié **sans aucune dérive de ligne** (5 emplacements exacts).
 
 ## Sprint 53 — 2026-07-28 (PLANIFIE — cohésion 0.48, dette de cascade CSS et couplage fond/encre du DS)
 **Objectif :** Découpler focus: dans 5 menus + layerisation h1..h6 + audit CSS non-layerisés
