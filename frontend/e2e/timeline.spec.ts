@@ -4,6 +4,18 @@ import { PROD } from './support/accounts'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
 
 /**
+ * #330 (lot b) — stub PAGE de l'API Fullscreen pour `timeline-fullscreen` (cf.
+ * rationale dans la spec). Déclaré au niveau module : `page.addInitScript` sérialise
+ * la fonction, mais son typage (donc l'absence de `any`) est vérifié ICI.
+ */
+declare global {
+  interface Window {
+    __fullscreenCalls?: number
+    __fullscreenExits?: number
+  }
+}
+
+/**
  * #314 (Sprint 47) — PASSE E2E UNIQUE de l'écran `/timeline` et du drawer de
  * CRÉATION d'événement du shell (testids livrés au Sprint 44, #300/#301, PR #313 :
  * aucun n'était référencé par une spec).
@@ -537,5 +549,148 @@ test.describe('#330 Drawer de détail événement (desktop, EventDrawer)', () =>
 
     await expect(page.getByTestId('timeline-drawer')).toHaveCount(0)
     await expect(page.getByTestId('timeline-drawer-overlay')).toHaveCount(0)
+  })
+})
+
+/**
+ * #330 (Sprint 54, lot b) — Toolbar desktop : zoom-out / today / weekend / aide /
+ * plein écran (`TimelineView.tsx`). Cinq testids déclarés depuis le Sprint 44 sans
+ * spec dédiée.
+ *
+ * ⚠ PRÉMISSE CORRIGÉE (vs. briefing #330) : `timeline-today` n'est PAS un bouton —
+ * c'est un badge POSITIONNEL statique (`<span data-testid="timeline-today">`, AUCUN
+ * `onClick`, `TimelineView.tsx:211`) posé sur la règle. Le raccourci clavier "T"
+ * (`scrollToToday`) est un mécanisme SÉPARÉ qui ne porte pas ce testid. Le seul
+ * comportement observable de `timeline-today` est sa POSITION, dérivée de
+ * `todayLeftPx = daysBetween(rangeStart, now) * dayWidth` : elle doit changer avec
+ * le zoom (dayWidth varie par niveau) — ce que ce test vérifie, pas un clic qui
+ * n'existe pas.
+ *
+ * ⚠ `timeline-weekend` (`buildWeekendSegments`, zoom.ts:381) retourne `[]` à TOUT
+ * zoom hors day/week — au niveau par défaut ('Mois') AUCUN segment n'existe : il
+ * faut zoomer d'un cran avant de pouvoir l'exercer.
+ */
+test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plein écran', () => {
+  test('zoom-out : dézoome (Mois → Trimestre), oracle timeline-zoom-level', async ({ page }) => {
+    await gotoTimeline(page)
+    const level = page.getByTestId('timeline-zoom-level')
+    await expect(level).toHaveText('Mois')
+
+    await page.getByTestId('timeline-zoom-out').click()
+
+    // Dézoomer élargit l'échelle (Mois -> Trimestre) : une assertion « le texte a
+    // changé » laisserait passer un zoom-IN accidentel sur le mauvais bouton.
+    await expect(level).toHaveText('Trimestre')
+  })
+
+  test('today : badge positionnel visible, dont la position suit le zoom (pas de clic, cf. note ci-dessus)', async ({
+    page,
+  }) => {
+    await gotoTimeline(page)
+    const badge = page.getByTestId('timeline-today')
+    await expect(badge).toBeVisible()
+    await expect(badge).toHaveText("Aujourd'hui")
+
+    const leftBefore = await badge.evaluate((el) => (el.parentElement as HTMLElement).style.left)
+    await page.getByTestId('timeline-zoom-out').click()
+
+    await expect(async () => {
+      const leftAfter = await badge.evaluate((el) => (el.parentElement as HTMLElement).style.left)
+      expect(leftAfter).not.toBe(leftBefore)
+    }).toPass()
+  })
+
+  test('weekend : motif calendaire réel (paire samedi/dimanche, écarts 34/238px) au zoom Semaine', async ({
+    page,
+  }) => {
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-weekend')).toHaveCount(0) // zoom Mois par défaut : []
+
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Semaine')
+
+    const segments = page.getByTestId('timeline-weekend')
+    const count = await segments.count()
+    // Le compte ABSOLU dépend de l'étendue totale du compte PARTAGÉ PROD (croît
+    // avec chaque spec du run, cf. #328 dans timeline-mobile.spec.ts) : au lieu d'un
+    // nombre figé, on vérifie le MOTIF calendaire — `DAY_WIDTH_PX.week` = 34px
+    // (zoom.ts) : un week-end = samedi puis dimanche (écart 34px), le week-end
+    // suivant 7 jours plus tard (écart 238px). Aucun autre écart n'est un
+    // calendrier valide : c'est la preuve du « bon nombre » exigée par le briefing,
+    // indépendante du volume accumulé — pas juste « >= 1 ».
+    expect(count).toBeGreaterThan(1)
+    const lefts = (
+      await Promise.all(
+        Array.from({ length: count }, (_, i) =>
+          segments.nth(i).evaluate((el) => parseFloat((el as HTMLElement).style.left)),
+        ),
+      )
+    ).sort((a, b) => a - b)
+    for (let i = 1; i < lefts.length; i++) {
+      const delta = Math.round(lefts[i] - lefts[i - 1])
+      expect([34, 238], `écart ${delta}px entre segments ${i - 1} et ${i}`).toContain(delta)
+    }
+  })
+
+  test('aide : le survol ouvre le panneau de raccourcis (opacité), le contenu est réel', async ({
+    page,
+  }) => {
+    await gotoTimeline(page)
+    // `.mt-tlv__help-pop` est TOUJOURS dans le DOM avec un bounding-box non vide
+    // (`opacity:0;pointer-events:none` par défaut, timeline.css:190) : une
+    // assertion `toBeVisible()` passerait à tort SANS survol — piège de la même
+    // famille que les 28 régressions ratées au S53 (vérification verte qui ne
+    // regarde pas la bonne propriété CSS). L'oracle est l'opacité calculée.
+    const pop = page.locator('#timeline-help-pop')
+    await expect(pop).toHaveCSS('opacity', '0')
+
+    await page.getByTestId('timeline-help').hover()
+    await expect(pop).toHaveCSS('opacity', '1')
+    await expect(pop).toContainText('Aller à aujourd’hui')
+    await expect(pop).toContainText('Plein écran')
+
+    await page.mouse.move(0, 0)
+    await expect(pop).toHaveCSS('opacity', '0')
+  })
+
+  test('plein écran : bascule requestFullscreen/exitFullscreen (API stubée, rationale ci-dessous)', async ({
+    page,
+  }) => {
+    // L'API Fullscreen réelle n'offre AUCUNE garantie de support/activation en
+    // Chromium headless. On stube au niveau PAGE (pas composant) : le vrai bouton,
+    // le vrai handler, la VRAIE invocation de l'API sont exercés — seule
+    // l'implémentation navigateur est simulée, à l'identique de la technique déjà
+        // validée en RTL (`TimelineView.test.tsx`: `Element.prototype.requestFullscreen
+    // = vi.fn()`), transposée ici pour couvrir le clic RÉEL bout en bout (bouton ->
+    // handler -> API), toggle complet (entrée ET sortie), pas juste l'entrée.
+    await page.addInitScript(() => {
+      // Pas de `this` aliasé (identité de l'élément non pertinente ici, seule la
+      // TRUTHINESS de `document.fullscreenElement` est consommée par le handler).
+      let active = false
+      const root = document.documentElement
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => (active ? root : null),
+      })
+      Element.prototype.requestFullscreen = function requestFullscreenStub() {
+        active = true
+        window.__fullscreenCalls = (window.__fullscreenCalls ?? 0) + 1
+        return Promise.resolve()
+      }
+      document.exitFullscreen = function exitFullscreenStub() {
+        active = false
+        window.__fullscreenExits = (window.__fullscreenExits ?? 0) + 1
+        return Promise.resolve()
+      }
+    })
+
+    await gotoTimeline(page)
+    await page.getByTestId('timeline-fullscreen').click()
+    await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true)
+    expect(await page.evaluate(() => window.__fullscreenCalls)).toBe(1)
+
+    await page.getByTestId('timeline-fullscreen').click()
+    await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false)
+    expect(await page.evaluate(() => window.__fullscreenExits)).toBe(1)
   })
 })

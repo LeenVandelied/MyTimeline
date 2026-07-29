@@ -188,6 +188,21 @@ test.describe('#205 Timeline mobile — portrait', () => {
   })
 
   /**
+   * #330 (lot b) — `timeline-zoom-out` existe EN DOUBLE (desktop `TimelineView.tsx`
+   * ET les deux variantes mobiles) : le lot b du briefing couvre le desktop
+   * (`timeline.spec.ts`), ce test couvre le variant PORTRAIT mobile (même bouton,
+   * même reducer de zoom — `state.zoomOut`).
+   */
+  test('zoom-out : dézoome (alternative au pinch, variant portrait)', async ({ page }) => {
+    await seedAndOpenTimeline(page, 'portrait')
+
+    const level = page.getByTestId('timeline-zoom-level')
+    const before = await level.textContent()
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(level).not.toHaveText(before ?? '')
+  })
+
+  /**
    * #330 (lot a) — `timeline-sheet-overlay` : le tap ferme le bottom sheet, au même
    * titre que le bouton close déjà couvert plus haut (deux chemins de fermeture
    * distincts, pas un doublon).
