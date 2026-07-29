@@ -166,17 +166,20 @@ function sameMetrics(a: TimelineMetrics, b: TimelineMetrics): boolean {
  * `undefined` reste un hit au lieu d'être recalculé à chaque rendu.
  */
 function useZoomCache<T>(source: unknown, key: string, compute: () => T): T {
-  const cache = useRef<{ source: unknown; byKey: Map<string, { value: T }> }>({
-    source,
-    byKey: new Map<string, { value: T }>(),
-  })
-  if (cache.current.source !== source) {
-    cache.current = { source, byKey: new Map<string, { value: T }>() }
+  // Initialisation PARESSEUSE : un initialiseur de `useRef` est évalué à CHAQUE
+  // rendu, donc la `Map` allouée directement dans l'appel était jetée aussitôt à
+  // toutes les passes suivantes. `null` + création à la demande alloue une seule
+  // fois par `source`. Comportement inchangé : la purge reste conditionnée à un
+  // changement d'identité de `source`.
+  const cacheRef = useRef<{ source: unknown; byKey: Map<string, { value: T }> } | null>(null)
+  if (cacheRef.current === null || cacheRef.current.source !== source) {
+    cacheRef.current = { source, byKey: new Map<string, { value: T }>() }
   }
-  const hit = cache.current.byKey.get(key)
+  const cache = cacheRef.current
+  const hit = cache.byKey.get(key)
   if (hit) return hit.value
   const value = compute()
-  cache.current.byKey.set(key, { value })
+  cache.byKey.set(key, { value })
   return value
 }
 

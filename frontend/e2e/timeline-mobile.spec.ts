@@ -258,29 +258,47 @@ test.describe('#205 Timeline mobile — rotation', () => {
   test('portrait → paysage → portrait conserve le scroll horizontal (#328)', async ({ page }) => {
     await seedAndOpenTimeline(page, 'portrait')
 
-    // ÉLARGIR LE RAIL AVANT DE MESURER — sans quoi le test est insatisfiable.
-    // Au zoom par défaut ('Mois', 12 px/jour), le rail fait 61 j × 12 = 732 px. En
-    // paysage 844×390 le `clientWidth` monte à 794 : le rail entre EN ENTIER, donc
-    // `scrollWidth === clientWidth` et `maxScroll` vaut 0 — le seul `scrollLeft`
-    // atteignable est 0. Les deux assertions du test se contredisaient alors
-    // (`> 0` ligne suivante vs `≈ min(392, 0)` = 0 plus bas), quel que soit le code.
-    // Deux crans de zoom (Mois → Semaine → Jour) portent le rail à 5 856 px, soit
-    // `maxScroll` = 5 062 en paysage : la conservation du scroll redevient
-    // observable et le test redevient un vrai garde-fou, au lieu de dépendre du
-    // volume d'événements accumulé sur le compte partagé.
+    // ÉLARGIR LE RAIL AVANT DE MESURER — sans quoi le test peut être insatisfiable.
+    // `computeRange` couvre l'amplitude de TOUS les events du compte, et le compte
+    // PROD est PARTAGÉ par 6 specs : `totalDays` est un MINORANT (>= 61 j), jamais
+    // une valeur connue d'avance. Au zoom par défaut ('Mois', 12 px/jour) le rail
+    // vaut donc >= 732 px — même ordre de grandeur que le `clientWidth` paysage
+    // (~794 px pour une viewport de 844). Sur un compte à VOLUME MINIMAL le rail
+    // entre EN ENTIER : `scrollWidth === clientWidth`, `maxScroll` vaut 0, le seul
+    // `scrollLeft` atteignable est 0, et les deux assertions du test se
+    // contredisent (`> 0` plus bas vs `≈ min(x, 0)` = 0). Sur un compte chargé le
+    // rail dépasse 794 px et le test redevient satisfiable : d'où un échec
+    // INTERMITTENT, fonction du volume accumulé — pas une contradiction absolue.
+    // Deux crans de zoom (Mois → Semaine → Jour, 96 px/jour) portent le rail à
+    // >= 5 856 px (minorant, pas mesure) : le débordement paysage passe hors de
+    // portée du volume d'events et le test redevient déterministe.
     await page.getByTestId('timeline-zoom-in').click()
     await page.getByTestId('timeline-zoom-in').click()
+    // Les deux clics doivent être COMMITÉS avant toute mesure : si le commit React
+    // du 2e clic atterrissait après `setViewportSize`, le paysage mesurerait encore
+    // l'échelle 'Mois' (rail ~732 px < clientWidth) → `maxScroll` 0 → assertion
+    // rouge. On attend l'échelle atteinte, pas la latence des allers-retours.
+    // Libellé lu dans `public/locales/fr/dashboard.json` (`timeline.zoom.day`), la
+    // spec ouvrant `/fr/timeline` (`localePrefix: 'always'`).
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Jour')
 
     const geometry = (locator: Locator) =>
       locator.evaluate((el) => ({
         scrollLeft: el.scrollLeft,
+        scrollWidth: el.scrollWidth,
         maxScroll: el.scrollWidth - el.clientWidth,
       }))
 
     const portraitScroll = page.getByTestId('timeline-scroll')
-    // Garde-fou : si le rail n'excède pas le viewport paysage, le reste du test ne
-    // mesure rien. On le constate ici plutôt que d'échouer 20 lignes plus bas.
-    expect((await geometry(portraitScroll)).maxScroll).toBeGreaterThan(0)
+    // Garde-fou SUR LE BON AXE : ce que le test mesure après rotation, c'est le
+    // débordement du rail dans le viewport PAYSAGE (`clientWidth` ~794), pas dans
+    // le portrait (~340). Garder sur le `maxScroll` PORTRAIT laisserait ouverte la
+    // fenêtre morte `340 < rail <= 794` : garde vert, `afterRotate.scrollLeft > 0`
+    // rouge — exactement la pathologie que le garde prétend éliminer. On borne donc
+    // par la largeur de viewport paysage (844 >= `clientWidth` paysage) : condition
+    // SUFFISANTE pour `maxScroll > 0` après rotation, et vérifiable AVANT de
+    // tourner l'écran, donc l'échec reste diagnostiqué ici, pas 20 lignes plus bas.
+    expect((await geometry(portraitScroll)).scrollWidth).toBeGreaterThan(LANDSCAPE_SHORT.width)
     // Défilement utilisateur : on vise 400px, borné par l'étendue réelle du rail.
     await portraitScroll.evaluate((el) => {
       el.scrollLeft = Math.min(400, el.scrollWidth - el.clientWidth)

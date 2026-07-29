@@ -259,6 +259,17 @@ export function useTimelineMobileState(
       // Rotation : l'échelle du rail ne change pas avec l'orientation → report en
       // px à l'identique. Si elle a changé malgré tout (zoom pendant le switch),
       // on reporte la FRACTION pour rester cohérent avec `viewportStart`.
+      //
+      // LIMITE ASSUMÉE de la branche « fraction » : `saved.scrollLeft` a été lu au
+      // détachement, donc DÉJÀ CLAMPÉ à `scrollWidth - clientWidth` par le relayout
+      // (cf. commentaire du détachement ci-dessus). `saved.scrollLeft /
+      // saved.railWidth` n'est donc pas la fraction VOULUE par l'utilisateur mais
+      // celle de sa position clampée : si le clamp a mordu, on reporte une fraction
+      // sous-estimée. Le report en px (branche `else`) est immunisé — le clamp y est
+      // idempotent — la fraction ne l'est pas. Corriger exigerait de capturer la
+      // position sur les scrolls utilisateur, pas au détachement. Non fait : la
+      // branche n'est atteignable que si le zoom change PENDANT la rotation, cas
+      // qu'aucun test ne couvre et qu'aucun parcours produit ne produit.
       node.scrollLeft =
         saved.railWidth > 0 && railWidthRef.current > 0 && saved.railWidth !== railWidthRef.current
           ? (saved.scrollLeft / saved.railWidth) * railWidthRef.current

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { DAY_WIDTH_PX, MAJOR_TICK_UNIT } from './zoom'
@@ -37,9 +37,36 @@ vi.mock('next-intl', () => ({
     namespace ? `${namespace}.${key}` : key,
 }))
 
+/**
+ * jsdom n'implémente PAS l'API Fullscreen : on l'installe pour ce fichier, et on
+ * la RETIRE ensuite. Sans restauration, la stub survit au fichier le jour où
+ * l'isolation vitest (`isolate: false`, worker partagé) serait désactivée — un
+ * autre test verrait alors un `requestFullscreen` résolu d'office. On capture les
+ * descripteurs d'origine (absents ici, d'où la suppression) plutôt que d'affecter
+ * `undefined`, qui laisserait la propriété en place.
+ */
+const ORIGINAL_REQUEST_FULLSCREEN = Object.getOwnPropertyDescriptor(
+  Element.prototype,
+  'requestFullscreen',
+)
+const ORIGINAL_EXIT_FULLSCREEN = Object.getOwnPropertyDescriptor(document, 'exitFullscreen')
+
 beforeEach(() => {
   Element.prototype.requestFullscreen = vi.fn().mockResolvedValue(undefined)
   document.exitFullscreen = vi.fn().mockResolvedValue(undefined)
+})
+
+afterEach(() => {
+  if (ORIGINAL_REQUEST_FULLSCREEN) {
+    Object.defineProperty(Element.prototype, 'requestFullscreen', ORIGINAL_REQUEST_FULLSCREEN)
+  } else {
+    Reflect.deleteProperty(Element.prototype, 'requestFullscreen')
+  }
+  if (ORIGINAL_EXIT_FULLSCREEN) {
+    Object.defineProperty(document, 'exitFullscreen', ORIGINAL_EXIT_FULLSCREEN)
+  } else {
+    Reflect.deleteProperty(document, 'exitFullscreen')
+  }
 })
 
 const EVENTS: FullCalendarEvent[] = [
