@@ -162,8 +162,13 @@ issue_0372:
     1. CORRIGER LE PÉRIMÈTRE avant d'écrire — deux prémisses du body sont fausses au HEAD :
        - `HELP.md` n'existe NULLE PART dans le dépôt : l'AC « HELP.md supprimé ou vidé »
          est déjà satisfaite, la barrer plutôt que de la traiter.
-       - `docs/ops/deploiement-profils.md` n'existe PAS : le renvoi demandé pointe dans le
-         vide. Soit renvoyer vers un fichier existant de docs/ops/, soit retirer la section.
+       - ⚠ CORRIGÉ APRÈS COUP (2026-07-29, par le fullstack-dev de #372) : l'architecte
+         affirmait ici que `docs/ops/deploiement-profils.md` « n'existe PAS » et que le renvoi
+         pointait dans le vide. **Cette réfutation était elle-même fausse.** Le fichier EXISTE,
+         à `docs/runbook/deploiement-profils.md` (8,9 Ko). Seul le RÉPERTOIRE cité par l'issue
+         était erroné (`docs/ops/` au lieu de `docs/runbook/`). Le renvoi demandé par l'issue
+         est légitime : le faire pointer vers `docs/runbook/deploiement-profils.md`.
+         Cause de l'erreur : `ls` d'un seul dossier au lieu d'un `find docs -name <fichier>`.
     2. Rédiger le README racine : produit, stack, écrans, licence.
     3. Section Démarrage : prérequis, `.env` depuis `.env.example` (4.5K, présent), la commande
        unique, l'URL, création du premier compte. EXÉCUTER la commande depuis un clone vierge
@@ -182,8 +187,11 @@ issue_0372:
     `find -iname "HELP.md"` sur tout le dépôt (hors node_modules) => AUCUN RÉSULTAT.
     La prémisse « HELP.md est le stub Spring Initializr » est FAUSSE au HEAD ; backend/ ne
     contient que .mvn/ src/ .dockerignore Dockerfile mvnw mvnw.cmd package.json pom.xml.
-    docs/ops/ ne contient QUE flyway-v11-validation.md et purge-git-secrets-runbook.md —
-    `deploiement-profils.md` est un CHEMIN FANTÔME.
+    docs/ops/ ne contient QUE flyway-v11-validation.md et purge-git-secrets-runbook.md.
+    ⚠ L'architecte en concluait « `deploiement-profils.md` est un CHEMIN FANTÔME » —
+    CONCLUSION FAUSSE, infirmée à l'exécution : le fichier est à
+    `docs/runbook/deploiement-profils.md` (8,9 Ko). Seul le répertoire de l'issue était faux.
+    Vérifié par le lead : `find docs -iname "deploiement-profils*"` → 1 résultat.
     Existent et sont réutilisables : frontend/README.md, frontend/e2e/README.md (6.6K),
     scripts/test-quiet.sh, scripts/flyway-validate.sh, docker-compose.yml, .env.example.
     NON VÉRIFIÉ PAR MOI : je n'ai pas lancé docker compose, ni constaté qu'une commande unique

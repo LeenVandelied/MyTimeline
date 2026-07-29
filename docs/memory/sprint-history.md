@@ -1627,8 +1627,17 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 
 > **Prémisses d'issues infirmées par l'architecte au HEAD `473ed65`, avant tout code :**
 > · **#372** — `HELP.md` **n'existe nulle part** dans le dépôt (son AC « HELP.md supprimé » est déjà
->   satisfaite) et `docs/ops/deploiement-profils.md` **n'existe pas** : le renvoi demandé pointe dans le
->   vide. **Chemin fantôme dans un plan/une issue pour le 5ᵉ sprint consécutif.**
+>   satisfaite). Raison trouvée à l'exécution : **`.gitignore` ligne 1 = `HELP.md`**, il est ignoré
+>   depuis le scaffold Spring Initializr.
+>   ⚠ **L'architecte affirmait aussi que `docs/ops/deploiement-profils.md` n'existait pas — cette
+>   réfutation était FAUSSE, et le lead l'a propagée** dans ce fichier, dans `architect-plans.md` et
+>   dans le message du commit `8fb2289` (« chemin fantôme pour le 5ᵉ sprint consécutif »).
+>   **Le fichier existe** : `docs/runbook/deploiement-profils.md` (8,9 Ko). Seul le *répertoire* cité
+>   par l'issue était erroné. Infirmé par le fullstack-dev de #372, re-vérifié par le lead
+>   (`find docs -iname "deploiement-profils*"` → 1 résultat).
+>   **Leçon (`PIT-S52`) :** ne jamais conclure « chemin fantôme » sur un `ls` d'un seul dossier —
+>   `find` sur l'arborescence avant de déclarer un fichier inexistant. La série de « chemins fantômes »
+>   des sprints précédents mérite d'être relue avec ce biais en tête.
 > · **#341** (écartée) — sa mesure de référence n'est **pas reproductible** : 0 `<g>` dans tout
 >   `frontend/src/`, 0 `<svg>` inline dans la landing (les 3 SVG passent par `<Image src>`, DOM non
 >   traversable). Budget d'investigation inconnu → non planifiée.
