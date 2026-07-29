@@ -124,7 +124,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
         ))}
       </nav>
 
-      <div className="flex items-center gap-2 lg:gap-4">
+      <div className="flex items-center gap-2 max-[360px]:gap-1 lg:gap-4">
         {/* Bascule dans `LandingMobileMenu` sous `lg` — cf. #334, seuil remonté par #347. */}
         <div className="hidden items-center gap-4 lg:flex">
           <LanguageSelector />
@@ -139,10 +139,36 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
 
         {/* CTA primaire : reste visible à toutes les largeurs. `h-11` = 44 px de cible
             tactile sous `lg` (donc aussi sur le palier tablette, où l'on touche encore),
-            `lg:h-9` restaure la hauteur desktop d'origine. */}
+            `lg:h-9` restaure la hauteur desktop d'origine.
+
+            #347 (suivi) — PALIER PETIT TÉLÉPHONE, `max-[360px]`. À 320 px le header
+            n'a que 288 px utiles (`px-4` de part et d'autre) et empile trois blocs
+            INCOMPRESSIBLES : logo 122 px (`whitespace-nowrap`, #334), ce CTA, `gap-2`
+            et le burger 44 px. Mesuré au navigateur Linux (image Playwright jammy,
+            polices de la CI) au HEAD 13704ed, largeur du CTA par locale :
+
+              locale | CTA | total requis | dispo | bord droit du groupe
+              en     |  92 | 266          | 288   | 304  (marge 16 px)
+              fr     | 117 | 291          | 288   | 307  (marge 13 px)
+              es     | 126 | 300          | 288   | 316  (marge  4 px)
+              de     | 131 | 305          | 288   | 321  -> DÉBORDE de 1 px
+
+            ⚠ Ce défaut est ANTÉRIEUR à #347 : mesuré identique sur `origin/dev`
+            (a2d8e8e, seuil encore `md`) dans le même conteneur. Il ne se voyait pas
+            parce que l'assertion de #334 ne tournait qu'à 375 px, et parce que les
+            métriques de police de macOS rendent « Registrieren » assez étroit pour
+            tenir — c'est Ubuntu qui fait basculer. Ne PAS mesurer ce palier sur macOS.
+
+            Corriger `de` seul aurait laissé `es` à 4 px du même échec. On reprend donc
+            les métriques HORIZONTALES de la taille `sm` du DS (`px-3` + `text-xs`,
+            cf. `button.tsx`) sans sa hauteur `h-8` : `h-11` reste, la cible tactile
+            de 44 px exigée par #334 est préservée. Après correctif, `de` retombe à
+            281 px requis pour 288 dispo — dans la boîte de contenu, 23 px avant
+            débordement. Aucun `matchMedia` ne double ce seuil (contrairement à `lg`) :
+            il est purement CSS, rien à resynchroniser côté JS. */}
         <Button
           asChild
-          className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all lg:h-9"
+          className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-3 max-[360px]:text-xs lg:h-9"
         >
           <Link href={`/${locale}/register`}>{t('common.landing.buttons.register')}</Link>
         </Button>
