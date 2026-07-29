@@ -37,3 +37,32 @@ recommandations suite:
 
 BLOQUE_SUR: garde-fou E2E `e2e/landing-mobile-menu.spec.ts` (« sélecteur de langue ») ROUGE à cause de ce correctif — 1,23:1 clair / 1,28:1 sombre sur l'item de locale active de la landing publique. Cause dans `ui/language-selector.tsx`, hors périmètre par briefing (issue #353) ; correctif d'un jeton donné ci-dessus. Ne pas fusionner #346 sans lui.
 STATUS: PARTIAL
+
+---
+
+## RÉSOLUTION DU BLOCAGE — addendum du lead (2026-07-29)
+
+Le rapport ci-dessus est conservé **tel quel** : au moment où il a été écrit, le blocage était réel
+et le `STATUS: PARTIAL` justifié.
+
+Le blocage est **fermé** par le commit `df93b63` (agent de suivi), rendu détaillé dans
+`issue-346-followup-done.md`.
+
+- Correctif appliqué sur `frontend/src/components/ui/language-selector.tsx` :
+  `text-accent-foreground` → `text-accent-ink` + `focus:bg-accent-hover`.
+- **La piste proposée par ce rapport (`focus:bg-accent`) a été écartée après mesure** : elle
+  donnait 4,71:1 en clair (marge 0,21 sur le seuil) et surtout un **delta de surface repos→focus
+  nul (1,00:1)** — l'item actif devenait indistinguable au focus. La solution retenue mesure
+  **6,08:1 en clair / 8,78:1 en sombre**, avec un delta de surface de 1,29:1 / 1,27:1.
+- **Une prémisse de ce rapport est infirmée** : « aucun anneau ne compense » est faux.
+  `frontend/src/styles/ds/tokens/base.css:51-55` pose `:focus-visible { outline: 2px solid … }`
+  **hors de tout `@layer`** (vérifié par le lead : le bloc `@layer base` ne couvre que les
+  lignes 44-47), donc l'anneau bat `outline-hidden`. Mesuré au navigateur sur l'item concerné.
+- Les 2 E2E « sélecteur de langue » sont **vertes** ; spec entière 21/21 ; suite frontend 825/825.
+
+> ⚠ **Conséquence pour l'issue #339** (layerisation de `base.css`, non planifiée dans ce sprint) :
+> la règle `:focus-visible` non-layerisée est **porteuse d'accessibilité**. La layeriser en bloc
+> ferait perdre à l'anneau de focus sa priorité sur `outline-hidden`. À traiter explicitement
+> quand #339 sera planifiée.
+
+STATUS: COMPLETED
