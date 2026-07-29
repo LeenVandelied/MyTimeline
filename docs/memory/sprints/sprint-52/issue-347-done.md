@@ -1,6 +1,6 @@
 # Issue #347 — Header landing, débordement 768–1023 px
 
-commits: 9c570e1c65f832513ea68b0474c9d40c37029ffd
+commits: 97becea3d9b9142d9b621253f19e75ab8330a19a (correctif + tests) ; ce fichier a reçu le SHA dans un second commit de documentation, l'amend ayant nécessairement invalidé le SHA qu'il portait.
 
 pack_lu: OUI — cp-frontend.md §« Design system « Graphite » (`src/styles/ds/`) » (+ §« Tests (Vitest + RTL) — pièges »)
 
