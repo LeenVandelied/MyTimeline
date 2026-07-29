@@ -270,3 +270,28 @@ Au 2ᵉ cycle de review : `application-prod.properties` déclarait `${JWT_PRIVAT
 `env.getProperty()` lève alors depuis l'intérieur du garde-fou, `isBlankProperty` traite « placeholder
 irrésoluble » comme « non fournie » : on conserve les deux barrières **et** le message d'exploitation.
 Cf. [[PIT-S50-008]].
+
+## DEC-S52-001 — Le milestone GitHub prime sur un plan d'architecte périmé
+Le plan du 28/07 ciblait #102/#134/#148 ; le 29/07 le milestone « Sprint 52 » a été re-scopé (issues
+déplacées vers le milestone gelé « Mise en ligne » et vers Sprint 53). Décision : **le milestone fait foi**
+(MEMO-011, source unique de tracking), le label `sprint-*` est un résidu non fiable. Pourquoi : exécuter le
+plan périmé aurait rouvert un travail délibérément gelé en attente de la décision d'hébergement (#369).
+
+## DEC-S52-002 — Le garde-fou d'appariement ne sanctionne QUE le jeton DS `text-accent-ink`
+`--color-accent-foreground` est un alias shadcn, `--color-accent-ink` un jeton du DS Graphite. Décision : le
+détecteur n'accepte que le second. Pourquoi : seul le jeton DS a un ratio **mesuré** ; rien ne garantit que
+l'alias continue de le suivre.
+
+## DEC-S52-003 — Ne PAS élargir le garde-fou AST au couplage réparti sur deux fichiers
+La régression `df93b63` avait sa **surface** dans `dropdown-menu.tsx` et son **encre** dans
+`language-selector.tsx` — deux `className` distincts. Décision : laisser le détecteur tel quel. Pourquoi : il
+raisonne par attribut `className` ; deux moitiés dans deux fichiers sont hors de portée de toute analyse
+statique par attribut. L'élargir donnerait un **faux sentiment de couverture** — seule la mesure au
+navigateur couvre cette famille de défauts.
+
+## DEC-S52-004 — Corriger le palier, pas la locale
+Le débordement CI ne tombait qu'en `de` (−1 px), mais la mesure des 4 locales montrait `es` à **4 px** du même
+basculement. Décision : correctif au palier `max-[360px]` pour les 4 locales (marge portée à 16 px) plutôt
+qu'un ajustement ciblé sur `de`. Pourquoi : corriger `de` seul aurait laissé `es` à un rendu d'OS près du
+même échec. Le CTA reprend les métriques **horizontales** de la taille `sm` du DS sans sa hauteur, donc la
+cible tactile 44 px de #334 est préservée.

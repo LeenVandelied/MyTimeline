@@ -73,3 +73,5 @@ les métriques de police diffèrent de Linux, et `de` est la locale la plus larg
 les deux fois la CI Ubuntu a démenti. Tout budget de largeur doit être mesuré
 dans l'image Playwright, et viser une marge à deux chiffres — un correctif qui
 laisse 0 à 4 px de marge (ici `es`) est un échec CI en attente.
+
+STATUS: COMPLETED

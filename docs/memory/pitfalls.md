@@ -533,3 +533,49 @@ boot refusé »… mais `env.getProperty()` **lève alors depuis l'intérieur** 
 le message d'exploitation par un « Could not resolve placeholder » opaque. Solution : dans un
 `ApplicationListener` de fail-fast, envelopper la lecture et traiter « irrésoluble » comme « non fournie » —
 on garde **2 barrières ET** le message lisible. (Sprint 50, correctifs de review 2ᵉ cycle)
+
+## PIT-S52-001 — Mesurer un débordement de mise en page sur macOS seul ne prouve RIEN
+Les métriques de police diffèrent entre macOS et Ubuntu, et `de` est la locale la plus large.
+**#334 (S49) puis #347 (S52) ont tous deux conclu « écart 0 partout » depuis macOS ; la CI Ubuntu les a
+démentis les deux fois** — au S52, `scrollWidth=321 > clientWidth=320` à 320 px en `de`, un seul pixel.
+Solution : mesurer dans `mcr.microsoft.com/playwright:v<version>-jammy` (Docker). Prévention : **viser une
+marge à deux chiffres** — un correctif qui laisse 0 à 4 px est un échec CI en attente (`es` était à 4 px).
+
+## PIT-S52-002 — Un port qui répond ne prouve pas que c'est VOTRE process qui répond
+En worktree partagé avec des agents concurrents, `curl :8080` renvoyait 401 → « backend prêt ». En réalité le
+backend de l'agent avait échoué (port déjà pris) et il mesurait **celui d'un autre agent**. Solution :
+`lsof -nP -iTCP:<port>` **et** lecture du log de démarrage du process. Prévention : ne jamais conclure
+« mon service tourne » sur la seule réponse du port. (A produit 28 faux échecs E2E au S52.)
+
+## PIT-S52-003 — Un `text-*` posé sur le conteneur d'un composant Radix est hérité, donc cassable
+L'encre héritée est perdue dès qu'un consommateur enveloppe l'item dans un `<a>` / `<Link>` : l'élément `<a>`
+réimpose sa propre couleur au milieu de la chaîne d'héritage. Solution : poser l'encre en utilitaire sur
+**l'élément dont on garantit le ratio**, pas sur son ancêtre. Prévention : mesurer
+`getComputedStyle(el).color` sur l'élément lui-même, jamais raisonner sur la classe du conteneur.
+
+## PIT-S52-004 — L'indicateur de focus n'est pas forcément dans le `className` du composant
+Conclure « l'item perd son focus visible » parce que sa classe `focus:bg-*` ne change plus la surface est
+faux ici : `ds/tokens/base.css` pose un `:focus-visible { outline: 2px solid … }` **hors de tout `@layer`**,
+qui bat `outline-hidden` et fournit l'indicateur indépendamment du fond. Solution : lire
+`getComputedStyle(el).outlineStyle/Color/Offset` **et** `el.matches(':focus-visible')` avant de proposer un
+anneau. **Corollaire pour #339** : cette règle non-layerisée est **porteuse d'accessibilité** — layeriser
+`base.css` en bloc lui ferait perdre sa priorité sur `outline-hidden`.
+
+## PIT-S52-005 — Sonde `wget localhost` en image alpine : `unhealthy` à vie sur une app qui répond 200
+`/etc/hosts` du conteneur mappe `localhost` sur `127.0.0.1` **et** `::1` ; BusyBox wget tente `::1` d'abord ;
+Next standalone n'écoute que sur `0.0.0.0:3000` (IPv4). Le service `frontend` du compose est donc marqué
+`unhealthy` en permanence. Solution : cibler `127.0.0.1` explicitement dans le healthcheck.
+
+## PIT-S52-006 — Un plan d'architecte peut produire le FAUX négatif de chemin fantôme
+5ᵉ sprint consécutif de « chemins fantômes » — mais cette fois **l'architecte a déclaré à tort qu'un fichier
+n'existait pas** (`deploiement-profils.md` annoncé introuvable), sur la foi d'un `ls` d'un **seul répertoire**.
+Le fichier existe, sous `docs/runbook/`. Le lead a propagé l'erreur dans 3 artefacts avant correction.
+Solution : `find docs -name "<fichier>"` avant de déclarer un chemin inexistant. Prévention : **une réfutation
+de prémisse doit citer la commande qui balaye tout l'arbre**, jamais un `ls` ciblé.
+
+## PIT-S52-007 — Le hook RTK décale aussi `git log` (amende PIT-S50-007)
+`PIT-S50-007` couvrait `gh pr diff` et `vitest`. Au S52 : après un `git checkout -b`, `git log --oneline -3`
+affichait le commit **parent** en tête alors que `git rev-parse HEAD` donnait le bon SHA. Symptôme plus
+traître que le diff vide : **la sortie a l'air plausible**. Solution : `git rev-parse` fait foi pour savoir
+où l'on est ; `rtk proxy git log` pour l'historique. Ne jamais conclure « la branche est au mauvais endroit »
+sur un `git log`.
