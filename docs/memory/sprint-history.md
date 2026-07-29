@@ -1734,7 +1734,9 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 **Tests :** Frontend **836/836** · Backend **452/452** · **CI 4/4 verts** (dont `e2e`, 5m51s)
 **Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 1 MINEUR**
 **Nouveaux artefacts mémoire :** `PIT-S53-001` à `PIT-S53-006` · `PAT-S53-001`, `PAT-S53-002` · `DEC-S53-001` à `DEC-S53-004`
-**Status :** En cours — PR #382 ouverte, CI verte, en attente de `/sprint end 53`
+**Status :** **Terminé** — PR #382 mergée dans `dev` le 2026-07-29 (commit de merge `b0b2f19`).
+Milestone #53 fermé (2 issues, 0 ouverte — 9 issues de backlog **détachées** avant fermeture, elles n'ont
+jamais fait partie du périmètre). Issues #339 et #340 fermées.
 
 **Follow-ups arbitrés (Phase 4 triage — 6 items, 3 issues, 2 discard, 1 déjà résolu) :**
   - `:focus-visible` hors layer : annule `outline-none` sur ~14 sites + impose un `border-radius`
