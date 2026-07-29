@@ -57,17 +57,67 @@ Avec un `useMediaQuery` SSR-safe (`false` au 1er rendu), **tout effet de montage
 d'une variante mobile s'exécute sur le DOM desktop** → no-op silencieux, indétectable.
 **Prévention :** ancrer sur l'**attachement de la ref**, pas sur le montage du composant.
 
-## Recommandations suite
+## ✅ RÉSOLUTION E2E — le critère n°4 est validé (mise à jour du lead, 2026-07-29)
 
-- **`RECOMMAND_TEST_RUNNER`** — la spec E2E de rotation est écrite mais **jamais exécutée**.
-  Raison donnée : aucune stack debout (rien sur `:3000` ni `:8080`) ; images docker `mytimeline-*`
-  datées du 2026-07-11, **antérieures à l'auth RS256 de #323** → image backend inutilisable en
-  l'état ; et démarrer `mvnw` + `next dev` dans un working tree **partagé** avec l'agent #349
-  aurait risqué un faux négatif. Spec prête, à lancer avec `--workers=1` sur le port 3000.
+> Cette section **corrige** les réserves écrites plus bas, conservées telles quelles pour la trace.
+
+L'E2E a finalement été exécuté par le lead via le runbook du S47 (`mvnw` + `next dev`, **sans
+docker** — c'était la mauvaise piste). Déroulé :
+
+1. **Premier run : ROUGE.** `scrollLeft = 0` après rotation, attendu > 0. Conclusion apparente :
+   #328 ne fonctionne pas en navigateur réel.
+2. **Investigation mesurée (agent dédié) : le TEST était faux, pas le code.** Le test exigeait
+   **simultanément** `scrollLeft > 0` (ligne 281) et `scrollLeft ≈ min(392, maxScroll paysage)`
+   (lignes 282-285). Or au zoom par défaut le rail fait 61 j × 12 px = **732 px**, alors que le
+   `clientWidth` en paysage 844×390 vaut **794** : le rail **entre en entier**, donc
+   `scrollWidth === clientWidth` et **`maxScroll = 0`**. Les deux assertions se contredisaient —
+   le test échouait **quel que soit le code**.
+3. **Contre-preuve décisive** : sur un rail élargi (2 crans de zoom → vue Jour, rail 5 856 px,
+   `maxScroll` paysage 5 062), le code livré en `5210ed5` conserve la position **sans aucune
+   modification**. Le correctif de #328 était **correct depuis le début**.
+4. **Correctif appliqué au test** (`49fc3e2`) : élargir le rail avant de mesurer, + un garde-fou qui
+   constate `maxScroll > 0` au lieu d'échouer 20 lignes plus bas.
+
+**Résultat : `timeline-mobile.spec.ts` 15/15, suite E2E complète 97 passed / 0 failed / 8 skipped.**
+Le **critère d'acceptation n°4 de #328 est validé**.
+
+> **Deux hypothèses du lead démenties par la mesure, consignées :**
+> (a) j'avais écrit que la base locale en V6 bloquait l'E2E — **faux**, l'E2E utilise la base dédiée
+> `eventmanager_e2e`, déjà en V15 ; aucune migration n'a été appliquée.
+> (b) l'agent correcteur a écarté ma propre piste (« le layout n'est pas prêt à l'attachement de la
+> ref, il faut un `rAF` ») : instrumentation en Chromium réel → `scrollWidth` 732 / `clientWidth` 340
+> à l'attachement, écriture 190 relue 190. **Le layout était disponible.** `rAF`/`useLayoutEffect`
+> n'auraient rien changé.
+
+> **Correction d'un commentaire du code :** le commentaire « on sauve l'état DOM AVANT sa perte »
+> était **faux**. La trace au détachement montre `{scrollLeft: 0, scrollWidth: 794, clientWidth: 794}`
+> — la valeur est déjà clampée par le relayout de rotation **avant** le démontage React (392 → 0).
+> Le report fonctionne par **idempotence du clamp**, pas par mise à l'abri. Corrigé en `122e245`.
+
+### Réserves E2E qui subsistent
+- **Rotation SANS changement de variante** (ex. 844×520 → 844×390, même composant) : aucun
+  détachement de ref ne se produit, donc **aucune restauration ne tourne**. Non couvert par la spec,
+  non testé. **Trou probable** → follow-up.
+- **Redimensionnement en largeur dans la même variante** (390 → 640 portrait) : position clampée
+  puis définitivement perdue — ni l'ancien ni le nouveau code n'y répond.
+- **Sémantique produit non tranchée :** après un aller-retour où le paysage force 0, faut-il
+  **rendre** la position d'origine (intention « collante ») ou garder 0 (clamp chaîné) ? La spec
+  encode le clamp chaîné. Une intention collante serait meilleure UX. **À arbitrer par le dev.**
+- Autres viewports paysage (`LANDSCAPE_TALL` 844×520, tablettes) non instrumentés.
+
+---
+
+## Recommandations suite (état initial de l'agent — dépassé par la section ci-dessus)
+
+- ~~**`RECOMMAND_TEST_RUNNER`** — la spec E2E de rotation est écrite mais **jamais exécutée**.~~
+  **RÉSOLU** : exécutée, rouge, diagnostiquée (test faux), corrigée, verte. Voir ci-dessus.
+  *La raison invoquée par l'agent — images docker antérieures à RS256 — était réelle mais menait à
+  une fausse impasse : le runbook du S47 ne passe pas par docker.*
 
 ## non_verifie (déclaré par l'agent, conservé tel quel)
 
-- **E2E de rotation jamais exécuté** → le **critère d'acceptation n°4 de l'issue reste non validé**.
+- ~~**E2E de rotation jamais exécuté** → le critère d'acceptation n°4 reste non validé.~~
+  **DÉPASSÉ** — exécuté et vert, cf. section de résolution.
 - Comportement navigateur réel de l'affectation `scrollLeft` pendant la phase commit (attachement de
   ref) : non observé, raisonné par analogie avec `useLayoutEffect`.
 - Clamp navigateur `scrollWidth - clientWidth` (390 → 844 px en paysage) : géré dans l'assertion

@@ -1422,8 +1422,8 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 **Depend de :** aucune (indépendant de S50)
 **Status :** En cours — PR #367 ouverte (`sprint/51` → `dev`), en attente de CI puis de `/sprint end 51`
 **Branche :** `sprint/51` (créée depuis `origin/dev` @ `47730f9`, poussée 2026-07-29)
-**Commits :** 9 — 5 de code (#328, #349, #350, #351 + corrections post-review), 4 d'artefacts
-**Tests :** Frontend 821/821 · Backend 452/452 · typecheck OK · `next build` OK · **E2E non exécuté en local**
+**Commits :** 12 — 6 de code, 6 d'artefacts
+**Tests :** Frontend 821/821 · Backend 452/452 · typecheck OK · `next build` OK · **E2E 97 passed / 0 failed / 8 skipped**
 **Reviews :** reviewer batch — **0 CRITIQUE / 2 MAJEUR / 5 MINEUR** ; 1 MAJEUR + 1 MINEUR corrigés (`8e5e2a8`), le reste en follow-up assumé
 
 ### Bilan d'exécution
@@ -1470,17 +1470,54 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 >    par clé composite + test qui **échoue avec l'ancienne clé** (vérifié par revert : 10 graduations
 >    au lieu de 63).
 
-> **⚠ Réserves assumées — E2E jamais exécuté en local.** Blocage d'**environnement hérité du S50**,
-> pas un défaut du code de ce sprint : build docker impossible (métadonnées `eclipse-temurin:21-jre`
-> et `node:20-alpine` non chargeables), images `mytimeline-*` du 2026-07-11 **antérieures au passage
-> RS256 de #323**, et base locale à **V6** contre **V15** au dépôt (démarrer le backend hors docker
-> appliquerait 9 migrations à la base de dev — non fait sans arbitrage). **Le critère d'acceptation
-> n°4 de #328 n'est donc pas validé en local** ; la CI comporte un job `e2e` qui peut le lever.
-> Autres réserves : **jsdom ne clampe pas `scrollLeft` et rend `scrollWidth = 0`** → le test unitaire
-> de restauration passe **trivialement sans rien prouver** · `role="presentation"` non couvert (cales
-> jamais montées en jsdom) · **aucun outil d'audit a11y** dans `frontend/package.json`, critère n°2 de
-> #351 non tenu · #351 **partielle à l'échelle de l'app** (4 cales mobiles non corrigées) · mesures de
-> #349 prises en **Storybook dev**, pas sur un build de production.
+> **⚠⚠ L'E2E a rattrapé ce que 821 tests unitaires laissaient passer — l'épisode central du sprint.**
+>
+> **Deux fausses conclusions du lead, corrigées par la mesure et consignées :**
+> 1. J'ai d'abord écrit que l'E2E était **bloqué** (images docker antérieures au RS256, base locale
+>    en V6 contre V15). **Faux sur le fond** : le runbook du S47 démarre le backend via **`mvnw`,
+>    sans docker**, sur la base dédiée **`eventmanager_e2e`** — déjà en V15. Aucune migration n'a été
+>    appliquée. La base de dev en V6 n'a **jamais** été un obstacle. Le test-runner et moi avions
+>    suivi la piste docker, qui est une impasse.
+> 2. Ma piste de correctif (« le layout n'est pas prêt à l'attachement de la ref, il faut un `rAF` »)
+>    a été **écartée par instrumentation** en Chromium réel : `scrollWidth` 732 / `clientWidth` 340 à
+>    l'attachement, écriture 190 relue 190. Le layout était disponible ; `rAF`/`useLayoutEffect`
+>    n'auraient rien changé.
+>
+> **Ce que l'exécution a révélé.** Premier run : **96 passed / 1 failed**, et l'unique échec de toute
+> la suite était **exactement** le test de rotation de #328 — dont les 4 tests unitaires étaient
+> verts. Diagnostic mesuré : **le TEST était faux, pas le code.** Il exigeait **simultanément**
+> `scrollLeft > 0` et `scrollLeft ≈ min(392, maxScroll paysage)` ; or au zoom par défaut le rail fait
+> 61 j × 12 px = **732 px** contre un `clientWidth` paysage de **794** → le rail entre en entier,
+> `maxScroll = 0`, les deux assertions se contredisent. **Le test échouait quel que soit le code.**
+> **Contre-preuve** : sur un rail élargi (2 crans de zoom, rail 5 856 px), le code de `5210ed5`
+> conserve la position **sans aucune modification**. Corrigé en `49fc3e2` → **97 passed / 0 failed**.
+>
+> **[MEMORY:pitfall] jsdom ne fait pas de layout ET ne clampe pas `scrollLeft`** (`scrollWidth = 0`) :
+> tout test unitaire de restauration de scroll **passe trivialement sans rien prouver** — on écrit
+> 400, on relit 400, quel que soit l'état réel du DOM. Les 4 tests de rotation ont été **conservés**
+> (ils attestent le câblage : nœud DOM réellement différent, valeur transportée) mais leur portée est
+> désormais délimitée par un bloc de tête explicite. **Exiger un E2E pour toute assertion de scroll.**
+>
+> **[MEMORY:pitfall] Un test E2E de scroll dépend de la géométrie de sa fixture.** Une assertion
+> `scrollLeft > 0` n'a de sens que si `scrollWidth > clientWidth` **dans le viewport visé**. Poser un
+> garde-fou `maxScroll > 0` **avant** de mesurer, sinon l'échec survient 20 lignes plus loin en
+> accusant le code.
+>
+> **[MEMORY:pitfall] Commentaire de code démenti par la mesure** (corrigé en `122e245`) : « on sauve
+> l'état DOM AVANT sa perte » était faux — la trace au détachement montre `scrollLeft: 0`,
+> `scrollWidth: 794`, `clientWidth: 794` : la valeur est **déjà clampée par le relayout de rotation
+> avant le démontage React** (392 → 0). Le report marche par **idempotence du clamp**, pas par mise
+> à l'abri.
+>
+> **Réserves qui subsistent réellement :** `role="presentation"` non asserté (cales jamais montées en
+> jsdom, aucun test ne les cible) · **aucun outil d'audit a11y** dans `frontend/package.json` →
+> critère n°2 de #351 **non tenu** · #351 **partielle à l'échelle de l'app** (4 cales mobiles non
+> corrigées) · mesures de #349 prises en **Storybook dev**, pas en build de production · cas « ancêtre
+> défilant » de #351 non couvert par une spec dédiée (aucun tiroir Radix réel) · **rotation SANS
+> changement de variante** (844×520 → 844×390) : aucun détachement de ref → **aucune restauration ne
+> tourne**, trou probable · **arbitrage produit ouvert** : après un aller-retour où le paysage force
+> 0, faut-il rendre la position d'origine (« collante ») ou garder 0 (clamp chaîné) ? La spec encode
+> le clamp chaîné.
 
 > **Piège d'outillage — RTK, 3 manifestations distinctes ce sprint** (après `git diff` au S50) :
 > `git diff`, `wc -c`, et `vitest`/`grep` **même redirigés** renvoient vide ou 0. Contournement :
@@ -1514,8 +1551,11 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
   - Branche de report **par fraction** (`useTimelineMobileState.ts:239-245`) non couverte par les 4 tests de rotation [XS | frontend] (review)
   - **Aucun outil d'audit a11y** dans `frontend/package.json` — bloque le critère n°2 de #351 [S | frontend]
   - `frontend/.eslintcache` **tracké malgré le `.gitignore`** → `git rm --cached` [XS | infra]
-  - **Images docker antérieures au RS256** + base locale en V6 contre V15 : la recette E2E locale du 2026-07-27 est **périmée depuis le S50** [M | devops] — bloque toute vérification E2E locale
+  - **Images docker `mytimeline-*` antérieures au RS256** (2026-07-11) : le chemin docker de la stack E2E est mort, seul le chemin `mvnw` du runbook S47 fonctionne — à rebuilder ou à documenter comme abandonné [S | devops]
   - Note d'archive S42 à annoter : `Lane`/`EventBar`/`EventContent` **ne sont pas orphelins** [XS | doc]
+  - **Rotation sans changement de variante** (844×520 → 844×390) : aucun détachement de ref, donc aucune restauration — trou de couverture probable de #328 [S | frontend]
+  - **Arbitrage produit** : après un aller-retour où le paysage force `scrollLeft` à 0, rendre la position d'origine (« collante ») ou garder 0 (clamp chaîné) ? [S | produit]
+  - `auth.setup.ts` ne retente que sur **429**, pas sur un **500** de rendu : un seul 500 transitoire du serveur de dev Next tue tout le run [S | frontend]
 
 > **Note de démarrage — la commande demandée était `/sprint start 60`.** Le Sprint 60 n'existe pas :
 > aucun label `sprint-60` (les labels s'arrêtent à `sprint-54`), aucun milestone « Sprint 60 »
