@@ -186,6 +186,78 @@ test.describe('#205 Timeline mobile — portrait', () => {
     await page.getByTestId('timeline-zoom-in').click()
     await expect(level).not.toHaveText(before ?? '')
   })
+
+  /**
+   * #330 (lot a) — `timeline-sheet-overlay` : le tap ferme le bottom sheet, au même
+   * titre que le bouton close déjà couvert plus haut (deux chemins de fermeture
+   * distincts, pas un doublon).
+   */
+  test('overlay du bottom sheet : le tap ferme (comme le bouton close)', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    await seededEvent(page, eventTitle).click()
+    const sheet = page.getByTestId('timeline-sheet')
+    await expect(sheet).toBeVisible()
+    await expect(page.getByTestId('timeline-sheet-overlay')).toBeVisible()
+
+    // Le sheet est ANCRÉ EN BAS (`.mt-sheet{left:0;right:0;bottom:0}`, cf.
+    // timeline.css:276) : tap en HAUT de l'overlay pour ne pas retomber sur le
+    // panneau lui-même (qui couvre jusqu'à 80vh).
+    await page.getByTestId('timeline-sheet-overlay').click({ position: { x: 5, y: 5 } })
+    await expect(sheet).toHaveCount(0)
+    await expect(page.getByTestId('timeline-sheet-overlay')).toHaveCount(0)
+  })
+
+  /**
+   * #330 (lot a) — `timeline-sheet-grabber` : zone de swipe-down (pas juste un
+   * décor). Le seuil `DISMISS_THRESHOLD_PX` (80px, `TimelineBottomSheet.tsx:30`)
+   * distingue un swipe qui ferme d'un swipe qui ne fait que déplacer le panneau
+   * puis revient à sa place — les DEUX branches sont exercées, pas seulement le cas
+   * qui « marche ».
+   */
+  test('grabber : swipe-down > 80px ferme le sheet, un swipe court le laisse ouvert', async ({
+    page,
+  }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    await seededEvent(page, eventTitle).click()
+    const sheet = page.getByTestId('timeline-sheet')
+    await expect(sheet).toBeVisible()
+    const grabber = page.getByTestId('timeline-sheet-grabber')
+    const box = await grabber.boundingBox()
+    expect(box, 'le grabber doit être positionné').not.toBeNull()
+
+    // --- Swipe COURT (< seuil) : ne ferme PAS -------------------------------
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2 + 30, { steps: 5 })
+    await page.mouse.up()
+    await expect(sheet).toBeVisible()
+
+    // --- Swipe LONG (> seuil) : ferme ---------------------------------------
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2 + 120, { steps: 5 })
+    await page.mouse.up()
+    await expect(sheet).toHaveCount(0)
+  })
+
+  /**
+   * #330 (lot a) — `timeline-actionsheet-overlay` : le tap ferme l'action sheet,
+   * au même titre que le bouton « Annuler » déjà couvert plus haut.
+   */
+  test('overlay de l’action sheet : le tap ferme (comme Annuler)', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    await seededEventMore(page, eventTitle).click()
+    const sheet = page.getByTestId('timeline-actionsheet')
+    await expect(sheet).toBeVisible()
+    await expect(page.getByTestId('timeline-actionsheet-overlay')).toBeVisible()
+
+    await page.getByTestId('timeline-actionsheet-overlay').click({ position: { x: 5, y: 5 } })
+    await expect(sheet).toHaveCount(0)
+    await expect(page.getByTestId('timeline-actionsheet-overlay')).toHaveCount(0)
+  })
 })
 
 /* ========================================================================== */
@@ -387,5 +459,24 @@ test.describe('#205 Timeline mobile — paysage', () => {
     await expect(page.getByTestId('timeline-actionsheet')).toBeVisible()
     await expect(page.getByTestId('timeline-actionsheet-edit')).toBeVisible()
     await expect(page.getByTestId('timeline-actionsheet-delete')).toBeVisible()
+  })
+
+  /**
+   * #330 (lot a) — `timeline-landscape-drawer-overlay` : le tap ferme le drawer
+   * latéral, au même titre que son bouton close déjà couvert plus haut.
+   */
+  test('overlay du drawer latéral : le tap ferme (comme le bouton close)', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'landscape')
+
+    await seededEvent(page, eventTitle).click()
+    const drawer = page.getByTestId('timeline-landscape-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(page.getByTestId('timeline-landscape-drawer-overlay')).toBeVisible()
+
+    // Le drawer paysage est ANCRÉ À DROITE (réutilise `.mt-drawer`, cf. desktop) :
+    // tap en haut à gauche de l'overlay.
+    await page.getByTestId('timeline-landscape-drawer-overlay').click({ position: { x: 5, y: 5 } })
+    await expect(drawer).toHaveCount(0)
+    await expect(page.getByTestId('timeline-landscape-drawer-overlay')).toHaveCount(0)
   })
 })

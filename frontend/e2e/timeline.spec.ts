@@ -475,3 +475,67 @@ test.describe('#304 /timeline — accordéon collapse par produit', () => {
     await expect(groupHead).toHaveAttribute('aria-expanded', 'true')
   })
 })
+
+/**
+ * #330 (Sprint 54, lot a) — Drawer de DÉTAIL événement desktop (`EventDrawer.tsx`,
+ * testids `timeline-drawer` / `-close` / `-overlay`). Gap identifié par l'audit
+ * S46/S47 : aucune spec ne cliquait sur une pastille desktop (`timeline-event`)
+ * pour OUVRIR ce drawer — seul le drawer de CRÉATION (`shell-new-event-drawer*`,
+ * #314 ci-dessus) était couvert. Les trois testids sont exercés par leur
+ * COMPORTEMENT (ouverture avec contenu réel, fermeture par overlay OU par bouton
+ * — deux chemins distincts, pas un doublon), pas seulement leur présence.
+ */
+test.describe('#330 Drawer de détail événement (desktop, EventDrawer)', () => {
+  /** Seede un produit + son event du jour, ouvre la frise, clique sa pastille. */
+  async function seedAndOpenDetailDrawer(page: Page): Promise<{ eventTitle: string }> {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Detail Cat'))
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Detail Prod'),
+      categoryId: cat.id,
+    })
+
+    await gotoTimeline(page)
+    const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`)
+    await expect(pill).toBeVisible()
+    await pill.click()
+
+    return { eventTitle: product.name }
+  }
+
+  test('clic sur une pastille : timeline-drawer + overlay visibles avec le détail réel', async ({
+    page,
+  }) => {
+    const { eventTitle } = await seedAndOpenDetailDrawer(page)
+
+    const drawer = page.getByTestId('timeline-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(drawer).toHaveAttribute('role', 'dialog')
+    await expect(drawer).toHaveAttribute('aria-modal', 'true')
+    // Contenu réel (produit/catégorie/dates/statut via son titre), pas une coquille vide.
+    await expect(drawer).toContainText(eventTitle)
+    await expect(page.getByTestId('timeline-drawer-overlay')).toBeVisible()
+  })
+
+  test('clic sur l’overlay : ferme le drawer (démontage, pas juste masquage)', async ({ page }) => {
+    await seedAndOpenDetailDrawer(page)
+
+    // Clic en haut à gauche de l'overlay : le panneau slide-in est ANCRÉ À DROITE
+    // (`.mt-drawer{position:fixed;right:0}`, cf. timeline.css:151) — le centre par
+    // défaut du click() Playwright tomberait dessus, pas sur l'overlay.
+    await page.getByTestId('timeline-drawer-overlay').click({ position: { x: 5, y: 5 } })
+
+    await expect(page.getByTestId('timeline-drawer')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-drawer-overlay')).toHaveCount(0)
+  })
+
+  test('bouton close : ferme le drawer (démontage)', async ({ page }) => {
+    await seedAndOpenDetailDrawer(page)
+
+    await page.getByTestId('timeline-drawer-close').click()
+
+    await expect(page.getByTestId('timeline-drawer')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-drawer-overlay')).toHaveCount(0)
+  })
+})
