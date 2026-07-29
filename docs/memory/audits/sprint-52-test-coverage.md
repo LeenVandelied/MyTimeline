@@ -44,6 +44,49 @@ Contrôles supplémentaires exécutés par les agents d'implémentation :
 - Spec `landing-mobile-menu.spec.ts` complète → **21 passed** (dont les 2 tests « sélecteur de
   langue » qui étaient rouges avant le correctif `df93b63`).
 
+## ✅ RÉSERVE LEVÉE — arbitrage CI du 2026-07-29 (section ci-dessous conservée pour mémoire)
+
+La CI a tranché les deux questions ouvertes ci-dessous. **Les deux réponses sont désormais
+mesurées, plus supposées.**
+
+**1. Les 28 échecs E2E locaux étaient bien environnementaux.** Run CI `30452165133`, job `e2e` :
+**105 passed / 1 failed**, et **aucun** `GET /auth/me` en 404. Même code, environnement propre
+(Postgres 16 en service container, backend neuf) → la cause était locale, conformément à
+l'hypothèse « paire JWT éphémère + piles Docker concurrentes ». Prouvé par construction.
+
+**2. L'unique échec CI n'était PAS causé par ce sprint.** Le test en échec était
+`landing-mobile-menu.spec.ts:392 — 320 px, non-régression #334, les 4 locales` :
+`débordement à 320 px en de : scrollWidth=321 > clientWidth=320` — **un pixel, en allemand**.
+
+Verdict **mesuré, pas déduit** : la spec du HEAD a été exécutée contre le code de `origin/dev`
+(seuil encore `md`, zéro changement de #347) dans l'image `mcr.microsoft.com/playwright:v1.61.1-jammy`,
+et sort **la chaîne d'erreur identique à la CI**. C'est l'**OS qui bascule, pas le code** :
+#347 n'a fait qu'étendre l'assertion de 375 px aux 6 paliers × 4 locales, ce qui a **révélé** un
+défaut pré-existant. #334 (S49) avait conclu « 320/375/390 propres » — depuis macOS.
+
+**Correctif `9350a77` — sur le palier, pas sur la locale.** Mesure du groupe droit du header à
+320 px : `en` 16 px de marge · `fr` 13 px · **`es` 4 px** · **`de` −1 px (échec)**. Corriger `de`
+seul aurait laissé `es` à 4 px du même basculement d'OS. Sous `max-[360px]`, le CTA reprend les
+métriques **horizontales** de la taille `sm` du DS (`px-3` + `text-xs`) **sans sa hauteur** :
+`h-11` conservé, donc la **cible tactile de 44 px de #334 est préservée**. Les 4 locales
+finissent à 304 px — **16 px de marge**. Seuil purement CSS, aucun `matchMedia` ne le double,
+le seuil `lg` de #347 est intact, et `HeaderSection.tsx` (paire `hover:` sanctionnée) non touché.
+
+**Le test n'a pas été affaibli** : aucune tolérance, aucune locale retirée, aucun `skip`.
+
+> **`PIT-S52` — deux sprints de suite ont conclu « écart 0 partout » depuis macOS, et la CI Ubuntu
+> les a démentis les deux fois** (#334 au S49, #347 au S52). Les métriques de police diffèrent
+> entre macOS et Ubuntu ; `de` est la locale la plus large. **Un correctif de mise en page qui
+> laisse 0 à 4 px de marge est un échec CI en attente.** Mesurer dans l'image Playwright jammy et
+> viser une marge à deux chiffres.
+
+### Réserve d'origine — texte conservé tel quel
+
+> Ce qui suit était l'état des connaissances **avant** l'arbitrage CI. Conservé sans retouche :
+> l'hypothèse s'est révélée juste sur le point 1 mais le raisonnement « c'est du CSS donc ça ne
+> peut pas casser » restait, à ce moment-là, une déduction non mesurée — et il masquait un
+> second défaut, réel, que seule la CI a fait apparaître.
+
 ## ⚠ Réserve ouverte — 28 échecs E2E locaux, cause non démontrée
 
 Les 28 échecs ont **tous la même signature** : `GET /auth/me` → 404, perte de session après
@@ -92,7 +135,15 @@ ne pas fusionner sur la foi du raisonnement ci-dessus.
 ## Conclusion
 
 Suites unitaires backend et frontend **vertes** (452/452 et 825/825), review batch **0 finding**,
-garde-fous vérifiés non aveugles par contrôle négatif.
+garde-fous vérifiés non aveugles par contrôle négatif, **réserve E2E levée par arbitrage CI**.
 
-**Prêt pour PR, avec une réserve explicite** : les 28 échecs E2E locaux doivent être arbitrés par
-le job `e2e` de la CI avant merge. Ce n'est pas une formalité — c'est la condition de merge.
+Les deux anomalies de l'audit initial ont été tranchées **par la mesure** :
+les 28 échecs locaux étaient environnementaux (CI : 105 passed, 0 `/auth/me` 404), et l'unique
+échec CI était un défaut **pré-existant** révélé — non causé — par le nouveau test de #347,
+corrigé par `9350a77` sur le palier plutôt que sur la locale.
+
+**Ce sprint a produit un test qui a trouvé un vrai défaut que deux sprints avaient manqué.**
+C'est la valeur du filet ajouté par #347, pas un accident.
+
+**Condition de merge restante :** le job `e2e` de la CI doit être vert sur le SHA final
+(`e968d74`). Tant que ce n'est pas constaté, ne pas fusionner.
