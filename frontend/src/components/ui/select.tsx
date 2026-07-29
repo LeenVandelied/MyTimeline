@@ -6,6 +6,20 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * APPARIEMENT FOND/ENCRE À LA PRISE DE FOCUS (Sprint 52, #346).
+ *
+ * `SelectItem` posait `focus:bg-accent focus:text-accent-foreground` : deux
+ * clés `tailwind-merge` distinctes, donc une paire qu'un consommateur peut
+ * casser à moitié en ne redéfinissant que le fond — l'encre d'accent reste
+ * alors sur un fond quelconque. Le focus ne change plus que la SURFACE
+ * (`focus:bg-accent-soft`) ; l'encre de repos reste en place. Même invariant et
+ * même garde-fou que `dropdown-menu.tsx`, dont l'en-tête détaille le cas.
+ *
+ * `SelectContent` reste un CADRE DÉCORATIF (arbitrage du Sprint 49) : rien ici
+ * ne le repasse en surface fonctionnelle.
+ */
+
 const Select = SelectPrimitive.Root
 
 const SelectGroup = SelectPrimitive.Group
@@ -118,7 +132,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-xs py-1.5 pl-2 pr-8 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-xs py-1.5 pl-2 pr-8 text-sm outline-hidden text-popover-foreground focus:bg-accent-soft data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     {...props}

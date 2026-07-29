@@ -5,7 +5,13 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /**
- * Garde-fou d'APPARIEMENT DE SURVOL — étendu à `components/landing/`.
+ * Garde-fou d'APPARIEMENT D'ÉTAT — `components/landing/` ET `components/ui/`,
+ * préfixes `hover:` ET `focus:`.
+ *
+ * ⚠ NOM DE FICHIER HISTORIQUE. Il dit « landing » et « hover » ; le périmètre
+ * couvre depuis le Sprint 52 (#346) les deux répertoires et les deux états. Le
+ * renommage est laissé à un suivi dédié : trois agents écrivaient dans ce
+ * working tree au moment du correctif, un `git mv` y aurait été une course.
  *
  * POURQUOI CE FICHIER EXISTE. Le commit `24f44a3` a retiré `hover:text-*` des
  * variants de `ui/button.tsx` et posé l'invariant « le survol ne change que la
@@ -34,21 +40,55 @@ import { fileURLToPath } from 'node:url'
  *    (c'est le cas de `.nav-link` du header desktop) ;
  *  - un `hover:bg-*` SEUL : c'est précisément la forme recommandée.
  *
+ * POURQUOI `focus:` A ÉTÉ AJOUTÉ (Sprint 52, #346). Le même couplage vivait
+ * sous `focus:` dans `ui/dropdown-menu.tsx` (4 occurrences) et `ui/select.tsx`
+ * (1), hors du périmètre scanné : `focus:bg-accent focus:text-accent-foreground`.
+ * Latent — aucun consommateur ne le cassait encore, donc aucun ratio mesuré —
+ * mais Radix focalise l'item au `pointermove` : sous ces composants, `focus:`
+ * est l'état de survol EFFECTIF, pas un cas clavier marginal.
+ *
+ * POURQUOI `text-accent-foreground` N'EST PAS SANCTIONNÉ alors que
+ * `text-accent-ink` l'est. Ce ne sont pas deux orthographes du même jeton :
+ * `--color-accent-foreground` est un ALIAS de compatibilité shadcn défini dans
+ * `styles/globals.css`, qui pointe aujourd'hui vers `--color-accent-ink` du DS.
+ * Rien ne garantit qu'il continue de le suivre, et le DS ne mesure de ratio que
+ * pour `accent-ink` sur `accent`. Une paire dont une moitié est un alias
+ * indirect est une paire dont le ratio n'a pas été mesuré : elle est signalée.
+ *
+ * CE QUI RESTE HORS DE PORTÉE, ASSUMÉ :
+ *  - les variantes COMPOSÉES (`data-[variant=destructive]:focus:bg-*`,
+ *    `dark:…:focus:text-*`) : seul le `hover:`/`focus:` posé en TÊTE de classe
+ *    est lu. La paire destructive de `ui/dropdown-menu.tsx` (surface
+ *    `destructive/10`, encre `destructive`) a fait l'objet d'un arbitrage
+ *    distinct et ne doit pas rougir ici ;
+ *  - les corps de `cva(...)`, qui ne passent pas par un attribut `className=` —
+ *    c'est le périmètre de `ui/button.hover-pairing.test.ts`, qui reste requis.
+ *
  * CE QUE CE TEST NE PROUVE PAS. Aucun ratio n'est calculé : jsdom ne résout ni
  * la précédence des `@layer` ni la mise en page (PIT-S48). Les ratios réels sont
  * mesurés par `e2e/landing-mobile-menu.spec.ts` et `e2e/landing-cta-contrast.spec.ts`.
  */
 
-const LANDING_DIR = dirname(fileURLToPath(import.meta.url))
+const COMPONENTS_DIR = dirname(dirname(fileURLToPath(import.meta.url)))
+const SCANNED_DIRS = ['landing', 'ui'] as const
 
-/** La seule paire fond/encre sanctionnée pour un survol inversé. */
-const SANCTIONED_SURFACE = 'hover:bg-accent'
-const SANCTIONED_INK = 'hover:text-accent-ink'
+/** États dont on surveille l'appariement fond/encre. */
+const STATES = ['hover', 'focus'] as const
+type State = (typeof STATES)[number]
 
-function landingComponents(): string[] {
-  return readdirSync(LANDING_DIR)
-    .filter((name) => name.endsWith('.tsx') && !name.endsWith('.test.tsx'))
-    .sort()
+/** La seule paire fond/encre sanctionnée, par état : l'encre prévue POUR l'accent, sur l'accent. */
+const SANCTIONED: Record<State, { surface: string; ink: string }> = {
+  hover: { surface: 'hover:bg-accent', ink: 'hover:text-accent-ink' },
+  focus: { surface: 'focus:bg-accent', ink: 'focus:text-accent-ink' },
+}
+
+function scannedComponents(): string[] {
+  return SCANNED_DIRS.flatMap((dir) =>
+    readdirSync(join(COMPONENTS_DIR, dir))
+      .filter((name) => name.endsWith('.tsx') && !name.endsWith('.test.tsx'))
+      .sort()
+      .map((name) => `${dir}/${name}`),
+  )
 }
 
 /**
@@ -115,85 +155,137 @@ function classNameValues(source: string): string[] {
   return values
 }
 
-export interface HoverPairingOffence {
+export interface StatePairingOffence {
   file: string
+  /** État concerné : le couplage se juge état par état, pas tous états confondus. */
+  state: State
   className: string
   surfaces: string[]
   inks: string[]
 }
 
-/** Repère les `className` qui changent surface ET encre hors paire sanctionnée. */
-export function findHoverPairingOffences(
+/**
+ * Utilitaires d'un état posés EN TÊTE de classe.
+ *
+ * `(?<![^\s])` — négation à largeur fixe, donc valide partout — exige que le
+ * jeton commence la chaîne ou suive une espace. Sans elle,
+ * `data-[variant=destructive]:focus:bg-destructive/10` matcherait par sa fin et
+ * ferait rougir un arbitrage acté. Voir l'en-tête, « variantes composées ».
+ */
+function stateTokens(className: string, state: State, property: 'bg' | 'text'): string[] {
+  return className.match(new RegExp(`(?<![^\\s])${state}:${property}-[\\w-]+`, 'g')) ?? []
+}
+
+/**
+ * Repère les `className` qui changent surface ET encre dans un MÊME état, hors
+ * paire sanctionnée. Un `className` fautif dans les deux états produit deux
+ * signalements : ce sont deux ratios distincts à mesurer.
+ */
+export function findStatePairingOffences(
   file: string,
   source: string,
-): HoverPairingOffence[] {
-  const offences: HoverPairingOffence[] = []
+): StatePairingOffence[] {
+  const offences: StatePairingOffence[] = []
   for (const className of classNameValues(source)) {
-    const surfaces = className.match(/hover:bg-[\w-]+/g) ?? []
-    const inks = className.match(/hover:text-[\w-]+/g) ?? []
-    if (surfaces.length === 0 || inks.length === 0) continue
-    const sanctioned =
-      surfaces.length === 1 &&
-      inks.length === 1 &&
-      surfaces[0] === SANCTIONED_SURFACE &&
-      inks[0] === SANCTIONED_INK
-    if (!sanctioned) offences.push({ file, className, surfaces, inks })
+    for (const state of STATES) {
+      const surfaces = stateTokens(className, state, 'bg')
+      const inks = stateTokens(className, state, 'text')
+      if (surfaces.length === 0 || inks.length === 0) continue
+      const sanctioned =
+        surfaces.length === 1 &&
+        inks.length === 1 &&
+        surfaces[0] === SANCTIONED[state].surface &&
+        inks[0] === SANCTIONED[state].ink
+      if (!sanctioned) offences.push({ file, state, className, surfaces, inks })
+    }
   }
   return offences
 }
 
-describe('landing — appariement fond/encre au survol', () => {
+describe("landing + ui — appariement fond/encre au survol et à la prise de focus", () => {
   it('aucun composant ne couple surface et encre hors paire sanctionnée', () => {
-    const offences = landingComponents().flatMap((name) =>
-      findHoverPairingOffences(name, readFileSync(join(LANDING_DIR, name), 'utf8')),
+    const offences = scannedComponents().flatMap((name) =>
+      findStatePairingOffences(name, readFileSync(join(COMPONENTS_DIR, name), 'utf8')),
     )
     expect(
-      offences.map((o) => `${o.file} : ${o.surfaces.join(' ')} + ${o.inks.join(' ')}`),
-      "un `className` change à la fois la surface et l'encre au survol sans utiliser la paire " +
-        `\`${SANCTIONED_SURFACE}\` + \`${SANCTIONED_INK}\` : le ratio de la combinaison inventée ` +
-        "n'a été mesuré nulle part (cf. l'en-tête de ce fichier — le cas précédent valait 3.83:1)",
+      offences.map(
+        (o) => `${o.file} [${o.state}] : ${o.surfaces.join(' ')} + ${o.inks.join(' ')}`,
+      ),
+      "un `className` change à la fois la surface et l'encre dans un même état sans utiliser " +
+        "la paire sanctionnée du DS (`bg-accent` + `text-accent-ink`, préfixée par l'état) : " +
+        "le ratio de la combinaison inventée n'a été mesuré nulle part (cf. l'en-tête de ce " +
+        'fichier — le cas du Sprint 49 valait 3.83:1)',
     ).toEqual([])
   })
 
   it('le détecteur voit le défaut exact que le Sprint 49 a corrigé', () => {
     // Sans cette preuve, un détecteur devenu aveugle rendrait le test ci-dessus
     // vert pour de mauvaises raisons — le défaut même que ce garde-fou combat.
-    const regression = findHoverPairingOffences(
+    const regression = findStatePairingOffences(
       'Regression.tsx',
       'className={`text-ink hover:bg-accent-soft hover:text-accent px-3 ${FOCUS_RING}`}',
     )
     expect(regression).toHaveLength(1)
+    expect(regression[0].state).toBe('hover')
     expect(regression[0].surfaces).toEqual(['hover:bg-accent-soft'])
     expect(regression[0].inks).toEqual(['hover:text-accent'])
+  })
+
+  it('le détecteur voit le défaut `focus:` que le Sprint 52 a corrigé', () => {
+    // Témoin de la forme EXACTE retirée de `ui/dropdown-menu.tsx` et
+    // `ui/select.tsx` : sans lui, l'extension au préfixe `focus:` pourrait être
+    // inerte et le scan ci-dessus resterait vert sans rien vérifier de neuf.
+    const regression = findStatePairingOffences(
+      'Regression.tsx',
+      'className={cn("focus:bg-accent focus:text-accent-foreground rounded-sm", className)}',
+    )
+    expect(regression).toHaveLength(1)
+    expect(regression[0].state).toBe('focus')
+    expect(regression[0].surfaces).toEqual(['focus:bg-accent'])
+    expect(regression[0].inks).toEqual(['focus:text-accent-foreground'])
   })
 
   it('le détecteur voit un couplage écrit via `cn(...)` / `clsx(...)`', () => {
     // Témoin de la forme DOMINANTE du dépôt : avant le Sprint 49, le détecteur
     // ne lisait pas les expressions accoladées et rendait `[]` sur ces deux
     // lignes — vert, alors que le couplage est là.
-    const viaHelpers = findHoverPairingOffences(
+    const viaHelpers = findStatePairingOffences(
       'ViaHelpers.tsx',
       [
         "className={cn('hover:bg-x', 'hover:text-y')}",
-        'className={clsx(base, { active: on }, `px-3 hover:bg-accent-soft hover:text-accent`)}',
+        'className={clsx(base, { active: on }, `px-3 focus:bg-accent-soft focus:text-accent`)}',
       ].join('\n'),
     )
     expect(viaHelpers).toHaveLength(2)
+    expect(viaHelpers[0].state).toBe('hover')
     expect(viaHelpers[0].surfaces).toEqual(['hover:bg-x'])
     expect(viaHelpers[0].inks).toEqual(['hover:text-y'])
-    expect(viaHelpers[1].surfaces).toEqual(['hover:bg-accent-soft'])
-    expect(viaHelpers[1].inks).toEqual(['hover:text-accent'])
+    expect(viaHelpers[1].state).toBe('focus')
+    expect(viaHelpers[1].surfaces).toEqual(['focus:bg-accent-soft'])
+    expect(viaHelpers[1].inks).toEqual(['focus:text-accent'])
   })
 
   it('la paire sanctionnée et les moitiés isolées ne sont pas signalées', () => {
-    const accepted = findHoverPairingOffences(
+    const accepted = findStatePairingOffences(
       'Accepted.tsx',
       [
         'className="border-accent text-accent hover:bg-accent hover:text-accent-ink"',
         'className="nav-link hover:text-accent transition duration-200"',
-        'className="text-ink hover:bg-accent-soft rounded-sm"',
+        'className="text-ink focus:bg-accent-soft rounded-sm"',
       ].join('\n'),
     )
     expect(accepted).toEqual([])
+  })
+
+  it('une variante COMPOSÉE ne rougit pas — la paire destructive est arbitrée à part', () => {
+    // `data-[variant=destructive]:focus:*` de `ui/dropdown-menu.tsx` : surface
+    // `destructive/10`, encre `destructive` pleine — ce n'est pas le défaut
+    // « encre de la couleur du fond », et l'arbitrage est distinct. Sans cette
+    // borne, le scan élargi rougirait sur du code volontaire.
+    const composed = findStatePairingOffences(
+      'Composed.tsx',
+      'className={cn("focus:bg-accent-soft data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive", className)}',
+    )
+    expect(composed).toEqual([])
   })
 })
