@@ -17,6 +17,26 @@ import { TimelineResponsive } from './TimelineResponsive'
  * sur le plancher 0.02 de la minimap et le centrage initial vaut exactement
  * `todayLeftPx`. Ces valeurs sont dérivées du DOM (largeur du rail) et jamais
  * codées en dur.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * PORTÉE RÉELLE DE CE FICHIER — à lire avant de s'y fier (sprint 51)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * jsdom ne fait pas de layout ET NE CLAMPE PAS `scrollLeft` : `scrollWidth` et
+ * `clientWidth` valent 0, si bien qu'on peut y écrire 400 et relire 400 quel que
+ * soit l'état du rail. Les assertions `toBe(400)` / `toBe(250)` ci-dessous
+ * prouvent donc UNIQUEMENT le CÂBLAGE — que `setScrollNode` transporte bien une
+ * valeur d'un nœud DOM au suivant, et que le nœud remonté est bien un autre
+ * élément. Elles ne prouvent RIEN sur le comportement en navigateur.
+ *
+ * En navigateur, la même écriture est bornée à `scrollWidth - clientWidth`. Mesuré
+ * (Chromium, 390×844 → 844×390, données seedées par `e2e/timeline-mobile.spec.ts`)
+ * : rail 732 px, zone visible 340 px en portrait mais 794 px en paysage → le rail
+ * entre EN ENTIER, `maxScroll` vaut 0, et le seul `scrollLeft` atteignable en
+ * paysage est 0. Aucun code ne peut y produire une valeur > 0.
+ *
+ * Ne cherchez donc pas à « prouver » ici une correction de restauration de scroll
+ * : seul un test navigateur (Playwright) le peut. Ces 4 cas sont conservés comme
+ * garde-fou de non-régression du câblage, pas comme validation fonctionnelle.
  */
 
 vi.mock('next-intl', () => ({

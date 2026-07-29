@@ -48,6 +48,22 @@ import {
  * conteneur scrollable À LA PLACE de `scrollRef`). Le déclencheur est le
  * changement de variante lui-même, pas le montage du hook — `scrollToToday` ne
  * rejoue donc PAS et n'écrase pas la position utilisateur (inversion du bug).
+ *
+ * CE QUE LE MÉCANISME NE FAIT PAS (mesuré en navigateur, sprint 51) : il ne
+ * « sauve » PAS la position avant sa perte. Au démontage, `scrollLeft` a DÉJÀ été
+ * clampé par le navigateur : le relayout consécutif à la rotation précède de
+ * plusieurs étapes le démontage React (`clientWidth` mesuré 340 → 794, `scrollLeft`
+ * 392 → 0 AVANT que cette callback ne soit rappelée avec `null`). La restauration
+ * fonctionne parce que le navigateur RE-CLAMPE identiquement à l'attachement —
+ * `clamp(x, max)` est idempotent — pas parce que la valeur aurait été mise à
+ * l'abri. Conséquence directe : si le rail entre EN ENTIER dans la nouvelle
+ * orientation (`scrollWidth === clientWidth`), le seul `scrollLeft` atteignable
+ * est 0, et la position d'origine n'est récupérable NI ici NI ailleurs sans
+ * mémoriser l'intention utilisateur en amont du relayout.
+ *
+ * Le layout, lui, EST disponible au moment de l'attachement de la ref (mesuré :
+ * `scrollWidth` déjà à sa valeur finale) — aucun `rAF` / `useLayoutEffect` n'est
+ * requis pour que l'écriture de `scrollLeft` porte.
  */
 export interface TimelineMobileState {
   /**
@@ -218,7 +234,11 @@ export function useTimelineMobileState(
   const anchoredRef = useRef(false)
 
   const setScrollNode = useCallback((node: HTMLDivElement | null) => {
-    // Détachement : la variante est démontée, on sauve l'état DOM AVANT sa perte.
+    // Détachement : la variante est démontée. ATTENTION — `scrollLeft` lu ici est
+    // la valeur DÉJÀ CLAMPÉE par le relayout de la rotation, pas la position
+    // d'avant rotation (cf. bloc de tête). Le report reste correct par idempotence
+    // du clamp, mais toute évolution qui voudrait récupérer la position ORIGINALE
+    // devra la capturer sur les scrolls utilisateur, pas ici.
     if (node === null) {
       const previous = scrollRef.current
       if (previous) {
