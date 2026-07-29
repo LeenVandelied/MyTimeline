@@ -1722,7 +1722,7 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 >   « sous-routes profondes » de son body est **caduc**. À replanifier au S53 avec `ui-design` en vague 0.
 > · **#346** — mini-plan du S53 re-vérifié **sans aucune dérive de ligne** (5 emplacements exacts).
 
-## Sprint 53 — 2026-07-28 → 2026-07-29 (EN COURS — cohésion 1.00 après retrait de #346, dette de cascade CSS)
+## Sprint 53 — 2026-07-28 → 2026-07-29 (Terminé — merge PR #382 dans dev — cohésion 1.00 après retrait de #346, dette de cascade CSS)
 **Objectif :** Layerisation `h1..h6` + audit des CSS non-layerisés restants
 **Milestone GitHub :** #53
 **Issues (2) :** #339 (P2/S), #340 (P2/S) — 4 pts
@@ -1730,7 +1730,7 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 **Migrations Flyway :** aucune
 **Branche :** `sprint/53` créée sur `origin/dev` à `2966994` (merge PR #374)
 **Depend de :** aucune — ⚠ vérification navigateur clair+sombre OBLIGATOIRE (jsdom aveugle, pitfall S48)
-**Commits :** 4 — `40665fc` (#339) · `a4c4a6c` (#340) · `f5c09c8` (artefacts) · `3bd635a` (correctif régression)
+**Commits :** 6 sur `sprint/53` — `40665fc` (#339) · `a4c4a6c` (#340) · `f5c09c8` (artefacts) · `3bd635a` (**correctif régression**) · `ed111c8` (leçon de la régression) · `42bb835` (consolidation mémoire + triage) — puis `e33da7f` en PR de suivi #386 (statut)
 **Tests :** Frontend **836/836** · Backend **452/452** · **CI 4/4 verts** (dont `e2e`, 5m51s)
 **Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 1 MINEUR**
 **Nouveaux artefacts mémoire :** `PIT-S53-001` à `PIT-S53-006` · `PAT-S53-001`, `PAT-S53-002` · `DEC-S53-001` à `DEC-S53-004`
