@@ -263,19 +263,28 @@ test.describe('Landing — menu burger (375 px)', () => {
        *
        * Il n'était couvert nulle part : la spec ne contenait aucune référence à
        * `language`/`locale`, alors que #334 monte `LanguageSelector` DANS le
-       * panneau. L'item actif pose `bg-accent text-accent-foreground` ; il
-       * portait aussi `hover:bg-surface-2`, qui ne change QUE la surface et
-       * laisse l'encre d'accent en place.
+       * panneau.
        *
-       * Le survol souris SEUL ne le montre pas : Radix focalise l'item au
-       * `pointermove` et le `focus:bg-accent` de `ui/dropdown-menu.tsx` gagne
-       * (mesuré 4.71:1 en clair / 6.94:1 en sombre). L'état qui découvre le
-       * défaut est MIXTE : souris posée sur l'item actif, puis navigation au
-       * CLAVIER vers un autre item — le focus part, le `:hover` reste. Mesuré
-       * AVANT correctif : **1.10:1 en clair** (#ffffff sur #f3f4f6) et
-       * **1.17:1 en sombre** (#0b0c0e sur #1b1e24). Ce test fige les trois
-       * états, car la conformité des deux premiers dépend d'un ordre de cascade
-       * (`focus:` vs `hover:`) que rien d'autre ne garantit.
+       * ⚠ ÉTAT DU CODE AU S52 — le paragraphe qui suivait ici décrivait un
+       * couplage SUPPRIMÉ depuis. Il disait que « le `focus:bg-accent` de
+       * `ui/dropdown-menu.tsx` gagne (4,71:1 clair / 6,94:1 sombre) ». Ces
+       * chiffres et ce mécanisme N'EXISTENT PLUS : #346 a posé l'invariant
+       * « le focus ne change que la SURFACE », donc `dropdown-menu.tsx` porte
+       * `focus:bg-accent-soft` et non plus `focus:bg-accent`.
+       *
+       * Ce que le code fait AUJOURD'HUI : l'item actif pose
+       * `bg-accent text-accent-ink focus:bg-accent-hover`
+       * (`ui/language-selector.tsx`) — la paire de repos est celle sanctionnée
+       * par le DS, et le focus n'assombrit que l'aplat. Ratios MESURÉS après
+       * correctif : **6,08:1 en clair / 8,78:1 en sombre**, avec un delta de
+       * surface repos→focus de 1,29:1 / 1,27:1 (l'item actif reste distinguable).
+       *
+       * L'état qui découvrait le défaut d'origine reste MIXTE : souris posée sur
+       * l'item actif, puis navigation au CLAVIER vers un autre item — le focus
+       * part, le `:hover` reste. Mesuré AVANT tout correctif : **1.10:1 en clair**
+       * (#ffffff sur #f3f4f6) et **1.17:1 en sombre** (#0b0c0e sur #1b1e24).
+       * Ce test fige les trois états, car la conformité des deux premiers dépend
+       * d'un ordre de cascade (`focus:` vs `hover:`) que rien d'autre ne garantit.
        *
        * OUVERTURE AU CLAVIER, obligatoire : `trigger.click()` part en timeout et
        * `element.click()` en JS ne déclenche rien — Radix ouvre sur

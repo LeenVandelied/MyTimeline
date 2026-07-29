@@ -63,6 +63,20 @@ import { fileURLToPath } from 'node:url'
  *    distinct et ne doit pas rougir ici ;
  *  - les corps de `cva(...)`, qui ne passent pas par un attribut `className=` —
  *    c'est le périmètre de `ui/button.hover-pairing.test.ts`, qui reste requis.
+ *    ⚠ PORTÉE EXACTE DE CE TROU (relevé en review de la PR #374) : ce test dédié
+ *    ne couvre QUE `button.tsx`. Tout AUTRE composant de `ui/` bâti sur `cva(...)`
+ *    est donc sans garde-fou s'il gagne un jour une paire fond/encre d'état.
+ *    Vérifié au S52 : aucun n'en porte aujourd'hui, le trou n'est pas exploité —
+ *    mais il ne se signalera pas tout seul. Étendre `button.hover-pairing.test.ts`
+ *    à tous les `cva(...)` de `ui/` le fermerait ; non fait ici, hors périmètre.
+ *
+ * ⚠ TROU STRUCTUREL, LUI, IMPOSSIBLE À FERMER PAR ANALYSE STATIQUE (DEC-S52-003) :
+ * un couplage RÉPARTI SUR DEUX FICHIERS — surface posée par le composant de base,
+ * encre posée par son consommateur — est hors de portée de toute analyse par
+ * attribut `className`, puisqu'il n'existe aucun `className` où les deux moitiés
+ * se rencontrent. C'est exactement la régression `df93b63` du S52 (locale active
+ * illisible au focus, 1,23:1) : ce test était vert, à juste titre. NE PAS élargir
+ * le détecteur en croyant la combler — seule la mesure au navigateur la couvre.
  *
  * CE QUE CE TEST NE PROUVE PAS. Aucun ratio n'est calculé : jsdom ne résout ni
  * la précédence des `@layer` ni la mise en page (PIT-S48). Les ratios réels sont

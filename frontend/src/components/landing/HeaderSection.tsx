@@ -162,9 +162,13 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             Corriger `de` seul aurait laissé `es` à 4 px du même échec. On reprend donc
             les métriques HORIZONTALES de la taille `sm` du DS (`px-3` + `text-xs`,
             cf. `button.tsx`) sans sa hauteur `h-8` : `h-11` reste, la cible tactile
-            de 44 px exigée par #334 est préservée. Après correctif, `de` retombe à
-            281 px requis pour 288 dispo — dans la boîte de contenu, 23 px avant
-            débordement. Aucun `matchMedia` ne double ce seuil (contrairement à `lg`) :
+            de 44 px exigée par #334 est préservée. Après correctif, les 4 locales
+            requièrent 281 px pour 288 dispo — soit **7 px de marge dans la boîte de
+            contenu**, et un bord droit du groupe à 304 px pour 320 de viewport
+            (**16 px avant le bord de l'écran**). Ce sont les deux mesures utiles ;
+            une version antérieure de ce commentaire annonçait « 23 px », chiffre
+            qui ne correspondait à aucune des deux (relevé en review de la PR #374).
+            Aucun `matchMedia` ne double ce seuil (contrairement à `lg`) :
             il est purement CSS, rien à resynchroniser côté JS. */}
         <Button
           asChild
