@@ -391,3 +391,23 @@ chaque option par `addStyleTag` dans Playwright et comparer la **marge résiduel
 marge dans les 4 locales et l'autre **223–258 px**. Anti-pattern : choisir sur la seule absence de
 débordement — elle masque les correctifs qui tiennent à un pixel près, donc au rendu d'un autre OS
 (cf. [[PIT-S52-001]]).
+
+## PAT-S53-001 — Prouver qu'une règle CSS est layerisée : AST post-compilation + témoin + mutation
+Problème : `jsdom` ne résout ni `@layer` ni le layout, et un test RTL sur `className` ne prouve **rien** ici
+(les classes sont déjà présentes avant le correctif — c'est précisément le piège). Solution : compiler la
+**vraie** chaîne (`globals.css` + `@import 'tailwindcss'`) via PostCSS + le plugin Tailwind 4, puis asserter
+**sur l'AST de sortie** l'appartenance au layer et la valeur gagnante des custom properties (`winningRootVar`).
+Trois garde-fous indispensables : (1) **fixture témoin anti-vacuité** par assertion ; (2) **`from` unique par
+fixture** — le plugin mémoïse par chemin d'entrée, un `from` partagé fait compiler le CSS réel et le test
+**passe à vide** ; (3) **regex de discrimination** sur une déclaration propre au DS (`--font-display`,
+`--radius-md`) — Tailwind émet son preflight sous les **mêmes sélecteurs**. Valider par **mutation** :
+dé-layeriser la règle de production et exiger le rouge. Un test AST vert ne dit pas qu'il détecte quoi que
+ce soit. (Sprint 53, #339/#340 — `frontend/src/styles/__tests__/base-layer.test.ts`, 5 → 13 tests)
+
+## PAT-S53-002 — Sonder des éléments synthétiques pour mesurer une règle CSS indépendamment de la page
+Problème : vérifier une règle transverse en ouvrant une page ne teste que l'échantillon de cette page — et au
+S53 la landing était le **pire** échantillon (ses titres portent un `leading-tight` explicite, les 6 seuls du
+dépôt immunisés). Solution : `document.createElement(tag)` + `className` + `getComputedStyle`, élément jeté
+aussitôt. Ça teste **la règle**, pas la page, et se compare trivialement entre deux branches
+(`git checkout <base> -- frontend/src/styles` → reload → sonder → restaurer). Au S53 : dérive de line-height
+quantifiée sur 2 branches en ~2 minutes après un E2E rouge. Complément obligatoire de [[PAT-S48-001]].

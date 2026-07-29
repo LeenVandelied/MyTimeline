@@ -295,3 +295,39 @@ basculement. Décision : correctif au palier `max-[360px]` pour les 4 locales (m
 qu'un ajustement ciblé sur `de`. Pourquoi : corriger `de` seul aurait laissé `es` à un rendu d'OS près du
 même échec. Le CTA reprend les métriques **horizontales** de la taille `sm` du DS sans sa hauteur, donc la
 cible tactile 44 px de #334 est préservée.
+
+## DEC-S53-001 — `line-height` reste HORS layer sur `h1..h6`, les 4 autres propriétés y entrent
+Contexte : #339 devait faire céder les défauts de titre devant les utilitaires Tailwind. `ui-design` avait
+tranché `line-height : RESTE GAGNANTE` ; **le lead a écrasé ce verdict** en imposant « layeriser les 5 en
+bloc », convaincu que mapper `--leading-*` dans `@theme` suffisait. C'était faux (cf. `PIT-S53-001`) et la CI
+E2E l'a démontré. Décision finale : `margin`, `font-weight`, `font-family` et `letter-spacing` dans
+`@layer base` (elles **doivent** céder — c'est l'objet de l'issue, et `font-family` porte la bascule
+display→mono du dashboard) ; **`line-height` hors layer, seul**. Contrepartie assumée : un `leading-*`
+explicite ne peut plus gagner sur un titre — impact **mesuré nul**. `letter-spacing` peut rester layerisé :
+mesuré, `text-*` n'apparie **aucun** `letter-spacing`. Leçon de gouvernance : écraser la réserve précise d'un
+spécialiste demande une **preuve**, pas une inférence.
+
+## DEC-S53-002 — Ne PAS layeriser les 3 règles en conflit dont la correction créerait la régression
+L'audit #340 a démontré 4 conflits réels ; **3 n'ont délibérément pas été corrigés**, et c'est le résultat le
+plus utile de l'issue. `:focus-visible` : `language-selector.tsx` **dépend** de son caractère hors-layer, c'est
+son **unique** indicateur de focus — le layeriser = régression **WCAG 1.4.11** (reporté en follow-up [M] avec
+arbitrage `ui-design`). `.feature-card` / `.testimonial-card` : cf. `PIT-S53-004`. `time, .mono, [data-mono]` :
+2 sites, les deux posent `font-mono`, **dérive nulle** → verrou de l'AC appliqué. Pourquoi : layeriser une
+règle sans conflit démontré, c'est prendre un risque de cascade **contre rien**.
+
+## DEC-S53-003 — Les ~770 lignes de `ds/components/*.css` restent hors layer
+Le vrai défaut de #340 n'était pas les sélecteurs d'élément (il n'en existe **aucun** en tête de sélecteur
+dans les 7 fichiers listés) mais les **classes** hors layer, que l'énoncé ne mentionnait pas. Décision : ne
+layeriser que `.mt-avatar` (seul conflit réel prouvé) et laisser les ~770 autres lignes hors layer. Pourquoi :
+**0 conflit réel aujourd'hui** — ces classes sont posées **seules** partout — donc 0 bénéfice immédiat contre
+un basculement de précédence composant→utilitaire sur toute la Vue Timeline. À rouvrir seulement si le
+produit adopte la règle « une utilitaire gagne toujours ». Le layer retenu pour les classes de composant est
+`components`, pas `base` comme le disait l'issue (`base` est le layer des resets **et** du preflight Tailwind).
+
+## DEC-S53-004 — Le mapping `--leading-*` dans `@theme` est conservé bien que mesuré NO-OP
+Il ne change **aucune** valeur rendue (le `:root` hors layer du DS gagnait déjà, cf. `PIT-S53-002`). Conservé
+pour deux raisons : il explicite le pont DS → Tailwind, et il protège si un futur audit fait entrer ces
+`:root` dans un layer — cas où les défauts Tailwind reprendraient la main. Sa justification d'origine
+(« sinon `leading-tight` régresse 1.08 → 1.25 ») était **fausse** et a été réécrite dans le code plutôt que
+laissée en place : un commentaire faux aurait empoisonné l'audit #340. `--tracking-*` n'est **pas** mappé :
+même mécanisme, mêmes valeurs DS déjà gagnantes — l'ajouter serait purement cosmétique.

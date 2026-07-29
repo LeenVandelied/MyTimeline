@@ -579,3 +579,56 @@ affichait le commit **parent** en tête alors que `git rev-parse HEAD` donnait l
 traître que le diff vide : **la sortie a l'air plausible**. Solution : `git rev-parse` fait foi pour savoir
 où l'on est ; `rtk proxy git log` pour l'historique. Ne jamais conclure « la branche est au mauvais endroit »
 sur un `git log`.
+
+## PIT-S53-001 — En Tailwind 4, `text-*` apparie un `line-height` : layeriser une règle d'élément la lui fait céder
+Le correctif de #339 layerisait les 5 propriétés de `h1..h6` en bloc. Or une utilitaire `text-*` ne pose pas
+que `font-size` : elle pose **aussi** `line-height: var(--tw-leading, var(--text-lg--line-height))`, défauts
+émis dans `@layer theme`. Hors layer, la règle du DS battait cet appariement ; layerisée, elle **cède**.
+Mesuré : `h2.text-lg` **29,16 px (1.08) → 42 px (1,5556)**, `h1.text-xl` **37,8 → 49 px**. **28 titres** du
+dépôt portent `text-*` sans `leading-*` explicite → dérive **systémique et silencieuse** du rythme typo.
+Mapper `--leading-*` dans `@theme` **ne protège pas** : ça gouverne les utilitaires nommées `leading-*`, pas
+l'appariement. Solution : sortir `line-height` du layer, seul ; les 4 autres propriétés y restent (elles
+doivent céder, c'est l'objet de #339). Contrepartie mesurée nulle (les 6 titres à `leading-*` explicite
+valent déjà 1.08).
+
+## PIT-S53-002 — Un `:root` hors layer aux noms du namespace `@theme` rend la lecture de `@theme` trompeuse
+`ds/tokens/typography.css` déclare `--leading-*` / `--tracking-*` / `--text-*` dans un `:root` **hors layer**,
+avec les mêmes noms que le namespace de thème de Tailwind 4 (qui émet ses défauts dans `@layer theme`).
+Hors layer battant tout layer, **les tokens du DS gagnaient déjà**. Le lead a lu l'absence de ces clés dans
+`@theme` et en a conclu que le défaut Tailwind s'appliquait (« `leading-tight` rend 1.25 ») : **faux**, il
+rendait 1.08. Toute une décision de sprint a été bâtie sur cette inférence. Solution : ne jamais déduire une
+valeur effective de la lecture de `@theme` seul — compiler via PostCSS et résoudre la précédence de layers
+(helper `winningRootVar`, `base-layer.test.ts`). Corollaire dangereux : layeriser ces `:root` ferait basculer
+toute l'échelle typo/chromatique sur les défauts Tailwind.
+
+## PIT-S53-003 — Un audit de cascade par `className` littéral rate les utilitaires passées en prop
+Le balayage de #340 concluait « 0 conflit » sur `ds/components/*.css` jusqu'à ce qu'un 2ᵉ passage résolve les
+**consommateurs** de chaque composant : `AppShell` rend `<Avatar className="rounded-sm">`, et le
+`border-radius` du DS (7 px) annulait l'override (5 px) — l'override était un **NO-OP** depuis toujours.
+Solution : tout audit de cascade doit croiser classe-source **et** prop-passthrough. Prévention : sinon il
+conclut faussement à l'absence de conflit, ce qui est pire que pas d'audit.
+
+## PIT-S53-004 — Layeriser une règle `:hover` supprime l'état de survol s'il existe une utilitaire sans variante
+`.feature-card:hover{box-shadow}` et `.testimonial-card:hover{border-color}` sont en conflit réel avec
+`shadow-lg` / `border-rule` posées sur les mêmes éléments — mais ces utilitaires **n'ont pas de variante
+`hover:`**. Les layeriser aurait fait gagner l'utilitaire en permanence → **l'élévation au survol
+disparaissait**. La « correction » aurait créé la régression. Solution : avant de layeriser, vérifier les
+paires (règle `:hover` hors layer / utilitaire non-hover sur le même élément). Cf. `DEC-S53-002`.
+
+## PIT-S53-005 — Un conflit de cascade masqué par un correctif redondant sur une AUTRE propriété
+`scrollbar-none` (`@utility` → `@layer utilities`) pose `scrollbar-width: none`, que le
+`* { scrollbar-width: thin }` hors layer **annulait**. Invisible en développement : sous Chromium la barre
+disparaissait quand même via l'**autre** moitié de l'utilitaire (`::-webkit-scrollbar{display:none}`,
+propriété différente donc jamais en conflit). **Cassé sur Firefox seul** (`ProductCarousel:50`,
+`DensityRibbon:77`). Anti-pattern : conclure « ça marche » depuis un seul moteur quand une utilitaire agit
+par deux propriétés distinctes. ⚠ Le correctif n'a **pas** été observé sous Firefox, seulement déduit.
+
+## PIT-S53-006 — Un rapport `test-runner` peut être faux de façon *plausible* (cwd sur le dépôt principal)
+Le `test-runner` du S53 a rapporté `814/821`, « 1 suite en échec : Cannot find package
+'eslint-plugin-storybook' » et « `base-layer.test.ts` : 2 tests ». **Les trois chiffres étaient faux** : le
+paquet est déclaré ET installé, la suite donne **834/834**, le fichier contient **11** tests. Cause : cwd sur
+le **dépôt principal** au lieu du worktree (`node_modules` différents) — cf. `PIT-S8` / `PIT-S38`. Le mode
+d'échec est traître : le rapport est **plausible** (nombre proche du vrai + cause d'échec crédible), pas
+manifestement cassé. Solution : ne jamais reprendre un chiffre de test d'un subagent dans un audit ou un
+corps de PR sans l'avoir relancé soi-même depuis le worktree. Un écart de quelques tests est le **signal**
+qu'il faut re-mesurer.

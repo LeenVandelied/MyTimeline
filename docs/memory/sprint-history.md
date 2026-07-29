@@ -1733,7 +1733,27 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 **Commits :** 4 — `40665fc` (#339) · `a4c4a6c` (#340) · `f5c09c8` (artefacts) · `3bd635a` (correctif régression)
 **Tests :** Frontend **836/836** · Backend **452/452** · **CI 4/4 verts** (dont `e2e`, 5m51s)
 **Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 1 MINEUR**
+**Nouveaux artefacts mémoire :** `PIT-S53-001` à `PIT-S53-006` · `PAT-S53-001`, `PAT-S53-002` · `DEC-S53-001` à `DEC-S53-004`
 **Status :** En cours — PR #382 ouverte, CI verte, en attente de `/sprint end 53`
+
+**Follow-ups arbitrés (Phase 4 triage — 6 items, 3 issues, 2 discard, 1 déjà résolu) :**
+  - `:focus-visible` hors layer : annule `outline-none` sur ~14 sites + impose un `border-radius`
+    [M | design] → **#383** (backlog libre) — ⚠ **lié à #375**, elles se contraignent mutuellement :
+    `language-selector.tsx:54` dépend du caractère hors-layer (unique indicateur de focus), donc corriger
+    #383 sans traiter #375 supprimerait ce que #375 cherche à valider. Même lot, ou #375 d'abord.
+  - `FeaturesSection.tsx:41` double lévitation au survol, **−18px au lieu de −10** (`hover:-translate-y-2`
+    compile vers `translate` en TW4 et se **compose** avec `transform:translateY(-10px)`)
+    [XS | landing] → **#384** (backlog libre)
+  - `ds/styles.css` importé par personne [XS | design] → **#385** (backlog libre)
+  - Layerisation globale des ~770 lignes `ds/components/*.css` [L | design] → **discard** — 0 conflit réel
+    mesuré, arbitrage déjà consigné en `DEC-S53-003` ; une issue serait du bruit.
+  - Mapper `--tracking-*` dans `@theme` [XS | design] → **discard** — reposait sur une **prémisse fausse du
+    lead** ; mesuré sans effet visuel, annulation demandée par le fullstack-dev lui-même.
+  - Layeriser `time, .mono, [data-mono]` [XS | design] → **déjà résolu dans le sprint** : #340 a mesuré
+    2 sites posant tous deux `font-mono`, dérive **nulle**, verrou de l'AC appliqué.
+  - **Aucun milestone attaché** : « Sprint 54 » porte déjà **8** issues ouvertes, très au-dessus du plafond
+    de 3 du projet — même arbitrage qu'au S52. **Ratio discard : 2/6** (33 %, sous le seuil d'alerte de 50 %).
+  - Label `accessibility` **inexistant** dans le dépôt → non appliqué à #383 (signalé, non créé d'office).
 
 > **⚠ Régression introduite par la 1ʳᵉ passe de #339, attrapée par la SEULE CI E2E.** Layeriser les
 > **5** propriétés en bloc faisait céder `line-height` devant l'appariement porté par les utilitaires
