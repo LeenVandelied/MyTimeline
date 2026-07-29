@@ -1424,7 +1424,32 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 **Branche :** `sprint/51` (créée depuis `origin/dev` @ `47730f9`, poussée 2026-07-29)
 **Commits :** 12 — 6 de code, 6 d'artefacts
 **Tests :** Frontend 821/821 · Backend 452/452 · typecheck OK · `next build` OK · **E2E 97 passed / 0 failed / 8 skipped**
-**Reviews :** reviewer batch — **0 CRITIQUE / 2 MAJEUR / 5 MINEUR** ; 1 MAJEUR + 1 MINEUR corrigés (`8e5e2a8`), le reste en follow-up assumé
+**Reviews :** **2 cycles**
+- Cycle 1 (`reviewer` batch, Phase 7) : **0 CRITIQUE / 2 MAJEUR / 5 MINEUR** → 1 MAJEUR + 1 MINEUR corrigés (`8e5e2a8`)
+- Cycle 2 (`/review-pr 367`, 3 agents : `reviewer` + `playwright-reviewer` + `ui-design`) : **0 CRITIQUE / 2 MAJEUR / 6 MINEUR** → **tous corrigés** (`e327d67`). Détail : `docs/memory/sprints/sprint-51/review-cycle-2.md`
+
+> **⚠ Le cycle 2 a trouvé deux défauts DANS LE CORRECTIF DU LEAD — dont un que deux reviewers ont
+> relevé indépendamment.** Le cycle 1 avait relu le diff au commit `1f00995` ; **trois commits de code
+> lui étaient postérieurs et n'avaient jamais été relus**, dont le correctif E2E que j'avais écrit.
+> 1. **Mon garde-fou mesurait le mauvais axe.** Il validait `maxScroll > 0` en **portrait**
+>    (`clientWidth` 340) pour protéger une assertion portant sur le **paysage** (794). Fenêtre morte
+>    `340 < rail ≤ 794` : garde vert, assertion rouge — exactement la pathologie qu'il prétendait
+>    éliminer. Corrigé en `scrollWidth > LANDSCAPE_SHORT.width`.
+> 2. **Mes 2 clics de zoom n'étaient pas attendus** (aucune assertion sur `timeline-zoom-level`,
+>    contrairement au test voisin). Flake réel : si le commit React du 2ᵉ clic atterrit après
+>    `setViewportSize`, le paysage mesure l'échelle `month` → rail 732 vs 794 → échec.
+> 3. **Deux affirmations de mon commentaire étaient fausses** : `totalDays` est un **minorant**
+>    (`≥ 61`, le compte `PROD` est partagé par 6 specs), et « les deux assertions se contredisaient
+>    quel que soit le code » n'était vrai **qu'à volume minimal** — d'où le caractère intermittent.
+>
+> **Un MINEUR du cycle 1 a été clos À L'INVERSE de sa recommandation :** `ui-design` tranche qu'il
+> faut **garder** `aria-hidden` ET `role="presentation"` sur les cales — ils agissent à des étages
+> différents, et certaines versions d'axe-core évaluent le rôle structurel **avant** de filtrer les
+> nœuds `aria-hidden`, ce qui explique le défaut initial.
+>
+> **La suspicion du lead sur le 2ᵉ site d'appel du cache de zoom est levée** : `scaleEventPositions`
+> ne consomme jamais `zoom.level`, donc `${dayWidth}` seul y est correct — l'asymétrie avec
+> `buildRulerTicks` (qui lit `MAJOR_TICK_UNIT[level]`) est justifiée, pas un oubli.
 
 ### Bilan d'exécution
 
@@ -1556,6 +1581,10 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
   - **Rotation sans changement de variante** (844×520 → 844×390) : aucun détachement de ref, donc aucune restauration — trou de couverture probable de #328 [S | frontend]
   - **Arbitrage produit** : après un aller-retour où le paysage force `scrollLeft` à 0, rendre la position d'origine (« collante ») ou garder 0 (clamp chaîné) ? [S | produit]
   - `auth.setup.ts` ne retente que sur **429**, pas sur un **500** de rendu : un seul 500 transitoire du serveur de dev Next tue tout le run [S | frontend]
+  - **⚠ `auth-signature.spec.ts` : les 8 tests `skipped` sont TOUS conditionnés à `AUTH_JWT_PUBLIC_KEY` / `E2E_JWT_PRIVATE_KEY`** → en CI les deux `describe` RS256 sautent entièrement, donc **la vérification de signature durcie au Sprint 50 n'est couverte par aucun test en CI** ; seul `auth-guard.spec.ts` (présence de cookie) l'est. Trou silencieux à rendre bruyant [M | devops] — **le plus important de cette liste** (review cycle 2)
+  - **`@axe-core/playwright`** pour tenir le critère a11y de #351 : Playwright 1.61 déjà en devDep, `test:e2e` déjà câblé → 1 dépendance + ≈15 lignes de helper, sur un jeu de données dépassant `LANE_VIRTUALIZATION_MIN_ROWS` pour que les cales soient montées [S | frontend] (review cycle 2)
+  - Même fuite de mock Fullscreen dans `TimelineView.test.tsx:23-24` (un seul fichier visé par la correction du cycle 2) [XS | frontend]
+  - **Couplage au volume du compte partagé `PROD`** : `seededEvent(...).toHaveCount(1)` (`timeline-mobile.spec.ts:129,328`) dépend de `LANE_VIRTUALIZATION_MIN_ROWS = 60` ; `PROD` gagne ~1 lane par test sur 6 specs — précondition ni posée ni assertée [S | frontend] (review cycle 2)
 
 > **Note de démarrage — la commande demandée était `/sprint start 60`.** Le Sprint 60 n'existe pas :
 > aucun label `sprint-60` (les labels s'arrêtent à `sprint-54`), aucun milestone « Sprint 60 »
