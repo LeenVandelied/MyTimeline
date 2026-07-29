@@ -258,6 +258,19 @@ test.describe('#205 Timeline mobile — rotation', () => {
   test('portrait → paysage → portrait conserve le scroll horizontal (#328)', async ({ page }) => {
     await seedAndOpenTimeline(page, 'portrait')
 
+    // ÉLARGIR LE RAIL AVANT DE MESURER — sans quoi le test est insatisfiable.
+    // Au zoom par défaut ('Mois', 12 px/jour), le rail fait 61 j × 12 = 732 px. En
+    // paysage 844×390 le `clientWidth` monte à 794 : le rail entre EN ENTIER, donc
+    // `scrollWidth === clientWidth` et `maxScroll` vaut 0 — le seul `scrollLeft`
+    // atteignable est 0. Les deux assertions du test se contredisaient alors
+    // (`> 0` ligne suivante vs `≈ min(392, 0)` = 0 plus bas), quel que soit le code.
+    // Deux crans de zoom (Mois → Semaine → Jour) portent le rail à 5 856 px, soit
+    // `maxScroll` = 5 062 en paysage : la conservation du scroll redevient
+    // observable et le test redevient un vrai garde-fou, au lieu de dépendre du
+    // volume d'événements accumulé sur le compte partagé.
+    await page.getByTestId('timeline-zoom-in').click()
+    await page.getByTestId('timeline-zoom-in').click()
+
     const geometry = (locator: Locator) =>
       locator.evaluate((el) => ({
         scrollLeft: el.scrollLeft,
@@ -265,6 +278,9 @@ test.describe('#205 Timeline mobile — rotation', () => {
       }))
 
     const portraitScroll = page.getByTestId('timeline-scroll')
+    // Garde-fou : si le rail n'excède pas le viewport paysage, le reste du test ne
+    // mesure rien. On le constate ici plutôt que d'échouer 20 lignes plus bas.
+    expect((await geometry(portraitScroll)).maxScroll).toBeGreaterThan(0)
     // Défilement utilisateur : on vise 400px, borné par l'étendue réelle du rail.
     await portraitScroll.evaluate((el) => {
       el.scrollLeft = Math.min(400, el.scrollWidth - el.clientWidth)
