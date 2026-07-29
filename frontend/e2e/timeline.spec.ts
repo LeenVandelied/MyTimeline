@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
-import { getUserId, seedCategory, seedProduct, unique } from './support/products'
+import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 
 /**
  * #330 (lot b) — stub PAGE de l'API Fullscreen pour `timeline-fullscreen` (cf.
@@ -692,5 +692,193 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     await page.getByTestId('timeline-fullscreen').click()
     await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false)
     expect(await page.evaluate(() => window.__fullscreenExits)).toBe(1)
+  })
+})
+
+/**
+ * Seede un événement DIRECT (`POST /api/events`) avec une couleur explicite.
+ * Nécessaire pour `timeline-event-outside-label` : `seedProduct` (création
+ * imbriquée `POST /api/users/{id}/products`) ne permet PAS de fixer `color` sur
+ * son event imbriqué (BR-EVE-014 : `color` n'est exposé qu'au create DIRECT).
+ * PIT-S44-001 : `durationValue`/`durationUnit` restent INCONDITIONNELS même en
+ * `type='single'` -> valeurs neutres sans effet métier.
+ */
+async function seedEventWithColor(
+  page: Page,
+  opts: { productId: string; name: string; color: string },
+): Promise<void> {
+  const res = await page.request.post(`${API}/events`, {
+    data: {
+      name: opts.name,
+      type: 'single',
+      durationValue: 0,
+      durationUnit: 'days',
+      isRecurring: false,
+      date: todayIsoDate(),
+      color: opts.color,
+      productId: opts.productId,
+    },
+  })
+  expect(res.status(), `seed event coloré doit renvoyer 201 (obtenu ${res.status()})`).toBe(201)
+}
+
+/**
+ * #330 (Sprint 54, lot c) — Minimap + états transitoires + contraste de couleur.
+ * Les 2 faux positifs de l'issue d'origine (18) sont RETIRÉS de ce lot :
+ * `desktop-edit-trigger` / `mobile-delete-trigger` sont des doublures RTL
+ * déclarées dans `TimelineEditHost.test.tsx` (stubs de test, jamais rendues en
+ * production — grep confirmé sur `frontend/src/**` et `frontend/app/` : aucune
+ * occurrence hors ce fichier `*.test.tsx`, cf. retour de tâche).
+ */
+test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => {
+  test('minimap-viewport : le clavier ET le scroll de la frise déplacent le curseur', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Minimap Cat'))
+    await seedProduct(page, { userId, name: unique('Minimap Prod'), categoryId: cat.id })
+    await gotoTimeline(page)
+
+    const viewport = page.getByTestId('timeline-minimap-viewport')
+    await expect(viewport).toBeVisible()
+
+    // --- Clavier (role=slider, ArrowRight) ----------------------------------
+    const before = await viewport.getAttribute('aria-valuenow')
+    await viewport.focus()
+    await viewport.press('ArrowRight')
+    await expect(async () => {
+      expect(await viewport.getAttribute('aria-valuenow')).not.toBe(before)
+    }).toPass()
+
+    // --- Scroll de la frise (onScroll -> syncViewportFromScroll -> Minimap) -
+    // Zoom sur 'Jour' pour garantir un rail plus large que le viewport (même
+    // garde-fou que timeline-mobile.spec.ts #328 : au zoom par défaut, sur un
+    // compte peu chargé, le rail peut être plus étroit que le viewport -> aucun
+    // scroll possible, le test serait insatisfiable).
+    await page.getByTestId('timeline-zoom-in').click()
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Jour')
+
+    const scrollEl = page.getByTestId('timeline-scroll')
+    const geometry = await scrollEl.evaluate((el) => ({
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }))
+    expect(
+      geometry.scrollWidth,
+      'le rail doit dépasser le viewport pour que le scroll ait un effet',
+    ).toBeGreaterThan(geometry.clientWidth)
+
+    const leftBeforeScroll = await viewport.evaluate((el) => (el as HTMLElement).style.left)
+    await scrollEl.evaluate((el) => {
+      el.scrollLeft = el.scrollWidth - el.clientWidth
+    })
+    await expect(async () => {
+      const leftAfterScroll = await viewport.evaluate((el) => (el as HTMLElement).style.left)
+      expect(leftAfterScroll).not.toBe(leftBeforeScroll)
+    }).toPass()
+  })
+
+  test('loading : timeline-loading pendant la restauration de session, puis bascule vers l’écran réel', async ({
+    page,
+  }) => {
+    // `timeline-loading` (app/[locale]/(app)/timeline/page.tsx:47) est lié au
+    // `loading` de `useAuthGuard`/`AuthContext` (re-fetch GET /api/auth/me au
+    // montage), PAS au chargement des données produits (`timeline-data-loading`,
+    // déjà couvert plus haut). Sans latence contrôlée l'état est trop bref pour
+    // être asserté de façon fiable (même piège que `stubProductsListGated`) -> on
+    // retarde /api/auth/me via `page.route()`. `ensureAuthenticated` n'est PAS
+    // utilisé ici : il ferait sa PROPRE navigation vers /dashboard (donc son propre
+    // appel /me) AVANT la pose de la route, hors du champ de la mesure.
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await page.route('**/api/auth/me', async (route) => {
+      await gate
+      await route.continue()
+    })
+
+    await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
+
+    const loading = page.getByTestId('timeline-loading')
+    await expect(loading).toBeVisible()
+    await expect(loading.getByRole('status')).toBeVisible()
+
+    release()
+
+    await expect(loading).toHaveCount(0)
+    // Bascule vers l'écran réel : preuve que le garde n'a PAS redirigé vers /login
+    // pendant l'attente (storageState valide + loading résolu -> user présent).
+    await expect(page.getByTestId('timeline-screen')).toBeVisible()
+  })
+
+  test('live-region : contenu réel annoncé (zoom puis event sélectionné), pas juste présence', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Live Cat'))
+    const product = await seedProduct(page, { userId, name: unique('Live Prod'), categoryId: cat.id })
+    await gotoTimeline(page)
+
+    const live = page.getByTestId('timeline-live-region')
+    await expect(live).toBeVisible()
+    await expect(live).toHaveAttribute('aria-live', 'polite')
+    // Vide au chargement : pas d'annonce parasite (une live-region non vide au
+    // montage serait un bug a11y qu'une simple assertion de présence ne verrait pas).
+    await expect(live).toHaveText('')
+
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(live).toHaveText('Niveau de zoom : Trimestre')
+
+    await page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`).click()
+    await expect(live).toHaveText(`Événement sélectionné : ${product.name}`)
+  })
+
+  test('event-outside-label : dépend du CONTRASTE de couleur, pas de la longueur du titre', async ({
+    page,
+  }) => {
+    // PRÉMISSE CORRIGÉE (vs. briefing #330) : le briefing décrit ce testid comme
+    // déclenché par un libellé trop long pour la pastille (« zoom arrière, titre
+    // long »). Lecture du code (`EventPill.tsx:70`, `lib.ts:60-64`) : le vrai
+    // déclencheur est `eventLabelReadableInside(event.color)`, UNIQUEMENT fonction
+    // du contraste WCAG AA (4.5:1) de `event.color` contre l'encre noire/blanche —
+    // AUCUN lien avec la largeur de la pastille ou la longueur du titre. `#787878`
+    // (ratio mesuré = 4.432, < 4.5) déclenche le libellé extérieur ; `#1D4ED8`
+    // (ratio mesuré = 6.70) ne le déclenche jamais, à titre et produit identiques
+    // par ailleurs (seule variable isolée : la couleur).
+    //
+    // Effet de bord noté en préparant ce test (hors périmètre #330, cf. retour de
+    // tâche) : `DEFAULT_COLOR` (`types/event.ts`, `#6366f1`) a un ratio mesuré de
+    // 4.467 — LUI-MÊME sous le seuil AA. Un event sans couleur explicite (le cas
+    // `seedProduct` par défaut) déclenche donc déjà ce libellé en production ; ce
+    // test isole volontairement le contraste en fixant les DEUX couleurs
+    // explicitement plutôt que de s'appuyer sur ce défaut ambigu comme témoin.
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Outside Cat'))
+    const product = await seedProduct(page, { userId, name: unique('Outside Prod'), categoryId: cat.id })
+    const lowContrastTitle = unique('Low Contrast Evt')
+    const highContrastTitle = unique('High Contrast Evt')
+    await seedEventWithColor(page, {
+      productId: product.id,
+      name: lowContrastTitle,
+      color: '#787878',
+    })
+    await seedEventWithColor(page, {
+      productId: product.id,
+      name: highContrastTitle,
+      color: '#1D4ED8',
+    })
+
+    await gotoTimeline(page)
+
+    await expect(
+      page.locator('[data-testid="timeline-event-outside-label"]').filter({ hasText: lowContrastTitle }),
+    ).toHaveText(lowContrastTitle)
+    await expect(
+      page
+        .locator('[data-testid="timeline-event-outside-label"]')
+        .filter({ hasText: highContrastTitle }),
+    ).toHaveCount(0)
   })
 })
