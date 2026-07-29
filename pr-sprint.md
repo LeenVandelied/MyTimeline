@@ -1,140 +1,186 @@
 ## Objectif
 
-Durcir la chaîne d'authentification : la garde serveur du S45 devient une **vraie barrière**
-(vérification de signature en Edge, pas seulement présence du cookie), l'origine des redirections
-cesse de dépendre d'un en-tête fourni par l'appelant, et la dette « secrets exposés » est enfin
-instruite avec des preuves.
+Solder la **dette de cascade CSS** du design system : des règles écrites hors de tout `@layer`
+annulaient silencieusement les utilitaires Tailwind posées sur les mêmes éléments.
 
-Milestone : **Sprint 50** (#50). Cohésion 0.52. Aucune migration Flyway.
+Milestone : **Sprint 53** (#53). Sprint **100 % CSS + tests** — aucun `.tsx`, `.ts` applicatif, `.java`
+ni `.sql` modifié. **Aucune BR métier touchée. Aucune migration Flyway.**
 
 ## Issues traitées
 
-| # | Titre | État |
-|---|---|---|
-| #322 | Durcir le risque résiduel d'en-tête `Host` dans la garde middleware | Livrée |
-| #323 | Passer le JWT en signature asymétrique RS256 pour vérification en Edge | Livrée |
-| #249 | Rotation des secrets exposés dans l'historique git | **Partielle — reste ouverte** |
+| # | Titre | P | Size | État |
+|---|---|---|---|---|
+| #339 | `h1..h6 { margin: 0 }` non-layerisé annule silencieusement les `mb-*` | P2 | S | Livrée |
+| #340 | Auditer les fichiers CSS non-layerisés restants | P2 | S | Livrée |
 
-> ⚠ **#249 ne doit pas être fermée par cette PR.** Les trois critères opérationnels (régénérer et
-> redéployer `DB_PASSWORD`, `JWT_SECRET`, tester post-rotation) sont **inatteignables** : le projet
-> n'est pas déployé (`gh secret list` vide, aucun environnement, aucun workflow de déploiement).
-> Cette PR livre l'audit, l'inventaire manquant et le runbook corrigé. La rotation effective revient
-> au dev au premier déploiement.
-
-## Quatre prémisses du plan infirmées au démarrage (mesurées, pas supposées)
-
-1. **`#249` n'avait aucune cible de rotation.** Projet non déployé, aucun secret configuré nulle
-   part. L'exposition historique est en revanche **réelle** : `53175da` portait un
-   `spring.datasource.password` (10 car.) et un `jwt.secret` (128 car.) littéraux ; `c6ea19e` un
-   secret de test (68 car.). **Le dépôt est PUBLIC** — ces valeurs sont définitivement compromises,
-   la purge d'historique (#112) n'y changera rien. `BREVO_API_KEY` n'a **jamais** été exposée
-   (scan sur 727 commits, 3 angles d'attaque).
-2. **`docs/memory/devops/external-services-inventory.md` n'existait pas**, alors que le rapport
-   architecte l'annonçait présent (« la dépendance F3 est levée ») et que le runbook S35 comme la
-   règle de sécurité globale le référencent par ce chemin exact. **Chemin fantôme, 4ᵉ sprint
-   consécutif.** Le fichier est créé ici, avec sa §3quater.
-3. **L'option (a) de `#322` — « Host canonique au proxy » — était inapplicable** : aucun
-   reverse-proxy dans le dépôt (`docker-compose.yml` = postgres + backend + frontend,
-   `.github/workflows/` = `ci.yml` seul). Remplacée, sur décision du dev, par un **Host canonique
-   par variable d'environnement** (`APP_CANONICAL_HOST`), fail-closed et testable sans infra.
-4. **Le périmètre RS256 était sous-estimé** : `ExportTokenService` est un **second** consommateur de
-   `${jwt.secret}` que le plan ne voyait pas. Sans le traiter, l'étape « retirer `JWT_SECRET` de la
-   config » était inexécutable. Décision : clé dédiée `EXPORT_TOKEN_SECRET`, HS256 conservé (ces
-   jetons ne sont vérifiés que côté serveur).
+> **#346 retirée du périmètre — NO-OP confirmé, pas supposé.** Le plan de l'architecte (ancrage
+> `fc2a3a0`) la plaçait en vague 1 avec `possibly_done: false`. Elle a été **livrée au S52** entre-temps
+> (PR #374, issue fermée, milestone et label repassés à `sprint-52`). Vérifié au HEAD `2966994` avant
+> tout spawn : `focus:bg-accent-soft` est en place aux 5 emplacements, **zéro occurrence** de
+> `focus:bg-accent focus:text-accent-foreground` ne subsiste dans `components/ui/`.
+> Le sprint devient donc **strictement séquentiel** #339 → #340.
+> Dérive de milestone corrigée au lancement : #339 portait « Sprint 52 » avec un label `sprint-53`.
 
 ## Changements clés
 
-**#322 — origine canonique des redirections** (`bf9dec0`)
-- Nouveau module pur `frontend/src/lib/canonical-host.ts`, appliqué en aval via
-  `withCanonicalOrigin` — couvre la 307 de la garde **et** les redirections de next-intl, qui
-  dérivent toutes de `request.nextUrl`.
-- Variable non configurée ⇒ dégradé explicite (comportement d'avant #322), jamais un 500.
-- ⚠ **L'agent a infirmé une partie de l'énoncé de l'issue** : sur ce runtime self-hosté, `initURL`
-  dérive de l'hôte de *bind*, pas de l'en-tête `Host` — un `Host` falsifié ne déplaçait déjà pas la
-  redirection (mesuré au `curl`, 3 cas). Le correctif est de la **défense en profondeur**, et
-  redevient nécessaire avec `trustHostHeader` ou sur plateforme edge. Écrit tel quel dans l'ADR.
+### #339 — `40665fc`
+- `h1..h6` déplacée **en bloc** (5 propriétés) dans `@layer base`, même geste que le S48 sur `a`.
+- Les 5 `--leading-*` ajoutées au `@theme` de `globals.css`.
+- `FooterSection.tsx` **non modifié** : le CSS suffit à débloquer `mb-3 font-bold`.
 
-**#323 — signature RS256 vérifiable en Edge** (`1758c0c`)
-- `JwtService` migré en RS256 ; clé publique **dérivée** de la privée côté backend (pas de seconde
-  variable serveur). Signature publique de la classe inchangée ⇒ **aucun des 15 consommateurs
-  modifié**.
-- Vérification Edge en **WebCrypto natif** — aucune dépendance ajoutée. `alg === 'RS256'` exigé
-  avant tout appel cryptographique (`alg: none` et HS256-signé-avec-la-publique rejetés des deux
-  côtés).
-- `ExportTokenService` bascule sur `EXPORT_TOKEN_SECRET` : l'isolation auth ↔ download est
-  désormais **double** (claim `typ` + matériel de clé disjoint).
-- `ProfileSafetyGuard` gagne un 6ᵉ garde-fou : refus de boot en prod si les clés manquent.
-  Dev/test/CI : paire RS256 **éphémère générée au boot** — zéro clé committée (dépôt public).
-- Bascule **sèche**, sans double émission transitoire : rien n'est déployé, aucun parc
-  d'utilisateurs à ménager, et un double chemin de signature serait une surface d'attaque.
+### #340 — `a4c4a6c`
+Audit exhaustif (`docs/memory/sprints/sprint-53/audit-css-layers-340.md`, 226 lignes) :
+**382 règles hors layer recensées · 4 conflits réels démontrés · 3 corrigés.**
 
-**#249 — audit d'exposition** (`3f0f1b2`)
-- `docs/memory/audits/secret-exposure-audit.md`, `docs/memory/devops/external-services-inventory.md`
-  (nouveau, §3quater), runbook corrigé. Aucune valeur de secret n'apparaît nulle part.
+| Règle | Layer | Preuve du conflit réel |
+|---|---|---|
+| `core.css:176` `.mt-avatar` | `components` | `AppShell.tsx:217` rend `<Avatar className="rounded-sm">` — le `--radius-md` (7px) du DS annulait `rounded-sm` (5px). **L'override était un NO-OP.** |
+| `landing.css:141` `.timeline-preview` | `components` | `TimelinePreviewSection.tsx:19` pose `rounded-xl` (14px) ; `--radius-lg` (10px) l'annulait. |
+| `base.css:89` reset scrollbar `*` | `base` | L'utilitaire `scrollbar-none` pose `scrollbar-width:none`, **annulé** par `scrollbar-width:thin`. Sites : `ProductCarousel:50`, `DensityRibbon:77`. |
 
-**Correctifs de review** (`d7b8049`) · **Couverture E2E** (`44bc3cc`).
+**Le cas scrollbar est un vrai bug cross-navigateur** invisible en dev : sous Chromium la barre
+disparaissait quand même via l'**autre** moitié de l'utilitaire (`::-webkit-scrollbar{display:none}`,
+propriété différente donc jamais en conflit) ; **sous Firefox elle restait visible.**
 
-## BR impactées
+### Ce qui a été délibérément NON corrigé — corriger aurait créé la régression
+- **`:focus-visible`** — `language-selector.tsx:54` **dépend** de son caractère hors-layer : c'est son
+  **unique** indicateur de focus. Le layeriser = **régression WCAG 1.4.11**. → follow-up [M].
+- **`.feature-card` / `.testimonial-card`** — leur `:hover{box-shadow}` passerait sous `shadow-lg`,
+  utilitaire **sans variante `hover:`** → **l'élévation au survol disparaîtrait en permanence**.
+- **`time, .mono, [data-mono]`** — 2 sites, les deux posent `font-mono`, même valeur. **Dérive nulle**,
+  verrou de l'AC appliqué.
+- **~770 lignes de `.mt-*`** — posées **seules** partout (hors Avatar). **0 conflit.**
 
-- **BR-AUT-007** amendée : le cookie d'authentification est désormais signé en **RS256** (émission
-  et validation), et sa signature est vérifiable côté Edge sans exposer de secret d'émission.
-- Jetons de téléchargement d'export (#58, ADR-003) : mécanisme inchangé, **matériel de clé séparé**.
-  Le contrat « `verify()` ne lève jamais » est préservé.
+## Prémisses infirmées par la mesure, avant tout code
 
-## Review batch
+1. **L'issue #339 citait `FooterSection.tsx:41`.** Faux : les `<h4 className="text-ink mb-3 font-bold">`
+   sont **lignes 43, 63 et 78 — trois occurrences, pas une**.
+2. **La prémisse littérale de #340 était largement infondée.** Elle visait des « sélecteurs d'élément
+   HTML hors layer » : il n'en existe **aucun** en tête de sélecteur dans les 7 fichiers listés. Le vrai
+   défaut portait sur les **classes** hors layer, que l'issue ne mentionnait pas.
+3. **Une erreur du lead, infirmée par le fullstack-dev.** J'avais affirmé que `leading-tight` rendait
+   1.25 (défaut Tailwind) et que mapper `--leading-*` était une « condition de non-régression ».
+   **Faux** — `ds/tokens/typography.css` déclare ces tokens dans un `:root` **hors layer**, homonyme du
+   namespace `@theme` de Tailwind 4, et hors-layer bat tout layer : la valeur DS **1.08 gagnait déjà**.
+   Le mapping est donc un **NO-OP sur le rendu**, conservé comme assurance et **re-documenté
+   honnêtement dans le code**. Corollaire : les « 11 sites impactés » que j'annonçais pour
+   `--tracking-*` **ne bougeaient pas**. Confirmé ensuite **en navigateur** (`line-height` mesuré
+   38,88px sur 36px = 1.08).
 
-**0 CRITIQUE / 3 MAJEUR / 6 MINEUR** — tous résolus (`d7b8049`).
+## ⚠ Une régression introduite puis corrigée dans ce sprint — attrapée par la CI E2E seule
 
-Majeurs :
-1. **Dégradé silencieux sur clé illisible** — une `AUTH_JWT_PUBLIC_KEY` tronquée faisait accepter
-   100 % des cookies sans aucun signal, et le test E2E qui documente le dégradé restait vert.
-   `console.warn` one-shot ajouté quand la variable est **présente mais inexploitable** (absente =
-   dégradé volontaire, reste muet).
-2. **Audit auto-contradictoire** — l'audit de vague 1 décrivait comme « en dur au HEAD » trois
-   valeurs que #323 avait supprimées en vague 2, sur la même branche. §4 ré-ancrée sur `1758c0c`.
-3. **`APP_CANONICAL_HOST` absente du runbook de déploiement** — oubli garanti au premier
-   déploiement, donc dégradé open-redirect silencieux.
+La 1ʳᵉ passe de #339 layerisait les **5** propriétés en bloc. En Tailwind 4, une utilitaire `text-*` pose
+aussi un **`line-height` apparié** (`var(--tw-leading, var(--text-lg--line-height))`, défauts émis dans
+`@layer theme` que notre `@theme inline` ne remappe pas). Layerisé, le `line-height` du DS **cédait**
+devant cet appariement.
 
-Le correcteur a par ailleurs **infirmé une partie du mineur m1** : le repli Base64 à 76 colonnes
-n'existe pas sur BSD/macOS (donc invisible depuis le poste de dev) mais bien en conteneur Linux —
-mesuré, 6 lignes pour 300 octets. Correctif appliqué avec la nuance en commentaire.
+Mesuré au navigateur, avant/après : `h2.text-lg` **29,16px (1.08) → 42px (1,5556)** ·
+`h1.text-xl` **37,8px → 49px**. **28 titres** portent `text-*` sans `leading-*` explicite → **dérive
+systémique et silencieuse du rythme typographique** (settings, landing, products, dashboard, shared).
 
-## Audit tests
+**Symptôme :** `e2e/settings-mobile.spec.ts:19` rouge — le sheet de suppression de compte, grandi
+d'environ 13px par titre, interceptait au centre du viewport le clic destiné au backdrop.
+**Reproductible** (1ʳᵉ passe + retry Playwright + rerun complet du job), alors qu'`origin/dev` était
+**vert 2 fois** sur ce même job et que `settings-mobile` n'avait **jamais** échoué.
 
-`docs/memory/audits/sprint-50-test-coverage.md`
+**Correctif `3bd635a` :** `line-height` **sorti du layer**, seul ; les 4 autres y restent (elles doivent
+céder, c'est l'objet de #339). Valeurs restaurées à 1.08, acquis de #339 préservés. Contrepartie
+assumée : un `leading-*` explicite ne peut plus gagner sur un titre — impact **nul** (les 6 titres
+concernés portent `leading-tight` = 1.08, soit la valeur déjà appliquée).
+
+**Ce que ça apprend :**
+1. **`ui-design` avait raison et je l'ai écrasé.** Son verdict disait `line-height : RESTE GAGNANTE` ;
+   j'ai imposé « layeriser les 5 en bloc » en croyant que mapper `--leading-*` suffisait. Le mapping
+   gouverne les utilitaires `leading-*`, **pas** l'appariement de `text-*`.
+2. **Le test AST de 11 tests n'a rien vu** : il prouve l'appartenance à un layer, pas une valeur gagnante
+   sur un élément réel. 2 tests ajoutés pour ça, **validés par mutation** (remettre `line-height` dans
+   `@layer base` les fait rougir).
+3. **La vérification navigateur sur la landing était verte** — parce que ses titres portent
+   `leading-tight` explicite, précisément les seuls protégés. Le risque était sur les surfaces
+   non atteignables en local.
+
+## Tests
 
 | Suite | Résultat |
 |---|---|
-| Backend | **450 / 450** |
-| Frontend (Vitest) | **788 / 788**, 88 fichiers |
-| E2E signature (stack appairée) | **12 / 0** |
-| E2E suite complète (mode dégradé, config CI) | **96 passed / 8 skipped / 0 failed** |
+| Frontend | **92 fichiers, 836 passed / 0 failed** |
+| **CI complète** | **4/4 verts** — `backend` · `frontend` · `security` · `e2e` (5m51s) |
+| Backend | **452 tests, 0 failures, 0 errors** — BUILD SUCCESS |
+| `base-layer.test.ts` | **5 → 11 tests**, 11 passed |
+| Mutations (dé-layeriser, exiger le rouge) | 3/3 — **chaque mutation ne fait tomber que son test** |
+| `tsc --noEmit` / `eslint` / `prettier` | 0 / 0 / OK |
+| E2E Playwright | **non lancés en local** (backend + Postgres absents) — autorité = CI |
 
-**Preuve anti-faux-positif** (leçon S49 — « CI verte ≠ page correcte ») : un E2E de garde peut être
-vert en mode dégradé et ne rien prouver. Trois preuves ont été exigées : clé publique du backend
-identique octet à octet à celle du frontend, sonde `curl` avec cookie bidon ⇒ 307, et **fail-closed
-exécuté** — la même spec relancée contre un Next sans clé passe à 5 rouges sur 7.
+Les tests compilent la **vraie chaîne CSS** via PostCSS + Tailwind 4 et assertent **sur l'AST** : c'est
+la seule chose qui prouve quoi que ce soit ici, **jsdom ne résout ni `@layer` ni le layout**.
+Chaque fixture témoin a un `from` **unique** (le plugin Tailwind mémoïse par chemin — un `from` partagé
+ferait passer le test **à vide**) et chaque regex discrimine le preflight Tailwind homonyme.
 
-## Risques résiduels assumés
+> ⚠ Un rapport `test-runner` annonçant `814/821`, une suite en échec sur `eslint-plugin-storybook` et
+> « `base-layer.test.ts` : 2 tests » a été **écarté après contre-mesure** : les trois chiffres sont
+> faux, le subagent avait tourné depuis le **dépôt principal** au lieu du worktree. Les chiffres
+> ci-dessus sont ceux de runs relancés par le lead **depuis le worktree**.
 
-- **Aucun garde-fou frontend n'impose `AUTH_JWT_PUBLIC_KEY` ni `APP_CANONICAL_HOST` en production**
-  (pas d'équivalent frontend au `ProfileSafetyGuard`) ⇒ un oubli dégrade silencieusement. Follow-up.
-- **La 2ᵉ passe E2E ajoutée à `ci.yml` n'a jamais tourné sur un runner GitHub** — step de keygen
-  exécuté verbatim en local. À observer au premier push ; `e2e` n'est pas un check requis.
-- **Révocation `jti` non vérifiable en Edge** — `JwtFilter` reste seul juge. Inchangé.
-- **Clé publique dépareillée ⇒ boucle vers `/login`** (remède : vider la variable). La clé publique
-  est désormais journalisée au boot dans les deux cas pour éviter la re-dérivation manuelle.
-- **Repli Base64 GNU** vérifié en alpine, pas sur l'image de déploiement finale.
-- **Aucun boot réel observé** pour le log de clé publique et les `console.warn` des correctifs.
+## Revue
 
-## Follow-ups proposés (triage en `/sprint end`)
+`reviewer` sur le diff complet `2966994..HEAD` : **0 CRITIQUE / 0 MAJEUR / 1 MINEUR / 2 NON VÉRIFIÉ**.
+Il a re-exécuté les tests lui-même (11/11) et confirmé : ordre interne de cascade préservé
+(`.mt-avatar--sm/--lg/--round` battent toujours `.mt-avatar`), layer correct, et **exactitude des
+commentaires vis-à-vis du code** — pas de récidive de l'incident de la PR #374.
 
-Endpoint JWKS · garde-fou frontend prod pour les deux variables · couverture E2E du mode « clé
-présente mais illisible » · consolidation des pitfalls périmés (PIT-S13-003, PIT-S15-003, pattern
-`${JWT_SECRET}`) · `.env.example` sans `BREVO_API_KEY` · scan de secrets en CI
-(gitleaks/trufflehog) · `brevo.api.key` sans fail-fast prod · #250 (socle livré, à compléter) ·
-#112 purge d'historique, à séquencer après le premier provisionnement.
+## Vérification navigateur — clair ET sombre (obligatoire, pitfall S48)
 
----
+Landing `/fr`, mesures **avant/après contre `origin/dev`** sur la même page, le même navigateur :
+
+| Sonde | avant | après |
+|---|---|---|
+| `footer h4` ×3 — `margin-bottom` / `font-weight` | `0px` / `600` | **`12px` / `700`** |
+| hero `h1` — `margin-bottom` | `0px` | **`24px`** |
+| hero `h1` — `line-height` | — | **1.08 préservé** (Tailwind aurait donné 1.25) |
+| `.timeline-preview` — `border-radius` | `10px` | **`14px`** |
+| `.feature-card` — fond (sombre) | `rgb(19,21,25)` | **`rgb(19,21,25)`** (inchangé) |
+
+**Balayage de contraste WCAG : 38 éléments par thème, 0 sous AA 4,5:1** (pire cas 6,94:1 en sombre).
+Le mode de défaillance du S48 (CTA invisibles avec CI verte) est écarté **sur la landing**.
+Détail et protocole : `docs/memory/sprints/sprint-53/browser-verification.md`.
+
+## ⚠ Réserves assumées — à lever au prochain accès à un environnement authentifié
+
+1. **Dashboard, settings, products, timeline non ouverts** (backend + Postgres absents en local). Or
+   `ui-design` y situait le **risque le plus élevé** : bascule police display → **mono** sur 5 titres du
+   dashboard (`KpiMarginalia:38`, `ProductList:29`, `ProductCarousel:43`, `WeekAgenda:40`,
+   `CompactAgenda:80`), `mb-2` de `ProductDetailView:211,225`, graisses 600→500 de `settings/`, avatar
+   7px → 5px dans `AppShell`. **Ces changements n'ont pas été vus.**
+2. **Firefox / WebKit non lancés** — alors que le correctif scrollbar vise *précisément* Firefox : il
+   est **déduit de la cascade, pas observé**.
+3. Paliers responsive (320 / 768 / 1024 px) non balayés.
+4. La détection de conflit de l'audit est **syntaxique** : un conflit via variable CSS intermédiaire,
+   `style={{}}` inline ou classe concaténée dynamiquement y échapperait.
+
+## Couverture E2E
+
+`[COVERAGE-E2E] OK` — **aucun `data-testid` ajouté** (aucun `.tsx` modifié). Rien à couvrir.
+
+## Follow-ups proposés (à arbitrer en `/sprint end`)
+
+1. **[M]** `:focus-visible` — layeriser + réauditer les ~14 sites `outline-none` (chacun doit porter son
+   propre indicateur avant que le contour global ne cède). **Bloqué sur arbitrage `ui-design`.**
+2. **[XS]** `FeaturesSection.tsx:41` — **double lévitation au survol** : `hover:-translate-y-2` compile
+   en Tailwind 4 vers `translate` (pas `transform`) et se **compose** avec
+   `.feature-card:hover{transform:translateY(-10px)}` → **−18px au lieu de −10** (−13px sous 768px).
+   Pas un problème de layer : retirer l'un des deux.
+3. **[L, non recommandé en l'état]** Layerisation globale des ~770 lignes `ds/components/*.css` :
+   **0 conflit réel aujourd'hui**, donc 0 bénéfice immédiat contre un basculement de précédence
+   composant→utilitaire sur toute la Vue Timeline.
+4. **[XS]** `ds/styles.css` n'est **importé par personne** — fichier mort côté app, à statuer.
+5. **[XS]** Requalifier le mapping `--tracking-*` : purement **cosmétique**, **pas** une correction de
+   dérive visuelle (ma justification initiale était fausse).
+
+## Artefacts
+
+- `docs/memory/sprints/sprint-53/issue-339-done.md` · `issue-340-done.md`
+- `docs/memory/sprints/sprint-53/audit-css-layers-340.md`
+- `docs/memory/sprints/sprint-53/browser-verification.md`
+- `docs/memory/audits/sprint-53-test-coverage.md`
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

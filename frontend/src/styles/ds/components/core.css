@@ -173,11 +173,29 @@
 
 /* ---------------- Avatar ---------------- */
 /* Image frame → decorative (readme: "card and image frames"). */
-.mt-avatar{display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:var(--radius-md); background:var(--color-surface-2); border:1px solid var(--color-rule-strong); font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--color-ink-muted); overflow:hidden; flex:0 0 auto;}
-.mt-avatar img{width:100%; height:100%; object-fit:cover;}
-.mt-avatar--sm{width:24px; height:24px; font-size:10px;}
-.mt-avatar--lg{width:44px; height:44px; font-size:15px;}
-.mt-avatar--round{border-radius:50%;}
+/* ⚠ CASCADE (#340) — ce bloc DOIT rester dans `@layer components`. Le CSS hors
+   layer bat le CSS layerisé QUEL QUE SOIT le type de sélecteur : une classe hors
+   layer écrase donc aussi les utilitaires de `@layer utilities`. Conflit MESURÉ :
+   `AppShell` rend `<Avatar className="rounded-sm">` (commentaire à l'appui :
+   « Avatar carré — override local »), et le `border-radius:var(--radius-md)` (7px)
+   ci-dessous annulait silencieusement `rounded-sm` (`--radius-sm`, 5px). L'override
+   était un NO-OP. Layerisé, l'utilitaire gagne — sémantique attendue.
+   L'ordre INTERNE au layer est préservé : `--sm`/`--lg`/`--round` (même spécificité,
+   déclarés après) continuent de battre `.mt-avatar`.
+
+   ⚠ Le RESTE de ce fichier (et de `timeline.css` / `i18n.css`) est TOUJOURS hors
+   layer — ~770 lignes de classes `.mt-*` qui battraient une utilitaire posée sur le
+   même élément. AUCUN autre conflit réel n'existe au dépôt aujourd'hui : ces classes
+   y sont posées SEULES (audit #340, `docs/memory/sprints/sprint-53/audit-css-layers-340.md`).
+   Ne pas layeriser en masse sans re-mesurer : c'est un basculement de précédence
+   composant→utilitaire sur toute la Vue Timeline. */
+@layer components {
+  .mt-avatar{display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:var(--radius-md); background:var(--color-surface-2); border:1px solid var(--color-rule-strong); font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--color-ink-muted); overflow:hidden; flex:0 0 auto;}
+  .mt-avatar img{width:100%; height:100%; object-fit:cover;}
+  .mt-avatar--sm{width:24px; height:24px; font-size:10px;}
+  .mt-avatar--lg{width:44px; height:44px; font-size:15px;}
+  .mt-avatar--round{border-radius:50%;}
+}
 
 /* ---------------- Card ---------------- */
 .mt-card{background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-lg);}

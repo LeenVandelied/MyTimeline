@@ -18,12 +18,63 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  margin: 0;
+/* ⚠ CASCADE — `line-height` est DÉLIBÉRÉMENT HORS LAYER, seul de son bloc.
+   NE PAS le remettre dans le `@layer base` ci-dessous « par cohérence ».
+
+   POURQUOI. En Tailwind 4, une utilitaire `text-*` ne pose pas que `font-size` :
+   elle pose AUSSI un `line-height` apparié, via
+   `line-height: var(--tw-leading, var(--text-lg--line-height))`.
+   Ces `--text-*--line-height` sont des défauts Tailwind émis dans `@layer theme`
+   (`calc(1.75 / 1.125)` = 1.5556 pour `lg`, `calc(1.75 / 1.25)` = 1.4 pour `xl`)
+   et notre `@theme inline` ne les remappe PAS — il ne mappe que `--text-*`
+   (la taille) et `--leading-*`. Layeriser `line-height` avec les 4 autres
+   propriétés (1ʳᵉ passe de #339) le faisait donc CÉDER devant cet appariement :
+   tout titre portant `text-*` SANS `leading-*` explicite dérivait.
+   MESURÉ au navigateur, avant/après cette 1ʳᵉ passe :
+     · `h2.text-lg  font-semibold` : 29,16px (1.08) → 42px (1,5556)  = +12,8px/ligne
+     · `h1.text-xl  font-semibold` : 37,8px  (1.08) → 49px (1,4)     = +11,2px/ligne
+   28 titres du dépôt sont dans ce cas (settings, landing, products, dashboard,
+   shared) → dérive SYSTÉMIQUE et silencieuse du rythme typographique. Symptôme
+   qui l'a révélée : `e2e/settings-mobile.spec.ts:19` rouge — le sheet de
+   suppression de compte, grandi de ~13px par titre, interceptait au centre du
+   viewport le clic destiné au backdrop.
+
+   CONTREPARTIE ASSUMÉE. Hors layer, un `leading-*` explicite sur un titre ne peut
+   plus gagner. Impact réel MESURÉ : NUL — les 6 seuls titres concernés (landing)
+   portent `leading-tight`, qui vaut déjà 1.08. C'est le comportement d'origin/dev.
+
+   Les 4 AUTRES propriétés restent layerisées : elles DOIVENT céder (c'est #339).
+   · `margin` + `font-weight` → `<h4 class="mb-3 font-bold">` (FooterSection) ;
+   · `font-family` → bascule display→mono voulue sur les 5 titres du dashboard ;
+   · `letter-spacing` → peut céder sans risque : VÉRIFIÉ par compilation, une
+     utilitaire `text-*` n'émet AUCUN `letter-spacing` (contrairement au
+     `line-height`), il n'y a donc pas d'appariement qui puisse la faire dériver.
+   Garde-fou : `__tests__/base-layer.test.ts` (« ne cède PAS devant `text-lg` »). */
+h1, h2, h3, h4, h5, h6 { line-height: var(--leading-tight); }
+
+/* ⚠ CASCADE — ces 4 propriétés DOIVENT rester dans `@layer base`. Même raison
+   que la règle `a` plus bas (bloc « CASCADE », #295/S48) : hors layer, ces
+   défauts d'élément (0-0-1) battaient TOUTE utilitaire Tailwind posée sur un
+   titre. `mb-*`, `mt-*`, `font-*` et `tracking-*` sur un `<h1>`..`<h6>` étaient
+   donc SILENCIEUSEMENT annulés (#339) — le cas emblématique étant
+   `FooterSection` (`<h4 class="mb-3 font-bold">` rendu sans marge, en 600).
+
+   ℹ PAS de dérive de valeur sur les utilitaires `leading-*` / `tracking-*`
+   elles-mêmes (mesuré #339) : `typography.css` déclare `--leading-*` et
+   `--tracking-*` dans un `:root` HORS layer, avec les MÊMES NOMS que le
+   namespace de thème de Tailwind 4. Or Tailwind émet ses défauts dans
+   `@layer theme` → le `:root` du DS gagne (hors layer > tout layer). Ces
+   utilitaires résolvent donc déjà les valeurs du DS (1.08 / 0.16em), pas
+   celles de Tailwind. ⚠ Cela ne concerne QUE les utilitaires nommées : ça ne
+   protège RIEN contre le `line-height` apparié à `text-*`, qui ne passe pas
+   par `--leading-*` mais par `--text-*--line-height` (cf. bloc ci-dessus). */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+  }
 }
 
 /* mono everywhere temporal */
@@ -32,7 +83,8 @@ time, .mono, [data-mono] {
   font-feature-settings: var(--mono-features);
 }
 
-/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`.
+/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`. C'est LE bloc de
+   référence du fichier : il vaut aussi pour `h1..h6` ci-dessus (#339).
    Le CSS non-layerisé bat TOUJOURS le CSS layerisé, quelle que soit la
    spécificité : hors layer, `a` (0-0-1) écrasait les utilitaires Tailwind
    (`@layer utilities`) posées sur un `<a>`, p. ex. `text-accent-ink`. Depuis
@@ -40,7 +92,31 @@ time, .mono, [data-mono] {
    l'utilitaire → texte accent sur fond accent, contraste 1:1, invisible.
    Dans `@layer base`, le défaut d'élément reste gagnant par héritage (liens de
    nav/footer : aucune utilitaire `text-*` sur eux) mais cède devant une
-   utilitaire explicite — sémantique attendue. Cf. test base-layer.test.ts. */
+   utilitaire explicite — sémantique attendue. Cf. test base-layer.test.ts.
+
+   ⚠ RESTE HORS LAYER dans ce fichier après l'audit #340 — inventaire à jour,
+   avec le motif MESURÉ de chaque non-correction :
+   · `body` — inoffensif : n'agit que par héritage, une utilitaire sur un
+     descendant gagne de toute façon.
+   · `time, .mono, [data-mono]` — poserait un `font-family` gagnant sur une
+     utilitaire `font-*` mise sur un `<time>`. Deux sites au dépôt
+     (`EventPreviewTimeline:203`, `WeekAgenda:53`) ; les DEUX posent `font-mono`,
+     soit la MÊME valeur. Dérive rendue : NULLE. Verrou de l'AC #340 : pas de
+     conflit réel ⇒ pas de modification.
+   · `*, *::before, *::after` (box-sizing) et `::selection` — aucune utilitaire
+     Tailwind ne pose `box-sizing`, aucune ne cible `::selection`.
+   · `:focus-visible` — CONFLIT RÉEL, DÉLIBÉRÉMENT NON CORRIGÉ ICI. Il annule
+     `focus-visible:outline-none` / `outline-hidden` (~14 sites) et force
+     `border-radius: var(--radius-xs)` (3px) sur TOUT élément focalisé, par-dessus
+     ses `rounded-md` / `rounded-full`. Mais `language-selector.tsx` DÉPEND de ce
+     comportement, mesuré et documenté sur place (« hors `@layer`, donc gagnante
+     sur `outline-hidden` ») : il ne pose aucun anneau, son seul indicateur de
+     focus est ce contour. Le layeriser le supprimerait là-bas — régression WCAG
+     1.4.11. Idem `ExportDataFlow:85` (`<h3 tabIndex={-1} class="outline-none">`).
+     Correction = changement coordonné sur les ~14 sites + arbitrage `ui-design`,
+     hors calibre de #340. Chiffrage dans l'audit.
+   Le bloc scrollbar `*` est désormais layerisé (plus bas, motif sur place).
+   Audit complet : `docs/memory/sprints/sprint-53/audit-css-layers-340.md`. */
 @layer base {
   a { color: var(--color-accent); text-decoration: none; }
   a:hover { color: var(--color-accent-hover); }
@@ -56,14 +132,29 @@ time, .mono, [data-mono] {
 }
 
 /* thin scrollbars in the graphite palette */
-* { scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent; }
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb {
-  background: var(--color-rule-strong);
-  border-radius: var(--radius-pill);
-  border: 3px solid var(--color-bg);
+/* ⚠ CASCADE — ce bloc DOIT rester dans `@layer base`. Hors layer, `*` (0-0-0)
+   battait quand même `@layer utilities` : le classement par layer précède la
+   spécificité. Conflit MESURÉ (#340) : l'utilitaire `scrollbar-none` de
+   `globals.css` (`@utility` → `@layer utilities`) pose `scrollbar-width: none`,
+   que le `scrollbar-width: thin` ci-dessous ANNULAIT. La barre restait donc
+   visible sous Firefox sur `ProductCarousel` et `DensityRibbon` ; sous Chromium
+   elle disparaissait quand même, mais par l'autre moitié de l'utilitaire
+   (`::-webkit-scrollbar { display: none }` — propriété différente de `width` /
+   `height`, donc jamais en conflit). C'est ce qui rendait le défaut invisible en
+   développement, et ce que décrit sans le nommer le commentaire de `globals.css`
+   (« `scrollbar-width:none` seul ne suffit pas sous Chromium »).
+   Dans `@layer base`, l'utilitaire l'emporte enfin sur les deux moteurs.
+   `base` et pas `components` : c'est un reset d'élément universel. */
+@layer base {
+  * { scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-rule-strong);
+    border-radius: var(--radius-pill);
+    border: 3px solid var(--color-bg);
+  }
+  *::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
 }
-*::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
 
 /* respect reduced-motion: no transitions/animations when the user opts out */
 @media (prefers-reduced-motion: reduce) {

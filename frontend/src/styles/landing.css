@@ -138,11 +138,29 @@
 
 /* Aperçu de la frise — cadre décoratif + élévation par token (le token d'ombre est
  * découplé clair/sombre, l'ombre noire littérale d'avant ne l'était pas). */
-.timeline-preview {
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-rule);
+/*
+ * ⚠ CASCADE (#340) — cette règle DOIT rester dans `@layer components`. Hors layer
+ * elle battait les utilitaires Tailwind (`@layer utilities`) posées sur le MÊME
+ * élément quelle que soit la spécificité. Conflit MESURÉ : `TimelinePreviewSection`
+ * pose `rounded-xl` (= `--radius-xl`, 14px) sur ce div, et le `border-radius` du DS
+ * (`--radius-lg`, 10px) l'annulait silencieusement. Layerisée, l'utilitaire gagne :
+ * 14px, ce que le composant demande. Les trois autres déclarations sont inertes
+ * vis-à-vis du composant (`overflow-hidden` y porte la MÊME valeur ; aucune
+ * utilitaire `shadow-*` ni `border-*` n'y est posée).
+ *
+ * `components` et PAS `base` : c'est une classe de composant, pas un défaut
+ * d'élément. `base` marcherait (les deux précèdent `utilities`) mais rangerait un
+ * composant dans le layer des resets — qui est aussi celui du preflight Tailwind.
+ * Ce fichier est une feuille SÉPARÉE, chargée après `globals.css` par
+ * `app/layout.tsx` : le layer `components` y est donc déjà déclaré, ce bloc le
+ * REJOINT (il ne crée pas un rang nouveau). Cf. base-layer.test.ts. */
+@layer components {
+  .timeline-preview {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-rule);
+  }
 }
 
 /* Médias requêtes pour la réactivité */

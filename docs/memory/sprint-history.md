@@ -1722,14 +1722,94 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 >   « sous-routes profondes » de son body est **caduc**. À replanifier au S53 avec `ui-design` en vague 0.
 > · **#346** — mini-plan du S53 re-vérifié **sans aucune dérive de ligne** (5 emplacements exacts).
 
-## Sprint 53 — 2026-07-28 (PLANIFIE — cohésion 0.48, dette de cascade CSS et couplage fond/encre du DS)
-**Objectif :** Découpler focus: dans 5 menus + layerisation h1..h6 + audit CSS non-layerisés
+## Sprint 53 — 2026-07-28 → 2026-07-29 (EN COURS — cohésion 1.00 après retrait de #346, dette de cascade CSS)
+**Objectif :** Layerisation `h1..h6` + audit des CSS non-layerisés restants
 **Milestone GitHub :** #53
-**Issues :** #346 (P1/S), #339 (P2/S), #340 (P2/S) — 6 pts
-**Vagues :** V1 = #346 ∥ #339 | V2 = #340
+**Issues (2) :** #339 (P2/S), #340 (P2/S) — 4 pts
+**Vagues :** V1 = #339 seule | V2 = #340 (dépend de la méthode de layerisation validée en V1)
 **Migrations Flyway :** aucune
+**Branche :** `sprint/53` créée sur `origin/dev` à `2966994` (merge PR #374)
 **Depend de :** aucune — ⚠ vérification navigateur clair+sombre OBLIGATOIRE (jsdom aveugle, pitfall S48)
-**Status :** Planifie
+**Commits :** 4 — `40665fc` (#339) · `a4c4a6c` (#340) · `f5c09c8` (artefacts) · `3bd635a` (correctif régression)
+**Tests :** Frontend **836/836** · Backend **452/452** · **CI 4/4 verts** (dont `e2e`, 5m51s)
+**Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 1 MINEUR**
+**Nouveaux artefacts mémoire :** `PIT-S53-001` à `PIT-S53-006` · `PAT-S53-001`, `PAT-S53-002` · `DEC-S53-001` à `DEC-S53-004`
+**Status :** En cours — PR #382 ouverte, CI verte, en attente de `/sprint end 53`
+
+**Follow-ups arbitrés (Phase 4 triage — 6 items, 3 issues, 2 discard, 1 déjà résolu) :**
+  - `:focus-visible` hors layer : annule `outline-none` sur ~14 sites + impose un `border-radius`
+    [M | design] → **#383** (backlog libre) — ⚠ **lié à #375**, elles se contraignent mutuellement :
+    `language-selector.tsx:54` dépend du caractère hors-layer (unique indicateur de focus), donc corriger
+    #383 sans traiter #375 supprimerait ce que #375 cherche à valider. Même lot, ou #375 d'abord.
+  - `FeaturesSection.tsx:41` double lévitation au survol, **−18px au lieu de −10** (`hover:-translate-y-2`
+    compile vers `translate` en TW4 et se **compose** avec `transform:translateY(-10px)`)
+    [XS | landing] → **#384** (backlog libre)
+  - `ds/styles.css` importé par personne [XS | design] → **#385** (backlog libre)
+  - Layerisation globale des ~770 lignes `ds/components/*.css` [L | design] → **discard** — 0 conflit réel
+    mesuré, arbitrage déjà consigné en `DEC-S53-003` ; une issue serait du bruit.
+  - Mapper `--tracking-*` dans `@theme` [XS | design] → **discard** — reposait sur une **prémisse fausse du
+    lead** ; mesuré sans effet visuel, annulation demandée par le fullstack-dev lui-même.
+  - Layeriser `time, .mono, [data-mono]` [XS | design] → **déjà résolu dans le sprint** : #340 a mesuré
+    2 sites posant tous deux `font-mono`, dérive **nulle**, verrou de l'AC appliqué.
+  - **Aucun milestone attaché** : « Sprint 54 » porte déjà **8** issues ouvertes, très au-dessus du plafond
+    de 3 du projet — même arbitrage qu'au S52. **Ratio discard : 2/6** (33 %, sous le seuil d'alerte de 50 %).
+  - Label `accessibility` **inexistant** dans le dépôt → non appliqué à #383 (signalé, non créé d'office).
+
+> **⚠ Régression introduite par la 1ʳᵉ passe de #339, attrapée par la SEULE CI E2E.** Layeriser les
+> **5** propriétés en bloc faisait céder `line-height` devant l'appariement porté par les utilitaires
+> `text-*` (Tailwind 4 pose `line-height: var(--tw-leading, var(--text-lg--line-height))`, défauts émis
+> dans `@layer theme` que notre `@theme inline` ne remappe pas). Mesuré : `h2.text-lg`
+> **29,16px (1.08) → 42px**, `h1.text-xl` **37,8px → 49px**. **28 titres** portent `text-*` sans
+> `leading-*` explicite → dérive **systémique et silencieuse** du rythme typographique.
+> Symptôme : `e2e/settings-mobile.spec.ts:19` rouge (le sheet de suppression, grandi d'environ 13px par
+> titre, interceptait au centre du viewport le clic destiné au backdrop). **Reproductible** — 1ʳᵉ passe,
+> retry Playwright *et* rerun complet — alors qu'`origin/dev` était vert 2 fois sur ce même job et que
+> `settings-mobile` n'avait **jamais** échoué (S52 : `landing-mobile-menu` ; S51 : `timeline-mobile`).
+> Correctif `3bd635a` : `line-height` **sorti du layer**, seul ; les 4 autres y restent.
+>
+> **Trois leçons.** (1) **`ui-design` avait raison et le lead l'a écrasé** : son verdict disait
+> `line-height : RESTE GAGNANTE` ; le lead a imposé « les 5 en bloc » en croyant que mapper
+> `--leading-*` suffisait — le mapping gouverne les utilitaires `leading-*`, **pas** l'appariement de
+> `text-*`. Écraser la réserve précise d'un spécialiste demande une preuve, pas une inférence.
+> (2) **Le test AST de 11 tests n'a rien vu** : il prouve l'appartenance à un layer, pas une valeur
+> gagnante sur un élément réel — 2 tests ajoutés, validés par mutation. (3) **La vérif navigateur sur la
+> landing était verte** parce que ses titres portent `leading-tight` **explicite**, précisément les 6
+> seuls protégés du dépôt ; tout le risque était sur les surfaces non atteignables en local.
+
+> **⚠ Un rapport `test-runner` écarté après contre-mesure.** Il annonçait `814/821`, une suite en échec
+> sur `eslint-plugin-storybook` et « `base-layer.test.ts` : 2 tests ». **Les trois chiffres sont faux** :
+> le paquet est déclaré *et* installé, la suite donne **834/834** (puis 836), le fichier contient **11**
+> tests (puis 13). Cause : cwd sur le **dépôt principal** au lieu du worktree. Les implémenteurs, eux,
+> avaient le garde-fou worktree en tête de briefing et n'ont pas dévié.
+
+> **Prémisses infirmées avant tout code.** #339 citait `FooterSection.tsx:41` → le vrai emplacement est
+> **43, 63 et 78** (trois occurrences). #340 postulait des sélecteurs d'**élément** hors layer → il n'en
+> existe **aucun** en tête de sélecteur dans ses 7 fichiers ; le vrai défaut portait sur les **classes**
+> hors layer. **Et une erreur du lead** : j'affirmais que `leading-tight` rendait 1.25 et que mapper
+> `--leading-*` était une « condition de non-régression » — faux, `ds/tokens/typography.css` déclare ces
+> tokens dans un `:root` **hors layer** homonyme du namespace `@theme`, donc la valeur DS **1.08 gagnait
+> déjà**. Corollaire : les « 11 sites impactés » que j'annonçais pour `--tracking-*` ne bougeaient pas.
+
+> **⚠ #346 RETIRÉE du périmètre — NO-OP confirmé, pas supposé.** Le plan de l'architecte
+> (ancrage `fc2a3a0`, 2026-07-28) la plaçait en V1 avec `possibly_done: false`. Elle a été **livrée
+> au S52** entre-temps (PR #374, issue CLOSED le 2026-07-29, milestone et label repassés à
+> `sprint-52`). Vérifié au HEAD `2966994` avant tout spawn : `focus:bg-accent-soft` est en place aux
+> 5 emplacements, **zéro occurrence de `focus:bg-accent focus:text-accent-foreground`** subsiste
+> dans `components/ui/`. Conséquence : la V1 perd son parallélisme, le sprint devient **strictement
+> séquentiel #339 → #340**, et la cohésion monte à 1.00 (un seul domaine : cascade CSS).
+
+> **⚠ Dérive de milestone corrigée avant lancement.** #339 portait le milestone « Sprint 52 »
+> alors que son label était `sprint-53` — réattachée à « Sprint 53 ». Rappel : le milestone #53
+> porte aussi ~10 issues de backlog **hors périmètre** (follow-ups du S52, cf. bilan S52) ;
+> la source de vérité du périmètre de ce sprint est le **label `sprint-53`**, pas le milestone.
+
+> **⚠ Dérive de ligne dans l'énoncé de #339, mesurée avant tout code.** L'issue cite
+> `FooterSection.tsx:41` pour le `<h4 className="text-ink mb-3 font-bold">`. Le vrai emplacement est
+> **lignes 43, 63 et 78 — trois occurrences, pas une**. Ligne 41 ne porte rien de tel. Conforme à
+> `PIT-S52-006` : vérifier le fichier, jamais faire confiance au numéro de ligne d'une issue.
+> **Rayon de souffle mesuré :** ~38 titres `<h1>`..`<h4>` portent aujourd'hui un `mb-*`/`mt-*`/`font-*`
+> silencieusement annulé, répartis sur landing, dashboard, settings, products et timeline — la
+> layerisation les réactive **tous d'un coup**.
 
 ## Sprint 54 — 2026-07-28 (PLANIFIE — cohésion 0.46, réarmement du filet E2E de la frise)
 **Objectif :** data-testid SelectItem + couverture des 18 testids sans spec + retry rendu auth.setup

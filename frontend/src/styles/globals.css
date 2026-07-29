@@ -125,6 +125,36 @@
   --text-2xl: var(--text-2xl);
   --text-3xl: var(--text-3xl);
 
+  /* ---- interlignes (#339) — EXPLICITATION, PAS CORRECTION DE VALEUR ----
+     Ce mapping ne change AUCUNE valeur rendue aujourd'hui (mesuré par
+     compilation contrefactuelle) : `ds/tokens/typography.css` déclare déjà
+     `--leading-*` dans un `:root` HORS layer, homonyme du namespace de thème
+     Tailwind, et hors-layer bat `@layer theme` → les utilitaires `leading-*`
+     résolvent 1.08 et non le défaut Tailwind 1.25. On le garde comme filet :
+     il est la seule protection si l'audit de layerisation (#340) fait entrer
+     ces `:root` dans un layer, cas où les défauts Tailwind reprendraient la
+     main sur tout `leading-*` du produit.
+
+     ⚠ CE QUE CE MAPPING NE FAIT PAS — ne pas s'y fier pour les titres.
+     Il ne gouverne QUE les utilitaires NOMMÉES `leading-*`. Le `line-height`
+     qu'une utilitaire `text-*` pose en même temps que sa `font-size` passe par
+     un AUTRE canal, `var(--tw-leading, var(--text-lg--line-height))`, dont les
+     `--text-*--line-height` sont des défauts Tailwind de `@layer theme` non
+     remappés ici. Croire que ce mapping protégeait les titres est précisément
+     l'erreur qui a layerisé `line-height` sur `h1..h6` en 1ʳᵉ passe de #339 et
+     fait dériver 28 titres (+12,8px/ligne en `text-lg`). Ce qui les protège,
+     c'est la règle `h1..h6 { line-height }` laissée HORS layer dans
+     `ds/tokens/base.css` — voir le commentaire sur place.
+
+     `--tracking-*` n'est pas mappé : même mécanisme, mêmes valeurs DS déjà
+     gagnantes (0.16em / 0.06em / -0.02em). L'ajouter serait cohérent mais
+     reste hors périmètre #339. */
+  --leading-none: var(--leading-none);
+  --leading-tight: var(--leading-tight);
+  --leading-snug: var(--leading-snug);
+  --leading-normal: var(--leading-normal);
+  --leading-relaxed: var(--leading-relaxed);
+
   /* ---- spacing (base-4 + pas impairs du DS) ---- */
   --spacing-px: var(--space-px);
   --spacing-1: var(--space-1);
