@@ -125,6 +125,25 @@
   --text-2xl: var(--text-2xl);
   --text-3xl: var(--text-3xl);
 
+  /* ---- interlignes (#339) — EXPLICITATION, PAS CORRECTION DE VALEUR ----
+     Depuis que `h1..h6` est layerisé dans `base.css`, l'utilitaire
+     `leading-tight` posé sur un titre prend enfin effet. MESURE (compilation
+     PostCSS réelle, cf. base-layer.test.ts) : il rendait DÉJÀ 1.08, pas le
+     défaut Tailwind 1.25 — `ds/tokens/typography.css` déclare `--leading-*`
+     dans un `:root` HORS layer, homonyme du namespace de thème Tailwind, et
+     hors-layer bat `@layer theme`. Ce mapping ne change donc AUCUNE valeur
+     rendue aujourd'hui ; il rend le pont DS→Tailwind explicite et le rend
+     robuste si l'audit de layerisation (#340) fait entrer ces `:root` dans
+     un layer, cas où les défauts Tailwind reprendraient la main.
+     `--tracking-*` n'est pas mappé : même mécanisme, mêmes valeurs DS déjà
+     gagnantes (0.16em / 0.06em / -0.02em). L'ajouter serait cohérent mais
+     reste hors périmètre #339. */
+  --leading-none: var(--leading-none);
+  --leading-tight: var(--leading-tight);
+  --leading-snug: var(--leading-snug);
+  --leading-normal: var(--leading-normal);
+  --leading-relaxed: var(--leading-relaxed);
+
   /* ---- spacing (base-4 + pas impairs du DS) ---- */
   --spacing-px: var(--space-px);
   --spacing-1: var(--space-1);

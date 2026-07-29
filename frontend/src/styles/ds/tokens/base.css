@@ -18,12 +18,32 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  margin: 0;
+/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`. Même raison que la
+   règle `a` plus bas (bloc « CASCADE », #295/S48) : hors layer, ces défauts
+   d'élément (0-0-1) battaient TOUTE utilitaire Tailwind posée sur un titre.
+   `mb-*`, `mt-*`, `font-*`, `leading-*` et `tracking-*` sur un `<h1>`..`<h6>`
+   étaient donc SILENCIEUSEMENT annulés (#339) — le cas emblématique étant
+   `FooterSection` (`<h4 class="mb-3 font-bold">` rendu sans marge, en 600).
+   Les 5 propriétés sont layerisées EN BLOC : scinder la règle obligerait à
+   dupliquer le sélecteur, c'est fragile et ça diverge du patron `a`.
+
+   ℹ PAS de dérive de valeur sur `leading-*` / `tracking-*` (mesuré #339).
+   `typography.css` déclare `--leading-*` et `--tracking-*` dans un `:root`
+   HORS layer, avec les MÊMES NOMS que le namespace de thème de Tailwind 4.
+   Or Tailwind émet ses défauts dans `@layer theme` → le `:root` du DS gagne
+   (hors layer > tout layer). Les utilitaires `leading-tight` / `tracking-*`
+   résolvent donc déjà les valeurs du DS (1.08 / 0.16em), pas celles de
+   Tailwind (1.25 / 0.1em). Corollaire à ne PAS oublier : sortir ces tokens
+   du hors-layer (audit #340) les ferait basculer sous `@layer theme` — sauf
+   à les mapper dans `@theme`, ce que globals.css fait désormais. */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+  }
 }
 
 /* mono everywhere temporal */
@@ -32,7 +52,8 @@ time, .mono, [data-mono] {
   font-feature-settings: var(--mono-features);
 }
 
-/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`.
+/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`. C'est LE bloc de
+   référence du fichier : il vaut aussi pour `h1..h6` ci-dessus (#339).
    Le CSS non-layerisé bat TOUJOURS le CSS layerisé, quelle que soit la
    spécificité : hors layer, `a` (0-0-1) écrasait les utilitaires Tailwind
    (`@layer utilities`) posées sur un `<a>`, p. ex. `text-accent-ink`. Depuis
@@ -40,7 +61,16 @@ time, .mono, [data-mono] {
    l'utilitaire → texte accent sur fond accent, contraste 1:1, invisible.
    Dans `@layer base`, le défaut d'élément reste gagnant par héritage (liens de
    nav/footer : aucune utilitaire `text-*` sur eux) mais cède devant une
-   utilitaire explicite — sémantique attendue. Cf. test base-layer.test.ts. */
+   utilitaire explicite — sémantique attendue. Cf. test base-layer.test.ts.
+
+   ⚠ RESTE HORS LAYER dans ce fichier, non traité par #339 : `body`,
+   `time, .mono, [data-mono]`, `*` (box-sizing/scrollbar), `::selection`,
+   `:focus-visible`. `body` est inoffensif (il n'agit que par héritage, une
+   utilitaire sur un descendant gagne de toute façon). `time/.mono` porte un
+   `font-family` qui battrait une utilitaire `font-*` posée directement sur
+   un `<time>` — aujourd'hui sans dérive constatée (le seul site,
+   `EventPreviewTimeline`, pose `font-mono`, même valeur). À reprendre avec
+   l'audit de layerisation global (#340). */
 @layer base {
   a { color: var(--color-accent); text-decoration: none; }
   a:hover { color: var(--color-accent-hover); }
