@@ -244,6 +244,87 @@ test.describe('#205 Timeline mobile — rotation', () => {
     await expect(page.getByTestId('timeline-sheet')).toContainText(eventTitle)
     await expect(page.getByTestId('timeline-zoom-level')).toHaveText(zoomedLevel ?? '')
   })
+
+  /**
+   * #328 — Le `scrollLeft` est le SEUL état qui ne traversait pas la rotation :
+   * porté par le DOM de la variante démontée (mesuré 400 → 0), là où zoom et
+   * sélection vivent en state React au-dessus. Ce test l'asserte explicitement
+   * (l'ancien test de rotation ne couvrait que zoom + sélection).
+   *
+   * Nuance NON contournable : le navigateur CLAMPE `scrollLeft` à
+   * `scrollWidth - clientWidth`, et `clientWidth` grandit en paysage (390 → 844).
+   * La cible attendue est donc `min(position portrait, max de scroll paysage)`.
+   */
+  test('portrait → paysage → portrait conserve le scroll horizontal (#328)', async ({ page }) => {
+    await seedAndOpenTimeline(page, 'portrait')
+
+    // ÉLARGIR LE RAIL AVANT DE MESURER — sans quoi le test peut être insatisfiable.
+    // `computeRange` couvre l'amplitude de TOUS les events du compte, et le compte
+    // PROD est PARTAGÉ par 6 specs : `totalDays` est un MINORANT (>= 61 j), jamais
+    // une valeur connue d'avance. Au zoom par défaut ('Mois', 12 px/jour) le rail
+    // vaut donc >= 732 px — même ordre de grandeur que le `clientWidth` paysage
+    // (~794 px pour une viewport de 844). Sur un compte à VOLUME MINIMAL le rail
+    // entre EN ENTIER : `scrollWidth === clientWidth`, `maxScroll` vaut 0, le seul
+    // `scrollLeft` atteignable est 0, et les deux assertions du test se
+    // contredisent (`> 0` plus bas vs `≈ min(x, 0)` = 0). Sur un compte chargé le
+    // rail dépasse 794 px et le test redevient satisfiable : d'où un échec
+    // INTERMITTENT, fonction du volume accumulé — pas une contradiction absolue.
+    // Deux crans de zoom (Mois → Semaine → Jour, 96 px/jour) portent le rail à
+    // >= 5 856 px (minorant, pas mesure) : le débordement paysage passe hors de
+    // portée du volume d'events et le test redevient déterministe.
+    await page.getByTestId('timeline-zoom-in').click()
+    await page.getByTestId('timeline-zoom-in').click()
+    // Les deux clics doivent être COMMITÉS avant toute mesure : si le commit React
+    // du 2e clic atterrissait après `setViewportSize`, le paysage mesurerait encore
+    // l'échelle 'Mois' (rail ~732 px < clientWidth) → `maxScroll` 0 → assertion
+    // rouge. On attend l'échelle atteinte, pas la latence des allers-retours.
+    // Libellé lu dans `public/locales/fr/dashboard.json` (`timeline.zoom.day`), la
+    // spec ouvrant `/fr/timeline` (`localePrefix: 'always'`).
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Jour')
+
+    const geometry = (locator: Locator) =>
+      locator.evaluate((el) => ({
+        scrollLeft: el.scrollLeft,
+        scrollWidth: el.scrollWidth,
+        maxScroll: el.scrollWidth - el.clientWidth,
+      }))
+
+    const portraitScroll = page.getByTestId('timeline-scroll')
+    // Garde-fou SUR LE BON AXE : ce que le test mesure après rotation, c'est le
+    // débordement du rail dans le viewport PAYSAGE (`clientWidth` ~794), pas dans
+    // le portrait (~340). Garder sur le `maxScroll` PORTRAIT laisserait ouverte la
+    // fenêtre morte `340 < rail <= 794` : garde vert, `afterRotate.scrollLeft > 0`
+    // rouge — exactement la pathologie que le garde prétend éliminer. On borne donc
+    // par la largeur de viewport paysage (844 >= `clientWidth` paysage) : condition
+    // SUFFISANTE pour `maxScroll > 0` après rotation, et vérifiable AVANT de
+    // tourner l'écran, donc l'échec reste diagnostiqué ici, pas 20 lignes plus bas.
+    expect((await geometry(portraitScroll)).scrollWidth).toBeGreaterThan(LANDSCAPE_SHORT.width)
+    // Défilement utilisateur : on vise 400px, borné par l'étendue réelle du rail.
+    await portraitScroll.evaluate((el) => {
+      el.scrollLeft = Math.min(400, el.scrollWidth - el.clientWidth)
+    })
+    const before = await geometry(portraitScroll)
+    expect(before.scrollLeft).toBeGreaterThan(0)
+
+    // --- Rotation → PAYSAGE -------------------------------------------------
+    await page.setViewportSize(LANDSCAPE_SHORT)
+    await expect(page.getByTestId('timeline-mobile-landscape')).toBeVisible()
+
+    const landscapeScroll = page.getByTestId('timeline-scroll')
+    const afterRotate = await geometry(landscapeScroll)
+    expect(afterRotate.scrollLeft).toBeGreaterThan(0)
+    expect(afterRotate.scrollLeft).toBeCloseTo(
+      Math.min(before.scrollLeft, afterRotate.maxScroll),
+      0,
+    )
+
+    // --- Rotation retour → PORTRAIT -----------------------------------------
+    await page.setViewportSize(PORTRAIT)
+    await expect(page.getByTestId('timeline-mobile-portrait')).toBeVisible()
+
+    const back = await geometry(page.getByTestId('timeline-scroll'))
+    expect(back.scrollLeft).toBeCloseTo(Math.min(afterRotate.scrollLeft, back.maxScroll), 0)
+  })
 })
 
 /* ========================================================================== */

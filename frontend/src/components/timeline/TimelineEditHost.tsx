@@ -18,8 +18,9 @@ import type { PositionedEvent } from './zoom'
  * #absorb (gap A) — MONTE la surface d'édition d'event sur la frise ROUTÉE.
  *
  * Contexte : `EventEditForm` (+ `ConflictDialog` #231) ne vivait que dans `EventContent`,
- * monté uniquement via `TimelineCalendar` → `Lane` → `EventBar`, que PLUS AUCUNE page ne
- * rend (régression S17). Les pages routées (`dashboard`, détail produit) rendent
+ * monté uniquement via un ancien composant calendrier → `Lane` → `EventBar`, que PLUS
+ * AUCUNE page ne rend (régression S17, composant supprimé #350). Les pages routées
+ * (`dashboard`, détail produit) rendent
  * `TimelineResponsive` (desktop `EventDrawer` LECTURE SEULE, mobile `TimelineActionSheet`
  * dont l'`onEdit` n'était pas câblé). Ce host wrappe `TimelineResponsive`, câble
  * `onEditEvent` (desktop bouton « Éditer » d'`EventDrawer` + mobile action sheet) et ouvre

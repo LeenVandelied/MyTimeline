@@ -123,7 +123,9 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
       {/* Frise scrollable : règle sticky + lanes compactes. */}
       <div
         className="mt-tlm__scroll"
-        ref={state.scrollRef}
+        /* #328 — ref CALLBACK : restaure `scrollLeft` quand la rotation remonte
+           cette variante (l'ancien `state.scrollRef` perdait la position). */
+        ref={state.setScrollNode}
         onScroll={state.onScroll}
         onPointerDown={gestures.onScrollPointerDown}
         onPointerMove={gestures.onScrollPointerMove}

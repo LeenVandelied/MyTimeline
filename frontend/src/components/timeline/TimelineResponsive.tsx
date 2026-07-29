@@ -32,6 +32,9 @@ import type { PositionedEvent } from './zoom'
  * DEUX variantes mobiles. La rotation portrait ↔ paysage démonte/remonte la
  * variante mais PAS l'état (il vit au-dessus) → scroll, zoom et sélection
  * conservés. Le hook d'état ne reset pas au resize (préparé en #63).
+ * #328 : `scrollLeft` était l'exception — état DOM porté par la variante démontée,
+ * donc perdu. Il est maintenant transporté par `state.setScrollNode` (ref callback
+ * du hook d'état), qui le sauve au détachement et le restaure à l'attachement.
  *
  * SSR-safe : `useMediaQuery` rend `false` au 1er rendu → variante desktop par
  * défaut (pas de hydration mismatch), bascule après hydratation.

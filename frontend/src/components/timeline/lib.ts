@@ -3,8 +3,9 @@ import { contrastRatio, WCAG_AA_NORMAL, INK_DARK, INK_LIGHT } from '@/lib/color'
 
 /**
  * #47 — Logique de calcul partagée par les sous-composants Timeline.
- * Extraite telle quelle du monolithe `TimelineCalendar.tsx` (aucun changement
- * de comportement : mêmes signatures, mêmes formules de positionnement).
+ * Extraite telle quelle de l'ancien composant calendrier monolithique
+ * (supprimé #350 ; aucun changement de comportement : mêmes signatures,
+ * mêmes formules de positionnement).
  */
 
 /** Statut temporel d'un event (dupliqué de zoom.ts pour éviter un cycle d'import). */
