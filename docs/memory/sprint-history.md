@@ -1614,7 +1614,7 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 **Migrations Flyway :** aucune — aucun fichier Java touché
 **Depend de :** rien (S49/S50/S51 mergés)
 **Branche :** `sprint/52` créée sur `dev` à `473ed65`, rebasée sur `a2d8e8e` (PR #373) avant merge
-**Commits :** 16 · **Tests :** Backend **452/452** · Frontend **825/825** · **E2E CI 106/106**
+**Commits :** 18 · **Tests :** Backend **452/452** · Frontend **825/825** · **E2E CI 106/106**
 **Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 0 MINEUR**
 **CI :** run `30454839483` sur `e46a979` — **4 jobs verts** (`backend`, `frontend`, `security`, `e2e`)
 **Nouveaux artefacts mémoire :** `PIT-S52-001` à `PIT-S52-007` · `PAT-S52-001` · `DEC-S52-001` à `DEC-S52-004`
