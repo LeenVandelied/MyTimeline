@@ -1827,7 +1827,26 @@ jamais fait partie du périmètre). Issues #339 et #340 fermées.
 > · `frontend/src/components/events/NewEventDrawer.tsx:215-217` — `SelectItem` produit, sans `data-testid`.
 > · `frontend/e2e/timeline.spec.ts:221` — `.getByRole('option').nth(1)` confirmé, **seule** occurrence `.nth()` sur une option de `<Select>` dans les 18 specs.
 > · `auth.setup.ts` : rendu initial lignes **46-47** hors boucle, boucle `REGISTER_RETRIES` lignes **50-71**, message en dur lignes **63-66** — conforme.
-> · **18/18 testids de #330 confirmés à 0 spec E2E** (grep exhaustif, pas l'échantillon de 8 de l'architecte). Les 18 existent bien dans la source — dont `timeline-loading`, qui est dans **`frontend/app/[locale]/(app)/timeline/page.tsx:47`** et non sous `frontend/src/` (piège de périmètre de recherche : l'app router est `frontend/app/`).
+> · **18/18 testids de #330 confirmés à 0 spec E2E** (grep exhaustif, pas l'échantillon de 8 de l'architecte). Dont `timeline-loading`, qui est dans **`frontend/app/[locale]/(app)/timeline/page.tsx:47`** et non sous `frontend/src/` (piège de périmètre de recherche : l'app router est `frontend/app/`).
+>
+> **⚠ En revanche la cible de #330 est fausse : 16 testids couvrables, pas 18.** `desktop-edit-trigger` et `mobile-delete-trigger` n'existent **que** dans `frontend/src/components/timeline/TimelineEditHost.test.tsx` (lignes 63/72 pour les déclarations) — ce sont des doublures RTL, du type exact que l'issue exclut déjà pour `timeline-edit-host-stub` et `timeline-responsive-stub`, **et dans le même fichier**. Le critère d'acceptation n°1 (« chacun des 18 ») est donc inatteignable par construction : aucun navigateur ne rendra un testid déclaré dans un `*.test.tsx`.
+> **C'est une régression d'audit, traçable dans le dépôt :** `docs/memory/audits/sprint-46-test-coverage.md:47` identifiait déjà `mobile-delete-trigger` comme faux positif ; `sprint-47-test-coverage.md` §4 — source de la liste reprise par l'issue — l'a réintégré tout en excluant les deux autres stubs du même fichier. Correction portée dans le briefing de #330 avec la chaîne de preuve, pour que le prochain audit ne les réintègre pas une troisième fois.
+
+### Journal d'exécution Sprint 54
+
+**Vague 1 — terminée (les deux `STATUS: COMPLETED`) :**
+- **#331** → `9791d61` (3 fichiers, +27/−16). Contrat de testid posé : `product-option-<uuid>` et `recurrence-unit-option-<WEEK|MONTH|YEAR>`, dérivés de la `value` et jamais du libellé i18n. Tests : 836/836 unit, 15/0 E2E `timeline.spec.ts`, `tsc` 0 erreur. Contrat vérifié **au navigateur** (clic YEAR → le trigger affiche « an/year ») : le testid sélectionne la **bonne** valeur, ce que `.nth(1)` ne garantissait pas. Détail : `sprints/sprint-54/issue-331-done.md`.
+- **#329** → `515ab87` (3 fichiers, +229/−9). Tests : 5/0 projets `setup`, **108/0/0 suite E2E complète** (154 s, `--workers=1`). Détail : `sprints/sprint-54/issue-329-done.md`.
+
+> **⚠ Prémisse tenue depuis le S47 et infirmée par #329 : le retry 429 de `auth.setup.ts` était structurellement mort.** Budget Playwright par défaut = 30 s ; un cycle de retry coûte 8 s (attente `login-form`) + 20 s (`REGISTER_BACKOFF_MS`) = **28 s**, donc la 2ᵉ soumission expirait **toujours**. Mesuré : **4/4 `provision` en `Test timeout of 30000ms exceeded`, zéro ligne de diagnostic**. Le retry documenté depuis deux sprints n'avait donc jamais pu s'exécuter au-delà de la 1re tentative. Corrigé par `PROVISION_TIMEOUT_MS = 150_000` — sans quoi le nouveau message d'échec de #329 aurait été inatteignable lui aussi.
+
+> **Deux élargissements de périmètre assumés par les agents, tous deux justifiés :**
+> 1. **#329 a traité la ligne 70** (2ᵉ `expect(register-form)` dans le `catch`), absente du mini-plan et porteuse du même défaut exact que la ligne 47. Et il a **couvert le 3ᵉ mode de confusion du même message** (403 CORS, piège 2 du runbook S47) : le message ne suppose plus une cause, un listener `page.on('response')` collecte les statuts réellement observés et les rapporte avec une grille de lecture 429/403/409.
+> 2. **#331 a corrigé l'en-tête de `timeline.spec.ts` (lignes 27-30)**, qui affirmait aussi le ciblage « par INDEX » — le commentaire menteur n'était pas seulement aux lignes 213-218.
+
+> **Écart de couverture mesuré par le lead entre les deux vagues :** `recurrence-unit-option-WEEK` et `-YEAR` sont **posés par #331 mais exercés par aucune spec** (seul `MONTH` l'est) — MAJEUR selon l'heuristique COVERAGE-E2E du protocole A.4. Ajouté au périmètre de #330 plutôt que laissé en follow-up : coût marginal, l'agent est déjà dans ces fichiers.
+
+> **Incident d'infrastructure, sans effet sur le livrable :** le spawn de la vague 2 a échoué **trois fois de suite sur `API Error: 529 Overloaded`** (côté serveur, pas côté prompt). Arbre de travail vérifié propre après chaque échec — aucune écriture partielle. La persistance pré-spawn (briefing + `spawn-ref` committés avant l'appel) a rendu chaque reprise triviale : c'est exactement le cas d'usage pour lequel elle existe.
 
 > **Pas de branche `sprint/50` créée** (étape 4 du skill volontairement sautée, leçon S43/S44 reconduite S45–S49) : `/sprint start` crée son worktree lui-même.
 
