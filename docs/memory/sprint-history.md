@@ -1664,9 +1664,27 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 > avec logo sur 2 lignes en `fr`/`es`, **pré-existant, mesuré identique avant/après** · palier ≥ 1280 px non
 > vérifié · rendu visuel du CTA resserré non inspecté à l'œil, seules les largeurs sont mesurées.
 
-> **Saturation contexte lead : non mesurée** (pas d'instrumentation). Ordre de grandeur : 8 agents
+> **Saturation contexte lead : non mesurée** (pas d'instrumentation). Ordre de grandeur : 9 agents
 > (1 architect, 3 fullstack V1, 1 fullstack correctif #346, 1 test-runner, 1 reviewer, 1 fullstack correctif
-> #347) ≈ **700 K tokens cumulés côté subagents**. Le pattern artefact + purge a tenu.
+> #347, 1 project-manager) ≈ **760 K tokens cumulés côté subagents**. Le pattern artefact + purge a tenu.
+
+**Absorbé en cours :** 2 correctifs hors périmètre initial intégrés avant merge (`df93b63` régression
+démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) — tracés dans
+`issue-346-followup-done.md` et `issue-347-followup-done.md`.
+
+**Follow-ups arbitrés (Phase 4 triage — 8 items, 0 discard) :**
+  - Firefox/WebKit `:focus-visible` [S | frontend] → **#375** — *la seule conformité revendiquée mais non vérifiée du sprint*
+  - Healthcheck `frontend` du compose → `127.0.0.1` [XS | infra] → **#376**
+  - `frontend/README.md` encore le stub `create-next-app` [XS | docs] → **#377**
+  - Renommer `landing.hover-pairing.test.ts` [XS | frontend] → **#378**
+  - Header 1024 px : marge nulle + logo sur 2 lignes en `fr`/`es` [S | design] → **#379**
+    (⚠ **conflit de fichier avec #348** — même ligne `HeaderSection.tsx:86` : même lot ou séquencées, jamais en parallèle)
+  - **Résolus pendant le sprint, non soumis au triage :** `RECOMMAND_FOLLOWUP` locale active illisible
+    (→ `df93b63`) · anneau de focus sur les items de menu (**sans objet** : `:focus-visible` global existait
+    déjà, cf. `PIT-S52-004`) · `RECOMMAND_TEST_RUNNER` suite backend (→ lancée, **452/452**)
+  - **Aucun milestone attaché** : « Sprint 53 » porte déjà 10 issues ouvertes, très au-dessus du plafond
+    de 3 du projet — 5 items de plus le rendraient inutilisable comme outil de planification.
+  - **Ratio discard : 0/8.**
 
 > **⚠ Le plan initial de ce sprint (2026-07-28, ancrage `fc2a3a0`) est PÉRIMÉ et a été remplacé.**
 > Il ciblait #102 (P1/M), #134 (P2/S), #148 (P2/S) — « rate-limiting distribué et politique
