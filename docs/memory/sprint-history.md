@@ -1722,14 +1722,36 @@ démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) 
 >   « sous-routes profondes » de son body est **caduc**. À replanifier au S53 avec `ui-design` en vague 0.
 > · **#346** — mini-plan du S53 re-vérifié **sans aucune dérive de ligne** (5 emplacements exacts).
 
-## Sprint 53 — 2026-07-28 (PLANIFIE — cohésion 0.48, dette de cascade CSS et couplage fond/encre du DS)
-**Objectif :** Découpler focus: dans 5 menus + layerisation h1..h6 + audit CSS non-layerisés
+## Sprint 53 — 2026-07-28 → 2026-07-29 (EN COURS — cohésion 1.00 après retrait de #346, dette de cascade CSS)
+**Objectif :** Layerisation `h1..h6` + audit des CSS non-layerisés restants
 **Milestone GitHub :** #53
-**Issues :** #346 (P1/S), #339 (P2/S), #340 (P2/S) — 6 pts
-**Vagues :** V1 = #346 ∥ #339 | V2 = #340
+**Issues (2) :** #339 (P2/S), #340 (P2/S) — 4 pts
+**Vagues :** V1 = #339 seule | V2 = #340 (dépend de la méthode de layerisation validée en V1)
 **Migrations Flyway :** aucune
+**Branche :** `sprint/53` créée sur `origin/dev` à `2966994` (merge PR #374)
 **Depend de :** aucune — ⚠ vérification navigateur clair+sombre OBLIGATOIRE (jsdom aveugle, pitfall S48)
-**Status :** Planifie
+**Status :** En cours
+
+> **⚠ #346 RETIRÉE du périmètre — NO-OP confirmé, pas supposé.** Le plan de l'architecte
+> (ancrage `fc2a3a0`, 2026-07-28) la plaçait en V1 avec `possibly_done: false`. Elle a été **livrée
+> au S52** entre-temps (PR #374, issue CLOSED le 2026-07-29, milestone et label repassés à
+> `sprint-52`). Vérifié au HEAD `2966994` avant tout spawn : `focus:bg-accent-soft` est en place aux
+> 5 emplacements, **zéro occurrence de `focus:bg-accent focus:text-accent-foreground`** subsiste
+> dans `components/ui/`. Conséquence : la V1 perd son parallélisme, le sprint devient **strictement
+> séquentiel #339 → #340**, et la cohésion monte à 1.00 (un seul domaine : cascade CSS).
+
+> **⚠ Dérive de milestone corrigée avant lancement.** #339 portait le milestone « Sprint 52 »
+> alors que son label était `sprint-53` — réattachée à « Sprint 53 ». Rappel : le milestone #53
+> porte aussi ~10 issues de backlog **hors périmètre** (follow-ups du S52, cf. bilan S52) ;
+> la source de vérité du périmètre de ce sprint est le **label `sprint-53`**, pas le milestone.
+
+> **⚠ Dérive de ligne dans l'énoncé de #339, mesurée avant tout code.** L'issue cite
+> `FooterSection.tsx:41` pour le `<h4 className="text-ink mb-3 font-bold">`. Le vrai emplacement est
+> **lignes 43, 63 et 78 — trois occurrences, pas une**. Ligne 41 ne porte rien de tel. Conforme à
+> `PIT-S52-006` : vérifier le fichier, jamais faire confiance au numéro de ligne d'une issue.
+> **Rayon de souffle mesuré :** ~38 titres `<h1>`..`<h4>` portent aujourd'hui un `mb-*`/`mt-*`/`font-*`
+> silencieusement annulé, répartis sur landing, dashboard, settings, products et timeline — la
+> layerisation les réactive **tous d'un coup**.
 
 ## Sprint 54 — 2026-07-28 (PLANIFIE — cohésion 0.46, réarmement du filet E2E de la frise)
 **Objectif :** data-testid SelectItem + couverture des 18 testids sans spec + retry rendu auth.setup
