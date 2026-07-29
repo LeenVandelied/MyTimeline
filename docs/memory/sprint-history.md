@@ -1820,7 +1820,14 @@ jamais fait partie du périmètre). Issues #339 et #340 fermées.
 **Vagues :** V1 = #331 ∥ #329 | V2 = #330
 **Migrations Flyway :** aucune
 **Depend de :** Sprint 51 (specs assertent le comportement de scroll corrigé)
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-29, worktree `sprint-52-start-252990`, branche `claude/sprint-54-start-8ee5a7` basée sur `origin/dev` `68a924c`)
+
+> **Vérification des prémisses du plan architecte au démarrage (2026-07-29) — les 3 mini-plans tiennent.**
+> · `frontend/src/components/EventEditForm.tsx` **est** à la racine de `components/` (correction architecte confirmée) ; `SelectItem` WEEK/MONTH/YEAR aux lignes **436-438**, sans `data-testid`.
+> · `frontend/src/components/events/NewEventDrawer.tsx:215-217` — `SelectItem` produit, sans `data-testid`.
+> · `frontend/e2e/timeline.spec.ts:221` — `.getByRole('option').nth(1)` confirmé, **seule** occurrence `.nth()` sur une option de `<Select>` dans les 18 specs.
+> · `auth.setup.ts` : rendu initial lignes **46-47** hors boucle, boucle `REGISTER_RETRIES` lignes **50-71**, message en dur lignes **63-66** — conforme.
+> · **18/18 testids de #330 confirmés à 0 spec E2E** (grep exhaustif, pas l'échantillon de 8 de l'architecte). Les 18 existent bien dans la source — dont `timeline-loading`, qui est dans **`frontend/app/[locale]/(app)/timeline/page.tsx:47`** et non sous `frontend/src/` (piège de périmètre de recherche : l'app router est `frontend/app/`).
 
 > **Pas de branche `sprint/50` créée** (étape 4 du skill volontairement sautée, leçon S43/S44 reconduite S45–S49) : `/sprint start` crée son worktree lui-même.
 
