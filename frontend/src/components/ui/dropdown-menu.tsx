@@ -44,9 +44,18 @@ import { cn } from "@/lib/utils"
  * `components/landing/` + `components/ui/`, préfixes `hover:` et `focus:`).
  *
  * ⚠ CONSOMMATEUR À SURVEILLER : tout appelant qui pose lui-même une encre fixe
- * sur un item (p. ex. `language-selector.tsx`, item de locale active en
- * `bg-accent text-accent-foreground`) doit AUSSI apparier le focus, sinon son
- * encre se retrouve sur `accent-soft`. Voir #353.
+ * sur un item doit AUSSI reprendre la main sur la surface au focus, sinon son
+ * encre se retrouve sur `accent-soft`. Ce n'est pas théorique :
+ * `ui/language-selector.tsx` (item de locale active, encre `accent-ink`) est
+ * tombé à 1.23:1 en clair / 1.28:1 en sombre dès ce changement livré, sur la
+ * landing PUBLIQUE. Corrigé depuis par `focus:bg-accent-hover` posé côté
+ * appelant — voir l'en-tête de ce fichier-là pour les ratios mesurés.
+ *
+ * ⚠ LE GARDE-FOU AST NE COUVRE PAS CE CAS. Il raisonne par `className` ; ici la
+ * surface (`focus:bg-accent-soft`, ce fichier) et l'encre (`text-accent-ink`,
+ * l'appelant) vivent dans deux fichiers, donc dans deux `className` distincts.
+ * Aucune analyse statique par attribut ne peut les rapprocher. Le seul filet sur
+ * ce couplage-là est la mesure au navigateur (`e2e/landing-mobile-menu.spec.ts`).
  */
 
 function DropdownMenu({
