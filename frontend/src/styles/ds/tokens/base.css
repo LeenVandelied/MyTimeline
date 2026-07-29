@@ -63,14 +63,29 @@ time, .mono, [data-mono] {
    nav/footer : aucune utilitaire `text-*` sur eux) mais cède devant une
    utilitaire explicite — sémantique attendue. Cf. test base-layer.test.ts.
 
-   ⚠ RESTE HORS LAYER dans ce fichier, non traité par #339 : `body`,
-   `time, .mono, [data-mono]`, `*` (box-sizing/scrollbar), `::selection`,
-   `:focus-visible`. `body` est inoffensif (il n'agit que par héritage, une
-   utilitaire sur un descendant gagne de toute façon). `time/.mono` porte un
-   `font-family` qui battrait une utilitaire `font-*` posée directement sur
-   un `<time>` — aujourd'hui sans dérive constatée (le seul site,
-   `EventPreviewTimeline`, pose `font-mono`, même valeur). À reprendre avec
-   l'audit de layerisation global (#340). */
+   ⚠ RESTE HORS LAYER dans ce fichier après l'audit #340 — inventaire à jour,
+   avec le motif MESURÉ de chaque non-correction :
+   · `body` — inoffensif : n'agit que par héritage, une utilitaire sur un
+     descendant gagne de toute façon.
+   · `time, .mono, [data-mono]` — poserait un `font-family` gagnant sur une
+     utilitaire `font-*` mise sur un `<time>`. Deux sites au dépôt
+     (`EventPreviewTimeline:203`, `WeekAgenda:53`) ; les DEUX posent `font-mono`,
+     soit la MÊME valeur. Dérive rendue : NULLE. Verrou de l'AC #340 : pas de
+     conflit réel ⇒ pas de modification.
+   · `*, *::before, *::after` (box-sizing) et `::selection` — aucune utilitaire
+     Tailwind ne pose `box-sizing`, aucune ne cible `::selection`.
+   · `:focus-visible` — CONFLIT RÉEL, DÉLIBÉRÉMENT NON CORRIGÉ ICI. Il annule
+     `focus-visible:outline-none` / `outline-hidden` (~14 sites) et force
+     `border-radius: var(--radius-xs)` (3px) sur TOUT élément focalisé, par-dessus
+     ses `rounded-md` / `rounded-full`. Mais `language-selector.tsx` DÉPEND de ce
+     comportement, mesuré et documenté sur place (« hors `@layer`, donc gagnante
+     sur `outline-hidden` ») : il ne pose aucun anneau, son seul indicateur de
+     focus est ce contour. Le layeriser le supprimerait là-bas — régression WCAG
+     1.4.11. Idem `ExportDataFlow:85` (`<h3 tabIndex={-1} class="outline-none">`).
+     Correction = changement coordonné sur les ~14 sites + arbitrage `ui-design`,
+     hors calibre de #340. Chiffrage dans l'audit.
+   Le bloc scrollbar `*` est désormais layerisé (plus bas, motif sur place).
+   Audit complet : `docs/memory/sprints/sprint-53/audit-css-layers-340.md`. */
 @layer base {
   a { color: var(--color-accent); text-decoration: none; }
   a:hover { color: var(--color-accent-hover); }
@@ -86,14 +101,29 @@ time, .mono, [data-mono] {
 }
 
 /* thin scrollbars in the graphite palette */
-* { scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent; }
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb {
-  background: var(--color-rule-strong);
-  border-radius: var(--radius-pill);
-  border: 3px solid var(--color-bg);
+/* ⚠ CASCADE — ce bloc DOIT rester dans `@layer base`. Hors layer, `*` (0-0-0)
+   battait quand même `@layer utilities` : le classement par layer précède la
+   spécificité. Conflit MESURÉ (#340) : l'utilitaire `scrollbar-none` de
+   `globals.css` (`@utility` → `@layer utilities`) pose `scrollbar-width: none`,
+   que le `scrollbar-width: thin` ci-dessous ANNULAIT. La barre restait donc
+   visible sous Firefox sur `ProductCarousel` et `DensityRibbon` ; sous Chromium
+   elle disparaissait quand même, mais par l'autre moitié de l'utilitaire
+   (`::-webkit-scrollbar { display: none }` — propriété différente de `width` /
+   `height`, donc jamais en conflit). C'est ce qui rendait le défaut invisible en
+   développement, et ce que décrit sans le nommer le commentaire de `globals.css`
+   (« `scrollbar-width:none` seul ne suffit pas sous Chromium »).
+   Dans `@layer base`, l'utilitaire l'emporte enfin sur les deux moteurs.
+   `base` et pas `components` : c'est un reset d'élément universel. */
+@layer base {
+  * { scrollbar-width: thin; scrollbar-color: var(--color-rule-strong) transparent; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-rule-strong);
+    border-radius: var(--radius-pill);
+    border: 3px solid var(--color-bg);
+  }
+  *::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
 }
-*::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
 
 /* respect reduced-motion: no transitions/animations when the user opts out */
 @media (prefers-reduced-motion: reduce) {

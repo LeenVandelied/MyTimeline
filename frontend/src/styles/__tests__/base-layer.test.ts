@@ -36,6 +36,19 @@ const REGRESSION_FIXTURE = fileURLToPath(new URL('../__cascade-regression__.css'
 /** Idem pour le témoin `h1..h6` — voir la note de mémoïsation plus bas. */
 const HEADING_FIXTURE = fileURLToPath(new URL('../__heading-regression__.css', import.meta.url))
 
+/** #340 — `landing.css` n'est PAS importé par `globals.css` : `app/layout.tsx` le
+ *  charge comme une 2ᵉ feuille, APRÈS. On recompose donc le document tel que le
+ *  navigateur le voit pour pouvoir raisonner sur les layers des deux fichiers. */
+const LANDING = fileURLToPath(new URL('../landing.css', import.meta.url))
+const DOCUMENT_FIXTURE = fileURLToPath(new URL('../__document__.css', import.meta.url))
+const AVATAR_FIXTURE = fileURLToPath(new URL('../__avatar-regression__.css', import.meta.url))
+const SCROLLBAR_FIXTURE = fileURLToPath(new URL('../__scrollbar-regression__.css', import.meta.url))
+const PREVIEW_FIXTURE = fileURLToPath(new URL('../__preview-regression__.css', import.meta.url))
+
+/** Force l'émission des utilitaires dont on veut prouver le rang de layer,
+ *  sans dépendre du scan de contenu (qui varie avec le `from` de compilation). */
+const FORCE_UTILITIES = '@source inline("rounded-xl rounded-sm scrollbar-none");\n'
+
 type Compiled = { root: Container }
 
 async function compile(css: string, from: string): Promise<Compiled> {
@@ -257,6 +270,165 @@ describe('cascade @layer — défauts de titre h1..h6', () => {
       })
       expect(themeDecls).toContain('var(--leading-tight)')
       expect(themeDecls).not.toContain('1.25')
+    },
+    30_000,
+  )
+})
+
+/**
+ * Garde-fou de CASCADE — audit #340. Même mécanisme que `a` (#295) et `h1..h6`
+ * (#339), MAIS sur des sélecteurs de CLASSE.
+ *
+ * CE QUE L'AUDIT A MESURÉ. L'énoncé de #340 restreignait le défaut aux sélecteurs
+ * d'élément : c'est faux. Le CSS hors layer bat le CSS layerisé quel que soit le
+ * type de sélecteur — une classe hors layer écrase donc elle aussi les utilitaires
+ * de `@layer utilities`. Trois conflits RÉELS ont été démontrés au dépôt (une
+ * utilitaire écrite dans le code et silencieusement annulée), et eux seuls sont
+ * corrigés ici :
+ *   1. `.mt-avatar` (7px) annulait `rounded-sm` (5px) — `AppShell` ;
+ *   2. `.timeline-preview` (10px) annulait `rounded-xl` (14px) — `TimelinePreviewSection` ;
+ *   3. `* { scrollbar-width: thin }` annulait l'utilitaire `scrollbar-none`
+ *      (`ProductCarousel`, `DensityRibbon`) — invisible sous Chromium, où l'autre
+ *      moitié de l'utilitaire (`::-webkit-scrollbar{display:none}`) faisait le
+ *      travail sur une propriété DIFFÉRENTE, donc jamais en conflit.
+ *
+ * CE QUE CES TESTS NE PROUVENT PAS. Aucun rendu, aucun pixel : que le coin fasse
+ * bien 14px relève de l'œil / de l'E2E. jsdom ne résout pas les `@layer`.
+ * Ils ne disent rien non plus des ~770 lignes de `.mt-*` restées hors layer : elles
+ * ne sont PAS en conflit aujourd'hui (aucune n'est posée à côté d'une utilitaire),
+ * cf. `docs/memory/sprints/sprint-53/audit-css-layers-340.md`.
+ */
+describe('cascade @layer — classes de composant (#340)', () => {
+  it(
+    'encapsule `.mt-avatar` dans @layer components, sous les utilitaires',
+    async () => {
+      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+
+      // `--radius-md` discrimine la règle du DS de tout homonyme.
+      const hits = layersOf(root, '.mt-avatar', /--radius-md\b/)
+      expect(hits.length).toBeGreaterThan(0)
+      for (const chain of hits) {
+        expect(chain).toContain('components')
+      }
+
+      // L'utilitaire réellement posée par `AppShell` vit dans `utilities`…
+      const rounded = layersOf(root, '.rounded-sm', /border-radius:/)
+      expect(rounded.length).toBeGreaterThan(0)
+      for (const chain of rounded) {
+        expect(chain).toContain('utilities')
+      }
+
+      // …et `components` précède `utilities` : à importance égale, le layer le
+      // plus tardif gagne → `rounded-sm` l'emporte enfin sur le défaut DS.
+      const order = declaredLayerOrder(root)
+      expect(order.indexOf('components')).toBeLessThan(order.indexOf('utilities'))
+
+      // Les modificateurs restent dans le MÊME layer : leur victoire sur
+      // `.mt-avatar` tient à l'ordre du document, pas au rang de layer.
+      const round = layersOf(root, '.mt-avatar--round', /border-radius:\s*50%/)
+      expect(round.length).toBeGreaterThan(0)
+      for (const chain of round) {
+        expect(chain).toContain('components')
+      }
+    },
+    30_000,
+  )
+
+  it(
+    'détecte réellement un `.mt-avatar` NON layerisé (le détecteur ne passe pas à vide)',
+    async () => {
+      // ⚠ `from` unique obligatoire : le plugin PostCSS de Tailwind mémoïse par
+      // chemin d'entrée — réutiliser GLOBALS renverrait le CSS réel (test à vide).
+      const regressed = "@import 'tailwindcss';\n.mt-avatar { border-radius: var(--radius-md); }\n"
+      const { root } = await compile(regressed, AVATAR_FIXTURE)
+
+      const hits = layersOf(root, '.mt-avatar', /--radius-md\b/)
+      expect(hits.length).toBeGreaterThan(0)
+      expect(hits.some((chain) => chain.length === 0)).toBe(true)
+    },
+    30_000,
+  )
+
+  it(
+    'encapsule le reset scrollbar `*` dans @layer base, sous `scrollbar-none`',
+    async () => {
+      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+
+      // `scrollbar-width: thin` discrimine du preflight Tailwind, qui cible
+      // `*, ::after, ::before…` et ne touche jamais aux scrollbars.
+      const hits = layersOf(root, '*', /scrollbar-width:\s*thin/)
+      expect(hits.length).toBeGreaterThan(0)
+      for (const chain of hits) {
+        expect(chain).toContain('base')
+      }
+
+      // L'utilitaire `@utility scrollbar-none` de globals.css sort bien dans
+      // `utilities`, donc APRÈS `base` : `scrollbar-width: none` gagne enfin —
+      // y compris sous Firefox, seul moteur où l'utilitaire n'a pas de repli
+      // `::-webkit-scrollbar { display: none }`.
+      const util = layersOf(root, '.scrollbar-none', /scrollbar-width:\s*none/)
+      expect(util.length).toBeGreaterThan(0)
+      for (const chain of util) {
+        expect(chain).toContain('utilities')
+      }
+
+      const order = declaredLayerOrder(root)
+      expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
+    },
+    30_000,
+  )
+
+  it(
+    'détecte réellement un reset scrollbar NON layerisé (le détecteur ne passe pas à vide)',
+    async () => {
+      const regressed = "@import 'tailwindcss';\n* { scrollbar-width: thin; }\n"
+      const { root } = await compile(regressed, SCROLLBAR_FIXTURE)
+
+      const hits = layersOf(root, '*', /scrollbar-width:\s*thin/)
+      expect(hits.length).toBeGreaterThan(0)
+      expect(hits.some((chain) => chain.length === 0)).toBe(true)
+    },
+    30_000,
+  )
+
+  it(
+    'encapsule `.timeline-preview` dans @layer components, sous les utilitaires',
+    async () => {
+      // `landing.css` est une feuille SÉPARÉE, chargée après `globals.css` par
+      // `app/layout.tsx`. On recompose le document dans cet ordre : c'est la
+      // déclaration `@layer theme, base, components, utilities;` émise par
+      // globals.css qui fixe le rang, et `landing.css` ne fait que REJOINDRE le
+      // layer `components` déjà déclaré.
+      const document = readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES + readFileSync(LANDING, 'utf8')
+      const { root } = await compile(document, DOCUMENT_FIXTURE)
+
+      const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
+      expect(hits.length).toBeGreaterThan(0)
+      for (const chain of hits) {
+        expect(chain).toContain('components')
+      }
+
+      const rounded = layersOf(root, '.rounded-xl', /border-radius:/)
+      expect(rounded.length).toBeGreaterThan(0)
+      for (const chain of rounded) {
+        expect(chain).toContain('utilities')
+      }
+
+      const order = declaredLayerOrder(root)
+      expect(order.indexOf('components')).toBeLessThan(order.indexOf('utilities'))
+    },
+    30_000,
+  )
+
+  it(
+    'détecte réellement un `.timeline-preview` NON layerisé (le détecteur ne passe pas à vide)',
+    async () => {
+      const regressed = "@import 'tailwindcss';\n.timeline-preview { border-radius: var(--radius-lg); }\n"
+      const { root } = await compile(regressed, PREVIEW_FIXTURE)
+
+      const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
+      expect(hits.length).toBeGreaterThan(0)
+      expect(hits.some((chain) => chain.length === 0)).toBe(true)
     },
     30_000,
   )
