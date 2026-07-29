@@ -18,29 +18,60 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* ⚠ CASCADE — cette règle DOIT rester dans `@layer base`. Même raison que la
-   règle `a` plus bas (bloc « CASCADE », #295/S48) : hors layer, ces défauts
-   d'élément (0-0-1) battaient TOUTE utilitaire Tailwind posée sur un titre.
-   `mb-*`, `mt-*`, `font-*`, `leading-*` et `tracking-*` sur un `<h1>`..`<h6>`
-   étaient donc SILENCIEUSEMENT annulés (#339) — le cas emblématique étant
-   `FooterSection` (`<h4 class="mb-3 font-bold">` rendu sans marge, en 600).
-   Les 5 propriétés sont layerisées EN BLOC : scinder la règle obligerait à
-   dupliquer le sélecteur, c'est fragile et ça diverge du patron `a`.
+/* ⚠ CASCADE — `line-height` est DÉLIBÉRÉMENT HORS LAYER, seul de son bloc.
+   NE PAS le remettre dans le `@layer base` ci-dessous « par cohérence ».
 
-   ℹ PAS de dérive de valeur sur `leading-*` / `tracking-*` (mesuré #339).
-   `typography.css` déclare `--leading-*` et `--tracking-*` dans un `:root`
-   HORS layer, avec les MÊMES NOMS que le namespace de thème de Tailwind 4.
-   Or Tailwind émet ses défauts dans `@layer theme` → le `:root` du DS gagne
-   (hors layer > tout layer). Les utilitaires `leading-tight` / `tracking-*`
-   résolvent donc déjà les valeurs du DS (1.08 / 0.16em), pas celles de
-   Tailwind (1.25 / 0.1em). Corollaire à ne PAS oublier : sortir ces tokens
-   du hors-layer (audit #340) les ferait basculer sous `@layer theme` — sauf
-   à les mapper dans `@theme`, ce que globals.css fait désormais. */
+   POURQUOI. En Tailwind 4, une utilitaire `text-*` ne pose pas que `font-size` :
+   elle pose AUSSI un `line-height` apparié, via
+   `line-height: var(--tw-leading, var(--text-lg--line-height))`.
+   Ces `--text-*--line-height` sont des défauts Tailwind émis dans `@layer theme`
+   (`calc(1.75 / 1.125)` = 1.5556 pour `lg`, `calc(1.75 / 1.25)` = 1.4 pour `xl`)
+   et notre `@theme inline` ne les remappe PAS — il ne mappe que `--text-*`
+   (la taille) et `--leading-*`. Layeriser `line-height` avec les 4 autres
+   propriétés (1ʳᵉ passe de #339) le faisait donc CÉDER devant cet appariement :
+   tout titre portant `text-*` SANS `leading-*` explicite dérivait.
+   MESURÉ au navigateur, avant/après cette 1ʳᵉ passe :
+     · `h2.text-lg  font-semibold` : 29,16px (1.08) → 42px (1,5556)  = +12,8px/ligne
+     · `h1.text-xl  font-semibold` : 37,8px  (1.08) → 49px (1,4)     = +11,2px/ligne
+   28 titres du dépôt sont dans ce cas (settings, landing, products, dashboard,
+   shared) → dérive SYSTÉMIQUE et silencieuse du rythme typographique. Symptôme
+   qui l'a révélée : `e2e/settings-mobile.spec.ts:19` rouge — le sheet de
+   suppression de compte, grandi de ~13px par titre, interceptait au centre du
+   viewport le clic destiné au backdrop.
+
+   CONTREPARTIE ASSUMÉE. Hors layer, un `leading-*` explicite sur un titre ne peut
+   plus gagner. Impact réel MESURÉ : NUL — les 6 seuls titres concernés (landing)
+   portent `leading-tight`, qui vaut déjà 1.08. C'est le comportement d'origin/dev.
+
+   Les 4 AUTRES propriétés restent layerisées : elles DOIVENT céder (c'est #339).
+   · `margin` + `font-weight` → `<h4 class="mb-3 font-bold">` (FooterSection) ;
+   · `font-family` → bascule display→mono voulue sur les 5 titres du dashboard ;
+   · `letter-spacing` → peut céder sans risque : VÉRIFIÉ par compilation, une
+     utilitaire `text-*` n'émet AUCUN `letter-spacing` (contrairement au
+     `line-height`), il n'y a donc pas d'appariement qui puisse la faire dériver.
+   Garde-fou : `__tests__/base-layer.test.ts` (« ne cède PAS devant `text-lg` »). */
+h1, h2, h3, h4, h5, h6 { line-height: var(--leading-tight); }
+
+/* ⚠ CASCADE — ces 4 propriétés DOIVENT rester dans `@layer base`. Même raison
+   que la règle `a` plus bas (bloc « CASCADE », #295/S48) : hors layer, ces
+   défauts d'élément (0-0-1) battaient TOUTE utilitaire Tailwind posée sur un
+   titre. `mb-*`, `mt-*`, `font-*` et `tracking-*` sur un `<h1>`..`<h6>` étaient
+   donc SILENCIEUSEMENT annulés (#339) — le cas emblématique étant
+   `FooterSection` (`<h4 class="mb-3 font-bold">` rendu sans marge, en 600).
+
+   ℹ PAS de dérive de valeur sur les utilitaires `leading-*` / `tracking-*`
+   elles-mêmes (mesuré #339) : `typography.css` déclare `--leading-*` et
+   `--tracking-*` dans un `:root` HORS layer, avec les MÊMES NOMS que le
+   namespace de thème de Tailwind 4. Or Tailwind émet ses défauts dans
+   `@layer theme` → le `:root` du DS gagne (hors layer > tout layer). Ces
+   utilitaires résolvent donc déjà les valeurs du DS (1.08 / 0.16em), pas
+   celles de Tailwind. ⚠ Cela ne concerne QUE les utilitaires nommées : ça ne
+   protège RIEN contre le `line-height` apparié à `text-*`, qui ne passe pas
+   par `--leading-*` mais par `--text-*--line-height` (cf. bloc ci-dessus). */
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     font-weight: var(--weight-semibold);
-    line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
     margin: 0;
   }

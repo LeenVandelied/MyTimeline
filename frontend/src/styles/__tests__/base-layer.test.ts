@@ -42,12 +42,14 @@ const HEADING_FIXTURE = fileURLToPath(new URL('../__heading-regression__.css', i
 const LANDING = fileURLToPath(new URL('../landing.css', import.meta.url))
 const DOCUMENT_FIXTURE = fileURLToPath(new URL('../__document__.css', import.meta.url))
 const AVATAR_FIXTURE = fileURLToPath(new URL('../__avatar-regression__.css', import.meta.url))
+/** Témoin de la régression `line-height` layerisé (1ʳᵉ passe de #339). */
+const HEADING_LEADING_FIXTURE = fileURLToPath(new URL('../__heading-leading-regression__.css', import.meta.url))
 const SCROLLBAR_FIXTURE = fileURLToPath(new URL('../__scrollbar-regression__.css', import.meta.url))
 const PREVIEW_FIXTURE = fileURLToPath(new URL('../__preview-regression__.css', import.meta.url))
 
 /** Force l'émission des utilitaires dont on veut prouver le rang de layer,
  *  sans dépendre du scan de contenu (qui varie avec le `from` de compilation). */
-const FORCE_UTILITIES = '@source inline("rounded-xl rounded-sm scrollbar-none");\n'
+const FORCE_UTILITIES = '@source inline("rounded-xl rounded-sm scrollbar-none text-lg");\n'
 
 type Compiled = { root: Container }
 
@@ -270,6 +272,99 @@ describe('cascade @layer — défauts de titre h1..h6', () => {
       })
       expect(themeDecls).toContain('var(--leading-tight)')
       expect(themeDecls).not.toContain('1.25')
+    },
+    30_000,
+  )
+})
+
+/**
+ * Garde-fou de CASCADE — `line-height` des titres (régression de la 1ʳᵉ passe #339).
+ *
+ * CONTEXTE. La 1ʳᵉ passe de #339 a layerisé les 5 propriétés `h1..h6` EN BLOC.
+ * Or une utilitaire `text-*` de Tailwind 4 ne pose pas que `font-size` : elle pose
+ * AUSSI un `line-height` apparié, `var(--tw-leading, var(--text-lg--line-height))`,
+ * dont le fallback est un défaut Tailwind émis dans `@layer theme` et NON remappé
+ * par notre `@theme inline`. Layerisé, le `line-height` du DS cédait donc devant
+ * cet appariement, et les 28 titres du dépôt portant `text-*` SANS `leading-*`
+ * explicite dérivaient : `h2.text-lg` passait de 29,16px (1.08) à 42px (1,5556).
+ * Symptôme : `e2e/settings-mobile.spec.ts:19` rouge (sheet grandi interceptant le
+ * clic du backdrop). Correctif : `line-height` ressort HORS layer, seul.
+ *
+ * CE QUE CES TESTS PROUVENT. (1) la déclaration GAGNANTE de `line-height` pour un
+ * `h1..h6` portant `text-lg` est bien `var(--leading-tight)` et non l'appariement
+ * de `text-lg` — établi en comparant les RANGS DE LAYER, hors layer battant tout
+ * layer quelle que soit la spécificité ; (2) le conflit est RÉEL (on vérifie que
+ * `.text-lg` émet bien un `line-height` concurrent, sinon le test passerait à vide
+ * si Tailwind cessait d'apparier) ; (3) le détecteur rougit sur la forme régressée.
+ *
+ * CE QU'ILS NE PROUVENT PAS. Aucun rendu : les 42px / 29,16px ci-dessus viennent
+ * du navigateur et du calcul `27px × 1.5556`, pas d'ici. jsdom ne résout pas les
+ * `@layer` — un test RTL sur `className` ne détecterait RIEN.
+ */
+describe('cascade @layer — line-height des titres ne cède PAS devant `text-*`', () => {
+  const DS_HEADINGS = 'h1, h2, h3, h4, h5, h6'
+
+  /** Rang de layer : hors layer bat tout layer ; sinon, position dans l'ordre déclaré. */
+  function layerRank(chain: string[], order: string[]): number {
+    if (chain.length === 0) return Number.POSITIVE_INFINITY
+    return order.indexOf(chain[chain.length - 1])
+  }
+
+  it(
+    'laisse `h1..h6 { line-height }` HORS layer, donc gagnant sur le `line-height` apparié à `text-lg`',
+    async () => {
+      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+      const order = declaredLayerOrder(root)
+
+      // 1. Le conflit est RÉEL : `.text-lg` pose bien un `line-height` concurrent,
+      //    dans `utilities`. Sans cette assertion, le test passerait à vide le jour
+      //    où Tailwind cesserait d'apparier taille et interligne.
+      const textLgLeading: string[][] = []
+      root.walkRules((rule) => {
+        if (rule.selector.trim() !== '.text-lg') return
+        rule.walkDecls('line-height', () => {
+          textLgLeading.push(layerChain(rule))
+        })
+      })
+      expect(textLgLeading.length).toBeGreaterThan(0)
+      for (const chain of textLgLeading) expect(chain).toContain('utilities')
+
+      // 2. La règle `line-height` du DS sur `h1..h6` existe et est HORS layer.
+      const headingLeading = layersOf(root, DS_HEADINGS, /line-height:\s*var\(--leading-tight\)/)
+      expect(headingLeading.length).toBeGreaterThan(0)
+      for (const chain of headingLeading) expect(chain).toEqual([])
+
+      // 3. C'est donc elle qui GAGNE. Le rang de layer précède la spécificité :
+      //    peu importe que `.text-lg` (0-1-0) soit plus spécifique que `h2` (0-0-1).
+      const headingRank = Math.max(...headingLeading.map((c) => layerRank(c, order)))
+      const textLgRank = Math.max(...textLgLeading.map((c) => layerRank(c, order)))
+      expect(headingRank).toBeGreaterThan(textLgRank)
+
+      // 4. Les 4 AUTRES propriétés restent layerisées — le correctif ne défait
+      //    pas #339 : `mb-*` / `font-*` doivent toujours l'emporter sur le DS.
+      const marginHits = layersOf(root, DS_HEADINGS, /margin:\s*0/)
+      expect(marginHits.length).toBeGreaterThan(0)
+      for (const chain of marginHits) expect(chain).toContain('base')
+    },
+    30_000,
+  )
+
+  it(
+    'rougit si `line-height` est remis dans @layer base (le détecteur ne passe pas à vide)',
+    async () => {
+      // Reproduit EXACTEMENT la régression : les 5 propriétés en bloc dans `base`.
+      // ⚠ `from` unique obligatoire (mémoïsation par chemin du plugin Tailwind).
+      const regressed =
+        "@import 'tailwindcss';\n" +
+        `@layer base {\n  ${DS_HEADINGS} { line-height: var(--leading-tight); margin: 0; }\n}\n`
+      const { root } = await compile(regressed, HEADING_LEADING_FIXTURE)
+
+      const headingLeading = layersOf(root, DS_HEADINGS, /line-height:\s*var\(--leading-tight\)/)
+      expect(headingLeading.length).toBeGreaterThan(0)
+      // Sous la forme régressée, AUCUNE occurrence n'est hors layer — c'est
+      // exactement ce que l'assertion 2 du test ci-dessus refuse.
+      expect(headingLeading.some((chain) => chain.length === 0)).toBe(false)
+      for (const chain of headingLeading) expect(chain).toContain('base')
     },
     30_000,
   )
