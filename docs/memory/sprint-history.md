@@ -1605,14 +1605,122 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 > `frontend/src/hooks/useTimelineViewport.ts` qui **n'existe pas** ; le vrai chemin est
 > `frontend/src/components/timeline/useTimelineViewport.ts`.
 
-## Sprint 52 — 2026-07-28 (PLANIFIE — cohésion 0.47, rate-limiting distribué et politique d'authentification)
-**Objectif :** Rate-limiting Redis par compte + anti-énumération + harmonisation politique mdp (3 politiques divergentes)
-**Milestone GitHub :** #52
-**Issues :** #102 (P1/M), #134 (P2/S), #148 (P2/S) — 8 pts
-**Vagues :** V1 = #102 ∥ #148 | V2 = #134
-**Migrations Flyway :** aucune
-**Depend de :** Sprint 50 (#323 fige le contrat de jeton)
-**Status :** Planifie
+## Sprint 52 — 2026-07-29 (RE-PLANIFIÉ puis Terminé — cohésion 0.44, focus lisible, header tablette, README)
+**Objectif :** Découpler `focus:` dans 5 menus déroulants + solder le débordement du header au palier tablette + README racine de démarrage
+**Milestone GitHub :** #52 (« MVP local 1/3 — Cohérence visuelle, shell unifié, README de démarrage »)
+**Issues livrées (3) :** #346 (P1/S), #347 (P2/S), #372 (P2/S) — 6 pts
+**Vagues exécutées :** V1 = #346 ∥ #347 ∥ #372 (les 3 en parallèle, intersection des fichiers vide) — pas de V2
+**Correctifs de suivi (hors vague) :** `df93b63` (régression démasquée par #346) · `9350a77` (échec CI de #347)
+**Migrations Flyway :** aucune — aucun fichier Java touché
+**Depend de :** rien (S49/S50/S51 mergés)
+**Branche :** `sprint/52` créée sur `dev` à `473ed65`, rebasée sur `a2d8e8e` (PR #373) avant merge
+**Commits :** 16 · **Tests :** Backend **452/452** · Frontend **825/825** · **E2E CI 106/106**
+**Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 0 MINEUR**
+**CI :** run `30454839483` sur `e46a979` — **4 jobs verts** (`backend`, `frontend`, `security`, `e2e`)
+**Nouveaux artefacts mémoire :** `PIT-S52-001` à `PIT-S52-007` · `PAT-S52-001` · `DEC-S52-001` à `DEC-S52-004`
+**Status :** Terminé — PR #374
+
+> **⚠ Deux régressions attrapées avant merge — aucune par la CI seule.**
+> 1. **Invisible en test unitaire.** #346 a rendu la **locale active du sélecteur de langue illisible au
+>    focus** : elle porte `bg-accent text-accent-foreground` sans variante `focus:`, donc le nouveau fond
+>    clair laissait une encre claire. **1,23:1 en clair / 1,28:1 en sombre**, sur une page publique — le mode
+>    de défaillance exact du S48 (4 CTA invisibles). Deux E2E l'ont détecté. **La piste de correction
+>    proposée par le rapport de #346 a été écartée après mesure** : elle donnait 4,71:1 mais un delta de
+>    surface repos→focus **nul**, rendant l'item actif indistinguable. Retenu : `text-accent-ink` +
+>    `focus:bg-accent-hover` → **6,08:1 / 8,78:1**, delta de surface 1,29:1. Cf. `DEC-S52-002`.
+> 2. **Invisible sur macOS.** Le test **neuf** de #347 a fait tomber la CI sur **1 pixel** à 320 px en `de`.
+>    Verdict **mesuré** : la même spec exécutée contre `origin/dev` dans l'image Playwright jammy sort
+>    l'erreur identique → **défaut PRÉ-EXISTANT, révélé et non causé** par #347. #334 (S49) l'avait manqué
+>    en mesurant depuis macOS. Correctif appliqué au **palier** et non à la locale (`es` était à 4 px du même
+>    basculement) : marge portée de −1 px à **16 px** dans les 4 locales, cible tactile 44 px préservée,
+>    **test non affaibli** (ni tolérance, ni skip, ni locale retirée). Cf. `PIT-S52-001`, `DEC-S52-004`.
+
+> **⚠ 28 échecs E2E locaux qui n'étaient PAS une régression — et une réserve tenue jusqu'à la mesure.**
+> Le `test-runner` a remonté 28 échecs, tous sur `GET /auth/me` → 404. Le lead a **refusé de les déclarer
+> environnementaux sans preuve** et a écrit la condition de merge dans l'audit et la PR. La CI a tranché :
+> **105 passed / 1 failed**, aucun 404. Cause locale confirmée (paire JWT éphémère + piles Docker
+> concurrentes entre agents ; un agent a mesuré le backend d'un autre — `PIT-S52-002`).
+> **Mais le cadrage du lead était incomplet** : le raisonnement « c'est du CSS donc ça ne peut pas casser
+> l'auth » regardait du mauvais côté — le vrai défaut n'était pas dans l'auth mais dans un test que le
+> sprint venait d'ajouter. C'est la CI qui l'a montré, pas le lead.
+
+> **⚠ Erreur du lead, propagée puis corrigée (`2c38cbb`).** L'architecte a déclaré
+> `deploiement-profils.md` « chemin fantôme » sur la foi d'un `ls` d'un **seul** dossier ; le lead l'a repris
+> dans `sprint-history.md`, `architect-plans.md` et un message de commit, **en y ajoutant « 5ᵉ sprint
+> consécutif » de son propre chef**. Le fichier existe, sous `docs/runbook/` — seul le répertoire cité par
+> l'issue était faux. **La série de « chemins fantômes » des sprints S47→S51 mérite d'être relue avec ce
+> biais en tête.** Cf. `PIT-S52-006`.
+
+> **Prémisses d'issues infirmées avant tout code :** `HELP.md` n'est pas suivi par git (`.gitignore` ligne 1),
+> l'AC de #372 était déjà satisfaite · le piège CORS de #372 était mal énoncé (le CORS est figé **à** `:3000`,
+> c'est un front sur un autre port qui prend le 403 déguisé en rate-limit) · **`en` ne débordait pas** à
+> 768 px alors que l'AC de #347 liste les 4 locales — le cas trompeur qui aurait validé un faux correctif ·
+> un 4ᵉ piège non prévu trouvé : healthcheck `frontend` du compose `unhealthy` à vie (`PIT-S52-005`).
+
+> **Réserves assumées :** **Firefox et WebKit non testés** alors que toute la conformité WCAG 2.4.7 du
+> correctif repose sur le contour `:focus-visible` · modalité pointeur pure (`:focus-visible = false`) non
+> corrigée, seul retour = delta de surface 1,29:1 · `select.tsx` / Checkbox / Radio / SubTrigger corrigés
+> mais **jamais rendus au navigateur** (aucun consommateur dans le dépôt) · marge nulle du header à 1024 px
+> avec logo sur 2 lignes en `fr`/`es`, **pré-existant, mesuré identique avant/après** · palier ≥ 1280 px non
+> vérifié · rendu visuel du CTA resserré non inspecté à l'œil, seules les largeurs sont mesurées.
+
+> **Saturation contexte lead : non mesurée** (pas d'instrumentation). Ordre de grandeur : 9 agents
+> (1 architect, 3 fullstack V1, 1 fullstack correctif #346, 1 test-runner, 1 reviewer, 1 fullstack correctif
+> #347, 1 project-manager) ≈ **760 K tokens cumulés côté subagents**. Le pattern artefact + purge a tenu.
+
+**Absorbé en cours :** 2 correctifs hors périmètre initial intégrés avant merge (`df93b63` régression
+démasquée par #346 · `9350a77` échec CI révélé par le test neuf de #347) — tracés dans
+`issue-346-followup-done.md` et `issue-347-followup-done.md`.
+
+**Follow-ups arbitrés (Phase 4 triage — 8 items, 0 discard) :**
+  - Firefox/WebKit `:focus-visible` [S | frontend] → **#375** — *la seule conformité revendiquée mais non vérifiée du sprint*
+  - Healthcheck `frontend` du compose → `127.0.0.1` [XS | infra] → **#376**
+  - `frontend/README.md` encore le stub `create-next-app` [XS | docs] → **#377**
+  - Renommer `landing.hover-pairing.test.ts` [XS | frontend] → **#378**
+  - Header 1024 px : marge nulle + logo sur 2 lignes en `fr`/`es` [S | design] → **#379**
+    (⚠ **conflit de fichier avec #348** — même ligne `HeaderSection.tsx:86` : même lot ou séquencées, jamais en parallèle)
+  - **Résolus pendant le sprint, non soumis au triage :** `RECOMMAND_FOLLOWUP` locale active illisible
+    (→ `df93b63`) · anneau de focus sur les items de menu (**sans objet** : `:focus-visible` global existait
+    déjà, cf. `PIT-S52-004`) · `RECOMMAND_TEST_RUNNER` suite backend (→ lancée, **452/452**)
+  - **Aucun milestone attaché** : « Sprint 53 » porte déjà 10 issues ouvertes, très au-dessus du plafond
+    de 3 du projet — 5 items de plus le rendraient inutilisable comme outil de planification.
+  - **Ratio discard : 0/8.**
+
+> **⚠ Le plan initial de ce sprint (2026-07-28, ancrage `fc2a3a0`) est PÉRIMÉ et a été remplacé.**
+> Il ciblait #102 (P1/M), #134 (P2/S), #148 (P2/S) — « rate-limiting distribué et politique
+> d'authentification », cohésion 0.47. Le **2026-07-29 à 10:47**, le milestone GitHub « Sprint 52 » a été
+> entièrement re-scopé : #102 et #134 déplacées vers « Mise en ligne (GELÉ — hébergeur à définir) »
+> (l'issue #369 conditionne explicitement le sort de #102 à la topologie d'hébergement retenue), #148
+> déplacée vers le milestone Sprint 53, et 9 issues design/frontend attachées à la place.
+> **Arbitrage du dev au lancement : le milestone fait foi** (MEMO-011 — source unique de tracking) ;
+> les labels `sprint-52` résiduels sur #102/#134/#148 ont été retirés, le label `sprint-53` résiduel
+> sur #346 également. Mini-plans re-générés dans `docs/memory/sprints/sprint-52/architect-plans.md`.
+
+> **Prémisses d'issues infirmées par l'architecte au HEAD `473ed65`, avant tout code :**
+> · **#372** — `HELP.md` **n'existe nulle part** dans le dépôt (son AC « HELP.md supprimé » est déjà
+>   satisfaite). Raison trouvée à l'exécution : **`.gitignore` ligne 1 = `HELP.md`**, il est ignoré
+>   depuis le scaffold Spring Initializr.
+>   ⚠ **L'architecte affirmait aussi que `docs/ops/deploiement-profils.md` n'existait pas — cette
+>   réfutation était FAUSSE, et le lead l'a propagée** dans ce fichier, dans `architect-plans.md` et
+>   dans le message du commit `8fb2289` (« chemin fantôme pour le 5ᵉ sprint consécutif »).
+>   **Le fichier existe** : `docs/runbook/deploiement-profils.md` (8,9 Ko). Seul le *répertoire* cité
+>   par l'issue était erroné. Infirmé par le fullstack-dev de #372, re-vérifié par le lead
+>   (`find docs -iname "deploiement-profils*"` → 1 résultat).
+>   **Leçon (`PIT-S52`) :** ne jamais conclure « chemin fantôme » sur un `ls` d'un seul dossier —
+>   `find` sur l'arborescence avant de déclarer un fichier inexistant. La série de « chemins fantômes »
+>   des sprints précédents mérite d'être relue avec ce biais en tête.
+> · **#341** (écartée) — sa mesure de référence n'est **pas reproductible** : 0 `<g>` dans tout
+>   `frontend/src/`, 0 `<svg>` inline dans la landing (les 3 SVG passent par `<Image src>`, DOM non
+>   traversable). Budget d'investigation inconnu → non planifiée.
+> · **#348** (écartée) — le logo est à `HeaderSection.tsx:86`, **pas `:54`**. Et son AC « aucune classe
+>   `text-4xl`/`text-5xl` » entre en tension avec le `h1` du hero qui en porte déjà deux : `@theme`
+>   *étend* Tailwind au lieu de le remplacer, donc ces classes résolvent bien (36/48 px). À arbitrer.
+> · **#353** (écartée) — `h-9 w-9` ligne 52 et chaîne en dur ligne 54, **pas ligne 29**.
+> · **#338** (écartée) — `legal.json` ne contient que `terms`/`privacy` : **aucun corps juridique**.
+>   Bloquée hors périmètre technique, conforme à son propre body.
+> · **#299** (écartée) — *nuance en sa faveur* : `settings/` ne contient qu'un `page.tsx`, donc le risque
+>   « sous-routes profondes » de son body est **caduc**. À replanifier au S53 avec `ui-design` en vague 0.
+> · **#346** — mini-plan du S53 re-vérifié **sans aucune dérive de ligne** (5 emplacements exacts).
 
 ## Sprint 53 — 2026-07-28 (PLANIFIE — cohésion 0.48, dette de cascade CSS et couplage fond/encre du DS)
 **Objectif :** Découpler focus: dans 5 menus + layerisation h1..h6 + audit CSS non-layerisés

@@ -383,3 +383,11 @@ la moitié du mode de panne. Une seule variable serveur (`JWT_PRIVATE_KEY`), la 
 et **journalisée** (ce n'est pas un secret) pour être copiée vers le frontend sans re-dérivation manuelle.
 Reste ouvert : une clé publique **bien formée mais dépareillée** côté frontend fait boucler 100 % des sessions
 vers `/login` sans aucun signal — consigné en ADR-004 et au runbook, non détecté automatiquement. (Sprint 50, #323)
+
+## PAT-S52-001 — Arbitrer entre plusieurs correctifs CSS sans en coder aucun
+Problème : 3 options de correction proposées par une issue, sans critère pour trancher. Solution : simuler
+chaque option par `addStyleTag` dans Playwright et comparer la **marge résiduelle**, pas seulement
+« ça déborde ou non ». Au S52 sur #347 : deux options étaient « vertes », mais l'une laissait **0 px** de
+marge dans les 4 locales et l'autre **223–258 px**. Anti-pattern : choisir sur la seule absence de
+débordement — elle masque les correctifs qui tiennent à un pixel près, donc au rendu d'un autre OS
+(cf. [[PIT-S52-001]]).

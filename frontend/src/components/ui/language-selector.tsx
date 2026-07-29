@@ -15,29 +15,60 @@ const languages = [
 ];
 
 /**
- * APPARIEMENT FOND/ENCRE AU SURVOL — item de la locale ACTIVE (Sprint 49).
+ * APPARIEMENT FOND/ENCRE — item de la locale ACTIVE (Sprint 49, puis 52 / #346).
  *
- * L'item actif pose `bg-accent text-accent-foreground` (= `accent-ink`, l'encre
- * prévue POUR l'accent). Il portait AUSSI `hover:bg-surface-2`, qui ne change
- * QUE la surface : l'encre `accent-ink` restait en place sur un fond `surface-2`.
- * `tailwind-merge` ne fusionne pas `hover:bg-*` avec `focus:bg-*` (clés
- * distinctes), donc la règle coexistait avec le `focus:bg-accent` de
- * `dropdown-menu.tsx` — et tant que Radix focalise l'item au `pointermove`, le
- * `focus:` gagne et le défaut reste invisible.
+ * L'item actif pose une encre FIXE, `text-accent-ink` — l'encre prévue POUR
+ * l'accent. Toute règle d'état qui change SA SURFACE sans changer cette encre
+ * doit donc atterrir sur une surface où `accent-ink` reste lisible. Deux
+ * régressions successives sont nées de cet oubli :
  *
- * MESURÉ AU NAVIGATEUR (375 px, panneau burger de la landing) : la séquence
- * « souris posée sur l'item actif, puis navigation au CLAVIER vers un autre
- * item » retire le focus SANS retirer le `:hover` — et là le libellé mesure
- * **1.10:1 en clair** (#ffffff sur #f3f4f6) et **1.17:1 en sombre** (#0b0c0e sur
- * #1b1e24) : illisible dans les DEUX thèmes. Avec le focus (survol souris seul),
- * le même item mesure 4.71:1 / 6.94:1 — conforme. Le défaut n'existe donc que
- * dans un état mixte clavier+souris, ce qu'aucune relecture ne devine.
+ *  - S49 : `hover:bg-surface-2` posé ici ne changeait QUE la surface, et l'encre
+ *    `accent-ink` s'y retrouvait — mesuré **1.10:1 en clair** (#ffffff sur
+ *    #f3f4f6), **1.17:1 en sombre**. Corrigé en retirant le `hover:` de la
+ *    branche active. Le défaut n'apparaissait que dans un état MIXTE (souris
+ *    posée + focus clavier parti), ce qu'aucune relecture ne devine.
+ *  - S52 (#346) : `ui/dropdown-menu.tsx` a remplacé son `focus:bg-accent` par
+ *    `focus:bg-accent-soft`. Cette règle-là vient d'un AUTRE fichier, donc
+ *    d'un autre `className` — et elle posait l'encre `accent-ink` de cet item
+ *    sur un aplat CLAIR : mesuré **1.23:1 en clair** (#ffffff sur #dbe9fc) et
+ *    **1.28:1 en sombre** (#0b0c0e sur #16263a), sur la landing PUBLIQUE.
  *
- * Correctif : l'item ACTIF ne change plus de surface au survol — sa surface EST
- * déjà l'accent, et son encre y est appariée. La branche INACTIVE garde
- * `hover:bg-surface-2` : elle n'impose aucune encre, l'encre de repos du
- * `popover` reste en place sur les deux fonds.
- * Garde-fou : `e2e/landing-mobile-menu.spec.ts` (« sélecteur de langue »).
+ * CORRECTIF (#346 suivi) : l'item actif reprend la main sur sa surface au focus,
+ * avec `focus:bg-accent-hover` — le jeton que le DS prévoit pour « hover = un
+ * cran plus sombre sur un aplat primaire » (readme DS §Hover/press/focus, et
+ * `.mt-btn--accent:hover` qui apparie déjà `accent-hover` à `accent-ink`).
+ *
+ * POURQUOI `accent-hover` ET NON `accent` — les deux options ont été rendues et
+ * MESURÉES au navigateur (375 px, clair + sombre, `getComputedStyle` + fonds
+ * composités), pas arbitrées sur le papier :
+ *
+ *   |                          | `focus:bg-accent` | `focus:bg-accent-hover` |
+ *   | ratio au focus, clair    | 4.71:1            | **6.08:1**              |
+ *   | ratio au focus, sombre   | 6.94:1            | **8.78:1**              |
+ *   | delta de SURFACE repos→focus | 1.00:1 (nul)  | **1.29:1 / 1.27:1**     |
+ *
+ * `focus:bg-accent` rendait l'item actif strictement identique au focus et au
+ * repos, et ne laissait que 0.21 de marge sur le seuil de 4.5 en clair.
+ *
+ * L'INDICATEUR DE FOCUS N'EST PAS PORTÉ PAR LA SURFACE, et c'est voulu : la
+ * règle globale `:focus-visible` de `styles/ds/tokens/base.css` (hors `@layer`,
+ * donc gagnante sur `outline-hidden`) pose un contour de 2px `accent` à 2px
+ * d'offset. VÉRIFIÉ RENDU sur cet item : `outline: solid 2px rgb(17,112,228)
+ * offset=2px`, `:focus-visible = true` au clavier, `outline: none` hors focus.
+ * Le contour tombe sur la surface du popover — 4.71:1 en clair, 6.48:1 en
+ * sombre, au-dessus des 3:1 de WCAG 1.4.11. Aucun anneau supplémentaire n'est
+ * donc posé ici : ce serait un second indicateur concentrique, absent du DS.
+ *
+ * LIMITE MESURÉE, ASSUMÉE : en modalité POINTEUR pure (menu ouvert à la souris),
+ * `:focus-visible` vaut `false` et le contour ne s'affiche pas — le seul retour
+ * au survol de l'item actif est alors le delta de surface de 1.29:1. Les items
+ * INACTIFS, eux, passent à `accent-soft` (retour franc). L'item actif reste
+ * néanmoins signalé en permanence par son aplat d'accent.
+ *
+ * Garde-fou : `e2e/landing-mobile-menu.spec.ts` (« sélecteur de langue »), qui
+ * mesure les trois états (repos, survol, souris+clavier) dans les deux thèmes.
+ * Le garde-fou AST `landing.hover-pairing.test.ts` ne peut PAS voir ce défaut :
+ * il raisonne par `className`, et les deux moitiés vivaient dans deux fichiers.
  */
 export function LanguageSelector() {
   const pathname = usePathname() || '';
@@ -62,7 +93,11 @@ export function LanguageSelector() {
             className="w-full"
           >
             <DropdownMenuItem
-              className={locale === language.code ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-surface-2'}
+              className={
+                locale === language.code
+                  ? 'bg-accent text-accent-ink font-medium focus:bg-accent-hover'
+                  : 'hover:bg-surface-2'
+              }
             >
               {language.name}
             </DropdownMenuItem>

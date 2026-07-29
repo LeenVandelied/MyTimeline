@@ -8,7 +8,13 @@ import { LanguageSelector } from '@/components/ui/language-selector'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
 
 /**
- * #334 — Panneau off-canvas de la landing, ouvert par le burger du header sous `md`.
+ * #334 — Panneau off-canvas de la landing, ouvert par le burger du header sous `lg`.
+ *
+ * ⚠ #347 : le seuil était `md` (768 px) ; il est passé à `lg` (1024 px) parce que le
+ * palier tablette 768–1023 px rendait la mise en page desktop complète et débordait de
+ * 90 à 108 px selon la locale. Le `lg:hidden` de l'overlay ET celui du panneau ci-dessous
+ * doivent rester synchronisés avec `LG_BREAKPOINT_QUERY` de `HeaderSection` : sinon le
+ * focus-trap tourne sur un panneau masqué et avale l'Escape de toute la page.
  *
  * POURQUOI CE COMPOSANT EXISTE. À 375 px, le groupe droit du header (sélecteur de
  * langue + Connexion + Inscription) demandait 299 px (fr) / 305 px (de) pour 343 px
@@ -75,7 +81,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] md:hidden"
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] lg:hidden"
         onClick={onClose}
         data-testid="landing-header-menu-overlay"
         aria-hidden="true"
@@ -83,7 +89,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
       <div
         ref={panelRef}
         id="landing-header-menu"
-        className="bg-surface border-rule animate-in slide-in-from-right fixed inset-y-0 right-0 z-50 flex w-[min(320px,85vw)] flex-col border-l duration-200 md:hidden"
+        className="bg-surface border-rule animate-in slide-in-from-right fixed inset-y-0 right-0 z-50 flex w-[min(320px,85vw)] flex-col border-l duration-200 lg:hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="landing-header-menu-title"
