@@ -882,3 +882,56 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     ).toHaveCount(0)
   })
 })
+
+/**
+ * #331 (vague 1) — le contrat de testid dérivé de la `value` a livré 4 testids
+ * d'options, dont 2 restaient POSÉS SANS SPEC : `recurrence-unit-option-WEEK` et
+ * `recurrence-unit-option-YEAR` (specs=0 mesuré par le lead avant ce sprint). Seul
+ * MONTH était exercé (test « création complète », #314 ci-dessus). Étape 1bis
+ * (#330) : couvrir les deux avec le MÊME oracle que MONTH — le trigger affiche la
+ * bonne unité (`SelectValue` -> libellé de l'item choisi) — PLUS le libellé de la
+ * mini-frise preview (`event-form-preview-recurrence`), qui distingue
+ * explicitement WEEK de YEAR (pas seulement « une unité a été choisie », mais
+ * « LA bonne »). Les DEUX unités sont exercées (pas une seule, l'une suffirait à
+ * prouver que le mécanisme de sélection fonctionne mais pas que le MAPPING de
+ * chaque valeur est correct) : elles portent des valeurs BACKEND distinctes
+ * (BR-EVE-006, enum `RecurrenceUnit` WEEK/MONTH/YEAR) — un bug de mapping sur
+ * l'une des deux ne serait pas détecté par un test qui n'exercerait que l'autre.
+ */
+test.describe('#330 (étape 1bis, #331) — options de récurrence WEEK et YEAR', () => {
+  test('sélectionner WEEK puis YEAR : le trigger ET la preview affichent la bonne unité', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Recurrence Cat'))
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Recurrence Prod'),
+      categoryId: cat.id,
+    })
+
+    await gotoTimeline(page)
+    await openNewEventDrawer(page)
+
+    await page.getByTestId('shell-new-event-drawer-product-trigger').click()
+    await page.getByRole('option', { name: product.name }).click()
+    await page.getByTestId('event-form-title-input').fill(unique('Recurrence Evt'))
+    await page.getByTestId('event-form-duration-value').fill('3')
+    await page.getByTestId('event-form-recurring-toggle').click()
+
+    // --- WEEK ----------------------------------------------------------------
+    await page.getByTestId('event-form-recurrence-trigger').click()
+    await page.getByTestId('recurrence-unit-option-WEEK').click()
+    await expect(page.getByTestId('event-form-recurrence-trigger')).toContainText('Semaines')
+    await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText('Récurrent · Semaines')
+
+    // --- YEAR (bascule DEPUIS WEEK, pas l'état initial : preuve que le mapping
+    //     réagit à un CHANGEMENT, pas seulement à une première sélection) -------
+    await page.getByTestId('event-form-recurrence-trigger').click()
+    await page.getByTestId('recurrence-unit-option-YEAR').click()
+    await expect(page.getByTestId('event-form-recurrence-trigger')).toContainText('Années')
+    await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText('Récurrent · Années')
+    // Le passage à YEAR n'a pas laissé de trace de WEEK (bascule réelle, pas un ajout).
+    await expect(page.getByTestId('event-form-recurrence-trigger')).not.toContainText('Semaines')
+  })
+})
