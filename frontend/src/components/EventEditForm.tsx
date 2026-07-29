@@ -433,9 +433,18 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="bg-surface-2 text-ink border-rule-strong">
-                              <SelectItem value="WEEK">{tUnits('weeks')}</SelectItem>
-                              <SelectItem value="MONTH">{tUnits('months')}</SelectItem>
-                              <SelectItem value="YEAR">{tUnits('years')}</SelectItem>
+                              {/* #331 — testid dérivé de la `value` (jamais du libellé i18n,
+                                  qui change avec la locale). Radix ne répercute pas `value`
+                                  sur le DOM : sans cet attribut, les specs ciblent par index. */}
+                              <SelectItem value="WEEK" data-testid="recurrence-unit-option-WEEK">
+                                {tUnits('weeks')}
+                              </SelectItem>
+                              <SelectItem value="MONTH" data-testid="recurrence-unit-option-MONTH">
+                                {tUnits('months')}
+                              </SelectItem>
+                              <SelectItem value="YEAR" data-testid="recurrence-unit-option-YEAR">
+                                {tUnits('years')}
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage data-testid="event-form-series-error" />

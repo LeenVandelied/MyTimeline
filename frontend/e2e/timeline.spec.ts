@@ -24,10 +24,11 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * Auth : compte fixe PROD (storageState) → ZÉRO register (rate-limit 5/min/IP,
  * cf. `support/accounts.ts`). État seedé par API, parcours piloté à la souris.
  *
- * Sélecteurs : `data-testid` UNIQUEMENT. Seule exception assumée — les options
- * d'un `<Select>` Radix, rendues en portail sans testid forwardable : on cible
- * `role="option"` (par NOM DE DONNÉE pour les produits, par INDEX pour les unités
- * de récurrence, dont le libellé est i18n et donc interdit comme sélecteur).
+ * Sélecteurs : `data-testid` UNIQUEMENT. #331 a levé l'ancienne exception : les
+ * options de `<Select>` Radix portent désormais un testid dérivé de leur `value`
+ * (`recurrence-unit-option-<VALUE>`, `product-option-<id>`), le libellé i18n restant
+ * interdit comme sélecteur. Les produits restent ciblés par NOM DE DONNÉE là où la
+ * spec connaît le nom seedé — les deux voies sont stables, aucune ne dépend de l'ordre.
  */
 
 test.use({ storageState: PROD.storageState })
@@ -209,16 +210,13 @@ test.describe("#314 Drawer de création d'événement (shell)", () => {
     await page.getByTestId('event-form-title-input').fill(eventTitle)
     await page.getByTestId('event-form-duration-value').fill('3')
 
-    // --- Récurrence : l'option est ciblée par INDEX (libellés i18n interdits
-    //     comme sélecteurs). Ordre du <Select> : WEEK, MONTH, YEAR → nth(1)=MONTH.
-    //     Ciblage par `value` IMPOSSIBLE : Radix `SelectItem` déstructure `value`
-    //     hors des props DOM (@radix-ui/react-select — value passe par le contexte
-    //     de collection, jamais par un attribut). Ce `nth(1)` DÉPEND donc de l'ordre
-    //     déclaré dans `src/components/EventEditForm.tsx:436-438` (WEEK/MONTH/YEAR) :
-    //     toute réorganisation de ces trois <SelectItem> casse silencieusement ce test.
+    // --- Récurrence : l'option est ciblée par `data-testid` dérivé de la `value`
+    //     (#331). Les libellés i18n restent interdits comme sélecteurs, et l'ancien
+    //     `nth(1)` dépendait de l'ordre déclaré des <SelectItem> — un réordonnancement
+    //     faisait cliquer sur la mauvaise unité sans faire rougir le test.
     await page.getByTestId('event-form-recurring-toggle').click()
     await page.getByTestId('event-form-recurrence-trigger').click()
-    await page.getByRole('listbox').getByRole('option').nth(1).click()
+    await page.getByTestId('recurrence-unit-option-MONTH').click()
 
     // L'aperçu live (debounce 150 ms) affiche le badge de récurrence : c'est la
     // preuve que `isRecurring` + `recurrenceUnit` sont bien pris en compte.
