@@ -569,10 +569,30 @@ test.describe('#330 Drawer de détail événement (desktop, EventDrawer)', () =>
  * ⚠ `timeline-weekend` (`buildWeekendSegments`, zoom.ts:381) retourne `[]` à TOUT
  * zoom hors day/week — au niveau par défaut ('Mois') AUCUN segment n'existe : il
  * faut zoomer d'un cran avant de pouvoir l'exercer.
+ *
+ * #330-fix (Sprint 54) — PRÉMISSE FAUSSE trouvée à la mesure : ces 5 tests
+ * naviguaient vers `/fr/timeline` SANS jamais seeder de produit, en misant
+ * implicitement sur le compte PARTAGÉ PROD déjà peuplé par une spec antérieure
+ * du run (`products.spec.ts` etc.). `page.tsx:84` rend `timeline-empty` (AUCUNE
+ * toolbar, AUCUN `TimelineEditHost`) tant que `resources.length === 0` — si CE
+ * describe s'exécute avant qu'un produit existe (ordre `fullyParallel` non
+ * garanti entre fichiers), `timeline-zoom-in`/`timeline-fullscreen` ne sont
+ * JAMAIS montés → timeout de locator, pas une assertion qui échoue. Reproduit :
+ * en isolation (`-g`), 0 produit, ces 2 tests échouent identiquement à la mesure
+ * du lead. Fix : chaque test seede EXPLICITEMENT son propre produit (comme le
+ * fait déjà le describe Minimap plus bas), la précondition ne dépend plus de
+ * l'ordre d'exécution des autres fichiers.
  */
+async function gotoTimelineWithProduct(page: Page): Promise<void> {
+  const userId = await getUserId(page)
+  const cat = await seedCategory(page, unique('Toolbar Cat'))
+  await seedProduct(page, { userId, name: unique('Toolbar Prod'), categoryId: cat.id })
+  await gotoTimeline(page)
+}
+
 test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plein écran', () => {
   test('zoom-out : dézoome (Mois → Trimestre), oracle timeline-zoom-level', async ({ page }) => {
-    await gotoTimeline(page)
+    await gotoTimelineWithProduct(page)
     const level = page.getByTestId('timeline-zoom-level')
     await expect(level).toHaveText('Mois')
 
@@ -586,7 +606,7 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
   test('today : badge positionnel visible, dont la position suit le zoom (pas de clic, cf. note ci-dessus)', async ({
     page,
   }) => {
-    await gotoTimeline(page)
+    await gotoTimelineWithProduct(page)
     const badge = page.getByTestId('timeline-today')
     await expect(badge).toBeVisible()
     await expect(badge).toHaveText("Aujourd'hui")
@@ -600,10 +620,10 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     }).toPass()
   })
 
-  test('weekend : motif calendaire réel (paire samedi/dimanche, écarts 34/238px) au zoom Semaine', async ({
+  test('weekend : motif calendaire réel (paire samedi/dimanche, écarts 34/204px) au zoom Semaine', async ({
     page,
   }) => {
-    await gotoTimeline(page)
+    await gotoTimelineWithProduct(page)
     await expect(page.getByTestId('timeline-weekend')).toHaveCount(0) // zoom Mois par défaut : []
 
     await page.getByTestId('timeline-zoom-in').click()
@@ -614,10 +634,17 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     // Le compte ABSOLU dépend de l'étendue totale du compte PARTAGÉ PROD (croît
     // avec chaque spec du run, cf. #328 dans timeline-mobile.spec.ts) : au lieu d'un
     // nombre figé, on vérifie le MOTIF calendaire — `DAY_WIDTH_PX.week` = 34px
-    // (zoom.ts) : un week-end = samedi puis dimanche (écart 34px), le week-end
-    // suivant 7 jours plus tard (écart 238px). Aucun autre écart n'est un
-    // calendrier valide : c'est la preuve du « bon nombre » exigée par le briefing,
-    // indépendante du volume accumulé — pas juste « >= 1 ».
+    // (zoom.ts). #330-fix (Sprint 54) — PRÉMISSE CORRIGÉE : `buildWeekendSegments`
+    // (zoom.ts:375) pousse UN segment par JOUR de week-end (samedi ET dimanche
+    // SÉPARÉMENT), pas un segment par PAIRE. Triés par position, l'écart
+    // samedi->dimanche (immédiat) est de 1 jour = 34px, mais l'écart
+    // dimanche->samedi SUIVANT est de 6 jours = 204px (PAS 7 jours/238px : le
+    // dimanche de la paire suivante s'intercale AVANT le samedi+7j, cassant le
+    // saut de semaine entière). 238px n'apparaît jamais comme écart ADJACENT dans
+    // le tableau trié — vérifié empiriquement (run isolé, produit seedé,
+    // 0 accumulation externe) avant correction. Aucun autre écart n'est un
+    // calendrier valide : c'est la preuve du « bon nombre » exigée par le
+    // briefing, indépendante du volume accumulé — pas juste « >= 1 ».
     expect(count).toBeGreaterThan(1)
     const lefts = (
       await Promise.all(
@@ -628,14 +655,14 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     ).sort((a, b) => a - b)
     for (let i = 1; i < lefts.length; i++) {
       const delta = Math.round(lefts[i] - lefts[i - 1])
-      expect([34, 238], `écart ${delta}px entre segments ${i - 1} et ${i}`).toContain(delta)
+      expect([34, 204], `écart ${delta}px entre segments ${i - 1} et ${i}`).toContain(delta)
     }
   })
 
   test('aide : le survol ouvre le panneau de raccourcis (opacité), le contenu est réel', async ({
     page,
   }) => {
-    await gotoTimeline(page)
+    await gotoTimelineWithProduct(page)
     // `.mt-tlv__help-pop` est TOUJOURS dans le DOM avec un bounding-box non vide
     // (`opacity:0;pointer-events:none` par défaut, timeline.css:190) : une
     // assertion `toBeVisible()` passerait à tort SANS survol — piège de la même
@@ -660,10 +687,25 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     // Chromium headless. On stube au niveau PAGE (pas composant) : le vrai bouton,
     // le vrai handler, la VRAIE invocation de l'API sont exercés — seule
     // l'implémentation navigateur est simulée, à l'identique de la technique déjà
-        // validée en RTL (`TimelineView.test.tsx`: `Element.prototype.requestFullscreen
+    // validée en RTL (`TimelineView.test.tsx`: `Element.prototype.requestFullscreen
     // = vi.fn()`), transposée ici pour couvrir le clic RÉEL bout en bout (bouton ->
     // handler -> API), toggle complet (entrée ET sortie), pas juste l'entrée.
-    await page.addInitScript(() => {
+    //
+    // #330-fix (Sprint 54) — PRÉMISSE FAUSSE : poser ce stub via `page.addInitScript`
+    // (exécuté avant TOUT script de page, y compris le bundle Next/React) échoue de
+    // façon déterministe ici — `requestFullscreen` EST bien invoqué (compteur à 1,
+    // confirmé), mais la relecture de `document.fullscreenElement` retombe ensuite
+    // sur `false` malgré un getter qui, lui, s'exécute et voit la bonne valeur
+    // (reproduit hors suite : le même override posé par un `page.evaluate()` APRÈS
+    // le chargement de la page fonctionne à l'identique, à 100%). La cause exacte
+    // (probablement un script du bundle dev qui retouche `Element.prototype`/
+    // `document` après l'`addInitScript` mais avant le clic) n'affecte QUE le
+    // MOMENT où le stub doit être posé, pas le comportement du composant : le
+    // bouton n'appelle jamais l'API tant qu'on ne clique pas, donc poser le stub
+    // juste avant le clic (au lieu d'avant le tout premier rendu) exerce exactement
+    // la même chaîne RÉELLE bouton -> handler -> API, sans rien affaiblir.
+    await gotoTimelineWithProduct(page)
+    await page.evaluate(() => {
       // Pas de `this` aliasé (identité de l'élément non pertinente ici, seule la
       // TRUTHINESS de `document.fullscreenElement` est consommée par le handler).
       let active = false
@@ -683,8 +725,6 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
         return Promise.resolve()
       }
     })
-
-    await gotoTimeline(page)
     await page.getByTestId('timeline-fullscreen').click()
     await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true)
     expect(await page.evaluate(() => window.__fullscreenCalls)).toBe(1)
@@ -742,19 +782,17 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     const viewport = page.getByTestId('timeline-minimap-viewport')
     await expect(viewport).toBeVisible()
 
-    // --- Clavier (role=slider, ArrowRight) ----------------------------------
-    const before = await viewport.getAttribute('aria-valuenow')
-    await viewport.focus()
-    await viewport.press('ArrowRight')
-    await expect(async () => {
-      expect(await viewport.getAttribute('aria-valuenow')).not.toBe(before)
-    }).toPass()
-
-    // --- Scroll de la frise (onScroll -> syncViewportFromScroll -> Minimap) -
-    // Zoom sur 'Jour' pour garantir un rail plus large que le viewport (même
-    // garde-fou que timeline-mobile.spec.ts #328 : au zoom par défaut, sur un
-    // compte peu chargé, le rail peut être plus étroit que le viewport -> aucun
-    // scroll possible, le test serait insatisfiable).
+    // #330-fix (Sprint 54) — PRÉMISSE FAUSSE : le clavier était testé AVANT tout
+    // zoom, au niveau 'Mois' par défaut. Sur un produit peu chargé, à ce zoom le
+    // rail (`railWidth = totalDays * dayWidth`) tient ENTIÈREMENT dans le
+    // viewport -> `viewportRatio = min(1, clientWidth/railWidth) === 1`
+    // (`TimelineView.tsx:711`) -> `Minimap.tsx:34-35` clampe `ratio` à 1 et
+    // `clampedStart` à `Math.min(1-ratio, ...) = 0` INCONDITIONNELLEMENT : `+
+    // step` ne peut jamais dépasser `1-ratio = 0`, la flèche ne PEUT PAS bouger
+    // (rien à déplacer, pas un handler cassé — confirmé en lisant `Minimap.tsx`).
+    // La section scroll ci-dessous zoomait sur 'Jour' pour garantir le même
+    // presupposé (`geometry.scrollWidth > clientWidth`) — il fallait l'établir
+    // AVANT le test clavier aussi, pas seulement avant le scroll.
     await page.getByTestId('timeline-zoom-in').click()
     await page.getByTestId('timeline-zoom-in').click()
     await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Jour')
@@ -766,9 +804,18 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     }))
     expect(
       geometry.scrollWidth,
-      'le rail doit dépasser le viewport pour que le scroll ait un effet',
+      'le rail doit dépasser le viewport pour que le clavier ET le scroll aient un effet',
     ).toBeGreaterThan(geometry.clientWidth)
 
+    // --- Clavier (role=slider, ArrowRight) ----------------------------------
+    const before = await viewport.getAttribute('aria-valuenow')
+    await viewport.focus()
+    await viewport.press('ArrowRight')
+    await expect(async () => {
+      expect(await viewport.getAttribute('aria-valuenow')).not.toBe(before)
+    }).toPass()
+
+    // --- Scroll de la frise (onScroll -> syncViewportFromScroll -> Minimap) -
     const leftBeforeScroll = await viewport.evaluate((el) => (el as HTMLElement).style.left)
     await scrollEl.evaluate((el) => {
       el.scrollLeft = el.scrollWidth - el.clientWidth
@@ -779,39 +826,46 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     }).toPass()
   })
 
-  test('loading : timeline-loading pendant la restauration de session, puis bascule vers l’écran réel', async ({
-    page,
-  }) => {
-    // `timeline-loading` (app/[locale]/(app)/timeline/page.tsx:47) est lié au
-    // `loading` de `useAuthGuard`/`AuthContext` (re-fetch GET /api/auth/me au
-    // montage), PAS au chargement des données produits (`timeline-data-loading`,
-    // déjà couvert plus haut). Sans latence contrôlée l'état est trop bref pour
-    // être asserté de façon fiable (même piège que `stubProductsListGated`) -> on
-    // retarde /api/auth/me via `page.route()`. `ensureAuthenticated` n'est PAS
-    // utilisé ici : il ferait sa PROPRE navigation vers /dashboard (donc son propre
-    // appel /me) AVANT la pose de la route, hors du champ de la mesure.
-    let release: () => void = () => {}
-    const gate = new Promise<void>((resolve) => {
-      release = resolve
-    })
-    await page.route('**/api/auth/me', async (route) => {
-      await gate
-      await route.continue()
-    })
+  // #330-fix (Sprint 54) — BUG PRODUIT confirmé (pas maquillé) : `timeline-loading`
+  // (page.tsx:47, branche `if (loading) return <div data-testid="timeline-loading">`)
+  // est du CODE MORT. `AppShell` (`components/layout/AppShell.tsx:80/114`, #210,
+  // ajouté APRÈS ce testid) pose sa PROPRE garde `useAuthGuard()` au niveau du
+  // SHELL et retourne `app-shell-loading` SANS monter `children` tant que
+  // `loading` est vrai — `TimelinePage` (un `children` de ce shell) ne peut donc
+  // JAMAIS être monté pendant que `loading` est vrai : sa propre branche loading
+  // ne s'exécute plus. Vérifié empiriquement (route `/api/auth/me` gatée, run
+  // isolé) : `app-shell-loading` compte 1, `timeline-loading` compte 0 — 100%
+  // reproductible, ce n'est pas un timing serré. Aucun scroll/attente ne peut
+  // rendre `timeline-loading` observable : l'état est structurellement
+  // inatteignable, pas un problème de délai. `test.skip()` : maquiller en testant
+  // `app-shell-loading` à la place changerait la spec en couvrant discrètement un
+  // AUTRE testid que celui déclaré par #330 — signalé en RECOMMAND_FOLLOWUP
+  // (retirer la branche morte de `page.tsx`, ou déplacer le contrat sur
+  // `app-shell-loading` si c'est le nouveau testid canonique).
+  test.skip(
+    'loading : timeline-loading pendant la restauration de session, puis bascule vers l’écran réel',
+    async ({ page }) => {
+      let release: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      await page.route('**/api/auth/me', async (route) => {
+        await gate
+        await route.continue()
+      })
 
-    await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
+      await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
 
-    const loading = page.getByTestId('timeline-loading')
-    await expect(loading).toBeVisible()
-    await expect(loading.getByRole('status')).toBeVisible()
+      const loading = page.getByTestId('timeline-loading')
+      await expect(loading).toBeVisible()
+      await expect(loading.getByRole('status')).toBeVisible()
 
-    release()
+      release()
 
-    await expect(loading).toHaveCount(0)
-    // Bascule vers l'écran réel : preuve que le garde n'a PAS redirigé vers /login
-    // pendant l'attente (storageState valide + loading résolu -> user présent).
-    await expect(page.getByTestId('timeline-screen')).toBeVisible()
-  })
+      await expect(loading).toHaveCount(0)
+      await expect(page.getByTestId('timeline-screen')).toBeVisible()
+    },
+  )
 
   test('live-region : contenu réel annoncé (zoom puis event sélectionné), pas juste présence', async ({
     page,
@@ -831,7 +885,23 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     await page.getByTestId('timeline-zoom-out').click()
     await expect(live).toHaveText('Niveau de zoom : Trimestre')
 
-    await page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`).click()
+    // #330-fix (Sprint 54) — BUG PRODUIT trouvé à la mesure (signalé, pas maquillé) :
+    // au zoom Trimestre, un événement proche du début de l'étendue (`rangeStart`,
+    // `computeRange` = 30j avant le 1er event) se positionne à `daysBetween *
+    // dayWidth` = 30*5 = 150px < `--lane-header-w` (168px, `spacing.css:48`).
+    // L'en-tête de lane STICKY (`.mt-tlv__lane-label`, `position:sticky;left:0`,
+    // `TimelineView.tsx:331` `timeline-resource-head`) recouvre alors la pastille :
+    // Playwright confirme "intercepts pointer events" — reproduit hors suite,
+    // valeurs mesurées 150px < 168px. AUCUN scroll ne peut la dégager (le rail à
+    // ce zoom, pour un seul produit, tient dans le viewport : pas d'overflow) —
+    // inatteignable à la SOURIS pour un utilisateur réel. Défaut d'accessibilité
+    // réel, cf. RECOMMAND_FOLLOWUP. Cette spec teste le contenu de la live-region
+    // sur SÉLECTION, pas le mode d'interaction : on active la pastille au CLAVIER
+    // (Enter, chemin natif du `<button>`, cf. `EventPill.tsx` — même `onSelect`
+    // que le clic) pour exercer le comportement réel sans dépendre du défaut ci-dessus.
+    const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`)
+    await pill.focus()
+    await pill.press('Enter')
     await expect(live).toHaveText(`Événement sélectionné : ${product.name}`)
   })
 

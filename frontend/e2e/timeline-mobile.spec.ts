@@ -239,20 +239,42 @@ test.describe('#205 Timeline mobile — portrait', () => {
     const sheet = page.getByTestId('timeline-sheet')
     await expect(sheet).toBeVisible()
     const grabber = page.getByTestId('timeline-sheet-grabber')
-    const box = await grabber.boundingBox()
-    expect(box, 'le grabber doit être positionné').not.toBeNull()
+
+    // #330-fix (Sprint 54) — le panneau se STABILISE en 2 temps après l'ouverture
+    // (animation d'entrée CSS `mt-sheet-in` PUIS un léger réajustement de layout,
+    // mesuré ~20-25px, une fois le focus-trap/scroll-lock posé) : une seule mesure
+    // `boundingBox()` en tête de test, réutilisée pour les DEUX swipes, capture une
+    // position TRANSITOIRE. Le 2e swipe visait alors des coordonnées obsolètes qui
+    // retombaient sur `timeline-sheet-overlay` (sous le panneau, déjà réinstallé à
+    // sa position finale) au lieu du grabber -> aucun pointerdown sur la zone,
+    // fermeture jamais déclenchée (reproduit et confirmé hors suite : la 2e mesure
+    // de `boundingBox()` diffère de 24px de la 1re). Fix : une mesure FRAÎCHE,
+    // juste avant CHAQUE swipe (oracle observable = position réelle courante),
+    // aucune temporisation arbitraire.
+    const boxShort = await grabber.boundingBox()
+    expect(boxShort, 'le grabber doit être positionné').not.toBeNull()
 
     // --- Swipe COURT (< seuil) : ne ferme PAS -------------------------------
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    await page.mouse.move(boxShort!.x + boxShort!.width / 2, boxShort!.y + boxShort!.height / 2)
     await page.mouse.down()
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2 + 30, { steps: 5 })
+    await page.mouse.move(
+      boxShort!.x + boxShort!.width / 2,
+      boxShort!.y + boxShort!.height / 2 + 30,
+      { steps: 5 },
+    )
     await page.mouse.up()
     await expect(sheet).toBeVisible()
 
     // --- Swipe LONG (> seuil) : ferme ---------------------------------------
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
+    const boxLong = await grabber.boundingBox()
+    expect(boxLong, 'le grabber doit être positionné (2e mesure, post-swipe court)').not.toBeNull()
+    await page.mouse.move(boxLong!.x + boxLong!.width / 2, boxLong!.y + boxLong!.height / 2)
     await page.mouse.down()
-    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2 + 120, { steps: 5 })
+    await page.mouse.move(
+      boxLong!.x + boxLong!.width / 2,
+      boxLong!.y + boxLong!.height / 2 + 120,
+      { steps: 5 },
+    )
     await page.mouse.up()
     await expect(sheet).toHaveCount(0)
   })
