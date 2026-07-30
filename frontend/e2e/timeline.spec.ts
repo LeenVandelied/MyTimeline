@@ -1,7 +1,19 @@
 import { test, expect, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
-import { getUserId, seedCategory, seedProduct, unique } from './support/products'
+import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
+
+/**
+ * #330 (lot b) — stub PAGE de l'API Fullscreen pour `timeline-fullscreen` (cf.
+ * rationale dans la spec). Déclaré au niveau module : `page.addInitScript` sérialise
+ * la fonction, mais son typage (donc l'absence de `any`) est vérifié ICI.
+ */
+declare global {
+  interface Window {
+    __fullscreenCalls?: number
+    __fullscreenExits?: number
+  }
+}
 
 /**
  * #314 (Sprint 47) — PASSE E2E UNIQUE de l'écran `/timeline` et du drawer de
@@ -24,10 +36,11 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * Auth : compte fixe PROD (storageState) → ZÉRO register (rate-limit 5/min/IP,
  * cf. `support/accounts.ts`). État seedé par API, parcours piloté à la souris.
  *
- * Sélecteurs : `data-testid` UNIQUEMENT. Seule exception assumée — les options
- * d'un `<Select>` Radix, rendues en portail sans testid forwardable : on cible
- * `role="option"` (par NOM DE DONNÉE pour les produits, par INDEX pour les unités
- * de récurrence, dont le libellé est i18n et donc interdit comme sélecteur).
+ * Sélecteurs : `data-testid` UNIQUEMENT. #331 a levé l'ancienne exception : les
+ * options de `<Select>` Radix portent désormais un testid dérivé de leur `value`
+ * (`recurrence-unit-option-<VALUE>`, `product-option-<id>`), le libellé i18n restant
+ * interdit comme sélecteur. Les produits restent ciblés par NOM DE DONNÉE là où la
+ * spec connaît le nom seedé — les deux voies sont stables, aucune ne dépend de l'ordre.
  */
 
 test.use({ storageState: PROD.storageState })
@@ -201,24 +214,24 @@ test.describe("#314 Drawer de création d'événement (shell)", () => {
     await expect(page.getByTestId('shell-new-event-drawer-overlay')).toBeVisible()
 
     // --- Produit (BR-EVE-002) : Select Radix, options en portail ---------------
+    // #390-fix (D) / #331 — sélection par le testid dérivé de la `value`
+    // (`product-option-<id>`, NewEventDrawer.tsx:218), conforme au header du fichier
+    // (« data-testid UNIQUEMENT ») : ce testid était livré SANS aucune spec.
     await page.getByTestId('shell-new-event-drawer-product-trigger').click()
-    await page.getByRole('option', { name: product.name }).click()
+    await page.getByTestId(`product-option-${product.id}`).click()
 
     // --- Titre + durée (type=duration par défaut) -----------------------------
     const eventTitle = unique('Event drawer')
     await page.getByTestId('event-form-title-input').fill(eventTitle)
     await page.getByTestId('event-form-duration-value').fill('3')
 
-    // --- Récurrence : l'option est ciblée par INDEX (libellés i18n interdits
-    //     comme sélecteurs). Ordre du <Select> : WEEK, MONTH, YEAR → nth(1)=MONTH.
-    //     Ciblage par `value` IMPOSSIBLE : Radix `SelectItem` déstructure `value`
-    //     hors des props DOM (@radix-ui/react-select — value passe par le contexte
-    //     de collection, jamais par un attribut). Ce `nth(1)` DÉPEND donc de l'ordre
-    //     déclaré dans `src/components/EventEditForm.tsx:436-438` (WEEK/MONTH/YEAR) :
-    //     toute réorganisation de ces trois <SelectItem> casse silencieusement ce test.
+    // --- Récurrence : l'option est ciblée par `data-testid` dérivé de la `value`
+    //     (#331). Les libellés i18n restent interdits comme sélecteurs, et l'ancien
+    //     `nth(1)` dépendait de l'ordre déclaré des <SelectItem> — un réordonnancement
+    //     faisait cliquer sur la mauvaise unité sans faire rougir le test.
     await page.getByTestId('event-form-recurring-toggle').click()
     await page.getByTestId('event-form-recurrence-trigger').click()
-    await page.getByRole('listbox').getByRole('option').nth(1).click()
+    await page.getByTestId('recurrence-unit-option-MONTH').click()
 
     // L'aperçu live (debounce 150 ms) affiche le badge de récurrence : c'est la
     // preuve que `isRecurring` + `recurrenceUnit` sont bien pris en compte.
@@ -475,5 +488,549 @@ test.describe('#304 /timeline — accordéon collapse par produit', () => {
       'false',
     )
     await expect(groupHead).toHaveAttribute('aria-expanded', 'true')
+  })
+})
+
+/**
+ * #330 (Sprint 54, lot a) — Drawer de DÉTAIL événement desktop (`EventDrawer.tsx`,
+ * testids `timeline-drawer` / `-close` / `-overlay`). Gap identifié par l'audit
+ * S46/S47 : aucune spec ne cliquait sur une pastille desktop (`timeline-event`)
+ * pour OUVRIR ce drawer — seul le drawer de CRÉATION (`shell-new-event-drawer*`,
+ * #314 ci-dessus) était couvert. Les trois testids sont exercés par leur
+ * COMPORTEMENT (ouverture avec contenu réel, fermeture par overlay OU par bouton
+ * — deux chemins distincts, pas un doublon), pas seulement leur présence.
+ */
+test.describe('#330 Drawer de détail événement (desktop, EventDrawer)', () => {
+  /** Seede un produit + son event du jour, ouvre la frise, clique sa pastille. */
+  async function seedAndOpenDetailDrawer(page: Page): Promise<{ eventTitle: string }> {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Detail Cat'))
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Detail Prod'),
+      categoryId: cat.id,
+    })
+
+    await gotoTimeline(page)
+    const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`)
+    await expect(pill).toBeVisible()
+    await pill.click()
+
+    return { eventTitle: product.name }
+  }
+
+  test('clic sur une pastille : timeline-drawer + overlay visibles avec le détail réel', async ({
+    page,
+  }) => {
+    const { eventTitle } = await seedAndOpenDetailDrawer(page)
+
+    const drawer = page.getByTestId('timeline-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(drawer).toHaveAttribute('role', 'dialog')
+    await expect(drawer).toHaveAttribute('aria-modal', 'true')
+    // Contenu réel (produit/catégorie/dates/statut via son titre), pas une coquille vide.
+    await expect(drawer).toContainText(eventTitle)
+    await expect(page.getByTestId('timeline-drawer-overlay')).toBeVisible()
+  })
+
+  test('clic sur l’overlay : ferme le drawer (démontage, pas juste masquage)', async ({ page }) => {
+    await seedAndOpenDetailDrawer(page)
+
+    // Clic en haut à gauche de l'overlay : le panneau slide-in est ANCRÉ À DROITE
+    // (`.mt-drawer{position:fixed;right:0}`, cf. timeline.css:151) — le centre par
+    // défaut du click() Playwright tomberait dessus, pas sur l'overlay.
+    await page.getByTestId('timeline-drawer-overlay').click({ position: { x: 5, y: 5 } })
+
+    await expect(page.getByTestId('timeline-drawer')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-drawer-overlay')).toHaveCount(0)
+  })
+
+  test('bouton close : ferme le drawer (démontage)', async ({ page }) => {
+    await seedAndOpenDetailDrawer(page)
+
+    await page.getByTestId('timeline-drawer-close').click()
+
+    await expect(page.getByTestId('timeline-drawer')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-drawer-overlay')).toHaveCount(0)
+  })
+})
+
+/**
+ * #330 (Sprint 54, lot b) — Toolbar desktop : zoom-out / today / weekend / aide /
+ * plein écran (`TimelineView.tsx`). Cinq testids déclarés depuis le Sprint 44 sans
+ * spec dédiée.
+ *
+ * ⚠ PRÉMISSE CORRIGÉE (vs. briefing #330) : `timeline-today` n'est PAS un bouton —
+ * c'est un badge POSITIONNEL statique (`<span data-testid="timeline-today">`, AUCUN
+ * `onClick`, `TimelineView.tsx:211`) posé sur la règle. Le raccourci clavier "T"
+ * (`scrollToToday`) est un mécanisme SÉPARÉ qui ne porte pas ce testid. Le seul
+ * comportement observable de `timeline-today` est sa POSITION, dérivée de
+ * `todayLeftPx = daysBetween(rangeStart, now) * dayWidth` : elle doit changer avec
+ * le zoom (dayWidth varie par niveau) — ce que ce test vérifie, pas un clic qui
+ * n'existe pas.
+ *
+ * ⚠ `timeline-weekend` (`buildWeekendSegments`, zoom.ts:381) retourne `[]` à TOUT
+ * zoom hors day/week — au niveau par défaut ('Mois') AUCUN segment n'existe : il
+ * faut zoomer d'un cran avant de pouvoir l'exercer.
+ *
+ * #330-fix (Sprint 54) — PRÉMISSE FAUSSE trouvée à la mesure : ces 5 tests
+ * naviguaient vers `/fr/timeline` SANS jamais seeder de produit, en misant
+ * implicitement sur le compte PARTAGÉ PROD déjà peuplé par une spec antérieure
+ * du run (`products.spec.ts` etc.). `page.tsx:84` rend `timeline-empty` (AUCUNE
+ * toolbar, AUCUN `TimelineEditHost`) tant que `resources.length === 0` — si CE
+ * describe s'exécute avant qu'un produit existe (ordre `fullyParallel` non
+ * garanti entre fichiers), `timeline-zoom-in`/`timeline-fullscreen` ne sont
+ * JAMAIS montés → timeout de locator, pas une assertion qui échoue. Reproduit :
+ * en isolation (`-g`), 0 produit, ces 2 tests échouent identiquement à la mesure
+ * du lead. Fix : chaque test seede EXPLICITEMENT son propre produit (comme le
+ * fait déjà le describe Minimap plus bas), la précondition ne dépend plus de
+ * l'ordre d'exécution des autres fichiers.
+ */
+async function gotoTimelineWithProduct(page: Page): Promise<void> {
+  const userId = await getUserId(page)
+  const cat = await seedCategory(page, unique('Toolbar Cat'))
+  await seedProduct(page, { userId, name: unique('Toolbar Prod'), categoryId: cat.id })
+  await gotoTimeline(page)
+}
+
+test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plein écran', () => {
+  test('zoom-out : dézoome (Mois → Trimestre), oracle timeline-zoom-level', async ({ page }) => {
+    await gotoTimelineWithProduct(page)
+    const level = page.getByTestId('timeline-zoom-level')
+    await expect(level).toHaveText('Mois')
+
+    await page.getByTestId('timeline-zoom-out').click()
+
+    // Dézoomer élargit l'échelle (Mois -> Trimestre) : une assertion « le texte a
+    // changé » laisserait passer un zoom-IN accidentel sur le mauvais bouton.
+    await expect(level).toHaveText('Trimestre')
+  })
+
+  test('today : badge positionnel visible, dont la position suit le zoom (pas de clic, cf. note ci-dessus)', async ({
+    page,
+  }) => {
+    await gotoTimelineWithProduct(page)
+    const badge = page.getByTestId('timeline-today')
+    await expect(badge).toBeVisible()
+    await expect(badge).toHaveText("Aujourd'hui")
+
+    const leftBefore = await badge.evaluate((el) => (el.parentElement as HTMLElement).style.left)
+    await page.getByTestId('timeline-zoom-out').click()
+
+    await expect(async () => {
+      const leftAfter = await badge.evaluate((el) => (el.parentElement as HTMLElement).style.left)
+      expect(leftAfter).not.toBe(leftBefore)
+    }).toPass()
+  })
+
+  test('weekend : motif calendaire réel (paire samedi/dimanche, écarts 34/204px) au zoom Semaine', async ({
+    page,
+  }) => {
+    await gotoTimelineWithProduct(page)
+    await expect(page.getByTestId('timeline-weekend')).toHaveCount(0) // zoom Mois par défaut : []
+
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Semaine')
+
+    const segments = page.getByTestId('timeline-weekend')
+    const count = await segments.count()
+    // Le compte ABSOLU dépend de l'étendue totale du compte PARTAGÉ PROD (croît
+    // avec chaque spec du run, cf. #328 dans timeline-mobile.spec.ts) : au lieu d'un
+    // nombre figé, on vérifie le MOTIF calendaire — `DAY_WIDTH_PX.week` = 34px
+    // (zoom.ts). #330-fix (Sprint 54) — PRÉMISSE CORRIGÉE : `buildWeekendSegments`
+    // (zoom.ts:375) pousse UN segment par JOUR de week-end (samedi ET dimanche
+    // SÉPARÉMENT), pas un segment par PAIRE. Triés par position, l'écart
+    // samedi->dimanche (immédiat) est de 1 jour = 34px, mais l'écart
+    // dimanche->samedi SUIVANT est de 6 jours = 204px (PAS 7 jours/238px : le
+    // dimanche de la paire suivante s'intercale AVANT le samedi+7j, cassant le
+    // saut de semaine entière). 238px n'apparaît jamais comme écart ADJACENT dans
+    // le tableau trié — vérifié empiriquement (run isolé, produit seedé,
+    // 0 accumulation externe) avant correction. Aucun autre écart n'est un
+    // calendrier valide : c'est la preuve du « bon nombre » exigée par le
+    // briefing, indépendante du volume accumulé — pas juste « >= 1 ».
+    expect(count).toBeGreaterThan(1)
+    const lefts = (
+      await Promise.all(
+        Array.from({ length: count }, (_, i) =>
+          segments.nth(i).evaluate((el) => parseFloat((el as HTMLElement).style.left)),
+        ),
+      )
+    ).sort((a, b) => a - b)
+    for (let i = 1; i < lefts.length; i++) {
+      const delta = Math.round(lefts[i] - lefts[i - 1])
+      expect([34, 204], `écart ${delta}px entre segments ${i - 1} et ${i}`).toContain(delta)
+    }
+  })
+
+  test('aide : le survol ouvre le panneau de raccourcis (opacité), le contenu est réel', async ({
+    page,
+  }) => {
+    await gotoTimelineWithProduct(page)
+    // `.mt-tlv__help-pop` est TOUJOURS dans le DOM avec un bounding-box non vide
+    // (`opacity:0;pointer-events:none` par défaut, timeline.css:190) : une
+    // assertion `toBeVisible()` passerait à tort SANS survol — piège de la même
+    // famille que les 28 régressions ratées au S53 (vérification verte qui ne
+    // regarde pas la bonne propriété CSS). L'oracle est l'opacité calculée.
+    // #390-fix (E) — sélecteur par `data-testid` (politique du fichier, header L39) ;
+    // l'`id` reste sur l'élément comme cible d'`aria-describedby` (TimelineView.tsx),
+    // il n'est PAS supprimé, seulement doublé par un testid.
+    const pop = page.getByTestId('timeline-help-pop')
+    await expect(pop).toHaveCSS('opacity', '0')
+
+    await page.getByTestId('timeline-help').hover()
+    await expect(pop).toHaveCSS('opacity', '1')
+    await expect(pop).toContainText('Aller à aujourd’hui')
+    await expect(pop).toContainText('Plein écran')
+
+    await page.mouse.move(0, 0)
+    await expect(pop).toHaveCSS('opacity', '0')
+  })
+
+  test('plein écran : bascule requestFullscreen/exitFullscreen (API stubée, rationale ci-dessous)', async ({
+    page,
+  }) => {
+    // L'API Fullscreen réelle n'offre AUCUNE garantie de support/activation en
+    // Chromium headless. On stube au niveau PAGE (pas composant) : le vrai bouton,
+    // le vrai handler, la VRAIE invocation de l'API sont exercés — seule
+    // l'implémentation navigateur est simulée, à l'identique de la technique déjà
+    // validée en RTL (`TimelineView.test.tsx`: `Element.prototype.requestFullscreen
+    // = vi.fn()`), transposée ici pour couvrir le clic RÉEL bout en bout (bouton ->
+    // handler -> API), toggle complet (entrée ET sortie), pas juste l'entrée.
+    //
+    // #330-fix (Sprint 54) — PRÉMISSE FAUSSE : poser ce stub via `page.addInitScript`
+    // (exécuté avant TOUT script de page, y compris le bundle Next/React) échoue de
+    // façon déterministe ici — `requestFullscreen` EST bien invoqué (compteur à 1,
+    // confirmé), mais la relecture de `document.fullscreenElement` retombe ensuite
+    // sur `false` malgré un getter qui, lui, s'exécute et voit la bonne valeur
+    // (reproduit hors suite : le même override posé par un `page.evaluate()` APRÈS
+    // le chargement de la page fonctionne à l'identique, à 100%). La cause exacte
+    // (probablement un script du bundle dev qui retouche `Element.prototype`/
+    // `document` après l'`addInitScript` mais avant le clic) n'affecte QUE le
+    // MOMENT où le stub doit être posé, pas le comportement du composant : le
+    // bouton n'appelle jamais l'API tant qu'on ne clique pas, donc poser le stub
+    // juste avant le clic (au lieu d'avant le tout premier rendu) exerce exactement
+    // la même chaîne RÉELLE bouton -> handler -> API, sans rien affaiblir.
+    await gotoTimelineWithProduct(page)
+    await page.evaluate(() => {
+      // Pas de `this` aliasé (identité de l'élément non pertinente ici, seule la
+      // TRUTHINESS de `document.fullscreenElement` est consommée par le handler).
+      let active = false
+      const root = document.documentElement
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => (active ? root : null),
+      })
+      Element.prototype.requestFullscreen = function requestFullscreenStub() {
+        active = true
+        window.__fullscreenCalls = (window.__fullscreenCalls ?? 0) + 1
+        return Promise.resolve()
+      }
+      document.exitFullscreen = function exitFullscreenStub() {
+        active = false
+        window.__fullscreenExits = (window.__fullscreenExits ?? 0) + 1
+        return Promise.resolve()
+      }
+    })
+    await page.getByTestId('timeline-fullscreen').click()
+    await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true)
+    expect(await page.evaluate(() => window.__fullscreenCalls)).toBe(1)
+
+    await page.getByTestId('timeline-fullscreen').click()
+    await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false)
+    expect(await page.evaluate(() => window.__fullscreenExits)).toBe(1)
+  })
+})
+
+/**
+ * Seede un événement DIRECT (`POST /api/events`) avec une couleur explicite.
+ * Nécessaire pour `timeline-event-outside-label` : `seedProduct` (création
+ * imbriquée `POST /api/users/{id}/products`) ne permet PAS de fixer `color` sur
+ * son event imbriqué (BR-EVE-014 : `color` n'est exposé qu'au create DIRECT).
+ * PIT-S44-001 : `durationValue`/`durationUnit` restent INCONDITIONNELS même en
+ * `type='single'` -> valeurs neutres sans effet métier.
+ */
+async function seedEventWithColor(
+  page: Page,
+  opts: { productId: string; name: string; color: string },
+): Promise<void> {
+  const res = await page.request.post(`${API}/events`, {
+    data: {
+      name: opts.name,
+      type: 'single',
+      durationValue: 0,
+      durationUnit: 'days',
+      isRecurring: false,
+      date: todayIsoDate(),
+      color: opts.color,
+      productId: opts.productId,
+    },
+  })
+  expect(res.status(), `seed event coloré doit renvoyer 201 (obtenu ${res.status()})`).toBe(201)
+}
+
+/**
+ * #330 (Sprint 54, lot c) — Minimap + états transitoires + contraste de couleur.
+ * Les 2 faux positifs de l'issue d'origine (18) sont RETIRÉS de ce lot :
+ * `desktop-edit-trigger` / `mobile-delete-trigger` sont des doublures RTL
+ * déclarées dans `TimelineEditHost.test.tsx` (stubs de test, jamais rendues en
+ * production — grep confirmé sur `frontend/src/**` et `frontend/app/` : aucune
+ * occurrence hors ce fichier `*.test.tsx`, cf. retour de tâche).
+ */
+test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => {
+  test('minimap-viewport : le clavier ET le scroll de la frise déplacent le curseur', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Minimap Cat'))
+    await seedProduct(page, { userId, name: unique('Minimap Prod'), categoryId: cat.id })
+    await gotoTimeline(page)
+
+    const viewport = page.getByTestId('timeline-minimap-viewport')
+    await expect(viewport).toBeVisible()
+
+    // #330-fix (Sprint 54) — PRÉMISSE FAUSSE : le clavier était testé AVANT tout
+    // zoom, au niveau 'Mois' par défaut. Sur un produit peu chargé, à ce zoom le
+    // rail (`railWidth = totalDays * dayWidth`) tient ENTIÈREMENT dans le
+    // viewport -> `viewportRatio = min(1, clientWidth/railWidth) === 1`
+    // (`TimelineView.tsx:711`) -> `Minimap.tsx:34-35` clampe `ratio` à 1 et
+    // `clampedStart` à `Math.min(1-ratio, ...) = 0` INCONDITIONNELLEMENT : `+
+    // step` ne peut jamais dépasser `1-ratio = 0`, la flèche ne PEUT PAS bouger
+    // (rien à déplacer, pas un handler cassé — confirmé en lisant `Minimap.tsx`).
+    // La section scroll ci-dessous zoomait sur 'Jour' pour garantir le même
+    // presupposé (`geometry.scrollWidth > clientWidth`) — il fallait l'établir
+    // AVANT le test clavier aussi, pas seulement avant le scroll.
+    await page.getByTestId('timeline-zoom-in').click()
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Jour')
+
+    const scrollEl = page.getByTestId('timeline-scroll')
+    const geometry = await scrollEl.evaluate((el) => ({
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }))
+    expect(
+      geometry.scrollWidth,
+      'le rail doit dépasser le viewport pour que le clavier ET le scroll aient un effet',
+    ).toBeGreaterThan(geometry.clientWidth)
+
+    // #390-fix (H) — la garde `scrollWidth > clientWidth` ci-dessus n'exclut PAS le
+    // clamp `ratio >= 0.667` (Minimap.tsx:35) : `step = ratio/2` (Minimap.tsx:83) est
+    // alors borné par `1 - ratio`, et `aria-valuenow` (arrondi ENTIER, Minimap.tsx:125)
+    // ne bouge pas -> ArrowRight devient un no-op, flake selon la largeur du rail. On
+    // lit le ratio RÉEL de la fenêtre (largeur du handle = `${ratio*100}%`,
+    // Minimap.tsx:129) et on exige < 50% pour garantir que `step` déplace la valeur.
+    const viewportRatioPct = await viewport.evaluate((el) =>
+      parseFloat((el as HTMLElement).style.width),
+    )
+    expect(
+      viewportRatioPct,
+      'la fenêtre minimap doit couvrir < 50% du rail (sinon ArrowRight est un no-op via le clamp 1-ratio)',
+    ).toBeLessThan(50)
+
+    // --- Clavier (role=slider, ArrowRight) ----------------------------------
+    const before = await viewport.getAttribute('aria-valuenow')
+    await viewport.focus()
+    await viewport.press('ArrowRight')
+    await expect(async () => {
+      expect(await viewport.getAttribute('aria-valuenow')).not.toBe(before)
+    }).toPass()
+
+    // --- Scroll de la frise (onScroll -> syncViewportFromScroll -> Minimap) -
+    const leftBeforeScroll = await viewport.evaluate((el) => (el as HTMLElement).style.left)
+    await scrollEl.evaluate((el) => {
+      el.scrollLeft = el.scrollWidth - el.clientWidth
+    })
+    await expect(async () => {
+      const leftAfterScroll = await viewport.evaluate((el) => (el as HTMLElement).style.left)
+      expect(leftAfterScroll).not.toBe(leftBeforeScroll)
+    }).toPass()
+  })
+
+  // #330-fix (Sprint 54) — BUG PRODUIT confirmé (pas maquillé) : `timeline-loading`
+  // (page.tsx:47, branche `if (loading) return <div data-testid="timeline-loading">`)
+  // est du CODE MORT. `AppShell` (`components/layout/AppShell.tsx:80/114`, #210,
+  // ajouté APRÈS ce testid) pose sa PROPRE garde `useAuthGuard()` au niveau du
+  // SHELL et retourne `app-shell-loading` SANS monter `children` tant que
+  // `loading` est vrai — `TimelinePage` (un `children` de ce shell) ne peut donc
+  // JAMAIS être monté pendant que `loading` est vrai : sa propre branche loading
+  // ne s'exécute plus. Vérifié empiriquement (route `/api/auth/me` gatée, run
+  // isolé) : `app-shell-loading` compte 1, `timeline-loading` compte 0 — 100%
+  // reproductible, ce n'est pas un timing serré. Aucun scroll/attente ne peut
+  // rendre `timeline-loading` observable : l'état est structurellement
+  // inatteignable, pas un problème de délai. `test.skip()` : maquiller en testant
+  // `app-shell-loading` à la place changerait la spec en couvrant discrètement un
+  // AUTRE testid que celui déclaré par #330 — signalé en RECOMMAND_FOLLOWUP
+  // (retirer la branche morte de `page.tsx`, ou déplacer le contrat sur
+  // `app-shell-loading` si c'est le nouveau testid canonique).
+  test.skip(
+    'loading : timeline-loading pendant la restauration de session, puis bascule vers l’écran réel',
+    async ({ page }) => {
+      let release: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      await page.route('**/api/auth/me', async (route) => {
+        await gate
+        await route.continue()
+      })
+
+      await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
+
+      const loading = page.getByTestId('timeline-loading')
+      await expect(loading).toBeVisible()
+      await expect(loading.getByRole('status')).toBeVisible()
+
+      release()
+
+      await expect(loading).toHaveCount(0)
+      await expect(page.getByTestId('timeline-screen')).toBeVisible()
+    },
+  )
+
+  test('live-region : contenu réel annoncé (zoom puis event sélectionné), pas juste présence', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Live Cat'))
+    const product = await seedProduct(page, { userId, name: unique('Live Prod'), categoryId: cat.id })
+    await gotoTimeline(page)
+
+    const live = page.getByTestId('timeline-live-region')
+    await expect(live).toBeVisible()
+    await expect(live).toHaveAttribute('aria-live', 'polite')
+    // Vide au chargement : pas d'annonce parasite (une live-region non vide au
+    // montage serait un bug a11y qu'une simple assertion de présence ne verrait pas).
+    await expect(live).toHaveText('')
+
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(live).toHaveText('Niveau de zoom : Trimestre')
+
+    // #330-fix (Sprint 54) — BUG PRODUIT trouvé à la mesure (signalé, pas maquillé) :
+    // au zoom Trimestre, un événement proche du début de l'étendue (`rangeStart`,
+    // `computeRange` = 30j avant le 1er event) se positionne à `daysBetween *
+    // dayWidth` = 30*5 = 150px < `--lane-header-w` (168px, `spacing.css:48`).
+    // L'en-tête de lane STICKY (`.mt-tlv__lane-label`, `position:sticky;left:0`,
+    // `TimelineView.tsx:331` `timeline-resource-head`) recouvre alors la pastille :
+    // Playwright confirme "intercepts pointer events" — reproduit hors suite,
+    // valeurs mesurées 150px < 168px. AUCUN scroll ne peut la dégager (le rail à
+    // ce zoom, pour un seul produit, tient dans le viewport : pas d'overflow) —
+    // inatteignable à la SOURIS pour un utilisateur réel. Défaut d'accessibilité
+    // réel, cf. RECOMMAND_FOLLOWUP. Cette spec teste le contenu de la live-region
+    // sur SÉLECTION, pas le mode d'interaction : on active la pastille au CLAVIER
+    // (Enter, chemin natif du `<button>`, cf. `EventPill.tsx` — même `onSelect`
+    // que le clic) pour exercer le comportement réel sans dépendre du défaut ci-dessus.
+    const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`)
+    await pill.focus()
+    await pill.press('Enter')
+    await expect(live).toHaveText(`Événement sélectionné : ${product.name}`)
+  })
+
+  test('event-outside-label : dépend du CONTRASTE de couleur, pas de la longueur du titre', async ({
+    page,
+  }) => {
+    // PRÉMISSE CORRIGÉE (vs. briefing #330) : le briefing décrit ce testid comme
+    // déclenché par un libellé trop long pour la pastille (« zoom arrière, titre
+    // long »). Lecture du code (`EventPill.tsx:70`, `lib.ts:60-64`) : le vrai
+    // déclencheur est `eventLabelReadableInside(event.color)`, UNIQUEMENT fonction
+    // du contraste WCAG AA (4.5:1) de `event.color` contre l'encre noire/blanche —
+    // AUCUN lien avec la largeur de la pastille ou la longueur du titre. `#787878`
+    // (ratio mesuré = 4.432, < 4.5) déclenche le libellé extérieur ; `#1D4ED8`
+    // (ratio mesuré = 6.70) ne le déclenche jamais, à titre et produit identiques
+    // par ailleurs (seule variable isolée : la couleur).
+    //
+    // Effet de bord noté en préparant ce test (hors périmètre #330, cf. retour de
+    // tâche) : `DEFAULT_COLOR` (`types/event.ts`, `#6366f1`) a un ratio mesuré de
+    // 4.467 — LUI-MÊME sous le seuil AA. Un event sans couleur explicite (le cas
+    // `seedProduct` par défaut) déclenche donc déjà ce libellé en production ; ce
+    // test isole volontairement le contraste en fixant les DEUX couleurs
+    // explicitement plutôt que de s'appuyer sur ce défaut ambigu comme témoin.
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Outside Cat'))
+    const product = await seedProduct(page, { userId, name: unique('Outside Prod'), categoryId: cat.id })
+    const lowContrastTitle = unique('Low Contrast Evt')
+    const highContrastTitle = unique('High Contrast Evt')
+    await seedEventWithColor(page, {
+      productId: product.id,
+      name: lowContrastTitle,
+      color: '#787878',
+    })
+    await seedEventWithColor(page, {
+      productId: product.id,
+      name: highContrastTitle,
+      color: '#1D4ED8',
+    })
+
+    await gotoTimeline(page)
+
+    await expect(
+      page.locator('[data-testid="timeline-event-outside-label"]').filter({ hasText: lowContrastTitle }),
+    ).toHaveText(lowContrastTitle)
+
+    // #390-fix (C) — garde de PRÉSENCE : sans elle, le `toHaveCount(0)` ci-dessous
+    // serait vacuously vert si la pastille high-contrast n'était pas rendue du tout
+    // (event absent du fetch, packing de lane, seed ignoré) — la variable COULEUR,
+    // objet même du test, ne serait alors jamais isolée. On exige d'abord la
+    // pastille PORTEUSE, PUIS l'absence de son libellé extérieur.
+    await expect(
+      page.locator(`[data-testid="timeline-event"][data-event-title="${highContrastTitle}"]`),
+    ).toHaveCount(1)
+    await expect(
+      page
+        .locator('[data-testid="timeline-event-outside-label"]')
+        .filter({ hasText: highContrastTitle }),
+    ).toHaveCount(0)
+  })
+})
+
+/**
+ * #331 (vague 1) — le contrat de testid dérivé de la `value` a livré 4 testids
+ * d'options, dont 2 restaient POSÉS SANS SPEC : `recurrence-unit-option-WEEK` et
+ * `recurrence-unit-option-YEAR` (specs=0 mesuré par le lead avant ce sprint). Seul
+ * MONTH était exercé (test « création complète », #314 ci-dessus). Étape 1bis
+ * (#330) : couvrir les deux avec le MÊME oracle que MONTH — le trigger affiche la
+ * bonne unité (`SelectValue` -> libellé de l'item choisi) — PLUS le libellé de la
+ * mini-frise preview (`event-form-preview-recurrence`), qui distingue
+ * explicitement WEEK de YEAR (pas seulement « une unité a été choisie », mais
+ * « LA bonne »). Les DEUX unités sont exercées (pas une seule, l'une suffirait à
+ * prouver que le mécanisme de sélection fonctionne mais pas que le MAPPING de
+ * chaque valeur est correct) : elles portent des valeurs BACKEND distinctes
+ * (BR-EVE-006, enum `RecurrenceUnit` WEEK/MONTH/YEAR) — un bug de mapping sur
+ * l'une des deux ne serait pas détecté par un test qui n'exercerait que l'autre.
+ */
+test.describe('#330 (étape 1bis, #331) — options de récurrence WEEK et YEAR', () => {
+  test('sélectionner WEEK puis YEAR : le trigger ET la preview affichent la bonne unité', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Recurrence Cat'))
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Recurrence Prod'),
+      categoryId: cat.id,
+    })
+
+    await gotoTimeline(page)
+    await openNewEventDrawer(page)
+
+    await page.getByTestId('shell-new-event-drawer-product-trigger').click()
+    await page.getByRole('option', { name: product.name }).click()
+    await page.getByTestId('event-form-title-input').fill(unique('Recurrence Evt'))
+    await page.getByTestId('event-form-duration-value').fill('3')
+    await page.getByTestId('event-form-recurring-toggle').click()
+
+    // --- WEEK ----------------------------------------------------------------
+    await page.getByTestId('event-form-recurrence-trigger').click()
+    await page.getByTestId('recurrence-unit-option-WEEK').click()
+    await expect(page.getByTestId('event-form-recurrence-trigger')).toContainText('Semaines')
+    await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText('Récurrent · Semaines')
+
+    // --- YEAR (bascule DEPUIS WEEK, pas l'état initial : preuve que le mapping
+    //     réagit à un CHANGEMENT, pas seulement à une première sélection) -------
+    await page.getByTestId('event-form-recurrence-trigger').click()
+    await page.getByTestId('recurrence-unit-option-YEAR').click()
+    await expect(page.getByTestId('event-form-recurrence-trigger')).toContainText('Années')
+    await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText('Récurrent · Années')
+    // Le passage à YEAR n'a pas laissé de trace de WEEK (bascule réelle, pas un ajout).
+    await expect(page.getByTestId('event-form-recurrence-trigger')).not.toContainText('Semaines')
   })
 })

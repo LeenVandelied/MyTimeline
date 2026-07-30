@@ -186,6 +186,161 @@ test.describe('#205 Timeline mobile — portrait', () => {
     await page.getByTestId('timeline-zoom-in').click()
     await expect(level).not.toHaveText(before ?? '')
   })
+
+  /**
+   * #330 (lot b) — `timeline-zoom-out` existe EN DOUBLE (desktop `TimelineView.tsx`
+   * ET les deux variantes mobiles) : le lot b du briefing couvre le desktop
+   * (`timeline.spec.ts`), ce test couvre le variant PORTRAIT mobile (même bouton,
+   * même reducer de zoom — `state.zoomOut`).
+   */
+  test('zoom-out : dézoome (alternative au pinch, variant portrait)', async ({ page }) => {
+    await seedAndOpenTimeline(page, 'portrait')
+
+    // #390-fix (A) — oracle ANCRÉ (aligné sur le desktop `timeline.spec.ts:594`) :
+    // un « le texte a changé » laisserait passer un `timeline-zoom-out` recâblé par
+    // erreur sur zoomIn (Mois -> Semaine). On asserte l'état de DÉPART (Mois, zoom
+    // par défaut `initialZoomState`, zoom.ts:65) PUIS l'état d'ARRIVÉE (Trimestre).
+    const level = page.getByTestId('timeline-zoom-level')
+    await expect(level).toHaveText('Mois')
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(level).toHaveText('Trimestre')
+  })
+
+  /**
+   * #330 (lot a) — `timeline-sheet-overlay` : le tap ferme le bottom sheet, au même
+   * titre que le bouton close déjà couvert plus haut (deux chemins de fermeture
+   * distincts, pas un doublon).
+   */
+  test('overlay du bottom sheet : le tap ferme (comme le bouton close)', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    await seededEvent(page, eventTitle).click()
+    const sheet = page.getByTestId('timeline-sheet')
+    await expect(sheet).toBeVisible()
+    await expect(page.getByTestId('timeline-sheet-overlay')).toBeVisible()
+
+    // Le sheet est ANCRÉ EN BAS (`.mt-sheet{left:0;right:0;bottom:0}`, cf.
+    // timeline.css:276) : tap en HAUT de l'overlay pour ne pas retomber sur le
+    // panneau lui-même (qui couvre jusqu'à 80vh).
+    await page.getByTestId('timeline-sheet-overlay').click({ position: { x: 5, y: 5 } })
+    await expect(sheet).toHaveCount(0)
+    await expect(page.getByTestId('timeline-sheet-overlay')).toHaveCount(0)
+  })
+
+  /**
+   * #330 (lot a) — `timeline-sheet-grabber` : zone de swipe-down (pas juste un
+   * décor). Le seuil `DISMISS_THRESHOLD_PX` (80px, `TimelineBottomSheet.tsx:30`)
+   * distingue un swipe qui ferme d'un swipe qui ne fait que déplacer le panneau
+   * puis revient à sa place — les DEUX branches sont exercées, pas seulement le cas
+   * qui « marche ».
+   */
+  test('grabber : swipe-down > 80px ferme le sheet, un swipe court le laisse ouvert', async ({
+    page,
+  }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    await seededEvent(page, eventTitle).click()
+    const sheet = page.getByTestId('timeline-sheet')
+    await expect(sheet).toBeVisible()
+    const grabber = page.getByTestId('timeline-sheet-grabber')
+
+    // #330-fix (Sprint 54) — le panneau se STABILISE en 2 temps après l'ouverture
+    // (animation d'entrée CSS `mt-sheet-in` PUIS un léger réajustement de layout,
+    // mesuré ~20-25px, une fois le focus-trap/scroll-lock posé) : une seule mesure
+    // `boundingBox()` en tête de test, réutilisée pour les DEUX swipes, capture une
+    // position TRANSITOIRE. Le 2e swipe visait alors des coordonnées obsolètes qui
+    // retombaient sur `timeline-sheet-overlay` (sous le panneau, déjà réinstallé à
+    // sa position finale) au lieu du grabber -> aucun pointerdown sur la zone,
+    // fermeture jamais déclenchée (reproduit et confirmé hors suite : la 2e mesure
+    // de `boundingBox()` diffère de 24px de la 1re). Fix : une mesure FRAÎCHE,
+    // juste avant CHAQUE swipe (oracle observable = position réelle courante),
+    // aucune temporisation arbitraire.
+    // #390-fix (B) — deux corrections. (1) MESURE STABILISÉE : le panneau se réajuste
+    // ~24px après l'ouverture (animation d'entrée PUIS repositionnement au montage du
+    // focus-trap/scroll-lock) ; une `boundingBox()` prise « juste après toBeVisible »
+    // capture une position TRANSITOIRE et `mouse.down()` retombe sur l'overlay (sous le
+    // panneau) au lieu du grabber. On attend une position VÉRIFIÉE stable (2 lectures
+    // consécutives identiques), pas une temporisation arbitraire. (2) ORACLE POSITIF :
+    // pendant le drag, le sheet suit le doigt (`style.transform=translateY`,
+    // `TimelineBottomSheet.tsx:116`, posé UNIQUEMENT si `dragY>0`) — sans mouvement
+    // observé, le geste n'a pas atteint le grabber -> rouge (le défaut qu'on corrige,
+    // là où l'ancien `toBeVisible()` restait vacuously vert « par inaction »).
+    const stableGrabberBox = async () => {
+      let prev = await grabber.boundingBox()
+      for (let i = 0; i < 30; i++) {
+        await page.waitForTimeout(50)
+        const cur = await grabber.boundingBox()
+        if (prev && cur && Math.abs(cur.y - prev.y) < 0.5 && Math.abs(cur.x - prev.x) < 0.5) {
+          return cur
+        }
+        prev = cur
+      }
+      expect(prev, 'le grabber doit se stabiliser en position').not.toBeNull()
+      return prev!
+    }
+
+    const boxShort = await stableGrabberBox()
+
+    // --- Swipe COURT (< seuil) : ne ferme PAS -------------------------------
+    const shortCx = boxShort.x + boxShort.width / 2
+    const shortCy = boxShort.y + boxShort.height / 2
+    await page.mouse.move(shortCx, shortCy)
+    await page.mouse.down()
+    await page.mouse.move(shortCx, shortCy + 30, { steps: 5 })
+    // ORACLE POSITIF : le geste a bien saisi le grabber -> le panneau a suivi (< seuil).
+    await expect(async () => {
+      const transform = await sheet.evaluate((el) => (el as HTMLElement).style.transform)
+      const moved = /translateY\(([\d.]+)px\)/.exec(transform)
+      expect(moved, `le sheet doit suivre le drag court (transform=${transform})`).not.toBeNull()
+      expect(parseFloat(moved![1])).toBeGreaterThan(0)
+    }).toPass({ timeout: 1000 })
+    await page.mouse.up()
+    // Revient à sa place ET reste MONTÉ (toHaveCount(1), pas juste « visible » qui
+    // passerait aussi pendant une éventuelle animation de sortie) ; transform purgé.
+    await expect(sheet).toHaveCount(1)
+    await expect
+      .poll(async () => sheet.evaluate((el) => (el as HTMLElement).style.transform))
+      .toBe('')
+
+    // --- Swipe LONG (> seuil) : ferme ---------------------------------------
+    // Mesure fraîche + stabilisée aussi pour le 2e swipe (le panneau est revenu à sa
+    // place après le swipe court, mais on ne réutilise pas une mesure potentiellement
+    // périmée).
+    const boxLong = await stableGrabberBox()
+    const longCx = boxLong.x + boxLong.width / 2
+    const longCy = boxLong.y + boxLong.height / 2
+    await page.mouse.move(longCx, longCy)
+    await page.mouse.down()
+    await page.mouse.move(longCx, longCy + 120, { steps: 5 })
+    // ORACLE POSITIF : le geste dépasse le seuil DISMISS_THRESHOLD_PX (80px,
+    // TimelineBottomSheet.tsx:30) AVANT le relâchement — prouve qu'on ferme bien
+    // « parce que le seuil est franchi », pas « parce que le geste n'est jamais parti ».
+    await expect(async () => {
+      const transform = await sheet.evaluate((el) => (el as HTMLElement).style.transform)
+      const moved = /translateY\(([\d.]+)px\)/.exec(transform)
+      expect(moved, `le sheet doit suivre le drag long (transform=${transform})`).not.toBeNull()
+      expect(parseFloat(moved![1])).toBeGreaterThan(80)
+    }).toPass({ timeout: 1000 })
+    await page.mouse.up()
+    await expect(sheet).toHaveCount(0)
+  })
+
+  /**
+   * #330 (lot a) — `timeline-actionsheet-overlay` : le tap ferme l'action sheet,
+   * au même titre que le bouton « Annuler » déjà couvert plus haut.
+   */
+  test('overlay de l’action sheet : le tap ferme (comme Annuler)', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'portrait')
+
+    await seededEventMore(page, eventTitle).click()
+    const sheet = page.getByTestId('timeline-actionsheet')
+    await expect(sheet).toBeVisible()
+    await expect(page.getByTestId('timeline-actionsheet-overlay')).toBeVisible()
+
+    await page.getByTestId('timeline-actionsheet-overlay').click({ position: { x: 5, y: 5 } })
+    await expect(sheet).toHaveCount(0)
+    await expect(page.getByTestId('timeline-actionsheet-overlay')).toHaveCount(0)
+  })
 })
 
 /* ========================================================================== */
@@ -387,5 +542,24 @@ test.describe('#205 Timeline mobile — paysage', () => {
     await expect(page.getByTestId('timeline-actionsheet')).toBeVisible()
     await expect(page.getByTestId('timeline-actionsheet-edit')).toBeVisible()
     await expect(page.getByTestId('timeline-actionsheet-delete')).toBeVisible()
+  })
+
+  /**
+   * #330 (lot a) — `timeline-landscape-drawer-overlay` : le tap ferme le drawer
+   * latéral, au même titre que son bouton close déjà couvert plus haut.
+   */
+  test('overlay du drawer latéral : le tap ferme (comme le bouton close)', async ({ page }) => {
+    const { eventTitle } = await seedAndOpenTimeline(page, 'landscape')
+
+    await seededEvent(page, eventTitle).click()
+    const drawer = page.getByTestId('timeline-landscape-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(page.getByTestId('timeline-landscape-drawer-overlay')).toBeVisible()
+
+    // Le drawer paysage est ANCRÉ À DROITE (réutilise `.mt-drawer`, cf. desktop) :
+    // tap en haut à gauche de l'overlay.
+    await page.getByTestId('timeline-landscape-drawer-overlay').click({ position: { x: 5, y: 5 } })
+    await expect(drawer).toHaveCount(0)
+    await expect(page.getByTestId('timeline-landscape-drawer-overlay')).toHaveCount(0)
   })
 })

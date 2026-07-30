@@ -1,186 +1,81 @@
 ## Objectif
 
-Solder la **dette de cascade CSS** du design system : des règles écrites hors de tout `@layer`
-annulaient silencieusement les utilitaires Tailwind posées sur les mêmes éléments.
+Réarmer le filet E2E de la frise : rendre les sélecteurs de test robustes au réordonnancement, couvrir les `data-testid` de la frise laissés sans spec par le Sprint 47, et empêcher qu'une instabilité passagère du serveur de dev bloque les 134 tests de la suite.
 
-Milestone : **Sprint 53** (#53). Sprint **100 % CSS + tests** — aucun `.tsx`, `.ts` applicatif, `.java`
-ni `.sql` modifié. **Aucune BR métier touchée. Aucune migration Flyway.**
+Milestone : **Sprint 54** (#54). Cohésion **0.46** · Périmètre **frontend uniquement** — 0 fichier `.java`, 0 `.sql`, 0 schéma Zod. **Aucune BR métier touchée. Aucune migration Flyway.**
 
 ## Issues traitées
 
-| # | Titre | P | Size | État |
+| Issue | Titre | P | Size | Résultat |
 |---|---|---|---|---|
-| #339 | `h1..h6 { margin: 0 }` non-layerisé annule silencieusement les `mb-*` | P2 | S | Livrée |
-| #340 | Auditer les fichiers CSS non-layerisés restants | P2 | S | Livrée |
+| #331 | Exposer des `data-testid` sur les `SelectItem` Radix | P2 | S | Livrée |
+| #329 | `auth.setup.ts` : retry sur l'échec de rendu de `/fr/register` | P2 | S | Livrée |
+| #330 | Couvrir les `data-testid` de la frise sans spec E2E | P2 | M | Livrée — **15 atteignables sur 18 annoncés**, cf. ci-dessous |
 
-> **#346 retirée du périmètre — NO-OP confirmé, pas supposé.** Le plan de l'architecte (ancrage
-> `fc2a3a0`) la plaçait en vague 1 avec `possibly_done: false`. Elle a été **livrée au S52** entre-temps
-> (PR #374, issue fermée, milestone et label repassés à `sprint-52`). Vérifié au HEAD `2966994` avant
-> tout spawn : `focus:bg-accent-soft` est en place aux 5 emplacements, **zéro occurrence** de
-> `focus:bg-accent focus:text-accent-foreground` ne subsiste dans `components/ui/`.
-> Le sprint devient donc **strictement séquentiel** #339 → #340.
-> Dérive de milestone corrigée au lancement : #339 portait « Sprint 52 » avec un label `sprint-53`.
+Vagues exécutées : **V1 = #331 ∥ #329** (fichiers disjoints) · **V2 = #330** · puis un cycle correctif.
 
 ## Changements clés
 
-### #339 — `40665fc`
-- `h1..h6` déplacée **en bloc** (5 propriétés) dans `@layer base`, même geste que le S48 sur `a`.
-- Les 5 `--leading-*` ajoutées au `@theme` de `globals.css`.
-- `FooterSection.tsx` **non modifié** : le CSS suffit à débloquer `mb-3 font-bold`.
+**#331 — sélecteurs robustes.** `data-testid` dérivés de la `value` et jamais d'un libellé traduit (qui changerait avec la locale) : `product-option-<uuid>` et `recurrence-unit-option-<WEEK|MONTH|YEAR>`. Le ciblage par index `.nth(1)` de `timeline.spec.ts` disparaît — c'était la seule occurrence sur une option de `<Select>`. Vérifié au navigateur : cliquer `recurrence-unit-option-YEAR` fait bien afficher « an/year » au trigger, ce que `.nth(1)` ne garantissait pas.
 
-### #340 — `a4c4a6c`
-Audit exhaustif (`docs/memory/sprints/sprint-53/audit-css-layers-340.md`, 226 lignes) :
-**382 règles hors layer recensées · 4 conflits réels démontrés · 3 corrigés.**
+**#329 — diagnostic du provisioning E2E.** Le rendu initial de `/fr/register` (hors boucle) n'était protégé par aucun retry : un 500 transitoire du serveur de dev Next tuait les 134 tests. Retry par `page.reload()`, logique extraite dans `e2e/support/register-page.ts` pour être testable, spec dédiée simulant un 500 via `page.route()` — plus un cas de 500 **persistant** vérifiant que l'échec reste bruyant. Le message n'accuse plus une cause au hasard : un listener `page.on('response')` collecte les statuts **réellement observés** et les restitue avec une grille de lecture 429 / 403 / 409.
 
-| Règle | Layer | Preuve du conflit réel |
-|---|---|---|
-| `core.css:176` `.mt-avatar` | `components` | `AppShell.tsx:217` rend `<Avatar className="rounded-sm">` — le `--radius-md` (7px) du DS annulait `rounded-sm` (5px). **L'override était un NO-OP.** |
-| `landing.css:141` `.timeline-preview` | `components` | `TimelinePreviewSection.tsx:19` pose `rounded-xl` (14px) ; `--radius-lg` (10px) l'annulait. |
-| `base.css:89` reset scrollbar `*` | `base` | L'utilitaire `scrollbar-none` pose `scrollbar-width:none`, **annulé** par `scrollbar-width:thin`. Sites : `ProductCarousel:50`, `DensityRibbon:77`. |
+**#330 — 18 nouveaux tests E2E**, en 4 commits par lot fonctionnel (drawer/overlays, contrôles de toolbar, minimap/états/contraste, options de récurrence). Les specs exercent des **comportements**, pas des présences : l'overlay du drawer provoque un **démontage** et non un masquage ; `timeline-zoom-out` change réellement `timeline-zoom-level` ; la live-region est vérifiée **vide au montage** (une annonce parasite est un bug a11y qu'une assertion de présence ne verrait pas) puis sur son contenu exact ; `timeline-event-outside-label` est testé avec un **contrôle négatif** (le cas au-dessus du seuil de contraste doit être absent).
 
-**Le cas scrollbar est un vrai bug cross-navigateur** invisible en dev : sous Chromium la barre
-disparaissait quand même via l'**autre** moitié de l'utilitaire (`::-webkit-scrollbar{display:none}`,
-propriété différente donc jamais en conflit) ; **sous Firefox elle restait visible.**
+## ⚠ La cible de #330 est corrigée : 15 atteignables, pas 18
 
-### Ce qui a été délibérément NON corrigé — corriger aurait créé la régression
-- **`:focus-visible`** — `language-selector.tsx:54` **dépend** de son caractère hors-layer : c'est son
-  **unique** indicateur de focus. Le layeriser = **régression WCAG 1.4.11**. → follow-up [M].
-- **`.feature-card` / `.testimonial-card`** — leur `:hover{box-shadow}` passerait sous `shadow-lg`,
-  utilitaire **sans variante `hover:`** → **l'élévation au survol disparaîtrait en permanence**.
-- **`time, .mono, [data-mono]`** — 2 sites, les deux posent `font-mono`, même valeur. **Dérive nulle**,
-  verrou de l'AC appliqué.
-- **~770 lignes de `.mt-*`** — posées **seules** partout (hors Avatar). **0 conflit.**
+Trois écarts au décompte du §4 de l'audit S47, chacun étayé par la mesure (détail : `docs/memory/audits/sprint-54-test-coverage.md` §2).
 
-## Prémisses infirmées par la mesure, avant tout code
+**Deux entrées ne sont pas des éléments d'interface.** `desktop-edit-trigger` et `mobile-delete-trigger` n'existent que dans `frontend/src/components/timeline/TimelineEditHost.test.tsx` — doublures RTL, exactement le motif pour lequel l'issue exclut déjà `timeline-edit-host-stub` et `timeline-responsive-stub`, **et dans le même fichier**. Aucune spec Playwright ne peut les exercer : le critère d'acceptation n°1 était **inatteignable par construction**. C'est une **régression d'audit traçable** : `audits/sprint-46-test-coverage.md:47` identifiait déjà `mobile-delete-trigger` comme faux positif, l'audit S47 l'a réintégré.
 
-1. **L'issue #339 citait `FooterSection.tsx:41`.** Faux : les `<h4 className="text-ink mb-3 font-bold">`
-   sont **lignes 43, 63 et 78 — trois occurrences, pas une**.
-2. **La prémisse littérale de #340 était largement infondée.** Elle visait des « sélecteurs d'élément
-   HTML hors layer » : il n'en existe **aucun** en tête de sélecteur dans les 7 fichiers listés. Le vrai
-   défaut portait sur les **classes** hors layer, que l'issue ne mentionnait pas.
-3. **Une erreur du lead, infirmée par le fullstack-dev.** J'avais affirmé que `leading-tight` rendait
-   1.25 (défaut Tailwind) et que mapper `--leading-*` était une « condition de non-régression ».
-   **Faux** — `ds/tokens/typography.css` déclare ces tokens dans un `:root` **hors layer**, homonyme du
-   namespace `@theme` de Tailwind 4, et hors-layer bat tout layer : la valeur DS **1.08 gagnait déjà**.
-   Le mapping est donc un **NO-OP sur le rendu**, conservé comme assurance et **re-documenté
-   honnêtement dans le code**. Corollaire : les « 11 sites impactés » que j'annonçais pour
-   `--tracking-*` **ne bougeaient pas**. Confirmé ensuite **en navigateur** (`line-height` mesuré
-   38,88px sur 36px = 1.08).
+**Une entrée est du code mort** — `timeline-loading`, cf. bug produit n°1.
 
-## ⚠ Une régression introduite puis corrigée dans ce sprint — attrapée par la CI E2E seule
+## ⚠ Deux bugs produit découverts (signalés, non corrigés — hors périmètre)
 
-La 1ʳᵉ passe de #339 layerisait les **5** propriétés en bloc. En Tailwind 4, une utilitaire `text-*` pose
-aussi un **`line-height` apparié** (`var(--tw-leading, var(--text-lg--line-height))`, défauts émis dans
-`@layer theme` que notre `@theme inline` ne remappe pas). Layerisé, le `line-height` du DS **cédait**
-devant cet appariement.
+Trouvés uniquement parce que les specs testent des comportements.
 
-Mesuré au navigateur, avant/après : `h2.text-lg` **29,16px (1.08) → 42px (1,5556)** ·
-`h1.text-xl` **37,8px → 49px**. **28 titres** portent `text-*` sans `leading-*` explicite → **dérive
-systémique et silencieuse du rythme typographique** (settings, landing, products, dashboard, shared).
+**1. `timeline-loading` est inatteignable.** `app/[locale]/(app)/timeline/page.tsx:47` porte bien la branche `if (loading)`, mais `AppShell` (`components/layout/AppShell.tsx:80/114`, livré par #210 **après** ce testid) pose sa propre garde `useAuthGuard()` au niveau du shell et retourne `app-shell-loading` **sans monter `children`**. La branche de `TimelinePage` ne peut donc plus s'exécuter. Mesuré, route `/api/auth/me` gatée : `app-shell-loading`=1, `timeline-loading`=0 — 100 % reproductible, ce n'est pas un timing serré. La spec est `test.skip()` avec la cause nommée ; **substituer `app-shell-loading` a été refusé délibérément**, cela aurait couvert un testid *différent* de celui déclaré tout en donnant l'illusion de la couverture.
 
-**Symptôme :** `e2e/settings-mobile.spec.ts:19` rouge — le sheet de suppression de compte, grandi
-d'environ 13px par titre, interceptait au centre du viewport le clic destiné au backdrop.
-**Reproductible** (1ʳᵉ passe + retry Playwright + rerun complet du job), alors qu'`origin/dev` était
-**vert 2 fois** sur ce même job et que `settings-mobile` n'avait **jamais** échoué.
+**2. En-tête de lane sticky rendant des événements inatteignables à la souris.** Au zoom Trimestre, un événement proche de `rangeStart` (`computeRange` = 30 j avant le 1er event) se place à `30 × 5 = 150 px` alors que `--lane-header-w` vaut **168 px** (`spacing.css:48`) : `.mt-tlv__lane-label` (`position:sticky;left:0`, `TimelineView.tsx:331`) intercepte le pointeur — Playwright le confirme explicitement. **Aucun scroll ne dégage la pastille** : à ce zoom, pour un seul produit, le rail tient dans le viewport, donc il n'y a pas d'overflow. Un utilisateur réel ne peut pas cliquer cet événement. L'assertion de la spec est conservée ; l'activation passe par le clavier (`Enter`, même `onSelect`).
 
-**Correctif `3bd635a` :** `line-height` **sorti du layer**, seul ; les 4 autres y restent (elles doivent
-céder, c'est l'objet de #339). Valeurs restaurées à 1.08, acquis de #339 préservés. Contrepartie
-assumée : un `leading-*` explicite ne peut plus gagner sur un titre — impact **nul** (les 6 titres
-concernés portent `leading-tight` = 1.08, soit la valeur déjà appliquée).
+Troisième point remonté pour arbitrage produit : `DEFAULT_COLOR` `#6366f1` (`types/event.ts:128`) a un ratio de contraste mesuré **4,467 < 4,5** (seuil AA). Tout événement sans couleur explicite déclenche donc déjà le libellé extérieur en production — c'est l'état **normal**, pas un cas limite.
 
-**Ce que ça apprend :**
-1. **`ui-design` avait raison et je l'ai écrasé.** Son verdict disait `line-height : RESTE GAGNANTE` ;
-   j'ai imposé « layeriser les 5 en bloc » en croyant que mapper `--leading-*` suffisait. Le mapping
-   gouverne les utilitaires `leading-*`, **pas** l'appariement de `text-*`.
-2. **Le test AST de 11 tests n'a rien vu** : il prouve l'appartenance à un layer, pas une valeur gagnante
-   sur un élément réel. 2 tests ajoutés pour ça, **validés par mutation** (remettre `line-height` dans
-   `@layer base` les fait rougir).
-3. **La vérification navigateur sur la landing était verte** — parce que ses titres portent
-   `leading-tight` explicite, précisément les seuls protégés. Le risque était sur les surfaces
-   non atteignables en local.
+## Prémisses infirmées par la mesure
+
+**Le retry 429 de `auth.setup.ts` était mort depuis le S47.** Budget Playwright par défaut 30 s ; un cycle coûte 8 s d'attente + 20 s de backoff = **28 s**, donc la 2ᵉ soumission expirait **toujours** — mesuré 4/4 `provision` en `Test timeout of 30000ms exceeded`, sans une ligne de diagnostic. Le retry documenté depuis deux sprints n'avait jamais pu s'exécuter au-delà de la 1re tentative.
+
+Trois prémisses des briefings du lead sont également tombées, consignées comme telles : `timeline-today` n'est **pas** un bouton (badge positionnel sans `onClick`, `TimelineView.tsx:211`) ; `timeline-event-outside-label` dépend du **contraste** et non de la longueur du titre ; `timeline-zoom-in`/`timeline-fullscreen` ne sont **pas montés** dans le contexte desktop visé — le grep prouvait qu'ils sont *écrits* dans un fichier, pas qu'ils sont *rendus*.
 
 ## Tests
 
-| Suite | Résultat |
-|---|---|
-| Frontend | **92 fichiers, 836 passed / 0 failed** |
-| **CI complète** | **4/4 verts** — `backend` · `frontend` · `security` · `e2e` (5m51s) |
-| Backend | **452 tests, 0 failures, 0 errors** — BUILD SUCCESS |
-| `base-layer.test.ts` | **5 → 11 tests**, 11 passed |
-| Mutations (dé-layeriser, exiger le rouge) | 3/3 — **chaque mutation ne fait tomber que son test** |
-| `tsc --noEmit` / `eslint` / `prettier` | 0 / 0 / OK |
-| E2E Playwright | **non lancés en local** (backend + Postgres absents) — autorité = CI |
+**E2E : 134 tests → 125 passed / 0 failed / 9 skipped** (`--workers=1`, run unique sans concurrence).
 
-Les tests compilent la **vraie chaîne CSS** via PostCSS + Tailwind 4 et assertent **sur l'AST** : c'est
-la seule chose qui prouve quoi que ce soit ici, **jsdom ne résout ni `@layer` ni le layout**.
-Chaque fixture témoin a un `from` **unique** (le plugin Tailwind mémoïse par chemin — un `from` partagé
-ferait passer le test **à vide**) et chaque regex discrimine le preflight Tailwind homonyme.
+`125` = les **108 de la baseline pré-#330** + 17 des 18 nouveaux tests. **Aucune régression** : les 108 préexistants passent tous. Les 9 skipped = 8 skips structurels préexistants + le skip justifié de `timeline-loading`.
 
-> ⚠ Un rapport `test-runner` annonçant `814/821`, une suite en échec sur `eslint-plugin-storybook` et
-> « `base-layer.test.ts` : 2 tests » a été **écarté après contre-mesure** : les trois chiffres sont
-> faux, le subagent avait tourné depuis le **dépôt principal** au lieu du worktree. Les chiffres
-> ci-dessus sont ceux de runs relancés par le lead **depuis le worktree**.
+Frontend unitaire **836/836** · `tsc --noEmit` **0 erreur** · `eslint` **0 issue**.
+Backend **non exécuté — aucun fichier backend touché** ; la CI reste le juge de la non-régression backend sur cette branche.
 
-## Revue
+Deux mesures antérieures (**8 rouges**, puis **12 rouges** sur un code identique) ont été **écartées** : deux suites Playwright avaient été lancées concurremment contre une base unique, et la contention produisait des échecs non reproductibles — `event-outside-label` échouait dans les deux runs contendus et **passe** au run propre. Erreur de méthode du lead, consignée dans l'audit plutôt qu'effacée.
 
-`reviewer` sur le diff complet `2966994..HEAD` : **0 CRITIQUE / 0 MAJEUR / 1 MINEUR / 2 NON VÉRIFIÉ**.
-Il a re-exécuté les tests lui-même (11/11) et confirmé : ordre interne de cascade préservé
-(`.mt-avatar--sm/--lg/--round` battent toujours `.mt-avatar`), layer correct, et **exactitude des
-commentaires vis-à-vis du code** — pas de récidive de l'incident de la PR #374.
+## Review
 
-## Vérification navigateur — clair ET sombre (obligatoire, pitfall S48)
+Review batch : **1 CRITIQUE / 0 MAJEUR retenu / 2 MINEURS**.
 
-Landing `/fr`, mesures **avant/après contre `origin/dev`** sur la même page, le même navigateur :
+Le CRITIQUE portait sur `PROVISION_TIMEOUT_MS`. Après vérification, **la sévérité est revue à la baisse** — dans le pire cas qui *continue*, `ensureRegisterForm(recover)` réussit à sa dernière tentative ; l'épuiser lève plus tôt avec le message de rendu. Mais **le fond est juste** : le commentaire annonçait ~110 s en omettant complètement les deux appels `recover`, qui sont des boucles de retry et non des vérifications instantanées. Pire cas recalculé : **~127 s**. Les 150 s ne laissaient que ~23 s de marge sur une infrastructure partagée par les 134 tests → **porté à 180 s**, calcul détaillé en commentaire.
 
-| Sonde | avant | après |
-|---|---|---|
-| `footer h4` ×3 — `margin-bottom` / `font-weight` | `0px` / `600` | **`12px` / `700`** |
-| hero `h1` — `margin-bottom` | `0px` | **`24px`** |
-| hero `h1` — `line-height` | — | **1.08 préservé** (Tailwind aurait donné 1.25) |
-| `.timeline-preview` — `border-radius` | `10px` | **`14px`** |
-| `.feature-card` — fond (sombre) | `rgb(19,21,25)` | **`rgb(19,21,25)`** (inchangé) |
+Un MINEUR est écarté avec raison : les littéraux `WEEK`/`MONTH`/`YEAR` dupliqués entre `value` et `data-testid` — dériver 3 valeurs statiques d'un enum ajouterait de l'indirection sans gain de sûreté. Sa référence de ligne était par ailleurs inexistante (1035-1043 dans un fichier de 653 lignes).
 
-**Balayage de contraste WCAG : 38 éléments par thème, 0 sous AA 4,5:1** (pire cas 6,94:1 en sombre).
-Le mode de défaillance du S48 (CTA invisibles avec CI verte) est écarté **sur la landing**.
-Détail et protocole : `docs/memory/sprints/sprint-53/browser-verification.md`.
+## Couverture des nouveaux testids (protocole A.4)
 
-## ⚠ Réserves assumées — à lever au prochain accès à un environnement authentifié
+`[COVERAGE-E2E] OK` — les 4 `data-testid` ajoutés sont tous référencés par une spec.
 
-1. **Dashboard, settings, products, timeline non ouverts** (backend + Postgres absents en local). Or
-   `ui-design` y situait le **risque le plus élevé** : bascule police display → **mono** sur 5 titres du
-   dashboard (`KpiMarginalia:38`, `ProductList:29`, `ProductCarousel:43`, `WeekAgenda:40`,
-   `CompactAgenda:80`), `mb-2` de `ProductDetailView:211,225`, graisses 600→500 de `settings/`, avatar
-   7px → 5px dans `AppShell`. **Ces changements n'ont pas été vus.**
-2. **Firefox / WebKit non lancés** — alors que le correctif scrollbar vise *précisément* Firefox : il
-   est **déduit de la cascade, pas observé**.
-3. Paliers responsive (320 / 768 / 1024 px) non balayés.
-4. La détection de conflit de l'audit est **syntaxique** : un conflit via variable CSS intermédiaire,
-   `style={{}}` inline ou classe concaténée dynamiquement y échapperait.
+À noter : `recurrence-unit-option-WEEK` et `-YEAR` étaient posés par #331 **sans aucune spec** (seul `MONTH` était exercé) — écart relevé entre les deux vagues et intégré au périmètre de #330 plutôt que reporté en follow-up.
 
-## Couverture E2E
+## Réserves assumées
 
-`[COVERAGE-E2E] OK` — **aucun `data-testid` ajouté** (aucun `.tsx` modifié). Rien à couvrir.
-
-## Follow-ups proposés (à arbitrer en `/sprint end`)
-
-1. **[M]** `:focus-visible` — layeriser + réauditer les ~14 sites `outline-none` (chacun doit porter son
-   propre indicateur avant que le contour global ne cède). **Bloqué sur arbitrage `ui-design`.**
-2. **[XS]** `FeaturesSection.tsx:41` — **double lévitation au survol** : `hover:-translate-y-2` compile
-   en Tailwind 4 vers `translate` (pas `transform`) et se **compose** avec
-   `.feature-card:hover{transform:translateY(-10px)}` → **−18px au lieu de −10** (−13px sous 768px).
-   Pas un problème de layer : retirer l'un des deux.
-3. **[L, non recommandé en l'état]** Layerisation globale des ~770 lignes `ds/components/*.css` :
-   **0 conflit réel aujourd'hui**, donc 0 bénéfice immédiat contre un basculement de précédence
-   composant→utilitaire sur toute la Vue Timeline.
-4. **[XS]** `ds/styles.css` n'est **importé par personne** — fichier mort côté app, à statuer.
-5. **[XS]** Requalifier le mapping `--tracking-*` : purement **cosmétique**, **pas** une correction de
-   dérive visuelle (ma justification initiale était fausse).
-
-## Artefacts
-
-- `docs/memory/sprints/sprint-53/issue-339-done.md` · `issue-340-done.md`
-- `docs/memory/sprints/sprint-53/audit-css-layers-340.md`
-- `docs/memory/sprints/sprint-53/browser-verification.md`
-- `docs/memory/audits/sprint-53-test-coverage.md`
+- Les deux bugs produit ci-dessus sont **signalés, non corrigés**.
+- `timeline-today`, `timeline-weekend`, `timeline-help`, `timeline-fullscreen` sont couverts **en desktop uniquement** ; la matrice complète par orientation mobile n'est pas faite.
+- L'API `requestFullscreen` est **stubée** dans sa spec : la bascule plein écran réelle du navigateur n'est pas observée.
+- #330 a été exécutée par un modèle **Sonnet**, pas Opus comme le prévoyait le triage (capacité Opus indisponible — six échecs `529` consécutifs). Le travail a été vérifié à la mesure par le lead ; la dérogation est consignée.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

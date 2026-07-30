@@ -1820,7 +1820,64 @@ jamais fait partie du périmètre). Issues #339 et #340 fermées.
 **Vagues :** V1 = #331 ∥ #329 | V2 = #330
 **Migrations Flyway :** aucune
 **Depend de :** Sprint 51 (specs assertent le comportement de scroll corrigé)
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-29, worktree `sprint-52-start-252990`, branche `claude/sprint-54-start-8ee5a7` basée sur `origin/dev` `68a924c`)
+
+> **Vérification des prémisses du plan architecte au démarrage (2026-07-29) — les 3 mini-plans tiennent.**
+> · `frontend/src/components/EventEditForm.tsx` **est** à la racine de `components/` (correction architecte confirmée) ; `SelectItem` WEEK/MONTH/YEAR aux lignes **436-438**, sans `data-testid`.
+> · `frontend/src/components/events/NewEventDrawer.tsx:215-217` — `SelectItem` produit, sans `data-testid`.
+> · `frontend/e2e/timeline.spec.ts:221` — `.getByRole('option').nth(1)` confirmé, **seule** occurrence `.nth()` sur une option de `<Select>` dans les 18 specs.
+> · `auth.setup.ts` : rendu initial lignes **46-47** hors boucle, boucle `REGISTER_RETRIES` lignes **50-71**, message en dur lignes **63-66** — conforme.
+> · **18/18 testids de #330 confirmés à 0 spec E2E** (grep exhaustif, pas l'échantillon de 8 de l'architecte). Dont `timeline-loading`, qui est dans **`frontend/app/[locale]/(app)/timeline/page.tsx:47`** et non sous `frontend/src/` (piège de périmètre de recherche : l'app router est `frontend/app/`).
+>
+> **⚠ En revanche la cible de #330 est fausse : 16 testids couvrables, pas 18.** `desktop-edit-trigger` et `mobile-delete-trigger` n'existent **que** dans `frontend/src/components/timeline/TimelineEditHost.test.tsx` (lignes 63/72 pour les déclarations) — ce sont des doublures RTL, du type exact que l'issue exclut déjà pour `timeline-edit-host-stub` et `timeline-responsive-stub`, **et dans le même fichier**. Le critère d'acceptation n°1 (« chacun des 18 ») est donc inatteignable par construction : aucun navigateur ne rendra un testid déclaré dans un `*.test.tsx`.
+> **C'est une régression d'audit, traçable dans le dépôt :** `docs/memory/audits/sprint-46-test-coverage.md:47` identifiait déjà `mobile-delete-trigger` comme faux positif ; `sprint-47-test-coverage.md` §4 — source de la liste reprise par l'issue — l'a réintégré tout en excluant les deux autres stubs du même fichier. Correction portée dans le briefing de #330 avec la chaîne de preuve, pour que le prochain audit ne les réintègre pas une troisième fois.
+
+### Journal d'exécution Sprint 54
+
+**Vague 1 — terminée (les deux `STATUS: COMPLETED`) :**
+- **#331** → `9791d61` (3 fichiers, +27/−16). Contrat de testid posé : `product-option-<uuid>` et `recurrence-unit-option-<WEEK|MONTH|YEAR>`, dérivés de la `value` et jamais du libellé i18n. Tests : 836/836 unit, 15/0 E2E `timeline.spec.ts`, `tsc` 0 erreur. Contrat vérifié **au navigateur** (clic YEAR → le trigger affiche « an/year ») : le testid sélectionne la **bonne** valeur, ce que `.nth(1)` ne garantissait pas. Détail : `sprints/sprint-54/issue-331-done.md`.
+- **#329** → `515ab87` (3 fichiers, +229/−9). Tests : 5/0 projets `setup`, **108/0/0 suite E2E complète** (154 s, `--workers=1`). Détail : `sprints/sprint-54/issue-329-done.md`.
+
+> **⚠ Prémisse tenue depuis le S47 et infirmée par #329 : le retry 429 de `auth.setup.ts` était structurellement mort.** Budget Playwright par défaut = 30 s ; un cycle de retry coûte 8 s (attente `login-form`) + 20 s (`REGISTER_BACKOFF_MS`) = **28 s**, donc la 2ᵉ soumission expirait **toujours**. Mesuré : **4/4 `provision` en `Test timeout of 30000ms exceeded`, zéro ligne de diagnostic**. Le retry documenté depuis deux sprints n'avait donc jamais pu s'exécuter au-delà de la 1re tentative. Corrigé par `PROVISION_TIMEOUT_MS = 150_000` — sans quoi le nouveau message d'échec de #329 aurait été inatteignable lui aussi.
+
+> **Deux élargissements de périmètre assumés par les agents, tous deux justifiés :**
+> 1. **#329 a traité la ligne 70** (2ᵉ `expect(register-form)` dans le `catch`), absente du mini-plan et porteuse du même défaut exact que la ligne 47. Et il a **couvert le 3ᵉ mode de confusion du même message** (403 CORS, piège 2 du runbook S47) : le message ne suppose plus une cause, un listener `page.on('response')` collecte les statuts réellement observés et les rapporte avec une grille de lecture 429/403/409.
+> 2. **#331 a corrigé l'en-tête de `timeline.spec.ts` (lignes 27-30)**, qui affirmait aussi le ciblage « par INDEX » — le commentaire menteur n'était pas seulement aux lignes 213-218.
+
+> **Écart de couverture mesuré par le lead entre les deux vagues :** `recurrence-unit-option-WEEK` et `-YEAR` sont **posés par #331 mais exercés par aucune spec** (seul `MONTH` l'est) — MAJEUR selon l'heuristique COVERAGE-E2E du protocole A.4. Ajouté au périmètre de #330 plutôt que laissé en follow-up : coût marginal, l'agent est déjà dans ces fichiers.
+
+> **Incident d'infrastructure, sans effet sur le livrable :** le spawn de la vague 2 a échoué **six fois de suite sur `API Error: 529 Overloaded`** (côté serveur, pas côté prompt). Arbre de travail vérifié propre après chaque échec — aucune écriture partielle. La persistance pré-spawn (briefing + `spawn-ref` committés avant l'appel) a rendu chaque reprise triviale : c'est exactement le cas d'usage pour lequel elle existe.
+> **Diagnostic utile :** une sonde `Agent` triviale en Haiku **puis** en Sonnet a répondu immédiatement → la panne était **spécifique à la capacité Opus**, pas au spawn de subagents ni au prompt. #330 et son cycle correctif ont donc tourné en **Sonnet** malgré un triage prévoyant Opus. Dérogation assumée pour ne pas bloquer le sprint, travail vérifié à la mesure par le lead, consignée dans l'audit et le corps de PR.
+
+**Vague 2 — terminée, plus un cycle correctif.**
+- **#330** → `900a48f` (lot a, drawer/overlays) · `9972cf6` (lot b, contrôles) · `e851d2b` (lot c, minimap/états) · `5ddc7a9` (étape 1bis, options WEEK/YEAR) · `059030d` (correctif des 6 specs rouges) · `0275f2c` (correctif de review sur le budget de timeout). **18 nouveaux tests**, +567 puis +156/−64 lignes. Détail : `sprints/sprint-54/issue-330-done.md`.
+
+**Cible de #330 corrigée deux fois : 18 annoncés → 16 → 15 réellement atteignables.**
+Ma première correction (2 doublures RTL) était elle-même incomplète : `timeline-loading` est du **code mort**, donc inexerçable. Détail et chaîne de preuve dans `audits/sprint-54-test-coverage.md` §2.
+
+> **⚠ Deux bugs produit découverts par les specs — signalés, non corrigés (hors périmètre) :**
+> 1. **`timeline-loading` inatteignable.** `AppShell` (`components/layout/AppShell.tsx:80/114`, livré par #210 **après** ce testid) porte sa propre garde `useAuthGuard()` et retourne `app-shell-loading` **sans monter `children`** → la branche `if (loading)` de `app/[locale]/(app)/timeline/page.tsx:47` ne peut plus s'exécuter. Mesuré route `/api/auth/me` gatée : `app-shell-loading`=1, `timeline-loading`=0, 100 % reproductible. `test.skip()` avec cause nommée ; **substituer `app-shell-loading` refusé délibérément** (aurait couvert un testid *différent* en donnant l'illusion de la couverture).
+> 2. **En-tête de lane sticky rendant des événements inatteignables à la souris.** Au zoom Trimestre, un événement proche de `rangeStart` se place à `30 × 5 = 150 px` alors que `--lane-header-w` vaut **168 px** (`spacing.css:48`) → `.mt-tlv__lane-label` intercepte le pointeur, **et aucun scroll ne le dégage** (pas d'overflow à ce zoom pour un produit unique). Assertion conservée, activation au clavier.
+> 3. Remonté pour arbitrage produit : `DEFAULT_COLOR` `#6366f1` à un ratio mesuré **4,467 < 4,5** (AA) → le libellé extérieur est l'état **normal** en production, pas un cas limite.
+
+> **⚠ Trois prémisses de MES briefings infirmées par la mesure — consignées sans être effacées :**
+> 1. **`timeline-today` n'est pas un bouton** : badge positionnel sans `onClick` (`TimelineView.tsx:211`) ; le raccourci « T » (`scrollToToday`) est un mécanisme séparé. J'avais demandé d'asserter que le clic ramène le viewport.
+> 2. **`timeline-event-outside-label` dépend du contraste de couleur** (`eventLabelReadableInside`, `lib.ts:60`), pas de la longueur du titre ni du zoom comme je l'avais écrit.
+> 3. **`timeline-zoom-in` / `timeline-fullscreen` ne sont pas montés** dans le contexte desktop vers lequel ma table des sources pointait — trois des six specs rouges échouaient sur un locator **jamais résolu**. Mon grep prouvait qu'ils sont *écrits* dans un fichier, pas qu'ils sont *rendus* : **exactement le piège dont j'avertissais l'agent dans le même briefing.**
+
+> **⚠ Erreur de méthode du lead sur la mesure, rattrapée :** j'ai lancé **deux suites Playwright concurrentes** contre un backend et une base uniques, et obtenu **8 rouges puis 12 rouges sur un code identique**. La contention produisait des échecs non reproductibles — `event-outside-label` rougissait dans les deux runs contendus et **passe** au run propre. Les deux mesures écartées ; seule la mesure isolée fait foi. Leçon : la règle `--workers=1` du runbook vaut aussi **au-dessus** du process Playwright, pas seulement à l'intérieur.
+
+> **Deux agents de la vague 2 se sont arrêtés sans livrer leur rapport final** (« j'attends la notification du run »), l'un après 204 appels d'outils et l'autre en laissant son travail **non commité**. Conséquence de méthode : **tous les chiffres du corps de PR et de l'audit sont mesurés par le lead**, aucun n'est repris d'une affirmation d'agent. Le travail lui-même était bon — le correctif a diagnostiqué chaque échec en (A) bug de spec / (B) bug produit / (C) flake **sans affaiblir une seule assertion**.
+
+**Review batch :** 1 CRITIQUE / 0 MAJEUR retenu / 2 MINEURS.
+Le CRITIQUE (budget `PROVISION_TIMEOUT_MS`) : **sévérité revue à la baisse** après vérification de l'arithmétique — dans le pire cas qui *continue*, `ensureRegisterForm(recover)` réussit à sa dernière tentative (l'épuiser lève plus tôt avec le message de rendu). **Mais le fond est juste** : le commentaire annonçait ~110 s en omettant les deux appels `recover`, qui sont des boucles de retry complètes. Pire cas recalculé **~127 s** → budget porté de 150 s à **180 s** (`0275f2c`). Un MINEUR écarté avec raison, et **sa référence de ligne était inexistante** (1035-1043 dans un fichier de 653 lignes) — rappel qu'un reviewer se vérifie aussi.
+
+**Tests (mesure finale, run unique sans concurrence) :** E2E **134 → 125 passed / 0 failed / 9 skipped** (4,2 min) · Frontend unitaire **836/836** · `tsc` 0 · `eslint` 0 · Backend **non exécuté (0 fichier backend touché)**.
+`125` = les **108 de la baseline pré-#330** + 17 des 18 nouveaux. **Aucune régression.**
+
+**PR :** #390 (`claude/sprint-54-start-8ee5a7` → `dev`), base vérifiée, milestone #54 attaché.
+
+> **Pas de branche `sprint/54`** : leçon S43-S49 reconduite, `/sprint start` travaille dans son worktree (`sprint-52-start-252990`, branche `claude/sprint-54-start-8ee5a7`).
 
 > **Pas de branche `sprint/50` créée** (étape 4 du skill volontairement sautée, leçon S43/S44 reconduite S45–S49) : `/sprint start` crée son worktree lui-même.
 

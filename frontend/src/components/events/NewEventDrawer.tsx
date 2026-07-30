@@ -212,7 +212,11 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
                   </SelectTrigger>
                   <SelectContent className="bg-surface-2 text-ink border-rule-strong">
                     {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
+                      <SelectItem
+                        key={product.id}
+                        value={product.id}
+                        data-testid={`product-option-${product.id}`}
+                      >
                         {product.name}
                       </SelectItem>
                     ))}
