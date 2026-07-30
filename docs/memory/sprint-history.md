@@ -1813,14 +1813,34 @@ jamais fait partie du périmètre). Issues #339 et #340 fermées.
 > silencieusement annulé, répartis sur landing, dashboard, settings, products et timeline — la
 > layerisation les réactive **tous d'un coup**.
 
-## Sprint 54 — 2026-07-28 (PLANIFIE — cohésion 0.46, réarmement du filet E2E de la frise)
-**Objectif :** data-testid SelectItem + couverture des 18 testids sans spec + retry rendu auth.setup
-**Milestone GitHub :** #54
-**Issues :** #331 (P2/S), #330 (P2/M), #329 (P2/S) — 8 pts
-**Vagues :** V1 = #331 ∥ #329 | V2 = #330
-**Migrations Flyway :** aucune
-**Depend de :** Sprint 51 (specs assertent le comportement de scroll corrigé)
-**Status :** En cours (démarré 2026-07-29, worktree `sprint-52-start-252990`, branche `claude/sprint-54-start-8ee5a7` basée sur `origin/dev` `68a924c`)
+## Sprint 54 — 2026-07-29 → 2026-07-30 (Terminé — merge PR #390 dans dev, commit `91c2f4a`)
+**Objectif :** data-testid SelectItem + couverture des testids de la frise sans spec + retry rendu auth.setup
+**Milestone GitHub :** #54 (fermé après merge)
+**Issues livrées (3) :** #331 (P2/S), #330 (P2/M), #329 (P2/S) — 8 pts
+**Vagues exécutées :** V1 = #331 ∥ #329 (fichiers disjoints) | V2 = #330 | + cycle correctif #330 | + cycle review-390
+**Cohésion score :** 0.46
+**Commits :** 15 (worktree `sprint-52-start-252990`, branche `claude/sprint-54-start-8ee5a7`, basée sur `origin/dev` `68a924c`)
+**BR impactées :** aucune (sprint 100 % E2E + 2 `data-testid` non fonctionnels ; `BR-EVE-006`/`BR-EVE-014` lues, pas modifiées)
+**Reviews :** batch Phase 7 (1 CRITIQUE budget timeout → résolu `0275f2c`) + `/review-pr 390` cycle 2 (3 axes, **0 CRITIQUE**, 6 findings corrigés / 1 réfuté avec preuve / 1 follow-up)
+**Tests :** Frontend unit **836/836** | E2E **125 passed / 0 failed / 9 skipped** sur 134 (mesure lead, run isolé) | Backend non exécuté (0 fichier backend) | **CI 4/4 verte** sur `a278be2` (backend, frontend, security, e2e)
+**Nouveaux artefacts mémoire :** `PIT-S54-001` à `PIT-S54-004` · `PAT-S54-001`, `PAT-S54-002`
+**Status :** **Terminé** — mergé le 2026-07-30 (merge `91c2f4a`).
+
+**Follow-ups arbitrés (Phase 4 triage — 9 items, 0 discard, choix dev « issues pour les 9 ») :**
+  - `timeline-loading` code mort (inatteignable depuis AppShell #210) [XS bug | frontend] → **#391**
+  - En-tête de lane sticky recouvrant les events proches de `rangeStart` au zoom Trimestre (150 px < 168 px), inatteignables à la souris [S bug | frontend] → **#392**
+  - `DEFAULT_COLOR` `#6366f1` sous seuil AA (4,467 < 4,5) [XS bug | design] → **#393**
+  - Oracle faible `not.toHaveText` sur le zoom-in mobile (jumeau du finding A, préexistant `41b8b15`) [XS | frontend] → **#394**
+  - `aria-pressed` sur `timeline-fullscreen` pour un oracle plein écran observable [S | frontend] → **#395**
+  - Les 2 autres `<Select>` d'`EventEditForm` (type d'événement, unité de durée) sans testid [XS | frontend] → **#396**
+  - `auth.setup.ts:128` `expect(dashboard)` sans timeout explicite [XS | frontend] → **#397**
+  - `settings-preferences.spec.ts` : options ciblées par libellé traduit [XS | frontend] → **#398**
+  - `E2ePass123` en clair dans `support/accounts.ts` (dépôt public, neutralisé) [XS | frontend] → **#399**
+  - **Ratio discard : 0/9.** Toutes en backlog libre (pas de milestone ; Sprint 55 « Mise en ligne » gelé, non pertinent). #391 et #392 sont les 2 bugs produit trouvés par les specs de #330.
+
+> **Écart de méthode du lead consigné (S54) :** mon check COVERAGE-E2E (Phase 8) a rendu un **faux OK** sur `product-option-<id>` — le `grep` a apparié un commentaire au lieu d'un usage sélecteur. Le testid était livré par #331 **sans aucune spec** ; rattrapé au cycle `/review-pr 390` (finding D, corrigé). Leçon en `PIT-S54-002`.
+> **Trois prémisses de mes propres briefings infirmées à la mesure** (`timeline-today` pas un bouton ; `timeline-event-outside-label` dépend du contraste, pas de la longueur ; `timeline-zoom-in`/`-fullscreen` non montés dans le contexte desktop visé) — le grep prouve l'écriture, pas le rendu. Détail dans `sprints/sprint-54/issue-330-done.md`.
+> **Capacité Opus 5 indisponible en cours de sprint** (six `529` consécutifs au spawn de la vague 2, puis du correctif review) : #330 et les cycles correctifs ont tourné en **Sonnet** puis **Opus 4.8** (bascule modèle par le dev). Reviewers de `/review-pr 390` en Opus 5. Travail vérifié à la mesure par le lead à chaque fois.
 
 > **Vérification des prémisses du plan architecte au démarrage (2026-07-29) — les 3 mini-plans tiennent.**
 > · `frontend/src/components/EventEditForm.tsx` **est** à la racine de `components/` (correction architecte confirmée) ; `SelectItem` WEEK/MONTH/YEAR aux lignes **436-438**, sans `data-testid`.

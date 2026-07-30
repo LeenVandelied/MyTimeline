@@ -411,3 +411,24 @@ dépôt immunisés). Solution : `document.createElement(tag)` + `className` + `g
 aussitôt. Ça teste **la règle**, pas la page, et se compare trivialement entre deux branches
 (`git checkout <base> -- frontend/src/styles` → reload → sonder → restaurer). Au S53 : dérive de line-height
 quantifiée sur 2 branches en ~2 minutes après un E2E rouge. Complément obligatoire de [[PAT-S48-001]].
+
+## PAT-S54-001 — Message d'échec E2E qui RAPPORTE les statuts mesurés au lieu de SUPPOSER la cause
+Problème : un message d'échec qui affirme une cause HTTP en dur (« 429 rate-limit probable ») a confondu
+**trois causes distinctes** pendant deux sprints — 429 (rate-limit register), 403 (CORS refusé, le profil dev
+fige `allowed-origins=:3000`), 500 (rendu du serveur de dev Next). Solution (#329) : un listener
+`page.on('response')` collecte les statuts **réellement observés** sur `POST /api/auth/register` ; le message
+les restitue avec une grille de lecture 429/403/409, et distingue explicitement « échec de rendu » (le
+formulaire ne s'est jamais affiché, aucun POST tenté) d'« échec de soumission ». Raffinement review : brancher
+la piste sur `lastStatus` (`null` ⇒ serveur injoignable / `200` ⇒ régression de rendu applicatif / `5xx` ⇒ dev
+server) pour ne pas mal catégoriser un 4ᵉ mode. Validé en conditions réelles : un run a produit le bon
+diagnostic sur un `ERR_CONNECTION_REFUSED`. Ne colle jamais une cause en dur dans un message d'échec de test.
+
+## PAT-S54-002 — Contourner un bug produit dans une spec SANS effacer son assertion
+Quand un défaut réel empêche le **mode d'interaction** mais pas le **comportement** visé, changer de mode
+d'activation en conservant l'assertion — et signaler le défaut en follow-up. Au S54, une pastille proche de
+`rangeStart` est inatteignable à la souris (en-tête de lane sticky `--lane-header-w=168px` recouvrant un event
+posé à 150 px) : la spec `live-region` active la pastille au **clavier** (`Enter`, même `onSelect` que le
+clic) tout en gardant l'assertion sur le contenu annoncé. La spec reste vraie ET le bug reste visible.
+Anti-pattern : affaiblir l'assertion en `toBeVisible()`, ce qui rendrait la spec verte **et muette**. Corollaire
+S54 : tout oracle négatif (`toHaveCount(0)`) doit être **ancré** par une assertion de présence de l'élément
+porteur, sinon il est vacuously vert quand le seed ne s'affiche pas. Cf. [[ci-green-is-not-page-correct]].
