@@ -427,11 +427,18 @@ jobs:
         env:
           PGPASSWORD: eventpass_ci
         run: |
+          # `psql` n'est PAS un binaire contractuel de l'image du runner : on l'exécute
+          # depuis l'image postgres:16 DÉJÀ tirée pour le service container (aucun apt-get,
+          # aucun tirage réseau supplémentaire). `--network host` => localhost:5432 publié.
+          psql() { docker run --rm --network host -e PGPASSWORD postgres:16 psql "$@"; }
+          # `version is not null` EXCLUT les migrations RÉPÉTABLES (R__*.sql), qui sont de
+          # type 'SQL' elles aussi mais sans version : sans ce filtre, une future R__ ferait
+          # rougir le comptage alors que la chaîne V1..Vn serait parfaitement rejouée.
           expected=$(ls backend/src/main/resources/db/migration/V*.sql | wc -l | tr -d ' ')
           applied=$(psql -h localhost -p 5432 -U eventuser -d eventmanager -tAc \
-            "select count(*) from flyway_schema_history where type = 'SQL' and success")
+            "select count(*) from flyway_schema_history where type = 'SQL' and version is not null and success")
           first=$(psql -h localhost -p 5432 -U eventuser -d eventmanager -tAc \
-            "select version from flyway_schema_history where type = 'SQL' order by installed_rank limit 1")
+            "select version from flyway_schema_history where type = 'SQL' and version is not null order by installed_rank limit 1")
           echo "Migrations attendues : ${expected} | appliquées : ${applied} | première version jouée : ${first}"
           if [ "$applied" != "$expected" ] || [ "$first" != "1" ]; then
             echo "ÉCHEC : la chaîne V1..Vn n'a PAS été rejouée intégralement sur un schéma vide."

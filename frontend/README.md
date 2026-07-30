@@ -9,7 +9,11 @@ Next.js 15 (Turbopack) · TypeScript 5 · Tailwind CSS v4
 
 ## Démarrer ce module seul
 
+Prérequis : Node 20 (version de la CI et de `frontend/Dockerfile`) — le README racine, lui,
+ne demande que Docker et couvre l'installation complète.
+
 ```bash
+npm install
 npm run dev
 ```
 
