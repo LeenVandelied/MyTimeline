@@ -1,19 +1,31 @@
 # CI — build + tests backend (Spring Boot / Maven) et frontend (Next.js / npm).
 #
-# Branch protection : NON activée par ce workflow (volontaire).
-#   L'activer AVANT un 1er run vert bloquerait TOUS les merges (dont cette PR).
-#   À activer manuellement APRÈS le 1er run vert, par un mainteneur :
+# Branch protection : JAMAIS activée par ce workflow (volontaire).
+#   Un check rendu requis AVANT son 1er run vert bloquerait TOUS les merges, y compris
+#   la PR qui l'introduit. La règle vaut pour tout job ajouté ici : on le laisse tourner
+#   à blanc, puis un mainteneur le rend requis dans un second temps.
 #
-#   gh api -X PUT repos/LeenVandelied/MyTimeline/branches/dev/protection \
-#     -f 'required_status_checks[strict]=true' \
-#     -f 'required_status_checks[checks][][context]=backend' \
-#     -f 'required_status_checks[checks][][context]=frontend' \
-#     -F 'enforce_admins=true' \
-#     -F 'required_pull_request_reviews[required_approving_review_count]=1' \
-#     -F 'restrictions=null'
-#   (idem pour la branche `main`)
-#   Ou via l'UI : Settings → Branches → Add rule → "Require status checks"
-#   (cocher backend + frontend) + "Require a pull request before merging" (1 review).
+# ÉTAT ACTUEL des checks requis sur `dev` (sprint 55, #361) :
+#   backend, frontend, e2e
+#   `e2e` a été ajouté après constat de 2 runs consécutifs 100% verts — un job E2E
+#   instable rendu requis bloque les merges légitimes.
+#   `flyway-smoke` (#356) tourne mais n'est PAS requis : trop peu d'historique.
+#
+# AJOUTER un check requis (PATCH ciblé — ne touche QUE les status checks, laisse
+# intacts enforce_admins / reviews / restrictions, contrairement à un PUT global) :
+#
+#   gh api -X PATCH repos/LeenVandelied/MyTimeline/branches/dev/protection/required_status_checks \
+#     -F strict=true \
+#     -f 'checks[][context]=backend' \
+#     -f 'checks[][context]=frontend' \
+#     -f 'checks[][context]=e2e'
+#
+#   La liste est REMPLACÉE, pas fusionnée : réénumérer les checks à conserver.
+#   Vérifier après coup :
+#     gh api repos/LeenVandelied/MyTimeline/branches/dev/protection \
+#       --jq '.required_status_checks.contexts'
+#   (`main` n'est pas configurée par cette commande — l'adapter si besoin.)
+#   Ou via l'UI : Settings → Branches → règle `dev` → "Require status checks".
 
 name: CI
 
