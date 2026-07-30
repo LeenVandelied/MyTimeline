@@ -85,14 +85,41 @@ export async function ensureRegisterForm(page: Page, options: EnsureRegisterForm
     }
   }
 
+  // #390-fix (F) — la piste de diagnostic est BRANCHÉE sur `lastStatus` : accuser
+  // « 500 du serveur de dev Next » quel que soit le mode de défaillance pointait la
+  // mauvaise cause (le lead a observé ce message avec `ERR_CONNECTION_REFUSED` +
+  // « statut inconnu »). Trois familles distinctes :
+  //   - lastStatus === null  -> `page.goto`/`reload` a JETÉ : serveur injoignable
+  //                             (next dev éteint) ou `baseURL` faux — pas un 5xx.
+  //   - lastStatus === 200   -> la page a répondu OK mais `register-form` ne s'est
+  //                             pas monté : régression de RENDU applicatif (testid
+  //                             rencommé, error boundary), pas le serveur de dev.
+  //   - lastStatus >= 500    -> 500 du serveur de dev Next (clientReferenceManifest).
+  let lead: string
+  if (lastStatus === null) {
+    lead =
+      `Piste — serveur INJOIGNABLE ou baseURL faux : \`page.goto\`/\`reload\` a jeté ` +
+      `(ex. ECONNREFUSED), aucune réponse HTTP reçue. Vérifier que le next dev tourne sur ` +
+      `le port attendu et que PLAYWRIGHT_BASE_URL pointe dessus ` +
+      `(cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md).`
+  } else if (lastStatus >= 500) {
+    lead =
+      `Piste — 500 du serveur de dev Next (InvariantError: Expected clientReferenceManifest ` +
+      `to be defined) : vérifier \`curl -o /dev/null -w "%{http_code}" <baseURL>/fr/register\` ` +
+      `puis REDÉMARRER le next dev (cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md).`
+  } else {
+    lead =
+      `Piste — page servie (HTTP ${lastStatus}) mais \`register-form\` jamais monté : ` +
+      `régression de RENDU applicatif (data-testid renommé, error boundary, hydratation), ` +
+      `pas le serveur de dev. Inspecter le DOM/console de /fr/register.`
+  }
+
   throw new Error(
     `ÉCHEC DE RENDU de /fr/register (${label}) après ${attempts} tentative(s) ` +
       `dont ${attempts - 1} page.reload() — dernier statut HTTP: ${lastStatus ?? 'inconnu'}. ` +
       `Ce n'est PAS un rate-limit register 429 : le formulaire ne s'est JAMAIS affiché, ` +
       `aucun POST /api/auth/register n'a donc été tenté. ` +
-      `Piste n°1 — 500 du serveur de dev Next (InvariantError: Expected clientReferenceManifest ` +
-      `to be defined) : vérifier \`curl -o /dev/null -w "%{http_code}" <baseURL>/fr/register\` ` +
-      `puis REDÉMARRER le next dev (cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md). ` +
+      `${lead} ` +
       `Dernière erreur: ${lastError}`,
   )
 }
