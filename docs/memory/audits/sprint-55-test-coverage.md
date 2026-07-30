@@ -70,9 +70,12 @@ imposait une preuve d'exécution par issue. Toutes ont été produites :
   non testables hors CI — la présence de `psql` sur `ubuntu-latest` et la joignabilité de
   `/actuator/health`. **La PR est ce qui les tranche.** Si le job rougit pour l'une de ces deux
   raisons, c'est un correctif à faire avant merge, pas un blocage de conception.
-- #361 n'est pas couverte : elle n'est pas un changement de code (protection de branche). Sa
-  vérification — « une PR à E2E rouge est refusée » — n'est possible qu'après activation, et
-  l'activation elle-même exige une suite E2E constatée stable.
+- #361 (livrée après cet audit initial) n'est pas un changement de code mais une modification de la
+  protection de branche `dev` : `e2e` est désormais un check requis, décidé par le développeur après
+  constat de **2 runs CI consécutifs 100% verts** (`2b2c5a7` et `911e0fb`). Son critère
+  d'acceptation 2 — « une PR à `e2e` rouge est bloquée » — reste **partiellement prouvé** : GitHub
+  évalue bien le check (PR #402 passée à `CLEAN`/`MERGEABLE` après ajout), mais le cas négatif n'a
+  pas été provoqué. Détail et commande exacte : `docs/memory/sprints/sprint-55/issue-361-done.md`.
 
 ## Conclusion
 
