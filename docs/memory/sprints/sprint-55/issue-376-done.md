@@ -1,7 +1,10 @@
 # Issue #376 — Healthcheck frontend : cibler 127.0.0.1
 
 RETOUR :
-- commits: [SHA_PLACEHOLDER]
+- commits: 1 commit, `:bug: fix(docker): cibler 127.0.0.1 dans le healthcheck frontend (#376)`.
+  Ce rapport étant inclus DANS ce commit, son SHA ne peut pas y figurer (contrainte « 1 seul
+  commit » du briefing) — SHA remonté au lead dans le retour d'agent, et lisible via
+  `git log --oneline --grep '#376'`.
 - resume:
   - `docker-compose.yml:90` — `http://localhost:3000` → `http://127.0.0.1:3000` dans la sonde
     `wget` du service `frontend`, + commentaire de 4 lignes expliquant la cause (résolution

@@ -1,7 +1,7 @@
 # Issue #356 — CI : job smoke Flyway (base vierge + migrate + ddl-auto=validate)
 
 RETOUR :
-- commits: [f9d5058]
+- commits: [b6d9efe]
 - resume: job `flyway-smoke` ajouté dans `.github/workflows/ci.yml` (aucun `needs:`, en
   parallèle). Approche **boot du jar seul**, PAS de CLI `flyway migrate` séparé — écart
   assumé au libellé de l'issue, justifié par la config vérifiée :
