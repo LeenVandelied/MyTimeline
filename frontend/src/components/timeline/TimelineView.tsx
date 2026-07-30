@@ -1011,7 +1011,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           >
             ?
           </button>
-          <div className="mt-tlv__help-pop" id="timeline-help-pop" role="tooltip">
+          <div
+            className="mt-tlv__help-pop"
+            id="timeline-help-pop"
+            data-testid="timeline-help-pop"
+            role="tooltip"
+          >
             {shortcuts.map(([key, desc]) => (
               <div key={key} className="mt-tlv__help-row">
                 <span>{desc}</span>

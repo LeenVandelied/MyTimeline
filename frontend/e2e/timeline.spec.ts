@@ -214,8 +214,11 @@ test.describe("#314 Drawer de création d'événement (shell)", () => {
     await expect(page.getByTestId('shell-new-event-drawer-overlay')).toBeVisible()
 
     // --- Produit (BR-EVE-002) : Select Radix, options en portail ---------------
+    // #390-fix (D) / #331 — sélection par le testid dérivé de la `value`
+    // (`product-option-<id>`, NewEventDrawer.tsx:218), conforme au header du fichier
+    // (« data-testid UNIQUEMENT ») : ce testid était livré SANS aucune spec.
     await page.getByTestId('shell-new-event-drawer-product-trigger').click()
-    await page.getByRole('option', { name: product.name }).click()
+    await page.getByTestId(`product-option-${product.id}`).click()
 
     // --- Titre + durée (type=duration par défaut) -----------------------------
     const eventTitle = unique('Event drawer')
@@ -668,7 +671,10 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     // assertion `toBeVisible()` passerait à tort SANS survol — piège de la même
     // famille que les 28 régressions ratées au S53 (vérification verte qui ne
     // regarde pas la bonne propriété CSS). L'oracle est l'opacité calculée.
-    const pop = page.locator('#timeline-help-pop')
+    // #390-fix (E) — sélecteur par `data-testid` (politique du fichier, header L39) ;
+    // l'`id` reste sur l'élément comme cible d'`aria-describedby` (TimelineView.tsx),
+    // il n'est PAS supprimé, seulement doublé par un testid.
+    const pop = page.getByTestId('timeline-help-pop')
     await expect(pop).toHaveCSS('opacity', '0')
 
     await page.getByTestId('timeline-help').hover()
@@ -806,6 +812,20 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
       geometry.scrollWidth,
       'le rail doit dépasser le viewport pour que le clavier ET le scroll aient un effet',
     ).toBeGreaterThan(geometry.clientWidth)
+
+    // #390-fix (H) — la garde `scrollWidth > clientWidth` ci-dessus n'exclut PAS le
+    // clamp `ratio >= 0.667` (Minimap.tsx:35) : `step = ratio/2` (Minimap.tsx:83) est
+    // alors borné par `1 - ratio`, et `aria-valuenow` (arrondi ENTIER, Minimap.tsx:125)
+    // ne bouge pas -> ArrowRight devient un no-op, flake selon la largeur du rail. On
+    // lit le ratio RÉEL de la fenêtre (largeur du handle = `${ratio*100}%`,
+    // Minimap.tsx:129) et on exige < 50% pour garantir que `step` déplace la valeur.
+    const viewportRatioPct = await viewport.evaluate((el) =>
+      parseFloat((el as HTMLElement).style.width),
+    )
+    expect(
+      viewportRatioPct,
+      'la fenêtre minimap doit couvrir < 50% du rail (sinon ArrowRight est un no-op via le clamp 1-ratio)',
+    ).toBeLessThan(50)
 
     // --- Clavier (role=slider, ArrowRight) ----------------------------------
     const before = await viewport.getAttribute('aria-valuenow')
@@ -945,6 +965,15 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     await expect(
       page.locator('[data-testid="timeline-event-outside-label"]').filter({ hasText: lowContrastTitle }),
     ).toHaveText(lowContrastTitle)
+
+    // #390-fix (C) — garde de PRÉSENCE : sans elle, le `toHaveCount(0)` ci-dessous
+    // serait vacuously vert si la pastille high-contrast n'était pas rendue du tout
+    // (event absent du fetch, packing de lane, seed ignoré) — la variable COULEUR,
+    // objet même du test, ne serait alors jamais isolée. On exige d'abord la
+    // pastille PORTEUSE, PUIS l'absence de son libellé extérieur.
+    await expect(
+      page.locator(`[data-testid="timeline-event"][data-event-title="${highContrastTitle}"]`),
+    ).toHaveCount(1)
     await expect(
       page
         .locator('[data-testid="timeline-event-outside-label"]')
