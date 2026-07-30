@@ -75,8 +75,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/fr   # 200
 
 Le backend attend que PostgreSQL soit `healthy` avant de démarrer (Flyway et
 `ddl-auto=validate` exigent un schéma joignable) : comptez une bonne minute avant qu'il
-réponde. Ne vous fiez pas à la colonne santé de `docker compose ps` pour le frontend, elle est
-fausse — voir « Pièges connus » n° 4.
+réponde. `docker compose ps` reflète fidèlement l'état des trois services : les trois passent
+`healthy` une fois la pile prête.
 
 ### Créer un premier compte
 
@@ -163,19 +163,6 @@ jamais silencieusement.
   rouges : deux workers génèrent chacun leur identité de test et l'assertion `toHaveValue`
   compare deux identifiants différents. Rien à voir avec le code testé. (La CI est déjà en
   `workers: 1`.)
-
-### 4. `docker compose ps` affiche le frontend `unhealthy` alors qu'il fonctionne
-
-La sonde du service `frontend` interroge `http://localhost:3000` avec le `wget` de BusyBox.
-Dans le conteneur, `localhost` résout d'abord en `::1` alors que Next n'écoute que sur
-`0.0.0.0:3000` (IPv4) : la sonde échoue systématiquement (`can't connect to remote host:
-Connection refused`) et le service reste marqué `unhealthy` **en permanence**, y compris quand
-l'application répond parfaitement depuis l'hôte. Aucun service ne dépend de cette sonde, donc
-la pile démarre quand même. Jugez sur l'URL, pas sur la colonne santé :
-
-```bash
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:3000/fr   # 200 attendu
-```
 
 ## Tests
 
