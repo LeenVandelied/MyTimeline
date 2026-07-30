@@ -842,6 +842,24 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
   }, [])
 
+  // #395 — État plein écran DÉRIVÉ de l'événement `fullscreenchange` du document
+  // (source de vérité du navigateur), et JAMAIS basculé à la main dans
+  // `toggleFullscreen`. Le plein écran s'entre/se quitte par au moins 4 chemins
+  // qui ne passent pas tous par le bouton : la touche Échap gérée plus bas,
+  // le raccourci F, l'Échap NATIF du navigateur, F11/le menu du navigateur.
+  // Un `useState` basculé dans le handler dériverait sur les cas 1/3/4 →
+  // `aria-pressed` annoncerait « activé » hors plein écran, c.-à-d. un attribut
+  // qui MENT au lecteur d'écran (pire que l'absence d'état observable).
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  useEffect(() => {
+    const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement))
+    // État initial : le composant peut être monté alors que la page est DÉJÀ en
+    // plein écran (navigation client-side), aucun événement ne serait émis.
+    syncFullscreen()
+    document.addEventListener('fullscreenchange', syncFullscreen)
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen)
+  }, [])
+
   // Zoom Cmd/Ctrl + molette (client-only, no refetch). Respecte reduced-motion
   // via le CSS scroll-behavior guard ; ici on ne fait que changer le niveau.
   const onWheel = useCallback((e: React.WheelEvent) => {
@@ -1058,6 +1076,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           className="mt-tlv__help-btn"
           onClick={toggleFullscreen}
           aria-label={t('dashboard.timeline.help.fullscreen')}
+          // #395 — bascule ARIA valide sur un `<button>` (état binaire activable) ;
+          // s'AJOUTE à l'`aria-label`, ne le remplace pas. Reflète `document.
+          // fullscreenElement` via `fullscreenchange`, pas un état local optimiste.
+          aria-pressed={isFullscreen}
           data-testid="timeline-fullscreen"
         >
           <Maximize2 size={13} strokeWidth={1.5} aria-hidden="true" />

@@ -189,6 +189,37 @@ describe('TimelineView', () => {
     await waitFor(() => expect(fsSpy).toHaveBeenCalled())
   })
 
+  it('#395 — `aria-pressed` du bouton plein écran suit `fullscreenchange`, y compris une sortie hors bouton', async () => {
+    const user = userEvent.setup()
+    // jsdom n'implémente pas `document.fullscreenElement` : on le pilote via une
+    // variable, et on ÉMET `fullscreenchange` comme le ferait un vrai navigateur.
+    let active = false
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      get: () => (active ? document.documentElement : null),
+    })
+    Element.prototype.requestFullscreen = vi.fn().mockImplementation(() => {
+      active = true
+      document.dispatchEvent(new Event('fullscreenchange'))
+      return Promise.resolve()
+    })
+    setup()
+
+    const btn = screen.getByTestId('timeline-fullscreen')
+    expect(btn).toHaveAttribute('aria-pressed', 'false')
+    // L'`aria-label` préexistant est CONSERVÉ (aria-pressed s'y ajoute).
+    expect(btn.getAttribute('aria-label')).toBeTruthy()
+
+    await user.click(btn)
+    await waitFor(() => expect(btn).toHaveAttribute('aria-pressed', 'true'))
+
+    // Sortie SANS passer par le bouton (Échap natif, F11, menu du navigateur) :
+    // un état basculé à la main dans `onClick` resterait bloqué sur `true` ici.
+    active = false
+    fireEvent(document, new Event('fullscreenchange'))
+    await waitFor(() => expect(btn).toHaveAttribute('aria-pressed', 'false'))
+  })
+
   it('le bloc event expose un aria-label riche (titre + statut + dates + produit)', () => {
     setup()
     const first = screen.getAllByTestId('timeline-event')[0]

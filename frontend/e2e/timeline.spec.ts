@@ -720,24 +720,87 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
         configurable: true,
         get: () => (active ? root : null),
       })
+      // #395 — le stub DOIT émettre `fullscreenchange` à chaque transition, comme
+      // le fait un vrai navigateur. Sans cela il est INFIDÈLE : un composant qui
+      // dérive correctement son état de cet événement (source de vérité) resterait
+      // figé sous le stub, et le test rougirait sur du code JUSTE. Émettre l'événement
+      // rend le stub plus proche du réel, PAS plus permissif.
       Element.prototype.requestFullscreen = function requestFullscreenStub() {
         active = true
         window.__fullscreenCalls = (window.__fullscreenCalls ?? 0) + 1
+        document.dispatchEvent(new Event('fullscreenchange'))
         return Promise.resolve()
       }
       document.exitFullscreen = function exitFullscreenStub() {
         active = false
         window.__fullscreenExits = (window.__fullscreenExits ?? 0) + 1
+        document.dispatchEvent(new Event('fullscreenchange'))
         return Promise.resolve()
       }
     })
+
+    // #395 — état observable AVANT toute interaction : le bouton s'annonce non actif.
+    const fsButton = page.getByTestId('timeline-fullscreen')
+    await expect(fsButton).toHaveAttribute('aria-pressed', 'false')
+
     await page.getByTestId('timeline-fullscreen').click()
     await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true)
     expect(await page.evaluate(() => window.__fullscreenCalls)).toBe(1)
+    // Oracle #395 : un changement d'état RÉELLEMENT visible dans l'UI, pas seulement
+    // l'appel d'une API stubée. Ce test rougirait si le clic ne changeait plus l'UI.
+    await expect(fsButton).toHaveAttribute('aria-pressed', 'true')
 
     await page.getByTestId('timeline-fullscreen').click()
     await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false)
     expect(await page.evaluate(() => window.__fullscreenExits)).toBe(1)
+    await expect(fsButton).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test('plein écran : `aria-pressed` suit une SORTIE qui ne passe pas par le bouton (#395)', async ({
+    page,
+  }) => {
+    // Cas DISCRIMINANT de l'issue #395 : c'est lui — et lui seul — qui distingue un
+    // état dérivé de `fullscreenchange` d'un `useState` basculé dans le handler du
+    // bouton. Le plein écran se quitte aussi par la touche Échap (gérée par le
+    // composant), l'Échap NATIF du navigateur, F11 ou le menu du navigateur : aucun
+    // de ces chemins ne repasse par `onClick`. Un état optimiste resterait à `true`
+    // et le bouton annoncerait « activé » hors plein écran (attribut MENSONGER,
+    // annoncé tel quel par un lecteur d'écran). Ici on sort SANS toucher le bouton.
+    await gotoTimelineWithProduct(page)
+    await page.evaluate(() => {
+      let active = false
+      const root = document.documentElement
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => (active ? root : null),
+      })
+      Element.prototype.requestFullscreen = function requestFullscreenStub() {
+        active = true
+        window.__fullscreenCalls = (window.__fullscreenCalls ?? 0) + 1
+        document.dispatchEvent(new Event('fullscreenchange'))
+        return Promise.resolve()
+      }
+      document.exitFullscreen = function exitFullscreenStub() {
+        active = false
+        window.__fullscreenExits = (window.__fullscreenExits ?? 0) + 1
+        document.dispatchEvent(new Event('fullscreenchange'))
+        return Promise.resolve()
+      }
+    })
+
+    const fsButton = page.getByTestId('timeline-fullscreen')
+    await fsButton.click()
+    await expect(fsButton).toHaveAttribute('aria-pressed', 'true')
+
+    // Sortie HORS bouton (équivalent Échap natif / F11 / menu navigateur).
+    await page.evaluate(() => document.exitFullscreen())
+    await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false)
+    await expect(fsButton).toHaveAttribute('aria-pressed', 'false')
+    // Le bouton reste fonctionnel APRÈS une sortie externe : il ré-entre en plein
+    // écran (et n'essaie pas de « sortir » d'un état qu'il croirait encore actif).
+    await fsButton.click()
+    await expect(fsButton).toHaveAttribute('aria-pressed', 'true')
+    expect(await page.evaluate(() => window.__fullscreenCalls)).toBe(2)
   })
 })
 
