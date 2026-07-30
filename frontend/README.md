@@ -13,7 +13,7 @@ Prérequis : Node 20 (version de la CI et de `frontend/Dockerfile`) — le READM
 ne demande que Docker et couvre l'installation complète.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 

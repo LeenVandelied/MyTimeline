@@ -18,7 +18,7 @@ Sprint 55 ne touche **aucun code applicatif**. Les 5 fichiers modifiés sont :
 n'est ajouté. Il n'existe donc aucune ligne de test unitaire, d'intégration ou E2E à écrire : un test
 qui « couvrirait » un `.env.example` ne testerait que lui-même.
 
-`BR-AUT-005` (anti-énumération sur `forgot-password`) est **citée** dans un commentaire de
+`BR-AUT-012` (anti-énumération sur `forgot-password`) est **citée** dans un commentaire de
 `.env.example` pour expliquer pourquoi une clé Brevo vide renvoie quand même 200. Son comportement
 n'est ni modifié ni retesté — la citation documente l'existant.
 
