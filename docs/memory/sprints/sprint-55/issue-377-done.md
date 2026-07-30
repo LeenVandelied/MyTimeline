@@ -1,5 +1,5 @@
 RETOUR :
-- commits: (voir git log après commit ci-dessous)
+- commits: 2737191
 - resume: arbitrage retenu = réduire à un court renvoi (option recommandée par le briefing).
   frontend/README.md remplace le stub create-next-app par un renvoi vers ../README.md,
   stack (Next.js 15/TS 5/Tailwind v4), commande `npm run dev` vérifiée dans package.json,
