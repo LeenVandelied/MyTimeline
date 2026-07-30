@@ -331,3 +331,28 @@ pour deux raisons : il explicite le pont DS → Tailwind, et il protège si un f
 (« sinon `leading-tight` régresse 1.08 → 1.25 ») était **fausse** et a été réécrite dans le code plutôt que
 laissée en place : un commentaire faux aurait empoisonné l'audit #340. `--tracking-*` n'est **pas** mappé :
 même mécanisme, mêmes valeurs DS déjà gagnantes — l'ajouter serait purement cosmétique.
+
+## DEC-S55-001 — Le smoke Flyway boote le jar au lieu d'invoquer le CLI `flyway migrate`
+L'issue #356 demandait « `flyway migrate` + `ddl-auto=validate` ». Retenu : **booter le jar contre une base
+vierge**, sans CLI. Justification : `application.properties:25` pose `spring.flyway.enabled=true` et
+`application-dev.properties:9` **comme** `-prod.properties:9` posent `ddl-auto=validate` — le démarrage FAIT
+déjà migrate puis validate. Un CLI séparé aurait testé un **chemin parallèle**, susceptible de diverger du
+chemin réellement emprunté en production. Le libellé de l'issue nommait un outillage ; la propriété à prouver
+est « une base vierge produit un schéma qu'Hibernate valide ». Écart assumé, inscrit dans le commentaire du
+job. Vérifié : run CI réel vert en 48 s, `attendues 15 | appliquées 15 | première version 1`.
+
+## DEC-S55-002 — Un « Piège connu » du README documentant un bug corrigé se SUPPRIME, il ne se réécrit pas
+#376 corrige le healthcheck que le « Piège n° 4 » décrivait. La section est supprimée et le renvoi de
+`README.md:76-79` réécrit ; l'explication technique (« pourquoi 127.0.0.1 ») migre en commentaire dans
+`docker-compose.yml`. Motif : « Pièges connus » s'adresse à l'utilisateur qui démarre la pile — un piège
+résolu n'y a plus sa place et rend le README menteur ; le « pourquoi » s'adresse au mainteneur qui éditerait
+le YAML, et c'est **là** qu'il empêche la régression. Contrôle associé : vérifier qu'aucun renvoi n'est
+orphelin et que la numérotation reste continue (ici 1-3, n° 4 était la dernière).
+
+## DEC-S55-003 — `e2e` rendu requis sur `dev` ; `flyway-smoke` NON
+Arbitrage du développeur (#361, 2026-07-30) après constat de **2 runs consécutifs 100% verts** : checks
+requis `dev` = `backend, frontend, e2e`. `flyway-smoke`, livré le même sprint, reste **non requis** — 2 runs
+verts seulement, tous deux sur la même PR : le rendre requis reproduirait le risque que #361 documente.
+Commande retenue : `PATCH` sur `…/protection/required_status_checks` et **non** le `PUT` global que
+documentait l'en-tête de `ci.yml` — le `PUT` réécrit toute la protection et aurait écrasé `enforce_admins`
+et les reviews au passage. Vérifié après coup : `enforce_admins: true` et reviews `0` inchangés.

@@ -565,6 +565,11 @@ anneau. **Corollaire pour #339** : cette règle non-layerisée est **porteuse d'
 `/etc/hosts` du conteneur mappe `localhost` sur `127.0.0.1` **et** `::1` ; BusyBox wget tente `::1` d'abord ;
 Next standalone n'écoute que sur `0.0.0.0:3000` (IPv4). Le service `frontend` du compose est donc marqué
 `unhealthy` en permanence. Solution : cibler `127.0.0.1` explicitement dans le healthcheck.
+> **RÉSOLU en #376 (Sprint 55, 2026-07-30)** — `docker-compose.yml` vise `127.0.0.1`, vérifié par un
+> `docker compose up` réel (`frontend Up (healthy)`, `FailingStreak: 0`). Le « Piège connu n° 4 » du
+> README a été supprimé et l'explication déplacée en commentaire au contact du YAML. **Le pitfall
+> reste valable comme règle générale** : `backend` et `postgres` sondent toujours `localhost`
+> (`docker-compose.yml:23` et `:59`) et ne sont verts que par repli IPv4 de `pg_isready`/`curl`.
 
 ## PIT-S52-006 — Un plan d'architecte peut produire le FAUX négatif de chemin fantôme
 5ᵉ sprint consécutif de « chemins fantômes » — mais cette fois **l'architecte a déclaré à tort qu'un fichier
@@ -673,3 +678,30 @@ API vs UI en 2 s. Corollaire de méthode observé côté lead : **ne jamais lanc
 concurrentes** contre un backend/une base uniques — la contention a produit 8 puis 12 rouges sur un code
 identique (`event-outside-label` rougissait sous contention, passe au run isolé). La règle `--workers=1` du
 runbook S47 vaut aussi AU-DESSUS du process Playwright. Cf. [[mytimeline-e2e-ci-only-gate]].
+
+## PIT-S55-001 — Un placeholder NON VIDE dans `.env.example` défait le no-op qu'il documente
+`BrevoEmailService:64` no-ope sur `apiKey.isBlank()`. Livrer `BREVO_API_KEY=xkeysib-REMPLACER-PAR-VOTRE-CLE`
+fait donc prendre la branche HTTP : POST réel vers l'API → 401 → `log.error`, soit l'**inverse exact** du
+« no-op silencieux » promis par le commentaire deux lignes au-dessus — et le fichier dit au dev de le copier
+vers `.env`. Solution : valeur **vide**, format attendu dans le commentaire. Jumeau du même bug : une ligne
+`VAR=` **exportée** (`set -a; . .env`, `env_file:`) fait EXISTER la propriété Spring avec la chaîne vide, qui
+**écrase** `${var:default}` — commenter la ligne (`#BREVO_SENDER_EMAIL=`) pour que le défaut s'applique.
+Prévention : pour chaque variable d'un `.env.example`, vérifier **dans le code** (a) si la branche teste
+`isBlank()`, (b) si un défaut applicatif doit s'appliquer. Trouvé en revue, pas à l'écriture.
+
+## PIT-S55-002 — `git commit --amend` en fan-out réécrit le commit d'un AUTRE agent
+Sprint 55 : un agent a amendé pour remplacer un SHA placeholder dans son propre rapport. Entre son commit et
+son amend, un autre agent avait poussé HEAD — **l'amend a réécrit le commit de l'autre**, qui porte désormais
+4 lignes du rapport du premier. Rien perdu (`git log --stat`), historique faux. `--amend` réécrit le HEAD
+*courant*, qui en fan-out n'est pas forcément le sien : aussi destructeur que `reset`. **Cause racine** :
+demander à l'agent d'écrire son propre SHA dans son rapport crée mécaniquement le besoin d'amender.
+Solution : ne pas le demander, ou accepter un 2ᵉ commit. Ajouter `--amend` à la liste des verbes git
+interdits des briefings, aux côtés de `reset`/`rebase`/`checkout`/`stash`/`clean`.
+Cf. [[sprint-parallel-commits-shared-worktree]].
+
+## PIT-S55-003 — Le triage `/review-pr` compte les lignes de `docs/` et peut produire une review VIDE
+PR #402 : 633 lignes → mode TEAM (seuil 300). Mais 355 de ces lignes sont des artefacts `docs/memory/**` que
+la consolidation ne review pas, et les 4 spawns de la phase B.3 sont gatés sur `HAS_BACKEND`/`HAS_FRONTEND`/
+`HAS_AUTH`/`HAS_DB` — **tous à 0** sur une PR devops/docs. TEAM aurait donc spawné **zéro reviewer**.
+Solution : basculer en SOLO et le dire. Prévention : compter les lignes **hors `docs/`** pour le seuil, ou
+tester qu'au moins un reviewer est éligible avant d'entrer en TEAM.

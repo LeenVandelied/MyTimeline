@@ -49,4 +49,19 @@
 - CI non rejouée localement (impossible) : les deux modifications de `ci.yml` sont tranchées par
   le run déclenché par le push.
 
+## Recommandations suite
+
+- `RECOMMAND_FOLLOWUP` — `BrevoEmailService.java:84` (commentaire du `catch`) et le javadoc de
+  classe (~l.30) citent `BR-AUT-005` au lieu de `BR-AUT-012`. C'est la **source** de l'erreur de
+  citation propagée dans `.env.example` puis dans l'audit. [XS | auth]
+- `RECOMMAND_FOLLOWUP` — `docker-compose.yml` ne propage aucune variable `BREVO_*` au service
+  backend : renseigner `.env` seul ne les active pas sous `docker compose up`. Décision de
+  conception, pas une correction de revue. [S | infrastructure]
+- Pas de `RECOMMAND_DB_EXPERT` : aucune migration, aucun `.sql` touché.
+- Pas de `RECOMMAND_SECURITY` : aucun code d'authentification modifié — le seul fichier lié à un
+  secret est `.env.example`, dont la valeur livrée est désormais **vide**.
+- Pas de `RECOMMAND_TEST_RUNNER` : aucun code applicatif touché, la suite est exercée par la CI
+  de la PR (5/5 verts).
+- Pas de `RECOMMAND_UI_DESIGN` : aucun `.tsx`, aucun token, aucun rendu modifié.
+
 STATUS: COMPLETED
