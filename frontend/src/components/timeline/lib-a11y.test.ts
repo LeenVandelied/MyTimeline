@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { FullCalendarEvent } from '@/types/event'
+import { DEFAULT_COLOR, type FullCalendarEvent } from '@/types/event'
 import { buildEventAriaLabel, eventLabelReadableInside } from './lib'
 
 /**
@@ -90,10 +90,19 @@ describe('eventLabelReadableInside (garde-fou contraste, point 6)', () => {
     expect(eventLabelReadableInside('#A7B83A')).toBe(true)
   })
 
-  it('indigo par défaut #6366f1 → aucune encre n’atteint 4.5:1 (4.47, false → libellé dehors)', () => {
-    // Cas réel : la couleur event par défaut est le pire cas (ni noir ni blanc ne
-    // passe AA), d'où le libellé de secours À L'EXTÉRIEUR de la barre.
+  it('indigo #6366f1 → aucune encre n’atteint 4.5:1 (4.47, false → libellé dehors)', () => {
+    // Échantillon de couleur NON conforme : ni noir ni blanc ne passe AA sur ce ton,
+    // d'où le libellé de secours À L'EXTÉRIEUR de la barre. #393 : ce hex a CESSÉ
+    // d'être la couleur event par défaut (c'était précisément le bug — l'état normal
+    // était le pire cas) ; il reste un excellent cas de test du fallback.
     expect(eventLabelReadableInside('#6366f1')).toBe(false)
+  })
+
+  // #393 — FILET ANTI-RÉGRESSION : la couleur event par défaut doit rester lisible
+  // DEDANS. Porte sur la constante IMPORTÉE (pas un littéral recopié) → rougit si
+  // quelqu'un remet un jour un `DEFAULT_COLOR` sous 4.5:1.
+  it('DEFAULT_COLOR → lisible DEDANS (AA franchi, pas de libellé dehors)', () => {
+    expect(eventLabelReadableInside(DEFAULT_COLOR)).toBe(true)
   })
 
   it('couleur absente → considéré lisible (theming DS, true)', () => {

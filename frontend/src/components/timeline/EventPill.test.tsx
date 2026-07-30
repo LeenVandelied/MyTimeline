@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { EventPill } from './EventPill'
 import { makePositionedEvent } from './fixtures'
 import { INK_DARK, INK_LIGHT } from '@/lib/color'
+import { DEFAULT_COLOR } from '@/types/event'
 
 /**
  * #192 — Tests de rendu EventPill. Composant présentation pur (aucune dep
@@ -105,8 +106,25 @@ describe('EventPill', () => {
       expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
     })
 
+    // #393 — CRITÈRE D'ACCEPTATION rendu : un event créé SANS couleur explicite
+    // (mapping → `DEFAULT_COLOR`) doit afficher son libellé DEDANS. Avant #393 ce
+    // cas tombait dans le test suivant (libellé dehors) à l'état NORMAL.
+    it('event sans couleur explicite (DEFAULT_COLOR) → libellé DEDANS, aucun libellé dehors', () => {
+      render(
+        <EventPill
+          event={makePositionedEvent({ color: DEFAULT_COLOR })}
+          ariaLabel="x"
+          onSelect={() => {}}
+        />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(within(pill).getByText('Péremption')).not.toHaveAttribute('aria-hidden')
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
     it('GARDE aria-hidden sur le span titre quand le contraste échoue dedans (libellé répété dehors)', () => {
       // #6366f1 → max 4.47:1 < AA → titre répété DEHORS → span interne décoratif.
+      // #393 : ce hex n'est PLUS le défaut de l'app, c'est un échantillon non conforme.
       render(
         <EventPill
           event={makePositionedEvent({ color: '#6366f1' })}
