@@ -43,10 +43,27 @@ const REGISTER_BACKOFF_MS = 20_000
  * d'échec explicatif n'était JAMAIS atteint. Constaté au S54 : 4/4 `provision` en
  * `timedOut` à 30 s, sans une seule ligne de diagnostic exploitable.
  *
- * Pire cas couvert ici : rendu (3 x 8 s + 2 x 2 s) + soumission (3 x 8 s + 2 x 20 s)
- * + login/dashboard, soit ~110 s.
+ * Pire cas RECALCULÉ (review S54 — le calcul précédent annonçait ~110 s en OUBLIANT
+ * les deux `ensureRegisterForm(mode:'recover')` du bloc catch, qui ne sont pas des
+ * vérifications instantanées mais des boucles de retry complètes) :
+ *
+ *   rendu initial, succès à la dernière tentative     8 + 2 + 8 + 2      = 20 s
+ *   itération 1 : attente login-form + backoff + recover   8 + 20 + 20   = 48 s
+ *   itération 2 : idem                                     8 + 20 + 20   = 48 s
+ *   itération 3 : attente login-form puis `throw`                        =  8 s
+ *   remplissage du formulaire (3 x ~1 s)                                 =  3 s
+ *                                                                     ------------
+ *                                                                        ~127 s
+ *
+ * Le budget doit couvrir ce pire cas SANS expirer, sinon on retombe exactement dans
+ * le défaut que #329 corrige : le message de diagnostic n'est jamais atteint. 150 s
+ * ne laissait que ~23 s de marge sur une infrastructure PARTAGÉE par les 134 tests
+ * (un dépassement ici les bloque tous) -> porté à 180 s.
+ *
+ * Note : si un `recover` épuise ses 3 tentatives, il lève AVANT (à ~28 s) avec le
+ * message d'ÉCHEC DE RENDU — chemin plus court, déjà couvert.
  */
-const PROVISION_TIMEOUT_MS = 150_000
+const PROVISION_TIMEOUT_MS = 180_000
 
 async function fillRegister(account: E2eAccount, page: Page): Promise<void> {
   await page.getByTestId('register-email').fill(account.email)
