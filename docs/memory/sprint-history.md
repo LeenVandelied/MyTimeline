@@ -1931,3 +1931,203 @@ Le CRITIQUE (budget `PROVISION_TIMEOUT_MS`) : **sévérité revue à la baisse**
   - **Sans objet :** R3 et R5 de l'audit (`JWT_SECRET` supprimé par #323) · #112 (purge historique) déjà close
   - **Ratio discard : 0/11** — aucun follow-up jugé non pertinent par le dev.
   - **Aucun milestone attaché** : « Sprint 51 » contient déjà ses 3 issues planifiées (#328, #349, #351) et le plan plafonne à 3 issues / ~10 points.
+
+---
+
+# Plan S55 → S59 — `/sprint plan 5` du 2026-07-30
+
+## ⚠ Bilan d'écart S52-S54 — à lire avant de planifier quoi que ce soit
+
+Un plan écrit le 2026-07-29 avait porté S52/S53/S54 à **27 issues** au total. Mesure faite le 2026-07-30 :
+
+| | |
+|---|---:|
+| Issues planifiées sur S52+S53+S54 | 27 |
+| **Réellement livrées** | **8** |
+| Détachées de leur milestone sans être faites | 14 |
+| Restées ouvertes dans un milestone **fermé** (invisibles au suivi) | 5 |
+| Nouvelles issues créées par les reviews de ces 3 sprints | 18 |
+| **Backlog ouvert : 107 → 117** | **+10** |
+
+**Le mode d'échec n'est pas le retard, c'est le re-scope silencieux** : les sprints ont été exécutés
+à 3 issues et l'excédent détaché sans trace. **Capacité réellement observée : 2,7 issues / 5,7 pts
+par sprint.**
+
+> **Garde-fou à imposer à chaque `/sprint end` :** toute issue non livrée **reste dans son
+> milestone** et est explicitement reportée. Jamais détachée. Et ne jamais fermer un milestone qui
+> contient encore des issues ouvertes (5 orphelines l'ont été dans « Sprint 52 »).
+
+## ⚠ Décalage milestone ↔ titre, assumé
+
+Le numéro 55 est pris par le milestone « Mise en ligne (GELÉ — hébergeur à définir) ».
+**Les milestones de ce plan sont donc décalés de +1** : Sprint 55 → #56, Sprint 56 → #57,
+Sprint 57 → #58, Sprint 58 → #59, Sprint 59 → #60. Le numéro réel est consigné dans chaque entrée.
+
+## ⚠ Garde-fous d'environnement à recopier dans TOUS les briefings
+
+- **`git log origin/dev` MENT** — le hook RTK masque les commits de merge. Il a renvoyé `a278be2`
+  alors que `origin/dev` = `91c2f4a`. **Réfs fiables : `git show-ref origin/dev` ou
+  `rtk proxy git ls-remote origin refs/heads/dev`.** Un plan entier a été construit sur cette
+  fausse SHA avant qu'un architect ne le corrige.
+- Le checkout principal était **58 commits en retard** au moment de la planification. Lire un
+  fichier de référence via `git show origin/dev:<path>`.
+- Chemin corrigé : le middleware est `frontend/middleware.ts`, **pas** `frontend/src/middleware.ts`.
+
+## Sprint 55 — 2026-07-30 (PLANIFIE — MVP local : un clone vierge démarre sans contradiction)
+**Objectif :** Solder les écarts entre ce que le README promet et ce que le dépôt fait
+**Milestone GitHub :** #56
+**Issues (5) :** #366 (P3/XS), #376 (P3/XS), #356 (P2/XS), #377 (P3/XS), #361 (P3/XS) — **5 pts**
+**Vagues :** V1 = les 5 en parallèle (fichiers strictement disjoints)
+**Cohésion :** 0.08 — ⚠ sous le seuil 0.3, split **rejeté** : ces items sont la clause « un clone
+démarre » du critère MVP et rien d'autre ; les regrouper par domaine les étalerait sur 3 sprints.
+**Migrations Flyway :** aucune (V16 reste libre)
+**Depend de :** rien
+**Status :** Planifie
+**Écart au plan validé :** #361 (job `e2e` requis sur `dev`) a été **ajoutée par le lead**.
+L'architect l'avait classée hors plan tout en la désignant « le regret le plus sérieux » : sans elle,
+une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 pts pour un plafond de
+10 — l'ajout ne déplace rien.
+**Vérification :** unitaire insuffisant partout. #376 → `docker compose up` + `ps` montrant
+`healthy`. #356 → run CI observé sur base vierge. #361 → constat qu'une PR à E2E rouge est refusée.
+
+## Sprint 56 — 2026-07-30 (PLANIFIE — MVP local : la frise redevient utilisable à la souris)
+**Objectif :** Lever le seul défaut vérifié du parcours cœur qui rend une action utilisateur impossible
+**Milestone GitHub :** #57
+**Issues (4) :** #392 (P2/S), #393 (P3/XS), #395 (P2/S), #391 (P3/XS) — **6 pts**
+**Vagues :** V1 = #392 ∥ #393 | V2 = #395 | V3 = #391
+**Cohésion :** 0.44
+**Migrations Flyway :** aucune
+**Depend de :** rien
+**Status :** Planifie
+
+> **Trois vagues pour 4 issues** : #392, #395 et #391 modifient **toutes** `frontend/e2e/timeline.spec.ts`.
+> #392 et #395 modifient en plus tous deux `TimelineView.tsx`.
+> **#392 exige un E2E** : jsdom ne fait pas de hit-testing, aucun test unitaire ne verra
+> « intercepts pointer events ». Plus navigateur clair+sombre aux 4 niveaux de zoom.
+
+## Sprint 57 — 2026-07-30 (PLANIFIE — MVP local : réglages sous le shell, gardes de routes, dernier 500)
+**Objectif :** Unifier le shell applicatif et fermer le seul 500 prouvé dans le code
+**Milestone GitHub :** #58
+**Issues (4) :** #299 (P2/S), #318 (P2/S), #312 (P3/XS), #398 (P3/XS) — **6 pts**
+**Vagues :** V1 = #299 ∥ #312 | V2 = #318 ∥ #398
+**Cohésion :** 0.22 — ⚠ sous le seuil. Split **rejeté** : sortir #312 remonterait à 0.31, mais le
+critère de sortie dit littéralement « sans erreur 500 », ce 500 est prouvé, et il coûte 1 pt.
+Le déporter pour un gain de métrique serait exactement le re-scope silencieux à éviter.
+**Migrations Flyway :** aucune
+**Depend de :** rien — mais **bloque** toute issue ultérieure qui lit l'arborescence `(app)/`
+**Status :** Planifie
+
+> **Dépendance dure #299 → #318, vérifiée :** `auth-guard-paths.ts:47` déclare
+> `PROTECTED_EXTRA_SEGMENTS = ['settings']` **parce que** settings vit hors de `(app)`. Après #299
+> elle doit devenir vide. Faire #318 d'abord = écrire un test à réécrire.
+> **Bonne nouvelle non dite par #299 :** settings est **un seul `page.tsx`**, pas une arborescence
+> profonde — le risque « périmètre plus large » annoncé par l'issue est infirmé.
+> **Arbitrage `ui-design` requis avant démarrage** (structure cible du shell).
+
+## Sprint 58 — 2026-07-30 (PLANIFIE — MVP local : cascade `:focus-visible` et dette WCAG du DS)
+**Objectif :** Layeriser `:focus-visible` sans perdre d'indicateur de focus, et solder la dette WCAG des bordures
+**Milestone GitHub :** #59
+**Issues (4) :** #383 (P1/M), #375 (P2/S), #352 (P3/S), #353 (P3/XS) — **8 pts**
+**Vagues :** V1 = #383 **seule** | V2 = #353 ∥ #352 ∥ #375
+**Cohésion :** 0.87
+**Migrations Flyway :** aucune
+**Depend de :** rien
+**Status :** Planifie
+
+> ⚠ **Sprint le plus susceptible de déraper — deux mesures.**
+> 1. **#383 est sous-estimée d'un facteur 2** : l'issue annonce ~14 sites, le comptage réel sur
+>    `origin/dev` donne **33 occurrences de `outline-none`/`outline-hidden` dans 20 fichiers**.
+>    L'estimation M (3 pts) est vraisemblablement fausse.
+> 2. **Régression WCAG 1.4.11 CERTAINE si on layerise naïvement** : `ui/language-selector.tsx` n'a
+>    **aucun anneau de focus propre**, ce contour global est son unique indicateur. Idem
+>    `ExportDataFlow.tsx`. Il faut donner un indicateur propre à chaque site **avant** de layeriser.
+>
+> **Navigateur clair + sombre obligatoire sur les 4 — aucun test unitaire n'est recevable** :
+> jsdom ne résout pas `@layer`, qui est précisément le mécanisme en cause. #375 exige Firefox **et**
+> WebKit. ⚠ **#342 (non planifiée) touche `language-selector.tsx`** — ne pas la planifier en parallèle.
+> **Arbitrage `ui-design` requis** : un reset de focus a-t-il le droit d'imposer un `border-radius` ?
+
+## Sprint 59 — 2026-07-30 (PLANIFIE — MVP local : header et hiérarchie typographique de la landing)
+**Objectif :** Solder les défauts de rendu du header aux paliers 768-1024 px et l'échelle typo de la landing
+**Milestone GitHub :** #60
+**Issues (4) :** #381 (P2/S), #379 (P2/S), #348 (P2/S), #341 (P2/S) — **8 pts**
+**Vagues :** V1 = #381 (mesure) ∥ #341 (investigation) | V2 = #379 | V3 = #348
+**Cohésion :** 0.81
+**Migrations Flyway :** aucune
+**Depend de :** Sprint 58 (#353 agrandit le déclencheur de langue **dans le header**)
+**Status :** Planifie — **le lot le plus faible en valeur MVP des cinq, d'où sa position**
+
+> ⚠ **#381, #379 et #348 visent LA MÊME LIGNE `HeaderSection.tsx:110`** — et leurs numéros de ligne
+> se contredisent (#348 dit 54, #379 dit 86, #381 dit 110). **La vérité est 110.** Chaîne
+> strictement séquentielle, jamais en parallèle.
+> **#341 : mesure négative utile** — aucun `<svg>` ni `<g ` littéral dans
+> `frontend/src/components/landing/*.tsx`. Le coupable vient d'une dépendance (lucide-react) ou de
+> `HeroTimelineAnimation.tsx`. **La piste technique de l'issue n'est PAS confirmée**, investigation
+> avant estimation.
+> **#381 doit être mesurée dans l'image `playwright:jammy`** : les métriques de police macOS ont
+> fait conclure à tort deux sprints de suite (PIT-S52-001). Un test `scrollWidth <= clientWidth`
+> seul est **non recevable** — un logo sur 2 lignes le satisfait.
+> **Tension d'AC à trancher :** #348 interdit d'introduire `text-4xl`/`text-5xl`, or
+> `HeroSection.tsx:59` en porte **déjà**, et `typography.css` s'arrête à `--text-3xl` — ces tokens
+> **n'existent pas**, donc écrire `md:text-4xl` **fait rétrécir** le texte.
+
+## Après S59, où en est le MVP local ? — **NON atteint**
+
+Le critère de sortie (« un clone démarre via le seul README, et l'utilisateur peut s'inscrire →
+créer produit/catégorie/événement → voir sa frise → exporter → supprimer son compte, sans écran
+cassé ni 500, prouvé en E2E ») **n'est pas atteint après ces 5 sprints. Il en faut ~7.**
+
+Déjà vert avant ce plan (vérifié dans les specs) : inscription/connexion (`golden-path.spec.ts:61`),
+création produit/catégorie/événement (`products`, `categories`, `timeline.spec.ts:199`), export JSON
+synchrone (`settings-account.spec.ts:21`), suppression de compte (`UserController.java:159` +
+`settings-account.spec.ts:51` + `AccountDeletionIntegrationTest`).
+
+**Ce qui manquera encore, par gravité :**
+1. **#307 (P1/M) — non planifiée.** Un événement archivé est filtré par `ProductDetailView` : du
+   point de vue de l'interface, **l'utilisateur qui archive par erreur a perdu sa donnée**. Non
+   plaçable : exige un **arbitrage produit du développeur** (vue « archivés » vs archivage
+   définitif), pas du code. **C'est le trou le plus visible du plan.**
+2. **#365 (gelé)** — `brevo.api.key` sans fail-fast : en local, « mot de passe oublié » échoue
+   **silencieusement**. L'architect respecte le gel mais demande d'en extraire la moitié
+   non-déploiement (un WARN au démarrage en profil dev). Sinon la clause « sans dépendance à un
+   service externe non documenté » reste **jaune** quoi que fassent les 5 sprints.
+3. **#270** — la clause « exporter ses données » n'est prouvée que sur la branche JSON synchrone ;
+   l'export async ZIP/CSV n'a aucun E2E.
+
+## Issues à re-scoper AVANT de les replanifier (sinon travail refait)
+
+- **#39** (README + CONTRIBUTING) — `possibly_done` **partiellement** : `README.md` racine existe
+  (225 l., livré par #372). Reste **CONTRIBUTING.md** seul. **Re-scoper, sinon un sprint futur
+  redéveloppera le README.**
+- **#354** (testids CTA + `.eslintcache`) — `possibly_done` **partiellement** : `.eslintcache` n'est
+  **plus tracké**. Reste la moitié testids. **Re-scoper.**
+- **#338** (mentions légales) — **à sortir du flux sprint** (label `blocked:humain`) : aucun agent ne
+  peut rédiger le contenu juridique. C'était l'une des 5 orphelines du milestone Sprint 52 fermé ;
+  la replanifier garantirait un nouveau non-livré.
+
+## Risques du plan
+
+- **R1 — Le backlog grossit plus vite qu'il ne se vide.** Au taux mesuré (+2,25 issue créée par
+  issue livrée), 20 livraisons génèrent **~45 nouvelles issues** → backlog 117 → **~142**.
+  **Corollaire : ne considérer que S55-S57 comme engagés et replanifier S58-S59 après la clôture de
+  S57.** Les issues de S58/S59 vieillissent déjà — les 3 numéros de ligne contradictoires de
+  `HeaderSection.tsx` en sont la preuve directe.
+- **R2 — Le plan est +48 % en nombre d'issues au-dessus de la capacité mesurée** (4 issues/sprint
+  contre 2,7 ; 6,6 pts contre 5,7). Calibrage demandé par le développeur, assumé comme tel.
+- **R3 — 60 % du plan (S57, S58, S59) est bloqué sur un arbitrage `ui-design` ou produit, pas sur du
+  code.** Si les arbitrages ne sont pas rendus avant le sprint, l'implémentation s'arrête.
+- **R5 — Aucune vérification navigateur n'a été faite pour construire ce plan**, uniquement des
+  lectures de code. 14 des 20 issues en exigent une. Le pitfall S48 vaut dans les deux sens : une
+  lecture de code verte ne prouve pas qu'une page est cassée — **#381 pourrait se refermer en une
+  simple documentation de mesure**, son issue admet que le défaut visible n'est pas établi.
+- **R7 — `/sprint end 54` n'est pas terminé (PR #400 ouverte).** Démarrer S55 avant sa clôture
+  rejoue les écarts connus. **Fermer #400 d'abord.**
+
+## Périmètre gelé — non contesté, une réserve
+
+Les 13 issues de « Mise en ligne (GELÉ) » supposent toutes un serveur, un domaine ou un profil
+`prod`. Aucune n'est nécessaire à un clone qui tourne en local. **Seule réserve : #365** (cf. point
+2 ci-dessus) — son intitulé dit « en production » mais le défaut se manifeste **d'abord en local**.
+
+> **Pas de branche `sprint/55` créée** (étape 4 du skill volontairement sautée, leçon S43/S44
+> reconduite depuis S45) : `/sprint start` crée son worktree lui-même.
