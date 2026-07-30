@@ -1,9 +1,11 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
-import { TimelineView } from './TimelineView'
+import { LANE_TRACK_OFFSET_PX, TimelineView } from './TimelineView'
 
 /**
  * #55 — Tests d'intégration TimelineView (jsdom).
@@ -375,7 +377,11 @@ describe('TimelineView', () => {
               end: '2026-07-12',
               allDay: true,
               resourceId: 'p3',
-              color: '#6366f1', // 4.47:1 max → fallback dehors
+              // Échantillon NON CONFORME choisi exprès (4.47:1 max → libellé de
+              // secours dehors). Ce n'est PAS la couleur par défaut de l'app :
+              // `DEFAULT_COLOR` vaut `#3B62D4` (5.407:1) depuis #393 — ne pas
+              // resynchroniser cette valeur sur le défaut, le test perdrait son objet.
+              color: '#6366f1',
               extendedProps: {
                 productId: 'p3',
                 productName: 'Prod3',
@@ -559,6 +565,34 @@ describe('TimelineView', () => {
       only.focus()
       await user.keyboard('{ArrowDown}')
       expect(only).toHaveFocus()
+    })
+  })
+
+  /**
+   * #392 — GARDE DE DÉRIVE, pas une preuve du correctif.
+   *
+   * ⚠ Ce qu'un test jsdom ne peut PAS prouver ici : jsdom ne fait aucun
+   * hit-testing et n'applique pas les feuilles du design system. Le
+   * recouvrement de l'en-tête sticky et sa correction ne sont observables
+   * qu'au navigateur — la preuve vit dans `e2e/timeline.spec.ts` (#392), et
+   * tout test unitaire qui prétendrait la fournir serait un faux témoin (piège
+   * déjà payé au S51 sur les tests de scroll).
+   *
+   * Ce que ce test VERROUILLE, en revanche : la duplication assumée du token
+   * `--lane-header-w` côté JS. Le décalage de la piste est appliqué en CSS ;
+   * `LANE_TRACK_OFFSET_PX` doit lui rester égal, sinon la largeur du rail, la
+   * minimap et les bandes de virtualisation se désalignent silencieusement de
+   * l'écart — sans qu'aucune assertion existante ne bronche.
+   */
+  describe('#392 — gouttière de piste', () => {
+    it('LANE_TRACK_OFFSET_PX reste égal au token --lane-header-w du DS', () => {
+      const spacing = readFileSync(
+        resolve(__dirname, '../../styles/ds/tokens/spacing.css'),
+        'utf8',
+      )
+      const match = spacing.match(/--lane-header-w:\s*(\d+(?:\.\d+)?)px/)
+      expect(match, '--lane-header-w introuvable dans ds/tokens/spacing.css').not.toBeNull()
+      expect(Number(match![1])).toBe(LANE_TRACK_OFFSET_PX)
     })
   })
 })

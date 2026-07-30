@@ -128,6 +128,31 @@ const PENDING_FOCUS_TTL_MS = 1000
 /** Tableau vide PARTAGÉ : une lane repliée garde ainsi une prop stable. */
 const NO_EVENTS: WindowedEvent[] = []
 
+/**
+ * #392 — GOUTTIÈRE DE PISTE (px). Largeur réservée en tête de rail pour
+ * l'en-tête de lane sticky (`.mt-tlv__lane-label`), qui est opaque et recouvre
+ * en permanence le bord gauche du viewport. Sans elle, une pastille posée à
+ * moins de cette distance de `rangeStart` naît SOUS l'en-tête et n'est
+ * atteignable à la souris à AUCUN niveau de scroll (cf. #392, mesuré à 150px
+ * au zoom Trimestre).
+ *
+ * DEUX REPÈRES cohabitent donc, et il ne faut pas les confondre :
+ *  - repère PISTE  : `leftPx` des events / graduations, origine = `rangeStart` ;
+ *  - repère RAIL   : ce que mesure `scrollLeft`, origine = bord du rail
+ *                    = repère piste + cette gouttière.
+ * Le décalage lui-même est appliqué en CSS (`margin-left:var(--lane-header-w)`
+ * sur les enfants positionnés du rail, cf. `ds/components/timeline.css`) : le
+ * JS n'en a besoin que là où il raisonne en repère RAIL (largeur du rail,
+ * scroll, minimap, bandes de virtualisation).
+ *
+ * ⚠ MIROIR du token `--lane-header-w` (`ds/tokens/spacing.css`). Il ne peut pas
+ * être lu depuis le DOM : `railWidth` participe au rendu SERVEUR, et un
+ * `getComputedStyle` divergerait à l'hydratation. Même convention que
+ * `DEFAULT_METRICS` (`virtualization.ts`), et verrouillé par un test de dérive
+ * (`TimelineView.test.tsx`).
+ */
+export const LANE_TRACK_OFFSET_PX = 168
+
 /** #81 — Clé de coordonnée clavier d'une pastille (« indexDeLane:indexDEvent »). */
 const navKeyOf = (lane: number, evt: number) => `${lane}:${evt}`
 
@@ -424,7 +449,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   const { rangeStart, totalDays } = useMemo(() => computeRange(events, now), [events, now])
 
-  const railWidth = useMemo(() => totalDays * dayWidth, [totalDays, dayWidth])
+  // #392 — `trackWidth` = étendue TEMPORELLE en px (repère piste) ; `railWidth`
+  // = largeur réellement défilable, gouttière d'en-tête comprise (repère rail).
+  // Distinguer les deux est ce qui garde la minimap exacte : elle représente la
+  // piste, pas la gouttière.
+  const trackWidth = useMemo(() => totalDays * dayWidth, [totalDays, dayWidth])
+  const railWidth = trackWidth + LANE_TRACK_OFFSET_PX
 
   // #349 — Source des recalculs déclenchés par le zoom : tout ce qui n'est PAS
   // le niveau de zoom. Tant que cette identité ne change pas, un aller-retour de
@@ -498,6 +528,22 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     verticalModel.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS
       ? viewport.vertical
       : UNBOUNDED_BAND
+
+  // #392 — `windowEvents` teste des `leftPx` (repère PISTE) contre la bande
+  // mesurée, publiée en repère RAIL (dérivée de `scrollLeft`) : on la ramène en
+  // repère piste. Sans ce recalage, la fenêtre de rendu serait décalée de la
+  // gouttière — masqué par l'overscan de 600px, donc INVISIBLE en test et
+  // dormant jusqu'au jour où l'overscan serait réduit. L'identité de la bande
+  // reste stable tant que celle de `viewport.horizontal` l'est (hystérésis #69),
+  // et `±Infinity` traverse la soustraction : `UNBOUNDED_BAND` (jsdom, conteneur
+  // non mesurable) reste non bornée → rendu complet, comme avant.
+  const horizontalBand = useMemo(
+    () => ({
+      start: viewport.horizontal.start - LANE_TRACK_OFFSET_PX,
+      end: viewport.horizontal.end - LANE_TRACK_OFFSET_PX,
+    }),
+    [viewport.horizontal],
+  )
 
   // #81 — Modèle plat de navigation clavier : la « grille » des lanes VISIBLES
   // (catégorie non collapsée) → chaque entrée = { resourceId, events[] }. L'ordre
@@ -605,8 +651,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       const event = target.events[evt]
       if (event) {
         const laneTop = verticalModel.laneTops.get(target.resourceId) ?? 0
+        // #392 — `useTimelineViewport` publie ses bandes en repère RAIL (elles
+        // viennent de `scrollLeft`) : on y convertit la cible, qui est en repère
+        // piste. Sans ça les deux repères se mélangeraient dans le même état.
         ensureVisible(
-          { start: event.leftPx, end: event.leftPx + event.widthPx },
+          {
+            start: LANE_TRACK_OFFSET_PX + event.leftPx,
+            end: LANE_TRACK_OFFSET_PX + event.leftPx + event.widthPx,
+          },
           { start: laneTop, end: laneTop + laneHeight },
         )
       }
@@ -704,12 +756,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // Fenêtre visible (fraction) pour la minimap : dérivée du scroll + largeur.
   const [viewportRatio, setViewportRatio] = useState(1)
 
+  // #392 — La minimap cartographie la PISTE (buckets d'events par jour), pas le
+  // rail : on retire la gouttière de `scrollLeft` avant de normaliser, sinon la
+  // fenêtre dérive de `LANE_TRACK_OFFSET_PX / trackWidth` sur toute la course.
   const syncViewportFromScroll = useCallback(() => {
     const el = scrollRef.current
-    if (!el || railWidth === 0) return
-    setViewportStart(el.scrollLeft / railWidth)
-    setViewportRatio(Math.min(1, el.clientWidth / railWidth))
-  }, [railWidth])
+    if (!el || trackWidth === 0) return
+    setViewportStart(Math.max(0, (el.scrollLeft - LANE_TRACK_OFFSET_PX) / trackWidth))
+    setViewportRatio(Math.min(1, el.clientWidth / trackWidth))
+  }, [trackWidth])
 
   // #69 — La synchronisation de la minimap déclenchait un `setState` (donc un
   // re-rendu COMPLET de la frise) à CHAQUE événement `scroll` : c'était le premier
@@ -743,6 +798,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     if (!el) return
     if (zoom.offsetDays !== lastOffsetRef.current) {
       lastOffsetRef.current = zoom.offsetDays
+      // #392 — VOLONTAIREMENT laissé en repère piste : `scrollLeft = N*dayWidth`
+      // amène le jour N à `LANE_TRACK_OFFSET_PX` du bord du viewport, c'est-à-dire
+      // JUSTE APRÈS l'en-tête sticky. Le convertir en repère rail le collerait au
+      // bord gauche, donc SOUS l'en-tête — le défaut même que corrige cette issue
+      // (visible sur « T » / « [ » / « ] »).
       el.scrollLeft = Math.max(0, zoom.offsetDays * dayWidth)
     }
   }, [zoom.offsetDays, dayWidth])
@@ -750,7 +810,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const scrollToToday = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
-    const target = todayLeftPx - el.clientWidth / 2
+    // `todayLeftPx` est en repère PISTE → passage en repère rail (#392).
+    const target = LANE_TRACK_OFFSET_PX + todayLeftPx - el.clientWidth / 2
     el.scrollLeft = Math.max(0, target)
   }, [todayLeftPx])
 
@@ -764,10 +825,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     (start: number) => {
       const el = scrollRef.current
       if (!el) return
-      el.scrollLeft = start * railWidth
+      // Réciproque exacte de `syncViewportFromScroll` (repère piste → rail, #392).
+      el.scrollLeft = LANE_TRACK_OFFSET_PX + start * trackWidth
       setViewportStart(start)
     },
-    [railWidth],
+    [trackWidth],
   )
 
   const toggleFullscreen = useCallback(() => {
@@ -901,7 +963,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           // est conservé (coordonnée clavier #81).
           const computed = isResCollapsed
             ? NO_EVENTS
-            : windowEvents(laneEvents, viewport.horizontal)
+            : windowEvents(laneEvents, horizontalBand)
           const previous = previousWindows.get(resource.id)
           const windowed = previous && sameWindowedEvents(previous, computed) ? previous : computed
           nextWindows.set(resource.id, windowed)

@@ -938,12 +938,12 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     // (ratio mesuré = 6.70) ne le déclenche jamais, à titre et produit identiques
     // par ailleurs (seule variable isolée : la couleur).
     //
-    // Effet de bord noté en préparant ce test (hors périmètre #330, cf. retour de
-    // tâche) : `DEFAULT_COLOR` (`types/event.ts`, `#6366f1`) a un ratio mesuré de
-    // 4.467 — LUI-MÊME sous le seuil AA. Un event sans couleur explicite (le cas
-    // `seedProduct` par défaut) déclenche donc déjà ce libellé en production ; ce
-    // test isole volontairement le contraste en fixant les DEUX couleurs
-    // explicitement plutôt que de s'appuyer sur ce défaut ambigu comme témoin.
+    // Effet de bord noté en préparant ce test (hors périmètre #330) : `DEFAULT_COLOR`
+    // valait alors `#6366f1`, ratio mesuré 4.467 — LUI-MÊME sous le seuil AA, donc un
+    // event sans couleur explicite déclenchait déjà ce libellé en production. ✅ CORRIGÉ
+    // depuis (#393, Sprint 56) : `DEFAULT_COLOR` = `#3B62D4` (5.407:1, palette event du
+    // DS). Le test fixe de toute façon les DEUX couleurs explicitement — il n'a jamais
+    // dépendu de ce défaut, et n'a donc pas bougé avec lui.
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Outside Cat'))
     const product = await seedProduct(page, { userId, name: unique('Outside Prod'), categoryId: cat.id })
@@ -1032,5 +1032,216 @@ test.describe('#330 (étape 1bis, #331) — options de récurrence WEEK et YEAR'
     await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText('Récurrent · Années')
     // Le passage à YEAR n'a pas laissé de trace de WEEK (bascule réelle, pas un ajout).
     await expect(page.getByTestId('event-form-recurrence-trigger')).not.toContainText('Semaines')
+  })
+})
+
+/* ==========================================================================
+ * #392 (Sprint 56) — En-tête de lane STICKY vs pastilles du début d'étendue.
+ *
+ * BUG (constaté #330/Sprint 54, PR #390) : `.mt-tlv__lane-label` est
+ * `position:sticky; left:0` et OPAQUE. Elle recouvre donc TOUJOURS les
+ * `--lane-header-w` (168px) premiers pixels du viewport de la frise. Une
+ * pastille dont l'origine sur la piste est < 168px est alors inatteignable à
+ * la SOURIS À TOUT NIVEAU DE SCROLL : défiler vers la droite déplace l'en-tête
+ * avec le viewport, il recouvre toujours autant. `computeRange` (zoom.ts) pose
+ * `rangeStart` à 30 jours avant le 1er event → le 1er event est à
+ * `30 * dayWidth` px, ce qui passe SOUS 168px à deux niveaux de zoom :
+ *   Trimestre 30*5   = 150px  < 168  ✗
+ *   Année     30*2.2 =  66px  < 168  ✗
+ *   Mois      30*12  = 360px         ✓
+ *   Semaine   30*34  = 1020px        ✓
+ *   Jour      30*96  = 2880px        ✓
+ *
+ * ⚠ E2E OBLIGATOIRE (pas de test jsdom) : jsdom ne fait AUCUN hit-testing —
+ * un test unitaire ne verra JAMAIS « intercepts pointer events » et serait un
+ * faux témoin (piège déjà payé S51 sur les tests de scroll).
+ *
+ * DÉTERMINISME — le listing produits est STUBBÉ ici, contrairement au reste de
+ * cette spec qui tourne contre le vrai backend. Le compte PROD est partagé par
+ * toutes les specs du run : `rangeStart` dépend du MINIMUM des dates de TOUS
+ * les events du compte. Sur un état seedé réel, la prémisse « la pastille est
+ * à 30 jours de rangeStart » n'est pas un contrat — le test deviendrait vert à
+ * vide (pastille repoussée loin à droite, plus aucun recouvrement à prouver)
+ * dès qu'une autre spec seede un event antérieur. Un produit / un event / une
+ * date connue = la géométrie exacte du bug, à chaque run.
+ * ========================================================================== */
+
+const STICKY_PRODUCT_ID = '3a1f0000-0000-4000-8000-000000000392'
+const STICKY_EVENT_ID = '3a1f0000-0000-4000-8000-000000000393'
+const STICKY_CATEGORY_ID = '3a1f0000-0000-4000-8000-000000000394'
+
+/**
+ * Stub : UN produit, UN événement daté du jour → `rangeStart = aujourd'hui - 30`
+ * (`computeRange`, padDays=30) et donc `dayOffset = 30` exactement.
+ * Couleur `#1D4ED8` (ratio 6.70 > AA) : évite le libellé extérieur de secours,
+ * qui ajouterait un nœud parasite au voisinage de la pastille (cf. #81 point 6).
+ */
+async function stubStickyLaneFixture(page: Page, productName: string): Promise<void> {
+  const today = todayIsoDate()
+  await stubProductsList(page, [
+    {
+      id: STICKY_PRODUCT_ID,
+      name: productName,
+      color: '#1D4ED8',
+      category: { id: STICKY_CATEGORY_ID, name: 'Sticky Cat', color: '#1D4ED8' },
+      events: [
+        {
+          id: STICKY_EVENT_ID,
+          title: productName,
+          type: 'single',
+          startDate: today,
+          endDate: today,
+          productId: STICKY_PRODUCT_ID,
+          color: '#1D4ED8',
+          archived: false,
+        },
+      ],
+    },
+  ])
+}
+
+/**
+ * Géométrie d'occlusion d'une lane, exprimée dans le repère du RAIL (donc
+ * INDÉPENDANTE du scroll courant) :
+ *   - `pillRailX`  : abscisse de la pastille depuis l'origine du rail
+ *     (`pill.x - scroll.x + scrollLeft`) ;
+ *   - `headWidth`  : largeur de l'en-tête sticky = épaisseur de la bande que
+ *     l'en-tête recouvre EN PERMANENCE au bord gauche du viewport.
+ *
+ * `pillRailX >= headWidth` est l'invariant de reachability : il signifie qu'à
+ * `scrollLeft = 0` (position la plus à gauche atteignable) la pastille est
+ * entièrement hors de la bande recouverte. C'est le SEUL énoncé durable —
+ * comparer les boîtes écran ne vaut qu'au scroll courant, et à un scroll
+ * quelconque TOUTE pastille peut passer sous l'en-tête (c'est le principe même
+ * d'un en-tête sticky, pas le bug).
+ */
+async function laneOcclusionGeometry(
+  page: Page,
+  productName: string,
+): Promise<{ pillRailX: number; headWidth: number }> {
+  const head = resourceHead(page, productName)
+  const scroll = page.getByTestId('timeline-scroll')
+  const pill = resourceRow(page, productName).locator('[data-testid="timeline-event"]').first()
+  await expect(pill).toBeVisible()
+  const headBox = await head.boundingBox()
+  const pillBox = await pill.boundingBox()
+  const scrollBox = await scroll.boundingBox()
+  expect(headBox, "l'en-tête de lane doit être mesurable").not.toBeNull()
+  expect(pillBox, 'la pastille doit être mesurable').not.toBeNull()
+  expect(scrollBox, 'le conteneur de scroll doit être mesurable').not.toBeNull()
+  const scrollLeft = await scroll.evaluate((el) => el.scrollLeft)
+  return {
+    pillRailX: pillBox!.x - scrollBox!.x + scrollLeft,
+    headWidth: headBox!.width,
+  }
+}
+
+test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignables', () => {
+  /**
+   * PARCOURS 1 (critère d'acceptation n°1) — le clic SOURIS. `click()` SANS
+   * `force` : c'est le contrôle d'actionnabilité de Playwright (hit-test au
+   * point cible) qui constitue l'oracle. Avant le correctif il échoue avec
+   * « <button data-testid="timeline-resource-head"> intercepts pointer events ».
+   */
+  test('zoom Trimestre : la pastille du début d’étendue est cliquable à la SOURIS', async ({
+    page,
+  }) => {
+    const productName = unique('Sticky Prod')
+    await stubStickyLaneFixture(page, productName)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+
+    // Prémisse : à ce zoom la pastille tombe bien dans la zone que l'en-tête
+    // recouvrait (30j * 5px = 150px < 168px). Sans cette garde le test pourrait
+    // devenir vert à vide si la géométrie de l'étendue changeait.
+    const scroll = page.getByTestId('timeline-scroll')
+    const noOverflow = await scroll.evaluate((el) => el.scrollWidth <= el.clientWidth)
+    expect(
+      noOverflow,
+      'à ce zoom le rail tient dans le viewport : AUCUN scroll ne peut dégager la pastille',
+    ).toBeTruthy()
+
+    const pill = resourceRow(page, productName).locator('[data-testid="timeline-event"]').first()
+    await pill.click()
+
+    await expect(page.getByTestId('timeline-drawer')).toBeVisible()
+    await expect(page.getByTestId('timeline-live-region')).toHaveText(
+      `Événement sélectionné : ${productName}`,
+    )
+  })
+
+  /**
+   * PARCOURS 2 (critère d'acceptation n°2) — NON-RÉGRESSION sur les 5 niveaux.
+   * Invariant durable, indépendant du mécanisme retenu : la pastille commence
+   * APRÈS la fin de l'en-tête sticky. Les niveaux larges (Trimestre, Année)
+   * étaient rouges, les étroits (Jour, Semaine, Mois) doivent le rester verts —
+   * un correctif qui décalerait la piste dans le mauvais sens les casserait.
+   */
+  test('les 5 niveaux de zoom : la pastille ne démarre jamais sous l’en-tête sticky', async ({
+    page,
+  }) => {
+    const productName = unique('Sticky Zoom Prod')
+    await stubStickyLaneFixture(page, productName)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    const level = page.getByTestId('timeline-zoom-level')
+    // Départ 'Mois' (initialZoomState) → on descend jusqu'à 'Jour', puis on
+    // remonte niveau par niveau : les 5 sont traversés dans un ordre connu.
+    await page.getByTestId('timeline-zoom-in').click()
+    await page.getByTestId('timeline-zoom-in').click()
+    await expect(level).toHaveText('Jour')
+
+    for (const expected of ['Jour', 'Semaine', 'Mois', 'Trimestre', 'Année']) {
+      if (expected !== 'Jour') await page.getByTestId('timeline-zoom-out').click()
+      await expect(level).toHaveText(expected)
+
+      // Aux zooms étroits la pastille (30 j après `rangeStart`) sort de la bande
+      // de virtualisation horizontale et n'est PAS montée : elle n'est donc pas
+      // mesurable sans amener la fenêtre sur elle. Raccourci « T » (GO_TO_TODAY)
+      // — chemin produit réel, aucun scroll bricolé par le test.
+      await page.keyboard.press('t')
+
+      const { pillRailX, headWidth } = await laneOcclusionGeometry(page, productName)
+      expect(
+        pillRailX,
+        `zoom ${expected} : la pastille démarre à ${pillRailX}px de l'origine du rail, ` +
+          `sous les ${headWidth}px recouverts en permanence par l'en-tête sticky`,
+      ).toBeGreaterThanOrEqual(headWidth - 0.5)
+    }
+  })
+
+  /**
+   * PARCOURS 3 — contre-preuve exigée par le plan : l'en-tête de lane est
+   * LUI-MÊME interactif (accordéon produit #195). Un correctif par
+   * `pointer-events:none` non borné rendrait ce test rouge — c'est précisément
+   * l'échange « un bug contre un autre » qu'on doit interdire. Exercé au zoom
+   * Trimestre, celui du correctif.
+   */
+  test('l’en-tête de lane reste cliquable (repli/dépliage) au zoom Trimestre', async ({ page }) => {
+    const productName = unique('Sticky Toggle Prod')
+    await stubStickyLaneFixture(page, productName)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+
+    const head = resourceHead(page, productName)
+    const pill = resourceRow(page, productName).locator('[data-testid="timeline-event"]')
+
+    await expect(head).toHaveAttribute('aria-expanded', 'true')
+    await expect(pill).toHaveCount(1)
+
+    await head.click()
+    await expect(head).toHaveAttribute('aria-expanded', 'false')
+    await expect(pill, 'les pastilles de la lane repliée sont démontées').toHaveCount(0)
+
+    await head.click()
+    await expect(head).toHaveAttribute('aria-expanded', 'true')
+    await expect(pill, 'les pastilles sont réaffichées au dépli').toHaveCount(1)
   })
 })
