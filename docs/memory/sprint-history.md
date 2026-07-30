@@ -1846,7 +1846,38 @@ jamais fait partie du périmètre). Issues #339 et #340 fermées.
 
 > **Écart de couverture mesuré par le lead entre les deux vagues :** `recurrence-unit-option-WEEK` et `-YEAR` sont **posés par #331 mais exercés par aucune spec** (seul `MONTH` l'est) — MAJEUR selon l'heuristique COVERAGE-E2E du protocole A.4. Ajouté au périmètre de #330 plutôt que laissé en follow-up : coût marginal, l'agent est déjà dans ces fichiers.
 
-> **Incident d'infrastructure, sans effet sur le livrable :** le spawn de la vague 2 a échoué **trois fois de suite sur `API Error: 529 Overloaded`** (côté serveur, pas côté prompt). Arbre de travail vérifié propre après chaque échec — aucune écriture partielle. La persistance pré-spawn (briefing + `spawn-ref` committés avant l'appel) a rendu chaque reprise triviale : c'est exactement le cas d'usage pour lequel elle existe.
+> **Incident d'infrastructure, sans effet sur le livrable :** le spawn de la vague 2 a échoué **six fois de suite sur `API Error: 529 Overloaded`** (côté serveur, pas côté prompt). Arbre de travail vérifié propre après chaque échec — aucune écriture partielle. La persistance pré-spawn (briefing + `spawn-ref` committés avant l'appel) a rendu chaque reprise triviale : c'est exactement le cas d'usage pour lequel elle existe.
+> **Diagnostic utile :** une sonde `Agent` triviale en Haiku **puis** en Sonnet a répondu immédiatement → la panne était **spécifique à la capacité Opus**, pas au spawn de subagents ni au prompt. #330 et son cycle correctif ont donc tourné en **Sonnet** malgré un triage prévoyant Opus. Dérogation assumée pour ne pas bloquer le sprint, travail vérifié à la mesure par le lead, consignée dans l'audit et le corps de PR.
+
+**Vague 2 — terminée, plus un cycle correctif.**
+- **#330** → `900a48f` (lot a, drawer/overlays) · `9972cf6` (lot b, contrôles) · `e851d2b` (lot c, minimap/états) · `5ddc7a9` (étape 1bis, options WEEK/YEAR) · `059030d` (correctif des 6 specs rouges) · `0275f2c` (correctif de review sur le budget de timeout). **18 nouveaux tests**, +567 puis +156/−64 lignes. Détail : `sprints/sprint-54/issue-330-done.md`.
+
+**Cible de #330 corrigée deux fois : 18 annoncés → 16 → 15 réellement atteignables.**
+Ma première correction (2 doublures RTL) était elle-même incomplète : `timeline-loading` est du **code mort**, donc inexerçable. Détail et chaîne de preuve dans `audits/sprint-54-test-coverage.md` §2.
+
+> **⚠ Deux bugs produit découverts par les specs — signalés, non corrigés (hors périmètre) :**
+> 1. **`timeline-loading` inatteignable.** `AppShell` (`components/layout/AppShell.tsx:80/114`, livré par #210 **après** ce testid) porte sa propre garde `useAuthGuard()` et retourne `app-shell-loading` **sans monter `children`** → la branche `if (loading)` de `app/[locale]/(app)/timeline/page.tsx:47` ne peut plus s'exécuter. Mesuré route `/api/auth/me` gatée : `app-shell-loading`=1, `timeline-loading`=0, 100 % reproductible. `test.skip()` avec cause nommée ; **substituer `app-shell-loading` refusé délibérément** (aurait couvert un testid *différent* en donnant l'illusion de la couverture).
+> 2. **En-tête de lane sticky rendant des événements inatteignables à la souris.** Au zoom Trimestre, un événement proche de `rangeStart` se place à `30 × 5 = 150 px` alors que `--lane-header-w` vaut **168 px** (`spacing.css:48`) → `.mt-tlv__lane-label` intercepte le pointeur, **et aucun scroll ne le dégage** (pas d'overflow à ce zoom pour un produit unique). Assertion conservée, activation au clavier.
+> 3. Remonté pour arbitrage produit : `DEFAULT_COLOR` `#6366f1` à un ratio mesuré **4,467 < 4,5** (AA) → le libellé extérieur est l'état **normal** en production, pas un cas limite.
+
+> **⚠ Trois prémisses de MES briefings infirmées par la mesure — consignées sans être effacées :**
+> 1. **`timeline-today` n'est pas un bouton** : badge positionnel sans `onClick` (`TimelineView.tsx:211`) ; le raccourci « T » (`scrollToToday`) est un mécanisme séparé. J'avais demandé d'asserter que le clic ramène le viewport.
+> 2. **`timeline-event-outside-label` dépend du contraste de couleur** (`eventLabelReadableInside`, `lib.ts:60`), pas de la longueur du titre ni du zoom comme je l'avais écrit.
+> 3. **`timeline-zoom-in` / `timeline-fullscreen` ne sont pas montés** dans le contexte desktop vers lequel ma table des sources pointait — trois des six specs rouges échouaient sur un locator **jamais résolu**. Mon grep prouvait qu'ils sont *écrits* dans un fichier, pas qu'ils sont *rendus* : **exactement le piège dont j'avertissais l'agent dans le même briefing.**
+
+> **⚠ Erreur de méthode du lead sur la mesure, rattrapée :** j'ai lancé **deux suites Playwright concurrentes** contre un backend et une base uniques, et obtenu **8 rouges puis 12 rouges sur un code identique**. La contention produisait des échecs non reproductibles — `event-outside-label` rougissait dans les deux runs contendus et **passe** au run propre. Les deux mesures écartées ; seule la mesure isolée fait foi. Leçon : la règle `--workers=1` du runbook vaut aussi **au-dessus** du process Playwright, pas seulement à l'intérieur.
+
+> **Deux agents de la vague 2 se sont arrêtés sans livrer leur rapport final** (« j'attends la notification du run »), l'un après 204 appels d'outils et l'autre en laissant son travail **non commité**. Conséquence de méthode : **tous les chiffres du corps de PR et de l'audit sont mesurés par le lead**, aucun n'est repris d'une affirmation d'agent. Le travail lui-même était bon — le correctif a diagnostiqué chaque échec en (A) bug de spec / (B) bug produit / (C) flake **sans affaiblir une seule assertion**.
+
+**Review batch :** 1 CRITIQUE / 0 MAJEUR retenu / 2 MINEURS.
+Le CRITIQUE (budget `PROVISION_TIMEOUT_MS`) : **sévérité revue à la baisse** après vérification de l'arithmétique — dans le pire cas qui *continue*, `ensureRegisterForm(recover)` réussit à sa dernière tentative (l'épuiser lève plus tôt avec le message de rendu). **Mais le fond est juste** : le commentaire annonçait ~110 s en omettant les deux appels `recover`, qui sont des boucles de retry complètes. Pire cas recalculé **~127 s** → budget porté de 150 s à **180 s** (`0275f2c`). Un MINEUR écarté avec raison, et **sa référence de ligne était inexistante** (1035-1043 dans un fichier de 653 lignes) — rappel qu'un reviewer se vérifie aussi.
+
+**Tests (mesure finale, run unique sans concurrence) :** E2E **134 → 125 passed / 0 failed / 9 skipped** (4,2 min) · Frontend unitaire **836/836** · `tsc` 0 · `eslint` 0 · Backend **non exécuté (0 fichier backend touché)**.
+`125` = les **108 de la baseline pré-#330** + 17 des 18 nouveaux. **Aucune régression.**
+
+**PR :** #390 (`claude/sprint-54-start-8ee5a7` → `dev`), base vérifiée, milestone #54 attaché.
+
+> **Pas de branche `sprint/54`** : leçon S43-S49 reconduite, `/sprint start` travaille dans son worktree (`sprint-52-start-252990`, branche `claude/sprint-54-start-8ee5a7`).
 
 > **Pas de branche `sprint/50` créée** (étape 4 du skill volontairement sautée, leçon S43/S44 reconduite S45–S49) : `/sprint start` crée son worktree lui-même.
 
