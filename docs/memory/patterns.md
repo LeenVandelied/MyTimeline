@@ -432,3 +432,20 @@ clic) tout en gardant l'assertion sur le contenu annoncé. La spec reste vraie E
 Anti-pattern : affaiblir l'assertion en `toBeVisible()`, ce qui rendrait la spec verte **et muette**. Corollaire
 S54 : tout oracle négatif (`toHaveCount(0)`) doit être **ancré** par une assertion de présence de l'élément
 porteur, sinon il est vacuously vert quand le seed ne s'affiche pas. Cf. [[ci-green-is-not-page-correct]].
+
+## PAT-S55-001 — Un serveur lancé en fond en CI perd son code de sortie : poll à échec-par-défaut
+`java -jar … &` (job `e2e`, `ci.yml:210`) rend le verdict du process **inaccessible** au step. Le job
+`flyway-smoke` (#356) corrige le motif : boucle 45×2 s qui (a) `kill -0 "$PID"` → process mort ⇒ dump du log
++ `exit 1`, (b) **preuve POSITIVE** de démarrage (`curl -sf /actuator/health | grep '"status":"UP"'`) ⇒
+`exit 0`, (c) sortie de boucle ⇒ timeout ⇒ `exit 1`. Le vert n'est **jamais** l'absence d'erreur.
+Anti-pattern : `sleep N` puis continuer, ou un poll qui `break` sans verdict — le job devient invérifiable.
+Corollaire : un job de garde-fou doit être testé **négativement** (ici : base injoignable ⇒ `RC=1`) ; sinon
+rien ne prouve qu'il peut rougir.
+
+## PAT-S55-002 — Rendre vérifiable la « virginité » d'une base plutôt que la supposer
+Un smoke Flyway sur base non vierge passerait au vert en validant un schéma qu'il n'a pas construit
+(`spring.flyway.baseline-on-migrate=true` suffit à le masquer). Le job relit donc
+`flyway_schema_history` et exige `count(success) == nb de V*.sql` **ET** `première version == 1` — le second
+prédicat est ce qui attrape le cas baseline. Filtrer `version is not null` pour ne pas compter les
+répétables `R__*.sql` (type `SQL` elles aussi). Effet de bord utile : une future `V16` mal nommée ou mal
+placée, donc ignorée par Flyway, fait rougir le step.

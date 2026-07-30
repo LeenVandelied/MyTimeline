@@ -1993,22 +1993,102 @@ Sprint 57 → #58, Sprint 58 → #59, Sprint 59 → #60. Le numéro réel est co
   fichier de référence via `git show origin/dev:<path>`.
 - Chemin corrigé : le middleware est `frontend/middleware.ts`, **pas** `frontend/src/middleware.ts`.
 
-## Sprint 55 — 2026-07-30 (PLANIFIE — MVP local : un clone vierge démarre sans contradiction)
+## Sprint 55 — 2026-07-30 → 2026-07-30 (Terminé — merge PR #402 dans dev)
 **Objectif :** Solder les écarts entre ce que le README promet et ce que le dépôt fait
-**Milestone GitHub :** #56
+**Milestone GitHub :** #56 (fermé après merge)
+**Issues livrées (5/5) :** #366, #376, #356, #377, #361 — **5 pts, 100 % du plan**
+**Vagues exécutées :** V1 = #366 ∥ #376 ∥ #377 ∥ #356 (4 fullstack-dev parallèles, fichiers
+disjoints) | V2 = #361 traitée par le lead (protection de branche, pas un fichier — arbitrage
+développeur requis)
+**Commits :** 12 (dont 3 de correction post-revue et 2 parasites de renseignement de SHA)
+**Cohésion :** 0.08 — sous le seuil, split rejeté à la planification, assumé
+**BR impactées :** aucune. `BR-AUT-012` **citée** dans `.env.example` sans modification de comportement
+**Reviews :** 2 passes. Batch en fin de `/sprint start` → **1 MAJEUR** + 7 mineurs. `/review-pr 402`
+après corrections → 0 CRITIQUE / 0 MAJEUR / **3 MINEURS**. Tous RÉSOLUS, 1 seul cycle chacun.
+**Tests :** aucun test ajouté (aucun code applicatif touché — 2 markdown, 1 compose, 1 `.env.example`,
+1 workflow). **CI : 4 runs consécutifs 5/5 verts** (`2b2c5a7`, `911e0fb`, `9e95e5d`, `a5d26c5`)
+
+### Le MAJEUR de la revue — ce que le sprint a failli livrer
+`.env.example` livrait `BREVO_API_KEY=xkeysib-REMPLACER-PAR-VOTRE-CLE`. Le no-op de
+`BrevoEmailService:64` est conditionné à `apiKey.isBlank()` : cette valeur **non blanche**, copiée
+vers `.env` comme le fichier le demande, aurait déclenché un **vrai POST vers api.brevo.com → 401 →
+`log.error`** — l'inverse exact du « no-op silencieux » promis deux lignes au-dessus. Le fichier
+documentait un comportement que lui-même empêchait d'obtenir. Trouvé **en revue, pas à l'écriture**,
+par un agent qui a été lire la condition dans le code au lieu de croire le commentaire. Cf.
+`PIT-S55-001`.
+
+### Vérifications d'exécution (le plan qualifiait le test unitaire d'insuffisant partout)
+- **#376** → pile Docker réelle : `frontend Up (healthy)`, `FailingStreak: 0`, 2 sondes `ExitCode 0`,
+  `curl /fr` → 200.
+- **#356** → **run CI réel vert en 48 s**, log à l'appui : `attendues 15 | appliquées 15 | première
+  version jouée : 1`. Plus un **test négatif** local (base injoignable ⇒ `RC=1`) prouvant que le job
+  peut rougir.
+- **#361** → checks requis `dev` passés de `[backend, frontend]` à `[backend, frontend, e2e]`,
+  `enforce_admins` et reviews vérifiés inchangés.
+
+### Écarts assumés
+- **#356 n'invoque pas le CLI `flyway migrate`** malgré le libellé de l'issue : `spring.flyway.enabled=true`
+  + `ddl-auto=validate` (dev ET prod) font que le boot le fait déjà. Cf. `DEC-S55-001`.
+- **#361 ajoutée au plan par le lead** (l'architect l'avait classée hors plan tout en la désignant
+  « le regret le plus sérieux »), et **arbitrée par le développeur** : `e2e` requis, `flyway-smoke`
+  non. Cf. `DEC-S55-003`.
+- **`/review-pr` lancé en SOLO malgré un triage mécanique disant TEAM** : les 4 spawns de TEAM sont
+  gatés sur des compteurs tous à 0 sur une PR devops/docs → TEAM aurait produit une review vide.
+  Cf. `PIT-S55-003`.
+
+### Ce qui N'EST PAS prouvé (à ne pas relire comme vert)
+- Le cas négatif de **#361** — « une PR à `e2e` rouge est refusée » — n'a **jamais été provoqué**. On
+  sait que GitHub évalue le check, pas qu'il bloque. → issue #408.
+- **`flyway-smoke` n'a jamais rougi sur GitHub** pour la bonne raison (entité désalignée d'une V16).
+  Le test négatif a été fait en local, sur base injoignable.
+
+### Incident — fan-out sur arbre partagé
+Un agent a fait `git commit --amend` pour corriger un SHA placeholder dans son propre rapport ; entre
+son commit et son amend, un autre agent avait poussé HEAD. **L'amend a réécrit le commit de l'autre
+agent.** Aucun fichier perdu (vérifié `git log --stat`), mais `70d7397` porte 4 lignes du mauvais
+rapport. Cause racine : demander à un agent d'écrire son propre SHA crée mécaniquement le besoin
+d'amender. Cf. `PIT-S55-002` — `--amend` rejoint la liste des verbes git interdits en fan-out.
+
+**Nouveaux pitfalls :** `PIT-S55-001` (placeholder qui défait un no-op), `PIT-S55-002` (`--amend` en
+fan-out), `PIT-S55-003` (triage `/review-pr` aveugle aux lignes `docs/`). **`PIT-S52-005` marqué
+RÉSOLU** en #376.
+**Nouveaux patterns :** `PAT-S55-001` (serveur en fond en CI → poll à échec-par-défaut),
+`PAT-S55-002` (rendre vérifiable la virginité d'une base).
+**Nouvelles décisions :** `DEC-S55-001`, `DEC-S55-002`, `DEC-S55-003`.
+
+**Follow-ups arbitrés (Phase 4 triage — 7 items, 0 discard) :**
+  - Citation `BR-AUT-005` → `BR-AUT-012` dans `BrevoEmailService` [XS | auth] → issue **#403**
+  - `docker-compose` ne propage aucune `BREVO_*` [S | infrastructure] → issue **#404**
+  - Healthchecks `backend`/`postgres` encore sur `localhost` [XS | infrastructure] → issue **#405**
+  - Commentaire « Pas d'actuator » du job `e2e` faux [XS | devops] → issue **#406**
+  - Rendre `flyway-smoke` requis plus tard [XS | devops] → issue **#407**
+  - Prouver le blocage d'une PR à `e2e` rouge [S | devops] → issue **#408**
+  - Protection de la branche `main` à trancher [XS | devops] → issue **#409**
+
+> **Backlog libre assumé, aucun milestone.** Les 7 issues ne sont **pas** rattachées à Sprint 56 :
+> il est déjà à 4 issues / 6 pts et la capacité mesurée est de **2,7 issues par sprint**. Les y
+> verser reproduirait le re-scope silencieux mesuré sur S52-S54 (27 planifiées, 8 livrées).
+> Ratio discard 0/7 — à surveiller : un discard nul répété peut signaler un critère de signalement
+> trop permissif autant qu'une bonne discipline.
+
+<details>
+<summary>Entrée de planification d'origine (2026-07-30)</summary>
+
 **Issues (5) :** #366 (P3/XS), #376 (P3/XS), #356 (P2/XS), #377 (P3/XS), #361 (P3/XS) — **5 pts**
 **Vagues :** V1 = les 5 en parallèle (fichiers strictement disjoints)
 **Cohésion :** 0.08 — ⚠ sous le seuil 0.3, split **rejeté** : ces items sont la clause « un clone
 démarre » du critère MVP et rien d'autre ; les regrouper par domaine les étalerait sur 3 sprints.
 **Migrations Flyway :** aucune (V16 reste libre)
 **Depend de :** rien
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-30, worktree `claude/sprint-55-start-22b896`, base `origin/dev` = `59a31b3`)
 **Écart au plan validé :** #361 (job `e2e` requis sur `dev`) a été **ajoutée par le lead**.
 L'architect l'avait classée hors plan tout en la désignant « le regret le plus sérieux » : sans elle,
 une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 pts pour un plafond de
 10 — l'ajout ne déplace rien.
 **Vérification :** unitaire insuffisant partout. #376 → `docker compose up` + `ps` montrant
 `healthy`. #356 → run CI observé sur base vierge. #361 → constat qu'une PR à E2E rouge est refusée.
+
+</details>
 
 ## Sprint 56 — 2026-07-30 (PLANIFIE — MVP local : la frise redevient utilisable à la souris)
 **Objectif :** Lever le seul défaut vérifié du parcours cœur qui rend une action utilisateur impossible

@@ -87,7 +87,11 @@ services:
       - "3000:3000"
     healthcheck:
       # wget est fourni par busybox dans node:20-alpine.
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      # `127.0.0.1` et NON `localhost` (#376) : /etc/hosts du conteneur résout `localhost`
+      # vers ::1 ET 127.0.0.1, le wget BusyBox tente ::1 en premier, or Next standalone
+      # n'écoute que sur 0.0.0.0:3000 (IPv4). Avec `localhost`, la sonde échouait en
+      # permanence et le service restait `unhealthy` alors qu'il répondait 200.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
       interval: 15s
       timeout: 5s
       retries: 5
