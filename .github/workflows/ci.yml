@@ -305,6 +305,147 @@ jobs:
         run: kill "$BACKEND_PID" 2>/dev/null || true
 
   # ---------------------------------------------------------------------------
+  # Flyway smoke (#356) — POURQUOI CE JOB EXISTE.
+  # `ddl-auto=validate` est actif en dev ET en prod : au boot, Hibernate REFUSE de
+  # démarrer si le schéma produit par Flyway ne correspond pas exactement aux entités
+  # (SchemaManagementException). Or aucune migration n'a été livrée depuis le sprint 39
+  # (V15) : le chemin « base VIERGE -> V1..Vn -> validate » n'était plus exercé nulle
+  # part de façon nommée. Le job `e2e` emprunte bien le même chemin, mais il ne le
+  # PROUVE pas : il rougirait pour dix autres raisons (Playwright, frontend, réseau)
+  # avant qu'on pense à incriminer le schéma, et les tests backend tournent, eux, sur
+  # Testcontainers. Un chemin non exercé est un chemin dont on ignore l'état.
+  #
+  # ÉCART ASSUMÉ AU LIBELLÉ DE L'ISSUE : aucune invocation du CLI `flyway migrate`.
+  # La config applicative fait DÉJÀ migrate puis validate au démarrage
+  # (application.properties : `spring.flyway.enabled=true` ; profils dev ET prod :
+  # `spring.jpa.hibernate.ddl-auto=validate`). Booter le jar contre une base vierge EST
+  # donc la propriété demandée par l'issue, et cela teste le chemin RÉEL — celui du
+  # démarrage applicatif en prod — au lieu d'un chemin parallèle qui pourrait diverger.
+  #
+  # BASE VIERGE (critère 1) : un service container GitHub Actions est créé PUIS DÉTRUIT
+  # à chaque run — aucun volume, aucun cache, rien de réutilisable. Ne JAMAIS ajouter de
+  # volume ou de cache ici : Flyway reprendrait un historique existant au lieu de rejouer
+  # V1..Vn, et le job passerait au vert sans rien avoir prouvé. Le dernier step relit
+  # `flyway_schema_history` précisément pour rendre cette virginité vérifiable.
+  #
+  # Tourne en parallèle (aucun `needs:`) et n'active AUCUNE branch protection.
+  # ---------------------------------------------------------------------------
+  flyway-smoke:
+    name: flyway-smoke
+    runs-on: ubuntu-latest
+    # Postgres 16 éphémère, mêmes conventions que le job `e2e` (DB `eventmanager`,
+    # user `eventuser`). Ici la base n'est JAMAIS peuplée par ailleurs : tout ce qu'elle
+    # contiendra à la fin du job aura été produit par la chaîne de migrations.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: eventmanager
+          POSTGRES_USER: eventuser
+          POSTGRES_PASSWORD: eventpass_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U eventuser -d eventmanager"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Jar seul : les tests sont déjà couverts par le job `backend`, les rejouer ici
+      # ne prouverait rien de plus sur le schéma et doublerait la durée.
+      - name: Build backend (package, skip tests)
+        working-directory: backend
+        env:
+          SKIP_DELEGATION: "1"
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package
+
+      # Profil `dev` : il porte le MÊME `ddl-auto=validate` que `prod` (c'est la propriété
+      # testée) et fournit des defaults non secrets pour tout le reste — JWT_PRIVATE_KEY
+      # vide (paire RS256 éphémère générée au boot), EXPORT_TOKEN_SECRET, chemins de
+      # stockage. Le profil `prod` exigerait des secrets sans aucun rapport avec le schéma.
+      # Backend lancé EN FOND : le code de sortie de `java` serait perdu, c'est le step
+      # suivant qui porte le verdict (il surveille le process et échoue s'il meurt).
+      - name: Start backend against virgin DB (Flyway migrate + ddl-auto=validate)
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          DB_URL: jdbc:postgresql://localhost:5432/eventmanager
+          DB_USERNAME: eventuser
+          DB_PASSWORD: eventpass_ci
+        run: |
+          java -jar target/*.jar > flyway-smoke.log 2>&1 &
+          echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
+
+      # L'ÉCHEC EST LE DÉFAUT (critère 3) : process mort, timeout, ou santé jamais UP
+      # => `exit 1` avec le log. C'est ici que se matérialise une incohérence future entre
+      # une migration V{N} et les entités : Hibernate lève SchemaManagementException APRÈS
+      # Flyway, la JVM sort en erreur, `kill -0` le constate au tour suivant et le job
+      # rougit. Un backend qui boote correctement ne rend jamais la main : la sortie EN
+      # VERT est donc conditionnée à une PREUVE POSITIVE de démarrage
+      # (/actuator/health -> {"status":"UP"}, exposé par défaut sur tous les profils),
+      # jamais à la simple absence d'erreur.
+      - name: Wait for successful boot (fail on crash or timeout)
+        working-directory: backend
+        run: |
+          for i in $(seq 1 45); do
+            if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+              echo "Backend MORT avant d'être prêt — migration ou validation du schéma en échec. Logs :"
+              tail -n 300 flyway-smoke.log
+              exit 1
+            fi
+            if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Boot OK après ${i} tentative(s) : Flyway a migré, Hibernate a validé le schéma."
+              exit 0
+            fi
+            echo "Attente du boot... (tentative ${i})"
+            sleep 2
+          done
+          echo "Timeout : backend jamais UP. Logs :"
+          tail -n 300 flyway-smoke.log
+          exit 1
+
+      # Preuve que la base était RÉELLEMENT vierge (critère 1 + risque nommé dans l'issue :
+      # « faux négatif si la base CI n'est pas réellement vierge »). Sans ce step, le job
+      # resterait vert sur une base préexistante dont Flyway se contenterait de constater
+      # l'historique — il aurait alors validé un schéma qu'il n'a pas construit.
+      # On exige donc : autant de migrations RÉUSSIES que de fichiers V*.sql, et un
+      # historique qui COMMENCE à la version 1. Effet de bord utile : une future V16
+      # ignorée (mauvais emplacement, nommage hors convention) fait rougir ce step.
+      - name: Verify the whole chain was replayed from an empty schema
+        env:
+          PGPASSWORD: eventpass_ci
+        run: |
+          expected=$(ls backend/src/main/resources/db/migration/V*.sql | wc -l | tr -d ' ')
+          applied=$(psql -h localhost -p 5432 -U eventuser -d eventmanager -tAc \
+            "select count(*) from flyway_schema_history where type = 'SQL' and success")
+          first=$(psql -h localhost -p 5432 -U eventuser -d eventmanager -tAc \
+            "select version from flyway_schema_history where type = 'SQL' order by installed_rank limit 1")
+          echo "Migrations attendues : ${expected} | appliquées : ${applied} | première version jouée : ${first}"
+          if [ "$applied" != "$expected" ] || [ "$first" != "1" ]; then
+            echo "ÉCHEC : la chaîne V1..Vn n'a PAS été rejouée intégralement sur un schéma vide."
+            exit 1
+          fi
+          echo "Chaîne complète rejouée depuis un schéma vide."
+
+      # Hygiène (identique au job e2e) : le runner éphémère tuerait le process de toute
+      # façon, mais on évite un orphelin sur d'éventuels reruns / runners self-hosted.
+      - name: Stop backend
+        if: always()
+        run: kill "$BACKEND_PID" 2>/dev/null || true
+
+  # ---------------------------------------------------------------------------
   # Security (#167) — scan de sécurité des dépendances. Tourne en parallèle des
   # autres jobs, n'ajoute AUCUNE dépendance et n'active AUCUNE branch protection.
   #   - npm audit : BLOQUANT sur les deps de PROD (>= high) ; INFORMATIF sur dev+prod
