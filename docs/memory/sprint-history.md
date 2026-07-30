@@ -2002,7 +2002,7 @@ Sprint 57 → #58, Sprint 58 → #59, Sprint 59 → #60. Le numéro réel est co
 démarre » du critère MVP et rien d'autre ; les regrouper par domaine les étalerait sur 3 sprints.
 **Migrations Flyway :** aucune (V16 reste libre)
 **Depend de :** rien
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-30, worktree `claude/sprint-55-start-22b896`, base `origin/dev` = `59a31b3`)
 **Écart au plan validé :** #361 (job `e2e` requis sur `dev`) a été **ajoutée par le lead**.
 L'architect l'avait classée hors plan tout en la désignant « le regret le plus sérieux » : sans elle,
 une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 pts pour un plafond de
