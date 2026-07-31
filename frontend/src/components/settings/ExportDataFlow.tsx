@@ -79,10 +79,15 @@ export function ExportDataFlow() {
       data-testid="export-flow"
     >
       <div>
+        {/* Pas d'`outline-none` ici (#383) : mesuré sur Chromium/Firefox, un
+            `.focus()` programmatique sur un `tabindex="-1"` ne déclenche
+            `:focus-visible` qu'au parcours CLAVIER, jamais après un clic. Le
+            contour du DS n'apparaît donc que là où il est utile — il montre à
+            l'utilisateur clavier où le focus a atterri au changement d'étape. */}
         <h3
           ref={headingRef}
           tabIndex={-1}
-          className="text-sm font-medium outline-none"
+          className="text-sm font-medium"
           data-testid="export-heading"
         >
           {t(`steps.${flow.phase}.title`)}

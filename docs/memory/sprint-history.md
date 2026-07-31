@@ -2113,7 +2113,7 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 >   `timeline/page.tsx`. `app-shell-loading` reste le testid canonique du chargement global ;
 >   le `test.skip()` de `timeline.spec.ts` est réécrit pour l'asserter.
 
-## Sprint 57 — 2026-07-30 (PLANIFIE — MVP local : réglages sous le shell, gardes de routes, dernier 500)
+## Sprint 57 — 2026-07-30 → 2026-07-31 (Terminé — merge PR #411 dans `dev`)
 **Objectif :** Unifier le shell applicatif et fermer le seul 500 prouvé dans le code
 **Milestone GitHub :** #58
 **Issues (4) :** #299 (P2/S), #318 (P2/S), #312 (P3/XS), #398 (P3/XS) — **6 pts**
@@ -2123,7 +2123,9 @@ critère de sortie dit littéralement « sans erreur 500 », ce 500 est prouvé,
 Le déporter pour un gain de métrique serait exactement le re-scope silencieux à éviter.
 **Migrations Flyway :** aucune
 **Depend de :** rien — mais **bloque** toute issue ultérieure qui lit l'arborescence `(app)/`
-**Status :** Implémenté — PR ouverte (démarré et livré 2026-07-31, worktree `claude/sprint-57-start-b61fdb`, base `origin/dev` = `6f89c87`)
+**Status :** **Terminé** — PR #411 mergée dans `dev` le 2026-07-31 19:08 UTC, merge commit `f13c4fa`
+(16 commits sur la branche, dont les 5 commits d'issues ci-dessous + consolidation mémoire et follow-ups).
+Statut soldé au démarrage du Sprint 58 (rituel `/sprint start`, cf. mémoire *sprint-end-github-gotchas* §3).
 
 **Commits (5) :** `1651f9a` (#312) · `6c830eb` (#299) · `542e1c2` (#318) · `af33171` (#398) · `9f4635d` (correctif post-review #318)
 **Vagues exécutées :** V0 = arbitrage `ui-design` (bloquant) | V1 = #299 ∥ #312 | V2 = #318 ∥ #398 | V3 = audit + review + correctif
@@ -2211,7 +2213,7 @@ Le déporter pour un gain de métrique serait exactement le re-scope silencieux 
 > profonde — le risque « périmètre plus large » annoncé par l'issue est infirmé.
 > **Arbitrage `ui-design` requis avant démarrage** (structure cible du shell).
 
-## Sprint 58 — 2026-07-30 (PLANIFIE — MVP local : cascade `:focus-visible` et dette WCAG du DS)
+## Sprint 58 — 2026-07-30 → 2026-07-31 (EN COURS — MVP local : cascade `:focus-visible` et dette WCAG du DS)
 **Objectif :** Layeriser `:focus-visible` sans perdre d'indicateur de focus, et solder la dette WCAG des bordures
 **Milestone GitHub :** #59
 **Issues (4) :** #383 (P1/M), #375 (P2/S), #352 (P3/S), #353 (P3/XS) — **8 pts**
@@ -2219,7 +2221,120 @@ Le déporter pour un gain de métrique serait exactement le re-scope silencieux 
 **Cohésion :** 0.87
 **Migrations Flyway :** aucune
 **Depend de :** rien
-**Status :** Planifie
+**Status :** **Implémenté — PR ouverte** (démarré et livré 2026-07-31, worktree
+`claude/sprint-58-start-26b185`, base `origin/dev` = `f13c4fa`). 17 commits.
+
+**Vagues exécutées :** V0 = arbitrage `ui-design` (bloquant) | V1 = #383 seule | V2 = #352 ∥ #353
+| V3 = #375 | V4 = audit tests + review batch + correctif de clôture
+**Tests :** Backend 462/462 · Frontend 887/887 · E2E 136 passed / 0 failed / 8 skipped ·
+`tsc` 0 erreur · `next build` exit 0
+**Review batch :** 0 CRITIQUE / 3 MAJEUR / 5 MINEUR — **tous soldés** dans le sprint (`82aea3f`,
+`ca8fbf8`, `d6d0b9c`)
+**Artefacts :** `docs/memory/sprints/sprint-58/design-arbitrage-383-352.md`,
+`issue-{383,353,352,375}-done.md`, `fix-final-done.md`,
+`docs/memory/audits/sprint-58-test-coverage.md`
+**CI :** 5/5 verte sur la PR #412 (backend, frontend, e2e, flyway-smoke, security)
+
+**Nouveaux pitfalls (5) :** `PIT-S58-001` (le fond sous un `outline` n'est pas le `background-color`
+d'un ancêtre) · `PIT-S58-002` (mesurer au mauvais instant ou dans le mauvais état) ·
+`PIT-S58-003` (`NEXT_PUBLIC_API_URL` / `E2E_API_PROXY_TARGET` se posent au **build**) ·
+`PIT-S58-004` (un garde-fou cité dans la doc peut n'exister nulle part) ·
+`PIT-S58-005` (trois pièges d'outillage qui déguisent un environnement en défaut applicatif)
+**Nouveaux patterns (3) :** `PAT-S58-001` (prouver « pré-existant » au lieu de l'affirmer) ·
+`PAT-S58-002` (lecture de pixel fiable en Playwright) · `PAT-S58-003` (découper un correctif de
+cascade en étapes dont aucune ne retire d'indicateur)
+**Nouvelles décisions (4) :** `DEC-S58-001` (contour du DS = unique indicateur de focus) ·
+`DEC-S58-002` (`surface-2`, 5ᵉ surface du DS et la plus serrée) · `DEC-S58-003` (checkbox : aligner
+le composant, conserver le spécimen) · `DEC-S58-004` (`<tr>` rogné par `overflow-x-auto` : ne rien
+changer)
+
+**Saturation contexte lead :** non instrumentée sur cette session — aucun compteur fiable à
+disposition, donc pas de chiffre inventé. Ordre de grandeur observable : 8 subagents (1 `ui-design`,
+5 `fullstack-dev`, 1 `test-runner`, 1 `reviewer`), retours distillés, aucun contenu brut conservé
+en contexte lead.
+
+> **L'arbitrage `ui-design` a re-calibré le sprint avant la première ligne de code.**
+> Trois résultats qui ont changé le plan :
+> 1. **Les deux moitiés de #383 sont séparables.** Retirer le `border-radius` du reset de focus ne
+>    touche aucun site — `outline` suit déjà le rayon propre de l'élément (mesuré au pixel sur
+>    Chromium 149, Firefox 151, WebKit 26.5). **La régression WCAG que le S53 redoutait est portée
+>    par la layerisation seule.** D'où un ordre en 4 étapes où aucun indicateur n'est jamais absent.
+> 2. **La zone de risque n'était pas celle annoncée.** L'issue et le plan désignaient
+>    `language-selector.tsx` — il n'a demandé **aucune modification de classe**. Le vrai danger
+>    était un groupe de 5 items de menu (`dropdown-menu.tsx`, `select.tsx`) dont le focus n'est
+>    signalé que par un fond à 1,23:1.
+> 3. **`landing.css` était déjà conforme** (arbitré par #335 avant l'ouverture de #352) → 3 des
+>    19 occurrences annoncées = 0 travail. Comptage `outline-*` corrigé : **32 sites réels dans
+>    24 fichiers**, contre « ~14 » dans l'issue.
+
+> **Les 5 échecs E2E de l'audit ne reproduisent pas — et la ligne de base l'a prouvé.**
+> L'audit rapportait 4 failed + 1 timedOut, dont 3 sur `timeline.spec.ts`, le fichier que #352
+> modifie le plus, l'un portant littéralement sur un label « qui dépend du CONTRASTE ».
+> Ligne de base prise **avant** tout correctif (code restauré à `f13c4fa`) : **les 5 sont verts sur
+> la base ET sur HEAD**, 136/0/8 dans les deux cas, y compris rejoués en isolation. Hypothèse
+> #352 infirmée (le test dépend de `eventLabelReadableInside(event.color)`, du TypeScript, pas du
+> CSS). **Aucune spec touchée, aucun correctif E2E écrit.** Cause probable constatée mais non
+> démontrée : configuration de l'environnement de l'audit — voir le pitfall `next build` ci-dessous.
+
+> **Une erreur de briefing du lead, assumée :** #383 avait pour instruction de **conserver**
+> `focus:border-transparent` sur `EventEditForm:505`, au motif que c'était la silhouette du champ
+> et non un indicateur de focus. Isolément exact ; combiné au retrait de l'anneau, ça faisait
+> disparaître la bordure au focus sans remplaçant. Relevé en review (MAJEUR), corrigé en `82aea3f`.
+> L'agent avait correctement suivi une instruction fausse.
+
+> **Un garde-fou annoncé qui n'existait pas :** `ds/a11y-audit.md` affirmait qu'une réintroduction
+> d'anneau local serait rattrapée par `base-layer.test.ts` — ce fichier ne contenait **aucune**
+> assertion sur le focus. Sur ce dépôt les commentaires servent de mémoire d'arbitrage : une
+> garantie fictive est pire que pas de garantie. Assertion écrite (`ca8fbf8`), **et sa limite
+> écrite avec elle** (elle verrouille la layerisation, elle ne détecte pas un `ring-2` réintroduit
+> dans un `.tsx`).
+
+**Follow-ups proposés (9) — à trier en Phase 4 de `/sprint end` :**
+| # | Description | Triage | Source |
+|--:|---|:---:|---|
+| 1 | `documentElement.lang` reste `"fr"` sur `/en/*`, `/es/*`, `/de/*` — les lecteurs d'écran prononcent tout en français (**WCAG 3.1.1**), y compris le libellé que #353 vient de traduire | S | #353 |
+| 2 | Options de `Select` sans `:focus-visible` sous **Firefox** dans leurs montages réels (ProductDrawer, EventEditForm, PreferencesSection) — non reproduit isolé, non infirmé en contexte | M | #383, #375 |
+| 3 | `.mt-radio__dot` et `.mt-switch__track` (tous deux **en production**) n'ont pour indicateur de focus qu'un `--shadow-focus` à **1,23:1** : l'`<input>` réel est en `opacity:0; width:0`, le contour global n'y peint rien | S | arbitrage `ui-design` |
+| 4 | Glyphe de coche sur la pastille sélectionnée de `CategoryDrawer` — bordure/remplissage à **1,61:1** sur le pire appariement (la distinguabilité passe par la bordure/fond, 8,87–16,03:1) | S | correctif de clôture |
+| 5 | Contour de focus **rogné** dans `.mt-zoom` et le tablist des réglages (`overflow:hidden`) → `outline-offset:-2px`. **Pré-existant, prouvé** — l'ancien `ring-*` était rogné pareil | XS | #383, confirmé #352 |
+| 6 | `.mt-evt--draft` : son `opacity:.8` empêche le pointillé d'atteindre 3:1 contre **son propre fond** en clair (2,82:1). Passe contre le fond de lane (3,11:1), donc cas nominal couvert | XS | #352 |
+| 7 | Étendre la mesure de contour aux **8 autres sites de montage** du sélecteur de langue et au palier < 1024 px (`LandingMobileMenu`) — aujourd'hui une prédiction, pas une mesure | XS | #375 |
+| 8 | Reporter la recette E2E qui marche (`NEXT_PUBLIC_API_URL` + `E2E_API_PROXY_TARGET` au **build**) dans `sprint-47/e2e-local-runbook.md` | XS | correctif de clôture |
+| 9 | Vérifier au navigateur les surfaces non couvertes par #383 : réglages en viewport **mobile**, `forced-colors`, `dpr ≠ 1` | S | #383 |
+
+**Absorbé en cours :** 3 commentaires rendus faux par les retraits d'anneaux (`CompactRail.tsx`,
+`select.stories.tsx`, `checkbox.stories.tsx`), décompte 32/31/1 aligné entre `base.css` et
+`a11y-audit.md`, exception `popover.tsx` commentée in-situ.
+
+**Follow-ups arbitrés (Phase 4 triage, 9 items) :**
+| Description | Triage | Arbitrage |
+|---|:---:|---|
+| `documentElement.lang` reste `"fr"` sur les pages non francophones (WCAG 3.1.1) | S | → issue **#413** |
+| Options de `Select` sans `:focus-visible` sous Firefox, en montage réel | M | → issue **#414** |
+| `.mt-radio__dot` / `.mt-switch__track` : focus à 1,23:1, tous deux en production | S | → issue **#415** |
+| Glyphe de coche sur pastille sélectionnée (`CategoryDrawer`) | S | → issue **#416** |
+| Contour rogné dans `.mt-zoom` et le tablist des réglages (`outline-offset:-2px`) | XS | → issue **#417** |
+| `.mt-evt--draft` : `opacity:.8` bloque les 3:1 contre son propre fond | XS | → issue **#418** |
+| Vérifier les surfaces de focus non couvertes (réglages mobile, `forced-colors`, `dpr≠1`, Safari) | S | → issue **#419** |
+| Reporter la recette E2E qui marche dans le runbook du S47 | XS | **absorbé** (`70dfbcf`) |
+| Étendre la mesure de contour aux 8 autres sites de montage du sélecteur | XS | **discard** — couvert par #419 |
+
+Ratio discard : **1/9**. Aucun sur-signalement constaté : les 9 items étaient adossés à une mesure
+ou à un fichier précis.
+
+⚠ **Les 7 issues sont créées SANS milestone (backlog libre), délibérément.** Rattacher des
+follow-ups au milestone « Sprint 59 » aurait reproduit le piège du S46 : `/sprint plan` sélectionne
+par **label** `sprint-N`, pas par milestone — les issues rattachées mais non labellisées ne sont
+jamais planifiées, et la fermeture du milestone les enterre (7 issues perdues au S46). Le backlog
+libre est au contraire le vivier exact de `/sprint plan`, qui part de toutes les issues ouvertes et
+**exclut** celles déjà labellisées `sprint-*`.
+
+**Écart assumé au plan des vagues :** l'architect proposait `V2 = #353 ∥ #352 ∥ #375`. #375 est
+**déplacée seule en V3**. Motif : #375 ne fait que *mesurer* le contour `:focus-visible` **sur le
+sélecteur de langue** — or #353 (V2) redimensionne ce même déclencheur à 44×44 px et #383 (V1) lui
+donne son propre anneau. Mesurer en parallèle de #353 reviendrait à mesurer une cible mouvante,
+exactement le travail perdu que l'architect voulait éviter en la plaçant après #383. Coût : nul
+(#375 ne modifie aucun fichier si le contour est conforme).
 
 > ⚠ **Sprint le plus susceptible de déraper — deux mesures.**
 > 1. **#383 est sous-estimée d'un facteur 2** : l'issue annonce ~14 sites, le comptage réel sur

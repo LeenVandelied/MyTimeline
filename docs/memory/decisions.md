@@ -378,3 +378,40 @@ remontée à 0.31. Décision : **garder #312**. Le critère de sortie du MVP dit
 500 », ce 500 était le seul prouvé dans le code sur 104 candidates auditées, et il coûtait 1 point. Le
 déporter aurait été un re-scope silencieux déguisé en amélioration de métrique. La cohésion mesure la
 proximité de domaine, pas la valeur livrée — elle informe le découpage, elle ne le commande pas.
+
+
+## DEC-S58-001 — Le contour du DS est l'unique indicateur de focus, et rien au niveau du site
+Après #383, `:focus-visible` vit dans `@layer base` et aucun composant ne pose d'utilitaire de focus — ni
+`outline-none`/`outline-hidden`, ni `ring-*`. Un anneau conservé à côté du contour ferait **deux indicateurs
+concentriques**, motif absent de la charte. Deux alternatives ont été mesurées et **rejetées** :
+`--shadow-focus` (`accent-soft`) plafonne à **1,23:1 clair / 1,19:1 sombre**, soit 2,5× sous WCAG 1.4.11 —
+c'est un halo, pas un indicateur ; et `ring-*` est un `box-shadow` dont le `ring-offset` peint une bande
+**opaque** dont la couleur initiale compilée est `#fff`, donc un liseré blanc en mode sombre, là où
+`outline-offset` est transparent. Seule exception du dépôt : `ui/popover.tsx` garde son `outline-hidden`
+(panneau, pas contrôle). Écriture imposée : **`outline-hidden`, jamais `outline-none`** — seul le premier
+émet le fallback `@media (forced-colors: active)`.
+
+## DEC-S58-002 — `surface-2` est la 5ᵉ surface du DS, et la plus serrée
+Les ratios versionnés du tier `rule-emphasis` couvraient 4 couples (`bg`/`surface` × clair/sombre). Les
+toolbars de la frise vivent sur **`surface-2`**, absent de cet inventaire. Mesuré au pixel en S58 :
+**3,70:1 en clair / 4,10:1 en sombre**, et jusqu'à **3,19:1** sur un bouton circulaire (anti-crénelage).
+Au-dessus des 3:1, mais avec la marge la plus étroite du DS. Consigné dans `ds/readme.md` : toute future
+migration vers ce tier sur `surface-2` doit être **mesurée**, pas déduite du token.
+
+## DEC-S58-003 — Checkbox : aligner le composant applicatif, conserver le spécimen du DS
+`.mt-check__box` n'a aucun consommateur applicatif, la checkbox réelle est `ui/checkbox.tsx` (shadcn). Deux
+options s'offraient : aligner le composant sur `rule-emphasis`, ou supprimer la règle morte. **Option (a)
+retenue.** Supprimer `.mt-check__box` aurait retiré la seule entrée que `control-border-tier.test.ts`
+surveille pour ce contrôle — le test ne lit que du CSS, la bordure de `checkbox.tsx` est une utilitaire
+Tailwind dans du TSX : on aurait échangé une règle **morte mais gardée** contre un contrôle **vivant et non
+gardé**. Et `.mt-radio__dot` / `.mt-switch__track`, ses jumeaux, sont **en production**. Contraste :
+`border-primary` (encre pure, 17,32:1) → `rule-emphasis` (4,07:1) — baisse assumée, prescrite par la charte,
+qui rétablit la hiérarchie « bordure plus discrète que le texte ».
+
+## DEC-S58-004 — Un `<tr>` focalisable rogné par `overflow-x-auto` : ne rien changer
+`ProductsListView` porte un `<tr role="link" tabIndex={0}>` dans une table `border-collapse`, cas où le
+rendu d'`outline` est réputé dépendre du moteur. Mesuré (Chromium 149 + Firefox 151, clair et sombre,
+lecture de pixel) : le contour **est peint**, 5,93:1 / 6,94:1 ; seules les verticales sont rognées, **par le
+conteneur `div.overflow-x-auto`**, pas par un défaut de peinture. Décision : **ne rien changer**. Les
+horizontales suffisent à signaler la ligne ; un `ring-*` est un `box-shadow` rogné à l'identique et interdit
+par [[DEC-S58-001]] ; un `outline-offset` négatif poserait le trait sur le `border-b` de la ligne.

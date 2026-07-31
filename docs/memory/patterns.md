@@ -465,3 +465,33 @@ le trou que le garde-fou ferme ; (c) normaliser la casse des deux côtés, sinon
 `'Billing'` passe au vert alors qu'`isProtectedPathname` compare `segment.toLowerCase()` — fausse assurance
 dans le scénario exact que le garde-fou vise (corrigé en cours de sprint, cf. [[PIT-S57-002]] pour le
 message d'échec).
+
+
+## PAT-S58-001 — Prouver « pré-existant » au lieu de l'affirmer
+Face à un défaut découvert pendant un sprint, « c'était déjà là » et « c'est nous » sont deux conclusions
+qui exigent chacune une preuve. Méthode employée trois fois en S58, coût ~5 minutes à chaque fois :
+restaurer le ou les fichiers depuis le commit de base (`git show <sha>:<chemin> > <chemin>`), re-mesurer,
+restaurer son état. A tranché le rognage de contour dans `.mt-zoom`, le défaut `Select`/Firefox, et surtout
+**5 échecs E2E** qui pointaient vers le fichier le plus modifié du sprint — verts sur la base **et** sur
+`HEAD`, donc ni régression ni défaut latent. Sans ce réflexe, l'arbitrage par défaut aurait été de revenir
+sur une migration correcte et mesurée. Symétrique de [[ci-green-is-not-page-correct]].
+
+## PAT-S58-002 — Lecture de pixel fiable en Playwright
+`page.screenshot({clip})` → base64 → `createImageBitmap` + canvas `getImageData` **dans la page**.
+Pour un filet fin ou pointillé, échantillonner **N lignes** et garder l'extrême (une sonde unique tombe dans
+un vide). Sur un bord courbe, l'anti-crénelage dilue le pixel : mesurer sur un côté droit, jamais sur un arc
+— S58 a lu 3,19:1 sur un bouton circulaire dont la couleur déclarée valait 3,70:1. C'est la seule méthode
+qui tranche un contraste en situation (cf. [[PIT-S58-001]]).
+
+## PAT-S58-003 — Découper un correctif de cascade en étapes dont aucune ne retire d'indicateur
+Layeriser une règle globale de focus **retire** l'indicateur partout où le code applicatif posait un
+`outline-none` — c'est pourquoi le S53 avait renoncé. S58 a montré que le défaut se **décompose** : retirer
+le `border-radius` parasite ne touche aucun site (le contour reste gagnant), nettoyer les 32 sites ne change
+rien au rendu (le contour les battait déjà), et seule la **layerisation** porte le risque — donc elle vient
+en dernier, quand plus aucun site ne la combat. Chaque étape est vérifiable seule, et à aucun instant
+l'application n'est sans indicateur de focus. Généralisable : devant un correctif de cascade jugé risqué,
+chercher d'abord **quelle part du défaut est séparable du risque**.
+Corollaire outillé : `PAT-S24-002` (hitbox 44×44 sans agrandir le visuel) se transpose en utilitaires
+Tailwind — `relative before:absolute before:top-1/2 before:left-1/2 before:h-11 before:w-11
+before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']`. Anti-pattern : agrandir `h-9 w-9`,
+qui déplace le layout et rouvre le débordement horizontal.

@@ -318,8 +318,13 @@ export function CategoryDrawer({
                         disabled={readOnly || submitting}
                         onClick={() => setSwatch(hex)}
                         className={cn(
-                          'size-7 rounded-full border transition focus:ring-2 focus:ring-offset-1 focus:outline-none',
-                          selected ? 'border-foreground ring-2 ring-offset-1' : 'border-rule',
+                          // Aucune utilitaire de focus : l'indicateur est le contour
+                          // `:focus-visible` du DS, qui suit le `rounded-full` (#383).
+                          // La SÉLECTION est portée par `border-foreground` seul —
+                          // l'ancien `ring-2 ring-offset-1` la rendait indiscernable
+                          // du focus, qui posait le même anneau.
+                          'size-7 rounded-full border transition',
+                          selected ? 'border-foreground' : 'border-rule',
                           (readOnly || submitting) && 'cursor-not-allowed opacity-50',
                         )}
                         style={{ backgroundColor: hex }}

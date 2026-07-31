@@ -96,8 +96,10 @@ describe('HeaderSection', () => {
   it('garde « Inscription » visible à toute largeur et le burger sous `lg` (#334, seuil #347)', () => {
     render(<HeaderSection locale="fr" />)
     const register = screen.getByText('common.landing.buttons.register')
-    // `classList` et pas `className` : la classe utilitaire `focus-visible:outline-hidden`
-    // du Button contient la sous-chaîne « hidden » et fausserait un `toContain`.
+    // `classList` et pas `className` : `contains()` compare des classes ENTIÈRES,
+    // là où un `toContain` sur la chaîne apparierait n'importe quelle utilitaire
+    // contenant « hidden » en sous-chaîne (p. ex. `focus-visible:outline-hidden`,
+    // que le Button portait avant #383) et rendrait l'assertion fausse.
     expect(register.classList.contains('hidden')).toBe(false)
     expect(register.classList.contains('lg:hidden')).toBe(false)
 

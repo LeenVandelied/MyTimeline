@@ -36,18 +36,17 @@ export interface StateScreenProps {
 /**
  * Classes d'action partagées (accent Graphite). Exportées pour que les écrans
  * appelants stylent leurs `<Link>` / `<button>` de manière cohérente sans
- * dupliquer la charte. Focus visible AA (ring accent + offset sur le fond).
+ * dupliquer la charte. Aucune utilitaire de focus ici : l'indicateur est le
+ * contour `:focus-visible` du DS (`ds/tokens/base.css`, #383).
  */
 export const stateActionPrimary = cn(
   'inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium',
   'bg-accent text-accent-ink transition-colors hover:bg-accent-hover',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
 )
 
 export const stateActionSecondary = cn(
   'inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium',
   'border border-rule-emphasis text-ink transition-colors hover:bg-surface-2',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
 )
 
 export function StateScreen({

@@ -85,6 +85,15 @@ shadowed feature cards. The new system rejects all of that.
   they carry no state. Whenever a border is the only thing telling the user a
   control exists, use `rule-emphasis`.
 
+  **`surface-2` (toolbars) — measured at render, #352.** The four ratios above
+  cover `bg` and `surface` only. Toolbars (`.mt-tlv__toolbar`, `.mt-tlm__toolbar`)
+  paint on `surface-2`, the tightest of the DS surfaces for this token. Pixel
+  readout on the real timeline (Chromium, `page.screenshot` + `getImageData`, not
+  `getComputedStyle` on an ancestor): `rule-emphasis` on `surface-2` =
+  **3.70:1 light · 4.10:1 dark**. Above 3:1, with the least headroom of the five
+  surfaces — re-measure this pair, not just `bg`/`surface`, before retuning the
+  token or darkening `surface-2`.
+
   Two rules of thumb:
   - **Do not reach for a text token** (`ink-muted`, `ink-faint`) to get a visible
     border. That was the S39 stopgap in `HeroSection` and it is now removed —

@@ -148,3 +148,40 @@ pas le bug dans la spec.
 
 `49 passed / 0 failed / 38 s` — commit `8d97edd` (= `origin/dev`).
 Toute spec rouge après ça est imputable au sprint, pas à l'existant.
+
+---
+
+## Réglage n°5 — `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` se posent au **`next build`** (ajout S58)
+
+Les rewrites Next sont **sérialisés dans `routes-manifest.json` au build**. Les poser au `next start`
+n'a **aucun effet**. Sans `NEXT_PUBLIC_API_URL=/api`, `apiClient` perd son préfixe et produit des
+**404 invisibles** pour le watcher d'`auth.setup.ts` — qui accuse alors le rate-limit, le CORS ou un
+409. Trois diagnostics faux, dans la même famille que le piège `Origin` du réglage n°1.
+
+**Oracle de vérification, à faire avant de lancer la suite :**
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3100/api/auth/me
+# doit renvoyer 401 — un 404 signale que le préfixe /api est perdu, donc un build mal configuré
+```
+
+Configuration complète qui a donné **136 passed / 0 failed / 8 skipped** au Sprint 58 :
+
+```
+backend-e2e Docker :8086  sur la base eventmanager_e2e via postgres-e2e :5436
+frontend :3100            (buildé AVEC NEXT_PUBLIC_API_URL=/api et E2E_API_PROXY_TARGET=8086)
+CI=1                      (force workers=1 — cf. réglage n°5 historique, renuméroté n°6 ci-dessous)
+PLAYWRIGHT_BASE_URL=http://localhost:3100
+SKIP_DELEGATION=1         (devant un npx playwright test direct)
+```
+
+⚠ **Ce que ce réglage a coûté avant d'être compris** : un audit du Sprint 58 a rapporté
+**5 échecs E2E**, dont 3 concentrés sur `timeline.spec.ts` — le fichier CSS le plus modifié du sprint,
+et l'un des tests portait littéralement sur un label « qui dépend du contraste ». L'hypothèse d'une
+régression était donc très plausible. Une ligne de base prise sur le commit de départ a montré que
+**les 5 tests étaient verts sur la base ET sur `HEAD`**, en suite comme en isolation. Aucun correctif
+n'était nécessaire, aucune spec n'a été touchée. Cf. `PIT-S58-003` et `PAT-S58-001`.
+
+⚠ Le hook **RTK** tue `npx next dev|start` en ne laissant que « Errors: 1 » dans le log. Un log serveur
+de 3 lignes est un artefact RTK, pas un plantage de l'app : passer par `rtk proxy`.
+

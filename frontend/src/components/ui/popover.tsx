@@ -16,6 +16,14 @@ const PopoverContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
   <PopoverPrimitive.Portal>
+    {/* `outline-hidden` ci-dessous = SEULE exception du dépôt au contour de focus
+        du DS (#383, Sprint 58) : un PANNEAU n'est pas un CONTRÔLE. Radix pose
+        `tabIndex=-1` sur le contenu et lui donne le focus à l'ouverture ; le
+        contour marquerait alors le conteneur entier, pas la cible que
+        l'utilisateur pilote. Les 31 AUTRES sites applicatifs ont été nettoyés de
+        leurs `outline-*` et héritent du contour unique. `outline-hidden` et
+        jamais `outline-none` : lui seul émet le repli `forced-colors: active`.
+        Modèle du commentaire : `ds/tokens/base.css` (bloc `:focus-visible`). */}
     <PopoverPrimitive.Content
       ref={ref}
       align={align}

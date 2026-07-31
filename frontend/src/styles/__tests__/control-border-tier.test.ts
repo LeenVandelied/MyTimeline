@@ -35,13 +35,22 @@ const GLOBALS = fileURLToPath(new URL('../globals.css', import.meta.url))
 /**
  * Sélecteurs dont la bordure EST l'affordance du contrôle. Ajouter ici tout
  * nouveau contrôle dont le contour porte la limite visuelle.
+ *
+ * ⚠ #352 — `.mt-check__box` est le SPÉCIMEN DS de la checkbox, pas le contrôle
+ * rendu par l'application. Le contrôle applicatif est `ui/checkbox.tsx` (racine
+ * Radix habillée par l'utilitaire `border-rule-emphasis`) — même tier, mécanisme
+ * différent. Cette entrée est conservée : la retirer supprimerait le SEUL
+ * garde-fou CSS du tier (ce test ne lit que du CSS, jamais de `.tsx`, et
+ * `checkbox.tsx` n'emprunte pas le pont `--color-input` testé plus bas), et
+ * désymétriserait le bloc `.mt-check` / `.mt-radio` / `.mt-switch` dont les deux
+ * autres membres sont consommés par `ui/radio.tsx` et `ui/switch.tsx`.
  */
 const FUNCTIONAL_CONTROL_SELECTORS = [
   '.mt-btn--secondary', // bouton outline
   '.mt-iconbtn', // bouton icône seule
   '.mt-input, .mt-textarea', // champ non rempli
   '.mt-select__trigger', // déclencheur de select
-  '.mt-check__box', // contour de checkbox
+  '.mt-check__box', // contour de checkbox (spécimen DS — cf. note ci-dessus)
   '.mt-radio__dot', // contour de radio
   '.mt-switch__track', // piste d'interrupteur (état off)
 ] as const

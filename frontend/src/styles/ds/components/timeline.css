@@ -1,8 +1,25 @@
 /* MyTimeline · Timeline component styles (Graphite)
-   The core product surface. Lanes = products, x-axis = time, events = bars. */
+   The core product surface. Lanes = products, x-axis = time, events = bars.
+
+   Tiers de bordure (#293 / #336 / #352) — cf. `../readme.md` § « Border tiers »
+   et l'en-tête de `core.css:5-13`. Critère UNIQUE, repris tel quel :
+   - FONCTIONNELLE (`--color-rule-emphasis`, ≥3:1, WCAG 1.4.11) si son retrait
+     empêcherait de voir qu'un CONTRÔLE existe ou où il commence ;
+   - DÉCORATIF (`--color-rule` / `--color-rule-strong`) si son retrait ne coûte
+     aucune information — séparateur, cadre de panneau flottant, cadre de carte,
+     graduation, marque statique non focusable.
+   Test d'application : l'élément a-t-il un remplissage qui le distingue de son
+   fond ? Si oui → décoratif ; si non → fonctionnelle.
+   #352 a arbitré les 16 `rule-strong` de ce fichier : 7 fonctionnelles migrées,
+   9 décoratives conservées et commentées une par une ci-dessous. Aucun filet de
+   la frise elle-même (graduations, séparateurs de lane, règles) n'est migré :
+   les alourdir ne rendrait aucune information. Chaque `rule-strong` restant est
+   donc un appel EXPLICITE, pas un oubli — ne pas les balayer en masse. */
 
 /* ---------------- TimelineRuler ---------------- */
 .mt-tl-ruler{display:flex; height:var(--ruler-height); background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); overflow:hidden;}
+/* Séparateur de graduation majeure DANS la règle temporelle : marque statique,
+   ni rôle ni focus, son retrait ne coûte aucune information → décoratif. */
 .mt-tl-ruler__maj{flex:1; border-right:1px solid var(--color-rule-strong); position:relative;}
 .mt-tl-ruler__maj:last-child{border-right:0;}
 .mt-tl-ruler__maj--weekend{background:color-mix(in srgb, var(--color-ink) 3.5%, transparent);}
@@ -39,8 +56,14 @@
 .dark .mt-evt:hover, [data-theme="dark"] .mt-evt:hover{filter:brightness(1.12);}
 /* recurring: solid bar (rhythm carried by ghost occurrences, not a fill pattern) */
 .mt-evt--recurring{}
-/* ghost / upcoming occurrence: dashed outline, faint tint, no solid fill */
-.mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt, var(--color-rule-strong)); color:var(--color-ink-muted); opacity:.8; box-shadow:none;}
+/* ghost / upcoming occurrence: dashed outline, faint tint, no solid fill.
+   #352 — le FALLBACK du pointillé passe au tier fonctionnel. L'occurrence
+   fantôme est cliquable et son fond est un `color-mix` à 8 % (≈ invisible) : le
+   pointillé porte seul l'objet. Quand `--mt-evt` n'est pas fourni
+   (`EventPreviewTimeline.tsx` ne le pose que `if (color)`), c'est ce fallback
+   qui peint le contour → fonctionnelle. AUCUN impact visuel dans le cas nominal
+   (couleur d'événement fournie) : la var l'emporte sur le fallback. */
+.mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt, var(--color-rule-emphasis)); color:var(--color-ink-muted); opacity:.8; box-shadow:none;}
 .mt-evt--archived{opacity:.45; filter:grayscale(.5);}
 /* preview (form live preview): non-interactive bars — drop the click affordance
    (`cursor:pointer` + hover brightness) inherited from `.mt-evt`. */
@@ -55,12 +78,19 @@
 
 /* ---------------- TimelineMinimap ---------------- */
 .mt-minimap{position:relative; display:flex; align-items:flex-end; gap:2px; height:40px; padding:5px 6px; background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); overflow:hidden;}
+/* REMPLISSAGE (pas un filet) de la barre de densité VIDE : `Minimap.tsx` rend
+   `h > 0 ? --filled : bar`, donc ce `rule-strong` est le seau à ZÉRO événement,
+   une ligne de base. L'information est portée par `--filled` (`accent`) →
+   décoratif. */
 .mt-minimap__bar{flex:1; background:var(--color-rule-strong); border-radius:1px; min-height:3px;}
 .mt-minimap__vp{position:absolute; top:0; bottom:0; border:1.5px solid var(--color-accent); border-radius:var(--radius-sm); background:color-mix(in srgb, var(--color-accent) 10%, transparent); cursor:grab;}
 .mt-minimap__vp:active{cursor:grabbing;}
 
 /* ---------------- TimelineZoomControls ---------------- */
-.mt-zoom{display:inline-flex; align-items:stretch; border:1px solid var(--color-rule-strong); border-radius:var(--radius-md); overflow:hidden;}
+/* #352 — cadre du GROUPE de zoom (`role="group"`). Ses boutons ont `border:0`
+   et `background:var(--color-surface)` sur une toolbar `surface-2` (delta
+   ~1.05:1) : ce cadre est la SEULE limite visible du contrôle → fonctionnelle. */
+.mt-zoom{display:inline-flex; align-items:stretch; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md); overflow:hidden;}
 .mt-zoom__btn{width:30px; background:var(--color-surface); border:0; color:var(--color-ink); font-family:var(--font-mono); font-size:15px; cursor:pointer; transition:background var(--dur-micro);}
 .mt-zoom__btn:first-child{border-right:1px solid var(--color-rule);}
 .mt-zoom__btn:last-child{border-left:1px solid var(--color-rule);}
@@ -68,6 +98,9 @@
 .mt-zoom__level{display:flex; align-items:center; padding:0 12px; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-muted); white-space:nowrap;}
 
 /* ---------------- DateStamp ---------------- */
+/* Cadre du `DateStamp` : bloc d'AFFICHAGE, sans rôle ni focus, avec un
+   remplissage (`surface`) qui le distingue déjà. Même appel que `.mt-badge`
+   (`core.css`, marque statique) → décoratif. */
 .mt-stamp{display:inline-block; text-align:center; min-width:58px; padding:6px 11px 7px; background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-md);}
 .mt-stamp__wd{font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-stamp__day{font-family:var(--font-mono); font-size:26px; font-weight:var(--weight-semibold); line-height:1.05; color:var(--color-ink);}
@@ -96,7 +129,9 @@
 /* Rail interne à largeur = totalDays * dayWidth (échelle du zoom). */
 .mt-tlv__rail{position:relative;}
 
-/* Règle sticky adaptative (graduations dynamiques par zoom). */
+/* Règle sticky adaptative (graduations dynamiques par zoom).
+   Filet règle / lanes : séparateur de deux zones d'affichage, aucun contrôle ne
+   commence ni ne finit là → décoratif. */
 .mt-tlv__ruler{position:sticky; top:0; z-index:var(--z-sticky); height:var(--ruler-height); background:var(--color-surface); border-bottom:1px solid var(--color-rule-strong);}
 .mt-tlv__tick{position:absolute; top:0; bottom:0; border-left:1px solid var(--color-rule);}
 .mt-tlv__tick--month{border-left-color:var(--color-ink-faint);}
@@ -199,7 +234,10 @@
 .mt-minimap__bar--filled{background:var(--color-accent);}
 .mt-minimap__vp:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
-/* Drawer détail événement — dérivé de .mt-dialog en slide-in droite. */
+/* Drawer détail événement — dérivé de .mt-dialog en slide-in droite.
+   Cadre de PANNEAU FLOTTANT + `shadow-lg` : la présence du panneau se lit à son
+   élévation et à son remplissage (`surface`), pas à son filet. Même appel que
+   `.mt-dialog` (`core.css`) → décoratif. */
 .mt-drawer__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); z-index:var(--z-modal); backdrop-filter:blur(2px);}
 .mt-drawer{position:fixed; right:0; top:0; bottom:0; z-index:var(--z-modal); width:min(420px, 92vw); display:flex; flex-direction:column; background:var(--color-surface); border-left:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-bottom-left-radius:var(--radius-xl); transform:translateX(0); transition:transform var(--dur-base) var(--ease-quart);}
 @media (prefers-reduced-motion:reduce){ .mt-drawer{transition:none;} }
@@ -209,7 +247,10 @@
 .mt-drawer__row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--color-rule); font-size:13px;}
 .mt-drawer__k{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-drawer__v{color:var(--color-ink); text-align:right;}
-.mt-drawer__close{position:relative; background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
+/* #352 — bouton fermer à ICÔNE SEULE, `background:none` : aucun remplissage ne
+   le distingue du header, la bordure porte toute l'affordance. Même appel que
+   `.mt-iconbtn` (`core.css`) → fonctionnelle. */
+.mt-drawer__close{position:relative; background:none; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
 /* #82 a11y — hitbox tap >= 44x44px sans agrandir le visuel (28px conservé).
    Pseudo centré qui déborde de (44-28)/2=8px sur chaque bord. Même technique
    que `.mt-tlm__evt::before`. N'affecte pas le layout du header flex. */
@@ -238,7 +279,10 @@
 
 /* Tooltip d'aide (?) — liste des raccourcis clavier. */
 .mt-tlv__help{position:relative; display:inline-flex;}
-.mt-tlv__help-btn{width:26px; height:26px; border-radius:50%; border:1px solid var(--color-rule-strong); background:var(--color-surface); color:var(--color-ink-muted); font-family:var(--font-mono); font-size:13px; cursor:pointer;}
+/* #352 — bouton d'aide `?` 26px, à icône seule : son `background:surface` sur
+   une toolbar `surface-2` ne le détache pas (delta ~1.05:1), la bordure est sa
+   seule limite → fonctionnelle. */
+.mt-tlv__help-btn{width:26px; height:26px; border-radius:50%; border:1px solid var(--color-rule-emphasis); background:var(--color-surface); color:var(--color-ink-muted); font-family:var(--font-mono); font-size:13px; cursor:pointer;}
 .mt-tlv__help-btn:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 .mt-tlv__help-pop{position:absolute; top:calc(100% + 8px); right:0; z-index:var(--z-popover); min-width:230px; background:var(--color-ink); color:var(--color-surface); border-radius:var(--radius-md); box-shadow:var(--shadow-md); padding:10px 12px; opacity:0; pointer-events:none; transition:opacity var(--dur-micro);}
 .mt-tlv__help:hover .mt-tlv__help-pop, .mt-tlv__help:focus-within .mt-tlv__help-pop{opacity:1; pointer-events:auto;}
@@ -288,7 +332,9 @@
    `overflow-x:auto` est fragile en WebKit. On double avec `-webkit-sticky` et
    on garde la règle en flux (pas de transform ancêtre) pour maximiser le support.
    Fallback : si le sticky lâche sur un device réel, la règle scrolle avec le
-   contenu (dégradation acceptable, non bloquante — réserve ui-design #2). */
+   contenu (dégradation acceptable, non bloquante — réserve ui-design #2).
+   Filet de la règle : miroir mobile de `.mt-tlv__ruler`, même verdict —
+   séparateur d'affichage, aucun contrôle ne commence là → décoratif. */
 .mt-tlm__ruler{position:-webkit-sticky; position:sticky; top:0; z-index:var(--z-sticky); height:var(--ruler-height); background:var(--color-surface); border-bottom:1px solid var(--color-rule-strong);}
 .mt-tlm__tick{position:absolute; top:0; bottom:0; border-left:1px solid var(--color-rule);}
 .mt-tlm__tick--month{border-left-color:var(--color-ink-faint);}
@@ -326,11 +372,18 @@
 
 /* -------- Bottom sheet détail (`.mt-sheet`) -------- */
 .mt-sheet__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); z-index:var(--z-modal); backdrop-filter:blur(2px);}
+/* Cadre de bottom sheet + `shadow-lg` : panneau flottant rempli (`surface`),
+   son filet ne délimite aucun contrôle → décoratif (cf. `.mt-drawer`). */
 .mt-sheet{position:fixed; left:0; right:0; bottom:0; z-index:var(--z-modal); max-height:80vh; display:flex; flex-direction:column; background:var(--color-surface); border-top:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-top-right-radius:var(--radius-xl); transform:translateY(0); animation:mt-sheet-in var(--dur-base) var(--ease-quart);}
 @keyframes mt-sheet-in{from{transform:translateY(100%);} to{transform:translateY(0);}}
 @media (prefers-reduced-motion:reduce){ .mt-sheet{animation:none;} }
 .mt-sheet__grabber-zone{display:flex; justify-content:center; align-items:center; height:28px; touch-action:none; cursor:grab;}
-.mt-sheet__grabber{width:36px; height:4px; border-radius:var(--radius-pill); background:var(--color-rule-strong);}
+/* #352 — poignée d'une zone RÉELLEMENT draggable : `.mt-sheet__grabber-zone`
+   ci-dessus porte `touch-action:none; cursor:grab` et est branchée sur le drag
+   de fermeture (`TimelineBottomSheet.tsx`). Cette pastille est le seul signal
+   visuel de ce contrôle → fonctionnelle. (Diverge de
+   `.mt-actionsheet__grabber`, qui n'est qu'une marque ornementale.) */
+.mt-sheet__grabber{width:36px; height:4px; border-radius:var(--radius-pill); background:var(--color-rule-emphasis);}
 .mt-sheet__header{display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-4); padding:0 var(--space-5) var(--space-3); border-bottom:1px solid var(--color-rule);}
 .mt-sheet__title{font-family:var(--font-display); font-size:18px; letter-spacing:-.01em; color:var(--color-ink);}
 /* Pendant sheet de `.mt-drawer__subtitle` : mêmes valeurs, nom cohérent avec le bloc
@@ -338,13 +391,22 @@
 .mt-sheet__subtitle{margin-top:2px; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-sheet__body{padding:var(--space-4) var(--space-5) var(--space-5); overflow:auto; flex:1;}
 /* Bouton fermer : cible >= 44px (le drawer desktop = 28px, NON conforme mobile —
-   réserve ui-design). */
-.mt-sheet__close{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; background:none; border:1px solid var(--color-rule-strong); border-radius:var(--radius-sm); color:var(--color-ink-muted); cursor:pointer; flex:0 0 auto;}
+   réserve ui-design).
+   #352 — bouton à ICÔNE SEULE, `background:none` : rien ne le distingue du
+   header sinon sa bordure → fonctionnelle (cf. `.mt-drawer__close`). */
+.mt-sheet__close{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; background:none; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-sm); color:var(--color-ink-muted); cursor:pointer; flex:0 0 auto;}
 .mt-sheet__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* -------- Action sheet (`.mt-actionsheet`) -------- */
+/* Cadre d'action sheet + `shadow-lg` : même appel que `.mt-sheet` et
+   `.mt-dialog` — panneau flottant rempli, aucun contrôle délimité → décoratif. */
 .mt-actionsheet{position:fixed; left:0; right:0; bottom:0; z-index:var(--z-modal); display:flex; flex-direction:column; gap:var(--space-1); padding:var(--space-2) var(--space-3) var(--space-4); background:var(--color-surface); border-top:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-top-right-radius:var(--radius-xl); animation:mt-sheet-in var(--dur-base) var(--ease-quart);}
 @media (prefers-reduced-motion:reduce){ .mt-actionsheet{animation:none;} }
+/* DIVERGE VOLONTAIREMENT de `.mt-sheet__grabber` (fonctionnelle) : ici la
+   poignée est rendue par `TimelineActionSheet.tsx` en `<span aria-hidden>` SANS
+   zone de drag — rien n'est draggable dans l'action sheet. C'est une marque
+   ornementale qui cite l'idiome de la bottom sheet, pas l'affordance d'un
+   contrôle → décoratif. Si un drag y est branché un jour, migrer ce filet. */
 .mt-actionsheet__grabber{align-self:center; width:36px; height:4px; margin-bottom:var(--space-2); border-radius:var(--radius-pill); background:var(--color-rule-strong);}
 .mt-actionsheet__item{display:flex; align-items:center; gap:var(--space-3); width:100%; min-height:48px; padding:0 var(--space-4); background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:var(--radius-md); font-family:var(--font-ui); font-size:15px; color:var(--color-ink); cursor:pointer;}
 .mt-actionsheet__item:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
@@ -374,8 +436,11 @@
 .mt-tlm--landscape .mt-tlm__lane-label{font-size:10px;}
 .mt-tlm--landscape .mt-tlm__group-head{padding-top:2px; padding-bottom:2px;}
 
-/* Toggle minimap masquable : interactif → focus ring + état aria-pressed. */
-.mt-tlm__minimap-toggle{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-md); color:var(--color-ink-muted); cursor:pointer; transition:background var(--dur-micro), color var(--dur-micro);}
+/* Toggle minimap masquable : interactif → focus ring + état aria-pressed.
+   #352 — bascule 44×44 à ICÔNE SEULE : son `background:surface` sur une toolbar
+   `surface-2` ne la détache pas, la bordure porte l'affordance →
+   fonctionnelle. L'état pressé garde `border-color:var(--color-accent)`. */
+.mt-tlm__minimap-toggle{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; background:var(--color-surface); border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md); color:var(--color-ink-muted); cursor:pointer; transition:background var(--dur-micro), color var(--dur-micro);}
 .mt-tlm__minimap-toggle:hover{background:var(--color-surface-2);}
 .mt-tlm__minimap-toggle[aria-pressed="true"]{color:var(--color-accent); border-color:var(--color-accent);}
 .mt-tlm__minimap-toggle:disabled{opacity:.4; cursor:not-allowed;}

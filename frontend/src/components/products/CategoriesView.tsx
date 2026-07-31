@@ -120,8 +120,8 @@ export function CategoriesView() {
                     }
                   }}
                   className={cn(
-                    'bg-surface border-rule hover:bg-accent-soft focus:ring-ring group flex w-full flex-col gap-3 rounded-lg border p-4 text-left',
-                    'cursor-pointer transition-colors focus:ring-2 focus:outline-none',
+                    'bg-surface border-rule hover:bg-accent-soft group flex w-full flex-col gap-3 rounded-lg border p-4 text-left',
+                    'cursor-pointer transition-colors',
                   )}
                   data-testid={`categories-card-${category.id}`}
                 >

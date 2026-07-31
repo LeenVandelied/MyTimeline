@@ -239,3 +239,102 @@ signaux cumulés : aplat teinté, encre bleue, `font-medium`.
   6.08:1 cités), `components/landing/landing.hover-pairing.test.ts` et
   `components/ui/button.hover-pairing.test.ts` (paire sanctionnée — 4.71:1 cité).
   À rafraîchir dans un lot de documentation.
+
+---
+
+## 8 · Contour `:focus-visible` — vérification MULTI-MOTEURS (WCAG 2.4.7 / 1.4.11)
+
+Le Sprint 52 annonçait la conformité 2.4.7 du sélecteur de langue sur la foi d'**un
+seul moteur** (Chromium). #375 (Sprint 58) l'a re-mesurée sur les trois moteurs,
+dans les deux thèmes, **par lecture de pixel** — pas par remontée d'ancêtres DOM,
+qui avait produit un faux 1.00:1 sur #383.
+
+Méthode : Playwright, `page.screenshot({clip})` d'une bande de 7 lignes traversant
+le bord DROIT de la boîte, décodage `createImageBitmap` + `getImageData`. Le trait
+est lu à sa position géométrique (offset 2px, largeur 2px → x=2..3), le fond réel
+dans le gap d'offset (x=0..1). Attente de 700 ms après chaque changement d'état
+(`outline-color` entre dans `transition-colors` en Tailwind v4 : une sonde à moins
+de 400 ms lit une couleur interpolée). Modalité **clavier** exclusivement.
+
+| Moteur | Thème | `:focus-visible` | `outline` calculé | Trait / fond MESURÉS | Ratio |
+|---|---|---|---|---|--:|
+| Chromium 149.0.7827.55 | clair | ✅ | `solid 2px rgb(14,95,196)` off=2px | `#0E5FC4` sur `#FFFFFF` | **6.08:1** |
+| Chromium 149.0.7827.55 | sombre | ✅ | `solid 2px rgb(77,155,255)` off=2px | `#4D9BFF` sur `#131519` | **6.48:1** |
+| Firefox 151.0 | clair | ✅ | `solid 2px rgb(14,95,196)` off=2px | `#0E5FC4` sur `#FFFFFF` | **6.08:1** |
+| Firefox 151.0 | sombre | ✅ | `solid 2px rgb(77,155,255)` off=2px | `#4D9BFF` sur `#131519` | **6.48:1** |
+| WebKit 26.5 | clair | ✅ | `solid 2px rgb(14,95,196)` off=2px | `#0E5FC4` sur `#FFFFFF` | **6.08:1** |
+| WebKit 26.5 | sombre | ✅ | `solid 2px rgb(77,155,255)` off=2px | `#4D9BFF` sur `#131519` | **6.48:1** |
+
+Valeurs pour l'**item de locale active** du sélecteur (fond = surface du popover).
+Sur le **déclencheur** (fond = `bg` de la page) : **5.93:1** clair / **6.94:1**
+sombre, mêmes couleurs de trait, les six combinaisons conformes. Les deux séries
+recoupent exactement les lignes `accent`/`surface` et `accent`/`bg` du §7 — mesure
+indépendante, même résultat.
+
+Contrôle négatif en modalité **souris** : `:focus-visible` = `false` et
+`outline-style: none` sur les trois moteurs. Aucun faux positif.
+
+Le contour se pose sur la boîte **visuelle** 36×36 du déclencheur, pas sur la zone
+tactile 44×44 du `::before` de PAT-S24-002 (#353) : le pseudo n'est pas dans le
+flux et ne déplace pas le trait. Vérifié au pixel.
+
+- ⚠️ **Safari natif NON testé.** Playwright pilote WebKit, qui n'est pas Safari :
+  moteur commun, mais chrome du navigateur, réglages système et pile de rendu
+  différents. Le critère « mesuré sur Safari » de #375 n'est donc que
+  **partiellement** tenu.
+- ⚠️ **WebKit : le déclencheur n'est pas atteint par `Tab`.** Le parcours ne
+  s'arrête que sur les contrôles de formulaire (`INPUT` seulement) ; boutons et
+  liens sont sautés. C'est le défaut d'usine de WebKit/Safari (« Full Keyboard
+  Access » désactivé), pas un défaut de l'application — mais il implique que la
+  ligne WebKit du déclencheur ci-dessus est mesurée sous focus **programmatique**,
+  alors que les cinq autres le sont sous `Tab` réel. Les lignes d'item, elles,
+  sont toutes atteintes au clavier (`Enter` sur le déclencheur).
+- 🔒 Le contour est l'**unique** indicateur de focus de l'application depuis #383.
+  Décompte exact, pour que le chiffre ne redevienne pas ambigu :
+  **32 sites** posaient un `outline-*` / `ring-*` local = **31 nettoyés**
+  (aucun n'avait d'indicateur propre : tous héritaient déjà de ce contour)
+  + **1 exception voulue**, `ui/popover.tsx` (un panneau n'est pas un contrôle,
+  son `outline-hidden` doit gagner). Même décompte que `ds/tokens/base.css`
+  (bloc `:focus-visible`).
+- 🔒 **Ce qui est verrouillé par un test, et ce qui ne l'est pas.**
+  `styles/__tests__/base-layer.test.ts` (describe « contour :focus-visible (#383) »)
+  assure sur le CSS **compilé** que la règle `:focus-visible` du DS reste dans
+  `@layer base`, que `outline-hidden` sort dans `@layer utilities`, et que `base`
+  précède `utilities` — donc qu'un `outline-hidden` explicite l'emporte, et que la
+  règle ne peut pas ressortir du layer pour ré-annuler les 32 sites.
+  Il **ne détecte PAS** la réintroduction d'un `ring-2` / `focus:ring-*` dans un
+  `.tsx` : il ne lit aucun composant. Cette régression-là reste à la charge de la
+  **revue**, pas d'un garde-fou automatique.
+
+### 8bis · Trois cas laissés NON MESURÉS par #383, mesurés à la clôture du Sprint 58
+
+Même méthode qu'au §8 (lecture de pixel, modalité clavier, attente ≥ 450 ms).
+Chromium 149 + Firefox 151, clair et sombre, dpr=1, viewport 1440×900.
+
+| Cas | Question posée | Résultat MESURÉ |
+|---|---|---|
+| `ProductsListView.tsx` — `<tr role="link" tabIndex={0}>` dans une `<table class="border-collapse">` | le contour peint-il sur une ligne de tableau collapsé ? | **oui**, trait complet à 3 px du bord, **5.93:1** clair / **6.94:1** sombre contre le fond de page, identique sur les deux moteurs |
+| `ui/select.tsx` — `SelectContent` `overflow-hidden` + viewport `p-1` (4 px) | `outline-offset: 2px` + trait 2 px = 4 px : le contour est-il rogné ? | **non rogné**. Sur le PREMIER item, le balayage vertical donne surface / surface / **trait / trait** / bordure du panneau : les 2 px peignent entièrement et viennent buter sur la bordure. Quatre côtés peints, **5.48:1** clair / **7.03:1** sombre |
+| `CategoryDrawer.tsx` — pastille 28 px, `border-foreground` (sélectionnée) vs `border-rule` | sélectionné et non sélectionné restent-ils distinguables, y compris sur pastille sombre ? | **oui**, mais le discriminant n'est PAS le contraste bordure/remplissage — voir la note ci-dessous |
+
+- ⚠️ **`<tr>` : les deux traits VERTICAUX sont rognés**, sur les deux moteurs. Ce
+  n'est pas un défaut de peinture de l'`outline` : la ligne occupe toute la largeur
+  du conteneur `div.overflow-x-auto` (`overflow-x` et `overflow-y` calculés à
+  `auto`), donc les côtés gauche/droit du contour tombent hors de la boîte de
+  défilement. Les traits HORIZONTAUX, eux, courent sur toute la largeur de la ligne
+  et la délimitent sans ambiguïté. **Aucune action** : ni `ring-*` (c'est un
+  `box-shadow`, rogné à l'identique), ni `outline-offset` négatif, qui poserait le
+  trait SUR la bordure `border-b` de la ligne.
+- ⚠️ **Pastilles : la sélection se lit contre le FOND DE PAGE, pas contre le
+  remplissage.** Bordure sélectionnée vs fond : **8.87–16.03:1** ; bordure NON
+  sélectionnée vs fond : **1.30–1.33:1** (invisible). C'est cet écart qui porte
+  l'état. En revanche, sur le pire appariement — `#F2A900` en thème **sombre**, où
+  `border-foreground` est quasi blanc — la bordure ne contraste que **1.61:1** avec
+  son propre remplissage : l'anneau n'est délimité que sur sa face EXTERNE. Il reste
+  perceptible (l'état est par ailleurs exposé par `aria-checked`), mais un affordant
+  plus robuste — glyphe de coche par-dessus la pastille — serait préférable.
+  Cf. RECOMMAND_FOLLOWUP du rapport de clôture.
+- ⚠️ **Non mesuré ici** : les **angles** du `SelectContent` (rayon 7 px), où un
+  rognage reste géométriquement possible — le balayage a porté sur les bords, à
+  12 %, 50 % et 88 % de la largeur. Et tout cela à **dpr = 1** : un écran à densité
+  fractionnaire peut placer le trait autrement.

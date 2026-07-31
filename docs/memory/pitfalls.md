@@ -738,3 +738,49 @@ Ce qui a tranché : les statuts **instrumentés par le fixture** (`watchRegister
 `e2e/.auth/accounts.json` périmé — `globalSetup` appelle bien `clearPersistedAccounts()`.
 Corollaire : un agent qui rend `PARTIAL` sur « E2E non joué » doit être re-vérifié, pas cru — ici le code
 était bon, seul l'environnement était cassé. Cf. runbook `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+
+
+## PIT-S58-001 — Le fond sous un `outline` n'est PAS le `background-color` d'un ancêtre
+`outline-offset: 2px` peint le trait **sur le parent**, et ce qui s'y trouve réellement peut être un
+dégradé, un `color-mix`, un pseudo-élément ou un empilement de surfaces. Remonter le DOM pour trouver le
+premier ancêtre non transparent produit donc de **faux ratios** : S58 a mesuré **1,00:1** sur un CTA accent
+avant que la lecture de pixel ne donne **5,93:1**. Corollaire symétrique, même sprint : une sonde
+« pixel le plus écarté du fond » attrape la **bordure du popover** (1 px au-delà du trait) et annonce
+**16,3:1 au lieu de 6,08:1**. Les offsets d'échantillonnage se fixent par **dump brut**, jamais par
+heuristique de contraste maximal. Règle : tout ratio annoncé doit dire **comment** il a été obtenu —
+`getComputedStyle` ne tranche que la couleur *déclarée*, jamais la couleur *peinte*.
+
+## PIT-S58-002 — Mesurer un contraste au mauvais instant ou dans le mauvais état
+Deux façons d'obtenir une valeur fausse sans que rien ne le signale.
+(1) **Instant** : Tailwind v4 fait entrer `outline-color` (et les couleurs de bordure) dans
+`transition-colors`. Une sonde lancée moins de **~400 ms** après le changement d'état lit une couleur
+**interpolée**. Attendre ≥450 ms, et exiger que le pixel ET `getComputedStyle` concordent.
+(2) **État** : S58 a lu 1,59:1 sur un bouton qui était `disabled` (`opacity:.4`), et un autre dont l'état
+par défaut `aria-pressed=true` écrase la bordure par `accent`. **Asserter l'état avant de mesurer**
+(`:focus-visible === true`, non `disabled`, `aria-pressed` connu) fait partie de la mesure.
+
+## PIT-S58-003 — E2E : `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` se posent au `next build`
+Les rewrites Next sont **sérialisés dans `routes-manifest.json`** au build : les poser au `next start` n'a
+aucun effet. Sans `NEXT_PUBLIC_API_URL=/api`, `apiClient` perd son préfixe et produit des **404 invisibles**
+pour le watcher d'`auth.setup.ts`, qui accuse alors le rate-limit, le CORS ou un 409 — trois diagnostics
+faux. **Oracle fiable : `curl /api/auth/me` doit renvoyer 401.** S58 : un audit a rapporté 5 échecs E2E de
+ce fait ; rejoués sur la même base après correction de l'environnement, **136/0/8 vert, en suite comme en
+isolation**. Complète [[PIT-S57-003]] (un `curl` qui réussit ne disculpe pas le CORS) : ici c'est le
+symétrique, un environnement cassé qui accuse le code.
+
+## PIT-S58-004 — Un garde-fou cité dans la doc peut n'exister nulle part
+`ds/a11y-audit.md` affirmait que toute réintroduction d'anneau local serait rattrapée par
+`base-layer.test.ts` — ce fichier ne contenait **aucune** occurrence de `focus` / `outline` / `ring`.
+Sur ce dépôt les commentaires servent de mémoire d'arbitrage : une garantie fictive est **pire** que pas de
+garantie, parce qu'elle dissuade d'en écrire une vraie. **Vérifier l'existence réelle de chaque garde-fou
+cité, pas seulement que le chemin du fichier résolve.** Et quand on écrit l'assertion manquante, écrire
+**avec elle ce qu'elle n'attrape pas** (ici : elle verrouille la layerisation du CSS source, elle ne détecte
+pas un `ring-2` réintroduit dans un `.tsx`).
+
+## PIT-S58-005 — Trois pièges d'outillage qui déguisent un environnement en défaut applicatif
+(1) Sous `next dev`, l'overlay **`nextjs-portal`** capte `elementFromPoint` dans le coin inférieur gauche →
+première mesure géométrique faussement à `0×0`. Neutraliser `nextjs-portal{display:none}` avant de mesurer.
+(2) `computer{left_click}` du connecteur navigateur **n'ouvre pas** un `DropdownMenu` Radix, même au centre
+exact : Radix ouvre sur `pointerdown`. N'en pas déduire un défaut du composant.
+(3) Le hook **RTK** tue `npx next dev|start` en ne laissant que « Errors: 1 » — un log serveur de 3 lignes
+est un artefact RTK, pas un plantage de l'app. `rtk proxy` obligatoire. Voir [[rtk-git-diff-empty-output]].

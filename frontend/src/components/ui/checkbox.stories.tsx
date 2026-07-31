@@ -2,8 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Checkbox } from './checkbox'
 
 /**
- * Checkbox (Radix) — coche/focus adossés aux tokens Graphite via `@theme`
- * (`bg-primary` cochée, `ring-ring` focus → tokens DS).
+ * Checkbox (Radix) — adossée aux tokens Graphite via `@theme` : `bg-primary`
+ * une fois cochée, bordure `border-rule-emphasis` au repos (tier FONCTIONNEL
+ * ≥3:1, #352 Sprint 58 — ce n'est plus `border-primary`).
+ *
+ * Le focus n'est PLUS porté par un `ring-*` local : depuis #383 (Sprint 58) le
+ * contour `:focus-visible` du DS est l'unique indicateur de focus de
+ * l'application. Voir `styles/ds/a11y-audit.md` §8.
  */
 const meta = {
   title: 'UI/Checkbox',

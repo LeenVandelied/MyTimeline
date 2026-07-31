@@ -150,7 +150,7 @@ export default function Dashboard() {
               aria-haspopup="dialog"
               aria-expanded={drawerOpen}
               data-testid="dashboard-mobile-menu-button"
-              className="text-ink hover:bg-accent-soft focus-visible:ring-ring flex h-11 w-11 items-center justify-center rounded-sm focus-visible:ring-2 focus-visible:outline-none md:hidden"
+              className="text-ink hover:bg-accent-soft flex h-11 w-11 items-center justify-center rounded-sm md:hidden"
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
