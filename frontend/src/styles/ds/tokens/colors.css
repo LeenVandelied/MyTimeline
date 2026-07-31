@@ -23,8 +23,16 @@
 
   /* ---- brand accent (electric blue) ---- */
   --blue-400: #4D9BFF;
+  /* Palier CONSERVÉ pour la continuité de la rampe, mais plus aliasé par aucun
+     rôle sémantique depuis le FU1 du Sprint 57 (voir `a11y-audit.md` §7) : posé
+     en texte sur `--blue-soft` il ne mesure que 3.83:1, sous les 4.5:1 de WCAG
+     1.4.3 AA. Ne PAS le réintroduire comme `--color-accent` en clair. */
   --blue-500: #1170E4;
   --blue-600: #0E5FC4;
+  /* Prolonge la rampe avec le MÊME pas que 500→600 (−3 / −17 / −32 par canal,
+     soit un écart de luminance de 1.31:1 contre 1.29:1) : le survol reste aussi
+     lisible qu'avant, il est simplement décalé d'un cran vers le bas. */
+  --blue-700: #0B4EA4;
   --blue-soft:#DBE9FC;
 
   /* ---- curated 12 event colours (calendar-grade) ---- */
@@ -63,11 +71,30 @@
   --color-primary-hover: #000000;
   --color-primary-soft:  #E3E4E8;
 
-  /* accent = electric blue (today / active / links) */
-  --color-accent:      var(--blue-500);
+  /* accent = electric blue (today / active / links)
+     DESCENDU D'UN CRAN (blue-500 → blue-600) au FU1 du Sprint 57. L'accent est
+     l'encre de TOUT état actif du produit (lien de sidebar `AppShell`, onglet de
+     `SettingsShell`, item focalisé de `ui/dropdown-menu`, ancres du panneau
+     burger de la landing), et cet état pose systématiquement cette encre sur
+     `--color-accent-soft`. À blue-500 ce couple mesurait 3.83:1 — sous les
+     4.5:1 de WCAG 1.4.3 AA pour du texte normal. À blue-600 : 4.94:1.
+     Corrigé ICI et non chez les consommateurs (option (a) plutôt qu'un token
+     `--color-accent-on-soft` dédié) parce que la liste des consommateurs est
+     OUVERTE : `focus:bg-accent-soft` de `ui/dropdown-menu.tsx` et
+     `hover:bg-accent-soft` de `ui/button.tsx` posent ce couple sur n'importe
+     quel `<a>` (qui hérite `color: var(--color-accent)` de `base.css`), donc sur
+     du code pas encore écrit. Un point de vérité unique les couvre tous.
+     Aucun autre usage ne régresse : l'accent ne sert qu'en ENCRE sur fond clair
+     (4.59 → 5.93:1 sur `bg`) ou en FOND sous `--color-accent-ink` blanc
+     (4.71 → 6.08:1) — l'assombrir améliore les deux. Le mode sombre, déjà
+     conforme (5.43:1), n'est pas touché. */
+  --color-accent:      var(--blue-600);
   --color-accent-ink:  #FFFFFF;
   --color-accent-soft: var(--blue-soft);
-  --color-accent-hover:var(--blue-600);
+  /* Suit l'accent d'un cran (voir `--blue-700`) : sans ce décalage, `hover`
+     serait devenu STRICTEMENT ÉGAL à l'état de repos et le survol de
+     `.mt-btn--accent` / `.mt-drawer__action` aurait disparu. */
+  --color-accent-hover:var(--blue-700);
 
   /* status — desaturated, matte; AA (≥4.5:1) as text on light surfaces */
   --color-success:      #237A38;
@@ -79,11 +106,16 @@
   --color-info:         #246FB2;
   --color-info-soft:    #DBEAF8;
 
-  /* focus ring */
-  --color-focus: var(--blue-500);
+  /* focus ring — SUIT l'accent (les deux valaient blue-500 avant le FU1 du
+     Sprint 57 ; les laisser diverger aurait fait cohabiter DEUX bleus à un cran
+     d'écart, l'anneau de `.mt-btn:focus-visible` (`--color-focus`) contre la
+     bordure de `.mt-input:focus` (`--color-accent`), sur le même écran). */
+  --color-focus: var(--blue-600);
 
-  /* event status tints (for bars) */
-  --color-ongoing: var(--blue-500);
+  /* event status tints (for bars) — `ongoing` suit l'accent pour la même raison :
+     le trait « aujourd'hui » de la frise est peint en `--color-accent`
+     (`timeline.css`), la pastille de statut « en cours » en `--color-ongoing`. */
+  --color-ongoing: var(--blue-600);
   --color-expired: var(--gray-400);
   --color-upcoming:var(--gray-500);
 }

@@ -59,7 +59,7 @@ shadowed feature cards. The new system rejects all of that.
 - **Colour:** calm neutrals (graphite ramp `#FCFCFD`→`#0B0C0E`); surfaces are real
   white on light, warm-anthracite on dark — never pure `#000`. **Primary = graphite**
   (near-black buttons; inverts to light on dark). **Accent = electric blue**
-  (`#1170E4` / `#4D9BFF`) used sparingly for today/active/links. Status is
+  (`#0E5FC4` / `#4D9BFF`) used sparingly for today/active/links. Status is
   desaturated and matte. Events draw from a **curated 12** (calendar-grade,
   AA-tuned both modes) — see `guidelines/colors-events.card.html`.
 - **Type:** **Archivo** (display + UI — neutral technical grotesque, deliberately

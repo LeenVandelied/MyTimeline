@@ -26,8 +26,14 @@ import { cn } from "@/lib/utils"
  * déjà `text-popover-foreground`, mais c'est une valeur HÉRITÉE : un item
  * enveloppé dans un `<Link>` (cas vivant de `language-selector.tsx`) hérite en
  * réalité du `color` de l'élément `<a>`, soit `--color-accent`. Sur
- * `accent-soft`, cette encre-là mesure **3.83:1 en thème clair** — sous les
- * 4.5:1 de WCAG 1.4.3 AA, exactement le ratio du défaut du Sprint 49. Poser
+ * `accent-soft`, cette encre-là mesurait **3.83:1 en thème clair** — sous les
+ * 4.5:1 de WCAG 1.4.3 AA, exactement le ratio du défaut du Sprint 49.
+ * ⚠ CE RATIO EST HISTORIQUE : le couple `accent` / `accent-soft` a été porté à
+ * **4.94:1 en clair** au FU1 du Sprint 57 (`--color-accent` descendu de
+ * `blue-500` à `blue-600` dans `styles/ds/tokens/colors.css`), donc l'encre
+ * héritée ne serait plus fautive aujourd'hui. La raison de poser l'utilitaire
+ * TIENT QUAND MÊME, et c'est pour cela qu'elle n'est pas retirée : elle rend
+ * l'encre indépendante de l'appelant, ce qu'aucun réglage de token ne fait. Poser
  * l'encre EN UTILITAIRE sur l'item la rend indépendante de ce que l'appelant
  * enveloppe autour ; un consommateur qui veut une autre encre l'écrit
  * lui-même et `tailwind-merge` la lui donne (même clé `text`).
