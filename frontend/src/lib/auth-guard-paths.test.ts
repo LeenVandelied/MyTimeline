@@ -28,12 +28,18 @@ describe('auth-guard-paths — contrat', () => {
   it('liste les segments du groupe (app) tels que présents sur le disque', () => {
     // Miroir de `frontend/app/[locale]/(app)/` — à mettre à jour EN MÊME TEMPS
     // que le système de fichiers (cf. ADR-004 §Limites).
-    expect([...PROTECTED_APP_SEGMENTS]).toEqual(['dashboard', 'products', 'timeline'])
+    expect([...PROTECTED_APP_SEGMENTS]).toEqual(['dashboard', 'products', 'settings', 'timeline'])
   })
 
-  it('protège aussi settings, connecté mais hors du groupe (app)', () => {
-    expect([...PROTECTED_EXTRA_SEGMENTS]).toEqual(['settings'])
+  it('protège settings, passé sous le groupe (app) en #299', () => {
+    // #299 — la route a MIGRÉ de `app/[locale]/settings/` vers
+    // `app/[locale]/(app)/settings/`. La garde serveur doit couvrir exactement
+    // le même chemin qu'avant : c'est le seul point du déplacement qui pouvait
+    // silencieusement ouvrir `/settings` aux anonymes.
+    expect([...PROTECTED_EXTRA_SEGMENTS]).toEqual([])
     expect(PROTECTED_SEGMENTS).toContain('settings')
+    expect(isProtectedPathname('/fr/settings')).toBe(true)
+    expect(isProtectedPathname('/en/settings')).toBe(true)
   })
 
   it("n'inclut PAS les routes publiques (sinon boucle de redirection)", () => {

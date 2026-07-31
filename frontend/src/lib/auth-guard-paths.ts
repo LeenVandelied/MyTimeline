@@ -29,22 +29,25 @@ export const AUTH_COOKIE_NAME = 'jwt'
  * laisse la nouvelle route SANS garde serveur, silencieusement.** Le test
  * `auth-guard-paths.test.ts` ancre la liste ; il ne la synchronise pas.
  *
- * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302) : dashboard, products,
- * timeline.
+ * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302, re-vérifié #299) :
+ * dashboard, products, settings, timeline.
  */
-export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'timeline'] as const
+export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'settings', 'timeline'] as const
 
 /**
  * Segments connectés vivant HORS du groupe `(app)`.
  *
- * `settings` a son propre shell (`SettingsShell`, cf. commentaire de
- * `app/[locale]/(app)/layout.tsx`) et porte sa propre garde client
- * (`app/[locale]/settings/page.tsx:35-39`, même pattern que `useAuthGuard`). Il
- * est tout aussi authentifié que les routes de `(app)` : l'exclure de la garde
- * serveur laisserait un trou évident. Isolé dans une constante distincte pour
- * rendre le périmètre explicite et révisable.
+ * VIDE depuis #299 : `settings` était le seul occupant, parce que sa coquille
+ * portait une sidebar 220px incompatible avec celle d'`AppShell`. Ses chapitres
+ * étant passés en onglets horizontaux, la route a été déplacée sous `(app)/` et
+ * a rejoint `PROTECTED_APP_SEGMENTS` — la garde serveur couvre exactement le
+ * même périmètre qu'avant, par une autre constante.
+ *
+ * La constante est CONSERVÉE (plutôt que supprimée) : elle documente la
+ * distinction « connecté hors du groupe », qui reste un cas possible, et son
+ * test ancre le fait qu'aucune route n'est aujourd'hui dans cette situation.
  */
-export const PROTECTED_EXTRA_SEGMENTS = ['settings'] as const
+export const PROTECTED_EXTRA_SEGMENTS = [] as const
 
 /** Union des segments exigeant une session côté serveur. */
 export const PROTECTED_SEGMENTS: readonly string[] = [
