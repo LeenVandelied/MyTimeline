@@ -168,8 +168,24 @@ public class JwtService {
      *
      * <p>Lève une {@link JwtException} (comme le reste du chemin de parsing) : les appelants
      * — {@code JwtFilter}, {@link #validateToken} — la traitent déjà comme « jeton refusé ».
+     *
+     * <p>FU2 (S57) : un jeton {@code null}/blanc (cookie {@code jwt=} vide) fait lever à jjwt
+     * une {@link IllegalArgumentException} — HORS de la hiérarchie {@link JwtException}. Cette
+     * exception échappait donc au {@code catch (JwtException)} de {@code AuthController}
+     * (#312) et retombait dans son {@code catch (Exception)} générique -> 500 + stacktrace,
+     * alors qu'un token invalide/expiré/malformé renvoie 401. Ce 500 recréait exactement le
+     * side-channel que #312 voulait supprimer (distinguer « token vide » de « token invalide »).
+     * Gardé ICI plutôt que dans chaque appelant : {@link #parseClaims} est le SEUL chokepoint
+     * commun à {@link #extractUsername}, {@link #extractJti}, {@link #extractExpiration} et
+     * {@link #validateToken} — {@code AuthController} (/me, /refresh) ET {@code JwtFilter}
+     * (chemin non-auth) en bénéficient sans dupliquer la garde. Lève {@link MalformedJwtException}
+     * (sous-type de {@code JwtException}) : un jeton vide n'est pas structurellement différent
+     * d'un jeton malformé pour l'appelant, qui doit déjà catcher {@code JwtException}.
      */
     private Claims parseClaims(String token) {
+        if (token == null || token.isBlank()) {
+            throw new MalformedJwtException("Jeton JWT absent ou blanc.");
+        }
         Jws<Claims> jws = Jwts.parser()
                 .verifyWith(verificationKey)
                 .build()

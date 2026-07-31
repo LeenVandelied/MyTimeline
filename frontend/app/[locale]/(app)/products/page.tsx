@@ -52,7 +52,7 @@ export default function ProductsPage() {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col" data-testid="products-page">
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         <Tabs
           items={tabItems}
           value={tab}
@@ -63,7 +63,7 @@ export default function ProductsPage() {
         />
 
         {tab === 'products' ? <ProductsListView /> : <CategoriesView />}
-      </main>
+      </div>
 
       <AppFooter />
     </div>

@@ -449,3 +449,19 @@ Un smoke Flyway sur base non vierge passerait au vert en validant un schéma qu'
 prédicat est ce qui attrape le cas baseline. Filtrer `version is not null` pour ne pas compter les
 répétables `R__*.sql` (type `SQL` elles aussi). Effet de bord utile : une future `V16` mal nommée ou mal
 placée, donc ignorée par Flyway, fait rougir le step.
+
+## PAT-S57-001 — Tester une logique filesystem sans polluer l'arborescence de production
+Un garde-fou qui lit le disque (S57 #318 : `readdirSync` sur `frontend/app/[locale]/(app)/` comparé à
+`PROTECTED_APP_SEGMENTS`) doit prouver qu'il **rougit**, sinon il ne garantit rien. La tentation — et ce que
+suggérait le plan architect — est d'ajouter une route bidon pour voir le rouge : **elle partirait en
+production**. Pattern retenu : extraire la logique en fonctions pures (`scanRouteDirectories` /
+`diffProtectedSegments` / `formatGuardReport`) typées sur la **forme structurelle** de `fs.Dirent`
+(`{name, isDirectory()}`) → les mêmes fonctions tournent sur le disque réel et sur des entrées fabriquées.
+Les deux directions d'échec (route non déclarée / constante orpheline) se testent alors sans toucher à `app/`.
+Corollaires appris dans le même sprint : (a) résoudre le chemin via `import.meta.url`, jamais le `cwd` ;
+(b) ce qu'on ne sait pas interpréter (`(groupe)/`, `[param]/`) doit **faire échouer** le test, pas être
+ignoré — un route group remonte ses enfants d'un niveau, un segment dynamique matche tout : ignorer rouvre
+le trou que le garde-fou ferme ; (c) normaliser la casse des deux côtés, sinon `(app)/Billing/` déclaré
+`'Billing'` passe au vert alors qu'`isProtectedPathname` compare `segment.toLowerCase()` — fausse assurance
+dans le scénario exact que le garde-fou vise (corrigé en cours de sprint, cf. [[PIT-S57-002]] pour le
+message d'échec).

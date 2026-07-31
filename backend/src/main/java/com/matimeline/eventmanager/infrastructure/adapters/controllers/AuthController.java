@@ -188,6 +188,17 @@ public class AuthController {
         } catch (MalformedJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
+        } catch (JwtException e) {
+            // #312 : catch-all JJWT aligné sur /refresh (BR-AUT-009). Placé APRÈS les
+            // catchs spécifiques ExpiredJwtException/MalformedJwtException (sous-types
+            // de JwtException, sinon erreur de compilation "catch inatteignable") pour
+            // ne rien changer à leur comportement existant. Couvre notamment
+            // SignatureException (token altéré/signé avec une autre clé), qui tombait
+            // jusqu'ici dans le catch (Exception) générique -> 500. Même 401 générique
+            // que les deux catchs ci-dessus et que /refresh : aucun side-channel
+            // supplémentaire (un 500 vs 401 révélerait le type d'échec de parsing).
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", ErrorCode.UNAUTHORIZED.getCode()));
         } catch (Exception e) {
             logger.error("Échec inattendu de /me", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

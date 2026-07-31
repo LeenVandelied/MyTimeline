@@ -201,6 +201,60 @@ class JwtServiceRs256Test {
                 .hasMessageContaining("2048");
     }
 
+    // ---------------------------------------------------------- jeton vide (FU2 S57)
+
+    /**
+     * FU2 (S57) — cookie {@code jwt=} vide : jjwt lève nativement une
+     * {@link IllegalArgumentException} sur une chaîne vide/blanche, HORS de la hiérarchie
+     * {@link io.jsonwebtoken.JwtException}. {@code AuthController} (#312) et {@code JwtFilter}
+     * ne catchent que {@code JwtException} -> sans garde, ce cas échappait au 401 attendu
+     * (500 sur /me et /refresh). {@link JwtService#parseClaims} doit donc lever une
+     * {@link MalformedJwtException} (sous-type de {@code JwtException}), jamais laisser
+     * fuiter l'{@code IllegalArgumentException} brute de jjwt.
+     */
+    @Test
+    void extractUsername_withEmptyToken_throwsJwtExceptionNotIllegalArgument() {
+        JwtService service = serviceWithKey(privateKeyBase64);
+
+        assertThatThrownBy(() -> service.extractUsername(""))
+                .isInstanceOf(io.jsonwebtoken.JwtException.class)
+                .isNotInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void extractUsername_withBlankToken_throwsJwtExceptionNotIllegalArgument() {
+        JwtService service = serviceWithKey(privateKeyBase64);
+
+        assertThatThrownBy(() -> service.extractUsername("   "))
+                .isInstanceOf(io.jsonwebtoken.JwtException.class)
+                .isNotInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void extractJti_withEmptyToken_throwsJwtExceptionNotIllegalArgument() {
+        JwtService service = serviceWithKey(privateKeyBase64);
+
+        // extractJti ne renvoie null QUE pour un token null (legacy sans jti) ; une chaîne
+        // vide doit suivre le même chemin de parsing que extractUsername, pas un null silencieux.
+        assertThatThrownBy(() -> service.extractJti(""))
+                .isInstanceOf(io.jsonwebtoken.JwtException.class)
+                .isNotInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void validateToken_withEmptyToken_returnsFalse_doesNotThrow() {
+        JwtService service = serviceWithKey(privateKeyBase64);
+        org.springframework.security.core.userdetails.UserDetails userDetails =
+                org.springframework.security.core.userdetails.User.withUsername("alice")
+                        .password("irrelevant")
+                        .authorities("ROLE_USER")
+                        .build();
+
+        // validateToken catche déjà Exception largement -> false, jamais de propagation.
+        // Non-régression explicite après l'ajout de la garde dans parseClaims.
+        assertThat(service.validateToken("", userDetails)).isFalse();
+    }
+
     @Test
     void initKeyMaterial_blankMaterial_fallsBackToEphemeralKeyPair() {
         // Dev/test : pas de clé committée (dépôt public) -> paire jetable, app fonctionnelle.

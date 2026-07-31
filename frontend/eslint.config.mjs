@@ -16,7 +16,17 @@ const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
     // Artefacts générés / outillage — non lintés (#29).
+    // next-env.d.ts (FU8, sprint 57) : régénéré par Next à chaque `next dev`/`next
+    // build` (writeAppTypeDeclarations), jamais édité à la main — le laisser au lint
+    // ne prouve rien et le triple-slash `path` vers `.next/types/routes.d.ts` viole
+    // systématiquement `@typescript-eslint/triple-slash-reference` (défaut
+    // `path: 'never'`). `next lint` (donc la CI) ne le scanne déjà pas — il ne fait
+    // partie d'aucun des dossiers par défaut (`app`/`pages`/`components`/`lib`/`src`) —
+    // mais un lint plus large qu'un dev pourrait lancer localement (`eslint .`, un hook
+    // pre-commit, un plugin éditeur) le remonte en faux rouge. Exclusion CIBLÉE : la
+    // règle reste active pour tout code écrit à la main.
     ignores: [
+      'next-env.d.ts',
       '.next/**',
       'storybook-static/**',
       'coverage/**',

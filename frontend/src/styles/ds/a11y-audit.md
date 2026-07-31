@@ -191,3 +191,51 @@ Le tier **fonctionnel** est `--color-rule-emphasis` (`--gray-450` `#7A7E87`,
 - ⚠️ **Reste à traiter** : `ds/components/timeline.css` (16 occurrences de
   `rule-strong`) — non arbitré, la frise étant en refonte (#69). À trier
   fonctionnel/décoratif dans un lot dédié.
+
+---
+
+## 7 · Tier accent — `accent` sur `accent-soft` (WCAG 1.4.3, ≥4.5:1)
+
+`--color-accent-soft` est le fond de **tout état actif du produit** ;
+`--color-accent` en est l'encre. Le couple était donc à mesurer comme un couple,
+et il **échouait en clair** : `#1170E4` sur `#DBE9FC` = **3.83:1**. En sombre il
+était conforme (5.43:1) — un défaut mono-thème, invisible à la relecture.
+
+**Correctif (FU1 du Sprint 57)** : `--color-accent` descend d'un cran de la rampe
+en clair, `blue-500` → **`blue-600 #0E5FC4`**. Le mode sombre n'est pas touché.
+`--color-accent-hover` suit sur un nouveau **`blue-700 #0B4EA4`** (sans quoi
+survol et repos auraient été confondus), et `--color-focus` / `--color-ongoing`
+suivent l'accent (ils valaient `blue-500` comme lui : les laisser en arrière
+aurait fait cohabiter deux bleus voisins sur le même écran).
+
+| Couple | Rôle | Clair avant | Clair après | Sombre (inchangé) |
+|---|---|--:|--:|--:|
+| `accent` / `accent-soft` | **état actif** (sidebar, onglets, item focalisé) | ❌ 3.83:1 | ✅ **4.94:1** | ✅ 5.43:1 |
+| `accent` / `bg` | lien, icône d'accent | ✅ 4.59:1 | ✅ 5.93:1 | ✅ 6.94:1 |
+| `accent` / `surface` | lien sur carte / popover | ✅ 4.71:1 | ✅ 6.08:1 | ✅ 6.48:1 |
+| `accent-ink` / `accent` | bouton plein, badge « aujourd'hui » | ✅ 4.71:1 | ✅ 6.08:1 | ✅ 6.94:1 |
+| `accent-ink` / `accent-hover` | bouton plein survolé | ✅ 6.08:1 | ✅ 7.95:1 | ✅ 8.78:1 |
+
+Aucun couple ne régresse : l'accent ne sert **jamais** d'encre sur fond sombre ni
+de fond sous encre sombre en mode clair, donc l'assombrir ne peut qu'augmenter
+tous les ratios. `--color-accent-soft` n'a **pas** été éclairci : il porte aussi
+`--shadow-focus` (`tokens/spacing.css`) et le fond de `::selection`
+(`tokens/base.css`), qui auraient perdu leur visibilité.
+
+**Distinction actif / inactif préservée** — l'état inactif reste
+`ink-muted` (`#5E626B`, 6.11:1 sur `surface`) sans fond, le survol
+`ink-muted` sur `surface-2` (`#F3F4F6`, 5.55:1). L'actif garde donc ses trois
+signaux cumulés : aplat teinté, encre bleue, `font-medium`.
+
+- 🔒 **Point de vérité unique** : la correction vit dans le token, **pas** dans
+  les composants. La liste des consommateurs est ouverte — `focus:bg-accent-soft`
+  (`ui/dropdown-menu.tsx`) et `hover:bg-accent-soft` (`ui/button.tsx`) posent ce
+  couple sur n'importe quel `<a>`, qui hérite `color: var(--color-accent)` de
+  `tokens/base.css`. Un token dédié `--color-accent-on-soft` n'aurait couvert que
+  les appels déjà écrits.
+- ⚠️ **Ratios cités ailleurs devenus conservateurs** (aucun n'annonce un échec,
+  ils sous-estiment simplement le réel) : `styles/landing.css` (`.gradient-text`,
+  `.nav-link` — 4.59:1 cité), `styles/animations.css` (`.cta-button` — 4.71:1 /
+  6.08:1 cités), `components/landing/landing.hover-pairing.test.ts` et
+  `components/ui/button.hover-pairing.test.ts` (paire sanctionnée — 4.71:1 cité).
+  À rafraîchir dans un lot de documentation.

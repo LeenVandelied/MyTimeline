@@ -107,8 +107,10 @@ export async function ensureAuthenticated(page: Page): Promise<void> {
 }
 
 /**
- * Ouvre les Réglages (desktop) via navigation directe et se place sur le
- * chapitre désiré (tablist WAI-ARIA). Suppose une viewport >= 768px.
+ * Ouvre la page Réglages (`/fr/settings`) à N'IMPORTE QUELLE viewport et attend
+ * que `settings-page` soit montée. NE présuppose AUCUN palier : la coquille
+ * desktop (`settings-tablist`) et le drill-down mobile (`settings-index`) sont
+ * tous deux enveloppés par `settings-page`, seul ce wrapper est attendu ici.
  *
  * Fiabilisation (BUG navigation `ERR_ABORTED`) :
  *  - on s'assure d'abord que l'auth est restaurée (`ensureAuthenticated`) pour
@@ -117,11 +119,12 @@ export async function ensureAuthenticated(page: Page): Promise<void> {
  *    tardives, ex. image d'avatar) puis attente explicite de `settings-page` ;
  *  - petit retry de navigation si la page settings n'apparaît pas (redirection
  *    résiduelle rare au tout premier rendu).
+ *
+ * Extrait de `openSettingsChapter` (FU4, sprint 57) : `settings-breakpoints.spec.ts`
+ * a besoin de cette ouverture SANS l'attente de la tablist, qui n'existe pas sous
+ * 768px. Dupliquer la séquence de retry aurait fait diverger les deux copies.
  */
-export async function openSettingsChapter(
-  page: Page,
-  chapter: 'profile' | 'security' | 'preferences' | 'account',
-): Promise<void> {
+export async function openSettingsPage(page: Page): Promise<void> {
   await ensureAuthenticated(page)
 
   await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
@@ -134,6 +137,17 @@ export async function openSettingsChapter(
     await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('settings-page')).toBeVisible()
   }
+}
+
+/**
+ * Ouvre les Réglages (desktop) via navigation directe et se place sur le
+ * chapitre désiré (tablist WAI-ARIA). Suppose une viewport >= 768px.
+ */
+export async function openSettingsChapter(
+  page: Page,
+  chapter: 'profile' | 'security' | 'preferences' | 'account',
+): Promise<void> {
+  await openSettingsPage(page)
 
   await expect(page.getByTestId('settings-tablist')).toBeVisible()
   await page.getByTestId(`settings-tab-${chapter}`).click()

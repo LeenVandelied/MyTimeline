@@ -1,163 +1,160 @@
 ## Objectif
 
-**MVP local — la frise redevient utilisable à la souris.** Ce sprint lève le seul défaut vérifié
-du parcours cœur qui rendait une action utilisateur *impossible* : un événement posé près du
-début de la période était recouvert par l'en-tête de lane sticky, donc non cliquable, sans aucun
-défilement permettant de le dégager.
+**Unifier le shell applicatif et fermer le dernier `500` prouvé.** Les Réglages vivaient hors du
+route group `(app)/`, avec leur propre chrome et leur propre navigation verticale : passer du
+tableau de bord aux réglages faisait disparaître la sidebar principale et changeait brutalement la
+structure de la page.
 
-Milestone : **Sprint 56** (#57). Cohésion 0.44. 4 issues, 6 points, **4/4 livrées**.
-Périmètre **frontend uniquement** — 0 fichier `.java`, 0 `.sql`, aucune migration Flyway.
+Milestone : **Sprint 57** (#58). Cohésion 0.22 — sous le seuil, split **délibérément rejeté** :
+sortir #312 aurait remonté la métrique à 0.31, mais le critère de sortie dit littéralement « sans
+erreur 500 », ce 500 est prouvé dans le code, et il coûte 1 point. Le déporter pour un gain de
+métrique aurait été exactement le re-scope silencieux à éviter.
+
+**4/4 issues livrées** + 1 correctif post-review.
 
 ## Issues traitées
 
-| Commit | Issue | P/Size | Objet |
-|---|---|---|---|
-| `9737d5b` | #393 | P3/XS→S | Couleur d'événement par défaut conforme AA + dédup de `DEFAULT_COLOR` |
-| `143edc0` | #392 | P2/S | Gouttière de piste : les événements sous l'en-tête sticky redeviennent cliquables |
-| `c87034d` | #395 | P2/S | `aria-pressed` sur le bouton plein écran, dérivé de `fullscreenchange` |
-| `f1a6827` | #391 | P3/XS→S | Suppression de la branche de chargement morte `timeline-loading` |
-
-> #393 et #391 étaient annoncées XS ; toutes deux se sont révélées plus larges (constante
-> dupliquée non citée pour l'une, test unitaire caduc non listé pour l'autre).
+| # | Titre | P | Size | Commit |
+|---|---|---|---|---|
+| #299 | Intégrer `settings/` sous le shell applicatif | P2 | S | `6c830eb` |
+| #312 | Aligner `/me` sur `/refresh` : `catch JwtException` → 401 | P3 | XS | `1651f9a` |
+| #318 | Synchroniser les segments protégés avec l'arborescence `(app)` | P2 | S | `542e1c2` |
+| #398 | Options de `settings-preferences.spec.ts` ciblées par libellé traduit | P3 | XS | `af33171` |
+| — | Correctif post-review : casse du garde-fou `(app)/` | — | — | `9f4635d` |
 
 ## Changements clés
 
-### #392 — gouttière de piste (et non `pointer-events`)
+### #299 — structure du shell (arbitrage `ui-design` préalable, bloquant)
 
-Une gouttière de `--lane-header-w` (168 px) est réservée en tête de rail ; tout le contenu
-positionné y est décalé (graduations, week-ends, ligne TODAY, pastilles). À `scrollLeft=0`
-l'en-tête occupe exactement la gouttière : aucune pastille ne peut naître sous lui, **à aucun
-zoom** (offset en px, indépendant du px/jour).
+`settings` passe sous `(app)/` et **l'URL `/[locale]/settings` ne change pas** — un route group est
+transparent. La sidebar `AppShell` devient la **seule** nav verticale ; `SettingsShell` est conservé
+mais sa nav 220 px devient une **barre d'onglets horizontale**.
 
-`pointer-events: none` a été **écarté** : l'en-tête *est* le bouton d'accordéon produit (#195).
-Même borné, il aurait laissé la pastille sous un fond opaque — cliquable à l'aveugle, donc
-toujours invisible. Un `padDays` dépendant du zoom a également été écarté : `rangeStart` serait
-devenu fonction du zoom, défaisant la mémoïsation de #349.
+Le pattern WAI-ARIA tablist et **tous** les `data-testid` sont préservés — c'est précisément ce qui
+a permis aux 6 specs E2E settings de rester intactes. `aria-orientation` passe en horizontal, ←/→
+deviennent les touches primaires, et **↑/↓ sont conservées en alias** parce qu'une spec les
+assertait. La garde d'auth locale de la page est supprimée (doublon de `useAuthGuard` porté par le
+shell).
 
-⚠ **Le zoom Année était cassé lui aussi** (66 px < 168), ce que l'issue ne mentionnait pas — elle
-ne citait que Trimestre. 3 niveaux sur 5 passaient, ce qui masquait le défaut.
+L'option « fusionner les 4 chapitres dans la sidebar » a été écartée : elle aurait mélangé deux
+niveaux de hiérarchie et cassé `settings-tablist` + `aria-selected` sur 5 specs.
 
-Effet de bord trouvé **au navigateur** (invisible en test) : `buildRulerTicks` émet des
-graduations à offset négatif, jusque-là hors rail donc invisibles, que la gouttière faisait
-apparaître au-dessus de la colonne produit. Corrigé par un coin sticky sur la règle.
+### #312 — le dernier 500
 
-### #393 — `#6366f1` → `#3B62D4`
+`catch (JwtException)` ajouté **après** `ExpiredJwtException` / `MalformedJwtException` — l'ordre est
+contraint par le langage, ce sont des sous-types et la superclasse placée avant ne compilerait pas —
+et **avant** le catch générique. Le corps de réponse est **strictement identique** à celui de
+`/refresh` (`ErrorCode.UNAUTHORIZED`, constante déjà partagée) : un libellé différent aurait recréé
+le side-channel que l'issue ferme.
 
-Ratio mesuré **5,407:1** (contre 4,467, sous le seuil AA de 4,5). Conséquence utilisateur : le
-libellé d'un événement sans couleur explicite repasse **dans** la pastille au lieu d'être rejeté
-à l'extérieur.
+### #318 — garde-fou filesystem
 
-`#4f46e5` (indigo-600) a été écarté malgré sa conformité : indigo Tailwind hors palette DS, alors
-que le projet a déjà purgé ses indigos/violets (purge gardée par `landing-palette.test.ts`).
-`#3B62D4` (`--evt-cobalt`) appartient à la palette curated et était déjà l'échantillon « AA OK »
-d'`EventPill.test.tsx`.
+`readdirSync` en profondeur 1 sur `(app)/`, chemin résolu via `import.meta.url` (indépendant du
+`cwd`), comparaison **bidirectionnelle** avec `PROTECTED_APP_SEGMENTS`.
 
-Une **seconde constante `DEFAULT_COLOR` dupliquée** existait dans `EventContent.tsx`, non citée
-par l'issue — `EventContent` importe désormais la source unique.
+Les route groups imbriqués `(x)/` et les segments dynamiques `[x]/` **font échouer le test** au lieu
+d'être ignorés : dans ces cas le scan ne peut plus conclure, et les ignorer rouvrirait exactement le
+trou que l'issue ferme. Le message d'échec nomme le segment fautif et le fichier à éditer. Le rouge
+est prouvé sur des entrées fabriquées via des fonctions pures, **sans ajouter aucune route réelle**
+dans `app/` (elle serait partie en production).
 
-### #395 — état dérivé, pas état optimiste
+### #398 — testids dérivés de la valeur
 
-`aria-pressed` est dérivé de l'événement `fullscreenchange` (+ sync initial au montage), jamais
-d'un `setState` dans le handler : l'état plein écran change aussi par Échap natif, F11 et le menu
-du navigateur. Le stub E2E, qui mutait l'état sans émettre l'événement, a été rendu fidèle.
+5 `data-testid` ajoutés sur les `SelectItem` de `PreferencesSection.tsx`
+(`pref-<champ>-option-<valeur>`, convention #331), spec basculée dessus. Plus aucun sélecteur par
+libellé traduit.
 
-### #391 — suppression, pas renommage
+## Règles métier impactées
 
-La branche `if (loading)` de `timeline/page.tsx` était inatteignable depuis #210 (le shell ne
-monte pas `children` tant que `loading || !user`). `app-shell-loading` devient le testid canonique
-unique — renommer aurait produit deux éléments portant le même testid.
+- **BR-AUT-008** — le follow-up S43 explicitement listé « reste ouvert » dans le pack `br-auth.md`
+  (`SignatureException` sur `/me` → 500) est **fermé**.
+- **BR-AUT-009** — sert de référence de parité, non modifiée.
+- **Garde serveur (#302 / S45, ADR-004)** — `PROTECTED_APP_SEGMENTS` inclut désormais `settings`,
+  `PROTECTED_EXTRA_SEGMENTS` est vide, et c'est verrouillé par test.
 
-`if (!user) return null` et `timeline-data-loading` sont **conservés** (garde defense-in-depth et
-testid distinct atteignable).
-
-## BR impactées
-
-**BR-EVE-009** uniquement (modèle couleur unique, encre calculée par contraste WCAG). Contrat
-inchangé : seule la valeur par défaut change, et elle devient conforme AA.
-
-Aucun changement backend, aucun changement d'authentification.
-
-## Audit tests
-
-Détail : `docs/memory/audits/sprint-56-test-coverage.md`.
+## Tests
 
 | Suite | Résultat |
 |---|---|
-| Backend | **452 / 0 échec** |
-| Frontend unit | **839 / 0 échec** (92 fichiers) |
-| E2E timeline | **47 / 0 échec** |
+| Backend | **455 / 455** |
+| Unitaires frontend | **859 / 859** (842 au départ, +17) |
+| E2E — 6 specs settings + `auth-guard.spec.ts` | **37 passed / 1 skipped** |
+| E2E — suite complète | 127 passed / **3 failed** / 8 skipped |
 | `tsc --noEmit` | 0 erreur |
-| Coverage-E2E (testids) | OK |
 
-### 4 échecs E2E locaux, tous environnementaux
+**Les 3 échecs E2E sont d'environnement, pas de code** — cause établie et non supposée : l'endpoint
+de test `/api/test-support/password-reset-token` renvoie 401 parce que le backend local ne tourne
+pas avec le profil `e2e`. Le fixture pose lui-même le diagnostic. Aucun commit de ce sprint ne
+touche au parcours de réinitialisation de mot de passe.
 
-- **3 connus** — `forgot-password`, `reset-password-failures` (×2) : HTTP 401 sur l'endpoint
-  test-only de reset, backend local lancé **sans le profil `e2e`**. Déjà rouges avant ce sprint ;
-  aucun de ces fichiers ne référence `timeline`.
-- **1 faux positif infirmé** — `golden-path` : `application.properties:93-97` documente que le
-  rate limiting est actif par défaut **par IP**, et que le **seul** contexte le désactivant est le
-  job CI e2e, précisément parce que le setup Playwright provisionne plusieurs comptes depuis une
-  IP unique. Relancé **en isolation** sur le même HEAD : **golden-path passe**. Dans ce même run,
-  les 4 étapes de provisioning partent en timeout — le throttle est bien actif localement.
+**Vérification navigateur** (#299 — non automatisable en unitaire), 4 paliers × clair/sombre,
+réellement observés :
 
-La CI, qui pose `RATE_LIMIT_ENABLED=false` sur son job e2e, est l'arbitre.
+| Palier | Observé |
+|---|---|
+| 390 px | 0 sidebar, drill-down mobile, `settings-tablist` absent du DOM |
+| **768 px** | 0 nav verticale, onglets horizontaux pleine largeur — **le palier où la double sidebar se serait manifestée** |
+| 1024 px | sidebar 248 px, contenu 776 = 1024 − 248, exactement 1 nav verticale |
+| 1280 px | contenu 1032, pas de scroll horizontal |
 
-## Qualité des tests — 4 pièges « vert qui ne prouve rien » désamorcés
+Débordement des onglets testé en locale **DE** (libellés les plus longs) : 484/720 px à 768 px.
 
-Motif récurrent du projet. Chaque cas a été **mesuré**, pas supposé :
+## Review batch
 
-1. **#392** — jsdom ne fait pas de hit-testing → clic Playwright réel sans `force`, oracle mesuré
-   (pastille à 150 px sous 168 px recouverts), rouge constaté avant correctif.
-2. **#393** — un garde-fou sur littéral recopié reste vert si la constante dérive → assertion sur
-   la constante **importée** ; en remettant l'ancienne valeur : exactement 2 échecs.
-3. **#395** — la variante naïve (`useState` dans le handler) ne casse **qu'un seul** test, celui
-   qui contourne le bouton. Sans ce cas, l'issue aurait été satisfaite par un `aria-pressed` qui
-   **ment** à un lecteur d'écran.
-4. **#391** — un E2E d'état transitoire reste vert sans sa gate → assertion de **stabilité**
-   (visible → pause bornée → toujours visible). Sans elle, mesure faite : le test restait vert
-   gate retirée.
+**0 CRITIQUE · 0 MAJEUR · 4 MINEURS** — verdict `MERGEABLE`.
 
-## Review
+Le point le plus risqué du sprint a été vérifié explicitement : la suppression de la garde d'auth de
+la page settings **ne rouvre rien**. `AppShell` fait un `return` précoce tant que `loading || !user`,
+**avant** tout rendu de `{children}` — le contenu des Réglages n'est jamais monté pour un visiteur
+anonyme, et le middleware coupe déjà en amont (307).
 
-6 `[OK]`, 1 `[MINEUR]`, **aucun bloquant**. Vérification dans le code de la cohérence des deux
-repères d'abscisse introduits par #392 (`windowEvents`, `ensureVisible`, synchro minimap,
-`scrollToToday`), de l'absence de fuite CSS vers minimap/mobile/preview, du cleanup de l'écoute
-`fullscreenchange`, et de la source unique de `DEFAULT_COLOR`.
+Un mineur a été **corrigé dans le sprint** (`9f4635d`) : le garde-fou de #318 ne normalisait pas la
+casse. Un dossier `(app)/Billing/` déclaré verbatim `'Billing'` aurait rendu le test **vert** alors
+qu'`isProtectedPathname` compare `segment.toLowerCase()` — `/fr/Billing` n'aurait donc **pas** été
+protégé. Fausse assurance dans le scénario exact que le garde-fou existe pour empêcher. La casse
+mixte est désormais rejetée explicitement, avec un message actionnable.
 
-`[MINEUR]` **non corrigé volontairement** : `timeline.css` porte un `var(--lane-header-w, 160px)`
-désynchronisé du token (168 px). **Vérifié pré-existant sur `dev`** — hors périmètre, versé au
-triage des follow-ups.
+## Points signalés honnêtement
 
-## Non vérifié (déclaré)
+**Contraste sous AA — 3ᵉ incident du projet (après S48 et S53), mesuré cette fois.** L'onglet actif
+en clair (`#1170E4` sur `#DBE9FC`) donne **3.83:1**, sous le seuil de 4.5.
+**Ce n'est pas une régression de ce sprint** : le lien actif de la sidebar `AppShell` mesure
+exactement le même ratio, sur le couple de tokens `bg-accent-soft` / `text-accent` que l'arbitrage
+imposait de reprendre à l'identique. C'est une dette du design system qui touche **tout état actif
+du produit** ; le correctif est au niveau du **token**, pas du composant.
 
-- **Thème sombre** : aucune des 4 issues n'a été ouverte au navigateur en sombre. Portée réelle
-  **plus étroite qu'annoncé initialement**, après vérification statique en review :
-  - les **pastilles d'événement sont theme-invariant par construction** — la palette `--evt-*`
-    est déclarée une seule fois en `:root` et jamais redéfinie dans `.dark`. Les ratios
-    `dark=3.619 / light=5.407` de #393 sont les contrastes contre les **deux encres candidates**
-    (`INK_DARK`/`INK_LIGHT`), pas contre les thèmes de l'app. Il n'y a donc rien à vérifier en
-    sombre côté couleur d'événement ;
-  - la **gouttière et le coin de règle** dépendent bien du thème, mais leurs tokens
-    (`--color-surface-2`, `--color-rule`) sont définis en clair **et** en sombre, et le coin
-    réutilise le token déjà employé par l'en-tête de lane.
-  - Reste réellement non vérifié : l'ordre de peinture du pseudo-élément au rendu, et la
-    distinguabilité perceptuelle de `#3B62D4` face à `--evt-sky` / `--evt-periwinkle`.
-- **Vues mobiles** au navigateur (leurs E2E passent ; les préfixes `mt-tlm`/`mt-tll` ne sont pas
-  touchés).
-- Vrai plein écran non stubé, F11 réel, lecteur d'écran réel — #395 couvre les 4 chemins **par
-  construction**, `fullscreenchange` étant la source de vérité.
-- `next build` non relancé après le dernier commit.
+**Écart de couverture E2E.** `settings-header` (testid marqué « optionnel » par l'arbitrage) n'a
+**aucun consommateur** : le palier 768 px, où ce header est la seule sortie de navigation, reste
+vérifié **uniquement à la main**. Traité par le processus documenté (`/create-e2e` après merge)
+plutôt qu'en élargissant le périmètre en phase de clôture.
 
-## Follow-ups remontés (triage en `/sprint end`)
+**Deux issues étaient périmées à l'exécution, et leurs briefings ont été corrigés.** #318 demandait
+de traiter `settings` comme « un cas hors du groupe `(app)` » — faux après #299, livrée le matin
+même dans ce sprint ; le critère a été redirigé vers « verrouiller que `PROTECTED_EXTRA_SEGMENTS`
+reste vide ». #398 était estimée « XS, un seul fichier de test » alors que les `SelectItem`
+n'avaient aucun `data-testid` : il a fallu instrumenter le composant d'abord.
 
-- `playwright.config.ts` — le `webServer` lance `npm run dev` **nu**, sans
-  `E2E_API_PROXY_TARGET`/`NEXT_PUBLIC_API_URL` : `npx playwright test` nu est systématiquement
-  rouge au setup, avec un message trompeur orientant vers rate-limit/CORS.
-- `application-dev.properties:35` — `app.cors.allowed-origins` figé à `:3000` : l'E2E local
-  devient impossible dès que ce port est pris par un autre projet.
-- `timeline.css` — fallback `var(--lane-header-w, 160px)` désynchronisé du token (pré-existant).
-- Ligne TODAY (`--z-cursor` 20) au-dessus de l'en-tête de lane et du coin de règle
-  (`--z-sticky` 10) : convention préexistante, mais un trait bleu traverse la colonne fixe.
-  Décision design.
+**Bruit d'attribution de commit.** `1651f9a` (#312, backend) contient aussi le renommage
+`settings/page.tsx → (app)/settings/page.tsx` (rename pur, 0 ligne de diff), absorbé par le working
+tree partagé du fan-out : `git commit` **sans pathspec commite tout l'index**, même après un
+`git add` ciblé. L'arbre est correct, seule l'attribution est fausse. La consigne durcie a été
+appliquée en vague 2, où les deux commits sont restés parfaitement isolés.
+
+## Follow-ups proposés (à arbitrer en `/sprint end`)
+
+1. Contraste DS `text-accent` / `bg-accent-soft` = 3.83:1 en clair, sur tout état actif — correctif token
+2. Couverture E2E de `settings-header` (automatiser le palier 768 px)
+3. Cookie `jwt=` **vide** → `IllegalArgumentException`, hors hiérarchie `JwtException` → 500 sur `/me`
+   **et** `/refresh` — défaut distinct de #312, dont l'alignement est bien atteint
+4. Garde-fou #318 limité à la profondeur 1 de `(app)/`
+5. Landmarks `<main>` imbriqués — pré-existant (dashboard et products aussi)
+6. Backend E2E local sans profil `e2e` → 3 specs de reset password rouges en permanence en local
+7. Bug i18n `DensityRibbon` : `{days}` non fourni, `IntlError` à chaque rendu du dashboard
+8. `npm run lint` rouge en local sur `next-env.d.ts`, vert en CI — divergence à trancher
+
+## Artefacts
+
+`docs/memory/sprints/sprint-57/issue-{299,312,318,398}-done.md` · `review-sprint-57.md` ·
+`docs/memory/audits/sprint-57-test-coverage.md` · `docs/memory/sprint-history.md`
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

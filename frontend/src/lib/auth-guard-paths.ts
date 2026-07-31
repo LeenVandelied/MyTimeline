@@ -26,25 +26,58 @@ export const AUTH_COOKIE_NAME = 'jwt'
  * système de fichiers à l'exécution — elle est explicite, donc faillible.
  *
  * **Ajouter un segment sous `frontend/app/[locale]/(app)/` sans l'ajouter ici
- * laisse la nouvelle route SANS garde serveur, silencieusement.** Le test
- * `auth-guard-paths.test.ts` ancre la liste ; il ne la synchronise pas.
+ * laisserait la nouvelle route SANS garde serveur, silencieusement.**
  *
- * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302) : dashboard, products,
- * timeline.
+ * ✅ #318 — ce n'est plus silencieux : `auth-guard-paths.test.ts` LIT le système
+ * de fichiers (`readdirSync` sur `frontend/app/[locale]/(app)/`, profondeur 1) et
+ * fait échouer la suite dans les DEUX sens — dossier présent non déclaré ici, ou
+ * segment déclaré ici sans dossier correspondant. Le middleware, lui, ne peut
+ * toujours pas dériver la liste à l'exécution (Edge : ni `fs`, ni `path`) : c'est
+ * le test qui porte la synchronisation, pas le runtime.
+ *
+ * Conséquence pratique : cette liste ne se modifie JAMAIS seule. Si le test rouge
+ * te renvoie ici, c'est l'arborescence qui a bougé — son message nomme le segment
+ * fautif et le sens de l'écart.
+ *
+ * ⚠ **Segments en MINUSCULES, impérativement.** `isProtectedPathname` compare
+ * `segment.toLowerCase()` à cette liste : un segment déclaré `'Billing'` n'y est
+ * JAMAIS trouvé, donc `/fr/Billing` resterait ouvert aux anonymes. Le dossier sur
+ * le disque, lui, garde sa casse — c'est la comparaison qui la normalise. Le
+ * garde-fou du fichier de test fait échouer toute déclaration en casse mixte.
+ *
+ * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302, re-vérifié #299,
+ * désormais VÉRIFIÉ EN CONTINU #318) : dashboard, products, settings, timeline.
  */
-export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'timeline'] as const
+export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'settings', 'timeline'] as const
 
 /**
  * Segments connectés vivant HORS du groupe `(app)`.
  *
- * `settings` a son propre shell (`SettingsShell`, cf. commentaire de
- * `app/[locale]/(app)/layout.tsx`) et porte sa propre garde client
- * (`app/[locale]/settings/page.tsx:35-39`, même pattern que `useAuthGuard`). Il
- * est tout aussi authentifié que les routes de `(app)` : l'exclure de la garde
- * serveur laisserait un trou évident. Isolé dans une constante distincte pour
- * rendre le périmètre explicite et révisable.
+ * VIDE depuis #299 : `settings` était le seul occupant, parce que sa coquille
+ * portait une sidebar 220px incompatible avec celle d'`AppShell`. Ses chapitres
+ * étant passés en onglets horizontaux, la route a été déplacée sous `(app)/` et
+ * a rejoint `PROTECTED_APP_SEGMENTS` — la garde serveur couvre exactement le
+ * même périmètre qu'avant, par une autre constante.
+ *
+ * La constante est CONSERVÉE (plutôt que supprimée) : elle documente la
+ * distinction « connecté hors du groupe », qui reste un cas possible, et son
+ * test ancre le fait qu'aucune route n'est aujourd'hui dans cette situation.
+ *
+ * ✅ FU3 — cette constante n'échappe plus à toute vérification : un second
+ * garde-fou lit `frontend/app/[locale]/` (profondeur 1) et exige que CHAQUE
+ * dossier routé y soit classé — public ou déclaré ici. Deux conséquences :
+ * un segment déclaré ici sans dossier correspondant fait rougir (garde qui ne
+ * protège rien), et une route connectée créée hors du groupe `(app)` sans être
+ * déclarée ici fait rougir aussi (c'était le trou : elle passait en silence).
+ * Si tu la re-remplis :
+ * 1. la route visée doit vivre HORS de `(app)/` — le test échoue si le segment
+ *    est déclaré des deux côtés (déclaration contradictoire, cf. #299) ;
+ * 2. remplace ici le motif de l'exception (pourquoi cette route ne peut pas
+ *    rejoindre `(app)`), comme `settings` le documentait avant #299 ;
+ * 3. ancre-la par un test de chemin explicite (`isProtectedPathname('/fr/<seg>')`),
+ *    seul filet disponible hors du groupe.
  */
-export const PROTECTED_EXTRA_SEGMENTS = ['settings'] as const
+export const PROTECTED_EXTRA_SEGMENTS = [] as const
 
 /** Union des segments exigeant une session côté serveur. */
 export const PROTECTED_SEGMENTS: readonly string[] = [
