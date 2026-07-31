@@ -167,7 +167,7 @@ export default function Dashboard() {
             onLogout={handleLogout}
             activeId="home"
           />
-          <main className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 overflow-y-auto px-4 py-4">
+          <div className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 overflow-y-auto px-4 py-4">
             {/* Colonne gauche : agenda compact jour + lendemain. */}
             <div className="min-w-0" data-testid="dashboard-landscape-agenda">
               <CompactAgenda events={events} />
@@ -181,11 +181,11 @@ export default function Dashboard() {
               <DensityRibbon events={events} locale={locale} scrollable />
               <ProductCarousel products={products} locale={locale} />
             </div>
-          </main>
+          </div>
         </div>
       ) : isMobile ? (
         // -------- Mobile portrait single-column (#83) --------
-        <main
+        <div
           className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6"
           data-testid="dashboard-mobile-portrait"
         >
@@ -199,10 +199,10 @@ export default function Dashboard() {
           <CompactAgenda events={events} />
 
           <ProductCarousel products={products} locale={locale} />
-        </main>
+        </div>
       ) : (
         // -------- Desktop (#80, inchangé) --------
-        <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-start justify-between gap-4">
             <GreetingHeader name={user.username} />
             <AddProductButton onProductAdded={refetch} />
@@ -230,7 +230,7 @@ export default function Dashboard() {
               <TimelineEditHost events={events} resources={resources} locale={locale} />
             )}
           </section>
-        </main>
+        </div>
       )}
 
       <AppFooter />

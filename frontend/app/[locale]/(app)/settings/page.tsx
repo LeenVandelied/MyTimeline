@@ -42,7 +42,7 @@ export default function SettingsPage() {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col">
-      <main className="flex-grow px-4 py-6 md:px-6 md:py-8" data-testid="settings-page">
+      <div className="flex-grow px-4 py-6 md:px-6 md:py-8" data-testid="settings-page">
         <div className="mx-auto w-full max-w-5xl">
           {/* Titre de page aligné sur le panneau : plus de bandeau `border-b`
               pleine largeur, le shell fournit déjà le cadre applicatif. */}
@@ -63,7 +63,7 @@ export default function SettingsPage() {
 
           {isMobile ? <MobileSettings /> : <SettingsShell />}
         </div>
-      </main>
+      </div>
 
       <AppFooter />
     </div>

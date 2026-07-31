@@ -49,7 +49,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col" data-testid="product-detail-page">
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         {productId ? (
           <ProductDetailView productId={productId} />
         ) : (
@@ -57,7 +57,7 @@ export default function ProductDetailPage() {
             {t('detail.notFound')}
           </p>
         )}
-      </main>
+      </div>
 
       <AppFooter />
     </div>
