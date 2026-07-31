@@ -130,7 +130,18 @@ triage des follow-ups.
 
 ## Non vérifié (déclaré)
 
-- **Thème sombre** : aucune des 4 issues n'a été regardée au navigateur en sombre.
+- **Thème sombre** : aucune des 4 issues n'a été ouverte au navigateur en sombre. Portée réelle
+  **plus étroite qu'annoncé initialement**, après vérification statique en review :
+  - les **pastilles d'événement sont theme-invariant par construction** — la palette `--evt-*`
+    est déclarée une seule fois en `:root` et jamais redéfinie dans `.dark`. Les ratios
+    `dark=3.619 / light=5.407` de #393 sont les contrastes contre les **deux encres candidates**
+    (`INK_DARK`/`INK_LIGHT`), pas contre les thèmes de l'app. Il n'y a donc rien à vérifier en
+    sombre côté couleur d'événement ;
+  - la **gouttière et le coin de règle** dépendent bien du thème, mais leurs tokens
+    (`--color-surface-2`, `--color-rule`) sont définis en clair **et** en sombre, et le coin
+    réutilise le token déjà employé par l'en-tête de lane.
+  - Reste réellement non vérifié : l'ordre de peinture du pseudo-élément au rendu, et la
+    distinguabilité perceptuelle de `#3B62D4` face à `--evt-sky` / `--evt-periwinkle`.
 - **Vues mobiles** au navigateur (leurs E2E passent ; les préfixes `mt-tlm`/`mt-tll` ne sont pas
   touchés).
 - Vrai plein écran non stubé, F11 réel, lecteur d'écran réel — #395 couvre les 4 chemins **par
