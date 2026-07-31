@@ -32,6 +32,7 @@ import { SUPPORTED_LOCALES } from '@/i18n/locales'
 /** Chemins cités dans les messages d'échec — le dev doit savoir QUOI éditer. */
 const GUARD_FILE = 'frontend/src/lib/auth-guard-paths.ts'
 const GUARD_TEST_FILE = 'frontend/src/lib/auth-guard-paths.test.ts'
+const LOCALE_DIR_LABEL = 'frontend/app/[locale]/'
 const APP_GROUP_LABEL = 'frontend/app/[locale]/(app)/'
 
 /**
@@ -41,14 +42,18 @@ const APP_GROUP_LABEL = 'frontend/app/[locale]/(app)/'
  * `path.join` (et non `new URL(...)` ni un glob) : les `[`, `]`, `(`, `)` du
  * chemin ne sont interprétés par personne — vérifié, `join` les rend tels quels.
  */
-const APP_GROUP_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  'app',
-  '[locale]',
-  '(app)',
-)
+const LOCALE_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'app', '[locale]')
+const APP_GROUP_DIR = join(LOCALE_DIR, '(app)')
+
+/**
+ * Route groups de `[locale]/` dont le contenu est vérifié par un AUTRE garde-fou.
+ *
+ * `(app)` n'est pas « ignorable » comme l'est `_components/` : il porte de vraies
+ * URL. Mais ses enfants sont déjà confrontés à `PROTECTED_APP_SEGMENTS` par le
+ * garde-fou #318 — le déléguer évite de compter deux fois. Tout AUTRE groupe
+ * rencontré à ce niveau reste `unsupported` (personne ne vérifie ses enfants).
+ */
+const DELEGATED_ROUTE_GROUPS = ['(app)'] as const
 
 /**
  * Forme minimale d'une entrée de répertoire. `fs.Dirent` la satisfait
@@ -63,6 +68,8 @@ type RouteScan = {
   readonly segments: readonly string[]
   /** Dossiers non routés, ignorés à dessein. */
   readonly ignored: readonly string[]
+  /** Route groups routés mais vérifiés par un autre garde-fou (cf. `knownGroups`). */
+  readonly delegated: readonly string[]
   /** Dossiers dont ce garde-fou ne sait PAS déduire l'URL → refus de conclure. */
   readonly unsupported: readonly string[]
 }
@@ -77,7 +84,9 @@ type RouteScan = {
  * 3. **`@slot/`** → route parallèle : rendue DANS le layout parent, elle
  *    n'introduit aucun segment d'URL propre → ignorée (rien de plus à protéger).
  * 4. **`(groupe)/`** → route group imbriqué : ses enfants remontent à CE niveau
- *    d'URL, invisibles d'un scan de profondeur 1. Conclure serait conclure faux.
+ *    d'URL, invisibles d'un scan de profondeur 1. Conclure serait conclure faux —
+ *    SAUF si le groupe est listé dans `knownGroups`, c'est-à-dire si un autre
+ *    garde-fou scanne déjà son contenu (`delegated`, cf. #318 pour `(app)`).
  * 5. **`[param]/`** → segment dynamique en première position : matcherait
  *    n'importe quel premier segment, ce qu'une liste de littéraux ne sait pas
  *    exprimer.
@@ -91,9 +100,13 @@ type RouteScan = {
  * imbriquée via son PREMIER segment (cf. tests plus bas) — il n'y a donc rien à
  * déclarer pour elles. Assertion explicite dans les tests, pas une supposition.
  */
-function scanRouteDirectories(entries: readonly DirEntryLike[]): RouteScan {
+function scanRouteDirectories(
+  entries: readonly DirEntryLike[],
+  knownGroups: readonly string[] = [],
+): RouteScan {
   const segments: string[] = []
   const ignored: string[] = []
+  const delegated: string[] = []
   const unsupported: string[] = []
 
   for (const entry of entries) {
@@ -102,6 +115,8 @@ function scanRouteDirectories(entries: readonly DirEntryLike[]): RouteScan {
     const { name } = entry
     if (name.startsWith('_') || name.startsWith('@')) {
       ignored.push(name)
+    } else if (knownGroups.includes(name)) {
+      delegated.push(name)
     } else if (name.startsWith('(') || name.startsWith('[')) {
       unsupported.push(name)
     } else {
@@ -109,7 +124,7 @@ function scanRouteDirectories(entries: readonly DirEntryLike[]): RouteScan {
     }
   }
 
-  return { segments, ignored, unsupported }
+  return { segments, ignored, delegated, unsupported }
 }
 
 type SegmentDrift = {
@@ -235,6 +250,119 @@ function expectGuardInSync(
   expect(report, `\n${report}\n`).toBe(GUARD_IN_SYNC)
 }
 
+// --- Garde-fou du niveau `[locale]/` (FU3 — hors du groupe `(app)`) ---------
+
+/**
+ * FU3 — le garde-fou #318 ne scanne QUE `(app)/`. Une route connectée créée hors
+ * du groupe (`app/[locale]/billing/`) restait invisible du scan, donc absente du
+ * diff, et `expect(PROTECTED_EXTRA_SEGMENTS).toEqual([])` restait VERT : le même
+ * angle mort silencieux, déplacé d'un niveau.
+ *
+ * Le garde-fou ci-dessous ferme ce trou en exigeant que TOUT dossier routé de
+ * `[locale]/` soit CLASSÉ — public (liste ci-dessous) ou protégé
+ * (`PROTECTED_EXTRA_SEGMENTS`). Le défaut par défaut est l'ÉCHEC : une route
+ * nouvelle non classée fait rougir, elle ne passe pas en silence. C'est
+ * exactement le mode de défaillance qui a produit trois échecs muets au S45.
+ *
+ * ⚠ Cette liste vit dans le TEST, pas dans `auth-guard-paths.ts` (DEC-S57-001) :
+ * le runtime Edge n'en a aucun usage — `isProtectedPathname` raisonne par
+ * inclusion dans les segments PROTÉGÉS, jamais par exclusion des publics. La
+ * placer dans le module de garde l'alourdirait sans qu'aucun code ne la lise.
+ */
+const PUBLIC_LOCALE_SEGMENTS = [
+  LOGIN_SEGMENT,
+  'register',
+  'forgot-password',
+  'reset-password',
+  'home',
+  'privacy',
+  'terms',
+] as const
+
+/** Message affiché quand toutes les routes de `[locale]/` sont classées. */
+const LOCALE_GUARD_IN_SYNC = `Toutes les routes de ${LOCALE_DIR_LABEL} sont classées (publiques ou protégées)`
+
+/**
+ * Rapport du niveau `[locale]/`. Réutilise `scanRouteDirectories` (avec `(app)`
+ * en groupe délégué) et `diffProtectedSegments` — la logique de comparaison n'est
+ * PAS dupliquée, seule la lecture des deux sens change :
+ *  - `undeclared` = dossier routé que personne n'a classé → le cas grave ;
+ *  - `orphan`     = déclaration sans dossier, partitionnée selon la liste
+ *                   d'origine (une déclaration protégée orpheline est une garde
+ *                   qui ne protège rien ; une publique orpheline est une liste
+ *                   qui a dérivé).
+ */
+function formatLocaleGuardReport(
+  entries: readonly DirEntryLike[],
+  publicSegments: readonly string[],
+  extraSegments: readonly string[],
+): string {
+  const scan = scanRouteDirectories(entries, DELEGATED_ROUTE_GROUPS)
+  const drift = diffProtectedSegments(scan.segments, [...publicSegments, ...extraSegments])
+  const publicSet = new Set(publicSegments.map(normalizeSegment))
+  const orphanPublic = drift.orphan.filter((segment) => publicSet.has(normalizeSegment(segment)))
+  const orphanProtected = drift.orphan.filter(
+    (segment) => !publicSet.has(normalizeSegment(segment)),
+  )
+  const contradictory = extraSegments.filter((segment) => publicSet.has(normalizeSegment(segment)))
+  const lines: string[] = []
+
+  if (drift.undeclared.length > 0) {
+    lines.push(
+      `• Nouvelles routes hors du groupe (app), NON classées : ${drift.undeclared.join(', ')}`,
+      `  → est-elle publique (l'ajouter à PUBLIC_LOCALE_SEGMENTS dans ${GUARD_TEST_FILE}) ou protégée (la déclarer dans PROTECTED_EXTRA_SEGMENTS dans ${GUARD_FILE}) ? Tant qu'elle n'est pas classée, ce test échoue À DESSEIN : non classée = servie aux visiteurs ANONYMES sans que personne l'ait décidé.`,
+    )
+  }
+
+  if (orphanProtected.length > 0) {
+    lines.push(
+      `• Segments déclarés dans PROTECTED_EXTRA_SEGMENTS mais ABSENTS de ${LOCALE_DIR_LABEL} : ${orphanProtected.join(', ')}`,
+      `  → cette garde ne protège RIEN (route supprimée, renommée, ou passée sous (app)/ ?). Retire le segment de ${GUARD_FILE}, ou corrige-le : un segment protégé hors du groupe DOIT correspondre à un dossier de ${LOCALE_DIR_LABEL}.`,
+    )
+  }
+
+  if (orphanPublic.length > 0) {
+    lines.push(
+      `• Segments listés dans PUBLIC_LOCALE_SEGMENTS mais ABSENTS de ${LOCALE_DIR_LABEL} : ${orphanPublic.join(', ')}`,
+      `  → route publique supprimée ou renommée ? Mets à jour PUBLIC_LOCALE_SEGMENTS dans ${GUARD_TEST_FILE} : une liste qui dérive finit par blanchir une route qui n'existe plus, et par en masquer une qui arrive.`,
+    )
+  }
+
+  if (contradictory.length > 0) {
+    lines.push(
+      `• Segments déclarés À LA FOIS publics et protégés : ${contradictory.join(', ')}`,
+      `  → déclaration contradictoire (le cas de settings avant #299). Tranche : soit la route exige une session (retire-la de PUBLIC_LOCALE_SEGMENTS dans ${GUARD_TEST_FILE}), soit non (retire-la de PROTECTED_EXTRA_SEGMENTS dans ${GUARD_FILE}).`,
+    )
+  }
+
+  if (scan.unsupported.length > 0) {
+    lines.push(
+      `• Dossiers non interprétables à la profondeur 1 de ${LOCALE_DIR_LABEL} : ${scan.unsupported.join(', ')}`,
+      `  → un route group « (x) » remonte ses enfants d'un niveau d'URL (personne ne les vérifie tant qu'il n'est pas ajouté à DELEGATED_ROUTE_GROUPS avec son propre scan), un segment dynamique « [x] » matche n'importe quel premier segment. Étends scanRouteDirectories dans ${GUARD_TEST_FILE} AVANT de fusionner.`,
+    )
+  }
+
+  return lines.length === 0
+    ? LOCALE_GUARD_IN_SYNC
+    : ['ROUTES NON CLASSÉES HORS DU GROUPE (app) (FU3) :', ...lines].join('\n')
+}
+
+/** Même précaution que `expectGuardInSync` : rapport en MESSAGE, pas en valeur. */
+function expectLocaleGuardInSync(
+  entries: readonly DirEntryLike[],
+  publicSegments: readonly string[],
+  extraSegments: readonly string[],
+): void {
+  const report = formatLocaleGuardReport(entries, publicSegments, extraSegments)
+
+  expect(report, `\n${report}\n`).toBe(LOCALE_GUARD_IN_SYNC)
+}
+
+/** Entrées de `[locale]/`, profondeur 1 (pas de `recursive: true`). */
+function readLocaleEntries(): readonly Dirent[] {
+  return readdirSync(LOCALE_DIR, { withFileTypes: true })
+}
+
 // ---------------------------------------------------------------------------
 
 describe('auth-guard-paths — contrat', () => {
@@ -278,15 +406,9 @@ describe('auth-guard-paths — contrat', () => {
   })
 
   it("n'inclut PAS les routes publiques (sinon boucle de redirection)", () => {
-    for (const publicSegment of [
-      LOGIN_SEGMENT,
-      'register',
-      'forgot-password',
-      'reset-password',
-      'home',
-      'privacy',
-      'terms',
-    ]) {
+    // Liste UNIQUE, partagée avec le garde-fou `[locale]/` (FU3) : deux listes de
+    // routes publiques auraient dérivé l'une de l'autre.
+    for (const publicSegment of PUBLIC_LOCALE_SEGMENTS) {
       expect(PROTECTED_SEGMENTS).not.toContain(publicSegment)
     }
   })
@@ -339,13 +461,7 @@ describe('isProtectedPathname', () => {
 
   it('ne protège pas les routes publiques', () => {
     for (const pathname of [
-      '/fr/login',
-      '/fr/register',
-      '/fr/forgot-password',
-      '/fr/reset-password',
-      '/fr/home',
-      '/fr/privacy',
-      '/fr/terms',
+      ...PUBLIC_LOCALE_SEGMENTS.map((segment) => `/fr/${segment}`),
       '/fr',
       '/',
     ]) {
@@ -575,8 +691,8 @@ describe('garde-fou (app)/ ↔ PROTECTED_APP_SEGMENTS (#318)', () => {
   })
 
   describe('PROTECTED_EXTRA_SEGMENTS', () => {
-    // Ce garde-fou ne couvre QUE `(app)/`. Un segment déclaré ici échappe donc à
-    // toute vérification filesystem — d'où ces deux ancres.
+    // Le garde-fou #318 ne couvre que `(app)/` ; celui de FU3 (plus bas) confronte
+    // ces segments-ci à `[locale]/`. Ces deux ancres restent le filet historique.
     const extraSegments: readonly string[] = PROTECTED_EXTRA_SEGMENTS
 
     it('est VIDE (le trou refermé par #299 ne doit pas se rouvrir en silence)', () => {
@@ -598,6 +714,154 @@ describe('garde-fou (app)/ ↔ PROTECTED_APP_SEGMENTS (#318)', () => {
         )
       }
       expect([...PROTECTED_SEGMENTS]).toEqual([...PROTECTED_APP_SEGMENTS, ...extraSegments])
+    })
+  })
+})
+
+/**
+ * FU3 — le garde-fou du niveau AU-DESSUS. Même architecture que #318 : la logique
+ * pure est éprouvée sur des entrées fabriquées (aucune fausse route sous `app/`,
+ * qui partirait en production), le disque réel n'est lu que pour l'appliquer.
+ */
+describe('garde-fou [locale]/ ↔ routes classées (FU3)', () => {
+  const dir = (name: string): DirEntryLike => ({ name, isDirectory: () => true })
+  const file = (name: string): DirEntryLike => ({ name, isDirectory: () => false })
+  const PUBLIC = [...PUBLIC_LOCALE_SEGMENTS]
+  const LOCALE_LIKE = [
+    dir('(app)'),
+    file('layout.tsx'),
+    file('page.tsx'),
+    ...PUBLIC.map(dir),
+  ]
+
+  describe('logique pure (entrées fabriquées)', () => {
+    it('est vert quand toute route de [locale]/ est classée', () => {
+      expect(formatLocaleGuardReport(LOCALE_LIKE, PUBLIC, [])).toBe(LOCALE_GUARD_IN_SYNC)
+    })
+
+    it('ROUGIT sur une route inconnue hors du groupe (app) — LE trou fermé par FU3', () => {
+      // Avant FU3 : `billing/` créé ici était invisible du scan de `(app)/`, donc
+      // absent du diff, et `expect(PROTECTED_EXTRA_SEGMENTS).toEqual([])` restait
+      // VERT. Le défaut par défaut est désormais l'échec, pas le silence.
+      const report = formatLocaleGuardReport([...LOCALE_LIKE, dir('billing')], PUBLIC, [])
+
+      expect(report).not.toBe(LOCALE_GUARD_IN_SYNC)
+      expect(report).toContain('NON classées : billing')
+      expect(report).toContain('PUBLIC_LOCALE_SEGMENTS')
+      expect(report).toContain('PROTECTED_EXTRA_SEGMENTS')
+      expect(report).toContain('ANONYMES')
+      expect(report).toContain(GUARD_FILE)
+      expect(report).toContain(GUARD_TEST_FILE)
+    })
+
+    it('accepte cette même route une fois CLASSÉE, dans un sens comme dans l’autre', () => {
+      // Publique : ajoutée à PUBLIC_LOCALE_SEGMENTS.
+      expect(
+        formatLocaleGuardReport([...LOCALE_LIKE, dir('billing')], [...PUBLIC, 'billing'], []),
+      ).toBe(LOCALE_GUARD_IN_SYNC)
+      // Protégée : déclarée dans PROTECTED_EXTRA_SEGMENTS.
+      expect(
+        formatLocaleGuardReport([...LOCALE_LIKE, dir('billing')], PUBLIC, ['billing']),
+      ).toBe(LOCALE_GUARD_IN_SYNC)
+    })
+
+    it('DÉLÈGUE (app)/ sans le compter comme segment ni comme dossier illisible', () => {
+      const scan = scanRouteDirectories(LOCALE_LIKE, DELEGATED_ROUTE_GROUPS)
+
+      expect(scan.delegated).toEqual(['(app)'])
+      expect(scan.segments).not.toContain('(app)')
+      expect(scan.unsupported).toEqual([])
+    })
+
+    it('REFUSE de conclure sur un route group NON délégué à ce niveau', () => {
+      // `(marketing)/` remonte ses enfants au niveau de `[locale]/` : ses routes
+      // seraient invisibles des DEUX garde-fous.
+      const report = formatLocaleGuardReport(
+        [...LOCALE_LIKE, dir('(marketing)'), dir('[slug]')],
+        PUBLIC,
+        [],
+      )
+
+      expect(report).not.toBe(LOCALE_GUARD_IN_SYNC)
+      expect(report).toContain('non interprétables à la profondeur 1 de frontend/app/[locale]/')
+      expect(report).toContain('(marketing), [slug]')
+      expect(report).toContain('DELEGATED_ROUTE_GROUPS')
+    })
+
+    it('ROUGIT sur un segment PROTÉGÉ déclaré sans dossier (garde qui protège du vide)', () => {
+      const report = formatLocaleGuardReport(LOCALE_LIKE, PUBLIC, ['billing'])
+
+      expect(report).not.toBe(LOCALE_GUARD_IN_SYNC)
+      expect(report).toContain('PROTECTED_EXTRA_SEGMENTS mais ABSENTS')
+      expect(report).toContain('ne protège RIEN')
+      expect(report).toContain(GUARD_FILE)
+    })
+
+    it('ROUGIT sur un segment PUBLIC listé sans dossier (liste qui dérive)', () => {
+      const report = formatLocaleGuardReport(
+        LOCALE_LIKE.filter((entry) => entry.name !== 'terms'),
+        PUBLIC,
+        [],
+      )
+
+      expect(report).not.toBe(LOCALE_GUARD_IN_SYNC)
+      expect(report).toContain('PUBLIC_LOCALE_SEGMENTS mais ABSENTS')
+      expect(report).toContain('terms')
+    })
+
+    it('ROUGIT sur une route déclarée À LA FOIS publique et protégée (cas settings pré-#299)', () => {
+      const report = formatLocaleGuardReport(LOCALE_LIKE, PUBLIC, ['home'])
+
+      expect(report).not.toBe(LOCALE_GUARD_IN_SYNC)
+      expect(report).toContain('publics et protégés : home')
+    })
+
+    it('ignore fichiers, dossiers privés et routes parallèles comme au niveau (app)/', () => {
+      const entries = [dir('(app)'), file('error.tsx'), dir('_lib'), dir('@modal')]
+      const scan = scanRouteDirectories(entries, DELEGATED_ROUTE_GROUPS)
+
+      expect(scan.segments).toEqual([])
+      expect(scan.ignored).toEqual(['_lib', '@modal'])
+      expect(formatLocaleGuardReport(entries, [], [])).toBe(LOCALE_GUARD_IN_SYNC)
+    })
+
+    it('compare sans distinction de casse, comme isProtectedPathname', () => {
+      // `Billing/` sur le disque + `'billing'` déclaré = la SEULE déclaration que
+      // la garde runtime honore (cf. #318) — elle ne doit pas rougir ici non plus.
+      expect(
+        formatLocaleGuardReport([...LOCALE_LIKE, dir('Billing')], PUBLIC, ['billing']),
+      ).toBe(LOCALE_GUARD_IN_SYNC)
+    })
+  })
+
+  describe('disque réel', () => {
+    it('ne laisse AUCUNE route de [locale]/ non classée', () => {
+      // Si ce test rougit : une route a été créée hors du groupe (app). Lis son
+      // message — il dit quoi éditer selon qu'elle est publique ou protégée.
+      expectLocaleGuardInSync(readLocaleEntries(), PUBLIC_LOCALE_SEGMENTS, PROTECTED_EXTRA_SEGMENTS)
+    })
+
+    it('voit sur le disque exactement les routes publiques listées (rien de plus)', () => {
+      // Ancre la liste CONTRE l'arborescence : `PROTECTED_EXTRA_SEGMENTS` étant
+      // vide, tout dossier routé de `[locale]/` hors `(app)` est public.
+      const scan = scanRouteDirectories(readLocaleEntries(), DELEGATED_ROUTE_GROUPS)
+
+      expect([...scan.segments].sort()).toEqual([...PUBLIC_LOCALE_SEGMENTS].sort())
+      expect(scan.delegated).toEqual(['(app)'])
+      expect(scan.unsupported).toEqual([])
+    })
+
+    it('lit un répertoire contenant AUSSI des fichiers (le filtrage sert)', () => {
+      const entries = readLocaleEntries()
+
+      expect(entries.some((entry) => !entry.isDirectory())).toBe(true)
+      expect(entries.some((entry) => entry.isDirectory())).toBe(true)
+    })
+
+    it('résout son chemin sans dépendre du cwd', () => {
+      expect(LOCALE_DIR.endsWith(join('frontend', 'app', '[locale]'))).toBe(true)
+      expect(APP_GROUP_DIR.startsWith(LOCALE_DIR)).toBe(true)
+      expect(() => readLocaleEntries()).not.toThrow()
     })
   })
 })

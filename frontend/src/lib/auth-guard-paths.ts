@@ -63,9 +63,13 @@ export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'settings', 'tim
  * distinction « connecté hors du groupe », qui reste un cas possible, et son
  * test ancre le fait qu'aucune route n'est aujourd'hui dans cette situation.
  *
- * ⚠ #318 — le garde-fou filesystem ne couvre QUE le groupe `(app)`. Tout segment
- * ajouté ici échappe donc, par construction, à toute vérification automatique :
- * rien sur le disque ne le contredit, rien ne le confirme. Si tu la re-remplis :
+ * ✅ FU3 — cette constante n'échappe plus à toute vérification : un second
+ * garde-fou lit `frontend/app/[locale]/` (profondeur 1) et exige que CHAQUE
+ * dossier routé y soit classé — public ou déclaré ici. Deux conséquences :
+ * un segment déclaré ici sans dossier correspondant fait rougir (garde qui ne
+ * protège rien), et une route connectée créée hors du groupe `(app)` sans être
+ * déclarée ici fait rougir aussi (c'était le trou : elle passait en silence).
+ * Si tu la re-remplis :
  * 1. la route visée doit vivre HORS de `(app)/` — le test échoue si le segment
  *    est déclaré des deux côtés (déclaration contradictoire, cf. #299) ;
  * 2. remplace ici le motif de l'exception (pourquoi cette route ne peut pas
