@@ -113,7 +113,15 @@
 .mt-check, .mt-radio{display:inline-flex; align-items:center; gap:9px; font-size:14px; color:var(--color-ink); cursor:pointer; position:relative;}
 .mt-check input, .mt-radio input{position:absolute; opacity:0; width:0; height:0;}
 .mt-check__box{
-  /* Unchecked checkbox: the outline IS the control → functional. */
+  /* Unchecked checkbox: the outline IS the control → functional.
+     #352 — USAGE. This rule is the DS SPECIMEN of the checkbox: it keeps the
+     tier for parity with its two production twins, `.mt-radio__dot`
+     (`ui/radio.tsx`) and `.mt-switch__track` (`ui/switch.tsx`). The checkbox
+     the application actually renders is `ui/checkbox.tsx`, a Radix root styled
+     with the `border-rule-emphasis` utility — same tier, different mechanism.
+     Deleting this rule would drop the only CSS-level guard on the tier
+     (`control-border-tier.test.ts` reads CSS, never TSX) and desymmetrise the
+     three-control block, so it stays. */
   width:18px; height:18px; border:1.5px solid var(--color-rule-emphasis); border-radius:var(--radius-sm);
   background:var(--color-surface); display:flex; align-items:center; justify-content:center;
   color:transparent; transition:all var(--dur-micro) var(--ease-quart); flex:0 0 auto;
