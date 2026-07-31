@@ -2221,8 +2221,71 @@ Statut soldé au démarrage du Sprint 58 (rituel `/sprint start`, cf. mémoire *
 **Cohésion :** 0.87
 **Migrations Flyway :** aucune
 **Depend de :** rien
-**Status :** **En cours** — démarré le 2026-07-31, worktree `claude/sprint-58-start-26b185`,
-base `origin/dev` = `f13c4fa` (merge du S57).
+**Status :** **Implémenté — PR ouverte** (démarré et livré 2026-07-31, worktree
+`claude/sprint-58-start-26b185`, base `origin/dev` = `f13c4fa`). 17 commits.
+
+**Vagues exécutées :** V0 = arbitrage `ui-design` (bloquant) | V1 = #383 seule | V2 = #352 ∥ #353
+| V3 = #375 | V4 = audit tests + review batch + correctif de clôture
+**Tests :** Backend 462/462 · Frontend 887/887 · E2E 136 passed / 0 failed / 8 skipped ·
+`tsc` 0 erreur · `next build` exit 0
+**Review batch :** 0 CRITIQUE / 3 MAJEUR / 5 MINEUR — **tous soldés** dans le sprint (`82aea3f`,
+`ca8fbf8`, `d6d0b9c`)
+**Artefacts :** `docs/memory/sprints/sprint-58/design-arbitrage-383-352.md`,
+`issue-{383,353,352,375}-done.md`, `fix-final-done.md`,
+`docs/memory/audits/sprint-58-test-coverage.md`
+
+> **L'arbitrage `ui-design` a re-calibré le sprint avant la première ligne de code.**
+> Trois résultats qui ont changé le plan :
+> 1. **Les deux moitiés de #383 sont séparables.** Retirer le `border-radius` du reset de focus ne
+>    touche aucun site — `outline` suit déjà le rayon propre de l'élément (mesuré au pixel sur
+>    Chromium 149, Firefox 151, WebKit 26.5). **La régression WCAG que le S53 redoutait est portée
+>    par la layerisation seule.** D'où un ordre en 4 étapes où aucun indicateur n'est jamais absent.
+> 2. **La zone de risque n'était pas celle annoncée.** L'issue et le plan désignaient
+>    `language-selector.tsx` — il n'a demandé **aucune modification de classe**. Le vrai danger
+>    était un groupe de 5 items de menu (`dropdown-menu.tsx`, `select.tsx`) dont le focus n'est
+>    signalé que par un fond à 1,23:1.
+> 3. **`landing.css` était déjà conforme** (arbitré par #335 avant l'ouverture de #352) → 3 des
+>    19 occurrences annoncées = 0 travail. Comptage `outline-*` corrigé : **32 sites réels dans
+>    24 fichiers**, contre « ~14 » dans l'issue.
+
+> **Les 5 échecs E2E de l'audit ne reproduisent pas — et la ligne de base l'a prouvé.**
+> L'audit rapportait 4 failed + 1 timedOut, dont 3 sur `timeline.spec.ts`, le fichier que #352
+> modifie le plus, l'un portant littéralement sur un label « qui dépend du CONTRASTE ».
+> Ligne de base prise **avant** tout correctif (code restauré à `f13c4fa`) : **les 5 sont verts sur
+> la base ET sur HEAD**, 136/0/8 dans les deux cas, y compris rejoués en isolation. Hypothèse
+> #352 infirmée (le test dépend de `eventLabelReadableInside(event.color)`, du TypeScript, pas du
+> CSS). **Aucune spec touchée, aucun correctif E2E écrit.** Cause probable constatée mais non
+> démontrée : configuration de l'environnement de l'audit — voir le pitfall `next build` ci-dessous.
+
+> **Une erreur de briefing du lead, assumée :** #383 avait pour instruction de **conserver**
+> `focus:border-transparent` sur `EventEditForm:505`, au motif que c'était la silhouette du champ
+> et non un indicateur de focus. Isolément exact ; combiné au retrait de l'anneau, ça faisait
+> disparaître la bordure au focus sans remplaçant. Relevé en review (MAJEUR), corrigé en `82aea3f`.
+> L'agent avait correctement suivi une instruction fausse.
+
+> **Un garde-fou annoncé qui n'existait pas :** `ds/a11y-audit.md` affirmait qu'une réintroduction
+> d'anneau local serait rattrapée par `base-layer.test.ts` — ce fichier ne contenait **aucune**
+> assertion sur le focus. Sur ce dépôt les commentaires servent de mémoire d'arbitrage : une
+> garantie fictive est pire que pas de garantie. Assertion écrite (`ca8fbf8`), **et sa limite
+> écrite avec elle** (elle verrouille la layerisation, elle ne détecte pas un `ring-2` réintroduit
+> dans un `.tsx`).
+
+**Follow-ups proposés (9) — à trier en Phase 4 de `/sprint end` :**
+| # | Description | Triage | Source |
+|--:|---|:---:|---|
+| 1 | `documentElement.lang` reste `"fr"` sur `/en/*`, `/es/*`, `/de/*` — les lecteurs d'écran prononcent tout en français (**WCAG 3.1.1**), y compris le libellé que #353 vient de traduire | S | #353 |
+| 2 | Options de `Select` sans `:focus-visible` sous **Firefox** dans leurs montages réels (ProductDrawer, EventEditForm, PreferencesSection) — non reproduit isolé, non infirmé en contexte | M | #383, #375 |
+| 3 | `.mt-radio__dot` et `.mt-switch__track` (tous deux **en production**) n'ont pour indicateur de focus qu'un `--shadow-focus` à **1,23:1** : l'`<input>` réel est en `opacity:0; width:0`, le contour global n'y peint rien | S | arbitrage `ui-design` |
+| 4 | Glyphe de coche sur la pastille sélectionnée de `CategoryDrawer` — bordure/remplissage à **1,61:1** sur le pire appariement (la distinguabilité passe par la bordure/fond, 8,87–16,03:1) | S | correctif de clôture |
+| 5 | Contour de focus **rogné** dans `.mt-zoom` et le tablist des réglages (`overflow:hidden`) → `outline-offset:-2px`. **Pré-existant, prouvé** — l'ancien `ring-*` était rogné pareil | XS | #383, confirmé #352 |
+| 6 | `.mt-evt--draft` : son `opacity:.8` empêche le pointillé d'atteindre 3:1 contre **son propre fond** en clair (2,82:1). Passe contre le fond de lane (3,11:1), donc cas nominal couvert | XS | #352 |
+| 7 | Étendre la mesure de contour aux **8 autres sites de montage** du sélecteur de langue et au palier < 1024 px (`LandingMobileMenu`) — aujourd'hui une prédiction, pas une mesure | XS | #375 |
+| 8 | Reporter la recette E2E qui marche (`NEXT_PUBLIC_API_URL` + `E2E_API_PROXY_TARGET` au **build**) dans `sprint-47/e2e-local-runbook.md` | XS | correctif de clôture |
+| 9 | Vérifier au navigateur les surfaces non couvertes par #383 : réglages en viewport **mobile**, `forced-colors`, `dpr ≠ 1` | S | #383 |
+
+**Absorbé en cours :** 3 commentaires rendus faux par les retraits d'anneaux (`CompactRail.tsx`,
+`select.stories.tsx`, `checkbox.stories.tsx`), décompte 32/31/1 aligné entre `base.css` et
+`a11y-audit.md`, exception `popover.tsx` commentée in-situ.
 
 **Écart assumé au plan des vagues :** l'architect proposait `V2 = #353 ∥ #352 ∥ #375`. #375 est
 **déplacée seule en V3**. Motif : #375 ne fait que *mesurer* le contour `:focus-visible` **sur le
