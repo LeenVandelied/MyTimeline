@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 
 import java.util.Optional;
@@ -172,6 +173,54 @@ class AuthControllerSecurityTest {
                 .andExpect(jsonPath("$.error").value("unauthorized"))
                 // Aucune fuite d'existence de compte : pas de 404 ni de "User not found".
                 .andExpect(content().string(not(containsString("User not found"))));
+    }
+
+    /**
+     * Issue #312 — follow-up #289 : sur /me, une {@code SignatureException} (token
+     * signé avec une autre clé / altéré) doit renvoyer le MÊME 401 générique
+     * {"error":"unauthorized"} que /refresh (cf.
+     * {@code refresh_withInvalidSignature_returns401AndDoesNotReissue}), jamais un
+     * 500 (auparavant capturée par le {@code catch (Exception)} générique du
+     * contrôleur — side-channel mineur révélant le type d'échec de parsing).
+     */
+    @Test
+    void me_withInvalidSignature_returns401Generic() throws Exception {
+        when(jwtService.extractUsername("tampered-token"))
+                .thenThrow(new SignatureException("invalid signature"));
+
+        mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "tampered-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("unauthorized"));
+    }
+
+    /**
+     * Issue #312 — non-régression : un token EXPIRÉ sur /me continue de renvoyer le
+     * 401 générique inchangé (catch {@code ExpiredJwtException} existant, comportement
+     * non touché par l'ajout du catch {@code JwtException}).
+     */
+    @Test
+    void me_withExpiredToken_returns401Generic() throws Exception {
+        when(jwtService.extractUsername("expired-token"))
+                .thenThrow(new ExpiredJwtException(null, null, "expired"));
+
+        mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "expired-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("unauthorized"));
+    }
+
+    /**
+     * Issue #312 — non-régression : un token MALFORMÉ sur /me continue de renvoyer le
+     * 401 générique inchangé (catch {@code MalformedJwtException} existant,
+     * comportement non touché par l'ajout du catch {@code JwtException}).
+     */
+    @Test
+    void me_withMalformedToken_returns401Generic() throws Exception {
+        when(jwtService.extractUsername("malformed-token"))
+                .thenThrow(new MalformedJwtException("malformed"));
+
+        mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "malformed-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
     @Test
