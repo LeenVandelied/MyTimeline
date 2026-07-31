@@ -223,6 +223,25 @@ class AuthControllerSecurityTest {
                 .andExpect(jsonPath("$.error").value("unauthorized"));
     }
 
+    /**
+     * FU2 (S57) — cookie {@code jwt=} VIDE sur /me : jjwt lève nativement une
+     * {@code IllegalArgumentException} sur un jeton vide/blanc, hors de la hiérarchie
+     * {@code JwtException} — elle échappait donc au {@code catch (JwtException)} (#312) et
+     * retombait dans le {@code catch (Exception)} générique -> 500. {@link JwtService#extractUsername}
+     * lève désormais {@link MalformedJwtException} pour ce cas (cf. {@code JwtServiceRs256Test}),
+     * déjà couverte par le catch existant : ce test ancre le 401 générique côté contrôleur, au
+     * même titre que token expiré/malformé/signature invalide.
+     */
+    @Test
+    void me_withEmptyToken_returns401Generic_notInternalError() throws Exception {
+        when(jwtService.extractUsername(""))
+                .thenThrow(new MalformedJwtException("Jeton JWT absent ou blanc."));
+
+        mockMvc.perform(get("/api/auth/me").cookie(new Cookie("jwt", "")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("unauthorized"));
+    }
+
     @Test
     void register_duplicateUsername_returns409() throws Exception {
         when(userService.findDomainUserByUsername(anyString())).thenReturn(Optional.empty());
@@ -331,6 +350,25 @@ class AuthControllerSecurityTest {
         when(userService.findDomainUserByUsername("ghost")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "ghost-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("unauthorized"))
+                .andExpect(cookie().doesNotExist("jwt"));
+
+        org.mockito.Mockito.verify(jwtService, org.mockito.Mockito.never())
+                .generateToken(any(Authentication.class));
+    }
+
+    /**
+     * FU2 (S57) — parité avec {@code me_withEmptyToken_returns401Generic_notInternalError} :
+     * cookie {@code jwt=} vide sur /refresh -> même 401 générique, jamais 500, jamais de
+     * ré-émission de token.
+     */
+    @Test
+    void refresh_withEmptyToken_returns401Generic_notInternalError() throws Exception {
+        when(jwtService.extractUsername(""))
+                .thenThrow(new MalformedJwtException("Jeton JWT absent ou blanc."));
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("jwt", "")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("unauthorized"))
                 .andExpect(cookie().doesNotExist("jwt"));
