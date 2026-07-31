@@ -119,15 +119,55 @@ type SegmentDrift = {
   readonly orphan: readonly string[]
 }
 
+/**
+ * Base de comparaison commune disque ↔ constante — MIROIR EXACT de la
+ * normalisation faite par `isProtectedPathname` (`segment.toLowerCase()`).
+ *
+ * Sans elle, un dossier `Billing/` déclaré `'billing'` (la déclaration CORRECTE,
+ * celle que la garde runtime reconnaît) rougissait à tort, et un dossier
+ * `Billing/` déclaré `'Billing'` (la déclaration CASSÉE) passait au vert.
+ */
+function normalizeSegment(segment: string): string {
+  return segment.toLowerCase()
+}
+
 /** Comparaison pure, sans `fs` : testable avec des entrées fabriquées. */
 function diffProtectedSegments(
   scannedSegments: readonly string[],
   declaredSegments: readonly string[],
 ): SegmentDrift {
+  const scanned = new Set(scannedSegments.map(normalizeSegment))
+  const declared = new Set(declaredSegments.map(normalizeSegment))
+
+  // On filtre sur la base normalisée mais on RESTITUE les noms bruts : le dev
+  // doit lire `Billing` (ce qu'il voit dans son explorateur), pas `billing`.
   return {
-    undeclared: scannedSegments.filter((segment) => !declaredSegments.includes(segment)),
-    orphan: declaredSegments.filter((segment) => !scannedSegments.includes(segment)),
+    undeclared: scannedSegments.filter((segment) => !declared.has(normalizeSegment(segment))),
+    orphan: declaredSegments.filter((segment) => !scanned.has(normalizeSegment(segment))),
   }
+}
+
+/**
+ * Segments déclarés que `isProtectedPathname` ne retrouvera JAMAIS.
+ *
+ * ⚠ Ce contrôle est le PRIX de la normalisation ci-dessus : `diffProtectedSegments`
+ * ne peut plus, par construction, distinguer `'Billing'` de `'billing'` — donc une
+ * constante en casse mixte lui paraît synchronisée. C'est précisément la fausse
+ * assurance que ce garde-fou existe pour empêcher : la comparaison est normalisée,
+ * la DÉCLARATION ne l'est pas — elle doit être rejetée, jamais corrigée en silence.
+ */
+function findMiscasedDeclarations(declaredSegments: readonly string[]): readonly string[] {
+  return declaredSegments.filter((segment) => segment !== normalizeSegment(segment))
+}
+
+/** Wording UNIQUE, partagé par le rapport du garde-fou et l'assertion sur l'union. */
+function formatMiscasedLines(miscased: readonly string[]): readonly string[] {
+  if (miscased.length === 0) return []
+
+  return [
+    `• Segments déclarés en casse MIXTE : ${miscased.join(', ')}`,
+    `  → isProtectedPathname compare \`segment.toLowerCase()\` à PROTECTED_SEGMENTS : un segment non minuscule n'y est JAMAIS trouvé, la route reste servie aux visiteurs ANONYMES. Déclare-le en minuscules (${miscased.map(normalizeSegment).join(', ')}) dans ${GUARD_FILE} — le dossier sur le disque garde sa casse, c'est la comparaison qui la normalise.`,
+  ]
 }
 
 /** Message affiché quand tout va bien — cible de l'assertion. */
@@ -143,7 +183,7 @@ function formatGuardReport(
 ): string {
   const scan = scanRouteDirectories(entries)
   const drift = diffProtectedSegments(scan.segments, declaredSegments)
-  const lines: string[] = []
+  const lines: string[] = [...formatMiscasedLines(findMiscasedDeclarations(declaredSegments))]
 
   if (drift.undeclared.length > 0) {
     lines.push(
@@ -207,6 +247,17 @@ describe('auth-guard-paths — contrat', () => {
     // disque. Si ce test rougit, lis son message : il nomme le segment fautif,
     // le sens de l'écart et le fichier à éditer.
     expectGuardInSync(readAppGroupEntries(), [...PROTECTED_APP_SEGMENTS])
+  })
+
+  it('déclare TOUS les segments protégés en minuscules (union app + extra)', () => {
+    // Le garde-fou filesystem ne voit que PROTECTED_APP_SEGMENTS ; l'invariant de
+    // casse, lui, porte sur l'UNION — c'est elle que `isProtectedPathname`
+    // consulte. Sans cette assertion, un `PROTECTED_EXTRA_SEGMENTS = ['Billing']`
+    // n'aurait aucun filet : ni disque à contredire, ni rapport à rougir.
+    const miscased = findMiscasedDeclarations(PROTECTED_SEGMENTS)
+    const report = ['DÉCLARATION EN CASSE MIXTE :', ...formatMiscasedLines(miscased)].join('\n')
+
+    expect(miscased, `\n${report}\n`).toEqual([])
   })
 
   it('protège settings, passé sous le groupe (app) en #299', () => {
@@ -435,6 +486,50 @@ describe('garde-fou (app)/ ↔ PROTECTED_APP_SEGMENTS (#318)', () => {
       expect(report).not.toBe(GUARD_IN_SYNC)
       expect(report).toContain('non interprétables à la profondeur 1 : (marketing), [slug]')
       expect(report).toContain(GUARD_TEST_FILE)
+    })
+
+    it('ROUGIT sur une déclaration en casse mixte, même recopiée VERBATIM du disque', () => {
+      // Le piège : `Billing/` sur le disque + `'Billing'` dans la constante. Les
+      // deux coïncident au caractère près — mais `isProtectedPathname` cherche
+      // `'billing'` dans une liste qui contient `'Billing'` et ne le trouve pas :
+      // la route part en production SANS garde, avec un garde-fou au vert.
+      const report = formatGuardReport([...REAL_LIKE, dir('Billing')], [...DECLARED, 'Billing'])
+
+      expect(report).not.toBe(GUARD_IN_SYNC)
+      expect(report).toContain('casse MIXTE : Billing')
+      expect(report).toContain('ANONYMES')
+      expect(report).toContain(GUARD_FILE)
+
+      // Pourquoi un contrôle DÉDIÉ et pas la simple comparaison : normalisée, elle
+      // ne voit plus rien ici. C'est ce trou que `findMiscasedDeclarations` bouche.
+      expect(diffProtectedSegments(['Billing'], ['Billing'])).toEqual({
+        undeclared: [],
+        orphan: [],
+      })
+    })
+
+    it('accepte un dossier disque en casse mixte déclaré en MINUSCULES (le cas correct)', () => {
+      // `Billing/` sur le disque + `'billing'` déclaré : avant normalisation, ce
+      // couple rougissait à tort (undeclared `Billing` + orphan `billing`) alors
+      // que c'est la SEULE déclaration que la garde runtime honore.
+      expect(formatGuardReport([...REAL_LIKE, dir('Billing')], [...DECLARED, 'billing'])).toBe(
+        GUARD_IN_SYNC,
+      )
+      expect(diffProtectedSegments(['Billing'], ['billing'])).toEqual({
+        undeclared: [],
+        orphan: [],
+      })
+
+      // Preuve du mécanisme sur un segment RÉELLEMENT déclaré (pas de fausse route
+      // dans `app/`) : la garde reconnaît l'URL quelle que soit sa casse.
+      expect(isProtectedPathname('/fr/Settings')).toBe(true)
+    })
+
+    it('nomme le dossier avec sa casse RÉELLE dans le rapport (le dev doit le retrouver)', () => {
+      const report = formatGuardReport([...REAL_LIKE, dir('Billing')], DECLARED)
+
+      expect(report).toContain('ABSENTES de PROTECTED_APP_SEGMENTS : Billing')
+      expect(report).not.toContain(': billing')
     })
 
     it('ne signale AUCUN faux positif sur un renommage bien propagé', () => {

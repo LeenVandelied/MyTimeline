@@ -39,6 +39,12 @@ export const AUTH_COOKIE_NAME = 'jwt'
  * te renvoie ici, c'est l'arborescence qui a bougé — son message nomme le segment
  * fautif et le sens de l'écart.
  *
+ * ⚠ **Segments en MINUSCULES, impérativement.** `isProtectedPathname` compare
+ * `segment.toLowerCase()` à cette liste : un segment déclaré `'Billing'` n'y est
+ * JAMAIS trouvé, donc `/fr/Billing` resterait ouvert aux anonymes. Le dossier sur
+ * le disque, lui, garde sa casse — c'est la comparaison qui la normalise. Le
+ * garde-fou du fichier de test fait échouer toute déclaration en casse mixte.
+ *
  * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302, re-vérifié #299,
  * désormais VÉRIFIÉ EN CONTINU #318) : dashboard, products, settings, timeline.
  */
