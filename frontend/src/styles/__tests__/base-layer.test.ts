@@ -46,10 +46,13 @@ const AVATAR_FIXTURE = fileURLToPath(new URL('../__avatar-regression__.css', imp
 const HEADING_LEADING_FIXTURE = fileURLToPath(new URL('../__heading-leading-regression__.css', import.meta.url))
 const SCROLLBAR_FIXTURE = fileURLToPath(new URL('../__scrollbar-regression__.css', import.meta.url))
 const PREVIEW_FIXTURE = fileURLToPath(new URL('../__preview-regression__.css', import.meta.url))
+/** Témoin du `:focus-visible` non layerisé (#383, Sprint 58). */
+const FOCUS_FIXTURE = fileURLToPath(new URL('../__focus-regression__.css', import.meta.url))
 
 /** Force l'émission des utilitaires dont on veut prouver le rang de layer,
  *  sans dépendre du scan de contenu (qui varie avec le `from` de compilation). */
-const FORCE_UTILITIES = '@source inline("rounded-xl rounded-sm scrollbar-none text-lg");\n'
+const FORCE_UTILITIES =
+  '@source inline("rounded-xl rounded-sm scrollbar-none text-lg outline-hidden");\n'
 
 type Compiled = { root: Container }
 
@@ -524,6 +527,81 @@ describe('cascade @layer — classes de composant (#340)', () => {
       const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
       expect(hits.length).toBeGreaterThan(0)
       expect(hits.some((chain) => chain.length === 0)).toBe(true)
+    },
+    30_000,
+  )
+})
+
+/**
+ * Garde-fou de CASCADE — indicateur de focus `:focus-visible` (#383, Sprint 58).
+ *
+ * CONTEXTE. `ds/tokens/base.css` pose `:focus-visible { outline: 2px solid
+ * var(--color-focus); outline-offset: 2px }`. Tant que cette règle vivait HORS
+ * layer, elle battait TOUT CSS layerisé : elle annulait les `outline-hidden` /
+ * `outline-none` du dépôt (dont celui, VOULU, de `ui/popover.tsx` — un panneau
+ * n'est pas un contrôle) et imposait au passage un `border-radius` parasite.
+ * #383 l'a fait entrer dans `@layer base`, APRÈS avoir nettoyé les 31 sites
+ * applicatifs qui posaient un `outline-*` sans indicateur de remplacement.
+ *
+ * CE QUE CE TEST PROUVE. Sur l'AST du CSS réellement compilé : (1) la règle
+ * `:focus-visible` du DS sort dans `@layer base` et non à la racine ;
+ * (2) l'utilitaire `outline-hidden` sort dans `@layer utilities` ; (3) l'ordre
+ * déclaré place `base` AVANT `utilities`. Ces trois faits impliquent, par les
+ * règles de cascade CSS, qu'un `outline-hidden` explicite l'emporte enfin sur
+ * le contour du DS — sémantique attendue depuis #383. Le détecteur ne passe pas
+ * à vide : le second test le fait rougir sur la forme régressée (règle hors layer).
+ *
+ * CE QUE CE TEST NE PROUVE **PAS**. Il ne détecte AUCUNE réintroduction d'un
+ * anneau local (`ring-2`, `focus:ring-*`, `outline-none`) dans un `.tsx` : il ne
+ * lit que du CSS, jamais les composants. Une telle vérification demanderait un
+ * grep sur les sources JSX — fragile (chaînes construites, `cn()`, `cva`,
+ * classes venues d'une lib) et hors du contrat de ce fichier. Il ne prouve pas
+ * davantage que le contour PEINT à l'écran, ni son contraste : cela relève de la
+ * mesure au navigateur consignée dans `ds/a11y-audit.md` §8.
+ */
+describe('cascade @layer — contour :focus-visible (#383)', () => {
+  it(
+    'encapsule `:focus-visible { outline }` dans @layer base, sous `outline-hidden`',
+    async () => {
+      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+
+      // 1. La règle de focus du DS est layerisée dans `base` (et pas à la racine).
+      //    `--color-focus` la discrimine de tout homonyme (preflight, Radix, etc.).
+      const focusHits = layersOf(root, ':focus-visible', /--color-focus\b/)
+      expect(focusHits.length).toBeGreaterThan(0)
+      for (const chain of focusHits) {
+        expect(chain).toContain('base')
+      }
+
+      // 2. L'utilitaire d'échappement vit dans `utilities`. `outline-hidden` et
+      //    NON `outline-none` : lui seul émet le repli `@media (forced-colors: active)`.
+      const utilityHits = layersOf(root, '.outline-hidden', /outline-style:\s*none/)
+      expect(utilityHits.length).toBeGreaterThan(0)
+      for (const chain of utilityHits) {
+        expect(chain).toContain('utilities')
+      }
+
+      // 3. `base` précède `utilities` : à importance égale, le layer le plus
+      //    tardif gagne → `outline-hidden` l'emporte enfin sur le contour du DS.
+      const order = declaredLayerOrder(root)
+      expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
+    },
+    30_000,
+  )
+
+  it(
+    'détecte réellement un `:focus-visible` NON layerisé (le détecteur ne passe pas à vide)',
+    async () => {
+      // Reproduit EXACTEMENT la régression d'avant #383 : la règle hors de tout layer.
+      // ⚠ `from` unique obligatoire (mémoïsation par chemin du plugin Tailwind).
+      const regressed =
+        "@import 'tailwindcss';\n:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }\n"
+      const { root } = await compile(regressed, FOCUS_FIXTURE)
+
+      const focusHits = layersOf(root, ':focus-visible', /--color-focus\b/)
+      expect(focusHits.length).toBeGreaterThan(0)
+      // Au moins une occurrence hors layer → exactement ce que l'assertion 1 refuse.
+      expect(focusHits.some((chain) => chain.length === 0)).toBe(true)
     },
     30_000,
   )
