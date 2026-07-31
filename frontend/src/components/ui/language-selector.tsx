@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from './button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
 import { Globe } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 const languages = [
@@ -76,20 +76,58 @@ const languages = [
  * mesure les trois états (repos, survol, souris+clavier) dans les deux thèmes.
  * Le garde-fou AST `landing.hover-pairing.test.ts` ne peut PAS voir ce défaut :
  * il raisonne par `className`, et les deux moitiés vivaient dans deux fichiers.
+ *
+ * ----------------------------------------------------------------------------
+ * CIBLE TACTILE DU DÉCLENCHEUR — PAT-S24-002 (#353, Sprint 58).
+ *
+ * Le déclencheur mesurait 36×36 px (`size="icon"` = `h-9 w-9`), sous les 44×44
+ * exigés par `styles/ds/a11y-audit.md` (WCAG 2.5.5). Le visuel RESTE 36×36 :
+ * la charte demande explicitement de « conserver le visuel mais étendre la zone
+ * cliquable » (a11y-audit §Mobile Form). Seul un `::before` transparent 44×44
+ * centré étend la hitbox, hors flux — donc AUCUN impact de layout, et le
+ * `scrollWidth` du header de la landing (le contexte de montage le plus
+ * contraint) ne peut pas bouger. Même technique que `.mt-drawer__close` et
+ * `.mt-tlm .mt-zoom__btn` (`ds/components/timeline.css`).
+ *
+ * ⚠ PIT PAT-S24-002 — le pseudo déborde de (44−36)/2 = 4 px sur chaque bord. Un
+ * ancêtre en `overflow:hidden` le CLIPPE en silence et la cible réelle retombe
+ * sous 44 px (c'est ce qui était arrivé aux boutons de zoom, cible réelle
+ * ~37×44). Bounding box du pseudo MESURÉE au navigateur (Chromium, `next dev`)
+ * sur les trois contextes publics, à 320/375/390/1280 px : **44×44 partout**,
+ * aucun ancêtre clippant (`HeaderSection`, `LandingMobileMenu`, pages d'auth).
+ * Contextes applicatifs (`AppShell`, `MobileDrawer`, dashboard) NON mesurés :
+ * ils exigent le backend. Leurs conteneurs (`p-3` / `p-4`) laissent toutefois
+ * plus que les 4 px nécessaires.
+ *
+ * `relative` est posé sur le déclencheur uniquement pour ancrer ce pseudo.
+ * AUCUN `ring-*` ni `outline-none` n'est ajouté : l'indicateur de focus
+ * canonique reste le contour du DS porté par `@layer base` (#383, arbitrage
+ * ui-design de la vague 0).
+ *
+ * ÉTIQUETTE ACCESSIBLE — le `sr-only` était la chaîne française « Changer de
+ * langue » EN DUR, donc lue en français par les lecteurs d'écran en `en`, `es`
+ * et `de`. C'est le seul contenu textuel du bouton (l'icône `Globe` n'en a
+ * aucun). Elle passe par next-intl : `common.navigation.changeLanguage`,
+ * renseignée dans les 4 locales.
  */
 export function LanguageSelector() {
   const pathname = usePathname() || '';
   const locale = useLocale();
-  
+  const t = useTranslations('common');
+
   // Récupérer le chemin sans le préfixe de locale
   const pathnameWithoutLocale = pathname.replace(`/${locale}`, '');
   
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 rounded-full before:absolute before:top-1/2 before:left-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']"
+        >
           <Globe className="h-4 w-4" />
-          <span className="sr-only">Changer de langue</span>
+          <span className="sr-only">{t('navigation.changeLanguage')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-surface">

@@ -138,7 +138,8 @@
     "profile": "Profil",
     "settings": "Paramètres",
     "back": "Retour",
-    "backToHome": "Retour à l'accueil"
+    "backToHome": "Retour à l'accueil",
+    "changeLanguage": "Changer de langue"
   },
   "time": {
     "year": "an",
