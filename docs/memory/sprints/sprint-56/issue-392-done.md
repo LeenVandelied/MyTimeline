@@ -1,7 +1,10 @@
 # Issue #392 — [BUG] En-tête de lane sticky rendant des événements inatteignables à la souris
 
 **Sprint :** 56 | **Vague :** 1 (parallèle avec #393) | **Triage :** S
+**Commit :** `143edc0`
 **Base spawn :** `8ec1a2a` (rebasé de fait sur `9737d5b`, commit de #393, sans conflit)
+**Vérifié par le lead :** portée du commit conforme à la propriété de fichiers déclarée —
+aucun empiétement sur les fichiers de #393.
 **Fichiers du commit :** `frontend/src/components/timeline/TimelineView.tsx`,
 `frontend/src/components/timeline/TimelineView.test.tsx`,
 `frontend/src/styles/ds/components/timeline.css`, `frontend/e2e/timeline.spec.ts`

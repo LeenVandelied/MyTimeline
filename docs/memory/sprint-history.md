@@ -2090,7 +2090,7 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 
 </details>
 
-## Sprint 56 — 2026-07-30 (PLANIFIE — MVP local : la frise redevient utilisable à la souris)
+## Sprint 56 — 2026-07-30 (En cours — MVP local : la frise redevient utilisable à la souris)
 **Objectif :** Lever le seul défaut vérifié du parcours cœur qui rend une action utilisateur impossible
 **Milestone GitHub :** #57
 **Issues (4) :** #392 (P2/S), #393 (P3/XS), #395 (P2/S), #391 (P3/XS) — **6 pts**
@@ -2098,12 +2098,19 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 **Cohésion :** 0.44
 **Migrations Flyway :** aucune
 **Depend de :** rien
-**Status :** Planifie
+**Status :** En cours (démarré 2026-07-30, worktree `claude/sprint-56-start-afdae4`, base `origin/dev` = `8ec1a2a`)
 
 > **Trois vagues pour 4 issues** : #392, #395 et #391 modifient **toutes** `frontend/e2e/timeline.spec.ts`.
 > #392 et #395 modifient en plus tous deux `TimelineView.tsx`.
 > **#392 exige un E2E** : jsdom ne fait pas de hit-testing, aucun test unitaire ne verra
 > « intercepts pointer events ». Plus navigateur clair+sombre aux 4 niveaux de zoom.
+
+> **Arbitrages produit tranchés par le développeur au démarrage (2026-07-30) :**
+> - **#393** → passer `DEFAULT_COLOR` à une teinte conforme AA (≥ 4,5), et non assumer le
+>   libellé hors pastille. Piste indigo-600 `#4f46e5` (~6,0), ratio à re-mesurer réellement.
+> - **#391** → **supprimer** la branche morte `if (loading)` / `timeline-loading` de
+>   `timeline/page.tsx`. `app-shell-loading` reste le testid canonique du chargement global ;
+>   le `test.skip()` de `timeline.spec.ts` est réécrit pour l'asserter.
 
 ## Sprint 57 — 2026-07-30 (PLANIFIE — MVP local : réglages sous le shell, gardes de routes, dernier 500)
 **Objectif :** Unifier le shell applicatif et fermer le seul 500 prouvé dans le code

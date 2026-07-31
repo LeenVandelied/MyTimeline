@@ -1,5 +1,16 @@
+# Issue #393 — [BUG] Couleur d'événement par défaut sous le seuil de contraste AA
+
+**Sprint :** 56 | **Vague :** 1 (parallèle avec #392) | **Triage :** S (l'issue annonçait XS)
+**Commit :** `9737d5b` | **Base spawn :** `8ec1a2a`
+**Décision produit :** tranchée par le développeur au démarrage (teinte AA, pas « libellé dehors assumé »)
+**Fichiers du commit (vérifiés par le lead, aucun empiétement sur #392) :** `types/event.ts`,
+`types/event.test.ts`, `EventContent.tsx`, `EventPill.test.tsx`, `fixtures.tsx`,
+`lib-a11y.test.ts`, `NewEventDrawer.test.tsx`
+
+---
+
 RETOUR :
-- commits: (voir git log — 1 commit logique)
+- commits: 9737d5b
 - resume: DEFAULT_COLOR '#6366f1' -> '#3B62D4' (--evt-cobalt, palette event Graphite).
   Ratio MESURE 5.407:1 (encre blanche) vs 4.467:1 avant. Dedup: EventContent.tsx
   redeclarait sa propre const DEFAULT_COLOR (jamais citee par l'issue) -> importe
