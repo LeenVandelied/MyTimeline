@@ -5,6 +5,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { NewEventDrawer } from './NewEventDrawer'
 import type { Product } from '@/types/product'
+import { DEFAULT_COLOR } from '@/types/event'
 
 /**
  * #300 — Tests du drawer de création d'événement (jsdom).
@@ -252,7 +253,9 @@ describe('NewEventDrawer — soumission (payload ↔ EventCreationRequest)', () 
       isRecurring: false,
       recurrenceUnit: undefined,
       date: '2026-08-01', // BR-EVE-005 — le DTO attend `date`, pas `startDate`.
-      color: '#6366f1',
+      // #393 — le drawer pré-remplit avec `DEFAULT_COLOR` (#300) : assertion sur la
+      // constante, pas sur un littéral qui refige la valeur du jour.
+      color: DEFAULT_COLOR,
       productId: '11111111-1111-4111-8111-111111111111',
     })
     // Aucun champ PATCH-only ne doit fuir dans le payload (BR-EVE-012/013/015).

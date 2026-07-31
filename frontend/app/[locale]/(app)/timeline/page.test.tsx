@@ -11,9 +11,17 @@ import type { Resource } from '@/components/timeline'
  * + invariant AuthProvider) est STUBBÉ : on isole le câblage page → host, pas le
  * rendu de la frise (couvert par TimelineView/TimelineResponsive/TimelineEditHost).
  *
- * Couvre : garde d'auth (spinner pendant restauration, rien si anonyme), état de
- * chargement des données, état vide (aucun produit), et montage du host avec les
- * données agrégées multi-produits ([MEMORY:decision] #301).
+ * Couvre : garde d'auth (rien si anonyme), état de chargement des DONNÉES, état
+ * vide (aucun produit), et montage du host avec les données agrégées
+ * multi-produits ([MEMORY:decision] #301).
+ *
+ * #391 — Le test « spinner de restauration » (`timeline-loading`) a été SUPPRIMÉ
+ * avec la branche qu'il couvrait. Il rendait `TimelinePage` en ISOLATION, hors de
+ * `AppShell` : il prouvait que la branche s'affichait si on la forçait, jamais
+ * qu'un utilisateur pouvait la voir (le shell ne monte `children` qu'une fois
+ * `loading` retombé). Le chargement de session est couvert par `app-shell-loading`
+ * (`AppShell.test.tsx` + `e2e/timeline.spec.ts`). Ne pas réintroduire de test de
+ * `loading` sur cette page : il ne décrirait aucun état atteignable.
  */
 vi.mock('next-intl', () => ({
   useTranslations:
@@ -67,13 +75,6 @@ beforeEach(() => {
 })
 
 describe('TimelinePage — garde d’auth', () => {
-  it('affiche le spinner de restauration tant que loading', () => {
-    mockAuthLoading = true
-    render(<TimelinePage />)
-    expect(screen.getByTestId('timeline-loading')).toBeInTheDocument()
-    expect(screen.queryByTestId('timeline-screen')).not.toBeInTheDocument()
-  })
-
   it('ne rend rien si anonyme (user null, loading retombé)', () => {
     mockAuthUser = null
     mockAuthLoading = false

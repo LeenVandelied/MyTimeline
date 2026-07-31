@@ -120,13 +120,64 @@
 /* Label produit sticky à gauche : identifie la lane, reste ancré pendant le
    scroll horizontal. Fond opaque + z-index pour passer au-dessus des event bars
    sans casser leur positionnement absolu (left:leftPx). */
-.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+/* #392 — largeur FIXE (et non plus `max-width`) : l'en-tête remplit désormais
+   la gouttière de piste, qui fait exactement `--lane-header-w`. Un en-tête plus
+   étroit (nom de produit court) y laisserait un vide au lieu d'une colonne. */
+.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
 /* #195 — Accordéon de 2e niveau (produit) : le label sticky devient un bouton
    toggle, mirror de .mt-tlv__group-head. Reset des styles bouton natifs, chevron
    à gauche, cible cliquable (pointer-events réactivés). */
 .mt-tlv__lane-head{gap:6px; border-top:0; border-bottom:0; border-left:0; padding-left:8px; cursor:pointer; text-align:left; pointer-events:auto;}
 .mt-tlv__lane-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
 .mt-tlv__lane-head-text{min-width:0; flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ---------------------------------------------------------------------------
+   #392 — GOUTTIÈRE DE PISTE. L'en-tête de lane est `position:sticky; left:0` et
+   OPAQUE : il recouvre en permanence les `--lane-header-w` premiers pixels du
+   viewport, à TOUT niveau de scroll (défiler l'emporte avec le viewport). Une
+   pastille dont l'origine sur la piste est < `--lane-header-w` était donc
+   inatteignable à la souris — définitivement, aucun scroll ne la dégageait
+   (mesuré : 30 j × 5 px = 150 px au zoom Trimestre, 66 px au zoom Année).
+
+   CORRECTIF RETENU : réserver une GOUTTIÈRE de `--lane-header-w` en tête de
+   rail et y décaler TOUT le contenu positionné (graduations, week-ends, ligne
+   TODAY, pastilles). À `scrollLeft = 0` l'en-tête occupe exactement la
+   gouttière et la piste commence là où il s'arrête : plus aucune pastille ne
+   peut naître sous lui. Les niveaux de zoom sont traités uniformément (la
+   gouttière est en px, pas en jours).
+
+   POURQUOI PAS `pointer-events:none` : l'en-tête EST interactif (accordéon
+   produit #195, `.mt-tlv__lane-head`) — le neutraliser échangerait ce bug
+   contre la perte du repli de lane. Le décalage ne touche AUCUNE capture de
+   pointeur.
+
+   POURQUOI `margin-left` (et pas un padding du rail ou un wrapper de piste) :
+   ces éléments sont tous `position:absolute`, or `left` se résout sur la boîte
+   de PADDING du bloc conteneur — un `padding-left` ne les déplacerait pas. La
+   marge, elle, s'ajoute au `left` calculé. Le sélecteur reste borné à l'enfant
+   DIRECT du conteneur concerné : les mêmes classes servent hors frise
+   (stories, `.mt-tlv__today-badge` d'`EventPreviewTimeline`) et ne doivent pas
+   hériter de la gouttière. L'ALIGNEMENT règle/piste tient parce que les quatre
+   familles subissent EXACTEMENT le même décalage.
+   --------------------------------------------------------------------------- */
+.mt-tlv__ruler > .mt-tlv__tick,
+.mt-tlv__ruler > .mt-tlv__today,
+.mt-tlv__rail > .mt-tlv__weekend,
+.mt-tlv__rail > .mt-tlv__today,
+.mt-tlv__lane > .mt-tlv__evt,
+.mt-tlv__lane > .mt-tlv__evt-outside{margin-left:var(--lane-header-w);}
+/* La trame de jours du fond de lane suit la piste, pas le bord du rail. */
+.mt-tlv__lane{background-position-x:var(--lane-header-w);}
+/* Coin haut-gauche : masque la gouttière SUR LA RÈGLE. `buildRulerTicks` peut
+   émettre des graduations à offset NÉGATIF (première frontière de mois avant
+   `rangeStart`) ; hors gouttière elles étaient hors rail donc invisibles, la
+   gouttière les ferait apparaître comme un libellé de date flottant au-dessus
+   de la colonne produit. Bloc STICKY en flux (les graduations, elles, sont
+   absolues) : il tient le bord gauche à tout niveau de scroll, exactement comme
+   l'en-tête de lane en dessous — la gouttière devient une colonne continue.
+   `--z-sticky` (et non plus) : la ligne TODAY (`--z-cursor`) passe par-dessus,
+   même convention que l'en-tête de lane. */
+.mt-tlv__ruler::before{content:""; position:sticky; left:0; z-index:var(--z-sticky); display:block; width:var(--lane-header-w); height:100%; background:var(--color-surface-2); border-right:1px solid var(--color-rule);}
 .mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
 .mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
 /* #81 — Focus ring (point 5). ÉCART INTENTIONNEL de token : les pastilles

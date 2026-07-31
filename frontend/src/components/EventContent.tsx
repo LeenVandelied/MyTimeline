@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { contrastInk } from '@/lib/color'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { queryKeys } from '@/lib/query-keys'
-import { FullCalendarEvent } from '@/types/event'
+import { DEFAULT_COLOR, FullCalendarEvent } from '@/types/event'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -19,8 +19,9 @@ import { useEventEditConflict } from '@/hooks/useEventEditConflict'
 import { Button } from './ui/button'
 import { EventEditForm, EventEditFormValues } from './EventEditForm'
 
-// #150 — modèle couleur unique `color` (BR-EVE-009).
-const DEFAULT_COLOR = '#6366f1'
+// #150 — modèle couleur unique `color` (BR-EVE-009). #393 : la constante était
+// REDÉCLARÉE ici en local, en doublon de `types/event.ts` — deux « défauts »
+// libres de diverger. Désormais importée, source unique.
 
 interface EventContentProps {
   event: FullCalendarEvent

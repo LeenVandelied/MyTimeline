@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  DEFAULT_COLOR,
   eventSchema,
   eventCreationSchema,
   eventEditSchema,
@@ -84,7 +85,9 @@ describe('mapToFullCalendarEvent', () => {
   it('fallback color par défaut si null', () => {
     const ev: Event = eventSchema.parse({ ...baseResponse, color: null, isAllDay: null })
     const mapped = mapToFullCalendarEvent(ev, 'Prod', 'cat', 'p1')
-    expect(mapped.color).toBe('#6366f1')
+    // #393 — assertion portée sur la CONSTANTE, pas sur un littéral recopié : le
+    // point testé est « le mapping retombe sur le défaut », pas sa valeur du jour.
+    expect(mapped.color).toBe(DEFAULT_COLOR)
     expect(mapped.allDay).toBe(false)
   })
 

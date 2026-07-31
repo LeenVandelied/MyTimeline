@@ -27,7 +27,13 @@ export const sampleResource: Resource = {
   category: 'Produits frais',
 }
 
-/** Event factice positionné + statut, sans passer par `buildEventsByResource`. */
+/**
+ * Event factice positionné + statut, sans passer par `buildEventsByResource`.
+ * ⚠ #393 — `color: '#6366f1'` est ici un input EXPLICITE et délibérément NON
+ * conforme AA (4.47:1) qui exerce le chemin « libellé DEHORS ». Ce n'est plus
+ * la couleur par défaut de l'app (`DEFAULT_COLOR`, désormais AA) : ne pas
+ * resynchroniser les deux, les tests du fallback en dépendent.
+ */
 export function makeEvent(
   overrides: Partial<EventWithComputedPosition> = {},
 ): EventWithComputedPosition {

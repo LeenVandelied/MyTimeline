@@ -123,9 +123,29 @@ export type FullCalendarEvent = {
   }
 }
 
-/** Couleur de repli d'un event sans `color` (BR-EVE-009). #300 : exportée pour
- *  pré-remplir le formulaire de création (le champ est optionnel côté DTO). */
-export const DEFAULT_COLOR = '#6366f1'
+/**
+ * Couleur de repli d'un event sans `color` (BR-EVE-009). #300 : exportée pour
+ * pré-remplir le formulaire de création (le champ est optionnel côté DTO).
+ * SOURCE UNIQUE — `EventContent.tsx` importe cette constante (#393, fin de la
+ * redéclaration locale qui pouvait diverger).
+ *
+ * #393 — l'ancien défaut `#6366f1` (indigo-500 Tailwind) plafonnait à **4.467:1**
+ * (mesuré via `contrastRatio` de `lib/color.ts`, meilleure encre = blanc), sous le
+ * seuil WCAG AA de 4.5. Conséquence : `eventLabelReadableInside` renvoyait `false`
+ * pour TOUT event créé sans couleur explicite → libellé rejeté À L'EXTÉRIEUR de la
+ * barre, à l'état normal et non en cas limite.
+ *
+ * Retenu : `--evt-cobalt` **#3B62D4** → **5.407:1** (encre blanche), AA franchi.
+ * Choisi plutôt que l'indigo-600 `#4f46e5` suggéré par l'issue (6.288:1, conforme
+ * lui aussi) parce qu'il appartient à la palette event curated des 12 tons Graphite
+ * (`ds/tokens/colors.css`, exposée en `--color-evt-cobalt`) : le projet a déjà
+ * purgé ses indigos/violets hors palette (cf. `landing.css` / `landing-palette.test.ts`),
+ * réintroduire un indigo Tailwind rouvrait cette dette. Teinte voisine de l'ancienne
+ * → décalage visuel minime pour les events existants sans couleur.
+ * Garde-fou anti-régression : `lib-a11y.test.ts` asserte
+ * `eventLabelReadableInside(DEFAULT_COLOR) === true` sur cette constante importée.
+ */
+export const DEFAULT_COLOR = '#3B62D4'
 
 export const mapToFullCalendarEvent = (
   event: Event,
