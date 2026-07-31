@@ -356,3 +356,25 @@ verts seulement, tous deux sur la même PR : le rendre requis reproduirait le ri
 Commande retenue : `PATCH` sur `…/protection/required_status_checks` et **non** le `PUT` global que
 documentait l'en-tête de `ci.yml` — le `PUT` réécrit toute la protection et aurait écrasé `enforce_admins`
 et les reviews au passage. Vérifié après coup : `enforce_admins: true` et reviews `0` inchangés.
+
+## DEC-S57-001 — La logique de comparaison du garde-fou vit dans le fichier de test, pas dans le module
+`auth-guard-paths.ts` est importé par le **middleware Edge** : il doit rester minimal et pur. Le scan
+filesystem et la comparaison (#318) sont de l'outillage de test, pas du runtime — ils vivent donc dans
+`auth-guard-paths.test.ts`. Le module ne gagne que 6 lignes de JSDoc documentant le lien avec le garde-fou
+et l'exigence de déclaration en minuscules. Corollaire : le garde-fou ne peut pas être invoqué au build ;
+c'est un test de non-régression, pas une génération de liste (l'issue #318 mentionnait cette alternative).
+
+## DEC-S57-002 — Un seul `<h1>` « Réglages » rendu à tous les paliers
+L'arbitrage `ui-design` de #299 était contradictoire sur ce point : la section CHROME exigeait de **garder**
+le `<h1>`, la section PALIERS annonçait que « le header `lg:hidden` disparaît » — appliquées ensemble, elles
+imposaient **2 `<h1>`** dans le DOM. Arbitrage retenu par l'implémentation : **CHROME est normative,
+PALIERS est descriptive**. Seul `settings-back` est `lg:hidden`, pas tout le header. Règle générale à
+reprendre : quand un arbitrage designer se contredit, la section qui décrit le **contrat** prime sur celle
+qui décrit l'**apparence attendue**, et l'écart doit être remonté (il l'a été, en `[MEMORY:decision]`).
+
+## DEC-S57-003 — Cohésion 0.22 assumée : ne pas déporter #312 pour redresser une métrique
+Le sprint 57 affichait une cohésion de 0.22, sous le seuil de 0.3, et sortir #312 (`/me` → 401) l'aurait
+remontée à 0.31. Décision : **garder #312**. Le critère de sortie du MVP dit littéralement « sans erreur
+500 », ce 500 était le seul prouvé dans le code sur 104 candidates auditées, et il coûtait 1 point. Le
+déporter aurait été un re-scope silencieux déguisé en amélioration de métrique. La cohésion mesure la
+proximité de domaine, pas la valeur livrée — elle informe le découpage, elle ne le commande pas.

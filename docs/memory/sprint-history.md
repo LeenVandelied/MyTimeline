@@ -2090,7 +2090,7 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 
 </details>
 
-## Sprint 56 — 2026-07-30 (En cours — MVP local : la frise redevient utilisable à la souris)
+## Sprint 56 — 2026-07-30 → 2026-07-31 (Terminé — merge PR #410 dans dev)
 **Objectif :** Lever le seul défaut vérifié du parcours cœur qui rend une action utilisateur impossible
 **Milestone GitHub :** #57
 **Issues (4) :** #392 (P2/S), #393 (P3/XS), #395 (P2/S), #391 (P3/XS) — **6 pts**
@@ -2098,7 +2098,8 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 **Cohésion :** 0.44
 **Migrations Flyway :** aucune
 **Depend de :** rien
-**Status :** En cours (démarré 2026-07-30, worktree `claude/sprint-56-start-afdae4`, base `origin/dev` = `8ec1a2a`)
+**Status :** Terminé — PR #410 mergée dans `dev` le 2026-07-31 (worktree `claude/sprint-56-start-afdae4`, base `origin/dev` = `8ec1a2a`)
+> Statut rectifié pendant `/sprint end 57` : l'entrée était restée `En cours` alors que la PR #410 était mergée depuis le 2026-07-31.
 
 > **Trois vagues pour 4 issues** : #392, #395 et #391 modifient **toutes** `frontend/e2e/timeline.spec.ts`.
 > #392 et #395 modifient en plus tous deux `TimelineView.tsx`.
@@ -2161,15 +2162,47 @@ Le déporter pour un gain de métrique serait exactement le re-scope silencieux 
 > il n'envoie pas d'en-tête `Origin`.** Réflexe : lire les statuts instrumentés par `watchRegisterResponses`
 > avant toute hypothèse.
 
-**Follow-ups à arbitrer en `/sprint end` (Phase 4) :**
-1. **Contraste DS** `text-accent`/`bg-accent-soft` = 3.83:1 en clair, sous AA, sur tout état actif — correctif token (issu de #299)
-2. Couverture E2E de `settings-header` — 0 spec ; le palier 768 px reste vérifié à la main (Phase 8)
-3. Cookie `jwt=` **vide** → `IllegalArgumentException` hors hiérarchie `JwtException` → **500** sur `/me` **et** `/refresh` (review) — l'alignement visé par #312 est bien atteint, c'est un défaut distinct
-4. Garde-fou #318 limité à la profondeur 1 de `(app)/` — une route protégée hors du groupe reste sans filet
-5. Landmarks `<main>` imbriqués (`settings-page` dans `shell-main`) — pré-existant, dashboard et products aussi
-6. Backend E2E local sans profil `e2e` → 3 specs de reset password rouges en permanence en local
-7. Bug i18n `DensityRibbon` : `{days}` non fourni, `IntlError` à chaque rendu du dashboard
-8. `npm run lint` rouge en local sur `next-env.d.ts`, vert en CI — divergence à trancher
+**Follow-ups arbitrés (Phase 4 triage — décision dev : traiter les 8 directement, aucune issue créée) :**
+
+| # | Follow-up | Décision | Commit |
+|---|---|---|---|
+| FU1 | Contraste DS `accent`/`accent-soft` 3.83:1 sous AA | absorbé | `44a3ac7` |
+| FU2 | Cookie `jwt` vide → 500 sur `/me` et `/refresh` | absorbé | `c0cc3ef` |
+| FU3 | Garde-fou limité à `(app)/` | absorbé | `ae038b9` |
+| FU4 | Couverture E2E du palier 768 px | absorbé | `3d5df36` |
+| FU5 | Backend E2E local sans profil `e2e` | absorbé | `677d8a8` |
+| FU6 | Bug i18n `DensityRibbon` | absorbé | `d6a6f06` |
+| FU7 | Landmarks `<main>` imbriqués | absorbé | `1fc7b87` |
+| FU8 | `npm run lint` rouge en local | absorbé | `cfa74c5` |
+
+**Bilan : 8 absorbés, 0 issue créée, 0 discardé.** 13 commits au total sur le sprint.
+
+**Tests après follow-ups :** Backend **462/462** · Frontend **875/875** · E2E **136 passed / 0 failed / 8 skipped** · `tsc` 0 · `lint` 0
+
+> **Trois énoncés de follow-up étaient FAUX et ont été rectifiés, pas appliqués :**
+> - **FU6** — le bug i18n n'était pas `{days}` manquant dans les messages (les 4 locales étaient
+>   correctes) ni la ligne citée. Vraie cause : `t('label')` appelé **sans** `{days}` à **3 endroits**.
+>   Le test unitaire existant utilisait un mock ignorant les paramètres — il **ne pouvait pas**
+>   détecter ce bug ; un test avec un vrai `NextIntlClientProvider` a été ajouté.
+> - **FU8** — il n'y avait **aucune divergence CI/local**. `next lint` ne scanne jamais
+>   `next-env.d.ts` (hors dossiers par défaut) ; le rouge venait du **hook RTK** local qui élargit le
+>   périmètre. L'exclusion reste utile (plugins d'éditeur), mais la prémisse était fausse.
+> - **FU4** — `settings-header` n'est **pas** `lg:hidden` : seul `settings-back` l'est. Asserter
+>   « header masqué à 1024 » aurait produit une spec **rouge sur du code sain** (cf. DEC-S57-002).
+
+> **FU1 — pourquoi un token dédié aurait été insuffisant :** la liste des consommateurs du couple
+> fautif est **ouverte** (`base.css:121` pose `a { color: var(--color-accent) }`, et
+> `dropdown-menu`/`button` posent `bg-accent-soft` au survol/focus de n'importe quel `<a>`). Preuve
+> empirique : `ui/dropdown-menu.tsx:29` **documentait déjà ce 3.83:1 depuis le S52** sans le corriger.
+> D'où l'assombrissement de `--color-accent` (blue-500 → blue-600) plutôt qu'un
+> `--color-accent-on-soft`. Mesure de l'« avant » faite sur la **même page live** par réinjection de
+> l'ancien token — et la 1ʳᵉ tentative d'override, **no-op silencieux**, a été détectée avant de
+> confirmer une amélioration inexistante.
+
+> **Environnement E2E : le port 3000 était squatté par un AUTRE projet (EdelWheels)** au moment de la
+> vérification finale — piège n°1 du runbook S47. Avec `reuseExistingServer`, Playwright aurait testé
+> silencieusement la mauvaise application. Contourné par `backend-e2e:8085` (livré par FU5) +
+> frontend `:3100`, ce qui a **aussi** fait passer les 3 specs de reset password.
 
 > **Dépendance dure #299 → #318, vérifiée :** `auth-guard-paths.ts:47` déclare
 > `PROTECTED_EXTRA_SEGMENTS = ['settings']` **parce que** settings vit hors de `(app)`. Après #299
