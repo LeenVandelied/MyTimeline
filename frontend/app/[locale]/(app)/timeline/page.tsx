@@ -32,29 +32,22 @@ import { TimelineEditHost } from '@/components/timeline'
  *
  * Garde d'auth (defense-in-depth) calquée sur le dashboard : le shell garde déjà,
  * la page conserve la sienne (`useAuthGuard` → redirection `/login` si anonyme).
+ *
+ * #391 — PAS de branche `loading` ici. Le chargement GLOBAL de session est porté
+ * par `AppShell` (`components/layout/AppShell.tsx`, #210), qui ne rend `children`
+ * qu'une fois `loading` retombé ET `user` présent : `app-shell-loading` est le
+ * SEUL testid du chargement de session. L'ancien `timeline-loading` de cette page
+ * était structurellement inatteignable (code mort) — supprimé. `if (!user) return
+ * null` est conservé : c'est un filet defense-in-depth qui ne rend aucune UI, pas
+ * un état observable. `timeline-data-loading` (ci-dessous) est un état DIFFÉRENT
+ * et bien atteignable : chargement des DONNÉES, sous le shell déjà monté.
  */
 export default function TimelinePage() {
   const t = useTranslations('shell.timeline')
   const locale = useLocale()
   // #301 — Garde d'auth factorisée (defense-in-depth : le shell garde aussi).
-  const { user, loading } = useAuthGuard()
+  const { user } = useAuthGuard()
   const { events, resources, isLoading } = useDashboardData(user?.id)
-
-  if (loading) {
-    return (
-      <div
-        className="flex h-full min-h-screen items-center justify-center"
-        data-testid="timeline-loading"
-      >
-        <div
-          className="border-accent h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
-          role="status"
-        >
-          <span className="sr-only">{t('loading')}</span>
-        </div>
-      </div>
-    )
-  }
 
   if (!user) return null
 

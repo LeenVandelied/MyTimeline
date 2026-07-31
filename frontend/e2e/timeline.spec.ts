@@ -909,46 +909,59 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     }).toPass()
   })
 
-  // #330-fix (Sprint 54) — BUG PRODUIT confirmé (pas maquillé) : `timeline-loading`
-  // (page.tsx:47, branche `if (loading) return <div data-testid="timeline-loading">`)
-  // est du CODE MORT. `AppShell` (`components/layout/AppShell.tsx:80/114`, #210,
-  // ajouté APRÈS ce testid) pose sa PROPRE garde `useAuthGuard()` au niveau du
-  // SHELL et retourne `app-shell-loading` SANS monter `children` tant que
-  // `loading` est vrai — `TimelinePage` (un `children` de ce shell) ne peut donc
-  // JAMAIS être monté pendant que `loading` est vrai : sa propre branche loading
-  // ne s'exécute plus. Vérifié empiriquement (route `/api/auth/me` gatée, run
-  // isolé) : `app-shell-loading` compte 1, `timeline-loading` compte 0 — 100%
-  // reproductible, ce n'est pas un timing serré. Aucun scroll/attente ne peut
-  // rendre `timeline-loading` observable : l'état est structurellement
-  // inatteignable, pas un problème de délai. `test.skip()` : maquiller en testant
-  // `app-shell-loading` à la place changerait la spec en couvrant discrètement un
-  // AUTRE testid que celui déclaré par #330 — signalé en RECOMMAND_FOLLOWUP
-  // (retirer la branche morte de `page.tsx`, ou déplacer le contrat sur
-  // `app-shell-loading` si c'est le nouveau testid canonique).
-  test.skip(
-    'loading : timeline-loading pendant la restauration de session, puis bascule vers l’écran réel',
-    async ({ page }) => {
-      let release: () => void = () => {}
-      const gate = new Promise<void>((resolve) => {
-        release = resolve
-      })
-      await page.route('**/api/auth/me', async (route) => {
-        await gate
-        await route.continue()
-      })
+  // #391 (Sprint 56) — CONTRAT DU CHARGEMENT DE SESSION SUR `/timeline`.
+  //
+  // Le chargement GLOBAL de session est porté par le SHELL, pas par la page :
+  // `AppShell` (`components/layout/AppShell.tsx:114`, #210) pose sa garde
+  // `useAuthGuard()` et rend `app-shell-loading` SANS monter `children` tant que
+  // `loading || !user`. `app-shell-loading` est donc le SEUL testid observable de
+  // cet état ; la page de la frise n'en porte aucun. `timeline-data-loading`
+  // (couvert plus haut) est un état DIFFÉRENT : chargement des DONNÉES, sous un
+  // shell déjà monté.
+  //
+  // L'assertion `timeline-loading` à 0 est un VERROU DE NON-RÉGRESSION : ce testid
+  // a existé sur `page.tsx` jusqu'à #391, où il a été supprimé comme code mort
+  // (structurellement inatteignable sous le shell). Sa réapparition ferait rougir
+  // ce test.
+  //
+  // Sensibilité : la gate sur `/api/auth/me` est ce qui rend l'état OBSERVABLE.
+  // Sans elle, `/me` répond en quelques ms et le spinner a déjà disparu — d'où la
+  // vérification de STABILITÉ ci-dessous (le spinner tient tant que la gate n'est
+  // pas libérée), sans laquelle le test constaterait un écran déjà chargé et ne
+  // prouverait rien.
+  test('chargement de session : app-shell-loading porté par le shell, puis écran réel', async ({
+    page,
+  }) => {
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await page.route('**/api/auth/me', async (route) => {
+      await gate
+      await route.continue()
+    })
 
-      await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
+    await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
 
-      const loading = page.getByTestId('timeline-loading')
-      await expect(loading).toBeVisible()
-      await expect(loading.getByRole('status')).toBeVisible()
+    const shellLoading = page.getByTestId('app-shell-loading')
+    await expect(shellLoading).toBeVisible()
+    await expect(shellLoading.getByRole('status')).toBeVisible()
 
-      release()
+    // Stabilité : `/me` reste gatée, l'état DOIT persister. C'est cette attente
+    // qui donne sa sensibilité au test (sans gate, elle rougit ici).
+    await page.waitForTimeout(1_000)
+    await expect(shellLoading).toBeVisible()
+    // Le shell ne monte pas `children` : ni l'écran, ni un quelconque spinner de page.
+    await expect(page.getByTestId('timeline-screen')).toHaveCount(0)
+    await expect(page.getByTestId('timeline-loading')).toHaveCount(0)
 
-      await expect(loading).toHaveCount(0)
-      await expect(page.getByTestId('timeline-screen')).toBeVisible()
-    },
-  )
+    release()
+
+    await expect(shellLoading).toHaveCount(0)
+    await expect(page.getByTestId('timeline-screen')).toBeVisible()
+    // Verrou : la branche morte ne doit pas réapparaître, même écran monté.
+    await expect(page.getByTestId('timeline-loading')).toHaveCount(0)
+  })
 
   test('live-region : contenu réel annoncé (zoom puis event sélectionné), pas juste présence', async ({
     page,
