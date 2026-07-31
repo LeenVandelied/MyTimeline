@@ -1,81 +1,152 @@
 ## Objectif
 
-Réarmer le filet E2E de la frise : rendre les sélecteurs de test robustes au réordonnancement, couvrir les `data-testid` de la frise laissés sans spec par le Sprint 47, et empêcher qu'une instabilité passagère du serveur de dev bloque les 134 tests de la suite.
+**MVP local — la frise redevient utilisable à la souris.** Ce sprint lève le seul défaut vérifié
+du parcours cœur qui rendait une action utilisateur *impossible* : un événement posé près du
+début de la période était recouvert par l'en-tête de lane sticky, donc non cliquable, sans aucun
+défilement permettant de le dégager.
 
-Milestone : **Sprint 54** (#54). Cohésion **0.46** · Périmètre **frontend uniquement** — 0 fichier `.java`, 0 `.sql`, 0 schéma Zod. **Aucune BR métier touchée. Aucune migration Flyway.**
+Milestone : **Sprint 56** (#57). Cohésion 0.44. 4 issues, 6 points, **4/4 livrées**.
+Périmètre **frontend uniquement** — 0 fichier `.java`, 0 `.sql`, aucune migration Flyway.
 
 ## Issues traitées
 
-| Issue | Titre | P | Size | Résultat |
-|---|---|---|---|---|
-| #331 | Exposer des `data-testid` sur les `SelectItem` Radix | P2 | S | Livrée |
-| #329 | `auth.setup.ts` : retry sur l'échec de rendu de `/fr/register` | P2 | S | Livrée |
-| #330 | Couvrir les `data-testid` de la frise sans spec E2E | P2 | M | Livrée — **15 atteignables sur 18 annoncés**, cf. ci-dessous |
+| Commit | Issue | P/Size | Objet |
+|---|---|---|---|
+| `9737d5b` | #393 | P3/XS→S | Couleur d'événement par défaut conforme AA + dédup de `DEFAULT_COLOR` |
+| `143edc0` | #392 | P2/S | Gouttière de piste : les événements sous l'en-tête sticky redeviennent cliquables |
+| `c87034d` | #395 | P2/S | `aria-pressed` sur le bouton plein écran, dérivé de `fullscreenchange` |
+| `f1a6827` | #391 | P3/XS→S | Suppression de la branche de chargement morte `timeline-loading` |
 
-Vagues exécutées : **V1 = #331 ∥ #329** (fichiers disjoints) · **V2 = #330** · puis un cycle correctif.
+> #393 et #391 étaient annoncées XS ; toutes deux se sont révélées plus larges (constante
+> dupliquée non citée pour l'une, test unitaire caduc non listé pour l'autre).
 
 ## Changements clés
 
-**#331 — sélecteurs robustes.** `data-testid` dérivés de la `value` et jamais d'un libellé traduit (qui changerait avec la locale) : `product-option-<uuid>` et `recurrence-unit-option-<WEEK|MONTH|YEAR>`. Le ciblage par index `.nth(1)` de `timeline.spec.ts` disparaît — c'était la seule occurrence sur une option de `<Select>`. Vérifié au navigateur : cliquer `recurrence-unit-option-YEAR` fait bien afficher « an/year » au trigger, ce que `.nth(1)` ne garantissait pas.
+### #392 — gouttière de piste (et non `pointer-events`)
 
-**#329 — diagnostic du provisioning E2E.** Le rendu initial de `/fr/register` (hors boucle) n'était protégé par aucun retry : un 500 transitoire du serveur de dev Next tuait les 134 tests. Retry par `page.reload()`, logique extraite dans `e2e/support/register-page.ts` pour être testable, spec dédiée simulant un 500 via `page.route()` — plus un cas de 500 **persistant** vérifiant que l'échec reste bruyant. Le message n'accuse plus une cause au hasard : un listener `page.on('response')` collecte les statuts **réellement observés** et les restitue avec une grille de lecture 429 / 403 / 409.
+Une gouttière de `--lane-header-w` (168 px) est réservée en tête de rail ; tout le contenu
+positionné y est décalé (graduations, week-ends, ligne TODAY, pastilles). À `scrollLeft=0`
+l'en-tête occupe exactement la gouttière : aucune pastille ne peut naître sous lui, **à aucun
+zoom** (offset en px, indépendant du px/jour).
 
-**#330 — 18 nouveaux tests E2E**, en 4 commits par lot fonctionnel (drawer/overlays, contrôles de toolbar, minimap/états/contraste, options de récurrence). Les specs exercent des **comportements**, pas des présences : l'overlay du drawer provoque un **démontage** et non un masquage ; `timeline-zoom-out` change réellement `timeline-zoom-level` ; la live-region est vérifiée **vide au montage** (une annonce parasite est un bug a11y qu'une assertion de présence ne verrait pas) puis sur son contenu exact ; `timeline-event-outside-label` est testé avec un **contrôle négatif** (le cas au-dessus du seuil de contraste doit être absent).
+`pointer-events: none` a été **écarté** : l'en-tête *est* le bouton d'accordéon produit (#195).
+Même borné, il aurait laissé la pastille sous un fond opaque — cliquable à l'aveugle, donc
+toujours invisible. Un `padDays` dépendant du zoom a également été écarté : `rangeStart` serait
+devenu fonction du zoom, défaisant la mémoïsation de #349.
 
-## ⚠ La cible de #330 est corrigée : 15 atteignables, pas 18
+⚠ **Le zoom Année était cassé lui aussi** (66 px < 168), ce que l'issue ne mentionnait pas — elle
+ne citait que Trimestre. 3 niveaux sur 5 passaient, ce qui masquait le défaut.
 
-Trois écarts au décompte du §4 de l'audit S47, chacun étayé par la mesure (détail : `docs/memory/audits/sprint-54-test-coverage.md` §2).
+Effet de bord trouvé **au navigateur** (invisible en test) : `buildRulerTicks` émet des
+graduations à offset négatif, jusque-là hors rail donc invisibles, que la gouttière faisait
+apparaître au-dessus de la colonne produit. Corrigé par un coin sticky sur la règle.
 
-**Deux entrées ne sont pas des éléments d'interface.** `desktop-edit-trigger` et `mobile-delete-trigger` n'existent que dans `frontend/src/components/timeline/TimelineEditHost.test.tsx` — doublures RTL, exactement le motif pour lequel l'issue exclut déjà `timeline-edit-host-stub` et `timeline-responsive-stub`, **et dans le même fichier**. Aucune spec Playwright ne peut les exercer : le critère d'acceptation n°1 était **inatteignable par construction**. C'est une **régression d'audit traçable** : `audits/sprint-46-test-coverage.md:47` identifiait déjà `mobile-delete-trigger` comme faux positif, l'audit S47 l'a réintégré.
+### #393 — `#6366f1` → `#3B62D4`
 
-**Une entrée est du code mort** — `timeline-loading`, cf. bug produit n°1.
+Ratio mesuré **5,407:1** (contre 4,467, sous le seuil AA de 4,5). Conséquence utilisateur : le
+libellé d'un événement sans couleur explicite repasse **dans** la pastille au lieu d'être rejeté
+à l'extérieur.
 
-## ⚠ Deux bugs produit découverts (signalés, non corrigés — hors périmètre)
+`#4f46e5` (indigo-600) a été écarté malgré sa conformité : indigo Tailwind hors palette DS, alors
+que le projet a déjà purgé ses indigos/violets (purge gardée par `landing-palette.test.ts`).
+`#3B62D4` (`--evt-cobalt`) appartient à la palette curated et était déjà l'échantillon « AA OK »
+d'`EventPill.test.tsx`.
 
-Trouvés uniquement parce que les specs testent des comportements.
+Une **seconde constante `DEFAULT_COLOR` dupliquée** existait dans `EventContent.tsx`, non citée
+par l'issue — `EventContent` importe désormais la source unique.
 
-**1. `timeline-loading` est inatteignable.** `app/[locale]/(app)/timeline/page.tsx:47` porte bien la branche `if (loading)`, mais `AppShell` (`components/layout/AppShell.tsx:80/114`, livré par #210 **après** ce testid) pose sa propre garde `useAuthGuard()` au niveau du shell et retourne `app-shell-loading` **sans monter `children`**. La branche de `TimelinePage` ne peut donc plus s'exécuter. Mesuré, route `/api/auth/me` gatée : `app-shell-loading`=1, `timeline-loading`=0 — 100 % reproductible, ce n'est pas un timing serré. La spec est `test.skip()` avec la cause nommée ; **substituer `app-shell-loading` a été refusé délibérément**, cela aurait couvert un testid *différent* de celui déclaré tout en donnant l'illusion de la couverture.
+### #395 — état dérivé, pas état optimiste
 
-**2. En-tête de lane sticky rendant des événements inatteignables à la souris.** Au zoom Trimestre, un événement proche de `rangeStart` (`computeRange` = 30 j avant le 1er event) se place à `30 × 5 = 150 px` alors que `--lane-header-w` vaut **168 px** (`spacing.css:48`) : `.mt-tlv__lane-label` (`position:sticky;left:0`, `TimelineView.tsx:331`) intercepte le pointeur — Playwright le confirme explicitement. **Aucun scroll ne dégage la pastille** : à ce zoom, pour un seul produit, le rail tient dans le viewport, donc il n'y a pas d'overflow. Un utilisateur réel ne peut pas cliquer cet événement. L'assertion de la spec est conservée ; l'activation passe par le clavier (`Enter`, même `onSelect`).
+`aria-pressed` est dérivé de l'événement `fullscreenchange` (+ sync initial au montage), jamais
+d'un `setState` dans le handler : l'état plein écran change aussi par Échap natif, F11 et le menu
+du navigateur. Le stub E2E, qui mutait l'état sans émettre l'événement, a été rendu fidèle.
 
-Troisième point remonté pour arbitrage produit : `DEFAULT_COLOR` `#6366f1` (`types/event.ts:128`) a un ratio de contraste mesuré **4,467 < 4,5** (seuil AA). Tout événement sans couleur explicite déclenche donc déjà le libellé extérieur en production — c'est l'état **normal**, pas un cas limite.
+### #391 — suppression, pas renommage
 
-## Prémisses infirmées par la mesure
+La branche `if (loading)` de `timeline/page.tsx` était inatteignable depuis #210 (le shell ne
+monte pas `children` tant que `loading || !user`). `app-shell-loading` devient le testid canonique
+unique — renommer aurait produit deux éléments portant le même testid.
 
-**Le retry 429 de `auth.setup.ts` était mort depuis le S47.** Budget Playwright par défaut 30 s ; un cycle coûte 8 s d'attente + 20 s de backoff = **28 s**, donc la 2ᵉ soumission expirait **toujours** — mesuré 4/4 `provision` en `Test timeout of 30000ms exceeded`, sans une ligne de diagnostic. Le retry documenté depuis deux sprints n'avait jamais pu s'exécuter au-delà de la 1re tentative.
+`if (!user) return null` et `timeline-data-loading` sont **conservés** (garde defense-in-depth et
+testid distinct atteignable).
 
-Trois prémisses des briefings du lead sont également tombées, consignées comme telles : `timeline-today` n'est **pas** un bouton (badge positionnel sans `onClick`, `TimelineView.tsx:211`) ; `timeline-event-outside-label` dépend du **contraste** et non de la longueur du titre ; `timeline-zoom-in`/`timeline-fullscreen` ne sont **pas montés** dans le contexte desktop visé — le grep prouvait qu'ils sont *écrits* dans un fichier, pas qu'ils sont *rendus*.
+## BR impactées
 
-## Tests
+**BR-EVE-009** uniquement (modèle couleur unique, encre calculée par contraste WCAG). Contrat
+inchangé : seule la valeur par défaut change, et elle devient conforme AA.
 
-**E2E : 134 tests → 125 passed / 0 failed / 9 skipped** (`--workers=1`, run unique sans concurrence).
+Aucun changement backend, aucun changement d'authentification.
 
-`125` = les **108 de la baseline pré-#330** + 17 des 18 nouveaux tests. **Aucune régression** : les 108 préexistants passent tous. Les 9 skipped = 8 skips structurels préexistants + le skip justifié de `timeline-loading`.
+## Audit tests
 
-Frontend unitaire **836/836** · `tsc --noEmit` **0 erreur** · `eslint` **0 issue**.
-Backend **non exécuté — aucun fichier backend touché** ; la CI reste le juge de la non-régression backend sur cette branche.
+Détail : `docs/memory/audits/sprint-56-test-coverage.md`.
 
-Deux mesures antérieures (**8 rouges**, puis **12 rouges** sur un code identique) ont été **écartées** : deux suites Playwright avaient été lancées concurremment contre une base unique, et la contention produisait des échecs non reproductibles — `event-outside-label` échouait dans les deux runs contendus et **passe** au run propre. Erreur de méthode du lead, consignée dans l'audit plutôt qu'effacée.
+| Suite | Résultat |
+|---|---|
+| Backend | **452 / 0 échec** |
+| Frontend unit | **839 / 0 échec** (92 fichiers) |
+| E2E timeline | **47 / 0 échec** |
+| `tsc --noEmit` | 0 erreur |
+| Coverage-E2E (testids) | OK |
+
+### 4 échecs E2E locaux, tous environnementaux
+
+- **3 connus** — `forgot-password`, `reset-password-failures` (×2) : HTTP 401 sur l'endpoint
+  test-only de reset, backend local lancé **sans le profil `e2e`**. Déjà rouges avant ce sprint ;
+  aucun de ces fichiers ne référence `timeline`.
+- **1 faux positif infirmé** — `golden-path` : `application.properties:93-97` documente que le
+  rate limiting est actif par défaut **par IP**, et que le **seul** contexte le désactivant est le
+  job CI e2e, précisément parce que le setup Playwright provisionne plusieurs comptes depuis une
+  IP unique. Relancé **en isolation** sur le même HEAD : **golden-path passe**. Dans ce même run,
+  les 4 étapes de provisioning partent en timeout — le throttle est bien actif localement.
+
+La CI, qui pose `RATE_LIMIT_ENABLED=false` sur son job e2e, est l'arbitre.
+
+## Qualité des tests — 4 pièges « vert qui ne prouve rien » désamorcés
+
+Motif récurrent du projet. Chaque cas a été **mesuré**, pas supposé :
+
+1. **#392** — jsdom ne fait pas de hit-testing → clic Playwright réel sans `force`, oracle mesuré
+   (pastille à 150 px sous 168 px recouverts), rouge constaté avant correctif.
+2. **#393** — un garde-fou sur littéral recopié reste vert si la constante dérive → assertion sur
+   la constante **importée** ; en remettant l'ancienne valeur : exactement 2 échecs.
+3. **#395** — la variante naïve (`useState` dans le handler) ne casse **qu'un seul** test, celui
+   qui contourne le bouton. Sans ce cas, l'issue aurait été satisfaite par un `aria-pressed` qui
+   **ment** à un lecteur d'écran.
+4. **#391** — un E2E d'état transitoire reste vert sans sa gate → assertion de **stabilité**
+   (visible → pause bornée → toujours visible). Sans elle, mesure faite : le test restait vert
+   gate retirée.
 
 ## Review
 
-Review batch : **1 CRITIQUE / 0 MAJEUR retenu / 2 MINEURS**.
+6 `[OK]`, 1 `[MINEUR]`, **aucun bloquant**. Vérification dans le code de la cohérence des deux
+repères d'abscisse introduits par #392 (`windowEvents`, `ensureVisible`, synchro minimap,
+`scrollToToday`), de l'absence de fuite CSS vers minimap/mobile/preview, du cleanup de l'écoute
+`fullscreenchange`, et de la source unique de `DEFAULT_COLOR`.
 
-Le CRITIQUE portait sur `PROVISION_TIMEOUT_MS`. Après vérification, **la sévérité est revue à la baisse** — dans le pire cas qui *continue*, `ensureRegisterForm(recover)` réussit à sa dernière tentative ; l'épuiser lève plus tôt avec le message de rendu. Mais **le fond est juste** : le commentaire annonçait ~110 s en omettant complètement les deux appels `recover`, qui sont des boucles de retry et non des vérifications instantanées. Pire cas recalculé : **~127 s**. Les 150 s ne laissaient que ~23 s de marge sur une infrastructure partagée par les 134 tests → **porté à 180 s**, calcul détaillé en commentaire.
+`[MINEUR]` **non corrigé volontairement** : `timeline.css` porte un `var(--lane-header-w, 160px)`
+désynchronisé du token (168 px). **Vérifié pré-existant sur `dev`** — hors périmètre, versé au
+triage des follow-ups.
 
-Un MINEUR est écarté avec raison : les littéraux `WEEK`/`MONTH`/`YEAR` dupliqués entre `value` et `data-testid` — dériver 3 valeurs statiques d'un enum ajouterait de l'indirection sans gain de sûreté. Sa référence de ligne était par ailleurs inexistante (1035-1043 dans un fichier de 653 lignes).
+## Non vérifié (déclaré)
 
-## Couverture des nouveaux testids (protocole A.4)
+- **Thème sombre** : aucune des 4 issues n'a été regardée au navigateur en sombre.
+- **Vues mobiles** au navigateur (leurs E2E passent ; les préfixes `mt-tlm`/`mt-tll` ne sont pas
+  touchés).
+- Vrai plein écran non stubé, F11 réel, lecteur d'écran réel — #395 couvre les 4 chemins **par
+  construction**, `fullscreenchange` étant la source de vérité.
+- `next build` non relancé après le dernier commit.
 
-`[COVERAGE-E2E] OK` — les 4 `data-testid` ajoutés sont tous référencés par une spec.
+## Follow-ups remontés (triage en `/sprint end`)
 
-À noter : `recurrence-unit-option-WEEK` et `-YEAR` étaient posés par #331 **sans aucune spec** (seul `MONTH` était exercé) — écart relevé entre les deux vagues et intégré au périmètre de #330 plutôt que reporté en follow-up.
-
-## Réserves assumées
-
-- Les deux bugs produit ci-dessus sont **signalés, non corrigés**.
-- `timeline-today`, `timeline-weekend`, `timeline-help`, `timeline-fullscreen` sont couverts **en desktop uniquement** ; la matrice complète par orientation mobile n'est pas faite.
-- L'API `requestFullscreen` est **stubée** dans sa spec : la bascule plein écran réelle du navigateur n'est pas observée.
-- #330 a été exécutée par un modèle **Sonnet**, pas Opus comme le prévoyait le triage (capacité Opus indisponible — six échecs `529` consécutifs). Le travail a été vérifié à la mesure par le lead ; la dérogation est consignée.
+- `playwright.config.ts` — le `webServer` lance `npm run dev` **nu**, sans
+  `E2E_API_PROXY_TARGET`/`NEXT_PUBLIC_API_URL` : `npx playwright test` nu est systématiquement
+  rouge au setup, avec un message trompeur orientant vers rate-limit/CORS.
+- `application-dev.properties:35` — `app.cors.allowed-origins` figé à `:3000` : l'E2E local
+  devient impossible dès que ce port est pris par un autre projet.
+- `timeline.css` — fallback `var(--lane-header-w, 160px)` désynchronisé du token (pré-existant).
+- Ligne TODAY (`--z-cursor` 20) au-dessus de l'en-tête de lane et du coin de règle
+  (`--z-sticky` 10) : convention préexistante, mais un trait bleu traverse la colonne fixe.
+  Décision design.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
