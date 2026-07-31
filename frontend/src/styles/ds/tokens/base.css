@@ -105,18 +105,16 @@ time, .mono, [data-mono] {
      conflit réel ⇒ pas de modification.
    · `*, *::before, *::after` (box-sizing) et `::selection` — aucune utilitaire
      Tailwind ne pose `box-sizing`, aucune ne cible `::selection`.
-   · `:focus-visible` — CONFLIT RÉEL, DÉLIBÉRÉMENT NON CORRIGÉ ICI. Il annule
-     `focus-visible:outline-none` / `outline-hidden` (~14 sites) et force
-     `border-radius: var(--radius-xs)` (3px) sur TOUT élément focalisé, par-dessus
-     ses `rounded-md` / `rounded-full`. Mais `language-selector.tsx` DÉPEND de ce
-     comportement, mesuré et documenté sur place (« hors `@layer`, donc gagnante
-     sur `outline-hidden` ») : il ne pose aucun anneau, son seul indicateur de
-     focus est ce contour. Le layeriser le supprimerait là-bas — régression WCAG
-     1.4.11. Idem `ExportDataFlow:85` (`<h3 tabIndex={-1} class="outline-none">`).
-     Correction = changement coordonné sur les ~14 sites + arbitrage `ui-design`,
-     hors calibre de #340. Chiffrage dans l'audit.
    Le bloc scrollbar `*` est désormais layerisé (plus bas, motif sur place).
-   Audit complet : `docs/memory/sprints/sprint-53/audit-css-layers-340.md`. */
+   `:focus-visible` L'EST AUSSI depuis #383 (Sprint 58) — c'était le 4e et
+   dernier conflit réel de l'audit #340. Ce qui a débloqué sa correction :
+   les deux moitiés du défaut sont SÉPARABLES. Le `border-radius` parasite est
+   parti d'abord, la règle restant hors layer (donc sans toucher un seul site) ;
+   puis les 31 sites applicatifs qui posaient un `outline-*` ont été nettoyés ;
+   la layerisation n'est venue qu'en dernier, quand plus aucun indicateur ne
+   pouvait disparaître. Le motif détaillé est écrit sur la règle elle-même.
+   Audit complet : `docs/memory/sprints/sprint-53/audit-css-layers-340.md`.
+   Arbitrage : `docs/memory/sprints/sprint-58/design-arbitrage-383-352.md`. */
 @layer base {
   a { color: var(--color-accent); text-decoration: none; }
   a:hover { color: var(--color-accent-hover); }

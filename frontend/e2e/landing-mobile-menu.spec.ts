@@ -342,6 +342,27 @@ test.describe('Landing — menu burger (375 px)', () => {
         await page.keyboard.press('ArrowDown')
         await page.keyboard.press('ArrowDown')
         await expect(active).not.toHaveAttribute('data-highlighted', /.*/)
+
+        // #383 — L'ITEM FOCALISÉ AU CLAVIER DOIT PORTER LE CONTOUR DU DS.
+        // `ui/dropdown-menu.tsx` ne pose plus d'`outline-hidden` : l'indicateur
+        // est la règle `:focus-visible` de `ds/tokens/base.css`, désormais dans
+        // `@layer base`. Sans ce contour, le seul signal restant serait
+        // `focus:bg-accent-soft`, mesuré à 1,23:1 en clair / 1,19:1 en sombre —
+        // 2,5x SOUS les 3:1 de WCAG 1.4.11.
+        // ⚠ ASSERTION NAVIGATEUR OBLIGATOIRE : jsdom ne résout ni `@layer` ni la
+        // peinture, c'est-à-dire exactement le mécanisme en cause. Un test
+        // unitaire serait vert quoi qu'il arrive (cf. S51, S48).
+        const highlighted = content.locator('[role="menuitem"][data-highlighted]')
+        await expect(highlighted).toHaveCount(1)
+        const focusOutline = await highlighted.evaluate((el) => {
+          const s = getComputedStyle(el)
+          return { style: s.outlineStyle, width: s.outlineWidth, offset: s.outlineOffset }
+        })
+        expect(
+          focusOutline.style,
+          `contour :focus-visible de l'item de menu focalisé (#383) — mesuré ${JSON.stringify(focusOutline)}`,
+        ).not.toBe('none')
+        expect(focusOutline.width, `épaisseur du contour (charte : 2px)`).toBe('2px')
         measured.push(
           describeRendering(
             'langue/active (souris posée + clavier)',

@@ -51,13 +51,20 @@ const languages = [
  * repos, et ne laissait que 0.21 de marge sur le seuil de 4.5 en clair.
  *
  * L'INDICATEUR DE FOCUS N'EST PAS PORTÉ PAR LA SURFACE, et c'est voulu : la
- * règle globale `:focus-visible` de `styles/ds/tokens/base.css` (hors `@layer`,
- * donc gagnante sur `outline-hidden`) pose un contour de 2px `accent` à 2px
- * d'offset. VÉRIFIÉ RENDU sur cet item : `outline: solid 2px rgb(17,112,228)
- * offset=2px`, `:focus-visible = true` au clavier, `outline: none` hors focus.
- * Le contour tombe sur la surface du popover — 4.71:1 en clair, 6.48:1 en
- * sombre, au-dessus des 3:1 de WCAG 1.4.11. Aucun anneau supplémentaire n'est
- * donc posé ici : ce serait un second indicateur concentrique, absent du DS.
+ * règle globale `:focus-visible` de `styles/ds/tokens/base.css` pose un contour
+ * de 2px `accent` à 2px d'offset. VÉRIFIÉ RENDU sur cet item (Chromium et
+ * Firefox, #383) : `outline: solid 2px rgb(14,95,196) offset=2px` en clair,
+ * `rgb(77,155,255)` en sombre, `:focus-visible = true` au clavier,
+ * `outline: none` hors focus.
+ * Le contour tombe sur la surface du popover — 6.08:1 en clair, 6.48:1 en
+ * sombre, très au-dessus des 3:1 de WCAG 1.4.11. Aucun anneau supplémentaire
+ * n'est donc posé ici : ce serait un second indicateur concentrique, absent du
+ * DS.
+ *
+ * Ce fichier ne pose AUCUN `outline-*` : depuis #383 (Sprint 58) la règle du DS
+ * est layerisée dans `@layer base`, et ce qui menaçait cet item venait d'amont,
+ * du `outline-hidden` de `ui/dropdown-menu.tsx` — retiré. Le sélecteur est donc
+ * protégé par construction, sans dépendre de la position de la règle en cascade.
  *
  * LIMITE MESURÉE, ASSUMÉE : en modalité POINTEUR pure (menu ouvert à la souris),
  * `:focus-visible` vaut `false` et le contour ne s'affiche pas — le seul retour
