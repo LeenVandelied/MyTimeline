@@ -26,11 +26,21 @@ export const AUTH_COOKIE_NAME = 'jwt'
  * système de fichiers à l'exécution — elle est explicite, donc faillible.
  *
  * **Ajouter un segment sous `frontend/app/[locale]/(app)/` sans l'ajouter ici
- * laisse la nouvelle route SANS garde serveur, silencieusement.** Le test
- * `auth-guard-paths.test.ts` ancre la liste ; il ne la synchronise pas.
+ * laisserait la nouvelle route SANS garde serveur, silencieusement.**
  *
- * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302, re-vérifié #299) :
- * dashboard, products, settings, timeline.
+ * ✅ #318 — ce n'est plus silencieux : `auth-guard-paths.test.ts` LIT le système
+ * de fichiers (`readdirSync` sur `frontend/app/[locale]/(app)/`, profondeur 1) et
+ * fait échouer la suite dans les DEUX sens — dossier présent non déclaré ici, ou
+ * segment déclaré ici sans dossier correspondant. Le middleware, lui, ne peut
+ * toujours pas dériver la liste à l'exécution (Edge : ni `fs`, ni `path`) : c'est
+ * le test qui porte la synchronisation, pas le runtime.
+ *
+ * Conséquence pratique : cette liste ne se modifie JAMAIS seule. Si le test rouge
+ * te renvoie ici, c'est l'arborescence qui a bougé — son message nomme le segment
+ * fautif et le sens de l'écart.
+ *
+ * Dérivée de `frontend/app/[locale]/(app)/` (vérifié #302, re-vérifié #299,
+ * désormais VÉRIFIÉ EN CONTINU #318) : dashboard, products, settings, timeline.
  */
 export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'settings', 'timeline'] as const
 
@@ -46,6 +56,16 @@ export const PROTECTED_APP_SEGMENTS = ['dashboard', 'products', 'settings', 'tim
  * La constante est CONSERVÉE (plutôt que supprimée) : elle documente la
  * distinction « connecté hors du groupe », qui reste un cas possible, et son
  * test ancre le fait qu'aucune route n'est aujourd'hui dans cette situation.
+ *
+ * ⚠ #318 — le garde-fou filesystem ne couvre QUE le groupe `(app)`. Tout segment
+ * ajouté ici échappe donc, par construction, à toute vérification automatique :
+ * rien sur le disque ne le contredit, rien ne le confirme. Si tu la re-remplis :
+ * 1. la route visée doit vivre HORS de `(app)/` — le test échoue si le segment
+ *    est déclaré des deux côtés (déclaration contradictoire, cf. #299) ;
+ * 2. remplace ici le motif de l'exception (pourquoi cette route ne peut pas
+ *    rejoindre `(app)`), comme `settings` le documentait avant #299 ;
+ * 3. ancre-la par un test de chemin explicite (`isProtectedPathname('/fr/<seg>')`),
+ *    seul filet disponible hors du groupe.
  */
 export const PROTECTED_EXTRA_SEGMENTS = [] as const
 
