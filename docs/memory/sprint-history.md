@@ -2306,6 +2306,29 @@ en contexte lead.
 `select.stories.tsx`, `checkbox.stories.tsx`), décompte 32/31/1 aligné entre `base.css` et
 `a11y-audit.md`, exception `popover.tsx` commentée in-situ.
 
+**Follow-ups arbitrés (Phase 4 triage, 9 items) :**
+| Description | Triage | Arbitrage |
+|---|:---:|---|
+| `documentElement.lang` reste `"fr"` sur les pages non francophones (WCAG 3.1.1) | S | → issue **#413** |
+| Options de `Select` sans `:focus-visible` sous Firefox, en montage réel | M | → issue **#414** |
+| `.mt-radio__dot` / `.mt-switch__track` : focus à 1,23:1, tous deux en production | S | → issue **#415** |
+| Glyphe de coche sur pastille sélectionnée (`CategoryDrawer`) | S | → issue **#416** |
+| Contour rogné dans `.mt-zoom` et le tablist des réglages (`outline-offset:-2px`) | XS | → issue **#417** |
+| `.mt-evt--draft` : `opacity:.8` bloque les 3:1 contre son propre fond | XS | → issue **#418** |
+| Vérifier les surfaces de focus non couvertes (réglages mobile, `forced-colors`, `dpr≠1`, Safari) | S | → issue **#419** |
+| Reporter la recette E2E qui marche dans le runbook du S47 | XS | **absorbé** (`70dfbcf`) |
+| Étendre la mesure de contour aux 8 autres sites de montage du sélecteur | XS | **discard** — couvert par #419 |
+
+Ratio discard : **1/9**. Aucun sur-signalement constaté : les 9 items étaient adossés à une mesure
+ou à un fichier précis.
+
+⚠ **Les 7 issues sont créées SANS milestone (backlog libre), délibérément.** Rattacher des
+follow-ups au milestone « Sprint 59 » aurait reproduit le piège du S46 : `/sprint plan` sélectionne
+par **label** `sprint-N`, pas par milestone — les issues rattachées mais non labellisées ne sont
+jamais planifiées, et la fermeture du milestone les enterre (7 issues perdues au S46). Le backlog
+libre est au contraire le vivier exact de `/sprint plan`, qui part de toutes les issues ouvertes et
+**exclut** celles déjà labellisées `sprint-*`.
+
 **Écart assumé au plan des vagues :** l'architect proposait `V2 = #353 ∥ #352 ∥ #375`. #375 est
 **déplacée seule en V3**. Motif : #375 ne fait que *mesurer* le contour `:focus-visible` **sur le
 sélecteur de langue** — or #353 (V2) redimensionne ce même déclencheur à 44×44 px et #383 (V1) lui
