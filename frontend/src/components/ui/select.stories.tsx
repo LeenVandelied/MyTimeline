@@ -3,7 +3,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 /**
  * Select (Radix) — trigger/menu adossés aux tokens Graphite via `@theme`
- * (`border-input`, `bg-popover`, `focus:ring-ring` → tokens DS). Navigation
+ * (`border-input`, `bg-popover` → tokens DS ; focus = contour `:focus-visible`
+ * du DS depuis #383, plus d'anneau local). Navigation
  * clavier native Radix. Rendu en portail (le menu apparaît hors du canvas).
  */
 const meta = {

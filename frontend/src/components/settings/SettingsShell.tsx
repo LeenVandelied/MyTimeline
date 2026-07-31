@@ -87,7 +87,6 @@ export function SettingsShell() {
                 // `shrink-0` : dans un conteneur `overflow-x-auto`, sans lui les
                 // libellés longs (EN/DE) seraient compressés au lieu de défiler.
                 'flex h-11 shrink-0 items-center gap-3 rounded-md px-3 text-left text-sm transition-colors',
-                'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
                 selected
                   ? 'bg-accent-soft text-accent font-medium'
                   : 'text-ink-muted hover:bg-surface-2',

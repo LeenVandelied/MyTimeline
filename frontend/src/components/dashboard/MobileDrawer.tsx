@@ -70,7 +70,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
             onClick={onClose}
             aria-label={t('close')}
             data-testid="dashboard-mobile-drawer-close"
-            className="text-ink-muted border-rule hover:bg-accent-soft focus-visible:ring-ring flex h-11 w-11 items-center justify-center rounded-sm border focus-visible:ring-2 focus-visible:outline-none"
+            className="text-ink-muted border-rule hover:bg-accent-soft flex h-11 w-11 items-center justify-center rounded-sm border"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

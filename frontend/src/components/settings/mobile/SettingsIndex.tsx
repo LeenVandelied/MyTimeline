@@ -40,7 +40,7 @@ export function SettingsIndex({ onSelect }: SettingsIndexProps) {
               type="button"
               onClick={() => onSelect(id)}
               data-testid={`settings-index-${id}`}
-              className="hover:bg-surface-2 focus-visible:ring-ring flex w-full items-center gap-3 px-4 py-4 text-left focus-visible:ring-2 focus-visible:outline-none"
+              className="hover:bg-surface-2 flex w-full items-center gap-3 px-4 py-4 text-left"
             >
               <Icon className="text-ink-muted h-5 w-5 shrink-0" aria-hidden="true" />
               <span className="text-ink flex-1 text-sm font-medium">{t(`nav.${id}`)}</span>

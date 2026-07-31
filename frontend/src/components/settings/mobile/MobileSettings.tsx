@@ -49,7 +49,7 @@ export function MobileSettings() {
           onClick={() => setActive(null)}
           aria-label={t('mobile.backToIndex')}
           data-testid="mobile-settings-back"
-          className="border-rule text-ink-muted focus-visible:ring-ring -ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border focus-visible:ring-2 focus-visible:outline-none"
+          className="border-rule text-ink-muted -ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         </button>

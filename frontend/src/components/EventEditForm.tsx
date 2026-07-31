@@ -502,7 +502,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           onChange={(e) => handleColorChange(e.target.value, field)}
                           onBlur={field.onBlur}
                           data-testid="event-form-color-input"
-                          className="bg-surface-2 text-ink border-rule-emphasis focus:ring-accent flex-1 rounded-md border px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:outline-none"
+                          className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm focus:border-transparent"
                         />
                       </div>
                       <FormMessage data-testid="event-form-color-error" />

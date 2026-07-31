@@ -180,7 +180,6 @@ export function AvatarUpload({
             onDrop={handleDrop}
             className={cn(
               'border-rule flex flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed p-4 text-center transition-colors',
-              'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
               dragging && 'border-accent bg-accent-soft/40',
               disabled && 'cursor-not-allowed opacity-50',
             )}

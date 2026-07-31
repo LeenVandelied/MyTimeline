@@ -11,8 +11,9 @@ import { Home, Package, LogOut, type LucideIcon } from 'lucide-react'
  * (hamburger + drawer) est remplacée par ce rail persistant au bord gauche.
  * Icônes lucide SANS label visible → a11y OBLIGATOIRE (réserve Designer +
  * critère d'acceptation) : chaque item porte `aria-label` + `title` (tooltip),
- * `focus-visible:ring-2`, et est un vrai `<button>` (clavier natif Enter/Espace,
- * pas de `role`/`tabIndex`/`onKeyDown` custom à recâbler).
+ * l'indicateur de focus du DS (contour `:focus-visible`, cf. `ds/tokens/base.css`
+ * — plus d'anneau local depuis #383), et est un vrai `<button>` (clavier natif
+ * Enter/Espace, pas de `role`/`tabIndex`/`onKeyDown` custom à recâbler).
  *
  * Composant PRÉSENTATIONNEL (comme `MobileDrawer` #83) : les handlers sont
  * fournis par la page. Contenu minimum imposé : accueil, produits, déconnexion.
@@ -55,7 +56,7 @@ const RailButton: React.FC<{ item: CompactRailItem; active: boolean; label: stri
       data-testid={`dashboard-rail-item-${item.id}`}
       className={[
         'flex h-12 w-12 items-center justify-center rounded-sm',
-        'hover:bg-accent-soft focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+        'hover:bg-accent-soft',
         'transition-colors duration-150',
         active ? 'text-accent' : 'text-ink-muted',
       ].join(' ')}

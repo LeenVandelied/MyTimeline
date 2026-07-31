@@ -254,8 +254,8 @@ export function ProductsListView() {
                       }
                     }}
                     className={cn(
-                      'border-rule hover:bg-accent-soft focus:ring-ring border-b last:border-b-0',
-                      'cursor-pointer transition-colors focus:ring-2 focus:outline-none',
+                      'border-rule hover:bg-accent-soft border-b last:border-b-0',
+                      'cursor-pointer transition-colors',
                     )}
                     data-testid={`products-row-${product.id}`}
                   >

@@ -175,7 +175,6 @@ export function AppShell({ children }: AppShellProps) {
                 data-testid={`shell-sidebar-nav-link-${id}`}
                 className={cn(
                   'flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors',
-                  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
                   active
                     ? 'bg-accent-soft text-accent font-medium'
                     : 'text-ink-muted hover:bg-surface-2',
@@ -198,7 +197,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-pressed={isDark}
               aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
               data-testid="shell-sidebar-theme-toggle"
-              className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="text-ink-muted hover:bg-surface-2 flex h-11 w-11 items-center justify-center rounded-md transition-colors"
             >
               {isDark ? (
                 <Sun className="h-4 w-4" aria-hidden="true" />
@@ -211,7 +210,7 @@ export function AppShell({ children }: AppShellProps) {
           <Link
             href={`/${locale}/settings`}
             data-testid="shell-sidebar-settings-link"
-            className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className="text-ink-muted hover:bg-surface-2 flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors"
           >
             <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{t('settings')}</span>
@@ -235,7 +234,7 @@ export function AppShell({ children }: AppShellProps) {
               aria-label={t('logout')}
               title={t('logout')}
               data-testid="shell-sidebar-logout"
-              className="text-ink-muted hover:bg-surface-2 focus-visible:ring-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="text-ink-muted hover:bg-surface-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
             </button>
