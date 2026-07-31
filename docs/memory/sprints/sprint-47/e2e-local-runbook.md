@@ -7,6 +7,53 @@
 > À relire avant d'écrire la moindre spec : sans ces 4 réglages, la suite échoue
 > avec des messages qui accusent la mauvaise cause.
 
+## Piège #0 (Sprint 57, FU5) — le backend `:8080` lancé par `docker compose up` NE PORTE PAS le profil `e2e`
+
+Symptôme : `forgot-password.spec.ts` et `reset-password-failures.spec.ts` échouent en local
+(passent en CI) avec, dans les logs du fixture, `statut inattendu 401 sur
+/api/test-support/password-reset-token`. Le message pointe déjà la cause : `E2eResetTokenController`
+n'est enregistré QUE sous le profil Spring `e2e` (`@Profile("e2e")`) ; hors de ce profil le chemin
+n'est servi par aucun controller et retombe sur `anyRequest().authenticated()` → 401.
+
+Le piège : `docker compose up` (l'« orchestration dev en une commande », cf. en-tête de
+`docker-compose.yml`) est le réflexe naturel pour lancer un backend local, et son service
+`backend` par défaut pose `SPRING_PROFILES_ACTIVE=dev` **seul** — jamais `e2e`, jamais par
+accident (voir `ProfileSafetyGuard` #283 : le profil `e2e` doit toujours être demandé
+EXPLICITEMENT). Un backend démarré ainsi ne satisfera donc **jamais** ces 3 specs, quelle
+que soit la qualité du code testé.
+
+**Diagnostic rapide** — le profil `e2e` est-il actif sur le backend que vous ciblez :
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:8080/api/test-support/password-reset-token?email=x"
+# 401 -> profil e2e ABSENT (dev seul, ex. docker compose up par défaut)
+# 404 -> profil e2e actif, email inconnu/pas de token (comportement nominal)
+```
+
+**Deux recettes, choisir selon le contexte** (ne jamais redémarrer un backend partagé sans le
+dire — un autre agent/process peut en dépendre) :
+
+1. **Backend `java -jar` local** (§ "Démarrage" ci-dessous) — recette historique, valide,
+   commande `SPRING_PROFILES_ACTIVE=dev,e2e ... java -jar ...` déjà correcte. Nécessite de
+   posséder le port `:8080` (donc de ne PAS avoir de `docker compose up` déjà dessus).
+2. **Service Docker Compose dédié `backend-e2e`** (ajouté Sprint 57 FU5) — n'entre jamais en
+   conflit avec un `docker compose up` déjà en cours (port et DB séparés), donc utilisable même
+   quand `:8080` sert déjà un autre agent/session :
+
+   ```bash
+   docker compose --profile e2e up -d backend-e2e   # démarre aussi postgres-e2e (dépendance)
+   ```
+
+   Backend E2E disponible sur `:8085` (`eventmanager_e2e` dédiée sur `:5435`, CORS `:3000`+`:3100`
+   déjà couverts). Pointer le frontend E2E dessus : `E2E_API_PROXY_TARGET=http://localhost:8085`
+   (au lieu de `:8080`) à l'étape "Frontend" ci-dessous. Ports/nom de DB personnalisables via
+   `E2E_BACKEND_PORT` / `E2E_POSTGRES_PORT` (`.env` ou export shell) si `8085`/`5435` sont déjà
+   pris. Ce service est **opt-in** (`profiles: ["e2e"]` dans `docker-compose.yml`) : absent de
+   tout `docker compose up` sans argument, ne change rien au comportement par défaut.
+   `ProfileSafetyGuard` (#283) reste le filet : aucune variable posée par ce service ne simule un
+   marqueur d'environnement de production, donc aucun risque d'exposer `test-support` en prod via
+   cette voie.
+
 ## Les 4 pièges (chacun a coûté un diagnostic)
 
 | # | Piège | Symptôme trompeur | Réglage |
