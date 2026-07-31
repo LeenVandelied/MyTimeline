@@ -2122,7 +2122,54 @@ critère de sortie dit littéralement « sans erreur 500 », ce 500 est prouvé,
 Le déporter pour un gain de métrique serait exactement le re-scope silencieux à éviter.
 **Migrations Flyway :** aucune
 **Depend de :** rien — mais **bloque** toute issue ultérieure qui lit l'arborescence `(app)/`
-**Status :** Planifie
+**Status :** Implémenté — PR ouverte (démarré et livré 2026-07-31, worktree `claude/sprint-57-start-b61fdb`, base `origin/dev` = `6f89c87`)
+
+**Commits (5) :** `1651f9a` (#312) · `6c830eb` (#299) · `542e1c2` (#318) · `af33171` (#398) · `9f4635d` (correctif post-review #318)
+**Vagues exécutées :** V0 = arbitrage `ui-design` (bloquant) | V1 = #299 ∥ #312 | V2 = #318 ∥ #398 | V3 = audit + review + correctif
+**Tests :** Backend 455/455 · Frontend 859/859 · E2E settings + auth-guard 37 passed / 1 skipped · E2E complet 127 passed / 3 failed (environnement : backend sans profil `e2e`) / 8 skipped
+**Review batch :** 0 CRITIQUE / 0 MAJEUR / 4 MINEURS — 1 corrigé dans le sprint (`9f4635d`), 3 en follow-up
+**Artefacts :** `docs/memory/sprints/sprint-57/issue-{299,312,318,398}-done.md`, `review-sprint-57.md`, `docs/memory/audits/sprint-57-test-coverage.md`
+
+> **Arbitrage `ui-design` (V0)** : `settings` sous `(app)/` (URL inchangée), sidebar `AppShell` = seule
+> nav verticale, `SettingsShell` conservé mais nav 220 px → **onglets horizontaux**. Pattern tablist et
+> tous les `data-testid` préservés → les 6 specs E2E settings sont restées intactes. Option « fusionner
+> les 4 chapitres dans la sidebar » écartée (aurait cassé `settings-tablist` + `aria-selected` sur 5 specs).
+
+> **Deux issues étaient périmées à l'exécution, corrigées dans les briefings :**
+> - **#318** demandait de traiter `settings` comme « hors du groupe `(app)` » — faux après #299, livrée
+>   le matin même dans le même sprint. Critère redirigé : verrouiller que `PROTECTED_EXTRA_SEGMENTS`
+>   **reste** vide. La méthode suggérée par le plan (« voir le test rouge en ajoutant une route bidon »)
+>   a aussi été refusée : une route de test dans `app/` partirait en production.
+> - **#398** était estimée « XS, un seul fichier de test » — en réalité les `SelectItem` n'avaient aucun
+>   `data-testid`, il a fallu instrumenter le composant d'abord. Deux fichiers.
+
+> **Contraste — 3ᵉ incident du projet (après S48 et S53), mesuré cette fois :** onglet actif en clair
+> `#1170E4`/`#DBE9FC` = **3.83:1**, sous AA. **Pré-existant, non introduit** : le lien actif de la sidebar
+> `AppShell` mesure exactement le même ratio, sur le couple de tokens que l'arbitrage imposait de reprendre.
+> Dette DS touchant tout état actif du produit → correctif au niveau du **token**, follow-up.
+
+> **Pitfall confirmé deux fois : `git add` ciblé ne suffit pas sur working tree partagé.** `git commit`
+> **sans pathspec commite tout l'index** : en V1, le commit de #312 a avalé le `git mv` de #299 (rename pur,
+> 0 diff, arbre correct, attribution fausse). Consigne durcie en V2 (`git commit -- <fichiers>`) → les deux
+> commits de la vague 2 sont restés parfaitement isolés. À intégrer au briefing type de fan-out.
+
+> **Environnement E2E : 3 diagnostics faux avant le bon.** Symptôme « suite entièrement rouge dès le setup »
+> → successivement attribué au CORS, au backend injoignable, aux identités périmées. Cause initiale : aucun
+> serveur de dev sur `:3000` (arrêté en fin de V1). Puis, après relance sur `:3100`, cause réellement CORS
+> mais pour une autre raison que celle supposée — le proxy Next transmet `Origin: :3100`, refusé par le
+> profil `dev` figé sur `:3000` (piège n°2 du runbook S47). **Un `curl` qui réussit ne disculpe pas le CORS :
+> il n'envoie pas d'en-tête `Origin`.** Réflexe : lire les statuts instrumentés par `watchRegisterResponses`
+> avant toute hypothèse.
+
+**Follow-ups à arbitrer en `/sprint end` (Phase 4) :**
+1. **Contraste DS** `text-accent`/`bg-accent-soft` = 3.83:1 en clair, sous AA, sur tout état actif — correctif token (issu de #299)
+2. Couverture E2E de `settings-header` — 0 spec ; le palier 768 px reste vérifié à la main (Phase 8)
+3. Cookie `jwt=` **vide** → `IllegalArgumentException` hors hiérarchie `JwtException` → **500** sur `/me` **et** `/refresh` (review) — l'alignement visé par #312 est bien atteint, c'est un défaut distinct
+4. Garde-fou #318 limité à la profondeur 1 de `(app)/` — une route protégée hors du groupe reste sans filet
+5. Landmarks `<main>` imbriqués (`settings-page` dans `shell-main`) — pré-existant, dashboard et products aussi
+6. Backend E2E local sans profil `e2e` → 3 specs de reset password rouges en permanence en local
+7. Bug i18n `DensityRibbon` : `{days}` non fourni, `IntlError` à chaque rendu du dashboard
+8. `npm run lint` rouge en local sur `next-env.d.ts`, vert en CI — divergence à trancher
 
 > **Dépendance dure #299 → #318, vérifiée :** `auth-guard-paths.ts:47` déclare
 > `PROTECTED_EXTRA_SEGMENTS = ['settings']` **parce que** settings vit hors de `(app)`. Après #299
