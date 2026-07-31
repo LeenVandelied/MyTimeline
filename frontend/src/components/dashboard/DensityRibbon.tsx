@@ -61,7 +61,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
     <section
       className="bg-surface border-rule flex flex-col gap-2 rounded-lg border p-4"
       data-testid="dashboard-density-ribbon"
-      aria-label={t('label')}
+      aria-label={t('label', { days: rangeDays })}
     >
       <div className="flex items-baseline justify-between">
         <span className="text-ink-faint font-mono text-2xs tracking-widest uppercase">
@@ -76,7 +76,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
           <div
             className="scrollbar-none flex h-24 items-end gap-px overflow-x-auto pr-6"
             role="img"
-            aria-label={t('label')}
+            aria-label={t('label', { days: rangeDays })}
             data-testid="dashboard-density-ribbon-scroll"
           >
             {buckets.map((b, i) => (
@@ -111,7 +111,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
           </span>
         </div>
       ) : (
-        <div className="flex h-24 items-end gap-px" role="img" aria-label={t('label')}>
+        <div className="flex h-24 items-end gap-px" role="img" aria-label={t('label', { days: rangeDays })}>
           {buckets.map((b, i) => (
             <div
               key={i}
