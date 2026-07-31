@@ -21,7 +21,13 @@ Confirme l'arbitrage, infirme l'énoncé de l'issue (« ~14 »).
 
 ## Rendu vérifié (Playwright, moteurs réels)
 
-Chromium 141.0.7390.37 · Firefox 145.0 · WebKit 26.2 — **clair ET sombre**.
+Playwright 1.61.1 — **Chromium 149.0.7827.55 · Firefox 151.0 · WebKit 26.5** (versions relevées
+via `browser.version()`, identiques à celles de l'arbitrage) — **clair ET sombre**.
+
+> ⚠ ERRATUM : le message du commit `b4b62ce` annonce « Chromium 141 / Firefox 145 / WebKit 26.2 ».
+> Ces numéros sont FAUX — écrits de mémoire avant vérification. Les versions réelles sont
+> celles ci-dessus. Le message de commit n'a pas été réécrit (historique partagé avec les
+> autres agents du sprint) ; **ce fichier fait foi**.
 Écrans **derrière authentification atteints** (compte réel, cookie JWT, backend docker :8080
 via rewrite même-origine) : dashboard, réglages, produits, timeline. Plus landing et login.
 
