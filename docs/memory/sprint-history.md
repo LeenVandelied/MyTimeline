@@ -2113,7 +2113,7 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 >   `timeline/page.tsx`. `app-shell-loading` reste le testid canonique du chargement global ;
 >   le `test.skip()` de `timeline.spec.ts` est réécrit pour l'asserter.
 
-## Sprint 57 — 2026-07-30 (PLANIFIE — MVP local : réglages sous le shell, gardes de routes, dernier 500)
+## Sprint 57 — 2026-07-30 → 2026-07-31 (Terminé — merge PR #411 dans `dev`)
 **Objectif :** Unifier le shell applicatif et fermer le seul 500 prouvé dans le code
 **Milestone GitHub :** #58
 **Issues (4) :** #299 (P2/S), #318 (P2/S), #312 (P3/XS), #398 (P3/XS) — **6 pts**
@@ -2123,7 +2123,9 @@ critère de sortie dit littéralement « sans erreur 500 », ce 500 est prouvé,
 Le déporter pour un gain de métrique serait exactement le re-scope silencieux à éviter.
 **Migrations Flyway :** aucune
 **Depend de :** rien — mais **bloque** toute issue ultérieure qui lit l'arborescence `(app)/`
-**Status :** Implémenté — PR ouverte (démarré et livré 2026-07-31, worktree `claude/sprint-57-start-b61fdb`, base `origin/dev` = `6f89c87`)
+**Status :** **Terminé** — PR #411 mergée dans `dev` le 2026-07-31 19:08 UTC, merge commit `f13c4fa`
+(16 commits sur la branche, dont les 5 commits d'issues ci-dessous + consolidation mémoire et follow-ups).
+Statut soldé au démarrage du Sprint 58 (rituel `/sprint start`, cf. mémoire *sprint-end-github-gotchas* §3).
 
 **Commits (5) :** `1651f9a` (#312) · `6c830eb` (#299) · `542e1c2` (#318) · `af33171` (#398) · `9f4635d` (correctif post-review #318)
 **Vagues exécutées :** V0 = arbitrage `ui-design` (bloquant) | V1 = #299 ∥ #312 | V2 = #318 ∥ #398 | V3 = audit + review + correctif
@@ -2211,7 +2213,7 @@ Le déporter pour un gain de métrique serait exactement le re-scope silencieux 
 > profonde — le risque « périmètre plus large » annoncé par l'issue est infirmé.
 > **Arbitrage `ui-design` requis avant démarrage** (structure cible du shell).
 
-## Sprint 58 — 2026-07-30 (PLANIFIE — MVP local : cascade `:focus-visible` et dette WCAG du DS)
+## Sprint 58 — 2026-07-30 → 2026-07-31 (EN COURS — MVP local : cascade `:focus-visible` et dette WCAG du DS)
 **Objectif :** Layeriser `:focus-visible` sans perdre d'indicateur de focus, et solder la dette WCAG des bordures
 **Milestone GitHub :** #59
 **Issues (4) :** #383 (P1/M), #375 (P2/S), #352 (P3/S), #353 (P3/XS) — **8 pts**
@@ -2219,7 +2221,15 @@ Le déporter pour un gain de métrique serait exactement le re-scope silencieux 
 **Cohésion :** 0.87
 **Migrations Flyway :** aucune
 **Depend de :** rien
-**Status :** Planifie
+**Status :** **En cours** — démarré le 2026-07-31, worktree `claude/sprint-58-start-26b185`,
+base `origin/dev` = `f13c4fa` (merge du S57).
+
+**Écart assumé au plan des vagues :** l'architect proposait `V2 = #353 ∥ #352 ∥ #375`. #375 est
+**déplacée seule en V3**. Motif : #375 ne fait que *mesurer* le contour `:focus-visible` **sur le
+sélecteur de langue** — or #353 (V2) redimensionne ce même déclencheur à 44×44 px et #383 (V1) lui
+donne son propre anneau. Mesurer en parallèle de #353 reviendrait à mesurer une cible mouvante,
+exactement le travail perdu que l'architect voulait éviter en la plaçant après #383. Coût : nul
+(#375 ne modifie aucun fichier si le contour est conforme).
 
 > ⚠ **Sprint le plus susceptible de déraper — deux mesures.**
 > 1. **#383 est sous-estimée d'un facteur 2** : l'issue annonce ~14 sites, le comptage réel sur
