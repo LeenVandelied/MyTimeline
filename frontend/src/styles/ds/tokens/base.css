@@ -125,9 +125,22 @@ time, .mono, [data-mono] {
 ::selection { background: var(--color-accent-soft); color: var(--color-ink); }
 
 /* strong, marked focus — never the default browser ring */
-:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+/* ⚠ CASCADE — DOIT rester dans `@layer base` (#383). Hors layer, cette règle
+   battait TOUT CSS layerisé : elle annulait les 32 `outline-none` /
+   `outline-hidden` du dépôt et forçait `border-radius: var(--radius-xs)` (3px)
+   sur tout élément focalisé, par-dessus ses `rounded-md` / `rounded-full`.
+   Layerisée, elle cède devant une utilitaire explicite — sémantique attendue.
+   Prérequis LEVÉ : les 31 sites applicatifs qui posaient un `outline-*` ont été
+   nettoyés d'abord (aucun n'avait d'indicateur propre, tous héritaient déjà de
+   ce contour). Reste UNE exception voulue, `ui/popover.tsx` : un panneau n'est
+   pas un contrôle, son `outline-hidden` doit gagner.
+   Pas de `border-radius` ici : MESURÉ sur Chromium 149 / Firefox 151 /
+   WebKit 26.5, `outline` suit déjà le rayon propre de l'élément. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
 }
 
 /* thin scrollbars in the graphite palette */
