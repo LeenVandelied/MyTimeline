@@ -502,7 +502,13 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           onChange={(e) => handleColorChange(e.target.value, field)}
                           onBlur={field.onBlur}
                           data-testid="event-form-color-input"
-                          className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm focus:border-transparent"
+                          // #383-fix (S58) — PAS de `focus:border-transparent` ici. Cette
+                          // classe n'avait de sens qu'appariée au `focus:ring-2` retiré par
+                          // #383 : l'anneau remplaçait la bordure escamotée. Seule, elle
+                          // FAISAIT DISPARAÎTRE la silhouette du champ au focus sans rien
+                          // mettre en place — le contour du DS est posé 2px PLUS LOIN
+                          // (`outline-offset: 2px`), il ne bouche pas ce trou.
+                          className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm"
                         />
                       </div>
                       <FormMessage data-testid="event-form-color-error" />
