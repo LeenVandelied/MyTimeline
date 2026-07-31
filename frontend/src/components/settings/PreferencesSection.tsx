@@ -66,7 +66,7 @@ export function PreferencesSection() {
           </SelectTrigger>
           <SelectContent>
             {LOCALE_OPTIONS.map((code) => (
-              <SelectItem key={code} value={code}>
+              <SelectItem key={code} value={code} data-testid={`pref-language-option-${code}`}>
                 {t(`preferences.language.options.${code}`)}
               </SelectItem>
             ))}
@@ -86,7 +86,7 @@ export function PreferencesSection() {
           </SelectTrigger>
           <SelectContent>
             {THEME_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
+              <SelectItem key={option} value={option} data-testid={`pref-theme-option-${option}`}>
                 {t(`preferences.theme.options.${option}`)}
               </SelectItem>
             ))}
@@ -103,7 +103,11 @@ export function PreferencesSection() {
           </SelectTrigger>
           <SelectContent>
             {DENSITY_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
+              <SelectItem
+                key={option}
+                value={option}
+                data-testid={`pref-density-option-${option}`}
+              >
                 {t(`preferences.density.options.${option}`)}
               </SelectItem>
             ))}
