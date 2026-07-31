@@ -60,9 +60,12 @@ export interface LandingMobileMenuProps {
   navLinks: readonly LandingMobileMenuNavLink[]
 }
 
-/** Classe de focus commune — 2 px accent à 2 px d'offset (DS : jamais l'anneau natif). */
-const FOCUS_RING =
-  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
+/* Plus de classe de focus locale (#383) : l'indicateur est le contour
+   `:focus-visible` du DS (`ds/tokens/base.css`), 2px accent à 2px d'offset.
+   L'ancien `focus-visible:ring-offset-2` était posé SANS `ring-offset-color` :
+   `--tw-ring-offset-color` vaut `#fff` par défaut, ce qui peignait une bande
+   BLANCHE de 2px autour de chaque cible focalisée en mode sombre.
+   `outline-offset` est transparent — il laisse voir le fond réel. */
 
 export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
   open,
@@ -107,7 +110,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
             onClick={onClose}
             aria-label={t('common.landing.navigation.menuClose')}
             data-testid="landing-header-menu-close"
-            className={`text-ink-muted border-rule-emphasis hover:bg-accent-soft flex h-11 w-11 items-center justify-center rounded-sm border transition-colors duration-200 ${FOCUS_RING}`}
+            className="text-ink-muted border-rule-emphasis hover:bg-accent-soft flex h-11 w-11 items-center justify-center rounded-sm border transition-colors duration-200"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -122,7 +125,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
               key={link.href}
               href={link.href}
               onClick={onClose}
-              className={`text-ink hover:bg-accent-soft flex min-h-11 items-center rounded-sm px-3 text-xs transition-colors duration-200 ${FOCUS_RING}`}
+              className="text-ink hover:bg-accent-soft flex min-h-11 items-center rounded-sm px-3 text-xs transition-colors duration-200"
             >
               {link.label}
             </a>
@@ -133,7 +136,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
           <Link
             href={`/${locale}/login`}
             onClick={onClose}
-            className={`border-rule-emphasis text-accent hover:bg-accent hover:text-accent-ink flex min-h-11 items-center justify-center rounded-md border text-xs font-medium transition-colors duration-200 ${FOCUS_RING}`}
+            className="border-rule-emphasis text-accent hover:bg-accent hover:text-accent-ink flex min-h-11 items-center justify-center rounded-md border text-xs font-medium transition-colors duration-200"
           >
             {t('common.login.title')}
           </Link>

@@ -187,7 +187,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
           aria-controls={menuOpen ? 'landing-header-menu' : undefined}
           aria-label={t('common.landing.navigation.menuOpen')}
           data-testid="landing-header-menu-toggle"
-          className="text-ink-muted border-rule-emphasis hover:bg-accent-soft focus-visible:ring-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:hidden"
+          className="text-ink-muted border-rule-emphasis hover:bg-accent-soft flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border transition-colors duration-200 lg:hidden"
         >
           <Menu className="h-4 w-4" aria-hidden="true" />
         </button>
