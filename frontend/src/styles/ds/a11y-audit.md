@@ -239,3 +239,56 @@ signaux cumulés : aplat teinté, encre bleue, `font-medium`.
   6.08:1 cités), `components/landing/landing.hover-pairing.test.ts` et
   `components/ui/button.hover-pairing.test.ts` (paire sanctionnée — 4.71:1 cité).
   À rafraîchir dans un lot de documentation.
+
+---
+
+## 8 · Contour `:focus-visible` — vérification MULTI-MOTEURS (WCAG 2.4.7 / 1.4.11)
+
+Le Sprint 52 annonçait la conformité 2.4.7 du sélecteur de langue sur la foi d'**un
+seul moteur** (Chromium). #375 (Sprint 58) l'a re-mesurée sur les trois moteurs,
+dans les deux thèmes, **par lecture de pixel** — pas par remontée d'ancêtres DOM,
+qui avait produit un faux 1.00:1 sur #383.
+
+Méthode : Playwright, `page.screenshot({clip})` d'une bande de 7 lignes traversant
+le bord DROIT de la boîte, décodage `createImageBitmap` + `getImageData`. Le trait
+est lu à sa position géométrique (offset 2px, largeur 2px → x=2..3), le fond réel
+dans le gap d'offset (x=0..1). Attente de 700 ms après chaque changement d'état
+(`outline-color` entre dans `transition-colors` en Tailwind v4 : une sonde à moins
+de 400 ms lit une couleur interpolée). Modalité **clavier** exclusivement.
+
+| Moteur | Thème | `:focus-visible` | `outline` calculé | Trait / fond MESURÉS | Ratio |
+|---|---|---|---|---|--:|
+| Chromium 149.0.7827.55 | clair | ✅ | `solid 2px rgb(14,95,196)` off=2px | `#0E5FC4` sur `#FFFFFF` | **6.08:1** |
+| Chromium 149.0.7827.55 | sombre | ✅ | `solid 2px rgb(77,155,255)` off=2px | `#4D9BFF` sur `#131519` | **6.48:1** |
+| Firefox 151.0 | clair | ✅ | `solid 2px rgb(14,95,196)` off=2px | `#0E5FC4` sur `#FFFFFF` | **6.08:1** |
+| Firefox 151.0 | sombre | ✅ | `solid 2px rgb(77,155,255)` off=2px | `#4D9BFF` sur `#131519` | **6.48:1** |
+| WebKit 26.5 | clair | ✅ | `solid 2px rgb(14,95,196)` off=2px | `#0E5FC4` sur `#FFFFFF` | **6.08:1** |
+| WebKit 26.5 | sombre | ✅ | `solid 2px rgb(77,155,255)` off=2px | `#4D9BFF` sur `#131519` | **6.48:1** |
+
+Valeurs pour l'**item de locale active** du sélecteur (fond = surface du popover).
+Sur le **déclencheur** (fond = `bg` de la page) : **5.93:1** clair / **6.94:1**
+sombre, mêmes couleurs de trait, les six combinaisons conformes. Les deux séries
+recoupent exactement les lignes `accent`/`surface` et `accent`/`bg` du §7 — mesure
+indépendante, même résultat.
+
+Contrôle négatif en modalité **souris** : `:focus-visible` = `false` et
+`outline-style: none` sur les trois moteurs. Aucun faux positif.
+
+Le contour se pose sur la boîte **visuelle** 36×36 du déclencheur, pas sur la zone
+tactile 44×44 du `::before` de PAT-S24-002 (#353) : le pseudo n'est pas dans le
+flux et ne déplace pas le trait. Vérifié au pixel.
+
+- ⚠️ **Safari natif NON testé.** Playwright pilote WebKit, qui n'est pas Safari :
+  moteur commun, mais chrome du navigateur, réglages système et pile de rendu
+  différents. Le critère « mesuré sur Safari » de #375 n'est donc que
+  **partiellement** tenu.
+- ⚠️ **WebKit : le déclencheur n'est pas atteint par `Tab`.** Le parcours ne
+  s'arrête que sur les contrôles de formulaire (`INPUT` seulement) ; boutons et
+  liens sont sautés. C'est le défaut d'usine de WebKit/Safari (« Full Keyboard
+  Access » désactivé), pas un défaut de l'application — mais il implique que la
+  ligne WebKit du déclencheur ci-dessus est mesurée sous focus **programmatique**,
+  alors que les cinq autres le sont sous `Tab` réel. Les lignes d'item, elles,
+  sont toutes atteintes au clavier (`Enter` sur le déclencheur).
+- 🔒 Le contour est l'**unique** indicateur de focus de l'application depuis #383
+  (32 sites nettoyés de leurs `ring-*` / `outline-none`). Toute réintroduction
+  d'un anneau local est une régression : cf. `styles/__tests__/base-layer.test.ts`.
