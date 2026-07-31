@@ -192,4 +192,21 @@ addition, pas une correction, hors du mandat.
 - Instruments de mesure (`measure*.js`, `select-check.js`) écrits dans le
   **scratchpad hors dépôt**, jamais dans `frontend/e2e/`. Rien à supprimer du dépôt.
 
+## Recommandations suite
+
+**RECOMMAND_FOLLOWUP :**
+1. Rejouer la sonde `Select` sous **Firefox** dans ses montages **réels** (ProductDrawer,
+   EventEditForm, PreferencesSection — backend requis) pour clore le défaut ouvert par #383.
+   Non reproduit ici sur le composant isolé en Storybook, ce qui **n'infirme pas** l'observation
+   de #383 en contexte. [triage S]
+2. Étendre la mesure de contour aux **8 autres sites de montage** du sélecteur de langue et au
+   palier < 1024 px (`LandingMobileMenu`) : aujourd'hui une prédiction, pas une mesure. [triage XS]
+
+**Limite du mandat, redite ici :** Safari **natif** n'est pas testé — Playwright pilote WebKit.
+Le critère d'acceptation « mesuré sur Safari » est **partiellement tenu**, et doit être présenté
+comme tel plutôt que coché.
+
+**Autres signaux :** `RECOMMAND_TEST_RUNNER` : non (suite frontend lancée ici, verte).
+`RECOMMAND_SECURITY` : non. `RECOMMAND_DB_EXPERT` : non.
+
 STATUS: COMPLETED

@@ -95,4 +95,25 @@ via rewrite même-origine) : dashboard, réglages, produits, timeline. Plus land
   `focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring`.
 - `ui/language-selector.tsx` — **commentaire seul** modifié, aucune classe touchée (#353).
 
+## Recommandations suite
+
+**RECOMMAND_FOLLOWUP :**
+1. Rognage du contour de focus dans `.mt-zoom` et le tablist des réglages (`overflow:hidden`,
+   1 à 2 côtés peints sur 4) → `outline-offset: -2px`, motif déjà employé (`timeline.css:115`,
+   `:131`). **Pré-existant, prouvé** en restaurant le code du commit de base : l'ancien `ring-*`
+   était rogné de la même manière. [triage S]
+2. Options de `Select` sans `:focus-visible` sous **Firefox**, même en ouverture 100 % clavier —
+   seul signal restant : un fond `accent-soft` à 1,23:1 / 1,19:1. **Pré-existant, prouvé.**
+   Demande un indicateur non tributaire de `:focus-visible`. [triage M]
+3. `.mt-radio__dot` et `.mt-switch__track` (tous deux **en production**) : leur seul indicateur de
+   focus est `--shadow-focus` à 1,23:1, l'`<input>` réel étant en `opacity:0; width:0; height:0`
+   — le contour global n'y peint rien. Signalé par l'arbitrage `ui-design`, hors périmètre de #383
+   comme de #352. [triage S]
+4. Vérifier au navigateur les surfaces non couvertes ici : réglages en viewport **mobile**,
+   `CategoryDrawer`, `EventEditForm`, `forced-colors`, Safari natif. [triage S]
+
+**Autres signaux :** `RECOMMAND_TEST_RUNNER` : non (suite frontend 16 s, E2E ciblée déléguée).
+`RECOMMAND_SECURITY` : non (aucun changement d'authentification, d'autorisation ni de PII).
+`RECOMMAND_DB_EXPERT` : non (aucun fichier backend, aucune migration).
+
 STATUS: COMPLETED

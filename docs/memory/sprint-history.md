@@ -2233,6 +2233,25 @@ Statut soldé au démarrage du Sprint 58 (rituel `/sprint start`, cf. mémoire *
 **Artefacts :** `docs/memory/sprints/sprint-58/design-arbitrage-383-352.md`,
 `issue-{383,353,352,375}-done.md`, `fix-final-done.md`,
 `docs/memory/audits/sprint-58-test-coverage.md`
+**CI :** 5/5 verte sur la PR #412 (backend, frontend, e2e, flyway-smoke, security)
+
+**Nouveaux pitfalls (5) :** `PIT-S58-001` (le fond sous un `outline` n'est pas le `background-color`
+d'un ancêtre) · `PIT-S58-002` (mesurer au mauvais instant ou dans le mauvais état) ·
+`PIT-S58-003` (`NEXT_PUBLIC_API_URL` / `E2E_API_PROXY_TARGET` se posent au **build**) ·
+`PIT-S58-004` (un garde-fou cité dans la doc peut n'exister nulle part) ·
+`PIT-S58-005` (trois pièges d'outillage qui déguisent un environnement en défaut applicatif)
+**Nouveaux patterns (3) :** `PAT-S58-001` (prouver « pré-existant » au lieu de l'affirmer) ·
+`PAT-S58-002` (lecture de pixel fiable en Playwright) · `PAT-S58-003` (découper un correctif de
+cascade en étapes dont aucune ne retire d'indicateur)
+**Nouvelles décisions (4) :** `DEC-S58-001` (contour du DS = unique indicateur de focus) ·
+`DEC-S58-002` (`surface-2`, 5ᵉ surface du DS et la plus serrée) · `DEC-S58-003` (checkbox : aligner
+le composant, conserver le spécimen) · `DEC-S58-004` (`<tr>` rogné par `overflow-x-auto` : ne rien
+changer)
+
+**Saturation contexte lead :** non instrumentée sur cette session — aucun compteur fiable à
+disposition, donc pas de chiffre inventé. Ordre de grandeur observable : 8 subagents (1 `ui-design`,
+5 `fullstack-dev`, 1 `test-runner`, 1 `reviewer`), retours distillés, aucun contenu brut conservé
+en contexte lead.
 
 > **L'arbitrage `ui-design` a re-calibré le sprint avant la première ligne de code.**
 > Trois résultats qui ont changé le plan :

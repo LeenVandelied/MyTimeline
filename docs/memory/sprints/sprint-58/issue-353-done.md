@@ -140,4 +140,19 @@ Soit 4 locales sur 2 familles de contextes (landing publique + pages d'auth).
   porte une erreur `tsc` : `categoryId` manquant l. 90. À supprimer ou corriger avant
   la PR, sinon le typecheck CI rougit.
 
+## Recommandations suite
+
+**RECOMMAND_FOLLOWUP :**
+1. `document.documentElement.lang` vaut `"fr"` sur `/en/login`, `/es/login` et `/de/register` :
+   l'attribut `lang` du `<html>` n'est pas localisé. Les lecteurs d'écran appliquent la
+   prononciation française à des pages anglaises, espagnoles et allemandes — **y compris à
+   l'étiquette que cette issue vient de traduire**, ce qui en annule une bonne part du bénéfice.
+   WCAG 3.1.1. [triage S]
+2. `frontend/e2e/zz-measure-352.spec.ts` — fichier de mesure jetable laissé par l'agent #352,
+   cassait `tsc` (`categoryId` manquant l. 90). **Résolu depuis** : son auteur l'a supprimé avant
+   la fin de la vague 2. Consigné pour mémoire. [triage XS — clos]
+
+**Autres signaux :** `RECOMMAND_TEST_RUNNER` : non (suites lancées ici, vertes).
+`RECOMMAND_SECURITY` : non. `RECOMMAND_DB_EXPERT` : non.
+
 STATUS: COMPLETED
