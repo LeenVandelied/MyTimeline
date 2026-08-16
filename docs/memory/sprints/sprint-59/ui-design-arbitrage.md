@@ -108,4 +108,55 @@ de landing, et créerait 2 tokens pour **1 seul site d'usage**. Supprimer ce sit
 `.../HeroSection.tsx`, `.../HowItWorksSection.tsx`,
 `.claude/rules-jit/ux-patterns.md` (aucune règle typo — périmètre frise/clavier uniquement).
 
+---
+
+# Addendum — ratification du 17 px du chiffre d'étape (clôture du sprint)
+
+> Second passage `ui-design`, en Phase 1 de `/sprint end`. Le signal `RECOMMAND_UI_DESIGN` restait
+> ouvert : le 17 px avait été **imposé par la lettre d'un AC**, jamais choisi par un designer.
+
+## VERDICT : **RATIFIÉ 17 / 21**, `derogation_AC: NON`
+
+Trois arguments, dont un que personne n'avait relevé :
+
+1. **Le chiffre domine sa propre description.** Le `<p>` de la carte n'a aucune classe `text-*` et
+   hérite donc `body { font-size: var(--text-xs) }` = **15 px** (`base.css:14`). Hiérarchie interne
+   de la carte : **15 < 17 < 21** (mobile), **15 < 21 < 27** (md+). Cohérente, sans dérogation.
+   Le chiffre n'est pas « minuscule » — il était simplement comparé au mauvais voisin.
+2. **Contraste tenu.** `--color-accent` sur `--color-accent-soft` = **4,94:1** en clair / 5,43:1 en
+   sombre. À 17 px gras on est **sous** le seuil « grand texte » (18,66 px gras), l'exigence est donc
+   4,5:1 — **ça passe**.
+3. **Aucun palier DS n'existe entre 17 et 21.** Les deux candidats supérieurs sont morts par mesure
+   (27 égale le h2 ; 21/27 égale le h3). 17/21 est le **seul** point strictement conforme. « Rejeter
+   reviendrait à déroger à l'AC pour gagner un cran d'échelle : pas justifiable. »
+
+## Troisième voie proposée — le défaut serait la PASTILLE, pas le chiffre
+
+`h-16 w-16` (64 px) a été dimensionnée à l'époque du `text-2xl` (45 px). Le ressenti « pastille
+vide » viendrait du **contenant**, pas du contenu : hauteur de capitale ≈ 0,73 em → **~12,4 px dans
+64 px = 19 %** en mobile, ~24 % en md+, contre **30-45 %** pour un badge numéroté usuel.
+
+Correctif proposé : `HowItWorksSection.tsx:65` — `h-16 w-16` → **`h-10 w-10 md:h-12 md:w-12`**
+(31 % et 32 % de remplissage). Zéro impact sur l'AC, zéro impact sur
+`landing-typography-hierarchy.spec.ts` (la spec mesure le `<span>`, jamais la pastille). Pastille non
+interactive → aucune contrainte 44×44 px.
+
+**Non absorbé dans ce sprint** : ce n'est exigé par aucun AC, le 0,73 em est une **estimation non
+mesurée**, et `ui-design` lui-même exige une capture d'écran pour trancher le ressenti. Parti en
+follow-up.
+
+Recommandation jointe : `aria-hidden="true"` sur le `<span>` du chiffre — purement ordinal, déjà
+porté par l'ordre DOM, évite la lecture « 1 Créez votre timeline » au lecteur d'écran.
+
+## NON_TRANCHÉ
+
+- **Le 0,73 em de hauteur de capitale d'Archivo est une estimation, pas une mesure.** Les
+  pourcentages 19 % / 31 % en dépendent linéairement. Exige un relevé navigateur via
+  `Range`/`getClientRects` **sur le glyphe** — pas `getBoundingClientRect` du span, qui rend la boîte
+  de ligne.
+- **Perception « pastille vide » à 64 px vs 40 px : capture d'écran obligatoire**, 4 paliers, clair
+  ET sombre. En sombre `--color-accent-soft: #16263A` a un contraste de **fond** différent : un
+  disque peu contrasté rempli à 19 % peut disparaître visuellement alors que le texte, lui, passe AA.
+- Rythme de scan de la rangée de 4 étapes après réduction de 24 px de hauteur : non simulable.
+
 STATUS: COMPLETED

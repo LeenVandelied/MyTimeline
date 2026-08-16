@@ -1,160 +1,147 @@
 ## Objectif
 
-**Unifier le shell applicatif et fermer le dernier `500` prouvé.** Les Réglages vivaient hors du
-route group `(app)/`, avec leur propre chrome et leur propre navigation verticale : passer du
-tableau de bord aux réglages faisait disparaître la sidebar principale et changeait brutalement la
-structure de la page.
+Solder les défauts de rendu du header aux paliers 768-1024 px et l'échelle typographique de la
+landing. **Sprint 100 % frontend** : aucun fichier backend, aucune migration Flyway, aucune BR
+touchée.
 
-Milestone : **Sprint 57** (#58). Cohésion 0.22 — sous le seuil, split **délibérément rejeté** :
-sortir #312 aurait remonté la métrique à 0.31, mais le critère de sortie dit littéralement « sans
-erreur 500 », ce 500 est prouvé dans le code, et il coûte 1 point. Le déporter pour un gain de
-métrique aurait été exactement le re-scope silencieux à éviter.
+## Issues traitées (4/4)
 
-**4/4 issues livrées** + 1 correctif post-review.
+| Issue | Résultat |
+|---|---|
+| **#381** — logo header resté au palier `md:` | Corrigé — mais **l'hypothèse de l'issue est démentie par la mesure**, cf. ci-dessous |
+| **#379** — marge nulle et logo sur 2 lignes à 1024 px | **Résolue par #381.** Aucun agent dessus, [relevé posté sur l'issue](https://github.com/LeenVandelied/MyTimeline/issues/379#issuecomment-5308701720) |
+| **#348** — hiérarchie typographique inversée | Corrigé, **puis étendu** : 2 de ses 5 AC n'étaient pas atteints, absorbés dans ce sprint |
+| **#341** — SVG débordant ~30 px sur mobile | **Faux positif.** Aucun correctif de rendu, un verrou E2E à la place |
 
-## Issues traitées
+Cohésion du lot : **0.81**.
 
-| # | Titre | P | Size | Commit |
-|---|---|---|---|---|
-| #299 | Intégrer `settings/` sous le shell applicatif | P2 | S | `6c830eb` |
-| #312 | Aligner `/me` sur `/refresh` : `catch JwtException` → 401 | P3 | XS | `1651f9a` |
-| #318 | Synchroniser les segments protégés avec l'arborescence `(app)` | P2 | S | `542e1c2` |
-| #398 | Options de `settings-preferences.spec.ts` ciblées par libellé traduit | P3 | XS | `af33171` |
-| — | Correctif post-review : casse du garde-fou `(app)/` | — | — | `9f4635d` |
+## Le sprint a démenti trois de ses propres prémisses
+
+C'est le résultat principal, et il tient à un seul choix : **mesurer avant de corriger**, dans
+`mcr.microsoft.com/playwright:v1.61.1-jammy` plutôt que sur macOS (`PIT-S52-001`).
+
+1. **#381 cherchait un défaut entre 768 et 1023 px. Il n'y en a aucun** — logo à 57 px sur une
+   ligne, marge 223-262 px, dans les 4 locales et les 2 thèmes. Le `container` Tailwind plafonne la
+   largeur utile à 736 px et la nav est masquée : les deux annulent le défaut attendu.
+   **Le vrai défaut était à 1024 px** — un pixel hors du périmètre annoncé — avec `fr`/`de`/`es` sur
+   2 lignes et **0 px de marge**.
+2. **#341 traquait un SVG inline de la landing depuis trois sprints. Il n'existe pas.** Les 4 `<g>`
+   à `x=384` sont le bouton flottant des **TanStack Query Devtools**, monté sous
+   `NODE_ENV === 'development'`, absent du bundle de production, décalé hors bord droit **par
+   design**, et son `right` suit la largeur du viewport (329@320, **384@375**, 399@390). Il ne
+   produit aucun scroll. Mesure négative sur 20 combinaisons, macOS **et** jammy.
+3. **L'AC de #348 interdisait d'« introduire » `text-4xl`/`text-5xl`** — or `HeroSection.tsx:59` en
+   portait **déjà**, seul site du dépôt. Et ces classes ne sont pas inertes : absentes de
+   `@theme inline` sans `--text-*: initial`, elles retombent sur les **défauts Tailwind** (36/48 px),
+   donc **plus petit** que `text-3xl` (57 px). **La hiérarchie était littéralement inversée** : le
+   `h1` du hero rendait plus petit que le logo du header.
 
 ## Changements clés
 
-### #299 — structure du shell (arbitrage `ui-design` préalable, bloquant)
+**Header** (#381) — logo `md:text-3xl` (57 px) → **`text-md sm:text-lg`** (21/27), `whitespace-nowrap`
+à tous les paliers. `space-x-8` de la nav **intouchée**. Header `fr` : 184,8 → 90 px.
 
-`settings` passe sous `(app)/` et **l'URL `/[locale]/settings` ne change pas** — un route group est
-transparent. La sidebar `AppShell` devient la **seule** nav verticale ; `SettingsShell` est conservé
-mais sa nav 220 px devient une **barre d'onglets horizontale**.
+**Typographie de la landing** (#348 + absorption) :
 
-Le pattern WAI-ARIA tablist et **tous** les `data-testid` sont préservés — c'est précisément ce qui
-a permis aux 6 specs E2E settings de rester intactes. `aria-orientation` passe en horizontal, ←/→
-deviennent les touches primaires, et **↑/↓ sont conservées en alias** parce qu'une spec les
-assertait. La garde d'auth locale de la page est supprimée (doublon de `useAuthGuard` porté par le
-shell).
+| Élément | Avant | Après |
+|---|---|---|
+| h1 hero | `text-4xl md:text-5xl` (36/48, hors DS) | `text-xl md:text-2xl lg:text-3xl` (35/45/57) |
+| Sous-titre hero | `text-xl` (35) | `text-md md:text-lg leading-normal` (21/27) |
+| Chiffre d'étape | `text-2xl` (45) | `text-sm md:text-md leading-none` (17/21) |
+| Wordmark footer | `text-2xl` (45, toutes largeurs) | `text-md sm:text-lg` (21/27) |
 
-L'option « fusionner les 4 chapitres dans la sidebar » a été écartée : elle aurait mélangé deux
-niveaux de hiérarchie et cassé `settings-tablist` + `aria-selected` sur 5 specs.
+**`typography.css` n'est pas modifié.** Ajouter `--text-4xl`/`--text-5xl` aurait créé 2 tokens pour
+1 seul site d'usage ; supprimer ce site rend l'invariant « never Tailwind-default » **vrai à
+l'échelle du dépôt**.
 
-### #312 — le dernier 500
+Hiérarchie finale mesurée, **footer inclus dans le balayage** :
 
-`catch (JwtException)` ajouté **après** `ExpiredJwtException` / `MalformedJwtException` — l'ordre est
-contraint par le langage, ce sont des sous-types et la superclasse placée avant ne compilerait pas —
-et **avant** le catch générique. Le corps de réponse est **strictement identique** à celui de
-`/refresh` (`ErrorCode.UNAUTHORIZED`, constante déjà partagée) : un libellé différent aurait recréé
-le side-channel que l'issue ferme.
+```
+320-639 :  h1 35 > h2 27 > h3 21 = footer 21 > chiffre 17
+640-767 :  h1 35 > footer 27 > h2 27 > h3 21 > chiffre 17
+768-1023:  h1 45 > h2 35 > h3 27 = footer 27 > chiffre 21
+≥1024   :  h1 57 > h2 35 > h3 27 = footer 27 > chiffre 21
+```
 
-### #318 — garde-fou filesystem
+## Périmètre élargi — assumé, pas subi
 
-`readdirSync` en profondeur 1 sur `(app)/`, chemin résolu via `import.meta.url` (indépendant du
-`cwd`), comparaison **bidirectionnelle** avec `PROTECTED_APP_SEGMENTS`.
+Deux critères d'acceptation de #348 n'étaient pas atteints après sa livraison, et ont été absorbés
+sur décision du développeur :
 
-Les route groups imbriqués `(x)/` et les segments dynamiques `[x]/` **font échouer le test** au lieu
-d'être ignorés : dans ces cas le scan ne peut plus conclure, et les ignorer rouvrirait exactement le
-trou que l'issue ferme. Le message d'échec nomme le segment fautif et le fichier à éditer. Le rouge
-est prouvé sur des entrées fabriquées via des fonctions pures, **sans ajouter aucune route réelle**
-dans `app/` (elle serait partie en production).
+- **AC #2** — le wordmark du footer (45 px) **battait** le h1 sous 768 px et l'**égalait** de 768 à
+  1023 px. Le `<footer>` avait été *exclu du balayage de la spec* pour contourner ça.
+- **AC #1** — le chiffre d'étape **égalait** le h2 et **dépassait** le h3 de sa propre étape. La
+  spec figeait `<=` au lieu de `<`.
 
-### #398 — testids dérivés de la valeur
+**Les deux dérogations de spec ont été retirées.** Une spec qui exclut une zone ou relâche un
+comparateur pour verdir encode le défaut et le rend permanent.
 
-5 `data-testid` ajoutés sur les `SelectItem` de `PreferencesSection.tsx`
-(`pref-<champ>-option-<valeur>`, convention #331), spec basculée dessus. Plus aucun sélecteur par
-libellé traduit.
-
-## Règles métier impactées
-
-- **BR-AUT-008** — le follow-up S43 explicitement listé « reste ouvert » dans le pack `br-auth.md`
-  (`SignatureException` sur `/me` → 500) est **fermé**.
-- **BR-AUT-009** — sert de référence de parité, non modifiée.
-- **Garde serveur (#302 / S45, ADR-004)** — `PROTECTED_APP_SEGMENTS` inclut désormais `settings`,
-  `PROTECTED_EXTRA_SEGMENTS` est vide, et c'est verrouillé par test.
-
-## Tests
+## Tests — 929 des 1504 lignes ajoutées sont des tests
 
 | Suite | Résultat |
 |---|---|
-| Backend | **455 / 455** |
-| Unitaires frontend | **859 / 859** (842 au départ, +17) |
-| E2E — 6 specs settings + `auth-guard.spec.ts` | **37 passed / 1 skipped** |
-| E2E — suite complète | 127 passed / **3 failed** / 8 skipped |
-| `tsc --noEmit` | 0 erreur |
+| Frontend unitaire | **888 / 888** |
+| `tsc --noEmit` | **0 erreur** |
+| **E2E — suite complète** (Phase 6) | **183 / 183** |
+| Backend | **462 / 462** (aucun fichier touché) |
 
-**Les 3 échecs E2E sont d'environnement, pas de code** — cause établie et non supposée : l'endpoint
-de test `/api/test-support/password-reset-token` renvoie 401 parce que le backend local ne tourne
-pas avec le profil `e2e`. Le fixture pose lui-même le diagnostic. Aucun commit de ce sprint ne
-touche au parcours de réinitialisation de mot de passe.
+Les specs **authentifiées** ont bien tourné (`golden-path`, `settings-*`, `timeline*`, `auth-*`,
+`categories`, `products`) — c'était le trou du sprint : le header perd **24 à 95 px de hauteur** et
+aucun des 183 tests, y compris ceux qui cliquent en coordonnées, n'a cassé.
 
-**Vérification navigateur** (#299 — non automatisable en unitaire), 4 paliers × clair/sombre,
-réellement observés :
+**Nouveaux garde-fous** : `landing-header-logo.spec.ts`, `landing-mobile-overflow.spec.ts`,
+`landing-typography-hierarchy.spec.ts`, `ds-type-scale.test.ts` (garde-fou source), et
+`e2e/support/dev-tooling.ts` (source unique de la liste d'exclusion de l'outillage de dev).
 
-| Palier | Observé |
-|---|---|
-| 390 px | 0 sidebar, drill-down mobile, `settings-tablist` absent du DOM |
-| **768 px** | 0 nav verticale, onglets horizontaux pleine largeur — **le palier où la double sidebar se serait manifestée** |
-| 1024 px | sidebar 248 px, contenu 776 = 1024 − 248, exactement 1 nav verticale |
-| 1280 px | contenu 1032, pas de scroll horizontal |
+**Chaque spec a été prouvée non-vacuous** — classes fautives réintroduites, rouges nommés exigés.
+Ce n'est pas cosmétique : l'assertion `scrollWidth <= clientWidth` de #347 restait **verte** sur le
+défaut réel de #381 (un logo qui se coupe en deux lignes la satisfait), et l'auto-contrôle de la
+sonde de débordement restait **vert** sur une sonde renommée.
 
-Débordement des onglets testé en locale **DE** (libellés les plus longs) : 484/720 px à 768 px.
+## Review
 
-## Review batch
+**0 CRITIQUE · 1 MAJEUR · 6 MINEURS — tous résolus en un cycle** (`4cf19f2`).
 
-**0 CRITIQUE · 0 MAJEUR · 4 MINEURS** — verdict `MERGEABLE`.
+Le MAJEUR portait sur les tests : une boucle clair/sombre doublait 32 tests en 64 pour zéro signal,
+sur un check e2e requis. Le reviewer recommandait le **retrait total** de la couverture du thème
+sombre ; un **compromis** a été appliqué (cas général mono-thème + un contrôle ponctuel par spec).
 
-Le point le plus risqué du sprint a été vérifié explicitement : la suppression de la garde d'auth de
-la page settings **ne rouvre rien**. `AppShell` fait un `return` précoce tant que `loading || !user`,
-**avant** tout rendu de `{children}` — le contenu des Réglages n'est jamais monté pour un visiteur
-anonyme, et le middleware coupe déjà en amont (307).
+**La mesure a donné raison au compromis** : injection d'une règle `.dark h1 { font-size: 33px }` →
+**10 passed / 1 failed**, et **seul le contrôle sombre la voit**. Le retrait total l'aurait rendue
+invisible.
 
-Un mineur a été **corrigé dans le sprint** (`9f4635d`) : le garde-fou de #318 ne normalisait pas la
-casse. Un dossier `(app)/Billing/` déclaré verbatim `'Billing'` aurait rendu le test **vert** alors
-qu'`isProtectedPathname` compare `segment.toLowerCase()` — `/fr/Billing` n'aurait donc **pas** été
-protégé. Fausse assurance dans le scénario exact que le garde-fou existe pour empêcher. La casse
-mixte est désormais rejetée explicitement, avec un message actionnable.
+Suite `landing-*` : 82 → 68 tests.
 
-## Points signalés honnêtement
+## ⚠ Ce qui n'est PAS couvert
 
-**Contraste sous AA — 3ᵉ incident du projet (après S48 et S53), mesuré cette fois.** L'onglet actif
-en clair (`#1170E4` sur `#DBE9FC`) donne **3.83:1**, sous le seuil de 4.5.
-**Ce n'est pas une régression de ce sprint** : le lien actif de la sidebar `AppShell` mesure
-exactement le même ratio, sur le couple de tokens `bg-accent-soft` / `text-accent` que l'arbitrage
-imposait de reprendre à l'identique. C'est une dette du design system qui touche **tout état actif
-du produit** ; le correctif est au niveau du **token**, pas du composant.
+- **Aucun jugement esthétique, sur aucune des quatre issues.** Des nombres ont été mesurés ; **aucune
+  capture d'écran n'a été relue par qui que ce soit.** La conformité géométrique est établie, la
+  qualité visuelle ne l'est pas.
+- **Le 17 px du chiffre d'étape n'a pas été ratifié par `ui-design`** — il est imposé par la lettre
+  de l'AC « strictement plus petit », pas choisi par un designer.
+- **Chromium seul** — aucun projet Playwright de ce dépôt ne couvre Firefox ni WebKit.
+- **Contraste WCAG non re-mesuré au navigateur.** Point chiffré : le sous-titre du hero tombe de 35
+  à 21 px, donc **sous le seuil « grand texte » (24 px)** — son exigence passe de 3:1 à **4,5:1**.
+  Le calcul sur tokens donne 5,96:1 en clair et 6,26:1 en sombre (conforme), mais **opacité et
+  superpositions ne sont pas vérifiées**.
+- **jammy ≠ `ubuntu-latest`** — jeu de polices proche, pas identique. C'est la classe de défaut de
+  `PIT-S52-001` ; **cette CI est le premier vrai verdict**.
+- Le reste de la suite E2E n'a pas été rejoué après le commit de corrections de review (`4cf19f2`) ;
+  il l'avait été en Phase 6, avant. Ce commit ne touche que des specs `landing-*`, un support E2E
+  et un commentaire CSS — **déduit, pas vérifié**.
 
-**Écart de couverture E2E.** `settings-header` (testid marqué « optionnel » par l'arbitrage) n'a
-**aucun consommateur** : le palier 768 px, où ce header est la seule sortie de navigation, reste
-vérifié **uniquement à la main**. Traité par le processus documenté (`/create-e2e` après merge)
-plutôt qu'en élargissant le périmètre en phase de clôture.
+## Point d'attention à surveiller
 
-**Deux issues étaient périmées à l'exécution, et leurs briefings ont été corrigés.** #318 demandait
-de traiter `settings` comme « un cas hors du groupe `(app)` » — faux après #299, livrée le matin
-même dans ce sprint ; le critère a été redirigé vers « verrouiller que `PROTECTED_EXTRA_SEGMENTS`
-reste vide ». #398 était estimée « XS, un seul fichier de test » alors que les `SelectItem`
-n'avaient aucun `data-testid` : il a fallu instrumenter le composant d'abord.
+**La marge du header en `de` à 320 px vaut 5 px**, sous le plancher « deux chiffres » de
+`PIT-S52-001`. Antérieur à ce sprint (terrain de #347), inchangé ici — mais le prochain
+élargissement du groupe droit la fait basculer. Follow-up ouvert.
 
-**Bruit d'attribution de commit.** `1651f9a` (#312, backend) contient aussi le renommage
-`settings/page.tsx → (app)/settings/page.tsx` (rename pur, 0 ligne de diff), absorbé par le working
-tree partagé du fan-out : `git commit` **sans pathspec commite tout l'index**, même après un
-`git add` ciblé. L'arbre est correct, seule l'attribution est fausse. La consigne durcie a été
-appliquée en vague 2, où les deux commits sont restés parfaitement isolés.
+Au passage : `next.config.ts:30` pose `output: 'standalone'`, et Next avertit que `next start` ne
+fonctionne pas avec cette configuration. Le build à froid sert pourtant `/fr` et `/en` en 200.
+Candidat follow-up, non traité ici.
 
-## Follow-ups proposés (à arbitrer en `/sprint end`)
+## Suite
 
-1. Contraste DS `text-accent` / `bg-accent-soft` = 3.83:1 en clair, sur tout état actif — correctif token
-2. Couverture E2E de `settings-header` (automatiser le palier 768 px)
-3. Cookie `jwt=` **vide** → `IllegalArgumentException`, hors hiérarchie `JwtException` → 500 sur `/me`
-   **et** `/refresh` — défaut distinct de #312, dont l'alignement est bien atteint
-4. Garde-fou #318 limité à la profondeur 1 de `(app)/`
-5. Landmarks `<main>` imbriqués — pré-existant (dashboard et products aussi)
-6. Backend E2E local sans profil `e2e` → 3 specs de reset password rouges en permanence en local
-7. Bug i18n `DensityRibbon` : `{days}` non fourni, `IntlError` à chaque rendu du dashboard
-8. `npm run lint` rouge en local sur `next-env.d.ts`, vert en CI — divergence à trancher
+`/sprint end 59` — triage des follow-ups (5 en attente), consolidation mémoire, fermeture des
+issues et du milestone #60 après merge.
 
-## Artefacts
-
-`docs/memory/sprints/sprint-57/issue-{299,312,318,398}-done.md` · `review-sprint-57.md` ·
-`docs/memory/audits/sprint-57-test-coverage.md` · `docs/memory/sprint-history.md`
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)

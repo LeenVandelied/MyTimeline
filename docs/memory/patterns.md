@@ -495,3 +495,26 @@ Corollaire outillé : `PAT-S24-002` (hitbox 44×44 sans agrandir le visuel) se t
 Tailwind — `relative before:absolute before:top-1/2 before:left-1/2 before:h-11 before:w-11
 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']`. Anti-pattern : agrandir `h-9 w-9`,
 qui déplace le layout et rouvre le débordement horizontal.
+
+## PAT-S59-001 — Prouver qu'un test de mise en page n'est pas vacuous : le faire rougir
+Réintroduire la classe fautive, relancer, **exiger des rouges nommés**. Ce n'est pas un rituel : au S59,
+`scrollWidth <= clientWidth` de #347 restait **VERT** sur le défaut réel de #381 (un logo qui se coupe en
+deux lignes satisfait l'assertion), et l'auto-contrôle de la sonde de débordement restait **VERT** sur une
+sonde renommée (il assertait `tag === 'div'`, pas l'identité de la sonde). Corollaire : asserter `font-size`
+**sans** `line-height` laisse passer la moitié du défaut — `base.css` n'apparie un interligne serré qu'aux
+`h1..h6`, tout `text-*` sur `<p>`/`<span>` hérite sinon 1,5556.
+
+## PAT-S59-002 — Une dérogation de spec est une dette datée, à lever avec l'AC qu'elle contourne
+Une spec qui fige `<=` au lieu de `<`, ou qui **exclut une zone du balayage**, encode le défaut et le rend
+permanent — tout en affichant du vert. Au S59, le `<footer>` avait été exclu du balayage « plus grand
+élément de la page » pour faire verdir la hiérarchie typographique, avec un commentaire chiffré qui
+*justifiait* l'exclusion. Les deux dérogations ont été levées en même temps que les AC correspondants.
+Anti-pattern : documenter proprement une dérogation et la laisser vivre — la documenter ne l'annule pas.
+
+## PAT-S59-003 — Alléger une suite sans perdre son filet : le contrôle ponctuel
+Une boucle clair/sombre doublait 32 tests en 64 pour des métriques invariantes au thème, sur un check CI
+requis. Le reviewer recommandait le **retrait total** ; retenu à la place : cas général mono-thème **+ un
+contrôle ponctuel** (1 palier, 1 locale) qui asserte l'égalité des métriques entre thèmes. **Justifié par la
+mesure, pas par l'opinion** : injection d'une règle `.dark h1{font-size:33px}` → 10 passed / 1 failed, seul
+le contrôle ponctuel la voit. Le contrôle doit asserter la présence de `.dark` avant de re-mesurer, sinon il
+compare clair à clair et devient lui-même vacuous.
