@@ -63,18 +63,22 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 
 # --- Découpe pitfalls.md en une section par PIT-ID ---------------------------
 # Une section = de sa ligne `## PIT-...` (incluse) à la ligne précédant le `## ` suivant.
+# `close(cur)` au changement d'entree : les sections sont contigues, donc 2 descripteurs
+# ouverts au plus. Sans lui, awk garde 183 fichiers ouverts et bute sur FOPEN_MAX selon
+# l'implementation (BWK awk / mawk / gawk n'ont pas la meme limite) -> portabilite.
 awk -v dir="$TMP_DIR" '
   /^## / {
     id = ""
     if (match($0, /PIT-S[0-9]+-[0-9]+/)) id = substr($0, RSTART, RLENGTH)
-    if (id == "") { cur = ""; next }
+    if (cur != "") { close(cur); cur = "" }
+    if (id == "") next
     cur = dir "/" id
     order = order id "\n"
     print > cur
     next
   }
   cur != "" { print > cur }
-  END { printf "%s", order > (dir "/.order") }
+  END { if (cur != "") close(cur); printf "%s", order > (dir "/.order") }
 ' "$SRC"
 
 [ -s "$TMP_DIR/.order" ] || { echo "[gen-pit-packs] aucune entrée PIT trouvée dans $SRC" >&2; exit 2; }
