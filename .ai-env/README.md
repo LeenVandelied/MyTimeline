@@ -52,6 +52,25 @@ post-S49 font ~10 lignes. Verbatim intégral = 70 Ko (backend) et 96 Ko (fronten
 dans *chaque* briefing. D'où le découpage §1 texte intégral (sprints ≥ S53 +
 récurrents) / §2 index de titres.
 
+## Garde-fous de péremption
+
+Un artefact généré qui dérive en silence, c'est le défaut même que ce Layer B
+corrige. Deux contrôles l'empêchent de revenir :
+
+| Contrôle | Où | Portée |
+|---|---|---|
+| `gen-pit-packs.sh --check` | job CI `ai-env-packs` | bloquant — packs vs `pitfalls.md` |
+| `check-rules-jit-drift.sh` | poste de dev | copies `rules-jit/` vs plugin |
+
+Le second **SKIP en CI** : sa source de vérité est `~/.claude/plugins/`, absente du
+runner. À lancer en fin de sprint et après tout bump du plugin ; après un bump
+volontaire, recopier les sources puis `check-rules-jit-drift.sh --update`. Les
+empreintes amont vivent dans `rules-jit/.provenance.tsv`.
+
+`ai-env-packs` n'est **pas un check requis** à l'introduction — règle documentée en
+tête de `.github/workflows/ci.yml` : un check rendu requis avant son premier run vert
+bloque toutes les merges, y compris celle qui l'introduit. À rendre requis ensuite.
+
 ## Garde-fous `.claude/hooks/`
 
 Ces deux scripts sont dans `.claude/`, donc **non versionnés** : à recréer sur un

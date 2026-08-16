@@ -534,3 +534,35 @@ jobs:
           severity: CRITICAL
           exit-code: "1"
           ignore-unfixed: true
+
+  # ---------------------------------------------------------------------------
+  # ai-env-packs — garde-fou de péremption des artefacts générés du Layer B.
+  #
+  # POURQUOI (PR #420). `.ai-env/context-packs/pit-{backend,frontend}.md` sont
+  # GÉNÉRÉS depuis `docs/memory/pitfalls.md`. Si un sprint consigne de nouveaux
+  # pitfalls sans régénérer les packs, les sous-agents reçoivent un pack périmé —
+  # sans la moindre erreur visible. C'est exactement le mode d'échec silencieux
+  # que #420 corrigeait par ailleurs ; sans ce job il revient par la porte de
+  # derrière.
+  #
+  # `check-rules-jit-drift.sh` est appelé pour mémoire mais SKIP en CI : sa source
+  # de vérité est le cache plugin (~/.claude/plugins/), absent du runner. Il n'a de
+  # valeur que sur un poste de dev, en fin de sprint et après un bump du plugin.
+  #
+  # NON REQUIS à l'introduction (cf. en-tête de ce fichier) : à rendre requis par
+  # un mainteneur après un premier run vert.
+  # ---------------------------------------------------------------------------
+  ai-env-packs:
+    name: ai-env-packs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Packs pitfalls à jour vs docs/memory/pitfalls.md — BLOQUANT
+        run: bash .ai-env/tools/gen-pit-packs.sh --check
+
+      - name: Dérive des copies rules-jit vs plugin — INFORMATIF (SKIP en CI)
+        run: bash .ai-env/tools/check-rules-jit-drift.sh
