@@ -791,14 +791,56 @@
 **Note tooling :** `detect-domain.sh` re-confirmé bloquant (zombies >1h en background) → domaines mappés à la main (`auth`). `check-sprint-completeness.sh` absent de ce projet (vérif complétude faite à la main).
 **Status :** Terminé (clôturé 2026-07-12)
 
-## Sprint 36 — 2026-07-12 (En cours — cohésion 0.72, Export RGPD hardening)
+## Sprint 36 — 2026-07-12 (Terminé — code livré sur `dev`, clôture jamais faite — cohésion 0.72, Export RGPD hardening)
 **Objectif :** Chemin de stockage dédié export + rate-limit GET export + scheduler de purge des exports expirés (index V14).
 **Milestone GitHub :** #36
 **Issues :** #264, #265, #267
 **Vagues :** V1 = #264 (storage) ∥ #265 (rate-limit) | V2 = #267 (purge via port de #264 ; introduit @EnableScheduling)
 **Migrations Flyway :** V14 (idx_export_jobs_expires_at)
 **Dépend de :** aucune (mais introduit le scheduling réutilisé en S37)
-**Status :** En cours
+**Status :** **Terminé** — statut rectifié le **2026-08-16**, 35 jours et 23 sprints après coup.
+
+> **Le cas de clôture manquée le plus ancien du dépôt, et le plus trompeur.** L'entrée est restée
+> « En cours » depuis le 2026-07-12 ; le **milestone #36 a été fermé VIDE** (`open=0 closed=0` :
+> aucune issue n'y a jamais été rattachée) et les issues sont restées ouvertes. Un sprint qui
+> semblait à la fois « en cours », « sans issue » et « clos » — les trois signaux se contredisant.
+>
+> **Vérifié dans le code le 2026-08-16, le travail était bien livré et sur `dev` :**
+> - **#264** → `4dd436c` : `app.storage.export-path` présent dans les 3 fichiers de configuration
+>   (`application.properties:77`, `-dev:43`, `-prod:58`), placeholder `STORAGE_EXPORT_PATH`.
+> - **#267** → `00dc7ca` : `application/services/ExportPurgeScheduler.java` + migration
+>   `V14__idx_export_jobs_expires_at.sql`. Ancêtre de `origin/dev` confirmé.
+> - **#265** (rate-limit GET export) → **non livrée, report délibéré** : déplacée vers le milestone
+>   « Mise en ligne (GELÉ) », elle y reste. Le sprint est donc livré **à 2 issues sur 3**.
+>
+> #264 et #267 fermées le 2026-08-16 avec l'évidence en commentaire. **Leçon : un milestone fermé
+> vide n'est pas un sprint sans travail — c'est un sprint dont personne n'a rattaché les issues.**
+
+### 🔎 Audit global des clôtures — 2026-08-16
+
+Déclenché par la découverte que le **Sprint 56** était mergé depuis 16 jours sans avoir été clôturé.
+Le balayage a montré que ce n'était pas un cas isolé : **7 sprints sur 24** portaient un statut
+démenti par GitHub. Aucun n'avait de travail manquant — **le code était livré et sur `dev` dans les
+7 cas** ; c'est la comptabilité qui n'a pas suivi.
+
+| Sprint | Statut affiché | Réalité vérifiée | Correction |
+|---|---|---|---|
+| 36 | `En cours` (35 j) | #264 `4dd436c` + #267 `00dc7ca` sur `dev` ; milestone fermé **vide** | statut + **2 issues fermées** |
+| 46 | `PLANIFIÉ` | PR #324 mergée le 27/07 ; corps de l'entrée déjà complet | titre seul |
+| 48 | `PLANIFIÉ` | PR #333 mergée le 28/07 ; `Status: Terminé` déjà présent plus bas | titre seul |
+| 49 | `EN COURS` | PR #345 mergée le 28/07 ; `Status: Terminé` déjà présent plus bas | titre seul |
+| 51 | `En cours — PR ouverte` | PR #367 mergée le 29/07 | ligne `Status` |
+| 55 | `En cours` | PR #402 mergée le 30/07 | ligne `Status` |
+| 58 | `EN COURS` / `PR ouverte` | PR #412 mergée le 31/07 ; milestone fermé | titre + `Status` |
+
+**Piège de méthode rencontré pendant l'audit lui-même :** un balayage sur les seuls titres `## Sprint`
+rate les entrées dont le **titre dit « Terminé » mais dont la ligne `**Status :**` dit encore « En
+cours »** (cas 51 et 55). Il faut balayer **les deux** marqueurs, séparément.
+
+**5 issues ouvertes étaient par ailleurs parquées dans des milestones fermés** — #151 (S13), #185
+(S16), #230 (S26), #279 (S35), #338 (S52). Le rattachement les faisait passer pour livrées et les
+masquait des vues de backlog. Toutes **détachées vers le backlog libre** le 2026-08-16, sans
+changement de périmètre. Après quoi : **aucun milestone fermé ne contient plus d'issue ouverte.**
 
 ## Sprint 37 — 2026-07-12 → 2026-07-13 (Terminé — PR #282 dans dev)
 **Objectif :** Durcir le flux reset-password : E2E Playwright, rate-limit/lockout par token, verrou anti-TOCTOU (@Version, V15), purge TTL des tokens.
@@ -1035,7 +1077,7 @@
 
 **Status :** Terminé
 
-## Sprint 46 — 2026-07-16 (PLANIFIÉ — cohésion 0.50, Aperçu live drawer + dette focus S44)
+## Sprint 46 — 2026-07-16 → 2026-07-27 (Terminé — merge PR #324 dans `dev` — cohésion 0.50, Aperçu live drawer + dette focus S44)
 **Objectif :** Solder la dette S44 sur le drawer de création : aperçu live conforme au handoff §6 (#315), focus-trap dédupliqué (#316), suppression d'event câblée sur la frise mobile (#309).
 **Milestone GitHub :** #46
 **Issues :** #315 (P2/M), #316 (P3/XS), #309 (P3/XS) — 6 points
@@ -1136,7 +1178,7 @@ Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejet
 
 **Status :** Terminé — mergé dans `dev` (`94cfd95`), milestone #47 fermé, issues #314/#304/#205 fermées
 
-## Sprint 48 — 2026-07-16 (PLANIFIÉ — cohésion 0.95, Landing page sur le DS)
+## Sprint 48 — 2026-07-27 → 2026-07-28 (Terminé — merge PR #333 dans `dev` — cohésion 0.95, Landing page sur le DS)
 **Objectif :** Migrer la landing sur le Design System et décomposer le monolithe `HomePage.tsx` (274 l.) — token bordure AA (#293) puis décomposition en 7 sections (#56).
 **Milestone GitHub :** #48
 **Issues :** #293 (P2/S), #56 (P1/L) — 10 points
@@ -1227,7 +1269,7 @@ Ratio discard 0/10 — les follow-ups de ce sprint viennent tous d'observations 
 >
 > **[MEMORY:pitfall] Le token `gray-500` suggéré par le corps de #293 ÉCHOUE en sombre — mesuré, pas supposé.** Ratios WCAG calculés par le lead avant briefing : `--color-rule` = **1.24:1**, `--color-rule-strong` = **1.50:1** (confirme la prémisse de l'issue). Mais le candidat `gray-500 #5E626B` donne **2.99:1 vs `--color-surface` sombre (#131519)** → sous le seuil 3:1. Et `gray-400 #969AA3` échoue en clair (**2.75:1 vs bg**). La contrainte serrée est **`bg` en clair** et **`surface` en sombre** ; le token doit donc être **découplé clair/sombre** (une seule valeur pour les deux modes ne peut pas passer). Candidat sombre validé : `#6B7078` (3.93 vs bg / 3.67 vs surface).
 
-## Sprint 49 — 2026-07-16 → (EN COURS depuis 2026-07-28 — Virtualisation frise + solde dette landing)
+## Sprint 49 — 2026-07-16 → 2026-07-28 (Terminé — merge PR #345 dans `dev` — Virtualisation frise + solde dette landing)
 **Objectif :** Virtualiser la frise pour >1000 événements (#69) sur le vrai chemin de rendu, **et** solder la dette design laissée par le Sprint 48 (#334, #335, #336, #337).
 **Milestone GitHub :** #49
 **Issues (5) :** #69 (P1/L) · #334 (P1/M) · #335 (P1/M) · #336 (P1/M) · #337 (P1/M) — ~24 points
@@ -1420,7 +1462,9 @@ portalisé fermant tout le panneau du menu · verrou de scroll du body absent ·
 **Vagues :** V1 = #328 ∥ #349 | V2 = #351
 **Migrations Flyway :** aucune
 **Depend de :** aucune (indépendant de S50)
-**Status :** En cours — PR #367 ouverte (`sprint/51` → `dev`), en attente de CI puis de `/sprint end 51`
+**Status :** **Terminé** — PR **#367** (`sprint/51` → `dev`) **mergée le 2026-07-29**. Milestone Sprint 51
+fermé (0 ouverte / 4 fermées). *(Statut rectifié le 2026-08-16 : l'entrée annonçait encore « PR ouverte, en
+attente de CI » — cf. l'audit de clôture consigné sous le Sprint 36.)*
 **Branche :** `sprint/51` (créée depuis `origin/dev` @ `47730f9`, poussée 2026-07-29)
 **Commits :** 12 — 6 de code, 6 d'artefacts
 **Tests :** Frontend 821/821 · Backend 452/452 · typecheck OK · `next build` OK · **E2E 97 passed / 0 failed / 8 skipped**
@@ -2080,7 +2124,9 @@ RÉSOLU** en #376.
 démarre » du critère MVP et rien d'autre ; les regrouper par domaine les étalerait sur 3 sprints.
 **Migrations Flyway :** aucune (V16 reste libre)
 **Depend de :** rien
-**Status :** En cours (démarré 2026-07-30, worktree `claude/sprint-55-start-22b896`, base `origin/dev` = `59a31b3`)
+**Status :** **Terminé** — PR **#402** (`claude/sprint-55-start-22b896` → `dev`) **mergée le 2026-07-30**.
+Démarré 2026-07-30, base `origin/dev` = `59a31b3`. Milestone Sprint 55 fermé (0 ouverte / 5 fermées).
+*(Statut rectifié le 2026-08-16 — cf. l'audit de clôture consigné sous le Sprint 36.)*
 **Écart au plan validé :** #361 (job `e2e` requis sur `dev`) a été **ajoutée par le lead**.
 L'architect l'avait classée hors plan tout en la désignant « le regret le plus sérieux » : sans elle,
 une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 pts pour un plafond de
@@ -2156,9 +2202,12 @@ stabilité d'un état transitoire) · [[PAT-S56-003]] (asserter la constante imp
 > n'avait ni section « Recommandations suite » ni ligne `STATUS` — reconstituée par le lead à la
 > clôture, à partir du commit et de l'artefact, **pas** d'un retour de subagent.
 > Le statut avait été rectifié à `Terminé` pendant `/sprint end 57` sans que le reste de la
-> clôture ne suive : **rectifier le statut n'est pas clôturer.** C'est le même angle mort que
-> celui déjà consigné pour S58, dont l'entrée porte encore `EN COURS` alors que la PR #412 est
-> mergée et son milestone fermé.
+> clôture ne suive : **rectifier le statut n'est pas clôturer.**
+>
+> Le constat a déclenché un **audit de tout le fichier le 2026-08-16**, qui a trouvé le même angle
+> mort sur **6 autres sprints** (36, 46, 48, 49, 51, 55, 58) et **5 issues ouvertes parquées dans des
+> milestones fermés**. Bilan complet consigné sous le **Sprint 36**, qui en est le cas le plus ancien
+> et le plus trompeur.
 
 ## Sprint 57 — 2026-07-30 → 2026-07-31 (Terminé — merge PR #411 dans `dev`)
 **Objectif :** Unifier le shell applicatif et fermer le seul 500 prouvé dans le code
@@ -2260,7 +2309,7 @@ Statut soldé au démarrage du Sprint 58 (rituel `/sprint start`, cf. mémoire *
 > profonde — le risque « périmètre plus large » annoncé par l'issue est infirmé.
 > **Arbitrage `ui-design` requis avant démarrage** (structure cible du shell).
 
-## Sprint 58 — 2026-07-30 → 2026-07-31 (EN COURS — MVP local : cascade `:focus-visible` et dette WCAG du DS)
+## Sprint 58 — 2026-07-30 → 2026-07-31 (Terminé — merge PR #412 dans `dev` — MVP local : cascade `:focus-visible` et dette WCAG du DS)
 **Objectif :** Layeriser `:focus-visible` sans perdre d'indicateur de focus, et solder la dette WCAG des bordures
 **Milestone GitHub :** #59
 **Issues (4) :** #383 (P1/M), #375 (P2/S), #352 (P3/S), #353 (P3/XS) — **8 pts**
@@ -2268,8 +2317,12 @@ Statut soldé au démarrage du Sprint 58 (rituel `/sprint start`, cf. mémoire *
 **Cohésion :** 0.87
 **Migrations Flyway :** aucune
 **Depend de :** rien
-**Status :** **Implémenté — PR ouverte** (démarré et livré 2026-07-31, worktree
-`claude/sprint-58-start-26b185`, base `origin/dev` = `f13c4fa`). 17 commits.
+**Status :** **Terminé** — PR **#412** (`claude/sprint-58-start-26b185` → `dev`) **mergée le 2026-07-31**.
+Base `origin/dev` = `f13c4fa`, 17 commits. Milestone **#59 fermé** (0 ouverte / 4 fermées), les 4 issues
+fermées.
+> Statut rectifié le **2026-08-16** pendant l'audit de clôture : l'entrée est restée « Implémenté — PR
+> ouverte » pendant 16 jours alors que la PR était mergée le jour même de sa création. Même angle mort que
+> celui du Sprint 56 — la clôture GitHub avait bien été faite ici, c'est seulement l'entrée qui n'a pas suivi.
 
 **Vagues exécutées :** V0 = arbitrage `ui-design` (bloquant) | V1 = #383 seule | V2 = #352 ∥ #353
 | V3 = #375 | V4 = audit tests + review batch + correctif de clôture
