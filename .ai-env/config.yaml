@@ -61,7 +61,10 @@ rules_jit_dir: ".ai-env/rules-jit"
 stack_packs_backend: "cp-hexagonal, cp-backend"
 stack_packs_frontend: "cp-frontend"
 stack_rules_backend: "backend"
-stack_rules_frontend: "frontend"
+# ux-patterns : referentiel a11y/interactions du DS, injecte dans tout briefing frontend
+# (au S59 le lead devait l'inliner a la main faute d'injection). Fichier reel :
+# .claude/rules-jit/ux-patterns.md, expose ici par symlink relatif (source unique).
+stack_rules_frontend: "frontend, ux-patterns"
 
 # --- Review d'intention ---
 tracker_provider: "github"

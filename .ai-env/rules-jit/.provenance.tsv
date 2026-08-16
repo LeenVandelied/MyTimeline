@@ -1,0 +1,5 @@
+# Provenance des copies Layer B de rules-jit/ (voir check-rules-jit-drift.sh).
+# Format : <fichier>	<version plugin>	<sha256 de la SOURCE amont>
+# Le sha est celui du fichier AMONT, pas de la copie (qui porte un en-tete en plus).
+backend.md	0.3.1	8accdf17835deefce326a3ef1c494166cc326ca4966d2adda59afd2979c5027d
+frontend.md	0.3.1	3a2d3fb102b7107231131fea460b28d3a5e78e492b4f4f7b48f255b722272403
