@@ -23,6 +23,29 @@ export interface FooterSectionProps {
  * mort, et un lien mort est en outre un défaut d'accessibilité. Les clés i18n sont
  * CONSERVÉES dans les quatre locales : le jour où la page existe, il suffit de
  * rétablir l'entrée. Suivi : follow-up « créer la page mentions légales ».
+ *
+ * #348 (AC #2) — ÉCHELLE DU WORDMARK. Il portait `text-2xl`, soit 45 px dans l'échelle
+ * DS (PAS 24) et à TOUTES les largeurs, aucun palier responsive. Il BATTAIT donc le h1
+ * du hero sous 768 px (45 contre 35) et l'ÉGALAIT de 768 à 1023 px (45 contre 45) :
+ * l'AC « le h1 reste le plus grand élément de la page » était en défaut à cause du pied
+ * de page. Défaut PRÉEXISTANT à #348 (le h1 valait alors 36 px, défaut Tailwind de
+ * `text-4xl`), pas une régression — mais sa correction est nécessaire à l'AC.
+ *
+ * Aligné sur le wordmark du header (`HeaderSection`, fixé par #381) : `text-md sm:text-lg`
+ * = 21 / 27 px. C'est le MÊME wordmark, il n'y a pas de raison qu'il ait deux échelles.
+ *
+ * ⚠ PAS de `whitespace-nowrap` ici, contrairement au header — et c'est MESURÉ, pas déduit.
+ * Le header le porte parce qu'il est un `flex` contraint partageant sa ligne avec la nav
+ * et les CTA. Le footer, lui, est une colonne d'un `flex-col md:flex-row` : à 320 px le
+ * wordmark dispose de 288 px pour ~110 px de texte, et rend sur UNE ligne dans les quatre
+ * locales sans l'aide d'aucune utilitaire. Ajouter `whitespace-nowrap` serait une
+ * protection inerte contre un débordement qui n'existe pas.
+ *
+ * ⚠ Pas de `leading-*` explicite nécessaire : la description `<p>` et le wordmark rendent
+ * tous deux hors du périmètre de `base.css:53` (qui ne couvre que `h1..h6`), mais aucune
+ * hiérarchie ne dépend de leur interligne — seule la TAILLE est assertée ici. Le wordmark
+ * (21/27) reste au-dessus de la description (15 px, héritée du `body`) : l'inversion est
+ * supprimée, pas déplacée. Relevé : `e2e/landing-typography-hierarchy.spec.ts`.
  */
 export function FooterSection({ locale }: FooterSectionProps = {}) {
   const t = useTranslations()
@@ -35,7 +58,7 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="mb-6 md:mb-0">
-            <div className="text-accent mb-2 text-2xl font-bold">Ma Timeline</div>
+            <div className="text-accent text-md mb-2 font-bold sm:text-lg">Ma Timeline</div>
             <p className="text-ink-muted">{t('common.landing.footer.description')}</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8">

@@ -11,20 +11,28 @@ import { useTranslations } from 'next-intl'
  * ne fabrique donc aucune nouvelle convention.
  *
  * #348 — ÉCHELLE DU CHIFFRE D'ÉTAPE. Il portait `text-2xl` (45 px dans l'échelle DS,
- * pas 24) et dépassait donc le `h2` de sa propre section (27 px sous `md`). Passé à
- * `text-lg` (27 px, sans palier : la pastille fait `h-16 w-16` à toutes largeurs).
+ * pas 24) et dépassait donc le `h2` de sa propre section. Une 1ʳᵉ passe l'a mis à
+ * `text-lg` (27 px sans palier), ce qui laissait l'AC #1 en défaut : sous `md` le
+ * chiffre ÉGALAIT le h2 (27) et DÉPASSAIT le h3 de sa propre étape (21).
  *
- * ⚠ `leading-none` explicite, pour la même raison que le sous-titre du hero : le
- * `line-height` de `base.css:53` ne couvre que `h1..h6`, et l'utilitaire `text-lg`
- * apparie `--text-lg--line-height` = 1.5556 (défaut Tailwind, non remappé par
- * `@theme inline`). Sans lui, la boîte de ligne du chiffre vaudrait 42 px dans une
- * pastille de 64 px au lieu de 27. Cf. `ds/tokens/base.css:21-52`.
+ * VALEUR RETENUE : `text-sm md:text-md` = 17 / 21 px. L'AC #1 demande « STRICTEMENT
+ * plus petit que le titre auquel il se rattache », et le titre auquel ce chiffre se
+ * rattache est le `h3` de SON étape (21 / 27), pas le h2 de section. Les deux candidats
+ * ont été mesurés en jammy, dans la pastille réelle :
+ *   · `text-md md:text-lg` (21 / 27) → ÉGALE le h3 aux deux paliers. Rejeté : l'AC
+ *     demande une inégalité stricte, et une égalité n'est pas une hiérarchie.
+ *   · `text-sm md:text-md` (17 / 21) → strictement sous le h3 ET sous le h2 partout.
+ * La crainte « trop petit, le chiffre flotte dans le rond » ne s'est PAS vérifiée : la
+ * pastille fait 64 px, le chiffre y occupe 26,6 % de la hauteur sous `md` et 32,8 %
+ * au-dessus, avec un décentrage MESURÉ de 0,00 px en x comme en y (le `flex
+ * items-center justify-center` de la pastille centre la boîte de ligne, quelle que
+ * soit sa taille). Relevé complet : `e2e/landing-typography-hierarchy.spec.ts`.
  *
- * ⚠ ÉCART D'AC ASSUMÉ ET MESURÉ : sous `md`, le chiffre (27 px) ÉGALE le `h2` de
- * section (27 px) et DÉPASSE le `h3` de son étape (21 px). L'AC de #348 demandait
- * « strictement plus petit ». Le verdict `ui-design` fixe malgré tout `text-lg` —
- * l'écart est remonté en follow-up plutôt qu'arbitré ici. Relevé chiffré :
- * `e2e/landing-typography-hierarchy.spec.ts`.
+ * ⚠ `leading-none` explicite, à CONSERVER, pour la même raison que le sous-titre du
+ * hero : le `line-height` de `base.css:53` ne couvre que `h1..h6`, et une utilitaire
+ * `text-*` apparie son propre `--text-*--line-height` (défaut Tailwind 1.5556, non
+ * remappé par `@theme inline`). Sans lui la boîte de ligne du chiffre enflerait et il
+ * se décentrerait dans sa pastille. Piège MESURÉ, pas supposé. Cf. `base.css:21-52`.
  */
 const STEPS = [1, 2, 3, 4] as const
 
@@ -47,7 +55,9 @@ export function HowItWorksSection() {
           {STEPS.map((step) => (
             <div key={step} className="p-6 text-center">
               <div className="bg-accent-soft mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                <span className="text-accent text-lg leading-none font-bold">{step}</span>
+                <span className="text-accent md:text-md text-sm leading-none font-bold">
+                  {step}
+                </span>
               </div>
               <h3 className="text-ink text-md mb-2 font-bold md:text-lg">
                 {t(`common.landing.howItWorks.step${step}.title`)}

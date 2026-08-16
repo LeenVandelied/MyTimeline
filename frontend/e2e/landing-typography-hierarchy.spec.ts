@@ -2,7 +2,18 @@ import { test, expect, type Page } from '@playwright/test'
 import { waitForFonts } from './support/contrast'
 
 /**
- * #348 — HIÉRARCHIE TYPOGRAPHIQUE RENDUE DE LA LANDING, 3 PALIERS × 4 LOCALES × 2 THÈMES.
+ * #348 — HIÉRARCHIE TYPOGRAPHIQUE RENDUE DE LA LANDING, 4 PALIERS × 4 LOCALES × 2 THÈMES.
+ *
+ * ⚠ DEUX DÉROGATIONS ONT ÉTÉ RETIRÉES de cette spec en soldant les AC #1 et #2 de #348.
+ * Elles encodaient l'état du code plutôt que l'AC, et il faut savoir pourquoi avant de
+ * les réintroduire « pour faire passer le test » :
+ *   1. le `<footer>` était EXCLU du balayage « le h1 est le plus grand » (AC #2), parce
+ *      que son wordmark rendait 45 px à toutes largeurs. Le wordmark suit désormais le
+ *      header (`text-md sm:text-lg`) et le balayage couvre la page ENTIÈRE ;
+ *   2. le chiffre d'étape était figé en `<=` sous `md` (AC #1) pour tolérer l'égalité
+ *      27/27 avec le h2 — ce qui masquait qu'il DÉPASSAIT le h3 de sa propre étape.
+ *      Il est en `<` STRICT contre le h3 ET le h2, à tous les paliers.
+ * Un test qui encode le défaut au lieu de l'AC ne protège rien : il le rend permanent.
  *
  * POURQUOI UN E2E ET PAS UN UNITAIRE. Rien ici ne se déduit d'une classe utilitaire :
  *   · l'échelle du DS Graphite n'est PAS celle de Tailwind (`text-lg` = 27 px, pas 18) ;
@@ -30,8 +41,12 @@ const SCHEMES = ['light', 'dark'] as const
  * nominal. On mesure LES DEUX CÔTÉS de chaque seuil : #381 a montré qu'un défaut
  * attendu entre 768 et 1023 sortait en réalité à 1024 (le `container` Tailwind
  * plafonne la largeur utile et peut annuler le défaut attendu).
+ *
+ * 639/640 ajoutés en absorbant l'AC #2 : le wordmark du footer est le SEUL élément de
+ * la landing dont la bascule est en `sm` (640) et non en `md`. Sans ces deux largeurs,
+ * son palier ne serait vérifié que par accident, de part et d'autre du seuil `md`.
  */
-const WIDTHS = [320, 375, 768, 1023, 1024, 1280] as const
+const WIDTHS = [320, 375, 639, 640, 768, 1023, 1024, 1280] as const
 
 /** Échelle DS complète (`ds/tokens/typography.css`). Rien ne doit rendre hors d'elle. */
 const DS_SCALE = [13, 15, 17, 21, 27, 35, 45, 57]
@@ -42,9 +57,16 @@ const DS_SCALE = [13, 15, 17, 21, 27, 35, 45, 57]
  * RENDUS et non en classes.
  */
 function expected(width: number) {
-  if (width < 768) return { h1: 35, subtitle: 21, h2: 27, h3: 21, stepNumber: 27 }
-  if (width < 1024) return { h1: 45, subtitle: 27, h2: 35, h3: 27, stepNumber: 27 }
-  return { h1: 57, subtitle: 27, h2: 35, h3: 27, stepNumber: 27 }
+  if (width < 640) {
+    return { h1: 35, subtitle: 21, h2: 27, h3: 21, stepNumber: 17, footerWordmark: 21 }
+  }
+  if (width < 768) {
+    return { h1: 35, subtitle: 21, h2: 27, h3: 21, stepNumber: 17, footerWordmark: 27 }
+  }
+  if (width < 1024) {
+    return { h1: 45, subtitle: 27, h2: 35, h3: 27, stepNumber: 21, footerWordmark: 27 }
+  }
+  return { h1: 57, subtitle: 27, h2: 35, h3: 27, stepNumber: 21, footerWordmark: 27 }
 }
 
 /**
@@ -86,11 +108,19 @@ interface TypeMetrics {
   columnWidth: number
   h1ScrollWidth: number
   h1ClientWidth: number
-  /** Plus grande taille rendue HORS `<footer>` et hors outillage de dev — cf. AC #2. */
+  /**
+   * Plus grande taille rendue de TOUTE la page, `<footer>` COMPRIS — hors seul
+   * outillage de dev. C'est l'assertion de l'AC #2 ; le footer n'en est plus exclu.
+   */
   pageMaxFontPx: number
   pageMaxFontTag: string
-  /** Plus grande taille rendue DANS le `<footer>` — relevée, non assertée (cf. AC #2). */
+  /** Plus grande taille rendue DANS le `<footer>`, relevée à part pour le diagnostic. */
   footerMaxFontPx: number
+  footerMaxFontTag: string
+  /** Wordmark « Ma Timeline » du footer et sa description — cf. AC #2. */
+  footerWordmark: number
+  footerDescription: number
+  footerWordmarkLines: number
   docScrollWidth: number
   docClientWidth: number
 }
@@ -135,13 +165,40 @@ async function readTypography(page: Page, devTooling: string[]): Promise<TypeMet
     // jamais déduit d'une hauteur.
     const range = document.createRange()
     range.selectNodeContents(h1)
-    const h1Lines = Array.from(range.getClientRects()).filter((r) => r.width > 0 && r.height > 0)
-      .length
+    const h1Lines = Array.from(range.getClientRects()).filter(
+      (r) => r.width > 0 && r.height > 0,
+    ).length
 
-    // Balayage page entière : le h1 doit rester le plus GROS texte rendu (AC #2).
+    // Le wordmark du footer : ancré STRUCTURELLEMENT comme le sous-titre du hero
+    // (frère précédent de la description), jamais sur le libellé « Ma Timeline ».
+    const footer = document.querySelector('footer')
+    if (!footer) throw new Error('footer introuvable')
+    const footerDescription = footer.querySelector('p')
+    if (!footerDescription) throw new Error('description du footer introuvable')
+    const footerWordmark = footerDescription.previousElementSibling
+    if (!footerWordmark) throw new Error('wordmark du footer introuvable')
+
+    const wordmarkRange = document.createRange()
+    wordmarkRange.selectNodeContents(footerWordmark)
+    const footerWordmarkLines = Array.from(wordmarkRange.getClientRects()).filter(
+      (r) => r.width > 0 && r.height > 0,
+    ).length
+
+    /**
+     * Balayage page ENTIÈRE : le h1 doit rester le plus GROS texte rendu (AC #2).
+     *
+     * ⚠ Le `<footer>` n'est PLUS exclu. L'exclusion précédente était le contournement
+     * d'un vrai défaut (`FooterSection` rendait son wordmark en `text-2xl` = 45 px à
+     * toutes largeurs, battant le h1 sous 768 px et l'égalant jusqu'à 1023 px). Le
+     * wordmark est désormais aligné sur celui du header (`text-md sm:text-lg`), donc
+     * l'AC #2 est vérifiable sans dérogation — et le rester est précisément ce que ce
+     * balayage verrouille. Ne PAS réintroduire d'exclusion de zone ici : seule
+     * l'exclusion de l'outillage de DÉVELOPPEMENT (absent en production) est légitime.
+     */
     let pageMaxFontPx = 0
     let pageMaxFontTag = ''
     let footerMaxFontPx = 0
+    let footerMaxFontTag = ''
     for (const el of Array.from(document.querySelectorAll('body *'))) {
       if (tooling.some((sel) => el.closest(sel))) continue
       const style = getComputedStyle(el)
@@ -153,13 +210,14 @@ async function readTypography(page: Page, devTooling: string[]): Promise<TypeMet
       )
       if (!ownText) continue
       const size = parseFloat(style.fontSize)
-      if (el.closest('footer')) {
-        footerMaxFontPx = Math.max(footerMaxFontPx, size)
-        continue
+      const tag = `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 40)}`
+      if (el.closest('footer') && size > footerMaxFontPx) {
+        footerMaxFontPx = size
+        footerMaxFontTag = tag
       }
       if (size > pageMaxFontPx) {
         pageMaxFontPx = size
-        pageMaxFontTag = `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 40)}`
+        pageMaxFontTag = tag
       }
     }
 
@@ -181,6 +239,10 @@ async function readTypography(page: Page, devTooling: string[]): Promise<TypeMet
       pageMaxFontPx,
       pageMaxFontTag,
       footerMaxFontPx,
+      footerMaxFontTag,
+      footerWordmark: px(footerWordmark),
+      footerDescription: px(footerDescription),
+      footerWordmarkLines,
       docScrollWidth: document.documentElement.scrollWidth,
       docClientWidth: document.documentElement.clientWidth,
     }
@@ -209,19 +271,15 @@ for (const scheme of SCHEMES) {
             `${locale}: h1 ${m.h1}px×${m.h1Ratio}/${m.h1Lines}l (boîte ${m.h1BoxWidth} dans ` +
               `colonne ${m.columnWidth}), sous-titre ${m.subtitle}px×${m.subtitleRatio}, ` +
               `h2 ${m.h2}px, h3 ${m.h3}px, ` +
-              `chiffre ${m.stepNumber}px×${m.stepNumberRatio}, max hors-footer ${m.pageMaxFontPx}px ` +
-              `(${m.pageMaxFontTag}), max footer ${m.footerMaxFontPx}px`,
+              `chiffre ${m.stepNumber}px×${m.stepNumberRatio}, wordmark footer ` +
+              `${m.footerWordmark}px/${m.footerWordmarkLines}l (desc ${m.footerDescription}px), ` +
+              `max page ${m.pageMaxFontPx}px (${m.pageMaxFontTag}), ` +
+              `max footer ${m.footerMaxFontPx}px (${m.footerMaxFontTag})`,
           )
 
           // `expect.soft` : on veut le tableau COMPLET des locales fautives. Corriger
           // `fr` sans regarder `de`/`es` a déjà produit un faux « corrigé » au S49.
-          const check = (
-            label: string,
-            got: number,
-            wanted: number,
-            token: string,
-            extra = '',
-          ) =>
+          const check = (label: string, got: number, wanted: number, token: string, extra = '') =>
             expect
               .soft(
                 got,
@@ -249,8 +307,9 @@ for (const scheme of SCHEMES) {
             'chiffre d’étape',
             m.stepNumber,
             want.stepNumber,
-            'text-lg',
-            ' À `text-2xl` il vaudrait 45px et dépasserait le h2 de sa propre section.',
+            width < 768 ? 'text-sm' : 'md:text-md',
+            ' À `text-lg` il vaudrait 27px partout : ÉGAL au h2 sous md, et au-dessus ' +
+              'du h3 de sa propre étape (21px).',
           )
 
           // INTERLIGNES — la moitié invisible du correctif (cf. EXPECTED_RATIO).
@@ -271,30 +330,58 @@ for (const scheme of SCHEMES) {
           }
 
           // AC #2 — le h1 est l'élément le plus grand de la page, à toutes largeurs.
-          expect
-            .soft(m.h1Count, `un seul h1 attendu sur la landing, trouvé ${m.h1Count}`)
-            .toBe(1)
+          expect.soft(m.h1Count, `un seul h1 attendu sur la landing, trouvé ${m.h1Count}`).toBe(1)
 
           /**
-           * ⚠ `<footer>` EXCLU DU BALAYAGE — exclusion MESURÉE, pas commodité.
-           * Première exécution jammy de cette spec, AVANT toute exclusion :
-           * `FooterSection.tsx:38` rend « Ma Timeline » en `text-2xl` = 45 px, à
-           * TOUTES largeurs (aucun palier). Il bat donc le h1 à 320/375 px (35 px) et
-           * l'ÉGALE de 768 à 1023 px (45 px) : l'AC #2 est en défaut sous `lg` pour un
-           * élément HORS du périmètre de #348 — et elle l'était DÉJÀ avant ce
-           * correctif, le h1 valant alors 36 px (défaut Tailwind `text-4xl`).
-           * Le briefing classe explicitement ce site en follow-up : on ne le corrige
-           * pas « en passant ». On l'exclut donc du verdict tout en RELEVANT sa taille
-           * (annotation ci-dessous), pour que le chiffre reste au dossier.
+           * AC #2 — LE h1 EST LE PLUS GRAND TEXTE DE LA PAGE, `<footer>` COMPRIS.
+           *
+           * L'exclusion du `<footer>` qui vivait ici est SUPPRIMÉE. Elle contournait un
+           * défaut réel et mesuré : `FooterSection` rendait « Ma Timeline » en
+           * `text-2xl` = 45 px à TOUTES largeurs (aucun palier), battant donc le h1 à
+           * 320/375 px (35) et l'ÉGALANT de 768 à 1023 px (45). Le wordmark est passé à
+           * `text-md sm:text-lg` (21 / 27), aligné sur celui du header : le balayage
+           * couvre désormais la page entière et l'AC est verrouillée pour de bon.
            */
           expect
             .soft(
               m.pageMaxFontPx,
-              `le h1 (${m.h1}px) doit rester le plus grand texte rendu hors footer à ` +
-                `${width} px en ${locale} — mesuré ${m.pageMaxFontPx}px sur ` +
-                `\`${m.pageMaxFontTag}\``,
+              `le h1 (${m.h1}px) doit rester le plus grand texte rendu de la page ENTIÈRE ` +
+                `(footer compris) à ${width} px en ${locale} — mesuré ${m.pageMaxFontPx}px ` +
+                `sur \`${m.pageMaxFontTag}\`. Si le coupable est dans le \`<footer>\`, ` +
+                `c'est le wordmark : il doit suivre le header (\`text-md sm:text-lg\`), ` +
+                `pas repasser à \`text-2xl\` (45px).`,
             )
             .toBe(m.h1)
+
+          // Le wordmark du footer suit l'échelle du header — c'est le MÊME wordmark.
+          check(
+            'wordmark du footer',
+            m.footerWordmark,
+            want.footerWordmark,
+            width < 640 ? 'text-md' : 'sm:text-lg',
+            ' À `text-2xl` il vaudrait 45px et battrait le h1 sous 768px.',
+          )
+          // L'inversion doit DISPARAÎTRE, pas se déplacer : le wordmark reste au-dessus
+          // de la description qu'il coiffe (15px, héritée du `body`).
+          expect
+            .soft(
+              m.footerWordmark,
+              `le wordmark du footer (${m.footerWordmark}px) doit rester AU-DESSUS de sa ` +
+                `description (${m.footerDescription}px) à ${width} px en ${locale} — ` +
+                `sinon l'inversion de hiérarchie est déplacée, pas supprimée`,
+            )
+            .toBeGreaterThan(m.footerDescription)
+          // `whitespace-nowrap` volontairement ABSENT au footer (contrairement au
+          // header) : ce test est ce qui justifie son absence, plutôt qu'un réflexe.
+          expect
+            .soft(
+              m.footerWordmarkLines,
+              `le wordmark du footer doit tenir sur UNE ligne à ${width} px en ${locale} ` +
+                `sans \`whitespace-nowrap\` — mesuré ${m.footerWordmarkLines} ligne(s). ` +
+                `S'il en prend deux, c'est \`whitespace-nowrap\` qu'il faut ajouter, ` +
+                `pas ce test qu'il faut assouplir.`,
+            )
+            .toBe(1)
 
           // AC #1 — chaque élément secondaire rend sous le titre qu'il accompagne.
           expect
@@ -313,32 +400,32 @@ for (const scheme of SCHEMES) {
             .toBeLessThan(m.h1)
 
           /**
-           * ⚠ ÉCART D'AC MESURÉ ET ASSUMÉ, PAS UN OUBLI.
-           * L'AC de #348 demande « STRICTEMENT plus petit ». Le verdict `ui-design`
-           * fixe le chiffre d'étape à `text-lg` sans palier (27 px) et le h2 à
-           * `text-lg md:text-xl` (27 / 35) : sous `md` les deux valent 27 px — ÉGAUX,
-           * pas strictement inférieurs. Et le chiffre DÉPASSE alors le h3 de sa propre
-           * étape (21 px). On fige donc l'inégalité LARGE contre le h2, et l'inégalité
-           * STRICTE seulement là où le verdict la produit (≥ 768 px). L'écart part en
-           * follow-up ; le figer ici en `<=` empêche au moins une régression vers 45 px.
+           * AC #1 — LE CHIFFRE D'ÉTAPE, STRICTEMENT, À TOUS LES PALIERS.
+           *
+           * La tolérance `<=` qui vivait ici est SUPPRIMÉE : elle figeait l'égalité
+           * chiffre/h2 sous `md` (27 = 27) que produisait `text-lg`, et laissait passer
+           * le vrai défaut — le chiffre DÉPASSAIT alors le h3 de sa propre étape
+           * (27 > 21). Le chiffre est décoratif et se rattache au h3 de SON étape :
+           * c'est contre lui que l'AC « strictement plus petit » se mesure d'abord.
+           * `text-sm md:text-md` (17 / 21) le place sous les deux, partout.
            */
           expect
             .soft(
               m.stepNumber,
-              `chiffre d’étape (${m.stepNumber}px) vs h2 de section (${m.h2}px) à ${width} px ` +
-                `en ${locale} — égalité TOLÉRÉE sous md (écart d'AC #348 documenté), ` +
-                `dépassement JAMAIS`,
+              `chiffre d’étape (${m.stepNumber}px) vs h3 de son étape (${m.h3}px) à ` +
+                `${width} px en ${locale} — l'AC #1 exige STRICTEMENT plus petit que le ` +
+                `titre auquel il se rattache. Égalité = échec : ` +
+                `\`text-md md:text-lg\` rendrait 21/27, soit exactement le h3.`,
             )
-            .toBeLessThanOrEqual(m.h2)
-          if (width >= 768) {
-            expect
-              .soft(
-                m.stepNumber,
-                `au-dessus de md le chiffre d’étape (${m.stepNumber}px) doit rendre ` +
-                  `STRICTEMENT sous le h2 (${m.h2}px) — ${width} px, ${locale}`,
-              )
-              .toBeLessThan(m.h2)
-          }
+            .toBeLessThan(m.h3)
+          expect
+            .soft(
+              m.stepNumber,
+              `chiffre d’étape (${m.stepNumber}px) vs h2 de section (${m.h2}px) à ${width} px ` +
+                `en ${locale} — STRICTEMENT plus petit exigé à TOUS les paliers, y compris ` +
+                `sous md (c'est là que \`text-lg\` produisait l'égalité 27/27).`,
+            )
+            .toBeLessThan(m.h2)
 
           // Toute taille rendue reste DANS l'échelle DS — le vrai garde-fou anti-`4xl`.
           for (const [label, value] of Object.entries({
@@ -347,6 +434,7 @@ for (const scheme of SCHEMES) {
             h2: m.h2,
             h3: m.h3,
             stepNumber: m.stepNumber,
+            footerWordmark: m.footerWordmark,
           })) {
             expect
               .soft(
