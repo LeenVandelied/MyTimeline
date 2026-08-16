@@ -27,17 +27,18 @@ interface HeaderSectionProps {
  *
  * #334 : le header débordait de 173 px à 375 px de large. Sous le point de bascule, le
  * groupe droit est réduit à `[Inscription] [burger]` — les ancres de navigation,
- * « Connexion » et le sélecteur de langue basculent dans `LandingMobileMenu`. Le logo
- * suit l'échelle typo du DS (`text-md` 21 px → `text-lg` 27 px → `text-3xl` 57 px).
- * ⚠ L'échelle du DS Graphite n'est PAS celle de Tailwind (`text-3xl` = 57 px, pas
- * 30 px) — tout calcul de largeur doit partir de `ds/tokens/typography.css`, sinon
- * le budget de largeur est faux d'un facteur ~2. Mesuré au navigateur à 375 px :
- * logo 121 px + groupe 178 px (de) = 299 px pour 343 px disponibles.
+ * « Connexion » et le sélecteur de langue basculent dans `LandingMobileMenu`.
+ * ⚠ L'échelle du DS Graphite n'est PAS celle de Tailwind — tout calcul de largeur doit
+ * partir de `ds/tokens/typography.css` (`text-md` = 21 px, `text-lg` = 27 px), sinon le
+ * budget de largeur est faux d'un facteur ~2. Mesuré au navigateur à 375 px :
+ * logo 122 px + groupe 178 px (de) = 300 px pour 343 px disponibles.
  *
  * #347 : #334 avait borné la bascule à `md` (768 px), ce qui laissait le palier
  * tablette 768–1023 px rendre la mise en page desktop COMPLÈTE dans un conteneur de
- * 736 px utiles. Mesuré au navigateur au HEAD 473ed65, à 768 px (min-content des trois
- * blocs, conteneur `container` = 768 px moins 2×16 px de `px-4`) :
+ * 736 px utiles. Le tableau ci-dessous est un RELEVÉ HISTORIQUE (HEAD 473ed65, logo
+ * encore à `md:text-3xl` 57 px) : il documente pourquoi la bascule est passée à `lg`,
+ * il ne décrit plus le code actuel — #381 a depuis ramené le logo à 27 px, donc
+ * NE PAS recalculer sur ces largeurs de logo.
  *
  *   locale | logo  | nav   | groupe droit | total | dispo | débordement
  *   fr     | 234   | 322,5 | 298,8        | 855,1 | 736   | +103 px
@@ -45,16 +46,36 @@ interface HeaderSectionProps {
  *   es     | 234   | 302,4 | 323,5        | 859,7 | 736   | +108 px
  *   en     | 255,1 | 246,2 | 234,8        | 736,1 | 736   |    0 px
  *
- * Aucun bloc n'est seul coupable : les trois sont DÉJÀ compressés à leur min-content
- * (le logo y tombe sur deux lignes, 137 px de haut) et leur somme dépasse encore.
- * D'où le choix de retirer des blocs du palier plutôt que de les rétrécir : la bascule
- * passe à `lg` (1024 px). Les deux autres arbitrages proposés par l'issue ont été
- * SIMULÉS au navigateur avant de trancher — ne faire basculer que le groupe droit
- * (langue + Connexion) ramène le débordement à zéro mais avec **0 px de marge** dans
- * les 4 locales, logo toujours sur deux lignes ; la bascule à `lg` laisse 223 à 258 px
- * de marge et remet le logo sur une ligne. Cf. `issue-347-done.md`.
+ * Aucun bloc n'était seul coupable : les trois étaient DÉJÀ compressés à leur
+ * min-content (le logo y tombait sur deux lignes, 137 px de haut) et leur somme
+ * dépassait encore. D'où le choix de retirer des blocs du palier plutôt que de les
+ * rétrécir : la bascule passe à `lg` (1024 px). Cf. `issue-347-done.md`.
  *
- * À `lg:` et au-dessus, le header est rendu strictement à l'identique d'avant #334.
+ * #381 — LE LOGO N'A PLUS DE PALIER PROPRE. #347 avait remonté tout le header à `lg`
+ * en oubliant le logo, resté à `md:text-3xl` + `md:whitespace-normal`. Le désalignement
+ * était factuel ; le défaut visible qu'on lui prêtait entre 768 et 1023 px, NON —
+ * mesuré dans `mcr.microsoft.com/playwright:v1.61.1-jammy` (4 locales × clair/sombre),
+ * le logo y tenait sur UNE ligne (57 px, 330 px de large, 223 à 262 px de marge), sans
+ * débordement. Le `container` y est plafonné à 768 px, la nav est masquée : la place ne
+ * manquait pas.
+ *
+ * Le vrai défaut était 1 px plus loin, à 1024 px, là où la nav revient :
+ *
+ *   locale | avant #381 (57 px)          | après #381 (27 px)
+ *   fr     | 2 lignes, marge 0 px        | 1 ligne, 159 px, marge 58,5 px
+ *   de     | 2 lignes, marge 0 px        | 1 ligne, 159 px, marge   82 px
+ *   es     | 2 lignes, marge 0 px        | 1 ligne, 159 px, marge   72 px
+ *   en     | 1 ligne,  marge 61 px       | 1 ligne, 159 px, marge 146,5 px
+ *
+ * Le header passait de 116,4 à 184,8 px de haut en `fr`/`de`/`es` — pour un wordmark.
+ * 57 px était un vestige, pas un choix : le logo suit désormais `text-md` (21 px) puis
+ * `text-lg` (27 px) à partir de `sm`, en `whitespace-nowrap` à TOUTES les largeurs.
+ * Une seule bascule d'échelle, à `sm`, et elle ne croise aucun seuil de mise en page.
+ * Hauteur du header après correctif : 92 px sous `lg`, 90 px au-dessus, dans les
+ * 4 locales et les 2 thèmes. Les paliers 320/375/390 px sont INCHANGÉS (21 px,
+ * 122 px de large) — `sm` est à 640 px. Garde-fou : `e2e/landing-header-logo.spec.ts`
+ * (nombre de lignes + taille rendue + marge ; `scrollWidth <= clientWidth` seul est
+ * aveugle à ce défaut, un logo sur deux lignes le satisfait).
  */
 /**
  * Point de bascule `lg` de Tailwind — le panneau mobile est en `lg:hidden`.
@@ -104,10 +125,12 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   return (
     <header className="container mx-auto flex items-center justify-between px-4 py-6">
       <div className="flex items-center">
-        {/* `whitespace-nowrap` UNIQUEMENT sous `md` : à `text-3xl` (57 px) le logo
-            se coupe en deux lignes, et l'empêcher élargirait le header desktop de
-            234 → 328 px. Au-dessus de `md` on restitue donc le comportement d'origine. */}
-        <div className="text-accent text-md sm:text-lg md:text-3xl font-bold whitespace-nowrap md:whitespace-normal">
+        {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
+            `text-md` (21 px) puis `text-lg` (27 px) à partir de `sm`, et
+            `whitespace-nowrap` à TOUTES les largeurs. Ni `md:text-3xl` ni
+            `md:whitespace-normal` : le wordmark ne se coupe plus jamais.
+            Justification chiffrée dans le bloc JSDoc du composant. */}
+        <div className="text-accent text-md sm:text-lg font-bold whitespace-nowrap">
           Ma Timeline
         </div>
       </div>
@@ -162,14 +185,40 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             Corriger `de` seul aurait laissé `es` à 4 px du même échec. On reprend donc
             les métriques HORIZONTALES de la taille `sm` du DS (`px-3` + `text-xs`,
             cf. `button.tsx`) sans sa hauteur `h-8` : `h-11` reste, la cible tactile
-            de 44 px exigée par #334 est préservée. Après correctif, les 4 locales
-            requièrent 281 px pour 288 dispo — soit **7 px de marge dans la boîte de
-            contenu**, et un bord droit du groupe à 304 px pour 320 de viewport
-            (**16 px avant le bord de l'écran**). Ce sont les deux mesures utiles ;
-            une version antérieure de ce commentaire annonçait « 23 px », chiffre
-            qui ne correspondait à aucune des deux (relevé en review de la PR #374).
-            Aucun `matchMedia` ne double ce seuil (contrairement à `lg`) :
-            il est purement CSS, rien à resynchroniser côté JS. */}
+            de 44 px exigée par #334 est préservée. Aucun `matchMedia` ne double ce
+            seuil (contrairement à `lg`) : il est purement CSS, rien à resynchroniser
+            côté JS.
+
+            ── RELEVÉ APRÈS CORRECTIF — 320 px, image `mcr.microsoft.com/playwright:
+            v1.61.1-jammy`, re-mesuré le 2026-08-16 sur `sprint/59` @ `9b1cb39`
+            (`--workers=1`, serveur `next dev` de l'hôte) :
+
+              locale | logo | groupe droit | requis | dispo | MARGE | bord droit
+              en     | 122  | 126          | 248    | 288   |  40   | 304
+              fr     | 122  | 148          | 270    | 288   |  18   | 304
+              es     | 122  | 156          | 278    | 288   |  10   | 304
+              de     | 122  | 161          | 283    | 288   |   5   | 304
+
+            ⚠ UN SEUL CHIFFRE DE MARGE, ET IL VAUT 5 px (`de`, pire cas). Le header
+            est `justify-between` et la `nav` est en `display:none` sous `lg` : il n'y
+            a que DEUX flex items, donc « marge restante dans la boîte de contenu » et
+            « écart entre le logo et le groupe droit » sont LA MÊME GRANDEUR — 5 px,
+            pas deux valeurs. Ce bloc a successivement annoncé « 23 px » (PR #374),
+            puis « 281 requis → 7 px de marge » ici et « 5 px » dans l'addendum #381
+            douze lignes plus bas : trois chiffres pour une seule mesure, dont deux
+            périmés. Relevé en review du Sprint 59, tranché par la re-mesure ci-dessus.
+            Ne PAS réintroduire de second chiffre : si le layout change, on remesure et
+            on remplace ce tableau, on ne le double pas. Le bord droit du groupe est à
+            304 px pour 320 de viewport dans les 4 locales, soit 16 px avant le bord de
+            l'écran, et `documentElement.scrollWidth === clientWidth === 320`.
+
+            ⚠ 5 px, c'est SOUS le plancher « marge à deux chiffres » de PIT-S52-001 :
+            `de` reste le cas tendu et le prochain élargissement du groupe droit le
+            fera basculer. Dette connue, non traitée ici.
+
+            #381 — CE BLOC RESTE EXACT pour les paliers concernés : le correctif de
+            #381 ne touche que >= `sm` (640 px), à 320 px le logo était et reste à
+            `text-md` (21 px, boîte 122 px). */}
         <Button
           asChild
           className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-3 max-[360px]:text-xs lg:h-9"

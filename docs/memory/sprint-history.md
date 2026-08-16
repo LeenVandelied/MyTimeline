@@ -2349,29 +2349,141 @@ exactement le travail perdu que l'architect voulait éviter en la plaçant aprè
 > WebKit. ⚠ **#342 (non planifiée) touche `language-selector.tsx`** — ne pas la planifier en parallèle.
 > **Arbitrage `ui-design` requis** : un reset de focus a-t-il le droit d'imposer un `border-radius` ?
 
-## Sprint 59 — 2026-07-30 (PLANIFIE — MVP local : header et hiérarchie typographique de la landing)
+## Sprint 59 — 2026-08-16 (Terminé — merge PR #421 dans `dev`)
 **Objectif :** Solder les défauts de rendu du header aux paliers 768-1024 px et l'échelle typo de la landing
-**Milestone GitHub :** #60
-**Issues (4) :** #381 (P2/S), #379 (P2/S), #348 (P2/S), #341 (P2/S) — **8 pts**
-**Vagues :** V1 = #381 (mesure) ∥ #341 (investigation) | V2 = #379 | V3 = #348
+**Milestone GitHub :** #60 (fermé après merge)
+**Issues livrées (4/4) :** #381, #379, #348, #341 — **8 pts, 100 % du plan**
+**Vagues exécutées :** V1 = #381 ∥ #341 (2 fullstack-dev parallèles) | **V2 supprimée** (#379 résolue par #381) | V3 = #348 | + 1 absorption post-V3
 **Cohésion :** 0.81
-**Migrations Flyway :** aucune
-**Depend de :** Sprint 58 (#353 agrandit le déclencheur de langue **dans le header**)
-**Status :** Planifie — **le lot le plus faible en valeur MVP des cinq, d'où sa position**
+**Migrations Flyway :** aucune. **Aucun fichier backend touché.**
+**Commits :** 6 — `b722c10` (#381) · `a62b3f7` (#341) · `860b0b0` (#348) · `9b1cb39` (absorption AC) · `4cf19f2` (corrections de review) · `61dc1ec` (artefacts)
+**Diff :** +1504 / −36 sur 10 fichiers, dont **929 lignes de tests**
+**BR impactées :** aucune (défauts de rendu, aucun flux cross-system)
+**Reviews :** reviewer batch — **0 CRITIQUE / 1 MAJEUR / 6 MINEURS**, tous RÉSOLUS en **1 seul cycle**
+**Tests :** unitaires 888/888 · `tsc` 0 erreur · **E2E suite complète 183/183** (specs authentifiées incluses) · backend 462/462
+**CI :** les 4 checks requis verts (`backend`, `frontend`, `e2e`, `ai-env-packs`) + `flyway-smoke`. `security` **rouge, préexistant** (`nanoid`, cf. follow-ups) et **non requis**.
+**Spécialistes spawnés :** `ui-design` ×2 (arbitrage amont + ratification de clôture), `test-runner` ×1, `reviewer` ×1
 
-> ⚠ **#381, #379 et #348 visent LA MÊME LIGNE `HeaderSection.tsx:110`** — et leurs numéros de ligne
-> se contredisent (#348 dit 54, #379 dit 86, #381 dit 110). **La vérité est 110.** Chaîne
-> strictement séquentielle, jamais en parallèle.
-> **#341 : mesure négative utile** — aucun `<svg>` ni `<g ` littéral dans
-> `frontend/src/components/landing/*.tsx`. Le coupable vient d'une dépendance (lucide-react) ou de
-> `HeroTimelineAnimation.tsx`. **La piste technique de l'issue n'est PAS confirmée**, investigation
-> avant estimation.
-> **#381 doit être mesurée dans l'image `playwright:jammy`** : les métriques de police macOS ont
-> fait conclure à tort deux sprints de suite (PIT-S52-001). Un test `scrollWidth <= clientWidth`
-> seul est **non recevable** — un logo sur 2 lignes le satisfait.
-> **Tension d'AC à trancher :** #348 interdit d'introduire `text-4xl`/`text-5xl`, or
-> `HeroSection.tsx:59` en porte **déjà**, et `typography.css` s'arrête à `--text-3xl` — ces tokens
-> **n'existent pas**, donc écrire `md:text-4xl` **fait rétrécir** le texte.
+### Le résultat principal : le sprint a démenti TROIS de ses propres prémisses
+
+Toutes par la mesure en `playwright:v1.61.1-jammy`, aucune atteignable par lecture de code.
+
+1. **#381 cherchait un défaut entre 768 et 1023 px — il n'y en a aucun.** Logo à 57 px sur une
+   ligne, marge 223-262 px, 4 locales × 2 thèmes. Le `container` Tailwind plafonne la largeur utile
+   à 736 px et la nav est masquée. **Le vrai défaut était à 1024 px**, un pixel hors périmètre :
+   2 lignes et **0 px de marge** en `fr`/`de`/`es`. → `PIT-S59-001`
+2. **#341 traquait un SVG inline de la landing depuis 3 sprints — il n'existe pas.** C'est le bouton
+   flottant des **TanStack Query Devtools**, dev-only, décalé par design, `right` suivant le
+   viewport (384@375 = le chiffre exact de l'issue). Aucun scroll produit. → `BUG-S59-001`,
+   `PIT-S59-002`
+3. **L'AC de #348 interdisait d'« introduire » un défaut qui préexistait.** `HeroSection.tsx:59`
+   portait déjà `text-4xl md:text-5xl`, seul site du dépôt — et ces classes ne sont **pas inertes**,
+   elles retombent sur les défauts Tailwind (36/48 px), **plus petit** que `text-3xl` (57 px). La
+   hiérarchie était littéralement inversée. → `PIT-S59-003`, `DEC-S59-002`
+
+### Périmètre élargi — assumé, pas subi
+
+**#379 supprimée du plan** : ses 3 AC sont atteints par `b722c10`. Aucun agent dessus, relevé posté
+en commentaire sur l'issue. Économie : une vague entière.
+
+**Absorption post-V3 (`9b1cb39`)** : 2 des 5 AC de #348 n'étaient pas atteints après sa livraison —
+le wordmark du footer (45 px) battait le h1 sous 768 px, et le chiffre d'étape égalait le h2. **Les
+deux dérogations de spec qui masquaient ces échecs ont été retirées** (`<footer>` exclu du balayage,
+`<=` au lieu de `<`). → `PAT-S59-002`
+
+### Arbitrages de design
+
+- **Logo/wordmark à palier unique `text-md sm:text-lg`**, nav `space-x-8` intouchée → `DEC-S59-001`
+- **Ne pas ajouter `--text-4xl`/`--text-5xl`** au DS ; supprimer l'unique site hors échelle →
+  `DEC-S59-002`
+- **17/21 px du chiffre d'étape RATIFIÉ**, sans dérogation d'AC. Argument décisif que personne
+  n'avait vu : le `<p>` de la carte hérite `--text-xs` = 15 px, donc le chiffre **domine sa propre
+  description** (15 < 17 < 21). Contraste 4,94:1, au-dessus du 4,5 exigé.
+
+### Review — le MAJEUR portait sur les tests, et l'arbitrage a été tranché par la mesure
+
+Une boucle clair/sombre doublait 32 tests en 64 pour des métriques invariantes au thème, sur un check
+CI requis. Le reviewer recommandait le **retrait total** ; retenu à la place : mono-thème **+ un
+contrôle ponctuel**. **Justifié par mesure** : injection de `.dark h1{font-size:33px}` →
+10 passed / 1 failed, **seul le contrôle ponctuel la voit**. Suite `landing-*` : 82 → 68 tests.
+→ `PAT-S59-003`
+
+### Nouveaux pitfalls / patterns / décisions / bugs
+
+`PIT-S59-001` (paliers ≠ où le défaut sort) · `PIT-S59-002` (outillage de dev pris pour un défaut) ·
+`PIT-S59-003` (`text-4xl` non inerte) · `PIT-S59-004` (Turbopack sert un chunk CSS périmé = faux
+vert) · `PAT-S59-001` (prouver la non-vacuité en faisant rougir) · `PAT-S59-002` (une dérogation de
+spec est une dette datée) · `PAT-S59-003` (contrôle ponctuel plutôt que retrait total) ·
+`DEC-S59-001` · `DEC-S59-002` · `BUG-S59-001`
+
+### ⚠ Ce que ce sprint n'a PAS couvert — à lire avant de s'en servir comme référence
+
+- **Aucun jugement esthétique, sur aucune des 4 issues.** Des nombres ont été mesurés ; **aucune
+  capture d'écran n'a été relue par qui que ce soit.** La conformité géométrique est établie, la
+  qualité visuelle ne l'est pas.
+- **Chromium seul** — aucun projet Playwright du dépôt ne couvre Firefox ni WebKit.
+- **Contraste WCAG non re-mesuré au navigateur.** Le sous-titre du hero tombe de 35 à 21 px, donc
+  **sous le seuil « grand texte » (24 px)** : son exigence passe de 3:1 à 4,5:1. Calcul sur tokens
+  5,96:1 (conforme), mais opacité et superpositions non vérifiées.
+- **La marge du header en `de` à 320 px vaut 5 px**, sous le plancher « deux chiffres » de
+  `PIT-S52-001`. Antérieur au sprint, désormais chiffré. Follow-up ouvert.
+
+### Follow-ups arbitrés (Phase 4 triage — 5 créés, 0 discardé)
+
+Le triage a été **groupé**, pas item par item : 5 items présentés d'un coup, tous retenus.
+
+- `nanoid` < 3.3.18, HIGH en dépendance de prod — rougit le job `security` de **toutes** les PR du
+  dépôt [S | devops] → **issue #422**
+- Marge du header en `de` à 320 px = 5 px, sous le plancher `PIT-S52-001` [S | design] → **#423**
+- Les deux wordmarks « Ma Timeline » ne sont pas des liens vers l'accueil [XS | transversal] → **#424**
+- 4 `leading-tight` inertes sur des `h2` de la landing [XS | design] → **#425**
+- Pastille des étapes surdimensionnée (remplissage ~19 % au lieu de 30-45 %) + `aria-hidden` sur le
+  chiffre [XS | design] → **#426** — **arrivé après le triage**, issu de la ratification `ui-design`
+
+Aucun milestone attaché (« Sprint 60 » n'existe pas) : les 5 vont au backlog libre.
+**Ratio discard : 0/5.** À surveiller — un discard nul de façon récurrente peut signaler que le lead
+filtre en amont plutôt que les fullstack-dev qui sur-signaleraient.
+
+**Absorbé en cours de sprint :** 2 AC de #348 (`9b1cb39`) + 7 points de review (`4cf19f2`).
+
+### Écarts au protocole `/sprint`, assumés
+
+- **Briefings passés par référence de fichier**, pas inlinés dans `Agent.prompt`. Le garde-fou censé
+  l'imposer (`.claude/hooks/pre-spawn-fullstack.sh`) **n'est pas installé**. Remplacé par un **jeton
+  sentinelle** en fin de briefing, que chaque agent devait recopier — **les 5 l'ont fait**.
+- **Context-pack famélique au démarrage** : `.ai-env/rules-jit/` n'existait pas et `pit-frontend.md`
+  non plus, donc `inject-pack.sh` ne produisait que `cp-frontend.md` (8,9 Ko). Le contexte manquant a
+  été écrit à la main. **Corrigé entre-temps sur `dev` par la PR #420**, issue de ce constat.
+- **Triage de follow-ups groupé** au lieu d'item par item (5 items, 1 seule question).
+- `check-sprint-completeness.sh` **n'existe pas** — contrôle fait à la main (5/5 `done.md` avec
+  section « Recommandations suite », `DB_EXPERT`/`SECURITY` en négations explicites, `TEST_RUNNER`
+  traité en Phase 6, `UI_DESIGN` traité en Phase 1 de la clôture).
+
+### ⚠ À FAIRE À CHAQUE CLÔTURE — régénérer les packs dérivés du Layer B
+
+**Nouveau depuis la PR #420 (mergée dans `dev` pendant ce sprint), et absent du skill `/sprint`.**
+
+`.ai-env/context-packs/pit-backend.md` et `pit-frontend.md` sont **générés** depuis
+`docs/memory/pitfalls.md`. Le job CI **requis** `ai-env-packs` exécute
+`gen-pit-packs.sh --check` et **rougit** si les packs sont périmés.
+
+La Phase 2 de `/sprint end` consiste précisément à écrire dans `pitfalls.md` — elle périme donc les
+packs **par construction**. Au S59 ça a coûté une boucle CI complète.
+
+**Recette, à exécuter avant de committer la consolidation mémoire :**
+
+```bash
+# 1. Classer chaque nouvelle entrée (sinon elle part dans LES DEUX packs)
+#    .ai-env/tools/pit-classification.tsv  ->  <PIT-ID><TAB><backend|frontend|both|tooling>
+# 2. Régénérer
+bash .ai-env/tools/gen-pit-packs.sh
+# 3. Vérifier avant de pousser
+bash .ai-env/tools/gen-pit-packs.sh --check
+```
+
+Committer `pit-classification.tsv` **et** les deux packs régénérés avec la consolidation.
+Ne pas classer n'est pas neutre : une entrée non classée est injectée aux agents **backend** aussi —
+au S59, trois pièges de mise en page seraient partis dans `pit-backend.md`.
 
 ## Après S59, où en est le MVP local ? — **NON atteint**
 

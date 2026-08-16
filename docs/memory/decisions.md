@@ -415,3 +415,19 @@ lecture de pixel) : le contour **est peint**, 5,93:1 / 6,94:1 ; seules les verti
 conteneur `div.overflow-x-auto`**, pas par un défaut de peinture. Décision : **ne rien changer**. Les
 horizontales suffisent à signaler la ligne ; un `ring-*` est un `box-shadow` rogné à l'identique et interdit
 par [[DEC-S58-001]] ; un `outline-offset` négatif poserait le trait sur le `border-b` de la ligne.
+
+## DEC-S59-001 — Wordmark à palier unique : `text-md sm:text-lg`, header ET footer
+Le logo du header héritait `md:text-3xl` = **57 px**, imposant un header de **184,8 px** de haut et **0 px de
+marge à 1024 px dans 3 locales sur 4**. Le JSDoc du composant chiffrait déjà ce palier à 234 px sur 2 lignes
+(328 px sans retour à la ligne) — un vestige que personne n'avait regardé rendu. Décision : **21 / 27 px,
+`whitespace-nowrap` à tous les paliers**, et `space-x-8` de la nav **intouchée** (resserrer la nav
+n'achetait que 16-32 px pour un coût d'espacement interactif, alors que le hors-norme était le 57 px). Le
+wordmark du **footer** suit la même échelle : c'est le même wordmark. Mesuré après : marges 58,5 à 146,5 px.
+
+## DEC-S59-002 — Ne PAS ajouter `--text-4xl`/`--text-5xl` au DS ; supprimer l'unique site hors échelle
+`HeroSection.tsx:59` était le **seul** site `4xl`/`5xl` du dépôt, et ces tokens n'existent pas dans
+`typography.css`. Deux voies : prolonger l'échelle ~1,27 (→ 72/92 px) ou ramener le `h1` dans l'échelle.
+Retenu : **ramener le h1** (`text-xl md:text-2xl lg:text-3xl` = 35/45/57), `typography.css` inchangé.
+Motif décisif : créer 2 tokens pour 1 seul usage est disproportionné, tandis que supprimer ce site rend
+l'invariant « never Tailwind-default » de l'en-tête du fichier **vrai à l'échelle du dépôt**. Cf.
+[[PIT-S59-003]].

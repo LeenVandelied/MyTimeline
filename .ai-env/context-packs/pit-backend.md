@@ -164,6 +164,13 @@ exact : Radix ouvre sur `pointerdown`. N'en pas déduire un défaut du composant
 (3) Le hook **RTK** tue `npx next dev|start` en ne laissant que « Errors: 1 » — un log serveur de 3 lignes
 est un artefact RTK, pas un plantage de l'app. `rtk proxy` obligatoire. Voir [[rtk-git-diff-empty-output]].
 
+
+## PIT-S59-004 — Turbopack sert un chunk CSS périmé et produit un FAUX VERT
+Après édition de `globals.css`, la première passe du test d'injection `.dark` est sortie **22 passed** — la
+règle injectée n'était simplement pas dans le CSS servi. `touch` et rechargement n'ont rien changé ; **seul
+un redémarrage du serveur dev** a compilé la règle. Prévention : avant de conclure « le défaut injecté n'est
+pas vu », `curl` le chunk CSS servi et vérifier que l'injection y figure. (Corollaire de [[PIT-S52-002]].)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

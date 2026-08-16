@@ -40,8 +40,15 @@ body {
    viewport le clic destiné au backdrop.
 
    CONTREPARTIE ASSUMÉE. Hors layer, un `leading-*` explicite sur un titre ne peut
-   plus gagner. Impact réel MESURÉ : NUL — les 6 seuls titres concernés (landing)
-   portent `leading-tight`, qui vaut déjà 1.08. C'est le comportement d'origin/dev.
+   plus gagner. Impact réel MESURÉ : NUL — les titres concernés (landing) portaient
+   tous `leading-tight`, qui vaut déjà 1.08. C'est le comportement d'origin/dev.
+   ⚠ COROLLAIRE, relevé en review du Sprint 59 : ces `leading-tight` sur `h1..h6`
+   sont donc INERTES. Deux ont été retirés (`HeroSection` h1, `HowItWorksSection`
+   h2) parce qu'ils suggéraient à tort qu'un `leading-*` pilote un titre ; les
+   autres subsistent. Le retrait ne change AUCUNE mesure — c'est cette règle-ci
+   qui tient 1.08. ⚠ Il ne se transpose PAS hors `h1..h6` : sur un `<p>` ou un
+   `<span>`, le `leading-*` explicite est la SEULE protection contre le
+   `--text-*--line-height` apparié (cf. bloc ci-dessus).
 
    Les 4 AUTRES propriétés restent layerisées : elles DOIVENT céder (c'est #339).
    · `margin` + `font-weight` → `<h4 class="mb-3 font-bold">` (FooterSection) ;
