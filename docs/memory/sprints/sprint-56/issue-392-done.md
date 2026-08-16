@@ -104,3 +104,25 @@ Suite E2E complète : 125 passed / 9 skipped / **3 failed hors périmètre**
 (`forgot-password`, `reset-password-failures` × 2) — toutes sur l'endpoint test-only de
 token de reset (`HTTP 401`) : le backend local tourne sans le profil `e2e` du runbook
 S47. Aucune ne charge `/timeline`.
+
+## Recommandations suite
+
+> **Section reconstituée par le lead pendant `/sprint end 56` (2026-08-16), pas par le
+> subagent.** Le done.md d'origine s'arrêtait à la ligne précédente : ni section
+> « Recommandations suite », ni ligne `STATUS`. Le contenu ci-dessous est déduit du corps
+> de l'artefact et du commit `143edc0` (mergé dans `dev` via PR #410 le 2026-07-31), pas
+> d'un retour de subagent. Aucun signal n'a donc pu être perdu en silence — mais aucun
+> n'est non plus attesté par l'agent qui a fait le travail.
+
+- `RECOMMAND_FOLLOWUP` (XS) — 3 échecs E2E hors périmètre (`forgot-password`,
+  `reset-password-failures` × 2) dus à l'absence du profil `e2e` sur le poste local. Même
+  racine que le follow-up de #391 (outillage E2E local non reproductible). À fusionner avec
+  lui plutôt qu'à traiter séparément.
+- Pas de `RECOMMAND_DB_EXPERT` : aucune migration, aucun fichier `.sql` dans le commit.
+- Pas de `RECOMMAND_SECURITY` : aucun chemin d'auth, de PII ni d'API externe touché — le
+  diff est confiné à la géométrie de la frise (CSS + positionnement).
+- Pas de `RECOMMAND_TEST_RUNNER` : 839 unitaires / 30 E2E timeline, sous les seuils.
+- Pas de `RECOMMAND_UI_DESIGN` : la gouttière consomme le token `--lane-header-w` existant,
+  aucune nouvelle valeur visuelle introduite.
+
+STATUS: COMPLETED

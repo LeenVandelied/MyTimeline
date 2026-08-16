@@ -2113,6 +2113,53 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 >   `timeline/page.tsx`. `app-shell-loading` reste le testid canonique du chargement global ;
 >   le `test.skip()` de `timeline.spec.ts` est réécrit pour l'asserter.
 
+**Commits (4, un par issue) :** `9737d5b` (#393) · `143edc0` (#392) · `c87034d` (#395) · `f1a6827` (#391)
+**Reviews :** reviewer batch — 6 `[OK]`, 1 `[MINEUR]`, **0 CRITIQUE / 0 MAJEUR**. Le `[MINEUR]`
+(`timeline.css` : `var(--lane-header-w, 160px)` désynchronisé du token réel 168 px) **non corrigé
+volontairement** — vérifié pré-existant sur `origin/dev`, donc hors périmètre, versé au triage.
+**Tests :** backend 452/452 · vitest 839/839 · `tsc --noEmit` 0 · E2E timeline 47/47.
+Suite E2E complète : 3 échecs **hors périmètre** (profil `e2e` absent du poste), aucun ne charge `/timeline`.
+**Arbitrage produit final #393 :** `#3B62D4` (`--evt-cobalt`, ratio **mesuré** 5,407:1) retenu **contre** le
+`#4f46e5` que suggérait l'arbitrage de démarrage — motif palette DS, cf. [[DEC-S56-002]].
+**Portée réelle #392 :** l'issue ne citait que le zoom Trimestre ; **Année était cassé aussi, et plus fort**
+(66 px contre 168). Trouvé en tabulant les 5 zooms, pas en vérifiant le cas cité.
+
+**Nouveaux pitfalls :** [[PIT-S56-001]] (test hors shell = branche inatteignable) · [[PIT-S56-002]] (stub
+d'API sans son événement inverse le verdict) · [[PIT-S56-003]] (constante par défaut redéclarée) ·
+[[PIT-S56-004]] (`:3000` appartient à un autre projet) · [[PIT-S56-005]] (`webServer` Playwright nu)
+**Nouveaux patterns :** [[PAT-S56-001]] (dériver de l'événement navigateur) · [[PAT-S56-002]] (asserter la
+stabilité d'un état transitoire) · [[PAT-S56-003]] (asserter la constante importée + sensibilité)
+**Nouvelles décisions :** [[DEC-S56-001]] (gouttière, pas `pointer-events:none`) · [[DEC-S56-002]]
+(`#3B62D4`) · [[DEC-S56-003]] (branche morte supprimée, `app-shell-loading` canonique)
+**Nouveaux bugs :** [[BUG-S56-001]]
+
+**Absorbé en cours :** aucun.
+**Follow-ups arbitrés (Phase 4 triage, 2026-08-16) — 4 remontés, 3 créés, 1 discardé :**
+  - `webServer` de `playwright.config.ts` sans `E2E_API_PROXY_TARGET`/`NEXT_PUBLIC_API_URL`
+    [XS | devops] (source #391) → **issue #427** (backlog, pas de milestone)
+  - `app.cors.allowed-origins` figé à `:3000` en profil `dev` [S | devops] (source #395) →
+    **issue #428** (backlog)
+  - `var(--lane-header-w, 160px)` désynchronisé du token 168px [XS | design] (`[MINEUR]` du
+    reviewer batch, pré-existant sur `dev`) → **issue #429** (backlog)
+  - 2 commentaires obsolètes citant `#6366f1` [XS | events] (source #393) → **discard : déjà
+    corrigés**. Vérifié dans le code à la clôture — `TimelineView.test.tsx:415` explicite
+    désormais que l'échantillon n'est pas le défaut, et `timeline.spec.ts:1018` porte
+    « ✅ CORRIGÉ depuis (#393, Sprint 56) ». Absorbés par un sprint ultérieur sans traçage.
+> Ratio discard 1/4 — les 3 autres ont été **vérifiés encore présents dans le code** avant
+> création, pas créés sur la foi du done.md. C'est ce contrôle qui a éliminé le quatrième.
+
+> **⚠ Clôture réelle : 2026-08-16, soit 16 jours après le merge — et en trois temps.**
+> Le code était dans `dev` depuis le 2026-07-31, mais `/sprint end 56` n'avait jamais tourné :
+> **(1)** les 4 issues sont restées **ouvertes** et le milestone #57 **ouvert** — seul sprint du
+> plan S55-S59 dans ce cas ; **(2)** **aucun** des 9 signaux `[MEMORY:*]` n'avait été consolidé
+> (trou S56 visible entre S55 et S57 dans les 4 fichiers mémoire) ; **(3)** `issue-392-done.md`
+> n'avait ni section « Recommandations suite » ni ligne `STATUS` — reconstituée par le lead à la
+> clôture, à partir du commit et de l'artefact, **pas** d'un retour de subagent.
+> Le statut avait été rectifié à `Terminé` pendant `/sprint end 57` sans que le reste de la
+> clôture ne suive : **rectifier le statut n'est pas clôturer.** C'est le même angle mort que
+> celui déjà consigné pour S58, dont l'entrée porte encore `EN COURS` alors que la PR #412 est
+> mergée et son milestone fermé.
+
 ## Sprint 57 — 2026-07-30 → 2026-07-31 (Terminé — merge PR #411 dans `dev`)
 **Objectif :** Unifier le shell applicatif et fermer le seul 500 prouvé dans le code
 **Milestone GitHub :** #58
