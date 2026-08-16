@@ -284,6 +284,36 @@ exact : Radix ouvre sur `pointerdown`. N'en pas déduire un défaut du composant
 (3) Le hook **RTK** tue `npx next dev|start` en ne laissant que « Errors: 1 » — un log serveur de 3 lignes
 est un artefact RTK, pas un plantage de l'app. `rtk proxy` obligatoire. Voir [[rtk-git-diff-empty-output]].
 
+
+## PIT-S59-001 — Un désalignement de paliers ne prédit PAS où le défaut sort
+#381 localisait un défaut de logo « entre 768 et 1023 px » par lecture du code seul (seul élément resté en
+`md:` quand #347 avait tout basculé en `lg:`). **Mesure jammy : aucun défaut dans cette plage** — le
+`container` Tailwind plafonne la largeur utile à 736 px et la nav est masquée, les deux annulent le défaut
+attendu. **Le vrai défaut était à 1024 px**, un pixel hors périmètre : 2 lignes et 0 px de marge en
+`fr`/`de`/`es`. Prévention : mesurer les DEUX côtés du seuil suivant, jamais le seul palier incriminé.
+
+
+## PIT-S59-002 — Un élément « débordant » relevé sur `npm run dev` peut être de l'outillage de dev
+Un audit par `getBoundingClientRect().right > clientWidth` remonte le bouton flottant des **TanStack Query
+Devtools** (`.tsqd-parent-container`) et l'overlay `nextjs-portal`, avec un `right` qui **suit la largeur du
+viewport** (329@320, 384@375, 399@390) — indiscernable d'un vrai défaut, alors que
+`scrollWidth == clientWidth`. **A produit #341 : trois sprints de suspicion sur un SVG de landing qui
+n'existe pas.** Exclusion portée par `frontend/e2e/support/dev-tooling.ts`. Cf. [[PIT-S58-005]].
+
+
+## PIT-S59-003 — `text-4xl`/`text-5xl` absents de `@theme inline` ne sont PAS inertes
+Sans `--text-*: initial`, ces classes retombent sur les **défauts Tailwind** (36/48 px) — donc **plus petit**
+que `text-3xl` (57 px) de l'échelle DS. Le `h1` du hero rendait ainsi plus petit que le logo du header :
+hiérarchie inversée, invisible à la lecture du nom de classe. Garde-fou source livré
+(`frontend/src/__tests__/ds-type-scale.test.ts`). Prévention : toute taille se **mesure au navigateur**.
+
+
+## PIT-S59-004 — Turbopack sert un chunk CSS périmé et produit un FAUX VERT
+Après édition de `globals.css`, la première passe du test d'injection `.dark` est sortie **22 passed** — la
+règle injectée n'était simplement pas dans le CSS servi. `touch` et rechargement n'ont rien changé ; **seul
+un redémarrage du serveur dev** a compilé la règle. Prévention : avant de conclure « le défaut injecté n'est
+pas vu », `curl` le chunk CSS servi et vérifier que l'injection y figure. (Corollaire de [[PIT-S52-002]].)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
