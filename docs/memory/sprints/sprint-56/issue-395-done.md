@@ -78,7 +78,12 @@ la source de vérité), pas par observation directe. E2E hors timeline non relan
 - `RECOMMAND_FOLLOWUP` — `application-dev.properties:35` : rendre `app.cors.allowed-origins`
   surchargeable/multi-port en dev. Aujourd'hui l'E2E local devient impossible dès que `:3000`
   est pris par un autre projet.
-- Pas de `RECOMMAND_TEST_RUNNER` (46 tests / 50 s, sous les seuils), pas de
-  `RECOMMAND_DB_EXPERT`, aucun fichier hors périmètre touché.
+- Pas de `RECOMMAND_TEST_RUNNER` (46 tests / 50 s, sous les seuils).
+- Pas de `RECOMMAND_DB_EXPERT` : aucune migration, aucun fichier hors périmètre touché.
+  <!-- Négation remise sur une seule ligne pendant /sprint end 56 : is_negation() de
+       check-sprint-completeness.sh raisonne ligne à ligne (regex "pas de.{0,5}recommand"),
+       et le « Pas de » était resté sur la ligne au-dessus du signal — faux positif
+       UNTREATED_SIGNAL. Aucun changement de fond. Ne pas citer un jeton de signal en clair
+       dans ce commentaire : sans négation devant, il redéclencherait le détecteur. -->
 
 STATUS: COMPLETED

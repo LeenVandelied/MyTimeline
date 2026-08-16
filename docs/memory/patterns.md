@@ -450,6 +450,30 @@ prédicat est ce qui attrape le cas baseline. Filtrer `version is not null` pour
 répétables `R__*.sql` (type `SQL` elles aussi). Effet de bord utile : une future `V16` mal nommée ou mal
 placée, donc ignorée par Flyway, fait rougir le step.
 
+## PAT-S56-001 — État UI d'une API navigateur à sorties multiples : dériver de l'événement, jamais du handler
+Le plein écran se quitte par le bouton, par Échap natif, par F11 et par le menu du navigateur. Un `useState`
+basculé dans `toggleFullscreen` ne voit que la première : l'attribut ARIA **ment** sur les trois autres.
+Pattern retenu (S56 #395) : `useEffect` sur `document.addEventListener('fullscreenchange')` lisant
+`Boolean(document.fullscreenElement)`, **+ sync initial au montage, + cleanup**, et **aucun `setState` dans le
+handler**. Généralisable à toute API à sorties multiples (visibilité, orientation, réseau). Le test qui
+discrimine les deux implémentations est celui qui **sort sans toucher l'UI** — sans lui, la variante naïve
+passe (mesuré : sensibilité B = 1 seul échec, le test « nominal » restant vert). Cf. [[PIT-S56-002]].
+
+## PAT-S56-002 — Un E2E d'état transitoire reste vert sans son mécanisme : asserter la STABILITÉ
+S56 #391 : le test du spinner de session restait vert **même gate retirée** — il constatait un écran déjà
+chargé, `toBeVisible()` attrapant le spinner au vol. Seule assertion qui rougit quand la gate saute :
+**assert visible → pause bornée → re-assert visible**. Mesuré : sans le `waitForTimeout` + re-assert, le test
+était vert sans la gate ; avec, sensibilité = 1 échec ciblé. Anti-pattern : `toBeVisible()` + `toHaveCount(0)`
+seuls, tous deux trivialement verts au premier poll réussi.
+
+## PAT-S56-003 — Un garde-fou de valeur s'asserte sur la constante IMPORTÉE, puis se prouve par sensibilité
+S56 #393 : un test écrit avec un littéral recopié (`expect(mapped.color).toBe('#3B62D4')`) reste vert quand la
+constante dérive — il ne prouve rien. Pattern : importer la constante et asserter la **propriété** voulue
+(`eventLabelReadableInside(DEFAULT_COLOR) === true`), puis **remettre temporairement la mauvaise valeur** et
+vérifier que le compte d'échecs est celui attendu (ici exactement 2, les 2 nouveaux garde-fous). Corollaire :
+distinguer les littéraux qui sont des **entrées explicites** d'un cas de test (à laisser tels quels, avec un
+commentaire qui interdit de les resynchroniser) de ceux qui **prétendaient valoir le défaut** (à convertir).
+
 ## PAT-S57-001 — Tester une logique filesystem sans polluer l'arborescence de production
 Un garde-fou qui lit le disque (S57 #318 : `readdirSync` sur `frontend/app/[locale]/(app)/` comparé à
 `PROTECTED_APP_SEGMENTS`) doit prouver qu'il **rougit**, sinon il ne garantit rien. La tentation — et ce que

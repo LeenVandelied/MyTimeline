@@ -357,6 +357,36 @@ Commande retenue : `PATCH` sur `…/protection/required_status_checks` et **non*
 documentait l'en-tête de `ci.yml` — le `PUT` réécrit toute la protection et aurait écrasé `enforce_admins`
 et les reviews au passage. Vérifié après coup : `enforce_admins: true` et reviews `0` inchangés.
 
+## DEC-S56-001 — En-tête de lane : gouttière de piste, et surtout PAS `pointer-events:none`
+S56 #392. L'en-tête sticky opaque recouvrait les 168 px (`--lane-header-w`) de tête du viewport ; aux zooms
+**Trimestre (150 px) et Année (66 px)** le 1er événement naissait dessous. L'option tentante — neutraliser
+l'en-tête aux pointeurs — était **fausse**, mais pas pour la raison que dit l'artefact de #392. **Vérifié dans
+le CSS au moment de la clôture :** `.mt-tlv__lane-label` porte **déjà** `pointer-events:none`, et ce depuis
+`c46c936` (vue Timeline desktop, #55) ; c'est la variante `.mt-tlv__lane-head` — le bouton d'accordéon produit
+(#195) — qui **réactive** `pointer-events:auto`. La neutralisation « restante » à faire aurait donc porté sur
+ce bouton, échangeant ce bug contre la perte du repli de lane, **avec un test vert**. Retenu :
+réserver une gouttière de `--lane-header-w` en tête de rail et y décaler tout le contenu positionné — aucune
+capture de pointeur touchée, offset en px donc **indépendant de l'échelle px/jour**. `margin-left` et non
+`padding-left` : les éléments décalés sont `position:absolute` et `left` se résout sur la boîte de padding.
+Écarté aussi : un `padDays` fonction du zoom, qui aurait fait de `rangeStart` une variable du zoom et défait
+l'optimisation de mémoïsation #349. Conséquence assumée : deux repères nommés, **PISTE** et **RAIL**.
+
+## DEC-S56-002 — `#3B62D4` (`--evt-cobalt`) plutôt que le `#4f46e5` suggéré par l'issue
+S56 #393. Les deux passent AA (mesurés : 6,288:1 et 5,407:1 contre 4,467:1 pour l'ancien `#6366f1`). Retenu
+`#3B62D4` parce qu'il appartient à la **palette event curated 12 tons du DS Graphite**, alors que `#4f46e5`
+est un indigo Tailwind : le projet a déjà purgé ses indigos/violets hors palette (`landing.css` +
+`landing-palette.test.ts` qui garde cette purge), le reprendre **rouvrait exactement cette dette**. Bonus :
+teinte voisine de l'ancienne, donc décalage visuel minime sur les événements existants sans couleur.
+Confirmation indépendante : `EventPill.test.tsx` utilisait déjà `#3B62D4` comme échantillon canonique
+« contraste OK dedans » **avant** cette issue. Arbitrage produit tranché par le développeur au démarrage :
+teinte conforme AA, et non « libellé hors pastille assumé ».
+
+## DEC-S56-003 — Branche morte supprimée plutôt que testid renommé ; `app-shell-loading` canonique
+S56 #391, tranché par le développeur. Renommer `timeline-loading` aurait produit **deux éléments portant le
+même testid**. La branche est donc supprimée, avec son test — `app-shell-loading` devient le testid canonique
+unique du chargement de session. Conservés explicitement : la garde `if (!user) return null`
+(defense-in-depth) et `timeline-data-loading` (testid différent, lui atteignable). Cf. [[PIT-S56-001]].
+
 ## DEC-S57-001 — La logique de comparaison du garde-fou vit dans le fichier de test, pas dans le module
 `auth-guard-paths.ts` est importé par le **middleware Edge** : il doit rester minimal et pur. Le scan
 filesystem et la comparaison (#318) sont de l'outillage de test, pas du runtime — ils vivent donc dans
