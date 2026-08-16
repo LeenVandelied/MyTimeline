@@ -2459,6 +2459,32 @@ filtre en amont plutôt que les fullstack-dev qui sur-signaleraient.
   section « Recommandations suite », `DB_EXPERT`/`SECURITY` en négations explicites, `TEST_RUNNER`
   traité en Phase 6, `UI_DESIGN` traité en Phase 1 de la clôture).
 
+### ⚠ À FAIRE À CHAQUE CLÔTURE — régénérer les packs dérivés du Layer B
+
+**Nouveau depuis la PR #420 (mergée dans `dev` pendant ce sprint), et absent du skill `/sprint`.**
+
+`.ai-env/context-packs/pit-backend.md` et `pit-frontend.md` sont **générés** depuis
+`docs/memory/pitfalls.md`. Le job CI **requis** `ai-env-packs` exécute
+`gen-pit-packs.sh --check` et **rougit** si les packs sont périmés.
+
+La Phase 2 de `/sprint end` consiste précisément à écrire dans `pitfalls.md` — elle périme donc les
+packs **par construction**. Au S59 ça a coûté une boucle CI complète.
+
+**Recette, à exécuter avant de committer la consolidation mémoire :**
+
+```bash
+# 1. Classer chaque nouvelle entrée (sinon elle part dans LES DEUX packs)
+#    .ai-env/tools/pit-classification.tsv  ->  <PIT-ID><TAB><backend|frontend|both|tooling>
+# 2. Régénérer
+bash .ai-env/tools/gen-pit-packs.sh
+# 3. Vérifier avant de pousser
+bash .ai-env/tools/gen-pit-packs.sh --check
+```
+
+Committer `pit-classification.tsv` **et** les deux packs régénérés avec la consolidation.
+Ne pas classer n'est pas neutre : une entrée non classée est injectée aux agents **backend** aussi —
+au S59, trois pièges de mise en page seraient partis dans `pit-backend.md`.
+
 ## Après S59, où en est le MVP local ? — **NON atteint**
 
 Le critère de sortie (« un clone démarre via le seul README, et l'utilisateur peut s'inscrire →
