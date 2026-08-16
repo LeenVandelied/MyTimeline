@@ -2349,7 +2349,7 @@ exactement le travail perdu que l'architect voulait éviter en la plaçant aprè
 > WebKit. ⚠ **#342 (non planifiée) touche `language-selector.tsx`** — ne pas la planifier en parallèle.
 > **Arbitrage `ui-design` requis** : un reset de focus a-t-il le droit d'imposer un `border-radius` ?
 
-## Sprint 59 — 2026-07-30 (PLANIFIE — MVP local : header et hiérarchie typographique de la landing)
+## Sprint 59 — 2026-07-30 → 2026-08-16 (EN COURS — MVP local : header et hiérarchie typographique de la landing)
 **Objectif :** Solder les défauts de rendu du header aux paliers 768-1024 px et l'échelle typo de la landing
 **Milestone GitHub :** #60
 **Issues (4) :** #381 (P2/S), #379 (P2/S), #348 (P2/S), #341 (P2/S) — **8 pts**
@@ -2357,7 +2357,7 @@ exactement le travail perdu que l'architect voulait éviter en la plaçant aprè
 **Cohésion :** 0.81
 **Migrations Flyway :** aucune
 **Depend de :** Sprint 58 (#353 agrandit le déclencheur de langue **dans le header**)
-**Status :** Planifie — **le lot le plus faible en valeur MVP des cinq, d'où sa position**
+**Status :** En cours (démarré 2026-08-16, branche `sprint/59` depuis `origin/dev` @ `6b6c1ec`) — **le lot le plus faible en valeur MVP des cinq, d'où sa position**
 
 > ⚠ **#381, #379 et #348 visent LA MÊME LIGNE `HeaderSection.tsx:110`** — et leurs numéros de ligne
 > se contredisent (#348 dit 54, #379 dit 86, #381 dit 110). **La vérité est 110.** Chaîne
