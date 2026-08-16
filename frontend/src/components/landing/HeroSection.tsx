@@ -48,6 +48,25 @@ interface HeroSectionProps {
  * colonnes. La mise en page flex d'origine descend d'un cran (du `<section>` vers un
  * `<div>` interne) pour que la frise occupe toute la largeur au lieu de devenir une
  * troisième colonne.
+ *
+ * #348 — ÉCHELLE TYPOGRAPHIQUE. Le `h1` portait `text-4xl md:text-5xl`. Ces deux
+ * tokens N'EXISTENT PAS dans `ds/tokens/typography.css` (échelle 13/15/17/21/27/35/
+ * 45/57) et `globals.css` ne pose aucun `--text-*: initial` : les utilitaires
+ * retombaient donc sur les DÉFAUTS TAILWIND (2.25rem / 3rem = 36 / 48 px), hors
+ * échelle DS et — mesuré — plus PETIT que le wordmark du header d'alors (57 px).
+ * La hiérarchie était inversée. `text-xl md:text-2xl lg:text-3xl` (35 / 45 / 57)
+ * la rétablit et rend l'invariant « never Tailwind-default » vrai à l'échelle du
+ * dépôt : c'était le seul site `4xl`/`5xl` du code. Arbitrage :
+ * `docs/memory/sprints/sprint-59/ui-design-arbitrage.md` (aucun token ajouté).
+ *
+ * ⚠ `leading-normal` sur le sous-titre n'est PAS décoratif. En Tailwind 4 une
+ * utilitaire `text-*` pose aussi `line-height: var(--tw-leading, var(--text-md--line-height))`.
+ * `--text-md--line-height` n'est émis par personne (nom propre au DS) → déclaration
+ * invalide au calcul → le `<p>` hériterait silencieusement de l'interligne parent.
+ * Et sur `md:text-lg`, `--text-lg--line-height` existe, lui, au défaut Tailwind
+ * (1.5556). Le `line-height` de `base.css:53` ne couvre QUE `h1..h6`, pas ce `<p>`.
+ * Cf. le bloc CASCADE de `ds/tokens/base.css:21-52`. Verrou :
+ * `e2e/landing-typography-hierarchy.spec.ts`.
  */
 export function HeroSection({ locale }: HeroSectionProps) {
   const t = useTranslations()
@@ -56,10 +75,12 @@ export function HeroSection({ locale }: HeroSectionProps) {
     <section className="section-animation container mx-auto px-4 py-20">
       <div className="flex flex-col items-center md:flex-row">
         <div className="mb-10 md:mb-0 md:w-1/2 md:pr-10">
-          <h1 className="mb-6 text-4xl leading-tight font-bold md:text-5xl">
+          <h1 className="mb-6 text-xl leading-tight font-bold md:text-2xl lg:text-3xl">
             {t('common.landing.hero.title')}
           </h1>
-          <p className="text-ink-muted mb-8 text-xl">{t('common.landing.hero.subtitle')}</p>
+          <p className="text-ink-muted text-md mb-8 leading-normal md:text-lg">
+            {t('common.landing.hero.subtitle')}
+          </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <Button
               asChild
