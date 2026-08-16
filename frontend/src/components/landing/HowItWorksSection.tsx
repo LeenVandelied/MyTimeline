@@ -33,6 +33,14 @@ import { useTranslations } from 'next-intl'
  * `text-*` apparie son propre `--text-*--line-height` (défaut Tailwind 1.5556, non
  * remappé par `@theme inline`). Sans lui la boîte de ligne du chiffre enflerait et il
  * se décentrerait dans sa pastille. Piège MESURÉ, pas supposé. Cf. `base.css:21-52`.
+ *
+ * ⚠ LA RÈGLE INVERSE SUR LE `h2`, ET ELLE NE SE GÉNÉRALISE PAS. Le `h2` portait
+ * `leading-tight` : INERTE, car `base.css:53` est hors layer et pose déjà 1.08 sur
+ * `h1..h6` — aucune utilitaire ne peut le battre. Retiré en review du Sprint 59
+ * parce qu'il laissait croire qu'un `leading-*` pilote un titre. La distinction est
+ * exactement celle du paragraphe ci-dessus : sur un `h1..h6` le `leading-*` est
+ * décoratif, sur un `<p>` ou un `<span>` il est INDISPENSABLE. Ne pas propager le
+ * retrait au `<span>` du chiffre.
  */
 const STEPS = [1, 2, 3, 4] as const
 
@@ -43,7 +51,7 @@ export function HowItWorksSection() {
     <section id="how-it-works" className="section-animation py-20">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-lg leading-tight font-bold md:text-xl">
+          <h2 className="mb-4 text-lg font-bold md:text-xl">
             {t('common.landing.howItWorks.title')}
           </h2>
           <p className="text-ink-muted text-md mx-auto max-w-3xl md:text-lg">

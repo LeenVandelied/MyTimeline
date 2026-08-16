@@ -1,8 +1,9 @@
 import { test, expect, type Page } from '@playwright/test'
 import { waitForFonts } from './support/contrast'
+import { devToolingSelectors } from './support/dev-tooling'
 
 /**
- * #348 — HIÉRARCHIE TYPOGRAPHIQUE RENDUE DE LA LANDING, 4 PALIERS × 4 LOCALES × 2 THÈMES.
+ * #348 — HIÉRARCHIE TYPOGRAPHIQUE RENDUE DE LA LANDING, 8 PALIERS × 4 LOCALES.
  *
  * ⚠ DEUX DÉROGATIONS ONT ÉTÉ RETIRÉES de cette spec en soldant les AC #1 et #2 de #348.
  * Elles encodaient l'état du code plutôt que l'AC, et il faut savoir pourquoi avant de
@@ -31,7 +32,31 @@ import { waitForFonts } from './support/contrast'
  */
 
 const LOCALES = ['fr', 'en', 'de', 'es'] as const
-const SCHEMES = ['light', 'dark'] as const
+
+/**
+ * ⚠ LE CAS GÉNÉRAL EST MONO-THÈME (clair). NE PAS « RÉTABLIR » UNE BOUCLE
+ * `['light','dark']` AUTOUR DES 8 PALIERS — c'est une régression de coût pour
+ * zéro signal, et elle a déjà été retirée une fois (review Sprint 59).
+ *
+ * POURQUOI. Toutes les grandeurs assertées ici sont des MÉTRIQUES DE POLICE et
+ * de mise en page — `fontSize`, `lineHeight`, nombre de boîtes de ligne,
+ * `scrollWidth`, largeurs de boîte. Le thème du DS Graphite ne pilote que des
+ * COULEURS : aucune règle `.dark` ni `prefers-color-scheme` du dépôt ne touche
+ * `font-*`, `text-*` ni `leading-*` (vérifié sur `src/styles/**`). Boucler sur
+ * les deux thèmes doublait donc 8 tests en 16, soit ~64 `page.goto`
+ * supplémentaires, sur un check e2e REQUIS pour merger, avec `workers: 1` et
+ * `retries: 2`. La seule grandeur réellement sensible au thème — le contraste —
+ * a sa propre spec, `landing-cta-contrast.spec.ts`.
+ *
+ * POURQUOI IL RESTE QUAND MÊME UN CONTRÔLE SOMBRE. Un retrait TOTAL rendrait
+ * l'invariant invérifiable : le jour où une règle `.dark` toucherait une
+ * métrique de police, plus rien ne le verrait. Le contrôle ponctuel en fin de
+ * fichier (« invariance des métriques au thème ») tient ce filet pour UN palier
+ * et UNE locale, en comparant les deux thèmes dans le MÊME test — 1 test au
+ * lieu de 8, et il prouve l'invariant au lieu de le supposer.
+ */
+const CONTROL_SCHEME_WIDTH = 768
+const CONTROL_SCHEME_LOCALE = 'de'
 
 /**
  * Paliers. 320/375 = mobile étroit (c'est là que le `h1` à 35 px risque de se
@@ -70,12 +95,12 @@ function expected(width: number) {
 }
 
 /**
- * Outillage de DÉVELOPPEMENT à exclure de tout balayage DOM : le bouton flottant des
- * TanStack Query Devtools et l'overlay Next remontent comme des éléments de page et
- * suivent la largeur du viewport. Ils n'existent pas en production. Exclusion déjà
- * portée par `landing-mobile-overflow.spec.ts` — même liste.
+ * Outillage de DÉVELOPPEMENT à exclure de tout balayage DOM. La liste est la SOURCE
+ * UNIQUE `support/dev-tooling.ts`, partagée avec `landing-mobile-overflow.spec.ts` :
+ * elle était dupliquée entre les deux specs sous un commentaire affirmant « même
+ * liste » — faux, `#__next-build-watcher` ne figurait que d'un côté (review S59).
  */
-const DEV_TOOLING = ['.tsqd-parent-container', 'nextjs-portal', '#__next-build-watcher']
+const DEV_TOOLING = devToolingSelectors()
 
 /**
  * Interlignes attendus, en RATIO (`line-height` rendu / `font-size` rendu).
@@ -249,230 +274,231 @@ async function readTypography(page: Page, devTooling: string[]): Promise<TypeMet
   }, devTooling)
 }
 
-for (const scheme of SCHEMES) {
-  test.describe(`Landing — hiérarchie typographique, thème ${scheme}`, () => {
-    test.use({ colorScheme: scheme })
+test.describe('Landing — hiérarchie typographique', () => {
+  // Thème CLAIR uniquement — cf. le bloc `CONTROL_SCHEME_*` en tête de fichier :
+  // les métriques assertées ici sont invariantes au thème, et cet invariant est
+  // lui-même vérifié par le contrôle ponctuel en fin de fichier.
+  test.use({ colorScheme: 'light' })
 
-    for (const width of WIDTHS) {
-      test(`${width} px — échelle DS et hiérarchie, les 4 locales`, async ({ page }) => {
-        await page.setViewportSize({ width, height: 900 })
-        const want = expected(width)
-        const relevé: string[] = []
+  for (const width of WIDTHS) {
+    test(`${width} px — échelle DS et hiérarchie, les 4 locales`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      const want = expected(width)
+      const relevé: string[] = []
 
-        for (const locale of LOCALES) {
-          await page.goto(`/${locale}`, { waitUntil: 'domcontentloaded' })
-          await waitForFonts(page)
-          // Le curseur reste où Playwright l'a laissé : sans cela un élément peut
-          // être mesuré dans son état `:hover`.
-          await page.mouse.move(0, 0)
+      for (const locale of LOCALES) {
+        await page.goto(`/${locale}`, { waitUntil: 'domcontentloaded' })
+        await waitForFonts(page)
+        // Le curseur reste où Playwright l'a laissé : sans cela un élément peut
+        // être mesuré dans son état `:hover`.
+        await page.mouse.move(0, 0)
 
-          const m = await readTypography(page, DEV_TOOLING)
-          relevé.push(
-            `${locale}: h1 ${m.h1}px×${m.h1Ratio}/${m.h1Lines}l (boîte ${m.h1BoxWidth} dans ` +
-              `colonne ${m.columnWidth}), sous-titre ${m.subtitle}px×${m.subtitleRatio}, ` +
-              `h2 ${m.h2}px, h3 ${m.h3}px, ` +
-              `chiffre ${m.stepNumber}px×${m.stepNumberRatio}, wordmark footer ` +
-              `${m.footerWordmark}px/${m.footerWordmarkLines}l (desc ${m.footerDescription}px), ` +
-              `max page ${m.pageMaxFontPx}px (${m.pageMaxFontTag}), ` +
-              `max footer ${m.footerMaxFontPx}px (${m.footerMaxFontTag})`,
-          )
+        const m = await readTypography(page, DEV_TOOLING)
+        relevé.push(
+          `${locale}: h1 ${m.h1}px×${m.h1Ratio}/${m.h1Lines}l (boîte ${m.h1BoxWidth} dans ` +
+            `colonne ${m.columnWidth}), sous-titre ${m.subtitle}px×${m.subtitleRatio}, ` +
+            `h2 ${m.h2}px, h3 ${m.h3}px, ` +
+            `chiffre ${m.stepNumber}px×${m.stepNumberRatio}, wordmark footer ` +
+            `${m.footerWordmark}px/${m.footerWordmarkLines}l (desc ${m.footerDescription}px), ` +
+            `max page ${m.pageMaxFontPx}px (${m.pageMaxFontTag}), ` +
+            `max footer ${m.footerMaxFontPx}px (${m.footerMaxFontTag})`,
+        )
 
-          // `expect.soft` : on veut le tableau COMPLET des locales fautives. Corriger
-          // `fr` sans regarder `de`/`es` a déjà produit un faux « corrigé » au S49.
-          const check = (label: string, got: number, wanted: number, token: string, extra = '') =>
-            expect
-              .soft(
-                got,
-                `${label} à ${width} px en ${locale} — attendu ${wanted}px (${token} de ` +
-                  `ds/tokens/typography.css), mesuré ${got}px.${extra}`,
-              )
-              .toBe(wanted)
-
-          check(
-            'h1 du hero',
-            m.h1,
-            want.h1,
-            width < 768 ? 'text-xl' : width < 1024 ? 'md:text-2xl' : 'lg:text-3xl',
-            ' Un h1 à 36 ou 48px signifie le retour de `text-4xl`/`text-5xl`, hors échelle DS.',
-          )
-          check(
-            'sous-titre du hero',
-            m.subtitle,
-            want.subtitle,
-            width < 768 ? 'text-md' : 'md:text-lg',
-          )
-          check('h2 de #how-it-works', m.h2, want.h2, width < 768 ? 'text-lg' : 'md:text-xl')
-          check('h3 d’étape', m.h3, want.h3, width < 768 ? 'text-md' : 'md:text-lg')
-          check(
-            'chiffre d’étape',
-            m.stepNumber,
-            want.stepNumber,
-            width < 768 ? 'text-sm' : 'md:text-md',
-            ' À `text-lg` il vaudrait 27px partout : ÉGAL au h2 sous md, et au-dessus ' +
-              'du h3 de sa propre étape (21px).',
-          )
-
-          // INTERLIGNES — la moitié invisible du correctif (cf. EXPECTED_RATIO).
-          for (const [label, got, wanted, token] of [
-            ['h1 du hero', m.h1Ratio, EXPECTED_RATIO.h1, 'leading-tight + base.css:53'],
-            ['sous-titre du hero', m.subtitleRatio, EXPECTED_RATIO.subtitle, 'leading-normal'],
-            ['chiffre d’étape', m.stepNumberRatio, EXPECTED_RATIO.stepNumber, 'leading-none'],
-          ] as const) {
-            expect
-              .soft(
-                got,
-                `interligne de ${label} à ${width} px en ${locale} — attendu ${wanted} ` +
-                  `(${token}), mesuré ${got}. Un ratio à 1.5556 ou 1.4 signifie que le ` +
-                  `\`line-height\` APPARIÉ à l'utilitaire \`text-*\` a repris la main : ` +
-                  `le \`leading-*\` explicite a disparu (cf. ds/tokens/base.css:21-52).`,
-              )
-              .toBeCloseTo(wanted, 1)
-          }
-
-          // AC #2 — le h1 est l'élément le plus grand de la page, à toutes largeurs.
-          expect.soft(m.h1Count, `un seul h1 attendu sur la landing, trouvé ${m.h1Count}`).toBe(1)
-
-          /**
-           * AC #2 — LE h1 EST LE PLUS GRAND TEXTE DE LA PAGE, `<footer>` COMPRIS.
-           *
-           * L'exclusion du `<footer>` qui vivait ici est SUPPRIMÉE. Elle contournait un
-           * défaut réel et mesuré : `FooterSection` rendait « Ma Timeline » en
-           * `text-2xl` = 45 px à TOUTES largeurs (aucun palier), battant donc le h1 à
-           * 320/375 px (35) et l'ÉGALANT de 768 à 1023 px (45). Le wordmark est passé à
-           * `text-md sm:text-lg` (21 / 27), aligné sur celui du header : le balayage
-           * couvre désormais la page entière et l'AC est verrouillée pour de bon.
-           */
+        // `expect.soft` : on veut le tableau COMPLET des locales fautives. Corriger
+        // `fr` sans regarder `de`/`es` a déjà produit un faux « corrigé » au S49.
+        const check = (label: string, got: number, wanted: number, token: string, extra = '') =>
           expect
             .soft(
-              m.pageMaxFontPx,
-              `le h1 (${m.h1}px) doit rester le plus grand texte rendu de la page ENTIÈRE ` +
-                `(footer compris) à ${width} px en ${locale} — mesuré ${m.pageMaxFontPx}px ` +
-                `sur \`${m.pageMaxFontTag}\`. Si le coupable est dans le \`<footer>\`, ` +
-                `c'est le wordmark : il doit suivre le header (\`text-md sm:text-lg\`), ` +
-                `pas repasser à \`text-2xl\` (45px).`,
+              got,
+              `${label} à ${width} px en ${locale} — attendu ${wanted}px (${token} de ` +
+                `ds/tokens/typography.css), mesuré ${got}px.${extra}`,
             )
-            .toBe(m.h1)
+            .toBe(wanted)
 
-          // Le wordmark du footer suit l'échelle du header — c'est le MÊME wordmark.
-          check(
-            'wordmark du footer',
-            m.footerWordmark,
-            want.footerWordmark,
-            width < 640 ? 'text-md' : 'sm:text-lg',
-            ' À `text-2xl` il vaudrait 45px et battrait le h1 sous 768px.',
-          )
-          // L'inversion doit DISPARAÎTRE, pas se déplacer : le wordmark reste au-dessus
-          // de la description qu'il coiffe (15px, héritée du `body`).
-          expect
-            .soft(
-              m.footerWordmark,
-              `le wordmark du footer (${m.footerWordmark}px) doit rester AU-DESSUS de sa ` +
-                `description (${m.footerDescription}px) à ${width} px en ${locale} — ` +
-                `sinon l'inversion de hiérarchie est déplacée, pas supprimée`,
-            )
-            .toBeGreaterThan(m.footerDescription)
-          // `whitespace-nowrap` volontairement ABSENT au footer (contrairement au
-          // header) : ce test est ce qui justifie son absence, plutôt qu'un réflexe.
-          expect
-            .soft(
-              m.footerWordmarkLines,
-              `le wordmark du footer doit tenir sur UNE ligne à ${width} px en ${locale} ` +
-                `sans \`whitespace-nowrap\` — mesuré ${m.footerWordmarkLines} ligne(s). ` +
-                `S'il en prend deux, c'est \`whitespace-nowrap\` qu'il faut ajouter, ` +
-                `pas ce test qu'il faut assouplir.`,
-            )
-            .toBe(1)
+        check(
+          'h1 du hero',
+          m.h1,
+          want.h1,
+          width < 768 ? 'text-xl' : width < 1024 ? 'md:text-2xl' : 'lg:text-3xl',
+          ' Un h1 à 36 ou 48px signifie le retour de `text-4xl`/`text-5xl`, hors échelle DS.',
+        )
+        check(
+          'sous-titre du hero',
+          m.subtitle,
+          want.subtitle,
+          width < 768 ? 'text-md' : 'md:text-lg',
+        )
+        check('h2 de #how-it-works', m.h2, want.h2, width < 768 ? 'text-lg' : 'md:text-xl')
+        check('h3 d’étape', m.h3, want.h3, width < 768 ? 'text-md' : 'md:text-lg')
+        check(
+          'chiffre d’étape',
+          m.stepNumber,
+          want.stepNumber,
+          width < 768 ? 'text-sm' : 'md:text-md',
+          ' À `text-lg` il vaudrait 27px partout : ÉGAL au h2 sous md, et au-dessus ' +
+            'du h3 de sa propre étape (21px).',
+        )
 
-          // AC #1 — chaque élément secondaire rend sous le titre qu'il accompagne.
+        // INTERLIGNES — la moitié invisible du correctif (cf. EXPECTED_RATIO).
+        for (const [label, got, wanted, token] of [
+          ['h1 du hero', m.h1Ratio, EXPECTED_RATIO.h1, 'base.css:53, hors layer'],
+          ['sous-titre du hero', m.subtitleRatio, EXPECTED_RATIO.subtitle, 'leading-normal'],
+          ['chiffre d’étape', m.stepNumberRatio, EXPECTED_RATIO.stepNumber, 'leading-none'],
+        ] as const) {
           expect
             .soft(
-              m.subtitle,
-              `le sous-titre du hero (${m.subtitle}px) doit rendre sous le h1 (${m.h1}px) ` +
-                `à ${width} px en ${locale}`,
+              got,
+              `interligne de ${label} à ${width} px en ${locale} — attendu ${wanted} ` +
+                `(${token}), mesuré ${got}. Un ratio à 1.5556 ou 1.4 signifie que le ` +
+                `\`line-height\` APPARIÉ à l'utilitaire \`text-*\` a repris la main : ` +
+                `le \`leading-*\` explicite a disparu (cf. ds/tokens/base.css:21-52).`,
             )
-            .toBeLessThan(m.h1)
-          expect
-            .soft(
-              m.h2,
-              `le h2 de section (${m.h2}px) doit rendre sous le h1 (${m.h1}px) à ${width} px ` +
-                `en ${locale}`,
-            )
-            .toBeLessThan(m.h1)
-
-          /**
-           * AC #1 — LE CHIFFRE D'ÉTAPE, STRICTEMENT, À TOUS LES PALIERS.
-           *
-           * La tolérance `<=` qui vivait ici est SUPPRIMÉE : elle figeait l'égalité
-           * chiffre/h2 sous `md` (27 = 27) que produisait `text-lg`, et laissait passer
-           * le vrai défaut — le chiffre DÉPASSAIT alors le h3 de sa propre étape
-           * (27 > 21). Le chiffre est décoratif et se rattache au h3 de SON étape :
-           * c'est contre lui que l'AC « strictement plus petit » se mesure d'abord.
-           * `text-sm md:text-md` (17 / 21) le place sous les deux, partout.
-           */
-          expect
-            .soft(
-              m.stepNumber,
-              `chiffre d’étape (${m.stepNumber}px) vs h3 de son étape (${m.h3}px) à ` +
-                `${width} px en ${locale} — l'AC #1 exige STRICTEMENT plus petit que le ` +
-                `titre auquel il se rattache. Égalité = échec : ` +
-                `\`text-md md:text-lg\` rendrait 21/27, soit exactement le h3.`,
-            )
-            .toBeLessThan(m.h3)
-          expect
-            .soft(
-              m.stepNumber,
-              `chiffre d’étape (${m.stepNumber}px) vs h2 de section (${m.h2}px) à ${width} px ` +
-                `en ${locale} — STRICTEMENT plus petit exigé à TOUS les paliers, y compris ` +
-                `sous md (c'est là que \`text-lg\` produisait l'égalité 27/27).`,
-            )
-            .toBeLessThan(m.h2)
-
-          // Toute taille rendue reste DANS l'échelle DS — le vrai garde-fou anti-`4xl`.
-          for (const [label, value] of Object.entries({
-            h1: m.h1,
-            subtitle: m.subtitle,
-            h2: m.h2,
-            h3: m.h3,
-            stepNumber: m.stepNumber,
-            footerWordmark: m.footerWordmark,
-          })) {
-            expect
-              .soft(
-                DS_SCALE,
-                `${label} rend ${value}px à ${width} px en ${locale} : valeur HORS échelle DS ` +
-                  `(${DS_SCALE.join('/')}). 36 ou 48px = défaut Tailwind, donc \`text-4xl\`/` +
-                  `\`text-5xl\` de retour.`,
-              )
-              .toContain(value)
-          }
-
-          // Aucun débordement introduit — c'est le point que `ui-design` a laissé
-          // ouvert : le h1 à 57 px dans une colonne `md:w-1/2` (~584 px à 1280).
-          expect
-            .soft(
-              m.h1ScrollWidth,
-              `le h1 déborde de sa colonne à ${width} px en ${locale} : ` +
-                `scrollWidth ${m.h1ScrollWidth} > clientWidth ${m.h1ClientWidth} ` +
-                `(colonne ${m.columnWidth}px, ${m.h1Lines} ligne(s))`,
-            )
-            .toBeLessThanOrEqual(m.h1ClientWidth)
-          expect
-            .soft(
-              m.docScrollWidth,
-              `débordement horizontal de page à ${width} px en ${locale} : ` +
-                `${m.docScrollWidth} > ${m.docClientWidth}`,
-            )
-            .toBeLessThanOrEqual(m.docClientWidth)
+            .toBeCloseTo(wanted, 1)
         }
 
-        test.info().annotations.push({
-          type: `typo-${width}px-${scheme}`,
-          description: relevé.join(' | '),
-        })
+        // AC #2 — le h1 est l'élément le plus grand de la page, à toutes largeurs.
+        expect.soft(m.h1Count, `un seul h1 attendu sur la landing, trouvé ${m.h1Count}`).toBe(1)
+
+        /**
+         * AC #2 — LE h1 EST LE PLUS GRAND TEXTE DE LA PAGE, `<footer>` COMPRIS.
+         *
+         * L'exclusion du `<footer>` qui vivait ici est SUPPRIMÉE. Elle contournait un
+         * défaut réel et mesuré : `FooterSection` rendait « Ma Timeline » en
+         * `text-2xl` = 45 px à TOUTES largeurs (aucun palier), battant donc le h1 à
+         * 320/375 px (35) et l'ÉGALANT de 768 à 1023 px (45). Le wordmark est passé à
+         * `text-md sm:text-lg` (21 / 27), aligné sur celui du header : le balayage
+         * couvre désormais la page entière et l'AC est verrouillée pour de bon.
+         */
+        expect
+          .soft(
+            m.pageMaxFontPx,
+            `le h1 (${m.h1}px) doit rester le plus grand texte rendu de la page ENTIÈRE ` +
+              `(footer compris) à ${width} px en ${locale} — mesuré ${m.pageMaxFontPx}px ` +
+              `sur \`${m.pageMaxFontTag}\`. Si le coupable est dans le \`<footer>\`, ` +
+              `c'est le wordmark : il doit suivre le header (\`text-md sm:text-lg\`), ` +
+              `pas repasser à \`text-2xl\` (45px).`,
+          )
+          .toBe(m.h1)
+
+        // Le wordmark du footer suit l'échelle du header — c'est le MÊME wordmark.
+        check(
+          'wordmark du footer',
+          m.footerWordmark,
+          want.footerWordmark,
+          width < 640 ? 'text-md' : 'sm:text-lg',
+          ' À `text-2xl` il vaudrait 45px et battrait le h1 sous 768px.',
+        )
+        // L'inversion doit DISPARAÎTRE, pas se déplacer : le wordmark reste au-dessus
+        // de la description qu'il coiffe (15px, héritée du `body`).
+        expect
+          .soft(
+            m.footerWordmark,
+            `le wordmark du footer (${m.footerWordmark}px) doit rester AU-DESSUS de sa ` +
+              `description (${m.footerDescription}px) à ${width} px en ${locale} — ` +
+              `sinon l'inversion de hiérarchie est déplacée, pas supprimée`,
+          )
+          .toBeGreaterThan(m.footerDescription)
+        // `whitespace-nowrap` volontairement ABSENT au footer (contrairement au
+        // header) : ce test est ce qui justifie son absence, plutôt qu'un réflexe.
+        expect
+          .soft(
+            m.footerWordmarkLines,
+            `le wordmark du footer doit tenir sur UNE ligne à ${width} px en ${locale} ` +
+              `sans \`whitespace-nowrap\` — mesuré ${m.footerWordmarkLines} ligne(s). ` +
+              `S'il en prend deux, c'est \`whitespace-nowrap\` qu'il faut ajouter, ` +
+              `pas ce test qu'il faut assouplir.`,
+          )
+          .toBe(1)
+
+        // AC #1 — chaque élément secondaire rend sous le titre qu'il accompagne.
+        expect
+          .soft(
+            m.subtitle,
+            `le sous-titre du hero (${m.subtitle}px) doit rendre sous le h1 (${m.h1}px) ` +
+              `à ${width} px en ${locale}`,
+          )
+          .toBeLessThan(m.h1)
+        expect
+          .soft(
+            m.h2,
+            `le h2 de section (${m.h2}px) doit rendre sous le h1 (${m.h1}px) à ${width} px ` +
+              `en ${locale}`,
+          )
+          .toBeLessThan(m.h1)
+
+        /**
+         * AC #1 — LE CHIFFRE D'ÉTAPE, STRICTEMENT, À TOUS LES PALIERS.
+         *
+         * La tolérance `<=` qui vivait ici est SUPPRIMÉE : elle figeait l'égalité
+         * chiffre/h2 sous `md` (27 = 27) que produisait `text-lg`, et laissait passer
+         * le vrai défaut — le chiffre DÉPASSAIT alors le h3 de sa propre étape
+         * (27 > 21). Le chiffre est décoratif et se rattache au h3 de SON étape :
+         * c'est contre lui que l'AC « strictement plus petit » se mesure d'abord.
+         * `text-sm md:text-md` (17 / 21) le place sous les deux, partout.
+         */
+        expect
+          .soft(
+            m.stepNumber,
+            `chiffre d’étape (${m.stepNumber}px) vs h3 de son étape (${m.h3}px) à ` +
+              `${width} px en ${locale} — l'AC #1 exige STRICTEMENT plus petit que le ` +
+              `titre auquel il se rattache. Égalité = échec : ` +
+              `\`text-md md:text-lg\` rendrait 21/27, soit exactement le h3.`,
+          )
+          .toBeLessThan(m.h3)
+        expect
+          .soft(
+            m.stepNumber,
+            `chiffre d’étape (${m.stepNumber}px) vs h2 de section (${m.h2}px) à ${width} px ` +
+              `en ${locale} — STRICTEMENT plus petit exigé à TOUS les paliers, y compris ` +
+              `sous md (c'est là que \`text-lg\` produisait l'égalité 27/27).`,
+          )
+          .toBeLessThan(m.h2)
+
+        // Toute taille rendue reste DANS l'échelle DS — le vrai garde-fou anti-`4xl`.
+        for (const [label, value] of Object.entries({
+          h1: m.h1,
+          subtitle: m.subtitle,
+          h2: m.h2,
+          h3: m.h3,
+          stepNumber: m.stepNumber,
+          footerWordmark: m.footerWordmark,
+        })) {
+          expect
+            .soft(
+              DS_SCALE,
+              `${label} rend ${value}px à ${width} px en ${locale} : valeur HORS échelle DS ` +
+                `(${DS_SCALE.join('/')}). 36 ou 48px = défaut Tailwind, donc \`text-4xl\`/` +
+                `\`text-5xl\` de retour.`,
+            )
+            .toContain(value)
+        }
+
+        // Aucun débordement introduit — c'est le point que `ui-design` a laissé
+        // ouvert : le h1 à 57 px dans une colonne `md:w-1/2` (~584 px à 1280).
+        expect
+          .soft(
+            m.h1ScrollWidth,
+            `le h1 déborde de sa colonne à ${width} px en ${locale} : ` +
+              `scrollWidth ${m.h1ScrollWidth} > clientWidth ${m.h1ClientWidth} ` +
+              `(colonne ${m.columnWidth}px, ${m.h1Lines} ligne(s))`,
+          )
+          .toBeLessThanOrEqual(m.h1ClientWidth)
+        expect
+          .soft(
+            m.docScrollWidth,
+            `débordement horizontal de page à ${width} px en ${locale} : ` +
+              `${m.docScrollWidth} > ${m.docClientWidth}`,
+          )
+          .toBeLessThanOrEqual(m.docClientWidth)
+      }
+
+      test.info().annotations.push({
+        type: `typo-${width}px`,
+        description: relevé.join(' | '),
       })
-    }
-  })
-}
+    })
+  }
+})
 
 /**
  * FRONTIÈRES D'ÉCHELLE DU h1 — le garde-fou anti-régression de #348.
@@ -520,5 +546,83 @@ test.describe('Landing — les trois paliers du h1 du hero', () => {
         `scrollWidth ${above.h1ScrollWidth} > clientWidth ${above.h1ClientWidth}. ` +
         `Si ce test rougit, replier sur \`lg:text-2xl\` (45 px).`,
     ).toBeLessThanOrEqual(above.h1ClientWidth)
+  })
+})
+
+/**
+ * CONTRÔLE PONCTUEL DU THÈME SOMBRE — le filet qui remplace la boucle `SCHEMES`.
+ *
+ * CE QU'IL REMPLACE. Les 8 paliers × 4 locales tournaient auparavant DEUX fois,
+ * une fois par thème, pour un total de ~64 `page.goto` supplémentaires sur un
+ * check e2e requis. Les 8 tests dupliqués n'apportaient aucun signal propre :
+ * ils ré-assertaient les MÊMES constantes contre les MÊMES métriques.
+ *
+ * CE QU'IL AJOUTE, ET QUE LE RETRAIT TOTAL AURAIT PERDU. Le cas général est
+ * mono-thème parce qu'on AFFIRME que les métriques de police sont invariantes au
+ * thème. Ce test est ce qui rend cette affirmation VÉRIFIÉE plutôt que supposée :
+ * il mesure le même palier dans les deux thèmes et exige l'égalité stricte de
+ * TOUTES les métriques. Le jour où une règle `.dark` toucherait `font-*`,
+ * `text-*` ou `leading-*`, c'est ici que ça rougira.
+ *
+ * ⚠ IL DOIT PROUVER QUE LA BASCULE A EU LIEU. `next-themes` est monté en
+ * `attribute="class" defaultTheme="system" enableSystem` (`app/layout.tsx:53`) :
+ * c'est `prefers-color-scheme` qui pilote la classe `.dark` sur `<html>`, via un
+ * écouteur `matchMedia` posé au montage. Sans l'assertion sur cette classe, un
+ * `emulateMedia` sans effet rendrait le test VACUOUS — il comparerait le thème
+ * clair à lui-même et serait vert quoi qu'il arrive.
+ */
+test.describe('Landing — invariance des métriques typographiques au thème', () => {
+  const isDark = (page: Page) =>
+    page.evaluate(() => document.documentElement.classList.contains('dark'))
+
+  test(`métriques identiques en clair et en sombre (${CONTROL_SCHEME_WIDTH} px, \`${CONTROL_SCHEME_LOCALE}\`)`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: CONTROL_SCHEME_WIDTH, height: 900 })
+
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto(`/${CONTROL_SCHEME_LOCALE}`, { waitUntil: 'domcontentloaded' })
+    await waitForFonts(page)
+    await page.mouse.move(0, 0)
+    await expect
+      .poll(() => isDark(page), {
+        message: '`<html>` ne doit PAS porter `.dark` sous `prefers-color-scheme: light`',
+      })
+      .toBe(false)
+    const light = await readTypography(page, DEV_TOOLING)
+
+    await page.emulateMedia({ colorScheme: 'dark' })
+    // La bascule passe par un écouteur `matchMedia` de next-themes : on ATTEND
+    // qu'elle ait effectivement eu lieu avant de remesurer, sinon le test
+    // comparerait le thème clair à lui-même.
+    await expect
+      .poll(() => isDark(page), {
+        message:
+          '`<html>` doit porter `.dark` après `emulateMedia({colorScheme:"dark"})` — ' +
+          'sans cette bascule, ce contrôle serait vacuous',
+      })
+      .toBe(true)
+    await waitForFonts(page)
+    await page.mouse.move(0, 0)
+    const dark = await readTypography(page, DEV_TOOLING)
+
+    expect(
+      dark,
+      `les métriques typographiques doivent être STRICTEMENT identiques dans les deux ` +
+        `thèmes à ${CONTROL_SCHEME_WIDTH} px en \`${CONTROL_SCHEME_LOCALE}\`. Si ce test ` +
+        `rougit, une règle \`.dark\` ou \`prefers-color-scheme\` touche désormais ` +
+        `\`font-*\` / \`text-*\` / \`leading-*\` : le cas général ci-dessus, mono-thème, ` +
+        `ne le verrait pas — il faut alors étendre la couverture, pas assouplir ce test.\n` +
+        `clair : ${JSON.stringify(light)}\nsombre : ${JSON.stringify(dark)}`,
+    ).toEqual(light)
+
+    // Et l'on revérifie que le thème sombre respecte bien les cibles d'échelle,
+    // pour que ce test reste utile même si `light` dérivait en même temps.
+    const want = expected(CONTROL_SCHEME_WIDTH)
+    expect.soft(dark.h1, 'h1 en thème sombre').toBe(want.h1)
+    expect.soft(dark.h2, 'h2 en thème sombre').toBe(want.h2)
+    expect.soft(dark.h3, 'h3 en thème sombre').toBe(want.h3)
+    expect.soft(dark.stepNumber, 'chiffre d’étape en thème sombre').toBe(want.stepNumber)
+    expect.soft(dark.footerWordmark, 'wordmark du footer en thème sombre').toBe(want.footerWordmark)
   })
 })

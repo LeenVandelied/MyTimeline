@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { waitForFonts } from './support/contrast'
+import { devToolingSelectors } from './support/dev-tooling'
 
 /**
  * #341 — Verrou de non-régression : aucun débordement horizontal de la landing
@@ -19,8 +20,10 @@ import { waitForFonts } from './support/contrast'
  * décalage suit la largeur du viewport : 329@320, 384@375, 399@390). Il n'en
  * produit pourtant aucun : `scrollWidth === clientWidth` et le défilement
  * horizontal est nul. Tout futur audit de débordement doit donc EXCLURE
- * `.tsqd-parent-container` et `nextjs-portal` (overlay de dev Next.js) avant de
- * conclure — sans quoi il rouvrira #341 à l'identique.
+ * l'outillage de dev avant de conclure — sans quoi il rouvrira #341 à
+ * l'identique. La liste vit dans `support/dev-tooling.ts`, SOURCE UNIQUE
+ * partagée avec `landing-typography-hierarchy.spec.ts` : elle était dupliquée
+ * ici en dur et les deux copies avaient déjà divergé (Sprint 59).
  *
  * Ce que la spec vérifie, sur le rendu réel :
  *  1. `documentElement.scrollWidth <= clientWidth` ;
@@ -42,11 +45,26 @@ const LOCALES = ['fr', 'de'] as const
 /** Tolérance sub-pixel : les arrondis de rendu produisent des écarts < 1 px. */
 const SUBPIXEL_TOLERANCE_PX = 0.5
 
+/**
+ * `id` est relevé au même titre que `tag` et `cls` : c'est le seul champ qui
+ * identifie la SONDE de l'auto-contrôle (`#overflow-self-check`, sans classe).
+ * Sans lui, l'auto-contrôle ne pouvait s'assurer que d'un `tag === 'div'` —
+ * satisfait par n'importe quel autre `div` fautif, donc incapable de prouver
+ * que c'est bien la sonde injectée qui a été détectée (review Sprint 59).
+ */
+interface Offender {
+  tag: string
+  id: string
+  cls: string
+  right: number
+  width: number
+}
+
 interface OverflowReport {
   clientWidth: number
   scrollWidth: number
   maxScrollX: number
-  offenders: Array<{ tag: string; cls: string; right: number; width: number }>
+  offenders: Offender[]
 }
 
 /**
@@ -69,39 +87,48 @@ async function revealWholePage(page: Page): Promise<void> {
 }
 
 async function measureOverflow(page: Page): Promise<OverflowReport> {
-  return page.evaluate((tolerance) => {
-    const de = document.documentElement
-    const clientWidth = de.clientWidth
-    const offenders: Array<{ tag: string; cls: string; right: number; width: number }> = []
+  return page.evaluate(
+    ({ tolerance, tooling }) => {
+      const de = document.documentElement
+      const clientWidth = de.clientWidth
+      const offenders: Array<{
+        tag: string
+        id: string
+        cls: string
+        right: number
+        width: number
+      }> = []
 
-    for (const el of Array.from(document.querySelectorAll('*'))) {
-      // Outillage de DÉVELOPPEMENT, absent du bundle de production : le bouton
-      // des TanStack Query Devtools et l'overlay Next.js. Les inclure, c'est
-      // rouvrir #341 sur un faux positif.
-      if (el.closest('.tsqd-parent-container')) continue
-      if (el.tagName.toLowerCase() === 'nextjs-portal' || el.closest('nextjs-portal')) continue
+      for (const el of Array.from(document.querySelectorAll('*'))) {
+        // Outillage de DÉVELOPPEMENT, absent du bundle de production (cf.
+        // `support/dev-tooling.ts`). Les inclure, c'est rouvrir #341 sur un
+        // faux positif. `closest` teste aussi l'élément lui-même.
+        if (tooling.some((sel) => el.closest(sel))) continue
 
-      const rect = el.getBoundingClientRect()
-      if (rect.width === 0 && rect.height === 0) continue
-      if (rect.right > clientWidth + tolerance) {
-        offenders.push({
-          tag: el.tagName.toLowerCase(),
-          cls: (el.getAttribute('class') ?? '').slice(0, 80),
-          right: Math.round(rect.right * 100) / 100,
-          width: Math.round(rect.width * 100) / 100,
-        })
+        const rect = el.getBoundingClientRect()
+        if (rect.width === 0 && rect.height === 0) continue
+        if (rect.right > clientWidth + tolerance) {
+          offenders.push({
+            tag: el.tagName.toLowerCase(),
+            id: el.id,
+            cls: (el.getAttribute('class') ?? '').slice(0, 80),
+            right: Math.round(rect.right * 100) / 100,
+            width: Math.round(rect.width * 100) / 100,
+          })
+        }
       }
-    }
 
-    // Sonde de défilement RÉEL : Chromium clampe `scrollX` à l'amplitude
-    // effective, une page sans débordement renvoie donc 0.
-    const previousY = window.scrollY
-    window.scrollTo(5_000, previousY)
-    const maxScrollX = window.scrollX
-    window.scrollTo(0, previousY)
+      // Sonde de défilement RÉEL : Chromium clampe `scrollX` à l'amplitude
+      // effective, une page sans débordement renvoie donc 0.
+      const previousY = window.scrollY
+      window.scrollTo(5_000, previousY)
+      const maxScrollX = window.scrollX
+      window.scrollTo(0, previousY)
 
-    return { clientWidth, scrollWidth: de.scrollWidth, maxScrollX, offenders }
-  }, SUBPIXEL_TOLERANCE_PX)
+      return { clientWidth, scrollWidth: de.scrollWidth, maxScrollX, offenders }
+    },
+    { tolerance: SUBPIXEL_TOLERANCE_PX, tooling: devToolingSelectors() },
+  )
 }
 
 for (const locale of LOCALES) {
@@ -140,23 +167,35 @@ test.describe('Landing — auto-contrôle du harnais de débordement', () => {
     await waitForFonts(page)
     await page.mouse.move(0, 0)
 
-    await expect
-      .poll(async () => (await measureOverflow(page)).offenders.length)
-      .toBe(0)
+    await expect.poll(async () => (await measureOverflow(page)).offenders.length).toBe(0)
 
     // `transition: none` + `min-width: 0` : une mutation injectée peut être
     // avalée par une transition en cours ou un `min-width` concurrent.
-    await page.evaluate(() => {
+    const PROBE_ID = 'overflow-self-check'
+    await page.evaluate((id) => {
       const probe = document.createElement('div')
-      probe.id = 'overflow-self-check'
+      probe.id = id
       probe.style.cssText =
         'position:absolute;top:0;left:0;width:9999px;height:4px;transition:none;min-width:0;'
       document.body.appendChild(probe)
-    })
+    }, PROBE_ID)
 
     const degraded = await measureOverflow(page)
-    expect(degraded.offenders.some((o) => o.tag === 'div')).toBe(true)
 
-    await page.evaluate(() => document.getElementById('overflow-self-check')?.remove())
+    /**
+     * On asserte l'IDENTITÉ de la sonde, pas sa forme.
+     *
+     * L'assertion précédente était `offenders.some((o) => o.tag === 'div')` :
+     * VACUOUS, puisque n'importe quel autre `div` réellement fautif l'aurait
+     * satisfaite. Elle ne prouvait donc pas ce que ce test prétend prouver —
+     * que le harnais DÉTECTE la dégradation injectée. Relevé en review S59.
+     */
+    expect(
+      degraded.offenders.map((o) => o.id),
+      `le harnais doit détecter la sonde injectée \`#${PROBE_ID}\` (9999px de large) — ` +
+        `débordants relevés : ${JSON.stringify(degraded.offenders)}`,
+    ).toContain(PROBE_ID)
+
+    await page.evaluate((id) => document.getElementById(id)?.remove(), PROBE_ID)
   })
 })

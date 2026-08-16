@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -26,8 +26,23 @@ import { fileURLToPath } from 'node:url'
  * en page).
  */
 
-/** Bornes réelles de `ds/tokens/typography.css`. Au-delà, Tailwind reprend la main. */
-const OUT_OF_SCALE = /\b(?:[a-z0-9-]+:)*text-(?:[4-9]xl|\d\dxl)\b/g
+/**
+ * Bornes réelles de `ds/tokens/typography.css`. Au-delà, Tailwind reprend la main.
+ *
+ * ⚠ LE `(?<!-)` N'EST PAS COSMÉTIQUE — il distingue l'USAGE d'une classe hors
+ * échelle de la DÉFINITION d'un token. Sans lui, `\btext-4xl\b` apparie aussi
+ * `--text-4xl` (le `-` avant `t` est une frontière de mot) : le jour où le DS
+ * ÉTEND légitimement son échelle en déclarant `--text-4xl` dans
+ * `ds/tokens/typography.css`, le garde-fou rougissait sur la définition même du
+ * token — un faux positif qui punit exactement la bonne action, et dont la seule
+ * issue apparente est de désarmer le test. Relevé en review du Sprint 59.
+ *
+ * Ce que la lookbehind laisse passer, volontairement : `--text-4xl:` (définition)
+ * et `var(--text-4xl)` (consommation). Ce qu'elle continue d'attraper :
+ * `text-4xl`, `md:text-4xl`, `text-10xl`, `@apply text-4xl` — les usages en
+ * classe utilitaire, seuls concernés par l'AC de #348.
+ */
+const OUT_OF_SCALE = /(?<!-)\b(?:[a-z0-9-]+:)*text-(?:[4-9]xl|\d\dxl)\b/g
 
 const SRC_ROOT = join(process.cwd(), 'src')
 const APP_ROOT = join(process.cwd(), 'app')
@@ -53,7 +68,18 @@ function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 }
 
+/**
+ * Balaye `dir` récursivement. Renvoie `[]` si le dossier n'existe pas.
+ *
+ * La garde d'existence n'est pas défensive « au cas où » : `SRC_ROOT` et
+ * `APP_ROOT` sont résolus depuis `process.cwd()`, donc depuis `frontend/`.
+ * Lancé d'ailleurs (racine du dépôt, IDE, runner configuré autrement),
+ * `readdirSync` jetait un `ENOENT` — une erreur d'infrastructure déguisée en
+ * échec de garde-fou. Le risque de ce repli, c'est la VACUITÉ : d'où
+ * l'assertion sur le nombre de fichiers balayés dans le test lui-même.
+ */
 function walk(dir: string): string[] {
+  if (!existsSync(dir)) return []
   let out: string[] = []
   for (const entry of readdirSync(dir)) {
     if (SKIP_DIRS.has(entry)) continue
@@ -70,12 +96,24 @@ function walk(dir: string): string[] {
 describe('échelle typographique DS — aucune taille hors échelle (#348)', () => {
   it('aucune classe `text-4xl`+ ne subsiste dans `src/` ni `app/`', () => {
     const offenders: string[] = []
+    const files = [...walk(SRC_ROOT), ...walk(APP_ROOT)]
 
-    for (const file of [...walk(SRC_ROOT), ...walk(APP_ROOT)]) {
+    // ANTI-VACUITÉ. `walk` renvoie `[]` sur un dossier absent : sans ce plancher,
+    // un test lancé depuis un mauvais `cwd` balaierait ZÉRO fichier et serait
+    // VERT — un garde-fou silencieusement désarmé, pire qu'un garde-fou rouge.
+    expect(
+      files.length,
+      `aucun fichier balayé : \`src/\` (${SRC_ROOT}) et \`app/\` (${APP_ROOT}) sont ` +
+        `résolus depuis \`process.cwd()\`. Ce test doit tourner avec \`frontend/\` ` +
+        `pour \`cwd\` — sinon il ne vérifie RIEN.`,
+    ).toBeGreaterThan(50)
+
+    for (const file of files) {
       if (file === SELF) continue
       const source = stripComments(readFileSync(file, 'utf8'))
       const hits = source.match(OUT_OF_SCALE)
-      if (hits) offenders.push(`${relative(process.cwd(), file)} → ${[...new Set(hits)].join(', ')}`)
+      if (hits)
+        offenders.push(`${relative(process.cwd(), file)} → ${[...new Set(hits)].join(', ')}`)
     }
 
     expect(

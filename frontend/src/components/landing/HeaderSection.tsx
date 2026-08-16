@@ -185,20 +185,40 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             Corriger `de` seul aurait laissé `es` à 4 px du même échec. On reprend donc
             les métriques HORIZONTALES de la taille `sm` du DS (`px-3` + `text-xs`,
             cf. `button.tsx`) sans sa hauteur `h-8` : `h-11` reste, la cible tactile
-            de 44 px exigée par #334 est préservée. Après correctif, les 4 locales
-            requièrent 281 px pour 288 dispo — soit **7 px de marge dans la boîte de
-            contenu**, et un bord droit du groupe à 304 px pour 320 de viewport
-            (**16 px avant le bord de l'écran**). Ce sont les deux mesures utiles ;
-            une version antérieure de ce commentaire annonçait « 23 px », chiffre
-            qui ne correspondait à aucune des deux (relevé en review de la PR #374).
-            Aucun `matchMedia` ne double ce seuil (contrairement à `lg`) :
-            il est purement CSS, rien à resynchroniser côté JS.
+            de 44 px exigée par #334 est préservée. Aucun `matchMedia` ne double ce
+            seuil (contrairement à `lg`) : il est purement CSS, rien à resynchroniser
+            côté JS.
 
-            #381 — CE BLOC RESTE EXACT, vérifié et non supposé. Le correctif de #381
-            ne touche que les paliers >= `sm` (640 px) ; à 320 px le logo était et
-            reste à `text-md`. Re-mesuré dans la même image jammy après correctif :
-            logo 122 px, marges identiques au pixel dans les 4 locales (`de` reste
-            le cas tendu, 5 px entre le logo et le groupe droit). */}
+            ── RELEVÉ APRÈS CORRECTIF — 320 px, image `mcr.microsoft.com/playwright:
+            v1.61.1-jammy`, re-mesuré le 2026-08-16 sur `sprint/59` @ `9b1cb39`
+            (`--workers=1`, serveur `next dev` de l'hôte) :
+
+              locale | logo | groupe droit | requis | dispo | MARGE | bord droit
+              en     | 122  | 126          | 248    | 288   |  40   | 304
+              fr     | 122  | 148          | 270    | 288   |  18   | 304
+              es     | 122  | 156          | 278    | 288   |  10   | 304
+              de     | 122  | 161          | 283    | 288   |   5   | 304
+
+            ⚠ UN SEUL CHIFFRE DE MARGE, ET IL VAUT 5 px (`de`, pire cas). Le header
+            est `justify-between` et la `nav` est en `display:none` sous `lg` : il n'y
+            a que DEUX flex items, donc « marge restante dans la boîte de contenu » et
+            « écart entre le logo et le groupe droit » sont LA MÊME GRANDEUR — 5 px,
+            pas deux valeurs. Ce bloc a successivement annoncé « 23 px » (PR #374),
+            puis « 281 requis → 7 px de marge » ici et « 5 px » dans l'addendum #381
+            douze lignes plus bas : trois chiffres pour une seule mesure, dont deux
+            périmés. Relevé en review du Sprint 59, tranché par la re-mesure ci-dessus.
+            Ne PAS réintroduire de second chiffre : si le layout change, on remesure et
+            on remplace ce tableau, on ne le double pas. Le bord droit du groupe est à
+            304 px pour 320 de viewport dans les 4 locales, soit 16 px avant le bord de
+            l'écran, et `documentElement.scrollWidth === clientWidth === 320`.
+
+            ⚠ 5 px, c'est SOUS le plancher « marge à deux chiffres » de PIT-S52-001 :
+            `de` reste le cas tendu et le prochain élargissement du groupe droit le
+            fera basculer. Dette connue, non traitée ici.
+
+            #381 — CE BLOC RESTE EXACT pour les paliers concernés : le correctif de
+            #381 ne touche que >= `sm` (640 px), à 320 px le logo était et reste à
+            `text-md` (21 px, boîte 122 px). */}
         <Button
           asChild
           className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-3 max-[360px]:text-xs lg:h-9"

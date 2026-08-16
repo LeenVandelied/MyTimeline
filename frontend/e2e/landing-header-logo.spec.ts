@@ -33,7 +33,27 @@ import { waitForFonts } from './support/contrast'
  */
 
 const LOCALES = ['fr', 'en', 'de', 'es'] as const
-const SCHEMES = ['light', 'dark'] as const
+
+/**
+ * ⚠ LE CAS GÉNÉRAL EST MONO-THÈME (clair). NE PAS « RÉTABLIR » UNE BOUCLE
+ * `['light','dark']` AUTOUR DES 8 PALIERS — retirée en review du Sprint 59, elle
+ * doublait 8 tests en 16 pour zéro signal.
+ *
+ * POURQUOI. Tout ce que cette spec mesure est GÉOMÉTRIQUE ou typographique :
+ * nombre de boîtes de ligne, `fontSize`, marge au bloc suivant, `scrollWidth`.
+ * Le thème du DS Graphite ne pilote que des COULEURS — aucune règle `.dark` ni
+ * `prefers-color-scheme` du dépôt ne touche `font-*`, `text-*` ou `leading-*`.
+ * Le coût, lui, était réel : ~64 `page.goto` de plus sur un check e2e REQUIS,
+ * avec `workers: 1` et `retries: 2`. Le contraste, seule grandeur réellement
+ * sensible au thème, a sa propre spec (`landing-cta-contrast.spec.ts`).
+ *
+ * POURQUOI UN CONTRÔLE SOMBRE SUBSISTE. Un retrait total rendrait l'invariant
+ * invérifiable. Le test « invariance des métriques au thème », en fin de
+ * fichier, compare les deux thèmes sur UN palier et UNE locale : 1 test au lieu
+ * de 8, et il PROUVE l'invariant au lieu de le supposer.
+ */
+const CONTROL_SCHEME_WIDTH = 1024
+const CONTROL_SCHEME_LOCALE = 'de'
 
 /**
  * Paliers couverts. 320/375/390 = non-régression #334 ; 768/820/1023 = palier
@@ -117,77 +137,76 @@ async function readLogo(page: Page): Promise<LogoMetrics> {
   })
 }
 
-for (const scheme of SCHEMES) {
-  test.describe(`Landing — wordmark du header, thème ${scheme}`, () => {
-    test.use({ colorScheme: scheme })
+test.describe('Landing — wordmark du header', () => {
+  // Thème CLAIR uniquement — cf. le bloc `CONTROL_SCHEME_*` en tête de fichier.
+  test.use({ colorScheme: 'light' })
 
-    for (const width of WIDTHS) {
-      test(`${width} px — une seule ligne, échelle DS et marge, les 4 locales`, async ({ page }) => {
-        await page.setViewportSize({ width, height: 900 })
-        const expectedFont = EXPECTED_FONT_PX(width)
-        const minGap = MIN_GAP_PX(width)
-        const relevé: string[] = []
+  for (const width of WIDTHS) {
+    test(`${width} px — une seule ligne, échelle DS et marge, les 4 locales`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      const expectedFont = EXPECTED_FONT_PX(width)
+      const minGap = MIN_GAP_PX(width)
+      const relevé: string[] = []
 
-        for (const locale of LOCALES) {
-          await page.goto(`/${locale}`, { waitUntil: 'domcontentloaded' })
-          await waitForFonts(page)
-          // Le curseur reste où Playwright l'a laissé : sans cela un élément
-          // peut être mesuré dans son état `:hover`.
-          await page.mouse.move(0, 0)
+      for (const locale of LOCALES) {
+        await page.goto(`/${locale}`, { waitUntil: 'domcontentloaded' })
+        await waitForFonts(page)
+        // Le curseur reste où Playwright l'a laissé : sans cela un élément
+        // peut être mesuré dans son état `:hover`.
+        await page.mouse.move(0, 0)
 
-          const m = await readLogo(page)
-          relevé.push(
-            `${locale}: ${m.fontSizePx}px, ${m.lines} ligne(s), ${m.widthPx}x${m.heightPx}, ` +
-              `marge ${m.gapToNextPx}px, header ${m.headerHeightPx}px`,
+        const m = await readLogo(page)
+        relevé.push(
+          `${locale}: ${m.fontSizePx}px, ${m.lines} ligne(s), ${m.widthPx}x${m.heightPx}, ` +
+            `marge ${m.gapToNextPx}px, header ${m.headerHeightPx}px`,
+        )
+
+        // `expect.soft` : on veut le tableau COMPLET des locales fautives, pas
+        // seulement la première. Corriger `fr` sans regarder `de`/`es` a déjà
+        // produit un faux « corrigé » au S49.
+        expect
+          .soft(
+            m.lines,
+            `le wordmark doit tenir sur UNE ligne à ${width} px en ${locale} — ` +
+              `mesuré ${m.lines} ligne(s), boîte ${m.widthPx}x${m.heightPx}px. ` +
+              `C'est le défaut que \`scrollWidth <= clientWidth\` ne peut pas voir.`,
           )
+          .toBe(1)
 
-          // `expect.soft` : on veut le tableau COMPLET des locales fautives, pas
-          // seulement la première. Corriger `fr` sans regarder `de`/`es` a déjà
-          // produit un faux « corrigé » au S49.
-          expect
-            .soft(
-              m.lines,
-              `le wordmark doit tenir sur UNE ligne à ${width} px en ${locale} — ` +
-                `mesuré ${m.lines} ligne(s), boîte ${m.widthPx}x${m.heightPx}px. ` +
-                `C'est le défaut que \`scrollWidth <= clientWidth\` ne peut pas voir.`,
-            )
-            .toBe(1)
+        expect
+          .soft(
+            m.fontSizePx,
+            `échelle DS du wordmark à ${width} px en ${locale} — attendu ${expectedFont}px ` +
+              `(${width < SM_BREAKPOINT ? 'text-md' : 'text-lg'} de ds/tokens/typography.css), ` +
+              `mesuré ${m.fontSizePx}px`,
+          )
+          .toBe(expectedFont)
 
-          expect
-            .soft(
-              m.fontSizePx,
-              `échelle DS du wordmark à ${width} px en ${locale} — attendu ${expectedFont}px ` +
-                `(${width < SM_BREAKPOINT ? 'text-md' : 'text-lg'} de ds/tokens/typography.css), ` +
-                `mesuré ${m.fontSizePx}px`,
-            )
-            .toBe(expectedFont)
+        expect
+          .soft(
+            m.gapToNextPx,
+            `marge entre le wordmark et le bloc suivant à ${width} px en ${locale} — ` +
+              `mesuré ${m.gapToNextPx}px, plancher ${minGap}px`,
+          )
+          .toBeGreaterThanOrEqual(minGap)
 
-          expect
-            .soft(
-              m.gapToNextPx,
-              `marge entre le wordmark et le bloc suivant à ${width} px en ${locale} — ` +
-                `mesuré ${m.gapToNextPx}px, plancher ${minGap}px`,
-            )
-            .toBeGreaterThanOrEqual(minGap)
+        // Garde-fou historique de #347, conservé : il ne prouve pas l'absence
+        // du défaut ci-dessus, mais son absence prouverait autre chose encore.
+        expect
+          .soft(
+            m.scrollWidth,
+            `débordement horizontal à ${width} px en ${locale} : ${m.scrollWidth} > ${m.clientWidth}`,
+          )
+          .toBeLessThanOrEqual(m.clientWidth)
+      }
 
-          // Garde-fou historique de #347, conservé : il ne prouve pas l'absence
-          // du défaut ci-dessus, mais son absence prouverait autre chose encore.
-          expect
-            .soft(
-              m.scrollWidth,
-              `débordement horizontal à ${width} px en ${locale} : ${m.scrollWidth} > ${m.clientWidth}`,
-            )
-            .toBeLessThanOrEqual(m.clientWidth)
-        }
-
-        test.info().annotations.push({
-          type: `wordmark-${width}px-${scheme}`,
-          description: relevé.join(' | '),
-        })
+      test.info().annotations.push({
+        type: `wordmark-${width}px`,
+        description: relevé.join(' | '),
       })
-    }
-  })
-}
+    })
+  }
+})
 
 /**
  * FRONTIÈRE EXACTE DE L'ÉCHELLE — le garde-fou anti-#381.
@@ -239,5 +258,67 @@ test.describe('Landing — le wordmark n’a pas de palier propre', () => {
 
     expect(below, `text-md attendu à ${SM_BREAKPOINT - 1} px`).toBe(21)
     expect(above, `text-lg attendu à ${SM_BREAKPOINT} px`).toBe(27)
+  })
+})
+
+/**
+ * CONTRÔLE PONCTUEL DU THÈME SOMBRE — le filet qui remplace la boucle `SCHEMES`.
+ *
+ * Le cas général ci-dessus est mono-thème parce qu'on AFFIRME que les métriques
+ * du wordmark sont invariantes au thème. Ce test est ce qui rend l'affirmation
+ * VÉRIFIÉE : il mesure 1024 px en `de` — le palier exact du défaut de #381 —
+ * dans les deux thèmes et exige l'égalité stricte de TOUTES les métriques.
+ *
+ * ⚠ IL DOIT PROUVER QUE LA BASCULE A EU LIEU. `next-themes` est monté en
+ * `attribute="class" defaultTheme="system" enableSystem` (`app/layout.tsx:53`) :
+ * `prefers-color-scheme` pilote la classe `.dark` sur `<html>` via un écouteur
+ * `matchMedia`. Sans l'assertion sur cette classe, un `emulateMedia` sans effet
+ * comparerait le thème clair à lui-même — vert quoi qu'il arrive.
+ */
+test.describe('Landing — invariance des métriques du wordmark au thème', () => {
+  const isDark = (page: Page) =>
+    page.evaluate(() => document.documentElement.classList.contains('dark'))
+
+  test(`métriques identiques en clair et en sombre (${CONTROL_SCHEME_WIDTH} px, \`${CONTROL_SCHEME_LOCALE}\`)`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: CONTROL_SCHEME_WIDTH, height: 900 })
+
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto(`/${CONTROL_SCHEME_LOCALE}`, { waitUntil: 'domcontentloaded' })
+    await waitForFonts(page)
+    await page.mouse.move(0, 0)
+    await expect
+      .poll(() => isDark(page), {
+        message: '`<html>` ne doit PAS porter `.dark` sous `prefers-color-scheme: light`',
+      })
+      .toBe(false)
+    const light = await readLogo(page)
+
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect
+      .poll(() => isDark(page), {
+        message:
+          '`<html>` doit porter `.dark` après `emulateMedia({colorScheme:"dark"})` — ' +
+          'sans cette bascule, ce contrôle serait vacuous',
+      })
+      .toBe(true)
+    await waitForFonts(page)
+    await page.mouse.move(0, 0)
+    const dark = await readLogo(page)
+
+    expect(
+      dark,
+      `les métriques du wordmark doivent être STRICTEMENT identiques dans les deux thèmes ` +
+        `à ${CONTROL_SCHEME_WIDTH} px en \`${CONTROL_SCHEME_LOCALE}\`. Si ce test rougit, ` +
+        `une règle \`.dark\` touche désormais la typographie ou la mise en page du header : ` +
+        `le cas général mono-thème ne le verrait pas — étendre la couverture, pas assouplir ` +
+        `ce test.\nclair : ${JSON.stringify(light)}\nsombre : ${JSON.stringify(dark)}`,
+    ).toEqual(light)
+
+    expect
+      .soft(dark.fontSizePx, 'échelle DS du wordmark en thème sombre')
+      .toBe(EXPECTED_FONT_PX(CONTROL_SCHEME_WIDTH))
+    expect.soft(dark.lines, 'wordmark sur une ligne en thème sombre').toBe(1)
   })
 })
