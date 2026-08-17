@@ -2723,9 +2723,22 @@ sprint depuis S57 — cf. note S57 ; ne pas « corriger » ce décalage.)
    install` non exercés). Premier run réel à surveiller.
 2. Gitleaks ne détecte **pas** le `DB_PASSWORD` historique (§3.1, 10 caractères alphabétiques,
    entropie trop basse). Documenté dans `.gitleaks.toml`, pas dissimulé.
-3. **La liste réelle des checks requis sur `dev` n'a pas pu être relue** : `branches/dev/protection`
-   **et** l'API GraphQL répondent HTTP 503 de façon persistante (dégradation GitHub ; le REST
-   ordinaire fonctionne). Aucune affirmation sur les checks requis n'est vérifiée dans ce sprint.
+3. ~~Checks requis non relisibles~~ — **levée en fin de sprint.** `branches/dev/protection` et
+   l'API GraphQL ont répondu HTTP 503 pendant ~2 h (dégradation GitHub, le REST ordinaire
+   fonctionnait), puis le service est revenu. **Checks requis réels sur `dev` :
+   `backend`, `frontend`, `e2e`, `ai-env-packs`** (4 contextes) — ni `security`, ni `secret-scan`.
+   À noter pour la mémoire projet : l'entrée qui parlait de « 5 jobs requis » est à corriger.
+
+### Défaut trouvé et corrigé par l'audit sécurité de fin de sprint
+
+`.gitleaksignore` épinglait une empreinte sur le fixture `SECRET` d'`ExportTokenServiceTest`,
+**encore présent au HEAD**, ce que la règle en tête de ce même fichier interdit explicitement.
+La constante s'appelle `SECRET` et non `EXPORT_TOKEN_SECRET` : l'allowlist par nom de clé ne la
+couvrait pas. Le mode d'échec était discret plutôt que bruyant — la ligne n'ayant jamais été
+retouchée depuis son commit d'introduction, l'empreinte restait valide indéfiniment, donc le
+masquage devenait **permanent** au lieu de rougir au premier reformatage. Remplacée (`bdf6671`)
+par une exclusion durable ancrée sur le marqueur `test-only-insecure` de la valeur **et** sur ce
+seul fichier, vérifiée dans les deux sens.
 
 ### ⚠ Rappel de clôture — régénérer les packs dérivés du Layer B
 

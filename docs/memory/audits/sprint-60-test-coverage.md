@@ -70,10 +70,13 @@ Aucune dette E2E créée par ce sprint. `[COVERAGE-E2E] OK`.
    l'audit §3.1 (10 caractères alphabétiques, entropie sous le seuil de `generic-api-key`). Le job
    attrape les secrets à préfixe connu ou à forte entropie ; il n'est pas un substitut à la revue.
    Documenté dans `.gitleaks.toml` plutôt que passé sous silence.
-3. **La liste réelle des checks requis sur `dev` n'a pas pu être relue** : l'endpoint
-   `branches/dev/protection` et l'API GraphQL répondent **HTTP 503** de façon persistante
-   (dégradation GitHub — le REST ordinaire fonctionne, rate limit interrogeable). Aucune
-   affirmation sur les checks requis n'est donc vérifiée dans ce sprint.
+3. ~~La liste des checks requis n'a pas pu être relue~~ — **levée.** L'endpoint
+   `branches/dev/protection` et l'API GraphQL ont répondu **HTTP 503** pendant ~2 h (dégradation
+   GitHub ; le REST ordinaire fonctionnait). Au retour du service, la liste réelle des checks
+   requis sur `dev` est : **`backend`, `frontend`, `e2e`, `ai-env-packs`** — 4 contextes.
+   `security` et `secret-scan` n'en font pas partie : conforme à ce que le sprint annonce, et
+   c'est précisément pourquoi `secret-scan` devra être promu requis après un premier run vert
+   (follow-up).
 4. **Branches non exercées du préflight #308** : `node_modules` totalement absent, et
    `node_modules` vide. Le code les traite, seul le cas « paquet manquant » a été déclenché
    réellement. Les reproduire exigeait de déplacer tout `node_modules` — écarté.
