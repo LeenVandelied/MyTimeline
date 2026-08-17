@@ -5,7 +5,8 @@
 > `run_frontend`, mais avant la documentation, la preuve, l'artefact et le commit.
 > Le lead a repris à partir de son diff non committé. Détail en fin de fichier.
 
-- commits: [ee0b1ea]
+- commits: [79d4a5b] — plus le commit immédiatement suivant, qui ne fait que corriger ce champ
+  (écrit en placeholder avant d'avoir le SHA). Un 2ᵉ commit plutôt qu'un `--amend` : `PIT-S55-002`.
 
 - resume:
   **Diagnostic** — la prémisse de l'issue est fausse : `eslint-plugin-storybook` **est** déclaré
