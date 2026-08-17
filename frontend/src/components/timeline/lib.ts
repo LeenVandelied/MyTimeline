@@ -36,7 +36,14 @@ export function buildEventAriaLabel(
   const end = fmt.format(new Date(event.end || event.start))
   const status = t(`dashboard.timeline.status.${event.status}`)
   const product = event.extendedProps?.productName
-  const parts = [event.title, status, `${start} – ${end}`]
+  const parts = [event.title, status]
+  // #230 (BR-EVE-011/013) — l'état ARCHIVÉ est rendu visuellement par une
+  // désaturation (`.mt-tlv__evt--archived` / `.mt-tlm__evt--archived`). Une
+  // information portée par la SEULE couleur est un échec WCAG 1.4.1 : on
+  // l'annonce donc textuellement, juste après le statut temporel. Silencieux
+  // pour un event actif (aucune clé émise) — parité avec la récurrence.
+  if (event.extendedProps?.archived) parts.push(t('dashboard.timeline.archived'))
+  parts.push(`${start} – ${end}`)
   if (product) parts.push(product)
   // BR-EVE-006 : n'annonce la récurrence QUE si l'event est récurrent avec une
   // fréquence connue. `recurrenceUnit` = enum MAJUSCULE WEEK/MONTH/YEAR.

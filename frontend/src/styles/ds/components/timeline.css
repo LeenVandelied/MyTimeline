@@ -225,6 +225,35 @@
    visuel. On réutilise le `:focus-visible` fourni par le DS. */
 .mt-tlv__evt:focus-visible{outline:2px solid var(--color-accent); outline-offset:2px;}
 .mt-tlv__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
+
+/* #230 — ÉVÉNEMENT ARCHIVÉ sur la frise (BR-EVE-011 : un archivé n'est plus actif).
+   Grisé, PAS masqué : il reste visible et cliquable là où le filtre de vue #307 le
+   remonte (vue « archivés » / « tous » du détail produit).
+
+   POURQUOI PAS `.mt-evt--archived` ICI : cette classe pose `opacity:.45`, et le
+   TITRE de l'événement est porté DANS la pastille — une opacité .45 sur du texte
+   passe sous le seuil WCAG AA (constat de #307, qui a pour cette raison réservé
+   `.mt-evt--archived` aux éléments décoratifs). On la RÉUTILISE donc telle quelle,
+   mais sur la seule pastille de statut (`aria-hidden`, cf. EventPill / mobile),
+   et le corps de la barre est désaturé SANS opacité :
+   `grayscale(1)` mappe fond ET encre vers leur gris de luminance, et le contraste
+   WCAG étant un RAPPORT de luminances, il est préservé à l'approximation du
+   filtre près (⚠ non MESURÉ en navigateur, cf. rapport #230).
+
+   Le sens n'est pas porté par la seule couleur (WCAG 1.4.1) : contour pointillé
+   (même vocabulaire que `.mt-evt--draft`) + mention « archivé » ajoutée à
+   l'`aria-label` agrégé (`buildEventAriaLabel`).
+
+   ⚠ Le `:hover` DOIT être redéclaré : `.mt-tlv__evt:hover` (0,2,0) bat
+   `.mt-tlv__evt--archived` (0,1,0) et effacerait le grisage au survol — famille
+   PIT-S53-004 (une utilitaire/règle sans variante `hover:` reprend la main).
+   `outline` (et non `border`) : hors flux, ne décale pas la géométrie px calculée
+   par `zoom.ts`. Le `:focus-visible` du DS reste prioritaire (0,2,0 + source plus
+   haut mais spécificité égale ⇒ on ne redéclare PAS l'outline de focus ici). */
+.mt-tlv__evt--archived,
+.mt-tlm__evt--archived{filter:grayscale(1); box-shadow:none; outline:1px dashed var(--color-rule-strong); outline-offset:-1px;}
+.mt-tlv__evt--archived:hover{filter:grayscale(1) brightness(1.04); box-shadow:none;}
+
 /* #81 point 6 — libellé de secours HORS barre : rendu quand le contraste du
    titre À L'INTÉRIEUR de la barre est < 4.5:1 (fond clair + barre étroite). Posé
    sur le fond de lane (ink lisible), aligné verticalement sur la barre. */

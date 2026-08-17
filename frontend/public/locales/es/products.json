@@ -38,7 +38,8 @@
         "endDate": "Fecha de fin",
         "recurrenceEndDate": "Fin de recurrencia",
         "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha.",
-        "archived": "Archivado"
+        "archived": "Archivado",
+        "archivedLockNote": "Este evento está archivado: sus campos son de solo lectura y ya no cuenta entre tus eventos activos. Desactiva «Archivado» más abajo para volver a editarlo."
       },
       "types": {
         "duration": "Duración",
@@ -195,5 +196,13 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "openEdit": "Editar {name}"
+  },
+  "archiveDialog": {
+    "title": "¿Archivar este evento?",
+    "quotaEffect": "Una vez archivado, este evento dejará de contar entre tus eventos activos y liberará esa parte de tu cuota de eventos.",
+    "reversible": "No se elimina nada: lo encontrarás en la pestaña «Archivados» del producto, donde podrás desarchivarlo.",
+    "readOnly": "Mientras esté archivado, sus campos pasan a solo lectura: solo se podrá desarchivar.",
+    "cancel": "Cancelar",
+    "confirm": "Archivar"
   }
 }

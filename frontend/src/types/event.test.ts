@@ -91,6 +91,17 @@ describe('mapToFullCalendarEvent', () => {
     expect(mapped.allDay).toBe(false)
   })
 
+  it('#230 — propage durationValue/durationUnit au view-model (formulaire frise soumissible)', () => {
+    // Sans cette propagation, `TimelineEditHost` ouvre le formulaire avec
+    // `type='duration'` mais `durationUnit: undefined` → le refine BR-EVE-004/006
+    // le rend NON soumissible. Bloquant depuis #230 : sur un event archivé les
+    // champs sont verrouillés, l'unité ne peut plus être re-saisie à la main.
+    const ev: Event = eventSchema.parse(baseResponse)
+    const mapped = mapToFullCalendarEvent(ev, 'Prod', 'cat', 'p1')
+    expect(mapped.extendedProps.durationValue).toBe(3)
+    expect(mapped.extendedProps.durationUnit).toBe('days')
+  })
+
   it('#188 — propage archived au view-model (BR-EVE-013)', () => {
     const ev: Event = eventSchema.parse({ ...baseResponse, archived: true })
     const mapped = mapToFullCalendarEvent(ev, 'Prod', 'cat', 'p1')

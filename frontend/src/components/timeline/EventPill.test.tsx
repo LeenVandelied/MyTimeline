@@ -35,7 +35,10 @@ describe('EventPill', () => {
         onSelect={() => {}}
       />,
     )
-    expect(screen.getByTestId('timeline-event')).toHaveAttribute('aria-label', 'Péremption, à venir')
+    expect(screen.getByTestId('timeline-event')).toHaveAttribute(
+      'aria-label',
+      'Péremption, à venir',
+    )
   })
 
   it('positionne la pastille via leftPx/widthPx', () => {
@@ -137,6 +140,63 @@ describe('EventPill', () => {
       expect(titleSpan).toHaveAttribute('aria-hidden', 'true')
       // Libellé extérieur présent (garde-fou #81) → titre non perdu visuellement.
       expect(screen.getByTestId('timeline-event-outside-label')).toBeInTheDocument()
+    })
+  })
+
+  // ==================== #230 — event ARCHIVÉ grisé (BR-EVE-011/013) ====================
+  describe('#230 rendu grisé d’un événement archivé', () => {
+    const archivedEvent = (color = '#3B62D4') =>
+      makePositionedEvent({
+        color,
+        extendedProps: {
+          productId: 'prod-1',
+          productName: 'Lait entier bio',
+          category: 'Produits frais',
+          type: 'duration',
+          archived: true,
+        },
+      })
+
+    it('un event archivé reste RENDU (grisé, pas masqué) et se signale par data-archived', () => {
+      render(<EventPill event={archivedEvent()} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      // Critère #230 : « grisé plutôt que simplement absent ».
+      expect(pill).toBeInTheDocument()
+      expect(pill).toHaveAttribute('data-archived', 'true')
+      expect(pill).toHaveClass('mt-tlv__evt--archived')
+    })
+
+    it('la classe d’opacité `.mt-evt--archived` reste cantonnée à la pastille DÉCORATIVE', () => {
+      // Décision #307 reprise ici : `opacity:.45` sur la barre ferait passer le
+      // TITRE sous AA. La barre est désaturée sans opacité (`--archived`), seul le
+      // point de statut (aria-hidden) porte `.mt-evt--archived`.
+      const { container } = render(
+        <EventPill event={archivedEvent()} ariaLabel="x" onSelect={() => {}} />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(pill).not.toHaveClass('mt-evt--archived')
+      const dot = container.querySelector('.mt-tlv__evt-dot')
+      expect(dot).toHaveClass('mt-evt--archived')
+      expect(dot).toHaveAttribute('aria-hidden', 'true')
+    })
+
+    it('un event ACTIF ne porte ni la classe ni l’attribut (non-régression)', () => {
+      const { container } = render(
+        <EventPill event={makePositionedEvent()} ariaLabel="x" onSelect={() => {}} />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(pill).not.toHaveAttribute('data-archived')
+      expect(pill).not.toHaveClass('mt-tlv__evt--archived')
+      expect(container.querySelector('.mt-tlv__evt-dot')).not.toHaveClass('mt-evt--archived')
+    })
+
+    it('un archivé reste CLIQUABLE (le grisage n’est pas une désactivation)', async () => {
+      const user = userEvent.setup()
+      const onSelect = vi.fn()
+      const event = archivedEvent()
+      render(<EventPill event={event} ariaLabel="x" onSelect={onSelect} />)
+      await user.click(screen.getByTestId('timeline-event'))
+      expect(onSelect).toHaveBeenCalledWith(event)
     })
   })
 })

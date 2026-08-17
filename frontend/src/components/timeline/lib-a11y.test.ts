@@ -8,7 +8,9 @@ import { buildEventAriaLabel, eventLabelReadableInside } from './lib'
  */
 const t = (k: string) => k
 
-function evt(overrides: Partial<FullCalendarEvent> = {}): FullCalendarEvent & { status: 'upcoming' } {
+function evt(
+  overrides: Partial<FullCalendarEvent> = {},
+): FullCalendarEvent & { status: 'upcoming' } {
   return {
     id: 'e1',
     title: 'Péremption lait',
@@ -36,6 +38,35 @@ describe('buildEventAriaLabel', () => {
     expect(label).toContain('Lait bio')
     // Une seule chaîne, virgules comme séparateurs (annonce unique).
     expect(label.split(', ').length).toBeGreaterThanOrEqual(4)
+  })
+
+  // #230 (WCAG 1.4.1) — le grisage d'un archivé est une info portée par la couleur :
+  // elle DOIT aussi être annoncée textuellement, sinon elle n'existe pas au lecteur
+  // d'écran. Ce helper est partagé desktop + mobile portrait + mobile paysage → une
+  // seule assertion couvre les trois surfaces.
+  it('#230 — annonce l’état ARCHIVÉ, juste après le statut temporel', () => {
+    const label = buildEventAriaLabel(
+      evt({
+        extendedProps: {
+          productId: 'p1',
+          productName: 'Lait bio',
+          category: 'Frais',
+          type: 'duration',
+          archived: true,
+        },
+      }),
+      'fr-FR',
+      t,
+    )
+    expect(label).toContain('dashboard.timeline.archived')
+    const parts = label.split(', ')
+    expect(parts.indexOf('dashboard.timeline.archived')).toBe(
+      parts.indexOf('dashboard.timeline.status.upcoming') + 1,
+    )
+  })
+
+  it('#230 — n’annonce PAS « archivé » sur un event actif', () => {
+    expect(buildEventAriaLabel(evt(), 'fr-FR', t)).not.toContain('timeline.archived')
   })
 
   it('ajoute le statut de récurrence quand isRecurring + recurrenceUnit (BR-EVE-006)', () => {

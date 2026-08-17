@@ -44,10 +44,7 @@ import type { PositionedEvent } from './zoom'
  * Les deux chemins convergent ensuite sur l'unique `runDelete` (pas de second callback →
  * pas de divergence d'invalidation de cache entre desktop et mobile, cf. plan #309).
  */
-export type TimelineEditHostProps = Omit<
-  TimelineResponsiveProps,
-  'onEditEvent' | 'onDeleteEvent'
->
+export type TimelineEditHostProps = Omit<TimelineResponsiveProps, 'onEditEvent' | 'onDeleteEvent'>
 
 export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   const [editing, setEditing] = useState<PositionedEvent | null>(null)
@@ -69,10 +66,16 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
     return {
       title: editing.title,
       type: editing.extendedProps?.type || 'duration',
-      // durationValue/durationUnit/recurrenceEndDate absents du view-model frise
-      // (FullCalendarEvent) : non pré-remplis (parité avec EventContent).
-      durationValue: undefined,
-      durationUnit: undefined,
+      // #230 — durée DÉSORMAIS pré-remplie depuis le view-model (`mapToFullCalendarEvent`
+      // ne la jette plus). Avant, `durationUnit: undefined` avec `type: 'duration'`
+      // faisait naître le formulaire INVALIDE (refine BR-EVE-004/006) : le submit était
+      // refusé tant que l'unité n'était pas re-saisie. Avec le verrou d'édition #230
+      // (champs en lecture seule quand `archived`), cette re-saisie devient impossible
+      // → le désarchivage depuis la frise aurait été bloqué. `?? undefined` : le champ
+      // est `.optional()` côté schéma, il n'accepte pas `null`.
+      durationValue: editing.extendedProps?.durationValue ?? undefined,
+      durationUnit: editing.extendedProps?.durationUnit ?? undefined,
+      // `recurrenceEndDate` reste absent du view-model frise (non pré-rempli).
       isRecurring: editing.extendedProps?.isRecurring ?? false,
       recurrenceUnit: editing.extendedProps?.recurrenceUnit ?? undefined,
       recurrenceEndDate: null,

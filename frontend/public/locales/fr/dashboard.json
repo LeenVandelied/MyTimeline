@@ -131,6 +131,7 @@
       "week": "récurrent chaque semaine",
       "month": "récurrent chaque mois",
       "year": "récurrent chaque année"
-    }
+    },
+    "archived": "archivé"
   }
 }

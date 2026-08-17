@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useTranslations } from 'next-intl'
 import { Controller, useForm, ControllerRenderProps } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Trash2 } from 'lucide-react'
+import { Archive, Trash2 } from 'lucide-react'
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { Input } from './ui/input'
@@ -17,6 +17,7 @@ import { Spinner } from './ui/spinner'
 import { PopoverPicker } from './ui/popoverPicker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
 import { ConflictDialog } from './shared/ConflictDialog'
+import { ArchiveConfirmDialog } from './events/ArchiveConfirmDialog'
 import { EventPreviewTimeline } from './events/EventPreviewTimeline'
 import type { PreviewEventType } from './events/previewTimeline'
 import { useNetworkStatus } from '@/contexts/NetworkStatusContext'
@@ -172,11 +173,34 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
   const [isColorOpen, setIsColorOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
+  // #230 — confirmation d'ARCHIVAGE : ouverte par le toggle, jamais par le submit.
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = React.useState(false)
 
   const submitting = submitState === 'submitting'
   const isEdit = Boolean(onDelete)
   // #300 — champs gouvernés par l'asymétrie du contrat create/update (cf. `EventFormMode`).
   const isCreate = mode === 'create'
+
+  /**
+   * #230 (BR-EVE-011 / BR-EVE-013) — VERROU D'ÉDITION d'un événement archivé.
+   *
+   * Un archivé n'est plus un event « actif » : le formulaire passe en lecture seule,
+   * SEUL le toggle d'archivage (donc le DÉSARCHIVAGE) reste actionnable, avec le
+   * submit qui le porte. Inapplicable au create (`archived` est PATCH-only,
+   * BR-EVE-013 — le champ n'existe même pas).
+   *
+   * ⚠ POURQUOI PAS l'option `disabled` de RHF (`useForm({disabled})` /
+   * `register(..., {disabled})`) : elle met la valeur du champ à `undefined` dans
+   * l'état du formulaire. Le PATCH partirait alors avec des dates vidées → la garde
+   * backend `endDate >= startDate` (BR-EVE-016, 400/422) tomberait sur un état
+   * fusionné incohérent, et BR-EVE-006 (`recurrenceUnit` requis si `isRecurring`)
+   * deviendrait insatisfiable sans message visible. On pose donc `disabled` sur le
+   * NŒUD DOM uniquement (après le spread `{...field}`, qui ne le porte pas) : les
+   * valeurs restent intactes dans l'état RHF et le payload part complet.
+   */
+  const archivedWatch = form.watch('archived')
+  const locked = !isCreate && archivedWatch === true
+  const lockedNoteId = 'event-form-archived-lock-note'
 
   const handleColorChange = (color: string, field: ColorField) => {
     field.onChange(color)
@@ -194,7 +218,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   const previewDurationValue = useDebounced(rawDurationValue)
   const previewDurationUnit = useDebounced(rawDurationUnit)
 
-  const validPreviewColor = previewColor && HEX_COLOR_REGEX.test(previewColor) ? previewColor : undefined
+  const validPreviewColor =
+    previewColor && HEX_COLOR_REGEX.test(previewColor) ? previewColor : undefined
 
   // #review S46 — `eventEditSchema.type` reste `z.string()` (le backend n'a AUCUNE
   // contrainte d'enum sur `type` : toute valeur hors `duration` est traitée comme
@@ -224,11 +249,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   return (
     <>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4"
-          data-testid="event-form"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" data-testid="event-form">
           {/* #review S42 (BR-EVE-015) — `version` optimiste rendue EXPLICITE : champ
               registered (Controller) plutôt que survie via `defaultValues` non-enregistré.
               Robuste à un futur `reset()`/`setValue`. Non éditable (hidden), Controller
@@ -250,6 +271,22 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           />
           <Card className="bg-surface border-rule shadow-md">
             <CardContent className="space-y-4 p-4">
+              {/* #230 — Un champ désactivé doit rester COMPRÉHENSIBLE (règle a11y du
+                  pack frontend) : le grisage seul n'explique rien. Ce bloc est rendu
+                  EN TÊTE, au contact des champs verrouillés, alors que le toggle qui
+                  en est la cause vit tout en bas du formulaire. */}
+              {locked && (
+                <div
+                  id={lockedNoteId}
+                  role="note"
+                  className="bg-surface-2 border-rule text-ink-muted flex items-start gap-2 rounded-md border p-3 text-sm"
+                  data-testid="event-form-archived-lock-note"
+                >
+                  <Archive className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                  <span>{t('archivedLockNote')}</span>
+                </div>
+              )}
+
               {/* Titre — BR-EVE-003 (required, 1..100). */}
               <FormField
                 control={form.control}
@@ -262,6 +299,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                         placeholder={t('namePlaceholder')}
                         data-testid="event-form-title-input"
                         {...field}
+                        disabled={locked}
+                        aria-describedby={locked ? lockedNoteId : undefined}
                         className="bg-surface-2 text-ink border-rule-emphasis"
                       />
                     </FormControl>
@@ -277,11 +316,16 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-ink">{t('type')}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={locked}
+                    >
                       <FormControl>
                         <SelectTrigger
                           className="bg-surface-2 text-ink border-rule-emphasis"
                           data-testid="event-form-type-trigger"
+                          aria-describedby={locked ? lockedNoteId : undefined}
                         >
                           <SelectValue placeholder={t('typePlaceholder')} />
                         </SelectTrigger>
@@ -310,6 +354,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                             data-testid="event-form-duration-value"
                             {...field}
                             value={field.value ?? ''}
+                            disabled={locked}
+                            aria-describedby={locked ? lockedNoteId : undefined}
                             className="bg-surface-2 text-ink border-rule-emphasis"
                           />
                         </FormControl>
@@ -324,9 +370,16 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     render={({ field }) => (
                       <FormItem className="flex-1">
                         <FormLabel className="text-ink">{t('durationUnit')}</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          disabled={locked}
+                        >
                           <FormControl>
-                            <SelectTrigger className="bg-surface-2 text-ink border-rule-emphasis">
+                            <SelectTrigger
+                              className="bg-surface-2 text-ink border-rule-emphasis"
+                              aria-describedby={locked ? lockedNoteId : undefined}
+                            >
                               <SelectValue placeholder={t('durationUnitPlaceholder')} />
                             </SelectTrigger>
                           </FormControl>
@@ -363,6 +416,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           data-testid="event-form-start-date"
                           {...field}
                           value={field.value ?? ''}
+                          disabled={locked}
+                          aria-describedby={locked ? lockedNoteId : undefined}
                           className="bg-surface-2 text-ink border-rule-emphasis"
                         />
                       </FormControl>
@@ -383,6 +438,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                             data-testid="event-form-end-date"
                             {...field}
                             value={field.value ?? ''}
+                            disabled={locked}
+                            aria-describedby={locked ? lockedNoteId : undefined}
                             className="bg-surface-2 text-ink border-rule-emphasis"
                           />
                         </FormControl>
@@ -404,6 +461,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={locked}
+                          aria-describedby={locked ? lockedNoteId : undefined}
                           data-testid="event-form-recurring-toggle"
                           className="data-[state=checked]:bg-accent"
                         />
@@ -423,11 +482,16 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-ink">{t('recurrenceUnit')}</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={locked}
+                          >
                             <FormControl>
                               <SelectTrigger
                                 className="bg-surface-2 text-ink border-rule-emphasis"
                                 data-testid="event-form-recurrence-trigger"
+                                aria-describedby={locked ? lockedNoteId : undefined}
                               >
                                 <SelectValue placeholder={t('recurrenceUnitPlaceholder')} />
                               </SelectTrigger>
@@ -466,6 +530,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                                 data-testid="event-form-recurrence-end-date"
                                 {...field}
                                 value={field.value ?? ''}
+                                disabled={locked}
+                                aria-describedby={locked ? lockedNoteId : undefined}
                                 className="bg-surface-2 text-ink border-rule-emphasis"
                               />
                             </FormControl>
@@ -495,12 +561,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           color={field.value ?? ''}
                           onChange={(color) => handleColorChange(color, field)}
                           onToggle={(isOpen) => setIsColorOpen(isOpen)}
+                          disabled={locked}
                         />
                         <input
                           type="text"
                           value={field.value ?? ''}
                           onChange={(e) => handleColorChange(e.target.value, field)}
                           onBlur={field.onBlur}
+                          disabled={locked}
+                          aria-describedby={locked ? lockedNoteId : undefined}
                           data-testid="event-form-color-input"
                           // #383-fix (S58) — PAS de `focus:border-transparent` ici. Cette
                           // classe n'avait de sens qu'appariée au `focus:ring-2` retiré par
@@ -541,7 +610,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
               {/* Archivage — BR-EVE-013 (archived PATCH-only). #300 : MASQUÉ au create,
                   le champ est absent d'`EventCreationRequest` (un event ne peut pas
-                  naître archivé) ; l'afficher promettrait une option inexistante. */}
+                  naître archivé) ; l'afficher promettrait une option inexistante.
+                  #230 : SEUL champ qui reste actionnable quand `locked` — c'est ce qui
+                  garantit que le DÉSARCHIVAGE reste possible. */}
               {!isCreate && (
                 <div className="border-rule space-y-4 border-t pt-4">
                   <FormField
@@ -552,7 +623,20 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                         <FormControl>
                           <Switch
                             checked={field.value ?? false}
-                            onChange={(e) => field.onChange(e.target.checked)}
+                            /**
+                             * #230 — ARCHIVER passe par une CONFIRMATION (effet quota
+                             * BR-EVE-011) : on n'appelle PAS `field.onChange` ici, on
+                             * ouvre le dialog. La checkbox étant contrôlée, elle reste
+                             * visuellement décochée tant que le dialog n'a pas été
+                             * confirmé — annuler ne laisse donc aucun état incohérent.
+                             * DÉSARCHIVER est immédiat : c'est l'action de sortie du
+                             * verrou, la freiner enfermerait l'utilisateur.
+                             */
+                            onChange={(e) => {
+                              if (e.target.checked) setArchiveConfirmOpen(true)
+                              else field.onChange(false)
+                            }}
+                            disabled={submitting}
                             data-testid="event-form-archived-toggle"
                           />
                         </FormControl>
@@ -623,6 +707,21 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           </Card>
         </form>
       </Form>
+
+      {/* #230 — Confirmation d'archivage (BR-EVE-011 : l'event sort des actifs).
+          `shouldDirty` : sans lui, un formulaire dont SEUL `archived` a changé
+          resterait `isDirty === false` (l'état de dirty est utilisé par les gardes de
+          navigation et les futurs « modifications non enregistrées »). */}
+      {!isCreate && (
+        <ArchiveConfirmDialog
+          open={archiveConfirmOpen}
+          onOpenChange={setArchiveConfirmOpen}
+          onConfirm={() => {
+            form.setValue('archived', true, { shouldDirty: true })
+            setArchiveConfirmOpen(false)
+          }}
+        />
+      )}
 
       {/* Suppression (mode édition) — réutilise DeleteConfirmDialog #65, variante event. */}
       {isEdit && onDelete && (

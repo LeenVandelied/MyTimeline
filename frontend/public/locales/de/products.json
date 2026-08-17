@@ -38,7 +38,8 @@
         "endDate": "Enddatum",
         "recurrenceEndDate": "Wiederholungsende",
         "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt.",
-        "archived": "Archiviert"
+        "archived": "Archiviert",
+        "archivedLockNote": "Dieses Ereignis ist archiviert: Seine Felder sind schreibgeschützt und es zählt nicht mehr zu deinen aktiven Ereignissen. Deaktiviere unten „Archiviert“, um es wieder zu bearbeiten."
       },
       "types": {
         "duration": "Dauer",
@@ -195,5 +196,13 @@
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "openEdit": "{name} bearbeiten"
+  },
+  "archiveDialog": {
+    "title": "Dieses Ereignis archivieren?",
+    "quotaEffect": "Nach dem Archivieren zählt dieses Ereignis nicht mehr zu deinen aktiven Ereignissen und gibt entsprechend Kontingent frei.",
+    "reversible": "Es wird nichts gelöscht: Du findest es im Reiter „Archiviert“ des Produkts wieder und kannst es dort wiederherstellen.",
+    "readOnly": "Solange es archiviert ist, sind seine Felder schreibgeschützt – nur das Wiederherstellen bleibt möglich.",
+    "cancel": "Abbrechen",
+    "confirm": "Archivieren"
   }
 }

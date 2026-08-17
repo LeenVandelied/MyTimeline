@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react'
 import { Minus, MoreHorizontal, Plus, Map as MapIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
+import { cn } from '@/lib/utils'
 import { textOn } from '@/lib/color'
 import { buildEventAriaLabel, Resource } from './lib'
 import { Minimap } from './Minimap'
@@ -243,6 +244,8 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                         {laneEvents.map((event) => {
                           const color = event.color || 'var(--color-accent)'
                           const ink = event.color ? textOn(event.color) : 'var(--color-accent-ink)'
+                          // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
+                          const archived = event.extendedProps?.archived === true
                           return (
                             <div
                               key={event.id}
@@ -251,9 +254,10 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                             >
                               <button
                                 type="button"
-                                className="mt-tlm__evt"
+                                className={cn('mt-tlm__evt', archived && 'mt-tlm__evt--archived')}
                                 data-testid="timeline-event"
                                 data-event-title={event.title}
+                                data-archived={archived ? 'true' : undefined}
                                 aria-label={buildEventAriaLabel(event, locale, t)}
                                 onClick={gestures.onEvtClick(event)}
                                 onPointerDown={gestures.onEvtPointerDown(event)}
@@ -267,8 +271,10 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                                   ['--mt-evt-status' as string]: statusToVar(event.status),
                                 }}
                               >
+                                {/* #230 — `.mt-evt--archived` sur le seul décoratif
+                                    (opacité .45 interdite sur du texte, cf. #307). */}
                                 <span
-                                  className="mt-tlm__evt-dot"
+                                  className={cn('mt-tlm__evt-dot', archived && 'mt-evt--archived')}
                                   style={{ background: statusToVar(event.status) }}
                                   aria-hidden="true"
                                 />
