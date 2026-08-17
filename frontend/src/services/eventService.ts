@@ -62,6 +62,34 @@ export const updateEvent = async (eventId: string, data: EventEditFormValues): P
   }
 }
 
+/**
+ * #307 — Bascule du seul flag `archived` (BR-EVE-013, PATCH-only).
+ *
+ * Payload MINIMAL : le PATCH backend est partiel (`EventServiceImpl.updateEvent`
+ * n'applique qu'un champ non-null), donc envoyer les autres champs du formulaire
+ * serait du bruit — et rejouerait des valeurs potentiellement périmées du cache.
+ *
+ * `version` (BR-EVE-015) est threadée quand elle est connue : `checkOptimisticVersion`
+ * ne compare QUE si le client la fournit. L'omettre transformerait un désarchivage
+ * fondé sur un cache périmé en écrasement silencieux ; la fournir donne un 409
+ * déterministe, que l'appelant traite. Erreur PROPAGÉE (jamais avalée).
+ */
+export const setEventArchived = async (
+  eventId: string,
+  archived: boolean,
+  version?: number | null,
+): Promise<void> => {
+  try {
+    await apiClient.patch(`/events/${eventId}`, {
+      archived,
+      ...(typeof version === 'number' ? { version } : {}),
+    })
+  } catch (error) {
+    console.error("Erreur lors du (dés)archivage de l'événement :", safeErrorMessage(error))
+    throw error
+  }
+}
+
 // #66 — DELETE /api/events/{id} (suppression physique, ownership 403). L'erreur
 // est propagée pour affichage inline par DeleteConfirmDialog (pitfall #65).
 export const deleteEvent = async (eventId: string): Promise<void> => {

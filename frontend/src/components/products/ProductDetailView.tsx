@@ -3,18 +3,21 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { ArchiveRestore, ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 
 import { contrastInk } from '@/lib/color'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Tabs } from '@/components/ui/tabs'
 import { ProductDrawer } from './ProductDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { TimelineEditHost } from '@/components/timeline'
 import type { Resource } from '@/components/timeline'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
+import { useSetEventArchived } from '@/hooks/useSetEventArchived'
 import { useAuth } from '@/hooks/useAuth'
 import { deleteProduct } from '@/services/productService'
-import { mapToFullCalendarEvent, type FullCalendarEvent } from '@/types/event'
+import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/types/event'
 
 /**
  * #68 — Vue détail d'un produit.
@@ -30,10 +33,52 @@ import { mapToFullCalendarEvent, type FullCalendarEvent } from '@/types/event'
  *
  * Actions : « Modifier » → `ProductDrawer` (edit) ; « Supprimer » →
  * `DeleteConfirmDialog` variant="product" (soft delete #50) puis retour liste.
+ *
+ * #307 (OPTION A) — un événement archivé (BR-EVE-013) restait INTROUVABLE : la vue
+ * filtrait `!archived` en dur, donc plus aucune surface ne permettait de le rouvrir
+ * ni de le désarchiver. On remplace ce filtre en dur par un ÉTAT DE VUE
+ * (`actifs` / `archivés` / `tous`) qui pilote À LA FOIS la sous-frise et l'historique :
+ *   - « archivés » / « tous » remontent l'event dans la frise → la surface d'édition
+ *     déjà montée (`TimelineEditHost`) le rouvre PRÉ-REMPLI, sans toucher au composant
+ *     frise ni au formulaire ;
+ *   - l'historique porte l'action « Désarchiver » (PATCH `archived:false`, BR-EVE-013).
+ * Le filtre est un état de vue (pas un `!archived` figé) pour que #230 puisse brancher
+ * l'affichage grisé dans la frise sans réécrire cette logique.
+ *
+ * ⚠ BR-EVE-011 — le compteur d'événements ACTIFS reste calculé sur `!archived` QUEL QUE
+ * SOIT le filtre : un archivé ne compte jamais comme actif (quota de tier).
  */
 
 export interface ProductDetailViewProps {
   productId: string
+}
+
+/** #307 — état de vue des événements (ne modifie AUCUNE donnée serveur). */
+export type EventViewFilter = 'active' | 'archived' | 'all'
+
+const EVENT_VIEW_FILTERS: readonly EventViewFilter[] = ['active', 'archived', 'all']
+
+function isEventViewFilter(value: string): value is EventViewFilter {
+  return (EVENT_VIEW_FILTERS as readonly string[]).includes(value)
+}
+
+function matchesEventFilter(archived: boolean, filter: EventViewFilter): boolean {
+  if (filter === 'all') return true
+  if (filter === 'archived') return archived
+  return !archived
+}
+
+/**
+ * Lit `error.response.status` (axios ou générique) sans `any`. Copie locale assumée :
+ * même helper que `ProductDrawer`/`CategoryDrawer`/`DeleteConfirmDialog` (mutualisation
+ * = refactor transverse hors périmètre #307, signalé en follow-up).
+ */
+function httpStatusOf(error: unknown): number | undefined {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { status?: unknown } }).response
+    if (response && typeof response.status === 'number') return response.status
+  }
+  return undefined
 }
 
 export function ProductDetailView({ productId }: ProductDetailViewProps) {
@@ -51,16 +96,97 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
+  // #307 — état de vue par défaut « actifs » : le comportement historique (archivés
+  // masqués) reste celui de l'arrivée sur la page, la découverte se fait par l'onglet.
+  const [filter, setFilter] = React.useState<EventViewFilter>('active')
+  const [unarchivingId, setUnarchivingId] = React.useState<string | null>(null)
+  const [unarchiveError, setUnarchiveError] = React.useState<{
+    id: string
+    kind: 'conflict' | 'generic'
+  } | null>(null)
 
-  // Filtrage AMONT : events/resources restreints à CE produit uniquement.
+  const setEventArchived = useSetEventArchived()
+
+  // Filtrage AMONT : events/resources restreints à CE produit uniquement, puis à
+  // l'état de vue courant (#307).
   const events = React.useMemo<FullCalendarEvent[]>(() => {
     if (!product) return []
     return (product.events ?? [])
-      .filter((event) => !event.archived)
+      .filter((event) => matchesEventFilter(event.archived, filter))
       .map((event) =>
         mapToFullCalendarEvent(event, product.name, product.category?.name ?? '', product.id),
       )
+  }, [product, filter])
+
+  // BR-EVE-011 — `active` est la SEULE source du compteur d'événements actifs :
+  // indépendante du filtre de vue, un archivé n'y entre jamais.
+  const counts = React.useMemo(() => {
+    const list = product?.events ?? []
+    const active = list.filter((event) => !event.archived).length
+    return { active, archived: list.length - active }
   }, [product])
+
+  const filterItems = React.useMemo(
+    () => [
+      {
+        value: 'active',
+        label: (
+          <span data-testid="product-detail-filter-active">
+            {t('filter.active')} · {counts.active}
+          </span>
+        ),
+      },
+      {
+        value: 'archived',
+        label: (
+          <span data-testid="product-detail-filter-archived">
+            {t('filter.archived')} · {counts.archived}
+          </span>
+        ),
+      },
+      {
+        value: 'all',
+        label: (
+          <span data-testid="product-detail-filter-all">
+            {t('filter.all')} · {counts.active + counts.archived}
+          </span>
+        ),
+      },
+    ],
+    [t, counts],
+  )
+
+  // Garde de type plutôt qu'un cast : `Tabs.onValueChange` expose un `string` brut.
+  const handleFilterChange = React.useCallback((value: string) => {
+    if (isEventViewFilter(value)) setFilter(value)
+  }, [])
+
+  /**
+   * #307 — Désarchivage (BR-EVE-013, PATCH-only). La `version` détenue au chargement est
+   * threadée (BR-EVE-015) : un cache périmé produit un 409 DÉTERMINISTE plutôt qu'un
+   * écrasement silencieux. Traitement du 409 : message dédié + rafraîchissement des
+   * données (fait par le hook) pour que le re-clic reparte d'une version fraîche. La modale
+   * comparative d'`EventEditForm` n'est PAS réutilisée ici : elle diffe champ par champ des
+   * saisies utilisateur, alors que ce flux n'écrit qu'un booléen (aucun diff à arbitrer).
+   */
+  const handleUnarchive = async (event: Event) => {
+    setUnarchiveError(null)
+    setUnarchivingId(event.id)
+    try {
+      await setEventArchived.mutateAsync({
+        id: event.id,
+        archived: false,
+        version: event.version ?? null,
+      })
+    } catch (error) {
+      setUnarchiveError({
+        id: event.id,
+        kind: httpStatusOf(error) === 409 ? 'conflict' : 'generic',
+      })
+    } finally {
+      setUnarchivingId(null)
+    }
+  }
 
   const resources = React.useMemo<Resource[]>(() => {
     if (!product) return []
@@ -119,12 +245,19 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   }
 
   const effectiveColor = product.color ?? product.category?.color ?? null
-  const nonArchivedCount = (product.events ?? []).filter((e) => !e.archived).length
+  // BR-EVE-011 : compteur d'events ACTIFS, jamais dérivé du filtre de vue.
+  const nonArchivedCount = counts.active
 
   const history = (product.events ?? [])
-    .filter((e) => !e.archived)
+    .filter((e) => matchesEventFilter(e.archived, filter))
     .slice()
     .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+
+  // Vue « archivés » vide : message dédié (« aucun archivé ») plutôt que le message
+  // générique « aucun événement », qui laisserait croire que le produit est vide.
+  // Clés LITTÉRALES (pas de `t(variable)`) — l'extraction i18n reste statiquement lisible.
+  const timelineEmptyMessage = filter === 'archived' ? t('archivedEmpty') : t('timelineEmpty')
+  const historyEmptyMessage = filter === 'archived' ? t('archivedEmpty') : t('historyEmpty')
 
   return (
     <div className="flex flex-col gap-6" data-testid="product-detail-view">
@@ -195,12 +328,19 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
             <dt className="text-ink-faint text-2xs tracking-widest uppercase">
               {t('fields.color')}
             </dt>
-            <dd className="text-ink mt-1 font-mono text-sm">
-              {effectiveColor ?? '—'}
-            </dd>
+            <dd className="text-ink mt-1 font-mono text-sm">{effectiveColor ?? '—'}</dd>
           </div>
         </dl>
       </section>
+
+      {/* #307 — état de vue partagé par la sous-frise ET l'historique. */}
+      <Tabs
+        items={filterItems}
+        value={filter}
+        onValueChange={handleFilterChange}
+        aria-label={t('filter.label')}
+        data-testid="product-detail-filter"
+      />
 
       {/* Sous-frise dédiée (filtrée en amont). */}
       <section
@@ -213,7 +353,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
         </h2>
         {events.length === 0 ? (
           <p className="text-ink-muted text-sm" data-testid="product-detail-timeline-empty">
-            {t('timelineEmpty')}
+            {timelineEmptyMessage}
           </p>
         ) : (
           <TimelineEditHost events={events} resources={resources} locale={locale} />
@@ -227,25 +367,62 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
         </h2>
         {history.length === 0 ? (
           <p className="text-ink-muted text-sm" data-testid="product-detail-history-empty">
-            {t('historyEmpty')}
+            {historyEmptyMessage}
           </p>
         ) : (
           <ul className="flex flex-col">
             {history.map((event) => (
               <li
                 key={event.id}
-                className="border-rule flex items-center gap-3 border-b py-2 last:border-b-0"
+                className="border-rule flex flex-col gap-1 border-b py-2 last:border-b-0"
                 data-testid={`product-detail-history-row-${event.id}`}
               >
-                <span
-                  className="size-2 shrink-0 rounded-full"
-                  style={{ background: event.color ?? effectiveColor ?? 'var(--color-rule-strong)' }}
-                  aria-hidden="true"
-                />
-                <span className="text-ink min-w-0 flex-1 truncate text-sm">{event.title}</span>
-                <span className="text-ink-muted font-mono text-xs tabular-nums">
-                  {dateFmt.format(new Date(event.startDate))}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    // `.mt-evt--archived` (DS, déjà défini) porte le repli visuel d'un
+                    // archivé. Appliqué à la PASTILLE décorative seulement : le poser sur
+                    // le titre le rendrait à 45 % d'opacité (contraste sous AA). Le sens
+                    // est porté par le badge textuel, à pleine encre.
+                    className={cn(
+                      'size-2 shrink-0 rounded-full',
+                      event.archived && 'mt-evt--archived',
+                    )}
+                    style={{
+                      background: event.color ?? effectiveColor ?? 'var(--color-rule-strong)',
+                    }}
+                    aria-hidden="true"
+                  />
+                  <span className="text-ink min-w-0 flex-1 truncate text-sm">{event.title}</span>
+                  {event.archived && (
+                    <span className="text-ink-faint text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
+                      {t('archivedBadge')}
+                    </span>
+                  )}
+                  <span className="text-ink-muted font-mono text-xs tabular-nums">
+                    {dateFmt.format(new Date(event.startDate))}
+                  </span>
+                  {event.archived && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex shrink-0 items-center gap-2"
+                      onClick={() => void handleUnarchive(event)}
+                      disabled={unarchivingId === event.id}
+                      data-testid={`product-detail-unarchive-${event.id}`}
+                    >
+                      <ArchiveRestore className="size-4" aria-hidden="true" />
+                      {unarchivingId === event.id ? t('unarchiving') : t('unarchive')}
+                    </Button>
+                  )}
+                </div>
+                {unarchiveError?.id === event.id && (
+                  <p className="text-destructive text-xs" role="alert">
+                    {unarchiveError.kind === 'conflict'
+                      ? t('unarchiveConflict')
+                      : t('unarchiveError')}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

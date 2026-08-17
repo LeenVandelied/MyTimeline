@@ -161,6 +161,18 @@
     "timelineEmpty": "No events to display for this product.",
     "historyTitle": "Event history",
     "historyEmpty": "No events recorded.",
+    "archivedEmpty": "No archived events.",
+    "archivedBadge": "Archived",
+    "unarchive": "Unarchive",
+    "unarchiving": "Unarchiving…",
+    "unarchiveError": "Unarchiving failed. Try again.",
+    "unarchiveConflict": "This event was changed elsewhere. The data has been refreshed, try again.",
+    "filter": {
+      "label": "Filter events",
+      "active": "Active",
+      "archived": "Archived",
+      "all": "All"
+    },
     "fields": {
       "name": "Name",
       "category": "Category",

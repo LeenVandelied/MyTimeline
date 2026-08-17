@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '@/types/product'
@@ -8,12 +8,17 @@ import { ProductDetailView } from './ProductDetailView'
  * #68 — Tests ProductDetailView : fiche produit, sous-frise FILTRÉE en amont (ne
  * reçoit que les events du produit sélectionné), historique, édition (drawer),
  * suppression (soft delete #50 → retour liste), état introuvable (archivé/absent).
+ *
+ * #307 — s'y ajoute l'état de vue « actifs / archivés / tous » (BR-EVE-013) : un event
+ * archivé redevient ATTEIGNABLE (frise + historique) et DÉSARCHIVABLE, sans que le
+ * compteur d'events actifs (BR-EVE-011) ne suive jamais le filtre.
  */
 
 const useProductsMock = vi.fn()
 const pushMock = vi.fn()
 const deleteProductMock = vi.fn()
 const timelineSpy = vi.fn()
+const setArchivedMock = vi.fn()
 
 vi.mock('@/hooks/useProductsWithEvents', () => ({
   useProductsWithEvents: (...args: unknown[]) => useProductsMock(...args),
@@ -23,6 +28,11 @@ vi.mock('@/hooks/useAuth', () => ({
 }))
 vi.mock('@/services/productService', () => ({
   deleteProduct: (...args: unknown[]) => deleteProductMock(...args),
+}))
+// #307 — la mutation de (dés)archivage est mockée au niveau du hook : son invalidation
+// TanStack est couverte par `useSetEventArchived.test.tsx` (isolation des responsabilités).
+vi.mock('@/hooks/useSetEventArchived', () => ({
+  useSetEventArchived: () => ({ mutateAsync: setArchivedMock }),
 }))
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
@@ -88,6 +98,8 @@ const PRODUCT: Product = {
       endDate: '2026-05-01T10:00:00Z',
       productId: 'p-alpha',
       archived: true,
+      // #307 — version détenue au chargement : threadée dans le PATCH (BR-EVE-015).
+      version: 3,
     },
   ],
 }
@@ -178,5 +190,115 @@ describe('ProductDetailView', () => {
     render(<ProductDetailView productId="p-alpha" />)
     await user.click(screen.getByTestId('product-detail-back'))
     expect(pushMock).toHaveBeenCalledWith('/fr/products')
+  })
+
+  /* ------------------------------------------------------------------ #307 */
+
+  describe('#307 — vue « archivés » (BR-EVE-013)', () => {
+    it('l’event archivé est masqué par défaut et absent des actions', () => {
+      render(<ProductDetailView productId="p-alpha" />)
+      expect(screen.queryByTestId('product-detail-history-row-e-arch')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('product-detail-unarchive-e-arch')).not.toBeInTheDocument()
+    })
+
+    it('l’onglet « archivés » remonte l’event dans l’historique ET dans la frise', async () => {
+      const user = userEvent.setup()
+      render(<ProductDetailView productId="p-alpha" />)
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+
+      // Historique : l'archivé remplace l'actif.
+      expect(screen.getByTestId('product-detail-history-row-e-arch')).toBeInTheDocument()
+      expect(screen.queryByTestId('product-detail-history-row-e1')).not.toBeInTheDocument()
+      // Frise : c'est ce passage qui rend l'event RÉOUVRABLE en édition
+      // (TimelineEditHost, monté par la vue, ouvre le formulaire pré-rempli).
+      const call = timelineSpy.mock.calls.at(-1)?.[0] as { events: Array<{ id: string }> }
+      expect(call.events.map((e) => e.id)).toEqual(['e-arch'])
+    })
+
+    it('l’onglet « tous » liste actifs et archivés ensemble', async () => {
+      const user = userEvent.setup()
+      render(<ProductDetailView productId="p-alpha" />)
+
+      await user.click(screen.getByTestId('product-detail-filter-all'))
+
+      expect(screen.getByTestId('product-detail-history-row-e1')).toBeInTheDocument()
+      expect(screen.getByTestId('product-detail-history-row-e-arch')).toBeInTheDocument()
+      const call = timelineSpy.mock.calls.at(-1)?.[0] as { events: Array<{ id: string }> }
+      expect(call.events.map((e) => e.id).sort()).toEqual(['e-arch', 'e1'])
+    })
+
+    // BR-EVE-011 — garde-fou de non-régression : le quota compte les events ACTIFS,
+    // il ne doit JAMAIS suivre le filtre de vue (sinon un archivé consommerait du quota).
+    it('le compteur d’events actifs ne suit PAS le filtre de vue', async () => {
+      const user = userEvent.setup()
+      render(<ProductDetailView productId="p-alpha" />)
+      const heading = screen.getByTestId('product-detail-history').querySelector('h2')
+
+      expect(heading?.textContent).toContain('products.detail.eventsCount')
+      const before = screen.getByTestId('product-detail-filter-active').textContent
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+
+      // Onglet « actifs » : 1 (l'actif e1), inchangé alors que la vue montre l'archivé.
+      expect(screen.getByTestId('product-detail-filter-active').textContent).toBe(before)
+      expect(before).toContain('1')
+      expect(screen.getByTestId('product-detail-filter-archived').textContent).toContain('1')
+    })
+
+    it('désarchive via le PATCH (archived:false + version threadée)', async () => {
+      const user = userEvent.setup()
+      setArchivedMock.mockResolvedValue(undefined)
+      render(<ProductDetailView productId="p-alpha" />)
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+      await user.click(screen.getByTestId('product-detail-unarchive-e-arch'))
+
+      expect(setArchivedMock).toHaveBeenCalledWith({
+        id: 'e-arch',
+        archived: false,
+        version: 3,
+      })
+    })
+
+    it('affiche un message dédié quand le désarchivage échoue en 409 (BR-EVE-015)', async () => {
+      const user = userEvent.setup()
+      setArchivedMock.mockRejectedValue({ response: { status: 409 } })
+      render(<ProductDetailView productId="p-alpha" />)
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+      await user.click(screen.getByTestId('product-detail-unarchive-e-arch'))
+
+      await waitFor(() =>
+        expect(screen.getByRole('alert')).toHaveTextContent('products.detail.unarchiveConflict'),
+      )
+    })
+
+    it('affiche un message générique sur une autre erreur', async () => {
+      const user = userEvent.setup()
+      setArchivedMock.mockRejectedValue({ response: { status: 500 } })
+      render(<ProductDetailView productId="p-alpha" />)
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+      await user.click(screen.getByTestId('product-detail-unarchive-e-arch'))
+
+      await waitFor(() =>
+        expect(screen.getByRole('alert')).toHaveTextContent('products.detail.unarchiveError'),
+      )
+    })
+
+    it('vue « archivés » sans archivé : message dédié, pas le message générique', async () => {
+      const user = userEvent.setup()
+      render(<ProductDetailView productId="p-beta" />)
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+
+      expect(screen.getByTestId('product-detail-history-empty')).toHaveTextContent(
+        'products.detail.archivedEmpty',
+      )
+      expect(screen.getByTestId('product-detail-timeline-empty')).toHaveTextContent(
+        'products.detail.archivedEmpty',
+      )
+    })
   })
 })

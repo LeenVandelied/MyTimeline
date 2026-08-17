@@ -161,6 +161,18 @@
     "timelineEmpty": "Keine Ereignisse für dieses Produkt anzuzeigen.",
     "historyTitle": "Ereignisverlauf",
     "historyEmpty": "Keine Ereignisse erfasst.",
+    "archivedEmpty": "Keine archivierten Ereignisse.",
+    "archivedBadge": "Archiviert",
+    "unarchive": "Wiederherstellen",
+    "unarchiving": "Wird wiederhergestellt…",
+    "unarchiveError": "Wiederherstellen fehlgeschlagen. Bitte erneut versuchen.",
+    "unarchiveConflict": "Dieses Ereignis wurde anderswo geändert. Die Daten wurden aktualisiert, bitte erneut versuchen.",
+    "filter": {
+      "label": "Ereignisse filtern",
+      "active": "Aktiv",
+      "archived": "Archiviert",
+      "all": "Alle"
+    },
     "fields": {
       "name": "Name",
       "category": "Kategorie",

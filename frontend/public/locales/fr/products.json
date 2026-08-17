@@ -161,6 +161,18 @@
     "timelineEmpty": "Aucun événement à afficher pour ce produit.",
     "historyTitle": "Historique des événements",
     "historyEmpty": "Aucun événement enregistré.",
+    "archivedEmpty": "Aucun événement archivé.",
+    "archivedBadge": "Archivé",
+    "unarchive": "Désarchiver",
+    "unarchiving": "Désarchivage…",
+    "unarchiveError": "Le désarchivage a échoué. Réessaie.",
+    "unarchiveConflict": "Cet événement a été modifié ailleurs. Les données ont été rafraîchies, réessaie.",
+    "filter": {
+      "label": "Filtrer les événements",
+      "active": "Actifs",
+      "archived": "Archivés",
+      "all": "Tous"
+    },
     "fields": {
       "name": "Nom",
       "category": "Catégorie",

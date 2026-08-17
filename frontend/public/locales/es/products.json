@@ -161,6 +161,18 @@
     "timelineEmpty": "No hay eventos para mostrar de este producto.",
     "historyTitle": "Historial de eventos",
     "historyEmpty": "No hay eventos registrados.",
+    "archivedEmpty": "No hay eventos archivados.",
+    "archivedBadge": "Archivado",
+    "unarchive": "Desarchivar",
+    "unarchiving": "Desarchivando…",
+    "unarchiveError": "No se pudo desarchivar. Inténtalo de nuevo.",
+    "unarchiveConflict": "Este evento se modificó en otro lugar. Los datos se han actualizado, inténtalo de nuevo.",
+    "filter": {
+      "label": "Filtrar eventos",
+      "active": "Activos",
+      "archived": "Archivados",
+      "all": "Todos"
+    },
     "fields": {
       "name": "Nombre",
       "category": "Categoría",
