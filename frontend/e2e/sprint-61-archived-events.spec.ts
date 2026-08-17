@@ -176,9 +176,17 @@ test.describe('#230 UX de l’archivage — confirmation, grisage, verrou', () =
     await page.getByTestId('event-drawer-edit').click()
     await expect(page.getByTestId('event-form')).toBeVisible()
 
+    // L'<input> qui porte le testid est visuellement masqué (`.mt-switch input` :
+    // position:absolute; opacity:0; width:0; height:0 — core.css) : non actionnable par
+    // Playwright. On clique la surface VISIBLE (le <label> parent) comme un utilisateur,
+    // et on garde les assertions d'état sur l'input. Même convention que
+    // `sprint-42-events.spec.ts` (scénario 2).
+    const archivedToggle = page.getByTestId('event-form-archived-toggle')
+    const clickArchivedToggle = () => archivedToggle.locator('xpath=ancestor::label[1]').click()
+
     // 1) Cocher « archivé » ouvre la confirmation, qui énonce l'effet quota
     //    (BR-EVE-011), la réversibilité (BR-EVE-013) et la lecture seule.
-    await page.getByTestId('event-form-archived-toggle').click()
+    await clickArchivedToggle()
     await expect(page.getByTestId('event-archive-confirm')).toBeVisible()
     await expect(page.getByTestId('event-archive-confirm-reversible')).toBeVisible()
     await expect(page.getByTestId('event-archive-confirm-readonly')).toBeVisible()
@@ -190,7 +198,7 @@ test.describe('#230 UX de l’archivage — confirmation, grisage, verrou', () =
     await expect(page.getByTestId('event-form-title-input')).toBeEnabled()
 
     // 3) Confirmer verrouille les champs et affiche l'explication textuelle.
-    await page.getByTestId('event-form-archived-toggle').click()
+    await clickArchivedToggle()
     await page.getByTestId('event-archive-confirm-button').click()
     await expect(page.getByTestId('event-form-archived-toggle')).toBeChecked()
     await expect(page.getByTestId('event-form-archived-lock-note')).toBeVisible()

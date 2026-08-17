@@ -248,6 +248,11 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
     // On clique la surface VISIBLE (le <label> parent) comme un utilisateur ; l'état
     // reste asserté sur l'input.
     await toggle.locator('xpath=ancestor::label[1]').click()
+    // #230 (Sprint 61) : cocher n'applique PLUS l'état directement — la case est
+    // contrôlée et reste DÉCOCHÉE tant que la confirmation (effet quota, BR-EVE-011)
+    // n'est pas validée. Il faut donc passer par le dialog avant d'asserter l'état.
+    await expect(page.getByTestId('event-archive-confirm')).toBeVisible()
+    await page.getByTestId('event-archive-confirm-button').click()
     await expect(toggle).toBeChecked()
     await page.getByTestId('event-form-submit').click()
     expect((await patch).status(), 'PATCH archived doit réussir').toBe(200)
@@ -259,13 +264,15 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
       'archived doit être persisté à true',
     ).toBe(true)
 
-    // --- Réouverture : l'event archivé est MASQUÉ de la frise ------------------
-    // `ProductDetailView` filtre `!archived` (l.59) : un event archivé disparaît de la
-    // timeline. Le pré-remplissage du toggle=checked n'est donc PAS vérifiable via la frise
-    // (l'event archivé n'est plus réouvrable par ce parcours — pas de vue « archivés »).
+    // --- Réouverture : l'event archivé est absent de la vue PAR DÉFAUT ---------
+    // MAJ #307 (Sprint 61) : le filtre `!archived` en dur a été remplacé par un état de
+    // vue « actifs / archivés / tous », dont le défaut reste « actifs ». Ce que ce test
+    // vérifie est donc toujours vrai — un event archivé n'apparaît pas à l'arrivée sur la
+    // page — mais la raison a changé : il n'est plus INATTEIGNABLE, seulement hors du
+    // filtre courant. Le commentaire précédent (« pas de vue archivés », « impossibilité
+    // de ré-éditer/désarchiver ») est PÉRIMÉ : cf. `sprint-61-archived-events.spec.ts`.
     // La persistance de `archived=true` est déjà assertée ci-dessus via l'API (source de
-    // vérité). Ici on vérifie le pendant UI : la pastille a bien disparu de la frise.
-    // NB (follow-up) : impossibilité de ré-éditer/désarchiver un event via l'UI.
+    // vérité). Ici on vérifie le pendant UI : la pastille a disparu de la vue actifs.
     await page.goto(`/fr/products/${product.id}`, { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('product-detail-timeline')).toBeVisible()
     // Frise vide (placeholder) : l'unique event, désormais archivé, a disparu.
