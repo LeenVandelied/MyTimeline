@@ -63,9 +63,12 @@ Aucune dette E2E créée par ce sprint. `[COVERAGE-E2E] OK`.
 
 ## Ce qui n'est PAS couvert — à lire avant de fusionner
 
-1. **Le job `secret-scan` n'a jamais tourné sur un runner GitHub.** Le téléchargement du binaire
-   gitleaks et son `sudo install` ne sont pas exercés localement. Premier run réel à surveiller
-   sur la PR.
+1. ~~Le job `secret-scan` n'a jamais tourné sur un runner GitHub~~ — **levée par la PR #432.**
+   Les 7 jobs sont verts au premier run : `secret-scan` **pass en 8 s** (téléchargement du binaire
+   et `sudo install` donc bien exercés), `ai-env-packs` 10 s, `security` **39 s — vert**, `backend`
+   1 min 11, `flyway-smoke` 51 s, `frontend` 2 min 26, `e2e` 6 min 39.
+   Le job `security` était rouge sur **toutes** les PR du dépôt avant ce sprint : c'est la preuve
+   de l'objectif atteint, pas un détail de tableau de bord.
 2. **Angle mort mesuré du scan** : gitleaks ne détecte **pas** le `DB_PASSWORD` historique de
    l'audit §3.1 (10 caractères alphabétiques, entropie sous le seuil de `generic-api-key`). Le job
    attrape les secrets à préfixe connu ou à forte entropie ; il n'est pas un substitut à la revue.

@@ -2719,8 +2719,10 @@ sprint depuis S57 — cf. note S57 ; ne pas « corriger » ce décalage.)
 
 ### Réserves connues au moment d'ouvrir la PR
 
-1. Le job `secret-scan` n'a **jamais tourné sur un runner GitHub** (binaire téléchargé + `sudo
-   install` non exercés). Premier run réel à surveiller.
+1. ~~`secret-scan` jamais exécuté sur un runner~~ — **levée : PR #432, 7/7 jobs verts au premier
+   run.** `secret-scan` pass en 8 s, `security` **pass en 39 s** — il était rouge sur *toutes* les
+   PR du dépôt avant ce sprint, c'est l'objectif atteint. `backend` 1 min 11, `frontend` 2 min 26,
+   `e2e` 6 min 39, `flyway-smoke` 51 s, `ai-env-packs` 10 s.
 2. Gitleaks ne détecte **pas** le `DB_PASSWORD` historique (§3.1, 10 caractères alphabétiques,
    entropie trop basse). Documenté dans `.gitleaks.toml`, pas dissimulé.
 3. ~~Checks requis non relisibles~~ — **levée en fin de sprint.** `branches/dev/protection` et
