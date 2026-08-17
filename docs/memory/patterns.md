@@ -542,3 +542,24 @@ contrôle ponctuel** (1 palier, 1 locale) qui asserte l'égalité des métriques
 mesure, pas par l'opinion** : injection d'une règle `.dark h1{font-size:33px}` → 10 passed / 1 failed, seul
 le contrôle ponctuel la voit. Le contrôle doit asserter la présence de `.dark` avant de re-mesurer, sinon il
 compare clair à clair et devient lui-même vacuous.
+
+## Baseliner un historique compromis sans créer d'angle mort futur (Sprint 60, #362)
+
+Problème : sur un dépôt **public**, l'historique contient des secrets définitivement compromis
+(audit #249). Un scan qui rougit à chaque run sur ces constats connus sera ignoré puis désactivé —
+exactement le mode d'échec que le garde-fou veut éviter. Mais tout mécanisme d'exclusion risque de
+blanchir aussi l'avenir.
+
+Solution retenue, **deux étages qu'il ne faut pas confondre** :
+- `.gitleaksignore` — empreintes `commit:fichier:règle:ligne`. Le SHA rend l'exclusion **inerte pour
+  tout commit futur** : une réintroduction produit une empreinte différente et rougit. Réservé aux
+  occurrences **absentes du HEAD** — le vérifier une par une, cf. [[PIT-S60-002]].
+- `.gitleaks.toml` — exclusions **durables** pour les valeurs jetables encore au HEAD, scopées
+  chemin **+** marqueur de la valeur, `condition = "AND"` obligatoire, cf. [[PIT-S60-001]].
+
+Anti-pattern écarté : `--baseline-path` avec un rapport JSON committé — le rapport **contient les
+valeurs en clair**, donc committer la baseline reviendrait à recommitter les secrets.
+
+Règle de maintenance qui fait tenir l'ensemble : **une exclusion se justifie par un § d'audit,
+jamais par « la CI est rouge »**. Et chaque exclusion se teste **dans les deux sens** avant
+livraison.
