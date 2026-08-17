@@ -2645,3 +2645,93 @@ Les 13 issues de « Mise en ligne (GELÉ) » supposent toutes un serveur, un dom
 
 > **Pas de branche `sprint/55` créée** (étape 4 du skill volontairement sautée, leçon S43/S44
 > reconduite depuis S45) : `/sprint start` crée son worktree lui-même.
+
+---
+
+## Sprint 60 — 2026-08-17 (En cours — PR à ouvrir depuis `sprint/60`)
+
+**Objectif :** Rendre le signal CI `security` exploitable.
+**Milestone GitHub :** #61 (le numéro de milestone est décalé de +1 par rapport au numéro de
+sprint depuis S57 — cf. note S57 ; ne pas « corriger » ce décalage.)
+**Issues livrées (3) :** #422, #362, #308
+**Vagues exécutées :** V1 = #422 + #362 en parallèle | V2 = #308
+**Branche :** `sprint/60`, créée depuis `origin/dev` @ `e18e5c1`.
+**Commits (5) :**
+- `c68591d` #362 — job CI `secret-scan` (gitleaks 8.30.1, binaire épinglé + SHA-256), `.gitleaks.toml`,
+  `.gitleaksignore`, §9 de l'audit d'exposition
+- `da0f0a3` #422 — `nanoid` 3.3.16 → 3.3.18 (GHSA-2v37-7h3g-55p8, HIGH)
+- `1b477c8` #422 — artefact
+- `79d4a5b` #308 — préflight `node_modules` dans `test-quiet.sh` + piège 4 du README
+- `647f45f` #308 — correction du SHA dans l'artefact
+
+**BR impactées :** aucune. Sprint entièrement outillage / CI / dépendances.
+**Tests :** frontend 95 fichiers / 888 tests exit 0 · E2E 169 passed / 0 failed / 8 skipped exit 0 ·
+`npm audit --omit=dev --audit-level=high` exit 0 · backend **non rejoué en local** (zéro fichier
+`backend/**` au diff ; le job CI requis le couvre). Détail :
+`docs/memory/audits/sprint-60-test-coverage.md`.
+**Status :** En cours
+
+### Ce qui n'a PAS suivi le protocole, et pourquoi
+
+- **Sprint jamais passé par `/sprint plan`.** Aucune entrée d'historique préalable, aucun
+  `architect-plans.md`, donc **aucun mini-plan architecte** — les plans d'implémentation ont été
+  écrits par le lead depuis les pistes techniques des issues, et la matrice de conflits de fichiers
+  vérifiée à la main. Le label `sprint-60` et le milestone préexistaient (posés par l'audit de
+  clôtures du 2026-08-16).
+- **Context-pack réduit délibérément.** `inject-pack.sh unknown frontend` produisait 77 Ko par
+  briefing, dont 44 Ko de pièges de mise en page sans rapport avec des issues de dépendances et de
+  CI. Remplacé par un pack `tooling` de 23 Ko (même logique de classification que
+  `gen-pit-packs.sh` : entrées `tooling` + `both` + non classées). Briefings finaux ~33 Ko, le
+  garde-fou `pre-spawn-fullstack.sh` (≥ 8 Ko + marqueur) reste satisfait.
+- **Le lead a terminé #308 à la place du fullstack-dev.** L'agent a calé (watchdog, 600 s sans
+  progression) après avoir écrit et câblé le préflight, avant la doc, la preuve, l'artefact et le
+  commit. Le lead a repris son diff non committé sans en réécrire une ligne, et a ajouté
+  `README.md` + l'artefact. Consigné en tête de `issue-308-done.md`.
+- **Deux erreurs du lead dans les briefings**, corrigées en cours de sprint :
+  (1) les briefings annonçaient que `test-quiet.sh frontend` lance vitest + build + typecheck +
+  lint — il ne lance **que** vitest ; l'agent de #422 l'a repéré et a lancé les trois autres
+  séparément, donc sans perte de couverture ;
+  (2) la consigne d'isolation des commits disait « `git add` ciblé » — `PIT-S57-001` établit que
+  c'est insuffisant. Corrigée en `git commit -m … -- <pathspec>` **avant** le premier spawn.
+
+### Vérifications refaites par le lead, sans croire les rapports
+
+- `ci.yml` revalidé via **Ruby** : la validation YAML annoncée par l'agent
+  (`python3 -c "import yaml"`) **ne pouvait pas s'exécuter** — PyYAML n'est pas installé sur ce
+  poste. Résultat : YAML valide, 7 jobs, `on: pull_request + push` vers `dev`/`main`.
+- Scan gitleaks rejoué : 768 commits, 0 détection, exit 0.
+- Détection prouvée hors dépôt : clé AWS + clé Stripe → 2 détections exit 1 ; clé Brevo
+  `xkeysib-` → 1 détection exit 1. **Piège rencontré** : `AKIAIOSFODNN7EXAMPLE` est la clé
+  d'exemple canonique d'AWS, allowlistée par défaut par gitleaks — un premier test de détection a
+  donc échoué à tort. Le test était mauvais, pas le job.
+- Préflight #308 déclenché réellement (exit 3), suite nominale revérifiée (95/888 exit 0), scope
+  inconnu toujours exit 2.
+- **État de l'environnement vérifié après l'arrêt de l'agent #308**, pas seulement `git status` :
+  celui-ci était propre alors que `frontend/node_modules/eslint-plugin-storybook` avait été
+  renommé et jamais restauré. Le worktree était dans l'état dégradé.
+
+### Écart de piste technique (issue #422)
+
+`npm audit fix` — commande prescrite par l'issue et annoncée comme « confirmée suffisante » —
+**échoue sur ce dépôt** : `Unable to resolve reference $postcss`, dû à
+`overrides: { "postcss": "$postcss" }`. Bump obtenu par `npm update nanoid`, dans la plage
+`^3.3.16` exigée par postcss 8.5.23, donc sans majeur et **sans aucune cascade**.
+
+### Réserves connues au moment d'ouvrir la PR
+
+1. Le job `secret-scan` n'a **jamais tourné sur un runner GitHub** (binaire téléchargé + `sudo
+   install` non exercés). Premier run réel à surveiller.
+2. Gitleaks ne détecte **pas** le `DB_PASSWORD` historique (§3.1, 10 caractères alphabétiques,
+   entropie trop basse). Documenté dans `.gitleaks.toml`, pas dissimulé.
+3. **La liste réelle des checks requis sur `dev` n'a pas pu être relue** : `branches/dev/protection`
+   **et** l'API GraphQL répondent HTTP 503 de façon persistante (dégradation GitHub ; le REST
+   ordinaire fonctionne). Aucune affirmation sur les checks requis n'est vérifiée dans ce sprint.
+
+### ⚠ Rappel de clôture — régénérer les packs dérivés du Layer B
+
+Reconduit du S59, toujours absent du skill : la Phase 2 de `/sprint end` écrit dans
+`pitfalls.md`, ce qui **périme par construction** `pit-backend.md` / `pit-frontend.md`, et le job
+CI requis `ai-env-packs` rougit. Recette : classer chaque nouvelle entrée dans
+`.ai-env/tools/pit-classification.tsv`, puis `bash .ai-env/tools/gen-pit-packs.sh`, puis
+`--check` avant de pousser. Ce sprint apporte plusieurs `[MEMORY:pitfall]` à classer, dont
+plusieurs de catégorie `tooling`.

@@ -187,6 +187,11 @@ copie concernée.
 L'**approvisionnement automatique** de `node_modules` dans les worktrees n'est pas traité : c'est
 l'objet de l'issue #272. Le préflight se contente de nommer le problème au lieu de le déguiser.
 
+Ce que le préflight **n'attrape pas** : il ne lit que les `import` **mono-ligne** de
+`frontend/eslint.config.mjs`. Un import réparti sur plusieurs lignes, ou un `import()` dynamique,
+passerait sous son radar — et le symptôme trompeur reviendrait tel quel. À garder en tête si un
+futur plugin ESLint est ajouté autrement qu'en une ligne.
+
 ## Tests
 
 Depuis la racine, [`scripts/test-quiet.sh`](scripts/test-quiet.sh) condense la sortie et ne
