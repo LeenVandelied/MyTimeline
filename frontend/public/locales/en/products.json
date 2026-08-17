@@ -199,7 +199,7 @@
   },
   "archiveDialog": {
     "title": "Archive this event?",
-    "quotaEffect": "Once archived, this event no longer counts towards your active events and frees up that much of your event quota.",
+    "quotaEffect": "Once archived, this event no longer counts towards your active events.",
     "reversible": "Nothing is deleted: you will find it again in the product’s “Archived” tab, where you can unarchive it.",
     "readOnly": "While it is archived, its fields become read-only — only unarchiving remains possible.",
     "cancel": "Cancel",

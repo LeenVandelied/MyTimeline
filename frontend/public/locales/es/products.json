@@ -199,7 +199,7 @@
   },
   "archiveDialog": {
     "title": "¿Archivar este evento?",
-    "quotaEffect": "Una vez archivado, este evento dejará de contar entre tus eventos activos y liberará esa parte de tu cuota de eventos.",
+    "quotaEffect": "Una vez archivado, este evento dejará de contar entre tus eventos activos.",
     "reversible": "No se elimina nada: lo encontrarás en la pestaña «Archivados» del producto, donde podrás desarchivarlo.",
     "readOnly": "Mientras esté archivado, sus campos pasan a solo lectura: solo se podrá desarchivar.",
     "cancel": "Cancelar",

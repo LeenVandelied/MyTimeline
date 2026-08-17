@@ -199,7 +199,7 @@
   },
   "archiveDialog": {
     "title": "Dieses Ereignis archivieren?",
-    "quotaEffect": "Nach dem Archivieren zählt dieses Ereignis nicht mehr zu deinen aktiven Ereignissen und gibt entsprechend Kontingent frei.",
+    "quotaEffect": "Nach dem Archivieren zählt dieses Ereignis nicht mehr zu deinen aktiven Ereignissen.",
     "reversible": "Es wird nichts gelöscht: Du findest es im Reiter „Archiviert“ des Produkts wieder und kannst es dort wiederherstellen.",
     "readOnly": "Solange es archiviert ist, sind seine Felder schreibgeschützt – nur das Wiederherstellen bleibt möglich.",
     "cancel": "Abbrechen",
