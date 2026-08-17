@@ -2648,7 +2648,7 @@ Les 13 issues de « Mise en ligne (GELÉ) » supposent toutes un serveur, un dom
 
 ---
 
-## Sprint 60 — 2026-08-17 (En cours — PR à ouvrir depuis `sprint/60`)
+## Sprint 60 — 2026-08-17 (Terminé — merge PR #432 dans `dev`)
 
 **Objectif :** Rendre le signal CI `security` exploitable.
 **Milestone GitHub :** #61 (le numéro de milestone est décalé de +1 par rapport au numéro de
@@ -2669,7 +2669,9 @@ sprint depuis S57 — cf. note S57 ; ne pas « corriger » ce décalage.)
 `npm audit --omit=dev --audit-level=high` exit 0 · backend **non rejoué en local** (zéro fichier
 `backend/**` au diff ; le job CI requis le couvre). Détail :
 `docs/memory/audits/sprint-60-test-coverage.md`.
-**Status :** En cours
+**Status :** **Terminé** — PR **#432** (`sprint/60` → `dev`) **mergée le 2026-08-17**, milestone #61
+fermé. Titre et ligne `Status` sont volontairement redondants : `PIT-S56-006` montre que grepper l'un
+sans l'autre rate les entrées où les deux se contredisent.
 
 ### Ce qui n'a PAS suivi le protocole, et pourquoi
 
@@ -2723,6 +2725,43 @@ sprint depuis S57 — cf. note S57 ; ne pas « corriger » ce décalage.)
    run.** `secret-scan` pass en 8 s, `security` **pass en 39 s** — il était rouge sur *toutes* les
    PR du dépôt avant ce sprint, c'est l'objectif atteint. `backend` 1 min 11, `frontend` 2 min 26,
    `e2e` 6 min 39, `flyway-smoke` 51 s, `ai-env-packs` 10 s.
+
+### Clôture (`/sprint end 60`)
+
+**Merge :** PR #432 (`sprint/60` → `dev`), merge commit, autorisé explicitement par le dev.
+**Milestone GitHub :** #61, fermé après le merge.
+**Issues fermées :** #422, #362, #308.
+**Commits :** 10.
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (contre-épreuve exécutée, **aucun défaut**) /
+2 MINEURS (1 traité, 1 en follow-up). Audit sécurité — **1 MAJEUR réel, corrigé** (`bdf6671`).
+**Tests :** frontend 95 fichiers / 888 tests · E2E 169 passed / 8 skipped · backend via CI ·
+CI finale **7/7 verte**.
+
+**Consolidation mémoire :** 10 pitfalls (`PIT-S60-001` → `010`), 2 décisions, 1 pattern.
+Les 10 pitfalls ont été **classés** dans `.ai-env/tools/pit-classification.tsv` (7 `tooling`,
+3 `frontend`) et les packs régénérés — `gen-pit-packs.sh --check` vert, et le job requis
+`ai-env-packs` confirmé vert en CI. Le rappel du S59 a donc été tenu cette fois.
+
+**Absorbé en cours (XS) :** 2 — exclusion PEM écrite au plus étroit après qualification du faux
+positif (#362) ; inventaire des jobs CI du README remis à jour, il en annonçait 4 sur 7 (#308).
+
+**Follow-ups arbitrés (Phase 4 triage) — 6 items, 6 créés, 0 discardé, backlog libre :**
+  - Rendre `secret-scan` **requis** sur `dev` [XS | devops] → **#433**
+  - Aligner `scripts/test-quiet.sh frontend` sur ce qu'annoncent les docs [S | tooling] → **#434**
+  - Réparer `npm audit fix` (override `$postcss` auto-référentiel) [S | frontend] → **#435**
+  - Règle gitleaks pour les mots de passe à basse entropie [S | devops] → **#436**
+  - Préflight : imports mono-ligne seulement [XS | tooling] → **#437**
+  - 6 HIGH résiduelles dev+prod (chaîne eslint/brace-expansion) [M | tooling] → **#438**
+
+> **Ratio discard 0/6 — deuxième sprint consécutif à 0 %** (S59 : 0/5). Le skill signale qu'un
+> discard nul récurrent indique soit que le lead filtre en amont, soit que le critère de
+> `RECOMMAND_FOLLOWUP` est trop large. À trancher au prochain sprint plutôt qu'à laisser filer :
+> ici les 6 items étaient tous des limites **mesurées** du travail livré, pas des intuitions — ce
+> qui plaide pour le filtrage amont, mais deux points ne font pas une tendance.
+
+> **#433 est le follow-up qui conditionne la valeur de tout ce sprint.** Tant que `secret-scan`
+> n'est pas un check requis, une PR qui le ferait rougir reste fusionnable, et le garde-fou est
+> décoratif. Sa précondition (premier run vert) est levée depuis la PR #432.
 2. Gitleaks ne détecte **pas** le `DB_PASSWORD` historique (§3.1, 10 caractères alphabétiques,
    entropie trop basse). Documenté dans `.gitleaks.toml`, pas dissimulé.
 3. ~~Checks requis non relisibles~~ — **levée en fin de sprint.** `branches/dev/protection` et
