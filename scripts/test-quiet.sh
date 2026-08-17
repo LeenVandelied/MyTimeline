@@ -86,6 +86,111 @@ run_backend() {
   return 0
 }
 
+# --- Préflight frontend (#308) -----------------------------------------------
+# Mode d'échec visé : `node_modules` absent ou incomplet dans le répertoire
+# RÉELLEMENT testé. Le symptôme brut est trompeur — la suite
+# src/__tests__/console-error-guard.test.ts charge la config ESLint réelle
+# (`new ESLint().calculateConfigForFile`), donc exécute les imports de
+# frontend/eslint.config.mjs ; un plugin manquant y produit
+#   Error: Cannot find package 'eslint-plugin-storybook' imported from …
+# qui se lit comme une régression de la garde anti-fuite credentials #160/#258
+# alors que seul l'environnement est en cause. Cas déjà survenu deux fois
+# (PIT-S41-004, PIT-S53-006 : rapport d'agent entièrement faux mais plausible).
+# On échoue donc AVANT vitest, avec le diagnostic et le correctif.
+frontend_env_hint() {
+  cat >&2 <<EOF
+  ─────────────────────────────────────────────────────────────────────────────
+  Ce n'est PAS une régression du code testé : l'environnement Node du
+  répertoire ci-dessous est absent ou incomplet.
+    répertoire testé : ${FRONTEND_DIR}
+    script exécuté   : ${SCRIPT_DIR}/test-quiet.sh  (les chemins sont résolus
+                       depuis la position du script, jamais depuis le cwd)
+  Correctif :
+    ( cd "${FRONTEND_DIR}" && npm ci )
+  Chaque worktree de sprint (.claude/worktrees/…) a son PROPRE node_modules :
+  lancer ce script depuis le dépôt principal ne teste PAS le code du worktree,
+  et inversement. Vérifier le dépôt visé :
+    /usr/bin/git -C "${REPO_ROOT}" rev-parse --show-toplevel
+    /usr/bin/git -C "${REPO_ROOT}" branch --show-current
+  Approvisionnement automatique de node_modules dans les worktrees : issue #272
+  (hors périmètre de ce préflight, qui se contente de nommer le problème).
+  ─────────────────────────────────────────────────────────────────────────────
+EOF
+}
+
+frontend_preflight() {
+  if [ ! -d "${FRONTEND_DIR}/node_modules" ]; then
+    echo "✗ Frontend : ${FRONTEND_DIR}/node_modules est absent — dépendances jamais installées ici." >&2
+    frontend_env_hint
+    return 3
+  fi
+  # Répertoire présent mais vide (symlink cassé, install interrompue) : même cause.
+  if [ -z "$(ls -A "${FRONTEND_DIR}/node_modules" 2>/dev/null)" ]; then
+    echo "✗ Frontend : ${FRONTEND_DIR}/node_modules existe mais est VIDE." >&2
+    frontend_env_hint
+    return 3
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    echo "✗ Frontend : 'node' introuvable dans le PATH — impossible de lancer Vitest." >&2
+    return 127
+  fi
+
+  # Résolvabilité des paquets importés par eslint.config.mjs. Limites assumées :
+  # ne couvre QUE les imports mono-ligne de ce seul fichier (un import multi-ligne
+  # ou un `require()` dynamique passe sous le radar), et ne valide pas le reste de
+  # l'arbre de dépendances — c'est un détecteur du cas de figure documenté
+  # ci-dessus, pas une vérification d'intégrité de node_modules.
+  local missing=""
+  local probe_status=0
+  missing="$(PREFLIGHT_FRONTEND_DIR="${FRONTEND_DIR}" node - <<'PREFLIGHT_JS'
+const fs = require('fs')
+const path = require('path')
+const { createRequire } = require('module')
+
+const dir = process.env.PREFLIGHT_FRONTEND_DIR
+const cfgPath = path.join(dir, 'eslint.config.mjs')
+if (!fs.existsSync(cfgPath)) process.exit(0)
+
+const src = fs.readFileSync(cfgPath, 'utf8')
+const specs = new Set()
+const importRe = /^\s*import\s[^'"]*['"]([^'"]+)['"]/gm
+let m
+while ((m = importRe.exec(src)) !== null) specs.add(m[1])
+
+const req = createRequire(path.join(dir, '__preflight__.cjs'))
+const missing = []
+for (const spec of specs) {
+  if (spec.startsWith('.') || spec.startsWith('/') || spec.startsWith('node:')) continue
+  try {
+    req.resolve(spec)
+  } catch (err) {
+    // Seul un paquet INTROUVABLE compte. Un paquet présent mais non exposé en
+    // CJS échoue avec ERR_PACKAGE_PATH_NOT_EXPORTED : ce n'est pas un manque.
+    if (err.code === 'MODULE_NOT_FOUND' || err.code === 'ERR_MODULE_NOT_FOUND') missing.push(spec)
+  }
+}
+process.stdout.write(missing.join(' '))
+PREFLIGHT_JS
+  )" || probe_status=$?
+
+  if [ "${probe_status}" -ne 0 ]; then
+    # Le préflight ne doit jamais empêcher de lancer les tests : on prévient et on passe.
+    echo "⚠ Frontend : préflight de résolution non concluant (exit ${probe_status}) — poursuite vers Vitest." >&2
+    return 0
+  fi
+
+  if [ -n "${missing}" ]; then
+    echo "✗ Frontend : paquet(s) importé(s) par eslint.config.mjs non résolvable(s) : ${missing}" >&2
+    echo "  Sans ce préflight, le symptôme est \"Cannot find package …\" dans" >&2
+    echo "  src/__tests__/console-error-guard.test.ts (il charge la config ESLint réelle)," >&2
+    echo "  ce qui se lit à tort comme une régression de la garde console.error #160/#258." >&2
+    frontend_env_hint
+    return 3
+  fi
+  return 0
+}
+
 # --- Frontend unitaires : Vitest ("test" = "vitest run") ---------------------
 run_frontend() {
   # Suite unitaire Vitest. Skip explicite si aucun script "test" (plutôt qu'un
@@ -93,6 +198,13 @@ run_frontend() {
   # (critère #133).
   if [ -f "${FRONTEND_DIR}/package.json" ] \
      && grep -qE '"test"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
+    # #308 — échouer avec un diagnostic actionnable plutôt que de laisser Vitest
+    # cracher un « Cannot find package » qui accuse le code.
+    local pre=0
+    frontend_preflight || pre=$?
+    if [ "${pre}" -ne 0 ]; then
+      return "${pre}"
+    fi
     echo "▶ Frontend (unitaires) : npm test  (vitest run, cwd=frontend)"
     local status=0
     ( cd "${FRONTEND_DIR}" && npm test --silent ) || status=$?

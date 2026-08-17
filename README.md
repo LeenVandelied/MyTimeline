@@ -164,6 +164,29 @@ jamais silencieusement.
   compare deux identifiants différents. Rien à voir avec le code testé. (La CI est déjà en
   `workers: 1`.)
 
+### 4. `node_modules` est propre à chaque copie de travail, et son absence ment sur la cause
+
+Chaque worktree (`.claude/worktrees/…`) a **son propre** `frontend/node_modules` ; il n'est pas
+partagé avec le dépôt principal. Deux conséquences, l'une gênante, l'autre trompeuse :
+
+- Lancer `./scripts/test-quiet.sh frontend` depuis le dépôt principal **ne teste pas** le code du
+  worktree, et inversement. Le script résout ses chemins depuis sa propre position, jamais depuis
+  le répertoire courant — c'est donc le script appelé qui décide du code testé.
+- Si les dépendances n'ont jamais été installées dans la copie testée, le symptôme brut était
+  `Cannot find package 'eslint-plugin-storybook'` dans
+  `frontend/src/__tests__/console-error-guard.test.ts`. Ce test charge la configuration ESLint
+  **réelle** (`new ESLint().calculateConfigForFile`), donc exécute les imports de
+  `frontend/eslint.config.mjs`. L'erreur se lit comme une régression de la garde anti-fuite de
+  credentials `#160`/`#258` alors que seul l'environnement est en cause — le cas s'est produit
+  deux fois, dont un rapport d'agent entièrement faux mais plausible.
+
+`test-quiet.sh frontend` échoue désormais **avant** Vitest, en sortie 3, avec le répertoire testé,
+la commande de correction et le rappel ci-dessus. Correctif : `( cd frontend && npm ci )` dans la
+copie concernée.
+
+L'**approvisionnement automatique** de `node_modules` dans les worktrees n'est pas traité : c'est
+l'objet de l'issue #272. Le préflight se contente de nommer le problème au lieu de le déguiser.
+
 ## Tests
 
 Depuis la racine, [`scripts/test-quiet.sh`](scripts/test-quiet.sh) condense la sortie et ne
@@ -193,8 +216,12 @@ Avant de lancer la suite E2E, **lire** :
 - [`frontend/e2e/README.md`](frontend/e2e/README.md) — harnais de contrôle de contraste et de
   troncature des CTA.
 
+`test-quiet.sh frontend` ne lance **que** Vitest — ni `build`, ni `typecheck`, ni `lint`, qui
+s'appellent séparément (cf. équivalents directs ci-dessus). Il sort en **3**, avant Vitest, si les
+dépendances de la copie testée sont absentes ou incomplètes (cf. piège 4).
+
 La CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) rejoue les jobs `backend`,
-`frontend`, `e2e` et `security` à chaque push.
+`frontend`, `e2e`, `flyway-smoke`, `security`, `secret-scan` et `ai-env-packs` à chaque push.
 
 ## Mise en production
 
