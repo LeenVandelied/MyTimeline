@@ -2859,4 +2859,62 @@ symbole existait, avec sa javadoc mentionnant même le consommateur `#67`. **Ce 
 un appelant** : le contrôle utile est `grep` des *appels* (`\.expand(`, nom du service injecté),
 pas de la déclaration.
 
-**Status :** **En cours** — démarré le 2026-08-17.
+### Exécution
+
+**Vagues exécutées :** V1 = #307 | V2 = #230 (séquentiel — les deux réécrivent le rendu des events
+archivés dans `ProductDetailView`).
+
+**Commits (8) :**
+- `1dfb527` #307 — vue « archivés » : filtre en dur → état de vue `'active'|'archived'|'all'`, hook
+  `useSetEventArchived`, `eventService.setEventArchived`, i18n ×4, 3 specs E2E (10 fichiers, +675/−22)
+- `17c73f8` #230 — `ArchiveConfirmDialog`, verrou de champs, grisage frise + vues mobiles,
+  propagation `durationValue`/`durationUnit`, 2 specs E2E (25 fichiers, +792/−64)
+- `afdcfb5` — correctifs de specs E2E (lead, cf. ci-dessous)
+- `db079e1` — review [MAJEUR] : retrait de la promesse de quota fictif, 4 locales
+- `ca3f02f` — review [MAJEUR] : encre + garde-fou de contraste calculés sur la couleur RENDUE
+- 3 commits de documentation (historique, artefacts, audit)
+
+**BR impactées :** BR-EVE-011 (non régressée), BR-EVE-013, BR-EVE-015, BR-EVE-006/016.
+**Migrations Flyway :** aucune. **Zéro fichier `backend/**` au diff.**
+
+**Reviews :** reviewer batch — **0 CRITIQUE / 2 MAJEUR / 3 MINEUR**, verdict NON-BLOQUANT.
+Les 2 majeurs ont été **corrigés dans le sprint** (`db079e1`, `ca3f02f`), les 3 mineurs partent en
+triage Phase 4.
+
+**Tests :** Vitest **937/937** · `tsc`/`eslint`/`build` 0 · **E2E suite complète 174 passed / 0 failed
+/ 8 skipped** · coverage-E2E 10 testids / 0 sans spec. Backend non rejoué (aucun fichier backend).
+Détail : `docs/memory/audits/sprint-61-test-coverage.md`.
+**CI :** 7/7 verte au premier run (PR #440).
+
+### Le fait marquant : les E2E n'avaient jamais tourné
+
+Les deux vagues ont rendu `RECOMMAND_TEST_RUNNER` — les 5 specs du sprint étaient seulement
+**compilées**. L'agent `test-runner` a lui aussi échoué à les lancer (turbopack inférant un mauvais
+workspace root, cf. [[PIT-S61-007]]) et a conclu « impossible sans modifier le dépôt ». Le lead a
+repris la main : contournement en une commande (`rtk proxy npx next dev`), backend réutilisé depuis le
+conteneur e2e déjà debout sur `:8086`.
+
+**L'exécution réelle a révélé que les specs ne passaient pas** : un clic sur l'`<input>` masqué d'un
+`Switch` (convention pourtant déjà documentée dans `sprint-42-events.spec.ts`), et une **vraie
+régression** — #230 change le comportement du toggle, cassant une spec préexistante. Corrigé en
+`afdcfb5`. Rapport : `docs/memory/sprints/sprint-61/test-runner-report.md`.
+
+> Le check coverage-E2E de la Phase 8 était **vert avant ces corrections** ([[PIT-S61-005]]) : il
+> prouve qu'un testid est *cité*, jamais qu'une spec *passe*.
+
+### Deux erreurs de mesure du lead, consignées
+
+1. **Contraste calculé avec du noir pur** alors que la charte utilise `INK_DARK = #0B0C0E`. L'exemple
+   cité (`#0070F8`) basculait déjà avant correctif : il ne démontrait pas le défaut. Le phénomène
+   restait réel (8,6 % mesurés). Cf. [[PIT-S61-004]].
+2. **Le briefing affirmait** que les 3 surfaces de frise partageaient le garde-fou de contraste.
+   Vérification sur `17c73f8` : **seul `EventPill` l'appelait**. Le subagent a dévié du plan pour
+   cette raison — écart accepté après vérification.
+
+**Absorbé en cours :** propagation `durationValue`/`durationUnit` au view-model + pré-remplissage
+`TimelineEditHost` (#230) — corrige un formulaire non soumissible depuis la frise, cf. [[PIT-S61-002]].
+
+**Nouveaux pitfalls :** PIT-S61-001 à PIT-S61-007. **Décisions :** 4 (option A, verrou DOM vs RHF,
+a11y sur couleur rendue, pas de quota promis). **Pattern :** PAT-S61-001 (état de vue).
+
+**Status :** **En cours** — démarré le 2026-08-17, PR **#440** ouverte (`sprint/61` → `dev`), CI verte.

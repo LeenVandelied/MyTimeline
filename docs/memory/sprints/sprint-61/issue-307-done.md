@@ -87,3 +87,32 @@ modification backend, zéro `EventEditForm*`, zéro `timeline/**`, zéro CSS.
 Aucune.
 
 STATUS: COMPLETED
+
+---
+
+## Résolution du RECOMMAND_TEST_RUNNER (Phase 6, 2026-08-17) — SIGNAL TRAITÉ
+
+Le signal a été traité, en deux temps :
+
+1. **Agent `test-runner` spawné par le lead.** Verdict rendu : `PARTIAL`. Suite unitaire verte
+   (920/920, `tsc`/`eslint`/`build` à 0) mais **E2E non exécutables** — Turbopack inférait un
+   mauvais workspace root (plusieurs lockfiles dans les worktrees voisins), toutes les pages
+   rendaient 500, `auth.setup.ts` cassait et **0 spec ne démarrait**.
+2. **Le lead a repris la main et exécuté les E2E lui-même.** Contournement sans modification du
+   dépôt : `rtk proxy npx next dev -p 3100` (webpack au lieu de turbopack) contre le conteneur
+   backend e2e déjà debout sur `:8086` (profil `dev,e2e`, CORS `:3100`).
+
+**Ce que l'exécution réelle a révélé — les specs ne passaient pas :**
+
+- `sprint-61-archived-events.spec.ts` : le clic ciblait l'`<input>` du `Switch`, rendu inactionnable
+  par `core.css:146`. Convention correcte (cliquer le `<label>` parent) déjà documentée dans
+  `sprint-42-events.spec.ts:246-250`.
+- `sprint-42-events.spec.ts:251` : **vraie régression** de #230 — cocher le toggle n'applique plus
+  l'état directement, il ouvre la confirmation. Spec mise à jour.
+
+Corrigé en `afdcfb5`. **Résultat final : E2E suite complète 174 passed / 0 failed / 8 skipped**,
+Vitest 937/937 après les correctifs de review.
+
+Détail complet : `docs/memory/audits/sprint-61-test-coverage.md`.
+
+STATUS: COMPLETED

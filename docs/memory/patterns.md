@@ -563,3 +563,14 @@ valeurs en clair**, donc committer la baseline reviendrait à recommitter les se
 Règle de maintenance qui fait tenir l'ensemble : **une exclusion se justifie par un § d'audit,
 jamais par « la CI est rouge »**. Et chaque exclusion se teste **dans les deux sens** avant
 livraison.
+
+## PAT-S61-001 — Remplacer un filtre codé en dur par un état de vue, pour que la vague suivante puisse s'y brancher
+
+`ProductDetailView` filtrait `!event.archived` en dur (#307). Plutôt qu'inverser la condition, la vague 1 a
+introduit `EventViewFilter = 'active' | 'archived' | 'all'` + `matchesEventFilter(archived, filter)`, avec
+`'active'` par défaut — donc **comportement d'arrivée inchangé**. La vague 2 (#230, grisage au lieu de masquage)
+a pu se brancher dessus sans réécrire la logique, et la spec E2E préexistante qui assertait « l'archivé disparaît
+de la frise » est restée vraie (le défaut n'a pas bougé), seule sa *raison* ayant changé.
+
+Le briefing de la vague 1 demandait explicitement cette forme, en anticipant le besoin de la vague 2. C'est ce
+qui a permis de séquencer deux issues sur les mêmes fichiers sans conflit de merge ni retouche croisée.
