@@ -339,11 +339,23 @@ maintenance en en-tête. **Aucune n'a été ajoutée pour « faire passer la CI 
      littéral Java `"-----BEGIN PRIVATE KEY-----\n"`** → faux positif : le test enrobe une clé
      **générée au run** pour vérifier qu'un `.pem` collé ne casse pas le boot. Le 3ᵉ critère
      (`regexes`) est ce qui empêche l'exclusion de couvrir tout le fichier.
-- **`.gitleaksignore`** — 12 empreintes `commit:fichier:règle:ligne`, **épinglées à des commits
+  3. Fixture `SECRET` d'`ExportTokenServiceTest`, ancré sur le marqueur `test-only-insecure` de la
+     valeur (en base64) **et** sur ce seul fichier. La constante ne s'appelant pas
+     `EXPORT_TOKEN_SECRET`, l'exclusion 1 — qui filtre par nom de clé — ne la couvrait pas.
+- **`.gitleaksignore`** — **11** empreintes `commit:fichier:règle:ligne`, **épinglées à des commits
   immuables** : le `jwt.secret` de §3.2 (2), les `JWT_SECRET` hors code source de §4.1 (4), les
-  fixtures `jwt.secret=` de tests d'intégration (5), l'ancien nom `SECRET` du fixture
-  `ExportTokenService` (1). Aucun de ces fichiers n'est blanchi pour l'avenir : une réintroduction
-  produit une empreinte différente et fait rougir la CI.
+  fixtures `jwt.secret=` de tests d'intégration (5). Aucun de ces fichiers n'est blanchi pour
+  l'avenir : une réintroduction produit une empreinte différente et fait rougir la CI. **Toutes ces
+  occurrences sont absentes du HEAD**, vérifié.
+
+  > **Correction apportée par l'audit sécurité de fin de sprint.** Une 12ᵉ empreinte visait le
+  > fixture `SECRET` d'`ExportTokenServiceTest`, **encore présent au HEAD** — ce que la règle en
+  > tête de `.gitleaksignore` interdit explicitement. Le défaut était discret plutôt que bruyant :
+  > la ligne n'ayant jamais été retouchée depuis son commit d'introduction, l'empreinte restait
+  > valide indéfiniment, donc le masquage devenait **permanent** au lieu de rougir au premier
+  > reformatage. Remplacée par l'exclusion durable 3 ci-dessus, vérifiée dans les deux sens : la
+  > même valeur dans `application-prod.properties` reste détectée, et une clé Stripe placée dans
+  > `ExportTokenServiceTest.java` reste détectée.
 
 ### 9.3 Limite mesurée — ce que le job N'attrape PAS
 

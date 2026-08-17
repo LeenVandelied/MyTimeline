@@ -37,7 +37,9 @@ e5c8ffdf26d05d8933dfe9de9fd3fe32b889f0e9:backend/src/test/java/com/matimeline/ev
 68b1bc478db36b17b8dfbeea943b293aef26d90f:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java:generic-api-key:40
 d3a776ffee0ec45537e5ea29dc948082dcadd10c:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:generic-api-key:60
 
-# --- Ancien nom `SECRET` du fixture d'ExportTokenService (base64 de "test-only-insecure-jwt…").
-# Le nom actuel (`EXPORT_TOKEN_SECRET`) est couvert durablement par `.gitleaks.toml` ; cette
-# occurrence-ci porte l'ancien nom et n'entre donc pas dans l'allowlist par nom de clé.
-0d1d739532b2bacd0201ad9a3b22155aff282be9:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java:generic-api-key:27
+# --- RETIRÉ (audit sécurité S60). Le fixture `SECRET` d'`ExportTokenServiceTest` est TOUJOURS
+# présent au HEAD (`ExportTokenServiceTest.java:40`) : l'épingler ici violait la règle énoncée
+# 25 lignes plus haut, et la violait dans le sens le plus discret — la ligne n'ayant jamais été
+# retouchée, l'empreinte restait valide indéfiniment et le masquage devenait permanent au lieu
+# de rougir. Déplacé en exclusion DURABLE dans `.gitleaks.toml` (bloc 3), ancrée sur le marqueur
+# `test-only-insecure` de la valeur elle-même et sur ce seul fichier.

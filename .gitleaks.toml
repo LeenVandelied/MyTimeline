@@ -64,6 +64,26 @@ paths = [
 #     couvrirait la règle `private-key` dans TOUT le fichier — donc une VRAIE clé privée collée ici
 #     passerait inaperçue. Testé : avec le critère, un bloc PEM authentique dans ce fichier est
 #     bien détecté ; sans lui, il ne l'était pas.
+# --- 3. Fixture `SECRET` d'ExportTokenServiceTest — audit §4.2, même famille que le bloc 1.
+#
+# La constante s'appelle `SECRET` et non `EXPORT_TOKEN_SECRET` : le bloc 1, qui filtre par NOM de
+# clé, ne la couvre donc pas. Elle était initialement épinglée dans `.gitleaksignore`, ce qui
+# violait la règle de ce fichier (« ne jamais y épingler une occurrence encore au HEAD ») —
+# détecté par l'audit sécurité de fin de sprint. Une empreinte `commit:fichier:règle:ligne` sur
+# une ligne jamais retouchée ne rougit jamais : le masquage devenait permanent et silencieux.
+#
+# Ancrage retenu : le marqueur `test-only-insecure` porté par la VALEUR elle-même, en base64
+# (`dGVzdC1vbmx5LWluc2VjdXJl` décode « test-only-insecure »), ET ce seul fichier de test.
+# `condition = "AND"` pour la même raison qu'au bloc 1 — sans lui, le marqueur blanchirait cette
+# valeur partout dans le dépôt. Vérifié empiriquement dans les deux sens : un secret DIFFÉRENT
+# dans ce même fichier reste détecté, et cette même valeur dans un autre fichier reste détectée.
+[[allowlists]]
+description = "Fixture SECRET base64 test-only-insecure (ExportTokenServiceTest, audit #249 §4.2)"
+condition = "AND"
+regexTarget = "line"
+regexes = ['''dGVzdC1vbmx5LWluc2VjdXJl''']
+paths = ['''(^|/)backend/src/test/java/.*/ExportTokenServiceTest\.java$''']
+
 [[allowlists]]
 description = "Armure PEM littérale, clé générée au run (JwtServiceRs256Test)"
 targetRules = ["private-key"]
