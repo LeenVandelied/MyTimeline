@@ -2849,6 +2849,10 @@ Livrer #67 supposait donc de trancher une décision de contrat d'API (`seriesInf
 celui du sprint. Décision du dev : **sortir #67 du milestone 61** et créer d'abord l'issue backend
 de câblage qui la débloque. L'estimation XS est caduque.
 
+Issue backend créée : **#439** — « câbler l'expansion de récurrence et exposer le flag `capped` »
+(backlog libre, `epic:events` / `priority:P2` / `size:M`). Elle porte la décision de contrat à
+trancher. #67 reste ouverte, débloquée par #439, commentaire d'explication posé dessus.
+
 **Leçon transposable :** une piste technique d'issue qui dit « le flag est fourni par l'issue 4.1 »
 n'est pas une preuve que 4.1 a été livrée. Un `grep` du symbole ne suffit pas non plus — ici le
 symbole existait, avec sa javadoc mentionnant même le consommateur `#67`. **Ce qui manquait, c'est
