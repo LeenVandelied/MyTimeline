@@ -190,6 +190,62 @@ describe('EventPill', () => {
       expect(container.querySelector('.mt-tlv__evt-dot')).not.toHaveClass('mt-evt--archived')
     })
 
+    /**
+     * Correction review S61 — le grisage archivé faisait passer le titre sous AA
+     * pour ~8 % des couleurs hex : l'encre était calculée sur la couleur d'ORIGINE
+     * alors que le DS peint un gris plus sombre (`filter: grayscale(1)`, pondération
+     * sur canaux gamma-encodés), et noir/blanc sont des points fixes du filtre.
+     */
+    it('#0078F8 ARCHIVÉ → encre recalculée sur le gris peint (blanc, 5.57:1), titre DEDANS', () => {
+      render(<EventPill event={archivedEvent('#0078F8')} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      // Avant : INK_DARK conservée, soit 3.51:1 sur le gris #686868 → échec AA muet.
+      expect(pill.style.getPropertyValue('--mt-evt-ink')).toBe(INK_LIGHT)
+      expect(within(pill).getByText('Péremption')).not.toHaveAttribute('aria-hidden')
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('#0078F8 NON archivé → encre et rendu STRICTEMENT inchangés (non-régression)', () => {
+      render(
+        <EventPill
+          event={makePositionedEvent({ color: '#0078F8' })}
+          ariaLabel="x"
+          onSelect={() => {}}
+        />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(pill.style.getPropertyValue('--mt-evt-ink')).toBe(INK_DARK)
+      expect(within(pill).getByText('Péremption')).not.toHaveAttribute('aria-hidden')
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('#008DFF ARCHIVÉ → aucune encre ne passe sur le gris → LIBELLÉ DEHORS', () => {
+      // Le cas que le garde-fou d'origine ratait : lisible avant grisage (5.83:1),
+      // gris `#777777` après, meilleur ratio 4.48 → sous AA, repli obligatoire.
+      render(<EventPill event={archivedEvent('#008DFF')} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      expect(within(pill).getByText('Péremption')).toHaveAttribute('aria-hidden', 'true')
+      expect(screen.getByTestId('timeline-event-outside-label')).toBeInTheDocument()
+    })
+
+    it('#008DFF NON archivé → titre DEDANS (le repli ne se déclenche pas à tort)', () => {
+      render(
+        <EventPill
+          event={makePositionedEvent({ color: '#008DFF' })}
+          ariaLabel="x"
+          onSelect={() => {}}
+        />,
+      )
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('fond très foncé archivé → l’encre BLANCHE est conservée (chemin non dégradé)', () => {
+      render(<EventPill event={archivedEvent('#0B0C0E')} ariaLabel="x" onSelect={() => {}} />)
+      expect(
+        screen.getByTestId('timeline-event').style.getPropertyValue('--mt-evt-ink'),
+      ).toBe(INK_LIGHT)
+    })
+
     it('un archivé reste CLIQUABLE (le grisage n’est pas une désactivation)', async () => {
       const user = userEvent.setup()
       const onSelect = vi.fn()

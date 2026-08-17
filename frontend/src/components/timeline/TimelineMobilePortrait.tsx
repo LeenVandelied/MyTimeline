@@ -5,8 +5,7 @@ import { Minus, MoreHorizontal, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
 import { cn } from '@/lib/utils'
-import { textOn } from '@/lib/color'
-import { buildEventAriaLabel, Resource } from './lib'
+import { buildEventAriaLabel, eventInkColor, Resource } from './lib'
 import { Minimap } from './Minimap'
 import { TimelineBottomSheet } from './TimelineBottomSheet'
 import { TimelineActionSheet } from './TimelineActionSheet'
@@ -230,10 +229,16 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                         </span>
                         {laneEvents.map((event) => {
                           const color = event.color || 'var(--color-accent)'
-                          const ink = event.color ? textOn(event.color) : 'var(--color-accent-ink)'
                           // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
                           // Même traitement que la frise desktop (`EventPill`).
                           const archived = event.extendedProps?.archived === true
+                          // #230 (correction review S61) — encre calculée sur la
+                          // couleur RENDUE : le DS désature la barre archivée, donc
+                          // l'encre doit suivre le gris peint (cf. `eventInkColor`),
+                          // sans quoi une encre noire figée tombe sous AA.
+                          const ink = event.color
+                            ? eventInkColor(event.color, archived)
+                            : 'var(--color-accent-ink)'
                           return (
                             <div
                               key={event.id}

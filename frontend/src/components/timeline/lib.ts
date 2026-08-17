@@ -1,5 +1,5 @@
 import { FullCalendarEvent } from '@/types/event'
-import { contrastRatio, WCAG_AA_NORMAL, INK_DARK, INK_LIGHT } from '@/lib/color'
+import { contrastRatio, contrastInk, grayscaleHex, WCAG_AA_NORMAL } from '@/lib/color'
 
 /**
  * #47 — Logique de calcul partagée par les sous-composants Timeline.
@@ -63,11 +63,63 @@ export function buildEventAriaLabel(
  * Réutilise `contrastRatio` de `lib/color.ts` (BR-EVE-009, pas de chroma-js).
  * Fond absent/invalide (theming DS `var(--color-accent)`) → considéré lisible
  * (le DS garantit son propre contraste `--color-accent-ink`).
+ *
+ * #230 (correction review S61) — `archived` : le fond évalué est la couleur
+ * RENDUE (désaturée pour un archivé, cf. `renderedEventColor`), et l'encre
+ * évaluée est celle que pose `eventInkColor` sur cette même couleur. Les deux
+ * décisions partent donc du MÊME état, ce qui n'était pas le cas avant.
+ * `archived = false` → strictement identique au comportement d'origine.
  */
-export function eventLabelReadableInside(color: string | undefined | null): boolean {
-  if (!color) return true
-  const best = Math.max(contrastRatio(color, INK_DARK), contrastRatio(color, INK_LIGHT))
-  return best >= WCAG_AA_NORMAL
+export function eventLabelReadableInside(
+  color: string | undefined | null,
+  archived = false,
+): boolean {
+  const rendered = renderedEventColor(color, archived)
+  if (!rendered) return true
+  // Le ratio est évalué contre l'encre RÉELLEMENT posée (celle que renvoie
+  // `eventInkColor` sur la même couleur rendue), pas contre la meilleure encre
+  // théorique d'une couleur qui n'est plus à l'écran.
+  return contrastRatio(rendered, contrastInk(rendered)) >= WCAG_AA_NORMAL
+}
+
+/**
+ * #230 (correction review S61) — Couleur de fond TELLE QU'ELLE SERA RENDUE.
+ *
+ * Le DS désature les événements archivés (`filter: grayscale(1)`). Tant que
+ * l'encre et le garde-fou de contraste raisonnaient sur la couleur d'ORIGINE,
+ * ils décrivaient un rendu qui n'existe plus : `grayscale()` opérant sur les
+ * canaux gamma-encodés (cf. `grayscaleHex`), le fond s'ASSOMBRIT, et l'encre
+ * noire — point fixe du filtre, donc immobile — perdait du contraste. Mesure :
+ * ~8 % des couleurs hex passaient AA avant grisage et échouaient après
+ * (ex. `#0070F8` : 4.67 → 3.44 avec l'encre noire figée).
+ *
+ * Non archivé → couleur inchangée (aucune régression possible).
+ */
+export function renderedEventColor(
+  color: string | undefined | null,
+  archived = false,
+): string | undefined | null {
+  if (!color || !archived) return color
+  return grayscaleHex(color)
+}
+
+/**
+ * #230 (correction review S61) — Encre du libellé, calculée sur la couleur
+ * RENDUE (BR-EVE-009 : noir/blanc au meilleur contraste, jamais hardcodée).
+ *
+ * Conséquence mesurable : `#0070F8` archivé passe d'une encre noire à 3.44:1
+ * (échec AA) à une encre blanche à 6.10:1 sur le gris `#626262` effectivement
+ * peint. Le grisage cesse d'être un chemin d'échec WCAG : tout gris pur admet
+ * une encre à ≥ 4.58:1 (le pire cas est le gris où noir et blanc s'égalisent,
+ * L+0.05 = √(1.05×0.05) ⇒ ratio 4.583), donc AA est TOUJOURS atteint dedans.
+ *
+ * ⚠ Robuste à l'incertitude d'espace colorimétrique : quel que soit l'espace
+ * dans lequel le navigateur applique `grayscale()`, le fond peint est un gris
+ * PUR — la borne 4.58 tient dans les deux cas. La correction ne dépend donc pas
+ * de la valeur exacte du gris, seulement du fait qu'il en est un.
+ */
+export function eventInkColor(color: string | undefined | null, archived = false): string {
+  return contrastInk(renderedEventColor(color, archived))
 }
 
 /** Ressource affichée dans une Lane (produit + sa catégorie). */

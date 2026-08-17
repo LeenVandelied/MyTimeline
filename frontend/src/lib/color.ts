@@ -67,3 +67,37 @@ export function contrastInk(hex: string | undefined | null): string {
 
 /** Alias sémantique charte (`textOn(hex)`). */
 export const textOn = contrastInk
+
+/**
+ * #230 (correction review S61) — Réplique en JS la couleur que le NAVIGATEUR
+ * produit pour `filter: grayscale(1)` (DS `.mt-tlv__evt--archived` /
+ * `.mt-tlm__evt--archived`).
+ *
+ * ⚠ La fonction raccourcie CSS `grayscale()` opère dans l'espace **sRGB**
+ * (CSS Filter Effects L1 §8 : `color-interpolation-filters: sRGB`) : la somme
+ * pondérée `0.2126·R' + 0.7152·G' + 0.0722·B'` porte sur les canaux
+ * **gamma-encodés** (0-255), PAS sur les valeurs linéarisées de `relativeLuminance`.
+ * La linéarisation étant convexe, le gris obtenu a une luminance WCAG INFÉRIEURE
+ * à celle de la couleur d'origine (inégalité de Jensen) → le fond s'assombrit.
+ * D'où le besoin de recalculer l'encre sur CETTE couleur et pas sur l'originale :
+ * noir et blanc sont des points fixes de `grayscale()`, l'encre ne bouge pas
+ * toute seule (c'est le bug corrigé ici).
+ *
+ * Hex invalide/absent → renvoyé tel quel (préserve le theming DS `var(--…)`).
+ */
+export function grayscaleHex(hex: string): string {
+  if (!HEX_RE.test(hex)) return hex
+  let h = hex.slice(1)
+  if (h.length === 3) {
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('')
+  }
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  const y = Math.min(255, Math.max(0, Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b)))
+  const c = y.toString(16).padStart(2, '0')
+  return `#${c}${c}${c}`
+}

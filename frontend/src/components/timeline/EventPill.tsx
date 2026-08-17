@@ -1,7 +1,6 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { contrastInk } from '@/lib/color'
-import { eventLabelReadableInside } from './lib'
+import { eventInkColor, eventLabelReadableInside } from './lib'
 import { statusToVar, type PositionedEvent } from './zoom'
 
 /**
@@ -66,9 +65,6 @@ export const EventPill: React.FC<EventPillProps> = ({
 }) => {
   const statusVar = statusToVar(event.status)
   const bg = event.color || 'var(--color-accent)'
-  // #81 point 6 — si l'encre calculée ne passe pas AA À L'INTÉRIEUR de la barre,
-  // on masque le titre dedans (aria-hidden, décoratif) et on le répète dehors.
-  const readableInside = eventLabelReadableInside(event.color)
   /**
    * #230 (BR-EVE-011/013) — un événement ARCHIVÉ n'est plus « actif » : il est GRISÉ
    * dans la frise, pas masqué (le masquage est le rôle du filtre de vue #307, en
@@ -80,6 +76,12 @@ export const EventPill: React.FC<EventPillProps> = ({
    * surfaces (PIT-S46-001).
    */
   const archived = event.extendedProps?.archived === true
+  // #81 point 6 — si l'encre calculée ne passe pas AA À L'INTÉRIEUR de la barre,
+  // on masque le titre dedans (aria-hidden, décoratif) et on le répète dehors.
+  // #230 (correction review S61) — le calcul porte sur la couleur RENDUE : pour
+  // un archivé, le DS désature la barre, donc encre ET verdict se calculent sur
+  // le gris effectivement peint, jamais sur la couleur d'origine disparue.
+  const readableInside = eventLabelReadableInside(event.color, archived)
   return (
     <>
       <button
@@ -100,7 +102,9 @@ export const EventPill: React.FC<EventPillProps> = ({
           ['--mt-evt' as string]: bg,
           ['--mt-evt-status' as string]: statusVar,
           // BR-EVE-009 : encre lisible calculée (contraste WCAG), plus de `#fff` hardcodé.
-          ['--mt-evt-ink' as string]: contrastInk(event.color),
+          // #230 : sur la couleur RENDUE (désaturée si archivé) — sinon l'encre
+          // décrit un fond qui n'est plus à l'écran.
+          ['--mt-evt-ink' as string]: eventInkColor(event.color, archived),
         }}
       >
         {/* #230 — `.mt-evt--archived` (DS, opacity .45 + grayscale .5) RÉUTILISÉE
