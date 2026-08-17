@@ -1,0 +1,73 @@
+# Configuration gitleaks — job CI `secret-scan` (#362, sprint 60).
+#
+# POURQUOI CE FICHIER. Le dépôt est PUBLIC et l'audit #249 (sprint 50,
+# `docs/memory/audits/secret-exposure-audit.md`) a établi qu'un mot de passe DB et un secret
+# JWT y ont été lisibles ~16 mois. Aucun garde-fou n'empêchait leur réintroduction. Ce fichier
+# porte les SEULES exclusions, chacune adossée à un constat écrit de cet audit.
+#
+# RÈGLE DE MAINTENANCE. Une exclusion se justifie par un §  de l'audit, jamais par « la CI est
+# rouge ». Deux mécanismes, à ne pas confondre :
+#   - CE FICHIER : exclusions DURABLES, valables pour toute occurrence future (indépendantes du
+#     commit). Réservé aux valeurs jetables assumées et aux faux positifs de règle.
+#   - `.gitleaksignore` : empreintes `commit:fichier:règle:ligne` ÉPINGLÉES À UN COMMIT, pour
+#     l'historique déjà exposé (immuable). Ne jamais y ajouter une occurrence encore au HEAD :
+#     l'empreinte changerait au prochain commit touchant le fichier et la CI rougirait.
+#
+# CE QUE CETTE CONFIG NE COUVRE PAS (mesuré, pas supposé — cf. PIT-S58-004) : gitleaks n'a PAS
+# détecté le `DB_PASSWORD` historique de l'audit §3.1 (10 caractères alphabétiques purs, entropie
+# trop basse pour `generic-api-key`). Le job attrape les secrets de forme aléatoire ou à préfixe
+# connu (`xkeysib-`, `sk_live_`, `AKIA…`, clés privées PEM, JWT) ; il n'attrape PAS un mot de passe
+# court ressemblant à un mot du dictionnaire. Ce n'est pas un substitut à la revue.
+
+[extend]
+useDefault = true
+
+# --- 1. EXPORT_TOKEN_SECRET dev / test / CI — audit §4.2, statut « accepté, pas de suite ».
+#
+# Seul matériel HMAC encore committé au HEAD. Trois valeurs DISTINCTES (aucune réutilisation
+# croisée), chacune contenant en clair, une fois décodée, ses propres marqueurs `insecure` /
+# `only` / `change`. Elles ne peuvent pas devenir un secret de production par oubli : en profil
+# `prod`, `EXPORT_TOKEN_SECRET` est obligatoire et le boot échoue s'il manque (garde-fou #323).
+#
+# `condition = "AND"` est INDISPENSABLE : par défaut un bloc `[[allowlists]]` combine ses critères
+# en OU — le seul `regexes` suffirait alors à blanchir un `EXPORT_TOKEN_SECRET` posé N'IMPORTE OÙ,
+# y compris dans un fichier de prod. Vérifié empiriquement avant livraison (avec `AND`, la même
+# valeur dans un chemin hors liste est toujours détectée).
+[[allowlists]]
+description = "EXPORT_TOKEN_SECRET jetable dev/test/CI (audit #249 §4.2)"
+condition = "AND"
+regexTarget = "line"
+regexes = [
+  '''(?i)EXPORT_TOKEN_SECRET''',
+  '''(?i)app\.export\.token-secret''',
+]
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''(^|/)\.github/workflows/ci\.yml$''',
+  '''(^|/)backend/src/test/resources/application-test\.properties$''',
+  '''(^|/)backend/src/test/java/.*/ExportTokenServiceTest\.java$''',
+]
+
+# --- 2. Faux positif de règle : littéral d'armure PEM dans un test.
+#
+# `JwtServiceRs256Test.keyMaterial_acceptsPemArmorAndLineBreaks` construit une chaîne
+# "-----BEGIN PRIVATE KEY-----\n" + <clé GÉNÉRÉE AU RUN> pour vérifier qu'un opérateur collant un
+# .pem entier n'obtient pas un boot cassé. Aucun matériel de clé n'est committé : `privateKeyBase64`
+# vient d'un `KeyPair` généré dans le test. C'est l'armure, pas la clé, que gitleaks voit.
+#
+# Triple restriction, chacune vérifiée empiriquement avant livraison :
+#   - `targetRules` : n'exclut que la règle `private-key`. Une clé d'API posée dans ce même
+#     fichier reste détectée (`generic-api-key`).
+#   - `paths` : ce seul fichier de test.
+#   - `regexes` + `condition = "AND"` : la ligne doit contenir le LITTÉRAL JAVA de l'armure,
+#     `"-----BEGIN PRIVATE KEY-----\n"` (guillemet + `\n` échappé). Sans ce 3e critère, l'exclusion
+#     couvrirait la règle `private-key` dans TOUT le fichier — donc une VRAIE clé privée collée ici
+#     passerait inaperçue. Testé : avec le critère, un bloc PEM authentique dans ce fichier est
+#     bien détecté ; sans lui, il ne l'était pas.
+[[allowlists]]
+description = "Armure PEM littérale, clé générée au run (JwtServiceRs256Test)"
+targetRules = ["private-key"]
+condition = "AND"
+regexTarget = "line"
+regexes = ['''"-----BEGIN PRIVATE KEY-----\\n"''']
+paths = ['''(^|/)backend/src/test/java/.*/JwtServiceRs256Test\.java$''']

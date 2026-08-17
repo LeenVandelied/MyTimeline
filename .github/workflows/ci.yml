@@ -10,6 +10,9 @@
 #   `e2e` a été ajouté après constat de 2 runs consécutifs 100% verts — un job E2E
 #   instable rendu requis bloque les merges légitimes.
 #   `flyway-smoke` (#356) tourne mais n'est PAS requis : trop peu d'historique.
+#   `secret-scan` (#362) tourne mais n'est PAS requis : introduit au sprint 60, à rendre requis
+#   après un premier run vert (c'est le job dont la mise en requis a le plus de valeur : sur un
+#   dépôt PUBLIC, un secret mergé est compromis à la seconde où il atterrit sur `dev`).
 #
 # AJOUTER un check requis (PATCH ciblé — ne touche QUE les status checks, laisse
 # intacts enforce_admins / reviews / restrictions, contrairement à un PUT global) :
@@ -534,6 +537,116 @@ jobs:
           severity: CRITICAL
           exit-code: "1"
           ignore-unfixed: true
+
+  # ---------------------------------------------------------------------------
+  # Secret-scan (#362) — empêche la RÉINTRODUCTION d'un secret dans le dépôt.
+  #
+  # POURQUOI CE JOB EXISTE. Le dépôt est PUBLIC. L'audit #249 (sprint 50,
+  # `docs/memory/audits/secret-exposure-audit.md`) a mesuré qu'un mot de passe DB et un secret JWT
+  # y ont été lisibles par n'importe qui pendant ~16 mois ; ils sont compromis sans réserve, et
+  # aucune purge d'historique n'y changera rien (§6 : forks et clones tiers). Jusqu'ici RIEN
+  # n'empêchait un futur commit de recommencer. C'est la recommandation R6 de l'audit.
+  #
+  # POURQUOI UN JOB DÉDIÉ, ET PAS UNE ÉTAPE DE `security`. Trois raisons, la dernière étant
+  # dirimante :
+  #   1. Signal. `security` mélange du BLOQUANT et de l'INFORMATIF (`continue-on-error` sur
+  #      l'audit dev+prod, dont la chaîne eslint est rouge de façon connue et non corrigeable —
+  #      cf. commentaire du job). Une détection de secret ne doit pas se lire dans ce bruit.
+  #   2. Nature. `security` audite des DÉPENDANCES (CVE amont, rien à corriger dans notre code) ;
+  #      ici c'est notre propre contenu, et l'action à prendre est immédiate.
+  #   3. `fetch-depth`. Ce scan a besoin de TOUT l'historique (`fetch-depth: 0`) ; `security` se
+  #      contente du checkout superficiel par défaut. Fusionner les deux ralentirait l'audit de
+  #      dépendances sans aucune contrepartie.
+  #
+  # POURQUOI LE BINAIRE ÉPINGLÉ, ET PAS `gitleaks/gitleaks-action@v2`. L'action officielle exige
+  # un `GITLEAKS_LICENSE` pour les comptes d'organisation. `LeenVandelied` est un compte
+  # personnel, donc elle FONCTIONNERAIT aujourd'hui — mais le dépôt n'a AUCUN secret Actions
+  # configuré (audit §5 : `gh secret list` vide, 0 environnement), et faire dépendre le garde-fou
+  # d'un secret qu'il faudrait provisionner le jour où le dépôt migre vers une organisation, c'est
+  # programmer sa propre panne. Le binaire épinglé + vérification SHA-256 ne dépend de rien.
+  #
+  # PORTÉE : tout l'historique atteignable depuis HEAD, sur PR ET sur push.
+  # Le critère de l'issue est « échouer si un secret est détecté DANS LE DIFF ». Sur un événement
+  # `pull_request`, actions/checkout place HEAD sur le commit de fusion : les commits de la PR sont
+  # donc DANS l'ensemble scanné — le critère est satisfait a fortiori, sans plomberie de plage de
+  # SHA (`base.sha..head.sha`) ni son mode d'échec silencieux quand un des deux bouts n'est pas
+  # atteignable. Le coût mesuré est négligeable : 766 commits / 11,73 Mo en 1,3 s. Le scan sur
+  # `push` vers dev/main tient le rôle du « scan périodique de l'historique » du 2e critère, à la
+  # cadence des merges et sans ajouter de déclencheur `schedule` (qui rejouerait AUSSI backend,
+  # frontend et e2e, soit ~20 min de runner par semaine pour rien).
+  # Conséquence à assumer : une détection non baselinée fait rougir TOUTES les PR, pas seulement
+  # celle qui l'introduit. C'est voulu — sur un dépôt public, un secret sur `dev` est déjà perdu.
+  #
+  # ⚠ `--redact=100` est OBLIGATOIRE, pas une préférence. Les logs de ce job sont PUBLICS comme le
+  # dépôt : sans redaction, gitleaks imprimerait la valeur détectée en clair dans la sortie CI et
+  # PUBLIERAIT lui-même le secret qu'il vient de trouver — en le rendant au passage indexable hors
+  # de git, donc survivant à toute purge. Le fichier, la ligne, la règle et le commit suffisent
+  # pour agir. Pour la même raison, aucun rapport n'est uploadé en artefact.
+  #
+  # EXCLUSIONS : `.gitleaks.toml` (durables, par chemin+nom de clé) et `.gitleaksignore`
+  # (empreintes épinglées à un commit, pour l'historique déjà exposé). Chaque entrée est adossée à
+  # un § de l'audit ; les deux fichiers portent la règle de maintenance en en-tête.
+  #
+  # CE QUE CE JOB N'ATTRAPE PAS (mesuré, cf. PIT-S58-004 : un garde-fou décrit mais fictif est pire
+  # que pas de garde-fou). gitleaks ne détecte PAS le `DB_PASSWORD` de l'audit §3.1 : 10 caractères
+  # alphabétiques purs, entropie trop basse pour la règle `generic-api-key`. Vérifié en rejouant le
+  # scan sur l'historique complet — sur les deux secrets historiques, seul le `jwt.secret` (hex 128)
+  # remonte. Ce job couvre les secrets à forte entropie et les préfixes connus (`xkeysib-`,
+  # `sk_live_`, `AKIA…`, clés privées PEM, JWT) ; il ne remplace pas la revue.
+  #
+  # Tourne en parallèle (aucun `needs:`) et n'active AUCUNE branch protection.
+  # `permissions: contents: read` hérité du niveau workflow (non élargi : un scan ne fait que lire).
+  # ---------------------------------------------------------------------------
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      # `fetch-depth: 0` : le défaut (1) ne donnerait qu'un seul commit à scanner — le job
+      # passerait au VERT sans avoir rien examiné. Ne pas le retirer.
+      - name: Checkout (historique complet)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Version ÉPINGLÉE + SHA-256 vérifié : c'est exactement la version avec laquelle les
+      # exclusions ont été calibrées en local. Un `latest` flottant changerait le jeu de règles
+      # sous nos pieds et ferait rougir la CI sur un commit qui ne touche à rien.
+      # `--fail-with-body` (curl) : sans lui, un 404 GitHub produirait un tarball HTML et une
+      # erreur de décompression illisible.
+      - name: Install gitleaks (version épinglée, checksum vérifié)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          set -euo pipefail
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSL --fail-with-body --retry 3 \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${tarball}" \
+            -o "$tarball"
+          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum --check --strict
+          tar -xzf "$tarball" gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          rm -f "$tarball" gitleaks
+          gitleaks version
+
+      # `gitleaks git` (et NON `gitleaks dir`) : le mode git ne voit que le contenu SUIVI par git.
+      # `dir` scanne le système de fichiers sans respecter `.gitignore` — mesuré en local, il
+      # remontait 20 faux positifs supplémentaires depuis `frontend/.next/`, `backend/target/` et
+      # `frontend/e2e/.auth/`, tous des artefacts de build/local jamais committés. Un job qui
+      # rougit pour du contenu non versionné est un job qu'on finit par désactiver.
+      #
+      # L'ÉCHEC EST LE DÉFAUT : gitleaks sort en code 1 dès la 1re détection, `set -euo pipefail`
+      # ne la rattrape pas, le job rougit. Aucun `continue-on-error` ici — c'est tout l'objet du job.
+      - name: Scan des secrets (historique atteignable depuis HEAD)
+        run: |
+          set -euo pipefail
+          gitleaks git \
+            --config .gitleaks.toml \
+            --redact=100 \
+            --no-banner \
+            --verbose \
+            .
 
   # ---------------------------------------------------------------------------
   # ai-env-packs — garde-fou de péremption des artefacts générés du Layer B.
