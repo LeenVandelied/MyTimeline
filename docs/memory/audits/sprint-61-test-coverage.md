@@ -34,7 +34,7 @@ suivre le filtre de vue). Il est couvert **deux fois** : test de non-régression
 
 | Suite | Résultat | Exit |
 |---|---|---|
-| Vitest frontend | **920 / 920** | 0 |
+| Vitest frontend | **937 / 937** (920 avant les correctifs de review, +17) | 0 |
 | `tsc --noEmit` | 0 erreur | 0 |
 | `eslint` | 0 erreur | 0 |
 | `next build` | OK | 0 |
@@ -92,3 +92,78 @@ actif (vérifié par le `404` sur `/api/test-support/...`, cf. runbook S47), COR
 - **Prettier n'est gaté par aucun job CI** : `sprint-42-events.spec.ts`, `popoverPicker.tsx` et
   `TimelineView.tsx` étaient déjà non conformes au HEAD. Le reformat complet a été **volontairement
   écarté** de ce sprint (239 lignes de bruit qui auraient noyé un correctif de 19 lignes).
+
+---
+
+## Phase 7 — review batch et correctifs (mise à jour finale)
+
+Reviewer : **0 CRITIQUE · 2 MAJEUR · 3 MINEUR · verdict NON-BLOQUANT**. Les deux majeurs ont été
+traités dans le sprint plutôt que reportés, parce que tous deux étaient vérifiables.
+
+### MAJEUR 1 — quota fictif dans la confirmation d'archivage → corrigé (`db079e1`)
+
+Le dialog annonçait « libérera d'autant ton quota d'événements » dans les 4 locales, alors que
+BR-EVE-011 est une anticipation : `PlanPolicy` est un no-op, aucun endpoint n'expose de plafond,
+aucune autre surface n'affiche de tier. Clause retirée, effet réel conservé.
+
+### MAJEUR 2 — contraste sous AA après grisage → corrigé (`ca3f02f`)
+
+`filter:grayscale(1)` ne préserve PAS le ratio de contraste dans la direction défavorable :
+`contrastInk` ne choisit que du noir ou du blanc, or ce sont des **points fixes** de `grayscale()`
+(seul le fond bouge) ; et le filtre pondère les canaux **gamma-encodés** quand la luminance WCAG
+linéarise d'abord — par convexité le gris obtenu est plus sombre. Encre blanche → contraste
+augmente ; **encre foncée → il diminue**. Le garde-fou `eventLabelReadableInside` ne connaissait que
+la couleur d'origine et ignorait `archived`.
+
+Correctif : `grayscaleHex` (réplique du filtre en gamma-encodé), `renderedEventColor(color, archived)`,
+`eventInkColor`, et `eventLabelReadableInside(color, archived)` — encre ET verdict calculés sur le
+**couple réellement rendu**, consommés par les 3 surfaces.
+
+Balayage mesuré : **8,6 % des couleurs passant AA échouaient après grisage → 1,5 % après correctif**,
+et ces 1,5 % déclenchent désormais le repli « libellé à l'extérieur ».
+
+#### Deux corrections de mesure à consigner
+
+1. **Le lead avait calculé avec du noir pur.** La charte utilise `INK_DARK = #0B0C0E`
+   (L = 0.00366), pas `#000000` : le point d'égalisation noir/blanc descend de 4.583 à 4.424.
+   Conséquence — `#0070F8`, l'exemple cité par le lead et par la review, **basculait déjà à
+   l'extérieur avant le correctif** (4.494 < 4.5) : il ne démontrait pas le défaut. Exemples
+   valides : `#0078F8` archivé (3.51:1 muet → 5.57:1) et `#008DFF` archivé (4.37 dedans → repli
+   déclenché). **Leçon : recalculer un seuil avec les constantes du dépôt avant de l'annoncer.**
+2. **Le briefing du lead affirmait à tort** que `EventPill`, `TimelineMobilePortrait` et
+   `TimelineMobileLandscape` partageaient le garde-fou. Vérifié sur `17c73f8` : **seul `EventPill`
+   appelait `eventLabelReadableInside`**, les vues mobiles n'avaient aucun repli. Corriger le seul
+   verdict aurait laissé 2 surfaces sur 3 à découvert — d'où le choix (accepté) de recalculer
+   l'encre sur la couleur rendue.
+
+### Résultats après correctifs
+
+| Suite | Résultat | Exit |
+|---|---|---|
+| Vitest frontend | **937 / 937** | 0 |
+| `tsc --noEmit` · `eslint` | 0 · 0 | 0 |
+| `npm run build` | OK (lancé après arrêt du serveur de dev) | 0 |
+| **E2E suite complète** | **174 passed / 0 failed / 8 skipped** | 0 |
+| Coverage-E2E | 10 testids, 0 sans spec | 0 |
+
+### MINEURS non traités → triage au `/sprint end`
+
+- `popoverPicker.tsx:36-46` — trigger `<div>` sans `role`/`tabIndex`/`onKeyDown`, non actionnable
+  au clavier. **Préexistant**, fichier seulement effleuré par ce diff. [XS]
+- `httpStatusOf` — 6e copie dans le dépôt. Seuil de tolérance dépassé, extraire `lib/http-status.ts`. [XS]
+- Aucun E2E ne couvre le **409 sur désarchivage** (BR-EVE-015), alors que `useSetEventArchived`
+  porte une logique dédiée (invalidation on 409). [S]
+- Bug i18n préexistant `deleteDialog` / `conflictDialog` (namespaces inexistants). [S]
+- **Suppression laissée active sur un événement archivé** — écart assumé par #230 vs le critère
+  « seul le désarchivage reste possible », **non arbitré par le dev**. [à trancher]
+
+### Réserves qui subsistent
+
+- **Aucune vérification en navigateur réel** : thème sombre, mobile, paysage jamais observés.
+- **La couleur réellement peinte par `grayscale(1)` n'a pas été mesurée en navigateur** :
+  l'hypothèse sRGB/gamma vient de la spec CSS Filter L1 §8. Si un navigateur filtrait en linéaire,
+  le fond peint resterait un gris pur (le correctif reste valide) mais les seuils exacts des tests
+  `#0078F8` / `#008DFF` bougeraient.
+- L'état `:hover` d'un archivé (`grayscale(1) brightness(1.04)`) n'a pas été analysé — il éclaircit
+  le gris et peut faire varier le ratio de quelques dixièmes.
+- **Backend non rejoué** (zéro fichier `backend/**` au diff ; le job CI requis le couvre).
