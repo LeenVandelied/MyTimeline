@@ -2792,7 +2792,7 @@ plusieurs de catégorie `tooling`.
 
 ---
 
-## Sprint 61 — 2026-08-17 (En cours)
+## Sprint 61 — 2026-08-17 (Terminé — merge PR #440 dans `dev`)
 
 **Objectif :** Événement archivé — sortir de l'impasse (l'archivage est aujourd'hui un aller sans
 retour côté interface).
@@ -2917,4 +2917,30 @@ régression** — #230 change le comportement du toggle, cassant une spec préex
 **Nouveaux pitfalls :** PIT-S61-001 à PIT-S61-007. **Décisions :** 4 (option A, verrou DOM vs RHF,
 a11y sur couleur rendue, pas de quota promis). **Pattern :** PAT-S61-001 (état de vue).
 
-**Status :** **En cours** — démarré le 2026-08-17, PR **#440** ouverte (`sprint/61` → `dev`), CI verte.
+### Follow-ups arbitrés (Phase 4 — triage interactif)
+
+7 follow-ups remontés (4 par les `done.md`, 3 par le reviewer). Arbitrage du dev : **4 créés, 0
+discardé**, 2 déjà traités en cours de sprint, 1 arbitrage produit tranché.
+
+  - Bug i18n `deleteDialog` / `conflictDialog` (namespaces inexistants) [S | frontend/i18n]
+    → issue **#441** (Sprint 62). ⚠ L'issue exige de **confirmer le rendu en navigateur d'abord** :
+    le défaut est établi par lecture de code, jamais constaté visuellement.
+  - E2E manquant sur le 409 de désarchivage (BR-EVE-015) [S | events] → issue **#442** (Sprint 62)
+  - Mutualiser `httpStatusOf`, 6 copies [XS | frontend] → issue **#443** (backlog)
+  - `popoverPicker` : trigger non actionnable au clavier + non conforme prettier [XS | frontend]
+    → issue **#444** (backlog)
+  - Commentaire périmé de `sprint-42-events.spec.ts` [XS] → **traité pendant le sprint** (`afdcfb5`)
+  - Les 2 MAJEUR du reviewer → **traités pendant le sprint** (`db079e1`, `ca3f02f`)
+  - Suppression active sur un événement archivé → **arbitrage dev : on la garde**. L'interdire
+    obligerait à désarchiver (donc à repasser dans les actifs) pour pouvoir supprimer. Le critère
+    d'acceptation de #230 est corrigé : le verrou porte sur l'**édition des champs**, pas sur les
+    actions de cycle de vie. Consigné dans `decisions.md`.
+
+Ratio discard 0/7 — aucun sur-signalement.
+
+**Issue sortie du sprint :** #67 (prérequis backend absent) → issue backend **#439** créée, #67
+détachée du milestone et commentée. Détail plus haut.
+
+**Status :** **Terminé** — PR **#440** (`sprint/61` → `dev`) mergée le 2026-08-17, milestone #62
+fermé. Titre et ligne `Status` volontairement redondants : `PIT-S56-006` montre que grepper l'un sans
+l'autre rate les entrées où les deux se contredisent.
