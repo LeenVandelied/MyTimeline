@@ -2789,3 +2789,70 @@ CI requis `ai-env-packs` rougit. Recette : classer chaque nouvelle entrée dans
 `.ai-env/tools/pit-classification.tsv`, puis `bash .ai-env/tools/gen-pit-packs.sh`, puis
 `--check` avant de pousser. Ce sprint apporte plusieurs `[MEMORY:pitfall]` à classer, dont
 plusieurs de catégorie `tooling`.
+
+---
+
+## Sprint 61 — 2026-08-17 (En cours)
+
+**Objectif :** Événement archivé — sortir de l'impasse (l'archivage est aujourd'hui un aller sans
+retour côté interface).
+**Milestone GitHub :** #62 (décalage +1 par rapport au numéro de sprint, cf. note S57 — ne pas
+« corriger » ce décalage.)
+**Branche :** `sprint/61`, créée depuis `origin/dev` @ `d5f60eb`.
+
+**Issues planifiées (2 après arbitrage) :** #307, #230.
+**Vagues :** V1 = #307 | V2 = #230 (séquentiel — les deux touchent le rendu des events archivés
+dans `ProductDetailView`).
+**Cohésion :** 1.00 (2/2 `epic:events`, pack `br-events`).
+**Migrations Flyway :** aucune.
+**Dépend de :** aucune.
+
+### Sprint jamais passé par `/sprint plan`
+
+Comme au S60. Le milestone #62 et les labels `sprint-61` existaient, mais **aucune entrée
+d'historique préalable et aucun `architect-plans.md`** — donc aucun mini-plan architecte. Les plans
+d'implémentation ont été écrits par le lead à partir des pistes techniques des issues et d'une
+vérification directe du code (Phase 0.5 faite à la main).
+
+### Arbitrages produit tranchés par le dev au démarrage (2026-08-17)
+
+Les deux issues du sprint étaient explicitement **en attente d'une décision produit** — elles ne
+pouvaient pas être briefées en l'état.
+
+- **#307 → Option A retenue.** Une vue/filtre « archivés » rend l'événement archivé atteignable,
+  ré-éditable et désarchivable. L'option B (archivage définitif assumé + renommage du bouton) est
+  écartée. Le titre du milestone #62 (« vue archives ») encodait déjà cette intention.
+- **#230 → trois comportements retenus** : confirmation à l'archivage mentionnant l'effet sur le
+  quota (BR-EVE-011), événement archivé **grisé** dans la frise plutôt que masqué (le style
+  `.mt-evt--archived` existe déjà dans `timeline.css:67`), et champs du formulaire désactivés
+  quand `archived=true`.
+
+Conséquence sur le découpage : #230 dépend de #307, puisque « grisé au lieu de masqué » réécrit le
+filtre que #307 est en train de transformer en état de vue. D'où la séquence V1 → V2 plutôt que du
+parallèle.
+
+### #67 sortie du sprint — le prérequis backend n'existait pas
+
+Planifiée comme `size:XS` (« lire un flag booléen et afficher un hint »), l'issue supposait que le
+flag `capped` était déjà renvoyé par l'API. Vérification faite :
+
+- `RecurrenceExpansion` (record domaine) porte bien `capped` et `MAX_OCCURRENCES = 4000`, et
+  `RecurrenceExpansionServiceImpl` le calcule correctement.
+- **Mais `RecurrenceExpansionService` n'est appelé par aucun contrôleur ni service applicatif** —
+  seul son propre test unitaire le référence. C'est du code orphelin : l'expansion n'est jamais
+  déclenchée sur un chemin HTTP.
+- Donc `seriesInfo` n'existe nulle part, `EventResponse` ne porte aucun champ de récurrence
+  calculée, et **il n'y a aucune réponse d'API où loger `capped`**.
+
+Livrer #67 supposait donc de trancher une décision de contrat d'API (`seriesInfo` dans
+`EventResponse` vs endpoint de prévisualisation dédié) sur un thème — la récurrence — étranger à
+celui du sprint. Décision du dev : **sortir #67 du milestone 61** et créer d'abord l'issue backend
+de câblage qui la débloque. L'estimation XS est caduque.
+
+**Leçon transposable :** une piste technique d'issue qui dit « le flag est fourni par l'issue 4.1 »
+n'est pas une preuve que 4.1 a été livrée. Un `grep` du symbole ne suffit pas non plus — ici le
+symbole existait, avec sa javadoc mentionnant même le consommateur `#67`. **Ce qui manquait, c'est
+un appelant** : le contrôle utile est `grep` des *appels* (`\.expand(`, nom du service injecté),
+pas de la déclaration.
+
+**Status :** **En cours** — démarré le 2026-08-17.
