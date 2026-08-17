@@ -296,7 +296,7 @@ des **obligations différées au premier déploiement**, pas des actions exécut
 | ~~R3~~ | ~~Remplacer `.env.example:26` par un placeholder explicitement marqué~~ | **SANS OBJET** — `JWT_SECRET` supprimé par #323 (`1758c0c`), cf. §4.1 | — |
 | R4 | Ajouter `BREVO_API_KEY` à `.env.example` (absent : le fichier liste `SPRING_PROFILES_ACTIVE`, `DB_USERNAME`, `DB_PASSWORD`, `POSTGRES_DB`, `JWT_PRIVATE_KEY`, `EXPORT_TOKEN_SECRET`, `NEXT_PUBLIC_API_URL`, `APP_CANONICAL_HOST`, `AUTH_JWT_PUBLIC_KEY` — énumération ré-ancrée à la revue S50 : `JWT_SECRET` n'y figure plus depuis #323) | divergence avec `application.properties.example` | follow-up |
 | ~~R5~~ | ~~Sortir le `jwt.secret` de `application-test.properties:28`~~ | **SANS OBJET** — la clé n'existe plus ; `jwt.private-key=` est vide et la paire de test est générée au run (#323), cf. §4.1 | — |
-| R6 | Poser un scan de secrets en CI (`gitleaks`/`trufflehog`) pour empêcher toute réintroduction | aucun garde-fou automatique aujourd'hui | follow-up |
+| ~~R6~~ | ~~Poser un scan de secrets en CI (`gitleaks`/`trufflehog`)~~ | **FAIT** — job `secret-scan` (#362, sprint 60), cf. §9 | ✅ #362 |
 | R7 | Exécuter la purge d'historique #112 **après** avoir acté que R1/R2 rendent les valeurs inutiles | la purge seule ne « décompromet » rien | dev |
 
 ---
@@ -307,3 +307,77 @@ des **obligations différées au premier déploiement**, pas des actions exécut
 - `docs/memory/devops/external-services-inventory.md` — inventaire + **§3quater** procédure par service
 - `docs/memory/sprints/sprint-29/issue-112-done.md` — runbook de purge d'historique
 - Issue #249 (rotation), #323 (RS256, vague 2 S50), #250 (inventaire services), #112 (purge)
+- Issue **#362** (sprint 60) — application de R6, cf. §9
+
+---
+
+## 9. Garde-fou CI contre la réintroduction — R6 appliquée (#362, sprint 60)
+
+### 9.1 Ce qui a été posé
+
+Job **`secret-scan`** dans `.github/workflows/ci.yml`, sur `pull_request` **et** `push` (dev, main).
+
+| Choix | Décision | Pourquoi |
+|---|---|---|
+| Outil | **gitleaks** 8.30.1 | R6 laissait le choix ouvert. Retenu pour son mécanisme d'exclusion à **deux étages** (`.gitleaks.toml` durable / `.gitleaksignore` épinglé au commit), indispensable ici : l'historique exposé de §3 est **immuable** et doit être baseliné sans blanchir les fichiers concernés pour l'avenir. |
+| Intégration | **binaire épinglé + SHA-256 vérifié**, pas `gitleaks/gitleaks-action@v2` | L'action exige `GITLEAKS_LICENSE` pour les comptes **d'organisation**. `LeenVandelied` est un compte personnel, donc elle marcherait *aujourd'hui* — mais §5 établit **0 secret Actions / 0 environnement** : adosser le garde-fou à un secret à provisionner le jour d'une migration en organisation, c'est programmer sa panne. |
+| Emplacement | **job dédié**, pas une étape de `security` | `security` mêle bloquant et `continue-on-error` (chaîne eslint rouge, non corrigeable) ; et ce scan exige `fetch-depth: 0` là où `security` se contente du checkout superficiel. |
+| Portée | historique **atteignable depuis HEAD** | Contient les commits de la PR (checkout sur le commit de fusion) → le critère « échouer sur le diff » est satisfait *a fortiori*, sans plomberie `base.sha..head.sha`. Coût mesuré : **766 commits / 11,73 Mo en ~1 s**. Le scan sur `push` tient le rôle du scan périodique, à la cadence des merges, sans déclencheur `schedule` (qui rejouerait aussi backend/frontend/e2e). |
+| Redaction | `--redact=100` **obligatoire** | Les logs CI d'un dépôt public sont publics : sans redaction, le job **publierait** en clair le secret qu'il vient de détecter, hors de git donc survivant à toute purge (#112). Aucun rapport n'est uploadé en artefact, pour le même motif. |
+
+### 9.2 Exclusions (critère d'acceptation 4)
+
+Chaque exclusion est adossée à un § de cet audit ; les deux fichiers portent leur règle de
+maintenance en en-tête. **Aucune n'a été ajoutée pour « faire passer la CI ».**
+
+- **`.gitleaks.toml`** — exclusions **durables**, valables pour les occurrences futures :
+  1. `EXPORT_TOKEN_SECRET` / `app.export.token-secret` dans `.env.example`, `ci.yml`,
+     `application-test.properties`, `ExportTokenServiceTest.java` → **§4.2** (« accepté, pas de
+     suite » : valeurs jetables auto-documentées, impossibles à promouvoir en prod par oubli).
+     `condition = "AND"` (chemin **et** nom de clé) : la même valeur ailleurs reste détectée.
+  2. Règle `private-key` dans `JwtServiceRs256Test.java`, **et seulement sur la ligne portant le
+     littéral Java `"-----BEGIN PRIVATE KEY-----\n"`** → faux positif : le test enrobe une clé
+     **générée au run** pour vérifier qu'un `.pem` collé ne casse pas le boot. Le 3ᵉ critère
+     (`regexes`) est ce qui empêche l'exclusion de couvrir tout le fichier.
+  3. Fixture `SECRET` d'`ExportTokenServiceTest`, ancré sur le marqueur `test-only-insecure` de la
+     valeur (en base64) **et** sur ce seul fichier. La constante ne s'appelant pas
+     `EXPORT_TOKEN_SECRET`, l'exclusion 1 — qui filtre par nom de clé — ne la couvrait pas.
+- **`.gitleaksignore`** — **11** empreintes `commit:fichier:règle:ligne`, **épinglées à des commits
+  immuables** : le `jwt.secret` de §3.2 (2), les `JWT_SECRET` hors code source de §4.1 (4), les
+  fixtures `jwt.secret=` de tests d'intégration (5). Aucun de ces fichiers n'est blanchi pour
+  l'avenir : une réintroduction produit une empreinte différente et fait rougir la CI. **Toutes ces
+  occurrences sont absentes du HEAD**, vérifié.
+
+  > **Correction apportée par l'audit sécurité de fin de sprint.** Une 12ᵉ empreinte visait le
+  > fixture `SECRET` d'`ExportTokenServiceTest`, **encore présent au HEAD** — ce que la règle en
+  > tête de `.gitleaksignore` interdit explicitement. Le défaut était discret plutôt que bruyant :
+  > la ligne n'ayant jamais été retouchée depuis son commit d'introduction, l'empreinte restait
+  > valide indéfiniment, donc le masquage devenait **permanent** au lieu de rougir au premier
+  > reformatage. Remplacée par l'exclusion durable 3 ci-dessus, vérifiée dans les deux sens : la
+  > même valeur dans `application-prod.properties` reste détectée, et une clé Stripe placée dans
+  > `ExportTokenServiceTest.java` reste détectée.
+
+### 9.3 Limite mesurée — ce que le job N'attrape PAS
+
+⚠️ À lire avant de considérer §3 comme « couvert ». Le scan **ne détecte pas** le `DB_PASSWORD` de
+**§3.1** : 10 caractères alphabétiques purs, entropie trop basse pour `generic-api-key`. Vérifié en
+rejouant le scan sur l'historique complet — des deux secrets de §1, seul le `jwt.secret` (hex 128)
+remonte. Le job couvre les secrets à forte entropie et les préfixes connus (`xkeysib-`, `sk_live_`,
+`AKIA…`, armures PEM, JWT) ; **un mot de passe court ressemblant à un mot du dictionnaire lui
+échappe**. Ce n'est pas un substitut à la revue, et §6 (« ce que cet audit ne couvre pas ») reste
+valable.
+
+### 9.4 Vérifications exécutées (2026-08-17)
+
+| Vérification | Résultat |
+|---|---|
+| Historique complet, config + baseline | **766 commits, 0 détection, exit 0** |
+| Historique complet, **sans** exclusions | 21 détections, exit 1 (dont 16 purement historiques) |
+| `gitleaks dir` (mode fichiers) | écarté : **+20 faux positifs**, il ignore `.gitignore` (`frontend/.next/`, `backend/target/`, `frontend/e2e/.auth/`) → le job utilise `gitleaks git`, qui ne voit que le contenu suivi |
+| Détection réelle d'un secret planté | **confirmée** : clé AWS et clé Stripe → détectées ; secret au bon nom mais **hors** chemin allowlisté → détecté ; autre nom de clé **dans** un chemin allowlisté → détecté ; vraie armure PEM dans le fichier de test → détectée |
+| Non-régression des 3 fichiers livrés | `.gitleaks.toml`, `.gitleaksignore`, `ci.yml` ne s'auto-détectent pas (exit 0) |
+| Syntaxe YAML de `ci.yml` | valide (7 jobs ; `permissions`, `concurrency` inchangés) |
+
+**Reste à faire (mainteneur)** : rendre `secret-scan` requis sur `dev` après un premier run vert
+(cf. en-tête de `ci.yml` pour le `PATCH` ciblé). Non fait ici — un check rendu requis avant son
+premier run vert bloquerait toutes les fusions, y compris la PR qui l'introduit.

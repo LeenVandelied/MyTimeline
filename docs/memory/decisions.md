@@ -461,3 +461,28 @@ Retenu : **ramener le h1** (`text-xl md:text-2xl lg:text-3xl` = 35/45/57), `typo
 Motif décisif : créer 2 tokens pour 1 seul usage est disproportionné, tandis que supprimer ce site rend
 l'invariant « never Tailwind-default » de l'en-tête du fichier **vrai à l'échelle du dépôt**. Cf.
 [[PIT-S59-003]].
+
+## Sprint 60 — gitleaks plutôt que trufflehog, et binaire épinglé plutôt qu'action officielle
+
+`docs/memory/audits/secret-exposure-audit.md` §R6 laissait les deux outils ouverts. Retenu :
+**gitleaks 8.30.1**. Motif décisif : son **mécanisme d'exclusion à deux étages** —
+`.gitleaksignore` (empreinte incluant le SHA du commit, donc ne couvre qu'un commit immuable) pour
+l'historique déjà exposé, et `.gitleaks.toml` (scopé chemin + nom de clé) pour les valeurs jetables
+encore au HEAD. C'est exactement ce qu'exige la situation : l'historique compromis doit être
+baseliné **sans** blanchir les fichiers pour l'avenir.
+
+**Binaire téléchargé et vérifié par SHA-256**, pas `gitleaks/gitleaks-action@v2` : l'action exige
+`GITLEAKS_LICENSE` pour les organisations, et ce dépôt n'a **aucun secret GitHub Actions**. Une
+solution dépendant d'un secret aurait été inapplicable ici.
+
+**Job dédié, pas une étape de `security`** : ce dernier mêle du bloquant et du `continue-on-error`,
+et le scan exige `fetch-depth: 0`. Garder le signal lisible séparément était tout l'objet du sprint.
+
+## Sprint 60 — un garde-fou de diagnostic ne doit jamais devenir une cause d'échec
+
+Le préflight `node_modules` de `scripts/test-quiet.sh` (#308) **ne bloque pas sur son propre
+échec** : si la sonde Node sort en erreur, il avertit sur `stderr` et laisse Vitest tourner. Il
+n'échoue (exit 3) que sur un diagnostic **positif** — répertoire absent, vide, ou paquet non
+résolvable. Motif : un outil ajouté pour rendre un échec lisible qui deviendrait lui-même une
+nouvelle source de rouge serait désactivé au premier faux positif, et emporterait le bénéfice avec
+lui.

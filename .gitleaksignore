@@ -1,0 +1,45 @@
+# Empreintes gitleaks épinglées — historique DÉJÀ EXPOSÉ (#362, sprint 60).
+#
+# Format : commit:fichier:règle:ligne. Chaque ligne désigne UN commit précis et immuable ;
+# aucune n'accorde de blanc-seing à un fichier. Un secret réintroduit dans ces mêmes fichiers
+# produira une empreinte DIFFÉRENTE (nouveau commit) et fera rougir la CI.
+#
+# POURQUOI CES LIGNES EXISTENT. Le dépôt est PUBLIC. L'audit #249 (sprint 50,
+# `docs/memory/audits/secret-exposure-audit.md` §3.1/§3.2) a établi que ces valeurs ont été
+# lisibles ~16 mois : elles sont COMPROMISES SANS RÉSERVE et le resteront après toute purge
+# d'historique (#112, cf. §6 « les forks et clones tiers »). Les baseliner ne les protège pas
+# — c'est déjà perdu. Sans ce fichier, le scan d'historique rougirait à CHAQUE run sur des
+# constats connus et le job serait ignoré puis désactivé, ce qui est exactement le mode
+# d'échec que #362 veut éviter.
+#
+# NE PAS ajouter ici une occurrence encore présente au HEAD : son empreinte changerait au
+# prochain commit touchant le fichier. Les valeurs jetables assumées vont dans `.gitleaks.toml`.
+# NE PAS ajouter de ligne sans un § d'audit correspondant : cf. `.gitleaks.toml` en-tête.
+
+# --- `jwt.secret` (HS256, hex 128) — audit §3.2. EXPOSÉ 164 commits, 2025-03-14 -> 2026-06-25.
+# Retiré du HEAD par `ff5dca3` (#34) puis le mécanisme entier supprimé par `1758c0c` (#323, RS256).
+53175dafb8a0d9195c41031f903f42b1761b074d:backend/src/main/resources/application.properties:generic-api-key:12
+5c73971d33ffa5fa3c9841798e3b2710f84c08c8:backend/src/main/resources/application.properties:generic-api-key:12
+
+# --- `JWT_SECRET` historique hors code source — audit §4.1, les trois emplacements ont disparu
+# avec `1758c0c`. Aucun de ces fichiers n'est allowlisté durablement : seuls ces commits le sont.
+da929b6668cf9d56c5e05b3ef3aaffa1539fe482:.env.example:generic-api-key:26
+952533aa48e3b787a9ef4ac0fa48731fcf0bc3f6:.github/workflows/ci.yml:generic-api-key:158
+da929b6668cf9d56c5e05b3ef3aaffa1539fe482:backend/src/test/resources/application-test.properties:generic-api-key:28
+b0c76801f15f89691072bc025b07154053857d4b:docs/memory/sprints/sprint-47/e2e-local-runbook.md:generic-api-key:28
+
+# --- Fixtures `jwt.secret=` de tests d'intégration (@TestPropertySource), base64 de
+# "0123456789abcdef…" — matériel de test, jamais un secret réel, et la propriété `jwt.secret`
+# n'existe plus depuis #323. Historique uniquement : absent du HEAD.
+00dc7ca5480987e27e8cab6b045dd5b4bb66004f:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java:generic-api-key:44
+e5c8ffdf26d05d8933dfe9de9fd3fe32b889f0e9:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java:generic-api-key:55
+0d1d739532b2bacd0201ad9a3b22155aff282be9:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java:generic-api-key:61
+68b1bc478db36b17b8dfbeea943b293aef26d90f:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java:generic-api-key:40
+d3a776ffee0ec45537e5ea29dc948082dcadd10c:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:generic-api-key:60
+
+# --- RETIRÉ (audit sécurité S60). Le fixture `SECRET` d'`ExportTokenServiceTest` est TOUJOURS
+# présent au HEAD (`ExportTokenServiceTest.java:40`) : l'épingler ici violait la règle énoncée
+# 25 lignes plus haut, et la violait dans le sens le plus discret — la ligne n'ayant jamais été
+# retouchée, l'empreinte restait valide indéfiniment et le masquage devenait permanent au lieu
+# de rougir. Déplacé en exclusion DURABLE dans `.gitleaks.toml` (bloc 3), ancrée sur le marqueur
+# `test-only-insecure` de la valeur elle-même et sur ce seul fichier.

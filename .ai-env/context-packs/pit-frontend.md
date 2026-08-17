@@ -376,6 +376,92 @@ règle injectée n'était simplement pas dans le CSS servi. `touch` et rechargem
 un redémarrage du serveur dev** a compilé la règle. Prévention : avant de conclure « le défaut injecté n'est
 pas vu », `curl` le chunk CSS servi et vérifier que l'injection y figure. (Corollaire de [[PIT-S52-002]].)
 
+
+## PIT-S60-001 — Une allowlist de scanner combine ses critères en OU : elle blanchit plus large qu'elle n'en a l'air
+Un bloc `[[allowlists]]` gitleaks avec `paths` **et** `regexes` mais **sans `condition = "AND"`** blanchit la
+valeur **partout dans le dépôt**, pas seulement dans le chemin visé. La lecture du bloc suggère l'inverse : les
+deux critères juxtaposés se lisent comme un ET. Trouvé à l'écriture de `.gitleaks.toml` (#362), la première
+version blanchissait `EXPORT_TOKEN_SECRET` y compris dans un fichier de prod. **Prévention : toute allowlist de
+scanner se teste dans les DEUX sens** — le cas attendu est tu, ET un cas voisin (même valeur hors chemin, autre
+secret dans le chemin) reste détecté. Rejouer la variante buggée pour voir le trou est ce qui l'a prouvé.
+
+
+## PIT-S60-002 — Une empreinte de baseline épinglée sur une ligne encore au HEAD masque à VIE, sans jamais rougir
+`.gitleaksignore` (format `commit:fichier:règle:ligne`) épinglait le fixture `SECRET` d'`ExportTokenServiceTest`,
+**toujours présent au HEAD**. La règle écrite en tête du fichier l'interdit — au motif que l'empreinte
+changerait au prochain commit touchant le fichier. Le mode d'échec réel est **l'inverse et bien plus discret** :
+la ligne n'ayant jamais été retouchée depuis son commit d'introduction, l'empreinte reste valide indéfiniment,
+donc le masquage devient **permanent** au lieu de rougir. Trouvé par l'audit sécurité de fin de sprint, pas à
+l'écriture. Remède : exclusion **durable** ancrée sur un marqueur de la VALEUR (`test-only-insecure`) + le
+chemin, `condition = "AND"` ; `.gitleaksignore` réservé aux occurrences **absentes du HEAD**, à vérifier une
+par une. Cf. [[PIT-S60-001]].
+
+
+## PIT-S60-003 — `gitleaks dir` ignore `.gitignore` : un gate CI doit être en mode `git`
+Mesuré : `gitleaks dir` scanne 214 Mo et remonte 25 détections, dont **20 dans `frontend/.next/`,
+`backend/target/`, `frontend/e2e/.auth/`** — des artefacts de build non versionnés. `gitleaks git` ne voit que
+le contenu suivi (21 détections). Un job bâti sur `dir` rougit donc pour des fichiers qui ne sont pas dans le
+dépôt, et sera désactivé après deux faux positifs. **Mode `git` pour tout gate CI.**
+
+
+## PIT-S60-004 — Un scan vert AVANT le commit ne prouve rien sur l'état APRÈS (le scanner peut se détecter lui-même)
+Un fichier de baseline listant des empreintes `commit:fichier:generic-api-key:ligne` aligne un SHA 40-hex à
+forte entropie et le mot « api-key » sur la même ligne : le scanner peut se déclencher **sur sa propre
+configuration**. Vérifié négatif ici, mais le piège général demeure — un scan pré-commit ne voit pas les
+fichiers non encore committés. **Rejouer le scan dans un dépôt jetable contenant les fichiers committés** avant
+de conclure. Corollaire : `--baseline-path` avec rapport JSON committé est un anti-pattern sur dépôt public —
+le rapport **contient les valeurs en clair**.
+
+
+## PIT-S60-005 — Un sous-agent qui casse l'environnement pour reproduire un cas dégradé peut caler avant de le restaurer
+Sprint 60 #308 : l'agent a renommé `frontend/node_modules/eslint-plugin-storybook` en
+`.eslint-plugin-storybook.S60-308-bak` pour prouver son garde-fou, puis a calé (watchdog 600 s) **avant la
+restauration**. Le worktree est resté dans l'état dégradé — et **`git status` était propre**, `node_modules`
+n'étant pas suivi. Un lead qui vérifie l'état d'un sprint sur le seul `git status` ne le voit pas ; l'échec
+suivant accuserait le code. **Après tout arrêt anormal d'un sous-agent, vérifier l'ENVIRONNEMENT** (résolution
+des paquets, processus laissés, ports tenus), pas seulement l'arbre git. Ici :
+`node -e "require.resolve('eslint-plugin-storybook')"`. Le répertoire de sauvegarde se retrouve par
+`find node_modules -maxdepth 2 -iname '*<paquet>*'` — le préfixe `.` le cache d'un `ls` ordinaire.
+
+
+## PIT-S60-006 — `npm audit fix` échoue tant qu'un `overrides` auto-référentiel existe
+`frontend/package.json` déclare `overrides: { "postcss": "$postcss" }` ; l'arbre virtuel d'`audit fix` ne résout
+pas la référence → `npm error Unable to resolve reference $postcss`, sur **toute** invocation. L'issue #422
+affirmait pourtant que `npm audit fix` était « confirmé suffisant ». Solution retenue : `npm update <transitif>`
+quand la version corrigée tient dans la plage semver du parent (lire la plage **dans le lock** avant). **Ne pas
+glisser vers `--force`** : il accepte les bumps majeurs. Prévention : ne jamais écrire dans une issue qu'une
+commande est confirmée sans l'avoir lancée.
+
+
+## PIT-S60-007 — `npm run typecheck` rouge sur une route FANTÔME : `.next/types` d'un build antérieur
+`tsconfig.json:26` inclut `.next/types/**/*.ts`, donc `tsc` type-checke les artefacts d'un build précédent —
+au S60, une erreur citant `app/[locale]/settings/page.js`, route disparue au passage en route group. Solution :
+rebuild puis re-typecheck. **Prévention : une erreur `tsc` qui ne cite QUE `.next/**` n'est pas imputable à son
+propre diff.**
+
+
+## PIT-S60-008 — Le squatteur de port peut être un AUTRE worktree DU MÊME projet
+Variante de [[PIT-S56-004]] : `:3100` était tenu par un `next-server` de
+`worktrees/new-feature-2347-14cb9a/frontend` (up 21 h), rendant **500 sur `/fr/register`**. Le réflexe « c'est
+un autre projet du poste » ne suffit donc pas — même nom de projet, même app, mais **code d'une autre branche**.
+`lsof -a -p <pid> -d cwd` identifie le propriétaire réel. Prendre un port libre plutôt que tuer le process d'une
+autre session.
+
+
+## PIT-S60-009 — `test-quiet.sh frontend` ne lance QUE Vitest, contrairement à ce que disent le README et les briefings
+`run_frontend` exécute un seul `npm test --silent` : ni `build`, ni `typecheck`, ni `lint`. La description
+« vitest + build + typecheck + lint » circulait dans les briefings de sprint et le README. **Anti-pattern :
+conclure « frontend vert » sur ce seul scope.** Corrigé au S60 (README §Tests + piège 4). Voisin de
+[[PIT-S58-004]] : une garantie décrite mais inexistante dissuade d'en écrire une vraie.
+
+
+## PIT-S60-010 — Un commentaire de test peut annoncer une isolation que le test ne respecte pas
+`console-error-guard.test.ts:20-21` annonce que son lint de fixtures reste « isolé des plugins next/storybook ».
+Vrai pour le volet 2 (config minimale), **faux pour le volet 1**, qui appelle
+`new ESLint().calculateConfigForFile(...)` — donc charge `eslint.config.mjs` et **tous** ses imports. C'est ce
+qui rend ce fichier, et lui seul, sensible à un `node_modules` incomplet. Le commentaire a probablement orienté
+#308 vers la déclaration de dépendance plutôt que vers le cwd. Cf. [[PIT-S41-004]], [[PIT-S53-006]].
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
