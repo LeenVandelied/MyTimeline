@@ -29,6 +29,35 @@ import type { CSSProperties } from 'react'
  * `/_not-found` DYNAMIQUE (mesuré : la ligne `○ /_not-found` sortirait du décompte
  * « Generating static pages (52/52) ») et `params` n'existe pas ici.
  *
+ * ⚠ THÈME — RECUL ASSUMÉ PAR RAPPORT À L'AVANT-#413, NON CORRIGÉ. Ce `<html>`
+ * est rendu HORS `ThemeProvider` (`app/[locale]/layout.tsx:66`), donc aucune
+ * classe `.dark` n'est posée : **cet écran rend TOUJOURS en thème clair**, y
+ * compris pour une personne dont toute l'application est en sombre. Avant #413,
+ * `<html>` vivait dans le layout racine et héritait de la `.dark` de
+ * next-themes. C'est le même effet que celui déjà consigné dans
+ * `app/global-error.tsx` (« hors ThemeProvider […] l'écran rend en thème
+ * clair »), mais il n'y était documenté que là — d'où cette note.
+ *
+ * POURQUOI CE N'EST PAS CORRIGÉ ICI, et pas par « lire le cookie de thème » :
+ * **il n'existe aucun cookie de thème.** next-themes est monté sans `storageKey`
+ * personnalisé ni `cookie`, donc en `localStorage` (clé `theme`), illisible au
+ * prérendu comme au premier rendu. Les voies restantes coûtent plus que le
+ * défaut :
+ *  - `headers()` / cookie : rendrait `/_not-found` DYNAMIQUE et sortirait la
+ *    ligne `○ /_not-found` du décompte « Generating static pages (52/52) » —
+ *    exactement ce que le commentaire du `<title>` interdit de « améliorer » ;
+ *  - relire `localStorage` dans le `useEffect` ci-dessous : techniquement
+ *    possible et sans mismatch (même schéma que `lang`), mais cela REDÉCLARE
+ *    ici la résolution de next-themes (clé de stockage, valeur `system`,
+ *    `matchMedia`, `enableSystem`) — une seconde source de vérité qui divergera
+ *    au premier changement d'option du provider (cf. `PIT-S56-003`) ;
+ *  - un fallback `@media (prefers-color-scheme: dark)` : le DS Graphite
+ *    n'écoute que `.dark` / `[data-theme="dark"]`, et un tel fallback
+ *    CONTREDIRAIT un choix explicite « clair » sur un poste en sombre.
+ * Sur un écran de dernier recours déjà best-effort sur `lang` et sur le
+ * `<title>`, le thème suit la même règle. À rouvrir si next-themes est un jour
+ * configuré sur un cookie : la lecture deviendrait alors triviale ET unique.
+ *
  * ⚠ Différence assumée avec `global-error` : la locale est posée dans un
  * `useEffect`, pas pendant le rendu. `/_not-found` est PRÉRENDU au build
  * (statique, servi tel quel pour les 4 locales) : résoudre `window.location`

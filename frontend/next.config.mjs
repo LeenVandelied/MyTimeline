@@ -40,6 +40,20 @@ const nextConfig = {
   // `headers()` — cela bascule toute l'app en rendu dynamique et annule le
   // `generateStaticParams()` de `[locale]/layout.tsx` (perte du SSG, 52 pages).
   // Instable par nature : à re-vérifier à chaque bump de Next (15.5.22 ici).
+  //
+  // ⚠ `package.json` déclare `"next": "^15.2.4"`, une PLAGE : un `npm i` peut
+  // installer une version où ce drapeau expérimental a été renommé ou retiré.
+  // Next ignore alors silencieusement la clé `experimental` inconnue — pas
+  // d'erreur, pas de warning bloquant — et `/_not-found` redevient un document
+  // SANS `<html>` (`NEXT_MISSING_ROOT_TAGS`).
+  // LE FILET EST UN E2E, PAS L'ÉPINGLAGE : `frontend/e2e/document-lang.spec.ts`
+  // (describe « #413 — 404 des URL non matchées ») fait un GET RÉEL sur
+  // `/fr/nope`, `/en/nope`, `/es/nope`, `/de/nope` et assert, sur le HTML SERVI
+  // avant hydratation : statut 404, balise `<html …lang="…">` présente,
+  // `data-testid="global-not-found-screen"` présent, et `<title>` NON VIDE égal
+  // à « Ma Timeline ». La disparition du drapeau fait donc rougir 4 tests du
+  // job CI `e2e` (check requis). Ne pas supprimer ces tests en croyant qu'ils
+  // ne couvrent que #413 : ils sont AUSSI la sentinelle de ce drapeau.
   experimental: {
     globalNotFound: true,
   },
