@@ -131,6 +131,7 @@
       "week": "recurring weekly",
       "month": "recurring monthly",
       "year": "recurring yearly"
-    }
+    },
+    "archived": "archived"
   }
 }

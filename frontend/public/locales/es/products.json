@@ -38,7 +38,8 @@
         "endDate": "Fecha de fin",
         "recurrenceEndDate": "Fin de recurrencia",
         "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha.",
-        "archived": "Archivado"
+        "archived": "Archivado",
+        "archivedLockNote": "Este evento está archivado: sus campos son de solo lectura y ya no cuenta entre tus eventos activos. Desactiva «Archivado» más abajo para volver a editarlo."
       },
       "types": {
         "duration": "Duración",
@@ -161,6 +162,18 @@
     "timelineEmpty": "No hay eventos para mostrar de este producto.",
     "historyTitle": "Historial de eventos",
     "historyEmpty": "No hay eventos registrados.",
+    "archivedEmpty": "No hay eventos archivados.",
+    "archivedBadge": "Archivado",
+    "unarchive": "Desarchivar",
+    "unarchiving": "Desarchivando…",
+    "unarchiveError": "No se pudo desarchivar. Inténtalo de nuevo.",
+    "unarchiveConflict": "Este evento se modificó en otro lugar. Los datos se han actualizado, inténtalo de nuevo.",
+    "filter": {
+      "label": "Filtrar eventos",
+      "active": "Activos",
+      "archived": "Archivados",
+      "all": "Todos"
+    },
     "fields": {
       "name": "Nombre",
       "category": "Categoría",
@@ -183,5 +196,13 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "openEdit": "Editar {name}"
+  },
+  "archiveDialog": {
+    "title": "¿Archivar este evento?",
+    "quotaEffect": "Una vez archivado, este evento dejará de contar entre tus eventos activos.",
+    "reversible": "No se elimina nada: lo encontrarás en la pestaña «Archivados» del producto, donde podrás desarchivarlo.",
+    "readOnly": "Mientras esté archivado, sus campos pasan a solo lectura: solo se podrá desarchivar.",
+    "cancel": "Cancelar",
+    "confirm": "Archivar"
   }
 }

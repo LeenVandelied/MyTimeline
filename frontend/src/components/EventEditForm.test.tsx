@@ -81,9 +81,9 @@ describe('EventEditForm — pré-remplissage & preview', () => {
     // #315 — l'aperçu est désormais une MINI-FRISE : la couleur porte la barre
     // d'occurrence (`--mt-evt`, API du DS), plus le conteneur.
     await waitFor(() =>
-      expect(
-        screen.getByTestId('event-form-preview-bar').style.getPropertyValue('--mt-evt'),
-      ).toBe('#3B82F6'),
+      expect(screen.getByTestId('event-form-preview-bar').style.getPropertyValue('--mt-evt')).toBe(
+        '#3B82F6',
+      ),
     )
     expect(screen.getByTestId('event-form-preview')).toBeInTheDocument()
   })
@@ -143,11 +143,21 @@ describe('EventEditForm — submitState (4 états)', () => {
 
   it("conflict : le dialog n'est PAS monté pour idle/error", () => {
     const { rerender } = render(
-      <EventEditForm defaultValues={baseDefaults} onSubmit={vi.fn()} onCancel={vi.fn()} submitState="error" />,
+      <EventEditForm
+        defaultValues={baseDefaults}
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+        submitState="error"
+      />,
     )
     expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
     rerender(
-      <EventEditForm defaultValues={baseDefaults} onSubmit={vi.fn()} onCancel={vi.fn()} submitState="idle" />,
+      <EventEditForm
+        defaultValues={baseDefaults}
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+        submitState="idle"
+      />,
     )
     expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
   })
@@ -313,16 +323,151 @@ describe('EventEditForm — archivage (BR-EVE-013)', () => {
     setup()
     const toggle = screen.getByTestId('event-form-archived-toggle')
     expect(toggle).not.toBeChecked()
+    // #230 — l'archivage passe désormais par une confirmation (effet quota).
     await userEvent.click(toggle)
-    expect(toggle).toBeChecked()
+    await userEvent.click(await screen.findByTestId('event-archive-confirm-button'))
+    await waitFor(() => expect(toggle).toBeChecked())
   })
 
   it('la soumission (PATCH) transmet archived après toggle', async () => {
     const { onSubmit } = setup()
     await userEvent.click(screen.getByTestId('event-form-archived-toggle'))
+    await userEvent.click(await screen.findByTestId('event-archive-confirm-button'))
     await userEvent.click(screen.getByTestId('event-form-submit'))
     await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
     expect(onSubmit.mock.calls[0][0]).toMatchObject({ archived: true })
+  })
+})
+
+/* ===========================================================================
+   #230 — UX de l'archivage : confirmation (effet quota BR-EVE-011) + verrou
+   d'édition (BR-EVE-013). Les tests ci-dessous couvrent les volets 1 et 3 du
+   critère d'acceptation ; le volet 2 (grisage dans la frise) est couvert par
+   `timeline/EventPill.test.tsx` et `timeline/lib-a11y.test.ts`.
+   =========================================================================== */
+describe('EventEditForm — #230 confirmation d’archivage (BR-EVE-011)', () => {
+  it('cocher « archivé » n’archive PAS directement : une confirmation s’ouvre', async () => {
+    setup()
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    await userEvent.click(toggle)
+    expect(await screen.findByTestId('event-archive-confirm')).toBeInTheDocument()
+    // Le toggle reste décoché tant que rien n'est confirmé (checkbox contrôlée).
+    expect(toggle).not.toBeChecked()
+  })
+
+  it('la confirmation énonce l’EFFET sur les events actifs + la réversibilité + la lecture seule', async () => {
+    setup()
+    await userEvent.click(screen.getByTestId('event-form-archived-toggle'))
+    const dialog = await screen.findByTestId('event-archive-confirm')
+    // BR-EVE-011 : l'effet quota est porté par la DESCRIPTION du dialog, que Radix
+    // câble en `aria-describedby` → annoncé à l'ouverture.
+    expect(dialog).toHaveTextContent('products.archiveDialog.quotaEffect')
+    expect(screen.getByTestId('event-archive-confirm-reversible')).toHaveTextContent(
+      'products.archiveDialog.reversible',
+    )
+    expect(screen.getByTestId('event-archive-confirm-readonly')).toHaveTextContent(
+      'products.archiveDialog.readOnly',
+    )
+  })
+
+  it('annuler laisse l’événement ACTIF et le formulaire éditable', async () => {
+    setup()
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    await userEvent.click(toggle)
+    await userEvent.click(await screen.findByTestId('event-archive-cancel'))
+    await waitFor(() =>
+      expect(screen.queryByTestId('event-archive-confirm')).not.toBeInTheDocument(),
+    )
+    expect(toggle).not.toBeChecked()
+    expect(screen.getByTestId('event-form-title-input')).not.toBeDisabled()
+  })
+
+  it('DÉSARCHIVER ne demande AUCUNE confirmation (sortie du verrou immédiate)', async () => {
+    setup({ defaultValues: { ...baseDefaults, archived: true } })
+    const toggle = screen.getByTestId('event-form-archived-toggle')
+    expect(toggle).toBeChecked()
+    await userEvent.click(toggle)
+    await waitFor(() => expect(toggle).not.toBeChecked())
+    expect(screen.queryByTestId('event-archive-confirm')).not.toBeInTheDocument()
+  })
+
+  it('mode create : ni toggle ni confirmation (archived est PATCH-only, BR-EVE-013)', () => {
+    setup({ mode: 'create' })
+    expect(screen.queryByTestId('event-form-archived-toggle')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('event-archive-confirm')).not.toBeInTheDocument()
+  })
+})
+
+describe('EventEditForm — #230 verrou d’édition d’un archivé (BR-EVE-013)', () => {
+  const LOCKED_FIELDS = [
+    'event-form-title-input',
+    'event-form-duration-value',
+    'event-form-start-date',
+    'event-form-end-date',
+    'event-form-color-input',
+    'event-form-recurring-toggle',
+  ]
+
+  it('archived=true : les champs d’édition sont désactivés', () => {
+    setup({ defaultValues: { ...baseDefaults, archived: true } })
+    for (const testId of LOCKED_FIELDS) {
+      expect(screen.getByTestId(testId), `${testId} doit être désactivé`).toBeDisabled()
+    }
+    expect(screen.getByTestId('event-form-type-trigger')).toBeDisabled()
+  })
+
+  it('archived=true : le toggle d’archivage et le submit RESTENT actifs (désarchivage possible)', () => {
+    setup({ defaultValues: { ...baseDefaults, archived: true } })
+    expect(screen.getByTestId('event-form-archived-toggle')).not.toBeDisabled()
+    expect(screen.getByTestId('event-form-submit')).not.toBeDisabled()
+  })
+
+  it('archived=true : une explication TEXTUELLE accompagne le grisage (a11y)', () => {
+    setup({ defaultValues: { ...baseDefaults, archived: true } })
+    const note = screen.getByTestId('event-form-archived-lock-note')
+    expect(note).toHaveTextContent('products.add.event.form.archivedLockNote')
+    // Le champ désactivé pointe l'explication : un grisage muet n'est pas suffisant.
+    expect(screen.getByTestId('event-form-title-input')).toHaveAttribute(
+      'aria-describedby',
+      note.getAttribute('id'),
+    )
+  })
+
+  it('archived=false : aucun champ désactivé, aucune note (non-régression)', () => {
+    setup()
+    for (const testId of LOCKED_FIELDS) {
+      expect(screen.getByTestId(testId)).not.toBeDisabled()
+    }
+    expect(screen.queryByTestId('event-form-archived-lock-note')).not.toBeInTheDocument()
+  })
+
+  it('le verrou suit le toggle DANS la session : confirmer archive → champs verrouillés', async () => {
+    setup()
+    expect(screen.getByTestId('event-form-title-input')).not.toBeDisabled()
+    await userEvent.click(screen.getByTestId('event-form-archived-toggle'))
+    await userEvent.click(await screen.findByTestId('event-archive-confirm-button'))
+    await waitFor(() => expect(screen.getByTestId('event-form-title-input')).toBeDisabled())
+    expect(screen.getByTestId('event-form-archived-lock-note')).toBeInTheDocument()
+  })
+
+  it('le verrou NE VIDE PAS les valeurs : le PATCH de désarchivage reste complet (BR-EVE-016/006)', async () => {
+    // Piège évité : l'option `disabled` de RHF met la valeur à `undefined`. Le payload
+    // partirait avec des dates vidées → garde backend endDate>=startDate sur un état
+    // fusionné incohérent. Ici `disabled` est posé sur le NŒUD DOM seulement.
+    const { onSubmit } = setup({ defaultValues: { ...baseDefaults, archived: true } })
+    await userEvent.click(screen.getByTestId('event-form-archived-toggle'))
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      archived: false,
+      title: 'Mon événement',
+      type: 'duration',
+      durationValue: 3,
+      durationUnit: 'days',
+      startDate: '2026-05-01',
+      endDate: '2026-05-04',
+      color: '#3B82F6',
+    })
   })
 })
 

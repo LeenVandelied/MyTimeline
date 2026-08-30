@@ -942,3 +942,49 @@ Vrai pour le volet 2 (config minimale), **faux pour le volet 1**, qui appelle
 `new ESLint().calculateConfigForFile(...)` — donc charge `eslint.config.mjs` et **tous** ses imports. C'est ce
 qui rend ce fichier, et lui seul, sensible à un `node_modules` incomplet. Le commentaire a probablement orienté
 #308 vers la déclaration de dépendance plutôt que vers le cwd. Cf. [[PIT-S41-004]], [[PIT-S53-006]].
+
+## PIT-S61-001 — Vitest : un mock de module PARTAGÉ + `mockReset()` fait passer un rejet traité pour un échec
+Un mock de module partagé rendant une promesse rejetée, combiné à `mockReset()`/`mockClear()` en `beforeEach`,
+fait rapporter la valeur de rejet comme un échec de test (`Serialized Error`, message `undefined`) **alors que le
+rejet EST traité**. Établi par bisection (#307) : passe sans `beforeEach`, échoue avec `mockReset`, `mockClear`
+ou une promesse pré-`catch`ée. Remède : recréer un `vi.fn()` par test. Variante de [[PIT-S11-002]].
+
+## PIT-S61-002 — Désactiver des champs révèle les valeurs manquantes du pré-remplissage
+`mapToFullCalendarEvent` jetait `durationValue`/`durationUnit` : un formulaire ouvert depuis la frise naissait
+**invalide** sur `durationUnit` alors que `type='duration'`. Bug **silencieux** tant que le submit était
+seulement refusé, **bloquant** dès que #230 a verrouillé les champs. Avant de poser un `disabled`, vérifier que
+le schéma reste satisfiable avec les valeurs **réellement pré-remplies**, pas celles du fixture de test.
+
+## PIT-S61-003 — `filter:grayscale()` ne préserve PAS le ratio de contraste WCAG
+Contredit le commentaire posé par #230. `contrastInk` ne choisit que du noir ou du blanc, or **ce sont des points
+fixes de `grayscale()`** : l'encre ne bouge pas, seul le fond bouge — et il s'**assombrit** (le filtre pondère les
+canaux gamma-encodés, la luminance WCAG linéarise d'abord ; par convexité le gris obtenu a une luminance
+inférieure). Encre claire → contraste augmente ; **encre foncée → il diminue**. Mesuré : 8,6 % des couleurs
+passant AA échouaient après grisage. Toute décision d'a11y doit porter sur le **couple rendu** (fond + encre),
+jamais sur la couleur source : exposer un `renderedColor(state)` unique consommé par l'encre ET par le verdict.
+
+## PIT-S61-004 — Ne jamais annoncer un seuil de contraste sans les constantes du dépôt
+`INK_DARK` vaut **`#0B0C0E`** (L = 0.00366), pas `#000000` : le point d'égalisation noir/blanc descend de 4.583 à
+4.424. Le lead ET le reviewer ont cité `#0070F8` comme cas cassant — calculé avec du noir pur. Recalculé avec la
+constante réelle, cette couleur **basculait déjà** avant correctif (4.494 < 4.5) : l'exemple ne démontrait rien.
+Le phénomène était réel, l'exemplaire faux. Recalculer avec les constantes du code avant d'annoncer un ratio.
+
+## PIT-S61-005 — Le check coverage-E2E est vert quand les specs sont seulement CITÉES
+Au S61 il affichait « 10 testids ajoutés, 0 sans spec » alors que **les 5 specs du sprint n'avaient jamais été
+exécutées** et que 2 échouaient. Il vérifie qu'un `data-testid` apparaît sous `frontend/e2e/`, il ne lance rien.
+Combiné à 920 Vitest verts et un build OK, l'illusion est convaincante. Un `RECOMMAND_TEST_RUNNER` se traite en
+**exécutant**, jamais en constatant. Famille [[PIT-S48-002]] (CI verte ≠ page correcte).
+
+## PIT-S61-006 — « le flag est fourni par l'issue N » n'est pas une preuve : grepper les APPELANTS
+Issue #67, planifiée XS : `RecurrenceExpansion.capped` existait, `MAX_OCCURRENCES = 4000` aussi, le service le
+calculait, et la javadoc citait même son consommateur `#67`. Mais **`RecurrenceExpansionService` n'avait aucun
+appelant** dans `backend/src/main` — seul son test unitaire le référençait. Code orphelin : aucune réponse d'API
+où loger le flag. Un `grep` de la déclaration validait l'issue à tort ; c'est le `grep` des **appels**
+(`\.methode(`, service injecté, champ présent dans le DTO de réponse) qui la disqualifie. Sortie du sprint → #439.
+
+## PIT-S61-007 — `npm run dev` (turbopack) infère un mauvais workspace root en worktree, et TOUT casse
+Le script force `--turbopack`, qui choisit un **autre worktree** quand plusieurs lockfiles coexistent : toutes les
+pages rendent 500 (`ENOENT app-build-manifest.json`), `auth.setup.ts` casse, **0 spec ne s'exécute** — et le
+message d'erreur ne dit rien de la cause. Un agent test-runner en a conclu « E2E impossibles sans modifier le
+dépôt ». Contournement réel, sans modification : `rtk proxy npx next dev -p 3100` (webpack). Voisin de
+[[PIT-S60-008]] (le squatteur de port peut être un autre worktree du même projet).

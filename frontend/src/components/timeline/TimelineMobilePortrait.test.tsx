@@ -29,7 +29,12 @@ const EVENTS: FullCalendarEvent[] = [
     allDay: true,
     resourceId: 'p1',
     color: '#3B62D4',
-    extendedProps: { productId: 'p1', productName: 'Lait bio', category: 'Frais', type: 'duration' },
+    extendedProps: {
+      productId: 'p1',
+      productName: 'Lait bio',
+      category: 'Frais',
+      type: 'duration',
+    },
   },
   {
     id: 'e2',
@@ -39,7 +44,12 @@ const EVENTS: FullCalendarEvent[] = [
     allDay: true,
     resourceId: 'p2',
     color: '#4FA459',
-    extendedProps: { productId: 'p2', productName: 'Pain', category: 'Boulangerie', type: 'single' },
+    extendedProps: {
+      productId: 'p2',
+      productName: 'Pain',
+      category: 'Boulangerie',
+      type: 'single',
+    },
   },
 ]
 
@@ -76,6 +86,29 @@ describe('TimelineMobilePortrait', () => {
     expect(events[0]).toHaveAttribute('data-event-title', 'Péremption lait longue durée à tronquer')
     // Le titre complet reste dans le DOM (tronqué visuellement en CSS, lisible au tap).
     expect(events[0]).toHaveTextContent('Péremption lait longue durée à tronquer')
+  })
+
+  // #230 — le grisage d'un archivé doit exister sur les TROIS surfaces de frise, pas
+  // seulement sur `EventPill` (desktop). On le prouve par un RENDU, pas par un grep
+  // du nom de classe dans la source (PIT-S54-002).
+  it('#230 — un event archivé est rendu GRISÉ (BR-EVE-011/013), pas masqué', () => {
+    renderPortrait({
+      events: [
+        {
+          ...EVENTS[0],
+          extendedProps: { ...EVENTS[0].extendedProps, archived: true },
+        },
+        EVENTS[1],
+      ],
+    })
+    const events = screen.getAllByTestId('timeline-event')
+    // Toujours 2 blocs : l'archivage ne fait pas disparaître l'event de la frise.
+    expect(events).toHaveLength(2)
+    expect(events[0]).toHaveAttribute('data-archived', 'true')
+    expect(events[0]).toHaveClass('mt-tlm__evt--archived')
+    // Opacité cantonnée au décoratif : la barre (qui porte le titre) ne l'a pas.
+    expect(events[0]).not.toHaveClass('mt-evt--archived')
+    expect(events[1]).not.toHaveAttribute('data-archived')
   })
 
   it('affiche le nom du produit dans chaque lane', () => {

@@ -1,6 +1,6 @@
 import React from 'react'
-import { contrastInk } from '@/lib/color'
-import { eventLabelReadableInside } from './lib'
+import { cn } from '@/lib/utils'
+import { eventInkColor, eventLabelReadableInside } from './lib'
 import { statusToVar, type PositionedEvent } from './zoom'
 
 /**
@@ -65,17 +65,32 @@ export const EventPill: React.FC<EventPillProps> = ({
 }) => {
   const statusVar = statusToVar(event.status)
   const bg = event.color || 'var(--color-accent)'
+  /**
+   * #230 (BR-EVE-011/013) — un événement ARCHIVÉ n'est plus « actif » : il est GRISÉ
+   * dans la frise, pas masqué (le masquage est le rôle du filtre de vue #307, en
+   * AMONT). La désaturation est portée par le DS (`.mt-tlv__evt--archived`, sans
+   * opacité pour ne pas faire chuter le contraste du titre) ; l'état est aussi
+   * annoncé vocalement via `ariaLabel` (`buildEventAriaLabel`), donc pas véhiculé
+   * par la seule couleur. `data-archived` est un CROCHET D'ASSERTION (unit + E2E) :
+   * un `data-testid` ici polluerait les compteurs `timeline-event` des autres
+   * surfaces (PIT-S46-001).
+   */
+  const archived = event.extendedProps?.archived === true
   // #81 point 6 — si l'encre calculée ne passe pas AA À L'INTÉRIEUR de la barre,
   // on masque le titre dedans (aria-hidden, décoratif) et on le répète dehors.
-  const readableInside = eventLabelReadableInside(event.color)
+  // #230 (correction review S61) — le calcul porte sur la couleur RENDUE : pour
+  // un archivé, le DS désature la barre, donc encre ET verdict se calculent sur
+  // le gris effectivement peint, jamais sur la couleur d'origine disparue.
+  const readableInside = eventLabelReadableInside(event.color, archived)
   return (
     <>
       <button
         type="button"
         ref={pillRef}
-        className="mt-tlv__evt"
+        className={cn('mt-tlv__evt', archived && 'mt-tlv__evt--archived')}
         data-testid="timeline-event"
         data-event-title={event.title}
+        data-archived={archived ? 'true' : undefined}
         data-evt-nav={navKey}
         aria-label={ariaLabel}
         tabIndex={tabIndex}
@@ -87,11 +102,16 @@ export const EventPill: React.FC<EventPillProps> = ({
           ['--mt-evt' as string]: bg,
           ['--mt-evt-status' as string]: statusVar,
           // BR-EVE-009 : encre lisible calculée (contraste WCAG), plus de `#fff` hardcodé.
-          ['--mt-evt-ink' as string]: contrastInk(event.color),
+          // #230 : sur la couleur RENDUE (désaturée si archivé) — sinon l'encre
+          // décrit un fond qui n'est plus à l'écran.
+          ['--mt-evt-ink' as string]: eventInkColor(event.color, archived),
         }}
       >
+        {/* #230 — `.mt-evt--archived` (DS, opacity .45 + grayscale .5) RÉUTILISÉE
+            telle quelle, mais sur ce seul élément DÉCORATIF (`aria-hidden`) : posée
+            sur la barre, son opacité ferait passer le titre sous AA (décision #307). */}
         <span
-          className="mt-tlv__evt-dot"
+          className={cn('mt-tlv__evt-dot', archived && 'mt-evt--archived')}
           style={{ background: statusVar }}
           aria-hidden="true"
         />

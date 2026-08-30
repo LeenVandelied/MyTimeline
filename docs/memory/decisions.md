@@ -486,3 +486,45 @@ n'échoue (exit 3) que sur un diagnostic **positif** — répertoire absent, vid
 résolvable. Motif : un outil ajouté pour rendre un échec lisible qui deviendrait lui-même une
 nouvelle source de rouge serait désactivé au premier faux positif, et emporterait le bénéfice avec
 lui.
+
+## Sprint 61 — un événement archivé reste atteignable (option A, #307)
+
+Le dev a tranché : plutôt qu'acter l'archivage comme définitif côté interface (option B, écartée), la vue détail
+produit expose un **état de vue** `'active' | 'archived' | 'all'` en remplacement du filtre `!archived` codé en
+dur. En vue « archivés » l'événement revient dans la frise, donc `TimelineEditHost` le rouvre **pré-rempli** sans
+qu'on touche ni à la frise ni au formulaire ; le désarchivage vit dans l'historique (PATCH minimal
+`{archived, version}`, 409 déterministe). Le compteur d'actifs (BR-EVE-011) reste calculé sur `!archived`
+**indépendamment du filtre** — c'était le risque de régression principal, couvert par un test dédié et un E2E.
+
+## Sprint 61 — le verrou de champs passe par `disabled` DOM, jamais par l'option RHF (#230)
+
+L'option `disabled` de react-hook-form met la valeur à `undefined`, ce qui **viderait les dates du payload PATCH**
+et ferait échouer les gardes BR-EVE-006/016. Le verrou est donc posé sur le nœud DOM, avec une note
+`role="note"` liée en `aria-describedby`. Toggle et submit restent actifs : freiner le désarchivage enfermerait
+l'utilisateur dans l'état archivé.
+
+## Sprint 61 — les décisions d'accessibilité portent sur la couleur RENDUE, pas la couleur source
+
+Corrige la décision initiale de #230 (« `grayscale` préserve le contraste »), fausse — cf. [[PIT-S61-003]].
+`grayscaleHex` réplique le filtre CSS en gamma-encodé ; `renderedEventColor(color, archived)` donne le fond
+réellement peint ; l'encre **et** le garde-fou `eventLabelReadableInside` sont calculés sur ce couple, et
+consommés par les 3 surfaces de frise (desktop + mobile portrait + paysage — les deux dernières n'avaient
+**aucun** repli auparavant). Résultat mesuré : 8,6 % de couleurs en échec AA après grisage ramenées à 1,5 %, qui
+déclenchent désormais le repli « libellé à l'extérieur ».
+
+## Sprint 61 — aucun texte d'interface ne promet un quota qui n'existe pas
+
+La confirmation d'archivage annonçait « libérera d'autant ton quota d'événements » dans les 4 locales. BR-EVE-011
+est une **anticipation** : `PlanPolicy.canCreateEvent` est un no-op, aucun endpoint n'expose de plafond, aucune
+autre surface n'affiche de tier. Règle retenue : formuler l'**effet** vérifiable (« ne comptera plus parmi tes
+événements actifs ») et ne jamais évoquer une limite tant qu'elle n'est pas réellement appliquée et exposée.
+
+## Sprint 61 — la suppression reste possible sur un événement archivé (arbitrage dev, clôture S61)
+
+Le critère d'acceptation de #230 disait « seul le désarchivage reste possible » quand `archived=true`.
+#230 a livré le verrou de champs mais a **laissé la suppression active**, en signalant l'écart sans
+l'arbitrer. Arbitrage du dev à la clôture : **on garde la suppression active**. L'interdire
+empêcherait purement et simplement de supprimer un événement archivé — l'utilisateur serait obligé de
+le désarchiver d'abord, donc de le faire repasser dans ses événements actifs, pour pouvoir s'en
+débarrasser. Le critère d'acceptation est donc corrigé : le verrou porte sur l'**édition** des champs,
+pas sur les actions de cycle de vie (désarchiver, supprimer).

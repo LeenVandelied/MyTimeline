@@ -131,6 +131,7 @@
       "week": "se repite cada semana",
       "month": "se repite cada mes",
       "year": "se repite cada año"
-    }
+    },
+    "archived": "archivado"
   }
 }

@@ -38,7 +38,8 @@
         "endDate": "End date",
         "recurrenceEndDate": "Recurrence end",
         "recurrenceEndHint": "Optional — the recurrence will be capped at this date.",
-        "archived": "Archived"
+        "archived": "Archived",
+        "archivedLockNote": "This event is archived: its fields are read-only and it no longer counts towards your active events. Turn “Archived” off below to edit it again."
       },
       "types": {
         "duration": "Duration",
@@ -161,6 +162,18 @@
     "timelineEmpty": "No events to display for this product.",
     "historyTitle": "Event history",
     "historyEmpty": "No events recorded.",
+    "archivedEmpty": "No archived events.",
+    "archivedBadge": "Archived",
+    "unarchive": "Unarchive",
+    "unarchiving": "Unarchiving…",
+    "unarchiveError": "Unarchiving failed. Try again.",
+    "unarchiveConflict": "This event was changed elsewhere. The data has been refreshed, try again.",
+    "filter": {
+      "label": "Filter events",
+      "active": "Active",
+      "archived": "Archived",
+      "all": "All"
+    },
     "fields": {
       "name": "Name",
       "category": "Category",
@@ -183,5 +196,13 @@
     "delete": "Delete",
     "edit": "Edit",
     "openEdit": "Edit {name}"
+  },
+  "archiveDialog": {
+    "title": "Archive this event?",
+    "quotaEffect": "Once archived, this event no longer counts towards your active events.",
+    "reversible": "Nothing is deleted: you will find it again in the product’s “Archived” tab, where you can unarchive it.",
+    "readOnly": "While it is archived, its fields become read-only — only unarchiving remains possible.",
+    "cancel": "Cancel",
+    "confirm": "Archive"
   }
 }

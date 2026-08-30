@@ -131,6 +131,7 @@
       "week": "wöchentlich wiederkehrend",
       "month": "monatlich wiederkehrend",
       "year": "jährlich wiederkehrend"
-    }
+    },
+    "archived": "archiviert"
   }
 }

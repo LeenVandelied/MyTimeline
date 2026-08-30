@@ -117,6 +117,16 @@ export type FullCalendarEvent = {
     // pour pré-remplir le toggle d'édition. AJOUT frontend : contrat Zod/DTO
     // (`eventSchema.archived`) inchangé, on ne fait que ne plus le JETER au mapping.
     archived?: boolean
+    // #230 — durée remontée au view-model, MÊME motif que `archived`/`version` :
+    // ne plus JETER des champs qu'`eventSchema` porte déjà (aucun changement de
+    // contrat Zod/DTO). SANS eux, `TimelineEditHost` pré-remplissait `durationUnit`
+    // à `undefined` alors que `type` valait `'duration'` → le refine BR-EVE-004/006
+    // du schéma d'édition rendait le formulaire NON SOUMISSIBLE tant que l'unité
+    // n'était pas re-saisie à la main. Devenu BLOQUANT avec le verrou #230 : sur un
+    // event archivé les champs sont en lecture seule, l'unité ne PEUT plus être
+    // re-saisie, donc le désarchiver depuis la frise serait impossible.
+    durationValue?: number | null
+    durationUnit?: DurationUnit | null
     // #absorb (BR-EVE-015) — version optimiste propagée au view-model pour la threader
     // dans le PATCH d'édition (409 déterministe). Le formulaire la renvoie telle quelle.
     version?: number | null
@@ -172,6 +182,10 @@ export const mapToFullCalendarEvent = (
       recurrenceUnit: event.recurrenceUnit,
       // #188 — propage `archived` pour pré-remplir le toggle d'édition (BR-EVE-013).
       archived: event.archived,
+      // #230 — propage la durée : sans elle, le formulaire ouvert depuis la frise
+      // naît invalide sur `durationUnit` (BR-EVE-004/006) et refuse le submit.
+      durationValue: event.durationValue,
+      durationUnit: event.durationUnit,
       // #absorb — propage `version` pour armer le 409 déterministe au PATCH (BR-EVE-015).
       version: event.version,
     },

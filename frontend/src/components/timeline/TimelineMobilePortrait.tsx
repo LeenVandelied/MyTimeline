@@ -4,8 +4,8 @@ import React, { useMemo } from 'react'
 import { Minus, MoreHorizontal, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
-import { textOn } from '@/lib/color'
-import { buildEventAriaLabel, Resource } from './lib'
+import { cn } from '@/lib/utils'
+import { buildEventAriaLabel, eventInkColor, Resource } from './lib'
 import { Minimap } from './Minimap'
 import { TimelineBottomSheet } from './TimelineBottomSheet'
 import { TimelineActionSheet } from './TimelineActionSheet'
@@ -229,7 +229,16 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                         </span>
                         {laneEvents.map((event) => {
                           const color = event.color || 'var(--color-accent)'
-                          const ink = event.color ? textOn(event.color) : 'var(--color-accent-ink)'
+                          // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
+                          // Même traitement que la frise desktop (`EventPill`).
+                          const archived = event.extendedProps?.archived === true
+                          // #230 (correction review S61) — encre calculée sur la
+                          // couleur RENDUE : le DS désature la barre archivée, donc
+                          // l'encre doit suivre le gris peint (cf. `eventInkColor`),
+                          // sans quoi une encre noire figée tombe sous AA.
+                          const ink = event.color
+                            ? eventInkColor(event.color, archived)
+                            : 'var(--color-accent-ink)'
                           return (
                             <div
                               key={event.id}
@@ -238,9 +247,10 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                             >
                               <button
                                 type="button"
-                                className="mt-tlm__evt"
+                                className={cn('mt-tlm__evt', archived && 'mt-tlm__evt--archived')}
                                 data-testid="timeline-event"
                                 data-event-title={event.title}
+                                data-archived={archived ? 'true' : undefined}
                                 aria-label={buildEventAriaLabel(event, locale, t)}
                                 onClick={gestures.onEvtClick(event)}
                                 onPointerDown={gestures.onEvtPointerDown(event)}
@@ -254,8 +264,11 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                   ['--mt-evt-status' as string]: statusToVar(event.status),
                                 }}
                               >
+                                {/* #230 — `.mt-evt--archived` (opacity .45) réutilisée
+                                    sur le seul élément DÉCORATIF : sur la barre elle
+                                    ferait passer le titre sous AA (décision #307). */}
                                 <span
-                                  className="mt-tlm__evt-dot"
+                                  className={cn('mt-tlm__evt-dot', archived && 'mt-evt--archived')}
                                   style={{ background: statusToVar(event.status) }}
                                   aria-hidden="true"
                                 />

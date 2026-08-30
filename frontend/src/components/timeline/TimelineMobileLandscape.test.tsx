@@ -29,7 +29,12 @@ const EVENTS: FullCalendarEvent[] = [
     allDay: true,
     resourceId: 'p1',
     color: '#3B62D4',
-    extendedProps: { productId: 'p1', productName: 'Lait bio', category: 'Frais', type: 'duration' },
+    extendedProps: {
+      productId: 'p1',
+      productName: 'Lait bio',
+      category: 'Frais',
+      type: 'duration',
+    },
   },
   {
     id: 'e2',
@@ -39,7 +44,12 @@ const EVENTS: FullCalendarEvent[] = [
     allDay: true,
     resourceId: 'p2',
     color: '#4FA459',
-    extendedProps: { productId: 'p2', productName: 'Pain', category: 'Boulangerie', type: 'single' },
+    extendedProps: {
+      productId: 'p2',
+      productName: 'Pain',
+      category: 'Boulangerie',
+      type: 'single',
+    },
   },
 ]
 
@@ -73,7 +83,11 @@ function mockMatchMedia(initial: (query: string) => boolean): MatchMediaControll
   }> = []
 
   window.matchMedia = vi.fn().mockImplementation((query: string) => {
-    const entry = { query, matches: matcher(query), listeners: new Set<(e: MediaQueryListEvent) => void>() }
+    const entry = {
+      query,
+      matches: matcher(query),
+      listeners: new Set<(e: MediaQueryListEvent) => void>(),
+    }
     lists.push(entry)
     return {
       get matches() {
@@ -81,8 +95,10 @@ function mockMatchMedia(initial: (query: string) => boolean): MatchMediaControll
       },
       media: query,
       onchange: null,
-      addEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) => entry.listeners.add(cb),
-      removeEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) => entry.listeners.delete(cb),
+      addEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) =>
+        entry.listeners.add(cb),
+      removeEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) =>
+        entry.listeners.delete(cb),
       addListener: (cb: (e: MediaQueryListEvent) => void) => entry.listeners.add(cb),
       removeListener: (cb: (e: MediaQueryListEvent) => void) => entry.listeners.delete(cb),
       dispatchEvent: vi.fn(),
@@ -145,6 +161,23 @@ describe('TimelineMobileLandscape', () => {
     const events = screen.getAllByTestId('timeline-event')
     expect(events[0]).toHaveAttribute('data-event-title', 'Péremption lait longue durée à tronquer')
     expect(events[0]).toHaveTextContent('Péremption lait longue durée à tronquer')
+  })
+
+  // #230 — troisième surface de frise. Prouvé par un RENDU (PIT-S54-002 : un grep de
+  // classe n'atteste ni usage ni montage).
+  it('#230 — un event archivé est rendu GRISÉ en paysage (BR-EVE-011/013)', () => {
+    renderLandscape({
+      events: [
+        { ...EVENTS[0], extendedProps: { ...EVENTS[0].extendedProps, archived: true } },
+        EVENTS[1],
+      ],
+    })
+    const events = screen.getAllByTestId('timeline-event')
+    expect(events).toHaveLength(2)
+    expect(events[0]).toHaveAttribute('data-archived', 'true')
+    expect(events[0]).toHaveClass('mt-tlm__evt--archived')
+    expect(events[0]).not.toHaveClass('mt-evt--archived')
+    expect(events[1]).not.toHaveAttribute('data-archived')
   })
 
   it('ouvre un DRAWER LATÉRAL (pas de bottom sheet) au tap, fermable via close', async () => {

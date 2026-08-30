@@ -2789,3 +2789,158 @@ CI requis `ai-env-packs` rougit. Recette : classer chaque nouvelle entrée dans
 `.ai-env/tools/pit-classification.tsv`, puis `bash .ai-env/tools/gen-pit-packs.sh`, puis
 `--check` avant de pousser. Ce sprint apporte plusieurs `[MEMORY:pitfall]` à classer, dont
 plusieurs de catégorie `tooling`.
+
+---
+
+## Sprint 61 — 2026-08-17 (Terminé — merge PR #440 dans `dev`)
+
+**Objectif :** Événement archivé — sortir de l'impasse (l'archivage est aujourd'hui un aller sans
+retour côté interface).
+**Milestone GitHub :** #62 (décalage +1 par rapport au numéro de sprint, cf. note S57 — ne pas
+« corriger » ce décalage.)
+**Branche :** `sprint/61`, créée depuis `origin/dev` @ `d5f60eb`.
+
+**Issues planifiées (2 après arbitrage) :** #307, #230.
+**Vagues :** V1 = #307 | V2 = #230 (séquentiel — les deux touchent le rendu des events archivés
+dans `ProductDetailView`).
+**Cohésion :** 1.00 (2/2 `epic:events`, pack `br-events`).
+**Migrations Flyway :** aucune.
+**Dépend de :** aucune.
+
+### Sprint jamais passé par `/sprint plan`
+
+Comme au S60. Le milestone #62 et les labels `sprint-61` existaient, mais **aucune entrée
+d'historique préalable et aucun `architect-plans.md`** — donc aucun mini-plan architecte. Les plans
+d'implémentation ont été écrits par le lead à partir des pistes techniques des issues et d'une
+vérification directe du code (Phase 0.5 faite à la main).
+
+### Arbitrages produit tranchés par le dev au démarrage (2026-08-17)
+
+Les deux issues du sprint étaient explicitement **en attente d'une décision produit** — elles ne
+pouvaient pas être briefées en l'état.
+
+- **#307 → Option A retenue.** Une vue/filtre « archivés » rend l'événement archivé atteignable,
+  ré-éditable et désarchivable. L'option B (archivage définitif assumé + renommage du bouton) est
+  écartée. Le titre du milestone #62 (« vue archives ») encodait déjà cette intention.
+- **#230 → trois comportements retenus** : confirmation à l'archivage mentionnant l'effet sur le
+  quota (BR-EVE-011), événement archivé **grisé** dans la frise plutôt que masqué (le style
+  `.mt-evt--archived` existe déjà dans `timeline.css:67`), et champs du formulaire désactivés
+  quand `archived=true`.
+
+Conséquence sur le découpage : #230 dépend de #307, puisque « grisé au lieu de masqué » réécrit le
+filtre que #307 est en train de transformer en état de vue. D'où la séquence V1 → V2 plutôt que du
+parallèle.
+
+### #67 sortie du sprint — le prérequis backend n'existait pas
+
+Planifiée comme `size:XS` (« lire un flag booléen et afficher un hint »), l'issue supposait que le
+flag `capped` était déjà renvoyé par l'API. Vérification faite :
+
+- `RecurrenceExpansion` (record domaine) porte bien `capped` et `MAX_OCCURRENCES = 4000`, et
+  `RecurrenceExpansionServiceImpl` le calcule correctement.
+- **Mais `RecurrenceExpansionService` n'est appelé par aucun contrôleur ni service applicatif** —
+  seul son propre test unitaire le référence. C'est du code orphelin : l'expansion n'est jamais
+  déclenchée sur un chemin HTTP.
+- Donc `seriesInfo` n'existe nulle part, `EventResponse` ne porte aucun champ de récurrence
+  calculée, et **il n'y a aucune réponse d'API où loger `capped`**.
+
+Livrer #67 supposait donc de trancher une décision de contrat d'API (`seriesInfo` dans
+`EventResponse` vs endpoint de prévisualisation dédié) sur un thème — la récurrence — étranger à
+celui du sprint. Décision du dev : **sortir #67 du milestone 61** et créer d'abord l'issue backend
+de câblage qui la débloque. L'estimation XS est caduque.
+
+Issue backend créée : **#439** — « câbler l'expansion de récurrence et exposer le flag `capped` »
+(backlog libre, `epic:events` / `priority:P2` / `size:M`). Elle porte la décision de contrat à
+trancher. #67 reste ouverte, débloquée par #439, commentaire d'explication posé dessus.
+
+**Leçon transposable :** une piste technique d'issue qui dit « le flag est fourni par l'issue 4.1 »
+n'est pas une preuve que 4.1 a été livrée. Un `grep` du symbole ne suffit pas non plus — ici le
+symbole existait, avec sa javadoc mentionnant même le consommateur `#67`. **Ce qui manquait, c'est
+un appelant** : le contrôle utile est `grep` des *appels* (`\.expand(`, nom du service injecté),
+pas de la déclaration.
+
+### Exécution
+
+**Vagues exécutées :** V1 = #307 | V2 = #230 (séquentiel — les deux réécrivent le rendu des events
+archivés dans `ProductDetailView`).
+
+**Commits (8) :**
+- `1dfb527` #307 — vue « archivés » : filtre en dur → état de vue `'active'|'archived'|'all'`, hook
+  `useSetEventArchived`, `eventService.setEventArchived`, i18n ×4, 3 specs E2E (10 fichiers, +675/−22)
+- `17c73f8` #230 — `ArchiveConfirmDialog`, verrou de champs, grisage frise + vues mobiles,
+  propagation `durationValue`/`durationUnit`, 2 specs E2E (25 fichiers, +792/−64)
+- `afdcfb5` — correctifs de specs E2E (lead, cf. ci-dessous)
+- `db079e1` — review [MAJEUR] : retrait de la promesse de quota fictif, 4 locales
+- `ca3f02f` — review [MAJEUR] : encre + garde-fou de contraste calculés sur la couleur RENDUE
+- 3 commits de documentation (historique, artefacts, audit)
+
+**BR impactées :** BR-EVE-011 (non régressée), BR-EVE-013, BR-EVE-015, BR-EVE-006/016.
+**Migrations Flyway :** aucune. **Zéro fichier `backend/**` au diff.**
+
+**Reviews :** reviewer batch — **0 CRITIQUE / 2 MAJEUR / 3 MINEUR**, verdict NON-BLOQUANT.
+Les 2 majeurs ont été **corrigés dans le sprint** (`db079e1`, `ca3f02f`), les 3 mineurs partent en
+triage Phase 4.
+
+**Tests :** Vitest **937/937** · `tsc`/`eslint`/`build` 0 · **E2E suite complète 174 passed / 0 failed
+/ 8 skipped** · coverage-E2E 10 testids / 0 sans spec. Backend non rejoué (aucun fichier backend).
+Détail : `docs/memory/audits/sprint-61-test-coverage.md`.
+**CI :** 7/7 verte au premier run (PR #440).
+
+### Le fait marquant : les E2E n'avaient jamais tourné
+
+Les deux vagues ont rendu `RECOMMAND_TEST_RUNNER` — les 5 specs du sprint étaient seulement
+**compilées**. L'agent `test-runner` a lui aussi échoué à les lancer (turbopack inférant un mauvais
+workspace root, cf. [[PIT-S61-007]]) et a conclu « impossible sans modifier le dépôt ». Le lead a
+repris la main : contournement en une commande (`rtk proxy npx next dev`), backend réutilisé depuis le
+conteneur e2e déjà debout sur `:8086`.
+
+**L'exécution réelle a révélé que les specs ne passaient pas** : un clic sur l'`<input>` masqué d'un
+`Switch` (convention pourtant déjà documentée dans `sprint-42-events.spec.ts`), et une **vraie
+régression** — #230 change le comportement du toggle, cassant une spec préexistante. Corrigé en
+`afdcfb5`. Rapport : `docs/memory/sprints/sprint-61/test-runner-report.md`.
+
+> Le check coverage-E2E de la Phase 8 était **vert avant ces corrections** ([[PIT-S61-005]]) : il
+> prouve qu'un testid est *cité*, jamais qu'une spec *passe*.
+
+### Deux erreurs de mesure du lead, consignées
+
+1. **Contraste calculé avec du noir pur** alors que la charte utilise `INK_DARK = #0B0C0E`. L'exemple
+   cité (`#0070F8`) basculait déjà avant correctif : il ne démontrait pas le défaut. Le phénomène
+   restait réel (8,6 % mesurés). Cf. [[PIT-S61-004]].
+2. **Le briefing affirmait** que les 3 surfaces de frise partageaient le garde-fou de contraste.
+   Vérification sur `17c73f8` : **seul `EventPill` l'appelait**. Le subagent a dévié du plan pour
+   cette raison — écart accepté après vérification.
+
+**Absorbé en cours :** propagation `durationValue`/`durationUnit` au view-model + pré-remplissage
+`TimelineEditHost` (#230) — corrige un formulaire non soumissible depuis la frise, cf. [[PIT-S61-002]].
+
+**Nouveaux pitfalls :** PIT-S61-001 à PIT-S61-007. **Décisions :** 4 (option A, verrou DOM vs RHF,
+a11y sur couleur rendue, pas de quota promis). **Pattern :** PAT-S61-001 (état de vue).
+
+### Follow-ups arbitrés (Phase 4 — triage interactif)
+
+7 follow-ups remontés (4 par les `done.md`, 3 par le reviewer). Arbitrage du dev : **4 créés, 0
+discardé**, 2 déjà traités en cours de sprint, 1 arbitrage produit tranché.
+
+  - Bug i18n `deleteDialog` / `conflictDialog` (namespaces inexistants) [S | frontend/i18n]
+    → issue **#441** (Sprint 62). ⚠ L'issue exige de **confirmer le rendu en navigateur d'abord** :
+    le défaut est établi par lecture de code, jamais constaté visuellement.
+  - E2E manquant sur le 409 de désarchivage (BR-EVE-015) [S | events] → issue **#442** (Sprint 62)
+  - Mutualiser `httpStatusOf`, 6 copies [XS | frontend] → issue **#443** (backlog)
+  - `popoverPicker` : trigger non actionnable au clavier + non conforme prettier [XS | frontend]
+    → issue **#444** (backlog)
+  - Commentaire périmé de `sprint-42-events.spec.ts` [XS] → **traité pendant le sprint** (`afdcfb5`)
+  - Les 2 MAJEUR du reviewer → **traités pendant le sprint** (`db079e1`, `ca3f02f`)
+  - Suppression active sur un événement archivé → **arbitrage dev : on la garde**. L'interdire
+    obligerait à désarchiver (donc à repasser dans les actifs) pour pouvoir supprimer. Le critère
+    d'acceptation de #230 est corrigé : le verrou porte sur l'**édition des champs**, pas sur les
+    actions de cycle de vie. Consigné dans `decisions.md`.
+
+Ratio discard 0/7 — aucun sur-signalement.
+
+**Issue sortie du sprint :** #67 (prérequis backend absent) → issue backend **#439** créée, #67
+détachée du milestone et commentée. Détail plus haut.
+
+**Status :** **Terminé** — PR **#440** (`sprint/61` → `dev`) mergée le 2026-08-17, milestone #62
+fermé. Titre et ligne `Status` volontairement redondants : `PIT-S56-006` montre que grepper l'un sans
+l'autre rate les entrées où les deux se contredisent.

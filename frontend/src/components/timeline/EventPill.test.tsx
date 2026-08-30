@@ -35,7 +35,10 @@ describe('EventPill', () => {
         onSelect={() => {}}
       />,
     )
-    expect(screen.getByTestId('timeline-event')).toHaveAttribute('aria-label', 'Péremption, à venir')
+    expect(screen.getByTestId('timeline-event')).toHaveAttribute(
+      'aria-label',
+      'Péremption, à venir',
+    )
   })
 
   it('positionne la pastille via leftPx/widthPx', () => {
@@ -137,6 +140,119 @@ describe('EventPill', () => {
       expect(titleSpan).toHaveAttribute('aria-hidden', 'true')
       // Libellé extérieur présent (garde-fou #81) → titre non perdu visuellement.
       expect(screen.getByTestId('timeline-event-outside-label')).toBeInTheDocument()
+    })
+  })
+
+  // ==================== #230 — event ARCHIVÉ grisé (BR-EVE-011/013) ====================
+  describe('#230 rendu grisé d’un événement archivé', () => {
+    const archivedEvent = (color = '#3B62D4') =>
+      makePositionedEvent({
+        color,
+        extendedProps: {
+          productId: 'prod-1',
+          productName: 'Lait entier bio',
+          category: 'Produits frais',
+          type: 'duration',
+          archived: true,
+        },
+      })
+
+    it('un event archivé reste RENDU (grisé, pas masqué) et se signale par data-archived', () => {
+      render(<EventPill event={archivedEvent()} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      // Critère #230 : « grisé plutôt que simplement absent ».
+      expect(pill).toBeInTheDocument()
+      expect(pill).toHaveAttribute('data-archived', 'true')
+      expect(pill).toHaveClass('mt-tlv__evt--archived')
+    })
+
+    it('la classe d’opacité `.mt-evt--archived` reste cantonnée à la pastille DÉCORATIVE', () => {
+      // Décision #307 reprise ici : `opacity:.45` sur la barre ferait passer le
+      // TITRE sous AA. La barre est désaturée sans opacité (`--archived`), seul le
+      // point de statut (aria-hidden) porte `.mt-evt--archived`.
+      const { container } = render(
+        <EventPill event={archivedEvent()} ariaLabel="x" onSelect={() => {}} />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(pill).not.toHaveClass('mt-evt--archived')
+      const dot = container.querySelector('.mt-tlv__evt-dot')
+      expect(dot).toHaveClass('mt-evt--archived')
+      expect(dot).toHaveAttribute('aria-hidden', 'true')
+    })
+
+    it('un event ACTIF ne porte ni la classe ni l’attribut (non-régression)', () => {
+      const { container } = render(
+        <EventPill event={makePositionedEvent()} ariaLabel="x" onSelect={() => {}} />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(pill).not.toHaveAttribute('data-archived')
+      expect(pill).not.toHaveClass('mt-tlv__evt--archived')
+      expect(container.querySelector('.mt-tlv__evt-dot')).not.toHaveClass('mt-evt--archived')
+    })
+
+    /**
+     * Correction review S61 — le grisage archivé faisait passer le titre sous AA
+     * pour ~8 % des couleurs hex : l'encre était calculée sur la couleur d'ORIGINE
+     * alors que le DS peint un gris plus sombre (`filter: grayscale(1)`, pondération
+     * sur canaux gamma-encodés), et noir/blanc sont des points fixes du filtre.
+     */
+    it('#0078F8 ARCHIVÉ → encre recalculée sur le gris peint (blanc, 5.57:1), titre DEDANS', () => {
+      render(<EventPill event={archivedEvent('#0078F8')} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      // Avant : INK_DARK conservée, soit 3.51:1 sur le gris #686868 → échec AA muet.
+      expect(pill.style.getPropertyValue('--mt-evt-ink')).toBe(INK_LIGHT)
+      expect(within(pill).getByText('Péremption')).not.toHaveAttribute('aria-hidden')
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('#0078F8 NON archivé → encre et rendu STRICTEMENT inchangés (non-régression)', () => {
+      render(
+        <EventPill
+          event={makePositionedEvent({ color: '#0078F8' })}
+          ariaLabel="x"
+          onSelect={() => {}}
+        />,
+      )
+      const pill = screen.getByTestId('timeline-event')
+      expect(pill.style.getPropertyValue('--mt-evt-ink')).toBe(INK_DARK)
+      expect(within(pill).getByText('Péremption')).not.toHaveAttribute('aria-hidden')
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('#008DFF ARCHIVÉ → aucune encre ne passe sur le gris → LIBELLÉ DEHORS', () => {
+      // Le cas que le garde-fou d'origine ratait : lisible avant grisage (5.83:1),
+      // gris `#777777` après, meilleur ratio 4.48 → sous AA, repli obligatoire.
+      render(<EventPill event={archivedEvent('#008DFF')} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      expect(within(pill).getByText('Péremption')).toHaveAttribute('aria-hidden', 'true')
+      expect(screen.getByTestId('timeline-event-outside-label')).toBeInTheDocument()
+    })
+
+    it('#008DFF NON archivé → titre DEDANS (le repli ne se déclenche pas à tort)', () => {
+      render(
+        <EventPill
+          event={makePositionedEvent({ color: '#008DFF' })}
+          ariaLabel="x"
+          onSelect={() => {}}
+        />,
+      )
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('fond très foncé archivé → l’encre BLANCHE est conservée (chemin non dégradé)', () => {
+      render(<EventPill event={archivedEvent('#0B0C0E')} ariaLabel="x" onSelect={() => {}} />)
+      expect(
+        screen.getByTestId('timeline-event').style.getPropertyValue('--mt-evt-ink'),
+      ).toBe(INK_LIGHT)
+    })
+
+    it('un archivé reste CLIQUABLE (le grisage n’est pas une désactivation)', async () => {
+      const user = userEvent.setup()
+      const onSelect = vi.fn()
+      const event = archivedEvent()
+      render(<EventPill event={event} ariaLabel="x" onSelect={onSelect} />)
+      await user.click(screen.getByTestId('timeline-event'))
+      expect(onSelect).toHaveBeenCalledWith(event)
     })
   })
 })
