@@ -74,7 +74,18 @@ test.describe('#413 — <html lang> localisé (WCAG 3.1.1)', () => {
  *
  * Le statut est asserté explicitement : un écran 404 renvoyé en 200 serait une
  * régression SEO, et passerait tous les autres oracles de ce fichier.
+ *
+ * `<title>` — SECONDE RÉGRESSION de #413, corrigée après coup. Retirer le layout
+ * racine de `/_not-found` a emporté la `metadata` qu'il portait : l'onglet n'avait
+ * plus de titre du tout. Le correctif (scission `global-not-found.tsx` Server, qui
+ * exporte `metadata` / `global-not-found-screen.tsx` Client) n'est PAS observable
+ * en unitaire : jsdom ne produit pas le `<head>` servi. D'où l'assertion ci-dessous
+ * sur le HTML brut. Elle échoue bien sur le build d'avant correctif (mesuré).
+ * Titre NON localisé et c'est attendu : `metadata` est résolue au build sur une
+ * page statique unique servie pour les 4 locales — cf. `app/global-not-found.tsx`.
  */
+const EXPECTED_NOT_FOUND_TITLE = 'Ma Timeline'
+
 const NOT_FOUND_PATHS = ['/fr/nope', '/en/nope', '/es/nope', '/de/nope'] as const
 
 test.describe('#413 — 404 des URL non matchées (document complet)', () => {
@@ -87,6 +98,12 @@ test.describe('#413 — 404 des URL non matchées (document complet)', () => {
       const openingTag = html.match(/<html[^>]*>/)?.[0] ?? ''
       expect(openingTag, `balise <html> servie pour ${path}`).toMatch(/^<html\s[^>]*lang="/)
       expect(html, `écran 404 servi pour ${path}`).toContain('data-testid="global-not-found-screen"')
+
+      // Oracle du `<title>` : lu sur le HTML SERVI, avant toute hydratation.
+      // Le CONTENU est asserté, pas seulement la présence de la balise — un
+      // `<title></title>` vide passerait un simple `toContain('<title')`.
+      const titleTag = html.match(/<title[^>]*>([\s\S]*?)<\/title>/)?.[1] ?? ''
+      expect(titleTag.trim(), `<title> servi pour ${path}`).toBe(EXPECTED_NOT_FOUND_TITLE)
     })
   }
 

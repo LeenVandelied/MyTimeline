@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // sur stderr — contraire à MEMO-007 (zéro stderr). Cf. `global-error.test.tsx`.
 vi.mock('../src/styles/globals.css', () => ({}))
 
-import GlobalNotFound from './global-not-found'
+import GlobalNotFound, { metadata } from './global-not-found'
 
 /**
  * #413 (suite) — écran 404 des URL NON MATCHÉES, hors de tout layout.
@@ -21,6 +21,11 @@ import GlobalNotFound from './global-not-found'
  * consignée dans le rapport d'issue et rejouée par `e2e/document-lang.spec.ts`.
  * Ici on verrouille seulement le CONTRAT du composant : document autonome,
  * `lang` aligné sur la locale de l'URL, libellés des 4 locales, lien préfixé.
+ *
+ * Idem pour `metadata` : ce fichier vérifie que le Server Component l'EXPORTE,
+ * pas que Next l'injecte dans le `<head>` SERVI (jsdom n'assemble pas de
+ * document Next). Cette preuve-là est le `<title>` lu sur le HTML brut,
+ * consigné dans le rapport d'issue et rejoué par `e2e/document-lang.spec.ts`.
  *
  * Comme pour `global-error`, RTL monte le `<html>` rendu dans un `<div>` :
  * le `validateDOMNesting` de React est attendu et absorbé par le spy
@@ -76,5 +81,21 @@ describe('GlobalNotFound', () => {
     expect(container.querySelector('html')).toHaveAttribute('lang', 'fr')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Page introuvable')
     expect(screen.getByTestId('global-not-found-home-link')).toHaveAttribute('href', '/fr')
+  })
+})
+
+/**
+ * #413 (suite) — RÉGRESSION `<title>`. Retirer le layout racine de
+ * `/_not-found` a emporté sa `metadata` : l'onglet n'avait plus de titre.
+ * D'où la scission Server (ce module, porteur de `metadata`) / Client
+ * (`global-not-found-screen.tsx`, porteur du `useEffect` de locale).
+ */
+describe('GlobalNotFound — metadata', () => {
+  it('exporte un title non vide (le layout racine ne s’applique plus ici)', () => {
+    expect(metadata.title).toBe('Ma Timeline')
+  })
+
+  it('exporte la description du layout racine', () => {
+    expect(metadata.description).toBe('Application de gestion de temps et événements')
   })
 })

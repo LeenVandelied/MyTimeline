@@ -1,14 +1,6 @@
-'use client'
+import type { Metadata } from 'next'
 
-import '../src/styles/globals.css'
-
-import { useEffect, useState } from 'react'
-import { Compass } from 'lucide-react'
-
-import { StateScreen, stateActionPrimary } from '@/components/shared/StateScreen'
-import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from '@/i18n/locales'
-import { fontVariables } from './fonts'
-import type { CSSProperties } from 'react'
+import GlobalNotFoundScreen from './global-not-found-screen'
 
 /**
  * #413 (suite) — 404 des URL NON MATCHÉES, rendue hors de tout layout.
@@ -39,99 +31,31 @@ import type { CSSProperties } from 'react'
  * `NextIntlClientProvider`, donc entièrement traduit). Celui-ci ne couvre que
  * ce qui n'atteint aucune route.
  *
- * LOCALE — même approche que `app/global-error.tsx`, et pour la même raison :
- * hors du segment `[locale]`, il n'y a ni `params` ni `NextIntlClientProvider`,
- * donc pas de `useTranslations` ; d'où `resolveLocale()` + les messages inlinés
- * typés. Les seules autres voies sont fermées : `headers()` rendrait
- * `/_not-found` DYNAMIQUE (mesuré : la ligne `○ /_not-found` sortirait du décompte
- * « Generating static pages (52/52) ») et `params` n'existe pas ici.
+ * ── POURQUOI CE FICHIER EST UN SERVER COMPONENT QUI NE REND (PRESQUE) RIEN ──
  *
- * ⚠ Différence assumée avec `global-error` : la locale est posée dans un
- * `useEffect`, pas pendant le rendu. `/_not-found` est PRÉRENDU au build
- * (statique, servi tel quel pour les 4 locales) : résoudre `window.location`
- * pendant le rendu produirait un HTML `fr` puis une hydratation `en` →
- * mismatch React sur `lang` ET sur le texte. Ici le premier rendu vaut `fr` des
- * DEUX côtés (aucun mismatch), puis l'effet aligne `lang` ET le texte sur la
- * locale de l'URL : les deux états successifs restent cohérents entre eux,
- * ce qui est ce que WCAG 3.1.1 demande. Le HTML servi reste `fr` — best-effort
- * assumé sur un écran de dernier recours, comme pour `global-error`.
+ * Retirer le layout racine de `/_not-found` a AUSSI retiré la `metadata` qu'il
+ * portait (`app/layout.tsx`, `title: 'Ma Timeline'`) : l'onglet de toute URL non
+ * matchée n'avait plus de `<title>`. Régression réelle de #413, corrigée ici.
+ *
+ * Or seul un Server Component peut exporter `metadata`, et l'écran a besoin
+ * d'un `useEffect` (résolution de la locale, cf. `global-not-found-screen.tsx`).
+ * D'où la scission : ce fichier-ci porte `metadata`, l'enfant client porte tout
+ * le rendu, `<html>` / `<body>` inclus — la stratégie de rendu est INCHANGÉE
+ * (`/_not-found` reste PRÉRENDU statiquement, décompte `52/52`).
+ *
+ * ⚠ TITRE NON LOCALISÉ, ET C'EST UN CHOIX. `metadata` est résolue au BUILD, côté
+ * serveur, sur une page statique unique servie pour les 4 locales : il n'y a ici
+ * ni `params` ni URL. Les deux seules voies vers un titre localisé sont fermées —
+ * `headers()` sortirait `/_not-found` du prérendu statique (mesuré sur #413), et
+ * `generateMetadata()` n'y a pas davantage de locale. On restaure donc exactement
+ * le titre d'avant #413. Ne pas « améliorer » ce point sans re-mesurer le
+ * décompte `Generating static pages (52/52)`.
  */
-type NotFoundMessages = {
-  title: string
-  description: string
-  backHome: string
-}
-
-/**
- * Copie conforme de `public/locales/<locale>/errors.json` → `notFound.*`.
- * Inlinés parce qu'aucun provider next-intl n'est monté au-dessus de ce
- * document. À resynchroniser si les libellés y changent.
- */
-const MESSAGES: Record<Locale, NotFoundMessages> = {
-  fr: {
-    title: 'Page introuvable',
-    description: "La page que vous recherchez n'existe pas ou a été déplacée.",
-    backHome: "Retour à l'accueil",
-  },
-  en: {
-    title: 'Page not found',
-    description: "The page you are looking for doesn't exist or has been moved.",
-    backHome: 'Back to home',
-  },
-  es: {
-    title: 'Página no encontrada',
-    description: 'La página que buscas no existe o ha sido movida.',
-    backHome: 'Volver al inicio',
-  },
-  de: {
-    title: 'Seite nicht gefunden',
-    description: 'Die gesuchte Seite existiert nicht oder wurde verschoben.',
-    backHome: 'Zurück zur Startseite',
-  },
-}
-
-function resolveLocale(): Locale {
-  if (typeof window === 'undefined') return DEFAULT_LOCALE
-  const segment = window.location.pathname.split('/')[1] ?? ''
-  return isSupportedLocale(segment) ? segment : DEFAULT_LOCALE
+export const metadata: Metadata = {
+  title: 'Ma Timeline',
+  description: 'Application de gestion de temps et événements',
 }
 
 export default function GlobalNotFound() {
-  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE)
-
-  useEffect(() => {
-    setLocale(resolveLocale())
-  }, [])
-
-  const m = MESSAGES[locale]
-
-  return (
-    <html
-      lang={locale}
-      className={fontVariables}
-      style={{ '--font-ui': 'var(--font-display)' } as CSSProperties}
-    >
-      <body>
-        <StateScreen
-          testId="global-not-found-screen"
-          code="404"
-          icon={<Compass />}
-          title={m.title}
-          description={m.description}
-          actions={
-            // `<a>` et non `<Link>` : ce document remplace le layout racine, une
-            // navigation client depuis ici repartirait d'un arbre sans providers.
-            // Cible = racine de locale (ADR-006), préfixée (`localePrefix: 'always'`).
-            <a
-              href={`/${locale}`}
-              className={stateActionPrimary}
-              data-testid="global-not-found-home-link"
-            >
-              {m.backHome}
-            </a>
-          }
-        />
-      </body>
-    </html>
-  )
+  return <GlobalNotFoundScreen />
 }
