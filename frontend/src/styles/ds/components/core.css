@@ -115,8 +115,15 @@
 .mt-check__box{
   /* Unchecked checkbox: the outline IS the control → functional.
      #352 — USAGE. This rule is the DS SPECIMEN of the checkbox: it keeps the
-     tier for parity with its two production twins, `.mt-radio__dot`
-     (`ui/radio.tsx`) and `.mt-switch__track` (`ui/switch.tsx`). The checkbox
+     tier for parity with its two twins, `.mt-radio__dot` (`ui/radio.tsx`) and
+     `.mt-switch__track` (`ui/switch.tsx`).
+     ⚠ #415 — CORRECTION, verified by grepping the CALLERS (`PIT-S61-006`):
+     only `.mt-switch__track` is actually in production, mounted ONCE at
+     `EventEditForm.tsx:624`. `<Radio>` has NO application consumer — its sole
+     hit outside the DS is `ui/radio.stories.tsx` — so `.mt-radio__dot` is a DS
+     specimen too, exactly like this rule. The wording "two production twins"
+     was wrong when written; `docs/memory/decisions.md:437` (`DEC-S58-003`)
+     propagates the same error. The checkbox
      the application actually renders is `ui/checkbox.tsx`, a Radix root styled
      with the `border-rule-emphasis` utility — same tier, different mechanism.
      Deleting this rule would drop the only CSS-level guard on the tier
@@ -128,7 +135,29 @@
 }
 .mt-check__box svg{width:12px; height:12px;}
 .mt-check input:checked + .mt-check__box{background:var(--color-accent); border-color:var(--color-accent); color:var(--color-accent-ink);}
-.mt-check input:focus-visible + .mt-check__box{box-shadow:var(--shadow-focus);}
+/* #415 — INDICATEUR DE FOCUS DES TROIS CONTRÔLES À `<input>` MASQUÉ.
+   `.mt-check__box`, `.mt-radio__dot` et `.mt-switch__track` portaient pour
+   UNIQUE indicateur `box-shadow: var(--shadow-focus)`, soit un halo
+   `--color-accent-soft` MESURÉ AU PIXEL à 1,23:1 en clair (#DBE9FC sur #FFFFFF)
+   et 1,19:1 en sombre (#16263A sur #131519) — très en dessous des 3:1 de
+   WCAG 1.4.11. Le contour global du DS (`base.css`, `@layer base`) ne les
+   rattrapait pas : leur `<input>` est en `opacity:0; width:0; height:0`, donc le
+   contour s'y peignait sur 0×0 pixel.
+   Correctif : porter sur la SŒUR VISIBLE le contour exact du DS
+   (`outline: 2px solid var(--color-focus); outline-offset: 2px`), identique à
+   `.mt-btn`, `.mt-iconbtn`, `.mt-select__trigger` et `.mt-tab`. Ce n'est donc
+   pas un second motif concurrent mais le MÊME indicateur, déplacé sur l'élément
+   qui a une surface — conforme à `DEC-S58-001` (aucun `ring-*`, aucun
+   `outline-none`, un seul indicateur de focus dans l'application).
+   `--shadow-focus` n'est PAS retouché : il reste l'accompagnement de
+   `.mt-input:focus` (L68) et `.mt-select__trigger[aria-expanded]` (L90), où il
+   double un changement de `border-color` et n'est pas l'unique indicateur.
+   `--color-accent-soft` n'est pas touché non plus (9+ consommateurs hors DS :
+   `::selection`, `button.tsx`, `dropdown-menu.tsx`, `select.tsx`…).
+   L'`<input>` reste masqué : le correctif ne le redimensionne pas, donc aucune
+   hitbox ni mise en page ne bouge.
+   Mesuré au pixel après correctif — voir `e2e/sprint-62-control-focus-contrast.spec.ts`. */
+.mt-check input:focus-visible + .mt-check__box{outline:2px solid var(--color-focus); outline-offset:2px;}
 .mt-check input:disabled ~ *{opacity:.5;}
 .mt-radio__dot{
   /* Unchecked radio: same, the ring IS the control → functional. */
@@ -139,7 +168,8 @@
 .mt-radio__dot::after{content:""; width:9px; height:9px; border-radius:50%; background:transparent; transition:background var(--dur-micro);}
 .mt-radio input:checked + .mt-radio__dot{border-color:var(--color-accent);}
 .mt-radio input:checked + .mt-radio__dot::after{background:var(--color-accent);}
-.mt-radio input:focus-visible + .mt-radio__dot{box-shadow:var(--shadow-focus);}
+/* #415 — cf. le bloc de `.mt-check__box` ci-dessus. */
+.mt-radio input:focus-visible + .mt-radio__dot{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* ---------------- Switch ---------------- */
 .mt-switch{display:inline-flex; align-items:center; gap:9px; font-size:14px; color:var(--color-ink); cursor:pointer; position:relative;}
@@ -154,7 +184,9 @@
 .mt-switch__thumb{position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--color-ink-faint); transition:all var(--dur-micro) var(--ease-quart);}
 .mt-switch input:checked + .mt-switch__track{background:var(--color-accent); border-color:var(--color-accent);}
 .mt-switch input:checked + .mt-switch__track .mt-switch__thumb{left:18px; background:#fff;}
-.mt-switch input:focus-visible + .mt-switch__track{box-shadow:var(--shadow-focus);}
+/* #415 — cf. le bloc de `.mt-check__box`. SEUL des trois à avoir un montage
+   applicatif : `EventEditForm.tsx:624` (toggle d'archivage). */
+.mt-switch input:focus-visible + .mt-switch__track{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* ---------------- Badge ---------------- */
 .mt-badge{
