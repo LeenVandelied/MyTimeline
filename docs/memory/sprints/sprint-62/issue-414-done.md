@@ -64,9 +64,16 @@ du projet dans `playwright.config.ts` avant tout élargissement du `testMatch`.
 
 - firefox : **13 passed**, exit 0
 - chromium ciblé : **13 passed**, exit 0
-- **chromium complet : 200 passed / 8 skipped / 0 failed**, exit 0
-  (les 8 skips sont des conditionnels préexistants `auth-guard` / `auth-signature` — clés RS256 non
-  posées en local ; la spec de #414 n'a aucun `test.skip`)
+- **chromium complet : 200 passed / 8 skipped / 0 failed**, exit 0 — **confirmé indépendamment**
+  lors de l'audit final
+
+  > **Correction apportée à l'audit.** L'auteur de #414 décrivait les 8 skips comme des conditionnels
+  > `auth-guard` / `auth-signature`. **Inexact** : `auth-guard.spec.ts` ne skippe **aucun** test (ses
+  > 13 passent). Le décompte réel est **7 + 1** :
+  > - `auth-signature.spec.ts` ×7 (l.135/157/177/206/226/247/293) —
+  >   `test.skip(!SIGNATURE_VERIFICATION_CONFIGURED)`, `AUTH_JWT_PUBLIC_KEY` absente en local
+  > - `settings-profile.spec.ts:36` (« upload avatar crop → confirm, puis suppression ») — un
+  >   **`test.fixme`**, 401 multipart sur le proxy Next, **sans rapport avec RS256**
 - vitest : **950 passed / 97 fichiers** · eslint : 0 · `tsc --noEmit` : 0
 - Run complet démarré **après** les 4 commits de code du sprint : aucun écart à leur attribuer
 
@@ -131,5 +138,12 @@ c'était la bonne conclusion.
 - **Pas de RECOMMAND_DB_EXPERT / SECURITY** : périmètre CSS / E2E, zéro BR, zéro endpoint.
 - **Piège pour la clôture** : les `test.fail()` rougiront à la correction du défaut de z-index — il
   faudra **retirer l'annotation**, pas la contourner.
+
+## Comment les `test.fail()` remontent dans les compteurs (vérifié à l'audit)
+
+Les deux `test.fail()` échouent bien comme attendu. Le reporter `list` les affiche `✘` — **c'est
+cosmétique** : ils sont comptés dans **`passed`**, jamais dans `failed` ni `skipped`, et l'exit reste
+0. Donc chromium **200 = 198 vrais verts + 2 échecs attendus** ; firefox **13 = 11 + 2**.
+**Un `✘` dans le log de la PR n'est pas un rouge.**
 
 STATUS: COMPLETED
