@@ -66,6 +66,9 @@ import type { Locator, Page } from '@playwright/test'
  * l'extremum, c'est réintroduire l'heuristique que `PIT-S58-001` interdit.
  * {@link PixelStrip.unanimity} expose la part du mode : une unanimité basse est
  * le signal qu'on échantillonne un arc ou un mauvais offset — pas un détail.
+ * {@link measureIndicatorContrast} LÈVE en dessous de 0,6 : la garde vit dans la
+ * fonction, pas dans les appelants, pour qu'aucun ratio faux ne puisse sortir
+ * d'un appel qui aurait oublié de la recopier.
  *
  * @see docs/memory/sprints/sprint-58 — origine des pièges cités.
  */
@@ -182,23 +185,48 @@ export async function settleForMeasurement(page: Page, waitMs = 450): Promise<vo
  * Assertion d'ÉTAT préalable à toute mesure (`PIT-S58-002`, volet « état »).
  * S58 a publié un 1,59:1 mesuré sur un bouton `disabled` (`opacity:.4`).
  * Lève si l'élément n'est pas en `:focus-visible`, ou s'il est désactivé.
+ *
+ * ⚠ « DÉSACTIVÉ » NE SE LIT PAS QUE SUR `.disabled`. La propriété DOM n'existe
+ * que sur les contrôles natifs. **Radix — donc `Select`, `DropdownMenu`,
+ * `Checkbox`, `Switch` de ce dépôt — désactive des `div` / `span` par
+ * `aria-disabled="true"` et/ou l'attribut `data-disabled`**, sur lesquels
+ * `.disabled` vaut `undefined`. Une garde qui ne teste que `HTMLInputElement` /
+ * `HTMLButtonElement` laisse donc passer un contrôle désactivé et rouvre
+ * exactement `PIT-S58-002` (le 1,59:1 du S58) sur toute la surface Radix de
+ * l'application. Les trois signaux sont testés, et le message NOMME celui qui a
+ * levé — un `aria-disabled` posé par erreur ne se voit pas autrement.
  */
 export async function assertFocusVisible(locator: Locator): Promise<void> {
-  const state = await locator.evaluate((el) => ({
-    focusVisible: el.matches(':focus-visible'),
-    disabled: el instanceof HTMLInputElement || el instanceof HTMLButtonElement ? el.disabled : false,
-    tag: el.tagName.toLowerCase(),
-  }))
+  const state = await locator.evaluate((el) => {
+    const nativeDisabled =
+      (el instanceof HTMLInputElement ||
+        el instanceof HTMLButtonElement ||
+        el instanceof HTMLSelectElement ||
+        el instanceof HTMLTextAreaElement) &&
+      el.disabled
+    return {
+      focusVisible: el.matches(':focus-visible'),
+      disabledBy: nativeDisabled
+        ? 'la propriété DOM `.disabled`'
+        : el.getAttribute('aria-disabled') === 'true'
+          ? '`aria-disabled="true"`'
+          : el.hasAttribute('data-disabled')
+            ? "l'attribut `data-disabled` (convention Radix)"
+            : null,
+      tag: el.tagName.toLowerCase(),
+    }
+  })
   if (!state.focusVisible) {
     throw new Error(
       `Mesure refusée : <${state.tag}> n'est PAS en :focus-visible. ` +
         `Un ratio lu hors de l'état visé ne prouve rien (PIT-S58-002).`,
     )
   }
-  if (state.disabled) {
+  if (state.disabledBy != null) {
     throw new Error(
-      `Mesure refusée : <${state.tag}> est disabled — S58 a publié un 1,59:1 lu ` +
-        `sur un bouton désactivé (opacity:.4). Assurer l'état avant de mesurer.`,
+      `Mesure refusée : <${state.tag}> est désactivé via ${state.disabledBy} — S58 a ` +
+        `publié un 1,59:1 lu sur un contrôle désactivé (opacity:.4). ` +
+        `Assurer l'état avant de mesurer (PIT-S58-002).`,
     )
   }
 }
@@ -215,18 +243,52 @@ interface Box {
  * Capture une fois la zone `box + marge` et rend un accesseur de pixel en
  * coordonnées CSS page. Le PNG est décodé DANS la page (`createImageBitmap` +
  * `getImageData`) : c'est la seule voie qui rend les octets réellement peints.
+ *
+ * ⚠ TROIS GARDES CONTRE UN RATIO FAUX SILENCIEUX — ne pas les retirer.
+ *
+ * `page.screenshot({clip})` **INTERSECTE le clip avec le viewport, sans le
+ * signaler** : un clip qui déborde à droite ou en bas rend une image PLUS
+ * PETITE que demandé. Une échelle dérivée de `décodé / clip` est alors fausse
+ * (par ex. 0,94 au lieu de 1), et l'accesseur lit un pixel DÉCALÉ — un ratio
+ * plausible mesuré au mauvais endroit. Le cas se produit dès qu'un contrôle
+ * touche un bord, ce qui est banal sur une pastille en pied de drawer.
+ *
+ *  1. Le clip est CLAMPÉ sur `page.viewportSize()` : ce qui est demandé est ce
+ *     qui est capturé, donc l'échelle reste juste.
+ *  2. Les dimensions décodées sont ASSERTÉES contre `clip × devicePixelRatio`
+ *     (± 1 px) : si le moteur rogne encore pour une raison non prévue ici, on
+ *     lève au lieu de publier.
+ *  3. Un point demandé HORS de la région capturée lève. L'ancien code le
+ *     ramenait au bord le plus proche (`Math.min`/`Math.max`) et rendait
+ *     silencieusement la couleur d'un AUTRE pixel — la garde 1 ne suffit pas :
+ *     un offset vers l'extérieur d'un élément déjà collé au bord du viewport
+ *     désigne un pixel qui n'existe simplement pas.
  */
 async function captureRegion(
   page: Page,
   box: Box,
   marginPx: number,
 ): Promise<(x: number, y: number) => Rgb> {
+  const viewport = page.viewportSize()
+  const left = Math.max(0, box.x - marginPx)
+  const top = Math.max(0, box.y - marginPx)
+  const right = box.x + box.width + marginPx
+  const bottom = box.y + box.height + marginPx
   const clip = {
-    x: Math.max(0, box.x - marginPx),
-    y: Math.max(0, box.y - marginPx),
-    width: box.width + marginPx * 2,
-    height: box.height + marginPx * 2,
+    x: left,
+    y: top,
+    width: (viewport == null ? right : Math.min(viewport.width, right)) - left,
+    height: (viewport == null ? bottom : Math.min(viewport.height, bottom)) - top,
   }
+  if (clip.width <= 0 || clip.height <= 0) {
+    throw new Error(
+      `Zone de capture vide après clamp sur le viewport ` +
+        `(${clip.width}×${clip.height}) : la boîte ${box.width}×${box.height} en ` +
+        `(${box.x},${box.y}) avec marge ${marginPx}px ne croise pas la zone visible. ` +
+        `Faire défiler l'élément dans le viewport avant de mesurer.`,
+    )
+  }
+
   const png = (await page.screenshot({ clip })).toString('base64')
 
   const decoded = await page.evaluate(async (b64: string) => {
@@ -239,7 +301,12 @@ async function captureRegion(
     if (ctx == null) throw new Error('canvas 2d indisponible')
     ctx.drawImage(bitmap, 0, 0)
     const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
-    return { width: bitmap.width, height: bitmap.height, data: Array.from(data) }
+    return {
+      width: bitmap.width,
+      height: bitmap.height,
+      dpr: window.devicePixelRatio,
+      data: Array.from(data),
+    }
   }, png)
 
   // Le screenshot est rendu en pixels PÉRIPHÉRIQUES : sur un écran HiDPI il est
@@ -248,9 +315,34 @@ async function captureRegion(
   const scaleX = decoded.width / clip.width
   const scaleY = decoded.height / clip.height
 
+  // …mais on VÉRIFIE ce rapport contre le `devicePixelRatio` observé dans la
+  // page. Un écart > 1 px de large signe une intersection silencieuse du clip
+  // par le viewport (cf. garde 2 du JSDoc) : l'échelle serait fausse et tous
+  // les pixels lus décalés. Tolérance 1 px : le PNG est arrondi à l'entier.
+  const expectedW = clip.width * decoded.dpr
+  const expectedH = clip.height * decoded.dpr
+  if (Math.abs(decoded.width - expectedW) > 1 || Math.abs(decoded.height - expectedH) > 1) {
+    throw new Error(
+      `Capture rognée : PNG ${decoded.width}×${decoded.height}px alors que le clip ` +
+        `${clip.width}×${clip.height} CSS × dpr ${decoded.dpr} attendait ` +
+        `${expectedW.toFixed(1)}×${expectedH.toFixed(1)}. L'échelle dérivée ` +
+        `(${scaleX.toFixed(3)}, ${scaleY.toFixed(3)}) serait fausse et TOUS les pixels ` +
+        `lus décalés — un ratio publié ici ne vaudrait rien.`,
+    )
+  }
+
   return (cssX: number, cssY: number): Rgb => {
-    const px = Math.min(decoded.width - 1, Math.max(0, Math.round((cssX - clip.x) * scaleX)))
-    const py = Math.min(decoded.height - 1, Math.max(0, Math.round((cssY - clip.y) * scaleY)))
+    const px = Math.round((cssX - clip.x) * scaleX)
+    const py = Math.round((cssY - clip.y) * scaleY)
+    if (px < 0 || px >= decoded.width || py < 0 || py >= decoded.height) {
+      throw new Error(
+        `Point (${cssX.toFixed(1)}, ${cssY.toFixed(1)}) CSS hors de la région capturée ` +
+          `[${clip.x}, ${clip.x + clip.width}] × [${clip.y}, ${clip.y + clip.height}] : ` +
+          `il n'existe aucun pixel à lire là. Rabattre la lecture sur le bord le plus ` +
+          `proche rendrait la couleur d'un AUTRE pixel, donc un faux ratio. ` +
+          `Choisir un autre côté, ou éloigner l'élément du bord du viewport.`,
+      )
+    }
     const i = (py * decoded.width + px) * 4
     return { r: decoded.data[i], g: decoded.data[i + 1], b: decoded.data[i + 2] }
   }
@@ -287,8 +379,29 @@ function samplePositions(box: Box, opts: StripOptions): Array<{ x: number; y: nu
   })
 }
 
-/** Couleur modale d'une liste d'échantillons, avec sa part. */
+/**
+ * Couleur modale d'une liste d'échantillons, avec sa part.
+ *
+ * Lève sur une liste VIDE plutôt que de déréférencer `samples[0].hex` : avec
+ * `samples: 0`, l'ancien code sortait un `TypeError` opaque (« Cannot read
+ * properties of undefined ») à trois niveaux de la cause réelle, et
+ * `unanimity` aurait valu `NaN` — donc une comparaison `>= 0.6` FAUSSE, qui
+ * passe pour une mesure.
+ *
+ * Ex æquo : `Map` itère dans l'ordre de PREMIÈRE INSERTION, c'est-à-dire
+ * l'ordre de parcours du côté, et `>` (strict) garde le premier. Le
+ * départage est donc déterministe et reproductible d'un run à l'autre —
+ * mais il n'a aucun sens physique : une unanimité qui laisse un ex æquo
+ * décider vaut au mieux 50 %, donc bien sous le seuil de 0,6 que
+ * {@link measureIndicatorContrast} impose. Le garde-fou est là, pas ici.
+ */
 function mode(samples: PixelSample[]): { rgb: Rgb; unanimity: number } {
+  if (samples.length === 0) {
+    throw new Error(
+      'mode() : aucun échantillon à agréger. Une bande vide ne peut produire ni ' +
+        "couleur ni unanimité — vérifier l'option `samples` (elle doit valoir >= 1).",
+    )
+  }
   const tally = new Map<string, number>()
   for (const s of samples) tally.set(s.hex, (tally.get(s.hex) ?? 0) + 1)
   let bestHex = samples[0].hex
@@ -322,7 +435,11 @@ export async function readStrip(
 ): Promise<PixelStrip> {
   const box = await locator.boundingBox()
   if (box == null) throw new Error("boundingBox() nulle : l'élément n'est pas rendu")
-  const read = await captureRegion(page, box, Math.ceil(opts.offsetPx) + 3)
+  // `Math.abs` : un offset NÉGATIF échantillonne l'INTÉRIEUR de la boîte (cf.
+  // le profil signé de #414). Sans la valeur absolue, la marge devenait
+  // négative et la région capturée RÉTRÉCISSAIT sous la boîte — inoffensif
+  // tant que l'accesseur rabattait sur le bord, désormais une levée.
+  const read = await captureRegion(page, box, Math.ceil(Math.abs(opts.offsetPx)) + 3)
   const samples: PixelSample[] = samplePositions(box, opts).map(({ x, y }) => {
     const rgb = read(x, y)
     return { x, y, rgb, hex: toHex(rgb) }
@@ -390,6 +507,24 @@ export interface IndicatorOptions extends Omit<StripOptions, 'offsetPx'> {
   indicatorOffsetPx: number
   /** Offset d'un pixel de fond franc au-delà du trait, lu sur le dump. */
   adjacentOffsetPx: number
+  /**
+   * Unanimité minimale exigée sur CHACUNE des deux bandes. Défaut `0.6`, le
+   * seuil que documente {@link PixelStrip.unanimity} — en dessous, la fonction
+   * LÈVE au lieu de rendre un `ratio`.
+   *
+   * Pourquoi c'est un défaut LEVANT et non une valeur à consulter : une bande
+   * peu unanime n'est pas « une mesure un peu bruitée », c'est un
+   * échantillonnage tombé sur un arc, un dégradé ou un mauvais offset — le
+   * `ratio` qui en sort désigne une couleur qui n'est celle de rien. #415 l'a
+   * vécu sur `.mt-radio__dot` (cercle pur) : unanimité tombée à 48 %, ratio
+   * NON publié. Ce jour-là seule une assertion écrite à la main dans la spec
+   * l'a arrêté ; le prochain appelant qui oubliera de la copier publiera un
+   * faux ratio. La garde vit donc ICI.
+   *
+   * Mettre `0` pour désactiver — à ne faire que dans un test qui éprouve
+   * délibérément une bande non unanime, jamais pour « faire passer » une mesure.
+   */
+  minUnanimity?: number
 }
 
 /**
@@ -403,6 +538,9 @@ export interface IndicatorOptions extends Omit<StripOptions, 'offsetPx'> {
  *
  * Le « fond adjacent » n'est PAS le `background-color` d'un ancêtre : c'est le
  * pixel réellement peint juste à côté du trait (`PIT-S58-001`).
+ *
+ * LÈVE si l'une des deux bandes est moins unanime que `minUnanimity` (défaut
+ * 0,6) : un appelant n'a donc RIEN à asserter pour être protégé du faux ratio.
  *
  * @example
  * await assertFocusVisible(input)
@@ -419,9 +557,29 @@ export async function measureIndicatorContrast(
   locator: Locator,
   opts: IndicatorOptions,
 ): Promise<IndicatorMeasurement> {
-  const { indicatorOffsetPx, adjacentOffsetPx, ...strip } = opts
+  const { indicatorOffsetPx, adjacentOffsetPx, minUnanimity = 0.6, ...strip } = opts
   const indicator = await readStrip(page, locator, { ...strip, offsetPx: indicatorOffsetPx })
   const adjacent = await readStrip(page, locator, { ...strip, offsetPx: adjacentOffsetPx })
+
+  // GARDE D'UNANIMITÉ — avant tout calcul de ratio, et sur les DEUX bandes : un
+  // fond adjacent non unanime rend le dénominateur du ratio aussi douteux que
+  // son numérateur. Cf. `IndicatorOptions.minUnanimity`.
+  for (const [name, band, offset] of [
+    ['le trait de focus', indicator, indicatorOffsetPx],
+    ['le fond adjacent', adjacent, adjacentOffsetPx],
+  ] as const) {
+    if (band.unanimity < minUnanimity) {
+      throw new Error(
+        `Ratio NON publié : unanimité ${(band.unanimity * 100).toFixed(0)}% sur ${name} ` +
+          `(côté ${band.side}, +${offset}px, seuil ${(minUnanimity * 100).toFixed(0)}%). ` +
+          `On échantillonne probablement un arc, un dégradé ou un offset qui chevauche ` +
+          `deux zones : la couleur modale (${band.dominantHex}) n'est celle de rien, et le ` +
+          `ratio qu'elle produirait ne vaudrait rien (PIT-S58-001). Rejouer ` +
+          `dumpOutwardProfile() et refixer les offsets, ou resserrer edgeGuardPx.`,
+      )
+    }
+  }
+
   const ratio = contrastRatio(indicator.dominant, adjacent.dominant)
   const method =
     `lecture de pixel peint (page.screenshot -> createImageBitmap -> getImageData), ` +
