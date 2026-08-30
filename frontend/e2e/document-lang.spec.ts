@@ -57,3 +57,53 @@ test.describe('#413 — <html lang> localisé (WCAG 3.1.1)', () => {
     })
   }
 })
+
+/**
+ * #413 (suite) — RÉGRESSION 404 introduite par le correctif ci-dessus, puis
+ * corrigée par `app/global-not-found.tsx` (`experimental.globalNotFound`).
+ *
+ * Descendre `<html>` / `<body>` sous `[locale]` a laissé le layout RACINE sans
+ * document, or Next l'exige pour servir la route interne `/_not-found` : toute
+ * URL non matchée répondait bien 404, mais avec un corps SANS `<html>` ni
+ * `<body>` (`NEXT_MISSING_ROOT_TAGS`) — écran blanc.
+ *
+ * L'oracle est le HTML SERVI, pas le DOM hydraté : deux contournements écartés
+ * PRÉRENDAIENT un document correct sans jamais être servis (`app/not-found.tsx`)
+ * ou étaient bien atteints sans que `notFound()` y aboutisse (attrape-tout
+ * `[...rest]`). Seule la lecture de la réponse brute les distingue.
+ *
+ * Le statut est asserté explicitement : un écran 404 renvoyé en 200 serait une
+ * régression SEO, et passerait tous les autres oracles de ce fichier.
+ */
+const NOT_FOUND_PATHS = ['/fr/nope', '/en/nope', '/es/nope', '/de/nope'] as const
+
+test.describe('#413 — 404 des URL non matchées (document complet)', () => {
+  for (const path of NOT_FOUND_PATHS) {
+    test(`${path} → 404 + document avec <html> et écran 404`, async ({ request }) => {
+      const response = await request.get(path)
+      expect(response.status(), `${path} doit répondre 404`).toBe(404)
+
+      const html = await response.text()
+      const openingTag = html.match(/<html[^>]*>/)?.[0] ?? ''
+      expect(openingTag, `balise <html> servie pour ${path}`).toMatch(/^<html\s[^>]*lang="/)
+      expect(html, `écran 404 servi pour ${path}`).toContain('data-testid="global-not-found-screen"')
+    })
+  }
+
+  // Le HTML servi est PRÉRENDU au build (une seule page statique pour les 4
+  // locales) : la locale de l'URL ne peut être posée qu'après hydratation.
+  // Les deux états successifs doivent rester cohérents : `lang` ET le libellé.
+  test('après hydratation, /de/nope s’aligne sur la locale de l’URL', async ({ page }) => {
+    const response = await page.goto('/de/nope')
+    expect(response?.status(), 'statut de /de/nope').toBe(404)
+
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.lang), {
+        message: 'document.documentElement.lang sur /de/nope',
+      })
+      .toBe('de')
+    await expect(page.getByTestId('global-not-found-screen')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Seite nicht gefunden')
+    await expect(page.getByTestId('global-not-found-home-link')).toHaveAttribute('href', '/de')
+  })
+})

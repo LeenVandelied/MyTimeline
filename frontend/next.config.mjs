@@ -28,6 +28,21 @@ const nextConfig = {
   // serveur Node minimal + uniquement les deps runtime nécessaires, sans copier
   // tout node_modules dans l'image finale. Neutre hors conteneur (dev/CI inchangés).
   output: 'standalone',
+  // #413 (suite) — DRAPEAU EXPÉRIMENTAL ASSUMÉ. #413 a descendu `<html>`/`<body>`
+  // sous `app/[locale]/layout.tsx` pour que `<html lang>` suive la locale de la
+  // route (WCAG 3.1.1). Effet de bord mesuré : Next exige que le layout RACINE
+  // fournisse le document pour servir `/_not-found`, or `app/layout.tsx` ne rend
+  // plus que `{children}` → toute URL non matchée répondait 404 avec un document
+  // SANS `<html>` ni `<body>` (`NEXT_MISSING_ROOT_TAGS`), écran blanc.
+  // Ce drapeau active `app/global-not-found.tsx`, la seule forme Next qui
+  // REMPLACE le layout racine sur cette route et rend son propre document.
+  // Alternative écartée : remonter `<html>` en racine et lire la locale via
+  // `headers()` — cela bascule toute l'app en rendu dynamique et annule le
+  // `generateStaticParams()` de `[locale]/layout.tsx` (perte du SSG, 52 pages).
+  // Instable par nature : à re-vérifier à chaque bump de Next (15.5.22 ici).
+  experimental: {
+    globalNotFound: true,
+  },
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: false,
