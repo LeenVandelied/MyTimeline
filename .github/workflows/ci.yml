@@ -249,9 +249,16 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Install Playwright browser (chromium)
+      # `firefox` ajouté au S62 (#414). NON facultatif : `npm run test:e2e`
+      # ci-dessous lance TOUS les projets de `playwright.config.ts`, qui déclare
+      # depuis #414 un projet `firefox` restreint par `testMatch` à la seule spec
+      # `sprint-62-select-focus-indicator.spec.ts`. Sans ce navigateur, ce projet
+      # échoue au lancement et le job `e2e` (check requis) rougit.
+      # Le périmètre Gecko reste cette unique spec — cf. le commentaire du projet
+      # dans `playwright.config.ts` avant d'en élargir le `testMatch`.
+      - name: Install Playwright browsers (chromium + firefox)
         working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox
 
       # Playwright lance lui-même le frontend via `webServer` (npm run dev). En
       # `next dev`, les NEXT_PUBLIC_* et E2E_API_PROXY_TARGET sont lus au RUNTIME
