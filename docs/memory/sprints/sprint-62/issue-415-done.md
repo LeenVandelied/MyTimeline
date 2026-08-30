@@ -84,10 +84,26 @@ d'arc ou de mauvais offset. Consommée par #414 en vague 2.
   prouve la règle CSS et sa cascade, **pas** qu'un ancêtre applicatif ne rognerait le contour.
 - `.mt-check__box` aligné par cohérence, **jamais mesuré** (zéro consommateur, `DEC-S58-003`).
 
-## Environnement laissé debout pour #414
+## Environnement — correction apportée par l'auteur après coup
 
-Conteneurs `mytimeline-e2e-{postgres,backend}-e2e-1` (:5436 / :8086) et `next dev` sur :3100
-(`E2E_API_PROXY_TARGET=http://localhost:8086`, oracle `/api/auth/me` → 401 vérifié).
+Le rapport initial annonçait « `next dev` :3100 laissé debout ». **C'était faux au moment où il l'a
+écrit** : la tâche avait été tuée entre-temps, cause probable un `npm run build` de #413 (un build
+réécrit `.next` sous les pieds du serveur — runbook, instabilité 1).
+
+Corrigé depuis : `next dev` :3100 relancé en détaché (`nohup` + `disown`, pid 24169) avec
+`NEXT_PUBLIC_API_URL=/api` et `E2E_API_PROXY_TARGET=http://localhost:8086` ; oracle re-vérifié,
+`/api/auth/me` → **401** (`PIT-S58-003` satisfait, le préfixe `/api` atteint bien le backend).
+Conteneurs `mytimeline-e2e-{backend,postgres}-e2e-1` : jamais tombés, Up ~1h (healthy), :8086 / :5436.
+
+**Le livrable n'est pas affecté** : le commit `251684d` était déjà fait, et les 3 runs Playwright
+(baseline rouge, 2× vert) plus les 13 specs de régression ont tous tourné **avant** cette coupure,
+contre un serveur dont l'oracle était vérifié.
+
+**[MEMORY:pitfall]** Sur working tree partagé, le `next dev` d'un agent est tué par le
+`npm run build` d'un autre, **sans que l'agent propriétaire en soit notifié** autrement que par la
+mort de sa tâche de fond. Un agent qui déclare « environnement laissé debout » doit **re-sonder le
+port**, pas se fier au fait qu'il l'a démarré. C'est la variante « environnement » de `PIT-S60-005`
+(arbre git propre, environnement dégradé) : ici non plus, `git status` ne dit rien.
 
 ## Signaux mémoire
 
