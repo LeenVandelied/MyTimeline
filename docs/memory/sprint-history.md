@@ -2792,6 +2792,44 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 62 — 2026-08-30 (En cours)
+**Objectif :** Dette d'accessibilité WCAG du design system — `lang` de page et indicateurs de focus.
+**Milestone GitHub :** #63
+**Issues (3) :** #413, #414, #415
+**Périmètre arbitré au démarrage :** le milestone 62 portait 5 issues ; #441 et #442 sont les
+follow-ups créés à la clôture du Sprint 61 et ne portent pas le label `sprint-62`. Décision du dev :
+les laisser au milestone pour le Sprint 63, exécuter les 3 issues planifiées.
+**Vagues :** V1 = #413 + #415 (parallèles, aucun fichier commun) | V2 = #414 (après #415, réutilise
+la sonde pixel livrée par #415)
+**Migrations :** aucune (sprint 100 % frontend)
+**Dépend de :** aucune
+
+### Plan architect produit au démarrage (pas au `/sprint plan`)
+`/sprint plan` n'avait persisté ni entrée d'historique ni `architect-plans.md` pour ce sprint. Un
+architect a donc été spawné en Phase 3 de `/sprint start`, en lecture seule, pour confronter au code
+les pistes techniques des 3 issues. **Deux d'entre elles se sont révélées fausses** — détail complet
+dans `docs/memory/sprints/sprint-62/architect-plans.md`.
+
+### Arbitrages produit tranchés par le dev au démarrage (2026-08-30)
+**#413 — la piste de l'issue était inapplicable.** Elle visait `frontend/src/app/[locale]/layout.tsx`,
+un chemin qui n'existe pas (l'app router est `frontend/app/`), et supposait que `locale` soit lisible
+là où est posé le `<html>`. Le `<html lang="fr">` est en réalité en dur dans le layout **racine**
+`frontend/app/layout.tsx:41`, où Next ne passe aucun param de segment enfant. Trois voies ont été
+mises au dev : descendre `<html>/<body>` sous `[locale]`, lire un header en racine, ou poser
+l'attribut côté client. **Voie retenue : descendre `<html>/<body>` sous `[locale]`** (pattern
+next-intl canonique) — seule voie qui garde le SSG *et* donne un `lang` correct dès le HTML SSR, donc
+la seule qui satisfait réellement WCAG 3.1.1. Elle impose de convertir `app/error.tsx` en
+`app/global-error.tsx`. Conséquence assumée : **#413 rebadgée `size:S` → `size:M`**, le « correctif
+d'une balise » annoncé n'existait pas.
+
+**#414 — les critères d'acceptation étaient inexécutables.** L'issue exige un verdict sur Firefox 151
+et une non-régression WebKit, alors que `frontend/playwright.config.ts:27-43` ne déclare que `setup`
+et `chromium`. **Décision : ajouter un projet `firefox` restreint par `testMatch` à la seule nouvelle
+spec** — le verdict devient rejouable en CI sans exposer les 174 E2E existants à un second moteur.
+WebKit est déclaré hors périmètre et sera consigné dans le `done.md`.
+
+**Status :** En cours
+
 ## Sprint 61 — 2026-08-17 (Terminé — merge PR #440 dans `dev`)
 
 **Objectif :** Événement archivé — sortir de l'impasse (l'archivage est aujourd'hui un aller sans
