@@ -3128,7 +3128,7 @@ plusieurs de catégorie `tooling`.
 
 ---
 
-## Sprint 63 — 2026-08-31 (En cours)
+## Sprint 63 — 2026-08-31 (Terminé — merge PR #449 dans `dev`)
 
 **Objectif :** Milestone « Débordements en langue allemande » — périmètre élargi par le dev aux 6
 issues du milestone (DE overflow + dette design/DS + i18n + couverture E2E).
@@ -3177,7 +3177,58 @@ s'applique pas : ce sont des chemins **suivis par git**, vérifiables par l'agen
 d'échouer en `PARTIAL` s'ils sont illisibles. Les briefings complets restent sur disque pour
 `/resume-failed`.
 
-**Status :** En cours
+### Bilan
+
+**Issues livrées (6) :** #446, #447, #442, #441, #423, #74
+**Vagues exécutées :** V1 = #446 + #447 + #442 (parallèles) | V2 = #441 | V3 = #423 | V4 = #74
+**Commits :** 16 (dont 2 cycles de correctif post-review)
+**Migrations :** aucune — sprint 100 % frontend
+**BR impactées :** BR-EVE-015 (couverte en E2E, non modifiée) ; `BR-EVE-012` mise en cause par #452
+**Tests :** `next build` EXIT=0 · backend 462/462 · frontend 1004/1004 · E2E 229 passed
+**Reviews :** batch sprint (1 MAJEUR corrigé) + `/review-pr 449` (1 MAJEUR préexistant, 2 MINEUR corrigés)
+**Nouveaux :** `PIT-S63-001..017`, `PAT-S63-001..007`, `DEC-S63-001..004`, `BUG-S63-001..004`, `ADR-008`
+
+### Le fait marquant : 3 pistes d'issue sur 6 étaient fausses ou incomplètes
+
+Le sprint n'ayant jamais été planifié, un architect a été spawné en Phase 3. Ce détour a payé :
+
+| Issue | Ce que disait l'issue | Réalité mesurée |
+|---|---|---|
+| #74 | appliquer 4 familles d'utilitaires `i18n.css` | **3 des 4 ciblent des composants inexistants** — aucun `Segmented` au dépôt, `.mt-tabs--collapsible` exige un markup absent. Issue **re-scopée en audit** |
+| #447 | asserter le focus « des 3 sélecteurs surveillés » | **Aucun** ne porte de règle de focus (formes composées frère-adjacent). Suivre l'issue aurait fait **rougir du CSS sain** |
+| #446 | « un seul des 6 consommateurs de `ui/select` est affecté » | Vrai pour `ui/select`, **trompeur** : `PopoverPicker`, même drawer, cassé à l'identique |
+
+### L'architect s'est trompé 4 fois, chaque fois corrigé par la mesure d'un agent
+
+Compte de tests (#442 : 7 annoncés, **5** réels — l'issue avait raison), statut de `.mt-radio__dot` (#447), arbitrage binaire (#441 : une **3ᵉ voie** existait, déjà conventionnelle), risque de régression (#423 : infirmé, 38 px au pire). **Aucune** de ces corrections n'est venue d'un doute théorique — toutes d'une re-mesure.
+
+### Deux découvertes convergentes, trouvées indépendamment
+
+La **création d'événement est injoignable sous 1024 px** : l'unique appelant de `setShowCreate(true)` vit dans un `<aside … lg:flex>`. Trouvée par #446 (variante `.mt-sheet` sans déclencheur) **et** par #74 (audit de largeurs), par deux voies distinctes.
+
+### La review de PR a coûté cher, et c'est ce qui l'a rendue utile
+
+Partie d'un flake E2E, elle a abouti à **deux défauts produit démontrés** (#451, #452) et deux autres corrigés au passage : `scroll-behavior: smooth` qui faussait toute mesure de défilement, et le centrage initial calculé sur une **étendue factice** — la frise s'ouvrait **13 ans avant aujourd'hui**, sans aucun symptôme.
+
+**Le flake n'est PAS refermé.** Taux du job `e2e` : ~**50 % avant comme après** correctif (5 runs : échec, succès, échec, succès, échec-puis-succès-au-rejeu). Ni un échec ni un vert isolés ne concluent. Suite dans #451.
+
+### Erreurs de méthode du lead, consignées
+
+1. **Conclusion sur un échantillon de un, deux fois** — « contamination confirmée » après un seul vert (démenti au run suivant, sur un commit de **documentation seule**), puis « le correctif ne marche pas » après un seul rouge, alors que le taux de base était déjà de 50 %.
+2. **`next build` annoncé vert sans être reproductible** — un run direct l'a démenti (`EXIT=1`, binaire natif absent). `node_modules` était cassé, pas le code ; réparé par `npm ci`, puis EXIT=0.
+3. **Contrainte présentée comme verrouillée alors qu'elle ne l'était pas** — 3 specs censées verrouiller la formule de scroll de #392 : `scrollLeft` n'y figure que comme **mesure**. Famille `PIT-S58-004`.
+4. **Reproche infondé à un agent**, accusé d'avoir esquivé le travail et cité un identifiant inexistant : il existait et a produit le meilleur diagnostic de la session.
+5. **Diagnostic périmé recyclé** — « l'ancre est keyée sur `dayWidth` seul » alors que l'agent l'avait entre-temps corrigé.
+
+### Écarts de skill relevés
+
+- `check-sprint-completeness.sh` a remonté **7 signaux « non traités » dont 5 étaient des négations explicites** ; le `grep` ne distingue pas « pas de `RECOMMAND_X` » d'une demande. Idem pour la précondition Phase 9 `grep "[MISSING]"`, qui aurait abandonné sur des phrases « **Aucun** `[MISSING]` ». Cf. `PIT-S63-017`.
+- Le check de couverture E2E est **aveugle aux testids dynamiques** : il n'a rien vu du seul testid ajouté (template literal), vérifié à la main.
+- `detect-domain.sh` inexploitable sur ce sprint (#74 → `auth`, #446 → `events` pour un sujet DS).
+- Le triage de `/review-pr` a levé un **faux positif `auth`** sur le chemin `styles/ds/tokens/`.
+- **Déviation d'inlining assumée** : `inject-pack.sh` n'ayant pas de mode allégé (127 KB par briefing), les prompts ont inliné `cp-frontend.md` et imposé la lecture de `pit-frontend.md` / `br-events.md` en étape 0 bloquante.
+
+**Status :** **Terminé** — PR **#449** (`sprint/63` → `dev`) mergée le 2026-08-31, milestone #64 fermé. Titre et ligne `Status` volontairement redondants (`PIT-S56-006`).
 
 ---
 

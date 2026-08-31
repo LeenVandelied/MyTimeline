@@ -571,6 +571,74 @@ jsdom + `css: true`. `vi.mock` de la feuille dans le test. (Sprint 62 #413)
 ## PIT-S62-014 — Un briefing qui exige de citer un fichier supprimé est infalsifiable
 Erreur du lead au S62 : le briefing d'un subagent imposait de lire `briefing-415.md` et d'en citer les marqueurs comme preuve de chargement du context-pack — alors que les briefings venaient d'être **retirés avant l'ouverture de la PR** (convention anti-bloat). Soit l'agent invente les marqueurs, soit il bloque. L'agent a refusé d'inventer et l'a signalé en tête de rapport — bon comportement. Ne pas adosser une preuve de chargement à un artefact que la convention de sprint supprime. (Sprint 62)
 
+
+## PIT-S63-001 — `locator.count()` n'auto-attend pas : routage responsive en course silencieuse
+Router un parcours E2E par `getByTestId('x').count()` crée une course quand la bascule est un `matchMedia` JS. `useMediaQuery` rend **`false` au premier rendu** (SSR-safe) : la frise est DESKTOP avant hydratation. Aux largeurs mobiles le test prenait donc la branche desktop, cliquait la pastille (qui, elle, auto-attend et se résout), puis attendait un `event-drawer-edit` **jamais monté** par `TimelineMobilePortrait`. Parade : résoudre la variante par `matchMedia` **dans la page**, puis **vérifier la racine** de cette variante sous budget court. Famille [[PIT-S61-006]] (grepper les appelants) : le symbole existe, le chemin non. (Sprint 63 #74/#449)
+
+
+## PIT-S63-002 — `actionTimeout: 0` est le défaut Playwright : une erreur de routage coûte le budget du TEST
+Sans budget explicite sur les clics d'un parcours à branches, une attente impossible consomme les **300 s du test**, × `retries: 2`. Le job `e2e` est passé de ~15 min à **42 min** pour 4 tests. Poser un budget par clic fait échouer **vite** et **nommer** le chemin manquant. (Sprint 63 #449)
+
+
+## PIT-S63-003 — L'outillage de dev bloque le CLIC, pas seulement la MESURE
+`.tsqd-parent-container` (React Query Devtools) était exclu des mesures depuis le S59, mais **interceptait les clics** — 42 tentatives repoussées. La CI e2e tourne sur `next dev` : l'outillage est présent. Parade : `pointer-events: none` via `addInitScript`, en le **laissant dans le DOM** pour ne pas invalider l'exclusion de mesure existante. (Sprint 63 #449)
+
+
+## PIT-S63-004 — Invoquer un pitfall de MÉTRIQUE pour excuser un TIMEOUT est une erreur de catégorie
+Erreur du lead au S63 : 4 échecs E2E excusés par [[PIT-S52-001]] (« mesures de largeur non concluantes sur macOS »). Or ce pitfall couvre les écarts de **métrique de police** ; un test qui **expire** n'a produit **aucune** mesure. La cause réelle était un routage responsive faux ([[PIT-S63-001]]). Signal de reconnaissance : l'échec est un `locator.*: Test timeout`, pas un écart de valeur. Refuser ce raisonnement est ce qui a mené au vrai diagnostic. (Sprint 63)
+
+
+## PIT-S63-005 — Tailwind v4 : `max-[Npx]` compile en `width < N`, pas `<=`
+Le palier compact s'arrête donc à `N-1`, et **`N` devient un second creux local** (header `de` : 52 px à 359, **23 px à 360**). Vérifié deux fois (`columnGap` 4/8 px, `paddingLeft` 8/16 px). Une grille de largeurs qui saute de 320 à 375 est **aveugle** à ce creux. Mesurer `N-1` **et** `N` pour tout palier `max-[]`, comme [[PIT-S59-001]] l'exige déjà pour les seuils `min-`. (Sprint 63 #423)
+
+
+## PIT-S63-006 — Un mock i18n en `${ns}.${key}` rend un namespace FAUX indiscernable d'un juste
+`useTranslations('deleteDialog')` (namespace inexistant) et `('common.deleteDialog')` (juste) produisent **le même** résultat de test. Le défaut a survécu plusieurs sprints sous **3 fichiers de tests verts**, et les E2E ne ciblaient que des `data-testid`, jamais du texte. Prévention : tout composant à `useTranslations` doit avoir au moins une assertion sur un **libellé traduit**, via `NextIntlClientProvider` alimenté par les VRAIS messages + collecteur `onError`. (Sprint 63 #441)
+
+
+## PIT-S63-007 — `warn-test-delegation.sh` tue la commande entière, y compris un heredoc qui ÉCRIT
+Le hook PreToolUse détecte une chaîne d'invocation de runner de test **n'importe où** dans la commande — **y compris un `cat <<EOF` qui ne fait que rédiger un fichier** la contenant. Le fichier n'est jamais créé et l'échec suivant (« no such file ») oriente vers un faux diagnostic. Rencontré **deux fois** au S63, par un agent puis par le lead. Parade : écrire ces fichiers avec l'outil `Write` ; `SKIP_DELEGATION=1` pour un run ciblé. (Sprint 63 #442)
+
+
+## PIT-S63-008 — « Environnement laissé debout » est une promesse que rien ne tient
+Un agent a conclu son rapport par « `next dev` laissé debout, réutilisable » ; sa tâche de fond a été tuée **après** l'envoi, et l'affirmation est devenue fausse sans que rien ne la corrige. Survenu **3 fois** au S63. Prévention : ne jamais promettre un **état** à l'agent suivant — donner la **commande de relance** et un fait **horodaté**. Variante temporelle de [[PIT-S62-009]]. (Sprint 63 #442)
+
+
+## PIT-S63-009 — Un `test.fail()` laissé comme marqueur de dette fige le périmètre de l'issue suivante
+Le S62 avait figé le popover invisible en 2 `test.fail()` sur **un seul widget**. L'issue #446 a donc décrit un défaut de `ui/select` — alors que la cause est un **palier `z` partagé** : `PopoverPicker`, monté dans le même drawer, était cassé à l'identique (46-66 % de panneau mesurés) et absent du périmètre. Corriger le seul `Select` aurait laissé le champ voisin invisible **dans le formulaire qu'on prétendait réparer**. Grepper les **frères du composant** avant d'accepter le périmètre d'une issue de superposition. (Sprint 63 #446)
+
+
+## PIT-S63-010 — Étendre un matcher de test CSS par inertie fait rougir du CSS sain
+#447 demandait d'asserter le focus « des 3 sélecteurs surveillés » — or **aucun** ne porte de règle de focus : les indicateurs vivent sur des sélecteurs **composés frère-adjacent** (`.mt-check input:focus-visible + .mt-check__box`, `core.css:160/172/189`). Réutiliser le matcher exact existant aurait rendu `decls.length === 0` puis fait échouer `toBeGreaterThan(0)` **sur du CSS parfaitement sain**. Grepper la règle **réelle** avant d'étendre. Symétrique de [[PIT-S61-006]]. (Sprint 63 #447)
+
+
+## PIT-S63-011 — Recette docker jammy : `host.docker.internal` donne 403 CORS sur tout écran authentifié
+Le backend fige `localhost:3000` comme origine acceptée. Depuis le conteneur, viser `host.docker.internal:3000` rend **403** ; via un **forwarder TCP** `127.0.0.1:3000 → host.docker.internal:3000`, la requête atteint la logique applicative (400). Invisible pour les audits de **landing** (pages non authentifiées) — d'où sa découverte tardive. (Sprint 63 #74)
+
+
+## PIT-S63-012 — Balayage `rect.right > clientWidth` : exclure les défileurs, mais surtout PAS `<body>`
+La frise produit 9-16 faux positifs par largeur (défilement horizontal légitime). Mais exclure `<body>` est pire : un scroll-lock Radix ouvert y déclare **tout le document** comme « contenu » et **masque l'élément fautif**. (Sprint 63 #74)
+
+
+## PIT-S63-013 — `unique()` fabrique un faux débordement : jeton de 16 chiffres insécable
+`support/products.ts:40` produit un identifiant de 16 chiffres ; rendu dans un `h1`, il déborde de 50-53 px. Un audit a failli « corriger » ce non-défaut. **Signal de reconnaissance : le débordement n'est PAS corrélé à la locale.** Défaut réel adjacent tracé : le `h1` du titre produit n'a pas de `break-words`. (Sprint 63 #74)
+
+
+## PIT-S63-014 — `scrollLeft` est en pixels : toute échelle variable le périme
+Au zoom, l'échelle px/jour change ; le navigateur **rabat** la valeur périmée sur `scrollWidth − clientWidth` et la virtualisation horizontale démonte **toutes** les pastilles (0 dans le DOM, lanes toujours rendues). Mesuré : `31348 / 32330 / 982`. **Règle : une position de défilement mémorisée dans une vue à échelle variable se stocke dans l'unité du DOMAINE (jours), jamais en pixels.** (Sprint 63 #449/#451)
+
+
+## PIT-S63-015 — Mesurer `scrollLeft` sous `scroll-behavior: smooth` donne des valeurs fantômes
+4 lectures contradictoires (4, 16, 17, 17259) pour **deux** écritures identiques à 59677 : les mesures étaient prises **en pleine animation**. Attendre deux lectures consécutives égales avant toute mesure ; poser une position avec `behavior:'instant'` — l'animation est de toute façon rabattue par le clamp avant d'aboutir. Famille [[PIT-S54-003]]. (Sprint 63 #449)
+
+
+## PIT-S63-016 — Un effet de positionnement en `useEffect(..., [])` réussit sur des données absentes
+`computeRange([])` (`zoom.ts:122`) renvoie `min = max = today` puis ±30 j : une étendue **factice mais plausible**. `scrollToToday()` s'exécutait donc au montage **avant l'arrivée des données**, réussissait silencieusement sur cette étendue fausse, et n'était **jamais rejoué**. Résultat mesuré : frise ouverte **13 ans avant aujourd'hui**, **sans aucun symptôme d'erreur**. Keyer un effet de positionnement sur l'**identité des données**, pas sur le montage. (Sprint 63 #449)
+
+
+## PIT-S63-017 — Les garde-fous à `grep` ne distinguent pas une NÉGATION d'une demande
+Deux occurrences au S63. (1) `check-sprint-completeness.sh` a remonté 7 « signaux non traités » : **5 étaient des négations explicites** (« pas de `RECOMMAND_DB_EXPERT` car aucun schéma »), les 2 autres étaient traités. (2) La précondition Phase 9 `grep -q "\[MISSING\]"` aurait abandonné à tort sur les phrases « **Aucun** `[MISSING]` » de l'audit. Un `grep` de jeton lit la présence, jamais l'intention. Vérifier le contexte avant d'agir sur un tel garde-fou. (Sprint 63, clôture)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
