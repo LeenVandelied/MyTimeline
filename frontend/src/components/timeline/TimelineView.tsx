@@ -1,6 +1,14 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import { ChevronRight, Maximize2, Minus, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
@@ -756,15 +764,61 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // Fenêtre visible (fraction) pour la minimap : dérivée du scroll + largeur.
   const [viewportRatio, setViewportRatio] = useState(1)
 
+  /* ==========================================================================
+   * #449 — ANCRE TEMPORELLE DU DÉFILEMENT
+   *
+   * `scrollLeft` est une longueur en PIXELS ; l'échelle px/jour, elle, change à
+   * chaque niveau de zoom. Une valeur posée à une échelle donnée n'a donc plus
+   * aucun sens à l'échelle suivante : au zoom arrière la piste rétrécit, le
+   * navigateur RABAT (`clamp`) le `scrollLeft` périmé sur `scrollWidth -
+   * clientWidth` et la frise saute au bord droit. Les pastilles de la zone
+   * regardée sortent alors de la bande de virtualisation (`OVERSCAN_X_PX`) et ne
+   * sont plus montées du tout — la frise paraît VIDE alors que les lanes
+   * restent visibles. Mesuré au défaut : `scrollLeft` 31348 pour un
+   * `scrollWidth - clientWidth` de 31348, à l'unité près.
+   *
+   * On mémorise donc la position en JOURS et non en pixels — grandeur INVARIANTE
+   * au zoom — et on la re-projette à la nouvelle échelle.
+   *
+   * REPÈRE : l'ancre est le jour de la PISTE qui affleure le bord droit de
+   * l'en-tête de lane sticky, soit exactement `scrollLeft / dayWidth`. C'est le
+   * même repère (et la même formule, à l'envers) que celui délibérément retenu
+   * par #392 quinze lignes plus bas pour `offsetDays` — pas le repère RAIL de
+   * `scrollToToday`, qui centre et ajoute `LANE_TRACK_OFFSET_PX`. Les deux ne
+   * sont pas interchangeables ; réutiliser celui de #392 garantit qu'un jour
+   * visible AVANT le zoom reste visible APRÈS, et jamais SOUS l'en-tête.
+   * ========================================================================== */
+  const anchorDaysRef = useRef(0)
+  const lastDayWidthRef = useRef(dayWidth)
+  /**
+   * Dernière ancre posée par le code (par opposition à un défilement de
+   * l'utilisateur). Tant que `anchorDaysRef` lui est égale, personne n'a pris la
+   * main et le recentrage automatique sur aujourd'hui reste légitime.
+   */
+  const autoAnchorRef = useRef(0)
+
+  /**
+   * Relève l'ancre depuis le DOM. Le garde d'échelle est ESSENTIEL : entre le
+   * rendu qui change `dayWidth` et l'effet qui re-projette, `scrollLeft` est
+   * précisément la valeur périmée rabattue par le navigateur. L'enregistrer
+   * écraserait l'ancre par le défaut même que l'on corrige.
+   */
+  const recordScrollAnchor = useCallback(() => {
+    const el = scrollRef.current
+    if (!el || dayWidth <= 0 || dayWidth !== lastDayWidthRef.current) return
+    anchorDaysRef.current = el.scrollLeft / dayWidth
+  }, [dayWidth])
+
   // #392 — La minimap cartographie la PISTE (buckets d'events par jour), pas le
   // rail : on retire la gouttière de `scrollLeft` avant de normaliser, sinon la
   // fenêtre dérive de `LANE_TRACK_OFFSET_PX / trackWidth` sur toute la course.
   const syncViewportFromScroll = useCallback(() => {
     const el = scrollRef.current
     if (!el || trackWidth === 0) return
+    recordScrollAnchor()
     setViewportStart(Math.max(0, (el.scrollLeft - LANE_TRACK_OFFSET_PX) / trackWidth))
     setViewportRatio(Math.min(1, el.clientWidth / trackWidth))
-  }, [trackWidth])
+  }, [trackWidth, recordScrollAnchor])
 
   // #69 — La synchronisation de la minimap déclenchait un `setState` (donc un
   // re-rendu COMPLET de la frise) à CHAQUE événement `scroll` : c'était le premier
@@ -804,8 +858,42 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       // bord gauche, donc SOUS l'en-tête — le défaut même que corrige cette issue
       // (visible sur « T » / « [ » / « ] »).
       el.scrollLeft = Math.max(0, zoom.offsetDays * dayWidth)
+      recordScrollAnchor()
     }
-  }, [zoom.offsetDays, dayWidth])
+  }, [zoom.offsetDays, dayWidth, recordScrollAnchor])
+
+  /**
+   * #449 — RE-PROJECTION de l'ancre quand l'échelle change (zoom avant/arrière,
+   * `SET_LEVEL`). Sans elle, `scrollLeft` restait celui posé à l'échelle
+   * précédente — au montage pour la plupart des parcours, l'effet ci-dessus
+   * étant gardé sur `offsetDays`, qu'aucune action de zoom ne modifie.
+   *
+   * `useLayoutEffect` (et non `useEffect`) : la re-projection doit être écrite
+   * AVANT la peinture, sinon la frise clignote une frame sur la position
+   * rabattue. La page ne rend rien côté serveur (`timeline/page.tsx` sort sur
+   * `if (!user) return null`, l'auth étant client) — aucun avertissement SSR.
+   *
+   * Ne s'arme QUE sur un changement d'échelle : un re-rendu quelconque ne doit
+   * jamais déplacer le défilement de l'utilisateur.
+   */
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    if (dayWidth === lastDayWidthRef.current) return
+    lastDayWidthRef.current = dayWidth
+    // Un zoom n'est pas une prise de main sur le DÉFILEMENT : si le recentrage
+    // automatique était encore actif, il doit le rester après re-projection.
+    const autoStillOwned = anchorDaysRef.current === autoAnchorRef.current
+    // Même repère PISTE que #392 : le jour ancré réaffleure l'en-tête sticky.
+    // `behavior:'instant'` : un zoom se règle, il ne se parcourt pas. Une
+    // animation ici serait rabattue par le clamp du navigateur avant d'aboutir,
+    // et deux clics rapprochés se marcheraient dessus.
+    el.scrollTo({ left: Math.max(0, anchorDaysRef.current * dayWidth), behavior: 'instant' })
+    // Relit la valeur réellement retenue (le navigateur rabat toujours aux
+    // bornes) : l'ancre reste ainsi fidèle à ce qui est affiché.
+    anchorDaysRef.current = el.scrollLeft / dayWidth
+    if (autoStillOwned) autoAnchorRef.current = anchorDaysRef.current
+  }, [dayWidth])
 
   const scrollToToday = useCallback(() => {
     const el = scrollRef.current
@@ -813,13 +901,52 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     // `todayLeftPx` est en repère PISTE → passage en repère rail (#392).
     const target = LANE_TRACK_OFFSET_PX + todayLeftPx - el.clientWidth / 2
     el.scrollLeft = Math.max(0, target)
-  }, [todayLeftPx])
+    recordScrollAnchor()
+    autoAnchorRef.current = anchorDaysRef.current
+  }, [todayLeftPx, recordScrollAnchor])
 
-  // Centrage initial sur aujourd'hui.
+  /**
+   * #449 — CENTRAGE INITIAL, REJOUÉ QUAND L'ÉTENDUE DEVIENT RÉELLE.
+   *
+   * L'ancien effet était en `[]` : il centrait sur aujourd'hui au MONTAGE, or à
+   * cet instant `useDashboardData` n'a pas encore répondu. `computeRange` sur un
+   * tableau d'events vide rend une fenêtre `aujourd'hui ± 30 j` — le centrage
+   * portait donc sur une étendue FACTICE, et n'était plus jamais rejoué quand
+   * l'étendue réelle arrivait. Mesuré sur une étendue de 5501 jours (today au
+   * jour 5000) : `scrollLeft` = 16 px au lieu de ~59 700, soit la frise ouverte
+   * treize ans avant aujourd'hui, aucune pastille du jour montée.
+   *
+   * Rejoué donc à chaque changement d'ÉTENDUE (`rangeStart` / `totalDays`), et
+   * volontairement PAS sur `dayWidth` : un changement d'échelle relève de la
+   * re-projection d'ancre ci-DESSUS, qui préserve la zone regardée au lieu de
+   * ramener de force sur aujourd'hui.
+   *
+   * GARDE : on ne recentre que si l'ancre courante est encore CELLE QUE NOUS
+   * AVONS POSÉE. Dès que l'utilisateur défile, `anchorDaysRef` diverge de
+   * `autoAnchorRef` et le recentrage automatique se tait définitivement — sans
+   * avoir à écouter `wheel` / `pointerdown`, et sans jamais reprendre la main
+   * sur un défilement délibéré.
+   */
+  const todayLeftPxRef = useRef(todayLeftPx)
+  todayLeftPxRef.current = todayLeftPx
+  const dayWidthRef = useRef(dayWidth)
+  dayWidthRef.current = dayWidth
+
   useEffect(() => {
-    scrollToToday()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    const el = scrollRef.current
+    if (!el) return
+    if (anchorDaysRef.current !== autoAnchorRef.current) return
+    // Repère RAIL + centrage (identique à `scrollToToday`), cf. #392.
+    const target = Math.max(0, LANE_TRACK_OFFSET_PX + todayLeftPxRef.current - el.clientWidth / 2)
+    // `behavior:'instant'` NEUTRALISE le `scroll-behavior:smooth` du conteneur
+    // (`ds/components/timeline.css:127`). Poser une position n'est pas naviguer :
+    // animer 60 000 px au montage laisse la frise plusieurs centaines de ms sur
+    // une zone qui n'est ni celle d'avant ni celle d'après — et toute mesure
+    // prise pendant le vol lit une position transitoire (piège PIT-S54-003).
+    el.scrollTo({ left: target, behavior: 'instant' })
+    anchorDaysRef.current = el.scrollLeft / dayWidthRef.current
+    autoAnchorRef.current = anchorDaysRef.current
+  }, [rangeStart, totalDays])
 
   const onMinimapSeek = useCallback(
     (start: number) => {
@@ -827,9 +954,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       if (!el) return
       // Réciproque exacte de `syncViewportFromScroll` (repère piste → rail, #392).
       el.scrollLeft = LANE_TRACK_OFFSET_PX + start * trackWidth
+      recordScrollAnchor()
       setViewportStart(start)
     },
-    [trackWidth],
+    [trackWidth, recordScrollAnchor],
   )
 
   const toggleFullscreen = useCallback(() => {
