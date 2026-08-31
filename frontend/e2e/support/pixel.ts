@@ -66,9 +66,32 @@ import type { Locator, Page } from '@playwright/test'
  * l'extremum, c'est réintroduire l'heuristique que `PIT-S58-001` interdit.
  * {@link PixelStrip.unanimity} expose la part du mode : une unanimité basse est
  * le signal qu'on échantillonne un arc ou un mauvais offset — pas un détail.
- * {@link measureIndicatorContrast} LÈVE en dessous de 0,6 : la garde vit dans la
- * fonction, pas dans les appelants, pour qu'aucun ratio faux ne puisse sortir
- * d'un appel qui aurait oublié de la recopier.
+ * {@link measureIndicatorContrast} LÈVE en dessous de 0,6, sur CHACUNE de ses
+ * deux bandes : la garde vit dans cette fonction, pas dans ses appelants, pour
+ * qu'un appel qui aurait oublié de la recopier ne puisse pas en sortir un ratio
+ * faux.
+ *
+ * La portée exacte de cette promesse — parce qu'un commentaire qui promet plus
+ * que le code est le défaut que ce fichier a déjà eu trois fois :
+ *  · elle vaut pour {@link measureIndicatorContrast}, la SEULE fonction qui rend
+ *    un `ratio`. {@link readStrip} et {@link dumpOutwardProfile} rendent une
+ *    `unanimity` SANS lever — c'est leur rôle (le dump doit pouvoir montrer une
+ *    bande pourrie), et il revient à l'appelant qui calculerait lui-même un
+ *    ratio depuis un `PixelStrip` de la lire ;
+ *  · elle est levable, par `minUnanimity: 0` — opt-out explicite et écrit dans
+ *    l'appel, jamais un défaut silencieux.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * CES GARDES SONT ARMÉES PAR DES TESTS
+ * ─────────────────────────────────────────────────────────────────────────────
+ * `src/__tests__/e2e-pixel-guards.test.ts` (Vitest) éprouve les quatre :
+ * bande vide, seuil d'unanimité sur les DEUX bandes, état désactivé lu jusque
+ * sur les ancêtres, et point hors région capturée. Chacun de ces tests a été
+ * vérifié ROUGE garde neutralisée, VERT garde remise. Les deux specs Playwright
+ * qui consomment la sonde mesurent des éléments sains (unanimité 100 %, loin des
+ * bords) : elles ne déclenchent aucune garde et ne prouvent donc rien à leur
+ * sujet. Toucher un seuil, un comparateur ou une tolérance ici sans faire rougir
+ * ce fichier de test signifie que la garde correspondante a été perdue.
  *
  * @see docs/memory/sprints/sprint-58 — origine des pièges cités.
  */
@@ -195,24 +218,66 @@ export async function settleForMeasurement(page: Page, waitMs = 450): Promise<vo
  * exactement `PIT-S58-002` (le 1,59:1 du S58) sur toute la surface Radix de
  * l'application. Les trois signaux sont testés, et le message NOMME celui qui a
  * levé — un `aria-disabled` posé par erreur ne se voit pas autrement.
+ *
+ * ⚠ ET IL NE SE LIT PAS QUE SUR L'ÉLÉMENT MESURÉ. Sur Radix, « désactivé » se
+ * propage par le DOM et non par une propriété : un `Select.Item`, un
+ * `DropdownMenu.Group` ou une `fieldset[data-disabled]` **ANCÊTRE** porte
+ * l'attribut, et le descendant réellement peint (l'`<span>` du libellé, la
+ * pastille, l'indicateur) n'en porte aucun. Une garde qui n'interroge que
+ * `el` laisse donc passer exactement le cas qu'elle prétend couvrir. La
+ * recherche remonte donc la chaîne avec `closest()`, et le message dit SUR QUEL
+ * élément le signal a été trouvé — l'élément mesuré ou un ancêtre nommé : quand
+ * cette garde lèvera dans six mois, c'est cette information-là qui évitera de
+ * chercher l'attribut sur le mauvais nœud.
+ *
+ * Convention retenue, identique à celle de Radix : l'attribut `data-disabled`
+ * n'est présent QUE lorsque le contrôle est désactivé (Radix ne publie pas
+ * `data-disabled="false"`), donc sa seule présence suffit.
  */
 export async function assertFocusVisible(locator: Locator): Promise<void> {
   const state = await locator.evaluate((el) => {
+    /** Les deux signaux non natifs, en un seul sélecteur — remonté par `closest`. */
+    const DISABLED_SELECTOR = '[aria-disabled="true"],[data-disabled]'
+
+    const signalOn = (node: Element): string | null =>
+      node.getAttribute('aria-disabled') === 'true'
+        ? '`aria-disabled="true"`'
+        : node.hasAttribute('data-disabled')
+          ? "l'attribut `data-disabled` (convention Radix)"
+          : null
+
+    const label = (node: Element): string => {
+      const id = node.id !== '' ? `#${node.id}` : ''
+      const cls =
+        node.classList.length > 0 ? `.${Array.from(node.classList).slice(0, 2).join('.')}` : ''
+      return `<${node.tagName.toLowerCase()}${id}${cls}>`
+    }
+
     const nativeDisabled =
       (el instanceof HTMLInputElement ||
         el instanceof HTMLButtonElement ||
         el instanceof HTMLSelectElement ||
         el instanceof HTMLTextAreaElement) &&
       el.disabled
+
+    let disabledBy: string | null = null
+    let disabledOn: string | null = null
+    if (nativeDisabled) {
+      disabledBy = 'la propriété DOM `.disabled`'
+      disabledOn = "l'élément mesuré lui-même"
+    } else {
+      const carrier = el.closest(DISABLED_SELECTOR)
+      const carrierSignal = carrier == null ? null : signalOn(carrier)
+      if (carrier != null && carrierSignal != null) {
+        disabledBy = carrierSignal
+        disabledOn = carrier === el ? "l'élément mesuré lui-même" : `un ANCÊTRE ${label(carrier)}`
+      }
+    }
+
     return {
       focusVisible: el.matches(':focus-visible'),
-      disabledBy: nativeDisabled
-        ? 'la propriété DOM `.disabled`'
-        : el.getAttribute('aria-disabled') === 'true'
-          ? '`aria-disabled="true"`'
-          : el.hasAttribute('data-disabled')
-            ? "l'attribut `data-disabled` (convention Radix)"
-            : null,
+      disabledBy,
+      disabledOn,
       tag: el.tagName.toLowerCase(),
     }
   })
@@ -224,8 +289,10 @@ export async function assertFocusVisible(locator: Locator): Promise<void> {
   }
   if (state.disabledBy != null) {
     throw new Error(
-      `Mesure refusée : <${state.tag}> est désactivé via ${state.disabledBy} — S58 a ` +
-        `publié un 1,59:1 lu sur un contrôle désactivé (opacity:.4). ` +
+      `Mesure refusée : <${state.tag}> est désactivé via ${state.disabledBy}, porté par ` +
+        `${state.disabledOn} — S58 a publié un 1,59:1 lu sur un contrôle désactivé ` +
+        `(opacity:.4). Sur Radix, un ancêtre (Item, Group, fieldset) désactive ses ` +
+        `descendants sans qu'aucune propriété DOM ne le signale. ` +
         `Assurer l'état avant de mesurer (PIT-S58-002).`,
     )
   }
