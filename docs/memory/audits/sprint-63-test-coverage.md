@@ -1,7 +1,8 @@
 # Audit tests — Sprint 63
 
-> Phase 6. Contient une **correction d'un rapport d'agent** : le premier audit annonçait
-> `next build : 0 erreur`. Ce chiffre n'est pas reproductible et ne doit pas être cité.
+> Phase 6. Contient deux **corrections de rapports d'agent** : un `next build` annoncé vert sans
+> être reproductible (il l'est devenu, mais seulement après réparation de `node_modules`), et
+> 4 échecs E2E excusés par un pitfall qui ne s'y applique pas.
 
 ## Résultats vérifiés
 
