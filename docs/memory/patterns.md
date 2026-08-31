@@ -589,3 +589,24 @@ Un **double de `Page`** dont `evaluate()` rend directement `{width, height, dpr,
 
 ## PAT-S62-005 — Un garde-fou de mesure vit dans la fonction qui rend le chiffre, pas dans les appelants
 S62 : `minUnanimity` était documenté en JSDoc et asserté **à la main** dans les deux specs. #415 y a survécu grâce à cette assertion manuelle — qu'aucun appelant suivant n'aurait eue. Le seuil est devenu une option **levante par défaut**, sur les deux bandes, avec opt-out explicite (`minUnanimity: 0`) et documentation du danger. Documenter un seuil en JSDoc et compter sur la recopie est un anti-pattern. Cf. [[PIT-S62-003]]. (Sprint 62, review cycle 2)
+
+## PAT-S63-001 — Trouver le levier sur un budget de largeur saturé : invariants vs degrés de liberté
+Classer les blocs en **invariants prouvés** (figés par une assertion de spec ou une règle a11y) et **degrés de liberté** ; le levier est ce qui reste. Header à 320 px : le wordmark est figé à 21 px par `EXPECTED_FONT_PX` (#381), le burger par la cible tactile de 44 px (#334), `gap-1` est au minimum — restait le rembourrage du CTA. **Anti-pattern** : chercher « ailleurs » parce que le levier évident a déjà servi une fois. `max-[360px]:px-3` avait été posé au S52 mais **n'était pas le minimum** : `px-2` a rendu 8 px dans les 4 locales. (Sprint 63 #423)
+
+## PAT-S63-002 — Cibler un groupe imbriqué de messages : le chemin pointé
+`useTranslations('common.deleteDialog')`. `i18n.ts` indexe par **nom de fichier**, et next-intl résout les **sous-chemins**. C'est la convention dominante du dépôt (~25 des ~40 namespaces littéraux ; précédent exact `common.buttons`, `MobileDrawer.tsx:34`). **Anti-patterns** : prendre le nom du groupe seul pour un namespace (⇒ clé brute affichée) ; extraire le groupe en fichier dédié (⇒ 8 fichiers de locale dupliqués et des clés orphelines). Le chemin pointé ne touche **aucun** appel `t()` — clés dynamiques comprises — ni **aucun** fichier de locale. (Sprint 63 #441)
+
+## PAT-S63-003 — E2E d'un conflit optimiste sur un flux à un seul booléen : bumper un champ TIERS
+Le contexte concurrent doit modifier un champ **autre** que celui testé (ici `title`, pas `archived`). Sinon le re-fetch **supprime l'affordance** et le critère « le 2ᵉ clic réussit » devient intestable. Bonus : le champ tiers rendu, absent du DOM avant le conflit, sert de **preuve observable** du re-fetch. **Anti-pattern** : prétendre asserter l'invalidation du cache TanStack depuis Playwright — elle n'est pas observable ; le proxy honnête est le second clic qui réussit. (Sprint 63 #442)
+
+## PAT-S63-004 — Prouver un correctif de superposition par contrôle négatif RUNTIME
+Forcer le token à son ancienne valeur en cours de page (`documentElement.style.setProperty`) et re-mesurer : le défaut revient intégralement (16 mesures, 2 widgets × 2 surfaces × 2 thèmes). Coût nul, **pas de commit intermédiaire, pas de fixture supprimée** (anti-[[PIT-S62-003]]). (Sprint 63 #446)
+
+## PAT-S63-005 — Prouver rouge une garde qui lit un fichier source partagé / en lecture seule
+Extraire l'audit en **fonction pure** `audit(css, cible) → Violation[]` : la garde l'appelle sur le disque, l'armement sur des **copies mutées en mémoire, commitées**. **Anti-patterns évités** : muter le fichier partagé puis restaurer ([[PIT-S60-005]]), ou supprimer les fixtures avant commit ([[PIT-S62-003]]). Corollaire : une fixture de mutation peut devenir un **no-op silencieux** — ajouter `expect(mutated).not.toBe(source)` et lever si la règle ciblée est absente. (Sprint 63 #447)
+
+## PAT-S63-006 — Distinguer « l'utilisateur a défilé » de « le code a défilé », sans écouter les pointeurs
+Deux refs : `anchorDaysRef` (mise à jour par le handler de scroll) et `autoAnchorRef` (posée à chaque écriture **programmatique**). Leur **divergence** signale la prise de main : le recentrage automatique se tait alors définitivement. **Anti-pattern** : la plomberie d'événements `wheel`/`pointerdown`, qui rate les chemins non couverts (clavier, barre de défilement, `scrollIntoView`). (Sprint 63 #449)
+
+## PAT-S63-007 — Choisir l'échantillon d'un audit par le RISQUE, et sonder les paires de seuil
+165 mesures, un seul débordement réel — mais l'échantillon a été construit sur les **frontières** : 359/360 (palier `max-[]`, cf. [[PIT-S63-005]]), **640/641** (bascule `matchMedia` de la frise : **deux arbres DOM distincts**, angle mort de la grille existante), 1023/1024 (apparition de la sidebar). Leçon [[ci-green-is-not-page-correct]] appliquée : une vérification verte sur un échantillon de commodité ne prouve rien. (Sprint 63 #74)
