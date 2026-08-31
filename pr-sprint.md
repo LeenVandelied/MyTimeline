@@ -105,15 +105,34 @@ garde d'état qui ne teste que `.disabled` est inopérante.
 Après durcissement, les deux specs retrouvent **exactement** les mêmes ratios, occurrence pour
 occurrence.
 
+### Deux cycles de review, et un trou fermé au second
+
+Le cycle 2 a été déclenché parce que les **commits de correction eux-mêmes n'avaient jamais été
+relus** — or `f275db4` est du code de garde écrit pour réparer du code de garde. Verdict
+`PRET_POUR_MERGE`, les 3 MAJEUR vérifiés résolus **dans le code**, pas sur le message de commit.
+
+Mais il a relevé ceci : *les ratios identiques après correction prouvent la non-régression, pas
+l'efficacité des gardes.* Unanimité 100 %, éléments loin des bords ⇒ **aucune garde ne se déclenchait
+sur un cas réel du dépôt**, et leurs seules fixtures avaient été supprimées avant commit. Toute
+régression future de ces gardes — seuil inversé, `<` devenu `<=` — serait passée en CI verte.
+
+`25d2474` ferme le trou : **19 tests vitest arment les 4 gardes**, chacun prouvé **rouge quand la
+garde est neutralisée**, avec contrôles négatifs (sans eux, une garde qui lèverait *toujours*
+passerait). Technique : un double de `Page` dont `evaluate()` rend le tableau RGBA décodé, ce qui
+fait tourner pour de vrai le clamp, l'assertion d'échelle et l'accès pixel — sans navigateur.
+
+Le même commit étend la garde `disabled` aux **ancêtres** Radix : un `Item` ou `Group` ancêtre
+désactive ses descendants sans qu'aucune propriété DOM ne le signale — même classe de bug que celui
+corrigé au cycle 1.
+
 ## Tests
 
 | Suite | Résultat | Exit |
 |---|---|:---:|
-| vitest | **950 passed / 97 fichiers** | 0 |
+| vitest | **969 passed / 98 fichiers** | 0 |
 | `tsc --noEmit` / `eslint` | 0 / 0 | 0 |
 | `next build` | **`Generating static pages (52/52)`**, `○ /_not-found` statique | 0 |
-| E2E chromium | **200 passed / 0 failed / 8 skipped** | 0 |
-| E2E firefox | **13 passed / 0 failed** | 0 |
+| E2E (chromium + firefox) | **216 déclarés, 208 passed, 0 failed, 8 skipped** | 0 |
 
 Audit complet : `docs/memory/audits/sprint-62-test-coverage.md`.
 
@@ -124,6 +143,8 @@ Audit complet : `docs/memory/audits/sprint-62-test-coverage.md`.
   **`passed`**, jamais dans `failed`. Chromium 200 = 198 verts + 2 échecs attendus.
 - **Les 8 skips** sont **7** `auth-signature` (clés RS256 absentes en local) **+ 1** `test.fixme`
   avatar (`settings-profile.spec.ts:36`) — pas `auth-guard`, qui passe ses 13 tests.
+- **Le projet `firefox` reporte 13 tests** en `--list` : Playwright y inclut la dépendance `setup`
+  (5). La spec restreinte en contient 8 (4 × 2 thèmes). Les deux chiffres sont justes.
 
 Chaque spec ajoutée a été **exécutée**, et deux **prouvées non vacuous** contre le build antérieur
 (4 échecs / 4 pour le `<title>`, 5 / 5 pour la 404). Le check de couverture E2E vérifie qu'un testid
