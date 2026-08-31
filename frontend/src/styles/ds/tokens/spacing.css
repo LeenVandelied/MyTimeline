@@ -56,12 +56,35 @@
      largeur commune casserait le détail (régression visuelle). */
   --drawer-width-form: 452px;
 
-  /* layers */
+  /* layers
+     ─────────────────────────────────────────────────────────────────────────
+     DEUX PALIERS DE POPOVER, ET C'EST VOULU (#446, ADR-008).
+
+     `--z-popover` (50) est le palier des popovers rendus DANS LE FLUX de la
+     page : `.mt-select__menu` (core.css:97), le tooltip `.mt-tooltip__bubble`
+     (core.css:286), `.mt-tlv__help-pop` (timeline.css:316). Ils appartiennent à
+     leur écran et DOIVENT passer sous une modale — c'est l'invariant du DS,
+     inchangé.
+
+     `--z-popover-over-modal` (75) est le palier des overlays Radix PORTALISÉS
+     dans `body` (`ui/select`, `ui/popover`, `ui/dropdown-menu`). Ces surfaces
+     n'ont pas d'écran d'appartenance : elles doivent se peindre au-dessus de
+     CELLE QUI LES A OUVERTES, y compris quand c'est un drawer ou une sheet
+     (`.mt-drawer` / `.mt-sheet` / `.mt-actionsheet`, tous à `--z-modal`, rendus
+     EN LIGNE donc insensibles à l'ordre du DOM). À 50 le popover du `Select` du
+     drawer de création d'événement n'était PAS PEINT (#446, mesuré au pixel).
+
+     L'intervalle ]70, 80[ est choisi pour préserver les deux bornes :
+       · > `--z-modal` (70)     : le popover surmonte drawers, sheets, modales ;
+       · < `--z-netbanner` (80) : la bannière réseau (#76) reste au-dessus de
+                                  TOUT, y compris d'un popover ouvert.
+     ───────────────────────────────────────────────────────────────────────── */
   --z-sticky:  10; /* @kind other */
   --z-cursor:  20; /* @kind other */
-  --z-popover: 50; /* @kind other */
+  --z-popover: 50; /* popovers DANS LE FLUX (passent sous les modales) @kind other */
   --z-toast:   60; /* @kind other */
   --z-modal:   70; /* @kind other */
+  --z-popover-over-modal: 75; /* #446 overlays Radix portalisés : au-dessus des modales @kind other */
   --z-netbanner: 80; /* #76 bannière réseau : AU-DESSUS des sheets/modales (z-modal) @kind other */
 }
 

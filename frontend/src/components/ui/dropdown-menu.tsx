@@ -38,6 +38,22 @@ import { cn } from "@/lib/utils"
  * enveloppe autour ; un consommateur qui veut une autre encre l'écrit
  * lui-même et `tailwind-merge` la lui donne (même clé `text`).
  *
+ * PLAN D'EMPILEMENT (Sprint 63, #446 — voir `ADR-008`).
+ *
+ * `DropdownMenuContent` et `DropdownMenuSubContent` passent de `z-50` au palier
+ * PARTAGÉ `--z-popover-over-modal` (75), avec `ui/select.tsx` et `ui/popover.tsx`
+ * — mêmes overlays Radix portalisés dans `body`.
+ *
+ * ⚠ HONNÊTETÉ SUR LE PÉRIMÈTRE : contrairement au `Select` de `NewEventDrawer`,
+ * AUCUN défaut n'a été mesuré ici. Le seul consommateur (`language-selector.tsx`)
+ * vit dans `MobileDrawer` et `LandingMobileMenu`, deux panneaux `z-50` rendus EN
+ * LIGNE : le portail, ajouté plus tard dans `body`, gagnait DÉJÀ par l'ordre du
+ * DOM, à `z` égal. C'est exactement le mécanisme qui a fait passer `ProductDrawer`
+ * et `DeleteConfirmDialog` à travers le défaut de #414 — une chance, pas un
+ * invariant. Le passage à 75 conserve le comportement observé ET le rend
+ * indépendant de l'ordre du DOM : le jour où un `DropdownMenu` est posé dans un
+ * `.mt-drawer` (`--z-modal` = 70, rendu en ligne), il n'aurait plus été peint.
+ *
  * CE QUI RESTE VOLONTAIREMENT APPARIÉ, hors périmètre de #346 :
  *  - `data-[variant=destructive]:focus:*` (surface `destructive/10`, encre
  *    `destructive`) : la surface est un voile à 10 %, l'encre n'y prend jamais
@@ -100,7 +116,7 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md",
+          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-[var(--z-popover-over-modal)] max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md",
           className
         )}
         {...props}
@@ -288,7 +304,7 @@ function DropdownMenuSubContent({
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
       className={cn(
-        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg",
+        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-[var(--z-popover-over-modal)] min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg",
         className
       )}
       {...props}

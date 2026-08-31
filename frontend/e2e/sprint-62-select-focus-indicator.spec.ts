@@ -49,9 +49,13 @@ import {
  *   · `NewEventDrawer.tsx:205`     -> `shell-new-event-drawer-product-trigger`
  * (L'issue citait `EventEditForm` : vérifié, ce fichier n'importe PAS `ui/select`.)
  *
- * ⚠ DÉFAUT DISTINCT DÉCOUVERT EN MESURANT LE 3e MONTAGE — voir le bloc
- * `test.fail()` en fin de fichier : dans `NewEventDrawer`, le popover n'est pas
- * peint du tout. Il est RECOUVERT par le panneau du drawer. Ce n'est pas #414.
+ * ⚠ DÉFAUT DISTINCT DÉCOUVERT EN MESURANT LE 3e MONTAGE, puis CORRIGÉ AU
+ * SPRINT 63 (#446) : dans `NewEventDrawer`, le popover n'était pas peint du
+ * tout — recouvert par le panneau du drawer (`z-50` sous `--z-modal`). Ce
+ * n'était pas #414, qui l'avait figé en deux `test.fail()`. Ces annotations ont
+ * été RETIRÉES par #446 et les tests mesurent maintenant la peinture, sur les
+ * DEUX surfaces du drawer (`.mt-drawer` desktop, `.mt-sheet` mobile). Voir le
+ * bloc de commentaire en fin de fichier pour le dossier complet.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * POURQUOI UN E2E, ET POURQUOI FIREFOX
@@ -352,8 +356,35 @@ function expectFocusIndicatorConforms(label: string, m: Measurement): void {
   ).toBeLessThan(WCAG_NON_TEXT)
 }
 
-/** Mise en place commune aux deux tests `NewEventDrawer`. Rend l'option survolée. */
-async function openNewEventDrawerSelect(page: Page): Promise<Locator> {
+/**
+ * `NewEventDrawer` a DEUX SURFACES, donc deux chemins CSS — pas deux conforts
+ * de vérification (#446) :
+ *   · `>= lg`  -> `.mt-drawer.mt-drawer--form` (`ds/components/timeline.css:271`)
+ *   · `< lg`   -> `.mt-sheet`                  (`ds/components/timeline.css:406`)
+ * `NewEventDrawer.tsx:73` bascule sur `useMediaQuery('(max-width: 1023px)')`.
+ * Les DEUX règles portent `z-index: var(--z-modal)` : le défaut de #446 vivait
+ * dans les deux, il doit être mesuré dans les deux.
+ */
+const COMPACT_VIEWPORT = { width: 390, height: 844 } as const
+
+/**
+ * Mise en place commune aux tests `NewEventDrawer`. Rend l'option survolée.
+ *
+ * ⚠ POURQUOI LE PASSAGE EN MOBILE SE FAIT *APRÈS* L'OUVERTURE, et pas en
+ * ouvrant depuis un viewport étroit : le SEUL déclencheur du drawer aujourd'hui
+ * est `shell-sidebar-new-event-button`, porté par l'`<aside>` de
+ * `AppShell.tsx:139` qui est `hidden … lg:flex` — donc absent sous 1024 px.
+ * Il n'existe AUCUN déclencheur mobile (vérifié : `shell-sidebar-new-event-button`
+ * est l'unique appelant de `setShowCreate(true)`). Le redimensionnement est donc
+ * le seul accès à `.mt-sheet`, et c'est un accès RÉEL — `useMediaQuery` écoute
+ * `change`, et `NewEventDrawer` documente lui-même que la variante sheet « couvre
+ * le redimensionnement ». Si un déclencheur mobile est ajouté un jour, ouvrir
+ * directement depuis lui et supprimer ce commentaire.
+ */
+async function openNewEventDrawerSelect(
+  page: Page,
+  opts: { compact?: boolean } = {},
+): Promise<Locator> {
   const userId = await getUserId(page)
   const cat = await seedCategory(page, unique('414 Ev Cat'))
   await seedProduct(page, { userId, name: unique('414 Ev Prod'), categoryId: cat.id })
@@ -365,7 +396,23 @@ async function openNewEventDrawerSelect(page: Page): Promise<Locator> {
   // Idem ProductDrawer : l'ouverture du drawer est un détail de mise en place,
   // la mesure porte sur le Select atteint ensuite au clavier.
   await page.getByTestId('shell-sidebar-new-event-button').click()
-  await expect(page.getByTestId('shell-new-event-drawer')).toBeVisible()
+  const panel = page.getByTestId('shell-new-event-drawer')
+  await expect(panel).toBeVisible()
+
+  if (opts.compact) {
+    await page.setViewportSize({ ...COMPACT_VIEWPORT })
+    // ORACLE DE CHEMIN CSS, pas de confort : sans lui, un test « mobile » qui
+    // aurait silencieusement gardé `.mt-drawer` rejouerait le cas desktop et
+    // rendrait un vert vide de sens (famille `PIT-S54-002`).
+    await expect(
+      panel,
+      `Sous ${COMPACT_VIEWPORT.width}px le panneau doit rendre la variante .mt-sheet ` +
+        `(NewEventDrawer.tsx:141). S'il porte encore .mt-drawer, la bascule useMediaQuery ` +
+        `n'a pas eu lieu et la mesure porterait sur le chemin DESKTOP.`,
+    ).toHaveClass(/(^|\s)mt-sheet(\s|$)/)
+  } else {
+    await expect(panel).toHaveClass(/(^|\s)mt-drawer(\s|$)/)
+  }
 
   const trigger = page.getByTestId('shell-new-event-drawer-product-trigger')
   await expect(trigger).toBeVisible()
@@ -417,10 +464,12 @@ for (const scheme of SCHEMES) {
     })
 
     /**
-     * 3e MONTAGE — l'ÉTAT est vérifiable, le PIXEL ne l'est pas : voir le
-     * `test.fail()` qui suit. Les deux sont volontairement séparés pour que le
-     * verdict de #414 — une question d'état et de déclaration — reste établi sur
-     * ce montage MALGRÉ le défaut de superposition qui empêche de le peindre.
+     * 3e MONTAGE, VOLET ÉTAT. Séparé du volet PIXEL (les deux tests qui suivent)
+     * depuis #414, où l'état était vérifiable alors que le pixel ne l'était pas —
+     * le défaut de superposition empêchait de peindre le popover. #446 a levé ce
+     * défaut, mais la séparation est CONSERVÉE : le verdict de #414 porte sur
+     * l'état et la déclaration, celui de #446 sur la peinture. Les garder
+     * distincts fait dire à un rouge LEQUEL des deux a régressé.
      */
     test(`NewEventDrawer / product-trigger — état et déclaration — ${scheme}`, async ({ page }) => {
       const highlighted = await openNewEventDrawerSelect(page)
@@ -448,52 +497,56 @@ for (const scheme of SCHEMES) {
     })
 
     /**
-     * ⚠ DÉFAUT DISTINCT DE #414, DÉCOUVERT EN MESURANT — `test.fail()` ASSUMÉ.
+     * DÉFAUT DE SUPERPOSITION — CORRIGÉ AU SPRINT 63 (#446), `test.fail()` RETIRÉ.
      *
-     * Dans `NewEventDrawer`, le popover du `Select` n'est PAS PEINT : il est
-     * intégralement recouvert par le panneau du drawer. Mesuré :
+     * HISTORIQUE. #414 avait découvert ici, EN MESURANT, un défaut distinct du
+     * sien : le popover du `Select` n'était PAS PEINT dans `NewEventDrawer`, il
+     * était intégralement recouvert par le panneau du drawer.
      *
-     *   · `ui/select.tsx:92` — `SelectContent` porte `z-50` (= `--z-popover`) ;
-     *   · `ds/components/timeline.css:271` — `.mt-drawer` porte
-     *     `z-index: var(--z-modal)`, soit **70** (`ds/tokens/spacing.css:64`).
+     *   · `ui/select.tsx` — `SelectContent` portait `z-50` (= `--z-popover`) ;
+     *   · `ds/components/timeline.css:271,406` — `.mt-drawer` ET `.mt-sheet`
+     *     portent `z-index: var(--z-modal)`, soit 70 (`ds/tokens/spacing.css`).
      *
-     * Le drawer est rendu EN LIGNE dans la page (pas dans un portail) : sa
-     * valeur `z` plus élevée l'emporte quel que soit l'ordre du DOM. Le profil
-     * de pixels sous l'option ne rend alors que le panneau du drawer —
+     * Le drawer est rendu EN LIGNE (`AppShell.tsx:259`), pas dans un portail :
+     * sa valeur `z` plus élevée l'emportait quel que soit l'ordre du DOM. Le
+     * profil de pixels sous l'option ne rendait que le panneau du drawer —
      * `#ffffff` en clair, `#131519` en sombre, unanimité 100 % sur les quinze
-     * offsets — alors même que le DOM affirme le contraire.
+     * offsets — alors même que le DOM affirmait le contraire.
      *
-     * `ProductDrawer` et `DeleteConfirmDialog` échappent au défaut : ils
-     * s'appuient sur un `Dialog` Radix PORTALISÉ, du même palier `z`, que le
-     * portail du Select — ajouté plus tard dans `body` — surmonte.
+     * #414 avait figé le constat en `test.fail()` plutôt qu'en commentaire, pour
+     * qu'il soit EXÉCUTABLE et qu'il ROUGISSE le jour de la correction. C'est ce
+     * qui s'est produit : #446 a relevé `SelectContent` au palier partagé
+     * `--z-popover-over-modal` (75, `ds/tokens/spacing.css`, cf. `ADR-008`), et
+     * l'annotation a été RETIRÉE — pas contournée, pas neutralisée. Ce test
+     * mesure désormais la peinture pour de bon, et redeviendra rouge si le palier
+     * repasse sous `--z-modal`.
      *
-     * ⚠ CE QUI A PRESQUE TROMPÉ LA MESURE, corollaire exact de `PIT-S58-001` :
-     * `document.elementsFromPoint()` au centre de l'option rend l'option EN TÊTE
-     * de pile, sans le moindre élément du drawer. Ce n'est PAS une preuve de
-     * peinture : quand une couche Radix est ouverte, `body { pointer-events:
-     * none }` retire tout le reste du test de survol. Le hit-test et la peinture
-     * sont deux choses différentes ; seule la lecture de pixel a tranché.
+     * ⚠ CE QUI A PRESQUE TROMPÉ LA MESURE D'ORIGINE, et qui trompera quiconque
+     * « re-vérifiera » ce correctif au DOM — corollaire exact de `PIT-S58-001`,
+     * consigné en `PIT-S62-001` : `document.elementsFromPoint()` au centre de
+     * l'option rend l'option EN TÊTE de pile, sans le moindre élément du drawer,
+     * MÊME QUAND elle est recouverte. Une couche Radix ouverte pose
+     * `body { pointer-events: none }`, ce qui retire tout le reste du test de
+     * survol. Hit-testing et peinture sont deux choses différentes ; seule la
+     * lecture de pixel tranche. Ne pas remplacer la sonde par un `elementsFromPoint`.
      *
-     * POURQUOI `test.fail()` ET PAS UN CORRECTIF : relever le `z` de
-     * `SelectContent` au-dessus de `--z-modal` est un arbitrage d'échelle du DS
-     * qui touche les six consommateurs et le rapport de superposition
-     * popover/modale dans son ensemble — hors du mandat de #414, qui porte sur
-     * l'indicateur de focus. `test.fail()` documente le défaut, le rend
-     * EXÉCUTABLE, garde la suite verte, et ROUGIRA le jour où il sera corrigé —
-     * signalant qu'il faut retirer cette annotation et rétablir l'assertion
-     * pixel. Un commentaire seul n'aurait été qu'un garde-fou fictif
-     * (`PIT-S58-004`).
+     * LES DEUX SURFACES SONT MESURÉES SÉPARÉMENT (desktop `.mt-drawer`, mobile
+     * `.mt-sheet`) : ce sont deux règles CSS distinctes portant le même token,
+     * donc deux fois le même risque — pas une double vérification de confort.
      */
-    test(`NewEventDrawer / product-trigger — le popover doit être PEINT — ${scheme}`, async ({
+    test(`NewEventDrawer / product-trigger — le popover est PEINT (desktop, .mt-drawer) — ${scheme}`, async ({
       page,
     }) => {
-      test.fail(
-        true,
-        'Défaut de superposition connu, hors #414 : SelectContent z-50 (--z-popover) ' +
-          'passe sous .mt-drawer z-70 (--z-modal). Ce test rougira quand ce sera corrigé.',
-      )
       const highlighted = await openNewEventDrawerSelect(page)
-      const label = `NewEventDrawer / product-trigger (${scheme})`
+      const label = `NewEventDrawer / product-trigger — desktop .mt-drawer (${scheme})`
+      expectFocusIndicatorConforms(label, await probeHighlighted(page, highlighted, label))
+    })
+
+    test(`NewEventDrawer / product-trigger — le popover est PEINT (mobile, .mt-sheet) — ${scheme}`, async ({
+      page,
+    }) => {
+      const highlighted = await openNewEventDrawerSelect(page, { compact: true })
+      const label = `NewEventDrawer / product-trigger — mobile .mt-sheet (${scheme})`
       expectFocusIndicatorConforms(label, await probeHighlighted(page, highlighted, label))
     })
   })
