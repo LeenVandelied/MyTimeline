@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
  * #57 — Coquille de présentation partagée pour les écrans d'état plein page
  * (404 / 403 / 500). Composant PUR (aucun hook, aucune dépendance i18n) : il
  * est donc réutilisable aussi bien depuis un Server Component (`not-found.tsx`)
- * que depuis un Client Component (`error.tsx`, `app/error.tsx` global).
+ * que depuis un Client Component (`[locale]/error.tsx`, `app/global-error.tsx`).
  *
  * Couleurs / espacements / typo : UNIQUEMENT via les tokens Graphite exposés à
  * Tailwind (`bg-bg`, `text-ink`, `text-ink-muted`, `text-ink-faint`…). Aucune

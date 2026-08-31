@@ -1,147 +1,190 @@
 ## Objectif
 
-Solder les défauts de rendu du header aux paliers 768-1024 px et l'échelle typographique de la
-landing. **Sprint 100 % frontend** : aucun fichier backend, aucune migration Flyway, aucune BR
-touchée.
+Dette d'accessibilité WCAG du design system : l'attribut `lang` de la page et les indicateurs de
+focus. Sprint **100 % frontend** — zéro backend, zéro migration, **zéro BR métier impactée**.
 
-## Issues traitées (4/4)
+## Résultat en une ligne
 
-| Issue | Résultat |
-|---|---|
-| **#381** — logo header resté au palier `md:` | Corrigé — mais **l'hypothèse de l'issue est démentie par la mesure**, cf. ci-dessous |
-| **#379** — marge nulle et logo sur 2 lignes à 1024 px | **Résolue par #381.** Aucun agent dessus, [relevé posté sur l'issue](https://github.com/LeenVandelied/MyTimeline/issues/379#issuecomment-5308701720) |
-| **#348** — hiérarchie typographique inversée | Corrigé, **puis étendu** : 2 de ses 5 AC n'étaient pas atteints, absorbés dans ce sprint |
-| **#341** — SVG débordant ~30 px sur mobile | **Faux positif.** Aucun correctif de rendu, un verrou E2E à la place |
+Sur les 3 issues planifiées, **deux pistes techniques se sont révélées fausses et une issue décrivait
+un défaut inexistant**. Le travail a donc autant consisté à établir ce qui était vrai qu'à corriger.
+Un défaut réel et distinct a été découvert en chemin.
 
-Cohésion du lot : **0.81**.
+## Issues traitées
 
-## Le sprint a démenti trois de ses propres prémisses
+| # | Objet | Résultat |
+|---|---|---|
+| [#415](https://github.com/LeenVandelied/MyTimeline/issues/415) | Focus radio/switch à 1,23:1 | **Corrigé** — 6,08:1 clair / 6,48:1 sombre |
+| [#413](https://github.com/LeenVandelied/MyTimeline/issues/413) | `documentElement.lang` figé sur `fr` | **Corrigé** — 4 locales, dès le HTML SSR |
+| [#414](https://github.com/LeenVandelied/MyTimeline/issues/414) | Focus des options de `Select` sous Firefox | **INFIRMÉ** — le défaut n'existe pas |
 
-C'est le résultat principal, et il tient à un seul choix : **mesurer avant de corriger**, dans
-`mcr.microsoft.com/playwright:v1.61.1-jammy` plutôt que sur macOS (`PIT-S52-001`).
+### #415 — le contour porté sur la sœur visible
 
-1. **#381 cherchait un défaut entre 768 et 1023 px. Il n'y en a aucun** — logo à 57 px sur une
-   ligne, marge 223-262 px, dans les 4 locales et les 2 thèmes. Le `container` Tailwind plafonne la
-   largeur utile à 736 px et la nav est masquée : les deux annulent le défaut attendu.
-   **Le vrai défaut était à 1024 px** — un pixel hors du périmètre annoncé — avec `fr`/`de`/`es` sur
-   2 lignes et **0 px de marge**.
-2. **#341 traquait un SVG inline de la landing depuis trois sprints. Il n'existe pas.** Les 4 `<g>`
-   à `x=384` sont le bouton flottant des **TanStack Query Devtools**, monté sous
-   `NODE_ENV === 'development'`, absent du bundle de production, décalé hors bord droit **par
-   design**, et son `right` suit la largeur du viewport (329@320, **384@375**, 399@390). Il ne
-   produit aucun scroll. Mesure négative sur 20 combinaisons, macOS **et** jammy.
-3. **L'AC de #348 interdisait d'« introduire » `text-4xl`/`text-5xl`** — or `HeroSection.tsx:59` en
-   portait **déjà**, seul site du dépôt. Et ces classes ne sont pas inertes : absentes de
-   `@theme inline` sans `--text-*: initial`, elles retombent sur les **défauts Tailwind** (36/48 px),
-   donc **plus petit** que `text-3xl` (57 px). **La hiérarchie était littéralement inversée** : le
-   `h1` du hero rendait plus petit que le logo du header.
+Le correctif n'est pas celui qu'imaginait l'issue. Plutôt que retoucher `--shadow-focus`, le contour
+du DS est porté sur la **sœur visible** du contrôle (`outline: 2px solid var(--color-focus)` sur
+`.mt-radio__dot` / `.mt-switch__track`), exactement comme `.mt-btn` et `.mt-tab` : **le même
+indicateur déplacé, pas un second motif** — conforme à `DEC-S58-001`.
+
+**Zéro token modifié.** `--color-accent-soft` et ses 9+ consommateurs (`::selection`, `button.tsx`,
+`dropdown-menu.tsx`…) sont intacts — c'était le vrai piège de l'issue.
+
+Mesuré au pixel, baseline rouge établie avant correctif : **1,23:1 → 6,08:1** (clair),
+**1,19:1 → 6,48:1** (sombre). Les chiffres annoncés par l'issue ont été reproduits indépendamment.
+
+> Correction à l'issue : `<Radio>` n'a **aucun consommateur applicatif** (l'issue et
+> `docs/memory/decisions.md:437` affirment à tort qu'il est « en production »). Seul `<Switch>` est
+> monté, une fois, dans `EventEditForm.tsx:624`.
+
+### #413 — descente de `<html>` sous `[locale]`, et ses deux régressions
+
+La piste de l'issue visait `frontend/src/app/[locale]/layout.tsx` — **un chemin qui n'existe pas**.
+Le `<html lang="fr">` était en dur dans le layout **racine** `frontend/app/layout.tsx:41`, où Next ne
+passe aucun param de segment enfant.
+
+Voie retenue (arbitrage dev) : descendre `<html>`/`<body>` sous `[locale]`, seule voie qui conserve
+le SSG **et** donne un `lang` correct dès le HTML SSR. `curl` sans JS renvoie bien `fr`/`en`/`es`/`de`
+sur les 4 routes. **Issue rebadgée `size:S` → `size:M`.**
+
+Elle a produit **deux régressions, toutes deux corrigées dans ce sprint** :
+
+1. **404 cassée** — sans `<html>` racine, toute URL non matchée rendait le document interne de Next
+   (`NEXT_MISSING_ROOT_TAGS`, texte vide). Deux contournements ont été tentés, **mesurés
+   inefficaces** et retirés. Correctif retenu : `experimental.globalNotFound` +
+   `app/global-not-found.tsx`, vérifié sur **4 environnements**.
+2. **`<title>` perdu** — retirer un layout retire **aussi sa `metadata`**, silencieusement. Corrigé
+   par une scission Server/Client. Titre **non localisé** (« Ma Timeline ») : choix assumé —
+   `metadata` est résolue au build sur une page statique unique servie pour 4 locales ; localiser
+   imposait `headers()` et la perte de 52 routes SSG.
+
+### #414 — verdict négatif, aucun code applicatif touché
+
+Mesuré au pixel peint, **Firefox 153 et Chromium**, clavier seul, clair et sombre : `:focus-visible`
+est bien obtenu et le contour vaut **6,08:1 / 6,48:1**. Les 1,23:1 de #383 sont reproduits
+exactement — **mais ils mesurent la surface de survol, pas l'indicateur de focus**, qui est peint
+(bande `--color-focus` à +3/+4 px).
+
+Coder un indicateur `data-[highlighted]:` aurait **dédoublé le motif** en violation de `DEC-S58-001`,
+pour un défaut inexistant. Le livrable est la spec de verdict, avec **garde-fou bidirectionnel** :
+elle rougit si le contour disparaît **et** si la surface dépasse 3:1 (signe d'un token modifié).
 
 ## Changements clés
 
-**Header** (#381) — logo `md:text-3xl` (57 px) → **`text-md sm:text-lg`** (21/27), `whitespace-nowrap`
-à tous les paliers. `space-x-8` de la nav **intouchée**. Header `fr` : 184,8 → 90 px.
+- `frontend/src/styles/ds/components/core.css` — contour sur la sœur visible (3 contrôles)
+- `frontend/app/layout.tsx`, `app/[locale]/layout.tsx`, `app/fonts.ts` — descente du document
+- `frontend/app/global-error.tsx` (ex-`error.tsx`), `global-not-found.tsx`, `global-not-found-screen.tsx`
+- `frontend/next.config.mjs` — `experimental.globalNotFound`
+- `frontend/e2e/support/pixel.ts` — **sonde de lecture de pixel, outillage neuf** (voir ci-dessous)
+- `frontend/playwright.config.ts` — projet `firefox` restreint par `testMatch`
+- `.github/workflows/ci.yml` — `playwright install chromium` → `chromium firefox`
 
-**Typographie de la landing** (#348 + absorption) :
+### Pourquoi une ligne de CI dans un sprint a11y
 
-| Élément | Avant | Après |
-|---|---|---|
-| h1 hero | `text-4xl md:text-5xl` (36/48, hors DS) | `text-xl md:text-2xl lg:text-3xl` (35/45/57) |
-| Sous-titre hero | `text-xl` (35) | `text-md md:text-lg leading-normal` (21/27) |
-| Chiffre d'étape | `text-2xl` (45) | `text-sm md:text-md leading-none` (17/21) |
-| Wordmark footer | `text-2xl` (45, toutes largeurs) | `text-md sm:text-lg` (21/27) |
+`npm run test:e2e` lance **tous** les projets de `playwright.config.ts`. Sans le navigateur, le
+nouveau projet `firefox` échoue au lancement et le job `e2e` — **check requis** — rougit. Le
+`testMatch` est ancré sur la seule spec `sprint-62-select-focus-indicator.spec.ts` : **les 174 E2E
+existantes ne voient jamais Gecko** (vérifié par `playwright test --list` : firefox = 13, chromium = 208).
 
-**`typography.css` n'est pas modifié.** Ajouter `--text-4xl`/`--text-5xl` aurait créé 2 tokens pour
-1 seul site d'usage ; supprimer ce site rend l'invariant « never Tailwind-default » **vrai à
-l'échelle du dépôt**.
+## Outillage : `PAT-S58-002` enfin implémenté
 
-Hiérarchie finale mesurée, **footer inclus dans le balayage** :
+La lecture de pixel était citée par la mémoire projet depuis le Sprint 58 **sans avoir jamais été
+implémentée**. `e2e/support/contrast.ts` ne fait que du `getComputedStyle` — son `getImageData`
+normalise une couleur sur un canvas 1×1. Le piège était réel : un dev pressé l'aurait prise pour la
+sonde.
 
-```
-320-639 :  h1 35 > h2 27 > h3 21 = footer 21 > chiffre 17
-640-767 :  h1 35 > footer 27 > h2 27 > h3 21 > chiffre 17
-768-1023:  h1 45 > h2 35 > h3 27 = footer 27 > chiffre 21
-≥1024   :  h1 57 > h2 35 > h3 27 = footer 27 > chiffre 21
-```
+`frontend/e2e/support/pixel.ts` la fournit, et la review batch l'a durcie sur **3 points où elle
+pouvait rendre un faux ratio silencieux** — le défaut même qu'elle prétend éliminer :
 
-## Périmètre élargi — assumé, pas subi
-
-Deux critères d'acceptation de #348 n'étaient pas atteints après sa livraison, et ont été absorbés
-sur décision du développeur :
-
-- **AC #2** — le wordmark du footer (45 px) **battait** le h1 sous 768 px et l'**égalait** de 768 à
-  1023 px. Le `<footer>` avait été *exclu du balayage de la spec* pour contourner ça.
-- **AC #1** — le chiffre d'étape **égalait** le h2 et **dépassait** le h3 de sa propre étape. La
-  spec figeait `<=` au lieu de `<`.
-
-**Les deux dérogations de spec ont été retirées.** Une spec qui exclut une zone ou relâche un
-comparateur pour verdir encode le défaut et le rend permanent.
-
-## Tests — 929 des 1504 lignes ajoutées sont des tests
-
-| Suite | Résultat |
+| Garde | Défaut mesuré avant correction |
 |---|---|
-| Frontend unitaire | **888 / 888** |
-| `tsc --noEmit` | **0 erreur** |
-| **E2E — suite complète** (Phase 6) | **183 / 183** |
-| Backend | **462 / 462** (aucun fichier touché) |
+| Clamp du `clip` sur le viewport | Élément collé au bord : le « fond adjacent » rendait **la couleur de l'élément lui-même**, unanimité 93 % — donc indétectable par la garde d'unanimité |
+| `minUnanimity = 0.6` **levante par défaut** | Fond rayé : **ratio 1,00:1 publié** sans signal |
+| `aria-disabled` / `data-disabled` | Un contrôle Radix désactivé passait la garde — le 1,59:1 du S58 pouvait revenir |
 
-Les specs **authentifiées** ont bien tourné (`golden-path`, `settings-*`, `timeline*`, `auth-*`,
-`categories`, `products`) — c'était le trou du sprint : le header perd **24 à 95 px de hauteur** et
-aucun des 183 tests, y compris ceux qui cliquent en coordonnées, n'a cassé.
+Sur une base Radix, « désactivé » est un **attribut sur un `div`**, jamais une propriété DOM : toute
+garde d'état qui ne teste que `.disabled` est inopérante.
 
-**Nouveaux garde-fous** : `landing-header-logo.spec.ts`, `landing-mobile-overflow.spec.ts`,
-`landing-typography-hierarchy.spec.ts`, `ds-type-scale.test.ts` (garde-fou source), et
-`e2e/support/dev-tooling.ts` (source unique de la liste d'exclusion de l'outillage de dev).
+Après durcissement, les deux specs retrouvent **exactement** les mêmes ratios, occurrence pour
+occurrence.
 
-**Chaque spec a été prouvée non-vacuous** — classes fautives réintroduites, rouges nommés exigés.
-Ce n'est pas cosmétique : l'assertion `scrollWidth <= clientWidth` de #347 restait **verte** sur le
-défaut réel de #381 (un logo qui se coupe en deux lignes la satisfait), et l'auto-contrôle de la
-sonde de débordement restait **vert** sur une sonde renommée.
+### Deux cycles de review, et un trou fermé au second
 
-## Review
+Le cycle 2 a été déclenché parce que les **commits de correction eux-mêmes n'avaient jamais été
+relus** — or `f275db4` est du code de garde écrit pour réparer du code de garde. Verdict
+`PRET_POUR_MERGE`, les 3 MAJEUR vérifiés résolus **dans le code**, pas sur le message de commit.
 
-**0 CRITIQUE · 1 MAJEUR · 6 MINEURS — tous résolus en un cycle** (`4cf19f2`).
+Mais il a relevé ceci : *les ratios identiques après correction prouvent la non-régression, pas
+l'efficacité des gardes.* Unanimité 100 %, éléments loin des bords ⇒ **aucune garde ne se déclenchait
+sur un cas réel du dépôt**, et leurs seules fixtures avaient été supprimées avant commit. Toute
+régression future de ces gardes — seuil inversé, `<` devenu `<=` — serait passée en CI verte.
 
-Le MAJEUR portait sur les tests : une boucle clair/sombre doublait 32 tests en 64 pour zéro signal,
-sur un check e2e requis. Le reviewer recommandait le **retrait total** de la couverture du thème
-sombre ; un **compromis** a été appliqué (cas général mono-thème + un contrôle ponctuel par spec).
+`25d2474` ferme le trou : **19 tests vitest arment les 4 gardes**, chacun prouvé **rouge quand la
+garde est neutralisée**, avec contrôles négatifs (sans eux, une garde qui lèverait *toujours*
+passerait). Technique : un double de `Page` dont `evaluate()` rend le tableau RGBA décodé, ce qui
+fait tourner pour de vrai le clamp, l'assertion d'échelle et l'accès pixel — sans navigateur.
 
-**La mesure a donné raison au compromis** : injection d'une règle `.dark h1 { font-size: 33px }` →
-**10 passed / 1 failed**, et **seul le contrôle sombre la voit**. Le retrait total l'aurait rendue
-invisible.
+Le même commit étend la garde `disabled` aux **ancêtres** Radix : un `Item` ou `Group` ancêtre
+désactive ses descendants sans qu'aucune propriété DOM ne le signale — même classe de bug que celui
+corrigé au cycle 1.
 
-Suite `landing-*` : 82 → 68 tests.
+## Tests
 
-## ⚠ Ce qui n'est PAS couvert
+| Suite | Résultat | Exit |
+|---|---|:---:|
+| vitest | **969 passed / 98 fichiers** | 0 |
+| `tsc --noEmit` / `eslint` | 0 / 0 | 0 |
+| `next build` | **`Generating static pages (52/52)`**, `○ /_not-found` statique | 0 |
+| E2E (chromium + firefox) | **216 déclarés, 208 passed, 0 failed, 8 skipped** | 0 |
 
-- **Aucun jugement esthétique, sur aucune des quatre issues.** Des nombres ont été mesurés ; **aucune
-  capture d'écran n'a été relue par qui que ce soit.** La conformité géométrique est établie, la
-  qualité visuelle ne l'est pas.
-- **Le 17 px du chiffre d'étape n'a pas été ratifié par `ui-design`** — il est imposé par la lettre
-  de l'AC « strictement plus petit », pas choisi par un designer.
-- **Chromium seul** — aucun projet Playwright de ce dépôt ne couvre Firefox ni WebKit.
-- **Contraste WCAG non re-mesuré au navigateur.** Point chiffré : le sous-titre du hero tombe de 35
-  à 21 px, donc **sous le seuil « grand texte » (24 px)** — son exigence passe de 3:1 à **4,5:1**.
-  Le calcul sur tokens donne 5,96:1 en clair et 6,26:1 en sombre (conforme), mais **opacité et
-  superpositions ne sont pas vérifiées**.
-- **jammy ≠ `ubuntu-latest`** — jeu de polices proche, pas identique. C'est la classe de défaut de
-  `PIT-S52-001` ; **cette CI est le premier vrai verdict**.
-- Le reste de la suite E2E n'a pas été rejoué après le commit de corrections de review (`4cf19f2`) ;
-  il l'avait été en Phase 6, avant. Ce commit ne touche que des specs `landing-*`, un support E2E
-  et un commentaire CSS — **déduit, pas vérifié**.
+Audit complet : `docs/memory/audits/sprint-62-test-coverage.md`.
 
-## Point d'attention à surveiller
+**Deux points de lecture des logs, pour éviter un faux signal en review :**
 
-**La marge du header en `de` à 320 px vaut 5 px**, sous le plancher « deux chiffres » de
-`PIT-S52-001`. Antérieur à ce sprint (terrain de #347), inchangé ici — mais le prochain
-élargissement du groupe droit la fait basculer. Follow-up ouvert.
+- **Les 2 `test.fail()` ne sont pas des rouges.** `sprint-62-select-focus-indicator.spec.ts` (~l.487)
+  marque le défaut de z-index non corrigé. Le reporter les affiche `✘`, mais ils comptent dans
+  **`passed`**, jamais dans `failed`. Chromium 200 = 198 verts + 2 échecs attendus.
+- **Les 8 skips** sont **7** `auth-signature` (clés RS256 absentes en local) **+ 1** `test.fixme`
+  avatar (`settings-profile.spec.ts:36`) — pas `auth-guard`, qui passe ses 13 tests.
+- **Le projet `firefox` reporte 13 tests** en `--list` : Playwright y inclut la dépendance `setup`
+  (5). La spec restreinte en contient 8 (4 × 2 thèmes). Les deux chiffres sont justes.
 
-Au passage : `next.config.ts:30` pose `output: 'standalone'`, et Next avertit que `next start` ne
-fonctionne pas avec cette configuration. Le build à froid sert pourtant `/fr` et `/en` en 200.
-Candidat follow-up, non traité ici.
+Chaque spec ajoutée a été **exécutée**, et deux **prouvées non vacuous** contre le build antérieur
+(4 échecs / 4 pour le `<title>`, 5 / 5 pour la 404). Le check de couverture E2E vérifie qu'un testid
+est *cité*, pas qu'une spec *passe* — il ne vaut rien seul.
 
-## Suite
+## Défaut réel découvert, non corrigé (issue de suivi proposée, P1)
 
-`/sprint end 59` — triage des follow-ups (5 en attente), consolidation mémoire, fermeture des
-issues et du milestone #60 après merge.
+**Le popover du `Select` n'est jamais peint dans `NewEventDrawer`.** `SelectContent` porte
+`z-50` (`--z-popover`) sous `.mt-drawer` en `--z-modal` = 70 (`timeline.css:271`), et le drawer rend
+**en ligne**, non portalisé : son `z` gagne quel que soit l'ordre DOM. `.mt-sheet` (variante mobile)
+et `.mt-actionsheet` portent le même token.
 
+Sur les 6 consommateurs de `ui/select`, **seul `NewEventDrawer` est affecté** — `ProductDrawer` et
+`DeleteConfirmDialog` y échappent via un `Dialog` Radix portalisé. Le Select y est inutilisable,
+clavier comme souris, desktop et mobile.
+
+Non corrigé (remonter l'échelle de z du DS touche les 6 consommateurs), mais **figé en `test.fail()`
+exécutable** qui rougira le jour de la correction — il faudra alors **retirer l'annotation, pas la
+contourner**.
+
+## Réserves assumées
+
+- **`experimental.globalNotFound` est un drapeau expérimental** et **ne rougit pas s'il disparaît**
+  à un bump de Next. Le filet est `document-lang.spec.ts:93-106`, qui assert le HTML servi de
+  `/_not-found` (statut, `<html lang>`, testid, `<title>` non vide) — sa perte donnerait 4 rouges au
+  job `e2e`. `package.json` déclare `^15.2.4` alors que le drapeau n'est validé que sur **15.5.22** :
+  **épingler la version reste une décision de dépendance à prendre**.
+- **Firefox 153**, alors que #383 mesurait **151** — non épinglable avec ce harnais. Une divergence
+  d'heuristique entre les deux versions n'est pas exclue. C'est la réserve la plus sérieuse.
+- **WebKit hors périmètre**, non exercé.
+- La 404 rend **toujours en clair** : son `<html>` est hors `ThemeProvider`. Documenté et non
+  corrigé — il n'existe aucun cookie de thème (next-themes est en `localStorage`, illisible au
+  prérendu), et les voies restantes coûtent plus que le défaut.
+- Le HTML **servi** de la 404 reste `lang="fr"` sur les 4 locales. **Pas une régression** : avant ce
+  sprint, *toutes* les pages étaient `lang="fr"`.
+- L'assertion d'échelle de la sonde n'est éprouvée qu'à **`dpr = 1`**.
+
+## Cohésion
+
+Score **1,00** — les 3 issues relèvent du même domaine (accessibilité DS / frontend), aucun
+chevauchement de fichiers entre elles.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

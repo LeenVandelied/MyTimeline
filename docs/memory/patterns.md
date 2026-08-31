@@ -574,3 +574,18 @@ de la frise » est restée vraie (le défaut n'a pas bougé), seule sa *raison* 
 
 Le briefing de la vague 1 demandait explicitement cette forme, en anticipant le besoin de la vague 2. C'est ce
 qui a permis de séquencer deux issues sur les mêmes fichiers sans conflit de merge ni retouche croisée.
+
+## PAT-S62-001 — La sonde de pixel `PAT-S58-002` existe enfin : `frontend/e2e/support/pixel.ts`
+Citée par la mémoire depuis le S58 **sans avoir jamais été implémentée** — et `e2e/support/contrast.ts` ressemblait assez à une sonde pour tromper (son `getImageData` l.138 ne fait que normaliser une couleur sur un canvas 1×1 ; le reste est du `getComputedStyle`). API : `measureIndicatorContrast(page, locator, {side, indicatorOffsetPx, adjacentOffsetPx, samples?, edgeGuard?, edgeGuardPx?, minUnanimity?})`, `dumpOutwardProfile`, `readStrip`, `contrastRatio`, `assertFocusVisible`, `settleForMeasurement`. Agrège par **mode**, jamais par extremum ([[PIT-S58-001]]), et expose `unanimity` comme détecteur d'arc ou de mauvais offset — sur un radio circulaire de 18 px, l'unanimité est tombée à **48 %** et la sonde a **refusé de publier le ratio**. Toujours lancer `dumpOutwardProfile` et **relire le profil brut** avant de figer un offset. (Sprint 62 #415)
+
+## PAT-S62-002 — Layout racine transparent ⇒ `experimental.globalNotFound`
+Quand `<html>` descend sous `[locale]` (pattern next-intl), `app/global-not-found.tsx` + `experimental: { globalNotFound: true }` est la **seule** forme servie au runtime (`next-app-loader` : « remove root layout for /_not-found »). Vérifié en prod standalone, dev webpack ET dev turbopack, Next 15.5.22. Anti-patterns mesurés en [[PIT-S62-005]]. ⚠ Le drapeau est **expérimental et ne rougit pas s'il disparaît** à un bump de Next : la 404 redeviendrait blanche en silence. Le filet doit être une spec E2E sur le **HTML servi** (statut 404 + `<html lang>` + testid + `<title>` non vide). (Sprint 62 #413)
+
+## PAT-S62-003 — `global-not-found` est monté en `page:`, donc il peut être un Server Component
+`next-app-loader/index.js:298` le monte en **`page:`** de `/_not-found`, pas en layout, et le builtin `client/components/builtin/global-not-found.js` n'a pas de `'use client'`. Forme retenue : **parent serveur** exportant `metadata` seule, **enfant client** rendant `<html>`/`<body>` et résolvant la locale en `useEffect`. C'est ce qui permet de garder un `<title>` sans sacrifier le prérendu statique. (Sprint 62 #413)
+
+## PAT-S62-004 — Armer une sonde de pixel sans navigateur
+Un **double de `Page`** dont `evaluate()` rend directement `{width, height, dpr, data}` (aucun PNG encodé) fait tourner **pour de vrai** le clamp viewport, l'assertion d'échelle et l'accès pixel, en vitest. Géométrie choisie pour que les positions tombent sur des entiers (côté 40 px, `edgeGuardPx: 10`, 21 échantillons → pas de 1 px) : une ligne rayée par parité donne 11/21 = 52 %, sous le seuil de 60 %, **de façon déterministe**. Anti-pattern écarté : extraire la garde dans une fonction pure testée à part — sa suppression du **site d'appel** resterait invisible. (Sprint 62, review cycle 2)
+
+## PAT-S62-005 — Un garde-fou de mesure vit dans la fonction qui rend le chiffre, pas dans les appelants
+S62 : `minUnanimity` était documenté en JSDoc et asserté **à la main** dans les deux specs. #415 y a survécu grâce à cette assertion manuelle — qu'aucun appelant suivant n'aurait eue. Le seuil est devenu une option **levante par défaut**, sur les deux bandes, avec opt-out explicite (`minUnanimity: 0`) et documentation du danger. Documenter un seuil en JSDoc et compter sur la recopie est un anti-pattern. Cf. [[PIT-S62-003]]. (Sprint 62, review cycle 2)

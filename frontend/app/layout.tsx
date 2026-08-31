@@ -1,68 +1,35 @@
-import '../src/styles/globals.css'
-import '../src/styles/landing.css'
-import '../src/styles/animations.css'
-// #56 — mouvement de la frise du Hero, isolé pour être remplaçable (aucune couleur).
-import '../src/styles/hero-timeline.css'
-import { ReactNode, CSSProperties } from 'react'
-import { Archivo, IBM_Plex_Mono } from 'next/font/google'
-import { Toaster } from 'react-hot-toast'
-import { ThemeProvider } from '@/components/theme-provider'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { QueryProvider } from '@/contexts/QueryProvider'
+import { ReactNode } from 'react'
 
 /**
- * Polices self-hostées via next/font (zéro requête Google en prod).
- * On expose les variables CSS attendues par le DS « Graphite » :
- *   --font-display / --font-ui = Archivo ; --font-mono = IBM Plex Mono.
+ * Layout RACINE — volontairement TRANSPARENT depuis #413.
+ *
+ * Le `<html>` / `<body>` et l'intégralité des providers vivent désormais dans
+ * `app/[locale]/layout.tsx`. RAISON : ce layout-ci est rendu AU-DESSUS du
+ * segment dynamique `[locale]`, et Next.js ne lui passe pas les `params` d'un
+ * segment enfant — `locale` y est donc structurellement inaccessible. Tant que
+ * la balise `<html>` était posée ici, son `lang` ne pouvait être qu'un littéral
+ * (`"fr"`), et toute page `/en/*` `/es/*` `/de/*` était annoncée comme
+ * francophone aux technologies d'assistance (violation WCAG 3.1.1).
+ *
+ * Voies écartées, ne pas les réintroduire :
+ *  - lire la locale via `headers()` ici : bascule l'app en rendu DYNAMIQUE et
+ *    annule le `generateStaticParams()` de `app/[locale]/layout.tsx` ;
+ *  - poser `document.documentElement.lang` après hydratation : le HTML SSR
+ *    resterait `fr`, ce qui ne satisfait pas WCAG 3.1.1.
+ *
+ * Conséquence à connaître : un composant monté ICI n'aurait ni CSS du DS, ni
+ * providers, ni `<body>`. C'est aussi pourquoi l'ancien `app/error.tsx` est
+ * devenu `app/global-error.tsx` (il rend son propre `<html>`/`<body>`).
+ *
+ * `metadata` reste ici : Next agrège les métadonnées de TOUS les layouts de la
+ * branche et les injecte dans le `<head>`, quel que soit le layout qui porte le
+ * `<html>`.
  */
-const archivo = Archivo({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-  variable: '--font-display',
-})
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  display: 'swap',
-  variable: '--font-mono',
-})
-
 export const metadata = {
   title: 'Ma Timeline',
   description: 'Application de gestion de temps et événements',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html
-      lang="fr"
-      suppressHydrationWarning
-      className={`${archivo.variable} ${ibmPlexMono.variable}`}
-      style={{ '--font-ui': 'var(--font-display)' } as CSSProperties}
-    >
-      <body>
-        {/*
-          Ordre des providers (imposé) : Theme (S6 #45) > Auth (S7 #40)
-          > Query (S7 #48, inséré entre AuthProvider et {children}).
-          #48 : envelopper {children} d'un <QueryClientProvider> ici, sous
-          <AuthProvider>, sans déplacer Theme ni Auth.
-        */}
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            {/* #48 : QueryClientProvider entre AuthProvider et {children}.
-                #76 : le bus réseau (NetworkStatusProvider + OfflineBanner) vit
-                dans app/[locale]/layout.tsx, SOUS NextIntlClientProvider —
-                OfflineBanner appelle useTranslations('network') qui exige ce
-                provider (sinon throw au prerender SSG). QueryProvider reste
-                ancêtre → useQueryClient du bus résout toujours. */}
-            <QueryProvider>{children}</QueryProvider>
-          </AuthProvider>
-        </ThemeProvider>
-        <Toaster position="top-right" />
-      </body>
-    </html>
-  )
+  return children
 }

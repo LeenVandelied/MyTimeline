@@ -40,6 +40,33 @@ export default defineConfig({
       // N'exécute les specs qu'après provisioning des comptes.
       dependencies: ['setup'],
     },
+    // Projet `firefox` VOLONTAIREMENT RESTREINT (#414, Sprint 62).
+    //
+    // POURQUOI il existe : #414 devait « rejouer la sonde sur Firefox 151 » et
+    // « ne pas régresser sur WebKit », alors que ce fichier ne déclarait que
+    // `setup` et `chromium` — le critère d'acceptation était INEXÉCUTABLE.
+    //
+    // POURQUOI il est restreint par `testMatch` à une seule spec : les 174 E2E
+    // existantes n'ont JAMAIS tourné sur Gecko. Les exposer d'un coup à un
+    // moteur jamais exercé transforme le sprint en chasse aux faux positifs
+    // (sélecteurs, timings d'animation, `scrollIntoView`), pour un bénéfice nul
+    // sur l'issue traitée. On ouvre donc le moteur là où la question se pose —
+    // le rendu du focus d'un `Select` Radix — et nulle part ailleurs.
+    //
+    // Élargir ce `testMatch` est une DÉCISION DE SPRINT, pas un détail : chaque
+    // spec ajoutée ici doit avoir été jouée verte sur Gecko au préalable.
+    //
+    // WebKit reste HORS PÉRIMÈTRE (#414) : non ajouté, donc non vérifié.
+    {
+      name: 'firefox',
+      testMatch: /sprint-62-select-focus-indicator\.spec\.ts/,
+      use: { ...devices['Desktop Firefox'] },
+      // Même dépendance que `chromium` : les comptes E2E sont provisionnés une
+      // fois (anti rate-limit register, cf. projet `setup` ci-dessus) et leur
+      // `storageState` est réutilisé tel quel — le cookie JWT n'est pas lié au
+      // moteur.
+      dependencies: ['setup'],
+    },
   ],
   // webServer démarré uniquement si on n'utilise pas un baseURL externe.
   webServer: process.env.PLAYWRIGHT_BASE_URL

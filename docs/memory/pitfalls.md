@@ -988,3 +988,45 @@ pages rendent 500 (`ENOENT app-build-manifest.json`), `auth.setup.ts` casse, **0
 message d'erreur ne dit rien de la cause. Un agent test-runner en a conclu « E2E impossibles sans modifier le
 dépôt ». Contournement réel, sans modification : `rtk proxy npx next dev -p 3100` (webpack). Voisin de
 [[PIT-S60-008]] (le squatteur de port peut être un autre worktree du même projet).
+
+## PIT-S62-001 — `elementsFromPoint()` n'est PAS une preuve de peinture
+Corollaire de [[PIT-S58-001]] côté hit-testing. Une couche Radix ouverte pose `body{pointer-events:none}` : tout le reste sort du test de survol et l'élément visé **remonte en tête de pile alors qu'il est recouvert**. S62 : la preuve DOM se lisait comme une *confirmation* que le popover était peint, tandis que le pixel montrait 100 % de panneau de drawer sur 15 offsets. `getComputedStyle` donne la couleur déclarée, `elementsFromPoint` la pile hit-testée — **jamais la peinte**. Seule la lecture de pixel tranche. (Sprint 62 #414)
+
+## PIT-S62-002 — `page.screenshot({clip})` intersecte le viewport en silence
+Toute échelle dérivée de `décodé/clip` devient fausse dès que l'élément touche le bord droit ou bas, et l'accesseur lit un pixel décalé. Mesuré : élément collé au bord bas, lecture « fond adjacent » à +6 px → rend **la couleur de l'élément lui-même**, unanimité **93 %** — donc indétectable par une garde d'unanimité. Clamper le clip sur `page.viewportSize()`, asserter `decoded ≈ clip × devicePixelRatio`, et **lever** au lieu de rabattre un point hors région. Une unanimité haute n'atteste ni de l'échelle ni de la position. (Sprint 62, review cycle 1)
+
+## PIT-S62-003 — Un garde-fou validé par des fixtures supprimées n'est pas armé
+S62 : 3 gardes ajoutées à `e2e/support/pixel.ts`, prouvées par des fixtures synthétiques **supprimées avant commit**. Les specs existantes restaient vertes — mais unanimité 100 % et éléments loin des bords : **aucune garde ne se déclenchait sur un cas réel du dépôt**. Toute régression future (seuil inversé, `<` en `<=`, tolérance élargie) serait passée en CI verte. Exiger un test **du garde lui-même**, avec contrôle négatif (sans lui, une garde qui lèverait *toujours* passe). Variante « garde-fou » de [[coverage-check-vert-ne-prouve-rien]]. (Sprint 62, review cycle 2)
+
+## PIT-S62-004 — Retirer un layout d'une route retire AUSSI sa `metadata`
+Pas seulement son `<html>`. La 1re passe de #413 a vu le document manquant et **pas** le `<title>` : `NEXT_MISSING_ROOT_TAGS` est bruyant, la perte de `metadata` est **silencieuse**. Après tout déplacement de `<html>`, mesurer le `<title>` **servi**, pas seulement la balise `<html>`. (Sprint 62 #413)
+
+## PIT-S62-005 — Layout racine transparent : Next casse la 404, et deux contournements ne marchent pas
+Next **exige** que le layout RACINE rende `<html>`/`<body>` pour servir `/_not-found`. Réduire `app/layout.tsx` à `{children}` (pattern next-intl) donne `NEXT_MISSING_ROOT_TAGS` sur toute URL non matchée. Mesuré inefficaces : `app/not-found.tsx` avec son propre `<html>` (**prérend** correctement mais **n'est jamais servi**) ; attrape-tout `[locale]/[...rest]` + `notFound()` (la route est atteinte mais `notFound()` **échappe** à `[locale]/not-found.tsx`). Seule forme servie : `experimental.globalNotFound` + `app/global-not-found.tsx` — cf. [[PAT-S62-002]]. (Sprint 62 #413)
+
+## PIT-S62-006 — Un écran prérendu hors layout ne peut pas résoudre la locale pendant le rendu
+Mismatch d'hydratation garanti sur `lang` **et** sur le texte. Poser la locale en `useEffect` (1er rendu = défaut des deux côtés). La voie `headers()` est interdite : elle sortirait la route du décompte `Generating static pages`. Corollaire : le `<title>` d'une telle page ne peut pas être localisé — `metadata` est résolue au build sur une page **unique** servie pour toutes les locales, sans `params` ni URL. (Sprint 62 #413)
+
+## PIT-S62-007 — Contrôle à `<input>` masqué : le contour `@layer base` est structurellement inopérant
+`opacity:0; width:0; height:0` → le contour se peint sur **0×0 px**. Tout composant qui masque son input doit porter le contour du DS sur sa **sœur visible**, sinon il n'a aucun indicateur de focus, quel que soit le token. Grep de détection : `input{...opacity:0...width:0}` + `+ .<classe>` sans `outline`. (Sprint 62 #415)
+
+## PIT-S62-008 — Sur Radix, « désactivé » est un attribut sur un `div`, jamais une propriété DOM
+Une garde d'état qui ne teste que `.disabled` (sur `HTMLInputElement`/`HTMLButtonElement`) est **inopérante** sur `Select`/`DropdownMenu`/`Checkbox`/`Switch` : Radix pose `aria-disabled` / `data-disabled`. Et un `Item`/`Group` **ancêtre** désactive ses descendants sans qu'aucune propriété DOM ne le signale → tester `el.closest('[aria-disabled="true"],[data-disabled]')`, pas `el` seul. Sans ça, le 1,59:1 de S58 (mesure sur contrôle désactivé) revient. (Sprint 62, review cycles 1 et 2)
+
+## PIT-S62-009 — Working tree partagé : `frontend/.next` est unique, et le `next dev` d'un agent meurt sans notification
+Un `next build` réécrit `.next` sous les pieds du serveur d'un autre agent, **sans autre signal que la mort de sa tâche de fond** — `git status` ne dit rien (variante « environnement » de [[PIT-S60-005]]). Un agent qui déclare « environnement laissé debout » doit **re-sonder le port**, pas se fier au fait qu'il l'a démarré. Pour builder sans casser le voisin : copie hors dépôt — `next build` webpack accepte un `node_modules` **symlinké**, **Turbopack le refuse** (`TurbopackInternalError: Symlink node_modules is invalid`), il faut hardlinker (`rsync --link-dest`). Et `next start` avec `output:'standalone'` sert de façon non fiable : utiliser `node .next/standalone/server.js` (+ copier `.next/static` et `public`). (Sprint 62)
+
+## PIT-S62-010 — RTK filtre plus que les commandes directes
+Famille [[PIT-S50-007]], élargie trois fois au S62. (1) `git diff` rendu quasi vide — connu. (2) **Les redirections vers fichier** : `npx next build > log 2>&1` a écrit un résumé RTK de 6 lignes (« 2 routes », faux) au lieu de la sortie Next. (3) **Les commandes à l'intérieur d'un `Bash` composé** : un run E2E a logué `PASS (200) FAIL (0)` sans la ligne `8 skipped`. (4) `ps aux | grep` → « 0 processus » alors que Playwright tournait. Parades : préfixer `rtk proxy`, ou mettre la commande dans un **fichier `.sh` exécuté par chemin** (le hook ne le réécrit pas) ; `/bin/ps -eo` ou `pgrep -fl` jamais `ps | grep` ; vérifier qu'un log de test contient bien les lignes par test avant d'en tirer un compteur. **Ne jamais reprendre un récap de commit RTK** : « 2 files changed » annoncé sur un commit de 4 / 282 lignes. (Sprint 62)
+
+## PIT-S62-011 — Deux runs E2E complets rapprochés ne PEUVENT pas passer
+`global-setup` purge `.auth/accounts.json`, donc chaque run ré-enregistre 4 comptes contre un bucket de **5/min/IP**. Le 2ᵉ échoue en `provision <compte>` avec `Test timeout of 180000ms` et « N did not run » — symptôme qui **ressemble à une panne d'infra**, pas à un rate-limit. Attendre ≥ 2,5 min entre deux runs. Cousin de [[e2e-cors-origin-proxy-trap]] : sur ce harnais, tout échec de provisioning se déguise en autre chose. (Sprint 62)
+
+## PIT-S62-012 — Sans `PLAYWRIGHT_BASE_URL`, Playwright démarre un serveur SANS le proxy `/api`
+`playwright.config.ts` fait `baseURL = PLAYWRIGHT_BASE_URL ?? localhost:3000` et, à défaut, lance son propre `webServer` (`npm run dev`) **sans** `E2E_API_PROXY_TARGET` : le rewrite `/api/*` n'existe pas, le `POST /api/auth/register` du projet `setup` tombe en **404**, les 4 comptes échouent et **aucun test ne démarre**. Un audit S62 en a conclu « BLOQUANT, régression du code » à tort. **Oracle : `401` sur `/api/auth/me` = proxy OK ; `404` = proxy absent.** Lire l'oracle avant toute hypothèse — cf. [[e2e-cors-origin-proxy-trap]]. (Sprint 62, audit Phase 6)
+
+## PIT-S62-013 — Importer `globals.css` dans un composant testé crache ~5 500 lignes de stderr
+jsdom + `css: true`. `vi.mock` de la feuille dans le test. (Sprint 62 #413)
+
+## PIT-S62-014 — Un briefing qui exige de citer un fichier supprimé est infalsifiable
+Erreur du lead au S62 : le briefing d'un subagent imposait de lire `briefing-415.md` et d'en citer les marqueurs comme preuve de chargement du context-pack — alors que les briefings venaient d'être **retirés avant l'ouverture de la PR** (convention anti-bloat). Soit l'agent invente les marqueurs, soit il bloque. L'agent a refusé d'inventer et l'a signalé en tête de rapport — bon comportement. Ne pas adosser une preuve de chargement à un artefact que la convention de sprint supprime. (Sprint 62)

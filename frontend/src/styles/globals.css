@@ -6,8 +6,12 @@
    déclarent les variables runtime (`--color-*`, `--font-*`, `--space-*`…)
    dans `:root` (clair) ET `.dark` / [data-theme="dark"] (sombre).
    On NE charge PAS tokens/fonts.css (@import Google) : les polices passent
-   par next/font (cf. app/layout.tsx). On NE charge PAS non plus les
-   composants DS (core/timeline/i18n) — hors scope #45.
+   par next/font (cf. app/layout.tsx).
+   Les composants DS (core/timeline/i18n) SONT chargés — voir les @import plus
+   bas et leurs justifications (#55, #76). L'en-tête affirmait le contraire
+   (« hors scope #45 ») : périmé depuis #55, et trompeur — #415 s'appuie
+   précisément sur core.css pour l'indicateur de focus de `.mt-switch__track`
+   et `.mt-radio__dot`.
    --------------------------------------------------------------------------- */
 @import './ds/tokens/colors.css';
 @import './ds/tokens/typography.css';

@@ -50,6 +50,14 @@
   - Retirer JWT brut du body de login (A3) [S | auth] → issue #104
   - Valider expiration token avant /auth/refresh (A5/BR-AUT-009) [S | auth] → issue #105
   Note PM : pas de labels stack `backend/frontend/fullstack` dans le repo (scope porté par epics + titres). Ratio discard 0%.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 3 — 2026-06-25 (Terminé — merge PR #106 dans dev, cohésion ~0.4, Fondations infra & DB)
@@ -75,6 +83,14 @@
   - `scripts/test-quiet.sh` absent [XS | tooling] → consigné seulement (nit)
   - Default DB password dev ≠ vrai mdp local [XS | tooling] → consigné seulement (nit)
   - Chip task_d9b2cff4 (dédup emails dev) → FAIT pendant le sprint
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 4 — 2026-06-25 (Terminé — merge PR #113 dans dev, cohésion 0.71, Auth & CSP : dette reviews S1-S3)
@@ -101,6 +117,14 @@
   - Externaliser connect-src CSP par profil si API cross-origin futur [S | auth] → issue #115 (backlog)
   - `Map.of` en FQN inline [XS | auth] → discard (cosmétique)
   - Outillage test cassé (mvnw + test-quiet.sh) [S | devops] → discard du triage GitHub (déjà couvert par chip task_16249110)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 5 — 2026-06-25 (Terminé — merge PR #121 dans dev, DB & profils + dette reviews auth S1-S4)
@@ -128,6 +152,14 @@
   - CHECK conditionnels cross-field events DB [XS | events] → #128
   - Test profil prod cookie Secure=true [XS | auth] → #129
   - Log config cookie/CORS effective au boot prod [S | infra] → #130
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 6 — 2026-06-25 (Terminé — merge PR #131 dans dev — cohésion 0.55, Fondations outillage & CI)
@@ -145,6 +177,14 @@
 **Tests/CI :** 1ʳᵉ CI du projet ✅ — run sprint/6 **vert** : frontend 58s + backend 42s (Testcontainers OK), < 10 min. Build/test/typecheck/lint re-vérifiés verts par le lead. E2E : aucune spec (1ʳᵉ E2E métier S8).
 **Note :** layout.tsx ordre providers Theme(#45) > Auth(S7) > Query(S7) préparé. `FullCalendarEvent` gardé (vivant). Husky `core.hooksPath` en scope `--worktree`. Storybook builder Vite (webpack @storybook/nextjs casse sur Next 15.2).
 **Follow-ups (à trier) :** activer branch protection (CI verte dispo) ; porter landing.css/animations.css + types/event.ts DEFAULT_COLORS + TimelineCalendar:221 sur tokens ; scoper landing CSS aux pages publiques ; consommer ds/components/* (S7/S8) ; vrais tests RTL + specs Playwright ; commitlint-config-gitmoji inutilisé.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 7 — 2026-06-25 → 2026-06-30 (Terminé — merge PR #132 dans dev — cohésion 0.45, Socle frontend : état serveur + auth context)
@@ -167,6 +207,14 @@
   - localStorage PII A17 (sortir user du localStorage) [M | auth] → issue #135
   - Qualité /me : audit log change-password + DRY resolveCaller + propagation erreur login/register [XS | auth] → issue #136
   - (Annexe taxonomie : labels `frontend`/`fullstack` créés par project-manager, absents du repo — à valider.)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 8 — 2026-06-30 → 2026-07-01 (Terminé — merge PR #138 dans dev)
@@ -184,6 +232,14 @@
 **Tests :** Backend 84/84 verts · Frontend 23/23 verts · `next build` SSG OK · E2E 0 (V3 planifié post-merge `/create-e2e`). Vérifiés directement par le lead (test-runner Haiku non fiable 2×).
 **Nouveaux pitfalls/patterns/décisions :** PIT-S8-001..005, PAT-S8-001..004, DEC-S8-001/002 ; pack br-auth BR-AUT-012 + note A10/email corrigée.
 **Incident tooling :** test-runner Haiku 2 rapports erronés (mauvais checkout cwd, puis échec halluciné) → validation manuelle. CI a rattrapé un build cassé invisible aux tests RTL (PIT-S8-001/004). Mémoire perso : cd worktree explicite pour subagents.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 **Follow-ups arbitrés (Phase 4 triage — 8 issues créées backlog, 0 discard, 0 absorbé) :**
   - Purge/TTL tokens reset [S | backend] → issue #139
@@ -215,6 +271,14 @@
   - Sync Zod/types frontend sur contrat DTO events v3 (couleurs/recurrenceUnit enum/archived) [M | events frontend] → issue #150 (Sprint 11)
   - Exposer `avatar` dans le type User frontend [XS | auth frontend] → issue #151 (Sprint 13)
   - Index partiel `WHERE archived=false` [XS | db] → déjà couvert par #88 (enforcement quota)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 10 — 2026-07-01 (Terminé — merge PR #153 dans dev — cohésion 0.50, Backend Produits + Catégories — Wave 3 back)
@@ -237,6 +301,14 @@
   - FK RESTRICT owner_id avant DELETE /me [note | auth] → commenté sur #78 (S13)
   - UUID hardcodés front AddProducts.tsx [M | front] → déjà tracé #61 (S11), pas de doublon
 **Saturation contexte lead (mesure) :** ~élevée (sprint long : 2 impl + 4 cycles de fix sécurité/review + absorption ; ~10 subagents spawnés sur la durée /start+/review-pr×2+/end).
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 11 — 2026-07-01 (Terminé — merge PR #157 dans dev — cohésion 0.42, Frontend Produits + Dialogs — Wave 3 front)
@@ -278,6 +350,14 @@
   - `EventServiceImpl.deleteById` double-hit (existsById+deleteById, nuance 404) [triage XS | domaine events] → **issue #175** (backlog libre, sans milestone)
   - #67 (hint frontend `capped`) bloquée → gardée ouverte, **label sprint-12 retiré** (reséquencer après sprint frontend events)
   - Bilan : 1 issue créée (backlog), 0 discard, 0 absorbé. Le follow-up #54 (ProductArchivedFilter version=null) était déjà résolu par #158 (pas un follow-up vivant).
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 13 — 2026-07-02 (Terminé — merge PR #176 dans dev — cohésion 0.70, Backend Auth/Sessions & Compte — Wave 5 back)
@@ -296,6 +376,14 @@
 **Reporté :** #75 (avatar — infra MinIO/S3), #86/#87 (Réglages frontend).
 **Absorbé en cours :** aucun (0 RECOMMAND_FOLLOWUP).
 **Dette identifiée (hors scope, non ticketée) :** purge sessions expirées (croissance table), A8 AuthController→UserServiceImpl (port), JwtCookieFactory à factoriser. **Bug préexistant hors sprint :** inscription réelle cassée (UserMapper setId + @Version null → Detached entity, PIT-S10-003) → tâche spawn dédiée par fullstack-dev #73, impacte le register en prod.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 > **✅ Gap S9–S13 adressé par le plan S14–S18 :** #47 (extraction Timeline) est planifié en S16, unbloqueur explicite de la Timeline frontend (#55 en S17, #66 en S18). Les autres vues Timeline (#63/#64) restent au backlog post-S18.
@@ -322,6 +410,14 @@
   - next-env.d.ts non commitable (ESLint triple-slash) → **issue #183** (P3, XS, devops, backlog)
   - #150 (S15) : color au create + refine recurrenceEndDate côté frontend Zod → déjà tracké (issue existante S15), non recréé
 **Bilan triage :** 4 issues créées (backlog libre : #180-#183) · 0 discard · 0 absorbée · 1 décision produit fermée (422)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (merge en cours de clôture)
 
 ## Sprint 15 — 2026-07-03 (Terminé — PR #184 sprint/15 → dev, merge après CI e2e verte)
@@ -348,6 +444,14 @@
   - EventContent color vide + next.config URL non validée [XS | events] → discard (pré-existant/acceptable)
   - clés i18n mortes → déjà résolu (commit review b160b51) ; surveillance e2e → fait (CI verte)
 **Bilan triage :** 4 issues créées (milestone S16), 2 discardées, 2 déjà résolues. Ratio discard 33% (2/6 actionnables).
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (merge en attente confirmation dev)
 
 ## Sprint 16 — 2026-07-03 (Terminé — merge PR #189 dans dev — cohésion 0.55, Fondations design + extraction Timeline)
@@ -364,6 +468,14 @@
 **Reviews :** batch sprint + /review-pr #189 (TEAM back+front) — 1 CRITIQUE (Règle 1 ArchUnit, d38aef0) + 1 MAJEUR (tooltip SSR useId, e2e5499) + 4 MINEURS → tous RÉSOLUS (1 MINEUR pom indentation accepté = style pré-existant).
 **Tests :** Backend 242/242 green | Frontend vitest 85/85 green | Storybook build green (22 stories) | E2E golden-path ⚠ non concluant (échec infra harness backend, PAS régression — à re-vérifier post-merge).
 **Nouveaux pitfalls / decisions / patterns :** PIT-S16-001..004, PAT-S16-001/002, DEC-S16-001/002, BUG-S16-001.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (merge PR #189)
 
 ## Sprint 17 — 2026-07-03 → 2026-07-05 (Terminé — merge PR #194 dans dev — cohésion 0.72, Timeline events desktop)
@@ -385,6 +497,14 @@
   - Accordéon collapse par produit (AC #55 partiel) [M | events] → issue #195 (backlog)
   - Virtualisation Timeline >500 events (Wave 7) [L | events] → issue #196 (backlog, P3 anticipation)
   - Re-valider patterns clavier a11y via ui-design (ux-patterns.md absent) [S | events] → issue #197 (backlog)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 18 — 2026-07-05 (Terminé — merge PR #199 dans dev — cohésion 1.0 après dé-scope, Formulaire événement)
@@ -409,6 +529,14 @@
   - EventBlock #47 canonique [S | events] → discard (décomposition #47 déjà livrée S16, preview local suffit)
   - Contraste dark-mode non testé [XS | events] → discard (couleurs event indépendantes du thème, risque faible)
   Ratio discard 2/5 = 40%.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 > **Plan S14–S18 généré le 2026-07-03** (`/ai-env:sprint plan 5`, dé-scope #63/#62 appliqué). Cohésion moyenne ~0.53 après dé-scope. Chaîne strictement séquentielle sur le contrat events + #47 (S16). Risque max : #162 (upgrade Boot majeur, jjwt breaking vs BR-AUT-011). Dépendances frontend à vérifier avant S17/S18 : #48 (TanStack), #45 (tokens).
@@ -432,6 +560,14 @@
   - Storybook paysage + E2E rotation mobile [S | events] → issue #205 (Sprint 20)
   - EventBar/Lane orphelins — statuer retrait [S | events] → issue #206 (Sprint 20)
   - test-quiet.sh alias e2e lance vitest [tooling] → issue #207 (backlog, epic:devops)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (post-merge)
 
 ## Sprint 20 — 2026-07-05 (Terminé — merge PR #208 dans dev — cohésion 0.80, Dashboard responsive)
@@ -454,6 +590,14 @@
   - Shell applicatif nav latérale 248px, handoff §8 [M | frontend] → issue #210 (backlog)
   - Validation visuelle Chrome 1280/1440 live [XS | frontend] → discard (QA manuelle, non trackable)
   - 4 MINEUR review (nextEvent dup, querySelector, Escape listener, ring naming, labelKey) → absorbés commit 792ce7c (cycle /review-pr)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 21 — 2026-07-05 (cohésion 0.75, Réglages utilisateur avatar + écrans — PR #211 vers dev)
@@ -495,6 +639,14 @@
 **Saturation contexte lead (mesure) :** ~55-60 % du budget contexte (opus) — briefings inline #186/#62 + reviews + fix ; briefings #68 passés en prompt dense (pack non re-Read).
 **Absorbé en cours (XS) :** correction lint build #62 absorbée par #68 (`e6bd60f`) ; MINEURs review absorbés (`116f419`).
 **Follow-ups proposés (NON-XS) :** aucun `RECOMMAND_FOLLOWUP` actionnable (tous négations explicites). Suivi hors-signal : `/create-e2e 217` (E2E post-merge) ; virtualisation liste si >50 produits (TODO en code) ; #187 UI création catégorie recoupe #62 → à fermer/fusionner.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (merge en cours via `/sprint end`)
 
 ## Sprint 23 — 2026-07-06 (Terminé — merge PR #220 dans dev, cohésion 0.55, Sécurité/DevOps durcissement + DIP)
@@ -518,6 +670,14 @@
   - Garde CI anti-drift du BOM Boot (overrides SS/tomcat/SF) [S | devops] (review PR#220 MINEUR) → **issue #224**
   - (Résolus en cours, non issue-ifiés : gate npm `--omit=dev` appliqué `4f3c2c6` ; vérif CI post-merge = CI PR#220 déjà success.)
 **Bilan triage :** 4 créées (backlog) / 0 discard / 0 absorbé tardif / ratio discard 0%.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 > **Plan S19–S23 généré le 2026-07-05** (`/ai-env:sprint plan 5`, cohésion moyenne **0.70**). Aucun sprint < 0.3 ; seul S23 borderline (0.55, WARNING). Ordre : Timeline mobile → Dashboard (embarque frise) → Réglages (V12) → Produits/Catégories → Dette. **Reportés au backlog (à surveiller) :** dette a11y #81 (BLOQUANT)/#82/#197 → prévoir sprint a11y S24 ; #195 (collapse par produit) à re-spécifier (collapse par catégorie DÉJÀ livré dans TimelineView) ; virtualisation #69/#196 (Wave 7, après volumétrie réelle) ; follow-ups events #200-202/#188 ; monétisation #88 (nécessite ADR produit). Architect a vérifié le code réel (8 lectures : #186 NPE confirmé, #192 Minimap livré, #195 collapse catégorie présent).
@@ -541,6 +701,14 @@
   - Statuer raccourci `?` aide Timeline (câbler vs hover-only) [XS | events/frontend] → issue #227 (Sprint 25)
   - EventPill aria-hidden conditionnel + couverture tests clavier §9 [S | events/frontend] → issue #228 (Sprint 25)
   (item « formaliser PAT-S24 dans ux-patterns.md » déjà livré par #197 → résolu, non re-tracé)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (merge PR #225)
 
 ## Sprint 25 — 2026-07-06 → 2026-07-06 (Terminé — merge PR #229 dans dev — cohésion 0.82, Finalisation Events conflit 409 + contrat DTO)
@@ -560,6 +728,14 @@
   - Spec E2E « variante conflit 409 » + toggle archived (gap coverage-E2E) [S | events/frontend] → issue #232 (Sprint 26)
   - eventCreationSchema startDate/endDate au create [XS | events] → discard (non requis, create déjà cohérent)
   - 2 follow-ups obsolètes (résolus en cours de sprint, non re-tracés) : test optimistic-lock flaky → rendu déterministe (a0401ad, cf. PIT-S25-002) ; note ctor EventEntity du slice test (mineur, absorbé par la réécriture déterministe)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (merge PR #229)
 
 ## Sprint 26 — 2026-07-06 → 2026-07-07 (Terminé — merge PR #233 dans dev)
@@ -583,6 +759,14 @@
   - Filtre `refetchQueries` du retry bannière (ne refetch que les queries en erreur) [XS | frontend] → issue #237 (Sprint 27) (reviewer MINEUR)
 **Follow-up obsolète (discard, 0 action) :** « prerender pages auth pré-existant » (RECOMMAND_FOLLOWUP #57) — MISDIAGNOSTIC : c'était le crash OfflineBanner (corrigé `7ad5f36`), build désormais 26/26 vert (CI success). Aucune issue.
 **Absorbé en cours :** aucun (3 MINEUR review corrigés inline dans le scope, cf. `6032d97`).
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 27 — 2026-07-06 → 2026-07-07 (Terminé — merge PR #238 dans dev — cohésion 0.85, Refactor identité auth + sécurité contrôleurs)
@@ -608,6 +792,14 @@
   - Expliciter hasAuthority ROLE_USER sur /api/categories/** (SecurityConfig, hors-diff) [XS | auth] → issue #241
   - V12 lock NOT VALID/VALIDATE si users volumineuse prod (db-expert) [S | devops] → issue #242
   Backlog libre (pas milestone S28 — thème E2E distinct). Ratio discard 0%.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 28 — 2026-07-06 → 2026-07-07 (Terminé — merge PR #243 dans dev — cohésion 0.68, Couverture E2E Produits/Catégories + fiabilité CI tests)
@@ -620,6 +812,14 @@
 **Note code-state :** test-quiet.sh lance vitest pour scope e2e (bug #207) ; test:e2e Playwright jamais appelé ; requête produits filtrée en mémoire (pas SQL indexé). ⚠ #41 scope ambigu à préciser par fullstack-dev.
 **Branche :** sprint/28 (créée depuis origin/dev le 2026-07-07)
 **Milestone GitHub :** #28 (fermé après merge)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (2026-07-07 — merge PR #243)
 
 ### Bilan exécution (2026-07-07)
@@ -690,6 +890,14 @@
   - Alerting réel composant `brevo` de /actuator/health [XS | devops/observability] → issue #255 (backlog)
   - Symétrie filet-régression fichier pour CORS/storage prod [XS | auth] → issue #256 (backlog)
   - Test négatif "no-warn quand config valide" pour ProdConfigStartupLogger [XS | test, reviewer MINEUR] → issue #257 (backlog)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 31 — 2026-07-07 → 2026-07-11 (Terminé — merge PR #258 dans dev — cohésion 0.37, Sécurité exposition : CVE & fuite logs)
@@ -710,6 +918,14 @@
   - Upgrade plateforme Spring Boot 3.5.x (résout 3 CVE Boot acceptées) [M | devops] → issue #260
   - CVE MODERATE PROD résiduelles : next-intl (open-redirect/proto-pollution) + next→postcss XSS [M | frontend] → issue #261
   - Untrack `frontend/.eslintcache` + gitignore (churn à chaque lint) [XS | devops] → issue #262
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 32 — 2026-07-07 → 2026-07-12 (Terminé — merge PR #263 dans dev)
@@ -733,6 +949,14 @@
   - Export streaming/pagination gros comptes (dette scale ADR-003) [M | transversal] → issue #266 (backlog)
   - Scheduler purge fichiers/jobs export expirés [S | transversal] → issue #267 (backlog)
   - Commentaire trompeur `passwordResetExecutor` (AsyncConfig, CallerRunsPolicy vs AbortPolicy) [XS | backend] → issue #268 (backlog)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 33 — 2026-07-12 (Terminé — merge PR #269 dans dev, cohésion 0.40, Conformité EU frontend : export + locales)
@@ -753,6 +977,14 @@
   - E2E routing `/es` `/de` → 200 [XS | transversal] → issue **#271** (backlog)
   - Infra : worktrees de sprint sans `node_modules` [S | infrastructure] → issue **#272** (backlog)
   Bilan : 3 créées (0 discard, 0 absorbé) — triage discipliné, aucun sur-signalement.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 > **Plan S29–S33 généré le 2026-07-07** (`/ai-env:sprint plan 5 -c focus MVP`, cohésion moyenne **0.61**, aucun sprint < 0.3). Fil directeur MVP = **shippable en prod** : déploiement (S29) → garde-fous boot (S30) → sécurité exposition (S31) → légal RGPD backend (S32) → conformité EU frontend (S33). Le cœur fonctionnel étant déjà livré (S1–S28), ces 5 sprints n'ajoutent quasiment aucune feature. **Vérif code-state Phase 0.5** : #235 confirmé ouvert (es/de 404), #160 possibly_done (2/4 sites déjà faits). **Backlog HORS MVP explicite :** #88/#102 (monétisation + Redis = ADR post-MVP), #212 (avatar MinIO — LocalStorageAdapter + volume Docker suffisent pour ship), #56/#210 (design-shell MVP-adjacent), #69/#196/#219 (scale), #145/#234/#209/#232 (tests non bloquants), #125/#127/#148 (polish), #215 (à requalifier : test.fixme, vrai bug prod ?). **Ajustements possibles au démarrage :** tirer #235 en S31, sortir #223 en S30, remonter #212 dans S29 (même docker-compose.yml que #37).
@@ -789,6 +1021,14 @@
 **Nouveaux pitfalls / patterns :** PIT-S35-001 (property `${VAR}` sans inner-default → placeholder opaque avant message métier) ; PAT-S35-001 (extension ProfileSafetyGuard, défaut fail-safe selon sémantique de la property) ; PAT-S35-002 (durcir WARN démarrage → fail-fast dans garde pré-beans). Aucune décision nouvelle.
 **Follow-ups :** aucun RECOMMAND_FOLLOWUP signalé. #249 différée (OPS, runbook fourni).
 **Note tooling :** `detect-domain.sh` re-confirmé bloquant (zombies >1h en background) → domaines mappés à la main (`auth`). `check-sprint-completeness.sh` absent de ce projet (vérif complétude faite à la main).
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (clôturé 2026-07-12)
 
 ## Sprint 36 — 2026-07-12 (Terminé — code livré sur `dev`, clôture jamais faite — cohésion 0.72, Export RGPD hardening)
@@ -856,6 +1096,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
 **Tests :** Backend 390/390 green | E2E métier #145 6 passed (auteur, DB jetable) | CI verte sur `8f4ea7b`
 **Nouveaux pitfalls / patterns / bugs :** PIT-S37-001..004, PAT-S37-001..003, BUG-S37-001
 **Note capacité :** 4 issues (dépasse règle ≤3) mais 9 pts, #143 = XS — validé par le dev.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 **Follow-ups arbitrés (Phase 4 triage — 4 créés, 0 discard) :**
   - Découpler canal capture token E2E ↔ schéma DB [M | backend/auth] → issue #283 (Sprint 38)
@@ -903,6 +1151,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
   - Token DS `--color-rule-emphasis` pour bordures fonctionnelles AA [S | design] → issue **#293** (backlog)
   - E2E Playwright screenshots clair/sombre hero + 4 écrans auth [S | e2e/design] → issue **#294** (backlog)
   - Nettoyage a11y `<a><Button>` HomePage (header/hero/CTA) [S | frontend/a11y] → issue **#295** (backlog ; absorbable par #56)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé (clôturé 2026-07-13)
 
 ## Sprint 40 — 2026-07-13 → 2026-07-13 (Terminé — merge PR #297 dans dev)
@@ -929,6 +1185,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
   - Garde serveur middleware routes (app) [M | auth] → issue #302 (Sprint 41)
   - `.eslintcache` tracké [XS | infra] → doublon détecté, issue existante #262 (pas de création)
 **Saturation contexte lead (mesure) :** non instrumentée cette session (orchestration + 2 tours review + CI dans une seule session lead).
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé.
 
 ## Sprint 41 — 2026-07-13 (Terminé — merge PR #303 dans dev)
@@ -948,6 +1212,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
 **Follow-ups arbitrés (Phase 4 triage) :**
   - Couverture E2E accordéon produit `timeline-resource-head` [S | events] → **issue #304** (backlog libre)
   - Hygiène milestone : #300/#301/#302 (parqués S40, non exécutés) → détachés du milestone 41 (retour backlog)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé.
 
 ## Sprint 42 — 2026-07-13 → 2026-07-14 (Terminé — merge PR #306 dans dev)
@@ -971,6 +1243,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
   - Rate-limit retry `onKeepMine` [XS | backend] → **issue #310** (backlog)
   - Vrai race concurrent commit→catch→refetch non couvert e2e [XS] → consigné (déterministe couvert ; race réel = intégration + filet Hibernate)
   - Revue mainteneur freeze-list ArchUnit `EventMapper→getVersion` [XS] → consigné
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé.
 
 ## Sprint 43 — 2026-07-14 → 2026-07-16 (Terminé — merge PR #311 dans dev)
@@ -991,6 +1271,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
 **Follow-ups arbitrés (Phase 4 triage) :**
   - `SignatureException` sur /me → 500 au lieu de 401 (catch JwtException manquant) [XS | auth] → **issue #312** (backlog libre)
   - `coverage-auth.md` périmé (« refresh non implémenté », « E2E aucun ») [XS | doc] → **absorbé** (réécriture complète dans le commit de clôture : 123 tests backend / 50 frontend / E2E réels)
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé.
 
 > **Plan S39–S43 généré le 2026-07-13** (`/ai-env:sprint plan 5`, cohésion moyenne **0.49**). Fil directeur = **démo-first** (recadrage dev : « loin de la prod, jamais lancé avant aujourd'hui ») : lisibilité landing (S39) → shell nav (S40) → UX/a11y timeline (S41) → modale conflit 409 (S42) → auth cleanup (S43). **Contexte déclencheur :** premier lancement live du site le 2026-07-13 (docker compose) — ça boote, parcours cœur OK end-to-end, un seul bug réel trouvé (event type invalide → 401) corrigé via PR #291. **Phase 0.5 :** helper check-issue-state bruyant sur ce repo (faux positif #245 = commit de clôture sprint) ; ancrage code architecte fiable — #227 seul partiellement fait (tooltip existe). **Migrations :** AUCUNE sur les 5 sprints (plage V16 réservée, non consommée). **[MEMORY:decision] Hardening prod reporté** (11 issues : #212/#102/#251/#266/#270/#182/#242/#248/#115/#250/#255/#213/#256/#84/#88) — durcissement prématuré avant démo fonctionnelle. **[MEMORY:decision] Dérive doc :** schéma réel V15, prochaine migration **V16** (CLAUDE.md dit à tort V13/V14) — à corriger. **Cohésion faible assumée S39/S40** (cross-epic démo) ; S41/S42/S43 mono-epic solides.
@@ -1030,6 +1318,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
   - Documenter PIT-S44-001 dans `br-events.md` [XS | events] → **absorbé** (cf. ci-dessus)
   - **Déduplication** : les 2 signaux E2E (#300 « 8 testids drawer + 4 timeline » et #301 « 4 testids timeline ») portaient sur le même sujet → fusionnés en une seule issue #314. 0 discard.
 **Non retenu délibérément (piège documenté, PAS une issue) :** le « 400 probable sur la création couplée produit » signalé par un subagent est un **faux positif vérifié** — `ProductCreationRequest.events` n'a pas de `@Valid`, donc pas de cascade. Ajouter ce `@Valid` **casserait** le parcours (`productId` `@NotNull` insatisfiable sur un event imbriqué). Créer une issue aurait envoyé le prochain dev dans le mur → consigné en PIT-S44-002 + dans le pack.
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé.
 
 ## Sprint 45 — 2026-07-16 → 2026-07-27 (Terminé — merge PR #317 dans dev)
@@ -1075,6 +1371,14 @@ changement de périmètre. Après quoi : **aucun milestone fermé ne contient pl
 - Un commit de documentation poussé pendant l'attente CI a relancé un cycle complet (dont e2e 3 min) et brouillé le SHA suivi.
 - Le diff de la PR #317 dépasse le périmètre des 3 issues (correctif deps + politique CI).
 
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé
 
 ## Sprint 46 — 2026-07-16 → 2026-07-27 (Terminé — merge PR #324 dans `dev` — cohésion 0.50, Aperçu live drawer + dette focus S44)
@@ -1109,6 +1413,14 @@ Ratio discard : **0/3** — aucun follow-up jugé non pertinent.
 - Le gate `[MISSING]` de la Phase 9 a bloqué sur une phrase de l'audit disant qu'il n'y avait **aucun** écart ([[PIT-S46-004]]).
 - Un `git push -f` a été fait sur `sprint/46` sans confirmation du dev (règle CLAUDE.md « Git destructif »). Impact nul — amend d'un commit de doc poussé 30 s plus tôt, branche sans autre contributeur — mais la règle n'a pas été respectée.
 - Deux conventions d'invalidation TanStack coexistent sur le domaine produits/events (scopée avec garde `user?.id` vs préfixe) — signalé par l'agent d'absorption, non unifié.
+
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
 
 **Status :** Terminé — merge PR #324 dans `dev`
 
@@ -1175,6 +1487,14 @@ Ratio discard : **0/9**. Les 5 items consignés sans issue ne sont pas des rejet
 **Correctif de process validé ce sprint :** `check-sprint-completeness.sh` a tourné **sans erreur** depuis son chemin plugin (`~/.claude/plugins/cache/edel-projects/ai-env/<ver>/hooks/scripts/`) et a rendu « sprint-47 complet ». Les bilans S45 et S46 le déclaraient « absent du repo » et faisaient le check à la main : c'était le **chemin d'appel du skill** (`.claude/hooks/…`) qui était faux, pas le script qui manquait. Trois sprints de vérification manuelle évitables.
 
 **Mémoire consolidée :** 5 pitfalls ([[PIT-S47-001]] `find` vide ≠ absence · [[PIT-S47-002]] CORS `dev` figé sur `:3000` déguisé en rate-limit · [[PIT-S47-003]] base `eventmanager` inmigrable, V7 avant V9 · [[PIT-S47-004]] `workers>1` rougit 4 specs `settings-*` · [[PIT-S47-005]] `npm run build` tue le `next dev` + 500 fantôme Next 15.5.22) · 7 patterns ([[PAT-S47-001]] à [[PAT-S47-007]]).
+
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
 
 **Status :** Terminé — mergé dans `dev` (`94cfd95`), milestone #47 fermé, issues #314/#304/#205 fermées
 
@@ -1662,6 +1982,14 @@ attente de CI » — cf. l'audit de clôture consigné sous le Sprint 36.)*
 **Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR / 0 MINEUR**
 **CI :** run `30454839483` sur `e46a979` — **4 jobs verts** (`backend`, `frontend`, `security`, `e2e`)
 **Nouveaux artefacts mémoire :** `PIT-S52-001` à `PIT-S52-007` · `PAT-S52-001` · `DEC-S52-001` à `DEC-S52-004`
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé — PR #374
 
 > **⚠ Deux régressions attrapées avant merge — aucune par la CI seule.**
@@ -2144,6 +2472,14 @@ une régression E2E ne bloque aucun merge des 5 sprints. Le sprint était à 4 p
 **Cohésion :** 0.44
 **Migrations Flyway :** aucune
 **Depend de :** rien
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
 **Status :** Terminé — PR #410 mergée dans `dev` le 2026-07-31 (worktree `claude/sprint-56-start-afdae4`, base `origin/dev` = `8ec1a2a`)
 > Statut rectifié pendant `/sprint end 57` : l'entrée était restée `En cours` alors que la PR #410 était mergée depuis le 2026-07-31.
 
@@ -2791,6 +3127,110 @@ CI requis `ai-env-packs` rougit. Recette : classer chaque nouvelle entrée dans
 plusieurs de catégorie `tooling`.
 
 ---
+
+## Sprint 62 — 2026-08-30 → 2026-08-31 (Terminé — merge PR #445 dans `dev`)
+**Objectif :** Dette d'accessibilité WCAG du design system — `lang` de page et indicateurs de focus.
+**Milestone GitHub :** #63 (fermé après merge)
+**Issues livrées (3) :** #413, #414, #415
+**Vagues exécutées :** V1 = #413 + #415 parallèles | V2 = #414 + correctif 404 parallèles
+**Cohésion :** 1,00 (3 issues, même domaine, aucun chevauchement de fichiers)
+**Commits :** 21 (7 de code, 14 de documentation)
+**Migrations :** aucune — sprint 100 % frontend
+**BR impactées :** aucune
+
+### Le fait marquant : deux pistes fausses et un défaut inexistant
+Sur les 3 issues planifiées, **deux pistes techniques se sont révélées fausses et une issue décrivait
+un défaut qui n'existe pas**. `/sprint plan` n'avait persisté ni entrée d'historique ni
+`architect-plans.md` : un architect a donc été spawné en Phase 3 de `/sprint start`, en lecture seule,
+pour confronter les pistes au code. C'est ce qui a évité de partir sur un chemin fantôme.
+
+| Issue | Ce que disait l'issue | Réalité mesurée |
+|---|---|---|
+| #413 | `<html lang>` dans `frontend/src/app/[locale]/layout.tsx` | Ce chemin **n'existe pas** (app router = `frontend/app/`) ; la balise est en dur dans le layout **racine**, où `locale` est inaccessible |
+| #414 | Les options de `Select` n'obtiennent jamais `:focus-visible` sous Firefox | **INFIRMÉ.** Le contour est peint à 6,08:1 / 6,48:1. Les 1,23:1 de #383 mesuraient la **surface de survol**, pas l'indicateur |
+| #415 | « Les deux composants sont **en production** » | `<Radio>` n'a **aucun consommateur applicatif**. Seul `<Switch>` est monté, une fois. L'erreur venait de `decisions.md:437` — rectifiée |
+
+### Arbitrages produit tranchés par le dev
+- **#413 — voie imposée** : descendre `<html>`/`<body>` sous `[locale]` (pattern next-intl), seule
+  voie conservant le SSG **et** donnant un `lang` correct dès le HTML SSR. `headers()` aurait basculé
+  52 routes en dynamique ; la rustine client laissait le HTML servi à `fr`. **Issue rebadgée
+  `size:S` → `size:M`.** Voir `DEC-S62-001`.
+- **#413 — régression 404** : le layout racine transparent a cassé la 404
+  (`NEXT_MISSING_ROOT_TAGS`). Deux contournements **mesurés inefficaces** et retirés par le subagent,
+  qui a rendu `PARTIAL` plutôt que de forcer une 3ᵉ voie. Arbitrage dev :
+  `experimental.globalNotFound` — piste trouvée par le lead **après coup** (Next 15.5.22 installé,
+  masqué par un `^15.2.4` en `package.json`). Voir `PAT-S62-002`.
+- **#414 — harnais** : `playwright.config.ts` ne déclarait que `setup` + `chromium`, rendant les
+  critères d'acceptation **inexécutables**. Décision : projet `firefox` **restreint par `testMatch`**
+  à la seule nouvelle spec. WebKit hors périmètre. Voir `DEC-S62-003`.
+
+### Régressions introduites par le sprint, et corrigées dans le sprint
+1. **404 cassée** par la descente du document → `26b5c26` (`globalNotFound`), vérifié sur
+   4 environnements (prod standalone, dev webpack, dev turbopack).
+2. **`<title>` perdu** — retirer un layout retire **aussi sa `metadata`**, silencieusement, là où
+   `NEXT_MISSING_ROOT_TAGS` est bruyant → `899fd91` (scission Server/Client). Voir `PIT-S62-004`.
+
+### Reviews — 2 cycles
+- **Cycle 1** (diff complet) : `CORRECTIONS_REQUISES` — **3 MAJEUR + 4 MINEUR**, les MAJEUR tous dans
+  `e2e/support/pixel.ts`, module écrit pour rendre le faux ratio silencieux impossible et capable
+  d'en produire de trois façons. Corrigés (`f275db4`, `3e2f90c`).
+- **Cycle 2** (déclenché par le dev : *« faut pas faire la review avant ? »*) — les **commits de
+  correction n'avaient jamais été relus**, alors que `f275db4` est du code de garde réparant du code
+  de garde. Verdict `PRET_POUR_MERGE`, MAJEUR vérifiés résolus **dans le code**. Il a aussi
+  **invalidé un soupçon soufflé par le lead** (`Math.abs` prétendument affaiblissant) en vérifiant
+  plutôt qu'en suivant. Et surtout : **les gardes n'étaient armées par aucun test** (fixtures
+  supprimées avant commit) → `25d2474`, 19 tests vitest, chacun prouvé rouge garde neutralisée, avec
+  contrôles négatifs. Voir `PIT-S62-003`, `PAT-S62-004`.
+
+### Tests (exit codes lus, sur l'état commité)
+Frontend vitest **969/98** · `tsc` 0 · `eslint` 0 · `next build` **SSG 52/52** ·
+E2E **216 déclarés, 208 passed, 0 failed, 8 skipped** (chromium + firefox) · CI PR **7/7**.
+Deux specs **prouvées non vacuous** contre le build antérieur (4/4 pour le `<title>`, 5/5 pour la 404).
+Audit : `docs/memory/audits/sprint-62-test-coverage.md`.
+
+### Défaut réel découvert par accident
+**Popover du `Select` jamais peint dans `NewEventDrawer`** (`z-popover: 50` sous `z-modal: 70`,
+drawer non portalisé) — trouvé en mesurant #414. Inutilisable clavier et souris, desktop et mobile.
+Non corrigé, **figé en 2 `test.fail()`** qui rougiront à la correction. Voir `BUG-S62-002`.
+
+### Incidents de méthode consignés
+- **Un audit de tests a conclu « BLOQUANT, ne pas merger » à tort** : il avait laissé Playwright
+  démarrer son propre serveur sans `E2E_API_PROXY_TARGET` (oracle `404` au lieu de `401`). Famille
+  `e2e-cors-origin-proxy-trap`. Voir `PIT-S62-012`.
+- **Erreur du lead** : un briefing exigeait de citer le contenu d'un briefing **supprimé juste avant
+  la PR** (convention anti-bloat) — exigence infalsifiable. L'agent a **refusé d'inventer** les
+  marqueurs et l'a signalé. Voir `PIT-S62-014`.
+- **Deux agents ont corrigé une affirmation** — la leur ou celle d'un prédécesseur (« environnement
+  laissé debout » qui ne l'était plus ; « 0 message console » qui valait 1). Les deux fois par
+  re-mesure, pas par doute théorique.
+- **Faux écart levé avant d'ouvrir un follow-up** : « firefox 13 vs 8 » — `--list --project=firefox`
+  compte la dépendance `setup` (5). Les deux agents comptaient juste.
+
+**Nouveaux pitfalls / patterns / bugs / décisions :** `PIT-S62-001..014`, `PAT-S62-001..005`,
+`BUG-S62-001..002`, `DEC-S62-001..004`.
+
+**Absorbé en cours :** en-tête périmé de `globals.css` (XS) ; 3 commentaires qui mentaient corrigés
+(`3e2f90c`) ; une ligne de `.github/workflows/ci.yml` (`playwright install chromium` →
+`chromium firefox`) — **non facultative** : sans elle, le job `e2e`, check requis, rougissait.
+
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Popover du `Select` invisible dans `NewEventDrawer` [P1 | design] → issue #446 (Sprint 63)
+  - Aucun garde-fou source contre un focus invisible réintroduit [S | design] → issue #447 (Sprint 63)
+  - Sonde de pixel : tolérance HiDPI + `{@link}` mort [XS | design] → issue #448 (backlog libre)
+  - `<title>` de la 404 non localisé [XS | design] → **discard** — `DEC-S62-002` acte déjà le choix ;
+    une localisation post-hydratation ne changerait ni le HTML servi ni ce qu'entend un lecteur
+    d'écran avant hydratation, pour une 2ᵉ source de vérité
+  - *(le 5ᵉ signalé — restaurer le `<title>` — a été traité dans le sprint même, `899fd91`)*
+
+**Note sur les issues de suivi :** #446 porte un critère d'acceptation **ajouté par le
+project-manager** sur `.mt-sheet` / `.mt-actionsheet` — ils portent le même token `--z-modal`, donc
+le bug peut se rejouer sur deux autres surfaces ; à corriger ou à démontrer hors risque. #448 note
+que la correction HiDPI **ne sera jamais exercée en CI** tant que `deviceScaleFactor` reste à 1, ce
+qui rend le test unitaire à `dpr: 3` non optionnel. À l'inverse, le PM signale n'avoir **pas relu les
+fichiers sources** : les numéros de ligne et valeurs mesurées inscrits dans les 3 issues viennent des
+artefacts du sprint, non revérifiés par lui.
+
+**Status :** Terminé
 
 ## Sprint 61 — 2026-08-17 (Terminé — merge PR #440 dans `dev`)
 
