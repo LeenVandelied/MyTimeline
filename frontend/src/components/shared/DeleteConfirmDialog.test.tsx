@@ -180,7 +180,7 @@ describe('DeleteConfirmDialog', () => {
     await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
 
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /deleteDialog.confirm/ })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: /common\.deleteDialog\.confirm/ })).toBeDisabled(),
     )
     expect(screen.getByText('common.deleteDialog.deleting')).toBeInTheDocument()
 
