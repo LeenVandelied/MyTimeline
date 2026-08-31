@@ -134,7 +134,7 @@ describe('TimelineEditHost — suppression mobile (#309)', () => {
     await waitFor(() => expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument())
     expect(deleteEvent).not.toHaveBeenCalled()
     // Même dialog que le desktop, variante event.
-    expect(screen.getByText('deleteDialog.event.title')).toBeInTheDocument()
+    expect(screen.getByText('common.deleteDialog.event.title')).toBeInTheDocument()
 
     // La suppression mobile ne passe jamais par `editing` → le dialog d'édition desktop
     // ne doit à aucun moment s'ouvrir.
@@ -161,7 +161,7 @@ describe('TimelineEditHost — suppression mobile (#309)', () => {
     renderUnderAuth()
 
     fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
-    fireEvent.click(await screen.findByText('deleteDialog.cancel'))
+    fireEvent.click(await screen.findByText('common.deleteDialog.cancel'))
 
     await waitFor(() =>
       expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
@@ -182,7 +182,7 @@ describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () =
     await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
     // Feedback inline (mécanisme déjà en place sur le chemin desktop).
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('deleteDialog.errors.generic')
+    expect(alert).toHaveTextContent('common.deleteDialog.errors.generic')
     // Le dialog NE se referme PAS : l'utilisateur voit que rien n'a été supprimé.
     expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
   })
@@ -194,7 +194,7 @@ describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () =
     fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
     fireEvent.click(await screen.findByTestId('delete-confirm-button'))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('deleteDialog.errors.notFound')
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.notFound')
   })
 })
 

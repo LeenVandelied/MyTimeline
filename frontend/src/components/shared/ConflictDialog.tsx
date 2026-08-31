@@ -101,7 +101,7 @@ export function ConflictDialog({
   onTakeServer,
   isSubmitting = false,
 }: ConflictDialogProps) {
-  const t = useTranslations('conflictDialog')
+  const t = useTranslations('common.conflictDialog')
 
   const isComparative = Boolean(serverEvent && localValues)
 

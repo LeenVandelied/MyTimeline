@@ -90,7 +90,7 @@ export function DeleteConfirmDialog({
   linkedProductsCount = 0,
   categoryId,
 }: DeleteConfirmDialogProps) {
-  const t = useTranslations('deleteDialog')
+  const t = useTranslations('common.deleteDialog')
 
   const [deleting, setDeleting] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
