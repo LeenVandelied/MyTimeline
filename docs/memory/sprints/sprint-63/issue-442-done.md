@@ -99,7 +99,25 @@ Négations explicites : pas de `RECOMMAND_TEST_RUNNER` (6 tests, 27,8 s, exécut
 `RECOMMAND_FOLLOWUP:` `next build` non joué sur ce diff faute de `.next` isolé — à couvrir par la CI
 avant merge. [triage XS | domaine infrastructure]
 
-**Environnement laissé debout et re-sondé après coup** (`/api/auth/me` = 401) : `next dev` :3000 +
-backend :8086, réutilisables par #446.
+## Correction post-rapport — l'agent s'est corrigé lui-même
+
+Son rapport initial se terminait par « environnement laissé debout, réutilisable ». **C'était faux au
+moment où quelqu'un aurait pu s'en servir** : sa tâche de fond `next dev` a été tuée **après**
+l'envoi du rapport.
+
+État revérifié par le lead, indépendamment : `:3000` → **000** (connexion refusée) ;
+`:8086` → **401**, `mytimeline-e2e-backend-e2e-1` up 14 h (healthy).
+
+Rien d'autre ne change : le run E2E (11 passed, `EXIT=0`), le contrôle négatif et le commit
+`cd4c6b3` sont **antérieurs** à l'arrêt et restent valides.
+
+Commande de relance transmise à l'agent #74 (vague 4), depuis `frontend/` :
+`NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8086 npx next dev -p 3000` —
+**webpack, pas `npm run dev`** (turbopack casse en worktree, `PIT-S61-007`).
+
+`[MEMORY:pitfall]` — un agent qui déclare « environnement laissé debout » en fin de rapport énonce
+une garantie que rien ne tient : sa tâche de fond peut être tuée **après** l'envoi, et l'affirmation
+devient fausse sans que rien ne la corrige. Prévention : ne jamais promettre un état à l'agent
+suivant — donner la **commande de relance**. Variante temporelle de `PIT-S62-009`.
 
 STATUS: COMPLETED
