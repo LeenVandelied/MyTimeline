@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import fs from 'node:fs'
 import { waitForFonts } from './support/contrast'
-import { devToolingSelectors } from './support/dev-tooling'
+import { devToolingSelectors, neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { ensureAuthenticated } from './support/auth'
 import { PROD, SHARED } from './support/accounts'
 import { getUserId, seedCategory, seedProduct, todayIsoDate } from './support/products'
@@ -58,6 +58,76 @@ const WIDTHS = [320, 359, 360, 375, 390, 414, 640, 641, 768, 1023, 1024, 1280] a
 
 /** Les 4 locales du dépôt. `de` est la plus large, `fr` la principale. */
 const LOCALES = ['fr', 'en', 'es', 'de'] as const
+
+/**
+ * BASCULE DE LA FRISE — les media queries de `TimelineResponsive.tsx:44-46`,
+ * recopiées ici parce que le composant ne les exporte pas.
+ *
+ * ⚠ CE QUI CLOCHAIT (rouge CI du S63, job e2e passé de ~15 à 42 min).
+ * La série `event-form` détectait le chemin par
+ * `getByTestId('timeline-event-more').count()` juste après `product-detail-view`.
+ * Deux raisons rendent ce compte NUL alors que la frise mobile est bien celle
+ * qui sera rendue : (a) `count()` NE PATIENTE PAS, et le bouton « ⋯ » n'existe
+ * qu'une fois les événements arrivés ; (b) `useMediaQuery` rend `false` au
+ * PREMIER rendu (`useMediaQuery.ts:20`, SSR-safe) — la frise est donc DESKTOP
+ * tant que l'effet d'hydratation n'a pas basculé. Le test prenait alors la
+ * branche desktop en portrait, cliquait la pastille (`timeline-event` existe
+ * dans les DEUX variantes, et ce clic-là patiente), puis attendait
+ * `event-drawer-edit` — que `TimelineMobilePortrait` ne monte JAMAIS — jusqu'au
+ * budget de 300 s. D'où 3 flaky + 1 échec dur, et des attentes de 5 min.
+ *
+ * CE QU'ON FAIT À LA PLACE. On pose au navigateur les MÊMES requêtes, avec la
+ * MÊME priorité que le composant (paysage > portrait > desktop) : `matchMedia`
+ * est exact dès `setViewportSize` et ne doit RIEN à l'hydratation, donc la
+ * détection n'est plus une course. On attend ensuite la RACINE de la variante
+ * déduite avec un budget COURT : cette attente VÉRIFIE la déduction au lieu de
+ * la supposer. Si la bascule du composant divergeait un jour de ces requêtes,
+ * le test échoue en 20 s avec un message qui nomme la largeur, la locale et la
+ * racine manquante — au lieu d'expirer à 300 s sur un locator muet.
+ */
+const MOBILE_PORTRAIT_QUERY = '(max-width: 640px) and (orientation: portrait)'
+const MOBILE_LANDSCAPE_QUERY = '(orientation: landscape) and (max-height: 600px)'
+
+type TimelineVariant = 'portrait' | 'landscape' | 'desktop'
+
+/** Racine rendue par chaque variante — montée même sans aucun événement. */
+const TIMELINE_ROOT_TESTID: Record<TimelineVariant, string> = {
+  portrait: 'timeline-mobile-portrait',
+  landscape: 'timeline-mobile-landscape',
+  desktop: 'timeline-view',
+}
+
+/**
+ * Budget des étapes de NAVIGATION du parcours d'édition (routage vers le bon
+ * chemin, ouverture de la feuille/du tiroir).
+ *
+ * ⚠ NE PAS ALLONGER. Il est court EXPRÈS : le défaut par défaut de Playwright
+ * pour `locator.click()` est `actionTimeout: 0` — aucun budget propre, donc
+ * l'échec remonte au budget du TEST (300 s ici). C'est précisément ce qui a
+ * transformé une erreur de routage en attente de 5 min répétée par les retries.
+ * Un chemin correct s'ouvre en moins d'une seconde ; si 20 s ne suffisent pas,
+ * c'est le routage ou le composant qu'il faut corriger, pas ce nombre.
+ * Cf. `PIT-S54-001` (un budget mal posé rend le diagnostic inatteignable).
+ */
+const PATH_TIMEOUT_MS = 20_000
+
+/**
+ * Variante de frise que `TimelineResponsive` VA rendre à la taille courante.
+ *
+ * Interrogée dans la page, pas déduite d'un seuil recalculé côté test : c'est la
+ * même primitive (`window.matchMedia`) que celle du composant.
+ */
+async function resolveTimelineVariant(page: Page): Promise<TimelineVariant> {
+  return page.evaluate<TimelineVariant, { portrait: string; landscape: string }>(
+    ({ portrait, landscape }) => {
+      // Même ordre de priorité que `TimelineResponsive` : paysage d'abord.
+      if (window.matchMedia(landscape).matches) return 'landscape'
+      if (window.matchMedia(portrait).matches) return 'portrait'
+      return 'desktop'
+    },
+    { portrait: MOBILE_PORTRAIT_QUERY, landscape: MOBILE_LANDSCAPE_QUERY },
+  )
+}
 
 /** Tolérance sub-pixel : les arrondis de rendu produisent des écarts < 1 px. */
 const SUBPIXEL_TOLERANCE_PX = 0.5
@@ -353,6 +423,11 @@ test.describe('#74 — formulaire d’événement', () => {
 
   for (const locale of LOCALES) {
     test(`event-form · ${locale} · ${WIDTHS.length} largeurs`, async ({ page }) => {
+      // Le bouton flottant des Query Devtools intercepte le clic sur
+      // `event-drawer-edit` (mesuré : 42 tentatives repoussées). La CI tourne
+      // sur `next dev`, donc il y est présent. Neutralisé pour le POINTEUR
+      // seulement — la mesure continue de l'exclure par `closest()`.
+      await neutralizeDevToolingPointerEvents(page)
       await ensureAuthenticated(page)
       const userId = await getUserId(page)
       const category = await seedCategory(page, shortName('Ev'))
@@ -382,24 +457,56 @@ test.describe('#74 — formulaire d’événement', () => {
          * d'édition) : l'édition passe par le bouton « ⋯ »
          * (`timeline-event-more`) puis la feuille d'actions.
          *
-         * On DÉTECTE l'affordance montée plutôt que de la déduire de la largeur :
-         * la bascule est un `matchMedia` JS, pas une media-query CSS, et elle
-         * dépend AUSSI de l'orientation.
+         * Le routage et son garde-fou sont documentés au-dessus de
+         * `MOBILE_PORTRAIT_QUERY` : variante interrogée via `matchMedia`, puis
+         * VÉRIFIÉE en attendant sa racine sous un budget court.
          */
-        const more = page.getByTestId('timeline-event-more').first()
-        const mobilePath = (await more.count()) > 0 && (await more.isVisible())
+        const variant = await resolveTimelineVariant(page)
+        const rootTestId = TIMELINE_ROOT_TESTID[variant]
 
-        if (mobilePath) {
-          await more.click()
-          await page.getByTestId('timeline-actionsheet-edit').click()
+        await expect(
+          page.getByTestId(rootTestId),
+          `[${locale} @ ${width}px] la frise devait rendre la variante « ${variant} » ` +
+            `(racine \`${rootTestId}\`), d'après les media queries de ` +
+            `TimelineResponsive.tsx recopiées dans cette spec. Racine absente => ` +
+            `la bascule du composant a divergé de ces requêtes : corriger la ` +
+            `détection, ne PAS allonger PATH_TIMEOUT_MS.`,
+        ).toBeVisible({ timeout: PATH_TIMEOUT_MS })
+
+        if (variant === 'desktop') {
+          await page.getByTestId('timeline-event').first().click({ timeout: PATH_TIMEOUT_MS })
+          const drawerEdit = page.getByTestId('event-drawer-edit')
+          await expect(
+            drawerEdit,
+            `[${locale} @ ${width}px] chemin DESKTOP : \`event-drawer-edit\` absent ` +
+              `après clic sur la pastille. Ce bouton n'existe que sous \`TimelineView\` ` +
+              `(EventDrawer) — s'il manque ici, c'est que la frise rendue n'est pas ` +
+              `celle attendue.`,
+          ).toBeVisible({ timeout: PATH_TIMEOUT_MS })
+          await drawerEdit.click({ timeout: PATH_TIMEOUT_MS })
         } else {
-          await page.getByTestId('timeline-event').first().click()
-          await page.getByTestId('event-drawer-edit').click()
+          const more = page.getByTestId('timeline-event-more').first()
+          await expect(
+            more,
+            `[${locale} @ ${width}px] chemin MOBILE (${variant}) : \`timeline-event-more\` ` +
+              `absent. Soit l'événement de fixture n'est pas monté, soit la frise ` +
+              `rendue n'est pas la variante mobile.`,
+          ).toBeVisible({ timeout: PATH_TIMEOUT_MS })
+          await more.click({ timeout: PATH_TIMEOUT_MS })
+          await page
+            .getByTestId('timeline-actionsheet-edit')
+            .click({ timeout: PATH_TIMEOUT_MS })
         }
 
         await expect(page.getByTestId('event-form')).toBeVisible({ timeout: 30_000 })
         await settle(page)
-        const m = await measure(page, 'event-form', locale, width, `via=${mobilePath ? 'actionsheet' : 'drawer'}`)
+        const m = await measure(
+          page,
+          'event-form',
+          locale,
+          width,
+          `via=${variant === 'desktop' ? 'drawer' : 'actionsheet'}·frise=${variant}`,
+        )
         expectNoPageOverflow(m, 'event-form', locale, width)
       }
     })
