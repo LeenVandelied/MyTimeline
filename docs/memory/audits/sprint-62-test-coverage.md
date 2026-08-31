@@ -28,12 +28,12 @@ Aucun `[MISSING]`.
 
 | Suite | Résultat | Exit |
 |---|---|:---:|
-| vitest (frontend) | **950 passed / 97 fichiers** | 0 |
+| vitest (frontend) | **969 passed / 98 fichiers** | 0 |
 | `tsc --noEmit` | 0 erreur | 0 |
 | `eslint` | 0 erreur | 0 |
 | `next build` | **`✓ Generating static pages (52/52)`**, `✓ globalNotFound`, `○ /_not-found` statique | 0 |
-| E2E chromium (complète) | **200 passed / 0 failed / 8 skipped** (6,0 min) | 0 |
-| E2E firefox (projet restreint) | **13 passed / 0 failed** (1,7 min) | 0 |
+| E2E complète (chromium + firefox) | **216 déclarés, 208 passed, 0 failed, 8 skipped** | 0 |
+| E2E firefox (projet restreint) | **13 déclarés** (5 `setup` + 8 spec), 0 failed | 0 |
 
 ### Les 8 skips chromium — décompte réel
 
@@ -110,6 +110,22 @@ démarrent jamais.
   la garde lève, pas qu'un composant réel du dépôt était affecté
 - **Suite backend non rejouée** — aucun fichier backend touché par le sprint
 - `forced-colors: active` non testé
+
+## Mise à jour après les 2 cycles de review
+
+Les compteurs ci-dessus intègrent le commit `25d2474`, qui **arme les 4 gardes de `pixel.ts`** par
+19 tests vitest (chacun prouvé rouge quand la garde est neutralisée, contrôles négatifs inclus) et
+étend la garde `disabled` aux ancêtres Radix. Détail complet :
+`docs/memory/sprints/sprint-62/review-corrections-done.md`.
+
+Le constat qui a motivé ce commit mérite d'être retenu : **les ratios identiques après correction
+prouvaient la non-régression, pas l'efficacité des gardes** — aucune ne se déclenchait sur un cas réel
+du dépôt, et leurs seules fixtures avaient été supprimées avant commit.
+
+Note de lecture sur le décompte firefox : `playwright test --list --project=firefox` reporte
+**13 tests**, Playwright incluant la dépendance `setup` (5) dans le décompte du projet. La spec
+restreinte en contient 8 (4 × 2 thèmes). Les deux chiffres sont justes, avec des conventions
+différentes — **ce n'est pas un écart**.
 
 ## Conclusion
 
