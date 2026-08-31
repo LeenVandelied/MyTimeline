@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test'
+
 /**
  * OUTILLAGE DE DÉVELOPPEMENT À EXCLURE DE TOUT BALAYAGE DOM — SOURCE UNIQUE.
  *
@@ -42,3 +44,44 @@ export const DEV_TOOLING = [
 
 /** Forme sérialisable pour `page.evaluate` (un `readonly string[]` ne passe pas tel quel). */
 export const devToolingSelectors = (): string[] => [...DEV_TOOLING]
+
+/**
+ * Neutralise l'outillage de dev pour les INTERACTIONS — et pour elles seules.
+ *
+ * POURQUOI. `DEV_TOOLING` était jusqu'ici exclu de la MESURE uniquement. Or le
+ * bouton flottant des TanStack Query Devtools est aussi un OBSTACLE AU CLIC :
+ * mesuré au Sprint 63, un `click()` sur `event-drawer-edit` a été intercepté
+ * 42 fois d'affilée par `<circle> … from <div class="tsqd-parent-container">`,
+ * jusqu'à expiration. Comme la CI e2e tourne sur `next dev` (cf. en-tête de ce
+ * fichier), le risque est RÉEL en CI, pas seulement en local — et il est
+ * position-dépendant, donc il se manifeste par un flake d'apparence aléatoire
+ * sur une largeur ou une locale au hasard.
+ *
+ * CE QUE ÇA NE FAIT PAS. `pointer-events: none` ne masque rien et ne démonte
+ * rien : les éléments restent dans le DOM, gardent leur `getBoundingClientRect`
+ * et restent donc soumis à l'exclusion de mesure existante (`closest(sel)`),
+ * qui continue de s'exercer telle quelle. Aucun verrou n'est desserré : on
+ * retire un meuble du SERVEUR DE DEV du chemin de clic, pas une zone
+ * applicative. Cf. l'avertissement ci-dessus — n'y ajoutez aucun sélecteur
+ * applicatif.
+ *
+ * `addInitScript` s'applique à CHAQUE navigation de la page : un seul appel en
+ * tête de test couvre toutes les `goto` suivantes.
+ */
+export async function neutralizeDevToolingPointerEvents(page: Page): Promise<void> {
+  await page.addInitScript((selectors: string[]) => {
+    const STYLE_ID = 'e2e-dev-tooling-neutralizer'
+    const inject = () => {
+      if (document.getElementById(STYLE_ID)) return
+      const style = document.createElement('style')
+      style.id = STYLE_ID
+      style.textContent = `${selectors.join(',')}{pointer-events:none !important;}`
+      document.head?.appendChild(style)
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', inject, { once: true })
+    } else {
+      inject()
+    }
+  }, [...DEV_TOOLING])
+}

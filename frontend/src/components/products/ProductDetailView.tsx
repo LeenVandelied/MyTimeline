@@ -417,7 +417,17 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                   )}
                 </div>
                 {unarchiveError?.id === event.id && (
-                  <p className="text-destructive text-xs" role="alert">
+                  // #442 — point d'accroche E2E. `role="alert"` reste le contrat a11y
+                  // (et celui de `ProductDetailView.test.tsx`) ; le testid s'y ajoute
+                  // pour que la spec du conflit 409 ne dépende pas d'un texte traduit
+                  // (4 locales). `data-kind` expose la VARIANTE (conflit vs générique),
+                  // sans quoi une spec devrait comparer le message rendu.
+                  <p
+                    className="text-destructive text-xs"
+                    role="alert"
+                    data-testid={`product-detail-unarchive-error-${event.id}`}
+                    data-kind={unarchiveError.kind}
+                  >
                     {unarchiveError.kind === 'conflict'
                       ? t('unarchiveConflict')
                       : t('unarchiveError')}

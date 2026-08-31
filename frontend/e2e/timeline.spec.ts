@@ -1321,3 +1321,137 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
     await expect(pill, 'les pastilles sont réaffichées au dépli').toHaveCount(1)
   })
 })
+
+/* ============================================================================
+ * #449 — ANCRE TEMPORELLE DU DÉFILEMENT AU CHANGEMENT DE ZOOM
+ *
+ * DÉFAUT REPRODUIT (mesures ci-dessous, contrôle négatif joué) : `scrollLeft`
+ * est posé en PIXELS et n'était jamais re-projeté quand l'échelle px/jour
+ * changeait. Au zoom arrière la piste rétrécit, le navigateur RABAT la valeur
+ * périmée sur `scrollWidth - clientWidth`, la frise saute au bord droit et les
+ * pastilles de la zone regardée sortent de la bande de virtualisation
+ * (`OVERSCAN_X_PX = 600`) : elles ne sont plus MONTÉES. La frise paraît vide
+ * alors que les lanes restent visibles.
+ *
+ * Sans le correctif : `scrollLeft` = 26691 pour un `scrollWidth - clientWidth`
+ * de 26691 (rabattu à l'unité près), pastille du jour montée 0 fois.
+ * Avec : 24865 (= 4973,08 j × 5 px/j), pastille du jour toujours montée.
+ *
+ * ⚠ E2E OBLIGATOIRE, jamais jsdom : jsdom NE CLAMPE PAS `scrollLeft` (il relit
+ * ce qu'on lui écrit) — le défaut y est structurellement invisible et un test
+ * unitaire serait un faux témoin (cf. [[jsdom-scroll-tests-prove-nothing]]).
+ *
+ * DÉTERMINISME : listing produits STUBBÉ, comme le fixture #392 ci-dessus. Le
+ * défaut n'apparaît que si la piste DÉBORDE et si la zone regardée n'est pas
+ * déjà le bord droit — deux conditions qui dépendent de l'étendue, donc de
+ * TOUS les events du compte partagé. Sur état seedé réel la spec deviendrait
+ * verte à vide (sur la base au moment de l'écriture : `scrollWidth` = 982 =
+ * `clientWidth`, AUCUN débordement, donc rien à prouver).
+ * ========================================================================== */
+
+const WIDE_PRODUCT_ID = '4a1f0000-0000-4000-8000-000000000449'
+
+/** Date ISO (locale, minuit) décalée de `days` par rapport à aujourd'hui. */
+function isoOffsetDate(days: number): string {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + days)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
+/**
+ * UN produit, TROIS events : J-4970, J (l'oracle) et J+470. `computeRange`
+ * (padDays = 30) rend donc une étendue de 5501 jours avec aujourd'hui au jour
+ * 5000 — soit, au zoom Mois (12 px/j), une piste qui déborde largement ET un
+ * centrage sur aujourd'hui qui n'est PAS le bord droit. C'est exactement la
+ * configuration où le rabattement se voit.
+ */
+async function stubWideRangeFixture(page: Page, productName: string): Promise<void> {
+  const mkEvent = (suffix: string, title: string, dayOffset: number) => ({
+    id: `${WIDE_PRODUCT_ID}-${suffix}`,
+    title,
+    type: 'single',
+    startDate: isoOffsetDate(dayOffset),
+    endDate: isoOffsetDate(dayOffset),
+    productId: WIDE_PRODUCT_ID,
+    color: '#1D4ED8',
+    archived: false,
+  })
+  await stubProductsList(page, [
+    {
+      id: WIDE_PRODUCT_ID,
+      name: productName,
+      color: '#1D4ED8',
+      category: { id: `${WIDE_PRODUCT_ID}-cat`, name: 'Wide Cat', color: '#1D4ED8' },
+      events: [
+        mkEvent('past', 'Borne passe', -4970),
+        mkEvent('today', productName, 0),
+        mkEvent('future', 'Borne futur', 470),
+      ],
+    },
+  ])
+}
+
+/**
+ * Attend l'ARRÊT du défilement (deux lectures consécutives égales) avant de
+ * mesurer. `.mt-tlv__scroll` porte `scroll-behavior:smooth`
+ * (`ds/components/timeline.css:127`) : une mesure prise en vol lit une position
+ * transitoire et rendrait la spec bruyante (famille PIT-S54-003).
+ */
+async function settledScroll(page: Page): Promise<{ scrollLeft: number; maxScroll: number }> {
+  const scroll = page.getByTestId('timeline-scroll')
+  let previous = -1
+  for (let i = 0; i < 40; i++) {
+    const value = await scroll.evaluate((el) => el.scrollLeft)
+    if (value === previous) break
+    previous = value
+    await page.waitForTimeout(100)
+  }
+  return scroll.evaluate((el) => ({
+    scrollLeft: el.scrollLeft,
+    maxScroll: el.scrollWidth - el.clientWidth,
+  }))
+}
+
+test.describe('#449 /timeline — le zoom arrière conserve la zone temporelle', () => {
+  test('zoom arrière sur une étendue large : la frise reste sur aujourd’hui, pas rabattue au bord droit', async ({
+    page,
+  }) => {
+    const productName = unique('Wide Range Prod')
+    await stubWideRangeFixture(page, productName)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    const todayPill = page.locator(
+      `[data-testid="timeline-event"][data-event-title="${productName}"]`,
+    )
+
+    // PRÉMISSES — sans elles la spec pourrait devenir verte à vide.
+    const before = await settledScroll(page)
+    expect(
+      before.maxScroll,
+      'la piste DOIT déborder au zoom Mois, sinon il n’y a aucun rabattement possible',
+    ).toBeGreaterThan(0)
+    expect(
+      before.scrollLeft,
+      'la zone regardée ne doit pas être DÉJÀ le bord droit, sinon le défaut est indiscernable',
+    ).toBeLessThan(before.maxScroll)
+    await expect(todayPill, 'la pastille du jour est montée avant le zoom').toHaveCount(1)
+
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+
+    const after = await settledScroll(page)
+    expect(
+      after.scrollLeft,
+      `zoom arrière : scrollLeft=${after.scrollLeft} rabattu sur le maximum ` +
+        `${after.maxScroll} — la frise a sauté au bord droit`,
+    ).toBeLessThan(after.maxScroll)
+    await expect(
+      todayPill,
+      'la pastille du jour reste montée : la frise n’a pas quitté la zone regardée',
+    ).toHaveCount(1)
+  })
+})

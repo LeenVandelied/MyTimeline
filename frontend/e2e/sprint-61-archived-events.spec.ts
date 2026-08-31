@@ -220,3 +220,105 @@ test.describe('#230 UX de l’archivage — confirmation, grisage, verrou', () =
     await expect(page.getByTestId('product-detail-filter-active')).toContainText('0')
   })
 })
+
+/**
+ * #442 (Sprint 63) — E2E : CONFLIT 409 au DÉSARCHIVAGE (BR-EVE-015).
+ *
+ * Trou couvert : `useSetEventArchived` porte une branche dédiée au 409 (invalidation de
+ * `queryKeys.products.all` MÊME en erreur, pour que le re-clic reparte d'une version
+ * fraîche au lieu de boucler sur des 409), et `ProductDetailView.handleUnarchive` mappe
+ * ce statut sur un message inline dédié. Aucune des 5 specs ci-dessus ne produisait de
+ * 409 : la branche n'était couverte que par des tests unitaires à erreur mockée.
+ *
+ * Mécanique du conflit (patron `sprint-42-events.spec.ts` : 2 contextes navigateur sur le
+ * MÊME compte). Le contexte A modifie l'event AILLEURS pendant que B a la page ouverte :
+ *   - le PATCH concurrent porte sur le `title`, PAS sur `archived` — désarchiver depuis A
+ *     ferait disparaître le bouton de B au re-fetch et rendrait le 4e critère (« le 2e clic
+ *     réussit ») structurellement intestable ;
+ *   - il passe par l'API et non par l'UI de A : un event archivé n'est ré-éditable que via
+ *     la frise en vue « archivés », et faire ce détour ne testerait rien de plus ici.
+ * B détient alors une `version` périmée : son clic « désarchiver » produit un 409 RÉEL,
+ * jamais simulé par une route interceptée.
+ *
+ * Anti-flaky : le statut de chaque PATCH est asserté sur la RÉPONSE réseau avant tout
+ * jugement du DOM (convention #232). Le re-clic n'est déclenché qu'après avoir observé la
+ * conséquence OBSERVABLE du re-fetch (le titre concurrent affiché), et non après un délai.
+ */
+test.describe('#442 Désarchivage — conflit 409 sur version périmée', () => {
+  test('version périmée -> 409 inline, données re-fetchées, 2e clic OK', async ({ browser }) => {
+    const ctxA = await browser.newContext({ storageState: PROD.storageState })
+    const ctxB = await browser.newContext({ storageState: PROD.storageState })
+    const pageA = await ctxA.newPage()
+    const pageB = await ctxB.newPage()
+
+    try {
+      const { userId, productId, event } = await seedArchivedEvent(pageA, 'Conflict')
+
+      // --- B ouvre la vue « archivés » : il détient la version courante (N) ------
+      await pageB.goto(`/fr/products/${productId}`, { waitUntil: 'domcontentloaded' })
+      await expect(pageB.getByTestId('product-detail-view')).toBeVisible()
+      await pageB.getByTestId('product-detail-filter-archived').click()
+      const row = pageB.getByTestId(`product-detail-history-row-${event.id}`)
+      await expect(row).toBeVisible()
+
+      // --- A modifie le MÊME event ailleurs : version N+1, TOUJOURS archivé -------
+      const serverTitle = unique('Titre concurrent')
+      const bump = await pageA.request.patch(`${API}/events/${event.id}`, {
+        data: { title: serverTitle, version: event.version },
+      })
+      expect(bump.status(), 'le PATCH concurrent de A doit réussir (200)').toBe(200)
+      const [bumped] = await fetchProductEvents(pageA.request, userId, productId)
+      expect(bumped.archived, 'l’event reste archivé après le PATCH concurrent').toBe(true)
+      expect(bumped.version, 'la version serveur doit avoir changé').not.toBe(event.version)
+
+      // --- 1er clic de B : version périmée -> 409 --------------------------------
+      const conflictPatch = pageB.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      // Le re-fetch déclenché par l'invalidation frappe `GET /api/users/{id}/products`
+      // (`useProductsWithEvents` — `products.withEvents` est un préfixe de `products.all`).
+      const refetch = pageB.waitForResponse(
+        (r) => r.url().includes(`/users/${userId}/products`) && r.request().method() === 'GET',
+      )
+      await pageB.getByTestId(`product-detail-unarchive-${event.id}`).click()
+      expect(
+        (await conflictPatch).status(),
+        'désarchivage sur version périmée doit renvoyer 409',
+      ).toBe(409)
+
+      // --- Message de conflit INLINE (pas de crash, pas de blocage silencieux) ----
+      const inlineError = pageB.getByTestId(`product-detail-unarchive-error-${event.id}`)
+      await expect(inlineError).toBeVisible()
+      // Variante `conflict` (et non le message générique) : assertion sur l'attribut,
+      // jamais sur le texte traduit (4 locales, `localePrefix:'always'`).
+      await expect(inlineError).toHaveAttribute('data-kind', 'conflict')
+
+      // --- Les données SONT re-fetchées après le conflit --------------------------
+      // Preuve 1 (réseau) : la requête de liste repart bien APRÈS le 409.
+      expect((await refetch).status(), 'le re-fetch produits doit réussir').toBe(200)
+      // Preuve 2 (rendu) : la ligne affiche le titre écrit par A — donnée qui n'existait
+      // nulle part côté B avant le conflit. C'est ce que l'E2E peut honnêtement prouver :
+      // l'invalidation de la clé de cache elle-même n'est pas observable de l'extérieur.
+      await expect(row).toContainText(serverTitle)
+
+      // --- 2e clic : repart d'une version fraîche -> succès, PAS de boucle de 409 --
+      const retryPatch = pageB.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      await pageB.getByTestId(`product-detail-unarchive-${event.id}`).click()
+      expect(
+        (await retryPatch).status(),
+        'le 2e clic doit réussir (200) — pas de nouveau 409',
+      ).toBe(200)
+
+      // --- Effets : serveur désarchivé, message disparu, ligne hors vue archivés ---
+      const after = await fetchProductEvents(pageB.request, userId, productId)
+      expect(after.find((e) => e.id === event.id)?.archived, 'archived repassé à false').toBe(false)
+      await expect(row).toHaveCount(0)
+      await expect(inlineError).toHaveCount(0)
+    } finally {
+      await ctxA.close()
+      await ctxB.close()
+    }
+  })
+})

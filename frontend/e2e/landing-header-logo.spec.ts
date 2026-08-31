@@ -74,13 +74,27 @@ const EXPECTED_FONT_PX = (width: number) => (width < SM_BREAKPOINT ? 21 : 27)
 /**
  * Marge minimale entre le bord droit du logo et le bloc suivant.
  *
- * Sous 768 px le header est déjà contraint par le palier `max-[360px]` de #347
- * (mesuré : 5 px en `de` à 320 px — c'est son terrain, pas celui-ci), on exige
- * donc seulement une marge STRICTEMENT positive. À partir de 768 px le relevé
- * jammy donne 58,5 px au pire (`fr` à 1024 px) : le plancher à 24 px laisse de
- * la place aux métriques de police sans tolérer un retour à la case 0 px.
+ * ⚠ SOUS 768 px, CE PLANCHER *EST* `PIT-S52-001` — c'est la seule chose du
+ * dépôt qui matérialise la règle « viser une marge à DEUX CHIFFRES ; un
+ * correctif qui laisse 0 à 4 px est un échec CI en attente ». Il a valu `1`
+ * jusqu'au Sprint 63, en renvoyant explicitement la dette à #423 ; #423 l'a
+ * payée (`max-[360px]:px-2` sur le CTA d'inscription) et remonte donc le
+ * plancher à 10. **Ne pas le redescendre, et ne pas le différencier par
+ * largeur pour faire passer un cas tendu** : ce serait affaiblir la garde, ce
+ * que `DEC-S52-004` interdit. Si un futur élargissement du groupe droit rougit
+ * ici, c'est le layout qu'il faut corriger.
+ *
+ * Relevé jammy après #423 (320 px, pire cas de chaque locale) : `de` 13 px,
+ * `es` 18 px, `fr` 26 px, `en` 48 px. À 375/390 px le palier `max-[360px]` ne
+ * s'applique plus et la marge repart à 38 px au pire (`de` à 375 px) : le
+ * plancher unique à 10 px ne contraint donc réellement que 320 px, sans être
+ * pour autant restreint à cette largeur.
+ *
+ * À partir de 768 px le relevé jammy donne 58,5 px au pire (`fr` à 1024 px) :
+ * le plancher à 24 px laisse de la place aux métriques de police sans tolérer
+ * un retour à la case 0 px.
  */
-const MIN_GAP_PX = (width: number) => (width < 768 ? 1 : 24)
+const MIN_GAP_PX = (width: number) => (width < 768 ? 10 : 24)
 
 interface LogoMetrics {
   fontSizePx: number

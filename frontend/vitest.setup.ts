@@ -94,4 +94,30 @@ if (typeof window !== 'undefined') {
   if (!window.HTMLElement.prototype.scrollIntoView) {
     window.HTMLElement.prototype.scrollIntoView = () => {}
   }
+  /**
+   * #449 — jsdom n'implémente pas non plus `Element.scrollTo` : sans ce stub,
+   * `TimelineView` lève `el.scrollTo is not a function` au montage (44 tests).
+   *
+   * Le stub REPORTE les valeurs sur `scrollLeft`/`scrollTop` au lieu de ne rien
+   * faire : un no-op ferait diverger silencieusement les tests qui lisent ces
+   * propriétés après un défilement programmatique. ⚠ Cela ne rend PAS le
+   * défilement observable pour autant — jsdom ne clampe pas `scrollLeft` (il
+   * relit ce qu'on lui écrit) : toute affirmation sur un défilement RÉEL exige
+   * un E2E, cf. la spec #449 de `e2e/timeline.spec.ts`.
+   */
+  if (!window.Element.prototype.scrollTo) {
+    window.Element.prototype.scrollTo = function scrollToStub(
+      this: Element,
+      xOrOptions?: number | ScrollToOptions,
+      y?: number,
+    ): void {
+      if (typeof xOrOptions === 'object' && xOrOptions !== null) {
+        if (xOrOptions.left !== undefined) this.scrollLeft = xOrOptions.left
+        if (xOrOptions.top !== undefined) this.scrollTop = xOrOptions.top
+        return
+      }
+      if (xOrOptions !== undefined) this.scrollLeft = xOrOptions
+      if (y !== undefined) this.scrollTop = y
+    }
+  }
 }

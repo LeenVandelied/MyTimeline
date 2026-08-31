@@ -55,24 +55,24 @@ describe('DeleteConfirmDialog', () => {
 
   it('variante event : affiche le titre event', () => {
     render(<DeleteConfirmDialog open variant="event" onOpenChange={noop} onConfirm={noop} />)
-    expect(screen.getByText('deleteDialog.event.title')).toBeInTheDocument()
+    expect(screen.getByText('common.deleteDialog.event.title')).toBeInTheDocument()
   })
 
   it('variante event : affiche le warning série si isRecurring', () => {
     render(
       <DeleteConfirmDialog open variant="event" isRecurring onOpenChange={noop} onConfirm={noop} />,
     )
-    expect(screen.getByText('deleteDialog.event.recurringWarning')).toBeInTheDocument()
+    expect(screen.getByText('common.deleteDialog.event.recurringWarning')).toBeInTheDocument()
   })
 
   it('variante event : pas de warning série sans isRecurring', () => {
     render(<DeleteConfirmDialog open variant="event" onOpenChange={noop} onConfirm={noop} />)
-    expect(screen.queryByText('deleteDialog.event.recurringWarning')).not.toBeInTheDocument()
+    expect(screen.queryByText('common.deleteDialog.event.recurringWarning')).not.toBeInTheDocument()
   })
 
   it('variante product : affiche le titre product', () => {
     render(<DeleteConfirmDialog open variant="product" onOpenChange={noop} onConfirm={noop} />)
-    expect(screen.getByText('deleteDialog.product.title')).toBeInTheDocument()
+    expect(screen.getByText('common.deleteDialog.product.title')).toBeInTheDocument()
   })
 
   it('variante category sans produits liés : pas de select de réassignation', () => {
@@ -86,7 +86,7 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={noop}
       />,
     )
-    expect(screen.queryByText('deleteDialog.category.reassignLabel')).not.toBeInTheDocument()
+    expect(screen.queryByText('common.deleteDialog.category.reassignLabel')).not.toBeInTheDocument()
   })
 
   it('variante category avec produits liés : bouton Supprimer désactivé sans réassignation', () => {
@@ -100,8 +100,8 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={noop}
       />,
     )
-    expect(screen.getByText('deleteDialog.category.reassignLabel')).toBeInTheDocument()
-    const confirmBtn = screen.getByRole('button', { name: 'deleteDialog.confirm' })
+    expect(screen.getByText('common.deleteDialog.category.reassignLabel')).toBeInTheDocument()
+    const confirmBtn = screen.getByRole('button', { name: 'common.deleteDialog.confirm' })
     expect(confirmBtn).toBeDisabled()
   })
 
@@ -122,7 +122,7 @@ describe('DeleteConfirmDialog', () => {
     await user.click(screen.getByRole('combobox'))
     await user.click(await screen.findByText('Cible A'))
 
-    const confirmBtn = screen.getByRole('button', { name: 'deleteDialog.confirm' })
+    const confirmBtn = screen.getByRole('button', { name: 'common.deleteDialog.confirm' })
     await waitFor(() => expect(confirmBtn).toBeEnabled())
 
     await user.click(confirmBtn)
@@ -158,9 +158,9 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={noop}
       />,
     )
-    expect(screen.getByText('deleteDialog.category.noOtherCategory')).toBeInTheDocument()
+    expect(screen.getByText('common.deleteDialog.category.noOtherCategory')).toBeInTheDocument()
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'deleteDialog.confirm' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'common.deleteDialog.confirm' })).toBeDisabled()
   })
 
   it('état deleting : bouton désactivé + spinner pendant la confirmation', async () => {
@@ -177,12 +177,12 @@ describe('DeleteConfirmDialog', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'deleteDialog.confirm' }))
+    await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
 
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /deleteDialog.confirm/ })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: /common\.deleteDialog\.confirm/ })).toBeDisabled(),
     )
-    expect(screen.getByText('deleteDialog.deleting')).toBeInTheDocument()
+    expect(screen.getByText('common.deleteDialog.deleting')).toBeInTheDocument()
 
     // Résout la promesse et laisse React appliquer les mises à jour d'état
     // (deleting→false, onOpenChange) dans un cycle act() implicite via waitFor.
@@ -203,8 +203,8 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={onConfirm}
       />,
     )
-    await user.click(screen.getByRole('button', { name: 'deleteDialog.confirm' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('deleteDialog.errors.notFound')
+    await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.notFound')
   })
 
   it('erreur 409 : affiche le message conflict inline', async () => {
@@ -220,8 +220,8 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={onConfirm}
       />,
     )
-    await user.click(screen.getByRole('button', { name: 'deleteDialog.confirm' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('deleteDialog.errors.conflict')
+    await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.conflict')
   })
 
   it('succès : appelle onOpenChange(false) après confirmation', async () => {
@@ -236,7 +236,7 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={onConfirm}
       />,
     )
-    await user.click(screen.getByRole('button', { name: 'deleteDialog.confirm' }))
+    await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
   })
 })
