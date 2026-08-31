@@ -3128,6 +3128,59 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 63 — 2026-08-31 (En cours)
+
+**Objectif :** Milestone « Débordements en langue allemande » — périmètre élargi par le dev aux 6
+issues du milestone (DE overflow + dette design/DS + i18n + couverture E2E).
+**Milestone GitHub :** #64 (décalage +1 conservé depuis S57)
+**Issues (6) :** #74, #423, #441, #442, #446, #447
+**Vagues :** à définir (architect Phase 3 — voir `docs/memory/sprints/sprint-63/architect-plans.md`)
+**Migrations :** aucune attendue — sprint 100 % frontend
+**Dépend de :** Sprint 62 (#446 et #447 sont ses follow-ups directs)
+
+### Écarts au skill assumés à l'ouverture
+
+1. **Sprint jamais planifié par `/sprint plan`** — ni entrée d'historique, ni `architect-plans.md`.
+   Comme au S62, un architect en lecture seule est spawné en Phase 3 de `/sprint start` pour
+   confronter les pistes techniques au code avant tout briefing. Au S62 ce détour avait invalidé
+   **2 pistes sur 3** et un défaut inexistant.
+2. **Périmètre à 6 issues, ~4 domaines** — au-delà des bornes du skill (3 issues OU ~10 points) et
+   cohésion faible par construction. Le dev a été averti des deux options plus étroites
+   (label seul = #423 + #74 ; ou +#446) et a **explicitement retenu le milestone complet**.
+3. **Le milestone contenait 4 issues non labellisées** (#441, #442, #446, #447) — follow-ups des
+   S61/S62 garés là, piège déjà documenté (`mytimeline-sprint-end-github-gotchas`). Elles ont été
+   labellisées `sprint-63` à l'ouverture pour que label et milestone concordent, plutôt que
+   détachées : c'est la conséquence du choix de périmètre ci-dessus.
+
+### Arbitrages de la Phase 3
+
+- **#74 re-scopée en audit** (arbitrage dev, 2026-08-31). L'architect a établi que **3 des 4
+  actions demandées ciblaient des composants inexistants** : aucun composant `Segmented` dans le
+  dépôt, `.mt-eyebrow` / `.mt-btn--wrap` / `.mt-tabs--collapsible` à **0 appelant**, et les règles
+  `tabs` exigent `.mt-tabs__row` / `.mt-tabs__menu` qui n'existent que dans `i18n.css`. Vérifié
+  deux fois (architect, puis lead par `git grep`). Corps GitHub réécrit + commentaire traçant les
+  alternatives écartées (sortir du sprint / garder tel quel). Dépendance déclarée « bloqué par
+  #45 » **levée** : `globals.css:31` importe déjà `i18n.css`.
+- **Vagues arrêtées** : V1 = #446 + #447 + #442 (parallèles, 0 fichier commun) | V2 = #441
+  (après #446 : `DeleteConfirmDialog.tsx`) | V3 = #423 (après #441 : `locales/*/common.json`) |
+  V4 = #74 (après #423 : `HeaderSection.tsx` + specs landing). #446, seul P1, est en V1.
+
+### Déviation d'outillage assumée
+
+`inject-pack.sh` n'a pas de mode allégé : les briefings composés font 100–127 KB pièce (dont 63 KB
+de `pit-frontend.md`), et le prompt d'un `Agent` doit être inliné. Trois briefings à ce format
+satureraient la fenêtre du lead. Choix retenu : le prompt inline `cp-frontend.md` en entier (le
+garde-fou `pre-spawn-fullstack.sh` est satisfait par un vrai pack, marqueur compris) et impose en
+**étape 0 obligatoire** la lecture de `pit-frontend.md` / `br-events.md` depuis
+`.ai-env/context-packs/`. Le pitfall que le garde-fou protège (`@/tmp/ctx-…` non expansé) ne
+s'applique pas : ce sont des chemins **suivis par git**, vérifiables par l'agent, avec consigne
+d'échouer en `PARTIAL` s'ils sont illisibles. Les briefings complets restent sur disque pour
+`/resume-failed`.
+
+**Status :** En cours
+
+---
+
 ## Sprint 62 — 2026-08-30 → 2026-08-31 (Terminé — merge PR #445 dans `dev`)
 **Objectif :** Dette d'accessibilité WCAG du design system — `lang` de page et indicateurs de focus.
 **Milestone GitHub :** #63 (fermé après merge)
