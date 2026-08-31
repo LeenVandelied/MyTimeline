@@ -19,7 +19,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? 'github' : 'list',
+  // En CI, DEUX reporters (#S63) : `github` produit les annotations inline sur la
+  // PR mais n'écrit AUCUN fichier — il ne crée jamais `playwright-report/`. L'étape
+  // « Upload Playwright report (on failure) » de `.github/workflows/ci.yml` uploadait
+  // donc un répertoire inexistant et réussissait en n'uploadant rien : un échec E2E
+  // ne laissait que la stack trace textuelle (diagnostic du défaut S63 resté
+  // INDÉTERMINÉ). Le reporter `html` écrit réellement le rapport ; `open: 'never'`
+  // empêche Playwright de tenter d'ouvrir un navigateur sur le runner.
+  // Les traces `on-first-retry` (ci-dessous) atterrissent, elles, dans
+  // `test-results/` — uploadé par une étape distincte du workflow.
+  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL,
     trace: 'on-first-retry',

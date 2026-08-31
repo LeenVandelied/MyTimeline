@@ -307,12 +307,41 @@ jobs:
         # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
         run: npx playwright test auth.setup.ts auth-signature.spec.ts
 
-      - name: Upload Playwright report (on failure)
+      # ARTEFACTS DE DIAGNOSTIC (S63) — deux répertoires DISTINCTS, deux uploads.
+      #
+      # Historique du défaut : `playwright.config.ts` n'activait en CI que le
+      # reporter `github`, qui n'écrit AUCUN fichier. `frontend/playwright-report/`
+      # n'existait donc jamais et cette étape réussissait en n'uploadant rien —
+      # un run en échec (ex. 33387548590) renvoyait une liste d'artefacts VIDE.
+      # Le reporter `html` est désormais ajouté à côté de `github` (forme tableau).
+      #
+      # `if-no-files-found: warn` (défaut, explicité ici) et NON `error` : le job
+      # peut échouer AVANT Playwright (boot backend, `npm ci`, install navigateurs),
+      # auquel cas l'absence de rapport est normale et ne doit pas ajouter de bruit.
+      # Le corollaire : un upload vert ne prouve pas que l'artefact existe — le
+      # contrôle se fait via `gh api repos/:owner/:repo/actions/runs/<id>/artifacts`.
+      - name: Upload Playwright HTML report (on failure)
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: playwright-report
           path: frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # `test-results/` est un répertoire SÉPARÉ du rapport HTML : c'est là que
+      # Playwright dépose les traces produites par `trace: 'on-first-retry'`
+      # (`trace.zip`, ouvrable avec `npx playwright show-trace`), les
+      # `error-context.md` (snapshot DOM au moment de l'échec) et les captures.
+      # Sans cette étape, ces fichiers étaient détruits avec le runner et un échec
+      # E2E ne laissait que la stack trace textuelle.
+      - name: Upload Playwright traces & error contexts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-test-results
+          path: frontend/test-results/
+          if-no-files-found: warn
           retention-days: 7
 
       - name: Dump backend log (on failure)
