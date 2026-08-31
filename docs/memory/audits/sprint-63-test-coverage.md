@@ -118,3 +118,26 @@ crash du forwarder), et un second run E2E a vu le serveur dev mourir en cours de
 
 La PR peut être ouverte — c'est la seule façon de trancher — mais elle **ne doit pas être présentée
 comme validée sur l'E2E**, et **ne doit pas être mergée avant CI verte**.
+
+---
+
+## Cycle 2 — la CI a démenti l'audit local, et le sprint est désormais vert
+
+Ce document a été écrit **avant** le premier run CI. Ce qu'il classait `INDÉTERMINÉ` est tranché :
+
+- **Les 4 tests `event-form` avaient un vrai défaut**, pas un artefact macOS. Cause : routage
+  responsive par `locator.count()` (qui n'auto-attend pas) contre un `useMediaQuery` rendant
+  `false` au premier rendu, plus `.tsqd-parent-container` interceptant le clic. Corrigé en
+  `f4082f1`, durées passées de 300 s (timeout) à **~11 s** par test.
+- **`timeline.spec.ts:966` était une contamination d'exécution**, confirmée : la spec passe sur
+  `f4082f1` **sans avoir été touchée**.
+
+**CI sur `f4082f1` : 7 jobs sur 7 verts.** Job `e2e` : 43 min 50 s / échec → **11 min 11 s /
+succès**. Playwright : 225 passed / 2 failed / 3 flaky → **229 passed / 0 failed / 0 flaky**.
+
+Détail complet : `docs/memory/sprints/sprint-63/correctif-ci-e2e-done.md`.
+
+**Leçon de méthode** : l'audit local avait excusé les échecs par `PIT-S52-001`. Invoquer un pitfall
+de *métrique de police* pour expliquer un **timeout** est une erreur de catégorie — un test qui
+expire n'a produit aucune mesure. Le refus d'accepter ce raisonnement est ce qui a conduit au vrai
+diagnostic.
