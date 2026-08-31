@@ -32,6 +32,21 @@ import { describe, expect, it } from 'vitest'
  *  - les namespaces CALCULÉS hors littéral (`useTranslations(cond ? a : b)` est
  *    couvert, mais pas `useTranslations(maVariable)`) ;
  *  - les placeholders ICU non fournis (cf. `DensityRibbon.intl.test.tsx`).
+ *
+ * DEUX FAUX POSITIFS POSSIBLES — la capture se fait sur le TEXTE BRUT, sans parser
+ * TypeScript. Aucun n'existe au dépôt aujourd'hui (vérifié en review PR #449), mais
+ * les écrire ici vaut mieux que de les redécouvrir sur une garde rouge à tort :
+ *  - APPEL IMBRIQUÉ : `[^)]*` s'arrête à la PREMIÈRE parenthèse fermante, donc
+ *    `useTranslations(fn('a'))` capture `fn('a'` puis en extrait `'a'` — `a` serait
+ *    traité comme un namespace et ne se résoudrait pas ;
+ *  - COMMENTAIRE en fichier de PRODUCTION : un `// … useTranslations('foo')` serait
+ *    capté comme un appel réel. Les fichiers de test en sont exempts (`NOT_PRODUCTION`
+ *    les exclut) — c'est ce qui permet aux `*.intl.test.tsx` de citer le défaut
+ *    historique `useTranslations('deleteDialog')` dans leur en-tête sans rougir.
+ *
+ * Dans les deux cas la garde échoue en NOMMANT le fichier et le namespace fautifs :
+ * le diagnostic est immédiat, et le remède est de passer à un parseur, pas d'élargir
+ * la regex (qui ne ferait que déplacer l'angle mort).
  */
 
 const LOCALES_ROOT = join(process.cwd(), 'public', 'locales')
