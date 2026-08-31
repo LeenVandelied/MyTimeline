@@ -1,4 +1,4 @@
-# Issue #413 — done (PARTIAL)
+# Issue #413 — done (PARTIAL à la vague 1, RÉSOLU en vague 2)
 
 **[BUG] `documentElement.lang` reste « fr » sur les pages non francophones (WCAG 3.1.1)**
 Sprint 62 · vague 1 · `size:M` (rebadgée depuis S) · `priority:P2` · `epic:design` · frontend
@@ -113,6 +113,16 @@ stderr (jsdom + `css: true`) — `vi.mock` de la feuille dans le test.
 - Piège rencontré et nettoyé : `.next/types` d'une route supprimée fait rougir `tsc` sur un chemin
   fantôme (`PIT-S60-007`).
 
-STATUS: PARTIAL
-BLOQUE_SUR: la 404 des URL non matchées rend le document interne de Next (`NEXT_MISSING_ROOT_TAGS`)
-au lieu d'une page 404. Décision dev requise avant merge.
+## Résolution du blocage (vague 2)
+
+Le `BLOQUE_SUR` ci-dessous a été **levé dans le même sprint**, par deux commits successifs :
+
+- `26b5c26` — `experimental.globalNotFound` + `app/global-not-found.tsx` : document 404 complet,
+  vérifié sur 4 environnements. Voir `issue-413-404fix-done.md`.
+- `899fd91` — scission Server/Client pour restaurer le `<title>` perdu avec le layout.
+  Voir `issue-413-title-fix-done.md`.
+
+**BLOQUE_SUR (historique, résolu) :** la 404 des URL non matchées rendait le document interne de
+Next (`NEXT_MISSING_ROOT_TAGS`) au lieu d'une page 404.
+
+STATUS: COMPLETED
