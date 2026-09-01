@@ -1,6 +1,10 @@
 # Audit tests — Sprint 64
 
-> Généré en fin de Phase 6. Un `[MISSING]` bloque la Phase 9 (PR).
+> Généré en fin de Phase 6. Une lacune de couverture bloque la Phase 9 (PR).
+>
+> ⚠ Ce document n'emploie **jamais** le marqueur de lacune en toutes lettres, même pour dire qu'il
+> n'y en a pas : la garde de Phase 9 le cherche par `grep` et une mention en prose la ferait avorter
+> à tort. Formuler « aucune lacune », jamais le marqueur entre crochets.
 > Commit auditté : `7a91688` (`sprint/64`), base `origin/dev` à `a5f4636`.
 
 ## Couverture par BR
@@ -18,7 +22,7 @@ La colonne « cross-system flow » du gabarit ne s'applique donc pas, et **aucun
 requis** : il n'y a pas de flux métier nouveau ou modifié. Le sprint change **comment** les tests
 tournent et **ce qu'ils laissent comme preuve**, pas ce qu'ils vérifient.
 
-**Aucun `[MISSING]`.**
+**Aucune lacune de couverture.**
 
 ## Résultats des runs
 
@@ -83,7 +87,7 @@ C'est l'apport réel de ce sprint — chaque affirmation est adossée à une mes
 
 ## Conclusion
 
-**Prêt pour la PR** au regard de cet audit. Aucun `[MISSING]`.
+**Prêt pour la PR** au regard de cet audit. Aucune lacune de couverture.
 
 Réserve à porter dans le corps de la PR : le job `e2e` réécrit n'a **jamais tourné sur un runner**,
 et les 2 flakes de l'issue #467 peuvent le faire rougir sans que ce soit imputable au sprint.
