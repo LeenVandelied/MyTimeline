@@ -62,10 +62,37 @@ office de mémoire d'arbitrage.
    contre un **serveur dev externe** (`PLAYWRIGHT_BASE_URL` posé, donc `webServer` à `undefined`),
    lancé en **webpack** et non en `--turbopack` — alors que la mort documentée au S63 s'est produite
    sur le serveur **turbopack lancé par le `webServer` de Playwright**, via `npm run test:e2e`.
-   Le critère d'acceptation « un run local complet sans `ECONNREFUSED` » est donc satisfait dans une
-   **configuration de serveur différente de celle qui mourait**. Borner les workers reste sain et le
-   commentaire est honnête, mais l'oracle n'a pas exercé le chemin par défaut.
-   → Décision de re-mesure : à arbitrer par le dev.
+   Le critère d'acceptation « un run local complet sans `ECONNREFUSED` » était donc satisfait dans
+   une **configuration de serveur différente de celle qui mourait**.
+   → **ÉCART FERMÉ le 2026-09-02** par une re-mesure sur le chemin par défaut — voir ci-dessous.
+
+## Re-mesure sur le chemin par défaut (2026-09-02) — écart fermé
+
+Demandée par le dev après la vague 3, pour exercer la configuration qui mourait réellement.
+
+**Conditions vérifiées** : `PLAYWRIGHT_BASE_URL` **absente** (run lancé sous
+`env -u PLAYWRIGHT_BASE_URL`), donc `webServer` de Playwright **actif** et moteur **turbopack**
+(`npm run dev` = `next dev --turbopack`, log préfixé `[WebServer]`). Port 3000 libre avant
+lancement — sans quoi `reuseExistingServer` aurait faussé la mesure. Backend `:8086`
+(`docker ps` : healthy ; `curl` → 401).
+
+**Résultat** : **229 passed / 2 failed / 8 skipped en 6,8 min**, et surtout
+**0 occurrence de `ECONNREFUSED` / `NS_ERROR_CONNECTION_REFUSED`**
+(`grep -c -E` sur le log complet — recompté par le lead sur le même log).
+
+**Verdict : parade confirmée sur le chemin par défaut.** Le serveur turbopack démarré par Playwright
+a survécu à la suite complète à 1 worker. La limite n°2 ci-dessus est levée.
+
+**Réserve déclarée par l'agent** : l'oracle `curl /api/auth/me` → 401 n'a **pas** été rejoué pendant
+la fenêtre du run. Preuve seulement indirecte que le proxy était en place — le projet `setup`
+(register) est vert et 229 tests sont passés, ce qu'un proxy absent aurait empêché en 404. Faiblesse
+de protocole, honnêtement signalée.
+
+**Les deux membres de la famille #467 ont rougi sur ce run** (`live-region` **et**
+`event-outside-label`), alors que chaque run précédent n'en voyait qu'un. Confirmation
+supplémentaire du caractère volumétrique du défaut.
+
+Log : `scratchpad/e2e-default-path.log` (70,5 Ko).
 
 ## Autre échec observé, non corrigé (hors périmètre)
 
