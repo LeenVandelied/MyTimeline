@@ -307,12 +307,25 @@ jobs:
         # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
         run: npx playwright test auth.setup.ts auth-signature.spec.ts
 
+      # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
+      #   - `playwright-report/` : le rapport HTML, écrit par le reporter `html`
+      #     ajouté en CI (playwright.config.ts). Avant #461 le seul reporter CI était
+      #     `github`, qui n'écrit RIEN sur disque : ce chemin était vide ou absent et
+      #     l'artefact ne contenait donc aucun contexte exploitable.
+      #   - `test-results/` : les traces (`trace: 'on-first-retry'`), captures et
+      #     vidéos. C'est le SEUL endroit où elles atterrissent, et il n'était uploadé
+      #     nulle part — d'où les diagnostics « indéterminé » du Sprint 63.
+      # `if-no-files-found: warn` : sans lui, un dossier absent fait ROUGIR le step
+      # d'upload et masque l'échec de test réellement à diagnostiquer.
       - name: Upload Playwright report (on failure)
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: playwright-report
-          path: frontend/playwright-report/
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
           retention-days: 7
 
       - name: Dump backend log (on failure)

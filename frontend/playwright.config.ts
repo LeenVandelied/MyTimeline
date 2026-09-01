@@ -19,7 +19,21 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? 'github' : 'list',
+  // #461 — POURQUOI un reporter COMPOSITE en CI, et pas `github` seul.
+  // Le reporter `github` n'écrit RIEN sur disque : il se contente de poster des
+  // annotations dans l'interface Actions. `playwright-report/` restait donc vide
+  // ou absent, et l'artefact uploadé par ci.yml était inexploitable — deux agents
+  // du Sprint 63 ont conclu « indéterminé » sur un échec faute de contexte.
+  // On garde donc `github` (annotations inline sur la PR) et on lui ADJOINT `html`,
+  // qui écrit le rapport consultable dans `playwright-report/`. Les traces
+  // (`trace: 'on-first-retry'`, plus bas) atterrissent, elles, dans
+  // `test-results/` : ci.yml doit uploader LES DEUX dossiers.
+  // `open: 'never'` interdit toute tentative d'ouverture de navigateur sur le runner.
+  // Le reporter local reste `list` — inchangé.
+  // ⚠ Le typage ne protège RIEN ici : `ReporterDescription` accepte `[string, any]`
+  // (reporters tiers), donc `['html', { open: 'jamais' }]` compile aussi — vérifié
+  // par contrôle négatif au S64. Seul un run réel atteste ce bloc.
+  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL,
     trace: 'on-first-retry',
