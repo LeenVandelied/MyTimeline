@@ -118,6 +118,25 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
+    # ⚠ PLAFOND DE DURÉE — REVUE S64. Sans `timeout-minutes`, un job hérite du
+    # plafond GitHub par DÉFAUT : 6 HEURES. Un `next start` qui ne rend jamais la
+    # main (port pris, artefact `.next` incomplet) épinglerait donc un runner une
+    # demi-journée avant qu'on l'apprenne. #462 rend le risque concret : ce job
+    # porte désormais un `next build`, DEUX serveurs en fond, `workers: 1` et
+    # `retries: 2`.
+    #
+    # POURQUOI 45 ET PAS MOINS. Référence AVANT ce sprint : 13 min 14 s (run
+    # `33431893101`). Les mesures LOCALES de #465 suggèrent que la production
+    # RACCOURCIT le job (suite à 4,3 min contre 9,0 min en dev, + ~28 s de build)
+    # — mais c'est un signal, PAS un acquis : aucun run CI n'a encore eu lieu.
+    # 45 min laisse ~3x la référence connue, de quoi absorber un runner lent ou
+    # deux retries complets sans transformer ce plafond en source de faux rouges.
+    # À resserrer une fois la durée RÉELLE mesurée sur la PR de sprint.
+    #
+    # PÉRIMÈTRE : `e2e` SEULEMENT. Les autres jobs du workflow n'ont pas non plus
+    # de plafond, mais leur cadrage mérite sa propre décision — pas un effet de
+    # bord d'une revue de #462.
+    timeout-minutes: 45
     # Postgres 16 en service container : le backend s'y connecte (DB `eventmanager`,
     # user `eventuser`). Flyway rejoue V1..Vn au boot du backend (schéma vide au départ).
     services:
@@ -329,11 +348,51 @@ jobs:
         env:
           VERIFYING_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
         run: |
-          npx next start -p 3000 > next-degraded.log 2>&1 &
-          echo "FRONT_DEGRADED_PID=$!" >> "$GITHUB_ENV"
+          # ⚠ BINAIRE DIRECT, PAS `npx` — REVUE S64, NE PAS « SIMPLIFIER ».
+          # `npx <cmd>` FORK un enfant : `$!` capturait donc le PID du WRAPPER
+          # `npm exec`, PAS celui du serveur Next. Vérifié localement au S64 sur un
+          # `npx` de substitution : `$!` -> « npm exec … », le vrai process tournant
+          # dans un PID enfant distinct. Le step « Stop backend and frontends »
+          # visait donc un process qui n'est pas le serveur — il MENT sur ce qu'il
+          # arrête. Que l'enfant meure quand même dépend alors du bon vouloir de npm
+          # à relayer le SIGTERM (il l'a fait dans notre essai) : un détail
+          # d'implémentation, pas un contrat. Un arrêt de serveur ne doit pas en
+          # dépendre — sur un rerun ou un runner self-hosted, le port reste pris.
+          # `./node_modules/.bin/next` est un script node à shebang, exec'é
+          # directement : `$!` est alors le PID du serveur lui-même.
+          ./node_modules/.bin/next start -p 3000 > next-degraded.log 2>&1 &
+          degraded_pid=$!
           AUTH_JWT_PUBLIC_KEY="$VERIFYING_PUBLIC_KEY" \
-            npx next start -p 3001 > next-verifying.log 2>&1 &
-          echo "FRONT_VERIFYING_PID=$!" >> "$GITHUB_ENV"
+            ./node_modules/.bin/next start -p 3001 > next-verifying.log 2>&1 &
+          verifying_pid=$!
+
+          # Export AVANT le contrôle de vie : si l'un des deux est mort, le step
+          # d'arrêt doit quand même pouvoir ramasser le SURVIVANT.
+          echo "FRONT_DEGRADED_PID=${degraded_pid}" >> "$GITHUB_ENV"
+          echo "FRONT_VERIFYING_PID=${verifying_pid}" >> "$GITHUB_ENV"
+
+          # ⚠ CE STEP DOIT POUVOIR ÉCHOUER — REVUE S64. Sa dernière commande était
+          # un `echo >> "$GITHUB_ENV"`, qui rend TOUJOURS 0 : le step sortait EN
+          # VERT même avec un `next start` mort à la seconde 0 (EADDRINUSE sur un
+          # rerun, `.next` incomplet, n'importe quoi). La CI enchaînait alors sur
+          # l'attente des serveurs et brûlait jusqu'à 180 s avant de produire un
+          # diagnostic qui accusait L'ATTENTE plutôt que LE DÉMARRAGE.
+          # Le `sleep 2` laisse à Next le temps de mourir : un process lancé il y a
+          # 3 ms est vivant même quand son port est déjà pris.
+          sleep 2
+
+          assert_alive() {
+            label="$1"; pid="$2"; log="$3"; port="$4"
+            if kill -0 "$pid" 2>/dev/null; then
+              echo "OK — serveur Next ${label} vivant (PID ${pid}, :${port})."
+              return 0
+            fi
+            echo "::error::Le serveur Next ${label} (:${port}) est MORT dès le démarrage. Causes typiques : port ${port} déjà pris (EADDRINUSE, typiquement sur un rerun) ou artefact .next incomplet. Log ${log} :"
+            tail -n 200 "$log" || true
+            return 1
+          }
+          assert_alive "dégradé"   "$degraded_pid"  next-degraded.log  3000 || exit 1
+          assert_alive "vérifiant" "$verifying_pid" next-verifying.log 3001 || exit 1
 
       # DEUX oracles, et ils ne se remplacent pas.
       #
@@ -405,7 +464,17 @@ jobs:
           # backend (profil `e2e`, cf. step de démarrage), à travers le proxy Next `/api/*`.
           # Les anciennes variables E2E_DB_* (lecture directe de password_reset_tokens,
           # #145) ont été retirées avec `e2e/support/db.ts` et la dépendance `pg`.
-        run: npm run test:e2e
+          #
+          # ⚠ DOSSIER DE RAPPORT PROPRE À LA PASSE — REVUE S64. Les deux passes
+          # écrivaient dans les MÊMES `playwright-report/` et `test-results/` : la
+          # passe 2 ÉCRASAIT la passe 1. Inoffensif tant que l'upload est
+          # `if: failure()` (la passe 2 ne tourne pas si la passe 1 échoue), mais
+          # un futur passage à `if: always()` perdrait la passe 1 EN SILENCE — soit
+          # exactement ce que #461 cherche à empêcher : une preuve écrasable n'est
+          # pas une preuve. Les deux dossiers restent SOUS les chemins existants,
+          # donc le step d'upload plus bas les ramasse sans changement.
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/passe-1-golden-path
+        run: npm run test:e2e -- --output=test-results/passe-1-golden-path
 
       # PASSE 2 — MODE VÉRIFIANT (audit de couverture S50), contre le SECOND serveur
       # de production (:3001), démarré AVEC `AUTH_JWT_PUBLIC_KEY` appairée à la clé
@@ -429,6 +498,9 @@ jobs:
           PLAYWRIGHT_BASE_URL: http://localhost:3001
           AUTH_JWT_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
           E2E_JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
+          # Cf. passe 1 : dossier de rapport DISTINCT, sinon cette passe écrase la
+          # précédente (revue S64).
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/passe-2-rs256
         # ⚠ `auth.setup.ts` EXPLICITEMENT dans le filtre (revue S50, 2e cycle) : un filtre portant
         # le seul nom de spec exclut aussi le projet `setup` (`testMatch /.*\.setup\.ts/`), dont
         # `chromium` dépend. La passe consommait alors le `storageState` laissé sur disque par la
@@ -438,7 +510,7 @@ jobs:
         # porte un cookie posé sur :3000, et cette passe interroge :3001. Re-provisionner est le
         # seul chemin correct. Le rate-limit register (5/min/IP) ne s'y oppose pas :
         # `RATE_LIMIT_ENABLED: false` est posé au démarrage du backend.
-        run: npx playwright test auth.setup.ts auth-signature.spec.ts
+        run: npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
 
       # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
       #   - `playwright-report/` : le rapport HTML, écrit par le reporter `html`
@@ -450,6 +522,13 @@ jobs:
       #     nulle part — d'où les diagnostics « indéterminé » du Sprint 63.
       # `if-no-files-found: warn` : sans lui, un dossier absent fait ROUGIR le step
       # d'upload et masque l'échec de test réellement à diagnostiquer.
+      #
+      # ⚠ REVUE S64 — chaque passe écrit désormais dans un SOUS-dossier nommé
+      # (`passe-1-golden-path` / `passe-2-rs256`) de ces deux mêmes chemins, au
+      # lieu de les écraser l'une l'autre. Les deux `path:` ci-dessous sont donc
+      # INCHANGÉS et récursifs : ils ramassent les deux passes. Ne pas les
+      # remplacer par des chemins de passe explicites — ce serait rendre le
+      # nommage des sous-dossiers load-bearing pour rien.
       - name: Upload Playwright report (on failure)
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

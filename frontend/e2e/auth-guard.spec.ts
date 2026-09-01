@@ -168,6 +168,7 @@ test.describe('Garde serveur — visiteur anonyme', () => {
   test('DÉGRADÉ : un cookie jwt bidon suffit à passer la garde (ADR-004)', async ({
     page,
     context,
+    baseURL,
   }) => {
     // ⚠ MISE À JOUR #323 (sprint 50) — ce test décrit désormais le mode DÉGRADÉ,
     // pas le comportement nominal. Depuis #323, le middleware VÉRIFIE la signature
@@ -200,9 +201,13 @@ test.describe('Garde serveur — visiteur anonyme', () => {
         'est donc rejeté (307). Cas couvert par e2e/auth-signature.spec.ts.',
     )
 
-    await context.addCookies([
-      { name: 'jwt', value: 'ceci-n-est-pas-un-jwt', url: 'http://localhost:3000' },
-    ])
+    // ⚠ `baseURL`, PAS `http://localhost:3000` en dur — REVUE S64. Le cookie doit
+    // être posé sur l'origine que la passe interroge RÉELLEMENT. Depuis #462 la CI
+    // lève DEUX serveurs (:3000 dégradé, :3001 vérifiant) : une URL figée poserait
+    // le cookie sur la mauvaise origine, `page.request.get` partirait sans cookie
+    // et le test échouerait sur une 307 inexplicable au lieu de la 200 attendue.
+    // Même convention que `auth-signature.spec.ts` (`url: baseURL!`).
+    await context.addCookies([{ name: 'jwt', value: 'ceci-n-est-pas-un-jwt', url: baseURL! }])
 
     const response = await page.request.get('/fr/dashboard', { maxRedirects: 0 })
     expect(response.status()).toBe(200)
