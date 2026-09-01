@@ -221,6 +221,15 @@ jobs:
           # (register 5/min, login 10/min) et ferait échouer le projet Playwright `setup`.
           # Défaut TOUJOURS true partout ailleurs (prod + jobs backend/frontend intacts).
           RATE_LIMIT_ENABLED: false
+          # #462 — DEUX origines, pas une. Depuis le passage en build de production, le
+          # frontend tourne sur DEUX ports (:3000 degrade, :3001 verifiant, cf. plus bas).
+          # Le profil `dev` fige `app.cors.allowed-origins=http://localhost:3000`
+          # (application-dev.properties:35, sans placeholder d'env) : le proxy Next RELAIE
+          # l'`Origin` du navigateur au backend, donc les appels /api/* venus de :3001
+          # recevraient un 403 CORS — qui se deguise ensuite en rate-limit ou en panne
+          # d'infra ([[PIT-S56-004]], [[PIT-S57-003]]). La liaison relachee Spring fait de
+          # cette variable d'env un override de la propriete.
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
         run: |
           java -jar target/*.jar > backend.log 2>&1 &
           echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
@@ -260,33 +269,154 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium firefox
 
-      # Playwright lance lui-même le frontend via `webServer` (npm run dev). En
-      # `next dev`, les NEXT_PUBLIC_* et E2E_API_PROXY_TARGET sont lus au RUNTIME
-      # depuis l'env du process ; on les pose donc au niveau du step.
+      # =========================================================================
+      # #462 — POURQUOI LA SUITE E2E TOURNE CONTRE UN BUILD DE PRODUCTION.
       #
-      # APPELS API MÊME-ORIGINE (indispensable — cf. next.config.mjs) : le cookie
-      # `jwt` est SameSite=Lax et ne serait PAS envoyé sur un POST cross-port
-      # (:3000 -> :8080) -> 401 sur la création produit/événement. On route donc
-      # tout via le proxy Next : NEXT_PUBLIC_API_URL=/api (origine :3000) +
-      # E2E_API_PROXY_TARGET=http://localhost:8080 (rewrite /api/* -> backend).
+      # AVANT : `playwright.config.ts` demarrait lui-meme `npm run dev`
+      # (`next dev --turbopack`), qui COMPILE CHAQUE ROUTE A LA DEMANDE. Un test
+      # pouvait donc rougir sur une lenteur de compilation a froid qui n'existe
+      # nulle part en production, et la CI ne validait a aucun moment l'artefact
+      # reellement livre (SSG de `generateStaticParams()`, prerendu de
+      # `/_not-found`, minification, `experimental.globalNotFound`).
+      #
+      # UN SEUL `next build`, DEUX `next start`. `middleware.ts:110-118` lit
+      # `AUTH_JWT_PUBLIC_KEY` au RUNTIME, par requete, explicitement NON inlinee
+      # au build (mesure #322) : seuls les PROCESS doivent differer, pas les
+      # artefacts. Un second build couterait +2,5 a +3 min pour un resultat
+      # identique.
+      #
+      # ⚠ LE POINT DUR, ET LA RAISON DE DEUX PORTS PLUTOT QU'UN REDEMARRAGE.
+      # Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance
+      # Next. Avant #462, c'est le redemarrage du `webServer` par Playwright entre
+      # les deux passes qui les rendait tous deux exercables. Or des que
+      # `PLAYWRIGHT_BASE_URL` est posee, `webServer` vaut `undefined` : plus aucun
+      # redemarrage. Un « tuer puis relancer sur le meme port » entre les deux
+      # steps rouvrirait un MODE D'ECHEC SILENCIEUX — si le kill echoue ou si le
+      # nouveau process ne prend pas le port, la passe 2 interroge le serveur
+      # DEGRADE de la passe 1, n'exerce plus rien, et RESTE VERTE. Deux ports
+      # distincts rendent cette panne impossible a manquer : si :3001 n'est pas
+      # la, la passe 2 echoue en connexion refusee.
+      #
+      # ⚠ `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` se posent ICI, AU BUILD,
+      # et surtout PAS au `next start` : les rewrites sont serialisees dans
+      # `.next/routes-manifest.json` par `next build` ([[PIT-S58-003]]). Les poser
+      # au demarrage n'aurait AUCUN effet et rendrait un 404 sur /api/*, que le
+      # harnais deguise ensuite en rate-limit, en CORS ou en 409.
+      #
+      # ⚠ COUPLAGE NOUVEAU, ASSUME : `next.config.mjs:61-65` fixe
+      # `ignoreBuildErrors: false` et `ignoreDuringBuilds: false`. Ce job rougit
+      # donc desormais sur une erreur de types ou de lint, en doublon du job
+      # `frontend`. C'est le prix d'un artefact de production : on ne peut pas
+      # tester le build sans le construire.
+      # =========================================================================
+      - name: Build frontend (production)
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: /api
+          E2E_API_PROXY_TARGET: http://localhost:8080
+        run: npm run build
+
+      # ⚠ `next start` emet « does not work with "output: standalone" » a cause de
+      # `next.config.mjs:30`. Ce message est TROMPEUR ici : `output: 'standalone'`
+      # est ADDITIF (il produit `.next/standalone/` EN PLUS), et le serveur normal
+      # reste pleinement fonctionnel — verifie au S64 sur ce build exact : pages
+      # SSG 200, `/fr/nope` 404, chunk `/_next/static/chunks/*.js` 200, CSS 200,
+      # `public/favicon.ico` 200, rewrite `/api/*` actif. On ne bascule PAS sur
+      # `node .next/standalone/server.js`, qui exigerait de recopier `public/` et
+      # `.next/static` a la main — donc plus de plomberie pour zero gain.
+      - name: Start frontend production servers (:3000 dégradé, :3001 vérifiant)
+        working-directory: frontend
+        env:
+          VERIFYING_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
+        run: |
+          npx next start -p 3000 > next-degraded.log 2>&1 &
+          echo "FRONT_DEGRADED_PID=$!" >> "$GITHUB_ENV"
+          AUTH_JWT_PUBLIC_KEY="$VERIFYING_PUBLIC_KEY" \
+            npx next start -p 3001 > next-verifying.log 2>&1 &
+          echo "FRONT_VERIFYING_PID=$!" >> "$GITHUB_ENV"
+
+      # DEUX oracles, et ils ne se remplacent pas.
+      #
+      # (1) PROXY — `/api/auth/me` doit rendre 401. Un 404 signifie que le rewrite
+      #     n'a pas ete bati dans `routes-manifest.json` ([[PIT-S58-003]]) ; sans
+      #     ce controle, la suite echouerait 40 s plus tard sur un message qui
+      #     accuse le rate-limit ou le CORS.
+      #
+      # (2) MODE D'AUTHENTIFICATION — c'est LA garantie que la passe 2 exerce
+      #     encore quelque chose. Un cookie `jwt` volontairement non-JWT sur une
+      #     route protegee discrimine les deux modes sans ambiguite :
+      #       - mode DEGRADE (pas de cle publique) : la garde ne verifie que la
+      #         PRESENCE du cookie -> 200 ;
+      #       - mode VERIFIANT (cle publique posee) : `verifyAuthCookie` rejette
+      #         -> 307 vers /fr/login.
+      #     C'est exactement l'assertion du 1er cas d'`auth-signature.spec.ts`
+      #     (« garde anti-degrade »), mais jouee ICI, en curl, AVANT les passes :
+      #     si un jour quelqu'un retire `AUTH_JWT_PUBLIC_KEY` du step, ou pointe
+      #     les deux passes sur le meme serveur, le job rougit sur une erreur
+      #     NOMMEE au lieu de rester vert en n'exercant plus rien.
+      - name: Wait for frontends + oracles (proxy /api, mode d'authentification)
+        run: |
+          wait_proxy() {
+            port="$1"; label="$2"
+            for i in $(seq 1 45); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}/api/auth/me" || echo 000)
+              case "$code" in
+                401) echo "OK :${port} (${label}) — proxy /api actif (401), après ${i} tentative(s)."; return 0 ;;
+                404) echo "::error::(:${port} ${label}) /api/auth/me rend 404 : le rewrite /api/* n'a PAS été bâti dans routes-manifest.json (PIT-S58-003). Vérifier NEXT_PUBLIC_API_URL / E2E_API_PROXY_TARGET du step « Build frontend »." ; return 1 ;;
+              esac
+              sleep 2
+            done
+            echo "::error::(:${port} ${label}) frontend indisponible après 90 s (dernier code=${code})."
+            return 1
+          }
+          wait_proxy 3000 dégradé   || exit 1
+          wait_proxy 3001 vérifiant || exit 1
+
+          probe_mode() {
+            curl -s -o /dev/null -w "%{http_code}" \
+              --cookie 'jwt=ceci-n-est-pas-un-jwt' \
+              "http://localhost:$1/fr/dashboard"
+          }
+          degraded=$(probe_mode 3000)
+          verifying=$(probe_mode 3001)
+          echo ":3000 -> HTTP ${degraded} (attendu 200 = mode DÉGRADÉ)"
+          echo ":3001 -> HTTP ${verifying} (attendu 307 = mode VÉRIFIANT)"
+
+          if [ "$degraded" != "200" ]; then
+            echo "::error::(:3000) attendu 200 (mode dégradé), reçu ${degraded}. La passe 1 (golden path) et auth-guard.spec.ts § DÉGRADÉ supposent un serveur SANS AUTH_JWT_PUBLIC_KEY."
+            exit 1
+          fi
+          if [ "$verifying" != "307" ]; then
+            echo "::error::(:3001) attendu 307 (mode vérifiant), reçu ${verifying}. 200 = le serveur Next ne voit PAS AUTH_JWT_PUBLIC_KEY : la passe 2 RS256 n'exercerait plus la vérification de signature tout en restant VERTE. Vérifier le step « Start frontend production servers »."
+            exit 1
+          fi
+
+      # PASSE 1 — golden path, contre le serveur de production DÉGRADÉ (:3000).
+      # `PLAYWRIGHT_BASE_URL` posée ⇒ `webServer` vaut `undefined` : Playwright ne
+      # démarre plus rien lui-même (c'est aussi pourquoi le garde-fou #427 de
+      # `playwright.config.ts` ne s'arme pas ici — il est LOCAL par construction).
       # CI=true active retries:2 / workers:1 (playwright.config.ts).
-      - name: Run E2E (Playwright golden path)
+      - name: Run E2E (Playwright golden path, build de production)
         working-directory: frontend
         env:
           CI: "true"
-          NEXT_PUBLIC_API_URL: /api
-          E2E_API_PROXY_TARGET: http://localhost:8080
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
           # #283 — le spec forgot-password capture le token via l'endpoint test-only du
           # backend (profil `e2e`, cf. step de démarrage), à travers le proxy Next `/api/*`.
           # Les anciennes variables E2E_DB_* (lecture directe de password_reset_tokens,
           # #145) ont été retirées avec `e2e/support/db.ts` et la dépendance `pg`.
         run: npm run test:e2e
 
-      # 2e passe — MODE VÉRIFIANT (audit de couverture S50). Playwright redémarre son propre
-      # `webServer`, cette fois AVEC `AUTH_JWT_PUBLIC_KEY` appairée à la clé privée du backend
-      # (qui, lui, tourne toujours depuis le 1er step) : le middleware vérifie alors vraiment
-      # la signature RS256. Sans cette passe, la chaîne backend -> Edge n'était prouvée que
-      # par des tests unitaires de part et d'autre, jamais bout à bout.
+      # PASSE 2 — MODE VÉRIFIANT (audit de couverture S50), contre le SECOND serveur
+      # de production (:3001), démarré AVEC `AUTH_JWT_PUBLIC_KEY` appairée à la clé
+      # privée du backend : le middleware vérifie alors vraiment la signature RS256.
+      # Sans cette passe, la chaîne backend -> Edge n'était prouvée que par des tests
+      # unitaires de part et d'autre, jamais bout à bout.
+      #
+      # ⚠ `AUTH_JWT_PUBLIC_KEY` reste posée sur le PROCESS DE TEST aussi : c'est elle
+      # que lit le `test.skip()` en tête d'`auth-signature.spec.ts`. Sans elle les 5 cas
+      # SKIPPENT — un job vert qui n'exerce rien. Le serveur, lui, la tient de son
+      # propre step de démarrage : les deux ne sont pas redondantes.
       #
       # Périmètre volontairement réduit à `auth-signature.spec.ts` : les autres specs sont
       # indifférentes au mode, les rejouer doublerait la durée du job pour rien.
@@ -296,8 +426,7 @@ jobs:
         working-directory: frontend
         env:
           CI: "true"
-          NEXT_PUBLIC_API_URL: /api
-          E2E_API_PROXY_TARGET: http://localhost:8080
+          PLAYWRIGHT_BASE_URL: http://localhost:3001
           AUTH_JWT_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
           E2E_JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
         # ⚠ `auth.setup.ts` EXPLICITEMENT dans le filtre (revue S50, 2e cycle) : un filtre portant
@@ -305,6 +434,10 @@ jobs:
         # `chromium` dépend. La passe consommait alors le `storageState` laissé sur disque par la
         # passe 1 — `globalSetup` ne purge que `accounts.json` — soit un couplage implicite entre
         # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
+        # ⚠ Depuis #462 ce filtre est ENCORE PLUS nécessaire : le `storageState` de la passe 1
+        # porte un cookie posé sur :3000, et cette passe interroge :3001. Re-provisionner est le
+        # seul chemin correct. Le rate-limit register (5/min/IP) ne s'y oppose pas :
+        # `RATE_LIMIT_ENABLED: false` est posé au démarrage du backend.
         run: npx playwright test auth.setup.ts auth-signature.spec.ts
 
       # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
@@ -333,11 +466,25 @@ jobs:
         working-directory: backend
         run: tail -n 300 backend.log || true
 
-      # Hygiène : arrêt du backend en fond (le runner éphémère le tuerait de toute
-      # façon, mais évite un process orphelin sur d'éventuels reruns / self-hosted).
-      - name: Stop backend
+      # #462 — les deux serveurs Next ont leur propre log. Sans ce dump, un échec de
+      # démarrage (port déjà pris, artefact de build incomplet) ne laisse AUCUNE trace :
+      # on ne verrait que des tests rouges, ce qui est exactement le mode de diagnostic
+      # « indéterminé » que le Sprint 63 a payé.
+      - name: Dump frontend logs (on failure)
+        if: failure()
+        working-directory: frontend
+        run: |
+          echo "===== :3000 (dégradé) ====="; tail -n 200 next-degraded.log || true
+          echo "===== :3001 (vérifiant) ====="; tail -n 200 next-verifying.log || true
+
+      # Hygiène : arrêt des process en fond (le runner éphémère les tuerait de toute
+      # façon, mais évite des process orphelins sur d'éventuels reruns / self-hosted).
+      - name: Stop backend and frontends
         if: always()
-        run: kill "$BACKEND_PID" 2>/dev/null || true
+        run: |
+          kill "$BACKEND_PID" 2>/dev/null || true
+          kill "$FRONT_DEGRADED_PID" 2>/dev/null || true
+          kill "$FRONT_VERIFYING_PID" 2>/dev/null || true
 
   # ---------------------------------------------------------------------------
   # Flyway smoke (#356) — POURQUOI CE JOB EXISTE.
