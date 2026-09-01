@@ -10,6 +10,71 @@ import { defineConfig, devices } from '@playwright/test'
 const PORT = 3000
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`
 
+/**
+ * #427 — ÉCHEC IMMÉDIAT quand le `webServer` local n'a pas ses variables.
+ *
+ * LE DÉFAUT CORRIGÉ. `webServer` lance `npm run dev` en héritant simplement de
+ * l'environnement du process Playwright. Si `E2E_API_PROXY_TARGET` ou
+ * `NEXT_PUBLIC_API_URL` y manque, Next démarre SANS le rewrite `/api/*` : le
+ * `POST /api/auth/register` du projet `setup` part en **404**, et le message qui
+ * remonte oriente vers le rate-limit, le CORS ou un 409 — trois conclusions
+ * fausses. Ce piège a fait dérailler les sprints **47, 56 et 57**
+ * ([[PIT-S56-005]], [[PIT-S62-012]], [[PIT-S57-003]]) et coûtait ~40 s avant de
+ * produire un symptôme trompeur. On échoue donc en < 1 s, avec la marche à suivre.
+ *
+ * POURQUOI PAS UN BLOC `env` DANS `webServer` (piste principale de l'issue,
+ * ÉCARTÉE). Poser les variables ici les rendrait INVENTÉES : `E2E_API_PROXY_TARGET`
+ * dépend du port réel du backend du poste (8080 en local nu, 8086 pour le
+ * conteneur e2e frère — [[PIT-S56-004]]), et une mauvaise valeur redonne
+ * exactement le 404 qu'on prétend supprimer, en plus silencieux puisque la
+ * variable semblerait posée. [[PIT-S55-001]] : un défaut non vide défait le
+ * garde-fou qu'il documente. On exige donc une valeur explicite du lanceur.
+ * (Pour un `next build` la question ne se pose même pas : les rewrites sont
+ * sérialisées dans `routes-manifest.json` AU BUILD — [[PIT-S58-003]].)
+ *
+ * PORTÉE. Ce garde-fou ne s'arme QUE sur le chemin où Playwright démarre Next
+ * lui-même, c.-à-d. `PLAYWRIGHT_BASE_URL` absente. En CI depuis #462, cette
+ * variable est posée par `ci.yml` et `webServer` vaut `undefined` : aucun effet.
+ *
+ * CE QU'IL N'ATTRAPE PAS : une valeur PRÉSENTE mais FAUSSE (mauvais port backend,
+ * backend éteint). Seul l'oracle réseau tranche —
+ * `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/auth/me`
+ * doit rendre **401** ; un **404** signifie que le proxy n'est pas en place.
+ */
+const WEBSERVER_REQUIRED_ENV = ['NEXT_PUBLIC_API_URL', 'E2E_API_PROXY_TARGET'] as const
+
+function assertWebServerEnv(): void {
+  // Une variable EXPORTÉE VIDE (`E2E_API_PROXY_TARGET=`) est traitée comme
+  // absente : elle ne produit aucun rewrite, seulement l'illusion d'être posée
+  // ([[PIT-S55-001]]).
+  const missing = WEBSERVER_REQUIRED_ENV.filter((name) => (process.env[name] ?? '') === '')
+  if (missing.length === 0) return
+
+  throw new Error(
+    [
+      `E2E — variable(s) manquante(s) pour le serveur Next que Playwright va démarrer : ${missing.join(', ')}.`,
+      '',
+      'Sans elles, `next dev` ne pose PAS le rewrite `/api/*` : le POST /api/auth/register du projet',
+      '`setup` part en 404, et le diagnostic accuse ensuite le rate-limit, le CORS ou un 409 — trois',
+      'conclusions fausses qui ont coûté les sprints 47, 56 et 57.',
+      '',
+      'DEUX FAÇONS DE REPARTIR (remplacer 8080 par le port RÉEL du backend) :',
+      '',
+      '  1) Laisser Playwright démarrer Next — ce chemin :',
+      '       cd frontend && NEXT_PUBLIC_API_URL=/api \\',
+      '         E2E_API_PROXY_TARGET=http://localhost:8080 npm run test:e2e',
+      '',
+      "  2) Viser un serveur DÉJÀ lancé (Playwright n'en démarre alors aucun) :",
+      '       NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8080 \\',
+      '         npx next dev -p 3000      # webpack, PAS --turbopack en worktree (PIT-S61-007)',
+      '       PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test',
+      '',
+      'ORACLE AVANT TOUTE AUTRE HYPOTHÈSE — 401 = proxy OK, 404 = proxy absent :',
+      `       curl -s -o /dev/null -w '%{http_code}\\n' ${baseURL}/api/auth/me`,
+    ].join('\n'),
+  )
+}
+
 export default defineConfig({
   testDir: './e2e',
   // Purge `.auth/accounts.json` d'un run précédent avant le projet `setup`
@@ -137,13 +202,22 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
-  // webServer démarré uniquement si on n'utilise pas un baseURL externe.
+  // webServer demarre uniquement si on n'utilise pas un baseURL externe.
+  // #427 — `assertWebServerEnv()` s'execute AVANT la construction de l'objet :
+  // sur ce chemin (et sur lui seul), l'absence de `NEXT_PUBLIC_API_URL` /
+  // `E2E_API_PROXY_TARGET` fait echouer le chargement de la config en < 1 s au
+  // lieu d'un 404 silencieux 40 s plus tard.
+  // ⚠ En CI depuis #462, `PLAYWRIGHT_BASE_URL` est TOUJOURS posee (deux
+  // `next start` de production, un par mode d'authentification) : cette branche
+  // est devenue exclusivement LOCALE. C'est precisement pourquoi #427 n'est pas
+  // caduque — le defaut qu'elle corrige survit entier sur le poste de dev.
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
-    : {
+    : (assertWebServerEnv(),
+      {
         command: 'npm run dev',
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
-      },
+      }),
 })
