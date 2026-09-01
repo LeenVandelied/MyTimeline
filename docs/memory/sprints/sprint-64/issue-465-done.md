@@ -110,8 +110,16 @@ ce comportement sous état cumulé. La suite se rapproche de la falaise et d'aut
 - **RECOMMAND_FOLLOWUP** — sortir `RUN` / les identités du scope module de `e2e/support/accounts.ts`
   (ou lire `.auth/accounts.json` à l'usage plutôt qu'à l'import) pour rendre `workers > 1` viable et
   le run local ~2× plus rapide.
-- **Environnement pour la vague 3** — le dev ne promet **aucun état** : à 22:46 UTC un `next dev`
-  webpack tournait sur `:3000` contre un backend e2e conteneurisé sur `:8086`. Relance :
+- **Environnement pour la vague 3** — le dev ne promet **aucun état**, et il a eu raison : le
+  `next dev` qu'il avait laissé sur `:3000` est **mort depuis** (`curl` → 000, plus aucun
+  `next-server`). Mort **propre** — exit 0 à la fin de la tâche de fond, log terminé sur des
+  `✓ Compiled` nominaux, aucune trace d'erreur : ce n'est **pas** la mort sous charge de #465.
+  Chronologie vérifiée, les mesures sont acquises serveur vivant : run terminé à 22:46:01 →
+  `curl` 401 après le run → `curl` 401 après le commit `4b9b4c1` → mort ensuite. **Le serveur a
+  survécu aux 239 tests, ce qui est exactement ce que la borne devait obtenir.**
+  Illustration en direct de `PIT-S63` — ne jamais promettre un état à l'agent suivant, donner la
+  commande de relance. Backends e2e conteneurisés `:8085` et `:8086` toujours up (healthy, 2 j).
+  Relance :
   `NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8086 npx next dev -p 3000`
   — **webpack, pas turbopack** (`PIT-S61-007`, 4 worktrees coexistent). Sonder avant toute
   conclusion : `curl :3000/api/auth/me` doit rendre **401**. `frontend/node_modules` était **absent**
