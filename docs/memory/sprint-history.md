@@ -3128,6 +3128,86 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
+
+**Objectif :** Bornage temporel des récurrences + fiabilité du harnais E2E
+**Milestone GitHub :** #66
+**Issues (4) :** #451, #452, #469, #470
+**Vagues :** V1 = #452 + #451 + #469 (parallèles, fichiers disjoints) | V2 = #470 (après #469, `playwright.config.ts` partagé)
+**Cohésion :** 0.0 entre les paires (#451+#452 = `epic:events` 1.0 ; #469+#470 = `epic:infrastructure` 1.0). Périmètre élargi sur décision dev (2026-09-02) : les 4 issues du milestone, au-dessus du garde-fou ≤3 issues/~10 pts du skill.
+**Migrations Flyway :** **aucune**. Une V16 de purge a été écrite puis **retirée** avant la PR (review db-expert + vérification lead) : l'expansion étant calculée à la LECTURE, les lignes sans `recurrence_end_date` sont déjà bornées à 5 ans par le code de #452 — le `DELETE` n'apportait rien et détruisait le tier `archived`. V16 reste le prochain numéro libre.
+**Dépend de :** Sprint 64 (merge PR #468 dans `dev`, `54bcf30`)
+
+**Décision produit #452 (tranchée par le dev, 2026-09-02) — les 3 questions exigées par l'issue :**
+1. Borne temporelle backend **seule** : un plafond en années s'ajoute aux 4000 occurrences de
+   `RecurrenceExpansion.MAX_OCCURRENCES`.
+2. `recurrenceEndDate` **reste hors du DTO de création** — **BR-EVE-012 inchangée**, pas de
+   modification du formulaire de création.
+3. Données existantes : **supprimées** (aucune donnée réelle en base à ce jour). Si un test a
+   besoin d'une récurrence, il lui pose une date de fin explicite.
+
+**État d'entrée #451 (`possibly_done`, vérifié en Phase 0.5) :** le correctif de code est **déjà
+dans `dev`** — `3dcc5ea` (`fix(timeline): ancre le defilement sur le temps, pas sur les pixels`,
+PR #449, 2026-08-31) a introduit `anchorDaysRef` + le `useLayoutEffect` sur `dayWidth`
+(`TimelineView.tsx:895-912`) qui re-projette `scrollLeft` au changement d'échelle en préservant le
+repère PISTE de #392. Le corps de l'issue décrit un code (`TimelineView.tsx:795-820`) qui n'existe
+plus. Reste à couvrir : le **test de non-régression** du cas mesuré (clamp horizontal), absent —
+la spec la plus proche (`timeline.spec.ts:977`) dézoome et asserte une pastille, mais via
+`revealSeededLane`, parade à la virtualisation **verticale**, donc elle n'épingle pas le clamp.
+
+**Commits :** 9 (1 cadrage, 1 par issue, 1 retrait V16, 1 mesure, 1 correctifs de review)
+**Tests :** Backend 465/465 · Frontend unitaire 1004/1004 (101 fichiers) · E2E 232/240 passed, 8 skipped, 0 failed (`workers: 2`)
+**Reviews :** batch — 0 CRITIQUE / 3 MAJEUR / 1 MINEUR, **tous résolus au cycle 2** (`aa57109`) ; db-expert sur V16 → migration retirée
+**Audit tests :** `docs/memory/audits/sprint-65-test-coverage.md`
+
+**Deux erreurs d'orchestration du lead, consignées pour la mémoire :**
+1. **Vagues découpées sur les fichiers, pas sur les ressources d'exécution.** #451 et #469 avaient
+   des fichiers disjoints mais partageaient le harnais E2E : #451 devait le FAIRE TOURNER pendant
+   que #469 le RÉÉCRIVAIT. L'agent de #451 s'en est sorti en isolant son harnais (`git archive`
+   dans un répertoire jetable) — parade de lui, pas du plan.
+2. **Un résultat rouge publié alors qu'il venait de ma propre interférence.** Ma campagne de mesure
+   de #469 tournait en même temps qu'une campagne encore vivante du subagent, les deux écrivant
+   dans les MÊMES fichiers de log d'un scratchpad partagé et partageant `e2e/.auth/`. J'ai conclu
+   « le correctif ne tient pas » ; le subagent m'a réfuté, preuve à l'appui (`M1.log` contenait DEUX
+   résumés finaux). Diagnostics fautifs : `find -maxdepth 4` trop court pour atteindre le scratchpad
+   (« pas de logs » ≠ « runs morts ») et un `ps` tombé entre deux runs. Parade adoptée : compter les
+   blocs `Running N tests using M workers` par log (doit valoir 1) et utiliser un répertoire de logs
+   horodaté unique.
+
+**Follow-ups arbitrés (Phase 4 triage — 4 retenus, 0 abandonné, 0 absorbé) :**
+  - Budget `register` E2E au plafond (5/run vs 5/min/IP, sans marge ; masqué en local par
+    `RATE_LIMIT_ENABLED=false`) [S | infrastructure] → issue **#475** (Sprint 66)
+  - Viabilité de `workers > 1` en CI non démontrée — dépend de #475 [M | infrastructure] →
+    issue **#476** (Sprint 66)
+  - Zoom AVANT (`+`/`=`) non épinglé, un seul couple de niveaux couvert [S | events] →
+    issue **#477** (backlog libre)
+  - `run-lock.ts` : `isAlive` traite `EPERM` comme « process mort » (latent, sans effet
+    aujourd'hui) [XS | infrastructure] → issue **#478** (Sprint 66)
+
+**Mémoire consolidée (8 signaux `[MEMORY:*]`) :**
+  - `pitfalls.md` : **PIT-S65-001** (restaurer par `mv` d'une copie `cp` ne préserve pas la mtime →
+    Maven rejoue du bytecode périmé, 4 faux échecs mesurés), **PIT-S65-002** (run de mesure en
+    arrière-plan qui meurt avec la session + deux campagnes concurrentes qui se corrompent ;
+    parade = compter les blocs `Running` par log), **PIT-S65-003** (listing Playwright `--list`
+    sans `rtk proxy` → `PASS (0) FAIL (0)`), **PIT-S65-004** (boucle de poll CI dont la condition
+    cherche un mot dans la sortie texte), **PIT-S65-005** (éditer une entrée `PIT-*` existante
+    périme les packs, pas seulement en ajouter une)
+  - `patterns.md` : **PAT-S65-001** (face à une signature connue, vérifier que les garde-fous ont
+    parlé), **PAT-S65-002** (découper les vagues par ressource d'exécution, pas seulement par
+    fichiers), **PAT-S65-003** (contrôle négatif dans les deux sens + oracle sur l'invariant)
+  - `decisions.md` : **DEC-S65-001** (horizon sur les seules séries sans borne explicite, pour
+    garder `MAX_OCCURRENCES` atteignable), **DEC-S65-002** (identité E2E par l'environnement, pas
+    par un fichier), **DEC-S65-003** (pas de migration : les données existantes sont bornées par
+    le code)
+  - `bugs-resolved.md` : **BUG-S65-001**, **BUG-S65-002**
+  - `.ai-env/context-packs/br-events.md` : BR-EVE-012 **complétée** (horizon 5 ans, règle
+    inchangée) ; packs `pit-*` régénérés après classification des 5 nouvelles entrées
+
+**Artefacts conservés :** 4 `issue-*-done.md`, 4 `spawn-ref-*.txt`, `db-expert-review-v16.md`,
+`test-runner-report.md`. Briefings supprimés (556 Ko → 72 Ko).
+
+**Status :** Terminé
+
 ## Sprint 64 — 2026-09-01 → 2026-09-02 (Terminé — merge PR #468 dans `dev`)
 
 **Objectif :** rendre la chaîne E2E diagnosticable et représentative — un échec en CI doit laisser

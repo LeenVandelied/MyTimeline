@@ -648,9 +648,8 @@ Deux occurrences au S63. (1) `check-sprint-completeness.sh` a remonté 7 « sign
 Le reporter `html` embarque ses données en **base64** dans `<template id="playwrightReportBase64">` (441 Ko décodés → `report.json` + ~32 JSON). Chercher le nom d'un test échoué dans le HTML ne renvoie donc jamais rien, même quand l'échec y est. **Décoder avant de conclure.** (Sprint 64 #461)
 
 
-## PIT-S64-003 — `PIT-S47-004` est déclaré « corrigé » alors qu'il ne l'est PAS
-La persistance de `.auth/accounts.json` ordonne l'**exécution** (`dependencies: ['setup']`), pas le **moment de l'import du module**. Dès `workers >= 2`, deux process chargent `e2e/support/accounts.ts` avant que `setup` n'ait persisté, chacun fige son `RUN` dérivé du `pid` → 4 specs `settings-*` rouges par run. Mesuré au S64. Ne pas rouvrir le parallélisme local sans sortir la lecture d'identités du scope module. (Sprint 64 #465)
-
+## PIT-S64-003 — Un correctif qui agit sur l'ordre d'EXÉCUTION ne corrige jamais une dépendance à l'ordre d'IMPORT
+La persistance de `.auth/accounts.json` a été présentée comme le correctif de [[PIT-S47-004]]. Elle ne l'était pas : `dependencies: ['setup']` ordonne l'**exécution**, pas le **moment de l'import du module**, et le projet `setup` étant lui-même `fullyParallel`, le worker qui écrivait le fichier n'était pas celui qui enregistrait les comptes. Mesuré au S64 (4 specs `settings-*` rouges par run dès `workers >= 2`). Le mécanisme d'identité a été refait au S65 (#469) : graine `E2E_RUN_ID` posée avant le fork des workers + résolution paresseuse. **La leçon durable n'est pas la valeur de `workers` mais la forme du raisonnement** — vérifier qu'un correctif agit sur la MÊME dimension que le défaut. (Sprint 64 #465, mécanisme refait S65 #469)
 
 ## PIT-S64-004 — Le message « does not work with output: standalone » de `next start` est TROMPEUR
 `output: 'standalone'` est **additif** : `.next/standalone/` est produit EN PLUS, et `next start` reste pleinement fonctionnel. Vérifié au S64 sur le build exact : SSG 200, `/fr/nope` 404, chunks JS 200, CSS 200, `favicon.ico` 200, rewrite `/api/*` actif. **Contredit `PIT-S62-009`** qui l'annonçait « non fiable ». Ne pas basculer sur `.next/standalone/server.js` sur la foi de ce message. (Sprint 64 #462)
@@ -674,6 +673,22 @@ Le `echo` rend 0, donc le step sort en succès même si le service lancé juste 
 
 ## PIT-S64-009 — Les flakes de virtualisation de la timeline DISPARAISSENT quand on les isole
 La suite E2E sème une catégorie et un produit par spec **sans nettoyage** et dépasse désormais `LANE_VIRTUALIZATION_MIN_ROWS = 60` (`virtualization.ts:80`) — 76 lanes en CI, 77 en local : la lane semée n'est plus montée dans le DOM. Rejouer la spec seule ne sème qu'une catégorie ⇒ virtualisation inactive ⇒ **le test passe**. Le réflexe d'isolement fait donc disparaître le défaut. C'est une **famille** (le membre qui tombe varie), suivie par l'issue **#467**. (Sprint 64)
+
+
+## PIT-S65-002 — Un run de mesure lancé en ARRIÈRE-PLAN par un subagent meurt avec sa session — et deux campagnes concurrentes se corrompent en silence
+Deux campagnes de mesure de #469 ont été perdues ainsi. (1) Le subagent lançait ses runs en tâche de fond puis rendait la main : les process mouraient avec sa session, **aucun résultat capturé**. (2) Le lead, croyant les runs morts, a lancé les siens **pendant qu'ils tournaient encore** : les deux campagnes écrivaient dans les **mêmes fichiers de log** d'un scratchpad partagé et partageaient `e2e/.auth/` — d'où un faux rouge portant la signature [[PIT-S47-004]] pour une cause qui n'a rien à voir. Diagnostics fautifs du lead à ne pas reproduire : `find -maxdepth 4` trop court pour atteindre le scratchpad (« pas de logs » ≠ « runs morts ») et un `ps` tombé dans l'intervalle entre deux runs. **Parades** : mesurer au premier plan ; répertoire de logs **horodaté unique** par campagne ; et surtout **compter les blocs `Running N tests using M workers` par log — il doit y en avoir exactement 1**. Un log en contenant deux (`231 passed (7.0m)` ET `222 passed / 10 failed (8.2m)`) est la preuve de la concurrence. (Sprint 65 #469)
+
+
+## PIT-S65-003 — Un listing Playwright `--list` sans `rtk proxy` sort en `PASS (0) FAIL (0)`
+Le hook RTK tronque/mal-parse la sortie du listing : le résultat ressemble **exactement** à une suite vide — soit précisément le faux signal que #470 élimine par ailleurs. Préfixer `rtk proxy` pour tout listing Playwright. Même famille que [[PIT-S20-003]] (`git diff` vidé) et [[PIT-S27-002]]. (Sprint 65 #470)
+
+
+## PIT-S65-004 — Une boucle de poll CI dont la condition de sortie cherche un MOT dans la sortie texte se termine à tort
+Une boucle `if ! echo "$OUT" | grep -qE 'pending|queued'` est sortie **dès la 1re itération** sur la réponse `no checks reported on the branch` : juste après un push, les checks n'existent pas encore, la chaîne ne contient donc aucun de ces mots, et l'absence de checks se lit comme « CI stabilisée ». Variante de [[PIT-S55-*]] (watcher muet), mais ici le watcher ment au lieu de se taire. **Ne jamais faire porter la condition sur la présence d'un mot dans une sortie texte** : interroger le STATUT du run pour le SHA exact (`gh run list --json headSha,status --jq 'select(.headSha=="<sha>")'`) et n'accepter que `completed`. (Sprint 65)
+
+
+## PIT-S65-005 — ÉDITER le corps d'une entrée `PIT-*` existante périme les packs, pas seulement en AJOUTER une
+Le job CI **requis** `ai-env-packs` lance `gen-pit-packs.sh --check`. La note connue portait sur l'ajout d'entrées non classées ; en réalité **toute édition du corps d'une entrée existante** périme les packs dérivés. Au S65, `PIT-S47-004` et `PIT-S64-003` réécrits ⇒ `ai-env-packs` rouge en 12 s, découvert **après** l'ouverture de la PR. Réflexe : dès que `docs/memory/pitfalls.md` apparaît dans `git status`, relancer `gen-pit-packs.sh` avant de pousser. Nuance : seules les entrées de sprints **≥ S53** figurent en texte intégral dans les packs (les plus anciennes n'y sont qu'en index de titres) — éditer une vieille entrée peut donc ne produire **aucun** diff de pack tout en faisant échouer `--check` à cause d'une autre. (Sprint 65)
 
 ---
 
@@ -749,7 +764,7 @@ La suite E2E sème une catégorie et un produit par spec **sans nettoyage** et d
 - PIT-S47-001 — Un `find` qui renvoie 0 ne prouve PAS une absence : le cwd du shell persiste entre les appels
 - PIT-S47-002 — Le profil `dev` fige `app.cors.allowed-origins=:3000` : un front sur un autre port échoue en accusant le rate-limit
 - PIT-S47-003 — La base de dev `eventmanager` est inmigrable : V7 casse sur des données que V9 nettoierait
-- PIT-S47-004 — Playwright en local : `workers > 1` rougit 4 specs `settings-*` pour une raison qui n'a rien à voir avec le code
+- PIT-S47-004 — `workers > 1` rougit 4 specs `settings-*` : DEUX causes distinctes, même signature
 - PIT-S47-005 — `npm run build` tue le `next dev` en cours, et Next 15.5.22 peut renvoyer un 500 fantôme après recompilation
 - PIT-S48-001 — Contraste bi-mode : la contrainte serrée change de fond selon le thème
 - PIT-S48-002 — Tailwind v4 scanne les COMMENTAIRES : citer une classe morte la ressuscite
