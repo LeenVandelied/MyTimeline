@@ -3128,6 +3128,18 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 66 — 2026-09-02 → en cours (cohésion 0.50, création d'événement sur mobile)
+**Objectif :** rendre la création d'événement atteignable et utilisable sous 1024 px
+**Milestone GitHub :** #67
+**Issues (2) :** #455 (M, P1, `epic:events`), #79 (S, P2, `epic:transversal`)
+**Vagues :** V1 = #455 (ui-design pré-implem + fullstack-dev) | V2 = #79 (après #455 : `NewEventDrawer.tsx` / `.mt-sheet` partagés + harnais E2E = ressource d'exécution partagée, PAT-S65-002) | V3 = test-runner + review batch
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 65 (merge PR #474 dans `dev`, `97aba4a`)
+**Planification :** plan architect `ade986f` (replanification S64-S68) jamais mergé dans `dev` — importé et vérifié à l'ouverture, cf. `docs/memory/sprints/sprint-66/architect-plans.md` (7 faits vérifiés, dont : sous `lg` seul le dashboard a une chrome mobile ; la doc DS `mobile-keyboard.md` citée par #79 n'existe pas ; 4 bottom sheets et non 3).
+**Hors milestone :** #475, #476, #478 (follow-ups du S65 garés dans ce milestone, non labellisés `sprint-66`) — à détacher avant fermeture du milestone.
+**Limite assumée :** le comportement réel du clavier virtuel (iOS/Android) exige un device — non couvrable en CI.
+**Status :** En cours
+
 ## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
 
 **Objectif :** Bornage temporel des récurrences + fiabilité du harnais E2E
