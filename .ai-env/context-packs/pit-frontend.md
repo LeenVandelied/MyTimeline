@@ -648,9 +648,8 @@ Deux occurrences au S63. (1) `check-sprint-completeness.sh` a remonté 7 « sign
 Le reporter `html` embarque ses données en **base64** dans `<template id="playwrightReportBase64">` (441 Ko décodés → `report.json` + ~32 JSON). Chercher le nom d'un test échoué dans le HTML ne renvoie donc jamais rien, même quand l'échec y est. **Décoder avant de conclure.** (Sprint 64 #461)
 
 
-## PIT-S64-003 — `PIT-S47-004` est déclaré « corrigé » alors qu'il ne l'est PAS
-La persistance de `.auth/accounts.json` ordonne l'**exécution** (`dependencies: ['setup']`), pas le **moment de l'import du module**. Dès `workers >= 2`, deux process chargent `e2e/support/accounts.ts` avant que `setup` n'ait persisté, chacun fige son `RUN` dérivé du `pid` → 4 specs `settings-*` rouges par run. Mesuré au S64. Ne pas rouvrir le parallélisme local sans sortir la lecture d'identités du scope module. (Sprint 64 #465)
-
+## PIT-S64-003 — Un correctif qui agit sur l'ordre d'EXÉCUTION ne corrige jamais une dépendance à l'ordre d'IMPORT
+La persistance de `.auth/accounts.json` a été présentée comme le correctif de [[PIT-S47-004]]. Elle ne l'était pas : `dependencies: ['setup']` ordonne l'**exécution**, pas le **moment de l'import du module**, et le projet `setup` étant lui-même `fullyParallel`, le worker qui écrivait le fichier n'était pas celui qui enregistrait les comptes. Mesuré au S64 (4 specs `settings-*` rouges par run dès `workers >= 2`). Le mécanisme d'identité a été refait au S65 (#469) : graine `E2E_RUN_ID` posée avant le fork des workers + résolution paresseuse. **La leçon durable n'est pas la valeur de `workers` mais la forme du raisonnement** — vérifier qu'un correctif agit sur la MÊME dimension que le défaut. (Sprint 64 #465, mécanisme refait S65 #469)
 
 ## PIT-S64-004 — Le message « does not work with output: standalone » de `next start` est TROMPEUR
 `output: 'standalone'` est **additif** : `.next/standalone/` est produit EN PLUS, et `next start` reste pleinement fonctionnel. Vérifié au S64 sur le build exact : SSG 200, `/fr/nope` 404, chunks JS 200, CSS 200, `favicon.ico` 200, rewrite `/api/*` actif. **Contredit `PIT-S62-009`** qui l'annonçait « non fiable ». Ne pas basculer sur `.next/standalone/server.js` sur la foi de ce message. (Sprint 64 #462)
@@ -749,7 +748,7 @@ La suite E2E sème une catégorie et un produit par spec **sans nettoyage** et d
 - PIT-S47-001 — Un `find` qui renvoie 0 ne prouve PAS une absence : le cwd du shell persiste entre les appels
 - PIT-S47-002 — Le profil `dev` fige `app.cors.allowed-origins=:3000` : un front sur un autre port échoue en accusant le rate-limit
 - PIT-S47-003 — La base de dev `eventmanager` est inmigrable : V7 casse sur des données que V9 nettoierait
-- PIT-S47-004 — Playwright en local : `workers > 1` rougit 4 specs `settings-*` pour une raison qui n'a rien à voir avec le code
+- PIT-S47-004 — `workers > 1` rougit 4 specs `settings-*` : DEUX causes distinctes, même signature
 - PIT-S47-005 — `npm run build` tue le `next dev` en cours, et Next 15.5.22 peut renvoyer un 500 fantôme après recompilation
 - PIT-S48-001 — Contraste bi-mode : la contrainte serrée change de fond selon le thème
 - PIT-S48-002 — Tailwind v4 scanne les COMMENTAIRES : citer une classe morte la ressuscite
