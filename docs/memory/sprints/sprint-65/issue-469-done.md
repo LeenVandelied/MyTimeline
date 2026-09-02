@@ -148,5 +148,46 @@ manifeste qu'en CI**.
 - **RECOMMAND_FOLLOWUP** — le budget register est **au plafond** (5/5 par run) : à border avant
   d'ajouter un compte E2E.
 
-STATUS: PARTIAL
-BLOQUE_SUR: les 2 runs complets consécutifs à `workers: 2` ne sont pas acquis — le run 2 a été invalidé par deux runs Playwright simultanés dans le worktree (preuve ci-dessus, garde-fous silencieux + graines de deux `globalSetup` distincts). Le verrou de run empêche désormais la récidive ; la mesure est à rejouer par le lead, machine au repos.
+## Mesure finale — rejouée par le LEAD, machine au repos (2026-09-02)
+
+Les 2 runs complets **consécutifs** exigés par l'issue, lancés par le lead seul sur la machine,
+répertoire de logs unique (`scratchpad/lead-measure-1788365530/`), verrou de run actif :
+
+| Run | Workers | Résultat | Durée | Blocs `Running` dans le log |
+|---|---|---|---|---|
+| 1 | 2 | **232 passed / 0 failed / 8 skipped** | 3 min 59 | 1 |
+| 2 | 2 | **232 passed / 0 failed / 8 skipped** | 3 min 11 | 1 |
+
+`exit=0` sur les deux. Le comptage des blocs `Running N tests using M workers` (=1 par log) atteste
+qu'**aucune campagne concurrente** n'a pollué la mesure — c'est précisément le contrôle qui manquait
+aux tentatives précédentes.
+
+Les 4 specs `settings-*` sont vertes sur les DEUX runs. Aucune occurrence de la signature
+`PIT-S47-004` (`toHaveValue` sur deux graines divergentes).
+
+**Comparaison :** 9 min 0 à `workers: 1` (Sprint 64) → **3–4 min à `workers: 2`**, sans échec.
+Le Sprint 64 mesurait 4 min 8 à 2 workers, mais avec 5 échecs : la vitesse était déjà là, la
+fiabilité non. C'est elle qui est acquise ici.
+
+**Erreur de mesure du lead, consignée pour la mémoire :** une première campagne du lead avait
+rendu 1 puis 5 échecs et conclu à tort que le correctif ne tenait pas. Elle était concurrente d'une
+campagne encore vivante du subagent, les deux écrivant dans les **mêmes fichiers de log** d'un
+scratchpad partagé et partageant `e2e/.auth/`. Preuve : `M1.log` contenait DEUX résumés finaux
+complets (`231 passed (7.0m)` et `222 passed / 10 failed (8.2m)`). Diagnostics erronés du lead :
+`find -maxdepth 4` trop court pour atteindre le scratchpad (« pas de logs » ≠ « runs morts ») et
+un `ps` tombé dans un intervalle entre deux runs. Le subagent avait raison de réfuter.
+
+## Recommandations suite
+
+- Pas de `RECOMMAND_TEST_RUNNER` : les 2 runs consécutifs ont été joués et lus par le lead (chiffres
+  ci-dessus).
+- Pas de `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY` : aucun schéma, aucune surface d'auth
+  applicative touchée — le changement est confiné au harnais de test.
+- **RECOMMAND_FOLLOWUP** — le budget register est **au plafond** (5 par run vs seuil 5/min/IP,
+  sans marge) : à border avant d'ajouter le moindre compte E2E. Masqué en local
+  (`RATE_LIMIT_ENABLED=false`), ne mord qu'en CI.
+- **RECOMMAND_FOLLOWUP** — `workers: 2` n'est acquis QU'EN LOCAL. La CI reste à
+  `workers: 1` (`process.env.CI ? 1 : 2`) : la viabilité du parallélisme sur le runner CI (une
+  seule IP, budget register au plafond) n'est pas démontrée et ne doit pas être supposée.
+
+STATUS: COMPLETED
