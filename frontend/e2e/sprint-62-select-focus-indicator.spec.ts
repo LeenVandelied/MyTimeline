@@ -371,15 +371,21 @@ const COMPACT_VIEWPORT = { width: 390, height: 844 } as const
  * Mise en place commune aux tests `NewEventDrawer`. Rend l'option survolée.
  *
  * ⚠ POURQUOI LE PASSAGE EN MOBILE SE FAIT *APRÈS* L'OUVERTURE, et pas en
- * ouvrant depuis un viewport étroit : le SEUL déclencheur du drawer aujourd'hui
- * est `shell-sidebar-new-event-button`, porté par l'`<aside>` de
- * `AppShell.tsx:139` qui est `hidden … lg:flex` — donc absent sous 1024 px.
- * Il n'existe AUCUN déclencheur mobile (vérifié : `shell-sidebar-new-event-button`
- * est l'unique appelant de `setShowCreate(true)`). Le redimensionnement est donc
- * le seul accès à `.mt-sheet`, et c'est un accès RÉEL — `useMediaQuery` écoute
- * `change`, et `NewEventDrawer` documente lui-même que la variante sheet « couvre
- * le redimensionnement ». Si un déclencheur mobile est ajouté un jour, ouvrir
- * directement depuis lui et supprimer ce commentaire.
+ * ouvrant depuis un viewport étroit. MOTIF D'ORIGINE, DEVENU CADUC : au S62 le
+ * SEUL déclencheur du drawer était `shell-sidebar-new-event-button`, porté par
+ * l'`<aside>` `hidden … lg:flex` du shell, donc absent sous 1024 px — le
+ * redimensionnement était le seul accès à `.mt-sheet`. #455 (S66) a ajouté un
+ * déclencheur mobile (`shell-mobile-new-event-button`, `lg:hidden`), câblé sur
+ * le même état.
+ *
+ * CE HELPER GARDE POURTANT LE REDIMENSIONNEMENT, ET C'EST DÉLIBÉRÉ : ce qui est
+ * mesuré ici est l'indicateur de focus du `Select`, pas le chemin d'ouverture.
+ * Basculer sur le FAB changerait la mise en place d'une mesure de contraste
+ * stabilisée, sans rien prouver de plus sur #414. Et l'accès par
+ * redimensionnement reste RÉEL (`useMediaQuery` écoute `change`, et
+ * `NewEventDrawer` documente que la variante sheet « couvre le
+ * redimensionnement »). Le parcours d'ouverture MOBILE, lui, est couvert par
+ * `sprint-66-mobile-create-event.spec.ts`.
  */
 async function openNewEventDrawerSelect(
   page: Page,

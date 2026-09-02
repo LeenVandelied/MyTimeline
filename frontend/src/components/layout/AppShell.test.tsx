@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import React from 'react'
@@ -288,6 +291,128 @@ describe('AppShell — délégation mobile', () => {
     // déléguée à l'écran enveloppé (zéro duplication).
     expect(screen.queryByTestId('dashboard-rail')).not.toBeInTheDocument()
     expect(screen.queryByTestId('dashboard-mobile-drawer')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * #455 — Déclencheur MOBILE de la création d'événement (FAB `lg:hidden`).
+ *
+ * CE QUE CE FICHIER PROUVE : le CÂBLAGE. Le bouton existe, porte son contrat
+ * (`data-testid`, nom accessible, `aria-haspopup`), et remonte au MÊME état
+ * `showCreate` que le bouton desktop — donc un SEUL `NewEventDrawer` monté, et
+ * une fermeture qui démonte réellement (compteur mount/unmount du mock).
+ *
+ * CE QU'IL NE PROUVE PAS, ET NE PEUT PAS PROUVER : la VISIBILITÉ. jsdom
+ * n'applique aucune feuille de style et ne fait aucun layout — `lg:hidden` /
+ * `hidden lg:flex` n'y ont AUCUN effet, les DEUX boutons sont donc dans le DOM
+ * quelle que soit la « largeur ». Les assertions de classe ci-dessous
+ * verrouillent la CHAÎNE DE CARACTÈRES, pas le rendu (famille [[PIT-S54-002]]).
+ * Le seul oracle de « visible et actionnable sous 1024 px » est l'E2E
+ * `e2e/sprint-66-mobile-create-event.spec.ts`, qui l'exerce dans un vrai moteur
+ * aux deux bornes du palier (390 px et 1280 px).
+ */
+describe('AppShell — déclencheur mobile Nouvel événement (#455)', () => {
+  beforeEach(() => {
+    mockPathname = '/fr/dashboard'
+    mockResolvedTheme = 'light'
+  })
+
+  it('rend un déclencheur mobile porteur du contrat E2E et de son nom accessible', () => {
+    renderShell()
+    const fab = screen.getByTestId('shell-mobile-new-event-button')
+    expect(fab).toBeInTheDocument()
+    expect(fab.tagName).toBe('BUTTON')
+    // `type="button"` : le shell n'a pas de <form>, mais un bouton sans type est
+    // `submit` par défaut — contrat explicite, aligné sur le bouton desktop.
+    expect(fab).toHaveAttribute('type', 'button')
+    // Icône seule -> le nom accessible ne peut venir que de l'aria-label (clé i18n
+    // EXISTANTE `shell.newEvent`, partagée avec le bouton desktop : aucune clé ajoutée).
+    expect(fab).toHaveAccessibleName('shell.newEvent')
+    // Annonce l'ouverture d'un dialog (le drawer est `role="dialog" aria-modal`).
+    expect(fab).toHaveAttribute('aria-haspopup', 'dialog')
+  })
+
+  it('porte les classes du palier et de la spec Designer (chaîne, pas rendu)', () => {
+    renderShell()
+    const fab = screen.getByTestId('shell-mobile-new-event-button')
+    // Miroir EXACT du `hidden … lg:flex` de la sidebar : exactement un des deux
+    // déclencheurs est peint, jamais zéro (le défaut de #455), jamais deux.
+    expect(fab.className).toContain('lg:hidden')
+    // 52x52 (`--space-13`) — au-dessus du minimum tactile WCAG 2.5.5 (44 px).
+    // `Button size="icon"` (h-9 w-9 = 36 px) serait SOUS le seuil : d'où le <button> nu.
+    expect(fab.className).toContain('h-13')
+    expect(fab.className).toContain('w-13')
+    // Radius du DS ; le pill est réservé aux switches (`--radius-pill`).
+    expect(fab.className).toContain('rounded-xl')
+    expect(fab.className).not.toContain('rounded-full')
+    // `z-10` = `--z-sticky` (10) < `--z-modal` (70) : l'overlay de la sheet recouvre
+    // le bouton pendant la saisie — aucun `aria-hidden` ni démontage nécessaire.
+    expect(fab.className).toContain('z-10')
+    expect(fab.className).toContain('fixed')
+  })
+
+  it('ouvre le MÊME drawer que le bouton desktop (état unique, une seule instance)', async () => {
+    renderShell()
+    drawerLifecycle.mockClear()
+    expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('shell-mobile-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    // Un SECOND état `showCreate` (ou un second montage du drawer) rendrait deux
+    // panneaux : `getAllByTestId` est ce qui l'attrape, `getByTestId` lèverait déjà.
+    expect(screen.getAllByTestId('shell-new-event-drawer')).toHaveLength(1)
+    expect(drawerLifecycle.mock.calls.filter(([phase]) => phase === 'mount')).toHaveLength(1)
+  })
+
+  it('partage l’état avec le bouton desktop : ouverture mobile, fermeture, réouverture desktop', async () => {
+    renderShell()
+    drawerLifecycle.mockClear()
+
+    fireEvent.click(screen.getByTestId('shell-mobile-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+
+    // La fermeture DÉMONTE (non-régression PR #313) — le déclencheur mobile ne
+    // contourne pas le montage conditionnel du shell.
+    fireEvent.click(screen.getByTestId('mock-drawer-close'))
+    await waitFor(() =>
+      expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument(),
+    )
+    expect(drawerLifecycle).toHaveBeenCalledWith('unmount')
+
+    // Le bouton desktop rouvre le même unique drawer : preuve que les deux
+    // déclencheurs pilotent UN état, et non deux.
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    expect(screen.getAllByTestId('shell-new-event-drawer')).toHaveLength(1)
+  })
+
+  it('laisse le bouton desktop INCHANGÉ (critère d’acceptation #455)', () => {
+    renderShell()
+    const desktop = screen.getByTestId('shell-sidebar-new-event-button')
+    expect(desktop).toBeInTheDocument()
+    const sidebar = screen.getByTestId('shell-sidebar')
+    expect(sidebar).toContainElement(desktop)
+    expect(sidebar.className).toContain('hidden')
+    expect(sidebar.className).toContain('lg:flex')
+    // Le FAB vit HORS de l'aside (sinon il serait masqué avec elle — c'est le bug).
+    expect(sidebar).not.toContainElement(screen.getByTestId('shell-mobile-new-event-button'))
+  })
+
+  // Le nom accessible du FAB n'existe QUE via `aria-label` : une clé absente
+  // afficherait le CHEMIN DE CLÉ BRUT aux lecteurs d'écran. Le mock i18n de ce
+  // fichier (`${ns}.${key}`) ne peut pas distinguer une clé vraie d'une fausse
+  // ([[PIT-S63-006]]), et `i18n-namespaces.test.ts` ne vérifie QUE la racine du
+  // namespace. On vérifie donc la clé elle-même dans les 4 locales servies.
+  it('la clé i18n du nom accessible existe dans les 4 locales', () => {
+    for (const locale of ['fr', 'en', 'es', 'de']) {
+      const messages = JSON.parse(
+        readFileSync(join(process.cwd(), 'public', 'locales', locale, 'shell.json'), 'utf-8'),
+      ) as Record<string, unknown>
+      expect(
+        typeof messages.newEvent === 'string' && messages.newEvent.length > 0,
+        `shell.newEvent doit exister et être non vide pour la locale ${locale}`,
+      ).toBe(true)
+    }
   })
 })
 
