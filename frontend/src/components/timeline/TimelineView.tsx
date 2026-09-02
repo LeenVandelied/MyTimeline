@@ -530,8 +530,24 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   )
 
   // #69 — La virtualisation VERTICALE ne s'enclenche qu'au-delà du seuil : en
-  // dessous, monter toutes les lanes coûte moins cher que les fenêtrer (et les
-  // parcours E2E / frises modestes gardent un DOM complet, cf. ADR-007).
+  // dessous, monter toutes les lanes coûte moins cher que les fenêtrer.
+  //
+  // ⚠ #467 (Sprint 64) — CORRECTION D'UNE HYPOTHÈSE FAUSSE. Ce commentaire
+  // affirmait que « les parcours E2E / frises modestes gardent un DOM complet,
+  // cf. ADR-007 ». C'EST FAUX POUR L'E2E, et mesuré : la suite sème une catégorie
+  // et un produit par spec SANS JAMAIS NETTOYER, donc le compte de test franchit
+  // le seuil en cours de run — 76 puis 99 lanes relevées sur deux runs CI, 62 en
+  // local. Les lanes hors bande ne sont alors plus montées, y compris celle que la
+  // spec vient de semer : deux tests de `timeline.spec.ts` échouaient sur un nœud
+  // INEXISTANT (et disparaissaient dès qu'on les isolait, ce qui a fait conclure
+  // « indéterminé » à deux agents au Sprint 63).
+  //
+  // Le comportement de PRODUCTION n'est pas en cause et n'a pas été touché : la
+  // virtualisation reste la bonne optimisation. C'est l'HYPOTHÈSE SUR L'E2E qui
+  // était fausse. La parade vit côté test — `frontend/e2e/support/timeline-lanes.ts`
+  // (`revealSeededLane`), à appeler par toute spec qui asserte une lane semée.
+  // Diagnostic complet : `docs/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md`.
+  // Ne pas relever `LANE_VIRTUALIZATION_MIN_ROWS` pour faire passer un test.
   const verticalBand =
     verticalModel.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS
       ? viewport.vertical
