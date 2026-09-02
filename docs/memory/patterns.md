@@ -610,3 +610,12 @@ Deux refs : `anchorDaysRef` (mise à jour par le handler de scroll) et `autoAnch
 
 ## PAT-S63-007 — Choisir l'échantillon d'un audit par le RISQUE, et sonder les paires de seuil
 165 mesures, un seul débordement réel — mais l'échantillon a été construit sur les **frontières** : 359/360 (palier `max-[]`, cf. [[PIT-S63-005]]), **640/641** (bascule `matchMedia` de la frise : **deux arbres DOM distincts**, angle mort de la grille existante), 1023/1024 (apparition de la sidebar). Leçon [[ci-green-is-not-page-correct]] appliquée : une vérification verte sur un échantillon de commodité ne prouve rien. (Sprint 63 #74)
+
+## PAT-S64-001 — Prouver un comportement CI quand la branche de sprint ne déclenche aucune CI
+Branche jetable créée dans un **worktree séparé** (jamais `checkout -b` dans le worktree partagé, dont le `HEAD` est vu par les autres agents) + PR **draft** titrée « TEMP — ne pas merger » vers `dev`, puis téléchargement de l'artefact et fermeture. La preuve est le **contenu du fichier téléchargé**, pas la page GitHub. (Sprint 64 #461, cf. `PIT-S64-008`)
+
+## PAT-S64-002 — Prouver un MODE d'exécution par contrôle négatif
+Pour établir qu'une passe de test exerce bien le mode qu'on croit, la pointer délibérément sur le **mauvais** environnement et **exiger le rouge**. Au S64 : passe RS256 = 12/12 sur le serveur vérifiant, **5 rouges** sur le serveur dégradé (`Expected 307 / Received 200`). Un vert seul n'aurait pas distingué « exerce » de « n'exerce plus rien ». Généralisable partout où un test peut rester vert en ne testant plus. (Sprint 64 #462)
+
+## PAT-S64-003 — Un oracle étroit ne suffit pas à choisir une valeur
+Le critère « 0 `ECONNREFUSED` » était déjà satisfait à 2 workers — mais 4 des 5 échecs restants étaient `PIT-S47-004`, soit 4 rouges garantis par run. Lire la **nature** des échecs résiduels avant de figer une valeur ; ne pas s'arrêter au premier palier qui coche le critère. (Sprint 64 #465)
