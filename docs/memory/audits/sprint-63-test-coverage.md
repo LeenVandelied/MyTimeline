@@ -91,7 +91,10 @@ Aucun `[MISSING]`.
 ## Ce qui n'a été vérifié par personne
 
 - **Les 4 tests `event-form`** — voir ci-dessus. CI seulement.
-- **La suite E2E complète dans un environnement stable.** Un second run (projet Firefox) a rendu
+- **La suite E2E complète dans un environnement stable.** Un second run — la suite **COMPLÈTE**
+  (projets `setup` + `chromium` + `firefox`), et **non** « le projet Firefox » comme l'écrivait
+  d'abord cette ligne : celui-ci est restreint par `testMatch` à une seule spec depuis le Sprint 62
+  (cf. le point « Firefox » plus bas, qui le dit déjà), il ne peut pas produire 230 tests — a rendu
   168 passed / **62 failed**, toutes en `NS_ERROR_CONNECTION_REFUSED` / `ECONNREFUSED ::1:3000` :
   le serveur dev local est mort en cours de run. Ces 62 échecs sont un artefact d'infrastructure,
   **pas un signal sur le code** — mais ils signifient qu'aucun run E2E complet et fiable n'existe

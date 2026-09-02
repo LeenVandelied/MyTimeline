@@ -3128,6 +3128,80 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 64 — 2026-09-01 (EN COURS — chaîne E2E/CI : artefacts d'échec, build de production, stabilité locale)
+
+**Objectif :** rendre la chaîne E2E diagnosticable et représentative — un échec en CI doit laisser
+une preuve téléchargeable, la suite doit valider un build de production et non un serveur de dev,
+et un run local complet ne doit plus mourir sous sa propre charge.
+**Milestone GitHub :** #65
+**Issues (4) :** #461, #465, #462, #427
+**Vagues :** V1 = #461 | V2 = #465 | V3 = #462 (+ #427 absorbée) — **strictement séquentielles**
+**Migrations :** aucune — sprint 100 % outillage E2E/CI
+**Dépend de :** Sprint 63 (les 3 issues du milestone en sont des follow-ups directs)
+**Cohésion :** 1.00 sur le label epic (`epic:infrastructure` pour #461/#462/#465, `epic:devops`
+pour #427) — même chaîne technique, mêmes fichiers.
+
+### Écarts au skill assumés à l'ouverture
+
+1. **Sprint jamais planifié par `/sprint plan`** — ni entrée d'historique, ni `architect-plans.md`,
+   comme aux S62 et S63. Un architect en lecture seule a donc été spawné en Phase 3 de
+   `/sprint start`, et ses 3 conclusions les plus lourdes ont été **re-vérifiées par le lead** avant
+   d'être briefées (`ci.yml:35-39`, `middleware.ts:110-118`, `PIT-S58-003`).
+2. **Périmètre porté à 4 issues** — au-delà de la borne du skill (3 issues OU ~10 points), sur
+   arbitrage explicite du dev. #427 est XS et touche le fichier déjà ouvert par #462 ; la laisser
+   au backlog aurait laissé intact, sur le poste local, le défaut qui a déjà fait dérailler les
+   sprints 47, 56 et 57.
+3. **`detect-domain.sh` renvoie `products` pour les 4 issues** — fallback erroné : ce sont des
+   issues d'outillage, sans rapport avec le domaine produits. Aucun pack `br-devops`/`br-infra`
+   n'existe. Les briefings inlinent `cp-frontend.md` et imposent en étape 0 la lecture de
+   `pit-frontend.md` depuis `.ai-env/context-packs/` — même déviation qu'au S63, même motif
+   (le pack complet saturerait la fenêtre du lead), même garde-fou (chemins suivis par git,
+   échec en `PARTIAL` s'ils sont illisibles).
+
+### Le fait structurant : aucune CI ne tourne sur `sprint/64`
+
+`.github/workflows/ci.yml:35-39` ne déclenche que sur `pull_request: [dev, main]` et
+`push: [dev, main]`. Le sprint n'aura donc **aucun retour CI avant l'ouverture de la PR** (Phase 9),
+et le critère d'acceptation de #461 — « vérifier sur un échec provoqué en CI » — ne peut être
+satisfait que par une **PR jetable vers `dev`**, jamais mergée, jamais confondue avec la PR de
+sprint. Ce point n'était identifié par aucune des issues.
+
+### Arbitrages de la Phase 3 (dev, avant tout développement)
+
+- **#427 absorbée dans #462.** #462 supprime le `webServer` en CI mais le **conserve en local**
+  (`PLAYWRIGHT_BASE_URL` absent) : le défaut de #427 survit intégralement au poste local. ⚠ La
+  piste principale de #427 (« injecter un bloc `env` dans `webServer` ») est **invalidée par
+  PIT-S58-003** — les rewrites sont sérialisées au build, pas au démarrage. Seule sa 2e piste tient :
+  échouer tôt, avec un message explicite, si les variables manquent.
+- **#465 re-scopée en parade documentée.** Le critère « cause racine identifiée » est retiré.
+  Motif : l'audit `sprint-63-test-coverage.md:95` attribue les 62 échecs au « projet Firefox », or
+  le `testMatch` de ce projet est restreint à **une seule spec** depuis le S62 (commit `97f92e8`,
+  inchangé) — 230 tests ne peuvent pas en venir ; ce qui a tourné est la suite complète. Le
+  symptôme est réel, son attribution ne l'est pas, et la correction du libellé entre dans le
+  périmètre. Sur une occurrence unique non reproductible, exiger la cause racine rendait l'issue
+  non closable. Corps de l'issue réécrit + commentaire de traçabilité
+  (`#465-issuecomment-5500891018`). Précédent : #74 re-scopée en audit au S63.
+- **Ordre des vagues.** L'ordre naïf #461 → #462 → #465 a été écarté : placer #465 après #462
+  l'exposait à une re-scope à zéro sur le malentendu « le mode prod règle le problème » — or #465
+  porte sur le poste **local**, où `next dev` reste utilisé après #462.
+
+### Deux angles morts des issues, corrigés avant briefing
+
+1. **#462 casserait la 2e passe E2E** — le job `e2e` lance deux passes Playwright dont les modes du
+   middleware sont mutuellement exclusifs sur une instance Next ; c'est le redémarrage du
+   `webServer` entre les passes qui les rend possibles. Poser `PLAYWRIGHT_BASE_URL` met `webServer`
+   à `undefined` et supprime ce redémarrage. L'issue est silencieuse là-dessus. Résolution retenue :
+   **un seul `next build`, deux `next start`** sur deux ports — `middleware.ts:110-118` lit
+   `AUTH_JWT_PUBLIC_KEY` au runtime, par requête, jamais inlinée (mesure #322), donc seul le process
+   doit différer.
+2. **Répartition build/runtime des variables** — `NEXT_PUBLIC_API_URL` **et** `E2E_API_PROXY_TARGET`
+   doivent être posées au `next build` (PIT-S58-003 : les rewrites sont sérialisées dans
+   `routes-manifest.json`). Oracle avant toute conclusion : `curl /api/auth/me` → 401.
+
+**Status :** **En cours** — ouvert le 2026-09-01 sur `sprint/64` (base `origin/dev` à `a5f4636`).
+Titre et ligne `Status` volontairement redondants (`PIT-S56-006`).
+---
+
 ## Sprint 63 — 2026-08-31 (Terminé — merge PR #449 dans `dev`)
 
 **Objectif :** Milestone « Débordements en langue allemande » — périmètre élargi par le dev aux 6
