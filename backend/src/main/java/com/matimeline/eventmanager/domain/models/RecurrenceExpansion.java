@@ -11,8 +11,16 @@ import java.util.List;
  *               ({@link RecurrenceExpansion#MAX_OCCURRENCES}), soit par l'horizon temporel
  *               ({@link RecurrenceExpansion#MAX_UNBOUNDED_EXPANSION_YEARS}) d'une récurrence sans
  *               {@code recurrenceEndDate}. Dans les deux cas la sémantique est la même du point de vue
- *               de l'appelant : « il existerait d'autres occurrences au-delà de ce que je te rends »
- *               (consommé par le hint frontend #67/#439).
+ *               de l'appelant : « il existerait d'autres occurrences au-delà de ce que je te rends ».
+ *
+ * <p><b>ATTENTION — ce drapeau n'a AUCUN consommateur à ce jour.</b> Il n'est exposé par aucune
+ * réponse d'API et {@code grep capped frontend/src} ne rend rien (vérifié au S65). Les issues
+ * ouvertes #67 et #439 PRÉVOIENT de l'exposer sous forme de hint frontend, mais ce câblage
+ * n'existe pas : ne pas lire cette javadoc comme la description d'un contrat en vigueur.
+ * Le service qui produit ce record ({@code RecurrenceExpansionService}) est lui-même sans
+ * appelant dans {@code src/main} — l'ensemble est un durcissement préventif, pas un chemin
+ * exécuté en production. Toute évolution de la sémantique de {@code capped} devra être
+ * re-validée AU MOMENT du câblage, pas supposée acquise ici.
  */
 public record RecurrenceExpansion(List<LocalDate> occurrences, boolean capped) {
 

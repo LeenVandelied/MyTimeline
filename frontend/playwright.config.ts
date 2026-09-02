@@ -147,9 +147,20 @@ export default defineConfig({
   // `storageState`. Le second run réauthentifie les specs du premier sur SES comptes.
   // D'où le verrou de run (`e2e/support/run-lock.ts`) qui refuse désormais le second.
   //
-  // CE QUI RESTE À FAIRE : rejouer 2 runs complets consécutifs, SEULS sur la machine,
-  // et ne remonter cette valeur au statut « acquis » qu'à ce moment-là. Tant que ce
-  // n'est pas fait, ne PAS citer 2 comme une valeur validée.
+  // ✅ REJOUÉ ET ACQUIS (lead, S65, machine au repos, verrou de run actif). Les 2 runs
+  // complets CONSÉCUTIFS exigés par #469 :
+  //     run 1 — 232 passed / 0 failed / 8 skipped en 3 min 59
+  //     run 2 — 232 passed / 0 failed / 8 skipped en 3 min 11
+  // Un vérificateur a été ajouté à la mesure : le log de chaque run ne contient qu'UN
+  // bloc `Running N tests using M workers`, ce qui atteste qu'aucune campagne
+  // concurrente ne l'a pollué — c'est précisément le contrôle qui manquait au run
+  // invalidé ci-dessus. Les 4 specs `settings-*` sont vertes sur les DEUX runs.
+  // Repère : 9 min 0 à `workers: 1` (S64) → 3-4 min ici.
+  //
+  // ⚠ ACQUIS EN LOCAL SEULEMENT. La CI reste à 1 (`process.env.CI ? 1 : 2`) : le runner
+  // tourne sur UNE IP et le budget `register` de la suite est DÉJÀ au plafond
+  // (5 par run vs 5/min/IP, cf. `e2e/support/accounts.ts`). Rien ne démontre que le
+  // parallélisme y tiendrait — ne pas le supposer.
   //
   // La borne de charge héritée de #465 reste par ailleurs en vigueur : on ne monte pas
   // au-delà de 2, seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré.

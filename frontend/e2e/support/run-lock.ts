@@ -33,9 +33,6 @@ interface RunLock {
   startedAt: string
 }
 
-/** Un verrou plus vieux que ça est tenu pour un résidu, jamais pour un run vivant. */
-const STALE_AFTER_MS = 60 * 60 * 1000
-
 function isAlive(pid: number): boolean {
   try {
     // Signal 0 : ne tue rien, teste seulement l'existence du process.
@@ -66,23 +63,30 @@ export function acquireRunLock(stateDir: string, runId: string): void {
   fs.mkdirSync(stateDir, { recursive: true })
 
   const held = readLock(lockFile)
+  // LE PROCESS VIVANT PRIME, QUEL QUE SOIT L'ÂGE DU VERROU (review S65).
+  // Une version antérieure cédait le verrou au-delà d'un seuil d'ancienneté (1 h) MÊME
+  // quand le process le détenant était encore VIVANT : un run long — débogage interactif,
+  // machine chargée, `--repeat-each` — se faisait voler son `.auth/` et rouvrait très
+  // exactement la corruption que ce verrou existe pour empêcher. L'ancienneté ne dit RIEN
+  // de la vivacité ; `isAlive` seul en décide. Un verrou dont le process est mort (run tué,
+  // `Ctrl-C`, teardown sauté) tombe dans la branche du dessous et est écrasé sans bruit,
+  // donc un run avorté ne bloque toujours personne.
   if (held && held.pid !== process.pid && isAlive(held.pid)) {
     const ageMs = Date.now() - Date.parse(held.startedAt)
-    if (!Number.isFinite(ageMs) || ageMs < STALE_AFTER_MS) {
-      throw new Error(
-        [
-          `E2E — un run Playwright est DÉJÀ en cours dans ce worktree (pid ${held.pid}, graine ${held.runId}, démarré ${held.startedAt}).`,
-          '',
-          `Les deux runs partageraient ${stateDir} : identités ET cookies (\`storageState\`).`,
-          "Le second run réécrirait les comptes du premier, et les specs `settings-*` échoueraient",
-          'des DEUX côtés avec un `toHaveValue` du type `Expected sh<graineA> / Received sh<graineB>`',
-          "— la signature de [[PIT-S47-004]], pour une cause qui n'a rien à voir avec elle.",
-          '',
-          'Attendre la fin de l\'autre run, ou le tuer, puis relancer. Si le process est mort et',
-          `que le verrou traîne, supprimer ${lockFile}.`,
-        ].join('\n'),
-      )
-    }
+    const age = Number.isFinite(ageMs) ? ` (depuis ${Math.round(ageMs / 60000)} min)` : ''
+    throw new Error(
+      [
+        `E2E — un run Playwright est DÉJÀ en cours dans ce worktree (pid ${held.pid}, graine ${held.runId}, démarré ${held.startedAt}${age}).`,
+        '',
+        `Les deux runs partageraient ${stateDir} : identités ET cookies (\`storageState\`).`,
+        "Le second run réécrirait les comptes du premier, et les specs `settings-*` échoueraient",
+        'des DEUX côtés avec un `toHaveValue` du type `Expected sh<graineA> / Received sh<graineB>`',
+        "— la signature de [[PIT-S47-004]], pour une cause qui n'a rien à voir avec elle.",
+        '',
+        'Attendre la fin de l\'autre run, ou le tuer, puis relancer. Si le process est mort et',
+        `que le verrou traîne, supprimer ${lockFile}.`,
+      ].join('\n'),
+    )
   }
 
   const lock: RunLock = { pid: process.pid, runId, startedAt: new Date().toISOString() }
