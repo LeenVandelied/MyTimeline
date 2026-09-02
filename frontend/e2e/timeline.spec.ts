@@ -1479,3 +1479,192 @@ test.describe('#449 /timeline — le zoom arrière conserve la zone temporelle',
     ).toHaveCount(1)
   })
 })
+
+/* ============================================================================
+ * #451 — ANCRAGE TEMPOREL SANS RABATTEMENT : LE CAS QUE #449 NE COUVRE PAS
+ *
+ * ÉTAT DES LIEUX (vérifié, contrôle négatif rejoué le 2026-09-02). Le correctif
+ * de #449 (`3dcc5ea`) est en place et la spec ci-dessus l'épingle bien : en
+ * neutralisant la re-projection d'ancre (`useLayoutEffect` sur `[dayWidth]`,
+ * `TimelineView.tsx:894`), elle rougit sur `scrollLeft=26691` pour un maximum de
+ * `26691`. Le corps de l'issue #451 (« `scrollToToday()` en `useEffect(…, [])`,
+ * lignes 795-820 ») décrit un code qui n'existe plus.
+ *
+ * CE QUI MANQUAIT MALGRÉ TOUT. La spec #449 ne prouve QU'UNE chose : que la
+ * frise ne se fait pas RABATTRE au bord droit. Son oracle géométrique
+ * (`scrollLeft < scrollWidth - clientWidth`) est satisfait par n'importe quelle
+ * position non rabattue — y compris par deux « correctifs » faux :
+ *   - un simple `scrollLeft = Math.min(scrollLeft, maxScroll)` (rabattement
+ *     évité, zone regardée quand même perdue) ;
+ *   - un recentrage sur AUJOURD'HUI à chaque changement d'échelle (la pastille
+ *     du jour, seul oracle de #449, resterait montée par construction).
+ * Les deux laisseraient la spec #449 VERTE.
+ *
+ * CE QUE CETTE SPEC AJOUTE. Une zone regardée LOIN d'aujourd'hui et PROCHE DU
+ * DÉBUT DE L'ÉTENDUE (jour 300 sur 5501), atteinte par le raccourci `]` — donc
+ * un contrôle produit réel, ce qui vaut aussi non-régression de `[` / `]`. À
+ * cette position AUCUN rabattement n'est possible : `scrollLeft` (3600 px au
+ * zoom Mois) reste très en dessous du maximum du zoom Trimestre (26691 px), et
+ * la spec l'ASSERTE en prémisse. L'oracle n'est donc plus « la frise n'a pas
+ * sauté au bord droit » mais « le jour qu'on regardait est toujours celui qu'on
+ * regarde » — la seule formulation qu'un recentrage sur aujourd'hui ne peut pas
+ * satisfaire.
+ *
+ * MESURES (zoom Mois 12 px/j → Trimestre 5 px/j, pastille au jour 300) :
+ *   avec la re-projection  : scrollLeft 3600 → 1500 (= 300 j × 5), bande de
+ *                            rendu ≈ [732, 2932] px piste, pastille à 1500 px
+ *                            → MONTÉE ;
+ *   sans (contrôle négatif) : scrollLeft reste 3600, bande ≈ [2832, 5032],
+ *                            pastille à 1500 px hors bande → DÉMONTÉE (0).
+ *
+ * NON-RÉGRESSION #392 DANS LE MÊME OPÉRATEUR. Le repère retenu par #392 est le
+ * repère PISTE : `scrollLeft = N × dayWidth` amène le jour N à
+ * `LANE_TRACK_OFFSET_PX` du bord du viewport, c'est-à-dire JUSTE APRÈS
+ * l'en-tête de lane sticky, jamais dessous. On mesure donc l'écart pastille ↔
+ * bord du conteneur AVANT et APRÈS le zoom : il doit valoir la largeur de
+ * l'en-tête dans les deux cas. Un correctif qui basculerait la re-projection en
+ * repère RAIL collerait la pastille au bord gauche, donc sous l'en-tête — c'est
+ * le défaut même que #392 avait corrigé, et cette assertion le rattrape.
+ *
+ * ⚠ E2E OBLIGATOIRE. Même raison qu'au bloc #449 : tout le mécanisme en cause
+ * est la géométrie de rendu réelle (bande de virtualisation dérivée de
+ * `clientWidth`, clamp du navigateur). jsdom ne clampe pas `scrollLeft` et ne
+ * mesure aucun conteneur — un test unitaire y serait un faux témoin
+ * (cf. [[jsdom-scroll-tests-prove-nothing]]).
+ * ========================================================================== */
+
+const EARLY_PRODUCT_ID = '4a1f0000-0000-4000-8000-000000000451'
+
+/** Pas de `[` / `]` au zoom Mois (`PERIOD_STEP_DAYS.month`, `zoom.ts`). */
+const MONTH_PERIOD_STEP_DAYS = 30
+/** Nombre de `]` joués : 10 × 30 j = jour 300 de l'étendue. */
+const PERIOD_PRESSES = 10
+/** Gouttière de l'en-tête de lane sticky (`TimelineView.tsx`, `LANE_TRACK_OFFSET_PX`). */
+const LANE_TRACK_OFFSET_PX = 168
+/** Échelles px/jour des deux niveaux traversés (`DAY_WIDTH_PX`, `zoom.ts`). */
+const DAY_WIDTH_MONTH_PX = 12
+const DAY_WIDTH_QUARTER_PX = 5
+
+/**
+ * UN produit, TROIS events. Les deux bornes fixent une étendue de 5501 jours
+ * (`computeRange`, padDays = 30) ; l'ORACLE est posé au jour 300 — proche du
+ * DÉBUT de l'étendue et à ~4700 jours d'aujourd'hui, donc hors de portée d'un
+ * recentrage sur aujourd'hui. Aucun event au jour 5000 : la pastille du jour ne
+ * peut pas se substituer à l'oracle par accident.
+ */
+async function stubEarlyRangeFixture(page: Page, oracleTitle: string): Promise<void> {
+  const mkEvent = (suffix: string, title: string, dayOffset: number) => ({
+    id: `${EARLY_PRODUCT_ID}-${suffix}`,
+    title,
+    type: 'single',
+    startDate: isoOffsetDate(dayOffset),
+    endDate: isoOffsetDate(dayOffset),
+    productId: EARLY_PRODUCT_ID,
+    color: '#1D4ED8',
+    archived: false,
+  })
+  await stubProductsList(page, [
+    {
+      id: EARLY_PRODUCT_ID,
+      name: 'Early Range Prod',
+      color: '#1D4ED8',
+      category: { id: `${EARLY_PRODUCT_ID}-cat`, name: 'Early Cat', color: '#1D4ED8' },
+      events: [
+        // rangeStart = ce jour − 30 → l'oracle tombe au jour 300 de l'étendue.
+        mkEvent('start', 'Borne debut', -4970),
+        mkEvent('oracle', oracleTitle, -4700),
+        mkEvent('end', 'Borne futur', 470),
+      ],
+    },
+  ])
+}
+
+/**
+ * Écart, en px écran, entre le bord gauche du conteneur défilant et le bord
+ * gauche de la pastille. C'est la grandeur que #392 fixe à
+ * `LANE_TRACK_OFFSET_PX` quand la position vient du repère PISTE : la pastille
+ * affleure l'en-tête sticky au lieu de passer dessous.
+ */
+async function pillOffsetFromViewportLeft(page: Page, title: string): Promise<number> {
+  const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${title}"]`)
+  await expect(pill).toHaveCount(1)
+  const pillBox = await pill.boundingBox()
+  const scrollBox = await page.getByTestId('timeline-scroll').boundingBox()
+  expect(pillBox, 'la pastille doit être mesurable').not.toBeNull()
+  expect(scrollBox, 'le conteneur de scroll doit être mesurable').not.toBeNull()
+  return pillBox!.x - scrollBox!.x
+}
+
+test.describe('#451 /timeline — le zoom arrière conserve le JOUR regardé, pas seulement le bord', () => {
+  test('zone regardée près du début de l’étendue : la pastille reste montée et affleure l’en-tête', async ({
+    page,
+  }) => {
+    const oracleTitle = unique('Early Oracle')
+    await stubEarlyRangeFixture(page, oracleTitle)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+
+    const oraclePill = page.locator(
+      `[data-testid="timeline-event"][data-event-title="${oracleTitle}"]`,
+    )
+
+    // 1. Amener la vue au jour 300 par le raccourci `]` — contrôle produit réel
+    //    (non-régression `[` / `]` par la même occasion). `]` écrit
+    //    `scrollLeft = offsetDays × dayWidth` en repère PISTE (#392).
+    for (let i = 0; i < PERIOD_PRESSES; i++) await page.keyboard.press(']')
+
+    const before = await settledScroll(page)
+    const targetDay = PERIOD_PRESSES * MONTH_PERIOD_STEP_DAYS
+    expect(
+      before.scrollLeft,
+      `le raccourci « ] » doit poser la vue au jour ${targetDay} (repère PISTE, #392)`,
+    ).toBe(targetDay * DAY_WIDTH_MONTH_PX)
+    await expect(
+      oraclePill,
+      'la pastille du jour 300 est montée AVANT le zoom arrière',
+    ).toHaveCount(1)
+    const offsetBefore = await pillOffsetFromViewportLeft(page, oracleTitle)
+
+    // 2. PRÉMISSE QUI DISTINGUE CETTE SPEC DE CELLE DE #449 : à cette position
+    //    aucun rabattement n'est possible au zoom arrière. Ce que la spec
+    //    éprouve est donc l'ANCRAGE, pas le clamp du navigateur.
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    const after = await settledScroll(page)
+    expect(
+      before.scrollLeft,
+      'la position d’avant zoom doit rester DANS les bornes du zoom Trimestre : ' +
+        'sans cela le défaut se confondrait avec le rabattement déjà couvert par #449',
+    ).toBeLessThan(after.maxScroll)
+
+    // 3. ORACLE — le jour regardé est toujours celui qu'on regarde. Le SYMPTÔME
+    //    utilisateur d'abord (la pastille disparaît), la position ensuite :
+    //    l'ordre inverse ferait échouer la spec sur un nombre avant d'avoir
+    //    montré ce que ce nombre COÛTE à l'écran.
+    await expect(
+      oraclePill,
+      'la pastille du jour 300 reste MONTÉE : sans re-projection elle sort de la ' +
+        'bande de virtualisation et la frise paraît vide',
+    ).toHaveCount(1)
+    expect(
+      after.scrollLeft,
+      `re-projection d’ancre : scrollLeft doit passer de ${before.scrollLeft} px ` +
+        `(${DAY_WIDTH_MONTH_PX} px/j) à ${targetDay * DAY_WIDTH_QUARTER_PX} px ` +
+        `(${DAY_WIDTH_QUARTER_PX} px/j) — même JOUR, échelle différente`,
+    ).toBe(targetDay * DAY_WIDTH_QUARTER_PX)
+
+    // 4. NON-RÉGRESSION #392 — repère PISTE conservé de part et d'autre du zoom :
+    //    la pastille affleure l'en-tête sticky, elle ne passe pas dessous.
+    const offsetAfter = await pillOffsetFromViewportLeft(page, oracleTitle)
+    for (const [label, value] of [
+      ['avant le zoom', offsetBefore],
+      ['après le zoom', offsetAfter],
+    ] as const) {
+      expect(
+        Math.round(value),
+        `#392 ${label} : la pastille doit affleurer l’en-tête sticky ` +
+          `(${LANE_TRACK_OFFSET_PX} px), pas passer dessous`,
+      ).toBe(LANE_TRACK_OFFSET_PX)
+    }
+  })
+})
