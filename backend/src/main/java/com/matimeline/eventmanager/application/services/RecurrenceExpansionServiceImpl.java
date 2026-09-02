@@ -14,10 +14,16 @@ import com.matimeline.eventmanager.domain.ports.services.RecurrenceExpansionServ
  * Expansion bornée des occurrences d'une récurrence (#54).
  *
  * <p>Génère les dates de proche en proche via {@code plusWeeks/plusMonths/plusYears}
- * (report calendaire correct : fin de mois, années bissextiles). Le plafond dur
- * {@link RecurrenceExpansion#MAX_OCCURRENCES} borne à la fois les récurrences sans
- * {@code recurrenceEndDate} (indéfinies) et les intervalles longs légitimes (vieil
- * événement hebdomadaire) — dans ce cas {@code capped=true} le signale.
+ * (report calendaire correct : fin de mois, années bissextiles).
+ *
+ * <p>DEUX bornes complémentaires, chacune sur son cas (#452) :
+ * <ul>
+ *   <li>{@link RecurrenceExpansion#MAX_UNBOUNDED_EXPANSION_YEARS} — horizon TEMPOREL, appliqué
+ *       aux séries SANS {@code recurrenceEndDate} ;</li>
+ *   <li>{@link RecurrenceExpansion#MAX_OCCURRENCES} — plafond mémoire/CPU en NOMBRE d'occurrences,
+ *       appliqué à toutes les séries, seul à mordre sur une borne explicite lointaine.</li>
+ * </ul>
+ * Dans les deux cas {@code capped=true} signale la troncature.
  */
 @Service
 public class RecurrenceExpansionServiceImpl implements RecurrenceExpansionService {
@@ -35,21 +41,35 @@ public class RecurrenceExpansionServiceImpl implements RecurrenceExpansionServic
                     "recurrenceEndDate (" + recurrenceEndDate + ") est antérieure à startDate (" + startDate + ")");
         }
 
+        // #452 — Une série sans borne explicite est développée jusqu'à l'HORIZON TEMPOREL,
+        // et non plus jusqu'au seul plafond d'occurrences (qui, exprimé en compte, laissait
+        // filer le mensuel sur ~333 ans). Une borne explicite est honorée telle quelle :
+        // l'horizon ne rogne jamais une intention utilisateur (BR-EVE-012).
+        boolean unbounded = (recurrenceEndDate == null);
+        LocalDate effectiveEnd = unbounded
+                ? startDate.plusYears(RecurrenceExpansion.MAX_UNBOUNDED_EXPANSION_YEARS)
+                : recurrenceEndDate;
+
         List<LocalDate> occurrences = new ArrayList<>();
         LocalDate current = startDate;
         boolean capped = false;
 
-        while (recurrenceEndDate == null || !current.isAfter(recurrenceEndDate)) {
+        while (!current.isAfter(effectiveEnd)) {
             occurrences.add(current);
             if (occurrences.size() >= RecurrenceExpansion.MAX_OCCURRENCES) {
-                // Plafond atteint. Il n'est "cappé" que s'il reste (ou pourrait rester)
-                // des occurrences à générer : borne absente, OU prochaine occurrence
-                // encore dans la fenêtre.
-                LocalDate next = advance(current, unit);
-                capped = recurrenceEndDate == null || !next.isAfter(recurrenceEndDate);
+                // Plafond d'occurrences atteint. Il n'est "cappé" que s'il reste des
+                // occurrences à générer : prochaine occurrence encore dans la fenêtre.
+                capped = !advance(current, unit).isAfter(effectiveEnd);
                 break;
             }
             current = advance(current, unit);
+        }
+
+        // Une série indéfinie est par définition infinie : l'horizon la tronque TOUJOURS,
+        // donc `capped` reste vrai — sémantique inchangée pour les consommateurs (#67/#439),
+        // seul le VOLUME rendu change.
+        if (unbounded) {
+            capped = true;
         }
 
         return new RecurrenceExpansion(occurrences, capped);
