@@ -171,3 +171,32 @@ aujourd'hui, et je ne l'affirme pas.
   suivi** par #439/#67, je n'ouvre pas de doublon.
 
 STATUS: COMPLETED
+
+---
+
+## ADDENDUM LEAD — migration V16 RETIRÉE (2026-09-02, après review db-expert)
+
+La migration `V16__delete_unbounded_recurring_events.sql` a été **supprimée** avant la PR, sur
+décision du dev, après une review `db-expert` dont le constat central a été re-vérifié par le lead.
+
+**Pourquoi.** L'expansion est calculée **à la LECTURE** — `RecurrenceExpansionServiceImpl:48-51`
+(`unbounded = (recurrenceEndDate == null)` → `startDate.plusYears(5)`) — et aucune table
+d'occurrences n'est matérialisée (zéro colonne `event_id` sur V1..V15). Les lignes que V16 aurait
+supprimées sont donc **déjà bornées à 5 ans** par le code livré ici, lignes préexistantes comprises.
+L'en-tête de V16 affirmait que #452 « borne pour l'AVENIR » : c'était faux, il borne aussi le passé.
+
+De plus, `recurrenceEndDate` restant hors du DTO de création (BR-EVE-012 inchangée, décision
+produit du 2026-09-02), `recurrence_end_date IS NULL` est l'état **NORMAL** post-#452 et non une
+donnée héritée : la purge se serait annulée au premier `create` suivant. Elle détruisait par
+ailleurs les lignes `archived = true`, soit le tier soft-delete de #44.
+
+**Bénéfice fonctionnel du DELETE : nul. Coût : destruction irréversible.** D'où le retrait.
+
+Points de la review qui restent valables et NE sont pas des dettes (la migration n'existe plus) :
+prédicat 3VL correct, intégrité référentielle vérifiée (seule FK = `fk_events_product`, sortante),
+bloc `do $$ ... raise notice` invisible sous Flyway, absence d'index sur le prédicat.
+
+**Conséquence** : le Sprint 65 ne livre **aucune migration**. `V16` reste le prochain numéro libre
+(CLAUDE.md inchangé). Le critère d'acceptation #452 « le comportement vis-à-vis des données
+existantes est explicitement traité » est tenu par **décision documentée de ne rien faire** — les
+données existantes sont bornées par le code, pas par une migration.
