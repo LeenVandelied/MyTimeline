@@ -1,11 +1,17 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Config Playwright E2E.
- * La config DOIT exister même sans test (cf. #29) — `npm run test:e2e` doit
- * tourner. Les specs vivent dans `e2e/`. `webServer` démarre Next en local
- * (réutilise un serveur déjà lancé en dev). Désactivé en l'absence de specs ?
- * Non : la config reste valide ; sans fichier `*.spec.ts`, Playwright sort 0.
+ * Config Playwright E2E. Les specs vivent dans `e2e/` (28 fichiers `*.spec.ts`
+ * au S65, ~240 tests). `webServer` démarre Next en local (réutilise un serveur
+ * déjà lancé en dev).
+ *
+ * #470 — `npm run test:e2e` (frontend/package.json) ne porte PLUS
+ * `--pass-with-no-tests` depuis le S65. À l'origine (#29, dépôt sans aucun
+ * spec) le flag évitait un exit non-zéro sur suite vide légitime. Ce cas n'a
+ * plus cours : la suite n'est jamais vide aujourd'hui, et le flag masquait un
+ * vrai risque — un filtre de sélection qui ne matcherait aucun test laisserait
+ * la passe 1 CI (.github/workflows/ci.yml) VERTE sans avoir rien exécuté. Sans
+ * le flag, une suite vide fait échouer Playwright (comportement voulu).
  */
 const PORT = 3000
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`
