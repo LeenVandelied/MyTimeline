@@ -3135,7 +3135,7 @@ plusieurs de catégorie `tooling`.
 **Issues (4) :** #451, #452, #469, #470
 **Vagues :** V1 = #452 + #451 + #469 (parallèles, fichiers disjoints) | V2 = #470 (après #469, `playwright.config.ts` partagé)
 **Cohésion :** 0.0 entre les paires (#451+#452 = `epic:events` 1.0 ; #469+#470 = `epic:infrastructure` 1.0). Périmètre élargi sur décision dev (2026-09-02) : les 4 issues du milestone, au-dessus du garde-fou ≤3 issues/~10 pts du skill.
-**Migrations Flyway :** V16 (suppression des récurrences sans date de fin — cf. décision produit ci-dessous)
+**Migrations Flyway :** **aucune**. Une V16 de purge a été écrite puis **retirée** avant la PR (review db-expert + vérification lead) : l'expansion étant calculée à la LECTURE, les lignes sans `recurrence_end_date` sont déjà bornées à 5 ans par le code de #452 — le `DELETE` n'apportait rien et détruisait le tier `archived`. V16 reste le prochain numéro libre.
 **Dépend de :** Sprint 64 (merge PR #468 dans `dev`, `54bcf30`)
 
 **Décision produit #452 (tranchée par le dev, 2026-09-02) — les 3 questions exigées par l'issue :**
