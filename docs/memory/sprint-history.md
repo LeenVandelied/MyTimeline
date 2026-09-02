@@ -3128,7 +3128,7 @@ plusieurs de catégorie `tooling`.
 
 ---
 
-## Sprint 65 — 2026-09-02 (En cours)
+## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
 
 **Objectif :** Bornage temporel des récurrences + fiabilité du harnais E2E
 **Milestone GitHub :** #66
@@ -3174,7 +3174,39 @@ la spec la plus proche (`timeline.spec.ts:977`) dézoome et asserte une pastille
    blocs `Running N tests using M workers` par log (doit valoir 1) et utiliser un répertoire de logs
    horodaté unique.
 
-**Status :** Terminé (implémentation) — PR ouverte, en attente de merge
+**Follow-ups arbitrés (Phase 4 triage — 4 retenus, 0 abandonné, 0 absorbé) :**
+  - Budget `register` E2E au plafond (5/run vs 5/min/IP, sans marge ; masqué en local par
+    `RATE_LIMIT_ENABLED=false`) [S | infrastructure] → issue **#475** (Sprint 66)
+  - Viabilité de `workers > 1` en CI non démontrée — dépend de #475 [M | infrastructure] →
+    issue **#476** (Sprint 66)
+  - Zoom AVANT (`+`/`=`) non épinglé, un seul couple de niveaux couvert [S | events] →
+    issue **#477** (backlog libre)
+  - `run-lock.ts` : `isAlive` traite `EPERM` comme « process mort » (latent, sans effet
+    aujourd'hui) [XS | infrastructure] → issue **#478** (Sprint 66)
+
+**Mémoire consolidée (8 signaux `[MEMORY:*]`) :**
+  - `pitfalls.md` : **PIT-S65-001** (restaurer par `mv` d'une copie `cp` ne préserve pas la mtime →
+    Maven rejoue du bytecode périmé, 4 faux échecs mesurés), **PIT-S65-002** (run de mesure en
+    arrière-plan qui meurt avec la session + deux campagnes concurrentes qui se corrompent ;
+    parade = compter les blocs `Running` par log), **PIT-S65-003** (listing Playwright `--list`
+    sans `rtk proxy` → `PASS (0) FAIL (0)`), **PIT-S65-004** (boucle de poll CI dont la condition
+    cherche un mot dans la sortie texte), **PIT-S65-005** (éditer une entrée `PIT-*` existante
+    périme les packs, pas seulement en ajouter une)
+  - `patterns.md` : **PAT-S65-001** (face à une signature connue, vérifier que les garde-fous ont
+    parlé), **PAT-S65-002** (découper les vagues par ressource d'exécution, pas seulement par
+    fichiers), **PAT-S65-003** (contrôle négatif dans les deux sens + oracle sur l'invariant)
+  - `decisions.md` : **DEC-S65-001** (horizon sur les seules séries sans borne explicite, pour
+    garder `MAX_OCCURRENCES` atteignable), **DEC-S65-002** (identité E2E par l'environnement, pas
+    par un fichier), **DEC-S65-003** (pas de migration : les données existantes sont bornées par
+    le code)
+  - `bugs-resolved.md` : **BUG-S65-001**, **BUG-S65-002**
+  - `.ai-env/context-packs/br-events.md` : BR-EVE-012 **complétée** (horizon 5 ans, règle
+    inchangée) ; packs `pit-*` régénérés après classification des 5 nouvelles entrées
+
+**Artefacts conservés :** 4 `issue-*-done.md`, 4 `spawn-ref-*.txt`, `db-expert-review-v16.md`,
+`test-runner-report.md`. Briefings supprimés (556 Ko → 72 Ko).
+
+**Status :** Terminé
 
 ## Sprint 64 — 2026-09-01 → 2026-09-02 (Terminé — merge PR #468 dans `dev`)
 

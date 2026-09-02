@@ -164,6 +164,10 @@ aujourd'hui, et je ne l'affirme pas.
 
 ## Recommandations suite
 
+- ✅ **RECOMMAND_DB_EXPERT — TRAITÉ.** Un `db-expert` a été spawné par le lead ; son rapport est
+  archivé dans `docs/memory/sprints/sprint-65/db-expert-review-v16.md`. Verdict : 2 `[CRITIQUE]`
+  → **la migration V16 a été RETIRÉE** (commit `61ca5d0`, cf. addendum en fin de ce fichier).
+  Signal d'origine ci-dessous, conservé pour traçabilité :
 - **RECOMMAND_DB_EXPERT** — migration V16 destructive (`DELETE` de lignes, irréversible).
   À relire : le prédicat, le traitement des lignes archivées, l'absence de table enfant.
 - **Pas de RECOMMAND_TEST_RUNNER** — suite backend complète lancée et lue ici (465/465, exit 0).

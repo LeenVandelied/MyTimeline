@@ -30,4 +30,19 @@ tooling à signaler.)
 - `frontend/package.json` (1 ligne)
 - `frontend/playwright.config.ts` (en-tête, 1 bloc commentaire)
 
+## Recommandations suite
+
+- Aucun `RECOMMAND_*` : périmètre XS clos. Le drapeau est retiré, les appelants sont inventoriés
+  (`ci.yml:477`, `scripts/test-quiet.sh:232` — aucun ne passe de filtre pouvant sélectionner
+  0 test), et l'en-tête de `playwright.config.ts` ne prétend plus que la config doit tourner sans
+  spec.
+- Pas de `RECOMMAND_TEST_RUNNER` : la preuve demandée par l'issue est un **listing**
+  (`Total: 240 tests in 29 files`, 0 exécution), pas un run. La suite complète a par ailleurs été
+  jouée par le lead après ce commit (232 passed / 0 failed).
+- Pas de `RECOMMAND_DB_EXPERT`, `RECOMMAND_SECURITY` ni `RECOMMAND_UI_DESIGN` : changement
+  d'outillage, aucun schéma, aucune surface d'auth, aucune surface visuelle.
+- **[MEMORY:pitfall]** signalé : un listing Playwright `--list` lancé sans `rtk proxy` sort en
+  `PASS (0) FAIL (0)` — confondable avec une vraie suite vide, soit exactement le faux signal que
+  cette issue élimine par ailleurs.
+
 STATUS: COMPLETED

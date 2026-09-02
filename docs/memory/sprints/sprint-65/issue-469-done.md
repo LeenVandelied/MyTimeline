@@ -141,8 +141,12 @@ manifeste qu'en CI**.
 
 ## Recommandations suite
 
-- **RECOMMAND_TEST_RUNNER** — rejouer les 2 runs complets consécutifs, seuls sur la machine, pour
-  statuer sur `workers: 2`. C'est la seule chose qui manque.
+- ~~RECOMMAND_TEST_RUNNER~~ — **TRAITÉ, signal clos.** Les 2 runs complets consécutifs ont été
+  joués et lus par le LEAD lui-même (machine au repos, verrou actif) : 232 passed / 0 failed sur
+  chacun, 3 min 59 et 3 min 11. Cf. section « Mesure finale » plus bas. Aucun `test-runner` n'a
+  été spawné : le lead avait besoin de contrôler l'isolation de la machine, ce qu'un subagent ne
+  pouvait pas garantir — deux campagnes précédentes avaient justement été perdues faute de cette
+  isolation.
 - Pas de `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY` : aucun schéma, aucune surface d'auth
   applicative touchée — le changement est confiné au harnais de test.
 - **RECOMMAND_FOLLOWUP** — le budget register est **au plafond** (5/5 par run) : à border avant

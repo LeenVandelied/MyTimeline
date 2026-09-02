@@ -106,4 +106,20 @@ harnais isolé. Le répertoire jetable a été sorti du dépôt (working tree fi
 - [x] Comportement #392 intact — 3 specs vertes + assertion géométrique neuve à 168 px
 - [x] Raccourcis `T` / `[` / `]` — `[`/`]` en E2E dans la nouvelle spec, les 3 en unitaire (53/53)
 
+## Recommandations suite
+
+- **RECOMMAND_FOLLOWUP** — **#451 est un doublon de #449.** Le correctif de code était déjà livré
+  par `3dcc5ea` (PR #449) ; cette issue n'a produit qu'une spec complémentaire. À fermer en le
+  disant explicitement. Le triage `possibly_done` du lead était juste sur la conclusion, faux sur
+  le motif (il affirmait qu'aucun test n'épinglait le cas — `timeline.spec.ts:1442` existait déjà).
+  [triage XS | domaine events]
+- **RECOMMAND_FOLLOWUP** — le **zoom AVANT** (`+` / `=`) n'est épinglé par aucune spec, et un seul
+  couple de niveaux est couvert (Mois → Trimestre). La re-projection d'ancre est symétrique dans le
+  code mais n'est prouvée que dans un sens. [triage S | domaine events]
+- Pas de `RECOMMAND_TEST_RUNNER` : `timeline.spec.ts` complet joué et lu ici (34/34 en 66 s), plus
+  les suites unitaires (53/53).
+- Pas de `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY` : aucun schéma, aucune surface d'auth —
+  cette issue ne touche aucune ligne applicative, uniquement une spec E2E.
+- Pas de `RECOMMAND_UI_DESIGN` : aucune surface visuelle nouvelle.
+
 STATUS: COMPLETED
