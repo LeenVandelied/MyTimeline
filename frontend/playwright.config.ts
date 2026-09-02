@@ -84,65 +84,70 @@ export default defineConfig({
   // Purge `.auth/accounts.json` d'un run précédent avant le projet `setup`
   // (identités partagées setup <-> specs régénérées à chaque run). Cf. e2e/global-setup.ts.
   globalSetup: './e2e/global-setup.ts',
+  // Libère le verrou de run posé par le globalSetup (un seul run Playwright à la
+  // fois par worktree — `e2e/.auth/` est partagé). Cf. e2e/support/run-lock.ts.
+  globalTeardown: './e2e/global-teardown.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // #465 — POURQUOI les workers sont BORNÉS en local. C'est une PARADE, PAS un
-  // correctif de cause racine.
+  // #469 — POURQUOI le parallélisme local est ROUVERT à 2 (il valait 1 depuis #465).
   //
-  // ⚠ LA CAUSE RACINE N'EST PAS CONNUE. Pourquoi `next dev` meurt sous charge
-  // parallèle (fuite mémoire ? plafond de descripteurs ? limite de connexions ?)
-  // n'a PAS été cherché : l'issue #465 a été explicitement re-scopée pour livrer
-  // une borne mesurée, pas un diagnostic. On borne donc la charge en dessous du
-  // seuil où la mort a été observée, sans prétendre l'avoir expliquée. Le serveur
-  // peut remourir si la suite grossit, ou sur une machine différente. Si ça
-  // arrive, c'est la cause racine qu'il faut ouvrir — PAS cette valeur qu'il faut
-  // baisser une fois de plus en silence.
+  // HISTORIQUE EN DEUX TEMPS, à ne pas relire à l'envers.
   //
-  // LE SYMPTÔME : `docs/memory/audits/sprint-63-test-coverage.md` documente un run
-  // local complet à 168 passed / 62 failed, dont la TOTALITÉ des échecs porte
-  // `NS_ERROR_CONNECTION_REFUSED` / `ECONNREFUSED ::1:3000` — le `next dev` local
-  // était mort en cours de run. Un SEUL serveur sert TOUS les workers, et
-  // `undefined` laissait Playwright en prendre la moitié des cœurs (5 sur les
-  // 10 cœurs du poste de mesure). Ces 62 échecs ne disaient rien sur le code.
-  // ⚠ Cette mort à 5 workers est REPRISE DE L'AUDIT, elle n'a pas été rejouée
-  // ici : re-provoquer une panne serveur n'apprenait rien de plus que la borne.
+  // 1) #465 (S64) a borné les workers à 1 en LOCAL pour un motif de CHARGE.
+  //    `docs/memory/audits/sprint-63-test-coverage.md` documente un run local complet
+  //    à 168 passed / 62 failed dont la TOTALITÉ des échecs porte
+  //    `NS_ERROR_CONNECTION_REFUSED` / `ECONNREFUSED ::1:3000` — le `next dev` local
+  //    était mort en cours de run. Un SEUL serveur sert TOUS les workers, et
+  //    `undefined` laissait Playwright en prendre la moitié des cœurs (5 sur 10).
+  //    ⚠ LA CAUSE RACINE DE CETTE MORT N'EST TOUJOURS PAS CONNUE (fuite mémoire ?
+  //    plafond de descripteurs ?) : elle n'a jamais été cherchée, ni au S64 ni ici.
+  //    La borne reste un PLAFOND, pas une explication. Si le serveur remeurt parce
+  //    que la suite a grossi, c'est la cause racine qu'il faut ouvrir — PAS cette
+  //    valeur qu'il faut rebaisser une fois de plus en silence.
   //
-  // CE QUI A ÉTÉ MESURÉ (S64, poste 10 cœurs, suite COMPLÈTE `setup` + `chromium`
-  // + `firefox` = 239 tests, serveur dev externe via `PLAYWRIGHT_BASE_URL`) :
+  // 2) #465 n'est cependant PAS descendu de 2 à 1 pour la charge : à 2 workers,
+  //    « 0 ECONNREFUSED » était DÉJÀ atteint. Il est descendu à 1 parce que 4 des
+  //    5 échecs restants étaient [[PIT-S47-004]] — une course d'IDENTITÉS E2E, sans
+  //    aucun rapport avec la charge. #469 corrige cette course à la source
+  //    (`e2e/support/accounts.ts` : graine unique `E2E_RUN_ID` posée par le
+  //    `globalSetup` AVANT le fork des workers + résolution paresseuse des
+  //    identités), ce qui rend 2 de nouveau tenable. La borne de charge, elle,
+  //    reste en vigueur : on ne remonte PAS au-delà de 2, seule valeur > 1 pour
+  //    laquelle « 0 ECONNREFUSED » a été MESURÉ.
   //
-  //   workers=2 -> 226 passed / 5 failed / 8 skipped en 4,8 min — 0 ECONNREFUSED
-  //   workers=1 -> 230 passed / 1 failed / 8 skipped en 9,0 min — 0 ECONNREFUSED
+  // ÉTAT DE LA VALIDATION #469 — À LIRE AVANT DE CROIRE CETTE VALEUR.
   //
-  // POURQUOI 1 ET PAS 2, alors que 2 satisfait déjà le critère « zéro
-  // ECONNREFUSED » : à 2 workers, 4 des 5 échecs sont les specs `settings-*` et
-  // c'est [[PIT-S47-004]] MOT POUR MOT — `toHaveValue` attend `sh4148187640411`
-  // et reçoit `sh4148087641348`. Deux process Node distincts chargent
-  // `e2e/support/accounts.ts` AVANT que le projet `setup` n'ait persisté
-  // `.auth/accounts.json` ; chacun fige alors son propre `RUN` (dérivé du `pid`),
-  // et la spec compare son identité locale au compte réellement enregistré par
-  // l'autre process. `dependencies: ['setup']` n'y change rien : il ordonne
-  // l'exécution, pas le moment de l'import du module. Borner à 2 aurait donc
-  // livré une config qui produit 4 rouges GARANTIS à chaque run local — soit
-  // exactement le contraire du but de #465, qui est de rendre un run local
-  // INTERPRÉTABLE. À 1 worker ces 4 échecs disparaissent, ce qui confirme la
-  // contention comme cause. Le coût assumé est la durée : 4,8 min -> 9,0 min.
+  // Le mécanisme d'identités est corrigé et PROUVÉ : sur un run instrumenté, les 4
+  // process workers (4 `pid` distincts) portent tous la MÊME graine
+  // (`[e2e] identités — worker N (pid …) : E2E_RUN_ID=…`), et les specs `settings-*`
+  // passent. Ce que la valeur 2 attend encore, c'est la preuve exigée par l'issue :
+  // DEUX runs complets CONSÉCUTIFS verts sur les 4 specs `settings-*`.
   //
-  // POURQUOI PLUS DE TERNAIRE : la branche CI valait déjà 1, la branche locale
-  // vaut maintenant 1 — les deux ont convergé. **Le comportement de la CI est
-  // INCHANGÉ** (elle tournait à 1, elle tourne à 1). Cette valeur aligne aussi le
-  // local sur le `--workers=1` du runbook S47, que `scripts/test-quiet.sh e2e`
-  // contournait en lançant `npm run test:e2e` sans drapeau ([[PIT-S49-006]]) :
-  // la borne étant désormais DANS la config, ce contournement n'existe plus.
+  // Mesures disponibles à ce jour (suite complète, 240 tests, serveur dev externe,
+  // backend conteneur `:8086`) :
   //
-  // Reste hors périmètre : le dernier échec (`timeline.spec.ts` ::
-  // `event-outside-label`) n'est PAS un problème de workers — il persiste à 1.
-  // C'est le flake structurel de virtualisation verticale diagnostiqué au S64
-  // (`docs/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md`) : la
-  // suite sème une catégorie et un produit par spec sans nettoyage, l'artefact
-  // de CE run montre 77 lanes pour un `LANE_VIRTUALIZATION_MIN_ROWS = 60`, donc
-  // la lane semée n'est jamais montée. Borner les workers ne le corrige pas.
-  workers: 1,
+  //   run 1 -> 231 passed / 1 failed / 8 skipped en 7 min 04 — `settings-*` VERTES,
+  //            l'unique échec est `timeline-mobile.spec.ts:366` (hors périmètre)
+  //   run 2 -> 227 passed / 5 failed / 8 skipped en 7 min 38 — `settings-*` ROUGES
+  //
+  // ⚠ LE RUN 2 A ÉTÉ INVALIDÉ, ET LA RAISON EST INSTRUCTIVE. Il portait la signature
+  // `Expected sh7100651484725 / Received sh7238353220892`, soit MOT POUR MOT
+  // [[PIT-S47-004]]. Ce n'en est pourtant pas : les DEUX valeurs sont des graines de
+  // `globalSetup` complètes, appartenant à DEUX runs Playwright qui tournaient EN
+  // MÊME TEMPS dans ce worktree — et aucun des deux garde-fous d'`accounts.ts` (graine
+  // absente, identités divergentes) n'a levé, ce qu'une graine non propagée aurait
+  // déclenché. Deux runs simultanés partagent `e2e/.auth/` : identités ET cookies
+  // `storageState`. Le second run réauthentifie les specs du premier sur SES comptes.
+  // D'où le verrou de run (`e2e/support/run-lock.ts`) qui refuse désormais le second.
+  //
+  // CE QUI RESTE À FAIRE : rejouer 2 runs complets consécutifs, SEULS sur la machine,
+  // et ne remonter cette valeur au statut « acquis » qu'à ce moment-là. Tant que ce
+  // n'est pas fait, ne PAS citer 2 comme une valeur validée.
+  //
+  // La borne de charge héritée de #465 reste par ailleurs en vigueur : on ne monte pas
+  // au-delà de 2, seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré.
+  workers: process.env.CI ? 1 : 2,
   // #461 — POURQUOI un reporter COMPOSITE en CI, et pas `github` seul.
   // Le reporter `github` n'écrit RIEN sur disque : il se contente de poster des
   // annotations dans l'interface Actions. `playwright-report/` restait donc vide

@@ -61,7 +61,7 @@ dire — un autre agent/process peut en dépendre) :
 | 1 | `:3000` est squatté par le `next-server` d'un **autre projet** (v16.2.11 ; MyTimeline est en Next 15) | `reuseExistingServer: true` fait tourner la suite contre la **mauvaise app**, sans aucun avertissement | Frontend sur `:3100` + `PLAYWRIGHT_BASE_URL` (qui désactive aussi le `webServer` Playwright) |
 | 2 | Le profil `dev` fige `app.cors.allowed-origins=http://localhost:3000` (pas de placeholder d'env) | `403 Invalid CORS request` sur `POST /api/auth/register` → l'app **reste** sur `/fr/register` → `auth.setup.ts` accuse un « rate-limit register 5/min/IP » **qui n'a pas lieu** | Override en argument de lancement : `--app.cors.allowed-origins=http://localhost:3000,http://localhost:3100` |
 | 3 | Base `eventmanager` figée à V6 avec des lignes `events` incompatibles | `V7__design_v3_schema.sql` échoue : `events_recurrence_unit_check`. (V9 « neutralize invalid recurrence unit » nettoie ces données — mais V7 s'exécute **avant** V9, donc la reprise à froid est impossible sur cette base) | Utiliser la base dédiée **`eventmanager_e2e`** (déjà provisionnée, migrée V15). **Ne pas toucher à `eventmanager`.** |
-| 4 | En local, workers > 1 | 4 specs `settings-*` rouges : `toHaveValue` attend `sh1763487562199`, reçoit `sh1763287562082` — deux **pid** différents ont généré chacun leur identité (`accounts.ts` §IDENTITÉS PARTAGÉES). Rien à voir avec le code testé | **Toujours `--workers=1`** en local (c'est déjà ce que fait la CI) |
+| 4 | En local, workers > 1 | 4 specs `settings-*` rouges : `toHaveValue` attend `sh<A>`, reçoit `sh<B>`. **DEUX causes possibles pour cette seule signature** — (a) identités figées au scope module (corrigé #469, S65), (b) **deux runs Playwright simultanés dans ce worktree**, qui partagent `e2e/.auth/` (identités ET cookies). Rien à voir avec le code testé dans les deux cas | Lire les lignes `[e2e] identités — worker N (pid …)` du log : graines identiques ⇒ cause (b), un seul run à la fois (un verrou refuse désormais le second). `workers` local reste **en cours de validation** — voir [[PIT-S47-004]] avant de conclure |
 
 ## Démarrage
 
@@ -97,7 +97,7 @@ proxy `/api/*` atteint réellement le backend (et pas seulement que Next répond
 ### 3. Lancer les specs
 
 ```bash
-cd frontend && SKIP_DELEGATION=1 PLAYWRIGHT_BASE_URL=http://localhost:3100 npx playwright test <fichier.spec.ts> --workers=1 --reporter=line
+cd frontend && SKIP_DELEGATION=1 PLAYWRIGHT_BASE_URL=http://localhost:3100 npx playwright test <fichier.spec.ts> --reporter=line
 ```
 
 `SKIP_DELEGATION=1` est requis : le hook `warn-test-delegation.sh` bloque `npx playwright test` sans lui.
