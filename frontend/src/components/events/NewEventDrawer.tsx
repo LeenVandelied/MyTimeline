@@ -4,13 +4,20 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
 import { useAuth } from '@/hooks/useAuth'
 import { useCreateEvent } from '@/hooks/useCreateEvent'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useMobileKeyboard } from '@/hooks/useMobileKeyboard'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { cn } from '@/lib/utils'
 import { DEFAULT_COLOR, toEventCreationPayload } from '@/types/event'
@@ -52,6 +59,15 @@ import type { EventSubmitState } from '@/components/EventEditForm'
 export interface NewEventDrawerProps {
   open: boolean
   onClose: () => void
+  /**
+   * #79 — Notifié à la TRANSITION « clavier virtuel ouvert » dans la variante
+   * bottom sheet (jamais sur desktop, où le hook n'est pas armé). Optionnel :
+   * l'évitement du clavier ne DÉPEND pas de ces callbacks, ils exposent l'état à
+   * un parent (ex. mettre en pause une animation de fond).
+   */
+  onKeyboardShow?: () => void
+  /** #79 — Transition inverse (clavier refermé). */
+  onKeyboardHide?: () => void
 }
 
 /** Date du jour en `YYYY-MM-DD` LOCAL. `toISOString()` serait en UTC → décalerait
@@ -63,7 +79,12 @@ const todayLocalIso = (): string => {
   return `${now.getFullYear()}-${month}-${day}`
 }
 
-export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose }) => {
+export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
+  open,
+  onClose,
+  onKeyboardShow,
+  onKeyboardHide,
+}) => {
   const t = useTranslations('shell.createDrawer')
   const tCommon = useTranslations('common')
   const { user } = useAuth()
@@ -81,6 +102,26 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
   const createEvent = useCreateEvent()
 
   useFocusTrap(panelRef, open, onClose)
+
+  /**
+   * #79 — Évitement du clavier virtuel. Armé UNIQUEMENT quand la sheet est ouverte
+   * ET en variante compacte : sur le drawer desktop aucun écouteur n'est posé et
+   * aucun style inline n'est produit (no-op strict, cf. `useMobileKeyboard`).
+   */
+  const { keyboardOpen, compact, availableHeight, offsetTop } = useMobileKeyboard({
+    enabled: open && isCompact,
+    onKeyboardShow,
+    onKeyboardHide,
+  })
+
+  /**
+   * #79 — Nœud du pied, porté par un STATE (et non un `useRef`) : le formulaire y
+   * portalise ses actions, or un `ref.current` lu au premier rendu vaut `null` et
+   * sa mutation ne re-rendrait rien. Le setter d'état est appelé par React en phase
+   * de commit (avant peinture) → pas de saut visuel entre le rendu en flux et le
+   * rendu portalisé.
+   */
+  const [footerNode, setFooterNode] = useState<HTMLDivElement | null>(null)
 
   const handleSubmit = useCallback(
     async (values: EventEditFormValues) => {
@@ -111,6 +152,9 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
       : 'idle'
 
   const hasProducts = products.length > 0
+  /** Le pied n'a de sens que si le formulaire est rendu (sinon : filet orphelin). */
+  const showForm = !productsQuery.isLoading && hasProducts
+  const showSheetFooter = isCompact && showForm
 
   const defaultValues: EventEditFormValues = {
     title: '',
@@ -143,6 +187,23 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
         aria-modal="true"
         aria-label={t('title')}
         data-testid="shell-new-event-drawer"
+        /* #79 — État observable du clavier (oracle E2E) ; ABSENT sur desktop, où le
+           hook n'est pas armé : l'attribut ne doit pas laisser croire à une mesure. */
+        data-keyboard={isCompact ? (keyboardOpen ? 'open' : 'closed') : undefined}
+        data-compact={isCompact && compact ? 'true' : undefined}
+        /**
+         * #79 — On NE remplace PAS le `max-height:80vh` du DS : on le BORNE à la
+         * hauteur réellement visible, et on répercute `offsetTop` (iOS déplace le
+         * viewport visuel sans bouger le viewport de mise en page auquel un
+         * `position:fixed` est ancré). Clavier fermé → `undefined`, donc retour
+         * intégral à la feuille de style (aucune transition : un `max-height`
+         * animé produirait un à-coup à chaque frappe).
+         */
+        style={
+          isCompact && keyboardOpen && availableHeight !== null
+            ? { maxHeight: `${availableHeight}px`, top: `${offsetTop}px` }
+            : undefined
+        }
       >
         <div className={isCompact ? 'mt-sheet__header' : 'mt-drawer__header'}>
           <div>
@@ -239,10 +300,26 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({ open, onClose })
                 onSubmit={handleSubmit}
                 onCancel={onClose}
                 submitState={submitState}
+                /* #79 — opt-in : sur le drawer desktop les deux props sont
+                   neutres (`false` / `null`), le formulaire est INCHANGÉ. */
+                compact={isCompact && compact}
+                footerPortalNode={isCompact ? footerNode : null}
               />
             </>
           )}
         </div>
+
+        {/* #79 — Pied STICKY : hors de `.mt-sheet__body` (le seul élément qui défile),
+            donc toujours visible — y compris quand le panneau est borné à la hauteur
+            laissée par le clavier. Il ne contient rien en propre : `EventEditForm` y
+            portalise SA rangée d'actions (aucune duplication de boutons). */}
+        {showSheetFooter && (
+          <div
+            ref={setFooterNode}
+            className="mt-sheet__footer"
+            data-testid="shell-new-event-drawer-footer"
+          />
+        )}
       </div>
     </>
   )

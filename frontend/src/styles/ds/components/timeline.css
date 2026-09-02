@@ -419,6 +419,14 @@
    `.mt-sheet__*` qui l'entoure (le header compact ne mélange plus les deux familles). */
 .mt-sheet__subtitle{margin-top:2px; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-sheet__body{padding:var(--space-4) var(--space-5) var(--space-5); overflow:auto; flex:1;}
+/* #79 — Pied de sheet STICKY (pendant de `.mt-drawer__footer`). Rendu HORS de
+   `.mt-sheet__body` (qui porte `overflow:auto; flex:1`) : les actions restent
+   donc visibles pendant que le corps défile, et surtout au-dessus du clavier
+   virtuel quand `useMobileKeyboard` borne la hauteur du panneau.
+   `min-height:var(--space-17)` (68px) = la réserve demandée pour la rangée de
+   boutons ; `flex:0 0 auto` empêche le pied d'être comprimé par le corps. */
+.mt-sheet__footer{flex:0 0 auto; min-height:var(--space-17); display:flex; align-items:center; padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-rule); background:var(--color-surface);}
+.mt-sheet__footer > *{flex:1;}
 /* Bouton fermer : cible >= 44px (le drawer desktop = 28px, NON conforme mobile —
    réserve ui-design).
    #352 — bouton à ICÔNE SEULE, `background:none` : rien ne le distingue du

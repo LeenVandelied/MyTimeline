@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslations } from 'next-intl'
 import { Controller, useForm, ControllerRenderProps } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -120,6 +121,29 @@ interface EventEditFormProps {
   onDelete?: () => Promise<void>
   /** Récurrence de l'événement édité → warning suppression « seul cet événement ». */
   isRecurring?: boolean
+  /**
+   * #79 — APERÇU RÉDUIT (opt-in, défaut `false`). Retire du rendu les champs
+   * SECONDAIRES (récurrence, couleur + aperçu) quand la hauteur visible ne suffit
+   * plus — typiquement clavier virtuel ouvert dans une bottom sheet. Aucun effet
+   * métier : les valeurs restent dans l'état RHF et sont soumises telles quelles.
+   */
+  compact?: boolean
+  /**
+   * #79 — PIED D'ACTIONS DÉPORTÉ (opt-in, défaut `undefined` → rendu en flux, donc
+   * desktop strictement inchangé). Nœud DOM dans lequel la rangée
+   * annuler/supprimer/soumettre est rendue via `createPortal`, afin qu'un parent
+   * (bottom sheet) la place HORS de sa zone de défilement et la garde visible
+   * au-dessus du clavier.
+   *
+   * ⚠ POURQUOI UN NŒUD ET PAS UN `RefObject` : lu pendant le rendu, `ref.current`
+   * vaut `null` au premier passage et sa mutation ne re-rend RIEN — la rangée
+   * resterait à jamais en flux. Le parent doit donc porter le nœud dans un `state`
+   * (ref callback), ce qui déclenche le re-rendu qui monte le portail.
+   *
+   * ⚠ Le nœud DOIT appartenir au panneau du parent : hors de lui, `useFocusTrap`
+   * (qui interroge le conteneur) exclurait les boutons du piège à focus.
+   */
+  footerPortalNode?: HTMLElement | null
 }
 
 /**
@@ -153,6 +177,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   onTakeServer,
   onDelete,
   isRecurring: eventIsRecurring = false,
+  compact = false,
+  footerPortalNode,
 }) => {
   const t = useTranslations('products.add.event.form')
   const tUnits = useTranslations('products.add.event.units')
@@ -170,6 +196,16 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
     defaultValues,
     mode: 'onTouched', // validations inline dès qu'un champ est touché (sans submit).
   })
+
+  /**
+   * #79 — Identifiant du `<form>`, propagé aux boutons via l'attribut HTML `form`.
+   * Quand la rangée d'actions est PORTALISÉE, son bouton `type="submit"` n'est plus
+   * un DESCENDANT du `<form>` : sans propriétaire de formulaire explicite, le clic
+   * ne déclencherait AUCUNE soumission native (donc aucun `onSubmit` React).
+   * `useId` plutôt qu'une constante : deux formulaires montés simultanément
+   * (édition + création) ne doivent pas se disputer le même id.
+   */
+  const formId = React.useId()
 
   const [isColorOpen, setIsColorOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
@@ -246,10 +282,78 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
       ? `${t('recurring')} · ${tUnits(RECURRENCE_UNIT_KEY[previewRecurrenceUnit])}`
       : null
 
+  /**
+   * #79 — Rangée d'actions (supprimer / annuler / soumettre) extraite en variable pour
+   * pouvoir être rendue à DEUX endroits SANS être dupliquée : en flux (défaut, desktop
+   * et drawer — comportement historique strictement inchangé) ou PORTALISÉE dans le
+   * pied fourni par le parent (bottom sheet mobile, #79). Un portail React conserve
+   * l'arbre React (contexte RHF, handlers) mais PAS la parenté DOM : le bouton de
+   * soumission porte donc `form={formId}` (cf. `formId`).
+   */
+  const actionsRow = (
+    <div
+      className={
+        footerPortalNode
+          ? 'flex w-full items-center justify-between'
+          : 'border-rule flex items-center justify-between border-t pt-4'
+      }
+    >
+      {isEdit ? (
+        <Button
+          type="button"
+          variant="ghost"
+          className="text-destructive"
+          onClick={() => setDeleteOpen(true)}
+          disabled={submitting || !isOnline}
+          title={!isOnline ? tNet('offline.hint') : undefined}
+          data-testid="event-form-delete"
+        >
+          <Trash2 className="size-4" aria-hidden="true" />
+          {tCommon('buttons.delete')}
+        </Button>
+      ) : (
+        <span />
+      )}
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          {tCommon('buttons.cancel')}
+        </Button>
+        <Button
+          type="submit"
+          form={formId}
+          className="bg-accent hover:bg-accent-hover text-accent-ink"
+          disabled={submitting || !isOnline}
+          title={!isOnline ? tNet('offline.hint') : undefined}
+          data-testid="event-form-submit"
+        >
+          {submitting && <Spinner label={tCommon('loading.saving')} className="text-current" />}
+          {/* #300 — libellé create : clé EXISTANTE `form.submit`
+                        (« Ajouter l'événement »), déjà traduite dans les 4 locales. */}
+          {submitting
+            ? tCommon('loading.saving')
+            : isCreate
+              ? t('submit')
+              : tCommon('buttons.save')}
+        </Button>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" data-testid="event-form">
+        <form
+          id={formId}
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+          data-testid="event-form"
+        >
           {/* #review S42 (BR-EVE-015) — `version` optimiste rendue EXPLICITE : champ
               registered (Controller) plutôt que survie via `defaultValues` non-enregistré.
               Robuste à un futur `reset()`/`setValue`. Non éditable (hidden), Controller
@@ -450,163 +554,184 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                 )}
               </div>
 
-              {/* Récurrence — BR-EVE-006 (seriesErr) + recurrenceEndDate (BR-EVE-012). */}
-              <div className="border-rule space-y-4 border-t pt-4">
-                <FormField
-                  control={form.control}
-                  name="isRecurring"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-y-0 space-x-3">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={locked}
-                          aria-describedby={locked ? lockedNoteId : undefined}
-                          data-testid="event-form-recurring-toggle"
-                          className="data-[state=checked]:bg-accent"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-ink cursor-pointer font-normal">
-                        {t('recurring')}
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-
-                {isRecurringWatch && (
-                  <div className="space-y-4">
+              {/* #79 — APERÇU RÉDUIT (`compact`) : sous 600 px de hauteur visible (clavier
+                  virtuel ouvert sur mobile), récurrence et couleur sont RETIRÉES du rendu
+                  pour laisser la place aux champs primaires (titre, type/durée, date) et
+                  au pied d'actions. Sans effet métier : `isRecurring=false` et
+                  `color=DEFAULT_COLOR` restent dans l'état RHF (`shouldUnregister` vaut
+                  false par défaut → une valeur non MONTÉE reste SOUMISE) et partent donc
+                  au backend inchangées (BR-EVE-007 / BR-EVE-009). Défaut `false` → aucun
+                  consommateur existant n'est affecté. */}
+              {!compact && (
+                <>
+                  {/* Récurrence — BR-EVE-006 (seriesErr) + recurrenceEndDate (BR-EVE-012). */}
+                  <div className="border-rule space-y-4 border-t pt-4">
                     <FormField
                       control={form.control}
-                      name="recurrenceUnit"
+                      name="isRecurring"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-ink">{t('recurrenceUnit')}</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            disabled={locked}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className="bg-surface-2 text-ink border-rule-emphasis"
-                                data-testid="event-form-recurrence-trigger"
-                                aria-describedby={locked ? lockedNoteId : undefined}
-                              >
-                                <SelectValue placeholder={t('recurrenceUnitPlaceholder')} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-surface-2 text-ink border-rule-strong">
-                              {/* #331 — testid dérivé de la `value` (jamais du libellé i18n,
-                                  qui change avec la locale). Radix ne répercute pas `value`
-                                  sur le DOM : sans cet attribut, les specs ciblent par index. */}
-                              <SelectItem value="WEEK" data-testid="recurrence-unit-option-WEEK">
-                                {tUnits('weeks')}
-                              </SelectItem>
-                              <SelectItem value="MONTH" data-testid="recurrence-unit-option-MONTH">
-                                {tUnits('months')}
-                              </SelectItem>
-                              <SelectItem value="YEAR" data-testid="recurrence-unit-option-YEAR">
-                                {tUnits('years')}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage data-testid="event-form-series-error" />
+                        <FormItem className="flex flex-row items-start space-y-0 space-x-3">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={locked}
+                              aria-describedby={locked ? lockedNoteId : undefined}
+                              data-testid="event-form-recurring-toggle"
+                              className="data-[state=checked]:bg-accent"
+                            />
+                          </FormControl>
+                          <FormLabel className="text-ink cursor-pointer font-normal">
+                            {t('recurring')}
+                          </FormLabel>
                         </FormItem>
                       )}
                     />
 
-                    {/* #300 — hors DTO create (BR-EVE-012 : `recurrenceEndDate` PATCH-only). */}
-                    {!isCreate && (
-                      <FormField
-                        control={form.control}
-                        name="recurrenceEndDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-ink">{t('recurrenceEndDate')}</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="date"
-                                data-testid="event-form-recurrence-end-date"
-                                {...field}
-                                value={field.value ?? ''}
+                    {isRecurringWatch && (
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="recurrenceUnit"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-ink">{t('recurrenceUnit')}</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
                                 disabled={locked}
-                                aria-describedby={locked ? lockedNoteId : undefined}
-                                className="bg-surface-2 text-ink border-rule-emphasis"
-                              />
-                            </FormControl>
-                            <p className="text-ink-muted text-xs">{t('recurrenceEndHint')}</p>
-                            <FormMessage />
-                          </FormItem>
+                              >
+                                <FormControl>
+                                  <SelectTrigger
+                                    className="bg-surface-2 text-ink border-rule-emphasis"
+                                    data-testid="event-form-recurrence-trigger"
+                                    aria-describedby={locked ? lockedNoteId : undefined}
+                                  >
+                                    <SelectValue placeholder={t('recurrenceUnitPlaceholder')} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-surface-2 text-ink border-rule-strong">
+                                  {/* #331 — testid dérivé de la `value` (jamais du libellé i18n,
+                                  qui change avec la locale). Radix ne répercute pas `value`
+                                  sur le DOM : sans cet attribut, les specs ciblent par index. */}
+                                  <SelectItem
+                                    value="WEEK"
+                                    data-testid="recurrence-unit-option-WEEK"
+                                  >
+                                    {tUnits('weeks')}
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="MONTH"
+                                    data-testid="recurrence-unit-option-MONTH"
+                                  >
+                                    {tUnits('months')}
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="YEAR"
+                                    data-testid="recurrence-unit-option-YEAR"
+                                  >
+                                    {tUnits('years')}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage data-testid="event-form-series-error" />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* #300 — hors DTO create (BR-EVE-012 : `recurrenceEndDate` PATCH-only). */}
+                        {!isCreate && (
+                          <FormField
+                            control={form.control}
+                            name="recurrenceEndDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-ink">{t('recurrenceEndDate')}</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="date"
+                                    data-testid="event-form-recurrence-end-date"
+                                    {...field}
+                                    value={field.value ?? ''}
+                                    disabled={locked}
+                                    aria-describedby={locked ? lockedNoteId : undefined}
+                                    className="bg-surface-2 text-ink border-rule-emphasis"
+                                  />
+                                </FormControl>
+                                <p className="text-ink-muted text-xs">{t('recurrenceEndHint')}</p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         )}
-                      />
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Couleur unique (design v3 #44) + validation hex (BR-EVE-009). */}
-              <div className="border-rule space-y-4 border-t pt-4">
-                <FormField
-                  control={form.control}
-                  name="color"
-                  render={({ field }) => (
-                    <FormItem className="relative">
-                      <FormLabel className="text-ink m-0 font-medium">
-                        {tDetails('color')}
-                      </FormLabel>
-                      <div className="flex items-center gap-2">
-                        <PopoverPicker
-                          isOpen={isColorOpen}
-                          color={field.value ?? ''}
-                          onChange={(color) => handleColorChange(color, field)}
-                          onToggle={(isOpen) => setIsColorOpen(isOpen)}
-                          disabled={locked}
-                        />
-                        <input
-                          type="text"
-                          value={field.value ?? ''}
-                          onChange={(e) => handleColorChange(e.target.value, field)}
-                          onBlur={field.onBlur}
-                          disabled={locked}
-                          aria-describedby={locked ? lockedNoteId : undefined}
-                          data-testid="event-form-color-input"
-                          // #383-fix (S58) — PAS de `focus:border-transparent` ici. Cette
-                          // classe n'avait de sens qu'appariée au `focus:ring-2` retiré par
-                          // #383 : l'anneau remplaçait la bordure escamotée. Seule, elle
-                          // FAISAIT DISPARAÎTRE la silhouette du champ au focus sans rien
-                          // mettre en place — le contour du DS est posé 2px PLUS LOIN
-                          // (`outline-offset: 2px`), il ne bouche pas ce trou.
-                          className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm"
-                        />
-                      </div>
-                      <FormMessage data-testid="event-form-color-error" />
-                    </FormItem>
-                  )}
-                />
+                  {/* Couleur unique (design v3 #44) + validation hex (BR-EVE-009). */}
+                  <div className="border-rule space-y-4 border-t pt-4">
+                    <FormField
+                      control={form.control}
+                      name="color"
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <FormLabel className="text-ink m-0 font-medium">
+                            {tDetails('color')}
+                          </FormLabel>
+                          <div className="flex items-center gap-2">
+                            <PopoverPicker
+                              isOpen={isColorOpen}
+                              color={field.value ?? ''}
+                              onChange={(color) => handleColorChange(color, field)}
+                              onToggle={(isOpen) => setIsColorOpen(isOpen)}
+                              disabled={locked}
+                            />
+                            <input
+                              type="text"
+                              value={field.value ?? ''}
+                              onChange={(e) => handleColorChange(e.target.value, field)}
+                              onBlur={field.onBlur}
+                              disabled={locked}
+                              aria-describedby={locked ? lockedNoteId : undefined}
+                              data-testid="event-form-color-input"
+                              // #383-fix (S58) — PAS de `focus:border-transparent` ici. Cette
+                              // classe n'avait de sens qu'appariée au `focus:ring-2` retiré par
+                              // #383 : l'anneau remplaçait la bordure escamotée. Seule, elle
+                              // FAISAIT DISPARAÎTRE la silhouette du champ au focus sans rien
+                              // mettre en place — le contour du DS est posé 2px PLUS LOIN
+                              // (`outline-offset: 2px`), il ne bouche pas ce trou.
+                              className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm"
+                            />
+                          </div>
+                          <FormMessage data-testid="event-form-color-error" />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* #315 — Preview live (debounce 150 ms) : MINI-FRISE du handoff §6
+                    {/* #315 — Preview live (debounce 150 ms) : MINI-FRISE du handoff §6
                     (règle + TODAY + occurrence fantôme pointillée + légende
                     « prochaine occurrence »). Remplace le bloc coloré simple du
                     Sprint 44 (écart assumé DEC-S44-002). Les testids
                     `event-form-preview` et `event-form-preview-recurrence` sont
                     PRÉSERVÉS (tests #66/#300, E2E #314). */}
-                <div>
-                  <div className="text-ink mb-2 text-sm">{tDetails('preview')}</div>
-                  <EventPreviewTimeline
-                    title={previewTitle}
-                    color={validPreviewColor}
-                    type={previewEventType}
-                    durationValue={previewDurationValue}
-                    durationUnit={previewDurationUnit}
-                    startDate={previewStartDate}
-                    endDate={previewEndDate}
-                    isRecurring={previewIsRecurring}
-                    recurrenceUnit={previewRecurrenceUnit}
-                    recurrenceLabel={previewRecurrence}
-                  />
-                </div>
-              </div>
+                    <div>
+                      <div className="text-ink mb-2 text-sm">{tDetails('preview')}</div>
+                      <EventPreviewTimeline
+                        title={previewTitle}
+                        color={validPreviewColor}
+                        type={previewEventType}
+                        durationValue={previewDurationValue}
+                        durationUnit={previewDurationUnit}
+                        startDate={previewStartDate}
+                        endDate={previewEndDate}
+                        isRecurring={previewIsRecurring}
+                        recurrenceUnit={previewRecurrenceUnit}
+                        recurrenceLabel={previewRecurrence}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Archivage — BR-EVE-013 (archived PATCH-only). #300 : MASQUÉ au create,
                   le champ est absent d'`EventCreationRequest` (un event ne peut pas
@@ -656,53 +781,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                 </p>
               )}
 
-              <div className="border-rule flex items-center justify-between border-t pt-4">
-                {isEdit ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="text-destructive"
-                    onClick={() => setDeleteOpen(true)}
-                    disabled={submitting || !isOnline}
-                    title={!isOnline ? tNet('offline.hint') : undefined}
-                    data-testid="event-form-delete"
-                  >
-                    <Trash2 className="size-4" aria-hidden="true" />
-                    {tCommon('buttons.delete')}
-                  </Button>
-                ) : (
-                  <span />
-                )}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
-                    onClick={onCancel}
-                    disabled={submitting}
-                  >
-                    {tCommon('buttons.cancel')}
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-accent hover:bg-accent-hover text-accent-ink"
-                    disabled={submitting || !isOnline}
-                    title={!isOnline ? tNet('offline.hint') : undefined}
-                    data-testid="event-form-submit"
-                  >
-                    {submitting && (
-                      <Spinner label={tCommon('loading.saving')} className="text-current" />
-                    )}
-                    {/* #300 — libellé create : clé EXISTANTE `form.submit`
-                        (« Ajouter l'événement »), déjà traduite dans les 4 locales. */}
-                    {submitting
-                      ? tCommon('loading.saving')
-                      : isCreate
-                        ? t('submit')
-                        : tCommon('buttons.save')}
-                  </Button>
-                </div>
-              </div>
+              {footerPortalNode ? createPortal(actionsRow, footerPortalNode) : actionsRow}
             </CardContent>
           </Card>
         </form>

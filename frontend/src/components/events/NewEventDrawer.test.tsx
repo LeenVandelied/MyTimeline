@@ -1,9 +1,14 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { act, render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { NewEventDrawer } from './NewEventDrawer'
+import {
+  FakeVisualViewport,
+  installVisualViewport,
+  removeVisualViewport,
+} from '@/__tests__/support/visualViewport'
 import type { Product } from '@/types/product'
 import { DEFAULT_COLOR } from '@/types/event'
 
@@ -55,10 +60,8 @@ vi.mock('@/hooks/useAuth', () => ({
 }))
 
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
   useLocale: () => 'fr',
 }))
 
@@ -100,8 +103,7 @@ const selectOption = async (triggerTestId: string, name: string) => {
   await userEvent.click(await screen.findByRole('option', { name }))
 }
 
-const selectProduct = (name: string) =>
-  selectOption('shell-new-event-drawer-product-trigger', name)
+const selectProduct = (name: string) => selectOption('shell-new-event-drawer-product-trigger', name)
 
 beforeEach(() => {
   createEventMock.mockReset()
@@ -267,9 +269,7 @@ describe('NewEventDrawer — soumission (payload ↔ EventCreationRequest)', () 
     expect(payload).not.toHaveProperty('title')
 
     // L'event créé doit apparaître dans la frise → invalidation par PRÉFIXE `products`.
-    await waitFor(() =>
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['products'] }),
-    )
+    await waitFor(() => expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['products'] }))
     await waitFor(() => expect(onClose).toHaveBeenCalled())
   })
 
@@ -338,5 +338,120 @@ describe('NewEventDrawer — soumission (payload ↔ EventCreationRequest)', () 
 
     await waitFor(() => expect(screen.getByTestId('event-form-title-error')).toBeInTheDocument())
     expect(createEventMock).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * #79 — Évitement du clavier virtuel (variante bottom sheet).
+ *
+ * PROUVENT : le câblage (pied monté HORS du corps, actions portalisées dedans,
+ * attributs d'état, callbacks, bornage inline de la hauteur) et le NO-OP desktop.
+ * NE PROUVENT PAS : qu'un clavier réel laisse les champs atteignables — jsdom ne
+ * met rien en page et `visualViewport` y est STUBBÉ (cf. `useMobileKeyboard.test.ts`).
+ */
+describe('NewEventDrawer — #79 clavier virtuel (sheet mobile)', () => {
+  const renderCompact = (
+    handlers: { onKeyboardShow?: () => void; onKeyboardHide?: () => void } = {},
+  ) => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <NewEventDrawer open onClose={onClose} {...handlers} />
+      </QueryClientProvider>,
+    )
+  }
+
+  afterEach(() => {
+    removeVisualViewport()
+  })
+
+  it('desktop : aucun pied, aucun attribut d’état (le hook n’est pas armé)', () => {
+    mockIsCompact = false
+    installVisualViewport(new FakeVisualViewport(494))
+    renderDrawer()
+
+    const panel = screen.getByTestId('shell-new-event-drawer')
+    // Même avec un viewport « clavier ouvert », la variante drawer ignore tout :
+    // c'est la non-régression desktop demandée par l'issue.
+    expect(panel).not.toHaveAttribute('data-keyboard')
+    expect(panel).not.toHaveAttribute('data-compact')
+    expect(panel).not.toHaveAttribute('style')
+    expect(screen.queryByTestId('shell-new-event-drawer-footer')).not.toBeInTheDocument()
+    expect(screen.getByTestId('event-form')).toContainElement(
+      screen.getByTestId('event-form-submit'),
+    )
+  })
+
+  it('sheet : le pied est HORS du corps défilant et porte la rangée d’actions', () => {
+    mockIsCompact = true
+    renderCompact()
+
+    const footer = screen.getByTestId('shell-new-event-drawer-footer')
+    const submit = screen.getByTestId('event-form-submit')
+    expect(footer).toContainElement(submit)
+    // `.mt-sheet__body` est le SEUL élément à `overflow:auto` : un pied rendu
+    // dedans défilerait avec le formulaire et sortirait de l'écran.
+    expect(footer).toHaveClass('mt-sheet__footer')
+    expect(document.querySelector('.mt-sheet__body')).not.toContainElement(submit)
+    expect(screen.getByTestId('shell-new-event-drawer')).toContainElement(footer)
+  })
+
+  it('sheet sans clavier : `data-keyboard="closed"`, aucune hauteur imposée', () => {
+    mockIsCompact = true
+    installVisualViewport(new FakeVisualViewport(844))
+    renderCompact()
+
+    const panel = screen.getByTestId('shell-new-event-drawer')
+    expect(panel).toHaveAttribute('data-keyboard', 'closed')
+    expect(panel).not.toHaveAttribute('data-compact')
+    // Pas de style inline : le `max-height:80vh` du DS reste seul maître.
+    expect(panel.style.maxHeight).toBe('')
+  })
+
+  it('sheet + clavier : borne la hauteur, passe en aperçu réduit et notifie', async () => {
+    mockIsCompact = true
+    const vv = new FakeVisualViewport(844)
+    installVisualViewport(vv)
+    const onKeyboardShow = vi.fn()
+    const onKeyboardHide = vi.fn()
+    renderCompact({ onKeyboardShow, onKeyboardHide })
+
+    const panel = screen.getByTestId('shell-new-event-drawer')
+    expect(screen.getByTestId('event-form-color-input')).toBeInTheDocument()
+
+    // Clavier ~350 px : 494 px visibles, sous le seuil d'aperçu réduit (600).
+    await act(async () => {
+      vv.emit({ height: 494 })
+    })
+    await waitFor(() => expect(panel).toHaveAttribute('data-keyboard', 'open'))
+    expect(panel).toHaveAttribute('data-compact', 'true')
+    expect(panel.style.maxHeight).toBe('494px')
+    expect(panel.style.top).toBe('0px')
+    // Champ secondaire retiré ; les actions restent dans le pied.
+    expect(screen.queryByTestId('event-form-color-input')).not.toBeInTheDocument()
+    expect(screen.getByTestId('shell-new-event-drawer-footer')).toContainElement(
+      screen.getByTestId('event-form-submit'),
+    )
+    expect(onKeyboardShow).toHaveBeenCalledTimes(1)
+
+    // Fermeture : retour intégral (pas de style résiduel, couleur de retour).
+    await act(async () => {
+      vv.emit({ height: 844 })
+    })
+    await waitFor(() => expect(panel).toHaveAttribute('data-keyboard', 'closed'))
+    expect(panel.style.maxHeight).toBe('')
+    expect(screen.getByTestId('event-form-color-input')).toBeInTheDocument()
+    expect(onKeyboardHide).toHaveBeenCalledTimes(1)
+  })
+
+  it('sheet sans produit : aucun pied orphelin (pas de formulaire à soumettre)', () => {
+    mockIsCompact = true
+    mockProductsData = []
+    renderCompact()
+
+    expect(screen.getByTestId('shell-new-event-drawer-empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('shell-new-event-drawer-footer')).not.toBeInTheDocument()
   })
 })
