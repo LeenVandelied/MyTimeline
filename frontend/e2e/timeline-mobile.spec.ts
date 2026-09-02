@@ -2,6 +2,7 @@ import { test, expect, type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
 import { ensureAuthenticated } from './support/auth'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
+import { revealSeededLane } from './support/timeline-lanes'
 
 /**
  * #205 (Sprint 47) — E2E des vues Timeline MOBILES (portrait #63 / paysage #64).
@@ -84,6 +85,11 @@ async function seedAndOpenTimeline(
   // Le host n'est monté qu'une fois les données chargées ET non vides.
   await expect(page.getByTestId('timeline-host')).toBeVisible()
   await expect(page.getByTestId(`timeline-mobile-${variant}`)).toBeVisible()
+  // #467 — les vues mobiles partagent le MÊME seuil de virtualisation verticale que
+  // le desktop (`useTimelineMobileState.ts:168`) et le MÊME compte PROD cumulatif :
+  // la lane semée peut n'être pas montée. Point d'entrée unique de toutes les specs
+  // mobiles -> la parade est posée ici une seule fois (cf. `support/timeline-lanes.ts`).
+  await revealSeededLane(page, { category: cat.name, product: productName })
 
   return { eventTitle: productName, productName }
 }

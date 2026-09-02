@@ -2,6 +2,7 @@ import { test, expect, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
+import { revealSeededLane } from './support/timeline-lanes'
 
 /**
  * #330 (lot b) — stub PAGE de l'API Fullscreen pour `timeline-fullscreen` (cf.
@@ -248,6 +249,10 @@ test.describe("#314 Drawer de création d'événement (shell)", () => {
     await expect(page.getByTestId('shell-new-event-drawer')).toHaveCount(0)
 
     // --- L'événement apparaît DANS LA FRISE (critère d'acceptation) -----------
+    // #467 — la lane du produit semé peut être hors bande de virtualisation
+    // verticale (le compte PROD dépasse 60 lanes en cours de suite) : on l'amène
+    // dans la bande AVANT d'asserter, sinon la pastille n'est pas montée du tout.
+    await revealSeededLane(page, { category: cat.name, product: product.name })
     // `data-event-title` est l'attribut stable porté par la pastille (EventPill).
     await expect(
       page.locator(`[data-testid="timeline-event"][data-event-title="${eventTitle}"]`),
@@ -408,10 +413,12 @@ test.describe('#304 /timeline — accordéon collapse par produit', () => {
   test('clic sur timeline-resource-head : aria-expanded bascule, pastilles masquées puis réaffichées', async ({
     page,
   }) => {
-    const { first } = await seedTwoProductsInOneCategory(page)
+    const { category, first } = await seedTwoProductsInOneCategory(page)
 
     await gotoTimeline(page)
     await expect(page.getByTestId('timeline-host')).toBeVisible()
+    // #467 — parade virtualisation verticale (cf. `support/timeline-lanes.ts`).
+    await revealSeededLane(page, { category, product: first })
 
     const head = resourceHead(page, first)
     const pill = resourceRow(page, first).locator(
@@ -448,6 +455,8 @@ test.describe('#304 /timeline — accordéon collapse par produit', () => {
 
     await gotoTimeline(page)
     await expect(page.getByTestId('timeline-host')).toBeVisible()
+    // #467 — parade virtualisation verticale (cf. `support/timeline-lanes.ts`).
+    await revealSeededLane(page, { category, product: first })
 
     const firstHead = resourceHead(page, first)
     const secondHead = resourceHead(page, second)
@@ -512,6 +521,8 @@ test.describe('#330 Drawer de détail événement (desktop, EventDrawer)', () =>
     })
 
     await gotoTimeline(page)
+    // #467 — parade virtualisation verticale (cf. `support/timeline-lanes.ts`).
+    await revealSeededLane(page, { category: cat.name, product: product.name })
     const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`)
     await expect(pill).toBeVisible()
     await pill.click()
@@ -995,6 +1006,15 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     // sur SÉLECTION, pas le mode d'interaction : on active la pastille au CLAVIER
     // (Enter, chemin natif du `<button>`, cf. `EventPill.tsx` — même `onSelect`
     // que le clic) pour exercer le comportement réel sans dépendre du défaut ci-dessus.
+    // #467 — la pastille visée n'est PAS masquée quand ce test rougit : elle n'est
+    // pas MONTÉE (lane hors bande de virtualisation verticale, le compte PROD
+    // dépassant 60 lanes en cours de suite). La parade est posée ICI, et non après
+    // `gotoTimeline`, parce que le clic sur `timeline-zoom-out` ci-dessus fait
+    // REMONTER la page (Playwright défile jusqu'au bouton avant de cliquer) et
+    // re-sort la lane de la bande. Mesuré sur une frise de 71 lanes, compteur de
+    // pastilles : au chargement 0, après parade 1, après le clic zoom-out 0, après
+    // parade re-posée 1. Les assertions du test sont inchangées.
+    await revealSeededLane(page, { category: cat.name, product: product.name })
     const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${product.name}"]`)
     await pill.focus()
     await pill.press('Enter')
@@ -1037,6 +1057,10 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     })
 
     await gotoTimeline(page)
+    // #467 — même mécanisme que la spec `live-region` ci-dessus : sans ce
+    // défilement, les deux pastilles colorées ne sont pas montées et les
+    // assertions de contraste portent sur un DOM vide.
+    await revealSeededLane(page, { category: cat.name, product: product.name })
 
     await expect(
       page.locator('[data-testid="timeline-event-outside-label"]').filter({ hasText: lowContrastTitle }),
