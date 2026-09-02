@@ -3128,6 +3128,35 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 65 — 2026-09-02 (En cours)
+
+**Objectif :** Bornage temporel des récurrences + fiabilité du harnais E2E
+**Milestone GitHub :** #66
+**Issues (4) :** #451, #452, #469, #470
+**Vagues :** V1 = #452 + #451 + #469 (parallèles, fichiers disjoints) | V2 = #470 (après #469, `playwright.config.ts` partagé)
+**Cohésion :** 0.0 entre les paires (#451+#452 = `epic:events` 1.0 ; #469+#470 = `epic:infrastructure` 1.0). Périmètre élargi sur décision dev (2026-09-02) : les 4 issues du milestone, au-dessus du garde-fou ≤3 issues/~10 pts du skill.
+**Migrations Flyway :** V16 (suppression des récurrences sans date de fin — cf. décision produit ci-dessous)
+**Dépend de :** Sprint 64 (merge PR #468 dans `dev`, `54bcf30`)
+
+**Décision produit #452 (tranchée par le dev, 2026-09-02) — les 3 questions exigées par l'issue :**
+1. Borne temporelle backend **seule** : un plafond en années s'ajoute aux 4000 occurrences de
+   `RecurrenceExpansion.MAX_OCCURRENCES`.
+2. `recurrenceEndDate` **reste hors du DTO de création** — **BR-EVE-012 inchangée**, pas de
+   modification du formulaire de création.
+3. Données existantes : **supprimées** (aucune donnée réelle en base à ce jour). Si un test a
+   besoin d'une récurrence, il lui pose une date de fin explicite.
+
+**État d'entrée #451 (`possibly_done`, vérifié en Phase 0.5) :** le correctif de code est **déjà
+dans `dev`** — `3dcc5ea` (`fix(timeline): ancre le defilement sur le temps, pas sur les pixels`,
+PR #449, 2026-08-31) a introduit `anchorDaysRef` + le `useLayoutEffect` sur `dayWidth`
+(`TimelineView.tsx:895-912`) qui re-projette `scrollLeft` au changement d'échelle en préservant le
+repère PISTE de #392. Le corps de l'issue décrit un code (`TimelineView.tsx:795-820`) qui n'existe
+plus. Reste à couvrir : le **test de non-régression** du cas mesuré (clamp horizontal), absent —
+la spec la plus proche (`timeline.spec.ts:977`) dézoome et asserte une pastille, mais via
+`revealSeededLane`, parade à la virtualisation **verticale**, donc elle n'épingle pas le clamp.
+
+**Status :** En cours
+
 ## Sprint 64 — 2026-09-01 → 2026-09-02 (Terminé — merge PR #468 dans `dev`)
 
 **Objectif :** rendre la chaîne E2E diagnosticable et représentative — un échec en CI doit laisser
