@@ -3137,8 +3137,15 @@ plusieurs de catégorie `tooling`.
 **Dépend de :** Sprint 65 (merge PR #474 dans `dev`, `97aba4a`)
 **Planification :** plan architect `ade986f` (replanification S64-S68) jamais mergé dans `dev` — importé et vérifié à l'ouverture, cf. `docs/memory/sprints/sprint-66/architect-plans.md` (7 faits vérifiés, dont : sous `lg` seul le dashboard a une chrome mobile ; la doc DS `mobile-keyboard.md` citée par #79 n'existe pas ; 4 bottom sheets et non 3).
 **Hors milestone :** #475, #476, #478 (follow-ups du S65 garés dans ce milestone, non labellisés `sprint-66`) — à détacher avant fermeture du milestone.
-**Limite assumée :** le comportement réel du clavier virtuel (iOS/Android) exige un device — non couvrable en CI.
-**Status :** En cours
+**Limite assumée :** le comportement réel du clavier virtuel (iOS/Android) exige un device — non couvrable en CI (E2E avec `visualViewport` stubbé = oracle de câblage).
+**Designer (ui-design, pré-implem) :** #455 → FAB `<button>` natif 52×52 `lg:hidden` dans `AppShell` (seul point commun aux 4 écrans), `z-sticky` sous `z-modal`, testid `shell-mobile-new-event-button` ; #79 → bornage `maxHeight`/`top` sur `visualViewport`, `.mt-sheet__footer` (68 px, token `--space-17`), props opt-in `compact`/`footerPortalNode` sur `EventEditForm`, mode réduit = couleur + récurrence masquées, oracles `data-keyboard`/`data-compact`.
+**Commits code :** `a5b18d5` (#455, 4 fichiers, +435/−9) · `f24ef96` (#79, 11 fichiers, +1433/−202)
+**Tests (runs réels, HEAD `aaf85e2`) :** Vitest 1030/1030 (102 fichiers, baseline 1004) · `tsc` 0 erreur · E2E 246 tests : 238 passed / 0 failed / 8 skipped (7,8 min, `workers: 2`, backend e2e `:8086`) · contrôles négatifs joués sur les 2 issues (5 mutations, toutes rougissent)
+**Reviews :** batch — 0 CRITIQUE / 0 MAJEUR code / 2 MINEUR (non corrigés, documentés) → PRET_POUR_MERGE, pas de cycle 2 nécessaire. `docs/memory/sprints/sprint-66/review-batch.md`
+**Audit tests :** `docs/memory/audits/sprint-66-test-coverage.md`
+**Follow-ups signalés (à trier en /sprint end) :** #455 → padding bas de sécurité sous 1024 px sur timeline/products/settings (P3) ; FAB tabulable derrière la sheet (P3, sans effet tant que `useFocusTrap` tient). #79 → test appareil réel iOS/Android ; câbler ou retirer le slot `footer` de `BottomSheet` (prop sans appelant prod) ; auditer les `duration-*` posées sans `transition-*`.
+**Signaux `[MEMORY:*]` (à consolider en /sprint end) :** 7 — 2 pitfalls (déclencheur unique sous `hidden lg:flex` ; `duration-*` seule arme `transition: all`), 3 patterns (RTL câblage + E2E palier dans les deux sens + contrôle négatif ; rangée d'actions portalisée dans `panelRef` + `form={id}` ; stub d'API à événements qui mute ET dispatch), 2 décisions (`<button>` natif 52 px vs `Button size="icon"` 36 px ; slot `footer` exposé non câblé).
+**Status :** En cours (PR ouverte, merge via /sprint end)
 
 ## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
 
