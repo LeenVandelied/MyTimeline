@@ -3155,7 +3155,26 @@ plus. Reste à couvrir : le **test de non-régression** du cas mesuré (clamp ho
 la spec la plus proche (`timeline.spec.ts:977`) dézoome et asserte une pastille, mais via
 `revealSeededLane`, parade à la virtualisation **verticale**, donc elle n'épingle pas le clamp.
 
-**Status :** En cours
+**Commits :** 9 (1 cadrage, 1 par issue, 1 retrait V16, 1 mesure, 1 correctifs de review)
+**Tests :** Backend 465/465 · Frontend unitaire 1004/1004 (101 fichiers) · E2E 232/240 passed, 8 skipped, 0 failed (`workers: 2`)
+**Reviews :** batch — 0 CRITIQUE / 3 MAJEUR / 1 MINEUR, **tous résolus au cycle 2** (`aa57109`) ; db-expert sur V16 → migration retirée
+**Audit tests :** `docs/memory/audits/sprint-65-test-coverage.md`
+
+**Deux erreurs d'orchestration du lead, consignées pour la mémoire :**
+1. **Vagues découpées sur les fichiers, pas sur les ressources d'exécution.** #451 et #469 avaient
+   des fichiers disjoints mais partageaient le harnais E2E : #451 devait le FAIRE TOURNER pendant
+   que #469 le RÉÉCRIVAIT. L'agent de #451 s'en est sorti en isolant son harnais (`git archive`
+   dans un répertoire jetable) — parade de lui, pas du plan.
+2. **Un résultat rouge publié alors qu'il venait de ma propre interférence.** Ma campagne de mesure
+   de #469 tournait en même temps qu'une campagne encore vivante du subagent, les deux écrivant
+   dans les MÊMES fichiers de log d'un scratchpad partagé et partageant `e2e/.auth/`. J'ai conclu
+   « le correctif ne tient pas » ; le subagent m'a réfuté, preuve à l'appui (`M1.log` contenait DEUX
+   résumés finaux). Diagnostics fautifs : `find -maxdepth 4` trop court pour atteindre le scratchpad
+   (« pas de logs » ≠ « runs morts ») et un `ps` tombé entre deux runs. Parade adoptée : compter les
+   blocs `Running N tests using M workers` par log (doit valoir 1) et utiliser un répertoire de logs
+   horodaté unique.
+
+**Status :** Terminé (implémentation) — PR ouverte, en attente de merge
 
 ## Sprint 64 — 2026-09-01 → 2026-09-02 (Terminé — merge PR #468 dans `dev`)
 
