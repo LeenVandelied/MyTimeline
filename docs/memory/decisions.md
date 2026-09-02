@@ -552,3 +552,15 @@ Nouveau palier **`--z-popover-over-modal: 75`**, entre `--z-modal` (70) et `--z-
 
 ## DEC-S63-004 — Une spec d'audit se conserve ARMÉE, pas en constat
 `sprint-63-de-overflow-audit.spec.ts` est conservée avec son assertion `expectNoPageOverflow` active et **vue rouge par contrôle négatif** (ancien `className` du footer remis). Le raisonnement est le même que pour toutes les gardes du sprint : « un verrou qui ne peut pas rougir est un décor ». Corollaire assumé : la spec **n'était pas encore dans la CI** au moment de l'audit — une garde hors CI ne protège rien. (Sprint 63 #74)
+
+## DEC-S64-001 — `workers: 1` en local pour l'E2E, assumé comme PARADE et non comme correctif
+Seule valeur mesurée où un run local complet est **interprétable** : 230 passed / 1 failed en 9,0 min, 0 `ECONNREFUSED` (et 229/2 en 6,8 min à la re-mesure sur le chemin par défaut). 2 workers satisfaisait l'oracle mais rouvrait `PIT-S64-003`. **La cause racine de la mort de `next dev` n'est pas connue** — c'est écrit dans le fichier, avec l'interdiction d'abaisser la valeur une fois de plus en silence si le symptôme revient. Aligne aussi le local sur le `--workers=1` du runbook S47 que `test-quiet.sh e2e` contournait (`PIT-S49-006`). (Sprint 64 #465)
+
+## DEC-S64-002 — Deux serveurs de production sur deux ports, plutôt qu'un kill/relance entre les passes
+Choix dicté par le **mode d'échec**, pas par l'élégance : un `kill` raté laisse la passe 2 tourner sur le serveur dégradé, **verte et vide** ; un `:3001` absent donne une connexion refusée, bruyante et immédiate. On échange une panne silencieuse contre une panne visible. Un seul `next build` suffit : `middleware.ts` lit `AUTH_JWT_PUBLIC_KEY` au runtime, seuls les process diffèrent. (Sprint 64 #462)
+
+## DEC-S64-003 — `if-no-files-found: warn` sur l'upload d'artefact Playwright
+Sans lui, un dossier absent fait **rougir le step d'upload** et masque l'échec de test réellement à diagnostiquer — l'inverse du but de #461. (Sprint 64 #461)
+
+## DEC-S64-004 — Deux arbitrages de périmètre pris avant tout développement
+(1) **#465 re-scopée** : critère « cause racine identifiée » retiré au profit d'une parade mesurée — une occurrence unique, non reproductible, rendait l'issue non closable (schéma déjà payé aux S62 et S63). (2) **#427 absorbée dans #462** : #462 supprime le `webServer` en CI mais le conserve en local, où le défaut de #427 survit — il y avait déjà fait dérailler les sprints 47, 56 et 57. Sa piste principale (bloc `env` dans `webServer`) est invalidée par `PIT-S58-003` ; seule tient la 2e, l'échec précoce. (Sprint 64)

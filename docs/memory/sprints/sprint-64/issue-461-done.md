@@ -89,7 +89,13 @@ c'est la meilleure forme, et elle est promue en `[MEMORY:pattern]` ci-dessous.
 - **RECOMMAND_FOLLOWUP** — supprimer la branche distante `chore/461-artifact-proof` (`104b209`).
   `git push origin --delete` est une opération destructive : **laissée en place volontairement**,
   à reconfirmer avec le dev. PR #466 déjà CLOSED.
-- **RECOMMAND_TEST_RUNNER** — **second échec, non lié à ce diff** :
+- **Pas de RECOMMAND_TEST_RUNNER ouvert — signal levé puis CLOS le 2026-09-02.** Le specialist
+  retenu n'a volontairement **pas** été un `test-runner` : le signal ne demandait pas de rejouer une
+  suite, mais de **diagnostiquer une trace**, et l'échec était déterministe 3/3 — il n'y avait rien
+  à re-mesurer. Un `playwright-reviewer` a donc été spawné, et son verdict est consigné dans
+  `docs/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md` : **FLAKE structurel** de
+  virtualisation verticale, sans lien avec ce sprint, suivi par l'issue **#467** (P1, Sprint 65).
+  Le fait d'origine, conservé pour mémoire — **second échec, non lié à ce diff** :
   `timeline.spec.ts :: live-region : contenu réel annoncé (zoom puis event sélectionné)`,
   **3/3 tentatives rouges** sur le run 33563972215.
   Le lead a vérifié : la CI sur `dev` au commit `a5f4636` était **verte** (run `33431893101`,
@@ -99,6 +105,13 @@ c'est la meilleure forme, et elle est promue en `[MEMORY:pattern]` ci-dessous.
   La trace est disponible : `test-results/timeline--330-Minimap-…-retry1/trace.zip` (2 638 794 o),
   artefact du run 33563972215, rétention 7 jours → **expire le 2026-09-08**.
   C'est exactement le service que #461 vient de rendre.
+
+  **→ SIGNAL TRAITÉ (2026-09-02).** Le specialist retenu n'est **pas** un `test-runner` mais un
+  `playwright-reviewer` : le signal ne demandait pas de rejouer une suite (ce qu'aurait fait un
+  test-runner) mais de **diagnostiquer une trace**, et l'échec était déterministe 3/3, donc rien à
+  re-mesurer. Résultat : `docs/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md` —
+  verdict **FLAKE structurel** de virtualisation verticale, sans lien avec ce sprint, suivi par
+  l'issue **#467** (P1, milestone Sprint 65). Aucun `RECOMMAND_TEST_RUNNER` ne reste ouvert.
 
 ## Non vérifié
 

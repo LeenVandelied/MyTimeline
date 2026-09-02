@@ -3128,14 +3128,15 @@ plusieurs de catégorie `tooling`.
 
 ---
 
-## Sprint 64 — 2026-09-01 (EN COURS — chaîne E2E/CI : artefacts d'échec, build de production, stabilité locale)
+## Sprint 64 — 2026-09-01 → 2026-09-02 (Terminé — merge PR #468 dans `dev`)
 
 **Objectif :** rendre la chaîne E2E diagnosticable et représentative — un échec en CI doit laisser
 une preuve téléchargeable, la suite doit valider un build de production et non un serveur de dev,
 et un run local complet ne doit plus mourir sous sa propre charge.
-**Milestone GitHub :** #65
-**Issues (4) :** #461, #465, #462, #427
-**Vagues :** V1 = #461 | V2 = #465 | V3 = #462 (+ #427 absorbée) — **strictement séquentielles**
+**Milestone GitHub :** #65 (fermé après merge — 5 issues, 0 ouverte)
+**Issues livrées (5) :** #461, #465, #462, #427, **#467** (absorbée en clôture)
+**Vagues exécutées :** V1 = #461 | V2 = #465 | V3 = #462 (+ #427 absorbée) — **strictement
+séquentielles** (les 4 issues touchaient toutes `playwright.config.ts` : parallélisme nul)
 **Migrations :** aucune — sprint 100 % outillage E2E/CI
 **Dépend de :** Sprint 63 (les 3 issues du milestone en sont des follow-ups directs)
 **Cohésion :** 1.00 sur le label epic (`epic:infrastructure` pour #461/#462/#465, `epic:devops`
@@ -3198,8 +3199,85 @@ sprint. Ce point n'était identifié par aucune des issues.
    doivent être posées au `next build` (PIT-S58-003 : les rewrites sont sérialisées dans
    `routes-manifest.json`). Oracle avant toute conclusion : `curl /api/auth/me` → 401.
 
-**Status :** **En cours** — ouvert le 2026-09-01 sur `sprint/64` (base `origin/dev` à `a5f4636`).
-Titre et ligne `Status` volontairement redondants (`PIT-S56-006`).
+### Bilan
+
+**Commits :** 18 · **Migrations :** aucune — sprint 100 % outillage, aucun fichier source
+applicatif touché avant l'absorption de #467
+**BR impactées :** aucune
+**Tests :** `tsc` EXIT=0 · `next build` EXIT=0 (~22 s) · lint EXIT=0 · Vitest **1004/1004** ·
+backend **462/462** · E2E **229 passed / 2 failed** puis **tout vert après #467**
+**Reviews :** batch en **2 cycles** — cycle 1 : 0 CRITIQUE / 3 MAJEUR / 3 MINEUR (tous corrigés
+dans `9c774e4`) ; cycle 2 **sur le commit de correction lui-même** : 0 CRITIQUE / 0 MAJEUR, les
+6 correctifs vérifiés **armés** sur pièce
+**Nouveaux :** `PIT-S64-001..009`, `PAT-S64-001..003`, `DEC-S64-001..004` (+ `PIT-S63-017` enrichi)
+
+### Le résultat le plus net : le job `e2e` a RACCOURCI
+
+| | Durée |
+|---|---|
+| Avant (run `33431893101`) | 13 min 14 s |
+| Après (`next build` + 2 serveurs de production) | **8 min 01 s** puis 8 min 10 s et 8 min 58 s |
+
+**−36 % en moyenne.** Les ~28 s de `next build` sont plus que compensées par la disparition des
+compilations à froid de `next dev` et de l'attente de démarrage. On a gagné **à la fois** en
+représentativité et en durée — ce qui n'était donné que comme hypothèse en Phase 3.
+
+### Ce qui a été prouvé, et comment
+
+Chaque affirmation est adossée à une mesure, jamais à un run vert :
+
+| Affirmation | Preuve |
+|---|---|
+| Un échec E2E laisse un artefact exploitable | Échec **provoqué** sur PR jetable (run `33563972215`) : 8,9 Mo, `index.html` de 1,1 Mo, 4 `trace.zip`. **Et resservi deux fois pour de vrai** pendant la clôture |
+| La passe 2 RS256 exerce **encore** le mode vérifiant | **Contrôle négatif** : 12/12 sur le serveur vérifiant, **5 rouges** sur le dégradé |
+| Le prérendu de production ne casse pas `/_not-found` | 5 tests rejoués **un par un** contre `next start` — 13/13 |
+| `workers: 1` empêche la mort du serveur | Run complet par le **chemin par défaut** (turbopack via `webServer`) : 0 `ECONNREFUSED` |
+| Le correctif #467 ne dépend pas du volume | Validé à 62 lanes en local, **vert en CI à 99 lanes** sur 2 runs |
+
+### Les trois découvertes qui ont changé le travail
+
+1. **Aucune CI ne tourne sur `sprint/64`** (`ci.yml:35-39`). Le premier vrai run d'un sprint est
+   l'ouverture de sa PR — d'où la PR jetable pour prouver #461.
+2. **#462 appliquée naïvement aurait cassé la 2e passe RS256, en silence** : `PLAYWRIGHT_BASE_URL`
+   met `webServer` à `undefined`, supprimant le redémarrage entre les passes. La passe serait
+   restée **verte sans plus rien exercer**.
+3. **Les 3 MAJEUR de la review mentaient aussi** : `$!` capturait le PID de `npx` et non de
+   `next start` (le step d'arrêt déclarait arrêter ce qu'il n'arrêtait pas), le step de démarrage
+   **ne pouvait jamais échouer**, et **aucun `timeout-minutes` n'existait nulle part** dans le
+   workflow.
+
+### #467 absorbée en clôture — le flake était devenu un gate
+
+Sur les 3 premiers runs CI du sprint, **2 étaient rouges** à cause de la famille de flakes de
+virtualisation. Diagnostiquée en vague 1 sur l'artefact que #461 venait de rendre disponible
+(76 puis 99 lanes contre un seuil de 60), elle a d'abord été tracée en issue, puis **absorbée** sur
+arbitrage du dev quand elle a bloqué le merge. Correctif : `revealSeededLane()`
+(`frontend/e2e/support/timeline-lanes.ts`), sans toucher au produit ni affaiblir une seule
+assertion. Le commentaire d'`ADR-007` qui portait l'hypothèse fausse a été corrigé.
+
+**Absorbé en cours (XS) :** `frontend/.gitignore` ne couvrait pas `*.log` (`7274b24`).
+
+**Follow-ups arbitrés (Phase 4 triage) — ratio discard 0/7 :**
+  - `frontend/.gitignore` sans `*.log` [XS] → **absorbé** (`7274b24`)
+  - Sortir `RUN` du scope module de `accounts.ts` [M] → issue **#469** (Sprint 65)
+  - `--pass-with-no-tests` sur `test:e2e` [XS] → issue **#470** (Sprint 65)
+  - Cause racine de la mort de `next dev` [L] → issue **#471** (backlog libre)
+  - 2 flakes E2E résiduels découverts pendant #467 [M] → issue **#472** (backlog libre)
+  - Mesurer la durée réelle du job `e2e` → **fait** (8 min 01 s), consigné ici
+  - Supprimer la branche jetable `chore/461-artifact-proof` → **fait** (après confirmation du dev)
+
+### Ce qui reste non prouvé
+
+- **La survie d'un serveur orphelin après le step d'arrêt n'a jamais été observée** : le PID est
+  faux par construction, mais `npm` a relayé le SIGTERM dans l'essai. Le commentaire du fichier le
+  dit sans surclamer.
+- **La mort du serveur à ~5 workers n'a pas été reproduite** : la parade #465 est calibrée sur un
+  symptôme documenté au S63, pas rejoué ici.
+- **Les 2 flakes de #472 n'ont jamais été vus en CI**, seulement en local sur 5 runs.
+- L'oracle `curl → 401` n'a pas été rejoué pendant la fenêtre de la re-mesure E2E de #465.
+
+**Status :** **Terminé** — PR **#468** (`sprint/64` → `dev`) mergée le 2026-09-02, milestone #65
+fermé. Titre et ligne `Status` volontairement redondants (`PIT-S56-006`).
 ---
 
 ## Sprint 63 — 2026-08-31 (Terminé — merge PR #449 dans `dev`)
