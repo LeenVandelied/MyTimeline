@@ -132,12 +132,17 @@ journalise explicitement :
 ```
 WARN  JwtService : jwt.private-key (JWT_PRIVATE_KEY) non configurée : paire RS256 ÉPHÉMÈRE
       générée au démarrage. Tous les jetons émis seront invalidés au prochain redémarrage.
-INFO  JwtService : Clé PUBLIQUE de vérification RS256 — valeur à poser dans AUTH_JWT_PUBLIC_KEY…
+INFO  JwtService : Clé PUBLIQUE de vérification RS256 (SPKI Base64) : MIIBIjANBgkq…
 ```
 
 Conséquence : après un `docker compose restart`, tous les cookies de session émis avant sont
 signés par une clé qui n'existe plus, donc **tout le monde est déconnecté**. C'est **voulu**,
 ce n'est pas un bug — mais c'est déroutant la première fois.
+
+> Depuis #358, cette valeur journalisée n'est plus à recopier nulle part : le frontend découvre
+> la clé publique sur `GET /.well-known/jwks.json`. Le log reste un outil de DIAGNOSTIC (savoir
+> d'un coup d'œil quelle clé un backend donné utilise). La variable `AUTH_JWT_PUBLIC_KEY` n'existe
+> plus côté frontend — c'est `AUTH_JWKS_URL` qui la remplace.
 
 Pour figer les sessions, générer une clé et la poser dans `.env` (recette complète, avec le
 `tr -d '\n'` qui n'est pas cosmétique, en tête de `.env.example`) :
