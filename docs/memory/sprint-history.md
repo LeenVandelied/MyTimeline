@@ -3128,6 +3128,130 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 67 — 2026-09-03 (En cours)
+**Objectif :** résorber la dette CVE des dépendances npm frontend et réparer l'outil qui la corrige
+**Milestone GitHub :** #68
+**Issues (3) :** #435 (S, P2, `frontend`), #182 (S, P3, `epic:devops`), #438 (M, P1, `epic:devops`)
+**Cohésion :** 1.00 — les 3 issues portent sur `frontend/package.json` + `package-lock.json`
+**Vagues :** V1 = #435 seule (débloque `npm audit fix`) | V2 = #182 + #438 dans UN SEUL agent (même lockfile, même vérification d'audit) | V3 = test-runner + review batch
+**Parallélisme : AUCUN.** Les 3 issues écrivent le même `package-lock.json`. Cf. [[sprint-wave-shared-frontend-runtime]] : la matrice de l'architect raisonne sur les fichiers source et ne voit pas le graphe npm — deux agents concurrents produiraient deux résolutions d'arbre incompatibles.
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 66 (merge PR #479 dans `dev`, `3e05f26`)
+**Branche :** `claude/sprint-67-start-a731f5` (worktree) — pas de branche `sprint/67`, cf. convention projet
+**Planification :** AUCUN plan architect. Le milestone #68 et les labels `sprint-67` viennent du triage de clôture des sprints précédents ; `/sprint plan` n'a jamais tourné pour ce sprint. Aucun `architect-plans.md` — les briefings sont construits sur l'état vérifié ci-dessous, pas sur un mini-plan.
+
+### Dérive des énoncés d'issue constatée à l'ouverture (vérifiée, pas supposée)
+
+Mesuré sur `3e05f26`, worktree propre, `npm audit` réel :
+
+| Vérification | Résultat |
+|---|---|
+| `npm audit fix --dry-run` | **échoue** — `npm error Unable to resolve reference $postcss` → #435 confirmée, et elle bloque les deux autres |
+| Étape CI bloquante (deps PROD, `--omit=dev`) | **verte**, 0 vulnérabilité |
+| Étape CI informative (dev+prod) | **7 HIGH + 1 moderate**, toutes `fixAvailable=true` |
+| `@eslint/eslintrc@3.3.6` | épingle toujours `minimatch@3.1.5` → `brace-expansion@1.1.16` |
+
+Deux énoncés sont **périmés** :
+
+1. **#438** parle de « 6 HIGH résiduelles, toutes `eslint`/`brace-expansion`, non corrigeables ».
+   L'arbre réel porte 7 HIGH dont **une seule** dans la chaîne eslint. Les autres sont nouvelles et
+   sans rapport : `fast-uri` (SSRF / host confusion), `js-yaml` (CPU quadratique), `browserslist`
+   (OOM), `image-size` ← `vite-plugin-storybook-nextjs` ← `@storybook/nextjs-vite`.
+2. **#182** vise « vite, vitest, flatted, minimatch, picomatch ». **Cette chaîne n'existe plus** :
+   elle a été résorbée entre-temps. La chaîne Storybook restante passe par `image-size`.
+
+La condition de sortie inscrite dans `.github/workflows/ci.yml` (« À REVOIR dès que
+`@eslint/eslintrc` passe à `minimatch@10` ») n'est **pas** remplie : eslintrc 3.3.6 est la dernière
+version et reste sur `minimatch@3.1.5`. L'argument documenté au S45 (forcer `brace-expansion@5.0.8`
+casse `minimatch@3`, qui appelle `expand` comme une fonction) reste donc à re-tester, pas à
+recopier — `npm` annonce désormais `fixAvailable=true` sur cette entrée.
+
+**Arbitrage dev (2026-09-03) :** périmètre élargi à **l'ensemble des 7 HIGH actuels**, pas au seul
+texte des issues. Objectif : audit dev+prod au vert, ou justification écrite par résiduel. Les corps
+de #182 et #438 sont à corriger sur GitHub pour refléter l'arbre réel.
+
+### Arbitrage dev n°2 (2026-09-03) — étape `npm audit` de la CI
+
+`.github/workflows/ci.yml` est un pipeline CI : modification soumise à confirmation explicite
+(règle globale du dev). Question posée, réponse : **garder les deux étapes en l'état**
+(PROD bloquante + dev/prod `continue-on-error`), et **corriger le bloc de commentaires du S45**,
+devenu faux.
+
+Écarté sciemment : refusionner en une seule étape bloquante — ce que `ci.yml` prévoyait pourtant
+lui-même. Motif : la prochaine CVE publiée dans une devDep bloquerait tous les merges vers `dev`,
+et ce sprint démontre que cela arrive souvent. La baseline verte suffit à rendre un rouge
+significatif, sans coût de blocage — même logique que le job `security` réparé au S60
+([[mytimeline-ci-required-checks-sha-race]] : « CLEAN est le normal, UNSTABLE est un vrai signal »).
+
+Le lead applique ce changement lui-même après la vague 2 : les agents ont interdiction de toucher
+à `ci.yml`, et le commentaire ne peut être écrit correctement qu'une fois l'audit final connu.
+
+### Résultat
+
+`npm audit` frontend (dev+prod) : **8 → 0** (1 moderate + 7 high résorbées).
+Étape CI **bloquante** (`--omit=dev --audit-level=high`) : 0 avant, 0 après, aux trois mesures.
+
+| Commit | Issue | Fichiers |
+|---|---|---|
+| `9e6e3ea` | #435 | `frontend/package.json`, `frontend/README.md` |
+| `24ff500` | #182 | `frontend/package-lock.json` |
+| `b7f05ee` | #438 | `frontend/package-lock.json` |
+| `64e0616` | #438 | `.github/workflows/ci.yml` (lead, 100 % commentaires) |
+
+4 fichiers au total, **aucun code applicatif** — ni `.ts`, ni `.tsx`, ni `.java`, ni `.sql`.
+
+### Le fait marquant : un « blocage amont » faux pendant ~20 sprints
+
+`ci.yml` documentait depuis le S45 que `brace-expansion` était **incorrigible en aval** (« 5.0.8
+change sa forme d'export, le forcer casse le lint : `expand is not a function` »). Cette phrase a
+été recopiée telle quelle dans l'énoncé de #438, et l'a orienté vers un simple arbitrage documentaire.
+
+Elle est fausse. `minimatch@3.1.5` déclare `brace-expansion: ^1.1.7` : la **1.1.18**, publiée depuis,
+y entre — la branche 5.x n'est jamais sollicitée, la forme d'export est préservée. Mesuré, pas
+déduit : `typeof require(...) === "function"`, `minimatch('abc.js','*.{js,ts}') === true`, et
+`npm run lint` exit 0 avec **0 occurrence** de `expand is not a function` (confirmé indépendamment
+par le `test-runner`).
+
+> Un blocage amont n'est pas un acquis. Il se périme **silencieusement** le jour où l'amont publie
+> un patch dans la plage semver déjà déclarée : rien ne le signale, et le verdict survit dans un
+> commentaire de CI puis dans les énoncés d'issues qui le citent.
+
+Les 8 entrées étaient **toutes** des patchs in-range. `npm audit fix` n'a jamais été nécessaire :
+méthode retenue = lire les plages déclarées dans le lock, puis `npm update` ciblé
+(`PIT-S31-001` : `audit fix` tire des majeurs non voulus ; `PIT-S45-006` : une 2e passe aggrave).
+
+### Deux corrections de mesure du lead, consignées
+
+1. **Mon relevé `npm audit fix --dry-run` était incomplet.** Il ne montrait pas le downgrade
+   `oxc-resolver 11.23.0 → 11.21.2` (+ 19 bindings). L'agent l'a trouvé en diffant le lockfile, l'a
+   déclaré spontanément, et l'a expliqué : `storybook@10.6.0` l'épingle en exact `"11.21.2"`.
+   Diffé le lock > se fier au résumé du lead.
+2. **Le compteur « added 195 packages » de npm affole pour rien.** La churn réelle du lockfile est
+   de 15 add / 10 remove ; le reste sont des binaires de plateforme optionnels déjà au lock.
+
+### Tests (vérification indépendante, agent `test-runner`, 485 s)
+
+`build` 0 · `lint` 0 · **1030/1030** (102 fichiers) · `typecheck` 0 · `build-storybook` 0.
+Baseline pré-travaux relancée : 1030/1030 — **écart nul**. **Aucun écart** entre les rapports des
+agents d'implémentation et la mesure indépendante.
+E2E Playwright **non lancés** (dit, pas déguisé en vert) : hors périmètre, aucune surface applicative
+touchée. `[COVERAGE-E2E] OK` — aucun `.tsx` modifié, donc rien à citer (`PIT-S61-005` : ce check
+n'a jamais prouvé qu'une spec passe).
+
+Audit : `docs/memory/audits/sprint-67-test-coverage.md`.
+
+### Limites assumées
+
+- E2E non exécutés.
+- Downgrade `oxc-resolver` subi (pin exact amont) : couvert par build/lint/tests/build-storybook,
+  sans vérification spécifique au-delà.
+- L'audit est vert **à cette date** — une CVE publiée demain sur une devDep le repassera au rouge.
+  C'est désormais l'usage attendu de l'étape informative, dont la baseline est verte.
+
+**Status :** En cours
+
+---
+
 ## Sprint 66 — 2026-09-02 → 2026-09-03 (Terminé — merge PR #479 dans `dev`)
 **Objectif :** rendre la création d'événement atteignable et utilisable sous 1024 px
 **Milestone GitHub :** #67
