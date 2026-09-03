@@ -3144,8 +3144,15 @@ plusieurs de catégorie `tooling`.
 **Reviews :** batch — 0 CRITIQUE / 0 MAJEUR code / 2 MINEUR (non corrigés, documentés) → PRET_POUR_MERGE, pas de cycle 2 nécessaire. `docs/memory/sprints/sprint-66/review-batch.md`
 **Audit tests :** `docs/memory/audits/sprint-66-test-coverage.md`
 **Follow-ups signalés (à trier en /sprint end) :** #455 → padding bas de sécurité sous 1024 px sur timeline/products/settings (P3) ; FAB tabulable derrière la sheet (P3, sans effet tant que `useFocusTrap` tient). #79 → test appareil réel iOS/Android ; câbler ou retirer le slot `footer` de `BottomSheet` (prop sans appelant prod) ; auditer les `duration-*` posées sans `transition-*`.
-**Signaux `[MEMORY:*]` (à consolider en /sprint end) :** 7 — 2 pitfalls (déclencheur unique sous `hidden lg:flex` ; `duration-*` seule arme `transition: all`), 3 patterns (RTL câblage + E2E palier dans les deux sens + contrôle négatif ; rangée d'actions portalisée dans `panelRef` + `form={id}` ; stub d'API à événements qui mute ET dispatch), 2 décisions (`<button>` natif 52 px vs `Button size="icon"` 36 px ; slot `footer` exposé non câblé).
-**Status :** En cours (PR ouverte, merge via /sprint end)
+**Mémoire consolidée (7 signaux `[MEMORY:*]`, /sprint end 2026-09-03) :**
+  - `pitfalls.md` : **PIT-S66-001** (action centrale avec un seul déclencheur sous `hidden lg:flex` — morte sous le palier sans test rouge), **PIT-S66-002** (`duration-*` seule arme `transition: all` → un `max-height` inline s'anime, lire `el.getAnimations()`)
+  - `patterns.md` : **PAT-S66-001** (prouver « visible sous N px » : RTL câblage + unicité, E2E palier dans les deux sens + contrôle négatif), **PAT-S66-002** (rangée d'actions portalisée DANS `panelRef`, ref callback + `useState`, `form={id}`), **PAT-S66-003** (stub `visualViewport` qui mute ET dispatch, drapeau `pending` ≠ id rAF)
+  - `decisions.md` : **DEC-S66-001** (`<button>` natif 52 px dans le shell vs `Button size="icon"` 36 px), **DEC-S66-002** (slot `footer` de `BottomSheet` exposé, non câblé)
+  - `bugs-resolved.md` : **BUG-S66-001**
+  - packs `pit-*` régénérés (2 entrées classées `frontend`) ; `docs/memory/sprints/sprint-66/ui-design-decisions.md` archive les 2 specs designer
+**PR :** #479 (`claude/sprint-66-start-ebe593` → `dev`), CI 7/7 verte sur `12f50b4`, `mergeStateStatus: CLEAN` avant consolidation
+**Saturation contexte lead (mesure) :** ~27 % du budget (opus) à l'ouverture de la clôture
+**Status :** En cours (PR #479 ouverte — triage des follow-ups puis merge via /sprint end)
 
 ## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
 
