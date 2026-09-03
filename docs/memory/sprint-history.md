@@ -4084,3 +4084,61 @@ Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 Bilan triage : 2 issues créées (backlog), 1 absorbée, 1 déjà traitée, **0 discard**.
 
 **Status :** Terminé — merge PR #490 dans `dev` (merge commit `e070f828`, CI 7/7 verte sur le SHA de tête `05c6c51`). Milestone #70 fermé, issues #439 et #67 fermées après merge.
+
+## Sprint 70 — 2026-09-03 (En cours — Aperçu du drawer de création : position + rendu)
+**Objectif :** rendre l'aperçu live *sticky en haut* du drawer de création (handoff §6), puis
+vérifier de visu le rendu de la mini-frise livrée au S46 en thème clair ET sombre.
+**Milestone GitHub :** #71
+**Issues (2) :** #326 (S, P2, `epic:design`, `frontend`), #325 (S, P2, `epic:design`, `frontend`)
+**Cohésion :** 1.00 — même surface (`EventEditForm` → `EventPreviewTimeline` dans `NewEventDrawer`),
+même epic, même section de spéc (`docs/design/graphite-handoff.md` §6).
+**Migrations Flyway :** aucune (prochaine libre = V16, non utilisée ici)
+**Dépend de :** aucune (Sprint 69 mergé, PR #490)
+**Branche :** `claude/sprint-70-start-b946cb` (worktree harness, HEAD == `origin/dev` @ `fd954b2` au
+démarrage) — pas de branche `sprint/70`, cf. convention projet (S68/S69).
+**Planification :** AUCUN plan architect. Le milestone #71 et les labels `sprint-70` viennent du
+triage de clôture du Sprint 46 ; `/sprint plan` n'a jamais tourné pour ce sprint. Pas
+d'`architect-plans.md` — les briefings sont construits sur l'état vérifié ci-dessous.
+
+### État vérifié à l'ouverture (mesuré sur `fd954b2`, pas supposé)
+
+| Vérification | Résultat |
+|---|---|
+| `grep -rn sticky frontend/src/components/events/` | **0 hit** — aucun sticky sur l'aperçu. #326 est intégralement à faire, **aucun NO-OP**. |
+| Position réelle de l'aperçu | `EventEditForm.tsx` ~750 : dans le flux du formulaire, **après le champ Couleur**. Le handoff §6 (ligne 197) le veut « sticky en haut ». Écart réel, non corrigé depuis #315 (S46). |
+| Précédent de sticky dans ce même drawer | `.mt-sheet__footer` (#79) : nœud sorti de `.mt-sheet__body`, contenu portalisé depuis `EventEditForm` via `footerPortalNode`. Pattern maison réutilisable — pas besoin d'en inventer un second. |
+| Rendu visuel de la mini-frise | **jamais inspecté** (aveu explicite du body de #325). Conformité au handoff §6 déduite de l'usage des tokens, pas constatée. #325 est du vrai travail. |
+| Outillage de vérification visuelle | existant et éprouvé : `frontend/e2e/support/contrast.ts` + `landing-cta-contrast.spec.ts` + `sprint-62-control-focus-contrast.spec.ts` mesurent des styles **calculés** en clair ET sombre. Boucle E2E locale documentée : `docs/memory/sprints/sprint-47/e2e-local-runbook.md`. |
+
+### Arbitrages dev (2026-09-03)
+
+**n°1 — ordre des vagues INVERSÉ vs l'ordre naturel de lecture : V1 = #326, V2 = #325.**
+Les deux issues touchent la même surface (`EventEditForm.tsx`, `timeline.css`,
+`EventPreviewTimeline.tsx`) → parallélisme exclu, conflit garanti. L'ordre retenu fait
+vérifier l'aperçu **à sa position finale** : vérifier d'abord (#325) puis déplacer (#326)
+invaliderait la vérification et imposerait un second passage navigateur.
+
+**n°2 — périmètre de #326 borné au chemin CRÉATION.** Le handoff §6 couvre « création /
+édition », mais l'issue dit « drawer de création ». Étendre le sticky aux 3 surfaces d'édition
+partagées (`EventDrawer`, `TimelineEditHost`, `ConflictDialog`) élargirait le risque de
+régression (`PAT-S44-001`) sans mandat. Extension éventuelle → `RECOMMAND_FOLLOWUP`.
+
+### Écart de méthode assumé — composition des briefings (suite du S69)
+
+Briefings complets committés (`briefing-326.md` 150 Ko, `stack=frontend`), mais les
+`Agent.prompt` réellement émis sont des variantes compactes (~60 Ko) : instructions + état
+vérifié + `cp-frontend` + `br-events` + `rules-jit/{frontend,ux-patterns}` **inline** (marqueurs
+présents, garde-fou `pre-spawn-fullstack.sh` satisfait) + **pointeur** vers l'archive
+`.ai-env/context-packs/pit-frontend.md` (90 Ko, chemin versionné stable) avec ordre de lecture
+imposé. Motif identique au S68/S69 : la recopie ferait transiter l'archive deux fois par le
+contexte du lead.
+
+**Ce que ce sprint change par rapport au S69 :** le S69 s'est clôturé en constatant qu'il était
+*impossible de prouver* que les agents avaient ouvert l'archive pointée, et a laissé le choix
+ouvert (« recopie intégrale, ou ligne `fichiers de contexte lus` auditable »). **La 2ᵉ branche est
+retenue ici** : le livrable attendu de chaque briefing exige une ligne `fichiers de contexte lus`
+listant les chemins réellement ouverts, **avec un ancrage vérifiable par fichier** (identifiant de
+pitfall, numéro de ligne ou citation courte). À auditer à la clôture — et à consigner si la preuve
+est de nouveau insuffisante.
+
+**Status :** En cours
