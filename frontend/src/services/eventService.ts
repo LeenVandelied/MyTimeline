@@ -4,6 +4,7 @@ import {
   EventEditFormValues,
   RecurrencePreviewRequest,
   RecurrencePreviewResponse,
+  recurrencePreviewResponseSchema,
 } from '@/types/event'
 import apiClient from './apiClient'
 import { safeErrorMessage } from '@/lib/safe-error'
@@ -23,7 +24,10 @@ export const previewRecurrence = async (
 ): Promise<RecurrencePreviewResponse> => {
   try {
     const response = await apiClient.post('/events/recurrence-preview', payload)
-    return response.data
+    // Validation runtime du contrat #439 (zod_dto_sync) : garantit `{count, capped}`
+    // typés avant de piloter le hint. Un drift de contrat backend → erreur de query
+    // (hint masqué), jamais un `capped` fantôme lu sur une réponse malformée.
+    return recurrencePreviewResponseSchema.parse(response.data)
   } catch (error) {
     console.error('Erreur lors de la preview de récurrence :', safeErrorMessage(error))
     throw error

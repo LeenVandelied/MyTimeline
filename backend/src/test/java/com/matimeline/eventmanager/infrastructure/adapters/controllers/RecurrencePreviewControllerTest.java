@@ -138,4 +138,20 @@ class RecurrencePreviewControllerTest {
 
         verify(recurrenceExpansionService, never()).expand(any(), any(), any());
     }
+
+    @Test
+    void previewRecurrence_unknownRecurrenceUnit_returns400_andServiceNotCalled() throws Exception {
+        // Contrat figé : l'enum est bindé STRICT (majuscules WEEK/MONTH/YEAR), sans parsing
+        // tolérant. Une unité legacy minuscule ("weeks") échoue à la désérialisation Jackson
+        // -> 400, JAMAIS un 500. Le service ne doit pas être appelé. Ce comportement est le
+        // pendant backend du piège documenté côté frontend (#67).
+        String body = "{\"startDate\":\"2026-01-01\",\"recurrenceUnit\":\"weeks\"}";
+
+        mockMvc.perform(post("/api/events/recurrence-preview")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verify(recurrenceExpansionService, never()).expand(any(), any(), any());
+    }
 }
