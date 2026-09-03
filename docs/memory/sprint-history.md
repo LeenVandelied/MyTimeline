@@ -4083,4 +4083,4 @@ Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 
 Bilan triage : 2 issues créées (backlog), 1 absorbée, 1 déjà traitée, **0 discard**.
 
-**Status :** En cours — PR #490 prête au merge (CI verte, triage fait)
+**Status :** Terminé — merge PR #490 dans `dev` (merge commit `e070f828`, CI 7/7 verte sur le SHA de tête `05c6c51`). Milestone #70 fermé, issues #439 et #67 fermées après merge.
