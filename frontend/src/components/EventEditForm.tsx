@@ -342,7 +342,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    */
   const previewBlock = (
     <div>
-      <div className="text-ink mb-2 text-sm">{tDetails('preview')}</div>
+      {/* #325 — libellé de BLOC, pas de titre. `text-sm` rend **17px** ici
+          (l'échelle du DS Graphite écrase celle de Tailwind, [[PIT-S49-002]]) :
+          depuis que #326 a fait remonter l'aperçu au-dessus du pli, ce libellé
+          jouxtait le titre du drawer (19px display) et le concurrençait, alors
+          qu'il nomme un bloc. `.mt-drawer__label` est le style que le DS réserve
+          exactement à ce rôle (mono 10px capitales, `ink-muted`) — déjà porté
+          par `.mt-drawer__field` dans le même panneau. Aucune couleur littérale :
+          la classe est theme-aware par ses tokens. */}
+      <div className="mt-drawer__label mb-2">{tDetails('preview')}</div>
       <EventPreviewTimeline
         title={previewTitle}
         color={validPreviewColor}
@@ -851,9 +859,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               {/* #326 — Aperçu ÉPINGLÉ : rendu dans le nœud du parent, hors de sa zone
                   de défilement. Gardé par `!compact` — l'aperçu réduit (#79, clavier
                   virtuel) le retire de PARTOUT, le nœud hôte reste alors vide. */}
-              {!compact && previewPortalNode
-                ? createPortal(previewBlock, previewPortalNode)
-                : null}
+              {!compact && previewPortalNode ? createPortal(previewBlock, previewPortalNode) : null}
 
               {footerPortalNode ? createPortal(actionsRow, footerPortalNode) : actionsRow}
             </CardContent>

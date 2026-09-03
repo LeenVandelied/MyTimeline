@@ -62,6 +62,28 @@ export const CTA_MIN_RATIO = 4.5
 /** Tolérance de troncature, en px : sub-pixels de rendu et arrondis de bordure. */
 export const TRUNCATION_TOLERANCE_PX = 1
 
+/**
+ * Seuil WCAG 2.1 AA — composants d'interface et objets graphiques (1.4.11).
+ *
+ * S'applique aux traits qui PORTENT une information et ne sont pas du texte :
+ * le connecteur pointillé et le contour de l'occurrence fantôme de l'aperçu
+ * (#325, handoff §6) sont exactement cela — retirés, la récurrence n'est plus
+ * lisible. C'est le même arbitrage que `--color-rule-emphasis` (#293) : un
+ * filet DÉCORATIF peut plafonner à 1.2:1, un filet FONCTIONNEL non.
+ */
+export const WCAG_AA_NON_TEXT = 3
+
+/**
+ * Propriété calculée qui porte l'« encre » à mesurer.
+ *
+ * `'color'` (défaut) = le texte, seul cas jusqu'à #325. Les autres valeurs
+ * permettent de mesurer un TRAIT contre son fond composité, avec exactement la
+ * même arithmétique — plutôt qu'une seconde implémentation de la luminance
+ * WCAG, dont la première version naïve du dépôt se trompait d'un facteur ~2 sur
+ * les bleus (cf. en-tête de ce module).
+ */
+export type InkProperty = 'color' | 'borderTopColor' | 'borderBottomColor' | 'backgroundColor'
+
 export interface TextRendering {
   /** Ratio de contraste WCAG entre la couleur du texte et le fond composité. */
   ratio: number
@@ -93,8 +115,11 @@ export interface TextRendering {
  * page : le style calculé n'existe pas côté Node, et rapatrier l'arbre des
  * ancêtres pour le recomposer ici serait à la fois plus lent et plus fragile.
  */
-export async function readTextRendering(locator: Locator): Promise<TextRendering> {
-  return locator.evaluate((el: Element): TextRendering => {
+export async function readTextRendering(
+  locator: Locator,
+  inkProperty: InkProperty = 'color',
+): Promise<TextRendering> {
+  return locator.evaluate((el: Element, inkProp: InkProperty): TextRendering => {
     type Rgba = [number, number, number, number]
 
     /**
@@ -191,8 +216,16 @@ export async function readTextRendering(locator: Locator): Promise<TextRendering
     }
 
     // --- Ancêtres : premier fond opaque + couches semi-transparentes ---------
+    // Le point de DÉPART dépend de ce qu'on mesure (#325) :
+    //  - texte et bordures sont peints PAR-DESSUS le fond de l'élément lui-même
+    //    (`background-clip: border-box` par défaut) → on part de `el` ;
+    //  - quand l'encre EST le fond de l'élément (barre TODAY `bg-accent`), le
+    //    fond de `el` est l'objet mesuré, pas son support : partir de `el`
+    //    composerait la couleur sur elle-même et rendrait 1.00:1 pour tout
+    //    aplat, y compris parfaitement contrasté. On part donc du parent.
+    const backdropRoot: Element | null = inkProp === 'backgroundColor' ? el.parentElement : el
     const layers: Rgba[] = []
-    for (let node: Element | null = el; node !== null; node = node.parentElement) {
+    for (let node: Element | null = backdropRoot; node !== null; node = node.parentElement) {
       const nodeStyle = getComputedStyle(node)
       // DÉGRADÉS (revue du Sprint 49). Seul `backgroundColor` est composité. Un
       // ancêtre dont le fond est un `background-image` a un `backgroundColor`
@@ -259,7 +292,28 @@ export async function readTextRendering(locator: Locator): Promise<TextRendering
     // (quand le fond appartient au même groupe d'opacité, il pâlit lui aussi et
     // le contraste réel est un peu meilleur), et c'est le sens voulu : un
     // harnais de contraste doit se tromper en étant trop sévère, jamais l'inverse.
-    const ink = toRgba(style.color)
+    // --- Encre mesurée ------------------------------------------------------
+    // GARDE (#325). `border-top-color` vaut `currentColor` quand AUCUNE bordure
+    // n'est déclarée : sans ce contrôle, mesurer le trait d'un élément qui n'en
+    // a pas rendrait silencieusement le contraste de son TEXTE — un ratio
+    // plausible, sur le mauvais objet. C'est le mode d'échec de PIT-S53-001
+    // (`text-*` qui apparie un `line-height`) transposé aux bordures : la sonde
+    // répond, mais à une autre question. On lève plutôt que de mesurer faux.
+    if (inkProp === 'borderTopColor' || inkProp === 'borderBottomColor') {
+      const side = inkProp === 'borderTopColor' ? 'Top' : 'Bottom'
+      const lineStyle = style[`border${side}Style` as 'borderTopStyle' | 'borderBottomStyle']
+      const lineWidth = Number.parseFloat(
+        style[`border${side}Width` as 'borderTopWidth' | 'borderBottomWidth'],
+      )
+      if (lineStyle === 'none' || lineStyle === 'hidden' || !(lineWidth > 0)) {
+        throw new Error(
+          `aucune bordure ${side.toLowerCase()} sur ${describeNode(el)} ` +
+            `(style « ${lineStyle} », largeur ${lineWidth}px) : la mesure aurait rendu ` +
+            '`currentColor`, donc le contraste du TEXTE au lieu de celui du trait.',
+        )
+      }
+    }
+    const ink = toRgba(style[inkProp])
     const foreground = over([ink[0], ink[1], ink[2], ink[3] * effectiveOpacity], background)
     const fontSizePx = Number.parseFloat(style.fontSize)
     const fontWeight = Number.parseInt(style.fontWeight, 10)
@@ -284,7 +338,7 @@ export async function readTextRendering(locator: Locator): Promise<TextRendering
       boxHeight: rect.height,
       text: (el.textContent ?? '').trim(),
     }
-  })
+  }, inkProperty)
 }
 
 /**
@@ -350,12 +404,16 @@ export async function readAtRest(page: Page, locator: Locator): Promise<TextRend
  * Constaté en développant cette spec : le défaut de survol du CTA secondaire
  * passait « vert » un run sur deux. On attend donc la stabilité, PUIS on juge.
  */
-export async function readStable(locator: Locator, timeout = 3_000): Promise<TextRendering> {
+export async function readStable(
+  locator: Locator,
+  timeout = 3_000,
+  inkProperty: InkProperty = 'color',
+): Promise<TextRendering> {
   const deadline = Date.now() + timeout
-  let previous = await readTextRendering(locator)
+  let previous = await readTextRendering(locator, inkProperty)
   for (;;) {
     await locator.page().waitForTimeout(120)
-    const current = await readTextRendering(locator)
+    const current = await readTextRendering(locator, inkProperty)
     const settled =
       Math.abs(current.ratio - previous.ratio) < 0.005 &&
       current.background === previous.background &&
