@@ -3248,7 +3248,22 @@ Audit : `docs/memory/audits/sprint-67-test-coverage.md`.
 - L'audit est vert **à cette date** — une CVE publiée demain sur une devDep le repassera au rouge.
   C'est désormais l'usage attendu de l'étape informative, dont la baseline est verte.
 
-**Status :** En cours
+### PR et CI
+
+**PR #485** (`claude/sprint-67-start-a731f5` → `dev`), base vérifiée après création (MEMO-012).
+**7/7 jobs verts au premier run** : `backend` 59 s · `frontend` 2 m 20 · `e2e` 8 m 23 ·
+`flyway-smoke` 51 s · `security` 21 s · `ai-env-packs` 11 s · `secret-scan` 7 s.
+
+Deux points valent d'être relevés :
+
+1. **Les E2E ont tourné en CI et sont verts.** Ils n'avaient pas été lancés en local (dit comme tel
+   dans les artefacts, jamais déguisé en vert) : la CI comble donc cette limite, elle ne la masque pas.
+2. **L'étape `npm audit` INFORMATIVE est en `success`**, pas simplement absorbée par son
+   `continue-on-error` (vérifié via l'API sur les steps du job, pas sur la conclusion du job).
+   C'est la preuve directe que l'objectif de #438 est atteint : le signal rouge permanent a
+   **disparu**, il n'a pas été masqué.
+
+**Status :** En cours — PR #485 ouverte, CI verte, en attente de `/sprint end 67`
 
 ---
 
