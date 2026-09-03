@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { EventEditForm, type EventEditFormValues } from './EventEditForm'
+import { useRecurrencePreview } from '@/hooks/useRecurrencePreview'
 
 /**
  * #66 — Tests EventEditForm : submitState (4 états), validations inline
@@ -23,6 +24,16 @@ vi.mock('@/components/ui/popoverPicker', () => ({
     <div data-testid="mock-picker" data-color={color} />
   ),
 }))
+
+// #67 — `EventEditForm` interroge désormais `useRecurrencePreview` (useQuery) pour
+// le hint « plafond 4000 ». On mocke le HOOK (pas de QueryClientProvider dans ces
+// tests, et on veut piloter `capped` sans réseau). Défaut : aucune donnée → pas de hint.
+vi.mock('@/hooks/useRecurrencePreview', () => ({
+  useRecurrencePreview: vi.fn(() => ({ data: undefined })),
+}))
+
+const previewResult = (data: { count: number; capped: boolean } | undefined) =>
+  ({ data }) as unknown as ReturnType<typeof useRecurrencePreview>
 
 vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
   DeleteConfirmDialog: ({
@@ -519,6 +530,59 @@ function renderWithDelete(onDelete: (() => Promise<void>) | undefined) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  // #67 — `clearAllMocks` ne réinitialise PAS les `mockReturnValue` : on repose le
+  // défaut « pas de preview » pour ne pas fuiter un `capped:true` d'un test à l'autre.
+  vi.mocked(useRecurrencePreview).mockReturnValue(previewResult(undefined))
+})
+
+/* ===========================================================================
+   #67 — Hint « plafond 4000 occurrences récurrentes » (flag `capped` de la
+   preview #439). NON bloquant, sous le champ `recurrenceEndDate`. Le hook
+   `useRecurrencePreview` est mocké (cf. haut de fichier) pour piloter `capped`.
+   =========================================================================== */
+describe('EventEditForm — #67 hint plafond 4000 occurrences', () => {
+  const recurringDefaults: EventEditFormValues = {
+    ...baseDefaults,
+    isRecurring: true,
+    recurrenceUnit: 'WEEK',
+  }
+
+  it('capped=true → le hint est visible sous recurrenceEndDate', () => {
+    vi.mocked(useRecurrencePreview).mockReturnValue(previewResult({ count: 4000, capped: true }))
+    setup({ defaultValues: recurringDefaults })
+    const hint = screen.getByTestId('event-form-recurrence-capped-hint')
+    expect(hint).toBeInTheDocument()
+    expect(hint).toHaveTextContent('products.add.event.form.recurrenceCappedHint')
+    // Ton informatif : role=status (pas alert), aria-live poli (avertissement neutre).
+    expect(hint).toHaveAttribute('role', 'status')
+    expect(hint).toHaveAttribute('aria-live', 'polite')
+  })
+
+  it('capped=false → aucun hint', () => {
+    vi.mocked(useRecurrencePreview).mockReturnValue(previewResult({ count: 12, capped: false }))
+    setup({ defaultValues: recurringDefaults })
+    expect(screen.queryByTestId('event-form-recurrence-capped-hint')).not.toBeInTheDocument()
+  })
+
+  it('réponse absente (query non résolue / désactivée) → aucun hint', () => {
+    // Défaut du mock : data undefined.
+    setup({ defaultValues: recurringDefaults })
+    expect(screen.queryByTestId('event-form-recurrence-capped-hint')).not.toBeInTheDocument()
+  })
+
+  it('récurrence désactivée → ni champ recurrenceEndDate ni hint (même si capped=true)', () => {
+    vi.mocked(useRecurrencePreview).mockReturnValue(previewResult({ count: 4000, capped: true }))
+    setup({ defaultValues: { ...baseDefaults, isRecurring: false } })
+    expect(screen.queryByTestId('event-form-recurrence-end-date')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('event-form-recurrence-capped-hint')).not.toBeInTheDocument()
+  })
+
+  it('le hint ne BLOQUE PAS la soumission (capped=true → onSubmit appelé)', async () => {
+    vi.mocked(useRecurrencePreview).mockReturnValue(previewResult({ count: 4000, capped: true }))
+    const { onSubmit } = setup({ defaultValues: recurringDefaults })
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+  })
 })
 
 /**

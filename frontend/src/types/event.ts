@@ -15,6 +15,27 @@ export type RecurrenceUnit = z.infer<typeof recurrenceUnitEnum>
 export const durationUnitEnum = z.enum(['days', 'weeks', 'months', 'years'])
 export type DurationUnit = z.infer<typeof durationUnitEnum>
 
+// #67 — Contrat de la preview de récurrence (POST /api/events/recurrence-preview,
+// endpoint livré par #439). TYPAGE FRONTEND UNIQUEMENT : aucune sync DTO backend
+// (le contrat est déjà figé côté serveur, on ne fait que le consommer).
+//   - Requête : { startDate, recurrenceUnit (enum MAJUSCULE), recurrenceEndDate? }.
+//     ⚠ #439 : `recurrenceUnit` est bindé sur l'enum EXACT WEEK/MONTH/YEAR (pas de
+//     parsing tolérant) → on réutilise `recurrenceUnitEnum`, jamais les unités de durée.
+//   - Réponse 200 : { count, capped }. `capped=true` = série tronquée (horizon 5 ans
+//     sans borne, ou plafond MAX_OCCURRENCES=4000 avec borne) → pilote le hint #67.
+export type RecurrencePreviewRequest = {
+  startDate: string
+  recurrenceUnit: RecurrenceUnit
+  recurrenceEndDate?: string | null
+}
+
+export const recurrencePreviewResponseSchema = z.object({
+  count: z.number(),
+  capped: z.boolean(),
+})
+
+export type RecurrencePreviewResponse = z.infer<typeof recurrencePreviewResponseSchema>
+
 export const eventSchema = z.object({
   id: z.string(),
   title: z.string(),

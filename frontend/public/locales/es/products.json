@@ -38,6 +38,7 @@
         "endDate": "Fecha de fin",
         "recurrenceEndDate": "Fin de recurrencia",
         "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha.",
+      "recurrenceCappedHint": "La serie supera las 4.000 repeticiones. Define una fecha de fin para obtener el recuento exacto.",
         "archived": "Archivado",
         "archivedLockNote": "Este evento está archivado: sus campos son de solo lectura y ya no cuenta entre tus eventos activos. Desactiva «Archivado» más abajo para volver a editarlo."
       },

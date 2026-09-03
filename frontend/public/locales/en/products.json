@@ -38,6 +38,7 @@
         "endDate": "End date",
         "recurrenceEndDate": "Recurrence end",
         "recurrenceEndHint": "Optional — the recurrence will be capped at this date.",
+      "recurrenceCappedHint": "The series exceeds 4,000 occurrences. Set an end date to get the exact count.",
         "archived": "Archived",
         "archivedLockNote": "This event is archived: its fields are read-only and it no longer counts towards your active events. Turn “Archived” off below to edit it again."
       },

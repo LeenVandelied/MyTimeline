@@ -30,6 +30,17 @@ export const queryKeys = {
   events: {
     all: ['events'] as const,
     detail: (eventId: string) => ['events', eventId] as const,
+    /**
+     * #67 — Preview du plafond d'occurrences (`POST /api/events/recurrence-preview`,
+     * #439). Clé scopée sur les params DÉBOUNCÉS (startDate/unit/endDate) : le hint
+     * « plafond 4000 » se recalcule sans champ persisté, et le cache dédup les params
+     * identiques.
+     */
+    recurrencePreview: (params: {
+      startDate?: string
+      recurrenceUnit?: string
+      recurrenceEndDate?: string | null
+    }) => ['events', 'recurrence-preview', params] as const,
   },
   categories: {
     all: ['categories'] as const,
