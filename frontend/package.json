@@ -82,8 +82,12 @@
     "vite": "^6.4.3",
     "vitest": "^3.2.7"
   },
+  "_overridesRationale": {
+    "postcss": "OBLIGATOIRE - next@15.x épingle postcss à la version EXACTE 8.4.31, vulnérable (GHSA-r28c-9q8g-f849, GHSA-6g55-p6wh-862q). Sans cet override, npm installe un node_modules/next/node_modules/postcss@8.4.31 imbriqué et le job CI security (npm audit --omit=dev, BLOQUANT) repasse de 0 à 2 vulnérabilités de production. Garder la version littérale alignée sur devDependencies.postcss - ne JAMAIS réécrire $postcss (référence auto-référentielle qui casse tout npm audit fix, cf. #435). Détail : frontend/README.md, section Overrides npm.",
+    "sharp": "Force sharp >= 0.35 (optimisation d'images Next) dans les chaînes transitives. Même gate CI security. Détail : frontend/README.md, section Overrides npm."
+  },
   "overrides": {
-    "postcss": "$postcss",
+    "postcss": "^8.5.23",
     "sharp": "^0.35.0"
   }
 }
