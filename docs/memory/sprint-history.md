@@ -4037,4 +4037,12 @@ CI **7/7 verte**. Le job `e2e` prouve empiriquement le cœur de #358 :
 
 Audit re-signé : `docs/memory/audits/sprint-68-test-coverage.md`.
 
-**Status :** En cours
+### Follow-ups arbitrés (Phase 4 triage)
+
+- ci.yml `:3001` sur `AUTH_JWKS_URL` (bloquant CI) [XS | auth] → **absorbé** (commit `a95b9c6`, lead, confirmation dev)
+- JWKS à 2 clés backend pour rotation non disruptive [M | auth] → **issue #489** (backlog libre)
+- #363 « paire dépareillée » sans objet par construction [—] → **déjà traité** (#363 fermée won't-do)
+
+Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
+
+**Status :** Terminé — merge PR #488 dans `dev` (voir résultat CI ci-dessus, 7/7 vert sur `4f9eb61` puis `7b3e72f`)
