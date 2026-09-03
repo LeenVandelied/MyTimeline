@@ -3944,3 +3944,84 @@ détachée du milestone et commentée. Détail plus haut.
 **Status :** **Terminé** — PR **#440** (`sprint/61` → `dev`) mergée le 2026-08-17, milestone #62
 fermé. Titre et ligne `Status` volontairement redondants : `PIT-S56-006` montre que grepper l'un sans
 l'autre rate les entrées où les deux se contredisent.
+
+---
+
+## Sprint 68 — 2026-09-03 (En cours)
+**Objectif :** supprimer la copie manuelle de la clé publique RS256 — le middleware Next découvre la clé auprès du backend (JWKS) au lieu de la lire dans une variable d'environnement
+**Milestone GitHub :** #69
+**Issues (2) :** #358 (M, P1, `epic:auth`, `fullstack`), #363 (S, P2, `epic:auth`, `frontend`)
+**Cohésion :** 1.00 — les deux issues portent sur le même chemin (`frontend/middleware.ts` → `auth-token-verify.ts` → `AUTH_JWT_PUBLIC_KEY`)
+**Vagues :** V1 = #358 seule | #363 tranchée par le lead sans code (cf. ci-dessous) | V2 = test-runner + review batch
+**Parallélisme : AUCUN** — une seule issue d'implémentation.
+**Migrations Flyway :** aucune attendue (prochaine V16 si besoin)
+**Dépend de :** Sprint 67 (merge PR #485 dans `dev`, `3c57f12`)
+**Branche :** `claude/sprint-68-start-1a382f` (worktree, HEAD == `origin/dev` au démarrage `dcaac93`) — pas de branche `sprint/68`, cf. convention projet
+**Planification :** AUCUN plan architect. Le milestone #69 et les labels `sprint-68` viennent du triage de clôture des sprints précédents ; `/sprint plan` n'a jamais tourné pour ce sprint. Pas d'`architect-plans.md` — le briefing est construit sur l'état vérifié ci-dessous.
+
+### État vérifié à l'ouverture (mesuré sur `dcaac93`, pas supposé)
+
+| Vérification | Résultat |
+|---|---|
+| `grep -ril "jwks\|well-known"` sur `backend/src`, `frontend/src`, `frontend/middleware.ts`, `frontend/e2e` | **0 hit code** — seulement `docs/adr/ADR-004`, `docs/memory/`. #358 est intégralement à faire, aucun NO-OP |
+| Lecture de la clé par le middleware | `frontend/middleware.ts:104`, accès littéral `process.env.AUTH_JWT_PUBLIC_KEY` passé à `verifyAuthCookie` |
+| Chemin « clé illisible » de #363 | couvert **unitairement** (`auth-token-verify.ts` → `warnUnreadableKeyOnce`, testé dans `auth-token-verify.test.ts`) |
+| Coût E2E de #363 | réel : `auth-signature.spec.ts` § « Conditionnement » établit que les modes « clé valide » et « clé absente/illisible » sont **mutuellement exclusifs sur une même instance Next** → 3ᵉ instance requise |
+
+### Arbitrages dev (2026-09-03)
+
+**n°1 — #358 : JWKS = SEULE SOURCE.** Le middleware ne lit plus `AUTH_JWT_PUBLIC_KEY`, pas de
+repli sur la variable. Conforme aux critères d'acceptation #2 et #5 de l'issue. Écarté :
+« JWKS + repli sur la variable » — plus robuste à une panne réseau Edge, mais conserve deux
+sources de vérité, donc exactement le cas « paire dépareillée » que l'issue prétend éliminer,
+et maintient la copie manuelle dans le runbook.
+
+**n°2 — #363 : fermée *won't do*, sans développement.** C'était le critère d'acceptation n°1 de
+l'issue elle-même. Quatre motifs, dont le décisif : l'arbitrage n°1 **supprime le chemin** —
+sans variable d'environnement à mal renseigner, le mode « clé publique présente mais illisible »
+n'existe plus. Décision documentée sur l'issue
+([commentaire](https://github.com/LeenVandelied/MyTimeline/issues/363#issuecomment-5524741005)).
+Fermeture GitHub après le merge, cf. [[mytimeline-sprint-end-github-gotchas]].
+
+### ⚠ Retombée CI — le lead s'est trompé, correction inscrite ici
+
+**Ce que le briefing affirmait (FAUX)** : le job E2E lancerait Next sans `AUTH_JWT_PUBLIC_KEY`,
+`auth-signature.spec.ts` skipperait en CI, et `auth-guard.spec.ts` § DÉGRADÉ virerait au rouge dès
+que la découverte JWKS s'activerait.
+
+**La réalité, vérifiée dans `ci.yml`** : depuis #462/S64, le job e2e lance **DEUX serveurs Next**
+sur un seul build — `:3000` dégradé et `:3001` vérifiant (`ci.yml:346`) — encadrés par un **oracle
+`probe_mode`** qui exige 200 sur `:3000` et 307 sur `:3001` AVANT les passes (`ci.yml:434-449`).
+`auth-signature.spec.ts` **ne skippe pas** en CI : la passe 2 tourne contre `:3001`. Les deux specs
+restent donc valides telles quelles.
+
+**Origine de l'erreur** : le lead a lu l'en-tête § « Conditionnement » d'`auth-signature.spec.ts`,
+écrit au S50, au lieu de lire `ci.yml`. Le commentaire était périmé de quatre sprints. C'est
+exactement [[upstream-blocker-verdict-expires]] — lire l'état courant, pas l'énoncé — et le lead
+l'avait mis en garde dans ce même briefing contre ce piège. Le fullstack-dev a lu le job, pas
+l'énoncé, et a corrigé le lead : **la section « RETOMBÉE CI » d'un briefing est elle-même à
+vérifier.**
+
+**Conséquence réelle** : `:3001` n'avait plus rien qui l'active (`AUTH_JWT_PUBLIC_KEY` n'est plus
+lue par le middleware) → l'oracle rougit sur « attendu 307, reçu 200 ». Échec **nommé**, pas faux
+vert : l'oracle du S64 a fait exactement son travail. Correctif = `AUTH_JWKS_URL` sur le lancement
+`:3001`, appliqué par le lead (commit `a95b9c6`) après **confirmation explicite du dev**
+(modification de pipeline CI). `AUTH_JWT_PUBLIC_KEY` reste posée sur le **process de test** de la
+passe 2 (`ci.yml:497`) — elle sert au `test.skip()` et à la forge de `rs256.ts`, la retirer rendrait
+les cas RS256 skippés et le job vert sans rien exercer.
+
+### Écart de méthode assumé — composition du briefing
+
+Le briefing `briefing-358.md` inline 5 packs (`cp-hexagonal`, `cp-backend`, `cp-frontend`,
+`br-auth`, `coverage-auth` = 58 Ko) au lieu des 7 que produit `build-briefing.sh` en
+`stack=fullstack`. Les deux archives de pitfalls (`pit-backend` 52 Ko + `pit-frontend` 85 Ko)
+sont **pointées par leur chemin committé** avec ordre de lecture explicite, au lieu d'être
+recopiées. Motif : le briefing complet pèse 212 Ko (~98 K tokens) et devait transiter **deux
+fois** par le contexte du lead (lecture puis ré-émission dans `Agent.prompt`), soit ~200 K tokens
+pour une pure recopie — ce que la Phase 4 du skill cherche justement à éviter. Les garde-fous du
+hook `pre-spawn-fullstack.sh` restent satisfaits (58 Ko > 30 Ko, marqueurs de pack présents,
+aucune référence `/tmp/ctx-`), et l'anti-pattern d'origine visait les fichiers `/tmp` éphémères
+inexistants, pas des fichiers committés à chemin stable. **À vérifier à la clôture :** que l'agent
+a effectivement lu les deux archives.
+
+**Status :** En cours
