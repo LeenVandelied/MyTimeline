@@ -11,8 +11,11 @@ import crypto from 'node:crypto'
  * ⚠ AUCUNE CLÉ N'EST EMBARQUÉE ICI. Le dépôt est PUBLIC. Le matériel de signature est lu
  * dans l'environnement du process Playwright, où il doit être injecté à l'exécution :
  *
- *   - `AUTH_JWT_PUBLIC_KEY` — la MÊME valeur que celle posée dans l'environnement du serveur
- *     Next (SPKI Base64, journalisée au boot du backend par `JwtService.initKeyMaterial`).
+ *   - `AUTH_JWT_PUBLIC_KEY` — la clé publique SPKI Base64 de la paire jetable, MATÉRIEL DE
+ *     TEST uniquement. ⚠ #358 : le SERVEUR Next ne lit PLUS cette variable — il découvre la
+ *     clé sur le JWKS du backend (`AUTH_JWKS_URL`). Elle reste indispensable ICI, parce que
+ *     forger un HS256 « signé avec la clé publique » et vérifier un jeton authentique
+ *     exigent d'avoir ce matériel sous la main dans le process de test.
  *     Sa présence est ce qui déclenche la spec ; son absence la fait SKIPPER.
  *   - `E2E_JWT_PRIVATE_KEY` — la clé privée PKCS#8 Base64 appairée, celle passée au backend
  *     via `JWT_PRIVATE_KEY`. Requise UNIQUEMENT pour le cas « jeton expiré » (seul cas qui
@@ -29,10 +32,13 @@ export const PUBLIC_KEY_SPKI_BASE64 = (process.env.AUTH_JWT_PUBLIC_KEY ?? '').tr
 export const PRIVATE_KEY_PKCS8_BASE64 = (process.env.E2E_JWT_PRIVATE_KEY ?? '').trim()
 
 /**
- * La spec de signature n'a de sens que si le serveur Next tourne AVEC la clé publique.
- * On se fie à la variable du process de test comme PROCURATION de l'état du serveur — le
- * spec vérifie ensuite ce postulat par une sonde réelle (cf. le test « garde anti-dégradé »),
- * parce qu'une procuration fausse rendrait tous les autres cas trompeurs.
+ * La spec de signature n'a de sens que si le serveur Next tourne en mode VÉRIFIANT.
+ *
+ * ⚠ #358 — cette variable est une procuration ENCORE PLUS INDIRECTE qu'avant : le serveur
+ * n'est plus gouverné par elle mais par `AUTH_JWKS_URL` (et par la joignabilité du JWKS).
+ * Les poser ensemble reste la convention du job CI et de la recette locale, mais rien ne le
+ * garantit. C'est pourquoi le PREMIER cas de `auth-signature.spec.ts` (« garde anti-dégradé »)
+ * SONDE réellement le serveur : c'est lui l'oracle, pas cette constante.
  */
 export const SIGNATURE_VERIFICATION_CONFIGURED = PUBLIC_KEY_SPKI_BASE64.length > 0
 
@@ -91,6 +97,37 @@ export function verifyRs256(token: string): boolean {
     key,
     fromBase64Url(signature),
   )
+}
+
+/**
+ * URL du backend, telle que joignable depuis le PROCESS DE TEST (et non depuis le navigateur).
+ *
+ * Sert au seul contrôle du document JWKS (#358) : celui-ci vit sur `/.well-known/jwks.json`,
+ * HORS du préfixe `/api`, donc il n'est PAS relayé par le rewrite same-origin de Next — on
+ * l'interroge donc en direct. Le défaut vaut pour le job CI comme pour la recette locale
+ * documentée en tête de `auth-signature.spec.ts` ; il est délibérément NON VIDE afin que le
+ * contrôle s'exécute vraiment au lieu de skipper en silence (un test qui skippe ne prouve rien).
+ */
+export const BACKEND_ORIGIN = (process.env.E2E_BACKEND_URL ?? 'http://localhost:8080').replace(
+  /\/+$/,
+  '',
+)
+
+/** Chemin canonique du JWKS — miroir de `JwksController.JWKS_PATH` côté backend. */
+export const JWKS_PATH = '/.well-known/jwks.json'
+
+/**
+ * Recompose la clé publique SPKI Base64 à partir des paramètres JWK `n` et `e`.
+ *
+ * C'est l'assertion CROSS-SYSTEM de #358 : elle prouve que la clé PUBLIÉE par le backend est
+ * bien celle de la paire avec laquelle il SIGNE (comparaison à `PUBLIC_KEY_SPKI_BASE64`, la
+ * moitié publique de la paire jetable injectée au backend). Sans elle, un JWKS bien formé mais
+ * portant une AUTRE clé passerait inaperçu — le middleware rejetterait alors tous les cookies
+ * et le diagnostic accuserait le middleware plutôt que la publication.
+ */
+export function spkiBase64FromJwk(n: string, e: string): string {
+  const key = crypto.createPublicKey({ key: { kty: 'RSA', n, e }, format: 'jwk' })
+  return key.export({ type: 'spki', format: 'der' }).toString('base64')
 }
 
 /**

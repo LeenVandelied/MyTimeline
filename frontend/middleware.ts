@@ -33,16 +33,22 @@ const intlMiddleware = createMiddleware({
  * zéro octet de page protégée.
  *
  * #323 — la garde vérifie désormais aussi la SIGNATURE et l'EXPIRATION du cookie.
- * `JwtService` signe en RS256 : seule la clé PUBLIQUE (`AUTH_JWT_PUBLIC_KEY`) est
- * exposée à l'Edge, donc aucun secret de frappe de jetons ne quitte le backend —
- * ce qui levait le blocage de l'ADR-004 §Option A. Un cookie `jwt` forgé ou expiré
- * est maintenant redirigé, plus servi.
+ * `JwtService` signe en RS256 : seule la clé PUBLIQUE est exposée à l'Edge, donc
+ * aucun secret de frappe de jetons ne quitte le backend — ce qui levait le blocage
+ * de l'ADR-004 §Option A. Un cookie `jwt` forgé ou expiré est maintenant redirigé,
+ * plus servi.
+ *
+ * #358 — cette clé publique n'est PLUS recopiée à la main dans une variable
+ * d'environnement (`AUTH_JWT_PUBLIC_KEY` n'existe plus). Elle est DÉCOUVERTE auprès
+ * du backend via son JWKS (`AUTH_JWKS_URL`), qui en est la source de vérité :
+ * la rotation devient atomique et la panne « clé dépareillée » disparaît par
+ * construction. Cache, timeout et garde-fou anti-tempête : `src/lib/auth-jwks.ts`.
  *
  * ⚠ Ce n'est TOUJOURS PAS une frontière d'autorisation. Deux raisons subsistent :
  * (a) la RÉVOCATION de session (`jti`) n'est vérifiable qu'en base, donc côté
- * backend ; (b) sans `AUTH_JWT_PUBLIC_KEY` configurée, la garde retombe en mode
- * dégradé « présence seule » (cf. `auth-token-verify.ts`). `JwtFilter` reste le
- * seul juge : ne jamais rendre de donnée métier en se fiant à ce middleware.
+ * backend ; (b) sans JWKS configuré ou joignable, la garde retombe en mode dégradé
+ * « présence seule » (cf. `auth-token-verify.ts`). `JwtFilter` reste le seul juge :
+ * ne jamais rendre de donnée métier en se fiant à ce middleware.
  *
  * ORDRE : le check d'auth s'exécute AVANT `intlMiddleware`, mais ne traite que
  * les chemins DÉJÀ préfixés d'une locale supportée. Un `/dashboard` nu passe donc
@@ -106,15 +112,22 @@ function withCanonicalOrigin(response: NextResponse): NextResponse {
 export default async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
-  // ⚠ `process.env.AUTH_JWT_PUBLIC_KEY` en accès LITTÉRAL (et non `process.env[CONST]`) :
-  // c'est la forme reconnue par l'analyse statique de Next. Variable NON `NEXT_PUBLIC_*`,
-  // donc lue au RUNTIME, jamais inlinée au build ni envoyée au navigateur (mesure #322).
-  // Une clé publique n'est pas un secret, mais rien ne justifie de la baker dans le bundle.
+  // ⚠ `process.env.AUTH_JWKS_URL` en accès LITTÉRAL (et non `process.env[CONST]`) : c'est la
+  // forme reconnue par l'analyse statique de Next. Variable NON `NEXT_PUBLIC_*`, donc lue au
+  // RUNTIME, jamais inlinée au build ni envoyée au navigateur — l'URL doit d'ailleurs être
+  // joignable DEPUIS LE SERVEUR Next, ce qui n'est pas la même adresse que celle du navigateur
+  // (`NEXT_PUBLIC_API_URL` vaut `http://localhost:8080/api` en Docker et `/api` en E2E : ni
+  // l'une ni l'autre n'est exploitable ici, d'où une variable dédiée — #358).
+  //
+  // ⚠ `verifyAuthCookie` fait un appel RÉSEAU (découverte JWKS) au plus une fois par TTL et
+  // par isolat, jamais par requête, et ne LÈVE jamais : son `fetch` est enveloppé et borné par
+  // un timeout. Un backend lent ou mort dégrade la garde, il ne pend pas l'Edge et ne produit
+  // pas de 500 sur toutes les routes protégées (BUG-S45-001).
   const isRejected =
     isProtectedPathname(pathname) &&
     (await verifyAuthCookie(
       request.cookies.get(AUTH_COOKIE_NAME)?.value,
-      process.env.AUTH_JWT_PUBLIC_KEY,
+      process.env.AUTH_JWKS_URL,
     )) === 'rejected'
 
   if (isRejected) {
