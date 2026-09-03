@@ -4141,4 +4141,4 @@ listant les chemins réellement ouverts, **avec un ancrage vérifiable par fichi
 pitfall, numéro de ligne ou citation courte). À auditer à la clôture — et à consigner si la preuve
 est de nouveau insuffisante.
 
-**Status :** En cours
+**Status :** En cours — PR **#494** ouverte (`claude/sprint-70-start-b946cb` → `dev`), en attente CI puis `/sprint end 70`
