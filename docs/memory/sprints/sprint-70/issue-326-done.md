@@ -89,8 +89,8 @@ section « retombée CI » ; S70 : l'attribution d'une BR).
   pas la structure `header / body(overflow:auto) / footer`. Non fait, conformément à la consigne.
 - `RECOMMAND_FOLLOWUP` — corriger l'attribution BR-EVE-009 : créer une BR dédiée « perf aperçu live /
   débounce » ou corriger les renvois du code (`EventEditForm.tsx:174`, `:289`).
-- `RECOMMAND_UI_DESIGN` — couvert par #325 (vague 2), voir la checklist ci-dessus. Pas de demande
-  supplémentaire.
+- Pas de `RECOMMAND_UI_DESIGN` à spawner : la revue visuelle EST l'issue #325, vague 2 de ce
+  même sprint, à qui la checklist ci-dessus a été transmise en entrée.
 - Pas de `RECOMMAND_DB_EXPERT` / `RECOMMAND_SECURITY` / `RECOMMAND_TEST_RUNNER` : changement 100 %
   frontend présentationnel, aucun appel réseau nouveau, aucune donnée ; les suites ont tourné en local.
 

@@ -110,8 +110,9 @@ corrige le verdict porté dans `issue-326-done.md`.
   doctrine DS, à arbitrer face à #352.
 - Signalé pour arbitrage en review : le correctif n°3 (libellé « Aperçu ») **touche aussi la
   bottom sheet**, alors que le reste du sprint l'a laissée hors périmètre.
-- Pas de `RECOMMAND_TEST_RUNNER` (suites lancées, exit codes lus), pas de
-  `RECOMMAND_DB_EXPERT` / `RECOMMAND_SECURITY` (aucun schéma ni surface d'auth touchés).
+- Pas de `RECOMMAND_TEST_RUNNER` : suites lancées par l'agent, exit codes lus.
+- Pas de `RECOMMAND_DB_EXPERT` : aucun schéma, aucune migration, aucun fichier backend touché.
+- Pas de `RECOMMAND_SECURITY` : aucune surface d'auth, aucune PII, aucun appel réseau nouveau.
 
 ## Réserve du lead
 
