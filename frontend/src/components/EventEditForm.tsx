@@ -340,17 +340,35 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * édition inchangée) ou PORTALISÉ dans le nœud d'en-tête fourni par le parent
    * (drawer de création → aperçu épinglé, handoff §6).
    */
+  /**
+   * #325 + correctif review S70 — classe du libellé « Aperçu », CONDITIONNELLE au
+   * CHEMIN DE RENDU. `previewBlock` est UNE seule variable rendue à deux endroits
+   * (cf. ci-dessous) : reclasser le libellé « sur la variable » le reclassait donc
+   * sur TOUTES les surfaces, alors que le motif de #325 n'existe que sur une seule.
+   *
+   * ÉPINGLÉ (`previewPortalNode` fourni — drawer de CRÉATION >= lg, #326) :
+   * `.mt-drawer__label`. Depuis que #326 a fait remonter l'aperçu au-dessus du pli,
+   * ce libellé jouxte le titre du drawer (19px display) et le concurrençait, alors
+   * qu'il nomme un bloc. `.mt-drawer__label` est le style que le DS réserve
+   * exactement à ce rôle (mono 10px capitales, `ink-muted`) — déjà porté par
+   * `.mt-drawer__field` dans le même panneau. Aucune couleur littérale : la classe
+   * est theme-aware par ses tokens.
+   *
+   * EN FLUX (toutes les AUTRES surfaces : `EventDrawer`, `TimelineEditHost`,
+   * `ConflictDialog`, et la variante bottom sheet < 1024px explicitement laissée
+   * hors périmètre par #326) : classe HISTORIQUE, strictement inchangée. Aucune de
+   * ces surfaces ne place le libellé au contact d'un titre de drawer → aucun mandat
+   * pour le reclasser (PAT-S44-001, « le mode historique reste le défaut »).
+   * ⚠ `text-sm` rend **17px** ici (l'échelle du DS Graphite écrase celle de Tailwind,
+   * [[PIT-S49-002]]) : c'est l'état d'origine à préserver, pas une valeur à corriger.
+   */
+  const previewLabelClassName = previewPortalNode
+    ? 'mt-drawer__label mb-2'
+    : 'text-ink mb-2 text-sm'
+
   const previewBlock = (
     <div>
-      {/* #325 — libellé de BLOC, pas de titre. `text-sm` rend **17px** ici
-          (l'échelle du DS Graphite écrase celle de Tailwind, [[PIT-S49-002]]) :
-          depuis que #326 a fait remonter l'aperçu au-dessus du pli, ce libellé
-          jouxtait le titre du drawer (19px display) et le concurrençait, alors
-          qu'il nomme un bloc. `.mt-drawer__label` est le style que le DS réserve
-          exactement à ce rôle (mono 10px capitales, `ink-muted`) — déjà porté
-          par `.mt-drawer__field` dans le même panneau. Aucune couleur littérale :
-          la classe est theme-aware par ses tokens. */}
-      <div className="mt-drawer__label mb-2">{tDetails('preview')}</div>
+      <div className={previewLabelClassName}>{tDetails('preview')}</div>
       <EventPreviewTimeline
         title={previewTitle}
         color={validPreviewColor}
