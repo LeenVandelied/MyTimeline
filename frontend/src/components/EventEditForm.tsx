@@ -288,9 +288,14 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   // quand l'utilisateur pose/déplace la borne (le hint disparaît dès que `count`
   // repasse sous 4000 → `capped:false`). Le hook s'auto-désactive tant que la
   // récurrence n'est pas active + startDate/unit définis (cf. `enabled`).
+  //
+  // `&& !isCreate` : le champ `recurrenceEndDate` — et donc le hint qu'il porte —
+  // n'existe qu'en mode edit (BR-EVE-012 : hors DTO de création). Sans cette garde,
+  // configurer une récurrence à la CRÉATION déclenchait un appel réseau débouncé dont
+  // le résultat n'était jamais affichable. Triage clôture S69.
   const previewRecurrenceEndDate = useDebounced(form.watch('recurrenceEndDate'))
   const { data: recurrencePreview } = useRecurrencePreview({
-    isRecurring: Boolean(previewIsRecurring),
+    isRecurring: Boolean(previewIsRecurring) && !isCreate,
     startDate: previewStartDate,
     recurrenceUnit: previewRecurrenceUnit,
     recurrenceEndDate: previewRecurrenceEndDate,

@@ -583,6 +583,28 @@ describe('EventEditForm — #67 hint plafond 4000 occurrences', () => {
     await userEvent.click(screen.getByTestId('event-form-submit'))
     await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
   })
+
+  // Triage clôture S69 — le champ `recurrenceEndDate` (donc le hint) n'existe qu'en
+  // mode edit (BR-EVE-012 : hors DTO de création). La query doit donc rester DÉSARMÉE
+  // en création, même récurrence configurée : sinon appel réseau débouncé jamais affichable.
+  it('mode create → la query preview reste désarmée (isRecurring=false transmis au hook)', () => {
+    vi.mocked(useRecurrencePreview).mockReturnValue(previewResult({ count: 4000, capped: true }))
+    setup({ mode: 'create', defaultValues: recurringDefaults })
+
+    expect(vi.mocked(useRecurrencePreview)).toHaveBeenCalledWith(
+      expect.objectContaining({ isRecurring: false }),
+    )
+    expect(screen.queryByTestId('event-form-recurrence-capped-hint')).not.toBeInTheDocument()
+  })
+
+  it('mode edit → la query preview est armée (isRecurring=true transmis au hook)', () => {
+    vi.mocked(useRecurrencePreview).mockReturnValue(previewResult({ count: 12, capped: false }))
+    setup({ defaultValues: recurringDefaults })
+
+    expect(vi.mocked(useRecurrencePreview)).toHaveBeenCalledWith(
+      expect.objectContaining({ isRecurring: true }),
+    )
+  })
 })
 
 /**
