@@ -3128,7 +3128,7 @@ plusieurs de catégorie `tooling`.
 
 ---
 
-## Sprint 67 — 2026-09-03 (En cours)
+## Sprint 67 — 2026-09-03 (Terminé — merge PR #485 dans `dev`)
 **Objectif :** résorber la dette CVE des dépendances npm frontend et réparer l'outil qui la corrige
 **Milestone GitHub :** #68
 **Issues (3) :** #435 (S, P2, `frontend`), #182 (S, P3, `epic:devops`), #438 (M, P1, `epic:devops`)
@@ -3305,7 +3305,15 @@ Ratio discard 0/1 — aucun sur-signalement.
 d'un sprint précédent à détacher (contrairement au motif récurrent de
 [[mytimeline-sprint-end-github-gotchas]]).
 
-**Status :** En cours — PR #485 ouverte, CI verte, en attente de confirmation de merge
+**Issues livrées (3) :** #435, #182, #438 — toutes fermées, milestone #68 fermé.
+**Commits :** 7 (1 logique par issue + 3 de documentation/mémoire).
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 0 MINEUR.
+**Tests :** frontend 1030/1030 · build/lint/typecheck/build-storybook exit 0 · E2E verts en CI (8 m 19).
+**CI :** 7/7 verte aux deux runs (ouverture et commit final).
+
+**Status :** **Terminé** — PR **#485** (`claude/sprint-67-start-a731f5` → `dev`) mergée le
+2026-09-03 (`3c57f12`), milestone #68 fermé. Titre et ligne `Status` volontairement redondants :
+`PIT-S56-006` montre que grepper l'un sans l'autre rate les entrées où les deux se contredisent.
 
 ---
 
