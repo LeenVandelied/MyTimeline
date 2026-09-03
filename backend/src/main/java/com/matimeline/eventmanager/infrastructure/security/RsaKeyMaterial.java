@@ -1,15 +1,20 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.MessageDigest;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
@@ -97,6 +102,64 @@ final class RsaKeyMaterial {
      */
     static String toSpkiBase64(PublicKey publicKey) {
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    }
+
+    /**
+     * Modulus RSA au format du paramètre JWK {@code n} (RFC 7518 §6.3.1) : entier POSITIF,
+     * big-endian, Base64url SANS padding.
+     *
+     * <p>⚠ {@link BigInteger#toByteArray()} produit un complément à deux SIGNÉ : un modulus
+     * dont l'octet de poids fort dépasse 0x7F se voit préfixer un {@code 0x00} de signe. Ce
+     * zéro n'appartient PAS à l'entier JWK et doit être retiré, sinon {@code crypto.subtle
+     * .importKey('jwk', …)} côté Edge rejette la clé (ou, pire, en importe une différente).
+     * Le cas se produit sur ~la moitié des clés RSA générées — donc invisible un jour sur deux.
+     */
+    static String modulusBase64Url(PublicKey publicKey) throws GeneralSecurityException {
+        return base64UrlUnsigned(asRsa(publicKey).getModulus());
+    }
+
+    /** Exposant public au format du paramètre JWK {@code e}. Même encodage que {@code n}. */
+    static String publicExponentBase64Url(PublicKey publicKey) throws GeneralSecurityException {
+        return base64UrlUnsigned(asRsa(publicKey).getPublicExponent());
+    }
+
+    /**
+     * Empreinte JWK (RFC 7638) servant de {@code kid} : SHA-256 de la forme CANONIQUE du JWK,
+     * en Base64url sans padding.
+     *
+     * <p>La forme canonique est imposée par la RFC : uniquement les paramètres requis
+     * ({@code e}, {@code kty}, {@code n} pour RSA), triés par ordre lexicographique de nom,
+     * sérialisés sans espace. La concaténation ci-dessous EST cette forme — la construire à la
+     * main plutôt que via Jackson garantit qu'aucune configuration de sérialisation (ordre des
+     * champs, indentation) ne puisse en changer la valeur, donc le {@code kid}, entre deux
+     * versions. Les valeurs {@code n} et {@code e} sont du Base64url : elles ne contiennent ni
+     * guillemet ni antislash, aucun échappement JSON n'est requis.
+     */
+    static String jwkThumbprint(String modulusBase64Url, String exponentBase64Url)
+            throws GeneralSecurityException {
+        String canonical = "{\"e\":\"" + exponentBase64Url + "\",\"kty\":\"RSA\",\"n\":\""
+                + modulusBase64Url + "\"}";
+        byte[] digest = MessageDigest.getInstance("SHA-256")
+                .digest(canonical.getBytes(StandardCharsets.UTF_8));
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+    }
+
+    private static RSAPublicKey asRsa(PublicKey publicKey) throws GeneralSecurityException {
+        if (publicKey instanceof RSAPublicKey rsa) {
+            return rsa;
+        }
+        // Inatteignable tant que le matériel provient de fromPkcs8/generateEphemeral (RSA par
+        // construction) — la garde existe pour que l'ajout d'un autre algorithme échoue ici,
+        // bruyamment, plutôt que de publier un JWKS silencieusement faux.
+        throw new GeneralSecurityException("clé publique non RSA : publication JWKS impossible");
+    }
+
+    /** Encode un entier positif en Base64url non padé, sans l'octet de signe de BigInteger. */
+    private static String base64UrlUnsigned(BigInteger value) {
+        byte[] signed = value.toByteArray();
+        int offset = (signed.length > 1 && signed[0] == 0) ? 1 : 0;
+        byte[] unsigned = Arrays.copyOfRange(signed, offset, signed.length);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(unsigned);
     }
 
     private static void assertLongEnough(RSAPrivateKey key) throws GeneralSecurityException {

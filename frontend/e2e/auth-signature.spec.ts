@@ -4,6 +4,8 @@ import { test, expect } from '@playwright/test'
 
 import { SHARED } from './support/accounts'
 import {
+  BACKEND_ORIGIN,
+  JWKS_PATH,
   PUBLIC_KEY_SPKI_BASE64,
   SIGNATURE_VERIFICATION_CONFIGURED,
   SIGNING_KEY_AVAILABLE,
@@ -12,6 +14,7 @@ import {
   forgeAlgNone,
   forgeHs256,
   signRs256,
+  spkiBase64FromJwk,
   tamperSignature,
   verifyRs256,
   type JwtClaims,
@@ -38,17 +41,22 @@ import {
  *
  * Le dépôt est PUBLIC : aucune clé privée n'y est committée, donc aucune clé publique STABLE
  * n'est publiable. La spec exige donc une paire JETABLE générée au lancement de la stack et
- * SKIPPE si `AUTH_JWT_PUBLIC_KEY` est absente de l'environnement du process de test — c'est
- * le cas du job CI historique, qui tourne en mode dégradé (couvert, lui, par la spec
- * `auth-guard.spec.ts` § DÉGRADÉ ; les deux modes sont mutuellement exclusifs sur une même
- * instance Next, la variable étant lue au runtime par le middleware).
+ * SKIPPE si `AUTH_JWT_PUBLIC_KEY` est absente de l'environnement du process de test.
  *
- * ⚠ La variable du process de test n'est qu'une PROCURATION de l'état du serveur Next : on
- * pourrait la poser d'un côté et pas de l'autre. Le sens de défaillance est heureusement
- * fail-closed — un serveur resté en dégradé répondrait 200 là où les cas ci-dessous attendent
- * 307, donc la suite virerait au ROUGE, jamais au faux vert. Le premier test ancre néanmoins
- * ce postulat EXPLICITEMENT (« garde anti-dégradé ») : le diagnostic doit être immédiat, pas
- * déduit de quatre cas rouges.
+ * ⚠ #358 — CE QUI GOUVERNE LE SERVEUR A CHANGÉ. Le serveur Next ne lit plus de clé publique
+ * en variable : il la DÉCOUVRE sur le JWKS du backend, et c'est la présence de `AUTH_JWKS_URL`
+ * dans SON environnement qui le fait basculer en mode vérifiant. `AUTH_JWT_PUBLIC_KEY` ne
+ * subsiste que comme MATÉRIEL DE FORGE dans le process de test (cf. `support/rs256.ts`). Les
+ * deux modes restent mutuellement exclusifs sur une instance Next donnée — le job CI lève donc
+ * toujours deux serveurs, `:3000` sans découverte (dégradé, couvert par `auth-guard.spec.ts`
+ * § DÉGRADÉ) et `:3001` avec.
+ *
+ * ⚠ La variable du process de test n'est donc qu'une PROCURATION, et une procuration plus
+ * lâche qu'avant. Le sens de défaillance reste fail-closed — un serveur resté en dégradé
+ * répondrait 200 là où les cas ci-dessous attendent 307, donc la suite virerait au ROUGE,
+ * jamais au faux vert. Le premier test ancre néanmoins ce postulat EXPLICITEMENT (« garde
+ * anti-dégradé ») : c'est LUI l'oracle du mode serveur, et le diagnostic doit être immédiat,
+ * pas déduit de quatre cas rouges.
  *
  * ## Recette de lancement (mesurée, cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`)
  *
@@ -68,9 +76,10 @@ import {
  *   JWT_PRIVATE_KEY="$(cat /tmp/priv.b64)" RATE_LIMIT_ENABLED=false \
  *   java -jar target/*.jar --app.cors.allowed-origins=http://localhost:3000,http://localhost:3100
  *
- * # 3. Frontend :3100 — clé PUBLIQUE (lue au RUNTIME par le middleware, cf. middleware.ts).
+ * # 3. Frontend :3100 — URL du JWKS (lue au RUNTIME par le middleware, cf. middleware.ts).
+ * #    ⚠ #358 : plus de clé publique ici. Le middleware la découvre sur le backend.
  * cd frontend && NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8080 \
- *   AUTH_JWT_PUBLIC_KEY="$(cat /tmp/pub.b64)" npm run dev -- -p 3100
+ *   AUTH_JWKS_URL=http://localhost:8080/.well-known/jwks.json npm run dev -- -p 3100
  *
  * # 4. Specs — la MÊME clé publique côté test, plus la privée pour le seul cas « expiré ».
  * cd frontend && SKIP_DELEGATION=1 PLAYWRIGHT_BASE_URL=http://localhost:3100 \
@@ -117,20 +126,20 @@ test.describe('Signature RS256 du cookie jwt — backend Spring -> middleware Ed
 
   test.skip(
     !SIGNATURE_VERIFICATION_CONFIGURED,
-    'AUTH_JWT_PUBLIC_KEY absente du process de test : le middleware tourne en mode DÉGRADÉ ' +
-      '(garde sur la présence du cookie), couvert par auth-guard.spec.ts. Voir la recette de ' +
-      "lancement en tête de fichier pour exercer la vérification de signature.",
+    'AUTH_JWT_PUBLIC_KEY absente du process de test (matériel de forge) : la stack visée ' +
+      'tourne en mode DÉGRADÉ, garde sur la présence du cookie, couvert par ' +
+      'auth-guard.spec.ts. Voir la recette de lancement en tête de fichier.',
   )
 
   /**
    * GARDE ANTI-DÉGRADÉ — doit rester le PREMIER cas du fichier.
    *
    * En mode dégradé, ce même cookie bidon renvoie 200 (c'est exactement ce qu'affirme
-   * `auth-guard.spec.ts § DÉGRADÉ`). Un 200 ici signifie donc que le SERVEUR Next ne voit pas
-   * `AUTH_JWT_PUBLIC_KEY`, quelle que soit la variable vue par le process de test : rien de ce
-   * que ce fichier affirme ensuite n'aurait alors de valeur. Ne pas « réparer » ce cas en
-   * assouplissant l'assertion — appairer la clé publique du serveur Next à la clé privée du
-   * backend (la valeur exacte est journalisée au boot de `JwtService`).
+   * `auth-guard.spec.ts § DÉGRADÉ`). Un 200 ici signifie donc que le SERVEUR Next n'a PAS de
+   * clé de vérification — #358 : soit `AUTH_JWKS_URL` n'est pas posée sur son process, soit le
+   * JWKS du backend ne lui est pas joignable — quelle que soit la variable vue par le process
+   * de test : rien de ce que ce fichier affirme ensuite n'aurait alors de valeur. Ne pas
+   * « réparer » ce cas en assouplissant l'assertion.
    */
   test('anti-dégradé : un cookie non-JWT est REJETÉ (la vérification est bien active)', async ({
     page,
@@ -143,10 +152,50 @@ test.describe('Signature RS256 du cookie jwt — backend Spring -> middleware Ed
 
     expect(
       response.status(),
-      "200 = le serveur Next est en mode DÉGRADÉ (AUTH_JWT_PUBLIC_KEY non vue par le SERVEUR) : " +
-        'la suite ci-dessous ne prouverait rien.',
+      '200 = le serveur Next est en mode DÉGRADÉ : AUTH_JWKS_URL absente de SON environnement, ' +
+        'ou JWKS du backend injoignable depuis lui. La suite ci-dessous ne prouverait rien.',
     ).toBe(307)
     expect(new URL(response.headers()['location'], baseURL).pathname).toBe('/fr/login')
+  })
+
+  /**
+   * #358 — LE DOCUMENT DE DÉCOUVERTE LUI-MÊME, interrogé en direct sur le backend.
+   *
+   * Les cas voisins prouvent que le middleware vérifie ; celui-ci prouve CE QU'IL A DÉCOUVERT.
+   * Sans lui, un JWKS bien formé mais portant une AUTRE clé produirait exactement le même
+   * symptôme qu'un middleware cassé (tout est rejeté), et le diagnostic partirait du mauvais
+   * côté. L'assertion est CROSS-SYSTEM : la clé recomposée depuis `n`/`e` doit être, octet
+   * pour octet, la moitié publique de la paire jetable injectée au backend en `JWT_PRIVATE_KEY`.
+   *
+   * ⚠ Requête DIRECTE vers le backend (`BACKEND_ORIGIN`), pas via `baseURL` : le rewrite
+   * same-origin de Next ne couvre que `/api/*`, or ce chemin est à la racine (RFC 8615).
+   * ⚠ Pas de `Origin` sur cette requête — elle ne dit donc RIEN du CORS, et n'a pas à le dire :
+   * le `fetch` du middleware part lui aussi de serveur à serveur, sans `Origin`.
+   */
+  test('le backend PUBLIE un JWKS anonyme portant exactement la clé de signature', async ({
+    request,
+  }) => {
+    const response = await request.get(`${BACKEND_ORIGIN}${JWKS_PATH}`)
+
+    expect(
+      response.status(),
+      `${BACKEND_ORIGIN}${JWKS_PATH} doit répondre 200 SANS authentification — un 401 signifie ` +
+        'que la whitelist de SecurityConfig a sauté et que la découverte boucle sur elle-même.',
+    ).toBe(200)
+
+    const jwks = (await response.json()) as { keys?: Record<string, string>[] }
+    const key = jwks.keys?.[0]
+    expect(key, 'le JWKS ne porte aucune clé').toBeDefined()
+    expect(key!.kty).toBe('RSA')
+    expect(key!.alg).toBe('RS256')
+    expect(key!.use).toBe('sig')
+    expect(key!.kid?.length ?? 0).toBeGreaterThan(0)
+
+    expect(
+      spkiBase64FromJwk(key!.n, key!.e),
+      'la clé PUBLIÉE diffère de la clé de la paire injectée au backend : le middleware ' +
+        'découvrirait une clé qui ne vérifie aucun jeton réel.',
+    ).toBe(PUBLIC_KEY_SPKI_BASE64)
   })
 
   /**

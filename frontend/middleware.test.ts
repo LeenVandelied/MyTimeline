@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server'
 
 import middleware, { config } from './middleware'
 import { AUTH_COOKIE_NAME } from '@/lib/auth-guard-paths'
-import { resetVerificationKeyCache } from '@/lib/auth-token-verify'
+import { resetJwksCache } from '@/lib/auth-jwks'
 import { SUPPORTED_LOCALES } from '@/i18n/locales'
 
 /**
@@ -107,10 +107,11 @@ describe('middleware — cookie jwt présent', () => {
     },
   )
 
-  it('DÉGRADÉ (AUTH_JWT_PUBLIC_KEY absente) : un cookie arbitraire passe encore', async () => {
-    // Comportement d'avant #323, conservé TEL QUEL quand la clé publique n'est pas
-    // configurée (dev local, CI e2e, preview) — cf. le bloc « signature RS256 » plus
-    // bas pour le comportement AVEC clé. Ancré ici pour que le dégradé reste VISIBLE :
+  it('DÉGRADÉ (AUTH_JWKS_URL absente) : un cookie arbitraire passe encore', async () => {
+    // Comportement d'avant #323, conservé TEL QUEL quand la découverte JWKS n'est pas
+    // configurée (dev local, preview, serveur E2E :3000) — cf. le bloc « signature RS256 »
+    // plus bas pour le comportement AVEC découverte. Ancré ici pour que le dégradé reste
+    // VISIBLE :
     // c'est `JwtFilter` (401) + `useAuthGuard` qui tranchent réellement dans ce mode.
     const req = new NextRequest(new URL('/fr/dashboard', ORIGIN))
     req.cookies.set(AUTH_COOKIE_NAME, 'ceci-n-est-pas-un-jwt')
@@ -409,19 +410,42 @@ describe('middleware — origine canonique du Location (#322)', () => {
 describe('middleware — signature RS256 du cookie (#323)', () => {
   /**
    * #323 — la garde ne se contente plus de la PRÉSENCE du cookie : elle vérifie sa
-   * signature avec la clé PUBLIQUE (`AUTH_JWT_PUBLIC_KEY`), ce que la migration de
-   * `JwtService` en RS256 rend possible sans exposer de secret d'émission à l'Edge.
+   * signature avec la clé PUBLIQUE, ce que la migration de `JwtService` en RS256 rend
+   * possible sans exposer de secret d'émission à l'Edge.
+   *
+   * #358 — cette clé est DÉCOUVERTE via le JWKS du backend (`AUTH_JWKS_URL`), plus lue
+   * dans une variable d'environnement. Le `fetch` est donc stubbé ici : ce bloc vérifie
+   * l'INTÉGRATION middleware (307 vs 200), pas le protocole de découverte, couvert
+   * finement par `src/lib/auth-jwks.test.ts` et `src/lib/auth-token-verify.test.ts`.
    *
    * Les jetons sont signés ICI avec une paire générée à la volée (aucune clé committée,
-   * dépôt PUBLIC). La mécanique de vérification elle-même est couverte finement par
-   * `src/lib/auth-token-verify.test.ts` ; ce bloc vérifie l'INTÉGRATION : le rejet doit
-   * produire une REDIRECTION 307, jamais un throw — une exception non catchée ici
-   * deviendrait un 500 sur toutes les routes protégées (BUG-S45-001).
+   * dépôt PUBLIC). Le rejet doit produire une REDIRECTION 307, jamais un throw — une
+   * exception non catchée ici deviendrait un 500 sur toutes les routes protégées
+   * (BUG-S45-001).
    */
   const RS256 = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' } as const
 
+  const JWKS_URL = 'http://backend.test/.well-known/jwks.json'
+
   let keyPair: CryptoKeyPair
-  let publicKeyBase64: string
+  let publicJwk: JsonWebKey
+
+  /** Active la découverte : URL posée + JWKS servi par un `fetch` stubbé. */
+  const enableJwksDiscovery = (): void => {
+    process.env.AUTH_JWKS_URL = JWKS_URL
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              keys: [{ kty: publicJwk.kty, n: publicJwk.n, e: publicJwk.e, alg: 'RS256', use: 'sig' }],
+            }),
+            { status: 200, headers: { 'content-type': 'application/json' } },
+          ),
+      ),
+    )
+  }
 
   const base64Url = (bytes: ArrayBuffer): string => {
     let binary = ''
@@ -457,20 +481,20 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
       true,
       ['sign', 'verify'],
     )
-    publicKeyBase64 = base64Url(await crypto.subtle.exportKey('spki', keyPair.publicKey))
-      .replace(/-/g, '+')
-      .replace(/_/g, '/')
+    publicJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey)
   })
 
   afterEach(() => {
-    delete process.env.AUTH_JWT_PUBLIC_KEY
-    // Le cache d'import de clé est global au module : sans reset, une clé posée par un
-    // cas resterait active dans le suivant (dont ceux qui testent le DÉGRADÉ).
-    resetVerificationKeyCache()
+    delete process.env.AUTH_JWKS_URL
+    vi.unstubAllGlobals()
+    // Cache JWKS et garde-fou anti-tempête sont globaux au module : sans reset, une clé
+    // découverte par un cas resterait active dans le suivant (dont ceux qui testent le
+    // DÉGRADÉ).
+    resetJwksCache()
   })
 
   it('laisse passer un jeton BIEN SIGNÉ et non expiré', async () => {
-    process.env.AUTH_JWT_PUBLIC_KEY = publicKeyBase64
+    enableJwksDiscovery()
 
     const response = await middleware(requestWithToken(await signToken(3600)))
 
@@ -479,7 +503,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   })
 
   it('REDIRIGE (307) un jeton à signature invalide — jamais un throw, jamais un 500', async () => {
-    process.env.AUTH_JWT_PUBLIC_KEY = publicKeyBase64
+    enableJwksDiscovery()
     const tampered = `${(await signToken(3600)).slice(0, -6)}AAAAAA`
 
     const response = await middleware(requestWithToken(tampered))
@@ -489,7 +513,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   })
 
   it('REDIRIGE un cookie qui n’est pas un JWT du tout', async () => {
-    process.env.AUTH_JWT_PUBLIC_KEY = publicKeyBase64
+    enableJwksDiscovery()
 
     const response = await middleware(requestWithToken('ceci-n-est-pas-un-jwt'))
 
@@ -498,7 +522,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   })
 
   it('REDIRIGE un jeton EXPIRÉ (le trou fonctionnel que #323 vient fermer)', async () => {
-    process.env.AUTH_JWT_PUBLIC_KEY = publicKeyBase64
+    enableJwksDiscovery()
 
     const response = await middleware(requestWithToken(await signToken(-60)))
 
@@ -512,17 +536,22 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
     expect(response.status).toBe(200)
   })
 
-  it('DÉGRADE sans erreur quand la clé publique configurée est ILLISIBLE', async () => {
-    // Fail-closed déconnecterait tout le monde sur une faute de frappe ; le backend
-    // reste seul juge (401). Limite assumée, ADR-004 §Vérification de signature RS256.
+  it('DÉGRADE sans erreur quand le JWKS est configuré mais INJOIGNABLE', async () => {
+    // Fail-closed déconnecterait tout le monde à la moindre indisponibilité du backend ;
+    // celui-ci reste seul juge (401). Limite assumée, ADR-004 §Vérification de signature.
     //
-    // ⚠ `console.warn` MOCKÉ (MEMO-007, revue S50 2e cycle) : ce cas traverse
-    // `warnUnreadableKeyOnce`, qui écrivait un bloc `stderr |` dans la sortie de la suite.
-    // Le CONTENU du message est couvert par `auth-token-verify.test.ts` ; ici on ne fait
-    // que taire le canal, pour qu'un run vert reste silencieux.
+    // ⚠ `console.warn` mocké (MEMO-007) : hors production le module est muet, mais le mock
+    // garde le test insensible à un futur changement de seuil de signalisation. Le CONTENU
+    // du message est couvert par `auth-token-verify.test.ts`.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     try {
-      process.env.AUTH_JWT_PUBLIC_KEY = 'pas-une-cle-publique'
+      process.env.AUTH_JWKS_URL = JWKS_URL
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => {
+          throw new TypeError('fetch failed')
+        }),
+      )
 
       const response = await middleware(requestWithToken('cookie-arbitraire'))
 
@@ -532,10 +561,21 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
     }
   })
 
+  it('ne DÉCOUVRE pas le JWKS à chaque requête (coût Edge)', async () => {
+    enableJwksDiscovery()
+    const token = await signToken(3600)
+
+    for (let i = 0; i < 4; i += 1) {
+      expect((await middleware(requestWithToken(token))).status).toBe(200)
+    }
+
+    expect(vi.mocked(globalThis.fetch)).toHaveBeenCalledTimes(1)
+  })
+
   it('n’applique la vérification QUE sur les routes protégées', async () => {
     // Une route publique ne doit jamais coûter une vérification RSA ni être redirigée
     // à cause d'un cookie périmé traînant dans le navigateur.
-    process.env.AUTH_JWT_PUBLIC_KEY = publicKeyBase64
+    enableJwksDiscovery()
 
     const response = await middleware(requestWithToken(await signToken(-60), '/fr/home'))
 
@@ -545,7 +585,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   it('compose avec l’origine canonique (#322) : le rejet est redirigé vers l’hôte canonique', async () => {
     // Les deux durcissements du sprint doivent tenir ENSEMBLE : la 307 émise par la
     // vérification de signature passe bien par `withCanonicalOrigin`.
-    process.env.AUTH_JWT_PUBLIC_KEY = publicKeyBase64
+    enableJwksDiscovery()
     process.env.APP_CANONICAL_HOST = 'app.mytimeline.test'
 
     const req = new NextRequest(new URL('/fr/dashboard', 'http://evil.example'), {

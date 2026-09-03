@@ -298,8 +298,8 @@ jobs:
       # reellement livre (SSG de `generateStaticParams()`, prerendu de
       # `/_not-found`, minification, `experimental.globalNotFound`).
       #
-      # UN SEUL `next build`, DEUX `next start`. `middleware.ts:110-118` lit
-      # `AUTH_JWT_PUBLIC_KEY` au RUNTIME, par requete, explicitement NON inlinee
+      # UN SEUL `next build`, DEUX `next start`. `middleware.ts` lit
+      # `AUTH_JWKS_URL` au RUNTIME, par requete, explicitement NON inlinee
       # au build (mesure #322) : seuls les PROCESS doivent differer, pas les
       # artefacts. Un second build couterait +2,5 a +3 min pour un resultat
       # identique.
@@ -345,8 +345,6 @@ jobs:
       # `.next/static` a la main — donc plus de plomberie pour zero gain.
       - name: Start frontend production servers (:3000 dégradé, :3001 vérifiant)
         working-directory: frontend
-        env:
-          VERIFYING_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
         run: |
           # ⚠ BINAIRE DIRECT, PAS `npx` — REVUE S64, NE PAS « SIMPLIFIER ».
           # `npx <cmd>` FORK un enfant : `$!` capturait donc le PID du WRAPPER
@@ -362,7 +360,7 @@ jobs:
           # directement : `$!` est alors le PID du serveur lui-même.
           ./node_modules/.bin/next start -p 3000 > next-degraded.log 2>&1 &
           degraded_pid=$!
-          AUTH_JWT_PUBLIC_KEY="$VERIFYING_PUBLIC_KEY" \
+          AUTH_JWKS_URL=http://localhost:8080/.well-known/jwks.json \
             ./node_modules/.bin/next start -p 3001 > next-verifying.log 2>&1 &
           verifying_pid=$!
 
@@ -410,7 +408,7 @@ jobs:
       #         -> 307 vers /fr/login.
       #     C'est exactement l'assertion du 1er cas d'`auth-signature.spec.ts`
       #     (« garde anti-degrade »), mais jouee ICI, en curl, AVANT les passes :
-      #     si un jour quelqu'un retire `AUTH_JWT_PUBLIC_KEY` du step, ou pointe
+      #     si un jour quelqu'un retire `AUTH_JWKS_URL` du step, ou pointe
       #     les deux passes sur le meme serveur, le job rougit sur une erreur
       #     NOMMEE au lieu de rester vert en n'exercant plus rien.
       - name: Wait for frontends + oracles (proxy /api, mode d'authentification)
@@ -442,11 +440,11 @@ jobs:
           echo ":3001 -> HTTP ${verifying} (attendu 307 = mode VÉRIFIANT)"
 
           if [ "$degraded" != "200" ]; then
-            echo "::error::(:3000) attendu 200 (mode dégradé), reçu ${degraded}. La passe 1 (golden path) et auth-guard.spec.ts § DÉGRADÉ supposent un serveur SANS AUTH_JWT_PUBLIC_KEY."
+            echo "::error::(:3000) attendu 200 (mode dégradé), reçu ${degraded}. La passe 1 (golden path) et auth-guard.spec.ts § DÉGRADÉ supposent un serveur SANS AUTH_JWKS_URL (#358 : la clé se découvre via JWKS, il n'y a plus de variable de clé publique)."
             exit 1
           fi
           if [ "$verifying" != "307" ]; then
-            echo "::error::(:3001) attendu 307 (mode vérifiant), reçu ${verifying}. 200 = le serveur Next ne voit PAS AUTH_JWT_PUBLIC_KEY : la passe 2 RS256 n'exercerait plus la vérification de signature tout en restant VERTE. Vérifier le step « Start frontend production servers »."
+            echo "::error::(:3001) attendu 307 (mode vérifiant), reçu ${verifying}. 200 = le serveur Next n'a pas pu découvrir la clé via AUTH_JWKS_URL (variable absente, ou backend :8080 / /.well-known/jwks.json injoignable) : la passe 2 RS256 n'exercerait plus la vérification de signature tout en restant VERTE. Vérifier le step « Start frontend production servers » et le JWKS du backend."
             exit 1
           fi
 
@@ -477,15 +475,18 @@ jobs:
         run: npm run test:e2e -- --output=test-results/passe-1-golden-path
 
       # PASSE 2 — MODE VÉRIFIANT (audit de couverture S50), contre le SECOND serveur
-      # de production (:3001), démarré AVEC `AUTH_JWT_PUBLIC_KEY` appairée à la clé
-      # privée du backend : le middleware vérifie alors vraiment la signature RS256.
-      # Sans cette passe, la chaîne backend -> Edge n'était prouvée que par des tests
-      # unitaires de part et d'autre, jamais bout à bout.
+      # de production (:3001), démarré AVEC `AUTH_JWKS_URL` pointant sur le JWKS du
+      # backend (#358) : le middleware y découvre la clé publique appairée à la clé
+      # privée en service, et vérifie alors vraiment la signature RS256. Sans cette
+      # passe, la chaîne backend -> Edge n'était prouvée que par des tests unitaires
+      # de part et d'autre, jamais bout à bout.
       #
-      # ⚠ `AUTH_JWT_PUBLIC_KEY` reste posée sur le PROCESS DE TEST aussi : c'est elle
-      # que lit le `test.skip()` en tête d'`auth-signature.spec.ts`. Sans elle les 5 cas
-      # SKIPPENT — un job vert qui n'exerce rien. Le serveur, lui, la tient de son
-      # propre step de démarrage : les deux ne sont pas redondantes.
+      # ⚠ `AUTH_JWT_PUBLIC_KEY` reste posée sur le PROCESS DE TEST, et SEULEMENT là.
+      # Depuis #358 le SERVEUR ne la lit plus (il découvre sa clé via le JWKS) — ne pas
+      # la « rétablir » sur le step de démarrage en croyant réparer quelque chose. Ici
+      # c'est elle que lit le `test.skip()` en tête d'`auth-signature.spec.ts` et dont
+      # `e2e/support/rs256.ts` se sert pour forger/vérifier. Sans elle les cas SKIPPENT
+      # — un job vert qui n'exerce rien. Les deux ne sont pas redondantes.
       #
       # Périmètre volontairement réduit à `auth-signature.spec.ts` : les autres specs sont
       # indifférentes au mode, les rejouer doublerait la durée du job pour rien.

@@ -19,6 +19,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
+import com.matimeline.eventmanager.infrastructure.adapters.controllers.JwksController;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -141,6 +142,12 @@ public class SecurityConfig {
                 // Sans permitAll, TOUTE exception non gérée (500) se redispatche sur /error,
                 // échoue l'auth et ressort en 401 « unauthorized » trompeur (masque l'erreur réelle).
                 .requestMatchers("/error").permitAll()
+                // JWKS (#358) — DOIT être public. C'est la source de vérité de la clé
+                // PUBLIQUE de vérification RS256, consommée par le middleware Next AVANT
+                // toute authentification. Le protéger produirait une boucle : 401 -> pas de
+                // clé -> garde dégradée -> 401. Une clé publique n'est pas un secret, et le
+                // document ne contient QUE modulus + exposant public (cf. JwkResponse).
+                .requestMatchers(JwksController.JWKS_PATH).permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/{userId}/products/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/api/products/**").hasAuthority("ROLE_USER")

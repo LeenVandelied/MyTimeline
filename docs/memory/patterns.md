@@ -354,6 +354,7 @@ disponibles nativement dans le runtime Edge, **zéro dépendance de production a
 séquence et ne s'improvise pas au milieu d'un sprint. La lecture de la clé se fait en accès **littéral**
 (`process.env.AUTH_JWT_PUBLIC_KEY`, forme reconnue par l'analyse statique de Next) et **non** `NEXT_PUBLIC_*`,
 donc au runtime et non inlinée au build. (Sprint 50, #323)
+> ⚠️ **PÉRIMÉ Sprint 68 (#358)** sur la SOURCE de la clé : le middleware ne lit plus `AUTH_JWT_PUBLIC_KEY` — il découvre la clé publique sur le JWKS du backend (`AUTH_JWKS_URL`). Le reste (WebCrypto, zéro dépendance, accès littéral au runtime) tient. Cf. [[DEC-S68-001]].
 
 ## PAT-S50-002 — Dégradé volontaire vs panne de configuration : deux cas, deux traitements
 Sur une variable d'environnement qui active une protection, distinguer :
@@ -643,3 +644,6 @@ jsdom n'expose pas `visualViewport`. Le stub réutilisable (`frontend/src/__test
 
 ## PAT-S67-002 — Prouver qu'un `overrides` npm est load-bearing sans écrire dans le lockfile partagé
 Copier `package.json` + `package-lock.json` **hors du dépôt** (scratchpad), y retirer l'override, puis `npm install --package-lock-only --ignore-scripts` suivi de `npm audit --omit=dev`. Le delta de vulnérabilités répond à la question « cet override sert-il encore ? » sans jamais toucher l'arbre du worktree — décisif quand d'autres agents travaillent sur le même lockfile. Anti-pattern : tester en place (écrit le lock partagé, et un `npm install` de vérification suffit à polluer un diff qu'on voulait vide). Oracle complémentaire pour un changement censé être neutre (ex. remplacer `"$postcss"` par sa littérale) : le md5 du lockfile doit être IDENTIQUE avant/après.
+
+## PAT-S68-001 — Re-découverte d'une clé JWKS déclenchée par le seul « échec inexplicable », sous cooldown — jamais sur tout rejet
+Un middleware Edge qui vérifie une signature avec une clé découverte (JWKS, #358) doit rafraîchir sa clé quand la clé publiée a tourné. Le déclencheur correct est étroit : signature invalide sur un jeton PAR AILLEURS bien formé et non expiré (`alg` attendu, `sub` présent, `exp`/`nbf` OK) — le seul cas qui signe une rotation de clé plausible. Déclencher sur expiration, malformation ou `alg` inattendu ne prouve aucune rotation. Et le refetch est plafonné par un cooldown (ex. 1/min) + cache négatif. Anti-pattern : refetch sur TOUT rejet de signature — un attaquant envoyant des cookies forgés en rafale produirait alors une rafale de `fetch` vers `/.well-known/jwks.json`, soit un **DoS amplifié vers son propre backend**, déclenché par du trafic non authentifié. Le dédoublonnage des `fetch` concurrents (promesse partagée, jamais mémorisée si rejetée) complète la garde.

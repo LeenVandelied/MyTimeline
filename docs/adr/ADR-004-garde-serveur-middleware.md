@@ -71,10 +71,10 @@ se matérialise que dans le cas marginal du cookie présent-mais-expiré.
 
 ## Décision
 
-> ⚠ **Amendement #323 (sprint 50)** — le point 1 ci-dessous décrit l'état livré par
-> #302 et reste exact **en mode dégradé** (clé publique non configurée). Avec
-> `AUTH_JWT_PUBLIC_KEY` renseignée, la garde vérifie EN PLUS la signature et
-> l'expiration. Le point 5 (« la validation RÉELLE reste backend ») demeure vrai :
+> ⚠ **Amendement #323 (sprint 50), révisé par #358 (sprint 68)** — le point 1 ci-dessous
+> décrit l'état livré par #302 et reste exact **en mode dégradé** (JWKS non configuré ou
+> injoignable). Avec `AUTH_JWKS_URL` renseignée et le JWKS joignable, la garde vérifie EN
+> PLUS la signature et l'expiration. Le point 5 (« la validation RÉELLE reste backend ») demeure vrai :
 > la révocation de session n'est vérifiable qu'en base.
 
 1. **Le middleware vérifie la seule présence du cookie `jwt`.** Nom du cookie
@@ -258,8 +258,14 @@ présent mais expiré/forgé laisse passer le rendu » et « n'importe qui peut 
 cookie nommé `jwt` » — étaient la conséquence directe du **HMAC symétrique** de
 `JwtService` : le secret qui vérifie était celui qui émet, donc impubliable côté Edge
 (§Option A). `JwtService` signe désormais en **RS256** ; `frontend/middleware.ts`
-vérifie signature + `exp` avec la seule clé **publique** (`AUTH_JWT_PUBLIC_KEY`).
-Un cookie forgé ou périmé produit maintenant un **307 vers `/login`**.
+vérifie signature + `exp` avec la seule clé **publique**. Un cookie forgé ou périmé
+produit maintenant un **307 vers `/login`**.
+
+**#358 (sprint 68) — la clé n'est plus une variable, elle est DÉCOUVERTE.** Le backend
+publie sa clé publique sur `GET /.well-known/jwks.json` (`JwksController`, public, non
+authentifié) et le middleware l'y lit via `AUTH_JWKS_URL`, avec cache (TTL 10 min), cache
+négatif (30 s), timeout de 2 s et re-découverte forcée plafonnée à une par minute quand
+une signature ne s'explique par aucune clé connue. `AUTH_JWT_PUBLIC_KEY` est **supprimée**.
 
 **Vérification par WebCrypto natif, AUCUNE dépendance ajoutée.**
 `crypto.subtle.importKey('spki', …)` + `crypto.subtle.verify('RSASSA-PKCS1-v1_5', …)`
@@ -283,9 +289,10 @@ aux deux points d'émission. Ancré par test des deux côtés.
   valide jusqu'à son `exp`. Seul `JwtFilter` consulte la table des sessions. Un
   utilisateur déconnecté ailleurs franchit donc encore la garde — et reçoit 401 sur
   chaque appel API.
-- **Dégradé assumé sur clé absente ou illisible.** `AUTH_JWT_PUBLIC_KEY` non
-  configurée, vide, ou non décodable ⇒ la garde retombe sur la **présence seule** du
-  cookie, c'est-à-dire le contrat de #302. Fail-**open**, délibérément : une garde
+- **Dégradé assumé sur JWKS absent ou injoignable.** `AUTH_JWKS_URL` non configurée,
+  vide, non http(s), ou JWKS injoignable/illisible (timeout, non-2xx, aucune clé RSA
+  exploitable) ⇒ la garde retombe sur la **présence seule** du cookie, c'est-à-dire le
+  contrat de #302. Fail-**open**, délibérément : une garde
   fail-closed sur une clé mal saisie déconnecterait 100 % des utilisateurs sans
   qu'aucun signal ne l'explique, alors que le backend continue, lui, de refuser les
   jetons invalides. Même arbitrage que `APP_CANONICAL_HOST` (#322) et que le
@@ -299,35 +306,32 @@ aux deux points d'émission. Ancré par test des deux côtés.
   (BUG-S45-001) — juste le signal qui manquait : sans lui, le seul symptôme d'un #322/#323
   intégralement inerte était l'*absence* d'un avertissement. Un vrai garde-fou (refus de
   démarrage) reste un follow-up commun aux deux variables.
-- **Une clé publique DÉPAREILLÉE renvoie tout le monde vers `/login`.** C'est le mode
-  de panne propre à cette évolution : la clé frontend et la clé privée backend sont
-  deux variables distinctes, sans mécanisme de découverte (pas de JWKS). Le symptôme
-  est une boucle « je me connecte, je suis redirigé » — non bloquante (l'API répond
-  normalement) mais très déroutante. Mitigations retenues : (a) le backend n'expose
-  qu'**une** variable, la clé publique étant DÉRIVÉE de la privée (`RsaKeyMaterial`),
-  ce qui supprime la moitié du risque ; (b) le backend **journalise au boot** la valeur
-  exacte à coller (dans les DEUX modes, configuré comme éphémère). Un endpoint JWKS
-  supprimerait le reste — hors scope, noté en follow-up.
-  **⚠ AUCUN signal ne couvre ce cas** (revue S50, 2e cycle) : une clé BIEN FORMÉE mais
-  dépareillée s'importe sans erreur, donc ni `warnUnreadableKeyOnce` (clé illisible) ni
-  l'avertissement d'absence ne se déclenchent — seules les signatures échouent, une par une.
-  C'est la panne la plus visible pour l'utilisateur (100 % des sessions renvoyées vers
-  `/login`) et la moins diagnosticable. **Remède immédiat : VIDER `AUTH_JWT_PUBLIC_KEY`**
-  (retour au dégradé de #302, tout le monde repasse), puis recoller la valeur journalisée
-  au boot du backend actuellement en service — et non une valeur re-dérivée à la main en
-  `openssl`, manipulation qui produit précisément une paire dépareillée au moindre écart.
-- **CI e2e en mode dégradé.** Le job e2e démarre le backend sans clé (paire éphémère,
-  car aucune clé privée ne peut être committée dans un dépôt **public**) et ne publie
-  donc pas de `AUTH_JWT_PUBLIC_KEY`. La vérification de signature est couverte en
-  **unitaire** (`middleware.test.ts`, `auth-token-verify.test.ts`), **pas en E2E** :
-  `e2e/auth-guard.spec.ts` exerce le chemin dégradé, inchangé.
+- ~~**Une clé publique DÉPAREILLÉE renvoie tout le monde vers `/login`.**~~ →
+  **FERMÉ par #358 (sprint 68)**. Ce mode de panne venait de l'existence de DEUX
+  configurations de clé (privée backend / publique frontend) sans mécanisme de
+  découverte. Il n'y en a plus qu'une : le frontend lit la clé sur le JWKS du backend,
+  donc une clé « dépareillée » n'est plus représentable. La rotation devient atomique
+  côté distribution — mais reste une **déconnexion globale** tant que le backend ne
+  publie qu'une clé à la fois (JWKS à deux clés = follow-up).
+  **Mode de panne de remplacement, à surveiller : JWKS injoignable depuis le serveur
+  Next.** Piège classique — poser l'URL vue du NAVIGATEUR (`NEXT_PUBLIC_API_URL`) au
+  lieu d'une adresse de serveur à serveur. Effet : dégradé « présence seule », signalé
+  par un `console.warn` one-shot en production. Sonder depuis le conteneur frontend
+  lui-même, jamais depuis le poste de l'opérateur.
+- **CI e2e : deux serveurs Next, deux modes.** Depuis l'audit S50 et #462, le job `e2e`
+  lance UN build de production servi DEUX fois : `:3000` **dégradé** (aucune découverte
+  configurée) et `:3001` **vérifiant**. `e2e/auth-guard.spec.ts § DÉGRADÉ` couvre le
+  premier, `e2e/auth-signature.spec.ts` le second. Depuis #358, ce qui distingue les deux
+  n'est plus `AUTH_JWT_PUBLIC_KEY` mais la présence de `AUTH_JWKS_URL` sur le process
+  serveur : **le mode dégradé reste atteignable en CI, et c'est cette variable qui
+  l'atteint.**
 
 **Rotation et distribution des clés.** Procédure opérationnelle complète :
 `docs/memory/devops/secret-rotation-runbook.md §2`. En résumé : la clé privée
 (`JWT_PRIVATE_KEY`) est un secret de plateforme au même titre que `DB_PASSWORD` ; la
-clé publique (`AUTH_JWT_PUBLIC_KEY`) n'en est pas un et se déploie comme une variable
-de configuration ordinaire. Les deux se posent **dans le même déploiement** (publique
-d'abord, en tolérance dégradée, puis privée) — jamais l'une sans l'autre.
+clé publique n'en est pas un — et depuis #358 elle ne se déploie plus du tout : le
+frontend la découvre sur le JWKS du backend. Seule `AUTH_JWKS_URL` (une URL, pas une clé)
+est à poser côté frontend, une fois pour toutes.
 
 **Stratégie de transition — bascule SÈCHE, assumée.** Le changement de matériel de
 signature invalide **100 %** des jetons en circulation : tout utilisateur connecté est
@@ -354,14 +358,15 @@ checklist dans le runbook.
 
 - ~~Migrer la signature JWT en asymétrique (RS256)~~ → **traité #323 (sprint 50)**,
   cf. §Limites « Vérification de signature RS256 ». Restent ouverts :
-  - exposer un **endpoint JWKS** côté backend pour que le middleware découvre la clé
-    publique au lieu de la recevoir en variable — supprimerait le mode de panne
-    « clé dépareillée » et rendrait la rotation atomique ;
+  - ~~exposer un **endpoint JWKS**~~ → **traité #358 (sprint 68)** ;
   - **révocation vérifiable en Edge** (le `jti` révoqué passe encore la garde) ;
   - couvrir la vérification de signature en **E2E** (exige de provisionner une paire
     à la volée dans le job CI, aucune clé ne pouvant être committée).
-- Rendre `AUTH_JWT_PUBLIC_KEY` **obligatoire en production**, comme
-  `APP_CANONICAL_HOST` : même absence de garde-fou frontend, même dégradé silencieux.
+- Rendre `AUTH_JWKS_URL` **obligatoire en production**, comme `APP_CANONICAL_HOST` :
+  même absence de garde-fou frontend, même dégradé silencieux.
+- Publier **deux clés** dans le JWKS le temps d'une rotation (l'ancienne + la nouvelle),
+  pour qu'une rotation cesse d'être une déconnexion globale. Le middleware essaie déjà
+  toutes les clés publiées ; c'est le backend qui ne sait charger qu'une paire (#358).
 - Synchroniser automatiquement `PROTECTED_APP_SEGMENTS` avec le contenu de
   `frontend/app/[locale]/(app)/` (script de lint, ou test qui lit le FS côté
   Node uniquement).

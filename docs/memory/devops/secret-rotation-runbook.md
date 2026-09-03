@@ -6,6 +6,9 @@
 > **Mis à jour Sprint 50 (2026-07-28, #323)** : §2 RÉÉCRITE — `JWT_SECRET` n'existe plus,
 > remplacé par `JWT_PRIVATE_KEY` (RS256) + `AUTH_JWT_PUBLIC_KEY` (frontend, non secrète) +
 > `EXPORT_TOKEN_SECRET` (tokens d'export, dédié).
+> **Mis à jour Sprint 68 (#358)** : §2 révisée — `AUTH_JWT_PUBLIC_KEY` **supprimée**, remplacée
+> par la découverte JWKS (`AUTH_JWKS_URL`, une URL et non une clé). L'« ordre imposé » de
+> rotation et le mode de panne « paire dépareillée » n'existent plus.
 > À exécuter **manuellement** le moment venu. Procédure par service détaillée :
 > `docs/memory/devops/external-services-inventory.md §3quater` — ✅ **le fichier existe désormais**
 > (créé au Sprint 50 par #249 ; il était référencé depuis le S35 alors qu'il n'avait jamais été écrit,
@@ -79,16 +82,18 @@ corrigé par `ff5dca3` (#34). Exposition secondaire dans `application-test.prope
 | Variable | Rôle | Secret ? | Où |
 |---|---|---|---|
 | `JWT_PRIVATE_KEY` | Signe les jetons d'authentification (RS256) | **OUI** | backend |
-| `AUTH_JWT_PUBLIC_KEY` | Vérifie la signature du cookie `jwt` dans le middleware Next | **NON** | frontend |
+| `AUTH_JWKS_URL` | **URL** (pas une clé) du JWKS où le middleware Next DÉCOUVRE la clé publique de vérification (#358) | **NON** | frontend |
 | `EXPORT_TOKEN_SECRET` | Signe les tokens de téléchargement d'export RGPD (HS256, dédié) | **OUI** | backend |
 
 - `JWT_PRIVATE_KEY` : clé privée RSA **PKCS#8 en Base64** (armure PEM tolérée), modulus
   **≥ 2048 bits**. La clé **publique en est DÉRIVÉE au boot** (`RsaKeyMaterial.fromPkcs8`) :
   il n'y a délibérément **pas** de seconde variable côté backend — une paire dépareillée
   serait indétectable.
-- `AUTH_JWT_PUBLIC_KEY` : format **SPKI Base64**. Ce n'est **pas** un secret (elle ne permet
-  que de vérifier, jamais d'émettre) : elle se déploie comme une variable de configuration
-  ordinaire, pas via le secrets-manager.
+- `AUTH_JWKS_URL` : **#358 — il n'y a plus de clé publique à distribuer.** Le backend publie
+  la sienne sur `GET /.well-known/jwks.json` (public, non authentifié) et le frontend l'y
+  découvre. Seule cette URL est configurée côté frontend, une fois pour toutes ; elle ne
+  change pas lors d'une rotation. ⚠ Elle doit être joignable **depuis le serveur Next**, pas
+  depuis le navigateur.
 - `EXPORT_TOKEN_SECRET` : HMAC Base64, ≥ 32 octets décodés. Reste symétrique **à dessein** —
   ces tokens ne sont vérifiés que par le backend (endpoint interne
   `/api/export/download/{jobId}?token=…`), aucune clé de vérification n'a à être distribuée.
@@ -105,25 +110,30 @@ garde-fou, la production déconnecterait tout le monde à chaque redéploiement,
 # Clé privée (SECRET — ne jamais committer, ne jamais coller dans un chat/issue/PR)
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
 openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64   # -> JWT_PRIVATE_KEY
-# Clé publique correspondante (NON secrète)
-openssl rsa -in jwt.pem -pubout -outform DER | base64             # -> AUTH_JWT_PUBLIC_KEY
+# (#358 — plus de seconde commande : la clé publique n'est plus distribuée à la main,
+#  le backend la publie sur /.well-known/jwks.json)
 # Secret des tokens de download d'export
 openssl rand -base64 48                                            # -> EXPORT_TOKEN_SECRET
 ```
 
 ### 2.3 Distribution et rotation
 
-⚠ **Ordre imposé** — la clé publique d'abord, la privée ensuite :
+⚠ **#358 — l'ordre imposé n'existe plus.** Il venait de l'existence de DEUX configurations de
+clé qu'il fallait faire converger sans fenêtre de divergence. Le frontend découvrant désormais
+la clé auprès du backend, une rotation se réduit à :
 
-- [ ] Déployer la **nouvelle `AUTH_JWT_PUBLIC_KEY`** côté frontend. Tant que le backend signe
-      avec l'ancienne clé, le middleware rejette les jetons → il faut donc **vider
-      `AUTH_JWT_PUBLIC_KEY`** le temps de la bascule (mode dégradé : garde sur la seule
-      présence du cookie, le backend reste seul juge — cf. ADR-004), OU basculer les deux
-      services dans le **même déploiement atomique**.
-- [ ] Déployer la **nouvelle `JWT_PRIVATE_KEY`** côté backend.
-- [ ] Reposer `AUTH_JWT_PUBLIC_KEY` avec la clé publique de la NOUVELLE paire.
-- [ ] La clé privée ne quitte **jamais** le secrets-manager. La clé publique peut circuler
-      librement (elle est publiable, c'est tout son intérêt).
+- [ ] Déployer la **nouvelle `JWT_PRIVATE_KEY`** côté backend, puis redémarrer. Le JWKS publie
+      immédiatement la nouvelle clé publique ; le frontend la récupère de lui-même.
+- [ ] Aucune action côté frontend. `AUTH_JWKS_URL` ne change pas.
+- [ ] ⚠ **La rotation reste une DÉCONNEXION GLOBALE.** Le backend ne charge qu'UNE paire :
+      les jetons déjà émis, signés par l'ancienne clé, deviennent invalides (côté `JwtFilter`
+      comme côté middleware). Communiquer avant. Le correctif de fond — publier l'ancienne ET
+      la nouvelle clé le temps que les jetons expirent — est un follow-up (le middleware essaie
+      déjà toutes les clés du JWKS ; c'est le backend qui ne sait en charger qu'une).
+- [ ] ⚠ **Délai de propagation, borné :** un isolat Edge peut servir l'ancienne clé jusqu'à
+      **10 min** (TTL du cache), mais une signature inexplicable déclenche une re-découverte
+      forcée (plafonnée à une par minute) — la bascule effective se compte donc en secondes.
+- [ ] La clé privée ne quitte **jamais** le secrets-manager.
 - [ ] `EXPORT_TOKEN_SECRET` se rotationne indépendamment (aucun lien avec l'auth depuis #323).
       Effet de bord : les URLs de téléchargement d'export déjà émises (TTL 24 h, ADR-003)
       deviennent invalides — l'utilisateur relance un export.
@@ -145,12 +155,18 @@ openssl rand -base64 48                                            # -> EXPORT_T
       sa présence signifie que `JWT_PRIVATE_KEY` n'a pas été prise en compte.
 - [ ] Ne jamais réintroduire la valeur historique exposée (`JWT_SECRET`) sous un autre nom.
 
-### 2.5 Mode de panne à connaître : clé publique dépareillée
+### 2.5 Mode de panne à connaître : JWKS injoignable depuis le serveur Next
 
-Si `AUTH_JWT_PUBLIC_KEY` ne correspond pas à `JWT_PRIVATE_KEY`, **tout utilisateur connecté est
-renvoyé vers `/login`** en boucle (l'API, elle, répond normalement — le backend vérifie avec sa
-propre clé). Diagnostic : vider `AUTH_JWT_PUBLIC_KEY` rétablit immédiatement le service en mode
-dégradé. Correction de fond envisagée : endpoint **JWKS** côté backend (follow-up ADR-004).
+~~Clé publique dépareillée~~ → **fermé par #358** : il n'existe plus de seconde copie de la clé,
+donc plus de paire dépareillable.
+
+Le mode de panne de remplacement : `AUTH_JWKS_URL` pointe une adresse que le **serveur** Next
+n'atteint pas (piège classique : y avoir mis l'URL vue du NAVIGATEUR). Effet — la garde retombe
+en dégradé « présence seule », un `console.warn` one-shot est émis en production, et rien
+d'autre ne le signale. Diagnostic : sonder DEPUIS le conteneur frontend
+(`docker compose exec frontend wget -qO- "$AUTH_JWKS_URL"`), jamais depuis le poste de
+l'opérateur. Second contrôle : `GET /.well-known/jwks.json` doit répondre **200 sans
+authentification** — un 401 signifie que la whitelist de `SecurityConfig` a sauté.
 
 ## 3. `BREVO_API_KEY` — ✅ vérification close : NON exposée
 
@@ -186,7 +202,7 @@ Restent à faire **par le dev, au premier déploiement prod** :
 
 - [ ] `DB_PASSWORD` régénéré et déployé (§1) — en pratique : provisionner la base avec une valeur
       neuve, jamais celle de l'historique.
-- [ ] `JWT_PRIVATE_KEY` + `AUTH_JWT_PUBLIC_KEY` + `EXPORT_TOKEN_SECRET` générés et déployés (§2.2/§2.3),
+- [ ] `JWT_PRIVATE_KEY` + `EXPORT_TOKEN_SECRET` générés et déployés, `AUTH_JWKS_URL` posée (§2.2/§2.3),
       avec communication préalable sur la déconnexion globale si des sessions existent alors.
       ✅ Le MÉCANISME est livré (#323, Sprint 50) ; il reste à poser les VALEURS au déploiement.
 - [x] Vérification `BREVO_API_KEY` (§3) — **faite au Sprint 50 : non exposée**.

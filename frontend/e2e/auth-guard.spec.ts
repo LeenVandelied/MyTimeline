@@ -170,14 +170,18 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     context,
     baseURL,
   }) => {
-    // ⚠ MISE À JOUR #323 (sprint 50) — ce test décrit désormais le mode DÉGRADÉ,
-    // pas le comportement nominal. Depuis #323, le middleware VÉRIFIE la signature
-    // RS256 du cookie quand `AUTH_JWT_PUBLIC_KEY` est configurée, et un cookie
-    // bidon est alors redirigé (307). L'environnement e2e ne pose PAS cette
-    // variable : le backend du job CI signe avec une paire ÉPHÉMÈRE (aucune clé
-    // privée n'est committable dans un dépôt PUBLIC), donc aucune clé publique
-    // stable n'est publiable au frontend. Le chemin dégradé reste donc le chemin
-    // exercé ici, et il doit continuer de fonctionner.
+    // ⚠ MISE À JOUR #323 (sprint 50), révisée #358 (sprint 68) — ce test décrit le
+    // mode DÉGRADÉ, pas le comportement nominal. Le middleware VÉRIFIE la signature
+    // RS256 du cookie dès qu'il dispose de la clé publique, et un cookie bidon est
+    // alors redirigé (307).
+    //
+    // #358 — CE QUI REND LE DÉGRADÉ ATTEIGNABLE A CHANGÉ. Ce n'est plus « aucune clé
+    // publique publiable » : le backend PUBLIE désormais sa clé sur son JWKS, y compris
+    // avec une paire éphémère. Le mode dégradé est atteint parce que le serveur Next
+    // de la passe 1 (`:3000`) est démarré SANS `AUTH_JWKS_URL` — donc sans découverte.
+    // C'est un choix explicite du job CI, pas une fatalité : le chemin dégradé reste le
+    // comportement réellement servi quand la découverte n'est pas configurée (dev local
+    // par défaut, preview mal configurée), et il doit continuer de fonctionner.
     //
     // La vérification de signature elle-même est couverte en UNITAIRE :
     // `frontend/middleware.test.ts` (§ signature RS256) et
@@ -190,15 +194,16 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     // contre une stack appairée, il échouait (200 attendu, 307 reçu) alors que le
     // code se comportait CORRECTEMENT. On le conditionne donc à la configuration
     // observable, plutôt que de le figer sur un seul des deux mondes :
-    //   - clé absente (config CI historique)  -> ce cas s'exécute (contrat #302) ;
-    //   - clé présente (stack appairée)       -> `auth-signature.spec.ts` prend le
+    //   - découverte non configurée (:3000)  -> ce cas s'exécute (contrat #302) ;
+    //   - découverte configurée (:3001)       -> `auth-signature.spec.ts` prend le
     //     relais et affirme la 307 sur ce même cookie bidon.
     // Ne pas « réparer » ce test en durcissant l'assertion : ce serait supprimer la
     // couverture du dégradé, qui reste le mode réellement déployé en CI.
     test.skip(
       SIGNATURE_VERIFICATION_CONFIGURED,
-      'AUTH_JWT_PUBLIC_KEY configurée : le middleware VÉRIFIE la signature, le cookie bidon ' +
-        'est donc rejeté (307). Cas couvert par e2e/auth-signature.spec.ts.',
+      'Stack appairée (process de test porteur de la clé publique de forge) : le serveur ' +
+        'cible découvre la clé via son JWKS et VÉRIFIE la signature, le cookie bidon est ' +
+        'donc rejeté (307). Cas couvert par e2e/auth-signature.spec.ts.',
     )
 
     // ⚠ `baseURL`, PAS `http://localhost:3000` en dur — REVUE S64. Le cookie doit
