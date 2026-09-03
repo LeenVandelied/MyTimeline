@@ -11,11 +11,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+
+import com.matimeline.eventmanager.application.dtos.JwkResponse;
+import com.matimeline.eventmanager.application.dtos.JwksResponse;
 
 @Service
 public class JwtService {
@@ -58,20 +63,17 @@ public class JwtService {
         this.signingKey = keyPair.getPrivate();
         this.verificationKey = keyPair.getPublic();
 
-        // ⚠ Journalisée dans LES DEUX cas (revue S50), pas seulement sur le chemin éphémère.
-        // Avec JWT_PRIVATE_KEY posée (prod), c'était le SEUL moyen d'obtenir la valeur de
-        // AUTH_JWT_PUBLIC_KEY sans re-dériver la clé à la main en openssl depuis le secret —
-        // manipulation risquée qui produit une paire dépareillée au moindre écart. Le symptôme
-        // d'une paire dépareillée est muet et coûteux : le middleware rejette tout cookie
-        // authentique, donc l'utilisateur boucle vers /login sans message d'erreur.
-        // Une clé PUBLIQUE n'est pas un secret : la publier dans les logs est sans risque.
-        // ⚠ Passe par l'accesseur PUBLIC (revue S50) plutôt que de rappeler
-        // `RsaKeyMaterial.toSpkiBase64` : sans cela `getPublicKeySpkiBase64()` n'avait aucun
-        // appelant dans `main/`, et rien ne garantissait que la valeur journalisée reste bien
-        // celle que l'accesseur — seule référence citée dans la doc d'exploitation — produit.
-        log.info("Clé PUBLIQUE de vérification RS256 — valeur à poser dans AUTH_JWT_PUBLIC_KEY "
-                 + "côté frontend pour activer la vérification de signature du middleware : {}",
-                 getPublicKeySpkiBase64());
+        // ⚠ Journalisée dans LES DEUX cas, pas seulement sur le chemin éphémère.
+        // #358 — ce log n'est PLUS une étape de configuration : la clé publique est désormais
+        // PUBLIÉE par le backend sur /.well-known/jwks.json et découverte par le middleware
+        // Next, il n'y a plus rien à recopier à la main (AUTH_JWT_PUBLIC_KEY n'existe plus).
+        // Il reste un outil de DIAGNOSTIC : c'est la seule façon de constater d'un coup d'œil,
+        // dans les logs, quelle clé un backend donné utilise réellement — utile après une
+        // rotation, ou pour distinguer deux instances. Une clé PUBLIQUE n'est pas un secret.
+        // ⚠ Passe par l'accesseur PUBLIC plutôt que de rappeler `RsaKeyMaterial.toSpkiBase64` :
+        // sans cela `getPublicKeySpkiBase64()` n'aurait aucun appelant dans `main/`, et rien ne
+        // garantirait que la valeur journalisée reste celle que l'accesseur produit.
+        log.info("Clé PUBLIQUE de vérification RS256 (SPKI Base64) : {}", getPublicKeySpkiBase64());
     }
 
     private KeyPair configuredKeyPair() {
@@ -100,11 +102,44 @@ public class JwtService {
     }
 
     /**
-     * Clé PUBLIQUE de vérification au format SPKI Base64 — valeur à publier telle quelle dans
-     * {@code AUTH_JWT_PUBLIC_KEY} côté frontend (#323). Ce n'est PAS un secret.
+     * Clé PUBLIQUE de vérification au format SPKI Base64. Ce n'est PAS un secret.
+     *
+     * <p>#358 — n'est plus destinée à être recopiée dans une variable d'environnement du
+     * frontend : elle sert au log de démarrage (diagnostic) et à l'outillage de test. La
+     * distribution de la clé au middleware Edge passe désormais par {@link #getPublicJwks()}.
      */
     public String getPublicKeySpkiBase64() {
         return RsaKeyMaterial.toSpkiBase64(verificationKey);
+    }
+
+    /**
+     * Document JWK Set publiant la clé PUBLIQUE de vérification courante (#358).
+     *
+     * <p>C'est la SOURCE DE VÉRITÉ de la clé pour le middleware Next : celui-ci la découvre via
+     * {@code /.well-known/jwks.json} au lieu de la lire dans une variable d'environnement
+     * recopiée à la main. La classe de panne « clé publique dépareillée » disparaît par
+     * construction — la valeur publiée est DÉRIVÉE, à chaque appel, du matériel qui signe
+     * réellement les jetons, et non d'une seconde configuration qui pourrait diverger.
+     *
+     * <p>Une seule entrée : {@code JWT_PRIVATE_KEY} est unique (cf. {@code RsaKeyMaterial}).
+     *
+     * @throws IllegalStateException matériel de clé non encodable en JWK — inatteignable avec
+     *                               une paire RSA, remonté en 500 plutôt que servi tronqué :
+     *                               un JWKS incomplet ferait rejeter TOUS les cookies.
+     */
+    public JwksResponse getPublicJwks() {
+        try {
+            String modulus = RsaKeyMaterial.modulusBase64Url(verificationKey);
+            String exponent = RsaKeyMaterial.publicExponentBase64Url(verificationKey);
+            return new JwksResponse(List.of(new JwkResponse(
+                    "RSA", "sig", Jwts.SIG.RS256.getId(),
+                    RsaKeyMaterial.jwkThumbprint(modulus, exponent),
+                    modulus, exponent)));
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(
+                    "Publication JWKS impossible : " + e.getClass().getSimpleName()
+                    + " (détail volontairement non journalisé).", e);
+        }
     }
 
     public String generateToken(String username) {
