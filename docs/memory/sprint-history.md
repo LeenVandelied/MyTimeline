@@ -4046,3 +4046,55 @@ Audit re-signé : `docs/memory/audits/sprint-68-test-coverage.md`.
 Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 
 **Status :** Terminé — merge PR #488 dans `dev` (voir résultat CI ci-dessus, 7/7 vert sur `4f9eb61` puis `7b3e72f`)
+
+## Sprint 69 — 2026-09-03 (PLANIFIÉ — cohésion 1.00, Récurrence événements)
+**Objectif :** Récurrence événements bout-en-bout (backend câblage expansion → hint frontend)
+**Milestone GitHub :** #70
+**Issues :** #439, #67
+**Vagues :** V1 = #439 (backend, tranche le contrat) | V2 = #67 (dépend du flag `capped` de #439)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first (« pas archi mais feature »)
+**Risque bloquant :** décision de contrat API #439 à trancher AVANT code (Option 1 `seriesInfo` dans EventResponse vs Option 2 endpoint dédié `POST /api/events/recurrence-preview` — archi recommande Option 2)
+**Status :** Planifié
+
+## Sprint 70 — 2026-09-03 (PLANIFIÉ — cohésion 1.00, Aperçu drawer événement)
+**Objectif :** Aperçu de l'événement dans le drawer de création (sticky + revue visuelle, handoff §6)
+**Milestone GitHub :** #71
+**Issues :** #326, #325
+**Vagues :** V1 = #326 (repositionnement sticky) | V2 = #325 (revue rendu clair/sombre, même surface)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 69 (rebase `EventEditForm.tsx` modifié par #67)
+**Directive plan :** MVP feature-first
+**Status :** Planifié
+
+## Sprint 71 — 2026-09-03 (PLANIFIÉ — cohésion 1.00, Durcissement compte auth)
+**Objectif :** Anti-énumération username + rate-limit /api/me + harmonisation politique mot de passe
+**Milestone GitHub :** #72
+**Issues :** #134, #148
+**Vagues :** V1 = #134 ∥ #148 (fichiers disjoints, parallélisables)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first
+**Status :** Planifié
+
+## Sprint 72 — 2026-09-03 (PLANIFIÉ — cohésion 1.00, Localisation i18n)
+**Objectif :** Formats dates/nombres Intl localisés + i18n template email reset (EN/DE/ES)
+**Milestone GitHub :** #73
+**Issues :** #72, #142
+**Vagues :** V1 = #72 ∥ #142 (frontend Timeline vs backend Brevo, disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first
+**Status :** Planifié
+
+## Sprint 73 — 2026-09-03 (PLANIFIÉ — cohésion 0.00 ⚠ assumée, Polish catalogue + layout)
+**Objectif :** Quick-wins polish : break-words titre produit + glyphe coche pastille catégorie + sidebar tablette icon-only
+**Milestone GitHub :** #74
+**Issues :** #458, #416, #298
+**Vagues :** V1 = #458 ∥ #416 ∥ #298 (3 fichiers totalement disjoints, 100% parallélisable)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 72 (rebase `globals.css`)
+**Directive plan :** MVP feature-first
+**Note cohésion :** score thématique 0.00 (products/categories/layout) mais risque opérationnel nul (fichiers disjoints) — sprint polish délibéré, pool feature cohésif épuisé après S72
+**Status :** Planifié
