@@ -3263,7 +3263,49 @@ Deux points valent d'être relevés :
    C'est la preuve directe que l'objectif de #438 est atteint : le signal rouge permanent a
    **disparu**, il n'a pas été masqué.
 
-**Status :** En cours — PR #485 ouverte, CI verte, en attente de `/sprint end 67`
+### Consolidation mémoire (Phase 2)
+
+**Nouveaux pitfalls (4)** — tous classés `tooling`, packs `pit-*` régénérés (`--check` OK) :
+  - `PIT-S67-001` — un « blocage amont non corrigeable » se périme EN SILENCE et survit dans un
+    commentaire de CI puis dans les énoncés d'issues qui le citent (le cas `brace-expansion`)
+  - `PIT-S67-002` — retirer l'`overrides.postcss` casserait l'étape CI **bloquante** (`next` épingle
+    postcss en version exacte)
+  - `PIT-S67-003` — le compteur « added N packages » de npm surestime massivement la churn réelle ;
+    c'est en diffant le lock qu'on trouve ce que `--dry-run` ne montre pas
+  - `PIT-S67-004` — `check-sprint-completeness.sh` lit **ligne à ligne** : une négation
+    « pas de RECOMMAND_X » repliée sur la ligne suivante compte comme signal non traité ; et il
+    cherche le rapport d'un spécialiste par le NOM d'un fichier du dossier du sprint
+
+**Nouveaux patterns (2) :** `PAT-S67-001` (lire les plages du lock puis `npm update` ciblé plutôt
+que `npm audit fix`) · `PAT-S67-002` (prouver qu'un override est load-bearing sur une copie hors dépôt).
+
+**Nouvelles décisions (2) :** `DEC-S67-001` (l'étape audit CI reste informative malgré l'audit à 0) ·
+`DEC-S67-002` (documenter un override : `_overridesRationale` + README).
+
+### Le check de complétude a fait son travail — sur moi
+
+`/sprint end` Phase 1 a échoué au premier passage avec **4 problèmes**, tous imputables au lead :
+une section « Recommandations suite » absente de `issue-182-done.md`, et surtout **le rapport du
+test-runner rangé dans `docs/memory/audits/` au lieu du dossier du sprint** — un spécialiste
+réellement spawné mais invisible pour le hook, qui le comptait donc comme signal non traité.
+Corrigé sur le fond (rapport déposé en `sprints/sprint-67/test-runner-report.md`, convention S61),
+pas en contournant le check. Le 4e point a produit `PIT-S67-004`.
+
+### Follow-ups arbitrés (Phase 4 — triage interactif)
+
+**1 seul follow-up** remonté, aucun discardé :
+  - Avertissement Next.js « multiple lockfiles », workspace root inféré hors du dépôt
+    [XS | devops] (issue-435 — `RECOMMAND_FOLLOWUP`) → issue **#486**, **backlog libre**
+    (sans milestone, arbitrage dev explicite). Motif de création malgré P3 : même racine que
+    `PIT-S61-007`, qui avait coûté un diagnostic entier au S61 (« E2E impossibles »).
+
+Ratio discard 0/1 — aucun sur-signalement.
+
+**Milestone #68 :** propre à la clôture — exactement les 3 issues `sprint-67`, **aucun intrus**
+d'un sprint précédent à détacher (contrairement au motif récurrent de
+[[mytimeline-sprint-end-github-gotchas]]).
+
+**Status :** En cours — PR #485 ouverte, CI verte, en attente de confirmation de merge
 
 ---
 

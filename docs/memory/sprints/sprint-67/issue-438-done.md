@@ -76,9 +76,9 @@ Aucun test modifié, aucun code applicatif touché.
 
 - L'agent recommandait de durcir l'étape CI maintenant que l'audit atteint 0.
   **Arbitré NON** par le dev (cf. ci-dessus) — la recommandation est traitée, pas ignorée.
-- Pas de `RECOMMAND_DB_EXPERT` (aucune migration), pas de `RECOMMAND_SECURITY` (aucune surface auth
-  ni PII ; les CVE sont dans l'outillage de dev, rien n'est livré au runtime), pas de
-  `RECOMMAND_UI_DESIGN` (aucune surface visuelle).
+- Pas de `RECOMMAND_DB_EXPERT` : aucune migration.
+- Pas de `RECOMMAND_SECURITY` : aucune surface auth ni PII ; les CVE sont dans l'outillage de dev, rien n'est livré au runtime.
+- Pas de `RECOMMAND_UI_DESIGN` : aucune surface visuelle.
 - `RECOMMAND_TEST_RUNNER` : le lead l'a spawné en Phase 6 pour vérification indépendante.
 
 ## Limites assumées

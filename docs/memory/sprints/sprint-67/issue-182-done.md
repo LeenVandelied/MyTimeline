@@ -60,4 +60,22 @@ toujours résolvable.
 - Le downgrade `oxc-resolver` est **subi** (pin exact amont) : couvert par build, lint, tests et
   `build-storybook`, mais aucune vérification spécifique au-delà.
 
+## Recommandations suite
+
+- **Aucun `RECOMMAND_FOLLOWUP`** pour cette issue : le bump est propre, aucune dette découverte au
+  passage. (Le seul follow-up du sprint — l'avertissement « multiple lockfiles » de Next.js — vient
+  de l'issue #435, pas d'ici.)
+- Pas de `RECOMMAND_DB_EXPERT` : aucune migration.
+- Pas de `RECOMMAND_SECURITY` : les CVE traitées sont dans l'outillage de développement, rien n'est livré au runtime.
+- Pas de `RECOMMAND_UI_DESIGN` : aucune surface visuelle touchée.
+- Pas de `RECOMMAND_TEST_RUNNER` demandé par l'agent, mais le lead en a spawné un en Phase 6 —
+  cf. `test-runner-report.md`, écarts nuls.
+
+### Point de vigilance pour un futur bump Storybook
+
+`storybook@10.6.0` épingle `oxc-resolver` en version **exacte** `11.21.2`, et
+`@storybook/nextjs-vite@10.6.0` épingle `vite-plugin-storybook-nextjs` en exact `10.6.0`. Un futur
+bump de la chaîne déplacera donc ces deux paquets **sans** que `package.json` change : juger le diff
+sur le lockfile, jamais sur les dépendances déclarées.
+
 STATUS: COMPLETED
