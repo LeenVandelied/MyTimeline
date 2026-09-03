@@ -32,9 +32,10 @@ DB_PASSWORD=
 # Generer :
 #   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
 #   openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64
-# La cle PUBLIQUE est DERIVEE au boot (pas de seconde variable cote backend). Le pendant
-# public a publier cote frontend (AUTH_JWT_PUBLIC_KEY, NON secret) :
-#   openssl rsa -in jwt.pem -pubout -outform DER | base64
+# La cle PUBLIQUE est DERIVEE au boot (pas de seconde variable cote backend) et PUBLIEE
+# sur GET /.well-known/jwks.json (#358, endpoint public, non authentifie) : le middleware
+# Next l'y decouvre. Il n'y a plus rien a recopier cote frontend (AUTH_JWT_PUBLIC_KEY a ete
+# SUPPRIMEE ; cote frontend, seule AUTH_JWKS_URL reste a poser).
 # Vide en dev/test : paire EPHEMERE generee au demarrage (sessions perdues au redemarrage).
 # Toute rotation invalide TOUS les tokens existants (deconnexion globale).
 JWT_PRIVATE_KEY=

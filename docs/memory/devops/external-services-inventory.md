@@ -154,19 +154,20 @@ Pas d'interruption pour l'utilisateur : seul le flux « mot de passe oublié » 
 | Variable | Rôle | Secret ? | Service |
 |---|---|---|---|
 | `JWT_PRIVATE_KEY` | signe les jetons d'auth (RS256), PKCS#8 Base64, ≥ 2048 bits | **OUI** | backend |
-| `AUTH_JWT_PUBLIC_KEY` | vérifie la signature du cookie `jwt` en Edge, SPKI Base64 | **NON** | frontend |
+| `AUTH_JWKS_URL` | **URL** du JWKS où l'Edge DÉCOUVRE la clé publique (#358) — plus aucune clé n'est recopiée | **NON** | frontend |
 | `EXPORT_TOKEN_SECRET` | signe les tokens de download d'export (HS256), Base64 ≥ 32 o. | **OUI** | backend |
 
 La clé **publique backend est DÉRIVÉE** de la privée au boot : elle n'est pas configurable, donc
-pas dépareillable côté serveur. Le seul risque de désynchronisation est côté frontend (§5 ci-dessous).
+pas dépareillable côté serveur. **#358 — elle n'est plus dépareillable côté frontend non plus** :
+celui-ci ne détient plus de copie, il la découvre sur `GET /.well-known/jwks.json` (public).
 
 1. **Générer** :
    `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem`, puis
    `openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64` (→ `JWT_PRIVATE_KEY`) et
-   `openssl rsa -in jwt.pem -pubout -outform DER | base64` (→ `AUTH_JWT_PUBLIC_KEY`).
-   `EXPORT_TOKEN_SECRET` : `openssl rand -base64 48`.
-2. **Ordre de déploiement** : vider `AUTH_JWT_PUBLIC_KEY` (mode dégradé assumé, ADR-004) OU
-   déployer backend + frontend **atomiquement** ; jamais la privée seule avec l'ancienne publique.
+   `EXPORT_TOKEN_SECRET` : `openssl rand -base64 48`. (#358 — plus de clé publique à extraire.)
+2. **Ordre de déploiement** : #358 — il n'y en a plus. Déployer la nouvelle `JWT_PRIVATE_KEY`
+   et redémarrer le backend ; le frontend redécouvre la clé seul (cache 10 min, re-découverte
+   forcée sur signature inexplicable, plafonnée à une par minute).
 3. Tout changement de matériel de signature **invalide tous les jetons émis** → déconnexion globale.
    Planifier une fenêtre de faible usage et **communiquer en amont**. Aucune double émission
    transitoire n'existe (choix de #323 : un vérificateur bi-algorithme rouvrirait la confusion
@@ -175,10 +176,12 @@ pas dépareillable côté serveur. Le seul risque de désynchronisation est côt
    par `JwtFilter`/`JwtService`), `POST /api/auth/refresh` sur le nouveau jeton, un téléchargement
    d'export de bout en bout, et **absence du WARN « paire RS256 ÉPHÉMÈRE »** dans les logs de boot
    (sa présence = `JWT_PRIVATE_KEY` non prise en compte).
-5. **Panne à connaître** : `AUTH_JWT_PUBLIC_KEY` dépareillée ⇒ tout utilisateur connecté est renvoyé
-   vers `/login` en boucle, alors que l'API répond normalement. Remède immédiat : vider la variable.
-6. La clé **privée** ne quitte jamais le secrets-manager. La clé **publique** peut circuler librement
-   (c'est tout l'intérêt de l'asymétrique) et se déploie comme une config ordinaire.
+5. **Panne à connaître** (#358, remplace « clé dépareillée ») : `AUTH_JWKS_URL` injoignable
+   DEPUIS LE SERVEUR Next (piège : y avoir mis l'URL vue du navigateur) ⇒ garde en dégradé
+   « présence seule », signalée par un seul `console.warn` en production. Sonder depuis le
+   conteneur frontend, pas depuis le poste de l'opérateur.
+6. La clé **privée** ne quitte jamais le secrets-manager. La clé **publique** est publiée par le
+   backend lui-même : plus rien à déployer côté frontend qu'une URL.
 7. Le boot prod **échoue** (`ProfileSafetyGuard` #323) si `JWT_PRIVATE_KEY` ou `EXPORT_TOKEN_SECRET`
    sont vides — nécessaire car une clé privée absente ne casse rien visiblement (paire éphémère).
 

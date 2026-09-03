@@ -76,13 +76,22 @@ services:
       # VIDE par défaut => dégradé assumé, comportement d'avant #322 inchangé en
       # dev local. À renseigner en prod/preview, cf. .env.example et ADR-004.
       APP_CANONICAL_HOST: ${APP_CANONICAL_HOST:-}
-      # #323 — clé PUBLIQUE RS256 (SPKI Base64) de vérification de signature du cookie
-      # `jwt`. Lue au RUNTIME comme APP_CANONICAL_HOST. Ce n'est PAS un secret, mais
-      # elle DOIT correspondre à la JWT_PRIVATE_KEY du backend : une clé dépareillée
-      # renverrait tout utilisateur connecté vers /login. VIDE (défaut) => dégradé
-      # assumé, garde sur la seule présence du cookie (comportement d'avant #323).
-      # En dev avec paire éphémère, la valeur à coller est journalisée au boot backend.
-      AUTH_JWT_PUBLIC_KEY: ${AUTH_JWT_PUBLIC_KEY:-}
+      # #358 — URL du JWKS du backend, d'où le middleware DÉCOUVRE la clé publique de
+      # vérification RS256 du cookie `jwt`. Remplace AUTH_JWT_PUBLIC_KEY (supprimée) :
+      # plus aucune clé n'est recopiée à la main, donc plus de paire dépareillée ni de
+      # fenêtre de divergence pendant une rotation.
+      #
+      # ⚠ ADRESSE DE SERVEUR À SERVEUR, PAS CELLE DU NAVIGATEUR. Ce fetch part du
+      # process Next DANS le réseau Compose : la cible est le nom de service `backend`,
+      # pas `localhost:8080` (qui, depuis le conteneur frontend, désigne le frontend
+      # lui-même). C'est exactement pourquoi NEXT_PUBLIC_API_URL n'est PAS réutilisable
+      # ici — elle vaut l'URL vue du navigateur.
+      #
+      # Défaut NON VIDE, à la différence de APP_CANONICAL_HOST : dans cette stack le
+      # backend existe et est joignable, la valeur est donc correcte par construction et
+      # la vérification de signature marche sans configuration. Un défaut vide aurait
+      # laissé la garde en mode dégradé pour tout le monde en local.
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:-http://backend:8080/.well-known/jwks.json}
     ports:
       - "3000:3000"
     healthcheck:
