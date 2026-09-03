@@ -3128,7 +3128,7 @@ plusieurs de catégorie `tooling`.
 
 ---
 
-## Sprint 66 — 2026-09-02 → en cours (cohésion 0.50, création d'événement sur mobile)
+## Sprint 66 — 2026-09-02 → 2026-09-03 (Terminé — merge PR #479 dans `dev`)
 **Objectif :** rendre la création d'événement atteignable et utilisable sous 1024 px
 **Milestone GitHub :** #67
 **Issues (2) :** #455 (M, P1, `epic:events`), #79 (S, P2, `epic:transversal`)
@@ -3152,7 +3152,16 @@ plusieurs de catégorie `tooling`.
   - packs `pit-*` régénérés (2 entrées classées `frontend`) ; `docs/memory/sprints/sprint-66/ui-design-decisions.md` archive les 2 specs designer
 **PR :** #479 (`claude/sprint-66-start-ebe593` → `dev`), CI 7/7 verte sur `12f50b4`, `mergeStateStatus: CLEAN` avant consolidation
 **Saturation contexte lead (mesure) :** ~27 % du budget (opus) à l'ouverture de la clôture
-**Status :** En cours (PR #479 ouverte — triage des follow-ups puis merge via /sprint end)
+**Follow-ups arbitrés (Phase 4 triage — 5 retenus en backlog libre, 0 abandonné, 0 absorbé) :**
+  - FAB mobile : padding bas de sécurité sous 1024 px sur timeline/products/settings [XS | design] → issue **#480**
+  - FAB mobile : sortir le déclencheur de l'ordre de tabulation quand la sheet est ouverte [XS | design] → issue **#481**
+  - Vérifier sur appareil réel (iOS Safari, Android Chrome) l'évitement du clavier virtuel [S | transversal] → issue **#482**
+  - BottomSheet Réglages : câbler ou retirer le slot `footer` (DEC-S66-002) [S | auth] → issue **#483**
+  - Auditer les utilitaires `duration-*` sans `transition-*` explicite (PIT-S66-002) [S | design] → issue **#484**
+**Milestone :** #67 fermé après merge ; #475, #476, #478 (follow-ups du S65 garés dans ce milestone, jamais planifiés) détachés avant fermeture.
+**Commits :** 8 (1 ouverture, 1 par issue ×2, 2 artefacts de vague, 1 audit/review/PR, 1 consolidation mémoire, 1 bilan de triage)
+**Artefacts conservés :** 2 `issue-*-done.md`, 2 `spawn-ref-*.txt`, `architect-plans.md`, `review-batch.md`, `ui-design-decisions.md`. Briefings supprimés avant la PR.
+**Status :** Terminé
 
 ## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
 
