@@ -3128,6 +3128,41 @@ plusieurs de catégorie `tooling`.
 
 ---
 
+## Sprint 66 — 2026-09-02 → 2026-09-03 (Terminé — merge PR #479 dans `dev`)
+**Objectif :** rendre la création d'événement atteignable et utilisable sous 1024 px
+**Milestone GitHub :** #67
+**Issues (2) :** #455 (M, P1, `epic:events`), #79 (S, P2, `epic:transversal`)
+**Vagues :** V1 = #455 (ui-design pré-implem + fullstack-dev) | V2 = #79 (après #455 : `NewEventDrawer.tsx` / `.mt-sheet` partagés + harnais E2E = ressource d'exécution partagée, PAT-S65-002) | V3 = test-runner + review batch
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 65 (merge PR #474 dans `dev`, `97aba4a`)
+**Planification :** plan architect `ade986f` (replanification S64-S68) jamais mergé dans `dev` — importé et vérifié à l'ouverture, cf. `docs/memory/sprints/sprint-66/architect-plans.md` (7 faits vérifiés, dont : sous `lg` seul le dashboard a une chrome mobile ; la doc DS `mobile-keyboard.md` citée par #79 n'existe pas ; 4 bottom sheets et non 3).
+**Hors milestone :** #475, #476, #478 (follow-ups du S65 garés dans ce milestone, non labellisés `sprint-66`) — à détacher avant fermeture du milestone.
+**Limite assumée :** le comportement réel du clavier virtuel (iOS/Android) exige un device — non couvrable en CI (E2E avec `visualViewport` stubbé = oracle de câblage).
+**Designer (ui-design, pré-implem) :** #455 → FAB `<button>` natif 52×52 `lg:hidden` dans `AppShell` (seul point commun aux 4 écrans), `z-sticky` sous `z-modal`, testid `shell-mobile-new-event-button` ; #79 → bornage `maxHeight`/`top` sur `visualViewport`, `.mt-sheet__footer` (68 px, token `--space-17`), props opt-in `compact`/`footerPortalNode` sur `EventEditForm`, mode réduit = couleur + récurrence masquées, oracles `data-keyboard`/`data-compact`.
+**Commits code :** `a5b18d5` (#455, 4 fichiers, +435/−9) · `f24ef96` (#79, 11 fichiers, +1433/−202)
+**Tests (runs réels, HEAD `aaf85e2`) :** Vitest 1030/1030 (102 fichiers, baseline 1004) · `tsc` 0 erreur · E2E 246 tests : 238 passed / 0 failed / 8 skipped (7,8 min, `workers: 2`, backend e2e `:8086`) · contrôles négatifs joués sur les 2 issues (5 mutations, toutes rougissent)
+**Reviews :** batch — 0 CRITIQUE / 0 MAJEUR code / 2 MINEUR (non corrigés, documentés) → PRET_POUR_MERGE, pas de cycle 2 nécessaire. `docs/memory/sprints/sprint-66/review-batch.md`
+**Audit tests :** `docs/memory/audits/sprint-66-test-coverage.md`
+**Follow-ups signalés (à trier en /sprint end) :** #455 → padding bas de sécurité sous 1024 px sur timeline/products/settings (P3) ; FAB tabulable derrière la sheet (P3, sans effet tant que `useFocusTrap` tient). #79 → test appareil réel iOS/Android ; câbler ou retirer le slot `footer` de `BottomSheet` (prop sans appelant prod) ; auditer les `duration-*` posées sans `transition-*`.
+**Mémoire consolidée (7 signaux `[MEMORY:*]`, /sprint end 2026-09-03) :**
+  - `pitfalls.md` : **PIT-S66-001** (action centrale avec un seul déclencheur sous `hidden lg:flex` — morte sous le palier sans test rouge), **PIT-S66-002** (`duration-*` seule arme `transition: all` → un `max-height` inline s'anime, lire `el.getAnimations()`)
+  - `patterns.md` : **PAT-S66-001** (prouver « visible sous N px » : RTL câblage + unicité, E2E palier dans les deux sens + contrôle négatif), **PAT-S66-002** (rangée d'actions portalisée DANS `panelRef`, ref callback + `useState`, `form={id}`), **PAT-S66-003** (stub `visualViewport` qui mute ET dispatch, drapeau `pending` ≠ id rAF)
+  - `decisions.md` : **DEC-S66-001** (`<button>` natif 52 px dans le shell vs `Button size="icon"` 36 px), **DEC-S66-002** (slot `footer` de `BottomSheet` exposé, non câblé)
+  - `bugs-resolved.md` : **BUG-S66-001**
+  - packs `pit-*` régénérés (2 entrées classées `frontend`) ; `docs/memory/sprints/sprint-66/ui-design-decisions.md` archive les 2 specs designer
+**PR :** #479 (`claude/sprint-66-start-ebe593` → `dev`), CI 7/7 verte sur `12f50b4`, `mergeStateStatus: CLEAN` avant consolidation
+**Saturation contexte lead (mesure) :** ~27 % du budget (opus) à l'ouverture de la clôture
+**Follow-ups arbitrés (Phase 4 triage — 5 retenus en backlog libre, 0 abandonné, 0 absorbé) :**
+  - FAB mobile : padding bas de sécurité sous 1024 px sur timeline/products/settings [XS | design] → issue **#480**
+  - FAB mobile : sortir le déclencheur de l'ordre de tabulation quand la sheet est ouverte [XS | design] → issue **#481**
+  - Vérifier sur appareil réel (iOS Safari, Android Chrome) l'évitement du clavier virtuel [S | transversal] → issue **#482**
+  - BottomSheet Réglages : câbler ou retirer le slot `footer` (DEC-S66-002) [S | auth] → issue **#483**
+  - Auditer les utilitaires `duration-*` sans `transition-*` explicite (PIT-S66-002) [S | design] → issue **#484**
+**Milestone :** #67 fermé après merge ; #475, #476, #478 (follow-ups du S65 garés dans ce milestone, jamais planifiés) détachés avant fermeture.
+**Commits :** 8 (1 ouverture, 1 par issue ×2, 2 artefacts de vague, 1 audit/review/PR, 1 consolidation mémoire, 1 bilan de triage)
+**Artefacts conservés :** 2 `issue-*-done.md`, 2 `spawn-ref-*.txt`, `architect-plans.md`, `review-batch.md`, `ui-design-decisions.md`. Briefings supprimés avant la PR.
+**Status :** Terminé
+
 ## Sprint 65 — 2026-09-02 (Terminé — merge PR #474 dans `dev`)
 
 **Objectif :** Bornage temporel des récurrences + fiabilité du harnais E2E

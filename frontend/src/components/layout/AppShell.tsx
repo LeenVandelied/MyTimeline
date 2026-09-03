@@ -53,6 +53,19 @@ import { safeErrorMessage } from '@/lib/safe-error'
  *    logique nav, aucune réécriture. La tablette (`md`→`lg`) bascule donc en mode
  *    mobile (pas d'état sidebar repliable ce sprint — DEC).
  *
+ * #455 — CRÉATION D'ÉVÉNEMENT SOUS 1024 px (bouton flottant `lg:hidden`).
+ * La délégation ci-dessus vaut pour la NAV, pas pour l'ACTION : le seul
+ * déclencheur de `NewEventDrawer` vivait dans l'`<aside>` `hidden … lg:flex`, donc
+ * la création d'événement était INATTEIGNABLE sous 1024 px (mobile et tablette
+ * portrait), et aucun écran enveloppé n'en portait de substitut — seul le
+ * dashboard a une chrome mobile, `timeline`/`products`/`settings` n'en ont aucune.
+ * Le déclencheur mobile vit donc ICI, au seul point d'ancrage commun aux 4 écrans
+ * du groupe `(app)`. Il appelle le MÊME `setShowCreate(true)` que le bouton
+ * desktop : un SEUL état, donc un SEUL `NewEventDrawer` monté (un second état
+ * monterait un second drawer). Le drawer bascule seul en bottom sheet `.mt-sheet`
+ * sous 1024 px (`NewEventDrawer` : `useMediaQuery('(max-width: 1023px)')`) — rien
+ * à lui passer. Le bouton desktop `shell-sidebar-new-event-button` est INCHANGÉ.
+ *
  * Lien actif : `aria-current="page"` + classe calquée sur `SettingsShell`
  * (`bg-accent-soft text-accent font-medium`), jamais la classe legacy `.is-active`.
  * Bouton Nouvel événement : `bg-primary` (Button défaut, graphite), overlay =
@@ -246,6 +259,31 @@ export function AppShell({ children }: AppShellProps) {
       <main className="min-w-0 flex-1" data-testid="shell-main">
         {children}
       </main>
+
+      {/* #455 — Bouton flottant « Nouvel événement », `lg:hidden` (miroir exact du
+          `hidden … lg:flex` de l'`<aside>` : exactement un des deux déclencheurs est
+          rendu, jamais zéro, jamais deux). Spec Designer :
+            · 52×52 (`h-13 w-13`, token `--space-13`) — au-dessus du minimum tactile
+              WCAG 2.5.5 (44 px) ; `Button size="icon"` (36 px) serait sous le seuil ;
+            · `rounded-xl` (`--radius-xl`), le pill étant réservé aux switches ;
+            · `z-10` = `--z-sticky`, donc SOUS `--z-modal` (70) : l'overlay de la sheet
+              recouvre le bouton pendant la saisie, sans `aria-hidden` ni démontage ;
+            · offset bas = `--space-6` + `env(safe-area-inset-bottom)` (encoche iOS,
+              même parade que `settings/mobile/BottomSheet.tsx`).
+          Icône seule → le nom accessible vient d'`aria-label` (clé i18n EXISTANTE
+          `shell.newEvent`, aucune clé ajoutée) ; `aria-haspopup="dialog"` annonce
+          l'ouverture du drawer. La restauration du focus est déjà assurée par
+          `useFocusTrap` (cleanup au démontage du drawer) — rien à ajouter ici. */}
+      <button
+        type="button"
+        onClick={() => setShowCreate(true)}
+        aria-label={t('newEvent')}
+        aria-haspopup="dialog"
+        data-testid="shell-mobile-new-event-button"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed right-4 bottom-[calc(var(--space-6)+env(safe-area-inset-bottom))] z-10 flex h-13 w-13 items-center justify-center rounded-xl shadow-lg transition-colors lg:hidden"
+      >
+        <Plus className="h-5 w-5" aria-hidden="true" />
+      </button>
 
       {/* #300 — Flux de création réel : le Dialog placeholder (#210, testid
           `shell-new-event-dialog`) est REMPLACÉ par le drawer 452px du handoff §6.

@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
+import { useMobileKeyboard } from '@/hooks/useMobileKeyboard'
 
 /**
  * #87 — Bottom sheet générique (ancrée bas, slide-up) pour le mobile Réglages.
@@ -27,6 +28,16 @@ export interface BottomSheetProps {
   children: React.ReactNode
   /** testid racine du panneau (défaut `bottom-sheet`). */
   testId?: string
+  /**
+   * #79 — Pied FIXE, rendu hors de la zone de défilement et donc toujours visible
+   * au-dessus du clavier virtuel. Optionnel : absent → aucun pied n'est monté (le
+   * sheet garde exactement sa structure d'origine).
+   */
+  footer?: React.ReactNode
+  /** #79 — Transition « clavier virtuel ouvert » (mesurée par `visualViewport`). */
+  onKeyboardShow?: () => void
+  /** #79 — Transition inverse (clavier refermé). */
+  onKeyboardHide?: () => void
 }
 
 /** Seuil (px) de swipe-down au-delà duquel on ferme au relâchement. */
@@ -46,6 +57,9 @@ export function BottomSheet({
   title,
   children,
   testId = 'bottom-sheet',
+  footer,
+  onKeyboardShow,
+  onKeyboardHide,
 }: BottomSheetProps) {
   const t = useTranslations('settings')
   const panelRef = useRef<HTMLDivElement>(null)
@@ -54,6 +68,19 @@ export function BottomSheet({
 
   // Focus trap + Escape (mutualisé). Actif seulement quand ouvert.
   useFocusTrap(panelRef, open, onClose)
+
+  /**
+   * #79 — Évitement du clavier virtuel. Ce sheet porte une SAISIE (re-saisie du
+   * username avant suppression de compte, BR-AUT-001) : clavier ouvert, un panneau
+   * `fixed bottom-0` passe derrière le clavier. Le hook est un no-op sans
+   * `visualViewport` (jsdom, desktop sans clavier logiciel).
+   * PAS de mode réduit ici (un seul champ) : seul le bornage de hauteur s'applique.
+   */
+  const { keyboardOpen, compact, availableHeight, offsetTop } = useMobileKeyboard({
+    enabled: open,
+    onKeyboardShow,
+    onKeyboardHide,
+  })
 
   // Réinitialise l'offset de drag à chaque (ré)ouverture.
   useEffect(() => {
@@ -98,14 +125,36 @@ export function BottomSheet({
         aria-labelledby={`${testId}-title`}
         aria-describedby={`${testId}-body`}
         data-testid={testId}
+        /* #79 — état observable (oracle E2E) ; `data-compact` informe seulement :
+           ce sheet ne masque aucun champ. */
+        data-keyboard={keyboardOpen ? 'open' : 'closed'}
+        data-compact={compact ? 'true' : undefined}
         className={cn(
           'bg-surface border-rule fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col',
           'rounded-t-2xl border-t shadow-lg',
           'motion-safe:animate-in motion-safe:slide-in-from-bottom motion-safe:duration-200',
         )}
         style={{
+          /**
+           * #79 — PIÈGE MESURÉ : `motion-safe:duration-200` (posée pour l'animation
+           * d'entrée) ne fixe QUE `transition-duration`. Or la valeur INITIALE de
+           * `transition-property` est `all` : la classe arme donc une transition de
+           * 200 ms sur TOUTES les propriétés, `max-height` et `top` compris. Le
+           * bornage au clavier s'animait alors au lieu de s'appliquer (mesuré en
+           * E2E : `max-height` interpolait encore ~570 px pendant l'assertion), ce
+           * que la spec Designer interdit explicitement (à-coup à chaque frappe).
+           * On restreint donc la transition au `transform` (le seul effet voulu,
+           * celui du swipe-down) ; la géométrie du clavier devient instantanée.
+           */
+          transitionProperty: 'transform',
           transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,
           paddingBottom: 'env(safe-area-inset-bottom)',
+          /* #79 — borne la `max-h-[85vh]` de la classe à ce qui reste visible, et
+             suit `offsetTop` (iOS ancre les `fixed` sur le viewport de MISE EN PAGE,
+             que le clavier ne réduit pas). Clavier fermé → `undefined` : la classe
+             Tailwind reprend seule la main, sans transition. */
+          maxHeight: keyboardOpen && availableHeight !== null ? `${availableHeight}px` : undefined,
+          top: keyboardOpen ? `${offsetTop}px` : undefined,
         }}
       >
         {/* Grabber décoratif + zone de swipe-down. */}
@@ -138,6 +187,20 @@ export function BottomSheet({
         <div id={`${testId}-body`} className="flex-1 overflow-auto px-5 py-4">
           {children}
         </div>
+
+        {/* #79 — Pied hors défilement (pendant de `.mt-sheet__footer` du DS, mêmes
+            valeurs : filet, `--space-4`/`--space-5`, réserve de 68 px = `--space-17`).
+            `shrink-0` : le corps `flex-1` ne doit pas l'écraser quand la hauteur du
+            panneau est bornée. */}
+        {footer ? (
+          <div
+            data-testid={`${testId}-footer`}
+            className="border-rule flex shrink-0 items-center border-t px-5 py-4"
+            style={{ minHeight: 'var(--space-17)' }}
+          >
+            {footer}
+          </div>
+        ) : null}
       </div>
     </>
   )

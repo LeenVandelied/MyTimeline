@@ -520,3 +520,70 @@ function renderWithDelete(onDelete: (() => Promise<void>) | undefined) {
 beforeEach(() => {
   vi.clearAllMocks()
 })
+
+/**
+ * #79 — Props OPT-IN d'évitement du clavier mobile (`compact`, `footerPortalNode`).
+ *
+ * PROUVENT : le no-op par défaut (desktop/drawer inchangés), le retrait des champs
+ * secondaires en mode réduit, la CONSERVATION de leurs valeurs dans le payload, et
+ * que la rangée d'actions portalisée reste SOUMETTANTE.
+ * NE PROUVENT PAS : que le pied est visible au-dessus d'un clavier réel — jsdom ne
+ * fait aucune mise en page (cf. `useMobileKeyboard.test.ts`).
+ */
+describe('EventEditForm — #79 mode réduit & pied déporté', () => {
+  it('sans prop : rien ne bouge (couleur, récurrence, actions dans le formulaire)', () => {
+    setup()
+    expect(screen.getByTestId('event-form-color-input')).toBeInTheDocument()
+    expect(screen.getByTestId('event-form-recurring-toggle')).toBeInTheDocument()
+    // La rangée d'actions reste DANS le `<form>` : aucun portail, aucun pied.
+    expect(screen.getByTestId('event-form')).toContainElement(
+      screen.getByTestId('event-form-submit'),
+    )
+  })
+
+  it('compact : couleur + récurrence retirées, champs primaires conservés', () => {
+    setup({ compact: true })
+    expect(screen.queryByTestId('event-form-color-input')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('event-form-recurring-toggle')).not.toBeInTheDocument()
+    // Les champs sans lesquels l'événement n'est pas créable restent là.
+    expect(screen.getByTestId('event-form-title-input')).toBeInTheDocument()
+    expect(screen.getByTestId('event-form-start-date')).toBeInTheDocument()
+    expect(screen.getByTestId('event-form-type-trigger')).toBeInTheDocument()
+    expect(screen.getByTestId('event-form-submit')).toBeInTheDocument()
+  })
+
+  it('compact : les valeurs NON MONTÉES partent quand même (BR-EVE-007 / BR-EVE-009)', async () => {
+    // Le cœur du risque métier : masquer un champ ne doit PAS vider sa valeur.
+    // RHF ne désenregistre pas les champs démontés (`shouldUnregister` défaut false),
+    // donc `color` et `isRecurring` restent dans le payload.
+    const { onSubmit } = setup({ compact: true })
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      color: '#3B82F6',
+      isRecurring: false,
+      title: 'Mon événement',
+    })
+  })
+
+  it('footerPortalNode : les actions sont rendues DANS le nœud fourni et soumettent', async () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    try {
+      const { onSubmit } = setup({ footerPortalNode: host })
+      const submit = screen.getByTestId('event-form-submit')
+      const formEl = screen.getByTestId('event-form')
+
+      expect(host).toContainElement(submit)
+      // Le portail sort le bouton du `<form>` : sans propriétaire de formulaire
+      // explicite, le clic ne soumettrait RIEN (pas de `onSubmit` React).
+      expect(formEl).not.toContainElement(submit)
+      expect(submit).toHaveAttribute('form', formEl.getAttribute('id'))
+
+      await userEvent.click(submit)
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    } finally {
+      host.remove()
+    }
+  })
+})
