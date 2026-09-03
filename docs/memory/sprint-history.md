@@ -4024,4 +4024,17 @@ aucune référence `/tmp/ctx-`), et l'anti-pattern d'origine visait les fichiers
 inexistants, pas des fichiers committés à chemin stable. **À vérifier à la clôture :** que l'agent
 a effectivement lu les deux archives.
 
+### Résultat CI mesuré (PR #488, run 33755473552, SHA 4f9eb61)
+
+CI **7/7 verte**. Le job `e2e` prouve empiriquement le cœur de #358 :
+- oracle : `:3000 -> 200` (dégradé) et `:3001 -> 307` (vérifiant) — `:3001` découvre la clé via
+  `AUTH_JWKS_URL` sur le JWKS du backend, sans aucune variable de clé publique ;
+- passe 2 (`auth-signature.spec.ts` contre `:3001`) : **13 passed / 0 skipped / 0 failed**. Le
+  `0 skipped` est le point clé — la spec a réellement exercé signature altérée / `alg:none` /
+  HS256 forgé / jeton expiré + l'assertion cross-system `spkiBase64FromJwk`.
+- passe 1 : 236 passed / 9 skipped / 2 flaky. Les 2 flaky (`sprint-62-select-focus-indicator`,
+  sheet mobile) sont sans rapport avec ce sprint (dette pré-existante).
+
+Audit re-signé : `docs/memory/audits/sprint-68-test-coverage.md`.
+
 **Status :** En cours

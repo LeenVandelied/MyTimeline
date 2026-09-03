@@ -3,17 +3,27 @@
 > Rédigé par le lead en fin de Phase 6. Une issue livrée : #358 (JWKS + découverte de clé).
 > #363 fermée *won't do* sans code — hors périmètre de cet audit.
 
-## ⚠ Avertissement de lecture — ce que cet audit ne prouve PAS
+## ✅ Exécution E2E — mesurée en CI sur la PR #488 (run 33755473552, SHA 4f9eb61)
 
-**Aucun test E2E n'a été exécuté pendant ce sprint.** Ni par le fullstack-dev (qui le déclare
-explicitement dans son `done.md`), ni par le lead : aucune stack n'a été lancée. Les specs E2E
-listées ci-dessous **existent et sont écrites**, mais elles sont *raisonnées, pas mesurées*.
+Pendant l'implémentation, **aucun E2E n'a été lancé** (ni fullstack-dev ni lead — aucune stack
+montée localement). Les specs étaient *raisonnées, pas mesurées*. Ce document a donc été rédigé
+« PAS prêt à être déclaré vert » et re-signé ici après la première exécution réelle, celle du job
+`e2e` de la CI, dans le seul environnement qui monte les deux serveurs Next + l'oracle.
 
-La distinction compte, et le projet a déjà été mordu par sa confusion
-([[coverage-check-vert-ne-prouve-rien]], S61 : tout vert avec 5 specs jamais exécutées dont 2
-cassées). Rien ici ne doit être lu comme « E2E vert ». La seule exécution qui fera foi est celle
-du job `e2e` de la CI sur la PR — **cet audit sera à re-signer avec les compteurs réels** avant
-toute clôture.
+**Preuve empirique du cœur de #358** (extraite des logs du job `e2e`, pas déduite) :
+
+- Oracle `probe_mode` AVANT les passes : `:3000 -> HTTP 200` (dégradé) et **`:3001 -> HTTP 307`
+  (vérifiant)**. Le serveur `:3001`, démarré avec `AUTH_JWKS_URL` (et SANS aucune variable de clé
+  publique), a **réellement découvert la clé sur le JWKS du backend** et rejeté un cookie bidon.
+- Passe 2 : la commande cible `auth-signature.spec.ts` contre
+  `PLAYWRIGHT_BASE_URL=http://localhost:3001` → **13 passed, 0 skipped, 0 failed**. Le `0 skipped`
+  est décisif : la spec ne s'est PAS esquivée (piège [[coverage-check-vert-ne-prouve-rien]]),
+  elle a exercé la chaîne complète — signature altérée, `alg:none`, HS256 forgé, jeton expiré, ET
+  la nouvelle assertion cross-system `spkiBase64FromJwk` (la clé publiée == la clé de signature).
+
+La chaîne backend (signe, clé privée) → JWKS (publie, clé publique) → middleware Edge (découvre,
+vérifie) est donc prouvée **bout à bout, empiriquement**, et pas seulement par des unitaires de
+part et d'autre.
 
 Le check `[COVERAGE-E2E]` de la Phase 8 est passé OK, mais il ne vaut rien ici : il vérifie que
 les nouveaux `data-testid` sont cités dans une spec, or ce sprint ne touche **aucun `.tsx`**.
@@ -59,7 +69,8 @@ il déclencherait un ABORT sur une phrase de prose, alors qu'aucune case du tabl
 | Types | `tsc --noEmit` | 0 erreur |
 | Lint | `eslint` (9 fichiers) | 0 erreur |
 | Build | `next build` (prod) | exit 0 |
-| **E2E** | *(aucune)* | **NON EXÉCUTÉ** |
+| E2E passe 1 (golden path, `:3000` dégradé) | **236 passed / 0 failed / 9 skipped / 2 flaky** (5.9 min) |
+| E2E passe 2 (RS256, `:3001` vérifiant) | **13 passed / 0 failed / 0 skipped** (5.2 s) |
 
 ## Review batch (Phase 7)
 
@@ -89,6 +100,9 @@ profondeur par le lead** — la CI est ce qui le tranchera.
 
 ## Conclusion
 
-**PAS prêt à être déclaré vert.** Prêt à partir en PR — c'est précisément le moyen de faire
-exécuter les E2E dans le seul environnement qui les monte (2 serveurs Next + oracle, `ci.yml`).
-Condition de sortie : job `e2e` de la CI vert sur la PR, compteurs reportés dans ce fichier.
+**Prêt.** CI 7/7 verte sur la PR #488 (run `33755473552`), dont le job `e2e` avec la passe RS256
+à `13 passed / 0 skipped` qui prouve la découverte JWKS bout à bout. Les 2 flaky de la passe 1
+(`sprint-62-select-focus-indicator`, sheet mobile) sont **sans rapport** avec ce sprint — dette
+pré-existante. Reste, hors périmètre de cette issue : la rotation non disruptive (JWKS à 2 clés),
+le garde-fou prod sur `AUTH_JWKS_URL`, et la MAJ de `patterns.md`/`decisions.md` (à faire en
+Phase 2 de `/sprint end` avec régénération des packs `pit-*`).
