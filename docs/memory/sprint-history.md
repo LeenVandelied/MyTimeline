@@ -4046,3 +4046,15 @@ Audit re-signé : `docs/memory/audits/sprint-68-test-coverage.md`.
 Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 
 **Status :** Terminé — merge PR #488 dans `dev` (voir résultat CI ci-dessus, 7/7 vert sur `4f9eb61` puis `7b3e72f`)
+
+## Sprint 69 — 2026-09-03 (En cours — Récurrence : câbler le flag `capped`)
+**Objectif :** Brancher le moteur d'expansion de récurrence (`RecurrenceExpansionService`, sans appelant en `src/main`) sur un chemin HTTP réel, et exposer le hint `capped` côté formulaire.
+**Milestone GitHub :** #70 (Récurrence événements)
+**Issues :** #439 (BACKEND, M, P2), #67 (CHORE frontend, XS, P2)
+**Vagues :** V1 = #439 (endpoint preview backend) | V2 = #67 (hint frontend, consomme l'endpoint)
+**Migrations Flyway :** aucune (prochaine libre = V16, non utilisée ici)
+**Dépend de :** aucune (Sprint 68 mergé)
+**Décision de contrat (bloquante #439, tranchée avant implémentation) :** **Option 2 — endpoint dédié `POST /api/events/recurrence-preview`** renvoyant `{ count, capped }`. Motif : #67 exige un hint *live* (mise à jour à la saisie de `recurrenceEndDate`), que l'Option 1 (`seriesInfo` dans `EventResponse`, only-after-submit) ne satisfait pas ; Option 2 n'impacte aucun contrat existant et évite le recalcul par `GET`. Consigné en commentaire sur #439.
+**Note NO-OP :** aucune. Vérifié 2026-09-03 : `grep capped/seriesInfo/recurrence-preview` ne rend rien hors des fichiers du service lui-même ; le port `RecurrenceExpansionService` n'a aucun appelant en `src/main` (confirmé par la javadoc de `RecurrenceExpansion`). Les deux issues sont du vrai travail.
+**Branche :** `claude/sprint-69-d576fe` (worktree harness, basée exactement sur `origin/dev` @ 0e888bd). Remote `sprint/69` @ 4f684d7 = commit de plan seul (diff vide vs dev), ignoré.
+**Status :** En cours
