@@ -4211,5 +4211,21 @@ qu'au S69 (`br-events` y est aussi pointé) : assumé et compensé par la ligne 
   d'un autre projet à régénérer par `/ai-env:setup` ; `check-sprint-completeness.sh` ne reconnaît pas
   une négation coupée par un retour à la ligne ([[PIT-S70-005]]).
 
+### ⚠ Retombée CI à la clôture — le lead est retombé dans un trou déjà consigné
+
+Le commit de clôture a fait **rougir `ai-env-packs`** (check REQUIS) :
+`gen-pit-packs.sh --check` a détecté que `pit-backend.md` et `pit-frontend.md` ne reflétaient plus
+`docs/memory/pitfalls.md`, où le lead venait d'ajouter `PIT-S70-001..006`. Correctif : classer les
+6 entrées dans `.ai-env/tools/pit-classification.tsv` (4 `tooling`, 2 `frontend`) puis régénérer.
+Sans classification, `gen-pit-packs.sh` les met dans **LES DEUX** packs et avertit — le `--check`
+passe quand même, mais les deux archives enflent inutilement.
+
+**Ce qui rend l'incident notable : le S69 avait DÉJÀ consigné ce trou de procédure**
+(commit `39c81ae`, « classer PIT-S69-001/002 + régénérer les packs pitfalls ») et le lead l'a
+répété au sprint suivant. Consigner un piège ne suffit pas s'il ne s'attache à rien d'exécutable :
+ici la seule chose qui l'a rattrapé est la **CI**, pas la mémoire. Règle à appliquer désormais :
+**toute écriture dans `docs/memory/pitfalls.md` s'accompagne, dans le même commit,
+de la classification TSV et de `bash .ai-env/tools/gen-pit-packs.sh`.**
+
 **Status :** **Terminé** — merge PR **#494** (`claude/sprint-70-start-b946cb` → `dev`), CI 7/7 verte,
 milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PIT-S56-006`).
