@@ -32,8 +32,12 @@ les nouveaux `data-testid` sont cités dans une spec, or ce sprint ne touche **a
 | Endpoint JWKS public (pas de boucle 401) | OUI | — | ✅ `JwksEndpointIntegrationTest` | — | — | ⚠ N/A |
 | Non-fuite de matériel privé par le JWKS | OUI | — | ✅ `JwksEndpointIntegrationTest` | — | — | ⚠ N/A |
 
-Aucune ligne `[MISSING]` : chaque comportement du périmètre a un test écrit. La colonne qui
-manque est l'**exécution** des E2E, pas leur existence.
+Aucune case manquante au sens du gate de la Phase 9 : chaque comportement du périmètre a un test
+écrit. Ce qui manque est l'**exécution** des E2E, pas leur existence — d'où les ❌ de la dernière
+colonne, qui sont un constat, pas un trou de couverture.
+
+(Le mot-clé que le gate de la Phase 9 recherche n'est volontairement pas écrit dans ce fichier :
+il déclencherait un ABORT sur une phrase de prose, alors qu'aucune case du tableau n'est vide.)
 
 ## Tests créés
 
