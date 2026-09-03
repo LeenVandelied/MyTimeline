@@ -1,6 +1,38 @@
-import { Event, EventCreationPayload, EventEditFormValues } from '@/types/event'
+import {
+  Event,
+  EventCreationPayload,
+  EventEditFormValues,
+  RecurrencePreviewRequest,
+  RecurrencePreviewResponse,
+  recurrencePreviewResponseSchema,
+} from '@/types/event'
 import apiClient from './apiClient'
 import { safeErrorMessage } from '@/lib/safe-error'
+
+/**
+ * #67 — Preview du nombre d'occurrences d'une récurrence (`POST /api/events/
+ * recurrence-preview`, endpoint livré par #439). `apiClient` préfixe déjà `/api`.
+ *
+ * Le flag `capped` de la réponse alimente un hint NON bloquant sous le champ
+ * `recurrenceEndDate` (plafond 4000 occurrences). Erreur PROPAGÉE (le hook
+ * TanStack la mappe en état de query, jamais avalée). ⚠ `recurrenceUnit` doit
+ * rester en MAJUSCULE (WEEK/MONTH/YEAR) — le backend #439 ne tolère pas les
+ * unités legacy minuscules (400).
+ */
+export const previewRecurrence = async (
+  payload: RecurrencePreviewRequest,
+): Promise<RecurrencePreviewResponse> => {
+  try {
+    const response = await apiClient.post('/events/recurrence-preview', payload)
+    // Validation runtime du contrat #439 (zod_dto_sync) : garantit `{count, capped}`
+    // typés avant de piloter le hint. Un drift de contrat backend → erreur de query
+    // (hint masqué), jamais un `capped` fantôme lu sur une réponse malformée.
+    return recurrencePreviewResponseSchema.parse(response.data)
+  } catch (error) {
+    console.error('Erreur lors de la preview de récurrence :', safeErrorMessage(error))
+    throw error
+  }
+}
 
 /**
  * #300 — Création d'un événement (`POST /api/events`, BR-EVE-001/002/006/007).

@@ -4046,3 +4046,41 @@ Audit re-signé : `docs/memory/audits/sprint-68-test-coverage.md`.
 Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 
 **Status :** Terminé — merge PR #488 dans `dev` (voir résultat CI ci-dessus, 7/7 vert sur `4f9eb61` puis `7b3e72f`)
+
+## Sprint 69 — 2026-09-03 (En cours — Récurrence : câbler le flag `capped`)
+**Objectif :** Brancher le moteur d'expansion de récurrence (`RecurrenceExpansionService`, sans appelant en `src/main`) sur un chemin HTTP réel, et exposer le hint `capped` côté formulaire.
+**Milestone GitHub :** #70 (Récurrence événements)
+**Issues :** #439 (BACKEND, M, P2), #67 (CHORE frontend, XS, P2)
+**Vagues :** V1 = #439 (endpoint preview backend) | V2 = #67 (hint frontend, consomme l'endpoint)
+**Migrations Flyway :** aucune (prochaine libre = V16, non utilisée ici)
+**Dépend de :** aucune (Sprint 68 mergé)
+**Décision de contrat (bloquante #439, tranchée avant implémentation) :** **Option 2 — endpoint dédié `POST /api/events/recurrence-preview`** renvoyant `{ count, capped }`. Motif : #67 exige un hint *live* (mise à jour à la saisie de `recurrenceEndDate`), que l'Option 1 (`seriesInfo` dans `EventResponse`, only-after-submit) ne satisfait pas ; Option 2 n'impacte aucun contrat existant et évite le recalcul par `GET`. Consigné en commentaire sur #439.
+**Note NO-OP :** aucune. Vérifié 2026-09-03 : `grep capped/seriesInfo/recurrence-preview` ne rend rien hors des fichiers du service lui-même ; le port `RecurrenceExpansionService` n'a aucun appelant en `src/main` (confirmé par la javadoc de `RecurrenceExpansion`). Les deux issues sont du vrai travail.
+**Branche :** `claude/sprint-69-d576fe` (worktree harness, basée exactement sur `origin/dev` @ 0e888bd). Remote `sprint/69` @ 4f684d7 = commit de plan seul (diff vide vs dev), ignoré.
+
+**Issues livrées (2) :** #439 (backend, M), #67 (frontend, XS)
+**Vagues exécutées :** V1 = #439 (endpoint preview) → V2 = #67 (hint, consomme le contrat V1). Séquentiel strict : #67 dépendait du contrat livré par #439.
+**Commits :** 6 — `ba8f585` (#439 endpoint) · `5a25b0b` (#67 hint) · `aa49f74` (corrections review : parse Zod + test enum inconnu) · `3356463` (absorption follow-up : preview désarmée en création) · `ba36292` + `11011b3` (docs/audit).
+**BR impactées :** BR-EVE-012 (`recurrenceEndDate` / flag `capped` — règle inchangée, enfin CÂBLÉE : le port n'avait aucun appelant en `src/main` depuis le S65).
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 2 MINEURS (tous RÉSOLUS avant merge, commit `aa49f74`). Verdict : PRÊT MERGE.
+**Tests :** Backend 476/476 green (re-run lead) | Frontend `EventEditForm.test.tsx` 47/47 + `src/services/` 16/16 (re-run lead), `tsc` propre sur les fichiers du sprint | **CI 7/7 verte** (dont `frontend` et `e2e`, non re-mesurables en worktree — CI = gate autoritatif).
+**Nouveaux pitfalls / décisions / patterns :** [[PIT-S69-001]] (useQuery sans QueryClientProvider casse les tests → mocker le hook ; `clearAllMocks` ne repose pas les `mockReturnValue`), [[PIT-S69-002]] (`test-quiet.sh frontend` en worktree : pas de `node_modules`, et le partagé peut être périmé — ne pas conclure « suite rouge » sur un préflight d'env), [[DEC-S69-001]] (Option 2 endpoint dédié), [[PAT-S69-001]] (réutiliser un 422 domaine sur un endpoint pur).
+
+**Écart de méthode assumé — composition des briefings.** Les briefings complets (`briefing-439.md` 105 Ko `stack=backend`, `briefing-67.md` 141 Ko `stack=frontend`) sont committés, mais les `Agent.prompt` réellement émis sont des variantes compactes (37 Ko / 31 Ko) : instructions exactes + pack domaine `br-events` inline (marqueur présent, garde-fou `pre-spawn-fullstack.sh` satisfait) + **pointeur vers le briefing complet committé** pour les archives lourdes (`pit-backend` 55 Ko, `pit-frontend` 86 Ko). Motif : identique au S68 — recopier 105/141 Ko ferait transiter le pack DEUX fois par le contexte du lead (lecture + ré-émission), et une reproduction manuelle verbatim de cette taille est en outre une source d'erreur. L'anti-pattern d'origine (PIT context-pack-injection) visait des `@/tmp/ctx-*` inexistants, pas des chemins versionnés stables. ⚠ **NON VÉRIFIÉ à la clôture** : que les agents aient effectivement OUVERT le briefing complet pointé n'a pas pu être établi — le seul moyen serait de lire leurs transcripts JSONL, dont la taille ferait déborder le contexte du lead. Preuve INDIRECTE seulement : les deux livrables citent du code réel non présent dans le prompt compact (ex. `SecurityConfig:154` pour #439, `useDebounced`/`isCreate` pour #67), donc les agents ont bien lu le dépôt — mais cela ne prouve pas la lecture de l'archive `pit-*`. C'est la faiblesse assumée de ce montage : le pointeur n'est pas contraignant. À trancher au prochain sprint : soit accepter le coût de la recopie intégrale, soit ajouter au livrable attendu une ligne « fichiers de contexte lus » que le lead peut auditer.
+
+**Écart de méthode assumé — Phase 6.** Pas de `test-runner` spawné : le lead a re-mesuré lui-même (backend via `test-quiet.sh`, frontend via `vitest` ciblé + `tsc`), la suite backend étant sous le seuil de délégation (476 < 500, < 3 min) et la suite frontend n'étant pas exécutable telle quelle en worktree ([[PIT-S69-002]]).
+
+**Faux positif de gate rencontré :** la précondition Phase 9 (`grep "\[MISSING\]"` sur l'audit) s'est déclenchée sur une PROSE mentionnant le jeton (« Aucun `[MISSING]` bloquant »), pas sur une lacune réelle. Le gate est un grep littéral sans contexte → ne jamais écrire le jeton hors d'une cellule de matrice. Corrigé en reformulant (`11011b3`).
+
+**Vrai rouge CI attrapé à la clôture — trou de procédure du skill `/sprint end`.** Le commit de consolidation mémoire (`3af6481`) a fait ROUGIR le job requis `ai-env-packs` : consolider `docs/memory/pitfalls.md` OBLIGE à (1) classer chaque nouveau `PIT-*` dans `.ai-env/tools/pit-classification.tsv` et (2) régénérer `pit-backend.md`/`pit-frontend.md` via `.ai-env/tools/gen-pit-packs.sh`. La Phase 2 du skill ne mentionne NI l'un NI l'autre — sans ces étapes, une entrée non classée part par défaut dans les DEUX packs (avertissement stderr) et `gen-pit-packs.sh --check` échoue. Corrigé en `39c81ae`. **À faire systématiquement en Phase 2 de toute clôture**, comme au S68 (« + régénération packs »). Deux enseignements de méthode : le rouge n'a été vu que parce que la surveillance CI était **épinglée au SHA** — une lecture de `gh pr checks` au mauvais instant a d'abord renvoyé un faux « SETTLED » sur un rollup vide entre deux runs (cf. [[mytimeline-ci-required-checks-sha-race]]) ; et le run du commit d'absorption (`3356463`) a été **annulé** par le push suivant (concurrence CI), donc seul le run du dernier SHA fait foi.
+
+**Absorbé en cours :** 1 follow-up (XS) — preview de récurrence désarmée en mode création (`3356463`), + 2 tests figeant les deux sens.
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - E2E du hint `event-form-recurrence-capped-hint` [S | events] → **issue #491** (backlog libre, labels `test`+`enhancement`)
+  - Afficher le compte exact `count` quand `capped=false` [XS | events] → **issue #492** (backlog libre, P3, spéculatif)
+  - Preview déclenchée en mode création (appel réseau sans effet visible) [XS | events] → **absorbé** (`3356463`)
+  - « Typer le contrat côté frontend » (RECOMMAND_FOLLOWUP de #439) → **déjà traité** dans le sprint (schéma Zod livré par #67, validation runtime `.parse()` ajoutée en correction review)
+
+Bilan triage : 2 issues créées (backlog), 1 absorbée, 1 déjà traitée, **0 discard**.
+
+**Status :** En cours — PR #490 prête au merge (CI verte, triage fait)

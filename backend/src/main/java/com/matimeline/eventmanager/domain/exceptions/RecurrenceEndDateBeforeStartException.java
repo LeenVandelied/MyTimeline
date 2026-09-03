@@ -23,4 +23,15 @@ public class RecurrenceEndDateBeforeStartException extends RuntimeException {
         super("BR-EVE-012 : recurrenceEndDate (" + recurrenceEndDate + ") ne peut pas être "
                 + "antérieure à startDate (" + startDate + ") pour l'événement " + id);
     }
+
+    /**
+     * Variante SANS id d'événement — contexte de PRÉVISUALISATION (#439) où le calcul est PUR
+     * (aucun event persisté, {@code POST /api/events/recurrence-preview}). Même règle BR-EVE-012,
+     * même mapping 422 via {@code GlobalExceptionHandler} : réutilise la sémantique d'erreur du
+     * chemin CRUD plutôt que d'en introduire une seconde.
+     */
+    public RecurrenceEndDateBeforeStartException(LocalDate recurrenceEndDate, LocalDate startDate) {
+        super("BR-EVE-012 : recurrenceEndDate (" + recurrenceEndDate + ") ne peut pas être "
+                + "antérieure à startDate (" + startDate + ")");
+    }
 }

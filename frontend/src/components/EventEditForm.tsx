@@ -22,6 +22,7 @@ import { ArchiveConfirmDialog } from './events/ArchiveConfirmDialog'
 import { EventPreviewTimeline } from './events/EventPreviewTimeline'
 import type { PreviewEventType } from './events/previewTimeline'
 import { useNetworkStatus } from '@/contexts/NetworkStatusContext'
+import { useRecurrencePreview } from '@/hooks/useRecurrencePreview'
 import {
   createEventEditSchema,
   HEX_COLOR_REGEX,
@@ -281,6 +282,25 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
     previewIsRecurring && previewRecurrenceUnit
       ? `${t('recurring')} · ${tUnits(RECURRENCE_UNIT_KEY[previewRecurrenceUnit])}`
       : null
+
+  // #67 — Preview du plafond d'occurrences (POST /events/recurrence-preview, #439).
+  // `recurrenceEndDate` débouncée comme les autres watches : la query se recalcule
+  // quand l'utilisateur pose/déplace la borne (le hint disparaît dès que `count`
+  // repasse sous 4000 → `capped:false`). Le hook s'auto-désactive tant que la
+  // récurrence n'est pas active + startDate/unit définis (cf. `enabled`).
+  //
+  // `&& !isCreate` : le champ `recurrenceEndDate` — et donc le hint qu'il porte —
+  // n'existe qu'en mode edit (BR-EVE-012 : hors DTO de création). Sans cette garde,
+  // configurer une récurrence à la CRÉATION déclenchait un appel réseau débouncé dont
+  // le résultat n'était jamais affichable. Triage clôture S69.
+  const previewRecurrenceEndDate = useDebounced(form.watch('recurrenceEndDate'))
+  const { data: recurrencePreview } = useRecurrencePreview({
+    isRecurring: Boolean(previewIsRecurring) && !isCreate,
+    startDate: previewStartDate,
+    recurrenceUnit: previewRecurrenceUnit,
+    recurrenceEndDate: previewRecurrenceEndDate,
+  })
+  const recurrenceCapped = recurrencePreview?.capped === true
 
   /**
    * #79 — Rangée d'actions (supprimer / annuler / soumettre) extraite en variable pour
@@ -659,6 +679,21 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                                   />
                                 </FormControl>
                                 <p className="text-ink-muted text-xs">{t('recurrenceEndHint')}</p>
+                                {/* #67 — hint NON bloquant : la série dépasse le plafond
+                                    de 4000 occurrences (flag `capped` de la preview #439).
+                                    Ton informatif (pas d'erreur, pas de rouge), voisin de
+                                    `recurrenceEndHint`. Ne conditionne RIEN de la soumission.
+                                    Disparaît dès qu'une borne ramène `count` sous 4000. */}
+                                {recurrenceCapped && (
+                                  <p
+                                    role="status"
+                                    aria-live="polite"
+                                    className="text-ink-muted text-xs"
+                                    data-testid="event-form-recurrence-capped-hint"
+                                  >
+                                    {t('recurrenceCappedHint')}
+                                  </p>
+                                )}
                                 <FormMessage />
                               </FormItem>
                             )}

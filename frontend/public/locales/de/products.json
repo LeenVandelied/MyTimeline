@@ -38,6 +38,7 @@
         "endDate": "Enddatum",
         "recurrenceEndDate": "Wiederholungsende",
         "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt.",
+      "recurrenceCappedHint": "Die Serie überschreitet 4.000 Vorkommen. Legen Sie ein Enddatum fest, um die genaue Anzahl zu erhalten.",
         "archived": "Archiviert",
         "archivedLockNote": "Dieses Ereignis ist archiviert: Seine Felder sind schreibgeschützt und es zählt nicht mehr zu deinen aktiven Ereignissen. Deaktiviere unten „Archiviert“, um es wieder zu bearbeiten."
       },
