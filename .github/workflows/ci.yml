@@ -717,8 +717,8 @@ jobs:
   # Security (#167) — scan de sécurité des dépendances. Tourne en parallèle des
   # autres jobs, n'ajoute AUCUNE dépendance et n'active AUCUNE branch protection.
   #   - npm audit : BLOQUANT sur les deps de PROD (>= high) ; INFORMATIF sur dev+prod
-  #     (sprint 45 — cf. commentaire détaillé au-dessus de l'étape, blocage amont
-  #     brace-expansion/minimatch dans la chaîne eslint, non livrée au runtime).
+  #     (split conservé au sprint 67 — cf. commentaire détaillé au-dessus de l'étape ;
+  #     depuis le S67 les DEUX étapes sont à 0, l'informative n'est plus rouge par défaut).
   #   - trivy fs --severity CRITICAL --exit-code 1 : bloque UNIQUEMENT le critique
   #     (évite le bruit HIGH/MEDIUM ; les CVE CRITICAL sont résolues par #180).
   # permissions: contents: read hérité du niveau workflow (non élargi).
@@ -742,26 +742,39 @@ jobs:
       # npm audit sur le lockfile frontend, en DEUX étapes depuis le sprint 45.
       #
       # HISTORIQUE — #167 auditait prod seul (--omit=dev) ; #222 (sprint 31) a retiré
-      # ce flag pour couvrir dev+prod, la chaîne vitest ayant été bumpée à 0 HIGH.
+      # ce flag pour couvrir dev+prod ; le sprint 45 a re-splité, la chaîne eslint étant
+      # alors rouge de façon jugée non corrigeable.
       #
-      # POURQUOI LE SPLIT (sprint 45) — l'advisory brace-expansion GHSA-mh99-v99m-4gvg
-      # (DoS/OOM, HIGH) remonte en cascade via minimatch dans TOUTE la chaîne eslint
-      # (9 entrées HIGH, une seule cause racine). Elle est INCORRIGIBLE en aval :
-      #   - le seul brace-expansion corrigé est 5.0.8, qui change sa forme d'export ;
-      #     le forcer casse le lint (`expand is not a function`, minimatch@3 l'appelle
-      #     comme une fonction) — testé, puis annulé ;
-      #   - @eslint/eslintrc, DERNIÈRE version (3.3.6, celle installée), épingle
-      #     toujours `minimatch: ^3.1.5` -> aucune version amont vers laquelle monter ;
-      #   - minimatch@9 utiliserait brace-expansion@^2, toujours dans la plage vulnérable.
-      # Ces paquets ne sont PAS livrés au runtime : ils ne tournent qu'au lint/build.
+      # ⚠ SPRINT 67 (#438) — LE MOTIF DU SPLIT N'EXISTE PLUS.
+      # Ce bloc affirmait que l'advisory brace-expansion GHSA-mh99-v99m-4gvg était
+      # INCORRIGIBLE en aval : « le seul brace-expansion corrigé est 5.0.8, qui change sa
+      # forme d'export ; le forcer casse le lint (`expand is not a function`) ». Ce verdict
+      # a survécu ~20 sprints sans être re-testé. Il est FAUX depuis qu'un correctif est
+      # publié sur la branche 1.x :
+      #   - `minimatch@3.1.5` déclare `brace-expansion: ^1.1.7` ; la 1.1.18 y entre.
+      #   - La branche 5.x n'est donc jamais sollicitée, et la forme d'export est préservée
+      #     (`typeof require(...)` === "function", `npm run lint` exit 0).
+      # Le sprint 67 a résorbé les 8 entrées (7 high + 1 moderate) : `npm audit` dev+prod
+      # est passé de 8 à **0**.
       #
-      # Étape BLOQUANTE = dépendances de PRODUCTION uniquement (0 vuln au sprint 45,
-      # après bump postcss 8.5.23 / sharp 0.35.3 via overrides / next 15.5.22).
-      # Étape INFORMATIVE = dev+prod, continue-on-error : la chaîne dev reste VISIBLE
-      # dans les logs à chaque run, sans bloquer le merge.
+      # LEÇON, à ne pas réécrire à l'envers : un « blocage amont » n'est pas un acquis. Il
+      # se périme silencieusement le jour où l'amont publie un patch dans la plage semver
+      # déjà déclarée — rien ne le signale. Re-tester avant de recopier.
       #
-      # À REVOIR dès que @eslint/eslintrc passe à minimatch@10 : refusionner les deux
-      # étapes en un seul `npm audit --audit-level=high` bloquant (= revenir à #222).
+      # POURQUOI LE SPLIT EST MALGRÉ TOUT CONSERVÉ (arbitrage dev, 2026-09-03).
+      # Refusionner en un seul `npm audit --audit-level=high` bloquant a été explicitement
+      # ÉCARTÉ : la prochaine CVE publiée dans une devDependency bloquerait alors TOUS les
+      # merges vers `dev` jusqu'à correction — or ce sprint montre que cela arrive souvent
+      # (5 des 8 entrées étaient apparues depuis le sprint 60). L'étape informative suffit :
+      # maintenant que sa baseline est VERTE, un rouge y redevient un signal exploitable,
+      # au lieu du bruit permanent que #438 avait pour objet de supprimer.
+      #
+      # Étape BLOQUANTE = dépendances de PRODUCTION uniquement. Elle tient à 0 grâce aux
+      # `overrides` de frontend/package.json : `next` épingle postcss à la version EXACTE
+      # 8.4.31 (vulnérable), l'override le hisse en ^8.5.23. NE PAS supprimer ces overrides —
+      # cf. frontend/README.md § « Overrides npm » et la clé `_overridesRationale`.
+      # Étape INFORMATIVE = dev+prod, continue-on-error.
+      #
       # Le scan Trivy ci-dessous couvre le CRITICAL cross-stack, inchangé.
       - name: npm audit (frontend deps PROD, >= high) — BLOQUANT
         working-directory: frontend
