@@ -123,6 +123,15 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
    */
   const [footerNode, setFooterNode] = useState<HTMLDivElement | null>(null)
 
+  /**
+   * #326 — Nœud d'ACCUEIL DE L'APERÇU, même contrat que `footerNode` (state et non
+   * `useRef`, cf. ci-dessus). Le formulaire y portalise sa mini-frise ; le nœud vit
+   * ENTRE le header et `.mt-drawer__body` — donc hors du seul élément qui défile —
+   * ce qui épingle l'aperçu en haut du drawer sans `position:sticky` ni z-index
+   * (handoff §6). C'est la symétrie exacte du pied sticky de #79.
+   */
+  const [previewNode, setPreviewNode] = useState<HTMLDivElement | null>(null)
+
   const handleSubmit = useCallback(
     async (values: EventEditFormValues) => {
       // BR-EVE-002 : `productId` requis. Gardé ICI (hors schéma du formulaire) → un
@@ -155,6 +164,17 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
   /** Le pied n'a de sens que si le formulaire est rendu (sinon : filet orphelin). */
   const showForm = !productsQuery.isLoading && hasProducts
   const showSheetFooter = isCompact && showForm
+  /**
+   * #326 — APERÇU ÉPINGLÉ : variante DRAWER (>= lg) UNIQUEMENT, périmètre du handoff §6
+   * (« drawer latéral 452px … aperçu live sticky en haut »).
+   *
+   * DIVERGENCE ASSUMÉE pour la bottom sheet : #79 y traite la hauteur visible comme une
+   * ressource rare (l'aperçu réduit RETIRE justement l'aperçu quand le clavier s'ouvre).
+   * Y épingler la mini-frise en permanence amputerait la zone de saisie sur le plus petit
+   * écran — l'inverse de l'intention. La sheet garde donc l'aperçu en flux (comportement
+   * actuel, aucune régression).
+   */
+  const showPinnedPreview = !isCompact && showForm
 
   const defaultValues: EventEditFormValues = {
     title: '',
@@ -225,6 +245,18 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
             <X size={16} strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
+
+        {/* #326 — Aperçu épinglé : HORS de `.mt-drawer__body` (le seul élément à
+            `overflow:auto`), donc toujours visible pendant que le formulaire défile.
+            Ne contient rien en propre : `EventEditForm` y portalise SA mini-frise
+            (aucune duplication de markup, aucun second aperçu à synchroniser). */}
+        {showPinnedPreview && (
+          <div
+            ref={setPreviewNode}
+            className="mt-drawer__preview"
+            data-testid="shell-new-event-drawer-preview"
+          />
+        )}
 
         <div className={isCompact ? 'mt-sheet__body' : 'mt-drawer__body'}>
           {productsQuery.isLoading ? (
@@ -304,6 +336,8 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
                    neutres (`false` / `null`), le formulaire est INCHANGÉ. */
                 compact={isCompact && compact}
                 footerPortalNode={isCompact ? footerNode : null}
+                /* #326 — `null` en variante sheet : l'aperçu y reste en flux. */
+                previewPortalNode={showPinnedPreview ? previewNode : null}
               />
             </>
           )}

@@ -145,6 +145,23 @@ interface EventEditFormProps {
    * (qui interroge le conteneur) exclurait les boutons du piège à focus.
    */
   footerPortalNode?: HTMLElement | null
+  /**
+   * #326 — APERÇU DÉPORTÉ (opt-in, défaut `undefined` → rendu en flux, donc les
+   * surfaces d'ÉDITION — `EventDrawer`, `TimelineEditHost`, `ConflictDialog` — sont
+   * strictement inchangées, cf. PAT-S44-001 « le mode historique reste le défaut »).
+   * Nœud DOM dans lequel le bloc d'aperçu live est rendu via `createPortal`, afin
+   * qu'un parent (drawer de création) le place HORS de sa zone de défilement et le
+   * garde épinglé en haut pendant que le formulaire défile (handoff §6).
+   *
+   * ⚠ MÊME CONTRAT QUE `footerPortalNode` : un NŒUD, pas un `RefObject` (lu pendant
+   * le rendu, `ref.current` vaut `null` au premier passage et sa mutation ne re-rend
+   * RIEN), et il DOIT appartenir au panneau du parent (sinon `useFocusTrap` l'ignore).
+   *
+   * ⚠ L'aperçu reste gouverné par `compact` : en aperçu réduit il n'est rendu NULLE
+   * PART, ni en flux ni dans le portail — le nœud hôte reste alors vide (le DS le
+   * masque via `:empty`).
+   */
+  previewPortalNode?: HTMLElement | null
 }
 
 /**
@@ -180,6 +197,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   isRecurring: eventIsRecurring = false,
   compact = false,
   footerPortalNode,
+  previewPortalNode,
 }) => {
   const t = useTranslations('products.add.event.form')
   const tUnits = useTranslations('products.add.event.units')
@@ -310,6 +328,36 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * l'arbre React (contexte RHF, handlers) mais PAS la parenté DOM : le bouton de
    * soumission porte donc `form={formId}` (cf. `formId`).
    */
+  /**
+   * #315 — Preview live (debounce 150 ms) : MINI-FRISE du handoff §6 (règle + TODAY +
+   * occurrence fantôme pointillée + légende « prochaine occurrence »). Remplace le bloc
+   * coloré simple du Sprint 44 (écart assumé DEC-S44-002). Les testids
+   * `event-form-preview` et `event-form-preview-recurrence` sont PRÉSERVÉS
+   * (tests #66/#300, E2E #314).
+   *
+   * #326 — Extrait en variable pour être rendu à DEUX endroits SANS duplication de
+   * markup (même technique qu'`actionsRow`) : en flux sous le champ Couleur (défaut,
+   * édition inchangée) ou PORTALISÉ dans le nœud d'en-tête fourni par le parent
+   * (drawer de création → aperçu épinglé, handoff §6).
+   */
+  const previewBlock = (
+    <div>
+      <div className="text-ink mb-2 text-sm">{tDetails('preview')}</div>
+      <EventPreviewTimeline
+        title={previewTitle}
+        color={validPreviewColor}
+        type={previewEventType}
+        durationValue={previewDurationValue}
+        durationUnit={previewDurationUnit}
+        startDate={previewStartDate}
+        endDate={previewEndDate}
+        isRecurring={previewIsRecurring}
+        recurrenceUnit={previewRecurrenceUnit}
+        recurrenceLabel={previewRecurrence}
+      />
+    </div>
+  )
+
   const actionsRow = (
     <div
       className={
@@ -743,27 +791,11 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                       )}
                     />
 
-                    {/* #315 — Preview live (debounce 150 ms) : MINI-FRISE du handoff §6
-                    (règle + TODAY + occurrence fantôme pointillée + légende
-                    « prochaine occurrence »). Remplace le bloc coloré simple du
-                    Sprint 44 (écart assumé DEC-S44-002). Les testids
-                    `event-form-preview` et `event-form-preview-recurrence` sont
-                    PRÉSERVÉS (tests #66/#300, E2E #314). */}
-                    <div>
-                      <div className="text-ink mb-2 text-sm">{tDetails('preview')}</div>
-                      <EventPreviewTimeline
-                        title={previewTitle}
-                        color={validPreviewColor}
-                        type={previewEventType}
-                        durationValue={previewDurationValue}
-                        durationUnit={previewDurationUnit}
-                        startDate={previewStartDate}
-                        endDate={previewEndDate}
-                        isRecurring={previewIsRecurring}
-                        recurrenceUnit={previewRecurrenceUnit}
-                        recurrenceLabel={previewRecurrence}
-                      />
-                    </div>
+                    {/* #326 — L'aperçu n'est rendu ICI (en flux, sous la couleur) que
+                    si AUCUN nœud de portail n'est fourni : c'est le comportement
+                    historique des surfaces d'édition. Le drawer de CRÉATION fournit
+                    `previewPortalNode` et récupère le même bloc épinglé en haut. */}
+                    {previewPortalNode ? null : previewBlock}
                   </div>
                 </>
               )}
@@ -815,6 +847,13 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                   {tErr('submitError')}
                 </p>
               )}
+
+              {/* #326 — Aperçu ÉPINGLÉ : rendu dans le nœud du parent, hors de sa zone
+                  de défilement. Gardé par `!compact` — l'aperçu réduit (#79, clavier
+                  virtuel) le retire de PARTOUT, le nœud hôte reste alors vide. */}
+              {!compact && previewPortalNode
+                ? createPortal(previewBlock, previewPortalNode)
+                : null}
 
               {footerPortalNode ? createPortal(actionsRow, footerPortalNode) : actionsRow}
             </CardContent>

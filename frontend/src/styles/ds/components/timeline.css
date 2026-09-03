@@ -301,6 +301,17 @@
 .mt-drawer--form{width:min(var(--drawer-width-form), 92vw);}
 /* Sous-titre du header (nom du produit ciblé / aide contextuelle). */
 .mt-drawer__subtitle{margin-top:2px; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
+/* #326 — BANDEAU D'APERÇU ÉPINGLÉ (handoff §6 : « aperçu live sticky en haut »).
+   Rendu HORS de `.mt-drawer__body` (qui porte `overflow:auto; flex:1`), entre le
+   header et le corps : l'aperçu reste donc visible pendant que le formulaire défile,
+   SANS `position:sticky` — donc sans z-index à arbitrer (le palier `--z-modal` partagé
+   par `.mt-drawer`/`.mt-sheet` reste intouché, cf. #446). Exact pendant du pied sticky
+   `.mt-sheet__footer` (#79) : `flex:0 0 auto` empêche le corps de le comprimer.
+   `:empty` — le formulaire ne portalise RIEN en aperçu réduit (#79) : sans cette règle
+   le bandeau laisserait un liseré et un padding orphelins. */
+.mt-drawer__preview{flex:0 0 auto; padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--color-rule); background:var(--color-surface);}
+.mt-drawer__preview:empty{display:none;}
+
 /* Champ hors formulaire (sélecteur de produit) : bloc d'en-tête du corps. */
 .mt-drawer__field{display:flex; flex-direction:column; gap:var(--space-2); padding-bottom:var(--space-4); margin-bottom:var(--space-4); border-bottom:1px solid var(--color-rule);}
 .mt-drawer__label{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
