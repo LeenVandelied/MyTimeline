@@ -455,3 +455,65 @@ describe('NewEventDrawer — #79 clavier virtuel (sheet mobile)', () => {
     expect(screen.queryByTestId('shell-new-event-drawer-footer')).not.toBeInTheDocument()
   })
 })
+
+
+/**
+ * #326 — APERÇU ÉPINGLÉ EN HAUT DU DRAWER DE CRÉATION (handoff §6).
+ *
+ * PROUVENT : la STRUCTURE — le bloc d'aperçu est monté hors de `.mt-drawer__body`
+ * (le seul élément à `overflow:auto`) et dans le panneau, en un SEUL exemplaire, et
+ * uniquement sur le chemin CRÉATION en variante drawer.
+ * NE PROUVENT PAS : qu'il reste visuellement collé au défilement — jsdom ne met rien
+ * en page (cf. [[jsdom-scroll-tests-prove-nothing]]). C'est le rôle de l'E2E
+ * `sprint-70-create-preview-pinned.spec.ts`, qui mesure la boîte après scroll réel.
+ */
+describe('NewEventDrawer — #326 aperçu épinglé (handoff §6)', () => {
+  it('desktop : l’aperçu est HORS du corps défilant, dans le panneau, en un seul exemplaire', () => {
+    mockIsCompact = false
+    renderDrawer()
+
+    const host = screen.getByTestId('shell-new-event-drawer-preview')
+    const preview = screen.getByTestId('event-form-preview')
+
+    expect(host).toContainElement(preview)
+    expect(host).toHaveClass('mt-drawer__preview')
+    // Le corps est le SEUL élément à `overflow:auto` : un aperçu rendu dedans
+    // défilerait avec le formulaire — c'est exactement l'écart que #326 corrige.
+    expect(document.querySelector('.mt-drawer__body')).not.toContainElement(preview)
+    expect(screen.getByTestId('shell-new-event-drawer')).toContainElement(host)
+    // Zéro duplication de markup : le portail DÉPLACE le bloc, il ne le clone pas.
+    expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
+  })
+
+  it('desktop : l’aperçu épinglé reste LIVE (reflète la saisie débouncée)', async () => {
+    mockIsCompact = false
+    renderDrawer()
+
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Refonte')
+    // Debounce 150 ms (BR-EVE-009) : le portail conserve l'arbre React, donc le
+    // contexte RHF — la valeur doit finir par traverser jusqu'à la mini-frise.
+    await waitFor(() =>
+      expect(screen.getByTestId('shell-new-event-drawer-preview')).toHaveTextContent('Refonte'),
+    )
+  })
+
+  it('sheet (< lg) : PAS d’aperçu épinglé, il reste en flux dans le corps', () => {
+    mockIsCompact = true
+    renderDrawer()
+
+    expect(screen.queryByTestId('shell-new-event-drawer-preview')).not.toBeInTheDocument()
+    // Divergence assumée (#79 : la hauteur visible est rare sur la sheet).
+    expect(document.querySelector('.mt-sheet__body')).toContainElement(
+      screen.getByTestId('event-form-preview'),
+    )
+  })
+
+  it('sans produit : aucun hôte d’aperçu orphelin (pas de formulaire rendu)', () => {
+    mockIsCompact = false
+    mockProductsData = []
+    renderDrawer()
+
+    expect(screen.getByTestId('shell-new-event-drawer-empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('shell-new-event-drawer-preview')).not.toBeInTheDocument()
+  })
+})

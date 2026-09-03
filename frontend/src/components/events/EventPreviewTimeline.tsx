@@ -149,7 +149,13 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
               style={{
                 left: `${model.connector.leftPercent}%`,
                 width: `${model.connector.widthPercent}%`,
-                borderColor: color ?? 'var(--color-rule-strong)',
+                // #325 — repli au tier FONCTIONNEL (`rule-emphasis`, #293 : seul
+                // palier >= 3:1 dans les DEUX thèmes), pas au tier décoratif
+                // `rule-strong` qui plafonne à ~1.5:1. Le connecteur PORTE la
+                // récurrence : retiré, la relation entre les deux occurrences
+                // n'est plus lisible — c'est le même tier que le contour du
+                // fantôme (`.mt-evt--draft`, #352), il doit donc s'y aligner.
+                borderColor: color ?? 'var(--color-rule-emphasis)',
               }}
               data-testid="event-form-preview-connector"
               aria-hidden="true"

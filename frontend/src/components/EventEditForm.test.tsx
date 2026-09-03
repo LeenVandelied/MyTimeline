@@ -673,3 +673,86 @@ describe('EventEditForm — #79 mode réduit & pied déporté', () => {
     }
   })
 })
+
+/**
+ * #326 — `previewPortalNode`. NON-RÉGRESSION DES SURFACES D'ÉDITION : `EventEditForm`
+ * sert AUSSI `EventDrawer`, `TimelineEditHost` et `ConflictDialog`, qui ne passent
+ * PAS cette prop. Le mode historique (aperçu en flux) doit rester le DÉFAUT — c'est
+ * l'exigence PAT-S44-001 rappelée par l'issue.
+ */
+describe('EventEditForm — #326 aperçu déporté', () => {
+  it('sans prop (édition) : l’aperçu reste EN FLUX dans le formulaire', () => {
+    setup()
+    const preview = screen.getByTestId('event-form-preview')
+    expect(screen.getByTestId('event-form')).toContainElement(preview)
+    expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
+  })
+
+  it('previewPortalNode : l’aperçu passe dans le nœud fourni et SORT du formulaire', async () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    try {
+      setup({ previewPortalNode: host })
+      const preview = screen.getByTestId('event-form-preview')
+
+      expect(host).toContainElement(preview)
+      expect(screen.getByTestId('event-form')).not.toContainElement(preview)
+      // Le portail DÉPLACE : aucun aperçu résiduel en flux (sinon deux frises à
+      // synchroniser, et des testids dupliqués qui casseraient les E2E existants).
+      expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
+
+      // Le portail conserve l'arbre React : le contexte RHF traverse (debounce 150 ms).
+      await userEvent.type(screen.getByTestId('event-form-title-input'), 'X')
+      await waitFor(() => expect(host).toHaveTextContent('X'))
+    } finally {
+      host.remove()
+    }
+  })
+
+  it('previewPortalNode + compact : l’aperçu n’est rendu NULLE PART (#79 prime)', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    try {
+      setup({ previewPortalNode: host, compact: true })
+      expect(screen.queryByTestId('event-form-preview')).not.toBeInTheDocument()
+      // L'hôte reste vide → masqué par `.mt-drawer__preview:empty` (timeline.css).
+      expect(host).toBeEmptyDOMElement()
+    } finally {
+      host.remove()
+    }
+  })
+})
+
+/**
+ * Correctif review S70 (MAJEUR) — la reclassification du libellé « Aperçu » voulue par
+ * #325 ne vaut QUE sur le chemin ÉPINGLÉ (drawer de création >= lg, seul endroit où le
+ * libellé jouxte le titre du drawer). En flux — `EventDrawer`, `TimelineEditHost`,
+ * `ConflictDialog` et la bottom sheet < 1024px — la classe HISTORIQUE doit être servie.
+ *
+ * ⚠ Ce test prouve QUELLE CLASSE est appliquée, rien de plus : jsdom ne met rien en page,
+ * il ne dit donc RIEN de la taille rendue (17px vs 10px, cf. [[PIT-S49-002]]).
+ */
+describe('EventEditForm — libellé « Aperçu » selon le chemin de rendu', () => {
+  const LABEL = 'products.details.preview'
+
+  it('en flux (édition / bottom sheet) : classe historique `text-ink mb-2 text-sm`', () => {
+    setup()
+    const label = screen.getByText(LABEL)
+    expect(label).toHaveClass('text-ink', 'mb-2', 'text-sm')
+    expect(label).not.toHaveClass('mt-drawer__label')
+  })
+
+  it('épinglé (previewPortalNode) : `.mt-drawer__label mb-2` (correctif #325)', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    try {
+      setup({ previewPortalNode: host })
+      const label = screen.getByText(LABEL)
+      expect(host).toContainElement(label)
+      expect(label).toHaveClass('mt-drawer__label', 'mb-2')
+      expect(label).not.toHaveClass('text-sm')
+    } finally {
+      host.remove()
+    }
+  })
+})

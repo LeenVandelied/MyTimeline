@@ -4084,3 +4084,148 @@ Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 Bilan triage : 2 issues créées (backlog), 1 absorbée, 1 déjà traitée, **0 discard**.
 
 **Status :** Terminé — merge PR #490 dans `dev` (merge commit `e070f828`, CI 7/7 verte sur le SHA de tête `05c6c51`). Milestone #70 fermé, issues #439 et #67 fermées après merge.
+
+## Sprint 70 — 2026-09-03 (Terminé — merge PR #494 dans dev — Aperçu du drawer de création : position + rendu)
+**Objectif :** rendre l'aperçu live *sticky en haut* du drawer de création (handoff §6), puis
+vérifier de visu le rendu de la mini-frise livrée au S46 en thème clair ET sombre.
+**Milestone GitHub :** #71
+**Issues (2) :** #326 (S, P2, `epic:design`, `frontend`), #325 (S, P2, `epic:design`, `frontend`)
+**Cohésion :** 1.00 — même surface (`EventEditForm` → `EventPreviewTimeline` dans `NewEventDrawer`),
+même epic, même section de spéc (`docs/design/graphite-handoff.md` §6).
+**Migrations Flyway :** aucune (prochaine libre = V16, non utilisée ici)
+**Dépend de :** aucune (Sprint 69 mergé, PR #490)
+**Branche :** `claude/sprint-70-start-b946cb` (worktree harness, HEAD == `origin/dev` @ `fd954b2` au
+démarrage) — pas de branche `sprint/70`, cf. convention projet (S68/S69).
+**Planification :** AUCUN plan architect. Le milestone #71 et les labels `sprint-70` viennent du
+triage de clôture du Sprint 46 ; `/sprint plan` n'a jamais tourné pour ce sprint. Pas
+d'`architect-plans.md` — les briefings sont construits sur l'état vérifié ci-dessous.
+
+### État vérifié à l'ouverture (mesuré sur `fd954b2`, pas supposé)
+
+| Vérification | Résultat |
+|---|---|
+| `grep -rn sticky frontend/src/components/events/` | **0 hit** — aucun sticky sur l'aperçu. #326 est intégralement à faire, **aucun NO-OP**. |
+| Position réelle de l'aperçu | `EventEditForm.tsx` ~750 : dans le flux du formulaire, **après le champ Couleur**. Le handoff §6 (ligne 197) le veut « sticky en haut ». Écart réel, non corrigé depuis #315 (S46). |
+| Précédent de sticky dans ce même drawer | `.mt-sheet__footer` (#79) : nœud sorti de `.mt-sheet__body`, contenu portalisé depuis `EventEditForm` via `footerPortalNode`. Pattern maison réutilisable — pas besoin d'en inventer un second. |
+| Rendu visuel de la mini-frise | **jamais inspecté** (aveu explicite du body de #325). Conformité au handoff §6 déduite de l'usage des tokens, pas constatée. #325 est du vrai travail. |
+| Outillage de vérification visuelle | existant et éprouvé : `frontend/e2e/support/contrast.ts` + `landing-cta-contrast.spec.ts` + `sprint-62-control-focus-contrast.spec.ts` mesurent des styles **calculés** en clair ET sombre. Boucle E2E locale documentée : `docs/memory/sprints/sprint-47/e2e-local-runbook.md`. |
+
+### Arbitrages dev (2026-09-03)
+
+**n°1 — ordre des vagues INVERSÉ vs l'ordre naturel de lecture : V1 = #326, V2 = #325.**
+Les deux issues touchent la même surface (`EventEditForm.tsx`, `timeline.css`,
+`EventPreviewTimeline.tsx`) → parallélisme exclu, conflit garanti. L'ordre retenu fait
+vérifier l'aperçu **à sa position finale** : vérifier d'abord (#325) puis déplacer (#326)
+invaliderait la vérification et imposerait un second passage navigateur.
+
+**n°2 — périmètre de #326 borné au chemin CRÉATION.** Le handoff §6 couvre « création /
+édition », mais l'issue dit « drawer de création ». Étendre le sticky aux 3 surfaces d'édition
+partagées (`EventDrawer`, `TimelineEditHost`, `ConflictDialog`) élargirait le risque de
+régression (`PAT-S44-001`) sans mandat. Extension éventuelle → `RECOMMAND_FOLLOWUP`.
+
+### Écart de méthode assumé — composition des briefings (suite du S69)
+
+Briefings complets committés (`briefing-326.md` 150 Ko, `stack=frontend`), mais les
+`Agent.prompt` réellement émis sont des variantes compactes (~60 Ko) : instructions + état
+vérifié + `cp-frontend` + `br-events` + `rules-jit/{frontend,ux-patterns}` **inline** (marqueurs
+présents, garde-fou `pre-spawn-fullstack.sh` satisfait) + **pointeur** vers l'archive
+`.ai-env/context-packs/pit-frontend.md` (90 Ko, chemin versionné stable) avec ordre de lecture
+imposé. Motif identique au S68/S69 : la recopie ferait transiter l'archive deux fois par le
+contexte du lead.
+
+**Ce que ce sprint change par rapport au S69 :** le S69 s'est clôturé en constatant qu'il était
+*impossible de prouver* que les agents avaient ouvert l'archive pointée, et a laissé le choix
+ouvert (« recopie intégrale, ou ligne `fichiers de contexte lus` auditable »). **La 2ᵉ branche est
+retenue ici** : le livrable attendu de chaque briefing exige une ligne `fichiers de contexte lus`
+listant les chemins réellement ouverts, **avec un ancrage vérifiable par fichier** (identifiant de
+pitfall, numéro de ligne ou citation courte). À auditer à la clôture — et à consigner si la preuve
+est de nouveau insuffisante.
+
+### Bilan d'exécution
+
+**Issues livrées (2) :** #326 (S, épinglage) · #325 (S, vérification visuelle)
+**Vagues exécutées :** V1 = #326 → V2 = #325. Séquentiel strict, parallélisme exclu (même surface).
+**Commits de code (3) :** `22d6eeb` (#326 épinglage) · `297d160` (#325 vérification + 3 corrections)
+· `2955bbb` (correctif du MAJEUR de review).
+**BR impactées :** BR-EVE-009 (modèle couleur) — effleurée seulement : le rendu de la couleur
+utilisateur change, la règle non. Aucun endpoint, aucun DTO, aucune migration, aucun fichier backend.
+**Reviews :** reviewer batch — **0 CRITIQUE / 1 MAJEUR / 1 MINEUR**. Le MAJEUR (classe du libellé
+« Aperçu » fuyant vers 4 surfaces sans mandat) est RÉSOLU par `2955bbb`. Le MINEUR est l'attribution
+BR-EVE-009, laissée intacte volontairement → issue #496.
+**Tests (arbre final, mesurés par le lead) :** Backend **476/476** · Frontend **1056/1056** ·
+**E2E 243 passed / 9 skipped / 0 failed** (exit 0, 9,7 min) · specs du sprint **10/10** ·
+`tsc`/`eslint` propres. **CI 7/7 verte** sur la PR. Audit : `docs/memory/audits/sprint-70-test-coverage.md`.
+**Coverage E2E :** OK (le seul testid nouveau, `shell-new-event-drawer-preview`, est cité dans une spec).
+
+**Nouveaux pitfalls / patterns / décisions / bugs :** [[PIT-S70-001]] (BR mal attribuée dans un
+briefing) · [[PIT-S70-002]] (étiquette « pré-existant » à réfuter par la CI de la base) ·
+[[PIT-S70-003]] (opacity redondante sur variante déjà faible) · [[PIT-S70-004]] (sonde
+`currentColor`) · [[PIT-S70-005]] (hook de complétude testé ligne par ligne) · [[PIT-S70-006]]
+(hypothèses transmises comme constats entre vagues) · [[PAT-S70-001]] (prop `<x>PortalNode`) ·
+[[DEC-S70-001]] (pas de `max-height`) · [[DEC-S70-002]] (preuve de lecture auditable) ·
+[[BUG-S70-001]] (fantôme sous seuils WCAG) · [[BUG-S70-002]] (RTK : exit 1 sous un texte de succès).
+
+### Ce que ce sprint a coûté en affirmations fausses
+
+**Quatre affirmations fausses, dont trois du lead.** (1) Le briefing attribuait BR-EVE-009 au
+débounce de l'aperçu — c'est le modèle couleur. (2) Le lead a recopié comme constats 4 « écarts
+visuels » de la vague 1 : la mesure en a **réfuté 2** (double filet inexistant, filets à 207 px ;
+pas d'amputation du corps défilant). (3) Le briefing du correctif affirmait que `cn` était importé
+dans `EventEditForm.tsx` — il ne l'était pas. (4) Le premier audit de tests a rendu **deux verdicts
+faux** étiquetés « pré-existant » : un échec de build réfuté par la CI verte de `dev` sur `fd954b2`,
+et une E2E « rouge » qui n'était pas une mesure (l'audit avait tué le serveur de dev en buildant
+contre lui — piège nommé au runbook S47 — puis imputé les dégâts au code ; 247 specs en `skipped`).
+
+Les agents ont corrigé les 3 premières. La 4ᵉ a été réfutée par le lead **en une commande**
+(`gh run list --branch dev`), d'où [[PIT-S70-002]]. **Trois sprints consécutifs** où le fullstack-dev
+corrige une affirmation du briefing (S68 : retombée CI ; S69 : —, S70 : BR + import `cn`).
+
+### Protocole de preuve de lecture — la question ouverte du S69 est tranchée
+
+Le S69 se clôturait sans pouvoir prouver que les agents ouvraient les archives **pointées** plutôt
+que recopiées, et laissait le choix entre « recopie intégrale » et « ligne auditable ». **La ligne
+auditable est retenue** ([[DEC-S70-002]]) : chaque briefing exige `fichiers de contexte lus` avec un
+ancrage vérifiable par fichier. Résultat sur 3 spawns : un **aveu explicite** (vague 1, 2 sections
+non ouvertes) que le S69 n'aurait pas su détecter, et 2 relevés exacts. Découverte associée :
+`rules-jit/frontend.md` injecté par `build-briefing.sh` est un **placeholder EdelWheels/Quarkus**
+(« À RÉGÉNÉRER »), dont la consigne de test contredit le runbook du projet — la lacune de la vague 1
+était donc moins grave que le lead ne l'avait d'abord écrite.
+
+**Écart de méthode assumé (suite S68/S69) :** briefings complets committés (150 Ko), `Agent.prompt`
+compacts réellement émis (20,7 / 23,9 / 17,6 Ko) avec `cp-frontend` inline (marqueur présent,
+garde-fou `pre-spawn-fullstack.sh` satisfait) et le reste par pointeur versionné. Écart **plus large**
+qu'au S69 (`br-events` y est aussi pointé) : assumé et compensé par la ligne auditable.
+
+**Absorbé en cours :** aucun. Périmètre tenu strict par issue.
+
+### Follow-ups arbitrés (Phase 4 triage — option « créer les 3 », choisie par le dev)
+
+  - Étendre l'aperçu épinglé aux 3 surfaces d'édition [S | events/design] → **issue #495** (Sprint 71)
+  - Trancher l'attribution BR-EVE-009 et recibler les 2 renvois [XS | events] → **issue #496** (Sprint 71)
+  - Plancher de lisibilité ≥3:1 sur les traits en couleur utilisateur, **1,02:1 mesuré** [S | events/design]
+    → **issue #497** (Sprint 71, `priority:P1` + `bug` : défaut d'accessibilité constaté, pas cosmétique)
+
+  Bilan : **3 issues créées, 0 discardée, 0 absorbée** (ratio discard 0 %).
+
+  Non transformés en issues (consignés ici seulement) : `rules-jit/frontend.md` est un placeholder
+  d'un autre projet à régénérer par `/ai-env:setup` ; `check-sprint-completeness.sh` ne reconnaît pas
+  une négation coupée par un retour à la ligne ([[PIT-S70-005]]).
+
+### ⚠ Retombée CI à la clôture — le lead est retombé dans un trou déjà consigné
+
+Le commit de clôture a fait **rougir `ai-env-packs`** (check REQUIS) :
+`gen-pit-packs.sh --check` a détecté que `pit-backend.md` et `pit-frontend.md` ne reflétaient plus
+`docs/memory/pitfalls.md`, où le lead venait d'ajouter `PIT-S70-001..006`. Correctif : classer les
+6 entrées dans `.ai-env/tools/pit-classification.tsv` (4 `tooling`, 2 `frontend`) puis régénérer.
+Sans classification, `gen-pit-packs.sh` les met dans **LES DEUX** packs et avertit — le `--check`
+passe quand même, mais les deux archives enflent inutilement.
+
+**Ce qui rend l'incident notable : le S69 avait DÉJÀ consigné ce trou de procédure**
+(commit `39c81ae`, « classer PIT-S69-001/002 + régénérer les packs pitfalls ») et le lead l'a
+répété au sprint suivant. Consigner un piège ne suffit pas s'il ne s'attache à rien d'exécutable :
+ici la seule chose qui l'a rattrapé est la **CI**, pas la mémoire. Règle à appliquer désormais :
+**toute écriture dans `docs/memory/pitfalls.md` s'accompagne, dans le même commit,
+de la classification TSV et de `bash .ai-env/tools/gen-pit-packs.sh`.**
+
+**Status :** **Terminé** — merge PR **#494** (`claude/sprint-70-start-b946cb` → `dev`), CI 7/7 verte,
+milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PIT-S56-006`).
