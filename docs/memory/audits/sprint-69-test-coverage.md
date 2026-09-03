@@ -34,4 +34,4 @@ Reviewer batch (Phase 7) : **PRÊT MERGE** — 0 CRITIQUE / 0 MAJEUR. 2 MINEURs,
 
 ## Conclusion
 
-**Prêt pour PR.** Logique couverte en unit backend + slice contrôleur + unit frontend, tous verts (re-run lead). E2E parcours du hint différé en `/create-e2e` post-merge (tracké Phase 4), conformément au workflow E2E-CI de ce dépôt. Aucun `[MISSING]` bloquant : la couverture pré-merge est adéquate pour la nature du flux (calcul pur + hint UI mono-rôle).
+**Prêt pour PR.** Logique couverte en unit backend + slice contrôleur + unit frontend, tous verts (re-run lead). E2E parcours du hint différé en `/create-e2e` post-merge (tracké Phase 4), conformément au workflow E2E-CI de ce dépôt. Aucun test requis manquant bloquant : la couverture pré-merge est adéquate pour la nature du flux (calcul pur + hint UI mono-rôle).
