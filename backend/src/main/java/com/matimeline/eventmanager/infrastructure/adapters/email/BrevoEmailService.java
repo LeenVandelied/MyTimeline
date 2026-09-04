@@ -34,6 +34,14 @@ import com.matimeline.eventmanager.domain.ports.services.EmailService;
  * BR-AUT-012, PAS BR-AUT-005 (qui traite du 401 sur échec d'authentification). Le code
  * source portait la mauvaise référence depuis #49 — ne pas la réintroduire.
  *
+ * <p>Deux occurrences de l'ancienne étiquette subsistent VOLONTAIREMENT :
+ * <ul>
+ *   <li>{@code V6__create_password_reset_tokens.sql} — une migration Flyway déjà
+ *       appliquée ; modifier son texte, fût-ce un commentaire, change son checksum
+ *       et fait échouer la validation au démarrage sur toute base existante.</li>
+ *   <li>{@code AuthController} (chemin login) — là, BR-AUT-005 est la BONNE règle.</li>
+ * </ul>
+ *
  * <p>i18n (#142) : sujet et corps viennent du catalogue {@link PasswordResetEmailTemplate}
  * (fr/en/es/de). La sélection est un simple lookup en mémoire, sans I/O ni exception
  * possible : une locale inconnue retombe sur le français, donc aucune valeur d'entrée

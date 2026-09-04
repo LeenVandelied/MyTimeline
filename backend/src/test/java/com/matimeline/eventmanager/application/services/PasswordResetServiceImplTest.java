@@ -35,7 +35,7 @@ import com.matimeline.eventmanager.domain.ports.services.EmailService;
 /**
  * Tests unitaires de {@link PasswordResetServiceImpl} (issue #49).
  *
- * <p>Couvre les AC : forgot-password no-op + no-leak sur email inconnu (BR-AUT-005),
+ * <p>Couvre les AC : forgot-password no-op + no-leak sur email inconnu (BR-AUT-012),
  * envoi email + persistance token sur email connu ; reset-password token inexistant /
  * expiré (>15 min) / déjà consommé -> InvalidPasswordResetTokenException (->400) ;
  * succès -> re-hash BCrypt (BR-AUT-002) + marquage consommé (usage unique).

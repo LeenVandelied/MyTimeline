@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
- * Configuration de l'exécution asynchrone (review S8, fix BR-AUT-005 timing).
+ * Configuration de l'exécution asynchrone (review S8, fix BR-AUT-012 timing).
  *
  * <p>Active {@code @Async} et fournit l'executor dédié au flux "mot de passe oublié".
  * Objectif anti-énumération par timing : le endpoint {@code forgot-password} doit

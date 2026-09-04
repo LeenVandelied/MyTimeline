@@ -31,7 +31,7 @@ import com.matimeline.eventmanager.domain.ports.services.EmailService;
 import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
 
 /**
- * Test du correctif BR-AUT-005 (anti-énumération par TIMING) — review S8.
+ * Test du correctif BR-AUT-012 (anti-énumération par TIMING) — review S8.
  *
  * <p>Avant le fix, {@code forgot-password} exécutait, pour un email connu, lookup +
  * INSERT + appel HTTP Brevo de façon SYNCHRONE sur le thread de requête : la latence
