@@ -4643,3 +4643,40 @@ CI 7/7 verte sur le SHA mergé `43fb5f9`.
 ferme rien sur une PR dont la base est `dev`).
 
 **Status :** Terminé
+
+---
+
+## Sprint 75 — 2026-09-04 (En cours — finitions pages légales & dette i18n)
+
+**Objectif :** finitions des pages légales publiques (`/privacy`, `/terms`) et résorption
+d'une API next-intl dépréciée.
+
+**Milestone GitHub :** #76
+**Issues planifiées (3) :** #60, #172, #279
+**Vagues :** V1 = #279 ‖ #60 (fichiers disjoints — `i18n.ts` d'un côté, `app/[locale]/{privacy,terms}` +
+`public/locales/*/legal.json` de l'autre)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+
+**Arbitrages de cadrage (pré-briefing, énoncés d'issue vérifiés contre le code) :**
+- **#172 fusionnée dans #60.** Son point 2 (le `sr-only` « Changer de langue » codé en dur dans
+  `language-selector.tsx`) est **déjà livré au Sprint 58 (#353)** : la ligne 172 rend
+  `{t('navigation.changeLanguage')}`, la clé existe dans les 4 `common.json`, et
+  `language-selector.i18n.test.ts` est un test de garde contre la régression. Son point 1 (clé
+  `disclaimerOriginalFrench` absente de `fr/legal.json`) porte sur une clé **appelée nulle part
+  dans le code** — c'est précisément le disclaimer que #60 doit câbler. Les deux issues se
+  disputaient `legal.json` ; #60 absorbe le reste et #172 sera fermée avec cette évidence.
+- **#60 recadrée sur le fonctionnel.** L'énoncé annonce un restyling DS Graphite bloqué par #45 ;
+  les deux pages utilisent déjà `bg-bg`, `text-ink`, `text-ink-muted`, `border-rule`. Le travail
+  réel est ailleurs : « Retour » codé en dur (deux occurrences par page), date `01/06/2023` en dur,
+  disclaimer absent, aucun `id=` d'ancre pour un sommaire.
+- **Chemins de l'énoncé #60 périmés** : pas de groupe `(public)` (`app/[locale]/privacy/page.tsx`),
+  et les traductions sont dans `public/locales/<l>/legal.json`, pas `messages/<l>/legal.json`.
+- **#279 n'est pas « non-impactant »** comme l'affirme son énoncé : `i18n.ts` est branché via
+  `createNextIntlPlugin('./i18n.ts')` et les pages légales appellent `getTranslations`, qui passe
+  par `getRequestConfig`. Vérification exigée au build et au rendu, pas seulement en unitaire.
+
+**Couverture :** aucun E2E ne couvre `/privacy` ni `/terms` aujourd'hui — une spec ciblée est
+exigée de #60 (bouton « Retour » traduit, disclaimer hors `fr`, saut d'ancre du sommaire).
+
+**Status :** En cours
