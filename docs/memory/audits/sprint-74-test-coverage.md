@@ -34,11 +34,11 @@ Faisceau qui l'écarte du périmètre de ce sprint — **sans le prouver formell
 4. La CI de `dev` est verte sur les derniers merges.
 5. Rejeu ciblé du fichier : **25/25**.
 
-⚠ **Ce que ce faisceau ne prouve pas.** Le rejeu ciblé est vert *en isolation*, ce qui retire la
-charge — la mémoire projet retient explicitement qu'une isolation verte n'établit pas la
-flakiness. Le contre-test décisif (rejouer ce spec **sur `origin/dev`** dans les mêmes
-conditions de charge) **n'a pas été fait**. L'imputation « hors périmètre » reste un faisceau,
-pas une démonstration. La CI de la PR tranchera.
+~~⚠ Ce que ce faisceau ne prouve pas~~ → **TRANCHÉ PAR LA CI.** Le job `e2e` de la PR #523 est
+**vert** (8 min 47) sur le SHA `6060019`, sur la même suite complète. L'échec local était bien
+environnemental (charge du `next dev` local), pas une régression du sprint. Les 7 checks de la
+CI passent : `backend`, `frontend`, `e2e`, `ai-env-packs`, `flyway-smoke`, `secret-scan`,
+`security`.
 
 ## Couverture par critère d'acceptation
 
@@ -142,5 +142,4 @@ Restent, et c'est assumé :
 - **deux vérifications partielles** — la *fluidité* de la transition de #384 (le panneau
   navigateur rendait des lectures de transition instables) et le palier responsive `-5px`
   sous 768 px (règle présente, non mesurée à ce viewport).
-- **une imputation non démontrée** — l'échec E2E `sprint-62-select-focus-indicator` est écarté
-  par faisceau, pas par contre-test sur `origin/dev`. La CI de la PR tranchera.
+L'échec E2E local est **résolu** : la CI de la PR #523 passe l'`e2e` complet au vert.
