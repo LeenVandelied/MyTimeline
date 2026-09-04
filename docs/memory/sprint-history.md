@@ -4558,7 +4558,7 @@ Ratio discard : **0 %** sur 12 items.
 
 ---
 
-## Sprint 74 — 2026-09-04 (En cours — « Landing & focus polish »)
+## Sprint 74 — 2026-09-04 (Terminé — merge PR #523 dans dev, commit `b1bb7b7`)
 
 **Objectif :** quatre finitions frontend XS, toutes `epic:design` / `priority:P3`, sur des
 fichiers strictement disjoints — accessibilité du sélecteur de langue, cohérence motion du
@@ -4636,5 +4636,10 @@ sur un `prettier --check` que la sortie brute donnait ROUGE, deux appels success
 fichier intact donnant les deux verdicts opposés. Évité de justesse : imputer à son propre edit
 une non-conformité pré-existante et reformater 60 lignes de shadcn.
 
-**Status :** Terminé côté développement — PR #523 verte, en attente du triage des follow-ups et
-du merge (`/sprint end 74`)
+**PR :** #523, mergée dans `dev` le 2026-09-04 (commit de merge `b1bb7b7`, 22 commits).
+CI 7/7 verte sur le SHA mergé `43fb5f9`.
+**Milestone GitHub :** #75 — **fermé** après merge.
+**Issues fermées après merge :** #342, #343, #384, #417 (fermeture manuelle : un `Closes #N` ne
+ferme rien sur une PR dont la base est `dev`).
+
+**Status :** Terminé
