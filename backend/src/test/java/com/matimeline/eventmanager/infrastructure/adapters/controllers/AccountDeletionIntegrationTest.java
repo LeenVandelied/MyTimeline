@@ -103,7 +103,7 @@ class AccountDeletionIntegrationTest extends AbstractPostgresIntegrationTest {
             user.setName("DelTest");
             user.setUsername(username);
             user.setEmail(username + "@example.test");
-            user.setPassword(passwordEncoder.encode("secret6"));
+            user.setPassword(passwordEncoder.encode("Secret60"));
             user.setRole("ROLE_USER");
             em.persist(user);
 
@@ -150,7 +150,7 @@ class AccountDeletionIntegrationTest extends AbstractPostgresIntegrationTest {
     }
 
     private Cookie login(String username) throws Exception {
-        String body = "{\"username\":\"" + username + "\",\"password\":\"secret6\"}";
+        String body = "{\"username\":\"" + username + "\",\"password\":\"Secret60\"}";
         String ip = nextIp();
         MvcResult res = mockMvc.perform(post("/api/auth/login")
                         .with(req -> { req.setRemoteAddr(ip); return req; })

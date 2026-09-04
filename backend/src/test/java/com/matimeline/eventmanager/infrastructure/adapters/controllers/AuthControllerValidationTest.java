@@ -54,7 +54,7 @@ class AuthControllerValidationTest {
     @Test
     void register_invalidEmail_returns400() throws Exception {
         String body = "{\"name\":\"validName\",\"username\":\"validUser\","
-                + "\"email\":\"not-an-email\",\"password\":\"secret6\"}";
+                + "\"email\":\"not-an-email\",\"password\":\"Secret60\"}";
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

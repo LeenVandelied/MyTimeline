@@ -75,7 +75,7 @@ class RegisterLoginIntegrationTest extends AbstractPostgresIntegrationTest {
     void register_thenLogin_persistsUser_andIssuesJwtCookie() throws Exception {
         String username = "reg" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         String email = username + "@example.test";
-        String password = "secret6";
+        String password = "Secret60";
 
         String registerBody = "{"
                 + "\"name\":\"Reg Test\","
@@ -119,8 +119,8 @@ class RegisterLoginIntegrationTest extends AbstractPostgresIntegrationTest {
     void changePassword_updatesPersistedHash_soReloginUsesNewPassword() throws Exception {
         String username = "upd" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         String email = username + "@example.test";
-        String oldPassword = "secret6";
-        String newPassword = "secret7new";
+        String oldPassword = "Secret60";
+        String newPassword = "Secret7New";
 
         String registerBody = "{"
                 + "\"name\":\"Upd Test\","

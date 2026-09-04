@@ -21,7 +21,9 @@
     "name": "El nombre debe tener al menos 3 caracteres",
     "username": "El nombre de usuario debe tener al menos 3 caracteres",
     "password": {
-      "min": "La contraseña debe tener al menos 6 caracteres",
+      "min": "La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula y un número",
+      "max": "La contraseña no debe superar los 100 caracteres",
+      "loginMin": "La contraseña debe tener al menos 6 caracteres",
       "uppercase": "La contraseña debe contener al menos una mayúscula",
       "number": "La contraseña debe contener al menos un número",
       "match": "Las contraseñas no coinciden"

@@ -14,7 +14,9 @@
     "max": "Username must be at most 20 characters"
   },
   "password": {
-    "min": "Password must be at least 6 characters",
+    "min": "Password must be at least 8 characters, including one uppercase letter and one number",
+    "max": "Password must not exceed 100 characters",
+    "loginMin": "Password must be at least 6 characters",
     "uppercase": "Password must contain at least one uppercase letter",
     "number": "Password must contain at least one number",
     "match": "Passwords do not match",

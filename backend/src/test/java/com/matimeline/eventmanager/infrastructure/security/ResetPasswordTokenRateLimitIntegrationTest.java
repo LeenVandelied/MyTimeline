@@ -74,11 +74,11 @@ class ResetPasswordTokenRateLimitIntegrationTest extends AbstractPostgresIntegra
 
     /**
      * POST /api/auth/reset-password avec un token donné, depuis une IP socket donnée.
-     * Le mot de passe est valide (>=6) pour que le seul motif d'échec possible soit le
+     * Le mot de passe respecte la politique BR-AUT-003 (>=8, majuscule, chiffre) pour que le seul motif d'échec possible soit le
      * token (jamais un 400 de @Valid sur le mot de passe).
      */
     private int reset(String token, String socketIp) throws Exception {
-        String body = "{\"token\":\"" + token + "\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"token\":\"" + token + "\",\"newPassword\":\"NewSecret1\"}";
         return mockMvc.perform(post("/api/auth/reset-password")
                         .with(req -> { req.setRemoteAddr(socketIp); return req; })
                         .contentType(MediaType.APPLICATION_JSON)
@@ -100,7 +100,7 @@ class ResetPasswordTokenRateLimitIntegrationTest extends AbstractPostgresIntegra
             assertNotEquals(429, sc, "tentative #" + i + " sous la limite par token ne doit pas être 429");
         }
         // 6e tentative sur le MÊME token, encore une IP neuve -> throttlée par token.
-        String body = "{\"token\":\"" + token + "\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"token\":\"" + token + "\",\"newPassword\":\"NewSecret1\"}";
         mockMvc.perform(post("/api/auth/reset-password")
                         .with(req -> { req.setRemoteAddr("10.41.0.99"); return req; })
                         .contentType(MediaType.APPLICATION_JSON)

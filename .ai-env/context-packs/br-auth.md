@@ -52,12 +52,14 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 **Implémentation** : `AuthController.register` (l.112) `passwordEncoder.encode(...)`.
 **Test attendu** : `AuthControllerTest#register_shouldStoreBcryptHash_notPlaintext`.
 
-### BR-AUT-003 — Validation des champs d'inscription
-**Règle** : Le `system` MUST rejeter un `register` dont `name`/`username` ne font pas 3..20 caractères, `email` non valide, ou `password` < 6 caractères.
-**Pourquoi** : Garantir des credentials exploitables et un email correct.
-**Implémentation** : annotations Bean Validation sur `RegisterRequest` (`@NotBlank`, `@Size(min=3,max=20)`, `@Email`, `@Size(min=6)`) + `@Valid` sur `@RequestBody` (`AuthController.java:151`).
-**Test attendu** : `AuthControllerTest#register_shouldReturn400_whenPasswordTooShort`.
-> ✅ RÉSOLU (Sprint 9) : `@Valid` présent sur `register` (`AuthController.java:151`) → les Bean Validations de `RegisterRequest` sont déclenchées (validation serveur active). Côté frontend, `RegisterSchema` Zod existe (`frontend/src/lib/schemas/auth.ts:47`, cf. A12).
+### BR-AUT-003 — Politique de mot de passe (unique) + validation des champs d'inscription
+**Règle** : Le `system` MUST rejeter un `register` dont `name`/`username` ne font pas 3..20 caractères ou dont l'`email` est invalide. Et sur TOUT chemin de **création ou de modification** d'un mot de passe (`register`, `reset-password`, `change-password`), le `system` MUST rejeter un mot de passe qui ne fait pas **8..100 caractères, avec au moins une majuscule et au moins un chiffre**.
+**Pourquoi** : une politique unique. Avant #148, trois règles coexistaient (form register : min 6 + majuscule + chiffre ; form reset : min 6 ; backend : `@Size(min=6)` nu) — un même mot de passe était accepté à un endroit et refusé à un autre.
+**Périmètre — CRÉATION / MODIFICATION UNIQUEMENT** : la politique NE S'APPLIQUE PAS au login. `AuthRequest` ne porte ni longueur minimale ni règle de complexité, et `createLoginSchema` reste à `min(6)` avec la clé de message dédiée `validation.password.loginMin`. Sans cette exemption, tout compte créé avant #148 (mot de passe à 6 caractères) serait **verrouillé**. Idem pour `ChangePasswordRequest.oldPassword`, non contraint : sinon un compte historique ne pourrait pas se mettre en conformité.
+**Implémentation** : annotation composée `@StrongPassword` (`application/validation/StrongPassword.java` + `StrongPasswordValidator.java`, `MIN_LENGTH=8`, `MAX_LENGTH=100`) posée sur `RegisterRequest.password`, `ResetPasswordRequest.newPassword` et `ChangePasswordRequest.newPassword`, + `@Valid` sur `@RequestBody`. Côté frontend, `PASSWORD_POLICY` + `passwordField()` (`frontend/src/lib/schemas/auth.ts`) alimentent `createRegisterFormSchema`, `createResetPasswordFormSchema`, `RegisterSchema`, `ResetPasswordSchema` et `createChangePasswordSchema` (`schemas/settings.ts`). Messages i18n : `validation.password.{min,max,uppercase,number,loginMin}` dans `public/locales/{fr,en,es,de}/validation.json` (namespace vivant) et `register.json`.
+**Tests** : `PasswordPolicyTest` (29, dont l'égalité des verdicts entre les 3 endpoints et la non-application au login) ; `AuthControllerLegacyPasswordLoginTest` (3, comptes legacy : login à 6 caractères OK, register du même mot de passe refusé, mise en conformité par change-password) ; `frontend/src/lib/schemas/password-policy.test.ts` (49).
+> ✅ RÉSOLU (Sprint 9) : `@Valid` présent sur `register` (`AuthController.java:151`) → les Bean Validations de `RegisterRequest` sont déclenchées (validation serveur active).
+> ⚠️ **AMENDÉE Sprint 71 (#148) — le backend est désormais la SOURCE DE VÉRITÉ de la politique.** Durcissement 6 -> 8 caractères + majuscule + chiffre, appliqué à l'identique sur les 3 DTOs de création/modification et répliqué (non réinventé) par les schémas Zod. Ajout d'une **borne haute à 100** : sans elle, on pouvait créer un mot de passe que le login (`AuthRequest`, `@Size(max=100)`) refusait ensuite de recevoir. Aucune migration de données : les hash existants ne sont pas touchés, la règle ne s'applique qu'au prochain changement.
 
 ### BR-AUT-004 — Validation des credentials de login
 **Règle** : Le `system` MUST rejeter un `login` dont `username` < 3 ou `password` < 6 caractères.
@@ -65,6 +67,7 @@ CRUD simple côté persistance — **pas de lifecycle d'état métier** sur `Use
 **Implémentation** : `AuthRequest` côté backend + `@Valid` sur `login` (`AuthController.java:97`) ; `LoginSchema` Zod côté frontend (`username z.string().min(3)`, `password z.string().min(6)`).
 **Test attendu** : `AuthControllerTest#login_shouldReject_whenUsernameTooShort`.
 > ✅ RÉSOLU (Sprint 9) : `@Valid` présent sur `login` (`AuthController.java:97`) — également sur forgot/reset password. La validation backend est active (plus uniquement Zod frontend).
+> ⚠️ **CORRIGÉ Sprint 71 (#148) — l'énoncé ci-dessus surdécrivait le backend.** `AuthRequest` n'a JAMAIS porté de longueur minimale : seulement `@NotBlank` + `@Size(max=100)` sur les deux champs. Le `min(6)` de `LoginSchema` est donc une contrainte purement client. Elle est **conservée volontairement** (et NON alignée sur les 8 caractères de BR-AUT-003) : durcir le login verrouillerait les comptes antérieurs à #148. Preuve : `AuthControllerLegacyPasswordLoginTest#login_withPreExistingSixCharPassword_stillSucceeds_andIssuesJwtCookie`.
 
 ### BR-AUT-005 — Échec d'authentification → 401, jamais de fuite interne
 **Règle** : Le `system` MUST renvoyer `401 UNAUTHORIZED` (`"Invalid username or password"`) sur mauvais credentials et NE MUST PAS exposer de détail interne d'exception.

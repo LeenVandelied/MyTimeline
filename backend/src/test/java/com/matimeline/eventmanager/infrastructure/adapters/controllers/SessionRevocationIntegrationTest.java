@@ -105,7 +105,7 @@ class SessionRevocationIntegrationTest extends AbstractPostgresIntegrationTest {
     }
 
     /**
-     * Seede un utilisateur (mot de passe BCrypt "secret6") et COMMITTE dans une
+     * Seede un utilisateur (mot de passe BCrypt "Secret60") et COMMITTE dans une
      * transaction dédiée — le login ouvre sa propre transaction (auth) et doit voir
      * l'utilisateur. Renvoie le username. {@link TransactionTemplate} nécessaire car
      * le test n'est pas @Transactional et l'auto-invocation ne proxie pas @Transactional.
@@ -119,7 +119,7 @@ class SessionRevocationIntegrationTest extends AbstractPostgresIntegrationTest {
             user.setName("SessTest");
             user.setUsername(username);
             user.setEmail(username + "@example.test");
-            user.setPassword(passwordEncoder.encode("secret6"));
+            user.setPassword(passwordEncoder.encode("Secret60"));
             user.setRole("ROLE_USER");
             em.persist(user);
         });
@@ -128,7 +128,7 @@ class SessionRevocationIntegrationTest extends AbstractPostgresIntegrationTest {
 
     /** Login réel -> renvoie le cookie jwt posé (token porteur du jti + session créée). */
     private Cookie login(String username) throws Exception {
-        String body = "{\"username\":\"" + username + "\",\"password\":\"secret6\"}";
+        String body = "{\"username\":\"" + username + "\",\"password\":\"Secret60\"}";
         String ip = nextIp();
         MvcResult res = mockMvc.perform(post("/api/auth/login")
                         .with(req -> { req.setRemoteAddr(ip); return req; })

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { PASSWORD_POLICY } from '@/lib/schemas/auth'
+
 /**
  * #86 — Schémas Zod des formulaires Réglages. Factories i18n (`create*Schema(t)`)
  * pour messages traduits (next-intl), alignées sur les DTO backend :
@@ -41,13 +43,24 @@ export type ProfileFormValues = z.infer<ReturnType<typeof createProfileSchema>>
    Changement de mot de passe (POST /api/me/change-password).
    `confirmPassword` : UX only (non envoyé). Interdit un nouveau == ancien
    (inutile + signal d'erreur de saisie fréquent).
+
+   #148 — `newPassword` suit la politique UNIQUE `PASSWORD_POLICY` (BR-AUT-003),
+   la même que register et reset, et que `@StrongPassword` côté backend.
+   `oldPassword` n'est PAS contraint : c'est un mot de passe EXISTANT, qui peut
+   dater d'avant le durcissement — le contraindre empêcherait justement un compte
+   historique de se mettre en conformité.
    --------------------------------------------------------------------------- */
 
 export const createChangePasswordSchema = (t: Translate) =>
   z
     .object({
       oldPassword: z.string().min(1, { message: t('validation.password.required') }),
-      newPassword: z.string().min(6, { message: t('validation.password.min') }),
+      newPassword: z
+        .string()
+        .min(PASSWORD_POLICY.minLength, { message: t('validation.password.min') })
+        .max(PASSWORD_POLICY.maxLength, { message: t('validation.password.max') })
+        .regex(PASSWORD_POLICY.uppercase, { message: t('validation.password.uppercase') })
+        .regex(PASSWORD_POLICY.digit, { message: t('validation.password.number') }),
       confirmPassword: z.string(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {

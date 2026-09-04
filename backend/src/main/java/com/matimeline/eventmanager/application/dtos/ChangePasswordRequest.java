@@ -1,12 +1,16 @@
 package com.matimeline.eventmanager.application.dtos;
 
+import com.matimeline.eventmanager.application.validation.StrongPassword;
+
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 /**
  * Requête de changement de mot de passe (POST /api/me/change-password).
  * {@code oldPassword} : vérifié contre le hash BCrypt courant (échec -> 400).
- * {@code newPassword} : >= 6 caractères, cohérent avec BR-AUT-003.
+ * {@code newPassword} : politique unique {@link StrongPassword} (BR-AUT-003 —
+ * >= 8 caractères, une majuscule, un chiffre), identique à register et reset
+ * depuis #148. {@code oldPassword} n'est PAS soumis à la politique : c'est un
+ * mot de passe existant, potentiellement antérieur au durcissement.
  */
 public class ChangePasswordRequest {
 
@@ -14,7 +18,7 @@ public class ChangePasswordRequest {
     private String oldPassword;
 
     @NotBlank
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    @StrongPassword
     private String newPassword;
 
     public String getOldPassword() {

@@ -207,9 +207,9 @@ class UserControllerTest {
         // A8/DIP : la vérif du hash vit dans le port. Le contrôleur délègue ;
         // l'échec remonte en InvalidCredentialsException -> 400 via GlobalExceptionHandler.
         doThrow(new InvalidCredentialsException())
-                .when(userService).changePassword(eq(caller), eq("wrongold"), eq("newsecret"));
+                .when(userService).changePassword(eq(caller), eq("wrongold"), eq("NewSecret1"));
 
-        String body = "{\"oldPassword\":\"wrongold\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"oldPassword\":\"wrongold\",\"newPassword\":\"NewSecret1\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
@@ -224,9 +224,9 @@ class UserControllerTest {
     @Test
     void changePassword_returns204_andDelegatesToPort_onSuccess() throws Exception {
         stubAuthenticatedCaller();
-        doNothing().when(userService).changePassword(eq(caller), eq("rightold"), eq("newsecret"));
+        doNothing().when(userService).changePassword(eq(caller), eq("RightOld1"), eq("NewSecret1"));
 
-        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"oldPassword\":\"RightOld1\",\"newPassword\":\"NewSecret1\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
@@ -234,7 +234,7 @@ class UserControllerTest {
                         .content(body))
                 .andExpect(status().isNoContent());
 
-        verify(userService).changePassword(eq(caller), eq("rightold"), eq("newsecret"));
+        verify(userService).changePassword(eq(caller), eq("RightOld1"), eq("NewSecret1"));
     }
 
     @Test
@@ -242,9 +242,9 @@ class UserControllerTest {
         stubAuthenticatedCaller();
         // Review PR #132 : new == old (après validation BCrypt de l'ancien) -> 400.
         doThrow(new SamePasswordException())
-                .when(userService).changePassword(eq(caller), eq("rightold"), eq("rightold"));
+                .when(userService).changePassword(eq(caller), eq("RightOld1"), eq("RightOld1"));
 
-        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"rightold\"}";
+        String body = "{\"oldPassword\":\"RightOld1\",\"newPassword\":\"RightOld1\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
@@ -258,8 +258,8 @@ class UserControllerTest {
 
     @Test
     void changePassword_returns400_whenNewPasswordTooShort() throws Exception {
-        // newPassword < 6 -> @Valid -> 400
-        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"abc\"}";
+        // newPassword hors politique BR-AUT-003 (<8, ni majuscule ni chiffre) -> @Valid -> 400
+        String body = "{\"oldPassword\":\"RightOld1\",\"newPassword\":\"abc\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
