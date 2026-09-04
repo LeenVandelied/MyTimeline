@@ -73,6 +73,7 @@ test.describe('#60 — bouton « Retour » localisé', () => {
       await expect(page.getByRole('link', { name: FR_BACK, exact: true })).toHaveCount(0)
       await expect(page.getByRole('link', { name: FR_BACK_TO_HOME })).toHaveCount(0)
       await expect(page.getByRole('link', { name: 'Zurück', exact: true })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Zurück zur Startseite' })).toBeVisible()
     })
   }
 })

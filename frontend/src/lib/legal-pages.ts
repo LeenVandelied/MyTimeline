@@ -46,8 +46,15 @@ export function formatLegalDate(locale: string): string {
   }).format(new Date(`${LEGAL_LAST_UPDATED_ISO}T00:00:00Z`))
 }
 
-/** Locale de rédaction d'origine des textes légaux — celle qui fait foi. */
-export const LEGAL_SOURCE_LOCALE = 'fr'
+/**
+ * Locale de rédaction d'origine des textes légaux — celle qui fait foi.
+ *
+ * Volontairement NON exportée : son seul lecteur est `shouldShowLegalDisclaimer`
+ * juste dessous. L'exporter inviterait un appelant à re-implémenter la
+ * comparaison au lieu d'appeler le prédicat, et la règle « le disclaimer ne
+ * s'affiche pas dans la langue source » se retrouverait écrite à deux endroits.
+ */
+const LEGAL_SOURCE_LOCALE = 'fr'
 
 /**
  * Le disclaimer « la version française fait foi » n'a de sens que pour un

@@ -57,6 +57,16 @@ export async function loadMessages(locale: string) {
  * précisément CETTE branche de repli dont la sémantique change ici — et que
  * `next build` n'exerce pas (il ne prérend que des segments valides).
  */
+/**
+ * CASSE — `hasLocale` compare à l'identique : `'FR'` n'est PAS reconnu et
+ * replie sur `fr`. C'est délibéré et non un oubli de normalisation. Les URLs
+ * que sert réellement l'application sont produites par `middleware.ts`
+ * (`next-intl/middleware`, `localePrefix: 'always'`), qui n'émet que les
+ * préfixes en minuscules de `SUPPORTED_LOCALES` ; `/FR/...` est une URL forgée
+ * à la main. Y répondre en `fr` la sert dans la langue de référence plutôt que
+ * de la traiter comme un doublon casse-insensible de `/fr/...` — ce qui
+ * créerait deux URLs indexables pour un même contenu.
+ */
 export function resolveLocale(requested: unknown): Locale {
   return hasLocale(SUPPORTED_LOCALES, requested) ? requested : DEFAULT_LOCALE;
 }
