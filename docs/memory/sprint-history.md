@@ -4607,4 +4607,23 @@ remède, 1 suite de review)
   faisait croiser le trait et l'icône (bouton 16,5 px, icône 14 px). Remplacé par le déclippage
   du groupe, aligné sur ce que #226 faisait déjà en mobile.
 
-**Status :** Terminé côté développement — PR #523 ouverte et verte, en attente de `/sprint end 74`
+**Nouveaux pitfalls / décisions / patterns :** `PIT-S74-001` à `-007`, `DEC-S74-001`/`-002`,
+`PAT-S74-001` à `-004` — consolidés dans `pitfalls.md` / `decisions.md` / `patterns.md`,
+classifiés dans `pit-classification.tsv`, packs `pit-*` régénérés (`gen-pit-packs.sh --check`
+au vert).
+
+**Absorbé en cours (XS) :** 2 découvertes intégrées —
+  - #343 : en-tête de `hero-timeline.css` corrigé (il annonçait deux imports inexistants)
+  - #384 : retrait de la classe `transform` nue (morte en Tailwind v4 sur cet élément)
+
+**Follow-ups proposés (tous XS) :**
+  - commentaire périmé de `dropdown-menu.tsx:26-30` (cite comme « cas vivant » l'imbrication que
+    #342 supprime) [XS | frontend/doc] (issue-342 — RECOMMAND_FOLLOWUP)
+  - commentaire d'ancrage de `landing-mobile-menu.spec.ts:265-270` décrivant une structure à deux
+    nœuds [XS | frontend/e2e] (issue-342)
+  - `.mt-tab` (onglets produits, `core.css:260`, `outline-offset:3px`) non vérifié au navigateur,
+    potentiellement rogné ; son remède ne peut pas être l'offset négatif [XS | frontend/a11y]
+    (issue-417)
+
+**Status :** Terminé côté développement — PR #523 verte, en attente du triage des follow-ups et
+du merge (`/sprint end 74`)
