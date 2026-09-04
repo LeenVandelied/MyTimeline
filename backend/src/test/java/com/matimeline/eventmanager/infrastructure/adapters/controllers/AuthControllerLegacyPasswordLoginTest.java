@@ -154,7 +154,20 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
         assertNotNull(jwt, "pré-requis : le login legacy doit réussir");
 
         String newPassword = "Legacy2026";
+        // review S71 — `POST /api/me/change-password` est un slot RATE-LIMITÉ (5/min/IP,
+        // `RateLimitingFilter.LIMITS`, ajouté par #134). Sans `setRemoteAddr` cet appel
+        // retombait sur le 127.0.0.1 par défaut de MockMvc, donc sur un bucket PARTAGÉ
+        // avec toute autre classe @SpringBootTest appelant ce endpoint sans IP dédiée
+        // (aujourd'hui `RegisterLoginIntegrationTest` : 2 jetons consommés sur 5 — sous
+        // le seuil, mais la marge dépend d'un décompte qu'aucun test ne garde).
+        // On applique donc à CE troisième appel la convention que la classe s'était
+        // déjà donnée pour `login`/`register` (sous-réseau 10.83.x.y dédié, cf. `nextIp`) :
+        // le verdict ne dépend plus du nombre d'appels des autres classes.
+        // ⚠ Ce n'est PAS une déflakisation prouvée : le flaky signalé par l'audit n'a pas
+        // pu être reproduit (3 conteneurs neufs, verts). C'est la suppression d'un couplage
+        // réel, pas la correction d'une cause établie.
         mockMvc.perform(post("/api/me/change-password")
+                        .with(req -> { req.setRemoteAddr(nextIp()); return req; })
                         .cookie(jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"oldPassword\":\"" + LEGACY_PASSWORD
