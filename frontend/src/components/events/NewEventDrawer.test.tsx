@@ -490,7 +490,7 @@ describe('NewEventDrawer — #326 aperçu épinglé (handoff §6)', () => {
     renderDrawer()
 
     await userEvent.type(screen.getByTestId('event-form-title-input'), 'Refonte')
-    // Debounce 150 ms (BR-EVE-009) : le portail conserve l'arbre React, donc le
+    // Debounce 150 ms (BR-EVE-017) : le portail conserve l'arbre React, donc le
     // contexte RHF — la valeur doit finir par traverser jusqu'à la mini-frise.
     await waitFor(() =>
       expect(screen.getByTestId('shell-new-event-drawer-preview')).toHaveTextContent('Refonte'),

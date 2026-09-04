@@ -182,7 +182,7 @@ interface EventEditFormProps {
  */
 const RECURRENCE_UNIT_KEY = { WEEK: 'weeks', MONTH: 'months', YEAR: 'years' } as const
 
-/** Valeur debouncée (perf preview live, BR-EVE-009 — 150 ms). */
+/** Valeur debouncée (perf preview live, BR-EVE-017 — 150 ms). */
 function useDebounced<T>(value: T, delay = 150): T {
   const [debounced, setDebounced] = React.useState(value)
   React.useEffect(() => {
@@ -297,7 +297,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
   // #315 — dates débouncées elles aussi : la mini-frise recalcule sa fenêtre à
   // partir de `startDate`/`endDate`, une saisie non débouncée la ferait glisser
-  // à chaque frappe (BR-EVE-009, cf. `useDebounced`).
+  // à chaque frappe (BR-EVE-017, cf. `useDebounced`).
   const previewStartDate = useDebounced(form.watch('startDate'))
   const previewEndDate = useDebounced(form.watch('endDate'))
 

@@ -33,7 +33,7 @@ import { buildPreviewModel, type PreviewEventType, type PreviewSegment } from '.
  * son rendu par défaut monte `EventContent`, qui exige les contextes auth/i18n de
  * la page. La géométrie vient donc de `previewTimeline.ts` (fonctions pures).
  *
- * ⚠ PERF (BR-EVE-009) : ce composant ne débounce RIEN lui-même. Les valeurs
+ * ⚠ PERF (BR-EVE-017) : ce composant ne débounce RIEN lui-même. Les valeurs
  * arrivent déjà débouncées à 150 ms depuis `EventEditForm` — les brancher sur les
  * `watch()` bruts recalculerait la géométrie à chaque frappe.
  *

@@ -140,6 +140,14 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 
 > ⚠ Note numérotation : l'issue #201 parlait de « BR-EVE-002 » pour endDate≥startDate, mais BR-EVE-002 (ci-dessus) = « Produit cible obligatoire ». La règle endDate≥startDate est formalisée ici en **BR-EVE-016** (éviter la collision). BR-EVE-003 (dérivation endDate) est étendue au PATCH par le même sprint.
 
+### BR-EVE-017 — Aperçu live de l'éditeur d'event : valeurs débouncées à 150 ms
+**Règle** : les valeurs de formulaire alimentant l'**aperçu live** d'un event (mini-frise `EventPreviewTimeline`, pastille, légende) MUST transiter par un débounce de **150 ms** porté par `EventEditForm`. Le composant d'aperçu MUST NOT débouncer lui-même, et ses props MUST NOT être rebranchées sur les `watch()` bruts de react-hook-form.
+**Pourquoi** : sans débounce, chaque frappe relance le calcul de géométrie de la frise (fenêtre temporelle dérivée de `startDate`/`endDate`) — la frise « glisse » visuellement à la saisie et le coût de rendu est payé à chaque caractère. Le débounce est placé à la SOURCE (une seule fois, dans le formulaire) plutôt que dans l'aperçu, pour que tout consommateur de `EventPreviewTimeline` hérite du même contrat sans le réimplémenter.
+**⚠ Contrainte d'implémentation, pas de règle produit** : la valeur 150 ms est un choix de perf UI (#315 / #326), pas une exigence métier négociée. Elle est documentée ici parce qu'elle est **transverse à plusieurs composants** et qu'un contributeur qui rebranche l'aperçu sur `form.watch()` casserait le contrat sans qu'aucun test ne l'y oblige.
+**✅ IMPLÉMENTÉ (Sprint 65 #315 / Sprint 70 #326)** : helper local `useDebounced<T>(value, delay = 150)` dans `frontend/src/components/EventEditForm.tsx` ; applique à `startDate`, `endDate`, `isRecurring`, `recurrenceUnit`, titre et couleur d'aperçu. `EventPreviewTimeline.tsx` est purement présentationnel et reçoit les valeurs déjà débouncées.
+**Test** : `NewEventDrawer.test.tsx` (« l'aperçu épinglé reste LIVE » — `waitFor` sur la propagation débouncée jusqu'à la mini-frise).
+**⚠ Historique de numérotation (issue #496)** : ces mêmes contraintes étaient commentées `BR-EVE-009` dans le code jusqu'au Sprint 71 — attribution **fausse**, BR-EVE-009 (ci-dessus) = **modèle couleur event**. Les renvois ont été reciblés ici. Cf. [[PIT-S70-001]] : un identifiant `BR-*` recopié depuis un commentaire de code se propage jusque dans les briefings.
+
 ---
 
 ## 4. Dépendances inter-domaines
