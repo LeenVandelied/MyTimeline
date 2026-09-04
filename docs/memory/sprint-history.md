@@ -4555,3 +4555,36 @@ Ratio discard : **0 %** sur 12 items.
 - Le mot `[MISSING]` employé en prose dans l'artefact d'audit aurait déclenché le garde-fou
   bloquant de la Phase 9 (grep littéral). Reformulé.
 
+
+---
+
+## Sprint 74 — 2026-09-04 (En cours — « Landing & focus polish »)
+
+**Objectif :** quatre finitions frontend XS, toutes `epic:design` / `priority:P3`, sur des
+fichiers strictement disjoints — accessibilité du sélecteur de langue, cohérence motion du
+DS + scope CSS de la landing, double lévitation des cartes Fonctionnalités, contour de focus
+rogné par `overflow`.
+
+**Milestone GitHub :** #75 (« Sprint 74 »)
+**Issues (4) :** #342 (XS), #343 (XS), #384 (XS), #417 (XS) — toutes `size:XS`, `epic:design`,
+`priority:P3`, `frontend`
+**Vagues prévues :** V1 = #342 + #343 + #384 + #417 en parallèle (fichiers strictement disjoints)
+**Migrations Flyway :** aucune
+**BR impactées :** aucune (les 4 issues déclarent « Aucune »)
+**Dépend de :** aucune
+
+**Écarts de procédure assumés (à lire avant tout diagnostic) :**
+- **Aucun plan `/sprint plan` n'existait.** Le milestone #75 et le label `sprint-74` avaient été
+  créés côté GitHub, mais ni entrée `sprint-history.md`, ni `docs/memory/sprints/sprint-74/architect-plans.md`
+  sur `dev` ni sur aucune branche `claude/*`. Les vagues ci-dessus ont donc été dérivées par le
+  lead à partir de la matrice de fichiers (recon directe du code), pas d'un rapport architect.
+  Les briefings ne portent pas de section « Plan d'implémentation (architect) ».
+- **Le worktree de départ était sur la mauvaise base.** `claude/sprint-74-start-f9aacf` pointait
+  sur `main` (`d8b4f53`), branche divergente qui ne contient ni `docs/`, ni `.ai-env/`, ni
+  `.claude/hooks/`, ni `scripts/`. `sprint/74` a été recréée depuis `origin/dev` (`455862f`).
+  Toute session qui repart de `main` pour ce projet travaille à l'aveugle.
+- **Vérification NO-OP faite à la main**, pas via `check-issue-state.sh` (cf. mémoire :
+  « 0 NO-OP » ne prouve rien). Les 4 défauts ont été reconstatés dans le code à `455862f` —
+  détail dans chaque `briefing-<N>.md`, section « État réel du code ».
+
+**Status :** En cours
