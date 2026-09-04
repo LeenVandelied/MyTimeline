@@ -4743,3 +4743,55 @@ point 2 livré au S58/#353, point 1 absorbé par #60.
   un contournement de hook documenté) et de ce que le lead a listé comme non couvert.
 
 **Status :** Terminé
+
+---
+
+## Sprint 76 — 2026-09-05 (En cours — dette XS parallélisable + mesure a11y des pages légales)
+
+**Objectif :** solder trois dettes XS indépendantes (garde anti-boucle 409, filtrage du retry
+réseau, double-hit DB à la suppression d'event) et **mesurer** ce que le Sprint 75 avait seulement
+déduit sur les pages légales.
+
+**Milestone GitHub :** #77
+**Issues (4) :** #310, #237, #175, #527
+
+**Arbitrage de périmètre (pré-briefing).** Le milestone Sprint 76 contenait **4** issues mais seules
+**3** portaient le label `sprint-76` : #527, rattachée au milestone lors du triage de Phase 4 du
+Sprint 75, n'avait jamais été labellisée. C'est le piège documenté dans
+`mytimeline-sprint-end-github-gotchas` — un follow-up du sprint précédent qui traîne dans le
+milestone du suivant. Arbitré avec le dev : **#527 est dans le périmètre**, label posé.
+
+**Vagues :** V1 = #310 ‖ #237 ‖ #175 ‖ #527 — **une seule vague, 4 agents parallèles**.
+Fichiers strictement disjoints : `src/hooks/useEventEditConflict.ts` (#310) ·
+`src/contexts/NetworkStatusContext.tsx` (#237) · `backend/**` (#175) ·
+`app/[locale]/{privacy,terms}` + `src/components/legal/**` + `e2e/**` (#527).
+
+**Migrations Flyway :** aucune attendue (la prochaine serait V16).
+**Dépend de :** aucune.
+
+**Partition de la stack de test (contrainte de vague).** Trois des quatre agents sont frontend et
+partagent un unique working tree, un unique `frontend/.next` et une unique stack Playwright
+(`PIT-S73-008`, `PIT-S62-009`). L'exclusivité de Playwright et de tout serveur Next est donnée à
+**#527** — la seule issue dont l'objet *est* une mesure au navigateur. #310 et #237 sont contraints
+à Vitest, et le `next build` global de non-régression est joué par le lead en fin de vague
+(`PIT-S22-001` : il attrape des erreurs de lint invisibles à tsc et à vitest).
+
+**Énoncés d'issue vérifiés contre le code avant briefing** (le réflexe manquait encore au S74) :
+- **#237 — piste exacte** (`NetworkStatusContext.tsx` l.80-86). Écart trouvé en plus : le JSDoc
+  l.22 affirme DÉJÀ que `retry()` ne relance que les requêtes échouées. Le commentaire décrit la
+  cible, pas le code. Ajouté au périmètre.
+- **#310 — l'énoncé ne nomme aucun fichier.** La logique vit dans `useEventEditConflict.ts`, hook
+  PARTAGÉ par deux points de montage : une garde posée dans un composant ne couvrirait qu'un
+  chemin. Et `onKeepMine` **ré-aligne déjà la version** sur le corps 409 — la boucle résiduelle à
+  borner est la contention réelle, pas un bug de version. Ce que l'énoncé ne dit pas.
+- **#175 — lignes périmées** (« ≈ l.133-138 » ; réel : l.235-242). Surtout : `deleteById` de Spring
+  Data charge l'entité avant de supprimer, donc le coût actuel est probablement de **3** requêtes,
+  et l'option 1 de l'énoncé (`findEventById` + `deleteById`) **n'économiserait rien**. L'agent doit
+  MESURER avant d'éditer, et un no-op documenté chiffres à l'appui est une issue de perf P3.
+- **#527 — chemins de l'App Router** : `frontend/app/`, pas `frontend/src/app/`. Cibles exactes
+  identifiées : chiffre romain en `text-ink-muted` sur `bg-surface` dans un `<li className="flex
+  gap-3">` avec `shrink-0 w-10` (configuration littérale de `PIT-S73-001` pour le débordement `de`),
+  et disclaimer `text-sm text-ink-muted` sur `bg-surface`. Outillage de mesure déjà mûr et signalé
+  à l'agent (`e2e/support/{contrast,pixel,dev-tooling}.ts`, `sprint-63-de-overflow-audit.spec.ts`).
+
+**Status :** En cours
