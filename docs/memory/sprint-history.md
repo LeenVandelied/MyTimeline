@@ -4232,6 +4232,32 @@ milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PI
 
 ---
 
+## Sprint 72 — 2026-09-04 (En cours — i18n : email de reset + formats localisés)
+
+**Objectif :** i18n — localisation de l'email de réinitialisation (backend) et
+finition des formats dates/nombres localisés (frontend).
+
+**Milestone GitHub :** #73 (« Sprint 72 »)
+**Issues :** #142 (S, epic:auth, backend), #72 (M, epic:transversal, frontend)
+**Vagues :** V1 = #142 + #72 en parallèle (fichiers strictement disjoints — backend/ vs frontend/)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Cohésion :** 1.00 sur le thème i18n ; 0.00 sur les br-packs (`br-auth` vs `br-events`).
+Deux moitiés de pile qui ne se touchent pas — c'est ce qui rend la vague unique sûre,
+pas ce qui rend le sprint cohérent au sens des packs.
+
+**Arbitrages pris au démarrage (reconnaissance de code, pas lecture d'issue) :**
+- #142 — aucune locale n'est persistée nulle part (`User.java` sans champ locale, pas de
+  colonne DB, `LanguageSelector` purement URL) et l'endpoint est **non authentifié**.
+  Décision dev : la locale transite par `ForgotPasswordRequest`, champ optionnel,
+  repli `fr`. Ni `Accept-Language`, ni migration.
+- #72 — **l'essentiel du scope de l'issue est déjà livré** : `Intl.DateTimeFormat(locale, …)`
+  dans ~15 composants, `dayjs` et `date-fns` à zéro occurrence. Décision dev : issue
+  reformulée sur le reste réel (classes DS `mt-date--short`/`mt-num` jamais appliquées,
+  `Intl.NumberFormat` à zéro occurrence, tests 4 locales).
+
+**Status :** En cours
+
 ## Sprint 71 — 2026-09-04 (Terminé — merge PR #498 dans dev — Dette sécurité auth + follow-ups design du S70)
 
 **Objectif :** solder deux dettes de sécurité `epic:auth` (politique de mot de passe, anti-énumération
