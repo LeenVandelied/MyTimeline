@@ -112,6 +112,29 @@ public class EventRepositoryJpaImpl
                 .executeUpdate();
     }
 
+    // #175 — DELETE bulk JPQL : UNE SEULE instruction JDBC, et le nombre de lignes
+    // touchées porte le contrat 404 du service (0 ligne -> EventNotFoundException).
+    // Remplace le deleteById(UUID) hérité de SimpleJpaRepository
+    // (findById().ifPresent(delete) = SELECT + DELETE), lui-même précédé d'un
+    // existsById (SELECT count(*)) : 3 instructions mesurées pour une suppression
+    // unitaire (EventDeleteStatisticsIntegrationTest).
+    //
+    // JPQL et non SQL natif (contrairement à deleteAllByUserId ci-dessus) : EventEntity
+    // ne porte AUCUN @SQLRestriction — rien à contourner — et le bulk JPQL déclare son
+    // entity space, donc Hibernate auto-flushe les mutations en attente sur `events`
+    // avant de l'exécuter. Aucune FK enfant ne référence events : pas de cascade à
+    // orchestrer. Comme tout bulk, il n'évince pas l'entité du cache de 1er niveau :
+    // sous open-in-view, une EventEntity chargée plus tôt dans la MÊME requête (contrôle
+    // d'ownership du contrôleur) y reste, non modifiée — le flush de fin de transaction
+    // n'émet donc rien pour elle, et la requête se termine juste après.
+    @Override
+    public int deleteByIdIfExists(UUID id) {
+        return entityManager
+                .createQuery("DELETE FROM EventEntity e WHERE e.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
     @Override
     public Optional<Event> findEventById(UUID id) {
         Optional<EventEntity> optionalEntity = super.findById(id);

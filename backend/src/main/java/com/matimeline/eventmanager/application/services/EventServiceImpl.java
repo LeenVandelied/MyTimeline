@@ -235,10 +235,16 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public void deleteById(UUID id) {
-        if (!eventRepository.existsById(id)) {
+        // #175 : UNE SEULE instruction JDBC. L'ancienne séquence existsById(id) puis
+        // eventRepository.deleteById(id) en émettait TROIS (mesuré) : SELECT count(*),
+        // puis le SELECT + DELETE du deleteById hérité de SimpleJpaRepository
+        // (findById().ifPresent(delete)) — l'issue parlait de « double-hit », la mesure
+        // dit trois. Le contrat 404 est INCHANGÉ, seulement dérivé autrement : c'est
+        // désormais le nombre de lignes touchées (0) qui atteste l'absence, au lieu
+        // d'une sonde d'existence préalable. Verrou : EventDeleteStatisticsIntegrationTest.
+        if (eventRepository.deleteByIdIfExists(id) == 0) {
             throw new EventNotFoundException(id);
         }
-        eventRepository.deleteById(id);
     }
 
     @Override
