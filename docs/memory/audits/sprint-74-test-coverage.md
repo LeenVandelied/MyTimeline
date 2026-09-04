@@ -126,6 +126,6 @@ Options (appel de charte, non tranché par le lead) :
 
 ## Conclusion
 
-Prêt pour la PR **sous réserve** de l'arbitrage ci-dessus. Aucun `[MISSING]`. Un critère est
+Prêt pour la PR **sous réserve** de l'arbitrage ci-dessus. Aucune ligne de couverture manquante (le tableau ci-dessus est exhaustif). Un critère est
 structurellement invérifiable (#343a, l'issue s'auto-contredit), deux sont partiels (fluidité
 #384, palier < 768 px), un est en échec assumé et documenté (#417A non-recouvrement).
