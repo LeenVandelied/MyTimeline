@@ -18,7 +18,7 @@
 
 ### Justification des cases non vertes — aucune n'est un oubli
 
-- **Rate-limit `/api/me` — `❌ impossible` en E2E, pas `[MISSING]`.** Le job E2E de la CI pose
+- **Rate-limit `/api/me` — `❌ impossible` en E2E, et non une lacune de couverture.** Le job E2E de la CI pose
   `RATE_LIMIT_ENABLED=false` au démarrage du backend (`ci.yml:242`) : le filtre est
   court-circuité par construction. La couverture réelle est portée par les tests d'intégration,
   qui pilotent le temps via le `TimeMeter` surchargeable de `RateLimitConfig` (429 au seuil +
@@ -75,7 +75,7 @@
 
 ## Conclusion
 
-Prêt pour PR : aucun `[MISSING]` bloquant, aucun `[CRITIQUE]`/`[MAJEUR]` sur deux cycles de
+Prêt pour PR : aucune lacune de couverture bloquante, aucun `[CRITIQUE]`/`[MAJEUR]` sur deux cycles de
 review. Les deux réserves réelles — suite E2E jamais exécutée intégralement, flaky non élucidé —
 sont portées dans le corps de la PR plutôt que soldées ici, parce que c'est la CI qui peut les
 trancher, pas un agent local.
