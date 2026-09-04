@@ -4232,7 +4232,7 @@ milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PI
 
 ---
 
-## Sprint 73 — 2026-09-04 (En cours — Polish catalogue + layout)
+## Sprint 73 — 2026-09-04 (Terminé — merge PR #520 dans dev, commit `8512e25`)
 
 **Objectif :** trois finitions frontend indépendantes — débordement de titre produit,
 lisibilité de la pastille de couleur sélectionnée, état sidebar icon-only sur tablette.
@@ -4318,7 +4318,41 @@ DEC-S73-001/002. Packs `pit-*` régénérés (`gen-pit-packs.sh`) et classificat
 `c405988` (suite review), `fa84cef` + `efb9db3` (docs), `664c575` (mémoire + packs),
 `d749712` + `46471bf` (absorptions du triage).
 
-**Status :** En cours
+**Milestone GitHub :** #74 — **fermé** après merge (0 open / 3 closed).
+**Issues fermées :** #458, #416, #298 — fermées APRÈS le merge (sur base `dev`,
+`Closes #N` ne ferme rien).
+
+### Régression E2E introduite PAR ce sprint, corrigée avant merge (`0954412`)
+À consigner sans euphémisme. La sonde ajoutée en absorption seedait, sur le compte E2E
+**partagé** `PROD`, des produits au nom d'un seul mot de 40-64 caractères — et `seedProduct`
+ne nettoyait rien. `sprint-62-select-focus-indicator.spec.ts` utilise le même compte : son
+popover de `<Select>` s'élargissait et le point échantillonné sortait du viewport 390 px.
+**2 tests rouges en CI**, projet `firefox`.
+
+Cause **confirmée en base** (8 lignes `products`, `length(name)=64`, users `pr*`), échec CI
+reproduit localement sur la base. Correctif : helper `deleteProduct`
+(`DELETE /api/users/{userId}/products/{productId}` → 204, route vérifiée dans
+`ProductController.java:135`) + `afterEach` inconditionnel. `sprint-62` **non touché** —
+affaiblir un test existant pour couvrir un défaut introduit ailleurs aurait été le mauvais
+correctif. Défaut latent corrigé au passage : `unique('S73')` au lieu de `Date.now()`
+(collision sur `uq_categories_owner_name`, remontée en **500**).
+
+**Erreur d'analyse du lead à retenir :** ces 2 échecs ont d'abord été qualifiés d'instabilité
+locale à `workers: 2`, sur la foi d'un rejeu isolé vert (critère PAT-S72-002). Le rejeu isolé
+était trompeur : il retirait la spec **polluante**, pas la charge. La CI à `workers: 1` a
+tranché. Corollaire : PAT-S72-002 ne vaut que si l'isolation ne supprime pas aussi la cause.
+
+**Tests (finaux, CI verte 7/7 sur `b0eed47`) :** frontend unitaire 1181/1181 ;
+E2E **258 passed / 0 failed / 9 skipped / 0 flaky** aux paramètres CI (`--workers=1 --retries=2`).
+**Réserve :** sans retry, 2 runs locaux ont montré les mêmes 2 tests `sprint-62` en *timeout*
+(mode d'échec distinct de la géométrie), non reproduit en isolation ni aux paramètres CI ;
+variable non isolée.
+
+**Saturation contexte lead (mesurée) :** ~3 % du budget (opus) — 9 subagents au total
+(2 ui-design, 3 fullstack-dev de vague, 1 test-runner, 1 reviewer, 2 absorptions + 1 correctif,
+1 project-manager), retours distillés en artefacts.
+
+**Status :** Terminé
 
 ## Sprint 72 — 2026-09-04 (Terminé — merge PR #512 dans dev, commit `a6fdd825`)
 

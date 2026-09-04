@@ -484,6 +484,14 @@ S73 : verdict `INDETERMINE` sur « `next dev` échoue sur la branche du sprint, 
 ## PIT-S73-005 — Un briefing qui pointe un chemin de règles inexistant fait passer les subagents pour négligents
 Les 3 briefings du S73 citaient `.claude/rules-jit/frontend.md` : ce fichier n'existe pas (seul `ux-patterns.md` est présent sous `.claude/rules-jit/`). Les 3 subagents ont dûment rapporté « non lu » en écart au briefing — écart imputable au lead, qui avait recopié la liste générique du skill sans la vérifier. Prévention : `ls` les chemins de contexte avant de les inscrire dans un briefing. Voir aussi les chemins fantômes déjà relevés aux S45-S49. (Sprint 73)
 
+
+## PIT-S73-008 — Deux subagents en fan-out qui partagent la stack E2E se corrompent mutuellement
+Deux absorptions lancées en parallèle dans le même worktree ont chacune démarré `next dev` + Playwright : `.next` corrompu en cours de run (`Cannot find module './vendor-chunks/…'`, 500 sur `/fr/dashboard`) → tests rouges dont le diagnostic accuse FAUSSEMENT le code de la page ; puis 3 runs perdus sur le verrou `e2e/.auth/run.lock`. Prévention : sérialiser les agents qui ont besoin de la stack E2E, ou ne paralléliser que ceux qui n'en ont pas besoin. (Sprint 73)
+
+
+## PIT-S73-009 — `Date.now()` comme suffixe de nom sur un compte E2E partagé collisionne, et remonte en 500
+`uq_categories_owner_name` est `UNIQUE(owner, name)` : à `workers: 2`, deux tests seedant « S73 <timestamp> » dans la même milliseconde violent la contrainte. Le backend remonte **500** (pas 409) → diagnostiqué à tort comme « backend cassé ». Prévention : toujours le helper `unique()` de `frontend/e2e/support/products.ts`. (Sprint 73)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
