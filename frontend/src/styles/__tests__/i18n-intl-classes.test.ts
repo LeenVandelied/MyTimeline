@@ -62,7 +62,13 @@ function rulesFor(root: Container, className: string) {
     )
       return
     const decls = new Map<string, string>()
-    rule.walkDecls((d) => decls.set(d.prop, d.value.trim()))
+    // Corps de bloc volontaire : une lambda-expression renverrait la `Map`, or le
+    // callback de `walkDecls` est type `false | void` (toute valeur non-`false`
+    // interromprait le parcours). L'expression compilait sous vitest mais cassait
+    // `tsc --noEmit`, donc le job frontend en CI.
+    rule.walkDecls((d) => {
+      decls.set(d.prop, d.value.trim())
+    })
     hits.push({ selector: rule.selector, chain: layerChain(rule), decls })
   })
   return hits
