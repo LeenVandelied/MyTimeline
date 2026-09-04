@@ -4232,6 +4232,72 @@ milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PI
 
 ---
 
+## Sprint 73 — 2026-09-04 (En cours — Polish catalogue + layout)
+
+**Objectif :** trois finitions frontend indépendantes — débordement de titre produit,
+lisibilité de la pastille de couleur sélectionnée, état sidebar icon-only sur tablette.
+
+**Milestone GitHub :** #74 (« Sprint 73 ») — ne contient que les 3 issues du sprint
+(vérifié : aucun traînard du S72).
+**Issues (3) :** #458 (XS, epic:products), #416 (S, epic:design), #298 (S, epic:design)
+**Vagues exécutées :** V1 = #458 + #416 + #298 en parallèle (fichiers strictement disjoints)
+**Cohésion :** thème « polish UI » cohérent, mais br-packs disjoints (`br-products` vs
+`br-categories` vs aucun pack pour le layout). Ce qui a rendu la vague unique sûre, c'est la
+disjonction stricte des fichiers — pas la cohésion métier.
+**Migrations Flyway :** aucune
+**BR impactées :** aucune (les 3 issues déclarent « Aucune »)
+**Commits :** 4 — `3d98ce9` (#458), `1e3143e` (#416), `bb6d219` (#298), `c405988` (suite review)
+
+**Tests :** frontend unitaire 106 fichiers / **1181 passed** / 0 failed.
+E2E Playwright **249 passed / 0 failed / 9 skipped** (5 min 12, `exit=0`), exécutés par le
+lead sur `sprint/73` — un seul bloc `Running 258 tests using 2 workers` (contrôle
+anti-pollution). Les 9 skips sont `auth-signature.spec.ts`, préexistants.
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 2 MINEURS, les deux résolus
+(`c405988`, documentaires).
+
+**Écart au flow `/sprint` :** `/sprint plan 73` n'a jamais été exécuté. Le label `sprint-73`
+et le milestone #74 existaient (peuplés pendant le S71), mais il n'y avait ni entrée
+`PLANIFIE` dans ce fichier, ni `docs/memory/sprints/sprint-73/architect-plans.md`. Les trois
+issues ont donc été briefées sans mini-plan architect ; le triage et la matrice de
+parallélisabilité ont été faits par le lead au démarrage.
+
+**Base du worktree corrigée au démarrage :** le worktree pointait sur
+`claude/sprint-73-start-5d3805`, branché sur `main` — sans `docs/`, `scripts/` ni CI. Sprint
+mené sur `sprint/73` créée depuis `origin/dev`.
+
+**Pré-validation Phase 0.5 (lead) :** les 3 issues vérifiées non livrées sur la base —
+`h1` sans `break-words`, pastille sans glyphe, aucun `--sidebar-width-collapsed`. Aucun no-op.
+
+**Designer :** `ui-design` sollicité en amont sur #416 et #298. Verdicts
+APPROUVE_SOUS_CONDITION, valeurs concrètes injectées dans les briefings.
+
+### Ce que le sprint NE prouve PAS (réserve explicite)
+Deux critères d'acceptation restent **argumentés, non observés** — voir
+`docs/memory/audits/sprint-73-test-coverage.md` :
+- #458 « le titre ne déborde plus » : aucun test ne mesure un débordement (jsdom ne fait pas
+  de layout). Le raisonnement CSS est solide, mais c'est un raisonnement.
+- #416 « ≥ 3:1 sur 12 couleurs » : prouvé sur le **modèle** (calcul de luminance recalculé par
+  script sur `CATEGORY_SWATCHES` réel), pas sur le **rendu**.
+Un `RECOMMAND_FOLLOWUP` dédié existe pour chacun.
+
+### Défaut confirmé introduit par le sprint, NON corrigé
+`frontend/app/[locale]/(app)/dashboard/page.tsx:112` — `<header ... lg:hidden>` est désormais
+peint entre 768 et 1023 **en même temps** que la sidebar icon-only, et ses contrôles (L121,
+`hidden md:flex`) y dupliquent LanguageSelector + Réglages + Logout du pied de sidebar.
+Hors périmètre de fichiers de #298, donc signalé plutôt qu'absorbé. À arbitrer en Phase 4.
+
+### Faux diagnostics écartés (2)
+- `test-runner` a rendu `INDETERMINE` en concluant à une régression de build (« `next dev`
+  échoue sur `sprint/73` »). **Réfuté par reproduction** : `next dev` démarre en 1,25 s et la
+  suite E2E complète est verte sur cette branche. Cause réelle : l'avertissement de workspace
+  root en worktree (PIT-S61-007), déjà documenté dans `playwright.config.ts`, contourné par sa
+  recette 2 (webpack + `PLAYWRIGHT_BASE_URL`) au lieu de `npm run dev` (turbopack).
+- Les briefings pointaient `.claude/rules-jit/frontend.md`, **chemin fantôme** : seul
+  `ux-patterns.md` existe sous `.claude/rules-jit/`. Les « écarts au briefing » rapportés par
+  les 3 subagents sur ce fichier sont imputables au briefing du lead, pas à eux.
+
+**Status :** En cours
+
 ## Sprint 72 — 2026-09-04 (Terminé — merge PR #512 dans dev, commit `a6fdd825`)
 
 **Objectif :** i18n — localisation de l'email de réinitialisation (backend) et finition
