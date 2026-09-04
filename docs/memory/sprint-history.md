@@ -4295,6 +4295,26 @@ se sont révélés inexacts (→ `DEC-S72-004`) :
 3. **Aucune vérification navigateur** du delta 15px → 13px sur `EventPreviewTimeline`
    ni du `nowrap` en `de` (estimé, non mesuré).
 
+### Follow-ups arbitrés (Phase 4 triage) — 6 créés, 0 discardé, 0 absorbé
+
+Décision dev : **backlog libre, aucun milestone** — même arbitrage qu'au S71, pour ne
+pas engager le contenu du Sprint 73 (milestone #74, déjà peuplé) depuis ce sprint.
+
+  - Durée « 15 minutes » codée en dur dans les 4 templates [XS | auth] → **#513**
+  - Relecture es/de par un locuteur + rendu réel en client mail [XS | auth] → **#514**
+  - Vérification navigateur du delta 15→13px et du `nowrap` en `de` [XS | frontend] → **#515**
+  - Sélecteur `time.mt-num` n'atteint pas les `<span>` [XS | design] → **#516** (issu de la review)
+  - Arbitrage Designer sur `.mt-date--short` [S | design] → **#517**
+  - ~15 dates rendues en `<span>` au lieu de `<time datetime>` [M | frontend] → **#518**
+
+Ratio discard : **0 %** sur 6 items.
+
+Deux corrections après création : le lead avait écrit dans le briefing du
+`project-manager` que `epic:design` n'existait pas dans ce dépôt — **c'est faux**,
+l'agent l'a vérifié par `gh label list` et l'a signalé. `#516` et `#517` ont été
+rebasculés de `epic:transversal` vers `epic:design`, conformément au domaine indiqué
+dans les artefacts source. Un briefing de lead non vérifié, encore une fois.
+
 **Status :** PR ouverte, en attente de merge
 
 ## Sprint 71 — 2026-09-04 (Terminé — merge PR #498 dans dev — Dette sécurité auth + follow-ups design du S70)
