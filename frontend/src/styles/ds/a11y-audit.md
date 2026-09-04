@@ -346,13 +346,23 @@ l'ancien `ring-*` (un `box-shadow`) était rogné exactement de la même façon.
 
 | Zone | Ce qui rogne | Remède posé |
 |---|---|---|
-| `.mt-zoom__btn` (contrôles de zoom) | `.mt-zoom{overflow:hidden}` — le bouton remplit la boîte de clip, les 4px du contour (`offset 2` + `trait 2`) tombent dehors | `outline-offset:-2px` (`components/timeline.css`) |
+| `.mt-zoom__btn` (contrôles de zoom) | `.mt-zoom{overflow:hidden}` — le bouton remplit la boîte de clip, les 4px du contour (`offset 2` + `trait 2`) tombent dehors | **`overflow:hidden` RETIRÉ du groupe**, arrondi porté par les boutons de bord ; le contour du DS (+2px) peint dehors (`components/timeline.css`) |
 | onglets de `SettingsShell` | conteneur `overflow-x-auto` : `overflow-y` calculé à `auto` → traits HAUT/BAS rognés, plus le trait GAUCHE du 1er onglet | `.mt-tablist-scroll > [role='tab']:focus-visible{outline-offset:-2px}` (`components/core.css`) |
 
-- **Exception assumée** : en contexte `.mt-tlm` (mobile), `.mt-zoom` est déjà
-  `overflow:visible` (#226) et le contour y est correct sur ses 4 côtés → le
-  décalage du DS (+2px) y est **restauré** explicitement. Un contour intérieur
-  aurait dégradé un rendu juste.
+- **Pourquoi PAS l'`outline-offset` négatif sur `.mt-zoom__btn`** — c'était la
+  piste de l'énoncé de #417, écartée **après mesure au navigateur**. Le bouton
+  fait **30 × 16,5px** pour une icône `<svg>` de **14 × 14px** (calée sur son bord
+  gauche). Un trait inset de 2px ne laisse que **8,5px** libres : l'icône déborde
+  du trait en haut, en bas et à gauche. Aucune valeur inset ne s'en sort — `-1px`
+  → 10,5px, `0` → 12,5px, toujours < 14px. **Le problème est la hauteur du
+  bouton, pas la valeur de l'offset.** Le remède retenu est donc celui que #226
+  appliquait déjà en contexte `.mt-tlm` : ne plus clipper le groupe, et porter
+  l'arrondi sur les boutons de bord. Même cause, même correctif, un seul motif
+  dans le DS.
+- Corollaire : les deux zones de #417 n'ont **pas** le même remède. Le tablist des
+  réglages garde l'offset négatif (pastilles `rounded-md`, `h-11`, `px-3` — le
+  trait y est à 2px du bord et 10px du libellé) ; les contrôles de zoom passent
+  par le déclippage.
 - **Ce remède ne s'étend PAS à `.mt-tab`** ni au cas `<tr>` du §8bis : ces deux
   cibles portent un `border-bottom` porteur d'état (accent de l'onglet
   sélectionné / filet de ligne), qu'un contour intérieur recouvrirait — c'est
@@ -360,12 +370,20 @@ l'ancien `ring-*` (un `box-shadow`) était rogné exactement de la même façon.
   réglages sont des pastilles `rounded-md` **sans bordure** : l'objection ne s'y
   applique pas. `.mt-tab` a de plus 1px de padding latéral (le trait tomberait
   sur le libellé).
-- ⚠️ **NON MESURÉ** (aucune vérification navigateur dans ce lot) : les 4 côtés
-  peints, et le contraste réel sous le trait déplacé (`PIT-S58-001` — le fond
-  sous un `outline` n'est pas le `background-color` d'un ancêtre). Ratios
-  **calculés depuis les tokens**, à confirmer au pixel :
-  `--color-focus` sur `--color-surface` (bouton de zoom) ≈ **6.10:1** clair /
-  **6.49:1** sombre ; `--color-focus` sur `--color-accent-soft` (onglet des
-  réglages — le focus y est TOUJOURS sur l'onglet sélectionné, `tabIndex`
-  roving) ≈ **4.94:1** clair / **5.43:1** sombre. Seuil applicable : 3:1
-  (WCAG 1.4.11).
+- ✅ **MESURÉ au navigateur** (Sprint 74, `next dev` webpack, focus armé au
+  clavier réel, les deux thèmes) — les ratios calculés depuis les tokens sont
+  confirmés à 0,02 près, et aucun côté n'est rogné :
+
+  | Cible | côtés rognés | trait | fond réel sous le trait | contraste |
+  |---|---|---|---|---|
+  | `.mt-zoom__btn` clair | 0 / 4 | `#0E5FC4` | `#FFFFFF` | **6,08:1** |
+  | `.mt-zoom__btn` sombre | 0 / 4 | `#4D9BFF` | `#131519` | **6,48:1** |
+  | onglet réglages clair | 0 / 4 | `#0E5FC4` | `#DBE9FC` | **4,95:1** |
+  | onglet réglages sombre | 0 / 4 | `#4D9BFF` | `#16263A` | **5,43:1** |
+
+  Seuil applicable : 3:1 (WCAG 1.4.11). Le focus des onglets est **toujours** sur
+  l'onglet sélectionné (`tabIndex` roving + flèches qui déplacent la sélection),
+  donc toujours sur `--color-accent-soft` : c'est bien ce couple qui est mesuré.
+  Contre-épreuve sur le tablist : en forçant l'ancien décalage (`+2px`), le
+  contour redevient rogné sur **3 côtés** — le correctif est bien ce qui supprime
+  le défaut.
