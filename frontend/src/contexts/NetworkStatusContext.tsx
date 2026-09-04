@@ -19,8 +19,9 @@ import { networkStatusStore } from '@/services/networkStatus'
  *  - `navigator.onLine` + événements `online`/`offline` → `isOnline` ;
  *  - `networkStatusStore` (alimenté par l'intercepteur axios) → timeout / 5xx.
  *
- * `retry()` relance les requêtes TanStack Query échouées (`refetchQueries`) et
- * pilote l'état `isRetrying` (bannière « re-essai en cours »).
+ * `retry()` relance les requêtes TanStack Query MONTÉES dont la dernière
+ * résolution est en échec (`refetchQueries` filtré — #237) et pilote l'état
+ * `isRetrying` (bannière « re-essai en cours »).
  */
 export interface NetworkStatus {
   /** false = hors ligne (mode avion / perte réseau). */
@@ -31,7 +32,7 @@ export interface NetworkStatus {
   isServerError: boolean
   /** true = un re-essai est en cours. */
   isRetrying: boolean
-  /** Relance les requêtes en échec. */
+  /** Relance les requêtes montées dont la dernière résolution est en échec. */
   retry: () => void
 }
 
@@ -79,10 +80,28 @@ export function NetworkStatusProvider({ children }: { children: ReactNode }) {
 
   const retry = useCallback(() => {
     setIsRetrying(true)
-    void queryClient.refetchQueries().finally(() => {
-      networkStatusStore.clear()
-      setIsRetrying(false)
-    })
+    // #237 — ne relancer QUE ce qui a réellement échoué, et seulement à l'écran.
+    //
+    // `refetchQueries()` sans filtre applique `type: 'all'` (défaut de
+    // `matchQuery`, query-core 5.101.2) : il rejouait donc TOUT le cache, y
+    // compris les requêtes saines et celles d'écrans démontés — du trafic inutile
+    // au moment précis où le réseau se rétablit.
+    //
+    // - `state.status` (`'pending' | 'success' | 'error'`) porte le résultat de la
+    //   dernière résolution : c'est le bon prédicat. `state.fetchStatus`
+    //   (`'fetching' | 'paused' | 'idle'`) décrit l'activité réseau en cours, pas
+    //   l'échec — il ne conviendrait pas ici.
+    // - `type: 'active'` restreint aux requêtes ayant au moins un observateur
+    //   monté. Une requête en erreur mais démontée n'affiche rien ; elle sera de
+    //   toute façon relancée à son prochain montage (sans données, elle est stale).
+    void queryClient
+      .refetchQueries({ type: 'active', predicate: (query) => query.state.status === 'error' })
+      .finally(() => {
+        // Inchangé (#237) : la bannière disparaît même quand AUCUNE requête
+        // n'était en erreur — `refetchQueries` résout alors immédiatement.
+        networkStatusStore.clear()
+        setIsRetrying(false)
+      })
   }, [queryClient])
 
   const value: NetworkStatus = {
