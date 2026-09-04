@@ -50,8 +50,13 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
               className="border-rule flex items-center gap-3 border-b py-2 last:border-b-0"
               data-testid={`dashboard-week-agenda-row-${event.id}`}
             >
+              {/* #72 — `.mt-date--long` (DS i18n.css §7) : mono + tabular-nums +
+                  `unicode-bidi:isolate` + `nowrap`. Sa `font-size:13px` est la
+                  valeur EXACTE de `--text-2xs` → aucun delta de taille. On ne pose
+                  PAS `.mt-date--short` : elle force `uppercase` + 11px, un
+                  traitement qui relève d'un arbitrage Designer (cf. rapport #72). */}
               <time
-                className="text-ink-muted w-16 shrink-0 font-mono text-2xs"
+                className="text-ink-muted mt-date--long w-16 shrink-0"
                 dateTime={new Date(event.start).toISOString()}
               >
                 {dayFmt.format(new Date(event.start))}

@@ -23,6 +23,8 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
     () => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
     [locale],
   )
+  // #72 — Compteur = quantité → séparateur de milliers localisé (cf. ProductCarousel).
+  const nf = useMemo(() => new Intl.NumberFormat(locale), [locale])
 
   return (
     <section className="flex flex-col gap-3" data-testid="dashboard-product-list" aria-label={t('label')}>
@@ -58,7 +60,8 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                 ) : (
                   <span className="text-ink-faint hidden text-2xs sm:inline">{t('noUpcoming')}</span>
                 )}
-                <span className="text-ink-faint font-mono text-2xs tabular-nums">{count}</span>
+                {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums + isolation bidi. */}
+                <span className="text-ink-faint mt-num text-2xs">{nf.format(count)}</span>
               </li>
             )
           })}

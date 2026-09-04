@@ -72,9 +72,14 @@ export function StateScreen({
             {icon}
           </div>
         ) : null}
+        {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums (rendu identique)
+            + `direction:ltr; unicode-bidi:isolate`, pour qu'un code ne se réordonne
+            pas en contexte RTL. PAS d'`Intl.NumberFormat` ici : `code` est un
+            IDENTIFIANT (`404`, `500`) typé `string`, pas une quantité — le formater
+            insérerait un séparateur de milliers à partir de 1000. */}
         {code ? (
           <p
-            className="text-ink-faint font-mono text-2xl font-semibold tracking-widest tabular-nums"
+            className="text-ink-faint mt-num text-2xl font-semibold tracking-widest"
             data-testid="state-screen-code"
           >
             {code}

@@ -70,7 +70,7 @@ describe('WeekAgenda', () => {
 describe('KpiMarginalia', () => {
   it('rend les 3 KPIs en chiffres inline', () => {
     render(
-      <KpiMarginalia kpis={{ activeProducts: 4, eventsThisMonth: 7, currentStreak: 2 }} />,
+      <KpiMarginalia kpis={{ activeProducts: 4, eventsThisMonth: 7, currentStreak: 2 }} locale={LOCALE} />,
     )
     expect(screen.getByTestId('dashboard-kpi-active-products')).toHaveTextContent('4')
     expect(screen.getByTestId('dashboard-kpi-events-month')).toHaveTextContent('7')

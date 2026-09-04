@@ -37,6 +37,10 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
     () => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
     [locale],
   )
+  // #72 — Le compteur est une QUANTITÉ : séparateur de milliers localisé
+  // (fr « 1 234 », en « 1,234 », de/es « 1.234 »). Sans lui, un produit à
+  // >999 événements affiche « 1234 » dans les 4 locales.
+  const nf = useMemo(() => new Intl.NumberFormat(locale), [locale])
 
   return (
     <section className="flex flex-col gap-3" data-testid="dashboard-product-carousel-section">
@@ -78,7 +82,9 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
                 ) : (
                   <span className="text-ink-faint text-2xs">{t('noUpcoming')}</span>
                 )}
-                <span className="text-ink-faint mt-auto font-mono text-2xs tabular-nums">{count}</span>
+                {/* #72 — `.mt-num` (DS i18n.css §7) remplace `font-mono … tabular-nums` :
+                    même rendu, plus l'isolation bidi (`direction:ltr; unicode-bidi:isolate`). */}
+                <span className="text-ink-faint mt-num mt-auto text-2xs">{nf.format(count)}</span>
               </li>
             )
           })}

@@ -55,6 +55,10 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
     () => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
     [locale],
   )
+  // #72 — Le `title` des barres expose un compteur d'événements : quantité →
+  // séparateur de milliers localisé. C'est un ATTRIBUT texte : aucune classe DS
+  // (`.mt-num`) n'y est applicable, seul le formatage joue.
+  const nf = useMemo(() => new Intl.NumberFormat(locale), [locale])
   const rangeLabel = `${fmt.format(from)} — ${fmt.format(now)}`
 
   return (
@@ -85,7 +89,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
                 className="relative h-full shrink-0"
                 style={{ width: `${minBarWidth}px` }}
                 data-testid={b.isToday ? 'dashboard-density-today' : undefined}
-                title={`${fmt.format(b.date)} · ${b.count}`}
+                title={`${fmt.format(b.date)} · ${nf.format(b.count)}`}
               >
                 <div
                   className="absolute bottom-0 w-full rounded-xs"
@@ -118,7 +122,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
               className="relative flex-1"
               style={{ height: '100%' }}
               data-testid={b.isToday ? 'dashboard-density-today' : undefined}
-              title={`${fmt.format(b.date)} · ${b.count}`}
+              title={`${fmt.format(b.date)} · ${nf.format(b.count)}`}
             >
               <div
                 className="absolute bottom-0 w-full rounded-xs"
