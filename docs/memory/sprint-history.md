@@ -4232,12 +4232,12 @@ milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PI
 
 ---
 
-## Sprint 72 — 2026-09-04 (PR #512 ouverte, CI verte — i18n : email de reset localisé + formats de nombres)
+## Sprint 72 — 2026-09-04 (Terminé — merge PR #512 dans dev, commit `a6fdd825`)
 
 **Objectif :** i18n — localisation de l'email de réinitialisation (backend) et finition
 des formats de nombres localisés (frontend).
 
-**Milestone GitHub :** #73 (« Sprint 72 »)
+**Milestone GitHub :** #73 (« Sprint 72 ») — fermé après merge, ne contenait que les 2 issues du sprint (aucun traînard d'un sprint précédent, contrairement au piège habituel)
 **Issues livrées (2) :** #142 (S, epic:auth), #72 (M, epic:transversal)
 **Vagues exécutées :** V1 = #142 + #72 en parallèle (fichiers strictement disjoints)
 **Cohésion :** 1.00 sur le thème i18n ; 0.00 sur les br-packs (`br-auth` vs `br-events`).
@@ -4315,7 +4315,14 @@ l'agent l'a vérifié par `gh label list` et l'a signalé. `#516` et `#517` ont 
 rebasculés de `epic:transversal` vers `epic:design`, conformément au domaine indiqué
 dans les artefacts source. Un briefing de lead non vérifié, encore une fois.
 
-**Status :** PR ouverte, en attente de merge
+**CI finale :** 7/7 SUCCESS sur `aa66469`. À noter : le job `ai-env-packs` est
+**sorti rouge** sur `ad87d11` — la consolidation mémoire avait ajouté 7 pitfalls sans
+régénérer `.ai-env/context-packs/pit-{backend,frontend}.md`, qui en sont **générés**.
+Le garde-fou a fait exactement son travail (échec silencieux évité). Corrigé par
+`aa66469`, avec classification des 7 entrées dans `pit-classification.tsv` — sans quoi
+elles partaient dans les deux packs.
+
+**Status :** Terminé
 
 ## Sprint 71 — 2026-09-04 (Terminé — merge PR #498 dans dev — Dette sécurité auth + follow-ups design du S70)
 
