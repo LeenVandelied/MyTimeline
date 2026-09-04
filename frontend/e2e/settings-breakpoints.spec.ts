@@ -183,10 +183,7 @@ for (const bp of BREAKPOINTS) {
       // matrice — une déduction implicite masquerait la divergence.
       const back = page.getByTestId('settings-back')
       if (bp.back) {
-        await expect(
-          back,
-          `le retour doit être visible à ${bp.width} px (< ${LG})`,
-        ).toBeVisible()
+        await expect(back, `le retour doit être visible à ${bp.width} px (< ${LG})`).toBeVisible()
         await expect(back).toHaveAttribute('href', '/fr/dashboard')
       } else {
         await expect(
@@ -195,9 +192,15 @@ for (const bp of BREAKPOINTS) {
         ).toBeHidden()
       }
       // INVARIANT MINIMAL QUI TIENT ENCORE : au moins une sortie à tout palier.
-      // (À 768..1023 il y en a deux — redondance non tranchée, cf. follow-up.)
-      const exits =
-        (bp.back ? 1 : 0) + (bp.sidebar !== null ? 1 : 0)
+      // AFFAIBLISSEMENT ASSUMÉ (était « exactement une »). Cause : #298 (Sprint 73) a
+      // fait passer le palier de la sidebar à `md` alors que `settings-back` reste en
+      // `lg:hidden` ; entre 768 et 1023 les deux sorties coexistent donc.
+      // Ce n'est PAS un contournement pour faire passer le test : la redondance est
+      // réelle en production et n'a pas encore été tranchée par le Designer.
+      // Suivi : docs/memory/sprints/sprint-73/issue-298-done.md (RECOMMAND_FOLLOWUP
+      // « redondance de sortie sur /settings en 768-1023 »). Dès que la décision est
+      // prise, remettre l'invariant à « exactement une sortie ».
+      const exits = (bp.back ? 1 : 0) + (bp.sidebar !== null ? 1 : 0)
       expect(exits, `aucune sortie de navigation à ${bp.width} px`).toBeGreaterThanOrEqual(1)
 
       // ---- Chapitres : drill-down (< md) vs onglets horizontaux (>= md) ----
@@ -229,8 +232,9 @@ for (const bp of BREAKPOINTS) {
       expect(
         vertical.length,
         `navigations verticales à ${bp.width} px : ${
-          vertical.map((n) => `${n.testid} ${Math.round(n.width)}x${Math.round(n.height)}`).join(', ') ||
-          'aucune'
+          vertical
+            .map((n) => `${n.testid} ${Math.round(n.width)}x${Math.round(n.height)}`)
+            .join(', ') || 'aucune'
         }`,
       ).toBe(expectedVertical)
 
@@ -274,10 +278,7 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
     await page.setViewportSize({ width: LG - 1, height: 900 })
     await openSettingsPage(page)
 
-    await expect(
-      back,
-      'à 1023 px le retour doit être visible (`lg:hidden`)',
-    ).toBeVisible()
+    await expect(back, 'à 1023 px le retour doit être visible (`lg:hidden`)').toBeVisible()
     await expect(sidebar, 'à 1023 px la sidebar du shell est peinte, repliée (#298)').toBeVisible()
     await expect
       .poll(async () => (await sidebar.boundingBox())?.width, {
@@ -298,7 +299,10 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
         message: 'à 1024 px la sidebar doit se déplier à 248px (--sidebar-width)',
       })
       .toBe(SIDEBAR_WIDTH)
-    await expect(header, 'le header reste rendu à 1024 px (le <h1> ne dépend pas de la largeur)').toBeVisible()
+    await expect(
+      header,
+      'le header reste rendu à 1024 px (le <h1> ne dépend pas de la largeur)',
+    ).toBeVisible()
 
     // Retour en arrière : la bascule doit être RÉVERSIBLE (une règle écrite
     // `min-width` d’un côté et `max-width` de l’autre ne le serait pas).
@@ -332,7 +336,10 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
     await expect(page.getByTestId('settings-back')).toBeVisible()
 
     await page.setViewportSize({ width: MD, height: 900 })
-    await expect(tablist, 'au 1er pixel tablette (768) les onglets doivent être montés').toBeVisible()
+    await expect(
+      tablist,
+      'au 1er pixel tablette (768) les onglets doivent être montés',
+    ).toBeVisible()
     await expect(index, 'à 768 px le drill-down ne doit plus être dans le DOM').toHaveCount(0)
     await expect(page.getByTestId('settings-back')).toBeVisible()
     // #298 — 768 px est AUSSI le pixel d'apparition de la sidebar repliée : la

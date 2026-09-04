@@ -55,7 +55,9 @@ const MOBILE_PORTRAIT = { width: 390, height: 844 }
  * Mobile retourné. Largeur 740 et NON 844 depuis #298 (Sprint 73) : le palier du
  * FAB est passé de `lg:hidden` à `md:hidden`, donc 844 tombe désormais dans la
  * plage TABLETTE (768–1023), où c'est la sidebar repliée icon-only qui porte le
- * déclencheur — pas le FAB. 740 reste un paysage réaliste (iPhone SE retourné)
+ * déclencheur — pas le FAB. 740x390 reste un paysage de smartphone réaliste
+ * (ordre de grandeur d'un Android compact retourné ; ce n'est PAS un iPhone SE,
+ * dont le paysage vaut 667x375)
  * et reste sous `md`, ce qui préserve l'intention d'origine du test : « le FAB
  * est atteignable en paysage ». La bascule du palier elle-même est couverte aux
  * quatre bornes par `sprint-73-tablet-sidebar.spec.ts`.
