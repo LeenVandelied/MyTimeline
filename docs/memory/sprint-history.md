@@ -4098,3 +4098,48 @@ Bilan : 1 issue créée (#489), 1 absorbée, 1 déjà traitée, 0 discard.
 **Directive plan :** MVP feature-first
 **Note cohésion :** score thématique 0.00 (products/categories/layout) mais risque opérationnel nul (fichiers disjoints) — sprint polish délibéré, pool feature cohésif épuisé après S72
 **Status :** Planifié
+
+## Sprint 74 — 2026-09-04 (PLANIFIÉ — cohésion 0.55, UX-polish : Landing & focus)
+**Objectif :** Bugs UX landing + garde-fous focus a11y (type : UX-polish)
+**Milestone GitHub :** #75
+**Issues :** #384, #342, #343, #417
+**Vagues :** V1 = #384 ∥ #342 ∥ #343 ∥ #417 (fichiers disjoints)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first — 2e vague de planification (S74-S77), vivier feature épuisé → sprints UX/QA
+**Note :** #342 touche `language-selector.tsx` que #172 (S75) touche aussi → signaler à S75 le déplacement
+**Status :** Planifié
+
+## Sprint 75 — 2026-09-04 (PLANIFIÉ — cohésion 0.50, UX-polish : Page légale & i18n)
+**Objectif :** Finitions /privacy /terms (i18n, date dynamique, DS, disclaimer, sommaire) + clé legal FR + migration API next-intl (type : UX-polish)
+**Milestone GitHub :** #76
+**Issues :** #172, #60, #279
+**Vagues :** V1 = #172 ∥ #279 | V2 = #60 (après #172 — conflit `fr/legal.json`)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first (S74-S77)
+**Note :** #172 partiellement livrée (sr-only déjà i18n'd) — ne facturer que la clé FR `disclaimerOriginalFrench`
+**Status :** Planifié
+
+## Sprint 76 — 2026-09-04 (PLANIFIÉ — cohésion 0.33 ⚠, Résilience réseau & events)
+**Objectif :** Petits fixes robustesse : filtre refetch bannière réseau + garde anti-boucle retry 409 + double-hit DB deleteById (type : UX/hardening)
+**Milestone GitHub :** #77
+**Issues :** #237, #310, #175
+**Vagues :** V1 = #237 ∥ #310 ∥ #175 (3 couches disjointes)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first (S74-S77)
+**Note cohésion :** 0.33 (transversal réseau + events front + events back) — sprint assumé « 3 fixes de robustesse » faute de masse critique ; #310 fichier modale 409 à localiser (domain-researcher)
+**Status :** Planifié
+
+## Sprint 77 — 2026-09-04 (PLANIFIÉ — cohésion 0.50, QA-hardening : QA visuelle & focus)
+**Objectif :** E2E captures clair/sombre hero+auth + revue visuelle Storybook + garde-fou focus ring-*/outline-none (type : QA-hardening, valeur anti-régression indirecte)
+**Milestone GitHub :** #78
+**Issues :** #294, #191, #457
+**Vagues :** V1 = #294 ∥ #457 | V2 = #191 (si #191 édite `core.css` lu par #457, sinon V1)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Directive plan :** MVP feature-first (S74-S77)
+**Note :** valeur QA indirecte (pas de gain utilisateur direct, assumé) ; risque faux positifs diff visuel (refs générées en CI)
+**Backlog après S77 :** vivier feature épuisé — S78+ conditionné à une décision produit (débloquer archi avatar, lancer epic monétisation, ou nouvelles features). Ne PAS forcer S78 sur du chore (#219/#456/#483/#484/#90).
+**Status :** Planifié
