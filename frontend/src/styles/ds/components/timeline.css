@@ -408,8 +408,9 @@
    `.mt-zoom`, la hitbox 44px de #226 serait de nouveau rognée ici. */
 .mt-tlm .mt-zoom{overflow:visible;}
 .mt-tlm .mt-zoom__btn{position:relative; min-height:44px;}
-.mt-tlm .mt-zoom__btn:first-child{border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
-.mt-tlm .mt-zoom__btn:last-child{border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
+/* Les deux surcharges de rayon que #226 posait ici ont été SUPPRIMÉES par #417 : depuis le
+   déclippage, `.mt-zoom__btn:first-child`/`:last-child` portent l'arrondi pour tout le monde
+   (plus haut, mêmes valeurs). Les garder ferait chercher une différence qui n'existe pas. */
 .mt-tlm .mt-zoom__btn::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 
 /* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll

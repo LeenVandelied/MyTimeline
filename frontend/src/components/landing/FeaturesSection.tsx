@@ -18,9 +18,10 @@ import { Card, CardContent } from '@/components/ui/card'
  * Deux utilitaires ont été retirées de la carte ci-dessous :
  *   - `hover:-translate-y-2` : en Tailwind 4 elle compile vers la propriété **`translate`**, pas
  *     `transform` (vérifié dans la source du paquet). Elle ne remplaçait donc pas la déclaration
- *     de la feuille, elle s'y AJOUTAIT — le navigateur compose les deux propriétés : **-18px** au
- *     survol, **-13px** sous 768px. Retirer la règle CSS à la place aurait donné -8px (pas les
- *     -10px voulus) et laissé le palier responsive orphelin ;
+ *     de la feuille, elle s'y AJOUTAIT — le navigateur compose les deux propriétés. Les valeurs
+ *     mesurées et le détail de l'arbitrage vivent dans `src/styles/landing.css` (bloc
+ *     `.feature-card`), SEULE source de vérité : ne pas les recopier ici, un correctif d'un
+ *     seul côté laisserait l'autre commentaire mensonger (famille PIT-S48-002) ;
  *   - `transform` (nue) : en v4 elle ne pose qu'une identité (`rotateX(0) … skewY(0)`) et aucune
  *     utilitaire `rotate-*`/`skew-*` n'est posée ici. Le contexte d'empilement et le bloc
  *     conteneur viennent déjà de `.card-gradient-border` (`position:relative; z-index:0`,
