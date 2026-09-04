@@ -77,3 +77,51 @@ config Playwright documente déjà (PIT-S61-007) — contourné par la recette 2
 **Gate VERTE.** Suite unitaire et suite E2E exécutées et vertes sur `sprint/73`.
 Prêt pour PR, avec la réserve explicite ci-dessus sur #458 et #416 — deux critères
 d'acceptation reposent sur un modèle, pas sur une observation.
+
+---
+
+## Mise à jour après les 2 absorptions du triage (Phase 4)
+
+Deux absorptions ont ajouté du code APRÈS le premier audit : `46471bf` (double chrome
+dashboard) et `d749712` (sondes navigateur). La suite a donc été rejouée.
+
+### Les 2 réserves du premier audit sont LEVÉES
+La sonde `sprint-73-model-vs-rendered.spec.ts` prouve **au navigateur** ce qui n'était
+qu'argumenté sur modèle :
+- #458 débordement : 3/3 — `scrollWidth == clientWidth` (281/281 mobile, 906/906 desktop)
+- #416 contraste : 2/2 — **24/24 cellules** (12 couleurs × 2 thèmes), minimum **4,54:1 au
+  rendu**, identique au calcul de `color.test.ts`
+
+`sprint-73-tablet-sidebar.spec.ts` (14/14) porte en plus un **contrôle de falsification** :
+rejouée sur le code d'avant `46471bf`, elle échoue (`Expected: 1 / Received: 2`). L'oracle
+voit donc réellement le défaut de double chrome.
+
+### Unitaire
+`./scripts/test-quiet.sh frontend` sur le HEAD final : **1181 passed / 106 fichiers / 0 échec**.
+
+### E2E local — INSTABLE à `workers: 2`, à déclarer tel quel
+Trois exécutions complètes locales sur le HEAD final :
+
+| Run | Résultat |
+|---|---|
+| 1 | 256 passed / **2 failed** — `sprint-62-select-focus-indicator.spec.ts:551` (light + dark) |
+| 2 | **INVALIDE** — le `next dev` local est mort en cours de run (oracle `/api/auth/me` = `000`, connexion refusée). La fixture a correctement écrit « Ce n'est PAS un rate-limit register 429 ». Mode de panne déjà documenté (#465), cause racine toujours inconnue. |
+| 3 | 255 passed / **3 failed** — les 2 mêmes + `timeline.spec.ts:200` |
+
+**Rejouées seules sur le MÊME commit, `--workers=1` : `sprint-62` + `timeline` = 54/54
+vertes, exit 0.** Deux verdicts opposés sur un code identique ⇒ instabilité, critère
+[[PAT-S72-002]].
+
+Cause du symptôme, lue et non supposée : `Point (413,5 ; 353,3) CSS hors de la région
+capturée [6 ; 390]` — le popover est mesuré avant d'avoir été repositionné. C'est une course
+de géométrie, pas une assertion sur les changements du sprint.
+
+**Ce qui EMPÊCHE de conclure « sans rapport » à la légère :** `AppShell.tsx` est dans le diff
+ET héberge le déclencheur `NewEventDrawer`. L'argument n'est donc pas « fichiers disjoints »
+mais : le test tourne à **390 px**, sous `md`, où `hidden md:flex` et l'ancien
+`hidden lg:flex` masquent identiquement l'`<aside>`, où `md:hidden` et l'ancien `lg:hidden`
+affichent identiquement le FAB, et où les contrôles retirés du header étaient de toute façon
+`hidden md:flex` donc déjà invisibles. La géométrie mobile est inchangée par ce sprint.
+
+**Gate retenue : la CI**, qui tourne `workers: 1` sur un build de production — configuration
+dans laquelle ces specs passent. Le run local à `workers: 2` n'est pas la référence.

@@ -4271,7 +4271,11 @@ mené sur `sprint/73` créée depuis `origin/dev`.
 **Designer :** `ui-design` sollicité en amont sur #416 et #298. Verdicts
 APPROUVE_SOUS_CONDITION, valeurs concrètes injectées dans les briefings.
 
-### Ce que le sprint NE prouve PAS (réserve explicite)
+### Réserve LEVÉE en Phase 4 (voir « Follow-ups arbitrés » plus bas)
+> Les deux critères ci-dessous étaient argumentés sur modèle au moment de la PR. Ils sont
+> désormais **prouvés au navigateur** par `sprint-73-model-vs-rendered.spec.ts` (`d749712`).
+
+#### Énoncé d'origine
 Deux critères d'acceptation restent **argumentés, non observés** — voir
 `docs/memory/audits/sprint-73-test-coverage.md` :
 - #458 « le titre ne déborde plus » : aucun test ne mesure un débordement (jsdom ne fait pas
@@ -4280,7 +4284,7 @@ Deux critères d'acceptation restent **argumentés, non observés** — voir
   script sur `CATEGORY_SWATCHES` réel), pas sur le **rendu**.
 Un `RECOMMAND_FOLLOWUP` dédié existe pour chacun.
 
-### Défaut confirmé introduit par le sprint, NON corrigé
+### Défaut confirmé introduit par le sprint — CORRIGÉ en Phase 4 (`46471bf`)
 `frontend/app/[locale]/(app)/dashboard/page.tsx:112` — `<header ... lg:hidden>` est désormais
 peint entre 768 et 1023 **en même temps** que la sidebar icon-only, et ses contrôles (L121,
 `hidden md:flex`) y dupliquent LanguageSelector + Réglages + Logout du pied de sidebar.
@@ -4299,6 +4303,20 @@ Hors périmètre de fichiers de #298, donc signalé plutôt qu'absorbé. À arbi
 **Nouveaux pitfalls / patterns / décisions :** PIT-S73-001..005, PAT-S73-001/002,
 DEC-S73-001/002. Packs `pit-*` régénérés (`gen-pit-packs.sh`) et classification
 `pit-classification.tsv` complétée.
+
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Double chrome dashboard 768-1023 [S | design] → **absorbé** (`46471bf`) — header
+    `lg:hidden` → `md:hidden`, 3 contrôles dupliqués + 5 imports morts supprimés, E2E de
+    non-régression **falsifiée** (échoue sur le code d'avant : `Expected: 1 / Received: 2`)
+  - Sondes navigateur débordement #458 + contraste #416 [XS | products/categories] →
+    **absorbées** (`d749712`) — les 2 réserves du sprint sont levées : 3/3 et 24/24 au rendu
+  - Redondance de sortie `/settings` 768-1023 [XS | design] → **issue #521** (backlog libre,
+    sans milestone, sur décision du dev)
+  - 0 discard. Ratio discard/total = 0/3 — les fullstack-dev n'ont pas sur-signalé.
+
+**Commits (finaux) :** 8 — `3d98ce9` (#458), `1e3143e` (#416), `bb6d219` (#298),
+`c405988` (suite review), `fa84cef` + `efb9db3` (docs), `664c575` (mémoire + packs),
+`d749712` + `46471bf` (absorptions du triage).
 
 **Status :** En cours
 
