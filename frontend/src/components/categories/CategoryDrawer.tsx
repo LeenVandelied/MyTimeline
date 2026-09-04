@@ -4,10 +4,10 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { Tag, FileText, Palette, Trash2, AlertTriangle } from 'lucide-react'
+import { Tag, FileText, Palette, Trash2, AlertTriangle, Check } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { contrastRatio, contrastInk, WCAG_AA_NORMAL } from '@/lib/color'
+import { contrastRatio, contrastInk, WCAG_AA_NORMAL, swatchGlyphInkVar } from '@/lib/color'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -323,12 +323,28 @@ export function CategoryDrawer({
                           // La SÉLECTION est portée par `border-foreground` seul —
                           // l'ancien `ring-2 ring-offset-1` la rendait indiscernable
                           // du focus, qui posait le même anneau.
-                          'size-7 rounded-full border transition',
+                          // #416 : la bordure seule tombait à 1,61:1 contre le
+                          // remplissage sur le pire cas ; un glyphe de coche s'y
+                          // AJOUTE (la bordure reste). `flex` centre le glyphe sans
+                          // toucher `size-7` — la grille de pastilles ne bouge pas.
+                          'flex size-7 items-center justify-center rounded-full border transition',
                           selected ? 'border-foreground' : 'border-rule',
                           (readOnly || submitting) && 'cursor-not-allowed opacity-50',
                         )}
                         style={{ backgroundColor: hex }}
-                      />
+                      >
+                        {/* Décoratif : l'état de sélection reste porté par
+                            `aria-checked` ci-dessus, pas par ce glyphe. Encre
+                            calculée sur la luminance du remplissage (cf.
+                            `swatchGlyphInk`, ≥ 4.54:1 sur les 12 couleurs). */}
+                        {selected && (
+                          <Check
+                            className="size-4"
+                            aria-hidden="true"
+                            style={{ color: swatchGlyphInkVar(hex) }}
+                          />
+                        )}
+                      </button>
                     )
                   })}
                   {/* Picker libre (react-colorful). */}

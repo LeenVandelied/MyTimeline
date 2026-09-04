@@ -273,3 +273,61 @@ export function outlineFloorVars(
   }
   return { '--mt-evt-outline': forTheme('light'), '--mt-evt-outline-dark': forTheme('dark') }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   #416 — GLYPHE DE COCHE de la pastille de couleur sélectionnée (CategoryDrawer)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   La sélection n'était signalée que par une bordure : sur le pire cas le rapport
+   bordure/remplissage tombe à 1,61:1, la bordure se confond avec la couleur
+   qu'elle entoure. Le glyphe rend le signal indépendant de la couleur choisie.
+
+   Le remplissage de la pastille est un hex INLINE (`style={{backgroundColor}}`),
+   donc identique dans les deux thèmes. Pour que le contraste du glyphe le soit
+   aussi, l'encre est un token de PALETTE BRUT (`--gray-0` / `--gray-900`), jamais
+   un alias sémantique (`--color-ink`, `--color-primary-foreground`) : ces alias
+   s'inversent dans `.dark` (`ds/tokens/colors.css` l.123) et le glyphe
+   disparaîtrait en thème sombre. `--gray-0` et `--gray-900` ne sont définis que
+   dans `:root` (l.7 et l.21) et ne sont redéfinis par AUCUN bloc de thème.
+
+   ⚠ Ces encres ne sont PAS `INK_LIGHT`/`INK_DARK` ci-dessus (`#0B0C0E` ≠
+   `#16181D`) : cf. PIT-S61-004, on ne cite pas un ratio calculé avec d'autres
+   constantes que celles réellement peintes. */
+
+/** `--gray-0` (`ds/tokens/colors.css` l.7) — encre claire du glyphe. */
+export const SWATCH_GLYPH_LIGHT = '#FFFFFF'
+/** `--gray-900` (`ds/tokens/colors.css` l.21) — encre sombre du glyphe. */
+export const SWATCH_GLYPH_DARK = '#16181D'
+
+/**
+ * Seuil de luminance relative au-dessus duquel le glyphe passe en encre sombre
+ * (valeur arbitrée par la charte, #416).
+ *
+ * Ce n'est PAS le point d'égalisation exact des deux encres, qui vaut ici
+ * L ≈ 0.1992 (`(L+0.05)² = 1.05 × (L(#16181D)+0.05)`) : entre 0.179 et 0.1992 ce
+ * seuil choisit donc l'encre sombre là où l'encre claire contrasterait un peu
+ * mieux. Aucune des 12 couleurs de `CATEGORY_SWATCHES` ne tombe dans cette bande
+ * (plus proches : magenta 0.1710, rouge 0.2183) et le pire cas hypothétique de la
+ * bande reste à ~4.0:1 — très au-dessus des 3:1 exigés. Verrouillé par test.
+ */
+export const SWATCH_GLYPH_THRESHOLD = 0.179
+
+/**
+ * Encre du glyphe (hex) qui se détache du remplissage `hex`.
+ *
+ * Hex invalide → `SWATCH_GLYPH_DARK` : branche inatteignable depuis l'UI (le
+ * glyphe n'est monté que sur les 12 constantes `CATEGORY_SWATCHES`, dont la
+ * validité est verrouillée par test), présente pour ne pas rendre `undefined`.
+ */
+export function swatchGlyphInk(hex: string): string {
+  if (!HEX_RE.test(hex)) return SWATCH_GLYPH_DARK
+  return relativeLuminance(hex) > SWATCH_GLYPH_THRESHOLD ? SWATCH_GLYPH_DARK : SWATCH_GLYPH_LIGHT
+}
+
+/**
+ * Même choix, exprimé en TOKEN DS (`var(--gray-…)`) pour le style inline du
+ * composant — le hex ne sort jamais dans le DOM, la charte reste la source.
+ */
+export function swatchGlyphInkVar(hex: string): string {
+  return swatchGlyphInk(hex) === SWATCH_GLYPH_DARK ? 'var(--gray-900)' : 'var(--gray-0)'
+}
