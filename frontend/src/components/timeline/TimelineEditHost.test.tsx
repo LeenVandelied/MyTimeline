@@ -244,3 +244,85 @@ describe('TimelineEditHost — invalidation du cache après suppression', () => 
     expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.products.all })
   })
 })
+
+/**
+ * #495 — APERÇU ÉPINGLÉ sur la surface d'ÉDITION (extension de `PAT-S70-001`, posé au
+ * S70 côté création). Deux choses sont vérifiées ici, et une troisième ne l'est PAS :
+ *
+ *  1. le bloc d'aperçu SORT du formulaire et atterrit dans le nœud d'en-tête, sans
+ *     duplication de markup (`toHaveLength(1)` — un second `event-form-preview`
+ *     casserait les sélecteurs des E2E existants) ;
+ *  2. la BASCULE DE CLASSE du libellé « Aperçu » sur cette surface — c'est le défaut
+ *     MAJEUR attrapé par la review du S70 (le reclassement fuyait vers toutes les
+ *     surfaces sans mandat), l'issue exige donc une couverture PAR SURFACE ;
+ *  3. ⚠ NON VÉRIFIÉ ICI : que l'aperçu reste RÉELLEMENT visible pendant le défilement.
+ *     jsdom ne met rien en page et n'applique pas `position:sticky`
+ *     ([[jsdom-scroll-tests-prove-nothing]]). Ces tests prouvent l'ARBRE DOM et la
+ *     CLASSE, rien de la géométrie peinte — cf. le done.md, la preuve manque.
+ *
+ * `matchMedia` est piloté par test : le mock global de `vitest.setup.ts` rend
+ * `matches:false` (= sous 640px, bottom sheet), ce qui sert précisément de
+ * contre-épreuve de non-régression PAT-S44-001.
+ */
+function mockViewport(matches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  })
+}
+
+describe('TimelineEditHost — #495 aperçu épinglé (surface d’édition)', () => {
+  it('>= 640px : l’aperçu est PORTALISÉ dans l’en-tête et SORT du formulaire', async () => {
+    mockViewport(true)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const host = await screen.findByTestId('timeline-edit-dialog-preview')
+    const preview = await screen.findByTestId('event-form-preview')
+
+    await waitFor(() => expect(host).toContainElement(preview))
+    expect(screen.getByTestId('event-form')).not.toContainElement(preview)
+    // Aucun aperçu résiduel en flux : une seule mini-frise à synchroniser.
+    expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
+  })
+
+  it('>= 640px : le libellé « Aperçu » bascule sur `.mt-drawer__label` (bascule VOULUE)', async () => {
+    mockViewport(true)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const host = await screen.findByTestId('timeline-edit-dialog-preview')
+    const label = await screen.findByText('products.details.preview')
+
+    await waitFor(() => expect(host).toContainElement(label))
+    expect(label).toHaveClass('mt-drawer__label', 'mb-2')
+    expect(label).not.toHaveClass('text-sm')
+  })
+
+  it('< 640px (bottom sheet) : aperçu EN FLUX + classe HISTORIQUE (PAT-S44-001)', async () => {
+    mockViewport(false)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const preview = await screen.findByTestId('event-form-preview')
+    expect(screen.getByTestId('event-form')).toContainElement(preview)
+    // Le nœud hôte existe mais reste VIDE → masqué par `empty:hidden`, aucun liseré.
+    expect(screen.getByTestId('timeline-edit-dialog-preview')).toBeEmptyDOMElement()
+
+    const label = screen.getByText('products.details.preview')
+    expect(label).toHaveClass('text-ink', 'mb-2', 'text-sm')
+    expect(label).not.toHaveClass('mt-drawer__label')
+  })
+})

@@ -146,20 +146,31 @@ interface EventEditFormProps {
    */
   footerPortalNode?: HTMLElement | null
   /**
-   * #326 — APERÇU DÉPORTÉ (opt-in, défaut `undefined` → rendu en flux, donc les
-   * surfaces d'ÉDITION — `EventDrawer`, `TimelineEditHost`, `ConflictDialog` — sont
-   * strictement inchangées, cf. PAT-S44-001 « le mode historique reste le défaut »).
-   * Nœud DOM dans lequel le bloc d'aperçu live est rendu via `createPortal`, afin
-   * qu'un parent (drawer de création) le place HORS de sa zone de défilement et le
-   * garde épinglé en haut pendant que le formulaire défile (handoff §6).
+   * #326 — APERÇU DÉPORTÉ (opt-in, défaut `undefined` → rendu en flux ; cf.
+   * PAT-S44-001 « le mode historique reste le défaut »). Nœud DOM dans lequel le bloc
+   * d'aperçu live est rendu via `createPortal`, afin qu'un parent le place HORS de sa
+   * zone de défilement et le garde épinglé en haut pendant que le formulaire défile
+   * (handoff §6).
+   *
+   * #495 — CONSOMMATEURS (l'inventaire, pas une liste de surfaces « inchangées ») :
+   *   - `NewEventDrawer` (création) — épinglé >= lg, en flux dans la bottom sheet ;
+   *   - `TimelineEditHost` (édition) — épinglé >= sm, en flux sous 640px ;
+   *   - `EventContent` (chemin calendrier historique) — ne passe PAS la prop.
+   * ⚠ `EventDrawer` et `ConflictDialog` ne sont PAS des consommateurs : ni l'un ni
+   * l'autre ne monte ce formulaire (le premier est un panneau de DÉTAIL en lecture
+   * seule qui délègue l'édition via `onEdit` ; le second est rendu PAR ce formulaire).
+   * Ils n'ont donc aucun aperçu à épingler — l'inventaire à 3 surfaces des issues
+   * #326/#495 était erroné.
    *
    * ⚠ MÊME CONTRAT QUE `footerPortalNode` : un NŒUD, pas un `RefObject` (lu pendant
    * le rendu, `ref.current` vaut `null` au premier passage et sa mutation ne re-rend
    * RIEN), et il DOIT appartenir au panneau du parent (sinon `useFocusTrap` l'ignore).
    *
    * ⚠ L'aperçu reste gouverné par `compact` : en aperçu réduit il n'est rendu NULLE
-   * PART, ni en flux ni dans le portail — le nœud hôte reste alors vide (le DS le
-   * masque via `:empty`).
+   * PART, ni en flux ni dans le portail — le nœud hôte reste alors vide. Chaque
+   * appelant DOIT donc le masquer à vide (`.mt-drawer__preview:empty{display:none}`
+   * côté DS pour `NewEventDrawer`, `empty:hidden` côté Tailwind pour
+   * `TimelineEditHost`), sinon son padding/sa marge laisse un liseré orphelin.
    */
   previewPortalNode?: HTMLElement | null
 }
@@ -354,11 +365,17 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * `.mt-drawer__field` dans le même panneau. Aucune couleur littérale : la classe
    * est theme-aware par ses tokens.
    *
-   * EN FLUX (toutes les AUTRES surfaces : `EventDrawer`, `TimelineEditHost`,
-   * `ConflictDialog`, et la variante bottom sheet < 1024px explicitement laissée
-   * hors périmètre par #326) : classe HISTORIQUE, strictement inchangée. Aucune de
-   * ces surfaces ne place le libellé au contact d'un titre de drawer → aucun mandat
-   * pour le reclasser (PAT-S44-001, « le mode historique reste le défaut »).
+   * #495 — La même justification vaut mot pour mot sur la surface d'ÉDITION : depuis
+   * cette issue, `TimelineEditHost` épingle l'aperçu DANS son bloc d'en-tête, au
+   * contact immédiat de `DialogTitle` (20px gras). La bascule de classe y est donc
+   * VOULUE, pas subie. `.mt-drawer__label` est un sélecteur DS de premier niveau
+   * (`timeline.css:325`), il ne requiert aucun ancêtre `.mt-drawer` : il s'applique
+   * tel quel sur cette surface Tailwind.
+   *
+   * EN FLUX (les chemins qui ne fournissent PAS la prop : `EventContent`, la bottom
+   * sheet de création < 1024px et le dialog d'édition < 640px) : classe HISTORIQUE,
+   * strictement inchangée. Aucun de ces chemins ne place le libellé au contact d'un
+   * titre → aucun mandat pour le reclasser (PAT-S44-001).
    * ⚠ `text-sm` rend **17px** ici (l'échelle du DS Graphite écrase celle de Tailwind,
    * [[PIT-S49-002]]) : c'est l'état d'origine à préserver, pas une valeur à corriger.
    */
