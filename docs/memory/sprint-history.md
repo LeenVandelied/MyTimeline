@@ -4229,3 +4229,38 @@ de la classification TSV et de `bash .ai-env/tools/gen-pit-packs.sh`.**
 
 **Status :** **Terminé** — merge PR **#494** (`claude/sprint-70-start-b946cb` → `dev`), CI 7/7 verte,
 milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PIT-S56-006`).
+
+---
+
+## Sprint 71 — 2026-09-04 (En cours — Dette sécurité auth + follow-ups design du S70)
+
+**Objectif :** solder deux dettes de sécurité `epic:auth` (politique de mot de passe, anti-énumération
+username + rate-limit `/api/me`) et les trois follow-ups design arbitrés à la clôture du Sprint 70.
+
+**Milestone GitHub :** #72 (`Sprint 71`)
+**Issues (5) :** #148, #134 (`epic:auth`) — #495, #496, #497 (`epic:design` / events)
+**Branche :** `claude/sprint-71-start-09aa02` (basée sur `origin/dev` = `8769d6a`)
+
+**Cadrage :** ce sprint n'avait **pas** été planifié par `/sprint plan` — aucune entrée `PLANIFIE`,
+aucun `architect-plans.md`. Le milestone `Sprint 71` ne contenait que les 3 follow-ups du S70,
+tandis que le label `sprint-71` ne portait que #148 et #134 (écart connu, cf. mémoire
+« Pièges clôture sprint GitHub »). Périmètre unifié sur décision du dev : les 5 issues.
+Cohésion faible assumée (2 blocs disjoints : auth backend / design frontend).
+
+**Arbitrages tranchés par le dev avant implémentation** (les 3 issues concernées les exigeaient) :
+- **#148** — durcir le **backend** comme source de vérité : `min 8` + majuscule + chiffre sur
+  `RegisterRequest` **et** `ResetPasswordRequest`, schémas Zod (register + reset) alignés.
+  Contrainte à la création/modification uniquement — jamais à la vérification au login.
+- **#134** — **garder le 409**, neutraliser le **message** (identique sur `register` et
+  `PATCH /api/me`, sans confirmer l'existence du compte). Rate-limit `/api/me` livré dans tous les cas.
+- **#497** — doctrine a11y : **mélange progressif vers l'encre du thème jusqu'à 3:1**, theme-aware,
+  limité aux 2 traits concernés (connecteur pointillé + contour fantôme).
+- **#496** — **créer une BR dédiée** pour le débounce 150 ms de l'aperçu live, puis recibler les
+  2 commentaires ; `BR-EVE-009` reste la règle « modèle couleur event ».
+
+**Vagues :** V1 = #148 + #134 + #497 + #495 (fichiers disjoints, parallèles) | V2 = #496
+(touche `EventEditForm.tsx`, sérialisé après #495 par prudence)
+
+**Migrations Flyway :** aucune attendue (prochaine libre : V16)
+
+**Status :** En cours
