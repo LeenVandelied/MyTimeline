@@ -171,11 +171,12 @@ PIT-S74-007) :
 
 ## Recommandations suite
 
-Pas de `RECOMMAND_TEST_RUNNER` car la preuve exigée par le critère 3 est unitaire, elle est écrite,
-elle est verte (exit 0) et son contrôle négatif rougit — un E2E n'ajouterait pas de garantie que le
-test unitaire ne fournit pas déjà, et la stack E2E appartient à l'agent #527 sur cette vague ; pas
-de `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY_EXPERT` car le diff est purement frontend
-(hook + présentation + libellés), sans schéma ni surface d'authentification, et le flux est déjà
-gardé par l'ownership.
+> ⚠ Chaque négation tient sur UNE SEULE ligne : `check-sprint-completeness.sh` lit ligne à ligne,
+> et un « Pas de » replié sur la ligne précédente fait compter le signal comme NON TRAITÉ
+> (PIT-S70-005, PIT-S67-004). Ne pas reformater ces trois lignes.
+
+Pas de `RECOMMAND_TEST_RUNNER` car la preuve exigée par le critère 3 est unitaire, écrite, verte (exit 0), son contrôle négatif rougit, et la stack E2E appartient à l'agent #527 sur cette vague.
+Pas de `RECOMMAND_DB_EXPERT` car le diff est purement frontend (hook + présentation + libellés), sans aucun schéma ni requête.
+Pas de `RECOMMAND_SECURITY_EXPERT` car le diff ne touche aucune surface d'authentification et le flux est déjà gardé par l'ownership.
 
 STATUS: COMPLETED

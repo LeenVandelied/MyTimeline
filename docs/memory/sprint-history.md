@@ -4794,4 +4794,76 @@ partagent un unique working tree, un unique `frontend/.next` et une unique stack
   et disclaimer `text-sm text-ink-muted` sur `bg-surface`. Outillage de mesure déjà mûr et signalé
   à l'agent (`e2e/support/{contrast,pixel,dev-tooling}.ts`, `sprint-63-de-overflow-audit.spec.ts`).
 
-**Status :** En cours
+**Issues livrées (4) :** #310, #237, #175, #527
+**Vagues exécutées :** V1 = #310 ‖ #237 ‖ #175 ‖ #527 — une seule vague, 4 agents parallèles,
+fichiers strictement disjoints. Aucune collision de commit : les 4 agents ont commité en pathspec
+ciblé sur un working tree unique.
+**Commits :** 9 — `325470e` (ouverture) · `77c0d46` (#175) · `a9ecd15` (#237) · `75b1bed` (#310) ·
+`af919be` (extraits de pièges) · `f160d5b` (#175 cycle 2 de review) · `360dd4b` (#527) ·
+`55ef305` (audit de tests) · commit de clôture
+**BR impactées :** aucune modifiée. BR-EVE-015 (concurrence optimiste) **précisée** par
+`DEC-S76-002` : le `DELETE` n'y est plus soumis, décision écrite et épinglée par un test.
+
+**Ce que le sprint a réellement produit : trois prémisses d'énoncé réfutées.** C'est le résultat
+le plus utile, et il n'apparaît dans aucun diff.
+- **#175** — l'énoncé annonçait un « double-hit » ; la mesure dit **trois** instructions, et
+  **l'option que l'issue recommandait n'aurait rien économisé** (elle remplace le `count` par un
+  `SELECT` en laissant `deleteById` refaire le sien). Écartée par les chiffres.
+- **#237** — le défaut n'était pas « relance toutes les requêtes actives » mais **tout le cache**
+  (`type: 'all'` par défaut, contrairement à `invalidateQueries`). Et le JSDoc affirmait depuis le
+  S26 que le filtrage existait déjà.
+- **#527** — la moitié « débordement en `de` » était **sans objet** : les 20 intitulés de sections
+  de `legal.json` sont restés **en français** en `en`/`es`/`de`. Il n'y a pas de titres allemands
+  longs parce qu'il n'y a pas de titres allemands.
+
+**Mesures de #527 (le livrable était des nombres, pas un avis) :** 80 mesures, 2 pages × 2 thèmes.
+Chiffres romains, liens et disclaimer à **6,11:1** en clair et **5,85:1** en sombre (seuil 4,5) —
+tous conformes, zéro écart. Débordement du sommaire en `de` à 375 px : **aucun** (marges −15,6 px
+et −23,8 px). Témoin de peinture au pixel sur les 40 chiffres : fond peint identique au fond
+composite du DOM, ce qui réfute [[PIT-S58-001]] **par la mesure** et non par raisonnement.
+
+**Reviews :** reviewer batch — **0 CRITIQUE / 0 MAJEUR**, verdict MERGEABLE ; il a vérifié les 7
+chemins de reset du compteur de #310 un par un avec numéros de ligne et recompté les entrées de
+sommaire (9 / 1+10) contre la source. Review DB sur #175 (port du domaine modifié) — **1 MAJEUR
+traité en cycle 2** (verrou optimiste), 5 MINEURS dont 3 traités.
+
+**Le MAJEUR de la review DB est le défaut le plus intéressant du sprint** : le DELETE bulk retirait
+le verrou optimiste sans qu'aucun des 564 tests ne rougisse. L'agent ne l'a pas cru sur parole — son
+contrôle négatif a prouvé que l'ancien chemin levait bien, **et** révélé que la fenêtre protégée
+était intra-requête (artefact d'`open-in-view`), pas une garantie métier. La décision en sort
+renforcée au lieu d'être subie.
+
+**Tests :** Backend **566/566** · Frontend unitaire **1261/1261** (111 fichiers) ·
+`next build` **compilé** (58 routes, `/privacy` et `/terms` prérendues sur 4 locales) ·
+E2E **296 passed / 0 failed / 9 skipped** (11,0 min, 1 worker). Codes de sortie lus, jamais le
+texte. **Contrôles négatifs joués sur les 4 issues.** Détail :
+`docs/memory/audits/sprint-76-test-coverage.md`.
+
+**Deux trous que la partition de la stack créait mécaniquement, comblés par le lead :**
+- `next build` — les trois agents frontend en étaient empêchés (exclusivité Playwright/Next donnée
+  à #527, working tree et `.next` partagés). Personne ne l'aurait joué.
+- **Le conteneur backend e2e était périmé de ~13 h** (image du 2026-09-04 12:15, commit backend du
+  2026-09-05 01:23). Reconstruit avant le run : sans cela l'E2E aurait validé le code d'avant #175.
+  Ses ports par défaut (5435/8085) étaient squattés par d'autres worktrees du même projet.
+
+**Écarts assumés (écrits, non tus) :** #310 sans E2E (couverture unitaire + contrôle négatif ;
+l'énoncé autorisait « unitaire ou E2E ») · auto-flush du bulk JPQL **non vérifié** (sans impact,
+appelant unique) · plafond de 3 de #310 **non calibré** sur données réelles · #175 non mesuré sur
+un aller-retour HTTP réel.
+
+**Nouveaux pitfalls / patterns / décisions :** `PIT-S76-001` à `-007`, `PAT-S76-001`/`-002`,
+`DEC-S76-001`/`-002` — consolidés, classifiés dans `pit-classification.tsv`, packs `pit-*`
+régénérés (`gen-pit-packs.sh --check` au vert).
+
+**Écart de process constaté :** aucun des 4 agents n'a écrit ses signaux `[MEMORY:*]` dans son
+`done.md` — ils n'existaient que dans les retours de 500 tokens. La Phase 2 de `/sprint end` les y
+lit : sans le contexte du lead, ils étaient perdus. À durcir dans le gabarit de briefing.
+
+**Absorbé en cours (XS) :** #237 a corrigé le JSDoc mensonger de `NetworkStatusContext` (hors
+énoncé, signalé au briefing par le lead).
+**Follow-ups proposés (NON-XS) :** 2, issus du balayage de #527 — voir « Follow-ups arbitrés ».
+
+**PR :** #531 (`sprint/76` → `dev`). CI **7/7 verte** sur `55ef305`, SHA du run identique au SHA de
+tête de la PR (pas de course).
+
+**Status :** En cours (merge en attente)

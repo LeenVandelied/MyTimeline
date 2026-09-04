@@ -886,6 +886,26 @@ Famille [[PIT-S74-008]] / [[BUG-S70-002]], élargie au cas le plus trompeur. `np
 ## PIT-S75-004 — Un glob dans un commentaire de bloc TS ferme le commentaire, et l'erreur tombe douze lignes plus bas
 Écrire `` `public/locales/*/legal.json` `` dans un `/* … */` insère un `*/` qui **termine le bloc** : le reste du commentaire devient du code, et esbuild rougit loin de la cause (« Expected ; but found 01 »). Les backquotes markdown ne protègent rien — le lexer TS ne les connaît pas. Effet de bord d'orchestration observé au S75 : le fichier momentanément invalide a rendu `tsc` et `next build` GLOBAUX rouges pour l'autre agent de la vague, dans un working tree partagé. Prévention : proscrire `*/` dans tout commentaire de bloc — écrire `<locale>` plutôt que `*`. (Sprint 75 #60)
 
+
+## PIT-S76-003 — `queryClient.refetchQueries()` sans filtre applique `type: "all"`, PAS « les queries actives »
+Le défaut de `matchQuery` (query-core 5.101.2, `utils.js` l.23) est `type = "all"` : un `refetchQueries()` nu rejoue **tout le cache**, y compris les queries d'écrans démontés. Contre-intuitif parce que `invalidateQueries`/`resetQueries` de la MÊME librairie forcent, eux, `type: "active"` (`queryClient.js` l.134/159). Un « ça ne relance que l'actif » énoncé de mémoire est faux. Lire `matchQuery` avant de raisonner sur un défaut de filtre TanStack. (Sprint 76 #237)
+
+
+## PIT-S76-004 — Un JSDoc peut décrire le comportement CIBLE et non le comportement RÉEL, depuis des sprints
+`NetworkStatusContext.tsx` l.22 affirmait depuis le S26 que `retry()` relançait « les requêtes TanStack Query échouées » alors que le code les relançait TOUTES. Le commentaire n'a jamais menti sur l'intention, seulement sur le fait. Corollaire opérationnel : un commentaire n'est pas une preuve du code, et une issue qui décrit un défaut peut être contredite par un commentaire voisin qui décrit la cible — ne pas en conclure que l'issue est un no-op. Famille [[PIT-S56-003]] (constante « par défaut » redéclarée sous un commentaire qui jure le contraire). (Sprint 76 #237)
+
+
+## PIT-S76-005 — zsh ne fait pas de word-splitting : `git add -- $F` avec une liste de chemins en variable ne stage RIEN
+Sous zsh (shell de ce poste), `$F` contenant plusieurs chemins arrive comme **UN SEUL** pathspec : `git add` sort en 128, rien n'est indexé. L'échec est bruyant donc bénin, mais il coûte un aller-retour à chaque agent d'une vague de fan-out — et le même piège produit des FAUX POSITIFS silencieux dans les boucles d'audit (`for tid in $NEW_TESTIDS` du check coverage-E2E a rendu un MAJEUR fantôme au S76). Écrire les chemins littéralement, ou `${=F}`, ou un tableau. À corriger dans les gabarits de briefing qui recommandent « `git add <fichiers exacts>` ». (Sprint 76 #310)
+
+
+## PIT-S76-006 — Un audit visuel cadré sur une surface trouve le défaut À CÔTÉ, et le réflexe n'est ni de l'ignorer ni de le corriger
+Le balayage armé de #527 a sorti le `<h1>` à **57 px** (`text-3xl` du DS ≠ 30 px Tailwind, cf. [[PIT-S53-001]]) débordant de +124 px à 375 px, alors que les deux surfaces auditées étaient saines. Avant d'imputer au sprint : `git log -S` sur la classe fautive (ici `2a2cd9a`, pas l'issue en cours) **et** mesurer les 4 locales (écart inter-locale 13 px ⇒ non-i18n). Deux commandes suffisent à classer le défaut. Et ne pas « réparer » par `break-words` un titre dont le correctif est une rampe typographique : mesurer la contrepartie (246 px de haut) avant de décider. (Sprint 76 #527)
+
+
+## PIT-S76-007 — Le vérificateur de complétude de sprint lit LIGNE À LIGNE : une négation `RECOMMAND_*` repliée par le formatage compte comme signal NON TRAITÉ
+Récurrence mesurée de [[PIT-S70-005]] / [[PIT-S67-004]] au S76 : le done.md de #310 portait « … ; pas\nde `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY_EXPERT` car … ». Le « pas » étant sur la ligne précédente, `check-sprint-completeness.sh` a compté **deux** signaux actionnables non traités et bloqué la clôture. Le piège n'est pas la rédaction mais **le repli à 100 colonnes** appliqué après coup. Écrire chaque négation sur UNE ligne, et le dire dans le done.md pour qu'un reformatage ultérieur ne la casse pas. Même famille : le garde-fou de Phase 9 grep `[MISSING]` littéralement et se déclenche sur la PHRASE QUI LE DOCUMENTE dans l'audit. (Sprint 76, clôture)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
