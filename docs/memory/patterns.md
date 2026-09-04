@@ -677,3 +677,9 @@ Le seuil canonique 0,179 est le point d'égalisation contre du **noir pur**. Ave
 
 ## PAT-S73-002 — Prouver qu'un token de largeur compile, plutôt que d'asserter la présence d'une classe
 Asserter `toHaveClass('w-sidebar-collapsed')` ne dit pas si l'utilitaire existe : une classe inexistante passe le test et ne peint rien. Recette : compiler `globals.css` avec `@tailwindcss/postcss` et vérifier que la règle `.w-sidebar-collapsed { width: var(--sidebar-width-collapsed) }` est **générée**. Même famille que [[PAT-S72-001]]. (Sprint 73 #298)
+
+## PAT-S73-003 — Attribuer (ou disculper) un échec E2E : rejouer la suite sur la BASE en restaurant les fichiers, sans changer de commit
+En worktree partagé, `git stash` / `git checkout` sont interdits (arbre partagé avec d'autres sessions). Recette : `git show <base>:<path> > <path>` pour restaurer les fichiers suspects, rejouer, puis restaurer HEAD de la même façon. Au S73 cela a prouvé que l'échec de géométrie survenait DÉJÀ sur la base polluée — donc que la cause était la donnée seedée, pas le code — et que le timeout observé sans retry est un mode d'échec distinct. Anti-pattern : conclure « pré-existant » ou « corrigé » sans ce run de référence. (Sprint 73)
+
+## PAT-S73-004 — Prouver l'absence de doublon entre deux chromes portant des `data-testid` DIFFÉRENTS : compter par nom accessible
+`getByRole(..., { name, exact: true })` est le seul point commun entre deux implémentations distinctes, et n'apparie que les nœuds exposés à l'arbre d'accessibilité — le compte reflète donc ce qui est peint. Anti-patterns : `toBeVisible()` (passe avec 2 occurrences) et le compte par testid (ne peut structurellement jamais voir un doublon inter-chrome). Valider l'oracle par **falsification** : rejoué sur le code d'avant le correctif, il doit ÉCHOUER (`Expected: 1 / Received: 2`). (Sprint 73 #298)
