@@ -477,6 +477,13 @@ La suite E2E est morte au projet `setup` (`provision shared`), 248 tests non ex�
 La suite frontend est sortie rouge (4 tests / 1 fichier) pendant que l'agent de #142 éditait `authService.ts` dans le même arbre ; verte au re-run isolé. Prévention : en fan-out, re-jouer avant d'imputer un échec à son propre diff. Corollaire direct de l'étiquette « pré-existant » et complément de [[PIT-S71-010]]. (Sprint 72 #72)
 
 
+## PIT-S73-004 — Un `test-runner` délégué conclut « E2E impossible » à tort — 4 fois sur 4 sur ce projet
+S73 : verdict `INDETERMINE` sur « `next dev` échoue sur la branche du sprint, marche sur `origin/dev` ⇒ régression de build ». Réfuté en 45 s : `next dev` démarre en 1,25 s et la suite passe 249/0. Cause réelle = inférence de workspace root en worktree ([[PIT-S61-007]]), déjà documentée dans `frontend/playwright.config.ts` avec sa recette de contournement (webpack, pas turbopack). Prévention : le lead lance la suite lui-même (~6 min) plutôt que de déléguer ; lire `playwright.config.ts` AVANT tout diagnostic. Précédents : S49 ×2, S51. (Sprint 73)
+
+
+## PIT-S73-005 — Un briefing qui pointe un chemin de règles inexistant fait passer les subagents pour négligents
+Les 3 briefings du S73 citaient `.claude/rules-jit/frontend.md` : ce fichier n'existe pas (seul `ux-patterns.md` est présent sous `.claude/rules-jit/`). Les 3 subagents ont dûment rapporté « non lu » en écart au briefing — écart imputable au lead, qui avait recopié la liste générique du skill sans la vérifier. Prévention : `ls` les chemins de contexte avant de les inscrire dans un briefing. Voir aussi les chemins fantômes déjà relevés aux S45-S49. (Sprint 73)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

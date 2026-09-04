@@ -802,6 +802,26 @@ La suite frontend est sortie rouge (4 tests / 1 fichier) pendant que l'agent de 
 ## PIT-S72-007 — Le callback de `walkDecls` (PostCSS) est typé `false | void` : une lambda-expression casse le typecheck
 `rule.walkDecls((d) => decls.set(d.prop, d.value))` renvoie la `Map` de `Map.set`, alors qu'une valeur non-`false` interrompt le parcours — d'où TS2322. Invisible sous vitest, rouge sous `tsc --noEmit`. Prévention : corps de bloc obligatoire pour tout visiteur PostCSS dont on ignore la valeur de retour. (Sprint 72 #72)
 
+
+## PIT-S73-001 — `break-words` seul ne corrige PAS un débordement quand l'élément est enfant direct d'un flex
+`min-width:auto` sur un item de flex conserve la taille min-content du mot le plus long, et `overflow-wrap:break-word` (contrairement à `anywhere`) ne réduit pas min-content : le texte déborde quand même. Solution : `min-w-0` **+** `break-words` sur l'élément, ou `overflow-wrap:anywhere`. Prévention : tout correctif de débordement textuel doit remonter la chaîne flex avant de conclure — PIT-S63-013 annonçait « il manque break-words » et c'était insuffisant. (Sprint 73 #458)
+
+
+## PIT-S73-002 — Encre calculée sur un fond peint en hex inline : n'utiliser que des tokens de PALETTE, jamais les alias sémantiques
+Pour choisir une couleur de glyphe par luminance sur un fond `style={{backgroundColor: hex}}`, utiliser `--gray-0` / `--gray-900` (palette brute). Les alias `--color-ink` / `--color-primary-foreground` s'inversent sous `.dark` → le glyphe disparaît en thème sombre, alors que le fond, lui, ne change pas. Prévention : verrouiller par test que le bloc dark ne redéfinit AUCUN des tokens de palette utilisés (vérifié au S73 : `--gray-*` définis uniquement sur `:root`). (Sprint 73 #416)
+
+
+## PIT-S73-003 — Changer le palier d'un conteneur de shell (`lg:` → `md:`) n'est jamais un changement local
+Déplacer le breakpoint de la sidebar a reclassé le viewport 844px de « mobile » en « tablette », invalidant 2 assertions de `sprint-66-mobile-create-event` et 3 de `settings-breakpoints`. Prévention : grepper les E2E pour les viewports tombant dans la NOUVELLE plage AVANT d'annoncer le périmètre. Un briefing qui liste `AppShell.tsx` + tokens comme périmètre sous-estime systématiquement le blast radius. (Sprint 73 #298)
+
+
+## PIT-S73-004 — Un `test-runner` délégué conclut « E2E impossible » à tort — 4 fois sur 4 sur ce projet
+S73 : verdict `INDETERMINE` sur « `next dev` échoue sur la branche du sprint, marche sur `origin/dev` ⇒ régression de build ». Réfuté en 45 s : `next dev` démarre en 1,25 s et la suite passe 249/0. Cause réelle = inférence de workspace root en worktree ([[PIT-S61-007]]), déjà documentée dans `frontend/playwright.config.ts` avec sa recette de contournement (webpack, pas turbopack). Prévention : le lead lance la suite lui-même (~6 min) plutôt que de déléguer ; lire `playwright.config.ts` AVANT tout diagnostic. Précédents : S49 ×2, S51. (Sprint 73)
+
+
+## PIT-S73-005 — Un briefing qui pointe un chemin de règles inexistant fait passer les subagents pour négligents
+Les 3 briefings du S73 citaient `.claude/rules-jit/frontend.md` : ce fichier n'existe pas (seul `ux-patterns.md` est présent sous `.claude/rules-jit/`). Les 3 subagents ont dûment rapporté « non lu » en écart au briefing — écart imputable au lead, qui avait recopié la liste générique du skill sans la vérifier. Prévention : `ls` les chemins de contexte avant de les inscrire dans un briefing. Voir aussi les chemins fantômes déjà relevés aux S45-S49. (Sprint 73)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

@@ -4296,6 +4296,10 @@ Hors périmètre de fichiers de #298, donc signalé plutôt qu'absorbé. À arbi
   `ux-patterns.md` existe sous `.claude/rules-jit/`. Les « écarts au briefing » rapportés par
   les 3 subagents sur ce fichier sont imputables au briefing du lead, pas à eux.
 
+**Nouveaux pitfalls / patterns / décisions :** PIT-S73-001..005, PAT-S73-001/002,
+DEC-S73-001/002. Packs `pit-*` régénérés (`gen-pit-packs.sh`) et classification
+`pit-classification.tsv` complétée.
+
 **Status :** En cours
 
 ## Sprint 72 — 2026-09-04 (Terminé — merge PR #512 dans dev, commit `a6fdd825`)

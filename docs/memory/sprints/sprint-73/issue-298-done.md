@@ -87,7 +87,22 @@ divergence.
 - `RECOMMAND_FOLLOWUP` — redondance de sortie sur `/settings` en 768-1023 : `settings-back`
   (`lg:hidden`) coexiste désormais avec la sidebar. Non cassé, mais non tranché.
   `settings-back` doit-il passer `md:hidden` ? Triage estimé : XS | Domaine : design.
-- `RECOMMAND_TEST_RUNNER` — faire tourner la suite e2e complète : 3 specs modifiées + 1 neuve,
-  aucune exécutée ici.
+- `RECOMMAND_TEST_RUNNER` — **TRAITÉ, signal clos.** Déroulé :
+  1. Un subagent `test-runner` a bien été spawné par le lead. Il a rendu `INDETERMINE`
+     en concluant à une régression de build (« `next dev` échoue sur `sprint/73`,
+     fonctionne sur `origin/dev` », erreur « supprimée par Next.js »).
+  2. **Ce diagnostic a été réfuté par reproduction directe du lead** : `next dev` démarre
+     en 1,25 s sur `sprint/73` (`✓ Ready`). La cause réelle est l'inférence de workspace
+     root en worktree (plusieurs lockfiles, PIT-S61-007), que `playwright.config.ts`
+     documente déjà et contourne par sa recette 2 (`npx next dev` webpack +
+     `PLAYWRIGHT_BASE_URL`) au lieu de `npm run dev` (turbopack).
+  3. **Suite E2E complète exécutée par le lead** sur `sprint/73`, backend conteneur
+     `:8086`, oracle `/api/auth/me` = 401 : **249 passed / 0 failed / 9 skipped** en
+     5 min 12 (`exit=0`), un seul bloc `Running 258 tests using 2 workers`.
+     Les 4 specs concernées par ce sprint sont vertes, ainsi que les 2 specs non
+     modifiées mais identifiées à risque (`sprint-63-de-overflow-audit` 17/17,
+     `timeline-mobile` 15/15).
+  4. Confirmé une seconde fois par le job `e2e` de la CI sur `efb9db3` (success).
+  Détail : `docs/memory/audits/sprint-73-test-coverage.md`.
 
 STATUS: COMPLETED
