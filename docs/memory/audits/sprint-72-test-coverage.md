@@ -8,7 +8,7 @@
 
 | BR | Description | Flux inter-systemes | Unit backend | Integration | Unit frontend | E2E parcours | E2E metier |
 |----|-------------|:---:|:---:|:---:|:---:|:---:|:---:|
-| BR-AUT-012 | forgot-password : 200 systematique, sans side-channel de timing ; token usage unique | OUI (app + Brevo) | OK (47 nouveaux) | OK (`MockRestServiceServer`) | OK (`authService.test.ts`) | non couvert | **non atteignable — voir ci-dessous** |
+| BR-AUT-012 | forgot-password : 200 systematique, sans side-channel de timing ; token usage unique | OUI (app + Brevo) | OK (47 nouveaux) | OK (`MockRestServiceServer`) | OK (`authService.test.ts`) | **OK** (`forgot-password.spec.ts` + `reset-password-failures.spec.ts`, backend de HEAD) | **non atteignable — voir ci-dessous** |
 | (aucune) | #72 est purement presentationnel : formats de nombres et classes DS. Aucune regle metier touchee. | NON | s.o. | s.o. | OK (2 fichiers, +304 l.) | non couvert | s.o. |
 
 ### Pourquoi l'E2E metier de BR-AUT-012 n'est pas fourni
@@ -40,7 +40,8 @@ intercepte le payload HTTP reel et asserte sur `htmlContent` pour les 4 langues.
 - Frontend : `./scripts/test-quiet.sh frontend` → **106 fichiers, 1168 tests, 0 failed**
 - `npx tsc --noEmit` → **0 erreur** (apres le correctif `72d75f3`)
 - `npx prettier --check` sur les fichiers touches → conforme
-- **E2E Playwright : NON EXECUTES sur ce diff.**
+- **E2E Playwright : 243 passed / 1 flaky / 9 skipped** (253 tests, `--workers=1`, 8,7 min),
+  contre un backend **construit depuis HEAD**. Detail : `docs/memory/sprints/sprint-72/e2e-run.md`.
 
 ## Check de couverture E2E (heuristique Phase 8)
 
@@ -54,7 +55,10 @@ pas qu'une spec passe. Un verdict vert n'aurait rien prouve non plus.
 
 ## Ce qui reste non verifie — a ne pas lire comme soldé
 
-1. **Aucun E2E lance** sur ce diff, ni backend ni frontend.
+1. ~~Aucun E2E lance~~ → **FAIT apres coup** : suite complete jouee en local, 243/253
+   verts, 1 instable prouve non-regressif (rejeu isole 25/25 sur le meme commit),
+   9 skipped. `forgot-password.spec.ts` (parcours full-stack) et
+   `reset-password-failures.spec.ts` passent contre le backend de HEAD.
 2. **Aucun rendu d'email jamais vu dans un client mail.** Les 4 templates n'existent
    que sous forme de chaines assertees par des tests.
 3. **Traductions es/de non relues par un locuteur natif** — redigees d'apres
@@ -76,3 +80,8 @@ seul le job frontend en CI l'aurait attrapee.
 Suites unitaires vertes et typage propre, mesures independamment. Les quatre points
 de la section « non verifie » sont des trous connus, dont deux (E2E, rendu mail reel)
 meritent un follow-up plutot qu'un blocage de la PR.
+
+**Mise a jour apres exécution E2E** : le point 1 (« aucun E2E lance ») est leve. Le
+parcours forgot → token → reset → login est desormais prouve de bout en bout contre le
+backend de HEAD. Le point 2 (rendu reel des emails localises) reste entier et
+constitue la limite de fond de #142.
