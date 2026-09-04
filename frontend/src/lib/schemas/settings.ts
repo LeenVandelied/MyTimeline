@@ -6,12 +6,22 @@ import { PASSWORD_POLICY } from '@/lib/schemas/auth'
  * #86 — Schémas Zod des formulaires Réglages. Factories i18n (`create*Schema(t)`)
  * pour messages traduits (next-intl), alignées sur les DTO backend :
  *  - Profil  -> `UserUpdateRequest` : name 3..20, username 3..20, email valide.
- *  - Password -> `ChangePasswordRequest` : oldPassword requis, newPassword >= 6.
+ *  - Password -> `ChangePasswordRequest` : oldPassword requis, newPassword conforme
+ *    à la politique (cf. ci-dessous).
  *  - Delete  -> `DeleteAccountRequest` : username (re-saisie de confirmation).
  *
- * ⚠ Ne PAS surcontraindre le contrat backend (pit-auth) : le backend exige
- * newPassword >= 6 SANS règle majuscule/chiffre. On garde >= 6 ici pour ne pas
- * empêcher un compte existant (mot de passe `abcdef`) de le changer.
+ * ⚠ POLITIQUE DE MOT DE PASSE — SOURCE UNIQUE (#148, BR-AUT-003 amendée).
+ * Le backend porte la règle via l'annotation `@StrongPassword`
+ * (`application/validation/StrongPassword.java`) sur `ChangePasswordRequest.newPassword` :
+ * **8..100 caractères + au moins une majuscule + au moins un chiffre**. Le frontend la
+ * RÉPLIQUE via `PASSWORD_POLICY` (`schemas/auth.ts`), il ne la redéfinit pas.
+ * NE PAS « simplifier » ce schéma vers `min(6)` : l'ancien commentaire disait
+ * « le backend exige >= 6 SANS règle majuscule/chiffre » — c'est FAUX depuis #148, et
+ * y revenir réintroduirait exactement la divergence multi-politique que #148 a supprimée
+ * (le formulaire accepterait un mot de passe que le backend rejette en 400).
+ * Le LOGIN reste hors politique (`AuthRequest` : `@NotBlank` + `@Size(max=100)` seulement),
+ * pour qu'un compte antérieur à 6 caractères puisse encore se connecter ET se mettre en
+ * conformité. Changer la règle = changer `StrongPasswordValidator` + `PASSWORD_POLICY`.
  *
  * ⚠ Convention (cf. `schemas/auth.ts`) : `t` est le traducteur RACINE
  * (`useTranslations()` sans namespace). Les clés sont donc préfixées par leur
