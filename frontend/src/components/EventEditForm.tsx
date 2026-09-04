@@ -347,9 +347,14 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * (tests #66/#300, E2E #314).
    *
    * #326 — Extrait en variable pour être rendu à DEUX endroits SANS duplication de
-   * markup (même technique qu'`actionsRow`) : en flux sous le champ Couleur (défaut,
-   * édition inchangée) ou PORTALISÉ dans le nœud d'en-tête fourni par le parent
-   * (drawer de création → aperçu épinglé, handoff §6).
+   * markup (même technique qu'`actionsRow`) : en flux sous le champ Couleur (défaut)
+   * ou PORTALISÉ dans le nœud d'en-tête fourni par le parent (aperçu épinglé,
+   * handoff §6).
+   *
+   * ⚠ #495 — l'ÉDITION n'est plus « inchangée » : `TimelineEditHost` épingle lui aussi,
+   * mais seulement À PARTIR de 640px. Sous 640px (bottom sheet) il passe
+   * `previewPortalNode={null}` et l'aperçu retombe en flux. Le repli en flux n'est donc
+   * plus « la surface d'édition », c'est « toute surface qui ne fournit pas de nœud ».
    */
   /**
    * #325 + correctif review S70 — classe du libellé « Aperçu », CONDITIONNELLE au

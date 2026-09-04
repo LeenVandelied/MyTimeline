@@ -208,8 +208,23 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
             'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[480px] sm:max-w-[480px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',
           )}
         >
-          <div className="bg-surface sticky top-0 z-10 rounded-t-xl p-5 shadow-md">
-            <DialogHeader>
+          {/* #495 / review S71 — GRAMMAIRE DE SÉPARATION alignée sur la surface de
+              CRÉATION (`.mt-drawer__header` + `.mt-drawer__preview`, timeline.css) :
+              titre / aperçu / corps sont séparés par DEUX filets hairline
+              `border-b border-rule` pleine largeur, pas par une ombre.
+              Le `shadow-md` initial était un usage hors charte (`ds/readme.md:106`
+              réserve `md`/`lg` à l'élévation du modal LUI-MÊME — déjà portée par le
+              `shadow-xl` de `DialogContent` ci-dessus) ET une technique DIFFÉRENTE de
+              la création pour le même rôle fonctionnel.
+              Le padding migre du bloc sticky vers ses deux enfants : c'est la seule
+              façon d'obtenir des filets PLEINE LARGEUR (un `border-b` sur un bloc
+              `p-5` serait resté à l'intérieur du padding, encadré de 20px de vide).
+              Cotes reprises de la création : header `--space-5 --space-5 --space-4`
+              (px-5 pt-5 pb-4), aperçu `--space-4 --space-5` (px-5 py-4).
+              Aucune couleur en dur : `--color-rule` est défini dans les DEUX palettes
+              (clair + sombre), comme pour la création. */}
+          <div className="bg-surface sticky top-0 z-10 rounded-t-xl">
+            <DialogHeader className="border-rule border-b px-5 pt-5 pb-4">
               <DialogTitle className="text-ink flex items-center text-xl font-bold">
                 <Calendar className="mr-2 h-5 w-5" aria-hidden="true" />
                 {editing?.title}
@@ -234,12 +249,14 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
                 Ne contient rien en propre : `EventEditForm` y portalise SA mini-frise.
                 `empty:hidden` remplace le `:empty{display:none}` de
                 `.mt-drawer__preview` (classe DS non applicable ici : cette surface
-                n'est pas un `.mt-drawer`) — sans lui, la marge du nœud vide décalerait
-                l'en-tête sous 640px et pendant le rendu initial (avant hydratation,
-                `useMediaQuery` rend `false`). */}
+                n'est pas un `.mt-drawer`) — sans lui, le padding et le filet du nœud
+                vide laisseraient un liseré orphelin sous l'en-tête sous 640px et
+                pendant le rendu initial (avant hydratation, `useMediaQuery` rend
+                `false`). C'est le pendant exact de `.mt-drawer__preview:empty`
+                côté création : hôte vide ⇒ un SEUL filet visible (celui du header). */}
             <div
               ref={setPreviewNode}
-              className="mt-4 empty:hidden"
+              className="border-rule border-b px-5 py-4 empty:hidden"
               data-testid="timeline-edit-dialog-preview"
             />
           </div>
