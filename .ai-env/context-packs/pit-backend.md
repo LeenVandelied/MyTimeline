@@ -456,6 +456,27 @@ Une méthode `@ParameterizedTest` compte pour 1 déclaration et N exécutions (`
 ## PIT-S71-010 — Indexer ses seuls hunks dans un working tree partagé : plumbing git, jamais le working tree
 `UserControllerTest.java` était édité en parallèle par #134 et #148. `git add -p` est indisponible (mode non interactif) et le diff redirigé est corrompu ([[PIT-S71-002]]). Recette : `git cat-file -p HEAD:<path>` → reconstruction du contenu voulu → `git hash-object -w` → `git update-index --cacheinfo` : l'index reçoit la version voulue et **le working tree n'est jamais touché**, donc le WIP du voisin reste intact. Complément de [[sprint-parallel-commits-shared-worktree]]. (Sprint 71 #134)
 
+
+## PIT-S72-001 — Une référence « BR-XX » écrite dans un commentaire n'est pas une preuve
+`BrevoEmailService` et 12 autres emplacements attribuaient l'anti-énumération de forgot-password à **BR-AUT-005**, qui est en réalité « échec d'authentification → 401 ». La bonne règle est **BR-AUT-012**. L'erreur datait de #49 et s'est propagée par recopie — le lead lui-même l'a reprise dans son premier briefing avant de la corriger. Prévention : vérifier l'énoncé dans `br-<domaine>.md` avant de reprendre une référence lue dans du code ou une issue. Généralise [[PIT-S70-001]]. (Sprint 72 #142)
+
+
+## PIT-S72-003 — Ne jamais modifier le texte d'une migration Flyway déjà appliquée, même un commentaire
+La review batch recommandait de corriger l'étiquette BR fausse dans `V6__create_password_reset_tokens.sql`. Appliqué tel quel, ce changement de **commentaire** modifie le checksum de la migration et fait échouer la validation Flyway au démarrage sur toute base existante. Le reviewer n'avait pas vu ce piège. Prévention : les fichiers `db/migration/V*.sql` sont immuables une fois appliqués ; une correction documentaire les concernant se met ailleurs (javadoc de l'adapter, pack domaine). (Sprint 72, review batch)
+
+
+## PIT-S72-004 — Le premier hit d'une route sous `next dev` dépasse un timeout Playwright de 5 s
+La suite E2E est morte au projet `setup` (`provision shared`), 248 tests non exécutés : `expect(getByTestId('dashboard')).toBeVisible()` a 5 s de timeout, or le **premier** `GET /fr/dashboard` a pris **4172 ms** (compilation webpack 3,4 s) contre 72/59/35 ms ensuite — les 3 provisions suivantes sont passées. Diagnostic par lecture des durées dans le log `next dev`, pas par hypothèse. Prévention : préchauffer les routes ou relancer une fois avant de conclure à un défaut ; un échec du **seul premier** cas d'une série identique désigne l'environnement, pas le code. (Sprint 72)
+
+
+## PIT-S72-005 — Un conteneur e2e « prêt à l'emploi » peut porter une image antérieure au code du sprint
+`mytimeline-e2e-backend-e2e-1` était disponible et correctement configuré, mais son image précédait #142 : l'utiliser aurait rendu une suite verte **sans aucune valeur** sur le code à valider. Recette retenue : `./mvnw package -DskipTests` puis `java -jar` sur `:8086`, en ne réutilisant du conteneur que la base Postgres. Prévention : avant de s'appuyer sur un backend conteneurisé pour valider un diff, comparer la date de l'image aux commits à tester. Nuance [[mytimeline-e2e-ci-only-gate]] §S61 qui recommandait ce raccourci. (Sprint 72)
+
+
+## PIT-S72-006 — Un run de tests dans un working tree partagé n'est valable que si `git status` est stable de bout en bout
+La suite frontend est sortie rouge (4 tests / 1 fichier) pendant que l'agent de #142 éditait `authService.ts` dans le même arbre ; verte au re-run isolé. Prévention : en fan-out, re-jouer avant d'imputer un échec à son propre diff. Corollaire direct de l'étiquette « pré-existant » et complément de [[PIT-S71-010]]. (Sprint 72 #72)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
