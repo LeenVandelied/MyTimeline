@@ -2,22 +2,52 @@
 
 Sprint 74, vague 1 (parallèle). Taille XS. `epic:design` / `priority:P3`.
 
-## Commit
+## Commits
 
-- `0c40f9d` — 4 fichiers, 64+/1− (`timeline.css`, `core.css`, `a11y-audit.md`, `SettingsShell.tsx`)
+- `0c40f9d` — implémentation initiale (fullstack-dev), 4 fichiers
+- `801dadd` — **retournement de la zone A par le lead après mesure au navigateur** (cf. §
+  « Zone A — remède changé »)
 
-## Zone A — `.mt-zoom` (contrôles de zoom)
+## Zone A — remède CHANGÉ après mesure au navigateur
 
-`timeline.css:129` : `.mt-zoom__btn:focus-visible{outline:2px solid var(--color-focus);
-outline-offset:-2px;}`. Le bouton remplit la boîte de clip de `.mt-zoom` (`overflow:hidden`,
-l. 123) : les 4 px (offset 2 + trait 2) tombent entièrement dehors. Motif repris de
-`timeline.css:180/196`. Pas de `ring-*` (`DEC-S58-001`).
+**Ce que le fullstack-dev avait livré** (`0c40f9d`) : `.mt-zoom__btn:focus-visible{
+outline-offset:-2px}`, la piste prescrite par l'énoncé, plus un override
+`.mt-tlm .mt-zoom__btn:focus-visible{outline-offset:2px}` pour préserver le cas mobile.
 
-**Exception mobile préservée** — `timeline.css:399` :
-`.mt-tlm .mt-zoom__btn:focus-visible{outline-offset:2px;}`. En `.mt-tlm` le groupe est déjà
-`overflow:visible` (#226) et le contour y est correct sur 4 côtés ; un offset négatif y
-dégraderait un rendu juste et rapprocherait le trait du glyphe. Le décalage DS est donc
-restauré explicitement.
+**Pourquoi c'était le mauvais remède.** La vérification navigateur du lead a réalisé le risque
+que l'issue énonçait elle-même (« vérifier qu'il ne recouvre pas le libellé sur les cibles les
+plus étroites ») :
+
+- `.mt-zoom__btn` mesure **30 × 16,5 px** ; l'icône `<svg>` mesure **14 × 14 px**
+- un trait inset de 2 px ne laisse que **8,5 px** libres → l'icône déborde du trait en **haut,
+  bas et gauche**
+- aucune valeur inset ne s'en sort : `-1px` → 10,5 px, `0` → 12,5 px, toujours < 14 px.
+  **Le problème est la hauteur du bouton, pas la valeur de l'offset.**
+
+Le fullstack-dev n'avait aucun moyen de le voir : le briefing lui interdisait le navigateur
+(working tree partagé), et il avait explicitement listé ce point comme non vérifié. Son
+raisonnement écrit supposait « un glyphe mono de 15px » — ce sont en réalité des icônes SVG.
+
+**Remède retenu** (`801dadd`, arbitré avec le développeur) : retirer `overflow:hidden` de
+`.mt-zoom` et porter l'arrondi sur `.mt-zoom__btn:first-child` / `:last-child`. Le contour du
+DS (+2 px) peint alors **dehors**, sur ses 4 côtés, sans toucher l'icône. C'est exactement ce
+que #226 appliquait déjà en contexte `.mt-tlm` : même cause (le clip du groupe), même
+correctif, **un seul motif dans le DS** au lieu de deux.
+
+Conséquences : l'override `.mt-tlm .mt-zoom__btn:focus-visible{outline-offset:2px}` devient
+inutile et disparaît ; `.mt-tlm .mt-zoom{overflow:visible}` est conservée en garde et annotée.
+
+### Vérification navigateur du remède (focus armé au clavier réel)
+
+- **desktop 1440 px** : `.mt-zoom` ne figure plus parmi les ancêtres clippants ; le seul
+  restant est `.mt-tlv`, qui ne rogne **aucun** des 4 côtés. Contour à `+2px`, hors du bouton,
+  icône intacte.
+- **mobile 390 px** : boutons à 44 px (hitbox #226), seul ancêtre clippant `.mt-tlm`,
+  **0 côté rogné**.
+- **contre-épreuve du fond** (ce que `overflow:hidden` gardait) : bouton rempli d'une couleur
+  franche et agrandi 8×, le fond **suit l'arrondi** — aucun débordement carré.
+- contrastes : **6,08:1** clair (`#0E5FC4` sur `#FFFFFF`) / **6,48:1** sombre (`#4D9BFF` sur
+  `#131519`), et **5,53:1** contre le fond de toolbar.
 
 ## Zone B — l'énoncé ET mon briefing se trompaient de composant
 
@@ -65,15 +95,11 @@ layout, « 4 côtés peints » n'y est pas observable. Un test vert aurait été
 
 ## NON vérifié — les critères d'acceptation 1, 2 et 3 restent OUVERTS
 
-- **Rendu navigateur (clair + sombre) : pas fait.** Les 4 côtés peints ne sont donc **pas**
-  prouvés.
-- **Contraste réel sous le trait déplacé** (`PIT-S58-001`) : non mesuré au pixel. Ratios
-  **calculés depuis les tokens**, à confirmer (seuil WCAG 1.4.11 = 3:1) :
-  - `--color-focus` sur `--color-surface` (bouton de zoom, fond réel après offset négatif)
-    ≈ **6.10:1** clair (`#0E5FC4`/`#FFFFFF`) / **6.49:1** sombre (`#4D9BFF`/`#131519`) ;
-    en `:hover` le fond devient `--color-surface-2`.
-  - `--color-focus` sur `--color-accent-soft` (onglet de réglages) ≈ **4.94:1** clair
-    (`#0E5FC4`/`#DBE9FC`) / **5.43:1** sombre (`#4D9BFF`/`#16263A`).
+- ~~Rendu navigateur~~ → **FAIT par le lead** après coup, dans les deux thèmes, sur les deux
+  zones. Résultats ci-dessus et dans `docs/memory/audits/sprint-74-test-coverage.md`. Les
+  ratios estimés par le fullstack-dev depuis les tokens sont confirmés **à 0,02 près**.
+- Reste non vérifié : le comportement en `:hover` **simultané** au focus (le fond passe à
+  `--color-surface-2`, non mesuré), et le mode `forced-colors: active`.
 - ⚠ **Sources non lues.** L'agent a travaillé sur les résumés inlinés dans le briefing, pas sur
   `docs/memory/sprints/sprint-58/design-arbitrage-383-352.md` ni sur les entrées
   `pit-frontend.md` (`PIT-S58-001`, `PIT-S62-007`, `PIT-S53-001/004`, `PIT-S63-005`). Il l'a

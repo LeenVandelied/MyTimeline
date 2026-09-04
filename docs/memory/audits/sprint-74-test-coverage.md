@@ -56,8 +56,8 @@ Légende : ✅ vérifié et prouvé · 🟡 partiel · ❌ non vérifié
 | #384 | Une seule déclaration de lévitation | ✅ 28 tests + **mutation** | ✅ CSSOM : 1 règle, `translate: none` | ✅ |
 | #384 | −10 px au survol (au lieu de −18) | — (jsdom sans layout) | ✅ **`matrix(1,0,0,1,0,-10)`** sous `:hover` réel | ✅ |
 | #384 | Palier responsive `-5px` < 768 px préservé | ✅ | 🟡 règle présente, **non mesurée sous 768 px** | 🟡 |
-| #417A | `.mt-zoom` — contour peint sur 4 côtés | — | ✅ **0 côté rogné**, clair + sombre | ✅ |
-| #417A | Ne recouvre pas le contenu (risque de l'issue) | — | ❌ **RÉALISÉ — le trait croise l'icône** | ❌ |
+| #417A | `.mt-zoom` — contour peint sur 4 côtés | — | ✅ **0 côté rogné**, desktop + mobile, clair + sombre | ✅ |
+| #417A | Ne recouvre pas le contenu (risque de l'issue) | — | ✅ **résolu par le déclippage** — trait dehors, icône intacte | ✅ |
 | #417B | Tablist réglages — 4 côtés | — | ✅ **0 côté rogné** + **mutation** | ✅ |
 | #417B | Vérifié clair ET sombre | — | ✅ **4,95:1** / **5,43:1** | ✅ |
 | #417 | `outline-offset` négatif, pas de `ring-*` | ✅ `base-layer.test.ts` | ✅ CSSOM | ✅ |
@@ -100,32 +100,47 @@ supprime. `overflow-x: auto` calcule bien `overflow-y: auto` (constaté).
 Tous les contrastes dépassent le seuil WCAG 1.4.11 (3:1) et confirment les estimations du
 fullstack-dev à 0,02 près.
 
-## Décision ouverte — #417 zone A : le trait croise l'icône
+## Décision tranchée — #417 zone A : le remède a changé
 
-Le risque que l'issue énonçait elle-même (« vérifier qu'il ne recouvre pas le libellé sur les
-cibles les plus étroites ») **se réalise**. Géométrie mesurée, desktop, les deux thèmes :
+Le premier correctif (`outline-offset:-2px`, la piste de l'énoncé) réalisait le risque que
+l'issue énonçait elle-même. Géométrie mesurée : `.mt-zoom__btn` fait **30 × 16,5 px** pour une
+icône `<svg>` de **14 × 14 px** ; un trait inset de 2 px ne laisse que **8,5 px** libres, donc
+l'icône déborde du trait en haut, en bas et à gauche. Aucune valeur inset n'y échappe (`-1px` →
+10,5 px, `0` → 12,5 px, toujours < 14 px) : **le problème est la hauteur du bouton**.
 
-- `.mt-zoom__btn` : **30 × 16,5 px**
-- trait : bord externe à 2 px à l'intérieur, épaisseur 2 px → **espace libre vertical = 8,5 px**
-- icône `<svg>` : **14 × 14 px**, calée sur le bord **gauche** du bouton
-- → l'icône déborde du trait en **haut, bas et gauche**
+Arbitré avec le développeur → **retirer `overflow:hidden` de `.mt-zoom`**, l'arrondi étant porté
+par les boutons de bord. Le contour du DS (+2 px) peint dehors, sur ses 4 côtés, sans toucher
+l'icône. C'est le remède que #226 appliquait déjà en contexte `.mt-tlm` — même cause, même
+correctif, un seul motif dans le DS. Commit `801dadd`.
 
-Aucune valeur inset ne résout le cas : à `-1px` l'espace libre vaut 10,5 px, à `0` il vaut
-12,5 px — toujours < 14 px. **Le problème est la hauteur du bouton (16,5 px) face à une icône de
-14 px**, pas la valeur choisie. Le critère « 4 côtés peints » est atteint ; celui de
-non-recouvrement ne l'est pas.
+### Vérification du remède (focus armé au clavier réel, serveur webpack)
 
-Options (appel de charte, non tranché par le lead) :
+| Contexte | ancêtres clippants | côtés rognés | trait |
+|---|---|---|---|
+| desktop 1440 px | `.mt-tlv` seul (`.mt-zoom` n'y est plus) | **0 / 4** | `+2px`, hors du bouton |
+| mobile 390 px (boutons 44 px) | `.mt-tlm` seul | **0 / 4** | `+2px` |
 
-1. **Livrer tel quel** — 4 côtés peints, trait croisant l'icône sur 3 côtés.
-2. **`overflow: visible` sur `.mt-zoom` desktop** + rayon porté par les boutons — c'est
-   exactement ce que fait déjà l'exception mobile `.mt-tlm .mt-zoom{overflow:visible}`
-   (`timeline.css:390`). Le contour DS standard (+2 px) peindrait alors dehors, sans toucher
-   l'icône.
-3. **Retirer la zone A** de ce sprint et la rouvrir en issue de charte (hauteur du contrôle).
+Contrastes : **6,08:1** clair / **6,48:1** sombre contre le fond du bouton, **5,53:1** contre le
+fond de toolbar. Seuil WCAG 1.4.11 = 3:1.
+
+**Contre-épreuve du fond** — c'est précisément ce que `overflow:hidden` gardait : le premier
+bouton rempli d'une couleur franche et agrandi 8× montre un fond qui **suit l'arrondi**, sans
+débordement carré. Le clip était donc retirable sans la régression qu'il prévenait.
+
+Les deux zones de #417 n'ont donc **pas** le même remède, et c'est délibéré : le tablist des
+réglages garde son `outline-offset:-2px` (pastilles `rounded-md` sans bordure, trait à 2 px du
+bord et 10 px du libellé). Consigné au §8ter de `ds/a11y-audit.md`.
 
 ## Conclusion
 
-Prêt pour la PR **sous réserve** de l'arbitrage ci-dessus. Aucune ligne de couverture manquante (le tableau ci-dessus est exhaustif). Un critère est
-structurellement invérifiable (#343a, l'issue s'auto-contredit), deux sont partiels (fluidité
-#384, palier < 768 px), un est en échec assumé et documenté (#417A non-recouvrement).
+Prêt pour la PR. Aucune ligne de couverture manquante — le tableau ci-dessus est exhaustif.
+
+Restent, et c'est assumé :
+- **un critère structurellement invérifiable** — #343a « animation inchangée visuellement »
+  est incompatible avec « utiliser `--ease-quart` », l'issue s'auto-contredit. Arbitré avec le
+  développeur en faveur du token ; le geste de la frise change.
+- **deux vérifications partielles** — la *fluidité* de la transition de #384 (le panneau
+  navigateur rendait des lectures de transition instables) et le palier responsive `-5px`
+  sous 768 px (règle présente, non mesurée à ce viewport).
+- **une imputation non démontrée** — l'échec E2E `sprint-62-select-focus-indicator` est écarté
+  par faisceau, pas par contre-test sur `origin/dev`. La CI de la PR tranchera.
