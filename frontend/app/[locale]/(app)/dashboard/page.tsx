@@ -213,7 +213,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
             <WeekAgenda events={events} locale={locale} variant="table" />
             <aside className="flex flex-col gap-6">
-              <KpiMarginalia kpis={kpis} />
+              <KpiMarginalia kpis={kpis} locale={locale} />
               <ProductList products={products} locale={locale} />
             </aside>
           </div>

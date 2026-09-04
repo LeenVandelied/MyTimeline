@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -33,7 +35,7 @@ import com.matimeline.eventmanager.domain.ports.services.EmailService;
 /**
  * Tests unitaires de {@link PasswordResetServiceImpl} (issue #49).
  *
- * <p>Couvre les AC : forgot-password no-op + no-leak sur email inconnu (BR-AUT-005),
+ * <p>Couvre les AC : forgot-password no-op + no-leak sur email inconnu (BR-AUT-012),
  * envoi email + persistance token sur email connu ; reset-password token inexistant /
  * expiré (>15 min) / déjà consommé -> InvalidPasswordResetTokenException (->400) ;
  * succès -> re-hash BCrypt (BR-AUT-002) + marquage consommé (usage unique).
@@ -71,9 +73,9 @@ class PasswordResetServiceImplTest {
     void requestReset_unknownEmail_doesNothing_noLeak() {
         when(userRepository.findDomainUserByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
-        newService().requestReset("ghost@example.com");
+        newService().requestReset("ghost@example.com", "en");
 
-        // BR-AUT-005 : aucun token persisté, aucun email envoyé, aucune exception.
+        // BR-AUT-012 : aucun token persisté, aucun email envoyé, aucune exception.
         verify(tokenRepository, never()).create(any());
         verify(tokenRepository, never()).markConsumed(any());
         verifyNoInteractions(emailService);
@@ -84,7 +86,7 @@ class PasswordResetServiceImplTest {
         UUID userId = UUID.randomUUID();
         when(userRepository.findDomainUserByEmail("alice@example.com")).thenReturn(Optional.of(user(userId)));
 
-        newService().requestReset("alice@example.com");
+        newService().requestReset("alice@example.com", "de");
 
         ArgumentCaptor<PasswordResetToken> tokenCaptor = ArgumentCaptor.forClass(PasswordResetToken.class);
         // Chemin CREATE (#286) : route vers create() (pur INSERT), JAMAIS markConsumed().
@@ -96,7 +98,21 @@ class PasswordResetServiceImplTest {
         // Expiration = now + 15 min (cadrage S8).
         assertThat(saved.getExpiresAt()).isEqualTo(now().plusMinutes(15));
 
-        verify(emailService).sendPasswordResetEmail(anyString(), anyString(), anyString());
+        // #142 : la locale reçue est relayée TELLE QUELLE au port (la résolution et le
+        // repli sur fr appartiennent à l'adapter, cf. PasswordResetEmailTemplate).
+        verify(emailService).sendPasswordResetEmail(anyString(), anyString(), anyString(), eq("de"));
+    }
+
+    @Test
+    void requestReset_nullLocale_isRelayedAsIs_withoutFailing() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.findDomainUserByEmail("alice@example.com")).thenReturn(Optional.of(user(userId)));
+
+        // BR-AUT-012 : une locale absente ne doit rien casser sur le chemin forgot-password.
+        newService().requestReset("alice@example.com", null);
+
+        verify(tokenRepository).create(any());
+        verify(emailService).sendPasswordResetEmail(anyString(), anyString(), anyString(), isNull());
     }
 
     // ----- reset-password -----

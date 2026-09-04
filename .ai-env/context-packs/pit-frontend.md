@@ -782,6 +782,26 @@ Une fonction de plancher qui `toLowerCase()` sa sortie avant même de décider q
 ## PIT-S71-010 — Indexer ses seuls hunks dans un working tree partagé : plumbing git, jamais le working tree
 `UserControllerTest.java` était édité en parallèle par #134 et #148. `git add -p` est indisponible (mode non interactif) et le diff redirigé est corrompu ([[PIT-S71-002]]). Recette : `git cat-file -p HEAD:<path>` → reconstruction du contenu voulu → `git hash-object -w` → `git update-index --cacheinfo` : l'index reçoit la version voulue et **le working tree n'est jamais touché**, donc le WIP du voisin reste intact. Complément de [[sprint-parallel-commits-shared-worktree]]. (Sprint 71 #134)
 
+
+## PIT-S72-002 — « `tsc --noEmit` : 0 erreur » dans un rapport d'agent peut être faux — vitest ne typecheck pas
+L'agent de #72 a rapporté un typecheck propre ; `i18n-intl-classes.test.ts:65` levait pourtant TS2322 à HEAD. La suite vitest était verte parce qu'elle **ne typecheck pas** : seul le job frontend en CI l'aurait attrapé. L'écart a été trouvé par l'agent de l'autre issue, puis vérifié par le lead. Prévention : rejouer soi-même `tsc --noEmit` avant de reprendre un chiffre de typage dans un audit ; deux rapports d'agent qui se contredisent se tranchent par la mesure, jamais par l'ancienneté du rapport. Voir [[PIT-S71-...]] sur l'étiquette « pré-existant ». (Sprint 72)
+
+
+## PIT-S72-004 — Le premier hit d'une route sous `next dev` dépasse un timeout Playwright de 5 s
+La suite E2E est morte au projet `setup` (`provision shared`), 248 tests non exécutés : `expect(getByTestId('dashboard')).toBeVisible()` a 5 s de timeout, or le **premier** `GET /fr/dashboard` a pris **4172 ms** (compilation webpack 3,4 s) contre 72/59/35 ms ensuite — les 3 provisions suivantes sont passées. Diagnostic par lecture des durées dans le log `next dev`, pas par hypothèse. Prévention : préchauffer les routes ou relancer une fois avant de conclure à un défaut ; un échec du **seul premier** cas d'une série identique désigne l'environnement, pas le code. (Sprint 72)
+
+
+## PIT-S72-005 — Un conteneur e2e « prêt à l'emploi » peut porter une image antérieure au code du sprint
+`mytimeline-e2e-backend-e2e-1` était disponible et correctement configuré, mais son image précédait #142 : l'utiliser aurait rendu une suite verte **sans aucune valeur** sur le code à valider. Recette retenue : `./mvnw package -DskipTests` puis `java -jar` sur `:8086`, en ne réutilisant du conteneur que la base Postgres. Prévention : avant de s'appuyer sur un backend conteneurisé pour valider un diff, comparer la date de l'image aux commits à tester. Nuance [[mytimeline-e2e-ci-only-gate]] §S61 qui recommandait ce raccourci. (Sprint 72)
+
+
+## PIT-S72-006 — Un run de tests dans un working tree partagé n'est valable que si `git status` est stable de bout en bout
+La suite frontend est sortie rouge (4 tests / 1 fichier) pendant que l'agent de #142 éditait `authService.ts` dans le même arbre ; verte au re-run isolé. Prévention : en fan-out, re-jouer avant d'imputer un échec à son propre diff. Corollaire direct de l'étiquette « pré-existant » et complément de [[PIT-S71-010]]. (Sprint 72 #72)
+
+
+## PIT-S72-007 — Le callback de `walkDecls` (PostCSS) est typé `false | void` : une lambda-expression casse le typecheck
+`rule.walkDecls((d) => decls.set(d.prop, d.value))` renvoie la `Map` de `Map.set`, alors qu'une valeur non-`false` interrompt le parcours — d'où TS2322. Invisible sous vitest, rouge sous `tsc --noEmit`. Prévention : corps de bloc obligatoire pour tout visiteur PostCSS dont on ignore la valeur de retour. (Sprint 72 #72)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

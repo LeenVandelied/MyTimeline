@@ -13,13 +13,16 @@ public interface PasswordResetService {
      * génère un token UUID (valide 15 min, usage unique), le persiste et déclenche
      * l'envoi de l'email Brevo. Si l'email est inconnu, NE FAIT RIEN.
      *
-     * <p>BR-AUT-005 (anti-énumération) : cette méthode ne lève JAMAIS d'exception
+     * <p>BR-AUT-012 (anti-énumération) : cette méthode ne lève JAMAIS d'exception
      * révélant l'existence/absence du compte et ne retourne aucune information ;
      * le contrôleur répond TOUJOURS 200 quel que soit le résultat du lookup.
      *
-     * @param email adresse saisie par l'utilisateur
+     * @param email  adresse saisie par l'utilisateur
+     * @param locale étiquette de langue de l'email à envoyer (#142) ; {@code null},
+     *               vide ou non supportée -> français. Aucune valeur ne peut faire
+     *               échouer le traitement (BR-AUT-012).
      */
-    void requestReset(String email);
+    void requestReset(String email, String locale);
 
     /**
      * Étape "réinitialiser le mot de passe". Vérifie que le token existe, n'est pas

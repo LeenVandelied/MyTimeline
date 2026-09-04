@@ -126,13 +126,19 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
     return { active, archived: list.length - active }
   }, [product])
 
+  // #72 — Compteurs de filtre = quantités → séparateur de milliers localisé.
+  // On ne pose PAS `.mt-num` sur ces chiffres : ils sont INLINE dans un libellé
+  // d'onglet en police de texte ; `.mt-num` y basculerait le seul nombre en mono,
+  // un changement visuel non couvert par le design livré.
+  const nf = React.useMemo(() => new Intl.NumberFormat(locale), [locale])
+
   const filterItems = React.useMemo(
     () => [
       {
         value: 'active',
         label: (
           <span data-testid="product-detail-filter-active">
-            {t('filter.active')} · {counts.active}
+            {t('filter.active')} · {nf.format(counts.active)}
           </span>
         ),
       },
@@ -140,7 +146,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
         value: 'archived',
         label: (
           <span data-testid="product-detail-filter-archived">
-            {t('filter.archived')} · {counts.archived}
+            {t('filter.archived')} · {nf.format(counts.archived)}
           </span>
         ),
       },
@@ -148,12 +154,12 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
         value: 'all',
         label: (
           <span data-testid="product-detail-filter-all">
-            {t('filter.all')} · {counts.active + counts.archived}
+            {t('filter.all')} · {nf.format(counts.active + counts.archived)}
           </span>
         ),
       },
     ],
-    [t, counts],
+    [t, counts, nf],
   )
 
   // Garde de type plutôt qu'un cast : `Tabs.onValueChange` expose un `string` brut.

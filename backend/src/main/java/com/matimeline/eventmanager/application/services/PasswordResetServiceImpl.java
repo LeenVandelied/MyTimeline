@@ -34,7 +34,7 @@ import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
  *
  * <p>Sécurité :
  * <ul>
- *   <li>BR-AUT-005 : {@link #requestReset} ne révèle jamais l'existence du compte
+ *   <li>BR-AUT-012 : {@link #requestReset} ne révèle jamais l'existence du compte
  *       (pas d'exception, pas de retour) — le contrôleur répond toujours 200.
  *       De plus {@code requestReset} est {@code @Async} : lookup + INSERT + envoi
  *       Brevo s'exécutent hors du thread de requête, donc le 200 est rendu en temps
@@ -76,7 +76,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     }
 
     /**
-     * BR-AUT-005 (anti-énumération par timing) : exécution {@code @Async} sur
+     * BR-AUT-012 (anti-énumération par timing) : exécution {@code @Async} sur
      * l'executor {@code passwordResetExecutor}. Le contrôleur appelle cette méthode
      * via le proxy Spring, qui rend la main IMMÉDIATEMENT (le 200 ne dépend ni du
      * lookup, ni de l'INSERT, ni de la latence réseau Brevo). Email connu et inconnu
@@ -89,15 +89,20 @@ public class PasswordResetServiceImpl implements PasswordResetService {
      * <p>Note : appelé directement (sans proxy) en test unitaire, le corps s'exécute
      * de façon synchrone — les assertions sur {@code save}/{@code sendPasswordResetEmail}
      * restent valides ; l'aspect async est une préoccupation d'infrastructure.
+     *
+     * <p>#142 : {@code locale} est relayée telle quelle au port {@link EmailService}.
+     * Aucune validation ici — la résolution (et le repli sur {@code fr}) appartient à
+     * l'adapter, qui connaît le catalogue de templates. Aucune valeur ne peut faire
+     * échouer ce chemin.
      */
     @Override
     @Async("passwordResetExecutor")
     @Transactional
-    public void requestReset(String email) {
+    public void requestReset(String email, String locale) {
         try {
             Optional<User> maybeUser = userRepository.findDomainUserByEmail(email);
             if (maybeUser.isEmpty()) {
-                // BR-AUT-005 : email inconnu -> aucune action, aucun signal. Le contrôleur
+                // BR-AUT-012 : email inconnu -> aucune action, aucun signal. Le contrôleur
                 // répond 200 comme pour un email existant (anti-énumération).
                 return;
             }
@@ -117,7 +122,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
             // L'envoi email passe par le port (adapter Brevo en infra). Le token brut est
             // transmis au mail mais JAMAIS loggé ici.
-            emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), tokenValue.toString());
+            emailService.sendPasswordResetEmail(
+                    user.getEmail(), user.getName(), tokenValue.toString(), locale);
         } catch (RuntimeException ex) {
             // Tâche async : ne JAMAIS laisser remonter (côté requête c'est déjà découplé,
             // mais on neutralise tout bruit). Log SANS email/token/PII (anti side-channel).

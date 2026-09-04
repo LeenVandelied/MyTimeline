@@ -240,7 +240,13 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
         data-testid="event-form-preview-legend"
       >
         <span>{t('previewTimeline.nextOccurrence')}</span>
-        <time className="text-ink font-mono" dateTime={toLocalIso(model.nextOccurrence)}>
+        {/* #72 — `.mt-date--long` (DS i18n.css §7) : mono + tabular-nums + nowrap
+            + isolation bidi. Elle impose `font-size:13px` là où le `<time>` héritait
+            du `text-xs` (15px) de la légende : delta assumé, la taille d'une date
+            longue appartient au DS. `.mt-date--short` (11px + uppercase) n'est pas
+            posée — son format cible « 24 JUIN 2026 » demande aussi un changement
+            d'options `Intl` (arbitrage Designer, cf. rapport #72). */}
+        <time className="text-ink mt-date--long" dateTime={toLocalIso(model.nextOccurrence)}>
           {dateFormatter.format(model.nextOccurrence)}
         </time>
         {recurrenceLabel && (

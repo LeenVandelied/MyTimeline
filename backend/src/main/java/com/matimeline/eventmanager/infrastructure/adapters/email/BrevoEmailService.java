@@ -27,10 +27,25 @@ import com.matimeline.eventmanager.domain.ports.services.EmailService;
  *   <li>La clé n'est JAMAIS loggée (ni en entier ni en fragment).</li>
  *   <li>Si la clé est absente (dev/test sans env var), l'envoi est NO-OP avec un
  *       warning : le flux forgot-password reste fonctionnel (token créé) sans crasher,
- *       et BR-AUT-005 (réponse 200 systématique) est préservée.</li>
+ *       et BR-AUT-012 (réponse 200 systématique) est préservée.</li>
  * </ul>
  *
- * <p>Template FR figé ici (abstraction emailLocale prévue en wave future, cf. risques #49).
+ * <p>⚠ Étiquette de règle corrigée (#142) : l'anti-énumération de forgot-password est
+ * BR-AUT-012, PAS BR-AUT-005 (qui traite du 401 sur échec d'authentification). Le code
+ * source portait la mauvaise référence depuis #49 — ne pas la réintroduire.
+ *
+ * <p>Deux occurrences de l'ancienne étiquette subsistent VOLONTAIREMENT :
+ * <ul>
+ *   <li>{@code V6__create_password_reset_tokens.sql} — une migration Flyway déjà
+ *       appliquée ; modifier son texte, fût-ce un commentaire, change son checksum
+ *       et fait échouer la validation au démarrage sur toute base existante.</li>
+ *   <li>{@code AuthController} (chemin login) — là, BR-AUT-005 est la BONNE règle.</li>
+ * </ul>
+ *
+ * <p>i18n (#142) : sujet et corps viennent du catalogue {@link PasswordResetEmailTemplate}
+ * (fr/en/es/de). La sélection est un simple lookup en mémoire, sans I/O ni exception
+ * possible : une locale inconnue retombe sur le français, donc aucune valeur d'entrée
+ * ne peut changer le code de réponse ni créer d'écart de timing (BR-AUT-012).
  */
 @Service
 public class BrevoEmailService implements EmailService {
@@ -38,7 +53,6 @@ public class BrevoEmailService implements EmailService {
     private static final Logger log = LoggerFactory.getLogger(BrevoEmailService.class);
 
     private static final String BREVO_ENDPOINT = "https://api.brevo.com/v3/smtp/email";
-    private static final String EMAIL_SUBJECT = "Réinitialisation de votre mot de passe MyTimeline";
 
     private final RestClient restClient;
     private final String apiKey;
@@ -60,7 +74,8 @@ public class BrevoEmailService implements EmailService {
     }
 
     @Override
-    public void sendPasswordResetEmail(String recipientEmail, String recipientName, String resetToken) {
+    public void sendPasswordResetEmail(
+            String recipientEmail, String recipientName, String resetToken, String locale) {
         if (apiKey == null || apiKey.isBlank()) {
             // Pas de clé (dev/test) : on ne tente pas l'appel HTTP. Le flux métier
             // continue (token déjà persisté), réponse 200 préservée.
@@ -69,7 +84,9 @@ public class BrevoEmailService implements EmailService {
         }
 
         String resetLink = resetUrlBase + "?token=" + resetToken;
-        Map<String, Object> payload = buildPayload(recipientEmail, recipientName, resetLink);
+        // Repli défensif sur le français : null / vide / locale inconnue (BR-AUT-012).
+        PasswordResetEmailTemplate template = PasswordResetEmailTemplate.resolve(locale);
+        Map<String, Object> payload = buildPayload(recipientEmail, recipientName, resetLink, template);
 
         try {
             restClient.post()
@@ -81,7 +98,7 @@ public class BrevoEmailService implements EmailService {
                     .toBodilessEntity();
         } catch (RestClientException ex) {
             // Échec d'envoi : on logue SANS le token ni la clé. On ne propage pas
-            // l'exception jusqu'au contrôleur (BR-AUT-005 : la réponse 200 ne doit
+            // l'exception jusqu'au contrôleur (BR-AUT-012 : la réponse 200 ne doit
             // pas dépendre de la disponibilité de Brevo, sinon on fuit l'existence
             // du compte via un timing/erreur différent).
             log.error("Échec de l'envoi de l'email de réinitialisation via Brevo : {}", ex.getClass().getSimpleName());
@@ -90,9 +107,10 @@ public class BrevoEmailService implements EmailService {
 
     /**
      * Construit le corps JSON attendu par l'API Brevo (sender / to / subject /
-     * htmlContent). Template FR.
+     * htmlContent) à partir du template de la langue résolue (#142).
      */
-    private Map<String, Object> buildPayload(String recipientEmail, String recipientName, String resetLink) {
+    private Map<String, Object> buildPayload(
+            String recipientEmail, String recipientName, String resetLink, PasswordResetEmailTemplate template) {
         String safeName = recipientName == null || recipientName.isBlank() ? "" : recipientName;
         // XSS : le nom est contrôlé par l'utilisateur (saisi à l'inscription). Échapper
         // AVANT insertion dans le HTML de l'email, sinon un nom contenant du markup
@@ -104,19 +122,14 @@ public class BrevoEmailService implements EmailService {
         // mais on échappe l'URL avant insertion dans l'attribut href pour ne pas dépendre
         // d'une base future non contrôlée (cohérent avec l'échappement de safeName).
         String escapedResetLink = HtmlUtils.htmlEscape(resetLink);
-        String htmlContent =
-                "<p>Bonjour " + escapedName + ",</p>"
-                + "<p>Vous avez demandé la réinitialisation de votre mot de passe MyTimeline. "
-                + "Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe :</p>"
-                + "<p><a href=\"" + escapedResetLink + "\">Réinitialiser mon mot de passe</a></p>"
-                + "<p>Ce lien est valable 15 minutes. Si vous n'êtes pas à l'origine de cette demande, "
-                + "ignorez simplement cet email.</p>"
-                + "<p>L'équipe MyTimeline</p>";
+        // L'échappement est appliqué AVANT le rendu, donc identiquement dans les 4
+        // langues : le catalogue n'insère que des valeurs déjà neutralisées.
+        String htmlContent = template.htmlContent(escapedName, escapedResetLink);
 
         return Map.of(
                 "sender", Map.of("email", senderEmail, "name", senderName),
                 "to", List.of(Map.of("email", recipientEmail, "name", safeName)),
-                "subject", EMAIL_SUBJECT,
+                "subject", template.subject(),
                 "htmlContent", htmlContent);
     }
 }

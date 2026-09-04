@@ -31,7 +31,7 @@ import com.matimeline.eventmanager.domain.ports.services.EmailService;
 import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
 
 /**
- * Test du correctif BR-AUT-005 (anti-énumération par TIMING) — review S8.
+ * Test du correctif BR-AUT-012 (anti-énumération par TIMING) — review S8.
  *
  * <p>Avant le fix, {@code forgot-password} exécutait, pour un email connu, lookup +
  * INSERT + appel HTTP Brevo de façon SYNCHRONE sur le thread de requête : la latence
@@ -95,10 +95,10 @@ class ForgotPasswordAsyncTest extends com.matimeline.eventmanager.support.Abstra
         doAnswer(invocation -> {
             sendBlock.await(5, TimeUnit.SECONDS);
             return null;
-        }).when(emailService).sendPasswordResetEmail(anyString(), anyString(), anyString());
+        }).when(emailService).sendPasswordResetEmail(anyString(), anyString(), anyString(), anyString());
 
         long start = System.currentTimeMillis();
-        passwordResetService.requestReset("known@example.com"); // via proxy @Async
+        passwordResetService.requestReset("known@example.com", "en"); // via proxy @Async
         long elapsed = System.currentTimeMillis() - start;
 
         // L'appel rend la main sans avoir attendu le latch (5 s) : envoi bien déporté.
@@ -106,7 +106,7 @@ class ForgotPasswordAsyncTest extends com.matimeline.eventmanager.support.Abstra
 
         // La tâche async s'exécute bien et appelle l'envoi (timeout = attente async).
         verify(emailService, timeout(5000))
-                .sendPasswordResetEmail(anyString(), anyString(), anyString());
+                .sendPasswordResetEmail(anyString(), anyString(), anyString(), anyString());
         verify(tokenRepository, timeout(5000)).create(org.mockito.ArgumentMatchers.any());
 
         sendBlock.countDown();

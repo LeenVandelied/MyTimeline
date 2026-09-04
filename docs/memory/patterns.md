@@ -665,3 +665,9 @@ Poser les deux résultats en propriétés personnalisées (`--x` / `--x-dark`) e
 
 ## PAT-S71-004 — Filets hairline pleine largeur dans un bloc à padding unique : descendre le padding vers les enfants
 Pour reproduire la grammaire de séparation d'une surface sœur, poser le `border-b` sur le conteneur **paddé** produit un filet encadré de vide, pas un filet pleine largeur. Recette : migrer le padding du conteneur vers chacun de ses enfants, chaque enfant portant son propre `border-b` — les cotes se reprennent des classes de la surface de référence, pas d'une estimation. (Sprint 71, cycle de correction)
+
+## PAT-S72-001 — Prouver qu'une classe du DS remplace des utilitaires Tailwind sans delta : compiler la CSS et asserter sur l'AST
+Sous jsdom aucune feuille n'est appliquée : `expect(el).toHaveClass('mt-num')` ne prouve rien (la classe pouvait déjà être là) et ne dit rien de la cascade. Recette : compiler la vraie chaîne CSS avec `@tailwindcss/postcss`, puis asserter sur l'AST — rang de layer et propriétés effectivement déclarées. Harnais réutilisé de `base-layer.test.ts` vers `i18n-intl-classes.test.ts`. (Sprint 72 #72)
+
+## PAT-S72-002 — Distinguer un test instable d'une régression : rejouer le spec seul SUR LE MÊME COMMIT
+Un E2E rouge dans une suite complète ne dit pas s'il est causé par le diff. Rejouer ce seul spec **sans changer de commit** tranche en une commande : deux verdicts opposés sur un code identique ⇒ instabilité. C'est plus rapide et plus concluant que de reconstruire la base `origin/dev`, et ça évite l'étiquette « pré-existant » posée sans preuve. Corroborer par le périmètre (aucun fichier du diff sur le chemin testé) et par le sort des tests jumeaux dans le run rouge. (Sprint 72)

@@ -2,6 +2,7 @@ import apiClient from '@/services/apiClient'
 import { LoginData, LoginSchema } from '@/types/auth'
 import { UserSchema } from '@/types/user'
 import { safeErrorMessage } from '@/lib/safe-error'
+import { isSupportedLocale } from '@/i18n/locales'
 
 export const login = async (username: string, password: string) => {
   try {
@@ -37,11 +38,18 @@ export const registerUser = async (
 
 /**
  * #53 — Mot de passe oublié (contrat #49). Le backend renvoie TOUJOURS 200
- * (anti-fuite BR-AUT-005 : il ne révèle pas si l'email existe). L'appelant
+ * (anti-fuite BR-AUT-012 : il ne révèle pas si l'email existe). L'appelant
  * affiche donc un message neutre quel que soit le retour.
+ *
+ * #142 — `locale` (optionnel) choisit la langue de l'email de réinitialisation.
+ * La locale courante vient de la route (`/[locale]/forgot-password`) : le serveur
+ * ne stocke AUCUNE langue par utilisateur, c'est donc au client de la porter.
+ * Une valeur non supportée est simplement omise — le backend retombe sur `fr`.
  */
-export const forgotPassword = async (email: string) => {
-  const response = await apiClient.post('/auth/forgot-password', { email })
+export const forgotPassword = async (email: string, locale?: string) => {
+  const payload =
+    locale && isSupportedLocale(locale) ? { email, locale } : { email }
+  const response = await apiClient.post('/auth/forgot-password', payload)
   return response.data
 }
 

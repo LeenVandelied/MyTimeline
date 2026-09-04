@@ -21,7 +21,7 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * (sous /api/auth/**, permitAll + bypass JwtFilter). Passe par la vraie chaîne
  * Spring Security (@AutoConfigureMockMvc applique springSecurity).
  *
- * <p>BR-AUT-005 (anti-énumération) : forgot-password répond 200 même pour un email
+ * <p>BR-AUT-012 (anti-énumération) : forgot-password répond 200 même pour un email
  * inconnu. Pas de Brevo réel : BREVO_API_KEY absente en test -> BrevoEmailService
  * no-op (warning), le flux n'échoue pas.
  */
@@ -33,7 +33,7 @@ class PasswordResetEndpointsIntegrationTest extends AbstractPostgresIntegrationT
     private MockMvc mockMvc;
 
     /**
-     * #103/BR-AUT-011 + BR-AUT-005 : forgot-password accessible sans token et répond
+     * #103/BR-AUT-011 + BR-AUT-012 : forgot-password accessible sans token et répond
      * 200 pour un email inconnu (anti-énumération). Email aléatoire => jamais en base.
      */
     @Test

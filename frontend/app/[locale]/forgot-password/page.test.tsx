@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ForgotPasswordPage from './page'
 
 /**
- * #53 — BR-AUT-005 : forgot-password affiche un message NEUTRE quel que soit le
+ * #53 — BR-AUT-012 : forgot-password affiche un message NEUTRE quel que soit le
  * retour backend (anti-fuite). On vérifie aussi qu'une erreur réseau bascule
  * sur le message d'erreur générique sans révéler l'existence du compte.
  */
@@ -33,7 +33,7 @@ describe('ForgotPasswordPage', () => {
     forgotPasswordMock.mockReset()
   })
 
-  it('affiche un message neutre après envoi (BR-AUT-005)', async () => {
+  it('affiche un message neutre après envoi (BR-AUT-012)', async () => {
     forgotPasswordMock.mockResolvedValue({})
     const user = userEvent.setup()
     render(<ForgotPasswordPage params={params} />)
