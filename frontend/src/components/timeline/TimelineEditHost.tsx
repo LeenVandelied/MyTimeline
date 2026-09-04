@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
 import { useEventEditConflict } from '@/hooks/useEventEditConflict'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { deleteEvent } from '@/services/eventService'
 import { TimelineResponsive, type TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
@@ -51,6 +52,29 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   // Cible de suppression MOBILE (action sheet) : non nulle ⇒ dialog de confirmation ouvert.
   const [deleteTarget, setDeleteTarget] = useState<PositionedEvent | null>(null)
   const queryClient = useQueryClient()
+
+  /**
+   * #495 — APERÇU ÉPINGLÉ sur la surface d'ÉDITION (handoff §6 « création / édition »),
+   * extension de `PAT-S70-001` posé au S70 côté création (#326).
+   *
+   * ⚠ UN NŒUD, PAS UN `RefObject` (contrat de `previewPortalNode`) : `ref.current` vaut
+   * `null` au premier rendu et sa mutation ne re-rendrait RIEN — l'aperçu resterait à
+   * jamais en flux. Le setter de `useState` passé en ref callback est appelé en phase de
+   * commit, avant peinture : le portail se monte sans saut visuel.
+   */
+  const [previewNode, setPreviewNode] = useState<HTMLDivElement | null>(null)
+
+  /**
+   * #495 — Épinglage réservé à la variante PANNEAU LATÉRAL (`sm:` = 640px, le SEUL
+   * breakpoint de cette surface, cf. `DialogContent` ci-dessous). Sous 640px le dialog
+   * est une bottom sheet bornée à `max-h-[92vh]` : y épingler l'aperçu amputerait la
+   * zone de saisie, exactement le motif pour lequel #326 a laissé l'aperçu EN FLUX dans
+   * la sheet du drawer de création. Choix aligné, pas nouveau.
+   *
+   * ⚠ `useMediaQuery` rend `false` au premier passage (SSR-safe) → aperçu en flux puis
+   * portalisé après hydratation. Même comportement que `NewEventDrawer`.
+   */
+  const pinPreview = useMediaQuery('(min-width: 640px)')
 
   const closeEditor = useCallback(() => setEditing(null), [])
 
@@ -184,13 +208,57 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
             'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[480px] sm:max-w-[480px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',
           )}
         >
-          <div className="bg-surface sticky top-0 z-10 rounded-t-xl p-5 shadow-md">
-            <DialogHeader>
+          {/* #495 / review S71 — GRAMMAIRE DE SÉPARATION alignée sur la surface de
+              CRÉATION (`.mt-drawer__header` + `.mt-drawer__preview`, timeline.css) :
+              titre / aperçu / corps sont séparés par DEUX filets hairline
+              `border-b border-rule` pleine largeur, pas par une ombre.
+              Le `shadow-md` initial était un usage hors charte (`ds/readme.md:106`
+              réserve `md`/`lg` à l'élévation du modal LUI-MÊME — déjà portée par le
+              `shadow-xl` de `DialogContent` ci-dessus) ET une technique DIFFÉRENTE de
+              la création pour le même rôle fonctionnel.
+              Le padding migre du bloc sticky vers ses deux enfants : c'est la seule
+              façon d'obtenir des filets PLEINE LARGEUR (un `border-b` sur un bloc
+              `p-5` serait resté à l'intérieur du padding, encadré de 20px de vide).
+              Cotes reprises de la création : header `--space-5 --space-5 --space-4`
+              (px-5 pt-5 pb-4), aperçu `--space-4 --space-5` (px-5 py-4).
+              Aucune couleur en dur : `--color-rule` est défini dans les DEUX palettes
+              (clair + sombre), comme pour la création. */}
+          <div className="bg-surface sticky top-0 z-10 rounded-t-xl">
+            <DialogHeader className="border-rule border-b px-5 pt-5 pb-4">
               <DialogTitle className="text-ink flex items-center text-xl font-bold">
                 <Calendar className="mr-2 h-5 w-5" aria-hidden="true" />
                 {editing?.title}
               </DialogTitle>
             </DialogHeader>
+
+            {/* #495 — Nœud hôte de l'aperçu épinglé. Placé DANS le bloc d'en-tête
+                DÉJÀ `sticky top-0 z-10` : on réutilise le mécanisme d'épinglage en
+                place au lieu d'en poser un second. Conséquence directe — AUCUN
+                nouveau `position:sticky`, AUCUN nouveau palier de z-index à arbitrer
+                (le palier `--z-modal` partagé `.mt-drawer`/`.mt-sheet` de #446 reste
+                intouché, comme au S70).
+
+                POURQUOI PAS un frère de la zone défilante (lettre de PAT-S70-001) :
+                ici le conteneur défilant EST `DialogContent` lui-même
+                (`overflow-y-auto`), il n'existe donc aucun frère où se placer. Rendre
+                la structure `header / body(overflow:auto) / footer` supposerait de
+                refaire la boîte du dialog (bottom sheet `max-h-[92vh]` + panneau
+                `sm:h-full`) — restructuration lourde sur une surface qui porte aussi
+                les deux chemins de suppression (#309) et la machine à conflit 409.
+
+                Ne contient rien en propre : `EventEditForm` y portalise SA mini-frise.
+                `empty:hidden` remplace le `:empty{display:none}` de
+                `.mt-drawer__preview` (classe DS non applicable ici : cette surface
+                n'est pas un `.mt-drawer`) — sans lui, le padding et le filet du nœud
+                vide laisseraient un liseré orphelin sous l'en-tête sous 640px et
+                pendant le rendu initial (avant hydratation, `useMediaQuery` rend
+                `false`). C'est le pendant exact de `.mt-drawer__preview:empty`
+                côté création : hôte vide ⇒ un SEUL filet visible (celui du header). */}
+            <div
+              ref={setPreviewNode}
+              className="border-rule border-b px-5 py-4 empty:hidden"
+              data-testid="timeline-edit-dialog-preview"
+            />
           </div>
 
           <div className="p-5">
@@ -208,6 +276,9 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
                 onTakeServer={conflict.onTakeServer}
                 onDelete={deleteEditing}
                 isRecurring={editing?.extendedProps?.isRecurring ?? false}
+                /* #495 — `null` sous 640px : l'aperçu y reste EN FLUX (PAT-S44-001,
+                   le mode historique reste le défaut là où rien ne le remplace). */
+                previewPortalNode={pinPreview ? previewNode : null}
               />
             )}
           </div>

@@ -100,7 +100,7 @@ class AuthControllerSecurityTest {
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
         when(jwtService.generateToken(any(Authentication.class))).thenReturn(jwt);
 
-        String body = "{\"username\":\"alice\",\"password\":\"secret6\"}";
+        String body = "{\"username\":\"alice\",\"password\":\"Secret60\"}";
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -250,7 +250,7 @@ class AuthControllerSecurityTest {
                         "could not execute statement; constraint [users.username]"));
 
         String body = "{\"name\":\"validName\",\"username\":\"validUser\","
-                + "\"email\":\"valid@example.com\",\"password\":\"secret6\"}";
+                + "\"email\":\"valid@example.com\",\"password\":\"Secret60\"}";
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -269,7 +269,7 @@ class AuthControllerSecurityTest {
                         "could not execute statement; constraint [users.email]"));
 
         String body = "{\"name\":\"validName\",\"username\":\"validUser\","
-                + "\"email\":\"dupe@example.com\",\"password\":\"secret6\"}";
+                + "\"email\":\"dupe@example.com\",\"password\":\"Secret60\"}";
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -391,7 +391,7 @@ class AuthControllerSecurityTest {
         when(jwtService.generateToken(any(Authentication.class))).thenReturn("login-token");
         Cookie loginCookie = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"alice\",\"password\":\"secret6\"}"))
+                        .content("{\"username\":\"alice\",\"password\":\"Secret60\"}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getCookie("jwt");
 

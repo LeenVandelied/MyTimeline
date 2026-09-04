@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 
 import { Cursor } from '@/components/timeline/Cursor'
 import { Ruler } from '@/components/timeline/Ruler'
-import { contrastInk } from '@/lib/color'
+import { contrastInk, outlineFloorVars } from '@/lib/color'
 import type { DurationUnit, RecurrenceUnit } from '@/types/event'
 import { buildPreviewModel, type PreviewEventType, type PreviewSegment } from './previewTimeline'
 
@@ -33,13 +33,21 @@ import { buildPreviewModel, type PreviewEventType, type PreviewSegment } from '.
  * son rendu par défaut monte `EventContent`, qui exige les contextes auth/i18n de
  * la page. La géométrie vient donc de `previewTimeline.ts` (fonctions pures).
  *
- * ⚠ PERF (BR-EVE-009) : ce composant ne débounce RIEN lui-même. Les valeurs
+ * ⚠ PERF (BR-EVE-017) : ce composant ne débounce RIEN lui-même. Les valeurs
  * arrivent déjà débouncées à 150 ms depuis `EventEditForm` — les brancher sur les
  * `watch()` bruts recalculerait la géométrie à chaque frappe.
  *
  * Aucune couleur en dur : tokens DS uniquement (accent/rule/ink/surface),
  * theme-aware clair + sombre. La seule couleur littérale est celle CHOISIE par
  * l'utilisateur pour son événement (donnée, pas décoration).
+ *
+ * ⚠ #497 — cette couleur utilisateur est PLANCHÉE à 3:1 (WCAG 1.4.11) sur les
+ * deux traits qui portent la récurrence, et sur eux seuls : le connecteur
+ * pointillé et le contour de l'occurrence fantôme. Voir `lib/color.ts`
+ * (`outlineFloorVars`) pour la doctrine et `ds/components/timeline.css` (§ #497)
+ * pour l'API CSS. Les APLATS (barre pleine, fond à 8 % du fantôme) restent
+ * peints dans la couleur BRUTE — c'est l'identité de l'événement, et leur encre
+ * est déjà calculée par `contrastInk`.
  */
 export interface EventPreviewTimelineProps {
   /** Titre saisi (déjà débouncé). Vide ⇒ libellé d'exemple. */
@@ -65,16 +73,35 @@ export interface EventPreviewTimelineProps {
 }
 
 /**
+ * #497 — le fond de `.mt-evt--draft` est `color-mix(in srgb, --mt-evt 8%,
+ * --color-surface)` : c'est CE fond, pas la surface nue, que le contour du
+ * fantôme doit franchir à 3:1. Doit rester synchronisé avec `timeline.css`.
+ */
+const GHOST_TINT_PERCENT = 8
+
+/**
  * Style d'une barre. Les propriétés personnalisées `--mt-evt*` sont l'API
  * documentée du DS (`ds/components/timeline.css`) ; `React.CSSProperties`
  * (csstype) n'expose pas d'index signature pour les custom properties, d'où
  * l'assertion — seule justification acceptée pour ce cast.
  */
-function barStyle(segment: PreviewSegment, color: string | undefined): React.CSSProperties {
+function barStyle(
+  segment: PreviewSegment,
+  color: string | undefined,
+  /**
+   * #497 — pourcentage de la couleur événement déjà mélangé dans la surface
+   * pour former le fond derrière le CONTOUR. `null` = pas de contour planché
+   * (barre pleine : son identité est l'aplat, pas un trait — hors périmètre).
+   * `8` = fond de `.mt-evt--draft`, `timeline.css`.
+   */
+  outlineTintPercent: number | null = null,
+): React.CSSProperties {
+  const outline = outlineTintPercent === null ? null : outlineFloorVars(color, outlineTintPercent)
   return {
     left: `${segment.leftPercent}%`,
     width: `${segment.widthPercent}%`,
     ...(color ? { '--mt-evt': color, '--mt-evt-ink': contrastInk(color) } : {}),
+    ...(outline ?? {}),
   } as React.CSSProperties
 }
 
@@ -145,18 +172,25 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
         <div className="relative" style={{ height: 'var(--lane-height)' }}>
           {model.connector && (
             <div
-              className="pointer-events-none absolute top-1/2 border-t-2 border-dashed"
-              style={{
-                left: `${model.connector.leftPercent}%`,
-                width: `${model.connector.widthPercent}%`,
-                // #325 — repli au tier FONCTIONNEL (`rule-emphasis`, #293 : seul
-                // palier >= 3:1 dans les DEUX thèmes), pas au tier décoratif
-                // `rule-strong` qui plafonne à ~1.5:1. Le connecteur PORTE la
-                // récurrence : retiré, la relation entre les deux occurrences
-                // n'est plus lisible — c'est le même tier que le contour du
-                // fantôme (`.mt-evt--draft`, #352), il doit donc s'y aligner.
-                borderColor: color ?? 'var(--color-rule-emphasis)',
-              }}
+              // #325 — repli au tier FONCTIONNEL (`rule-emphasis`, #293 : seul
+              // palier >= 3:1 dans les DEUX thèmes), pas au tier décoratif
+              // `rule-strong` qui plafonne à ~1.5:1. Le connecteur PORTE la
+              // récurrence : retiré, la relation entre les deux occurrences
+              // n'est plus lisible — c'est le même tier que le contour du
+              // fantôme (`.mt-evt--draft`, #352), il doit donc s'y aligner.
+              // #497 — le trait (2px dashed) et son repli passent dans la classe
+              // DS `.mt-evt-connector` : la couleur PLANCHÉE dépend du thème, et
+              // un `borderColor` inline ne peut pas être commuté par `.dark`.
+              // `tintPercent = 0` : le connecteur n'a pas de fond propre, le
+              // premier fond opaque est le `bg-surface` du cadre d'aperçu.
+              className="mt-evt-connector pointer-events-none absolute top-1/2"
+              style={
+                {
+                  left: `${model.connector.leftPercent}%`,
+                  width: `${model.connector.widthPercent}%`,
+                  ...(outlineFloorVars(color, 0) ?? {}),
+                } as React.CSSProperties
+              }
               data-testid="event-form-preview-connector"
               aria-hidden="true"
             />
@@ -178,7 +212,7 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
           {model.ghost && (
             <div
               className="mt-evt mt-evt--draft mt-evt--preview"
-              style={barStyle(model.ghost, color)}
+              style={barStyle(model.ghost, color, GHOST_TINT_PERCENT)}
               data-testid="event-form-preview-ghost"
             >
               <span aria-hidden="true">↻</span>

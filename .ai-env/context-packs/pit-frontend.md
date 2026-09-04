@@ -750,6 +750,38 @@ Le hook cherche `RECOMMAND_<SPEC>` puis teste, **sur la même ligne**, un motif 
 ## PIT-S70-006 — Un écart transmis par un agent qui n'a pas ouvert de navigateur est une HYPOTHÈSE, pas un constat
 La vague 1 du S70 a livré une liste de 4 « écarts visuels connus », que le lead a recopiée telle quelle dans le briefing de la vague 2 comme checklist d'entrée. La vérification mesurée en a **réfuté 2** : le « double filet » header/aperçu (filets réellement distants de **207 px** en clair, 187 px en sombre) et l'« amputation du corps défilant » (le bandeau occupe 29,6 % de 700 px, il reste 418 px). Les deux venaient d'une lecture de code, pas d'une observation. Prévention : étiqueter explicitement la provenance de chaque écart transmis entre vagues (`mesuré` vs `déduit du code`) — un agent qui n'a pas rendu la page ne peut produire que des hypothèses, et les propager comme des faits fait perdre du temps à la vague suivante.
 
+
+## PIT-S71-001 — Un inventaire fourni par un énoncé (surfaces, occurrences) est un point de départ, jamais le périmètre
+Deux occurrences au S71. (1) #495 : « les 3 surfaces d'édition `EventDrawer` / `TimelineEditHost` / `ConflictDialog` », affirmé par l'issue, par le `done.md` du S70 et par 2 blocs de commentaires d'`EventEditForm.tsx` — **deux des trois ne montent pas `EventEditForm`** ; un `grep -rn "<EventEditForm"` (2 s) réfute l'énoncé et divise le périmètre par 3. (2) #496 : le briefing nommait 2 renvois `BR-*` fautifs, le repo en portait **4**. Prévention : grepper l'inventaire sur le code AVANT d'agir, et classer chaque occurrence RECIBLÉ / INTACT — la trace du tri prouve qu'on n'a ratissé ni trop large ni trop court. Même famille que [[PIT-S70-001]] et [[upstream-blocker-verdict-expires]] : un énoncé recopié n'acquiert pas de vérité par répétition. (Sprint 71 #495 #496)
+
+
+## PIT-S71-002 — RTK ne fait pas que tronquer l'affichage : il CORROMPT des sorties qui servent de données
+Extension mesurée au S71 de [[rtk-git-diff-empty-output]] et [[BUG-S70-002]] (portée plus large qu'écrite). (1) `rtk proxy git diff > f` a produit un **patch inapplicable** (#134) : `git add -p` étant par ailleurs indisponible, le plumbing git est resté le seul chemin sûr. (2) `grep -oE` sur `br-events.md` a rendu une liste d'identifiants **amputée de BR-EVE-010** (#496) — choisir un id « libre » dessus aurait réutilisé un id OCCUPÉ ; `rtk proxy grep` a rétabli la liste. Prévention : toute sortie qui sert de DONNÉE (patch, liste d'identifiants, comptage) passe par `rtk proxy` ET se recoupe par une seconde commande. (Sprint 71 #134 #496)
+
+
+## PIT-S71-003 — Chrome renvoie `color(srgb ...)` et non `rgb()` pour un fond issu de `color-mix` : le parseur naïf SURESTIME le contraste
+Vérification navigateur S71 : l'instrument de mesure ne matchait que `rgb(...)`, n'a donc pas reconnu le fond composite et a lu le mauvais fond — ratio **surestimé de +0,18** (citron, thème clair). Une passe a11y menée avec cet outil peut déclarer conforme ce qui ne l'est pas, sans rien signaler. Prévention : accepter `color(srgb r g b)` autant que `rgb()`/`oklch()`, et faire **échouer explicitement** le parseur sur un format inconnu plutôt que retomber sur un ancêtre. Cousin de [[PIT-S58-001]] (mauvais élément) et [[PIT-S70-004]] (sonde silencieusement décalée) : ici l'élément est bon, c'est le FORMAT qui trahit. (Sprint 71, vérif navigateur)
+
+
+## PIT-S71-005 — Un `trap EXIT` de restauration à chemin RELATIF ment : il annonce `[restored]` sur un fichier encore muté
+Script de mutation testing (#495) : `trap restore EXIT`, puis la suite Playwright lancée depuis `frontend/` via un `cd`. Le trap s'exécute dans le cwd **final** → `FileNotFoundError` sur le chemin relatif, fichier source resté **muté** dans un working tree partagé par 3 autres agents — et le script a rendu `exit 0` en affichant `[restored]`. Prévention : chemins **absolus** dans tout trap de restauration, et vérifier la restauration par un `grep -c` du motif attendu, jamais par la sortie du script. (Sprint 71 #495)
+
+
+## PIT-S71-006 — Compter les tests d'un pack coverage par `grep -c '@Test'` est faux dès qu'il existe un `@ParameterizedTest`
+Une méthode `@ParameterizedTest` compte pour 1 déclaration et N exécutions (`PasswordPolicyTest` : 4 déclarées / **29 exécutées**). Au S71, la reprise des compteurs de `coverage-auth.md` depuis surefire a corrigé **7 écarts** (total 155 → 172) et exhumé une **classe fantôme inexistante à HEAD** (`JwtServiceSecretValidationTest`, renommée depuis N sprints) : un compteur faux survit indéfiniment parce que rien ne le confronte au réel. Prévention : compter depuis `target/surefire-reports/*.txt` (`Tests run:`), jamais depuis les annotations, et consigner la méthode en tête de pack. (Sprint 71, cycle de correction)
+
+
+## PIT-S71-007 — Un plancher de contraste ne se cherche pas par dichotomie : le prédicat n'est pas monotone
+Le long du chemin couleur→encre du thème, la luminance peut **traverser** celle du fond (couleur quasi noire en thème sombre) : le ratio descend jusqu'à 1,00:1 avant de remonter. Une recherche binaire converge donc vers un faux plancher. Prévention : balayage **linéaire** du paramètre de mélange, et vérification du ratio sur le hex **arrondi** effectivement rendu, pas sur la valeur flottante intermédiaire. (Sprint 71 #497)
+
+
+## PIT-S71-008 — Normaliser la casse d'un hex sur le chemin « déjà conforme » fait passer une identité pour une modification
+Une fonction de plancher qui `toLowerCase()` sa sortie avant même de décider qu'il n'y a rien à corriger renvoie une valeur ≠ de l'entrée : style inline recalculé à chaque frappe, `toBe` faussement rouge, diff bruyant. Prévention : court-circuiter (`return input`) sur le chemin conforme **avant** toute normalisation de format. (Sprint 71 #497)
+
+
+## PIT-S71-010 — Indexer ses seuls hunks dans un working tree partagé : plumbing git, jamais le working tree
+`UserControllerTest.java` était édité en parallèle par #134 et #148. `git add -p` est indisponible (mode non interactif) et le diff redirigé est corrompu ([[PIT-S71-002]]). Recette : `git cat-file -p HEAD:<path>` → reconstruction du contenu voulu → `git hash-object -w` → `git update-index --cacheinfo` : l'index reçoit la version voulue et **le working tree n'est jamais touché**, donc le WIP du voisin reste intact. Complément de [[sprint-parallel-commits-shared-worktree]]. (Sprint 71 #134)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

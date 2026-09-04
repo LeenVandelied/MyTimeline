@@ -106,7 +106,7 @@ class AuthControllerErrorContractTest {
         when(userService.findDomainUserByUsername("alice")).thenReturn(Optional.of(existing));
 
         String body = "{\"name\":\"Alice Martin\",\"username\":\"alice\","
-                + "\"email\":\"alice@example.com\",\"password\":\"secret6\"}";
+                + "\"email\":\"alice@example.com\",\"password\":\"Secret60\"}";
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -123,7 +123,7 @@ class AuthControllerErrorContractTest {
         when(passwordEncoder.encode(anyString())).thenReturn("hashed");
 
         String body = "{\"name\":\"Bob Martin\",\"username\":\"bob\","
-                + "\"email\":\"bob@example.com\",\"password\":\"secret6\"}";
+                + "\"email\":\"bob@example.com\",\"password\":\"Secret60\"}";
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

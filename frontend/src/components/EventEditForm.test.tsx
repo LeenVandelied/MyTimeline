@@ -756,3 +756,37 @@ describe('EventEditForm — libellé « Aperçu » selon le chemin de rendu', ()
     }
   })
 })
+
+/**
+ * #495 — CAS PARTICULIER `ConflictDialog`. L'issue le compte parmi les « 3 surfaces
+ * d'édition » à épingler ; c'est une erreur d'inventaire : `ConflictDialog` ne MONTE
+ * pas ce formulaire, il est rendu PAR lui (`EventEditForm.tsx`, `<ConflictDialog>` en
+ * fin de composant) et n'affiche qu'un diff champ par champ — il n'a aucun aperçu à
+ * épingler et ne peut pas en héberger un sans devenir son propre parent.
+ *
+ * Ce qui RESTE à verrouiller, et que ce test verrouille : quand un parent épingle
+ * l'aperçu ET qu'un 409 ouvre le dialog de conflit, l'aperçu ne doit ni se dupliquer
+ * ni migrer dans le dialog. Le portail Radix du dialog est un frère du portail
+ * d'aperçu — une régression ici produirait deux `event-form-preview` et casserait les
+ * sélecteurs des E2E existants.
+ */
+describe('EventEditForm — #495 aperçu épinglé + ConflictDialog ouvert (409)', () => {
+  it('un 409 ouvre le dialog SANS dupliquer ni déplacer l’aperçu épinglé', async () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    try {
+      setup({ previewPortalNode: host, submitState: 'conflict' })
+
+      const conflict = await screen.findByTestId('event-form-conflict')
+      const preview = screen.getByTestId('event-form-preview')
+
+      expect(host).toContainElement(preview)
+      expect(conflict).not.toContainElement(preview)
+      expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
+      // Le libellé suit son aperçu : il ne reste rien dans le dialog de conflit.
+      expect(conflict).not.toHaveTextContent('products.details.preview')
+    } finally {
+      host.remove()
+    }
+  })
+})

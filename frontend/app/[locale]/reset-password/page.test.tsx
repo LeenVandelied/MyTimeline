@@ -58,14 +58,14 @@ describe('ResetPasswordPage', () => {
     const user = userEvent.setup()
     render(<ResetPasswordPage params={params} />)
 
-    await user.type(screen.getByTestId('reset-password'), 'Secret1')
-    await user.type(screen.getByTestId('reset-confirm-password'), 'Secret1')
+    await user.type(screen.getByTestId('reset-password'), 'Secret12')
+    await user.type(screen.getByTestId('reset-confirm-password'), 'Secret12')
     await user.click(screen.getByTestId('reset-submit'))
 
     await waitFor(() => {
       expect(screen.getByTestId('reset-success')).toBeInTheDocument()
     })
-    expect(resetPasswordMock).toHaveBeenCalledWith('valid-token', 'Secret1')
+    expect(resetPasswordMock).toHaveBeenCalledWith('valid-token', 'Secret12')
     expect(screen.getByTestId('reset-go-login')).toBeInTheDocument()
   })
 
@@ -74,8 +74,8 @@ describe('ResetPasswordPage', () => {
     const user = userEvent.setup()
     render(<ResetPasswordPage params={params} />)
 
-    await user.type(screen.getByTestId('reset-password'), 'Secret1')
-    await user.type(screen.getByTestId('reset-confirm-password'), 'Secret1')
+    await user.type(screen.getByTestId('reset-password'), 'Secret12')
+    await user.type(screen.getByTestId('reset-confirm-password'), 'Secret12')
     await user.click(screen.getByTestId('reset-submit'))
 
     await waitFor(() => {

@@ -12,7 +12,8 @@ import { z } from 'zod'
  *    les messages d'erreur doivent être traduits (next-intl `useTranslations()`).
  *
  * Contraintes alignées BR-AUT-003 (br-auth) : username 3..20, email valide,
- * password ≥ 6. Les DTOs backend sont `{username,password}` (login),
+ * et une POLITIQUE DE MOT DE PASSE UNIQUE (#148) — voir `PASSWORD_POLICY`
+ * ci-dessous. Les DTOs backend sont `{username,password}` (login),
  * `{name,username,email,password}` (register), `{email}` (forgot),
  * `{token,newPassword}` (reset, contrat #49).
  */
@@ -21,7 +22,52 @@ import { z } from 'zod'
 type Translate = (key: string) => string
 
 /* ---------------------------------------------------------------------------
-   Login (BR-AUT-004)
+   Politique de mot de passe (BR-AUT-003) — #148
+   --------------------------------------------------------------------------- */
+
+/**
+ * #148 — Réplique EXACTE de la politique serveur : `@StrongPassword`
+ * (`backend/.../application/validation/StrongPasswordValidator.java`).
+ * Le backend est la source de vérité ; ces valeurs n'existent ici que pour
+ * afficher l'erreur avant l'aller-retour réseau. Toute divergence recrée le bug
+ * d'origine (un mot de passe accepté à un endroit, refusé à un autre).
+ */
+export const PASSWORD_POLICY = {
+  minLength: 8,
+  maxLength: 100,
+  uppercase: /[A-Z]/,
+  digit: /[0-9]/,
+} as const
+
+/**
+ * Applique la politique à un champ mot de passe. Utilisé par TOUS les
+ * formulaires de création/modification (register, reset, change-password) —
+ * jamais par le login, cf. `createLoginSchema`.
+ */
+const passwordField = (t: Translate) =>
+  z
+    .string()
+    .min(PASSWORD_POLICY.minLength, { message: t('validation.password.min') })
+    .max(PASSWORD_POLICY.maxLength, { message: t('validation.password.max') })
+    .regex(PASSWORD_POLICY.uppercase, { message: t('validation.password.uppercase') })
+    .regex(PASSWORD_POLICY.digit, { message: t('validation.password.number') })
+
+/** Variante sans i18n, pour les schémas « bruts » de contrat (parsing service). */
+const rawPasswordField = () =>
+  z
+    .string()
+    .min(PASSWORD_POLICY.minLength)
+    .max(PASSWORD_POLICY.maxLength)
+    .regex(PASSWORD_POLICY.uppercase)
+    .regex(PASSWORD_POLICY.digit)
+
+/* ---------------------------------------------------------------------------
+   Login (BR-AUT-004) — DÉLIBÉRÉMENT HORS de la politique #148.
+   Un compte créé avant le durcissement a un mot de passe à 6 caractères : le
+   contraindre ici le verrouillerait AVANT même l'appel réseau. Le backend est
+   cohérent (`AuthRequest` ne porte ni min ni règle de complexité). D'où la clé
+   de message dédiée `validation.password.loginMin` : le formulaire de login ne
+   doit pas annoncer « 8 caractères » alors qu'il en accepte 6.
    --------------------------------------------------------------------------- */
 
 export const LoginSchema = z.object({
@@ -34,13 +80,14 @@ export type LoginData = z.infer<typeof LoginSchema>
 export const createLoginSchema = (t: Translate) =>
   z.object({
     username: z.string().min(3, { message: t('validation.username.min') }),
-    password: z.string().min(6, { message: t('validation.password.min') }),
+    password: z.string().min(6, { message: t('validation.password.loginMin') }),
   })
 
 export type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>
 
 /* ---------------------------------------------------------------------------
-   Register (BR-AUT-003) — username 3..20, email valide, password ≥ 6.
+   Register (BR-AUT-003) — username 3..20, email valide, mot de passe conforme
+   à `PASSWORD_POLICY` (#148 : ≥ 8, une majuscule, un chiffre).
    `name` ≠ `username` : champs distincts (cf. fix #40 / A11).
    --------------------------------------------------------------------------- */
 
@@ -48,14 +95,15 @@ export const RegisterSchema = z.object({
   name: z.string().min(3).max(20),
   username: z.string().min(3).max(20),
   email: z.string().email(),
-  password: z.string().min(6),
+  password: rawPasswordField(),
 })
 
 export type RegisterData = z.infer<typeof RegisterSchema>
 
 /**
- * Variante formulaire : ajoute `confirmPassword` (UX, non envoyé au backend) +
- * contraintes de complexité (majuscule/chiffre) déjà présentes dans l'UI.
+ * Variante formulaire : ajoute `confirmPassword` (UX, non envoyé au backend).
+ * Le mot de passe passe par `passwordField` — la MÊME règle que reset et
+ * change-password, et que le backend (#148).
  */
 export const createRegisterFormSchema = (t: Translate) =>
   z
@@ -69,11 +117,7 @@ export const createRegisterFormSchema = (t: Translate) =>
         .min(3, { message: t('validation.username.min') })
         .max(20, { message: t('validation.username.max') }),
       email: z.string().email({ message: t('validation.email.invalid') }),
-      password: z
-        .string()
-        .min(6, { message: t('validation.password.min') })
-        .regex(/[A-Z]/, { message: t('validation.password.uppercase') })
-        .regex(/[0-9]/, { message: t('validation.password.number') }),
+      password: passwordField(t),
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -105,22 +149,24 @@ export const createForgotPasswordSchema = (t: Translate) =>
 
 export const ResetPasswordSchema = z.object({
   token: z.string().min(1),
-  newPassword: z.string().min(6),
+  newPassword: rawPasswordField(),
 })
 
 export type ResetPasswordData = z.infer<typeof ResetPasswordSchema>
 
 /**
  * Schéma formulaire : `newPassword` + confirmation (le token est hors formulaire).
- * Contrainte alignée sur le register ET le backend (`ResetPasswordRequest` =
- * min 6, BR-AUT-003) : PAS d'exigence majuscule/chiffre ici, sinon le form reset
- * serait plus strict que l'inscription (un compte `abcdef` ne pourrait pas se
- * réinitialiser). Cf. pit-auth : le client ne doit pas surcontraindre le contrat backend.
+ * #148 — alignement sur la politique UNIQUE : register, reset et change-password
+ * appliquent désormais `passwordField`, et le backend (`@StrongPassword` sur
+ * `RegisterRequest` / `ResetPasswordRequest` / `ChangePasswordRequest`) tranche
+ * à l'identique. Le client ne surcontraint donc plus le contrat backend — il le
+ * réplique. Un compte historique en `abcdef` PEUT toujours se réinitialiser : il
+ * choisit simplement un mot de passe conforme, et son login n'est pas durci.
  */
 export const createResetPasswordFormSchema = (t: Translate) =>
   z
     .object({
-      newPassword: z.string().min(6, { message: t('validation.password.min') }),
+      newPassword: passwordField(t),
       confirmPassword: z.string(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {

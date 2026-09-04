@@ -49,8 +49,8 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByTestId('register-email'), 'alice@example.com')
   await user.type(screen.getByTestId('register-name'), 'Alice')
   await user.type(screen.getByTestId('register-username'), 'alice')
-  await user.type(screen.getByTestId('register-password'), 'Secret1')
-  await user.type(screen.getByTestId('register-confirm-password'), 'Secret1')
+  await user.type(screen.getByTestId('register-password'), 'Secret12')
+  await user.type(screen.getByTestId('register-confirm-password'), 'Secret12')
 }
 
 describe('RegisterPage', () => {

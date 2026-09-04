@@ -135,7 +135,7 @@ class AuthControllerDevProfileCookieTest {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"alice\",\"password\":\"secret6\"}"))
+                        .content("{\"username\":\"alice\",\"password\":\"Secret60\"}"))
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists("jwt"))
                 // app.cookie.secure=false (application-dev.properties #99)

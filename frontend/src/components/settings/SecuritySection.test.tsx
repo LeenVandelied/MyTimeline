@@ -49,14 +49,14 @@ describe('SecuritySection — changement de mot de passe', () => {
     changePasswordMutate.mockResolvedValue(undefined)
     render(<SecuritySection />)
     fireEvent.change(screen.getByTestId('password-old'), { target: { value: 'oldpass' } })
-    fireEvent.change(screen.getByTestId('password-new'), { target: { value: 'newpass1' } })
-    fireEvent.change(screen.getByTestId('password-confirm'), { target: { value: 'newpass1' } })
+    fireEvent.change(screen.getByTestId('password-new'), { target: { value: 'Newpass1' } })
+    fireEvent.change(screen.getByTestId('password-confirm'), { target: { value: 'Newpass1' } })
     fireEvent.click(screen.getByTestId('password-submit'))
 
     await waitFor(() =>
       expect(changePasswordMutate).toHaveBeenCalledWith({
         oldPassword: 'oldpass',
-        newPassword: 'newpass1',
+        newPassword: 'Newpass1',
       }),
     )
   })
@@ -64,7 +64,7 @@ describe('SecuritySection — changement de mot de passe', () => {
   it('bloque si la confirmation ne correspond pas', async () => {
     render(<SecuritySection />)
     fireEvent.change(screen.getByTestId('password-old'), { target: { value: 'oldpass' } })
-    fireEvent.change(screen.getByTestId('password-new'), { target: { value: 'newpass1' } })
+    fireEvent.change(screen.getByTestId('password-new'), { target: { value: 'Newpass1' } })
     fireEvent.change(screen.getByTestId('password-confirm'), { target: { value: 'different' } })
     fireEvent.click(screen.getByTestId('password-submit'))
 
@@ -80,8 +80,8 @@ describe('SecuritySection — changement de mot de passe', () => {
 
     render(<SecuritySection />)
     fireEvent.change(screen.getByTestId('password-old'), { target: { value: 'oldpass' } })
-    fireEvent.change(screen.getByTestId('password-new'), { target: { value: 'newpass1' } })
-    fireEvent.change(screen.getByTestId('password-confirm'), { target: { value: 'newpass1' } })
+    fireEvent.change(screen.getByTestId('password-new'), { target: { value: 'Newpass1' } })
+    fireEvent.change(screen.getByTestId('password-confirm'), { target: { value: 'Newpass1' } })
     fireEvent.click(screen.getByTestId('password-submit'))
 
     await waitFor(() =>

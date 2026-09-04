@@ -67,7 +67,7 @@ class PasswordResetTokenPurgeSchedulerIntegrationTest extends AbstractPostgresIn
             user.setName("PurgeTest");
             user.setUsername(username);
             user.setEmail(username + "@example.test");
-            user.setPassword(passwordEncoder.encode("secret6"));
+            user.setPassword(passwordEncoder.encode("Secret60"));
             user.setRole("ROLE_USER");
             em.persist(user);
             em.flush();

@@ -65,7 +65,7 @@ class PasswordResetEndpointsIntegrationTest extends AbstractPostgresIntegrationT
      */
     @Test
     void resetPassword_unknownToken_noAuth_returns400() throws Exception {
-        String body = "{\"token\":\"" + UUID.randomUUID() + "\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"token\":\"" + UUID.randomUUID() + "\",\"newPassword\":\"NewSecret1\"}";
 
         mockMvc.perform(post("/api/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +81,7 @@ class PasswordResetEndpointsIntegrationTest extends AbstractPostgresIntegrationT
      */
     @Test
     void resetPassword_malformedToken_returns400() throws Exception {
-        String body = "{\"token\":\"not-a-uuid\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"token\":\"not-a-uuid\",\"newPassword\":\"NewSecret1\"}";
 
         mockMvc.perform(post("/api/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +90,7 @@ class PasswordResetEndpointsIntegrationTest extends AbstractPostgresIntegrationT
     }
 
     /**
-     * reset-password avec newPassword trop court (<6) -> 400 via @Valid (BR-AUT-003).
+     * reset-password avec newPassword hors politique (<8 caractères) -> 400 via @Valid (BR-AUT-003).
      */
     @Test
     void resetPassword_shortPassword_returns400() throws Exception {

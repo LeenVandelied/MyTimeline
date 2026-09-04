@@ -71,8 +71,30 @@
    (< 3:1, WCAG 1.4.11) et date du fantôme **3.59:1** en clair (< 4.5:1, WCAG
    1.4.3). Sans l'opacité : **3.15:1** et **5.52:1**. L'identité colorée du
    fantôme est intacte (le contour reste peint par `--mt-evt`). */
-.mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt, var(--color-rule-emphasis)); color:var(--color-ink-muted); box-shadow:none;}
+/* #497 — PLANCHER DE LISIBILITÉ (WCAG 1.4.11, 3:1) sur les DEUX traits peints
+   dans la couleur choisie par l'utilisateur : ce contour et le connecteur
+   pointillé (`.mt-evt-connector` ci-dessous). Mesuré au S70 (#325) : citron en
+   clair 2.07:1, quasi-noir en sombre 1.02:1 — le trait n'existait plus.
+   `--mt-evt-outline` / `--mt-evt-outline-dark` sont l'API : couleur de
+   l'événement MÉLANGÉE PROGRESSIVEMENT vers l'encre du thème jusqu'à franchir
+   le seuil, calculée par `lib/color.ts:outlineFloorVars` et posée en style
+   inline par `EventPreviewTimeline.tsx`. Les deux thèmes sont calculés côté JS
+   et c'est LE CSS qui tranche : un `useTheme()` rendrait la passe SSR sans
+   plancher, et le thème sombre n'a pas le même pire cas que le clair.
+   Le FOND à 8 % reste peint par `--mt-evt` BRUT : l'identité colorée de
+   l'événement n'est pas planchée, seul le trait qui porte l'objet l'est.
+   Sans ces variables (tout consommateur autre que l'aperçu — il n'y en a aucun
+   à ce jour, cf. #325) la chaîne de repli est EXACTEMENT celle d'avant #497. */
+.mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt-outline, var(--mt-evt, var(--color-rule-emphasis))); color:var(--color-ink-muted); box-shadow:none;}
+.dark .mt-evt--draft, [data-theme="dark"] .mt-evt--draft{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
 .mt-evt--archived{opacity:.45; filter:grayscale(.5);}
+/* Connecteur pointillé entre occurrences (aperçu du formulaire). Était peint
+   en style INLINE par `EventPreviewTimeline.tsx` (`borderColor: color`) : une
+   valeur inline ne peut pas être commutée par thème, d'où cette classe. Le
+   repli `--color-rule-emphasis` est le tier FONCTIONNEL arbitré par #352 —
+   inchangé, c'est bien la couleur planchée qui s'y substitue quand elle existe. */
+.mt-evt-connector{border-top:2px dashed var(--mt-evt-outline, var(--color-rule-emphasis));}
+.dark .mt-evt-connector, [data-theme="dark"] .mt-evt-connector{border-top-color:var(--mt-evt-outline-dark, var(--color-rule-emphasis));}
 /* preview (form live preview): non-interactive bars — drop the click affordance
    (`cursor:pointer` + hover brightness) inherited from `.mt-evt`. */
 .mt-evt--preview{cursor:default;}

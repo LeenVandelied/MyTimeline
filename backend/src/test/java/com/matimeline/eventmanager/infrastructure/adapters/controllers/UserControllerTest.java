@@ -129,6 +129,12 @@ class UserControllerTest {
 
     // ----- BR-AUT-001 : unicité username -----
 
+    /**
+     * #134 — le STATUT reste 409 (contrat frontend inchangé : ProfileSection.tsx
+     * discrimine sur {@code error.response?.status === 409}), mais le CORPS ne doit
+     * plus confirmer l'existence d'un compte tiers : code générique "conflict",
+     * strictement identique au 409 de {@code AuthController.register}.
+     */
     @Test
     void patchMe_returns409_whenUsernameTakenByAnotherUser() throws Exception {
         stubAuthenticatedCaller();
@@ -142,9 +148,43 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("username already taken"));
+                .andExpect(jsonPath("$.error").value(ErrorCode.CONFLICT.getCode()));
 
         verify(userService, never()).updateUser(any(User.class));
+    }
+
+    /**
+     * #134 — non-régression anti-énumération : aucun mot du corps ne doit décrire la
+     * CAUSE du conflit. Une simple égalité sur "conflict" (test ci-dessus) laisserait
+     * passer un futur enrichissement du body ({@code message}, {@code field}...) qui
+     * réintroduirait l'oracle. On assert donc aussi l'ABSENCE des marqueurs, et
+     * l'absence du username sondé — qui est la donnée que l'attaquant cherche à
+     * confirmer.
+     */
+    @Test
+    void patchMe_conflictBody_leaksNoUsernameExistenceHint() throws Exception {
+        stubAuthenticatedCaller();
+        User other = new User(UUID.randomUUID(), "Bob", "bob", HASH, "ROLE_USER", "bob@example.com");
+        when(userService.findDomainUserByUsername("bob")).thenReturn(Optional.of(other));
+
+        String body = "{\"name\":\"Alice\",\"username\":\"bob\",\"email\":\"alice@example.com\"}";
+
+        String responseBody = mockMvc.perform(patch("/api/me")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse().getContentAsString();
+
+        String lower = responseBody.toLowerCase(java.util.Locale.ROOT);
+        org.junit.jupiter.api.Assertions.assertFalse(lower.contains("taken"),
+                "le corps ne doit pas dire que le username est pris : " + responseBody);
+        org.junit.jupiter.api.Assertions.assertFalse(lower.contains("username"),
+                "le corps ne doit pas nommer le champ en cause : " + responseBody);
+        org.junit.jupiter.api.Assertions.assertFalse(lower.contains("exist"),
+                "le corps ne doit pas évoquer l'existence d'un compte : " + responseBody);
+        org.junit.jupiter.api.Assertions.assertFalse(lower.contains("bob"),
+                "le corps ne doit pas renvoyer le username sondé : " + responseBody);
     }
 
     @Test
@@ -167,9 +207,9 @@ class UserControllerTest {
         // A8/DIP : la vérif du hash vit dans le port. Le contrôleur délègue ;
         // l'échec remonte en InvalidCredentialsException -> 400 via GlobalExceptionHandler.
         doThrow(new InvalidCredentialsException())
-                .when(userService).changePassword(eq(caller), eq("wrongold"), eq("newsecret"));
+                .when(userService).changePassword(eq(caller), eq("wrongold"), eq("NewSecret1"));
 
-        String body = "{\"oldPassword\":\"wrongold\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"oldPassword\":\"wrongold\",\"newPassword\":\"NewSecret1\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
@@ -184,9 +224,9 @@ class UserControllerTest {
     @Test
     void changePassword_returns204_andDelegatesToPort_onSuccess() throws Exception {
         stubAuthenticatedCaller();
-        doNothing().when(userService).changePassword(eq(caller), eq("rightold"), eq("newsecret"));
+        doNothing().when(userService).changePassword(eq(caller), eq("RightOld1"), eq("NewSecret1"));
 
-        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"newsecret\"}";
+        String body = "{\"oldPassword\":\"RightOld1\",\"newPassword\":\"NewSecret1\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
@@ -194,7 +234,7 @@ class UserControllerTest {
                         .content(body))
                 .andExpect(status().isNoContent());
 
-        verify(userService).changePassword(eq(caller), eq("rightold"), eq("newsecret"));
+        verify(userService).changePassword(eq(caller), eq("RightOld1"), eq("NewSecret1"));
     }
 
     @Test
@@ -202,9 +242,9 @@ class UserControllerTest {
         stubAuthenticatedCaller();
         // Review PR #132 : new == old (après validation BCrypt de l'ancien) -> 400.
         doThrow(new SamePasswordException())
-                .when(userService).changePassword(eq(caller), eq("rightold"), eq("rightold"));
+                .when(userService).changePassword(eq(caller), eq("RightOld1"), eq("RightOld1"));
 
-        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"rightold\"}";
+        String body = "{\"oldPassword\":\"RightOld1\",\"newPassword\":\"RightOld1\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
@@ -218,8 +258,8 @@ class UserControllerTest {
 
     @Test
     void changePassword_returns400_whenNewPasswordTooShort() throws Exception {
-        // newPassword < 6 -> @Valid -> 400
-        String body = "{\"oldPassword\":\"rightold\",\"newPassword\":\"abc\"}";
+        // newPassword hors politique BR-AUT-003 (<8, ni majuscule ni chiffre) -> @Valid -> 400
+        String body = "{\"oldPassword\":\"RightOld1\",\"newPassword\":\"abc\"}";
 
         mockMvc.perform(post("/api/me/change-password")
                         .cookie(new Cookie("jwt", TOKEN))
