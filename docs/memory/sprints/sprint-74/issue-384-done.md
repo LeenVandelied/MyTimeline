@@ -96,10 +96,13 @@ ne reproduit sans réécriture ; et `.testimonial-card` suit déjà ce modèle.
 - **RECOMMAND_UI_DESIGN : non.** Aucune valeur visuelle n'est changée par rapport à l'intention :
   l'issue énonce −10 px comme la cible, le correctif la restaure sans toucher aux tokens ni à la
   charte.
-- **RECOMMAND_SECURITY : non.** Aucune donnée, aucun endpoint, aucun état d'auth — 1 attribut
-  `className` et des commentaires CSS.
-- **RECOMMAND_DB_EXPERT / RECOMMAND_TEST_RUNNER : non.** Aucune migration ni BR touchée ; la
-  suite ciblée tourne en quelques secondes.
+- Pas de RECOMMAND_SECURITY car aucune donnée, aucun endpoint, aucun état d'auth n'est touché —
+  1 attribut `className` et des commentaires CSS. Confirmé côté CI : `security` et `secret-scan`
+  au vert sur la PR #523.
+- Pas de RECOMMAND_DB_EXPERT car aucune migration, aucun schéma, aucune BR.
+- Pas de RECOMMAND_TEST_RUNNER car le périmètre testable tient en une suite ciblée de quelques
+  secondes ; la suite complète a de toute façon été exécutée par le lead (1187/1187 unitaires,
+  E2E vert en CI).
 
 ## Absorbé / follow-ups
 

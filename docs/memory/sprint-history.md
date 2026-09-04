@@ -4587,4 +4587,24 @@ rogné par `overflow`.
   « 0 NO-OP » ne prouve rien). Les 4 défauts ont été reconstatés dans le code à `455862f` —
   détail dans chaque `briefing-<N>.md`, section « État réel du code ».
 
-**Status :** En cours
+**Commits :** 19 (dont 4 correctifs d'issue, 1 correctif de locators E2E, 1 retournement de
+remède, 1 suite de review)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 2 MINEUR (tous RÉSOLUS, commit `6060019`)
+**Specialists :** `ui-design` sur #342 (APPROUVÉ SOUS RÉSERVE, réserve levée) — cf.
+`sprints/sprint-74/specialists-ui-design.md`
+**Tests :** unitaires frontend 1187/1187 · `npm run build` exit 0 · E2E 257 passés en local
+(1 échec environnemental) · **CI PR #523 : 7/7 checks verts, `e2e` compris**
+**PR :** #523 (`sprint/74` → `dev`)
+
+**Faits marquants :**
+- **3 énoncés sur 4 étaient faux ou périmés**, et les 3 ont été redressés par constat dans le
+  code : #343 visait un import déplacé depuis #413 ET s'auto-contredisait (le token
+  `--ease-quart` ne vaut pas la courbe qu'il remplace) ; #417 nommait le mauvais composant pour
+  sa zone B et citait des lignes inexistantes ; #342 prescrivait un pattern non transposable.
+- **Le briefing du lead a relayé une de ces erreurs** (#417 zone B) — c'est le fullstack-dev qui
+  l'a réfutée en vérifiant dans le `.tsx` plutôt qu'en appliquant le CSS nommé.
+- **Le remède de #417 zone A a été retourné après mesure** : l'`outline-offset` négatif prescrit
+  faisait croiser le trait et l'icône (bouton 16,5 px, icône 14 px). Remplacé par le déclippage
+  du groupe, aligné sur ce que #226 faisait déjà en mobile.
+
+**Status :** Terminé côté développement — PR #523 ouverte et verte, en attente de `/sprint end 74`

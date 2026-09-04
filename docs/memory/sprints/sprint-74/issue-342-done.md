@@ -75,10 +75,14 @@ tout passage à `asChild`, et corriger en sélecteur composé.
 
 ## Recommandations suite
 
-- **RECOMMAND_TEST_RUNNER** : oui — `landing-mobile-menu.spec.ts` à rejouer après le correctif
-  de locators (job CI `e2e` requis).
-- **RECOMMAND_UI_DESIGN** : oui, léger — la conversion `asChild` déplace le porteur des
-  utilitaires de surface/encre ; ratios non re-mesurés (cf. « NON vérifié »).
+- Pas de RECOMMAND_TEST_RUNNER résiduel car le signal est **clos** : `landing-mobile-menu.spec.ts`
+  a été rejouée après le correctif de locators, deux fois et au vert — run local complet du lead
+  (257 passés, spec aux positions 89/267 light et 91/267 dark) puis job `e2e` de la CI sur la
+  PR #523 (vert, 8 min 47). Aucun subagent `test-runner` n'a été spawné : la note mémoire
+  déconseille cette délégation sur ce dépôt (4 faux « E2E impossible » rendus par des
+  `test-runner` successifs, dont un au S73).
+- **RECOMMAND_UI_DESIGN** : traité — spawn `ui-design`, verdict APPROUVÉ SOUS RÉSERVE, réserve
+  ensuite **levée**. Détail dans `specialists-ui-design.md`.
 - **Pas de RECOMMAND_SECURITY** : aucun changement d'auth, de données personnelles ni d'appel
   réseau — correction purement structurelle du DOM.
 - **Pas de RECOMMAND_DB_EXPERT** : aucune BR, aucune migration, aucun accès backend.
