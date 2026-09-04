@@ -94,4 +94,69 @@ d'accuser l'auth ou le rate-limit.**
 - **Aucune recommandation bloquante pour le merge** : les deux critères d'acceptation du
   Sprint 73 sont **tenus au navigateur**.
 
+
+---
+
+## ⚠ RÉGRESSION CAUSÉE PAR CETTE ABSORPTION — corrigée (`0954412`)
+
+Cette sonde a **cassé la CI**. À consigner sans euphémisme : le sprint a introduit une
+régression E2E via ses propres tests.
+
+**Mécanisme.** La sonde seedait, sur le compte **partagé** `PROD`, des produits dont le nom
+est un seul mot de 40–64 caractères — et `seedProduct` ne nettoyait rien, donc la donnée
+persistait. `sprint-62-select-focus-indicator.spec.ts` utilise le **même** compte et ouvre le
+`<Select>` produit du `NewEventDrawer` : le popover s'élargissait et le point échantillonné
+(x ≈ 412,6) sortait du viewport 390 px. 2 tests rouges, projet `firefox`.
+
+**Cause confirmée en base, pas déduite :** 8 lignes `products` `archived=false`,
+`length(name)=64`, nom `Antidisestablishmentarianismelectroencephalographie<timestamp>`,
+appartenant à des users `pr*`. Reproduction de l'échec CI en local sur la base sans le
+correctif : **256 / 2 / 9**, mêmes 2 tests, même erreur de géométrie.
+
+**Piste écartée avec preuve :** l'ajout à `pixel.ts` est purement additif à partir de la
+**ligne 661**, après les lignes 405/510/511 de la pile d'échec, et ne supprime rien.
+
+### Correctif
+- `deleteProduct` dans `frontend/e2e/support/products.ts` — route **vérifiée** dans
+  `ProductController.java:135` : `DELETE /api/users/{userId}/products/{productId}` → **204**
+  (soft delete BR-PRO-007 ; `@SQLRestriction("archived = false")` suffit à dépolluer).
+- Branché sur un `test.afterEach` **inconditionnel** (inventaire rempli AVANT le `goto`),
+  chaque suppression isolée en `try/catch` pour ne jamais faire rougir un test vert.
+- **Catégorie délibérément non supprimée**, après vérification : `DELETE /api/categories/{id}`
+  répond **409** même une fois le produit supprimé (le soft delete conserve la FK
+  `products.category_id`). Le helper `deleteCategory` a été écrit puis **retiré** — chemin
+  mort qui warnait à chaque run.
+- `sprint-62-...spec.ts` **n'a pas été touché** : affaiblir un test existant pour couvrir un
+  défaut introduit ailleurs aurait été le mauvais correctif.
+
+### Défaut latent corrigé au passage
+Nom de catégorie via `unique('S73')` au lieu de `S73 ${Date.now()}` :
+`uq_categories_owner_name` est `UNIQUE(owner, name)` et le compte est partagé — à
+`workers: 2`, deux tests seedaient dans la même milliseconde. Confirmé dans les logs backend
+(`duplicate key value violates unique constraint`), **remonté en 500**, donc facile à
+diagnostiquer à tort comme « backend cassé ».
+
+### Purge locale
+8 + 2 produits `Antidisestablishmentarianism%` passés `archived=true` (même sémantique que
+l'API, `UPDATE` réversible, aucun `DELETE` physique). Plus long nom restant : 38 car., avec
+espace, donc sécable.
+
+### Vérification
+- `--project=firefox` : **15/15**, trois fois de suite
+- sonde S73 seule : **10/10**, deux fois, 0 warning de nettoyage
+- suite complète aux **paramètres CI exacts** (`--workers=1 --retries=2`) :
+  **258 passed / 0 failed / 9 skipped / 0 flaky**
+
+### Réserve à ne pas masquer
+Sans retry (`--retries=0`), deux runs complets ont montré les mêmes 2 tests `sprint-62:551`
+en **timeout 30 s** (`waiting for [role="option"][data-highlighted]`) — **mode d'échec
+DIFFÉRENT** de l'erreur de géométrie, jamais reproduit en isolation (3 runs firefox verts) et
+absent du run aux paramètres CI. Corrélation observée mais **non prouvée** : en suite complète
+le compte `PROD` porte 81 produits visibles contre 6 en run isolé. La variable n'a pas été
+isolée. L'erreur de géométrie, elle, a **0 occurrence** sur tous les runs avec le correctif.
+
+La fenêtre de pollution n'est **fermée** qu'à `workers: 1` (la CI). En local à `workers: 2`
+elle est réduite à la durée d'un test, pas supprimée — la fermer exigerait un compte dédié,
+donc un `register` de plus (budget déjà au plafond 5/min/IP).
+
 STATUS: COMPLETED
