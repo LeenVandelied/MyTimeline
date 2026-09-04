@@ -4555,3 +4555,86 @@ Ratio discard : **0 %** sur 12 items.
 - Le mot `[MISSING]` employé en prose dans l'artefact d'audit aurait déclenché le garde-fou
   bloquant de la Phase 9 (grep littéral). Reformulé.
 
+
+---
+
+## Sprint 74 — 2026-09-04 (En cours — « Landing & focus polish »)
+
+**Objectif :** quatre finitions frontend XS, toutes `epic:design` / `priority:P3`, sur des
+fichiers strictement disjoints — accessibilité du sélecteur de langue, cohérence motion du
+DS + scope CSS de la landing, double lévitation des cartes Fonctionnalités, contour de focus
+rogné par `overflow`.
+
+**Milestone GitHub :** #75 (« Sprint 74 »)
+**Issues (4) :** #342 (XS), #343 (XS), #384 (XS), #417 (XS) — toutes `size:XS`, `epic:design`,
+`priority:P3`, `frontend`
+**Vagues prévues :** V1 = #342 + #343 + #384 + #417 en parallèle (fichiers strictement disjoints)
+**Migrations Flyway :** aucune
+**BR impactées :** aucune (les 4 issues déclarent « Aucune »)
+**Dépend de :** aucune
+
+**Écarts de procédure assumés (à lire avant tout diagnostic) :**
+- **Aucun plan `/sprint plan` n'existait.** Le milestone #75 et le label `sprint-74` avaient été
+  créés côté GitHub, mais ni entrée `sprint-history.md`, ni `docs/memory/sprints/sprint-74/architect-plans.md`
+  sur `dev` ni sur aucune branche `claude/*`. Les vagues ci-dessus ont donc été dérivées par le
+  lead à partir de la matrice de fichiers (recon directe du code), pas d'un rapport architect.
+  Les briefings ne portent pas de section « Plan d'implémentation (architect) ».
+- **Le worktree de départ était sur la mauvaise base.** `claude/sprint-74-start-f9aacf` pointait
+  sur `main` (`d8b4f53`), branche divergente qui ne contient ni `docs/`, ni `.ai-env/`, ni
+  `.claude/hooks/`, ni `scripts/`. `sprint/74` a été recréée depuis `origin/dev` (`455862f`).
+  Toute session qui repart de `main` pour ce projet travaille à l'aveugle.
+- **Vérification NO-OP faite à la main**, pas via `check-issue-state.sh` (cf. mémoire :
+  « 0 NO-OP » ne prouve rien). Les 4 défauts ont été reconstatés dans le code à `455862f` —
+  détail dans chaque `briefing-<N>.md`, section « État réel du code ».
+
+**Commits :** 19 (dont 4 correctifs d'issue, 1 correctif de locators E2E, 1 retournement de
+remède, 1 suite de review)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 2 MINEUR (tous RÉSOLUS, commit `6060019`)
+**Specialists :** `ui-design` sur #342 (APPROUVÉ SOUS RÉSERVE, réserve levée) — cf.
+`sprints/sprint-74/specialists-ui-design.md`
+**Tests :** unitaires frontend 1187/1187 · `npm run build` exit 0 · E2E 257 passés en local
+(1 échec environnemental) · **CI PR #523 : 7/7 checks verts, `e2e` compris**
+**PR :** #523 (`sprint/74` → `dev`)
+
+**Faits marquants :**
+- **3 énoncés sur 4 étaient faux ou périmés**, et les 3 ont été redressés par constat dans le
+  code : #343 visait un import déplacé depuis #413 ET s'auto-contredisait (le token
+  `--ease-quart` ne vaut pas la courbe qu'il remplace) ; #417 nommait le mauvais composant pour
+  sa zone B et citait des lignes inexistantes ; #342 prescrivait un pattern non transposable.
+- **Le briefing du lead a relayé une de ces erreurs** (#417 zone B) — c'est le fullstack-dev qui
+  l'a réfutée en vérifiant dans le `.tsx` plutôt qu'en appliquant le CSS nommé.
+- **Le remède de #417 zone A a été retourné après mesure** : l'`outline-offset` négatif prescrit
+  faisait croiser le trait et l'icône (bouton 16,5 px, icône 14 px). Remplacé par le déclippage
+  du groupe, aligné sur ce que #226 faisait déjà en mobile.
+
+**Nouveaux pitfalls / décisions / patterns :** `PIT-S74-001` à `-007`, `DEC-S74-001`/`-002`,
+`PAT-S74-001` à `-004` — consolidés dans `pitfalls.md` / `decisions.md` / `patterns.md`,
+classifiés dans `pit-classification.tsv`, packs `pit-*` régénérés (`gen-pit-packs.sh --check`
+au vert).
+
+**Absorbé en cours (XS) :** 2 découvertes intégrées —
+  - #343 : en-tête de `hero-timeline.css` corrigé (il annonçait deux imports inexistants)
+  - #384 : retrait de la classe `transform` nue (morte en Tailwind v4 sur cet élément)
+
+**Follow-ups arbitrés (Phase 4 triage) — 3 items, tous XS :**
+  - commentaire périmé de `dropdown-menu.tsx:26-30` [XS | frontend/doc] (issue-342)
+    → **absorbé** (`ba61234`). Diff volontairement limité aux 6 lignes de commentaire : un
+    `prettier --write` aurait reformaté 60 lignes sans rapport dans un fichier shadcn déjà non
+    conforme sur `origin/dev` — vérifié, et la CI ne lance pas prettier.
+  - commentaire d'ancrage de `landing-mobile-menu.spec.ts:265-270` [XS | frontend/e2e]
+    (issue-342) → **discard**. Il est à 5 lignes du commentaire #342 ajouté aux l. 318-319, qui
+    explique déjà la structure à un seul nœud : le lecteur a la réponse sous les yeux.
+  - `.mt-tab` (onglets produits, `core.css:260`, `outline-offset:3px`), contour potentiellement
+    rogné et offset négatif exclu par le soulignement d'accent [XS | frontend/a11y] (issue-417)
+    → **issue #524** créée, backlog libre (pas de milestone, choix du développeur).
+
+  Ratio discard : 1/3. Les fullstack-dev n'ont pas sur-signalé — 2 des 3 items viennent d'eux et
+  le 3ᵉ est le seul qui pouvait cacher un vrai défaut d'accessibilité.
+
+**Découverte tardive (Phase 4) :** `PIT-S74-008` — RTK a rendu « All files formatted correctly »
+sur un `prettier --check` que la sortie brute donnait ROUGE, deux appels successifs sur le même
+fichier intact donnant les deux verdicts opposés. Évité de justesse : imputer à son propre edit
+une non-conformité pré-existante et reformater 60 lignes de shadcn.
+
+**Status :** Terminé côté développement — PR #523 verte, en attente du triage des follow-ups et
+du merge (`/sprint end 74`)

@@ -838,6 +838,38 @@ Deux absorptions lancées en parallèle dans le même worktree ont chacune déma
 ## PIT-S73-009 — `Date.now()` comme suffixe de nom sur un compte E2E partagé collisionne, et remonte en 500
 `uq_categories_owner_name` est `UNIQUE(owner, name)` : à `workers: 2`, deux tests seedant « S73 <timestamp> » dans la même milliseconde violent la contrainte. Le backend remonte **500** (pas 409) → diagnostiqué à tort comme « backend cassé ». Prévention : toujours le helper `unique()` de `frontend/e2e/support/products.ts`. (Sprint 73)
 
+
+## PIT-S74-001 — Tailwind 4 : `translate-*` et `transform` sont deux propriétés que la cascade ne départage jamais
+`hover:-translate-y-2` compile vers la propriété CSS **`translate`** ; `transform`, `rotate-*`, `skew-*` compilent vers **`transform`**. Une utilitaire de translation et un `transform: translateY()` de feuille ne sont donc PAS en conflit : elles se **composent**. `.feature-card` cumulait −8px (utilitaire) et −10px (feuille) = **−18px** au survol, −13px sous 768px, sans que `tsc`, `vitest` ni la CI ne voient quoi que ce soit. Prévention : chercher la PAIRE (utilitaire `translate-*` / déclaration `transform` sur le même élément) avant de conclure à un conflit de cascade — layeriser n'y changerait rien. (Sprint 74 #384)
+
+
+## PIT-S74-002 — Un `overflow-x-auto` Tailwind fait calculer `overflow-y` à `auto` : le contour de focus est rogné en HAUT et en BAS
+Symptôme « 1 côté peint sur 4 » qui n'a rien d'horizontal. Le tablist de `SettingsShell` (`overflow-x-auto`) rognait les traits haut/bas du contour `@layer base` (`outline-offset:2px`, donc 4px hors de la boîte de défilement) plus le trait gauche du premier onglet. Contre-épreuve faite au navigateur : en rétablissant l'offset positif, **3 côtés sur 4** redeviennent rognés. Prévention : tout conteneur `overflow-*-auto` clippe sur les DEUX axes ; vérifier la géométrie du contour, pas seulement l'axe nommé. (Sprint 74 #417)
+
+
+## PIT-S74-003 — Un énoncé d'issue peut nommer le mauvais composant, et la recon du lead peut relayer l'erreur
+« Le tablist des réglages » de #417 ne passe PAS par `.mt-tab` du DS : `SettingsShell.tsx` utilise des utilitaires Tailwind bruts, `.mt-tab` sert aux onglets **produits**. Appliquer le CSS nommé par l'issue aurait corrigé un composant voisin en laissant le vrai défaut. Le briefing du lead relayait l'erreur — une recon de lead ne l'immunise pas, elle déplace l'erreur d'un cran. Au S74, **3 énoncés sur 4** portaient une piste technique fausse ou périmée (chemin vidé par un sprint antérieur, lignes inexistantes, pattern non transposable). Prévention : `grep` du sélecteur **dans le `.tsx`** avant d'éditer le CSS nommé, et dire explicitement au subagent que le briefing peut se tromper. (Sprint 74 #417 / #342 / #343)
+
+
+## PIT-S74-004 — Un correctif d'imbrication a11y casse en silence tout locator E2E écrit en DESCENDANCE
+Sortir `<DropdownMenuItem>` de son `<Link>` fait que l'ancre EST le `menuitem` : un seul nœud porte `href` et `role`. Les locators `a[href="…"] [role="menuitem"]` (avec espace) passent alors à **0 élément** — invisible à `tsc` et `vitest`, rouge seulement en E2E. Prévention : `grep -rn 'role="…"\|a\[href=' e2e/` avant tout passage à `asChild`, et corriger en sélecteur composé (`a[href][role="menuitem"]`). Corollaire d'orchestration : si `frontend/e2e/` est hors du périmètre d'écriture du subagent (vague parallèle), il rendra `PARTIAL` — c'est le comportement voulu, au lead d'appliquer la retouche. (Sprint 74 #342)
+
+
+## PIT-S74-005 — « Utiliser le token du DS » et « rendu inchangé » ne sont compatibles que si le token vaut la valeur littérale
+#343 exigeait les deux. Or `--ease-quart` vaut `cubic-bezier(0.32, 0.72, 0, 1)` et non la Material `(0.4, 0, 0.2, 1)` qu'il remplaçait : **+0,54 de progression à 25 % de la course**, l'animation change de caractère. L'issue s'auto-contredisait sans que personne ne l'ait vu à la rédaction. Prévention : comparer la VALEUR du token à la littérale AVANT de coder ; si elles diffèrent, remonter l'arbitrage au développeur avec les chiffres plutôt que de choisir en silence. (Sprint 74 #343)
+
+
+## PIT-S74-006 — Un `outline-offset` négatif ne tient pas dans un contrôle plus court que son contenu
+Remède prescrit par #417 pour `.mt-zoom__btn` : bouton **30 × 16,5px**, icône **14 × 14px**. Un trait inset de 2px ne laisse que **8,5px** libres → le contour CROISE l'icône en haut, en bas et à gauche. Aucune valeur n'y échappe (`-1px` → 10,5px, `0` → 12,5px, toujours < 14px) : le facteur limitant est la HAUTEUR du contrôle, pas la valeur de l'offset. Prévention : avant de choisir un offset négatif, poser l'arithmétique `hauteur − 2×(|offset| + épaisseur)` contre la taille du contenu. Si elle est négative, le remède est ailleurs (déclipper le conteneur, cf. [[DEC-S74-002]]). (Sprint 74 #417)
+
+
+## PIT-S74-007 — `warn-test-delegation.sh` bloque aussi le heredoc qui CONTIENT la commande, et l'échec se déguise en lancement réussi
+Le hook scanne le texte de l'appel `Bash` : écrire un script avec un heredoc contenant `npx playwright test` est bloqué comme si on la lançait. Conséquence vécue au S74 : le heredoc bloqué n'a pas créé le `.sh`, l'appel suivant a lancé `nohup` dessus et a rendu un `pid=` rassurant — **10 minutes d'attente sur un run qui n'existait pas**. Prévention : préfixer de `SKIP_DELEGATION=1` **l'appel qui écrit le script**, pas seulement celui qui l'exécute, et vérifier `ls -l` du script avant tout `nohup`. (Sprint 74)
+
+
+## PIT-S74-008 — RTK transforme un `prettier --check` ROUGE en « All files formatted correctly »
+Famille [[PIT-S62-010]], élargie au S74. `npx prettier --check <fichier>` a rendu « Prettier: All files formatted correctly » (résumé RTK) là où la sortie brute disait `[warn] … Code style issues found`. Deux appels successifs sur le MÊME fichier intact ont donné les deux verdicts opposés — le filtre ne s'applique pas de façon déterministe. Conséquence évitée de justesse : croire que son propre edit avait cassé le formatage et lancer un `prettier --write` qui reformate 60 lignes sans rapport dans un fichier shadcn jamais conforme. Prévention : `rtk proxy npx prettier --check …` pour tout verdict de formatage, et **vérifier l'état de la BASE** (`git show origin/dev:<path>`) avant d'imputer une non-conformité à son propre diff. Note connexe : la CI de ce dépôt ne lance PAS prettier (aucune occurrence dans `.github/workflows/`) — le formatage n'est pas un gate. (Sprint 74)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

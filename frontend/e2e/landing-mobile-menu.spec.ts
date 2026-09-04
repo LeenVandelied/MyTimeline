@@ -315,8 +315,13 @@ test.describe('Landing — menu burger (375 px)', () => {
 
         // Ancrage structurel : la locale active est celle dont le lien pointe
         // vers le chemin courant (`/fr`). Aucun libellé en dur.
-        const active = content.locator('a[href="/fr"] [role="menuitem"]')
-        const other = content.locator('a[href="/en"] [role="menuitem"]')
+        //
+        // #342 — sélecteur COMPOSÉ, pas de descendance. Depuis la sortie du
+        // `DropdownMenuItem` hors du `<Link>` (`<DropdownMenuItem asChild>`),
+        // l'ancre EST le `menuitem` : un seul nœud porte `href` et `role`. Un
+        // `a[href] [role="menuitem"]` (avec espace) y renvoie 0 élément.
+        const active = content.locator('a[href="/fr"][role="menuitem"]')
+        const other = content.locator('a[href="/en"][role="menuitem"]')
         await expect(active).toHaveCount(1)
         await expect(other).toHaveCount(1)
 

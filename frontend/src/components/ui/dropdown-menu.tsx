@@ -24,8 +24,12 @@ import { cn } from "@/lib/utils"
  * POURQUOI `text-popover-foreground` EST POSÉ SUR L'ITEM et pas seulement sur
  * le `Content` — MESURÉ AU NAVIGATEUR, pas déduit. `DropdownMenuContent` porte
  * déjà `text-popover-foreground`, mais c'est une valeur HÉRITÉE : un item
- * enveloppé dans un `<Link>` (cas vivant de `language-selector.tsx`) hérite en
- * réalité du `color` de l'élément `<a>`, soit `--color-accent`. Sur
+ * enveloppé dans un `<Link>` hérite en réalité du `color` de l'élément `<a>`,
+ * soit `--color-accent`. ⚠ L'exemple d'origine (`language-selector.tsx`) N'EST
+ * PLUS un cas vivant depuis #342 (Sprint 74) : l'imbrication y a été inversée en
+ * `<DropdownMenuItem asChild><Link/></DropdownMenuItem>`, l'ancre EST l'item et
+ * porte l'utilitaire. Le mode d'échec décrit reste possible pour tout appelant
+ * qui envelopperait un item — c'est bien ce contre quoi l'utilitaire protège. Sur
  * `accent-soft`, cette encre-là mesurait **3.83:1 en thème clair** — sous les
  * 4.5:1 de WCAG 1.4.3 AA, exactement le ratio du défaut du Sprint 49.
  * ⚠ CE RATIO EST HISTORIQUE : le couple `accent` / `accent-soft` a été porté à

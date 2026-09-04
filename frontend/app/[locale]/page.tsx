@@ -1,3 +1,8 @@
+// #56/#343 — mouvement de la frise du Hero (aucune couleur). Importée ICI, sur la route
+// landing, et NON dans `app/[locale]/layout.tsx` : `HeroTimelineAnimation` n'est rendu que
+// par `HeroSection` <- `HomePage` <- cette page, l'import au layout servait donc la feuille
+// à toutes les routes localisées (login, dashboard, timeline, settings…) pour rien.
+import '../../src/styles/hero-timeline.css'
 import HomePage from '@/components/pages/HomePage'
 
 /**

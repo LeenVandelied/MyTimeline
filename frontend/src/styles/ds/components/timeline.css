@@ -120,10 +120,26 @@
 /* #352 — cadre du GROUPE de zoom (`role="group"`). Ses boutons ont `border:0`
    et `background:var(--color-surface)` sur une toolbar `surface-2` (delta
    ~1.05:1) : ce cadre est la SEULE limite visible du contrôle → fonctionnelle. */
-.mt-zoom{display:inline-flex; align-items:stretch; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md); overflow:hidden;}
+/* #417 — le groupe NE CLIPPE PLUS (`overflow:hidden` retiré), et ce sont les
+   boutons de bord qui portent désormais l'arrondi. POURQUOI : le clip rognait le
+   contour de focus du DS (`@layer base`, `outline-offset:2px`) — ses 4px (2 de
+   décalage + 2 de trait) tombaient hors de la boîte de clip, seuls 1 à 2 côtés
+   étaient peints.
+   POURQUOI PAS un `outline-offset` négatif (piste de l'énoncé de #417, ÉCARTÉE
+   après mesure) : le bouton fait 30×16,5px pour une icône de 14px. Un trait
+   inset de 2px ne laisse que 8,5px libres — l'icône DÉBORDE du trait en haut, en
+   bas et à gauche. Aucune valeur inset ne s'en sort (`-1px` → 10,5px, `0` →
+   12,5px, toujours < 14px) : le problème est la hauteur du bouton, pas la valeur.
+   Le contour du DS peint donc à l'EXTÉRIEUR, sur ses 4 côtés, sans toucher
+   l'icône. Ni `ring-*` ni `outline-none` — DEC-S58-001.
+   C'est exactement le remède déjà appliqué en contexte `.mt-tlm` par #226 (plus
+   bas) : même cause (le clip du groupe), même correctif. */
+.mt-zoom{display:inline-flex; align-items:stretch; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md);}
 .mt-zoom__btn{width:30px; background:var(--color-surface); border:0; color:var(--color-ink); font-family:var(--font-mono); font-size:15px; cursor:pointer; transition:background var(--dur-micro);}
-.mt-zoom__btn:first-child{border-right:1px solid var(--color-rule);}
-.mt-zoom__btn:last-child{border-left:1px solid var(--color-rule);}
+/* Arrondi porté par les boutons de bord : sans lui, le fond de survol carré
+   déborderait de l'arrondi du groupe une fois le clip retiré. */
+.mt-zoom__btn:first-child{border-right:1px solid var(--color-rule); border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
+.mt-zoom__btn:last-child{border-left:1px solid var(--color-rule); border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
 .mt-zoom__btn:hover{background:var(--color-surface-2);}
 .mt-zoom__level{display:flex; align-items:center; padding:0 12px; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-muted); white-space:nowrap;}
 
@@ -387,10 +403,14 @@
    fond hover carré déborderait de l'arrondi). Les 7px libérés côté gauche
    tiennent dans le padding `--space-3` (12px) de la toolbar → aucun re-clip par
    le `overflow:hidden` de `.mt-tlm`. */
+/* #417 — devenue redondante (le groupe est `visible` par défaut depuis #417),
+   conservée comme garde : si quelqu'un rétablissait `overflow:hidden` sur
+   `.mt-zoom`, la hitbox 44px de #226 serait de nouveau rognée ici. */
 .mt-tlm .mt-zoom{overflow:visible;}
 .mt-tlm .mt-zoom__btn{position:relative; min-height:44px;}
-.mt-tlm .mt-zoom__btn:first-child{border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
-.mt-tlm .mt-zoom__btn:last-child{border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
+/* Les deux surcharges de rayon que #226 posait ici ont été SUPPRIMÉES par #417 : depuis le
+   déclippage, `.mt-zoom__btn:first-child`/`:last-child` portent l'arrondi pour tout le monde
+   (plus haut, mêmes valeurs). Les garder ferait chercher une différence qui n'existe pas. */
 .mt-tlm .mt-zoom__btn::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
 
 /* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll

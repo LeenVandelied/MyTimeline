@@ -259,6 +259,20 @@
 .mt-tab[aria-selected="true"]{color:var(--color-ink); border-bottom-color:var(--color-accent);}
 .mt-tab:focus-visible{outline:2px solid var(--color-focus); outline-offset:3px;}
 
+/* #417 — TABLIST DÉFILANTE (`SettingsShell`, conteneur `overflow-x-auto`).
+   `overflow-x:auto` fait calculer `overflow-y` à `auto` : la boîte de défilement
+   rogne les traits HAUT et BAS du contour du DS (`@layer base`,
+   `outline-offset:2px`), ainsi que le trait GAUCHE du premier onglet. Contour
+   ramené à l'intérieur de l'onglet, même remède que `.mt-tlv__group-head`
+   (`timeline.css`). Cible large — 44px de haut, 12px de padding latéral — donc
+   le trait ne recouvre ni l'icône ni le libellé. Pas de `ring-*` (DEC-S58-001).
+   ⚠ NE PAS étendre à `.mt-tab` ci-dessus : padding latéral de 1px (le trait
+   tomberait SUR le libellé) et `border-bottom` d'accent sur l'onglet sélectionné
+   (le trait recouvrirait le soulignement, donc l'état sélectionné) — c'est
+   l'objection du cas `<tr>` de `../a11y-audit.md` §8bis. Ici ni l'un ni l'autre :
+   l'onglet des réglages est une pastille `rounded-md` sans bordure. */
+.mt-tablist-scroll > [role='tab']:focus-visible{outline-offset:-2px;}
+
 /* ---------------- Toast ---------------- */
 .mt-toast{
   display:flex; gap:11px; align-items:flex-start; background:var(--color-surface);

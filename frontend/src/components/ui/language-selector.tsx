@@ -109,6 +109,48 @@ const languages = [
  * et `de`. C'est le seul contenu textuel du bouton (l'icône `Globe` n'en a
  * aucun). Elle passe par next-intl : `common.navigation.changeLanguage`,
  * renseignée dans les 4 locales.
+ *
+ * ----------------------------------------------------------------------------
+ * IMBRICATION D'INTERACTIFS — #342 (Sprint 74), même famille que #295 (S48).
+ *
+ * Les items de locale étaient rendus `<Link><DropdownMenuItem/></Link>`. Radix
+ * pose `role="menuitem"` + un `tabindex` géré en roving sur l'item ; imbriqué
+ * dans l'ancre de `next/link`, cela faisait DEUX éléments interactifs empilés
+ * par langue — HTML invalide, et l'ancre restait un point d'arrêt de tabulation
+ * NATIF en plus du roving de Radix.
+ *
+ * PATTERN RETENU : `<DropdownMenuItem asChild><Link/></DropdownMenuItem>`, soit
+ * l'INVERSION de l'imbrication. C'est la transposition exacte de #295
+ * (`<Button asChild><Link/></Button>`, cf. `landing/HeroSection.tsx`) : le
+ * primitif Radix ne rend plus de nœud propre, son `Slot` reporte classes, `role`
+ * et handlers SUR le `<a>`. Un seul élément, donc une seule cible de tabulation.
+ * `<Button asChild>` littéral, cité par l'énoncé de l'issue, ne s'appliquait pas
+ * ici : il n'y a pas de `Button` dans le menu, et un `Button` ne saurait pas
+ * porter la sémantique `menuitem`.
+ *
+ * ⚠ PIT-S48-005 — une conversion `asChild` remonte sur le `<a>` des propriétés
+ * qui ne s'appliquaient qu'à l'élément interne. Les deux régressions de #295 ont
+ * été auditées ici :
+ *  1. CASCADE. `ds/tokens/base.css:126` pose `a { color: var(--color-accent) }`.
+ *     C'est ce qui avait rendu les CTA bleu sur bleu en S48 — mais la règle est
+ *     LAYERISÉE dans `@layer base` depuis `842a46c`, et l'encre de l'item
+ *     (`text-popover-foreground` du wrapper, `text-accent-ink` posée ici sur la
+ *     locale active) vit dans `@layer utilities`, qui la bat. C'est exactement
+ *     l'indépendance que visait le pavé de `ui/dropdown-menu.tsx` : l'encre est
+ *     posée EN UTILITAIRE sur l'item, donc elle suit le `<a>` fusionné.
+ *  2. TAILLE MINIMALE FLEX. Le défaut de #295 exigeait que l'élément fusionné
+ *     soit un FLEX ITEM en `overflow` non-`visible`. Ici le `<a>` fusionné est
+ *     un flex CONTENEUR de niveau bloc, seul enfant en flux de
+ *     `DropdownMenuContent` (bloc `p-1`) : aucune rangée ne le comprime.
+ *  Le `className="w-full"` que portait le `<Link>` a été retiré : l'ancre était
+ *  alors `display:inline`, où `width` NE S'APPLIQUE PAS — la classe était inerte.
+ *  Le `<a>` fusionné porte désormais `flex` (via l'item) et remplit sa ligne.
+ *
+ * ⚠ NON VÉRIFIÉ AU NAVIGATEUR par l'agent de #342 (interdiction de `next dev` /
+ * `next build`, working tree partagé). Les ratios et la cible tactile documentés
+ * plus haut n'ont PAS été re-mesurés après cette conversion. jsdom ne résout ni
+ * la précédence des `@layer` ni aucune mise en page (PIT-S48-005) : le garde-fou
+ * `language-selector.a11y.test.tsx` ne prouve QUE la structure du DOM.
  */
 export function LanguageSelector() {
   const pathname = usePathname() || '';
@@ -132,21 +174,17 @@ export function LanguageSelector() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-surface">
         {languages.map((language) => (
-          <Link
+          <DropdownMenuItem
             key={language.code}
-            href={`/${language.code}${pathnameWithoutLocale}`}
-            className="w-full"
+            asChild
+            className={
+              locale === language.code
+                ? 'bg-accent text-accent-ink font-medium focus:bg-accent-hover'
+                : 'hover:bg-surface-2'
+            }
           >
-            <DropdownMenuItem
-              className={
-                locale === language.code
-                  ? 'bg-accent text-accent-ink font-medium focus:bg-accent-hover'
-                  : 'hover:bg-surface-2'
-              }
-            >
-              {language.name}
-            </DropdownMenuItem>
-          </Link>
+            <Link href={`/${language.code}${pathnameWithoutLocale}`}>{language.name}</Link>
+          </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
