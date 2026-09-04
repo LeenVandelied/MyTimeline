@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { LegalDisclaimer } from '@/components/legal/legal-disclaimer';
+import { LegalTableOfContents } from '@/components/legal/legal-table-of-contents';
+import { PRIVACY_SECTIONS, formatLegalDate, shouldShowLegalDisclaimer } from '@/lib/legal-pages';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const locale = (await params).locale;
@@ -19,6 +22,10 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
   const locale = (await params).locale;
   
   const t = await getTranslations({ locale, namespace: 'legal' });
+  // Les libellés « Retour » vivent depuis toujours dans `common.navigation`
+  // (`back`, `backToHome`), renseignés dans les 4 locales et déjà utilisés
+  // ailleurs — #60 les CÂBLE au lieu de dupliquer deux clés dans `legal`.
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
 
   return (
     <div className="min-h-screen bg-bg text-ink">
@@ -27,14 +34,25 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
           <Link href={`/${locale}`} passHref>
             <Button variant="ghost" className="p-0 mr-4 hover:bg-transparent">
               <ArrowLeft className="h-5 w-5 mr-2" />
-              <span>Retour</span>
+              <span>{tCommon('navigation.back')}</span>
             </Button>
           </Link>
           <h1 className="text-3xl font-bold gradient-text">{t('privacy.title')}</h1>
         </div>
 
+        {shouldShowLegalDisclaimer(locale) && (
+          <LegalDisclaimer>{t('disclaimerOriginalFrench')}</LegalDisclaimer>
+        )}
+
+        <LegalTableOfContents
+          sections={PRIVACY_SECTIONS}
+          label={t('tableOfContents')}
+          t={t}
+          testId="privacy-toc"
+        />
+
         <div className="bg-surface rounded-xl p-8 shadow-lg border border-rule mb-8">
-          <section className="mb-8">
+          <section id="introduction" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.introduction.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('privacy.introduction.content')}
@@ -43,7 +61,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="data-collection" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.dataCollection.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.dataCollection.content')}
@@ -57,7 +75,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="data-use" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.dataUse.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.dataUse.content')}
@@ -72,7 +90,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="data-sharing" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.dataSharing.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.dataSharing.content')}
@@ -86,7 +104,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="data-protection" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.dataProtection.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.dataProtection.content')}
@@ -95,7 +113,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="user-rights" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.userRights.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.userRights.content')}
@@ -112,7 +130,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="cookies" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.cookies.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.cookies.content')}
@@ -121,7 +139,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section className="mb-8">
+          <section id="policy-changes" className="mb-8 scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.policyChanges.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.policyChanges.content')}
@@ -130,7 +148,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
           <hr className="border-rule my-6" />
 
-          <section>
+          <section id="contact" className="scroll-mt-24">
             <h2 className="text-xl font-semibold mb-4">{t('privacy.contact.title')}</h2>
             <p className="text-ink-muted mb-4">
               {t('privacy.contact.content')}
@@ -139,12 +157,12 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
         </div>
 
         <div className="text-center">
-          <p className="text-ink-muted text-sm">
-            {t('privacy.lastUpdated')}: 01/06/2023
+          <p className="text-ink-muted text-sm" data-testid="legal-last-updated">
+            {t('privacy.lastUpdated')}: {formatLegalDate(locale)}
           </p>
           <Link href={`/${locale}`} passHref>
             <Button variant="outline" className="mt-4 border-rule hover:bg-surface">
-              Retour à l&apos;accueil
+              {tCommon('navigation.backToHome')}
             </Button>
           </Link>
         </div>
@@ -153,4 +171,4 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
       {/* Footer */}
     </div>
   );
-} 
+}
