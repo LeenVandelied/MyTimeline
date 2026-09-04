@@ -61,31 +61,43 @@ interface Swatch {
   readonly name: string
   readonly hex: string
   /**
-   * Les traits PEINTS DANS LA COULEUR DE L'ÉVÉNEMENT (connecteur, contour du
-   * fantôme) sont-ils exigés au seuil WCAG 1.4.11 pour cette couleur ?
+   * #497 — thèmes dans lesquels le trait est attendu **PLANCHÉ**, c'est-à-dire
+   * peint dans une couleur DIFFÉRENTE de celle choisie par l'utilisateur.
    *
-   * `false` = ÉCART CONNU ET MESURÉ, volontairement non corrigé ici (#325) :
-   * ces deux traits reprennent la couleur choisie par l'utilisateur SANS
-   * plancher de lisibilité. Relevé sur ce harnais :
-   *   citron en clair — connecteur **2.20:1**, contour du fantôme **2.07:1** ;
-   *   nuit en sombre  — connecteur **1.02:1**, contour du fantôme **1.02:1**
-   *                     (le trait a la luminance du fond : il n'existe plus).
-   * Poser un plancher change la DOCTRINE COULEUR du DS (#352 a classé ce
-   * pointillé au tier fonctionnel sans jamais mesurer le cas nominal) : c'est
-   * un arbitrage, pas une correction visuelle — d'où un suivi séparé plutôt
-   * qu'une réécriture unilatérale. Les autres éléments du §6 restent exigés
-   * pour ces couleurs : ils ne dépendent pas d'elle, SAUF le libellé de la
-   * barre, dont l'encre est calculée par `contrastInk` et qui doit donc tenir
-   * le seuil pour TOUTE couleur (8.91:1 sur citron, 18.61:1 sur nuit).
+   * Historique. #325 mesurait déjà ces 4 cas mais les EXEMPTAIT du seuil : le
+   * connecteur et le contour du fantôme reprenaient la couleur utilisateur sans
+   * plancher (citron en clair **2.20:1** / **2.07:1** ; quasi-noir en sombre
+   * **1.02:1** / **1.02:1** — le trait avait la luminance du fond). #497 a
+   * tranché la doctrine (mélange progressif vers l'encre du thème jusqu'à 3:1,
+   * `lib/color.ts:outlineFloorVars`) : l'exemption a donc DISPARU, tous les
+   * traits sont exigés à `WCAG_AA_NON_TEXT` pour TOUTE couleur.
+   *
+   * Ce champ ne relâche plus rien — il durcit. Il ancre l'autre moitié de la
+   * doctrine, celle qu'un seuil seul ne sait pas dire : le plancher est
+   * **progressif**, donc une couleur déjà conforme doit ressortir **INTACTE**.
+   * Sans cette assertion, un repli brutal sur un token neutre (ou un mélange
+   * qui sur-corrige) passerait au vert en effaçant l'identité colorée des 12
+   * couleurs de la palette.
    */
-  readonly coloredTraitsMustPass: boolean
+  readonly flooredIn: readonly (typeof SCHEMES)[number][]
 }
 
 const SWATCHES: readonly Swatch[] = [
-  { name: 'cobalt (DEFAULT_COLOR)', hex: '#3B62D4', coloredTraitsMustPass: true },
-  { name: 'citron (la plus claire de la palette)', hex: '#A7B83A', coloredTraitsMustPass: false },
-  { name: 'nuit (couleur libre quasi noire)', hex: '#101318', coloredTraitsMustPass: false },
+  // Cas nominal : conforme dans les deux thèmes AVANT #497 (5.41 / 3.38 sur le
+  // connecteur, 4.83 / 3.18 sur le contour) → doit rester rigoureusement intact.
+  { name: 'cobalt (DEFAULT_COLOR)', hex: '#3B62D4', flooredIn: [] },
+  // Pire cas CLAIR : la plus claire de la palette curatée.
+  { name: 'citron (la plus claire de la palette)', hex: '#A7B83A', flooredIn: ['light'] },
+  // Pire cas SOMBRE : couleur libre quasi noire (le champ couleur est un `input`
+  // texte, toute valeur hexadécimale valide est atteignable).
+  { name: 'nuit (couleur libre quasi noire)', hex: '#101318', flooredIn: ['dark'] },
 ] as const
+
+/** `#RRGGBB` → `rgb(r, g, b)`, la forme rendue par `getComputedStyle`. */
+function toRgbString(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+  return `rgb(${r}, ${g}, ${b})`
+}
 
 /**
  * Ouvre le drawer de création, choisit un produit et met le formulaire dans
@@ -276,20 +288,44 @@ for (const scheme of SCHEMES) {
           `${tag} barre — libellé`,
         )
 
-        // ── CONNECTEUR POINTILLÉ + CONTOUR DU FANTÔME ────────────────────────
-        // Les deux traits sont peints dans la couleur de l'événement : leur
-        // lisibilité en dépend, d'où le drapeau par couleur (cf. `Swatch`).
-        if (swatch.coloredTraitsMustPass) {
-          await expectTraitVisible(
-            page.getByTestId('event-form-preview-connector'),
-            `${tag} connecteur pointillé`,
-            'borderTopColor',
-          )
-          await expectTraitVisible(
-            page.getByTestId('event-form-preview-ghost'),
-            `${tag} fantôme — contour pointillé`,
-            'borderTopColor',
-          )
+        // ── CONNECTEUR POINTILLÉ + CONTOUR DU FANTÔME (#497) ─────────────────
+        // Les deux traits sont peints dans la couleur de l'événement, PLANCHÉE
+        // à 3:1. Exigé pour TOUTE couleur depuis #497 — l'exemption de #325 est
+        // levée, c'est le durcissement demandé par l'issue.
+        const traits = [
+          {
+            locator: page.getByTestId('event-form-preview-connector'),
+            label: `${tag} connecteur pointillé`,
+          },
+          {
+            locator: page.getByTestId('event-form-preview-ghost'),
+            label: `${tag} fantôme — contour pointillé`,
+          },
+        ] as const
+        const isFloored = swatch.flooredIn.includes(scheme)
+        for (const trait of traits) {
+          await expectTraitVisible(trait.locator, trait.label, 'borderTopColor')
+
+          // ORACLE DE MÉCANISME. Le seuil seul ne dit pas COMMENT il est
+          // atteint : un plancher inopérant + un fond qui aurait bougé
+          // passerait aussi. On compare donc la couleur RÉELLEMENT peinte à
+          // celle qui a été saisie — c'est la mesure qui distingue
+          // « le plancher agit » de « le contraste est bon par accident ».
+          const painted = await trait.locator.evaluate((el) => getComputedStyle(el).borderTopColor)
+          if (isFloored) {
+            expect(
+              painted,
+              `${trait.label} : le trait est encore peint dans la couleur BRUTE ` +
+                `${swatch.hex} — le plancher #497 n'a pas été appliqué dans ce thème`,
+            ).not.toBe(toRgbString(swatch.hex))
+          } else {
+            expect(
+              painted,
+              `${trait.label} : couleur déjà conforme AVANT #497, elle doit ressortir ` +
+                `intacte (${swatch.hex}) — un plancher qui sur-corrige efface ` +
+                "l'identité colorée de l'événement",
+            ).toBe(toRgbString(swatch.hex))
+          }
         }
 
         // ── OCCURRENCE FANTÔME — texte ───────────────────────────────────────

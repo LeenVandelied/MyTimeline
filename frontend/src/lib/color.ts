@@ -101,3 +101,175 @@ export function grayscaleHex(hex: string): string {
   const c = y.toString(16).padStart(2, '0')
   return `#${c}${c}${c}`
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   #497 — PLANCHER DE LISIBILITÉ des traits peints dans la COULEUR UTILISATEUR
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Contexte mesuré (#325, S70) : le connecteur pointillé et le contour de
+   l'occurrence fantôme de la mini-frise d'aperçu reprennent la couleur choisie
+   par l'utilisateur SANS aucun plancher. Relevé au navigateur, drawer 1280×700 :
+   citron `#A7B83A` en clair → connecteur **2.20:1**, contour **2.07:1** ;
+   quasi-noir `#101318` en sombre → **1.02:1** des deux côtés (le trait a la
+   luminance du fond : il n'existe plus). Seuil WCAG 1.4.11 = 3:1.
+
+   DOCTRINE ARBITRÉE (#497, S71) — mélange PROGRESSIF de la couleur utilisateur
+   vers l'ENCRE DU THÈME jusqu'à franchir 3:1, et pas plus loin. Pourquoi ce
+   choix plutôt qu'un repli sur un token neutre : le repli neutre efface
+   l'identité colorée de l'événement sur TOUTES les couleurs sous le seuil, y
+   compris celles qui n'en sont qu'à un cheveu. Le mélange progressif garde la
+   teinte reconnaissable quand c'est possible (citron clair → citron sombre,
+   `#A7B83A` → `#8D9B35`) et ne dégrade jusqu'au gris que les couleurs qui n'ont
+   plus de marge (quasi-noir en sombre → `#616468`).
+
+   PÉRIMÈTRE STRICT : ces deux traits, et EUX SEULS. Le plancher n'est PAS
+   appliqué au remplissage de la barre pleine ni au fond à 8 % du fantôme — ce
+   sont des aplats dont l'identité colorée est l'information, et leur encre est
+   déjà calculée par `contrastInk`. Élargir serait un changement de doctrine
+   sans mandat.
+
+   THEME-AWARE : le pire cas n'est pas le même selon le thème (couleur très
+   claire sur fond clair / couleur quasi noire sur fond sombre). On calcule donc
+   les DEUX valeurs et c'est le CSS qui choisit (`.dark`/`[data-theme]`,
+   `ds/components/timeline.css`) — pas un `useTheme()` côté JS, qui rendrait la
+   première passe SSR sans plancher.                                         */
+
+/** Seuil WCAG 1.4.11 — composants non textuels et objets graphiques. */
+export const WCAG_AA_NON_TEXT = 3
+
+/**
+ * Marge ajoutée à la cible interne. Le modèle JS ci-dessous reproduit le
+ * compositage du navigateur, mais pas sa précision : `color-mix()` interpole en
+ * flottant là où l'on quantifie sur 8 bits par canal, et la sonde E2E lit la
+ * couleur *rendue*. Sans marge, une valeur calculée à 3.004:1 peut être relue à
+ * 2.998:1 — un rouge dû à l'arrondi, pas au rendu. La marge est un coussin de
+ * quantification, PAS un relèvement du seuil : le seuil reste 3:1.
+ */
+export const CONTRAST_FLOOR_MARGIN = 0.05
+
+/**
+ * Surfaces réellement peintes derrière ces deux traits, par thème.
+ *
+ * Ce sont des COPIES de `--color-surface` (`ds/tokens/colors.css` l.54 pour
+ * `:root`, l.126 pour `.dark`). Une duplication de token est une dette : elle
+ * est ici inévitable (aucune fonction CSS ne calcule un contraste) et elle est
+ * VERROUILLÉE par un test qui relit `colors.css` et compare — cf.
+ * `color.test.ts` § « les constantes de thème ne divergent pas des tokens ».
+ * Sans ce verrou on retomberait sur PIT-S58-004 (un garde-fou affirmé par un
+ * commentaire, inexistant dans les faits).
+ */
+export const THEME_SURFACE = { light: '#FFFFFF', dark: '#131519' } as const
+
+/** Encres de thème (`--color-ink` : `gray-900` en clair, `#ECEDEF` en sombre). */
+export const THEME_INK = { light: '#16181D', dark: '#ECEDEF' } as const
+
+export type ThemeName = keyof typeof THEME_SURFACE
+
+/** Canaux 0-255 d'un hex `#RGB`/`#RRGGBB`. */
+function channels(hex: string): [number, number, number] {
+  let h = hex.slice(1)
+  if (h.length === 3) {
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('')
+  }
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]
+}
+
+/**
+ * Mélange `from` vers `to` par `weight` (0 → `from`, 1 → `to`), en sRGB
+ * GAMMA-ENCODÉ — c'est-à-dire exactement ce que fait `color-mix(in srgb, …)`
+ * (CSS Color 5 : `srgb` est l'espace encodé, `srgb-linear` serait l'autre).
+ * Interpoler en linéaire ici produirait une couleur différente de celle que le
+ * navigateur peint pour le fond à 8 % de `.mt-evt--draft`, et le plancher
+ * serait calculé contre un fond qui n'existe pas.
+ */
+export function mixHex(from: string, to: string, weight: number): string {
+  if (!HEX_RE.test(from) || !HEX_RE.test(to)) return from
+  const t = Math.min(1, Math.max(0, weight))
+  const a = channels(from)
+  const b = channels(to)
+  const out = a.map((v, i) => {
+    const mixed = Math.round(v * (1 - t) + b[i] * t)
+    return Math.min(255, Math.max(0, mixed)).toString(16).padStart(2, '0')
+  })
+  return `#${out.join('')}`
+}
+
+/**
+ * Plus petit mélange de `color` vers `ink` qui atteint `target` contre
+ * `background`. Renvoie `color` INCHANGÉE si elle est déjà conforme.
+ *
+ * ⚠ Le balayage est LINÉAIRE, pas dichotomique, et c'est délibéré : le
+ * contraste n'est PAS monotone le long du chemin. En thème sombre, une couleur
+ * quasi noire est plus sombre que la surface ; en la tirant vers l'encre claire
+ * la luminance TRAVERSE celle du fond, donc le ratio redescend à 1.00:1 avant
+ * de remonter. Une dichotomie sur un prédicat non monotone rendrait un `t`
+ * arbitraire. 256 pas = la granularité réelle d'un canal 8 bits : chercher plus
+ * fin ne produirait aucune couleur supplémentaire.
+ *
+ * Le ratio est vérifié sur le hex ARRONDI effectivement renvoyé, jamais sur la
+ * valeur flottante intermédiaire — c'est cette couleur-là que le navigateur
+ * peindra et que la sonde E2E relira.
+ */
+export function contrastFloor(
+  color: string,
+  background: string,
+  ink: string,
+  target: number = WCAG_AA_NON_TEXT + CONTRAST_FLOOR_MARGIN,
+): string {
+  if (!HEX_RE.test(color) || !HEX_RE.test(background) || !HEX_RE.test(ink)) return color
+  // Court-circuit du cas conforme : on rend la chaîne D'ORIGINE, pas son
+  // équivalent normalisé par `mixHex`. Sans ça `#3B62D4` ressortirait `#3b62d4`
+  // — même couleur peinte, mais un `toBe(color)` (test comme revue de diff)
+  // croirait à une modification, et le style inline changerait à chaque frappe.
+  if (contrastRatio(color, background) >= target) return color
+  const STEPS = 256
+  for (let i = 1; i <= STEPS; i += 1) {
+    const candidate = mixHex(color, ink, i / STEPS)
+    if (contrastRatio(candidate, background) >= target) return candidate
+  }
+  // Inatteignable avec les tokens du DS (encre vs surface : 16.9:1 en clair,
+  // 14.6:1 en sombre). Filet explicite plutôt qu'un `undefined` silencieux.
+  return ink
+}
+
+/**
+ * Propriétés personnalisées à poser sur un trait peint dans la couleur
+ * utilisateur. Le CSS choisit selon le thème ; l'API est documentée dans
+ * `ds/components/timeline.css` (§ #497).
+ */
+export interface OutlineFloorVars {
+  '--mt-evt-outline': string
+  '--mt-evt-outline-dark': string
+}
+
+/**
+ * Calcule le plancher pour les DEUX thèmes.
+ *
+ * `tintPercent` = part de `color` déjà mélangée dans la surface pour former le
+ * fond RÉELLEMENT peint derrière le trait. Les deux traits de l'aperçu n'ont
+ * pas le même support et n'ont donc pas le même plancher :
+ *   - connecteur : `0` — il flotte sur la lane, premier fond opaque = `surface` ;
+ *   - contour du fantôme : `8` — `.mt-evt--draft` peint sa bordure PAR-DESSUS
+ *     son propre fond `color-mix(… 8%, surface)` (`background-clip: border-box`).
+ * Cette distinction n'est pas cosmétique : elle vaut ~0.6 point de ratio sur le
+ * citron en clair (2.20 vs 2.07 dans les mesures d'origine).
+ *
+ * Renvoie `null` pour une couleur absente ou non hexadécimale → l'appelant
+ * n'émet alors AUCUNE variable et le repli DS (`--color-rule-emphasis`, tier
+ * fonctionnel arbitré par #352) reprend la main.
+ */
+export function outlineFloorVars(
+  color: string | undefined | null,
+  tintPercent = 0,
+): OutlineFloorVars | null {
+  if (!color || !HEX_RE.test(color)) return null
+  const forTheme = (theme: ThemeName): string => {
+    const surface = THEME_SURFACE[theme]
+    const background = tintPercent > 0 ? mixHex(surface, color, tintPercent / 100) : surface
+    return contrastFloor(color, background, THEME_INK[theme])
+  }
+  return { '--mt-evt-outline': forTheme('light'), '--mt-evt-outline-dark': forTheme('dark') }
+}
