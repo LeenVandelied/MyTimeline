@@ -89,6 +89,20 @@ public class UserController {
      * PATCH /api/me — met à jour name/email/username de l'utilisateur courant.
      * BR-AUT-001 : un {@code username} déjà porté par un AUTRE compte -> 409 CONFLICT.
      * BR-AUT-008 : renvoie {@code UserResponse} (jamais le hash).
+     *
+     * <p>#134 — politique anti-énumération de username. Le STATUT reste 409 (contrat
+     * inchangé : {@code ProfileSection.tsx} et {@code register/page.tsx} discriminent
+     * sur le statut HTTP seul, jamais sur le corps). C'est le MESSAGE qui devient
+     * neutre : le corps portait {@code {"error":"username already taken"}}, qui
+     * CONFIRMAIT textuellement l'existence d'un compte tiers. Il porte désormais le
+     * MÊME code générique {@code {"error":"conflict"}} que {@code AuthController.register}
+     * (#288) — corps strictement identique sur les deux surfaces, donc aucun oracle
+     * exploitable dans le body sur l'une et pas l'autre.
+     *
+     * <p>Le 409 lui-même reste un oracle par statut : arbitrage produit assumé (#134,
+     * l'UX de correction inline du champ username le vaut). L'atténuation est le
+     * throttle par IP posé sur {@code PATCH /api/me} dans {@code RateLimitingFilter} —
+     * il borne le DÉBIT d'énumération, il ne la supprime pas.
      */
     @PatchMapping
     public ResponseEntity<?> updateCurrentUser(@Valid @RequestBody UserUpdateRequest request) {
@@ -105,8 +119,10 @@ public class UserController {
         if (!request.getUsername().equals(caller.getUsername())) {
             Optional<User> existing = userService.findDomainUserByUsername(request.getUsername());
             if (existing.isPresent() && !existing.get().getId().equals(caller.getId())) {
+                // #134 : corps NEUTRE, identique au 409 de register (AuthController).
+                // Ne jamais réintroduire ici un libellé du type "username already taken".
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(java.util.Map.of("error", "username already taken"));
+                        .body(java.util.Map.of("error", ErrorCode.CONFLICT.getCode()));
             }
         }
 

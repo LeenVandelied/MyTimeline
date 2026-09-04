@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -309,6 +310,130 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
                             .with(req -> { req.setRemoteAddr(ip); return req; }))
                     .andReturn().getResponse().getStatus();
             assertNotEquals(429, sc, "le re-download /download ne doit jamais être throttlé (requête #" + i + ")");
+        }
+    }
+
+    // ----- #134 : /api/me entre dans la map de rate-limiting -----
+
+    private static final String CHANGE_PASSWORD_BODY =
+            "{\"oldPassword\":\"Secret60\",\"newPassword\":\"Secret61\"}";
+    private static final String PATCH_ME_BODY =
+            "{\"name\":\"Alice\",\"username\":\"someuser\",\"email\":\"alice@example.com\"}";
+
+    /**
+     * #134 : {@code POST /api/me/change-password} vérifie l'ANCIEN mot de passe — oracle de
+     * credentials brute-forçable depuis une session volée, et jusqu'ici HORS de la map (seul
+     * {@code /api/auth/*} y était). Slot strict 5/min/IP : les 5 premières passent (rejetées
+     * plus loin faute de JWT — le filtre court-circuite AVANT l'authz), la 6e depuis la même
+     * IP est 429 + JSON générique, sans stack trace.
+     */
+    @Test
+    void changePassword_sixthWithinWindow_returns429() throws Exception {
+        String ip = "10.3.0.1";
+        for (int i = 1; i <= 5; i++) {
+            int sc = mockMvc.perform(post("/api/me/change-password")
+                            .with(req -> { req.setRemoteAddr(ip); return req; })
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CHANGE_PASSWORD_BODY))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "change-password #" + i + " sous la limite ne doit pas être throttlé");
+        }
+        mockMvc.perform(post("/api/me/change-password")
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CHANGE_PASSWORD_BODY))
+                .andExpect(status().is(429))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("too_many_requests"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("Exception"))));
+    }
+
+    /**
+     * #134 : la fenêtre se réarme. Sans cette assertion, un bucket qui ne se recharge jamais
+     * (429 définitif pour l'IP) passerait le test ci-dessus — un utilisateur légitime serait
+     * verrouillé hors de son changement de mot de passe. Fenêtre avancée par le TimeMeter
+     * contrôlable, jamais par un {@code Thread.sleep}.
+     */
+    @Test
+    void changePassword_afterWindowAdvance_isAllowedAgain() throws Exception {
+        String ip = "10.3.0.2";
+        for (int i = 1; i <= 6; i++) {
+            mockMvc.perform(post("/api/me/change-password")
+                    .with(req -> { req.setRemoteAddr(ip); return req; })
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(CHANGE_PASSWORD_BODY));
+        }
+        clock.advance(Duration.ofMinutes(1).plusSeconds(1));
+
+        int sc = mockMvc.perform(post("/api/me/change-password")
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CHANGE_PASSWORD_BODY))
+                .andReturn().getResponse().getStatus();
+        assertNotEquals(429, sc, "après la fenêtre, le quota change-password doit être rechargé");
+    }
+
+    /**
+     * #134 : {@code PATCH /api/me} renvoie 409 quand le username visé est déjà pris — oracle
+     * d'énumération PAR STATUT, volontairement conservé (le corps, lui, est neutralisé côté
+     * UserController). Le throttle 10/min/IP borne le débit de balayage : la 11e requête de la
+     * même IP dans la fenêtre est 429.
+     */
+    @Test
+    void patchMe_eleventhWithinWindow_returns429() throws Exception {
+        String ip = "10.3.0.3";
+        for (int i = 1; i <= 10; i++) {
+            int sc = mockMvc.perform(patch("/api/me")
+                            .with(req -> { req.setRemoteAddr(ip); return req; })
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(PATCH_ME_BODY))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "PATCH /api/me #" + i + " sous la limite ne doit pas être throttlé");
+        }
+        mockMvc.perform(patch("/api/me")
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PATCH_ME_BODY))
+                .andExpect(status().is(429))
+                .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
+     * #134 : PATCH et POST change-password ont des buckets INDÉPENDANTS (la clé embarque la
+     * méthode ET le chemin). Épuiser change-password ne doit pas verrouiller l'édition de
+     * profil depuis la même IP — sinon le throttle devient un vecteur de DoS entre endpoints.
+     */
+    @Test
+    void changePasswordAndPatchMe_haveIndependentBuckets() throws Exception {
+        String ip = "10.3.0.4";
+        for (int i = 1; i <= 6; i++) {
+            mockMvc.perform(post("/api/me/change-password")
+                    .with(req -> { req.setRemoteAddr(ip); return req; })
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(CHANGE_PASSWORD_BODY));
+        }
+        int sc = mockMvc.perform(patch("/api/me")
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PATCH_ME_BODY))
+                .andReturn().getResponse().getStatus();
+        assertNotEquals(429, sc, "le bucket PATCH /api/me est distinct de celui de change-password");
+    }
+
+    /**
+     * #134 (non-régression) : {@code GET /api/me} est polled par le SPA à chaque navigation.
+     * Il reste DÉLIBÉRÉMENT hors de la map (cf. javadoc de RateLimitingFilter) — le throttler
+     * ne doit pas casser la navigation normale ni pénaliser les utilisateurs derrière un NAT.
+     */
+    @Test
+    void getMe_isNotRateLimited() throws Exception {
+        String ip = "10.3.0.5";
+        for (int i = 1; i <= 30; i++) {
+            int sc = mockMvc.perform(get("/api/me")
+                            .with(req -> { req.setRemoteAddr(ip); return req; }))
+                    .andReturn().getResponse().getStatus();
+            assertNotEquals(429, sc, "GET /api/me ne doit jamais être throttlé (requête #" + i + ")");
         }
     }
 

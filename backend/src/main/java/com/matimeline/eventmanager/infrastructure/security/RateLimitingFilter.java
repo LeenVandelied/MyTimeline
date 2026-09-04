@@ -64,6 +64,23 @@ import jakarta.servlet.http.HttpServletResponse;
  * {@code docs/adr/ADR-003-export-rgpd-async-job.md} (§ Rate-limiting). Because the
  * bucket key is exact-URI based, these two nested paths never match {@link #LIMITS}.
  *
+ * <p><b>Profile endpoints (#134):</b> {@code POST /api/me/change-password} (old-password
+ * oracle — brute-forceable from a stolen session, previously unthrottled) and
+ * {@code PATCH /api/me} (409 on a taken username — username-enumeration oracle by STATUS)
+ * are throttled. The remaining {@code /api/me} routes are DELIBERATELY out of scope: they
+ * act on the caller's own record only (structural ownership from the JWT), expose no
+ * cross-user oracle, and throttling them would only degrade legitimate use:
+ * <ul>
+ *   <li>{@code GET /api/me} and {@code GET /api/me/avatar} — reads polled by the SPA on
+ *       every navigation; a per-IP cap would break normal browsing (and shared-NAT users);</li>
+ *   <li>{@code DELETE /api/me} — terminal, single-shot, guarded by a username re-type;</li>
+ *   <li>{@code DELETE /api/me/avatar} — idempotent no-op reset.</li>
+ * </ul>
+ * {@code POST /api/me/avatar} (multipart upload, 5 MiB cap, magic-byte validation + disk
+ * write) is a genuine resource-exhaustion surface but is NOT covered here — it is out of
+ * the scope of #134 (anti-enumeration + credential brute-force) and is left as a tracked
+ * follow-up rather than silently bundled in.
+ *
  * <p><b>Scope of the limit:</b> buckets live in a {@link ConcurrentHashMap} inside
  * this single JVM, keyed by {@code clientIp + "|" + method + " " + path}. The limits are therefore
  * PER INSTANCE: behind a load balancer with N replicas the effective ceiling is
@@ -83,26 +100,42 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * only (e.g. {@code /api/export} is limited on both POST and GET, while a bare
      * path is otherwise POST-only here).
      */
-    private static final Map<String, Integer> LIMITS = Map.of(
-            "POST /api/auth/login", 10,
-            "POST /api/auth/register", 5,
-            "POST /api/auth/refresh", 20,
+    private static final Map<String, Integer> LIMITS = Map.ofEntries(
+            // Map.ofEntries (et non Map.of) : Map.of plafonne à 10 paires. La map en
+            // comptait 8 avant #134 et en compte 10 après — pile la limite. ofEntries n'a
+            // pas ce plafond : ajouter un futur slot ne demande plus de refactor.
+            Map.entry("POST /api/auth/login", 10),
+            Map.entry("POST /api/auth/register", 5),
+            Map.entry("POST /api/auth/refresh", 20),
             // #49 : forgot-password est une cible d'abus (spam mail / énumération).
             // Throttle strict par IP, cohérent avec le slot reset-password (#33).
-            "POST /api/auth/forgot-password", 5,
-            "POST /api/auth/reset-password", 5,
+            Map.entry("POST /api/auth/forgot-password", 5),
+            Map.entry("POST /api/auth/reset-password", 5),
             // #58 : soumission de job d'export RGPD (POST /api/export) — opération lourde
             // (pool async borné + écriture fichier sur disque, aucun quota). Sans throttle un
             // user authentifié peut spammer les soumissions → épuisement du pool + accumulation
             // de fichiers. Limite basse (5/min/IP) alignée sur les slots coûteux forgot/reset.
-            "POST /api/export", 5,
+            Map.entry("POST /api/export", 5),
             // #265 : export SYNCHRONE inline (GET /api/export?format=json|markdown) — recalcule
             // l'export à chaque appel (requêtes DB User+Product+Category+Event répétées, rendu
             // inline). Vecteur de DoS/consommation CPU-IO par un user authentifié. Même limite
             // basse (5/min/IP) et bucket SÉPARÉ du POST (la clé inclut la méthode). Le polling
             // /job et le re-download /download restent volontairement hors périmètre (cf. javadoc
             // de classe + ADR-003 § Rate-limiting).
-            "GET /api/export", 5
+            Map.entry("GET /api/export", 5),
+            // #134 : POST /api/me/change-password — la vérification de l'ANCIEN mot de passe
+            // est un oracle de credentials. Une session volée (cookie jwt exfiltré) permettait
+            // de deviner l'ancien mot de passe sans AUCUNE contrainte de débit, alors que la
+            // même devinette via POST /api/auth/login est plafonnée à 10/min. Slot strict
+            // (5/min/IP) : un utilisateur légitime change son mot de passe une fois, une erreur
+            // de saisie en ajoute une ou deux — 5 couvre le cas honnête avec de la marge.
+            Map.entry("POST /api/me/change-password", 5),
+            // #134 : PATCH /api/me — le 409 sur username déjà pris reste un oracle PAR STATUT
+            // (arbitrage assumé, cf. javadoc de UserController.updateCurrentUser : le corps est
+            // neutralisé, pas le statut). Le throttle borne le DÉBIT d'énumération : 10/min/IP
+            // rend le balayage d'un dictionnaire de usernames impraticable sans gêner l'édition
+            // de profil (opération rare). Il ne SUPPRIME pas l'oracle.
+            Map.entry("PATCH /api/me", 10)
     );
 
     private static final Duration WINDOW = Duration.ofMinutes(1);
