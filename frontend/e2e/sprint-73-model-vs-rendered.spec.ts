@@ -1,7 +1,14 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
 import { ensureAuthenticated } from './support/auth'
-import { getUserId, openCategoriesTab, seedCategory, seedProduct } from './support/products'
+import {
+  deleteProduct,
+  getUserId,
+  openCategoriesTab,
+  seedCategory,
+  seedProduct,
+  unique,
+} from './support/products'
 import {
   readStable,
   waitForFonts,
@@ -143,12 +150,103 @@ async function readTitleGeometry(h1: Locator): Promise<{
   })
 }
 
-/** Seede un produit nommé `name` et ouvre sa fiche de détail. */
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * DÉPOLLUTION DU COMPTE PARTAGÉ — ce que cette spec doit à toutes les autres
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * LE DÉFAUT QU'ON CORRIGE ICI (régression CI du S73, `6347a28` rouge alors que
+ * `664c575` — même branche, sans cette spec — était vert). La sonde (a) seede,
+ * sur le compte PARTAGÉ `PROD`, un produit dont le nom est un MOT UNIQUE de 64
+ * caractères, insécable par construction. `seedProduct` ne nettoyait rien : ce
+ * produit restait visible de TOUTE spec réutilisant `PROD.storageState` dans le
+ * même run. `sprint-62-select-focus-indicator.spec.ts` en est une : elle ouvre
+ * le `<Select>` produit du `NewEventDrawer`, dont le popover s'élargit alors
+ * pour afficher ce nom. Le point que sa sonde de peinture échantillonne
+ * (x ≈ 412,6) tombait au-delà du viewport mobile de 390 px — « il n'existe
+ * aucun pixel à lire là », sur les deux thèmes.
+ *
+ * Le test lésé mesurait la BONNE chose : ce sont les données laissées derrière
+ * qui étaient fautives. Ce n'est donc pas à lui de s'adapter — c'est à cette
+ * spec-ci de rendre le compte dans l'état où elle l'a trouvé.
+ *
+ * POURQUOI `afterEach` ET PAS UNE SUPPRESSION EN FIN DE `test()`. Une ligne de
+ * nettoyage placée à la fin du corps d'un test n'est JAMAIS atteinte quand une
+ * assertion échoue avant elle — c'est-à-dire précisément le jour où la sonde
+ * rougit et où la pollution serait la plus durable. `afterEach` s'exécute quel
+ * que soit le verdict, et le fixture `page` y est encore ouvert (sa destruction
+ * vient après les hooks).
+ *
+ * POURQUOI LE NETTOYAGE NE PEUT PAS FAIRE ROUGIR UN TEST VERT. Chaque
+ * suppression est isolée : son échec est journalisé (`[S73][cleanup]`) mais
+ * n'est pas relancé. Un nettoyage qui masquerait la vraie cause d'un échec, ou
+ * qui inventerait un échec là où la mesure a réussi, serait un défaut de plus.
+ * L'inventaire est vidé dans tous les cas, pour qu'un test suivant ne réessaie
+ * pas indéfiniment les mêmes ids.
+ *
+ * ⚠ CE QUE ÇA NE COUVRE PAS. La fenêtre de pollution n'est FERMÉE que si les
+ * specs ne se chevauchent pas — c'est le cas en CI (`workers: 1`). En local à
+ * `workers: 2`, une spec tierce peut lire le compte pendant qu'un test d'ici
+ * est en vol : la fenêtre est réduite à la durée d'UN test, pas supprimée. La
+ * suppression du chevauchement demanderait un compte dédié à cette spec, donc
+ * un `register` de plus — budget déjà au plafond (5/min/IP, cf. `accounts.ts`).
+ *
+ * CE QUI EST NETTOYÉ, ET CE QUI NE PEUT PAS L'ÊTRE. Le PRODUIT au nom long est
+ * supprimé — c'est lui, et lui seul, qui causait la régression. La CATÉGORIE
+ * qui le porte est délibérément LAISSÉE, après vérification : `DELETE
+ * /api/categories/{id}` répond **409** (« utilisée par 1 produits ») même une
+ * fois le produit supprimé, parce que BR-PRO-007 archive le produit au lieu de
+ * l'effacer — la clé étrangère `products.category_id` survit, donc la catégorie
+ * reste « en usage » à jamais. La supprimer exigerait un
+ * `reassignToCategoryId`, c'est-à-dire une AUTRE catégorie jetable : on
+ * déplacerait le résidu, on ne le supprimerait pas. Ce résidu est de toute
+ * façon inoffensif pour le défaut traité — un nom issu de `unique('S73')` fait
+ * une vingtaine de caractères ET contient une espace, donc il est sécable : il
+ * n'élargit aucun popover, ce qui est précisément la propriété qui manquait au
+ * nom de produit.
+ */
+
+interface SeededProductFixture {
+  userId: string
+  productId: string
+}
+
+/** Inventaire du test EN COURS, vidé par l'`afterEach` ci-dessous. */
+let seededProducts: SeededProductFixture[] = []
+
+test.afterEach(async ({ page }) => {
+  const pending = seededProducts
+  seededProducts = []
+
+  for (const { userId, productId } of pending) {
+    try {
+      await deleteProduct(page, { userId, productId })
+    } catch (error) {
+      console.warn(`[S73][cleanup] produit ${productId} non supprimé — ${String(error)}`)
+    }
+  }
+})
+
+/**
+ * Seede un produit nommé `name` et ouvre sa fiche de détail.
+ *
+ * Le produit est inscrit à l'inventaire AVANT toute navigation : si le `goto`
+ * ou l'attente de la carte échoue, l'`afterEach` nettoie quand même ce qui a
+ * été créé.
+ */
 async function openProductDetail(page: Page, name: string): Promise<Locator> {
   await ensureAuthenticated(page)
   const userId = await getUserId(page)
-  const category = await seedCategory(page, `S73 ${Date.now()}`)
+  // `unique()` et NON `S73 ${Date.now()}` : `uq_categories_owner_name` est une
+  // contrainte UNIQUE (owner, name) et le compte PROD est partagé. À
+  // `workers: 2`, deux tests de ce fichier peuvent seeder dans la MÊME
+  // milliseconde — mesuré : `duplicate key value violates unique constraint
+  // "uq_categories_owner_name"`, remonté en **500** (pas 409), donc en
+  // « seed catégorie doit renvoyer 201 (obtenu 500) ». Le suffixe aléatoire de
+  // `unique()` existe exactement pour ça.
+  const category = await seedCategory(page, unique('S73'))
   const product = await seedProduct(page, { userId, name, categoryId: category.id })
+  seededProducts.push({ userId, productId: product.id })
   await page.goto(`/fr/products/${product.id}`, { waitUntil: 'domcontentloaded' })
   await expect(page.getByTestId('product-detail-card')).toBeVisible()
   await waitForFonts(page)
