@@ -4232,7 +4232,7 @@ milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PI
 
 ---
 
-## Sprint 71 — 2026-09-04 (En cours — Dette sécurité auth + follow-ups design du S70)
+## Sprint 71 — 2026-09-04 (Terminé — merge PR #498 dans dev — Dette sécurité auth + follow-ups design du S70)
 
 **Objectif :** solder deux dettes de sécurité `epic:auth` (politique de mot de passe, anti-énumération
 username + rate-limit `/api/me`) et les trois follow-ups design arbitrés à la clôture du Sprint 70.
@@ -4263,4 +4263,81 @@ Cohésion faible assumée (2 blocs disjoints : auth backend / design frontend).
 
 **Migrations Flyway :** aucune attendue (prochaine libre : V16)
 
-**Status :** En cours
+**Status :** **Terminé** — PR **#498** (`claude/sprint-71-start-09aa02` → `dev`), 19 commits.
+
+**Issues livrées (5) :** #148, #134 (auth) · #497, #495, #496 (events/design)
+**Vagues exécutées :** V1 = #148 + #134 + #497 + #495 (4 subagents parallèles) | V2 = #496
+**Cohésion :** faible et assumée — 2 blocs disjoints (auth backend / design frontend), périmètre
+unifié sur décision du dev.
+
+**BR impactées :** BR-AUT-003 (amendée : 8..100 + majuscule + chiffre, création/modification
+uniquement, login NON durci) · BR-AUT-004 (énoncé corrigé) · **BR-EVE-017 (créée)** — débounce
+150 ms de l'aperçu live, met fin à la collision d'identifiant sur BR-EVE-009.
+
+**Reviews :** review batch cycle 1 — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (tous corrigés) ·
+`ui-design` — 1 MAJEUR (`shadow-md` hors charte → `border-rule`, corrigé) ·
+**review cycle 2 sur les commits de correction** — 0 CRITIQUE / 0 MAJEUR / 0 régression.
+
+**Tests :** Backend **514/514** · Frontend **1132/1132** · `tsc`/ESLint/Prettier 0 ·
+`gen-pit-packs --check` et `check-rules-jit-drift` exit 0.
+**CI PR #498 :** 4 checks requis VERTS (`backend`, `frontend`, `e2e` 15 min 9, `ai-env-packs`)
+\+ `secret-scan`, `flyway-smoke`. Seul `security` rouge — **pré-existant prouvé** : déjà rouge sur
+la base `8769d6a`, et le sprint ne touche aucune dépendance (diff vide sur `package.json`,
+`package-lock.json`, `pom.xml`). Cause : `npm audit` renvoie un 400 « Invalid package tree », pas
+une CVE. → issue #501.
+
+**Vérification navigateur indépendante** (`browser-verification.md`) : 44 mesures de contraste,
+minimum **3,06:1**, 8 couleurs jamais testées ajoutées, **aucune sur-correction** sur la couleur
+par défaut ; grammaire du bandeau 5/5 conforme à la surface de création (filets pleine largeur
+478 px, `empty:hidden` vérifié, plus aucun `shadow-md`).
+
+**Nouveaux pitfalls / bugs / patterns / décisions :** `PIT-S71-001..010`, `BUG-S71-001..002`,
+`PAT-S71-001..004`, `DEC-S71-001..004` (commit `2276a75`). Dédoublonnages : `PIT-S32-002`,
+`PIT-S37-004` et `BUG-S70-002` **annotés « toujours actifs au S71 »** plutôt que dupliqués.
+
+### Ce qui reste ouvert — à ne pas lire comme soldé
+
+1. **Le flaky `AuthControllerLegacyPasswordLoginTest` n'est pas élucidé.** Observé rouge au
+   premier boot de conteneur (2/3), jamais reproduit ensuite (3 conteneurs neufs). Deux
+   hypothèses réfutées par mesure. Le `setRemoteAddr` ajouté est le seul couplage réel constaté,
+   **pas une déflakisation prouvée**. La CI est passée verte en un run. → issue #500.
+2. **Aucune exécution E2E indépendante avant la CI.** Les deux runs locaux ont chacun été menés
+   par l'auteur du changement qu'ils validaient. C'est la CI (15 min 9, verte) qui a apporté la
+   première preuve tierce.
+3. **BR-EVE-017 n'est protégée par aucun test** → issue #507.
+
+### Follow-ups arbitrés (Phase 4 triage) — 12 créés, 0 discardé, 0 absorbé
+
+Décision dev : **backlog libre, aucun milestone**, pour ne pas reproduire l'ambiguïté
+label-vs-milestone qui a demandé un arbitrage au démarrage de ce sprint même.
+
+  - `POST /api/me/avatar` hors rate-limit [S | auth] → **#499** (`priority:P1`, sécurité)
+  - Flaky `AuthControllerLegacyPasswordLoginTest` non élucidé [S | auth] → **#500**
+  - Job CI `security` rouge sur `dev` (lockfile, pas CVE) [S | infra] → **#501**
+  - Inventaire faux « 3 surfaces d'édition » [XS | design] → **#502**
+  - Plancher 3:1 non mesuré sur bottom sheet mobile [S | design] → **#503**
+  - 9 couleurs de la palette non mesurées en E2E [S | design] → **#504**
+  - `EventContent.tsx:146` — `shadow-md` hors charte [XS | design] → **#505**
+  - `DialogDescription` manquant sur `TimelineEditHost` [XS | transversal] → **#506**
+  - Test protégeant BR-EVE-017 [S | events] → **#507**
+  - `PasswordStrength.tsx` calé sur 6 caractères [XS | auth] → **#508**
+  - Clés `validation.password.*` dupliquées [XS | transversal] → **#509**
+  - Trancher sur prettier (CI ou retrait des scripts) [S | infra] → **#510**
+
+Écarté d'office : `coverage-auth.md` périmé (#134) — **résolu pendant le sprint** (commit
+`f025598`), qui a de surcroît trouvé la cause racine : le comptage par `grep -c '@Test'` ignore
+les `@ParameterizedTest` (7 écarts, total 155 → 172, plus une classe fantôme inexistante à HEAD).
+
+Ratio discard : **0 %** sur 12 items.
+
+### Écarts de conduite du lead à consigner
+
+- Briefing de #148 et #496 pointait `docs/memory/business-rules.md` — **ce fichier n'existe pas**
+  dans ce repo. Chemin recopié du template du skill sans vérification.
+- Inventaire « 3 surfaces d'édition » recopié de l'issue sans contrôle, alors qu'un `grep` de
+  2 secondes le réfutait. Périmètre de #495 divisé par 3 par l'agent lui-même → `PIT-S71-001`.
+- Briefing de déflakisation fondé sur une note de #148 décrivant un piège **évité**, pas un
+  défaut **présent** — l'agent a dû le constater lui-même.
+- Le mot `[MISSING]` employé en prose dans l'artefact d'audit aurait déclenché le garde-fou
+  bloquant de la Phase 9 (grep littéral). Reformulé.
+
