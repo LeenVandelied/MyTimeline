@@ -4679,4 +4679,43 @@ d'une API next-intl dépréciée.
 **Couverture :** aucun E2E ne couvre `/privacy` ni `/terms` aujourd'hui — une spec ciblée est
 exigée de #60 (bouton « Retour » traduit, disclaimer hors `fr`, saut d'ancre du sommaire).
 
-**Status :** En cours
+**Issues livrées (2 + 1 absorbée) :** #279, #60 — #172 absorbée par #60
+**Vagues exécutées :** V1 = #279 ‖ #60 (parallèles, fichiers disjoints)
+**Commits :** 5 — `7510e84` (ouverture) · `b24bd21` (#279) · `9dac435` (#60) ·
+`a101ad4` (correctifs de review) · `b2f861d` (audit + artefacts)
+**BR impactées :** aucune (deux chores frontend)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEUR, **les 3 corrigés** (`a101ad4`),
+pas reportés. Le reviewer a recalculé la parité i18n par script sur les *ensembles* de clés
+(66/66/66/66) plutôt que de recopier le comptage du briefing, confirmé la signature de `hasLocale`
+dans `node_modules/use-intl`, et rejoué build et unitaires lui-même.
+**Cycle 2 :** fait par mesure et non par agent (20 lignes, dont l'essentiel est du commentaire) —
+`tsc --noEmit` propre, ce qui prouve qu'aucun appelant externe ne dépendait de l'export retiré ;
+64/64 unitaires ; E2E 33/33 ; **contrôle négatif sur l'assertion ajoutée**.
+**Tests :** Backend 561/561 · Frontend unitaire 1251/1251 · E2E 33/33 ·
+`next build` global 52/52 pages, `/privacy` et `/terms` prérendues sur les 4 locales.
+**CI :** 7/7 verte sur `b2f861d`.
+
+**Deux contrôles négatifs joués** — l'ancre `user-rights` renommée fait rougir 2 tests dont
+l'auto-contrôle ; l'assertion allemande ajoutée en réponse à la review rougit quand on la casse.
+C'est la seule chose qui distingue une spec qui prouve d'une spec qui passe, et ce dépôt est déjà
+passé « tout vert » avec cinq specs jamais exécutées.
+
+**La preuve de build de #279 a dû être refaite par le lead.** L'agent avait rendu un `next build`
+vert, puis extrait `resolveLocale` ; son re-build a été bloqué par un fichier momentanément
+invalide de l'autre agent (working tree partagé). Il l'a dit au lieu de le taire et a substitué un
+`tsc` isolé en précisant que ce n'était pas équivalent. Le build global a été relancé en fin de
+vague — c'est là seulement que la non-régression a été établie.
+
+**Nouveaux pitfalls / décisions / patterns :** `PIT-S75-001` à `-004`, `PAT-S75-001`,
+`DEC-S75-001` — consolidés, classifiés dans `pit-classification.tsv`, packs `pit-*` régénérés
+(`gen-pit-packs.sh --check` au vert).
+
+**Absorbé en cours (XS) :** #172 en totalité (voir arbitrages de cadrage ci-dessus).
+**Follow-ups proposés (NON-XS) :** aucun `RECOMMAND_FOLLOWUP` formel. Deux points d'outillage
+remontés par les agents, traités au triage de Phase 4.
+
+**Saturation contexte lead :** non instrumentée finement. Le mécanisme a tenu : les retours bruts
+des subagents (112 K et 158 K tokens consommés de leur côté) ne sont jamais entrés dans le contexte
+du lead — seuls les `done.md` et leurs pointeurs.
+
+**Status :** En cours — PR #526 ouverte et verte, merge en attente de validation
