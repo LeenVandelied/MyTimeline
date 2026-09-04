@@ -54,8 +54,16 @@ test.use({ storageState: SHARED.storageState })
 const LG = 1024
 /** Seuil `md` (48rem) = `useMediaQuery('(max-width: 767px)')` : drill-down <-> onglets. */
 const MD = 768
-/** Largeur de la sidebar du shell (`--sidebar-width`, `w-sidebar`). */
+/** Largeur de la sidebar du shell dépliée (`--sidebar-width`, `w-sidebar`). */
 const SIDEBAR_WIDTH = 248
+/**
+ * #298 (Sprint 73) — largeur de la sidebar REPLIÉE icon-only
+ * (`--sidebar-width-collapsed`, `w-sidebar-collapsed`). Le shell a désormais
+ * TROIS états : masquée (< md), repliée 64px (md..lg), dépliée 248px (>= lg).
+ * Ce fichier ne teste PAS ce palier (c'est `sprint-73-tablet-sidebar.spec.ts`) ;
+ * il en tient compte pour que ses propres assertions restent vraies.
+ */
+const SIDEBAR_WIDTH_COLLAPSED = 64
 
 interface NavBox {
   testid: string
@@ -107,17 +115,27 @@ function measureOverflow(page: Page): Promise<{ scrollWidth: number; clientWidth
 interface Breakpoint {
   width: number
   label: string
-  /** Sidebar persistante du shell montée (>= lg). */
-  sidebar: boolean
+  /**
+   * Largeur attendue de la sidebar du shell, ou `null` si elle doit être masquée
+   * (< md). #298 : 64px entre md et lg, 248px au-delà.
+   */
+  sidebar: number | null
   /** `false` = drill-down mobile (`settings-index`), `true` = tablist horizontal. */
   tabs: boolean
+  /**
+   * `settings-back` peint ? Il est gaté par `lg:hidden` — un palier DIFFÉRENT de
+   * celui de la sidebar depuis #298 (`md`). Les deux ne peuvent donc plus être
+   * déduits l'un de l'autre : entre 768 et 1023 px, la sidebar repliée ET le
+   * retour coexistent (redondance signalée en follow-up, cf. plus bas).
+   */
+  back: boolean
 }
 
 const BREAKPOINTS: readonly Breakpoint[] = [
-  { width: 390, label: 'téléphone (iPhone 14)', sidebar: false, tabs: false },
-  { width: MD, label: 'tablette', sidebar: false, tabs: true },
-  { width: LG, label: 'desktop, 1er pixel', sidebar: true, tabs: true },
-  { width: 1280, label: 'desktop large', sidebar: true, tabs: true },
+  { width: 390, label: 'téléphone (iPhone 14)', sidebar: null, tabs: false, back: true },
+  { width: MD, label: 'tablette', sidebar: SIDEBAR_WIDTH_COLLAPSED, tabs: true, back: true },
+  { width: LG, label: 'desktop, 1er pixel', sidebar: SIDEBAR_WIDTH, tabs: true, back: false },
+  { width: 1280, label: 'desktop large', sidebar: SIDEBAR_WIDTH, tabs: true, back: false },
 ]
 
 for (const bp of BREAKPOINTS) {
@@ -137,40 +155,53 @@ for (const bp of BREAKPOINTS) {
 
       // ---- Sidebar du shell : le palier `lg` -------------------------------
       const sidebar = page.getByTestId('shell-sidebar')
-      if (bp.sidebar) {
+      if (bp.sidebar !== null) {
         await expect(
           sidebar,
-          `la sidebar du shell doit être montée à ${bp.width} px (>= ${LG})`,
+          `la sidebar du shell doit être montée à ${bp.width} px (>= ${MD})`,
         ).toBeVisible()
         const box = await sidebar.boundingBox()
         expect(box, 'la sidebar visible doit avoir une boîte mesurable').not.toBeNull()
-        expect(box?.width, `la sidebar doit mesurer ${SIDEBAR_WIDTH}px (--sidebar-width)`).toBe(
-          SIDEBAR_WIDTH,
-        )
+        expect(
+          box?.width,
+          `la sidebar doit mesurer ${bp.sidebar}px à ${bp.width} px ` +
+            '(--sidebar-width-collapsed entre md et lg, --sidebar-width au-delà)',
+        ).toBe(bp.sidebar)
+        // Le lien Réglages reste une cible peinte aux deux états (icon-only en
+        // replié : son libellé est `hidden lg:inline`, pas le lien lui-même).
         await expect(page.getByTestId('shell-sidebar-settings-link')).toBeVisible()
       } else {
         await expect(
           sidebar,
-          `la sidebar du shell doit être masquée à ${bp.width} px (< ${LG})`,
+          `la sidebar du shell doit être masquée à ${bp.width} px (< ${MD})`,
         ).toBeHidden()
       }
 
-      // ---- Sortie de navigation : `settings-back` est le complément exact ---
-      // C'est LE point du palier : sous `lg` la sidebar est masquée, le bouton
-      // retour est la seule sortie ; au-dessus il disparaît au profit d'elle.
+      // ---- Sortie de navigation : `settings-back` (`lg:hidden`) ------------
+      // Le retour ne se déduit PLUS de la sidebar : leurs paliers ont divergé au
+      // #298 (retour = `lg`, sidebar = `md`). D'où un champ dédié dans la
+      // matrice — une déduction implicite masquerait la divergence.
       const back = page.getByTestId('settings-back')
-      if (bp.sidebar) {
-        await expect(
-          back,
-          `le retour doit disparaître à ${bp.width} px : la sidebar assure la navigation`,
-        ).toBeHidden()
+      if (bp.back) {
+        await expect(back, `le retour doit être visible à ${bp.width} px (< ${LG})`).toBeVisible()
+        await expect(back).toHaveAttribute('href', '/fr/dashboard')
       } else {
         await expect(
           back,
-          `le retour doit être visible à ${bp.width} px : c'est la SEULE sortie (sidebar masquée)`,
-        ).toBeVisible()
-        await expect(back).toHaveAttribute('href', '/fr/dashboard')
+          `le retour doit disparaître à ${bp.width} px : la sidebar dépliée assure la navigation`,
+        ).toBeHidden()
       }
+      // INVARIANT MINIMAL QUI TIENT ENCORE : au moins une sortie à tout palier.
+      // AFFAIBLISSEMENT ASSUMÉ (était « exactement une »). Cause : #298 (Sprint 73) a
+      // fait passer le palier de la sidebar à `md` alors que `settings-back` reste en
+      // `lg:hidden` ; entre 768 et 1023 les deux sorties coexistent donc.
+      // Ce n'est PAS un contournement pour faire passer le test : la redondance est
+      // réelle en production et n'a pas encore été tranchée par le Designer.
+      // Suivi : docs/memory/sprints/sprint-73/issue-298-done.md (RECOMMAND_FOLLOWUP
+      // « redondance de sortie sur /settings en 768-1023 »). Dès que la décision est
+      // prise, remettre l'invariant à « exactement une sortie ».
+      const exits = (bp.back ? 1 : 0) + (bp.sidebar !== null ? 1 : 0)
+      expect(exits, `aucune sortie de navigation à ${bp.width} px`).toBeGreaterThanOrEqual(1)
 
       // ---- Chapitres : drill-down (< md) vs onglets horizontaux (>= md) ----
       const tablist = page.getByTestId('settings-tablist')
@@ -201,8 +232,9 @@ for (const bp of BREAKPOINTS) {
       expect(
         vertical.length,
         `navigations verticales à ${bp.width} px : ${
-          vertical.map((n) => `${n.testid} ${Math.round(n.width)}x${Math.round(n.height)}`).join(', ') ||
-          'aucune'
+          vertical
+            .map((n) => `${n.testid} ${Math.round(n.width)}x${Math.round(n.height)}`)
+            .join(', ') || 'aucune'
         }`,
       ).toBe(expectedVertical)
 
@@ -222,11 +254,21 @@ for (const bp of BREAKPOINTS) {
 
 test.describe('Réglages responsive — frontières exactes des paliers', () => {
   /**
-   * FRONTIÈRE `lg` (1023/1024). `settings-back` est masqué par une classe CSS
-   * (`lg:hidden`) et la sidebar par une autre (`hidden lg:flex`) : rien dans le
-   * typage ne relie les deux. Si elles divergeaient, un palier se retrouverait
-   * soit SANS aucune sortie de navigation (retour masqué + sidebar masquée),
-   * soit avec deux sorties redondantes. On vérifie donc les deux sens, au pixel.
+   * FRONTIÈRE `lg` (1023/1024). `settings-back` est masqué par `lg:hidden` ; la
+   * sidebar du shell, elle, ne DISPARAÎT plus à cette frontière depuis #298 —
+   * elle s'y REPLIE (248 -> 64 px), son masquage étant descendu à `md`. Ce test
+   * vérifie donc désormais deux choses au pixel : le retour bascule bien à
+   * 1023/1024, et la sidebar change bien de largeur au même pixel.
+   *
+   * SORTIE DE NAVIGATION — ce que ce test N'AFFIRME PLUS. L'ancienne rédaction
+   * posait « sous lg la sidebar est masquée, le retour est la SEULE sortie ».
+   * Ce n'est plus vrai entre 768 et 1023 px : la sidebar repliée y est peinte EN
+   * PLUS du bouton retour, donc deux sorties coexistent. Ce n'est pas un défaut
+   * fonctionnel (aucune n'est cassée) mais une redondance visuelle que #298 n'a
+   * pas tranchée — `settings-back` devrait-il passer en `md:hidden` ? La
+   * décision appartient au Designer et touche `SettingsShell`, hors du périmètre
+   * de fichiers de #298 : suivi en follow-up. Le test se borne donc à décrire
+   * l'état RÉEL, sans le déclarer souhaitable.
    */
   test('le retour et la sidebar basculent au même pixel (1023/1024)', async ({ page }) => {
     const back = page.getByTestId('settings-back')
@@ -236,28 +278,41 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
     await page.setViewportSize({ width: LG - 1, height: 900 })
     await openSettingsPage(page)
 
-    await expect(
-      back,
-      'à 1023 px le retour doit être visible : la sidebar est masquée, sans lui la page n’a plus de sortie',
-    ).toBeVisible()
-    await expect(sidebar, 'à 1023 px la sidebar du shell doit être masquée').toBeHidden()
+    await expect(back, 'à 1023 px le retour doit être visible (`lg:hidden`)').toBeVisible()
+    await expect(sidebar, 'à 1023 px la sidebar du shell est peinte, repliée (#298)').toBeVisible()
+    await expect
+      .poll(async () => (await sidebar.boundingBox())?.width, {
+        message: 'à 1023 px la sidebar doit mesurer 64px (--sidebar-width-collapsed)',
+      })
+      .toBe(SIDEBAR_WIDTH_COLLAPSED)
     await expect(header, 'le header reste rendu à 1023 px').toBeVisible()
 
     // Bascule vers le desktop : masquage CSS pur (aucune remontée `matchMedia`
-    // n’est nécessaire pour `lg:hidden`), la sidebar apparaît, le retour part.
+    // n’est nécessaire pour `lg:hidden`), la sidebar se déplie, le retour part.
     await page.setViewportSize({ width: LG, height: 900 })
     await expect(
       back,
-      'au 1er pixel desktop (1024) le retour doit disparaître au profit de la sidebar',
+      'au 1er pixel desktop (1024) le retour doit disparaître au profit de la sidebar dépliée',
     ).toBeHidden()
-    await expect(sidebar, 'à 1024 px la sidebar du shell doit apparaître').toBeVisible()
-    await expect(header, 'le header reste rendu à 1024 px (le <h1> ne dépend pas de la largeur)').toBeVisible()
+    await expect
+      .poll(async () => (await sidebar.boundingBox())?.width, {
+        message: 'à 1024 px la sidebar doit se déplier à 248px (--sidebar-width)',
+      })
+      .toBe(SIDEBAR_WIDTH)
+    await expect(
+      header,
+      'le header reste rendu à 1024 px (le <h1> ne dépend pas de la largeur)',
+    ).toBeVisible()
 
     // Retour en arrière : la bascule doit être RÉVERSIBLE (une règle écrite
     // `min-width` d’un côté et `max-width` de l’autre ne le serait pas).
     await page.setViewportSize({ width: LG - 1, height: 900 })
     await expect(back, 'de retour à 1023 px, le retour doit réapparaître').toBeVisible()
-    await expect(sidebar, 'de retour à 1023 px, la sidebar doit se remasquer').toBeHidden()
+    await expect
+      .poll(async () => (await sidebar.boundingBox())?.width, {
+        message: 'de retour à 1023 px, la sidebar doit se replier à 64px',
+      })
+      .toBe(SIDEBAR_WIDTH_COLLAPSED)
   })
 
   /**
@@ -281,16 +336,28 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
     await expect(page.getByTestId('settings-back')).toBeVisible()
 
     await page.setViewportSize({ width: MD, height: 900 })
-    await expect(tablist, 'au 1er pixel tablette (768) les onglets doivent être montés').toBeVisible()
-    await expect(index, 'à 768 px le drill-down ne doit plus être dans le DOM').toHaveCount(0)
     await expect(
-      page.getByTestId('settings-back'),
-      'à 768 px le retour reste la seule sortie (sidebar toujours masquée)',
+      tablist,
+      'au 1er pixel tablette (768) les onglets doivent être montés',
     ).toBeVisible()
-    await expect(page.getByTestId('shell-sidebar')).toBeHidden()
+    await expect(index, 'à 768 px le drill-down ne doit plus être dans le DOM').toHaveCount(0)
+    await expect(page.getByTestId('settings-back')).toBeVisible()
+    // #298 — 768 px est AUSSI le pixel d'apparition de la sidebar repliée : la
+    // frontière `md` est partagée par deux mécanismes INDÉPENDANTS (le JS
+    // `useMediaQuery` des onglets, et la classe CSS `hidden md:flex` du shell).
+    // Les deux doivent basculer au MÊME pixel — d'où l'assertion ici (768, la
+    // sidebar apparaît) et son complément plus bas (767, elle repart).
+    await expect(
+      page.getByTestId('shell-sidebar'),
+      'au 1er pixel tablette (768) la sidebar repliée du shell doit apparaître',
+    ).toBeVisible()
 
     await page.setViewportSize({ width: MD - 1, height: 900 })
     await expect(index, 'de retour à 767 px le drill-down doit revenir').toBeVisible()
     await expect(tablist, 'de retour à 767 px les onglets doivent être démontés').toHaveCount(0)
+    await expect(
+      page.getByTestId('shell-sidebar'),
+      'de retour à 767 px (< md) la sidebar du shell doit se remasquer',
+    ).toBeHidden()
   })
 })

@@ -11,8 +11,9 @@ import { AppShell } from './AppShell'
  * auth mockés → assertions locale-agnostiques (clés `ns.key`). Couvre : nav
  * persistante (3 items + a11y `aria-label`/`aria-current`), lien actif dérivé du
  * pathname, sélecteurs intégrés (langue / thème / réglages / profil / logout),
- * overlay Nouvel événement (Dialog), et délégation mobile (sidebar `lg`-gated,
- * aucune duplication de CompactRail/MobileDrawer). Contrats `data-testid` E2E.
+ * overlay Nouvel événement (Dialog), et palier responsive #298 (sidebar `md`-gated,
+ * libellés `lg`-gated, aucune duplication de CompactRail/MobileDrawer). Contrats
+ * `data-testid` E2E.
  */
 let mockPathname = '/fr/dashboard'
 const push = vi.fn()
@@ -279,15 +280,87 @@ describe('AppShell — overlay Nouvel événement', () => {
   })
 })
 
-describe('AppShell — délégation mobile', () => {
-  it('la sidebar est réservée au desktop (hidden lg:flex) et ne duplique pas la nav mobile', () => {
+/**
+ * #298 — TROIS ÉTATS RESPONSIVE (`< md` masquée / `md`..`lg` icon-only 64px /
+ * `>= lg` pleine 248px).
+ *
+ * CE QUE CE BLOC PROUVE : les CHAÎNES de classes et le fait que les libellés
+ * portent bien le gate `lg:`, plus la présence inconditionnelle des noms
+ * accessibles (`aria-label`), qui, eux, ne dépendent d'aucun CSS.
+ *
+ * CE QU'IL NE PROUVE PAS : que la sidebar MESURE 64px entre 768 et 1023 px.
+ * jsdom n'applique aucune feuille de style et ne fait aucun layout — asserter
+ * `className.contains('md:flex')` verrouille un littéral, pas un rendu (famille
+ * [[PIT-S54-002]], cf. [[PAT-S66-001]]). Le seul oracle du critère « sidebar
+ * icon-only entre md et lg » est `e2e/sprint-73-tablet-sidebar.spec.ts`, qui
+ * exerce les QUATRE bornes du palier (767/768 et 1023/1024) dans un vrai moteur.
+ */
+describe('AppShell — palier responsive (#298)', () => {
+  beforeEach(() => {
     mockResolvedTheme = 'light'
+  })
+
+  it('la sidebar est montée dès `md` et porte les deux largeurs tokenisées', () => {
     renderShell()
     const sidebar = screen.getByTestId('shell-sidebar')
     expect(sidebar.className).toContain('hidden')
-    expect(sidebar.className).toContain('lg:flex')
-    expect(sidebar.className).toContain('w-sidebar')
-    // Le shell ne rend PAS CompactRail / MobileDrawer : la nav mobile reste
+    // #298 : le palier descend de `lg` à `md` (l'état tablette n'est plus un trou).
+    expect(sidebar.className).toContain('md:flex')
+    expect(sidebar.className).not.toContain('lg:flex')
+    // Les DEUX largeurs viennent de tokens layout-specific (BLOCKING-1 de #210) :
+    // aucune valeur arbitraire `w-[64px]` / `w-16` nue.
+    expect(sidebar.className).toContain('w-sidebar-collapsed')
+    expect(sidebar.className).toContain('lg:w-sidebar')
+    expect(sidebar.className).not.toMatch(/w-\[\d+px\]/)
+  })
+
+  it('les libellés de nav sont gatés par `lg:` (icon-only entre md et lg)', () => {
+    renderShell()
+    for (const id of ['dashboard', 'timeline', 'products']) {
+      const link = screen.getByTestId(`shell-sidebar-nav-link-${id}`)
+      const label = link.querySelector('span')
+      expect(label, `le lien ${id} doit porter un <span> de libellé`).not.toBeNull()
+      expect(label?.className).toContain('hidden')
+      expect(label?.className).toContain('lg:inline')
+    }
+    // Le libellé du bouton de création suit la même règle.
+    const newEventLabel = screen.getByTestId('shell-sidebar-new-event-button').querySelector('span')
+    expect(newEventLabel?.className).toContain('hidden')
+    expect(newEventLabel?.className).toContain('lg:inline')
+    // Le nom du profil aussi (`lg:block`, pas `lg:inline` : `truncate` exige un bloc).
+    const profile = screen.getByTestId('shell-sidebar-avatar').parentElement
+    const nameSpan = profile?.querySelector('span.truncate')
+    expect(nameSpan?.className).toContain('hidden')
+    expect(nameSpan?.className).toContain('lg:block')
+  })
+
+  it('chaque cible reste identifiable sans libellé visible (aria-label + title)', () => {
+    renderShell()
+    // Pattern `RailButton` (dashboard/CompactRail.tsx) : nom accessible + tooltip
+    // natif, INCONDITIONNELS — ils ne dépendent d'aucune media query, donc cette
+    // assertion vaut bien pour l'état replié.
+    const targets: [string, string][] = [
+      ['shell-sidebar-nav-link-dashboard', 'shell.nav.dashboard'],
+      ['shell-sidebar-nav-link-timeline', 'shell.nav.timeline'],
+      ['shell-sidebar-nav-link-products', 'shell.nav.products'],
+      ['shell-sidebar-settings-link', 'shell.settings'],
+      ['shell-sidebar-new-event-button', 'shell.newEvent'],
+      ['shell-sidebar-logout', 'shell.logout'],
+    ]
+    for (const [testid, name] of targets) {
+      const el = screen.getByTestId(testid)
+      expect(el, `${testid} doit avoir un nom accessible`).toHaveAccessibleName(name)
+      expect(el.getAttribute('title'), `${testid} doit porter un title natif`).toBe(name)
+    }
+    // Le toggle de thème est dynamique (clair/sombre) : nom et title concordent.
+    const toggle = screen.getByTestId('shell-sidebar-theme-toggle')
+    expect(toggle).toHaveAccessibleName('shell.theme.toDark')
+    expect(toggle.getAttribute('title')).toBe('shell.theme.toDark')
+  })
+
+  it('ne duplique pas la nav mobile de l’écran enveloppé', () => {
+    renderShell()
+    // Le shell ne rend PAS CompactRail / MobileDrawer : la nav < md reste
     // déléguée à l'écran enveloppé (zéro duplication).
     expect(screen.queryByTestId('dashboard-rail')).not.toBeInTheDocument()
     expect(screen.queryByTestId('dashboard-mobile-drawer')).not.toBeInTheDocument()
@@ -295,7 +368,7 @@ describe('AppShell — délégation mobile', () => {
 })
 
 /**
- * #455 — Déclencheur MOBILE de la création d'événement (FAB `lg:hidden`).
+ * #455 — Déclencheur MOBILE de la création d'événement (FAB `md:hidden` depuis #298).
  *
  * CE QUE CE FICHIER PROUVE : le CÂBLAGE. Le bouton existe, porte son contrat
  * (`data-testid`, nom accessible, `aria-haspopup`), et remonte au MÊME état
@@ -304,12 +377,13 @@ describe('AppShell — délégation mobile', () => {
  *
  * CE QU'IL NE PROUVE PAS, ET NE PEUT PAS PROUVER : la VISIBILITÉ. jsdom
  * n'applique aucune feuille de style et ne fait aucun layout — `lg:hidden` /
- * `hidden lg:flex` n'y ont AUCUN effet, les DEUX boutons sont donc dans le DOM
+ * `hidden md:flex` n'y ont AUCUN effet, les DEUX boutons sont donc dans le DOM
  * quelle que soit la « largeur ». Les assertions de classe ci-dessous
  * verrouillent la CHAÎNE DE CARACTÈRES, pas le rendu (famille [[PIT-S54-002]]).
- * Le seul oracle de « visible et actionnable sous 1024 px » est l'E2E
+ * Le seul oracle de « visible et actionnable sous 768 px » est l'E2E
  * `e2e/sprint-66-mobile-create-event.spec.ts`, qui l'exerce dans un vrai moteur
- * aux deux bornes du palier (390 px et 1280 px).
+ * aux deux bornes du palier ; `e2e/sprint-73-tablet-sidebar.spec.ts` couvre la
+ * bascule du palier lui-même (767/768 et 1023/1024).
  */
 describe('AppShell — déclencheur mobile Nouvel événement (#455)', () => {
   beforeEach(() => {
@@ -335,9 +409,12 @@ describe('AppShell — déclencheur mobile Nouvel événement (#455)', () => {
   it('porte les classes du palier et de la spec Designer (chaîne, pas rendu)', () => {
     renderShell()
     const fab = screen.getByTestId('shell-mobile-new-event-button')
-    // Miroir EXACT du `hidden … lg:flex` de la sidebar : exactement un des deux
-    // déclencheurs est peint, jamais zéro (le défaut de #455), jamais deux.
-    expect(fab.className).toContain('lg:hidden')
+    // Miroir EXACT du `hidden … md:flex` de la sidebar (#298 a fait descendre le
+    // palier de `lg` à `md`) : exactement un des deux déclencheurs est peint,
+    // jamais zéro (le défaut de #455), jamais deux. Si l'un des deux gates
+    // changeait sans l'autre, 768..1023 aurait deux boutons ou aucun.
+    expect(fab.className).toContain('md:hidden')
+    expect(fab.className).not.toContain('lg:hidden')
     // 52x52 (`--space-13`) — au-dessus du minimum tactile WCAG 2.5.5 (44 px).
     // `Button size="icon"` (h-9 w-9 = 36 px) serait SOUS le seuil : d'où le <button> nu.
     expect(fab.className).toContain('h-13')
@@ -393,7 +470,7 @@ describe('AppShell — déclencheur mobile Nouvel événement (#455)', () => {
     const sidebar = screen.getByTestId('shell-sidebar')
     expect(sidebar).toContainElement(desktop)
     expect(sidebar.className).toContain('hidden')
-    expect(sidebar.className).toContain('lg:flex')
+    expect(sidebar.className).toContain('md:flex')
     // Le FAB vit HORS de l'aside (sinon il serait masqué avec elle — c'est le bug).
     expect(sidebar).not.toContainElement(screen.getByTestId('shell-mobile-new-event-button'))
   })

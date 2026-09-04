@@ -10,7 +10,12 @@ import {
   mixHex,
   outlineFloorVars,
   relativeLuminance,
+  swatchGlyphInk,
+  swatchGlyphInkVar,
   CONTRAST_FLOOR_MARGIN,
+  SWATCH_GLYPH_DARK,
+  SWATCH_GLYPH_LIGHT,
+  SWATCH_GLYPH_THRESHOLD,
   INK_DARK,
   INK_LIGHT,
   THEME_INK,
@@ -317,5 +322,52 @@ describe('#497 — les constantes de thème ne divergent pas des tokens du DS', 
         `${selector} sombre`,
       ).toBe(true)
     }
+  })
+})
+
+describe('#416 — encre du glyphe de coche des pastilles', () => {
+  const css = readFileSync(join(__dirname, '../styles/ds/tokens/colors.css'), 'utf-8')
+
+  it('bascule au seuil de luminance, pas sur une encre fixe', () => {
+    // Un blanc fixe échoue sur les couleurs claires, une encre fixe sur les
+    // sombres : le choix DOIT dépendre du remplissage.
+    expect(swatchGlyphInk('#F2A900')).toBe(SWATCH_GLYPH_DARK) // ambre, L = 0.4725
+    expect(swatchGlyphInk('#3E63DD')).toBe(SWATCH_GLYPH_LIGHT) // bleu, L = 0.1517
+  })
+
+  it('applique bien SWATCH_GLYPH_THRESHOLD (strictement supérieur)', () => {
+    // Encadrement du seuil par deux gris dont la luminance l'entoure.
+    const below = '#757575' // L = 0.17789
+    const above = '#767676' // L = 0.18116
+    expect(relativeLuminance(below)).toBeLessThan(SWATCH_GLYPH_THRESHOLD)
+    expect(relativeLuminance(above)).toBeGreaterThan(SWATCH_GLYPH_THRESHOLD)
+    expect(swatchGlyphInk(below)).toBe(SWATCH_GLYPH_LIGHT)
+    expect(swatchGlyphInk(above)).toBe(SWATCH_GLYPH_DARK)
+  })
+
+  it('hex invalide → encre sombre, jamais `undefined`', () => {
+    expect(swatchGlyphInk('rouge')).toBe(SWATCH_GLYPH_DARK)
+    expect(swatchGlyphInk('#12345')).toBe(SWATCH_GLYPH_DARK)
+  })
+
+  it('la variante DS rend un token de PALETTE, pas un alias de thème', () => {
+    // `--color-ink` / `--color-primary-foreground` s'inversent dans `.dark` : le
+    // remplissage étant un hex inline, le glyphe disparaîtrait en thème sombre.
+    expect(swatchGlyphInkVar('#F2A900')).toBe('var(--gray-900)')
+    expect(swatchGlyphInkVar('#3E63DD')).toBe('var(--gray-0)')
+  })
+
+  it('`--gray-0` / `--gray-900` valent les constantes ET ne sont pas redéfinis en sombre', () => {
+    // Même garde-fou que §#497 : les constantes JS dupliquent des tokens CSS.
+    // Le second volet est le cœur de #416 — si un bloc de thème redéfinissait
+    // ces deux tokens, la table de contraste ne vaudrait plus qu'en clair.
+    expect(/--gray-0:\s*#FFFFFF;/i.test(css)).toBe(true)
+    expect(/--gray-900:\s*#16181D;/i.test(css)).toBe(true)
+    expect(SWATCH_GLYPH_LIGHT).toBe('#FFFFFF')
+    expect(SWATCH_GLYPH_DARK).toBe('#16181D')
+
+    const dark = css.slice(css.indexOf('[data-theme="dark"]'))
+    expect(/--gray-0\s*:/.test(dark)).toBe(false)
+    expect(/--gray-900\s*:/.test(dark)).toBe(false)
   })
 })

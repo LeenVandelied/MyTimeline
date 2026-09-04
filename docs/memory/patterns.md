@@ -671,3 +671,9 @@ Sous jsdom aucune feuille n'est appliquée : `expect(el).toHaveClass('mt-num')` 
 
 ## PAT-S72-002 — Distinguer un test instable d'une régression : rejouer le spec seul SUR LE MÊME COMMIT
 Un E2E rouge dans une suite complète ne dit pas s'il est causé par le diff. Rejouer ce seul spec **sans changer de commit** tranche en une commande : deux verdicts opposés sur un code identique ⇒ instabilité. C'est plus rapide et plus concluant que de reconstruire la base `origin/dev`, et ça évite l'étiquette « pré-existant » posée sans preuve. Corroborer par le périmètre (aucun fichier du diff sur le chemin testé) et par le sort des tests jumeaux dans le run rouge. (Sprint 72)
+
+## PAT-S73-001 — Annoncer un seuil de bascule noir/blanc : recalculer le point d'égalisation avec les encres RÉELLES
+Le seuil canonique 0,179 est le point d'égalisation contre du **noir pur**. Avec l'encre réelle du DS (`--gray-900` = #16181D, L = 0,00913) il vaut ≈ 0,1992 : entre les deux, le seuil choisit l'encre sombre alors que la claire contrasterait mieux. Recette : recalculer avec les constantes du dépôt, vérifier qu'aucune valeur du jeu ne tombe dans la bande d'écart, et **poser un test qui rougit si une nouvelle valeur y entre**. Corollaire de [[PIT-S61-004]]. (Sprint 73 #416)
+
+## PAT-S73-002 — Prouver qu'un token de largeur compile, plutôt que d'asserter la présence d'une classe
+Asserter `toHaveClass('w-sidebar-collapsed')` ne dit pas si l'utilitaire existe : une classe inexistante passe le test et ne peint rien. Recette : compiler `globals.css` avec `@tailwindcss/postcss` et vérifier que la règle `.w-sidebar-collapsed { width: var(--sidebar-width-collapsed) }` est **générée**. Même famille que [[PAT-S72-001]]. (Sprint 73 #298)

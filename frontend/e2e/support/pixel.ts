@@ -661,3 +661,99 @@ export async function measureIndicatorContrast(
 
 /** Seuil WCAG 2.1 — 1.4.11 Non-text Contrast (indicateurs d'état, bordures de contrôle). */
 export const WCAG_NON_TEXT = 3
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * #416 / Sprint 73 — MESURE D'UN GLYPHE PEINT À L'INTÉRIEUR D'UNE PASTILLE
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * POURQUOI `readStrip` NE CONVIENT PAS. Tout ce module échantillonne VERS
+ * L'EXTÉRIEUR d'un côté droit de la boîte (contours, anneaux de focus). Le
+ * glyphe de coche de `CategoryDrawer` est à l'INTÉRIEUR d'un disque de 28 px :
+ * il n'a ni côté droit, ni offset outward. Une bande le raterait entièrement.
+ *
+ * CE QUE CETTE FONCTION PROUVE, ET CE QU'ELLE NE PROUVE PAS. Elle atteste que
+ * des pixels du glyphe sont RÉELLEMENT PEINTS et de quelle POLARITÉ ils sont
+ * (encre plus claire ou plus sombre que le remplissage). Elle ne remplace PAS
+ * le ratio WCAG : un trait de `stroke-width` ~1,3 px CSS est fortement
+ * anticrénelé, donc ses pixels de bord sont des MÉLANGES encre/remplissage et
+ * le ratio peint est mécaniquement PLUS BAS que le ratio des couleurs
+ * spécifiées — que WCAG 2.x mesure, elle, sur les couleurs, pas sur la
+ * couverture d'anticrénelage. Publier le ratio peint comme « le » contraste
+ * serait donc faux du côté sévère. Il sert de TÉMOIN de peinture, le ratio
+ * WCAG restant lu par `contrast.ts` sur le style calculé.
+ */
+export interface PaintedGlyph {
+  /** Couleur MODALE de l'intérieur = le remplissage de la pastille. */
+  fill: Rgb
+  fillHex: string
+  /** Part des pixels portant exactement {@link fill} (le reste = glyphe + anticrénelage). */
+  fillShare: number
+  /** Pixel le PLUS ÉLOIGNÉ du remplissage en luminance = coeur du trait peint. */
+  extreme: Rgb
+  extremeHex: string
+  /** Contraste PEINT extremum / remplissage — témoin, pas le ratio WCAG (cf. JSDoc). */
+  ratio: number
+  /** `'lighter'` si l'extremum est plus clair que le remplissage, sinon `'darker'`. */
+  polarity: 'lighter' | 'darker'
+  /** Nombre de pixels lus. */
+  sampled: number
+}
+
+/**
+ * Lit tous les pixels de l'INTÉRIEUR d'un élément (marge `insetPx` écartée pour
+ * ne toucher ni la bordure ni les arcs du rayon) et en dégage remplissage,
+ * extremum et polarité.
+ *
+ * @param insetPx marge écartée sur les quatre côtés, en px CSS. Sur une pastille
+ *   `size-7` (28 px) portant un rayon plein et une bordure de 1 px, 6 px cadre
+ *   exactement la zone du glyphe `size-4` (16 px).
+ */
+export async function measurePaintedGlyph(
+  page: Page,
+  locator: Locator,
+  opts: { insetPx?: number } = {},
+): Promise<PaintedGlyph> {
+  const inset = opts.insetPx ?? 6
+  const box = await locator.boundingBox()
+  if (box == null) throw new Error("boundingBox() nulle : l'élément n'est pas rendu")
+  const width = box.width - inset * 2
+  const height = box.height - inset * 2
+  if (width <= 0 || height <= 0) {
+    throw new Error(
+      `Inset ${inset}px × 2 >= la boîte ${box.width}×${box.height} : aucun intérieur à ` +
+        'lire. Baisser `insetPx`, ou mesurer un élément plus grand.',
+    )
+  }
+  const read = await captureRegion(page, box, 2)
+  const samples: PixelSample[] = []
+  for (let dy = 0; dy < height; dy += 1) {
+    for (let dx = 0; dx < width; dx += 1) {
+      const x = box.x + inset + dx + 0.5
+      const y = box.y + inset + dy + 0.5
+      const rgb = read(x, y)
+      samples.push({ x, y, rgb, hex: toHex(rgb) })
+    }
+  }
+  const { rgb: fill, unanimity } = mode(samples)
+  const fillLum = relativeLuminance(fill)
+  let extreme = fill
+  let bestDelta = -1
+  for (const s of samples) {
+    const delta = Math.abs(relativeLuminance(s.rgb) - fillLum)
+    if (delta > bestDelta) {
+      bestDelta = delta
+      extreme = s.rgb
+    }
+  }
+  return {
+    fill,
+    fillHex: toHex(fill),
+    fillShare: unanimity,
+    extreme,
+    extremeHex: toHex(extreme),
+    ratio: contrastRatio(extreme, fill),
+    polarity: relativeLuminance(extreme) > fillLum ? 'lighter' : 'darker',
+    sampled: samples.length,
+  }
+}

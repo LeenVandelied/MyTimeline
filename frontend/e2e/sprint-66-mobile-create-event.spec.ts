@@ -51,9 +51,19 @@ test.use({ storageState: PROD.storageState })
 
 /** Portrait mobile de référence (iPhone 14). */
 const MOBILE_PORTRAIT = { width: 390, height: 844 }
-/** Mobile retourné : la largeur (844) reste sous 1024 → même palier. */
-const MOBILE_LANDSCAPE = { width: 844, height: 390 }
-/** Desktop : au-dessus de `lg` (1024), le FAB doit disparaître. */
+/**
+ * Mobile retourné. Largeur 740 et NON 844 depuis #298 (Sprint 73) : le palier du
+ * FAB est passé de `lg:hidden` à `md:hidden`, donc 844 tombe désormais dans la
+ * plage TABLETTE (768–1023), où c'est la sidebar repliée icon-only qui porte le
+ * déclencheur — pas le FAB. 740x390 reste un paysage de smartphone réaliste
+ * (ordre de grandeur d'un Android compact retourné ; ce n'est PAS un iPhone SE,
+ * dont le paysage vaut 667x375)
+ * et reste sous `md`, ce qui préserve l'intention d'origine du test : « le FAB
+ * est atteignable en paysage ». La bascule du palier elle-même est couverte aux
+ * quatre bornes par `sprint-73-tablet-sidebar.spec.ts`.
+ */
+const MOBILE_LANDSCAPE = { width: 740, height: 390 }
+/** Desktop : au-dessus de `lg` (1024), la sidebar est dépliée et le FAB absent. */
 const DESKTOP = { width: 1280, height: 900 }
 
 /**
@@ -207,7 +217,7 @@ test.describe('#455 — création d’événement sous 1024 px (mobile portrait)
   })
 })
 
-test.describe('#455 — mobile paysage (largeur < 1024 px)', () => {
+test.describe('#455 — mobile paysage (largeur < 768 px depuis #298)', () => {
   test.use({ viewport: MOBILE_LANDSCAPE })
 
   test('le FAB reste atteignable et ouvre la sheet', async ({ page }) => {

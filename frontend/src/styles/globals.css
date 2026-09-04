@@ -195,6 +195,8 @@
 
   /* ---- layout applicatif (shell #210) → utilitaire `w-sidebar` ---- */
   --spacing-sidebar: var(--sidebar-width);
+  /* #298 — utilitaire `w-sidebar-collapsed` (palier tablette icon-only). */
+  --spacing-sidebar-collapsed: var(--sidebar-width-collapsed);
 }
 
 /* base.css du DS gère déjà body { background:var(--color-bg); color:var(--color-ink) }.

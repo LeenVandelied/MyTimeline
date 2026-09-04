@@ -43,28 +43,50 @@ import { safeErrorMessage } from '@/lib/safe-error'
  * sur les Réglages. Le lien « Réglages » du pied de cette nav pointe donc vers
  * une route sœur du même groupe (pas de re-montage du shell à la navigation).
  *
- * Responsive (décisions Designer, cf. briefing) :
+ * Responsive — TROIS états depuis #298 (décisions Designer, cf. briefing) :
  *  - `>= lg` (1024px, même seuil que `SettingsShell`) : sidebar persistante 248px
  *    (logo, nav Tableau de bord / Timeline / Produits, bouton Nouvel événement,
- *    langue, thème, profil avatar carré, réglages, déconnexion).
- *  - `< lg` : la sidebar est masquée (`hidden lg:flex`). Le shell DÉLÈGUE la nav
- *    mobile à l'écran enveloppé, qui conserve ses composants existants
- *    `CompactRail` (paysage) / `MobileDrawer` (portrait) — zéro duplication de
- *    logique nav, aucune réécriture. La tablette (`md`→`lg`) bascule donc en mode
- *    mobile (pas d'état sidebar repliable ce sprint — DEC).
+ *    langue, thème, profil avatar carré, réglages, déconnexion). INCHANGÉ.
+ *  - `md`..`lg` (768–1023px) : sidebar REPLIÉE icon-only 64px
+ *    (`w-sidebar-collapsed`, token `--sidebar-width-collapsed`). Mêmes cibles, mêmes
+ *    `data-testid`, seuls les libellés textuels passent en `hidden lg:inline`.
+ *    A11y : chaque cible porte `aria-label` + `title` INCONDITIONNELS — pattern déjà
+ *    en prod dans `dashboard/CompactRail.tsx` (`RailButton`), pas le `<Tooltip>` custom.
+ *  - `< md` (<=767px) : la sidebar est masquée (`hidden md:flex`). Le shell DÉLÈGUE la
+ *    nav mobile à l'écran enveloppé (`CompactRail` / `MobileDrawer` du dashboard) —
+ *    zéro duplication de logique nav.
  *
- * #455 — CRÉATION D'ÉVÉNEMENT SOUS 1024 px (bouton flottant `lg:hidden`).
+ * DEC-S40-001 CORRIGÉE (le commentaire précédent était FAUX, vérifié au #298) : il
+ * affirmait que la tablette « bascule en mode mobile CompactRail/MobileDrawer ». Ni
+ * l'un ni l'autre ne couvrait 768–1024 px —
+ *  · `CompactRail` est monté sur `useMediaQuery('(orientation: landscape) and
+ *    (max-height: 500px)')` (`dashboard/page.tsx:63`) : un critère de HAUTEUR, pas un
+ *    palier de largeur tablette ;
+ *  · `MobileDrawer` suit `isMobile` = `'(max-width: 767px)'` (`dashboard/page.tsx:60`).
+ * Il y avait donc un TROU : entre 768 et 1023 px, aucune nav n'était rendue par le
+ * shell ni par l'écran (hors dashboard, qui garde sa propre chrome `lg:hidden`).
+ * #298 comble ce trou par l'état icon-only.
+ *
+ * #455 — CRÉATION D'ÉVÉNEMENT SOUS 768 px (bouton flottant `md:hidden`).
  * La délégation ci-dessus vaut pour la NAV, pas pour l'ACTION : le seul
  * déclencheur de `NewEventDrawer` vivait dans l'`<aside>` `hidden … lg:flex`, donc
- * la création d'événement était INATTEIGNABLE sous 1024 px (mobile et tablette
- * portrait), et aucun écran enveloppé n'en portait de substitut — seul le
- * dashboard a une chrome mobile, `timeline`/`products`/`settings` n'en ont aucune.
- * Le déclencheur mobile vit donc ICI, au seul point d'ancrage commun aux 4 écrans
- * du groupe `(app)`. Il appelle le MÊME `setShowCreate(true)` que le bouton
- * desktop : un SEUL état, donc un SEUL `NewEventDrawer` monté (un second état
- * monterait un second drawer). Le drawer bascule seul en bottom sheet `.mt-sheet`
- * sous 1024 px (`NewEventDrawer` : `useMediaQuery('(max-width: 1023px)')`) — rien
- * à lui passer. Le bouton desktop `shell-sidebar-new-event-button` est INCHANGÉ.
+ * la création d'événement était INATTEIGNABLE sous 1024 px, et aucun écran
+ * enveloppé n'en portait de substitut — seul le dashboard a une chrome mobile,
+ * `timeline`/`products`/`settings` n'en ont aucune. Le déclencheur flottant vit
+ * donc ICI, au seul point d'ancrage commun aux 4 écrans du groupe `(app)`. Il
+ * appelle le MÊME `setShowCreate(true)` que le bouton de la sidebar : un SEUL état,
+ * donc un SEUL `NewEventDrawer` monté (un second état monterait un second drawer).
+ * Le drawer bascule seul en bottom sheet `.mt-sheet` sous 1024 px (`NewEventDrawer` :
+ * `useMediaQuery('(max-width: 1023px)')`) — rien à lui passer.
+ *
+ * INVARIANT #455, RÉÉCRIT POUR LES 3 ÉTATS DE #298. Le miroir doit rester EXACT,
+ * sinon un palier se retrouve avec zéro déclencheur (le défaut d'origine) ou deux.
+ * `hidden md:flex` sur l'`<aside>` ⇔ `md:hidden` sur le bouton flottant, donc :
+ *   · `< md`      → bouton flottant SEUL ;
+ *   · `md`..`lg`  → bouton de sidebar SEUL, icon-only (libellé `hidden lg:inline`) ;
+ *   · `>= lg`     → bouton de sidebar SEUL, libellé visible.
+ * Exactement un des deux déclencheurs est peint, à TOUTE largeur. Le `data-testid`
+ * `shell-sidebar-new-event-button` et le handler sont INCHANGÉS.
  *
  * Lien actif : `aria-current="page"` + classe calquée sur `SettingsShell`
  * (`bg-accent-soft text-accent font-medium`), jamais la classe legacy `.is-active`.
@@ -147,34 +169,41 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen" data-testid="app-shell">
-      {/* -------- Sidebar persistante 248px (desktop >= lg uniquement) -------- */}
+      {/* -------- Sidebar persistante : 64px icon-only (md..lg), 248px (>= lg) -------- */}
       <aside
-        className="bg-surface border-rule w-sidebar sticky top-0 hidden h-screen shrink-0 flex-col border-r lg:flex"
+        className="bg-surface border-rule w-sidebar-collapsed lg:w-sidebar sticky top-0 hidden h-screen shrink-0 flex-col border-r md:flex"
         data-testid="shell-sidebar"
       >
-        {/* Logo / marque */}
-        <div className="border-rule flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <CalendarDays className="text-accent h-5 w-5" aria-hidden="true" />
-          <span className="text-ink text-sm font-semibold tracking-tight">{t('brand')}</span>
+        {/* Logo / marque — l'icône seule tient le rôle de marque en replié. */}
+        <div className="border-rule flex h-14 shrink-0 items-center justify-center gap-2 border-b px-3 lg:justify-start lg:px-4">
+          <CalendarDays className="text-accent h-5 w-5 shrink-0" aria-hidden="true" />
+          <span className="text-ink hidden text-sm font-semibold tracking-tight lg:inline">
+            {t('brand')}
+          </span>
         </div>
 
-        {/* Bouton Nouvel événement (overlay) — primary graphite */}
-        <div className="px-3 pt-4">
+        {/* Bouton Nouvel événement (overlay) — primary graphite.
+            Replié : icône seule, le nom accessible vient d'`aria-label`+`title`
+            (pattern `RailButton`). `px-0 lg:px-4` évite que le padding du Button
+            n'écrase l'icône dans les 48px utiles du rail. */}
+        <div className="px-2 pt-4 lg:px-3">
           <Button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="w-full"
+            aria-label={t('newEvent')}
+            title={t('newEvent')}
+            className="w-full px-0 lg:px-4"
             data-testid="shell-sidebar-new-event-button"
           >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span>{t('newEvent')}</span>
+            <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="hidden lg:inline">{t('newEvent')}</span>
           </Button>
         </div>
 
         {/* Navigation principale */}
         <nav
           aria-label={t('nav.aria')}
-          className="flex flex-1 flex-col gap-1 px-3 pt-4"
+          className="flex flex-1 flex-col gap-1 px-2 pt-4 lg:px-3"
           data-testid="shell-sidebar-nav"
         >
           {NAV_ITEMS.map(({ id, icon: Icon }) => {
@@ -185,30 +214,36 @@ export function AppShell({ children }: AppShellProps) {
                 key={id}
                 href={href}
                 aria-current={active ? 'page' : undefined}
+                aria-label={t(`nav.${id}`)}
+                title={t(`nav.${id}`)}
                 data-testid={`shell-sidebar-nav-link-${id}`}
                 className={cn(
-                  'flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors',
+                  'flex h-11 items-center justify-center gap-3 rounded-md px-0 text-sm transition-colors lg:justify-start lg:px-3',
                   active
                     ? 'bg-accent-soft text-accent font-medium'
                     : 'text-ink-muted hover:bg-surface-2',
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>{t(`nav.${id}`)}</span>
+                <span className="hidden lg:inline">{t(`nav.${id}`)}</span>
               </Link>
             )
           })}
         </nav>
 
         {/* Pied : langue + thème + réglages + profil + déconnexion */}
-        <div className="border-rule flex flex-col gap-2 border-t p-3">
-          <div className="flex items-center justify-between">
+        <div className="border-rule flex flex-col gap-2 border-t p-2 lg:p-3">
+          {/* Replié : les deux contrôles s'empilent (48px utiles ne tiennent pas
+              deux cibles de 44px côte à côte). `LanguageSelector` est déjà
+              `size="icon"` → aucun changement à lui apporter. */}
+          <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-between">
             <LanguageSelector />
             <button
               type="button"
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               aria-pressed={isDark}
               aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
+              title={isDark ? t('theme.toLight') : t('theme.toDark')}
               data-testid="shell-sidebar-theme-toggle"
               className="text-ink-muted hover:bg-surface-2 flex h-11 w-11 items-center justify-center rounded-md transition-colors"
             >
@@ -222,14 +257,16 @@ export function AppShell({ children }: AppShellProps) {
 
           <Link
             href={`/${locale}/settings`}
+            aria-label={t('settings')}
+            title={t('settings')}
             data-testid="shell-sidebar-settings-link"
-            className="text-ink-muted hover:bg-surface-2 flex h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors"
+            className="text-ink-muted hover:bg-surface-2 flex h-11 items-center justify-center gap-3 rounded-md px-0 text-sm transition-colors lg:justify-start lg:px-3"
           >
             <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>{t('settings')}</span>
+            <span className="hidden lg:inline">{t('settings')}</span>
           </Link>
 
-          <div className="flex items-center gap-3 px-1 pt-1">
+          <div className="flex flex-col items-center gap-2 px-0 pt-1 lg:flex-row lg:gap-3 lg:px-1">
             {/* Avatar carré (rounded-sm) — override local, `avatar.tsx` inchangé. */}
             <Avatar
               className="rounded-sm"
@@ -238,7 +275,9 @@ export function AppShell({ children }: AppShellProps) {
               size="sm"
               data-testid="shell-sidebar-avatar"
             />
-            <span className="text-ink min-w-0 flex-1 truncate text-sm font-medium">
+            {/* Replié : l'avatar seul identifie le profil (`truncate` exige un
+                bloc, d'où `lg:block` et non `lg:inline`). */}
+            <span className="text-ink hidden min-w-0 flex-1 truncate text-sm font-medium lg:block">
               {displayName || t('profile')}
             </span>
             <button
@@ -260,9 +299,10 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
 
-      {/* #455 — Bouton flottant « Nouvel événement », `lg:hidden` (miroir exact du
-          `hidden … lg:flex` de l'`<aside>` : exactement un des deux déclencheurs est
-          rendu, jamais zéro, jamais deux). Spec Designer :
+      {/* #455 — Bouton flottant « Nouvel événement », `md:hidden` depuis #298 (miroir
+          exact du `hidden … md:flex` de l'`<aside>` : exactement un des deux
+          déclencheurs est rendu, jamais zéro, jamais deux — sous `md` c'est celui-ci,
+          au-dessus c'est celui de la sidebar, replié puis plein). Spec Designer :
             · 52×52 (`h-13 w-13`, token `--space-13`) — au-dessus du minimum tactile
               WCAG 2.5.5 (44 px) ; `Button size="icon"` (36 px) serait sous le seuil ;
             · `rounded-xl` (`--radius-xl`), le pill étant réservé aux switches ;
@@ -280,7 +320,7 @@ export function AppShell({ children }: AppShellProps) {
         aria-label={t('newEvent')}
         aria-haspopup="dialog"
         data-testid="shell-mobile-new-event-button"
-        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed right-4 bottom-[calc(var(--space-6)+env(safe-area-inset-bottom))] z-10 flex h-13 w-13 items-center justify-center rounded-xl shadow-lg transition-colors lg:hidden"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 fixed right-4 bottom-[calc(var(--space-6)+env(safe-area-inset-bottom))] z-10 flex h-13 w-13 items-center justify-center rounded-xl shadow-lg transition-colors md:hidden"
       >
         <Plus className="h-5 w-5" aria-hidden="true" />
       </button>
