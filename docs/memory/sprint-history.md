@@ -4718,4 +4718,28 @@ remontés par les agents, traités au triage de Phase 4.
 des subagents (112 K et 158 K tokens consommés de leur côté) ne sont jamais entrés dans le contexte
 du lead — seuls les `done.md` et leurs pointeurs.
 
-**Status :** En cours — PR #526 ouverte et verte, merge en attente de validation
+**PR :** #526, mergée dans `dev` le 2026-09-04 (commit de merge `d08f038`, 5 commits).
+CI 7/7 verte sur le SHA mergé `31bd064`.
+**Milestone GitHub :** #76 — **fermé** après merge. Vérifié avant fermeture : il ne contenait que
+les 3 issues du sprint, aucun follow-up égaré du sprint précédent (le piège documenté ne s'est pas
+présenté cette fois).
+**Issues fermées après merge :** #279, #60, #172 — fermeture manuelle et commentée (un `Closes #N`
+ne ferme rien sur une PR dont la base est `dev`). #172 porte l'évidence de sa double résolution :
+point 2 livré au S58/#353, point 1 absorbé par #60.
+
+**Follow-ups arbitrés (Phase 4 triage) — 3 items, 0 discard :**
+  - contrastes des éléments ajoutés et débordement du sommaire en `de` sur les pages légales
+    [S | frontend/a11y] → **issue #527**, milestone Sprint 76. Le seul des trois qui peut cacher un
+    défaut utilisateur réel : la conformité des éléments ajoutés est *déduite* de l'usage de jetons
+    DS validés ailleurs, exactement le raisonnement que `BUG-S70-001` a réfuté par la mesure.
+  - sort de `format:check` (câbler en CI ou retirer les scripts) [S | tooling/CI] → **issue #528**,
+    backlog libre. **Redécouverte de `BUG-S71-002`** : deux sprints l'ont désormais signalé sans
+    qu'il soit tranché ; l'issue le dit pour que le troisième ne le retrouve pas non plus.
+  - `warn-test-delegation.sh` contredit la doctrine E2E du projet [S | tooling/orchestration]
+    → **issue #529**, backlog libre.
+
+  Ratio discard : 0/3. Aucun agent n'avait émis de `RECOMMAND_FOLLOWUP` formel — les trois points
+  viennent de ce qu'ils ont instruit en passant (un témoin passé sur `prettier` avant de conclure,
+  un contournement de hook documenté) et de ce que le lead a listé comme non couvert.
+
+**Status :** Terminé
