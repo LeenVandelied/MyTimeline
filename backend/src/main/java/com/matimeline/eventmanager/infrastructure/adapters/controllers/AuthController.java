@@ -342,14 +342,18 @@ public class AuthController {
      * Mot de passe oublié (#49). Génère + envoie un token de réinitialisation si
      * l'email correspond à un compte existant.
      *
-     * <p>BR-AUT-005 (anti-énumération) : répond TOUJOURS 200 quel que soit le
+     * <p>BR-AUT-012 (anti-énumération) : répond TOUJOURS 200 quel que soit le
      * résultat du lookup — le service ne lève aucune exception révélant l'existence
      * du compte. Le seul 400 possible vient de la validation @Valid (corps malformé /
      * email absent), traité par GlobalExceptionHandler.
+     *
+     * <p>#142 : le champ {@code locale} du corps (optionnel, non validé) choisit la
+     * langue de l'email. Il n'est PAS contraint : une locale absente ou inconnue
+     * retombe sur le français côté adapter, sans changer le code de réponse.
      */
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        passwordResetService.requestReset(request.getEmail());
+        passwordResetService.requestReset(request.getEmail(), request.getLocale());
         // Message neutre identique dans tous les cas (compte trouvé ou non).
         return ResponseEntity.ok(Map.of(
                 "message", "Si un compte correspond à cet email, un lien de réinitialisation a été envoyé."));

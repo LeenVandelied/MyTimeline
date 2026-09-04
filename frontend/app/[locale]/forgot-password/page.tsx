@@ -39,8 +39,9 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ local
     setLoading(true)
     setServerError(null)
     try {
-      await forgotPassword(data.email)
-      // BR-AUT-005 : message neutre quel que soit le retour (anti-fuite).
+      // #142 : la locale de la route choisit la langue de l'email de réinitialisation.
+      await forgotPassword(data.email, locale)
+      // BR-AUT-012 : message neutre quel que soit le retour (anti-fuite).
       setSubmitted(true)
     } catch {
       setServerError(t('common.forgotPassword.errors.generic'))
