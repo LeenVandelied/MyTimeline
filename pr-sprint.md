@@ -1,94 +1,140 @@
-## Objectif
+## Sprint 74 — « Landing & focus polish »
 
-Trois finitions frontend indépendantes : débordement de titre produit, lisibilité de la
-pastille de couleur sélectionnée, état sidebar icon-only sur tablette.
+Quatre finitions frontend XS, toutes `epic:design` / `priority:P3`, sur des fichiers
+strictement disjoints. Aucune BR impactée, aucune migration, aucun changement backend.
 
-Milestone **Sprint 73** (#74). Aucune BR métier touchée, aucune migration Flyway.
+Milestone : **Sprint 74** (#75). Vague unique, les 4 issues traitées en parallèle.
 
-## Issues traitées
+| Issue | Sujet | Commit |
+|---|---|---|
+| #342 | `<Link>` enveloppant `<DropdownMenuItem>` dans le sélecteur de langue | `3ebb8d6` + `0c26911` |
+| #343 | Easing hors DS et import CSS chargé sur toutes les routes | `6365d26` |
+| #384 | Double lévitation au survol des cartes Fonctionnalités (−18 px au lieu de −10) | `ecc76c2` |
+| #417 | Contour de focus rogné dans `.mt-zoom` et le tablist des réglages | `0c40f9d` + `801dadd` |
 
-| # | Titre | Size | Commit |
-|---|---|---|---|
-| #458 | Titre produit sans `break-words` déborde sur mot long | XS | `3d98ce9` |
-| #416 | Pastille sélectionnée : glyphe de coche (CategoryDrawer) | S | `1e3143e` |
-| #298 | Tablette : sidebar shell repliable (icon-only) | S | `bb6d219` |
+---
 
-Vague unique : les trois en parallèle, fichiers strictement disjoints.
+## Trois énoncés sur quatre étaient faux ou périmés
 
-## Changements clés
+C'est le fait marquant de ce sprint : les correctifs livrés ne sont pas ceux que les issues
+prescrivaient. Chaque écart est justifié par un constat dans le code, pas par une préférence.
 
-**#458** — `break-words` seul **ne suffisait pas**. Le `<h1>` est enfant direct d'un
-conteneur flex, où `min-width:auto` conserve la taille min-content du mot le plus long et
-neutralise `overflow-wrap:break-word`. D'où `min-w-0` en plus — convention déjà présente
-13 fois dans le dépôt.
+**#343 — l'issue s'auto-contredisait.** Elle demandait à la fois d'utiliser `--ease-quart` et
+que l'animation reste inchangée. Or le token vaut `cubic-bezier(0.32, 0.72, 0, 1)` et non la
+courbe Material `(0.4, 0, 0.2, 1)` qu'il remplace : **+0,54 de progression à 25 % de la
+course**, la frise décélère nettement plus tôt. Arbitré avec le développeur en faveur du token
+(cohérence du système de motion) ; **le geste de la frise change sur la landing**, c'est
+assumé. L'issue visait par ailleurs `app/layout.tsx:5`, alors que ce layout est transparent
+depuis #413 — l'import réel était dans `app/[locale]/layout.tsx`.
 
-**#416** — Glyphe `<Check>` dont la couleur est calculée depuis la luminance du remplissage
-(seuil L > 0,179), avec les tokens de palette **bruts** `--gray-0` / `--gray-900` et non les
-alias sémantiques `--color-ink` / `--color-primary-foreground`, qui s'inversent en `.dark` et
-feraient disparaître le glyphe en thème sombre. Contraste recalculé par script sur les 12
-couleurs réelles : minimum **4,54:1**, aucune sous 3:1.
+**#417 — l'énoncé nommait le mauvais composant, et sa piste technique était la mauvaise.** Le
+« tablist des réglages » ne passe pas par `.mt-tab` du DS mais par des utilitaires Tailwind
+bruts ; corriger le CSS nommé aurait touché les onglets **produits** en laissant le vrai défaut
+en place. Et le motif de référence cité (`timeline.css:115`/`:131`) n'existe plus, il est
+en `:180`/`:196`. Enfin la piste `outline-offset` négatif s'est révélée mauvaise pour les
+contrôles de zoom (voir plus bas).
 
-**#298** — 3ᵉ état de sidebar entre `md` et `lg` via le token dédié
-`--sidebar-width-collapsed` (aucune valeur arbitraire `w-[64px]`), et l'invariant #455
-maintenu : `hidden md:flex` sur l'`<aside>` ⟺ `md:hidden` sur le bouton flottant.
+**#342 — le pattern cité n'était pas transposable.** L'issue prescrivait `<Button asChild>` par
+analogie avec #295, mais l'élément est un `DropdownMenuItem` : un `Button` aurait détruit
+`role="menuitem"`. Le pattern réellement livré par #295 est « le primitif prend `asChild` », ce
+qui donne ici `<DropdownMenuItem asChild><Link/></DropdownMenuItem>`.
 
-## Deux constats qui dépassent le périmètre des issues
+---
 
-**1. Un commentaire du code était factuellement faux.** `AppShell.tsx` affirmait que
-`CompactRail` / `MobileDrawer` couvraient 768–1023 px. Vérifié directement : `CompactRail`
-se déclenche sur `(orientation:landscape) and (max-height:500px)` — un critère de **hauteur** —
-et `MobileDrawer` sur `max-width:767px`. **Aucun des deux n'a jamais couvert cette plage.**
-Le report acté en DEC-S40-001 laissait donc un trou, pas le repli qu'il décrivait.
-Commentaire corrigé dans ce sprint.
+## #417 — pourquoi le remède a changé en cours de route
 
-**2. Un défaut confirmé que cette PR introduit et NE corrige PAS.**
-`frontend/app/[locale]/(app)/dashboard/page.tsx:112` — `<header ... lg:hidden>` est désormais
-peint entre 768 et 1023 **en même temps** que la sidebar icon-only, et ses contrôles (L121,
-`hidden md:flex`) y dupliquent LanguageSelector + Réglages + Logout du pied de sidebar.
-Le fichier était hors du périmètre autorisé de #298 : signalé plutôt qu'absorbé
-silencieusement. Correctif probable `lg:hidden` → `md:hidden`, à arbitrer côté design.
+La piste de l'énoncé (`outline-offset:-2px`) a été implémentée puis **mesurée au navigateur**,
+et elle réalisait le risque que l'issue énonçait elle-même :
 
-## Tests
+- `.mt-zoom__btn` fait **30 × 16,5 px**, l'icône `<svg>` **14 × 14 px**
+- un trait inset de 2 px ne laisse que **8,5 px** libres → le trait **croise l'icône** en haut,
+  en bas et à gauche
+- aucune valeur inset n'y échappe : `-1px` → 10,5 px, `0` → 12,5 px, toujours < 14 px.
+  **Le problème est la hauteur du bouton, pas la valeur de l'offset.**
 
-- **Unitaire frontend** : 106 fichiers / **1181 passed** / 0 failed
-- **E2E Playwright** : **249 passed / 0 failed / 9 skipped** (5 min 12, `exit=0`)
-  - Un seul bloc `Running 258 tests using 2 workers` — contrôle anti-pollution
-  - 9 skips = `auth-signature.spec.ts` (RS256), préexistants, étrangers au sprint
-  - Spécifiquement vertes : `sprint-73-tablet-sidebar` 5/5 (bornes 767/768/1023/1024),
-    `settings-breakpoints` 6/6, `sprint-66-mobile-create-event` 3/3, et les deux specs
-    non modifiées mais identifiées à risque — `sprint-63-de-overflow-audit` 17/17 et
-    `timeline-mobile` 15/15
-- `tsc --noEmit` 0 erreur, eslint 0, prettier clean
+Remède retenu (`801dadd`) : retirer `overflow:hidden` de `.mt-zoom`, l'arrondi étant porté par
+les boutons de bord. Le contour du DS (+2 px) peint alors dehors, sur ses 4 côtés, sans toucher
+l'icône. **C'est exactement ce que #226 appliquait déjà en contexte `.mt-tlm`** : même cause (le
+clip du groupe), même correctif, un seul motif dans le DS au lieu de deux.
 
-## Ce que cette PR ne prouve pas
+Les deux zones de #417 n'ont donc pas le même remède, et c'est délibéré : le tablist des
+réglages garde son `outline-offset:-2px` (pastilles `rounded-md` **sans bordure**, trait à 2 px
+du bord et 10 px du libellé). L'objection du §8bis de `ds/a11y-audit.md` — « un offset négatif
+poserait le trait SUR la bordure porteuse d'état » — tient pour `.mt-tab` et le `<tr>`, pas
+pour ces pastilles. Arbitrage consigné au §8ter.
 
-Deux critères d'acceptation restent **argumentés, non observés** :
+---
 
-- **#458** « le titre ne déborde plus » — aucun test ne mesure un débordement ; jsdom ne
-  calcule pas de layout. Le test ajouté assert la présence des classes. Le raisonnement CSS
-  est solide, mais c'est un raisonnement.
-- **#416** « ≥ 3:1 sur 12 couleurs × 2 thèmes » — prouvé sur le **modèle** (calcul de
-  luminance), pas sur le **rendu**. Aucune sonde de contraste navigateur.
+## Tests et vérifications
 
-Un `RECOMMAND_FOLLOWUP` dédié existe pour chacun. Détail dans
-`docs/memory/audits/sprint-73-test-coverage.md`.
+| Suite | Résultat |
+|---|---|
+| Unitaires frontend | **1187 / 1187**, 107 fichiers |
+| `npm run build` (lint CI) | exit 0 |
+| E2E Playwright | **257 passés**, 1 échec, 9 ignorés |
 
-## Review
+Backend non exécuté : aucun fichier backend dans le diff.
 
-Reviewer batch : **0 CRITIQUE / 0 MAJEUR / 2 MINEURS**, les deux résolus dans `c405988`
-(documentaires). Le reviewer a vérifié indépendamment que `--gray-0` / `--gray-900` ne sont
-jamais redéfinis sous `.dark` — la seule condition qui aurait invalidé tout le raisonnement
-de contraste de #416.
+**Vérifications navigateur** (serveur webpack en worktree, focus armé au clavier réel, les deux
+thèmes) — c'est ce qui a permis de retourner #417 :
 
-## Notes de process
+- `.feature-card` au survol : `transform: matrix(1, 0, 0, 1, 0, -10)`, `translate: none`
+  → **−10 px exactement**, le cumul à −18 px est supprimé
+- `.hero-timeline*` : **5 sélecteurs + 2 keyframes** servis sur `/fr`, **0** sur `/fr/login` et
+  `/fr/register` (chunks CSS réellement inspectés)
+- contours de focus : **0 côté rogné sur 4**, desktop et mobile, dans les deux thèmes ;
+  contrastes **4,95 à 6,48:1** (seuil WCAG 1.4.11 = 3:1)
+- deux **contre-épreuves par mutation** : rétablir l'ancien offset positif sur le tablist
+  reproduit bien le rognage sur 3 côtés ; remplir un bouton de zoom d'une couleur franche et
+  l'agrandir 8× montre que le fond suit l'arrondi — le `overflow:hidden` retiré ne gardait
+  rien qui ne soit couvert autrement
 
-- `/sprint plan 73` n'avait jamais été exécuté : label et milestone existaient, mais sans
-  entrée `PLANIFIE` ni mini-plans architect. Triage et matrice faits au démarrage.
-- Le worktree pointait sur une branche issue de `main` (sans `docs/`, `scripts/`, CI) ;
-  sprint mené sur `sprint/73` créée depuis `origin/dev`.
-- Un `INDETERMINE` du `test-runner` (« régression de build sur `sprint/73` ») a été **réfuté
-  par reproduction** : `next dev` démarre en 1,25 s et la suite E2E est verte. Cause réelle :
-  l'inférence de workspace root en worktree (PIT-S61-007), déjà documentée dans
-  `playwright.config.ts`.
+Détail complet : `docs/memory/audits/sprint-74-test-coverage.md`.
+
+### L'échec E2E
+
+`[chromium] sprint-62-select-focus-indicator.spec.ts:551` → `locator.evaluate: Test timeout of
+30000ms exceeded`. Écarté du périmètre par faisceau : **3 des 4 variantes du même test
+passent**, le diff ne touche aucun sélecteur de cet arbre, le symptôme est un timeout et non
+une assertion de peinture, la CI de `dev` est verte, et le rejeu ciblé du fichier donne 25/25.
+
+⚠ **Ce faisceau n'est pas une démonstration.** Le rejeu ciblé est vert *en isolation*, ce qui
+retire la charge. Le contre-test décisif — rejouer ce spec sur `origin/dev` dans les mêmes
+conditions — n'a pas été fait. La CI de cette PR tranchera.
+
+---
+
+## Ce qui n'est pas vérifié
+
+- **#343 « animation inchangée visuellement »** : structurellement inatteignable, l'issue
+  s'auto-contredit. Le geste change, c'est arbitré et documenté.
+- **Fluidité de la transition de #384** : `transition-property: all` et `duration: 0.3s` sont
+  bien calculés sur l'élément, mais le panneau navigateur rendait des lectures de transition
+  instables — l'interpolation elle-même n'a pas été observée de façon fiable.
+- **Palier responsive `-5px` sous 768 px** (#384) : règle présente et correctement conditionnée,
+  non mesurée à ce viewport.
+- **#417 en `:hover` simultané au focus** (le fond passe à `--color-surface-2`) et en
+  `forced-colors: active`.
+
+## Écarts de procédure
+
+- **Aucun plan `/sprint plan` n'existait** : le milestone #75 et le label `sprint-74` avaient
+  été créés côté GitHub, sans entrée `sprint-history.md` ni `architect-plans.md`. Les vagues
+  ont été dérivées par recon directe du code, pas d'un rapport architect.
+- **Le worktree de départ pointait sur `main`** (`d8b4f53`), branche divergente sans `docs/`,
+  `.ai-env/`, `.claude/hooks/` ni `scripts/`. `sprint/74` a été recréée depuis `origin/dev`.
+
+## Follow-ups proposés
+
+- `dropdown-menu.tsx:26-30` — le pavé cite comme « cas vivant » une imbrication que #342 vient
+  de supprimer. [XS | frontend/doc]
+- `landing-mobile-menu.spec.ts:265-270` — commentaire d'ancrage décrivant une structure à deux
+  nœuds. [XS | frontend/e2e]
+- `.mt-tab` (onglets produits, `core.css:260`, `outline-offset:3px`) — non vérifié au
+  navigateur, potentiellement rogné selon son conteneur ; son remède ne peut pas être l'offset
+  négatif (recouvrement du soulignement d'accent). [XS | frontend/a11y]
+
+Traite #342, #343, #384, #417 — fermeture manuelle au `/sprint end` (un `Closes #N` ne ferme
+rien sur une PR dont la base est `dev`).
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
