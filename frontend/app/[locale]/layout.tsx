@@ -1,8 +1,6 @@
 import '../../src/styles/globals.css'
 import '../../src/styles/landing.css'
 import '../../src/styles/animations.css'
-// #56 — mouvement de la frise du Hero, isolé pour être remplaçable (aucune couleur).
-import '../../src/styles/hero-timeline.css'
 import React, { ReactNode, CSSProperties } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'

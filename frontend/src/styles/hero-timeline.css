@@ -2,9 +2,15 @@
  * Frise horizontale animée du Hero de la landing (#56).
  *
  * Feuille DÉDIÉE et volontairement isolée : l'animation n'est pas spécifiée au design
- * system et sera probablement remplacée. La retirer = supprimer ce fichier, son import
- * dans `app/layout.tsx` et `HeroTimelineAnimation.tsx`. Rien d'autre n'en dépend, et
- * aucun sélecteur ici ne déborde du préfixe `.hero-timeline`.
+ * system et sera probablement remplacée. La retirer = supprimer ce fichier et son import
+ * dans `app/[locale]/page.tsx`. Rien d'autre n'en dépend, et aucun sélecteur ici ne
+ * déborde du préfixe `.hero-timeline`.
+ *
+ * PORTÉE (#343) : importée depuis la SEULE route landing `app/[locale]/page.tsx`, et non
+ * depuis `app/[locale]/layout.tsx` qui l'aurait servie à toutes les routes localisées.
+ * `HeroTimelineAnimation` n'est rendu que par `HeroSection` <- `HomePage` <- cette route :
+ * déplacer l'import ailleurs (ou rendre le composant depuis une autre route) casse
+ * l'animation SANS casser un test — jsdom ne charge pas les feuilles de la route.
  *
  * ZÉRO COULEUR — toutes les couleurs viennent des classes utilitaires DS posées dans le
  * composant (`bg-rule`, `bg-accent`, `bg-surface`, `border-rule-emphasis`). Cette
@@ -12,6 +18,13 @@
  *
  * Les deux animations partagent la même durée : le pic du marqueur « aujourd'hui »
  * (50 %) tombe pendant la course de la progression, la frise se lit comme un seul geste.
+ *
+ * EASING (#343) : `--ease-quart` (ds/tokens/spacing.css) remplace la valeur littérale
+ * `cubic-bezier(0.4, 0, 0.2, 1)` héritée de #56. Ce n'est PAS un no-op visuel — la courbe
+ * du DS décélère bien plus tôt (à 25 % de la course : 78 % de la largeur contre 24 %
+ * auparavant). Écart assumé : le DS est la source de vérité du motion, et la frise se lit
+ * comme un geste plus « lancé ». Le marqueur `today` garde `ease-in-out` : c'est une
+ * pulsation symétrique, aucun token du DS ne la couvre.
  */
 
 .hero-timeline {
@@ -19,7 +32,7 @@
 }
 
 .hero-timeline__progress {
-  animation: hero-timeline-sweep var(--hero-timeline-duration) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: hero-timeline-sweep var(--hero-timeline-duration) var(--ease-quart) infinite;
 }
 
 @keyframes hero-timeline-sweep {
