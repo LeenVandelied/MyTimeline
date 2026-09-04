@@ -50,6 +50,11 @@
 
   /* layout-specific (#210 shell applicatif — nav latérale persistante) */
   --sidebar-width: 248px;
+  /* #298 — palier tablette (md..lg) : sidebar repliee icon-only. 64px = 4x16
+     (grille base-4), largeur alignee sur `CompactRail` (`w-16`). Token dedie
+     plutot qu'un `w-16` nu : les dimensions de shell passent par un token
+     layout-specific (BLOCKING-1 de #210). */
+  --sidebar-width-collapsed: 64px;
   /* #300 — drawer FORMULAIRE (création d'événement, handoff §6 : 452px). Token dédié
      plutôt qu'un `w-[452px]` arbitraire (PAT-S40-002). NE remplace PAS le drawer de
      DÉTAIL `.mt-drawer` (420px en dur, timeline.css) : deux surfaces distinctes, une
