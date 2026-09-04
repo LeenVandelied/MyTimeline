@@ -3,14 +3,11 @@
 import { useTranslations, useLocale } from 'next-intl'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
-import { Button } from '@/components/ui/button'
 import AddProductButton from '@/components/products/AddProductButton'
-import { LanguageSelector } from '@/components/ui/language-selector'
 import { AppFooter } from '@/components/ui/footer-app'
-import { CalendarDays, LogOut, Menu, Settings } from 'lucide-react'
+import { CalendarDays, Menu } from 'lucide-react'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { TimelineEditHost } from '@/components/timeline'
 import { useDashboardData } from '@/hooks/useDashboardData'
@@ -44,9 +41,11 @@ import {
  *
  * Bascule via `useMediaQuery` (SSR-safe : rend `false` au 1er rendu → desktop par
  * défaut, pas de hydration mismatch). Le switch d'affichage est TERNAIRE :
- * paysage > portrait > desktop. Les contrôles header desktop (langue + logout)
- * sont masqués sur mobile (`hidden md:flex`) ; le hamburger n'apparaît qu'en
- * portrait (`md:hidden` + masqué en paysage), remplacé par le rail en paysage.
+ * paysage > portrait > desktop. Le header de l'écran est `md:hidden` depuis le
+ * suivi de #298 (cf. son commentaire) : il ne porte plus que le titre d'écran et
+ * le hamburger, lequel n'apparaît qu'en portrait (masqué en paysage, où le rail
+ * vertical le remplace). Langue / réglages / déconnexion sont fournis par le pied
+ * de la sidebar du shell dès `md`, et par le `MobileDrawer` en dessous.
  */
 export default function Dashboard() {
   const t = useTranslations()
@@ -104,41 +103,49 @@ export default function Dashboard() {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col" data-testid="dashboard">
-      {/* #210 — Enveloppé par le shell applicatif (`(app)/layout.tsx`). En desktop
-          (>= lg) la nav latérale du shell fournit langue / thème / réglages /
-          profil / déconnexion : ce header propre à l'écran est donc masqué à
-          partir de `lg` pour éviter la double chrome. En < lg le shell délègue :
-          ce header (hamburger #83 / contrôles) reste la nav mobile de l'écran. */}
-      <header className="bg-surface border-rule sticky top-0 z-10 border-b lg:hidden">
+      {/* #210, RÉVISÉ APRÈS #298 — Enveloppé par le shell applicatif
+          (`(app)/layout.tsx`). L'`<aside>` du shell est `hidden md:flex` DEPUIS
+          #298 : il est peint dès 768 px (icon-only 64px de 768 à 1023, déplié
+          248px au-delà) et y fournit langue / thème / nav / réglages / profil /
+          déconnexion. Le masquage à `lg` de ce header datait d'avant #298 : il
+          était donc devenu FAUX, ce header restant peint EN MÊME TEMPS que la
+          sidebar repliée sur toute la plage 768–1023, et ses contrôles
+          `hidden md:flex` y dupliquant langue + réglages + déconnexion du pied
+          de sidebar (défaut relevé par #298, corrigé ici).
+
+          Ce header passe donc `md:hidden`, MIROIR EXACT du `hidden md:flex` de
+          l'`<aside>` (même paire de classes que l'invariant #455 du shell).
+          INVARIANT : exactement UNE chrome de navigation est peinte à toute
+          largeur — `< md` ce header, `>= md` la sidebar du shell ; jamais zéro,
+          jamais deux. Oracle : `e2e/sprint-73-tablet-sidebar.spec.ts`.
+
+          CE QUE LE HEADER PORTE ENCORE, ET POURQUOI RIEN N'EST PERDU EN 768–1023 :
+            · titre d'écran (`dashboard.title`) — au-dessus de `lg` ce header était
+              DÉJÀ masqué, donc le titre y était déjà absent : le contexte de page
+              est porté par l'`aria-current="page"` de la nav sidebar et par
+              `GreetingHeader`. Aucune régression propre à la plage tablette ;
+            · hamburger (#83) — déjà `md:hidden` sur SON PROPRE nœud, donc jamais
+              peint au-dessus de 767 px : le masquer avec le header ne retire rien.
+              Son `MobileDrawer` (langue / thème / déconnexion) reste le relais
+              `< md`, la sidebar prenant le relais `>= md`.
+
+          Les contrôles desktop (langue + lien Réglages + déconnexion) sont
+          SUPPRIMÉS et non conservés : leur conteneur était `hidden md:flex` DANS
+          un header désormais `md:hidden` — ils n'auraient plus pu être peints à
+          AUCUNE largeur (famille PIT-S66-001 : une cible logée dans un conteneur
+          responsive jamais peint, qu'aucun test ne voit disparaître). Leurs
+          équivalents vivent dans le pied de sidebar (`shell-sidebar-settings-link`,
+          `shell-sidebar-logout`, `LanguageSelector`) et dans le `MobileDrawer`. */}
+      <header
+        className="bg-surface border-rule sticky top-0 z-10 border-b md:hidden"
+        data-testid="dashboard-header"
+      >
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <CalendarDays className="text-accent h-5 w-5" />
             <span className="text-ink text-xs font-semibold tracking-tight">
               {t('dashboard.title')}
             </span>
-          </div>
-          {/* Contrôles desktop (langue + logout) — masqués sur mobile portrait. */}
-          <div className="hidden items-center gap-3 md:flex">
-            <LanguageSelector />
-            {/* #86 — Accès aux Réglages (page /settings, 4 chapitres). */}
-            <Button
-              asChild
-              variant="ghost"
-              className="text-ink hover:bg-accent-soft flex items-center gap-2"
-            >
-              <Link href={`/${locale}/settings`} data-testid="dashboard-settings-link">
-                <Settings className="h-4 w-4" />
-                <span>{t('common.buttons.settings')}</span>
-              </Link>
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              className="text-ink hover:bg-accent-soft flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>{t('common.buttons.logout')}</span>
-            </Button>
           </div>
           {/* Hamburger mobile portrait — ouvre le drawer off-canvas (#83).
               #85 : masqué en paysage (remplacé par le rail vertical). */}

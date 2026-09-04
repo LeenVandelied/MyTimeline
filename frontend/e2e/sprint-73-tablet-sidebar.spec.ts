@@ -71,6 +71,19 @@ async function openShell(page: Page): Promise<void> {
   await ensureAuthenticated(page)
 }
 
+/**
+ * NOMS ACCESSIBLES fr des trois contrôles que les DEUX chromes portaient.
+ * Ce sont les seuls points communs exploitables : les `data-testid` diffèrent
+ * d'une chrome à l'autre (`dashboard-settings-link` vs
+ * `shell-sidebar-settings-link`), donc un compte par testid ne pourrait
+ * STRUCTURELLEMENT jamais voir un doublon inter-chrome. Les libellés viennent
+ * de `public/locales/fr/` : `common.buttons.settings` == `shell.settings` et
+ * `common.buttons.logout` == `shell.logout`, ce qui rend l'appariement exact.
+ */
+const NAME_SETTINGS = 'Réglages'
+const NAME_LOGOUT = 'Se déconnecter'
+const NAME_LANGUAGE = 'Changer de langue'
+
 /** Largeur peinte de la sidebar (null si elle n'a pas de boîte). */
 async function sidebarWidth(page: Page): Promise<number | null> {
   const box = await page.getByTestId('shell-sidebar').boundingBox()
@@ -169,6 +182,113 @@ for (const p of PALIERS) {
           floatingTrigger,
           `à ${p.width} px (< ${MD}) le bouton flottant est le SEUL déclencheur de création`,
         ).toBeVisible()
+      }
+    })
+
+    // -----------------------------------------------------------------------
+    // SUIVI #298 — CHROME DE NAVIGATION UNIQUE (non-régression de la DOUBLE
+    // chrome que #298 a introduite sans la corriger).
+    //
+    // #298 a fait passer l'`<aside>` du shell de `hidden lg:flex` à
+    // `hidden md:flex`, mais le header propre au dashboard
+    // (`app/[locale]/(app)/dashboard/page.tsx`) est resté `lg:hidden` : les
+    // deux chromes se peignaient EN MÊME TEMPS sur 768–1023, et les contrôles
+    // `hidden md:flex` du header (langue + Réglages + déconnexion) y
+    // apparaissaient EN DOUBLE avec le pied de sidebar. Le header est passé
+    // `md:hidden`, miroir exact du `hidden md:flex` de l'aside.
+    //
+    // POURQUOI UN COMPTE ET NON `toBeVisible()`. Un `toBeVisible()` sur un
+    // contrôle passerait avec DEUX occurrences peintes : c'est précisément
+    // l'assertion qui n'aurait pas vu le défaut. On COMPTE donc les cibles,
+    // par leur NOM ACCESSIBLE (cf. NAME_* ci-dessus). `getByRole` n'apparie
+    // que les nœuds EXPOSÉS à l'arbre d'accessibilité : un ancêtre
+    // `display:none` (`md:hidden` / `hidden`) les en retire, le compte reflète
+    // donc bien ce qui est peint. Aucun `count()` nu : tout passe par
+    // `expect.poll`, qui réessaie ([[PIT-S63-001]]).
+    // -----------------------------------------------------------------------
+    test(`chrome de navigation unique à ${p.width} px`, async ({ page }) => {
+      test.setTimeout(120_000)
+      await openShell(page)
+
+      const screenHeader = page.getByTestId('dashboard-header')
+      const sidebar = page.getByTestId('shell-sidebar')
+      const hamburger = page.getByTestId('dashboard-mobile-menu-button')
+
+      const settings = page.getByRole('link', { name: NAME_SETTINGS, exact: true })
+      const logout = page.getByRole('button', { name: NAME_LOGOUT, exact: true })
+      const language = page.getByRole('button', { name: NAME_LANGUAGE, exact: true })
+
+      // ---- Exactement UNE chrome peinte, jamais zéro, jamais deux ----------
+      if (p.sidebar) {
+        await expect(
+          screenHeader,
+          `à ${p.width} px (>= ${MD}) le header de l'écran doit céder la place à ` +
+            'la sidebar du shell (il était `lg:hidden`, donc encore peint ici)',
+        ).toBeHidden()
+        await expect(sidebar).toBeVisible()
+
+        // ---- Aucun contrôle en double ------------------------------------
+        for (const [locator, label] of [
+          [settings, `lien « ${NAME_SETTINGS} »`],
+          [logout, `bouton « ${NAME_LOGOUT} »`],
+          [language, `sélecteur « ${NAME_LANGUAGE} »`],
+        ] as const) {
+          await expect
+            .poll(() => locator.count(), {
+              message:
+                `à ${p.width} px le ${label} ne doit être peint QU'UNE fois ` +
+                '(2 = header de l\'écran + pied de sidebar : la double chrome est de retour)',
+            })
+            .toBe(1)
+        }
+
+        // Le hamburger porte son propre `md:hidden` : il n'était déjà jamais
+        // peint sur cette plage. Masquer le header ne lui retire donc rien —
+        // c'est la vérification, pas la supposition, du briefing.
+        await expect(
+          hamburger,
+          `à ${p.width} px (>= ${MD}) le hamburger était DÉJÀ masqué par son propre ` +
+            '`md:hidden` : aucune fonction perdue en masquant le header',
+        ).toBeHidden()
+      } else {
+        await expect(
+          screenHeader,
+          `à ${p.width} px (< ${MD}) le header de l'écran est la SEULE chrome`,
+        ).toBeVisible()
+        await expect(sidebar).toBeHidden()
+        await expect(hamburger).toBeVisible()
+
+        // Sous `md`, ces trois contrôles ne sont peints NULLE PART tant que le
+        // drawer est fermé : ils y transitent par le hamburger (#83). Le
+        // compte à 0 verrouille ce contrat — un 1 signalerait que des
+        // contrôles desktop se sont remis à fuiter dans le header mobile.
+        for (const [locator, label] of [
+          [settings, `lien « ${NAME_SETTINGS} »`],
+          [logout, `bouton « ${NAME_LOGOUT} »`],
+          [language, `sélecteur « ${NAME_LANGUAGE} »`],
+        ] as const) {
+          await expect
+            .poll(() => locator.count(), {
+              message: `à ${p.width} px le ${label} passe par le drawer, pas par le header`,
+            })
+            .toBe(0)
+        }
+
+        // ---- PREUVE DE NON-PERTE SOUS `md` : le relais existe -------------
+        // Masquer le header dès `md` n'est légitime que si, en dessous, le
+        // hamburger ouvre bien une chrome équivalente. On l'exerce.
+        await hamburger.click()
+        await expect(page.getByTestId('dashboard-mobile-drawer')).toBeVisible()
+        await expect
+          .poll(() => logout.count(), {
+            message: `à ${p.width} px le drawer doit fournir EXACTEMENT un « ${NAME_LOGOUT} »`,
+          })
+          .toBe(1)
+        await expect
+          .poll(() => language.count(), {
+            message: `à ${p.width} px le drawer doit fournir EXACTEMENT un « ${NAME_LANGUAGE} »`,
+          })
+          .toBe(1)
       }
     })
   })
