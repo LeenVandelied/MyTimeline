@@ -64,7 +64,9 @@ export function SettingsShell() {
         role="tablist"
         aria-label={t('nav.aria')}
         aria-orientation="horizontal"
-        className="border-rule flex flex-row gap-1 overflow-x-auto border-b"
+        // `mt-tablist-scroll` (DS, core.css) : `overflow-x-auto` calcule aussi
+        // `overflow-y:auto` et rognait le contour de focus des onglets (#417).
+        className="mt-tablist-scroll border-rule flex flex-row gap-1 overflow-x-auto border-b"
         data-testid="settings-tablist"
       >
         {CHAPTERS.map((chapter, i) => {

@@ -125,6 +125,16 @@
 .mt-zoom__btn:first-child{border-right:1px solid var(--color-rule);}
 .mt-zoom__btn:last-child{border-left:1px solid var(--color-rule);}
 .mt-zoom__btn:hover{background:var(--color-surface-2);}
+/* #417 — le groupe porte `overflow:hidden` (il arrondit les coins des boutons,
+   qui n'ont pas de rayon propre). Le contour de focus du DS vient de `@layer
+   base` avec `outline-offset:2px` : ces 4px (2 de décalage + 2 de trait) tombent
+   HORS de la boîte de clip du groupe, seuls 1 à 2 côtés sont peints. On ramène
+   le contour À L'INTÉRIEUR du bouton — motif déjà employé plus bas par
+   `.mt-tlv__group-head` et `.mt-tlv__lane-head`. Pas de `ring-*` (box-shadow :
+   rogné à l'identique, et `ring-offset` peint une bande opaque en sombre) —
+   DEC-S58-001. Bouton de 30px pour un glyphe mono de 15px : à -2px le trait
+   court à 2px du bord, sans recouvrir le glyphe. */
+.mt-zoom__btn:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
 .mt-zoom__level{display:flex; align-items:center; padding:0 12px; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-muted); white-space:nowrap;}
 
 /* ---------------- DateStamp ---------------- */
@@ -392,6 +402,12 @@
 .mt-tlm .mt-zoom__btn:first-child{border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
 .mt-tlm .mt-zoom__btn:last-child{border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
 .mt-tlm .mt-zoom__btn::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
+/* #417 — en contexte `.mt-tlm` le groupe est DÉJÀ passé en `overflow:visible`
+   (ci-dessus, #226) : rien n'y rogne le contour, qui est correct sur ses 4 côtés
+   avec le décalage du DS. On y REVIENT donc explicitement à +2px : un contour
+   intérieur y dégraderait un rendu aujourd'hui juste et rapprocherait le trait
+   du glyphe sur une cible dont la hitbox déborde déjà de 7px de chaque côté. */
+.mt-tlm .mt-zoom__btn:focus-visible{outline-offset:2px;}
 
 /* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll
    horizontal natif mais laisse le composant gérer le pinch (2 doigts). */

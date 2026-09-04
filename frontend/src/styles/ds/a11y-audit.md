@@ -338,3 +338,34 @@ Chromium 149 + Firefox 151, clair et sombre, dpr=1, viewport 1440×900.
   rognage reste géométriquement possible — le balayage a porté sur les bords, à
   12 %, 50 % et 88 % de la largeur. Et tout cela à **dpr = 1** : un écran à densité
   fractionnaire peut placer le trait autrement.
+
+### 8ter · Contour rogné par un conteneur de défilement — #417 (Sprint 74)
+
+Deux zones peignaient 1 à 2 côtés sur 4. Défaut **pré-existant** au Sprint 58 :
+l'ancien `ring-*` (un `box-shadow`) était rogné exactement de la même façon.
+
+| Zone | Ce qui rogne | Remède posé |
+|---|---|---|
+| `.mt-zoom__btn` (contrôles de zoom) | `.mt-zoom{overflow:hidden}` — le bouton remplit la boîte de clip, les 4px du contour (`offset 2` + `trait 2`) tombent dehors | `outline-offset:-2px` (`components/timeline.css`) |
+| onglets de `SettingsShell` | conteneur `overflow-x-auto` : `overflow-y` calculé à `auto` → traits HAUT/BAS rognés, plus le trait GAUCHE du 1er onglet | `.mt-tablist-scroll > [role='tab']:focus-visible{outline-offset:-2px}` (`components/core.css`) |
+
+- **Exception assumée** : en contexte `.mt-tlm` (mobile), `.mt-zoom` est déjà
+  `overflow:visible` (#226) et le contour y est correct sur ses 4 côtés → le
+  décalage du DS (+2px) y est **restauré** explicitement. Un contour intérieur
+  aurait dégradé un rendu juste.
+- **Ce remède ne s'étend PAS à `.mt-tab`** ni au cas `<tr>` du §8bis : ces deux
+  cibles portent un `border-bottom` porteur d'état (accent de l'onglet
+  sélectionné / filet de ligne), qu'un contour intérieur recouvrirait — c'est
+  l'objection déjà écrite au §8bis, et elle tient toujours. Les onglets des
+  réglages sont des pastilles `rounded-md` **sans bordure** : l'objection ne s'y
+  applique pas. `.mt-tab` a de plus 1px de padding latéral (le trait tomberait
+  sur le libellé).
+- ⚠️ **NON MESURÉ** (aucune vérification navigateur dans ce lot) : les 4 côtés
+  peints, et le contraste réel sous le trait déplacé (`PIT-S58-001` — le fond
+  sous un `outline` n'est pas le `background-color` d'un ancêtre). Ratios
+  **calculés depuis les tokens**, à confirmer au pixel :
+  `--color-focus` sur `--color-surface` (bouton de zoom) ≈ **6.10:1** clair /
+  **6.49:1** sombre ; `--color-focus` sur `--color-accent-soft` (onglet des
+  réglages — le focus y est TOUJOURS sur l'onglet sélectionné, `tabIndex`
+  roving) ≈ **4.94:1** clair / **5.43:1** sombre. Seuil applicable : 3:1
+  (WCAG 1.4.11).
