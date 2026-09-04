@@ -63,6 +63,13 @@ export interface ConflictDialogProps {
    * d'action pour empêcher un double-clic = 2 `updateEvent` concurrents. Défaut `false`.
    */
   isSubmitting?: boolean
+  /**
+   * #310 - Plafond de re-soumissions « garder mes modifications » atteint (409 repetes,
+   * contention reelle). Affiche un message explicite et desactive DEFINITIVEMENT le
+   * bouton keep-mine : un message sous un bouton encore cliquable ne bornerait rien.
+   * « Prendre la version serveur » reste actionnable - c'est la sortie du flux.
+   */
+  keepMineExhausted?: boolean
 }
 
 /** Champs comparables local ↔ serveur (kind pilote la comparaison/affichage). */
@@ -100,6 +107,7 @@ export function ConflictDialog({
   onKeepMine,
   onTakeServer,
   isSubmitting = false,
+  keepMineExhausted = false,
 }: ConflictDialogProps) {
   const t = useTranslations('common.conflictDialog')
 
@@ -190,6 +198,19 @@ export function ConflictDialog({
           </div>
         )}
 
+        {/* #310 - Message terminal : le plafond de re-soumissions est atteint. Jetons
+            semantiques existants uniquement (`text-destructive`, deja utilise par le
+            titre et par l'erreur inline d'EventEditForm) - aucune couleur litterale. */}
+        {isComparative && keepMineExhausted && (
+          <p
+            role="alert"
+            className="text-destructive text-sm"
+            data-testid="conflict-dialog-keep-mine-exhausted"
+          >
+            {t('keepMineExhausted')}
+          </p>
+        )}
+
         <DialogFooter className="gap-2">
           {isComparative ? (
             <>
@@ -207,7 +228,7 @@ export function ConflictDialog({
                 type="button"
                 className="bg-accent hover:bg-accent-hover text-accent-ink"
                 onClick={() => onKeepMine?.()}
-                disabled={isSubmitting}
+                disabled={isSubmitting || keepMineExhausted}
                 data-testid="conflict-dialog-keep-mine"
               >
                 {t('keepMine')}

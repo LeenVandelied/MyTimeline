@@ -183,6 +183,51 @@ describe('ConflictDialog — mode comparatif (#231)', () => {
     expect(onTakeServer).toHaveBeenCalledOnce()
   })
 
+  it('keepMineExhausted : message explicite + keep-mine definitivement desactive (#310)', async () => {
+    const onKeepMine = vi.fn()
+    const onTakeServer = vi.fn()
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={onKeepMine}
+        onTakeServer={onTakeServer}
+        keepMineExhausted
+      />,
+    )
+    // Critere 2 : un message explicite s'affiche apres N echecs consecutifs.
+    const alert = screen.getByTestId('conflict-dialog-keep-mine-exhausted')
+    expect(alert).toHaveTextContent('common.conflictDialog.keepMineExhausted')
+    expect(alert).toHaveAttribute('role', 'alert')
+    // Critere 1/5 : le bouton n'est plus actionnable (un message sous un bouton
+    // encore cliquable ne bornerait rien).
+    expect(screen.getByTestId('conflict-dialog-keep-mine')).toBeDisabled()
+    await userEvent.click(screen.getByTestId('conflict-dialog-keep-mine'))
+    expect(onKeepMine).not.toHaveBeenCalled()
+    // La SORTIE du flux reste ouverte : « prendre la version serveur » actionnable.
+    expect(screen.getByTestId('conflict-dialog-take-server')).not.toBeDisabled()
+    await userEvent.click(screen.getByTestId('conflict-dialog-take-server'))
+    expect(onTakeServer).toHaveBeenCalledOnce()
+  })
+
+  it('sans keepMineExhausted : aucun message de plafond (#310)', () => {
+    render(
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        serverEvent={serverEvent}
+        localValues={localValues}
+        onKeepMine={vi.fn()}
+        onTakeServer={vi.fn()}
+      />,
+    )
+    expect(screen.queryByTestId('conflict-dialog-keep-mine-exhausted')).not.toBeInTheDocument()
+  })
+
   it('isSubmitting : désactive garder/prendre → pas de double-clic = 2 updateEvent', async () => {
     const onKeepMine = vi.fn()
     const onTakeServer = vi.fn()

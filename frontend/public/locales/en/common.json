@@ -49,6 +49,7 @@
     "yourValue": "Your changes",
     "serverValue": "Server version",
     "keepMine": "Keep my changes",
+    "keepMineExhausted": "Too many attempts: this event keeps being modified elsewhere. Use the server version, or close and redo your change from the up-to-date data.",
     "takeServer": "Use the server version",
     "empty": "—",
     "yes": "Yes",

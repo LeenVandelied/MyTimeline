@@ -110,4 +110,19 @@ describe('ConflictDialog — intégration next-intl réelle (#441)', () => {
     expect(document.body.textContent).not.toMatch(/conflictDialog\./)
     expect(errors).toEqual([])
   })
+
+  it('#310 — message de plafond keep-mine TRADUIT (pas un chemin de cle)', () => {
+    const errors = renderWithRealIntl({
+      serverEvent: SERVER_EVENT,
+      localValues: LOCAL_VALUES,
+      onKeepMine: vi.fn(),
+      onTakeServer: vi.fn(),
+      keepMineExhausted: true,
+    })
+    const alert = screen.getByTestId('conflict-dialog-keep-mine-exhausted')
+    expect(alert).toHaveTextContent('Trop de tentatives')
+    // PIT-S63-006 : un namespace faux resterait invisible sous le mock `${ns}.${key}`.
+    expect(document.body.textContent).not.toMatch(/conflictDialog\./)
+    expect(errors).toEqual([])
+  })
 })

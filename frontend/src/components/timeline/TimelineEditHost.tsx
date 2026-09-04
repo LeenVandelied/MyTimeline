@@ -274,6 +274,7 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
                 conflictLocalValues={conflict.conflict?.local}
                 onKeepMine={conflict.onKeepMine}
                 onTakeServer={conflict.onTakeServer}
+                keepMineExhausted={conflict.keepMineExhausted}
                 onDelete={deleteEditing}
                 isRecurring={editing?.extendedProps?.isRecurring ?? false}
                 /* #495 — `null` sous 640px : l'aperçu y reste EN FLUX (PAT-S44-001,
