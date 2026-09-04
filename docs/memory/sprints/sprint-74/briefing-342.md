@@ -72,6 +72,27 @@ cela produit un interactif dans un interactif.
 
 ## Contraintes d'exécution — LIRE AVANT TOUTE COMMANDE
 
+### 0. Répertoire de travail — VÉRIFIE-LE AVANT TOUT
+
+Ce sprint tourne dans un **worktree git**, pas dans le dépôt principal. Un subagent peut
+démarrer avec un `cwd` par défaut sur `~/VSProjects/MyTimeline` (le dépôt principal, branche
+`dev`) : tu y lirais du code voisin mais pas le tien, et tout ton travail serait perdu ou
+commité sur la mauvaise branche.
+
+**Première commande, sans exception :**
+
+```bash
+cd /Users/herrh/VSProjects/MyTimeline/.claude/worktrees/traitement-s-xs-parallele-d0ae59 \
+  && pwd && git rev-parse --abbrev-ref HEAD && git log --oneline -1
+```
+
+Attendu : la branche est **`sprint/74`**. Si `pwd` ou la branche diffèrent, **ARRÊTE-TOI** et
+rends `STATUS: PARTIAL` avec `BLOQUE_SUR: cwd/branche inattendus — <ce que tu as vu>`.
+Ne « corrige » pas en changeant de branche.
+
+Préfixe chaque `Bash` d'un `cd` explicite vers ce chemin : le cwd ne persiste pas de façon
+garantie entre tes appels.
+
 ### 1. Working tree PARTAGÉ — 4 agents tournent en parallèle sur ce répertoire
 
 Tu n'es pas seul. Trois autres `fullstack-dev` travaillent **en même temps, dans ce même
