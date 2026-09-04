@@ -81,6 +81,13 @@ pas mesure**.
   inutilisee. [S | design]
 - `RECOMMAND_FOLLOWUP` : verification navigateur du delta 15→13px et du `nowrap`
   en `de`. [XS | frontend]
-- `RECOMMAND_TEST_RUNNER` : E2E Playwright non lances sur ce diff.
+- Pas de RECOMMAND_TEST_RUNNER a traiter : le signal initial (« E2E Playwright non
+  lances sur ce diff ») est **eteint**. Aucun agent `test-runner` n'a ete spawne — le
+  lead a monte la stack et joue la suite complete lui-meme (backend construit depuis
+  HEAD, frontend `:3100`), ce qui donne la meme preuve tout en permettant de
+  diagnostiquer sur place les deux rouges rencontres.
+  Resultat : **243 passed / 1 instable prouve non-regressif / 9 skipped**.
+  Detail : `docs/memory/sprints/sprint-72/e2e-run.md`. Confirme ensuite par le job
+  `e2e` de la CI (vert sur `94ef537`).
 
 STATUS: COMPLETED

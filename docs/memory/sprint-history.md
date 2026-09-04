@@ -4232,31 +4232,70 @@ milestone #71 fermé. Titre et ligne `Status` volontairement redondants (cf. `PI
 
 ---
 
-## Sprint 72 — 2026-09-04 (En cours — i18n : email de reset + formats localisés)
+## Sprint 72 — 2026-09-04 (PR #512 ouverte, CI verte — i18n : email de reset localisé + formats de nombres)
 
-**Objectif :** i18n — localisation de l'email de réinitialisation (backend) et
-finition des formats dates/nombres localisés (frontend).
+**Objectif :** i18n — localisation de l'email de réinitialisation (backend) et finition
+des formats de nombres localisés (frontend).
 
 **Milestone GitHub :** #73 (« Sprint 72 »)
-**Issues :** #142 (S, epic:auth, backend), #72 (M, epic:transversal, frontend)
-**Vagues :** V1 = #142 + #72 en parallèle (fichiers strictement disjoints — backend/ vs frontend/)
-**Migrations Flyway :** aucune
-**Dépend de :** aucune
+**Issues livrées (2) :** #142 (S, epic:auth), #72 (M, epic:transversal)
+**Vagues exécutées :** V1 = #142 + #72 en parallèle (fichiers strictement disjoints)
 **Cohésion :** 1.00 sur le thème i18n ; 0.00 sur les br-packs (`br-auth` vs `br-events`).
-Deux moitiés de pile qui ne se touchent pas — c'est ce qui rend la vague unique sûre,
+Deux moitiés de pile qui ne se touchent pas — c'est ce qui a rendu la vague unique sûre,
 pas ce qui rend le sprint cohérent au sens des packs.
+**Migrations Flyway :** aucune
+**Commits :** 8 — `afd164c` (#72), `cf49e2e` (#142), `72d75f3` (correctif typage),
+`27cba3a` (suite review), + 4 de documentation.
+**BR impactées :** BR-AUT-012 (aucune modification de la règle ; étiquette corrigée).
 
-**Arbitrages pris au démarrage (reconnaissance de code, pas lecture d'issue) :**
-- #142 — aucune locale n'est persistée nulle part (`User.java` sans champ locale, pas de
-  colonne DB, `LanguageSelector` purement URL) et l'endpoint est **non authentifié**.
-  Décision dev : la locale transite par `ForgotPasswordRequest`, champ optionnel,
-  repli `fr`. Ni `Accept-Language`, ni migration.
-- #72 — **l'essentiel du scope de l'issue est déjà livré** : `Intl.DateTimeFormat(locale, …)`
-  dans ~15 composants, `dayjs` et `date-fns` à zéro occurrence. Décision dev : issue
-  reformulée sur le reste réel (classes DS `mt-date--short`/`mt-num` jamais appliquées,
-  `Intl.NumberFormat` à zéro occurrence, tests 4 locales).
+### Le sprint n'était pas planifié — cadrage refait par lecture du code
 
-**Status :** En cours
+Milestone et labels existaient, mais **aucune entrée de planification, aucun mini-plan**.
+Le cadrage a été reconstruit par reconnaissance de code, et les **deux** énoncés d'issue
+se sont révélés inexacts (→ `DEC-S72-004`) :
+
+- **#142** supposait qu'une langue utilisateur existe. Elle n'existe nulle part, et
+  l'endpoint est non authentifié → locale portée par le DTO (`DEC-S72-001`).
+- **#72** décrivait un formatage `dayjs` déjà migré (`date-fns` à zéro occurrence).
+  Périmètre réduit au reste réel : `Intl.NumberFormat` à zéro occurrence et classes DS
+  jamais appliquées.
+
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS. 1 corrigé (`27cba3a`),
+2 arbitrés et documentés (`DEC-S72-002`, `DEC-S72-003`).
+
+**Tests :** Backend 561/561 · Frontend 1168/1168 · `tsc --noEmit` propre ·
+**E2E 243 passed / 1 instable / 9 skipped** (local, backend construit depuis HEAD) ·
+**CI 7/7 SUCCESS** sur `94ef537` (SHA vérifié identique au HEAD local).
+
+**Nouveaux pitfalls / patterns / décisions :** `PIT-S72-001..007`, `PAT-S72-001..002`,
+`DEC-S72-001..004`. Aucun bug consigné.
+
+### Écarts et erreurs à ne pas lisser
+
+- **Un rapport d'agent était faux.** #72 affirmait `tsc --noEmit` propre ; TS2322 était
+  bien présent. Trouvé par l'agent de #142, vérifié et corrigé par le lead
+  (`PIT-S72-002`). Vitest ne typecheckant pas, seule la CI l'aurait vu.
+- **Le lead a propagé une étiquette de BR fausse** (BR-AUT-005 au lieu de BR-AUT-012)
+  dans son premier briefing, recopiée du code sans vérification — la même faute que
+  celle consignée au S71. Corrigée avant le spawn (`PIT-S72-001`).
+- **La review a produit une recommandation dangereuse** : corriger l'étiquette dans une
+  migration Flyway appliquée aurait cassé le boot par changement de checksum. Écartée
+  avec la raison écrite dans le code (`PIT-S72-003`).
+- **La PR a été ouverte avant les E2E.** C'est le dev qui l'a exigé après coup ; le trou
+  était identifié dans l'audit mais n'aurait pas dû être laissé ouvert à l'ouverture.
+- **Le check de couverture E2E a levé un faux positif** (`dashboard-density-today`,
+  testid déjà présent sur `dev`, ligne voisine modifiée).
+
+### Ce qui reste NON prouvé après clôture
+
+1. **Aucun des 4 templates d'email n'a jamais été vu dans un client mail.**
+   `BREVO_API_KEY` absente → adapter NO-OP. L'E2E prouve que le parcours forgot → token
+   → reset → login fonctionne, **pas** que le template DE ou ES est correct.
+2. **Traductions es/de non relues par un locuteur natif.**
+3. **Aucune vérification navigateur** du delta 15px → 13px sur `EventPreviewTimeline`
+   ni du `nowrap` en `de` (estimé, non mesuré).
+
+**Status :** PR ouverte, en attente de merge
 
 ## Sprint 71 — 2026-09-04 (Terminé — merge PR #498 dans dev — Dette sécurité auth + follow-ups design du S70)
 
