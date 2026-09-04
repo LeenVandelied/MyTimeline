@@ -36,7 +36,7 @@ import jakarta.persistence.EntityManagerFactory;
  * en réalité un TRIPLE hit MESURÉ : {@code SELECT count(*)} + {@code SELECT} de l'entité +
  * {@code DELETE} = 3 instructions JDBC.
  *
- * <p>APRÈS #175, le port expose {@code deleteByIdIfExists} (DELETE bulk JPQL bindé rendant
+ * <p>APRÈS #175, le port expose {@code deleteByIdReturningRowCount} (DELETE bulk JPQL bindé rendant
  * le nombre de lignes touchées) : 1 seule instruction, et le 404 est dérivé du compte de
  * lignes au lieu d'une sonde d'existence préalable.
  *

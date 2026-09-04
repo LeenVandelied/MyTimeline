@@ -46,17 +46,21 @@ de 1er niveau (0 SQL) — l'instruction réellement supprimée est le `SELECT co
 ## 3. Voie retenue : (a)
 
 Port `EventRepository` : `void deleteById(UUID)` **retiré**, remplacé par
-`int deleteByIdIfExists(UUID)` qui rend le nombre de lignes touchées.
+`int deleteByIdReturningRowCount(UUID)` qui rend le nombre de lignes touchées.
 Implémentation dans `EventRepositoryJpaImpl` : `DELETE` bulk **JPQL** bindé
 (`DELETE FROM EventEntity e WHERE e.id = :id`), une seule instruction.
-Service : `if (eventRepository.deleteByIdIfExists(id) == 0) throw new EventNotFoundException(id);`.
+Service : `if (eventRepository.deleteByIdReturningRowCount(id) == 0) throw new EventNotFoundException(id);`.
 
 Choix JPQL et non SQL natif (alors que `deleteAllByUserId` du même fichier est natif) : le natif
 n'était nécessaire là-bas que pour contourner le `@SQLRestriction` de `ProductEntity` ; ici il n'y
 en a aucun à contourner, et le bulk JPQL déclare son *entity space*, donc Hibernate auto-flushe les
-mutations en attente sur `events` avant de l'exécuter. Le retrait de `deleteById` du port est
-délibéré : laisser sur le port la méthode qui EST l'anti-pattern permettrait de le réintroduire par
-inadvertance au prochain besoin de suppression.
+mutations en attente sur `events` avant de l'exécuter. Le retrait de `deleteById` du port est délibéré, mais sa
+portée était SURVENDUE dans la première version de ce document (« empêche la réintroduction ») —
+correction : il retire le chemin à trois requêtes de l'**abstraction dont dépend la couche
+application**, rien de plus. `EventRepositoryJpaImpl extends SimpleJpaRepository`, donc `deleteById`
+et `delete` restent des méthodes **publiques du bean concret** ; le contrôle négatif de
+`EventDeleteStatisticsIntegrationTest` les appelle justement via `legacyRepository`. C'est une
+barrière de conception, pas une garantie de compilation.
 
 Précédent maison invoqué : `UserRepositoryJpaImpl.deleteById` (#78) fait déjà exactement ce
 raisonnement — « natif bindé pour éviter le select+delete de `SimpleJpaRepository.deleteById` ».
@@ -74,6 +78,65 @@ raisonnement — « natif bindé pour éviter le select+delete de `SimpleJpaRepo
   la portent pas : le gain est réel (−2 instructions en isolé, −1 sur le chemin HTTP), le coût est
   d'UNE méthode de port, et le dépôt porte déjà le précédent identique de #78. Le no-op aurait
   laissé en place une méthode de port qui est un piège pour le prochain appelant.
+
+## 3bis. Verrou optimiste perdu sur la suppression — décision assumée (cycle 2 de review)
+
+**Constat du db-expert, vérifié moi-même et CONFIRMÉ par la mesure.** `EventEntity` porte bien
+`@Version` (l.33-35). L'ancien chemin finissait par `em.remove(entity)`, qui émet
+`DELETE ... WHERE id = ? AND version = ?` ; le DELETE bulk JPQL émet `WHERE id = ?` seul. Un
+événement édité concurremment est donc désormais supprimé là où l'ancien chemin levait un
+`StaleStateException`. Ni documenté ni testé dans mon premier commit : c'était un angle mort réel.
+
+**Preuve, pas déduction.** J'ai ajouté un contrôle négatif à
+`EventOptimisticLockConflictIntegrationTest` :
+`legacyDeletePath_underSharedPersistenceContext_didRaiseOptimisticLock` **passe** — l'ancien chemin
+levait effectivement un conflit de la famille optimistic-lock quand une édition était committée
+entre le chargement d'ownership et le flush. Le constat du reviewer est donc exact, pas théorique.
+Reproduction déterministe, sans thread ni timing (l'édition concurrente est committée par une
+transaction imbriquée `REQUIRES_NEW`) — PIT-S25-002 ne s'applique pas.
+
+**Ce que ce contrôle négatif apprend en plus.** La fenêtre que l'ancien verrou protégeait n'était
+**pas** « quelqu'un a édité pendant que j'avais la page ouverte », mais les quelques millisecondes
+**internes à la requête DELETE**, entre le `SELECT` d'ownership et le flush : sous `open-in-view`,
+le `findById` de `SimpleJpaRepository.deleteById` tapait le cache de 1er niveau et réutilisait la
+version lue par le contrôle d'ownership. Sans `open-in-view`, ce `findById` aurait rechargé une
+version fraîche et le verrou n'aurait jamais rien attrapé.
+
+**Décision retenue : « la suppression gagne toujours ».** Assumée, pas subie :
+1. `DELETE /api/events/{id}` ne transporte **aucune version** — contrairement au PATCH dont
+   `EventUpdateRequest.version` porte le contrat 409 de BR-EVE-015. Le client ne peut donc pas
+   exprimer « supprime la version que j'ai vue » : il n'y a aucune intention utilisateur à
+   protéger, et un 409 sur DELETE serait inexploitable côté frontend (rien à comparer dans la
+   modale de conflit).
+2. La fenêtre réellement couverte était intra-requête (ci-dessus), pas métier.
+3. Une suppression demandée par le propriétaire est un acte terminal ; perdre une édition
+   concurrente sur une ligne qui disparaît de toute façon est sans conséquence observable.
+
+**Si le choix devait être REVU** (p. ex. si le frontend se mettait à envoyer une version au DELETE),
+le coût — chiffré, non implémenté — serait : un paramètre `version` sur le port et sur le DTO ;
+`DELETE ... WHERE e.id = :id AND e.version = :version` ; et la distinction des deux causes possibles
+de rowcount 0 (inexistant → 404 / version périmée → 409) par une relecture, soit une 2ᵉ instruction
+**sur le seul chemin de conflit**. Le chemin nominal resterait à 1 instruction.
+
+**Épinglage.** `concurrentEditThenDelete_deletionWins` transforme l'effet de bord en spécification :
+édition concurrente committée (version 0 → 1), puis suppression → la ligne part, aucun conflit. Il
+est volontairement voisin de `staleVersionUpdate_isRejectedByOptimisticLock_withoutOverwriting`, qui
+échoue sur le même scénario : le contraste UPDATE/DELETE est lisible dans le même fichier. Le jour
+où l'arbitrage devra changer, c'est ce test qui rougira en premier.
+
+## 3ter. Nommage et code mort (cycle 2 de review)
+
+**Nommage — tranché : renommé.** `deleteByIdIfExists` → **`deleteByIdReturningRowCount`** : le
+reviewer a raison, `IfExists` annonçait une idempotence anodine alors que le rowcount est
+load-bearing (le service en dérive le 404) ; le nouveau nom oblige l'appelant à le regarder.
+
+**`existsById` — tranché : retiré.** C'est bien mon commit qui l'a rendu mort. Supprimé de
+`EventRepository` (port), de `EventService` (port) et de `EventServiceImpl` — la chaîne entière
+n'avait plus aucun appelant de production. Effet de bord assumé : les deux
+`verify(eventRepository, never()).existsById(...)` de `EventServiceImplTest` (hérités de #95)
+deviennent structurellement impossibles et sont remplacés par un commentaire — l'assertion est
+désormais garantie par le compilateur plutôt que par un test. `ProductService`/`CategoryService`
+gardent leur propre `existsById` (celui de Category a de vrais appelants) : hors périmètre.
 
 ## 4. Contrat 404 préservé
 
@@ -95,8 +158,11 @@ Preuves :
 
 - Nouveau : `backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java`
   (3 tests : compte nominal, compte + 404 sur id inconnu, A/B séquence contrôleur).
+- Nouveaux (cycle 2), dans `EventOptimisticLockConflictIntegrationTest` :
+  `concurrentEditThenDelete_deletionWins` (spécification du comportement retenu) et
+  `legacyDeletePath_underSharedPersistenceContext_didRaiseOptimisticLock` (contrôle négatif).
 - Suite backend complète : `./scripts/test-quiet.sh backend` →
-  **`Tests run: 564, Failures: 0, Errors: 0, Skipped: 0` / `BUILD SUCCESS` / `EXIT=0`**
+  **`Tests run: 566, Failures: 0, Errors: 0, Skipped: 0` / `BUILD SUCCESS` / `EXIT=0`**
   (code de sortie lu explicitement, pas le texte du résumé — PIT-S45-003 / PIT-S75-002).
   `ArchitectureTest` (ArchUnit) inclus dans le run et vert : le port reste une interface pure,
   aucun import Spring/JPA introduit dans `domain/`.
@@ -109,21 +175,18 @@ Preuves :
   dans un test transactionnel ; il ne passe pas par MockMvc + services réels. Le compte de la
   requête HTTP complète inclurait en plus les requêtes d'authentification (user, produit) que ce
   correctif ne touche pas.
-- **`EventService.existsById` / `EventRepository.existsById` semblent sans appelant** (grep :
-  seule l'impl de passe-plat). Dette laissée intacte, hors périmètre de cette issue.
-- **Effet de bord connu du bulk delete** : il n'évince pas l'entité du cache de 1er niveau. Sous
-  open-in-view, une `EventEntity` chargée plus tôt dans la même requête y reste, non modifiée — le
-  flush de fin de transaction n'émet donc rien pour elle, et la requête se termine juste après.
-  Documenté en commentaire dans l'adaptateur. Aucun scénario du dépôt ne relit l'événement après sa
-  suppression dans la même requête ; ce point mériterait d'être re-vérifié si un jour la suppression
-  était enchaînée à d'autres lectures.
+- **Cache L1 après bulk delete** : point tranché SAIN au cycle 2 par le db-expert — le contrôleur
+  répond `ok().build()` sans relecture, donc dirty-check vide et aucun `UPDATE` post-`DELETE`.
+  À re-vérifier uniquement si la suppression était un jour enchaînée à d'autres lectures.
+- **Auto-flush du bulk JPQL : NON VÉRIFIÉ**, et laissé tel quel sur consigne du lead — sans impact
+  ici (le service est le seul appelant, rien en attente sur `events` au moment de l'appel).
 - **Pas de bench de latence** : la mesure porte sur le nombre d'instructions JDBC, pas sur un temps.
   Sur une suppression unitaire l'effet en millisecondes n'a pas été quantifié.
 
 ## Recommandations suite
 
-RECOMMAND_DB_EXPERT — le port `EventRepository` a été modifié (retrait de `deleteById`, ajout de `deleteByIdIfExists` avec bulk JPQL) : un relecteur schéma/requêtes doit valider la bascule vers un DELETE bulk et l'absence de cascade attendue sur `events`.
-Pas de RECOMMAND_TEST_RUNNER car la suite backend complète a été exécutée localement (564/564, EXIT=0) et tient en une commande.
+Pas de RECOMMAND_DB_EXPERT car le cycle 2 de review db-expert a eu lieu et ses cinq points sont traités dans ce document (verrou optimiste acté et testé, nommage tranché, `existsById` retiré, affirmation surdimensionnée corrigée, cache L1 confirmé sain).
+Pas de RECOMMAND_TEST_RUNNER car la suite backend complète a été exécutée localement (566/566, EXIT=0) et tient en une commande.
 Pas de RECOMMAND_SECURITY_EXPERT car le contrat d'ownership 403/404 est inchangé et couvert par `EventControllerOwnershipTest` resté vert.
 
 STATUS: COMPLETED

@@ -9,7 +9,6 @@ import com.matimeline.eventmanager.domain.models.Event;
 public interface EventRepository {
   List<Event> findDomainEventByProductId(UUID productId);
   Event save(Event event);
-  boolean existsById(UUID id);
   Optional<Event> findEventById(UUID id);
 
   /**
@@ -18,18 +17,28 @@ public interface EventRepository {
    * contrat 404 ({@code EventNotFoundException} quand 0 ligne) SANS sonde d'existence
    * préalable.
    *
+   * <p>Le nom dit « returning row count » et non « ifExists » : le compte n'est PAS un
+   * détail d'idempotence, il est PORTEUR DU CONTRAT — l'appelant DOIT le tester, sans quoi
+   * la suppression d'un id inconnu répondrait 200 au lieu de 404.
+   *
    * <p>Remplace l'ancien {@code void deleteById(UUID)}, hérité tel quel de
    * {@code SimpleJpaRepository} ({@code findById().ifPresent(this::delete)}). Combiné au
    * {@code existsById} qui le précédait dans le service, il coûtait TROIS instructions
    * JDBC mesurées ({@code SELECT count(*)} + {@code SELECT} de l'entité + {@code DELETE})
-   * pour une suppression unitaire. Le contrat ci-dessus en exige UNE SEULE. La méthode
-   * {@code void deleteById} a été RETIRÉE du port pour que ce chemin à trois requêtes ne
-   * puisse pas être réintroduit par inadvertance ; la mesure est verrouillée par
-   * {@code EventDeleteStatisticsIntegrationTest}.
+   * pour une suppression unitaire. Le contrat ci-dessus en exige UNE SEULE ; la mesure est
+   * verrouillée par {@code EventDeleteStatisticsIntegrationTest}.
    *
-   * <p>Idempotent : un appel sur un id inexistant retourne simplement 0, sans exception.
+   * <p>Retirer {@code deleteById} du PORT retire le chemin à trois requêtes de l'abstraction
+   * dont dépend la couche application — cela ne le rend pas inatteignable pour autant :
+   * {@code EventRepositoryJpaImpl} étend {@code SimpleJpaRepository}, donc {@code deleteById}
+   * et {@code delete} restent des méthodes PUBLIQUES du bean concret (le contrôle négatif de
+   * {@code EventDeleteStatisticsIntegrationTest} s'en sert justement).
+   *
+   * <p>⚠ PERTE ASSUMÉE DU VERROU OPTIMISTE — voir la note de décision dans
+   * {@code EventRepositoryJpaImpl.deleteByIdReturningRowCount} et le test
+   * {@code EventOptimisticLockConflictIntegrationTest#concurrentEditThenDelete_deletionWins}.
    */
-  int deleteByIdIfExists(UUID id);
+  int deleteByIdReturningRowCount(UUID id);
 
   /**
    * BR-EVE-015 (#231) : version optimiste (@Version) COURANTE de l'event, ou vide s'il

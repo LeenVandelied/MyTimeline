@@ -242,17 +242,11 @@ public class EventServiceImpl implements EventService {
         // dit trois. Le contrat 404 est INCHANGÉ, seulement dérivé autrement : c'est
         // désormais le nombre de lignes touchées (0) qui atteste l'absence, au lieu
         // d'une sonde d'existence préalable. Verrou : EventDeleteStatisticsIntegrationTest.
-        if (eventRepository.deleteByIdIfExists(id) == 0) {
+        if (eventRepository.deleteByIdReturningRowCount(id) == 0) {
             throw new EventNotFoundException(id);
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsById(UUID id) {
-        return eventRepository.existsById(id);
-    }   
-    
     @Override
     @Transactional
     public Event save(Event event) {

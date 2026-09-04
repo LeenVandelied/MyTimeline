@@ -30,6 +30,4 @@ public interface EventService {
     Optional<Integer> findVersionById(UUID id);
 
     void deleteById(UUID id);
-
-    boolean existsById(UUID id);
 }
