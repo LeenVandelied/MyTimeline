@@ -305,7 +305,9 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
             style={{ background: effectiveColor ?? 'var(--color-rule-strong)' }}
             aria-hidden="true"
           />
-          <h1 className="text-ink text-xl font-semibold tracking-tight">{product.name}</h1>
+          <h1 className="text-ink min-w-0 text-xl font-semibold tracking-tight break-words">
+            {product.name}
+          </h1>
         </div>
 
         <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">

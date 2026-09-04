@@ -145,6 +145,17 @@ describe('ProductDetailView', () => {
     expect(screen.getByTestId('product-detail-category')).toHaveTextContent('Véhicules')
   })
 
+  // jsdom ne calcule aucun layout : ce test verifie uniquement que les classes de
+  // gestion de debordement sont bien portees par le h1 du titre. L'absence reelle de
+  // debordement pixel n'est PAS prouvee ici (cf. non_verifie / E2E).
+  it('porte les classes anti-debordement sur le titre produit', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    const title = screen.getByTestId('product-detail-card').querySelector('h1')
+    expect(title).not.toBeNull()
+    expect(title?.className).toContain('break-words')
+    expect(title?.className).toContain('min-w-0')
+  })
+
   it('passe à la sous-frise UNIQUEMENT les events non archivés de CE produit', () => {
     render(<ProductDetailView productId="p-alpha" />)
     expect(screen.getByTestId('timeline-responsive')).toBeInTheDocument()
