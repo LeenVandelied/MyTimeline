@@ -83,51 +83,42 @@ const SCHEMES = ['light', 'dark'] as const
 /**
  * Les deux surfaces livrées par #60 et auditées par #527 — le périmètre exact
  * de cette issue. Tout ce qui est en dehors est un CONSTAT, pas une régression
- * du sprint 76 (cf. `KNOWN_PAGE_OVERFLOW` juste dessous).
+ * du sprint 76 (le débordement de PAGE, lui, a été soldé par #532 — cf. le bloc
+ * juste dessous et la garde anti-régression qui l'accompagne).
  */
 const SCOPE_SELECTOR =
   '[data-testid="privacy-toc"],[data-testid="terms-toc"],[data-testid="legal-disclaimer"]'
 
 /**
- * DÉFAUT PRÉ-EXISTANT, HORS PÉRIMÈTRE DE #527 — caractérisé ici, pas toléré.
+ * #532 (Sprint 77) — LE DÉFAUT DU `<h1>` QUE CE FICHIER CARACTÉRISAIT EST CORRIGÉ.
  *
- * Le `<h1>` des deux pages légales est un enfant direct du `<div class="flex
- * items-center mb-6">` qui porte aussi le bouton « Retour ». Il est rendu à
- * `text-3xl`, soit **57 px** dans l'échelle du DS (`ds/tokens/typography.css` —
- * PAS les 30 px de l'échelle Tailwind par défaut, [[PIT-S53-001]]). Le mot le
- * plus long du titre y mesure ~381 px : `min-width:auto` sur un item de flex
- * conserve cette taille min-content, et la page déborde donc à toute largeur
- * mobile.
+ * Ce qu'il y avait ici. Une constante `KNOWN_PAGE_OVERFLOW` et un test qui FIGEAIT
+ * le débordement du `<h1>` des deux pages légales (`text-3xl`, 57 px dans l'échelle
+ * du DS) : il exigeait que ce fautif-là, et lui seul, déborde. Son propre message
+ * disait de le SUPPRIMER le jour où le titre serait corrigé — [[PIT-S63-009]] : un
+ * marqueur de dette laissé en place fige le périmètre de l'issue suivante.
  *
- * MESURÉ le 2026-09-05, `next dev`, Chromium, 4 locales × 5 largeurs :
- *   /privacy — 320 px : scrollWidth 499 (dépassement 179 px) · 375 px : 124 px
- *   /terms   — 320 px : scrollWidth 429 (dépassement 109 px) · 375 px :  54 px
- *   Résorbé à partir de 640 px.
+ * Ce qui l'a corrigé. #532 pose une rampe typographique responsive sur le titre
+ * (`text-xl md:text-2xl lg:text-3xl`, 35/45/57 px), replie l'en-tête sous 640 px
+ * (`flex-wrap` + `w-full sm:w-auto`) et ajoute le filet `min-w-0` + `break-words`
+ * exigé par [[PIT-S73-001]] ; les `<h2>` de section reçoivent `break-words`, un
+ * composé allemand débordant AUSSI leur boîte (« Artikel 8 – Änderung der
+ * Nutzungsbedingungen », +133 px @320 px — second fautif que le balayage
+ * `rect.right` ne voyait pas, puisqu'un texte qui déborde sa boîte n'élargit pas
+ * son rectangle).
  *
- * TROIS RAISONS DE NE PAS LE CORRIGER ICI, chacune vérifiée :
- *  1. Il est PRÉ-EXISTANT : la ligne vient de `2a2cd9a` (« Step 3 add term and
- *     privacy »), pas de `9dac435` (#60, Sprint 75), dont le message précise
- *     d'ailleurs « aucun restyling ». #527 audite ce qu'a livré #60.
- *  2. Il n'est PAS corrélé à la locale — signal de reconnaissance de
- *     [[PIT-S63-013]]. Les intitulés légaux sont restés français dans les 4
- *     locales ; seul le libellé du bouton varie (Retour/Back/Atrás/Zurück), ce
- *     qui déplace le dépassement de 13 px au plus. `de` n'est donc pas le sujet.
- *  3. Le corriger est un ARBITRAGE DE CHARTE, pas une retouche. Mesuré sur
- *     `/de/privacy` @375 px : `min-w-0` SEUL ne corrige rien (la boîte tombe à
- *     240,9 px mais `scrollWidth` reste 381 — [[PIT-S73-001]] exactement) ;
- *     `min-w-0 + break-words` supprime bien le débordement, au prix d'un titre
- *     coupé en plein mot sur **246 px de haut** (369 px à 320 px sur `/terms`).
- *     Le vrai correctif est une rampe typographique responsive sur le titre —
- *     décision du gardien de la charte, hors mandat de cette issue.
+ * Ce qui le remplace. Le test de caractérisation est RETOURNÉ en garde
+ * anti-régression (« aucun débordement de page », 320 px ET 375 px), avec son
+ * contrôle négatif intégré : le filet est retiré à l'exécution et la mesure DOIT
+ * basculer, sinon la garde ne mesure rien ([[PIT-S62-003]]).
  *
- * CE TEST EST UNE CARACTÉRISATION. Il rougit dans les DEUX sens : si le
- * dépassement s'aggrave, et aussi le jour où quelqu'un corrige le titre — il
- * faudra alors le supprimer, ce que son message dit explicitement.
+ * MESURÉ le 2026-09-05 (`next dev`, Chromium, 4 locales × 5 largeurs) — avant / après :
+ *   de /privacy +379 / 0 @320 · +324 / 0 @375 · +285 / 0 @414 · +59 / 0 @640
+ *   de /terms   +395 / 0 @320 · +340 / 0 @375 · +301 / 0 @414 · +75 / 0 @640
+ *   fr /privacy +177 / 0 @320 · +122 / 0 @375 | fr /terms +107 / 0 @320 · +52 / 0 @375
+ *   es /privacy  +64 / 0 @320 |  es /terms +116 / 0 @320 · +61 / 0 @375
+ *   en aucun débordement, ni avant ni après.
  */
-const KNOWN_PAGE_OVERFLOW = {
-  privacy: { cls: 'text-3xl font-bold gradient-text', tag: 'h1' },
-  terms: { cls: 'text-3xl font-bold gradient-text', tag: 'h1' },
-} as const
 
 /**
  * Relevé chiffré, une ligne JSON par mesure.
@@ -519,12 +510,11 @@ test.describe(`#527 — débordement du sommaire en « ${LOCALE} » à ${MOBILE_
       const where = `${name} · ${LOCALE} · ${MOBILE_WIDTH}px`
 
       // ── LE VERROU DE #527 : rien du PÉRIMÈTRE ne déborde ────────────────
-      // Volontairement restreint aux deux surfaces livrées par #60. La page,
-      // elle, déborde — par son `<h1>`, défaut PRÉ-EXISTANT caractérisé par le
-      // test dédié plus bas. Élargir cette assertion à toute la page ferait
-      // rougir #527 sur un défaut qui n'est ni le sien ni corrigeable sans
-      // arbitrage de charte ; la restreindre au périmètre garde le verrou ARMÉ
-      // là où il a un sens (l'auto-contrôle plus bas le prouve).
+      // Restreint aux deux surfaces livrées par #60 — c'est le périmètre de
+      // #527, et l'auto-contrôle plus bas prouve que ce verrou sait rougir.
+      // Le débordement de PAGE, lui, n'est plus toléré depuis #532 : il est
+      // couvert par la garde anti-régression du test suivant, qui asserte
+      // l'ABSENCE de tout fautif, à 320 px comme à 375 px.
       expect(
         sweep.offenders.filter((o) => o.inScope),
         `${where} : le sommaire ou le disclaimer dépasse le bord droit du document — ` +
@@ -575,42 +565,76 @@ test.describe(`#527 — débordement du sommaire en « ${LOCALE} » à ${MOBILE_
     })
 
     /**
-     * CARACTÉRISATION du défaut pré-existant du `<h1>` — cf. le commentaire de
-     * `KNOWN_PAGE_OVERFLOW`. Ce test n'autorise rien : il FIXE l'état mesuré,
-     * de sorte qu'un second fautif, ou un fautif d'une autre nature, rougisse.
+     * GARDE ANTI-RÉGRESSION #532 — la page ne déborde PLUS, à AUCUNE largeur
+     * mobile. Remplace le test de caractérisation qui figeait le `<h1>` fautif
+     * (cf. le bloc de commentaire en tête de fichier).
+     *
+     * DEUX LARGEURS, et pas seulement les 375 px du reste du fichier : à 320 px
+     * la marge est la plus étroite (288 px de contenu) et c'est là que le
+     * correctif se joue. `de` reste la locale de mesure — c'est le cas
+     * DIMENSIONNANT depuis que #533 a traduit les titres
+     * (« Nutzungsbedingungen » : 597 px à 57 px, contre 381 px pour le titre
+     * français le plus long).
+     *
+     * CONTRÔLE NÉGATIF INTÉGRÉ ([[PIT-S62-003]]) : un « 0 débordement » ne vaut
+     * rien tant qu'on n'a pas montré que l'instrument SAIT rougir. On retire
+     * donc le filet (`min-width` + `overflow-wrap` + rampe) à l'exécution et on
+     * exige que le débordement REVIENNE, sur le `<h1>` nommément.
      */
-    test(`/${LOCALE}/${name} — le seul débordement de page reste le <h1> pré-existant`, async ({
-      page,
-    }) => {
-      test.setTimeout(120_000)
-      await page.goto(`/${LOCALE}/${name}`, { waitUntil: 'domcontentloaded' })
-      await expect(page.getByTestId(tocId)).toBeVisible({ timeout: 30_000 })
-      await waitForFonts(page)
-      await page.mouse.move(0, 0)
+    for (const width of [320, MOBILE_WIDTH]) {
+      test(`/${LOCALE}/${name} — aucun débordement de page à ${width}px (#532)`, async ({
+        page,
+      }) => {
+        test.setTimeout(120_000)
+        await page.setViewportSize({ width, height: 800 })
+        await page.goto(`/${LOCALE}/${name}`, { waitUntil: 'domcontentloaded' })
+        await expect(page.getByTestId(tocId)).toBeVisible({ timeout: 30_000 })
+        await waitForFonts(page)
+        await page.mouse.move(0, 0)
+        // La largeur du volet peut avoir bougé pendant le chargement : on la
+        // REFIXE juste avant la mesure, sinon le relevé est silencieusement faux.
+        await page.setViewportSize({ width, height: 800 })
 
-      const sweep = await measureOverflow(page)
-      const expected = KNOWN_PAGE_OVERFLOW[name]
-      record({
-        kind: 'known-overflow',
-        page: name,
-        locale: LOCALE,
-        width: MOBILE_WIDTH,
-        clientWidth: sweep.clientWidth,
-        scrollWidth: sweep.scrollWidth,
-        maxScrollX: sweep.maxScrollX,
-        overshootPx: Math.round((sweep.scrollWidth - sweep.clientWidth) * 100) / 100,
-        offenders: sweep.offenders,
+        const sweep = await measureOverflow(page)
+        record({
+          kind: 'page-overflow-guard',
+          page: name,
+          locale: LOCALE,
+          width,
+          clientWidth: sweep.clientWidth,
+          scrollWidth: sweep.scrollWidth,
+          maxScrollX: sweep.maxScrollX,
+          overshootPx: Math.round((sweep.scrollWidth - sweep.clientWidth) * 100) / 100,
+          offenders: sweep.offenders,
+        })
+
+        const where = `${name} · ${LOCALE} · ${width}px`
+        expect(
+          sweep.offenders,
+          `${where} : la page déborde — ${JSON.stringify(sweep.offenders)}`,
+        ).toEqual([])
+        expect(
+          sweep.scrollWidth,
+          `${where} : défilement horizontal du document (scrollWidth ${sweep.scrollWidth} > ` +
+            `clientWidth ${sweep.clientWidth})`,
+        ).toBeLessThanOrEqual(sweep.clientWidth + SUBPIXEL_TOLERANCE_PX)
+        // Sonde de défilement RÉEL, en plus des boîtes : Chromium clampe `scrollX`.
+        expect(sweep.maxScrollX, `${where} : la page défile de ${sweep.maxScrollX}px`).toBe(0)
+
+        // ── contrôle négatif : sans le filet, le défaut d'origine revient ──
+        await page.addStyleTag({
+          content:
+            'h1{font-size:57px !important;width:auto !important;' +
+            'min-width:auto !important;overflow-wrap:normal !important;hyphens:none !important}',
+        })
+        const degraded = await measureOverflow(page)
+        expect(
+          degraded.offenders.map((o) => o.tag),
+          `${where} : le filet retiré, le balayage NE VOIT PAS revenir le débordement du ` +
+            `<h1> — cette garde ne mesure rien. Relevé : ${JSON.stringify(degraded.offenders)}`,
+        ).toContain('h1')
       })
-
-      expect(
-        sweep.offenders.map((o) => `${o.tag}.${o.cls}`),
-        `${name} · ${LOCALE} · ${MOBILE_WIDTH}px — l'inventaire des débordements de PAGE a ` +
-          `changé. Attendu : le seul \`<${expected.tag}>\` pré-existant décrit par ` +
-          `KNOWN_PAGE_OVERFLOW. Relevé : ${JSON.stringify(sweep.offenders)}. ` +
-          `Si le titre a été corrigé (rampe typographique responsive), SUPPRIMER ce test ` +
-          `et étendre l'assertion de périmètre à toute la page.`,
-      ).toEqual([`${expected.tag}.${expected.cls}`])
-    })
+    }
   }
 })
 
@@ -672,10 +696,11 @@ test.describe('#527 — auto-contrôle du harnais', () => {
     await page.mouse.move(0, 0)
 
     const clean = await measureOverflow(page)
-    // Référence prise SUR LE PÉRIMÈTRE, pas sur la page : le `<h1>` déborde
-    // déjà (défaut pré-existant, cf. `KNOWN_PAGE_OVERFLOW`). Un `toEqual([])`
-    // sur toute la page ferait échouer cet auto-contrôle pour une raison
-    // étrangère à ce qu'il vérifie.
+    // Référence prise sur le PÉRIMÈTRE de #527 — c'est ce périmètre que
+    // l'injection ci-dessous doit faire rougir. Depuis #532 la PAGE ne déborde
+    // plus non plus (garde dédiée plus haut) : la référence vaut donc aussi
+    // `[]` sur toute la page, mais la restreindre garde cet auto-contrôle
+    // centré sur ce qu'il prouve.
     expect(
       clean.offenders.filter((o) => o.inScope),
       `le périmètre débordait DÉJÀ avant injection : ${JSON.stringify(clean.offenders)}`,

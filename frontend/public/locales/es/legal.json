@@ -2,69 +2,69 @@
   "disclaimerOriginalFrench": "Estos términos legales se proporcionan en francés. La versión francesa prevalece en caso de discrepancia.",
   "tableOfContents": "Índice",
   "terms": {
-    "title": "Conditions Générales d'Utilisation",
+    "title": "Condiciones Generales de Uso",
     "meta": {
       "description": "Consultez les Conditions Générales d'Utilisation de Ma Timeline. Informez-vous sur les règles et conditions qui régissent l'utilisation de notre service de gestion du temps."
     },
     "preamble": {
-      "title": "Préambule",
+      "title": "Preámbulo",
       "content": "Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») régissent l'accès et l'utilisation du site matimeline.fr, édité par Loïc de Laforcade, dont le siège social est situé 321 Chemin de la Contraz, 74570 Filliere. L'utilisateur reconnaît avoir pris connaissance des CGU et s'engage à les respecter."
     },
     "article1": {
-      "title": "Article 1 – Définitions",
+      "title": "Artículo 1 – Definiciones",
       "site": "Site : désigne le site internet accessible à l'adresse www.matimeline.fr.",
       "user": "Utilisateur : toute personne accédant et naviguant sur le Site, à quelque titre que ce soit.",
       "content": "Contenu : désigne l'ensemble des éléments présents sur le Site (textes, images, vidéos, logos, etc.)."
     },
     "article2": {
-      "title": "Article 2 – Objet",
+      "title": "Artículo 2 – Objeto",
       "content": "Les présentes CGU ont pour objet de définir les conditions dans lesquelles les utilisateurs peuvent accéder au Site et l'utiliser. En accédant au Site, l'utilisateur accepte sans réserve les présentes CGU."
     },
     "article3": {
-      "title": "Article 3 – Accès au site",
+      "title": "Artículo 3 – Acceso al sitio",
       "content": "L'accès au Site est ouvert à tout utilisateur disposant d'une connexion Internet. Le site est accessible gratuitement, hors coûts de connexion et d'abonnement à Internet. Certaines sections du site peuvent toutefois être réservées aux utilisateurs enregistrés."
     },
     "article4": {
-      "title": "Article 4 – Propriété intellectuelle",
+      "title": "Artículo 4 – Propiedad intelectual",
       "content": "Le contenu du Site (textes, images, logos, etc.) est protégé par les lois en vigueur relatives à la propriété intellectuelle et aux droits d'auteur. Toute reproduction, représentation, modification, ou adaptation, totale ou partielle du contenu, sans l'autorisation écrite préalable de Loïc de Laforcade, est interdite et constitue une contrefaçon."
     },
     "article5": {
-      "title": "Article 5 – Données personnelles",
+      "title": "Artículo 5 – Datos personales",
       "content": "Le Site peut recueillir des données personnelles telles que le nom, l'adresse e-mail, etc. Conformément à la réglementation en vigueur (RGPD), l'utilisateur dispose d'un droit d'accès, de rectification et de suppression de ses données personnelles. Pour toute demande, contactez loic.de.laforcade@hotmail.fr."
     },
     "article6": {
-      "title": "Article 6 – Responsabilité",
+      "title": "Artículo 6 – Responsabilidad",
       "content": "L'utilisation du Site se fait sous la seule responsabilité de l'utilisateur. Loïc de Laforcade ne saurait être tenu responsable de tout dommage direct ou indirect, y compris pertes de données ou de profit, résultant de l'accès ou de l'utilisation du Site."
     },
     "article7": {
-      "title": "Article 7 – Liens hypertextes",
+      "title": "Artículo 7 – Enlaces de hipertexto",
       "content": "Le Site peut contenir des liens vers d'autres sites internet. Loïc de Laforcade n'exerce aucun contrôle sur le contenu de ces sites et ne saurait être tenu responsable de leur disponibilité ou de leur contenu."
     },
     "article8": {
-      "title": "Article 8 – Modification des CGU",
+      "title": "Artículo 8 – Modificación de las condiciones",
       "content": "Loïc de Laforcade se réserve le droit de modifier à tout moment les présentes CGU. Les utilisateurs sont invités à les consulter régulièrement. Les modifications prennent effet à compter de leur publication sur le Site."
     },
     "article9": {
-      "title": "Article 9 – Loi applicable",
+      "title": "Artículo 9 – Ley aplicable",
       "content": "Les présentes CGU sont régies par la loi française. En cas de litige, et après tentative de résolution amiable, les tribunaux de Annecy seront compétents."
     },
     "article10": {
-      "title": "Article 10 – Contact",
+      "title": "Artículo 10 – Contacto",
       "content": "Pour toute question relative aux présentes CGU, vous pouvez contacter Loïc de Laforcade à l'adresse suivante : loic.de.laforcade@hotmail.fr."
     },
     "lastUpdated": "Dernière mise à jour"
   },
   "privacy": {
-    "title": "Politique de Confidentialité",
+    "title": "Política de Privacidad",
     "meta": {
       "description": "Consultez la Politique de Confidentialité de Ma Timeline. Découvrez comment nous recueillons, utilisons et protégeons vos données personnelles."
     },
     "introduction": {
-      "title": "Introduction",
+      "title": "Introducción",
       "content": "Chez Ma Timeline, nous accordons une grande importance à la protection de vos données personnelles. Cette Politique de Confidentialité explique comment nous recueillons, utilisons, partageons et protégeons vos informations lorsque vous utilisez notre service."
     },
     "dataCollection": {
-      "title": "Collecte des données",
+      "title": "Recopilación de datos",
       "content": "Nous collectons différents types d'informations lorsque vous utilisez notre site :",
       "items": {
         "personal": "Informations personnelles : nom, prénom, adresse e-mail, etc. que vous nous fournissez lors de votre inscription ou lorsque vous nous contactez.",
@@ -73,7 +73,7 @@
       }
     },
     "dataUse": {
-      "title": "Utilisation des données",
+      "title": "Uso de los datos",
       "content": "Nous utilisons vos données pour les finalités suivantes :",
       "items": {
         "services": "Fournir, maintenir et améliorer nos services.",
@@ -83,7 +83,7 @@
       }
     },
     "dataSharing": {
-      "title": "Partage des données",
+      "title": "Comunicación de datos",
       "content": "Nous ne vendons pas vos données personnelles. Nous pouvons toutefois les partager dans les circonstances suivantes :",
       "items": {
         "serviceProviders": "Avec des prestataires de services qui nous aident à exploiter notre site (hébergement, analyses, etc.).",
@@ -92,11 +92,11 @@
       }
     },
     "dataProtection": {
-      "title": "Protection des données",
+      "title": "Protección de los datos",
       "content": "Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données contre tout accès, modification, divulgation ou destruction non autorisés."
     },
     "userRights": {
-      "title": "Vos droits",
+      "title": "Sus derechos",
       "content": "Conformément à la législation en vigueur, vous disposez des droits suivants concernant vos données personnelles :",
       "items": {
         "access": "Droit d'accès : vous pouvez demander une copie des données que nous détenons sur vous.",
@@ -108,15 +108,15 @@
       }
     },
     "cookies": {
-      "title": "Cookies et technologies similaires",
+      "title": "Cookies y tecnologías similares",
       "content": "Nous utilisons des cookies et des technologies similaires pour améliorer votre expérience sur notre site, analyser notre trafic et personnaliser notre contenu. Vous pouvez contrôler l'utilisation des cookies via les paramètres de votre navigateur."
     },
     "policyChanges": {
-      "title": "Modifications de la politique",
+      "title": "Modificaciones de la política",
       "content": "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Nous vous informerons de tout changement significatif par le biais d'un avis sur notre site ou par e-mail."
     },
     "contact": {
-      "title": "Contact",
+      "title": "Contacto",
       "content": "Si vous avez des questions ou des préoccupations concernant cette politique de confidentialité ou le traitement de vos données, veuillez nous contacter à l'adresse suivante : loic.de.laforcade@hotmail.fr."
     },
     "lastUpdated": "Dernière mise à jour"

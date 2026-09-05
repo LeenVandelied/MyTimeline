@@ -1,12 +1,12 @@
 import '../../src/styles/globals.css'
 import '../../src/styles/landing.css'
 import '../../src/styles/animations.css'
-import React, { ReactNode, CSSProperties } from 'react'
+import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
 import { Toaster } from 'react-hot-toast'
 import { loadMessages } from '../../i18n'
-import { fontVariables } from '../fonts'
+import { fontVariables, fontUiStyle } from '../fonts'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/contexts/QueryProvider'
@@ -52,7 +52,11 @@ export default async function LocaleLayout({
       // avec le HTML serveur est attendu, pas un bug d'hydratation.
       suppressHydrationWarning
       className={fontVariables}
-      style={{ '--font-ui': 'var(--font-display)' } as CSSProperties}
+      // `--font-ui` est une DÉRIVÉE d'`--font-display`, pas une famille de plus.
+      // Elle vient de `app/fonts.ts` et non d'un littéral écrit ici : `.storybook/preview.ts`
+      // pose la MÊME sur le `<html>` du preview, et la copie manuelle qui existait des deux
+      // côtés pouvait diverger en silence (revue S77). Source unique = pas de dérive possible.
+      style={fontUiStyle}
     >
       <body>
         {/*

@@ -49,7 +49,20 @@ export function LegalTableOfContents({ sections, label, t, testId }: LegalTableO
             <a
               href={`#${section.id}`}
               data-testid={`${testId}-link-${section.id}`}
-              className="text-ink-muted hover:text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              // #457 — PAS de `focus-visible:outline-none focus-visible:ring-2
+              // focus-visible:ring-ring` ici. La COULEUR était juste
+              // (`--color-ring` est un alias de `--color-focus`,
+              // `globals.css:114`), mais le MÉCANISME viole DEC-S58-001 : le
+              // trio supprimait le contour du DS pour le remplacer par un
+              // `box-shadow`. Trois conséquences — un second motif d'indicateur
+              // absent de la charte ; un anneau ROGNÉ par tout ancêtre
+              // `overflow` là où `outline` déborde (même raisonnement qu'en
+              // DEC-S58-004) ; et la perte du repli `@media (forced-colors:
+              // active)` que seul `outline` émet. Le contour `:focus-visible`
+              // du DS (`ds/tokens/base.css`, `@layer base`) s'applique tout
+              // seul : il n'y a AUCUNE classe de focus à poser.
+              // `rounded-sm` est conservé — il donne sa forme à ce contour.
+              className="text-ink-muted hover:text-ink underline-offset-4 hover:underline rounded-sm"
             >
               {t(section.titleKey)}
             </a>

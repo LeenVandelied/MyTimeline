@@ -553,9 +553,12 @@ describe('cascade @layer — classes de composant (#340)', () => {
  *
  * CE QUE CE TEST NE PROUVE **PAS**. Il ne détecte AUCUNE réintroduction d'un
  * anneau local (`ring-2`, `focus:ring-*`, `outline-none`) dans un `.tsx` : il ne
- * lit que du CSS, jamais les composants. Une telle vérification demanderait un
- * grep sur les sources JSX — fragile (chaînes construites, `cn()`, `cva`,
- * classes venues d'une lib) et hors du contrat de ce fichier. Il ne prouve pas
+ * lit que du CSS, jamais les composants. Cette vérification-là existe DEPUIS
+ * (#457, Sprint 77) et vit dans `tsx-focus-utility.test.ts` — non par `grep`,
+ * dont ce paragraphe redoutait à juste titre la fragilité, mais par un lexeur de
+ * littéraux, aveugle aux commentaires et couvrant `cn()` comme les corps de
+ * `cva(...)`. La réserve restante est la bonne : une classe CONSTRUITE
+ * (`` `ring-${n}` ``) ou venue d'une lib échappe à l'un comme à l'autre. Il ne prouve pas
  * davantage que le contour PEINT à l'écran, ni son contraste : cela relève de la
  * mesure au navigateur consignée dans `ds/a11y-audit.md` §8.
  */

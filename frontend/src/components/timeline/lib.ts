@@ -170,6 +170,38 @@ export function formatDay(date: Date, locale: string): string {
 }
 
 /**
+ * #191 — Mêmes données que `formatDay`, mais SÉPARÉES en deux jetons.
+ *
+ * `formatDay` rend une chaîne unique (« dim. 5 ») dont le jour de semaine est un
+ * mot INSÉCABLE de ~30 px : dans une cellule de règle étroite, il débordait sur
+ * les cellules voisines (mesuré : 30 cellules sur 30 à 800 px). Séparer les deux
+ * jetons permet à `DateStamp` de dégrader le libellé — masquer visuellement le
+ * jour de semaine, garder le NUMÉRO, qui est le jeton porteur — au lieu de
+ * tronquer une chaîne indivisible ou de la laisser déborder.
+ *
+ * `formatToParts` plutôt qu'un `format` par option : une seule traversée ICU,
+ * donc un seul jeu de règles de locale, et aucun risque de désaccord entre deux
+ * formateurs (certaines locales n'abrègent pas de la même façon selon les
+ * champs demandés).
+ */
+export function formatDayParts(date: Date, locale: string): { weekday: string; day: string } {
+  const parts = new Intl.DateTimeFormat(locale, {
+    weekday: 'short',
+    day: 'numeric',
+  }).formatToParts(date)
+
+  const pick = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts
+      .filter((part) => part.type === type)
+      .map((part) => part.value)
+      .join('')
+
+  // Repli défensif : si une locale exotique ne produisait aucune part `day`,
+  // mieux vaut le quantième local qu'une cellule vide.
+  return { weekday: pick('weekday'), day: pick('day') || String(date.getDate()) }
+}
+
+/**
  * Positionne les events par ressource sur la fenêtre `[start, end]`.
  * Reprend à l'identique le `useMemo eventsByResource` du monolithe : clamp à la
  * vue, calcul left/width %, dérivation du statut vs `now`. Fonction pure pour

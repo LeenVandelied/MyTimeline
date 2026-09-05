@@ -1,140 +1,128 @@
-## Sprint 74 — « Landing & focus polish »
+## Objectif
 
-Quatre finitions frontend XS, toutes `epic:design` / `priority:P3`, sur des fichiers
-strictement disjoints. Aucune BR impactée, aucune migration, aucun changement backend.
+QA visuelle du design system (revue Storybook clair/sombre, captures de référence Playwright), un
+garde-fou focus qui couvre enfin le `.tsx`, et les deux follow-ups du Sprint 76 sur les pages
+légales.
 
-Milestone : **Sprint 74** (#75). Vague unique, les 4 issues traitées en parallèle.
+**Milestone GitHub :** #78 · **Issues (5) :** #457, #533, #191, #532, #294
 
-| Issue | Sujet | Commit |
+---
+
+## Issues traitées
+
+| # | Livré | Commit |
 |---|---|---|
-| #342 | `<Link>` enveloppant `<DropdownMenuItem>` dans le sélecteur de langue | `3ebb8d6` + `0c26911` |
-| #343 | Easing hors DS et import CSS chargé sur toutes les routes | `6365d26` |
-| #384 | Double lévitation au survol des cartes Fonctionnalités (−18 px au lieu de −10) | `ecc76c2` |
-| #417 | Contour de focus rogné dans `.mt-zoom` et le tablist des réglages | `0c40f9d` + `801dadd` |
+| #457 | Garde-fou Vitest scannant 122 `.tsx` : rougit sur tout `outline-*` / `ring-*` posé sans le token `--color-focus` | `700a2d8` |
+| #533 | 22 intitulés de sections légales traduits en `en`/`es`/`de` + garde de parité étendue | `9d90407` |
+| #191 | Bascule de thème Storybook (+ polices réparées) et correctif de débordement de `DateStamp` | `a5046fa`, `119f497` |
+| #532 | Rampe typographique responsive sur les titres des pages légales | `52237f4` |
+| #294 | Première infrastructure de diff visuel du dépôt : spec + 10 références Linux | `0b5a27c` |
+| — | Corrections des 2 constats majeurs de review | `823a1f2` |
 
 ---
 
-## Trois énoncés sur quatre étaient faux ou périmés
+## Ce que le sprint a réfuté en chemin
 
-C'est le fait marquant de ce sprint : les correctifs livrés ne sont pas ceux que les issues
-prescrivaient. Chaque écart est justifié par un constat dans le code, pas par une préférence.
+Quatre énoncés d'issue se sont révélés faux à la mesure. Ils sont documentés dans les `done.md`
+plutôt que corrigés en silence :
 
-**#343 — l'issue s'auto-contredisait.** Elle demandait à la fois d'utiliser `--ease-quart` et
-que l'animation reste inchangée. Or le token vaut `cubic-bezier(0.32, 0.72, 0, 1)` et non la
-courbe Material `(0.4, 0, 0.2, 1)` qu'il remplace : **+0,54 de progression à 25 % de la
-course**, la frise décélère nettement plus tôt. Arbitré avec le développeur en faveur du token
-(cohérence du système de motion) ; **le geste de la frise change sur la landing**, c'est
-assumé. L'issue visait par ailleurs `app/layout.tsx:5`, alors que ce layout est transparent
-depuis #413 — l'import réel était dans `app/[locale]/layout.tsx`.
+- **#533** annonçait « 20 intitulés » restés en français. Le dépôt en portait **64 sur 66**, corps de
+  sections compris — soit 192 traductions d'un texte à portée juridique, pas 20. Le périmètre a été
+  ramené aux 22 titres sur arbitrage explicite ; les 44 clés de corps partent en follow-up.
+- **#532** affirmait que le débordement était « non corrélé à la locale ». Après #533, l'anglais ne
+  déborde **plus du tout** et l'allemand déborde **trois fois plus** que le français — et encore à
+  640 px, largeur que l'énoncé déclarait saine.
+- **#191** annonçait 22 stories : il y en a **80**, sur 26 composants. Et le commentaire de story
+  « comme le dashboard » était faux — le seul consommateur de `Ruler`/`DateStamp` est
+  `EventPreviewTimeline`, le dashboard ayant son propre `TimelineRuler`.
+- **#294** visait `app/[locale]/home/`, qui est un `permanentRedirect` 308, pas la landing.
 
-**#417 — l'énoncé nommait le mauvais composant, et sa piste technique était la mauvaise.** Le
-« tablist des réglages » ne passe pas par `.mt-tab` du DS mais par des utilitaires Tailwind
-bruts ; corriger le CSS nommé aurait touché les onglets **produits** en laissant le vrai défaut
-en place. Et le motif de référence cité (`timeline.css:115`/`:131`) n'existe plus, il est
-en `:180`/`:196`. Enfin la piste `outline-offset` négatif s'est révélée mauvaise pour les
-contrôles de zoom (voir plus bas).
-
-**#342 — le pattern cité n'était pas transposable.** L'issue prescrivait `<Button asChild>` par
-analogie avec #295, mais l'élément est un `DropdownMenuItem` : un `Button` aurait détruit
-`role="menuitem"`. Le pattern réellement livré par #295 est « le primitif prend `asChild` », ce
-qui donne ici `<DropdownMenuItem asChild><Link/></DropdownMenuItem>`.
+Deux prémisses de mes propres briefings ont aussi été réfutées par les agents, à raison : un critère
+de départage CI qui n'existait pas, et le commentaire de story ci-dessus que j'avais relayé.
 
 ---
 
-## #417 — pourquoi le remède a changé en cours de route
+## Défauts trouvés à côté de leur cible
 
-La piste de l'énoncé (`outline-offset:-2px`) a été implémentée puis **mesurée au navigateur**,
-et elle réalisait le risque que l'issue énonçait elle-même :
-
-- `.mt-zoom__btn` fait **30 × 16,5 px**, l'icône `<svg>` **14 × 14 px**
-- un trait inset de 2 px ne laisse que **8,5 px** libres → le trait **croise l'icône** en haut,
-  en bas et à gauche
-- aucune valeur inset n'y échappe : `-1px` → 10,5 px, `0` → 12,5 px, toujours < 14 px.
-  **Le problème est la hauteur du bouton, pas la valeur de l'offset.**
-
-Remède retenu (`801dadd`) : retirer `overflow:hidden` de `.mt-zoom`, l'arrondi étant porté par
-les boutons de bord. Le contour du DS (+2 px) peint alors dehors, sur ses 4 côtés, sans toucher
-l'icône. **C'est exactement ce que #226 appliquait déjà en contexte `.mt-tlm`** : même cause (le
-clip du groupe), même correctif, un seul motif dans le DS au lieu de deux.
-
-Les deux zones de #417 n'ont donc pas le même remède, et c'est délibéré : le tablist des
-réglages garde son `outline-offset:-2px` (pastilles `rounded-md` **sans bordure**, trait à 2 px
-du bord et 10 px du libellé). L'objection du §8bis de `ds/a11y-audit.md` — « un offset négatif
-poserait le trait SUR la bordure porteuse d'état » — tient pour `.mt-tab` et le `<tr>`, pas
-pour ces pastilles. Arbitrage consigné au §8ter.
+- **#191** — Storybook n'avait **aucun mécanisme de thème** : le critère « revue en clair ET sombre »
+  était structurellement inatteignable. Et les variables `--font-display`/`-ui`/`-mono` valaient la
+  **chaîne vide** : les 80 stories étaient rendues en police système.
+- **#532** — les `<h2>` allemands débordaient **leur propre boîte** (+121 à +133 px), invisibles au
+  balayage `rect.right`. Corriger le seul `<h1>` aurait fermé l'issue sur une page toujours en
+  défilement horizontal.
+- **#294** — `OfflineBanner` entrait dans la boîte capturée : la référence l'aurait figé et **rougi
+  la CI en permanence**.
+- **#191** — `::placeholder` du `Textarea` à **2,82:1** (clair) et **2,99:1** (sombre) : les jetons
+  sont intervertis entre thèmes. Hors périmètre, parti en follow-up.
 
 ---
 
-## Tests et vérifications
+## Tests
 
-| Suite | Résultat |
-|---|---|
-| Unitaires frontend | **1187 / 1187**, 107 fichiers |
-| `npm run build` (lint CI) | exit 0 |
-| E2E Playwright | **257 passés**, 1 échec, 9 ignorés |
+Toutes les suites rejouées par le lead, **codes de sortie lus** :
 
-Backend non exécuté : aucun fichier backend dans le diff.
+| Gate | Résultat | Sortie |
+|---|---|:---:|
+| Backend `./mvnw test` | 566 tests, 75 classes, 0 échec | 0 |
+| Frontend Vitest | **1313 tests / 113 fichiers** | 0 |
+| `tsc --noEmit` | 0 erreur | 0 |
+| `next lint` | 0 erreur | 0 |
+| `next build` | compilé, 52 pages | 0 |
+| `storybook build` | compilé | 0 |
+| E2E `sprint-77-theme-visual` | 11 passed (armement inclus) | 0 |
+| E2E `sprint-76-legal-visual` | 12 passed (auto-contrôles inclus) | 0 |
 
-**Vérifications navigateur** (serveur webpack en worktree, focus armé au clavier réel, les deux
-thèmes) — c'est ce qui a permis de retourner #417 :
+**Les 5 contrôles négatifs ont été rejoués indépendamment** par le lead, pas repris des rapports
+d'agents : mutation réelle sur `ui/switch.tsx` → exit 1 ; titre allemand remis en français → exit 1
+avec `shasum` identique après restauration ; « Mittwoch » injecté → +33 px ; composé allemand
+démesuré → page +574 px ; `letter-spacing` sur le hero → 11 878 px de diff.
 
-- `.feature-card` au survol : `transform: matrix(1, 0, 0, 1, 0, -10)`, `translate: none`
-  → **−10 px exactement**, le cumul à −18 px est supprimé
-- `.hero-timeline*` : **5 sélecteurs + 2 keyframes** servis sur `/fr`, **0** sur `/fr/login` et
-  `/fr/register` (chunks CSS réellement inspectés)
-- contours de focus : **0 côté rogné sur 4**, desktop et mobile, dans les deux thèmes ;
-  contrastes **4,95 à 6,48:1** (seuil WCAG 1.4.11 = 3:1)
-- deux **contre-épreuves par mutation** : rétablir l'ancien offset positif sur le tablist
-  reproduit bien le rognage sur 3 côtés ; remplir un bouton de zoom d'une couleur franche et
-  l'agrandir 8× montre que le fond suit l'arrondi — le `overflow:hidden` retiré ne gardait
-  rien qui ne soit couvert autrement
-
-Détail complet : `docs/memory/audits/sprint-74-test-coverage.md`.
-
-### L'échec E2E
-
-`[chromium] sprint-62-select-focus-indicator.spec.ts:551` → `locator.evaluate: Test timeout of
-30000ms exceeded`. Écarté du périmètre par faisceau : **3 des 4 variantes du même test
-passent**, le diff ne touche aucun sélecteur de cet arbre, le symptôme est un timeout et non
-une assertion de peinture, la CI de `dev` est verte, et le rejeu ciblé du fichier donne 25/25.
-
-⚠ **Ce faisceau n'est pas une démonstration.** Le rejeu ciblé est vert *en isolation*, ce qui
-retire la charge. Le contre-test décisif — rejouer ce spec sur `origin/dev` dans les mêmes
-conditions — n'a pas été fait. La CI de cette PR tranchera.
+Détail complet : `docs/memory/audits/sprint-77-test-coverage.md`.
 
 ---
 
-## Ce qui n'est pas vérifié
+## Review
 
-- **#343 « animation inchangée visuellement »** : structurellement inatteignable, l'issue
-  s'auto-contredit. Le geste change, c'est arbitré et documenté.
-- **Fluidité de la transition de #384** : `transition-property: all` et `duration: 0.3s` sont
-  bien calculés sur l'élément, mais le panneau navigateur rendait des lectures de transition
-  instables — l'interpolation elle-même n'a pas été observée de façon fiable.
-- **Palier responsive `-5px` sous 768 px** (#384) : règle présente et correctement conditionnée,
-  non mesurée à ce viewport.
-- **#417 en `:hover` simultané au focus** (le fond passe à `--color-surface-2`) et en
-  `forced-colors: active`.
+`reviewer` + `playwright-reviewer`. **Aucun constat critique. Deux majeurs, tous deux corrigés** au
+commit `823a1f2` puis re-vérifiés :
 
-## Écarts de procédure
+1. La tolérance de diff visuel était posée en clé `expect` **globale** — trouvée indépendamment par
+   les deux relecteurs. Redescendue au point d'appel ; le projet Playwright dédié a été écarté à
+   raison (le gabarit de nom porte `{projectName}` et aurait invalidé les 10 PNG).
+2. La dérivation `--font-ui` était **recopiée à la main** de `layout.tsx` vers `preview.ts`, sans
+   test de parité. Extraite dans `frontend/app/fonts.ts` : la dérive devient impossible plutôt que
+   surveillée, avec une garde de 9 tests vérifiée sur les deux builders.
 
-- **Aucun plan `/sprint plan` n'existait** : le milestone #75 et le label `sprint-74` avaient
-  été créés côté GitHub, sans entrée `sprint-history.md` ni `architect-plans.md`. Les vagues
-  ont été dérivées par recon directe du code, pas d'un rapport architect.
-- **Le worktree de départ pointait sur `main`** (`d8b4f53`), branche divergente sans `docs/`,
-  `.ai-env/`, `.claude/hooks/` ni `scripts/`. `sprint/74` a été recréée depuis `origin/dev`.
+Trois mineurs laissés en l'état, avec leur raison dans `review-fixes-done.md`.
 
-## Follow-ups proposés
+---
 
-- `dropdown-menu.tsx:26-30` — le pavé cite comme « cas vivant » une imbrication que #342 vient
-  de supprimer. [XS | frontend/doc]
-- `landing-mobile-menu.spec.ts:265-270` — commentaire d'ancrage décrivant une structure à deux
-  nœuds. [XS | frontend/e2e]
-- `.mt-tab` (onglets produits, `core.css:260`, `outline-offset:3px`) — non vérifié au
-  navigateur, potentiellement rogné selon son conteneur ; son remède ne peut pas être l'offset
-  négatif (recouvrement du soulignement d'accent). [XS | frontend/a11y]
+## Écarts assumés — à lire avant de merger
 
-Traite #342, #343, #384, #417 — fermeture manuelle au `/sprint end` (un `Closes #N` ne ferme
-rien sur une PR dont la base est `dev`).
+1. **Le critère « vert en CI » de #294 n'a pas pu être vérifié.** Aucune CI ne tourne sur les
+   branches `sprint/N` : **cette PR est le premier run réel**. Les 10 références sont générées en
+   `jammy` (22.04), `ubuntu-latest` est `noble` (24.04), et Playwright nomme les deux `linux` — elles
+   **seront donc comparées**. Si le job `e2e` rougit sur un diff de rastérisation, le remède est de
+   **régénérer les références sur l'image du runner**, pas d'élargir le ratio : l'écart serait de
+   l'ordre de grandeur des mutations que la spec doit détecter.
+2. **#191 n'a aucun E2E.** Le correctif `DateStamp` est prouvé par mesure navigateur, mais aucun test
+   du dépôt ne garde ce comportement. Les seuils 34/52 px sont calibrés sur Archivo 500 aux tailles
+   actuelles : un changement de fonte ou de `px-*` les invalide, et rien ne l'empêche mécaniquement.
+3. **Les 22 traductions juridiques de #533 n'ont pas été relues par un humain.** Le texte a une
+   portée juridique ; le `done.md` porte l'avertissement, un follow-up demande la relecture.
+4. **Suite E2E complète non jouée** — seules les 3 specs concernées par le diff l'ont été
+   (deux runs complets rapprochés ne peuvent pas passer : bucket de rate-limit).
+5. **Aucun backend vivant pendant les E2E** : les 7 écrans exercés sont publics, aucun parcours
+   authentifié n'a été rejoué.
+6. **25 écarts d'alignement pixel** relevés vs `core.css`, documentés et volontairement non corrigés.
+
+---
+
+## Cohésion
+
+Score élevé : les 5 issues portent le même thème (QA visuelle du design system) et 4 sur 5 sont
+étiquetées `epic:design`. **Ce sprint n'a pas été planifié par `/sprint plan`** — pas d'entrée
+PLANIFIÉ, pas d'`architect-plans.md` : les vagues et mini-plans ont été établis par le lead.
+Exécution **strictement séquentielle**, 5 vagues, sur décision du dev.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

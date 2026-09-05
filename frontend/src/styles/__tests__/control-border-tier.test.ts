@@ -157,6 +157,11 @@ describe('tier de bordure des contrôles — WCAG 1.4.11', () => {
    • Elle ne lit QUE `ds/components/core.css`. Un indicateur — ou sa suppression
      — posé dans un `.tsx`, une utilitaire Tailwind, `globals.css` ou une autre
      feuille du DS lui échappe entièrement.
+     ⤷ MOITIÉ `.tsx` FERMÉE DEPUIS (#457, Sprint 77) par
+       `tsx-focus-utility.test.ts` : il scanne les littéraux de `src/components/**`
+       et `app/**` et rougit sur tout `outline-*` / `ring-*` posé en TSX. Restent
+       à découvert, ici comme là-bas : les utilitaires Tailwind écrites en CSS,
+       `globals.css` et les autres feuilles du DS.
    • Elle ne rapproche que les règles où `:focus…` ET la classe surveillée
      figurent dans le MÊME sélecteur. Un focus déclaré sur un sélecteur voisin
      (`.mt-check:focus-within …`, un descendant, un `:has()`) n'est ni compté

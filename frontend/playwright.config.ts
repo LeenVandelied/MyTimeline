@@ -180,6 +180,32 @@ export default defineConfig({
   // (reporters tiers), donc `['html', { open: 'jamais' }]` compile aussi — vérifié
   // par contrôle négatif au S64. Seul un run réel atteste ce bloc.
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  // #294 / correctif de revue S77 — LA TOLÉRANCE DU DIFF VISUEL N'EST PLUS ICI.
+  //
+  // Elle a été posée au S77 au niveau RACINE de ce fichier (`expect.toHaveScreenshot`),
+  // ce qui en faisait le DÉFAUT DU DÉPÔT pour toute comparaison visuelle à venir. Or
+  // elle a été calibrée sur deux surfaces précises et sur elles seules : le hero de la
+  // landing (1280 x 747) et les cartes d'authentification — du texte sur fond plat. La
+  // faire hériter en silence par une future spec (un graphe, une photo, une timeline
+  // animée) serait une décision globale prise pour un besoin local, et personne ne la
+  // relirait puisqu'elle s'appliquerait sans être écrite.
+  //
+  // Elle vit donc désormais AU POINT D'APPEL, dans la seule spec qui la demande :
+  // `e2e/sprint-77-theme-visual.spec.ts`, constante `VISUAL_TOLERANCE`, accompagnée du
+  // sweep de calibration qui la justifie et de ce qu'elle ne voit plus.
+  //
+  // DEUX PISTES PROPOSÉES EN REVUE, TOUTES DEUX ÉCARTÉES, ET POURQUOI :
+  //  • Un PROJET Playwright dédié. Le gabarit de nom des références porte
+  //    `{projectName}` : les 10 PNG committés se nomment `…-chromium-linux.png`. Un
+  //    projet `visual` les renommerait donc TOUTES, et un simple déplacement de
+  //    tolérance imposerait de les régénérer en conteneur.
+  //  • `test.use({ expect: … })`. `expect` n'est déclaré que sur `TestConfig` et
+  //    `TestProject` dans les types Playwright 1.61 (`playwright/types/test.d.ts`,
+  //    L1127 et L180) — pas sur `TestOptions`, donc pas dans `test.use()`.
+  //
+  // Une prochaine spec de diff visuel pose SA tolérance, mesurée sur SA surface. Ne pas
+  // remettre de clé `expect` globale ici sans cette mesure : elle vaudrait pour tout le
+  // dépôt sans avoir été calibrée pour rien.
   use: {
     baseURL,
     trace: 'on-first-retry',
