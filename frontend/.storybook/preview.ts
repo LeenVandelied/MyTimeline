@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/react-vite'
 
-import { archivo, ibmPlexMono } from '../app/fonts'
+import { FONT_UI_VALUE, FONT_UI_VARIABLE, fontVariables } from '../app/fonts'
 import '../src/styles/globals.css'
 
 /**
@@ -35,15 +35,27 @@ import '../src/styles/globals.css'
  * `background: var(--color-bg)`) bascule lui aussi. Un wrapper laisserait la
  * story sombre sur un fond de page clair — une revue « sombre » mensongère.
  *
- * ⚠ `--font-ui` n'est PAS produit par `app/fonts.ts` (qui n'expose que
- * `--font-display` et `--font-mono`) : l'application le dérive par un style
- * inline `--font-ui: var(--font-display)` sur `<html>`. On reproduit ce dérivé
- * à l'identique — s'en écarter ferait diverger le preview du produit.
+ * ⚠ `--font-ui` n'est PAS produit par `next/font` (qui n'expose qu'une variable par
+ * famille, soit `--font-display` et `--font-mono`) : c'est une DÉRIVÉE.
+ *
+ * CORRECTIF DE REVUE S77. Cette dérivation était RECOPIÉE À LA MAIN ici, en face de
+ * celle de `app/[locale]/layout.tsx`, sans aucun test de parité : `layout.tsx` aurait pu
+ * changer sa dérivation et ce fichier aurait dérivé EN SILENCE — les 80 stories rendues
+ * dans une police autre que celle de l'application, c'est-à-dire le défaut même que #191
+ * venait de corriger. Elle vient désormais de `app/fonts.ts`, source UNIQUE importée des
+ * deux côtés (`FONT_UI_VARIABLE` / `FONT_UI_VALUE`, et `fontUiStyle` pour le `<html>` de
+ * l'app). Idem pour les classes de variables : `fontVariables` est la chaîne EXACTE que
+ * `layout.tsx` pose en `className`, on la découpe au lieu de la reconstruire.
+ * `src/styles/__tests__/storybook-font-shell.test.ts` garde ce partage contre un retour
+ * en arrière par littéral.
  */
 type ThemeName = 'light' | 'dark'
 
-/** Classes de variables de police next/font, telles que posées sur `<html>`. */
-const FONT_VARIABLE_CLASSES = [archivo.variable, ibmPlexMono.variable].filter(Boolean)
+/**
+ * Classes de variables de police next/font, telles que posées sur `<html>` par
+ * `app/[locale]/layout.tsx` — MÊME chaîne, simplement découpée pour `classList.add`.
+ */
+const FONT_VARIABLE_CLASSES = fontVariables.split(/\s+/).filter(Boolean)
 
 /**
  * Shell appliqué à `<html>` du preview. Idempotent : le décorateur le rejoue à
@@ -52,9 +64,10 @@ const FONT_VARIABLE_CLASSES = [archivo.variable, ibmPlexMono.variable].filter(Bo
 function applyPreviewShell(theme: ThemeName): void {
   const root = document.documentElement
 
-  // Polices — mêmes classes de variables que `fontVariables`, même dérivé `--font-ui`.
+  // Polices — les classes de `fontVariables` et la dérivée `--font-ui`, toutes deux
+  // importées de `app/fonts.ts` : aucun littéral local à faire diverger.
   root.classList.add(...FONT_VARIABLE_CLASSES)
-  root.style.setProperty('--font-ui', 'var(--font-display)')
+  root.style.setProperty(FONT_UI_VARIABLE, FONT_UI_VALUE)
 
   // Thème — `.dark` pilote `@custom-variant dark`, `data-theme` en miroir (comme
   // next-themes en production) ; `color-scheme` aligne les contrôles natifs.

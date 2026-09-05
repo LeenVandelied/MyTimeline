@@ -52,10 +52,25 @@ import { fileURLToPath } from 'node:url'
  * • Elle ne mesure AUCUN pixel et AUCUN ratio. Elle constate l'absence d'un
  *   contournement en source ; que le contour du DS soit effectivement PEINT et
  *   contrasté reste la charge de `e2e/sprint-62-control-focus-contrast.spec.ts`.
- * • Elle ne lit que des LITTÉRAUX. Une classe calculée (`` `ring-${n}` ``,
- *   `clsx({ [FOCUS]: on })`, une constante importée d'un autre module, une classe
- *   venue d'une lib) reste invisible — aucune analyse statique par chaîne ne la voit.
- *   Symétrique du trou DEC-S52-003 de `landing.hover-pairing.test.ts`.
+ * • Elle ne lit que des LITTÉRAUX — mais « littéral » englobe les FRAGMENTS STATIQUES
+ *   d'un gabarit, et c'est plus large que ce que cet en-tête a d'abord affirmé.
+ *
+ *   ⚠ CORRECTIF DE REVUE (S77). La rédaction initiale donnait `` `ring-${n}` `` pour
+ *   INVISIBLE. C'est FAUX, et c'est désormais MESURÉ (bloc « classes construites »
+ *   plus bas, qui fige les deux sens) : `stringLiteralsOf` coupe le gabarit à chaque
+ *   `${`, le fragment `ring-` devient un littéral à part entière, `baseUtility` le
+ *   rend tel quel et `/^ring-/` matche — la garde ROUGIT. Idem pour
+ *   `` `outline-${x}` ``. Aucun test ne verrouillait ce comportement dans un sens ni
+ *   dans l'autre : l'affirmation n'était donc ni vraie ni gardée.
+ *
+ *   CE QUI RESTE RÉELLEMENT INVISIBLE — tout ce dont AUCUN fragment statique ne porte
+ *   le préfixe interdit : `` `${prefix}-2` `` (le préfixe vit dans le code),
+ *   `clsx({ [FOCUS]: on })` (clé calculée), une constante importée d'un autre module,
+ *   une classe venue d'une lib. Aucune analyse statique par chaîne ne les voit.
+ *   S'y ajoute la forme NUE construite, `` `ring${n}` `` : elle passe non pas à cause
+ *   de l'interpolation mais du discriminant de multiplicité de `BARE_UTILITIES` — le
+ *   fragment `ring` se retrouve SEUL dans son littéral, donc indiscernable d'une
+ *   valeur de prop. Symétrique du trou DEC-S52-003 de `landing.hover-pairing.test.ts`.
  * • Elle ignore la CASCADE et les `@layer` : un `outline: none` écrit en CSS (dans
  *   `globals.css`, `landing.css` ou une feuille du DS) n'est pas du TSX et lui
  *   échappe — c'est la moitié du trou #447 que ce fichier ne ferme PAS.
@@ -537,5 +552,59 @@ describe('la garde ne rougit pas sur du TSX sain (#457)', () => {
     // Les mutations vivent en mémoire ; ce témoin le prouve (méthode S63).
     expect(readFileSync(join(FRONTEND, CHECKBOX), 'utf8')).toContain(CHECKBOX_ANCHOR)
     expect(readFileSync(join(FRONTEND, CHECKBOX), 'utf8')).not.toContain('ring-2')
+  })
+})
+
+/**
+ * CLASSES CONSTRUITES — la frontière EXACTE de la garde, figée dans les DEUX sens.
+ *
+ * Ce bloc existe parce que l'en-tête de ce fichier a affirmé pendant un sprint que
+ * `` `ring-${n}` `` était invisible à la garde. La revue l'a réfuté par la mesure, et
+ * personne ne pouvait trancher : AUCUN test ne verrouillait ce comportement, ni dans un
+ * sens ni dans l'autre. Sur ce dépôt les commentaires servent de mémoire d'arbitrage
+ * ([[PIT-S58-004]]) — une frontière décrite mais non gardée dérive au premier
+ * refactoring de `stringLiteralsOf`.
+ *
+ * LA RÈGLE RÉELLE, telle que mesurée : le lexeur coupe le gabarit à chaque `${`, donc
+ * un fragment statique porteur du préfixe interdit est vu comme n'importe quel littéral.
+ * Ce qui échappe, c'est ce dont le préfixe lui-même est calculé.
+ */
+describe('classes construites — frontière figée (#457, correctif de revue S77)', () => {
+  it.each([
+    { label: 'gabarit `ring-${n}`', source: 'const c = `ring-${n}`', token: 'ring-' },
+    { label: 'gabarit `outline-${x}`', source: 'const c = `outline-${x}`', token: 'outline-' },
+    {
+      label: 'fragment porteur au MILIEU du gabarit',
+      source: 'const c = `text-${size} ring-${n}`',
+      token: 'ring-',
+    },
+  ])('$label ⇒ la garde ROUGIT (le fragment statique suffit)', ({ source, token }) => {
+    expect(findFocusUtilityOffences('Built.tsx', source).map((o) => o.token)).toEqual([token])
+  })
+
+  it('le fragment coupé au `${` est bien un littéral à part entière', () => {
+    // La MÉCANIQUE derrière le verdict ci-dessus : sans cette assertion, un refactoring
+    // de `stringLiteralsOf` (p. ex. « ignorer tout gabarit contenant une substitution »)
+    // rendrait les trois cas ci-dessus verts pour la mauvaise raison.
+    expect(stringLiteralsOf('const c = `ring-${n}`')).toEqual(['ring-'])
+    expect(baseUtility('ring-')).toBe('ring-')
+  })
+
+  it.each([
+    {
+      label: 'préfixe CALCULÉ `${prefix}-2` — rien de statique à voir',
+      source: 'const c = `${prefix}-2`',
+    },
+    { label: 'clé calculée `clsx({ [FOCUS]: on })`', source: 'const c = clsx({ [FOCUS]: on })' },
+    {
+      label: "constante importée d'un autre module",
+      source: 'import { FOCUS_CLASS } from "@/x"\nconst c = FOCUS_CLASS',
+    },
+    {
+      label: 'forme NUE construite `ring${n}` (discriminant de multiplicité, pas interpolation)',
+      source: 'const c = `ring${n}`',
+    },
+  ])('$label ⇒ la garde reste AVEUGLE (trou assumé)', ({ source }) => {
+    expect(findFocusUtilityOffences('Built.tsx', source)).toEqual([])
   })
 })

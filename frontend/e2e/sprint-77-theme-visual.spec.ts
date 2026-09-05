@@ -12,8 +12,11 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
  * typographique ou un débordement — jamais comparer un RENDU. Une régression purement
  * visuelle (un token de couleur inversé entre thèmes, une carte qui perd son ombre, un
  * `border-radius` qui saute) passait donc entre toutes les mailles. C'est ce trou-là que
- * la spec ferme, et elle apporte avec elle son outillage : la tolérance vit dans
- * `playwright.config.ts` (clé `expect.toHaveScreenshot`), les références vivent dans
+ * la spec ferme, et elle apporte avec elle son outillage : la tolérance vit ICI
+ * (constante `VISUAL_TOLERANCE`, passée au point d'appel — elle a d'abord été posée au
+ * niveau racine de `playwright.config.ts`, d'où la revue du S77 l'a fait redescendre :
+ * une tolérance calibrée sur DEUX surfaces ne doit pas être le défaut du dépôt), les
+ * références vivent dans
  * `e2e/sprint-77-theme-visual.spec.ts-snapshots/` (nomenclature PAR DÉFAUT de Playwright,
  * volontairement non surchargée : `{arg}-{projectName}-{platform}.png`).
  *
@@ -228,6 +231,71 @@ const SCREENS: readonly Screen[] = [
  * tolérance retenue est calibrée SOUS le ratio que cette mutation produit.
  */
 const NEGATIVE_CONTROL_CSS = 'section.section-animation h1 { letter-spacing: 0.035em !important; }'
+
+/**
+ * TOLÉRANCE DU DIFF VISUEL — portée par les CAPTURES DE CETTE SPEC, et par elles seules.
+ *
+ * ⚠ POURQUOI ELLE EST ICI ET NON DANS `playwright.config.ts` (correctif de revue S77).
+ * Elle y a d'abord vécu comme clé `expect.toHaveScreenshot` au niveau RACINE, donc comme
+ * DÉFAUT DU DÉPÔT. Or les chiffres ci-dessous ont été mesurés sur DEUX surfaces et sur
+ * elles seules — le hero de la landing (1280 x 747 px) et les cartes d'authentification,
+ * c'est-à-dire du texte sur fond plat. Une future comparaison visuelle (un graphe, une
+ * photo, une timeline) en aurait hérité SILENCIEUSEMENT, pour une surface et un contenu
+ * qui n'ont rien à voir, et sans que personne relise une valeur qui ne serait écrite
+ * nulle part chez elle. Une prochaine spec de diff visuel doit poser SA propre tolérance,
+ * mesurée sur SA surface.
+ *
+ * ── LA VALEUR N'EST PAS UN CHIFFRE ROND CHOISI AU JUGÉ ─────────────────────────────
+ *
+ * BRUIT MESURÉ : **0 pixel**. Trois runs complets consécutifs de la spec (11 tests)
+ * contre des références fraîches, `maxDiffPixelRatio: 0`, même poste, même serveur
+ * `next dev` : 11/11 verts à chaque fois. Le rendu est bit-à-bit reproductible une fois
+ * neutralisé l'habillage dépendant de l'environnement (cf. `ENV_CHROME_CSS` ci-dessus —
+ * c'est LUI qui a rendu ce 0 possible, pas la tolérance).
+ *
+ * PLAFOND MESURÉ : la plus petite régression TYPOGRAPHIQUE simulée sur le hero
+ * (1280 x 747 px = 956 160 px) produit **11 226 px de diff, soit un ratio 0.0117** (un
+ * `letter-spacing: 0.010em` sur le `h1`). Sweep de calibration :
+ *
+ *     letter-spacing h1 0.035em (mutation du contrôle négatif) : 11 878 px (0.0124)
+ *     letter-spacing h1 0.010em                                : 11 226 px (0.0117)
+ *     font-size du sous-titre +1px                             : 125 522 px (0.1313)
+ *     token `--color-accent` remplacé (fond du CTA primaire)   :  34 711 px (0.0363)
+ *     `border-radius` du CTA 8px -> 4px                        :      45 px (0.00005)
+ *
+ * On retient **0.002** : ~6x au-dessus du bruit constaté (0) et ~6x SOUS la plus petite
+ * régression typographique mesurée. La marge existe dans les deux sens, et le contrôle
+ * négatif en fin de fichier l'atteste à chaque run.
+ *
+ * CE QUE CETTE VALEUR NE VOIT PLUS, ET QU'IL FAUT ASSUMER : une régression pesant moins
+ * de 0.2 % de la surface capturée — 1 912 px sur le hero, 350 px sur la plus petite carte
+ * d'auth (448 x 391). Le `border-radius` du sweep (45 px) EST dans cet angle mort. Le
+ * resserrer à 0 le couvrirait, au prix d'aucune marge face à un environnement de rendu
+ * qu'on n'a pas pu mesurer (cf. ci-dessous).
+ *
+ * ── CE QUE LA TOLÉRANCE NE PEUT PAS SAUVER (à lire avant de la remonter) ───────────
+ *
+ * Les références sont générées en conteneur `mcr.microsoft.com/playwright:v1.61.1-jammy`
+ * (Ubuntu 22.04) et la CI tourne sur `ubuntu-latest` (24.04 « noble »). Playwright nomme
+ * les DEUX `linux` : les références SERONT donc bien comparées en CI, il n'y aura pas
+ * d'erreur explicite « référence manquante ». Si les deux distributions rastérisaient le
+ * texte différemment, le diff porterait sur des MILLIERS de pixels — l'ordre de grandeur
+ * des mutations ci-dessus. AUCUNE valeur raisonnable de `maxDiffPixelRatio` n'absorbe
+ * cela : au-delà de ~0.02 la spec ne peut plus rien détecter et devient un test qui ne
+ * peut plus échouer. Ce qui absorbe le bruit de rastérisation, c'est `threshold` (écart
+ * de couleur PAR PIXEL, défaut 0.2), pas le ratio. Donc : si la CI rougit sur ces
+ * références, la réponse n'est PAS de monter ce ratio, c'est de RÉGÉNÉRER les références
+ * sur l'image qui correspond au runner. Recette :
+ * `docs/memory/sprints/sprint-77/issue-294-done.md`.
+ */
+const VISUAL_TOLERANCE = {
+  maxDiffPixelRatio: 0.002,
+  // Explicite alors que c'est le DÉFAUT : c'est le paramètre qui absorbe le bruit
+  // d'antialiasing (écart YIQ toléré par pixel), et donc le premier qu'on serait tenté
+  // de toucher. Le laisser implicite invitait à le confondre avec le ratio ci-dessus,
+  // qui ne joue pas le même rôle.
+  threshold: 0.2,
+} as const
 
 /**
  * Attend que les polices RÉELLEMENT UTILISÉES soient chargées ET peintes.
@@ -450,7 +518,7 @@ for (const scheme of SCHEMES) {
     for (const screen of SCREENS) {
       test(`${screen.name} — capture de référence`, async ({ page }, testInfo) => {
         const target = await prepare(page, screen, scheme, testInfo)
-        await expect(target).toHaveScreenshot(`${screen.name}-${scheme}.png`)
+        await expect(target).toHaveScreenshot(`${screen.name}-${scheme}.png`, VISUAL_TOLERANCE)
       })
     }
   })
@@ -502,7 +570,17 @@ test.describe('#294 — armement de la comparaison', () => {
 
     let comparisonFailed = false
     try {
-      await expect(hero).toHaveScreenshot('landing-hero-light.png', { timeout: 5_000 })
+      // ⚠ MÊME tolérance que les captures de référence, obligatoirement. Ce test ne
+      // prouve quelque chose que s'il compare dans les MÊMES conditions : l'oublier ici
+      // ferait retomber la comparaison sur le défaut Playwright (`maxDiffPixelRatio`
+      // absent, `maxDiffPixels` absent, donc AUCUN pixel toléré), le contrôle négatif
+      // rougirait pour la mauvaise raison et resterait vert même si la tolérance des
+      // captures était élargie à 1. C'est exactement le désarmement silencieux que le
+      // déplacement de la tolérance hors de la config aurait pu introduire.
+      await expect(hero).toHaveScreenshot('landing-hero-light.png', {
+        ...VISUAL_TOLERANCE,
+        timeout: 5_000,
+      })
     } catch {
       comparisonFailed = true
     }
@@ -510,7 +588,7 @@ test.describe('#294 — armement de la comparaison', () => {
     expect(
       comparisonFailed,
       "La comparaison visuelle est restée VERTE malgré une mutation de l'interlettrage du " +
-        '`h1` du hero. La tolérance de `playwright.config.ts` (`expect.toHaveScreenshot`) est ' +
+        '`h1` du hero. La tolérance `VISUAL_TOLERANCE` (en tête de ce fichier) est ' +
         'trop large : la suite ne peut plus détecter aucune régression et reste verte pour ' +
         "toujours. Resserrer la tolérance, ou vérifier que la référence n'a pas été " +
         'régénérée AVEC la mutation.',
