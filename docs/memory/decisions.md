@@ -421,6 +421,19 @@ c'est un halo, pas un indicateur ; et `ring-*` est un `box-shadow` dont le `ring
 (panneau, pas contrôle). Écriture imposée : **`outline-hidden`, jamais `outline-none`** — seul le premier
 émet le fallback `@media (forced-colors: active)`.
 
+**COUVERTURE AUTOMATISÉE** (état au S77). Trois garde-fous, complémentaires et disjoints :
+`base-layer.test.ts` tient la CASCADE (la règle sort bien dans `@layer base`, sous `utilities`) ;
+`control-border-tier.test.ts` tient le CSS des contrôles à `<input>` masqué (`core.css` uniquement) ;
+et **`tsx-focus-utility.test.ts` (#457, S77) tient le côté TSX** — il scanne les littéraux de
+`src/components/**` et `app/**` (122 fichiers) et rougit sur tout `outline-*` / `ring-*`, dérogations
+tenues dans une allowlist `(fichier, utilitaire)` dont l'unique entrée est le `outline-hidden` de
+`ui/popover.tsx` nommé ci-dessus. Il est plus STRICT que l'énoncé de #457, qui ne visait qu'un `ring-*`
+« sans le token `--color-focus` » : c'est le MÉCANISME que cette décision rejette, pas la couleur — la
+violation trouvée au S77 (`legal-table-of-contents.tsx`, corrigée) portait justement la bonne couleur
+(`ring-ring` → `--color-focus`) et restait un contournement. Ce qu'AUCUN des trois ne couvre : une classe
+CONSTRUITE (`` `ring-${n}` ``), un `outline` en CSS hors `core.css`, et tout ratio réel — mesuré par
+`e2e/sprint-62-control-focus-contrast.spec.ts`.
+
 ## DEC-S58-002 — `surface-2` est la 5ᵉ surface du DS, et la plus serrée
 Les ratios versionnés du tier `rule-emphasis` couvraient 4 couples (`bg`/`surface` × clair/sombre). Les
 toolbars de la frise vivent sur **`surface-2`**, absent de cet inventaire. Mesuré au pixel en S58 :
