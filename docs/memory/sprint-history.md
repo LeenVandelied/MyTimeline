@@ -4890,3 +4890,373 @@ compteurs SQL mesurés pour #175, `type: "all"` pour #237, sémantique du compte
 et prémisse réfutée pour #527.
 
 **Status :** Terminé
+
+## Sprint 77 — 2026-09-05 → en cours (QA visuelle & garde-fou focus)
+
+**Objectif :** QA visuelle du design system (Storybook clair/sombre, captures de référence
+Playwright) + un garde-fou focus qui couvre enfin le `.tsx`, + les deux follow-ups du S76 sur les
+pages légales.
+
+**Milestone GitHub :** #78
+**Issues (5) :** #457, #533, #191, #532, #294
+**Branche :** `sprint/77` (créée depuis `origin/dev` @ `82d66b9`)
+
+**Cadrage — ce sprint n'a PAS été planifié par `/sprint plan`.** Aucune entrée PLANIFIÉ, aucun
+`architect-plans.md`. Le milestone #78 préexistait avec 3 issues étiquetées `sprint-77` (#191, #294,
+#457) et 2 follow-ups du S76 attachés au milestone sans le label (#532, #533). Le périmètre à 5 a
+été arbitré par le dev ; les deux follow-ups ont reçu le label `sprint-77`. Les vagues et les
+mini-plans sont établis par le lead, pas par un architect.
+
+**Vagues — séquentielles, une issue à la fois (décision dev).**
+- V1 `#457` — garde statique, ni navigateur ni serveur.
+- V2 `#533` — traductions `legal.json`. **Placée avant #532** : traduire les titres change le texte
+  que #532 mesure pour calibrer sa rampe typographique.
+- V3 `#191` — revue visuelle Storybook + correctifs DS. Exclusivité navigateur.
+- V4 `#532` — rampe typographique du `<h1>` des pages légales + retrait du test de caractérisation
+  posé au S76 dans `sprint-76-legal-visual.spec.ts`.
+- V5 `#294` — captures de référence Playwright. **En dernier** : ses screenshots doivent être gravés
+  sur un DS déjà corrigé par #191 et #532, sinon ils naissent périmés.
+
+**#533 — l'énoncé est réfuté par le dépôt, périmètre réduit aux titres (arbitrage dev).**
+L'issue annonce « les **20 intitulés de sections** » restés en français et *soupçonne* que les corps
+le soient aussi. Comparaison clé à clé des 4 `legal.json` faite par le lead avant briefing :
+**64 clés sur 66 sont identiques au français** en `en`, `es` ET `de` — titres *et* corps. Seules
+`tableOfContents` et `disclaimerOriginalFrench` sont réellement traduites. Ce n'est donc pas 20 clés
+mais **192 traductions** (64 × 3) de deux documents à portée juridique (CGU articles 1-10 + politique
+de confidentialité), et le `size:M` de l'issue repose sur une prémisse fausse. Le compte exact de
+clés `*.title` est **22**, pas 20.
+Décision du dev, prise sur cette mesure : **#533 se limite aux 22 titres**. Les 44 clés de corps
+restent en français, couvertes par `disclaimerOriginalFrench` (« la version française fait foi »),
+qui est le seul texte déjà traduit. Le reste part en follow-up chiffré à la clôture.
+
+**Réserve écrite sur #533 (texte à portée juridique).** L'énoncé de l'issue dit lui-même que la
+traduction « demande une relecture humaine, ce n'est pas une tâche à confier à un agent sans
+validation ». Le dev a tranché de l'inclure malgré cette réserve, exposée avant démarrage. Le
+briefing exige que la traduction soit livrée marquée comme NON RELUE, et le fait sera porté dans le
+corps de la PR — pas tu.
+
+**Écart d'énoncé relevé avant briefing (leçon S74) :** #191 annonce « 22 stories », il y en a **26**
+sur disque (18 `ui/` + 8 `timeline/`). Les pistes techniques des 5 issues ont été vérifiées
+existantes ; le trou documenté dans l'en-tête de `control-border-tier.test.ts` (#457) a été relu.
+
+### Vague 1 — #457 livrée (`700a2d8`)
+
+Garde-fou **Vitest**, pas ESLint : `frontend/src/styles/__tests__/tsx-focus-utility.test.ts` (541 l.).
+Un lexeur de littéraux (états chaîne / gabarit / commentaire) balaie **122 `.tsx`** de
+`src/components/**` et `app/**` et rougit sur tout `outline-*` / `ring-*`. Couvre `cn()`, `clsx()`,
+`cva()`, `Record<V,string>`.
+
+**Deux affirmations de MON briefing que l'agent a réfutées, à raison :**
+- Je lui donnais comme critère de départage « vérifie lequel de `lint` ou `test` la CI joue
+  réellement ». **Les deux tournent** — `ci.yml:99-109` enchaîne `build`, `test`, `typecheck`, `lint`.
+  Le critère que je proposais était vide ; l'agent a tranché sur la méthode d'armement S63 à la place
+  (une mutation en mémoire exige une fonction pure, `no-restricted-syntax` ne sait pas inspecter le
+  contenu d'un littéral). Même famille que `PIT-S68-002`, mais côté lead.
+- Il a lu `git log -1` menteur sous RTK et l'a tranché par `git rev-parse` — HEAD était bien
+  `82d66b9`. Élargit `PIT-S45-003` à `git log`.
+
+**Périmètre déplacé par la mesure (`PIT-S71-001`) :** les 3 fichiers nommés par l'issue
+(`ui/checkbox|radio|switch.tsx`) portent **zéro** occurrence. La seule violation réelle du dépôt
+était dans `components/legal/legal-table-of-contents.tsx:52` — corrigée (couleur juste, mécanisme
+faux : `ring-ring` au lieu du token `--color-focus`).
+
+**Contrôle négatif — vérifié par le lead, pas cru sur parole.** L'agent l'annonce armé à deux
+niveaux. J'ai rejoué le mien indépendamment : injection d'un `ring-2` réel dans `ui/switch.tsx`
+→ **exit 1, 1 failed / 18 passed**, puis `git checkout --` et `git status` propre. Et j'ai rejoué la
+garde seule : **19/19, exit 0**.
+
+**Tests rapportés par l'agent :** vitest 112 fichiers **1280/1280** exit 0 · `tsc --noEmit` exit 0 ·
+`next build` exit 0 (52 pages) · `next lint` exit 0. **Non joué : aucun E2E** — alors qu'il a touché
+la TOC légale, surface de `sprint-76-legal-visual.spec.ts`. Il le signale lui-même et en fait un
+follow-up ; c'est à reprendre en vague 4 ou 5.
+
+**Effet de bord assumé sur #191 (vague 3) :** `ui/checkbox|radio|switch.tsx` sont intacts mais
+désormais **surveillés** — un correctif visuel qui y poserait un `ring-*` fera rougir la CI, par
+conception. C'est voulu, et #191 en est averti.
+
+### Vague 2 — #533 livrée (`9d90407`)
+
+22 clés `*.title` traduites en `en` / `es` / `de`. Vérifié par le lead, pas cru sur parole :
+**parité des clés intacte** (66 dans les 4 locales), **aucune clé de corps touchée** (périmètre
+respecté au caractère près), et les seuls titres `en` restés identiques au français sont **3 vrais
+cognats** (`Introduction`, `Contact`, `Article 10 – Contact`) — l'agent a eu la lucidité de ne pas
+inventer une différence pour satisfaire son propre test, et a borné l'exception par une allowlist
+nominative testée.
+
+**Contrôle négatif rejoué par le lead** : `de/privacy.cookies.title` remis en français
+→ **exit 1, 3 failed / 73 passed** ; restauration confirmée par `shasum -a256` identique.
+Le garde-fou vit dans `frontend/src/lib/legal-pages.test.ts` (test de parité #60 **étendu**, pas de
+fichier concurrent créé) : 60 → 76 cas. Suite complète **1296/1296**, exit 0.
+
+**⚠ Cette vague PÉRIME la mesure de #532, et donc son énoncé.** L'issue #532 affirme que le
+débordement du `<h1>` est « **non corrélé à la locale** » (`fr` +122 px, `en` +109, `es` +111,
+`de` +124 sur `/privacy` @375 px). Ces chiffres ont été relevés quand les 4 locales affichaient le
+**même titre français**. Ce n'est plus vrai :
+
+| Locale | `privacy.title` | mot le plus long | `terms.title` | mot le plus long |
+|---|---|---|---|---|
+| `fr` | Politique de Confidentialité | Confidentialité (15) | Conditions Générales d'Utilisation | d'Utilisation (13) |
+| `en` | Privacy Policy | Privacy (7) | Terms of Use | Terms (5) |
+| `es` | Política de Privacidad | Privacidad (10) | Condiciones Generales de Uso | Condiciones (11) |
+| `de` | **Datenschutzerklärung** | **Datenschutzerklärung (20)** | Allgemeine Nutzungsbedingungen | **Nutzungsbedingungen (19)** |
+
+L'allemand devient le **cas dimensionnant** : composés non sécables de 19-20 caractères, min-content
+irréductible — `break-words` n'y peut rien de plus qu'au S76 (`PIT-S73-001`). L'anglais, à l'inverse,
+n'a probablement plus de débordement du tout. **#532 doit re-mesurer les 4 locales avant de calibrer
+sa rampe** ; le tableau de son énoncé est mort. L'agent l'a signalé de lui-même, et a relevé un
+piège adjacent : `de/terms.article1.title` = « Begriffsbestimmungen » (20 car.) — un `<h2>` aussi
+contraignant que le `<h1>`, hors du champ de l'issue.
+
+**Réserve tenue :** le done.md porte l'avertissement « traductions produites par un agent, **non
+relues par un humain**, texte à portée juridique ». Reporté au corps de la PR. 3 follow-ups émis,
+dont la relecture humaine des 22 intitulés et les 44 clés de corps restées en français.
+
+### Vague 3 — #191 : revue visuelle conduite par le LEAD en navigateur, corrections déléguées
+
+La revue elle-même n'a pas été déléguée : un écart rapporté par un agent qui n'a pas ouvert de
+navigateur est une hypothèse (`PIT-S70-006`). Storybook lancé sur `:6006`, **80 stories sur
+26 composants** (l'énoncé disait 22 — il ne correspond à rien), balayées **× 2 thèmes** par un
+instrument mesurant contraste du texte (fond **peint** réel, remontée d'ancêtres + compositing
+alpha, cf. `PIT-S58-001`) et débordement horizontal.
+
+**Instrument armé avant d'être cru** : deux sondes synthétiques injectées (ratios 1,92 et 1,01)
+correctement attrapées ; 18 nœuds de texte vus sur `button--all-variants`. Un vert non armé n'aurait
+rien valu (`PIT-S62-003`).
+
+**Constat 1 — prérequis absent, non mentionné par l'issue.** Storybook n'a **aucun mécanisme de
+thème** : ni `globalTypes`, ni décorateur, ni `@storybook/addon-themes` (absent du `package.json`).
+`<html class="" data-theme=null>`. Or le sombre s'exprime par `.dark` (`colors.css:123-124`).
+Les deux premiers critères d'acceptation étaient donc **structurellement inatteignables**. Les
+tokens, eux, sont sains : injection de `.dark` → `--color-bg` `#FCFCFD`→`#0B0C0E`, encre
+`rgb(22,24,29)`→`rgb(236,237,239)`, `--color-focus` `#0E5FC4`→`#4D9BFF`. Le défaut est l'absence de
+bascule, pas le DS. J'ai injecté par JS pour mener la revue — contournement de mesure, pas livrable.
+
+**Constat 2 — défaut réel, mesuré.** `DateStamp.tsx:21` déborde de sa cellule sur
+`timeline-ruler--thirty-days`, story dont le commentaire dit « fenêtre pleine de 30 jours **comme le
+dashboard** » : c'est le cas de production. `overflow:visible` → le texte empiète sur les cellules
+voisines (capture à 800 px : « ven. sam dim » se touchent, points finaux perdus).
+
+| Viewport | cellule | en débordement | pire |
+|---|---|---|---|
+| 800 px | 22 px | **30/30** | +20 px |
+| 1024 px | 27 px | **30/30** | +15 px |
+| 1280 px | 34 px | 21/30 | +8 px |
+| 1600 px | 43 px | 0/30 | 0 |
+
+Chiffres **identiques en clair et en sombre** : défaut de mise en page révélé par la revue de thème,
+pas défaut de thème. Sain seulement au-delà de 1600 px — cassé sur tout portable.
+
+**Constat 3 — faux positif écarté avant de faire des dégâts.** L'instrument a signalé 4,47 < 4,5 sur
+le texte des `EventPill` (blanc sur `#6366f1`), dans les 2 thèmes. Le dépôt documente déjà ce cas :
+`fixtures.tsx:32` dit que cette couleur est « un input EXPLICITE et délibérément NON conforme »,
+`types/event.ts:163` cite le plafond de 4,467:1, et le composant **répète le titre à l'extérieur**
+de la pilule (`eventLabelReadableInside → false`, #81 pt 6). J'avais mesuré le leurre décoratif, pas
+le libellé accessible. « Corriger » cette couleur aurait cassé un cas de test volontaire.
+
+**Constat 4 — non tranché, transmis comme tel.** `ui-tooltip--default` (cw 34 / sw 110) : au
+rechargement aucun déclencheur trouvé et `.mt-tooltip` absent — la première lecture portait
+vraisemblablement sur un état fermé. `timeline-cursor--end` : 2 px, probablement une butée légitime.
+Ni défaut ni sain : à mesurer par la vague.
+
+**Piège d'instrumentation rencontré :** deux mesures divergentes du même élément (22 px puis 34 px)
+parce que le volet du navigateur avait changé de taille entre deux appels — la largeur de cellule
+dépend du viewport, pas du thème. Toute mesure ultérieure fixe la largeur explicitement.
+
+**Angles morts de ma revue, écrits et délégués :** composants sans nœud de texte (`nText=0` sur les
+4 stories `ui-iconbutton--*`, `ui-input--default/--disabled`, `ui-textarea--*`, `timeline-cursor--*`)
+→ contraste des **icônes** et des **placeholders** non vérifié ; états **hover/focus** jamais
+déclenchés ; **alignement pixel vs `core.css`** (critère 3 de l'issue) **pas fait du tout**.
+
+### Vague 3 — #191, passe 1 (`a5046fa`) : deux corrections de MA revue, et un défaut résiduel
+
+**L'agent a réfuté deux affirmations de mon briefing. Vérifié : il a raison sur les deux.**
+1. *« la story 30 jours est le cas du dashboard »* — **faux**. Le seul consommateur de
+   `Ruler`/`DateStamp` est `EventPreviewTimeline.tsx:168` (aperçu du drawer, 6 graduations) ;
+   `TimelineView` a son propre `TimelineRuler` en pixels absolus. J'avais recopié le commentaire de
+   story comme un fait — `PIT-S71-001` appliqué au lead, deuxième occurrence du sprint après le
+   critère CI inventé du briefing #457.
+2. *Manque que je n'avais pas vu* : `--font-display` / `--font-ui` / `--font-mono` valaient la
+   **chaîne vide** dans Storybook — les 80 stories étaient rendues en police système. Toutes mes
+   mesures de largeur (donc les magnitudes de débordement du constat 2) étaient prises dans la
+   mauvaise fonte. L'agent a remesuré l'avant dans la bonne police avant de comparer.
+
+**Livré** : bascule de thème durable (`globalTypes` + décorateur posant `.dark`, `data-theme`,
+`color-scheme` **et** les variables de police), pilotable par `?globals=theme:dark` — donc
+réutilisable par #294. Vérifié par le lead : `.dark` + `data-theme=dark` + `color-scheme:dark` +
+`--font-display: 'Archivo'` / `--font-mono: 'IBM Plex Mono'` effectivement peuplées.
+
+**Défaut résiduel trouvé par le lead — le correctif `DateStamp` est incomplet.** Le seuil
+`@min-[34px]` laisse une **bande cassée d'environ 34 à 50 px de cellule** : le jour de semaine
+réapparaît sans place et se fait rogner en plein glyphe par l'`overflow-hidden`.
+
+| viewport | cellule | masqué proprement | **rogné** | pire manque |
+|---|---|---|---|---|
+| 1152 px | 31,7 | 30/30 | 0 | — |
+| 1200 px | 33,1 | 30/30 | 0 | — |
+| 1280 px | 35,4 | 0 | **30/30** | **15 px** |
+| 1360 px | 37,6 | 0 | 30/30 | 12 px |
+| 1440 px | 39,9 | 0 | 30/30 | 10 px |
+| 1600 px | 44,4 | 0 | 21/30 | 6 px |
+| 1800 px | 50,1 | 0 | 0 | 0 |
+
+Le rapport de l'agent annonçait « 0/30 » à 1280 et 1600 px : sa sonde portait vraisemblablement sur
+la cellule `@container` (dimensionnée par la grille, donc jamais en débordement) au lieu de
+l'enveloppe interne. Corroboré visuellement (capture à 1280 px : « sam. » rogné). Renvoyé en
+**cycle 2** — une correction issue d'une review doit elle-même être relue.
+
+**Piège d'instrumentation, côté lead :** ma première contre-mesure a rendu « 0 débordement sur
+0 cellules » — l'agent avait changé les classes, mon sélecteur ne matchait plus. Un vert vacuous,
+écarté avant d'être cru.
+
+**Défaut NOUVEAU rapporté par l'agent (à vérifier) :** `::placeholder` du `Textarea` à
+**2,82:1** en clair / 2,99 en sombre — non conforme. Les icônes (12 SVG, min 5,85:1) et le
+placeholder de l'`Input` (5,96/6,26) passent. **25 écarts pixel sur 32 contrôles** relevés vs
+`core.css`, volontairement NON corrigés (le dépôt acte `.mt-*` comme spécimen parallèle de `ui/*`).
+
+### Vague 3 — #191, cycle 2 (`119f497`) : bande refermée, vérifiée par le lead
+
+L'agent a confirmé mon constat et **corrigé mon hypothèse sur la cause de sa fausse mesure** : sa
+sonde portait bien sur l'enveloppe interne (et non sur la cellule `@container` comme je le
+supposais), mais elle passait par `Range.getClientRects()`, qui **renvoie des boîtes de ligne
+bornées à la boîte de contenu** — un mot insécable plus large que sa boîte n'y apparaît jamais. Sa
+sonde rendait donc structurellement 0 sur ce défaut précis. Les deux lignes fausses sont corrigées
+dans le `done.md` avec un encart « cycle 2 » qui dit ce qui était faux et pourquoi, pas réécrites
+en silence.
+
+**Seuil recalé à 52 px, dérivé de la mesure** (et non repris de mon « ~50 ») : jour le plus large en
+Archivo 500 @15 px sur les 4 locales — `fr` « sam. » 33,3 px (la contrainte), `en` « Wed » 30,4,
+`es` « dom » 30,3, `de` « Mo. » 25,8 — + `px-2` (16 px) = 49,3 px requis, marge à 52. **26 px
+d'écart de besoin entre `de` et `fr`** : un seuil calibré sur une seule locale aurait été faux
+ailleurs.
+
+**Contre-vérification indépendante du lead** (sonde `scrollWidth - clientWidth`, `sr-only` exclus
+par `position:absolute`) : **0 rognage** aux 7 paliers × 2 thèmes, et 0 sur un balayage de 1850 à
+2570 px couvrant la zone où le jour réapparaît (cellules 51,5 → 71,9 px). **Bascule unique et
+nette** entre cellule 51,5 px (masqué) et 54,1 px (affiché). **Ma sonde était armée** : injection de
+« Mittwoch » → +33 px correctement détectés.
+
+**Placeholder du `Textarea` — défaut confirmé par le lead, cause identifiée.** Les jetons sont
+**intervertis entre thèmes** : le `Textarea` emploie en sombre la valeur claire de l'`Input`, et
+réciproquement.
+
+| Composant | clair | sombre |
+|---|---|---|
+| `Input` | `rgb(94,98,107)` sur `#FCFCFD` → **5,96** ✅ | `rgb(142,146,153)` sur `#0B0C0E` → **6,26** ✅ |
+| `Textarea` | `rgb(150,154,163)` sur `#FFFFFF` → **2,82** ❌ | `rgb(94,98,107)` sur `#131519` → **2,99** ❌ |
+
+Laissé en follow-up (l'issue autorise « ticket de suivi si correction hors périmètre »), à porter au
+triage de clôture.
+
+**Réserve écrite par l'agent, non tue :** les seuils 34/52 px sont calibrés sur Archivo 500 aux
+tailles actuelles ; un changement de fonte, de graisse ou de `px-*` les invalide, et rien ne
+l'empêche mécaniquement. Le `RECOMMAND_FOLLOWUP` d'un E2E anti-régression sur `DateStamp` monte
+donc en pertinence — aucun test du dépôt ne garde ce comportement aujourd'hui.
+
+### Vague 4 — #532 livrée (`52237f4`) : énoncé réfuté, second fautif trouvé, dette E2E soldée
+
+**L'énoncé de l'issue est réfuté par la mesure, comme la vague 2 le laissait prévoir.** Débordement
+de page AVANT correctif (320/375/414/640 px) :
+
+| Locale | `/privacy` | `/terms` |
+|---|---|---|
+| `de` | **+379 / +324 / +285 / +59** | **+395 / +340 / +301 / +75** |
+| `fr` | +177 / +122 / +83 / 0 | +107 / +52 / +13 / 0 |
+| `es` | +64 / +9 / 0 / 0 | +116 / +61 / +22 / 0 |
+| `en` | **0 partout** | **0 partout** |
+
+« Non corrélé à la locale » est faux : `en` ne déborde plus du tout, `de` déborde trois fois plus
+que `fr` — **et encore à 640 px**, largeur que l'issue déclarait saine.
+
+**Second fautif, hors énoncé :** les `<h2>` en `text-xl` (35 px) allemands débordent **leur propre
+boîte** (+121 à +133 px @320). Invisibles au balayage `rect.right` — vus uniquement par
+`scrollWidth > clientWidth`. Corriger le seul `<h1>` aurait laissé la page en défilement horizontal
+en allemand : l'issue aurait été « close » sur un défaut toujours présent.
+
+**Correctif** : rampe `text-xl md:text-2xl lg:text-3xl` (35/45/57 — la même que `HeroSection:88`),
+plus un repli d'en-tête sous `sm`, `min-w-0 + break-words` (`PIT-S73-001`), `break-words` sur les
+20 `<h2>`, et `hyphens-auto` (césure syllabique mesurée en `de`). Écarté : une rampe à 27 px, qui
+aurait **inversé la hiérarchie** (les `<h2>` valent 35).
+
+**Contre-vérification indépendante du lead** — 4 locales × 2 pages × 4 largeurs = **32 combinaisons
+à 0**, débordement de page, du `<h1>` et des `<h2>` compris. Rampe confirmée : 35 px (<md) → 45 px
+(768) → **57 px (≥1024, desktop inchangé)**. **Instrument armé** : composé allemand démesuré injecté
+avec césure coupée → page +574 px, `h1` +590 px détectés. Les 32 zéros ne sont pas vacuous.
+
+**Test de caractérisation S76 : retourné, pas supprimé.** `KNOWN_PAGE_OVERFLOW` retiré, le test
+« le seul débordement reste le `<h1>` pré-existant » devient « aucun débordement de page à 320 ET
+375 px », assertion élargie à toute la page, contrôle négatif intégré.
+
+**Dette E2E du sprint soldée, et rejouée par le lead.** `sprint-76-legal-visual` **12/12, exit 0**
+(11,5 s) — dont deux tests d'auto-contrôle du harnais. C'est la surface que #457 avait modifiée sans
+qu'aucun E2E ne tourne. `sprint-75-legal-pages` 28/28 exit 0 côté agent. Recette : `next dev -p 3000`
+en **webpack** lancé à la main + `PLAYWRIGHT_BASE_URL` + `--no-deps`. Note d'oracle : `/api/auth/me`
+rend **500** et non 401 — le rewrite `/api/*` existe (il a tenté) mais aucun backend n'écoute ; sans
+objet pour des pages publiques, à ne pas confondre avec le 404 « proxy absent ».
+
+### Vague 5 — #294 livrée (`0b5a27c`) : première infrastructure de diff visuel du dépôt
+
+Le dépôt n'avait **aucune** infra de diff visuel : 0 `toHaveScreenshot`, 0 `*-snapshots`, 0 clé
+`expect`. #294 n'était donc pas « une spec » mais l'introduction de l'outillage.
+
+**Trois sources de fausses références trouvées par la mesure, aucune anticipée par le briefing :**
+habillage dépendant de l'environnement dans la boîte capturée (indicateur dev Next, devtools
+TanStack, et surtout `OfflineBanner` — qui **aurait rougi la CI en permanence**) ; course de police
+sous `display: swap`, `document.fonts.ready` insuffisant (4 runs rouges sur 6, ~13 700 px) ; et une
+référence gravée avec le bouton en `aria-busy` pendant l'amorçage d'`AuthContext` (13 820 px,
+reproductible 8 fois).
+
+**Énoncé périmé, encore un :** `app/[locale]/home/` est un `permanentRedirect` 308 (ADR-006), pas la
+landing. Capture faite sur `/fr`.
+
+**Tolérance calibrée, pas devinée** : `maxDiffPixelRatio: 0.002`. Bruit mesuré **0 px** ; balayage de
+mutations sur le hero (956 160 px) — `letter-spacing 0.010em` = 11 226 px, `--color-accent` =
+34 711 px, `font-size +1px` = 125 522 px. **La détection cesse à 0.02** ; 0.002 est donc ~6× au-dessus
+du bruit et ~6× sous la plus petite régression typographique.
+
+**10 PNG `-chromium-linux`, 332 Ko**, générés dans `mcr.microsoft.com/playwright:v1.61.1-jammy`
+(version Playwright identique au `package.json`, vérifiée dans le conteneur).
+
+**Un faux vert produit par le LEAD, et corrigé.** Mon premier run de vérification est sorti
+**exit 0** en affichant « 1 passed, **11 did not run** » : j'avais omis `--no-deps`, Playwright a
+joué le projet `setup` contre un backend inexistant, et les 11 tests visuels ont été sautés sans que
+le code de sortie le dise. **Un code de sortie ne suffit pas — il faut lire le compte de tests
+réellement exécutés.** Rejoué correctement : **11/11, exit 0**.
+
+### Phase 6-8 — audit, review batch, couverture
+
+**Audit** : `docs/memory/audits/sprint-77-test-coverage.md`. Toutes les suites rejouées par le lead,
+codes de sortie lus : backend **566/566**, vitest **1296/1296** (puis 1313 au cycle 2), `tsc` 0,
+`lint` 0, `next build` 0, E2E visuel **11/11**, E2E légal **12/12**. Les **5 contrôles négatifs**
+ont été rejoués indépendamment plutôt que repris des rapports d'agents.
+
+**Couverture E2E (Phase 8) : sans objet** — le diff n'introduit aucun nouveau `data-testid`. Ce
+n'est pas un « OK », c'est une absence de matière ; le check heuristique n'avait rien à comparer.
+
+**Review batch** : `reviewer` + `playwright-reviewer`. **Aucun critique, 2 majeurs** — dont un
+trouvé **indépendamment par les deux relecteurs** (la clé `expect.toHaveScreenshot` posée
+globalement, héritée en silence par toute future spec) ; l'autre étant la dérivation `--font-ui`
+recopiée à la main de `layout.tsx` vers `preview.ts`, sans test de parité — variante exacte de
+`PIT-S58-004`.
+
+### Cycle 2 — corrections de review (`823a1f2`), re-vérifiées par le lead
+
+- **Majeur 1** : tolérance redescendue au **point d'appel**, clé `expect` retirée de la config. Le
+  projet Playwright dédié a été écarté à raison — le gabarit de nom porte `{projectName}`, il aurait
+  renommé donc invalidé les 10 PNG. L'agent a aussi prouvé la *délivrance* de la constante en la
+  portant temporairement à 0.05 : l'armement échoue alors (exit 1), donc la valeur est réellement lue.
+- **Majeur 2** : **extraction** dans `frontend/app/fonts.ts`, importé par `layout.tsx` ET
+  `.storybook/preview.ts` — la dérive devient impossible au lieu d'être surveillée. Une seconde copie
+  manuelle a été trouvée au passage. Garde de 9 tests, vérifiée sur les **deux** builders
+  (`next build` et `storybook build`, tous deux exit 0).
+- **Mineur** : le commentaire de `tsx-focus-utility.test.ts` affirmait que `` `ring-${n}` ``
+  échappait au lexeur. **Faux, établi par exécution** : le fragment `ring-` avant le `${` fait rougir
+  la garde. Commentaire corrigé, 8 cas figent désormais le comportement dans les deux sens.
+
+Trois mineurs **volontairement non traités**, avec leur raison écrite — le principal étant le
+`data-testid` sur la carte auth, qui invaliderait les 10 références PNG.
+
+Gates après cycle 2, rejoués par le lead : vitest **1313/1313**, `tsc` 0, `lint` 0, `next build` 0,
+**`storybook build` 0**, E2E visuel **11/11** — tous exit 0.
+
+**Status :** En cours
+
