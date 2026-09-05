@@ -30,14 +30,26 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
   return (
     <div className="min-h-screen bg-bg text-ink">
       <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center mb-6">
+        <div className="flex flex-wrap items-center gap-y-2 mb-6">
           <Link href={`/${locale}`} passHref>
             <Button variant="ghost" className="p-0 mr-4 hover:bg-transparent">
               <ArrowLeft className="h-5 w-5 mr-2" />
               <span>{tCommon('navigation.back')}</span>
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold gradient-text">{t('terms.title')}</h1>
+          {/* #532 — MÊME RAMPE QUE `/privacy`, dont le `<h1>` porte la justification
+              complète (paliers, relevés 4 locales × 5 largeurs, [[PIT-S73-001]],
+              [[PIT-S53-001]]) : `app/[locale]/privacy/page.tsx`.
+
+              Relevé propre à CETTE page avant correctif (2026-09-05, `next dev`, Chromium) :
+                de +395 px @320 · +340 @375 · +301 @414 · +75 @640   (« Nutzungsbedingungen »,
+                                                                      597 px à 57 px)
+                fr +107 @320 · +52 @375 · +13 @414 | es +116 / +61 / +22 | en aucun.
+              Les `<h2>` de section portent `break-words` pour la même raison : « Artikel 8 –
+              Änderung der Nutzungsbedingungen » débordait sa boîte de 133 px @320. */}
+          <h1 className="w-full min-w-0 break-words hyphens-auto text-xl font-bold gradient-text sm:w-auto md:text-2xl lg:text-3xl">
+            {t('terms.title')}
+          </h1>
         </div>
 
         {shouldShowLegalDisclaimer(locale) && (
@@ -53,7 +65,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
 
         <div className="bg-surface rounded-xl p-8 shadow-lg border border-rule mb-8">
           <section id="preamble" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.preamble.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.preamble.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.preamble.content')}
             </p>
@@ -62,7 +74,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-1" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article1.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article1.title')}</h2>
             <ul className="list-disc pl-6 space-y-2 text-ink-muted">
               <li>{t('terms.article1.site')}</li>
               <li>{t('terms.article1.user')}</li>
@@ -73,7 +85,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-2" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article2.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article2.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article2.content')}
             </p>
@@ -82,7 +94,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-3" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article3.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article3.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article3.content')}
             </p>
@@ -91,7 +103,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-4" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article4.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article4.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article4.content')}
             </p>
@@ -100,7 +112,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-5" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article5.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article5.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article5.content')}
             </p>
@@ -109,7 +121,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-6" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article6.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article6.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article6.content')}
             </p>
@@ -118,7 +130,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-7" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article7.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article7.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article7.content')}
             </p>
@@ -127,7 +139,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-8" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article8.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article8.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article8.content')}
             </p>
@@ -136,7 +148,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-9" className="mb-8 scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article9.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article9.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article9.content')}
             </p>
@@ -145,7 +157,7 @@ export default async function TermsOfService({ params }: { params: Promise<{ loc
           <hr className="border-rule my-6" />
 
           <section id="article-10" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article10.title')}</h2>
+            <h2 className="text-xl font-semibold mb-4 break-words hyphens-auto">{t('terms.article10.title')}</h2>
             <p className="text-ink-muted mb-2">
               {t('terms.article10.content')}
             </p>
