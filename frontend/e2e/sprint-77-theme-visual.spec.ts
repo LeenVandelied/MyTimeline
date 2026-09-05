@@ -536,6 +536,21 @@ for (const scheme of SCHEMES) {
  * timeout en espérant une convergence. Ici on espère l'inverse, inutile de l'attendre
  * longtemps. Et sans `retries: 0`, la CI (`retries: 2`) rejouerait trois fois un test
  * dont on attend l'échec de l'assertion interne.
+ *
+ * ⚠ RÉGÉNÉRER LES RÉFÉRENCES : TOUJOURS EXCLURE CE BLOC.
+ *
+ *     … --update-snapshots --grep-invert "armement"
+ *
+ * Ce test compare le hero MUTÉ à `landing-hero-light.png`. Sous `--update-snapshots`,
+ * Playwright ÉCRASE les références existantes : la mutation d'interlettrage est alors
+ * gravée DANS la référence du hero, qui devient fausse pour toute la suite. La garde
+ * `existsSync` plus bas empêche une CRÉATION accidentelle, pas un ÉCRASEMENT — elle ne
+ * protège donc pas de ce cas.
+ *
+ * Constaté au S77 en régénérant sur l'image du runner : `landing-hero-light.png` s'est
+ * retrouvée mutée (13 058 px d'écart au run suivant, ratio 0,02). Le message d'échec
+ * ci-dessous le disait déjà (« vérifier que la référence n'a pas été régénérée AVEC la
+ * mutation ») — il avait raison, il n'a simplement pas pu l'empêcher.
  */
 test.describe('#294 — armement de la comparaison', () => {
   test.use({ colorScheme: 'light', viewport: { width: 1280, height: 720 } })
