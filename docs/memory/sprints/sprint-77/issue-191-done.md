@@ -89,49 +89,84 @@ en `repeat(N, minmax(0, 1fr))` : la piste rétrécit sans plancher.
 
 **Retenu : dégradation par requête de conteneur.** La cellule s'adapte à SA largeur, pas au
 viewport — seule option juste pour deux consommateurs d'échelles opposées (6 graduations larges vs
-N jours étroits). Sous 34 px : le jour de semaine passe en `sr-only` (il reste dans l'arbre
+N jours étroits). **Sous 52 px** : le jour de semaine passe en `sr-only` (il reste dans l'arbre
 d'accessibilité **à toutes les largeurs** — aucune perte pour les technologies d'assistance,
-contrairement à `display:none`), le numéro reste visible, la typo passe à `--text-2xs` et le
-padding à `px-0.5`. `overflow-hidden` sert de filet : plus aucune peinture hors piste.
+contrairement à `display:none`), le numéro reste visible. Palier secondaire à 34 px : en dessous,
+la typo passe à `--text-2xs` et le padding à `px-0.5`. `overflow-hidden` sert de filet : plus
+aucune peinture hors piste.
+
+**Seuil de 52 px — mesuré, sur les 4 locales.** Jour de semaine le plus large, Archivo 500 à 15 px :
+fr `sam.` = **33,3 px** (la contrainte), en `Wed` = 30,4, es `dom` = 30,3, de `Mo.` = 25,8. Avec
+`px-2` (16 px) il faut ≥ 49,3 px, d'où 52 px (~2,7 px de marge de rendu). Un seuil calibré sur une
+seule locale serait faux ailleurs : 26 px d'écart de besoin entre `de` et `fr`. Le palier 34 px ne
+gouverne que typo/padding — le numéro à 2 chiffres fait 17,2 px, soit 33,2 px avec `px-2`.
 
 ⚠ Vérifié avant de choisir (PIT-S73-001) : la cellule est un **enfant de grille**, pas de flex —
 `break-words` n'était de toute façon pas la bonne famille de correctif.
 ⚠ Un élément ne peut pas se requêter lui-même : `@container` sur la cellule, variantes
 `@min-[34px]:*` sur l'enveloppe interne.
 
-### Tableau avant / après — `timeline-ruler--thirty-days`, 4 largeurs × 2 thèmes
+### ⚠ Cycle 2 de revue — la 1ʳᵉ passe laissait une BANDE CASSÉE (34–52 px)
 
-Critère de nuisance : largeur de la plus large **ligne peinte** comparée à la boîte de rembourrage
-de la cellule. Au-delà, l'encre se peint sur la cellule voisine.
+**Le tableau à 4 largeurs publié en cycle 1 était faux sur 2 lignes** (« 1280 px 0/30 » et
+« 1600 px 0/30 » pour l'après). Signalé par le coordinateur, reproduit et confirmé ici : avec le
+seuil à 34 px, le jour de semaine **réapparaissait sans avoir la place** entre 34 et ~50 px de
+cellule et se faisait rogner par l'`overflow-hidden` — glyphe coupé en plein milieu, soit le défaut
+qu'on prétendait corriger. Mesuré à 1280 px (cellule 34 px) : `sam. 4` manquait de **15 px**,
+`ven. 3`/`dim. 5` de 11 px, `jeu. 2`/`lun. 6` de 7 px.
 
-| Viewport | Thème | AVANT piste | AVANT débordement | APRÈS piste | APRÈS débordement | APRÈS rogné | APRÈS visible | h |
-|---|---|---|---|---|---|---|---|---|
-| 800  | clair  | 21 px | **30/30**, max **+12,3 px** | 22 px | **0/30** | 0/30 | `5` | 44 px |
-| 800  | sombre | 21 px | **30/30**, max **+12,3 px** | 22 px | **0/30** | 0/30 | `5` | 44 px |
-| 1024 | clair  | 27 px | **21/30**, max **+6,3 px**  | 27 px | **0/30** | 0/30 | `5` | 44 px |
-| 1024 | sombre | 27 px | **21/30**, max **+6,3 px**  | 27 px | **0/30** | 0/30 | `5` | 44 px |
-| 1280 | clair  | 34 px | 0/30 | 34 px | 0/30 | 0/30 | `dim. 5` | 56 px |
-| 1280 | sombre | 34 px | 0/30 | 34 px | 0/30 | 0/30 | `dim. 5` | 56 px |
-| 1600 | clair  | 43 px | 0/30 | 43 px | 0/30 | 0/30 | `dim. 5` | 56 px |
-| 1600 | sombre | 43 px | 0/30 | 43 px | 0/30 | 0/30 | `dim. 5` | 56 px |
+**Pourquoi ma sonde ne l'a pas vu** — et ce n'est pas la raison avancée par le coordinateur (qui
+supposait que je mesurais la cellule `@container`) : je mesurais bien l'enveloppe interne, mais via
+`Range.getClientRects()`, qui renvoie des **boîtes de ligne bornées à la boîte de contenu**. Un mot
+insécable plus large que sa boîte n'y apparaît donc **jamais** : la sonde rendait structurellement
+0 pour ce défaut précis. La sonde correcte est `scrollWidth - clientWidth` sur l'enveloppe qui
+rogne. Les 4 largeurs testées (800/1024/1280/1600) n'auraient de toute façon pas suffi à voir la
+bande — mais même en la traversant, l'ancienne sonde l'aurait manquée.
 
-Clair et sombre donnent des chiffres **identiques** : c'était un défaut de mise en page, pas de
-thème — la revue de thème l'a seulement révélé.
+### Tableau après correction — 7 paliers × 2 thèmes
 
-L'« avant » a été mesuré sur une story temporaire reproduisant le markup d'origine **dans la même
-fonte (Archivo)**, puis supprimée avant commit : sans cela le correctif de police aurait déplacé
-les largeurs sous les pieds de la mesure. Les chiffres du briefing (30/30 à 800, 21/30 à 1024)
-sont donc confirmés en tendance ; les valeurs exactes diffèrent parce qu'elles avaient été prises
-en police système.
+Sonde : `scrollWidth - clientWidth` sur l'enveloppe interne (celle qui porte `overflow-hidden`),
+`sr-only` exclus par `position:absolute`. « masqué proprement » = jour de semaine retiré du flux
+visuel, numéro intact, aucun rognage.
 
-**Non-régression du cas large** (une première version forçait `flex-col` et empilait le libellé sur
-2 lignes à toute largeur — attrapé par la mesure, corrigé) :
+| Viewport | Cellule | Masqué proprement | ROGNÉ | Pire manque | Affiché |
+|---|---|---|---|---|---|
+| 1152 px | 31 px | 30/30 | **0/30** | 0 | numéro seul |
+| 1200 px | 32 px | 30/30 | **0/30** | 0 | numéro seul |
+| 1280 px | 34 px | 30/30 | **0/30** (avant correctif : 30/30 rognées, −15 px) | 0 | numéro seul |
+| 1360 px | 37 px | 30/30 | **0/30** (avant : 30/30, −12 px) | 0 | numéro seul |
+| 1440 px | 39 px | 30/30 | **0/30** (avant : 30/30, −10 px) | 0 | numéro seul |
+| 1600 px | 43 px | 30/30 | **0/30** (avant : 21/30, −6 px) | 0 | numéro seul |
+| 1800 px | 49 px | 30/30 | **0/30** | 0 | numéro seul |
 
-| Cas | AVANT | APRÈS |
-|---|---|---|
-| 14 jours @ 1600 (piste 94 px) | h=44 px, `dim. 5` sur 1 ligne | h=44 px, `dim. 5` sur 1 ligne — **identique** |
-| 14 jours @ 800 (piste ~47 px) | h=56 px, 0 débordement | h=56 px, 0 débordement |
-| stories `timeline-datestamp--*` (piste 159 px) | — | 0 débordement, `dim. 5` / `Sun 5` |
+Chiffres **identiques en clair et en sombre** aux 7 paliers (14 mesures).
+
+**Balayage continu** — pour prouver qu'aucune bande cassée ne subsiste ailleurs, viewport balayé de
+700 à 2600 px par pas de 40 px (**48 paliers**, cellules de **19 px à 71 px**) :
+
+- **0 cellule rognée sur toute la plage** ;
+- **une seule bascule**, nette, entre cellule **52 px et 53 px** : `numéro seul` → `jour + numéro`.
+
+**Les 4 locales du produit**, à la largeur la plus tendue où le jour est affiché (cellule 54 px), en
+injectant le jeton le plus large de chaque locale dans le libellé : `fr sam.` 0 px de débordement,
+`en Wed` 0, `es dom` 0, `de Mo.` 0 — dans les **2 thèmes**.
+
+**Sondes armées** (PIT-S62-003) : le jeton `Mittwoch` injecté au même endroit est correctement
+rapporté à **+24 px**, et le contrôle `sam.` à **0** — la sonde détecte donc bien ce qu'elle
+prétend détecter, contrairement à celle du cycle 1.
+
+**Non-régression du cas large et du consommateur réel :**
+
+| Cas | Résultat |
+|---|---|
+| `timeline-ruler--default` 14 jours @1280 (cellule 75 px) | 0/14 rognée, `jour + numéro` |
+| stories `timeline-datestamp--*` (cellule 159 px), 2 thèmes | 0/1 rognée, `jour + numéro` |
+| Débordement hors cellule (défaut d'origine), 800/1024 px | toujours 0/30 — le correctif initial tient |
+
+L'« avant » du cycle 1 avait été mesuré sur une story temporaire reproduisant le markup d'origine
+**dans la même fonte (Archivo)**, puis supprimée avant commit : sans cela le correctif de police
+aurait déplacé les largeurs sous les pieds de la mesure. Les chiffres de débordement **hors** cellule
+du briefing (30/30 à 800 px, 21/30 à 1024 px) restent confirmés en tendance.
 
 ## 4. Constat 4 — tranché
 
@@ -241,6 +276,9 @@ moi** — le faire ici serait le pire moment. → suivi chiffré ci-dessous.
 
 ## 7. Tests — chiffres réels et codes de sortie
 
+Tableau ci-dessous = **re-run du cycle 2** (après le recalage du seuil à 52 px). Les 5 gates
+avaient déjà été joués au cycle 1 avec les mêmes chiffres et les mêmes codes de sortie.
+
 | Gate | Commande | Résultat | Code de sortie |
 |---|---|---|---|
 | Vitest | `./scripts/test-quiet.sh frontend` | **112 fichiers, 1296 tests, 1296 passés** | **0** |
@@ -273,10 +311,22 @@ suppression exige `rm -rf`, qui demande une confirmation explicite. À supprimer
   le dérivé `--font-ui: var(--font-display)`. Prévention : un preview qui ne pose pas le shell de
   `app/[locale]/layout.tsx` rend une AUTRE application — toute mesure typographique ou de thème
   prise avant ce constat est nulle.
-- `[MEMORY:pitfall]` Contexte : mesure de débordement par `Range.getClientRects()`. Solution :
-  cette API **ignore le rognage `overflow:hidden`** des ancêtres et rapporte le texte masqué —
-  elle comptait mon propre `sr-only` comme un débordement de +6,9 px. Prévention : exclure les
-  sous-arbres `sr-only` et distinguer « peint hors de la boîte » de « rogné ».
+- `[MEMORY:pitfall]` Contexte : mesure de débordement par `Range.getClientRects()`. DEUX défauts
+  opposés, les deux rencontrés sur la même issue. (1) l'API **ignore le rognage `overflow:hidden`**
+  et rapporte le texte masqué — elle comptait mon `sr-only` comme +6,9 px de débordement ;
+  (2) inversement, elle renvoie des **boîtes de ligne bornées à la boîte de contenu**, donc un mot
+  INSÉCABLE plus large que sa boîte n'y apparaît jamais : elle rendait structurellement 0 sur un
+  rognage réel de 15 px, et a produit 2 lignes fausses dans mon rapport de cycle 1. Prévention :
+  pour « ça déborde de sa boîte ? », la sonde est `scrollWidth - clientWidth` sur l'élément qui
+  rogne — jamais une largeur de `Range`. Réserver `Range` à la mesure d'un texte NON contraint.
+- `[MEMORY:pitfall]` Contexte : un seuil de requête de conteneur qui RÉVÈLE du contenu
+  (`@min-[N]:not-sr-only`). Solution : si N est choisi à vue et non dérivé de la largeur mesurée du
+  contenu + padding, on crée une **bande cassée** — le contenu réapparaît sans la place de
+  s'afficher et se fait rogner, ce qui est pire que de le masquer (seuil à 34 px alors que `fr`
+  exige 49,3 px → 15 px rognés entre 34 et 50 px). Prévention : dériver le seuil de la mesure du
+  jeton le plus large **sur toutes les locales du produit** (ici 26 px d'écart entre `de` et `fr`),
+  et valider par un BALAYAGE CONTINU de largeurs, pas par 4 valeurs rondes — la bande tombait
+  entre deux paliers testés.
 - `[MEMORY:pitfall]` Contexte : parcours des `document.styleSheets` pour retrouver une règle.
   Solution : un `CSSStyleRule` moderne expose un `cssRules` VIDE mais défini ; un `if (r.cssRules)`
   avant le test de `selectorText` saute donc toutes les règles feuilles (0 résultat sur une règle
