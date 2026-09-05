@@ -532,6 +532,19 @@ Sous zsh (shell de ce poste), `$F` contenant plusieurs chemins arrive comme **UN
 ## PIT-S76-007 — Le vérificateur de complétude de sprint lit LIGNE À LIGNE : une négation `RECOMMAND_*` repliée par le formatage compte comme signal NON TRAITÉ
 Récurrence mesurée de [[PIT-S70-005]] / [[PIT-S67-004]] au S76 : le done.md de #310 portait « … ; pas\nde `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY_EXPERT` car … ». Le « pas » étant sur la ligne précédente, `check-sprint-completeness.sh` a compté **deux** signaux actionnables non traités et bloqué la clôture. Le piège n'est pas la rédaction mais **le repli à 100 colonnes** appliqué après coup. Écrire chaque négation sur UNE ligne, et le dire dans le done.md pour qu'un reformatage ultérieur ne la casse pas. Même famille : le garde-fou de Phase 9 grep `[MISSING]` littéralement et se déclenche sur la PHRASE QUI LE DOCUMENTE dans l'audit. (Sprint 76, clôture)
 
+
+
+## PIT-S77-008 — RTK corrompt `git log -1` ET avale le code de sortie : vérifier HEAD par `git rev-parse`
+Au S77, `git log --oneline -1` rendait le **parent** (`1271253`) là où `git rev-parse HEAD` rendait le vrai HEAD (`82d66b9`) — de quoi conclure à tort que le briefing du lead se trompait de base. Et `npx vitest … ; echo $?` rend une chaîne **vide** sous le hook. Le hook réécrit aussi les **arguments** : `npx storybook dev -p 6006` est devenu `storybook dev -p 6006 dev 6006`. Toute vérification de HEAD passe par `git rev-parse`, tout code de sortie et toute commande longue par `rtk proxy`. Élargit [[PIT-S45-003]] et [[PIT-S71-002]]. (Sprint 77)
+
+
+## PIT-S77-018 — Une garde statique qui cherche un NOM NU rougit sur la prose des fichiers qu'elle garde
+Un garde-fou cherchant `--font-ui` se déclenche sur les commentaires qui **documentent justement la règle** — il se désarme au premier run, sur sa propre documentation. Remède : chercher la forme de CODE, le littéral **quoté**, que la prose n'emploie jamais, et figer ce choix par un test « la prose ne suffit pas à faire rougir ». Même famille que [[PIT-S63-017]] et [[PIT-S76-007]] : un garde à motif ne distingue pas l'usage de la mention. (Sprint 77, cycle 2 de review)
+
+
+## PIT-S77-020 — Playwright sort **exit 0** avec « N did not run » quand le projet `setup` échoue : lire le COMPTE de tests, pas le code de sortie
+Vérification du lead lancée sans `--no-deps` : Playwright a joué le projet `setup`, qui provisionne des comptes contre un backend absent ; les **11 tests visuels ont été sautés** et la sortie affichait « 1 passed, **11 did not run** » — **avec un code de sortie 0**. Une vérification qui ne vérifiait rien. Un code de sortie ne suffit jamais : lire le nombre de tests **réellement exécutés**. Voisin de [[PIT-S61-005]] et [[PIT-S45-003]]. (Sprint 77, audit de clôture)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
