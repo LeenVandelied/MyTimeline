@@ -1,0 +1,130 @@
+{
+  "pageTitle": "Ajustes",
+  "loading": "Cargando…",
+  "backToDashboard": "Volver al panel",
+  "common": {
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "continue": "Continuar",
+    "genericError": "Ha ocurrido un error, inténtalo de nuevo.",
+    "close": "Cerrar"
+  },
+  "nav": {
+    "aria": "Capítulos de ajustes",
+    "profile": "Perfil",
+    "security": "Seguridad",
+    "preferences": "Preferencias",
+    "account": "Cuenta"
+  },
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Gestiona tu información personal.",
+    "name": "Nombre",
+    "username": "Nombre de usuario",
+    "email": "Correo electrónico",
+    "saved": "Perfil guardado",
+    "errors": {
+      "usernameTaken": "Este nombre de usuario ya está en uso"
+    },
+    "avatar": {
+      "title": "Avatar",
+      "current": "Avatar actual",
+      "dropzone": "Arrastra una imagen o haz clic para elegir",
+      "hint": "PNG o JPG, 5 MB máximo",
+      "zoom": "Zoom",
+      "apply": "Aplicar",
+      "delete": "Eliminar avatar",
+      "errorType": "El archivo debe ser una imagen",
+      "errorSize": "La imagen no debe superar los 5 MB",
+      "uploaded": "Avatar actualizado",
+      "uploadError": "No se pudo subir el avatar, inténtalo de nuevo",
+      "deleted": "Avatar eliminado",
+      "deleteError": "No se pudo eliminar el avatar, inténtalo de nuevo"
+    }
+  },
+  "security": {
+    "title": "Seguridad",
+    "subtitle": "Contraseña y sesiones activas.",
+    "password": {
+      "title": "Cambiar la contraseña",
+      "old": "Contraseña actual",
+      "new": "Nueva contraseña",
+      "confirm": "Confirmar la nueva contraseña",
+      "submit": "Actualizar la contraseña",
+      "changed": "Contraseña actualizada",
+      "wrongOld": "La contraseña actual es incorrecta"
+    },
+    "strength": {
+      "weak": "Débil",
+      "medium": "Media",
+      "strong": "Fuerte"
+    },
+    "sessions": {
+      "title": "Sesiones activas",
+      "loading": "Cargando sesiones…",
+      "error": "No se pueden cargar las sesiones",
+      "empty": "Ninguna sesión activa",
+      "current": "Sesión actual",
+      "unknownDevice": "Dispositivo desconocido",
+      "unknownIp": "IP desconocida",
+      "revoke": "Revocar",
+      "revokeOne": "Revocar esta sesión",
+      "revoked": "Sesión revocada",
+      "revokeOthers": "Revocar todas las demás sesiones",
+      "revokedOthers": "Otras sesiones revocadas"
+    }
+  },
+  "preferences": {
+    "title": "Preferencias",
+    "subtitle": "Idioma, tema y densidad de visualización.",
+    "language": {
+      "label": "Idioma",
+      "options": {
+        "fr": "Français",
+        "en": "English",
+        "es": "Español",
+        "de": "Deutsch"
+      }
+    },
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Sistema"
+      }
+    },
+    "density": {
+      "label": "Densidad",
+      "options": {
+        "compact": "Compacta",
+        "normal": "Normal",
+        "comfortable": "Cómoda"
+      }
+    }
+  },
+  "account": {
+    "title": "Cuenta",
+    "subtitle": "Exporta tus datos o elimina tu cuenta.",
+    "delete": {
+      "title": "Eliminar mi cuenta",
+      "description": "Esta acción es permanente e irreversible.",
+      "button": "Eliminar cuenta",
+      "warnTitle": "¿Eliminar permanentemente tu cuenta?",
+      "warnBody": "Todos tus datos (productos, eventos, categorías) se eliminarán de forma irreversible.",
+      "confirmTitle": "Confirmar la eliminación",
+      "confirmBody": "Para confirmar, escribe tu nombre de usuario «{username}».",
+      "usernameLabel": "Nombre de usuario",
+      "confirmButton": "Eliminar permanentemente",
+      "deleting": "Eliminando…",
+      "mismatch": "El nombre de usuario no coincide",
+      "done": "Cuenta eliminada"
+    }
+  },
+  "mobile": {
+    "backToIndex": "Volver a los ajustes"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "title": "Export my data",
+  "description": "Download a copy of your personal data (GDPR portability).",
+  "formatLabel": "Export format",
+  "steps": {
+    "confirm": { "title": "Export my data" },
+    "preparing": { "title": "Preparing your export…" },
+    "ready": { "title": "Your export is ready" },
+    "error": { "title": "Export failed" }
+  },
+  "formats": {
+    "JSON": {
+      "label": "JSON",
+      "hint": "Structured file, ideal for re-importing your data or technical use. Instant download."
+    },
+    "MARKDOWN": {
+      "label": "Markdown",
+      "hint": "Readable text document, formatted for reading. Instant download."
+    },
+    "ZIP": {
+      "label": "ZIP (full archive)",
+      "hint": "Archive bundling all your data and files. Prepared in the background."
+    },
+    "CSV": {
+      "label": "CSV (spreadsheet)",
+      "hint": "Tables compatible with Excel or Google Sheets. Prepared in the background."
+    }
+  },
+  "actions": {
+    "download": "Download",
+    "prepare": "Prepare export",
+    "relaunch": "Request again",
+    "again": "New export",
+    "retry": "Try again"
+  },
+  "status": {
+    "PENDING": "pending",
+    "RUNNING": "in progress",
+    "COMPLETED": "completed",
+    "FAILED": "failed"
+  },
+  "preparing": {
+    "busy": "Preparing your export…",
+    "status": "Preparing your export: {status}. This may take a moment."
+  },
+  "ready": {
+    "syncDone": "Your export has been downloaded.",
+    "asyncReady": "Your export is ready.",
+    "expiresAt": "This link expires on {date}.",
+    "expired": "This download link has expired. Request again to generate a new export."
+  },
+  "errors": {
+    "network": "A network error occurred. Please try again.",
+    "jobFailed": "Export preparation failed. Please try again."
+  }
+}

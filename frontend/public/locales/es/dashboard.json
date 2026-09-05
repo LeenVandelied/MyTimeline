@@ -1,20 +1,137 @@
 {
-  "title": "Tableau de bord",
-  "welcome": "Bienvenue sur votre tableau de bord",
+  "title": "Panel de control",
+  "welcome": "Bienvenido a tu panel de control",
+  "lastConnection": "Última conexión",
+  "email": "Correo electrónico",
+  "role": "Rol",
+  "products": "Productos",
+  "greeting": {
+    "eyebrow": "Resumen",
+    "morning": "Buenos días {name}, aquí está tu día",
+    "afternoon": "Buenas tardes {name}, aquí está tu día",
+    "evening": "Buenas noches {name}, aquí está tu día",
+    "subtitle": "Tus próximos vencimientos, de un vistazo."
+  },
+  "density": {
+    "label": "Densidad de eventos en {days} días",
+    "eyebrow": "Densidad · {days} días",
+    "empty": "Sin eventos en este período"
+  },
+  "week": {
+    "title": "Esta semana",
+    "label": "Agenda de la semana actual",
+    "empty": "Sin eventos esta semana"
+  },
+  "mobile": {
+    "menu": "Abrir menú",
+    "drawer": {
+      "title": "Ajustes",
+      "close": "Cerrar menú",
+      "language": "Idioma",
+      "theme": "Tema",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro"
+    },
+    "scrollHint": "Desplázate horizontalmente",
+    "compactAgenda": {
+      "title": "Hoy y mañana",
+      "label": "Agenda compacta de hoy y mañana",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "empty": "Sin eventos hoy ni mañana"
+    },
+    "carousel": {
+      "label": "Productos, desplazamiento horizontal"
+    }
+  },
+  "landscape": {
+    "rail": {
+      "label": "Navegación",
+      "home": "Inicio",
+      "products": "Productos",
+      "logout": "Cerrar sesión"
+    }
+  },
+  "kpi": {
+    "title": "En resumen",
+    "label": "Indicadores clave",
+    "activeProducts": "{count, plural, one {producto activo} other {productos activos}}",
+    "eventsThisMonth": "{count, plural, one {evento este mes} other {eventos este mes}}",
+    "currentStreak": "{count, plural, one {día de racha} other {días de racha}}"
+  },
+  "productList": {
+    "title": "Tus productos",
+    "label": "Lista de productos",
+    "empty": "Aún no hay productos",
+    "noUpcoming": "Sin vencimientos"
+  },
   "stats": {
-    "title": "Statistiques",
-    "totalEvents": "Total des événements",
-    "upcomingEvents": "Événements à venir",
-    "completedEvents": "Événements terminés"
+    "title": "Estadísticas",
+    "totalEvents": "Eventos totales",
+    "upcomingEvents": "Próximos eventos",
+    "completedEvents": "Eventos completados"
   },
   "recentEvents": {
-    "title": "Événements récents",
-    "noEvents": "Aucun événement récent",
-    "viewAll": "Voir tout"
+    "title": "Eventos recientes",
+    "noEvents": "No hay eventos recientes",
+    "viewAll": "Ver todo"
   },
   "actions": {
-    "createEvent": "Créer un événement",
-    "viewCalendar": "Voir le calendrier",
-    "manageProfile": "Gérer le profil"
+    "createEvent": "Crear evento",
+    "viewCalendar": "Ver calendario",
+    "manageProfile": "Administrar perfil"
+  },
+  "timeline": {
+    "zoom": {
+      "label": "Nivel de zoom",
+      "in": "Acercar",
+      "out": "Alejar",
+      "day": "Día",
+      "week": "Semana",
+      "month": "Mes",
+      "quarter": "Trimestre",
+      "year": "Año"
+    },
+    "minimap": {
+      "label": "Vista general de la cronología",
+      "toggle": "Mostrar u ocultar la vista general"
+    },
+    "status": {
+      "expired": "Finalizado",
+      "ongoing": "En curso",
+      "upcoming": "Próximo"
+    },
+    "drawer": {
+      "product": "Producto",
+      "category": "Categoría",
+      "start": "Inicio",
+      "end": "Fin",
+      "status": "Estado"
+    },
+    "help": {
+      "label": "Atajos de teclado",
+      "today": "Ir a hoy",
+      "period": "Periodo anterior / siguiente",
+      "zoom": "Acercar / alejar",
+      "fullscreen": "Pantalla completa",
+      "escape": "Cerrar panel"
+    },
+    "actions": {
+      "label": "Acciones del evento"
+    },
+    "region": {
+      "label": "Línea de tiempo de eventos",
+      "description": "Use las flechas izquierda y derecha para desplazarse entre los eventos de una fila, arriba y abajo para cambiar de fila, Inicio y Fin para ir al primer o último evento, Entrar o Espacio para abrir el detalle."
+    },
+    "live": {
+      "zoom": "Nivel de zoom:",
+      "selected": "Evento seleccionado:"
+    },
+    "recurrence": {
+      "week": "se repite cada semana",
+      "month": "se repite cada mes",
+      "year": "se repite cada año"
+    },
+    "archived": "archivado"
   }
 }

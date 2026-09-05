@@ -1,0 +1,56 @@
+{
+  "title": "Exporter mes données",
+  "description": "Téléchargez une copie de vos données personnelles (portabilité RGPD).",
+  "formatLabel": "Format d'export",
+  "steps": {
+    "confirm": { "title": "Exporter mes données" },
+    "preparing": { "title": "Préparation de l'export…" },
+    "ready": { "title": "Votre export est prêt" },
+    "error": { "title": "Échec de l'export" }
+  },
+  "formats": {
+    "JSON": {
+      "label": "JSON",
+      "hint": "Fichier structuré, idéal pour réimporter vos données ou un usage technique. Téléchargement immédiat."
+    },
+    "MARKDOWN": {
+      "label": "Markdown",
+      "hint": "Document texte lisible, mis en forme pour la lecture. Téléchargement immédiat."
+    },
+    "ZIP": {
+      "label": "ZIP (archive complète)",
+      "hint": "Archive regroupant l'ensemble de vos données et fichiers. Préparée en arrière-plan."
+    },
+    "CSV": {
+      "label": "CSV (tableur)",
+      "hint": "Tableaux compatibles Excel ou Google Sheets. Préparé en arrière-plan."
+    }
+  },
+  "actions": {
+    "download": "Télécharger",
+    "prepare": "Préparer l'export",
+    "relaunch": "Relancer une demande",
+    "again": "Nouvel export",
+    "retry": "Réessayer"
+  },
+  "status": {
+    "PENDING": "en attente",
+    "RUNNING": "en cours",
+    "COMPLETED": "terminé",
+    "FAILED": "échoué"
+  },
+  "preparing": {
+    "busy": "Préparation de l'export en cours…",
+    "status": "Préparation de votre export : {status}. Cela peut prendre un moment."
+  },
+  "ready": {
+    "syncDone": "Votre export a été téléchargé.",
+    "asyncReady": "Votre export est prêt.",
+    "expiresAt": "Ce lien expire le {date}.",
+    "expired": "Ce lien de téléchargement a expiré. Relancez une demande pour générer un nouvel export."
+  },
+  "errors": {
+    "network": "Une erreur réseau est survenue. Veuillez réessayer.",
+    "jobFailed": "La préparation de l'export a échoué. Veuillez réessayer."
+  }
+}

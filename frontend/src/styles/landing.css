@@ -1,11 +1,30 @@
-/* Styles spécifiques à la landing page */
+/* Styles spécifiques à la landing page.
+ *
+ * #335 — toutes les couleurs passent désormais par les tokens du DS « Graphite »
+ * (`ds/tokens/colors.css`, `ds/tokens/spacing.css`). Plus aucune valeur littérale :
+ * les violets/indigos et les gris qui vivaient ici étaient hors palette ET
+ * theme-blind — ils ignoraient le mode sombre et, ce fichier n'étant pas dans un
+ * `@layer`, ils ÉCRASAIENT les utilitaires `border-rule` posés sur les mêmes
+ * éléments au sprint 48 (le CSS sans layer bat le CSS layered). C'est ce qui
+ * laissait le critère n°3 de #56 non tenu côté CSS. Les valeurs retirées sont dans
+ * l'historique git — on ne les recopie pas ici, pour qu'un grep d'audit sur ce
+ * fichier reste franc (et par PIT-S48-002 : ce qui traîne en commentaire revient).
+ *
+ * Les règles de MOUVEMENT dupliquées avec `animations.css` (`.section-animation`,
+ * `.cta-button`, `.card-gradient-border`, `.feature-icon`) ont été retirées d'ici :
+ * `animations.css` en est la source unique. Ce fichier ne porte plus que le style
+ * statique de la landing.
+ */
 
-/* Animation pour le texte en dégradé */
+/* Titre en dégradé — pages légales (`privacy`, `terms`).
+ * Dégradé encre → accent : les deux extrémités tiennent AA (≥4.5:1) sur `bg` comme
+ * sur `surface`, dans les deux modes (mesuré : min 4.59:1 en clair, 6.48:1 en sombre),
+ * donc aucune position de l'animation ne peut rendre le titre illisible. */
 .gradient-text {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(to right, #8B5CF6, #4F46E5);
+  background-image: linear-gradient(to right, var(--color-ink), var(--color-accent));
   background-size: 200% 100%;
   animation: gradient-shift 3s ease infinite;
 }
@@ -22,56 +41,37 @@
   }
 }
 
-/* Animation pour les cartes de fonctionnalités */
+/* Cartes de fonctionnalités.
+ * Bordure DÉCORATIVE (cadre de carte, son retrait ne coûte aucune information) :
+ * tier `rule`, et `rule-strong` d'un cran au survol — cf. tableau des tiers de
+ * bordure du DS (readme). Ce n'est PAS `rule-emphasis` : la bordure n'est ici
+ * l'affordance d'aucun contrôle.
+ *
+ * ⚠ PROPRIÉTAIRE UNIQUE DU MOUVEMENT (#384). Le `transform` de `:hover` ci-dessous est la SEULE
+ * déclaration qui lève la carte. `FeaturesSection.tsx` portait en plus `hover:-translate-y-2` :
+ * en Tailwind 4 cette utilitaire compile vers la propriété `translate`, distincte de `transform`,
+ * donc les deux s'appliquaient et se COMPOSAIENT — -18px au survol au lieu de -10, -13px sous
+ * 768px. L'utilitaire a été retirée du composant ; ne pas la réintroduire, et ne pas dupliquer
+ * cette élévation par une utilitaire `translate-*`/`transform` côté TSX.
+ *
+ * ⚠ NE PAS LAYERISER ce bloc (PIT-S53-004) : `shadow-lg` est posée sur le même élément SANS
+ * variante `hover:`. Sous `@layer`, l'utilitaire gagnerait en permanence et l'élévation au survol
+ * disparaîtrait — la « correction » créerait la régression. Cf. `sprint-53/audit-css-layers-340.md` §3.5. */
 .feature-card {
   transition: all 0.3s ease;
-  border-color: #374151;
+  border-color: var(--color-rule);
 }
 
 .feature-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -5px rgba(79, 70, 229, 0.04);
-  border-color: #4B5563;
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-rule-strong);
 }
 
-/* Animation pour l'icône des fonctionnalités */
-.feature-icon {
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover .feature-icon {
-  transform: scale(1.1);
-}
-
-/* Style pour le bouton avec effet de hover */
-.cta-button {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.25);
-}
-
-.cta-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transition: all 0.6s ease;
-}
-
-.cta-button:hover::before {
-  left: 100%;
-}
-
-/* Animation pour la section héros */
+/* Halo derrière l'image du héros.
+ * `accent-soft` est le seul tint de la palette prévu pour un aplat de fond ; il est
+ * découplé clair/sombre par le token, là où l'ancien dégradé indigo/violet restait
+ * identique dans les deux modes. */
 .hero-image-container {
   position: relative;
 }
@@ -83,15 +83,21 @@
   left: -10px;
   right: -10px;
   bottom: -10px;
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
-  border-radius: 20px;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-xl);
   z-index: -1;
   filter: blur(20px);
   opacity: 0.3;
-  animation: pulse 3s ease-in-out infinite;
+  animation: hero-halo-pulse 3s ease-in-out infinite;
 }
 
-@keyframes pulse {
+/* ⚠ Nommage : ce keyframe s'appelait `pulse` — le MÊME nom que l'animation intégrée
+ * de Tailwind derrière `animate-pulse`. `landing.css` étant importé APRÈS `globals.css`
+ * dans `app/layout.tsx`, sa définition gagnait et remplaçait celle de Tailwind pour
+ * TOUTE l'application : les squelettes de chargement (`LoadingSkeleton`, la page
+ * `dashboard/loading`) clignotaient entre 20 % et 30 % d'opacité avec un scale, au lieu
+ * du fondu à 50 % attendu. Préfixe obligatoire, comme dans `hero-timeline.css`. */
+@keyframes hero-halo-pulse {
   0% {
     opacity: 0.2;
     transform: scale(0.98);
@@ -106,43 +112,21 @@
   }
 }
 
-/* Points flottants décoratifs pour l'arrière-plan */
-.floating-dots {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  overflow: hidden;
-  z-index: -1;
-}
-
-.dot {
-  position: absolute;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.4) 0%, rgba(79, 70, 229, 0) 70%);
-  border-radius: 50%;
-  opacity: 0.2;
-}
-
-/* Effet de survol pour les témoignages */
+/* Cartes de témoignages — même tier de bordure décorative que `.feature-card`. */
 .testimonial-card {
   transition: all 0.3s ease;
-  border-color: #374151;
+  border-color: var(--color-rule);
 }
 
 .testimonial-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05);
-  border-color: #4B5563;
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-rule-strong);
 }
 
-/* Effet de focus pour les champs de formulaire */
-.form-input:focus {
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-  border-color: #6D28D9;
-}
-
-/* Transition douce pour les liens de navigation */
+/* Liens de navigation — le soulignement au survol est l'affordance de lien, donc
+ * `accent` (rôle « today / active / links » du DS). Trait plein : le DS proscrit les
+ * dégradés décoratifs. Mesuré : 4.59:1 (clair/bg) à 6.94:1 (sombre/bg). */
 .nav-link {
   position: relative;
   transition: all 0.2s ease;
@@ -155,7 +139,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #8B5CF6 0%, #4F46E5 100%);
+  background: var(--color-accent);
   transition: width 0.3s ease;
 }
 
@@ -163,61 +147,42 @@
   width: 100%;
 }
 
-/* Animation d'entrée pour les sections */
-.section-animation {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s ease;
-}
-
-.section-animation.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Styles spécifiques pour la preview de la timeline */
-.timeline-preview {
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid #374151;
-}
-
-/* Style pour les cartes dans les sections */
-.card-gradient-border {
-  position: relative;
-  border-radius: 0.75rem;
-  z-index: 0;
-}
-
-.card-gradient-border::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: -1px;
-  padding: 1px;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, #8B5CF6 0%, #4F46E5 100%);
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.3;
-  transition: opacity 0.3s ease;
-}
-
-.card-gradient-border:hover::before {
-  opacity: 0.6;
+/* Aperçu de la frise — cadre décoratif + élévation par token (le token d'ombre est
+ * découplé clair/sombre, l'ombre noire littérale d'avant ne l'était pas). */
+/*
+ * ⚠ CASCADE (#340) — cette règle DOIT rester dans `@layer components`. Hors layer
+ * elle battait les utilitaires Tailwind (`@layer utilities`) posées sur le MÊME
+ * élément quelle que soit la spécificité. Conflit MESURÉ : `TimelinePreviewSection`
+ * pose `rounded-xl` (= `--radius-xl`, 14px) sur ce div, et le `border-radius` du DS
+ * (`--radius-lg`, 10px) l'annulait silencieusement. Layerisée, l'utilitaire gagne :
+ * 14px, ce que le composant demande. Les trois autres déclarations sont inertes
+ * vis-à-vis du composant (`overflow-hidden` y porte la MÊME valeur ; aucune
+ * utilitaire `shadow-*` ni `border-*` n'y est posée).
+ *
+ * `components` et PAS `base` : c'est une classe de composant, pas un défaut
+ * d'élément. `base` marcherait (les deux précèdent `utilities`) mais rangerait un
+ * composant dans le layer des resets — qui est aussi celui du preflight Tailwind.
+ * Ce fichier est une feuille SÉPARÉE, chargée après `globals.css` par
+ * `app/layout.tsx` : le layer `components` y est donc déjà déclaré, ce bloc le
+ * REJOINT (il ne crée pas un rang nouveau). Cf. base-layer.test.ts. */
+@layer components {
+  .timeline-preview {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-rule);
+  }
 }
 
 /* Médias requêtes pour la réactivité */
 @media (max-width: 768px) {
+  /* Palier réduit du MÊME propriétaire que la règle ligne 54 — il n'a de sens que tant que la
+   * lévitation reste portée par `transform` ici (cf. #384). */
   .feature-card:hover {
     transform: translateY(-5px);
   }
-  
+
   .hero-image-container::before {
     animation: none;
   }
-} 
+}

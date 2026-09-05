@@ -1,0 +1,328 @@
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+
+import { TimelineEditHost } from './TimelineEditHost'
+import type { TimelineResponsiveProps } from './TimelineResponsive'
+import type { PositionedEvent } from './zoom'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { deleteEvent } from '@/services/eventService'
+import { queryKeys } from '@/lib/query-keys'
+
+/**
+ * #review S42 (MINEUR) — INVARIANT provider de TimelineEditHost.
+ *
+ * `TimelineEditHost` monte `useEventEditConflict`, qui appelle `useAuth()` → LÈVE hors
+ * d'un `<AuthProvider>`. Ce test verrouille l'invariant : monté SOUS un AuthProvider réel,
+ * le host se rend sans lever. `TimelineResponsive` (frise lourde) est stubbé — on isole le
+ * câblage host/hook. `authService` mocké pour que la restauration de session au montage
+ * (fetchUser → /me) se résolve sans réseau.
+ *
+ * #309 — le stub expose un déclencheur `mobile-delete-trigger` qui invoque
+ * `onDeleteEvent(event)` comme le ferait `TimelineActionSheet` (mobile), SANS passer
+ * par `onEditEvent` (contrairement au chemin desktop `EventEditForm` → `editing`).
+ *
+ * #review S46 (MAJEUR) — le chemin mobile passe désormais par `DeleteConfirmDialog`
+ * (hard-delete serveur : pas de corbeille) et l'échec de `deleteEvent` doit être
+ * remonté à l'utilisateur au lieu de finir en unhandled rejection.
+ *
+ * next-intl mocké en chemin de clé (`namespace.key`) : `DeleteConfirmDialog` traduit
+ * ses libellés, on assert sur les clés (indépendant de la locale).
+ */
+
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  useLocale: () => 'fr',
+}))
+
+vi.mock('./TimelineResponsive', () => {
+  const positionedEvent = (id: string, title: string): PositionedEvent => ({
+    id,
+    title,
+    start: '2026-01-01',
+    end: '2026-01-02',
+    allDay: false,
+    resourceId: 'product-1',
+    extendedProps: {
+      productId: 'product-1',
+      productName: 'Produit',
+      category: 'cat',
+      type: 'single',
+    },
+    leftPx: 0,
+    widthPx: 0,
+    status: 'upcoming',
+  })
+
+  return {
+    TimelineResponsive: (props: TimelineResponsiveProps) => (
+      <div data-testid="timeline-responsive-stub">
+        <button
+          type="button"
+          data-testid="mobile-delete-trigger"
+          onClick={() => props.onDeleteEvent?.(positionedEvent('evt-mobile', 'Mobile event'))}
+        >
+          delete
+        </button>
+        {/* Chemin DESKTOP : `EventDrawer` ouvre l'éditeur (`editing`), la suppression part
+            ensuite d'`EventEditForm` → `DeleteConfirmDialog` → `deleteEditing`. */}
+        <button
+          type="button"
+          data-testid="desktop-edit-trigger"
+          onClick={() => props.onEditEvent?.(positionedEvent('evt-desktop', 'Desktop event'))}
+        >
+          edit
+        </button>
+      </div>
+    ),
+  }
+})
+
+vi.mock('@/services/authService', () => ({
+  getUserProfile: vi.fn().mockResolvedValue({ id: 'user-1', name: 'Test', email: 't@e.st' }),
+  login: vi.fn(),
+  logout: vi.fn(),
+  registerUser: vi.fn(),
+}))
+
+vi.mock('@/services/eventService', () => ({
+  deleteEvent: vi.fn(),
+}))
+
+/**
+ * Rend le host sous un `QueryClientProvider` RÉEL (pas de mock de `@tanstack/react-query` :
+ * `AuthProvider` s'en sert aussi). `invalidateQueries` est espionné sur l'instance pour
+ * prouver l'invalidation de cache après suppression (absorption S46).
+ */
+function renderUnderAuth() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>{children}</AuthProvider>
+    </QueryClientProvider>
+  )
+  return {
+    ...render(<TimelineEditHost events={[]} resources={[]} locale="fr" />, { wrapper }),
+    invalidateQueries,
+  }
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+describe('TimelineEditHost — invariant AuthProvider (#review S42)', () => {
+  it('monté sous <AuthProvider> : se rend sans lever (useEventEditConflict → useAuth OK)', async () => {
+    expect(() => renderUnderAuth()).not.toThrow()
+    // Le host rend TimelineResponsive (stub) ; le dialog d'édition reste fermé (editing=null).
+    expect(screen.getByTestId('timeline-responsive-stub')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument(),
+    )
+  })
+})
+
+describe('TimelineEditHost — suppression mobile (#309)', () => {
+  it('onDeleteEvent (TimelineActionSheet mobile) ARME la confirmation sans supprimer', async () => {
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+
+    // #review S46 MAJEUR : hard-delete serveur → aucun appel réseau au tap.
+    await waitFor(() => expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument())
+    expect(deleteEvent).not.toHaveBeenCalled()
+    // Même dialog que le desktop, variante event.
+    expect(screen.getByText('common.deleteDialog.event.title')).toBeInTheDocument()
+
+    // La suppression mobile ne passe jamais par `editing` → le dialog d'édition desktop
+    // ne doit à aucun moment s'ouvrir.
+    expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument()
+  })
+
+  it('confirmation → supprime l’event ciblé et referme le dialog', async () => {
+    vi.mocked(deleteEvent).mockResolvedValue(undefined)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    // Réutilise l'unique chemin `deleteEvent` du host (pas de second callback → pas de
+    // divergence d'invalidation de cache desktop/mobile, cf. plan d'implémentation).
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
+    expect(deleteEvent).toHaveBeenCalledTimes(1)
+    await waitFor(() =>
+      expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
+    )
+  })
+
+  it('annulation → ne supprime rien et referme le dialog', async () => {
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByText('common.deleteDialog.cancel'))
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
+    )
+    expect(deleteEvent).not.toHaveBeenCalled()
+  })
+})
+
+describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () => {
+  it('403 : erreur affichée à l’utilisateur, dialog maintenu ouvert (pas d’unhandled rejection)', async () => {
+    // Rejet typé axios-like : `DeleteConfirmDialog` lit `error.response.status`.
+    vi.mocked(deleteEvent).mockRejectedValue({ response: { status: 403 } })
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
+    // Feedback inline (mécanisme déjà en place sur le chemin desktop).
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('common.deleteDialog.errors.generic')
+    // Le dialog NE se referme PAS : l'utilisateur voit que rien n'a été supprimé.
+    expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
+  })
+
+  it('404 : message dédié (contrat d’erreur du dialog partagé)', async () => {
+    vi.mocked(deleteEvent).mockRejectedValue({ response: { status: 404 } })
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.notFound')
+  })
+})
+
+/**
+ * Absorption S46 — sans invalidation, la frise (`useProductsWithEvents`) gardait l'event
+ * supprimé à l'écran jusqu'à navigation. `runDelete` étant le point d'appel UNIQUE de
+ * `deleteEvent`, les deux chemins (mobile `confirmDeleteTarget`, desktop `deleteEditing`)
+ * doivent en bénéficier — et AUCUN chemin d'erreur (PAT-S46-002).
+ */
+describe('TimelineEditHost — invalidation du cache après suppression', () => {
+  it('mobile : succès → invalide le préfixe products (couvre products.withEvents)', async () => {
+    vi.mocked(deleteEvent).mockResolvedValue(undefined)
+    const { invalidateQueries } = renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await waitFor(() =>
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.products.all }),
+    )
+  })
+
+  it('desktop : succès via l’éditeur → même invalidation (point d’appel unique)', async () => {
+    vi.mocked(deleteEvent).mockResolvedValue(undefined)
+    const { invalidateQueries } = renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    // Le dialog d'édition monte `EventEditForm`, dont le bouton supprimer ouvre le même
+    // `DeleteConfirmDialog` (#65) branché sur `deleteEditing`.
+    fireEvent.click(await screen.findByTestId('event-form-delete'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-desktop'))
+    await waitFor(() =>
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.products.all }),
+    )
+  })
+
+  it('échec serveur → AUCUNE invalidation (le cache n’est pas touché sur rejet)', async () => {
+    vi.mocked(deleteEvent).mockRejectedValue({ response: { status: 403 } })
+    const { invalidateQueries } = renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    await screen.findByRole('alert')
+    expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.products.all })
+  })
+})
+
+/**
+ * #495 — APERÇU ÉPINGLÉ sur la surface d'ÉDITION (extension de `PAT-S70-001`, posé au
+ * S70 côté création). Deux choses sont vérifiées ici, et une troisième ne l'est PAS :
+ *
+ *  1. le bloc d'aperçu SORT du formulaire et atterrit dans le nœud d'en-tête, sans
+ *     duplication de markup (`toHaveLength(1)` — un second `event-form-preview`
+ *     casserait les sélecteurs des E2E existants) ;
+ *  2. la BASCULE DE CLASSE du libellé « Aperçu » sur cette surface — c'est le défaut
+ *     MAJEUR attrapé par la review du S70 (le reclassement fuyait vers toutes les
+ *     surfaces sans mandat), l'issue exige donc une couverture PAR SURFACE ;
+ *  3. ⚠ NON VÉRIFIÉ ICI : que l'aperçu reste RÉELLEMENT visible pendant le défilement.
+ *     jsdom ne met rien en page et n'applique pas `position:sticky`
+ *     ([[jsdom-scroll-tests-prove-nothing]]). Ces tests prouvent l'ARBRE DOM et la
+ *     CLASSE, rien de la géométrie peinte — cf. le done.md, la preuve manque.
+ *
+ * `matchMedia` est piloté par test : le mock global de `vitest.setup.ts` rend
+ * `matches:false` (= sous 640px, bottom sheet), ce qui sert précisément de
+ * contre-épreuve de non-régression PAT-S44-001.
+ */
+function mockViewport(matches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  })
+}
+
+describe('TimelineEditHost — #495 aperçu épinglé (surface d’édition)', () => {
+  it('>= 640px : l’aperçu est PORTALISÉ dans l’en-tête et SORT du formulaire', async () => {
+    mockViewport(true)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const host = await screen.findByTestId('timeline-edit-dialog-preview')
+    const preview = await screen.findByTestId('event-form-preview')
+
+    await waitFor(() => expect(host).toContainElement(preview))
+    expect(screen.getByTestId('event-form')).not.toContainElement(preview)
+    // Aucun aperçu résiduel en flux : une seule mini-frise à synchroniser.
+    expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
+  })
+
+  it('>= 640px : le libellé « Aperçu » bascule sur `.mt-drawer__label` (bascule VOULUE)', async () => {
+    mockViewport(true)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const host = await screen.findByTestId('timeline-edit-dialog-preview')
+    const label = await screen.findByText('products.details.preview')
+
+    await waitFor(() => expect(host).toContainElement(label))
+    expect(label).toHaveClass('mt-drawer__label', 'mb-2')
+    expect(label).not.toHaveClass('text-sm')
+  })
+
+  it('< 640px (bottom sheet) : aperçu EN FLUX + classe HISTORIQUE (PAT-S44-001)', async () => {
+    mockViewport(false)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const preview = await screen.findByTestId('event-form-preview')
+    expect(screen.getByTestId('event-form')).toContainElement(preview)
+    // Le nœud hôte existe mais reste VIDE → masqué par `empty:hidden`, aucun liseré.
+    expect(screen.getByTestId('timeline-edit-dialog-preview')).toBeEmptyDOMElement()
+
+    const label = screen.getByText('products.details.preview')
+    expect(label).toHaveClass('text-ink', 'mb-2', 'text-sm')
+    expect(label).not.toHaveClass('mt-drawer__label')
+  })
+})

@@ -1,52 +1,209 @@
 {
   "add": {
-    "title": "Ajouter un produit",
+    "title": "Produkt hinzufügen",
     "form": {
-      "name": "Nom du produit",
-      "namePlaceholder": "Nom du produit",
-      "category": "Catégorie",
-      "categoryPlaceholder": "Sélectionnez une catégorie",
-      "submit": "Ajouter",
-      "error": "Une erreur est survenue lors de l'ajout du produit."
+      "name": "Produktname",
+      "namePlaceholder": "Produktname eingeben",
+      "category": "Kategorie",
+      "categoryPlaceholder": "Kategorie auswählen",
+      "submit": "Hinzufügen",
+      "error": "Beim Hinzufügen des Produkts ist ein Fehler aufgetreten."
     },
     "categories": {
-      "vehicles": "Véhicules",
-      "insurance": "Assurance",
-      "food": "Aliments",
-      "medical": "Médical"
+      "vehicles": "Fahrzeuge",
+      "insurance": "Versicherung",
+      "food": "Lebensmittel",
+      "medical": "Medizinisch"
     },
     "event": {
-      "title": "Ajouter un événement",
+      "title": "Ereignis hinzufügen",
+      "list": "Hinzugefügte Ereignisse",
+      "empty": "Keine Ereignisse hinzugefügt",
+      "remove": "Entfernen",
       "form": {
-        "name": "Nom de l'événement",
-        "namePlaceholder": "Nom de l'événement",
-        "type": "Type",
-        "typePlaceholder": "Choisir le type",
-        "duration": "Durée",
-        "durationValue": "Valeur",
-        "durationUnit": "Unité",
-        "durationUnitPlaceholder": "Choisir une unité",
-        "date": "Date de l'événement",
-        "recurring": "Récurrent",
-        "recurrenceUnit": "Fréquence de récurrence",
-        "recurrenceUnitPlaceholder": "Choisir une fréquence",
-        "submit": "Ajouter l'événement"
+        "name": "Ereignisname",
+        "namePlaceholder": "Ereignisname eingeben",
+        "type": "Typ",
+        "typePlaceholder": "Typ auswählen",
+        "duration": "Dauer",
+        "durationValue": "Wert",
+        "durationUnit": "Einheit",
+        "durationUnitPlaceholder": "Einheit auswählen",
+        "date": "Ereignisdatum",
+        "recurring": "Wiederkehrend",
+        "recurrenceUnit": "Wiederholungsfrequenz",
+        "recurrenceUnitPlaceholder": "Frequenz auswählen",
+        "submit": "Ereignis hinzufügen",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "recurrenceEndDate": "Wiederholungsende",
+        "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt.",
+      "recurrenceCappedHint": "Die Serie überschreitet 4.000 Vorkommen. Legen Sie ein Enddatum fest, um die genaue Anzahl zu erhalten.",
+        "archived": "Archiviert",
+        "archivedLockNote": "Dieses Ereignis ist archiviert: Seine Felder sind schreibgeschützt und es zählt nicht mehr zu deinen aktiven Ereignissen. Deaktiviere unten „Archiviert“, um es wieder zu bearbeiten."
       },
       "types": {
-        "duration": "Durée",
-        "single": "Ponctuel"
+        "duration": "Dauer",
+        "single": "Einmalig"
       },
       "units": {
-        "days": "Jours",
-        "weeks": "Semaines",
-        "months": "Mois",
-        "years": "Années"
+        "days": "Tage",
+        "weeks": "Wochen",
+        "months": "Monate",
+        "years": "Jahre"
       }
     },
     "events": {
-      "list": "Événements ajoutés",
-      "empty": "Aucun événement ajouté",
-      "remove": "Supprimer"
+      "list": "Hinzugefügte Ereignisse",
+      "empty": "Keine Ereignisse hinzugefügt",
+      "remove": "Entfernen"
+    },
+    "description": "Fügen Sie ein neues Produkt mit zugehörigen Ereignissen hinzu"
+  },
+  "details": {
+    "title": "Ereignisdetails",
+    "end": "Ihr Ereignis endet in ",
+    "duration": "Dauer",
+    "colors": "Farbanpassung",
+    "color": "Farbe",
+    "preview": "Ereignisvorschau",
+    "sampleEvent": "Beispielereignis",
+    "sampleDescription": "Ereignisbeschreibung mit ausgewählten Farben",
+    "previewTimeline": {
+      "label": "Zeitleisten-Vorschau des Ereignisses",
+      "nextOccurrence": "Nächstes Vorkommen"
+    },
+    "edit": {
+      "title": "Ereignis bearbeiten",
+      "success": "Ereignis erfolgreich geändert",
+      "error": "Fehler beim Ändern des Ereignisses"
     }
+  },
+  "edit": {
+    "title": "Ereignis bearbeiten",
+    "save": "Änderungen speichern"
+  },
+  "drawer": {
+    "createTitle": "Neues Produkt",
+    "editTitle": "Produkt bearbeiten",
+    "createDescription": "Erstellen Sie ein Produkt und optional sein erstes Ereignis.",
+    "editDescription": "Aktualisieren Sie Name oder Kategorie dieses Produkts.",
+    "fields": {
+      "name": "Produktname",
+      "namePlaceholder": "Produktname",
+      "category": "Kategorie",
+      "categoryPlaceholder": "Kategorie auswählen",
+      "noCategory": "Keine Kategorie verfügbar, erstellen Sie zuerst eine.",
+      "color": "Farbe",
+      "resetColor": "Zurücksetzen",
+      "firstEvent": "Erstes Ereignis (optional)"
+    },
+    "preview": {
+      "label": "Vorschau",
+      "placeholderName": "Produktname",
+      "sparklineLabel": "Vorschau der letzten 90 Tage"
+    },
+    "actions": {
+      "create": "Erstellen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "submitting": "Wird gespeichert"
+    },
+    "errors": {
+      "noUser": "Sie sind nicht angemeldet.",
+      "conflict": "Die ausgewählte Kategorie existiert nicht mehr. Liste neu laden.",
+      "notFound": "Produkt nicht gefunden.",
+      "forbidden": "Aktion nicht erlaubt.",
+      "generic": "Ein Fehler ist aufgetreten. Bitte erneut versuchen."
+    }
+  },
+  "list": {
+    "title": "Produkte",
+    "subtitle": "Deine Produkte und ihre jüngste Aktivität.",
+    "newProduct": "Neues Produkt",
+    "search": "Produkt suchen",
+    "searchPlaceholder": "Nach Name filtern…",
+    "sortBy": "Sortieren nach",
+    "loading": "Produkte werden geladen…",
+    "empty": "Noch keine Produkte.",
+    "emptySearch": "Kein Produkt entspricht deiner Suche.",
+    "error": "Produkte konnten nicht geladen werden.",
+    "count": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
+    "columns": {
+      "name": "Name",
+      "category": "Kategorie",
+      "activity": "Aktivität (90 T)",
+      "lastActivity": "Letzte Aktivität",
+      "actions": "Aktionen"
+    },
+    "noCategory": "Keine Kategorie",
+    "noActivity": "Keine Aktivität",
+    "sort": {
+      "nameAsc": "Name (A→Z)",
+      "nameDesc": "Name (Z→A)",
+      "categoryAsc": "Kategorie (A→Z)",
+      "lastActivityDesc": "Neueste Aktivität",
+      "lastActivityAsc": "Älteste Aktivität"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "openDetail": "Detail öffnen"
+    },
+    "sparklineLabel": "Aktivität der letzten 90 Tage von {name}"
+  },
+  "detail": {
+    "back": "Zurück zu den Produkten",
+    "notFound": "Produkt nicht gefunden oder archiviert.",
+    "loading": "Produkt wird geladen…",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "timelineTitle": "Produkt-Zeitleiste",
+    "timelineEmpty": "Keine Ereignisse für dieses Produkt anzuzeigen.",
+    "historyTitle": "Ereignisverlauf",
+    "historyEmpty": "Keine Ereignisse erfasst.",
+    "archivedEmpty": "Keine archivierten Ereignisse.",
+    "archivedBadge": "Archiviert",
+    "unarchive": "Wiederherstellen",
+    "unarchiving": "Wird wiederhergestellt…",
+    "unarchiveError": "Wiederherstellen fehlgeschlagen. Bitte erneut versuchen.",
+    "unarchiveConflict": "Dieses Ereignis wurde anderswo geändert. Die Daten wurden aktualisiert, bitte erneut versuchen.",
+    "filter": {
+      "label": "Ereignisse filtern",
+      "active": "Aktiv",
+      "archived": "Archiviert",
+      "all": "Alle"
+    },
+    "fields": {
+      "name": "Name",
+      "category": "Kategorie",
+      "description": "Beschreibung",
+      "color": "Farbe",
+      "noDescription": "Keine Beschreibung",
+      "noCategory": "Keine Kategorie"
+    },
+    "eventsCount": "{count, plural, =0 {keine Ereignisse} one {# Ereignis} other {# Ereignisse}}"
+  },
+  "categories": {
+    "title": "Kategorien",
+    "subtitle": "Organisiere deine Produkte nach Kategorie.",
+    "newCategory": "Neue Kategorie",
+    "loading": "Kategorien werden geladen…",
+    "empty": "Noch keine Kategorien.",
+    "error": "Kategorien konnten nicht geladen werden.",
+    "system": "System",
+    "productCount": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "openEdit": "{name} bearbeiten"
+  },
+  "archiveDialog": {
+    "title": "Dieses Ereignis archivieren?",
+    "quotaEffect": "Nach dem Archivieren zählt dieses Ereignis nicht mehr zu deinen aktiven Ereignissen.",
+    "reversible": "Es wird nichts gelöscht: Du findest es im Reiter „Archiviert“ des Produkts wieder und kannst es dort wiederherstellen.",
+    "readOnly": "Solange es archiviert ist, sind seine Felder schreibgeschützt – nur das Wiederherstellen bleibt möglich.",
+    "cancel": "Abbrechen",
+    "confirm": "Archivieren"
   }
 }

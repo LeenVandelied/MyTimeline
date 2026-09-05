@@ -17,6 +17,9 @@
     },
     "event": {
       "title": "Ajouter un événement",
+      "list": "Événements ajoutés",
+      "empty": "Aucun événement ajouté",
+      "remove": "Supprimer",
       "form": {
         "name": "Nom de l'événement",
         "namePlaceholder": "Nom de l'événement",
@@ -30,7 +33,14 @@
         "recurring": "Récurrent",
         "recurrenceUnit": "Fréquence de récurrence",
         "recurrenceUnitPlaceholder": "Choisir une fréquence",
-        "submit": "Ajouter l'événement"
+        "submit": "Ajouter l'événement",
+        "startDate": "Date de début",
+        "endDate": "Date de fin",
+        "recurrenceEndDate": "Fin de récurrence",
+        "recurrenceEndHint": "Optionnel — la récurrence sera bornée à cette date.",
+      "recurrenceCappedHint": "La série dépasse 4 000 occurrences. Définissez une date de fin pour obtenir le compte exact.",
+        "archived": "Archivé",
+        "archivedLockNote": "Cet événement est archivé : ses champs sont en lecture seule et il ne compte plus parmi tes événements actifs. Désactive « Archivé » ci-dessous pour le modifier de nouveau."
       },
       "types": {
         "duration": "Durée",
@@ -47,6 +57,153 @@
       "list": "Événements ajoutés",
       "empty": "Aucun événement ajouté",
       "remove": "Supprimer"
+    },
+    "description": "Ajoutez un nouveau produit avec ses événements associés"
+  },
+  "details": {
+    "title": "Détails de l'événement",
+    "end": "Votre événement se termine dans ",
+    "duration": "Durée",
+    "colors": "Personnalisation des couleurs",
+    "color": "Couleur",
+    "preview": "Aperçu de l'événement",
+    "sampleEvent": "Exemple d'événement",
+    "sampleDescription": "Description de l'événement avec les couleurs sélectionnées",
+    "previewTimeline": {
+      "label": "Aperçu chronologique de l'événement",
+      "nextOccurrence": "Prochaine occurrence"
+    },
+    "edit": {
+      "title": "Modifier l'événement",
+      "success": "Événement modifié avec succès",
+      "error": "Erreur lors de la modification de l'événement"
     }
+  },
+  "edit": {
+    "title": "Modifier l'événement",
+    "save": "Enregistrer les modifications"
+  },
+  "drawer": {
+    "createTitle": "Nouveau produit",
+    "editTitle": "Modifier le produit",
+    "createDescription": "Créez un produit et, si besoin, son premier événement.",
+    "editDescription": "Mettez à jour le nom ou la catégorie de ce produit.",
+    "fields": {
+      "name": "Nom du produit",
+      "namePlaceholder": "Nom du produit",
+      "category": "Catégorie",
+      "categoryPlaceholder": "Sélectionnez une catégorie",
+      "noCategory": "Aucune catégorie disponible, créez-en une d'abord.",
+      "color": "Couleur",
+      "resetColor": "Réinitialiser",
+      "firstEvent": "Premier événement (optionnel)"
+    },
+    "preview": {
+      "label": "Aperçu",
+      "placeholderName": "Nom du produit",
+      "sparklineLabel": "Aperçu des 90 derniers jours"
+    },
+    "actions": {
+      "create": "Créer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "submitting": "Enregistrement en cours"
+    },
+    "errors": {
+      "noUser": "Utilisateur non connecté.",
+      "conflict": "La catégorie sélectionnée n'existe plus. Rechargez la liste.",
+      "notFound": "Produit introuvable.",
+      "forbidden": "Action non autorisée.",
+      "generic": "Une erreur est survenue. Réessayez."
+    }
+  },
+  "list": {
+    "title": "Produits",
+    "subtitle": "Tes produits et leur activité récente.",
+    "newProduct": "Nouveau produit",
+    "search": "Rechercher un produit",
+    "searchPlaceholder": "Filtrer par nom…",
+    "sortBy": "Trier par",
+    "loading": "Chargement des produits…",
+    "empty": "Aucun produit pour le moment.",
+    "emptySearch": "Aucun produit ne correspond à ta recherche.",
+    "error": "Impossible de charger les produits.",
+    "count": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "columns": {
+      "name": "Nom",
+      "category": "Catégorie",
+      "activity": "Activité (90 j)",
+      "lastActivity": "Dernière activité",
+      "actions": "Actions"
+    },
+    "noCategory": "Sans catégorie",
+    "noActivity": "Aucune activité",
+    "sort": {
+      "nameAsc": "Nom (A→Z)",
+      "nameDesc": "Nom (Z→A)",
+      "categoryAsc": "Catégorie (A→Z)",
+      "lastActivityDesc": "Activité récente",
+      "lastActivityAsc": "Activité ancienne"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "archive": "Archiver",
+      "openDetail": "Ouvrir le détail"
+    },
+    "sparklineLabel": "Activité des 90 derniers jours de {name}"
+  },
+  "detail": {
+    "back": "Retour aux produits",
+    "notFound": "Produit introuvable ou archivé.",
+    "loading": "Chargement du produit…",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "timelineTitle": "Frise du produit",
+    "timelineEmpty": "Aucun événement à afficher pour ce produit.",
+    "historyTitle": "Historique des événements",
+    "historyEmpty": "Aucun événement enregistré.",
+    "archivedEmpty": "Aucun événement archivé.",
+    "archivedBadge": "Archivé",
+    "unarchive": "Désarchiver",
+    "unarchiving": "Désarchivage…",
+    "unarchiveError": "Le désarchivage a échoué. Réessaie.",
+    "unarchiveConflict": "Cet événement a été modifié ailleurs. Les données ont été rafraîchies, réessaie.",
+    "filter": {
+      "label": "Filtrer les événements",
+      "active": "Actifs",
+      "archived": "Archivés",
+      "all": "Tous"
+    },
+    "fields": {
+      "name": "Nom",
+      "category": "Catégorie",
+      "description": "Description",
+      "color": "Couleur",
+      "noDescription": "Aucune description",
+      "noCategory": "Sans catégorie"
+    },
+    "eventsCount": "{count, plural, =0 {aucun événement} one {# événement} other {# événements}}"
+  },
+  "categories": {
+    "title": "Catégories",
+    "subtitle": "Organise tes produits par catégorie.",
+    "newCategory": "Nouvelle catégorie",
+    "loading": "Chargement des catégories…",
+    "empty": "Aucune catégorie pour le moment.",
+    "error": "Impossible de charger les catégories.",
+    "system": "Système",
+    "productCount": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "openEdit": "Modifier {name}"
+  },
+  "archiveDialog": {
+    "title": "Archiver cet événement ?",
+    "quotaEffect": "Une fois archivé, cet événement ne comptera plus parmi tes événements actifs.",
+    "reversible": "Rien n'est supprimé : tu le retrouveras dans l'onglet « Archivés » du produit, où tu pourras le désarchiver.",
+    "readOnly": "Tant qu’il est archivé, ses champs passent en lecture seule — seul le désarchivage reste possible.",
+    "cancel": "Annuler",
+    "confirm": "Archiver"
   }
-} 
+}

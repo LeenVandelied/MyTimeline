@@ -1,0 +1,56 @@
+{
+  "title": "Meine Daten exportieren",
+  "description": "Laden Sie eine Kopie Ihrer personenbezogenen Daten herunter (DSGVO-Portabilität).",
+  "formatLabel": "Exportformat",
+  "steps": {
+    "confirm": { "title": "Meine Daten exportieren" },
+    "preparing": { "title": "Export wird vorbereitet…" },
+    "ready": { "title": "Ihr Export ist bereit" },
+    "error": { "title": "Export fehlgeschlagen" }
+  },
+  "formats": {
+    "JSON": {
+      "label": "JSON",
+      "hint": "Strukturierte Datei, ideal zum erneuten Importieren Ihrer Daten oder für technische Zwecke. Sofortiger Download."
+    },
+    "MARKDOWN": {
+      "label": "Markdown",
+      "hint": "Lesbares Textdokument, für die Lektüre formatiert. Sofortiger Download."
+    },
+    "ZIP": {
+      "label": "ZIP (vollständiges Archiv)",
+      "hint": "Archiv mit all Ihren Daten und Dateien. Wird im Hintergrund vorbereitet."
+    },
+    "CSV": {
+      "label": "CSV (Tabelle)",
+      "hint": "Mit Excel oder Google Sheets kompatible Tabellen. Wird im Hintergrund vorbereitet."
+    }
+  },
+  "actions": {
+    "download": "Herunterladen",
+    "prepare": "Export vorbereiten",
+    "relaunch": "Erneut anfordern",
+    "again": "Neuer Export",
+    "retry": "Erneut versuchen"
+  },
+  "status": {
+    "PENDING": "ausstehend",
+    "RUNNING": "läuft",
+    "COMPLETED": "abgeschlossen",
+    "FAILED": "fehlgeschlagen"
+  },
+  "preparing": {
+    "busy": "Ihr Export wird vorbereitet…",
+    "status": "Ihr Export wird vorbereitet: {status}. Dies kann einen Moment dauern."
+  },
+  "ready": {
+    "syncDone": "Ihr Export wurde heruntergeladen.",
+    "asyncReady": "Ihr Export ist bereit.",
+    "expiresAt": "Dieser Link läuft am {date} ab.",
+    "expired": "Dieser Download-Link ist abgelaufen. Fordern Sie erneut an, um einen neuen Export zu erstellen."
+  },
+  "errors": {
+    "network": "Ein Netzwerkfehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "jobFailed": "Die Vorbereitung des Exports ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+  }
+}

@@ -5,17 +5,35 @@
   },
   "name": {
     "min": "Name must be at least 3 characters",
-    "required": "Name is required"
+    "required": "Name is required",
+    "max": "Name must be at most 20 characters"
   },
   "username": {
     "min": "Username must be at least 3 characters",
-    "required": "Username is required"
+    "required": "Username is required",
+    "max": "Username must be at most 20 characters"
   },
   "password": {
-    "min": "Password must be at least 6 characters",
+    "min": "Password must be at least 8 characters, including one uppercase letter and one number",
+    "max": "Password must not exceed 100 characters",
+    "loginMin": "Password must be at least 6 characters",
     "uppercase": "Password must contain at least one uppercase letter",
     "number": "Password must contain at least one number",
     "match": "Passwords do not match",
-    "required": "Password is required"
+    "required": "Password is required",
+    "same": "The new password must be different from the old one"
+  },
+  "event": {
+    "titleRequired": "The event title is required",
+    "titleMax": "The title cannot exceed 100 characters",
+    "durationMin": "Duration must be greater than 0",
+    "durationUnitRequired": "The duration unit is required",
+    "recurrenceUnitRequired": "The recurrence frequency is required",
+    "recurrenceEndBeforeStart": "The recurrence end date must be on or after the start date",
+    "endBeforeStart": "The end date must be on or after the start date",
+    "colorInvalid": "Invalid color (hexadecimal format expected, e.g. #3B82F6)",
+    "submitError": "An error occurred while saving, please try again.",
+    "conflict": "This event was modified in the meantime. Reload to see the latest version.",
+    "reload": "Reload"
   }
 }

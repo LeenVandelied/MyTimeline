@@ -6,7 +6,68 @@
     "submit": "Sign in",
     "loading": "Signing in...",
     "noAccount": "Don't have an account yet?",
-    "register": "Sign up"
+    "register": "Sign up",
+    "forgotPassword": "Forgot password?",
+    "errors": {
+      "invalidCredentials": "Incorrect username or password",
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "deleteDialog": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "deleting": "Deleting",
+    "event": {
+      "title": "Delete this event?",
+      "description": "This action cannot be undone.",
+      "recurringWarning": "This only deletes this event, not the series."
+    },
+    "product": {
+      "title": "Delete this product?",
+      "description": "The product will be archived and no longer appear in your lists."
+    },
+    "category": {
+      "title": "Delete this category?",
+      "description": "This action cannot be undone.",
+      "reassignLabel": "Move products to…",
+      "reassignPlaceholder": "Choose a destination category",
+      "noOtherCategory": "No other category available to reassign the products. Create another category first."
+    },
+    "errors": {
+      "notFound": "This category no longer exists.",
+      "conflict": "Cannot reassign the products to this category.",
+      "generic": "An error occurred while deleting, please try again."
+    }
+  },
+  "conflictDialog": {
+    "title": "Modified elsewhere",
+    "description": "This item was modified from another tab or by someone else. Reload the up-to-date data before continuing; your unsaved changes will be lost.",
+    "reload": "Reload up-to-date data",
+    "dismiss": "Cancel",
+    "comparativeDescription": "This event was modified elsewhere while you were editing. Compare your changes with the server version, then choose which one to keep.",
+    "field": "Field",
+    "yourValue": "Your changes",
+    "serverValue": "Server version",
+    "keepMine": "Keep my changes",
+    "keepMineExhausted": "Too many attempts: this event keeps being modified elsewhere. Use the server version, or close and redo your change from the up-to-date data.",
+    "takeServer": "Use the server version",
+    "empty": "—",
+    "yes": "Yes",
+    "no": "No",
+    "noChanges": "No visible field difference.",
+    "fields": {
+      "title": "Title",
+      "type": "Type",
+      "durationValue": "Duration",
+      "durationUnit": "Duration unit",
+      "isRecurring": "Recurring",
+      "recurrenceUnit": "Frequency",
+      "recurrenceEndDate": "Recurrence end",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "color": "Color",
+      "archived": "Archived"
+    }
   },
   "validation": {
     "username": "Username must contain at least 3 characters",
@@ -20,11 +81,13 @@
     "edit": "Edit",
     "back": "Back",
     "logout": "Logout",
+    "settings": "Settings",
     "previous": "Previous",
     "next": "Next",
     "today": "Today",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "close": "Close"
   },
   "loading": {
     "default": "Loading...",
@@ -36,7 +99,8 @@
     "profile": "Profile",
     "settings": "Settings",
     "back": "Back",
-    "backToHome": "Back to home"
+    "backToHome": "Back to home",
+    "changeLanguage": "Change language"
   },
   "time": {
     "year": "year",
@@ -47,12 +111,22 @@
     "days": "days",
     "expired": "Expired"
   },
+  "events": {
+    "ongoing": "Ongoing",
+    "expired": "Expired",
+    "upcoming": "Upcoming",
+    "duration": "Duration",
+    "single": "Single date"
+  },
   "landing": {
     "title": "My Timeline | Your personal organization assistant",
     "navigation": {
       "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials"
+      "testimonials": "Testimonials",
+      "menuOpen": "Open menu",
+      "menuClose": "Close menu",
+      "menuTitle": "Menu"
     },
     "buttons": {
       "register": "Sign up"
@@ -139,8 +213,54 @@
     }
   },
   "footer": {
-    "allRightsReserved": "Tous droits réservés.",
-    "termsOfService": "Conditions d'utilisation",
-    "privacyPolicy": "Politique de confidentialité"
+    "allRightsReserved": "All rights reserved.",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "legalNotice": "Legal Notice",
+    "product": "Product",
+    "features": "Features",
+    "howItWorks": "How it works",
+    "testimonials": "Testimonials",
+    "legal": "Legal"
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "Username already taken",
+      "generic": "Something went wrong during sign up, please try again"
+    },
+    "success": "Account created, redirecting to login..."
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "description": "Enter your email address to receive a reset link.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send link",
+    "loading": "Sending...",
+    "neutralMessage": "If an account exists for this address, a reset email has been sent.",
+    "backToLogin": "Back to login",
+    "errors": {
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "resetPassword": {
+    "title": "New password",
+    "description": "Choose a new password for your account.",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Reset password",
+    "loading": "Resetting...",
+    "success": "Password reset. You can now sign in.",
+    "goToLogin": "Sign in",
+    "missingToken": "Invalid or incomplete reset link.",
+    "errors": {
+      "invalidToken": "This reset link is invalid or expired.",
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "spinner": {
+    "loading": "Loading"
   }
-} 
+}

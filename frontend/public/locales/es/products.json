@@ -1,52 +1,209 @@
 {
   "add": {
-    "title": "Ajouter un produit",
+    "title": "Añadir Producto",
     "form": {
-      "name": "Nom du produit",
-      "namePlaceholder": "Nom du produit",
-      "category": "Catégorie",
-      "categoryPlaceholder": "Sélectionnez une catégorie",
-      "submit": "Ajouter",
-      "error": "Une erreur est survenue lors de l'ajout du produit."
+      "name": "Nombre del Producto",
+      "namePlaceholder": "Ingrese el nombre del producto",
+      "category": "Categoría",
+      "categoryPlaceholder": "Seleccione una categoría",
+      "submit": "Añadir",
+      "error": "Ocurrió un error al añadir el producto."
     },
     "categories": {
-      "vehicles": "Véhicules",
-      "insurance": "Assurance",
-      "food": "Aliments",
-      "medical": "Médical"
+      "vehicles": "Vehículos",
+      "insurance": "Seguros",
+      "food": "Alimentos",
+      "medical": "Médico"
     },
     "event": {
-      "title": "Ajouter un événement",
+      "title": "Añadir Evento",
+      "list": "Eventos Añadidos",
+      "empty": "No hay eventos añadidos",
+      "remove": "Eliminar",
       "form": {
-        "name": "Nom de l'événement",
-        "namePlaceholder": "Nom de l'événement",
-        "type": "Type",
-        "typePlaceholder": "Choisir le type",
-        "duration": "Durée",
-        "durationValue": "Valeur",
-        "durationUnit": "Unité",
-        "durationUnitPlaceholder": "Choisir une unité",
-        "date": "Date de l'événement",
-        "recurring": "Récurrent",
-        "recurrenceUnit": "Fréquence de récurrence",
-        "recurrenceUnitPlaceholder": "Choisir une fréquence",
-        "submit": "Ajouter l'événement"
+        "name": "Nombre del Evento",
+        "namePlaceholder": "Ingrese el nombre del evento",
+        "type": "Tipo",
+        "typePlaceholder": "Elegir tipo",
+        "duration": "Duración",
+        "durationValue": "Valor",
+        "durationUnit": "Unidad",
+        "durationUnitPlaceholder": "Elegir una unidad",
+        "date": "Fecha del Evento",
+        "recurring": "Recurrente",
+        "recurrenceUnit": "Frecuencia de Recurrencia",
+        "recurrenceUnitPlaceholder": "Elegir frecuencia",
+        "submit": "Añadir Evento",
+        "startDate": "Fecha de inicio",
+        "endDate": "Fecha de fin",
+        "recurrenceEndDate": "Fin de recurrencia",
+        "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha.",
+      "recurrenceCappedHint": "La serie supera las 4.000 repeticiones. Define una fecha de fin para obtener el recuento exacto.",
+        "archived": "Archivado",
+        "archivedLockNote": "Este evento está archivado: sus campos son de solo lectura y ya no cuenta entre tus eventos activos. Desactiva «Archivado» más abajo para volver a editarlo."
       },
       "types": {
-        "duration": "Durée",
-        "single": "Ponctuel"
+        "duration": "Duración",
+        "single": "Único"
       },
       "units": {
-        "days": "Jours",
-        "weeks": "Semaines",
-        "months": "Mois",
-        "years": "Années"
+        "days": "Días",
+        "weeks": "Semanas",
+        "months": "Meses",
+        "years": "Años"
       }
     },
     "events": {
-      "list": "Événements ajoutés",
-      "empty": "Aucun événement ajouté",
-      "remove": "Supprimer"
+      "list": "Eventos Añadidos",
+      "empty": "No hay eventos añadidos",
+      "remove": "Eliminar"
+    },
+    "description": "Añada un nuevo producto con sus eventos asociados"
+  },
+  "details": {
+    "title": "Detalles del Evento",
+    "end": "Su evento termina en ",
+    "duration": "Duración",
+    "colors": "Personalización de Colores",
+    "color": "Color",
+    "preview": "Vista Previa del Evento",
+    "sampleEvent": "Evento de Ejemplo",
+    "sampleDescription": "Descripción del evento con los colores seleccionados",
+    "previewTimeline": {
+      "label": "Vista previa cronológica del evento",
+      "nextOccurrence": "Próxima ocurrencia"
+    },
+    "edit": {
+      "title": "Editar Evento",
+      "success": "Evento modificado con éxito",
+      "error": "Error al modificar el evento"
     }
+  },
+  "edit": {
+    "title": "Editar Evento",
+    "save": "Guardar Cambios"
+  },
+  "drawer": {
+    "createTitle": "Nuevo producto",
+    "editTitle": "Editar producto",
+    "createDescription": "Cree un producto y, si lo desea, su primer evento.",
+    "editDescription": "Actualice el nombre o la categoría de este producto.",
+    "fields": {
+      "name": "Nombre del producto",
+      "namePlaceholder": "Nombre del producto",
+      "category": "Categoría",
+      "categoryPlaceholder": "Seleccione una categoría",
+      "noCategory": "No hay categorías disponibles, cree una primero.",
+      "color": "Color",
+      "resetColor": "Restablecer",
+      "firstEvent": "Primer evento (opcional)"
+    },
+    "preview": {
+      "label": "Vista previa",
+      "placeholderName": "Nombre del producto",
+      "sparklineLabel": "Vista previa de los últimos 90 días"
+    },
+    "actions": {
+      "create": "Crear",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "submitting": "Guardando"
+    },
+    "errors": {
+      "noUser": "No ha iniciado sesión.",
+      "conflict": "La categoría seleccionada ya no existe. Recargue la lista.",
+      "notFound": "Producto no encontrado.",
+      "forbidden": "Acción no permitida.",
+      "generic": "Ocurrió un error. Inténtelo de nuevo."
+    }
+  },
+  "list": {
+    "title": "Productos",
+    "subtitle": "Tus productos y su actividad reciente.",
+    "newProduct": "Nuevo producto",
+    "search": "Buscar un producto",
+    "searchPlaceholder": "Filtrar por nombre…",
+    "sortBy": "Ordenar por",
+    "loading": "Cargando productos…",
+    "empty": "Aún no hay productos.",
+    "emptySearch": "Ningún producto coincide con tu búsqueda.",
+    "error": "No se pudieron cargar los productos.",
+    "count": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
+    "columns": {
+      "name": "Nombre",
+      "category": "Categoría",
+      "activity": "Actividad (90 d)",
+      "lastActivity": "Última actividad",
+      "actions": "Acciones"
+    },
+    "noCategory": "Sin categoría",
+    "noActivity": "Sin actividad",
+    "sort": {
+      "nameAsc": "Nombre (A→Z)",
+      "nameDesc": "Nombre (Z→A)",
+      "categoryAsc": "Categoría (A→Z)",
+      "lastActivityDesc": "Actividad reciente",
+      "lastActivityAsc": "Actividad antigua"
+    },
+    "actions": {
+      "edit": "Editar",
+      "archive": "Archivar",
+      "openDetail": "Abrir detalle"
+    },
+    "sparklineLabel": "Actividad de los últimos 90 días de {name}"
+  },
+  "detail": {
+    "back": "Volver a los productos",
+    "notFound": "Producto no encontrado o archivado.",
+    "loading": "Cargando producto…",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "timelineTitle": "Cronología del producto",
+    "timelineEmpty": "No hay eventos para mostrar de este producto.",
+    "historyTitle": "Historial de eventos",
+    "historyEmpty": "No hay eventos registrados.",
+    "archivedEmpty": "No hay eventos archivados.",
+    "archivedBadge": "Archivado",
+    "unarchive": "Desarchivar",
+    "unarchiving": "Desarchivando…",
+    "unarchiveError": "No se pudo desarchivar. Inténtalo de nuevo.",
+    "unarchiveConflict": "Este evento se modificó en otro lugar. Los datos se han actualizado, inténtalo de nuevo.",
+    "filter": {
+      "label": "Filtrar eventos",
+      "active": "Activos",
+      "archived": "Archivados",
+      "all": "Todos"
+    },
+    "fields": {
+      "name": "Nombre",
+      "category": "Categoría",
+      "description": "Descripción",
+      "color": "Color",
+      "noDescription": "Sin descripción",
+      "noCategory": "Sin categoría"
+    },
+    "eventsCount": "{count, plural, =0 {ningún evento} one {# evento} other {# eventos}}"
+  },
+  "categories": {
+    "title": "Categorías",
+    "subtitle": "Organiza tus productos por categoría.",
+    "newCategory": "Nueva categoría",
+    "loading": "Cargando categorías…",
+    "empty": "Aún no hay categorías.",
+    "error": "No se pudieron cargar las categorías.",
+    "system": "Sistema",
+    "productCount": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "openEdit": "Editar {name}"
+  },
+  "archiveDialog": {
+    "title": "¿Archivar este evento?",
+    "quotaEffect": "Una vez archivado, este evento dejará de contar entre tus eventos activos.",
+    "reversible": "No se elimina nada: lo encontrarás en la pestaña «Archivados» del producto, donde podrás desarchivarlo.",
+    "readOnly": "Mientras esté archivado, sus campos pasan a solo lectura: solo se podrá desarchivar.",
+    "cancel": "Cancelar",
+    "confirm": "Archivar"
   }
 }

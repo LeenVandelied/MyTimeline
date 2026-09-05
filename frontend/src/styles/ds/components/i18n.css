@@ -1,0 +1,186 @@
+/* MyTimeline · i18n robustness utilities (Graphite)
+   Règles de fallback pour l'élasticité linguistique (allemand +30%,
+   mots composés). Formalisées en v3.5 — voir « Audit Multilingue.dc.html ».
+   Toutes les règles sont OPT-IN (classes utilitaires) sauf l'auto-tracking
+   des eyebrows qui se déclenche sur [lang="de"] / :lang(de). */
+
+/* ============================================================
+   1 · SEGMENTED ADAPTATIF  →  bascule en Select au-delà du seuil
+   ------------------------------------------------------------
+   Seuil validé : 320 px de largeur disponible.
+   Markup : un conteneur .mt-seg porte les deux vues ; on n'affiche
+   qu'une seule à la fois via un flag data-mode (posé côté code après
+   mesure, ou en dur par langue). Au-dessus du seuil → "bar",
+   en dessous → "select" (l'icône ↻ est préservée dans les deux).
+   ============================================================ */
+.mt-seg{display:flex; border:1px solid var(--color-rule-strong); border-radius:7px; overflow:hidden;}
+.mt-seg__btn{
+  flex:1 1 0; min-width:0; padding:7px 10px; border:0; cursor:pointer;
+  font:600 11px var(--font-mono); letter-spacing:.04em;
+  background:var(--color-surface); color:var(--color-ink-muted);
+  white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+  border-right:1px solid var(--color-rule-strong);
+  transition:background var(--dur-micro), color var(--dur-micro);
+}
+.mt-seg__btn:last-child{border-right:0;}
+.mt-seg__btn[aria-pressed="true"], .mt-seg__btn.is-on{background:var(--color-primary); color:var(--color-primary-ink);}
+/* Vue Select de repli — même hauteur, icône conservée dans le trigger */
+.mt-seg__select{display:none;}
+.mt-seg[data-mode="select"] .mt-seg__bar{display:none;}
+.mt-seg[data-mode="select"] .mt-seg__select{display:block;}
+/* Repli "dur" par langue : DE passe en Select sous le seuil sans JS */
+.mt-seg--de-select[lang="de"] .mt-seg__bar,
+[lang="de"] .mt-seg--de-select .mt-seg__bar{display:none;}
+.mt-seg--de-select[lang="de"] .mt-seg__select,
+[lang="de"] .mt-seg--de-select .mt-seg__select{display:block;}
+
+/* ============================================================
+   2 · EYEBROWS MONO UPPERCASE  →  tracking dégressif + wrap autorisé
+   ------------------------------------------------------------
+   Défaut FR/EN : letter-spacing .08em.
+   DE (mots longs) : .02em automatiquement, pour récupérer ~6 % de largeur
+   sans casser l'identité. .mt-eyebrow--wrap autorise 2 lignes plutôt
+   qu'un débordement. .mt-eyebrow--title force le Title Case (casse douce)
+   quand l'uppercase devient illisible/brutal en allemand.
+   ============================================================ */
+.mt-eyebrow{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--color-ink-muted);
+  white-space:nowrap; line-height:1.3;
+}
+[lang="de"] .mt-eyebrow, .mt-eyebrow:lang(de){letter-spacing:.02em;}
+.mt-eyebrow--wrap{white-space:normal; text-wrap:balance; max-width:22ch;}
+.mt-eyebrow--title{text-transform:none; letter-spacing:.01em; font-weight:600;}
+
+/* ============================================================
+   3 · BOUTONS  →  wrap 2 lignes, JAMAIS d'ellipsis sur un CTA primaire
+   ------------------------------------------------------------
+   Un CTA qui déborde s'enroule sur 2 lignes avec un interligne serré ;
+   on ne tronque jamais un libellé d'action. Les .mt-btn restants gardent
+   leur white-space:nowrap.
+   ============================================================ */
+.mt-btn--wrap{white-space:normal; text-align:center; line-height:1.18; min-height:40px; text-wrap:balance;}
+.mt-btn--wrap.mt-btn--lg{min-height:46px;}
+
+/* ============================================================
+   4 · TRUNCATE + TOOLTIP  →  combobox / valeurs longues (composés DE)
+   ------------------------------------------------------------
+   .mt-truncate coupe proprement ; le libellé complet reste accessible
+   via l'attribut title (tooltip natif) + aria. À poser sur la valeur
+   affichée du trigger de Select, pas sur le menu déroulant (qui, lui,
+   peut wrap).
+   ============================================================ */
+.mt-truncate{display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.mt-select__menu .mt-select__opt{white-space:normal;} /* le menu peut respirer sur 2 lignes */
+
+/* ============================================================
+   5 · ONGLETS COLLAPSIBLES  →  menu déroulant si > 3 items en DE
+   ------------------------------------------------------------
+   Au-delà de 3 onglets en allemand (ou si la rangée déborde), on bascule
+   la barre d'onglets en un Select compact. .mt-tabs--collapsible porte les
+   deux vues ; data-mode="menu" (posé par langue ou après mesure) montre le
+   Select et masque la rangée.
+   ============================================================ */
+.mt-tabs--collapsible .mt-tabs__menu{display:none;}
+.mt-tabs--collapsible[data-mode="menu"] .mt-tabs__row{display:none;}
+.mt-tabs--collapsible[data-mode="menu"] .mt-tabs__menu{display:block;}
+[lang="de"] .mt-tabs--de-menu .mt-tabs__row{display:none;}
+[lang="de"] .mt-tabs--de-menu .mt-tabs__menu{display:block;}
+
+/* ============================================================
+   6 · BANNERS  →  hauteur plafonnée 32 px, message tronqué + action fixe
+   ------------------------------------------------------------
+   La bannière système (offline / timeout / serveur) ne dépasse JAMAIS
+   32 px : le message se tronque (…), l'action reste pleinement lisible à
+   droite (flex:0 0 auto). Le message complet vit dans title + l'écran
+   d'état dédié.
+   ============================================================ */
+.mt-sysbanner{
+  display:flex; align-items:center; gap:10px; height:32px; padding:0 12px;
+  border-bottom:1px solid var(--color-rule-strong);
+  background:var(--color-surface-2); overflow:hidden;
+}
+.mt-sysbanner__dot{flex:0 0 auto; width:6px; height:6px; border-radius:50%; background:var(--color-warning);}
+.mt-sysbanner--danger .mt-sysbanner__dot{background:var(--color-danger);}
+.mt-sysbanner--info .mt-sysbanner__dot{background:var(--color-info);}
+.mt-sysbanner__msg{
+  flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-size:12.5px; color:var(--color-ink);
+}
+.mt-sysbanner__action{
+  flex:0 0 auto; font:600 10px var(--font-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--color-accent); background:none; border:0; cursor:pointer; padding:0;
+}
+/* États dérivés du bus réseau (offline/timeout/server-error) — voir « Banner Offline.dc.html ».
+   Slide-in/out 200 ms, neutralisé sous prefers-reduced-motion. */
+.mt-sysbanner{transform:none; transition:transform .2s cubic-bezier(.32,.72,0,1);}
+.mt-sysbanner--enter{transform:translateY(-100%);}
+@media (prefers-reduced-motion:reduce){ .mt-sysbanner{transition:none;} }
+/* Au-dessus des bottom sheets : la bannière reste visible quand un sheet est ouvert.
+   #76 — z-index via token --z-netbanner (80) > --z-modal (70, sheets/modales).
+   L'ancienne valeur 60 (= --z-toast) passait SOUS les sheets : corrigé. */
+.mt-sysbanner--sticky{position:sticky; top:0; z-index:var(--z-netbanner);}
+/* Sous-état des boutons submit quand offline : mat + non cliquable (le title porte le hint). */
+.mt-btn[data-net="offline"], [data-net="offline"] .mt-btn--net{
+  opacity:.5; cursor:not-allowed; filter:grayscale(.35); pointer-events:none;
+}
+
+/* ============================================================
+   7 · INTL  →  dates & nombres mono, place garantie, isolation RTL
+   ------------------------------------------------------------
+   Le FORMATAGE est fait côté code par Intl.DateTimeFormat / NumberFormat ;
+   le design ne fait que GARANTIR LA PLACE et la tenue typographique.
+   Convention de marquage :
+     <time datetime="2026-06-24" class="mt-date--short">{{ formatted }}</time>
+   Formats cibles (cf. Audit Multilingue §3) :
+     FR  MER 24 JUIN     ·  EN  WED JUN 24
+     ES  MIÉ 24 JUN      ·  DE  MI. 24. JUN
+   tabular-nums = chiffres de chasse fixe (alignement des colonnes mono).
+   unicode-bidi:isolate = une date/un nombre ne se réordonne JAMAIS dans un
+   contexte RTL (le « 24 » reste avant « JUIN », la ponctuation ne migre pas).
+   ============================================================ */
+.mt-num{
+  font-family:var(--font-mono); font-variant-numeric:tabular-nums lining-nums;
+  font-feature-settings:"tnum" 1; direction:ltr; unicode-bidi:isolate;
+}
+.mt-date--short, .mt-date--long{
+  font-family:var(--font-mono); font-variant-numeric:tabular-nums;
+  direction:ltr; unicode-bidi:isolate; white-space:nowrap; letter-spacing:.01em;
+}
+.mt-date--short{font-size:11px; text-transform:uppercase; letter-spacing:.06em;}
+.mt-date--long{font-size:13px;}
+/* time[] hérite des couleurs ; on neutralise l'éventuel style natif. */
+time.mt-date--short, time.mt-date--long, time.mt-num{text-decoration:none; color:inherit;}
+
+/* ============================================================
+   8 · RTL  →  miroir logique de l'UI, frise conservée LTR
+   ------------------------------------------------------------
+   POSITION RETENUE (cf. « Preview RTL.dc.html ») :
+   • L'UI (chrome, drawers, listes, formulaires) MIROITE en dir="rtl" :
+     marges/paddings/alignements suivent le sens de lecture.
+   • La FRISE CHRONOLOGIQUE conserve son sens LTR (passé→futur =
+     gauche→droite, axe temporel universel). Elle est ré-isolée en LTR
+     même dans un document RTL via .mt-timeline-ltr. Le chrome AUTOUR
+     de la frise (sidebar, header, panneau détail) miroite normalement.
+   • Dates, nombres, eyebrows mono à contenu numérique : restent LTR
+     (déjà couverts par .mt-num / .mt-date--* + unicode-bidi:isolate).
+   Pré-requis MARKUP : utiliser des propriétés LOGIQUES (margin-inline,
+   padding-inline, inset-inline, text-align:start/end) plutôt que
+   left/right partout où c'est possible — ces classes ne corrigent que
+   les cas directionnels explicites ci-dessous.
+   ============================================================ */
+[dir="rtl"]{ }
+/* La frise garde le sens du temps, quel que soit le sens de lecture du document. */
+.mt-timeline-ltr{ direction:ltr; unicode-bidi:isolate; }
+/* Icônes directionnelles : flèches/chevrons de navigation se retournent en RTL.
+   À POSER sur les glyphes directionnels uniquement (← → ‹ › » «), JAMAIS sur ↻
+   (récurrence, non directionnel) ni sur les flèches temporelles internes à la frise. */
+.mt-dir-icon{display:inline-block;}
+.mt-dir-icon:dir(rtl){transform:scaleX(-1);}
+/* Repli sans :dir() (navigateurs anciens) : même effet via l'ancêtre dir. */
+[dir="rtl"] .mt-dir-icon{transform:scaleX(-1);}
+/* Bordure d'accent des side sheets : passe du bord gauche au bord droit (logique). */
+.mt-sheet-accent{border-inline-start:2px solid var(--color-accent);}
+/* Eyebrows mono : restent à gauche visuellement n'est PAS souhaité — ils suivent
+   le flux RTL ; seul leur CONTENU numérique est isolé (cf. .mt-num). Rien à forcer. */
+

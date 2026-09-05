@@ -1,12 +1,33 @@
+import '../../src/styles/globals.css'
+import '../../src/styles/landing.css'
+import '../../src/styles/animations.css'
 import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
+import { Toaster } from 'react-hot-toast'
 import { loadMessages } from '../../i18n'
+import { fontVariables, fontUiStyle } from '../fonts'
+import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { QueryProvider } from '@/contexts/QueryProvider'
+import { NetworkStatusProvider } from '@/contexts/NetworkStatusContext'
+import { OfflineBanner } from '@/components/shared/OfflineBanner'
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/locales'
 
-const locales = ['fr', 'en']
-
+/**
+ * #413 — CE layout porte le `<html>` / `<body>` de l'application.
+ *
+ * Il a été DESCENDU depuis `app/layout.tsx` parce qu'il est le premier layout
+ * de la branche à connaître `locale` : c'est la seule position d'où
+ * `<html lang>` peut refléter la locale de la route DANS LE HTML SERVI (avant
+ * hydratation), ce qu'exige WCAG 3.1.1. Ne pas le remonter.
+ *
+ * `generateStaticParams()` ci-dessous garde les 4 locales en rendu STATIQUE :
+ * la locale vient des params de route, jamais d'une API dynamique (`headers()`,
+ * `cookies()`) qui ferait basculer toute l'app en rendu dynamique.
+ */
 export function generateStaticParams() {
-  return locales.map(locale => ({ locale }))
+  return SUPPORTED_LOCALES.map(locale => ({ locale }))
 }
 
 export default async function LocaleLayout({
@@ -16,17 +37,53 @@ export default async function LocaleLayout({
   children: ReactNode
   params: Promise<{ locale: string }>;
 }) {
-  const locale = (await params).locale || 'fr'
-  
-  if (!locales.includes(locale)) {
+  const locale = (await params).locale || DEFAULT_LOCALE
+
+  if (!isSupportedLocale(locale)) {
     notFound()
   }
 
   const messages = await loadMessages(locale)
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
-    </NextIntlClientProvider>
+    <html
+      lang={locale}
+      // next-themes pose la classe de thème sur <html> côté client : l'écart
+      // avec le HTML serveur est attendu, pas un bug d'hydratation.
+      suppressHydrationWarning
+      className={fontVariables}
+      // `--font-ui` est une DÉRIVÉE d'`--font-display`, pas une famille de plus.
+      // Elle vient de `app/fonts.ts` et non d'un littéral écrit ici : `.storybook/preview.ts`
+      // pose la MÊME sur le `<html>` du preview, et la copie manuelle qui existait des deux
+      // côtés pouvait diverger en silence (revue S77). Source unique = pas de dérive possible.
+      style={fontUiStyle}
+    >
+      <body>
+        {/*
+          Ordre des providers (imposé) : Theme (S6 #45) > Auth (S7 #40)
+          > Query (S7 #48, inséré entre AuthProvider et {children}).
+          #48 : envelopper {children} d'un <QueryClientProvider> ici, sous
+          <AuthProvider>, sans déplacer Theme ni Auth.
+        */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <QueryProvider>
+              <NextIntlClientProvider locale={locale} messages={messages}>
+                {/* #76 : bus réseau + bannière SOUS le provider i18n
+                    (`OfflineBanner` appelle useTranslations('network'), qui
+                    exige NextIntlClientProvider — sinon throw au prerender SSG,
+                    cf. PIT-S26-001). QueryProvider reste ancêtre →
+                    useQueryClient du bus résout. */}
+                <NetworkStatusProvider>
+                  <OfflineBanner />
+                  {children}
+                </NetworkStatusProvider>
+              </NextIntlClientProvider>
+            </QueryProvider>
+          </AuthProvider>
+        </ThemeProvider>
+        <Toaster position="top-right" />
+      </body>
+    </html>
   )
 }

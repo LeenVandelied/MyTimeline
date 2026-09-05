@@ -1,67 +1,182 @@
-import axios from "axios";
-import { toast } from "react-hot-toast";
-import { refreshToken } from "./authService";
+import axios from 'axios'
+import { toast } from 'react-hot-toast'
+import { refreshToken } from './authService'
+import { networkStatusStore } from './networkStatus'
+import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/locales'
+
+/**
+ * #76 — Timeout par défaut (15 s). Couvre les requêtes API JSON normales sans
+ * requalifier une réponse lente légitime. ⚠ Les uploads multipart (avatar #215)
+ * sont EXEMPTÉS (timeout désactivé) via l'intercepteur de requête plus bas —
+ * ne pas casser les uploads longs.
+ */
+const DEFAULT_TIMEOUT_MS = 15_000
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
+  timeout: DEFAULT_TIMEOUT_MS,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
-});
+})
 
-let isRedirecting = false;
+/**
+ * #76 — Les uploads multipart peuvent légitimement durer longtemps (fichiers
+ * volumineux, réseau lent). On neutralise le timeout global pour ces requêtes
+ * afin de ne pas requalifier un upload en cours en « timeout réseau ».
+ */
+apiClient.interceptors.request.use((config) => {
+  const isMultipart =
+    typeof FormData !== 'undefined' && config.data instanceof FormData
+  if (isMultipart) {
+    config.timeout = 0
+  }
+  return config
+})
+
+let isRedirecting = false
+
+/**
+ * Cible de redirection 401/403 préfixée par la locale courante
+ * (#40 : avant on redirigeait vers `/login` non préfixé, cassé par
+ * `localePrefix: 'always'`). On lit le 1er segment du pathname ; à défaut
+ * la locale par défaut `fr`.
+ */
+const loginUrlForCurrentLocale = (): string => {
+  const segment = window.location.pathname.split('/')[1]
+  const locale = isSupportedLocale(segment) ? segment : DEFAULT_LOCALE
+  return `/${locale}/login`
+}
 
 const setupPeriodicRefresh = () => {
-  setInterval(async () => {
-    try {
-      await refreshToken();
-    } catch (error) {
-      console.debug("Rafraîchissement périodique silencieux échoué", error);
-    }
-  }, 6 * 60 * 60 * 1000); // 6 heures
-};
+  setInterval(
+    async () => {
+      try {
+        await refreshToken()
+      } catch (error) {
+        console.debug('Rafraîchissement périodique silencieux échoué', error)
+      }
+    },
+    6 * 60 * 60 * 1000,
+  ) // 6 heures
+}
 
 if (typeof window !== 'undefined') {
-  setupPeriodicRefresh();
+  setupPeriodicRefresh()
+}
+
+/**
+ * #53 — Endpoints des formulaires auth : leurs erreurs (400/401/409) sont
+ * gérées INLINE par les écrans Login/Register/Reset. On exclut donc ces routes
+ * du traitement global (toast + redirect vers /login) — sinon un 401 sur
+ * /auth/login déclencherait une redirection vers la page de login elle-même
+ * (boucle visuelle) au lieu d'afficher « identifiants invalides » sous le champ.
+ *
+ * `/auth/me` est la SONDE d'authentification anonyme : `AuthProvider` l'appelle au
+ * montage (racine de l'app, cf. app/layout.tsx) pour restaurer la session depuis le
+ * cookie (#135). Pour un visiteur NON connecté (aucun cookie), elle renvoie 401 —
+ * ce n'est PAS une session expirée mais la réponse normale « pas authentifié », déjà
+ * gérée par `AuthContext.fetchUser` (setUser(null)). Sans cette exclusion, ce 401 de
+ * sonde déclenchait le toast « Session expirée » + un `window.location.href=/login`
+ * différé de 1,5 s : sur une page publique (landing/login/register) le visiteur était
+ * rejeté vers /login, et en E2E le timer résiduel, encore en vol après un
+ * register->login->dashboard rapide (navigations SPA qui ne l'annulent pas), ramenait
+ * l'utilisateur fraîchement connecté sur /login (échec golden-path, 2026-07-11).
+ * L'expiration RÉELLE d'une session reste couverte par les endpoints de données
+ * authentifiés (produits/événements/...), eux non exclus.
+ */
+const INLINE_AUTH_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/me',
+]
+
+/**
+ * Extrait le pathname d'une URL axios (absolue ou relative à baseURL) afin de
+ * matcher la whitelist de façon ANCRÉE (pas en sous-chaîne). `url.includes(endpoint)`
+ * était fragile : un futur endpoint partageant une sous-chaîne (ex.
+ * `/auth/login-history`) aurait été exclu à tort du handler 401 global, avalant un
+ * vrai 401. On compare le pathname par égalité stricte OU suffixe ancré.
+ */
+const pathnameOf = (url: string): string => {
+  try {
+    // 2e arg = base : gère les URLs relatives (config.url axios sans baseURL absolu).
+    return new URL(url, 'http://x').pathname
+  } catch {
+    // URL non parsable : on retombe sur la chaîne brute (sans query string).
+    return url.split('?')[0]
+  }
+}
+
+const isInlineAuthRequest = (url?: string): boolean => {
+  if (typeof url !== 'string') return false
+  const pathname = pathnameOf(url)
+  return INLINE_AUTH_ENDPOINTS.some(
+    (endpoint) => pathname === endpoint || pathname.endsWith(endpoint),
+  )
 }
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // #76 — toute réponse OK atteste que la connectivité serveur est rétablie :
+    // on éteint un éventuel état timeout/5xx résiduel (retour en ligne implicite).
+    networkStatusStore.clear()
+    return response
+  },
   (error) => {
+    // #76 — Classification réseau AVANT tout court-circuit : la santé réseau est
+    // globale (même sur les endpoints auth gérés inline). Un timeout se reconnaît
+    // au seul code `ECONNABORTED` (signal axios fiable d'un dépassement de `timeout`) ;
+    // une 5xx à `response.status >= 500`. On n'utilise PAS le message d'erreur
+    // (regex trop large : requalifierait des erreurs métier contenant "timeout").
+    const isTimeout = error.code === 'ECONNABORTED'
+    if (isTimeout) {
+      networkStatusStore.reportTimeout()
+    } else if (typeof error.response?.status === 'number' && error.response.status >= 500) {
+      networkStatusStore.reportServerError()
+    }
+    if (isInlineAuthRequest(error.config?.url)) {
+      // Géré inline par le formulaire : on relaie l'erreur sans effet de bord global.
+      return Promise.reject(error)
+    }
     if (error.response?.status === 400) {
-      toast.error("Erreur de validation, veuillez vérifier vos données.");
+      toast.error('Erreur de validation, veuillez vérifier vos données.')
     } else if (error.response?.status === 401) {
       if (!isRedirecting) {
-        isRedirecting = true;
-        toast.error("Session expirée, redirection vers la page de connexion...");
-        localStorage.removeItem("user");
+        isRedirecting = true
+        toast.error('Session expirée, redirection vers la page de connexion...')
+        // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
         setTimeout(() => {
-          window.location.href = "/login";
-          isRedirecting = false;
-        }, 1500);
+          window.location.href = loginUrlForCurrentLocale()
+          isRedirecting = false
+        }, 1500)
       }
     } else if (error.response?.status === 403) {
       if (!isRedirecting) {
-        isRedirecting = true;
-        console.error("Erreur 403 - Accès refusé:", {
+        isRedirecting = true
+        // NE PAS logger error.config.headers : contient l'en-tête Authorization
+        // (jeton porteur) + cookies → fuite de credentials dans la console / les
+        // agrégateurs de logs. On se limite aux métadonnées non sensibles.
+        console.error('Erreur 403 - Accès refusé:', {
           url: error.config?.url,
           method: error.config?.method,
-          headers: error.config?.headers,
-          data: error.response?.data
-        });
-        localStorage.removeItem("user");
-        toast.error("Votre session a expiré, redirection vers la page de connexion...");
+          data: error.response?.data,
+        })
+        // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
+        toast.error('Votre session a expiré, redirection vers la page de connexion...')
         setTimeout(() => {
-          window.location.href = "/login";
-          isRedirecting = false;
-        }, 1500);
+          window.location.href = loginUrlForCurrentLocale()
+          isRedirecting = false
+        }, 1500)
       }
     } else if (error.response?.status === 500) {
-      toast.error("Erreur serveur, veuillez réessayer plus tard.");
+      toast.error('Erreur serveur, veuillez réessayer plus tard.')
     }
-    return Promise.reject(error);
-  }
-);
+    return Promise.reject(error)
+  },
+)
 
-export default apiClient;
+export default apiClient

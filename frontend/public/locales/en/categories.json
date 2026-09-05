@@ -1,0 +1,39 @@
+{
+  "drawer": {
+    "createTitle": "New category",
+    "editTitle": "Edit category",
+    "createDescription": "Create a category to organize your products.",
+    "editDescription": "Update the name, color, or description.",
+    "systemDescription": "System category: viewable but not editable.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Category name",
+      "color": "Color",
+      "resetColor": "Reset",
+      "contrastWarning": "Low contrast: text may be hard to read on this color.",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Describe this category…"
+    },
+    "preview": {
+      "label": "Preview",
+      "placeholderName": "Category name"
+    },
+    "actions": {
+      "create": "Create",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "submitting": "Saving"
+    },
+    "errors": {
+      "forbidden": "Action not allowed on this category.",
+      "notFound": "Category not found.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "validation": {
+    "nameRequired": "Name is required",
+    "nameTooLong": "Name must not exceed 255 characters",
+    "nameConflict": "A category with this name already exists."
+  }
+}

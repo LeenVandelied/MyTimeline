@@ -1,0 +1,34 @@
+{
+  "brand": "MyTimeline",
+  "newEvent": "New event",
+  "settings": "Settings",
+  "profile": "Profile",
+  "logout": "Logout",
+  "loading": "Loading…",
+  "nav": {
+    "aria": "Main navigation",
+    "dashboard": "Dashboard",
+    "timeline": "Timeline",
+    "products": "Products"
+  },
+  "theme": {
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "createDrawer": {
+    "title": "New event",
+    "subtitle": "Linked to a product",
+    "product": "Product",
+    "productPlaceholder": "Choose a product",
+    "productRequired": "Please select a product.",
+    "loadingProducts": "Loading products…",
+    "emptyProducts": "Create a product first: an event is always linked to one of them."
+  },
+  "timeline": {
+    "eyebrow": "Timeline",
+    "title": "Timeline",
+    "emptyTitle": "No products yet",
+    "emptyBody": "Create a product and add events to it to see your chronological timeline.",
+    "loading": "Loading…"
+  }
+}

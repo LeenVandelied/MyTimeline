@@ -1,46 +1,266 @@
 {
   "login": {
-    "title": "Connexion",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
-    "submit": "Se connecter",
-    "loading": "Connexion...",
-    "noAccount": "Pas encore de compte ?",
-    "register": "Inscrivez-vous"
+    "title": "Iniciar sesión",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "loading": "Iniciando sesión...",
+    "noAccount": "¿Aún no tienes cuenta?",
+    "register": "Regístrate",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "errors": {
+      "invalidCredentials": "Nombre de usuario o contraseña incorrectos",
+      "generic": "Ha ocurrido un error, inténtalo de nuevo"
+    }
+  },
+  "deleteDialog": {
+    "cancel": "Cancelar",
+    "confirm": "Eliminar",
+    "deleting": "Eliminando",
+    "event": {
+      "title": "¿Eliminar este evento?",
+      "description": "Esta acción no se puede deshacer.",
+      "recurringWarning": "Esto elimina únicamente este evento, no la serie."
+    },
+    "product": {
+      "title": "¿Eliminar este producto?",
+      "description": "El producto se archivará y dejará de aparecer en tus listas."
+    },
+    "category": {
+      "title": "¿Eliminar esta categoría?",
+      "description": "Esta acción no se puede deshacer.",
+      "reassignLabel": "Mover los productos a…",
+      "reassignPlaceholder": "Elige una categoría de destino",
+      "noOtherCategory": "No hay otra categoría disponible para reasignar los productos. Crea primero otra categoría."
+    },
+    "errors": {
+      "notFound": "Esta categoría ya no existe.",
+      "conflict": "No se pueden reasignar los productos a esta categoría.",
+      "generic": "Ocurrió un error al eliminar, inténtalo de nuevo."
+    }
+  },
+  "conflictDialog": {
+    "title": "Modificado en otro lugar",
+    "description": "Este elemento se modificó desde otra pestaña o por otra persona. Vuelve a cargar los datos actualizados antes de continuar; se perderán los cambios no guardados.",
+    "reload": "Recargar los datos actualizados",
+    "dismiss": "Cancelar",
+    "comparativeDescription": "Este evento se modificó en otro lugar mientras lo editabas. Compara tus cambios con la versión del servidor y elige cuál conservar.",
+    "field": "Campo",
+    "yourValue": "Tus cambios",
+    "serverValue": "Versión del servidor",
+    "keepMine": "Conservar mis cambios",
+    "keepMineExhausted": "Demasiados intentos: este evento se sigue modificando en otro lugar. Usa la versión del servidor, o cierra y rehaz tu cambio a partir de los datos actualizados.",
+    "takeServer": "Usar la versión del servidor",
+    "empty": "—",
+    "yes": "Sí",
+    "no": "No",
+    "noChanges": "No hay diferencias de campos visibles.",
+    "fields": {
+      "title": "Título",
+      "type": "Tipo",
+      "durationValue": "Duración",
+      "durationUnit": "Unidad de duración",
+      "isRecurring": "Recurrente",
+      "recurrenceUnit": "Frecuencia",
+      "recurrenceEndDate": "Fin de recurrencia",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "color": "Color",
+      "archived": "Archivado"
+    }
   },
   "validation": {
-    "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "password": "Le mot de passe doit contenir au moins 6 caractères"
+    "username": "El nombre de usuario debe contener al menos 3 caracteres",
+    "password": "La contraseña debe contener al menos 6 caracteres"
   },
   "buttons": {
-    "submit": "Valider",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "back": "Retour",
-    "logout": "Se déconnecter",
-    "previous": "Précédent",
-    "next": "Suivant",
-    "today": "Aujourd'hui"
+    "submit": "Validar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "logout": "Cerrar sesión",
+    "settings": "Ajustes",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "today": "Hoy",
+    "showMore": "Ver más",
+    "showLess": "Ver menos",
+    "close": "Cerrar"
   },
   "loading": {
-    "default": "Chargement...",
-    "saving": "Enregistrement...",
-    "deleting": "Suppression..."
+    "default": "Cargando...",
+    "saving": "Guardando...",
+    "deleting": "Eliminando..."
   },
   "navigation": {
-    "home": "Accueil",
-    "profile": "Profil",
-    "settings": "Paramètres"
+    "home": "Inicio",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "back": "Atrás",
+    "backToHome": "Volver al inicio",
+    "changeLanguage": "Cambiar de idioma"
   },
   "time": {
-    "year": "an",
-    "years": "ans",
-    "month": "mois",
-    "months": "mois",
-    "day": "jour",
-    "days": "jours",
-    "expired": "Expiré"
+    "year": "año",
+    "years": "años",
+    "month": "mes",
+    "months": "meses",
+    "day": "día",
+    "days": "días",
+    "expired": "Expirado"
+  },
+  "events": {
+    "ongoing": "En curso",
+    "expired": "Expirado",
+    "upcoming": "Próximo",
+    "duration": "Duración",
+    "single": "Fecha única"
+  },
+  "landing": {
+    "title": "Mi Timeline | Tu asistente personal de organización",
+    "navigation": {
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "testimonials": "Testimonios",
+      "menuOpen": "Abrir el menú",
+      "menuClose": "Cerrar el menú",
+      "menuTitle": "Menú"
+    },
+    "buttons": {
+      "register": "Registrarse"
+    },
+    "meta": {
+      "description": "Mi Timeline te ayuda a gestionar tus plazos, organizar tu tiempo y optimizar tu productividad. Simple, intuitivo y personalizable."
+    },
+    "images": {
+      "dashboard": "Vista previa del panel de Mi Timeline",
+      "timeline": "Ejemplo de timeline",
+      "mobileApp": "Aplicación móvil Mi Timeline"
+    },
+    "hero": {
+      "title": "Organiza tu vida con Mi Timeline",
+      "subtitle": "Tu asistente personal para gestionar plazos, optimizar tu tiempo y alcanzar tus objetivos más eficientemente.",
+      "cta": "Comenzar gratis",
+      "secondary": "Descubre cómo funciona"
+    },
+    "features": {
+      "title": "Características principales",
+      "subtitle": "Mi Timeline combina las mejores herramientas de gestión del tiempo para ayudarte a alcanzar una organización óptima.",
+      "timeline": {
+        "title": "Visualización temporal",
+        "description": "Visualiza tus plazos y compromisos en una timeline intuitiva. Obtén una visión general clara de tus proyectos."
+      },
+      "reminders": {
+        "title": "Recordatorios inteligentes",
+        "description": "Recibe notificaciones adaptadas a tus hábitos y a la importancia de tus tareas. Nunca más pierdas una fecha límite."
+      },
+      "organization": {
+        "title": "Organización por proyecto",
+        "description": "Agrupa tus tareas por proyecto y categoría. Sigue tu progreso y establece prioridades para cada actividad."
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "subtitle": "Mi Timeline simplifica tu organización en pocos pasos sencillos",
+      "step1": {
+        "title": "Crea tu cuenta",
+        "description": "Regístrate en pocos segundos para comenzar tu viaje de organización."
+      },
+      "step2": {
+        "title": "Añade tus proyectos",
+        "description": "Define tus proyectos, productos o categorías que deseas seguir."
+      },
+      "step3": {
+        "title": "Crea tus plazos",
+        "description": "Añade tus eventos y define su duración, tipo e importancia."
+      },
+      "step4": {
+        "title": "Mantente organizado",
+        "description": "Visualiza, sigue y modifica fácilmente todos tus plazos en un único lugar."
+      }
+    },
+    "testimonials": {
+      "title": "Qué dicen nuestros usuarios",
+      "subtitle": "Descubre cómo Mi Timeline ha transformado la organización diaria de nuestros usuarios"
+    },
+    "cta": {
+      "title": "¿Listo para transformar tu organización?",
+      "subtitle": "Comienza ahora y mejora tu productividad",
+      "button": "Crear mi cuenta gratis",
+      "secondary": "Obtener más información"
+    },
+    "mobileApp": {
+      "title": "Lleva tu organización contigo",
+      "subtitle": "Accede a Mi Timeline en todos tus dispositivos. Mantente organizado dondequiera que estés.",
+      "ios": "Próximamente en iOS",
+      "android": "Próximamente en Android"
+    },
+    "footer": {
+      "description": "Tu asistente personal de organización y gestión del tiempo",
+      "product": "Producto",
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "testimonials": "Testimonios",
+      "legal": "Legal",
+      "terms": "Términos de servicio",
+      "privacy": "Política de privacidad",
+      "legalNotice": "Aviso legal",
+      "account": "Cuenta",
+      "login": "Iniciar sesión",
+      "register": "Registrarse"
+    }
+  },
+  "footer": {
+    "allRightsReserved": "Todos los derechos reservados.",
+    "termsOfService": "Términos de servicio",
+    "privacyPolicy": "Política de privacidad",
+    "legalNotice": "Aviso legal",
+    "product": "Productos",
+    "features": "Características",
+    "howItWorks": "Cómo funciona",
+    "testimonials": "Testimonios",
+    "legal": "Legal"
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "El nombre de usuario ya está en uso",
+      "generic": "Ha ocurrido un error durante el registro, inténtalo de nuevo"
+    },
+    "success": "Cuenta creada, redirigiendo al inicio de sesión..."
+  },
+  "forgotPassword": {
+    "title": "Contraseña olvidada",
+    "description": "Introduce tu dirección de correo para recibir un enlace de restablecimiento.",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "submit": "Enviar enlace",
+    "loading": "Enviando...",
+    "neutralMessage": "Si existe una cuenta para esta dirección, se ha enviado un correo de restablecimiento.",
+    "backToLogin": "Volver al inicio de sesión",
+    "errors": {
+      "generic": "Ha ocurrido un error, inténtalo de nuevo"
+    }
+  },
+  "resetPassword": {
+    "title": "Nueva contraseña",
+    "description": "Elige una nueva contraseña para tu cuenta.",
+    "newPassword": "Nueva contraseña",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Restablecer contraseña",
+    "loading": "Restableciendo...",
+    "success": "Contraseña restablecida. Ya puedes iniciar sesión.",
+    "goToLogin": "Iniciar sesión",
+    "missingToken": "Enlace de restablecimiento inválido o incompleto.",
+    "errors": {
+      "invalidToken": "Este enlace de restablecimiento no es válido o ha caducado.",
+      "generic": "Ha ocurrido un error, inténtalo de nuevo"
+    }
+  },
+  "spinner": {
+    "loading": "Cargando"
   }
 }

@@ -1,20 +1,137 @@
 {
-  "title": "Tableau de bord",
-  "welcome": "Bienvenue sur votre tableau de bord",
+  "title": "Dashboard",
+  "welcome": "Willkommen in Ihrem Dashboard",
+  "lastConnection": "Letzte Verbindung",
+  "email": "E-Mail",
+  "role": "Rolle",
+  "products": "Produkte",
+  "greeting": {
+    "eyebrow": "Überblick",
+    "morning": "Guten Morgen {name}, hier ist dein Tag",
+    "afternoon": "Guten Tag {name}, hier ist dein Tag",
+    "evening": "Guten Abend {name}, hier ist dein Tag",
+    "subtitle": "Deine anstehenden Termine auf einen Blick."
+  },
+  "density": {
+    "label": "Ereignisdichte über {days} Tage",
+    "eyebrow": "Dichte · {days} Tage",
+    "empty": "Keine Ereignisse in diesem Zeitraum"
+  },
+  "week": {
+    "title": "Diese Woche",
+    "label": "Agenda der aktuellen Woche",
+    "empty": "Keine Ereignisse diese Woche"
+  },
+  "mobile": {
+    "menu": "Menü öffnen",
+    "drawer": {
+      "title": "Einstellungen",
+      "close": "Menü schließen",
+      "language": "Sprache",
+      "theme": "Design",
+      "themeLight": "Hell",
+      "themeDark": "Dunkel"
+    },
+    "scrollHint": "Horizontal scrollen",
+    "compactAgenda": {
+      "title": "Heute und morgen",
+      "label": "Kompakte Agenda für heute und morgen",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "empty": "Keine Ereignisse heute oder morgen"
+    },
+    "carousel": {
+      "label": "Produkte, horizontales Scrollen"
+    }
+  },
+  "landscape": {
+    "rail": {
+      "label": "Navigation",
+      "home": "Startseite",
+      "products": "Produkte",
+      "logout": "Abmelden"
+    }
+  },
+  "kpi": {
+    "title": "Kurzüberblick",
+    "label": "Kennzahlen",
+    "activeProducts": "{count, plural, one {aktives Produkt} other {aktive Produkte}}",
+    "eventsThisMonth": "{count, plural, one {Ereignis diesen Monat} other {Ereignisse diesen Monat}}",
+    "currentStreak": "{count, plural, one {Tag Serie} other {Tage Serie}}"
+  },
+  "productList": {
+    "title": "Deine Produkte",
+    "label": "Produktliste",
+    "empty": "Noch keine Produkte",
+    "noUpcoming": "Keine anstehenden"
+  },
   "stats": {
-    "title": "Statistiques",
-    "totalEvents": "Total des événements",
-    "upcomingEvents": "Événements à venir",
-    "completedEvents": "Événements terminés"
+    "title": "Statistiken",
+    "totalEvents": "Gesamtereignisse",
+    "upcomingEvents": "Kommende Ereignisse",
+    "completedEvents": "Abgeschlossene Ereignisse"
   },
   "recentEvents": {
-    "title": "Événements récents",
-    "noEvents": "Aucun événement récent",
-    "viewAll": "Voir tout"
+    "title": "Letzte Ereignisse",
+    "noEvents": "Keine aktuellen Ereignisse",
+    "viewAll": "Alle ansehen"
   },
   "actions": {
-    "createEvent": "Créer un événement",
-    "viewCalendar": "Voir le calendrier",
-    "manageProfile": "Gérer le profil"
+    "createEvent": "Ereignis erstellen",
+    "viewCalendar": "Kalender anzeigen",
+    "manageProfile": "Profil verwalten"
+  },
+  "timeline": {
+    "zoom": {
+      "label": "Zoomstufe",
+      "in": "Vergrößern",
+      "out": "Verkleinern",
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat",
+      "quarter": "Quartal",
+      "year": "Jahr"
+    },
+    "minimap": {
+      "label": "Zeitleisten-Übersicht",
+      "toggle": "Übersicht ein- oder ausblenden"
+    },
+    "status": {
+      "expired": "Beendet",
+      "ongoing": "Laufend",
+      "upcoming": "Bevorstehend"
+    },
+    "drawer": {
+      "product": "Produkt",
+      "category": "Kategorie",
+      "start": "Beginn",
+      "end": "Ende",
+      "status": "Status"
+    },
+    "help": {
+      "label": "Tastenkürzel",
+      "today": "Zu heute springen",
+      "period": "Vorheriger / nächster Zeitraum",
+      "zoom": "Vergrößern / verkleinern",
+      "fullscreen": "Vollbild",
+      "escape": "Panel schließen"
+    },
+    "actions": {
+      "label": "Ereignisaktionen"
+    },
+    "region": {
+      "label": "Ereignis-Zeitleiste",
+      "description": "Verwenden Sie die Pfeiltasten links und rechts, um zwischen Ereignissen einer Zeile zu wechseln, hoch und runter, um die Zeile zu wechseln, Pos1 und Ende für das erste oder letzte Ereignis, Eingabe oder Leertaste, um die Details zu öffnen."
+    },
+    "live": {
+      "zoom": "Zoomstufe:",
+      "selected": "Ausgewähltes Ereignis:"
+    },
+    "recurrence": {
+      "week": "wöchentlich wiederkehrend",
+      "month": "monatlich wiederkehrend",
+      "year": "jährlich wiederkehrend"
+    },
+    "archived": "archiviert"
   }
 }

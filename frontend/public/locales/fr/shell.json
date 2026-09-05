@@ -1,0 +1,34 @@
+{
+  "brand": "MyTimeline",
+  "newEvent": "Nouvel événement",
+  "settings": "Réglages",
+  "profile": "Profil",
+  "logout": "Se déconnecter",
+  "loading": "Chargement…",
+  "nav": {
+    "aria": "Navigation principale",
+    "dashboard": "Tableau de bord",
+    "timeline": "Timeline",
+    "products": "Produits"
+  },
+  "theme": {
+    "toLight": "Passer au thème clair",
+    "toDark": "Passer au thème sombre"
+  },
+  "createDrawer": {
+    "title": "Nouvel événement",
+    "subtitle": "Rattaché à un produit",
+    "product": "Produit",
+    "productPlaceholder": "Choisir un produit",
+    "productRequired": "Sélectionnez un produit.",
+    "loadingProducts": "Chargement des produits…",
+    "emptyProducts": "Créez d'abord un produit : un événement est toujours rattaché à l'un d'eux."
+  },
+  "timeline": {
+    "eyebrow": "Frise",
+    "title": "Timeline",
+    "emptyTitle": "Aucun produit pour l'instant",
+    "emptyBody": "Créez un produit et ajoutez-y des événements pour voir votre frise chronologique.",
+    "loading": "Chargement…"
+  }
+}

@@ -1,0 +1,551 @@
+/* MyTimeline · Timeline component styles (Graphite)
+   The core product surface. Lanes = products, x-axis = time, events = bars.
+
+   Tiers de bordure (#293 / #336 / #352) — cf. `../readme.md` § « Border tiers »
+   et l'en-tête de `core.css:5-13`. Critère UNIQUE, repris tel quel :
+   - FONCTIONNELLE (`--color-rule-emphasis`, ≥3:1, WCAG 1.4.11) si son retrait
+     empêcherait de voir qu'un CONTRÔLE existe ou où il commence ;
+   - DÉCORATIF (`--color-rule` / `--color-rule-strong`) si son retrait ne coûte
+     aucune information — séparateur, cadre de panneau flottant, cadre de carte,
+     graduation, marque statique non focusable.
+   Test d'application : l'élément a-t-il un remplissage qui le distingue de son
+   fond ? Si oui → décoratif ; si non → fonctionnelle.
+   #352 a arbitré les 16 `rule-strong` de ce fichier : 7 fonctionnelles migrées,
+   9 décoratives conservées et commentées une par une ci-dessous. Aucun filet de
+   la frise elle-même (graduations, séparateurs de lane, règles) n'est migré :
+   les alourdir ne rendrait aucune information. Chaque `rule-strong` restant est
+   donc un appel EXPLICITE, pas un oubli — ne pas les balayer en masse. */
+
+/* ---------------- TimelineRuler ---------------- */
+.mt-tl-ruler{display:flex; height:var(--ruler-height); background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); overflow:hidden;}
+/* Séparateur de graduation majeure DANS la règle temporelle : marque statique,
+   ni rôle ni focus, son retrait ne coûte aucune information → décoratif. */
+.mt-tl-ruler__maj{flex:1; border-right:1px solid var(--color-rule-strong); position:relative;}
+.mt-tl-ruler__maj:last-child{border-right:0;}
+.mt-tl-ruler__maj--weekend{background:color-mix(in srgb, var(--color-ink) 3.5%, transparent);}
+.mt-tl-ruler__maj--month{border-right-color:var(--color-ink-faint);}
+.mt-tl-ruler__date{position:absolute; top:7px; left:8px; font-family:var(--font-mono); font-size:10px; color:var(--color-ink); letter-spacing:.02em;}
+.mt-tl-ruler__min{position:absolute; bottom:0; height:6px; border-left:1px solid var(--color-rule);}
+.mt-tl-ruler__min:nth-child(2){left:25%;} .mt-tl-ruler__min:nth-child(3){left:50%;} .mt-tl-ruler__min:nth-child(4){left:75%;}
+
+/* ---------------- TimelineLane ---------------- */
+.mt-lane{display:flex; border:1px solid var(--color-rule); border-top:0;}
+.mt-lane:first-of-type{border-top:1px solid var(--color-rule);}
+.mt-lane__head{width:var(--lane-header-w); flex:0 0 auto; padding:11px 14px; border-right:1px solid var(--color-rule); background:var(--color-surface); display:flex; flex-direction:column; justify-content:center; gap:2px;}
+.mt-lane__name{font-family:var(--font-display); font-size:15px; font-weight:var(--weight-semibold); color:var(--color-ink); line-height:1.2;}
+.mt-lane__cat{font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-lane__track{flex:1; position:relative; min-height:var(--lane-height); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px); background-size:var(--mt-grid-step, 12.5%) 100%;}
+
+/* ---------------- TimelineEventBar ----------------
+   Solid, calendar-grade bars (modernised): the event colour reads as a real
+   filled pill rather than a washed 15% tint. Text defaults to white; for the
+   light end of the curated 12 (amber, citron, orange) pass a dark ink via
+   style: `--mt-evt-ink:#16181D` (or compute by luminance, as the Timeline view
+   does). Recurrence is shown by ghost occurrences (--draft) + a dotted
+   connector / RecurrenceBadge — NOT by a stripe fill. */
+.mt-evt{
+  position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px;
+  border-radius:6px;
+  background:var(--mt-evt, var(--color-accent));
+  color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+  box-shadow:var(--shadow-sm);
+  transition:filter var(--dur-micro), box-shadow var(--dur-micro);
+}
+.mt-evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
+.dark .mt-evt:hover, [data-theme="dark"] .mt-evt:hover{filter:brightness(1.12);}
+/* recurring: solid bar (rhythm carried by ghost occurrences, not a fill pattern) */
+.mt-evt--recurring{}
+/* ghost / upcoming occurrence: dashed outline, faint tint, no solid fill.
+   #352 — le FALLBACK du pointillé passe au tier fonctionnel. L'occurrence
+   fantôme est cliquable et son fond est un `color-mix` à 8 % (≈ invisible) : le
+   pointillé porte seul l'objet. Quand `--mt-evt` n'est pas fourni
+   (`EventPreviewTimeline.tsx` ne le pose que `if (color)`), c'est ce fallback
+   qui peint le contour → fonctionnelle. AUCUN impact visuel dans le cas nominal
+   (couleur d'événement fournie) : la var l'emporte sur le fallback. */
+/* #325 — `opacity:.8` RETIRÉ. Il était un dimmer REDONDANT : la variante est
+   déjà « faible » par son fond à 8 %, son contour pointillé, son encre `muted`
+   et son absence d'ombre. Il ne retirait donc pas d'insistance, il retirait du
+   CONTRASTE — sur les deux seules choses qui portent l'objet. Mesuré au drawer
+   de création, couleur par défaut (`#3B62D4`) : contour **2.49:1** en sombre
+   (< 3:1, WCAG 1.4.11) et date du fantôme **3.59:1** en clair (< 4.5:1, WCAG
+   1.4.3). Sans l'opacité : **3.15:1** et **5.52:1**. L'identité colorée du
+   fantôme est intacte (le contour reste peint par `--mt-evt`). */
+/* #497 — PLANCHER DE LISIBILITÉ (WCAG 1.4.11, 3:1) sur les DEUX traits peints
+   dans la couleur choisie par l'utilisateur : ce contour et le connecteur
+   pointillé (`.mt-evt-connector` ci-dessous). Mesuré au S70 (#325) : citron en
+   clair 2.07:1, quasi-noir en sombre 1.02:1 — le trait n'existait plus.
+   `--mt-evt-outline` / `--mt-evt-outline-dark` sont l'API : couleur de
+   l'événement MÉLANGÉE PROGRESSIVEMENT vers l'encre du thème jusqu'à franchir
+   le seuil, calculée par `lib/color.ts:outlineFloorVars` et posée en style
+   inline par `EventPreviewTimeline.tsx`. Les deux thèmes sont calculés côté JS
+   et c'est LE CSS qui tranche : un `useTheme()` rendrait la passe SSR sans
+   plancher, et le thème sombre n'a pas le même pire cas que le clair.
+   Le FOND à 8 % reste peint par `--mt-evt` BRUT : l'identité colorée de
+   l'événement n'est pas planchée, seul le trait qui porte l'objet l'est.
+   Sans ces variables (tout consommateur autre que l'aperçu — il n'y en a aucun
+   à ce jour, cf. #325) la chaîne de repli est EXACTEMENT celle d'avant #497. */
+.mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt-outline, var(--mt-evt, var(--color-rule-emphasis))); color:var(--color-ink-muted); box-shadow:none;}
+.dark .mt-evt--draft, [data-theme="dark"] .mt-evt--draft{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
+.mt-evt--archived{opacity:.45; filter:grayscale(.5);}
+/* Connecteur pointillé entre occurrences (aperçu du formulaire). Était peint
+   en style INLINE par `EventPreviewTimeline.tsx` (`borderColor: color`) : une
+   valeur inline ne peut pas être commutée par thème, d'où cette classe. Le
+   repli `--color-rule-emphasis` est le tier FONCTIONNEL arbitré par #352 —
+   inchangé, c'est bien la couleur planchée qui s'y substitue quand elle existe. */
+.mt-evt-connector{border-top:2px dashed var(--mt-evt-outline, var(--color-rule-emphasis));}
+.dark .mt-evt-connector, [data-theme="dark"] .mt-evt-connector{border-top-color:var(--mt-evt-outline-dark, var(--color-rule-emphasis));}
+/* preview (form live preview): non-interactive bars — drop the click affordance
+   (`cursor:pointer` + hover brightness) inherited from `.mt-evt`. */
+.mt-evt--preview{cursor:default;}
+.mt-evt--preview:hover{box-shadow:var(--shadow-sm); filter:none;}
+.mt-evt--draft.mt-evt--preview:hover{box-shadow:none; filter:none;}
+.dark .mt-evt--preview:hover, [data-theme="dark"] .mt-evt--preview:hover{filter:none;}
+
+/* ---------------- TimelineCursor (TODAY) ---------------- */
+.mt-cursor{position:absolute; top:-6px; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}
+.mt-cursor__label{position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; letter-spacing:.12em; color:var(--color-accent-ink); background:var(--color-accent); padding:2px 6px; border-radius:var(--radius-xs); white-space:nowrap;}
+
+/* ---------------- TimelineMinimap ---------------- */
+.mt-minimap{position:relative; display:flex; align-items:flex-end; gap:2px; height:40px; padding:5px 6px; background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); overflow:hidden;}
+/* REMPLISSAGE (pas un filet) de la barre de densité VIDE : `Minimap.tsx` rend
+   `h > 0 ? --filled : bar`, donc ce `rule-strong` est le seau à ZÉRO événement,
+   une ligne de base. L'information est portée par `--filled` (`accent`) →
+   décoratif. */
+.mt-minimap__bar{flex:1; background:var(--color-rule-strong); border-radius:1px; min-height:3px;}
+.mt-minimap__vp{position:absolute; top:0; bottom:0; border:1.5px solid var(--color-accent); border-radius:var(--radius-sm); background:color-mix(in srgb, var(--color-accent) 10%, transparent); cursor:grab;}
+.mt-minimap__vp:active{cursor:grabbing;}
+
+/* ---------------- TimelineZoomControls ---------------- */
+/* #352 — cadre du GROUPE de zoom (`role="group"`). Ses boutons ont `border:0`
+   et `background:var(--color-surface)` sur une toolbar `surface-2` (delta
+   ~1.05:1) : ce cadre est la SEULE limite visible du contrôle → fonctionnelle. */
+/* #417 — le groupe NE CLIPPE PLUS (`overflow:hidden` retiré), et ce sont les
+   boutons de bord qui portent désormais l'arrondi. POURQUOI : le clip rognait le
+   contour de focus du DS (`@layer base`, `outline-offset:2px`) — ses 4px (2 de
+   décalage + 2 de trait) tombaient hors de la boîte de clip, seuls 1 à 2 côtés
+   étaient peints.
+   POURQUOI PAS un `outline-offset` négatif (piste de l'énoncé de #417, ÉCARTÉE
+   après mesure) : le bouton fait 30×16,5px pour une icône de 14px. Un trait
+   inset de 2px ne laisse que 8,5px libres — l'icône DÉBORDE du trait en haut, en
+   bas et à gauche. Aucune valeur inset ne s'en sort (`-1px` → 10,5px, `0` →
+   12,5px, toujours < 14px) : le problème est la hauteur du bouton, pas la valeur.
+   Le contour du DS peint donc à l'EXTÉRIEUR, sur ses 4 côtés, sans toucher
+   l'icône. Ni `ring-*` ni `outline-none` — DEC-S58-001.
+   C'est exactement le remède déjà appliqué en contexte `.mt-tlm` par #226 (plus
+   bas) : même cause (le clip du groupe), même correctif. */
+.mt-zoom{display:inline-flex; align-items:stretch; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md);}
+.mt-zoom__btn{width:30px; background:var(--color-surface); border:0; color:var(--color-ink); font-family:var(--font-mono); font-size:15px; cursor:pointer; transition:background var(--dur-micro);}
+/* Arrondi porté par les boutons de bord : sans lui, le fond de survol carré
+   déborderait de l'arrondi du groupe une fois le clip retiré. */
+.mt-zoom__btn:first-child{border-right:1px solid var(--color-rule); border-top-left-radius:var(--radius-md); border-bottom-left-radius:var(--radius-md);}
+.mt-zoom__btn:last-child{border-left:1px solid var(--color-rule); border-top-right-radius:var(--radius-md); border-bottom-right-radius:var(--radius-md);}
+.mt-zoom__btn:hover{background:var(--color-surface-2);}
+.mt-zoom__level{display:flex; align-items:center; padding:0 12px; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-muted); white-space:nowrap;}
+
+/* ---------------- DateStamp ---------------- */
+/* Cadre du `DateStamp` : bloc d'AFFICHAGE, sans rôle ni focus, avec un
+   remplissage (`surface`) qui le distingue déjà. Même appel que `.mt-badge`
+   (`core.css`, marque statique) → décoratif. */
+.mt-stamp{display:inline-block; text-align:center; min-width:58px; padding:6px 11px 7px; background:var(--color-surface); border:1px solid var(--color-rule-strong); border-radius:var(--radius-md);}
+.mt-stamp__wd{font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-stamp__day{font-family:var(--font-mono); font-size:26px; font-weight:var(--weight-semibold); line-height:1.05; color:var(--color-ink);}
+.mt-stamp__mo{font-family:var(--font-mono); font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-accent); margin-top:2px;}
+.mt-stamp--sm .mt-stamp__day{font-size:20px;}
+.mt-stamp--sm{min-width:48px; padding:5px 9px 6px;}
+
+/* ---------------- EventPill ---------------- */
+.mt-pill{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; padding:5px 10px; border-radius:var(--radius-sm); border:1px solid var(--color-rule); border-left:3px solid var(--mt-evt, var(--color-accent)); background:var(--color-surface); color:var(--color-ink);}
+.mt-pill__meta{font-family:var(--font-mono); font-size:10px; color:var(--color-ink-muted);}
+
+/* ---------------- RecurrenceBadge ---------------- */
+.mt-recur{display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10px; letter-spacing:.02em; text-transform:uppercase; color:var(--color-accent); border:1px solid var(--color-accent); border-radius:var(--radius-sm); padding:3px 8px;}
+.mt-recur svg{width:11px; height:11px;}
+
+/* ---------------- Timeline view (#55, desktop) ----------------
+   Assemblage de la Vue desktop sur les primitives #47. La frise est continue
+   (scroll horizontal), l'échelle px/jour est pilotée par le zoom (useReducer).
+   Aucun nouveau token : compose colors/spacing/motion existants. */
+
+/* Conteneur scrollable de la frise (règle sticky + lanes partagent le scroll). */
+.mt-tlv{position:relative; display:flex; flex-direction:column; width:100%; border:1px solid var(--color-rule); border-radius:var(--radius-md); background:var(--color-surface); overflow:hidden;}
+.mt-tlv__toolbar{display:flex; align-items:center; gap:12px; padding:8px 12px; border-bottom:1px solid var(--color-rule); background:var(--color-surface-2); flex-wrap:wrap;}
+.mt-tlv__scroll{position:relative; overflow-x:auto; overflow-y:hidden; scroll-behavior:smooth;}
+@media (prefers-reduced-motion:reduce){ .mt-tlv__scroll{scroll-behavior:auto;} }
+/* Rail interne à largeur = totalDays * dayWidth (échelle du zoom). */
+.mt-tlv__rail{position:relative;}
+
+/* Règle sticky adaptative (graduations dynamiques par zoom).
+   Filet règle / lanes : séparateur de deux zones d'affichage, aucun contrôle ne
+   commence ni ne finit là → décoratif. */
+.mt-tlv__ruler{position:sticky; top:0; z-index:var(--z-sticky); height:var(--ruler-height); background:var(--color-surface); border-bottom:1px solid var(--color-rule-strong);}
+.mt-tlv__tick{position:absolute; top:0; bottom:0; border-left:1px solid var(--color-rule);}
+.mt-tlv__tick--month{border-left-color:var(--color-ink-faint);}
+.mt-tlv__tick--weekend{background:color-mix(in srgb, var(--color-ink) 3.5%, transparent);}
+.mt-tlv__tick-label{position:absolute; top:7px; left:6px; font-family:var(--font-mono); font-size:10px; color:var(--color-ink); letter-spacing:.02em; white-space:nowrap; pointer-events:none;}
+
+/* Overlay week-end continu (fond de colonne, cohérence verticale avec la règle). */
+.mt-tlv__weekend{position:absolute; top:0; bottom:0; background:color-mix(in srgb, var(--color-ink) 3.5%, transparent); pointer-events:none;}
+
+/* Indicateur TODAY vertical + badge (réutilise --color-accent / --z-cursor). */
+.mt-tlv__today{position:absolute; top:0; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}
+.mt-tlv__today-badge{position:absolute; top:2px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; letter-spacing:.1em; color:var(--color-accent-ink); background:var(--color-accent); padding:2px 6px; border-radius:var(--radius-xs); white-space:nowrap;}
+
+/* Lanes de la vue (compose .mt-lane du DS ; accordéon de catégorie au-dessus). */
+.mt-tlv__group-head{display:flex; align-items:center; gap:8px; width:100%; padding:7px 14px; background:var(--color-surface-2); border-top:1px solid var(--color-rule); border-bottom:1px solid var(--color-rule); font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted); cursor:pointer; position:sticky; left:0;}
+.mt-tlv__group-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
+.mt-tlv__chev{transition:transform 160ms var(--ease-quart); flex:0 0 auto;}
+.mt-tlv__chev--open{transform:rotate(90deg);}
+@media (prefers-reduced-motion:reduce){ .mt-tlv__chev{transition:none;} }
+.mt-tlv__lane{position:relative; height:var(--lane-height); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+/* Label produit sticky à gauche : identifie la lane, reste ancré pendant le
+   scroll horizontal. Fond opaque + z-index pour passer au-dessus des event bars
+   sans casser leur positionnement absolu (left:leftPx). */
+/* #392 — largeur FIXE (et non plus `max-width`) : l'en-tête remplit désormais
+   la gouttière de piste, qui fait exactement `--lane-header-w`. Un en-tête plus
+   étroit (nom de produit court) y laisserait un vide au lieu d'une colonne. */
+.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+/* #195 — Accordéon de 2e niveau (produit) : le label sticky devient un bouton
+   toggle, mirror de .mt-tlv__group-head. Reset des styles bouton natifs, chevron
+   à gauche, cible cliquable (pointer-events réactivés). */
+.mt-tlv__lane-head{gap:6px; border-top:0; border-bottom:0; border-left:0; padding-left:8px; cursor:pointer; text-align:left; pointer-events:auto;}
+.mt-tlv__lane-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
+.mt-tlv__lane-head-text{min-width:0; flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ---------------------------------------------------------------------------
+   #392 — GOUTTIÈRE DE PISTE. L'en-tête de lane est `position:sticky; left:0` et
+   OPAQUE : il recouvre en permanence les `--lane-header-w` premiers pixels du
+   viewport, à TOUT niveau de scroll (défiler l'emporte avec le viewport). Une
+   pastille dont l'origine sur la piste est < `--lane-header-w` était donc
+   inatteignable à la souris — définitivement, aucun scroll ne la dégageait
+   (mesuré : 30 j × 5 px = 150 px au zoom Trimestre, 66 px au zoom Année).
+
+   CORRECTIF RETENU : réserver une GOUTTIÈRE de `--lane-header-w` en tête de
+   rail et y décaler TOUT le contenu positionné (graduations, week-ends, ligne
+   TODAY, pastilles). À `scrollLeft = 0` l'en-tête occupe exactement la
+   gouttière et la piste commence là où il s'arrête : plus aucune pastille ne
+   peut naître sous lui. Les niveaux de zoom sont traités uniformément (la
+   gouttière est en px, pas en jours).
+
+   POURQUOI PAS `pointer-events:none` : l'en-tête EST interactif (accordéon
+   produit #195, `.mt-tlv__lane-head`) — le neutraliser échangerait ce bug
+   contre la perte du repli de lane. Le décalage ne touche AUCUNE capture de
+   pointeur.
+
+   POURQUOI `margin-left` (et pas un padding du rail ou un wrapper de piste) :
+   ces éléments sont tous `position:absolute`, or `left` se résout sur la boîte
+   de PADDING du bloc conteneur — un `padding-left` ne les déplacerait pas. La
+   marge, elle, s'ajoute au `left` calculé. Le sélecteur reste borné à l'enfant
+   DIRECT du conteneur concerné : les mêmes classes servent hors frise
+   (stories, `.mt-tlv__today-badge` d'`EventPreviewTimeline`) et ne doivent pas
+   hériter de la gouttière. L'ALIGNEMENT règle/piste tient parce que les quatre
+   familles subissent EXACTEMENT le même décalage.
+   --------------------------------------------------------------------------- */
+.mt-tlv__ruler > .mt-tlv__tick,
+.mt-tlv__ruler > .mt-tlv__today,
+.mt-tlv__rail > .mt-tlv__weekend,
+.mt-tlv__rail > .mt-tlv__today,
+.mt-tlv__lane > .mt-tlv__evt,
+.mt-tlv__lane > .mt-tlv__evt-outside{margin-left:var(--lane-header-w);}
+/* La trame de jours du fond de lane suit la piste, pas le bord du rail. */
+.mt-tlv__lane{background-position-x:var(--lane-header-w);}
+/* Coin haut-gauche : masque la gouttière SUR LA RÈGLE. `buildRulerTicks` peut
+   émettre des graduations à offset NÉGATIF (première frontière de mois avant
+   `rangeStart`) ; hors gouttière elles étaient hors rail donc invisibles, la
+   gouttière les ferait apparaître comme un libellé de date flottant au-dessus
+   de la colonne produit. Bloc STICKY en flux (les graduations, elles, sont
+   absolues) : il tient le bord gauche à tout niveau de scroll, exactement comme
+   l'en-tête de lane en dessous — la gouttière devient une colonne continue.
+   `--z-sticky` (et non plus) : la ligne TODAY (`--z-cursor`) passe par-dessus,
+   même convention que l'en-tête de lane. */
+.mt-tlv__ruler::before{content:""; position:sticky; left:0; z-index:var(--z-sticky); display:block; width:var(--lane-header-w); height:100%; background:var(--color-surface-2); border-right:1px solid var(--color-rule);}
+.mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
+.mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
+/* #81 — Focus ring (point 5). ÉCART INTENTIONNEL de token : les pastilles
+   d'événement utilisent `--color-accent` (et non `--color-focus` comme les
+   autres interactifs de la frise) — exigé par le critère d'acceptation #81
+   « outline: 2px solid var(--color-accent) », référencé dans ux-patterns.md §6,
+   validé par ui-design (S24). Les deux tokens rendent la même valeur (blue-600
+   clair depuis le FU1 du Sprint 57 / blue-400 sombre) — `--color-focus` a été
+   décalé AVEC l'accent précisément pour que cet écart de token reste sans écart
+   visuel. On réutilise le `:focus-visible` fourni par le DS. */
+.mt-tlv__evt:focus-visible{outline:2px solid var(--color-accent); outline-offset:2px;}
+.mt-tlv__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
+
+/* #230 — ÉVÉNEMENT ARCHIVÉ sur la frise (BR-EVE-011 : un archivé n'est plus actif).
+   Grisé, PAS masqué : il reste visible et cliquable là où le filtre de vue #307 le
+   remonte (vue « archivés » / « tous » du détail produit).
+
+   POURQUOI PAS `.mt-evt--archived` ICI : cette classe pose `opacity:.45`, et le
+   TITRE de l'événement est porté DANS la pastille — une opacité .45 sur du texte
+   passe sous le seuil WCAG AA (constat de #307, qui a pour cette raison réservé
+   `.mt-evt--archived` aux éléments décoratifs). On la RÉUTILISE donc telle quelle,
+   mais sur la seule pastille de statut (`aria-hidden`, cf. EventPill / mobile),
+   et le corps de la barre est désaturé SANS opacité :
+   `grayscale(1)` mappe fond ET encre vers leur gris de luminance, et le contraste
+   WCAG étant un RAPPORT de luminances, il est préservé à l'approximation du
+   filtre près (⚠ non MESURÉ en navigateur, cf. rapport #230).
+
+   Le sens n'est pas porté par la seule couleur (WCAG 1.4.1) : contour pointillé
+   (même vocabulaire que `.mt-evt--draft`) + mention « archivé » ajoutée à
+   l'`aria-label` agrégé (`buildEventAriaLabel`).
+
+   ⚠ Le `:hover` DOIT être redéclaré : `.mt-tlv__evt:hover` (0,2,0) bat
+   `.mt-tlv__evt--archived` (0,1,0) et effacerait le grisage au survol — famille
+   PIT-S53-004 (une utilitaire/règle sans variante `hover:` reprend la main).
+   `outline` (et non `border`) : hors flux, ne décale pas la géométrie px calculée
+   par `zoom.ts`. Le `:focus-visible` du DS reste prioritaire (0,2,0 + source plus
+   haut mais spécificité égale ⇒ on ne redéclare PAS l'outline de focus ici). */
+.mt-tlv__evt--archived,
+.mt-tlm__evt--archived{filter:grayscale(1); box-shadow:none; outline:1px dashed var(--color-rule-strong); outline-offset:-1px;}
+.mt-tlv__evt--archived:hover{filter:grayscale(1) brightness(1.04); box-shadow:none;}
+
+/* #81 point 6 — libellé de secours HORS barre : rendu quand le contraste du
+   titre À L'INTÉRIEUR de la barre est < 4.5:1 (fond clair + barre étroite). Posé
+   sur le fond de lane (ink lisible), aligné verticalement sur la barre. */
+.mt-tlv__evt-outside{position:absolute; top:9px; height:26px; display:inline-flex; align-items:center; padding:0 4px; font-size:12px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; pointer-events:none;}
+
+/* Minimap waveform : barres de densité + fenêtre draggable focusable. */
+.mt-minimap__bar--filled{background:var(--color-accent);}
+.mt-minimap__vp:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Drawer détail événement — dérivé de .mt-dialog en slide-in droite.
+   Cadre de PANNEAU FLOTTANT + `shadow-lg` : la présence du panneau se lit à son
+   élévation et à son remplissage (`surface`), pas à son filet. Même appel que
+   `.mt-dialog` (`core.css`) → décoratif. */
+.mt-drawer__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); z-index:var(--z-modal); backdrop-filter:blur(2px);}
+.mt-drawer{position:fixed; right:0; top:0; bottom:0; z-index:var(--z-modal); width:min(420px, 92vw); display:flex; flex-direction:column; background:var(--color-surface); border-left:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-bottom-left-radius:var(--radius-xl); transform:translateX(0); transition:transform var(--dur-base) var(--ease-quart);}
+@media (prefers-reduced-motion:reduce){ .mt-drawer{transition:none;} }
+.mt-drawer__header{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:var(--space-5) var(--space-5) var(--space-4); border-bottom:1px solid var(--color-rule);}
+.mt-drawer__title{font-family:var(--font-display); font-size:19px; letter-spacing:-.01em; color:var(--color-ink);}
+.mt-drawer__body{padding:var(--space-5); overflow:auto; flex:1;}
+.mt-drawer__row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--color-rule); font-size:13px;}
+.mt-drawer__k{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-drawer__v{color:var(--color-ink); text-align:right;}
+/* #352 — bouton fermer à ICÔNE SEULE, `background:none` : aucun remplissage ne
+   le distingue du header, la bordure porte toute l'affordance. Même appel que
+   `.mt-iconbtn` (`core.css`) → fonctionnelle. */
+.mt-drawer__close{position:relative; background:none; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-sm); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-ink-muted); cursor:pointer;}
+/* #82 a11y — hitbox tap >= 44x44px sans agrandir le visuel (28px conservé).
+   Pseudo centré qui déborde de (44-28)/2=8px sur chaque bord. Même technique
+   que `.mt-tlm__evt::before`. N'affecte pas le layout du header flex. */
+.mt-drawer__close::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
+.mt-drawer__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+/* #absorb (gap A) — pied du drawer + bouton « Éditer » (ouvre EventEditForm). Tokens DS,
+   theme clair+sombre via var(). Hitbox >= 44px (min-height). */
+.mt-drawer__footer{padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-rule); display:flex; justify-content:flex-end;}
+.mt-drawer__action{display:inline-flex; align-items:center; gap:var(--space-2); min-height:44px; padding:0 var(--space-4); background:var(--color-accent); color:var(--color-accent-ink); border:none; border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px; font-weight:500; cursor:pointer;}
+.mt-drawer__action:hover{background:var(--color-accent-hover);}
+.mt-drawer__action:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* #300 — VARIANTE « formulaire » du drawer (création d'événement, handoff §6).
+   Largeur 452px via le token dédié `--drawer-width-form` (spacing.css). N'altère PAS
+   `.mt-drawer` (420px, drawer de DÉTAIL) : variante additive, aucune régression visuelle
+   sur le détail. `min(…, 92vw)` : même garde-fou d'étroitesse que la base.
+   Le corps porte le formulaire (scroll interne) → pas de padding propre, `--space-5`
+   est appliqué par `.mt-drawer__body`. */
+.mt-drawer--form{width:min(var(--drawer-width-form), 92vw);}
+/* Sous-titre du header (nom du produit ciblé / aide contextuelle). */
+.mt-drawer__subtitle{margin-top:2px; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
+/* #326 — BANDEAU D'APERÇU ÉPINGLÉ (handoff §6 : « aperçu live sticky en haut »).
+   Rendu HORS de `.mt-drawer__body` (qui porte `overflow:auto; flex:1`), entre le
+   header et le corps : l'aperçu reste donc visible pendant que le formulaire défile,
+   SANS `position:sticky` — donc sans z-index à arbitrer (le palier `--z-modal` partagé
+   par `.mt-drawer`/`.mt-sheet` reste intouché, cf. #446). Exact pendant du pied sticky
+   `.mt-sheet__footer` (#79) : `flex:0 0 auto` empêche le corps de le comprimer.
+   `:empty` — le formulaire ne portalise RIEN en aperçu réduit (#79) : sans cette règle
+   le bandeau laisserait un liseré et un padding orphelins. */
+.mt-drawer__preview{flex:0 0 auto; padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--color-rule); background:var(--color-surface);}
+.mt-drawer__preview:empty{display:none;}
+
+/* Champ hors formulaire (sélecteur de produit) : bloc d'en-tête du corps. */
+.mt-drawer__field{display:flex; flex-direction:column; gap:var(--space-2); padding-bottom:var(--space-4); margin-bottom:var(--space-4); border-bottom:1px solid var(--color-rule);}
+.mt-drawer__label{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-drawer__error{color:var(--color-danger); font-size:12px;}
+
+/* Tooltip d'aide (?) — liste des raccourcis clavier. */
+.mt-tlv__help{position:relative; display:inline-flex;}
+/* #352 — bouton d'aide `?` 26px, à icône seule : son `background:surface` sur
+   une toolbar `surface-2` ne le détache pas (delta ~1.05:1), la bordure est sa
+   seule limite → fonctionnelle. */
+.mt-tlv__help-btn{width:26px; height:26px; border-radius:50%; border:1px solid var(--color-rule-emphasis); background:var(--color-surface); color:var(--color-ink-muted); font-family:var(--font-mono); font-size:13px; cursor:pointer;}
+.mt-tlv__help-btn:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+.mt-tlv__help-pop{position:absolute; top:calc(100% + 8px); right:0; z-index:var(--z-popover); min-width:230px; background:var(--color-ink); color:var(--color-surface); border-radius:var(--radius-md); box-shadow:var(--shadow-md); padding:10px 12px; opacity:0; pointer-events:none; transition:opacity var(--dur-micro);}
+.mt-tlv__help:hover .mt-tlv__help-pop, .mt-tlv__help:focus-within .mt-tlv__help-pop{opacity:1; pointer-events:auto;}
+.mt-tlv__help-row{display:flex; justify-content:space-between; gap:16px; font-size:11.5px; line-height:1.7;}
+.mt-tlv__kbd{font-family:var(--font-mono); font-size:10px; background:color-mix(in srgb, var(--color-surface) 18%, transparent); border-radius:var(--radius-xs); padding:1px 5px;}
+
+/* ============================================================================
+   #63 — Vue Timeline MOBILE PORTRAIT (`.mt-tlm*`) + bottom sheet (`.mt-sheet`)
+   + action sheet (`.mt-actionsheet`).
+   Aucun token nouveau : compose colors/spacing/motion/z existants. Breakpoint
+   portrait piloté côté JS (matchMedia max-width:640px, cf. TimelineResponsive) —
+   pas de token `--bp-*` dans le DS (réserve ui-design #3, [MEMORY:decision]).
+   ============================================================================ */
+
+.mt-tlm{position:relative; display:flex; flex-direction:column; width:100%; border:1px solid var(--color-rule); border-radius:var(--radius-md); background:var(--color-surface); overflow:hidden;}
+.mt-tlm__toolbar{display:flex; align-items:center; gap:var(--space-2); padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--color-rule); background:var(--color-surface-2);}
+
+/* #226 — a11y WCAG 2.5.5 : cible tactile RÉELLE ≥44×44px pour le zoom sur
+   surfaces touch mobile. Scope `.mt-tlm` (couvre portrait + paysage
+   `.mt-tlm--landscape`) : le bouton desktop `.mt-zoom__btn` (hors `.mt-tlm`)
+   reste 30px + groupe `overflow:hidden` inchangé. La hitbox s'étend hors flux
+   via `::before` 44×44px centré (PAT-S24-002) : n'altère ni l'icône (font-size
+   inchangée) ni le flex du groupe.
+   ⚠ PIT PAT-S24-002 : le `::before` déborde de (44-30)/2 = 7px de chaque côté du
+   bouton. Le groupe `.mt-zoom` a `overflow:hidden` (arrondi desktop) → sur le
+   1er (bord gauche) et le dernier (bord droit) bouton, ces 7px extérieurs
+   étaient CLIPPÉS → cible réelle ~37×44px sur les bords extrêmes. Fix : passer le
+   groupe en `overflow:visible` UNIQUEMENT en contexte `.mt-tlm` pour libérer la
+   hitbox. Le `::before` est transparent → aucun rendu n'apparaît. On réarrondit
+   les coins extérieurs des boutons de bord (`:first-child` / `:last-child`) à
+   `--radius-md` pour préserver la silhouette arrondie du groupe (sans le clip, le
+   fond hover carré déborderait de l'arrondi). Les 7px libérés côté gauche
+   tiennent dans le padding `--space-3` (12px) de la toolbar → aucun re-clip par
+   le `overflow:hidden` de `.mt-tlm`. */
+/* #417 — devenue redondante (le groupe est `visible` par défaut depuis #417),
+   conservée comme garde : si quelqu'un rétablissait `overflow:hidden` sur
+   `.mt-zoom`, la hitbox 44px de #226 serait de nouveau rognée ici. */
+.mt-tlm .mt-zoom{overflow:visible;}
+.mt-tlm .mt-zoom__btn{position:relative; min-height:44px;}
+/* Les deux surcharges de rayon que #226 posait ici ont été SUPPRIMÉES par #417 : depuis le
+   déclippage, `.mt-zoom__btn:first-child`/`:last-child` portent l'arrondi pour tout le monde
+   (plus haut, mêmes valeurs). Les garder ferait chercher une différence qui n'existe pas. */
+.mt-tlm .mt-zoom__btn::before{content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px;}
+
+/* Frise scrollable horizontale. `touch-action:pan-x` : autorise le scroll
+   horizontal natif mais laisse le composant gérer le pinch (2 doigts). */
+.mt-tlm__scroll{position:relative; overflow-x:auto; overflow-y:hidden; touch-action:pan-x; -webkit-overflow-scrolling:touch;}
+.mt-tlm__rail{position:relative;}
+
+/* Règle sticky. ⚠ iOS Safari 16+ : `position:sticky` DANS un conteneur
+   `overflow-x:auto` est fragile en WebKit. On double avec `-webkit-sticky` et
+   on garde la règle en flux (pas de transform ancêtre) pour maximiser le support.
+   Fallback : si le sticky lâche sur un device réel, la règle scrolle avec le
+   contenu (dégradation acceptable, non bloquante — réserve ui-design #2).
+   Filet de la règle : miroir mobile de `.mt-tlv__ruler`, même verdict —
+   séparateur d'affichage, aucun contrôle ne commence là → décoratif. */
+.mt-tlm__ruler{position:-webkit-sticky; position:sticky; top:0; z-index:var(--z-sticky); height:var(--ruler-height); background:var(--color-surface); border-bottom:1px solid var(--color-rule-strong);}
+.mt-tlm__tick{position:absolute; top:0; bottom:0; border-left:1px solid var(--color-rule);}
+.mt-tlm__tick--month{border-left-color:var(--color-ink-faint);}
+.mt-tlm__tick--weekend{background:color-mix(in srgb, var(--color-ink) 3.5%, transparent);}
+.mt-tlm__tick-label{position:absolute; top:6px; left:5px; font-family:var(--font-mono); font-size:9px; color:var(--color-ink); letter-spacing:.02em; white-space:nowrap; pointer-events:none;}
+
+.mt-tlm__weekend{position:absolute; top:0; bottom:0; background:color-mix(in srgb, var(--color-ink) 3.5%, transparent); pointer-events:none;}
+.mt-tlm__today{position:absolute; top:0; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}
+.mt-tlm__today-badge{position:absolute; top:2px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:8px; letter-spacing:.08em; color:var(--color-accent-ink); background:var(--color-accent); padding:1px 5px; border-radius:var(--radius-xs); white-space:nowrap;}
+
+/* En-tête de catégorie (sticky à gauche). */
+.mt-tlm__group-head{position:sticky; left:0; display:flex; align-items:center; padding:var(--space-1) var(--space-3); background:var(--color-surface-2); border-top:1px solid var(--color-rule); border-bottom:1px solid var(--color-rule); font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted); z-index:calc(var(--z-sticky) + 1);}
+
+/* Lane compacte : densité réduite mais hauteur >= 44px (contrainte a11y PRIME
+   sur la densité, réserve ui-design #1). */
+.mt-tlm__lane{position:relative; height:44px; border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+.mt-tlm__lane-label{position:-webkit-sticky; position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:120px; height:100%; padding:0 var(--space-2); background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:11px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+
+/* Bloc event compact + son bouton `⋯`. Le wrap positionne (left absolu), le
+   bouton event porte la largeur. Hitbox verticale = toute la lane (44px). */
+.mt-tlm__evt-wrap{position:absolute; top:0; bottom:0; display:flex; align-items:center; gap:2px;}
+.mt-tlm__evt{position:relative; display:flex; align-items:center; gap:5px; height:28px; min-height:28px; padding:0 8px; border-radius:6px; font-size:11px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); border:0;}
+/* Pseudo-élément : étend la zone tap à 44px de haut sans agrandir le visuel. */
+.mt-tlm__evt::before{content:""; position:absolute; top:-8px; bottom:-8px; left:0; right:0;}
+.mt-tlm__evt:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+.mt-tlm__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
+.mt-tlm__evt-title{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+/* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px. */
+.mt-tlm__evt-more{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:-2px; background:transparent; border:0; border-radius:var(--radius-sm); cursor:pointer; flex:0 0 auto;}
+.mt-tlm__evt-more:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Minimap compacte (hauteur réduite vs desktop, JS Minimap inchangé). */
+.mt-tlm__minimap{padding:var(--space-2) var(--space-3); border-top:1px solid var(--color-rule); background:var(--color-surface-2);}
+.mt-tlm__minimap .mt-minimap{height:28px;}
+
+/* -------- Bottom sheet détail (`.mt-sheet`) -------- */
+.mt-sheet__overlay{position:fixed; inset:0; background:rgba(11,12,14,.5); z-index:var(--z-modal); backdrop-filter:blur(2px);}
+/* Cadre de bottom sheet + `shadow-lg` : panneau flottant rempli (`surface`),
+   son filet ne délimite aucun contrôle → décoratif (cf. `.mt-drawer`). */
+.mt-sheet{position:fixed; left:0; right:0; bottom:0; z-index:var(--z-modal); max-height:80vh; display:flex; flex-direction:column; background:var(--color-surface); border-top:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-top-right-radius:var(--radius-xl); transform:translateY(0); animation:mt-sheet-in var(--dur-base) var(--ease-quart);}
+@keyframes mt-sheet-in{from{transform:translateY(100%);} to{transform:translateY(0);}}
+@media (prefers-reduced-motion:reduce){ .mt-sheet{animation:none;} }
+.mt-sheet__grabber-zone{display:flex; justify-content:center; align-items:center; height:28px; touch-action:none; cursor:grab;}
+/* #352 — poignée d'une zone RÉELLEMENT draggable : `.mt-sheet__grabber-zone`
+   ci-dessus porte `touch-action:none; cursor:grab` et est branchée sur le drag
+   de fermeture (`TimelineBottomSheet.tsx`). Cette pastille est le seul signal
+   visuel de ce contrôle → fonctionnelle. (Diverge de
+   `.mt-actionsheet__grabber`, qui n'est qu'une marque ornementale.) */
+.mt-sheet__grabber{width:36px; height:4px; border-radius:var(--radius-pill); background:var(--color-rule-emphasis);}
+.mt-sheet__header{display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-4); padding:0 var(--space-5) var(--space-3); border-bottom:1px solid var(--color-rule);}
+.mt-sheet__title{font-family:var(--font-display); font-size:18px; letter-spacing:-.01em; color:var(--color-ink);}
+/* Pendant sheet de `.mt-drawer__subtitle` : mêmes valeurs, nom cohérent avec le bloc
+   `.mt-sheet__*` qui l'entoure (le header compact ne mélange plus les deux familles). */
+.mt-sheet__subtitle{margin-top:2px; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
+.mt-sheet__body{padding:var(--space-4) var(--space-5) var(--space-5); overflow:auto; flex:1;}
+/* #79 — Pied de sheet STICKY (pendant de `.mt-drawer__footer`). Rendu HORS de
+   `.mt-sheet__body` (qui porte `overflow:auto; flex:1`) : les actions restent
+   donc visibles pendant que le corps défile, et surtout au-dessus du clavier
+   virtuel quand `useMobileKeyboard` borne la hauteur du panneau.
+   `min-height:var(--space-17)` (68px) = la réserve demandée pour la rangée de
+   boutons ; `flex:0 0 auto` empêche le pied d'être comprimé par le corps. */
+.mt-sheet__footer{flex:0 0 auto; min-height:var(--space-17); display:flex; align-items:center; padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-rule); background:var(--color-surface);}
+.mt-sheet__footer > *{flex:1;}
+/* Bouton fermer : cible >= 44px (le drawer desktop = 28px, NON conforme mobile —
+   réserve ui-design).
+   #352 — bouton à ICÔNE SEULE, `background:none` : rien ne le distingue du
+   header sinon sa bordure → fonctionnelle (cf. `.mt-drawer__close`). */
+.mt-sheet__close{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; background:none; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-sm); color:var(--color-ink-muted); cursor:pointer; flex:0 0 auto;}
+.mt-sheet__close:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* -------- Action sheet (`.mt-actionsheet`) -------- */
+/* Cadre d'action sheet + `shadow-lg` : même appel que `.mt-sheet` et
+   `.mt-dialog` — panneau flottant rempli, aucun contrôle délimité → décoratif. */
+.mt-actionsheet{position:fixed; left:0; right:0; bottom:0; z-index:var(--z-modal); display:flex; flex-direction:column; gap:var(--space-1); padding:var(--space-2) var(--space-3) var(--space-4); background:var(--color-surface); border-top:1px solid var(--color-rule-strong); box-shadow:var(--shadow-lg); border-top-left-radius:var(--radius-xl); border-top-right-radius:var(--radius-xl); animation:mt-sheet-in var(--dur-base) var(--ease-quart);}
+@media (prefers-reduced-motion:reduce){ .mt-actionsheet{animation:none;} }
+/* DIVERGE VOLONTAIREMENT de `.mt-sheet__grabber` (fonctionnelle) : ici la
+   poignée est rendue par `TimelineActionSheet.tsx` en `<span aria-hidden>` SANS
+   zone de drag — rien n'est draggable dans l'action sheet. C'est une marque
+   ornementale qui cite l'idiome de la bottom sheet, pas l'affordance d'un
+   contrôle → décoratif. Si un drag y est branché un jour, migrer ce filet. */
+.mt-actionsheet__grabber{align-self:center; width:36px; height:4px; margin-bottom:var(--space-2); border-radius:var(--radius-pill); background:var(--color-rule-strong);}
+.mt-actionsheet__item{display:flex; align-items:center; gap:var(--space-3); width:100%; min-height:48px; padding:0 var(--space-4); background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:var(--radius-md); font-family:var(--font-ui); font-size:15px; color:var(--color-ink); cursor:pointer;}
+.mt-actionsheet__item:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+.mt-actionsheet__item--danger{color:var(--color-danger); border-color:var(--color-danger-soft);}
+.mt-actionsheet__item--cancel{justify-content:center; color:var(--color-ink-muted); background:transparent;}
+
+/* ============================================================================
+   #64 — Vue Timeline MOBILE PAYSAGE (`.mt-tlm--landscape`) + drawer latéral
+   touch (`.mt-drawer--landscape`) + toggle minimap masquable.
+   Réutilise 100% des `.mt-tlm*` #63 ; SEULE la densité (hauteurs de ligne) et le
+   conteneur de détail (drawer latéral vs bottom sheet) changent. Aucun token
+   nouveau. Breakpoints pilotés côté JS (orientation + hauteur, cf.
+   TimelineResponsive) — pas de token `--bp-*` (réserve ui-design #3).
+   ============================================================================ */
+
+/* Lanes DENSES : dérive --lane-height/--ruler-height LOCALEMENT (scope au
+   conteneur paysage → n'affecte ni portrait ni desktop). Plus de catégories
+   visibles sans scroll vertical (hauteur d'écran réduite en paysage).
+   Valeurs ad hoc : ruler 34px (vs 44), lane 34px (vs 44). */
+.mt-tlm--landscape{--ruler-height:34px; --lane-height:34px;}
+.mt-tlm--landscape .mt-tlm__lane{height:var(--lane-height);}
+.mt-tlm--landscape .mt-tlm__ruler{height:var(--ruler-height);}
+/* Bloc event compacté visuellement (24px) MAIS hitbox ≥ 44px conservée via le
+   pseudo `::before` (touch target PRIME sur la densité — réserve ui-design #1). */
+.mt-tlm--landscape .mt-tlm__evt{height:24px; min-height:24px; font-size:10.5px;}
+.mt-tlm--landscape .mt-tlm__evt::before{top:-10px; bottom:-10px;}
+.mt-tlm--landscape .mt-tlm__lane-label{font-size:10px;}
+.mt-tlm--landscape .mt-tlm__group-head{padding-top:2px; padding-bottom:2px;}
+
+/* Toggle minimap masquable : interactif → focus ring + état aria-pressed.
+   #352 — bascule 44×44 à ICÔNE SEULE : son `background:surface` sur une toolbar
+   `surface-2` ne la détache pas, la bordure porte l'affordance →
+   fonctionnelle. L'état pressé garde `border-color:var(--color-accent)`. */
+.mt-tlm__minimap-toggle{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; background:var(--color-surface); border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md); color:var(--color-ink-muted); cursor:pointer; transition:background var(--dur-micro), color var(--dur-micro);}
+.mt-tlm__minimap-toggle:hover{background:var(--color-surface-2);}
+.mt-tlm__minimap-toggle[aria-pressed="true"]{color:var(--color-accent); border-color:var(--color-accent);}
+.mt-tlm__minimap-toggle:disabled{opacity:.4; cursor:not-allowed;}
+.mt-tlm__minimap-toggle:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Drawer latéral variante PAYSAGE : largeur adaptée à un écran bas et large
+   (plafonne à 44vw pour laisser la frise visible derrière), bouton fermer ≥ 44px
+   (le desktop 28px n'est pas conforme touch — réserve ui-design). */
+.mt-drawer--landscape{width:min(360px, 44vw);}
+.mt-drawer__close--touch{width:44px; height:44px;}

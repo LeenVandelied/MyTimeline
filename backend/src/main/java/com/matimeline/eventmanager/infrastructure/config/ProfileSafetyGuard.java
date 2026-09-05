@@ -1,0 +1,405 @@
+package com.matimeline.eventmanager.infrastructure.config;
+
+import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.ConfigurableEnvironment;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Garde-fou fail-fast (#111) contre le fallback silencieux {@code SPRING_PROFILES_ACTIVE:dev}.
+ *
+ * <p>{@code application.properties} conserve le default {@code dev} pour le confort
+ * de développement (mvn/IDE démarrent sans variable). Le risque : en production, si
+ * {@code SPRING_PROFILES_ACTIVE} est oublié, Spring active SILENCIEUSEMENT le profil
+ * {@code dev} avec ses defaults non-secrets. Ce listener refuse alors de booter.
+ *
+ * <p>Déclencheur : un marqueur d'environnement de production est présent
+ * ({@code ENVIRONMENT=production|prod} ou {@code APP_ENV=production|prod}) ALORS que
+ * le profil actif est {@code dev} (ou aucun profil explicite → default dev). On lève
+ * alors une exception qui interrompt le démarrage AVANT tout refresh de contexte.
+ *
+ * <p>Listener volontairement enregistré via {@code spring.factories} pour s'exécuter
+ * au plus tôt (event {@link ApplicationEnvironmentPreparedEvent}), avant la création
+ * des beans, sans dépendre du contexte applicatif (donc testable sans Docker).
+ *
+ * <p>Second garde-fou (#216) : refuse le boot si le master-switch
+ * {@code app.rate-limit.enabled} vaut {@code false} ALORS que l'environnement est
+ * <em>prod effectif</em> (marqueur prod OU profil {@code prod} actif). Désactiver le
+ * rate-limit en production ne doit jamais résulter d'une simple fuite de config.
+ * Le job CI e2e qui pose légitimement {@code false} tourne en profil {@code test}/{@code dev}
+ * SANS marqueur prod : il n'est donc jamais bloqué (pas de collision avec ce check).
+ *
+ * <p>Note de numérotation : les ordinaux ci-dessous (Troisième, Quatrième...) reflètent
+ * l'ORDRE D'EXÉCUTION dans {@link #onApplicationEvent}, PAS la chronologie des numéros
+ * d'issue (#254 s'exécute avant #253 bien que 254 > 253) — ne pas s'y fier pour le
+ * cross-référencement tracker, se fier uniquement au tag {@code #NNN} entre parenthèses.
+ *
+ * <p>Troisième garde-fou (#254) : refuse le boot si le cookie JWT n'est pas marqué
+ * {@code Secure} ({@code app.cookie.secure} absent OU {@code false}) ALORS que
+ * l'environnement est <em>prod effectif</em>. Contrairement au rate-limit (#216) dont
+ * le défaut fail-safe est {@code true}, le défaut FAIL-SAFE de ce garde-fou pour
+ * {@code app.cookie.secure} est {@code false} (property absente = traitée comme
+ * non-sécurisée) — à ne pas confondre avec le défaut applicatif réel de la property,
+ * qui est {@code true} (cf. {@code application.properties: app.cookie.secure=${COOKIE_SECURE:true}}
+ * et {@code application-prod.properties}). Un cookie non-{@code Secure} en
+ * prod peut être transmis en clair (risque MITM) : on exige donc un {@code true}
+ * EXPLICITE en prod effectif, et on traite {@code absent OU false} comme non-sécurisé.
+ *
+ * <p>Quatrième garde-fou (#253) : refuse le boot si {@code app.cookie.domain}
+ * ({@code COOKIE_DOMAIN}) OU {@code app.cors.allowed-origins} ({@code CORS_ALLOWED_ORIGINS})
+ * sont vides/blancs ALORS que l'environnement est <em>prod effectif</em>. Ces deux valeurs
+ * étaient auparavant seulement journalisées en WARN par {@code ProdConfigStartupLogger}
+ * (#130) : l'app démarrait quand même, avec une auth multi-sous-domaines cassée
+ * silencieusement (domaine vide → cookie host-only) ou un frontend bloqué par CORS
+ * (origines vides). Le WARN devient un fail-fast, cohérent avec #111/#216/#254 et
+ * exécuté au plus tôt (avant création des beans). Les WARN redondants ont été retirés
+ * de {@code ProdConfigStartupLogger} (cf. commentaire pointant vers #253).
+ *
+ * <p>Cinquième garde-fou (#283, exécuté EN PREMIER) : refuse le boot si le profil
+ * {@code e2e} est actif ALORS que l'environnement est <em>prod effectif</em>. Le profil
+ * {@code e2e} active le package {@code infrastructure.adapters.testsupport} (ADR-005), qui
+ * expose {@code GET /api/test-support/password-reset-token?email=...} en ANONYME. Combiné à
+ * {@code POST /api/auth/forgot-password}, ce canal permet la prise de contrôle de n'importe
+ * quel compte et contourne intégralement BR-AUT-005 / BR-AUT-012. Ce check passe AVANT #111
+ * (et non après) volontairement : sur une config {@code dev,e2e} + marqueur prod, les deux
+ * checks se déclenchent, et le message qui doit remonter à l'exploitant est celui qui nomme
+ * la porte dérobée, pas celui qui nomme le fallback de profil. Le job CI e2e
+ * ({@code SPRING_PROFILES_ACTIVE=dev,e2e}, AUCUN marqueur prod) n'est pas concerné.
+ *
+ * <p>Sixième garde-fou (#323) : refuse le boot si {@code jwt.private-key}
+ * ({@code JWT_PRIVATE_KEY}) OU {@code app.export.token-secret} ({@code EXPORT_TOKEN_SECRET})
+ * sont vides/blancs en <em>prod effectif</em>. Ces deux valeurs remplacent l'unique
+ * {@code JWT_SECRET} supprimé par la migration RS256. Le danger propre à
+ * {@code jwt.private-key} : contrairement aux autres secrets, une valeur vide ne fait PAS
+ * échouer l'application — {@code JwtService} bascule sur une paire RSA <em>éphémère</em> et
+ * démarre normalement. En production, cela déconnecterait silencieusement tous les
+ * utilisateurs à chaque redéploiement, sans le moindre symptôme au boot. C'est exactement
+ * le type de panne muette que ce listener existe pour interdire.
+ */
+public class ProfileSafetyGuard
+        implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+
+    /** Valeurs (insensibles à la casse) d'un marqueur d'env considérées comme "prod". */
+    static final List<String> PROD_MARKER_VALUES = List.of("production", "prod");
+
+    /** Noms de variables d'env inspectées comme marqueur d'environnement. */
+    static final List<String> ENV_MARKER_KEYS = List.of("ENVIRONMENT", "APP_ENV");
+
+    /** Profil activant le canal test-only {@code testsupport} (ADR-005) — interdit en prod. */
+    static final String E2E_PROFILE = "e2e";
+
+    /** Master-switch du rate-limit (défaut fail-safe {@code true}). */
+    static final String RATE_LIMIT_ENABLED_KEY = "app.rate-limit.enabled";
+
+    /** Flag {@code Secure} du cookie JWT (défaut fail-safe du garde-fou {@code false} ; défaut applicatif réel {@code true}, cf. application.properties). */
+    static final String COOKIE_SECURE_KEY = "app.cookie.secure";
+
+    /** Domaine du cookie JWT (vide = cookie host-only, auth multi-sous-domaines cassée). */
+    static final String COOKIE_DOMAIN_KEY = "app.cookie.domain";
+
+    /** Origines CORS autorisées (CSV ; vide = frontend cross-site bloqué). */
+    static final String CORS_ALLOWED_ORIGINS_KEY = "app.cors.allowed-origins";
+
+    /** Clé privée RS256 de signature des JWT (#323 ; vide = paire éphémère, interdite en prod). */
+    static final String JWT_PRIVATE_KEY_KEY = "jwt.private-key";
+
+    /** Secret HMAC dédié aux tokens de download d'export (#323). */
+    static final String EXPORT_TOKEN_SECRET_KEY = "app.export.token-secret";
+
+    @Override
+    public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
+        ConfigurableEnvironment env = event.getEnvironment();
+
+        checkE2eProfileInProduction(env);        // #283 (porte dérobée test-support : priorité absolue)
+        checkDevProfileInProduction(env);        // #111 (inchangé)
+        checkRateLimitDisabledInProduction(env); // #216
+        checkCookieInsecureInProduction(env);    // #254
+        checkMissingCookieDomainInProduction(env); // #253
+        checkMissingCorsOriginsInProduction(env);  // #253
+        checkMissingJwtPrivateKeyInProduction(env);   // #323
+        checkMissingExportTokenSecretInProduction(env); // #323
+    }
+
+    /**
+     * Check #323 (clé de signature) : en prod effectif, {@code jwt.private-key} vide/blanche →
+     * refuse de booter. Voir le javadoc de classe : une {@code jwt.private-key} vide ne casse
+     * rien au démarrage (paire éphémère) — c'est précisément ce qui la rend dangereuse en
+     * production, d'où un fail-fast explicite ici plutôt qu'un WARN.
+     *
+     * <p>⚠ Cette barrière est la SECONDE, pas la seule : {@code application-prod.properties}
+     * déclare {@code ${JWT_PRIVATE_KEY}} SANS default, donc une variable absente fait déjà
+     * échouer la résolution du placeholder. Ce check couvre le cas qu'elle laisse passer —
+     * variable présente mais BLANCHE — et fournit le message d'exploitation lisible.
+     */
+    private void checkMissingJwtPrivateKeyInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, paire éphémère légitime.
+        }
+        if (isBlankProperty(env, JWT_PRIVATE_KEY_KEY)) {
+            throw new IllegalStateException(
+                    "ARRÊT FAIL-FAST (#323) : '" + JWT_PRIVATE_KEY_KEY + "' (JWT_PRIVATE_KEY) est "
+                    + "VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                    + "ou profil Spring 'prod' actif). Sans clé configurée, JwtService génère une paire "
+                    + "RS256 ÉPHÉMÈRE : l'application démarre normalement mais TOUS les utilisateurs "
+                    + "sont déconnectés à chaque redémarrage, sans symptôme visible. Fournir une clé "
+                    + "privée RSA PKCS#8 en Base64 (modulus >= 2048 bits) via JWT_PRIVATE_KEY. "
+                    + "NB : JWT_SECRET (HS256) a été supprimé par #323, il n'est plus lu.");
+        }
+    }
+
+    /**
+     * Check #323 (secret d'export) : en prod effectif, {@code app.export.token-secret}
+     * vide/blanc → refuse de booter. Même dispositif à deux barrières que la clé de signature
+     * (cf. {@link #checkMissingJwtPrivateKeyInProduction}).
+     */
+    private void checkMissingExportTokenSecretInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, secret de dev légitime.
+        }
+        if (isBlankProperty(env, EXPORT_TOKEN_SECRET_KEY)) {
+            throw new IllegalStateException(
+                    "ARRÊT FAIL-FAST (#323) : '" + EXPORT_TOKEN_SECRET_KEY + "' (EXPORT_TOKEN_SECRET) "
+                    + "est VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                    + "ou profil Spring 'prod' actif). Ce secret HMAC dédié signe les tokens de "
+                    + "téléchargement d'export RGPD ; il ne partage plus jwt.secret depuis #323. "
+                    + "Fournir une valeur Base64 décodant à >= 32 octets (openssl rand -base64 48).");
+        }
+    }
+
+    /**
+     * Check #283 : en prod effectif, profil {@code e2e} actif → refuse de booter. Le profil
+     * {@code e2e} conditionne le package {@code testsupport} (ADR-005), dont le controller
+     * révèle en anonyme le token de réinitialisation de mot de passe de n'importe quel email.
+     * Aucune combinaison {@code prod}+{@code e2e} n'est légitime ; le job CI e2e tourne en
+     * {@code dev,e2e} SANS marqueur prod et reste autorisé.
+     */
+    private void checkE2eProfileInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → CI/dev, canal test-only légitime.
+        }
+        if (!isProfileActive(env, E2E_PROFILE)) {
+            return; // Profil e2e inactif → package testsupport non chargé.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#283) : le profil Spring 'e2e' est ACTIF en environnement de "
+                + "production effective (marqueur ENVIRONMENT/APP_ENV=prod ou profil Spring 'prod' "
+                + "actif). Ce profil expose le canal test-only GET /api/test-support/"
+                + "password-reset-token en accès anonyme : il permet la prise de contrôle de "
+                + "n'importe quel compte (contournement de BR-AUT-005/BR-AUT-012). Retirer 'e2e' "
+                + "de SPRING_PROFILES_ACTIVE en production ; ce profil n'est légitime que dans le "
+                + "job CI e2e (dev,e2e sans marqueur d'environnement de production).");
+    }
+
+    /**
+     * Check #111 : marqueur prod présent ALORS que le profil {@code dev} est actif
+     * (fallback silencieux {@code SPRING_PROFILES_ACTIVE:dev}) → refuse de booter.
+     */
+    private void checkDevProfileInProduction(ConfigurableEnvironment env) {
+        if (!isProductionMarkerPresent(env)) {
+            return; // Pas de marqueur prod → confort dev intact, aucun blocage.
+        }
+        if (!isDevProfileActive(env)) {
+            return; // Marqueur prod + profil non-dev → configuration cohérente.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#111) : un marqueur d'environnement de production est "
+                + "présent (ENVIRONMENT/APP_ENV) mais le profil Spring actif est 'dev'. "
+                + "Le fallback silencieux SPRING_PROFILES_ACTIVE:dev exposerait des defaults "
+                + "non-secrets en production. Définir explicitement SPRING_PROFILES_ACTIVE=prod "
+                + "(ou retirer le marqueur ENVIRONMENT en environnement de développement).");
+    }
+
+    /**
+     * Check #216 : en prod effectif, {@code app.rate-limit.enabled=false} → refuse de
+     * booter. Ne se déclenche QU'en prod effectif ; un boot dev/test qui désactive le
+     * rate-limit (job CI e2e) reste autorisé.
+     */
+    private void checkRateLimitDisabledInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isRateLimitDisabled(env)) {
+            return; // Rate-limit actif (défaut) ou property absente → configuration sûre.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#216) : '" + RATE_LIMIT_ENABLED_KEY + "=false' détecté "
+                + "en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Désactiver le rate-limit en production est "
+                + "refusé (protection anti-abus). Retirer cette property ou la remettre à 'true' "
+                + "en prod ; la désactivation n'est légitime que dans le job CI e2e (profil test/dev).");
+    }
+
+    /**
+     * Check #254 : en prod effectif, un cookie JWT non-{@code Secure}
+     * ({@code app.cookie.secure} absent OU {@code false}) → refuse de booter. Un cookie
+     * transmissible en clair exposerait le token à une interception (MITM). Le blocage
+     * ne concerne que la prod effective ; dev/test (cookie localhost non sécurisé)
+     * reste autorisé.
+     */
+    private void checkCookieInsecureInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isCookieInsecure(env)) {
+            return; // Cookie Secure explicitement activé → configuration sûre.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#254) : le cookie JWT doit être marqué 'Secure' en "
+                + "production ('" + COOKIE_SECURE_KEY + "' (COOKIE_SECURE) = true). Valeur absente ou 'false' "
+                + "détectée en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Un cookie non-Secure peut être transmis en clair "
+                + "sur une connexion non chiffrée (risque d'interception du token). Définir "
+                + "explicitement '" + COOKIE_SECURE_KEY + "' (COOKIE_SECURE) = true en prod.");
+    }
+
+    /**
+     * Check #253 (domaine) : en prod effectif, {@code app.cookie.domain} vide/blanc →
+     * refuse de booter. Un domaine vide produit un cookie host-only : l'authentification
+     * multi-sous-domaines échouerait silencieusement en production. Le blocage ne concerne
+     * que la prod effective ; dev/test (domaine localhost vide) reste autorisé.
+     */
+    private void checkMissingCookieDomainInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isBlankProperty(env, COOKIE_DOMAIN_KEY)) {
+            return; // Domaine renseigné → configuration cohérente.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#253) : '" + COOKIE_DOMAIN_KEY + "' (COOKIE_DOMAIN) est "
+                + "VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Un domaine vide produit un cookie host-only : "
+                + "l'authentification multi-sous-domaines échouerait silencieusement. Définir "
+                + "explicitement COOKIE_DOMAIN ('" + COOKIE_DOMAIN_KEY + "') en prod.");
+    }
+
+    /**
+     * Check #253 (CORS) : en prod effectif, {@code app.cors.allowed-origins} vide (property
+     * absente/blanche OU tous les tokens CSV blancs) → refuse de booter. Sans origine
+     * autorisée, le frontend serait bloqué par CORS. Le blocage ne concerne que la prod
+     * effective ; dev/test reste autorisé.
+     */
+    private void checkMissingCorsOriginsInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test, blocage non pertinent.
+        }
+        if (!isCorsOriginsMissing(env)) {
+            return; // Au moins une origine renseignée → configuration cohérente.
+        }
+
+        throw new IllegalStateException(
+                "ARRÊT FAIL-FAST (#253) : '" + CORS_ALLOWED_ORIGINS_KEY + "' (CORS_ALLOWED_ORIGINS) "
+                + "est VIDE en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
+                + "ou profil Spring 'prod' actif). Sans origine cross-site autorisée, le frontend "
+                + "serait bloqué par CORS. Définir explicitement CORS_ALLOWED_ORIGINS "
+                + "('" + CORS_ALLOWED_ORIGINS_KEY + "') en prod.");
+    }
+
+    /**
+     * Vrai si le cookie JWT n'est PAS sécurisé : {@code app.cookie.secure} absent OU
+     * explicitement {@code false}. Défaut fail-safe {@code false} (property absente =
+     * non-sécurisé), à l'inverse du rate-limit (#216) : ici on EXIGE un {@code true}
+     * explicite en prod, cohérent avec le défaut applicatif {@code false} du flag.
+     */
+    private boolean isCookieInsecure(ConfigurableEnvironment env) {
+        return !env.getProperty(COOKIE_SECURE_KEY, Boolean.class, Boolean.FALSE);
+    }
+
+    /**
+     * Vrai si la property est absente, {@code null} ou uniquement composée de blancs.
+     *
+     * <p>⚠ Le {@code catch} n'est pas décoratif (revue S50, 2e cycle) : depuis que
+     * {@code application-prod.properties} déclare {@code ${JWT_PRIVATE_KEY}} SANS default,
+     * une variable d'environnement absente rend le placeholder IRRÉSOLUBLE, et
+     * {@code getProperty} lève une {@link IllegalArgumentException} au lieu de renvoyer
+     * {@code null}. Sans ce catch, le boot échouerait bien (c'est le but de la 1re barrière)
+     * mais sur un « Could not resolve placeholder » opaque, en perdant le message
+     * d'exploitation de la 2e. On traite donc « irrésoluble » comme « non fournie » : les deux
+     * barrières restent disjointes ET l'exploitant garde le message lisible.
+     */
+    private boolean isBlankProperty(ConfigurableEnvironment env, String key) {
+        try {
+            String value = env.getProperty(key);
+            return value == null || value.isBlank();
+        } catch (IllegalArgumentException e) {
+            return true; // Placeholder non résolu = valeur non fournie.
+        }
+    }
+
+    /**
+     * Vrai si {@code app.cors.allowed-origins} ne fournit aucune origine exploitable :
+     * property absente/blanche, OU chaque token CSV (séparé par virgule) est blanc après
+     * trim. Lecture en {@code String} brute (le CSV n'est pas encore résolu en {@code List}
+     * à ce stade du cycle de vie), cohérent avec le WARN historique de {@code ProdConfigStartupLogger}.
+     */
+    private boolean isCorsOriginsMissing(ConfigurableEnvironment env) {
+        String raw = env.getProperty(CORS_ALLOWED_ORIGINS_KEY);
+        if (raw == null || raw.isBlank()) {
+            return true;
+        }
+        return Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .allMatch(String::isEmpty);
+    }
+
+    /** Vrai si une des variables marqueur vaut une valeur "prod" (casse ignorée). */
+    private boolean isProductionMarkerPresent(ConfigurableEnvironment env) {
+        return ENV_MARKER_KEYS.stream()
+                .map(env::getProperty)
+                .filter(value -> value != null)
+                .map(value -> value.trim().toLowerCase(Locale.ROOT))
+                .anyMatch(PROD_MARKER_VALUES::contains);
+    }
+
+    /**
+     * "Prod effectif" pour #216 : marqueur d'env prod présent OU profil {@code prod}
+     * explicitement actif. Volontairement disjoint du critère de #111 (profil {@code dev}) :
+     * aucune collision logique, chaque check cible sa propre configuration dangereuse.
+     */
+    private boolean isProductionEffective(ConfigurableEnvironment env) {
+        return isProductionMarkerPresent(env) || isProfileActive(env, "prod");
+    }
+
+    /**
+     * Vrai si {@code app.rate-limit.enabled} est explicitement {@code false}. La property
+     * absente vaut {@code true} (défaut fail-safe) → non désactivé.
+     */
+    private boolean isRateLimitDisabled(ConfigurableEnvironment env) {
+        return !env.getProperty(RATE_LIMIT_ENABLED_KEY, Boolean.class, Boolean.TRUE);
+    }
+
+    /**
+     * Vrai si le profil {@code dev} est effectivement actif : soit explicitement,
+     * soit par fallback (aucun profil actif ⇒ le default {@code dev} de
+     * {@code application.properties} s'applique).
+     */
+    private boolean isDevProfileActive(ConfigurableEnvironment env) {
+        return isProfileActive(env, "dev");
+    }
+
+    /**
+     * Vrai si {@code profileName} est actif : soit explicitement présent dans les profils
+     * actifs, soit — en l'absence de profil actif résolu — présent dans la property brute
+     * {@code spring.profiles.active} (default {@code dev}).
+     */
+    private boolean isProfileActive(ConfigurableEnvironment env, String profileName) {
+        List<String> active = Arrays.asList(env.getActiveProfiles());
+        if (active.isEmpty()) {
+            // À ce stade le default ${SPRING_PROFILES_ACTIVE:dev} n'est pas encore
+            // résolu en profil actif ; on lit la property brute pour anticiper.
+            String resolved = env.getProperty("spring.profiles.active", "dev");
+            return Arrays.stream(resolved.split(","))
+                    .map(String::trim)
+                    .anyMatch(profileName::equalsIgnoreCase);
+        }
+        return active.stream().anyMatch(profileName::equalsIgnoreCase);
+    }
+}

@@ -1,0 +1,192 @@
+# =============================================================
+# MyTimeline — orchestration dev en une commande (#37)
+#   docker compose up        -> postgres + backend + frontend
+#   docker compose down      -> arrêt propre (volumes de données CONSERVÉS)
+# Aucun secret en dur : tout vient de .env (voir .env.example) avec des
+# defaults dev intégrés pour un boot immédiat sans configuration.
+# =============================================================
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-eventmanager}
+      POSTGRES_USER: ${DB_USERNAME:-eventuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-motdepasse_dev_local}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # Backend démarre APRÈS postgres healthy (ddl-auto=validate + Flyway au boot
+      # exigent un schéma joignable). -U/-d ciblent la vraie base/rôle.
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-eventuser} -d ${POSTGRES_DB:-eventmanager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Datasource pointée sur le SERVICE compose `postgres` (réseau interne).
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventmanager}
+      DB_USERNAME: ${DB_USERNAME:-eventuser}
+      DB_PASSWORD: ${DB_PASSWORD:-motdepasse_dev_local}
+      # Signature JWT RS256 (#323). JWT_SECRET (HS256) n'existe PLUS.
+      # AUCUNE clé RSA n'est fournie en dur ici : le dépôt est PUBLIC. Vide (défaut) =>
+      # le backend génère une paire ÉPHÉMÈRE au boot et journalise la clé publique
+      # correspondante — pratique en local, mais les sessions ne survivent pas à un
+      # `docker compose restart`. Poser JWT_PRIVATE_KEY dans .env pour les figer
+      # (clé privée RSA PKCS#8 en Base64, cf. .env.example).
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+      # Secret HMAC DÉDIÉ des tokens de téléchargement d'export RGPD (#323) — ne partage
+      # plus la clé d'auth. Base64 STANDARD, 49 octets décodés (>= 32 requis pour HS256).
+      # Défaut dev manifestement jetable, aligné sur application-dev.properties.
+      EXPORT_TOKEN_SECRET: ${EXPORT_TOKEN_SECRET:-ZGV2LW9ubHktaW5zZWN1cmUtZXhwb3J0LXRva2VuLXNlY3JldC1jaGFuZ2UtbWUhIQ==}
+      # Avatars persistés sur le volume monté ci-dessous.
+      STORAGE_AVATAR_PATH: /app/var/avatars
+    ports:
+      - "8080:8080"
+    volumes:
+      - avatars-data:/app/var/avatars
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Bakée au build (variable NEXT_PUBLIC_*). Joignable depuis le navigateur.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
+    depends_on:
+      - backend
+    environment:
+      # #322 — origine canonique des redirections du middleware. Lue au RUNTIME
+      # (pas un ARG de build : changer le domaine ne doit pas exiger un rebuild).
+      # VIDE par défaut => dégradé assumé, comportement d'avant #322 inchangé en
+      # dev local. À renseigner en prod/preview, cf. .env.example et ADR-004.
+      APP_CANONICAL_HOST: ${APP_CANONICAL_HOST:-}
+      # #358 — URL du JWKS du backend, d'où le middleware DÉCOUVRE la clé publique de
+      # vérification RS256 du cookie `jwt`. Remplace AUTH_JWT_PUBLIC_KEY (supprimée) :
+      # plus aucune clé n'est recopiée à la main, donc plus de paire dépareillée ni de
+      # fenêtre de divergence pendant une rotation.
+      #
+      # ⚠ ADRESSE DE SERVEUR À SERVEUR, PAS CELLE DU NAVIGATEUR. Ce fetch part du
+      # process Next DANS le réseau Compose : la cible est le nom de service `backend`,
+      # pas `localhost:8080` (qui, depuis le conteneur frontend, désigne le frontend
+      # lui-même). C'est exactement pourquoi NEXT_PUBLIC_API_URL n'est PAS réutilisable
+      # ici — elle vaut l'URL vue du navigateur.
+      #
+      # Défaut NON VIDE, à la différence de APP_CANONICAL_HOST : dans cette stack le
+      # backend existe et est joignable, la valeur est donc correcte par construction et
+      # la vérification de signature marche sans configuration. Un défaut vide aurait
+      # laissé la garde en mode dégradé pour tout le monde en local.
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:-http://backend:8080/.well-known/jwks.json}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      # wget est fourni par busybox dans node:20-alpine.
+      # `127.0.0.1` et NON `localhost` (#376) : /etc/hosts du conteneur résout `localhost`
+      # vers ::1 ET 127.0.0.1, le wget BusyBox tente ::1 en premier, or Next standalone
+      # n'écoute que sur 0.0.0.0:3000 (IPv4). Avec `localhost`, la sonde échouait en
+      # permanence et le service restait `unhealthy` alors qu'il répondait 200.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ---------------------------------------------------------------
+  # Boucle E2E locale (FU5 sprint 57) — service `postgres-e2e` + `backend-e2e`.
+  # OPT-IN via le mécanisme natif `profiles:` de Compose : absents de tout
+  # `docker compose up` sans argument (comportement par défaut inchangé).
+  # Lancer explicitement : `docker compose --profile e2e up backend-e2e`
+  # (démarre `postgres-e2e` en dépendance). Détail complet, y compris la
+  # recette alternative "jar + java local" (sans Docker) :
+  # docs/memory/sprints/sprint-47/e2e-local-runbook.md
+  #
+  # POURQUOI un service séparé plutôt que réutiliser `postgres`/`backend` :
+  # - DB dédiée et jetable (`eventmanager_e2e`) : la DB `eventmanager` du service
+  #   `postgres` par défaut peut être bloquée à une migration ancienne
+  #   (cf. runbook, piège #3) ; l'E2E ne doit jamais dépendre de son état.
+  # - Port différent (8085 par défaut) : ne coupe jamais le backend `:8080`
+  #   déjà utilisé par le service `backend` par défaut (utile en session
+  #   partagée où un autre process sert déjà sur 8080).
+  # - `SPRING_PROFILES_ACTIVE=dev,e2e` en dur (liste ADDITIVE, cf. javadoc
+  #   `E2eResetTokenController`) : ce service N'EXISTE QUE pour l'E2E, aucune
+  #   raison de le rendre configurable vers autre chose.
+  # - `RATE_LIMIT_ENABLED=false` : la suite Playwright provisionne plusieurs
+  #   comptes depuis une IP unique (localhost), même besoin que le job CI `e2e`.
+  # Sécurité : `ProfileSafetyGuard` (#283) refuse le boot si le profil `e2e`
+  # est actif ALORS qu'un marqueur d'environnement de production est présent —
+  # aucune variable de ce service n'en pose un.
+  postgres-e2e:
+    image: postgres:16
+    profiles: ["e2e"]
+    environment:
+      POSTGRES_DB: eventmanager_e2e
+      POSTGRES_USER: ${DB_USERNAME:-eventuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-motdepasse_dev_local}
+    ports:
+      - "${E2E_POSTGRES_PORT:-5435}:5432"
+    volumes:
+      - postgres-e2e-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-eventuser} -d eventmanager_e2e"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend-e2e:
+    profiles: ["e2e"]
+    build:
+      context: ./backend
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev,e2e
+      DB_URL: jdbc:postgresql://postgres-e2e:5432/eventmanager_e2e
+      DB_USERNAME: ${DB_USERNAME:-eventuser}
+      DB_PASSWORD: ${DB_PASSWORD:-motdepasse_dev_local}
+      # Paire éphémère générée au boot (suffisant pour forgot/reset-password ;
+      # cf. runbook pour la recette à clé appairée, nécessaire uniquement à
+      # auth-signature.spec.ts).
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+      EXPORT_TOKEN_SECRET: ${EXPORT_TOKEN_SECRET:-ZGV2LW9ubHktaW5zZWN1cmUtZXhwb3J0LXRva2VuLXNlY3JldC1jaGFuZ2UtbWUhIQ==}
+      RATE_LIMIT_ENABLED: "false"
+      STORAGE_AVATAR_PATH: /app/var/avatars
+      # application-dev.properties fige `app.cors.allowed-origins=http://localhost:3000`
+      # EN DUR (pas de placeholder ${...} — piège #2 du runbook). Une variable d'env
+      # Spring Boot passe quand même devant : les OS env vars sont une source de
+      # config de priorité SUPÉRIEURE aux fichiers application-{profil}.properties
+      # (relaxed binding : app.cors.allowed-origins -> APP_CORS_ALLOWED_ORIGINS).
+      # Inclut :3100 (port front E2E recommandé par le runbook) en plus de :3000.
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3100}
+    ports:
+      - "${E2E_BACKEND_PORT:-8085}:8080"
+    volumes:
+      - avatars-e2e-data:/app/var/avatars
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  postgres-data:
+  avatars-data:
+  postgres-e2e-data:
+  avatars-e2e-data:

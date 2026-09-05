@@ -11,7 +11,7 @@ import com.matimeline.eventmanager.infrastructure.entities.ProductEntity;
 @Component
 public class EventMapper {
   public Event toDomain(EventEntity eventEntity) {
-      return new Event(
+      Event event = new Event(
           eventEntity.getId(),
           eventEntity.getTitle(),
           eventEntity.getType(),
@@ -19,11 +19,18 @@ public class EventMapper {
           eventEntity.getDurationUnit(),
           eventEntity.getIsRecurring(),
           eventEntity.getRecurrenceUnit(),
+          eventEntity.getRecurrenceEndDate(),
           eventEntity.getStartDate(),
           eventEntity.getEndDate(),
           eventEntity.getProduct().getId(),
-          eventEntity.getIsAllDay()
+          eventEntity.getIsAllDay(),
+          eventEntity.getColor(),
+          eventEntity.isArchived()
       );
+      // #absorb (BR-EVE-015) : la version @Version (infra) est remontée au domaine pour
+      // l'exposer en sortie (EventResponse) et alimenter le check optimiste déterministe.
+      event.setVersion(eventEntity.getVersion());
+      return event;
   }
 
   public EventEntity toEntity(Event event, ProductEntity productEntity) {
@@ -35,9 +42,13 @@ public class EventMapper {
       entity.setDurationUnit(event.getDurationUnit());
       entity.setIsRecurring(event.getIsRecurring());
       entity.setRecurrenceUnit(event.getRecurrenceUnit());
+      entity.setRecurrenceEndDate(event.getRecurrenceEndDate());
       entity.setStartDate((event.getStartDate() != null) ? event.getStartDate() : LocalDate.now());
       entity.setEndDate(event.getEndDate());
       entity.setProduct(productEntity);
+      entity.setIsAllDay(event.getIsAllDay());
+      entity.setColor(event.getColor());
+      entity.setArchived(event.isArchived());
       return entity;
   }
 }

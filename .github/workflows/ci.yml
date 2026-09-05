@@ -1,0 +1,941 @@
+# CI — build + tests backend (Spring Boot / Maven) et frontend (Next.js / npm).
+#
+# Branch protection : JAMAIS activée par ce workflow (volontaire).
+#   Un check rendu requis AVANT son 1er run vert bloquerait TOUS les merges, y compris
+#   la PR qui l'introduit. La règle vaut pour tout job ajouté ici : on le laisse tourner
+#   à blanc, puis un mainteneur le rend requis dans un second temps.
+#
+# ÉTAT ACTUEL des checks requis sur `dev` (sprint 55, #361) :
+#   backend, frontend, e2e
+#   `e2e` a été ajouté après constat de 2 runs consécutifs 100% verts — un job E2E
+#   instable rendu requis bloque les merges légitimes.
+#   `flyway-smoke` (#356) tourne mais n'est PAS requis : trop peu d'historique.
+#   `secret-scan` (#362) tourne mais n'est PAS requis : introduit au sprint 60, à rendre requis
+#   après un premier run vert (c'est le job dont la mise en requis a le plus de valeur : sur un
+#   dépôt PUBLIC, un secret mergé est compromis à la seconde où il atterrit sur `dev`).
+#
+# AJOUTER un check requis (PATCH ciblé — ne touche QUE les status checks, laisse
+# intacts enforce_admins / reviews / restrictions, contrairement à un PUT global) :
+#
+#   gh api -X PATCH repos/LeenVandelied/MyTimeline/branches/dev/protection/required_status_checks \
+#     -F strict=true \
+#     -f 'checks[][context]=backend' \
+#     -f 'checks[][context]=frontend' \
+#     -f 'checks[][context]=e2e'
+#
+#   La liste est REMPLACÉE, pas fusionnée : réénumérer les checks à conserver.
+#   Vérifier après coup :
+#     gh api repos/LeenVandelied/MyTimeline/branches/dev/protection \
+#       --jq '.required_status_checks.contexts'
+#   (`main` n'est pas configurée par cette commande — l'adapter si besoin.)
+#   Ou via l'UI : Settings → Branches → règle `dev` → "Require status checks".
+
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+# Annule les runs obsolètes sur une même PR/branche (économie de temps < 10 min).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    # Docker présent nativement sur ubuntu-latest → Testcontainers Postgres OK.
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build + tests (mvnw verify)
+        # SKIP_DELEGATION : neutralise un éventuel hook local de délégation
+        # (absent en CI, mais sans effet de bord si défini).
+        env:
+          SKIP_DELEGATION: "1"
+        run: ./mvnw --batch-mode --no-transfer-progress verify
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Tests (Vitest)
+        run: npm run test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+  # ---------------------------------------------------------------------------
+  # E2E (#163) — golden path Playwright full-stack : inscription -> connexion ->
+  # produit + événement -> timeline. Lève la stack COMPLÈTE (Postgres + backend
+  # Spring Boot + frontend Next.js) car register/login/create sont de vrais appels
+  # API. N'ajoute PAS de dépendance aux jobs backend/frontend (tourne en parallèle,
+  # sans les casser). N'active AUCUNE branch protection.
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    # ⚠ PLAFOND DE DURÉE — REVUE S64. Sans `timeout-minutes`, un job hérite du
+    # plafond GitHub par DÉFAUT : 6 HEURES. Un `next start` qui ne rend jamais la
+    # main (port pris, artefact `.next` incomplet) épinglerait donc un runner une
+    # demi-journée avant qu'on l'apprenne. #462 rend le risque concret : ce job
+    # porte désormais un `next build`, DEUX serveurs en fond, `workers: 1` et
+    # `retries: 2`.
+    #
+    # POURQUOI 45 ET PAS MOINS. Référence AVANT ce sprint : 13 min 14 s (run
+    # `33431893101`). Les mesures LOCALES de #465 suggèrent que la production
+    # RACCOURCIT le job (suite à 4,3 min contre 9,0 min en dev, + ~28 s de build)
+    # — mais c'est un signal, PAS un acquis : aucun run CI n'a encore eu lieu.
+    # 45 min laisse ~3x la référence connue, de quoi absorber un runner lent ou
+    # deux retries complets sans transformer ce plafond en source de faux rouges.
+    # À resserrer une fois la durée RÉELLE mesurée sur la PR de sprint.
+    #
+    # PÉRIMÈTRE : `e2e` SEULEMENT. Les autres jobs du workflow n'ont pas non plus
+    # de plafond, mais leur cadrage mérite sa propre décision — pas un effet de
+    # bord d'une revue de #462.
+    timeout-minutes: 45
+    # Postgres 16 en service container : le backend s'y connecte (DB `eventmanager`,
+    # user `eventuser`). Flyway rejoue V1..Vn au boot du backend (schéma vide au départ).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: eventmanager
+          POSTGRES_USER: eventuser
+          POSTGRES_PASSWORD: eventpass_ci
+        ports:
+          - 5432:5432
+        # Healthcheck : GitHub attend que Postgres soit prêt avant les steps.
+        options: >-
+          --health-cmd "pg_isready -U eventuser -d eventmanager"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Backend : build du jar (skip tests, déjà couverts par le job `backend`).
+      - name: Build backend (package, skip tests)
+        working-directory: backend
+        env:
+          SKIP_DELEGATION: "1"
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package
+
+      # Paire RS256 JETABLE, générée À L'EXÉCUTION (audit de couverture S50). Le dépôt est
+      # PUBLIC : aucune clé n'y est committée, et celle-ci meurt avec le runner. Elle est ce
+      # qui rend la vérification de signature Edge (#323) exerçable en E2E — jusqu'ici, seule
+      # une paire ÉPHÉMÈRE générée par le backend existait, dont le frontend ne connaissait
+      # pas la clé publique.
+      #
+      # ⚠ Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance Next (la
+      # variable est lue au runtime) : la première passe E2E tourne DÉGRADÉE (frontend sans
+      # clé publique, contrat #302 -> `auth-guard.spec.ts`), la seconde tourne VÉRIFIANTE
+      # (`auth-signature.spec.ts`). Le BACKEND, lui, signe avec cette paire dans les deux cas.
+      #
+      # ⚠ `::add-mask::` posé AVANT l'écriture dans `GITHUB_ENV` (revue S50, 2e cycle) : le dépôt
+      # est PUBLIC, donc les logs de ce job le sont aussi. La paire meurt avec le runner et n'a
+      # aucune valeur — mais un step futur qui dumperait l'environnement (`set -x`, `printenv`,
+      # action tierce en mode debug) publierait du matériel de signature en clair. C'est le
+      # MOTIF qui est corrigé ici, pas un impact actuel. Seule la clé PRIVÉE est masquée : la
+      # clé publique n'est pas un secret, et la masquer caviarderait les diagnostics.
+      - name: Generate throwaway RS256 keypair (dev-only, never committed)
+        run: |
+          node -e 'const c=require("crypto"),f=require("fs");
+            const {privateKey,publicKey}=c.generateKeyPairSync("rsa",{modulusLength:2048,
+              privateKeyEncoding:{type:"pkcs8",format:"der"},
+              publicKeyEncoding:{type:"spki",format:"der"}});
+            const priv=privateKey.toString("base64");
+            console.log("::add-mask::"+priv);
+            f.appendFileSync(process.env.GITHUB_ENV,
+              "E2E_JWT_PRIVATE_KEY="+priv+"\n"+
+              "E2E_JWT_PUBLIC_KEY="+publicKey.toString("base64")+"\n")'
+
+      # Démarrage du backend en tâche de fond (profil dev : cookie Secure=false,
+      # Domain=localhost, CORS http://localhost:3000 déjà autorisé). EXPORT_TOKEN_SECRET
+      # passé explicitement (le profil dev a un default, mais on ne s'appuie pas dessus
+      # en CI) ; la signature d'auth utilise la paire jetable générée juste au-dessus.
+      - name: Start backend (Spring Boot, profils dev+e2e, :8080)
+        working-directory: backend
+        env:
+          # #283 / ADR-004 — liste ADDITIVE : `dev` fournit toute la config dont ce job
+          # dépend déjà (datasource, cookie, CORS) ; `e2e` n'AJOUTE que le canal de capture
+          # du token de reset (GET /api/test-support/password-reset-token, @Profile("e2e")).
+          # Ce profil n'est demandé QUE dans ce job : en dev local (profil `dev` seul) comme
+          # en prod, le canal n'existe pas (garde-fous E2eTestSupport*Test côté backend).
+          SPRING_PROFILES_ACTIVE: dev,e2e
+          DB_URL: jdbc:postgresql://localhost:5432/eventmanager
+          DB_USERNAME: eventuser
+          DB_PASSWORD: eventpass_ci
+          # #323 — JWT_SECRET (HS256) supprimé. La clé PRIVÉE vient de la paire jetable
+          # générée au step précédent (rien n'est committé, rien ne survit au runner) : c'est
+          # elle qui permet à la 2e passe E2E de publier la clé PUBLIQUE appairée au frontend
+          # et d'exercer réellement la vérification de signature Edge (audit S50).
+          # Avant : paire ÉPHÉMÈRE générée par le backend, dont personne d'autre ne connaissait
+          # la clé publique -> vérification Edge jamais exercée hors tests unitaires.
+          JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
+          # Secret HMAC dédié aux tokens de download d'export (CI-only, non secret).
+          EXPORT_TOKEN_SECRET: Q0lPbmx5SW5zZWN1cmVFeHBvcnRUb2tlblNlY3JldEZvckUyRVRlc3RzMDEyMzQ1Njc4OQ==
+          # E2E-ONLY : désactive le rate-limit auth. La suite provisionne plusieurs
+          # comptes depuis l'IP unique du runner -> déclencherait le throttle par IP
+          # (register 5/min, login 10/min) et ferait échouer le projet Playwright `setup`.
+          # Défaut TOUJOURS true partout ailleurs (prod + jobs backend/frontend intacts).
+          RATE_LIMIT_ENABLED: false
+          # #462 — DEUX origines, pas une. Depuis le passage en build de production, le
+          # frontend tourne sur DEUX ports (:3000 degrade, :3001 verifiant, cf. plus bas).
+          # Le profil `dev` fige `app.cors.allowed-origins=http://localhost:3000`
+          # (application-dev.properties:35, sans placeholder d'env) : le proxy Next RELAIE
+          # l'`Origin` du navigateur au backend, donc les appels /api/* venus de :3001
+          # recevraient un 403 CORS — qui se deguise ensuite en rate-limit ou en panne
+          # d'infra ([[PIT-S56-004]], [[PIT-S57-003]]). La liaison relachee Spring fait de
+          # cette variable d'env un override de la propriete.
+          APP_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001
+        run: |
+          java -jar target/*.jar > backend.log 2>&1 &
+          echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
+
+      # Attente de la disponibilité RÉELLE du backend avant de lancer Playwright
+      # (évite le flaky). Pas d'actuator : on poll un endpoint connu — `/api/auth/me`
+      # renvoie 401 sans cookie, ce qui prouve que l'app répond (tout code HTTP < 500
+      # non vide = up). Timeout ~90s (boot Spring + Flyway).
+      - name: Wait for backend readiness
+        working-directory: backend
+        run: |
+          for i in $(seq 1 45); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/me || echo 000)
+            if [ "$code" != "000" ] && [ "$code" -lt 500 ]; then
+              echo "Backend up (HTTP $code) après ${i} tentative(s)."
+              exit 0
+            fi
+            echo "Attente backend... (tentative ${i}, code=$code)"
+            sleep 2
+          done
+          echo "Backend indisponible après timeout — logs :"
+          tail -n 200 backend.log || true
+          exit 1
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # `firefox` ajouté au S62 (#414). NON facultatif : `npm run test:e2e`
+      # ci-dessous lance TOUS les projets de `playwright.config.ts`, qui déclare
+      # depuis #414 un projet `firefox` restreint par `testMatch` à la seule spec
+      # `sprint-62-select-focus-indicator.spec.ts`. Sans ce navigateur, ce projet
+      # échoue au lancement et le job `e2e` (check requis) rougit.
+      # Le périmètre Gecko reste cette unique spec — cf. le commentaire du projet
+      # dans `playwright.config.ts` avant d'en élargir le `testMatch`.
+      - name: Install Playwright browsers (chromium + firefox)
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium firefox
+
+      # =========================================================================
+      # #462 — POURQUOI LA SUITE E2E TOURNE CONTRE UN BUILD DE PRODUCTION.
+      #
+      # AVANT : `playwright.config.ts` demarrait lui-meme `npm run dev`
+      # (`next dev --turbopack`), qui COMPILE CHAQUE ROUTE A LA DEMANDE. Un test
+      # pouvait donc rougir sur une lenteur de compilation a froid qui n'existe
+      # nulle part en production, et la CI ne validait a aucun moment l'artefact
+      # reellement livre (SSG de `generateStaticParams()`, prerendu de
+      # `/_not-found`, minification, `experimental.globalNotFound`).
+      #
+      # UN SEUL `next build`, DEUX `next start`. `middleware.ts` lit
+      # `AUTH_JWKS_URL` au RUNTIME, par requete, explicitement NON inlinee
+      # au build (mesure #322) : seuls les PROCESS doivent differer, pas les
+      # artefacts. Un second build couterait +2,5 a +3 min pour un resultat
+      # identique.
+      #
+      # ⚠ LE POINT DUR, ET LA RAISON DE DEUX PORTS PLUTOT QU'UN REDEMARRAGE.
+      # Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance
+      # Next. Avant #462, c'est le redemarrage du `webServer` par Playwright entre
+      # les deux passes qui les rendait tous deux exercables. Or des que
+      # `PLAYWRIGHT_BASE_URL` est posee, `webServer` vaut `undefined` : plus aucun
+      # redemarrage. Un « tuer puis relancer sur le meme port » entre les deux
+      # steps rouvrirait un MODE D'ECHEC SILENCIEUX — si le kill echoue ou si le
+      # nouveau process ne prend pas le port, la passe 2 interroge le serveur
+      # DEGRADE de la passe 1, n'exerce plus rien, et RESTE VERTE. Deux ports
+      # distincts rendent cette panne impossible a manquer : si :3001 n'est pas
+      # la, la passe 2 echoue en connexion refusee.
+      #
+      # ⚠ `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` se posent ICI, AU BUILD,
+      # et surtout PAS au `next start` : les rewrites sont serialisees dans
+      # `.next/routes-manifest.json` par `next build` ([[PIT-S58-003]]). Les poser
+      # au demarrage n'aurait AUCUN effet et rendrait un 404 sur /api/*, que le
+      # harnais deguise ensuite en rate-limit, en CORS ou en 409.
+      #
+      # ⚠ COUPLAGE NOUVEAU, ASSUME : `next.config.mjs:61-65` fixe
+      # `ignoreBuildErrors: false` et `ignoreDuringBuilds: false`. Ce job rougit
+      # donc desormais sur une erreur de types ou de lint, en doublon du job
+      # `frontend`. C'est le prix d'un artefact de production : on ne peut pas
+      # tester le build sans le construire.
+      # =========================================================================
+      - name: Build frontend (production)
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: /api
+          E2E_API_PROXY_TARGET: http://localhost:8080
+        run: npm run build
+
+      # ⚠ `next start` emet « does not work with "output: standalone" » a cause de
+      # `next.config.mjs:30`. Ce message est TROMPEUR ici : `output: 'standalone'`
+      # est ADDITIF (il produit `.next/standalone/` EN PLUS), et le serveur normal
+      # reste pleinement fonctionnel — verifie au S64 sur ce build exact : pages
+      # SSG 200, `/fr/nope` 404, chunk `/_next/static/chunks/*.js` 200, CSS 200,
+      # `public/favicon.ico` 200, rewrite `/api/*` actif. On ne bascule PAS sur
+      # `node .next/standalone/server.js`, qui exigerait de recopier `public/` et
+      # `.next/static` a la main — donc plus de plomberie pour zero gain.
+      - name: Start frontend production servers (:3000 dégradé, :3001 vérifiant)
+        working-directory: frontend
+        run: |
+          # ⚠ BINAIRE DIRECT, PAS `npx` — REVUE S64, NE PAS « SIMPLIFIER ».
+          # `npx <cmd>` FORK un enfant : `$!` capturait donc le PID du WRAPPER
+          # `npm exec`, PAS celui du serveur Next. Vérifié localement au S64 sur un
+          # `npx` de substitution : `$!` -> « npm exec … », le vrai process tournant
+          # dans un PID enfant distinct. Le step « Stop backend and frontends »
+          # visait donc un process qui n'est pas le serveur — il MENT sur ce qu'il
+          # arrête. Que l'enfant meure quand même dépend alors du bon vouloir de npm
+          # à relayer le SIGTERM (il l'a fait dans notre essai) : un détail
+          # d'implémentation, pas un contrat. Un arrêt de serveur ne doit pas en
+          # dépendre — sur un rerun ou un runner self-hosted, le port reste pris.
+          # `./node_modules/.bin/next` est un script node à shebang, exec'é
+          # directement : `$!` est alors le PID du serveur lui-même.
+          ./node_modules/.bin/next start -p 3000 > next-degraded.log 2>&1 &
+          degraded_pid=$!
+          AUTH_JWKS_URL=http://localhost:8080/.well-known/jwks.json \
+            ./node_modules/.bin/next start -p 3001 > next-verifying.log 2>&1 &
+          verifying_pid=$!
+
+          # Export AVANT le contrôle de vie : si l'un des deux est mort, le step
+          # d'arrêt doit quand même pouvoir ramasser le SURVIVANT.
+          echo "FRONT_DEGRADED_PID=${degraded_pid}" >> "$GITHUB_ENV"
+          echo "FRONT_VERIFYING_PID=${verifying_pid}" >> "$GITHUB_ENV"
+
+          # ⚠ CE STEP DOIT POUVOIR ÉCHOUER — REVUE S64. Sa dernière commande était
+          # un `echo >> "$GITHUB_ENV"`, qui rend TOUJOURS 0 : le step sortait EN
+          # VERT même avec un `next start` mort à la seconde 0 (EADDRINUSE sur un
+          # rerun, `.next` incomplet, n'importe quoi). La CI enchaînait alors sur
+          # l'attente des serveurs et brûlait jusqu'à 180 s avant de produire un
+          # diagnostic qui accusait L'ATTENTE plutôt que LE DÉMARRAGE.
+          # Le `sleep 2` laisse à Next le temps de mourir : un process lancé il y a
+          # 3 ms est vivant même quand son port est déjà pris.
+          sleep 2
+
+          assert_alive() {
+            label="$1"; pid="$2"; log="$3"; port="$4"
+            if kill -0 "$pid" 2>/dev/null; then
+              echo "OK — serveur Next ${label} vivant (PID ${pid}, :${port})."
+              return 0
+            fi
+            echo "::error::Le serveur Next ${label} (:${port}) est MORT dès le démarrage. Causes typiques : port ${port} déjà pris (EADDRINUSE, typiquement sur un rerun) ou artefact .next incomplet. Log ${log} :"
+            tail -n 200 "$log" || true
+            return 1
+          }
+          assert_alive "dégradé"   "$degraded_pid"  next-degraded.log  3000 || exit 1
+          assert_alive "vérifiant" "$verifying_pid" next-verifying.log 3001 || exit 1
+
+      # DEUX oracles, et ils ne se remplacent pas.
+      #
+      # (1) PROXY — `/api/auth/me` doit rendre 401. Un 404 signifie que le rewrite
+      #     n'a pas ete bati dans `routes-manifest.json` ([[PIT-S58-003]]) ; sans
+      #     ce controle, la suite echouerait 40 s plus tard sur un message qui
+      #     accuse le rate-limit ou le CORS.
+      #
+      # (2) MODE D'AUTHENTIFICATION — c'est LA garantie que la passe 2 exerce
+      #     encore quelque chose. Un cookie `jwt` volontairement non-JWT sur une
+      #     route protegee discrimine les deux modes sans ambiguite :
+      #       - mode DEGRADE (pas de cle publique) : la garde ne verifie que la
+      #         PRESENCE du cookie -> 200 ;
+      #       - mode VERIFIANT (cle publique posee) : `verifyAuthCookie` rejette
+      #         -> 307 vers /fr/login.
+      #     C'est exactement l'assertion du 1er cas d'`auth-signature.spec.ts`
+      #     (« garde anti-degrade »), mais jouee ICI, en curl, AVANT les passes :
+      #     si un jour quelqu'un retire `AUTH_JWKS_URL` du step, ou pointe
+      #     les deux passes sur le meme serveur, le job rougit sur une erreur
+      #     NOMMEE au lieu de rester vert en n'exercant plus rien.
+      - name: Wait for frontends + oracles (proxy /api, mode d'authentification)
+        run: |
+          wait_proxy() {
+            port="$1"; label="$2"
+            for i in $(seq 1 45); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}/api/auth/me" || echo 000)
+              case "$code" in
+                401) echo "OK :${port} (${label}) — proxy /api actif (401), après ${i} tentative(s)."; return 0 ;;
+                404) echo "::error::(:${port} ${label}) /api/auth/me rend 404 : le rewrite /api/* n'a PAS été bâti dans routes-manifest.json (PIT-S58-003). Vérifier NEXT_PUBLIC_API_URL / E2E_API_PROXY_TARGET du step « Build frontend »." ; return 1 ;;
+              esac
+              sleep 2
+            done
+            echo "::error::(:${port} ${label}) frontend indisponible après 90 s (dernier code=${code})."
+            return 1
+          }
+          wait_proxy 3000 dégradé   || exit 1
+          wait_proxy 3001 vérifiant || exit 1
+
+          probe_mode() {
+            curl -s -o /dev/null -w "%{http_code}" \
+              --cookie 'jwt=ceci-n-est-pas-un-jwt' \
+              "http://localhost:$1/fr/dashboard"
+          }
+          degraded=$(probe_mode 3000)
+          verifying=$(probe_mode 3001)
+          echo ":3000 -> HTTP ${degraded} (attendu 200 = mode DÉGRADÉ)"
+          echo ":3001 -> HTTP ${verifying} (attendu 307 = mode VÉRIFIANT)"
+
+          if [ "$degraded" != "200" ]; then
+            echo "::error::(:3000) attendu 200 (mode dégradé), reçu ${degraded}. La passe 1 (golden path) et auth-guard.spec.ts § DÉGRADÉ supposent un serveur SANS AUTH_JWKS_URL (#358 : la clé se découvre via JWKS, il n'y a plus de variable de clé publique)."
+            exit 1
+          fi
+          if [ "$verifying" != "307" ]; then
+            echo "::error::(:3001) attendu 307 (mode vérifiant), reçu ${verifying}. 200 = le serveur Next n'a pas pu découvrir la clé via AUTH_JWKS_URL (variable absente, ou backend :8080 / /.well-known/jwks.json injoignable) : la passe 2 RS256 n'exercerait plus la vérification de signature tout en restant VERTE. Vérifier le step « Start frontend production servers » et le JWKS du backend."
+            exit 1
+          fi
+
+      # PASSE 1 — golden path, contre le serveur de production DÉGRADÉ (:3000).
+      # `PLAYWRIGHT_BASE_URL` posée ⇒ `webServer` vaut `undefined` : Playwright ne
+      # démarre plus rien lui-même (c'est aussi pourquoi le garde-fou #427 de
+      # `playwright.config.ts` ne s'arme pas ici — il est LOCAL par construction).
+      # CI=true active retries:2 / workers:1 (playwright.config.ts).
+      - name: Run E2E (Playwright golden path, build de production)
+        working-directory: frontend
+        env:
+          CI: "true"
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          # #283 — le spec forgot-password capture le token via l'endpoint test-only du
+          # backend (profil `e2e`, cf. step de démarrage), à travers le proxy Next `/api/*`.
+          # Les anciennes variables E2E_DB_* (lecture directe de password_reset_tokens,
+          # #145) ont été retirées avec `e2e/support/db.ts` et la dépendance `pg`.
+          #
+          # ⚠ DOSSIER DE RAPPORT PROPRE À LA PASSE — REVUE S64. Les deux passes
+          # écrivaient dans les MÊMES `playwright-report/` et `test-results/` : la
+          # passe 2 ÉCRASAIT la passe 1. Inoffensif tant que l'upload est
+          # `if: failure()` (la passe 2 ne tourne pas si la passe 1 échoue), mais
+          # un futur passage à `if: always()` perdrait la passe 1 EN SILENCE — soit
+          # exactement ce que #461 cherche à empêcher : une preuve écrasable n'est
+          # pas une preuve. Les deux dossiers restent SOUS les chemins existants,
+          # donc le step d'upload plus bas les ramasse sans changement.
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/passe-1-golden-path
+        run: npm run test:e2e -- --output=test-results/passe-1-golden-path
+
+      # PASSE 2 — MODE VÉRIFIANT (audit de couverture S50), contre le SECOND serveur
+      # de production (:3001), démarré AVEC `AUTH_JWKS_URL` pointant sur le JWKS du
+      # backend (#358) : le middleware y découvre la clé publique appairée à la clé
+      # privée en service, et vérifie alors vraiment la signature RS256. Sans cette
+      # passe, la chaîne backend -> Edge n'était prouvée que par des tests unitaires
+      # de part et d'autre, jamais bout à bout.
+      #
+      # ⚠ `AUTH_JWT_PUBLIC_KEY` reste posée sur le PROCESS DE TEST, et SEULEMENT là.
+      # Depuis #358 le SERVEUR ne la lit plus (il découvre sa clé via le JWKS) — ne pas
+      # la « rétablir » sur le step de démarrage en croyant réparer quelque chose. Ici
+      # c'est elle que lit le `test.skip()` en tête d'`auth-signature.spec.ts` et dont
+      # `e2e/support/rs256.ts` se sert pour forger/vérifier. Sans elle les cas SKIPPENT
+      # — un job vert qui n'exerce rien. Les deux ne sont pas redondantes.
+      #
+      # Périmètre volontairement réduit à `auth-signature.spec.ts` : les autres specs sont
+      # indifférentes au mode, les rejouer doublerait la durée du job pour rien.
+      # `E2E_JWT_PRIVATE_KEY` sert au SEUL cas « jeton expiré », qui exige une signature
+      # authentique (sans elle, ce cas skippe au lieu de se déguiser en test d'expiration).
+      - name: Run E2E (vérification de signature RS256, stack appairée)
+        working-directory: frontend
+        env:
+          CI: "true"
+          PLAYWRIGHT_BASE_URL: http://localhost:3001
+          AUTH_JWT_PUBLIC_KEY: ${{ env.E2E_JWT_PUBLIC_KEY }}
+          E2E_JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
+          # Cf. passe 1 : dossier de rapport DISTINCT, sinon cette passe écrase la
+          # précédente (revue S64).
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/passe-2-rs256
+        # ⚠ `auth.setup.ts` EXPLICITEMENT dans le filtre (revue S50, 2e cycle) : un filtre portant
+        # le seul nom de spec exclut aussi le projet `setup` (`testMatch /.*\.setup\.ts/`), dont
+        # `chromium` dépend. La passe consommait alors le `storageState` laissé sur disque par la
+        # passe 1 — `globalSetup` ne purge que `accounts.json` — soit un couplage implicite entre
+        # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
+        # ⚠ Depuis #462 ce filtre est ENCORE PLUS nécessaire : le `storageState` de la passe 1
+        # porte un cookie posé sur :3000, et cette passe interroge :3001. Re-provisionner est le
+        # seul chemin correct. Le rate-limit register (5/min/IP) ne s'y oppose pas :
+        # `RATE_LIMIT_ENABLED: false` est posé au démarrage du backend.
+        run: npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
+
+      # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
+      #   - `playwright-report/` : le rapport HTML, écrit par le reporter `html`
+      #     ajouté en CI (playwright.config.ts). Avant #461 le seul reporter CI était
+      #     `github`, qui n'écrit RIEN sur disque : ce chemin était vide ou absent et
+      #     l'artefact ne contenait donc aucun contexte exploitable.
+      #   - `test-results/` : les traces (`trace: 'on-first-retry'`), captures et
+      #     vidéos. C'est le SEUL endroit où elles atterrissent, et il n'était uploadé
+      #     nulle part — d'où les diagnostics « indéterminé » du Sprint 63.
+      # `if-no-files-found: warn` : sans lui, un dossier absent fait ROUGIR le step
+      # d'upload et masque l'échec de test réellement à diagnostiquer.
+      #
+      # ⚠ REVUE S64 — chaque passe écrit désormais dans un SOUS-dossier nommé
+      # (`passe-1-golden-path` / `passe-2-rs256`) de ces deux mêmes chemins, au
+      # lieu de les écraser l'une l'autre. Les deux `path:` ci-dessous sont donc
+      # INCHANGÉS et récursifs : ils ramassent les deux passes. Ne pas les
+      # remplacer par des chemins de passe explicites — ce serait rendre le
+      # nommage des sous-dossiers load-bearing pour rien.
+      - name: Upload Playwright report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Dump backend log (on failure)
+        if: failure()
+        working-directory: backend
+        run: tail -n 300 backend.log || true
+
+      # #462 — les deux serveurs Next ont leur propre log. Sans ce dump, un échec de
+      # démarrage (port déjà pris, artefact de build incomplet) ne laisse AUCUNE trace :
+      # on ne verrait que des tests rouges, ce qui est exactement le mode de diagnostic
+      # « indéterminé » que le Sprint 63 a payé.
+      - name: Dump frontend logs (on failure)
+        if: failure()
+        working-directory: frontend
+        run: |
+          echo "===== :3000 (dégradé) ====="; tail -n 200 next-degraded.log || true
+          echo "===== :3001 (vérifiant) ====="; tail -n 200 next-verifying.log || true
+
+      # Hygiène : arrêt des process en fond (le runner éphémère les tuerait de toute
+      # façon, mais évite des process orphelins sur d'éventuels reruns / self-hosted).
+      - name: Stop backend and frontends
+        if: always()
+        run: |
+          kill "$BACKEND_PID" 2>/dev/null || true
+          kill "$FRONT_DEGRADED_PID" 2>/dev/null || true
+          kill "$FRONT_VERIFYING_PID" 2>/dev/null || true
+
+  # ---------------------------------------------------------------------------
+  # Flyway smoke (#356) — POURQUOI CE JOB EXISTE.
+  # `ddl-auto=validate` est actif en dev ET en prod : au boot, Hibernate REFUSE de
+  # démarrer si le schéma produit par Flyway ne correspond pas exactement aux entités
+  # (SchemaManagementException). Or aucune migration n'a été livrée depuis le sprint 39
+  # (V15) : le chemin « base VIERGE -> V1..Vn -> validate » n'était plus exercé nulle
+  # part de façon nommée. Le job `e2e` emprunte bien le même chemin, mais il ne le
+  # PROUVE pas : il rougirait pour dix autres raisons (Playwright, frontend, réseau)
+  # avant qu'on pense à incriminer le schéma, et les tests backend tournent, eux, sur
+  # Testcontainers. Un chemin non exercé est un chemin dont on ignore l'état.
+  #
+  # ÉCART ASSUMÉ AU LIBELLÉ DE L'ISSUE : aucune invocation du CLI `flyway migrate`.
+  # La config applicative fait DÉJÀ migrate puis validate au démarrage
+  # (application.properties : `spring.flyway.enabled=true` ; profils dev ET prod :
+  # `spring.jpa.hibernate.ddl-auto=validate`). Booter le jar contre une base vierge EST
+  # donc la propriété demandée par l'issue, et cela teste le chemin RÉEL — celui du
+  # démarrage applicatif en prod — au lieu d'un chemin parallèle qui pourrait diverger.
+  #
+  # BASE VIERGE (critère 1) : un service container GitHub Actions est créé PUIS DÉTRUIT
+  # à chaque run — aucun volume, aucun cache, rien de réutilisable. Ne JAMAIS ajouter de
+  # volume ou de cache ici : Flyway reprendrait un historique existant au lieu de rejouer
+  # V1..Vn, et le job passerait au vert sans rien avoir prouvé. Le dernier step relit
+  # `flyway_schema_history` précisément pour rendre cette virginité vérifiable.
+  #
+  # Tourne en parallèle (aucun `needs:`) et n'active AUCUNE branch protection.
+  # ---------------------------------------------------------------------------
+  flyway-smoke:
+    name: flyway-smoke
+    runs-on: ubuntu-latest
+    # Postgres 16 éphémère, mêmes conventions que le job `e2e` (DB `eventmanager`,
+    # user `eventuser`). Ici la base n'est JAMAIS peuplée par ailleurs : tout ce qu'elle
+    # contiendra à la fin du job aura été produit par la chaîne de migrations.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: eventmanager
+          POSTGRES_USER: eventuser
+          POSTGRES_PASSWORD: eventpass_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U eventuser -d eventmanager"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Jar seul : les tests sont déjà couverts par le job `backend`, les rejouer ici
+      # ne prouverait rien de plus sur le schéma et doublerait la durée.
+      - name: Build backend (package, skip tests)
+        working-directory: backend
+        env:
+          SKIP_DELEGATION: "1"
+        run: ./mvnw --batch-mode --no-transfer-progress -DskipTests package
+
+      # Profil `dev` : il porte le MÊME `ddl-auto=validate` que `prod` (c'est la propriété
+      # testée) et fournit des defaults non secrets pour tout le reste — JWT_PRIVATE_KEY
+      # vide (paire RS256 éphémère générée au boot), EXPORT_TOKEN_SECRET, chemins de
+      # stockage. Le profil `prod` exigerait des secrets sans aucun rapport avec le schéma.
+      # Backend lancé EN FOND : le code de sortie de `java` serait perdu, c'est le step
+      # suivant qui porte le verdict (il surveille le process et échoue s'il meurt).
+      - name: Start backend against virgin DB (Flyway migrate + ddl-auto=validate)
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          DB_URL: jdbc:postgresql://localhost:5432/eventmanager
+          DB_USERNAME: eventuser
+          DB_PASSWORD: eventpass_ci
+        run: |
+          java -jar target/*.jar > flyway-smoke.log 2>&1 &
+          echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
+
+      # L'ÉCHEC EST LE DÉFAUT (critère 3) : process mort, timeout, ou santé jamais UP
+      # => `exit 1` avec le log. C'est ici que se matérialise une incohérence future entre
+      # une migration V{N} et les entités : Hibernate lève SchemaManagementException APRÈS
+      # Flyway, la JVM sort en erreur, `kill -0` le constate au tour suivant et le job
+      # rougit. Un backend qui boote correctement ne rend jamais la main : la sortie EN
+      # VERT est donc conditionnée à une PREUVE POSITIVE de démarrage
+      # (/actuator/health -> {"status":"UP"}, exposé par défaut sur tous les profils),
+      # jamais à la simple absence d'erreur.
+      - name: Wait for successful boot (fail on crash or timeout)
+        working-directory: backend
+        run: |
+          for i in $(seq 1 45); do
+            if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+              echo "Backend MORT avant d'être prêt — migration ou validation du schéma en échec. Logs :"
+              tail -n 300 flyway-smoke.log
+              exit 1
+            fi
+            if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Boot OK après ${i} tentative(s) : Flyway a migré, Hibernate a validé le schéma."
+              exit 0
+            fi
+            echo "Attente du boot... (tentative ${i})"
+            sleep 2
+          done
+          echo "Timeout : backend jamais UP. Logs :"
+          tail -n 300 flyway-smoke.log
+          exit 1
+
+      # Preuve que la base était RÉELLEMENT vierge (critère 1 + risque nommé dans l'issue :
+      # « faux négatif si la base CI n'est pas réellement vierge »). Sans ce step, le job
+      # resterait vert sur une base préexistante dont Flyway se contenterait de constater
+      # l'historique — il aurait alors validé un schéma qu'il n'a pas construit.
+      # On exige donc : autant de migrations RÉUSSIES que de fichiers V*.sql, et un
+      # historique qui COMMENCE à la version 1. Effet de bord utile : une future V16
+      # ignorée (mauvais emplacement, nommage hors convention) fait rougir ce step.
+      - name: Verify the whole chain was replayed from an empty schema
+        env:
+          PGPASSWORD: eventpass_ci
+        run: |
+          # `psql` n'est PAS un binaire contractuel de l'image du runner : on l'exécute
+          # depuis l'image postgres:16 DÉJÀ tirée pour le service container (aucun apt-get,
+          # aucun tirage réseau supplémentaire). `--network host` => localhost:5432 publié.
+          psql() { docker run --rm --network host -e PGPASSWORD postgres:16 psql "$@"; }
+          # `version is not null` EXCLUT les migrations RÉPÉTABLES (R__*.sql), qui sont de
+          # type 'SQL' elles aussi mais sans version : sans ce filtre, une future R__ ferait
+          # rougir le comptage alors que la chaîne V1..Vn serait parfaitement rejouée.
+          expected=$(ls backend/src/main/resources/db/migration/V*.sql | wc -l | tr -d ' ')
+          applied=$(psql -h localhost -p 5432 -U eventuser -d eventmanager -tAc \
+            "select count(*) from flyway_schema_history where type = 'SQL' and version is not null and success")
+          first=$(psql -h localhost -p 5432 -U eventuser -d eventmanager -tAc \
+            "select version from flyway_schema_history where type = 'SQL' and version is not null order by installed_rank limit 1")
+          echo "Migrations attendues : ${expected} | appliquées : ${applied} | première version jouée : ${first}"
+          if [ "$applied" != "$expected" ] || [ "$first" != "1" ]; then
+            echo "ÉCHEC : la chaîne V1..Vn n'a PAS été rejouée intégralement sur un schéma vide."
+            exit 1
+          fi
+          echo "Chaîne complète rejouée depuis un schéma vide."
+
+      # Hygiène (identique au job e2e) : le runner éphémère tuerait le process de toute
+      # façon, mais on évite un orphelin sur d'éventuels reruns / runners self-hosted.
+      - name: Stop backend
+        if: always()
+        run: kill "$BACKEND_PID" 2>/dev/null || true
+
+  # ---------------------------------------------------------------------------
+  # Security (#167) — scan de sécurité des dépendances. Tourne en parallèle des
+  # autres jobs, n'ajoute AUCUNE dépendance et n'active AUCUNE branch protection.
+  #   - npm audit : BLOQUANT sur les deps de PROD (>= high) ; INFORMATIF sur dev+prod
+  #     (split conservé au sprint 67 — cf. commentaire détaillé au-dessus de l'étape ;
+  #     depuis le S67 les DEUX étapes sont à 0, l'informative n'est plus rouge par défaut).
+  #   - trivy fs --severity CRITICAL --exit-code 1 : bloque UNIQUEMENT le critique
+  #     (évite le bruit HIGH/MEDIUM ; les CVE CRITICAL sont résolues par #180).
+  # permissions: contents: read hérité du niveau workflow (non élargi).
+  # ---------------------------------------------------------------------------
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm audit sur le lockfile frontend, en DEUX étapes depuis le sprint 45.
+      #
+      # HISTORIQUE — #167 auditait prod seul (--omit=dev) ; #222 (sprint 31) a retiré
+      # ce flag pour couvrir dev+prod ; le sprint 45 a re-splité, la chaîne eslint étant
+      # alors rouge de façon jugée non corrigeable.
+      #
+      # ⚠ SPRINT 67 (#438) — LE MOTIF DU SPLIT N'EXISTE PLUS.
+      # Ce bloc affirmait que l'advisory brace-expansion GHSA-mh99-v99m-4gvg était
+      # INCORRIGIBLE en aval : « le seul brace-expansion corrigé est 5.0.8, qui change sa
+      # forme d'export ; le forcer casse le lint (`expand is not a function`) ». Ce verdict
+      # a survécu ~20 sprints sans être re-testé. Il est FAUX depuis qu'un correctif est
+      # publié sur la branche 1.x :
+      #   - `minimatch@3.1.5` déclare `brace-expansion: ^1.1.7` ; la 1.1.18 y entre.
+      #   - La branche 5.x n'est donc jamais sollicitée, et la forme d'export est préservée
+      #     (`typeof require(...)` === "function", `npm run lint` exit 0).
+      # Le sprint 67 a résorbé les 8 entrées (7 high + 1 moderate) : `npm audit` dev+prod
+      # est passé de 8 à **0**.
+      #
+      # LEÇON, à ne pas réécrire à l'envers : un « blocage amont » n'est pas un acquis. Il
+      # se périme silencieusement le jour où l'amont publie un patch dans la plage semver
+      # déjà déclarée — rien ne le signale. Re-tester avant de recopier.
+      #
+      # POURQUOI LE SPLIT EST MALGRÉ TOUT CONSERVÉ (arbitrage dev, 2026-09-03).
+      # Refusionner en un seul `npm audit --audit-level=high` bloquant a été explicitement
+      # ÉCARTÉ : la prochaine CVE publiée dans une devDependency bloquerait alors TOUS les
+      # merges vers `dev` jusqu'à correction — or ce sprint montre que cela arrive souvent
+      # (5 des 8 entrées étaient apparues depuis le sprint 60). L'étape informative suffit :
+      # maintenant que sa baseline est VERTE, un rouge y redevient un signal exploitable,
+      # au lieu du bruit permanent que #438 avait pour objet de supprimer.
+      #
+      # Étape BLOQUANTE = dépendances de PRODUCTION uniquement. Elle tient à 0 grâce aux
+      # `overrides` de frontend/package.json : `next` épingle postcss à la version EXACTE
+      # 8.4.31 (vulnérable), l'override le hisse en ^8.5.23. NE PAS supprimer ces overrides —
+      # cf. frontend/README.md § « Overrides npm » et la clé `_overridesRationale`.
+      # Étape INFORMATIVE = dev+prod, continue-on-error.
+      #
+      # Le scan Trivy ci-dessous couvre le CRITICAL cross-stack, inchangé.
+      - name: npm audit (frontend deps PROD, >= high) — BLOQUANT
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: npm audit (frontend deps dev+prod, >= high) — INFORMATIF
+        working-directory: frontend
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+      # Scan filesystem de tout le repo (dépendances backend Maven + frontend npm +
+      # secrets/misconfig). exit-code=1 + severity=CRITICAL => build rouge seulement
+      # sur du CRITICAL, en cohérence avec le critère d'acceptation #167.
+      - name: Trivy filesystem scan (fail on CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+  # ---------------------------------------------------------------------------
+  # Secret-scan (#362) — empêche la RÉINTRODUCTION d'un secret dans le dépôt.
+  #
+  # POURQUOI CE JOB EXISTE. Le dépôt est PUBLIC. L'audit #249 (sprint 50,
+  # `docs/memory/audits/secret-exposure-audit.md`) a mesuré qu'un mot de passe DB et un secret JWT
+  # y ont été lisibles par n'importe qui pendant ~16 mois ; ils sont compromis sans réserve, et
+  # aucune purge d'historique n'y changera rien (§6 : forks et clones tiers). Jusqu'ici RIEN
+  # n'empêchait un futur commit de recommencer. C'est la recommandation R6 de l'audit.
+  #
+  # POURQUOI UN JOB DÉDIÉ, ET PAS UNE ÉTAPE DE `security`. Trois raisons, la dernière étant
+  # dirimante :
+  #   1. Signal. `security` mélange du BLOQUANT et de l'INFORMATIF (`continue-on-error` sur
+  #      l'audit dev+prod, dont la chaîne eslint est rouge de façon connue et non corrigeable —
+  #      cf. commentaire du job). Une détection de secret ne doit pas se lire dans ce bruit.
+  #   2. Nature. `security` audite des DÉPENDANCES (CVE amont, rien à corriger dans notre code) ;
+  #      ici c'est notre propre contenu, et l'action à prendre est immédiate.
+  #   3. `fetch-depth`. Ce scan a besoin de TOUT l'historique (`fetch-depth: 0`) ; `security` se
+  #      contente du checkout superficiel par défaut. Fusionner les deux ralentirait l'audit de
+  #      dépendances sans aucune contrepartie.
+  #
+  # POURQUOI LE BINAIRE ÉPINGLÉ, ET PAS `gitleaks/gitleaks-action@v2`. L'action officielle exige
+  # un `GITLEAKS_LICENSE` pour les comptes d'organisation. `LeenVandelied` est un compte
+  # personnel, donc elle FONCTIONNERAIT aujourd'hui — mais le dépôt n'a AUCUN secret Actions
+  # configuré (audit §5 : `gh secret list` vide, 0 environnement), et faire dépendre le garde-fou
+  # d'un secret qu'il faudrait provisionner le jour où le dépôt migre vers une organisation, c'est
+  # programmer sa propre panne. Le binaire épinglé + vérification SHA-256 ne dépend de rien.
+  #
+  # PORTÉE : tout l'historique atteignable depuis HEAD, sur PR ET sur push.
+  # Le critère de l'issue est « échouer si un secret est détecté DANS LE DIFF ». Sur un événement
+  # `pull_request`, actions/checkout place HEAD sur le commit de fusion : les commits de la PR sont
+  # donc DANS l'ensemble scanné — le critère est satisfait a fortiori, sans plomberie de plage de
+  # SHA (`base.sha..head.sha`) ni son mode d'échec silencieux quand un des deux bouts n'est pas
+  # atteignable. Le coût mesuré est négligeable : 766 commits / 11,73 Mo en 1,3 s. Le scan sur
+  # `push` vers dev/main tient le rôle du « scan périodique de l'historique » du 2e critère, à la
+  # cadence des merges et sans ajouter de déclencheur `schedule` (qui rejouerait AUSSI backend,
+  # frontend et e2e, soit ~20 min de runner par semaine pour rien).
+  # Conséquence à assumer : une détection non baselinée fait rougir TOUTES les PR, pas seulement
+  # celle qui l'introduit. C'est voulu — sur un dépôt public, un secret sur `dev` est déjà perdu.
+  #
+  # ⚠ `--redact=100` est OBLIGATOIRE, pas une préférence. Les logs de ce job sont PUBLICS comme le
+  # dépôt : sans redaction, gitleaks imprimerait la valeur détectée en clair dans la sortie CI et
+  # PUBLIERAIT lui-même le secret qu'il vient de trouver — en le rendant au passage indexable hors
+  # de git, donc survivant à toute purge. Le fichier, la ligne, la règle et le commit suffisent
+  # pour agir. Pour la même raison, aucun rapport n'est uploadé en artefact.
+  #
+  # EXCLUSIONS : `.gitleaks.toml` (durables, par chemin+nom de clé) et `.gitleaksignore`
+  # (empreintes épinglées à un commit, pour l'historique déjà exposé). Chaque entrée est adossée à
+  # un § de l'audit ; les deux fichiers portent la règle de maintenance en en-tête.
+  #
+  # CE QUE CE JOB N'ATTRAPE PAS (mesuré, cf. PIT-S58-004 : un garde-fou décrit mais fictif est pire
+  # que pas de garde-fou). gitleaks ne détecte PAS le `DB_PASSWORD` de l'audit §3.1 : 10 caractères
+  # alphabétiques purs, entropie trop basse pour la règle `generic-api-key`. Vérifié en rejouant le
+  # scan sur l'historique complet — sur les deux secrets historiques, seul le `jwt.secret` (hex 128)
+  # remonte. Ce job couvre les secrets à forte entropie et les préfixes connus (`xkeysib-`,
+  # `sk_live_`, `AKIA…`, clés privées PEM, JWT) ; il ne remplace pas la revue.
+  #
+  # Tourne en parallèle (aucun `needs:`) et n'active AUCUNE branch protection.
+  # `permissions: contents: read` hérité du niveau workflow (non élargi : un scan ne fait que lire).
+  # ---------------------------------------------------------------------------
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      # `fetch-depth: 0` : le défaut (1) ne donnerait qu'un seul commit à scanner — le job
+      # passerait au VERT sans avoir rien examiné. Ne pas le retirer.
+      - name: Checkout (historique complet)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Version ÉPINGLÉE + SHA-256 vérifié : c'est exactement la version avec laquelle les
+      # exclusions ont été calibrées en local. Un `latest` flottant changerait le jeu de règles
+      # sous nos pieds et ferait rougir la CI sur un commit qui ne touche à rien.
+      # `--fail-with-body` (curl) : sans lui, un 404 GitHub produirait un tarball HTML et une
+      # erreur de décompression illisible.
+      - name: Install gitleaks (version épinglée, checksum vérifié)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          set -euo pipefail
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSL --fail-with-body --retry 3 \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${tarball}" \
+            -o "$tarball"
+          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum --check --strict
+          tar -xzf "$tarball" gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          rm -f "$tarball" gitleaks
+          gitleaks version
+
+      # `gitleaks git` (et NON `gitleaks dir`) : le mode git ne voit que le contenu SUIVI par git.
+      # `dir` scanne le système de fichiers sans respecter `.gitignore` — mesuré en local, il
+      # remontait 20 faux positifs supplémentaires depuis `frontend/.next/`, `backend/target/` et
+      # `frontend/e2e/.auth/`, tous des artefacts de build/local jamais committés. Un job qui
+      # rougit pour du contenu non versionné est un job qu'on finit par désactiver.
+      #
+      # L'ÉCHEC EST LE DÉFAUT : gitleaks sort en code 1 dès la 1re détection, `set -euo pipefail`
+      # ne la rattrape pas, le job rougit. Aucun `continue-on-error` ici — c'est tout l'objet du job.
+      - name: Scan des secrets (historique atteignable depuis HEAD)
+        run: |
+          set -euo pipefail
+          gitleaks git \
+            --config .gitleaks.toml \
+            --redact=100 \
+            --no-banner \
+            --verbose \
+            .
+
+  # ---------------------------------------------------------------------------
+  # ai-env-packs — garde-fou de péremption des artefacts générés du Layer B.
+  #
+  # POURQUOI (PR #420). `.ai-env/context-packs/pit-{backend,frontend}.md` sont
+  # GÉNÉRÉS depuis `docs/memory/pitfalls.md`. Si un sprint consigne de nouveaux
+  # pitfalls sans régénérer les packs, les sous-agents reçoivent un pack périmé —
+  # sans la moindre erreur visible. C'est exactement le mode d'échec silencieux
+  # que #420 corrigeait par ailleurs ; sans ce job il revient par la porte de
+  # derrière.
+  #
+  # `check-rules-jit-drift.sh` est appelé pour mémoire mais SKIP en CI : sa source
+  # de vérité est le cache plugin (~/.claude/plugins/), absent du runner. Il n'a de
+  # valeur que sur un poste de dev, en fin de sprint et après un bump du plugin.
+  #
+  # NON REQUIS à l'introduction (cf. en-tête de ce fichier) : à rendre requis par
+  # un mainteneur après un premier run vert.
+  # ---------------------------------------------------------------------------
+  ai-env-packs:
+    name: ai-env-packs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Packs pitfalls à jour vs docs/memory/pitfalls.md — BLOQUANT
+        run: bash .ai-env/tools/gen-pit-packs.sh --check
+
+      - name: Dérive des copies rules-jit vs plugin — INFORMATIF (SKIP en CI)
+        run: bash .ai-env/tools/check-rules-jit-drift.sh

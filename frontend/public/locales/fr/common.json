@@ -6,7 +6,108 @@
     "submit": "Se connecter",
     "loading": "Connexion...",
     "noAccount": "Pas encore de compte ?",
-    "register": "Inscrivez-vous"
+    "register": "Inscrivez-vous",
+    "forgotPassword": "Mot de passe oublié ?",
+    "errors": {
+      "invalidCredentials": "Nom d'utilisateur ou mot de passe incorrect",
+      "generic": "Une erreur est survenue, veuillez réessayer"
+    }
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "Nom d'utilisateur déjà pris",
+      "generic": "Une erreur est survenue lors de l'inscription, veuillez réessayer"
+    },
+    "success": "Compte créé, redirection vers la connexion..."
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié",
+    "description": "Saisissez votre adresse email pour recevoir un lien de réinitialisation.",
+    "email": "Email",
+    "emailPlaceholder": "vous@exemple.com",
+    "submit": "Envoyer le lien",
+    "loading": "Envoi...",
+    "neutralMessage": "Si un compte existe pour cette adresse, un email de réinitialisation a été envoyé.",
+    "backToLogin": "Retour à la connexion",
+    "errors": {
+      "generic": "Une erreur est survenue, veuillez réessayer"
+    }
+  },
+  "resetPassword": {
+    "title": "Nouveau mot de passe",
+    "description": "Choisissez un nouveau mot de passe pour votre compte.",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirmer le mot de passe",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Réinitialiser le mot de passe",
+    "loading": "Réinitialisation...",
+    "success": "Mot de passe réinitialisé. Vous pouvez maintenant vous connecter.",
+    "goToLogin": "Se connecter",
+    "missingToken": "Lien de réinitialisation invalide ou incomplet.",
+    "errors": {
+      "invalidToken": "Ce lien de réinitialisation est invalide ou expiré.",
+      "generic": "Une erreur est survenue, veuillez réessayer"
+    }
+  },
+  "spinner": {
+    "loading": "Chargement en cours"
+  },
+  "deleteDialog": {
+    "cancel": "Annuler",
+    "confirm": "Supprimer",
+    "deleting": "Suppression en cours",
+    "event": {
+      "title": "Supprimer cet événement ?",
+      "description": "Cette action est irréversible.",
+      "recurringWarning": "Cette action supprime uniquement cet événement, pas la série."
+    },
+    "product": {
+      "title": "Supprimer ce produit ?",
+      "description": "Le produit sera archivé et n'apparaîtra plus dans vos listes."
+    },
+    "category": {
+      "title": "Supprimer cette catégorie ?",
+      "description": "Cette action est irréversible.",
+      "reassignLabel": "Déplacer les produits vers…",
+      "reassignPlaceholder": "Choisissez une catégorie de destination",
+      "noOtherCategory": "Aucune autre catégorie disponible pour réassigner les produits. Créez d'abord une autre catégorie."
+    },
+    "errors": {
+      "notFound": "Cette catégorie n'existe plus.",
+      "conflict": "Impossible de réassigner les produits vers cette catégorie.",
+      "generic": "Une erreur est survenue lors de la suppression, veuillez réessayer."
+    }
+  },
+  "conflictDialog": {
+    "title": "Modifié ailleurs",
+    "description": "Cet élément a été modifié depuis un autre onglet ou par une autre personne. Rechargez les données à jour avant de continuer, vos modifications non enregistrées seront perdues.",
+    "reload": "Recharger les données à jour",
+    "dismiss": "Annuler",
+    "comparativeDescription": "Cet événement a été modifié ailleurs pendant votre édition. Comparez vos modifications à la version serveur, puis choisissez laquelle conserver.",
+    "field": "Champ",
+    "yourValue": "Vos modifications",
+    "serverValue": "Version serveur",
+    "keepMine": "Garder mes modifications",
+    "keepMineExhausted": "Trop de tentatives : cet événement continue d'être modifié ailleurs. Prenez la version serveur, ou fermez et reprenez votre modification à partir des données à jour.",
+    "takeServer": "Prendre la version serveur",
+    "empty": "—",
+    "yes": "Oui",
+    "no": "Non",
+    "noChanges": "Aucune différence de champ visible.",
+    "fields": {
+      "title": "Titre",
+      "type": "Type",
+      "durationValue": "Durée",
+      "durationUnit": "Unité de durée",
+      "isRecurring": "Récurrent",
+      "recurrenceUnit": "Fréquence",
+      "recurrenceEndDate": "Fin de récurrence",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "color": "Couleur",
+      "archived": "Archivé"
+    }
   },
   "validation": {
     "username": "Le nom d'utilisateur doit contenir au moins 3 caractères",
@@ -20,11 +121,13 @@
     "edit": "Modifier",
     "back": "Retour",
     "logout": "Se déconnecter",
+    "settings": "Réglages",
     "previous": "Précédent",
     "next": "Suivant",
     "today": "Aujourd'hui",
     "showMore": "Voir plus",
-    "showLess": "Voir moins"
+    "showLess": "Voir moins",
+    "close": "Fermer"
   },
   "loading": {
     "default": "Chargement...",
@@ -36,7 +139,8 @@
     "profile": "Profil",
     "settings": "Paramètres",
     "back": "Retour",
-    "backToHome": "Retour à l'accueil"
+    "backToHome": "Retour à l'accueil",
+    "changeLanguage": "Changer de langue"
   },
   "time": {
     "year": "an",
@@ -47,12 +151,22 @@
     "days": "jours",
     "expired": "Expiré"
   },
+  "events": {
+    "ongoing": "En cours",
+    "expired": "Expiré",
+    "upcoming": "À venir",
+    "duration": "Durée",
+    "single": "Date unique"
+  },
   "landing": {
     "title": "Ma Timeline | Votre assistant d'organisation personnel",
     "navigation": {
       "features": "Fonctionnalités",
       "howItWorks": "Comment ça marche",
-      "testimonials": "Témoignages"
+      "testimonials": "Témoignages",
+      "menuOpen": "Ouvrir le menu",
+      "menuClose": "Fermer le menu",
+      "menuTitle": "Menu"
     },
     "buttons": {
       "register": "Inscription"
@@ -149,4 +263,4 @@
     "testimonials": "Témoignages",
     "legal": "Légal"
   }
-} 
+}

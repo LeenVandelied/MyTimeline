@@ -12,5 +12,21 @@
   "server": {
     "error": "Erreur serveur. Veuillez réessayer plus tard",
     "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'accueil"
+  },
+  "forbidden": {
+    "title": "Accès refusé",
+    "description": "Vous n'avez pas les autorisations nécessaires pour accéder à cette page.",
+    "backHome": "Retour à l'accueil"
+  },
+  "crash": {
+    "title": "Une erreur est survenue",
+    "description": "Un problème inattendu s'est produit. Réessayez ou revenez à l'accueil.",
+    "retry": "Réessayer",
+    "backHome": "Retour à l'accueil"
   }
 } 
