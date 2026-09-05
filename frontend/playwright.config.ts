@@ -180,6 +180,66 @@ export default defineConfig({
   // (reporters tiers), donc `['html', { open: 'jamais' }]` compile aussi — vérifié
   // par contrôle négatif au S64. Seul un run réel atteste ce bloc.
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  // #294 — TOLÉRANCE DU DIFF VISUEL. Première clé `expect` de ce fichier : avant ce
+  // sprint le dépôt ne comparait aucun rendu (0 `toHaveScreenshot`, 0 répertoire
+  // `*-snapshots`, 0 PNG de référence). Seule spec concernée aujourd'hui :
+  // `e2e/sprint-77-theme-visual.spec.ts` (hero de la landing + 4 écrans d'auth,
+  // clair et sombre). Nomenclature laissée au DÉFAUT Playwright — les références
+  // vivent dans `e2e/sprint-77-theme-visual.spec.ts-snapshots/` et se nomment
+  // `{arg}-{projectName}-{platform}.png`, donc `…-chromium-linux.png`.
+  //
+  // ── LA VALEUR N'EST PAS UN CHIFFRE ROND CHOISI AU JUGÉ ──────────────────────────
+  //
+  // BRUIT MESURÉ : **0 pixel**. Trois runs complets consécutifs de la spec (11 tests)
+  // contre des références fraîches, `maxDiffPixelRatio: 0`, même poste, même serveur
+  // `next dev` : 11/11 verts à chaque fois. Le rendu est bit-à-bit reproductible une
+  // fois neutralisé l'habillage dépendant de l'environnement (cf. `ENV_CHROME_CSS`
+  // dans la spec — c'est LUI qui a rendu ce 0 possible, pas la tolérance).
+  //
+  // PLAFOND MESURÉ : la plus petite régression TYPOGRAPHIQUE simulée sur le hero
+  // (1280 x 747 px = 956 160 px) produit **11 226 px de diff, soit un ratio 0.0117**
+  // (un `letter-spacing: 0.010em` sur le `h1`). Mesures du sweep de calibration :
+  //
+  //     letter-spacing h1 0.035em (mutation du contrôle négatif) : 11 878 px (0.0124)
+  //     letter-spacing h1 0.010em                                : 11 226 px (0.0117)
+  //     font-size du sous-titre +1px                             : 125 522 px (0.1313)
+  //     token `--color-accent` remplacé (fond du CTA primaire)   :  34 711 px (0.0363)
+  //     `border-radius` du CTA 8px -> 4px                        :      45 px (0.00005)
+  //
+  // On retient **0.002**. C'est ~6x au-dessus du bruit constaté (0) et ~6x SOUS la
+  // plus petite régression typographique mesurée : la marge existe dans les deux sens,
+  // et le contrôle négatif de la spec l'atteste à chaque run.
+  //
+  // CE QUE CETTE VALEUR NE VOIT PLUS, ET QU'IL FAUT ASSUMER : une régression pesant
+  // moins de 0.2 % de la surface capturée — 1 912 px sur le hero, 350 px sur la plus
+  // petite carte d'auth (448 x 391). Le `border-radius` du sweep (45 px) EST dans cet
+  // angle mort. Le resserrer à 0 le couvrirait, au prix d'aucune marge du tout face à
+  // un environnement de rendu qu'on n'a pas pu mesurer (cf. ci-dessous).
+  //
+  // ── CE QUE LA TOLÉRANCE NE PEUT PAS SAUVER (à lire avant de la remonter) ─────────
+  //
+  // Les références sont générées en conteneur `mcr.microsoft.com/playwright:v1.61.1-jammy`
+  // (Ubuntu 22.04) et la CI tourne sur `ubuntu-latest` (24.04 « noble »). Playwright
+  // nomme les DEUX `linux` : les références SERONT donc bien comparées en CI, il n'y
+  // aura pas d'erreur explicite « référence manquante ». Si les deux distributions
+  // rastérisaient le texte différemment, le diff porterait sur des MILLIERS de pixels
+  // — l'ordre de grandeur des mutations ci-dessus. AUCUNE valeur raisonnable de
+  // `maxDiffPixelRatio` n'absorbe cela : au-delà de ~0.02 la spec ne peut plus rien
+  // détecter et devient un test qui ne peut plus échouer. Ce qui absorbe le bruit de
+  // rastérisation, c'est `threshold` (écart de couleur PAR PIXEL, défaut 0.2), pas le
+  // ratio. Donc : si la CI rougit sur ces références, la réponse n'est PAS de monter
+  // ce ratio, c'est de RÉGÉNÉRER les références sur l'image qui correspond au runner.
+  // Recette : `docs/memory/sprints/sprint-77/issue-294-done.md`.
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.002,
+      // Explicite alors que c'est le DÉFAUT : c'est le paramètre qui absorbe le
+      // bruit d'antialiasing (écart YIQ toléré par pixel), et donc le premier
+      // qu'on serait tenté de toucher. Le laisser implicite invitait à le
+      // confondre avec le ratio ci-dessus, qui ne joue pas le même rôle.
+      threshold: 0.2,
+    },
+  },
   use: {
     baseURL,
     trace: 'on-first-retry',
