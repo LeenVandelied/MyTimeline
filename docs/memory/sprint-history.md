@@ -4880,4 +4880,13 @@ tête de la PR (pas de course).
   Ratio discard : **0/2**. Aucun agent n'avait émis de `RECOMMAND_FOLLOWUP` formel — les deux points
   viennent du balayage armé de #527, qui a trouvé le défaut à côté de sa cible (`PIT-S76-006`).
 
-**Status :** En cours (merge en attente)
+**Merge :** PR #531 mergée dans `dev` le 2026-09-05 — commit de merge `193a089`, 11 commits.
+CI **7/7 verte** sur `5e625f7` (SHA de tête vérifié identique au SHA du run : pas de course).
+**Milestone GitHub :** #77 — **fermé** après merge. Vérifié avant fermeture : il ne contenait que
+les 4 issues du sprint, toutes fermées, aucun follow-up égaré du sprint précédent.
+**Issues fermées après merge :** #175, #237, #310, #527 — fermeture manuelle et commentée (un
+`Closes #N` ne ferme rien sur une PR dont la base est `dev`). Chaque commentaire porte l'évidence :
+compteurs SQL mesurés pour #175, `type: "all"` pour #237, sémantique du compteur pour #310, ratios
+et prémisse réfutée pour #527.
+
+**Status :** Terminé
