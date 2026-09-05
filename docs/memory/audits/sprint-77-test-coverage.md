@@ -75,7 +75,8 @@ le compte de tests réellement exécutés.** Le run a été refait avec `--no-de
    ce comportement**. L'agent l'a signalé lui-même en `RECOMMAND_FOLLOWUP`. Les seuils 34/52 px sont
    calibrés sur Archivo 500 aux tailles actuelles : un changement de fonte, de graisse ou de `px-*`
    les invalide, et **rien ne l'empêche mécaniquement**.
-2. **Le critère « vert en CI » de #294 n'est pas vérifiable dans ce sprint.** Aucune CI ne tourne sur
+2. **[RÉSOLU — voir « Verdict CI » en fin de document] Le critère « vert en CI » de #294 n'était pas
+   vérifiable au moment de la rédaction.** Aucune CI ne tourne sur
    les branches `sprint/N` (`PIT-S64-008`) : il sera tranché à l'ouverture de la PR. Les références
    sont générées en `jammy` (22.04) alors que `ubuntu-latest` est `noble` (24.04) ; Playwright nomme
    les deux `linux`, donc elles **seront comparées** et un écart de rastérisation produirait un vrai
@@ -144,3 +145,45 @@ sont assumés et nommés ; aucun n'est bloquant pour l'ouverture de la PR.
 **Prêt pour PR.** Les corrections de review sont livrées et re-vérifiées par le lead (cycle 2
 ci-dessus). Aucun constat critique n'a été émis ; les 3 mineurs laissés en l'état sont nommés dans
 `review-fixes-done.md` avec leur raison.
+
+
+---
+
+## Verdict CI — le risque annoncé s'est réalisé, puis a été soldé
+
+**Run 1 (`0568da7`) — ÉCHEC du job `e2e`, 7 failed / 302 passed.**
+Exactement le risque écrit dans l'écart n°2. Les 4 cartes auth ont rougi : `login-light` 717 px,
+`register-light` 1259 px, plus `forgot-password` et `reset-password` — **ratio 0,01 contre une
+tolérance de 0,002**. Cause : références générées en `jammy` 22.04, runner mesuré en **Ubuntu
+24.04.4** (`noble`), même suffixe `linux` donc comparaison réelle. Les 6 autres jobs verts, et les
+302 autres tests passants : le reste du sprint était validé.
+
+**La tolérance n'a PAS été élargie.** L'écart environnemental (0,01) vaut le même ordre de grandeur
+que la plus petite régression que la spec doit détecter (`letter-spacing 0.010em` = 0,0117) :
+l'élargir aurait rendu la spec structurellement incapable d'échouer. Remède appliqué, celui que la
+PR annonçait : régénérer sur l'image du runner.
+
+**Piège rencontré pendant la régénération, et documenté dans la spec.**
+`--update-snapshots` **écrase** les références existantes : la première passe a gravé la mutation
+d'interlettrage du test d'armement dans `landing-hero-light.png`, rendue fausse pour toute la suite
+(13 058 px d'écart au run de vérification, ratio 0,02). La garde `existsSync` protège d'une
+**création** accidentelle, pas d'un **écrasement**. Détecté en rejouant la suite **sans**
+`--update-snapshots` plutôt qu'en se fiant au fait que 8 PNG avaient été écrits. Régénération
+correcte : `--update-snapshots --grep-invert "armement"`. La marche à suivre est désormais en tête
+du bloc d'armement de la spec.
+
+**Run 2 (`e513450`) — SUCCÈS, 7 jobs sur 7**, `e2e` compris.
+
+| Job | Run 1 (`0568da7`) | Run 2 (`e513450`) |
+|---|---|---|
+| `backend` | ✅ | ✅ |
+| `frontend` | ✅ | ✅ |
+| **`e2e`** | ❌ 7 failed / 302 passed | **✅** |
+| `security` | ✅ | ✅ |
+| `flyway-smoke` | ✅ | ✅ |
+| `secret-scan` | ✅ | ✅ |
+| `ai-env-packs` | ✅ | ✅ |
+
+Les références sont désormais alignées sur `ubuntu-latest` = noble 24.04. **Fragilité durable, non
+résolue** : un futur bump d'`ubuntu-latest` (26.04) rougira de la même façon et imposera une
+nouvelle régénération. C'est le coût assumé de références PNG commitées.

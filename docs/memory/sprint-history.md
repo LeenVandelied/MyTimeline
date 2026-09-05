@@ -5258,5 +5258,34 @@ Trois mineurs **volontairement non traités**, avec leur raison écrite — le p
 Gates après cycle 2, rejoués par le lead : vitest **1313/1313**, `tsc` 0, `lint` 0, `next build` 0,
 **`storybook build` 0**, E2E visuel **11/11** — tous exit 0.
 
+### PR #536 et verdict CI — le risque annoncé s'est réalisé, puis a été soldé
+
+**PR [#536](https://github.com/LeenVandelied/MyTimeline/pull/536)** (`sprint/77` → `dev`), base
+vérifiée, ouverte sur `0568da7`.
+
+**Run 1 — `e2e` ROUGE**, 7 failed / 302 passed. Les 4 cartes auth : `login-light` 717 px,
+`register-light` 1259 px, `forgot-password`, `reset-password` — **ratio 0,01 vs tolérance 0,002**.
+Références en `jammy` 22.04, runner mesuré en **Ubuntu 24.04.4**. C'est mot pour mot l'écart n°2 que
+le corps de la PR annonçait : la prédiction était juste, et le premier run CI du sprint l'a
+confirmée. Les 6 autres jobs verts.
+
+**Tolérance NON élargie** : l'écart environnemental (0,01) vaut le même ordre de grandeur que la
+plus petite régression détectable (0,0117) — l'élargir aurait désarmé la spec. Références
+régénérées sur `mcr.microsoft.com/playwright:v1.61.1-noble`, contre un build de **production**
+(comme la CI).
+
+**Piège trouvé par le lead pendant la régénération, nouveau et non documenté jusqu'ici :**
+`--update-snapshots` **écrase** les références existantes, donc grave la mutation du test d'armement
+dans `landing-hero-light.png` — 13 058 px d'écart au run suivant. La garde `existsSync` de l'agent
+protège d'une **création**, pas d'un **écrasement** ; son message d'échec disait pourtant quoi
+vérifier. Détecté en rejouant **sans** `--update-snapshots` au lieu de se fier aux 8 PNG écrits.
+Régénération correcte : `--grep-invert "armement"`. Marche à suivre écrite en tête du bloc.
+
+**Run 2 (`e513450`) — 7 jobs sur 7 VERTS**, `e2e` compris. SHA du run identique au SHA de tête
+(pas de course). Le critère « vert en CI » de #294, déclaré invérifiable pendant le sprint, est
+**tranché et satisfait**.
+
+**Fragilité durable, non résolue :** un futur bump d'`ubuntu-latest` rougira de la même façon.
+
 **Status :** En cours
 
