@@ -91,3 +91,13 @@ Constaté au S70 : le proxy RTK rend un texte de succès alors que le code de so
 
 ## BUG-S71-002 — Dérive de formatage invisible : la CI frontend ne lance jamais `format:check`
 `frontend/src/components/events/NewEventDrawer.test.tsx` viole `prettier --check` **à HEAD**, dérive introduite au S70 (#326). Non attrapée parce que la CI lance `npm run lint` (eslint) et **jamais** `npm run format:check` : lint et formatage sont deux gates différents, une CI verte ne dit rien du second. Non corrigé au S71 (hors périmètre : reformater aurait noyé un diff de 4 caractères) ; l'arbitrage restant est d'ajouter `format:check` à la CI ou de retirer les scripts `format*` du `package.json`. Étiquette « pré-existant » réfutée comme l'exige [[PIT-S70-002]] : `git show HEAD:<fichier>` + `prettier --check` → **exit 1**. (Sprint 71 #496)
+
+
+## `::placeholder` du `Textarea` non conforme — les jetons sont intervertis entre thèmes (Sprint 77 #191)
+Cause : la spec DS `::placeholder` utilise `--color-ink-faint` → **2,82:1** en clair et **2,99:1** en sombre sur `.mt-textarea`, sous le seuil de 4,5:1. `ui/input.tsx` n'y échappe **que par accident**, en utilisant `ink-muted` (5,96 / 6,26). Statut : **non corrigé** — décision de charte, le token a 9+ consommateurs, et #294 gravait ses références juste après. Follow-up ouvert. Règle : `ink-faint` ne tient pas 4,5:1 ; tout champ qui suit le DS à la lettre est non conforme.
+
+## Référence `register-light` gravée avec le bouton en `aria-busy` (Sprint 77 #294)
+Cause : `register/page.tsx:30` et `login/page.tsx:29` lisent `loading` depuis `useAuth()` — l'amorçage global d'`AuthContext` (`GET /api/auth/me`), dont la durée dépend de l'API. La référence a été capturée pendant cet état (spinner + « Inscription… », `disabled`). Symptôme : **13 820 px de diff, reproductibles sur 8 runs**. Solution : attendre `[aria-busy="true"]` à 0 dans la cible avant capture. **Règle de diagnostic : un chiffre de diff parfaitement stable accuse la RÉFÉRENCE ; un chiffre qui varie accuse le RUN.**
+
+## Le commentaire de `tsx-focus-utility.test.ts` donnait pour aveugle une forme que le lexeur détecte (Sprint 77, cycle 2 de review)
+Cause : l'en-tête affirmait que `` `ring-${n}` `` échappait au lexeur ; faux — `stringLiteralsOf` coupe le gabarit à chaque `${`, le fragment statique `ring-` devient un littéral et matche `/^ring-/`. Comportement établi **par la mesure** (exécution des fonctions exportées, pas relecture), commentaire corrigé, et **8 cas de test figent désormais la frontière dans les deux sens**. Règle : sur ce dépôt un commentaire est une mémoire d'arbitrage — s'il énonce une frontière, un test doit la verrouiller, sinon elle dérive au premier refactoring.

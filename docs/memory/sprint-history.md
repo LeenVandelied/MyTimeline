@@ -5287,5 +5287,40 @@ Régénération correcte : `--grep-invert "armement"`. Marche à suivre écrite 
 
 **Fragilité durable, non résolue :** un futur bump d'`ubuntu-latest` rougira de la même façon.
 
-**Status :** En cours
+### Clôture — merge, issues, milestone
+
+**PR #536 mergée dans `dev` le 2026-09-05** — commit de merge `3107d5d`, **10 commits**.
+Le merge a d'abord été **refusé** (« head branch is not up to date ») : `dev` avait avancé d'un
+commit. `origin/dev` rapatrié dans la branche (`5a714d4`), CI relancée et **verte 7/7**, puis merge.
+`--admin` **non utilisé** — la protection de branche a été respectée, pas contournée.
+
+**Issues fermées à la main, avec l'évidence dans chaque commentaire** : #457, #533, #191, #532,
+#294. Un `Closes #N` ne ferme rien quand la base est `dev`. Chaque commentaire porte les mesures et,
+quand c'est le cas, **ce que l'issue annonçait à tort**.
+
+**Milestone GitHub #78 — fermé.** Vérifié avant fermeture : il ne contenait que les 5 issues du
+sprint, toutes fermées, **aucun follow-up égaré d'un sprint précédent** (le piège du S76 ne s'est
+pas reproduit).
+
+**Mémoire consolidée :** 20 `PIT-S77-001..020`, 4 `PAT-S77-001..004`, 5 `DEC-S77-001..005`, 3 bugs.
+Classification renseignée dans `pit-classification.tsv` et packs régénérés
+(`gen-pit-packs.sh --check` au vert) — sans quoi le job `ai-env-packs` rougit et les pitfalls
+n'atteignent jamais les sous-agents.
+
+**Ce que ce sprint a coûté en fausses pistes, et qui vaut d'être retenu :** quatre énoncés d'issue
+sur cinq se sont révélés faux à la mesure (#533 sur son chiffrage, #532 sur sa corrélation à la
+locale, #191 sur son décompte **et** sur son consommateur, #294 sur sa cible). **Deux prémisses des
+briefings du lead** ont aussi été réfutées par les agents, à raison. Et le lead a produit
+**deux faux verts** (un run Playwright sans `--no-deps` sorti exit 0 avec « 11 did not run », un
+sélecteur périmé rendant « 0 débordement sur 0 cellules ») — tous deux détectés en contre-mesurant,
+tous deux consignés.
+
+**Follow-ups : 19 recommandations** émises dans les artefacts, **non triées à ce stade** — le triage
+est un arbitrage humain, item par item, et créer 19 issues d'office serait du bruit. Les plus
+substantiels : les 44 clés de corps de `legal.json` (M), la **relecture humaine des 22 traductions
+juridiques** (bloquant avant production), les 25 écarts spécimen DS vs `ui/*` (M), le `::placeholder`
+du `Textarea` à 2,82:1 (S), l'E2E anti-régression de `DateStamp` (S), l'extension aux écrans
+authentifiés (M), le `data-testid` sur la carte auth (S, impose de régénérer les 10 PNG).
+
+**Status :** Terminé
 

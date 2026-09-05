@@ -704,3 +704,16 @@ Problème : `onKeepMine` re-soumet en appelant `onSubmit` (l'API publique du hoo
 
 ## PAT-S76-002 — Verrou d'issue + test de caractérisation : que faire quand un balayage armé sort un défaut hors périmètre
 Ni relâcher l'assertion (« c'est décoratif »), ni corriger à l'aveugle un défaut dont le correctif est un arbitrage. Recette en deux pièces. (1) **Scoper le verrou** : un drapeau `inScope` sur le sélecteur des surfaces réellement auditées, l'assertion restant armée par un auto-contrôle qui rougit si le sélecteur devient vide. (2) **Figer l'inventaire** par un test de caractérisation nommé, qui rougit dans DEUX cas — si un second fautif apparaît, ET le jour où le défaut est corrigé, son message disant alors de le supprimer. Le défaut cesse d'être un angle mort sans devenir une dette silencieusement tolérée. (Sprint 76 #527)
+
+
+## PAT-S77-001 — Armer un garde-fou de scan à DEUX niveaux : la fonction d'audit ET son câblage au walker
+Les mutations en mémoire (méthode S63) prouvent la fonction d'audit mais **pas** son branchement sur les fichiers : une garde dont `scannedFiles()` rend `[]` reste verte avec un armement parfait. Ajouter (a) une assertion de **périmètre non vide** et (b) une mutation **réelle sur disque** jouée une fois, revert vérifié au `git status`. Au S77 le second niveau a été la preuve la plus forte : avant correction, le scan mordait sur les 3 violations authentiques du dépôt. (Sprint 77 #457)
+
+## PAT-S77-002 — Contrôle négatif d'une spec de diff visuel : committé dans la spec, et protégé de l'auto-génération
+Problème : prouver qu'une comparaison visuelle peut échouer, sans fixture jetable ([[PIT-S62-003]]). Solution : un contrôle négatif **committé dans la même spec**, qui rejoue un cas existant + une mutation `addStyleTag`, **vérifie que la mutation est effective** avant de capturer, et exige l'échec de `toHaveScreenshot` contre la **même référence committée** — plus un `existsSync` sur la référence, car un `toHaveScreenshot` sans référence l'ÉCRIT. ⚠ Ce garde ne protège **pas** d'un `--update-snapshots`, qui écrase l'existant : cf. [[PIT-S77-019]]. Anti-pattern : mesurer l'armement dans un harnais supprimé avant commit. (Sprint 77 #294)
+
+## PAT-S77-003 — Rendre PURE la fonction de détection pour que le contrôle négatif tienne dans le dépôt
+Au lieu d'un test qui lit le disque et compare, extraire une fonction qui prend les deux arbres en argument (`frenchLeftoverTitles(fr, translated, locale)`). Le contrôle négatif peut alors saboter une copie **en mémoire** et voir la garde rougir — sans fixture supprimée avant commit, et sans toucher au disque. Anti-pattern : une garde prouvée par une mutation manuelle jouée une fois et jamais rejouée en CI. (Sprint 77 #533)
+
+## PAT-S77-004 — Rampe typographique responsive sur l'échelle DS, pour un titre enfant de flex
+`text-xl md:text-2xl lg:text-3xl` (35/45/57 dans l'échelle Graphite) + `min-w-0 break-words` (le titre est enfant direct d'un flex, [[PIT-S73-001]]) + repli d'en-tête `flex-wrap` / `w-full sm:w-auto` + `hyphens-auto` (l'attribut `lang` est déjà posé sur `<html>`). Anti-pattern : descendre la rampe **sous** la taille des `<h2>` de la même page — hiérarchie inversée ; et croire qu'un `break-words` seul suffit sur un item de flex. (Sprint 77 #532)
