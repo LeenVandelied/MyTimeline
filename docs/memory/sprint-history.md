@@ -4866,4 +4866,18 @@ lit : sans le contexte du lead, ils étaient perdus. À durcir dans le gabarit d
 **PR :** #531 (`sprint/76` → `dev`). CI **7/7 verte** sur `55ef305`, SHA du run identique au SHA de
 tête de la PR (pas de course).
 
+**Follow-ups arbitrés (Phase 4 triage) — 2 items, 0 discard :**
+  - `<h1>` des pages légales à 57 px, déborde de +124 px @375 px et +179 px @320 px dans les
+    **4 locales** [S | frontend/a11y/DS] → **issue #532**, milestone Sprint 77. Pré-existant
+    (`2a2cd9a`), non corrélé à la locale, correctif = rampe typographique (arbitrage de charte,
+    à router vers `ui-design`). ⚠ Un test de caractérisation le fige dans
+    `sprint-76-legal-visual.spec.ts` : **il devra être retiré avec le correctif**, son message le dit.
+  - Les 20 intitulés de `legal.json` restés en français en `en`/`es`/`de` [M | frontend/i18n] →
+    **issue #533**, milestone Sprint 77. C'est la cause du volet sans objet de #527 : il n'y a pas
+    de débordement allemand parce qu'il n'y a pas de titres allemands. Périmètre réel probablement
+    plus large que 20 clés (les corps de sections n'ont pas été instruits).
+
+  Ratio discard : **0/2**. Aucun agent n'avait émis de `RECOMMAND_FOLLOWUP` formel — les deux points
+  viennent du balayage armé de #527, qui a trouvé le défaut à côté de sa cible (`PIT-S76-006`).
+
 **Status :** En cours (merge en attente)
