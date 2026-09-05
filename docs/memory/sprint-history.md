@@ -4646,7 +4646,7 @@ ferme rien sur une PR dont la base est `dev`).
 
 ---
 
-## Sprint 75 — 2026-09-04 (En cours — finitions pages légales & dette i18n)
+## Sprint 75 — 2026-09-04 (Terminé — merge PR #526 dans dev, commit `d08f038` — finitions pages légales & dette i18n)
 
 **Objectif :** finitions des pages légales publiques (`/privacy`, `/terms`) et résorption
 d'une API next-intl dépréciée.
@@ -4746,7 +4746,7 @@ point 2 livré au S58/#353, point 1 absorbé par #60.
 
 ---
 
-## Sprint 76 — 2026-09-05 (En cours — dette XS parallélisable + mesure a11y des pages légales)
+## Sprint 76 — 2026-09-05 (Terminé — merge PR #531 dans dev, commit `193a089` — dette XS parallélisable + mesure a11y des pages légales)
 
 **Objectif :** solder trois dettes XS indépendantes (garde anti-boucle 409, filtrage du retry
 réseau, double-hit DB à la suppression d'event) et **mesurer** ce que le Sprint 75 avait seulement
