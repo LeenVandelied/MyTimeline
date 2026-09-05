@@ -118,6 +118,11 @@ interface EventEditFormProps {
   onKeepMine?: () => void
   /** #231 — « Prendre la version serveur » : abandonne le local + rafraîchit. */
   onTakeServer?: () => void
+  /**
+   * #310 - Plafond de re-soumissions keep-mine atteint (409 repetes) : le dialog affiche
+   * un message explicite et desactive definitivement « garder mes modifications ».
+   */
+  keepMineExhausted?: boolean
   /** Mode édition : supprime l'événement (ouvre le dialog de confirmation). */
   onDelete?: () => Promise<void>
   /** Récurrence de l'événement édité → warning suppression « seul cet événement ». */
@@ -204,6 +209,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   conflictLocalValues,
   onKeepMine,
   onTakeServer,
+  keepMineExhausted = false,
   onDelete,
   isRecurring: eventIsRecurring = false,
   compact = false,
@@ -948,6 +954,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         onKeepMine={() => onKeepMine?.()}
         onTakeServer={() => onTakeServer?.()}
         isSubmitting={submitting}
+        keepMineExhausted={keepMineExhausted}
         testId="event-form-conflict"
       />
     </>

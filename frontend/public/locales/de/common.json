@@ -49,6 +49,7 @@
     "yourValue": "Deine Änderungen",
     "serverValue": "Serverversion",
     "keepMine": "Meine Änderungen behalten",
+    "keepMineExhausted": "Zu viele Versuche: Dieses Ereignis wird weiterhin anderswo geändert. Übernimm die Serverversion oder schließe und wiederhole deine Änderung auf Basis der aktuellen Daten.",
     "takeServer": "Serverversion übernehmen",
     "empty": "—",
     "yes": "Ja",

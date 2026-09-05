@@ -517,6 +517,21 @@ Famille [[PIT-S74-008]] / [[BUG-S70-002]], élargie au cas le plus trompeur. `np
 #279 affirmait noir sur blanc « Non-impactant au runtime actuel […] indépendant de `getRequestConfig` ». Faux : `next.config.mjs` fait `createNextIntlPlugin('./i18n.ts')`, ce qui en fait le request-config ACTIF, et les pages légales y résolvent leurs messages via `getTranslations`. La conséquence n'est pas académique — elle change la preuve exigible : un `vitest` vert ne prouvait rien, seul un `next build` le pouvait. Troisième sprint consécutif où l'énoncé se trompe ([[PIT-S74-003]], [[DEC-S72-004]]). Prévention : traiter toute clause d'innocuité d'une issue comme une affirmation à vérifier — ici, deux `grep` (le plugin, les appelants) suffisaient. (Sprint 75 #279)
 
 
+## PIT-S76-001 — `deleteById(ID)` hérité de `SimpleJpaRepository` n'est PAS une requête mais DEUX, et un « double-hit » annoncé est un TRIPLE
+`SimpleJpaRepository.deleteById` fait `findById().ifPresent(delete)` : un `SELECT` **puis** un `DELETE`. Précédé d'un `existsById` (`SELECT count(*)`), le coût réel est de **3** instructions, pas 2 — l'énoncé de #175 disait « double-hit ». Conséquence directe : le correctif « évident » (`findEventById(...).orElseThrow()` puis `deleteById(id)`) **n'économise rien**, il remplace le `count` par un `SELECT` et laisse `deleteById` refaire le sien. Ne pas refactorer sur la foi d'un compte annoncé : mesurer avec `Statistics.getPrepareStatementCount` sur un test d'intégration. Nuance qui a changé la conclusion : `open-in-view` est ACTIF ici, donc le compte isolé du service diffère du compte du chemin HTTP réel (3 vs 3 avant, 1 vs 2 après) — mesurer la séquence du contrôleur, pas seulement la méthode. (Sprint 76 #175)
+
+
+## PIT-S76-002 — Un DELETE bulk JPQL n'est pas versionné : il retire silencieusement le verrou optimiste que `em.remove` appliquait
+Sur une entité portant `@Version`, `em.remove` émet `DELETE … WHERE id=? AND version=?` ; un `DELETE FROM E e WHERE e.id = :id` émet `WHERE id=?`. Remplacer l'un par l'autre pour gagner une requête supprime donc une garantie de concurrence — **sans aucun test rouge**. Trouvé en review DB au S76, invisible aux 564 tests existants. Vérifier par un contrôle négatif (édition concurrente committée en `REQUIRES_NEW` imbriquée, déterministe, ni thread ni timing) plutôt que par raisonnement. Nuance mesurée : la fenêtre réellement protégée n'était pas « édité pendant que la page est ouverte » mais les millisecondes INTRA-REQUÊTE entre le `SELECT` d'ownership et le flush — un artefact d'`open-in-view`, pas une garantie métier. La décision reste défendable, mais elle doit être écrite ET épinglée par un test. (Sprint 76 #175)
+
+
+## PIT-S76-005 — zsh ne fait pas de word-splitting : `git add -- $F` avec une liste de chemins en variable ne stage RIEN
+Sous zsh (shell de ce poste), `$F` contenant plusieurs chemins arrive comme **UN SEUL** pathspec : `git add` sort en 128, rien n'est indexé. L'échec est bruyant donc bénin, mais il coûte un aller-retour à chaque agent d'une vague de fan-out — et le même piège produit des FAUX POSITIFS silencieux dans les boucles d'audit (`for tid in $NEW_TESTIDS` du check coverage-E2E a rendu un MAJEUR fantôme au S76). Écrire les chemins littéralement, ou `${=F}`, ou un tableau. À corriger dans les gabarits de briefing qui recommandent « `git add <fichiers exacts>` ». (Sprint 76 #310)
+
+
+## PIT-S76-007 — Le vérificateur de complétude de sprint lit LIGNE À LIGNE : une négation `RECOMMAND_*` repliée par le formatage compte comme signal NON TRAITÉ
+Récurrence mesurée de [[PIT-S70-005]] / [[PIT-S67-004]] au S76 : le done.md de #310 portait « … ; pas\nde `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY_EXPERT` car … ». Le « pas » étant sur la ligne précédente, `check-sprint-completeness.sh` a compté **deux** signaux actionnables non traités et bloqué la clôture. Le piège n'est pas la rédaction mais **le repli à 100 colonnes** appliqué après coup. Écrire chaque négation sur UNE ligne, et le dire dans le done.md pour qu'un reformatage ultérieur ne la casse pas. Même famille : le garde-fou de Phase 9 grep `[MISSING]` littéralement et se déclenche sur la PHRASE QUI LE DOCUMENTE dans l'audit. (Sprint 76, clôture)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

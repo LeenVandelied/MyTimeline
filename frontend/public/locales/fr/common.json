@@ -89,6 +89,7 @@
     "yourValue": "Vos modifications",
     "serverValue": "Version serveur",
     "keepMine": "Garder mes modifications",
+    "keepMineExhausted": "Trop de tentatives : cet événement continue d'être modifié ailleurs. Prenez la version serveur, ou fermez et reprenez votre modification à partir des données à jour.",
     "takeServer": "Prendre la version serveur",
     "empty": "—",
     "yes": "Oui",

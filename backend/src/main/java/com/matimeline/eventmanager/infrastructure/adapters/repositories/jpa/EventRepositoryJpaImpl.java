@@ -112,6 +112,55 @@ public class EventRepositoryJpaImpl
                 .executeUpdate();
     }
 
+    // #175 — DELETE bulk JPQL : UNE SEULE instruction JDBC, et le nombre de lignes
+    // touchées porte le contrat 404 du service (0 ligne -> EventNotFoundException).
+    // Remplace le deleteById(UUID) hérité de SimpleJpaRepository
+    // (findById().ifPresent(delete) = SELECT + DELETE), lui-même précédé d'un
+    // existsById (SELECT count(*)) : 3 instructions mesurées pour une suppression
+    // unitaire (EventDeleteStatisticsIntegrationTest).
+    //
+    // JPQL et non SQL natif (contrairement à deleteAllByUserId ci-dessus) : EventEntity
+    // ne porte AUCUN @SQLRestriction — rien à contourner — et le bulk JPQL déclare son
+    // entity space, donc Hibernate auto-flushe les mutations en attente sur `events`
+    // avant de l'exécuter. Aucune FK enfant ne référence events : pas de cascade à
+    // orchestrer. Comme tout bulk, il n'évince pas l'entité du cache de 1er niveau :
+    // sous open-in-view, une EventEntity chargée plus tôt dans la MÊME requête (contrôle
+    // d'ownership du contrôleur) y reste, non modifiée — le contrôleur répond
+    // ok().build() sans relecture, le dirty-check de fin de transaction est vide, aucun
+    // UPDATE post-DELETE n'est émis.
+    //
+    // ─── DÉCISION ASSUMÉE : la suppression NE PORTE PLUS LE VERROU OPTIMISTE ───────────
+    // EventEntity porte @Version. L'ancien chemin finissait par em.remove(entity), qui
+    // émet DELETE ... WHERE id=? AND version=? ; ce bulk émet WHERE id=? seul. Un event
+    // édité concurremment est donc désormais supprimé au lieu de lever un
+    // StaleStateException. C'est un CHOIX, pas un effet de bord subi :
+    //   1. DELETE /api/events/{id} ne transporte AUCUNE version (contrairement au PATCH,
+    //      dont EventUpdateRequest.version porte le contrat 409 de BR-EVE-015). Le client
+    //      ne peut donc pas exprimer « supprime la version que j'ai vue » : il n'y a
+    //      aucune intention utilisateur à protéger, et un 409 sur DELETE serait
+    //      inexploitable côté frontend (rien à comparer dans la modale de conflit).
+    //   2. La fenêtre réellement couverte par l'ancien verrou n'était PAS « quelqu'un a
+    //      édité pendant que j'avais la page ouverte » mais les quelques millisecondes
+    //      INTERNES à la requête DELETE, entre le SELECT d'ownership et le flush — sous
+    //      open-in-view, le findById du deleteById tapait le cache de 1er niveau et
+    //      réutilisait la version lue par le contrôle d'ownership.
+    //   3. Sémantique retenue : « la suppression gagne toujours ». Une suppression
+    //      demandée par le propriétaire est un acte terminal ; perdre une édition
+    //      concurrente sur une ligne qui part de toute façon est sans conséquence.
+    // Si ce choix devait être REVU (p.ex. si le frontend se mettait à envoyer une version
+    // au DELETE), le coût serait : ajouter un paramètre version au port et au DTO, passer
+    // à `DELETE ... WHERE e.id = :id AND e.version = :version`, et distinguer les deux cas
+    // de rowcount 0 (inexistant -> 404 / version périmée -> 409) par une relecture — soit
+    // une 2e instruction sur le seul chemin de conflit.
+    // Comportement épinglé par EventOptimisticLockConflictIntegrationTest (#175).
+    @Override
+    public int deleteByIdReturningRowCount(UUID id) {
+        return entityManager
+                .createQuery("DELETE FROM EventEntity e WHERE e.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
     @Override
     public Optional<Event> findEventById(UUID id) {
         Optional<EventEntity> optionalEntity = super.findById(id);

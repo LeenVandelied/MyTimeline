@@ -258,6 +258,7 @@ export const EventContent: React.FC<EventContentProps> = ({ event }) => {
                 conflictLocalValues={conflict.conflict?.local}
                 onKeepMine={conflict.onKeepMine}
                 onTakeServer={conflict.onTakeServer}
+                keepMineExhausted={conflict.keepMineExhausted}
                 onDelete={onDelete}
               />
             )}

@@ -489,7 +489,9 @@ class EventServiceImplTest {
 
         assertThat(result).containsSame(existingEvent);
         verify(eventRepository, times(1)).findEventById(eventId);
-        verify(eventRepository, never()).existsById(any(UUID.class));
+        // #175 : le verify(never()).existsById d'origine est devenu structurellement
+        // impossible — existsById a été retiré du port EventRepository (plus aucun
+        // appelant de production depuis que deleteById ne le sonde plus).
     }
 
     @Test
@@ -500,7 +502,9 @@ class EventServiceImplTest {
 
         assertThat(result).isEmpty();
         verify(eventRepository, times(1)).findEventById(eventId);
-        verify(eventRepository, never()).existsById(any(UUID.class));
+        // #175 : le verify(never()).existsById d'origine est devenu structurellement
+        // impossible — existsById a été retiré du port EventRepository (plus aucun
+        // appelant de production depuis que deleteById ne le sonde plus).
     }
 
     // ---- BR-EVE-014 (#168) : color fournissable dès la création ----
