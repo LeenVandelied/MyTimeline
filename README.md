@@ -186,9 +186,13 @@ partagé avec le dépôt principal. Deux conséquences, l'une gênante, l'autre 
   deux fois, dont un rapport d'agent entièrement faux mais plausible.
 
 `test-quiet.sh frontend` échoue désormais **avant toute étape** (le préflight précède `next build`),
-en sortie 3, avec le répertoire testé,
-la commande de correction et le rappel ci-dessus. Correctif : `( cd frontend && npm ci )` dans la
-copie concernée.
+en sortie 3, avec le répertoire testé, la commande de correction et le rappel ci-dessus.
+Correctif : `( cd frontend && npm ci )` dans la copie concernée.
+
+La sortie **3** couvre deux causes distinctes, au diagnostic différent : ce préflight
+(`node_modules` absent ou incomplet → `npm ci`), **et** un script npm attendu manquant dans
+`frontend/package.json` (`build`, `test`, `typecheck`, `lint` → rétablir le script, ou passer au
+scope `frontend-unit`). Le second cas ne se répare pas par un `npm ci`.
 
 L'**approvisionnement automatique** de `node_modules` dans les worktrees n'est pas traité : c'est
 l'objet de l'issue #272. Le préflight se contente de nommer le problème au lieu de le déguiser.

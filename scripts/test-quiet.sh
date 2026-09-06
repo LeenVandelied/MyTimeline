@@ -208,18 +208,27 @@ PREFLIGHT_JS
 }
 
 # --- Frontend unitaires : Vitest ("test" = "vitest run") ---------------------
+# $1 = "required" (optionnel), $2 = "preflight-done" (optionnel).
+# Revue du S78, cycle 2 : ces deux paramètres remplacent une garde `grep` que
+# `run_frontend` portait en double. Deux `grep` sur la même clé, c'est DEUX
+# sources de vérité — le jour où l'une dérive, `run_frontend` passe sa garde puis
+# `run_frontend_unit` skippe à 0, et le « ✓ OK » final ment de nouveau.
 run_frontend_unit() {
+  local required="${1:-}"
+  local preflight_done="${2:-}"
   # Suite unitaire Vitest. Skip explicite si aucun script "test" (plutôt qu'un
-  # faux échec). Code de sortie de Vitest propagé : un test rouge => script rouge
-  # (critère #133).
+  # faux échec) — sauf en mode `required`, cf. run_frontend_npm_step. Code de
+  # sortie de Vitest propagé : un test rouge => script rouge (critère #133).
   if [ -f "${FRONTEND_DIR}/package.json" ] \
      && grep -qE '"test"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
     # #308 — échouer avec un diagnostic actionnable plutôt que de laisser Vitest
     # cracher un « Cannot find package » qui accuse le code.
-    local pre=0
-    frontend_preflight || pre=$?
-    if [ "${pre}" -ne 0 ]; then
-      return "${pre}"
+    if [ "${preflight_done}" != "preflight-done" ]; then
+      local pre=0
+      frontend_preflight || pre=$?
+      if [ "${pre}" -ne 0 ]; then
+        return "${pre}"
+      fi
     fi
     echo "▶ Frontend (unitaires) : npm test  (vitest run, cwd=frontend)"
     local status=0
@@ -229,6 +238,11 @@ run_frontend_unit() {
       return "${status}"
     fi
     echo "✓ Frontend (unitaires) : OK"
+  elif [ "${required}" = "required" ]; then
+    echo "✗ Frontend (unitaires) : aucun script \"test\" dans ${FRONTEND_DIR}/package.json." >&2
+    echo "  Le scope 'frontend' annonce les tests unitaires : les sauter rendrait son" >&2
+    echo "  verdict faux. Rétablir le script, ou utiliser le scope 'frontend-unit'." >&2
+    return 3
   else
     echo "⊘ Frontend : aucun script \"test\" (Vitest) dans package.json — skip."
   fi
@@ -261,6 +275,12 @@ run_frontend_npm_step() {
       echo "  de run_frontend ET de son message final." >&2
       return 3
     fi
+    # NOTE (revue S78, cycle 2) : cette branche n'a plus AUCUN appelant — les 3
+    # appels de run_frontend passent `required`. Conservée délibérément : elle est
+    # la politique par défaut de la fonction, et un futur scope optionnel qui
+    # réutiliserait ce helper la voudrait. Si elle survit sans appelant plusieurs
+    # sprints de plus, la supprimer plutôt que de la laisser documenter une
+    # politique que personne n'exerce.
     echo "⊘ Frontend (${label}) : aucun script \"${script}\" dans package.json — skip."
     return 0
   fi
@@ -304,17 +324,10 @@ run_frontend() {
   # la fonction rendrait 0 en affichant « ✓ OK ». La propagation ne doit pas
   # dépendre du contexte d'appel : on la rend explicite.
   run_frontend_npm_step build "build" required || return $?
-  # Même exigence pour Vitest : run_frontend_unit skippe en rendant 0 si aucun
-  # script "test" n'existe — politique correcte pour le scope `frontend-unit`
-  # (optionnel), fausse ici où le message final annonce « tests unitaires ».
-  if [ ! -f "${FRONTEND_DIR}/package.json" ] \
-     || ! grep -qE '"test"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
-    echo "✗ Frontend (unitaires) : aucun script \"test\" dans ${FRONTEND_DIR}/package.json." >&2
-    echo "  Le scope 'frontend' annonce les tests unitaires : les sauter rendrait son" >&2
-    echo "  verdict faux. Rétablir le script, ou utiliser le scope 'frontend-unit'." >&2
-    return 3
-  fi
-  run_frontend_unit || return $?
+  # `required` : même exigence que les 3 étapes npm — un skip ici rendrait faux le
+  # « tests unitaires » du message final. `preflight-done` : le préflight vient
+  # d'être joué ci-dessus, inutile de relancer son spawn `node`.
+  run_frontend_unit required preflight-done || return $?
   run_frontend_npm_step typecheck "typecheck" required || return $?
   run_frontend_npm_step lint "lint" required || return $?
   echo "✓ Frontend : OK (build + tests unitaires + typecheck + lint)"
