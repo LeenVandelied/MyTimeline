@@ -1,4 +1,5 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+import { expect, test } from './support/fixtures'
+import { type APIRequestContext, type Page } from '@playwright/test'
 import { PROD, SHARED } from './support/accounts'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'

@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 import { ensureAuthenticated } from './auth'
+import { trackSeed } from './seed-cleanup'
 
 /**
  * Helpers E2E domaine Produits & Catégories (#218).
@@ -60,6 +61,8 @@ export async function seedCategory(
   expect(res.status(), `seed catégorie doit renvoyer 201 (obtenu ${res.status()})`).toBe(201)
   const body = (await res.json()) as { id: string }
   expect(body.id).toBeTruthy()
+  // #463 — enregistre la catégorie pour la purge de fin de test (`seed-cleanup.ts`).
+  await trackSeed(page, { kind: 'category', id: body.id })
   return { id: body.id, name }
 }
 
@@ -90,6 +93,8 @@ export async function seedProduct(
   expect(res.status()).toBeLessThan(300)
   const body = (await res.json()) as { id: string }
   expect(body.id).toBeTruthy()
+  // #463 — enregistre le produit pour la purge de fin de test (`seed-cleanup.ts`).
+  await trackSeed(page, { kind: 'product', userId, id: body.id })
   return { id: body.id, name }
 }
 

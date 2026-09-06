@@ -1,4 +1,5 @@
-import { test, expect, type Page, type Route } from '@playwright/test'
+import { test, expect } from './support/fixtures'
+import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'

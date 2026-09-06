@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './support/fixtures'
 import { PROD } from './support/accounts'
 import {
   getUserId,
