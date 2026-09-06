@@ -36,12 +36,23 @@ import { expect, type Page } from '@playwright/test'
  * re-posée 1. Le run complet du 2026-09-02 a d'ailleurs laissé `live-region` rouge
  * avec la parade posée trop tôt — c'est ce contrôle qui l'a tranché.
  *
- * CE QUE LA PARADE NE FAIT PAS. Elle ne borne pas la croissance de la suite : le
- * compte PROD continuera d'accumuler des lanes. Toute NOUVELLE spec qui seede une
- * lane sur `/fr/timeline` et l'asserte doit appeler ce helper. Le semis isolé par
- * spec (voie 1 de #467) reste la réponse de fond ; il est aujourd'hui bloqué par le
- * rate-limit register (5/min/IP, `support/accounts.ts`) et par le projet `setup`,
- * qui provisionne les comptes UNE fois pour toute la suite.
+ * CE QUE LA PARADE NE FAIT PAS. Elle ne borne pas la croissance de la suite : elle
+ * rend une lane lisible malgré le fenêtrage, elle n'empêche pas le fenêtrage.
+ *
+ * ⚠ MISE À JOUR #463 — LE PARAGRAPHE QUI SUIVAIT ÉTAIT PÉRIMÉ. Il annonçait que la
+ * réponse de fond (« semis isolé par spec ») était « bloquée par le rate-limit
+ * register (5/min/IP) ». Deux fois faux aujourd'hui : le profil `e2e` porte un
+ * plafond dédié de 20/min/IP depuis #475, et le job CI `e2e` comme le service
+ * `backend-e2e` posent `RATE_LIMIT_ENABLED=false`, qui court-circuite le filtre
+ * entier — aucun plafond n'est en vigueur pendant un run.
+ *
+ * CE QUI A ÉTÉ FAIT À LA PLACE (#463) : le NETTOYAGE post-test
+ * (`support/seed-cleanup.ts`), branché sur `seedCategory`/`seedProduct` par une
+ * fixture auto. Mesuré sur un run complet : 81 produits visibles + 88 catégories
+ * restants sur le compte PROD AVANT, 0 produit visible + 1 catégorie APRÈS. La
+ * frise ne franchit donc plus `LANE_VIRTUALIZATION_MIN_ROWS = 60` du fait de la
+ * suite elle-même, et ce helper redevient une précaution plutôt qu'une nécessité.
+ * Le garder : une spec qui sème 60+ lanes À ELLE SEULE reste possible.
  */
 export async function revealSeededLane(
   page: Page,

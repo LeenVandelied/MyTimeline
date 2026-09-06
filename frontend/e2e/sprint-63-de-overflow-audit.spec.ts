@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from './support/fixtures'
+import { type Page } from '@playwright/test'
 import fs from 'node:fs'
 import { waitForFonts } from './support/contrast'
 import { devToolingSelectors, neutralizeDevToolingPointerEvents } from './support/dev-tooling'

@@ -5446,14 +5446,178 @@ sur ce dépôt `Closes #N` ne ferme rien puisque la base de la PR est `dev`. Mil
 
 **Status :** Terminé
 
-### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
+### Sprint 79 — 2026-09-06 (EN COURS — cohésion 0.34, Causes racines du harnais E2E)
 **Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
 **Milestone GitHub :** #80
 **Issues :** #428, #475, #463
 **Vagues :** V1 = #428 ‖ #475 | V2 = #463 (conflit `accounts.ts` / `auth.setup.ts`)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 78 (le reformatage de #528 touche 10 specs e2e — l'absorber avant)
-**Status :** Planifié
+**Status :** En cours
+
+**Démarrage `/sprint start 79` — 2026-09-06.** Worktree `amazing-rubin-93b16e`, branche
+`claude/sprint-79-start-c6dc55` basée sur `origin/dev @113e205` — donc **le merge de clôture du
+Sprint 78 est bien dans la base**, ce qui lève la dépendance dure annoncée au plan (le reformatage
+prettier de #528 touche 10 specs e2e ; les réécrire avant l'aurait provoqué un conflit frontal).
+Vérifié en une commande (`git merge-base --is-ancestor origin/dev HEAD`), pas déduit
+([[sprint-worktree-branche-hors-dev]]). Pas de branche `sprint/79` créée : `sprint/78` est encore
+attachée à un autre worktree et la branche du worktree courant fait le même travail.
+
+**Arbitrage de périmètre (pré-briefing).** Le milestone Sprint 79 contenait **7** issues, mais
+seules **3** portaient le label `sprint-79`. Les 4 autres — #539, #540, #541, #542 — sont les
+follow-ups XS créés au triage de clôture du Sprint 78 et rattachés d'office au milestone suivant :
+exactement le piège consigné dans `mytimeline-sprint-end-github-gotchas`. Arbitré avec le dev :
+**périmètre = les 3 du plan**, les 4 XS détachés du milestone 79 et renvoyés au backlog.
+Argument dirimant sur #542 : elle demande de modifier la **source du plugin `ai-env`**, hors dépôt —
+elle n'est donc pas livrable dans la PR d'un sprint, quel qu'il soit.
+
+**Énoncés vérifiés contre le code avant de briefer** ([[issue-enonces-perimes-verifier-avant-briefer]]).
+Les trois `possibly_done: false` de l'architect reposaient sur de la lecture ; je les ai recomptés :
+- **#428 — exact, littéralement.** `application-dev.properties:35` vaut
+  `app.cors.allowed-origins=http://localhost:3000`, valeur unique sans placeholder, tandis que
+  `application-prod.properties:47` porte **déjà** la forme cible `${CORS_ALLOWED_ORIGINS:}`. Le
+  correctif est une transposition, pas une invention.
+- **#475 — exact, les deux moitiés du calcul.** `RateLimitingFilter` : `Map.entry("POST
+  /api/auth/register", 5)`. `accounts.ts` : `ALL_ACCOUNTS = [SHARED, PWD, DEL, PROD]` = 4, plus
+  l'auto-inscription de `golden-path.spec.ts` = **5 pour un plafond de 5**. Marge nulle, comme
+  annoncé.
+- **#463 — l'énoncé sous-estime l'ampleur d'un facteur 4.** Il cite 4 specs « et probablement
+  d'autres » ; la mesure (`grep -rl PROD frontend/e2e/*.ts`) en donne **16**. Le calibrage Size M ne
+  tient que si la stratégie retenue est mécanique (préfixe unique par test), pas un compte par
+  fichier — qui multiplierait les `register` par 16 et casserait #475 le sprint même où on la livre.
+
+**Partition de la stack de test (contrainte de vague).** `playwright.config.ts` pose un **verrou de
+run** (`e2e/support/run-lock.ts`) : un seul run Playwright à la fois par worktree, `e2e/.auth/` étant
+partagé. L'exclusivité n'est donc pas une convention de briefing, elle est mécaniquement imposée.
+V1 : #475 détient Playwright ; #428 se valide par **test d'intégration Spring**, sans run E2E.
+V2 : #463 détient Playwright et doit produire **deux** runs (nominal + ordre inversé) — sans le
+second, la correction n'est pas prouvée. Recette locale : `npx next dev -p 3000` (webpack, **pas**
+`npm run dev` qui force turbopack et rend 500 sur toutes les pages en worktree, PIT-S61-007), puis
+`PLAYWRIGHT_BASE_URL=...` — et l'oracle `curl /api/auth/me` doit rendre **401** avant toute
+hypothèse ([[e2e-cors-origin-proxy-trap]]).
+
+**Les trois prémisses passées à la mesure — deux réfutées, une confirmée.** C'est le résultat le
+plus utile du sprint, et il n'apparaît dans aucun diff.
+- **#428 — RÉFUTÉE.** Le test a été joué **contre le fichier de properties INCHANGÉ** : 6/7 verts,
+  dont les 3 cas de surcharge. Les variables d'environnement priment déjà sur
+  `application-<profil>.properties` (précédence Spring Boot) — `APP_CORS_ALLOWED_ORIGINS`
+  fonctionnait **sans** placeholder. Le placeholder livré est donc **explicite, pas fonctionnel** :
+  il rend le levier découvrable dans le fichier qu'on ouvre en déboguant. Corollaire : le
+  contournement « conteneur backend frère sur :8090 » traîné depuis le S56 ne traitait pas le
+  symptôme, il était **inutile**. Le défaut réel était documentaire.
+- **#475 — RÉFUTÉE, et c'est la découverte structurante.** `.github/workflows/ci.yml:294` pose
+  `RATE_LIMIT_ENABLED: false`, qui court-circuite le filtre **entier** dès `doFilterInternal`
+  (`RateLimitingFilter:329`). **Aucun plafond n'était en vigueur pendant un run E2E**, ni en CI ni
+  en local. Preuve corroborante : le job émet en réalité **9** inscriptions par run (deux passes),
+  jusqu'à 11 avec les retries — armé à 5, la suite serait rouge depuis longtemps. Le « 5 pour 5 »
+  n'était affirmé que par des commentaires, et l'un d'eux servait d'argument à `workers: 1` en CI.
+- **#463 — CONFIRMÉE, par deux mesures.** En fin de run, le compte `PROD` gardait **81 produits
+  visibles et 88 catégories** ; après correctif, **0 et 2**. Et `sprint-62-select-focus-indicator.spec.ts:551`
+  était **verte seule, rouge en suite** — la signature exacte de l'issue — puis verte des deux côtés
+  sur les deux runs.
+
+**#463 : la stratégie retenue, et l'argument qui a écarté les deux autres.**
+- *Compte dédié par fichier* — écarté : ne corrige pas la dépendance **intra-fichier** que l'issue
+  décrit (29 tests dans `timeline.spec.ts` continueraient de se marcher dessus).
+- *Espace de noms par test* — écarté parce qu'il **était déjà en place** (89 appels à `unique()`) et
+  n'a rien empêché : il supprime les collisions de **nom**, pas la **visibilité**.
+- *Nettoyage post-test* — retenu. Instrumentation des deux portes de semis (`seedCategory` /
+  `seedProduct`) + fixture `auto` : **1 ligne d'import par spec, aucun corps de test modifié**.
+
+**Le chiffre publié par #475 était faux, et le cycle 2 l'a rattrapé.** Le compteur de budget ne
+lisait que `e2e/*.spec.ts` et ratait **3 inscriptions** passant par l'helper
+`e2e/support/auth.ts#registerOnly` (`forgot-password.spec.ts`, `reset-password-failures.spec.ts`).
+Budget réel = **8** pour un plafond de 20, marge **12** — recompté depuis les sources et revérifié
+indépendamment par un reviewer (4 + 1 + 1 + 2). La valeur de configuration (20) n'a pas bougé :
+c'est la documentation qui mentait. Quatre fichiers de commentaires corrigés en cascade.
+
+**Deux MAJEURS de review, une seule cause.** Le reviewer batch et le playwright-reviewer ont ouvert
+indépendamment un MAJEUR sur le **même motif** : des gardes plausibles à la lecture et **jamais
+exercées**. Cycle 2 (`1f6ac24`) sous une règle unique — *une garde n'est acquise que si on l'a vue
+rougir*. Les 8 gardes du sprint ont désormais leur message d'échec réel consigné dans
+`docs/memory/audits/sprint-79-test-coverage.md`. L'assertion tautologique `20 - 5 == 15` livrée au
+cycle 1 serait restée **verte** sur une mutation du plafond : la démonstration du motif, sur le
+sprint qui le corrige. Le commit de cycle 2 a lui-même été relu (MERGEABLE) —
+[[sprint-review-cycle-2-avant-pr]].
+
+**Ce qui tombe pour le Sprint 80.** Le plan fait dépendre #476 (`workers > 1`) de #475 au motif
+qu'« à 2 workers avec le budget au plafond, un 429 se déguise en timeout `/login` ». Ce motif
+**n'existe pas** : il n'y a pas de 429 possible tant que `RATE_LIMIT_ENABLED=false`. La dépendance
+dure S79 → S80 est levée.
+
+**Nuance de l'audit sécurité sur le trou CI.** Le job backend joue les deux nouveaux tests
+d'intégration de rate-limit : une régression de **logique** (mauvais seuil, mauvaise clé de bucket)
+serait attrapée là. Ce que le désarmement en E2E laisse vraiment passer, ce sont les régressions du
+**chemin réseau réel** — proxy Next, extraction d'IP/XFF, interaction CORS × rate-limit en
+conditions live. Verdict : **SÛR**, 1 MINEUR (pas de borne haute sur `register-per-minute`).
+
+**Issues livrées (3) :** #428 (`3a4d442`), #475 (`e9c71d8`), #463 (`4cf02fe`).
+**Vagues exécutées :** V1 = #428 ‖ #475 (2 agents parallèles, fichiers disjoints) | V2 = #463 seul.
+**Commits :** 7 — ouverture · briefings V1 · `3a4d442` · `e9c71d8` · briefing V2 · `4cf02fe` ·
+`1f6ac24` (cycle 2) · audit de tests.
+**BR impactées :** **aucune**. Sprint d'outillage intégral.
+**Reviews :** reviewer batch **0 CRITIQUE / 1 MAJEUR / 3 MINEURS** → MERGEABLE ·
+security-expert **SÛR** (1 MINEUR) · playwright-reviewer **preuve solide** (1 MAJEUR) ·
+re-review du cycle 2 **MERGEABLE** (0/0, 2 MINEURS).
+**Tests :** Backend **577/577** · Frontend **1327/1327** · E2E 3 runs complets (299/10, les 10
+échecs étant des références visuelles `chromium-linux` absentes en local macOS — impossible en CI).
+
+**Réserves non levées, listées :** `products.spec.ts:33` rouge 1 fois sur 3 puis vert, **non
+attribué** (l'agent a refusé l'étiquette « pré-existant » sans run sur la base — c'est la bonne
+posture, [[pre-existant-label-needs-base-ci-check]]) · aucun run CI observé · Firefox non exécuté ·
+ordre intra-fichier non permuté (Playwright 1.61 n'a pas de `--shuffle`) · angle mort résiduel du
+compteur (locator depuis une variable, helper en `export const`) · **effet de bord poste** : la base
+locale `eventmanager` ne migre plus (`V7` casse sur `events_recurrence_unit_check`), une base
+`eventmanager_s79` a été créée et non supprimée.
+
+**Verdict CI — PR #544, 7/7 verts.** `ai-env-packs` 15s · `backend` 1m31 · **`e2e` 9m40** ·
+`flyway-smoke` 45s · `frontend` 2m21 · `secret-scan` 6s · `security` 26s. `mergeable=MERGEABLE`,
+`mergeStateStatus=CLEAN`.
+
+Ce run lève la réserve la plus lourde du sprint : les E2E n'avaient tourné qu'en **local macOS**
+(`workers: 2`), jamais en CI. Le job `e2e` **vert sous Linux à `workers: 1`** confirme deux choses
+d'un coup — la purge post-test de #463 tient dans la configuration réelle, et les **10 échecs de
+références visuelles ne s'y produisent pas**. La prédiction du lead (le dépôt ne contient que des
+références `chromium-linux`, zéro `darwin`, donc l'échec est impossible en CI) passe du statut de
+déduction à celui de **fait mesuré**. C'est précisément le contrôle qui manquait au S76 et que
+[[playwright-refs-plateforme-et-armement]] réclame.
+
+**Follow-ups arbitrés (Phase 4 triage) — 8 créés, 0 discardé, 0 absorbé.** Cinq venaient des
+`RECOMMAND_FOLLOWUP` des agents ; **trois ont été relevés par le lead pendant les reviews** et
+n'apparaissaient dans aucun `done.md` (marqués ☆).
+  - ☆ la base locale ne migre plus au-delà de V7 → **#545** [M | P1 | bug]
+  - ☆ catégorie indélébile : `countByCategoryId` natif ignore `@SQLRestriction` → **#546** [M | P1 | bug]
+  - ré-armer le rate-limit dans la stack E2E → **#547** [M | P1 | chore]
+  - références visuelles absentes pour macOS → **#548** [S | P2 | chore]
+  - journaliser la liste CORS effective en dev → **#549** [S | P2 | enhancement]
+  - purge post-test aveugle aux catégories créées à l'IHM → **#550** [S | P2 | chore]
+  - ☆ pas de borne haute sur `register-per-minute` → **#551** [XS | P3 | enhancement]
+  - runbook CORS : formulation périmée → **#552** [XS | P3 | chore]
+Ratio discard **0 %** — aucun sur-signalement. Toutes sans milestone (le milestone Sprint 80 porte
+déjà ses 3 issues planifiées).
+
+**Rectification d'une affirmation du lead, à consigner.** Le désarmement du rate-limit en CI a été
+présenté en cours de sprint comme « la découverte structurante ». C'est **inexact** : l'issue
+**#320**, ouverte depuis le S45, décrit déjà `RATE_LIMIT_ENABLED=false` et le trou de couverture qui
+en découle. Ce que le S79 apporte réellement est la **conséquence chiffrée** — 9 inscriptions
+émises par run là où le harnais en annonçait 5, la fausseté du « 5 pour 5 », et le fait que ce
+chiffre **servait d'argument** au maintien de `workers: 1`. La nouveauté est la mesure, pas le
+constat. #547 référence #320 plutôt que de la dupliquer ; **à trancher : fermer l'une au profit de
+l'autre.** Leçon générale, voisine de [[upstream-blocker-verdict-expires]] : avant de qualifier un
+constat de « découverte », chercher l'issue qui le porte déjà.
+
+**Effet de bord poste, NON nettoyé (décision du dev).** La base `eventmanager_s79` créée par un
+agent est **conservée**. Vérification faite avant toute suppression : `eventmanager` est arrêtée à
+**V6 sur 15** tandis que `eventmanager_s79` est à **V15** — c'était donc la seule base locale
+complètement migrée du poste, et la détruire aurait laissé le dev sans base utilisable. Le risque
+avait été formulé au conditionnel par le lead, puis **re-soumis au dev une fois mesuré** plutôt
+qu'appliqué à la lettre. Le blocage `V7` lui-même est tracé en #545.
+
+**Écarts de taxonomie constatés à la création des issues :** `epic:catalog` n'existe pas dans le
+dépôt (la taxonomie sépare `epic:categories` et `epic:products`) → `epic:categories` posé sur #546
+et #550. `backend/devops` n'est pas une valeur de stack valide → `backend` seul, le domaine étant
+porté par `epic:*`. Aucun label inventé.
+
 
 ### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.

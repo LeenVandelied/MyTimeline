@@ -1,4 +1,5 @@
-import { test, expect, type Page, type APIRequestContext } from '@playwright/test'
+import { test, expect } from './support/fixtures'
+import { type Page, type APIRequestContext } from '@playwright/test'
 import { PROD } from './support/accounts'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 

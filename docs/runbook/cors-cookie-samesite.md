@@ -18,7 +18,7 @@ Sprint 4 (PR #113).
 
 | Profil | Source | Valeur |
 |--------|--------|--------|
-| dev | `application-dev.properties` | `http://localhost:3000` |
+| dev | `application-dev.properties` ← env `APP_CORS_ALLOWED_ORIGINS` | `http://localhost:3000` par défaut, surchargeable (#428) |
 | prod | `application-prod.properties` ← env `CORS_ALLOWED_ORIGINS` | OBLIGATOIRE, aucun default |
 | fallback `@Value` | défaut intégré | `http://localhost:3000` (fail-safe dev, jamais wildcard) |
 
@@ -34,6 +34,39 @@ export CORS_ALLOWED_ORIGINS=https://app.mytimeline.fr
 
 Valeur manquante en prod => le bean CORS échoue au boot (fail-fast) plutôt que
 d'autoriser silencieusement une mauvaise origine.
+
+### Dev local — port 3000 déjà pris (#428)
+
+Symptôme : un autre projet du poste occupe `:3000`, le front bascule sur `:3100`
+et **relaie** `Origin: http://localhost:3100` au backend. Le backend dev répond
+**403**, que `auth.setup.ts` rapporte comme un « rate-limit probable ».
+
+> ⚠️ Un `curl` de contrôle **réussit** et semble disculper le backend : il n'envoie
+> aucun en-tête `Origin`, donc ne déclenche jamais le filtre CORS (PIT-S57-003).
+> Pour reproduire un vrai préflight : `curl -i -X OPTIONS <url> -H 'Origin: http://localhost:3100' -H 'Access-Control-Request-Method: GET'`.
+
+Correctif : surcharger la liste (multi-ports acceptés) au lancement du backend.
+
+```bash
+APP_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3100 ./mvnw spring-boot:run
+```
+
+**Mesuré au S79** : cette surcharge fonctionnait **déjà** avant #428 — les variables
+d'environnement priment sur les `application-*.properties` dans l'ordre de précédence
+Spring Boot. Le placeholder ajouté en #428 ne débloque rien de nouveau : il rend le
+levier **découvrable** dans le fichier qu'on ouvre en débogant. Le vrai défaut était
+documentaire, pas fonctionnel.
+
+> ⚠️ **Ne jamais déclarer `APP_CORS_ALLOWED_ORIGINS` dans un fichier chargé
+> automatiquement** (`.env`, `.env.example`, `docker-compose`). Une ligne
+> `APP_CORS_ALLOWED_ORIGINS=` exportée **vide** écrase le défaut et produit une origine
+> BLANCHE — un CORS qui refuse **tout**, avec le même 403 trompeur (PIT-S55-001).
+> Décision assumée : aucun garde-fou « blanc → défaut » côté code, il ferait diverger
+> dev et prod (où le vide DOIT rester un fail-fast, `ProfileSafetyGuard` #253).
+
+Comportement épinglé par
+`backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java`
+(7 cas : défaut, surcharge mono/multi/espaces, variable vide, non-régression prod).
 
 ## 2. `Authorization` retiré de `exposedHeaders`
 

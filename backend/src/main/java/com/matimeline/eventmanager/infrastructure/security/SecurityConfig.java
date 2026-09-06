@@ -56,11 +56,26 @@ public class SecurityConfig {
     // Profils : dev = http://localhost:3000 ; prod = origine(s) via env CORS_ALLOWED_ORIGINS.
     private final List<String> allowedOrigins;
 
+    /**
+     * Expression de placeholder résolue pour {@link #allowedOrigins} (#428).
+     *
+     * <p>Extraite en constante pour que le test d'intégration
+     * {@code CorsAllowedOriginsConfigIntegrationTest} résolve EXACTEMENT la même
+     * expression que le constructeur : une divergence entre les deux rendrait le test
+     * vert sur une expression qui n'est plus celle du code de production.
+     *
+     * <p>Le default INTERNE {@code :http://localhost:3000} est le filet fail-safe si la
+     * property est totalement absente (jamais un wildcard, incompatible avec
+     * {@code allowCredentials=true}). Il ne dispense PAS le profil dev de porter sa
+     * propre valeur : voir {@code application-dev.properties}.
+     */
+    static final String ALLOWED_ORIGINS_EXPRESSION = "${app.cors.allowed-origins:http://localhost:3000}";
+
     // userDetailsService n'est pas injecté ici : il est fourni en paramètre du @Bean
     // authenticationManager(...) (où Spring le résout), pas via ce constructeur.
     public SecurityConfig(@Lazy JwtFilter jwtFilter,
                           RateLimitingFilter rateLimitingFilter,
-                          @Value("${app.cors.allowed-origins:http://localhost:3000}") List<String> allowedOrigins) {
+                          @Value(ALLOWED_ORIGINS_EXPRESSION) List<String> allowedOrigins) {
         this.jwtFilter = jwtFilter;
         this.rateLimitingFilter = rateLimitingFilter;
         this.allowedOrigins = allowedOrigins;

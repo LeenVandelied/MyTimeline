@@ -5,17 +5,54 @@ import path from 'node:path'
  * Comptes E2E FIXES enregistrés UNE SEULE FOIS par le projet `setup`
  * (`auth.setup.ts`) puis réutilisés par les specs via `test.use({ storageState })`.
  *
- * POURQUOI DES COMPTES FIXES — anti rate-limit register (`RateLimitingFilter` :
- * `/api/auth/register` = 5 requêtes / minute / IP). Le job CI `e2e` tourne sur UNE
- * IP. L'ancien pattern « 1 register par test » (helper `registerAndLogin` appelé
- * dans chaque test) faisait ~14 registers, re-joués à chaque retry -> 429 ->
- * l'app reste sur /fr/login -> timeout `dashboard`/`settings-page`.
+ * POURQUOI DES COMPTES FIXES — anti rate-limit register (`RateLimitingFilter` sur
+ * `/api/auth/register`). Le job CI `e2e` tourne sur UNE IP. L'ancien pattern
+ * « 1 register par test » (helper `registerAndLogin` appelé dans chaque test)
+ * faisait ~14 registers, re-joués à chaque retry -> 429 -> l'app reste sur
+ * /fr/login -> timeout `dashboard`/`settings-page`.
  *
  * Le projet `setup` s'exécute UNE fois (dépendance de `chromium` et `firefox`) et
  * n'est PAS re-joué quand un test échoue et retry. Le nombre de registers de TOUTE
  * la suite est donc borné à `ALL_ACCOUNTS.length` (4) + le self-register du
- * golden-path = **5 registers par run**. Toute nouvelle identité ajoutée ici
- * consomme directement le budget du bucket4j : ne pas en ajouter sans recompter.
+ * golden-path (1) + les 3 appels au helper `support/auth.ts#registerOnly`
+ * (`forgot-password.spec.ts` x1, `reset-password-failures.spec.ts` x2)
+ * = **8 registers par run**.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LE BUDGET, EN CHIFFRES — #475, et ce que les versions précédentes de ce
+ * commentaire affirmaient de FAUX
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Ce bloc concluait « on reste sous le rate-limit register (5/min/IP) ». C'était
+ * faux : 5 pour un plafond de 5, c'est le plafond, pas « sous » — marge NULLE.
+ * Un commentaire voisin annonçait par ailleurs « 3 comptes » là où le tableau en
+ * contient 4. Le chiffre faux avait essaimé jusqu'à `playwright.config.ts`, où il
+ * SERVAIT D'ARGUMENT pour maintenir `workers: 1` en CI.
+ *
+ * ÉTAT RÉEL depuis #475, CHIFFRE CORRIGÉ au cycle 2 de revue du S79 :
+ *   budget suite  =  4 (ALL_ACCOUNTS) + 1 (golden-path)
+ *                    + 3 (helper `registerOnly`)           =  8 / min / IP
+ *   plafond e2e   =  app.rate-limit.register-per-minute    = 20 / min / IP
+ *                    (backend/src/main/resources/application-e2e.properties)
+ *   marge         =                                          12
+ *
+ * ⚠ CE COMMENTAIRE A ANNONCÉ 5 PENDANT TOUT LE S79. Le recompte automatique ne
+ * regardait alors que les fichiers `*.spec.ts` : une inscription émise depuis un
+ * helper de `e2e/support/` lui était invisible, et il en manquait 3. La détection
+ * résout maintenant cette indirection, et elle est elle-même exercée sur des
+ * sources synthétiques dans `e2e-register-budget.test.ts`.
+ *
+ * ⚠ ET LA NUANCE QUI DÉCIDE DE TOUT : le job CI `e2e` et le service `backend-e2e`
+ * posent `RATE_LIMIT_ENABLED=false`, qui court-circuite le filtre ENTIER. Pendant
+ * un run E2E, AUCUN plafond n'est aujourd'hui en vigueur — ni 5, ni 20. Un run
+ * vert ne prouve donc rien sur ce budget, et n'a jamais rien prouvé. Le plafond
+ * de 20 est ce qui rend le re-armement du filtre possible ; il ne le fait pas.
+ *
+ * Ces trois nombres ne sont plus tenus par ce commentaire : ils sont RECOMPTÉS
+ * depuis les sources par `frontend/src/__tests__/e2e-register-budget.test.ts`
+ * (comptes + specs vs plafond backend), et le plafond est exercé pour de vrai par
+ * `RegisterRateLimitE2eProfileIntegrationTest` côté backend. Ajouter une identité
+ * ici fait rougir le premier : c'est voulu, recompter est le point.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * IDENTITÉS PARTAGÉES ENTRE PROCESS — #469, ce qui a VRAIMENT été corrigé
@@ -73,7 +110,7 @@ import path from 'node:path'
  * - isolation inter-process : la graine mélange `CI_JOB_ID`, le `pid` du process
  *   principal, l'horloge et un aléa — deux jobs partageant l'horloge sur un même
  *   runner ne peuvent pas collisionner ;
- * - budget register inchangé (5 par run, cf. plus haut).
+ * - budget register inchangé (5 par run, cf. « LE BUDGET, EN CHIFFRES » plus haut).
  */
 
 /** Variable d'environnement portant la graine d'identités partagée par tous les process. */

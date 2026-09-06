@@ -582,6 +582,30 @@ Pour prouver qu'une fonction shell propage bien ses échecs hors du contexte pro
 ## PIT-S78-008 — Le hook `warn-test-delegation.sh` tue un heredoc pour la QUATRIÈME fois, et il a tué celui qui écrivait CETTE entrée
 Récurrence de [[PIT-S63-007]] et [[PIT-S74-007]]. Au S78 il a frappé deux fois **le lead**, et le second cas est le plus parlant : le heredoc qui ajoutait ce bloc à `pitfalls.md` contenait la chaîne d'invocation Playwright **en tant que citation dans le texte du pitfall**, et l'écriture entière a été bloquée. Le hook ne distingue ni un usage d'une **mention**, ni une commande d'une **négation** (famille [[PIT-S63-017]]) — il scanne le texte de l'appel `Bash`, point. Premier cas du même sprint : un heredoc rédigeant un briefing dont une consigne **interdisait** de lancer Playwright. Parade : dès qu'un texte parle d'un runner de test, l'écrire avec l'outil `Write`, ou passer par un fichier intermédiaire — jamais par heredoc. (Sprint 78, briefings et clôture)
 
+## PIT-S79-001 — Un budget annoncé par un COMMENTAIRE n'est pas un budget : la stack qui exécute la suite désarmait le garde-fou entier
+L'énoncé de #475 affirmait que la suite E2E consommait « 5 inscriptions pour un plafond de 5, marge nulle en CI ». Le job `e2e` pose en réalité `RATE_LIMIT_ENABLED: false` (`ci.yml:294`), qui court-circuite `RateLimitingFilter` **en entier** dès `doFilterInternal` — tous les slots, tous les endpoints. **Aucun plafond n'était en vigueur pendant un run E2E**, ni en CI ni en local. L'énoncé avait été écrit à partir des commentaires du harnais, jamais d'une mesure. Preuve corroborante immédiate : le job émet **9** inscriptions par run (deux passes), jusqu'à 11 avec les retries — armé à 5, la suite serait rouge depuis des mois. Règle : lire la configuration de la stack qui exécute réellement la suite (workflow + docker-compose) AVANT de croire un budget annoncé par un commentaire. Un budget qu'aucun test ne recompte n'est pas un budget : il dérive, et l'issue qui en naît est fausse dès sa première ligne. (Sprint 79 #475)
+
+
+## PIT-S79-002 — Un chiffre faux recopié dans un 3e fichier est déjà devenu un ARGUMENT de conception
+Le « 5 pour un plafond de 5 » avait essaimé dans `accounts.ts`, `auth.setup.ts` et `playwright.config.ts` — et dans ce dernier il **justifiait** le maintien de `workers: 1` en CI. Réfuter le chiffre ne suffit donc pas : il faut greper toutes ses copies et vérifier ce que **chacune justifie**, sinon une décision continue de reposer sur une valeur morte. Corollaire au S79 : la dépendance dure S79 → S80 (« à 2 workers, un 429 se déguise en timeout `/login` ») est tombée avec le chiffre. (Sprint 79 #475)
+
+
+## PIT-S79-003 — Une variable d'environnement surchargeait DÉJÀ la property : la mesure a réfuté l'énoncé avant la première ligne de code
+#428 demandait de rendre `app.cors.allowed-origins` surchargeable en profil dev. Le test a été joué **contre le fichier de properties inchangé** : 6/7 verts, dont les 3 cas de surcharge. Les variables d'environnement priment sur `application-<profil>.properties` dans l'ordre de précédence Spring Boot (relaxed binding : `APP_CORS_ALLOWED_ORIGINS` → `app.cors.allowed-origins`) — le levier existait, il n'était écrit nulle part. Corollaire : le contournement « conteneur backend frère sur `:8090` » traîné depuis le S56 ne traitait pas le symptôme, il était **inutile**. Règle : jouer le test contre le code NON corrigé est ce qui distingue un correctif d'un placebo. (Sprint 79 #428)
+
+
+## PIT-S79-004 — `withPropertyValues` PROUVE LE MAUVAIS MÉCANISME quand on veut démontrer une surcharge par variable d'environnement
+`withPropertyValues(...)` alimente la source « Inlined Test Properties », dont la précédence n'est pas celle d'une vraie variable d'environnement : un test écrit ainsi peut être vert alors que la surcharge réelle échoue, ou l'inverse. Il faut **remplacer** la source `systemEnvironment` (`StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME`) par une `SystemEnvironmentPropertySource` peuplée à la main — `replace` et non `addFirst`, ce qui conserve la position de précédence canonique **et** isole le test des variables réellement exportées sur le poste. (Sprint 79 #428)
+
+
+## PIT-S79-005 — Une `@Configuration` imbriquée dans un test rougit 106 tests étrangers, et le message de surface ne nomme jamais la cause
+Les classes de test vivent sur le **même classpath** que le code de production : le component scan de TOUS les `@SpringBootTest` ramasse une `@Configuration` imbriquée dans un fichier de test, et un `@Bean` homonyme entre en collision avec celui de la configuration réelle → `BeanDefinitionOverrideException` sur **106 tests d'intégration** très loin du fichier modifié. Le message de surface (`ApplicationContext failure threshold (1) exceeded`) est une **cascade** : la cause n'apparaît que dans le `Caused by:` du log maven complet, pas dans la sortie surefire. Parade : `@TestConfiguration` (exclue du scan par `TypeExcludeFilter`) + nom de méthode `@Bean` distinct comme seconde barrière. Heuristique : un test « local » qui rougit plus de dix tests étrangers est presque toujours une collision de bean, pas une régression fonctionnelle. (Sprint 79 #428)
+
+
+## PIT-S79-006 — `@SQLRestriction` ne protège PAS d'une requête SQL NATIVE : un produit archivé rend sa catégorie indélébile
+`CategoryServiceImpl.deleteCategory` compte les produits liés via `countByCategoryId`, qui est du **SQL natif** : le `@SQLRestriction("archived = false")` de `ProductEntity` ne s'y applique pas, donc les produits archivés y comptent encore. Conséquence : toute catégorie ayant un jour porté un produit rend **409 pour toujours**. Parade côté appelant : `DELETE /api/categories/{id}?reassignToCategoryId=<poubelle>`. Règle générale : soft delete + comptage natif = suppression du parent impossible ; le vérifier sur **la requête**, jamais sur l'annotation. (Sprint 79 #463)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

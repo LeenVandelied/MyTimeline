@@ -157,10 +157,26 @@ export default defineConfig({
   // invalidé ci-dessus. Les 4 specs `settings-*` sont vertes sur les DEUX runs.
   // Repère : 9 min 0 à `workers: 1` (S64) → 3-4 min ici.
   //
-  // ⚠ ACQUIS EN LOCAL SEULEMENT. La CI reste à 1 (`process.env.CI ? 1 : 2`) : le runner
-  // tourne sur UNE IP et le budget `register` de la suite est DÉJÀ au plafond
-  // (5 par run vs 5/min/IP, cf. `e2e/support/accounts.ts`). Rien ne démontre que le
-  // parallélisme y tiendrait — ne pas le supposer.
+  // ⚠ ACQUIS EN LOCAL SEULEMENT. La CI reste à 1 (`process.env.CI ? 1 : 2`).
+  //
+  // ⚠ CORRECTION #475 — L'ARGUMENT QUI FIGURAIT ICI ÉTAIT FAUX. Ce paragraphe
+  // justifiait `workers: 1` en CI par « le budget `register` de la suite est DÉJÀ au
+  // plafond (5 par run vs 5/min/IP) ». Deux erreurs, dans le même argument :
+  //   1. le job CI `e2e` démarre le backend avec `RATE_LIMIT_ENABLED=false`
+  //      (ci.yml), qui court-circuite le filtre ENTIER : aucun plafond n'est en
+  //      vigueur pendant un run, donc aucun budget n'y est « au plafond » ;
+  //   2. depuis #475 le profil `e2e` porte de toute façon un plafond dédié de
+  //      20/min/IP (application-e2e.properties), soit 8 émis pour 20 — marge 12.
+  //      (8 et non 5 : le compte a été corrigé au cycle 2 de revue du S79, les 3
+  //      inscriptions émises via `support/auth.ts#registerOnly` manquaient.)
+  // Le rate-limit `register` n'est donc PAS une raison de rester à 1 worker en CI.
+  //
+  // CE QUI RESTE VRAI, et ce qui motive seul la valeur 1 : la borne de CHARGE
+  // héritée de #465 (mort du serveur Next sous parallélisme, cause racine jamais
+  // trouvée) n'a été mesurée qu'en LOCAL. Rien ne démontre que 2 workers tiendraient
+  // sur un runner CI — ne pas le supposer, et surtout ne pas remonter cette valeur
+  // en croyant que #475 l'a débloquée : #475 retire un faux obstacle, il n'apporte
+  // aucune mesure de charge en CI.
   //
   // La borne de charge héritée de #465 reste par ailleurs en vigueur : on ne monte pas
   // au-delà de 2, seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré.
