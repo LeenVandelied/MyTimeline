@@ -5427,7 +5427,24 @@ de focus disloquée par le tri de classes (#528), et 3 descriptions fausses du s
   - `husky`/`lint-staged` déclarés sans `.husky/` ni script `prepare` : installer le hook ou
     retirer les deux dépendances mortes [XS | frontend]
 
-**Status :** PR #538 ouverte, CI verte 7/7 — en attente d'arbitrage des follow-ups et du merge.
+**Follow-ups arbitrés (Phase 4 triage) — 4 retenus sur 4, 0 écarté :**
+  - `husky`/`lint-staged` déclarés sans `.husky/` ni script `prepare` [XS | frontend] → issue **#539**
+  - consigner les valeurs de référence de couverture [XS | ci] → issue **#540**
+  - restreindre le périmètre de mesure v8 côté frontend [XS | frontend] → issue **#541** (dépend de #540)
+  - reporter la correction des rules-jit en amont du plugin ai-env [XS | ci] → issue **#542**
+
+  Toutes attachées au milestone Sprint 79 (#80), toutes `size:XS` / `priority:P3`. Ratio discard
+  0/4 — les fullstack-dev n'ont pas sur-signalé ce sprint. Écart de taxonomie constaté par le
+  project-manager : **aucun label `ci` n'existe** dans le dépôt, les deux items de ce domaine
+  portent donc `epic:devops`.
+
+**Merge :** PR **#538** fusionnée dans `dev` le 2026-09-06, commit de merge `c004fa5`. CI verte
+**7/7 sur le SHA final** `f6dfcd3` (et non sur un vert périmé : chaque commit de clôture relançait
+la CI, l'attente a été refaite à chaque fois). Issues #528, #434, #169 fermées **après** le merge —
+sur ce dépôt `Closes #N` ne ferme rien puisque la base de la PR est `dev`. Milestone #79 fermé
+(0 ouverte / 3 fermées).
+
+**Status :** Terminé
 
 ### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
 **Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
