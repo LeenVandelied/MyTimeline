@@ -41,7 +41,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * (brute-force / credential-stuffing mitigation — issue #33, BR-AUT-002 family ;
  * resource-exhaustion mitigation for the RGPD export — issues #58, #265).
  *
- * <p>Only the {@code (method, exact-path)} pairs listed in {@link #LIMITS} are
+ * <p>Only the {@code (method, exact-path)} pairs listed in {@link #DEFAULT_LIMITS} are
  * throttled; every other request (including {@code GET /api/auth/me},
  * {@code POST /api/auth/logout}, and the whole rest of the API) passes through
  * untouched. On overflow the filter short-circuits with HTTP 429 and a minimal
@@ -62,7 +62,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * cross-user enumeration), so the abuse surface is bounded to a user hammering
  * their own already-produced artefacts — an accepted residual, tracked in
  * {@code docs/adr/ADR-003-export-rgpd-async-job.md} (§ Rate-limiting). Because the
- * bucket key is exact-URI based, these two nested paths never match {@link #LIMITS}.
+ * bucket key is exact-URI based, these two nested paths never match {@link #DEFAULT_LIMITS}.
  *
  * <p><b>Profile endpoints (#134):</b> {@code POST /api/me/change-password} (old-password
  * oracle — brute-forceable from a stolen session, previously unthrottled) and
@@ -94,18 +94,34 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitingFilter.class);
 
+    /** Bucket key of the one slot whose ceiling is profile-tunable (see {@link #registerPerMinute}). */
+    private static final String REGISTER_KEY = "POST /api/auth/register";
+
+    /**
+     * #475 — default ceiling of {@link #REGISTER_KEY}, in force in EVERY profile that does
+     * not override {@code app.rate-limit.register-per-minute} (prod included). Declared here
+     * and NOWHERE else: the {@code @Value} placeholder below resolves to {@code null} when the
+     * property is absent, so this constant is the single source of the default. Asserted by
+     * {@code RegisterRateLimitConfigurableIntegrationTest#defaultProfile_registerCeilingIsFive}.
+     */
+    private static final int DEFAULT_REGISTER_PER_MINUTE = 5;
+
     /**
      * Requests per minute per IP, per throttled {@code "METHOD /exact/path"} pair.
      * The key embeds the HTTP method so a single URI can be throttled on some verbs
      * only (e.g. {@code /api/export} is limited on both POST and GET, while a bare
      * path is otherwise POST-only here).
+     *
+     * <p>DEFAULTS ONLY. The table actually consulted at runtime is the per-instance
+     * {@link #limits}, which is this map with {@link #REGISTER_KEY} overridden by
+     * {@code app.rate-limit.register-per-minute} when that property is set.
      */
-    private static final Map<String, Integer> LIMITS = Map.ofEntries(
+    private static final Map<String, Integer> DEFAULT_LIMITS = Map.ofEntries(
             // Map.ofEntries (et non Map.of) : Map.of plafonne à 10 paires. La map en
             // comptait 8 avant #134 et en compte 10 après — pile la limite. ofEntries n'a
             // pas ce plafond : ajouter un futur slot ne demande plus de refactor.
             Map.entry("POST /api/auth/login", 10),
-            Map.entry("POST /api/auth/register", 5),
+            Map.entry(REGISTER_KEY, DEFAULT_REGISTER_PER_MINUTE),
             Map.entry("POST /api/auth/refresh", 20),
             // #49 : forgot-password est une cible d'abus (spam mail / énumération).
             // Throttle strict par IP, cohérent avec le slot reset-password (#33).
@@ -208,10 +224,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final TimeMeter timeMeter;
 
     /**
-     * Decodes + normalises the request path before matching against {@link #LIMITS}.
+     * Decodes + normalises the request path before matching against {@link #DEFAULT_LIMITS}.
      *
      * <p><b>Why (audit #265):</b> {@link HttpServletRequest#getRequestURI()} is the RAW,
-     * still-percent-encoded URI (Servlet contract). Matching {@code LIMITS} on it lets an
+     * still-percent-encoded URI (Servlet contract). Matching the limit table on it lets an
      * attacker bypass the throttle with a trivially re-encoded path: {@code GET /api/%65xport}
      * ({@code e} → {@code %65}) yields the raw string {@code "GET /api/%65xport"}, which does
      * not equal {@code "GET /api/export"} → no bucket → unlimited hits, while Spring still
@@ -242,6 +258,37 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final boolean rateLimitEnabled;
 
     /**
+     * #475 — effective ceiling of {@link #REGISTER_KEY} for THIS instance, i.e. the value of
+     * {@code app.rate-limit.register-per-minute} when set, else {@link #DEFAULT_REGISTER_PER_MINUTE}.
+     *
+     * <p><b>Why this one slot is tunable and the others are not.</b> {@code POST /api/auth/register}
+     * is the only throttled endpoint an automated test suite must legitimately hit SEVERAL times in
+     * a row from ONE IP: the Playwright {@code setup} project provisions the fixed E2E accounts
+     * ({@code frontend/e2e/support/accounts.ts}) and the golden path self-registers. Every other
+     * slot models an abuse pattern that no test needs to reproduce in bulk.
+     *
+     * <p><b>What this replaces, and what it does NOT.</b> Before #475 the E2E stack had exactly one
+     * way to get through: {@code app.rate-limit.enabled=false} (CI job {@code e2e}, ci.yml; service
+     * {@code backend-e2e}, docker-compose.yml), which bypasses the WHOLE filter — every slot, every
+     * endpoint. That is strictly worse than an IP exemption: the filter the suite runs against is
+     * not throttled at all, so nothing the suite does can ever exercise it, and the register budget
+     * quoted all over the E2E harness ("5 per run vs 5/min") was measuring a ceiling that was not
+     * in force. A dedicated per-profile ceiling lets the {@code e2e} profile keep the filter ARMED
+     * with a documented margin instead. It does NOT by itself re-arm the CI job — that flip is a
+     * separate change (the login slot, 10/min, has its own budget to recount first).
+     *
+     * <p>Floor-checked at construction: a value below 1 would silently throttle EVERY register
+     * (bucket capacity 0) and is rejected at boot rather than at the first user signup.
+     */
+    private final int registerPerMinute;
+
+    /**
+     * #475 — the limit table actually consulted by {@link #doFilterInternal}: {@link #DEFAULT_LIMITS}
+     * with {@link #REGISTER_KEY} remapped to {@link #registerPerMinute}. Built once, immutable.
+     */
+    private final Map<String, Integer> limits;
+
+    /**
      * @param timeMeter            time source backing every bucket. Production wires the
      *                             real nanotime meter; tests inject a controllable one to
      *                             advance the window deterministically without {@code Thread.sleep}.
@@ -249,14 +296,36 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      *                             ({@code app.rate-limit.trust-forwarded-header}, default false).
      * @param rateLimitEnabled     master switch ({@code app.rate-limit.enabled}, default true).
      *                             {@code false} bypasses the filter entirely — CI/e2e only.
+     * @param registerPerMinute    per-IP ceiling of {@code POST /api/auth/register}
+     *                             ({@code app.rate-limit.register-per-minute}). Injected as a boxed
+     *                             {@code Integer} defaulting to {@code null} ON PURPOSE: the numeric
+     *                             default then lives in {@link #DEFAULT_REGISTER_PER_MINUTE} alone,
+     *                             instead of being duplicated in a placeholder literal that nothing
+     *                             would keep in sync. Only {@code application-e2e.properties} sets it.
      */
     public RateLimitingFilter(
             TimeMeter timeMeter,
             @Value("${app.rate-limit.trust-forwarded-header:false}") boolean trustForwardedHeader,
-            @Value("${app.rate-limit.enabled:true}") boolean rateLimitEnabled) {
+            @Value("${app.rate-limit.enabled:true}") boolean rateLimitEnabled,
+            @Value("${app.rate-limit.register-per-minute:#{null}}") Integer registerPerMinute) {
         this.timeMeter = timeMeter;
         this.trustForwardedHeader = trustForwardedHeader;
         this.rateLimitEnabled = rateLimitEnabled;
+        this.registerPerMinute = registerPerMinute != null ? registerPerMinute : DEFAULT_REGISTER_PER_MINUTE;
+        if (this.registerPerMinute < 1) {
+            throw new IllegalArgumentException(
+                    "app.rate-limit.register-per-minute must be >= 1 (got " + this.registerPerMinute
+                            + "): a ceiling of 0 gives every register bucket a capacity of 0, which "
+                            + "429s EVERY signup. Use app.rate-limit.enabled=false to bypass the filter.");
+        }
+        Map<String, Integer> effective = new LinkedHashMap<>(DEFAULT_LIMITS);
+        effective.put(REGISTER_KEY, this.registerPerMinute);
+        this.limits = Map.copyOf(effective);
+        if (this.registerPerMinute != DEFAULT_REGISTER_PER_MINUTE) {
+            log.warn("register rate limit OVERRIDDEN to {}/min/IP (default {}) via "
+                    + "app.rate-limit.register-per-minute — intended for the e2e profile only.",
+                    this.registerPerMinute, DEFAULT_REGISTER_PER_MINUTE);
+        }
         if (!rateLimitEnabled) {
             log.warn("rate limiting DISABLED (app.rate-limit.enabled=false) — CI/e2e only. "
                     + "Do NOT run this configuration in prod or any long-lived environment.");
@@ -278,7 +347,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String path = pathHelper.getPathWithinApplication(request);
         String methodAndPath = request.getMethod() + " " + path;
 
-        Integer limit = LIMITS.get(methodAndPath);
+        Integer limit = limits.get(methodAndPath);
         if (limit == null) {
             chain.doFilter(request, response);
             return;

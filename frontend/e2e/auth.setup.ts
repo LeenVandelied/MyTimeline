@@ -8,10 +8,15 @@ import { ensureRegisterForm } from './support/register-page'
  * Provisionne UNE SEULE FOIS par run les comptes E2E fixes (register UI -> login
  * UI -> cookie JWT HttpOnly) et sauvegarde leur `storageState` (cookies) sur disque.
  * Les specs chargent ensuite ce state via `test.use({ storageState })` : ZÉRO
- * register par test -> on reste sous le rate-limit register (5/min/IP).
+ * register par test.
  *
  * Le setup ne se rejoue PAS quand un test échoue et retry (seuls les tests
- * retryent). Nombre de registers de la suite settings = nombre de comptes ici (3).
+ * retryent). Nombre de registers émis ici = `ALL_ACCOUNTS.length`, soit 4 — et NON
+ * 3, chiffre qu'affirmait ce commentaire depuis l'ajout du compte `prod` (#218).
+ * Le budget complet (4 + 1 auto-inscription golden-path = 5) et sa marge face au
+ * plafond backend sont documentés dans `support/accounts.ts` (§ LE BUDGET, EN
+ * CHIFFRES) et RECOMPTÉS par `src/__tests__/e2e-register-budget.test.ts` — c'est
+ * ce recomptage, pas ce paragraphe, qui fait foi.
  *
  * Chaque compte est provisionné en SÉRIE (registers espacés dans le même job) et
  * dans son propre `browser.newContext` pour isoler les cookies avant sauvegarde.
@@ -20,15 +25,24 @@ import { ensureRegisterForm } from './support/register-page'
 type Page = import('@playwright/test').Page
 
 /**
- * Fenêtre bucket4j register = 5 req / min / IP. Le setup enchaîne 3 registers, plus
- * le self-register golden-path : sous charge (retry, réordonnancement) la file peut
- * frôler/dépasser le seuil -> 429 -> l'app RESTE sur /fr/register (aucune redirection
- * vers /fr/login) -> le `provision` échoue (flaky `[setup]`, cf. run 28752900622).
+ * Résilience au 429 sur le register.
  *
- * On rend donc CHAQUE register RÉSILIENT au rate-limit : si après submit on ne bascule
- * pas sur le formulaire de login dans un délai court, on ATTEND que le bucket se
- * recharge (~1 min par minute) et on RETENTE le submit. Déterministe (pas de register
- * par test réintroduit ; on ne fait que temporiser le provisioning fixe).
+ * MOTIF D'ORIGINE : le setup enchaîne 4 registers, plus le self-register du
+ * golden-path, pour une fenêtre bucket4j alors plafonnée à 5 req/min/IP. Sous charge
+ * (retry, réordonnancement) la file dépassait le seuil -> 429 -> l'app RESTE sur
+ * /fr/register (aucune redirection vers /fr/login) -> le `provision` échoue (flaky
+ * `[setup]`, cf. run 28752900622).
+ *
+ * DEPUIS #475 le profil `e2e` porte un plafond dédié de 20/min/IP (marge 15) : le
+ * dépassement n'est plus attendu. On GARDE néanmoins cette résilience — elle ne coûte
+ * rien quand rien ne rate, et elle reste le seul filet si la stack tourne un jour
+ * contre un backend au plafond par défaut (5). La retirer, ce serait miser sur une
+ * configuration qui n'est vérifiée nulle part au runtime.
+ *
+ * Mécanique : si après submit on ne bascule pas sur le formulaire de login dans un
+ * délai court, on ATTEND que le bucket se recharge (~1 min par minute) et on RETENTE
+ * le submit. Déterministe (pas de register par test réintroduit ; on ne fait que
+ * temporiser le provisioning fixe).
  */
 const REGISTER_RETRIES = 3
 const REGISTER_BACKOFF_MS = 20_000
