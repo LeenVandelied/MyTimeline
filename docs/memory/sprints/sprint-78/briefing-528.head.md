@@ -14,7 +14,7 @@ Premier appel Bash obligatoire, et vérification du HEAD attendu :
 pwd && git rev-parse --abbrev-ref HEAD && git rev-parse --short HEAD
 ```
 
-Attendu : branche `sprint/78`, HEAD `12f8bc1` (ou un descendant si un autre agent a déjà commité).
+Attendu : branche `sprint/78`, HEAD `1ebdd64` (ou un descendant si un autre agent a déjà commité).
 Si `pwd` ne finit PAS par `traitement-s-xs-parallele-d0ae59` : **arrête-toi et signale-le**.
 Préfixe TOUS tes chemins Read/Edit/Write par cette racine absolue.
 

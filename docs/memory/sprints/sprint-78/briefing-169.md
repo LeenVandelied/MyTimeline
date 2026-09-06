@@ -1,3 +1,286 @@
+[BRIEFING ISSUE #169 — Sprint 78, vague 2]
+
+## ⚠ GARDE-FOU WORKTREE — À EXÉCUTER AVANT TOUTE AUTRE COMMANDE
+
+Tu travailles dans un **worktree git**, PAS dans le dépôt principal. Ton `cwd` par défaut peut
+être `/Users/herrh/VSProjects/MyTimeline` (le dépôt principal) — écrire là serait une perte sèche.
+
+**Racine de travail (unique chemin valide) :**
+`/Users/herrh/VSProjects/MyTimeline/.claude/worktrees/traitement-s-xs-parallele-d0ae59`
+
+Premier appel Bash obligatoire :
+
+```bash
+pwd && git rev-parse --abbrev-ref HEAD && git rev-parse --short HEAD
+```
+
+⚠ **La branche locale de ce worktree s'appelle `claude/sprint-78-start-5c9db2`, PAS `sprint/78`**
+(la branche `sprint/78` est attachée à un autre worktree ; celle-ci en est un fast-forward exact
+et sera poussée vers `sprint/78` à l'ouverture de la PR). **C'est normal, ne le « corrige » pas**,
+ne fais aucun `git checkout` / `git switch` / `git branch -m`.
+Si `pwd` ne finit PAS par `traitement-s-xs-parallele-d0ae59` : **arrête-toi et signale-le**.
+Préfixe TOUS tes chemins Read/Edit/Write par cette racine absolue.
+
+## Contexte de vague — tu es SEUL sur l'arbre
+
+Vague 2. Les deux issues de la vague 1 (**#528** et **#434**) sont **livrées et commitées**.
+Aucun autre agent ne code en même temps que toi. Les règles de working tree partagé restent
+néanmoins de mise pour le commit :
+- `git add <chemins explicites>`, jamais `git add -A` / `git add .` / `git add -u`.
+- `git commit -m "msg" -- <mêmes chemins>` (⚠ `-m` AVANT le `--`, sinon le message est pris
+  pour un pathspec — PIT-S57-001).
+- JAMAIS `git commit --amend`, `git stash`, `git reset`, `git checkout -- .`.
+
+## Issue #169 — [CHORE] Rendre la couverture de tests mesurable : JaCoCo + vitest --coverage en CI
+
+### Corps de l'issue
+
+**Contexte.** Personne ne peut dire aujourd'hui, chiffres à l'appui, quelle proportion du code
+est réellement testée. Cette information est utile pour prioriser les efforts de test d'un
+sprint à l'autre.
+
+**Description.** Aucun rapport de couverture n'est généré, ni backend ni frontend : le plugin
+`jacoco` est absent de `backend/pom.xml`, et aucun dossier `frontend/coverage/` n'existe. La
+couverture réelle n'est donc ni mesurable ni suivable dans le temps — les documents de suivi
+(`coverage-*.md`) comptent les tests manuellement.
+
+**Description technique.**
+- Ajouter le plugin JaCoCo au build Maven (rapport généré à l'étape `verify`)
+- Ajouter `vitest run --coverage` côté frontend (reporter au format `lcov`)
+- Publier les deux rapports comme artefacts téléchargeables depuis chaque run de CI
+- **Pas de seuil bloquant dans un premier temps** — l'objectif est de mesurer avant d'imposer
+  un seuil
+
+**Critères d'acceptation.**
+- [ ] Rapport JaCoCo généré et exporté en artefact CI
+- [ ] Rapport vitest coverage (lcov) généré et exporté en artefact CI
+- [ ] Les deux artefacts sont téléchargeables depuis un run CI GitHub Actions
+
+**Origine.** Audit qualité 2026-07-02 — `docs/audit/audit-2026-07-02.md`, axe 3.
+
+### Ce que l'issue NE demande PAS — et que tu ne dois pas ajouter
+
+- **Aucun seuil bloquant** (`<limit>`, `check` goal JaCoCo, `thresholds` vitest). Mesurer, pas
+  gater. En ajouter un transformerait un sprint « rendre mesurable » en gate surprise.
+- Aucun service externe (Codecov, SonarQube, badge). Artefacts GitHub Actions, point.
+- Aucun changement de tests existants.
+
+## Plan d'implémentation (architect, `/sprint plan`)
+
+```yaml
+issue_169:
+  fichiers_cles:
+    - "backend/pom.xml"
+    - "frontend/vitest.config.mts"      # ⚠ .mts, PAS .ts (l'architect a écrit .ts — faux)
+    - ".github/workflows/ci.yml  (jobs backend + frontend)"
+  couches_touchees: ["ci", "backend", "frontend"]
+  strategie_test: "manuel (artefacts téléchargeables depuis un run CI)"
+  risque_regression: "L'agent JaCoCo s'attache à argLine ; le backend utilise Testcontainers —
+    un argLine surchargé sans concaténer l'existant casse TOUTE la suite backend."
+  ordre_ecriture: "pom.xml → vitest.config → ci.yml (upload artefacts)"
+  zod_dto_sync: "NON"
+  possibly_done: false
+```
+
+### État réel du code — MESURÉ par le lead le 2026-09-06 (post-vague 1)
+
+Vérifie ce qui suit, mais pars de là. **Un point du mini-plan architect est faux, deux points
+utiles n'y figurent pas** (PIT-S71-001 : un énoncé recopié n'acquiert pas de vérité par
+répétition).
+
+1. `grep -c jacoco backend/pom.xml` → **0**. CONFIRMÉ absent.
+
+2. **Le fichier de config Vitest est `frontend/vitest.config.mts`** — extension `.mts`, pas
+   `.ts`. Le mini-plan architect ET la piste technique de l'issue disent `.ts`. Il n'existe
+   aucun `vitest.config.ts`. Il ne contient aujourd'hui **aucune** clé `coverage`.
+   `test.exclude` y vaut `['node_modules/**', '.next/**', 'e2e/**', '**/*.stories.{ts,tsx}']`
+   et `test.include` cible `src/**`, `app/**`, `middleware.{test,spec}.ts`.
+
+3. **`maven-surefire-plugin` est déjà déclaré dans `backend/pom.xml`** (section `<build>`), avec
+   un `<configuration><systemPropertyVariables><api.version>` pour Testcontainers — **mais SANS
+   aucun `<argLine>`**. C'est la bonne nouvelle : `jacoco:prepare-agent` pose la propriété
+   `argLine` et surefire la consomme automatiquement tant que personne ne la surcharge.
+   **Règle absolue** : si tu ajoutes un `<argLine>` littéral à surefire, tu détaches l'agent
+   JaCoCo et/ou tu casses Testcontainers. Si un `<argLine>` devient nécessaire, il DOIT
+   contenir `@{argLine}` pour concaténer celui de JaCoCo. Le mode d'échec est brutal : toute
+   la suite backend tombe.
+
+4. La CI lance `./mvnw --batch-mode --no-transfer-progress verify` (job `backend`,
+   `working-directory: backend`, JDK 21 temurin). Un `report` lié à la phase `verify` (ou
+   `test`) est donc exécuté par la CI telle quelle.
+
+5. **Le job CI `frontend` a changé pendant la vague 1** : #528 y a ajouté un step final
+   `Format (Prettier)` → `npm run format:check`, après `Lint`. La séquence est désormais
+   `npm ci` → `Build` → `Tests (Vitest)` → `Typecheck` → `Lint` → `Format (Prettier)`.
+   Lis le fichier, ne te fie pas à une description antérieure (PIT-S68-002).
+
+6. **`actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4` est déjà utilisée**
+   dans ce workflow (job `e2e`). **Réutilise exactement ce SHA épinglé** — le dépôt épingle
+   toutes ses actions par SHA, une référence `@v4` flottante serait une régression de posture.
+
+7. Les sorties sont déjà ignorées par git : `backend/target/` (`.gitignore` racine) et
+   `coverage/` (`frontend/.gitignore`). `frontend/.prettierignore` ignore déjà `coverage`, donc
+   le nouveau gate `format:check` de #528 ne mordra pas sur les rapports générés.
+
+8. **Le scope `coverage` de `scripts/test-quiet.sh` t'attend déjà** : il contient un branchement
+   `grep -q jacoco backend/pom.xml` → si présent, `test jacoco:report`, sinon un message ℹ.
+   Ton travail va donc **activer** ce chemin, qui n'a jamais tourné. ⚠ #434 a modifié
+   `scripts/test-quiet.sh` pendant la vague 1 : **relis le script tel qu'il est maintenant**
+   avant de supposer quoi que ce soit de son contenu ou de ses scopes. Vérifie que le chemin
+   `coverage` fonctionne réellement une fois JaCoCo présent — et **si tu dois le retoucher,
+   fais-le au minimum et dis-le explicitement** (le fichier vient d'être arbitré par #434).
+
+9. **Ce que #434 a livré en vague 1, et qui te concerne directement** : le scope `frontend` de
+   `scripts/test-quiet.sh` a été ÉTENDU — il enchaîne désormais `build → vitest → typecheck →
+   lint`, arrêt au premier échec, ~53 s à cache `.next` chaud (contre ~27 s avant). Un nouveau
+   scope `frontend-unit` (Vitest seul) a été ajouté pour la boucle rapide. Conséquence pour
+   toi : `./scripts/test-quiet.sh frontend` est maintenant un vrai gate mais il **lance un
+   `next build`** — utilise `frontend-unit` pour tes itérations rapides, et le scope complet
+   une fois seulement, à la fin.
+
+### Piège de mesure — protocole imposé
+
+Le hook RTK falsifie des sorties : `next build` rendu « 2 routes » au lieu de 52 pages
+(PIT-S75-002), `prettier --check` rouge affiché vert (PIT-S74-008), `vitest` « PASS/FAIL »
+inventé (PIT-S45-003), `git log -1` rendant le parent (PIT-S77-008). **La redirection vers un
+fichier ne désamorce rien** : le fichier capture la sortie DÉJÀ résumée.
+
+Toute affirmation de ta part sur un vert/rouge ou un chiffre doit venir de cette forme, sans
+pipe, avec l'exit code lu immédiatement :
+
+```bash
+rtk proxy <commande> > /tmp/out-169.txt 2>&1; echo "EXIT=$?"; tail -20 /tmp/out-169.txt
+```
+
+Et **la preuve qu'un rapport existe est le fichier**, pas la sortie du build :
+`ls -la backend/target/site/jacoco/index.html` et `ls -la frontend/coverage/lcov.info`.
+
+⚠ La suite backend utilise **Testcontainers** : elle exige un Docker vivant et prend plusieurs
+minutes. Si Docker est absent sur ce poste, **dis-le au lieu de conclure**, et rabats-toi sur
+`./mvnw help:effective-pom` / `./mvnw validate` pour prouver que le plugin est bien lié aux
+phases attendues. Ne conclus jamais « la suite est rouge » sur un défaut d'environnement
+(PIT-S69-002, PIT-S70-002).
+
+## Triage
+Taille: XS→S
+Modèle: opus
+Effort: high
+
+## Context-pack (lire EN PRIORITÉ avant tout code)
+
+<!-- ===== cp-backend.md ===== -->
+# Context-pack : Backend (MyTimeline — Spring Boot 3 / Java 21)
+
+> Référence maître : `.claude/rules-jit/backend.md`
+> À charger pour TOUTE tâche backend. Package racine : `com.matimeline.eventmanager`.
+
+## Stack réelle
+
+Java 21 + Spring Boot 3.2.2 + Spring Web (MVC) + Spring Data JPA (Hibernate) + PostgreSQL 16 +
+Flyway 9.22.3 (core, support Postgres inclus) + Spring Security (JWT cookie HttpOnly, jjwt 0.11.5) +
+Lombok (DTOs uniquement) + Bucket4j (rate limiting in-memory) + Testcontainers 1.20.6 (tests).
+PAS de Quarkus / Panache / CDI. Aucun `io.quarkus.*`, `@ApplicationScoped`, `@QuarkusTest`, `persist()`.
+
+## Conventions MyTimeline (source de vérité projet — issues des reviews S10)
+
+Ces 4 conventions transverses sont revenues comme BUGS en review. Les respecter par défaut. Détail :
+`docs/memory/pitfalls.md` (PIT-S10-*) et `docs/memory/patterns.md` (PAT-S10-*).
+
+1. **Jamais de domain model / entité JPA renvoyé par un `@RestController`** — toujours un `*Response` DTO
+   (record ou classe Lombok `@Getter`/`@AllArgsConstructor`, méthode `fromDomain(...)`). Réduire la
+   catégorie et les sous-objets au strict minimum. NE JAMAIS exposer l'objet `User`/owner ni les champs
+   internes (`archived`, `ownerId`, `version`). Ex : `ProductResponse` masque user/archived/color et réduit
+   la catégorie à `{id,name}` ; `CategoryResponse` remplace `ownerId` par un booléen dérivé `system`.
+   AP récurrent : catégories (#52) ET produits — vu 2×. Réf PAT-S10 / `CategoryResponse`, `ProductResponse`.
+2. **Ownership : vérifier la ressource CIBLE, pas seulement la ressource parente ; 404 (pas 403) pour une
+   ressource d'autrui** (anti-énumération d'UUID — un 403 confirmerait l'existence de l'id). Ex : à
+   l'assignation d'une `categoryId` à un produit, valider `category.ownerId == caller || ownerId == null`,
+   sinon `CategoryNotFoundException` -> 404 (cf. `ProductServiceImpl.resolveAssignableCategory`). Résolution
+   du caller depuis le cookie JWT : helper `resolveCaller(token)` (cf. `CategoryController`). Réf PIT-S10-005.
+3. **`DataIntegrityViolationException` -> 409 mappé au niveau SERVICE, dans un `try/catch` autour du SEUL
+   `save()` concerné** — JAMAIS un `@ExceptionHandler(DataIntegrityViolationException)` global : il
+   masquerait toute violation FK/contrainte sous un 409 trompeur. Ex : `CategoryServiceImpl.createCategory`
+   et `updateCategory` catchent localement -> `CategoryNameConflictException`. Le handler global a été
+   SUPPRIMÉ (cf. note dans `GlobalExceptionHandler`). Réf PAT-S10-002 / PIT-S10-002.
+4. **Update JPA = charger l'entité gérée (`findById`) + recopier les champs mutables (update-in-place)** —
+   ne PAS faire `repository.save(mapper.toEntity(domain))` en UPDATE : les domain models n'ont pas de
+   `@Version`, l'entité reconstruite est détachée (version=null) -> `persist()` échoue ("uninitialized
+   version") ou `merge()` lève un OptimisticLock. Charger le managed, recopier name/color/etc., laisser
+   Hibernate piloter `@Version`/`updated_at`. Cible d'une FK : `entityManager.getReference(...)` (pas une
+   entité détachée). Cf. `CategoryRepositoryJpaImpl.save`, `ProductRepositoryJpaImpl.save`. Réf PIT-S10-003.
+5. **Soft delete via `@SQLRestriction("archived = false")` sur l'entité** — filtre TOUTES les lectures
+   Hibernate (findById/findAll/associations) automatiquement (cf. `ProductEntity`). Pour les opérations
+   transverses qui doivent voir les lignes filtrées (réassignation avant delete de catégorie, comptage
+   avant purge), utiliser du SQL NATIF bindé pour contourner le `@SQLRestriction` (cf.
+   `ProductRepositoryJpaImpl.countByCategoryId` / `updateCategoryForProducts`). Réf PAT-S10-001 / PIT-S10-004.
+
+## Conventions Spring Boot
+
+- Controllers : `@RestController` + `@RequestMapping("/api/...")`, verbes `@GetMapping`/`@PostMapping`/
+  `@PatchMapping`/`@DeleteMapping`. Injecter les PORTS (interfaces), pas les `*Impl`.
+- Services : `@Service` sur `*Impl` (dans `application/services/`), constructeur `@Autowired`.
+- `@Transactional` de `org.springframework.transaction.annotation` ; `@Transactional(readOnly = true)` sur
+  les lectures. La réassignation + delete de catégorie doit rester dans UNE transaction atomique.
+- Repos JPA : `@Repository` + `extends SimpleJpaRepository<Entity, UUID> implements <PortDomaine>`,
+  requêtes JPQL/native via `EntityManager` bindé (`.setParameter`), `.setMaxResults(1)` au lieu d'un `get(0)`.
+- DTOs : `application/dtos/` (Lombok `@Getter`/`@AllArgsConstructor` ou records). `@Valid` + Bean Validation
+  sur tout `@RequestBody`.
+- Erreurs : `GlobalExceptionHandler` (`@RestControllerAdvice`) mappe les exceptions DOMAINE
+  (`*NotFoundException` -> 404, `CategoryNameConflictException`/`CategoryInUseException` -> 409...). Corps
+  plat `{"error": "..."}` pour les erreurs métier. Les 401/403 de la chaîne Security sont gérés par
+  `SecurityConfig` (authenticationEntryPoint / accessDeniedHandler), PAS par le handler — ne pas dupliquer.
+- Entités : `@Entity`, `@GeneratedValue(strategy = AUTO)` UUID, `@Version`, audit `@CreatedDate`/
+  `@LastModifiedDate` + `@EntityListeners(AuditingEntityListener.class)`, `equals/hashCode` sur l'id.
+
+## Migrations Flyway
+
+- `backend/src/main/resources/db/migration/V{n}__description.sql`. Dernière : `V8__category_ownership.sql`.
+  Prochaine = `V{n+1}`. Vérifier : `ls db/migration/V*.sql | sort -V | tail -1`.
+- JAMAIS rééditer une migration déjà appliquée (checksum) -> créer `V{n+1}`. Rollback commenté dans le fichier.
+- Flyway 9.x : support Postgres DANS `flyway-core`, ne PAS ajouter `flyway-database-postgresql` (Flyway 10+).
+- `ddl-auto=validate` (dev, prod, test) : Hibernate ne modifie jamais le schéma, Flyway est la source de
+  vérité. Une entité désalignée du schéma -> échec au boot. `baseline-on-migrate=true`.
+
+## Sécurité
+
+- `SecurityConfig` (Spring Security), JWT signé (jjwt) porté par un cookie HttpOnly `jwt`. `JwtService`
+  (extractUsername...), `JwtFilter`, `RateLimitingFilter` (Bucket4j, par IP — `trust-forwarded-header=false`).
+- Identité dérivée du JWT, JAMAIS d'un param. Ownership vérifié manuellement dans les controllers via
+  `resolveCaller(token)` -> compare l'id (403 pour la ressource possédée d'autrui côté catégorie ;
+  404 pour la ressource-cible d'autrui, cf. convention 2).
+- Secrets via env (`JWT_PRIVATE_KEY` — clé privée RS256 PKCS#8 Base64 depuis #323, `EXPORT_TOKEN_SECRET`,
+  `DB_PASSWORD`, `BREVO_API_KEY`) — aucun default en profil prod (fail-fast). ⚠ `JWT_SECRET` (HS256) a été
+  SUPPRIMÉ par #323 : ne pas le réintroduire. La clé publique de vérification est DÉRIVÉE de la privée et
+  publiée côté frontend via `AUTH_JWT_PUBLIC_KEY` (non secrète).
+  `ProfileSafetyGuard` refuse le boot si profil `dev` actif avec marqueur d'env prod. Aucune concat SQL.
+
+## Null-safety & qualité
+
+- `orElseThrow(() -> new XxxNotFoundException(id))` quand l'entité DOIT exister — jamais `orElse(null)` +
+  null-check en aval (NPE caché). `getReference` pour attacher une FK sans charger l'entité.
+- Méthodes > 20 lignes -> décomposer ; complexité > 5 -> refactorer ; pas de magic values ; risque N+1 ->
+  `fetch join`/`@BatchSize` ; index DB sur colonnes filtrées/triées (cf. `V5__fk_indexes.sql`).
+
+## Tests
+
+- Lancer via le WRAPPER OBLIGATOIRE : `./scripts/test-quiet.sh backend` (ou `backend/./mvnw`). Docker
+  REQUIS (Testcontainers). Property `docker.api.version=1.44` dans le pom (pipe `api.version` vers surefire)
+  — pièce docker-java : sans elle, "Could not find a valid Docker environment".
+- Slices controllers : `@ExtendWith(MockitoExtension.class)` + `MockMvcBuilders.standaloneSetup(...)` +
+  mocks Mockito (cf. `CategoryControllerTest`). Services : test unitaire `@ExtendWith(MockitoExtension.class)`.
+  ⚠ `standaloneSetup` BYPASSE la chaîne Spring Security → il ne teste que le 403/404 renvoyé par le
+  contrôleur lui-même (ownership manuel). Pour tester les **401/403 imposés par Spring Security**
+  (auth manquante, rate-limit), utiliser `@SpringBootTest` + `@AutoConfigureMockMvc` (cf.
+  `AuthErrorContractIntegrationTest`, `RateLimitingAndHeadersIntegrationTest`) — sinon faux verts.
+- Intégration : `@SpringBootTest` + `@Transactional` (rollback) + `extends AbstractPostgresIntegrationTest`
+  (singleton container Postgres 16, profil `test`, Flyway rejoue V1..Vn from scratch). PAS de H2.
+- Surefire matche `**/*Test.java` (les `*IntegrationTest` inclus). Données de test uniques par test (UUID),
+  pas de constantes partagées.
+
+## Référence pour approfondir
+
+`.claude/rules-jit/backend.md` · `docs/memory/pitfalls.md` (PIT-S10-*) · `docs/memory/patterns.md` (PAT-S10-*)
+
 <!-- ===== pit-backend.md (extrait ciblé issue #169) ===== -->
 ## PIT-S12-003 — `git add -A` / `git add .` dans un worktree sprint partagé
 Un subagent a fait `git add -A` avant de committer son fix → bundlé du travail lead non committé (commentaire V9, `docs/memory/sprints/**`, `sprint-history.md`) dans son commit. Corrigé via `git reset --soft HEAD~1` + staging explicite. Prévention : JAMAIS `git add -A`/`git add .` dans un worktree sprint où le lead a des modifs en cours — toujours `git add <fichiers explicites>` de son scope. À rappeler dans les briefings fullstack-dev. (Sprint 12 #54-fix)
@@ -148,3 +431,96 @@ Récurrence mesurée de [[PIT-S70-005]] / [[PIT-S67-004]] au S76 : le done.md de
 Au S77, `git log --oneline -1` rendait le **parent** (`1271253`) là où `git rev-parse HEAD` rendait le vrai HEAD (`82d66b9`) — de quoi conclure à tort que le briefing du lead se trompait de base. Et `npx vitest … ; echo $?` rend une chaîne **vide** sous le hook. Le hook réécrit aussi les **arguments** : `npx storybook dev -p 6006` est devenu `storybook dev -p 6006 dev 6006`. Toute vérification de HEAD passe par `git rev-parse`, tout code de sortie et toute commande longue par `rtk proxy`. Élargit [[PIT-S45-003]] et [[PIT-S71-002]]. (Sprint 77)
 
 
+
+<!-- CACHE_CONTROL_BREAKPOINT -->
+
+## Dépendances intra-sprint
+
+- **Vague 2, dernière issue du sprint.** #528 et #434 sont livrées et commitées :
+  `5650264` (câblage `format:check` + reformatage de 119 fichiers), `fb8c21a` (scope
+  `frontend` étendu). Tu travailles sur leur état, pas sur celui du plan.
+- `.github/workflows/ci.yml` et `frontend/package.json` étaient réservés à #528 pendant la
+  vague 1 : **ils sont à toi maintenant**. Idem `frontend/vitest.config.mts`.
+- **Ne modifie PAS** `docs/memory/pitfalls.md` ni les packs `.ai-env/context-packs/pit-*.md` :
+  ils sont consolidés par le lead en Phase 2 de `/sprint end`.
+- **Ne modifie AUCUN fichier sous `docs/memory/sprints/sprint-78/`** sauf ton propre
+  `issue-169-done.md`.
+- Si tu ajoutes une devDependency frontend (`@vitest/coverage-v8` ou équivalent) :
+  `package-lock.json` change, c'est attendu et il est déjà dans `.prettierignore`.
+  **Vérifie que la version du provider est compatible avec Vitest `^2.1.9`** — un provider
+  majeur en avance casse le run avec un message qui n'a rien à voir.
+
+## Contraintes
+
+- Branche : celle du worktree (`claude/sprint-78-start-5c9db2`, fast-forward de `sprint/78`).
+  **Aucune CI ne tourne sur les branches de sprint** (PIT-S64-008) : le premier run réel est
+  l'ouverture de la PR. Tu ne peux donc PAS prouver « l'artefact est téléchargeable » par un
+  run CI. **Ce que tu dois prouver à la place** :
+  1. les deux rapports sont réellement PRODUITS localement (chemins listés par `ls -la`) ;
+  2. les chemins déclarés dans les steps `upload-artifact` correspondent EXACTEMENT à ces
+     chemins, en tenant compte du `working-directory` du job (le `path:` d'`upload-artifact`
+     est relatif à la RACINE du dépôt, **pas** au `working-directory` — c'est le mode d'échec
+     classique de cette action, et il produit un artefact vide sans faire rougir le job) ;
+  3. le YAML parse et la structure des 7 jobs est intacte.
+  Dis explicitement, dans ton done.md, que le téléchargement effectif reste à constater sur le
+  premier run de la PR. Ne l'annonce pas comme vérifié.
+- Un step `upload-artifact` qui ne trouve rien **warne** au lieu d'échouer. Si tu veux qu'un
+  rapport manquant se voie, ajoute `if-no-files-found: error`. Tranche et documente.
+- Commit : **1 seul commit logique**, message gitmoji en **français**, corps expliquant les
+  choix (provider de coverage, phase Maven du `report`, périmètre d'exclusion éventuel).
+- `git add <chemins explicites>` puis `git commit -m "msg" -- <mêmes chemins>`.
+  **zsh ne fait pas de word-splitting** : `git add -- $F` avec une liste dans une variable ne
+  stage RIEN (PIT-S76-005). Énumère les chemins littéralement.
+- **Le nouveau gate `format:check` s'applique à toi** : si tu touches `frontend/vitest.config.mts`
+  ou tout fichier sous `frontend/` hors `.prettierignore`, lance `npm run format:check` avant de
+  committer, sinon tu rends la CI rouge pour un espace.
+- Tests attendus avant de conclure, chacun avec son exit code lu sans pipe :
+  `npm run test`, `npm run typecheck`, `npm run build`, `npm run lint`, `npm run format:check`
+  côté frontend ; côté backend `./mvnw --batch-mode verify` si Docker est disponible, sinon
+  `./mvnw help:effective-pom` (et dis que Docker manquait).
+- **Ne lance PAS Playwright / E2E.** Le lead s'en charge en Phase 6.
+
+## Livrable attendu (format strict, MAX 500 tokens, style caveman — pas de prose)
+
+Écris d'abord le fichier
+`docs/memory/sprints/sprint-78/issue-169-done.md`, puis retourne un résumé identique.
+
+Le done.md DOIT contenir, dans cet ordre :
+
+```
+# Issue #169 — <titre court>
+
+## Commits
+<SHA> — <message>
+
+## Résumé
+<ce qui est câblé, où, avec quelle phase Maven / quel provider vitest ; ce qui a été
+délibérément NON fait (seuils) ; chemins d'artefacts et pourquoi ils sont corrects vis-à-vis
+du working-directory ; pièges rencontrés>
+
+## Tests
+<commande → EXIT=N → verdict, une ligne par commande>
+<preuve d'existence des rapports : ls -la des deux chemins>
+
+## Non vérifié / assumé
+<ce que tu n'as PAS pu prouver — en particulier le téléchargement réel de l'artefact,
+qui n'existera qu'au premier run de la PR>
+
+## Signaux mémoire
+[MEMORY:decision] <une ligne>
+[MEMORY:pitfall] <une ligne>   (autant que nécessaire ; écris-les ICI, pas seulement dans ta
+                                réponse — c'est ce fichier que le lead consolide)
+
+## Recommandations suite
+RECOMMAND_<X> : <raison>
+ou une NÉGATION EXPLICITE tenant sur UNE SEULE LIGNE, ex :
+"Pas de RECOMMAND_DB_EXPERT car aucune migration ni requête SQL touchée."
+(le vérificateur de complétude lit LIGNE À LIGNE — une négation repliée sur deux lignes n'est
+pas reconnue : PIT-S67-004 / PIT-S70-005 / PIT-S76-007)
+RECOMMAND_FOLLOWUP: <desc> [triage XS|S|M|L|XL | domaine <x>]   (si applicable)
+
+STATUS: COMPLETED
+```
+
+Dernière ligne du fichier = `STATUS: COMPLETED` (ou `STATUS: PARTIAL` avec une section
+`BLOQUE_SUR` détaillée juste avant). Rien après.
