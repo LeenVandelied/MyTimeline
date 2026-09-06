@@ -236,14 +236,31 @@ run_frontend_unit() {
 }
 
 # --- Frontend : une étape npm générique (build / typecheck / lint) -----------
-# $1 = nom du script npm, $2 = libellé affiché. Skip explicite si le script npm
-# n'existe pas (même politique que run_frontend_unit : pas de faux échec).
-# Code de sortie propagé tel quel.
+# $1 = nom du script npm, $2 = libellé affiché, $3 = "required" (optionnel).
+#
+# POURQUOI $3 EXISTE (revue du S78, MAJEUR). La politique « script absent => skip
+# retour 0 » vient de run_frontend_unit et se défend pour un scope OPTIONNEL. Elle
+# est INTENABLE dans le scope `frontend`, qui ANNONCE « build + tests + typecheck
+# + lint » : un script renommé ou supprimé y produirait un skip silencieux suivi
+# d'un « ✓ OK (build + tests unitaires + typecheck + lint) » mentant sur ce qui a
+# tourné. C'est exactement le défaut que l'issue #434 corrige — le réintroduire
+# par la porte de derrière serait un comble (famille PIT-S64-007 : un gate dont
+# une étape ne peut pas échouer ne prouve rien).
+# En mode required, un script manquant est une ERREUR de configuration : sortie 3,
+# le même code que le préflight, avec un diagnostic actionnable.
 run_frontend_npm_step() {
   local script="$1"
   local label="$2"
+  local required="${3:-}"
   if [ ! -f "${FRONTEND_DIR}/package.json" ] \
      || ! grep -qE "\"${script}\"[[:space:]]*:" "${FRONTEND_DIR}/package.json"; then
+    if [ "${required}" = "required" ]; then
+      echo "✗ Frontend (${label}) : aucun script \"${script}\" dans ${FRONTEND_DIR}/package.json." >&2
+      echo "  Le scope 'frontend' annonce build + tests + typecheck + lint : une étape" >&2
+      echo "  manquante rendrait son verdict faux. Rétablir le script, ou retirer l'étape" >&2
+      echo "  de run_frontend ET de son message final." >&2
+      return 3
+    fi
     echo "⊘ Frontend (${label}) : aucun script \"${script}\" dans package.json — skip."
     return 0
   fi
@@ -278,10 +295,28 @@ run_frontend() {
   fi
 
   echo "▶ Frontend : vérification complète (build → tests → typecheck → lint)"
-  run_frontend_npm_step build "build"
-  run_frontend_unit
-  run_frontend_npm_step typecheck "typecheck"
-  run_frontend_npm_step lint "lint"
+  # `|| return $?` EXPLICITE sur chaque étape (revue du S78, MAJEUR).
+  # `set -euo pipefail` en tête de fichier suffisait tant que run_frontend est
+  # appelé nûment (c'est le cas aujourd'hui : `case` plus bas), mais `set -e` est
+  # DÉSARMÉ dès qu'une fonction est appelée en contexte conditionnel
+  # (`run_frontend || x`, `if run_frontend`, `$(run_frontend)`). Le jour où un
+  # appelant l'enveloppe ainsi, les 4 étapes s'enchaîneraient malgré un rouge et
+  # la fonction rendrait 0 en affichant « ✓ OK ». La propagation ne doit pas
+  # dépendre du contexte d'appel : on la rend explicite.
+  run_frontend_npm_step build "build" required || return $?
+  # Même exigence pour Vitest : run_frontend_unit skippe en rendant 0 si aucun
+  # script "test" n'existe — politique correcte pour le scope `frontend-unit`
+  # (optionnel), fausse ici où le message final annonce « tests unitaires ».
+  if [ ! -f "${FRONTEND_DIR}/package.json" ] \
+     || ! grep -qE '"test"[[:space:]]*:' "${FRONTEND_DIR}/package.json"; then
+    echo "✗ Frontend (unitaires) : aucun script \"test\" dans ${FRONTEND_DIR}/package.json." >&2
+    echo "  Le scope 'frontend' annonce les tests unitaires : les sauter rendrait son" >&2
+    echo "  verdict faux. Rétablir le script, ou utiliser le scope 'frontend-unit'." >&2
+    return 3
+  fi
+  run_frontend_unit || return $?
+  run_frontend_npm_step typecheck "typecheck" required || return $?
+  run_frontend_npm_step lint "lint" required || return $?
   echo "✓ Frontend : OK (build + tests unitaires + typecheck + lint)"
   return 0
 }

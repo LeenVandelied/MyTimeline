@@ -185,7 +185,8 @@ partagé avec le dépôt principal. Deux conséquences, l'une gênante, l'autre 
   credentials `#160`/`#258` alors que seul l'environnement est en cause — le cas s'est produit
   deux fois, dont un rapport d'agent entièrement faux mais plausible.
 
-`test-quiet.sh frontend` échoue désormais **avant** Vitest, en sortie 3, avec le répertoire testé,
+`test-quiet.sh frontend` échoue désormais **avant toute étape** (le préflight précède `next build`),
+en sortie 3, avec le répertoire testé,
 la commande de correction et le rappel ci-dessus. Correctif : `( cd frontend && npm ci )` dans la
 copie concernée.
 
@@ -244,7 +245,8 @@ vert » sur `frontend-unit` seul — c'est le malentendu que le scope `frontend`
 `#434`, mesuré : avec une erreur de type introduite, `frontend` sort en **1** dès l'étape build,
 `frontend-unit` sort en **0**).
 
-Ces deux scopes lancent `next build`, qui **réécrit `frontend/.next`**. Dans un worktree de sprint
+Les scopes `frontend` et `all` lancent `next build`, qui **réécrit `frontend/.next`** — mais PAS
+`frontend-unit`, qui n'exécute que Vitest. Dans un worktree de sprint
 partagé, cela tue sans avertissement un `next dev` tenu par un autre agent : utiliser
 `frontend-unit` quand un serveur Next tourne à côté.
 
