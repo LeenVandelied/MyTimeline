@@ -5570,6 +5570,18 @@ compteur (locator depuis une variable, helper en `export const`) · **effet de b
 locale `eventmanager` ne migre plus (`V7` casse sur `events_recurrence_unit_check`), une base
 `eventmanager_s79` a été créée et non supprimée.
 
+**Verdict CI — PR #544, 7/7 verts.** `ai-env-packs` 15s · `backend` 1m31 · **`e2e` 9m40** ·
+`flyway-smoke` 45s · `frontend` 2m21 · `secret-scan` 6s · `security` 26s. `mergeable=MERGEABLE`,
+`mergeStateStatus=CLEAN`.
+
+Ce run lève la réserve la plus lourde du sprint : les E2E n'avaient tourné qu'en **local macOS**
+(`workers: 2`), jamais en CI. Le job `e2e` **vert sous Linux à `workers: 1`** confirme deux choses
+d'un coup — la purge post-test de #463 tient dans la configuration réelle, et les **10 échecs de
+références visuelles ne s'y produisent pas**. La prédiction du lead (le dépôt ne contient que des
+références `chromium-linux`, zéro `darwin`, donc l'échec est impossible en CI) passe du statut de
+déduction à celui de **fait mesuré**. C'est précisément le contrôle qui manquait au S76 et que
+[[playwright-refs-plateforme-et-armement]] réclame.
+
 ### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
 **Milestone GitHub :** #81
