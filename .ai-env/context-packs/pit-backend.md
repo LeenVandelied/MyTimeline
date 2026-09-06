@@ -263,10 +263,19 @@ un autre projet du poste » ne suffit donc pas — même nom de projet, même ap
 autre session.
 
 
-## PIT-S60-009 — `test-quiet.sh frontend` ne lance QUE Vitest, contrairement à ce que disent le README et les briefings
-`run_frontend` exécute un seul `npm test --silent` : ni `build`, ni `typecheck`, ni `lint`. La description
-« vitest + build + typecheck + lint » circulait dans les briefings de sprint et le README. **Anti-pattern :
-conclure « frontend vert » sur ce seul scope.** Corrigé au S60 (README §Tests + piège 4). Voisin de
+## PIT-S60-009 — ~~`test-quiet.sh frontend` ne lance QUE Vitest~~ — **RÉSOLU au S78 (#434)**
+> ⚠ **ENTRÉE PÉRIMÉE, conservée pour l'historique — ne plus s'en servir comme d'un fait.**
+> Depuis le S78 (`fb8c21a`), le scope `frontend` exécute réellement `build → vitest → typecheck →
+> lint` et s'arrête au premier échec ; le scope `frontend-unit` a été ajouté pour l'ancien
+> comportement (Vitest seul). Un verdict repris tel quel de cette entrée serait aujourd'hui FAUX —
+> c'est exactement le mécanisme de [[PIT-S67-001]] (un verdict se périme en silence et survit dans
+> les énoncés qui le citent). Ce qui reste vrai et transposable : **le nom d'un scope n'est pas une
+> preuve de son périmètre — lire la fonction.**
+
+Énoncé d'origine (S60) : `run_frontend` exécute un seul `npm test --silent` : ni `build`, ni
+`typecheck`, ni `lint`. La description « vitest + build + typecheck + lint » circulait dans les
+briefings de sprint et le README. **Anti-pattern : conclure « frontend vert » sur ce seul scope.**
+Documentation corrigée au S60 (README §Tests + piège 4), **comportement** corrigé au S78. Voisin de
 [[PIT-S58-004]] : une garantie décrite mais inexistante dissuade d'en écrire une vraie.
 
 
