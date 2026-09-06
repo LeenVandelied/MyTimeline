@@ -179,7 +179,7 @@ Prevention: ne pas promettre un « run en ordre inversé » comme si un flag l'o
 preuve à une mesure d'ÉTAT (comptage en base de ce que la suite laisse derrière), qui couvre
 l'intra-fichier que la permutation n'atteint pas.
 
-## 9. Recommandations
+## 9. Recommandations suite
 
 - **RECOMMAND_FOLLOWUP** — tracer les catégories créées à la SOURIS (résidu
   `Cat Create …`, 1/run). Demande de toucher les corps de tests : hors périmètre de #463.
