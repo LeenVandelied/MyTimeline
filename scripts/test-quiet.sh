@@ -14,10 +14,26 @@
 # Scopes :
 #   unit | backend   (défaut) → suite backend Spring Boot (Testcontainers Postgres, Docker requis)
 #   coverage                  → idem + rapport de couverture si jacoco est configuré
-#   frontend                  → tests unitaires frontend Vitest (npm test = "vitest run")
+#   frontend                  → vérification frontend COMPLÈTE, alignée sur le job CI `frontend` :
+#                               build (next build) → tests unitaires (vitest run) → typecheck
+#                               (tsc --noEmit) → lint (next lint). S'arrête au premier échec.
+#                               E2E NON inclus. Ordre de grandeur mesuré (#434, cache .next
+#                               chaud, macOS/M-series) : ~90 s au total (build 49 s, vitest 27 s,
+#                               typecheck 7 s, lint 5 s). Un cache .next froid rallonge le build.
+#   frontend-unit             → tests unitaires frontend Vitest SEULS (npm test = "vitest run",
+#                               ~27 s). Boucle de dev rapide. ⚠ Un vert ici ne dit RIEN du build :
+#                               `next build` a déjà attrapé des erreurs invisibles à Vitest et à
+#                               tsc (PIT-S22-001, PIT-S41-005). Ne jamais conclure « frontend
+#                               vert » sur ce scope — c'est exactement le malentendu PIT-S60-009
+#                               que le scope `frontend` ci-dessus corrige.
 #   e2e                       → tests E2E Playwright (npm run test:e2e ; navigateurs + stack requis)
-#   all                       → backend puis frontend unitaires (Vitest). E2E NON inclus
-#                               (nécessite la stack complète — lancer `e2e` séparément).
+#   all                       → backend puis vérification frontend complète (idem scope `frontend`).
+#                               E2E NON inclus (nécessite la stack complète — lancer `e2e` séparément).
+#
+# ⚠ Arbre de travail PARTAGÉ (fan-out de sprint) : les scopes `frontend` et `all` lancent
+#   `next build`, qui RÉÉCRIT frontend/.next. Un `next dev` tenu par un autre agent dans le même
+#   worktree meurt sans autre signal que la mort de sa tâche de fond (PIT-S62-009). Utiliser
+#   `frontend-unit` quand un serveur Next tourne à côté.
 #
 # Commande sous-jacente backend (la sortie verbeuse part dans un log, seul
 # l'agrégat "Tests run:" + le verdict sont affichés) :
@@ -192,7 +208,7 @@ PREFLIGHT_JS
 }
 
 # --- Frontend unitaires : Vitest ("test" = "vitest run") ---------------------
-run_frontend() {
+run_frontend_unit() {
   # Suite unitaire Vitest. Skip explicite si aucun script "test" (plutôt qu'un
   # faux échec). Code de sortie de Vitest propagé : un test rouge => script rouge
   # (critère #133).
@@ -216,6 +232,57 @@ run_frontend() {
   else
     echo "⊘ Frontend : aucun script \"test\" (Vitest) dans package.json — skip."
   fi
+  return 0
+}
+
+# --- Frontend : une étape npm générique (build / typecheck / lint) -----------
+# $1 = nom du script npm, $2 = libellé affiché. Skip explicite si le script npm
+# n'existe pas (même politique que run_frontend_unit : pas de faux échec).
+# Code de sortie propagé tel quel.
+run_frontend_npm_step() {
+  local script="$1"
+  local label="$2"
+  if [ ! -f "${FRONTEND_DIR}/package.json" ] \
+     || ! grep -qE "\"${script}\"[[:space:]]*:" "${FRONTEND_DIR}/package.json"; then
+    echo "⊘ Frontend (${label}) : aucun script \"${script}\" dans package.json — skip."
+    return 0
+  fi
+  echo "▶ Frontend (${label}) : npm run ${script}  (cwd=frontend)"
+  local status=0
+  ( cd "${FRONTEND_DIR}" && npm run "${script}" ) || status=$?
+  if [ "${status}" -ne 0 ]; then
+    echo "✗ Frontend (${label}) : échec (exit ${status})." >&2
+    return "${status}"
+  fi
+  echo "✓ Frontend (${label}) : OK"
+  return 0
+}
+
+# --- Frontend : vérification COMPLÈTE, alignée sur le job CI `frontend` -------
+# #434 — le scope `frontend` ne lançait QUE Vitest alors que le README et les
+# briefings de sprint le décrivaient comme « tests + build + typecheck + lint ».
+# Ce malentendu a produit un rapport de vérification entièrement faux (PIT-S60-009).
+# Arbitrage : étendre le scope plutôt que le renommer, pour que son nom redevienne
+# vrai (détail et coût : docs/memory/sprints/sprint-78/issue-434-done.md).
+#
+# ORDRE = celui du job CI `frontend` (build → tests → typecheck → lint), et pas
+# l'ordre « le moins cher d'abord » : tsconfig.json inclut `.next/types/**`, donc
+# un typecheck lancé AVANT le build lit les types d'un build antérieur et peut
+# rougir sur une route fantôme (PIT-S60-007). Le build doit les régénérer d'abord.
+# S'arrête au PREMIER échec — le code de sortie remonté est celui de l'étape rouge.
+run_frontend() {
+  local pre=0
+  frontend_preflight || pre=$?
+  if [ "${pre}" -ne 0 ]; then
+    return "${pre}"
+  fi
+
+  echo "▶ Frontend : vérification complète (build → tests → typecheck → lint)"
+  run_frontend_npm_step build "build"
+  run_frontend_unit
+  run_frontend_npm_step typecheck "typecheck"
+  run_frontend_npm_step lint "lint"
+  echo "✓ Frontend : OK (build + tests unitaires + typecheck + lint)"
   return 0
 }
 
@@ -258,6 +325,9 @@ case "${SCOPE}" in
   frontend)
     run_frontend
     ;;
+  frontend-unit)
+    run_frontend_unit
+    ;;
   e2e)
     run_e2e
     ;;
@@ -266,10 +336,10 @@ case "${SCOPE}" in
     run_frontend
     ;;
   -h|--help|help)
-    sed -n '2,40p' "${BASH_SOURCE[0]}"
+    sed -n '2,45p' "${BASH_SOURCE[0]}"
     ;;
   *)
-    echo "Scope inconnu : '${SCOPE}'. Scopes valides : unit | backend | coverage | e2e | frontend | all" >&2
+    echo "Scope inconnu : '${SCOPE}'. Scopes valides : unit | backend | coverage | e2e | frontend | frontend-unit | all" >&2
     exit 2
     ;;
 esac

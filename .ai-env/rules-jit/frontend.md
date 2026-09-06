@@ -78,9 +78,10 @@ Ne JAMAIS lancer `npx vitest run`, `npx tsc --noEmit`, `npx playwright test` dir
 
 **Usage obligatoire** :
 ```bash
-./scripts/test-quiet.sh frontend   # le framework de test frontend + tsc --noEmit
-./scripts/test-quiet.sh e2e        # Playwright (reset DB inclus)
-./scripts/test-quiet.sh unit       # Backend + Frontend
+./scripts/test-quiet.sh frontend       # build + Vitest + tsc --noEmit + next lint (#434)
+./scripts/test-quiet.sh frontend-unit  # Vitest SEUL — un vert ici ne dit RIEN du build
+./scripts/test-quiet.sh e2e            # Playwright (reset DB inclus)
+./scripts/test-quiet.sh all            # Backend puis frontend complet (`unit` = backend SEUL)
 ```
 
 wrapper capture tout dans `/tmp/<project-lower>-tests-<timestamp>.log` et renvoie :

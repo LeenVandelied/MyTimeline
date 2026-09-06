@@ -105,7 +105,8 @@ Ne JAMAIS lancer `mvn test`, `mvn verify` ou `mvn test -Dtest=...` directement d
 **Usage obligatoire** :
 ```bash
 ./scripts/test-quiet.sh backend    # Unit backend — resume <= 1KB
-./scripts/test-quiet.sh unit       # Backend + Frontend
+./scripts/test-quiet.sh unit       # ALIAS de `backend` (backend SEUL, malgre son nom)
+./scripts/test-quiet.sh all        # Backend puis verification frontend complete
 ```
 
 wrapper redirige le log complet dans `/tmp/<project-lower>-tests-<timestamp>.log` et retourne uniquement :

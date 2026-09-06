@@ -204,18 +204,21 @@ remonte que l'agrégat « Tests run » et le verdict ; en cas d'échec, le log c
 et son chemin affiché.
 
 ```bash
-./scripts/test-quiet.sh backend    # JUnit + Testcontainers (Docker requis)
-./scripts/test-quiet.sh frontend   # Vitest
-./scripts/test-quiet.sh all        # backend puis frontend (E2E NON inclus)
-./scripts/test-quiet.sh e2e        # Playwright (stack complète + navigateurs requis)
+./scripts/test-quiet.sh backend        # JUnit + Testcontainers (Docker requis)
+./scripts/test-quiet.sh frontend       # build + Vitest + typecheck + lint (~1 min)
+./scripts/test-quiet.sh frontend-unit  # Vitest SEUL (~30 s) — ne dit rien du build
+./scripts/test-quiet.sh all            # backend puis frontend complet (E2E NON inclus)
+./scripts/test-quiet.sh e2e            # Playwright (stack complète + navigateurs requis)
 ```
 
 Équivalents directs, si vous préférez la sortie brute :
 
 ```bash
 cd backend  && SKIP_DELEGATION=1 ./mvnw test
+cd frontend && npm run build       # next build (lint bloquant + typecheck inclus)
 cd frontend && npm test            # Vitest
 cd frontend && npm run typecheck   # tsc --noEmit
+cd frontend && npm run lint        # next lint
 ```
 
 Avant de lancer la suite E2E, **lire** :
@@ -226,9 +229,24 @@ Avant de lancer la suite E2E, **lire** :
 - [`frontend/e2e/README.md`](frontend/e2e/README.md) — harnais de contrôle de contraste et de
   troncature des CTA.
 
-`test-quiet.sh frontend` ne lance **que** Vitest — ni `build`, ni `typecheck`, ni `lint`, qui
-s'appellent séparément (cf. équivalents directs ci-dessus). Il sort en **3**, avant Vitest, si les
-dépendances de la copie testée sont absentes ou incomplètes (cf. piège 4).
+`test-quiet.sh frontend` exécute la vérification **complète** dans l'ordre du job CI `frontend` :
+`next build` → Vitest → `tsc --noEmit` → `next lint`. Il s'arrête au premier échec et remonte le
+code de sortie de l'étape rouge. L'ordre n'est pas « le moins cher d'abord » à dessein :
+`tsconfig.json` inclut `.next/types/**`, donc un typecheck lancé avant le build lit les types d'un
+build antérieur et peut rougir sur une route qui n'existe plus — le build doit les régénérer
+d'abord. Il sort en **3**, avant toute étape, si les dépendances de la copie testée sont absentes
+ou incomplètes (cf. piège 4).
+
+`test-quiet.sh frontend-unit` ne lance **que** Vitest, pour la boucle de dev rapide. Un vert
+sur ce scope **ne dit rien du build** : `next build` applique un lint bloquant qui a déjà fait
+échouer la CI sur des erreurs invisibles à Vitest *et* à `tsc`. Ne jamais conclure « frontend
+vert » sur `frontend-unit` seul — c'est le malentendu que le scope `frontend` corrige (issue
+`#434`, mesuré : avec une erreur de type introduite, `frontend` sort en **1** dès l'étape build,
+`frontend-unit` sort en **0**).
+
+Ces deux scopes lancent `next build`, qui **réécrit `frontend/.next`**. Dans un worktree de sprint
+partagé, cela tue sans avertissement un `next dev` tenu par un autre agent : utiliser
+`frontend-unit` quand un serveur Next tourne à côté.
 
 La CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) rejoue les jobs `backend`,
 `frontend`, `e2e`, `flyway-smoke`, `security`, `secret-scan` et `ai-env-packs` à chaque push.
