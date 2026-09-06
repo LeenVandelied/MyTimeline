@@ -33,7 +33,8 @@ type Page = import('@playwright/test').Page
  * /fr/register (aucune redirection vers /fr/login) -> le `provision` échoue (flaky
  * `[setup]`, cf. run 28752900622).
  *
- * DEPUIS #475 le profil `e2e` porte un plafond dédié de 20/min/IP (marge 15) : le
+ * DEPUIS #475 le profil `e2e` porte un plafond dédié de 20/min/IP (marge 12 pour un
+ * budget de 8 recompté au S79) : le
  * dépassement n'est plus attendu. On GARDE néanmoins cette résilience — elle ne coûte
  * rien quand rien ne rate, et elle reste le seul filet si la stack tourne un jour
  * contre un backend au plafond par défaut (5). La retirer, ce serait miser sur une

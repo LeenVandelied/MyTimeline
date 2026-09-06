@@ -14,7 +14,9 @@ import path from 'node:path'
  * Le projet `setup` s'exécute UNE fois (dépendance de `chromium` et `firefox`) et
  * n'est PAS re-joué quand un test échoue et retry. Le nombre de registers de TOUTE
  * la suite est donc borné à `ALL_ACCOUNTS.length` (4) + le self-register du
- * golden-path = **5 registers par run**.
+ * golden-path (1) + les 3 appels au helper `support/auth.ts#registerOnly`
+ * (`forgot-password.spec.ts` x1, `reset-password-failures.spec.ts` x2)
+ * = **8 registers par run**.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * LE BUDGET, EN CHIFFRES — #475, et ce que les versions précédentes de ce
@@ -27,11 +29,18 @@ import path from 'node:path'
  * contient 4. Le chiffre faux avait essaimé jusqu'à `playwright.config.ts`, où il
  * SERVAIT D'ARGUMENT pour maintenir `workers: 1` en CI.
  *
- * ÉTAT RÉEL depuis #475 :
- *   budget suite  =  4 (ALL_ACCOUNTS) + 1 (golden-path)   =  5 / min / IP
+ * ÉTAT RÉEL depuis #475, CHIFFRE CORRIGÉ au cycle 2 de revue du S79 :
+ *   budget suite  =  4 (ALL_ACCOUNTS) + 1 (golden-path)
+ *                    + 3 (helper `registerOnly`)           =  8 / min / IP
  *   plafond e2e   =  app.rate-limit.register-per-minute    = 20 / min / IP
  *                    (backend/src/main/resources/application-e2e.properties)
- *   marge         =                                          15
+ *   marge         =                                          12
+ *
+ * ⚠ CE COMMENTAIRE A ANNONCÉ 5 PENDANT TOUT LE S79. Le recompte automatique ne
+ * regardait alors que les fichiers `*.spec.ts` : une inscription émise depuis un
+ * helper de `e2e/support/` lui était invisible, et il en manquait 3. La détection
+ * résout maintenant cette indirection, et elle est elle-même exercée sur des
+ * sources synthétiques dans `e2e-register-budget.test.ts`.
  *
  * ⚠ ET LA NUANCE QUI DÉCIDE DE TOUT : le job CI `e2e` et le service `backend-e2e`
  * posent `RATE_LIMIT_ENABLED=false`, qui court-circuite le filtre ENTIER. Pendant

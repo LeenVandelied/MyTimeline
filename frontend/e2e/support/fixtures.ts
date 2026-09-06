@@ -1,5 +1,6 @@
 import { test as base, expect } from '@playwright/test'
 import { beginSeedTracking, flushSeedTracking } from './seed-cleanup'
+import { decideSeedCleanupOutcome } from './seed-cleanup-outcome'
 
 /**
  * #463 — `test` étendu, à importer À LA PLACE de `@playwright/test` dans toute
@@ -14,28 +15,26 @@ import { beginSeedTracking, flushSeedTracking } from './seed-cleanup'
  * `baseURL` : la faire dépendre de `page` forcerait l'ouverture d'une page pour
  * des tests qui n'en veulent pas (`sprint-42-events.spec.ts` ne prend que
  * `{ browser }` et ouvre ses deux contextes lui-même).
+ *
+ * ⚠ CE QUE CETTE FIXTURE FAIT D'UNE PURGE EN ÉCHEC — et où c'est PROUVÉ. La
+ * décision (lever si le test était vert, avertir s'il était déjà rouge) vit dans
+ * `seed-cleanup-outcome.ts` ; ses trois branches sont couvertes par
+ * `src/__tests__/seed-cleanup-outcome.test.ts`, et le fait qu'une purge qui échoue
+ * pour de vrai fasse effectivement ROUGIR un test vert est le contrôle négatif
+ * `e2e/seed-cleanup-guard.spec.ts`. Avant ce contrôle, cette branche n'avait
+ * jamais été exécutée une seule fois.
  */
 export const test = base.extend<{ seedIsolation: void }>({
   seedIsolation: [
     async ({ baseURL }, use, testInfo) => {
       beginSeedTracking(baseURL)
       await use()
-      const failures = await flushSeedTracking()
-      if (failures.length === 0) return
+      const outcome = decideSeedCleanupOutcome(await flushSeedTracking(), testInfo.status)
+      if (outcome.level === 'clean') return
 
-      const report = [
-        `#463 — la purge post-test a échoué (${failures.length}) :`,
-        ...failures.map((f) => `  - ${f}`),
-        '',
-        "Une purge inopérante ne casse rien TOUT DE SUITE : elle laisse l'état du test",
-        'dans le champ de vision des suivants et ressuscite la dépendance à l’ordre que',
-        '#463 supprime. On la rend donc bruyante plutôt que de la laisser passer.',
-      ].join('\n')
-
-      testInfo.annotations.push({ type: 'seed-cleanup', description: report })
-      // Test DÉJÀ rouge : on n'écrase pas sa cause par celle de la purge.
-      if (testInfo.status === 'passed') throw new Error(report)
-      console.warn(report)
+      testInfo.annotations.push({ type: 'seed-cleanup', description: outcome.report })
+      if (outcome.level === 'fatal') throw new Error(outcome.report)
+      console.warn(outcome.report)
     },
     { auto: true },
   ],

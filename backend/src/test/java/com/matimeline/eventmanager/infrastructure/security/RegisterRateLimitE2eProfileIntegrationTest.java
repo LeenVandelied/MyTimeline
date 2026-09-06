@@ -2,10 +2,12 @@ package com.matimeline.eventmanager.infrastructure.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -29,7 +31,12 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  *
  * <p><b>La marge, en chiffres.</b> Budget nominal de la suite Playwright sur une minute :
  * 4 provisions du projet {@code setup} ({@code ALL_ACCOUNTS}) + 1 auto-inscription du
- * golden-path = 5. Plafond e2e = 20. Marge = 15 inscriptions supplémentaires par minute.
+ * golden-path + 3 inscriptions émises par le helper {@code support/auth.ts#registerOnly}
+ * (1 dans {@code forgot-password.spec.ts}, 2 dans {@code reset-password-failures.spec.ts})
+ * = 8. Plafond e2e = 20. Marge = 12 inscriptions supplémentaires par minute.
+ * <b>Ces 3 dernières manquaient au chiffre annoncé au cycle 1</b> : le compteur de specs
+ * ne regardait alors que les fichiers {@code *.spec.ts} et ne voyait pas un register émis
+ * depuis un helper. Corrigé au cycle 2 de revue du S79, des deux côtés.
  * Le test assert les DEUX bords : rien n'est bridé jusqu'à 20 (la marge existe vraiment),
  * et la 21e prend un 429 (le plafond reste un plafond — on dimensionne, on ne désarme pas).
  *
@@ -48,14 +55,27 @@ class RegisterRateLimitE2eProfileIntegrationTest extends AbstractPostgresIntegra
     /**
      * Inscriptions émises par un run Playwright nominal dans une même fenêtre d'une minute :
      * {@code ALL_ACCOUNTS.length} (4, frontend/e2e/support/accounts.ts) + l'auto-inscription de
-     * golden-path.spec.ts (1). C'est le nombre que la marge doit couvrir.
+     * golden-path.spec.ts (1) + les 3 appels à {@code support/auth.ts#registerOnly}. C'est le
+     * nombre que la marge doit couvrir. Il est RECOMPTÉ depuis les sources par
+     * {@code frontend/src/__tests__/e2e-register-budget.test.ts} — ici il n'est que recopié,
+     * donc c'est là-bas que le recompte fait foi.
      */
-    private static final int E2E_SUITE_REGISTERS_PER_RUN = 5;
+    private static final int E2E_SUITE_REGISTERS_PER_RUN = 8;
+
+    /** Marge minimale exigée, alignée sur {@code MIN_MARGIN} de e2e-register-budget.test.ts. */
+    private static final int MIN_MARGIN = 5;
 
     private static final String REGISTER_BODY = "{\"name\":\"x\",\"username\":\"x\",\"email\":\"x\",\"password\":\"x\"}";
 
     @Autowired
     private MockMvc mockMvc;
+
+    /**
+     * Plafond LU DANS LA CONFIGURATION résolue par Spring sous le profil {@code e2e}. C'est
+     * la seule valeur de ce fichier qui vienne d'ailleurs que d'une constante Java.
+     */
+    @Value("${app.rate-limit.register-per-minute}")
+    private int configuredRegisterCeiling;
 
     private int register(String socketIp) throws Exception {
         return mockMvc.perform(post("/api/auth/register")
@@ -88,17 +108,32 @@ class RegisterRateLimitE2eProfileIntegrationTest extends AbstractPostgresIntegra
     }
 
     /**
-     * LE CRITÈRE D'ACCEPTATION DE #475, exprimé en chiffres. Sans cette assertion, un futur
-     * abaissement du plafond e2e (ou un ajout de compte dans {@code ALL_ACCOUNTS} non
-     * répercuté ici) ramènerait silencieusement le budget à « 100 % sans marge » — l'état que
-     * l'issue corrige. Le pendant côté suite, qui recompte les inscriptions à partir des
-     * SOURCES E2E, vit dans {@code frontend/src/__tests__/e2e-register-budget.test.ts}.
+     * LE CRITÈRE D'ACCEPTATION DE #475, confronté à la CONFIGURATION RÉSOLUE.
+     *
+     * <p><b>Ce que cette version corrige (cycle 2 de revue, S79).</b> La précédente assertait
+     * {@code 20 - 5 == 15} à partir de deux constantes Java : de l'arithmétique pure, verte
+     * même si {@code application-e2e.properties} était supprimé, renommé ou écrasé. Elle ne
+     * pouvait rien détecter. Celle-ci lit {@code app.rate-limit.register-per-minute} dans
+     * l'environnement Spring du profil {@code e2e} : abaisser le plafond dans le fichier la
+     * fait rougir, ce qui est exactement la régression qu'on prétend garder.
+     *
+     * <p>Le pendant côté suite, qui recompte les inscriptions à partir des SOURCES E2E
+     * (specs ET helpers de {@code e2e/support/}), vit dans
+     * {@code frontend/src/__tests__/e2e-register-budget.test.ts}.
      */
     @Test
-    void e2eCeilingLeavesRoomForMoreRegistersThanTheSuiteEmits() {
-        int margin = E2E_LIMIT - E2E_SUITE_REGISTERS_PER_RUN;
-        assertEquals(15, margin,
-                "marge attendue = plafond e2e (" + E2E_LIMIT + ") - budget nominal de la suite ("
-                        + E2E_SUITE_REGISTERS_PER_RUN + ")");
+    void e2eCeilingReadFromConfigurationLeavesRoomForMoreRegistersThanTheSuiteEmits() {
+        assertEquals(E2E_LIMIT, configuredRegisterCeiling,
+                "app.rate-limit.register-per-minute résolu sous le profil e2e doit valoir "
+                        + E2E_LIMIT + " (application-e2e.properties). Une autre valeur signifie que le "
+                        + "fichier n'est pas chargé, ou qu'il a été modifié sans que le budget de la "
+                        + "suite Playwright soit recompté.");
+
+        int margin = configuredRegisterCeiling - E2E_SUITE_REGISTERS_PER_RUN;
+        assertTrue(margin >= MIN_MARGIN,
+                "marge = plafond CONFIGURÉ (" + configuredRegisterCeiling + ") - budget nominal de la "
+                        + "suite (" + E2E_SUITE_REGISTERS_PER_RUN + ") = " + margin + ", minimum exigé "
+                        + MIN_MARGIN + ". Sous ce seuil, la suite redevient ce que #475 corrige : "
+                        + "un budget au plafond, où toute spec qui s'inscrit fait échouer la CI.");
     }
 }

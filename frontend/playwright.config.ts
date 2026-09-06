@@ -166,7 +166,9 @@ export default defineConfig({
   //      (ci.yml), qui court-circuite le filtre ENTIER : aucun plafond n'est en
   //      vigueur pendant un run, donc aucun budget n'y est « au plafond » ;
   //   2. depuis #475 le profil `e2e` porte de toute façon un plafond dédié de
-  //      20/min/IP (application-e2e.properties), soit 5 émis pour 20 — marge 15.
+  //      20/min/IP (application-e2e.properties), soit 8 émis pour 20 — marge 12.
+  //      (8 et non 5 : le compte a été corrigé au cycle 2 de revue du S79, les 3
+  //      inscriptions émises via `support/auth.ts#registerOnly` manquaient.)
   // Le rate-limit `register` n'est donc PAS une raison de rester à 1 worker en CI.
   //
   // CE QUI RESTE VRAI, et ce qui motive seul la valeur 1 : la borne de CHARGE
