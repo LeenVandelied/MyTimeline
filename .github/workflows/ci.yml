@@ -74,6 +74,30 @@ jobs:
           SKIP_DELEGATION: "1"
         run: ./mvnw --batch-mode --no-transfer-progress verify
 
+      # Rapport de couverture JaCoCo (#169) — MESURE, pas de gate. Le rapport est
+      # produit par l'execution `jacoco-report` liee a la phase `verify` (cf.
+      # backend/pom.xml), donc par la commande ci-dessus, sans etape de build
+      # supplementaire.
+      #
+      # /!\ `path:` est relatif a la RACINE du depot, PAS au `working-directory`
+      # du job (celui-ci ne s'applique qu'aux steps `run:`). D'ou `backend/target/…`
+      # et non `target/…`. C'est le mode d'echec classique de cette action : un
+      # chemin errone produit un artefact VIDE sans faire rougir le job.
+      #
+      # Pas de `if: always()` : ce step ne tourne donc que si `verify` a reussi.
+      # Combine a `if-no-files-found: error`, l'echec du step signifie alors une
+      # seule chose, non ambigue — « la suite est verte mais aucun rapport n'a ete
+      # ecrit », c.-a-d. un cablage JaCoCo casse. Avec `always()`, un simple test
+      # rouge (report jamais atteint) declencherait la meme erreur et noierait le
+      # signal.
+      - name: Upload rapport de couverture JaCoCo
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: jacoco-coverage-report
+          path: backend/target/site/jacoco/
+          if-no-files-found: error
+          retention-days: 14
+
   frontend:
     name: frontend
     runs-on: ubuntu-latest
@@ -99,8 +123,25 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Tests (Vitest)
-        run: npm run test
+      # #169 — `test:coverage` = `vitest run --coverage`. MEME suite, MEME code de
+      # sortie que `npm run test` : on ne lance pas la suite deux fois pour
+      # obtenir le rapport. Le script `test` nu reste dispo pour la boucle locale.
+      - name: Tests (Vitest + couverture)
+        run: npm run test:coverage
+
+      # Rapport lcov (#169). Place ICI, juste apres la suite, et pas en fin de job :
+      # les steps s'executent en sequence, donc un `lint`/`format:check` rouge plus
+      # bas n'annule pas ce step, mais l'inverse serait vrai s'il etait place apres
+      # eux (step success-only => pas d'artefact). Meme regle de chemin que cote
+      # backend : `path:` est relatif a la RACINE du depot, pas au `working-directory`
+      # `frontend` du job.
+      - name: Upload rapport de couverture Vitest (lcov)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vitest-coverage-report
+          path: frontend/coverage/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Typecheck
         run: npm run typecheck

@@ -313,8 +313,11 @@ case "${SCOPE}" in
     run_backend test
     ;;
   coverage)
-    # Pas de plugin jacoco dans backend/pom.xml à ce jour : 'coverage' exécute la
-    # suite. Brancher le goal jacoco (ex. "test jacoco:report") quand il sera ajouté.
+    # #169 — jacoco-maven-plugin est desormais PRESENT dans backend/pom.xml, donc
+    # c'est la branche `test jacoco:report` qui s'execute (rapport dans
+    # backend/target/site/jacoco/). Le `else` est conserve comme filet : il resterait
+    # vrai si le plugin etait un jour retire. SEULE cette ligne de commentaire a ete
+    # touchee ici — le branchement lui-meme, arbitre par #434, est inchange.
     if grep -q "jacoco" "${BACKEND_DIR}/pom.xml" 2>/dev/null; then
       run_backend test jacoco:report
     else
