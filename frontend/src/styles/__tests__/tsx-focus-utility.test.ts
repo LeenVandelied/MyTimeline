@@ -318,7 +318,10 @@ export function baseUtility(token: string): string {
 export function findFocusUtilityOffences(file: string, source: string): FocusUtilityOffence[] {
   const offences: FocusUtilityOffence[] = []
   for (const literal of stringLiteralsOf(source)) {
-    const tokens = literal.trim().split(/\s+/).filter((t) => t.length > 0)
+    const tokens = literal
+      .trim()
+      .split(/\s+/)
+      .filter((t) => t.length > 0)
     // Un littéral à jeton UNIQUE ne peut pas être distingué d'une valeur de prop :
     // les formes nues n'y sont pas retenues (cf. `BARE_UTILITIES`).
     const isClassList = tokens.length > 1
@@ -356,7 +359,7 @@ function scannedFiles(): string[] {
   return SCANNED_ROOTS.flatMap((root) => walk(root))
 }
 
-describe("utilitaire de focus en TSX — WCAG 1.4.11 / DEC-S58-001 (#457)", () => {
+describe('utilitaire de focus en TSX — WCAG 1.4.11 / DEC-S58-001 (#457)', () => {
   const files = scannedFiles()
 
   it('le périmètre est non vide (sinon la garde passerait à vide)', () => {
@@ -372,7 +375,7 @@ describe("utilitaire de focus en TSX — WCAG 1.4.11 / DEC-S58-001 (#457)", () =
     )
     expect(
       offences.map((o) => `${o.file} : ${o.token}  (dans « ${o.literal} »)`),
-      "Un `.tsx` pose un utilitaire de focus local, ce que DEC-S58-001 interdit " +
+      'Un `.tsx` pose un utilitaire de focus local, ce que DEC-S58-001 interdit ' +
         "(docs/memory/decisions.md:413). L'indicateur de focus UNIQUE du dépôt est le " +
         'contour `:focus-visible` du DS, layerisé dans `@layer base` ' +
         "(`ds/tokens/base.css`) : il s'applique tout seul, aucune classe n'est à poser. " +
@@ -393,7 +396,10 @@ describe("utilitaire de focus en TSX — WCAG 1.4.11 / DEC-S58-001 (#457)", () =
         .flatMap((literal) => literal.split(/\s+/))
         .some((token) => baseUtility(token) === allowed.utility)
     }).map((a) => `${a.file} : ${a.utility}`)
-    expect(stale, "dérogation `ALLOWED_UTILITIES` qui ne correspond plus à aucun jeton du fichier").toEqual([])
+    expect(
+      stale,
+      'dérogation `ALLOWED_UTILITIES` qui ne correspond plus à aucun jeton du fichier',
+    ).toEqual([])
   })
 })
 
@@ -402,8 +408,17 @@ describe("utilitaire de focus en TSX — WCAG 1.4.11 / DEC-S58-001 (#457)", () =
  * Les mutations portent sur des fichiers RÉELS du dépôt, lus puis mutés EN MÉMOIRE.
  */
 const CHECKBOX = 'src/components/ui/checkbox.tsx'
-/** Ancre réelle de `checkbox.tsx` : la classe de base de la racine Radix. */
-const CHECKBOX_ANCHOR = 'peer h-4 w-4 shrink-0'
+/**
+ * Ancre réelle de `checkbox.tsx` : la classe de base de la racine Radix.
+ *
+ * ⚠ Depuis #528, `prettier-plugin-tailwindcss` trie les classes selon l'ordre
+ * canonique Tailwind et le gate `format:check` de la CI l'impose. Une ancre doit
+ * donc être une sous-chaîne CONTIGUË **dans l'ordre trié**, pas dans l'ordre où
+ * un humain les a écrites : l'ancienne ancre `'peer h-4 w-4 shrink-0'` a été
+ * disloquée par le tri (`peer border-rule-emphasis data-[…] h-4 w-4 shrink-0`).
+ * Le test d'existence ci-dessous est ce qui l'a rattrapé — le garder en premier.
+ */
+const CHECKBOX_ANCHOR = 'h-4 w-4 shrink-0'
 
 const ARMING_CASES = [
   {
@@ -495,11 +510,11 @@ describe("armement de la garde d'utilitaire de focus — contrôles négatifs (#
 describe('la garde ne rougit pas sur du TSX sain (#457)', () => {
   it('ignore les occurrences en COMMENTAIRE, les trois formes du dépôt', () => {
     const source = [
-      '// #383 : l\'ancien `ring-2 ring-offset-1` la rendait indiscernable du focus.',
-      '/* L\'ancien `focus-visible:ring-offset-2` était posé SANS `ring-offset-color`. */',
+      "// #383 : l'ancien `ring-2 ring-offset-1` la rendait indiscernable du focus.",
+      "/* L'ancien `focus-visible:ring-offset-2` était posé SANS `ring-offset-color`. */",
       'const A = () => (',
       '  <div>',
-      '    {/* Pas d\'`outline-none` ici (#383) : le contour du DS suffit. */}',
+      "    {/* Pas d'`outline-none` ici (#383) : le contour du DS suffit. */}",
       '    <span className="text-sm" />',
       '  </div>',
       ')',
@@ -522,7 +537,7 @@ describe('la garde ne rougit pas sur du TSX sain (#457)', () => {
     expect(findFocusUtilityOffences('Tpl.tsx', 'href={`#${ring.id}`}')).toEqual([])
   })
 
-  it("ne rougit pas sur des utilitaires voisins qui ne sont pas des anneaux", () => {
+  it('ne rougit pas sur des utilitaires voisins qui ne sont pas des anneaux', () => {
     const offences = findFocusUtilityOffences(
       'Neighbours.tsx',
       'className="rounded-sm border-rule-emphasis text-ink underline-offset-4 data-[state=open]:bg-accent-soft [&_svg:not([class*=\'size-\'])]:size-4"',

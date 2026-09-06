@@ -649,9 +649,7 @@ describe('garde-fou (app)/ ↔ PROTECTED_APP_SEGMENTS (#318)', () => {
     })
 
     it('ne signale AUCUN faux positif sur un renommage bien propagé', () => {
-      const renamed = REAL_LIKE.map((entry) =>
-        entry.name === 'timeline' ? dir('frise') : entry,
-      )
+      const renamed = REAL_LIKE.map((entry) => (entry.name === 'timeline' ? dir('frise') : entry))
 
       expect(formatGuardReport(renamed, ['dashboard', 'products', 'settings', 'frise'])).toBe(
         GUARD_IN_SYNC,
@@ -727,12 +725,7 @@ describe('garde-fou [locale]/ ↔ routes classées (FU3)', () => {
   const dir = (name: string): DirEntryLike => ({ name, isDirectory: () => true })
   const file = (name: string): DirEntryLike => ({ name, isDirectory: () => false })
   const PUBLIC = [...PUBLIC_LOCALE_SEGMENTS]
-  const LOCALE_LIKE = [
-    dir('(app)'),
-    file('layout.tsx'),
-    file('page.tsx'),
-    ...PUBLIC.map(dir),
-  ]
+  const LOCALE_LIKE = [dir('(app)'), file('layout.tsx'), file('page.tsx'), ...PUBLIC.map(dir)]
 
   describe('logique pure (entrées fabriquées)', () => {
     it('est vert quand toute route de [locale]/ est classée', () => {
@@ -760,9 +753,9 @@ describe('garde-fou [locale]/ ↔ routes classées (FU3)', () => {
         formatLocaleGuardReport([...LOCALE_LIKE, dir('billing')], [...PUBLIC, 'billing'], []),
       ).toBe(LOCALE_GUARD_IN_SYNC)
       // Protégée : déclarée dans PROTECTED_EXTRA_SEGMENTS.
-      expect(
-        formatLocaleGuardReport([...LOCALE_LIKE, dir('billing')], PUBLIC, ['billing']),
-      ).toBe(LOCALE_GUARD_IN_SYNC)
+      expect(formatLocaleGuardReport([...LOCALE_LIKE, dir('billing')], PUBLIC, ['billing'])).toBe(
+        LOCALE_GUARD_IN_SYNC,
+      )
     })
 
     it('DÉLÈGUE (app)/ sans le compter comme segment ni comme dossier illisible', () => {
@@ -828,9 +821,9 @@ describe('garde-fou [locale]/ ↔ routes classées (FU3)', () => {
     it('compare sans distinction de casse, comme isProtectedPathname', () => {
       // `Billing/` sur le disque + `'billing'` déclaré = la SEULE déclaration que
       // la garde runtime honore (cf. #318) — elle ne doit pas rougir ici non plus.
-      expect(
-        formatLocaleGuardReport([...LOCALE_LIKE, dir('Billing')], PUBLIC, ['billing']),
-      ).toBe(LOCALE_GUARD_IN_SYNC)
+      expect(formatLocaleGuardReport([...LOCALE_LIKE, dir('Billing')], PUBLIC, ['billing'])).toBe(
+        LOCALE_GUARD_IN_SYNC,
+      )
     })
   })
 

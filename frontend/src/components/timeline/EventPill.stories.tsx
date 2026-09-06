@@ -59,7 +59,12 @@ export const AllStatuses: Story = {
     <>
       <EventPill
         {...args}
-        event={makePositionedEvent({ title: 'Expiré', status: 'expired', leftPx: 10, widthPx: 110 })}
+        event={makePositionedEvent({
+          title: 'Expiré',
+          status: 'expired',
+          leftPx: 10,
+          widthPx: 110,
+        })}
       />
       <EventPill
         {...args}

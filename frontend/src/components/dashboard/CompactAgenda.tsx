@@ -45,7 +45,7 @@ const AgendaRow: React.FC<{ event: FullCalendarEvent }> = ({ event }) => (
       aria-hidden="true"
     />
     <span className="text-ink min-w-0 flex-1 truncate text-xs font-medium">{event.title}</span>
-    <span className="text-ink-faint shrink-0 truncate text-2xs">
+    <span className="text-ink-faint text-2xs shrink-0 truncate">
       {event.extendedProps.productName}
     </span>
   </li>
@@ -77,7 +77,7 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new 
       data-testid="dashboard-compact-agenda"
       aria-label={t('label')}
     >
-      <h2 className="text-ink-faint font-mono text-2xs tracking-widest uppercase">{t('title')}</h2>
+      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
       {isEmpty ? (
         <p className="text-ink-muted text-xs" data-testid="dashboard-compact-agenda-empty">
           {t('empty')}
@@ -85,7 +85,7 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new 
       ) : (
         <>
           <div className="flex flex-col gap-1" data-testid="dashboard-compact-agenda-today">
-            <span className="text-ink-muted font-mono text-2xs tracking-widest uppercase">
+            <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
               {t('today')}
             </span>
             {todayEvents.length === 0 ? (
@@ -100,7 +100,7 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new 
           </div>
           {tomorrowEvents.length > 0 && (
             <div className="flex flex-col gap-1" data-testid="dashboard-compact-agenda-tomorrow">
-              <span className="text-ink-muted font-mono text-2xs tracking-widest uppercase">
+              <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
                 {t('tomorrow')}
               </span>
               <ul className="flex flex-col">

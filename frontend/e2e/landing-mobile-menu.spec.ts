@@ -161,7 +161,9 @@ test.describe('Landing — menu burger (375 px)', () => {
     await expect(page.getByTestId(MOBILE_MENU.close)).toBeFocused()
 
     // Balayage complet : à aucun moment le focus ne s'échappe.
-    const focusables = await panel.locator('button, [href], [tabindex]:not([tabindex="-1"])').count()
+    const focusables = await panel
+      .locator('button, [href], [tabindex]:not([tabindex="-1"])')
+      .count()
     expect(focusables).toBeGreaterThan(1)
     for (let i = 0; i < focusables + 1; i += 1) {
       await page.keyboard.press('Tab')
@@ -181,13 +183,17 @@ test.describe('Landing — menu burger (375 px)', () => {
     // C'est la régression d'origine de #334 : 173 px de scroll horizontal à
     // 375 px. Le panneau, en `fixed`, ne doit pas la réintroduire.
     const closed = await overflow()
-    expect(closed.scrollWidth, `débordement horizontal, menu fermé : ${JSON.stringify(closed)}`)
-      .toBeLessThanOrEqual(closed.clientWidth)
+    expect(
+      closed.scrollWidth,
+      `débordement horizontal, menu fermé : ${JSON.stringify(closed)}`,
+    ).toBeLessThanOrEqual(closed.clientWidth)
 
     await openMenu(page)
     const opened = await overflow()
-    expect(opened.scrollWidth, `débordement horizontal, menu ouvert : ${JSON.stringify(opened)}`)
-      .toBeLessThanOrEqual(opened.clientWidth)
+    expect(
+      opened.scrollWidth,
+      `débordement horizontal, menu ouvert : ${JSON.stringify(opened)}`,
+    ).toBeLessThanOrEqual(opened.clientWidth)
     expect(opened.bodyScrollWidth).toBeLessThanOrEqual(opened.clientWidth)
   })
 
@@ -251,7 +257,10 @@ test.describe('Landing — menu burger (375 px)', () => {
           .toBeGreaterThanOrEqual(requiredRatio(closeRest))
         await close.hover()
         measured.push(
-          describeRendering('menu/fermer (survol)', await expectReadable(close, 'menu/fermer (survol)')),
+          describeRendering(
+            'menu/fermer (survol)',
+            await expectReadable(close, 'menu/fermer (survol)'),
+          ),
         )
 
         test.info().annotations.push({ type: 'contraste-menu', description: measured.join(' | ') })
@@ -386,7 +395,9 @@ test.describe('Landing — menu burger (375 px)', () => {
           ),
         )
 
-        test.info().annotations.push({ type: 'contraste-langue', description: measured.join(' | ') })
+        test
+          .info()
+          .annotations.push({ type: 'contraste-langue', description: measured.join(' | ') })
       })
     })
   }
@@ -481,7 +492,10 @@ test.describe('Landing — aucun débordement horizontal, tous paliers', () => {
     await page.setViewportSize({ width: DESKTOP_MIN - 1, height: 900 })
     await page.goto('/fr', { waitUntil: 'domcontentloaded' })
     await waitForFonts(page)
-    await expect(toggle, 'le burger doit être visible au dernier pixel du palier tablette').toBeVisible()
+    await expect(
+      toggle,
+      'le burger doit être visible au dernier pixel du palier tablette',
+    ).toBeVisible()
     await expect(nav, 'la navigation desktop ne doit pas être visible à 1023 px').toBeHidden()
     expect(await page.evaluate(() => window.matchMedia('(min-width: 64rem)').matches)).toBe(false)
 

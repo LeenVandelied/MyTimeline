@@ -38,7 +38,7 @@ export function CtaSection({ locale }: CtaSectionProps) {
         <h2 className="text-accent-ink mb-6 text-lg leading-tight font-bold md:text-xl">
           {t('common.landing.cta.title')}
         </h2>
-        <p className="text-accent-ink mx-auto mb-10 max-w-3xl text-md md:text-lg">
+        <p className="text-accent-ink text-md mx-auto mb-10 max-w-3xl md:text-lg">
           {t('common.landing.cta.subtitle')}
         </p>
         <Button

@@ -241,9 +241,9 @@ describe('EventPill', () => {
 
     it('fond très foncé archivé → l’encre BLANCHE est conservée (chemin non dégradé)', () => {
       render(<EventPill event={archivedEvent('#0B0C0E')} ariaLabel="x" onSelect={() => {}} />)
-      expect(
-        screen.getByTestId('timeline-event').style.getPropertyValue('--mt-evt-ink'),
-      ).toBe(INK_LIGHT)
+      expect(screen.getByTestId('timeline-event').style.getPropertyValue('--mt-evt-ink')).toBe(
+        INK_LIGHT,
+      )
     })
 
     it('un archivé reste CLIQUABLE (le grisage n’est pas une désactivation)', async () => {

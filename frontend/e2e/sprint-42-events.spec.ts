@@ -88,135 +88,131 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
    *   - `conflict-dialog-keep-mine` : re-soumet, PAS de boucle 409, succès ;
    *   - `conflict-dialog-take-server` : abandonne le local + rafraîchit.
    */
-  test(
-    'conflit 409 concurrent -> modale comparative (diff + garder/prendre)',
-    async ({ browser }) => {
-      // --- SETUP état partagé via API (contexte A) --------------------------
-      const ctxA = await browser.newContext({ storageState: PROD.storageState })
-      const ctxB = await browser.newContext({ storageState: PROD.storageState })
-      const pageA = await ctxA.newPage()
-      const pageB = await ctxB.newPage()
+  test('conflit 409 concurrent -> modale comparative (diff + garder/prendre)', async ({
+    browser,
+  }) => {
+    // --- SETUP état partagé via API (contexte A) --------------------------
+    const ctxA = await browser.newContext({ storageState: PROD.storageState })
+    const ctxB = await browser.newContext({ storageState: PROD.storageState })
+    const pageA = await ctxA.newPage()
+    const pageB = await ctxB.newPage()
 
-      try {
-        const userId = await getUserId(pageA)
-        const cat = await seedCategory(pageA, unique('Conflict Cat'))
-        const product = await seedProduct(pageA, {
-          userId,
-          name: unique('Conflict Prod'),
-          categoryId: cat.id,
-          eventDate: todayIsoDate(),
-        })
-        const [seededEvent] = await fetchProductEvents(pageA.request, userId, product.id)
-        expect(seededEvent?.id, 'event seedé requis').toBeTruthy()
+    try {
+      const userId = await getUserId(pageA)
+      const cat = await seedCategory(pageA, unique('Conflict Cat'))
+      const product = await seedProduct(pageA, {
+        userId,
+        name: unique('Conflict Prod'),
+        categoryId: cat.id,
+        eventDate: todayIsoDate(),
+      })
+      const [seededEvent] = await fetchProductEvents(pageA.request, userId, product.id)
+      expect(seededEvent?.id, 'event seedé requis').toBeTruthy()
 
-        // --- Les deux contextes ouvrent le MÊME event (même version au chargement) ---
-        await openEventEditForm(pageA, product.id)
-        await openEventEditForm(pageB, product.id)
+      // --- Les deux contextes ouvrent le MÊME event (même version au chargement) ---
+      await openEventEditForm(pageA, product.id)
+      await openEventEditForm(pageB, product.id)
 
-        // --- A sauvegarde d'abord : PATCH 200, version serveur incrémentée -----
-        const patchA = pageA.waitForResponse(
-          (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
-        )
-        await pageA.getByTestId('event-form-title-input').fill(unique('Titre A'))
-        await pageA.getByTestId('event-form-submit').click()
-        expect((await patchA).status(), 'PATCH A doit réussir (200)').toBe(200)
+      // --- A sauvegarde d'abord : PATCH 200, version serveur incrémentée -----
+      const patchA = pageA.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      await pageA.getByTestId('event-form-title-input').fill(unique('Titre A'))
+      await pageA.getByTestId('event-form-submit').click()
+      expect((await patchA).status(), 'PATCH A doit réussir (200)').toBe(200)
 
-        // --- B sauvegarde ensuite avec une version STALE : PATCH 409 ------------
-        const patchB = pageB.waitForResponse(
-          (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
-        )
-        const localTitleB = unique('Titre B')
-        await pageB.getByTestId('event-form-title-input').fill(localTitleB)
-        await pageB.getByTestId('event-form-submit').click()
-        // Anti-flaky : on ASSERTE le 409 sur la réponse AVANT d'attendre la modale.
-        expect((await patchB).status(), 'PATCH B concurrent doit renvoyer 409').toBe(409)
+      // --- B sauvegarde ensuite avec une version STALE : PATCH 409 ------------
+      const patchB = pageB.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      const localTitleB = unique('Titre B')
+      await pageB.getByTestId('event-form-title-input').fill(localTitleB)
+      await pageB.getByTestId('event-form-submit').click()
+      // Anti-flaky : on ASSERTE le 409 sur la réponse AVANT d'attendre la modale.
+      expect((await patchB).status(), 'PATCH B concurrent doit renvoyer 409').toBe(409)
 
-        // --- Modale comparative ouverte + diff visible -------------------------
-        const dialog = pageB.getByTestId('event-form-conflict')
-        await expect(dialog).toBeVisible()
-        await expect(pageB.getByTestId('conflict-dialog-diff')).toBeVisible()
-        // Au moins la ligne `title` diffère (A a écrasé le titre côté serveur).
-        // `data-testid` ET `data-field` portés par le MÊME <li> (ConflictDialog l.168-169) :
-        // on cible la row par attributs combinés (un `filter({has})` chercherait un DESCENDANT).
-        const titleRow = pageB.locator(
-          '[data-testid="conflict-dialog-diff-row"][data-field="title"]',
-        )
-        await expect(titleRow.getByTestId('conflict-dialog-diff-local')).toContainText(localTitleB)
+      // --- Modale comparative ouverte + diff visible -------------------------
+      const dialog = pageB.getByTestId('event-form-conflict')
+      await expect(dialog).toBeVisible()
+      await expect(pageB.getByTestId('conflict-dialog-diff')).toBeVisible()
+      // Au moins la ligne `title` diffère (A a écrasé le titre côté serveur).
+      // `data-testid` ET `data-field` portés par le MÊME <li> (ConflictDialog l.168-169) :
+      // on cible la row par attributs combinés (un `filter({has})` chercherait un DESCENDANT).
+      const titleRow = pageB.locator('[data-testid="conflict-dialog-diff-row"][data-field="title"]')
+      await expect(titleRow.getByTestId('conflict-dialog-diff-local')).toContainText(localTitleB)
 
-        // --- « Garder mes modifications » : re-soumet SANS boucle 409 ----------
-        const keepMinePatch = pageB.waitForResponse(
-          (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
-        )
-        await pageB.getByTestId('conflict-dialog-keep-mine').click()
-        expect(
-          (await keepMinePatch).status(),
-          '« garder mes modifs » re-soumet et réussit (pas de nouvelle boucle 409)',
-        ).toBe(200)
-        await expect(dialog).toBeHidden()
+      // --- « Garder mes modifications » : re-soumet SANS boucle 409 ----------
+      const keepMinePatch = pageB.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      await pageB.getByTestId('conflict-dialog-keep-mine').click()
+      expect(
+        (await keepMinePatch).status(),
+        '« garder mes modifs » re-soumet et réussit (pas de nouvelle boucle 409)',
+      ).toBe(200)
+      await expect(dialog).toBeHidden()
 
-        // Persistance serveur : le titre local B a bien gagné.
-        const afterKeep = await fetchProductEvents(pageB.request, userId, product.id)
-        expect(afterKeep.find((e) => e.id === seededEvent.id)?.title).toBe(localTitleB)
-      } finally {
-        await ctxA.close()
-        await ctxB.close()
-      }
-    },
-  )
+      // Persistance serveur : le titre local B a bien gagné.
+      const afterKeep = await fetchProductEvents(pageB.request, userId, product.id)
+      expect(afterKeep.find((e) => e.id === seededEvent.id)?.title).toBe(localTitleB)
+    } finally {
+      await ctxA.close()
+      await ctxB.close()
+    }
+  })
 
   /**
    * SCÉNARIO 1bis — action « prendre la version serveur ».
    * Isolé du keep-mine pour une assertion nette (un seul chemin par test).
    */
-  test(
-    'conflit 409 -> « prendre la version serveur » rafraîchit les données',
-    async ({ browser }) => {
-      const ctxA = await browser.newContext({ storageState: PROD.storageState })
-      const ctxB = await browser.newContext({ storageState: PROD.storageState })
-      const pageA = await ctxA.newPage()
-      const pageB = await ctxB.newPage()
+  test('conflit 409 -> « prendre la version serveur » rafraîchit les données', async ({
+    browser,
+  }) => {
+    const ctxA = await browser.newContext({ storageState: PROD.storageState })
+    const ctxB = await browser.newContext({ storageState: PROD.storageState })
+    const pageA = await ctxA.newPage()
+    const pageB = await ctxB.newPage()
 
-      try {
-        const userId = await getUserId(pageA)
-        const cat = await seedCategory(pageA, unique('TakeSrv Cat'))
-        const product = await seedProduct(pageA, {
-          userId,
-          name: unique('TakeSrv Prod'),
-          categoryId: cat.id,
-        })
-        const [seededEvent] = await fetchProductEvents(pageA.request, userId, product.id)
+    try {
+      const userId = await getUserId(pageA)
+      const cat = await seedCategory(pageA, unique('TakeSrv Cat'))
+      const product = await seedProduct(pageA, {
+        userId,
+        name: unique('TakeSrv Prod'),
+        categoryId: cat.id,
+      })
+      const [seededEvent] = await fetchProductEvents(pageA.request, userId, product.id)
 
-        await openEventEditForm(pageA, product.id)
-        await openEventEditForm(pageB, product.id)
+      await openEventEditForm(pageA, product.id)
+      await openEventEditForm(pageB, product.id)
 
-        const serverTitle = unique('Titre serveur')
-        const patchA = pageA.waitForResponse(
-          (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
-        )
-        await pageA.getByTestId('event-form-title-input').fill(serverTitle)
-        await pageA.getByTestId('event-form-submit').click()
-        expect((await patchA).status()).toBe(200)
+      const serverTitle = unique('Titre serveur')
+      const patchA = pageA.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      await pageA.getByTestId('event-form-title-input').fill(serverTitle)
+      await pageA.getByTestId('event-form-submit').click()
+      expect((await patchA).status()).toBe(200)
 
-        const patchB = pageB.waitForResponse(
-          (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
-        )
-        await pageB.getByTestId('event-form-title-input').fill(unique('Titre local abandonné'))
-        await pageB.getByTestId('event-form-submit').click()
-        expect((await patchB).status()).toBe(409)
+      const patchB = pageB.waitForResponse(
+        (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
+      )
+      await pageB.getByTestId('event-form-title-input').fill(unique('Titre local abandonné'))
+      await pageB.getByTestId('event-form-submit').click()
+      expect((await patchB).status()).toBe(409)
 
-        await expect(pageB.getByTestId('event-form-conflict')).toBeVisible()
-        await pageB.getByTestId('conflict-dialog-take-server').click()
-        await expect(pageB.getByTestId('event-form-conflict')).toBeHidden()
+      await expect(pageB.getByTestId('event-form-conflict')).toBeVisible()
+      await pageB.getByTestId('conflict-dialog-take-server').click()
+      await expect(pageB.getByTestId('event-form-conflict')).toBeHidden()
 
-        // La version serveur (titre de A) est la source de vérité après refresh.
-        const after = await fetchProductEvents(pageB.request, userId, product.id)
-        expect(after.find((e) => e.id === seededEvent.id)?.title).toBe(serverTitle)
-      } finally {
-        await ctxA.close()
-        await ctxB.close()
-      }
-    },
-  )
+      // La version serveur (titre de A) est la source de vérité après refresh.
+      const after = await fetchProductEvents(pageB.request, userId, product.id)
+      expect(after.find((e) => e.id === seededEvent.id)?.title).toBe(serverTitle)
+    } finally {
+      await ctxA.close()
+      await ctxB.close()
+    }
+  })
 
   /**
    * SCÉNARIO 2 — Toggle `archived` (BR-EVE-013, PATCH-only).

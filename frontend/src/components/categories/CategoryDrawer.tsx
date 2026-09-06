@@ -303,7 +303,11 @@ export function CategoryDrawer({
                   <Palette className="size-4" aria-hidden="true" />
                   {t('fields.color')}
                 </span>
-                <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('fields.color')}>
+                <div
+                  className="flex flex-wrap items-center gap-2"
+                  role="group"
+                  aria-label={t('fields.color')}
+                >
                   {CATEGORY_SWATCHES.map((hex) => {
                     const selected = color?.toLowerCase() === hex.toLowerCase()
                     return (
@@ -379,7 +383,10 @@ export function CategoryDrawer({
                     data-testid="category-contrast-warning"
                     className="text-muted-foreground flex items-center gap-1 text-xs"
                   >
-                    <AlertTriangle className="text-destructive size-3.5 shrink-0" aria-hidden="true" />
+                    <AlertTriangle
+                      className="text-destructive size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     {t('fields.contrastWarning')}
                   </p>
                 )}
@@ -420,9 +427,7 @@ export function CategoryDrawer({
                     className="inline-flex max-w-full items-center rounded-full px-3 py-1 text-sm font-medium"
                     style={{ backgroundColor: previewColor, color: ink }}
                   >
-                    <span className="truncate">
-                      {watchedName || t('preview.placeholderName')}
-                    </span>
+                    <span className="truncate">{watchedName || t('preview.placeholderName')}</span>
                   </span>
                 </div>
               </div>
@@ -460,11 +465,7 @@ export function CategoryDrawer({
                     {t('actions.cancel')}
                   </Button>
                   {!readOnly && (
-                    <Button
-                      type="submit"
-                      disabled={submitting}
-                      data-testid="category-submit"
-                    >
+                    <Button type="submit" disabled={submitting} data-testid="category-submit">
                       {submitting && (
                         <Spinner label={t('actions.submitting')} className="text-current" />
                       )}

@@ -150,10 +150,7 @@ export function useEventEditConflict(
     [eventId, invalidateEvents, onDone, user?.id],
   )
 
-  const onSubmit = useCallback(
-    (data: EventEditFormValues) => runSubmit(data, false),
-    [runSubmit],
-  )
+  const onSubmit = useCallback((data: EventEditFormValues) => runSubmit(data, false), [runSubmit])
 
   const onReload = useCallback(() => {
     invalidateEvents()

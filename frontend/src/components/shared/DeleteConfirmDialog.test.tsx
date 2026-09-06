@@ -204,7 +204,9 @@ describe('DeleteConfirmDialog', () => {
       />,
     )
     await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.notFound')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'common.deleteDialog.errors.notFound',
+    )
   })
 
   it('erreur 409 : affiche le message conflict inline', async () => {
@@ -221,7 +223,9 @@ describe('DeleteConfirmDialog', () => {
       />,
     )
     await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.conflict')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'common.deleteDialog.errors.conflict',
+    )
   })
 
   it('succès : appelle onOpenChange(false) après confirmation', async () => {

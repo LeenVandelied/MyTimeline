@@ -55,13 +55,7 @@ function renderWithRealIntl(
       messages={{ common: commonMessages }}
       onError={(error) => errors.push(error.message)}
     >
-      <DeleteConfirmDialog
-        open
-        variant="event"
-        onOpenChange={noop}
-        onConfirm={noop}
-        {...props}
-      />
+      <DeleteConfirmDialog open variant="event" onOpenChange={noop} onConfirm={noop} {...props} />
     </NextIntlClientProvider>,
   )
   return errors

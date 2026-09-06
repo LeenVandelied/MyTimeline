@@ -30,12 +30,10 @@ describe('useTimelineViewport — ciblage de l’écouteur de défilement (#351)
   let railRef: RefObject<HTMLDivElement | null>
 
   const makeRafSpy = () =>
-    vi
-      .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation((cb: FrameRequestCallback) => {
-        cb(0)
-        return 1
-      })
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+      cb(0)
+      return 1
+    })
   let raf: ReturnType<typeof makeRafSpy>
 
   const mount = () => renderHook(() => useTimelineViewport(scrollRef, railRef, 'geometry'))

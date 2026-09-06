@@ -5324,3 +5324,200 @@ authentifiés (M), le `data-testid` sur la carte auth (S, impose de régénérer
 
 **Status :** Terminé
 
+
+---
+
+## Plan S78-S82 — 2026-09-06 (`/sprint plan 5 -c "focus mvp"`)
+
+**Cadrage.** « focus mvp » n'avait aucune définition dans le dépôt (ni doc, ni milestone MVP).
+Désambiguïsé avec le dev : **robustesse fonctionnelle avant polish**. Sont exclus le polish
+design/a11y (`epic:design` P3) et le milestone #55 « Mise en ligne (GELÉ) », bloqué sur une
+décision humaine (#369 hébergeur/domaine/TLS).
+
+**Fil directeur.** Assainir la chaîne de vérification avant d'y ajouter quoi que ce soit :
+les gates qui mentent d'abord (S78), le harnais E2E ensuite (S79-S80), les tests métier en
+dernier (S82). Toute issue qui MODIFIE l'infrastructure de test passe avant celles qui
+AJOUTENT des tests.
+
+**15 issues, 35 points, cohésion globale 0.363. Aucune migration Flyway — V16 reste libre.**
+
+### Sprint 78 — 2026-09-06 (EN COURS — cohésion 0.28, Les gates de vérification mentent)
+**Objectif :** trancher trois contrôles verts qui ne prouvent pas ce qu'ils prétendent.
+**Milestone GitHub :** #79
+**Issues :** #528, #434, #169
+**Vagues :** V1 = #528 ‖ #434 | V2 = #169 (conflit `ci.yml` + `frontend/package.json`)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (racine du plan)
+**Cohésion sous seuil assumée** (DEC-S57-003) : la métrique informe le découpage, elle ne le
+commande pas. Split proposé et écarté — mesurer la couverture AVANT d'en ajouter est ce qui
+rend le chiffre exploitable.
+
+**Démarrage `/sprint start 78` — 2026-09-06.** Exécuté depuis le worktree
+`traitement-s-xs-parallele-d0ae59` (la branche `sprint/78` était déjà attachée au worktree
+`sprint-69-d576fe`, laissé par `/sprint plan` ; branche locale avancée en fast-forward plutôt que
+de libérer le worktree d'une autre session).
+
+**Trois écarts entre les énoncés et la mesure, relevés avant de briefer** (PIT-S71-001) :
+- #528 — le script `format:check` vaut `prettier --check .`, pas `--check src e2e` : la dette est
+  de **119 fichiers**, pas 104 (chiffre de l'architect) ni « 2-3 » (corps de l'issue).
+- #169 — le fichier est `frontend/vitest.config.mts`, pas `vitest.config.ts` (mini-plan architect).
+- #434 — les numéros de ligne de la piste technique sont faux ; `run_frontend` est vers L200-225.
+
+**Écart au plan de vagues assumé par le lead.** L'architect donnait V1 = #528 ‖ #434. Les deux
+issues se disputent en réalité l'état de l'arbre `frontend/` : #528 y réécrit 119 fichiers pendant
+que #434 doit y casser volontairement le typecheck pour prouver sa détection. Le parallélisme est
+conservé, encadré par trois règles écrites dans les deux briefings : exclusivité Playwright à
+#528, `docs/memory/decisions.md` réservé à #528 (#434 passe par un signal `[MEMORY:decision]`),
+et un fichier sonde au nom convenu `frontend/src/__tmp-434-typecheck-probe.ts` que #528 sait devoir
+ignorer.
+
+**Vagues exécutées :** V1 = #528 ‖ #434 (parallèles, encadrées) | V2 = #169.
+**Commits :** 16 sur la branche — 3 d'implémentation (`5650264`, `fb8c21a`, `62a5b71`), 2 de
+correction de revue (`81e405f`, `1123660`), 1 de mémoire (`c55a520`), le reste en artefacts.
+**BR impactées :** aucune. Sprint d'outillage — zéro ligne sous `backend/src/main/java/**`,
+aucune logique frontend touchée.
+
+**Tests.** Backend `mvnw verify` 566/566 (Docker présent). Frontend Vitest 1313/1313, typecheck,
+lint, `next build` 52/52 pages, `format:check` — tous EXIT=0. **E2E joué par le lead**, pas
+délégué (`PIT-S73-004` : 4 verdicts « E2E impossible » faux sur ce projet) : 304 passed / 5 failed
+/ 9 skipped sur une stack isolée (conteneur Postgres dédié `:5436` — le Postgres du poste est
+figé en V6 et le migrer aurait été un effet de bord non demandé). Les 5 échecs sont instruits dans
+`sprints/sprint-78/test-runner-report.md` : 1 dû à `--ignore-snapshots` sur darwin, 3 à
+`BREVO_API_KEY` absente, 1 (`golden-path`) à une contention sur `register` — vert en isolation, et
+surtout impossible à imputer à un sprint qui ne touche aucun backend exécutable.
+
+**CI :** run `34030803910` puis re-run sur `07fb3fa` — **7 jobs sur 7 verts, `e2e` compris**. C'est
+la CI qui a tranché le seul risque hors de portée du poste : le reformatage n'a cassé aucune
+comparaison visuelle. Artefacts de couverture constatés **non vides** : `vitest-coverage-report`
+1 208 873 o, `jacoco-coverage-report` 917 764 o — 3ᵉ critère de #169 vérifié, pas déduit.
+
+**Couverture initiale mesurée :** backend 90,49 % instructions / 72,18 % branches ; frontend
+70,77 % statements (BRUT — configs racine happées par v8, ce n'est pas une cible).
+
+**Reviews :** cycle 1 = 0 CRITIQUE / 2 MAJEUR / 5 MINEUR ; cycle 2 sur les commits de correction
+= 0 CRITIQUE / 0 MAJEUR / 5 MINEUR. Tous les MAJEUR résolus.
+- Les 2 MAJEUR portaient sur le correctif de #434 **lui-même**, qui réintroduisait par la porte de
+  derrière le défaut qu'il corrigeait : un script npm manquant produisait un skip à 0 suivi d'un
+  « ✓ OK (build + tests unitaires + typecheck + lint) ».
+- **Le cycle 2 a réfuté un contrôle écrit par le lead** — le constat le plus utile de ce sprint,
+  consigné en [[PIT-S78-007]]. Le contrôle d'armement franchissait une frontière de processus et
+  serait passé au vert avant le correctif aussi.
+- 2 MINEUR assumés sans correction : prescription `~3.2.7` vs `^3.2.7` sur `@vitest/coverage-v8`
+  (lock à 3.2.7, CI non exposée), et branche `skip` de `run_frontend_npm_step` désormais sans
+  appelant (conservée, absence d'appelant documentée dans le code).
+
+**Contrôle coverage-E2E (Phase 8) :** MAJEUR **réfuté**. 9 testids signalés « sans spec » existent
+tous déjà sur `origin/dev` — le reformatage fait compter chaque ligne comme ajoutée par
+l'heuristique ([[PIT-S78-006]]). Le sprint n'introduit aucun testid.
+
+**Nouveaux pitfalls / décisions / patterns :** `PIT-S78-001` à `PIT-S78-008`,
+`DEC-S78-001` à `DEC-S78-004`, `PAT-S78-001`. `BUG-S71-002` **clos**. `PIT-S60-009` marqué RÉSOLU
+(il affirmait au présent un comportement que ce sprint a changé, et il était injecté tel quel dans
+les packs de tous les subagents).
+
+**Absorbé en cours (XS) :** 2 découvertes hors scope initial intégrées — l'ancre littérale du test
+de focus disloquée par le tri de classes (#528), et 3 descriptions fausses du scope `unit` dans
+`.ai-env/rules-jit/{frontend,backend}.md` (#434).
+
+**Follow-ups proposés (tous XS) :**
+  - constater les 2 artefacts non vides puis consigner les références dans les `coverage-*.md`
+    [XS | ci] (issue-169 — la première moitié est **déjà faite** : artefacts constatés)
+  - exclure les configs racine du périmètre v8 une fois la référence brute consignée [XS | frontend]
+  - reporter la correction des scopes dans les rules-jit AMONT du plugin ai-env [XS | ci]
+  - `husky`/`lint-staged` déclarés sans `.husky/` ni script `prepare` : installer le hook ou
+    retirer les deux dépendances mortes [XS | frontend]
+
+**Status :** PR #538 ouverte, CI verte 7/7 — en attente d'arbitrage des follow-ups et du merge.
+
+### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
+**Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
+**Milestone GitHub :** #80
+**Issues :** #428, #475, #463
+**Vagues :** V1 = #428 ‖ #475 | V2 = #463 (conflit `accounts.ts` / `auth.setup.ts`)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 78 (le reformatage de #528 touche 10 specs e2e — l'absorber avant)
+**Status :** Planifié
+
+### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
+**Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
+**Milestone GitHub :** #81
+**Issues :** #472, #476, #408
+**Vagues :** V1 = #472 | V2 = #476 | V3 = #408 (3 vagues : `playwright.config.ts` partagé + exclusivité Playwright)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 79 — dépendance DURE. #476 exige #475 livrée : à 2 workers avec le
+budget register au plafond, un 429 se déguise en timeout `/login`, et le diagnostic est faux.
+**Status :** Planifié
+
+### Sprint 81 — 2026-09-06 (PLANIFIÉ — cohésion 0.56, Durcir le parcours auth/avatar)
+**Objectif :** rate-limit avatar, flaky auth élucidé (ou son mécanisme de capture livré), E2E avatar dégelé.
+**Milestone GitHub :** #82
+**Issues :** #500, #499, #215
+**Vagues :** V1 = #500 | V2 = #499 | V3 = #215
+> Séquentiel volontaire : #500 instrumente un flaky dont une hypothèse est la collision de
+> bucket rate-limit ; si #499 modifie `LIMITS` en parallèle, l'imputation devient impossible.
+**Migrations Flyway :** aucune
+**Dépend de :** Sprints 79 + 80 (#215 exige un harnais dont le diagnostic est fiable)
+**Status :** Planifié
+
+### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
+**Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
+**Milestone GitHub :** #83
+**Issues :** #507, #491, #477
+**Vagues :** V1 = #507 ‖ #491 | V2 = #477
+**Migrations Flyway :** aucune
+**Dépend de :** Sprints 78 → 81 (ajouter des tests en dernier, sur un harnais assaini)
+**Status :** Planifié
+
+### Énoncés périmés détectés pendant la planification — et traités
+
+L'architect a audité 44 candidates. Le taux d'énoncés faux reste cohérent avec le S74 (3/4) et
+le S77 (4/5). Contre-vérifié par le lead avant toute fermeture :
+
+| # | Verdict | Évidence | Action |
+|---|---|---|---|
+| #501 | Périmée | 2 derniers runs `dev` = success ; `npm audit` prod et dev+prod = 0 vuln | **Fermée** |
+| #360 | Sans objet | `AUTH_JWT_PUBLIC_KEY` supprimée depuis #358 (S68) — la clé vient du JWKS ; la panne « paire dépareillée » disparaît par construction | **Fermée** |
+| #510 | Doublon de #528 | Même défaut, même arbitrage binaire, même parc de fichiers | **Fermée** |
+| #319 | Contredit la décision en vigueur | `ci.yml:765-771` — arbitrage dev du 2026-09-03 qui ÉCARTE explicitement la refusion demandée | **Fermée won't-do** |
+| #529 | Hors dépôt | `warn-test-delegation.sh` vit dans le plugin ai-env, pas dans MyTimeline — aucune PR ici ne peut la résoudre | Commentée, laissée ouverte |
+| #272 | 2 critères sur 3 déjà satisfaits | `node_modules` présent, `.gitignore:79` OK, préflight #308 en place ; reste l'automatisation | Requalifiée `size:S` → `size:XS` |
+
+**Chiffres d'issue démentis par la mesure** (à ne pas recopier depuis les corps d'issue) :
+- #528 : **104 fichiers** non conformes prettier, pas 2-3.
+- #463 : **16 specs** consomment le compte PROD, pas 4.
+- #240 : **7** duplications de la garde d'ownership, pas 5.
+- #477 : la ligne citée (`TimelineView.tsx:895-912`) date du S65 et n'a pas été revérifiée.
+
+**Piège actif consigné (#507)** : `NewEventDrawer.test.tsx:488-499` cite BR-EVE-017 en
+commentaire mais son assertion (`waitFor(toHaveTextContent)`) passe avec OU sans debounce. Un
+agent qui grep la BR conclura « déjà couvert ». Le briefing doit citer ce fichier:ligne.
+
+### Risques du plan
+
+1. **#528 est le plus gros diff des 5 sprints (104 fichiers)** et `prettier-plugin-tailwindcss`
+   réordonne les classes. Les specs de comparaison visuelle (S76/S77) doivent être **rejouées**,
+   jamais ré-armées via `--update-snapshots`.
+2. **La cause racine de la mort du `next dev` sous charge reste inconnue** (documentée telle
+   quelle dans `playwright.config.ts`, commentaire #469). #476 mesure `workers:2` sans que ce
+   soit levé : un rouge sera ambigu. « Rebaisser la valeur en silence » n'est pas une conclusion.
+3. **L'architect n'a joué aucun test.** Ses `possibly_done: false` reposent sur lecture + grep.
+   Les taux de flake de #472, le rouge de #500 et le blocage de merge de #408 restent non mesurés.
+4. **8 des 15 issues exigent un run E2E** → parallélisme faible sur 3 sprints sur 5. Structurel,
+   non corrigeable par le découpage (un seul agent à la fois peut jouer Playwright).
+5. **#215 risque de rejouer un diagnostic déjà faux trois fois** (CORS/Origin, S47/S56/S57).
+   L'oracle `curl → 401` est imposé avant toute hypothèse.
+
+### Écarté par le cadrage, pas par la valeur
+
+**#518** (P1, ~15 composants rendent des dates en `<span>` au lieu de `<time datetime>`) est le
+seul P1 non planifié : c'est de la sémantique/a11y, rangée côté polish par le cadrage retenu.
+Signalé au dev, qui a validé le plan en connaissance de cause.
+
+### Note de méthode — la pré-validation Phase 0.5 est inexploitable sur ce dépôt
+
+`check-issue-state.sh` a renvoyé `possibly_done: true` sur **20 des 44** candidates. **Les 20
+sont des faux positifs** : le helper fait `git log --grep "#N"` et tombe sur le commit de
+*clôture de sprint qui a CRÉÉ* l'issue en follow-up, jamais sur un commit qui la résout. Le
+tableau n'a donc pas été transmis à l'architect ; à la place, celui-ci a vérifié chaque issue
+retenue directement dans le code. C'est cette vérification-là qui a produit les 6 péremptions
+ci-dessus — le signal automatique en aurait produit zéro.

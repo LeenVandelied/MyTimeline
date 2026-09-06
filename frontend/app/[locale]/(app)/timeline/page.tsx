@@ -57,7 +57,7 @@ export default function TimelinePage() {
       data-testid="timeline-screen"
     >
       <header className="flex flex-col gap-1">
-        <span className="text-ink-faint font-mono text-2xs tracking-widest uppercase">
+        <span className="text-ink-faint text-2xs font-mono tracking-widest uppercase">
           {t('eyebrow')}
         </span>
         <h1 className="text-ink flex items-center gap-3 text-2xl font-semibold tracking-tight">

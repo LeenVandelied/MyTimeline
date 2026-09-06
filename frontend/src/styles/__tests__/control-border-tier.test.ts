@@ -97,25 +97,21 @@ describe('tier de bordure des contrôles — WCAG 1.4.11', () => {
     expect(remaining.length).toBeGreaterThan(0)
   })
 
-  it(
-    'le pont shadcn `--color-input` pointe sur le tier fonctionnel',
-    async () => {
-      const result = await postcss([tailwind()]).process(readFileSync(GLOBALS, 'utf8'), {
-        from: GLOBALS,
-      })
-      const root = result.root as unknown as Container
+  it('le pont shadcn `--color-input` pointe sur le tier fonctionnel', async () => {
+    const result = await postcss([tailwind()]).process(readFileSync(GLOBALS, 'utf8'), {
+      from: GLOBALS,
+    })
+    const root = result.root as unknown as Container
 
-      let inputToken: string | undefined
-      root.walkDecls('--color-input', (decl) => {
-        inputToken = decl.value
-      })
+    let inputToken: string | undefined
+    root.walkDecls('--color-input', (decl) => {
+      inputToken = decl.value
+    })
 
-      expect(inputToken).toBeDefined()
-      expect(inputToken).toContain('--color-rule-emphasis')
-      expect(inputToken).not.toContain('--color-rule-strong')
-    },
-    30_000,
-  )
+    expect(inputToken).toBeDefined()
+    expect(inputToken).toContain('--color-rule-emphasis')
+    expect(inputToken).not.toContain('--color-rule-strong')
+  }, 30_000)
 })
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -183,11 +179,7 @@ describe('tier de bordure des contrôles — WCAG 1.4.11', () => {
 */
 
 /** Sœurs visibles qui portent l'indicateur de focus d'un `<input>` masqué. */
-const FOCUS_INDICATOR_CONTROLS = [
-  '.mt-check__box',
-  '.mt-radio__dot',
-  '.mt-switch__track',
-] as const
+const FOCUS_INDICATOR_CONTROLS = ['.mt-check__box', '.mt-radio__dot', '.mt-switch__track'] as const
 
 type FocusViolationKind =
   | 'missing-rule'
@@ -323,7 +315,7 @@ function withFocusRuleReplaced(css: string, control: string, decls: string | nul
   return root.toString()
 }
 
-describe("indicateur de focus des contrôles à `<input>` masqué — WCAG 1.4.11 / DEC-S58-001", () => {
+describe('indicateur de focus des contrôles à `<input>` masqué — WCAG 1.4.11 / DEC-S58-001', () => {
   const coreCss = readFileSync(CORE, 'utf8')
 
   it.each(FOCUS_INDICATOR_CONTROLS)(

@@ -13,7 +13,7 @@ vi.mock('next-intl', () => ({
 }))
 
 describe('LocaleNotFound', () => {
-  it('rend l\'écran 404 (code, titre, description)', () => {
+  it("rend l'écran 404 (code, titre, description)", () => {
     render(<LocaleNotFound />)
     expect(screen.getByTestId('not-found-screen')).toBeInTheDocument()
     expect(screen.getByTestId('state-screen-code')).toHaveTextContent('404')

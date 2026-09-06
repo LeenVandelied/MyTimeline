@@ -74,10 +74,7 @@ export function ExportDataFlow() {
   const expired = flow.phase === 'ready' && isExpired(flow.completedJob?.expiresAt ?? null)
 
   return (
-    <div
-      className="border-rule max-w-md space-y-4 rounded-md border p-4"
-      data-testid="export-flow"
-    >
+    <div className="border-rule max-w-md space-y-4 rounded-md border p-4" data-testid="export-flow">
       <div>
         {/* Pas d'`outline-none` ici (#383) : mesuré sur Chromium/Firefox, un
             `.focus()` programmatique sur un `tabindex="-1"` ne déclenche
@@ -207,12 +204,7 @@ export function ExportDataFlow() {
             </p>
           )}
 
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={flow.reset}
-            data-testid="export-again"
-          >
+          <Button type="button" variant="ghost" onClick={flow.reset} data-testid="export-again">
             {t('actions.again')}
           </Button>
         </div>
@@ -225,12 +217,7 @@ export function ExportDataFlow() {
             <AlertTriangle className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             {t(`errors.${flow.errorKey ?? 'network'}`)}
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={flow.reset}
-            data-testid="export-retry"
-          >
+          <Button type="button" variant="outline" onClick={flow.reset} data-testid="export-retry">
             {t('actions.retry')}
           </Button>
         </div>

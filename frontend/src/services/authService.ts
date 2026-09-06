@@ -47,8 +47,7 @@ export const registerUser = async (
  * Une valeur non supportée est simplement omise — le backend retombe sur `fr`.
  */
 export const forgotPassword = async (email: string, locale?: string) => {
-  const payload =
-    locale && isSupportedLocale(locale) ? { email, locale } : { email }
+  const payload = locale && isSupportedLocale(locale) ? { email, locale } : { email }
   const response = await apiClient.post('/auth/forgot-password', payload)
   return response.data
 }

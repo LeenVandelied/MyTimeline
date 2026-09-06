@@ -1,18 +1,18 @@
-import React, { useCallback } from "react";
-import { HexColorPicker } from "react-colorful";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import React, { useCallback } from 'react'
+import { HexColorPicker } from 'react-colorful'
+import { Popover, PopoverContent, PopoverTrigger } from './popover'
 
 export const PopoverPicker = ({
   color,
   onChange,
   isOpen,
   onToggle,
-  disabled = false
+  disabled = false,
 }: {
-  color: string,
-  onChange: (color: string) => void,
-  isOpen: boolean,
-  onToggle?: (isOpen: boolean) => void,
+  color: string
+  onChange: (color: string) => void
+  isOpen: boolean
+  onToggle?: (isOpen: boolean) => void
   /**
    * #230 — Déclencheur inerte. Le trigger est un `<div>`, pas un contrôle de
    * formulaire : ni l'attribut `disabled` ni un `<fieldset disabled>` ancêtre ne
@@ -24,12 +24,15 @@ export const PopoverPicker = ({
   disabled?: boolean
 }) => {
   const handlePickerMouseDown = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
+    e.stopPropagation()
+  }, [])
 
-  const handleColorChange = useCallback((newColor: string) => {
-    onChange(newColor);
-  }, [onChange]);
+  const handleColorChange = useCallback(
+    (newColor: string) => {
+      onChange(newColor)
+    },
+    [onChange],
+  )
 
   return (
     <Popover open={disabled ? false : isOpen} onOpenChange={disabled ? undefined : onToggle}>
@@ -37,16 +40,16 @@ export const PopoverPicker = ({
         <div
           className={
             disabled
-              ? "w-6 h-6 rounded-lg border border-white cursor-not-allowed opacity-60"
-              : "w-6 h-6 rounded-lg border border-white cursor-pointer"
+              ? 'h-6 w-6 cursor-not-allowed rounded-lg border border-white opacity-60'
+              : 'h-6 w-6 cursor-pointer rounded-lg border border-white'
           }
           aria-disabled={disabled || undefined}
           style={{ backgroundColor: color }}
           onMouseDown={disabled ? undefined : handlePickerMouseDown}
         />
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-auto p-0 border-none bg-transparent shadow-none"
+      <PopoverContent
+        className="w-auto border-none bg-transparent p-0 shadow-none"
         onMouseDown={handlePickerMouseDown}
         onClick={(e) => e.stopPropagation()}
       >
@@ -55,5 +58,5 @@ export const PopoverPicker = ({
         </div>
       </PopoverContent>
     </Popover>
-  );
-};
+  )
+}

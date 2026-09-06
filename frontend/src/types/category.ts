@@ -69,7 +69,10 @@ export type CategoryUpdate = z.infer<typeof categoryUpdateSchema>
  */
 export function createCategoryFormSchema(t: (key: string) => string) {
   return z.object({
-    name: z.string().min(1, { message: t('nameRequired') }).max(255, { message: t('nameTooLong') }),
+    name: z
+      .string()
+      .min(1, { message: t('nameRequired') })
+      .max(255, { message: t('nameTooLong') }),
     color: z.string().max(255).optional(),
     description: z.string().max(255).optional(),
   })

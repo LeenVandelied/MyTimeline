@@ -170,9 +170,7 @@ describe('useEventEditConflict — garde anti-boucle keep-mine (#310)', () => {
       })
     }
     await waitFor(() => expect(result.current.keepMineExhausted).toBe(true))
-    expect(updateEventMock).toHaveBeenCalledTimes(
-      callsAfterSuccess + 1 + MAX_KEEP_MINE_ATTEMPTS,
-    )
+    expect(updateEventMock).toHaveBeenCalledTimes(callsAfterSuccess + 1 + MAX_KEEP_MINE_ATTEMPTS)
   })
 
   it("une soumission initiale en 409 n'entame pas le budget de re-soumissions", async () => {
@@ -202,7 +200,7 @@ describe('useEventEditConflict — garde anti-boucle keep-mine (#310)', () => {
     expect(updateEventMock).toHaveBeenCalledTimes(2 + MAX_KEEP_MINE_ATTEMPTS)
   })
 
-  it("abandonner le flux (onConflictDismiss) libère le budget", async () => {
+  it('abandonner le flux (onConflictDismiss) libère le budget', async () => {
     let serverVersion = 2
     updateEventMock.mockImplementation(() => Promise.reject(conflictError(serverVersion++)))
 

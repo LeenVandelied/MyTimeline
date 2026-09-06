@@ -115,7 +115,7 @@ describe('Button — appariement fond/encre au survol', () => {
       // `(?![\w-])` et non `\b` : `-` est un non-mot, donc `\b` matcherait
       // aussi `hover:bg-accent-soft`, qui est précisément la valeur attendue.
       source.match(/hover:bg-accent(?![\w-])/g) ?? [],
-      "`hover:bg-accent` (accent plein) exige une encre appariée : interdit au niveau du variant",
+      '`hover:bg-accent` (accent plein) exige une encre appariée : interdit au niveau du variant',
     ).toEqual([])
   })
 })

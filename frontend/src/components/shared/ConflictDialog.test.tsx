@@ -37,7 +37,12 @@ describe('ConflictDialog', () => {
 
   it('testId personnalisable (préservation event-form-conflict)', () => {
     render(
-      <ConflictDialog open onOpenChange={vi.fn()} onReload={vi.fn()} testId="event-form-conflict" />,
+      <ConflictDialog
+        open
+        onOpenChange={vi.fn()}
+        onReload={vi.fn()}
+        testId="event-form-conflict"
+      />,
     )
     expect(screen.getByTestId('event-form-conflict')).toBeInTheDocument()
   })

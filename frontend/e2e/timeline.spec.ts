@@ -400,7 +400,11 @@ async function seedTwoProductsInOneCategory(
   const userId = await getUserId(page)
   const cat = await seedCategory(page, unique('Collapse Cat'))
   const first = await seedProduct(page, { userId, name: unique('Collapse P1'), categoryId: cat.id })
-  const second = await seedProduct(page, { userId, name: unique('Collapse P2'), categoryId: cat.id })
+  const second = await seedProduct(page, {
+    userId,
+    name: unique('Collapse P2'),
+    categoryId: cat.id,
+  })
   return { category: cat.name, first: first.name, second: second.name }
 }
 
@@ -979,7 +983,11 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
   }) => {
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Live Cat'))
-    const product = await seedProduct(page, { userId, name: unique('Live Prod'), categoryId: cat.id })
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Live Prod'),
+      categoryId: cat.id,
+    })
     await gotoTimeline(page)
 
     const live = page.getByTestId('timeline-live-region')
@@ -1042,7 +1050,11 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     // dépendu de ce défaut, et n'a donc pas bougé avec lui.
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Outside Cat'))
-    const product = await seedProduct(page, { userId, name: unique('Outside Prod'), categoryId: cat.id })
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Outside Prod'),
+      categoryId: cat.id,
+    })
     const lowContrastTitle = unique('Low Contrast Evt')
     const highContrastTitle = unique('High Contrast Evt')
     await seedEventWithColor(page, {
@@ -1063,7 +1075,9 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     await revealSeededLane(page, { category: cat.name, product: product.name })
 
     await expect(
-      page.locator('[data-testid="timeline-event-outside-label"]').filter({ hasText: lowContrastTitle }),
+      page
+        .locator('[data-testid="timeline-event-outside-label"]')
+        .filter({ hasText: lowContrastTitle }),
     ).toHaveText(lowContrastTitle)
 
     // #390-fix (C) — garde de PRÉSENCE : sans elle, le `toHaveCount(0)` ci-dessous
@@ -1122,7 +1136,9 @@ test.describe('#330 (étape 1bis, #331) — options de récurrence WEEK et YEAR'
     await page.getByTestId('event-form-recurrence-trigger').click()
     await page.getByTestId('recurrence-unit-option-WEEK').click()
     await expect(page.getByTestId('event-form-recurrence-trigger')).toContainText('Semaines')
-    await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText('Récurrent · Semaines')
+    await expect(page.getByTestId('event-form-preview-recurrence')).toHaveText(
+      'Récurrent · Semaines',
+    )
 
     // --- YEAR (bascule DEPUIS WEEK, pas l'état initial : preuve que le mapping
     //     réagit à un CHANGEMENT, pas seulement à une première sélection) -------

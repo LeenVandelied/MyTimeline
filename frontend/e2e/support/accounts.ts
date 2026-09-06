@@ -95,7 +95,10 @@ const ACCOUNTS_FILE = path.join(STATE_DIR, 'accounts.json')
  * garantit aussi `prefix(2) + RUN(16) = 18 <= 20` (BR-AUT-003).
  */
 function sanitizeRunId(raw: string): string {
-  return raw.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 16)
+  return raw
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase()
+    .slice(0, 16)
 }
 
 /**
@@ -220,7 +223,7 @@ function resolveIdentity(key: E2eAccount['key'], prefix: string): PersistedIdent
           'Les identités E2E doivent toutes dériver de la MÊME graine, posée par',
           '`globalSetup` (e2e/global-setup.ts) dans le process principal AVANT le fork des',
           'workers. Sans elle, chaque process regénère la sienne et les specs `settings-*`',
-          "comparent un username local au compte réellement enregistré par un autre process",
+          'comparent un username local au compte réellement enregistré par un autre process',
           '([[PIT-S47-004]]). Vérifier que `globalSetup` est bien déclaré dans',
           "playwright.config.ts et qu'il n'a pas échoué avant de poser la variable.",
         ].join('\n'),
@@ -238,7 +241,7 @@ function resolveIdentity(key: E2eAccount['key'], prefix: string): PersistedIdent
         `  dérivée de ${RUN_ID_ENV}=${fromEnv} : ${derived.username}`,
         `  persistée par le projet \`setup\` dans ${ACCOUNTS_FILE} : ${persisted.username}`,
         '',
-        "Les deux valeurs portent pourtant la MÊME graine de run (un fichier écrit par un",
+        'Les deux valeurs portent pourtant la MÊME graine de run (un fichier écrit par un',
         "AUTRE run est ignoré en amont) : la dérivation n'est donc plus une fonction pure de",
         'la graine. Invariant cassé dans `deriveIdentity`/`persistAccounts`, pas régression',
         'du code applicatif testé ([[PIT-S47-004]]).',

@@ -717,3 +717,12 @@ Au lieu d'un test qui lit le disque et compare, extraire une fonction qui prend 
 
 ## PAT-S77-004 — Rampe typographique responsive sur l'échelle DS, pour un titre enfant de flex
 `text-xl md:text-2xl lg:text-3xl` (35/45/57 dans l'échelle Graphite) + `min-w-0 break-words` (le titre est enfant direct d'un flex, [[PIT-S73-001]]) + repli d'en-tête `flex-wrap` / `w-full sm:w-auto` + `hyphens-auto` (l'attribut `lang` est déjà posé sur `<html>`). Anti-pattern : descendre la rampe **sous** la taille des `<h2>` de la même page — hiérarchie inversée ; et croire qu'un `break-words` seul suffit sur un item de flex. (Sprint 77 #532)
+
+## PAT-S78-001 — Prouver qu'un reformatage massif est inerte au rendu, sans lancer un seul diff visuel
+Problème : un `prettier-plugin-tailwindcss` sur 119 fichiers réordonne les classes, et le diff visuel qui le validerait est coûteux, lent, et parfois hors de portée (références de capture liées à la plateforme).
+
+Deux contrôles suffisent, et ils sont plus FORTS qu'un run vert :
+1. **Empreinte du multi-ensemble de classes**, par fichier, HEAD vs après. Détecte toute classe ajoutée, retirée ou altérée. Si seul l'ordre change, le rendu ne peut pas changer par la cascade : le gagnant Tailwind est fixé par l'ordre dans la **feuille générée**, pas dans l'attribut `class`.
+2. **Audit des littéraux auto-conflictuels vis-à-vis de `twMerge`** — la seule voie par laquelle l'ordre DANS l'attribut peut compter, puisque `twMerge` résout last-wins dans la chaîne. Au S78 : 1354 littéraux audités, **1 seul** auto-conflictuel, et c'était une directive `@source inline(...)` jamais passée à `cn()`, laissée intacte par le tri.
+
+Pourquoi c'est mieux qu'un diff visuel : un run vert ne couvre que les écrans capturés, alors que ces deux contrôles couvrent **tous** les fichiers touchés et raisonnent sur le mécanisme. Le diff visuel reste utile en aval — la CI du S78 l'a confirmé — mais il valide, il ne démontre pas. (Sprint 78 #528)

@@ -27,8 +27,12 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
   const nf = useMemo(() => new Intl.NumberFormat(locale), [locale])
 
   return (
-    <section className="flex flex-col gap-3" data-testid="dashboard-product-list" aria-label={t('label')}>
-      <h2 className="text-ink-faint font-mono text-2xs tracking-widest uppercase">{t('title')}</h2>
+    <section
+      className="flex flex-col gap-3"
+      data-testid="dashboard-product-list"
+      aria-label={t('label')}
+    >
+      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
       {products.length === 0 ? (
         // #57 — État vide partagé (remplace le <p> inline). testId préservé pour
         // les tests #80 existants (dashboard-product-list-empty).
@@ -54,11 +58,14 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                   {product.name}
                 </span>
                 {next ? (
-                  <span className="text-ink-muted hidden truncate text-2xs sm:inline">
-                    {next.title} · <span className="font-mono">{fmt.format(new Date(next.start))}</span>
+                  <span className="text-ink-muted text-2xs hidden truncate sm:inline">
+                    {next.title} ·{' '}
+                    <span className="font-mono">{fmt.format(new Date(next.start))}</span>
                   </span>
                 ) : (
-                  <span className="text-ink-faint hidden text-2xs sm:inline">{t('noUpcoming')}</span>
+                  <span className="text-ink-faint text-2xs hidden sm:inline">
+                    {t('noUpcoming')}
+                  </span>
                 )}
                 {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums + isolation bidi. */}
                 <span className="text-ink-faint mt-num text-2xs">{nf.format(count)}</span>

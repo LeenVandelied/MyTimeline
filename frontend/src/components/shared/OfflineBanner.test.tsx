@@ -26,8 +26,7 @@ function setOnline(value: boolean) {
 }
 
 function renderBanner(client?: QueryClient) {
-  const queryClient =
-    client ?? new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const queryClient = client ?? new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <NetworkStatusProvider>{children}</NetworkStatusProvider>

@@ -5,7 +5,11 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { AlertTriangle, ShieldAlert } from 'lucide-react'
 
-import { StateScreen, stateActionPrimary, stateActionSecondary } from '@/components/shared/StateScreen'
+import {
+  StateScreen,
+  stateActionPrimary,
+  stateActionSecondary,
+} from '@/components/shared/StateScreen'
 import { isForbiddenError } from '@/lib/state-errors'
 
 /**

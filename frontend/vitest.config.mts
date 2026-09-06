@@ -42,5 +42,26 @@ export default defineConfig({
       'middleware.{test,spec}.ts',
     ],
     exclude: ['node_modules/**', '.next/**', 'e2e/**', '**/*.stories.{ts,tsx}'],
+    // #169 — COUVERTURE : mesure seule, AUCUN seuil bloquant.
+    // Pas de clé `thresholds` ici, volontairement : l'objectif de l'issue est de
+    // rendre la couverture mesurable avant d'imposer un plancher. Le rapport
+    // n'est produit que si `--coverage` est passé (cf. script `test:coverage`) ;
+    // `npm test` reste inchangé pour la boucle de dev rapide.
+    coverage: {
+      // Provider v8 (instrumentation native du moteur) plutôt qu'istanbul : pas
+      // de transformation supplémentaire du bundle, donc pas de coût sur la durée
+      // de la suite. `@vitest/coverage-v8` doit rester aligné sur la MINEURE de
+      // `vitest` (3.2.x) — un provider en avance échoue avec un message qui ne
+      // parle pas de version.
+      provider: 'v8',
+      // `lcov` = exigence de l'issue (fichier coverage/lcov.info consommable par
+      // un outil tiers) ; `text-summary` donne les 4 chiffres directement dans le
+      // log CI, sans avoir à télécharger l'artefact pour lire un total.
+      reporter: ['text-summary', 'lcov'],
+      // Explicite : c'est ce chemin que le job CI `frontend` publie en artefact
+      // (`path: frontend/coverage/`). Déjà couvert par frontend/.gitignore et
+      // frontend/.prettierignore — le gate `format:check` (#528) ne mord pas dessus.
+      reportsDirectory: './coverage',
+    },
   },
 })

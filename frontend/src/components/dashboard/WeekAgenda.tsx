@@ -26,18 +26,19 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
 }) => {
   const t = useTranslations('dashboard.week')
   const { start, end } = useMemo(() => getWeekRange(now), [now])
-  const weekEvents = useMemo(
-    () => getEventsInRange(events, start, end),
-    [events, start, end],
-  )
+  const weekEvents = useMemo(() => getEventsInRange(events, start, end), [events, start, end])
   const dayFmt = useMemo(
     () => new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric' }),
     [locale],
   )
 
   return (
-    <section className="flex flex-col gap-3" data-testid="dashboard-week-agenda" aria-label={t('label')}>
-      <h2 className="text-ink-faint font-mono text-2xs tracking-widest uppercase">{t('title')}</h2>
+    <section
+      className="flex flex-col gap-3"
+      data-testid="dashboard-week-agenda"
+      aria-label={t('label')}
+    >
+      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
       {weekEvents.length === 0 ? (
         <p className="text-ink-muted text-xs" data-testid="dashboard-week-agenda-empty">
           {t('empty')}
@@ -69,7 +70,7 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
               <span className="text-ink min-w-0 flex-1 truncate text-xs font-medium">
                 {event.title}
               </span>
-              <span className="text-ink-faint hidden truncate text-2xs sm:inline">
+              <span className="text-ink-faint text-2xs hidden truncate sm:inline">
                 {event.extendedProps.productName}
               </span>
             </li>

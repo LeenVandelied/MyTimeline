@@ -1,10 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  downloadAsyncExport,
-  exportInline,
-  getExportJob,
-  submitAsyncExport,
-} from './exportService'
+import { downloadAsyncExport, exportInline, getExportJob, submitAsyncExport } from './exportService'
 
 /**
  * #59 — Client export RGPD. On mocke `apiClient` (axios) pour vérifier :

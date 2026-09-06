@@ -456,7 +456,6 @@ describe('NewEventDrawer — #79 clavier virtuel (sheet mobile)', () => {
   })
 })
 
-
 /**
  * #326 — APERÇU ÉPINGLÉ EN HAUT DU DRAWER DE CRÉATION (handoff §6).
  *

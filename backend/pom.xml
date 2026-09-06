@@ -67,6 +67,13 @@
 			  • testcontainers 1.21.4    (docker-java récent, ≥ ex-override 1.20.6)
 			Seuls docker.api.version et jjwt.version (hors BOM) restent fixés ci-dessus.
 		-->
+		<!--
+			JaCoCo (#169) — NON gere par le BOM Spring Boot 3.5.16 (son parent ne
+			declare aucun <jacoco.version> ni pluginManagement pour jacoco-maven-plugin) :
+			la version est donc EPINGLEE ici, comme jjwt. 0.8.13 = premiere ligne qui
+			instrumente le bytecode Java 21 sans avertissement de classfile version.
+		-->
+		<jacoco.version>0.8.13</jacoco.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -231,6 +238,52 @@
 						<api.version>${docker.api.version}</api.version>
 					</systemPropertyVariables>
 				</configuration>
+			</plugin>
+			<!--
+				COUVERTURE DE TESTS (#169) — MESURE SEULE, aucun seuil bloquant.
+				Le goal `check` (et donc toute balise <limit>/<rule>) est DELIBEREMENT
+				absent : l'objectif de l'issue est de rendre la couverture mesurable
+				avant d'imposer un plancher. Ajouter `check` ici transformerait ce
+				rapport en gate de merge surprise.
+				
+				`prepare-agent` (phase par defaut `initialize`) pose la PROPRIETE Maven
+				`argLine` avec le -javaagent JaCoCo. maven-surefire-plugin la consomme
+				automatiquement car son parametre argLine vaut ${argLine} par defaut, et
+				surtout parce que la configuration surefire ci-dessus ne declare AUCUN
+				<argLine> litteral.
+				/!\ REGLE ABSOLUE : si un <argLine> devient un jour necessaire dans
+				surefire, il DOIT contenir @{argLine} pour concatener celui de JaCoCo.
+				Un <argLine> litteral detache l'agent (rapport vide, 0%) et/ou prive le
+				JVM forke de -Dapi.version, ce qui fait tomber TOUTE la suite
+				Testcontainers sur « Could not find a valid Docker environment ».
+				
+				`report` est liee a `verify` (la phase que lance la CI) et produit
+				target/site/jacoco/{index.html,jacoco.xml,jacoco.csv} — chemin publie en
+				artefact par le job `backend` de .github/workflows/ci.yml.
+				Aucun <excludes> : on mesure le module tel quel, quitte a ce que le
+				premier chiffre soit pessimiste (DTO/config comptes). Restreindre le
+				perimetre avant d'avoir une mesure de reference reviendrait a choisir le
+				chiffre qu'on veut lire.
+			-->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<execution>
+						<id>jacoco-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

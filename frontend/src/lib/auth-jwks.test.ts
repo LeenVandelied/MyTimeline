@@ -33,7 +33,9 @@ const NOW = Date.UTC(2026, 6, 28, 12, 0, 0)
 let publicJwk: JsonWebKey
 
 function jwksBody(): unknown {
-  return { keys: [{ kty: publicJwk.kty, n: publicJwk.n, e: publicJwk.e, alg: 'RS256', use: 'sig' }] }
+  return {
+    keys: [{ kty: publicJwk.kty, n: publicJwk.n, e: publicJwk.e, alg: 'RS256', use: 'sig' }],
+  }
 }
 
 function stubOkFetch(): ReturnType<typeof vi.fn> {

@@ -22,18 +22,14 @@ describe('StateScreen', () => {
   it('rend les actions fournies + testId custom + thème sombre', () => {
     render(
       <div className="dark">
-        <StateScreen
-          testId="err"
-          title="x"
-          actions={<a href="#retour">Retour</a>}
-        />
+        <StateScreen testId="err" title="x" actions={<a href="#retour">Retour</a>} />
       </div>,
     )
     expect(screen.getByTestId('err')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Retour' })).toBeInTheDocument()
   })
 
-  it('classes d\'action exposées (accent primaire / bordure secondaire)', () => {
+  it("classes d'action exposées (accent primaire / bordure secondaire)", () => {
     expect(stateActionPrimary).toContain('bg-accent')
     // #336 — l'action secondaire est un bouton outline : sa bordure EST
     // l'affordance, donc tier fonctionnel `rule-emphasis` (≥3:1, WCAG 1.4.11)

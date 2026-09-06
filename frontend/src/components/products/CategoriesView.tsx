@@ -42,10 +42,7 @@ export function CategoriesView() {
   const productsQuery = useProductsWithEvents(userId)
   const deleteMutation = useDeleteCategory()
 
-  const categories = React.useMemo(
-    () => categoriesQuery.data ?? [],
-    [categoriesQuery.data],
-  )
+  const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data])
 
   // Compteur de produits par catégorie (produits archivés déjà exclus API #50).
   const countByCategory = React.useMemo(() => {
@@ -136,7 +133,7 @@ export function CategoriesView() {
                     </div>
                     {category.system && (
                       <span
-                        className="bg-muted text-ink-muted rounded-full px-2 py-0.5 text-2xs font-medium"
+                        className="bg-muted text-ink-muted text-2xs rounded-full px-2 py-0.5 font-medium"
                         data-testid={`categories-system-${category.id}`}
                       >
                         {t('system')}

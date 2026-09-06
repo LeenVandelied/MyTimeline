@@ -24,10 +24,8 @@ import type { Resource } from '@/components/timeline'
  * `loading` sur cette page : il ne décrirait aucun état atteignable.
  */
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
   useLocale: () => 'fr',
 }))
 

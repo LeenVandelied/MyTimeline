@@ -81,7 +81,8 @@ describe('#335 — palette et unicité des règles de la landing', () => {
      * rendrait les assertions ci-dessus vertes par vacuité.
      */
     it('le détecteur repère bien un hex et un rgba hors palette', () => {
-      const fixture = '.x { border-color: #8B5CF6; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25); }'
+      const fixture =
+        '.x { border-color: #8B5CF6; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25); }'
       expect(colorLiterals(fixture, '/virtuel/temoin.css')).toHaveLength(2)
     })
 
@@ -108,7 +109,7 @@ describe('#335 — palette et unicité des règles de la landing', () => {
       })
     }
 
-    it('.cta-button ne porte qu\'un seul pseudo-élément de brillance', () => {
+    it(".cta-button ne porte qu'un seul pseudo-élément de brillance", () => {
       const shine = new Set<string>()
       for (const path of Object.values(FILES)) {
         postcss.parse(readFileSync(path, 'utf8'), { from: path }).walkRules((rule: Rule) => {

@@ -45,12 +45,7 @@ import type { Product } from '@/types/product'
  *   - Clic/Entrée/Espace sur une ligne → navigation vers le détail produit.
  */
 
-type SortKey =
-  | 'nameAsc'
-  | 'nameDesc'
-  | 'categoryAsc'
-  | 'lastActivityDesc'
-  | 'lastActivityAsc'
+type SortKey = 'nameAsc' | 'nameDesc' | 'categoryAsc' | 'lastActivityDesc' | 'lastActivityAsc'
 
 const SORT_KEYS: SortKey[] = [
   'lastActivityDesc',
@@ -236,8 +231,7 @@ export function ProductsListView() {
             <tbody>
               {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}
               {visible.map((product) => {
-                const effectiveColor =
-                  product.color ?? product.category?.color ?? null
+                const effectiveColor = product.color ?? product.category?.color ?? null
                 const lastMs = lastActivityMs(product)
                 const categoryName = product.category?.name ?? t('noCategory')
                 return (
@@ -361,7 +355,6 @@ export function ProductsListView() {
           onConfirm={handleArchiveConfirm}
         />
       )}
-
     </div>
   )
 }

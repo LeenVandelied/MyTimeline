@@ -1,18 +1,20 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 
 export function AppFooter() {
-  const t = useTranslations();
-  const locale = useLocale();
-  
+  const t = useTranslations()
+  const locale = useLocale()
+
   return (
-    <footer className="bg-surface py-4 text-ink-muted text-sm mt-auto">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+    <footer className="bg-surface text-ink-muted mt-auto py-4 text-sm">
+      <div className="container mx-auto flex flex-col items-center justify-between px-4 md:flex-row">
         <div>
-          <p>© {new Date().getFullYear()} Ma Timeline. {t('common.footer.allRightsReserved')}</p>
+          <p>
+            © {new Date().getFullYear()} Ma Timeline. {t('common.footer.allRightsReserved')}
+          </p>
         </div>
         {/*
           #74 — `flex-wrap` + `gap` au lieu de `space-x-4`.
@@ -42,5 +44,5 @@ export function AppFooter() {
         </div>
       </div>
     </footer>
-  );
-}   
+  )
+}

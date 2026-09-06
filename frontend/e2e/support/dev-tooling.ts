@@ -69,19 +69,22 @@ export const devToolingSelectors = (): string[] => [...DEV_TOOLING]
  * tête de test couvre toutes les `goto` suivantes.
  */
 export async function neutralizeDevToolingPointerEvents(page: Page): Promise<void> {
-  await page.addInitScript((selectors: string[]) => {
-    const STYLE_ID = 'e2e-dev-tooling-neutralizer'
-    const inject = () => {
-      if (document.getElementById(STYLE_ID)) return
-      const style = document.createElement('style')
-      style.id = STYLE_ID
-      style.textContent = `${selectors.join(',')}{pointer-events:none !important;}`
-      document.head?.appendChild(style)
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', inject, { once: true })
-    } else {
-      inject()
-    }
-  }, [...DEV_TOOLING])
+  await page.addInitScript(
+    (selectors: string[]) => {
+      const STYLE_ID = 'e2e-dev-tooling-neutralizer'
+      const inject = () => {
+        if (document.getElementById(STYLE_ID)) return
+        const style = document.createElement('style')
+        style.id = STYLE_ID
+        style.textContent = `${selectors.join(',')}{pointer-events:none !important;}`
+        document.head?.appendChild(style)
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inject, { once: true })
+      } else {
+        inject()
+      }
+    },
+    [...DEV_TOOLING],
+  )
 }

@@ -27,15 +27,15 @@ import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/loc
  * `cookies()`) qui ferait basculer toute l'app en rendu dynamique.
  */
 export function generateStaticParams() {
-  return SUPPORTED_LOCALES.map(locale => ({ locale }))
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }))
 }
 
 export default async function LocaleLayout({
   children,
-  params
+  params,
 }: {
   children: ReactNode
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string }>
 }) {
   const locale = (await params).locale || DEFAULT_LOCALE
 

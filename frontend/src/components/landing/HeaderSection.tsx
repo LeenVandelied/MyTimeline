@@ -130,7 +130,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             `whitespace-nowrap` à TOUTES les largeurs. Ni `md:text-3xl` ni
             `md:whitespace-normal` : le wordmark ne se coupe plus jamais.
             Justification chiffrée dans le bloc JSDoc du composant. */}
-        <div className="text-accent text-md sm:text-lg font-bold whitespace-nowrap">
+        <div className="text-accent text-md font-bold whitespace-nowrap sm:text-lg">
           Ma Timeline
         </div>
       </div>
@@ -261,12 +261,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
         </button>
       </div>
 
-      <LandingMobileMenu
-        open={menuOpen}
-        onClose={closeMenu}
-        locale={locale}
-        navLinks={navLinks}
-      />
+      <LandingMobileMenu open={menuOpen} onClose={closeMenu} locale={locale} navLinks={navLinks} />
     </header>
   )
 }

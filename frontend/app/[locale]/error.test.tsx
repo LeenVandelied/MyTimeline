@@ -26,7 +26,7 @@ afterEach(() => {
 })
 
 describe('LocaleError — branche 500', () => {
-  it('rend l\'écran 500 avec retry + retour accueil', () => {
+  it("rend l'écran 500 avec retry + retour accueil", () => {
     render(<LocaleError error={new Error('boom')} reset={vi.fn()} />)
     expect(screen.getByTestId('error-screen')).toBeInTheDocument()
     expect(screen.getByTestId('state-screen-code')).toHaveTextContent('500')
@@ -44,7 +44,7 @@ describe('LocaleError — branche 500', () => {
     expect(reset).toHaveBeenCalledOnce()
   })
 
-  it('journalise l\'erreur (console.error)', () => {
+  it("journalise l'erreur (console.error)", () => {
     render(<LocaleError error={new Error('boom')} reset={vi.fn()} />)
     expect(errorSpy).toHaveBeenCalled()
   })

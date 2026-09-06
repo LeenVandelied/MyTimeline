@@ -10,10 +10,8 @@ import { CompactRail } from './CompactRail'
  * (aria-current + classe accent). Contrats `data-testid` pour l'E2E paysage.
  */
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
   useLocale: () => 'fr',
 }))
 

@@ -218,7 +218,13 @@ export function buildPreviewModel(input: PreviewInput): PreviewModel {
     ? addDays(ghostStart, Math.round((end.getTime() - start.getTime()) / MS_PER_DAY))
     : null
 
-  const marks = [today, start, end, ...(ghostStart ? [ghostStart] : []), ...(ghostEnd ? [ghostEnd] : [])]
+  const marks = [
+    today,
+    start,
+    end,
+    ...(ghostStart ? [ghostStart] : []),
+    ...(ghostEnd ? [ghostEnd] : []),
+  ]
   const min = new Date(Math.min(...marks.map((d) => d.getTime())))
   const max = new Date(Math.max(...marks.map((d) => d.getTime())))
   const spanDays = Math.max(1, Math.round((max.getTime() - min.getTime()) / MS_PER_DAY) + 1)
@@ -270,6 +276,8 @@ export function buildPreviewModel(input: PreviewInput): PreviewModel {
     connector,
     todayPercent: todayInWindow ? percentAt(today) : null,
     nextOccurrence:
-      ghostStart && recurrenceUnit ? resolveNextOccurrence(ghostStart, recurrenceUnit, today) : start,
+      ghostStart && recurrenceUnit
+        ? resolveNextOccurrence(ghostStart, recurrenceUnit, today)
+        : start,
   }
 }

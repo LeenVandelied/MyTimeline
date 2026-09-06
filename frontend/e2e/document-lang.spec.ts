@@ -44,7 +44,9 @@ test.describe('#413 — <html lang> localisé (WCAG 3.1.1)', () => {
       )
     })
 
-    test(`${path} → document.documentElement.lang vaut "${lang}" après hydratation`, async ({ page }) => {
+    test(`${path} → document.documentElement.lang vaut "${lang}" après hydratation`, async ({
+      page,
+    }) => {
       await page.goto(path)
       // `document.documentElement` et pas `locator('html')` : c'est LA valeur
       // que consomment les technologies d'assistance, et celle mesurée dans le
@@ -97,7 +99,9 @@ test.describe('#413 — 404 des URL non matchées (document complet)', () => {
       const html = await response.text()
       const openingTag = html.match(/<html[^>]*>/)?.[0] ?? ''
       expect(openingTag, `balise <html> servie pour ${path}`).toMatch(/^<html\s[^>]*lang="/)
-      expect(html, `écran 404 servi pour ${path}`).toContain('data-testid="global-not-found-screen"')
+      expect(html, `écran 404 servi pour ${path}`).toContain(
+        'data-testid="global-not-found-screen"',
+      )
 
       // Oracle du `<title>` : lu sur le HTML SERVI, avant toute hydratation.
       // Le CONTENU est asserté, pas seulement la présence de la balise — un

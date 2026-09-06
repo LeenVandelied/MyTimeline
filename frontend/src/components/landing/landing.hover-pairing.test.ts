@@ -195,10 +195,7 @@ function stateTokens(className: string, state: State, property: 'bg' | 'text'): 
  * paire sanctionnée. Un `className` fautif dans les deux états produit deux
  * signalements : ce sont deux ratios distincts à mesurer.
  */
-export function findStatePairingOffences(
-  file: string,
-  source: string,
-): StatePairingOffence[] {
+export function findStatePairingOffences(file: string, source: string): StatePairingOffence[] {
   const offences: StatePairingOffence[] = []
   for (const className of classNameValues(source)) {
     for (const state of STATES) {
@@ -216,15 +213,13 @@ export function findStatePairingOffences(
   return offences
 }
 
-describe("landing + ui — appariement fond/encre au survol et à la prise de focus", () => {
+describe('landing + ui — appariement fond/encre au survol et à la prise de focus', () => {
   it('aucun composant ne couple surface et encre hors paire sanctionnée', () => {
     const offences = scannedComponents().flatMap((name) =>
       findStatePairingOffences(name, readFileSync(join(COMPONENTS_DIR, name), 'utf8')),
     )
     expect(
-      offences.map(
-        (o) => `${o.file} [${o.state}] : ${o.surfaces.join(' ')} + ${o.inks.join(' ')}`,
-      ),
+      offences.map((o) => `${o.file} [${o.state}] : ${o.surfaces.join(' ')} + ${o.inks.join(' ')}`),
       "un `className` change à la fois la surface et l'encre dans un même état sans utiliser " +
         "la paire sanctionnée du DS (`bg-accent` + `text-accent-ink`, préfixée par l'état) : " +
         "le ratio de la combinaison inventée n'a été mesuré nulle part (cf. l'en-tête de ce " +

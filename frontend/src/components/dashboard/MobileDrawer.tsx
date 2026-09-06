@@ -78,14 +78,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
 
         <div className="flex flex-1 flex-col gap-6 p-4">
           <div className="flex flex-col gap-2">
-            <span className="text-ink-faint font-mono text-2xs tracking-widest uppercase">
+            <span className="text-ink-faint text-2xs font-mono tracking-widest uppercase">
               {t('language')}
             </span>
             <LanguageSelector />
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-ink-faint font-mono text-2xs tracking-widest uppercase">
+            <span className="text-ink-faint text-2xs font-mono tracking-widest uppercase">
               {t('theme')}
             </span>
             <Button

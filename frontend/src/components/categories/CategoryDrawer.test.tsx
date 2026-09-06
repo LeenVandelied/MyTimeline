@@ -209,7 +209,10 @@ describe('CategoryDrawer', () => {
 
     // #245 : passe par la mutation (qui invalide categories.all + products.all).
     await waitFor(() =>
-      expect(deleteMutateAsync).toHaveBeenCalledWith({ id: 'cat-1', reassignToCategoryId: undefined }),
+      expect(deleteMutateAsync).toHaveBeenCalledWith({
+        id: 'cat-1',
+        reassignToCategoryId: undefined,
+      }),
     )
     await waitFor(() => expect(onDeleted).toHaveBeenCalled())
   })
@@ -265,7 +268,11 @@ describe('#416 — coche de la pastille sélectionnée', () => {
     expect(CATEGORY_SWATCHES).toHaveLength(12)
     const table = CATEGORY_SWATCHES.map((hex) => {
       const ink = swatchGlyphInk(hex)
-      return [hex, ink === SWATCH_GLYPH_DARK ? 'sombre' : 'clair', +contrastRatio(hex, ink).toFixed(2)]
+      return [
+        hex,
+        ink === SWATCH_GLYPH_DARK ? 'sombre' : 'clair',
+        +contrastRatio(hex, ink).toFixed(2),
+      ]
     })
     // Table figée : un ratio qui bouge signale un hex modifié, pas un test à
     // « remettre au vert ». Min = 4.54 (rouge), seuil WCAG 1.4.11 = 3.

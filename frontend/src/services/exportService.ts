@@ -54,8 +54,7 @@ export const exportInline = async (format: ExportFormat): Promise<DownloadedFile
       responseType: 'blob',
     })
     const filename =
-      filenameFromDisposition(response.headers?.['content-disposition']) ??
-      fallbackFilename(format)
+      filenameFromDisposition(response.headers?.['content-disposition']) ?? fallbackFilename(format)
     return { blob: response.data as Blob, filename }
   } catch (error) {
     console.error("Erreur lors de l'export inline :", safeErrorMessage(error))
@@ -104,8 +103,7 @@ export const downloadAsyncExport = async (downloadUrl: string): Promise<Download
     const path = downloadUrl.replace(/^\/api(?=\/)/, '')
     const response = await apiClient.get(path, { responseType: 'blob' })
     const filename =
-      filenameFromDisposition(response.headers?.['content-disposition']) ??
-      'mytimeline-export'
+      filenameFromDisposition(response.headers?.['content-disposition']) ?? 'mytimeline-export'
     return { blob: response.data as Blob, filename }
   } catch (error) {
     console.error("Erreur lors du téléchargement de l'export :", safeErrorMessage(error))

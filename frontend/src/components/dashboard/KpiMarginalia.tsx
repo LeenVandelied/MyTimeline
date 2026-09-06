@@ -44,8 +44,12 @@ export const KpiMarginalia: React.FC<KpiMarginaliaProps> = ({ kpis, locale }) =>
   const nf = React.useMemo(() => new Intl.NumberFormat(locale), [locale])
 
   return (
-    <section className="flex flex-col gap-3" data-testid="dashboard-kpi-marginalia" aria-label={t('label')}>
-      <h2 className="text-ink-faint font-mono text-2xs tracking-widest uppercase">{t('title')}</h2>
+    <section
+      className="flex flex-col gap-3"
+      data-testid="dashboard-kpi-marginalia"
+      aria-label={t('label')}
+    >
+      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
       <ul className="flex flex-col">
         <KpiLine
           value={nf.format(kpis.activeProducts)}

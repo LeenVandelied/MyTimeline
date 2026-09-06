@@ -34,7 +34,7 @@ afterEach(() => {
 })
 
 describe('GlobalError', () => {
-  it('rend l\'écran 500 global + boutons retry / accueil', () => {
+  it("rend l'écran 500 global + boutons retry / accueil", () => {
     render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
     // #413 : un global-error rend son propre document.
     expect(screen.getByTestId('global-error-screen').closest('body')).not.toBeNull()
@@ -45,7 +45,7 @@ describe('GlobalError', () => {
   })
 
   // ADR-006 — la landing canonique est la racine de locale (`/es`, `/fr`), plus `/…/home`.
-  it('locale déduite de l\'URL (/es/...) → messages espagnols + lien /es', () => {
+  it("locale déduite de l'URL (/es/...) → messages espagnols + lien /es", () => {
     window.history.pushState({}, '', '/es/anything')
     render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
     expect(screen.getByText('Se produjo un error')).toBeInTheDocument()

@@ -74,11 +74,11 @@ export const DateStamp: React.FC<DateStampProps> = ({ day, locale, now }) => {
 
   return (
     <div
-      className={`@container text-ink border-rule border-r ${
+      className={`text-ink border-rule @container border-r ${
         isToday ? 'bg-accent-soft' : 'bg-surface-2'
       }`}
     >
-      <div className="text-2xs @min-[34px]:text-xs overflow-hidden px-0.5 py-2 text-center font-medium @min-[34px]:px-2">
+      <div className="text-2xs overflow-hidden px-0.5 py-2 text-center font-medium @min-[34px]:px-2 @min-[34px]:text-xs">
         {/* L'espace vit DANS le span : masqué avec lui, et sécable — le libellé
             doit pouvoir passer à la ligne entre les deux jetons plutôt que de
             déborder (une espace insécable rétablirait le défaut corrigé ici). */}

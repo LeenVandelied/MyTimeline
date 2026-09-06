@@ -55,7 +55,12 @@ const EVENTS: FullCalendarEvent[] = [
     allDay: true,
     resourceId: 'p1',
     color: '#3B62D4',
-    extendedProps: { productId: 'p1', productName: 'Lait bio', category: 'Frais', type: 'duration' },
+    extendedProps: {
+      productId: 'p1',
+      productName: 'Lait bio',
+      category: 'Frais',
+      type: 'duration',
+    },
   },
   {
     id: 'e2',
@@ -110,7 +115,8 @@ function mockMatchMedia(initial: (query: string) => boolean) {
       },
       media: query,
       onchange: null,
-      addEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) => entry.listeners.add(cb),
+      addEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) =>
+        entry.listeners.add(cb),
       removeEventListener: (_: string, cb: (e: MediaQueryListEvent) => void) =>
         entry.listeners.delete(cb),
       addListener: (cb: (e: MediaQueryListEvent) => void) => entry.listeners.add(cb),
@@ -156,12 +162,7 @@ function minimapValueNow(): number {
 
 function renderResponsive() {
   return render(
-    <TimelineResponsive
-      events={EVENTS}
-      resources={RESOURCES}
-      locale="fr-FR"
-      today={TODAY}
-    />,
+    <TimelineResponsive events={EVENTS} resources={RESOURCES} locale="fr-FR" today={TODAY} />,
   )
 }
 

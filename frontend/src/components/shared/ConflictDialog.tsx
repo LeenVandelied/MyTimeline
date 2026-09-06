@@ -78,7 +78,11 @@ const DIFF_FIELDS: ReadonlyArray<{
   kind: 'bool' | 'text'
   pick: (v: EventEditFormValues | Event) => unknown
 }> = [
-  { key: 'title', kind: 'text', pick: (v) => (v as EventEditFormValues).title ?? (v as Event).title },
+  {
+    key: 'title',
+    kind: 'text',
+    pick: (v) => (v as EventEditFormValues).title ?? (v as Event).title,
+  },
   { key: 'type', kind: 'text', pick: (v) => v.type },
   { key: 'durationValue', kind: 'text', pick: (v) => v.durationValue },
   { key: 'durationUnit', kind: 'text', pick: (v) => v.durationUnit },
@@ -171,7 +175,10 @@ export function ConflictDialog({
             </div>
 
             {diffRows.length === 0 ? (
-              <p className="text-ink-muted px-1 py-2 text-sm" data-testid="conflict-dialog-no-changes">
+              <p
+                className="text-ink-muted px-1 py-2 text-sm"
+                data-testid="conflict-dialog-no-changes"
+              >
                 {t('noChanges')}
               </p>
             ) : (
@@ -185,10 +192,16 @@ export function ConflictDialog({
                     className="border-warning bg-warning-soft grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 rounded-md border-l-2 px-2 py-1.5 text-sm"
                   >
                     <span className="text-ink-muted truncate">{t(`fields.${f.key}`)}</span>
-                    <span className="text-ink truncate font-medium" data-testid="conflict-dialog-diff-local">
+                    <span
+                      className="text-ink truncate font-medium"
+                      data-testid="conflict-dialog-diff-local"
+                    >
                       {fmt(f.pick(localValues!), f.kind)}
                     </span>
-                    <span className="text-ink truncate font-medium" data-testid="conflict-dialog-diff-server">
+                    <span
+                      className="text-ink truncate font-medium"
+                      data-testid="conflict-dialog-diff-server"
+                    >
                       {fmt(f.pick(serverEvent!), f.kind)}
                     </span>
                   </li>
