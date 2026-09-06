@@ -52,6 +52,33 @@ Vague 3 : run `34060872826`, `e2e` FAILURE sur une cassure volontaire, `mergeSta
 avec les 3 autres checks requis verts. C'est le premier sprint où le gate est vérifié dans le sens
 négatif. Dossier : `docs/memory/sprints/sprint-80/issue-408-preuve-blocage-merge.md`.
 
+### Test de mutation — la garde de `readStrips` a été VUE ROUGIR
+
+Le relecteur Playwright a ouvert un `[MAJEUR]` honnête : toute la preuve de #472 reposait sur une
+lecture statique, aucune garde n'ayant été observée en échec. Règle du S79 — *une garde n'est
+acquise que si on l'a vue rougir*. Le lead a donc joué un test de mutation.
+
+**Mutation** : `pixel.ts` — `Math.max(...offsetsPx.map(Math.abs))` → `Math.min(...)`, c'est-à-dire
+une marge de capture délibérément trop petite pour les offsets les plus éloignés. C'est exactement
+la régression que le relecteur craignait de ne pas pouvoir exclure.
+
+**Résultat observé — 8 tests rouges**, message d'échec réel :
+
+```
+Point (x, y) CSS hors de la région capturée [...] : il n'existe aucun pixel à lire là.
+  at read        (e2e/support/pixel.ts:405)
+  at readStrips  (e2e/support/pixel.ts:571)
+  at probeHighlighted (e2e/sprint-62-select-focus-indicator.spec.ts:346)
+```
+
+Le point décisif : la régression **lève**, elle ne rend pas un pixel rabattu sur le bord. Un
+décalage de marge ne peut donc **pas** produire un faux vert — c'était le risque n°1 du sprint.
+
+**Après révocation de la mutation** : `20 passed (20,6 s)` sur
+`sprint-62-select-focus-indicator.spec.ts` **et** `sprint-62-control-focus-contrast.spec.ts` —
+l'autre consommateur du helper partagé, celui que le done.md signalait en `RECOMMAND_REVIEWER`.
+`git diff -- frontend/e2e/support/pixel.ts` est vide : le fichier est restauré à l'identique.
+
 ## Ce qui n'a PAS été vérifié — à lire avant de conclure
 
 1. **Les suites unitaires (backend JUnit, frontend Vitest) n'ont pas été rejouées par le lead.**
