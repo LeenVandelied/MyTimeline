@@ -5619,7 +5619,7 @@ et #550. `backend/devops` n'est pas une valeur de stack valide → `backend` seu
 porté par `epic:*`. Aucun label inventé.
 
 
-### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
+### Sprint 80 — 2026-09-06 (EN COURS — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
 **Milestone GitHub :** #81
 **Issues :** #472, #476, #408
@@ -5627,7 +5627,20 @@ porté par `epic:*`. Aucun label inventé.
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 79 — dépendance DURE. #476 exige #475 livrée : à 2 workers avec le
 budget register au plafond, un 429 se déguise en timeout `/login`, et le diagnostic est faux.
-**Status :** Planifié
+**Status :** En cours
+
+> **Dépendance amont LEVÉE au démarrage (2026-09-06).** La dépendance dure annoncée
+> ci-dessus est caduque sur son motif : #475 et #463 sont livrées ET fermées (S79 mergé),
+> et la rétro S79 a établi que le motif invoqué (« un 429 se déguise en timeout /login »)
+> n'existe pas — `RATE_LIMIT_ENABLED=false` court-circuite le filtre entier pendant le job
+> CI `e2e`. Le séquencement en 3 vagues est conservé, mais pour ses VRAIES raisons :
+> `playwright.config.ts` partagé + verrou de run (`e2e/support/run-lock.ts`) qui interdit
+> deux campagnes Playwright simultanées dans un worktree.
+>
+> **Harnais E2E monté et vérifié par le lead avant la vague 1** : backend e2e conteneurisé
+> sur `:8086` (pile `s80e2e`, ports 8085/5435 squattés par un conteneur périmé d'une autre
+> session), `next dev` en **webpack** sur `:3000` (pas turbopack — PIT-S61-007 en worktree).
+> Oracle réseau de `playwright.config.ts` vérifié : `GET :3000/api/auth/me` → **401**.
 
 ### Sprint 81 — 2026-09-06 (PLANIFIÉ — cohésion 0.56, Durcir le parcours auth/avatar)
 **Objectif :** rate-limit avatar, flaky auth élucidé (ou son mécanisme de capture livré), E2E avatar dégelé.
