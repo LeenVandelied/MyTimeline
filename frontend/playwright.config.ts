@@ -157,7 +157,8 @@ export default defineConfig({
   // invalidé ci-dessus. Les 4 specs `settings-*` sont vertes sur les DEUX runs.
   // Repère : 9 min 0 à `workers: 1` (S64) → 3-4 min ici.
   //
-  // ⚠ ACQUIS EN LOCAL SEULEMENT. La CI reste à 1 (`process.env.CI ? 1 : 2`).
+  // ⚠ ACQUIS EN LOCAL SEULEMENT AU S65. La CI est restée à 1 jusqu'au S80 — c'est
+  // #476 ci-dessous qui l'a mesurée, et qui l'a fait passer à 2.
   //
   // ⚠ CORRECTION #475 — L'ARGUMENT QUI FIGURAIT ICI ÉTAIT FAUX. Ce paragraphe
   // justifiait `workers: 1` en CI par « le budget `register` de la suite est DÉJÀ au
@@ -171,16 +172,55 @@ export default defineConfig({
   //      inscriptions émises via `support/auth.ts#registerOnly` manquaient.)
   // Le rate-limit `register` n'est donc PAS une raison de rester à 1 worker en CI.
   //
-  // CE QUI RESTE VRAI, et ce qui motive seul la valeur 1 : la borne de CHARGE
-  // héritée de #465 (mort du serveur Next sous parallélisme, cause racine jamais
-  // trouvée) n'a été mesurée qu'en LOCAL. Rien ne démontre que 2 workers tiendraient
-  // sur un runner CI — ne pas le supposer, et surtout ne pas remonter cette valeur
-  // en croyant que #475 l'a débloquée : #475 retire un faux obstacle, il n'apporte
-  // aucune mesure de charge en CI.
+  // Restait alors une SEULE inconnue, et c'est elle qui motivait la valeur 1 en CI :
+  // la borne de CHARGE héritée de #465 (mort du serveur Next sous parallélisme, cause
+  // racine jamais cherchée) n'avait été mesurée qu'en LOCAL. Rien ne démontrait que
+  // 2 workers tiendraient sur un runner GitHub.
+  //
+  // ═══ #476 (S80) — CETTE INCONNUE EST MAINTENANT MESURÉE. LA CI PASSE À 2. ═══
+  //
+  // Protocole : PR jetable #554 (un seul fichier, une seule ligne : ce `workers`),
+  // fermée depuis. La CI ne se déclenche que sur `pull_request` — un push de branche
+  // ne lance rien, la PR jetable était donc le seul moyen d'obtenir la mesure.
+  //
+  // ⚠ LA BASELINE DU LEAD NE POUVAIT PAS SERVIR SEULE. Ses 3 runs `workers: 1`
+  // (8 min 16 / 9 min 26 / 9 min 44) ont été pris sur `dev`, donc SANS #472 (S80,
+  // sonde de pixels ramenée de 18 captures à 1). Les comparer au flip aurait mesuré
+  // DEUX changements et crédité le parallélisme d'un gain peut-être dû à #472. D'où
+  // une 3e PR jetable de CONTRÔLE (#555, diff VIDE vs la branche de sprint) qui isole
+  // le confondant. Elle rend 8 min 19 — DANS la plage de la baseline : #472 n'a aucun
+  // effet mesurable sur la durée du job. Le delta ci-dessous est donc bien le
+  // parallélisme SEUL.
+  //
+  //   run                      | workers | job `e2e` | passe 1 (319 tests) | passe 2
+  //   34059902914 (contrôle)   |    1    |  8 min 19 | 310 ✓ / 9 skip 5,5m | 13 ✓ 6,8s
+  //   34059829246 tentative 1  |    2    |  5 min 47 | 310 ✓ / 9 skip 3,3m | 13 ✓ 5,9s
+  //   34059829246 tentative 2  |    2    |  5 min 52 | 310 ✓ / 9 skip 3,4m | 13 ✓ 6,3s
+  //
+  //   → −2 min 30 sur le job (−30 %), −40 % sur la suite elle-même. Le reste du job
+  //     (build backend, `npm ci`, `next build`, install des navigateurs) est
+  //     incompressible par `workers` et explique l'écart entre les deux pourcentages.
+  //
+  // TROIS VÉRIFICATIONS SANS LESQUELLES CES VERTS NE VAUDRAIENT RIEN :
+  //  1. `0 ECONNREFUSED` / `0 NS_ERROR_CONNECTION_REFUSED` sur les 3 runs. C'est LA
+  //     signature de la mort du serveur de #465 : la borne de charge TIENT en CI.
+  //  2. Le compte de tests est IDENTIQUE aux 3 runs (319 + 13 lancés, 310 + 13 passés,
+  //     9 skipped). Un job vert dont le projet `setup` a échoué afficherait « N did not
+  //     run » AVEC un exit 0 ([[PIT-S77-020]]) : ici la suite a bien tout joué.
+  //  3. ZÉRO test `flaky` sur les 3 runs — donc aucun vert acheté par `retries: 2`.
+  //     Sans ce contrôle, une instabilité de charge serait passée pour un succès.
+  //
+  // CE QUE CETTE MESURE NE DIT PAS. 2 runs consécutifs, c'est ce qu'exigeait #476 ;
+  // ce n'est PAS une preuve de stabilité dans la durée, et la mort de serveur de #465
+  // était intermittente. Si `ECONNREFUSED` réapparaît en CI, c'est la CAUSE RACINE
+  // qu'il faut enfin ouvrir — PAS cette valeur qu'il faut rebaisser une fois de plus
+  // en silence. Le mode d'échec LOCAL (compilation à la demande de `next dev`, #472)
+  // n'existe pas ici : la CI sert un `next build` de production depuis #462.
   //
   // La borne de charge héritée de #465 reste par ailleurs en vigueur : on ne monte pas
-  // au-delà de 2, seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré.
-  workers: process.env.CI ? 1 : 2,
+  // au-delà de 2, seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré —
+  // en local (#469) comme en CI (#476).
+  workers: 2,
   // #461 — POURQUOI un reporter COMPOSITE en CI, et pas `github` seul.
   // Le reporter `github` n'écrit RIEN sur disque : il se contente de poster des
   // annotations dans l'interface Actions. `playwright-report/` restait donc vide
