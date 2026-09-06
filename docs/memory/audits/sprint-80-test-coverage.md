@@ -81,14 +81,23 @@ l'autre consommateur du helper partagé, celui que le done.md signalait en `RECO
 
 ## Ce qui n'a PAS été vérifié — à lire avant de conclure
 
-1. **Les suites unitaires (backend JUnit, frontend Vitest) n'ont pas été rejouées par le lead.**
-   Motif : zéro code de production et zéro fichier de test unitaire modifiés sur tout le sprint —
-   elles sont structurellement inchangées. **Ce n'est pas une mesure, c'est un raisonnement** : la
-   CI de la PR de sprint les jouera et fait foi.
-2. **Le HEAD exact du sprint n'est encore passé par aucune CI.** Les 3 runs verts ci-dessus portent
-   sur `105be32` (PR jetable #554), dont la configuration `workers` est fonctionnellement identique
-   mais dont l'arbre n'inclut pas les commits d'artefacts postérieurs. La PR de sprint est ce qui le
-   vérifiera — limite déjà déclarée par la vague 2.
+1. ~~Les suites unitaires n'ont pas été rejouées par le lead.~~ **LEVÉ** — voir ci-dessous.
+2. ~~Le HEAD exact du sprint n'est passé par aucune CI.~~ **LEVÉ** — voir ci-dessous.
+### ✅ Les deux limites ci-dessus sont LEVÉES — PR de sprint #557, run `34061832001`
+
+La PR de sprint a fait passer le **HEAD exact du sprint** par la CI, **4 checks requis verts sur 4**
+(`backend`, `frontend`, `e2e`, `ai-env-packs`) plus `security`, `flyway-smoke` et `secret-scan`.
+
+- **`e2e` : 5 min 39**, `Running 319 tests using 2 workers` → **310 passed** (3,3 mn) + **13 passed**
+  (5,9 s) sur la passe de signature RS256. **0 failed, 0 flaky.**
+  ⇒ `workers: 2` tient sur le **vrai code du sprint**, pas seulement sur la PR jetable #554, et la
+  durée (5 min 39) confirme la mesure de #476 contre la baseline de 8-9 min.
+- **`frontend` : 1327 tests Vitest passés** (115 fichiers) — la suite que le lead n'avait pas
+  rejouée, désormais **mesurée** et non plus seulement raisonnée.
+- **`backend` : vert** — idem.
+
+### Ce qui reste ouvert
+
 3. **La baseline LOCALE n'est pas verte, et ne peut pas l'être** :
    `products.spec.ts :: navigation liste vers détail produit` est rouge 4 runs sur 6 en local, cause
    identifiée (compilation à froid de `next dev`, 6,5 s contre un `expect` à 5 s). **Absente en CI**,
@@ -106,6 +115,7 @@ l'autre consommateur du helper partagé, celui que le done.md signalait en `RECO
 
 ## Conclusion
 
-**Prêt pour PR.** Aucun manque de couverture signale. Le seul point ouvert est que la CI n'a pas encore vu le HEAD
+**Prêt pour merge.** Aucun manque de couverture signalé, et la CI a validé le HEAD exact du
+sprint (4/4 requis verts). Le point ouvert résiduel est que la CI n'a pas encore vu le HEAD
 exact du sprint — ce que la PR de sprint corrige par construction, et qui doit être surveillé avant
 le merge.
