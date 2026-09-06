@@ -5496,6 +5496,80 @@ second, la correction n'est pas prouvée. Recette locale : `npx next dev -p 3000
 `PLAYWRIGHT_BASE_URL=...` — et l'oracle `curl /api/auth/me` doit rendre **401** avant toute
 hypothèse ([[e2e-cors-origin-proxy-trap]]).
 
+**Les trois prémisses passées à la mesure — deux réfutées, une confirmée.** C'est le résultat le
+plus utile du sprint, et il n'apparaît dans aucun diff.
+- **#428 — RÉFUTÉE.** Le test a été joué **contre le fichier de properties INCHANGÉ** : 6/7 verts,
+  dont les 3 cas de surcharge. Les variables d'environnement priment déjà sur
+  `application-<profil>.properties` (précédence Spring Boot) — `APP_CORS_ALLOWED_ORIGINS`
+  fonctionnait **sans** placeholder. Le placeholder livré est donc **explicite, pas fonctionnel** :
+  il rend le levier découvrable dans le fichier qu'on ouvre en déboguant. Corollaire : le
+  contournement « conteneur backend frère sur :8090 » traîné depuis le S56 ne traitait pas le
+  symptôme, il était **inutile**. Le défaut réel était documentaire.
+- **#475 — RÉFUTÉE, et c'est la découverte structurante.** `.github/workflows/ci.yml:294` pose
+  `RATE_LIMIT_ENABLED: false`, qui court-circuite le filtre **entier** dès `doFilterInternal`
+  (`RateLimitingFilter:329`). **Aucun plafond n'était en vigueur pendant un run E2E**, ni en CI ni
+  en local. Preuve corroborante : le job émet en réalité **9** inscriptions par run (deux passes),
+  jusqu'à 11 avec les retries — armé à 5, la suite serait rouge depuis longtemps. Le « 5 pour 5 »
+  n'était affirmé que par des commentaires, et l'un d'eux servait d'argument à `workers: 1` en CI.
+- **#463 — CONFIRMÉE, par deux mesures.** En fin de run, le compte `PROD` gardait **81 produits
+  visibles et 88 catégories** ; après correctif, **0 et 2**. Et `sprint-62-select-focus-indicator.spec.ts:551`
+  était **verte seule, rouge en suite** — la signature exacte de l'issue — puis verte des deux côtés
+  sur les deux runs.
+
+**#463 : la stratégie retenue, et l'argument qui a écarté les deux autres.**
+- *Compte dédié par fichier* — écarté : ne corrige pas la dépendance **intra-fichier** que l'issue
+  décrit (29 tests dans `timeline.spec.ts` continueraient de se marcher dessus).
+- *Espace de noms par test* — écarté parce qu'il **était déjà en place** (89 appels à `unique()`) et
+  n'a rien empêché : il supprime les collisions de **nom**, pas la **visibilité**.
+- *Nettoyage post-test* — retenu. Instrumentation des deux portes de semis (`seedCategory` /
+  `seedProduct`) + fixture `auto` : **1 ligne d'import par spec, aucun corps de test modifié**.
+
+**Le chiffre publié par #475 était faux, et le cycle 2 l'a rattrapé.** Le compteur de budget ne
+lisait que `e2e/*.spec.ts` et ratait **3 inscriptions** passant par l'helper
+`e2e/support/auth.ts#registerOnly` (`forgot-password.spec.ts`, `reset-password-failures.spec.ts`).
+Budget réel = **8** pour un plafond de 20, marge **12** — recompté depuis les sources et revérifié
+indépendamment par un reviewer (4 + 1 + 1 + 2). La valeur de configuration (20) n'a pas bougé :
+c'est la documentation qui mentait. Quatre fichiers de commentaires corrigés en cascade.
+
+**Deux MAJEURS de review, une seule cause.** Le reviewer batch et le playwright-reviewer ont ouvert
+indépendamment un MAJEUR sur le **même motif** : des gardes plausibles à la lecture et **jamais
+exercées**. Cycle 2 (`1f6ac24`) sous une règle unique — *une garde n'est acquise que si on l'a vue
+rougir*. Les 8 gardes du sprint ont désormais leur message d'échec réel consigné dans
+`docs/memory/audits/sprint-79-test-coverage.md`. L'assertion tautologique `20 - 5 == 15` livrée au
+cycle 1 serait restée **verte** sur une mutation du plafond : la démonstration du motif, sur le
+sprint qui le corrige. Le commit de cycle 2 a lui-même été relu (MERGEABLE) —
+[[sprint-review-cycle-2-avant-pr]].
+
+**Ce qui tombe pour le Sprint 80.** Le plan fait dépendre #476 (`workers > 1`) de #475 au motif
+qu'« à 2 workers avec le budget au plafond, un 429 se déguise en timeout `/login` ». Ce motif
+**n'existe pas** : il n'y a pas de 429 possible tant que `RATE_LIMIT_ENABLED=false`. La dépendance
+dure S79 → S80 est levée.
+
+**Nuance de l'audit sécurité sur le trou CI.** Le job backend joue les deux nouveaux tests
+d'intégration de rate-limit : une régression de **logique** (mauvais seuil, mauvaise clé de bucket)
+serait attrapée là. Ce que le désarmement en E2E laisse vraiment passer, ce sont les régressions du
+**chemin réseau réel** — proxy Next, extraction d'IP/XFF, interaction CORS × rate-limit en
+conditions live. Verdict : **SÛR**, 1 MINEUR (pas de borne haute sur `register-per-minute`).
+
+**Issues livrées (3) :** #428 (`3a4d442`), #475 (`e9c71d8`), #463 (`4cf02fe`).
+**Vagues exécutées :** V1 = #428 ‖ #475 (2 agents parallèles, fichiers disjoints) | V2 = #463 seul.
+**Commits :** 7 — ouverture · briefings V1 · `3a4d442` · `e9c71d8` · briefing V2 · `4cf02fe` ·
+`1f6ac24` (cycle 2) · audit de tests.
+**BR impactées :** **aucune**. Sprint d'outillage intégral.
+**Reviews :** reviewer batch **0 CRITIQUE / 1 MAJEUR / 3 MINEURS** → MERGEABLE ·
+security-expert **SÛR** (1 MINEUR) · playwright-reviewer **preuve solide** (1 MAJEUR) ·
+re-review du cycle 2 **MERGEABLE** (0/0, 2 MINEURS).
+**Tests :** Backend **577/577** · Frontend **1327/1327** · E2E 3 runs complets (299/10, les 10
+échecs étant des références visuelles `chromium-linux` absentes en local macOS — impossible en CI).
+
+**Réserves non levées, listées :** `products.spec.ts:33` rouge 1 fois sur 3 puis vert, **non
+attribué** (l'agent a refusé l'étiquette « pré-existant » sans run sur la base — c'est la bonne
+posture, [[pre-existant-label-needs-base-ci-check]]) · aucun run CI observé · Firefox non exécuté ·
+ordre intra-fichier non permuté (Playwright 1.61 n'a pas de `--shuffle`) · angle mort résiduel du
+compteur (locator depuis une variable, helper en `export const`) · **effet de bord poste** : la base
+locale `eventmanager` ne migre plus (`V7` casse sur `events_recurrence_unit_check`), une base
+`eventmanager_s79` a été créée et non supprimée.
+
 ### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
 **Milestone GitHub :** #81
