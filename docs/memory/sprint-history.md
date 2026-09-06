@@ -5582,6 +5582,43 @@ références `chromium-linux`, zéro `darwin`, donc l'échec est impossible en C
 déduction à celui de **fait mesuré**. C'est précisément le contrôle qui manquait au S76 et que
 [[playwright-refs-plateforme-et-armement]] réclame.
 
+**Follow-ups arbitrés (Phase 4 triage) — 8 créés, 0 discardé, 0 absorbé.** Cinq venaient des
+`RECOMMAND_FOLLOWUP` des agents ; **trois ont été relevés par le lead pendant les reviews** et
+n'apparaissaient dans aucun `done.md` (marqués ☆).
+  - ☆ la base locale ne migre plus au-delà de V7 → **#545** [M | P1 | bug]
+  - ☆ catégorie indélébile : `countByCategoryId` natif ignore `@SQLRestriction` → **#546** [M | P1 | bug]
+  - ré-armer le rate-limit dans la stack E2E → **#547** [M | P1 | chore]
+  - références visuelles absentes pour macOS → **#548** [S | P2 | chore]
+  - journaliser la liste CORS effective en dev → **#549** [S | P2 | enhancement]
+  - purge post-test aveugle aux catégories créées à l'IHM → **#550** [S | P2 | chore]
+  - ☆ pas de borne haute sur `register-per-minute` → **#551** [XS | P3 | enhancement]
+  - runbook CORS : formulation périmée → **#552** [XS | P3 | chore]
+Ratio discard **0 %** — aucun sur-signalement. Toutes sans milestone (le milestone Sprint 80 porte
+déjà ses 3 issues planifiées).
+
+**Rectification d'une affirmation du lead, à consigner.** Le désarmement du rate-limit en CI a été
+présenté en cours de sprint comme « la découverte structurante ». C'est **inexact** : l'issue
+**#320**, ouverte depuis le S45, décrit déjà `RATE_LIMIT_ENABLED=false` et le trou de couverture qui
+en découle. Ce que le S79 apporte réellement est la **conséquence chiffrée** — 9 inscriptions
+émises par run là où le harnais en annonçait 5, la fausseté du « 5 pour 5 », et le fait que ce
+chiffre **servait d'argument** au maintien de `workers: 1`. La nouveauté est la mesure, pas le
+constat. #547 référence #320 plutôt que de la dupliquer ; **à trancher : fermer l'une au profit de
+l'autre.** Leçon générale, voisine de [[upstream-blocker-verdict-expires]] : avant de qualifier un
+constat de « découverte », chercher l'issue qui le porte déjà.
+
+**Effet de bord poste, NON nettoyé (décision du dev).** La base `eventmanager_s79` créée par un
+agent est **conservée**. Vérification faite avant toute suppression : `eventmanager` est arrêtée à
+**V6 sur 15** tandis que `eventmanager_s79` est à **V15** — c'était donc la seule base locale
+complètement migrée du poste, et la détruire aurait laissé le dev sans base utilisable. Le risque
+avait été formulé au conditionnel par le lead, puis **re-soumis au dev une fois mesuré** plutôt
+qu'appliqué à la lettre. Le blocage `V7` lui-même est tracé en #545.
+
+**Écarts de taxonomie constatés à la création des issues :** `epic:catalog` n'existe pas dans le
+dépôt (la taxonomie sépare `epic:categories` et `epic:products`) → `epic:categories` posé sur #546
+et #550. `backend/devops` n'est pas une valeur de stack valide → `backend` seul, le domaine étant
+porté par `epic:*`. Aucun label inventé.
+
+
 ### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
 **Milestone GitHub :** #81
