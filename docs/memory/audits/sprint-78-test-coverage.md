@@ -141,6 +141,32 @@ MINEUR assumé sans correction : la prescription de version `~3.2.7` vs `^3.2.7`
 `@vitest/coverage-v8`. Le commentaire est plus strict que la contrainte réelle ; le lock est à
 3.2.7 et la CI n'y est pas exposée.
 
+## Verdict CI de la PR #538 — ce que le local ne pouvait pas juger
+
+Run `34030803910` sur `b2a5bea` : **7 jobs sur 7 verts**, `e2e` compris
+(`backend`, `frontend`, `e2e`, `flyway-smoke`, `security`, `secret-scan`, `ai-env-packs`).
+
+Trois incertitudes explicitement laissées ouvertes plus haut sont **closes par ce run**, et
+aucune ne l'aurait été par une mesure locale :
+
+1. **Les comparaisons de captures.** C'était le seul risque réel du reformatage de 119 fichiers,
+   et il n'était jugeable que sur Linux avec les références `-chromium-linux` du dépôt. `e2e`
+   vert : le réordonnancement des classes Tailwind n'a cassé aucune comparaison visuelle. La
+   preuve indirecte du multi-ensemble de classes est confirmée par l'exécution.
+2. **Les artefacts de couverture sont réellement produits et non vides** —
+   `vitest-coverage-report` **1 208 873 o**, `jacoco-coverage-report` **917 764 o**. Le 3ᵉ critère
+   d'acceptation de #169 est constaté, pas déduit. Le `path:` d'`upload-artifact` était donc bien
+   relatif à la racine du dépôt : l'erreur classique aurait produit des artefacts VIDES sans
+   faire rougir le job — un artefact non vide est ici la seule preuve qui vaille.
+3. **Le nouveau gate `format:check` passe en CI** (job `frontend` vert), et **JaCoCo n'a pas
+   détaché l'agent ni cassé Testcontainers** (job `backend` vert, 566 tests). C'étaient les deux
+   modes d'échec brutaux redoutés.
+
+Note de méthode : `gh pr checks` interrogé juste après le push a répondu « no checks reported on
+the branch ». Ce n'est PAS une CI verte — c'est l'absence de checks encore créés, exactement le
+faux positif de PIT-S65-004. Le statut a été relu par SHA (`headSha == b2a5bea`) jusqu'à
+`completed`, jamais par la présence d'un mot dans une sortie texte.
+
 ## Conclusion
 
 Prêt pour la PR. Les trois gates du sprint sont armés et prouvés par des expériences qui
