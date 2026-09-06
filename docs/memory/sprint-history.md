@@ -5324,3 +5324,124 @@ authentifiés (M), le `data-testid` sur la carte auth (S, impose de régénérer
 
 **Status :** Terminé
 
+
+---
+
+## Plan S78-S82 — 2026-09-06 (`/sprint plan 5 -c "focus mvp"`)
+
+**Cadrage.** « focus mvp » n'avait aucune définition dans le dépôt (ni doc, ni milestone MVP).
+Désambiguïsé avec le dev : **robustesse fonctionnelle avant polish**. Sont exclus le polish
+design/a11y (`epic:design` P3) et le milestone #55 « Mise en ligne (GELÉ) », bloqué sur une
+décision humaine (#369 hébergeur/domaine/TLS).
+
+**Fil directeur.** Assainir la chaîne de vérification avant d'y ajouter quoi que ce soit :
+les gates qui mentent d'abord (S78), le harnais E2E ensuite (S79-S80), les tests métier en
+dernier (S82). Toute issue qui MODIFIE l'infrastructure de test passe avant celles qui
+AJOUTENT des tests.
+
+**15 issues, 35 points, cohésion globale 0.363. Aucune migration Flyway — V16 reste libre.**
+
+### Sprint 78 — 2026-09-06 (PLANIFIÉ — cohésion 0.28, Les gates de vérification mentent)
+**Objectif :** trancher trois contrôles verts qui ne prouvent pas ce qu'ils prétendent.
+**Milestone GitHub :** #79
+**Issues :** #528, #434, #169
+**Vagues :** V1 = #528 ‖ #434 | V2 = #169 (conflit `ci.yml` + `frontend/package.json`)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (racine du plan)
+**Cohésion sous seuil assumée** (DEC-S57-003) : la métrique informe le découpage, elle ne le
+commande pas. Split proposé et écarté — mesurer la couverture AVANT d'en ajouter est ce qui
+rend le chiffre exploitable.
+**Status :** Planifié
+
+### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
+**Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
+**Milestone GitHub :** #80
+**Issues :** #428, #475, #463
+**Vagues :** V1 = #428 ‖ #475 | V2 = #463 (conflit `accounts.ts` / `auth.setup.ts`)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 78 (le reformatage de #528 touche 10 specs e2e — l'absorber avant)
+**Status :** Planifié
+
+### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
+**Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
+**Milestone GitHub :** #81
+**Issues :** #472, #476, #408
+**Vagues :** V1 = #472 | V2 = #476 | V3 = #408 (3 vagues : `playwright.config.ts` partagé + exclusivité Playwright)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 79 — dépendance DURE. #476 exige #475 livrée : à 2 workers avec le
+budget register au plafond, un 429 se déguise en timeout `/login`, et le diagnostic est faux.
+**Status :** Planifié
+
+### Sprint 81 — 2026-09-06 (PLANIFIÉ — cohésion 0.56, Durcir le parcours auth/avatar)
+**Objectif :** rate-limit avatar, flaky auth élucidé (ou son mécanisme de capture livré), E2E avatar dégelé.
+**Milestone GitHub :** #82
+**Issues :** #500, #499, #215
+**Vagues :** V1 = #500 | V2 = #499 | V3 = #215
+> Séquentiel volontaire : #500 instrumente un flaky dont une hypothèse est la collision de
+> bucket rate-limit ; si #499 modifie `LIMITS` en parallèle, l'imputation devient impossible.
+**Migrations Flyway :** aucune
+**Dépend de :** Sprints 79 + 80 (#215 exige un harnais dont le diagnostic est fiable)
+**Status :** Planifié
+
+### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
+**Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
+**Milestone GitHub :** #83
+**Issues :** #507, #491, #477
+**Vagues :** V1 = #507 ‖ #491 | V2 = #477
+**Migrations Flyway :** aucune
+**Dépend de :** Sprints 78 → 81 (ajouter des tests en dernier, sur un harnais assaini)
+**Status :** Planifié
+
+### Énoncés périmés détectés pendant la planification — et traités
+
+L'architect a audité 44 candidates. Le taux d'énoncés faux reste cohérent avec le S74 (3/4) et
+le S77 (4/5). Contre-vérifié par le lead avant toute fermeture :
+
+| # | Verdict | Évidence | Action |
+|---|---|---|---|
+| #501 | Périmée | 2 derniers runs `dev` = success ; `npm audit` prod et dev+prod = 0 vuln | **Fermée** |
+| #360 | Sans objet | `AUTH_JWT_PUBLIC_KEY` supprimée depuis #358 (S68) — la clé vient du JWKS ; la panne « paire dépareillée » disparaît par construction | **Fermée** |
+| #510 | Doublon de #528 | Même défaut, même arbitrage binaire, même parc de fichiers | **Fermée** |
+| #319 | Contredit la décision en vigueur | `ci.yml:765-771` — arbitrage dev du 2026-09-03 qui ÉCARTE explicitement la refusion demandée | **Fermée won't-do** |
+| #529 | Hors dépôt | `warn-test-delegation.sh` vit dans le plugin ai-env, pas dans MyTimeline — aucune PR ici ne peut la résoudre | Commentée, laissée ouverte |
+| #272 | 2 critères sur 3 déjà satisfaits | `node_modules` présent, `.gitignore:79` OK, préflight #308 en place ; reste l'automatisation | Requalifiée `size:S` → `size:XS` |
+
+**Chiffres d'issue démentis par la mesure** (à ne pas recopier depuis les corps d'issue) :
+- #528 : **104 fichiers** non conformes prettier, pas 2-3.
+- #463 : **16 specs** consomment le compte PROD, pas 4.
+- #240 : **7** duplications de la garde d'ownership, pas 5.
+- #477 : la ligne citée (`TimelineView.tsx:895-912`) date du S65 et n'a pas été revérifiée.
+
+**Piège actif consigné (#507)** : `NewEventDrawer.test.tsx:488-499` cite BR-EVE-017 en
+commentaire mais son assertion (`waitFor(toHaveTextContent)`) passe avec OU sans debounce. Un
+agent qui grep la BR conclura « déjà couvert ». Le briefing doit citer ce fichier:ligne.
+
+### Risques du plan
+
+1. **#528 est le plus gros diff des 5 sprints (104 fichiers)** et `prettier-plugin-tailwindcss`
+   réordonne les classes. Les specs de comparaison visuelle (S76/S77) doivent être **rejouées**,
+   jamais ré-armées via `--update-snapshots`.
+2. **La cause racine de la mort du `next dev` sous charge reste inconnue** (documentée telle
+   quelle dans `playwright.config.ts`, commentaire #469). #476 mesure `workers:2` sans que ce
+   soit levé : un rouge sera ambigu. « Rebaisser la valeur en silence » n'est pas une conclusion.
+3. **L'architect n'a joué aucun test.** Ses `possibly_done: false` reposent sur lecture + grep.
+   Les taux de flake de #472, le rouge de #500 et le blocage de merge de #408 restent non mesurés.
+4. **8 des 15 issues exigent un run E2E** → parallélisme faible sur 3 sprints sur 5. Structurel,
+   non corrigeable par le découpage (un seul agent à la fois peut jouer Playwright).
+5. **#215 risque de rejouer un diagnostic déjà faux trois fois** (CORS/Origin, S47/S56/S57).
+   L'oracle `curl → 401` est imposé avant toute hypothèse.
+
+### Écarté par le cadrage, pas par la valeur
+
+**#518** (P1, ~15 composants rendent des dates en `<span>` au lieu de `<time datetime>`) est le
+seul P1 non planifié : c'est de la sémantique/a11y, rangée côté polish par le cadrage retenu.
+Signalé au dev, qui a validé le plan en connaissance de cause.
+
+### Note de méthode — la pré-validation Phase 0.5 est inexploitable sur ce dépôt
+
+`check-issue-state.sh` a renvoyé `possibly_done: true` sur **20 des 44** candidates. **Les 20
+sont des faux positifs** : le helper fait `git log --grep "#N"` et tombe sur le commit de
+*clôture de sprint qui a CRÉÉ* l'issue en follow-up, jamais sur un commit qui la résout. Le
+tableau n'a donc pas été transmis à l'architect ; à la place, celui-ci a vérifié chaque issue
+retenue directement dans le code. C'est cette vérification-là qui a produit les 6 péremptions
+ci-dessus — le signal automatique en aurait produit zéro.
