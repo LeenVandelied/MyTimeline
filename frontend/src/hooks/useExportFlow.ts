@@ -10,11 +10,7 @@ import {
   submitAsyncExport,
   triggerBrowserDownload,
 } from '@/services/exportService'
-import {
-  isSyncFormat,
-  type ExportFormat,
-  type ExportJobResponse,
-} from '@/lib/schemas/export'
+import { isSyncFormat, type ExportFormat, type ExportJobResponse } from '@/lib/schemas/export'
 
 /**
  * #59 — Machine à états du flux d'export RGPD en 3 étapes, alignée sur le contrat
@@ -168,8 +164,7 @@ export function useExportFlow(): UseExportFlowResult {
     jobStatus: phase === 'preparing' ? (jobQuery.data?.status ?? 'PENDING') : null,
     completedJob,
     errorKey,
-    isBusy:
-      inlineMutation.isPending || submitMutation.isPending || downloadMutation.isPending,
+    isBusy: inlineMutation.isPending || submitMutation.isPending || downloadMutation.isPending,
     start,
     downloadCompleted,
     reset,

@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 
 /**
  * Tailwind 4 — config CSS-first.
@@ -7,11 +7,8 @@ import type { Config } from "tailwindcss";
  * Ce fichier ne sert qu'à cadrer la détection de contenu et les plugins.
  */
 const config: Config = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ['./app/**/*.{js,ts,jsx,tsx,mdx}', './src/**/*.{js,ts,jsx,tsx,mdx}'],
   plugins: [],
-};
+}
 
-export default config;
+export default config

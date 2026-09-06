@@ -1,31 +1,29 @@
-import {hasLocale} from 'next-intl';
-import {getRequestConfig} from 'next-intl/server';
-import fs from 'fs';
-import path from 'path';
+import { hasLocale } from 'next-intl'
+import { getRequestConfig } from 'next-intl/server'
+import fs from 'fs'
+import path from 'path'
 
-import {SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale} from '@/i18n/locales';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type Locale } from '@/i18n/locales'
 
 export async function loadMessages(locale: string) {
-  const localeDir = path.join(process.cwd(), 'public', 'locales', locale);
-  
+  const localeDir = path.join(process.cwd(), 'public', 'locales', locale)
+
   if (!fs.existsSync(localeDir)) {
-    return {};
+    return {}
   }
-  
-  const files = fs.readdirSync(localeDir).filter(file => file.endsWith('.json'));
-  
-  const messages: Record<string, Record<string, unknown>> = {};
-  
+
+  const files = fs.readdirSync(localeDir).filter((file) => file.endsWith('.json'))
+
+  const messages: Record<string, Record<string, unknown>> = {}
+
   for (const file of files) {
-    const namespace = file.replace('.json', '');
-    const content = JSON.parse(
-      fs.readFileSync(path.join(localeDir, file), 'utf8')
-    );
-    
-    messages[namespace] = content;
+    const namespace = file.replace('.json', '')
+    const content = JSON.parse(fs.readFileSync(path.join(localeDir, file), 'utf8'))
+
+    messages[namespace] = content
   }
-  
-  return messages;
+
+  return messages
 }
 
 /**
@@ -68,14 +66,14 @@ export async function loadMessages(locale: string) {
  * créerait deux URLs indexables pour un même contenu.
  */
 export function resolveLocale(requested: unknown): Locale {
-  return hasLocale(SUPPORTED_LOCALES, requested) ? requested : DEFAULT_LOCALE;
+  return hasLocale(SUPPORTED_LOCALES, requested) ? requested : DEFAULT_LOCALE
 }
 
-export default getRequestConfig(async ({requestLocale}) => {
-  const locale = resolveLocale(await requestLocale);
+export default getRequestConfig(async ({ requestLocale }) => {
+  const locale = resolveLocale(await requestLocale)
 
   return {
     locale,
-    messages: await loadMessages(locale)
-  };
-});
+    messages: await loadMessages(locale),
+  }
+})

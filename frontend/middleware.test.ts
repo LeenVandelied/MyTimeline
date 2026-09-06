@@ -439,7 +439,9 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
         async () =>
           new Response(
             JSON.stringify({
-              keys: [{ kty: publicJwk.kty, n: publicJwk.n, e: publicJwk.e, alg: 'RS256', use: 'sig' }],
+              keys: [
+                { kty: publicJwk.kty, n: publicJwk.n, e: publicJwk.e, alg: 'RS256', use: 'sig' },
+              ],
             }),
             { status: 200, headers: { 'content-type': 'application/json' } },
           ),

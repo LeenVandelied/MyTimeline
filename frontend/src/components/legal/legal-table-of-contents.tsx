@@ -37,13 +37,13 @@ export function LegalTableOfContents({ sections, label, t, testId }: LegalTableO
     <nav
       aria-label={label}
       data-testid={testId}
-      className="bg-surface rounded-xl p-6 shadow-lg border border-rule mb-8"
+      className="bg-surface border-rule mb-8 rounded-xl border p-6 shadow-lg"
     >
-      <h2 className="text-lg font-semibold mb-4">{label}</h2>
+      <h2 className="mb-4 text-lg font-semibold">{label}</h2>
       <ol className="space-y-2">
         {sections.map((section, index) => (
           <li key={section.id} className="flex gap-3">
-            <span aria-hidden="true" className="text-ink-muted tabular-nums shrink-0 w-10">
+            <span aria-hidden="true" className="text-ink-muted w-10 shrink-0 tabular-nums">
               {toRomanNumeral(index + 1)}.
             </span>
             <a
@@ -62,7 +62,7 @@ export function LegalTableOfContents({ sections, label, t, testId }: LegalTableO
               // du DS (`ds/tokens/base.css`, `@layer base`) s'applique tout
               // seul : il n'y a AUCUNE classe de focus à poser.
               // `rounded-sm` est conservé — il donne sa forme à ce contour.
-              className="text-ink-muted hover:text-ink underline-offset-4 hover:underline rounded-sm"
+              className="text-ink-muted hover:text-ink rounded-sm underline-offset-4 hover:underline"
             >
               {t(section.titleKey)}
             </a>

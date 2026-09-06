@@ -1123,9 +1123,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           // #69 — Fenêtre HORIZONTALE : seuls les événements dont l'intervalle
           // croise la plage temporelle visible sont montés. L'index d'origine
           // est conservé (coordonnée clavier #81).
-          const computed = isResCollapsed
-            ? NO_EVENTS
-            : windowEvents(laneEvents, horizontalBand)
+          const computed = isResCollapsed ? NO_EVENTS : windowEvents(laneEvents, horizontalBand)
           const previous = previousWindows.get(resource.id)
           const windowed = previous && sameWindowedEvents(previous, computed) ? previous : computed
           nextWindows.set(resource.id, windowed)

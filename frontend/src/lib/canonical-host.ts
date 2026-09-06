@@ -152,7 +152,8 @@ interface MutableOrigin {
  * ⚠ Les littéraux IPv6 (`[::1]`) ne sont PAS acceptés sous forme nue ; les
  * déclarer sous forme d'origine complète (`http://[::1]:3000`) fonctionne.
  */
-const BARE_HOST_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*(?::\d{1,5})?$/i
+const BARE_HOST_PATTERN =
+  /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*(?::\d{1,5})?$/i
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
 
@@ -211,7 +212,9 @@ function parseEntry(entry: string): CanonicalOrigin | null {
  * ⚠ Ce dégradé-là n'est plus SILENCIEUX quand la variable est non vide : cf.
  * `warnUnusableConfigOnce`. Une valeur absente reste, elle, totalement muette.
  */
-export function parseCanonicalOrigins(rawValue: string | null | undefined): readonly CanonicalOrigin[] {
+export function parseCanonicalOrigins(
+  rawValue: string | null | undefined,
+): readonly CanonicalOrigin[] {
   if (rawValue === null || rawValue === undefined) {
     warnMissingConfigInProductionOnce()
     return []

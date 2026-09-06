@@ -5,7 +5,11 @@ import '../src/styles/globals.css'
 import { useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
-import { StateScreen, stateActionPrimary, stateActionSecondary } from '@/components/shared/StateScreen'
+import {
+  StateScreen,
+  stateActionPrimary,
+  stateActionSecondary,
+} from '@/components/shared/StateScreen'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/locales'
 import { fontVariables } from './fonts'
 import type { CSSProperties } from 'react'
@@ -116,10 +120,19 @@ export default function GlobalError({
           description={m.description}
           actions={
             <>
-              <button type="button" onClick={reset} className={stateActionPrimary} data-testid="global-error-retry">
+              <button
+                type="button"
+                onClick={reset}
+                className={stateActionPrimary}
+                data-testid="global-error-retry"
+              >
                 {m.retry}
               </button>
-              <a href={`/${locale}`} className={stateActionSecondary} data-testid="global-error-home-link">
+              <a
+                href={`/${locale}`}
+                className={stateActionSecondary}
+                data-testid="global-error-home-link"
+              >
                 {m.backHome}
               </a>
             </>

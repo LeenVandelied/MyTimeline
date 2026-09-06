@@ -54,11 +54,7 @@ vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
     onConfirm: (id?: string) => void | Promise<void>
   }) =>
     open ? (
-      <button
-        type="button"
-        data-testid={`delete-dialog-${variant}`}
-        onClick={() => onConfirm()}
-      >
+      <button type="button" data-testid={`delete-dialog-${variant}`} onClick={() => onConfirm()}>
         confirm
       </button>
     ) : null,

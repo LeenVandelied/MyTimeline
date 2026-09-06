@@ -108,6 +108,17 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Gate de FORMATAGE (#528). Distinct du lint : `next lint` (eslint) ne
+      # verifie PAS le formatage, donc une CI verte ne disait rien de prettier.
+      # Defaut consigne sous BUG-S71-002, redecouvert aux S71/S75/S77 sans etre
+      # tranche. Dette de 119 fichiers reformatee dans le meme commit que ce
+      # gate : un reformatage sans son gate derive a nouveau immediatement.
+      # Volontairement SANS `continue-on-error` et derniere commande = prettier
+      # lui-meme (exit 1 si non conforme) — cf. PIT-S64-007 : un step dont la
+      # derniere commande ne peut pas echouer ne bloque rien.
+      - name: Format (Prettier)
+        run: npm run format:check
+
   # ---------------------------------------------------------------------------
   # E2E (#163) — golden path Playwright full-stack : inscription -> connexion ->
   # produit + événement -> timeline. Lève la stack COMPLÈTE (Postgres + backend

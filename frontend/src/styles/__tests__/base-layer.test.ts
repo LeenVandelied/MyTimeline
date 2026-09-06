@@ -43,7 +43,9 @@ const LANDING = fileURLToPath(new URL('../landing.css', import.meta.url))
 const DOCUMENT_FIXTURE = fileURLToPath(new URL('../__document__.css', import.meta.url))
 const AVATAR_FIXTURE = fileURLToPath(new URL('../__avatar-regression__.css', import.meta.url))
 /** Témoin de la régression `line-height` layerisé (1ʳᵉ passe de #339). */
-const HEADING_LEADING_FIXTURE = fileURLToPath(new URL('../__heading-leading-regression__.css', import.meta.url))
+const HEADING_LEADING_FIXTURE = fileURLToPath(
+  new URL('../__heading-leading-regression__.css', import.meta.url),
+)
 const SCROLLBAR_FIXTURE = fileURLToPath(new URL('../__scrollbar-regression__.css', import.meta.url))
 const PREVIEW_FIXTURE = fileURLToPath(new URL('../__preview-regression__.css', import.meta.url))
 /** Témoin du `:focus-visible` non layerisé (#383, Sprint 58). */
@@ -64,7 +66,9 @@ async function compile(css: string, from: string): Promise<Compiled> {
 /** Chaîne des at-rules parentes d'un nœud, de la plus proche à la racine. */
 function layerChain(node: { parent?: unknown }): string[] {
   const chain: string[] = []
-  let current = node.parent as { type?: string; name?: string; params?: string; parent?: unknown } | undefined
+  let current = node.parent as
+    | { type?: string; name?: string; params?: string; parent?: unknown }
+    | undefined
   while (current && current.type !== 'root') {
     if (current.type === 'atrule' && current.name === 'layer') {
       chain.push((current.params ?? '').trim())
@@ -120,58 +124,50 @@ function layersOf(root: Container, selector: string, declMatch: RegExp): string[
 }
 
 describe('cascade @layer — règle de base des liens', () => {
-  it(
-    "encapsule `a { color: accent }` dans @layer base, sous les utilitaires",
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8'), GLOBALS)
+  it('encapsule `a { color: accent }` dans @layer base, sous les utilitaires', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8'), GLOBALS)
 
-      // 1. La règle `a` du DS est layerisée dans `base` (et pas à la racine).
-      const anchorHits = layersOf(root, 'a', /--color-accent\b/)
-      expect(anchorHits.length).toBeGreaterThan(0)
-      for (const chain of anchorHits) {
-        expect(chain).toContain('base')
-      }
+    // 1. La règle `a` du DS est layerisée dans `base` (et pas à la racine).
+    const anchorHits = layersOf(root, 'a', /--color-accent\b/)
+    expect(anchorHits.length).toBeGreaterThan(0)
+    for (const chain of anchorHits) {
+      expect(chain).toContain('base')
+    }
 
-      // 2. Les utilitaires de couleur texte vivent dans `utilities`.
-      const utilityHits = layersOf(root, '.text-accent-ink', /color:/)
-      expect(utilityHits.length).toBeGreaterThan(0)
-      for (const chain of utilityHits) {
-        expect(chain).toContain('utilities')
-      }
+    // 2. Les utilitaires de couleur texte vivent dans `utilities`.
+    const utilityHits = layersOf(root, '.text-accent-ink', /color:/)
+    expect(utilityHits.length).toBeGreaterThan(0)
+    for (const chain of utilityHits) {
+      expect(chain).toContain('utilities')
+    }
 
-      // 3. L'ordre déclaré des layers place `base` AVANT `utilities` :
-      //    à égalité de « importance », le layer le plus tardif gagne.
-      let order: string[] = []
-      root.walkAtRules('layer', (at) => {
-        if (order.length || at.nodes) return // on cherche l'instruction `@layer a, b, c;`
-        order = at.params.split(',').map((name) => name.trim())
-      })
-      expect(order).toContain('base')
-      expect(order).toContain('utilities')
-      expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
-    },
-    30_000,
-  )
+    // 3. L'ordre déclaré des layers place `base` AVANT `utilities` :
+    //    à égalité de « importance », le layer le plus tardif gagne.
+    let order: string[] = []
+    root.walkAtRules('layer', (at) => {
+      if (order.length || at.nodes) return // on cherche l'instruction `@layer a, b, c;`
+      order = at.params.split(',').map((name) => name.trim())
+    })
+    expect(order).toContain('base')
+    expect(order).toContain('utilities')
+    expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
+  }, 30_000)
 
-  it(
-    'détecte réellement une règle de lien NON layerisée (le détecteur ne passe pas à vide)',
-    async () => {
-      // Reproduit la régression : même déclaration, hors de tout `@layer`.
-      // ⚠ `from` DOIT différer de GLOBALS : le plugin PostCSS de Tailwind
-      // mémoïse la compilation par chemin d'entrée — réutiliser GLOBALS
-      // renverrait le CSS réel et ferait passer ce test à vide.
-      const regressed = "@import 'tailwindcss';\na { color: var(--color-accent); }\n"
-      const { root } = await compile(regressed, REGRESSION_FIXTURE)
+  it('détecte réellement une règle de lien NON layerisée (le détecteur ne passe pas à vide)', async () => {
+    // Reproduit la régression : même déclaration, hors de tout `@layer`.
+    // ⚠ `from` DOIT différer de GLOBALS : le plugin PostCSS de Tailwind
+    // mémoïse la compilation par chemin d'entrée — réutiliser GLOBALS
+    // renverrait le CSS réel et ferait passer ce test à vide.
+    const regressed = "@import 'tailwindcss';\na { color: var(--color-accent); }\n"
+    const { root } = await compile(regressed, REGRESSION_FIXTURE)
 
-      const anchorHits = layersOf(root, 'a', /--color-accent\b/)
-      expect(anchorHits.length).toBeGreaterThan(0)
-      // Au moins une occurrence hors layer → c'est exactement ce que le test
-      // ci-dessus refuse. Sans cette assertion, le premier test pourrait passer
-      // pour de mauvaises raisons (sélecteur jamais trouvé, matcher trop laxe).
-      expect(anchorHits.some((chain) => chain.length === 0)).toBe(true)
-    },
-    30_000,
-  )
+    const anchorHits = layersOf(root, 'a', /--color-accent\b/)
+    expect(anchorHits.length).toBeGreaterThan(0)
+    // Au moins une occurrence hors layer → c'est exactement ce que le test
+    // ci-dessus refuse. Sans cette assertion, le premier test pourrait passer
+    // pour de mauvaises raisons (sélecteur jamais trouvé, matcher trop laxe).
+    expect(anchorHits.some((chain) => chain.length === 0)).toBe(true)
+  }, 30_000)
 })
 
 /**
@@ -193,91 +189,79 @@ describe('cascade @layer — règle de base des liens', () => {
 describe('cascade @layer — défauts de titre h1..h6', () => {
   const DS_HEADINGS = 'h1, h2, h3, h4, h5, h6'
 
-  it(
-    'encapsule les défauts `h1..h6` du DS dans @layer base',
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8'), GLOBALS)
+  it('encapsule les défauts `h1..h6` du DS dans @layer base', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8'), GLOBALS)
 
-      // `--font-display` discrimine la règle du DS du reset preflight de
-      // Tailwind, qui porte le même sélecteur mais seulement font-size/weight.
-      const headingHits = layersOf(root, DS_HEADINGS, /--font-display\b/)
-      expect(headingHits.length).toBeGreaterThan(0)
-      for (const chain of headingHits) {
-        expect(chain).toContain('base')
-      }
+    // `--font-display` discrimine la règle du DS du reset preflight de
+    // Tailwind, qui porte le même sélecteur mais seulement font-size/weight.
+    const headingHits = layersOf(root, DS_HEADINGS, /--font-display\b/)
+    expect(headingHits.length).toBeGreaterThan(0)
+    for (const chain of headingHits) {
+      expect(chain).toContain('base')
+    }
 
-      // `margin: 0` — la déclaration qui annulait les `mb-*` — est bien dans
-      // le même bloc layerisé, et non restée à la racine.
-      const marginHits = layersOf(root, DS_HEADINGS, /margin:\s*0/)
-      expect(marginHits.length).toBeGreaterThan(0)
-      for (const chain of marginHits) {
-        expect(chain).toContain('base')
-      }
-    },
-    30_000,
-  )
+    // `margin: 0` — la déclaration qui annulait les `mb-*` — est bien dans
+    // le même bloc layerisé, et non restée à la racine.
+    const marginHits = layersOf(root, DS_HEADINGS, /margin:\s*0/)
+    expect(marginHits.length).toBeGreaterThan(0)
+    for (const chain of marginHits) {
+      expect(chain).toContain('base')
+    }
+  }, 30_000)
 
-  it(
-    'détecte réellement des défauts de titre NON layerisés (le détecteur ne passe pas à vide)',
-    async () => {
-      // ⚠ `from` DOIT différer de GLOBALS *et* des autres fixtures : le plugin
-      // PostCSS de Tailwind mémoïse la compilation par chemin d'entrée.
-      const regressed = `@import 'tailwindcss';\n${DS_HEADINGS} { font-family: var(--font-display); margin: 0; }\n`
-      const { root } = await compile(regressed, HEADING_FIXTURE)
+  it('détecte réellement des défauts de titre NON layerisés (le détecteur ne passe pas à vide)', async () => {
+    // ⚠ `from` DOIT différer de GLOBALS *et* des autres fixtures : le plugin
+    // PostCSS de Tailwind mémoïse la compilation par chemin d'entrée.
+    const regressed = `@import 'tailwindcss';\n${DS_HEADINGS} { font-family: var(--font-display); margin: 0; }\n`
+    const { root } = await compile(regressed, HEADING_FIXTURE)
 
-      const headingHits = layersOf(root, DS_HEADINGS, /--font-display\b/)
-      expect(headingHits.length).toBeGreaterThan(0)
-      expect(headingHits.some((chain) => chain.length === 0)).toBe(true)
-    },
-    30_000,
-  )
+    const headingHits = layersOf(root, DS_HEADINGS, /--font-display\b/)
+    expect(headingHits.length).toBeGreaterThan(0)
+    expect(headingHits.some((chain) => chain.length === 0)).toBe(true)
+  }, 30_000)
 
-  it(
-    'résout `leading-tight` sur le token DS (1.08) et non sur le défaut Tailwind (1.25)',
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8'), GLOBALS)
+  it('résout `leading-tight` sur le token DS (1.08) et non sur le défaut Tailwind (1.25)', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8'), GLOBALS)
 
-      // 1. L'utilitaire délègue à la variable — il n'inline aucune constante.
-      const leadingRules: string[] = []
-      root.walkRules((rule) => {
-        if (rule.selector.trim() !== '.leading-tight') return
-        expect(layerChain(rule)).toContain('utilities')
-        rule.walkDecls('line-height', (decl) => {
-          leadingRules.push(decl.value.trim())
-        })
+    // 1. L'utilitaire délègue à la variable — il n'inline aucune constante.
+    const leadingRules: string[] = []
+    root.walkRules((rule) => {
+      if (rule.selector.trim() !== '.leading-tight') return
+      expect(layerChain(rule)).toContain('utilities')
+      rule.walkDecls('line-height', (decl) => {
+        leadingRules.push(decl.value.trim())
       })
-      expect(leadingRules.length).toBeGreaterThan(0)
-      for (const value of leadingRules) {
-        expect(value).toBe('var(--leading-tight)')
-      }
+    })
+    expect(leadingRules.length).toBeGreaterThan(0)
+    for (const value of leadingRules) {
+      expect(value).toBe('var(--leading-tight)')
+    }
 
-      // 2. La déclaration GAGNANTE de `--leading-tight` est celle du DS.
-      //    `ds/tokens/typography.css` la pose dans un `:root` hors layer,
-      //    homonyme du namespace de thème Tailwind ; hors layer bat
-      //    `@layer theme`, donc 1.08 l'emporte sur 1.25. C'est CE point qui
-      //    tient la valeur — pas le mapping `@theme` (cf. assertion 3).
-      expect(winningRootVar(root, '--leading-tight')).toBe('1.08')
+    // 2. La déclaration GAGNANTE de `--leading-tight` est celle du DS.
+    //    `ds/tokens/typography.css` la pose dans un `:root` hors layer,
+    //    homonyme du namespace de thème Tailwind ; hors layer bat
+    //    `@layer theme`, donc 1.08 l'emporte sur 1.25. C'est CE point qui
+    //    tient la valeur — pas le mapping `@theme` (cf. assertion 3).
+    expect(winningRootVar(root, '--leading-tight')).toBe('1.08')
 
-      // 3. Le mapping `--leading-*` de `@theme` (globals.css) est présent.
-      //    HONNÊTETÉ : il est REDONDANT aujourd'hui — le retirer ne changerait
-      //    aucune valeur rendue (mesuré par compilation contrefactuelle). On
-      //    le verrouille quand même : il est la seule protection si l'audit de
-      //    layerisation (#340) fait entrer les `:root` de tokens dans un layer
-      //    situé avant `theme`, cas où les défauts Tailwind reprendraient la
-      //    main sur tout `leading-*` du produit.
-      const themeDecls: string[] = []
-      root.walkRules((rule) => {
-        if (!rule.selector.includes(':root')) return
-        if (!layerChain(rule).includes('theme')) return
-        rule.walkDecls('--leading-tight', (decl) => {
-          themeDecls.push(decl.value.trim())
-        })
+    // 3. Le mapping `--leading-*` de `@theme` (globals.css) est présent.
+    //    HONNÊTETÉ : il est REDONDANT aujourd'hui — le retirer ne changerait
+    //    aucune valeur rendue (mesuré par compilation contrefactuelle). On
+    //    le verrouille quand même : il est la seule protection si l'audit de
+    //    layerisation (#340) fait entrer les `:root` de tokens dans un layer
+    //    situé avant `theme`, cas où les défauts Tailwind reprendraient la
+    //    main sur tout `leading-*` du produit.
+    const themeDecls: string[] = []
+    root.walkRules((rule) => {
+      if (!rule.selector.includes(':root')) return
+      if (!layerChain(rule).includes('theme')) return
+      rule.walkDecls('--leading-tight', (decl) => {
+        themeDecls.push(decl.value.trim())
       })
-      expect(themeDecls).toContain('var(--leading-tight)')
-      expect(themeDecls).not.toContain('1.25')
-    },
-    30_000,
-  )
+    })
+    expect(themeDecls).toContain('var(--leading-tight)')
+    expect(themeDecls).not.toContain('1.25')
+  }, 30_000)
 })
 
 /**
@@ -313,64 +297,56 @@ describe('cascade @layer — line-height des titres ne cède PAS devant `text-*`
     return order.indexOf(chain[chain.length - 1])
   }
 
-  it(
-    'laisse `h1..h6 { line-height }` HORS layer, donc gagnant sur le `line-height` apparié à `text-lg`',
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
-      const order = declaredLayerOrder(root)
+  it('laisse `h1..h6 { line-height }` HORS layer, donc gagnant sur le `line-height` apparié à `text-lg`', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+    const order = declaredLayerOrder(root)
 
-      // 1. Le conflit est RÉEL : `.text-lg` pose bien un `line-height` concurrent,
-      //    dans `utilities`. Sans cette assertion, le test passerait à vide le jour
-      //    où Tailwind cesserait d'apparier taille et interligne.
-      const textLgLeading: string[][] = []
-      root.walkRules((rule) => {
-        if (rule.selector.trim() !== '.text-lg') return
-        rule.walkDecls('line-height', () => {
-          textLgLeading.push(layerChain(rule))
-        })
+    // 1. Le conflit est RÉEL : `.text-lg` pose bien un `line-height` concurrent,
+    //    dans `utilities`. Sans cette assertion, le test passerait à vide le jour
+    //    où Tailwind cesserait d'apparier taille et interligne.
+    const textLgLeading: string[][] = []
+    root.walkRules((rule) => {
+      if (rule.selector.trim() !== '.text-lg') return
+      rule.walkDecls('line-height', () => {
+        textLgLeading.push(layerChain(rule))
       })
-      expect(textLgLeading.length).toBeGreaterThan(0)
-      for (const chain of textLgLeading) expect(chain).toContain('utilities')
+    })
+    expect(textLgLeading.length).toBeGreaterThan(0)
+    for (const chain of textLgLeading) expect(chain).toContain('utilities')
 
-      // 2. La règle `line-height` du DS sur `h1..h6` existe et est HORS layer.
-      const headingLeading = layersOf(root, DS_HEADINGS, /line-height:\s*var\(--leading-tight\)/)
-      expect(headingLeading.length).toBeGreaterThan(0)
-      for (const chain of headingLeading) expect(chain).toEqual([])
+    // 2. La règle `line-height` du DS sur `h1..h6` existe et est HORS layer.
+    const headingLeading = layersOf(root, DS_HEADINGS, /line-height:\s*var\(--leading-tight\)/)
+    expect(headingLeading.length).toBeGreaterThan(0)
+    for (const chain of headingLeading) expect(chain).toEqual([])
 
-      // 3. C'est donc elle qui GAGNE. Le rang de layer précède la spécificité :
-      //    peu importe que `.text-lg` (0-1-0) soit plus spécifique que `h2` (0-0-1).
-      const headingRank = Math.max(...headingLeading.map((c) => layerRank(c, order)))
-      const textLgRank = Math.max(...textLgLeading.map((c) => layerRank(c, order)))
-      expect(headingRank).toBeGreaterThan(textLgRank)
+    // 3. C'est donc elle qui GAGNE. Le rang de layer précède la spécificité :
+    //    peu importe que `.text-lg` (0-1-0) soit plus spécifique que `h2` (0-0-1).
+    const headingRank = Math.max(...headingLeading.map((c) => layerRank(c, order)))
+    const textLgRank = Math.max(...textLgLeading.map((c) => layerRank(c, order)))
+    expect(headingRank).toBeGreaterThan(textLgRank)
 
-      // 4. Les 4 AUTRES propriétés restent layerisées — le correctif ne défait
-      //    pas #339 : `mb-*` / `font-*` doivent toujours l'emporter sur le DS.
-      const marginHits = layersOf(root, DS_HEADINGS, /margin:\s*0/)
-      expect(marginHits.length).toBeGreaterThan(0)
-      for (const chain of marginHits) expect(chain).toContain('base')
-    },
-    30_000,
-  )
+    // 4. Les 4 AUTRES propriétés restent layerisées — le correctif ne défait
+    //    pas #339 : `mb-*` / `font-*` doivent toujours l'emporter sur le DS.
+    const marginHits = layersOf(root, DS_HEADINGS, /margin:\s*0/)
+    expect(marginHits.length).toBeGreaterThan(0)
+    for (const chain of marginHits) expect(chain).toContain('base')
+  }, 30_000)
 
-  it(
-    'rougit si `line-height` est remis dans @layer base (le détecteur ne passe pas à vide)',
-    async () => {
-      // Reproduit EXACTEMENT la régression : les 5 propriétés en bloc dans `base`.
-      // ⚠ `from` unique obligatoire (mémoïsation par chemin du plugin Tailwind).
-      const regressed =
-        "@import 'tailwindcss';\n" +
-        `@layer base {\n  ${DS_HEADINGS} { line-height: var(--leading-tight); margin: 0; }\n}\n`
-      const { root } = await compile(regressed, HEADING_LEADING_FIXTURE)
+  it('rougit si `line-height` est remis dans @layer base (le détecteur ne passe pas à vide)', async () => {
+    // Reproduit EXACTEMENT la régression : les 5 propriétés en bloc dans `base`.
+    // ⚠ `from` unique obligatoire (mémoïsation par chemin du plugin Tailwind).
+    const regressed =
+      "@import 'tailwindcss';\n" +
+      `@layer base {\n  ${DS_HEADINGS} { line-height: var(--leading-tight); margin: 0; }\n}\n`
+    const { root } = await compile(regressed, HEADING_LEADING_FIXTURE)
 
-      const headingLeading = layersOf(root, DS_HEADINGS, /line-height:\s*var\(--leading-tight\)/)
-      expect(headingLeading.length).toBeGreaterThan(0)
-      // Sous la forme régressée, AUCUNE occurrence n'est hors layer — c'est
-      // exactement ce que l'assertion 2 du test ci-dessus refuse.
-      expect(headingLeading.some((chain) => chain.length === 0)).toBe(false)
-      for (const chain of headingLeading) expect(chain).toContain('base')
-    },
-    30_000,
-  )
+    const headingLeading = layersOf(root, DS_HEADINGS, /line-height:\s*var\(--leading-tight\)/)
+    expect(headingLeading.length).toBeGreaterThan(0)
+    // Sous la forme régressée, AUCUNE occurrence n'est hors layer — c'est
+    // exactement ce que l'assertion 2 du test ci-dessus refuse.
+    expect(headingLeading.some((chain) => chain.length === 0)).toBe(false)
+    for (const chain of headingLeading) expect(chain).toContain('base')
+  }, 30_000)
 })
 
 /**
@@ -397,139 +373,116 @@ describe('cascade @layer — line-height des titres ne cède PAS devant `text-*`
  * cf. `docs/memory/sprints/sprint-53/audit-css-layers-340.md`.
  */
 describe('cascade @layer — classes de composant (#340)', () => {
-  it(
-    'encapsule `.mt-avatar` dans @layer components, sous les utilitaires',
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+  it('encapsule `.mt-avatar` dans @layer components, sous les utilitaires', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
 
-      // `--radius-md` discrimine la règle du DS de tout homonyme.
-      const hits = layersOf(root, '.mt-avatar', /--radius-md\b/)
-      expect(hits.length).toBeGreaterThan(0)
-      for (const chain of hits) {
-        expect(chain).toContain('components')
-      }
+    // `--radius-md` discrimine la règle du DS de tout homonyme.
+    const hits = layersOf(root, '.mt-avatar', /--radius-md\b/)
+    expect(hits.length).toBeGreaterThan(0)
+    for (const chain of hits) {
+      expect(chain).toContain('components')
+    }
 
-      // L'utilitaire réellement posée par `AppShell` vit dans `utilities`…
-      const rounded = layersOf(root, '.rounded-sm', /border-radius:/)
-      expect(rounded.length).toBeGreaterThan(0)
-      for (const chain of rounded) {
-        expect(chain).toContain('utilities')
-      }
+    // L'utilitaire réellement posée par `AppShell` vit dans `utilities`…
+    const rounded = layersOf(root, '.rounded-sm', /border-radius:/)
+    expect(rounded.length).toBeGreaterThan(0)
+    for (const chain of rounded) {
+      expect(chain).toContain('utilities')
+    }
 
-      // …et `components` précède `utilities` : à importance égale, le layer le
-      // plus tardif gagne → `rounded-sm` l'emporte enfin sur le défaut DS.
-      const order = declaredLayerOrder(root)
-      expect(order.indexOf('components')).toBeLessThan(order.indexOf('utilities'))
+    // …et `components` précède `utilities` : à importance égale, le layer le
+    // plus tardif gagne → `rounded-sm` l'emporte enfin sur le défaut DS.
+    const order = declaredLayerOrder(root)
+    expect(order.indexOf('components')).toBeLessThan(order.indexOf('utilities'))
 
-      // Les modificateurs restent dans le MÊME layer : leur victoire sur
-      // `.mt-avatar` tient à l'ordre du document, pas au rang de layer.
-      const round = layersOf(root, '.mt-avatar--round', /border-radius:\s*50%/)
-      expect(round.length).toBeGreaterThan(0)
-      for (const chain of round) {
-        expect(chain).toContain('components')
-      }
-    },
-    30_000,
-  )
+    // Les modificateurs restent dans le MÊME layer : leur victoire sur
+    // `.mt-avatar` tient à l'ordre du document, pas au rang de layer.
+    const round = layersOf(root, '.mt-avatar--round', /border-radius:\s*50%/)
+    expect(round.length).toBeGreaterThan(0)
+    for (const chain of round) {
+      expect(chain).toContain('components')
+    }
+  }, 30_000)
 
-  it(
-    'détecte réellement un `.mt-avatar` NON layerisé (le détecteur ne passe pas à vide)',
-    async () => {
-      // ⚠ `from` unique obligatoire : le plugin PostCSS de Tailwind mémoïse par
-      // chemin d'entrée — réutiliser GLOBALS renverrait le CSS réel (test à vide).
-      const regressed = "@import 'tailwindcss';\n.mt-avatar { border-radius: var(--radius-md); }\n"
-      const { root } = await compile(regressed, AVATAR_FIXTURE)
+  it('détecte réellement un `.mt-avatar` NON layerisé (le détecteur ne passe pas à vide)', async () => {
+    // ⚠ `from` unique obligatoire : le plugin PostCSS de Tailwind mémoïse par
+    // chemin d'entrée — réutiliser GLOBALS renverrait le CSS réel (test à vide).
+    const regressed = "@import 'tailwindcss';\n.mt-avatar { border-radius: var(--radius-md); }\n"
+    const { root } = await compile(regressed, AVATAR_FIXTURE)
 
-      const hits = layersOf(root, '.mt-avatar', /--radius-md\b/)
-      expect(hits.length).toBeGreaterThan(0)
-      expect(hits.some((chain) => chain.length === 0)).toBe(true)
-    },
-    30_000,
-  )
+    const hits = layersOf(root, '.mt-avatar', /--radius-md\b/)
+    expect(hits.length).toBeGreaterThan(0)
+    expect(hits.some((chain) => chain.length === 0)).toBe(true)
+  }, 30_000)
 
-  it(
-    'encapsule le reset scrollbar `*` dans @layer base, sous `scrollbar-none`',
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+  it('encapsule le reset scrollbar `*` dans @layer base, sous `scrollbar-none`', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
 
-      // `scrollbar-width: thin` discrimine du preflight Tailwind, qui cible
-      // `*, ::after, ::before…` et ne touche jamais aux scrollbars.
-      const hits = layersOf(root, '*', /scrollbar-width:\s*thin/)
-      expect(hits.length).toBeGreaterThan(0)
-      for (const chain of hits) {
-        expect(chain).toContain('base')
-      }
+    // `scrollbar-width: thin` discrimine du preflight Tailwind, qui cible
+    // `*, ::after, ::before…` et ne touche jamais aux scrollbars.
+    const hits = layersOf(root, '*', /scrollbar-width:\s*thin/)
+    expect(hits.length).toBeGreaterThan(0)
+    for (const chain of hits) {
+      expect(chain).toContain('base')
+    }
 
-      // L'utilitaire `@utility scrollbar-none` de globals.css sort bien dans
-      // `utilities`, donc APRÈS `base` : `scrollbar-width: none` gagne enfin —
-      // y compris sous Firefox, seul moteur où l'utilitaire n'a pas de repli
-      // `::-webkit-scrollbar { display: none }`.
-      const util = layersOf(root, '.scrollbar-none', /scrollbar-width:\s*none/)
-      expect(util.length).toBeGreaterThan(0)
-      for (const chain of util) {
-        expect(chain).toContain('utilities')
-      }
+    // L'utilitaire `@utility scrollbar-none` de globals.css sort bien dans
+    // `utilities`, donc APRÈS `base` : `scrollbar-width: none` gagne enfin —
+    // y compris sous Firefox, seul moteur où l'utilitaire n'a pas de repli
+    // `::-webkit-scrollbar { display: none }`.
+    const util = layersOf(root, '.scrollbar-none', /scrollbar-width:\s*none/)
+    expect(util.length).toBeGreaterThan(0)
+    for (const chain of util) {
+      expect(chain).toContain('utilities')
+    }
 
-      const order = declaredLayerOrder(root)
-      expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
-    },
-    30_000,
-  )
+    const order = declaredLayerOrder(root)
+    expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
+  }, 30_000)
 
-  it(
-    'détecte réellement un reset scrollbar NON layerisé (le détecteur ne passe pas à vide)',
-    async () => {
-      const regressed = "@import 'tailwindcss';\n* { scrollbar-width: thin; }\n"
-      const { root } = await compile(regressed, SCROLLBAR_FIXTURE)
+  it('détecte réellement un reset scrollbar NON layerisé (le détecteur ne passe pas à vide)', async () => {
+    const regressed = "@import 'tailwindcss';\n* { scrollbar-width: thin; }\n"
+    const { root } = await compile(regressed, SCROLLBAR_FIXTURE)
 
-      const hits = layersOf(root, '*', /scrollbar-width:\s*thin/)
-      expect(hits.length).toBeGreaterThan(0)
-      expect(hits.some((chain) => chain.length === 0)).toBe(true)
-    },
-    30_000,
-  )
+    const hits = layersOf(root, '*', /scrollbar-width:\s*thin/)
+    expect(hits.length).toBeGreaterThan(0)
+    expect(hits.some((chain) => chain.length === 0)).toBe(true)
+  }, 30_000)
 
-  it(
-    'encapsule `.timeline-preview` dans @layer components, sous les utilitaires',
-    async () => {
-      // `landing.css` est une feuille SÉPARÉE, chargée après `globals.css` par
-      // `app/layout.tsx`. On recompose le document dans cet ordre : c'est la
-      // déclaration `@layer theme, base, components, utilities;` émise par
-      // globals.css qui fixe le rang, et `landing.css` ne fait que REJOINDRE le
-      // layer `components` déjà déclaré.
-      const document = readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES + readFileSync(LANDING, 'utf8')
-      const { root } = await compile(document, DOCUMENT_FIXTURE)
+  it('encapsule `.timeline-preview` dans @layer components, sous les utilitaires', async () => {
+    // `landing.css` est une feuille SÉPARÉE, chargée après `globals.css` par
+    // `app/layout.tsx`. On recompose le document dans cet ordre : c'est la
+    // déclaration `@layer theme, base, components, utilities;` émise par
+    // globals.css qui fixe le rang, et `landing.css` ne fait que REJOINDRE le
+    // layer `components` déjà déclaré.
+    const document = readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES + readFileSync(LANDING, 'utf8')
+    const { root } = await compile(document, DOCUMENT_FIXTURE)
 
-      const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
-      expect(hits.length).toBeGreaterThan(0)
-      for (const chain of hits) {
-        expect(chain).toContain('components')
-      }
+    const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
+    expect(hits.length).toBeGreaterThan(0)
+    for (const chain of hits) {
+      expect(chain).toContain('components')
+    }
 
-      const rounded = layersOf(root, '.rounded-xl', /border-radius:/)
-      expect(rounded.length).toBeGreaterThan(0)
-      for (const chain of rounded) {
-        expect(chain).toContain('utilities')
-      }
+    const rounded = layersOf(root, '.rounded-xl', /border-radius:/)
+    expect(rounded.length).toBeGreaterThan(0)
+    for (const chain of rounded) {
+      expect(chain).toContain('utilities')
+    }
 
-      const order = declaredLayerOrder(root)
-      expect(order.indexOf('components')).toBeLessThan(order.indexOf('utilities'))
-    },
-    30_000,
-  )
+    const order = declaredLayerOrder(root)
+    expect(order.indexOf('components')).toBeLessThan(order.indexOf('utilities'))
+  }, 30_000)
 
-  it(
-    'détecte réellement un `.timeline-preview` NON layerisé (le détecteur ne passe pas à vide)',
-    async () => {
-      const regressed = "@import 'tailwindcss';\n.timeline-preview { border-radius: var(--radius-lg); }\n"
-      const { root } = await compile(regressed, PREVIEW_FIXTURE)
+  it('détecte réellement un `.timeline-preview` NON layerisé (le détecteur ne passe pas à vide)', async () => {
+    const regressed =
+      "@import 'tailwindcss';\n.timeline-preview { border-radius: var(--radius-lg); }\n"
+    const { root } = await compile(regressed, PREVIEW_FIXTURE)
 
-      const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
-      expect(hits.length).toBeGreaterThan(0)
-      expect(hits.some((chain) => chain.length === 0)).toBe(true)
-    },
-    30_000,
-  )
+    const hits = layersOf(root, '.timeline-preview', /--radius-lg\b/)
+    expect(hits.length).toBeGreaterThan(0)
+    expect(hits.some((chain) => chain.length === 0)).toBe(true)
+  }, 30_000)
 })
 
 /**
@@ -563,49 +516,41 @@ describe('cascade @layer — classes de composant (#340)', () => {
  * mesure au navigateur consignée dans `ds/a11y-audit.md` §8.
  */
 describe('cascade @layer — contour :focus-visible (#383)', () => {
-  it(
-    'encapsule `:focus-visible { outline }` dans @layer base, sous `outline-hidden`',
-    async () => {
-      const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
+  it('encapsule `:focus-visible { outline }` dans @layer base, sous `outline-hidden`', async () => {
+    const { root } = await compile(readFileSync(GLOBALS, 'utf8') + FORCE_UTILITIES, GLOBALS)
 
-      // 1. La règle de focus du DS est layerisée dans `base` (et pas à la racine).
-      //    `--color-focus` la discrimine de tout homonyme (preflight, Radix, etc.).
-      const focusHits = layersOf(root, ':focus-visible', /--color-focus\b/)
-      expect(focusHits.length).toBeGreaterThan(0)
-      for (const chain of focusHits) {
-        expect(chain).toContain('base')
-      }
+    // 1. La règle de focus du DS est layerisée dans `base` (et pas à la racine).
+    //    `--color-focus` la discrimine de tout homonyme (preflight, Radix, etc.).
+    const focusHits = layersOf(root, ':focus-visible', /--color-focus\b/)
+    expect(focusHits.length).toBeGreaterThan(0)
+    for (const chain of focusHits) {
+      expect(chain).toContain('base')
+    }
 
-      // 2. L'utilitaire d'échappement vit dans `utilities`. `outline-hidden` et
-      //    NON `outline-none` : lui seul émet le repli `@media (forced-colors: active)`.
-      const utilityHits = layersOf(root, '.outline-hidden', /outline-style:\s*none/)
-      expect(utilityHits.length).toBeGreaterThan(0)
-      for (const chain of utilityHits) {
-        expect(chain).toContain('utilities')
-      }
+    // 2. L'utilitaire d'échappement vit dans `utilities`. `outline-hidden` et
+    //    NON `outline-none` : lui seul émet le repli `@media (forced-colors: active)`.
+    const utilityHits = layersOf(root, '.outline-hidden', /outline-style:\s*none/)
+    expect(utilityHits.length).toBeGreaterThan(0)
+    for (const chain of utilityHits) {
+      expect(chain).toContain('utilities')
+    }
 
-      // 3. `base` précède `utilities` : à importance égale, le layer le plus
-      //    tardif gagne → `outline-hidden` l'emporte enfin sur le contour du DS.
-      const order = declaredLayerOrder(root)
-      expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
-    },
-    30_000,
-  )
+    // 3. `base` précède `utilities` : à importance égale, le layer le plus
+    //    tardif gagne → `outline-hidden` l'emporte enfin sur le contour du DS.
+    const order = declaredLayerOrder(root)
+    expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))
+  }, 30_000)
 
-  it(
-    'détecte réellement un `:focus-visible` NON layerisé (le détecteur ne passe pas à vide)',
-    async () => {
-      // Reproduit EXACTEMENT la régression d'avant #383 : la règle hors de tout layer.
-      // ⚠ `from` unique obligatoire (mémoïsation par chemin du plugin Tailwind).
-      const regressed =
-        "@import 'tailwindcss';\n:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }\n"
-      const { root } = await compile(regressed, FOCUS_FIXTURE)
+  it('détecte réellement un `:focus-visible` NON layerisé (le détecteur ne passe pas à vide)', async () => {
+    // Reproduit EXACTEMENT la régression d'avant #383 : la règle hors de tout layer.
+    // ⚠ `from` unique obligatoire (mémoïsation par chemin du plugin Tailwind).
+    const regressed =
+      "@import 'tailwindcss';\n:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }\n"
+    const { root } = await compile(regressed, FOCUS_FIXTURE)
 
-      const focusHits = layersOf(root, ':focus-visible', /--color-focus\b/)
-      expect(focusHits.length).toBeGreaterThan(0)
-      // Au moins une occurrence hors layer → exactement ce que l'assertion 1 refuse.
-      expect(focusHits.some((chain) => chain.length === 0)).toBe(true)
-    },
-    30_000,
-  )
+    const focusHits = layersOf(root, ':focus-visible', /--color-focus\b/)
+    expect(focusHits.length).toBeGreaterThan(0)
+    // Au moins une occurrence hors layer → exactement ce que l'assertion 1 refuse.
+    expect(focusHits.some((chain) => chain.length === 0)).toBe(true)
+  }, 30_000)
 })

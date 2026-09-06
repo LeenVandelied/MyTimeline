@@ -15,10 +15,8 @@ import { MobileDrawer } from './MobileDrawer'
  * pour l'E2E #85.
  */
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
   useLocale: () => 'fr',
 }))
 
@@ -54,7 +52,13 @@ const product = (id: string, overrides: Partial<Product> = {}): Product => ({
 describe('DensityRibbon (scrollable)', () => {
   it('rend un rail scrollable-x avec hint de scroll en mode scrollable', () => {
     render(
-      <DensityRibbon events={[evt('a', '2026-07-15')]} now={NOW} locale={LOCALE} rangeDays={30} scrollable />,
+      <DensityRibbon
+        events={[evt('a', '2026-07-15')]}
+        now={NOW}
+        locale={LOCALE}
+        rangeDays={30}
+        scrollable
+      />,
     )
     expect(screen.getByTestId('dashboard-density-ribbon-scroll')).toBeInTheDocument()
     expect(screen.getByTestId('dashboard-density-today')).toBeInTheDocument()

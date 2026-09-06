@@ -68,10 +68,10 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
       aria-label={t('label', { days: rangeDays })}
     >
       <div className="flex items-baseline justify-between">
-        <span className="text-ink-faint font-mono text-2xs tracking-widest uppercase">
+        <span className="text-ink-faint text-2xs font-mono tracking-widest uppercase">
           {t('eyebrow', { days: rangeDays })}
         </span>
-        <span className="text-ink-muted font-mono text-2xs">{rangeLabel}</span>
+        <span className="text-ink-muted text-2xs font-mono">{rangeLabel}</span>
       </div>
       {scrollable ? (
         // Rail scrollable-x : barres à largeur mini fixe, indicateur de scroll
@@ -109,13 +109,17 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
             className="from-surface pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent"
             aria-hidden="true"
           />
-          <span className="text-ink-faint mt-1 flex items-center justify-end gap-1 font-mono text-2xs">
+          <span className="text-ink-faint text-2xs mt-1 flex items-center justify-end gap-1 font-mono">
             <ChevronRight className="h-3 w-3" aria-hidden="true" />
             {tm('scrollHint')}
           </span>
         </div>
       ) : (
-        <div className="flex h-24 items-end gap-px" role="img" aria-label={t('label', { days: rangeDays })}>
+        <div
+          className="flex h-24 items-end gap-px"
+          role="img"
+          aria-label={t('label', { days: rangeDays })}
+        >
           {buckets.map((b, i) => (
             <div
               key={i}

@@ -69,14 +69,11 @@ export const Minimap: React.FC<MinimapProps> = ({
 
   // Saisie du handle lui-même : arme le drag + capture le pointeur sur la track
   // sans recentrer immédiatement (on garde la position, le move fera le seek).
-  const onHandlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      e.stopPropagation()
-      draggingRef.current = true
-      trackRef.current?.setPointerCapture?.(e.pointerId)
-    },
-    [],
-  )
+  const onHandlePointerDown = useCallback((e: React.PointerEvent) => {
+    e.stopPropagation()
+    draggingRef.current = true
+    trackRef.current?.setPointerCapture?.(e.pointerId)
+  }, [])
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

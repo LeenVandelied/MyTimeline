@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
+import * as React from 'react'
+import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
+import { Check } from 'lucide-react'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
@@ -22,14 +22,12 @@ const Checkbox = React.forwardRef<
       // peint en aplat par `data-[state=checked]:bg-primary`. Le spécimen DS
       // correspondant est `.mt-check__box` (`ds/components/core.css`), aligné sur
       // le même tier.
-      "peer h-4 w-4 shrink-0 rounded-xs border border-rule-emphasis shadow-sm disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className
+      'peer border-rule-emphasis data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground h-4 w-4 shrink-0 rounded-xs border shadow-sm disabled:cursor-not-allowed disabled:opacity-50',
+      className,
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator
-      className={cn("flex items-center justify-center text-current")}
-    >
+    <CheckboxPrimitive.Indicator className={cn('flex items-center justify-center text-current')}>
       <Check className="h-4 w-4" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>

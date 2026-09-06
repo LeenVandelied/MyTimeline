@@ -23,10 +23,8 @@ import { StateScreen } from '@/components/shared/StateScreen'
  * (`\s` couvre U+202F, catégorie Zs) plutôt que de coller un littéral fragile.
  */
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
 }))
 
 const LOCALES = ['fr', 'en', 'es', 'de'] as const

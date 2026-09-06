@@ -79,9 +79,7 @@ describe('useExportFlow — format asynchrone', () => {
     expect(result.current.completedJob?.downloadUrl).toBe(completedJob.downloadUrl)
 
     act(() => result.current.downloadCompleted())
-    await waitFor(() =>
-      expect(downloadAsyncExport).toHaveBeenCalledWith(completedJob.downloadUrl),
-    )
+    await waitFor(() => expect(downloadAsyncExport).toHaveBeenCalledWith(completedJob.downloadUrl))
   })
 
   it('bascule en erreur jobFailed si le job échoue', async () => {

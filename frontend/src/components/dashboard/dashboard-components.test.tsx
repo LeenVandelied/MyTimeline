@@ -14,10 +14,8 @@ import { ProductList } from './ProductList'
  * (E2E #83/#85), délégation aux helpers, filet couleur, chiffres mono inline.
  */
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
 }))
 
 const NOW = new Date(2026, 6, 15, 9, 0, 0) // mer. 15 juil. 2026, 9h (matin)
@@ -49,7 +47,9 @@ describe('GreetingHeader', () => {
 
 describe('DensityRibbon', () => {
   it('rend une barre par jour de la fenêtre et marque TODAY', () => {
-    render(<DensityRibbon events={[evt('a', '2026-07-15')]} now={NOW} locale={LOCALE} rangeDays={30} />)
+    render(
+      <DensityRibbon events={[evt('a', '2026-07-15')]} now={NOW} locale={LOCALE} rangeDays={30} />,
+    )
     expect(screen.getByTestId('dashboard-density-ribbon')).toBeInTheDocument()
     expect(screen.getByTestId('dashboard-density-today')).toBeInTheDocument()
   })
@@ -70,7 +70,10 @@ describe('WeekAgenda', () => {
 describe('KpiMarginalia', () => {
   it('rend les 3 KPIs en chiffres inline', () => {
     render(
-      <KpiMarginalia kpis={{ activeProducts: 4, eventsThisMonth: 7, currentStreak: 2 }} locale={LOCALE} />,
+      <KpiMarginalia
+        kpis={{ activeProducts: 4, eventsThisMonth: 7, currentStreak: 2 }}
+        locale={LOCALE}
+      />,
     )
     expect(screen.getByTestId('dashboard-kpi-active-products')).toHaveTextContent('4')
     expect(screen.getByTestId('dashboard-kpi-events-month')).toHaveTextContent('7')

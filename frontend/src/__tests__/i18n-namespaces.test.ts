@@ -175,9 +175,10 @@ describe('i18n — tout namespace `useTranslations()` se résout dans les messag
   it('les 4 locales exposent les mêmes namespaces de premier niveau', () => {
     const reference = Object.keys(loadMessages('fr')).sort()
     for (const locale of ['en', 'de', 'es']) {
-      expect(Object.keys(loadMessages(locale)).sort(), `namespaces manquants en \`${locale}\``).toEqual(
-        reference,
-      )
+      expect(
+        Object.keys(loadMessages(locale)).sort(),
+        `namespaces manquants en \`${locale}\``,
+      ).toEqual(reference)
     }
   })
 })

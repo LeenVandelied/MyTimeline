@@ -13,13 +13,13 @@
  * Toute évolution de la liste des langues se fait ICI et se propage partout.
  */
 
-export const SUPPORTED_LOCALES = ['fr', 'en', 'es', 'de'] as const;
+export const SUPPORTED_LOCALES = ['fr', 'en', 'es', 'de'] as const
 
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
+export type Locale = (typeof SUPPORTED_LOCALES)[number]
 
-export const DEFAULT_LOCALE: Locale = 'fr';
+export const DEFAULT_LOCALE: Locale = 'fr'
 
 /** Garde de type : `true` si `value` est une locale supportée. */
 export function isSupportedLocale(value: string): value is Locale {
-  return (SUPPORTED_LOCALES as readonly string[]).includes(value);
+  return (SUPPORTED_LOCALES as readonly string[]).includes(value)
 }

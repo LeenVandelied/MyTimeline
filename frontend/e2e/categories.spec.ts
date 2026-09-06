@@ -48,7 +48,7 @@ test.use({ storageState: PROD.storageState })
 
 test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
   // Critère 1 — création via le drawer.
-  test('création d\'une catégorie via le drawer apparaît dans la liste', async ({ page }) => {
+  test("création d'une catégorie via le drawer apparaît dans la liste", async ({ page }) => {
     const name = unique('Cat Create')
 
     await openCategoriesTab(page)
@@ -65,7 +65,7 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
   })
 
   // Critère 2 — édition via le drawer.
-  test('édition d\'une catégorie existante via le drawer', async ({ page }) => {
+  test("édition d'une catégorie existante via le drawer", async ({ page }) => {
     const original = unique('Cat Edit')
     const updated = `${original} MAJ`
     const cat = await seedCategory(page, original)
@@ -87,7 +87,7 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
   })
 
   // Critère 3 — suppression SANS produits liés.
-  test('suppression d\'une catégorie sans produits liés', async ({ page }) => {
+  test("suppression d'une catégorie sans produits liés", async ({ page }) => {
     const cat = await seedCategory(page, unique('Cat Del'))
 
     await openCategoriesTab(page)
@@ -109,7 +109,7 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
   })
 
   // Critère 4 — suppression AVEC produits liés + réassignation.
-  test('suppression d\'une catégorie avec produits liés réassigne puis supprime', async ({
+  test("suppression d'une catégorie avec produits liés réassigne puis supprime", async ({
     page,
   }) => {
     const userId = await getUserId(page)
@@ -147,8 +147,6 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     // API réelle : produits de `source` réassignés atomiquement vers `target`.
     // Navigation vers la vue Produits (route distincte) pour vérifier la persistance.
     await gotoProducts(page)
-    await expect(page.getByTestId(`products-row-category-${product.id}`)).toContainText(
-      target.name,
-    )
+    await expect(page.getByTestId(`products-row-category-${product.id}`)).toContainText(target.name)
   })
 })

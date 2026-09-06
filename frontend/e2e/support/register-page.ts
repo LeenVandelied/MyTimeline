@@ -51,7 +51,10 @@ export interface EnsureRegisterFormOptions {
  * Garantit que le formulaire register est affiché, en retentant par `page.reload()`.
  * Lève une erreur explicitement typée « échec de rendu » si les tentatives sont épuisées.
  */
-export async function ensureRegisterForm(page: Page, options: EnsureRegisterFormOptions): Promise<void> {
+export async function ensureRegisterForm(
+  page: Page,
+  options: EnsureRegisterFormOptions,
+): Promise<void> {
   const {
     label,
     mode = 'navigate',

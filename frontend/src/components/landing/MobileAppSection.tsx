@@ -28,7 +28,9 @@ export function MobileAppSection() {
           <h2 className="mb-6 text-lg leading-tight font-bold md:text-xl">
             {t('common.landing.mobileApp.title')}
           </h2>
-          <p className="text-ink-muted text-md mb-8 md:text-lg">{t('common.landing.mobileApp.subtitle')}</p>
+          <p className="text-ink-muted text-md mb-8 md:text-lg">
+            {t('common.landing.mobileApp.subtitle')}
+          </p>
           {/* `flex-wrap` + `gap` : les 2 libellés de store sont `whitespace-nowrap`, donc une rangée
               non wrappable impose un min-content de 347 px (fr) à 450 px (es) — au-delà des 343 px
               disponibles à 375 px. `space-x-*` ne gère pas l'interligne quand ça passe à la ligne. */}

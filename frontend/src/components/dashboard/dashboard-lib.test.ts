@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
-import {
-  buildDensityBuckets,
-  getWeekRange,
-  getEventsInRange,
-} from '@/components/timeline'
+import { buildDensityBuckets, getWeekRange, getEventsInRange } from '@/components/timeline'
 import { timeOfDayKey } from './GreetingHeader'
 
 /**
@@ -80,11 +76,7 @@ describe('getEventsInRange', () => {
   it('filtre par plage et trie chronologiquement', () => {
     const start = new Date(2026, 6, 1)
     const end = new Date(2026, 6, 7, 23, 59, 59)
-    const events = [
-      evt('late', '2026-07-05'),
-      evt('early', '2026-07-02'),
-      evt('out', '2026-07-20'),
-    ]
+    const events = [evt('late', '2026-07-05'), evt('early', '2026-07-02'), evt('out', '2026-07-20')]
     const res = getEventsInRange(events, start, end)
     expect(res.map((e) => e.id)).toEqual(['early', 'late'])
   })

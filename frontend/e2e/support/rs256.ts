@@ -59,7 +59,8 @@ function fromBase64Url(segment: string): Buffer {
 /** Découpe un JWT compact. Lève si la forme n'est pas `header.payload.signature`. */
 function splitToken(token: string): { header: string; payload: string; signature: string } {
   const parts = token.split('.')
-  if (parts.length !== 3) throw new Error(`jeton non conforme (attendu 3 segments, reçu ${parts.length})`)
+  if (parts.length !== 3)
+    throw new Error(`jeton non conforme (attendu 3 segments, reçu ${parts.length})`)
   const [header, payload, signature] = parts
   return { header, payload, signature }
 }

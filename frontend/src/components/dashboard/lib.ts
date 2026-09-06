@@ -7,10 +7,7 @@ import type { Product } from '@/types/product'
  */
 
 /** Prochain event (début >= now) le plus proche, non archivé. */
-export function nextEvent(
-  product: Product,
-  now: Date,
-): { title: string; start: string } | null {
+export function nextEvent(product: Product, now: Date): { title: string; start: string } | null {
   const upcoming = (product.events ?? [])
     .filter((e) => !e.archived && new Date(e.startDate) >= now)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())

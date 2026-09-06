@@ -27,8 +27,7 @@ const apiClient = axios.create({
  * afin de ne pas requalifier un upload en cours en « timeout réseau ».
  */
 apiClient.interceptors.request.use((config) => {
-  const isMultipart =
-    typeof FormData !== 'undefined' && config.data instanceof FormData
+  const isMultipart = typeof FormData !== 'undefined' && config.data instanceof FormData
   if (isMultipart) {
     config.timeout = 0
   }

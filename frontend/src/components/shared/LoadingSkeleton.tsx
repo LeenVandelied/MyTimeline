@@ -28,7 +28,9 @@ export interface LoadingSkeletonProps {
 
 /** Bloc de base : surface neutre + pulsation. `bg-surface-2` suit le thème. */
 function Bar({ className }: { className?: string }) {
-  return <div className={cn('bg-surface-2 animate-pulse rounded-md', className)} aria-hidden="true" />
+  return (
+    <div className={cn('bg-surface-2 animate-pulse rounded-md', className)} aria-hidden="true" />
+  )
 }
 
 function ListRows({ rows }: { rows: number }) {
@@ -40,7 +42,10 @@ function ListRows({ rows }: { rows: number }) {
           className="border-rule flex items-center gap-3 border-b py-2 last:border-b-0"
           data-testid="loading-skeleton-item"
         >
-          <div className="bg-surface-2 h-2.5 w-2.5 shrink-0 animate-pulse rounded-full" aria-hidden="true" />
+          <div
+            className="bg-surface-2 h-2.5 w-2.5 shrink-0 animate-pulse rounded-full"
+            aria-hidden="true"
+          />
           <Bar className="h-3 flex-1" />
           <Bar className="hidden h-3 w-24 sm:block" />
         </div>
@@ -59,7 +64,10 @@ function Cards({ rows }: { rows: number }) {
           data-testid="loading-skeleton-item"
         >
           <div className="flex items-center gap-3">
-            <div className="bg-surface-2 h-8 w-8 shrink-0 animate-pulse rounded-full" aria-hidden="true" />
+            <div
+              className="bg-surface-2 h-8 w-8 shrink-0 animate-pulse rounded-full"
+              aria-hidden="true"
+            />
             <Bar className="h-4 flex-1" />
           </div>
           <Bar className="h-3 w-3/4" />
@@ -96,12 +104,7 @@ export function LoadingSkeleton({
   testId = 'loading-skeleton',
 }: LoadingSkeletonProps) {
   return (
-    <div
-      data-testid={testId}
-      role="status"
-      aria-busy="true"
-      className={cn('w-full', className)}
-    >
+    <div data-testid={testId} role="status" aria-busy="true" className={cn('w-full', className)}>
       {label ? <span className="sr-only">{label}</span> : null}
       {variant === 'cards' ? <Cards rows={rows} /> : null}
       {variant === 'timeline' ? <Lanes rows={rows} /> : null}

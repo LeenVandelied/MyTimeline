@@ -42,17 +42,13 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
       data-testid="dashboard-greeting"
     >
       <p
-        className="text-ink-faint font-mono text-2xs tracking-widest uppercase"
+        className="text-ink-faint text-2xs font-mono tracking-widest uppercase"
         data-testid="dashboard-greeting-eyebrow"
       >
         {t('eyebrow')}
       </p>
-      <h1 className="text-ink text-md font-medium tracking-tight">
-        {t(slot, { name })}
-      </h1>
-      {variant === 'full' && (
-        <p className="text-ink-muted text-xs">{t('subtitle')}</p>
-      )}
+      <h1 className="text-ink text-md font-medium tracking-tight">{t(slot, { name })}</h1>
+      {variant === 'full' && <p className="text-ink-muted text-xs">{t('subtitle')}</p>}
     </header>
   )
 }

@@ -183,7 +183,11 @@ describe('verifyAuthCookie — rejets', () => {
 
   it('rejette un jeton pas encore valide (nbf dans le futur)', async () => {
     const notYet = await makeToken({
-      claims: { sub: 'alice', exp: Math.floor(NOW / 1000) + 3600, nbf: Math.floor(NOW / 1000) + 60 },
+      claims: {
+        sub: 'alice',
+        exp: Math.floor(NOW / 1000) + 3600,
+        nbf: Math.floor(NOW / 1000) + 60,
+      },
     })
 
     await expect(verifyAuthCookie(notYet, JWKS_URL, NOW)).resolves.toBe('rejected')

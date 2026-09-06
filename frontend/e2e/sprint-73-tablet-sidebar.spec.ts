@@ -107,9 +107,27 @@ interface Palier {
 
 const PALIERS: readonly Palier[] = [
   { width: MD - 1, label: 'mobile, dernier pixel', sidebar: false, labels: false },
-  { width: MD, label: 'tablette, 1er pixel', sidebar: true, expectedWidth: COLLAPSED_WIDTH, labels: false },
-  { width: LG - 1, label: 'tablette, dernier pixel', sidebar: true, expectedWidth: COLLAPSED_WIDTH, labels: false },
-  { width: LG, label: 'desktop, 1er pixel', sidebar: true, expectedWidth: FULL_WIDTH, labels: true },
+  {
+    width: MD,
+    label: 'tablette, 1er pixel',
+    sidebar: true,
+    expectedWidth: COLLAPSED_WIDTH,
+    labels: false,
+  },
+  {
+    width: LG - 1,
+    label: 'tablette, dernier pixel',
+    sidebar: true,
+    expectedWidth: COLLAPSED_WIDTH,
+    labels: false,
+  },
+  {
+    width: LG,
+    label: 'desktop, 1er pixel',
+    sidebar: true,
+    expectedWidth: FULL_WIDTH,
+    labels: true,
+  },
 ]
 
 for (const p of PALIERS) {
@@ -123,10 +141,7 @@ for (const p of PALIERS) {
       const sidebar = page.getByTestId('shell-sidebar')
       const sidebarTrigger = page.getByTestId('shell-sidebar-new-event-button')
       const floatingTrigger = page.getByTestId('shell-mobile-new-event-button')
-      const navLabel = page
-        .getByTestId('shell-sidebar-nav-link-dashboard')
-        .locator('span')
-        .first()
+      const navLabel = page.getByTestId('shell-sidebar-nav-link-dashboard').locator('span').first()
 
       if (p.sidebar) {
         await expect(
@@ -152,7 +167,10 @@ for (const p of PALIERS) {
         )
 
         if (p.labels) {
-          await expect(navLabel, `à ${p.width} px (>= ${LG}) le libellé doit être peint`).toBeVisible()
+          await expect(
+            navLabel,
+            `à ${p.width} px (>= ${LG}) le libellé doit être peint`,
+          ).toBeVisible()
         } else {
           await expect(
             navLabel,
@@ -160,10 +178,7 @@ for (const p of PALIERS) {
           ).toBeHidden()
         }
       } else {
-        await expect(
-          sidebar,
-          `la sidebar doit être masquée à ${p.width} px (< ${MD})`,
-        ).toBeHidden()
+        await expect(sidebar, `la sidebar doit être masquée à ${p.width} px (< ${MD})`).toBeHidden()
       }
 
       // ---- Invariant #455 réécrit pour 3 états : EXACTEMENT un déclencheur ----
@@ -237,7 +252,7 @@ for (const p of PALIERS) {
             .poll(() => locator.count(), {
               message:
                 `à ${p.width} px le ${label} ne doit être peint QU'UNE fois ` +
-                '(2 = header de l\'écran + pied de sidebar : la double chrome est de retour)',
+                "(2 = header de l'écran + pied de sidebar : la double chrome est de retour)",
             })
             .toBe(1)
         }
@@ -332,7 +347,7 @@ test.describe('#298 — frontières réversibles', () => {
     await expect(sidebar, 'à 767 px la sidebar doit disparaître').toBeHidden()
     await expect(
       floatingTrigger,
-      "à 767 px le bouton flottant reprend la main — sans lui, plus aucun déclencheur de création",
+      'à 767 px le bouton flottant reprend la main — sans lui, plus aucun déclencheur de création',
     ).toBeVisible()
 
     // ---- Retour montant : 767 -> 768 -> 1024 -------------------------------

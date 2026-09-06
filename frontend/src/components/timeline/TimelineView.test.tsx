@@ -257,7 +257,9 @@ describe('TimelineView', () => {
       const pills = screen.getAllByTestId('timeline-event')
       const focusables = pills.filter((p) => p.getAttribute('tabindex') === '0')
       expect(focusables).toHaveLength(1)
-      expect(pills.filter((p) => p.getAttribute('tabindex') === '-1')).toHaveLength(pills.length - 1)
+      expect(pills.filter((p) => p.getAttribute('tabindex') === '-1')).toHaveLength(
+        pills.length - 1,
+      )
     })
 
     it('↓ déplace le focus vers la lane suivante, ↑ revient (navigation clavier)', async () => {
@@ -307,9 +309,7 @@ describe('TimelineView', () => {
       setup()
       const live = screen.getByTestId('timeline-live-region')
       await user.click(screen.getAllByTestId('timeline-event')[0])
-      await waitFor(() =>
-        expect(live.textContent).toContain('dashboard.timeline.live.selected'),
-      )
+      await waitFor(() => expect(live.textContent).toContain('dashboard.timeline.live.selected'))
       expect(live.textContent).toContain('Péremption lait')
     })
 
@@ -341,7 +341,12 @@ describe('TimelineView', () => {
           allDay: true,
           resourceId: 'pa',
           color: '#3B62D4',
-          extendedProps: { productId: 'pa', productName: 'Prod A', category: 'Cat A', type: 'single' },
+          extendedProps: {
+            productId: 'pa',
+            productName: 'Prod A',
+            category: 'Cat A',
+            type: 'single',
+          },
         },
         {
           id: 'eb',
@@ -351,7 +356,12 @@ describe('TimelineView', () => {
           allDay: true,
           resourceId: 'pb',
           color: '#3B62D4',
-          extendedProps: { productId: 'pb', productName: 'Prod B', category: 'Cat B', type: 'single' },
+          extendedProps: {
+            productId: 'pb',
+            productName: 'Prod B',
+            category: 'Cat B',
+            type: 'single',
+          },
         },
         {
           id: 'ec',
@@ -361,7 +371,12 @@ describe('TimelineView', () => {
           allDay: true,
           resourceId: 'pc',
           color: '#3B62D4',
-          extendedProps: { productId: 'pc', productName: 'Prod C', category: 'Cat C', type: 'single' },
+          extendedProps: {
+            productId: 'pc',
+            productName: 'Prod C',
+            category: 'Cat C',
+            type: 'single',
+          },
         },
       ]
       const resources: Resource[] = [
@@ -371,7 +386,12 @@ describe('TimelineView', () => {
       ]
       const user = userEvent.setup()
       render(
-        <TimelineView events={events} resources={resources} locale="fr-FR" today={new Date(2026, 6, 15)} />,
+        <TimelineView
+          events={events}
+          resources={resources}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+        />,
       )
 
       const pillFor = (title: string) =>
@@ -617,10 +637,7 @@ describe('TimelineView', () => {
    */
   describe('#392 — gouttière de piste', () => {
     it('LANE_TRACK_OFFSET_PX reste égal au token --lane-header-w du DS', () => {
-      const spacing = readFileSync(
-        resolve(__dirname, '../../styles/ds/tokens/spacing.css'),
-        'utf8',
-      )
+      const spacing = readFileSync(resolve(__dirname, '../../styles/ds/tokens/spacing.css'), 'utf8')
       const match = spacing.match(/--lane-header-w:\s*(\d+(?:\.\d+)?)px/)
       expect(match, '--lane-header-w introuvable dans ds/tokens/spacing.css').not.toBeNull()
       expect(Number(match![1])).toBe(LANE_TRACK_OFFSET_PX)

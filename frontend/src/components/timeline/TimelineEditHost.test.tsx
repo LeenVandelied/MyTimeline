@@ -194,7 +194,9 @@ describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () =
     fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
     fireEvent.click(await screen.findByTestId('delete-confirm-button'))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.notFound')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'common.deleteDialog.errors.notFound',
+    )
   })
 })
 

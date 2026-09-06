@@ -40,7 +40,13 @@ function renderWithRealIntl(props: Partial<Parameters<typeof DensityRibbon>[0]> 
       messages={{ dashboard: dashboardMessages }}
       onError={(error) => errors.push(error.message)}
     >
-      <DensityRibbon events={[evt('a', '2026-07-15')]} now={NOW} locale="fr" rangeDays={30} {...props} />
+      <DensityRibbon
+        events={[evt('a', '2026-07-15')]}
+        now={NOW}
+        locale="fr"
+        rangeDays={30}
+        {...props}
+      />
     </NextIntlClientProvider>,
   )
   return errors

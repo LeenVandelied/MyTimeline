@@ -98,7 +98,7 @@ describe('apiClient response interceptor', () => {
     }
   })
 
-  it("ne toast NI ne redirige sur un 401 de la sonde /auth/me (visiteur anonyme)", async () => {
+  it('ne toast NI ne redirige sur un 401 de la sonde /auth/me (visiteur anonyme)', async () => {
     // Régression golden-path E2E 2026-07-11 : AuthProvider sonde /auth/me au montage
     // (racine app). Pour un visiteur non connecté -> 401 = « pas authentifié » (normal),
     // géré inline par AuthContext (setUser null). Ce 401 NE DOIT PAS déclencher le toast

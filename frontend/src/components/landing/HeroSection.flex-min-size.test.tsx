@@ -41,7 +41,7 @@ vi.mock('next-intl', () => ({
 }))
 
 const STYLESHEETS = ['../../styles/landing.css', '../../styles/animations.css'].map((rel) =>
-  fileURLToPath(new URL(rel, import.meta.url))
+  fileURLToPath(new URL(rel, import.meta.url)),
 )
 
 /**

@@ -87,12 +87,7 @@ export const CompactRail: React.FC<CompactRailProps> = ({
     >
       <div className="flex flex-1 flex-col items-center gap-2">
         {items.map((item) => (
-          <RailButton
-            key={item.id}
-            item={item}
-            active={item.id === activeId}
-            label={t(item.id)}
-          />
+          <RailButton key={item.id} item={item} active={item.id === activeId} label={t(item.id)} />
         ))}
       </div>
 

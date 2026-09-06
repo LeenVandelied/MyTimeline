@@ -384,7 +384,12 @@ test.describe('#74 — frise chronologique', () => {
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 800 })
         await settle(page)
-        expectNoPageOverflow(await measure(page, 'timeline', locale, width), 'timeline', locale, width)
+        expectNoPageOverflow(
+          await measure(page, 'timeline', locale, width),
+          'timeline',
+          locale,
+          width,
+        )
       }
     })
   }
@@ -406,9 +411,7 @@ test.describe('#74 — réglages', () => {
         await settle(page)
         // Sous 768 px l'écran rend le drill-down `settings-index` ; au-dessus, la
         // tablist. On mesure ce qui est réellement monté, sans le présupposer.
-        const shell = (await page.getByTestId('settings-tablist').count())
-          ? 'tablist'
-          : 'index'
+        const shell = (await page.getByTestId('settings-tablist').count()) ? 'tablist' : 'index'
         const m = await measure(page, 'settings', locale, width, `coquille=${shell}`)
         expectNoPageOverflow(m, 'settings', locale, width)
       }
@@ -493,9 +496,7 @@ test.describe('#74 — formulaire d’événement', () => {
               `rendue n'est pas la variante mobile.`,
           ).toBeVisible({ timeout: PATH_TIMEOUT_MS })
           await more.click({ timeout: PATH_TIMEOUT_MS })
-          await page
-            .getByTestId('timeline-actionsheet-edit')
-            .click({ timeout: PATH_TIMEOUT_MS })
+          await page.getByTestId('timeline-actionsheet-edit').click({ timeout: PATH_TIMEOUT_MS })
         }
 
         await expect(page.getByTestId('event-form')).toBeVisible({ timeout: 30_000 })

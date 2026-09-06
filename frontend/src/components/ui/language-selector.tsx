@@ -1,18 +1,23 @@
-'use client';
+'use client'
 
-import { usePathname } from 'next/navigation';
-import { Button } from './button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
-import { Globe } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { usePathname } from 'next/navigation'
+import { Button } from './button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu'
+import { Globe } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 const languages = [
   { code: 'fr', name: 'Français' },
   { code: 'en', name: 'English' },
   { code: 'es', name: 'Español' },
-  { code: 'de', name: 'Deutsch' }
-];
+  { code: 'de', name: 'Deutsch' },
+]
 
 /**
  * APPARIEMENT FOND/ENCRE — item de la locale ACTIVE (Sprint 49, puis 52 / #346).
@@ -153,13 +158,13 @@ const languages = [
  * `language-selector.a11y.test.tsx` ne prouve QUE la structure du DOM.
  */
 export function LanguageSelector() {
-  const pathname = usePathname() || '';
-  const locale = useLocale();
-  const t = useTranslations('common');
+  const pathname = usePathname() || ''
+  const locale = useLocale()
+  const t = useTranslations('common')
 
   // Récupérer le chemin sans le préfixe de locale
-  const pathnameWithoutLocale = pathname.replace(`/${locale}`, '');
-  
+  const pathnameWithoutLocale = pathname.replace(`/${locale}`, '')
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -179,7 +184,7 @@ export function LanguageSelector() {
             asChild
             className={
               locale === language.code
-                ? 'bg-accent text-accent-ink font-medium focus:bg-accent-hover'
+                ? 'bg-accent text-accent-ink focus:bg-accent-hover font-medium'
                 : 'hover:bg-surface-2'
             }
           >
@@ -188,5 +193,5 @@ export function LanguageSelector() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-} 
+  )
+}

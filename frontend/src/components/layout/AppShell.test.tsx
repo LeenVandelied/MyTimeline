@@ -23,10 +23,8 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('next-intl', () => ({
-  useTranslations:
-    (namespace?: string) =>
-    (key: string) =>
-      namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
   useLocale: () => 'fr',
 }))
 

@@ -41,7 +41,7 @@ function readCommon(locale: string): CommonMessages {
 }
 
 describe('LanguageSelector — étiquette accessible', () => {
-  it("ne contient plus la chaîne française en dur", () => {
+  it('ne contient plus la chaîne française en dur', () => {
     expect(componentSource).not.toContain('>Changer de langue<')
   })
 

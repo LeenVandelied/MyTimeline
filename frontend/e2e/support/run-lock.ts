@@ -79,11 +79,11 @@ export function acquireRunLock(stateDir: string, runId: string): void {
         `E2E — un run Playwright est DÉJÀ en cours dans ce worktree (pid ${held.pid}, graine ${held.runId}, démarré ${held.startedAt}${age}).`,
         '',
         `Les deux runs partageraient ${stateDir} : identités ET cookies (\`storageState\`).`,
-        "Le second run réécrirait les comptes du premier, et les specs `settings-*` échoueraient",
+        'Le second run réécrirait les comptes du premier, et les specs `settings-*` échoueraient',
         'des DEUX côtés avec un `toHaveValue` du type `Expected sh<graineA> / Received sh<graineB>`',
         "— la signature de [[PIT-S47-004]], pour une cause qui n'a rien à voir avec elle.",
         '',
-        'Attendre la fin de l\'autre run, ou le tuer, puis relancer. Si le process est mort et',
+        "Attendre la fin de l'autre run, ou le tuer, puis relancer. Si le process est mort et",
         `que le verrou traîne, supprimer ${lockFile}.`,
       ].join('\n'),
     )

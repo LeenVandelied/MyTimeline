@@ -103,11 +103,7 @@ export function PreferencesSection() {
           </SelectTrigger>
           <SelectContent>
             {DENSITY_OPTIONS.map((option) => (
-              <SelectItem
-                key={option}
-                value={option}
-                data-testid={`pref-density-option-${option}`}
-              >
+              <SelectItem key={option} value={option} data-testid={`pref-density-option-${option}`}>
                 {t(`preferences.density.options.${option}`)}
               </SelectItem>
             ))}

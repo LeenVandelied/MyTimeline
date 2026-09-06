@@ -12,7 +12,7 @@ export function LegalDisclaimer({ children }: { children: string }) {
     <p
       role="note"
       data-testid="legal-disclaimer"
-      className="bg-surface border border-rule rounded-xl px-4 py-3 mb-8 text-sm text-ink-muted"
+      className="bg-surface border-rule text-ink-muted mb-8 rounded-xl border px-4 py-3 text-sm"
     >
       {children}
     </p>

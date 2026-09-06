@@ -65,7 +65,7 @@ test.describe('#329 retry de rendu de /fr/register', () => {
     expect(message).toContain('3 tentative') // nombre de tentatives listé
     expect(message).toContain('page.reload()')
     expect(message).toContain('dernier statut HTTP: 500') // nature de la dernière erreur
-    expect(message).toContain("PAS un rate-limit register 429")
+    expect(message).toContain('PAS un rate-limit register 429')
     expect(served).toBe(3) // 1 goto + 2 reload, puis abandon
   })
 })

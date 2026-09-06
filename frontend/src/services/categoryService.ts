@@ -72,10 +72,7 @@ export const createCategory = async (data: CategoryCreate): Promise<Category> =>
  * autrui, 409 si le nouveau nom collisionne (BR-CAT-004). L'erreur est propagée
  * pour l'affichage inline.
  */
-export const updateCategory = async (
-  id: string,
-  data: CategoryUpdate,
-): Promise<Category> => {
+export const updateCategory = async (id: string, data: CategoryUpdate): Promise<Category> => {
   try {
     const response = await apiClient.patch(`/categories/${id}`, data)
     return categorySchema.parse(response.data)
@@ -93,10 +90,7 @@ export const updateCategory = async (
  * (`CategoryInUseException`). On propage l'erreur (`error.response.status`) pour
  * l'affichage inline via `DeleteConfirmDialog` (#65 : `onConfirm` doit REJETER).
  */
-export const deleteCategory = async (
-  id: string,
-  reassignToCategoryId?: string,
-): Promise<void> => {
+export const deleteCategory = async (id: string, reassignToCategoryId?: string): Promise<void> => {
   try {
     await apiClient.delete(`/categories/${id}`, {
       params: reassignToCategoryId ? { reassignToCategoryId } : undefined,

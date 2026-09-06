@@ -58,7 +58,7 @@ test.describe('#218 Produits — navigation & CRUD via ProductDrawer', () => {
   })
 
   // Critère 6 — création via le ProductDrawer.
-  test('création d\'un produit via le ProductDrawer', async ({ page }) => {
+  test("création d'un produit via le ProductDrawer", async ({ page }) => {
     const cat = await seedCategory(page, unique('Create Cat'))
     const name = unique('Create Prod')
 
@@ -80,7 +80,7 @@ test.describe('#218 Produits — navigation & CRUD via ProductDrawer', () => {
   })
 
   // Critère 7 — édition via le ProductDrawer.
-  test('édition d\'un produit existant via le ProductDrawer', async ({ page }) => {
+  test("édition d'un produit existant via le ProductDrawer", async ({ page }) => {
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Edit Cat'))
     const original = unique('Edit Prod')
