@@ -180,7 +180,7 @@ export default defineConfig({
   //
   // La borne de charge héritée de #465 reste par ailleurs en vigueur : on ne monte pas
   // au-delà de 2, seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré.
-  workers: process.env.CI ? 1 : 2,
+  workers: process.env.CI ? 2 : 2,
   // #461 — POURQUOI un reporter COMPOSITE en CI, et pas `github` seul.
   // Le reporter `github` n'écrit RIEN sur disque : il se contente de poster des
   // annotations dans l'interface Actions. `playwright-report/` restait donc vide
