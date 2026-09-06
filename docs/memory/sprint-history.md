@@ -5446,14 +5446,14 @@ sur ce dépôt `Closes #N` ne ferme rien puisque la base de la PR est `dev`. Mil
 
 **Status :** Terminé
 
-### Sprint 79 — 2026-09-06 (EN COURS — cohésion 0.34, Causes racines du harnais E2E)
+### Sprint 79 — 2026-09-06 (Terminé — merge PR #544 dans dev, commit `12704c5` — causes racines du harnais E2E)
 **Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
 **Milestone GitHub :** #80
 **Issues :** #428, #475, #463
 **Vagues :** V1 = #428 ‖ #475 | V2 = #463 (conflit `accounts.ts` / `auth.setup.ts`)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 78 (le reformatage de #528 touche 10 specs e2e — l'absorber avant)
-**Status :** En cours
+**Status :** Terminé
 
 **Démarrage `/sprint start 79` — 2026-09-06.** Worktree `amazing-rubin-93b16e`, branche
 `claude/sprint-79-start-c6dc55` basée sur `origin/dev @113e205` — donc **le merge de clôture du
