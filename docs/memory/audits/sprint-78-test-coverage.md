@@ -110,6 +110,37 @@ nouvelle). Verdict réel : conforme, pas de LACUNE.
 - Le coût du scope `frontend` étendu a été mesuré à cache `.next` **chaud** (53 s) ; à froid il
   sera plus élevé, non mesuré.
 
+## Review (Phase 7) et son cycle 2 — dont un contrôle du lead réfuté
+
+Cycle 1 : **0 CRITIQUE / 2 MAJEUR / 5 MINEUR**. Les deux MAJEUR portaient sur le correctif de
+#434 lui-même — le sprint réintroduisait par la porte de derrière le défaut qu'il corrigeait
+(une étape sautée en silence, un verdict final qui l'annonce quand même). Corrigés en `81e405f`.
+
+Cycle 2 (les commits de correction sont eux-mêmes relus — angle mort mesuré au S62) :
+**0 CRITIQUE / 0 MAJEUR / 5 MINEUR**, traités en `1123660` sauf un, assumé.
+
+**Un contrôle écrit par le lead a été réfuté par le cycle 2, et c'est le constat le plus utile de
+cette review.** Pour prouver l'armement du MAJEUR 1 (propagation d'échec qui ne dépend plus du
+contexte d'appel), j'avais lancé `if ./scripts/test-quiet.sh frontend ; then …`. Vacuous : le
+script tourne dans son **propre processus**, dont le `set -e` n'est jamais désarmé par le `if` de
+l'appelant. Ce contrôle serait passé au vert **avant** le correctif aussi — il ne mesurait rien.
+
+Contrôle refait correctement (fonctions extraites avant le dispatcher, sourcées, `run_frontend`
+appelée en contexte conditionnel **dans** le shell, sonde TS2322 en place) :
+
+| Version | Résultat |
+|---|---|
+| `fb8c21a` — avant le correctif | build **ROUGE**, typecheck **ROUGE**, et pourtant `✓ Frontend : OK (build + tests unitaires + typecheck + lint)`, **return 0** |
+| après `81e405f` / `1123660` | **return 1** dès le build, aucune étape ultérieure atteinte |
+
+C'est la seule forme acceptable ici : une expérience qui **change** le verdict entre les deux
+versions. Leçon transposable : un contrôle qui franchit une frontière de processus ne teste pas
+le comportement interne d'une fonction — la frontière restaure ce qu'on prétendait désarmer.
+
+MINEUR assumé sans correction : la prescription de version `~3.2.7` vs `^3.2.7` sur
+`@vitest/coverage-v8`. Le commentaire est plus strict que la contrainte réelle ; le lock est à
+3.2.7 et la CI n'y est pas exposée.
+
 ## Conclusion
 
 Prêt pour la PR. Les trois gates du sprint sont armés et prouvés par des expériences qui
