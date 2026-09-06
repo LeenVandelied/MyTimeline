@@ -5341,7 +5341,7 @@ AJOUTENT des tests.
 
 **15 issues, 35 points, cohésion globale 0.363. Aucune migration Flyway — V16 reste libre.**
 
-### Sprint 78 — 2026-09-06 (PLANIFIÉ — cohésion 0.28, Les gates de vérification mentent)
+### Sprint 78 — 2026-09-06 (EN COURS — cohésion 0.28, Les gates de vérification mentent)
 **Objectif :** trancher trois contrôles verts qui ne prouvent pas ce qu'ils prétendent.
 **Milestone GitHub :** #79
 **Issues :** #528, #434, #169
@@ -5351,7 +5351,27 @@ AJOUTENT des tests.
 **Cohésion sous seuil assumée** (DEC-S57-003) : la métrique informe le découpage, elle ne le
 commande pas. Split proposé et écarté — mesurer la couverture AVANT d'en ajouter est ce qui
 rend le chiffre exploitable.
-**Status :** Planifié
+
+**Démarrage `/sprint start 78` — 2026-09-06.** Exécuté depuis le worktree
+`traitement-s-xs-parallele-d0ae59` (la branche `sprint/78` était déjà attachée au worktree
+`sprint-69-d576fe`, laissé par `/sprint plan` ; branche locale avancée en fast-forward plutôt que
+de libérer le worktree d'une autre session).
+
+**Trois écarts entre les énoncés et la mesure, relevés avant de briefer** (PIT-S71-001) :
+- #528 — le script `format:check` vaut `prettier --check .`, pas `--check src e2e` : la dette est
+  de **119 fichiers**, pas 104 (chiffre de l'architect) ni « 2-3 » (corps de l'issue).
+- #169 — le fichier est `frontend/vitest.config.mts`, pas `vitest.config.ts` (mini-plan architect).
+- #434 — les numéros de ligne de la piste technique sont faux ; `run_frontend` est vers L200-225.
+
+**Écart au plan de vagues assumé par le lead.** L'architect donnait V1 = #528 ‖ #434. Les deux
+issues se disputent en réalité l'état de l'arbre `frontend/` : #528 y réécrit 119 fichiers pendant
+que #434 doit y casser volontairement le typecheck pour prouver sa détection. Le parallélisme est
+conservé, encadré par trois règles écrites dans les deux briefings : exclusivité Playwright à
+#528, `docs/memory/decisions.md` réservé à #528 (#434 passe par un signal `[MEMORY:decision]`),
+et un fichier sonde au nom convenu `frontend/src/__tmp-434-typecheck-probe.ts` que #528 sait devoir
+ignorer.
+
+**Status :** En cours
 
 ### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
 **Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
