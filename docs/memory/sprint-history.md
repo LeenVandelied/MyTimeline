@@ -5446,14 +5446,55 @@ sur ce dépôt `Closes #N` ne ferme rien puisque la base de la PR est `dev`. Mil
 
 **Status :** Terminé
 
-### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
+### Sprint 79 — 2026-09-06 (EN COURS — cohésion 0.34, Causes racines du harnais E2E)
 **Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.
 **Milestone GitHub :** #80
 **Issues :** #428, #475, #463
 **Vagues :** V1 = #428 ‖ #475 | V2 = #463 (conflit `accounts.ts` / `auth.setup.ts`)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 78 (le reformatage de #528 touche 10 specs e2e — l'absorber avant)
-**Status :** Planifié
+**Status :** En cours
+
+**Démarrage `/sprint start 79` — 2026-09-06.** Worktree `amazing-rubin-93b16e`, branche
+`claude/sprint-79-start-c6dc55` basée sur `origin/dev @113e205` — donc **le merge de clôture du
+Sprint 78 est bien dans la base**, ce qui lève la dépendance dure annoncée au plan (le reformatage
+prettier de #528 touche 10 specs e2e ; les réécrire avant l'aurait provoqué un conflit frontal).
+Vérifié en une commande (`git merge-base --is-ancestor origin/dev HEAD`), pas déduit
+([[sprint-worktree-branche-hors-dev]]). Pas de branche `sprint/79` créée : `sprint/78` est encore
+attachée à un autre worktree et la branche du worktree courant fait le même travail.
+
+**Arbitrage de périmètre (pré-briefing).** Le milestone Sprint 79 contenait **7** issues, mais
+seules **3** portaient le label `sprint-79`. Les 4 autres — #539, #540, #541, #542 — sont les
+follow-ups XS créés au triage de clôture du Sprint 78 et rattachés d'office au milestone suivant :
+exactement le piège consigné dans `mytimeline-sprint-end-github-gotchas`. Arbitré avec le dev :
+**périmètre = les 3 du plan**, les 4 XS détachés du milestone 79 et renvoyés au backlog.
+Argument dirimant sur #542 : elle demande de modifier la **source du plugin `ai-env`**, hors dépôt —
+elle n'est donc pas livrable dans la PR d'un sprint, quel qu'il soit.
+
+**Énoncés vérifiés contre le code avant de briefer** ([[issue-enonces-perimes-verifier-avant-briefer]]).
+Les trois `possibly_done: false` de l'architect reposaient sur de la lecture ; je les ai recomptés :
+- **#428 — exact, littéralement.** `application-dev.properties:35` vaut
+  `app.cors.allowed-origins=http://localhost:3000`, valeur unique sans placeholder, tandis que
+  `application-prod.properties:47` porte **déjà** la forme cible `${CORS_ALLOWED_ORIGINS:}`. Le
+  correctif est une transposition, pas une invention.
+- **#475 — exact, les deux moitiés du calcul.** `RateLimitingFilter` : `Map.entry("POST
+  /api/auth/register", 5)`. `accounts.ts` : `ALL_ACCOUNTS = [SHARED, PWD, DEL, PROD]` = 4, plus
+  l'auto-inscription de `golden-path.spec.ts` = **5 pour un plafond de 5**. Marge nulle, comme
+  annoncé.
+- **#463 — l'énoncé sous-estime l'ampleur d'un facteur 4.** Il cite 4 specs « et probablement
+  d'autres » ; la mesure (`grep -rl PROD frontend/e2e/*.ts`) en donne **16**. Le calibrage Size M ne
+  tient que si la stratégie retenue est mécanique (préfixe unique par test), pas un compte par
+  fichier — qui multiplierait les `register` par 16 et casserait #475 le sprint même où on la livre.
+
+**Partition de la stack de test (contrainte de vague).** `playwright.config.ts` pose un **verrou de
+run** (`e2e/support/run-lock.ts`) : un seul run Playwright à la fois par worktree, `e2e/.auth/` étant
+partagé. L'exclusivité n'est donc pas une convention de briefing, elle est mécaniquement imposée.
+V1 : #475 détient Playwright ; #428 se valide par **test d'intégration Spring**, sans run E2E.
+V2 : #463 détient Playwright et doit produire **deux** runs (nominal + ordre inversé) — sans le
+second, la correction n'est pas prouvée. Recette locale : `npx next dev -p 3000` (webpack, **pas**
+`npm run dev` qui force turbopack et rend 500 sur toutes les pages en worktree, PIT-S61-007), puis
+`PLAYWRIGHT_BASE_URL=...` — et l'oracle `curl /api/auth/me` doit rendre **401** avant toute
+hypothèse ([[e2e-cors-origin-proxy-trap]]).
 
 ### Sprint 80 — 2026-09-06 (PLANIFIÉ — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
