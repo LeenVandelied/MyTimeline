@@ -32,7 +32,8 @@ test.describe('#413 — <html lang> localisé (WCAG 3.1.1)', () => {
   for (const { path, lang } of CASES) {
     test(`${path} → HTML SERVI porte lang="${lang}" (avant hydratation)`, async ({ request }) => {
       const response = await request.get(path)
-      expect(response.status(), `${path} doit répondre 200`).toBe(200)
+      // [NE PAS MERGER] cassure volontaire — issue #408
+      expect(response.status(), `${path} doit répondre 200`).toBe(418)
 
       const html = await response.text()
       const openingTag = html.match(/<html[^>]*>/)?.[0] ?? ''
