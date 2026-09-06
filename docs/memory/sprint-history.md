@@ -5371,7 +5371,63 @@ conservé, encadré par trois règles écrites dans les deux briefings : exclusi
 et un fichier sonde au nom convenu `frontend/src/__tmp-434-typecheck-probe.ts` que #528 sait devoir
 ignorer.
 
-**Status :** En cours
+**Vagues exécutées :** V1 = #528 ‖ #434 (parallèles, encadrées) | V2 = #169.
+**Commits :** 16 sur la branche — 3 d'implémentation (`5650264`, `fb8c21a`, `62a5b71`), 2 de
+correction de revue (`81e405f`, `1123660`), 1 de mémoire (`c55a520`), le reste en artefacts.
+**BR impactées :** aucune. Sprint d'outillage — zéro ligne sous `backend/src/main/java/**`,
+aucune logique frontend touchée.
+
+**Tests.** Backend `mvnw verify` 566/566 (Docker présent). Frontend Vitest 1313/1313, typecheck,
+lint, `next build` 52/52 pages, `format:check` — tous EXIT=0. **E2E joué par le lead**, pas
+délégué (`PIT-S73-004` : 4 verdicts « E2E impossible » faux sur ce projet) : 304 passed / 5 failed
+/ 9 skipped sur une stack isolée (conteneur Postgres dédié `:5436` — le Postgres du poste est
+figé en V6 et le migrer aurait été un effet de bord non demandé). Les 5 échecs sont instruits dans
+`sprints/sprint-78/test-runner-report.md` : 1 dû à `--ignore-snapshots` sur darwin, 3 à
+`BREVO_API_KEY` absente, 1 (`golden-path`) à une contention sur `register` — vert en isolation, et
+surtout impossible à imputer à un sprint qui ne touche aucun backend exécutable.
+
+**CI :** run `34030803910` puis re-run sur `07fb3fa` — **7 jobs sur 7 verts, `e2e` compris**. C'est
+la CI qui a tranché le seul risque hors de portée du poste : le reformatage n'a cassé aucune
+comparaison visuelle. Artefacts de couverture constatés **non vides** : `vitest-coverage-report`
+1 208 873 o, `jacoco-coverage-report` 917 764 o — 3ᵉ critère de #169 vérifié, pas déduit.
+
+**Couverture initiale mesurée :** backend 90,49 % instructions / 72,18 % branches ; frontend
+70,77 % statements (BRUT — configs racine happées par v8, ce n'est pas une cible).
+
+**Reviews :** cycle 1 = 0 CRITIQUE / 2 MAJEUR / 5 MINEUR ; cycle 2 sur les commits de correction
+= 0 CRITIQUE / 0 MAJEUR / 5 MINEUR. Tous les MAJEUR résolus.
+- Les 2 MAJEUR portaient sur le correctif de #434 **lui-même**, qui réintroduisait par la porte de
+  derrière le défaut qu'il corrigeait : un script npm manquant produisait un skip à 0 suivi d'un
+  « ✓ OK (build + tests unitaires + typecheck + lint) ».
+- **Le cycle 2 a réfuté un contrôle écrit par le lead** — le constat le plus utile de ce sprint,
+  consigné en [[PIT-S78-007]]. Le contrôle d'armement franchissait une frontière de processus et
+  serait passé au vert avant le correctif aussi.
+- 2 MINEUR assumés sans correction : prescription `~3.2.7` vs `^3.2.7` sur `@vitest/coverage-v8`
+  (lock à 3.2.7, CI non exposée), et branche `skip` de `run_frontend_npm_step` désormais sans
+  appelant (conservée, absence d'appelant documentée dans le code).
+
+**Contrôle coverage-E2E (Phase 8) :** MAJEUR **réfuté**. 9 testids signalés « sans spec » existent
+tous déjà sur `origin/dev` — le reformatage fait compter chaque ligne comme ajoutée par
+l'heuristique ([[PIT-S78-006]]). Le sprint n'introduit aucun testid.
+
+**Nouveaux pitfalls / décisions / patterns :** `PIT-S78-001` à `PIT-S78-008`,
+`DEC-S78-001` à `DEC-S78-004`, `PAT-S78-001`. `BUG-S71-002` **clos**. `PIT-S60-009` marqué RÉSOLU
+(il affirmait au présent un comportement que ce sprint a changé, et il était injecté tel quel dans
+les packs de tous les subagents).
+
+**Absorbé en cours (XS) :** 2 découvertes hors scope initial intégrées — l'ancre littérale du test
+de focus disloquée par le tri de classes (#528), et 3 descriptions fausses du scope `unit` dans
+`.ai-env/rules-jit/{frontend,backend}.md` (#434).
+
+**Follow-ups proposés (tous XS) :**
+  - constater les 2 artefacts non vides puis consigner les références dans les `coverage-*.md`
+    [XS | ci] (issue-169 — la première moitié est **déjà faite** : artefacts constatés)
+  - exclure les configs racine du périmètre v8 une fois la référence brute consignée [XS | frontend]
+  - reporter la correction des scopes dans les rules-jit AMONT du plugin ai-env [XS | ci]
+  - `husky`/`lint-staged` déclarés sans `.husky/` ni script `prepare` : installer le hook ou
+    retirer les deux dépendances mortes [XS | frontend]
+
+**Status :** PR #538 ouverte, CI verte 7/7 — en attente d'arbitrage des follow-ups et du merge.
 
 ### Sprint 79 — 2026-09-06 (PLANIFIÉ — cohésion 0.34, Causes racines du harnais E2E)
 **Objectif :** CORS dev surchargeable, budget register desserré, comptes E2E non partagés.

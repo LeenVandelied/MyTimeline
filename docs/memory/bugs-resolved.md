@@ -89,7 +89,8 @@ Constaté au S70 : le proxy RTK rend un texte de succès alors que le code de so
 ## BUG-S71-001 — Un mot de passe de plus de 100 caractères était créable, puis inutilisable au login
 `RegisterRequest.password` ne portait **aucune borne haute** alors qu'`AuthRequest` plafonne à `@Size(max=100)` : un compte créé avec un secret plus long devenait impossible à authentifier — le compte était perdu sans message compréhensible. Corrigé par `MAX_LENGTH = 100` dans `StrongPasswordValidator` (#148). Règle : toute contrainte de longueur sur un champ de **création** se confronte à celle du champ de **lecture/auth** correspondant. (Sprint 71 #148)
 
-## BUG-S71-002 — Dérive de formatage invisible : la CI frontend ne lance jamais `format:check`
+## BUG-S71-002 — ~~Dérive de formatage invisible : la CI frontend ne lance jamais `format:check`~~ — **RÉSOLU au S78 (#528)**
+> Clos par `5650264` : le step `Format (Prettier)` existe désormais dans le job `frontend`, et les 119 fichiers non conformes ont été reformatés dans le même commit. Arbitrage laissé ouvert aux S71/S75/S77 : tranché dans [[DEC-S78-001]].
 `frontend/src/components/events/NewEventDrawer.test.tsx` viole `prettier --check` **à HEAD**, dérive introduite au S70 (#326). Non attrapée parce que la CI lance `npm run lint` (eslint) et **jamais** `npm run format:check` : lint et formatage sont deux gates différents, une CI verte ne dit rien du second. Non corrigé au S71 (hors périmètre : reformater aurait noyé un diff de 4 caractères) ; l'arbitrage restant est d'ajouter `format:check` à la CI ou de retirer les scripts `format*` du `package.json`. Étiquette « pré-existant » réfutée comme l'exige [[PIT-S70-002]] : `git show HEAD:<fichier>` + `prettier --check` → **exit 1**. (Sprint 71 #496)
 
 

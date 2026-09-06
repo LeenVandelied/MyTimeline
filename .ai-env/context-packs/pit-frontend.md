@@ -996,6 +996,30 @@ Deux pièges enchaînés, mesurés sur la PR #536. (1) **Plateforme** : Playwrig
 ## PIT-S77-020 — Playwright sort **exit 0** avec « N did not run » quand le projet `setup` échoue : lire le COMPTE de tests, pas le code de sortie
 Vérification du lead lancée sans `--no-deps` : Playwright a joué le projet `setup`, qui provisionne des comptes contre un backend absent ; les **11 tests visuels ont été sautés** et la sortie affichait « 1 passed, **11 did not run** » — **avec un code de sortie 0**. Une vérification qui ne vérifiait rien. Un code de sortie ne suffit jamais : lire le nombre de tests **réellement exécutés**. Voisin de [[PIT-S61-005]] et [[PIT-S45-003]]. (Sprint 77, audit de clôture)
 
+
+## PIT-S78-001 — `prettier-plugin-tailwindcss` disloque les ancres littérales de tests : une ancre doit être contiguë DANS L'ORDRE TRIÉ
+Le tri canonique réordonne les classes : une ancre écrite dans l'ordre humain (`peer h-4 w-4 shrink-0`) se retrouve dispersée, et tout test qui fait `toContain` sur une chaîne de classes casse le jour où le gate de formatage est activé. Rencontré au S78 sur `tsx-focus-utility.test.ts` (7 tests rouges), ancre rebasée sur `h-4 w-4 shrink-0`. **Règle : une ancre de test sur des classes doit être choisie dans l'ordre que prettier produit, pas dans celui où on les écrit** — et le test doit vérifier que l'ancre existe encore, sinon il se désarme en silence. (Sprint 78 #528)
+
+
+## PIT-S78-002 — Mesurer ce que la CI mesurera, pas ce qui ressemble au périmètre
+Le mini-plan architect annonçait 104 fichiers non conformes en mesurant `prettier --check src e2e`. Le script `format:check` du dépôt vaut `prettier --check .` : **119 fichiers**. 15 fichiers d'écart, dont `tailwind.config.ts` et 4 autres à la racine. Le chiffre qui compte est toujours celui que produit **la commande que la CI lance**, jamais une approximation de son périmètre. Même famille que [[PIT-S71-001]], appliquée à un chiffre plutôt qu'à un inventaire. (Sprint 78 #528)
+
+
+## PIT-S78-003 — Le `path:` d'`actions/upload-artifact` IGNORE le `working-directory` du job — artefact vide, job vert
+`defaults.run.working-directory` ne s'applique qu'aux steps `run:`. Le `path:` d'une action est résolu depuis la **racine du dépôt**. Un chemin écrit relativement au working-directory ne matche donc rien, et `upload-artifact` **warne au lieu d'échouer** : l'artefact est publié VIDE et le job reste vert. La seule preuve qui vaille est la taille de l'artefact sur un run réel (S78 : 1 208 873 o et 917 764 o), jamais le job vert. Ajouter `if-no-files-found: error` pour transformer le silence en échec. (Sprint 78 #169)
+
+
+## PIT-S78-006 — Un reformatage massif rend le check coverage-E2E entièrement FANTÔME
+L'heuristique de Phase 8 collecte les `data-testid` des lignes `^+` du diff. Après un reformatage de 119 fichiers, **chaque ligne touchée compte comme ajoutée** : le check a rendu un MAJEUR sur 9 testids « sans spec » qui existaient tous déjà sur `origin/dev`. Réfutation en une commande : `git grep <testid> origin/dev`. Le sprint n'introduisait aucun testid. Voisin de [[PIT-S61-005]] (le check est vert quand les specs sont seulement citées) — dans les deux sens, il mesure le diff, pas la réalité. (Sprint 78, Phase 8)
+
+
+## PIT-S78-007 — Un contrôle qui franchit une frontière de PROCESSUS ne teste pas le `set -e` d'une fonction
+Pour prouver qu'une fonction shell propage bien ses échecs hors du contexte protégé par `set -e`, le lead avait lancé `if ./scripts/test-quiet.sh frontend ; then …`. **Vacuous** : le script tourne dans son propre processus, dont le `set -e` n'est jamais désarmé par le `if` de l'appelant — le contrôle serait passé au vert AVANT le correctif aussi. Le cycle 2 de revue l'a vu, pas le cycle 1. Contrôle correct : extraire les fonctions (tout ce qui précède le dispatcher `case`), les sourcer, reposer les variables de chemin que `BASH_SOURCE` ne déduit plus après sourcing, puis appeler la fonction sous `if`. Résultat sur la version d'avant le correctif : build ROUGE **et** typecheck ROUGE, et pourtant `✓ OK (build + tests unitaires + typecheck + lint)` avec `return 0`. **Règle : un contrôle doit changer de verdict entre les deux versions du code ; s'il ne le fait pas, il ne mesure rien.** (Sprint 78, cycle 2 de revue)
+
+
+## PIT-S78-008 — Le hook `warn-test-delegation.sh` tue un heredoc pour la QUATRIÈME fois, et il a tué celui qui écrivait CETTE entrée
+Récurrence de [[PIT-S63-007]] et [[PIT-S74-007]]. Au S78 il a frappé deux fois **le lead**, et le second cas est le plus parlant : le heredoc qui ajoutait ce bloc à `pitfalls.md` contenait la chaîne d'invocation Playwright **en tant que citation dans le texte du pitfall**, et l'écriture entière a été bloquée. Le hook ne distingue ni un usage d'une **mention**, ni une commande d'une **négation** (famille [[PIT-S63-017]]) — il scanne le texte de l'appel `Bash`, point. Premier cas du même sprint : un heredoc rédigeant un briefing dont une consigne **interdisait** de lancer Playwright. Parade : dès qu'un texte parle d'un runner de test, l'écrire avec l'outil `Write`, ou passer par un fichier intermédiaire — jamais par heredoc. (Sprint 78, briefings et clôture)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
