@@ -270,6 +270,39 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
+  // #472 (Sprint 80) — CE QUE LE SERVEUR LOCAL COÛTE À LA SUITE, ET POURQUOI LA CI
+  // N'EN PAIE RIEN. À LIRE AVANT D'ACCUSER UNE SPEC D'ÊTRE « FLAKY ».
+  //
+  // La recette locale (les DEUX branches ci-dessous) sert le front par `next dev`,
+  // qui COMPILE chaque route App Router à la demande et l'ÉVINCE après inactivité.
+  // Sur 5 runs complets du S80, le log du serveur donne des compilations de 6,5 s
+  // (`/[locale]/products/[productId]`), 8,3 s puis 17,8 s (`/[locale]/settings`),
+  // 9,7 s (`/[locale]/reset-password`) — et une route déjà compilée peut être
+  // RE-compilée plus tard dans le MÊME run, l'éviction étant fondée sur le temps.
+  //
+  // Le budget par défaut d'un `expect` Playwright est de 5 s. Une compilation de
+  // 6 à 18 s le dépasse donc systématiquement, et elle frappe DEUX victimes à la
+  // fois : le test qui demande la route, et le test du worker VOISIN, dont les
+  // chunks clients font la queue derrière la même compilation sérielle. C'est ce
+  // qui produit, run après run, un ou deux rouges DIFFERENTS avec toujours la même
+  // signature — `toBeVisible` « element(s) not found » ou `toHaveURL` inchangée,
+  // expirés à 5 s. Membres observés au S80 : `products.spec.ts` (2 tests),
+  // `golden-path.spec.ts`, `timeline.spec.ts`, et
+  // `sprint-62-select-focus-indicator.spec.ts` sur le projet `firefox`.
+  //
+  // ⚠ CE N'EST PAS UN DÉFAUT DES SPECS, ET CE N'EST PAS UN DÉFAUT DE LA CI. #462 a
+  // retiré `next dev` du job `e2e` POUR CETTE RAISON EXACTE, écrite dans
+  // `.github/workflows/ci.yml` : la CI joue deux `next start` sur un build de
+  // production, où aucune compilation à la demande n'existe. Le mode de panne est
+  // donc STRICTEMENT LOCAL.
+  //
+  // CE QU'IL NE FAUT PAS EN FAIRE : relever le timeout d'`expect`, ajouter un
+  // `retries` local ou un `test.slow()`. Cela achèterait du vert local avec du
+  // budget de test, et le local perdrait le signal que la CI, elle, garde. La
+  // parade propre — précharger les routes, ou desserrer l'éviction de `next dev`
+  // pour la recette e2e — touche la configuration du serveur, pas ce fichier, et
+  // n'a PAS été faite ici (hors périmètre #472).
+  //
   // webServer demarre uniquement si on n'utilise pas un baseURL externe.
   // #427 — `assertWebServerEnv()` s'execute AVANT la construction de l'objet :
   // sur ce chemin (et sur lui seul), l'absence de `NEXT_PUBLIC_API_URL` /

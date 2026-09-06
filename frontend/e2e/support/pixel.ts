@@ -500,26 +500,90 @@ export async function readStrip(
   locator: Locator,
   opts: StripOptions,
 ): Promise<PixelStrip> {
+  const [strip] = await readStrips(page, locator, [opts.offsetPx], opts)
+  return strip
+}
+
+/**
+ * Lit PLUSIEURS bandes sur UNE SEULE capture — même sonde, même agrégation par
+ * MODE, mêmes bandes rendues que `readStrip` appelé une fois par offset.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LE DÉFAUT MESURÉ QUI JUSTIFIE CETTE FONCTION (#472, Sprint 80)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * `readStrip` prend une capture PAR OFFSET. `sprint-62-select-focus-indicator`
+ * en demandait 18 par test (15 pour le dump brut signé -6..+8, 3 pour les
+ * mesures publiées), et chaque capture est un `page.screenshot({clip})` SUIVI
+ * d'un décodage PNG DANS la page (`createImageBitmap` + `getImageData`).
+ *
+ * Le coût est modeste sur Chromium et NE L'EST PAS sur Gecko. Chiffré sur deux
+ * runs complets, en comparant deux tests du MÊME fichier, même fixture, même
+ * mise en place, dont un seul sonde des pixels :
+ *
+ *   `NewEventDrawer — état et déclaration` (0 capture)  : 3,2-3,4 s / 6,4-12,1 s
+ *   `NewEventDrawer — le popover est PEINT` (18 captures): 7,1-8,5 s / 19,4-24,8 s
+ *                                          (run au repos)   (run sous charge)
+ *
+ * soit ~0,25 s par capture au repos et jusqu'à ~1,0 s sous charge — 18 captures
+ * consommant alors 15 à 18 s des 30 s de budget du test. Le run 2 du Sprint 80 a
+ * fait franchir le plafond à `ProductDrawer / product-category-trigger — light`
+ * (30,6 s), avec une pile qui désigne l'endroit exact : `readStrip` appelé
+ * depuis le DUMP, c.-à-d. la partie purement DIAGNOSTIQUE de la sonde. Le membre
+ * qui tombe varie d'un run à l'autre parce que tous les tests du fichier sont au
+ * même niveau de budget : c'est un défaut de COÛT, pas de composant.
+ *
+ * ⚠ CE N'EST PAS UNE OPTIMISATION DE CONFORT, et surtout PAS un relèvement de
+ * timeout déguisé. Le budget de 30 s n'est pas touché : c'est la dépense qui est
+ * ramenée à sa valeur utile. Relever le timeout aurait laissé la sonde payer 18
+ * fois le même pixel.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * POURQUOI UNE SEULE CAPTURE SUFFIT, ET POURQUOI ELLE EST PLUS JUSTE
+ * ─────────────────────────────────────────────────────────────────────────────
+ * La marge de `captureRegion` est dérivée de l'offset le plus éloigné : la
+ * région couvre donc TOUS les offsets demandés, et chaque bande y lit
+ * exactement les mêmes coordonnées CSS qu'elle aurait lues seule.
+ *
+ * Et la `boundingBox()` est prise UNE fois. C'était une faiblesse latente de
+ * l'appel répété : 18 mesures successives pouvaient tomber sur 18 boîtes
+ * différentes si l'élément bougeait entre-temps ([[PIT-S54-003]]), et le ratio
+ * publié aurait alors comparé des pixels de deux instants. Ici le contour, le
+ * fond du popover et la surface de l'option proviennent d'une MÊME image.
+ *
+ * ⚠ CE QU'ELLE NE FAIT PAS : attendre quoi que ce soit. L'élément doit être
+ * stabilisé AVANT (`settleForMeasurement`), exactement comme pour `readStrip`.
+ */
+export async function readStrips(
+  page: Page,
+  locator: Locator,
+  offsetsPx: readonly number[],
+  opts: Omit<StripOptions, 'offsetPx'>,
+): Promise<PixelStrip[]> {
+  if (offsetsPx.length === 0) return []
   const box = await locator.boundingBox()
   if (box == null) throw new Error("boundingBox() nulle : l'élément n'est pas rendu")
   // `Math.abs` : un offset NÉGATIF échantillonne l'INTÉRIEUR de la boîte (cf.
   // le profil signé de #414). Sans la valeur absolue, la marge devenait
   // négative et la région capturée RÉTRÉCISSAIT sous la boîte — inoffensif
   // tant que l'accesseur rabattait sur le bord, désormais une levée.
-  const read = await captureRegion(page, box, Math.ceil(Math.abs(opts.offsetPx)) + 3)
-  const samples: PixelSample[] = samplePositions(box, opts).map(({ x, y }) => {
-    const rgb = read(x, y)
-    return { x, y, rgb, hex: toHex(rgb) }
+  const margin = Math.ceil(Math.max(...offsetsPx.map((o) => Math.abs(o)))) + 3
+  const read = await captureRegion(page, box, margin)
+  return offsetsPx.map((offsetPx) => {
+    const stripOpts: StripOptions = { ...opts, offsetPx }
+    const samples: PixelSample[] = samplePositions(box, stripOpts).map(({ x, y }) => {
+      const rgb = read(x, y)
+      return { x, y, rgb, hex: toHex(rgb) }
+    })
+    const { rgb, unanimity } = mode(samples)
+    return {
+      dominant: rgb,
+      dominantHex: toHex(rgb),
+      unanimity,
+      samples,
+      offsetPx,
+      side: stripOpts.side,
+    }
   })
-  const { rgb, unanimity } = mode(samples)
-  return {
-    dominant: rgb,
-    dominantHex: toHex(rgb),
-    unanimity,
-    samples,
-    offsetPx: opts.offsetPx,
-    side: opts.side,
-  }
 }
 
 /**
@@ -540,11 +604,9 @@ export async function dumpOutwardProfile(
   maxOffsetPx = 8,
   opts: Omit<StripOptions, 'side' | 'offsetPx'> = {},
 ): Promise<PixelStrip[]> {
-  const out: PixelStrip[] = []
-  for (let o = 0; o <= maxOffsetPx; o += 1) {
-    out.push(await readStrip(page, locator, { ...opts, side, offsetPx: o }))
-  }
-  return out
+  const offsets = Array.from({ length: maxOffsetPx + 1 }, (_, o) => o)
+  // UNE seule capture pour tout le profil (#472) : voir {@link readStrips}.
+  return readStrips(page, locator, offsets, { ...opts, side })
 }
 
 /** Rend le profil en une ligne par offset, prêt à coller dans un rapport. */
