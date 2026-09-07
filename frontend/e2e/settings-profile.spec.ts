@@ -107,8 +107,44 @@ test.describe('Réglages — Profil : avatar + champs', () => {
     await expect(page.getByTestId('avatar-delete')).toBeVisible()
 
     // ---- Suppression : DELETE /api/me/avatar -> avatarUrl repasse à null ----
+    //
+    // SYMÉTRIE VOULUE avec la moitié « upload » ci-dessus (review E2E S81). Sans elle,
+    // le `toHaveCount(0)` retombait sur le timeout Playwright PAR DÉFAUT (5 s) pour
+    // couvrir un DELETE **plus** le `refreshUser()` + `invalidateQueries` qui suit —
+    // alors que la moitié upload s'accorde 15 s pour la même chaîne.
+    //
+    // POURQUOI CE N'EST PAS COSMÉTIQUE. Ce fichier est en `mode: 'serial'` sur le
+    // compte PARTAGÉ (`SHARED.storageState`) et ce test MUTE l'avatar de ce compte.
+    // S'il expire avant que le DELETE ait abouti, il ne rate pas seulement lui-même :
+    // il laisse un avatar RÉSIDUEL en base, et c'est l'assertion d'ouverture du
+    // PROCHAIN run (`expect(avatar.locator('img')).toHaveCount(0)`) qui rougit — un
+    // échec déporté, dans un autre run, sur une autre ligne. En CI la suite tourne à
+    // `workers: 2` depuis #476 : la marge de 5 s n'est pas une hypothèse sûre.
+    const avatarDelete = page.waitForResponse(
+      (res) => /\/api\/me\/avatar$/.test(res.url()) && res.request().method() === 'DELETE',
+      { timeout: 15_000 },
+    )
+    // Le refetch /me qui SUIT le DELETE (onSuccess) : c'est lui qui remet `avatarUrl`
+    // à null et démonte le <img>. Même raisonnement que pour l'upload.
+    const meResyncAfterDelete = page.waitForResponse(
+      (res) => /\/api\/auth\/me$/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15_000 },
+    )
+
     await page.getByTestId('avatar-delete').click()
-    await expect(avatar.locator('img')).toHaveCount(0)
+
+    const deleteResp = await avatarDelete
+    expect(
+      deleteResp.status(),
+      `DELETE /api/me/avatar attendu 204 ; reçu ${deleteResp.status()} — ` +
+        `401 = session perdue, 5xx = backend. L'endpoint est IDEMPOTENT ` +
+        `(UserController.deleteAvatar : caller sans avatar -> no-op 204), il n'y a donc ` +
+        `pas de 404 possible ici. Timeout = aucune requête émise (le bouton n'a rien déclenché).`,
+    ).toBe(204)
+
+    await meResyncAfterDelete
+
+    await expect(avatar.locator('img')).toHaveCount(0, { timeout: 15_000 })
     await expect(page.getByTestId('avatar-delete')).toHaveCount(0)
   })
 
