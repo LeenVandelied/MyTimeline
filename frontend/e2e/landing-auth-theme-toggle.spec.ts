@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { waitForFonts } from './support/contrast'
+import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 
 /**
  * #642 (DEC-S82-009) — la bascule de thème est ATTEIGNABLE HORS CONNEXION.
@@ -27,10 +28,12 @@ import { waitForFonts } from './support/contrast'
  *     `scriptProps`, provider déplacé hors du document statique), le flash
  *     reviendrait et rien d'autre dans le dépôt ne le verrait ;
  *  2. à `DOMContentLoaded`, `<html>` porte DÉJÀ la classe attendue ;
- *  3. au PREMIER `requestAnimationFrame` — enregistré par un `addInitScript`,
- *     donc avant tout script de la page — la classe est déjà posée. Une classe
- *     absente à ce point signifierait qu'au moins une frame a pu être peinte en
- *     clair.
+ *  3. à la PREMIÈRE FRAME OÙ DU CONTENU PEINTABLE EXISTE — sonde enregistrée
+ *     par un `addInitScript`, donc avant tout script de la page — la classe est
+ *     déjà posée. Une classe absente à ce point signifierait qu'au moins une
+ *     frame a pu être peinte en clair. ⚠ « première frame peintable », PAS
+ *     « première frame » : voir le commentaire d'`armThemeProbes`, le rAF nu
+ *     rendait un faux rouge ~1 fois sur 3.
  *
  * CE QUE ÇA NE PROUVE PAS : que rien n'a été peint. Aucune API de Playwright ne
  * donne le contenu des frames intermédiaires ; le point 3 est une borne, pas une
@@ -56,9 +59,44 @@ async function armThemeProbes(page: Page, seededTheme?: 'light' | 'dark') {
         }
       }
       const w = window as unknown as { __themeAtFirstFrame?: string; __themeAtDcl?: string }
-      requestAnimationFrame(() => {
-        w.__themeAtFirstFrame = document.documentElement.className
-      })
+
+      // ⚠ LE PREMIER `requestAnimationFrame` TOUT COURT EST UN FAUX ORACLE.
+      // Il a été mesuré ROUGE ~1 fois sur 3 (`firstFrame` sans `.dark`, `dcl`
+      // AVEC) alors qu'aucun flash n'est possible : le `<head>` porte deux
+      // feuilles de style BLOQUANTES, le rendu est donc suspendu pendant que
+      // le compositeur, lui, tique déjà. Un callback rAF enregistré au
+      // document-start peut ainsi s'exécuter alors que le parseur n'a pas
+      // encore atteint le script de next-themes — et une frame où RIEN n'est
+      // peint ne prouve aucun flash. On échantillonne donc la PREMIÈRE FRAME
+      // OÙ DU CONTENU PEINTABLE EXISTE, ce qui est la borne que le pavé
+      // d'en-tête décrit vraiment. (HTML servi : `<body>` à l'octet ~1393, le
+      // script de next-themes immédiatement après — il précède donc tout
+      // contenu applicatif, et c'est cet ordre que la sonde verrouille.)
+      // « PEINTABLE » SE MESURE, NE SE DEVINE PAS. Le HTML servi commence par
+      // `<body><div hidden></div><script>…next-themes…</script>` : un test sur
+      // la seule PRÉSENCE d'un élément non-script laissait donc encore passer
+      // la frame d'AVANT le script, via ce `<div hidden>` (faux rouge résiduel
+      // reproduit ~1 run sur 3). L'oracle exact est l'existence d'une BOÎTE
+      // rendue — `getClientRects()` est vide pour un `hidden`, et vide tant que
+      // les feuilles bloquantes du `<head>` n'ont pas produit de mise en page.
+      const paintable = () => {
+        const body = document.body
+        if (!body) return false
+        return Array.from(body.children).some(
+          (el) =>
+            !['SCRIPT', 'STYLE', 'LINK', 'TEMPLATE'].includes(el.tagName) &&
+            (el as HTMLElement).getClientRects().length > 0,
+        )
+      }
+      const sampleFirstPaintableFrame = () => {
+        if (paintable()) {
+          w.__themeAtFirstFrame = document.documentElement.className
+          return
+        }
+        requestAnimationFrame(sampleFirstPaintableFrame)
+      }
+      requestAnimationFrame(sampleFirstPaintableFrame)
+
       document.addEventListener('DOMContentLoaded', () => {
         w.__themeAtDcl = document.documentElement.className
       })
@@ -86,11 +124,39 @@ async function isDark(page: Page) {
 }
 
 /**
+ * BARRIÈRE D'HYDRATATION EXPLICITE — à franchir AVANT tout clic.
+ *
+ * `ThemeToggle` ne pose `aria-pressed` qu'APRÈS sa garde `mounted`
+ * (`ui/theme-toggle.tsx` : `aria-pressed={mounted ? isDark : undefined}`). Tant
+ * que l'attribut manque, React n'a pas hydraté ce sous-arbre : le bouton est
+ * pourtant déjà rendu, VISIBLE et CLIQUABLE — le clic part donc en NO-OP
+ * SILENCIEUX, sans que Playwright n'ait rien à signaler (il n'y a simplement pas
+ * encore de `onClick` attaché). L'échec se lit alors comme un défaut du
+ * composant (« la classe .dark ne s'inverse pas »), ce qu'il n'est pas.
+ *
+ * C'est le piège déjà documenté par `landing-mobile-menu.spec.ts` (`openMenu`),
+ * qui le traite en REJOUANT le clic sous `toPass`. Ce remède-là est
+ * INAPPLICABLE à une bascule : `setMenuOpen(true)` est idempotent,
+ * `setTheme(inverse)` ne l'est pas — un second clic ramènerait le thème à son
+ * état initial et le test deviendrait non déterministe. D'où une barrière, pas
+ * un réessai. Et surtout pas un `waitForTimeout`, qui serait à la fois lent et
+ * flaky.
+ */
+async function waitForToggleHydrated(page: Page, testId: string) {
+  await expect(
+    page.getByTestId(testId),
+    `${testId} : \`aria-pressed\` toujours absent — le sous-arbre React n'est pas hydraté, ` +
+      `un clic serait un NO-OP silencieux (cf. barrière d'hydratation ci-dessus)`,
+  ).toHaveAttribute('aria-pressed', /^(true|false)$/)
+}
+
+/**
  * Clique la bascule et attend le basculement RÉEL de la classe — pas un simple
  * `waitForTimeout` : next-themes écrit `localStorage` puis met à jour `<html>`
  * dans le même tour, mais l'attente explicite documente l'oracle.
  */
 async function toggleAndExpectFlip(page: Page, testId: string) {
+  await waitForToggleHydrated(page, testId)
   const before = await isDark(page)
   await page.getByTestId(testId).click()
   await expect
@@ -102,6 +168,21 @@ async function toggleAndExpectFlip(page: Page, testId: string) {
 }
 
 test.describe('Bascule de thème hors connexion', () => {
+  /**
+   * L'outillage de `next dev` est un OBSTACLE AU CLIC, pas seulement du bruit de
+   * mesure. Mesuré ici : à 375 px, la bascule du panneau mobile est recouverte
+   * par `<nextjs-portal>` et 60 tentatives de clic sont interceptées d'affilée
+   * jusqu'à expiration. La CI e2e tourne elle aussi sur `next dev`
+   * (`playwright.config.ts`) — le risque n'est donc pas local. On réutilise le
+   * neutraliseur canonique du dépôt (`support/dev-tooling.ts`, #63/S63) plutôt
+   * que de réécrire une exclusion locale : il pose `pointer-events:none` sur le
+   * seul mobilier du serveur de dev, sans masquer ni démonter quoi que ce soit
+   * d'applicatif.
+   */
+  test.beforeEach(async ({ page }) => {
+    await neutralizeDevToolingPointerEvents(page)
+  })
+
   test.describe('landing — nav desktop', () => {
     test.use({ viewport: { width: 1280, height: 900 } })
 
@@ -139,13 +220,23 @@ test.describe('Bascule de thème hors connexion', () => {
   test.describe('landing — panneau mobile', () => {
     test.use({ viewport: { width: 375, height: 812 } })
 
-    test('la bascule du panneau est atteignable, celle du header ne l’est pas', async ({ page }) => {
+    test('la bascule du panneau est atteignable, celle du header ne l’est pas', async ({
+      page,
+    }) => {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
 
       // Le groupe desktop reste dans le DOM (`hidden lg:flex`) mais n'est pas
       // atteignable : c'est bien le panneau qui porte la bascule sous `lg`.
       await expect(page.getByTestId('landing-header-theme-toggle')).toBeHidden()
+
+      // Le burger n'expose AUCUN marqueur de montage propre — mais il partage le
+      // sous-arbre client de `HeaderSection` avec la bascule desktop, qui reste
+      // dans le DOM sous `lg` (`hidden lg:flex`). Son `aria-pressed` est donc
+      // l'oracle d'hydratation du burger aussi, et `toHaveAttribute` n'exige pas
+      // la visibilité. Sans cette barrière, le clic est un NO-OP, le panneau
+      // n'est jamais monté, et l'échec se lit « landing-header-menu introuvable ».
+      await waitForToggleHydrated(page, 'landing-header-theme-toggle')
 
       await page.getByTestId('landing-header-menu-toggle').click()
       await expect(page.getByTestId('landing-header-menu')).toBeVisible()
@@ -197,7 +288,7 @@ test.describe('Bascule de thème hors connexion', () => {
       )
       expect(
         preHydration.length,
-        "aucun script inline ne pose le thème sur <html> avant hydratation — le flash de thème est de retour (CSP ? `scriptProps` ? provider sorti du document statique ?)",
+        'aucun script inline ne pose le thème sur <html> avant hydratation — le flash de thème est de retour (CSP ? `scriptProps` ? provider sorti du document statique ?)',
       ).toBeGreaterThan(0)
     })
 
