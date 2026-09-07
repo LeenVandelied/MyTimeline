@@ -56,25 +56,21 @@ matimeline.com {
 	import securite
 	encode zstd gzip
 
-	# API. L'ÉCRASEMENT de X-Forwarded-For est une exigence de SÉCURITÉ, pas une
-	# optimisation : `reverse_proxy` AJOUTE par défaut à l'en-tête existant, or
-	# RateLimitingFilter.clientIp() lit le PREMIER élément (`split(",")[0]`).
-	# Sans `header_up`, un client enverrait `X-Forwarded-For: 1.2.3.4`, se
-	# retrouverait dans un bucket neuf à chaque requête et contournerait
-	# entièrement le plafond anti-brute-force de /api/auth/*.
-	# Ce réglage forme une PAIRE avec APP_RATE_LIMIT_TRUST_FORWARDED_HEADER=true
-	# côté backend : activer l'un sans l'autre est un défaut, dans les deux sens.
+	# X-Forwarded-For : AUCUN `header_up` explicite — VÉRIFIÉ empiriquement, Caddy 2
+	# REMPLACE déjà X-Forwarded-For par l'IP réelle de la connexion (il ne fait pas
+	# confiance au XFF entrant tant que `trusted_proxies` n'est pas configuré). Un
+	# `header_up X-Forwarded-For {remote_host}` serait redondant (Caddy émet
+	# d'ailleurs « Unnecessary header_up ») ET deviendrait un piège si un vrai
+	# proxy amont était ajouté un jour avec `trusted_proxies`. C'est ce défaut de
+	# Caddy qui protège le rate-limit par IP : APP_RATE_LIMIT_TRUST_FORWARDED_HEADER=true
+	# côté backend fait lire au filtre ce XFF, que Caddy garantit non forgeable.
 	handle /api/* {
-		reverse_proxy backend:8080 {
-			header_up X-Forwarded-For {remote_host}
-		}
+		reverse_proxy backend:8080
 	}
 
 	# Tout le reste : Next.js.
 	handle {
-		reverse_proxy frontend:3000 {
-			header_up X-Forwarded-For {remote_host}
-		}
+		reverse_proxy frontend:3000
 	}
 }
 
