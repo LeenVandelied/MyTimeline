@@ -5988,16 +5988,27 @@ surfaces frontend. Reclassement en L probable ; risque de débordement du sprint
 
 Vérifiés par l'architect dans le code, à corriger **avant** tout briefing de fullstack-dev :
 
-1. **#621 (toast) — prémisse fausse.** L'audit écrit « aucune lib dans le dépôt ».
-   `react-hot-toast@^2.5.2` est en dépendance, `<Toaster>` est monté
-   (`app/[locale]/layout.tsx:7,:85`) et `components/ui/toast.tsx` existe avec 4 variantes.
-   L'écart réel : aucun toast de **succès à l'enregistrement**. Taille S → probablement XS.
-   **À requalifier avant planification** — un agent briefé sur l'énoncé réinstallerait une
-   lib déjà présente.
-2. **#629 (squelette) — énoncé faux au pied de la lettre.** `LoadingSkeleton` **est** monté
-   sur `app/[locale]/(app)/dashboard/loading.tsx:21` en `variant="list"`. C'est la variante
-   `'timeline'` (`LoadingSkeleton.tsx:19`) qui n'a aucun consommateur, et la route
-   `timeline/` qui n'a pas de `loading.tsx`. À requalifier avec #630.
+1. **#621 (toast) — prémisse fausse. ÉNONCÉ CORRIGÉ SUR GITHUB le 2026-09-08.** L'audit
+   écrivait « aucune lib dans le dépôt » et « recherche vide sur `components/ui/toast` » :
+   les deux sont faux, et l'énoncé se contredisait plus bas. État réel vérifié : **deux
+   mécanismes en parallèle**. `react-hot-toast@^2.5.2` est vivant (`<Toaster>` monté
+   `layout.tsx:7,:85`, 15 appels `toast.success`/`toast.error` en production dans
+   `settings/` + `apiClient.ts` + `CategoryDrawer.tsx`), tandis que `components/ui/toast.tsx`
+   — le composant conforme au DS, 4 variantes, stylé par `.mt-toast*` (`core.css:277-286`) —
+   a **zéro consommateur**. `--z-toast` (`spacing.css:90`) reste mort. L'écart réel est
+   double : périmètre (aucun toast dans `events/`, `products/`, `timeline/`,
+   `EventEditForm.tsx`) et traitement (deux rendus concurrents). Retitrée, recadrée, taille
+   ramenée à XS→S.
+2. **#629 (squelette) — l'énoncé était EXACT, ma synthèse initiale l'a sur-affirmée.**
+   La formulation « n'est monté sur aucune route » vaut bien pour la **variante `timeline`**,
+   pas pour le composant, et le corps de l'issue le disait déjà correctement. Précision
+   ajoutée sur GitHub le 2026-09-08 : le composant est en `components/shared/`
+   (pas `ui/`) ; sur ses 3 variantes (`LoadingSkeleton.tsx:19`), **`cards` est orpheline
+   elle aussi** — seule `list` a un consommateur de production
+   (`dashboard/loading.tsx:21`). `timeline` et `cards` ne vivent que dans les tests, qui
+   passent au vert sur du code que personne ne monte. **Ne pas reprendre le titre seul dans
+   un briefing** : un agent pourrait conclure que le composant entier est mort et le
+   supprimer.
 3. **#618 — chemin faux.** Le « 480px en dur » est à `components/timeline/TimelineEditHost.tsx:208`,
    pas dans `components/events/`. La surface de création est déjà conforme au token
    `--drawer-width-form: 452px`.
@@ -6059,7 +6070,8 @@ arbitrages de l'audit ne doit plus être citée telle quelle dans un briefing.**
 - **Tableau de bord** (#623, #624, #640) — #575 touche déjà 7 fichiers du dashboard en S84.
 - **Auth visuelle** (#625, #626) + **états système** (#627, #628, #629, #630) — bon lot S88,
   après requalification de #629.
-- **#621, #629** — énoncés à requalifier avant toute planification (voir écarts 1 et 2).
+- **#621** — énoncé corrigé et retitré sur GitHub le 2026-09-08 ; requalifiée XS→S, planifiable.
+- **#629** — précision ajoutée sur GitHub le 2026-09-08 ; l'énoncé initial était exact, planifiable telle quelle.
 - **#638** — bloquée par #577, planifiable dès S85.
 - **#517** — sera de fait re-tranchée par #518 (S83) : le précédent du dépôt écarte
   délibérément `.mt-date--short`.
