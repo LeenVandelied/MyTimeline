@@ -187,6 +187,18 @@ jobs:
             -f docker-compose.prod.yml pull
           docker compose --env-file .env --env-file .env.tag \
             -f docker-compose.prod.yml up -d --remove-orphans
+
+          # ⚠ INDISPENSABLE — le Caddyfile est un fichier MONTÉ, pas une partie de
+          # l'image ni de la config du service. En changer le contenu ne modifie
+          # donc rien du point de vue de Compose : `up -d` laisse le conteneur
+          # Caddy intact, avec l'ANCIENNE configuration chargée en mémoire.
+          # Constaté sur le passage aux certificats de production : le fichier
+          # était à jour sur le disque et Caddy servait toujours l'ACME de test.
+          # `reload` est préféré à `restart` : rechargement à chaud, sans coupure.
+          docker compose --env-file .env --env-file .env.tag \
+            -f docker-compose.prod.yml exec -T caddy \
+            caddy reload --config /etc/caddy/Caddyfile
+
           # Le jeton expire de toute façon avec le job ; on ne laisse pas
           # d'identifiant périmé traîner dans ~/.docker/config.json.
           docker logout ghcr.io >/dev/null
@@ -248,6 +260,19 @@ jobs:
           HOST: ${{ secrets.DEPLOY_HOST }}
           USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
-            'cd /opt/matimeline && docker compose -f docker-compose.prod.yml ps && \
-             docker compose -f docker-compose.prod.yml logs --tail 80'
+          # ⚠ Les `--env-file` sont OBLIGATOIRES : sans eux, Compose échoue sur
+          # `IMAGE_TAG is missing` et cette étape ne produit RIEN — le diagnostic
+          # se taisait exactement quand on en avait besoin.
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" bash -se <<'EOSSH'
+          cd /opt/matimeline
+          DC="docker compose --env-file .env --env-file .env.tag -f docker-compose.prod.yml"
+          echo "===== etat des conteneurs ====="
+          $DC ps
+          echo "===== certificat servi ====="
+          echo | openssl s_client -connect localhost:443 -servername matimeline.com 2>/dev/null \
+            | openssl x509 -noout -issuer -dates 2>/dev/null || echo "(aucun certificat lisible)"
+          echo "===== logs backend ====="
+          $DC logs backend --tail 60
+          echo "===== logs caddy ====="
+          $DC logs caddy --tail 40
+          EOSSH
