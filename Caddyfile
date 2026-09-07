@@ -58,10 +58,12 @@ matimeline.com {
 }
 
 # --- Domaines secondaires : 301 vers le canonique ---------------------------
-# `matimeline.com` est le canonique (ADR-009 §2). Les deux autres domaines
-# détenus et le `www.` redirigent, en conservant chemin ET query string —
+# `matimeline.com` est le canonique (ADR-009 §2). Les TROIS autres domaines
+# détenus et les `www.` redirigent, en conservant chemin ET query string —
 # contrairement au garde applicatif #322, qui les supprime volontairement.
 www.matimeline.com,
+matimeline.fr,
+www.matimeline.fr,
 ma-timeline.com,
 www.ma-timeline.com,
 ma-timeline.fr,
