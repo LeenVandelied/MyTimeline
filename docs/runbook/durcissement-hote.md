@@ -65,18 +65,26 @@ passe par `lo`, qui est accepté sans condition) :
 curl -sS -o /dev/null -w '%{http_code}\n' http://<IP>/
 ```
 
-> ⚠ **Le point d'observation compte, et il peut mentir — constaté le 2026-09-07.**
-> Depuis un réseau qui intercepte HTTP/HTTPS (proxy transparent d'opérateur, portail
-> d'entreprise), `nc -z` et `curl` sur les ports **80 et 443** voient la poignée de main
-> aboutir puis un reset, **que le port distant soit ouvert ou non**. Le piège est
-> redoutable parce qu'un port réellement fermé ailleurs (ex. 12345) se comporte
-> différemment — il expire — ce qui donne l'illusion d'un test discriminant.
+> ⚠ **Ne jamais conclure sur un code de retour de connexion — constaté le 2026-09-07.**
+> `nc -z` a rapporté « succeeded » sur 80/443 alors que la Security List OCI les bloquait
+> encore. `curl`, lui, disait vrai. J'en ai tiré une explication inventée (« le réseau
+> d'observation intercepte 80/443 ») que la suite a réfutée : une fois les règles posées, les
+> mêmes commandes depuis le même poste ont rendu le contenu attendu.
 >
-> **Le seul contrôle concluant** : lancer un écouteur temporaire sur l'hôte
-> (`sudo python3 -m http.server 80`) et vérifier qu'on obtient une **vraie réponse HTTP**
-> depuis l'extérieur. Si un écouteur actif ne répond toujours pas, c'est le point
-> d'observation qui est en cause, pas l'hôte. Penser à **tuer l'écouteur** : il sert
-> l'arborescence en `root`.
+> **Le seul contrôle qui tranche est un test par CONTENU.** Sur l'hôte :
+>
+> ```bash
+> mkdir -p /tmp/probe && echo "jeton-$(date +%s)" > /tmp/probe/index.html
+> sudo setsid --fork timeout 120 python3 -m http.server 80 --bind 0.0.0.0 --directory /tmp/probe
+> ```
+>
+> puis, depuis l'extérieur, exiger le **jeton exact** en retour. Un intercepteur peut fabriquer
+> une poignée de main, jamais un jeton généré à l'instant.
+>
+> Trois précautions : `--directory` est **obligatoire** (sans lui, l'arborescence est servie en
+> `root`) ; `setsid --fork` pour que l'écouteur survive à la fin de la session SSH ; et vérifier
+> qu'il écoute vraiment (`ss -tln`) **avant** d'interpréter un échec distant — sinon on teste le
+> vide. Tuer l'écouteur et supprimer `/tmp/probe` ensuite.
 
 ## 2. Neutraliser `rpcbind`
 
