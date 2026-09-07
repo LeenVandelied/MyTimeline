@@ -15,6 +15,14 @@ sauvegardée ne protège d'aucun des scénarios réalistes (perte d'instance, su
 accidentelle, corruption du volume). La cible retenue est **OCI Object Storage**
 (20 Go inclus dans l'offre), donc hors de l'hôte applicatif.
 
+> ✅ **Opérationnel depuis le 2026-09-07.** Bucket `matimeline-backups` (région
+> `eu-paris-1`, **privé**), accès par **Instance Principal** — aucun secret sur la machine :
+> groupe dynamique `matimeline-backup-dg` (matche l'instance par son OCID) + policy
+> `matimeline-backup-policy` (`manage objects` + `read buckets`, restreints au bucket). Le
+> cron pose `OCI_BUCKET=matimeline-backups` ; le script s'authentifie en `instance_principal`
+> et **relit la liste distante** pour prouver la présence des objets après envoi. Vérifié :
+> 5 objets par jeu réellement présents dans le bucket.
+
 ## Périmètre
 
 Les quatre éléments sont nécessaires à une restauration complète.
@@ -45,9 +53,26 @@ d'été française) :
 > l'hôte** — il l'écrit en clair dans son journal. Ne pas confondre « la sauvegarde
 > a réussi » et « la sauvegarde est en sécurité ».
 
-**Rétention** : 14 jours en local (`RETENTION_DAYS`). La rétention **distante** se règle
-par une *lifecycle policy* sur le bucket OCI, pas par ce script — il ne supprime jamais
-d'objet distant.
+**Rétention locale** : 14 jours (`RETENTION_DAYS`), appliquée par le script.
+
+**Rétention distante** : par *lifecycle policy* sur le bucket, **pas** par le script (il
+ne supprime jamais d'objet distant), et **pas par l'instance** — la policy IAM lui donne
+`manage objects` mais **pas** `manage buckets`, à dessein : une instance compromise ne
+doit pas pouvoir désactiver la rétention ni détruire le bucket. La lifecycle se pose donc
+en **admin**, une fois. Deux voies :
+
+- Console : bucket `matimeline-backups` → onglet *Gestion* / *Règles de politique de cycle
+  de vie* → règle DELETE 30 jours, préfixe `matimeline/`.
+- CLI depuis un principal admin (⚠ format validé — `--items` prend le **tableau nu**, et le
+  préfixe va dans `objectNameFilter.inclusionPrefixes`, pas `objectNamePrefix`) :
+
+  ```bash
+  echo '[{"name":"expire-30j","action":"DELETE","timeAmount":30,"timeUnit":"DAYS","isEnabled":true,"objectNameFilter":{"inclusionPrefixes":["matimeline/"]}}]' > lc.json
+  oci os object-lifecycle-policy put --namespace <ns> --bucket-name matimeline-backups --items file://lc.json --force
+  ```
+
+  Sans elle, les sauvegardes s'accumulent — sans danger de capacité (≈48 Ko/jour pour 20 Go
+  de quota gratuit, soit >1000 ans), mais à régler pour l'hygiène RGPD.
 
 ## Vérifier qu'une sauvegarde est exploitable
 
@@ -106,6 +131,15 @@ docker compose -f docker-compose.prod.yml up -d && docker compose -f docker-comp
 signale un dump plus ancien que le code déployé — dans ce cas, redéployer l'image
 correspondant à la version du dump avant d'aller plus loin.
 
+> ✅ **Restauration réellement exécutée le 2026-09-07** (critère central de #371).
+> Le dump de production a été restauré dans un conteneur `postgres:16` **vierge et
+> isolé** (jamais la prod) : `pg_restore` sans erreur, données identiques
+> (`users=1 products=1 events=0 flyway=15 categories=1`), mot de passe bien haché
+> (bcrypt, 60 car.). Conteneur de test supprimé après coup. La méthode « conteneur
+> jetable » est préférée à une base `_restore_test` dans l'instance de prod : zéro
+> `DROP DATABASE`, zéro risque pour les données réelles, et elle prouve la
+> restauration sur une base **totalement vierge**.
+
 ### 4. Le contrôle qui fait foi
 
 Aucun contrôle technique ne remplace le parcours réel :
@@ -122,10 +156,12 @@ Aucun contrôle technique ne remplace le parcours réel :
 |---|---|
 | RPO visé | 24 h (sauvegarde quotidienne) |
 | RTO visé | < 1 h |
-| RPO / RTO **mesurés** | **non mesurés à ce jour** |
+| RPO / RTO **mesurés** | RTO **3 s** (restauration base seule, ~20 Ko, 2026-09-07) ; RPO borné par le cron quotidien (24 h) |
 
-La dernière ligne reste à remplir après le premier exercice de restauration réel.
-Tant qu'elle est vide, #371 n'est pas close.
+RTO mesuré sur une restauration réelle dans un conteneur `postgres:16` vierge, hors
+temps de provisioning de l'hôte (à compter séparément en cas de perte machine :
+recréer l'instance, réinstaller la stack, ~15-30 min). Le RTO croîtra avec la
+taille de la base ; 3 s vaut pour l'état actuel (1 compte, 1 produit).
 
 ## Ce que ce runbook ne couvre pas
 
