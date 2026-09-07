@@ -1,6 +1,6 @@
 # Issue #499 — rate-limit sur POST /api/me/avatar
 
-- commits: [SHA_PLACEHOLDER]
+- commits: [12ae288]
 - resume: quota **10/min/IP** (`Map.entry("POST /api/me/avatar", 10)` dans `DEFAULT_LIMITS`, 11e entrée).
   Argument : l'upload est coûteux (multipart 5 Mio en heap + magic-bytes + write disque + delete de
   l'ancien) MAIS légitimement répétable (recadrage raté, mauvaise image, NAT partagé) — le palier
