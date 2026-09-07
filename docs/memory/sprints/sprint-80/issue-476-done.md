@@ -66,8 +66,9 @@ mesurable sur la durée, et le delta est bien attribuable au parallélisme seul.
 
 ## Recommandations suite
 
-- Pas de `RECOMMAND_TEST_RUNNER` (mesure en CI, rien à jouer en local), pas de `RECOMMAND_DB_EXPERT`
-  ni `RECOMMAND_SECURITY` (aucun schéma ni surface d'auth).
+- Pas de `RECOMMAND_TEST_RUNNER` : mesure en CI, rien à jouer en local.
+- Pas de `RECOMMAND_DB_EXPERT` : aucun schéma touché.
+- Pas de `RECOMMAND_SECURITY` : aucune surface d'auth touchée.
 - ⚠ **Limite assumée et déclarée par l'agent** : le commit `e491a82` lui-même n'est passé en CI dans
   aucune PR. Sa config est fonctionnellement identique à celle de #554 (`2` dans les deux
   environnements) et charge bien 319 tests en 40 fichiers (`--list` joué) — mais **la PR de sprint

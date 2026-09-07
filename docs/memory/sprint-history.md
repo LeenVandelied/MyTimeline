@@ -5619,7 +5619,7 @@ et #550. `backend/devops` n'est pas une valeur de stack valide → `backend` seu
 porté par `epic:*`. Aucun label inventé.
 
 
-### Sprint 80 — 2026-09-06 (EN COURS — cohésion 0.30, Rendre le gate e2e crédible)
+### Sprint 80 — 2026-09-06 → 2026-09-07 (Terminé — merge PR #557 dans dev — cohésion 0.30, Rendre le gate e2e crédible)
 **Objectif :** éteindre les 2 flakes résiduels, trancher `workers > 1`, prouver le blocage au merge.
 **Milestone GitHub :** #81
 **Issues :** #472, #476, #408
@@ -5627,7 +5627,82 @@ porté par `epic:*`. Aucun label inventé.
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 79 — dépendance DURE. #476 exige #475 livrée : à 2 workers avec le
 budget register au plafond, un 429 se déguise en timeout `/login`, et le diagnostic est faux.
-**Status :** En cours
+**Status :** Terminé
+
+**Issues livrées (3) :** #472 (`dea0a0c`), #476 (`e491a82`), #408 (`5412c5d`).
+**Vagues exécutées :** V1 = #472 | V2 = #476 | V3 = #408 — trois vagues **séquentielles**, jamais
+de parallélisme : `playwright.config.ts` partagé + verrou de run (une seule campagne Playwright par
+worktree, [[PIT-S73-008]]).
+**Commits :** 11 — ouverture · briefing V1 · `dea0a0c` · artefact V1 · `e491a82` · artefact V2 ·
+`5412c5d` · artefact V3 · audit · cycle 2 de review (`20ac71d`) · CI verte consignée.
+**BR impactées :** **aucune**. Sprint d'outillage intégral — `git diff origin/dev...HEAD --
+frontend/src backend/` est **vide**.
+**Tests :** backend vert · frontend **1327 Vitest** verts · **e2e 5 min 39, `Running 319 tests using
+2 workers`, 310 + 13 passés, 0 failed, 0 flaky** (PR #557, run `34061832001`, 4/4 checks requis).
+**Reviews :** reviewer batch **0 CRITIQUE / 1 MAJEUR / 1 MINEUR** → `MERGEABLE` ·
+playwright-reviewer **1 MAJEUR / 1 MINEUR** → `PREUVE SOLIDE`. Les deux MAJEURS **résolus** au
+cycle 2 (`20ac71d`).
+**Saturation contexte lead :** non mesurée précisément ; ~320 K tokens consommés sur la session,
+subagents inclus (3 fullstack-dev, 2 relecteurs, 1 project-manager).
+
+**Ce que le sprint a réellement établi.** Le symptôme décrit par #472 **n'a jamais reparu** en
+6 runs complets — mais une instabilité *réelle* du même fichier a été reproduite, sur un autre
+membre, avec **deux causes distinctes établies sur artefact** : une sonde de pixels qui prenait
+**18 captures d'écran par test** (15-18 s des 30 s de budget sur Gecko, corrigé → 1 capture) et la
+compilation à la demande de `next dev` (tolérée, strictement locale). Le second symptôme
+(suppression de catégorie) est **non reproduit en 6 runs**, verdict écrit dans la spec avec sa
+limite : « 0/6 ne réfute pas un taux annoncé à 1/5 ».
+
+**Le motif du sprint : une valeur changée périme des raisonnements ailleurs.** #476 fait passer la
+CI à `workers: 2`. Le reviewer a trouvé **deux** specs justifiant le retrait d'une boucle de thèmes
+par un coût « `workers: 1` ». Le lead en a trouvé une **troisième**, et celle-là n'était pas
+cosmétique : `sprint-73-model-vs-rendered.spec.ts` affirmait que la fenêtre de pollution du compte
+partagé est **fermée en CI parce que `workers: 1`**. #476 vient de la rouvrir — c'est le mécanisme
+exact de [[PIT-S73-006]], dont le symptôme fut 2 tests rouges à 1000 lignes du diff. Effet de bord
+assumé et désormais écrit ; et l'obstacle que cette spec invoquait pour la vraie parade (« compte
+dédié impossible, budget au plafond ») est **lui aussi périmé depuis #475**.
+
+**Deux confondants isolés au lieu d'être supposés.** (1) La vague 1 allégeant la sonde de pixels,
+le gain de #476 aurait pu lui être attribué : une **3ᵉ PR jetable à diff vide** l'a écarté (8 min 19,
+dans la plage de la baseline) — [[PAT-S80-002]]. (2) Un `mergeStateStatus: BLOCKED` ne s'impute pas
+seul : #408 l'a établi par trois pièces (protection de `dev` lue, 3 autres checks requis verts,
+contrôle positif **gratuit** tiré des PR jetables de #476) — [[PAT-S80-003]], [[PAT-S80-004]].
+
+**La garde a été vue rougir.** Le playwright-reviewer a ouvert un MAJEUR honnête : toute la preuve
+de #472 était **statique**. Le lead a joué un **test de mutation** (`Math.max` → `Math.min` sur la
+marge de capture) : **8 tests rouges** sur `Point hors de la région capturée`. Le point décisif est
+que la régression **lève** au lieu de rabattre sur le bord — un décalage de marge ne peut donc pas
+produire un faux vert. Mutation révoquée → 20/20 vert, y compris sur l'autre consommateur du helper
+partagé. C'est le sprint qui *applique* la règle du S79 après en avoir été le sujet.
+
+**Hygiène des PR jetables.** Quatre PR ouvertes, **trois jetables toutes fermées sans merge** et
+branches supprimées (#554, #555, #556) ; `git ls-remote | grep -c throwaway` → **0**. Aucun code
+cassé ne subsiste sur la branche.
+
+**Ce qui n'est PAS acquis, et qu'il faut lire avant de s'appuyer sur ce sprint :**
+- La **baseline locale n'est pas verte et ne peut pas l'être** ([[DEC-S80-002]]) — suivi par #558.
+- Les références visuelles macOS rougissent structurellement (10 échecs) — déjà porté par **#548**.
+- Le taux de flake historique de #472 (2/5, 1/5) a été mesuré à `workers: 1` : il n'est **pas**
+  comparable au régime actuel. « 0/6 » ne le réfute pas.
+- La cause racine de la mort du serveur Next sous parallélisme (#465) **n'a toujours pas été
+  cherchée**. `workers: 2` est une mesure, pas une explication.
+
+**Nouveaux pitfalls / patterns / décisions :** PIT-S80-001 à 009 · PAT-S80-001 à 005 ·
+DEC-S80-001 à 004. Dont [[PIT-S80-009]] : **les garde-fous du dépôt se déclenchent sur leur propre
+documentation — 3 fois en un seul sprint** (anti-délégation sur un briefing qui cite la commande,
+gate `[MISSING]` sur une phrase qui le nie, check de complétude qui lit ligne à ligne et coupe une
+négation sur un retour à la ligne). Déjà signalé au S76 : le motif est structurel.
+
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `products.spec.ts :: navigation liste → détail produit`, rouge 4/6 en local par compilation à
+    froid [S | frontend/e2e] → **issue #558** (backlog libre)
+  - `timeout-minutes: 45` du job `e2e` calibré sur une référence périmée (durée réelle 5-6 min)
+    [XS | infrastructure] → **issue #559** (backlog libre)
+  - Références visuelles macOS [XS | frontend/e2e] → **écarté, doublon de #548** (créée au triage du
+    S79 ; le S80 l'a reconfirmée indépendamment — cf. [[constat-deja-porte-par-une-issue]])
+  - #408 n'a émis **aucun** follow-up : ses deux candidats naturels sont déjà portés par #433 et
+    #407, et #409 couvre la protection de `main`. Vérifié avant de proposer.
+  Ratio discard : 1/3, et le discard est un **doublon vérifié**, pas un rejet de pertinence.
 
 > **Dépendance amont LEVÉE au démarrage (2026-09-06).** La dépendance dure annoncée
 > ci-dessus est caduque sur son motif : #475 et #463 sont livrées ET fermées (S79 mergé),

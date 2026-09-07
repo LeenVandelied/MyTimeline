@@ -1035,6 +1035,42 @@ Pas de `--shuffle`, et l'ordre des fichiers passé en CLI est **ignoré** (Playw
 ## PIT-S79-008 — Un compteur de sources qui ne lit que les specs rate ce qui passe par les helpers, et il l'a fait sur ce dépôt
 La garde de budget livrée par #475 ne lisait que `e2e/*.spec.ts` : les inscriptions émises depuis `e2e/support/auth.ts#registerOnly` (appelé par `forgot-password.spec.ts` et `reset-password-failures.spec.ts`) lui étaient **invisibles**. Le budget réel était **8, pas 5** — le chiffre publié par le sprint lui-même était faux, et c'est le cycle 2 de revue qui l'a rattrapé. Parade : résoudre l'indirection helper (point fixe borné sur les fonctions exportées) et ancrer les motifs sur la **forme d'appel**, pas sur la présence d'une chaîne (un message d'erreur qui cite `/api/auth/register` n'émet rien). Prévention : **tout compteur de sources doit être exercé sur des sources synthétiques**, sinon il mesure ce qu'il voit et non ce qui existe. Angle mort résiduel assumé et figé par un test : un locator construit depuis une variable, ou un helper écrit en `export const f = async () =>`. (Sprint 79, cycle 2 de revue)
 
+
+## PIT-S80-001 — Une sonde de pixels qui prend une capture par offset paie N screenshots + N décodages PNG par test
+`probeHighlighted` prenait **18 `page.screenshot` + 18 décodages** par test. Invisible sur Chromium (0,25 s/capture), **fatal sur Gecko sous charge** (1,0 s) : 15-18 s des 30 s de budget. Le symptôme trompe — « le membre qui tombe varie » ressemble à un flake de composant, c'est un défaut de **coût** : tous les tests du fichier sont au même niveau de budget. Parade : une capture, N offsets (`readStrips`, marge dérivée de l'offset le plus éloigné). Mesuré 19,4-24,8 s → 3,3-5,1 s. Détection : cf. [[PAT-S80-001]]. (Sprint 80 #472)
+
+
+## PIT-S80-002 — `next dev` compile les routes App Router à la demande ET les évince après inactivité
+Une route déjà compilée est **RE-compilée plus tard dans le MÊME run** : `/[locale]/settings` 1,0 s puis **17,8 s** ; `reset-password` 1,8 s puis 8,9 s. Le budget par défaut d'un `expect` est 5 s ⇒ dépassement systématique. La compilation étant **sérielle**, elle frappe AUSSI le worker voisin (chunks clients en file). Signature : `toBeVisible` « element(s) not found » ou `toHaveURL` inchangée, expirés à 5 s, sur des specs **sans rapport entre elles**. Le log `next dev` tranche en une commande. **Strictement local** : #462 a retiré `next dev` de la CI pour ça — d'où une baseline locale qui ne peut pas être verte. (Sprint 80 #472)
+
+
+## PIT-S80-003 — Le hook RTK réécrit `npx playwright test` (pas seulement `--list`)
+Il y injecte `--reporter=json` et tronque la sortie à 2 000 caractères : log vide, `EXIT=` faux. Même famille que [[PIT-S65-003]] (le listing) et [[PIT-S20-003]] (`git diff` vidé), mais sur le **RUN**. Parade : `rtk proxy npx playwright test --reporter=json` + `PLAYWRIGHT_JSON_OUTPUT_NAME`. Le JSON est de toute façon le meilleur artefact : statuts, durées, `workerIndex`, `startTime`, `stdout` par test. (Sprint 80 #472)
+
+
+## PIT-S80-004 — `ci.yml` porte `concurrency: cancel-in-progress: true` groupé par ref
+Pousser un commit vide pour « obtenir un 2ᵉ run » **annule le 1er**. Le second run d'une campagne de mesure s'obtient par `gh run rerun <id>`, jamais par un push. Corollaire utile : deux PR jetables sur des refs **différentes** tournent bien en parallèle — c'est ce qui rend [[PAT-S80-002]] gratuit en temps. (Sprint 80 #476)
+
+
+## PIT-S80-005 — Un job `e2e` vert ne vaut que lu à TROIS niveaux
+(1) `Running N tests using M workers` — le M atteste que le changement de config a effectivement pris ; (2) le compte passés/skipped, sinon un « N did not run » passe pour un succès ([[PIT-S77-020]]) ; (3) **l'absence de `flaky`** — `retries: 2` transforme silencieusement une instabilité de charge en succès. Un vert lu à un seul niveau ne prouve rien. (Sprint 80 #476)
+
+
+## PIT-S80-006 — `gh pr close --delete-branch` BASCULE LE WORKTREE SUR `main`
+Sans le moindre avertissement. Les commits suivants atterrissent donc sur `main`. Rencontré en vague 3 du S80. Parade : revenir explicitement sur la branche de travail et **le vérifier** (`git rev-parse --abbrev-ref HEAD`) avant tout commit qui suit une fermeture de PR. (Sprint 80 #408)
+
+
+## PIT-S80-007 — Pour faire rougir un gate, casser une assertion d'ÉGALITÉ, jamais une attente
+Une attente d'élément absent expire, et sous `retries: 2` l'échec est rejoué **3 fois** en consommant le budget du test — c'est le mécanisme par lequel le job `e2e` est passé de 15 à 42 min ([[PIT-S63-002]]). Une assertion d'égalité sur une valeur **déjà en main** (`toBe(200)` → `toBe(418)`) échoue en millisecondes. Choisir aussi une spec **hors du périmètre du sprint**, pour que l'imputation reste nette. (Sprint 80 #408)
+
+
+## PIT-S80-008 — Un job rouge doit être rouge POUR LA RAISON PROVOQUÉE
+Symétrique de [[PIT-S77-020]]. Sans ce contrôle on prouve « la CI bloque quand elle casse », pas « ce gate-ci bloque ». Contrôle à trois niveaux : les steps du harnais tous `success` (l'infra n'est pas tombée), la somme passés+échoués+sautés = total annoncé, et **100 % des enregistrements d'échec portant la cause attendue** (24/24 sur `Expected: 418 / Received: 200` au S80). (Sprint 80 #408)
+
+
+## PIT-S80-009 — Les garde-fous du dépôt se déclenchent sur leur propre documentation — 3 fois en un sprint
+Constaté au S80 : (1) `warn-test-delegation.sh` bloque l'ÉCRITURE d'un briefing qui contient la chaîne `npx playwright test` — alors que la mémoire projet interdit précisément de déléguer l'E2E ([[PIT-S73-004]]) ; parade `SKIP_DELEGATION=1`. (2) Le gate de Phase 9 grep `[MISSING]` dans l'audit et mord sur la phrase « aucun `[MISSING]` » — ne jamais écrire le marqueur littéral, même en négation. (3) `check-sprint-completeness.sh` lit **ligne à ligne** : une négation « pas de … \n ni `RECOMMAND_SECURITY` » coupée par un retour à la ligne devient un signal non traité. Garder chaque négation sur UNE ligne. Déjà signalé au S76 sur 2 occurrences — le motif est structurel, pas anecdotique. (Sprint 80, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

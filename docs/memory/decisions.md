@@ -710,3 +710,15 @@ Décision : rendre le seul slot `register` configurable (`app.rate-limit.registe
 
 ## DEC-S79-003 — Nettoyage post-test, parce que le namespacing était déjà là et n'avait rien empêché
 #463 proposait trois stratégies. *Comptes par fichier* : écartés, ils ne corrigent pas la dépendance **intra-fichier** que l'issue décrit (29 tests dans `timeline.spec.ts`). *Namespacing par test* : écarté parce qu'il **était déjà en place** — 89 appels à `unique()` — et n'a empêché ni #467 ni l'incident du S73, car il supprime les collisions de **nom** et non la **visibilité**. Retenu : nettoyage post-test branché sur `seedCategory`/`seedProduct` + fixture `auto`. Mesure qui tranche : 81 produits visibles et 88 catégories laissés en fin de run baseline → **0 et 2** avec le correctif, et la spec verte-seule/rouge-en-suite passe des deux côtés. (Sprint 79 #463)
+
+## DEC-S80-001 — La CI passe à `workers: 2` (job `e2e`)
+Mesure : 2 runs consécutifs verts, **5 min 47 / 5 min 52 contre une baseline de 8 min 16 à 9 min 44** (−30 % sur le job, −40 % sur la suite), 0 `ECONNREFUSED`, 0 `flaky`, compte de tests identique. La borne de charge héritée de #465 — dont la **cause racine n'a jamais été cherchée** — tient donc sur un runner. Confirmé ensuite sur le HEAD réel du sprint (PR #557 : `Running 319 tests using 2 workers`, 310 + 13 passés, 5 min 39). ⚠ Si `ECONNREFUSED` réapparaît, c'est **la cause racine de #465 qu'il faut ouvrir**, pas cette valeur qu'il faut rebaisser. On ne monte pas au-delà de 2 : seule valeur > 1 pour laquelle « 0 ECONNREFUSED » a été mesuré. (Sprint 80 #476)
+
+## DEC-S80-002 — La compilation à la demande de `next dev` est TOLÉRÉE en local, pas corrigée par du budget
+Relever un timeout, ajouter `retries` ou `test.slow()` achèterait du vert local **avec du budget de test**, et ferait perdre au local un signal que la CI garde (elle sert un build de production). La parade propre — préchauffage des routes ou desserrage de l'éviction — touche la config du serveur, hors périmètre #472. Conséquence assumée : **la baseline locale n'est pas verte et ne peut pas l'être**. (Sprint 80 #472)
+
+## DEC-S80-003 — Les références visuelles `sprint-77-theme-visual` sont inexploitables hors Linux
+Sur tout poste macOS, 10 rouges **structurels** : les références sont committées en `-chromium-linux.png` et le run génère `-chromium-darwin.png`. Ce n'est **pas** un flake et aucun garde-fou ne le dit. Les PNG darwin générés au S80 ont été supprimés, **pas** committés — cf. [[playwright-refs-plateforme-et-armement]]. (Sprint 80 #472)
+
+## DEC-S80-004 — La preuve de #408 s'arrête au couple `BLOCKED` + imputation, sans appeler l'API de merge
+Le test le plus direct serait d'appeler l'API de merge et de capturer le refus 405. Écarté : sur un dépôt **public**, une erreur de manipulation fusionnerait un test cassé dans `dev`. Le couple `BLOCKED` + les trois pièces d'imputation ([[PAT-S80-003]]) suffit. **Limite déclarée au §7 du dossier plutôt que masquée** — c'est exactement le défaut de rigueur que #408 corrigeait chez #361. (Sprint 80 #408)
