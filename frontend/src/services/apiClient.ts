@@ -22,14 +22,38 @@ const apiClient = axios.create({
 })
 
 /**
- * #76 — Les uploads multipart peuvent légitimement durer longtemps (fichiers
- * volumineux, réseau lent). On neutralise le timeout global pour ces requêtes
- * afin de ne pas requalifier un upload en cours en « timeout réseau ».
+ * Requêtes dont le corps est un `FormData` (uploads multipart — avatar #75).
+ *
+ * 1. #76 — Un upload peut légitimement durer longtemps (fichier volumineux,
+ *    réseau lent). On neutralise le timeout global pour ne pas requalifier un
+ *    upload en cours en « timeout réseau ».
+ *
+ * 2. #215 — On RETIRE le `Content-Type: application/json` posé au niveau de
+ *    l'instance. Ce n'est PAS cosmétique : axios ne se contente pas de laisser
+ *    l'en-tête en place, il CHANGE le corps. `transformRequest`
+ *    (axios/lib/defaults/index.js) fait, pour un `FormData` :
+ *
+ *        if (isFormData) return hasJSONContentType
+ *          ? JSON.stringify(formDataToJSON(data))   // <- notre cas
+ *          : data
+ *
+ *    Le fichier était donc sérialisé en JSON et JAMAIS envoyé comme fichier ;
+ *    le POST partait en `application/json`, et `POST /api/me/avatar`
+ *    (`consumes = multipart/form-data`) répondait **415 Unsupported Media Type**.
+ *    Sans cet en-tête, axios renvoie le `FormData` tel quel et le navigateur
+ *    pose lui-même `multipart/form-data` AVEC la boundary.
+ *
+ *    ⚠ Ce défaut n'avait rien d'un artefact d'environnement de test : il ne
+ *    dépend ni du proxy Next (`rewrites` E2E) ni du cookie JWT — mesuré le
+ *    2026-09-07, le même POST rejoué en direct sur le backend rend 415 avec
+ *    `Content-Type: application/json` et 200 en multipart, cookie identique.
+ *    L'upload d'avatar était cassé en PRODUCTION aussi.
  */
 apiClient.interceptors.request.use((config) => {
   const isMultipart = typeof FormData !== 'undefined' && config.data instanceof FormData
   if (isMultipart) {
     config.timeout = 0
+    config.headers.delete('Content-Type')
   }
   return config
 })

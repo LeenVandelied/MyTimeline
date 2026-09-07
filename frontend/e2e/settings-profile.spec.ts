@@ -23,17 +23,20 @@ test.use({ storageState: SHARED.storageState })
 test.describe.configure({ mode: 'serial' })
 
 test.describe('Réglages — Profil : avatar + champs', () => {
-  // FIXME (follow-up) : en CI e2e, le POST multipart `/api/me/avatar` renvoie 401
-  // (diagnostic capturé, run 28753470777) alors que les autres appels authentifiés
-  // du même storageState passent (PATCH /me, GET/DELETE /sessions...). Suspicion :
-  // edge-case du proxy Next dev (`rewrites` /api/* -> :8080) sur une requête
-  // multipart/form-data (le cookie JWT SameSite=Lax n'est pas propagé sur ce cas
-  // précis), spécifique à l'environnement E2E — a priori PAS reproductible en prod
-  // (pas de rewrite Next). L'upload avatar reste couvert par le backend
-  // (AvatarServiceImplTest/UserControllerTest : magic bytes, ownership, 5 Mo, cleanup)
-  // + les tests composant `ProfileSection`. À ré-activer après investigation du 401
-  // multipart-proxy (cf. issue de suivi).
-  test.fixme('upload avatar (crop -> confirm), puis suppression', async ({ page }) => {
+  // #215 — Ce test a longtemps été `test.fixme` sur l'hypothèse d'un 401 propre à
+  // l'environnement E2E (« le proxy Next dev ne propagerait pas le cookie JWT sur du
+  // multipart »). MESURÉ le 2026-09-07, c'était FAUX sur les deux points :
+  //   - le statut réel n'était pas 401 mais **415 Unsupported Media Type**, corps
+  //     `{"status":415,...,"path":"/api/me/avatar"}` — un 401 d'auth aurait rendu
+  //     `{"error":"unauthorized"}` (entry point Spring Security) ;
+  //   - le cookie `jwt` ÉTAIT bien envoyé, et le même POST multipart rejoué à travers
+  //     le proxy rendait 200. Le proxy Next est hors de cause.
+  // Cause réelle, côté client et donc VALABLE EN PRODUCTION : le `Content-Type:
+  // application/json` de l'instance axios survivait à un corps `FormData`, ce qui
+  // pousse axios à sérialiser le formulaire en JSON (le fichier n'était jamais
+  // transmis). Corrigé dans `apiClient` (intercepteur de requête), pas dans la
+  // chaîne d'auth backend.
+  test('upload avatar (crop -> confirm), puis suppression', async ({ page }) => {
     await openSettingsChapter(page, 'profile')
 
     const avatar = page.getByTestId('avatar-upload')
