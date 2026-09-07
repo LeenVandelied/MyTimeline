@@ -9,16 +9,21 @@
 #   1. la base PostgreSQL            (pg_dump, format custom)
 #   2. le volume des avatars         (#212 : stockage local tant qu'il dure)
 #   3. le volume des exports RGPD
-#   4. le volume caddy-data          (certificats + compte ACME ; le perdre
-#      force une réémission et peut heurter le quota Let's Encrypt)
+#   4. le volume caddy-data          (certificats + compte ACME)
 #
-# Le transfert HORS HÔTE est la raison d'être du script : une sauvegarde qui
-# ne vit que sur la machine sauvegardée ne protège de rien.
+# ⚠ Ce script opère via `docker` DIRECTEMENT (conteneurs repérés par leur label
+# de projet, volumes par leur nom), et JAMAIS via `docker compose`. Raison
+# apprise à l'usage : le fichier compose de prod exige `IMAGE_TAG` et les secrets
+# (`${VAR:?}`), qu'une session de cron n'a aucune raison d'avoir en environnement.
+# Une sauvegarde ne doit dépendre ni du tag d'image déployé ni des secrets — elle
+# doit marcher tant que les conteneurs TOURNENT, un point c'est tout.
+#
+# Le transfert HORS HÔTE est la raison d'être du script : une sauvegarde qui ne
+# vit que sur la machine sauvegardée ne protège d'aucun des scénarios réalistes.
 # =============================================================
 set -euo pipefail
 
-STACK_DIR="${STACK_DIR:-/opt/matimeline}"
-COMPOSE_FILE="${COMPOSE_FILE:-$STACK_DIR/docker-compose.prod.yml}"
+PROJECT="${COMPOSE_PROJECT:-matimeline}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/matimeline}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
 # Cible distante OCI Object Storage. Vide => transfert SAUTÉ, et le script le
@@ -30,7 +35,6 @@ WORK="$BACKUP_DIR/$TS"
 mkdir -p "$WORK"
 
 log() { printf '[%s] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
-compose() { docker compose -f "$COMPOSE_FILE" "$@"; }
 
 cleanup_on_error() {
   log "ÉCHEC — suppression de la sauvegarde partielle $WORK"
@@ -38,37 +42,56 @@ cleanup_on_error() {
 }
 trap cleanup_on_error ERR
 
+# Conteneur d'un service du projet, repéré par ses labels Compose (indépendant
+# du tag d'image et du nom exact du conteneur).
+container_of() {
+  local svc="$1" id
+  id="$(docker ps -q \
+    --filter "label=com.docker.compose.project=$PROJECT" \
+    --filter "label=com.docker.compose.service=$svc")"
+  [ -n "$id" ] || { log "ERREUR : conteneur du service '$svc' introuvable (projet $PROJECT)"; return 1; }
+  printf '%s' "$id"
+}
+
 # --- 1. Base de données ------------------------------------------------------
 # Format custom (-Fc) : restauration sélective possible et compression intégrée.
 log "pg_dump…"
-DB_NAME="$(compose exec -T postgres printenv POSTGRES_DB | tr -d '\r')"
-DB_USER="$(compose exec -T postgres printenv POSTGRES_USER | tr -d '\r')"
-compose exec -T postgres pg_dump -U "$DB_USER" -d "$DB_NAME" -Fc > "$WORK/db.dump"
+PG="$(container_of postgres)"
+DB_NAME="$(docker exec "$PG" printenv POSTGRES_DB | tr -d '\r')"
+DB_USER="$(docker exec "$PG" printenv POSTGRES_USER | tr -d '\r')"
+docker exec "$PG" pg_dump -U "$DB_USER" -d "$DB_NAME" -Fc > "$WORK/db.dump"
 
 # Un pg_dump qui échoue APRÈS avoir écrit l'en-tête laisse un fichier non vide
-# mais tronqué. `pg_restore --list` est le seul contrôle qui le détecte.
+# mais tronqué. `pg_restore --list` le détecte — mais le format custom (-Fc) exige
+# un fichier SEEKABLE : le vérifier via `/dev/stdin` (un pipe) échoue sur
+# « did not find magic string ». On réinjecte donc le dump dans un fichier temp
+# du conteneur, on le liste, puis on nettoie — code retour propagé.
 log "vérification de l'intégrité du dump…"
-compose exec -T postgres pg_restore --list /dev/stdin < "$WORK/db.dump" > /dev/null
+docker exec -i "$PG" sh -c \
+  'cat > /tmp/_verify.dump && pg_restore --list /tmp/_verify.dump > /dev/null; rc=$?; rm -f /tmp/_verify.dump; exit $rc' \
+  < "$WORK/db.dump"
 log "dump valide ($(du -h "$WORK/db.dump" | cut -f1))"
 
 # --- 2..4. Volumes -----------------------------------------------------------
 # Passage par un conteneur jetable : les volumes nommés ne sont pas montés sur
 # l'hôte, et fouiller /var/lib/docker/volumes à la main est fragile.
-PROJECT="$(compose config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["name"])')"
 for vol in avatars-data exports-data caddy-data; do
+  full="${PROJECT}_${vol}"
+  if ! docker volume inspect "$full" >/dev/null 2>&1; then
+    log "ERREUR : volume '$full' introuvable"; exit 1
+  fi
   log "archivage du volume $vol…"
-  docker run --rm \
-    -v "${PROJECT}_${vol}:/src:ro" \
-    -v "$WORK:/out" \
-    alpine:3 tar czf "/out/$vol.tar.gz" -C /src .
+  docker run --rm -v "$full:/src:ro" -v "$WORK:/out" alpine:3 \
+    tar czf "/out/$vol.tar.gz" -C /src .
 done
 
 # --- Empreintes --------------------------------------------------------------
 ( cd "$WORK" && sha256sum ./* > SHA256SUMS )
-log "sauvegarde locale prête : $WORK"
+log "sauvegarde locale prête : $WORK ($(du -sh "$WORK" | cut -f1))"
 
 # --- Transfert hors hôte -----------------------------------------------------
 if [ -n "$OCI_BUCKET" ]; then
+  command -v oci >/dev/null || { log "ERREUR : OCI_BUCKET défini mais l'outil 'oci' est absent"; exit 1; }
   log "envoi vers OCI Object Storage ($OCI_BUCKET)…"
   for f in "$WORK"/*; do
     oci os object put --bucket-name "$OCI_BUCKET" \

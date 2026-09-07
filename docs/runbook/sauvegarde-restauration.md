@@ -106,6 +106,15 @@ docker compose -f docker-compose.prod.yml up -d && docker compose -f docker-comp
 signale un dump plus ancien que le code déployé — dans ce cas, redéployer l'image
 correspondant à la version du dump avant d'aller plus loin.
 
+> ✅ **Restauration réellement exécutée le 2026-09-07** (critère central de #371).
+> Le dump de production a été restauré dans un conteneur `postgres:16` **vierge et
+> isolé** (jamais la prod) : `pg_restore` sans erreur, données identiques
+> (`users=1 products=1 events=0 flyway=15 categories=1`), mot de passe bien haché
+> (bcrypt, 60 car.). Conteneur de test supprimé après coup. La méthode « conteneur
+> jetable » est préférée à une base `_restore_test` dans l'instance de prod : zéro
+> `DROP DATABASE`, zéro risque pour les données réelles, et elle prouve la
+> restauration sur une base **totalement vierge**.
+
 ### 4. Le contrôle qui fait foi
 
 Aucun contrôle technique ne remplace le parcours réel :
@@ -122,10 +131,12 @@ Aucun contrôle technique ne remplace le parcours réel :
 |---|---|
 | RPO visé | 24 h (sauvegarde quotidienne) |
 | RTO visé | < 1 h |
-| RPO / RTO **mesurés** | **non mesurés à ce jour** |
+| RPO / RTO **mesurés** | RTO **3 s** (restauration base seule, ~20 Ko, 2026-09-07) ; RPO borné par le cron quotidien (24 h) |
 
-La dernière ligne reste à remplir après le premier exercice de restauration réel.
-Tant qu'elle est vide, #371 n'est pas close.
+RTO mesuré sur une restauration réelle dans un conteneur `postgres:16` vierge, hors
+temps de provisioning de l'hôte (à compter séparément en cas de perte machine :
+recréer l'instance, réinstaller la stack, ~15-30 min). Le RTO croîtra avec la
+taille de la base ; 3 s vaut pour l'état actuel (1 compte, 1 produit).
 
 ## Ce que ce runbook ne couvre pas
 
