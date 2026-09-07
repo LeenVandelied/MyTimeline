@@ -5912,7 +5912,7 @@ les issues #592-#644), `docs/design/graphite-handoff.md`, `docs/memory/decisions
 des sprints précédents, ce signal ne prouve rien — l'architect a vérifié chaque issue retenue
 directement dans le code (résultat : 11 énoncés démentis, voir plus bas).
 
-### Sprint 83 — 2026-09-07 (PLANIFIÉ — cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
+### Sprint 83 — 2026-09-07 → 2026-09-08 (EN COURS — cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
 **Objectif :** Fondation de charte (nav active, filet vs ombre, bascule de thème) + sémantique `<time>`
 **Milestone GitHub :** #84
 **Issues (4) :** #578, #574, #642, #518
@@ -5923,7 +5923,7 @@ directement dans le code (résultat : 11 énoncés démentis, voir plus bas).
 #518 (P1, seule P1 du lot) a été placée ici sur demande explicite. Elle traverse ~15
 composants et entre en conflit avec presque tous les sprints suivants ; la placer en tête
 évite les reprises.
-**Status :** Planifié
+**Status :** En cours (démarré 2026-09-08)
 
 ### Sprint 84 — 2026-09-07 (PLANIFIÉ — cohésion 0.40, Charte : palette unique et titres de section)
 **Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres
