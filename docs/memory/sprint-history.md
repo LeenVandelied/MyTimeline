@@ -5717,7 +5717,7 @@ négation sur un retour à la ligne). Déjà signalé au S76 : le motif est stru
 > session), `next dev` en **webpack** sur `:3000` (pas turbopack — PIT-S61-007 en worktree).
 > Oracle réseau de `playwright.config.ts` vérifié : `GET :3000/api/auth/me` → **401**.
 
-### Sprint 81 — 2026-09-06 → 2026-09-07 (EN COURS — cohésion 0.56, Durcir le parcours auth/avatar)
+### Sprint 81 — 2026-09-06 → 2026-09-07 (Terminé — merge PR #560 dans dev — cohésion 0.56, Durcir le parcours auth/avatar)
 **Objectif :** rate-limit avatar, flaky auth élucidé (ou son mécanisme de capture livré), E2E avatar dégelé.
 **Milestone GitHub :** #82
 **Issues :** #500, #499, #215
@@ -5755,7 +5755,21 @@ l'état du compte partagé E2E. Détail dans les done.md.
     la PR. Ratio discard 0/3.
 **Saturation contexte lead :** non mesurée — aucun instrument fiable disponible dans cette session ;
 ne pas inventer un chiffre pour remplir le champ.
-**Status :** En cours — PR #560 ouverte, CI verte (7/7), en attente de confirmation de merge
+**Issues :** #499 et #215 **livrées et fermées** · #500 **volontairement laissée OUVERTE** (détachée
+du milestone et délabellisée `sprint-81` pour ne pas passer pour livrée — cf. [[DEC-S81-006]]).
+**Milestone GitHub :** #82 — fermé après le merge.
+**Merge :** PR #560 fusionnée dans `dev` le 2026-09-07 (commit `c5379e77`), 7 checks verts.
+**Rattrapages de `dev` :** 13 commits de mise en production ont atterri dans `dev` PENDANT le sprint
+(stack, Caddy, `deploy.yml`, runbooks, ADR-009) — **aucun code applicatif touché de leur côté**.
+Trois fusions successives ont été nécessaires (`strict: true` sur `dev` exige une branche à jour, et
+`dev` avançait plus vite que les ~6 min de CI).
+**Collision de namespace mémoire — à retenir :** le chantier de déploiement écrivait dans le MÊME
+`pitfalls.md` avec le MÊME numéro de sprint et occupait déjà `PIT-S81-001..008` / `DEC-S81-001..004`.
+Mes entrées ont été déplacées en **`PIT-S81-020..024`** et **`DEC-S81-005..007`**, laissant 009..019
+libres. Deux références croisées étaient devenues **silencieusement fausses** (elles pointaient vers
+les entrées de déploiement) : corrigées dans `patterns.md` et `sprint-history.md`, plus le corps de
+l'issue #568.
+**Status :** Terminé
 
 ### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
 **Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
