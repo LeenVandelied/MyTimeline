@@ -191,8 +191,19 @@ jobs:
         env:
           ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}
         run: |
+          # Le Caddyfile est l'UNIQUE source de vérité sur le mode ACME. Tant que
+          # l'ACME de test est actif, le certificat n'est pas approuvé et une
+          # vérification TLS stricte ferait échouer ce job alors que l'application
+          # répond parfaitement. Lire le fichier évite une variable séparée qu'on
+          # oublierait de basculer en même temps que le Caddyfile.
+          if grep -qE '^[[:space:]]*acme_ca[[:space:]]+https://acme-staging' Caddyfile; then
+            echo "::warning::ACME de TEST actif — certificat non approuvé, vérification TLS désactivée pour ce run. Recommenter acme_ca dans le Caddyfile pour passer en production."
+            TLS_OPT="--insecure"
+          else
+            TLS_OPT=""
+          fi
           for i in $(seq 1 30); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
+            code=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
             if [ "$code" = "200" ]; then
               echo "OK : $ORIGIN/fr/login -> 200"
               exit 0
