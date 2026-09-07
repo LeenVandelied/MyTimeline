@@ -46,7 +46,7 @@
   "ready": {
     "syncDone": "Su exportación se ha descargado.",
     "asyncReady": "Su exportación está lista.",
-    "expiresAt": "Este enlace caduca el {date}.",
+    "expiresAt": "Este enlace caduca el <expiry>{date}</expiry>.",
     "expired": "Este enlace de descarga ha caducado. Vuelva a solicitarlo para generar una nueva exportación."
   },
   "errors": {

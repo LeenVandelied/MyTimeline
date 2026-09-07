@@ -1,5 +1,6 @@
 import React from 'react'
 import { formatDayParts } from './lib'
+import { toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #47 — DateStamp : une cellule de jour dans l'en-tête (Ruler).
@@ -79,11 +80,23 @@ export const DateStamp: React.FC<DateStampProps> = ({ day, locale, now }) => {
       }`}
     >
       <div className="text-2xs overflow-hidden px-0.5 py-2 text-center font-medium @min-[34px]:px-2 @min-[34px]:text-xs">
-        {/* L'espace vit DANS le span : masqué avec lui, et sécable — le libellé
-            doit pouvoir passer à la ligne entre les deux jetons plutôt que de
-            déborder (une espace insécable rétablirait le défaut corrigé ici). */}
-        <span className="sr-only @min-[52px]:not-sr-only">{`${weekday} `}</span>
-        {dayNumber}
+        {/* #518 — `<time datetime>` (convention DS `i18n.css` §7) : la cellule EST une
+            date, elle doit s'annoncer comme telle. Le `<time>` est posé À L'INTÉRIEUR
+            du `div` de mise en page (et ne le remplace pas) : un `<time>` est inline,
+            il perdrait `text-center`, `overflow-hidden` et le padding vertical.
+            PAS de `.mt-date--*` ici, à la différence des autres migrations de #518 :
+            `.mt-date--long` pose `white-space:nowrap`, ce qui DÉFAIT exactement le
+            passage à la ligne entre les deux jetons documenté juste dessous, et sa
+            `font-size:13px` fixe casserait la rampe par container-query (`text-2xs`
+            → `text-xs` au palier 34px) dont les seuils sont calculés en en-tête de
+            ce fichier. Le gain sémantique est acquis sans toucher au rendu. */}
+        <time dateTime={toLocalIsoDate(day) ?? undefined}>
+          {/* L'espace vit DANS le span : masqué avec lui, et sécable — le libellé
+              doit pouvoir passer à la ligne entre les deux jetons plutôt que de
+              déborder (une espace insécable rétablirait le défaut corrigé ici). */}
+          <span className="sr-only @min-[52px]:not-sr-only">{`${weekday} `}</span>
+          {dayNumber}
+        </time>
       </div>
     </div>
   )

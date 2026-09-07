@@ -5,7 +5,12 @@ import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { LegalDisclaimer } from '@/components/legal/legal-disclaimer'
 import { LegalTableOfContents } from '@/components/legal/legal-table-of-contents'
-import { PRIVACY_SECTIONS, formatLegalDate, shouldShowLegalDisclaimer } from '@/lib/legal-pages'
+import {
+  PRIVACY_SECTIONS,
+  LEGAL_LAST_UPDATED_ISO,
+  formatLegalDate,
+  shouldShowLegalDisclaimer,
+} from '@/lib/legal-pages'
 
 export async function generateMetadata({
   params,
@@ -199,7 +204,16 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
 
         <div className="text-center">
           <p className="text-ink-muted text-sm" data-testid="legal-last-updated">
-            {t('privacy.lastUpdated')}: {formatLegalDate(locale)}
+            {t('privacy.lastUpdated')}:{' '}
+            {/* #518 — `<time datetime>` (convention DS `i18n.css` §7). La valeur
+                machine-lisible est la CONSTANTE `LEGAL_LAST_UPDATED_ISO` elle-même
+                (`YYYY-MM-DD`), pas une reconstruction : `formatLegalDate` la rend en
+                `timeZone:'UTC'`, l'attribut et le libellé nomment donc le même jour
+                dans toutes les locales. Pas de `.mt-date--*` : la ligne est une
+                phrase de prose (`text-sm`, 17px) et non un jeton de donnée — y
+                imposer 13px mono ferait décrocher la date du libellé qui la précède
+                sur la MÊME ligne. */}
+            <time dateTime={LEGAL_LAST_UPDATED_ISO}>{formatLegalDate(locale)}</time>
           </p>
           <Link href={`/${locale}`} passHref>
             <Button variant="outline" className="border-rule hover:bg-surface mt-4">

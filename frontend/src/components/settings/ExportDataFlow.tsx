@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { useExportFlow } from '@/hooks/useExportFlow'
 import { EXPORT_FORMATS, isSyncFormat, type ExportFormat } from '@/lib/schemas/export'
+import { toIsoInstant } from '@/lib/date-iso'
 
 /**
  * #59 — Flux d'export RGPD en 3 étapes (choix format → préparation → téléchargement),
@@ -190,8 +191,26 @@ export function ExportDataFlow() {
                 </Button>
                 {flow.completedJob.expiresAt && (
                   <p className="text-ink-muted text-xs" data-testid="export-expiry">
-                    {t('ready.expiresAt', {
+                    {/* #518 — la date vit DANS une phrase ICU : la sortir du message
+                        casserait l'ordre des mots (`de` place « ab » APRÈS la date).
+                        `t.rich` + la balise `<expiry>` ajoutée aux 4 messages permet
+                        d'envelopper le seul segment date en `<time datetime>` sans
+                        toucher à la syntaxe de la phrase. Si Crowdin réécrit une
+                        traduction SANS la balise, next-intl rend simplement le texte
+                        nu — dégradation, pas d'exception. */}
+                    {t.rich('ready.expiresAt', {
                       date: formatExpiry(flow.completedJob.expiresAt, locale),
+                      expiry: (chunks) => (
+                        <time
+                          className="mt-date--long"
+                          dateTime={
+                            toIsoInstant(new Date(`${flow.completedJob?.expiresAt ?? ''}Z`)) ??
+                            undefined
+                          }
+                        >
+                          {chunks}
+                        </time>
+                      ),
                     })}
                   </p>
                 )}

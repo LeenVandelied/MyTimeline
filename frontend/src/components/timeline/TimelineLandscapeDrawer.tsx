@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { PositionedEvent } from './zoom'
 import { useFocusTrap } from './useFocusTrap'
+import { toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #64 — Drawer latéral droit de détail événement (variante PAYSAGE mobile).
@@ -53,15 +54,35 @@ export const TimelineLandscapeDrawer: React.FC<TimelineLandscapeDrawerProps> = (
   if (!event) return null
 
   const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
-  const startLabel = fmt.format(new Date(event.start))
-  const endLabel = fmt.format(new Date(event.end || event.start))
+  const startDate = new Date(event.start)
+  const endDate = new Date(event.end || event.start)
+  const startLabel = fmt.format(startDate)
+  const endLabel = fmt.format(endDate)
   const statusLabel = t(`dashboard.timeline.status.${event.status}`)
 
-  const rows: Array<[string, string]> = [
+  /* #518 — la VALEUR d'une ligne devient un `ReactNode` (et non plus un `string`)
+     pour que les deux lignes de date portent un `<time datetime>` (convention DS,
+     `i18n.css` §7) tout en gardant le rendu générique `rows.map()` : trois lignes
+     sur cinq restent du texte nu. `.mt-date--long` vaut 13px, la taille que
+     `.mt-drawer__row` pose déjà — seules la fonte mono et le `nowrap` changent.
+     Les `key` sont posées pour `react/jsx-key` : la règle voit un littéral de
+     tableau contenant du JSX et ne distingue pas un TUPLE (clé, valeur) d'une
+     liste d'enfants. Sans elles, `next build` échoue (le lint est un gate CI). */
+  const rows: Array<[string, React.ReactNode]> = [
     [t('dashboard.timeline.drawer.product'), event.extendedProps.productName],
     [t('dashboard.timeline.drawer.category'), event.extendedProps.category],
-    [t('dashboard.timeline.drawer.start'), startLabel],
-    [t('dashboard.timeline.drawer.end'), endLabel],
+    [
+      t('dashboard.timeline.drawer.start'),
+      <time key="start" className="mt-date--long" dateTime={toLocalIsoDate(startDate) ?? undefined}>
+        {startLabel}
+      </time>,
+    ],
+    [
+      t('dashboard.timeline.drawer.end'),
+      <time key="end" className="mt-date--long" dateTime={toLocalIsoDate(endDate) ?? undefined}>
+        {endLabel}
+      </time>,
+    ],
     [t('dashboard.timeline.drawer.status'), statusLabel],
   ]
 

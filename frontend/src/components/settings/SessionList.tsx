@@ -5,6 +5,7 @@ import { Monitor, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
+import { toIsoInstant } from '@/lib/date-iso'
 import type { Session } from '@/types/settings'
 
 /**
@@ -29,6 +30,29 @@ function formatDate(iso: string, locale: string): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date)
+}
+
+/**
+ * #518 — Horodatage de dernière activité en `<time datetime>` (convention DS,
+ * `i18n.css` §7).
+ *
+ * `toIsoInstant` et NON `toLocalIsoDate` : le libellé porte `timeStyle:'short'`,
+ * donc une HEURE — l'attribut doit désigner l'instant complet, pas seulement le
+ * jour. Sur un `iso` illisible, `formatDate` rend déjà la chaîne brute ; on
+ * n'émet alors AUCUN attribut `datetime` (plutôt qu'une valeur invalide) et le
+ * `<time>` reste du HTML valide.
+ *
+ * DELTA VISUEL ASSUMÉ : `.mt-date--long` impose 13px là où le `<p>` porte
+ * `text-xs` (15px) — l'IP voisine, elle, reste à 15px. Même arbitrage qu'au #72 :
+ * la typographie d'une date appartient au DS. Non vérifié en navigateur (jsdom
+ * n'applique aucune feuille du DS).
+ */
+function SessionTimestamp({ iso, locale }: { iso: string; locale: string }) {
+  return (
+    <time className="mt-date--long" dateTime={toIsoInstant(new Date(iso)) ?? undefined}>
+      {formatDate(iso, locale)}
+    </time>
+  )
 }
 
 export function SessionList({
@@ -91,7 +115,7 @@ export function SessionList({
                 <p className="text-ink-muted truncate text-xs">
                   {session.ipAddress ?? t('security.sessions.unknownIp')}
                   {' · '}
-                  {formatDate(session.lastActivity, locale)}
+                  <SessionTimestamp iso={session.lastActivity} locale={locale} />
                 </p>
               </div>
             </div>

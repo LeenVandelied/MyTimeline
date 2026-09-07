@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { Cursor } from '@/components/timeline/Cursor'
 import { Ruler } from '@/components/timeline/Ruler'
 import { contrastInk, outlineFloorVars } from '@/lib/color'
+import { toLocalIsoDate } from '@/lib/date-iso'
 import type { DurationUnit, RecurrenceUnit } from '@/types/event'
 import { buildPreviewModel, type PreviewEventType, type PreviewSegment } from './previewTimeline'
 
@@ -103,13 +104,6 @@ function barStyle(
     ...(color ? { '--mt-evt': color, '--mt-evt-ink': contrastInk(color) } : {}),
     ...(outline ?? {}),
   } as React.CSSProperties
-}
-
-/** `YYYY-MM-DD` LOCAL (jamais `toISOString()`, qui bascule en UTC). */
-function toLocalIso(date: Date): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
 }
 
 export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
@@ -246,7 +240,10 @@ export const EventPreviewTimeline: React.FC<EventPreviewTimelineProps> = ({
             longue appartient au DS. `.mt-date--short` (11px + uppercase) n'est pas
             posée — son format cible « 24 JUIN 2026 » demande aussi un changement
             d'options `Intl` (arbitrage Designer, cf. rapport #72). */}
-        <time className="text-ink mt-date--long" dateTime={toLocalIso(model.nextOccurrence)}>
+        <time
+          className="text-ink mt-date--long"
+          dateTime={toLocalIsoDate(model.nextOccurrence) ?? undefined}
+        >
           {dateFormatter.format(model.nextOccurrence)}
         </time>
         {recurrenceLabel && (

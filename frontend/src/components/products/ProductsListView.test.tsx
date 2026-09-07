@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '@/types/product'
+import { toLocalIsoDate } from '@/lib/date-iso'
 import { ProductsListView } from './ProductsListView'
 
 /**
@@ -204,5 +205,28 @@ describe('ProductsListView', () => {
       'products-row-category-p-alpha',
     )
     expect(cat).toHaveTextContent('Véhicules')
+  })
+
+  /**
+   * #518 — la dernière activité est une DATE : elle se rend en `<time datetime>`
+   * (convention DS `i18n.css` §7), pas en texte nu dans la cellule. Rien n'est
+   * vérifié ici de sa TENUE visuelle (`.mt-date--long` n'a aucun effet sous jsdom).
+   */
+  it('rend la dernière activité en <time datetime> et laisse le repli en texte nu', () => {
+    render(<ProductsListView />)
+    const withActivity = within(screen.getByTestId('products-row-p-alpha')).getByText(
+      new Intl.DateTimeFormat('fr', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }).format(new Date('2026-06-01T10:00:00Z')),
+    )
+    expect(withActivity.tagName).toBe('TIME')
+    expect(withActivity.getAttribute('datetime')).toBe(
+      toLocalIsoDate(new Date('2026-06-01T10:00:00Z')),
+    )
+    // p-gamma n'a AUCUN événement : « aucune activité » n'est pas une date, donc
+    // aucun `<time>` ne doit apparaître dans sa ligne.
+    expect(screen.getByTestId('products-row-p-gamma').querySelector('time')).toBeNull()
   })
 })

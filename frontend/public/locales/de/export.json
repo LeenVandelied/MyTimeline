@@ -46,7 +46,7 @@
   "ready": {
     "syncDone": "Ihr Export wurde heruntergeladen.",
     "asyncReady": "Ihr Export ist bereit.",
-    "expiresAt": "Dieser Link läuft am {date} ab.",
+    "expiresAt": "Dieser Link läuft am <expiry>{date}</expiry> ab.",
     "expired": "Dieser Download-Link ist abgelaufen. Fordern Sie erneut an, um einen neuen Export zu erstellen."
   },
   "errors": {

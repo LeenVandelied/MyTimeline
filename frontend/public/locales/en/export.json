@@ -46,7 +46,7 @@
   "ready": {
     "syncDone": "Your export has been downloaded.",
     "asyncReady": "Your export is ready.",
-    "expiresAt": "This link expires on {date}.",
+    "expiresAt": "This link expires on <expiry>{date}</expiry>.",
     "expired": "This download link has expired. Request again to generate a new export."
   },
   "errors": {

@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Pencil, Archive, PlusCircle, Search } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { toLocalIsoDate } from '@/lib/date-iso'
 import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -286,8 +287,21 @@ export function ProductsListView() {
                         label={t('sparklineLabel', { name: product.name })}
                       />
                     </td>
+                    {/* #518 — la cellule garde ses utilitaires (ils habillent AUSSI le
+                        repli « aucune activité », qui n'est pas une date) ; seule la
+                        branche DATE devient un `<time datetime>` porteur de
+                        `.mt-date--long` (convention DS, `i18n.css` §7). */}
                     <td className="text-ink-muted hidden px-4 py-3 font-mono text-xs md:table-cell">
-                      {lastMs !== null ? dateFmt.format(new Date(lastMs)) : t('noActivity')}
+                      {lastMs !== null ? (
+                        <time
+                          className="mt-date--long"
+                          dateTime={toLocalIsoDate(new Date(lastMs)) ?? undefined}
+                        >
+                          {dateFmt.format(new Date(lastMs))}
+                        </time>
+                      ) : (
+                        t('noActivity')
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
