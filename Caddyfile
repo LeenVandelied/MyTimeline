@@ -13,18 +13,19 @@
 # =============================================================
 {
 	email {$ACME_EMAIL}
-	# ⚠ ACME DE TEST ACTIF — activé délibérément pour le PREMIER déploiement.
-	# Les certificats émis ici ne sont PAS approuvés par les navigateurs : le site
-	# affichera un avertissement de sécurité. C'est voulu, le temps d'éprouver la
-	# chaîne de déploiement sans risquer le quota Let's Encrypt de production
-	# (les échecs de validation sont plafonnés à 5 par heure et par nom, et il y a
-	# 8 noms à émettre ici).
+	# ACME DE PRODUCTION (ligne ci-dessous COMMENTÉE = émetteur par défaut de Caddy,
+	# c'est-à-dire Let's Encrypt en production). Certificats approuvés par les
+	# navigateurs.
 	#
-	# POUR PASSER EN PRODUCTION : recommenter la ligne ci-dessous, puis redéployer.
+	# L'ACME de TEST a servi au premier déploiement, le temps d'éprouver la chaîne
+	# sans risquer le quota (échecs de validation plafonnés à 5 par heure et par
+	# nom, pour 8 noms à émettre). La chaîne est désormais prouvée de bout en bout.
+	#
+	# POUR REVENIR AU TEST (mise au point, changement de topologie) : décommenter.
 	# L'étape de vérification de `deploy.yml` lit CE FICHIER pour savoir si elle
-	# doit exiger un certificat approuvé — les deux restent donc cohérents
+	# doit exiger un certificat approuvé — les deux restent cohérents
 	# automatiquement, sans variable séparée à ne pas oublier.
-	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
 # --- En-têtes de sécurité communs -------------------------------------------

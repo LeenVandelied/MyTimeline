@@ -21,7 +21,7 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 | `AUTH_JWKS_URL` *(frontend)* | URL du JWKS du backend (#358) — le middleware Next y **découvre** la clé PUBLIQUE de vérification du cookie `jwt`, ex. `https://api.example.com/.well-known/jwks.json`. **Pas un secret.** ⚠ Doit être joignable **depuis le serveur Next**, pas depuis le navigateur | ⚠️ recommandé | Garde **dégradée** : présence du cookie seule (comportement d'avant #323). Aucun garde-fou frontend ne fait échouer le démarrage ; un `console.warn` one-shot est émis en production |
 | `APP_CANONICAL_HOST` *(frontend)* | Origine(s) canonique(s) des redirections émises par `middleware.ts` (#322), liste CSV, **1re entrée = le canonique**. **Poser la forme `https://app.example.com`, PAS l'hôte nu** (voir note ci-dessous). **Pas un secret** | ⚠️ recommandé | **Open-redirect silencieux** : l'origine du `Location` reste héritée de `Host` / `x-forwarded-host`, donc contrôlable par l'appelant (+ empoisonnement de cache si un cache mutualisé mémorise la 307). Aucun garde-fou frontend ne fait échouer le démarrage ; un `console.warn` one-shot est émis en production (revue S50) |
 | `CORS_ALLOWED_ORIGINS` | Origine(s) front autorisée(s), liste CSV (#120) | ✅ | **Boot échoue** (bean CORS fail-fast) — détails : [`cors-cookie-samesite.md`](cors-cookie-samesite.md) §1 |
-| `COOKIE_DOMAIN` | Domaine du cookie `jwt` (#118), eTLD+1 pour les sous-domaines | ⚠️ conditionnel | Cookie **host-only** : OK en mono-domaine, **auth cassée silencieusement** en multi-sous-domaines |
+| `COOKIE_DOMAIN` | Domaine du cookie `jwt` (#118), eTLD+1 | ✅ | **Boot REFUSÉ** par `ProfileSafetyGuard` (#253). L'omettre revient à la déclarer vide : `application-prod.properties:38` fournit le défaut `${COOKIE_DOMAIN:}` |
 | `STORAGE_AVATAR_PATH` | Répertoire privé des avatars (#75), hors webroot | ✅ | **Boot échoue** — `application-prod.properties:57` la lit sans default |
 | `STORAGE_EXPORT_PATH` | Répertoire privé des exports RGPD (#264), distinct des avatars | ✅ | **Boot échoue** — `application-prod.properties:62` la lit sans default |
 | `BREVO_API_KEY` | Clé API de l'email transactionnel (reset de mot de passe) | ✅ | Service email en **NO-OP silencieux** : aucun email ne part, aucune erreur (#365) |
@@ -82,8 +82,17 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 > frontend lui-même (`docker compose exec frontend wget -qO- "$AUTH_JWKS_URL"`), pas depuis
 > le poste de l'opérateur.
 
-> `COOKIE_DOMAIN` est **obligatoire dès que** front et API sont sur des
-> sous-domaines distincts du même site (ex. `app.mytimeline.app` + `api.mytimeline.app`) :
+> **`COOKIE_DOMAIN` est obligatoire EN TOUTE TOPOLOGIE — corrigé après le premier
+> déploiement réel.** Ce runbook la classait « conditionnel » et jugeait acceptable
+> de l'omettre en mono-domaine. **C'était faux** : `ProfileSafetyGuard` (#253) refuse
+> le boot sur une valeur blanche, sans considérer la topologie, et l'omettre revient
+> exactement à la déclarer vide puisque `application-prod.properties:38` fournit le
+> défaut `${COOKIE_DOMAIN:}`. Le backend a bouclé sur un crash pour cette raison.
+>
+> Valeur : l'**eTLD+1** (`matimeline.com`), jamais un sous-domaine.
+>
+> Le conseil d'origine reste vrai pour le reste : elle est d'autant plus critique dès
+> que front et API sont sur des sous-domaines distincts du même site (ex. `app.mytimeline.app` + `api.mytimeline.app`) :
 > poser `COOKIE_DOMAIN=mytimeline.app` (l'eTLD+1, pas un sous-domaine) pour que le
 > cookie couvre tous les sous-domaines. En mono-domaine strict, l'omettre est
 > acceptable (host-only). Détails cookie / SameSite : [`cors-cookie-samesite.md`](cors-cookie-samesite.md).

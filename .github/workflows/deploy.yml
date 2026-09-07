@@ -195,6 +195,16 @@ jobs:
       # PREUVE POSITIVE de bon fonctionnement, pas simple absence d'erreur : le job
       # ne passe au vert que si l'application répond réellement en HTTPS depuis
       # l'extérieur. Un conteneur « Up » mais cassé ferait autrement un déploiement vert.
+      # PREUVE POSITIVE, et sur les DEUX services.
+      #
+      # ⚠ Leçon du premier déploiement réel : ne sonder que `/fr/login` a rendu ce
+      # job VERT alors que le backend bouclait sur un crash. Cette page est servie
+      # par le frontend SEUL — elle répond 200 même sans backend. Il faut donc une
+      # sonde qui traverse Caddy jusqu'au backend.
+      #
+      # `/api/auth/me` sans cookie doit répondre 401 : c'est une réponse APPLICATIVE,
+      # donc la preuve que le backend a traité la requête. Un 502/504 signifierait
+      # que Caddy n'a trouvé personne derrière.
       - name: Vérifier la mise en ligne
         env:
           ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}
@@ -202,24 +212,34 @@ jobs:
           # Le Caddyfile est l'UNIQUE source de vérité sur le mode ACME. Tant que
           # l'ACME de test est actif, le certificat n'est pas approuvé et une
           # vérification TLS stricte ferait échouer ce job alors que l'application
-          # répond parfaitement. Lire le fichier évite une variable séparée qu'on
-          # oublierait de basculer en même temps que le Caddyfile.
+          # répond parfaitement.
           if grep -qE '^[[:space:]]*acme_ca[[:space:]]+https://acme-staging' Caddyfile; then
             echo "::warning::ACME de TEST actif — certificat non approuvé, vérification TLS désactivée pour ce run. Recommenter acme_ca dans le Caddyfile pour passer en production."
             TLS_OPT="--insecure"
           else
             TLS_OPT=""
           fi
+
+          front=""; back=""
           for i in $(seq 1 30); do
-            code=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
-            if [ "$code" = "200" ]; then
-              echo "OK : $ORIGIN/fr/login -> 200"
+            front=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
+            back=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/api/auth/me" || true)
+            echo "tentative $i : frontend=$front backend=$back"
+            if [ "$front" = "200" ] && [ "$back" = "401" ]; then
+              echo "OK : frontend 200 ET backend 401 (reponse applicative)"
               exit 0
             fi
-            echo "tentative $i : HTTP $code"
             sleep 10
           done
-          echo "ÉCHEC : l'application ne répond pas 200 après 5 minutes"
+
+          echo "ÉCHEC après 5 minutes — frontend=$front backend=$back"
+          [ "$front" != "200" ] && echo "  le frontend ne sert pas /fr/login"
+          case "$back" in
+            502|504) echo "  502/504 sur /api/auth/me : Caddy ne joint PAS le backend (crash-loop ?)" ;;
+            "")      echo "  aucune reponse du backend" ;;
+            401)     : ;;
+            *)       echo "  /api/auth/me a repondu $back au lieu de 401" ;;
+          esac
           exit 1
 
       - name: Diagnostic si échec

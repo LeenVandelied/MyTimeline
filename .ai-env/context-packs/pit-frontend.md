@@ -1112,6 +1112,14 @@ Les deux écrivent `frontend/.next` ; le premier meurt en cascade (`Cannot find 
 ## PIT-S81-024 — RTK réécrit le lanceur Playwright et fait disparaître l'instrumentation
 `--reporter=line` devient `--reporter=json`, puis la sortie est tronquée à 2000 caractères : les `console.log` d'instrumentation sont **perdus**, et un rapport d'échec devient illisible. Parade : préfixer par `rtk proxy` toute campagne Playwright dont on veut lire la sortie, ou lire le fichier complet sous `~/Library/Application Support/rtk/tee/`. Même famille que [[rtk-git-diff-empty-output]] : `grep -h` est également rejeté par le wrapper. (Sprint 81 #215)
 
+
+## PIT-S81-010 — Une sonde de déploiement qui ne traverse pas jusqu'au backend rend un vert menteur
+L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
+
+
+## PIT-S81-011 — `APP_CANONICAL_HOST` fait sortir le healthcheck du conteneur
+Le healthcheck du frontend sondait `http://127.0.0.1:3000`. En production, `localePrefix: 'always'` plus le garde canonique #322 font répondre `307 → https://<domaine public>/fr` : le `wget` suit la redirection, **quitte le conteneur** et dépend alors de la DNS et du TLS publics — il échouait sur le certificat ACME de test alors que l'application répondait. Un healthcheck de conteneur ne doit jamais sortir du conteneur. Correctif : envoyer l'en-tête `Host` canonique (extrait d'`APP_CANONICAL_HOST`, une seule source de vérité) sur un chemin **déjà préfixé par la locale** — 200 direct, sans redirection. (Mise en ligne #370)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

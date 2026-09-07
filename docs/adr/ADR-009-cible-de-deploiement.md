@@ -152,7 +152,7 @@ C'est la conséquence la plus contraignante de cet ADR.
 | `APP_CANONICAL_HOST` | `https://matimeline.com` | runtime frontend |
 | `AUTH_JWKS_URL` | `http://backend:8080/.well-known/jwks.json` | runtime frontend |
 | `CORS_ALLOWED_ORIGINS` | `https://matimeline.com` | runtime backend |
-| `COOKIE_DOMAIN` | *(omise)* | runtime backend |
+| `COOKIE_DOMAIN` | `matimeline.com` | runtime backend |
 | `STORAGE_AVATAR_PATH` | `/app/var/avatars` | runtime backend |
 | `STORAGE_EXPORT_PATH` | `/app/var/exports` | runtime backend |
 
@@ -167,8 +167,13 @@ Trois précisions qui ne se devinent pas, toutes tirées de
   jamais l'URL publique. Poser l'URL vue du navigateur est le piège documenté ; la garde
   retombe alors en dégradé « présence du cookie seule », avec pour seul signal un
   `console.warn`.
-- **`COOKIE_DOMAIN` est volontairement omise**, pas laissée vide. En mono-domaine strict le
-  cookie host-only est correct, et une clé déclarée vide serait pire que son absence (§ ci-dessus).
+- ⚠ **`COOKIE_DOMAIN` est OBLIGATOIRE — rectification d'une décision antérieure de cet ADR.**
+  Une première version la disait « volontairement omise », au motif qu'en mono-domaine strict le
+  cookie host-only est correct. **Le premier déploiement réel a réfuté ce raisonnement** :
+  `ProfileSafetyGuard` (#253) refuse le boot sur une valeur blanche sans considérer la topologie,
+  et l'omettre revient exactement à la déclarer vide puisque `application-prod.properties:38`
+  porte le défaut `${COOKIE_DOMAIN:}`. Le backend a bouclé sur un crash pour cette raison.
+  Valeur retenue : l'eTLD+1 `matimeline.com`. Voir [[PIT-S81-009]].
 
 > **Défaut relevé dans le runbook, à corriger.** Sa section « Variables d'environnement de
 > production (liste complète) » se déclare faisant foi mais **omet `STORAGE_AVATAR_PATH` et

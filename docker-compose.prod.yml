@@ -81,7 +81,13 @@ services:
       # --- CORS (#120) — same-origin, mais la variable reste OBLIGATOIRE ---
       CORS_ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-https://matimeline.com}
 
-      # COOKIE_DOMAIN : VOLONTAIREMENT ABSENTE (mono-domaine => host-only, cf. ADR-009 §3).
+      # ⚠ OBLIGATOIRE — et l'omettre revient EXACTEMENT à la déclarer vide, car
+      # `application-prod.properties:38` fournit le défaut `${COOKIE_DOMAIN:}`.
+      # `ProfileSafetyGuard` (#253) REFUSE le boot sur une valeur blanche, quelle
+      # que soit la topologie : le raisonnement « mono-domaine donc host-only
+      # acceptable » est faux face à ce garde-fou. Constaté sur le premier
+      # déploiement réel — le backend bouclait sur un crash.
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:?COOKIE_DOMAIN requis - garde-fou 253, le boot echoue si vide}
 
       # --- Stockage (#75, #264) : fail-fast, ABSENTS du runbook avant ADR-009 ---
       STORAGE_AVATAR_PATH: /app/var/avatars
@@ -151,7 +157,20 @@ services:
       # retomber la garde en mode dégradé « présence du cookie seule ».
       AUTH_JWKS_URL: http://backend:8080/.well-known/jwks.json
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
+      # ⚠ NE PAS sonder la racine `/` : avec `localePrefix: 'always'` et
+      # APP_CANONICAL_HOST posée, `/` répond 307 vers l'URL PUBLIQUE. Le wget du
+      # healthcheck suit la redirection, SORT DU CONTENEUR et dépend alors de la
+      # DNS et du TLS publics — il échouait sur le certificat ACME de test alors
+      # que l'application répondait parfaitement.
+      # On envoie donc l'hôte canonique (extrait d'APP_CANONICAL_HOST, une seule
+      # source de vérité) sur un chemin DÉJÀ préfixé par la locale : 200 direct,
+      # sans redirection ni sortie réseau.
+      test:
+        - CMD-SHELL
+        - >-
+          wget -q --spider
+          --header="Host: $$(echo "$$APP_CANONICAL_HOST" | sed -e 's|^https\?://||' -e 's|[/,].*||')"
+          http://127.0.0.1:3000/fr/login
       interval: 15s
       timeout: 5s
       retries: 5
