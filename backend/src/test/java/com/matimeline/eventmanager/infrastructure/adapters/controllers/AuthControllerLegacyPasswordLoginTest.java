@@ -1,9 +1,8 @@
 package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,6 +42,16 @@ import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
  * {@code AuthRequest} ne prouverait rien : la chaîne d'authentification complète
  * (filtre de validation, {@code AuthenticationManager}, comparaison BCrypt) est
  * ici traversée pour de vrai contre Postgres.
+ *
+ * <p><b>#500 — INSTRUMENTATION DE L'ÉCHEC.</b> Cette classe a été observée rouge
+ * au premier boot de conteneur Testcontainers, sans que la cause ait pu être
+ * établie : les messages d'échec ne disaient RIEN du statut HTTP reçu. Toute
+ * assertion portant sur une réponse HTTP passe désormais par
+ * {@link #diagnostic(MvcResult, String)}, qui rapporte statut + corps +
+ * en-têtes + une sonde DB committée, et joint la grille de lecture qui permet
+ * d'imputer l'échec sans le reproduire. Le message n'est construit QU'EN CAS
+ * D'ÉCHEC (messages fournis par {@code Supplier}) : la sonde DB ne s'exécute
+ * pas sur le chemin vert et ne peut donc pas en changer le comportement.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -108,6 +118,100 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
                 .andReturn();
     }
 
+    // ------------------------------------------------------------------
+    // #500 — capture du diagnostic au moment de l'échec
+    // ------------------------------------------------------------------
+
+    /**
+     * #500 — LA MESURE QUI MANQUAIT. Rend, pour une réponse quelconque, tout ce qui
+     * permet d'imputer l'échec sans avoir à le reproduire :
+     * <ul>
+     *   <li><b>statut</b> — 429 (rate-limit) vs 401 (auth) vs 500 (exception avalée)
+     *       étaient jusqu'ici indiscernables : le message d'échec ne portait que
+     *       « cookie jwt absent » ;</li>
+     *   <li><b>corps</b> — chaque cause a le sien et ils ne se confondent pas :
+     *       {@code too_many_requests} (RateLimitingFilter), {@code unauthorized}
+     *       (AuthController), {@code internal_error} (catch générique) ;</li>
+     *   <li><b>en-têtes</b> — énumérés SANS liste blanche : le filtre n'émet
+     *       aujourd'hui ni {@code Retry-After} ni {@code X-RateLimit-*}, mais si
+     *       #499 en ajoute, la capture les remontera sans nouvelle modification ;</li>
+     *   <li><b>sonde DB</b> — nombre de lignes {@code users} COMMITTÉES pour ce
+     *       username, lu dans une transaction à part. C'est ce qui départage les deux
+     *       familles de 401 : seed invisible vs credentials refusés.</li>
+     * </ul>
+     * Aucune exception ne s'échappe d'ici : un diagnostic qui plante masquerait
+     * l'échec qu'il est censé documenter.
+     */
+    private String diagnostic(MvcResult res, String username) {
+        MockHttpServletResponse response = res.getResponse();
+        return "statut=" + response.getStatus()
+                + " | corps=" + bodyOf(response)
+                + " | en-têtes=" + headersOf(response)
+                + " | lignes users committées pour '" + username + "'=" + committedRowCount(username)
+                + " || GRILLE DE LECTURE — "
+                + "429 {\"error\":\"too_many_requests\"} => RateLimitingFilter, bucket "
+                + "«IP|POST /api/auth/login» (10/min) ou «IP|POST /api/me/change-password» (5/min) : "
+                + "le sous-réseau dédié 10.83.x.y aurait donc été partagé ou rejoué ; "
+                + "401 {\"error\":\"unauthorized\"} avec 0 ligne => le seed n'est pas visible du thread "
+                + "de requête (commit, rollback, ou visibilité transactionnelle) ; "
+                + "401 avec 1 ligne => la ligne existe mais les credentials sont refusés "
+                + "(hash BCrypt / PasswordEncoder / username tronqué) ; "
+                + "500 {\"error\":\"internal_error\"} => AuthController a avalé une exception ET loggué "
+                + "sa stacktrace (registerSession, JwtService…) : la chercher dans la sortie surefire.";
+    }
+
+    private String bodyOf(MockHttpServletResponse response) {
+        try {
+            String body = response.getContentAsString();
+            return body == null || body.isEmpty() ? "<vide>" : body;
+        } catch (Exception e) {
+            return "<illisible: " + e + ">";
+        }
+    }
+
+    private String headersOf(MockHttpServletResponse response) {
+        StringBuilder sb = new StringBuilder("[");
+        for (String name : response.getHeaderNames()) {
+            if (sb.length() > 1) {
+                sb.append(", ");
+            }
+            sb.append(name).append('=').append(response.getHeaderValues(name));
+        }
+        return sb.append(']').toString();
+    }
+
+    /**
+     * Lit en base, dans une transaction DISTINCTE de celle du seed, le nombre de
+     * lignes committées portant ce username. Une transaction à part est le seul
+     * moyen de distinguer « la ligne n'a jamais été committée » de « la ligne est
+     * là mais l'authentification l'a refusée ».
+     */
+    private String committedRowCount(String username) {
+        try {
+            TransactionTemplate tx = new TransactionTemplate(txManager);
+            tx.setReadOnly(true);
+            Long count = tx.execute(status -> em.createQuery(
+                            "select count(u) from UserEntity u where u.username = :username", Long.class)
+                    .setParameter("username", username)
+                    .getSingleResult());
+            return String.valueOf(count);
+        } catch (Exception e) {
+            return "<sonde KO: " + e + ">";
+        }
+    }
+
+    /**
+     * Exige un login réussi ET rapporte le diagnostic complet quand il ne l'est pas.
+     * Remplace les {@code assertNotNull(cookie, "…")} dont le message ne disait rien
+     * du statut reçu — le point aveugle nommé par #500.
+     */
+    private Cookie assertLoginSucceeded(MvcResult res, String username, String why) {
+        Cookie jwt = res.getResponse().getCookie("jwt");
+        boolean succeeded = res.getResponse().getStatus() == 200
+                && jwt != null && jwt.getValue() != null && !jwt.getValue().isBlank();
+        assertTrue(succeeded, () -> why + " — " + diagnostic(res, username));
+        return jwt;
+    }
 
     @Test
     void login_withPreExistingSixCharPassword_stillSucceeds_andIssuesJwtCookie() throws Exception {
@@ -115,13 +219,8 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
 
         MvcResult res = login(username, LEGACY_PASSWORD);
 
-        assertTrue(res.getResponse().getStatus() == 200,
-                "un compte antérieur à #148 doit toujours pouvoir se connecter, statut reçu : "
-                        + res.getResponse().getStatus());
-        Cookie jwt = res.getResponse().getCookie("jwt");
-        assertNotNull(jwt, "le login legacy doit poser le cookie jwt");
-        assertTrue(jwt.getValue() != null && !jwt.getValue().isBlank(),
-                "le cookie jwt du login legacy doit porter une valeur");
+        assertLoginSucceeded(res, username,
+                "un compte antérieur à #148 doit toujours pouvoir se connecter et recevoir un cookie jwt non vide");
     }
 
     /**
@@ -138,11 +237,17 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
                 + "\"email\":\"" + username + "@example.test\","
                 + "\"password\":\"" + LEGACY_PASSWORD + "\"}";
 
-        mockMvc.perform(post("/api/auth/register")
+        MvcResult res = mockMvc.perform(post("/api/auth/register")
                         .with(req -> { req.setRemoteAddr(nextIp()); return req; })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andReturn();
+
+        // #500 : un 429 ici se lirait comme « la politique ne rejette plus » alors que la
+        // requête n'a même pas atteint la validation. Le diagnostic tranche.
+        assertEquals(400, res.getResponse().getStatus(),
+                () -> "un mot de passe à 6 caractères doit être refusé à l'inscription — "
+                        + diagnostic(res, username));
     }
 
     /** Le compte legacy peut se mettre en conformité : son ancien mot de passe hors
@@ -150,8 +255,8 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
     @Test
     void legacyAccount_canChangeToACompliantPassword_thenLogInWithIt() throws Exception {
         String username = seedLegacyAccount();
-        Cookie jwt = login(username, LEGACY_PASSWORD).getResponse().getCookie("jwt");
-        assertNotNull(jwt, "pré-requis : le login legacy doit réussir");
+        Cookie jwt = assertLoginSucceeded(login(username, LEGACY_PASSWORD), username,
+                "pré-requis : le login legacy doit réussir");
 
         String newPassword = "Legacy2026";
         // review S71 — `POST /api/me/change-password` est un slot RATE-LIMITÉ (5/min/IP,
@@ -166,15 +271,19 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
         // ⚠ Ce n'est PAS une déflakisation prouvée : le flaky signalé par l'audit n'a pas
         // pu être reproduit (3 conteneurs neufs, verts). C'est la suppression d'un couplage
         // réel, pas la correction d'une cause établie.
-        mockMvc.perform(post("/api/me/change-password")
+        MvcResult changed = mockMvc.perform(post("/api/me/change-password")
                         .with(req -> { req.setRemoteAddr(nextIp()); return req; })
                         .cookie(jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"oldPassword\":\"" + LEGACY_PASSWORD
                                 + "\",\"newPassword\":\"" + newPassword + "\"}"))
-                .andExpect(status().isNoContent());
+                .andReturn();
 
-        assertNotNull(login(username, newPassword).getResponse().getCookie("jwt"),
+        assertEquals(204, changed.getResponse().getStatus(),
+                () -> "la mise en conformité du mot de passe doit renvoyer 204 — "
+                        + diagnostic(changed, username));
+
+        assertLoginSucceeded(login(username, newPassword), username,
                 "le compte doit se reconnecter avec son nouveau mot de passe conforme");
     }
 }
