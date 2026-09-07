@@ -1083,6 +1083,10 @@ La Security List/NSG de la console OCI ne suffit pas : les images Ubuntu d'Oracl
 ## PIT-S81-004 — Un runbook qui se déclare « liste complète » peut omettre des variables fail-fast
 `docs/runbook/deploiement-profils.md` annonçait une liste « complète » qui « fait foi » en omettant **quatre** variables, dont `STORAGE_AVATAR_PATH` et `STORAGE_EXPORT_PATH` que `application-prod.properties` lit **sans default** : un opérateur suivant le runbook à la lettre n'arrivait pas à démarrer. La liste de #370 avait la même lacune, plus une variable supprimée depuis 20+ sprints (`AUTH_JWT_PUBLIC_KEY`, remplacée par `AUTH_JWKS_URL` en #358). Confronter toute liste de configuration au fichier `application-{profil}.properties`, jamais à sa description en prose. (Mise en ligne #213/#370)
 
+
+## PIT-S81-005 — Sonder les ports 80/443 depuis un réseau qui les intercepte donne un faux verdict
+Depuis un réseau à proxy transparent (opérateur, portail d'entreprise), `nc -z` et `curl` sur **80/443** voient la poignée de main aboutir puis un reset — **que le port distant soit ouvert ou non**. Le piège se referme parce qu'un port fermé banal (12345) se comporte, lui, différemment (il expire) : l'écart donne l'illusion d'un test discriminant, et j'en ai tiré la conclusion inverse de la vérité au 2026-09-07. Seul contrôle concluant : lancer un écouteur temporaire sur l'hôte et exiger une **vraie réponse HTTP** ; si un écouteur actif ne répond toujours pas, c'est le point d'observation qui ment. Penser à tuer l'écouteur, il sert l'arborescence en `root`. (Mise en ligne #561)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

@@ -65,15 +65,36 @@ passe par `lo`, qui est accepté sans condition) :
 curl -sS -o /dev/null -w '%{http_code}\n' http://<IP>/
 ```
 
-## 2. Supprimer `rpcbind`
+> ⚠ **Le point d'observation compte, et il peut mentir — constaté le 2026-09-07.**
+> Depuis un réseau qui intercepte HTTP/HTTPS (proxy transparent d'opérateur, portail
+> d'entreprise), `nc -z` et `curl` sur les ports **80 et 443** voient la poignée de main
+> aboutir puis un reset, **que le port distant soit ouvert ou non**. Le piège est
+> redoutable parce qu'un port réellement fermé ailleurs (ex. 12345) se comporte
+> différemment — il expire — ce qui donne l'illusion d'un test discriminant.
+>
+> **Le seul contrôle concluant** : lancer un écouteur temporaire sur l'hôte
+> (`sudo python3 -m http.server 80`) et vérifier qu'on obtient une **vraie réponse HTTP**
+> depuis l'extérieur. Si un écouteur actif ne répond toujours pas, c'est le point
+> d'observation qui est en cause, pas l'hôte. Penser à **tuer l'écouteur** : il sert
+> l'arborescence en `root`.
+
+## 2. Neutraliser `rpcbind`
 
 Aucun composant de MyTimeline ne s'en sert.
 
+**Appliqué le 2026-09-07 : masquage, PAS purge.** `nfs-common` dépend de `rpcbind`,
+donc `apt-get purge rpcbind` l'emporte avec lui. Aucun montage NFS n'existe sur la
+machine (`mount`, `/etc/fstab` vérifiés), la purge était donc sûre — mais le masquage
+ferme le port tout aussi bien et se défait en une commande, ce qui vaut mieux sur un
+hôte dont on ne connaît pas tout l'historique.
+
 ```bash
 sudo systemctl disable --now rpcbind.socket rpcbind.service
-sudo apt-get purge -y rpcbind
+sudo systemctl mask rpcbind.socket rpcbind.service
 ss -tlnp | grep ':111' || echo "port 111 : plus rien en écoute"
 ```
+
+Pour revenir en arrière : `sudo systemctl unmask rpcbind.socket rpcbind.service`.
 
 ## 3. Mises à jour de sécurité automatiques
 
