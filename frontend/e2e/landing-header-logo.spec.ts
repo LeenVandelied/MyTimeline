@@ -44,8 +44,13 @@ const LOCALES = ['fr', 'en', 'de', 'es'] as const
  * Le thème du DS Graphite ne pilote que des COULEURS — aucune règle `.dark` ni
  * `prefers-color-scheme` du dépôt ne touche `font-*`, `text-*` ou `leading-*`.
  * Le coût, lui, était réel : ~64 `page.goto` de plus sur un check e2e REQUIS,
- * avec `workers: 1` et `retries: 2`. Le contraste, seule grandeur réellement
- * sensible au thème, a sa propre spec (`landing-cta-contrast.spec.ts`).
+ * avec `retries: 2`. Le contraste, seule grandeur réellement sensible au thème,
+ * a sa propre spec (`landing-cta-contrast.spec.ts`).
+ *
+ * ⚠ #476 (S80) a fait passer la CI à `workers: 2` — le coût unitaire a donc
+ * baissé, et cette phrase citait auparavant `workers: 1`. Cela ne rouvre PAS la
+ * décision : l'argument qui la porte est « zéro signal » (le thème ne pilote
+ * aucune métrique de police), pas le coût. Le coût n'en était que l'aggravant.
  *
  * POURQUOI UN CONTRÔLE SOMBRE SUBSISTE. Un retrait total rendrait l'invariant
  * invérifiable. Le test « invariance des métriques au thème », en fin de

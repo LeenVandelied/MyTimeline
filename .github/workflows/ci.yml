@@ -174,8 +174,9 @@ jobs:
     # plafond GitHub par DÉFAUT : 6 HEURES. Un `next start` qui ne rend jamais la
     # main (port pris, artefact `.next` incomplet) épinglerait donc un runner une
     # demi-journée avant qu'on l'apprenne. #462 rend le risque concret : ce job
-    # porte désormais un `next build`, DEUX serveurs en fond, `workers: 1` et
-    # `retries: 2`.
+    # porte désormais un `next build`, DEUX serveurs en fond, `workers: 2`
+    # (#476, S80 : mesuré 5 min 47 / 5 min 52 contre 8 min 19 à 1 worker sur le
+    # MÊME code — cf. le dossier dans `playwright.config.ts`) et `retries: 2`.
     #
     # POURQUOI 45 ET PAS MOINS. Référence AVANT ce sprint : 13 min 14 s (run
     # `33431893101`). Les mesures LOCALES de #465 suggèrent que la production
@@ -504,7 +505,8 @@ jobs:
       # `PLAYWRIGHT_BASE_URL` posée ⇒ `webServer` vaut `undefined` : Playwright ne
       # démarre plus rien lui-même (c'est aussi pourquoi le garde-fou #427 de
       # `playwright.config.ts` ne s'arme pas ici — il est LOCAL par construction).
-      # CI=true active retries:2 / workers:1 (playwright.config.ts).
+      # CI=true active retries:2 ; `workers` vaut 2 partout depuis #476 (S80) —
+      # la valeur n'est plus conditionnée par `CI` (playwright.config.ts).
       - name: Run E2E (Playwright golden path, build de production)
         working-directory: frontend
         env:

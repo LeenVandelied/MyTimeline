@@ -186,11 +186,30 @@ async function readTitleGeometry(h1: Locator): Promise<{
  * pas indéfiniment les mêmes ids.
  *
  * ⚠ CE QUE ÇA NE COUVRE PAS. La fenêtre de pollution n'est FERMÉE que si les
- * specs ne se chevauchent pas — c'est le cas en CI (`workers: 1`). En local à
- * `workers: 2`, une spec tierce peut lire le compte pendant qu'un test d'ici
- * est en vol : la fenêtre est réduite à la durée d'UN test, pas supprimée. La
- * suppression du chevauchement demanderait un compte dédié à cette spec, donc
- * un `register` de plus — budget déjà au plafond (5/min/IP, cf. `accounts.ts`).
+ * specs ne se chevauchent pas. Une spec tierce peut lire le compte pendant
+ * qu'un test d'ici est en vol : la fenêtre est alors réduite à la durée d'UN
+ * test, pas supprimée.
+ *
+ * ⚠⚠ CETTE RÉSERVE VAUT DÉSORMAIS EN CI AUSSI — MISE À JOUR #476 (S80).
+ * Ce paragraphe affirmait que la fenêtre était FERMÉE en CI « parce que
+ * `workers: 1` ». #476 a fait passer la CI à `workers: 2`, mesure à l'appui.
+ * La CI est donc maintenant dans le MÊME régime que le local : fenêtre réduite,
+ * pas supprimée. C'est un effet de bord ASSUMÉ de #476, pas un oubli — mais il
+ * porte un vrai risque, et c'est exactement le mécanisme de [[PIT-S73-006]],
+ * dont le symptôme fut 2 tests rouges en CI à 1000 lignes du diff.
+ *
+ * CE QUI LE REND ACCEPTABLE : le nom semé par cette spec vient de
+ * `unique('S73')` — une vingtaine de caractères AVEC une espace, donc sécable.
+ * Il n'élargit aucun popover ; c'est précisément la propriété qui manquait au
+ * nom de produit de 64 caractères à l'origine de la régression.
+ *
+ * ⚠ L'OBSTACLE INVOQUÉ CI-DESSOUS EST LUI AUSSI PÉRIMÉ. La suppression du
+ * chevauchement demanderait un compte dédié, donc un `register` de plus — ce
+ * paragraphe l'écartait au motif d'un « budget déjà au plafond (5/min/IP) ».
+ * Cet argument est FAUX depuis #475 (S79) : le job CI `e2e` démarre le backend
+ * avec `RATE_LIMIT_ENABLED=false`, et le profil `e2e` porte de toute façon
+ * 20/min/IP pour 8 inscriptions émises. Un compte dédié est donc redevenu
+ * possible — c'est la vraie parade, si le risque se matérialise.
  *
  * CE QUI EST NETTOYÉ, ET CE QUI NE PEUT PAS L'ÊTRE. Le PRODUIT au nom long est
  * supprimé — c'est lui, et lui seul, qui causait la régression. La CATÉGORIE

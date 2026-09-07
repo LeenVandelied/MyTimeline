@@ -44,9 +44,14 @@ const LOCALES = ['fr', 'en', 'de', 'es'] as const
  * COULEURS : aucune règle `.dark` ni `prefers-color-scheme` du dépôt ne touche
  * `font-*`, `text-*` ni `leading-*` (vérifié sur `src/styles/**`). Boucler sur
  * les deux thèmes doublait donc 8 tests en 16, soit ~64 `page.goto`
- * supplémentaires, sur un check e2e REQUIS pour merger, avec `workers: 1` et
- * `retries: 2`. La seule grandeur réellement sensible au thème — le contraste —
- * a sa propre spec, `landing-cta-contrast.spec.ts`.
+ * supplémentaires, sur un check e2e REQUIS pour merger, avec `retries: 2`. La
+ * seule grandeur réellement sensible au thème — le contraste — a sa propre
+ * spec, `landing-cta-contrast.spec.ts`.
+ *
+ * ⚠ #476 (S80) a fait passer la CI à `workers: 2` — le coût unitaire a donc
+ * baissé, et cette phrase citait auparavant `workers: 1`. Cela ne rouvre PAS la
+ * décision : l'argument qui la porte est « zéro signal » (le thème ne pilote
+ * aucune métrique de police), pas le coût. Le coût n'en était que l'aggravant.
  *
  * POURQUOI IL RESTE QUAND MÊME UN CONTRÔLE SOMBRE. Un retrait TOTAL rendrait
  * l'invariant invérifiable : le jour où une règle `.dark` toucherait une

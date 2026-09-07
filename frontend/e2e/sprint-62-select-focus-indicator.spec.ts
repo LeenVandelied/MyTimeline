@@ -6,7 +6,7 @@ import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './su
 import {
   contrastRatio,
   formatProfile,
-  readStrip,
+  readStrips,
   settleForMeasurement,
   WCAG_NON_TEXT,
   type PixelStrip,
@@ -105,6 +105,58 @@ import {
  * PRÉREQUIS RUNTIME : backend Spring + Postgres migré, front servi depuis une
  * origine présente dans `app.cors.allowed-origins` (:3000 ou :3100).
  * Cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * #472 (Sprint 80) — INSTABILITÉ DE CE FICHIER : DEUX CAUSES, UNE CORRIGÉE, UNE
+ * TOLÉRÉE ET LOCALE. À LIRE AVANT D'ACCUSER LA MESURE.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Ce fichier est la SEULE spec exécutée par le projet `firefox` : quand il
+ * rougit, toute la couverture Gecko du dépôt rougit. #472 le suivait à partir
+ * d'observations du S64 (« popover mobile, variantes claire et sombre, 2 runs
+ * sur 5 »), sans diagnostic. Cinq runs COMPLETS ont été joués au S80 (régime
+ * `workers: 2`, celui de #469 — PAS celui du S64, qui était à 1). Le symptôme
+ * DÉCRIT n'est jamais réapparu ; une instabilité RÉELLE du fichier l'a été,
+ * sur d'autres membres, et voici ce qu'elle était.
+ *
+ * CAUSE 1 — LE COÛT DE LA SONDE. CORRIGÉE, ici et dans `support/pixel.ts`.
+ * `probeHighlighted` prenait 18 captures d'écran par test (15 pour le dump brut,
+ * 3 pour les mesures publiées), chacune suivie d'un décodage PNG dans la page.
+ * Chiffré en comparant deux tests de CE fichier, même fixture, dont un seul
+ * sonde : `état et déclaration` (0 capture) contre `le popover est PEINT`
+ * (18 captures) — 3,2 s contre 7,8 s machine au repos, 6,4 s contre 24,8 s sous
+ * charge. Au run 2, `ProductDrawer — light` a franchi les 30 s de budget du test
+ * AVEC UNE PILE QUI DÉSIGNAIT LE DUMP (`pixel.ts:503`, `readStrip` appelé depuis
+ * `dumpSignedProfile`). Le membre qui tombait variait parce que TOUS les tests du
+ * fichier étaient au même niveau de budget : défaut de coût, pas de composant.
+ * `readStrips` ramène les 18 captures à UNE. Mesuré après : les quatre tests
+ * `PEINT` sur Gecko passent de 19,4-24,8 s à 3,3-5,1 s sur trois runs.
+ *
+ * CAUSE 2 — LA COMPILATION À LA DEMANDE DE `next dev`. NON CORRIGÉE, ASSUMÉE,
+ * ET STRUCTURELLEMENT ABSENTE DE LA CI. C'est le motif exigé par le 4e critère
+ * d'acceptation de #472.
+ * La recette LOCALE sert le front par `next dev`, qui compile chaque route à la
+ * demande ET l'évince après inactivité. Relevé dans le log du serveur pendant le
+ * run 3 : `✓ Compiled /[locale]/settings in 17.8s`, puis `GET /fr/settings 200 in
+ * 18146ms` — soit exactement le test `pref-language` de ce fichier, à 24,7 s. Et
+ * comme la compilation est SÉRIELLE côté serveur, le worker VOISIN attend
+ * derrière : au même instant, `ProductDrawer — light` a échoué dans
+ * `ensureAuthenticated` sur un `getByTestId('dashboard')` à 5 s, ses chunks
+ * clients étant en file derrière ces 17,8 s. Deux tests différents, une seule
+ * cause, et elle n'est pas dans cette spec.
+ *
+ * POURQUOI ON NE LA CORRIGE PAS ICI. Elle n'atteint PAS la CI : #462 a
+ * précisément retiré `next dev` du job `e2e` pour cette raison, écrite dans
+ * `.github/workflows/ci.yml` — « un test pouvait donc rougir sur une lenteur de
+ * compilation a froid qui n'existe nulle part en production ». La CI joue deux
+ * `next start` sur un build de production : aucune compilation à la demande.
+ * Y répondre par un timeout plus large, un `retries` local ou un `test.slow()`
+ * masquerait une lenteur d'environnement derrière du budget de test, et ferait
+ * perdre au local le signal que la CI garde. Symptôme donc TOLÉRÉ EN LOCAL.
+ *
+ * CE QUE CE VERDICT NE DIT PAS. Il ne démontre pas que la cause 2 est ce que le
+ * S64 avait vu : les observations du S64 sont antérieures à #469 (workers 1 -> 2)
+ * ET à #463 (purge des semis), donc à deux changements de régime. Le symptôme
+ * décrit par #472 n'a pas été reproduit — il n'a pas été expliqué non plus.
  */
 
 test.use({ storageState: PROD.storageState })
@@ -226,27 +278,51 @@ async function readHighlightedState(highlighted: Locator): Promise<HighlightedSt
 }
 
 /**
- * DUMP BRUT de part et d'autre du bord haut de l'option.
+ * PROFIL SIGNÉ de part et d'autre du bord haut de l'option — la plage entière en
+ * UNE capture.
  *
  * `dumpOutwardProfile` ne parcourt que `0..max` vers l'extérieur ; ici la
- * surface de l'option est à l'INTÉRIEUR. On appelle donc `readStrip` — même
+ * surface de l'option est à l'INTÉRIEUR. On appelle donc `readStrips` — même
  * sonde, même agrégation par MODE — sur une plage signée. Aucune fonction ne
  * cherche « le meilleur pixel » : le profil est imprimé, et les offsets de
  * mesure sont des constantes du fichier justifiées par la déclaration CSS.
+ *
+ * ⚠ #472 (Sprint 80) — POURQUOI `readStrips` ET PLUS `readStrip` EN BOUCLE.
+ * Une capture par offset coûtait 18 `page.screenshot` + 18 décodages PNG par
+ * test (15 pour ce dump, 3 pour les mesures publiées). Mesuré sur Gecko, c'est
+ * 15 à 18 s des 30 s de budget du test sous charge — et le run 2 du Sprint 80 a
+ * fait franchir le plafond au test `ProductDrawer — light` (30,6 s), la pile
+ * pointant `readStrip` appelé DEPUIS CE DUMP. Le dossier chiffré est dans
+ * `support/pixel.ts`, sur `readStrips`. Ne pas revenir à la boucle « pour la
+ * lisibilité » : la plage mesurée EST le budget du test.
+ *
+ * Les trois offsets publiés (contour, fond du popover, surface) appartiennent à
+ * cette plage : ils sont donc LUS DANS CETTE MÊME IMAGE, et non dans trois
+ * captures ultérieures comme auparavant.
  */
-async function dumpSignedProfile(page: Page, target: Locator): Promise<PixelStrip[]> {
-  const out: PixelStrip[] = []
-  for (let o = DUMP_FROM_PX; o <= DUMP_TO_PX; o += 1) {
-    out.push(
-      await readStrip(page, target, {
-        side: SIDE,
-        offsetPx: o,
-        samples: SAMPLES,
-        edgeGuardPx: EDGE_GUARD_PX,
-      }),
+const PROFILE_OFFSETS_PX = Array.from(
+  { length: DUMP_TO_PX - DUMP_FROM_PX + 1 },
+  (_, i) => DUMP_FROM_PX + i,
+)
+
+async function readSignedProfile(page: Page, target: Locator): Promise<PixelStrip[]> {
+  return readStrips(page, target, PROFILE_OFFSETS_PX, {
+    side: SIDE,
+    samples: SAMPLES,
+    edgeGuardPx: EDGE_GUARD_PX,
+  })
+}
+
+/** Bande du profil à un offset donné. Lève si l'offset sort de la plage dumpée. */
+function stripAt(profile: PixelStrip[], offsetPx: number): PixelStrip {
+  const strip = profile[offsetPx - DUMP_FROM_PX]
+  if (strip == null || strip.offsetPx !== offsetPx) {
+    throw new Error(
+      `Offset ${offsetPx}px hors de la plage dumpée [${DUMP_FROM_PX}, ${DUMP_TO_PX}] : ` +
+        `élargir DUMP_FROM_PX/DUMP_TO_PX plutôt que de reprendre une capture séparée.`,
     )
   }
-  return out
+  return strip
 }
 
 interface Measurement {
@@ -267,18 +343,10 @@ async function probeHighlighted(
   await settleForMeasurement(page)
   const state = await readHighlightedState(highlighted)
 
-  const strip = async (offsetPx: number): Promise<PixelStrip> =>
-    readStrip(page, highlighted, {
-      side: SIDE,
-      offsetPx,
-      samples: SAMPLES,
-      edgeGuardPx: EDGE_GUARD_PX,
-    })
-
-  const profile = await dumpSignedProfile(page, highlighted)
-  const outline = await strip(OUTLINE_OFFSET_PX)
-  const popoverBg = await strip(POPOVER_BG_OFFSET_PX)
-  const itemSurface = await strip(ITEM_SURFACE_OFFSET_PX)
+  const profile = await readSignedProfile(page, highlighted)
+  const outline = stripAt(profile, OUTLINE_OFFSET_PX)
+  const popoverBg = stripAt(profile, POPOVER_BG_OFFSET_PX)
+  const itemSurface = stripAt(profile, ITEM_SURFACE_OFFSET_PX)
 
   const outlineRatio = contrastRatio(outline.dominant, popoverBg.dominant)
   const surfaceRatio = contrastRatio(itemSurface.dominant, popoverBg.dominant)

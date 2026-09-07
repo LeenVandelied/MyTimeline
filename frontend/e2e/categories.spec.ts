@@ -36,6 +36,44 @@ import {
  * #245 — La suppression passe par `useDeleteCategory` (useMutation) qui invalide
  *   `categories.all` + `products.all` sur succès : la liste se rafraîchit SEULE, sans
  *   reload. Les assertions de disparition observent donc la vue courante directement.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * #472 (Sprint 80) — « SUPPRESSION D'UNE CATÉGORIE » : NON REPRODUIT. LE CHIFFRE
+ * DE L'ISSUE N'EST PAS UNE BASE DE COMPARAISON.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * #472 suivait ici un flake relevé au S64 (« 1 run sur 5 ») pendant la validation
+ * d'AUTRE chose, sans diagnostic ni message d'erreur conservé — le done.md de
+ * #467 ne garde que le décompte.
+ *
+ * CE QUI A ÉTÉ FAIT AU S80 : 5 runs COMPLETS de la suite (≈320 tests), régime
+ * `workers: 2`, serveur Next externe, backend conteneur `:8086`. Les QUATRE tests
+ * de ce fichier sont verts sur les CINQ runs, entre 2,3 s et 6,2 s, les deux
+ * parcours de suppression compris. AUCUNE occurrence. Aucun correctif n'est donc
+ * appliqué ici : il n'y a rien à corriger qu'on sache nommer.
+ *
+ * ⚠ CE N'EST PAS « LE FLAKE EST MORT ». Deux précautions, dans cet ordre :
+ *
+ * 1. LE RÉGIME A CHANGÉ DEUX FOIS depuis la mesure du S64, et l'issue elle-même
+ *    est PÉRIMÉE sur ce point (elle annonce `workers: 1`). #469 (S65) a rouvert
+ *    le parallélisme local à 2, et #463 (S79) a introduit la purge post-test de
+ *    `support/seed-cleanup.ts`. Or c'est exactement l'ACCUMULATION que #463
+ *    supprime — un compte `PROD` partagé qui finissait un run avec ~88 catégories
+ *    et ~81 produits — qui portait les deux familles de flakes documentées avant
+ *    lui (#467 pour la virtualisation, [[PIT-S73-006]] pour un `<Select>` élargi
+ *    par une donnée laissée derrière). Que le symptôme du S64 ait appartenu à
+ *    cette famille est PLAUSIBLE et NON DÉMONTRÉ : aucune trace du S64 ne
+ *    subsiste pour le vérifier.
+ * 2. « 0 sur 5 » ne mesure pas un taux annoncé à « 1 sur 5 ». Cinq runs ne
+ *    suffisent pas à réfuter une fréquence de cet ordre — ils suffisent à dire
+ *    qu'on ne l'a pas revue, pas qu'elle n'existe plus.
+ *
+ * Si ces tests rougissent à nouveau : NE PAS les isoler pour conclure
+ * ([[PIT-S64-009]]), et regarder D'ABORD le log du `next dev` local. Au S80,
+ * TOUS les rouges des 5 runs hors références visuelles (`products.spec.ts`,
+ * `golden-path`, `timeline`) portaient la même signature — un `toBeVisible` ou un
+ * `toHaveURL` expiré à 5 s pendant qu'une route se (re)compilait 6 à 18 s sur le
+ * serveur de dev. Ce mode de panne n'existe pas en CI, qui sert un build de
+ * production (#462) ; le dossier est dans `sprint-62-select-focus-indicator.spec.ts`.
  */
 
 test.use({ storageState: PROD.storageState })
