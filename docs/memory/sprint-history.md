@@ -5738,8 +5738,24 @@ tous deux vérifiés par le lead puis corrigés avec contrôle négatif. MINEURS
 supposé) : le `Content-Type: application/json` d'instance d'axios faisait sérialiser le `FormData` en
 JSON (`transformRequest` remplace le corps), donc **l'upload d'avatar était cassé en PRODUCTION**.
 L'hypothèse « proxy Next / cookie SameSite » portée par l'issue depuis la PR #214 est réfutée.
-**#500 reste OUVERTE :** flaky non reproduit en 4 runs ; seul le mécanisme de capture est livré.
-**Status :** En cours — PR non ouverte, en attente d'arbitrage du dev
+**#500 reste OUVERTE :** flaky non reproduit en 4 runs ; seul le mécanisme de capture est livré
+(cf. [[DEC-S81-002]] — une série verte est le comportement nominal d'un flaky, elle ne réfute rien).
+**Nouveaux pitfalls / patterns / décisions :** PIT-S81-001 à 005 · PAT-S81-001, PAT-S81-002 ·
+DEC-S81-001 à 003 · 1 entrée `bugs-resolved` (le 415 avatar). Packs `pit-{backend,frontend}`
+régénérés et 5 entrées classées dans `pit-classification.tsv`.
+**Absorbé en cours (XS) :** 3 découvertes intégrées — commentaire `uploadAvatar` rendu faux par le
+fix, création du premier test unitaire d'`apiClient` (le module n'en avait aucun), remise à plat de
+l'état du compte partagé E2E. Détail dans les done.md.
+**Follow-ups arbitrés (Phase 4 triage, option `[t]`, backlog libre sur décision du dev) :**
+  - 429 sans `Retry-After` ni `X-RateLimit-*` sur les 11 slots [S | auth/infrastructure] → **issue #567**
+  - Dump MockMvc publiant un JWT valide dans les logs CI, 17 classes, dépôt public [M | backend/sécurité]
+    → **issue #568**
+  - « Rouvrir #215 si un 401 avatar réapparaît en CI » → **non transformé en issue** : c'est une
+    condition de réouverture, pas une action. Consignée dans `bugs-resolved.md` et dans le corps de
+    la PR. Ratio discard 0/3.
+**Saturation contexte lead :** non mesurée — aucun instrument fiable disponible dans cette session ;
+ne pas inventer un chiffre pour remplir le champ.
+**Status :** En cours — PR #560 ouverte, CI verte (7/7), en attente de confirmation de merge
 
 ### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
 **Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
