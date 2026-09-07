@@ -661,6 +661,15 @@ Le `Caddyfile` est un bind-mount : en changer le contenu ne modifie ni l'image n
 ## PIT-S81-013 — Changer `acme_ca` ne réémet aucun certificat existant
 Basculer de l'ACME de test vers la production ne suffit pas : Caddy retrouve en stockage un certificat **encore valide** pour chaque nom et le réutilise, quel que soit l'émetteur — `acme_ca` ne pilote que les émissions **futures**. Après rechargement, `openssl s_client` montrait toujours `(STAGING)`. Pour basculer réellement, supprimer les certificats de l'ancien CA dans le volume (`/data/caddy/certificates/<ca>-directory`) puis **REDÉMARRER le conteneur — `caddy reload` ne suffit pas**. Deux raisons cumulées : le reload répond `"config is unchanged"` et ne fait alors rien du tout, et Caddy sert de toute façon les certificats depuis son **cache mémoire**, que la suppression sur disque ne touche pas. Seul le redémarrage lui fait relire un stockage vide et demander au nouveau CA. Vérifié : après `restart`, 8 certificats obtenus sur `acme-v02` en ~30 s, sans erreur. ⚠ Le site n'a **plus de certificat** entre la suppression et l'émission réussie : la fenêtre est courte mais réelle, et une émission refusée (quota) la prolonge. (Mise en ligne #370)
 
+
+## PIT-S82-004 — « Restauré » et « oublié » ont le même `git status`
+Un contrôle négatif qui mute le code de production doit prouver sa restauration, et `git status` ne suffit pas : il ne montre pas le contenu. La preuve est `rtk proxy git diff HEAD -- <dossier>` **vide**, jointe au retour. Recette sur worktree : `cp` du fichier vers le scratchpad avant neutralisation, `cp` inverse après. `git stash` est **INTERDIT** ici — la pile est partagée entre worktrees et une autre session peut la popper ([[sprint-parallel-commits-shared-worktree]]). Sur un working tree partagé par un fan-out, la mutation du source est en outre proscrite tant qu'un autre agent tourne : préférer le contrôle négatif par la couche réseau ([[PAT-S82-002]]). (Sprint 82 #477)
+
+
+## PIT-S82-005 — Le check coverage-E2E compte les testids des fichiers de test
+L'heuristique de la Phase 8 balaie tous les `*.tsx` ajoutés, `.test.tsx` compris. Au S82 elle a signalé `mock-picker` en MAJEUR : c'est le testid d'un **composant mocké dans un test unitaire**, préexistant dans `EventEditForm.test.tsx`, sans aucune surface produit derrière. Le risque n'est pas le faux positif lui-même mais la réaction qu'il induit — écrire une spec E2E factice pour faire taire le check, ce qui ajoute du vert sans ajouter de preuve. Le check reste par ailleurs faible dans l'autre sens : il vérifie qu'un testid est **cité**, pas qu'une spec passe ([[coverage-check-vert-ne-prouve-rien]]). Filtrer `*.test.tsx` / `__tests__/` avant de conclure. (Sprint 82, Phase 8)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

@@ -779,3 +779,9 @@ Livrer le RTL coûte d'abord de la **traduction** (ar/he, relecture native), tr�
 
 ## DEC-S82-012 — Le thème reste global ; le bouton « Nouvel événement » de la frise n'est pas un arbitrage
 Issue à deux sujets de natures différentes. **Thème** : reste porté par `AppShell`, pas dupliqué par écran — un thème est une préférence d'application, pas de vue ; l'exposer dans chaque en-tête multiplierait les points de contrôle du même état. Couvert par [[DEC-S82-009]], handoff mis à jour pour cet écran. **Bouton « Nouvel événement »** : que l'écran cœur n'offre **aucun chemin de création** (`TimelineEditHost` ne monte qu'édition et suppression) n'est défendable par aucune lecture — reclassé en écart, porté par #602. L'issue #590 n'a plus d'objet propre. (Sprint 82 #590)
+
+## DEC-S82-013 — Une correction d'attribution de règle se pose aux DEUX bouts
+**Contexte.** La ligne `**Test**` de `BR-EVE-017` dans `br-events.md` désignait `NewEventDrawer.test.tsx` comme la garde de la règle. Ce test n'en gardait rien ([[PIT-S82-001]]).
+**Décision.** Recibler la ligne sur le nouveau fichier de garde **et** y écrire explicitement de ne PAS compter `NewEventDrawer.test.tsx`, **plus** un commentaire au point d'origine dans ce test.
+**Pourquoi.** Corriger seulement le pack laisse le commentaire trompeur en place dans le code ; corriger seulement le code laisse le pack faire autorité. Dans les deux cas le prochain contributeur refait le raisonnement « BR-EVE-017 est déjà couverte » — c'est exactement le mode de propagation décrit par [[PIT-S70-001]] (un identifiant `BR-*` recopié depuis un commentaire se propage jusque dans les briefings). La redondance est volontaire, comme celle du titre et de la ligne `Status` des entrées de sprint ([[PIT-S56-006]]).
+**Portée.** Vaut pour toute correction d'attribution `BR-*` / `PIT-*` : pack + point d'origine, jamais l'un sans l'autre. (Sprint 82 #507)
