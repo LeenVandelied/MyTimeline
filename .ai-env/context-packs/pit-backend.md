@@ -647,6 +647,14 @@ Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **rempla
 `@AutoConfigureMockMvc` (Spring Boot) imprime l'échange complet **sur échec**, `Set-Cookie:"jwt=eyJhbGciOiJSUzI1NiJ9…"` compris. **17 classes de test** portent l'annotation, aucune propriété `spring.test.mockmvc.print` n'est posée, et le dépôt est public. Masquer les en-têtes dans son PROPRE helper de diagnostic (fait au S81 pour #500) ne suffit donc pas : Spring imprime le token brut à la ligne suivante. Découvert par le contrôle négatif, **pas** par la review — qui n'avait vu que la moitié du problème. Antérieur au sprint (`git show <base>:<fichier>` le confirme). Correctif repo-wide à arbitrer. (Sprint 81, review sécurité + lead)
 
 
+## PIT-S81-009 — Omettre une variable ≠ l'absenter, quand le fichier de properties la déclare vide
+`COOKIE_DOMAIN` a été volontairement omise du compose de production, au motif documenté qu'en mono-domaine le cookie host-only est correct. Le backend a bouclé sur un crash : `ProfileSafetyGuard` (#253) refuse le boot sur une valeur **blanche**, sans considérer la topologie — et `application-prod.properties:38` porte `${COOKIE_DOMAIN:}`, donc **omettre la variable d'environnement produit exactement la même propriété vide que la déclarer vide**. Le runbook du projet, qui la classait « conditionnel — acceptable de l'omettre en mono-domaine », a induit l'erreur : il contredisait le code. Corollaire général : avant d'omettre une variable, lire le `application-{profil}.properties` — un défaut `${VAR:}` transforme l'omission en valeur vide, et c'est la valeur vide que les garde-fous testent. (Mise en ligne #370)
+
+
+## PIT-S81-010 — Une sonde de déploiement qui ne traverse pas jusqu'au backend rend un vert menteur
+L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
