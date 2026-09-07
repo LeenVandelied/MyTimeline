@@ -5771,14 +5771,76 @@ les entrées de déploiement) : corrigées dans `patterns.md` et `sprint-history
 l'issue #568.
 **Status :** Terminé
 
-### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
+### Sprint 82 — 2026-09-06 → 2026-09-07 (Terminé — merge PR #645 dans dev — cohésion 0.33, Couverture des BR events non protégées)
 **Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
-**Milestone GitHub :** #83
-**Issues :** #507, #491, #477
-**Vagues :** V1 = #507 ‖ #491 | V2 = #477
+**Milestone GitHub :** #83 (fermé après merge)
+**Issues livrées (3) :** #507, #491, #477
+**Vagues exécutées :** V1 = #507 ‖ #491 parallèles | V2 = #477
+**Cohésion score :** 0.33
+**Branche :** `claude/sprint-82-start-f67d87` (créée depuis `origin/dev` @ `992db28`)
 **Migrations Flyway :** aucune
-**Dépend de :** Sprints 78 → 81 (ajouter des tests en dernier, sur un harnais assaini)
-**Status :** Planifié
+**Commits :** 4 — `1e9f471` (#507), `63c5f9c` (#491), `1ab539f` (#477), `d90ab5e` (audit + statut)
+**BR impactées :** BR-EVE-017 (garde créée), BR-EVE-012 (couverture E2E ajoutée)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 1 MINEUR (regex permissive, non bloquant, documenté dans la spec). Verdict MERGEABLE.
+**Tests :** Backend 581/581 · Frontend vitest 1333/1333 · E2E CI Linux 7/7 jobs verts.
+**Status :** Terminé
+
+**Sprint 100 % tests — aucune ligne de code de production modifiée.** Le seul fichier ajouté sous
+`frontend/src/` est un `.test.tsx` ; `git diff origin/dev..HEAD -- frontend/src/components/timeline/`
+rend vide (vérifié après le contrôle négatif de #477).
+
+**Les trois gardes ont été vues ROUGES avant d'être acceptées.** C'est le seul critère qui vaille
+pour un sprint de tests, et il est le motif même de #507 (le test existant citait BR-EVE-017 sans
+rien en garder) :
+
+| Garde | Contrôle négatif | Rouge obtenu |
+|---|---|---|
+| debounce (#507) | `previewTitle`/`previewColor`/`previewStartDate` rebranchés sur `watch()` brut | 3 failed — `Expected "Mon événement" / Received "Refonte"` |
+| hint récurrence (#491) | `page.route().fulfill()` épinglant `capped` dans les deux sens, spec jetable non commitée | 2 failed / 5 passed |
+| zoom avant (#477) | `useLayoutEffect` sur `[dayWidth]` neutralisé (`TimelineView.tsx:895`) | 2 failed / 5 passed — `toHaveCount(1)` reçoit `0` |
+
+**Deux énoncés d'issue réfutés par la mesure** (le taux reste conforme au S74/S77/S82) :
+- **#491** — le déclencheur de `capped` n'est PAS le plafond de 4 000 occurrences annoncé par le
+  libellé, mais l'horizon de 5 ans de #452 : `MONTH` sans borne → `{count:61, capped:true}`. Le
+  libellé affiché à l'utilisateur est donc **factuellement faux dans le cas nominal** → follow-up.
+- **#477** — les numéros de ligne du plan avaient dérivé (`timeline.spec.ts:1443/1599` → réels
+  `1460/1616`). `TimelineView.tsx:895` était en revanche exact.
+
+**Point technique de fond (#477).** Au zoom AVANT la piste s'élargit : aucun clamp ne se déclenche,
+donc l'oracle géométrique de #449 (`scrollLeft < maxScroll`) y est **structurellement toujours
+vrai**. Une spec qui l'aurait transposé serait verte quoi qu'il arrive. Consigné en [[PAT-S82-003]].
+
+**Les 10 échecs E2E locaux n'étaient pas imputables au sprint — cause mesurée, puis confirmée par
+la CI.** Tous dans `sprint-77-theme-visual.spec.ts` : `A snapshot doesn't exist at
+...-chromium-darwin.png`. Seules les références `*-linux.png` sont suivies par git (régénérées sur
+l'image du runner au S77, `e513450`). Aucune régénération n'a été faite (`--update-snapshots`
+graverait la mutation d'armement dans la référence, et une capture macOS ne vaut rien pour la CI
+Linux) ; les 9 captures `*-darwin.png` écrites par le run ont été supprimées avant la PR. **La CI
+Linux a rendu `e2e` vert**, ce qui tranche définitivement.
+
+**Nouveaux pitfalls / patterns / décisions :** [[PIT-S82-001]] à [[PIT-S82-005]], [[PAT-S82-001]] à
+[[PAT-S82-003]], [[DEC-S82-013]]. Le piège RTK/Playwright rencontré par #491 était **déjà** consigné
+en [[PIT-S81-024]] — re-confirmation, pas découverte.
+
+**Écart de méthode assumé.** L'issue #507 a touché deux fichiers hors du strict « écrire un test »
+(un commentaire dans `NewEventDrawer.test.tsx`, une ligne dans `br-events.md`) : sans les deux
+bouts, le raisonnement « BR-EVE-017 est déjà couverte » se refait au sprint suivant. Cf.
+[[DEC-S82-013]].
+
+**Limites de couverture à ne pas surestimer :**
+- BR-EVE-017 est gardée **par échantillon** (titre, couleur, `startDate`). Rebrancher
+  `previewEndDate` seul sur `watch()` brut ne ferait rougir aucun test. La coalescence (N frappes →
+  1 rendu) n'est pas testée.
+- Couples de zoom encore non couverts : Trimestre↔Année, et l'entrée `Cmd`+molette
+  (`TimelineView.tsx:1012`, handler `wheel` séparé — seule des 4 entrées sans spec d'ancrage).
+- Aucun run Firefox / WebKit (projet `firefox` restreint par `testMatch` à une autre spec).
+
+**Cadrage — ce sprint a été exécuté sur un plan du 2026-09-06 devenu partiellement obsolète.**
+Entre la planification et l'exécution : la mise en production réelle (PR #564→#591) et l'audit de
+conformité design (PR #635/#636) qui a ouvert **~32 issues #613-#644**, dont une dizaine de P2. Le
+S82 a été cadré sans en avoir connaissance. Le dev a lancé le sprint en connaissance de cause. **Il
+n'existe plus aucun sprint planifié après le S82** : le prochain `/sprint plan` doit intégrer ce lot.
+
 
 ### Énoncés périmés détectés pendant la planification — et traités
 

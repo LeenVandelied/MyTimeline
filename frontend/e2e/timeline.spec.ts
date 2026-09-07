@@ -1685,3 +1685,242 @@ test.describe('#451 /timeline — le zoom arrière conserve le JOUR regardé, pa
     }
   })
 })
+
+/* ============================================================================
+ * #477 — ZOOM **AVANT** : LE SENS QUE NI #449 NI #451 N'ÉPINGLENT
+ *
+ * ÉTAT DES LIEUX (mesuré sur `HEAD`, contrôle négatif rejoué le 2026-09-07). La
+ * re-projection d'ancre est UN SEUL `useLayoutEffect` sur `[dayWidth]`
+ * (`TimelineView.tsx:895`) : elle est donc SYMÉTRIQUE dans le code. Mais elle
+ * n'était PROUVÉE que dans un sens — les deux specs ci-dessus jouent
+ * `timeline-zoom-out`, et le seul couple de niveaux exercé était Mois →
+ * Trimestre. Les 5 autres occurrences de `timeline-zoom-in` du fichier (L648,
+ * L881-882, L1311-1312, L1316) POSITIONNENT l'échelle pour d'autres assertions
+ * (week-end, pastilles, libellé de niveau) : aucune ne mesure `scrollLeft` de
+ * part et d'autre du changement d'échelle. Ce n'est pas de la couverture.
+ *
+ * POURQUOI LE SENS AVANT N'EST PAS LE SYMÉTRIQUE TRIVIAL DU SENS ARRIÈRE. Au
+ * zoom arrière la piste RÉTRÉCIT : le navigateur RABAT la valeur périmée et le
+ * symptôme est un saut au bord droit — c'est ce clamp que #449 attrape. Au zoom
+ * avant la piste s'ÉLARGIT : **aucun clamp n'est possible**, `scrollLeft` reste
+ * simplement à sa valeur périmée, qui désigne désormais un jour BEAUCOUP PLUS
+ * TÔT (1440 px valent le jour 120 à 12 px/j, mais le jour 42 à 34 px/j). La
+ * frise glisse silencieusement vers le passé, sans jamais toucher une borne.
+ * Un oracle géométrique du type « la frise n'a pas sauté au bord » est donc
+ * STRUCTURELLEMENT AVEUGLE ici : il est satisfait dans les deux cas. L'oracle
+ * retenu est celui de #451 — « le jour qu'on regardait est toujours celui qu'on
+ * regarde » — et lui seul.
+ *
+ * COUPLES DE NIVEAUX EXERCÉS (critère d'acceptation : au moins un AUTRE que
+ * Mois → Trimestre) : **Mois → Semaine** (12 → 34 px/j) puis **Semaine → Jour**
+ * (34 → 96 px/j). Deux couples, tous deux inédits, et la moitié FINE de
+ * l'échelle — celle où `DAY_WIDTH_PX` varie le plus vite — n'était traversée
+ * par aucune mesure d'ancrage.
+ *
+ * TROIS ENTRÉES PRODUIT COUVERTES : les raccourcis `+` et `=`
+ * (`TimelineView.tsx:1044-1046`, les deux alias que cite l'issue) et le bouton
+ * `timeline-zoom-in`, qu'AUCUNE spec d'ancrage n'utilisait.
+ *
+ * ÉTENDUE COURTE, ET C'EST DÉLIBÉRÉ. Le fixture de #449/#451 fait 5501 jours.
+ * `MAJOR_TICK_UNIT` vaut `'day'` aux niveaux Semaine ET Jour (`zoom.ts`), et la
+ * règle n'est PAS virtualisée (`TimelineRuler` mappe `ticks` en entier) :
+ * réutiliser ce fixture ferait rendre ~5500 graduations + ~1570 segments
+ * week-end à chaque zoom avant. On pose donc une étendue de 731 jours, qui
+ * suffit très largement à la démonstration (cf. arithmétique ci-dessous).
+ *
+ * ARITHMÉTIQUE (étendue 731 j, oracle au jour 120, aujourd'hui au jour 630 ;
+ * bande de virtualisation ≈ [scrollLeft − 768, scrollLeft + 1432], soit
+ * `OVERSCAN_X_PX` 600 + `LANE_TRACK_OFFSET_PX` 168 de part et d'autre d'un
+ * conteneur de ~1000 px) :
+ *
+ *   niveau    px/j   scrollLeft attendu   bande de rendu    pastille à
+ *   Mois       12    1440 (= 120 × 12)    [ 672,  2872]     1440  → MONTÉE
+ *   Semaine    34    4080 (= 120 × 34)    [3312,  5512]     4080  → MONTÉE
+ *   Jour       96   11520 (= 120 × 96)    [10752,12952]    11520  → MONTÉE
+ *
+ *   contrôle négatif (`useLayoutEffect` neutralisé) : `scrollLeft` RESTE à
+ *   1440 aux trois niveaux, la bande reste [672, 2872], et la pastille passe à
+ *   4080 puis 11520 px — hors bande de 1208 px puis de 8648 px → DÉMONTÉE (0).
+ *
+ * AUCUN RABATTEMENT N'EST EN CAUSE, et la spec l'ASSERTE : `scrollLeft` reste
+ * très en dessous du maximum aux trois niveaux (la piste ne fait que grandir).
+ * Ce qui est éprouvé est donc l'ANCRAGE seul.
+ *
+ * ⚠ E2E OBLIGATOIRE, jamais jsdom : même motif qu'aux deux blocs précédents —
+ * la bande de virtualisation dérive de `clientWidth` réel et jsdom ne mesure
+ * aucun conteneur (cf. [[jsdom-scroll-tests-prove-nothing]]).
+ * ========================================================================== */
+
+const ZOOM_IN_PRODUCT_ID = '4a1f0000-0000-4000-8000-000000000477'
+
+/** Nombre de `]` joués au zoom Mois : 4 × 30 j = jour 120 de l'étendue. */
+const ZOOM_IN_PERIOD_PRESSES = 4
+/** Échelles px/jour des deux niveaux ATTEINTS par zoom avant (`DAY_WIDTH_PX`). */
+const DAY_WIDTH_WEEK_PX = 34
+const DAY_WIDTH_DAY_PX = 96
+
+/**
+ * UN produit, TROIS events : J−600, J−510 (l'ORACLE) et J+70. `computeRange`
+ * (padDays = 30) rend une étendue de 731 jours démarrant à J−630 — donc
+ * l'oracle au jour 120 et AUJOURD'HUI au jour 630, à 510 jours de là. À
+ * l'échelle la plus fine traversée (96 px/j) cela fait 48 960 px d'écart : un
+ * recentrage sur aujourd'hui — le faux correctif que #451 documente — ne peut
+ * en aucun cas laisser la pastille de l'oracle dans la bande de rendu.
+ *
+ * Aucun event n'est posé sur aujourd'hui : la pastille du jour ne peut pas se
+ * substituer à l'oracle par accident.
+ */
+async function stubZoomInRangeFixture(page: Page, oracleTitle: string): Promise<void> {
+  const mkEvent = (suffix: string, title: string, dayOffset: number) => ({
+    id: `${ZOOM_IN_PRODUCT_ID}-${suffix}`,
+    title,
+    type: 'single',
+    startDate: isoOffsetDate(dayOffset),
+    endDate: isoOffsetDate(dayOffset),
+    productId: ZOOM_IN_PRODUCT_ID,
+    color: '#1D4ED8',
+    archived: false,
+  })
+  await stubProductsList(page, [
+    {
+      id: ZOOM_IN_PRODUCT_ID,
+      name: 'Zoom In Range Prod',
+      color: '#1D4ED8',
+      category: { id: `${ZOOM_IN_PRODUCT_ID}-cat`, name: 'Zoom In Cat', color: '#1D4ED8' },
+      events: [
+        // rangeStart = ce jour − 630 → l'oracle tombe au jour 120 de l'étendue.
+        mkEvent('start', 'Borne debut', -600),
+        mkEvent('oracle', oracleTitle, -510),
+        mkEvent('end', 'Borne futur', 70),
+      ],
+    },
+  ])
+}
+
+/**
+ * Amène la vue au jour 120 au zoom Mois via le raccourci `]` — contrôle produit
+ * réel (`SET_OFFSET` → `scrollLeft = offsetDays × dayWidth` en repère PISTE,
+ * #392), et non une écriture de `scrollLeft` par la spec : la position de
+ * départ est ainsi posée par le MÊME chemin que celui d'un utilisateur.
+ * Retourne le jour ancré et la mesure de départ, toutes deux ASSERTÉES.
+ */
+async function anchorAtDay120(
+  page: Page,
+  oracleTitle: string,
+): Promise<{ targetDay: number; offsetBefore: number }> {
+  const oraclePill = page.locator(
+    `[data-testid="timeline-event"][data-event-title="${oracleTitle}"]`,
+  )
+  for (let i = 0; i < ZOOM_IN_PERIOD_PRESSES; i++) await page.keyboard.press(']')
+
+  const targetDay = ZOOM_IN_PERIOD_PRESSES * MONTH_PERIOD_STEP_DAYS
+  const before = await settledScroll(page)
+  expect(
+    before.scrollLeft,
+    `le raccourci « ] » doit poser la vue au jour ${targetDay} (repère PISTE, #392)`,
+  ).toBe(targetDay * DAY_WIDTH_MONTH_PX)
+  expect(
+    before.scrollLeft,
+    'la vue de départ ne doit pas être au bord droit, sinon le zoom avant n’aurait ' +
+      'plus rien à re-projeter',
+  ).toBeLessThan(before.maxScroll)
+  await expect(
+    oraclePill,
+    `la pastille du jour ${targetDay} est montée AVANT tout zoom avant`,
+  ).toHaveCount(1)
+
+  return { targetDay, offsetBefore: await pillOffsetFromViewportLeft(page, oracleTitle) }
+}
+
+/**
+ * ORACLE d'un zoom AVANT : après passage à `dayWidth` px/jour, le jour ancré
+ * est toujours le jour regardé. Trois assertions, dans cet ordre :
+ *   1. le SYMPTÔME utilisateur (la pastille disparaît de la frise) — le montrer
+ *      avant le nombre, sinon la spec échoue sur un entier sans avoir dit ce
+ *      que cet entier coûte à l'écran ;
+ *   2. la POSITION exacte — `targetDay × dayWidth`, la seule formulation qu'un
+ *      recentrage sur aujourd'hui ne peut pas satisfaire ;
+ *   3. l'absence de rabattement, qui prouve que (2) n'est pas une borne lue par
+ *      hasard, et la non-régression #392 (repère PISTE : la pastille affleure
+ *      l'en-tête sticky au lieu de passer dessous).
+ */
+async function expectDayStillAnchored(
+  page: Page,
+  oracleTitle: string,
+  targetDay: number,
+  dayWidth: number,
+  levelLabel: string,
+): Promise<void> {
+  const oraclePill = page.locator(
+    `[data-testid="timeline-event"][data-event-title="${oracleTitle}"]`,
+  )
+  await expect(page.getByTestId('timeline-zoom-level')).toHaveText(levelLabel)
+
+  await expect(
+    oraclePill,
+    `zoom avant vers ${levelLabel} : la pastille du jour ${targetDay} reste MONTÉE — ` +
+      'sans re-projection elle sort de la bande de virtualisation et la frise paraît vide',
+  ).toHaveCount(1)
+
+  const after = await settledScroll(page)
+  expect(
+    after.scrollLeft,
+    `re-projection d’ancre vers ${levelLabel} : scrollLeft doit valoir ` +
+      `${targetDay * dayWidth} px (= ${targetDay} j × ${dayWidth} px/j) — même JOUR, ` +
+      'échelle différente',
+  ).toBe(targetDay * dayWidth)
+  expect(
+    after.scrollLeft,
+    'au zoom AVANT la piste ne fait que grandir : aucun rabattement ne doit être en jeu, ' +
+      'sinon la valeur ci-dessus serait une borne lue par hasard',
+  ).toBeLessThan(after.maxScroll)
+
+  expect(
+    Math.round(await pillOffsetFromViewportLeft(page, oracleTitle)),
+    `#392 après le zoom vers ${levelLabel} : la pastille doit affleurer l’en-tête ` +
+      `sticky (${LANE_TRACK_OFFSET_PX} px), pas passer dessous`,
+  ).toBe(LANE_TRACK_OFFSET_PX)
+}
+
+test.describe('#477 /timeline — le zoom AVANT conserve le JOUR regardé', () => {
+  test('raccourcis « + » puis « = » : Mois → Semaine → Jour, le jour ancré ne bouge pas', async ({
+    page,
+  }) => {
+    const oracleTitle = unique('ZoomIn Oracle')
+    await stubZoomInRangeFixture(page, oracleTitle)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+
+    const { targetDay, offsetBefore } = await anchorAtDay120(page, oracleTitle)
+    expect(
+      Math.round(offsetBefore),
+      `#392 avant le zoom : la pastille affleure déjà l’en-tête sticky (${LANE_TRACK_OFFSET_PX} px)`,
+    ).toBe(LANE_TRACK_OFFSET_PX)
+
+    // COUPLE 1 — Mois (12 px/j) → Semaine (34 px/j), raccourci `+`.
+    await page.keyboard.press('+')
+    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_WEEK_PX, 'Semaine')
+
+    // COUPLE 2 — Semaine (34 px/j) → Jour (96 px/j), alias `=` du même raccourci.
+    await page.keyboard.press('=')
+    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_DAY_PX, 'Jour')
+  })
+
+  test('bouton « timeline-zoom-in » : Mois → Semaine, le jour ancré ne bouge pas', async ({
+    page,
+  }) => {
+    const oracleTitle = unique('ZoomIn Btn Oracle')
+    await stubZoomInRangeFixture(page, oracleTitle)
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+
+    const { targetDay } = await anchorAtDay120(page, oracleTitle)
+
+    // Le bouton dispatche le MÊME `ZOOM_IN` que le raccourci, mais c'est la
+    // commande visible de l'écran, et aucune spec d'ancrage ne l'empruntait.
+    await page.getByTestId('timeline-zoom-in').click()
+    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_WEEK_PX, 'Semaine')
+  })
+})

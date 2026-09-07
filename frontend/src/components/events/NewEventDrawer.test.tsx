@@ -489,8 +489,12 @@ describe('NewEventDrawer — #326 aperçu épinglé (handoff §6)', () => {
     renderDrawer()
 
     await userEvent.type(screen.getByTestId('event-form-title-input'), 'Refonte')
-    // Debounce 150 ms (BR-EVE-017) : le portail conserve l'arbre React, donc le
+    // Ce test protège le PORTAIL : le portail conserve l'arbre React, donc le
     // contexte RHF — la valeur doit finir par traverser jusqu'à la mini-frise.
+    // ⚠ #507 — il ne protège PAS le débounce de BR-EVE-017 : ce `waitFor` passe
+    // À L'IDENTIQUE si l'aperçu est rebranché sur `form.watch()` brut. La garde
+    // du débounce vit dans `components/EventEditForm.debounce.test.tsx`, qui
+    // assert le NON-rendu pendant la fenêtre de 150 ms.
     await waitFor(() =>
       expect(screen.getByTestId('shell-new-event-drawer-preview')).toHaveTextContent('Refonte'),
     )

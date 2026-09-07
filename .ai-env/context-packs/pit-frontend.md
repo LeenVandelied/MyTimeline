@@ -1108,9 +1108,8 @@ Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **rempla
 Les deux écrivent `frontend/.next` ; le premier meurt en cascade (`Cannot find module './343.js'` depuis `webpack-runtime.js`, puis `ENOENT .next/server/vendor-chunks/lucide-react.js`). Interdire le remontage dans un briefing **ne suffit pas** : vérifier `lsof -nP -iTCP:3000 -sTCP:LISTEN` avant de conclure sur un rouge, et ne PAS relancer son propre serveur par-dessus celui d'un agent — on rejoue la corruption dans l'autre sens. Corollaire : ne pas lancer le scope `frontend` de `test-quiet.sh` (qui contient `next build`) tant qu'un `next dev` sert l'E2E. (Sprint 81, lead)
 
 
-## PIT-S81-024 — RTK réécrit le lanceur Playwright et fait disparaître l'instrumentation
-`--reporter=line` devient `--reporter=json`, puis la sortie est tronquée à 2000 caractères : les `console.log` d'instrumentation sont **perdus**, et un rapport d'échec devient illisible. Parade : préfixer par `rtk proxy` toute campagne Playwright dont on veut lire la sortie, ou lire le fichier complet sous `~/Library/Application Support/rtk/tee/`. Même famille que [[rtk-git-diff-empty-output]] : `grep -h` est également rejeté par le wrapper. (Sprint 81 #215)
-
+## PIT-S81-024 — re-confirmé au Sprint 82
+Le piège RTK/Playwright consigné au S81 s'est reproduit à l'identique au S82 (#491) : `--reporter=line` réécrit en `--reporter=json`, sortie tronquée, preuve de run inexploitable. Parade inchangée : `rtk proxy` + redirection vers un fichier. À inscrire d'office dans tout briefing qui exige de coller une sortie de run.
 
 ## PIT-S81-010 — Une sonde de déploiement qui ne traverse pas jusqu'au backend rend un vert menteur
 L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
@@ -1126,6 +1125,30 @@ Le `Caddyfile` est un bind-mount : en changer le contenu ne modifie ni l'image n
 
 ## PIT-S81-013 — Changer `acme_ca` ne réémet aucun certificat existant
 Basculer de l'ACME de test vers la production ne suffit pas : Caddy retrouve en stockage un certificat **encore valide** pour chaque nom et le réutilise, quel que soit l'émetteur — `acme_ca` ne pilote que les émissions **futures**. Après rechargement, `openssl s_client` montrait toujours `(STAGING)`. Pour basculer réellement, supprimer les certificats de l'ancien CA dans le volume (`/data/caddy/certificates/<ca>-directory`) puis **REDÉMARRER le conteneur — `caddy reload` ne suffit pas**. Deux raisons cumulées : le reload répond `"config is unchanged"` et ne fait alors rien du tout, et Caddy sert de toute façon les certificats depuis son **cache mémoire**, que la suppression sur disque ne touche pas. Seul le redémarrage lui fait relire un stockage vide et demander au nouveau CA. Vérifié : après `restart`, 8 certificats obtenus sur `acme-v02` en ~30 s, sans erreur. ⚠ Le site n'a **plus de certificat** entre la suppression et l'émission réussie : la fenêtre est courte mais réelle, et une émission refusée (quota) la prolonge. (Mise en ligne #370)
+
+
+## PIT-S82-001 — Un test qui CITE une règle peut n'en garder aucune
+`NewEventDrawer.test.tsx` citait `BR-EVE-017` en commentaire, mais son assertion — un `waitFor(toHaveTextContent(…))` — passe **à l'identique avec et sans le débounce** : elle protégeait le portail d'affichage, pas la règle. Toute la valeur d'une garde tient dans le fait de l'avoir vue **rougir sur la violation**, jamais dans la citation d'un identifiant. Corollaire pour les règles de la forme « X passe par un intermédiaire » : l'assertion doit porter sur le **NON-effet pendant la fenêtre** (l'ancienne valeur est encore là à t+delay−1), jamais sur « la valeur finit par arriver » — cette dernière forme est vraie dans les deux mondes. `grep BR-XXX` mesure la citation, pas la couverture : même famille que [[coverage-check-vert-ne-prouve-rien]] (S61) et [[PIT-S70-001]] (un `BR-*` recopié d'un commentaire se propage jusque dans les briefings). (Sprint 82 #507)
+
+
+## PIT-S82-002 — Un seuil déduit d'un libellé i18n est un seuil inventé
+Le hint de récurrence affiche « la série dépasse **4 000** occurrences », et l'énoncé de #491 reprenait ce chiffre. Le déclencheur réel de `capped=true` n'est plus ce plafond depuis #452 (S65) : toute série **sans `recurrenceEndDate`** est tronquée à l'horizon de 5 ans et repart `capped`. Mesuré en sondant l'endpoint avant d'écrire la donnée de test : `MONTH` sans borne → `{count:61, capped:true}` ; `MONTH` borné +2 mois → `{count:3, capped:false}` ; `WEEK` sans borne → `{count:261, capped:true}`. Une fixture calibrée sur 4 000 n'aurait jamais atteint l'état visé. Le seuil vit dans le service d'expansion ; le libellé n'en est qu'une glose — ici **fausse**, ce qui en fait aussi un défaut produit. Sonder, jamais lire le libellé comme une spécification. (Sprint 82 #491)
+
+
+## PIT-S82-003 — La règle graduée de la frise n'est PAS virtualisée, contrairement aux pastilles
+`MAJOR_TICK_UNIT` (`zoom.ts`) vaut `'day'` aux niveaux **Semaine ET Jour**, et `TimelineRuler` mappe `ticks` **en entier**. Réutiliser par réflexe le fixture « large étendue » de #449/#451 (5501 j) pour un test qui descend vers Jour ou Semaine fait rendre ~5500 graduations et ~1570 segments de week-end **à chaque changement d'échelle**. Le S82 a dimensionné une étendue dédiée de 731 j. Avant de recycler un fixture large pour un test qui zoome vers le fin, calculer le nombre de graduations ET de segments qui seront réellement rendus — le coût n'est pas porté par les pastilles, qui elles sont virtualisées. (Sprint 82 #477)
+
+
+## PIT-S82-004 — « Restauré » et « oublié » ont le même `git status`
+Un contrôle négatif qui mute le code de production doit prouver sa restauration, et `git status` ne suffit pas : il ne montre pas le contenu. La preuve est `rtk proxy git diff HEAD -- <dossier>` **vide**, jointe au retour. Recette sur worktree : `cp` du fichier vers le scratchpad avant neutralisation, `cp` inverse après. `git stash` est **INTERDIT** ici — la pile est partagée entre worktrees et une autre session peut la popper ([[sprint-parallel-commits-shared-worktree]]). Sur un working tree partagé par un fan-out, la mutation du source est en outre proscrite tant qu'un autre agent tourne : préférer le contrôle négatif par la couche réseau ([[PAT-S82-002]]). (Sprint 82 #477)
+
+
+## PIT-S82-005 — Le check coverage-E2E compte les testids des fichiers de test
+L'heuristique de la Phase 8 balaie tous les `*.tsx` ajoutés, `.test.tsx` compris. Au S82 elle a signalé `mock-picker` en MAJEUR : c'est le testid d'un **composant mocké dans un test unitaire**, préexistant dans `EventEditForm.test.tsx`, sans aucune surface produit derrière. Le risque n'est pas le faux positif lui-même mais la réaction qu'il induit — écrire une spec E2E factice pour faire taire le check, ce qui ajoute du vert sans ajouter de preuve. Le check reste par ailleurs faible dans l'autre sens : il vérifie qu'un testid est **cité**, pas qu'une spec passe ([[coverage-check-vert-ne-prouve-rien]]). Filtrer `*.test.tsx` / `__tests__/` avant de conclure. (Sprint 82, Phase 8)
+
+
+## PIT-S81-024 — re-confirmé au Sprint 82
+Le piège RTK/Playwright consigné au S81 s'est reproduit à l'identique au S82 (#491) : `--reporter=line` réécrit en `--reporter=json`, sortie tronquée, preuve de run inexploitable. Parade inchangée : `rtk proxy` + redirection vers un fichier. À inscrire d'office dans tout briefing qui exige de coller une sortie de run.
 
 ---
 
