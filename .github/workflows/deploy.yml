@@ -94,6 +94,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      # Nécessaire pour que l'hôte puisse TIRER les images : un package GHCR créé
+      # par un push du GITHUB_TOKEN est PRIVÉ par défaut, même sur un dépôt public.
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -123,6 +128,19 @@ jobs:
           scp -i ~/.ssh/id_deploy docker-compose.prod.yml Caddyfile \
             "$USER@$HOST:/opt/matimeline/"
 
+      # Le jeton est éphémère (durée du job) et transite par STDIN : il n'apparaît
+      # ni dans la ligne de commande, ni dans la table des process de l'hôte.
+      # Alternative écartée : rendre les packages GHCR publics à la main — une étape
+      # manuelle de plus, et un oubli au premier déploiement suffirait à le casser.
+      - name: Authentifier l'hôte auprès de GHCR
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
       - name: Déployer
         env:
           HOST: ${{ secrets.DEPLOY_HOST }}
@@ -139,6 +157,9 @@ jobs:
             -f docker-compose.prod.yml pull
           docker compose --env-file .env --env-file .env.tag \
             -f docker-compose.prod.yml up -d --remove-orphans
+          # Le jeton expire de toute façon avec le job ; on ne laisse pas
+          # d'identifiant périmé traîner dans ~/.docker/config.json.
+          docker logout ghcr.io >/dev/null
           EOSSH
 
       # PREUVE POSITIVE de bon fonctionnement, pas simple absence d'erreur : le job
