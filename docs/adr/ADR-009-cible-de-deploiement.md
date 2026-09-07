@@ -138,9 +138,35 @@ C'est la conséquence la plus contraignante de cet ADR.
 | Variable | Valeur | Moment |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | `https://matimeline.com/api` | **build** de l'image frontend |
-| `APP_CANONICAL_HOST` | `matimeline.com` | runtime frontend |
+| `SPRING_PROFILES_ACTIVE` | `prod` | runtime backend |
+| `ENVIRONMENT` | `production` | runtime backend (arme le garde-fou #111) |
+| `APP_CANONICAL_HOST` | `https://matimeline.com` | runtime frontend |
+| `AUTH_JWKS_URL` | `http://backend:8080/.well-known/jwks.json` | runtime frontend |
 | `CORS_ALLOWED_ORIGINS` | `https://matimeline.com` | runtime backend |
-| `COOKIE_DOMAIN` | `matimeline.com` | runtime backend |
+| `COOKIE_DOMAIN` | *(omise)* | runtime backend |
+| `STORAGE_AVATAR_PATH` | `/app/var/avatars` | runtime backend |
+| `STORAGE_EXPORT_PATH` | `/app/var/exports` | runtime backend |
+
+Trois précisions qui ne se devinent pas, toutes tirées de
+`docs/runbook/deploiement-profils.md` :
+
+- **`APP_CANONICAL_HOST` doit porter le schéma** (`https://matimeline.com`), pas l'hôte nu.
+  Un hôte nu ne fixe que l'hôte : un `x-forwarded-proto: http` menteur produirait alors un
+  `Location` en clair alors que le canonique est en HTTPS.
+- **`AUTH_JWKS_URL` est une adresse de serveur à serveur.** Le middleware Next la résout depuis
+  le conteneur frontend, dans le réseau Compose : la valeur est le **nom de service interne**,
+  jamais l'URL publique. Poser l'URL vue du navigateur est le piège documenté ; la garde
+  retombe alors en dégradé « présence du cookie seule », avec pour seul signal un
+  `console.warn`.
+- **`COOKIE_DOMAIN` est volontairement omise**, pas laissée vide. En mono-domaine strict le
+  cookie host-only est correct, et une clé déclarée vide serait pire que son absence (§ ci-dessus).
+
+> **Défaut relevé dans le runbook, à corriger.** Sa section « Variables d'environnement de
+> production (liste complète) » se déclare faisant foi mais **omet `STORAGE_AVATAR_PATH` et
+> `STORAGE_EXPORT_PATH`**, alors que `application-prod.properties` les lit **sans default**
+> (lignes 57 et 62) : leur absence fait échouer le boot. Un opérateur suivant le runbook à la
+> lettre n'arriverait pas à démarrer. `#213` ne couvre que la première des deux.
+> `BREVO_API_KEY` y manque également.
 
 Noms de variables **vérifiés** dans `application-prod.properties` (`COOKIE_DOMAIN` ligne 38,
 `CORS_ALLOWED_ORIGINS` ligne 47). Leur défaut vide y est **volontaire** : c'est ce qui permet à
