@@ -5717,7 +5717,7 @@ négation sur un retour à la ligne). Déjà signalé au S76 : le motif est stru
 > session), `next dev` en **webpack** sur `:3000` (pas turbopack — PIT-S61-007 en worktree).
 > Oracle réseau de `playwright.config.ts` vérifié : `GET :3000/api/auth/me` → **401**.
 
-### Sprint 81 — 2026-09-06 (PLANIFIÉ — cohésion 0.56, Durcir le parcours auth/avatar)
+### Sprint 81 — 2026-09-06 → 2026-09-07 (EN COURS — cohésion 0.56, Durcir le parcours auth/avatar)
 **Objectif :** rate-limit avatar, flaky auth élucidé (ou son mécanisme de capture livré), E2E avatar dégelé.
 **Milestone GitHub :** #82
 **Issues :** #500, #499, #215
@@ -5726,7 +5726,20 @@ négation sur un retour à la ligne). Déjà signalé au S76 : le motif est stru
 > bucket rate-limit ; si #499 modifie `LIMITS` en parallèle, l'imputation devient impossible.
 **Migrations Flyway :** aucune
 **Dépend de :** Sprints 79 + 80 (#215 exige un harnais dont le diagnostic est fiable)
-**Status :** Planifié
+**Branche :** `claude/sprint-81-start-bf08ac` (worktree — convention S80, pas de `sprint/81`)
+**Vagues exécutées :** V1 = #500 · V2 = #499 · V3 = #215 (séquentiel — working tree partagé + verrou Playwright)
+**Commits :** 8 (2 par issue, + 2 corrections de review)
+**Tests :** Backend 581/581 · Vitest 1330/1330 (116 fichiers) · build + typecheck + lint verts ·
+E2E 300 passed / 8 skipped / 11 failed — les 11 sont les rouges structurels macOS de
+`sprint-77-theme-visual` (références `-chromium-linux` sans équivalent `-darwin`), déjà consignés au S80.
+**Reviews :** 3 relecteurs — 2 MAJEURS (fuite de JWT dans les logs CI ; asymétrie du DELETE E2E),
+tous deux vérifiés par le lead puis corrigés avec contrôle négatif. MINEURS assumés et documentés.
+**Résultat clé :** #215 n'était PAS un artefact E2E. La cause mesurée est un **415** (et non le 401
+supposé) : le `Content-Type: application/json` d'instance d'axios faisait sérialiser le `FormData` en
+JSON (`transformRequest` remplace le corps), donc **l'upload d'avatar était cassé en PRODUCTION**.
+L'hypothèse « proxy Next / cookie SameSite » portée par l'issue depuis la PR #214 est réfutée.
+**#500 reste OUVERTE :** flaky non reproduit en 4 runs ; seul le mécanisme de capture est livré.
+**Status :** En cours — PR non ouverte, en attente d'arbitrage du dev
 
 ### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
 **Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
