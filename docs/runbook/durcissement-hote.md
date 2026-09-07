@@ -65,15 +65,44 @@ passe par `lo`, qui est accepté sans condition) :
 curl -sS -o /dev/null -w '%{http_code}\n' http://<IP>/
 ```
 
-## 2. Supprimer `rpcbind`
+> ⚠ **Ne jamais conclure sur un code de retour de connexion — constaté le 2026-09-07.**
+> `nc -z` a rapporté « succeeded » sur 80/443 alors que la Security List OCI les bloquait
+> encore. `curl`, lui, disait vrai. J'en ai tiré une explication inventée (« le réseau
+> d'observation intercepte 80/443 ») que la suite a réfutée : une fois les règles posées, les
+> mêmes commandes depuis le même poste ont rendu le contenu attendu.
+>
+> **Le seul contrôle qui tranche est un test par CONTENU.** Sur l'hôte :
+>
+> ```bash
+> mkdir -p /tmp/probe && echo "jeton-$(date +%s)" > /tmp/probe/index.html
+> sudo setsid --fork timeout 120 python3 -m http.server 80 --bind 0.0.0.0 --directory /tmp/probe
+> ```
+>
+> puis, depuis l'extérieur, exiger le **jeton exact** en retour. Un intercepteur peut fabriquer
+> une poignée de main, jamais un jeton généré à l'instant.
+>
+> Trois précautions : `--directory` est **obligatoire** (sans lui, l'arborescence est servie en
+> `root`) ; `setsid --fork` pour que l'écouteur survive à la fin de la session SSH ; et vérifier
+> qu'il écoute vraiment (`ss -tln`) **avant** d'interpréter un échec distant — sinon on teste le
+> vide. Tuer l'écouteur et supprimer `/tmp/probe` ensuite.
+
+## 2. Neutraliser `rpcbind`
 
 Aucun composant de MyTimeline ne s'en sert.
 
+**Appliqué le 2026-09-07 : masquage, PAS purge.** `nfs-common` dépend de `rpcbind`,
+donc `apt-get purge rpcbind` l'emporte avec lui. Aucun montage NFS n'existe sur la
+machine (`mount`, `/etc/fstab` vérifiés), la purge était donc sûre — mais le masquage
+ferme le port tout aussi bien et se défait en une commande, ce qui vaut mieux sur un
+hôte dont on ne connaît pas tout l'historique.
+
 ```bash
 sudo systemctl disable --now rpcbind.socket rpcbind.service
-sudo apt-get purge -y rpcbind
+sudo systemctl mask rpcbind.socket rpcbind.service
 ss -tlnp | grep ':111' || echo "port 111 : plus rien en écoute"
 ```
+
+Pour revenir en arrière : `sudo systemctl unmask rpcbind.socket rpcbind.service`.
 
 ## 3. Mises à jour de sécurité automatiques
 

@@ -621,6 +621,19 @@ La Security List/NSG de la console OCI ne suffit pas : les images Ubuntu d'Oracl
 ## PIT-S81-004 — Un runbook qui se déclare « liste complète » peut omettre des variables fail-fast
 `docs/runbook/deploiement-profils.md` annonçait une liste « complète » qui « fait foi » en omettant **quatre** variables, dont `STORAGE_AVATAR_PATH` et `STORAGE_EXPORT_PATH` que `application-prod.properties` lit **sans default** : un opérateur suivant le runbook à la lettre n'arrivait pas à démarrer. La liste de #370 avait la même lacune, plus une variable supprimée depuis 20+ sprints (`AUTH_JWT_PUBLIC_KEY`, remplacée par `AUTH_JWKS_URL` en #358). Confronter toute liste de configuration au fichier `application-{profil}.properties`, jamais à sa description en prose. (Mise en ligne #213/#370)
 
+
+## PIT-S81-005 — `nc -z` ment sur un port fermé ; seul un test par CONTENU tranche
+`nc -z` (macOS) a rapporté « succeeded » sur les ports 80/443 alors que la Security List OCI les bloquait encore — faux positif pur. `curl`, lui, disait vrai (« Connection reset by peer » = injoignable). Confronté aux deux, j'ai **inventé** une explication qui réconciliait tout (« mon réseau intercepte 80/443 et complète la poignée de main ») et je l'ai consignée comme un fait. Elle était **fausse** : une fois les règles OCI posées, les mêmes commandes depuis le **même poste** ont rendu le contenu attendu. L'explication simple — le port était fermé — était la bonne.
+
+**La règle qui tient** : ne jamais conclure sur une ouverture de port à partir d'un code de retour de connexion. Servir un **jeton unique** sur l'hôte (`python3 -m http.server <port> --directory <dossier vide>`) et exiger ce jeton en retour. Un intercepteur peut fabriquer une poignée de main, jamais un jeton généré à l'instant. Corollaires : `--directory` obligatoire (sinon l'arborescence est servie en `root`), `setsid --fork` pour que l'écouteur survive à la fin de la session SSH, et vérifier qu'il écoute AVANT de conclure d'un échec distant. (Mise en ligne #561)
+
+## PIT-S81-006 — Une capture d'écran fournie par l'utilisateur n'est pas un inventaire
+Au 2026-09-07, une capture de la liste des domaines OVH en montrait **3** ; la console en contenait **4**, la liste étant tronquée par un défilement. J'en ai tiré « `matimeline.fr` est un domaine NON détenu », affirmation propagée dans un ADR, trois commentaires d'issue, un message de commit et une description de PR avant d'être réfutée en ouvrant la console. Une capture prouve ce qu'elle montre, **jamais l'absence de ce qu'elle ne montre pas** — et une liste avec barre de défilement est par construction partielle. Recouper avec la source (console, API, `dig`) avant d'en tirer un fait négatif, surtout si ce fait sert à qualifier quelque chose de bloquant. (Mise en ligne #338)
+
+
+## PIT-S81-007 — L'expéditeur Brevo par défaut pointe sur un domaine non détenu
+`application.properties:113` porte `brevo.sender.email` avec le défaut `no-reply@mytimeline.app` — domaine **non détenu** — et `application-prod.properties` ne le surcharge pas ; `docker-compose.prod.yml` ne propageait que `BREVO_API_KEY`. Brevo refuse d'expédier depuis un expéditeur non authentifié, `BrevoEmailService` **attrape l'exception et se contente de la journaliser** (volontaire : BR-AUT-012 interdit que la réponse 200 dépende de Brevo, sinon l'existence d'un compte fuite par le timing). Conséquence : reset de mot de passe cassé **sans aucun symptôme**, même avec une clé API valide. Poser `BREVO_SENDER_EMAIL` sur un domaine **authentifié dans Brevo** (DKIM+DMARC) — le détenir ne suffit pas — et `BREVO_SENDER_NAME` (défaut `MyTimeline` ≠ marque « Ma Timeline »). (Mise en ligne #370)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

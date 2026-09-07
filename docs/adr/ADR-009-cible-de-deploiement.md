@@ -47,7 +47,9 @@ distincte et ne conditionne pas le déploiement.
 
 ### 2. Domaine canonique : `matimeline.com`
 
-Trois domaines sont détenus. Le canonique est **`matimeline.com`** :
+**Quatre** domaines sont détenus : `matimeline.com`, `matimeline.fr`, `ma-timeline.com`,
+`ma-timeline.fr` (vérifié dans la console OVH le 2026-09-07). Le canonique est
+**`matimeline.com`** :
 
 - se dicte à l'oral sans « tiret », contrairement aux variantes `ma-timeline.*` ;
 - `.com` cohérent avec les quatre locales servies (`fr`, `en`, `es`, `de`) — un `.fr` les
@@ -55,18 +57,25 @@ Trois domaines sont détenus. Le canonique est **`matimeline.com`** :
 - aligné sur le package backend `com.matimeline.eventmanager` ;
 - écart minimal avec les textes juridiques déjà livrés, qui citent `matimeline.fr`.
 
-`ma-timeline.com` et `ma-timeline.fr` sont conservés et **redirigés en 301** vers le canonique.
-`www.matimeline.com` redirige vers l'apex.
+Les trois autres domaines sont conservés et **redirigés en 301** vers le canonique, `www.`
+compris — soit 7 noms de redirection pour 1 canonique, tous déclarés dans le `Caddyfile`.
 
 `APP_CANONICAL_HOST` accepte déjà une liste séparée par des virgules (comportement épinglé par
 `frontend/middleware.test.ts:320`) : aucun code supplémentaire n'est nécessaire pour absorber les
 domaines secondaires.
 
-> **Dette juridique ouverte par cette décision.** Les CGU et la politique de confidentialité
-> (`frontend/public/locales/*/legal.json`, 4 locales) désignent en dur `matimeline.fr` et
-> `www.matimeline.fr` — un domaine **non détenu**. Huit occurrences sont à corriger vers
-> `matimeline.com`. Des CGU qui désignent un site que l'éditeur ne contrôle pas ne sont pas une
-> coquille cosmétique : le correctif est bloquant pour l'ouverture au public.
+> **Correction des textes juridiques.** Les CGU et la politique de confidentialité
+> (`frontend/public/locales/*/legal.json`, 4 locales) désignaient en dur `matimeline.fr` et
+> `www.matimeline.fr`. Huit occurrences ont été portées sur `matimeline.com` pour que les
+> textes désignent le domaine **canonique**, celui que l'utilisateur voit dans sa barre
+> d'adresse ; `matimeline.fr` ne sert plus qu'à rediriger.
+>
+> ⚠ **Rectification d'une affirmation antérieure de cet ADR.** Une première version disait que
+> `matimeline.fr` était **« un domaine non détenu »** et qualifiait le correctif de bloquant à ce
+> titre. C'était **faux** : il est bien détenu. L'erreur vient d'une capture d'écran tronquée de
+> la liste OVH, prise pour l'inventaire complet au lieu d'être recoupée avec la console. La
+> correction reste justifiée — par la cohérence avec le canonique — mais elle n'est **pas**
+> bloquante pour l'ouverture au public. Voir [[PIT-S81-006]].
 
 ### 3. Topologie réseau : mono-domaine, tout derrière un reverse-proxy
 
