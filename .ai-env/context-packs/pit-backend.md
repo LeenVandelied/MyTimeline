@@ -635,11 +635,11 @@ Au 2026-09-07, une capture de la liste des domaines OVH en montrait **3** ; la c
 `application.properties:113` porte `brevo.sender.email` avec le défaut `no-reply@mytimeline.app` — domaine **non détenu** — et `application-prod.properties` ne le surcharge pas ; `docker-compose.prod.yml` ne propageait que `BREVO_API_KEY`. Brevo refuse d'expédier depuis un expéditeur non authentifié, `BrevoEmailService` **attrape l'exception et se contente de la journaliser** (volontaire : BR-AUT-012 interdit que la réponse 200 dépende de Brevo, sinon l'existence d'un compte fuite par le timing). Conséquence : reset de mot de passe cassé **sans aucun symptôme**, même avec une clé API valide. Poser `BREVO_SENDER_EMAIL` sur un domaine **authentifié dans Brevo** (DKIM+DMARC) — le détenir ne suffit pas — et `BREVO_SENDER_NAME` (défaut `MyTimeline` ≠ marque « Ma Timeline »). (Mise en ligne #370)
 
 
-## PIT-S81-008 — Un `Content-Type: application/json` d'instance axios DÉTRUIT tout upload `FormData`
+## PIT-S81-020 — Un `Content-Type: application/json` d'instance axios DÉTRUIT tout upload `FormData`
 Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **remplace le corps** — `isFormData && hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data` (`axios/lib/defaults/index.js`). Le fichier disparaît **sans aucune exception côté client**, et le serveur répond **415**, jamais 401. C'est ce qui cassait `POST /api/me/avatar` **en production**, pas seulement en E2E. Parade : retirer l'en-tête dans l'intercepteur de requête pour tout corps `FormData` (`config.headers.delete('Content-Type')`) — le navigateur pose alors lui-même `multipart/form-data` avec la boundary. Règle générale : un `Content-Type` JSON posé au niveau d'une instance axios est incompatible avec tout upload passant par cette instance. (Sprint 81 #215)
 
 
-## PIT-S81-011 — Le dump d'échec MockMvc publie un JWT réel dans les logs d'un dépôt PUBLIC
+## PIT-S81-023 — Le dump d'échec MockMvc publie un JWT réel dans les logs d'un dépôt PUBLIC
 `@AutoConfigureMockMvc` (Spring Boot) imprime l'échange complet **sur échec**, `Set-Cookie:"jwt=eyJhbGciOiJSUzI1NiJ9…"` compris. **17 classes de test** portent l'annotation, aucune propriété `spring.test.mockmvc.print` n'est posée, et le dépôt est public. Masquer les en-têtes dans son PROPRE helper de diagnostic (fait au S81 pour #500) ne suffit donc pas : Spring imprime le token brut à la ligne suivante. Découvert par le contrôle négatif, **pas** par la review — qui n'avait vu que la moitié du problème. Antérieur au sprint (`git show <base>:<fichier>` le confirme). Correctif repo-wide à arbitrer. (Sprint 81, review sécurité + lead)
 
 

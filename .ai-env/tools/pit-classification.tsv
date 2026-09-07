@@ -378,8 +378,8 @@ PIT-S81-004	tooling
 PIT-S81-005	tooling
 PIT-S81-006	tooling
 PIT-S81-007	backend
-PIT-S81-008	both
-PIT-S81-009	frontend
-PIT-S81-010	frontend
-PIT-S81-011	backend
-PIT-S81-012	frontend
+PIT-S81-020	both
+PIT-S81-021	frontend
+PIT-S81-022	frontend
+PIT-S81-023	backend
+PIT-S81-024	frontend
