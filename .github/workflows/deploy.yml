@@ -62,6 +62,7 @@ jobs:
       packages: write
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
+      owner: ${{ steps.meta.outputs.owner }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -71,9 +72,16 @@ jobs:
           ref: ${{ inputs.ref || github.ref_name }}
           persist-credentials: false
 
-      - name: Calculer le tag d'image
+      # Le propriétaire est repris de GITHUB_REPOSITORY_OWNER et FORCÉ EN MINUSCULES.
+      # Les noms de dépôt OCI n'acceptent que les minuscules, or le propriétaire est
+      # « LeenVandelied » : `${{ github.repository_owner }}` employé tel quel fait
+      # échouer le build sur `repository name must be lowercase`. Les expressions
+      # GitHub n'ont pas de fonction de mise en minuscules — d'où ce calcul en shell.
+      - name: Calculer le tag d'image et le proprietaire GHCR
         id: meta
-        run: echo "tag=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "tag=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
@@ -91,7 +99,7 @@ jobs:
           context: ./backend
           push: true
           platforms: linux/arm64
-          tags: ghcr.io/${{ github.repository_owner }}/mytimeline-backend:${{ steps.meta.outputs.tag }}
+          tags: ghcr.io/${{ steps.meta.outputs.owner }}/mytimeline-backend:${{ steps.meta.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -105,7 +113,7 @@ jobs:
           platforms: linux/arm64
           build-args: |
             NEXT_PUBLIC_API_URL=${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}/api
-          tags: ghcr.io/${{ github.repository_owner }}/mytimeline-frontend:${{ steps.meta.outputs.tag }}
+          tags: ghcr.io/${{ steps.meta.outputs.owner }}/mytimeline-frontend:${{ steps.meta.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

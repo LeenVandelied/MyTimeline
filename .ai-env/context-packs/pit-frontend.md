@@ -1093,6 +1093,9 @@ La Security List/NSG de la console OCI ne suffit pas : les images Ubuntu d'Oracl
 Au 2026-09-07, une capture de la liste des domaines OVH en montrait **3** ; la console en contenait **4**, la liste étant tronquée par un défilement. J'en ai tiré « `matimeline.fr` est un domaine NON détenu », affirmation propagée dans un ADR, trois commentaires d'issue, un message de commit et une description de PR avant d'être réfutée en ouvrant la console. Une capture prouve ce qu'elle montre, **jamais l'absence de ce qu'elle ne montre pas** — et une liste avec barre de défilement est par construction partielle. Recouper avec la source (console, API, `dig`) avant d'en tirer un fait négatif, surtout si ce fait sert à qualifier quelque chose de bloquant. (Mise en ligne #338)
 
 
+## PIT-S81-008 — `github.repository_owner` casse le push GHCR quand il porte des majuscules
+Les noms de dépôt OCI n'acceptent **que des minuscules**. Le propriétaire ici est `LeenVandelied` : `ghcr.io/${{ github.repository_owner }}/...` fait échouer le build sur `ERROR: failed to build: invalid tag …: repository name must be lowercase`, après avoir consommé tout le temps de préparation du runner. Les expressions GitHub n'ont **pas** de fonction de mise en minuscules — le calcul doit se faire en shell : `echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"`. Le même piège frappe côté hôte : `GHCR_OWNER` dans le `.env` sert à construire l'URL du `pull`, il doit être en minuscules lui aussi. Aucune validation locale ne l'attrape — `docker compose config` accepte un nom d'image en majuscules, seul le registre le refuse. (Mise en ligne #370)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
