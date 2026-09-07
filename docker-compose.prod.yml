@@ -118,11 +118,13 @@ services:
       APP_FRONTEND_RESET_URL_BASE: ${PUBLIC_ORIGIN:-https://matimeline.com}/fr/reset-password
 
       # --- Rate-limit derrière reverse-proxy ---
-      # OBLIGATOIRE ici : sans cela, TOUTES les requêtes arrivent avec l'IP du conteneur
-      # Caddy comme remoteAddr, donc l'internet entier partage un seul bucket.
-      # N'est SÛR que parce que le Caddyfile ÉCRASE X-Forwarded-For (header_up) au lieu
-      # de l'ajouter — sinon un client forgerait l'en-tête et contournerait le plafond.
-      # Les deux réglages vont par PAIRE : ne jamais en changer un seul.
+      # OBLIGATOIRE : sans cela, le filtre lit `remoteAddr` = l'IP du conteneur Caddy
+      # pour TOUT le monde, donc l'internet entier partage un seul bucket.
+      # SÛR parce que Caddy 2 REMPLACE X-Forwarded-For par l'IP réelle de la connexion
+      # (vérifié empiriquement — cf. PIT-S81-002) : le filtre lit donc la vraie source,
+      # jamais une valeur forgée par le client. Aucun `header_up` n'est nécessaire dans
+      # le Caddyfile pour ça. ⚠ Si un vrai proxy amont est ajouté un jour, il faudra
+      # configurer `trusted_proxies` dans Caddy — pas rouvrir un header_up.
       APP_RATE_LIMIT_TRUST_FORWARDED_HEADER: "true"
 
       # Schéma/hôte d'origine restitués depuis les en-têtes X-Forwarded-* de Caddy.

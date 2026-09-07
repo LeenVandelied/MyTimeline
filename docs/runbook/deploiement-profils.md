@@ -99,23 +99,23 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 
 ## Derrière un reverse-proxy (ADR-009)
 
-Deux réglages qui n'ont de sens **qu'ensemble**. En activer un seul est un défaut,
-dans les deux sens.
+`APP_RATE_LIMIT_TRUST_FORWARDED_HEADER=true` est **obligatoire** : sans elle,
+`RateLimitingFilter` lit `getRemoteAddr()` = l'IP du conteneur Caddy pour **tout
+le monde**, et l'internet entier partage un seul bucket — quelques utilisateurs
+légitimes suffisent à verrouiller `/api/auth/*`.
 
-| Réglage | Où | Valeur |
-|---|---|---|
-| `APP_RATE_LIMIT_TRUST_FORWARDED_HEADER` | backend | `true` |
-| `header_up X-Forwarded-For {remote_host}` | `Caddyfile`, sur chaque `reverse_proxy` | obligatoire |
+C'est **sûr sans réglage particulier de Caddy**. Vérifié empiriquement (cf.
+PIT-S81-002) : Caddy 2 **remplace** `X-Forwarded-For` par l'IP réelle de la
+connexion — il ne fait pas confiance au XFF entrant tant que `trusted_proxies`
+n'est pas configuré. Le filtre lit donc toujours la vraie source, jamais une
+valeur forgée par le client. Test de bout en bout : login avec un `X-Forwarded-For`
+rotatif forgé → `10×401 puis 429`, le plafond s'applique sur la vraie IP.
 
-- **Aucun des deux** : `RateLimitingFilter` lit `getRemoteAddr()`, qui vaut l'IP du conteneur
-  Caddy pour **tout le monde**. L'internet entier partage un seul bucket : les plafonds
-  anti-brute-force de `/api/auth/*` deviennent un plafond global, et quelques utilisateurs
-  légitimes suffisent à verrouiller le service.
-- **`trust=true` sans `header_up`** : pire encore. `reverse_proxy` **ajoute** à
-  `X-Forwarded-For` au lieu de l'écraser, et `clientIp()` lit le **premier** élément
-  (`RateLimitingFilter.java:513`, `split(",")[0]`). Un attaquant envoie son propre
-  `X-Forwarded-For`, atterrit dans un bucket neuf à chaque requête, et le rate-limit ne
-  protège plus rien. C'est exactement le cas que la javadoc du filtre interdit.
+> ⚠ Un `header_up X-Forwarded-For {remote_host}` dans le `Caddyfile` serait
+> **redondant** (Caddy émet « Unnecessary header_up ») et deviendrait un **piège**
+> le jour où un vrai proxy amont serait placé devant : dans ce cas, configurer
+> `trusted_proxies` côté Caddy, surtout pas un `header_up` qui écraserait le XFF
+> légitime du proxy amont.
 
 `SERVER_FORWARD_HEADERS_STRATEGY=framework` est posée en complément pour que Spring
 restitue le schéma et l'hôte d'origine à partir des en-têtes `X-Forwarded-*`.
