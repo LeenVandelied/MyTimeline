@@ -1,0 +1,73 @@
+# =============================================================
+# MyTimeline — reverse-proxy et terminaison TLS (ADR-009, issue #370)
+#
+# Topologie MONO-DOMAINE : le navigateur ne voit qu'une origine,
+# `https://matimeline.com`. Caddy route /api/* vers le backend et tout le
+# reste vers le frontend. Conséquences voulues : cookie `jwt` same-origin en
+# SameSite=Lax, aucun préflight CORS, CSP `connect-src 'self'` suffisante.
+#
+# Certificats Let's Encrypt obtenus et renouvelés automatiquement. Le volume
+# `caddy-data` porte les certificats et les clés de compte ACME : le PERDRE
+# force une réémission et peut heurter les quotas Let's Encrypt. Il fait donc
+# partie du périmètre de sauvegarde (#371).
+# =============================================================
+{
+	email {$ACME_EMAIL}
+	# Décommenter pour répéter un déploiement sans consommer le quota de
+	# certificats Let's Encrypt (5 par domaine et par semaine) :
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# --- En-têtes de sécurité communs -------------------------------------------
+(securite) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		# Caddy annonce sa présence par défaut ; inutile de la publier.
+		-Server
+	}
+}
+
+# --- Domaine canonique ------------------------------------------------------
+matimeline.com {
+	import securite
+	encode zstd gzip
+
+	# API. L'ÉCRASEMENT de X-Forwarded-For est une exigence de SÉCURITÉ, pas une
+	# optimisation : `reverse_proxy` AJOUTE par défaut à l'en-tête existant, or
+	# RateLimitingFilter.clientIp() lit le PREMIER élément (`split(",")[0]`).
+	# Sans `header_up`, un client enverrait `X-Forwarded-For: 1.2.3.4`, se
+	# retrouverait dans un bucket neuf à chaque requête et contournerait
+	# entièrement le plafond anti-brute-force de /api/auth/*.
+	# Ce réglage forme une PAIRE avec APP_RATE_LIMIT_TRUST_FORWARDED_HEADER=true
+	# côté backend : activer l'un sans l'autre est un défaut, dans les deux sens.
+	handle /api/* {
+		reverse_proxy backend:8080 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	# Tout le reste : Next.js.
+	handle {
+		reverse_proxy frontend:3000 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+}
+
+# --- Domaines secondaires : 301 vers le canonique ---------------------------
+# `matimeline.com` est le canonique (ADR-009 §2). Les TROIS autres domaines
+# détenus et les `www.` redirigent, en conservant chemin ET query string —
+# contrairement au garde applicatif #322, qui les supprime volontairement.
+www.matimeline.com,
+matimeline.fr,
+www.matimeline.fr,
+ma-timeline.com,
+www.ma-timeline.com,
+ma-timeline.fr,
+www.ma-timeline.fr {
+	import securite
+	redir https://matimeline.com{uri} permanent
+}

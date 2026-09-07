@@ -5739,7 +5739,7 @@ supposé) : le `Content-Type: application/json` d'instance d'axios faisait séri
 JSON (`transformRequest` remplace le corps), donc **l'upload d'avatar était cassé en PRODUCTION**.
 L'hypothèse « proxy Next / cookie SameSite » portée par l'issue depuis la PR #214 est réfutée.
 **#500 reste OUVERTE :** flaky non reproduit en 4 runs ; seul le mécanisme de capture est livré
-(cf. [[DEC-S81-002]] — une série verte est le comportement nominal d'un flaky, elle ne réfute rien).
+(cf. [[DEC-S81-006]] — une série verte est le comportement nominal d'un flaky, elle ne réfute rien).
 **Nouveaux pitfalls / patterns / décisions :** PIT-S81-001 à 005 · PAT-S81-001, PAT-S81-002 ·
 DEC-S81-001 à 003 · 1 entrée `bugs-resolved` (le 415 avatar). Packs `pit-{backend,frontend}`
 régénérés et 5 entrées classées dans `pit-classification.tsv`.

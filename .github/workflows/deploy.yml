@@ -1,0 +1,192 @@
+# Déploiement — build des images arm64 puis mise en ligne sur l'instance Oracle.
+# Cible et topologie : docs/adr/ADR-009-cible-de-deploiement.md. Issue #370.
+#
+# ARM : l'hôte est aarch64 (Ampere A1). Le build tourne sur `ubuntu-24.04-arm`,
+# runner GitHub natif arm64, GRATUIT sur ce dépôt car il est PUBLIC. Aucun QEMU,
+# aucune émulation — un build Maven émulé prendrait plusieurs dizaines de minutes.
+#
+# ⚠ STAGING NON IMPLÉMENTÉ ICI, et c'est un écart ASSUMÉ à #370.
+#   #370 demande « push sur dev déploie staging, production manuelle ». Une seule
+#   instance est disponible, et `NEXT_PUBLIC_API_URL` est BAKÉE dans l'image
+#   frontend : un staging exigerait une seconde image ET un second domaine. Or
+#   l'enveloppe Oracle Always Free laisse 2 OCPU / 12 Go libres — un staging sur
+#   une SECONDE VM gratuite est la bonne réponse, traitée par une issue dédiée.
+#   En attendant, la production est le seul environnement et n'est JAMAIS
+#   déclenchée automatiquement : uniquement `workflow_dispatch`.
+#
+# Branch protection : ce workflow n'en active aucune (même règle que ci.yml).
+
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Ref à déployer (branche, tag ou SHA). Défaut : dev"
+        required: false
+        default: dev
+
+concurrency:
+  # JAMAIS `cancel-in-progress` : interrompre un déploiement en cours laisserait
+  # la stack dans un état mixte (images à moitié tirées, migrations engagées).
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build-arm64
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Calculer le tag d'image
+        id: meta
+        run: echo "tag=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # v6.13.0
+        with:
+          context: ./backend
+          push: true
+          platforms: linux/arm64
+          tags: ghcr.io/${{ github.repository_owner }}/mytimeline-backend:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # NEXT_PUBLIC_API_URL est BAKÉE au build (ARG -> ENV du Dockerfile) : changer le
+      # domaine impose de RECONSTRUIRE cette image, pas seulement de redéployer.
+      - name: Build & push frontend
+        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # v6.13.0
+        with:
+          context: ./frontend
+          push: true
+          platforms: linux/arm64
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}/api
+          tags: ghcr.io/${{ github.repository_owner }}/mytimeline-frontend:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: deploy-production
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      # Nécessaire pour que l'hôte puisse TIRER les images : un package GHCR créé
+      # par un push du GITHUB_TOKEN est PRIVÉ par défaut, même sur un dépôt public.
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      # Clé SSH montée en mémoire, hôte épinglé par sa clé publique connue :
+      # `StrictHostKeyChecking` par défaut accepterait n'importe quel hôte au
+      # premier contact, ce qui rend un MITM indétectable sur le 1er déploiement.
+      - name: Préparer SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+
+      # Le compose et le Caddyfile sont versionnés : c'est le dépôt qui fait foi,
+      # pas une copie divergente restée sur le serveur.
+      - name: Publier compose + Caddyfile
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          scp -i ~/.ssh/id_deploy docker-compose.prod.yml Caddyfile \
+            "$USER@$HOST:/opt/matimeline/"
+
+      # Le jeton est éphémère (durée du job) et transite par STDIN : il n'apparaît
+      # ni dans la ligne de commande, ni dans la table des process de l'hôte.
+      # Alternative écartée : rendre les packages GHCR publics à la main — une étape
+      # manuelle de plus, et un oubli au premier déploiement suffirait à le casser.
+      - name: Authentifier l'hôte auprès de GHCR
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
+      - name: Déployer
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" bash -se <<EOSSH
+          set -euo pipefail
+          cd /opt/matimeline
+          # IMAGE_TAG est écrit dans .env.tag, lu en plus de .env (qui porte les secrets
+          # et n'est JAMAIS versionné ni réécrit par ce workflow).
+          echo "IMAGE_TAG=$TAG" > .env.tag
+          docker compose --env-file .env --env-file .env.tag \
+            -f docker-compose.prod.yml pull
+          docker compose --env-file .env --env-file .env.tag \
+            -f docker-compose.prod.yml up -d --remove-orphans
+          # Le jeton expire de toute façon avec le job ; on ne laisse pas
+          # d'identifiant périmé traîner dans ~/.docker/config.json.
+          docker logout ghcr.io >/dev/null
+          EOSSH
+
+      # PREUVE POSITIVE de bon fonctionnement, pas simple absence d'erreur : le job
+      # ne passe au vert que si l'application répond réellement en HTTPS depuis
+      # l'extérieur. Un conteneur « Up » mais cassé ferait autrement un déploiement vert.
+      - name: Vérifier la mise en ligne
+        env:
+          ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
+            if [ "$code" = "200" ]; then
+              echo "OK : $ORIGIN/fr/login -> 200"
+              exit 0
+            fi
+            echo "tentative $i : HTTP $code"
+            sleep 10
+          done
+          echo "ÉCHEC : l'application ne répond pas 200 après 5 minutes"
+          exit 1
+
+      - name: Diagnostic si échec
+        if: failure()
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
+            'cd /opt/matimeline && docker compose -f docker-compose.prod.yml ps && \
+             docker compose -f docker-compose.prod.yml logs --tail 80'

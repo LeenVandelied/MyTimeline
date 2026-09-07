@@ -22,6 +22,40 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 | `APP_CANONICAL_HOST` *(frontend)* | Origine(s) canonique(s) des redirections émises par `middleware.ts` (#322), liste CSV, **1re entrée = le canonique**. **Poser la forme `https://app.example.com`, PAS l'hôte nu** (voir note ci-dessous). **Pas un secret** | ⚠️ recommandé | **Open-redirect silencieux** : l'origine du `Location` reste héritée de `Host` / `x-forwarded-host`, donc contrôlable par l'appelant (+ empoisonnement de cache si un cache mutualisé mémorise la 307). Aucun garde-fou frontend ne fait échouer le démarrage ; un `console.warn` one-shot est émis en production (revue S50) |
 | `CORS_ALLOWED_ORIGINS` | Origine(s) front autorisée(s), liste CSV (#120) | ✅ | **Boot échoue** (bean CORS fail-fast) — détails : [`cors-cookie-samesite.md`](cors-cookie-samesite.md) §1 |
 | `COOKIE_DOMAIN` | Domaine du cookie `jwt` (#118), eTLD+1 pour les sous-domaines | ⚠️ conditionnel | Cookie **host-only** : OK en mono-domaine, **auth cassée silencieusement** en multi-sous-domaines |
+| `STORAGE_AVATAR_PATH` | Répertoire privé des avatars (#75), hors webroot | ✅ | **Boot échoue** — `application-prod.properties:57` la lit sans default |
+| `STORAGE_EXPORT_PATH` | Répertoire privé des exports RGPD (#264), distinct des avatars | ✅ | **Boot échoue** — `application-prod.properties:62` la lit sans default |
+| `BREVO_API_KEY` | Clé API de l'email transactionnel (reset de mot de passe) | ✅ | Service email en **NO-OP silencieux** : aucun email ne part, aucune erreur (#365) |
+| `BREVO_SENDER_EMAIL` | Adresse expéditrice des emails | ✅ | Défaut du code `no-reply@mytimeline.app`, **domaine non détenu** ⇒ Brevo refuse l'envoi, l'exception est journalisée et le reset casse **en silence** |
+| `BREVO_SENDER_NAME` | Nom affiché de l'expéditeur | ⚠️ recommandé | Défaut du code `MyTimeline`, alors que la marque est « Ma Timeline » |
+| `APP_FRONTEND_RESET_URL_BASE` | Base du lien de réinitialisation envoyé par email | ✅ | **Lien mort vers `localhost:3000`** — voir l'encadré ci-dessous |
+
+> **Correction ADR-009 — cette liste était incomplète.** Les quatre lignes ci-dessus y
+> manquaient alors que la section se déclare « liste complète » et « fait foi ». Les deux
+> premières font **échouer le boot** ; un opérateur suivant ce runbook à la lettre
+> n'arrivait pas à démarrer. `#213` ne couvrait que `STORAGE_AVATAR_PATH`.
+
+> **`BREVO_SENDER_EMAIL` — même famille de panne silencieuse.** `BrevoEmailService` attrape
+> l'échec d'envoi et se contente de le journaliser : c'est **délibéré** (BR-AUT-012 interdit que
+> la réponse 200 dépende de la disponibilité de Brevo, sinon l'existence d'un compte fuiterait
+> par le timing). Conséquence : un expéditeur refusé ne produit **aucun symptôme visible** côté
+> utilisateur. Et posséder le domaine ne suffit pas — il doit être **authentifié dans Brevo**
+> (DKIM/DMARC), ou l'adresse validée comme expéditeur.
+
+> **`APP_FRONTEND_RESET_URL_BASE` — panne silencieuse la plus coûteuse du déploiement.**
+> `BrevoEmailService.java:68` porte le default `http://localhost:3000/reset-password`, et
+> `application-prod.properties` **ne le surcharge pas**. Sans cette variable, chaque email
+> de réinitialisation part en production avec un lien vers `localhost` : l'envoi réussit,
+> aucun log ne signale quoi que ce soit, et la fonctionnalité est simplement inutilisable.
+>
+> **Le préfixe de locale est obligatoire** : `https://<domaine>/fr/reset-password`, pas
+> `https://<domaine>/reset-password`. Le frontend est en `localePrefix: 'always'`, donc une
+> URL non préfixée dépend d'une redirection — et le garde canonique #322 **supprime la query
+> string** en redirigeant (comportement délibéré anti-open-redirect, épinglé par
+> `frontend/middleware.test.ts:90`). Le `?token=…` serait perdu en route.
+>
+> Limite connue et assumée : le lien pointe vers une locale figée alors que le *contenu* de
+> l'email est, lui, localisé. Un utilisateur hispanophone reçoit un email en espagnol menant
+> à une page française. Suivi par une issue dédiée.
 
 > **`APP_CANONICAL_HOST` : exiger la forme `https://…`** (revue S50). Une entrée en
 > **hôte nu** (`app.example.com`) ne fixe QUE l'hôte : le protocole de la requête est
@@ -53,6 +87,29 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 > poser `COOKIE_DOMAIN=mytimeline.app` (l'eTLD+1, pas un sous-domaine) pour que le
 > cookie couvre tous les sous-domaines. En mono-domaine strict, l'omettre est
 > acceptable (host-only). Détails cookie / SameSite : [`cors-cookie-samesite.md`](cors-cookie-samesite.md).
+
+## Derrière un reverse-proxy (ADR-009)
+
+Deux réglages qui n'ont de sens **qu'ensemble**. En activer un seul est un défaut,
+dans les deux sens.
+
+| Réglage | Où | Valeur |
+|---|---|---|
+| `APP_RATE_LIMIT_TRUST_FORWARDED_HEADER` | backend | `true` |
+| `header_up X-Forwarded-For {remote_host}` | `Caddyfile`, sur chaque `reverse_proxy` | obligatoire |
+
+- **Aucun des deux** : `RateLimitingFilter` lit `getRemoteAddr()`, qui vaut l'IP du conteneur
+  Caddy pour **tout le monde**. L'internet entier partage un seul bucket : les plafonds
+  anti-brute-force de `/api/auth/*` deviennent un plafond global, et quelques utilisateurs
+  légitimes suffisent à verrouiller le service.
+- **`trust=true` sans `header_up`** : pire encore. `reverse_proxy` **ajoute** à
+  `X-Forwarded-For` au lieu de l'écraser, et `clientIp()` lit le **premier** élément
+  (`RateLimitingFilter.java:513`, `split(",")[0]`). Un attaquant envoie son propre
+  `X-Forwarded-For`, atterrit dans un bucket neuf à chaque requête, et le rate-limit ne
+  protège plus rien. C'est exactement le cas que la javadoc du filtre interdit.
+
+`SERVER_FORWARD_HEADERS_STRATEGY=framework` est posée en complément pour que Spring
+restitue le schéma et l'hôte d'origine à partir des en-têtes `X-Forwarded-*`.
 
 ## Contexte
 

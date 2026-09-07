@@ -1,0 +1,167 @@
+# =============================================================
+# MyTimeline — stack de PRODUCTION (ADR-009, issue #370)
+#
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Différences ASSUMÉES avec docker-compose.yml (qui reste la stack de DEV) :
+#   - aucun `build:` — les images viennent de GHCR, construites en CI (arm64) ;
+#   - postgres, backend et frontend NE PUBLIENT AUCUN PORT vers l'hôte : Caddy
+#     est le seul point d'entrée, et il est le seul à écouter sur 80/443 ;
+#   - `restart: unless-stopped` partout (survie au reboot de l'instance) ;
+#   - aucun default de secret : tout vient de /opt/matimeline/.env (non versionné).
+#
+# ⚠ Ce fichier ne déclare JAMAIS une variable à vide. Voir application-dev.properties:51 :
+#   une ligne `VAR=` exportée écrase le défaut Spring au lieu de le laisser s'appliquer,
+#   et les garde-fous #253/#323 ne voient plus la variable comme absente.
+#   COOKIE_DOMAIN est donc ABSENTE de ce fichier (mono-domaine => cookie host-only voulu).
+# =============================================================
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data      # certificats Let's Encrypt — À SAUVEGARDER
+      - caddy-config:/config
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL requis pour Let\'s Encrypt}
+    depends_on:
+      - frontend
+      - backend
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    # AUCUN `ports:` — la base n'est joignable que depuis le réseau Compose.
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-eventmanager}
+      POSTGRES_USER: ${DB_USERNAME:-eventuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD requis}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-eventuser} -d ${POSTGRES_DB:-eventmanager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    mem_limit: 1g
+    logging: *default-logging
+
+  backend:
+    image: ghcr.io/${GHCR_OWNER:?GHCR_OWNER requis}/mytimeline-backend:${IMAGE_TAG:?IMAGE_TAG requis}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # --- Profil + garde-fou #111 (ceinture + bretelles) ---
+      SPRING_PROFILES_ACTIVE: prod
+      ENVIRONMENT: production
+
+      # --- Datasource ---
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventmanager}
+      DB_USERNAME: ${DB_USERNAME:-eventuser}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD requis}
+
+      # --- Secrets fail-fast (#323) : aucun default, le boot échoue si absents ---
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?JWT_PRIVATE_KEY requis}
+      EXPORT_TOKEN_SECRET: ${EXPORT_TOKEN_SECRET:?EXPORT_TOKEN_SECRET requis}
+
+      # --- CORS (#120) — same-origin, mais la variable reste OBLIGATOIRE ---
+      CORS_ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-https://matimeline.com}
+
+      # COOKIE_DOMAIN : VOLONTAIREMENT ABSENTE (mono-domaine => host-only, cf. ADR-009 §3).
+
+      # --- Stockage (#75, #264) : fail-fast, ABSENTS du runbook avant ADR-009 ---
+      STORAGE_AVATAR_PATH: /app/var/avatars
+      STORAGE_EXPORT_PATH: /app/var/exports
+
+      # --- Email transactionnel ---
+      BREVO_API_KEY: ${BREVO_API_KEY:?BREVO_API_KEY requis}
+      # ⚠ LE DÉFAUT DU CODE EST `no-reply@mytimeline.app` (application.properties:113),
+      # un domaine que le projet NE POSSÈDE PAS, et rien ne le surchargeait en prod.
+      # Brevo refuse d'expédier depuis un expéditeur non authentifié : l'appel échoue,
+      # `BrevoEmailService` attrape l'exception et se contente de la journaliser
+      # (volontaire — BR-AUT-012 interdit que la réponse 200 dépende de Brevo).
+      # Résultat sans ces deux lignes : reset de mot de passe cassé EN SILENCE, même
+      # avec une clé API valide. L'adresse doit appartenir à un domaine authentifié
+      # dans Brevo (DKIM/DMARC), pas seulement à un domaine détenu.
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-no-reply@matimeline.com}
+      # Le défaut du code est « MyTimeline » ; la marque affichée est « Ma Timeline ».
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-Ma Timeline}
+
+      # --- Lien de réinitialisation de mot de passe ---
+      # ⚠ LE DÉFAUT DU CODE EST `http://localhost:3000/reset-password`
+      # (BrevoEmailService.java:68) et application-prod.properties NE LE SURCHARGE PAS.
+      # Sans cette ligne, tous les emails de reset partent en production avec un lien
+      # vers localhost : la fonctionnalité est cassée SANS erreur ni log.
+      # Le préfixe de locale `/fr` est OBLIGATOIRE (`localePrefix: 'always'`) : une URL
+      # non préfixée dépend d'une redirection, et le garde canonique #322 SUPPRIME la
+      # query string en redirigeant (middleware.test.ts:90) — le token serait perdu.
+      APP_FRONTEND_RESET_URL_BASE: ${PUBLIC_ORIGIN:-https://matimeline.com}/fr/reset-password
+
+      # --- Rate-limit derrière reverse-proxy ---
+      # OBLIGATOIRE ici : sans cela, TOUTES les requêtes arrivent avec l'IP du conteneur
+      # Caddy comme remoteAddr, donc l'internet entier partage un seul bucket.
+      # N'est SÛR que parce que le Caddyfile ÉCRASE X-Forwarded-For (header_up) au lieu
+      # de l'ajouter — sinon un client forgerait l'en-tête et contournerait le plafond.
+      # Les deux réglages vont par PAIRE : ne jamais en changer un seul.
+      APP_RATE_LIMIT_TRUST_FORWARDED_HEADER: "true"
+
+      # Schéma/hôte d'origine restitués depuis les en-têtes X-Forwarded-* de Caddy.
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+
+      # Bornage mémoire de la JVM sans toucher à l'ENTRYPOINT de l'image.
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70"
+    volumes:
+      - avatars-data:/app/var/avatars
+      - exports-data:/app/var/exports
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    mem_limit: 2g
+    logging: *default-logging
+
+  frontend:
+    image: ghcr.io/${GHCR_OWNER:?GHCR_OWNER requis}/mytimeline-frontend:${IMAGE_TAG:?IMAGE_TAG requis}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      # #322 — forme AVEC schéma exigée (`https://…`), pas l'hôte nu : un hôte nu ne
+      # fixe que l'hôte, et un `x-forwarded-proto: http` menteur produirait un Location
+      # en clair. Omettre la variable laisserait un open-redirect silencieux.
+      APP_CANONICAL_HOST: ${PUBLIC_ORIGIN:-https://matimeline.com}
+      # #358 — adresse SERVEUR-À-SERVEUR, résolue depuis le conteneur frontend dans le
+      # réseau Compose. Ce n'est PAS l'URL publique : poser celle du navigateur ferait
+      # retomber la garde en mode dégradé « présence du cookie seule ».
+      AUTH_JWKS_URL: http://backend:8080/.well-known/jwks.json
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    mem_limit: 1g
+    logging: *default-logging
+
+volumes:
+  postgres-data:
+  avatars-data:
+  exports-data:
+  caddy-data:
+  caddy-config:
