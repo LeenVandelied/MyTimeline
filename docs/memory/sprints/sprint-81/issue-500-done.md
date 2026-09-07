@@ -1,6 +1,6 @@
 # Issue #500 — flaky AuthControllerLegacyPasswordLoginTest (vague 1)
 
-- commits: [d803044]
+- commits: [e20e578 (instrumentation + ce document), + le commit qui corrige cette ligne — `git log --oneline` fait foi]
 
 - resume:
   - Objectif : livrer LA MESURE MANQUANTE (statut HTTP reel au prochain rouge), pas une "correction" du flaky.
