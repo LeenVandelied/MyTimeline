@@ -4,7 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.persistence.EntityManager;
@@ -169,15 +173,59 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
         }
     }
 
+    /**
+     * En-têtes porteurs d'un secret : leur VALEUR ne doit jamais atteindre un log.
+     * {@code Set-Cookie} transporte le JWT RS256 réel émis par un login réussi, et
+     * {@code Authorization} un éventuel Bearer.
+     */
+    private static final Set<String> REDACTED_HEADERS =
+            Set.of("set-cookie", "authorization", "proxy-authorization", "cookie");
+
+    /**
+     * Dump des en-têtes de réponse pour le diagnostic de #500, AVEC MASQUAGE DES SECRETS.
+     *
+     * <p><b>Pourquoi le masquage (review sécurité S81).</b> Ce message part dans la sortie
+     * JUnit, donc dans les logs CI — et <b>ce dépôt est PUBLIC</b>. Or
+     * {@link #assertLoginSucceeded} échoue aussi sur le cas « statut 200 mais cookie {@code jwt}
+     * absent ou vide » : une réponse peut donc être dumpée ALORS QU'ELLE PORTE un
+     * {@code Set-Cookie} avec un JWT signé exploitable. Le compte est éphémère et la base
+     * jetable, mais publier un token valide reste une fuite — et elle ne coûte rien à éviter.
+     *
+     * <p><b>Ce que le masquage préserve.</b> Le nom de l'en-tête, le nom du cookie et la
+     * longueur de la valeur restent visibles : « un {@code Set-Cookie jwt} de 412 caractères
+     * était présent » suffit à distinguer les hypothèses que #500 cherche à départager
+     * (cookie absent / cookie vide / cookie présent mais rejeté). Masquer la valeur n'enlève
+     * donc rien au pouvoir diagnostique.
+     */
     private String headersOf(MockHttpServletResponse response) {
         StringBuilder sb = new StringBuilder("[");
         for (String name : response.getHeaderNames()) {
             if (sb.length() > 1) {
                 sb.append(", ");
             }
-            sb.append(name).append('=').append(response.getHeaderValues(name));
+            sb.append(name).append('=');
+            if (REDACTED_HEADERS.contains(name.toLowerCase(Locale.ROOT))) {
+                sb.append(redact(response.getHeaderValues(name)));
+            } else {
+                sb.append(response.getHeaderValues(name));
+            }
         }
         return sb.append(']').toString();
+    }
+
+    /**
+     * Remplace chaque valeur d'en-tête sensible par {@code <nom-du-cookie: N caractères
+     * masqués>} — assez pour le diagnostic, rien d'exploitable.
+     */
+    private String redact(List<Object> values) {
+        return values.stream()
+                .map(String::valueOf)
+                .map(v -> {
+                    int eq = v.indexOf('=');
+                    String cookieName = eq > 0 ? v.substring(0, eq) : "<sans nom>";
+                    return "<" + cookieName + ": " + v.length() + " caractères masqués>";
+                })
+                .collect(Collectors.joining(", ", "[", "]"));
     }
 
     /**
