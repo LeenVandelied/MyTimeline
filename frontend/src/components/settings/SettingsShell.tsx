@@ -29,6 +29,16 @@ import { AccountSection } from './AccountSection'
  * asserte `ArrowUp`) + Home/End. Les sections sont des composants autonomes
  * réutilisés tels quels par la variante mobile (#87), qui remplace cette coquille
  * par un drill-down.
+ *
+ * #578 — ONGLET SÉLECTIONNÉ : SOURCE DU MOTIF CORRIGÉE ICI. L'état actif était
+ * `bg-accent-soft text-accent font-medium` depuis #86 (43d9e14), sans rattachement
+ * à une maquette ; `AppShell` l'a ensuite recopié en se déclarant « calqué sur
+ * `SettingsShell` », et l'écart s'est propagé. La maquette veut une PILULE
+ * GRAPHITE PLEINE : `bg-primary text-primary-ink` (s'inverse seule en sombre,
+ * `--color-primary` → #ECEDEF / encre → #0B0C0E ; 17.8:1 en clair, 16.7:1 en
+ * sombre). Corriger la copie sans corriger cette source-ci l'aurait laissée
+ * réessaimer au prochain écran.
+ * La CASSE des libellés d'onglet reste INCHANGÉE — arbitrage renvoyé à #575.
  */
 type ChapterId = 'profile' | 'security' | 'preferences' | 'account'
 
@@ -90,7 +100,7 @@ export function SettingsShell() {
                 // libellés longs (EN/DE) seraient compressés au lieu de défiler.
                 'flex h-11 shrink-0 items-center gap-3 rounded-md px-3 text-left text-sm transition-colors',
                 selected
-                  ? 'bg-accent-soft text-accent font-medium'
+                  ? 'bg-primary text-primary-ink font-medium'
                   : 'text-ink-muted hover:bg-surface-2',
               )}
             >

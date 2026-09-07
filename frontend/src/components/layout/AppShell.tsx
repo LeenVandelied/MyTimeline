@@ -88,11 +88,31 @@ import { safeErrorMessage } from '@/lib/safe-error'
  * Exactement un des deux déclencheurs est peint, à TOUTE largeur. Le `data-testid`
  * `shell-sidebar-new-event-button` et le handler sont INCHANGÉS.
  *
- * Lien actif : `aria-current="page"` + classe calquée sur `SettingsShell`
- * (`bg-accent-soft text-accent font-medium`), jamais la classe legacy `.is-active`.
- * Bouton Nouvel événement : `bg-primary` (Button défaut, graphite), overlay =
- * `NewEventDrawer` (drawer 452px du handoff §6, #300 — remplace le Dialog minimal
- * placeholder de #210).
+ * #578 — ÉTAT ACTIF ET CTA : LA RÉFÉRENCE EST LA MAQUETTE, PAS UN ÉCRAN VOISIN.
+ * Le commentaire précédent disait que la classe active était « calquée sur
+ * `SettingsShell` » (`bg-accent-soft text-accent font-medium`). C'était la
+ * description exacte d'un précédent INTERNE, jamais rattaché à une maquette :
+ * le motif naît dans `SettingsShell` (#86, 43d9e14) et a été recopié ici. Ne
+ * plus invoquer un composant frère comme source de vérité visuelle — la source
+ * est le handoff (`design_handoff_mytimeline/README.md`, projet Claude Design).
+ *
+ * Conforme à la maquette depuis #578, et les deux couleurs étaient INVERSÉES :
+ *  · lien actif : PILULE GRAPHITE PLEINE — `bg-primary text-primary-ink`
+ *    (+ `aria-current="page"`), jamais la classe legacy `.is-active`. S'inverse
+ *    seule en sombre (`--color-primary` → #ECEDEF, encre → #0B0C0E) ;
+ *    contraste encre/pilule 17.8:1 en clair, 16.7:1 en sombre.
+ *  · bouton Nouvel événement : BLEU ACCENT —
+ *    `bg-accent hover:bg-accent-hover text-accent-ink`, le trio déjà porté par
+ *    tous les CTA primaires du produit (login, register, AddProductButton…),
+ *    et non le `bg-primary` par défaut du `Button`.
+ * `SettingsShell` (la source du motif) a reçu le MÊME état actif au même
+ * commit : les deux doivent rester alignés sur la maquette, pas l'un sur l'autre.
+ *
+ * La CASSE et la POLICE des libellés de nav restent INCHANGÉES (sentence case) :
+ * l'arbitrage mono-capitales de la maquette appartient à #575.
+ *
+ * Overlay du bouton = `NewEventDrawer` (drawer 452px du handoff §6, #300 —
+ * remplace le Dialog minimal placeholder de #210).
  */
 type NavId = 'dashboard' | 'timeline' | 'products'
 
@@ -182,7 +202,7 @@ export function AppShell({ children }: AppShellProps) {
           </span>
         </div>
 
-        {/* Bouton Nouvel événement (overlay) — primary graphite.
+        {/* Bouton Nouvel événement (overlay) — bleu accent (#578, cf. en-tête).
             Replié : icône seule, le nom accessible vient d'`aria-label`+`title`
             (pattern `RailButton`). `px-0 lg:px-4` évite que le padding du Button
             n'écrase l'icône dans les 48px utiles du rail. */}
@@ -192,7 +212,7 @@ export function AppShell({ children }: AppShellProps) {
             onClick={() => setShowCreate(true)}
             aria-label={t('newEvent')}
             title={t('newEvent')}
-            className="w-full px-0 lg:px-4"
+            className="bg-accent hover:bg-accent-hover text-accent-ink w-full px-0 lg:px-4"
             data-testid="shell-sidebar-new-event-button"
           >
             <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -220,7 +240,7 @@ export function AppShell({ children }: AppShellProps) {
                 className={cn(
                   'flex h-11 items-center justify-center gap-3 rounded-md px-0 text-sm transition-colors lg:justify-start lg:px-3',
                   active
-                    ? 'bg-accent-soft text-accent font-medium'
+                    ? 'bg-primary text-primary-ink font-medium'
                     : 'text-ink-muted hover:bg-surface-2',
                 )}
               >
