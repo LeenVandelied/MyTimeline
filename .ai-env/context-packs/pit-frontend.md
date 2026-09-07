@@ -1071,6 +1071,18 @@ Symétrique de [[PIT-S77-020]]. Sans ce contrôle on prouve « la CI bloque quan
 ## PIT-S80-009 — Les garde-fous du dépôt se déclenchent sur leur propre documentation — 3 fois en un sprint
 Constaté au S80 : (1) `warn-test-delegation.sh` bloque l'ÉCRITURE d'un briefing qui contient la chaîne `npx playwright test` — alors que la mémoire projet interdit précisément de déléguer l'E2E ([[PIT-S73-004]]) ; parade `SKIP_DELEGATION=1`. (2) Le gate de Phase 9 grep `[MISSING]` dans l'audit et mord sur la phrase « aucun `[MISSING]` » — ne jamais écrire le marqueur littéral, même en négation. (3) `check-sprint-completeness.sh` lit **ligne à ligne** : une négation « pas de … \n ni `RECOMMAND_SECURITY` » coupée par un retour à la ligne devient un signal non traité. Garder chaque négation sur UNE ligne. Déjà signalé au S76 sur 2 occurrences — le motif est structurel, pas anecdotique. (Sprint 80, lead)
 
+
+## PIT-S81-002 — Rate-limit derrière un reverse-proxy : les deux réglages vont par PAIRE
+Ni l'un ni l'autre : `getRemoteAddr()` vaut l'IP du conteneur Caddy pour **tout le monde**, l'internet entier partage un bucket et quelques utilisateurs légitimes verrouillent `/api/auth/*`. `APP_RATE_LIMIT_TRUST_FORWARDED_HEADER=true` **sans** `header_up X-Forwarded-For {remote_host}` dans le Caddyfile : pire — `reverse_proxy` **ajoute** à l'en-tête au lieu de l'écraser alors que `clientIp()` lit le premier élément (`RateLimitingFilter.java:513`, `split(",")[0]`), donc un client forge l'en-tête, atterrit dans un bucket neuf à chaque requête et contourne le plafond anti-brute-force. La javadoc du filtre pose la condition ; le Caddyfile par défaut ne la remplit pas. (Mise en ligne #370)
+
+
+## PIT-S81-003 — Oracle Cloud : ouvrir un port exige DEUX niveaux, et `iptables -A` y est inerte
+La Security List/NSG de la console OCI ne suffit pas : les images Ubuntu d'Oracle embarquent une chaîne `INPUT` qui se termine par `-j REJECT --reject-with icmp-host-prohibited`. Une règle **ajoutée** (`-A`) atterrit APRÈS ce `REJECT` et ne sert à rien — il faut **insérer** (`-I INPUT <n>`) avant lui, puis persister via `netfilter-persistent` sinon tout disparaît au reboot. Vérifier **depuis l'extérieur** : une sonde locale passe par `lo`, accepté sans condition, et réussit même quand le port est fermé au monde. (Mise en ligne #561)
+
+
+## PIT-S81-004 — Un runbook qui se déclare « liste complète » peut omettre des variables fail-fast
+`docs/runbook/deploiement-profils.md` annonçait une liste « complète » qui « fait foi » en omettant **quatre** variables, dont `STORAGE_AVATAR_PATH` et `STORAGE_EXPORT_PATH` que `application-prod.properties` lit **sans default** : un opérateur suivant le runbook à la lettre n'arrivait pas à démarrer. La liste de #370 avait la même lacune, plus une variable supprimée depuis 20+ sprints (`AUTH_JWT_PUBLIC_KEY`, remplacée par `AUTH_JWKS_URL` en #358). Confronter toute liste de configuration au fichier `application-{profil}.properties`, jamais à sa description en prose. (Mise en ligne #213/#370)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
