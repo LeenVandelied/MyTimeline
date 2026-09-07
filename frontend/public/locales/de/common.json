@@ -102,6 +102,11 @@
     "backToHome": "Zurück zur Startseite",
     "changeLanguage": "Sprache ändern"
   },
+  "theme": {
+    "toggle": "Design wechseln",
+    "toLight": "Zum hellen Design wechseln",
+    "toDark": "Zum dunklen Design wechseln"
+  },
   "time": {
     "year": "Jahr",
     "years": "Jahre",

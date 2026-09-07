@@ -21,6 +21,7 @@ import {
 import { resetPassword } from '@/services/authService'
 import { createResetPasswordFormSchema, type ResetPasswordFormValues } from '@/lib/schemas/auth'
 import { LanguageSelector } from '@/components/ui/language-selector'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { AppFooter } from '@/components/ui/footer-app'
 import { useTranslations } from 'next-intl'
 
@@ -172,7 +173,15 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col">
-      <div className="absolute top-4 right-4">
+      {/* #642 (DEC-S82-009) — la bascule de thème rejoint le sélecteur de langue
+          dans le coin haut-droit, sur les 4 pages d'auth à l'identique. Deux
+          boutons à icône seule de 36 px, `gap-1` : le bloc passe de 36 à 76 px
+          de large dans un coin libre, sans croiser la carte (`max-w-md` centrée)
+          — `e2e/sprint-77-theme-visual.spec.ts` capture la CARTE
+          (`div.bg-surface.border-rule.max-w-md.rounded-lg`), pas ce coin, ses
+          10 références restent donc valides. */}
+      <div className="absolute top-4 right-4 flex items-center gap-1">
+        <ThemeToggle testId="auth-theme-toggle" />
         <LanguageSelector />
       </div>
 

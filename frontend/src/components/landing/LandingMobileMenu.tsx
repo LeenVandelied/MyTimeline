@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { X } from 'lucide-react'
 import { LanguageSelector } from '@/components/ui/language-selector'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
 
 /**
@@ -140,7 +141,22 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
           >
             {t('common.login.title')}
           </Link>
-          <LanguageSelector />
+          {/* #642 (DEC-S82-009) — sous `lg`, c'est CE panneau qui porte la bascule
+              de thème : le groupe desktop du header, qui la contient aussi, est
+              en `hidden lg:flex`. Les deux contrôles à icône seule sont mis sur
+              UNE rangée (ils font 36 px de large chacun dans un panneau de
+              `min(320px,85vw)`, soit 288 px utiles hors `p-4` au pire) plutôt
+              qu'empilés par le `flex-col gap-4` du conteneur : empilés, ils
+              auraient repoussé la zone de navigation défilante de 44 px de plus
+              sur les écrans courts.
+              ⚠ `landing-mobile-menu.spec.ts` ancre le sélecteur de langue sur
+              `button[data-slot="dropdown-menu-trigger"]` et en exige UN SEUL
+              dans le panneau : la bascule est un `<Button>` nu, sans ce
+              `data-slot`, elle ne peut donc pas rendre ce compte ambigu. */}
+          <div className="flex items-center gap-1">
+            <LanguageSelector />
+            <ThemeToggle testId="landing-mobile-menu-theme-toggle" />
+          </div>
         </div>
       </div>
     </>
