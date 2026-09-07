@@ -97,7 +97,7 @@ export default async function PrivacyPolicy({ params }: { params: Promise<{ loca
           testId="privacy-toc"
         />
 
-        <div className="bg-surface border-rule mb-8 rounded-xl border p-8 shadow-lg">
+        <div className="bg-surface border-rule mb-8 rounded-lg border p-8">
           <section id="introduction" className="mb-8 scroll-mt-24">
             <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
               {t('privacy.introduction.title')}

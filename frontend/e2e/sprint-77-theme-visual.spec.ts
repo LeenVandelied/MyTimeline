@@ -123,13 +123,19 @@ const RESET_TOKEN = 'e2e-visual-reference-token'
 /**
  * Carte des 4 écrans d'authentification.
  * `app/[locale]/{login,register,forgot-password,reset-password}/page.tsx` rendent tous
- * la MÊME enveloppe : `div.bg-surface.w-full.max-w-md.rounded-lg.p-6.shadow-lg`, centrée
- * dans un `min-h-screen`. On capture cette carte — elle porte le titre, la description et
- * le formulaire, c'est-à-dire l'écran ; le `LanguageSelector` (positionné `absolute` dans
+ * la MÊME enveloppe : `div.bg-surface.border-rule.w-full.max-w-md.rounded-lg.border.p-6.shadow-xs`,
+ * centrée dans un `min-h-screen`. On capture cette carte — elle porte le titre, la description
+ * et le formulaire, c'est-à-dire l'écran ; le `LanguageSelector` (positionné `absolute` dans
  * un coin) et l'`AppFooter` en sont exclus, et c'est voulu : ils ne sont pas l'écran
  * d'auth et bougent pour des raisons qui lui sont étrangères.
+ *
+ * ⚠ #574 : ce sélecteur s'ancrait sur `.shadow-lg`, l'ombre hors charte que l'issue a
+ * justement retirée — le locator ne matchait PLUS rien et les 8 tests d'auth échouaient
+ * en « élément introuvable », pas en écart de pixels. Il s'ancre désormais sur
+ * `.border-rule`, le filet 1 px qui est un CRITÈRE D'ACCEPTATION de #574 (donc un
+ * invariant de la charte), et non sur l'élévation qui, elle, reste facultative.
  */
-const AUTH_CARD = 'div.bg-surface.max-w-md.rounded-lg.shadow-lg'
+const AUTH_CARD = 'div.bg-surface.border-rule.max-w-md.rounded-lg'
 
 /**
  * HABILLAGE DÉPENDANT DE L'ENVIRONNEMENT — la découverte qui a réorienté cette spec.

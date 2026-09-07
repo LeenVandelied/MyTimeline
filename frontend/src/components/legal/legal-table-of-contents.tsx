@@ -37,7 +37,7 @@ export function LegalTableOfContents({ sections, label, t, testId }: LegalTableO
     <nav
       aria-label={label}
       data-testid={testId}
-      className="bg-surface border-rule mb-8 rounded-xl border p-6 shadow-lg"
+      className="bg-surface border-rule mb-8 rounded-lg border p-6"
     >
       <h2 className="mb-4 text-lg font-semibold">{label}</h2>
       <ol className="space-y-2">

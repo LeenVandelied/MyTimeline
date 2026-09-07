@@ -33,9 +33,11 @@ import { Card, CardContent } from '@/components/ui/card'
  * donc pas de piège PIT-S66-002 (`duration-*` orpheline qui arme `all` par défaut), et elles
  * resteraient un repli correct si la feuille passait un jour sous `@layer`.
  *
- * ⚠ Ne PAS layeriser `.feature-card:hover` pour « ranger » ce conflit : `shadow-lg` est posée sur
- * cette carte SANS variante `hover:` — layerisée, la règle céderait et l'élévation au survol
- * disparaîtrait en permanence (PIT-S53-004, audit `sprint-53/audit-css-layers-340.md` §3.5).
+ * ⚠ Ne PAS layeriser `.feature-card:hover` pour « ranger » ce conflit : `border-rule` est posée sur
+ * cette carte SANS variante `hover:` — layerisée, la règle céderait et le passage à `rule-strong`
+ * au survol disparaîtrait en permanence (PIT-S53-004, audit `sprint-53/audit-css-layers-340.md` §3.5).
+ * (#574 a retiré le `shadow-lg` au repos, qui était l'autre moitié historique de ce conflit — et qui
+ * faisait DIMINUER l'ombre au survol, `lg` → `md`. Le repos est désormais un filet 1 px seul.)
  */
 const FEATURES: ReadonlyArray<{ key: string; Icon: LucideIcon }> = [
   { key: 'timeline', Icon: Calendar },
@@ -62,7 +64,7 @@ export function FeaturesSection() {
           {FEATURES.map(({ key, Icon }) => (
             <Card
               key={key}
-              className="feature-card card-gradient-border bg-surface border-rule shadow-lg transition-all duration-300 hover:shadow-md"
+              className="feature-card card-gradient-border bg-surface border-rule transition-all duration-300 hover:shadow-md"
             >
               <CardContent className="p-8">
                 <div className="bg-accent-soft feature-icon mb-6 w-max rounded-lg p-3">

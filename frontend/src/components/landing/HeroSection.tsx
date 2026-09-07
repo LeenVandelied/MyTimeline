@@ -110,7 +110,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
           </div>
         </div>
         <div className="hero-image-container relative md:w-1/2">
-          <div className="bg-surface border-rule overflow-hidden rounded-xl border shadow-lg">
+          <div className="bg-surface border-rule overflow-hidden rounded-xl border">
             {/* Image de prévisualisation du tableau de bord */}
             <div className="relative h-80 w-full md:h-96">
               <Image

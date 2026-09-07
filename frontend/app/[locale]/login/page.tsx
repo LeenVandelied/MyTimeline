@@ -65,7 +65,7 @@ export default function LoginPage({ params }: { params: Promise<{ locale: string
       </div>
 
       <div className="flex flex-grow items-center justify-center">
-        <div className="bg-surface w-full max-w-md rounded-lg p-6 shadow-lg">
+        <div className="bg-surface border-rule w-full max-w-md rounded-lg border p-6 shadow-xs">
           <h2 className="mb-6 text-center text-2xl font-bold">{t('common.login.title')}</h2>
 
           <Form {...form}>
