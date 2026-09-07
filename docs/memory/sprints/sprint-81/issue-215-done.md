@@ -1,4 +1,4 @@
-- commits: [SHA_A_REMPLACER]
+- commits: [46d6032]
 
 - mesure: POST /api/me/avatar via proxy :3000 -> **415**, PAS 401.
   corps `{"timestamp":...,"status":415,"error":"Unsupported Media Type","path":"/api/me/avatar"}`.
