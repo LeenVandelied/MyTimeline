@@ -18,6 +18,21 @@
 
 name: deploy
 
+# DEUX déclencheurs, tous deux MANUELS. Aucun push de branche ne déploie.
+#
+# ⚠ `workflow_dispatch` n'est proposé par GitHub que si ce fichier existe sur la
+#   BRANCHE PAR DÉFAUT du dépôt (`main`). Or `main` est ~1100 commits derrière
+#   `dev` et ne porte pas ce workflow : le bouton n'apparaît donc pas aujourd'hui.
+#   Il est conservé pour le jour où le rôle de `main` sera tranché (#409).
+#
+# ⚠ Le déclencheur par TAG, lui, n'a AUCUNE exigence de branche par défaut : un
+#   push de tag exécute le workflow tel qu'il est défini AU COMMIT TAGUÉ. C'est
+#   la voie utilisable, et celle que #370 avait anticipée.
+#
+#   Déployer :  git tag deploy-2026-09-07 <sha> && git push origin deploy-2026-09-07
+#
+# Dans les deux cas le job `deploy` reste derrière l'environnement `production`,
+# donc derrière une approbation humaine explicite.
 on:
   workflow_dispatch:
     inputs:
@@ -25,6 +40,9 @@ on:
         description: "Ref à déployer (branche, tag ou SHA). Défaut : dev"
         required: false
         default: dev
+  push:
+    tags:
+      - "deploy-*"
 
 concurrency:
   # JAMAIS `cancel-in-progress` : interrompre un déploiement en cours laisserait
@@ -48,7 +66,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ inputs.ref }}
+          # Sur un push de tag, le contexte `inputs` est vide : on retombe sur le
+          # tag lui-même, donc sur le code EXACT qui a déclenché le déploiement.
+          ref: ${{ inputs.ref || github.ref_name }}
           persist-credentials: false
 
       - name: Calculer le tag d'image
@@ -103,7 +123,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ inputs.ref }}
+          # Sur un push de tag, le contexte `inputs` est vide : on retombe sur le
+          # tag lui-même, donc sur le code EXACT qui a déclenché le déploiement.
+          ref: ${{ inputs.ref || github.ref_name }}
           persist-credentials: false
 
       # Clé SSH montée en mémoire, hôte épinglé par sa clé publique connue :
@@ -169,8 +191,19 @@ jobs:
         env:
           ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}
         run: |
+          # Le Caddyfile est l'UNIQUE source de vérité sur le mode ACME. Tant que
+          # l'ACME de test est actif, le certificat n'est pas approuvé et une
+          # vérification TLS stricte ferait échouer ce job alors que l'application
+          # répond parfaitement. Lire le fichier évite une variable séparée qu'on
+          # oublierait de basculer en même temps que le Caddyfile.
+          if grep -qE '^[[:space:]]*acme_ca[[:space:]]+https://acme-staging' Caddyfile; then
+            echo "::warning::ACME de TEST actif — certificat non approuvé, vérification TLS désactivée pour ce run. Recommenter acme_ca dans le Caddyfile pour passer en production."
+            TLS_OPT="--insecure"
+          else
+            TLS_OPT=""
+          fi
           for i in $(seq 1 30); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
+            code=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
             if [ "$code" = "200" ]; then
               echo "OK : $ORIGIN/fr/login -> 200"
               exit 0
