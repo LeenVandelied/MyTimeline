@@ -638,6 +638,15 @@ Au 2026-09-07, une capture de la liste des domaines OVH en montrait **3** ; la c
 ## PIT-S81-008 — `github.repository_owner` casse le push GHCR quand il porte des majuscules
 Les noms de dépôt OCI n'acceptent **que des minuscules**. Le propriétaire ici est `LeenVandelied` : `ghcr.io/${{ github.repository_owner }}/...` fait échouer le build sur `ERROR: failed to build: invalid tag …: repository name must be lowercase`, après avoir consommé tout le temps de préparation du runner. Les expressions GitHub n'ont **pas** de fonction de mise en minuscules — le calcul doit se faire en shell : `echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"`. Le même piège frappe côté hôte : `GHCR_OWNER` dans le `.env` sert à construire l'URL du `pull`, il doit être en minuscules lui aussi. Aucune validation locale ne l'attrape — `docker compose config` accepte un nom d'image en majuscules, seul le registre le refuse. (Mise en ligne #370)
 
+
+## PIT-S81-020 — Un `Content-Type: application/json` d'instance axios DÉTRUIT tout upload `FormData`
+Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **remplace le corps** — `isFormData && hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data` (`axios/lib/defaults/index.js`). Le fichier disparaît **sans aucune exception côté client**, et le serveur répond **415**, jamais 401. C'est ce qui cassait `POST /api/me/avatar` **en production**, pas seulement en E2E. Parade : retirer l'en-tête dans l'intercepteur de requête pour tout corps `FormData` (`config.headers.delete('Content-Type')`) — le navigateur pose alors lui-même `multipart/form-data` avec la boundary. Règle générale : un `Content-Type` JSON posé au niveau d'une instance axios est incompatible avec tout upload passant par cette instance. (Sprint 81 #215)
+
+
+## PIT-S81-023 — Le dump d'échec MockMvc publie un JWT réel dans les logs d'un dépôt PUBLIC
+`@AutoConfigureMockMvc` (Spring Boot) imprime l'échange complet **sur échec**, `Set-Cookie:"jwt=eyJhbGciOiJSUzI1NiJ9…"` compris. **17 classes de test** portent l'annotation, aucune propriété `spring.test.mockmvc.print` n'est posée, et le dépôt est public. Masquer les en-têtes dans son PROPRE helper de diagnostic (fait au S81 pour #500) ne suffit donc pas : Spring imprime le token brut à la ligne suivante. Découvert par le contrôle négatif, **pas** par la review — qui n'avait vu que la moitié du problème. Antérieur au sprint (`git show <base>:<fichier>` le confirme). Correctif repo-wide à arbitrer. (Sprint 81, review sécurité + lead)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

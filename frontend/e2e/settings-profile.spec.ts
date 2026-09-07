@@ -23,17 +23,20 @@ test.use({ storageState: SHARED.storageState })
 test.describe.configure({ mode: 'serial' })
 
 test.describe('Réglages — Profil : avatar + champs', () => {
-  // FIXME (follow-up) : en CI e2e, le POST multipart `/api/me/avatar` renvoie 401
-  // (diagnostic capturé, run 28753470777) alors que les autres appels authentifiés
-  // du même storageState passent (PATCH /me, GET/DELETE /sessions...). Suspicion :
-  // edge-case du proxy Next dev (`rewrites` /api/* -> :8080) sur une requête
-  // multipart/form-data (le cookie JWT SameSite=Lax n'est pas propagé sur ce cas
-  // précis), spécifique à l'environnement E2E — a priori PAS reproductible en prod
-  // (pas de rewrite Next). L'upload avatar reste couvert par le backend
-  // (AvatarServiceImplTest/UserControllerTest : magic bytes, ownership, 5 Mo, cleanup)
-  // + les tests composant `ProfileSection`. À ré-activer après investigation du 401
-  // multipart-proxy (cf. issue de suivi).
-  test.fixme('upload avatar (crop -> confirm), puis suppression', async ({ page }) => {
+  // #215 — Ce test a longtemps été `test.fixme` sur l'hypothèse d'un 401 propre à
+  // l'environnement E2E (« le proxy Next dev ne propagerait pas le cookie JWT sur du
+  // multipart »). MESURÉ le 2026-09-07, c'était FAUX sur les deux points :
+  //   - le statut réel n'était pas 401 mais **415 Unsupported Media Type**, corps
+  //     `{"status":415,...,"path":"/api/me/avatar"}` — un 401 d'auth aurait rendu
+  //     `{"error":"unauthorized"}` (entry point Spring Security) ;
+  //   - le cookie `jwt` ÉTAIT bien envoyé, et le même POST multipart rejoué à travers
+  //     le proxy rendait 200. Le proxy Next est hors de cause.
+  // Cause réelle, côté client et donc VALABLE EN PRODUCTION : le `Content-Type:
+  // application/json` de l'instance axios survivait à un corps `FormData`, ce qui
+  // pousse axios à sérialiser le formulaire en JSON (le fichier n'était jamais
+  // transmis). Corrigé dans `apiClient` (intercepteur de requête), pas dans la
+  // chaîne d'auth backend.
+  test('upload avatar (crop -> confirm), puis suppression', async ({ page }) => {
     await openSettingsChapter(page, 'profile')
 
     const avatar = page.getByTestId('avatar-upload')
@@ -104,8 +107,44 @@ test.describe('Réglages — Profil : avatar + champs', () => {
     await expect(page.getByTestId('avatar-delete')).toBeVisible()
 
     // ---- Suppression : DELETE /api/me/avatar -> avatarUrl repasse à null ----
+    //
+    // SYMÉTRIE VOULUE avec la moitié « upload » ci-dessus (review E2E S81). Sans elle,
+    // le `toHaveCount(0)` retombait sur le timeout Playwright PAR DÉFAUT (5 s) pour
+    // couvrir un DELETE **plus** le `refreshUser()` + `invalidateQueries` qui suit —
+    // alors que la moitié upload s'accorde 15 s pour la même chaîne.
+    //
+    // POURQUOI CE N'EST PAS COSMÉTIQUE. Ce fichier est en `mode: 'serial'` sur le
+    // compte PARTAGÉ (`SHARED.storageState`) et ce test MUTE l'avatar de ce compte.
+    // S'il expire avant que le DELETE ait abouti, il ne rate pas seulement lui-même :
+    // il laisse un avatar RÉSIDUEL en base, et c'est l'assertion d'ouverture du
+    // PROCHAIN run (`expect(avatar.locator('img')).toHaveCount(0)`) qui rougit — un
+    // échec déporté, dans un autre run, sur une autre ligne. En CI la suite tourne à
+    // `workers: 2` depuis #476 : la marge de 5 s n'est pas une hypothèse sûre.
+    const avatarDelete = page.waitForResponse(
+      (res) => /\/api\/me\/avatar$/.test(res.url()) && res.request().method() === 'DELETE',
+      { timeout: 15_000 },
+    )
+    // Le refetch /me qui SUIT le DELETE (onSuccess) : c'est lui qui remet `avatarUrl`
+    // à null et démonte le <img>. Même raisonnement que pour l'upload.
+    const meResyncAfterDelete = page.waitForResponse(
+      (res) => /\/api\/auth\/me$/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15_000 },
+    )
+
     await page.getByTestId('avatar-delete').click()
-    await expect(avatar.locator('img')).toHaveCount(0)
+
+    const deleteResp = await avatarDelete
+    expect(
+      deleteResp.status(),
+      `DELETE /api/me/avatar attendu 204 ; reçu ${deleteResp.status()} — ` +
+        `401 = session perdue, 5xx = backend. L'endpoint est IDEMPOTENT ` +
+        `(UserController.deleteAvatar : caller sans avatar -> no-op 204), il n'y a donc ` +
+        `pas de 404 possible ici. Timeout = aucune requête émise (le bouton n'a rien déclenché).`,
+    ).toBe(204)
+
+    await meResyncAfterDelete
+
+    await expect(avatar.locator('img')).toHaveCount(0, { timeout: 15_000 })
     await expect(page.getByTestId('avatar-delete')).toHaveCount(0)
   })
 

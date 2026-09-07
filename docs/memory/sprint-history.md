@@ -5717,7 +5717,7 @@ négation sur un retour à la ligne). Déjà signalé au S76 : le motif est stru
 > session), `next dev` en **webpack** sur `:3000` (pas turbopack — PIT-S61-007 en worktree).
 > Oracle réseau de `playwright.config.ts` vérifié : `GET :3000/api/auth/me` → **401**.
 
-### Sprint 81 — 2026-09-06 (PLANIFIÉ — cohésion 0.56, Durcir le parcours auth/avatar)
+### Sprint 81 — 2026-09-06 → 2026-09-07 (EN COURS — cohésion 0.56, Durcir le parcours auth/avatar)
 **Objectif :** rate-limit avatar, flaky auth élucidé (ou son mécanisme de capture livré), E2E avatar dégelé.
 **Milestone GitHub :** #82
 **Issues :** #500, #499, #215
@@ -5726,7 +5726,36 @@ négation sur un retour à la ligne). Déjà signalé au S76 : le motif est stru
 > bucket rate-limit ; si #499 modifie `LIMITS` en parallèle, l'imputation devient impossible.
 **Migrations Flyway :** aucune
 **Dépend de :** Sprints 79 + 80 (#215 exige un harnais dont le diagnostic est fiable)
-**Status :** Planifié
+**Branche :** `claude/sprint-81-start-bf08ac` (worktree — convention S80, pas de `sprint/81`)
+**Vagues exécutées :** V1 = #500 · V2 = #499 · V3 = #215 (séquentiel — working tree partagé + verrou Playwright)
+**Commits :** 8 (2 par issue, + 2 corrections de review)
+**Tests :** Backend 581/581 · Vitest 1330/1330 (116 fichiers) · build + typecheck + lint verts ·
+E2E 300 passed / 8 skipped / 11 failed — les 11 sont les rouges structurels macOS de
+`sprint-77-theme-visual` (références `-chromium-linux` sans équivalent `-darwin`), déjà consignés au S80.
+**Reviews :** 3 relecteurs — 2 MAJEURS (fuite de JWT dans les logs CI ; asymétrie du DELETE E2E),
+tous deux vérifiés par le lead puis corrigés avec contrôle négatif. MINEURS assumés et documentés.
+**Résultat clé :** #215 n'était PAS un artefact E2E. La cause mesurée est un **415** (et non le 401
+supposé) : le `Content-Type: application/json` d'instance d'axios faisait sérialiser le `FormData` en
+JSON (`transformRequest` remplace le corps), donc **l'upload d'avatar était cassé en PRODUCTION**.
+L'hypothèse « proxy Next / cookie SameSite » portée par l'issue depuis la PR #214 est réfutée.
+**#500 reste OUVERTE :** flaky non reproduit en 4 runs ; seul le mécanisme de capture est livré
+(cf. [[DEC-S81-006]] — une série verte est le comportement nominal d'un flaky, elle ne réfute rien).
+**Nouveaux pitfalls / patterns / décisions :** PIT-S81-001 à 005 · PAT-S81-001, PAT-S81-002 ·
+DEC-S81-001 à 003 · 1 entrée `bugs-resolved` (le 415 avatar). Packs `pit-{backend,frontend}`
+régénérés et 5 entrées classées dans `pit-classification.tsv`.
+**Absorbé en cours (XS) :** 3 découvertes intégrées — commentaire `uploadAvatar` rendu faux par le
+fix, création du premier test unitaire d'`apiClient` (le module n'en avait aucun), remise à plat de
+l'état du compte partagé E2E. Détail dans les done.md.
+**Follow-ups arbitrés (Phase 4 triage, option `[t]`, backlog libre sur décision du dev) :**
+  - 429 sans `Retry-After` ni `X-RateLimit-*` sur les 11 slots [S | auth/infrastructure] → **issue #567**
+  - Dump MockMvc publiant un JWT valide dans les logs CI, 17 classes, dépôt public [M | backend/sécurité]
+    → **issue #568**
+  - « Rouvrir #215 si un 401 avatar réapparaît en CI » → **non transformé en issue** : c'est une
+    condition de réouverture, pas une action. Consignée dans `bugs-resolved.md` et dans le corps de
+    la PR. Ratio discard 0/3.
+**Saturation contexte lead :** non mesurée — aucun instrument fiable disponible dans cette session ;
+ne pas inventer un chiffre pour remplir le champ.
+**Status :** En cours — PR #560 ouverte, CI verte (7/7), en attente de confirmation de merge
 
 ### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
 **Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.

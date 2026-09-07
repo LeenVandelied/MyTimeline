@@ -1096,6 +1096,22 @@ Au 2026-09-07, une capture de la liste des domaines OVH en montrait **3** ; la c
 ## PIT-S81-008 — `github.repository_owner` casse le push GHCR quand il porte des majuscules
 Les noms de dépôt OCI n'acceptent **que des minuscules**. Le propriétaire ici est `LeenVandelied` : `ghcr.io/${{ github.repository_owner }}/...` fait échouer le build sur `ERROR: failed to build: invalid tag …: repository name must be lowercase`, après avoir consommé tout le temps de préparation du runner. Les expressions GitHub n'ont **pas** de fonction de mise en minuscules — le calcul doit se faire en shell : `echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"`. Le même piège frappe côté hôte : `GHCR_OWNER` dans le `.env` sert à construire l'URL du `pull`, il doit être en minuscules lui aussi. Aucune validation locale ne l'attrape — `docker compose config` accepte un nom d'image en majuscules, seul le registre le refuse. (Mise en ligne #370)
 
+
+## PIT-S81-020 — Un `Content-Type: application/json` d'instance axios DÉTRUIT tout upload `FormData`
+Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **remplace le corps** — `isFormData && hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data` (`axios/lib/defaults/index.js`). Le fichier disparaît **sans aucune exception côté client**, et le serveur répond **415**, jamais 401. C'est ce qui cassait `POST /api/me/avatar` **en production**, pas seulement en E2E. Parade : retirer l'en-tête dans l'intercepteur de requête pour tout corps `FormData` (`config.headers.delete('Content-Type')`) — le navigateur pose alors lui-même `multipart/form-data` avec la boundary. Règle générale : un `Content-Type` JSON posé au niveau d'une instance axios est incompatible avec tout upload passant par cette instance. (Sprint 81 #215)
+
+
+## PIT-S81-021 — L'oracle réseau du projet reste VERT pendant que toutes les pages rendent 500
+`curl /api/auth/me` → 401 prouve que le rewrite `/api/*` est en place, **rien de plus** : la requête court-circuite le rendu React. Constaté deux fois au S81 — une fois par l'agent de la vague 3, une fois par le lead — avec `oracle = 401` et `/fr/home = 500` simultanément, ce qui fait mourir le projet `setup` de Playwright en `browserContext.close: Target page… has been closed` après 3 min par compte. Parade : sonder **aussi une page** (`/fr/login`, `/fr/register`, `/fr/home`) avant de déclarer un harnais sain. Cause au S81 : deux `next dev` partageant le même `frontend/.next`, puis un `next build` (scope `frontend`) lancé pendant qu'un `next dev` servait encore. Un simple redémarrage du serveur suffit — inutile de supprimer `.next`. (Sprint 81, lead + #215)
+
+
+## PIT-S81-022 — Deux `next dev` sur le même worktree se détruisent mutuellement
+Les deux écrivent `frontend/.next` ; le premier meurt en cascade (`Cannot find module './343.js'` depuis `webpack-runtime.js`, puis `ENOENT .next/server/vendor-chunks/lucide-react.js`). Interdire le remontage dans un briefing **ne suffit pas** : vérifier `lsof -nP -iTCP:3000 -sTCP:LISTEN` avant de conclure sur un rouge, et ne PAS relancer son propre serveur par-dessus celui d'un agent — on rejoue la corruption dans l'autre sens. Corollaire : ne pas lancer le scope `frontend` de `test-quiet.sh` (qui contient `next build`) tant qu'un `next dev` sert l'E2E. (Sprint 81, lead)
+
+
+## PIT-S81-024 — RTK réécrit le lanceur Playwright et fait disparaître l'instrumentation
+`--reporter=line` devient `--reporter=json`, puis la sortie est tronquée à 2000 caractères : les `console.log` d'instrumentation sont **perdus**, et un rapport d'échec devient illisible. Parade : préfixer par `rtk proxy` toute campagne Playwright dont on veut lire la sortie, ou lire le fichier complet sous `~/Library/Application Support/rtk/tee/`. Même famille que [[rtk-git-diff-empty-output]] : `grep -h` est également rejeté par le wrapper. (Sprint 81 #215)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

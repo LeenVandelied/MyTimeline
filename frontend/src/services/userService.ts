@@ -69,8 +69,11 @@ export const deleteAccount = async (username: string): Promise<void> => {
  * POST /api/me/avatar (multipart/form-data, part `file`). 200 -> UserResponse
  * à jour (avec `avatarUrl`). 400 si type non autorisé / trop volumineux / vide.
  *
- * On NE force PAS le header `Content-Type` : axios pose lui-même
- * `multipart/form-data` avec la boundary quand le body est un `FormData`.
+ * On NE force PAS le header `Content-Type` ICI : c'est l'intercepteur de requête
+ * d'`apiClient` qui RETIRE le `Content-Type: application/json` de l'instance pour
+ * un corps `FormData` (#215) — sans quoi axios sérialise le FormData en JSON et le
+ * backend répond 415. Une fois l'en-tête retiré, le navigateur pose lui-même
+ * `multipart/form-data` avec la boundary.
  */
 export const uploadAvatar = async (file: File): Promise<User> => {
   const formData = new FormData()
