@@ -76,10 +76,16 @@ import jakarta.servlet.http.HttpServletResponse;
  *   <li>{@code DELETE /api/me} — terminal, single-shot, guarded by a username re-type;</li>
  *   <li>{@code DELETE /api/me/avatar} — idempotent no-op reset.</li>
  * </ul>
- * {@code POST /api/me/avatar} (multipart upload, 5 MiB cap, magic-byte validation + disk
- * write) is a genuine resource-exhaustion surface but is NOT covered here — it is out of
- * the scope of #134 (anti-enumeration + credential brute-force) and is left as a tracked
- * follow-up rather than silently bundled in.
+ * <p><b>Avatar upload (#499):</b> {@code POST /api/me/avatar} (multipart upload, 5 MiB cap,
+ * magic-byte validation + disk write + delete of the previous file) IS now throttled — it was
+ * the follow-up left open by #134, whose scope was anti-enumeration + credential brute-force.
+ * It is a resource-exhaustion surface of a different nature: no oracle, but the heaviest
+ * per-request cost of the whole API. Because this filter runs BEFORE the authorization filter,
+ * an overflowing request is rejected before the container/DispatcherServlet parses the 5 MiB
+ * part at all. Ceiling 10/min/IP — the profile-edit tier, not the 5/min "costly" tier: unlike
+ * forgot/reset/change-password, repeated uploads are LEGITIMATE (a crop→confirm flow retried
+ * after a bad crop or a wrong file easily produces several POSTs, and shared-NAT users add
+ * up), while 10 x 5 MiB/min/IP of bounded, self-replacing storage is a negligible ceiling.
  *
  * <p><b>Scope of the limit:</b> buckets live in a {@link ConcurrentHashMap} inside
  * this single JVM, keyed by {@code clientIp + "|" + method + " " + path}. The limits are therefore
@@ -119,7 +125,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private static final Map<String, Integer> DEFAULT_LIMITS = Map.ofEntries(
             // Map.ofEntries (et non Map.of) : Map.of plafonne à 10 paires. La map en
             // comptait 8 avant #134 et en compte 10 après — pile la limite. ofEntries n'a
-            // pas ce plafond : ajouter un futur slot ne demande plus de refactor.
+            // pas ce plafond : ajouter un futur slot ne demande plus de refactor. (#499 a
+            // ajouté ce 11e slot sans toucher au format — c'était précisément le pari.)
             Map.entry("POST /api/auth/login", 10),
             Map.entry(REGISTER_KEY, DEFAULT_REGISTER_PER_MINUTE),
             Map.entry("POST /api/auth/refresh", 20),
@@ -151,7 +158,17 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             // neutralisé, pas le statut). Le throttle borne le DÉBIT d'énumération : 10/min/IP
             // rend le balayage d'un dictionnaire de usernames impraticable sans gêner l'édition
             // de profil (opération rare). Il ne SUPPRIME pas l'oracle.
-            Map.entry("PATCH /api/me", 10)
+            Map.entry("PATCH /api/me", 10),
+            // #499 : POST /api/me/avatar — seul endpoint qui écrit sur le DISQUE du serveur à
+            // chaque appel (multipart jusqu'à 5 Mio bufferisé en heap, validation magic-bytes,
+            // store + delete de l'ancien fichier) et jusqu'ici SANS aucun quota. Le filtre étant
+            // monté avant l'authz, le 429 tombe avant même le parsing du part.
+            // Pourquoi 10 et non 5 (le palier « coûteux » forgot/reset/change-password) : ces
+            // slots-là modélisent un abus dont AUCUNE répétition n'est légitime, alors qu'un
+            // upload d'avatar se retente honnêtement (recadrage raté, mauvaise image, NAT
+            // partagé) — 5 serait atteignable par un utilisateur de bonne foi. 10/min/IP borne
+            // l'écriture disque à 50 Mio/min/IP sur un stockage auto-remplaçant : négligeable.
+            Map.entry("POST /api/me/avatar", 10)
     );
 
     private static final Duration WINDOW = Duration.ofMinutes(1);

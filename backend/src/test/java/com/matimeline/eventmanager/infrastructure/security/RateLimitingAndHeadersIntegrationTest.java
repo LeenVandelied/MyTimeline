@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -435,6 +437,98 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
                     .andReturn().getResponse().getStatus();
             assertNotEquals(429, sc, "GET /api/me ne doit jamais être throttlé (requête #" + i + ")");
         }
+    }
+
+    // ----- #499 : POST /api/me/avatar entre dans la map de rate-limiting -----
+
+    /**
+     * Upload d'avatar keyé sur une IP socket dédiée. Le part porte quelques octets : le
+     * RateLimitingFilter court-circuite AVANT l'authz et avant le parsing du multipart, donc
+     * ni session ni image valide ne sont nécessaires pour prouver le throttle (les requêtes
+     * sous la limite repartent en 401, pas en 200 — on n'asserte donc que le NON-429).
+     */
+    private MvcResult uploadAvatar(String socketIp) throws Exception {
+        return mockMvc.perform(multipart("/api/me/avatar")
+                        .file(new MockMultipartFile("file", "a.png", MediaType.IMAGE_PNG_VALUE,
+                                new byte[] { (byte) 0x89, 'P', 'N', 'G' }))
+                        .with(req -> { req.setRemoteAddr(socketIp); return req; }))
+                .andReturn();
+    }
+
+    /**
+     * #499 (nominal) : sous le quota (10/min/IP), aucun upload n'est throttlé. Sans cette
+     * assertion un quota trop bas — 1 ou 2 — passerait le test de dépassement ci-dessous tout
+     * en cassant le parcours recadrage → confirmation, qui produit légitimement plusieurs POST.
+     */
+    @Test
+    void uploadAvatar_underThreshold_neverReturns429() throws Exception {
+        String ip = "10.4.0.1";
+        for (int i = 1; i <= 10; i++) {
+            int sc = uploadAvatar(ip).getResponse().getStatus();
+            assertNotEquals(429, sc, "upload avatar #" + i + " sous la limite ne doit pas être throttlé");
+        }
+    }
+
+    /**
+     * #499 : {@code POST /api/me/avatar} écrit sur le disque du serveur à chaque appel
+     * (multipart jusqu'à 5 Mio, validation magic-bytes, store + delete de l'ancien fichier) et
+     * n'avait AUCUN quota — surface d'épuisement de ressources laissée en suspens par #134.
+     * Slot 10/min/IP : la 11e requête de la même IP dans la fenêtre est 429 + JSON générique.
+     */
+    @Test
+    void uploadAvatar_eleventhWithinWindow_returns429() throws Exception {
+        String ip = "10.4.0.2";
+        for (int i = 1; i <= 10; i++) {
+            uploadAvatar(ip);
+        }
+        mockMvc.perform(multipart("/api/me/avatar")
+                        .file(new MockMultipartFile("file", "a.png", MediaType.IMAGE_PNG_VALUE,
+                                new byte[] { (byte) 0x89, 'P', 'N', 'G' }))
+                        .with(req -> { req.setRemoteAddr(ip); return req; }))
+                .andExpect(status().is(429))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("too_many_requests"));
+    }
+
+    /**
+     * #499 : la fenêtre se réarme. Sans cette assertion, un bucket qui ne se recharge jamais
+     * (429 définitif pour l'IP) passerait le test précédent — l'utilisateur serait verrouillé
+     * hors de son propre changement d'avatar. Fenêtre avancée par le TimeMeter contrôlable.
+     */
+    @Test
+    void uploadAvatar_afterWindowAdvance_isAllowedAgain() throws Exception {
+        String ip = "10.4.0.3";
+        for (int i = 1; i <= 10; i++) {
+            uploadAvatar(ip);
+        }
+        assertEquals(429, uploadAvatar(ip).getResponse().getStatus());
+
+        clock.advance(Duration.ofSeconds(61));
+
+        assertNotEquals(429, uploadAvatar(ip).getResponse().getStatus(),
+                "après la fenêtre, le quota d'upload d'avatar doit être rechargé");
+    }
+
+    /**
+     * #499 : le bucket avatar est INDÉPENDANT de celui de {@code PATCH /api/me} (la clé embarque
+     * méthode ET chemin), bien que les deux plafonds valent 10. Épuiser l'upload ne doit pas
+     * verrouiller l'édition de profil depuis la même IP — sinon le throttle devient un vecteur
+     * de DoS entre endpoints.
+     */
+    @Test
+    void uploadAvatarAndPatchMe_haveIndependentBuckets() throws Exception {
+        String ip = "10.4.0.4";
+        for (int i = 1; i <= 11; i++) {
+            uploadAvatar(ip);
+        }
+        assertEquals(429, uploadAvatar(ip).getResponse().getStatus(),
+                "le bucket avatar doit être épuisé à ce stade");
+        int sc = mockMvc.perform(patch("/api/me")
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PATCH_ME_BODY))
+                .andReturn().getResponse().getStatus();
+        assertNotEquals(429, sc, "le bucket PATCH /api/me est distinct de celui de l'upload d'avatar");
     }
 
     /**
