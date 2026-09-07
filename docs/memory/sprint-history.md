@@ -5771,14 +5771,15 @@ les entrées de déploiement) : corrigées dans `patterns.md` et `sprint-history
 l'issue #568.
 **Status :** Terminé
 
-### Sprint 82 — 2026-09-06 (PLANIFIÉ — cohésion 0.33, Couverture des BR events non protégées)
+### Sprint 82 — 2026-09-06 → en cours (cohésion 0.33, Couverture des BR events non protégées)
 **Objectif :** épingler BR-EVE-017 (debounce), le hint de plafond de récurrence, le zoom AVANT.
 **Milestone GitHub :** #83
 **Issues :** #507, #491, #477
 **Vagues :** V1 = #507 ‖ #491 | V2 = #477
 **Migrations Flyway :** aucune
 **Dépend de :** Sprints 78 → 81 (ajouter des tests en dernier, sur un harnais assaini)
-**Status :** Planifié
+**Branche :** `claude/sprint-82-start-f67d87` (créée depuis `origin/dev` @ `992db28`)
+**Status :** En cours
 
 ### Énoncés périmés détectés pendant la planification — et traités
 
