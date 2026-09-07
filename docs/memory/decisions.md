@@ -722,3 +722,12 @@ Sur tout poste macOS, 10 rouges **structurels** : les références sont committ�
 
 ## DEC-S80-004 — La preuve de #408 s'arrête au couple `BLOCKED` + imputation, sans appeler l'API de merge
 Le test le plus direct serait d'appeler l'API de merge et de capturer le refus 405. Écarté : sur un dépôt **public**, une erreur de manipulation fusionnerait un test cassé dans `dev`. Le couple `BLOCKED` + les trois pièces d'imputation ([[PAT-S80-003]]) suffit. **Limite déclarée au §7 du dossier plutôt que masquée** — c'est exactement le défaut de rigueur que #408 corrigeait chez #361. (Sprint 80 #408)
+
+## DEC-S81-001 — `POST /api/me/avatar` est plafonné à 10/min/IP, pas 5
+Le palier « abus » à 5/min (forgot, reset, export POST/GET, change-password) suppose qu'**aucune répétition n'est légitime** — faux pour un upload d'avatar : recadrage raté, mauvaise image, NAT partagé produisent des retentes honnêtes. Alignement retenu sur le palier « édition de profil » (login, `PATCH /api/me`). `AvatarServiceImpl` remplace puis supprime l'ancien fichier : 50 Mio/min/IP transitoire, **non cumulatif** sur disque. ⚠ Valeur **non adossée à une télémétrie réelle**, et aucun test ne prouve le 200 nominal authentifié sous quota (comme tous les slots de cette classe, les requêtes sous la limite repartent en 401). (Sprint 81 #499)
+
+## DEC-S81-002 — #500 n'est PAS fermée malgré 4 runs verts
+Le flaky `AuthControllerLegacyPasswordLoginTest` n'a pas été reproduit (4 runs, 4 conteneurs neufs, dont un « premier boot »). Seul le **mécanisme de capture** est livré ([[PAT-S81-001]]). Une série verte est le comportement nominal d'un flaky intermittent : la fermer sur ce motif est exactement le mode d'échec que l'issue interdit dans ses propres critères d'acceptation. L'issue reste ouverte jusqu'au prochain rouge, qui sera cette fois mesurable. (Sprint 81 #500)
+
+## DEC-S81-003 — Le correctif de la fuite de JWT s'arrête au périmètre du sprint
+Le masquage de `Set-Cookie`/`Authorization`/`Cookie` a été appliqué au helper de diagnostic livré par #500. La fuite **complète** vient de Spring ([[PIT-S81-004]], 17 classes) et son correctif — `MockMvcPrint.NONE` ou la propriété équivalente — prive 17 classes de test de leur dump d'échec. Cet arbitrage de diagnostic n'est pas pris en fin de sprint, sur la base d'une découverte tardive : issue dédiée. **Limite déclarée dans le message de commit et dans l'audit plutôt que masquée.** (Sprint 81, review sécurité)

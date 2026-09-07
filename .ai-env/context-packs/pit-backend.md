@@ -606,6 +606,14 @@ Les classes de test vivent sur le **même classpath** que le code de production 
 `CategoryServiceImpl.deleteCategory` compte les produits liés via `countByCategoryId`, qui est du **SQL natif** : le `@SQLRestriction("archived = false")` de `ProductEntity` ne s'y applique pas, donc les produits archivés y comptent encore. Conséquence : toute catégorie ayant un jour porté un produit rend **409 pour toujours**. Parade côté appelant : `DELETE /api/categories/{id}?reassignToCategoryId=<poubelle>`. Règle générale : soft delete + comptage natif = suppression du parent impossible ; le vérifier sur **la requête**, jamais sur l'annotation. (Sprint 79 #463)
 
 
+## PIT-S81-001 — Un `Content-Type: application/json` d'instance axios DÉTRUIT tout upload `FormData`
+Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **remplace le corps** — `isFormData && hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data` (`axios/lib/defaults/index.js`). Le fichier disparaît **sans aucune exception côté client**, et le serveur répond **415**, jamais 401. C'est ce qui cassait `POST /api/me/avatar` **en production**, pas seulement en E2E. Parade : retirer l'en-tête dans l'intercepteur de requête pour tout corps `FormData` (`config.headers.delete('Content-Type')`) — le navigateur pose alors lui-même `multipart/form-data` avec la boundary. Règle générale : un `Content-Type` JSON posé au niveau d'une instance axios est incompatible avec tout upload passant par cette instance. (Sprint 81 #215)
+
+
+## PIT-S81-004 — Le dump d'échec MockMvc publie un JWT réel dans les logs d'un dépôt PUBLIC
+`@AutoConfigureMockMvc` (Spring Boot) imprime l'échange complet **sur échec**, `Set-Cookie:"jwt=eyJhbGciOiJSUzI1NiJ9…"` compris. **17 classes de test** portent l'annotation, aucune propriété `spring.test.mockmvc.print` n'est posée, et le dépôt est public. Masquer les en-têtes dans son PROPRE helper de diagnostic (fait au S81 pour #500) ne suffit donc pas : Spring imprime le token brut à la ligne suivante. Découvert par le contrôle négatif, **pas** par la review — qui n'avait vu que la moitié du problème. Antérieur au sprint (`git show <base>:<fichier>` le confirme). Correctif repo-wide à arbitrer. (Sprint 81, review sécurité + lead)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
