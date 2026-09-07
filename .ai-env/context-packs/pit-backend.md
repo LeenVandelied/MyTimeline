@@ -655,6 +655,13 @@ Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **rempla
 L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
 
 
+## PIT-S81-012 — Un fichier de config MONTÉ n'est pas rechargé par `docker compose up -d`
+Le `Caddyfile` est un bind-mount : en changer le contenu ne modifie ni l'image ni la configuration du service, donc Compose considère le conteneur à jour et **le laisse intact, avec l'ancienne configuration en mémoire**. Constaté au passage vers les certificats de production : le fichier était correct sur le disque, `docker compose ps` montrait `caddy Up 56 minutes` quand backend et frontend avaient 6 minutes, et Caddy servait toujours l'ACME de test. Le déploiement doit **recharger explicitement** le service concerné après avoir publié le fichier (`caddy reload --config …`, préférable à `restart` : à chaud, sans coupure). Signal à surveiller : un `Up` bien plus ancien que les autres services après un déploiement. (Mise en ligne #370)
+
+
+## PIT-S81-013 — Changer `acme_ca` ne réémet aucun certificat existant
+Basculer de l'ACME de test vers la production ne suffit pas : Caddy retrouve en stockage un certificat **encore valide** pour chaque nom et le réutilise, quel que soit l'émetteur — `acme_ca` ne pilote que les émissions **futures**. Après rechargement, `openssl s_client` montrait toujours `(STAGING)`. Pour basculer réellement, supprimer les certificats de l'ancien CA dans le volume (`/data/caddy/certificates/<ca>-directory`) puis recharger. ⚠ Le site n'a **plus de certificat** entre la suppression et l'émission réussie : la fenêtre est courte mais réelle, et une émission refusée (quota) la prolonge. (Mise en ligne #370)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

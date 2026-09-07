@@ -25,6 +25,17 @@
 	# L'étape de vérification de `deploy.yml` lit CE FICHIER pour savoir si elle
 	# doit exiger un certificat approuvé — les deux restent cohérents
 	# automatiquement, sans variable séparée à ne pas oublier.
+	#
+	# ⚠ CHANGER DE CA NE SUFFIT PAS À RÉÉMETTRE. Caddy retrouve en stockage un
+	# certificat encore valide pour chaque nom et le réutilise, quel que soit
+	# l'émetteur : `acme_ca` ne pilote que les émissions FUTURES. Pour basculer
+	# réellement d'un CA à l'autre, il faut supprimer les certificats de l'ancien
+	# dans le volume `caddy-data` :
+	#   docker compose … exec caddy rm -rf \
+	#     /data/caddy/certificates/acme-staging-v02.api.letsencrypt.org-directory
+	# puis recharger. ⚠ Le site n'a PLUS de certificat entre la suppression et
+	# l'émission réussie : opération à faire en connaissance de cause.
+	# Procédure détaillée : docs/runbook/deploiement-profils.md.
 	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 

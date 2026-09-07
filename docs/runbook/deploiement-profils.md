@@ -120,6 +120,42 @@ dans les deux sens.
 `SERVER_FORWARD_HEADERS_STRATEGY=framework` est posée en complément pour que Spring
 restitue le schéma et l'hôte d'origine à partir des en-têtes `X-Forwarded-*`.
 
+## Basculer d'un CA ACME à l'autre (test ↔ production)
+
+Deux pièges, tous deux constatés en conditions réelles.
+
+**1. Publier le `Caddyfile` ne suffit pas.** C'est un bind-mount : en changer le
+contenu ne modifie ni l'image ni la configuration du service, donc
+`docker compose up -d` **laisse le conteneur Caddy intact**, avec l'ancienne
+configuration en mémoire. Le déploiement doit recharger explicitement :
+
+```bash
+docker compose --env-file .env --env-file .env.tag -f docker-compose.prod.yml exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+```
+
+*(Signal à surveiller : après un déploiement, `docker compose ps` montre un `Up`
+beaucoup plus ancien pour Caddy que pour les autres services.)*
+
+**2. Recharger ne réémet rien non plus.** Caddy retrouve en stockage un
+certificat **encore valide** pour chaque nom et le réutilise, quel que soit
+l'émetteur : `acme_ca` ne pilote que les émissions **futures**. Il faut
+supprimer les certificats de l'ancien CA :
+
+```bash
+docker compose --env-file .env --env-file .env.tag -f docker-compose.prod.yml exec -T caddy ls /data/caddy/certificates/
+```
+
+puis supprimer le répertoire du CA à abandonner et recharger.
+
+> ⚠ **Le site n'a plus AUCUN certificat entre la suppression et l'émission
+> réussie.** La fenêtre est normalement de quelques secondes, mais une émission
+> refusée (quota Let's Encrypt : 5 échecs de validation par heure et par nom) la
+> prolonge d'autant. Vérifier l'émetteur effectif après coup :
+>
+> ```bash
+> echo | openssl s_client -connect matimeline.com:443 -servername matimeline.com 2>/dev/null | openssl x509 -noout -issuer -dates
+> ```
+
 ## Contexte
 
 `application.properties` définit :
