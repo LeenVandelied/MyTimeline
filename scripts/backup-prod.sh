@@ -29,6 +29,11 @@ RETENTION_DAYS="${RETENTION_DAYS:-14}"
 # Cible distante OCI Object Storage. Vide => transfert SAUTÉ, et le script le
 # signale bruyamment plutôt que de laisser croire à une sauvegarde hors hôte.
 OCI_BUCKET="${OCI_BUCKET:-}"
+# Mode d'authentification OCI CLI. En prod : instance_principal (aucun secret sur
+# la machine ; l'instance s'authentifie par son identité via le groupe dynamique
+# matimeline-backup-dg + la policy matimeline-backup-policy). Vide => auth par
+# fichier ~/.oci (utile pour un test depuis un poste déjà configuré).
+OCI_CLI_AUTH_MODE="${OCI_CLI_AUTH_MODE:-instance_principal}"
 
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
 WORK="$BACKUP_DIR/$TS"
@@ -92,12 +97,20 @@ log "sauvegarde locale prête : $WORK ($(du -sh "$WORK" | cut -f1))"
 # --- Transfert hors hôte -----------------------------------------------------
 if [ -n "$OCI_BUCKET" ]; then
   command -v oci >/dev/null || { log "ERREUR : OCI_BUCKET défini mais l'outil 'oci' est absent"; exit 1; }
-  log "envoi vers OCI Object Storage ($OCI_BUCKET)…"
+  AUTH_OPT=()
+  [ -n "$OCI_CLI_AUTH_MODE" ] && AUTH_OPT=(--auth "$OCI_CLI_AUTH_MODE")
+  log "envoi vers OCI Object Storage ($OCI_BUCKET, auth=${OCI_CLI_AUTH_MODE:-config})…"
   for f in "$WORK"/*; do
-    oci os object put --bucket-name "$OCI_BUCKET" \
+    oci os object put "${AUTH_OPT[@]}" --bucket-name "$OCI_BUCKET" \
       --name "matimeline/$TS/$(basename "$f")" --file "$f" --force >/dev/null
   done
-  log "transfert hors hôte terminé"
+  # Un transfert « sans erreur » ne prouve pas la présence : on RELIT la liste
+  # distante du préfixe et on exige autant d'objets que ceux envoyés.
+  sent=$(find "$WORK" -maxdepth 1 -type f | wc -l | tr -d ' ')
+  got=$(oci os object list "${AUTH_OPT[@]}" --bucket-name "$OCI_BUCKET" \
+    --prefix "matimeline/$TS/" --query 'length(data)' --raw-output 2>/dev/null || echo 0)
+  [ "$got" = "$sent" ] || { log "ERREUR : $got objets distants pour $sent envoyés"; exit 1; }
+  log "transfert hors hôte vérifié ($got objets sous matimeline/$TS/)"
 else
   log "AVERTISSEMENT : OCI_BUCKET non défini — AUCUN transfert hors hôte."
   log "  Cette sauvegarde ne survivrait pas à la perte de l'instance."

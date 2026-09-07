@@ -15,6 +15,14 @@ sauvegardée ne protège d'aucun des scénarios réalistes (perte d'instance, su
 accidentelle, corruption du volume). La cible retenue est **OCI Object Storage**
 (20 Go inclus dans l'offre), donc hors de l'hôte applicatif.
 
+> ✅ **Opérationnel depuis le 2026-09-07.** Bucket `matimeline-backups` (région
+> `eu-paris-1`, **privé**), accès par **Instance Principal** — aucun secret sur la machine :
+> groupe dynamique `matimeline-backup-dg` (matche l'instance par son OCID) + policy
+> `matimeline-backup-policy` (`manage objects` + `read buckets`, restreints au bucket). Le
+> cron pose `OCI_BUCKET=matimeline-backups` ; le script s'authentifie en `instance_principal`
+> et **relit la liste distante** pour prouver la présence des objets après envoi. Vérifié :
+> 5 objets par jeu réellement présents dans le bucket.
+
 ## Périmètre
 
 Les quatre éléments sont nécessaires à une restauration complète.
@@ -45,9 +53,26 @@ d'été française) :
 > l'hôte** — il l'écrit en clair dans son journal. Ne pas confondre « la sauvegarde
 > a réussi » et « la sauvegarde est en sécurité ».
 
-**Rétention** : 14 jours en local (`RETENTION_DAYS`). La rétention **distante** se règle
-par une *lifecycle policy* sur le bucket OCI, pas par ce script — il ne supprime jamais
-d'objet distant.
+**Rétention locale** : 14 jours (`RETENTION_DAYS`), appliquée par le script.
+
+**Rétention distante** : par *lifecycle policy* sur le bucket, **pas** par le script (il
+ne supprime jamais d'objet distant), et **pas par l'instance** — la policy IAM lui donne
+`manage objects` mais **pas** `manage buckets`, à dessein : une instance compromise ne
+doit pas pouvoir désactiver la rétention ni détruire le bucket. La lifecycle se pose donc
+en **admin**, une fois. Deux voies :
+
+- Console : bucket `matimeline-backups` → onglet *Gestion* / *Règles de politique de cycle
+  de vie* → règle DELETE 30 jours, préfixe `matimeline/`.
+- CLI depuis un principal admin (⚠ format validé — `--items` prend le **tableau nu**, et le
+  préfixe va dans `objectNameFilter.inclusionPrefixes`, pas `objectNamePrefix`) :
+
+  ```bash
+  echo '[{"name":"expire-30j","action":"DELETE","timeAmount":30,"timeUnit":"DAYS","isEnabled":true,"objectNameFilter":{"inclusionPrefixes":["matimeline/"]}}]' > lc.json
+  oci os object-lifecycle-policy put --namespace <ns> --bucket-name matimeline-backups --items file://lc.json --force
+  ```
+
+  Sans elle, les sauvegardes s'accumulent — sans danger de capacité (≈48 Ko/jour pour 20 Go
+  de quota gratuit, soit >1000 ans), mais à régler pour l'hygiène RGPD.
 
 ## Vérifier qu'une sauvegarde est exploitable
 
