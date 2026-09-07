@@ -25,12 +25,21 @@ n'a de default deviné : une variable manquante fait soit échouer le boot
 | `STORAGE_AVATAR_PATH` | Répertoire privé des avatars (#75), hors webroot | ✅ | **Boot échoue** — `application-prod.properties:57` la lit sans default |
 | `STORAGE_EXPORT_PATH` | Répertoire privé des exports RGPD (#264), distinct des avatars | ✅ | **Boot échoue** — `application-prod.properties:62` la lit sans default |
 | `BREVO_API_KEY` | Clé API de l'email transactionnel (reset de mot de passe) | ✅ | Service email en **NO-OP silencieux** : aucun email ne part, aucune erreur (#365) |
+| `BREVO_SENDER_EMAIL` | Adresse expéditrice des emails | ✅ | Défaut du code `no-reply@mytimeline.app`, **domaine non détenu** ⇒ Brevo refuse l'envoi, l'exception est journalisée et le reset casse **en silence** |
+| `BREVO_SENDER_NAME` | Nom affiché de l'expéditeur | ⚠️ recommandé | Défaut du code `MyTimeline`, alors que la marque est « Ma Timeline » |
 | `APP_FRONTEND_RESET_URL_BASE` | Base du lien de réinitialisation envoyé par email | ✅ | **Lien mort vers `localhost:3000`** — voir l'encadré ci-dessous |
 
 > **Correction ADR-009 — cette liste était incomplète.** Les quatre lignes ci-dessus y
 > manquaient alors que la section se déclare « liste complète » et « fait foi ». Les deux
 > premières font **échouer le boot** ; un opérateur suivant ce runbook à la lettre
 > n'arrivait pas à démarrer. `#213` ne couvrait que `STORAGE_AVATAR_PATH`.
+
+> **`BREVO_SENDER_EMAIL` — même famille de panne silencieuse.** `BrevoEmailService` attrape
+> l'échec d'envoi et se contente de le journaliser : c'est **délibéré** (BR-AUT-012 interdit que
+> la réponse 200 dépende de la disponibilité de Brevo, sinon l'existence d'un compte fuiterait
+> par le timing). Conséquence : un expéditeur refusé ne produit **aucun symptôme visible** côté
+> utilisateur. Et posséder le domaine ne suffit pas — il doit être **authentifié dans Brevo**
+> (DKIM/DMARC), ou l'adresse validée comme expéditeur.
 
 > **`APP_FRONTEND_RESET_URL_BASE` — panne silencieuse la plus coûteuse du déploiement.**
 > `BrevoEmailService.java:68` porte le default `http://localhost:3000/reset-password`, et

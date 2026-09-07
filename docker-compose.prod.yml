@@ -89,6 +89,17 @@ services:
 
       # --- Email transactionnel ---
       BREVO_API_KEY: ${BREVO_API_KEY:?BREVO_API_KEY requis}
+      # ⚠ LE DÉFAUT DU CODE EST `no-reply@mytimeline.app` (application.properties:113),
+      # un domaine que le projet NE POSSÈDE PAS, et rien ne le surchargeait en prod.
+      # Brevo refuse d'expédier depuis un expéditeur non authentifié : l'appel échoue,
+      # `BrevoEmailService` attrape l'exception et se contente de la journaliser
+      # (volontaire — BR-AUT-012 interdit que la réponse 200 dépende de Brevo).
+      # Résultat sans ces deux lignes : reset de mot de passe cassé EN SILENCE, même
+      # avec une clé API valide. L'adresse doit appartenir à un domaine authentifié
+      # dans Brevo (DKIM/DMARC), pas seulement à un domaine détenu.
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-no-reply@matimeline.com}
+      # Le défaut du code est « MyTimeline » ; la marque affichée est « Ma Timeline ».
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-Ma Timeline}
 
       # --- Lien de réinitialisation de mot de passe ---
       # ⚠ LE DÉFAUT DU CODE EST `http://localhost:3000/reset-password`
