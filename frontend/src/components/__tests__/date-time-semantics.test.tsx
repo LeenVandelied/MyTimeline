@@ -1,5 +1,5 @@
 import { render, screen, cleanup } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Session } from '@/types/settings'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
@@ -12,7 +12,7 @@ import { SessionList } from '@/components/settings/SessionList'
 import { WeekAgenda } from '@/components/dashboard/WeekAgenda'
 import { ProductList } from '@/components/dashboard/ProductList'
 import { ProductCarousel } from '@/components/dashboard/ProductCarousel'
-import { toIsoInstant, toLocalIsoDate } from '@/lib/date-iso'
+import { parseServerDateTime, serverDateTime, toIsoInstant, toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #518 — Garde de SÉMANTIQUE des dates : une date affichée se rend en
@@ -141,13 +141,16 @@ describe('#518 — SessionList (horodatage avec heure)', () => {
 
   it('rend `lastActivity` en <time> porteur de l’INSTANT complet, pas du seul jour', () => {
     renderList(SESSIONS)
+    // `parseServerDateTime` et non `new Date` : `lastActivity` est un
+    // `LocalDateTime` Java, lu dans le référentiel SERVEUR (correctif S83).
+    const instant = parseServerDateTime('2026-07-05T10:00:00')
     const label = new Intl.DateTimeFormat(LOCALE, {
       dateStyle: 'medium',
       timeStyle: 'short',
-    }).format(new Date('2026-07-05T10:00:00'))
+    }).format(instant)
     const el = timeCarrying(label)
     // Le libellé porte une HEURE : l'attribut doit la porter aussi (`toIsoInstant`).
-    expect(el.getAttribute('datetime')).toBe(toIsoInstant(new Date('2026-07-05T10:00:00')))
+    expect(el.getAttribute('datetime')).toBe(toIsoInstant(instant))
     expect(el.className).toContain('mt-date--long')
   })
 
@@ -205,5 +208,119 @@ describe('#518 — dashboard : agenda et listes produits', () => {
     expect(el).not.toBeNull()
     expect(el?.className).toContain('mt-date--long')
     expect(el?.getAttribute('datetime')).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+
+/**
+ * #518 (correctif S83) — CONVENTION des horodatages NAÏFS du backend.
+ *
+ * `SessionResponse.lastActivity` et `ExportJobResponse.expiresAt` sont des
+ * `LocalDateTime` Java : Jackson les sérialise SANS offset. `SessionList` les
+ * lisait via `new Date(iso)` (fuseau du NAVIGATEUR) là où `ExportDataFlow`
+ * ajoutait `Z` (référentiel SERVEUR, #58) — deux lectures opposées du même
+ * contrat. Les deux passent désormais par `lib/date-iso.ts`.
+ *
+ * POURQUOI CE BLOC FORCE `TZ` : le défaut est un NO-OP en UTC. Un test qui se
+ * contenterait du fuseau ambiant passerait à l'identique AVANT et APRÈS le
+ * correctif sur la CI (Ubuntu = UTC) et ne prouverait donc rien. `Asia/Tokyo`
+ * (UTC+9, aucun DST à aucune date) rend l'écart de 9 h observable et stable.
+ * Node ≥ 16 honore une réaffectation de `process.env.TZ` à chaud (vérifié
+ * Node 22) ; le fuseau d'origine est restauré en `afterAll` pour ne pas
+ * contaminer les blocs suivants du fichier.
+ *
+ * CE QU'IL NE PROUVE PAS : rien sur `ExportDataFlow`, qui exige sa machine à
+ * états et est couvert dans son propre fichier ; ni sur les dates SANS heure
+ * (`LocalDate`, cf. `startDate` des événements), qui relèvent d'une autre
+ * convention et d'un autre arbitrage.
+ */
+describe('#518 — horodatage naïf du backend : lu dans le référentiel SERVEUR', () => {
+  /** Naïf, tel que Jackson l'écrit pour un `LocalDateTime`. */
+  const NAIVE = '2026-07-05T10:00:00'
+  /** Le même instant, explicite. C'est un LITTÉRAL : aucune dépendance au fuseau. */
+  const INSTANT = '2026-07-05T10:00:00.000Z'
+
+  const previousTz = process.env.TZ
+  beforeAll(() => {
+    process.env.TZ = 'Asia/Tokyo'
+  })
+  afterAll(() => {
+    process.env.TZ = previousTz
+  })
+
+  const session = (iso: string): Session => ({
+    id: 'sess-current',
+    deviceInfo: 'Chrome / macOS',
+    ipAddress: '192.168.1.0',
+    lastActivity: iso,
+    createdAt: '2026-07-01T09:00:00',
+    current: true,
+  })
+
+  function renderList(iso: string) {
+    return render(
+      <SessionList
+        sessions={[session(iso)]}
+        isLoading={false}
+        isError={false}
+        revokingId={null}
+        onRevoke={() => {}}
+        onRevokeOthers={() => {}}
+        isRevokingOthers={false}
+      />,
+    )
+  }
+
+  it('le fuseau forcé est bien actif (sans quoi tout ce bloc serait vacant)', () => {
+    // Sentinelle : à Tokyo, l'ANCIENNE lecture (`new Date(iso)`) donne 01:00Z.
+    // Si cette assertion tombe, c'est `process.env.TZ` qui n'a pas pris — et
+    // aucune des assertions suivantes ne discriminerait plus quoi que ce soit.
+    expect(new Date(NAIVE).toISOString()).toBe('2026-07-05T01:00:00.000Z')
+    expect(new Date(NAIVE).toISOString()).not.toBe(INSTANT)
+  })
+
+  it('`parseServerDateTime` lit le naïf en UTC, pas dans le fuseau du navigateur', () => {
+    expect(parseServerDateTime(NAIVE).toISOString()).toBe(INSTANT)
+  })
+
+  it('tolère un offset DÉJÀ présent au lieu de le rendre invalide', () => {
+    expect(parseServerDateTime('2026-07-05T10:00:00Z').toISOString()).toBe(INSTANT)
+    expect(parseServerDateTime('2026-07-05T12:00:00+02:00').toISOString()).toBe(INSTANT)
+    expect(Number.isNaN(parseServerDateTime('pas-une-date').getTime())).toBe(true)
+  })
+
+  it('SessionList : `datetime` nomme l’instant SERVEUR (échouerait avant le correctif)', () => {
+    const { container } = renderList(NAIVE)
+    expect(container.querySelector('time')?.getAttribute('datetime')).toBe(INSTANT)
+  })
+
+  it('SessionList : le libellé visible est la projection LOCALE de cet instant', () => {
+    renderList(NAIVE)
+    // 10:00 UTC = 19:00 à Tokyo. L'ancienne lecture affichait « 10:00 ».
+    const el = timeCarrying(
+      new Intl.DateTimeFormat(LOCALE, { dateStyle: 'medium', timeStyle: 'short' }).format(
+        new Date(INSTANT),
+      ),
+    )
+    expect(el.textContent).toContain('19:00')
+  })
+
+  it('libellé et attribut désignent le MÊME instant, quel que soit le fuseau', () => {
+    // La garde anti-redivergence : c'est `serverDateTime` qui produit les deux,
+    // à partir d'un seul parsing. Un appelant qui reviendrait à `new Date(iso)`
+    // pour l'un des deux casserait cette égalité.
+    const { label, machine } = serverDateTime(NAIVE, LOCALE)
+    const { container } = renderList(NAIVE)
+    const el = container.querySelector('time')
+    expect(machine).toBe(INSTANT)
+    expect(el?.getAttribute('datetime')).toBe(machine)
+    expect(el?.textContent).toBe(label)
+  })
+
+  it('horodatage illisible : chaîne brute affichée, AUCUN `datetime`', () => {
+    const { container } = renderList('pas-une-date')
+    const el = container.querySelector('time')
+    expect(el?.hasAttribute('datetime')).toBe(false)
+    expect(el?.textContent).toContain('pas-une-date')
   })
 })

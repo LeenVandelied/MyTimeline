@@ -40,3 +40,64 @@ export function toIsoInstant(date: Date): string | null {
   if (Number.isNaN(date.getTime())) return null
   return date.toISOString()
 }
+
+/* --------------------------------------------------------------------------
+ * #518 (correctif S83) — Horodatages NAÏFS venus du backend.
+ *
+ * LE CONTRAT : les DTO qui portent une heure l'exposent en `LocalDateTime` Java
+ * (`SessionResponse.lastActivity/createdAt`, `ExportJobResponse.expiresAt` — les
+ * deux SEULS du dépôt, vérifié). Jackson les sérialise SANS offset :
+ * `"2026-07-05T10:00:00"`. Le référentiel est celui du serveur, qui produit ses
+ * `LocalDateTime` via `Clock.systemDefaultZone()` dans un conteneur sans `TZ`,
+ * donc en UTC (`ClockConfig`, `SessionServiceImpl`). C'est la convention déjà
+ * documentée par #58 côté export.
+ *
+ * POURQUOI CE HELPER EXISTE : `new Date("2026-07-05T10:00:00")` — chaîne
+ * date-heure SANS offset — est interprétée par JS dans le fuseau du NAVIGATEUR.
+ * Deux composants lisaient donc le MÊME champ de deux façons opposées
+ * (`ExportDataFlow` ajoutait `Z`, `SessionList` non) : à Tokyo, 9 heures d'écart
+ * sur la même donnée. Le point d'appel ne suffit pas à tenir la convention —
+ * elle vit ici, et les appelants n'ont plus le droit d'appeler `new Date` sur un
+ * horodatage backend.
+ *
+ * TOLÉRANCE : si la chaîne porte DÉJÀ un offset (`Z`, `+02:00`), elle est passée
+ * telle quelle. Le jour où un DTO passera à `Instant`/`OffsetDateTime`, la date
+ * restera juste au lieu de devenir invalide par l'ajout d'un `Z` de trop.
+ * ------------------------------------------------------------------------ */
+
+/** La chaîne porte-t-elle déjà un fuseau explicite (`Z` ou `±HH:MM`) ? */
+const HAS_OFFSET = /(?:Z|[+-]\d{2}:?\d{2})$/i
+
+/**
+ * Horodatage backend naïf → `Date`. La `Date` rendue peut être invalide
+ * (`NaN`) : c'est à l'appelant de replier, comme sur `new Date`.
+ */
+export function parseServerDateTime(iso: string): Date {
+  return new Date(HAS_OFFSET.test(iso) ? iso : `${iso}Z`)
+}
+
+/**
+ * Rendu complet d'un horodatage backend : le LIBELLÉ visible et la valeur de
+ * l'attribut `datetime`, dérivés d'un SEUL parsing — ils ne peuvent donc pas
+ * désigner deux instants différents.
+ *
+ * - `label` : `Intl` dans la locale de l'UI (`dateStyle:'medium'` +
+ *   `timeStyle:'short'`, la forme « avec heure » de `.mt-date--long`), replié sur
+ *   la chaîne brute si l'horodatage est illisible — on ne perd pas la donnée ;
+ * - `machine` : instant complet ISO (UTC) via `toIsoInstant`, ou `null` si
+ *   illisible ; l'appelant passe alors `dateTime={machine ?? undefined}`.
+ */
+export function serverDateTime(
+  iso: string,
+  locale: string,
+): { label: string; machine: string | null } {
+  const date = parseServerDateTime(iso)
+  if (Number.isNaN(date.getTime())) return { label: iso, machine: null }
+  return {
+    label: new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(date),
+    machine: toIsoInstant(date),
+  }
+}

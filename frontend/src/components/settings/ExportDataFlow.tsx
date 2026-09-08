@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select'
 import { useExportFlow } from '@/hooks/useExportFlow'
 import { EXPORT_FORMATS, isSyncFormat, type ExportFormat } from '@/lib/schemas/export'
-import { toIsoInstant } from '@/lib/date-iso'
+import { parseServerDateTime, serverDateTime } from '@/lib/date-iso'
 
 /**
  * #59 — Flux d'export RGPD en 3 étapes (choix format → préparation → téléchargement),
@@ -29,22 +29,16 @@ import { toIsoInstant } from '@/lib/date-iso'
 const FORMAT_OPTIONS: readonly ExportFormat[] = EXPORT_FORMATS
 
 /**
- * Formate une date d'expiration ISO-8601 SANS offset (référentiel serveur, #58) :
- * interprétée comme UTC (suffixe `Z`) puis rendue dans la locale de l'UI.
+ * Le lien de téléchargement async est-il expiré (fenêtre 24h dépassée) ?
+ *
+ * `parseServerDateTime` : `expiresAt` est une date ISO-8601 SANS offset
+ * (référentiel serveur, #58). La convention et son « pourquoi » vivent
+ * désormais dans `lib/date-iso.ts`, pas au point d'appel — c'est ce qui a
+ * laissé `SessionList` en diverger.
  */
-function formatExpiry(iso: string, locale: string): string {
-  const date = new Date(`${iso}Z`)
-  if (Number.isNaN(date.getTime())) return iso
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
-}
-
-/** Le lien de téléchargement async est-il expiré (fenêtre 24h dépassée) ? */
 function isExpired(iso: string | null): boolean {
   if (!iso) return false
-  const date = new Date(`${iso}Z`)
+  const date = parseServerDateTime(iso)
   return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now()
 }
 
@@ -72,7 +66,11 @@ export function ExportDataFlow() {
     return () => clearInterval(id)
   }, [asyncExpiresAt])
 
-  const expired = flow.phase === 'ready' && isExpired(flow.completedJob?.expiresAt ?? null)
+  // `asyncExpiresAt` porte déjà la garde `phase === 'ready'`.
+  const expired = isExpired(asyncExpiresAt)
+  // Libellé et attribut `datetime` dérivés d'un SEUL parsing (ils ne peuvent
+  // donc pas désigner deux instants différents), et calculés une seule fois.
+  const expiry = asyncExpiresAt ? serverDateTime(asyncExpiresAt, locale) : null
 
   return (
     <div className="border-rule max-w-md space-y-4 rounded-md border p-4" data-testid="export-flow">
@@ -189,7 +187,7 @@ export function ExportDataFlow() {
                     </>
                   )}
                 </Button>
-                {flow.completedJob.expiresAt && (
+                {expiry && (
                   <p className="text-ink-muted text-xs" data-testid="export-expiry">
                     {/* #518 — la date vit DANS une phrase ICU : la sortir du message
                         casserait l'ordre des mots (`de` place « ab » APRÈS la date).
@@ -199,15 +197,9 @@ export function ExportDataFlow() {
                         traduction SANS la balise, next-intl rend simplement le texte
                         nu — dégradation, pas d'exception. */}
                     {t.rich('ready.expiresAt', {
-                      date: formatExpiry(flow.completedJob.expiresAt, locale),
+                      date: expiry.label,
                       expiry: (chunks) => (
-                        <time
-                          className="mt-date--long"
-                          dateTime={
-                            toIsoInstant(new Date(`${flow.completedJob?.expiresAt ?? ''}Z`)) ??
-                            undefined
-                          }
-                        >
+                        <time className="mt-date--long" dateTime={expiry.machine ?? undefined}>
                           {chunks}
                         </time>
                       ),
