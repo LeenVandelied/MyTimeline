@@ -245,7 +245,14 @@ describe('#518 — horodatage naïf du backend : lu dans le référentiel SERVEU
     process.env.TZ = 'Asia/Tokyo'
   })
   afterAll(() => {
-    process.env.TZ = previousTz
+    // ⚠ `process.env.TZ = undefined` N'EFFACE PAS la variable : Node coerce en la
+    // CHAÎNE "undefined", qui n'est pas une zone valide et retombe sur UTC. Or `TZ`
+    // n'est settée ni en CI ni dans un shell local, donc `previousTz` vaut presque
+    // toujours `undefined` — la restauration naïve contaminait silencieusement tout
+    // test suivant du même worker qui compte sur le fuseau AMBIANT.
+    // Mesuré : affectation de `undefined` -> getTimezoneOffset() 0 au lieu de -120.
+    if (previousTz === undefined) delete process.env.TZ
+    else process.env.TZ = previousTz
   })
 
   const session = (iso: string): Session => ({
