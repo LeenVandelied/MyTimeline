@@ -25,8 +25,10 @@ Aucun flux cross-system (2+ systèmes/rôles) dans ce sprint : **aucun E2E méti
 
 ## Résultats des runs
 
-**Unitaires / build / typecheck / lint** — `./scripts/test-quiet.sh frontend` complet :
-**1385 / 1385, exit 0** (base d'entrée du sprint : 1350 ; +35).
+**Unitaires / build / typecheck / lint** — `./scripts/test-quiet.sh frontend` complet,
+**rejoué par le lead** après le correctif de review `75f37c4` :
+**1392 / 1392 (121 fichiers), exit 0** — build + vitest + typecheck + lint.
+Base d'entrée du sprint : 1350 ; +42.
 Backend : **non exécuté — le sprint ne touche aucun fichier backend**
 (`git diff --name-only origin/dev..HEAD | grep -c '^backend/'` → **0**).
 
@@ -88,6 +90,36 @@ applicatif n'a pas été touché — le diagnostic navigateur du lead avait éta
 - **Métriques de largeur du header mesurées sur macOS**, pas sur l'image jammy de la CI, qui est
   ce qui fait basculer les budgets (`landing-header-logo.spec.ts` tranchera).
 - **Aucune garde automatique** n'attrapera un futur composant rendant une date en `<span>`.
+
+## Correctifs issus de la review (cycle 1) — et leur vérification
+
+Le cycle 1 a rendu **0 CRITIQUE / 1 MAJEUR / 2 MINEUR**.
+
+**Le MAJEUR — convention des horodatages naïfs (`75f37c4`).** Le backend expose `LocalDateTime`
+sur `SessionResponse` et `ExportJobResponse`, donc des chaînes ISO **sans offset**.
+`ExportDataFlow` les lisait en UTC (convention documentée #58) ; `SessionList` faisait
+`new Date(iso)`, soit **l'heure locale du navigateur**.
+*Attribution corrigée par le lead* : `formatDate` de `SessionList` est **inchangé depuis avant
+#518** (vérifié contre `origin/dev`) — le défaut est **pré-existant**, et le libellé s'accordait
+avec l'attribut. Ce qui a changé, c'est que #518 promeut ce décalage en **affirmation lisible par
+la machine**, ce qui contredit l'objet même de l'issue.
+Correctif : `parseServerDateTime` / `serverDateTime` dans `lib/date-iso.ts`, convention documentée
+**dans le helper** et non au point d'appel (c'est l'absence de point unique qui avait permis la
+divergence). 7 tests ajoutés sous `TZ='Asia/Tokyo'`, avec contre-épreuve : en remettant l'ancien
+`new Date(iso)`, **4 tests rougissent en fuseau local et 3 sous `TZ=UTC`** — la garde discrimine
+donc même dans les conditions de la CI, où le défaut serait autrement un NO-OP.
+**Impact utilisateur assumé** : l'heure de « dernière activité » change sur Réglages > Sécurité,
+du décalage local du navigateur. C'est une correction de bug — l'ancienne valeur était fausse.
+
+**Les 2 MINEUR** : le double parsing d'`ExportDataFlow:207` est traité dans le même commit ; la
+duplication des 2 bascules de thème en ligne (`AppShell`, `MobileDrawer`) reste en follow-up.
+
+**Vérification E2E ciblée après correctif** : `settings-security.spec.ts` +
+`landing-auth-theme-toggle.spec.ts` → **19 passed, exit 0**.
+⚠ Un premier passage avait rendu 4 rouges : le serveur `next dev` s'était dégradé
+(`/fr/login` = **500** pendant que `/api/auth/me` restait à **401** — piège S81, d'où l'intérêt de
+sonder les **deux** oracles). Après redémarrage, vert. Ces 4 rouges n'avaient rien à voir avec le
+correctif.
 
 ## Conclusion
 **Prêt pour PR**, sous deux réserves explicites et tracées :
