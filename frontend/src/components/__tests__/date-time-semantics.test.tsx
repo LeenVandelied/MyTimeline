@@ -211,7 +211,6 @@ describe('#518 — dashboard : agenda et listes produits', () => {
   })
 })
 
-
 /**
  * #518 (correctif S83) — CONVENTION des horodatages NAÏFS du backend.
  *
