@@ -77,4 +77,11 @@ Signalé, ni corrigé ni contourné.
 - `[MEMORY:decision]` La piste « testid faux » du lead est **infirmée** : une énumération DOM ne
   voit pas un élément monté conditionnellement. L'absence au balayage ne réfute pas le testid.
 
+## Recommandations suite
+- Pas de `RECOMMAND_TEST_RUNNER` : la spec a été jouée 6 fois par l'agent, puis rejouée
+  indépendamment par le lead (`settings-security` + `landing-auth-theme-toggle` → 19 passed).
+- Pas de `RECOMMAND_UI_DESIGN` : correctif de spec uniquement, aucun rendu modifié.
+- `RECOMMAND_FOLLOWUP` : aucun nouveau — le défaut applicatif signalé (bascule inopérante avant
+  hydratation) est inhérent à `setTheme` et ne justifie pas d'issue.
+
 STATUS: COMPLETED
