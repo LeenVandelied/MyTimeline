@@ -327,3 +327,40 @@ test.describe('#575 — détail produit', () => {
     expect(cb!.y, 'le compteur est AU-DESSUS du titre').toBeLessThan(hb!.y)
   })
 })
+
+/* ------------------------------ SALUT + CTA, MOBILE PORTRAIT (non-régression) */
+
+test.describe('#575 — salut et CTA « Nouveau produit » à 375 px', () => {
+  test.use({ viewport: { width: 375, height: 812 } })
+
+  // `GreetingHeader` partage sa rangée avec le CTA `nowrap` : sans `min-w-0` +
+  // `break-words`, un nom sans espace impose sa largeur min-content et pousse le CTA
+  // hors de l'écran (mesuré : page à 390 px en fr, 377 px en de — plus large en
+  // français, donc indépendant de la locale). Le français est le pire cas mesuré.
+  test('le CTA reste dans l’écran quand le nom est un jeton insécable', async ({ page }) => {
+    await openDashboard(page, 'fr')
+    await expect(page.getByTestId('dashboard-mobile-portrait')).toBeVisible()
+
+    // Précondition anti-vacuité : ce test ne prouve quelque chose QUE si le salut
+    // porte un jeton long. Les comptes E2E ont un identifiant de ~13 chiffres
+    // (PIT-S63-013) ; si la fixture change, ce test doit le dire, pas passer à vide.
+    const longest = await page
+      .getByTestId('dashboard-greeting')
+      .locator('h1')
+      .evaluate((el) => Math.max(...(el.textContent ?? '').split(/\s+/).map((w) => w.length)))
+    expect(
+      longest,
+      'précondition : un jeton d’au moins 14 caractères dans le salut',
+    ).toBeGreaterThanOrEqual(14)
+
+    const box = await page.getByTestId('add-product-button').boundingBox()
+    expect(box, 'CTA rendu').not.toBeNull()
+    expect(box!.x + box!.width, 'CTA poussé hors de l’écran').toBeLessThanOrEqual(375)
+
+    const doc = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }))
+    expect(doc.scrollWidth, 'débordement horizontal de page').toBeLessThanOrEqual(doc.clientWidth)
+  })
+})
