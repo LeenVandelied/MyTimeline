@@ -5978,9 +5978,9 @@ est mergée depuis le 2026-09-06 et sa ligne `Status` dit « Terminé » — tit
 **Status :** Terminé — PR #650 mergée le 2026-09-11 (`92f42c2`), milestone #84 fermé ; titre et
 Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 84 — 2026-09-11 → 2026-09-11 (EN CLÔTURE — PR #662 ouverte, cohésion 0.40, Charte : palette unique et titres de section)
+### Sprint 84 — 2026-09-11 → 2026-09-11 (Terminé — merge PR #662 dans dev, commit `6ef408c`, cohésion 0.40, Charte : palette unique et titres de section)
 **Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres ; en tête, MAJ `next`/`sharp` (P0)
-**Milestone GitHub :** #85 (4 issues, aucune héritée — à fermer APRÈS le merge)
+**Milestone GitHub :** #85 (fermé ; 4 issues, aucune héritée, toutes fermées après le merge)
 **Issues livrées (4) :** #651, #577, #575, #634
 **Vagues exécutées :** V0 = #651 seule (bump de dépendances = runtime partagé, jouée par le lead) | V1 (parallèle, fichiers disjoints) = #577 (opus) + #575 (opus) + #634 (sonnet) | correctifs post-vague = orchidée + suppression `EventContent` (1 agent sonnet) + débordement du salut (lead)
 **Cohésion score :** 0.40
@@ -6008,9 +6008,9 @@ Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
   - Frontière de commit `EventContent` → **discard** (documentée PR #662 + PIT-S57-001)
   Ratio : 6 issues / 3 commentaires / 3 discards / 0 absorbé en clôture (2 absorbés pendant le sprint, cf. ci-dessus).
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #662 ouverte, CI requise verte ; titre et Status à solder au `/sprint start 85` (variante S57 : zéro PR supplémentaire).
+**Status :** Terminé — PR #662 mergée le 2026-09-11 (`6ef408c`), milestone #85 fermé, #651/#577/#575/#634 fermées ; titre et Status soldés au `/sprint start 85` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 85 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
+### Sprint 85 — 2026-09-11 → en cours (EN COURS — cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
 **Objectif :** Filtres par catégorie, légende, pliage global, pastille/compteur, boutons Aujourd'hui et Nouvel événement
 **Milestone GitHub :** #86
 **Issues (3) :** #592, #601, #602
@@ -6019,7 +6019,12 @@ Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 **Dépend de :** Sprint 84 (#601 consomme la palette unifiée par #577)
 **Avertissement d'orchestration :** sprint **mono-fichier** (`TimelineView.tsx`, 58 Ko).
 Chemin critique de 7 points en série — **ne pas lui affecter 3 agents**.
-**Status :** Planifié
+**Démarrage (2026-09-11) :** maquette `Vue Timeline.dc.html` lue par le lead
+(`sprints/sprint-85/maquette-vue-timeline.md`) ; 6 décisions DEC-S85-001 → 006
+(`sprints/sprint-85/decisions-demarrage.md`, 4 arbitrées par le dev). Écart d'énoncé
+majeur trouvé : `TimelineView` est monté par 3 écrans (frise, dashboard, fiche produit) —
+sidebar et boutons en opt-in `/timeline` (DEC-S85-005).
+**Status :** En cours
 
 ### Sprint 86 — 2026-09-07 (PLANIFIÉ — cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
 **Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie de bout en bout, hint de plafond exact
