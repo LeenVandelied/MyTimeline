@@ -5341,7 +5341,7 @@ AJOUTENT des tests.
 
 **15 issues, 35 points, cohésion globale 0.363. Aucune migration Flyway — V16 reste libre.**
 
-### Sprint 78 — 2026-09-06 (EN COURS — cohésion 0.28, Les gates de vérification mentent)
+### Sprint 78 — 2026-09-06 (Terminé — merge PR #538 dans dev — cohésion 0.28, Les gates de vérification mentent)
 **Objectif :** trancher trois contrôles verts qui ne prouvent pas ce qu'ils prétendent.
 **Milestone GitHub :** #79
 **Issues :** #528, #434, #169
@@ -5912,18 +5912,71 @@ les issues #592-#644), `docs/design/graphite-handoff.md`, `docs/memory/decisions
 des sprints précédents, ce signal ne prouve rien — l'architect a vérifié chaque issue retenue
 directement dans le code (résultat : 11 énoncés démentis, voir plus bas).
 
-### Sprint 83 — 2026-09-07 → 2026-09-08 (EN COURS — cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
+### Sprint 83 — 2026-09-07 → 2026-09-11 (EN CLÔTURE — PR #650 ouverte, cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
 **Objectif :** Fondation de charte (nav active, filet vs ombre, bascule de thème) + sémantique `<time>`
-**Milestone GitHub :** #84
-**Issues (4) :** #578, #574, #642, #518
-**Vagues :** V1 = #518 ∥ #578 (fichiers disjoints) | V2 = #574 | V3 = #642
-**Migrations :** aucune
-**Dépend de :** aucune (sprint de fondation)
-**Effort :** 10 points — **exception au plafond de 3 issues/sprint, actée par le dev** :
-#518 (P1, seule P1 du lot) a été placée ici sur demande explicite. Elle traverse ~15
-composants et entre en conflit avec presque tous les sprints suivants ; la placer en tête
-évite les reprises.
-**Status :** En cours (démarré 2026-09-08)
+**Milestone GitHub :** #84 (à fermer APRÈS le merge)
+**Issues livrées (4) :** #578, #518, #574, #642 — à fermer APRÈS le merge (dev protégée)
+**Vagues exécutées :** V1 = #518 ∥ #578 | V2 = #574 | V3 = #642 — conformes au plan
+**Migrations :** aucune · **Fichiers backend touchés :** 0
+**Effort :** 10 points — exception au plafond de 3 issues, actée par le dev au plan
+**Cohésion :** 0.53
+**Commits :** 21 sur la branche (9 de code/test, 12 de documentation/orchestration) —
+`3a18e7f` #578 · `dcfa62e` #518 · `ca788e1` #574 · `ef8581e` #642 · `9ccd798` spec E2E de #642 ·
+`75f37c4` + `17b2d6a` correctifs de review (#518) · `b71c257` prettier · `ca9a747` 8 références
+visuelles régénérées · `ed904a1` doc DS (#578)
+**BR impactées :** aucune (conformité de charte + sémantique HTML)
+**Reviews :**
+- cycle 1 (sprint complet) — 0 CRITIQUE / 1 MAJEUR / 2 MINEUR, **tous traités** (MAJEUR : deux
+  lectures opposées des `LocalDateTime` backend → `75f37c4`) ;
+- cycle 2 (commits correctifs seuls) — 0 CRITIQUE / 1 MAJEUR / 1 MINEUR, **tous traités**
+  (MAJEUR : `process.env.TZ = undefined` contaminait les tests suivants → `17b2d6a`) ;
+- `ui-design` de clôture — 2 ÉCART / 3 CONFORME / 1 INDÉTERMINÉ. L'ÉCART sur #578 s'est révélé
+  **infondé** : la maquette (`App.dc.html`) donne raison au code, c'est la doc du DS qui était
+  fausse (`ed904a1`). L'INDÉTERMINÉ (cartes auth) a été tranché au navigateur.
+**Tests :** Frontend 1392/1392 (build + vitest + typecheck + lint), rejoué par le lead ·
+E2E CI 317 passed puis **vert** après régénération des 8 références · Backend : CI verte, non modifié
+**Artefacts :** `docs/memory/sprints/sprint-83/` (5 `done.md`, `verification-ui-design-et-tests.md`,
+`test-runner-par-le-lead.md`) · `docs/memory/audits/sprint-83-test-coverage.md`
+
+**Ce que la clôture a changé par rapport à la PR telle qu'ouverte :**
+- la CI a rougi `frontend` sur `prettier --check` (fichier de `75f37c4`) : `test-quiet.sh` n'exécute
+  pas `format:check` → `b71c257`, issue #660 ;
+- la CI a rougi `e2e` sur **8** références (et non 10 comme l'annonçait #574) : chaque carte auth
+  +2px, exactement le filet ajouté → régénérées sur l'image **noble** du runner (`ca9a747`),
+  rejouées 2 × 11/11 armement compris, CI verte ;
+- le rouge local `sprint-82-recurrence-capped-hint` venait bien d'une image backend antérieure de
+  4 jours à la fonctionnalité : **vert en CI** ;
+- `security` est rouge sur la PR **et sur dev** : avis critiques `next` < 15.5.24 (RCE non
+  authentifiée) + `sharp` HIGH, publiés pendant le sprint, sans lien avec son code → #651 (P0) ;
+- les 7 signaux `RECOMMAND_UI_DESIGN`/`TEST_RUNNER` que `check-sprint-completeness.sh` bloquait
+  étaient, pour les 4 `UI_DESIGN`, **réellement non traités** : revue de charte + vérification
+  navigateur faites à la clôture (contrastes mesurés, focus clavier, lisibilité des cartes).
+
+**Nouveaux pitfalls :** PIT-S83-001 → 015 (+ PIT-S81-024 re-confirmé) · **Patterns :** PAT-S83-001 → 007 ·
+**Décisions :** DEC-S83-001 → 005 · **Bugs résolus :** 2 (`WeekAgenda` publiait un autre jour que
+l'affiché ; `SessionList` décalé du fuseau navigateur) · Packs `pit-*` régénérés (`--check` vert).
+
+**Follow-ups arbitrés (Phase 4 — option « appliquer les recommandations », validée par le dev) :**
+  - MAJ `next` ≥ 15.5.24 + `sharp` ≥ 0.35.4 (RCE critique) [S | devops] → **#651, P0, milestone + label Sprint 84**
+  - `LocalDate` affiché au jour précédent à l'ouest de Greenwich, 5 écrans [S | events] → #652 (P1)
+  - Préférence de thème au niveau du compte (2 critères non tenus de #642) [M | fullstack] → #653
+  - Verrouiller la zone du backend en UTC [XS | backend] → #654
+  - Unifier les 3 bascules de thème [S | design] → #655
+  - Bannière réseau qui recouvre langue/thème (antérieur au sprint) [XS | design] → #656
+  - `shadow-xs` des cartes auth, inerte en sombre [XS | design] → #657
+  - Vérif navigateur des écrans authentifiés du sprint [XS | design] → #658
+  - Dates en `title`/`aria-label` [XS | transversal] → #659
+  - `format:check` dans `test-quiet.sh` [XS | devops] → #660
+  - Pack `cp-frontend.md` périmé [XS | devops] → #661
+  - Casse des libellés de nav, confirmée par la maquette → **commentaire sur #575**, pas d'issue
+  - `.mt-date--short` inutilisée → **commentaire sur #517** (à requalifier), pas d'issue
+  - Régénération des références PNG → **absorbé** (`ca9a747`)
+  Ratio : 11 issues / 2 commentaires / 1 absorbé / **0 discard**.
+**Correction de dérive au passage :** titre du Sprint 78 resté « EN COURS » alors que sa PR #538
+est mergée depuis le 2026-09-06 et sa ligne `Status` dit « Terminé » — titre corrigé.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #650 ouverte, CI requise verte, merge autorisé par le dev ; titre et
+Status à solder au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 
 ### Sprint 84 — 2026-09-07 (PLANIFIÉ — cohésion 0.40, Charte : palette unique et titres de section)
 **Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres
@@ -5936,6 +5989,8 @@ composants et entre en conflit avec presque tous les sprints suivants ; la place
 palette. Ni l'issue ni l'audit ne tranchent. Sans cet arbitrage, le sprint livre une palette
 cohérente et des données incohérentes.
 **Status :** Planifié
+
+**Ajout post-plan (clôture S83, décision du dev) :** #651 — MAJ `next` ≥ 15.5.24 + `sharp` (avis critiques, P0), rattachée au milestone et au label `sprint-84`, **à traiter en tête**. Hors du périmètre de l'architect : pas de mini-plan dans `architect-plans.md` ; vérifier au démarrage son absence de conflit avec les 3 issues planifiées (bump de dépendance = runtime partagé, cf. [[sprint-wave-shared-frontend-runtime]]).
 
 ### Sprint 85 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
 **Objectif :** Filtres par catégorie, légende, pliage global, pastille/compteur, boutons Aujourd'hui et Nouvel événement

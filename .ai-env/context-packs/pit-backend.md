@@ -670,6 +670,30 @@ Un contrôle négatif qui mute le code de production doit prouver sa restauratio
 L'heuristique de la Phase 8 balaie tous les `*.tsx` ajoutés, `.test.tsx` compris. Au S82 elle a signalé `mock-picker` en MAJEUR : c'est le testid d'un **composant mocké dans un test unitaire**, préexistant dans `EventEditForm.test.tsx`, sans aucune surface produit derrière. Le risque n'est pas le faux positif lui-même mais la réaction qu'il induit — écrire une spec E2E factice pour faire taire le check, ce qui ajoute du vert sans ajouter de preuve. Le check reste par ailleurs faible dans l'autre sens : il vérifie qu'un testid est **cité**, pas qu'une spec passe ([[coverage-check-vert-ne-prouve-rien]]). Filtrer `*.test.tsx` / `__tests__/` avant de conclure. (Sprint 82, Phase 8)
 
 
+## PIT-S83-005 — `test-quiet.sh frontend` n'exécute PAS `format:check`, que la CI exige
+Au S83, une double ligne vide introduite par `75f37c4` a traversé l'agent (build + vitest + typecheck + lint) puis le lead (`test-quiet.sh` : 1392/1392, exit 0) — et a rougi le job CI `frontend` sur `prettier --check`. Le verdict local ne couvrait pas toutes les étapes du job. Aggravant : sous RTK, `npx prettier --check <fichier>` renvoie « All files formatted correctly » **alors que le fichier est fautif** ; seul `rtk proxy npm run format:check` a dit vrai. Tant que `test-quiet.sh` n'intègre pas `format:check`, le lancer à part avant tout push. (Sprint 83, clôture)
+
+
+## PIT-S83-008 — Un `LocalDateTime` Java arrive SANS offset, et `new Date(iso)` le lit dans le fuseau du NAVIGATEUR
+`SessionResponse.lastActivity/createdAt` et `ExportJobResponse.expiresAt` sont des `LocalDateTime` : Jackson écrit `2026-07-05T10:00:00`. `ExportDataFlow` ajoutait `Z` (référentiel serveur, #58), `SessionList` faisait `new Date(iso)` — deux lectures opposées du même contrat, dont une fausse du décalage local. Défaut **pré-existant**, promu par #518 en affirmation lisible par la machine (`<time dateTime>`). Passer par `parseServerDateTime` / `serverDateTime` de `lib/date-iso.ts`. ⚠ Rien ne verrouille la zone du backend en UTC (`Clock.systemDefaultZone()`, aucun `TZ` conteneur) : la convention repose sur un défaut Docker implicite. (Sprint 83 #518, review cycle 1)
+
+
+## PIT-S83-011 — Un énoncé d'issue peut être faux alors que la plupart de ses références sont justes
+#518 nommait 5 composants à migrer ; 4 étaient justes, mais `CompactAgenda` n'affiche **aucune** date (documenté dans son en-tête depuis #83), `ProductsListView:295` est un `<td>` et `SessionList` un `<p>`. Le mini-plan architect se trompait lui aussi, dans l'autre sens (3 `<time>` comptés au lieu de 2, en incluant un fichier de test). Au même sprint, #574 annonçait 8 surfaces et 1 inversion de survol (il y en avait 9 et 2), puis 10 références visuelles invalidées (la CI en a rougi 8), et #642 reposait sur une préférence de thème « de compte » qui n'existe pas en base. Relire **chaque** élément nommé avant de briefer. (Sprint 83)
+
+
+## PIT-S83-012 — Une image de backend e2e se date ; une sonde HTTP, elle, ne prouve pas l'existence d'une route
+Au S83, `sprint-82-recurrence-capped-hint` échouait en local. L'image du conteneur backend (`docker inspect --format '{{.Created}}'`) datait du 2026-08-30 ; le flag `capped` a été livré le 2026-09-03 (`ba8f585`) : l'image ne **pouvait pas** contenir la fonctionnalité. La CI l'a confirmé (vert). La sonde HTTP, elle, ne tranchait rien : le filtre de sécurité rend **401 pour toute route non authentifiée, existante ou non** (calibré sur une route inventée). Dater l'image contre le commit de la fonctionnalité ; ne pas conclure d'un 401. (Sprint 83, Phase 6)
+
+
+## PIT-S83-013 — `check-sprint-completeness.sh` détecte la trace d'un spécialiste par NOM de fichier, pas par contenu
+La règle `ls "$SPRINT_DIR" | grep -E "test-runner"` est satisfaite par n'importe quel fichier bien nommé, vide compris ; inversement, un artefact complet qui traite un signal mais s'appelle autrement laisse le signal « non traité ». Au S83, un fichier `verification-ui-design-et-tests.md` a levé les 4 signaux `UI_DESIGN` mais aucun des 3 `TEST_RUNNER`, bien qu'il en contînt les résultats. Nommer l'artefact d'après le spécialiste **et** y mettre la preuve réelle ; ne jamais créer un fichier vide pour faire taire le contrôle. (Sprint 83, clôture)
+
+
+## PIT-S83-015 — RTK corrompt la sortie BINAIRE de `git show`
+Lire les dimensions d'un PNG versionné par `git show HEAD:<png> | python …` a rendu `1146224640x32489405` : le flux binaire est altéré par le hook. `rtk proxy git show HEAD:<png>` rend les vraies dimensions (448×430). À appliquer à toute sortie binaire, en plus des cas déjà connus (`git diff` vide, `--reporter=line` réécrit en JSON). (Sprint 83, clôture)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
