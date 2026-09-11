@@ -1,142 +1,79 @@
-# Sprint 83 — Charte : surfaces, navigation, thème + sémantique des dates
+# Sprint 85 — Frise : sidebar de catégories et barre d'outils
 
-Milestone [Sprint 83](https://github.com/LeenVandelied/MyTimeline/milestone/84) · cohésion 0.53 · 10 points · **aucune migration, aucun fichier backend**
-
-Sprint de fondation sur l'écart maquette ↔ production relevé par l'audit du 7 septembre, plus une dette de sémantique HTML.
+Écart maquette ↔ produit sur l'écran cœur. Les trois issues écrivent dans le même
+`TimelineView.tsx` : sprint **sérialisé**, un agent par vague.
 
 ## Issues traitées
 
-| # | Titre | Vague | Commit |
-|---|---|---|---|
-| #578 | Nav active : le précédent interne a remplacé la maquette (cause racine) | V1 | `3a18e7f` |
-| #518 | ~15 composants rendent des dates dans un `<span>` au lieu d'un `<time datetime>` | V1 | `dcfa62e` |
-| #574 | Ombre au repos contre filet 1px : surfaces hors charte | V2 | `ca788e1` |
-| #642 | Exposer la bascule de thème hors connexion (DEC-S82-009) | V3 | `ef8581e` + `9ccd798` |
-
-Plus deux commits issus de la review : `75f37c4` (convention des horodatages naïfs) et
-`17b2d6a` (contamination du fuseau entre tests).
+| # | Titre | Commit |
+|---|---|---|
+| #592 | Frise : sidebar absente — filtres par catégorie, légende et pliage global | `6f0c3eb` |
+| #601 | Frise : en-têtes de catégorie sans pastille ni compteur, et repli qui n'affiche rien | `a604e99` |
+| #602 | Frise : ni bouton Aujourd'hui ni bouton Nouvel événement dans la barre d'outils | `a2a3fce` |
+| — | Correctif de revue : hiérarchie en-tête de catégorie / lane | `1fb477a` |
 
 ## Changements clés
 
-**#578 — la cause racine est corrigée à la source.** `SettingsShell.tsx` avait introduit
-`bg-accent-soft text-accent` sans référence à une maquette ; `AppShell.tsx` l'avait recopié *et
-documenté en commentaire comme référence*. Les deux passent à la pilule graphite pleine, le CTA
-sidebar retrouve le bleu accent, et le commentaire ne désigne plus un composant frère comme
-source de vérité visuelle.
+- **Sidebar de la Vue Timeline** (`TimelineSidebar.tsx`, nouveau) : accordéons « Tout déplier /
+  Tout plier », filtres par catégorie (état `hiddenCats`, **distinct** du repli `collapsed`),
+  légende, raccourcis clavier. Permanente ≥ 1024 px, repliée derrière un bouton « Filtres »
+  en dessous (panneau superposé, Échap et clic extérieur, focus rendu).
+- **Filtrage en amont de la géométrie** : `visibleGroups` alimente `buildVerticalModel`,
+  `navLanes` (coordonnées clavier #81), le rendu et la minimap ; `hiddenCats` entre dans
+  `geometryKey`. C'était le risque principal identifié au plan.
+- **En-tête de catégorie** : pastille de couleur, compteur de produits, résumé compact quand la
+  catégorie est repliée (barrettes fenêtrées, mêmes coordonnées que les pastilles). Hauteur
+  fixée à 40 px, identique pliée et dépliée (la virtualisation mesure cette hauteur).
+- **Barre d'outils** : boutons « Aujourd'hui » et « Nouvel événement ». Ce dernier ouvre le
+  drawer **du shell** via un contexte (`CreateEventContext`) : un seul état, un seul drawer.
+- **Opt-in `/timeline`** : `TimelineView` est monté par trois écrans (frise, dashboard, fiche
+  produit) ; la sidebar et les deux boutons ne s'affichent que sur l'écran frise
+  (prop `layout="screen"`). L'en-tête de catégorie, partagé, change sur les trois.
 
-**#518 — le recensement de l'issue était partiellement faux.** 14 composants concernés (pas ~15),
-**12 migrés**, 3 hors d'atteinte (dates uniquement en `title`/`aria-label`). `CompactAgenda`,
-nommé par l'issue, n'affiche aucune date. Le nouveau `src/lib/date-iso.ts` corrige un défaut réel
-au passage : `WeekAgenda` posait `toISOString()`, donc l'attribut `datetime` pouvait nommer un
-autre jour que le libellé. Premier `t.rich` du dépôt pour la date en milieu de phrase ICU
-(l'allemand postpose « ab »).
+## Défauts trouvés en chemin, corrigés
 
-**#574 — 9 surfaces, pas 8**, et **2 inversions de survol, pas 1** (`TestimonialCard` en avait une
-via `landing.css`, invisible dans le `.tsx`). Surtout : le locator `AUTH_CARD` de
-`sprint-77-theme-visual.spec.ts` était **ancré sur la `shadow-lg` que l'issue retire** — les 8
-tests auth seraient tombés en « élément introuvable », pas en écart de pixels. Réancré sur
-l'invariant de charte.
+- **Libellé de catégorie qui sortait de l'écran** au défilement horizontal (`position:sticky` sur
+  une boîte aussi large que son conteneur) — antérieur au sprint, révélé par la pastille.
+- **Minimap écrasée à 9 px** par les nouveaux boutons à 1024 px, sans débordement visible pour
+  le signaler (`flex:1; min-width:0` absorbe tout le manque de place).
+- **Hiérarchie perdue** entre en-tête de catégorie et en-tête de lane (même fond, même graisse)
+  après #601 : la maquette les distingue par le fond, la graisse et un retrait.
 
-**#642 — périmètre réduit, en connaissance de cause.** Les points 2 et 3 du motif de persistance
-supposent une préférence de thème **au niveau du compte**, qui n'existe pas
-(`grep -ri theme backend/src/main/java` → 0 ; 0 migration ; `types/settings.ts:36` l'écrit en
-clair). Livré : l'exposition du contrôle (landing desktop + menu mobile + 4 pages auth), la
-persistance locale, et l'anti-flash. Non livré et signalé en follow-up : la préférence de compte.
+## Décisions (DEC-S85-001 → 006)
 
-## BR impactées
+Arbitrées au démarrage, détail dans `docs/memory/sprints/sprint-85/decisions-demarrage.md` :
+compteur d'en-tête = nombre de **produits** (maquette) ; légende limitée aux marques réellement
+rendues (les occurrences fantômes et le glyphe ↻ viennent avec #595) ; bouton de création masqué
+sous 768 px là où le shell a son bouton flottant ; sidebar repliée sous 1024 px ; opt-in
+`/timeline` ; couleur de catégorie issue de `product.category.color`, contour neutre si absente.
 
-**Aucune.** Les 4 issues portent « BR impactées : Aucune » — conformité à la charte et sémantique
-HTML, pas de règle métier.
+**Écarts à la maquette assumés** (revue de charte : 8 conformes, 1 écart, tous tracés dans les
+`issue-*-done.md`) : l'état « catégorie masquée » est barré en encre lisible au lieu d'une
+opacité de 40 % (2,52:1 → 6,11:1) ; le texte de sidebar utilise `ink-muted` et non `ink-faint`
+(2,82:1). L'écart restant — gouttière à 168 px au lieu de 176 — touche une constante partagée
+hors périmètre : suite dédiée.
 
 ## Tests
 
-- **Unitaires / build / typecheck / lint** : `./scripts/test-quiet.sh frontend` → **1392 / 1392
-  (121 fichiers), exit 0** (base d'entrée 1350).
-- **E2E Playwright**, suite complète jouée en local (recette worktree, webpack) :
-  **314 passed / 11 failed / 8 skipped**.
-- Backend **non exécuté** : le sprint ne touche aucun fichier backend (`git diff --name-only
-  origin/dev..HEAD | grep -c '^backend/'` → **0**).
+- **Frontend** : `next build` 52/52 pages · **1511 tests unitaires** (127 fichiers) · typecheck ·
+  lint · `format:check` — tous verts, mesurés par le lead.
+- **E2E**, base e2e recréée à vide : **370 passés / 8 sautés / 1 échec en 6,9 min**. L'échec est
+  le contrôle d'armement de `sprint-77-theme-visual`, qui échoue mécaniquement sur macOS
+  (références suffixées `-chromium-linux`) : c'est la CI Linux qui juge le visuel.
+- **Backend** : aucune ligne modifiée.
+- Audit complet : `docs/memory/audits/sprint-85-test-coverage.md`.
 
-Audit détaillé : `docs/memory/audits/sprint-83-test-coverage.md`.
+## Revues
 
-### ⚠ Deux rouges E2E attendus, aucun n'est une régression
+- **Code** (batch, diff complet) : 0 CRITIQUE / 0 MAJEUR / 3 MINEUR — aucun ne justifie une
+  correction de code ; le plus utile (une garde E2E qui ne protège pas l'invariant qu'elle croit
+  tester) part en suite.
+- **Charte** : 8 CONFORME / 1 ÉCART / 1 INDÉTERMINÉ ; l'indéterminé a été tranché par le lead sur
+  la maquette et corrigé (`1fb477a`).
+- **Vérification navigateur du lead** : `/timeline` en clair et en sombre, filtre, repli et
+  résumé, panneau « Filtres » à 900 px, dashboard sans sidebar ni boutons, anneau de focus
+  obtenu par une vraie tabulation (2 px, `:focus-visible`).
 
-**10 × `sprint-77-theme-visual.spec.ts`** — sur macOS, message `A snapshot doesn't exist …
--chromium-darwin.png` (et **non** `did not match`) : ces 10 écrans n'ont que des références
-`-chromium-linux.png`, donc la suite échoue localement quel que soit le code. **Aucun snapshot
-n'a été régénéré** et les PNG darwin produits ont été supprimés.
-**Conséquence à assumer : l'invalidation des 10 références par #574 n'est ni confirmée ni
-infirmée en local — c'est cette CI qui tranche.** Si ce spec est rouge ici, il faudra régénérer
-ses références **sur Linux** après merge.
-
-**1 × `sprint-82-recurrence-capped-hint.spec.ts`** — le backend e2e local utilisé provient d'une
-image construite le **2026-08-30**, alors que le flag `capped` a été livré le **2026-09-03**
-(`ba8f585`) : l'image ne peut pas contenir la fonctionnalité. La CI, qui construit le backend
-depuis la branche, doit le rendre vert.
-
-### Un défaut réel trouvé et corrigé
-
-La spec E2E de #642 **n'avait jamais été exécutée** et tombait **6 fois sur 11**. Cause racine :
-**un clic Playwright sur un bouton visible et activé mais non hydraté est un NO-OP silencieux**.
-Corrigé côté spec (`9ccd798`, barrière d'hydratation sur `aria-pressed`), composant applicatif
-non touché — un diagnostic navigateur avait d'abord établi qu'il fonctionnait.
-**6 exécutions consécutives, 0 échec.**
-
-## Review — deux cycles
-
-**Cycle 1 (sprint complet) : 0 CRITIQUE / 1 MAJEUR / 2 MINEUR.**
-
-Le MAJEUR : le backend expose `LocalDateTime` (chaînes ISO **sans offset**) sur
-`SessionResponse` et `ExportJobResponse` ; `ExportDataFlow` les lisait en UTC (convention
-documentée #58), `SessionList` en **heure locale du navigateur**. Vérification faite avant
-d'agir : `formatDate` de `SessionList` est **inchangé depuis avant #518** — le défaut est
-**pré-existant**, et son libellé s'accordait avec son attribut. Ce qui a changé, c'est que #518
-promeut ce décalage en **affirmation lisible par la machine**, contre l'objet même de l'issue.
-Corrigé par `75f37c4` : helpers `parseServerDateTime` / `serverDateTime` dans `lib/date-iso.ts`,
-convention documentée **dans le helper** et non au point d'appel — c'est l'absence de point
-unique qui avait permis la divergence. 7 tests sous `TZ='Asia/Tokyo'`, avec contre-épreuve :
-en restaurant l'ancien `new Date(iso)`, **4 tests rougissent en fuseau local et 3 sous `TZ=UTC`**.
-**Impact utilisateur assumé** : l'heure de « dernière activité » change sur Réglages > Sécurité
-du décalage local. C'est une correction de bug — l'ancienne valeur était fausse.
-
-**Cycle 2 (sur les commits correctifs uniquement) : 0 CRITIQUE / 1 MAJEUR / 1 MINEUR.**
-
-Les corrections de review sont elles-mêmes relues, et ce cycle a payé. Le MAJEUR :
-`afterAll` restaurait le fuseau par `process.env.TZ = previousTz`, or **`TZ` n'est settée ni en
-CI ni dans un shell local**, donc `previousTz` vaut presque toujours `undefined` — et Node
-**coerce l'affectation en la chaîne `"undefined"`**, zone invalide qui retombe sur UTC. Tout test
-suivant du même worker comptant sur le fuseau ambiant était silencieusement contaminé.
-Mesuré : `getTimezoneOffset()` rend **0** au lieu de **-120**. Corrigé par `17b2d6a`
-(`delete process.env.TZ` quand il n'y avait pas de valeur).
-Le MINEUR relevait que le vert de la spec E2E de #642 n'avait été qu'auto-rapporté : il a depuis
-été **rejoué indépendamment** (`settings-security` + `landing-auth-theme-toggle` → **19 passed,
-exit 0**).
-
-## Ce qui n'a pas été vérifié
-
-Trois des quatre issues sont des issues de **charte visuelle**, et **aucun contrôle visuel humain
-ni aucune mesure de contraste au pixel n'a été fait**. Trois agents sur quatre ont remonté
-`RECOMMAND_UI_DESIGN`. En particulier :
-
-- **#574** — la lisibilité des cartes Auth privées d'ombre franche (`--color-bg` #FCFCFD vs
-  `--color-surface` #FFFFFF ≈ 1,01:1). `shadow-xs` a été conservé *parce que le filet seul
-  paraissait insuffisant*, **sans preuve**. C'est le risque que l'issue elle-même désignait.
-- **#518** — un delta 15→13px assumé sur 3 surfaces, `SessionList` en tête (date 13px mono à côté
-  d'une IP restée à 15px, **sur la même ligne**).
-- **#578** — contrastes 17,76:1 / 16,70:1 **calculés sur les tokens déclarés**, pas sur des pixels
-  peints ; la maquette de référence n'a pas été ouverte.
-- **#518** est une issue d'accessibilité : **aucun test avec un lecteur d'écran réel**.
-- Les métriques de largeur du header ont été prises sur macOS, pas sur l'image jammy de la CI.
-
-## Follow-ups identifiés (à arbitrer en `/sprint end`)
-
-- Préférence de thème au niveau du **compte** — migration V16, endpoint, arbitrage à la connexion. Ferme les 2 critères non tenus de #642. `[M | backend+frontend]`
-- Régénérer les 10 références PNG de `sprint-77-theme-visual` **sur Linux** + mesurer au pixel le contraste carte Auth / fond. `[XS | frontend]`
-- Casse et police des libellés de navigation — **à rattacher à #575**. `[XS | frontend]`
-- **#517** à fermer ou requalifier : `.mt-date--short` reste délibérément inutilisée. `[XS | ui-design]`
-- Vérification navigateur du delta 15→13px, `SessionList` en priorité. `[XS | frontend/ui-design]`
-- Dates en `title`/`aria-label` (`DensityRibbon`, `TimelineView`) — hors d'atteinte de `<time>`. `[XS | frontend]`
-- Convergence des 2 bascules de thème en ligne restantes (`AppShell`, `MobileDrawer`), toutes deux sans garde `mounted`. `[XS | frontend]`
-- **#505 n'est PAS redondante** avec #574 (cible `shadow-md`, hors périmètre) — à laisser ouverte.
+Closes #592, #601, #602 (`dev` n'est pas la branche par défaut : les issues seront fermées à la main après le merge).
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
