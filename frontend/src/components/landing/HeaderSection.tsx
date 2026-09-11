@@ -7,6 +7,7 @@ import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { LanguageSelector } from '@/components/ui/language-selector'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LandingMobileMenu } from './LandingMobileMenu'
 
 interface HeaderSectionProps {
@@ -150,7 +151,43 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
       <div className="flex items-center gap-2 max-[360px]:gap-1 lg:gap-4">
         {/* Bascule dans `LandingMobileMenu` sous `lg` — cf. #334, seuil remonté par #347. */}
         <div className="hidden items-center gap-4 lg:flex">
-          <LanguageSelector />
+          {/* #642 (DEC-S82-009) — BASCULE DE THÈME HORS CONNEXION.
+              Elle vit dans le groupe `hidden lg:flex`, donc elle n'existe qu'à
+              partir de 1024 px : les paliers 320–1023 px, où le budget de
+              largeur du header est compté au pixel (marge de 13 px en `de` à
+              320 px, cf. le pavé du CTA plus bas), sont STRICTEMENT INCHANGÉS —
+              c'est `LandingMobileMenu` qui porte la bascule sous `lg`.
+
+              Le couple langue+thème est resserré à `gap-1` au lieu du `gap-4`
+              du groupe. Raison chiffrée : le header est `justify-between` avec
+              TROIS items (logo, nav, groupe droit), donc tout élargissement du
+              groupe se répartit à parts égales sur les deux écarts mesurés par
+              `e2e/landing-header-logo.spec.ts` (`gapToNextPx`, plancher 24 px
+              au-delà de 768 px). Relevé jammy de #381 à 1024 px : `fr` 58,5 px
+              (pire cas), `es` 72, `de` 82, `en` 146,5. Avec `gap-1` on ajoute
+              36 + 4 = 40 px, soit −20 px par écart ; avec `gap-4` (52 px, −26)
+              le pire cas n'aurait plus que ~8 px de réserve.
+
+              RELEVÉ APRÈS CORRECTIF, 1024 px, Chromium sur `next start` de
+              production — ⚠ macOS, PAS l'image jammy dont sortent les chiffres
+              de #381 ci-dessus ; les deux séries ne se comparent pas terme à
+              terme, seul l'ORDRE des locales est stable :
+
+                locale | marge logo→nav | groupe droit | débordement
+                fr     | 46,0           | 338,7        | 0
+                es     | 57,9           | 363,5        | 0
+                de     | 68,3           | 345,4        | 0
+                en     | 130,2          | 274,8        | 0
+
+              `fr` reste le pire cas, à 22 px au-dessus du plancher de 24 px.
+              Sous `lg` RIEN NE BOUGE — vérifié à 320 px en `de` : le groupe
+              vaut 146,6 px, la bascule a `display:none` héritée du parent, et
+              `scrollWidth === clientWidth`. C'est la spec ci-dessus qui tranche
+              en CI, aux métriques de police d'Ubuntu. */}
+          <div className="flex items-center gap-1">
+            <ThemeToggle testId="landing-header-theme-toggle" />
+            <LanguageSelector />
+          </div>
           <Button
             asChild
             variant="outline"

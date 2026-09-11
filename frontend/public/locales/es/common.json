@@ -102,6 +102,11 @@
     "backToHome": "Volver al inicio",
     "changeLanguage": "Cambiar de idioma"
   },
+  "theme": {
+    "toggle": "Cambiar de tema",
+    "toLight": "Cambiar al tema claro",
+    "toDark": "Cambiar al tema oscuro"
+  },
   "time": {
     "year": "año",
     "years": "años",

@@ -1,116 +1,142 @@
-## Objectif
+# Sprint 83 — Charte : surfaces, navigation, thème + sémantique des dates
 
-Trancher trois contrôles verts qui ne prouvaient pas ce qu'ils prétendaient. Sprint d'outillage
-et de CI : **aucun code métier n'est touché** — pas une ligne sous `backend/src/main/java/**`,
-aucune logique frontend. Ce qui change, ce sont les gates eux-mêmes.
+Milestone [Sprint 83](https://github.com/LeenVandelied/MyTimeline/milestone/84) · cohésion 0.53 · 10 points · **aucune migration, aucun fichier backend**
 
-Milestone : Sprint 78 (#79) · cohésion 0.28 (sous seuil, assumé — DEC-S57-003).
+Sprint de fondation sur l'écart maquette ↔ production relevé par l'audit du 7 septembre, plus une dette de sémantique HTML.
 
-## Issues livrées
+## Issues traitées
 
-| # | Arbitrage retenu | Ce qui a été écarté, et pourquoi |
-|---|---|---|
-| #528 | **Câbler** `format:check` en CI, et reformater la dette dans le même commit | Retirer les scripts `format*` laissait **zéro** gate de formatage (`next lint` ne le vérifie pas), et le plan du S79 dépend déjà de ce reformatage |
-| #434 | **Étendre** le scope `frontend` (build → vitest → typecheck → lint) | Le renommer en `frontend-unit` : ~55 archives de sprint citent le scope actuel, et renommer déplace le piège au lieu de le supprimer |
-| #169 | JaCoCo (`verify`) + vitest `--coverage` (lcov), 2 artefacts CI | Tout seuil bloquant : l'issue demande de **mesurer avant de gater** |
+| # | Titre | Vague | Commit |
+|---|---|---|---|
+| #578 | Nav active : le précédent interne a remplacé la maquette (cause racine) | V1 | `3a18e7f` |
+| #518 | ~15 composants rendent des dates dans un `<span>` au lieu d'un `<time datetime>` | V1 | `dcfa62e` |
+| #574 | Ombre au repos contre filet 1px : surfaces hors charte | V2 | `ca788e1` |
+| #642 | Exposer la bascule de thème hors connexion (DEC-S82-009) | V3 | `ef8581e` + `9ccd798` |
+
+Plus deux commits issus de la review : `75f37c4` (convention des horodatages naïfs) et
+`17b2d6a` (contamination du fuseau entre tests).
 
 ## Changements clés
 
-- **`.github/workflows/ci.yml`** — step `Format (Prettier)` ajouté au job `frontend` (sans
-  `continue-on-error`, dernière commande = prettier lui-même) + 2 steps `upload-artifact` pour les
-  rapports de couverture, sur le SHA v4 déjà épinglé du dépôt.
-- **119 fichiers reformatés** (`prettier` + `prettier-plugin-tailwindcss`). C'est l'essentiel du
-  volume du diff, et c'est du bruit : voir « Innocuité du reformatage » ci-dessous.
-- **`scripts/test-quiet.sh`** — scope `frontend` étendu, scope `frontend-unit` ajouté pour la
-  boucle rapide (il ne lance pas `next build`, donc il ne tue pas le `next dev` d'un agent voisin).
-- **`backend/pom.xml`** — `jacoco-maven-plugin` 0.8.13, version épinglée (le parent Spring Boot ne
-  la gère pas). **Aucun `<argLine>` littéral** : l'agent JaCoCo reste attaché et le
-  `-Dapi.version` de Testcontainers est préservé — l'inverse ferait tomber toute la suite backend.
-- **`frontend/vitest.config.mts`** — provider `v8`, reporters `text-summary` + `lcov`, script
-  `test:coverage` ; `npm test` inchangé.
-- **`docs/memory/pitfalls.md`** — `PIT-S60-009` marqué RÉSOLU. Il affirmait au présent que le
-  scope `frontend` ne lance que Vitest : rendu faux par ce sprint, et injecté tel quel dans les
-  packs de tous les subagents. Packs régénérés.
+**#578 — la cause racine est corrigée à la source.** `SettingsShell.tsx` avait introduit
+`bg-accent-soft text-accent` sans référence à une maquette ; `AppShell.tsx` l'avait recopié *et
+documenté en commentaire comme référence*. Les deux passent à la pilule graphite pleine, le CTA
+sidebar retrouve le bleu accent, et le commentaire ne désigne plus un composant frère comme
+source de vérité visuelle.
 
-## Innocuité du reformatage — mesurée, pas postulée
+**#518 — le recensement de l'issue était partiellement faux.** 14 composants concernés (pas ~15),
+**12 migrés**, 3 hors d'atteinte (dates uniquement en `title`/`aria-label`). `CompactAgenda`,
+nommé par l'issue, n'affiche aucune date. Le nouveau `src/lib/date-iso.ts` corrige un défaut réel
+au passage : `WeekAgenda` posait `toISOString()`, donc l'attribut `datetime` pouvait nommer un
+autre jour que le libellé. Premier `t.rich` du dépôt pour la date en milieu de phrase ICU
+(l'allemand postpose « ab »).
 
-Le risque réel de `prettier-plugin-tailwindcss` est le réordonnancement des classes, qui peut
-changer la cascade. Deux mesures, pas un raisonnement :
+**#574 — 9 surfaces, pas 8**, et **2 inversions de survol, pas 1** (`TestimonialCard` en avait une
+via `landing.css`, invisible dans le `.tsx`). Surtout : le locator `AUTH_CARD` de
+`sprint-77-theme-visual.spec.ts` était **ancré sur la `shadow-lg` que l'issue retire** — les 8
+tests auth seraient tombés en « élément introuvable », pas en écart de pixels. Réancré sur
+l'invariant de charte.
 
-1. **Empreinte du multi-ensemble de classes** par fichier, avant/après, sur les 119 fichiers :
-   aucune classe ajoutée, retirée ni altérée — seul l'ordre change.
-2. **Audit des 1354 littéraux** de classes pour les conflits `twMerge` : un seul auto-conflictuel,
-   une directive `@source inline(...)` laissée intacte par le tri.
+**#642 — périmètre réduit, en connaissance de cause.** Les points 2 et 3 du motif de persistance
+supposent une préférence de thème **au niveau du compte**, qui n'existe pas
+(`grep -ri theme backend/src/main/java` → 0 ; 0 migration ; `types/settings.ts:36` l'écrit en
+clair). Livré : l'exposition du contrôle (landing desktop + menu mobile + 4 pages auth), la
+persistance locale, et l'anti-flash. Non livré et signalé en follow-up : la préférence de compte.
 
-Un effet de bord réel a été trouvé et corrigé : le tri a disloqué une ancre littérale du test de
-focus (`checkbox.tsx`), ancre rebasée sur `h-4 w-4 shrink-0` et contrainte documentée dans la spec.
+## BR impactées
+
+**Aucune.** Les 4 issues portent « BR impactées : Aucune » — conformité à la charte et sémantique
+HTML, pas de règle métier.
 
 ## Tests
 
-Codes de sortie lus **sans pipe**, commandes préfixées `rtk proxy` (le hook falsifie `next build`,
-`prettier --check` et `vitest` sur ce poste).
+- **Unitaires / build / typecheck / lint** : `./scripts/test-quiet.sh frontend` → **1392 / 1392
+  (121 fichiers), exit 0** (base d'entrée 1350).
+- **E2E Playwright**, suite complète jouée en local (recette worktree, webpack) :
+  **314 passed / 11 failed / 8 skipped**.
+- Backend **non exécuté** : le sprint ne touche aucun fichier backend (`git diff --name-only
+  origin/dev..HEAD | grep -c '^backend/'` → **0**).
 
-- **Backend** : `mvnw verify` → EXIT=0, **566 tests**, 0 échec (Docker 29.2.1). Couverture
-  initiale 90,49 % instructions / 72,18 % branches.
-- **Frontend** : vitest **1313/1313**, typecheck, lint, `next build` (**52/52 pages**),
-  `format:check` → tous EXIT=0. Couverture initiale 70,77 % statements (chiffre BRUT, gonflé par
-  des configs racine happées par v8 — pas une cible).
-- **E2E** : suite réellement jouée par le lead sur une stack isolée (Postgres dédié, backend natif,
-  `next dev` en webpack) : **304 passed / 5 failed / 9 skipped** en 6,3 min.
+Audit détaillé : `docs/memory/audits/sprint-83-test-coverage.md`.
 
-**Les 5 échecs E2E sont instruits un par un** dans `docs/memory/audits/sprint-78-test-coverage.md`,
-et aucun n'est imputable à ce diff : 1 dû au drapeau `--ignore-snapshots` sur darwin (le garde-fou
-de la spec a correctement **refusé d'écrire** une référence de plateforme étrangère), 3 à
-`BREVO_API_KEY` absente (log backend à l'appui), 1 (`golden-path`) à une contention d'identités /
-rate-limit sur `register` — vert en isolation, et surtout **ce sprint ne modifie aucune ligne de
-backend exécutable** alors que l'échec est un refus côté serveur. Le suspect réel est #475/#463,
-déjà planifiées au Sprint 79.
+### ⚠ Deux rouges E2E attendus, aucun n'est une régression
 
-## Review
+**10 × `sprint-77-theme-visual.spec.ts`** — sur macOS, message `A snapshot doesn't exist …
+-chromium-darwin.png` (et **non** `did not match`) : ces 10 écrans n'ont que des références
+`-chromium-linux.png`, donc la suite échoue localement quel que soit le code. **Aucun snapshot
+n'a été régénéré** et les PNG darwin produits ont été supprimés.
+**Conséquence à assumer : l'invalidation des 10 références par #574 n'est ni confirmée ni
+infirmée en local — c'est cette CI qui tranche.** Si ce spec est rouge ici, il faudra régénérer
+ses références **sur Linux** après merge.
 
-Cycle 1 : **0 CRITIQUE / 2 MAJEUR / 5 MINEUR**. Les deux MAJEUR portaient sur le correctif de #434
-lui-même, qui réintroduisait par la porte de derrière le défaut qu'il corrigeait : un script npm
-manquant produisait un skip à 0 suivi d'un « OK » annonçant les quatre étapes.
+**1 × `sprint-82-recurrence-capped-hint.spec.ts`** — le backend e2e local utilisé provient d'une
+image construite le **2026-08-30**, alors que le flag `capped` a été livré le **2026-09-03**
+(`ba8f585`) : l'image ne peut pas contenir la fonctionnalité. La CI, qui construit le backend
+depuis la branche, doit le rendre vert.
 
-Cycle 2 (les commits de correction sont relus à leur tour) : **0 CRITIQUE / 0 MAJEUR / 5 MINEUR**.
+### Un défaut réel trouvé et corrigé
 
-Il y a réfuté **un contrôle écrit par le lead**, et c'est le constat le plus utile de la review :
-lancer `if ./scripts/test-quiet.sh frontend` pour prouver l'armement était vacuous — le script
-tourne dans son propre processus, dont le `set -e` n'est jamais désarmé par le `if` de l'appelant.
-Contrôle refait en sourçant les fonctions et en appelant `run_frontend` en contexte conditionnel
-dans le shell :
+La spec E2E de #642 **n'avait jamais été exécutée** et tombait **6 fois sur 11**. Cause racine :
+**un clic Playwright sur un bouton visible et activé mais non hydraté est un NO-OP silencieux**.
+Corrigé côté spec (`9ccd798`, barrière d'hydratation sur `aria-pressed`), composant applicatif
+non touché — un diagnostic navigateur avait d'abord établi qu'il fonctionnait.
+**6 exécutions consécutives, 0 échec.**
 
-| Version | Résultat |
-|---|---|
-| avant le correctif | build ROUGE, typecheck ROUGE, et pourtant `✓ OK (build + tests unitaires + typecheck + lint)`, **return 0** |
-| après | **return 1** dès le build, aucune étape ultérieure |
+## Review — deux cycles
 
-## Ce qui n'est PAS prouvé — à lire avant de merger
+**Cycle 1 (sprint complet) : 0 CRITIQUE / 1 MAJEUR / 2 MINEUR.**
 
-- **Les comparaisons de captures n'ont pas tourné.** C'est le seul risque résiduel du reformatage.
-  Les références sont suffixées `-chromium-linux` : sur darwin, Playwright en écrirait de
-  nouvelles au lieu de comparer. **Le job `e2e` de cette PR est la seule instance qui peut juger.**
-- **Le téléchargement effectif des deux artefacts de couverture** ne pouvait pas être prouvé
-  localement (aucune CI ne tourne sur les branches `sprint/N`). Prouvé à la place : rapports
-  réellement produits, `path:` corrects vis-à-vis de la racine du dépôt et non du
-  `working-directory` (erreur classique qui produit un artefact vide **sans faire rougir le job**),
-  YAML valide à 7 jobs. **À constater sur le premier run de cette PR.**
-- `if-no-files-found: error` n'a jamais été déclenché : raisonné, pas mesuré.
-- Le coût du scope `frontend` étendu (53 s) a été mesuré à cache `.next` **chaud** ; à froid, plus.
+Le MAJEUR : le backend expose `LocalDateTime` (chaînes ISO **sans offset**) sur
+`SessionResponse` et `ExportJobResponse` ; `ExportDataFlow` les lisait en UTC (convention
+documentée #58), `SessionList` en **heure locale du navigateur**. Vérification faite avant
+d'agir : `formatDate` de `SessionList` est **inchangé depuis avant #518** — le défaut est
+**pré-existant**, et son libellé s'accordait avec son attribut. Ce qui a changé, c'est que #518
+promeut ce décalage en **affirmation lisible par la machine**, contre l'objet même de l'issue.
+Corrigé par `75f37c4` : helpers `parseServerDateTime` / `serverDateTime` dans `lib/date-iso.ts`,
+convention documentée **dans le helper** et non au point d'appel — c'est l'absence de point
+unique qui avait permis la divergence. 7 tests sous `TZ='Asia/Tokyo'`, avec contre-épreuve :
+en restaurant l'ancien `new Date(iso)`, **4 tests rougissent en fuseau local et 3 sous `TZ=UTC`**.
+**Impact utilisateur assumé** : l'heure de « dernière activité » change sur Réglages > Sécurité
+du décalage local. C'est une correction de bug — l'ancienne valeur était fausse.
 
-## Couverture E2E
+**Cycle 2 (sur les commits correctifs uniquement) : 0 CRITIQUE / 1 MAJEUR / 1 MINEUR.**
 
-Le contrôle heuristique a rendu un MAJEUR sur 9 testids « sans spec ». **Faux positif intégral** :
-les 9 existent déjà sur `dev`. Le reformatage fait compter chaque ligne comme ajoutée par
-l'heuristique. Ce sprint n'introduit aucun testid — aucune surface UI nouvelle.
+Les corrections de review sont elles-mêmes relues, et ce cycle a payé. Le MAJEUR :
+`afterAll` restaurait le fuseau par `process.env.TZ = previousTz`, or **`TZ` n'est settée ni en
+CI ni dans un shell local**, donc `previousTz` vaut presque toujours `undefined` — et Node
+**coerce l'affectation en la chaîne `"undefined"`**, zone invalide qui retombe sur UTC. Tout test
+suivant du même worker comptant sur le fuseau ambiant était silencieusement contaminé.
+Mesuré : `getTimezoneOffset()` rend **0** au lieu de **-120**. Corrigé par `17b2d6a`
+(`delete process.env.TZ` quand il n'y avait pas de valeur).
+Le MINEUR relevait que le vert de la spec E2E de #642 n'avait été qu'auto-rapporté : il a depuis
+été **rejoué indépendamment** (`settings-security` + `landing-auth-theme-toggle` → **19 passed,
+exit 0**).
 
-## Suites proposées
+## Ce qui n'a pas été vérifié
 
-- Constater les 2 artefacts non vides au premier run, puis consigner les valeurs de référence
-- `husky` / `lint-staged` déclarés mais `.husky/` inexistant : installer le hook (le gate
-  deviendrait indolore) ou retirer les deux dépendances mortes
-- Exclure les configs racine du périmètre v8 une fois la référence brute consignée
-- Reporter la correction des `rules-jit` en amont du plugin ai-env
+Trois des quatre issues sont des issues de **charte visuelle**, et **aucun contrôle visuel humain
+ni aucune mesure de contraste au pixel n'a été fait**. Trois agents sur quatre ont remonté
+`RECOMMAND_UI_DESIGN`. En particulier :
+
+- **#574** — la lisibilité des cartes Auth privées d'ombre franche (`--color-bg` #FCFCFD vs
+  `--color-surface` #FFFFFF ≈ 1,01:1). `shadow-xs` a été conservé *parce que le filet seul
+  paraissait insuffisant*, **sans preuve**. C'est le risque que l'issue elle-même désignait.
+- **#518** — un delta 15→13px assumé sur 3 surfaces, `SessionList` en tête (date 13px mono à côté
+  d'une IP restée à 15px, **sur la même ligne**).
+- **#578** — contrastes 17,76:1 / 16,70:1 **calculés sur les tokens déclarés**, pas sur des pixels
+  peints ; la maquette de référence n'a pas été ouverte.
+- **#518** est une issue d'accessibilité : **aucun test avec un lecteur d'écran réel**.
+- Les métriques de largeur du header ont été prises sur macOS, pas sur l'image jammy de la CI.
+
+## Follow-ups identifiés (à arbitrer en `/sprint end`)
+
+- Préférence de thème au niveau du **compte** — migration V16, endpoint, arbitrage à la connexion. Ferme les 2 critères non tenus de #642. `[M | backend+frontend]`
+- Régénérer les 10 références PNG de `sprint-77-theme-visual` **sur Linux** + mesurer au pixel le contraste carte Auth / fond. `[XS | frontend]`
+- Casse et police des libellés de navigation — **à rattacher à #575**. `[XS | frontend]`
+- **#517** à fermer ou requalifier : `.mt-date--short` reste délibérément inutilisée. `[XS | ui-design]`
+- Vérification navigateur du delta 15→13px, `SessionList` en priorité. `[XS | frontend/ui-design]`
+- Dates en `title`/`aria-label` (`DensityRibbon`, `TimelineView`) — hors d'atteinte de `<time>`. `[XS | frontend]`
+- Convergence des 2 bascules de thème en ligne restantes (`AppShell`, `MobileDrawer`), toutes deux sans garde `mounted`. `[XS | frontend]`
+- **#505 n'est PAS redondante** avec #574 (cible `shadow-md`, hors périmètre) — à laisser ouverte.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
-

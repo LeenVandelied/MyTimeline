@@ -73,10 +73,17 @@
 
   /* accent = electric blue (today / active / links)
      DESCENDU D'UN CRAN (blue-500 → blue-600) au FU1 du Sprint 57. L'accent est
-     l'encre de TOUT état actif du produit (lien de sidebar `AppShell`, onglet de
-     `SettingsShell`, item focalisé de `ui/dropdown-menu`, ancres du panneau
-     burger de la landing), et cet état pose systématiquement cette encre sur
-     `--color-accent-soft`. À blue-500 ce couple mesurait 3.83:1 — sous les
+     l'encre des états actifs/focalisés de type SURVOL (item focalisé de
+     `ui/dropdown-menu`, ancres du panneau burger de la landing), et cet état
+     pose systématiquement cette encre sur `--color-accent-soft`.
+     ⚠ La NAVIGATION ACTIVE n'est PAS un consommateur de l'accent : le lien actif
+     de la sidebar `AppShell` et l'onglet actif de `SettingsShell` sont une
+     pilule `--color-primary` / `--color-primary-ink` (#578, Sprint 83). Source :
+     maquette `design_handoff_mytimeline/App.dc.html`, règle
+     `.app-nav.is-active { background: var(--color-primary) }` — c'est le CTA
+     « Nouvel événement » qui porte l'accent. Ce commentaire les citait jusqu'au
+     S83 : il décrivait le précédent interne (#86, `43d9e14`), pas la maquette.
+     À blue-500 le couple accent / accent-soft mesurait 3.83:1 — sous les
      4.5:1 de WCAG 1.4.3 AA pour du texte normal. À blue-600 : 4.94:1.
      Corrigé ICI et non chez les consommateurs (option (a) plutôt qu'un token
      `--color-accent-on-soft` dédié) parce que la liste des consommateurs est

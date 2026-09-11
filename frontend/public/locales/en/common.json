@@ -102,6 +102,11 @@
     "backToHome": "Back to home",
     "changeLanguage": "Change language"
   },
+  "theme": {
+    "toggle": "Change theme",
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
   "time": {
     "year": "year",
     "years": "years",

@@ -7,6 +7,7 @@ import { ArchiveRestore, ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 
 import { contrastInk } from '@/lib/color'
 import { cn } from '@/lib/utils'
+import { toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductDrawer } from './ProductDrawer'
@@ -406,9 +407,19 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                       {t('archivedBadge')}
                     </span>
                   )}
-                  <span className="text-ink-muted font-mono text-xs tabular-nums">
+                  {/* #518 — convention DS (`i18n.css` §7) : `<time datetime>` et non
+                      `<span>`. `.mt-date--long` REMPLACE `font-mono text-xs tabular-nums`
+                      (elle pose les trois, plus `unicode-bidi:isolate` et `nowrap`) :
+                      les garder serait un triplon dont `text-xs` (15px) perdrait de
+                      toute façon face à la règle HORS layer du DS (13px). Le delta de
+                      taille 15→13px est ASSUMÉ — même arbitrage qu'`EventPreviewTimeline`
+                      au #72 : la taille d'une date longue appartient au DS. */}
+                  <time
+                    className="text-ink-muted mt-date--long"
+                    dateTime={toLocalIsoDate(new Date(event.startDate)) ?? undefined}
+                  >
                     {dateFmt.format(new Date(event.startDate))}
-                  </span>
+                  </time>
                   {event.archived && (
                     <Button
                       type="button"

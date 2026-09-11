@@ -5,6 +5,7 @@ import { Monitor, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
+import { serverDateTime } from '@/lib/date-iso'
 import type { Session } from '@/types/settings'
 
 /**
@@ -22,13 +23,37 @@ interface SessionListProps {
   isRevokingOthers: boolean
 }
 
-function formatDate(iso: string, locale: string): string {
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return iso
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
+/**
+ * #518 — Horodatage de dernière activité en `<time datetime>` (convention DS,
+ * `i18n.css` §7).
+ *
+ * `serverDateTime` et NON `new Date(iso)` : `lastActivity` est un
+ * `LocalDateTime` Java, donc une chaîne SANS offset, à lire dans le référentiel
+ * SERVEUR (cf. le pavé « horodatages naïfs » de `lib/date-iso.ts`). Le lire avec
+ * `new Date` la faisait interpréter dans le fuseau du NAVIGATEUR — l'heure
+ * affichée et l'attribut `datetime` étaient tous deux décalés de l'offset local,
+ * et contredisaient `ExportDataFlow` qui applique, lui, la bonne convention
+ * depuis #58. Correction d'un défaut PRÉ-EXISTANT à #518 : l'heure visible
+ * change pour tout utilisateur hors UTC.
+ *
+ * Le libellé porte `timeStyle:'short'`, donc une HEURE : l'attribut désigne
+ * l'instant complet (`machine`), pas seulement le jour. Sur un `iso` illisible,
+ * `label` rend la chaîne brute et `machine` vaut `null` — aucun attribut
+ * `datetime` n'est émis (plutôt qu'une valeur fausse) et le `<time>` reste du
+ * HTML valide.
+ *
+ * DELTA VISUEL ASSUMÉ : `.mt-date--long` impose 13px là où le `<p>` porte
+ * `text-xs` (15px) — l'IP voisine, elle, reste à 15px. Même arbitrage qu'au #72 :
+ * la typographie d'une date appartient au DS. Non vérifié en navigateur (jsdom
+ * n'applique aucune feuille du DS).
+ */
+function SessionTimestamp({ iso, locale }: { iso: string; locale: string }) {
+  const { label, machine } = serverDateTime(iso, locale)
+  return (
+    <time className="mt-date--long" dateTime={machine ?? undefined}>
+      {label}
+    </time>
+  )
 }
 
 export function SessionList({
@@ -91,7 +116,7 @@ export function SessionList({
                 <p className="text-ink-muted truncate text-xs">
                   {session.ipAddress ?? t('security.sessions.unknownIp')}
                   {' · '}
-                  {formatDate(session.lastActivity, locale)}
+                  <SessionTimestamp iso={session.lastActivity} locale={locale} />
                 </p>
               </div>
             </div>

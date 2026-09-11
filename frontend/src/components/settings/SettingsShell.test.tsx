@@ -93,4 +93,19 @@ describe('SettingsShell', () => {
     expect(tablist.className).not.toContain('flex-col')
     expect(tablist.className).not.toContain('flex-wrap')
   })
+
+  // #578 — SOURCE du motif d'état actif : c'est ici que `bg-accent-soft text-accent`
+  // est né (#86), puis a été recopié dans `AppShell`. La maquette veut une pilule
+  // graphite pleine. Ce test verrouille la source pour qu'elle ne réessaime plus.
+  it("peint l'onglet sélectionné en pilule graphite pleine (maquette #578)", () => {
+    render(<SettingsShell />)
+    const selected = screen.getByTestId('settings-tab-profile')
+    expect(selected).toHaveAttribute('aria-selected', 'true')
+    expect(selected.className).toContain('bg-primary')
+    expect(selected.className).toContain('text-primary-ink')
+    expect(selected.className).not.toContain('bg-accent-soft')
+    expect(selected.className).not.toContain('text-accent')
+    // L'onglet NON sélectionné garde l'encre muette : la pilule est le seul signal.
+    expect(screen.getByTestId('settings-tab-security').className).toContain('text-ink-muted')
+  })
 })

@@ -5,6 +5,7 @@ import { Pencil, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { PositionedEvent } from './zoom'
 import { useFocusTrap } from './useFocusTrap'
+import { toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #55 — Drawer latéral de détail événement.
@@ -39,8 +40,10 @@ export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose
   if (!event) return null
 
   const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
-  const startLabel = fmt.format(new Date(event.start))
-  const endLabel = fmt.format(new Date(event.end || event.start))
+  const startDate = new Date(event.start)
+  const endDate = new Date(event.end || event.start)
+  const startLabel = fmt.format(startDate)
+  const endLabel = fmt.format(endDate)
   const statusLabel = t(`dashboard.timeline.status.${event.status}`)
 
   return (
@@ -77,11 +80,27 @@ export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose
           </div>
           <div className="mt-drawer__row">
             <span className="mt-drawer__k">{t('dashboard.timeline.drawer.start')}</span>
-            <span className="mt-drawer__v">{startLabel}</span>
+            {/* #518 — convention DS (`i18n.css` §7) : une date se rend en `<time>`.
+                `.mt-date--long` vaut `font-size:13px`, EXACTEMENT la valeur que
+                `.mt-drawer__row` pose déjà (`timeline.css`) : la migration ne change
+                donc que la fonte (mono + tabular-nums) et le `nowrap`, pas la taille.
+                Pas `.mt-date--short` : elle force `uppercase` + 11px (arbitrage
+                Designer resté ouvert, cf. #517 et le précédent #72). */}
+            <time
+              className="mt-drawer__v mt-date--long"
+              dateTime={toLocalIsoDate(startDate) ?? undefined}
+            >
+              {startLabel}
+            </time>
           </div>
           <div className="mt-drawer__row">
             <span className="mt-drawer__k">{t('dashboard.timeline.drawer.end')}</span>
-            <span className="mt-drawer__v">{endLabel}</span>
+            <time
+              className="mt-drawer__v mt-date--long"
+              dateTime={toLocalIsoDate(endDate) ?? undefined}
+            >
+              {endLabel}
+            </time>
           </div>
           <div className="mt-drawer__row">
             <span className="mt-drawer__k">{t('dashboard.timeline.drawer.status')}</span>

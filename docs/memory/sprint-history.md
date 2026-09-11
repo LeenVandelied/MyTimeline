@@ -5341,7 +5341,7 @@ AJOUTENT des tests.
 
 **15 issues, 35 points, cohésion globale 0.363. Aucune migration Flyway — V16 reste libre.**
 
-### Sprint 78 — 2026-09-06 (EN COURS — cohésion 0.28, Les gates de vérification mentent)
+### Sprint 78 — 2026-09-06 (Terminé — merge PR #538 dans dev — cohésion 0.28, Les gates de vérification mentent)
 **Objectif :** trancher trois contrôles verts qui ne prouvent pas ce qu'ils prétendent.
 **Milestone GitHub :** #79
 **Issues :** #528, #434, #169
@@ -5895,3 +5895,238 @@ sont des faux positifs** : le helper fait `git log --grep "#N"` et tombe sur le 
 tableau n'a donc pas été transmis à l'architect ; à la place, celui-ci a vérifié chaque issue
 retenue directement dans le code. C'est cette vérification-là qui a produit les 6 péremptions
 ci-dessus — le signal automatique en aurait produit zéro.
+
+---
+
+## Vague de planification S83 → S87 — 2026-09-07 (`/sprint plan 5 -c "focus mvp"`)
+
+**Axe retenu (arbitrage dev explicite) :** *écart maquette ↔ produit*. Le lot « le produit
+ne ressemble pas encore au handoff ». Hors scope de ces 5 sprints : mise en ligne / infra
+(milestone « Mise en ligne », gelé) et dette backend sans impact visuel.
+
+**Intrants architect :** `docs/design/audit-conformite-2026-09-07.md` (l'audit qui a produit
+les issues #592-#644), `docs/design/graphite-handoff.md`, `docs/memory/decisions.md`
+(DEC-S82-*). 15 issues retenues sur ~60 candidates ; le reste demeure au backlog.
+
+**Détection NO-OP :** aucune des ~60 candidates n'a de PR fusionnée. Conformément au constat
+des sprints précédents, ce signal ne prouve rien — l'architect a vérifié chaque issue retenue
+directement dans le code (résultat : 11 énoncés démentis, voir plus bas).
+
+### Sprint 83 — 2026-09-07 → 2026-09-11 (EN CLÔTURE — PR #650 ouverte, cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
+**Objectif :** Fondation de charte (nav active, filet vs ombre, bascule de thème) + sémantique `<time>`
+**Milestone GitHub :** #84 (à fermer APRÈS le merge)
+**Issues livrées (4) :** #578, #518, #574, #642 — à fermer APRÈS le merge (dev protégée)
+**Vagues exécutées :** V1 = #518 ∥ #578 | V2 = #574 | V3 = #642 — conformes au plan
+**Migrations :** aucune · **Fichiers backend touchés :** 0
+**Effort :** 10 points — exception au plafond de 3 issues, actée par le dev au plan
+**Cohésion :** 0.53
+**Commits :** 21 sur la branche (9 de code/test, 12 de documentation/orchestration) —
+`3a18e7f` #578 · `dcfa62e` #518 · `ca788e1` #574 · `ef8581e` #642 · `9ccd798` spec E2E de #642 ·
+`75f37c4` + `17b2d6a` correctifs de review (#518) · `b71c257` prettier · `ca9a747` 8 références
+visuelles régénérées · `ed904a1` doc DS (#578)
+**BR impactées :** aucune (conformité de charte + sémantique HTML)
+**Reviews :**
+- cycle 1 (sprint complet) — 0 CRITIQUE / 1 MAJEUR / 2 MINEUR, **tous traités** (MAJEUR : deux
+  lectures opposées des `LocalDateTime` backend → `75f37c4`) ;
+- cycle 2 (commits correctifs seuls) — 0 CRITIQUE / 1 MAJEUR / 1 MINEUR, **tous traités**
+  (MAJEUR : `process.env.TZ = undefined` contaminait les tests suivants → `17b2d6a`) ;
+- `ui-design` de clôture — 2 ÉCART / 3 CONFORME / 1 INDÉTERMINÉ. L'ÉCART sur #578 s'est révélé
+  **infondé** : la maquette (`App.dc.html`) donne raison au code, c'est la doc du DS qui était
+  fausse (`ed904a1`). L'INDÉTERMINÉ (cartes auth) a été tranché au navigateur.
+**Tests :** Frontend 1392/1392 (build + vitest + typecheck + lint), rejoué par le lead ·
+E2E CI 317 passed puis **vert** après régénération des 8 références · Backend : CI verte, non modifié
+**Artefacts :** `docs/memory/sprints/sprint-83/` (5 `done.md`, `verification-ui-design-et-tests.md`,
+`test-runner-par-le-lead.md`) · `docs/memory/audits/sprint-83-test-coverage.md`
+
+**Ce que la clôture a changé par rapport à la PR telle qu'ouverte :**
+- la CI a rougi `frontend` sur `prettier --check` (fichier de `75f37c4`) : `test-quiet.sh` n'exécute
+  pas `format:check` → `b71c257`, issue #660 ;
+- la CI a rougi `e2e` sur **8** références (et non 10 comme l'annonçait #574) : chaque carte auth
+  +2px, exactement le filet ajouté → régénérées sur l'image **noble** du runner (`ca9a747`),
+  rejouées 2 × 11/11 armement compris, CI verte ;
+- le rouge local `sprint-82-recurrence-capped-hint` venait bien d'une image backend antérieure de
+  4 jours à la fonctionnalité : **vert en CI** ;
+- `security` est rouge sur la PR **et sur dev** : avis critiques `next` < 15.5.24 (RCE non
+  authentifiée) + `sharp` HIGH, publiés pendant le sprint, sans lien avec son code → #651 (P0) ;
+- les 7 signaux `RECOMMAND_UI_DESIGN`/`TEST_RUNNER` que `check-sprint-completeness.sh` bloquait
+  étaient, pour les 4 `UI_DESIGN`, **réellement non traités** : revue de charte + vérification
+  navigateur faites à la clôture (contrastes mesurés, focus clavier, lisibilité des cartes).
+
+**Nouveaux pitfalls :** PIT-S83-001 → 015 (+ PIT-S81-024 re-confirmé) · **Patterns :** PAT-S83-001 → 007 ·
+**Décisions :** DEC-S83-001 → 005 · **Bugs résolus :** 2 (`WeekAgenda` publiait un autre jour que
+l'affiché ; `SessionList` décalé du fuseau navigateur) · Packs `pit-*` régénérés (`--check` vert).
+
+**Follow-ups arbitrés (Phase 4 — option « appliquer les recommandations », validée par le dev) :**
+  - MAJ `next` ≥ 15.5.24 + `sharp` ≥ 0.35.4 (RCE critique) [S | devops] → **#651, P0, milestone + label Sprint 84**
+  - `LocalDate` affiché au jour précédent à l'ouest de Greenwich, 5 écrans [S | events] → #652 (P1)
+  - Préférence de thème au niveau du compte (2 critères non tenus de #642) [M | fullstack] → #653
+  - Verrouiller la zone du backend en UTC [XS | backend] → #654
+  - Unifier les 3 bascules de thème [S | design] → #655
+  - Bannière réseau qui recouvre langue/thème (antérieur au sprint) [XS | design] → #656
+  - `shadow-xs` des cartes auth, inerte en sombre [XS | design] → #657
+  - Vérif navigateur des écrans authentifiés du sprint [XS | design] → #658
+  - Dates en `title`/`aria-label` [XS | transversal] → #659
+  - `format:check` dans `test-quiet.sh` [XS | devops] → #660
+  - Pack `cp-frontend.md` périmé [XS | devops] → #661
+  - Casse des libellés de nav, confirmée par la maquette → **commentaire sur #575**, pas d'issue
+  - `.mt-date--short` inutilisée → **commentaire sur #517** (à requalifier), pas d'issue
+  - Régénération des références PNG → **absorbé** (`ca9a747`)
+  Ratio : 11 issues / 2 commentaires / 1 absorbé / **0 discard**.
+**Correction de dérive au passage :** titre du Sprint 78 resté « EN COURS » alors que sa PR #538
+est mergée depuis le 2026-09-06 et sa ligne `Status` dit « Terminé » — titre corrigé.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #650 ouverte, CI requise verte, merge autorisé par le dev ; titre et
+Status à solder au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
+
+### Sprint 84 — 2026-09-07 (PLANIFIÉ — cohésion 0.40, Charte : palette unique et titres de section)
+**Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres
+**Milestone GitHub :** #85
+**Issues (3) :** #577, #575, #634
+**Vagues :** V1 (parallèle) = #577 + #575 + #634 — fichiers strictement disjoints
+**Migrations :** aucune (mais **décision de migration de DONNÉES à prendre**, voir ADR)
+**Dépend de :** Sprint 83 (surfaces figées avant de toucher la couleur)
+**ADR préalable bloquant :** les catégories en base portent les couleurs de l'ancienne
+palette. Ni l'issue ni l'audit ne tranchent. Sans cet arbitrage, le sprint livre une palette
+cohérente et des données incohérentes.
+**Status :** Planifié
+
+**Ajout post-plan (clôture S83, décision du dev) :** #651 — MAJ `next` ≥ 15.5.24 + `sharp` (avis critiques, P0), rattachée au milestone et au label `sprint-84`, **à traiter en tête**. Hors du périmètre de l'architect : pas de mini-plan dans `architect-plans.md` ; vérifier au démarrage son absence de conflit avec les 3 issues planifiées (bump de dépendance = runtime partagé, cf. [[sprint-wave-shared-frontend-runtime]]).
+
+### Sprint 85 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
+**Objectif :** Filtres par catégorie, légende, pliage global, pastille/compteur, boutons Aujourd'hui et Nouvel événement
+**Milestone GitHub :** #86
+**Issues (3) :** #592, #601, #602
+**Vagues :** V1 = #592 | V2 = #601 | V3 = #602 — **sérialisé**
+**Migrations :** aucune
+**Dépend de :** Sprint 84 (#601 consomme la palette unifiée par #577)
+**Avertissement d'orchestration :** sprint **mono-fichier** (`TimelineView.tsx`, 58 Ko).
+Chemin critique de 7 points en série — **ne pas lui affecter 3 agents**.
+**Status :** Planifié
+
+### Sprint 86 — 2026-09-07 (PLANIFIÉ — cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
+**Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie de bout en bout, hint de plafond exact
+**Milestone GitHub :** #87
+**Issues (3) :** #618, #617, #646
+**Vagues :** V1 = #618 ∥ #617-backend | V2 = #617-frontend | V3 = #646
+**Migrations :** **V10** (`V10__event_category.sql`, à créer — dernière existante = V9)
+**Dépend de :** Sprint 84 (#617 a besoin de la palette unique) ; #618 avant le reste du formulaire
+**ADR préalable bloquant :** `category` dérivé du produit par défaut et surchargeable —
+trancher la nullabilité de la colonne et le lieu de la règle de repli (domaine, pas mapper).
+**Risque de taille :** #617 est classée M mais touche 9 fichiers backend + migration + 2
+surfaces frontend. Reclassement en L probable ; risque de débordement du sprint.
+**Status :** Planifié
+
+### Sprint 87 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Landing publique : hero et frise du spec)
+**Objectif :** Hero 30/70 avec frise animée conforme au spec, purge des deux sections redondantes
+**Milestone GitHub :** #88
+**Issues (3) :** #611, #610, #641
+**Vagues :** V1 = #611 | V2 (parallèle) = #610 ∥ #641
+**Migrations :** aucune
+**Dépend de :** Sprint 83 (#574 filet, #642 bascule de thème), Sprint 85 (#611 reprend le rendu de frise réel)
+**Dette inter-sprint à honorer :** #574 (S83) pose un filet sur `HeroSection.tsx:113` ;
+#610 réécrit ce conteneur et **doit préserver ce filet**.
+**Status :** Planifié
+
+### Matrice de conflits (fichiers partagés)
+
+| Fichier partagé | Issues | Contrainte |
+|---|---|---|
+| `components/layout/AppShell.tsx` | 578, 574, 642 | Même sprint (S83), sérialisées — worktree partagé |
+| `components/timeline/TimelineView.tsx` | 592, 601, 602 (+ 593-600, 647 au backlog) | Même sprint (S85), sérialisées — 58 Ko traversés par 11 issues |
+| `components/EventEditForm.tsx` | 618, 617, 646 (+ 619, 620, 622) | Même sprint (S86), sérialisées ; #618 en premier |
+| `components/landing/HeroSection.tsx` | 574 (S83), 610 (S87) | Sprints différents, ordre imposé : #610 préserve le filet de #574 |
+| `components/categories/CategoryDrawer.tsx` | 577 (S84), 638 (backlog) | #638 bloquée par #577 — planifiable dès S85 |
+| `styles/ds/tokens/colors.css` + `globals.css` | 577 (S84), 643 (backlog) | Même `@theme` — ne jamais paralléliser |
+| `frontend/public/locales/*/` | 592, 602, 641, 646, 638, 640 | 13 JSON × 4 locales — conflit systématique si deux agents écrivent la même locale |
+
+### Écarts constatés entre les énoncés d'issues et le code réel (11)
+
+Vérifiés par l'architect dans le code, à corriger **avant** tout briefing de fullstack-dev :
+
+1. **#621 (toast) — prémisse fausse. ÉNONCÉ CORRIGÉ SUR GITHUB le 2026-09-08.** L'audit
+   écrivait « aucune lib dans le dépôt » et « recherche vide sur `components/ui/toast` » :
+   les deux sont faux, et l'énoncé se contredisait plus bas. État réel vérifié : **deux
+   mécanismes en parallèle**. `react-hot-toast@^2.5.2` est vivant (`<Toaster>` monté
+   `layout.tsx:7,:85`, 15 appels `toast.success`/`toast.error` en production dans
+   `settings/` + `apiClient.ts` + `CategoryDrawer.tsx`), tandis que `components/ui/toast.tsx`
+   — le composant conforme au DS, 4 variantes, stylé par `.mt-toast*` (`core.css:277-286`) —
+   a **zéro consommateur**. `--z-toast` (`spacing.css:90`) reste mort. L'écart réel est
+   double : périmètre (aucun toast dans `events/`, `products/`, `timeline/`,
+   `EventEditForm.tsx`) et traitement (deux rendus concurrents). Retitrée, recadrée, taille
+   ramenée à XS→S.
+2. **#629 (squelette) — l'énoncé était EXACT, ma synthèse initiale l'a sur-affirmée.**
+   La formulation « n'est monté sur aucune route » vaut bien pour la **variante `timeline`**,
+   pas pour le composant, et le corps de l'issue le disait déjà correctement. Précision
+   ajoutée sur GitHub le 2026-09-08 : le composant est en `components/shared/`
+   (pas `ui/`) ; sur ses 3 variantes (`LoadingSkeleton.tsx:19`), **`cards` est orpheline
+   elle aussi** — seule `list` a un consommateur de production
+   (`dashboard/loading.tsx:21`). `timeline` et `cards` ne vivent que dans les tests, qui
+   passent au vert sur du code que personne ne monte. **Ne pas reprendre le titre seul dans
+   un briefing** : un agent pourrait conclure que le composant entier est mort et le
+   supprimer.
+3. **#618 — chemin faux.** Le « 480px en dur » est à `components/timeline/TimelineEditHost.tsx:208`,
+   pas dans `components/events/`. La surface de création est déjà conforme au token
+   `--drawer-width-form: 452px`.
+4. **#646 — chemin faux.** Le hint est dans `components/EventEditForm.tsx:785` (racine de
+   `components/`), pas sous `components/events/`.
+5. **#602 — écart mal formulé.** La barre d'outils existe (`TimelineView.tsx:1179`,
+   `.mt-tlv__toolbar`) avec zoom, minimap, plein écran, aide. Deux boutons manquent ; la
+   barre n'est pas à créer.
+6. **#601 — écart mal formulé.** L'en-tête de catégorie existe (`TimelineGroupHead`,
+   `TimelineView.tsx:276-300`) avec `aria-expanded` correct. Manquent pastille, compteur et
+   résumé à l'état plié.
+7. **#634 — « probablement mort » confirmé, couleur mal décrite.** La valeur littérale est
+   `rgba(15,23,42,0.8)` (prop `borderColor`), pas un hex. `Lane`/`EventBar` ne sont importés
+   que par `Lane.stories.tsx`. Toujours exportés par `timeline/index.ts:10-13` : toute
+   suppression passe par l'index.
+8. **#577 — nuance.** « 12 tokens `--evt-*` utilisés par aucun sélecteur » est exact côté
+   CSS, mais ils **sont** exposés en utilitaires Tailwind (`globals.css:78-89`, `@theme`).
+   Le geste est de **brancher**, pas de créer.
+9. **#575 — faux positif embarqué.** `GreetingHeader.tsx:45` porte la même classe et est le
+   motif **correct** (l'audit le cite lui-même comme référence). Sur 12 occurrences mesurées,
+   5 seulement sont des `<h2>`.
+10. **Chemin i18n.** Les messages ne sont **pas** dans `messages/*.json` : ils vivent dans
+    `frontend/public/locales/<locale>/*.json` (13 fichiers × 4 locales), chargés par
+    `frontend/i18n.ts` via `fs.readdirSync`.
+11. **Chemin app router.** `frontend/app/[locale]/layout.tsx` existe, mais le shell
+    applicatif est `frontend/app/[locale]/(app)/layout.tsx` ; la landing est
+    `frontend/app/[locale]/page.tsx` (`/home` redirige en 308, ADR-006).
+
+**Bonus — blocages périmés.** L'audit liste 12 arbitrages dont 4 « bloquent des lots
+entiers ». **Les 12 ont été tranchés au Sprint 82** (DEC-S82-001 à 012). Conséquences :
+#625 débloquée et redescendue M→S, #617 débloquée (ne reste que la dépendance à #577),
+#639, #640, #641, #642, #643, #644, #637 débloquées. **La colonne « Bloque » du tableau des
+arbitrages de l'audit ne doit plus être citée telle quelle dans un briefing.**
+
+### Risques identifiés pour la vague
+
+1. **#617 sous-estimé** (M pour 9 fichiers backend + migration + 2 surfaces) — S86 peut déborder.
+2. **#577 impose une décision de migration de données non prise** — ADR en tête de S84.
+3. **S85 est mono-fichier** — zéro parallélisme, ne pas y affecter 3 agents.
+4. **`TimelineView.tsx` virtualise et indexe** : #592 (filtre catégorie) déplace les index de
+   navigation clavier (`navLanes:576`, commentaire :593 qui décrit déjà ce mode d'échec sur le
+   repli). Risque de régression le plus concret du plan.
+5. **#611 et les références visuelles** : boucle 52 s sous une suite qui compare des PNG
+   Linux. L'animation doit être figeable par le test. Rappel : sur macOS la suite fabrique des
+   faux `doesn't exist` — laisser la CI Linux trancher.
+6. **La charte est réécrite deux fois si l'ordre n'est pas tenu** (#574 S83 → #610 S87).
+7. **14 des 15 issues sont frontend** (seule #617 touche le backend) : aucun garde-fou
+   automatique pour la charte, la seule vérification est visuelle. Rappel mesuré « CI verte ≠
+   page correcte » : prévoir une vérification navigateur par sprint, sur un échantillon choisi
+   **par le risque**, pas sur la page la plus visible.
+8. **Aucun rendu n'a été observé pour produire ce plan.** Tout repose sur la lecture du code
+   et de l'audit. Contrastes réels, débordements en allemand et gestes tactiles ne sont pas
+   vérifiés ici.
+
+### Issues non planifiées notables
+
+- **Lot frise restant** (#593-#600, #647) — même `TimelineView.tsx`, éviterait des reprises en S88.
+- **Lot produits** (#603-#609) — cohérent, sans dépendance amont : peut partir en S88 sans coût.
+- **Tableau de bord** (#623, #624, #640) — #575 touche déjà 7 fichiers du dashboard en S84.
+- **Auth visuelle** (#625, #626) + **états système** (#627, #628, #629, #630) — bon lot S88,
+  après requalification de #629.
+- **#621** — énoncé corrigé et retitré sur GitHub le 2026-09-08 ; requalifiée XS→S, planifiable.
+- **#629** — précision ajoutée sur GitHub le 2026-09-08 ; l'énoncé initial était exact, planifiable telle quelle.
+- **#638** — bloquée par #577, planifiable dès S85.
+- **#517** — sera de fait re-tranchée par #518 (S83) : le précédent du dépôt écarte
+  délibérément `.mt-date--short`.

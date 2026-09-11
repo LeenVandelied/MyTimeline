@@ -54,9 +54,13 @@
  * 768px. L'utilitaire a été retirée du composant ; ne pas la réintroduire, et ne pas dupliquer
  * cette élévation par une utilitaire `translate-*`/`transform` côté TSX.
  *
- * ⚠ NE PAS LAYERISER ce bloc (PIT-S53-004) : `shadow-lg` est posée sur le même élément SANS
- * variante `hover:`. Sous `@layer`, l'utilitaire gagnerait en permanence et l'élévation au survol
- * disparaîtrait — la « correction » créerait la régression. Cf. `sprint-53/audit-css-layers-340.md` §3.5. */
+ * ⚠ NE PAS LAYERISER ce bloc (PIT-S53-004) : `border-rule` est posée sur le même élément SANS
+ * variante `hover:`. Sous `@layer`, l'utilitaire gagnerait en permanence et le passage à
+ * `rule-strong` au survol disparaîtrait — la « correction » créerait la régression.
+ * Cf. `sprint-53/audit-css-layers-340.md` §3.5.
+ * Le `box-shadow` ci-dessous est désormais la SEULE ombre de la carte : #574 a retiré le
+ * `shadow-lg` au repos (charte : surface au repos = filet, l'élévation est réservée aux
+ * popovers/modales), qui faisait de surcroît DIMINUER l'ombre au survol. */
 .feature-card {
   transition: all 0.3s ease;
   border-color: var(--color-rule);

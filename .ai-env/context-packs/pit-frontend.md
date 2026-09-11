@@ -1108,8 +1108,8 @@ Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **rempla
 Les deux écrivent `frontend/.next` ; le premier meurt en cascade (`Cannot find module './343.js'` depuis `webpack-runtime.js`, puis `ENOENT .next/server/vendor-chunks/lucide-react.js`). Interdire le remontage dans un briefing **ne suffit pas** : vérifier `lsof -nP -iTCP:3000 -sTCP:LISTEN` avant de conclure sur un rouge, et ne PAS relancer son propre serveur par-dessus celui d'un agent — on rejoue la corruption dans l'autre sens. Corollaire : ne pas lancer le scope `frontend` de `test-quiet.sh` (qui contient `next build`) tant qu'un `next dev` sert l'E2E. (Sprint 81, lead)
 
 
-## PIT-S81-024 — re-confirmé au Sprint 82
-Le piège RTK/Playwright consigné au S81 s'est reproduit à l'identique au S82 (#491) : `--reporter=line` réécrit en `--reporter=json`, sortie tronquée, preuve de run inexploitable. Parade inchangée : `rtk proxy` + redirection vers un fichier. À inscrire d'office dans tout briefing qui exige de coller une sortie de run.
+## PIT-S81-024 — re-confirmé au Sprint 83
+Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
 
 ## PIT-S81-010 — Une sonde de déploiement qui ne traverse pas jusqu'au backend rend un vert menteur
 L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
@@ -1147,8 +1147,71 @@ Un contrôle négatif qui mute le code de production doit prouver sa restauratio
 L'heuristique de la Phase 8 balaie tous les `*.tsx` ajoutés, `.test.tsx` compris. Au S82 elle a signalé `mock-picker` en MAJEUR : c'est le testid d'un **composant mocké dans un test unitaire**, préexistant dans `EventEditForm.test.tsx`, sans aucune surface produit derrière. Le risque n'est pas le faux positif lui-même mais la réaction qu'il induit — écrire une spec E2E factice pour faire taire le check, ce qui ajoute du vert sans ajouter de preuve. Le check reste par ailleurs faible dans l'autre sens : il vérifie qu'un testid est **cité**, pas qu'une spec passe ([[coverage-check-vert-ne-prouve-rien]]). Filtrer `*.test.tsx` / `__tests__/` avant de conclure. (Sprint 82, Phase 8)
 
 
-## PIT-S81-024 — re-confirmé au Sprint 82
-Le piège RTK/Playwright consigné au S81 s'est reproduit à l'identique au S82 (#491) : `--reporter=line` réécrit en `--reporter=json`, sortie tronquée, preuve de run inexploitable. Parade inchangée : `rtk proxy` + redirection vers un fichier. À inscrire d'office dans tout briefing qui exige de coller une sortie de run.
+## PIT-S81-024 — re-confirmé au Sprint 83
+Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
+
+## PIT-S83-001 — Un clic Playwright sur un bouton VISIBLE mais non hydraté est un NO-OP silencieux
+Au premier run réel, la spec de #642 tombait 6 fois sur 11 : `waitUntil: 'domcontentloaded'` puis clic immédiat. Le bouton est visible, activé, cliquable — mais React n'a pas encore attaché `onClick`, et Playwright ne signale rien. Le seul test vert assérait `aria-pressed` AVANT de cliquer : une barrière d'hydratation **accidentelle**, puisque le composant ne pose `aria-pressed` qu'après sa garde `mounted`. Remède : une barrière **nommée** sur un attribut post-montage (`waitForToggleHydrated`). Le `toPass` qui rejoue le clic (`openMenu`, `landing-mobile-menu.spec.ts:52-63`) ne vaut que pour une action **idempotente** ; une bascule (`setTheme(inverse)`) exige une barrière, pas un réessai. Corollaire : une énumération DOM ne voit pas un élément monté conditionnellement — son absence au balayage est le **symptôme** du clic perdu, pas la preuve d'un testid faux (le lead l'a cru, à tort). (Sprint 83 #642)
+
+
+## PIT-S83-002 — Le premier `requestAnimationFrame` posé par `addInitScript` n'est PAS une borne de peinture
+Une sonde anti-flash de thème qui échantillonne la classe de `<html>` au premier rAF donne un faux rouge ~1 run sur 3 : les feuilles bloquantes du `<head>` suspendent le rendu pendant que le compositeur tique déjà, et le `<body>` de Next s'ouvre sur un `<div hidden>` avant le script next-themes. Échantillonner la première frame où un enfant de `<body>` a `getClientRects().length > 0` — c'est un **resserrage** de l'oracle, pas un relâchement. (Sprint 83 #642)
+
+
+## PIT-S83-003 — Un locator E2E peut s'ancrer sur la classe même qu'une issue de charte supprime
+`AUTH_CARD` de `sprint-77-theme-visual.spec.ts` valait `div.bg-surface.max-w-md.rounded-lg.shadow-lg` : ancré sur l'ombre que #574 avait pour objet de retirer. Le mode d'échec n'aurait pas été un diff de pixels mais « élément introuvable » sur les 8 tests auth — et rien dans le périmètre de l'issue ne le laissait prévoir. Avant de commiter un retrait de classe, `grep` cette classe dans `frontend/e2e/` ; ancrer un locator visuel sur l'**invariant** exigé par la charte (`.border-rule`), jamais sur l'habillage. (Sprint 83 #574)
+
+
+## PIT-S83-004 — `next build` vert + `vitest` vert pendant que `tsc --noEmit` est ROUGE
+Les `.test.tsx` sortent du périmètre du build : un cast faux dans un fichier de test (`id` au lieu de `jobId`) passe le build et vitest, et ne rougit que `tsc`. Symétrique de PIT-S41-002 (le build attrape ce que RTL ne voit pas). Le verdict frontend, c'est `./scripts/test-quiet.sh frontend` **complet** — jamais build + vitest seuls. (Sprint 83 #518)
+
+
+## PIT-S83-005 — `test-quiet.sh frontend` n'exécute PAS `format:check`, que la CI exige
+Au S83, une double ligne vide introduite par `75f37c4` a traversé l'agent (build + vitest + typecheck + lint) puis le lead (`test-quiet.sh` : 1392/1392, exit 0) — et a rougi le job CI `frontend` sur `prettier --check`. Le verdict local ne couvrait pas toutes les étapes du job. Aggravant : sous RTK, `npx prettier --check <fichier>` renvoie « All files formatted correctly » **alors que le fichier est fautif** ; seul `rtk proxy npm run format:check` a dit vrai. Tant que `test-quiet.sh` n'intègre pas `format:check`, le lancer à part avant tout push. (Sprint 83, clôture)
+
+
+## PIT-S83-006 — JSX dans un littéral de TUPLE rougit `react/jsx-key`, donc le build
+`[['EventDrawer', <EventDrawer … />], …] as const` : la règle prend le tuple pour une liste d'enfants et exige une `key`, et le lint est une gate du build CI. Poser un `key` littéral sur chaque élément ; la règle ne sait pas distinguer un tuple d'un tableau d'enfants. (Sprint 83 #518)
+
+
+## PIT-S83-007 — `process.env.TZ = undefined` n'efface pas la variable : il la met à la CHAÎNE `"undefined"`
+Un test qui force `TZ='Asia/Tokyo'` puis restaure par `process.env.TZ = previousTz` contamine tout test suivant du même worker : `TZ` n'étant settée ni en CI ni dans un shell local, `previousTz` vaut presque toujours `undefined`, que Node coerce en `"undefined"` — zone invalide qui retombe sur UTC. Mesuré : `getTimezoneOffset()` rend 0 au lieu de -120. **Invisible sur la CI Ubuntu, déjà en UTC**, donc jamais rouge là où l'on regarde. Restaurer par `if (previousTz === undefined) delete process.env.TZ; else process.env.TZ = previousTz`. Plus généralement, un test de fuseau doit FORCER `TZ` — sinon il est vacant en CI, où le défaut qu'il couvre est un NO-OP — et sa contre-épreuve doit échouer aussi sous `TZ=UTC`. Trouvé par la review de **cycle 2**, sur un commit qui corrigeait lui-même le cycle 1. (Sprint 83 #518)
+
+
+## PIT-S83-008 — Un `LocalDateTime` Java arrive SANS offset, et `new Date(iso)` le lit dans le fuseau du NAVIGATEUR
+`SessionResponse.lastActivity/createdAt` et `ExportJobResponse.expiresAt` sont des `LocalDateTime` : Jackson écrit `2026-07-05T10:00:00`. `ExportDataFlow` ajoutait `Z` (référentiel serveur, #58), `SessionList` faisait `new Date(iso)` — deux lectures opposées du même contrat, dont une fausse du décalage local. Défaut **pré-existant**, promu par #518 en affirmation lisible par la machine (`<time dateTime>`). Passer par `parseServerDateTime` / `serverDateTime` de `lib/date-iso.ts`. ⚠ Rien ne verrouille la zone du backend en UTC (`Clock.systemDefaultZone()`, aucun `TZ` conteneur) : la convention repose sur un défaut Docker implicite. (Sprint 83 #518, review cycle 1)
+
+
+## PIT-S83-009 — `language-selector.i18n.test.ts` assère la liste EXACTE des clés de `common.navigation`
+Toute clé ajoutée sous `navigation` dans les 4 locales fait rougir ce test. Pour un nouveau contrôle transversal (ici la bascule de thème), ouvrir un objet frère (`common.theme`) plutôt qu'élargir `navigation`. (Sprint 83 #642)
+
+
+## PIT-S83-010 — Un commentaire de code peut institutionnaliser un écart — et tromper une revue de charte
+Deux fois au même sprint. (1) `AppShell.tsx` documentait sa classe active comme « calquée sur `SettingsShell` », transformant un précédent interne non sourcé (#86, `43d9e14`) en référence apparente ; le test assérait la même classe sous le même intitulé. (2) À la clôture, la revue `ui-design` a déclaré #578 en ÉCART en citant `colors.css:74-90` — un commentaire écrit au S57 **d'après ce même précédent** — alors que la maquette (`App.dc.html`, `.app-nav.is-active { background: var(--color-primary) }`) donnait raison à #578. Un commentaire qui cite un composant frère comme source de vérité visuelle est un signal de dérive, pas une justification ; face à un écart charte ↔ code, lire la **règle CSS de l'écran de maquette** avant de trancher. (Sprint 83 #578, clôture)
+
+
+## PIT-S83-011 — Un énoncé d'issue peut être faux alors que la plupart de ses références sont justes
+#518 nommait 5 composants à migrer ; 4 étaient justes, mais `CompactAgenda` n'affiche **aucune** date (documenté dans son en-tête depuis #83), `ProductsListView:295` est un `<td>` et `SessionList` un `<p>`. Le mini-plan architect se trompait lui aussi, dans l'autre sens (3 `<time>` comptés au lieu de 2, en incluant un fichier de test). Au même sprint, #574 annonçait 8 surfaces et 1 inversion de survol (il y en avait 9 et 2), puis 10 références visuelles invalidées (la CI en a rougi 8), et #642 reposait sur une préférence de thème « de compte » qui n'existe pas en base. Relire **chaque** élément nommé avant de briefer. (Sprint 83)
+
+
+## PIT-S83-012 — Une image de backend e2e se date ; une sonde HTTP, elle, ne prouve pas l'existence d'une route
+Au S83, `sprint-82-recurrence-capped-hint` échouait en local. L'image du conteneur backend (`docker inspect --format '{{.Created}}'`) datait du 2026-08-30 ; le flag `capped` a été livré le 2026-09-03 (`ba8f585`) : l'image ne **pouvait pas** contenir la fonctionnalité. La CI l'a confirmé (vert). La sonde HTTP, elle, ne tranchait rien : le filtre de sécurité rend **401 pour toute route non authentifiée, existante ou non** (calibré sur une route inventée). Dater l'image contre le commit de la fonctionnalité ; ne pas conclure d'un 401. (Sprint 83, Phase 6)
+
+
+## PIT-S83-013 — `check-sprint-completeness.sh` détecte la trace d'un spécialiste par NOM de fichier, pas par contenu
+La règle `ls "$SPRINT_DIR" | grep -E "test-runner"` est satisfaite par n'importe quel fichier bien nommé, vide compris ; inversement, un artefact complet qui traite un signal mais s'appelle autrement laisse le signal « non traité ». Au S83, un fichier `verification-ui-design-et-tests.md` a levé les 4 signaux `UI_DESIGN` mais aucun des 3 `TEST_RUNNER`, bien qu'il en contînt les résultats. Nommer l'artefact d'après le spécialiste **et** y mettre la preuve réelle ; ne jamais créer un fichier vide pour faire taire le contrôle. (Sprint 83, clôture)
+
+
+## PIT-S83-014 — `el.focus({ focusVisible: true })` ne déclenche PAS `:focus-visible` : faux négatif sur l'anneau de focus
+Au S83, un focus programmatique sur la bascule de thème a rendu `outline: none` et `matches(':focus-visible') === false` — ce qui aurait conclu à l'absence d'indicateur de focus. Une vraie navigation clavier (touche Tab depuis `body`) a rendu un anneau de 2px à 5,93:1 (clair) et 6,94:1 (sombre). Mesurer un indicateur de focus via le clavier réel, jamais via `focus()`. De même, une capture réduite à 0,8 a fait paraître pâle une icône mesurée ensuite à 16,7:1 : réduction d'un trait fin, pas un défaut. (Sprint 83, clôture)
+
+
+## PIT-S83-015 — RTK corrompt la sortie BINAIRE de `git show`
+Lire les dimensions d'un PNG versionné par `git show HEAD:<png> | python …` a rendu `1146224640x32489405` : le flux binaire est altéré par le hook. `rtk proxy git show HEAD:<png>` rend les vraies dimensions (448×430). À appliquer à toute sortie binaire, en plus des cas déjà connus (`git diff` vide, `--reporter=line` réécrit en JSON). (Sprint 83, clôture)
+
+
+## PIT-S81-024 — re-confirmé au Sprint 83
+Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
 
 ---
 

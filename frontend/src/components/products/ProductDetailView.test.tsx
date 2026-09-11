@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '@/types/product'
+import { toLocalIsoDate } from '@/lib/date-iso'
 import { ProductDetailView } from './ProductDetailView'
 
 /**
@@ -172,6 +173,27 @@ describe('ProductDetailView', () => {
     render(<ProductDetailView productId="p-alpha" />)
     expect(screen.getByTestId('product-detail-history-row-e1')).toBeInTheDocument()
     expect(screen.queryByTestId('product-detail-history-row-e-arch')).not.toBeInTheDocument()
+  })
+
+  /**
+   * #518 — la date de chaque ligne d'historique se rend en `<time datetime>`
+   * (convention DS `i18n.css` §7) et non plus en `<span>`. Seule la SÉMANTIQUE est
+   * vérifiée : `.mt-date--long` n'a aucun effet observable sous jsdom.
+   */
+  it('rend la date de chaque ligne d’historique en <time datetime> local', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    const row = screen.getByTestId('product-detail-history-row-e1')
+    const el = row.querySelector('time')
+    expect(el).not.toBeNull()
+    expect(el?.tagName).toBe('TIME')
+    expect(el?.getAttribute('datetime')).toBe(toLocalIsoDate(new Date('2026-06-01T10:00:00Z')))
+    expect(el?.textContent).toBe(
+      new Intl.DateTimeFormat('fr', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }).format(new Date('2026-06-01T10:00:00Z')),
+    )
   })
 
   it('ouvre le ProductDrawer en édition', async () => {

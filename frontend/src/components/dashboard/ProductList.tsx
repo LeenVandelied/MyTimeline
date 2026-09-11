@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
+import { toLocalIsoDate } from '@/lib/date-iso'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { nextEvent } from './lib'
 
@@ -60,7 +61,17 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                 {next ? (
                   <span className="text-ink-muted text-2xs hidden truncate sm:inline">
                     {next.title} ·{' '}
-                    <span className="font-mono">{fmt.format(new Date(next.start))}</span>
+                    {/* #518 — `<time datetime>` (convention DS `i18n.css` §7) et
+                        `.mt-date--long` en lieu et place de `font-mono` : elle pose la
+                        même fonte, plus `tabular-nums` et l'isolation bidi. Sa
+                        `font-size:13px` est EXACTEMENT le `text-2xs` du parent → aucun
+                        delta de taille ici. */}
+                    <time
+                      className="mt-date--long"
+                      dateTime={toLocalIsoDate(new Date(next.start)) ?? undefined}
+                    >
+                      {fmt.format(new Date(next.start))}
+                    </time>
                   </span>
                 ) : (
                   <span className="text-ink-faint text-2xs hidden sm:inline">

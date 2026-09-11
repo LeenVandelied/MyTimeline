@@ -39,7 +39,7 @@ export default function TestimonialCard({ name, role, content, avatar }: Testimo
   const textColorClass = getTextColorClass(avatar.bgColor)
 
   return (
-    <Card className="testimonial-card bg-surface border-rule shadow-lg">
+    <Card className="testimonial-card bg-surface border-rule">
       <CardContent className="p-8">
         <div className="mb-4 flex items-center">
           <div

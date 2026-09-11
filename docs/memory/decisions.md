@@ -785,3 +785,33 @@ Issue à deux sujets de natures différentes. **Thème** : reste porté par `App
 **Décision.** Recibler la ligne sur le nouveau fichier de garde **et** y écrire explicitement de ne PAS compter `NewEventDrawer.test.tsx`, **plus** un commentaire au point d'origine dans ce test.
 **Pourquoi.** Corriger seulement le pack laisse le commentaire trompeur en place dans le code ; corriger seulement le code laisse le pack faire autorité. Dans les deux cas le prochain contributeur refait le raisonnement « BR-EVE-017 est déjà couverte » — c'est exactement le mode de propagation décrit par [[PIT-S70-001]] (un identifiant `BR-*` recopié depuis un commentaire se propage jusque dans les briefings). La redondance est volontaire, comme celle du titre et de la ligne `Status` des entrées de sprint ([[PIT-S56-006]]).
 **Portée.** Vaut pour toute correction d'attribution `BR-*` / `PIT-*` : pack + point d'origine, jamais l'un sans l'autre. (Sprint 82 #507)
+
+## DEC-S83-001 — `.mt-date--long` partout où le DS s'applique ; `.mt-date--short` reste inutilisée (tranche #517)
+**Contexte.** #518 migrait ~15 composants vers `<time dateTime>` ; #517 (backlog) relevait que `.mt-date--short` est définie mais inutilisée.
+**Décision.** `.mt-date--long` sur les surfaces du DS ; `DateStamp` et les pages légales reçoivent `<time>` **sans** classe `.mt-date--*`.
+**Pourquoi.** `--short` impose `uppercase` + 11px **et** un autre jeu d'options `Intl` : c'est un choix Designer, pas une migration sémantique. `--long` (13px) vaut exactement `--text-2xs` et la taille de `.mt-drawer__row` → dashboard et drawers à taille constante. Le `nowrap` de `--long` défait le repli sur 2 lignes de `DateStamp`, et 13px mono décrocherait une date d'une phrase de prose.
+**Portée.** #517 est de fait tranchée dans ce sens : à fermer ou requalifier en arbitrage Designer (brancher `--short` avec ses options, ou la supprimer du DS). (Sprint 83 #518)
+
+## DEC-S83-002 — La casse des libellés de nav n'est PAS traitée par #578 ; elle revient à #575
+**Contexte.** #578 demandait aussi de « trancher le libellé de navigation » (mono capitales espacées vs sentence case), point que l'issue rattachait elle-même à #575.
+**Décision.** Arbitrage imposé au briefing : #578 livre la pilule graphite et le CTA accent, sans toucher casse ni police.
+**Pourquoi.** Trancher ici aurait produit deux arbitrages concurrents sur la même question. La maquette, lue à la clôture, confirme que la question est réelle (`App.dc.html` : `font-mono; uppercase; letter-spacing: .06em`).
+**Portée.** Follow-up rattaché à #575. (Sprint 83 #578)
+
+## DEC-S83-003 — Bascule de thème hors connexion : seul le temps 1 (local) est livré
+**Contexte.** #642 décrivait un motif de persistance en 3 temps (local avant connexion ; à la connexion, la préférence de compte gagne sinon le choix local est adopté ; ensuite le compte fait foi).
+**Décision.** Livrer l'exposition du contrôle (landing desktop + menu mobile + 4 pages auth), la persistance locale et l'anti-flash ; **ne pas** livrer les temps 2 et 3.
+**Pourquoi.** Ils supposent une préférence de thème au niveau du compte, qui n'existe ni dans le backend (`grep -ri theme backend/src/main/java` → 0), ni dans les migrations, ni dans l'API ; `types/settings.ts:36` l'écrit : « Thème : next-themes ». L'estimation « S » de l'issue reposait sur une prémisse fausse, établie par le lead **avant** le briefing.
+**Portée.** Deux critères d'acceptation de #642 restent non tenus ; follow-up M (migration V16 + endpoint + règle d'arbitrage). (Sprint 83 #642)
+
+## DEC-S83-004 — Les horodatages `LocalDateTime` du backend se lisent dans le référentiel SERVEUR (UTC)
+**Contexte.** Deux lectures opposées du même contrat (`SessionList` en fuseau navigateur, `ExportDataFlow` en UTC), relevées en MAJEUR par la review de cycle 1.
+**Décision.** UTC, via `parseServerDateTime` / `serverDateTime` de `lib/date-iso.ts`, convention documentée dans le helper.
+**Pourquoi.** C'était déjà la convention écrite (#58) ; `ClockConfig` produit `LocalDateTime.now()` dans la zone par défaut du conteneur, UTC. **Impact assumé** : l'heure de « dernière activité » change sur Réglages > Sécurité du décalage local — correction de bug, l'ancienne valeur était fausse.
+**Portée.** La zone du backend n'est **pas verrouillée** (`Clock.systemDefaultZone()`, aucun `TZ`) : follow-up backend pour la fixer. Les `LocalDate` (`startDate`) relèvent d'une autre convention, non traitée. (Sprint 83 #518)
+
+## DEC-S83-005 — Navigation active = `--color-primary` ; l'accent va au CTA « Nouvel événement »
+**Contexte.** La revue `ui-design` de clôture a déclaré #578 en ÉCART : `colors.css:74-90` désignait l'accent comme « l'encre de TOUT état actif (lien de sidebar `AppShell`, onglet de `SettingsShell`) », et `readme.md:6` réserve l'accent au « today/active ».
+**Décision.** Conserver #578 ; corriger la documentation du DS.
+**Pourquoi.** La maquette fait foi : `design_handoff_mytimeline/App.dc.html` pose `.app-nav.is-active { background: var(--color-primary); color: var(--color-primary-ink) }` et `background: var(--color-accent)` sur le CTA. Le commentaire de `colors.css` avait été écrit au S57 d'après le précédent interne (#86) que #578 corrige ; la phrase du handoff est ambiguë et contredite par son propre écran.
+**Portée.** Le commentaire de `colors.css` est réécrit ; « actif » au sens de l'accent désigne désormais les états focalisés de type survol (dropdown, burger) et le curseur *today*. (Sprint 83, clôture)

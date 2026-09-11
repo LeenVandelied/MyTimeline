@@ -1,7 +1,11 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ExportDataFlow } from './ExportDataFlow'
+import type { ReactNode } from 'react'
 import type { UseExportFlowResult } from '@/hooks/useExportFlow'
+
+/** Expiration du job async utilisée par l'étape « ready » (#518 : valeur du `datetime`). */
+const EXPIRES_AT = '2999-01-01T10:00:00'
 
 /**
  * #59 — Flux d'export RGPD (présentation). On pilote la machine à états via un
@@ -9,11 +13,27 @@ import type { UseExportFlowResult } from '@/hooks/useExportFlow'
  * (confirm / preparing / ready) + l'erreur + le lien expiré, sans dépendre des
  * timers de polling (testés dans `useExportFlow.test.ts`).
  */
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, params?: Record<string, unknown>) =>
-    params ? `${key}:${JSON.stringify(params)}` : key,
-  useLocale: () => 'fr',
-}))
+vi.mock('next-intl', () => {
+  /**
+   * #518 — le message `ready.expiresAt` est désormais rendu par `t.rich` (la date
+   * y est enveloppée d'un `<time datetime>`). Le mock doit donc exposer `.rich` en
+   * plus de l'appel direct, sinon `t.rich is not a function` fait tomber l'étape
+   * « ready ». `rich` applique le gestionnaire de balise aux paramètres NON
+   * fonctionnels, ce qui suffit à observer le `<time>` rendu.
+   */
+  const t = (key: string, params?: Record<string, unknown>) =>
+    params ? `${key}:${JSON.stringify(params)}` : key
+  t.rich = (key: string, params: Record<string, unknown> = {}) => {
+    const values = Object.entries(params).filter(([, v]) => typeof v !== 'function')
+    const tags = Object.entries(params).filter(([, v]) => typeof v === 'function')
+    const label = values.length ? `${key}:${JSON.stringify(Object.fromEntries(values))}` : key
+    return tags.reduce<ReactNode>(
+      (acc, [, render]) => (render as (c: ReactNode) => ReactNode)(acc),
+      label,
+    )
+  }
+  return { useTranslations: () => t, useLocale: () => 'fr' }
+})
 
 let flowState: UseExportFlowResult
 vi.mock('@/hooks/useExportFlow', () => ({
@@ -80,13 +100,19 @@ describe('ExportDataFlow', () => {
         status: 'COMPLETED',
         format: 'ZIP',
         downloadUrl: '/api/export/download/abc?token=t',
-        expiresAt: '2999-01-01T10:00:00',
+        expiresAt: EXPIRES_AT,
       },
     })
     render(<ExportDataFlow />)
 
     expect(screen.getByTestId('export-ready-async')).toBeInTheDocument()
-    expect(screen.getByTestId('export-expiry')).toBeInTheDocument()
+    // #518 — la date d'expiration est enveloppée d'un `<time datetime>` (convention
+    // DS `i18n.css` §7) SANS sortir de la phrase ICU : le `<p>` porte toujours le
+    // message, mais le seul segment date est balisé et machine-lisible.
+    const expiry = screen.getByTestId('export-expiry')
+    const time = expiry.querySelector('time')
+    expect(time).not.toBeNull()
+    expect(time?.getAttribute('datetime')).toBe(new Date(`${EXPIRES_AT}Z`).toISOString())
     fireEvent.click(screen.getByTestId('export-download'))
     expect(downloadCompleted).toHaveBeenCalledOnce()
   })

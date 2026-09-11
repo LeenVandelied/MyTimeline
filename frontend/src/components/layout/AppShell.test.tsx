@@ -174,13 +174,36 @@ describe('AppShell — lien actif', () => {
     )
   })
 
-  it('applique la classe active calquée sur SettingsShell (accent, pas .is-active)', () => {
+  // #578 — la référence est la MAQUETTE, pas `SettingsShell` : pilule graphite
+  // pleine (`bg-primary` + encre `primary-ink`). L'ancienne version de ce test
+  // asserait `bg-accent-soft text-accent`, c'est-à-dire le précédent interne
+  // recopié depuis `SettingsShell` (#86) — il figeait l'écart au lieu de le voir.
+  it('peint le lien actif en pilule graphite pleine (maquette #578, pas .is-active)', () => {
     mockPathname = '/fr/dashboard'
     renderShell()
     const active = screen.getByTestId('shell-sidebar-nav-link-dashboard')
-    expect(active.className).toContain('bg-accent-soft')
-    expect(active.className).toContain('text-accent')
+    expect(active.className).toContain('bg-primary')
+    expect(active.className).toContain('text-primary-ink')
+    // Les deux moitiés de l'ancien couple doivent avoir disparu ENSEMBLE : n'en
+    // retirer qu'une laisserait une encre bleue sur pilule graphite (cf. la
+    // famille de défauts `hover:bg-*` / `hover:text-*` de `ui/button.tsx`).
+    expect(active.className).not.toContain('bg-accent-soft')
+    expect(active.className).not.toContain('text-accent')
     expect(active.className).not.toContain('is-active')
+  })
+
+  // #578 — les deux couleurs étaient INVERSÉES par rapport à la maquette : le CTA
+  // portait le graphite (`bg-primary`, défaut du `Button`) et la nav le bleu.
+  it('peint le CTA « Nouvel événement » en bleu accent', () => {
+    mockPathname = '/fr/dashboard'
+    renderShell()
+    const cta = screen.getByTestId('shell-sidebar-new-event-button')
+    expect(cta.className).toContain('bg-accent')
+    expect(cta.className).toContain('text-accent-ink')
+    expect(cta.className).toContain('hover:bg-accent-hover')
+    // `cn()` = tailwind-merge : le `bg-primary` du variant `default` doit être
+    // ÉVINCÉ, pas simplement suivi d'une seconde classe de fond.
+    expect(cta.className).not.toContain('bg-primary')
   })
 })
 

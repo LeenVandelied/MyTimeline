@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { getWeekRange, getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
+import { toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #80 — Agenda de la semaine courante (spec Designer §3). Filets (pas de `<Card>`
@@ -56,9 +57,15 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
                   valeur EXACTE de `--text-2xs` → aucun delta de taille. On ne pose
                   PAS `.mt-date--short` : elle force `uppercase` + 11px, un
                   traitement qui relève d'un arbitrage Designer (cf. rapport #72). */}
+              {/* #518 — `toLocalIsoDate` REMPLACE `toISOString()`. `dayFmt` rend
+                  `{weekday, day}` dans le fuseau du navigateur ; `toISOString()`
+                  bascule en UTC et pouvait donc nommer un AUTRE jour que le libellé
+                  peint juste à côté (Paris UTC+2 : « mer. 24 » ↔ `2026-06-23T22:00Z`).
+                  Il levait en outre une `RangeError` sur une date invalide, là où
+                  l'helper rend `null` et l'attribut est simplement omis. */}
               <time
                 className="text-ink-muted mt-date--long w-16 shrink-0"
-                dateTime={new Date(event.start).toISOString()}
+                dateTime={toLocalIsoDate(new Date(event.start)) ?? undefined}
               >
                 {dayFmt.format(new Date(event.start))}
               </time>
