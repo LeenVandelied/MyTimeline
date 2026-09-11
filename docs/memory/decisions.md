@@ -827,3 +827,9 @@ Issue à deux sujets de natures différentes. **Thème** : reste porté par `App
 **Décision.** Traité dans #575 au S84 : liens de `AppShell.tsx` et tablist de `SettingsShell.tsx`, en plus des 8 titres de section.
 **Pourquoi.** Même motif typographique, fichiers disjoints des autres issues du sprint ; une issue séparée aurait rouvert la question de deux arbitrages concurrents.
 **Portée.** #575 passe de S à S+. (Sprint 84, démarrage — arbitrage du dev)
+
+## DEC-S84-003 — Orchidée `#B056A8` → `#AE55A6` : l'AA prime sur la valeur exacte du handoff
+**Contexte.** #577 imposait à la fois les 12 valeurs exactes du handoff (critère 4) et l'AA sur les 12 (critère 5). Mesuré avec les encres du dépôt (`INK_LIGHT #FFFFFF`, `INK_DARK #0B0C0E`) : orchidée `#B056A8` plafonne à 4.43:1 (blanc) / 4.42:1 (sombre). L'affirmation « AA-tunée » du handoff est fausse pour cette couleur avec nos constantes (elle ne passerait qu'avec un noir pur, 4.74).
+**Décision.** `--evt-orchid` = `#AE55A6` (4.52:1 sur blanc). Les 11 autres valeurs restent strictement égales au handoff ; le test de synchronisation porte une exception nommée pour orchidée.
+**Pourquoi.** Écart visuel imperceptible ; les deux autres voies (garder une couleur de palette sous AA et l'avertissement « contraste faible » qu'elle déclenche dans `CategoryDrawer`, ou retirer une couleur de la maquette) étaient pires.
+**Portée.** Aucune donnée migrée (DEC-S84-001) : une catégorie enregistrée en `#B056A8` s'ouvre désormais en « Personnalisé ». Acceptable, rien n'est déployé. (Sprint 84, arbitrage du dev)
