@@ -51,6 +51,10 @@ export interface TimelineResponsiveProps extends TimelineViewProps {
 export const TimelineResponsive: React.FC<TimelineResponsiveProps> = ({
   onEditEvent,
   onDeleteEvent,
+  // #592 (DEC-S85-004/005) — le contexte d'écran ne concerne que la frise
+  // DESKTOP : retenu ici pour que les variantes mobiles, inchangées, ne le
+  // reçoivent jamais (ni prop inconnue, ni comportement implicite).
+  layout,
   ...props
 }) => {
   const isMobilePortrait = useMediaQuery(MOBILE_PORTRAIT_QUERY)
@@ -101,7 +105,7 @@ export const TimelineResponsive: React.FC<TimelineResponsiveProps> = ({
 
   // #absorb (gap A) — le desktop reçoit aussi onEditEvent (drawer → bouton « Éditer »).
   // Avant, seules les variantes mobiles le recevaient → édition desktop inatteignable.
-  return <TimelineView {...props} onEditEvent={onEditEvent} />
+  return <TimelineView {...props} layout={layout} onEditEvent={onEditEvent} />
 }
 
 export default TimelineResponsive

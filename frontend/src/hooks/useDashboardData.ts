@@ -85,6 +85,8 @@ export function useDashboardData(
         id: product.id,
         title: product.name,
         category: product.category.name,
+        // #592 (DEC-S85-006) — pastille de catégorie (sidebar, puis en-tête #601).
+        categoryColor: product.category.color,
       })),
     [products],
   )

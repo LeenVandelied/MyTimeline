@@ -3,16 +3,29 @@
 import React, {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
   useState,
 } from 'react'
-import { ChevronRight, Maximize2, Minus, Plus } from 'lucide-react'
+import { ChevronRight, Maximize2, Minus, Plus, SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
-import { Resource, buildEventAriaLabel, groupResourcesByCategory } from './lib'
+import {
+  Resource,
+  buildEventAriaLabel,
+  categoryColorsOf,
+  countEventsByCategory,
+  groupResourcesByCategory,
+} from './lib'
+import {
+  TimelineSidebar,
+  buildTimelineShortcuts,
+  useTimelineSidebarPanel,
+  type TimelineSidebarCategory,
+} from './TimelineSidebar'
 import { Minimap } from './Minimap'
 import { EventDrawer } from './EventDrawer'
 import { EventPill } from './EventPill'
@@ -407,6 +420,22 @@ export interface TimelineViewProps {
    * `TimelineEditHost`. Absent → drawer lecture seule historique (aucune régression).
    */
   onEditEvent?: (event: PositionedEvent) => void
+  /**
+   * #592 (DEC-S85-005) — CONTEXTE DE MONTAGE de la frise desktop, opt-in.
+   *
+   *  - `'embedded'` (défaut) : frise incrustée dans un autre écran (dashboard,
+   *    fiche produit). Rendu HISTORIQUE, inchangé : barre d'outils + bulle `?`.
+   *  - `'screen'` : écran cœur « Vue Timeline » (`/timeline`, seul à le passer).
+   *    Ajoute la sidebar (accordéons, filtres de catégorie, légende, raccourcis),
+   *    qui remplace la bulle `?`.
+   *
+   * Nommée d'après le CONTEXTE et non d'après un bloc (`showSidebar`) : les
+   * boutons « Aujourd'hui » / « Nouvel événement » de la barre d'outils (#602)
+   * sont eux aussi propres à l'écran et se brancheront sur cette même prop.
+   * Traverse `TimelineEditHost` → `TimelineResponsive` sans code dédié ; les
+   * variantes MOBILES ne la reçoivent pas (`TimelineResponsive` la retient).
+   */
+  layout?: 'embedded' | 'screen'
 }
 
 export const TimelineView: React.FC<TimelineViewProps> = ({
@@ -415,7 +444,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   locale,
   today,
   onEditEvent,
+  layout = 'embedded',
 }) => {
+  const isScreen = layout === 'screen'
   const t = useTranslations()
   // #349 — `useTranslations()` ne garantit pas une identité stable entre deux
   // rendus. Passée telle quelle aux lanes mémoïsées, cette prop les invaliderait
@@ -445,6 +476,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   }, [])
   const toggleResource = useCallback((resourceId: string) => {
     setCollapsedResources((prev) => ({ ...prev, [resourceId]: !(prev[resourceId] ?? false) }))
+  }, [])
+  // #592 — MASQUAGE de catégorie (filtres de la sidebar), keyé par catégorie.
+  // DISTINCT de `collapsed` : replier garde l'en-tête d'accordéon et retire les
+  // lanes ; masquer retire la catégorie ENTIÈRE (en-tête, lanes, minimap). Les
+  // deux états sont indépendants : masquer puis réafficher rend la catégorie
+  // dans l'état de repli où elle était. Bascule stable (même motif que
+  // `toggleCategory`) : c'est une prop de la sidebar mémoïsée.
+  const [hiddenCats, setHiddenCats] = useState<Record<string, boolean>>({})
+  const toggleHiddenCategory = useCallback((category: string) => {
+    setHiddenCats((prev) => ({ ...prev, [category]: !(prev[category] ?? false) }))
   }, [])
   const scrollRef = useRef<HTMLDivElement>(null)
   const railRef = useRef<HTMLDivElement>(null)
@@ -499,12 +540,37 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   const groups = useMemo(() => Object.entries(resourcesByCategory), [resourcesByCategory])
 
+  // #592 — Catégories masquées par les filtres, dérivées UNE fois ici, EN AMONT
+  // de tout ce qui calcule une géométrie ou une coordonnée clavier : modèle
+  // vertical, `navLanes` (#81) et rendu consomment `visibleGroups`, jamais
+  // `groups`. C'est le risque n°1 du plan : filtrer seulement au rendu décalerait
+  // les index « lane:event » de la navigation clavier et les tops de la
+  // virtualisation (#69) sous une catégorie masquée. Aucun masquage → même
+  // identité que `groups` (aucune mémoïsation aval invalidée).
+  const hiddenResourceIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const r of resources) if (hiddenCats[r.category] ?? false) ids.add(r.id)
+    return ids
+  }, [resources, hiddenCats])
+  const visibleGroups = useMemo(
+    () =>
+      hiddenResourceIds.size === 0
+        ? groups
+        : groups.filter(([category]) => !(hiddenCats[category] ?? false)),
+    [groups, hiddenCats, hiddenResourceIds],
+  )
+
+  // #592 (DEC-S85-006) — couleur de chaque catégorie : table UNIQUE, que la
+  // pastille d'en-tête de catégorie (#601) consommera aussi.
+  const categoryColors = useMemo(() => categoryColorsOf(resources), [resources])
+
   // #69 — VIRTUALISATION. `geometryKey` force une remesure quand la géométrie du
   // rail change sans qu'aucun scroll ne survienne (zoom, étendue, collapse d'une
-  // catégorie, arrivée de nouveaux events).
+  // catégorie, arrivée de nouveaux events, #592 masquage d'une catégorie).
   const geometryKey = useMemo(
-    () => `${dayWidth}|${totalDays}|${resources.length}|${JSON.stringify(collapsed)}`,
-    [dayWidth, totalDays, resources.length, collapsed],
+    () =>
+      `${dayWidth}|${totalDays}|${resources.length}|${JSON.stringify(collapsed)}|${JSON.stringify(hiddenCats)}`,
+    [dayWidth, totalDays, resources.length, collapsed, hiddenCats],
   )
   const viewport = useTimelineViewport(scrollRef, railRef, geometryKey)
   const { ensureVisible, resync } = viewport
@@ -525,8 +591,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   // Modèle vertical (tops en px de chaque liste de lanes / de chaque lane).
   const verticalModel = useMemo(
-    () => buildVerticalModel(groups, collapsed, metrics),
-    [groups, collapsed, metrics],
+    () => buildVerticalModel(visibleGroups, collapsed, metrics),
+    [visibleGroups, collapsed, metrics],
   )
 
   // #69 — La virtualisation VERTICALE ne s'enclenche qu'au-delà du seuil : en
@@ -573,9 +639,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // (catégorie non collapsée) → chaque entrée = { resourceId, events[] }. L'ordre
   // suit le rendu (catégories puis ressources). Les lanes des catégories
   // collapsées sont EXCLUES (pastilles non rendues → non focusables).
+  // #592 — idem pour les catégories MASQUÉES : `visibleGroups` ne les contient pas.
   const navLanes = useMemo(() => {
     const lanes: Array<{ resourceId: string; events: PositionedEvent[] }> = []
-    for (const [category, resList] of groups) {
+    for (const [category, resList] of visibleGroups) {
       if (collapsed[category] ?? false) continue
       for (const resource of resList) {
         // #195 — Une lane produit collapsée n'a plus de pastilles rendues → on
@@ -586,7 +653,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       }
     }
     return lanes
-  }, [groups, collapsed, collapsedResources, eventsByResource])
+  }, [visibleGroups, collapsed, collapsedResources, eventsByResource])
 
   // #81 — Roving tabindex : la pastille active (celle qui porte tabIndex=0) est
   // repérée par sa RESSOURCE (`resourceId`) + son index d'event, PAS par un index
@@ -762,9 +829,49 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     [navLanes, focusNav],
   )
 
+  // #592 — La minimap ne représente que le VISIBLE (maquette : `visibleLanes()`
+  // filtre les catégories masquées). L'ÉTENDUE (`computeRange`), elle, reste
+  // calculée sur tous les événements : masquer une catégorie ne doit ni
+  // redimensionner la piste ni déplacer le défilement.
+  const minimapEvents = useMemo(
+    () =>
+      hiddenResourceIds.size === 0
+        ? events
+        : events.filter((e) => !hiddenResourceIds.has(e.resourceId)),
+    [events, hiddenResourceIds],
+  )
   const buckets = useMemo(
-    () => buildMinimapBuckets(events, rangeStart, totalDays),
-    [events, rangeStart, totalDays],
+    () => buildMinimapBuckets(minimapEvents, rangeStart, totalDays),
+    [minimapEvents, rangeStart, totalDays],
+  )
+
+  // #592 — Sidebar (écran `/timeline` seulement, DEC-S85-005).
+  const sidebarId = useId()
+  const sidebarPanel = useTimelineSidebarPanel(isScreen)
+  const { open: sidebarPanelOpen, closeAndRestoreFocus: closeSidebarPanel } = sidebarPanel
+  const eventCounts = useMemo(() => countEventsByCategory(events, resources), [events, resources])
+  // Liste des filtres : TOUTES les catégories (`groups`, pas `visibleGroups`) —
+  // une catégorie masquée doit rester dans la liste pour pouvoir être réaffichée.
+  const sidebarCategories = useMemo<TimelineSidebarCategory[]>(
+    () =>
+      isScreen
+        ? groups.map(([name]) => ({
+            name,
+            color: categoryColors[name] ?? null,
+            eventCount: eventCounts[name] ?? 0,
+            hidden: hiddenCats[name] ?? false,
+          }))
+        : [],
+    [isScreen, groups, categoryColors, eventCounts, hiddenCats],
+  )
+  // Maquette `collapseAll(v)` : pose `collapsed[cat] = v` pour TOUTES les
+  // catégories, masquées comprises (leur état de repli est ainsi cohérent quand
+  // on les réaffiche). N'altère pas `hiddenCats`.
+  const collapseAllCategories = useCallback(
+    (value: boolean) => {
+      setCollapsed(Object.fromEntries(groups.map(([category]) => [category, value])))
+    },
+    [groups],
   )
 
   const weekendSegments = useMemo(
@@ -1021,7 +1128,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         target &&
         (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
       if (e.key === 'Escape') {
-        if (selected) setSelected(null)
+        // #592 — le panneau superposé de la sidebar (< 1024 px) passe en premier :
+        // c'est l'élément ouvert le plus récent, et le focus revient à son bouton.
+        if (sidebarPanelOpen) closeSidebarPanel()
+        else if (selected) setSelected(null)
         else if (document.fullscreenElement) void document.exitFullscreen?.()
         return
       }
@@ -1058,7 +1168,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [selected, rangeStart, now, scrollToToday, toggleFullscreen])
+  }, [
+    selected,
+    rangeStart,
+    now,
+    scrollToToday,
+    toggleFullscreen,
+    sidebarPanelOpen,
+    closeSidebarPanel,
+  ])
 
   const levelLabel = t(`dashboard.timeline.zoom.${zoom.level}`)
 
@@ -1103,7 +1221,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const previousWindows = windowCacheRef.current
   const nextWindows = new Map<string, WindowedEvent[]>()
 
-  const renderGroups = groups.map(([category, resList]) => {
+  // #592 — `visibleGroups` : une catégorie masquée n'a ni en-tête ni lanes.
+  const renderGroups = visibleGroups.map(([category, resList]) => {
     const isCollapsed = collapsed[category] ?? false
     // #69 — Fenêtre verticale de CE groupe. Les en-têtes de catégorie restent
     // TOUJOURS montés (peu nombreux, et ils portent l'accordéon) ; seules les
@@ -1141,21 +1260,19 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   })
   windowCacheRef.current = nextWindows
 
-  const shortcuts: Array<[string, string]> = [
-    ['T', t('dashboard.timeline.help.today')],
-    ['[  ]', t('dashboard.timeline.help.period')],
-    ['+  −', t('dashboard.timeline.help.zoom')],
-    ['F', t('dashboard.timeline.help.fullscreen')],
-    ['Échap', t('dashboard.timeline.help.escape')],
-  ]
+  // Bulle `?` (layout `embedded` seulement) : même source que le pied de sidebar.
+  const shortcuts = isScreen ? [] : buildTimelineShortcuts((key) => t(`dashboard.timeline.${key}`))
 
   return (
     // #81 — REGION LANDMARK : la frise est un repère navigable pour les lecteurs
     // d'écran (`role="region"` explicite + `aria-label` descriptif). L'aide
     // clavier sr-only (`aria-describedby`) est lue à l'entrée dans la région.
+    // #592 — en `screen`, la section devient une grille [sidebar | barre + frise]
+    // (`timeline.css`, `.mt-tlv--screen`) ; le plein écran (`rootRef`) l'inclut.
     <section
-      className="mt-tlv"
+      className={isScreen ? 'mt-tlv mt-tlv--screen' : 'mt-tlv'}
       ref={rootRef}
+      data-layout={layout}
       role="region"
       aria-label={t('dashboard.timeline.region.label')}
       aria-describedby="timeline-region-desc"
@@ -1175,8 +1292,37 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       >
         {liveMessage}
       </div>
+      {/* #592 — Sidebar de l'écran Timeline. AVANT la barre d'outils dans le DOM :
+          c'est l'ordre visuel ≥ 1024 px (colonne gauche). < 1024 px elle devient
+          un panneau superposé à la frise, ouvert par le bouton « Filtres ». */}
+      {isScreen && (
+        <TimelineSidebar
+          id={sidebarId}
+          open={sidebarPanelOpen}
+          categories={sidebarCategories}
+          onToggleCategory={toggleHiddenCategory}
+          onCollapseAll={collapseAllCategories}
+          panelRef={sidebarPanel.panelRef}
+        />
+      )}
       {/* Toolbar : zoom controls + minimap + aide */}
       <div className="mt-tlv__toolbar">
+        {/* #592 (DEC-S85-004) — n'existe qu'en `screen` ; masqué en CSS ≥ 1024 px,
+            où la sidebar est permanente. */}
+        {isScreen && (
+          <button
+            type="button"
+            ref={sidebarPanel.buttonRef}
+            className="mt-tlv-side-toggle"
+            aria-expanded={sidebarPanelOpen}
+            aria-controls={sidebarId}
+            onClick={sidebarPanel.toggle}
+            data-testid="timeline-sidebar-toggle"
+          >
+            <SlidersHorizontal size={13} strokeWidth={1.5} aria-hidden="true" />
+            {t('dashboard.timeline.sidebar.toggle')}
+          </button>
+        )}
         <div className="mt-zoom" role="group" aria-label={t('dashboard.timeline.zoom.label')}>
           <button
             type="button"
@@ -1227,30 +1373,33 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           <Maximize2 size={13} strokeWidth={1.5} aria-hidden="true" />
         </button>
 
-        <div className="mt-tlv__help">
-          <button
-            type="button"
-            className="mt-tlv__help-btn"
-            aria-label={t('dashboard.timeline.help.label')}
-            aria-describedby="timeline-help-pop"
-            data-testid="timeline-help"
-          >
-            ?
-          </button>
-          <div
-            className="mt-tlv__help-pop"
-            id="timeline-help-pop"
-            data-testid="timeline-help-pop"
-            role="tooltip"
-          >
-            {shortcuts.map(([key, desc]) => (
-              <div key={key} className="mt-tlv__help-row">
-                <span>{desc}</span>
-                <span className="mt-tlv__kbd">{key}</span>
-              </div>
-            ))}
+        {/* #592 — en `screen`, les raccourcis vivent dans le pied de la sidebar. */}
+        {!isScreen && (
+          <div className="mt-tlv__help">
+            <button
+              type="button"
+              className="mt-tlv__help-btn"
+              aria-label={t('dashboard.timeline.help.label')}
+              aria-describedby="timeline-help-pop"
+              data-testid="timeline-help"
+            >
+              ?
+            </button>
+            <div
+              className="mt-tlv__help-pop"
+              id="timeline-help-pop"
+              data-testid="timeline-help-pop"
+              role="tooltip"
+            >
+              {shortcuts.map(([key, desc]) => (
+                <div key={key} className="mt-tlv__help-row">
+                  <span>{desc}</span>
+                  <span className="mt-tlv__kbd">{key}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Frise scrollable : règle sticky + lanes */}

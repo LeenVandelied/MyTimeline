@@ -115,7 +115,20 @@
       "period": "Période précédente / suivante",
       "zoom": "Zoom avant / arrière",
       "fullscreen": "Plein écran",
-      "escape": "Fermer le panneau"
+      "escape": "Fermer le panneau",
+      "escapeKey": "Échap"
+    },
+    "sidebar": {
+      "label": "Filtres et légende de la frise",
+      "toggle": "Filtres",
+      "accordions": "Accordéons",
+      "expandAll": "Tout déplier",
+      "collapseAll": "Tout plier",
+      "categories": "Catégories",
+      "categoriesHint": "Chaque bouton affiche ou masque sa catégorie dans la frise.",
+      "filterLabel": "{category}, {count, plural, one {# événement} other {# événements}}",
+      "legend": "Légende",
+      "legendEvent": "Événement"
     },
     "actions": {
       "label": "Actions de l’événement"

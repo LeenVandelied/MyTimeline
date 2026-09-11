@@ -115,7 +115,20 @@
       "period": "Periodo anterior / siguiente",
       "zoom": "Acercar / alejar",
       "fullscreen": "Pantalla completa",
-      "escape": "Cerrar panel"
+      "escape": "Cerrar panel",
+      "escapeKey": "Esc"
+    },
+    "sidebar": {
+      "label": "Filtros y leyenda de la cronología",
+      "toggle": "Filtros",
+      "accordions": "Acordeones",
+      "expandAll": "Desplegar todo",
+      "collapseAll": "Plegar todo",
+      "categories": "Categorías",
+      "categoriesHint": "Cada botón muestra u oculta su categoría en la cronología.",
+      "filterLabel": "{category}, {count, plural, one {# evento} other {# eventos}}",
+      "legend": "Leyenda",
+      "legendEvent": "Evento"
     },
     "actions": {
       "label": "Acciones del evento"

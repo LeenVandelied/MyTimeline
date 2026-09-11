@@ -115,7 +115,20 @@
       "period": "Vorheriger / nächster Zeitraum",
       "zoom": "Vergrößern / verkleinern",
       "fullscreen": "Vollbild",
-      "escape": "Panel schließen"
+      "escape": "Panel schließen",
+      "escapeKey": "Esc"
+    },
+    "sidebar": {
+      "label": "Filter und Legende der Zeitleiste",
+      "toggle": "Filter",
+      "accordions": "Akkordeons",
+      "expandAll": "Alle aufklappen",
+      "collapseAll": "Alle zuklappen",
+      "categories": "Kategorien",
+      "categoriesHint": "Jede Schaltfläche blendet ihre Kategorie in der Zeitleiste ein oder aus.",
+      "filterLabel": "{category}, {count, plural, one {# Ereignis} other {# Ereignisse}}",
+      "legend": "Legende",
+      "legendEvent": "Ereignis"
     },
     "actions": {
       "label": "Ereignisaktionen"

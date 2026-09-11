@@ -84,7 +84,10 @@ export default function TimelinePage() {
         </div>
       ) : (
         <div className="min-w-0 flex-1" data-testid="timeline-host">
-          <TimelineEditHost events={events} resources={resources} locale={locale} />
+          {/* #592 (DEC-S85-005) — seul écran à passer `layout="screen"` : sidebar
+              de filtres / légende / raccourcis. Dashboard et fiche produit gardent
+              le rendu `embedded` par défaut. */}
+          <TimelineEditHost events={events} resources={resources} locale={locale} layout="screen" />
         </div>
       )}
     </section>

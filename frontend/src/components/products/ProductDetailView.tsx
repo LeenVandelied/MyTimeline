@@ -197,7 +197,15 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
 
   const resources = React.useMemo<Resource[]>(() => {
     if (!product) return []
-    return [{ id: product.id, title: product.name, category: product.category?.name ?? '' }]
+    return [
+      {
+        id: product.id,
+        title: product.name,
+        category: product.category?.name ?? '',
+        // #592 (DEC-S85-006) — même dérivation que `useDashboardData`.
+        categoryColor: product.category?.color ?? null,
+      },
+    ]
   }, [product])
 
   const dateFmt = React.useMemo(

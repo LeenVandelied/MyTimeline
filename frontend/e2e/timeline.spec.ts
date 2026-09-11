@@ -681,7 +681,15 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
   test('aide : le survol ouvre le panneau de raccourcis (opacité), le contenu est réel', async ({
     page,
   }) => {
-    await gotoTimelineWithProduct(page)
+    // #592 (DEC-S85-005) — sur l'écran `/timeline`, la bulle `?` est REMPLACÉE par
+    // le pied de la sidebar (couvert par `sprint-85-timeline-sidebar.spec.ts`).
+    // Elle reste sur les frises INCRUSTÉES : on la vérifie donc sur le dashboard,
+    // qui monte le même `TimelineView` en layout `embedded`.
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('Toolbar Cat'))
+    await seedProduct(page, { userId, name: unique('Toolbar Prod'), categoryId: cat.id })
+    await ensureAuthenticated(page)
+    await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'embedded')
     // `.mt-tlv__help-pop` est TOUJOURS dans le DOM avec un bounding-box non vide
     // (`opacity:0;pointer-events:none` par défaut, timeline.css:190) : une
     // assertion `toBeVisible()` passerait à tort SANS survol — piège de la même

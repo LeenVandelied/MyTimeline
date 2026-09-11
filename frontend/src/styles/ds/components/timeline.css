@@ -376,6 +376,107 @@
 .mt-tlv__kbd{font-family:var(--font-mono); font-size:10px; background:color-mix(in srgb, var(--color-surface) 18%, transparent); border-radius:var(--radius-xs); padding:1px 5px;}
 
 /* ============================================================================
+   #592 — SIDEBAR de l'écran Vue Timeline (`TimelineSidebar.tsx`, layout
+   `screen` seulement — DEC-S85-005). Valeurs = styles inline de la maquette
+   `Vue Timeline.dc.html` (§A de `sprint-85/maquette-vue-timeline.md`), sauf les
+   écarts de CONTRASTE commentés sur place.
+
+   DISPOSITION — une GRILLE sur la section, pas un wrapper : la sidebar doit
+   rester DANS `rootRef` (le plein écran l'inclut) et le panneau superposé
+   < 1024 px doit couvrir la FRISE sans couvrir la barre d'outils (le bouton
+   « Filtres » y reste cliquable). Un même `<aside>` occupe donc la zone `side`
+   (≥ 1024 px) ou se superpose en `position:absolute` à la zone `scroll` : un
+   enfant absolu d'une grille positionnée prend sa ZONE comme bloc conteneur.
+   Les enfants sr-only et le drawer (fixe) sont hors flux : ils ne prennent pas
+   de cellule.
+   ============================================================================ */
+.mt-tlv--screen{display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); grid-template-areas:"toolbar" "scroll";}
+.mt-tlv--screen > .mt-tlv__toolbar{grid-area:toolbar;}
+.mt-tlv--screen > .mt-tlv__scroll{grid-area:scroll;}
+
+/* Maquette : aside 248px, fond `surface`, filet droit `rule` (séparateur
+   décoratif de deux zones d'affichage, aucun contrôle ne commence là). */
+.mt-tlv-side{display:flex; flex-direction:column; width:248px; min-width:0; background:var(--color-surface); border-right:1px solid var(--color-rule);}
+.mt-tlv-side__body{display:flex; flex-direction:column; gap:22px; padding:18px 16px; flex:1 1 auto;}
+
+/* Bouton « Filtres » de la barre d'outils (< 1024 px), masqué au-delà par la
+   media query qui SUIT — l'ordre de source compte, même spécificité. Fond `surface` sur une
+   barre `surface-2` (delta ~1,05:1) : le cadre est sa seule limite → tier
+   FONCTIONNEL, comme `.mt-tlv__help-btn` (#352). */
+.mt-tlv-side-toggle{display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-ink); font-family:var(--font-ui); font-size:12px; font-weight:500; white-space:nowrap; cursor:pointer;}
+.mt-tlv-side-toggle[aria-expanded="true"]{background:var(--color-surface-2);}
+.mt-tlv-side-toggle:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* < 1024 px (DEC-S85-004) : panneau superposé à la frise, fermé par défaut.
+   `display:none` le retire aussi de l'arbre d'accessibilité et de l'ordre de
+   tabulation quand il est fermé. Ombre `md` + filet : panneau flottant rempli
+   (tier décoratif, cf. en-tête du fichier). */
+@media (max-width:1023.98px){
+  .mt-tlv-side{position:absolute; grid-area:scroll; top:0; left:0; bottom:0; z-index:var(--z-popover); max-width:100%; overflow-y:auto; box-shadow:var(--shadow-md);}
+  .mt-tlv-side[data-open="false"]{display:none;}
+}
+/* ≥ 1024 px : colonne permanente sur toute la hauteur (barre d'outils comprise,
+   comme la maquette), et le bouton « Filtres » n'a plus d'objet. */
+@media (min-width:1024px){
+  .mt-tlv--screen{grid-template-columns:248px minmax(0,1fr); grid-template-areas:"side toolbar" "side scroll";}
+  .mt-tlv--screen > .mt-tlv-side{grid-area:side;}
+  .mt-tlv-side-toggle{display:none;}
+}
+
+/* Titre de bloc — maquette : mono 10px, `.14em`, capitales, `ink-faint`.
+   ÉCART : `ink-faint` = 2,82:1 (clair) / 2,99:1 (sombre) sur `surface`, sous
+   4,5:1 (constat déjà consigné, `bugs-resolved.md`) → `ink-muted` (6,11 / 5,85). */
+.mt-tlv-side__title{margin:0 0 9px; font-family:var(--font-mono); font-size:10px; font-weight:400; line-height:1.3; letter-spacing:.14em; text-transform:uppercase; color:var(--color-ink-muted);}
+[lang="de"] .mt-tlv-side__title, .mt-tlv-side__title:lang(de){letter-spacing:.06em;}
+
+/* Segmenté « Tout déplier | Tout plier ». Cadre du GROUPE : ses boutons ont le
+   fond `surface` de la sidebar (delta nul), le cadre est leur SEULE limite →
+   tier FONCTIONNEL (`rule-emphasis`, ≥ 3:1), et non le `rule-strong` de la
+   maquette (1,5:1) — même arbitrage que `.mt-zoom` (#352). Le filet ENTRE les
+   deux boutons reste décoratif (le cadre délimite déjà le contrôle). Pas de
+   clip (`overflow:hidden`) : il rognerait l'anneau de focus (#417) ; l'arrondi
+   est porté par les boutons de bord. Libellé enroulé plutôt que tronqué (DE). */
+.mt-tlv-side__seg{display:flex; border:1px solid var(--color-rule-emphasis); border-radius:7px;}
+.mt-tlv-side__seg-btn{flex:1 1 0; min-width:0; padding:8px 6px; border:0; background:var(--color-surface); color:var(--color-ink-muted); font-family:var(--font-ui); font-size:12px; font-weight:500; line-height:1.25; cursor:pointer; transition:background var(--dur-micro), color var(--dur-micro);}
+.mt-tlv-side__seg-btn:first-child{border-top-left-radius:6px; border-bottom-left-radius:6px;}
+.mt-tlv-side__seg-btn:last-child{border-left:1px solid var(--color-rule); border-top-right-radius:6px; border-bottom-right-radius:6px;}
+.mt-tlv-side__seg-btn:hover{background:var(--color-surface-2); color:var(--color-ink);}
+.mt-tlv-side__seg-btn:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* Filtres de catégorie. */
+.mt-tlv-side__filters{display:flex; flex-direction:column; gap:1px; margin:0; padding:0; list-style:none;}
+.mt-tlv-side__filter{display:flex; align-items:center; gap:9px; width:100%; padding:6px 8px; border:0; border-radius:6px; background:transparent; font-family:var(--font-ui); font-size:13px; font-weight:500; line-height:1.3; color:var(--color-ink); text-align:left; cursor:pointer;}
+.mt-tlv-side__filter:hover{background:var(--color-surface-2);}
+.mt-tlv-side__filter:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
+/* Pastille 11px. Couleur posée EN LIGNE (aplat + filet) par le composant ; ce
+   repli ne sert qu'aux catégories SANS couleur (DEC-S85-006) : contour neutre,
+   jamais une teinte inventée. */
+.mt-tlv-side__swatch{flex:0 0 auto; box-sizing:border-box; width:11px; height:11px; border-radius:3px; border:1px solid var(--color-rule-strong); background:transparent;}
+.mt-tlv-side__filter-label{flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+/* Compteur — maquette `ink-faint` : même écart de contraste que les titres. */
+.mt-tlv-side__count{flex:0 0 auto; font-family:var(--font-mono); font-size:11px; color:var(--color-ink-muted);}
+/* Catégorie MASQUÉE. ÉCART : la maquette pose `opacity:.4` sur toute la ligne
+   → libellé à 2,52:1 (clair) / 3,43:1 (sombre). On garde la pastille en
+   CONTOUR (signal de la maquette, posé en ligne), le libellé passe sur
+   `ink-muted` (6,11 / 5,85:1) et est BARRÉ : l'état « masqué » ne repose ni sur
+   l'opacité ni sur la seule couleur — une catégorie sans couleur a une pastille
+   en contour dans les DEUX états, c'est le barré qui la distingue. */
+.mt-tlv-side__filter[aria-pressed="false"]{color:var(--color-ink-muted);}
+.mt-tlv-side__filter[aria-pressed="false"] .mt-tlv-side__filter-label{text-decoration:line-through; text-decoration-thickness:1px;}
+
+/* Légende (DEC-S85-002 : seules les marques rendues par la frise de prod). */
+.mt-tlv-side__legend{display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; font-size:13px; color:var(--color-ink-muted);}
+.mt-tlv-side__legend-item{display:flex; align-items:center; gap:9px;}
+.mt-tlv-side__legend-evt{flex:0 0 auto; width:22px; height:12px; border-radius:4px; background:var(--color-accent); box-shadow:var(--shadow-sm);}
+
+/* Pied « raccourcis » — maquette : mono 10.5px, interligne 2, filet haut
+   décoratif. Texte `ink-faint` / touches `ink-muted` dans la maquette : décalé
+   d'un cran pour tenir 4,5:1 (texte `ink-muted`, touches `ink`). */
+.mt-tlv-side__keys{margin:0; padding:14px 18px; list-style:none; border-top:1px solid var(--color-rule); font-family:var(--font-mono); font-size:10.5px; line-height:2; color:var(--color-ink-muted);}
+.mt-tlv-side__kbd{font-family:inherit; font-size:inherit; color:var(--color-ink);}
+
+
+/* ============================================================================
    #63 — Vue Timeline MOBILE PORTRAIT (`.mt-tlm*`) + bottom sheet (`.mt-sheet`)
    + action sheet (`.mt-actionsheet`).
    Aucun token nouveau : compose colors/spacing/motion/z existants. Breakpoint
