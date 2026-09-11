@@ -157,6 +157,37 @@ describe('ProductDetailView', () => {
     expect(title?.className).toContain('min-w-0')
   })
 
+  // #575 — les deux titres de section étaient en style eyebrow SANS `font-mono`
+  // (`text-ink-faint text-2xs tracking-widest uppercase`), ce qui les avait fait
+  // rater au premier recensement. Classes seulement : jsdom ne peint rien.
+  it('rend les titres de section en vrais h2 (display 600, --text-sm, encre pleine)', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    const h2s = screen.getAllByRole('heading', { level: 2 })
+    expect(h2s.map((h) => h.textContent)).toEqual([
+      'products.detail.timelineTitle',
+      'products.detail.historyTitle',
+    ])
+    for (const h2 of h2s) {
+      for (const cls of ['text-ink', 'font-display', 'text-sm', 'font-semibold'])
+        expect(h2.className).toContain(cls)
+      for (const cls of ['uppercase', 'tracking-widest', 'text-ink-faint', 'text-2xs'])
+        expect(h2.className).not.toContain(cls)
+    }
+    // Hiérarchie : le h1 du produit est d'un palier au-dessus (`text-xl`).
+    expect(screen.getByRole('heading', { level: 1 }).className).toContain('text-xl')
+  })
+
+  it('historique : le compteur est un eyebrow `.mt-eyebrow` AU-DESSUS du h2, hors du titre', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    const history = screen.getByTestId('product-detail-history')
+    const count = screen.getByTestId('product-detail-history-count')
+    const h2 = history.querySelector('h2')
+    expect(count.className).toBe('mt-eyebrow')
+    expect(count.textContent).toContain('products.detail.eventsCount')
+    expect(h2?.textContent).toBe('products.detail.historyTitle')
+    expect(h2 && count.compareDocumentPosition(h2) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('passe à la sous-frise UNIQUEMENT les events non archivés de CE produit', () => {
     render(<ProductDetailView productId="p-alpha" />)
     expect(screen.getByTestId('timeline-responsive')).toBeInTheDocument()
@@ -266,9 +297,10 @@ describe('ProductDetailView', () => {
     it('le compteur d’events actifs ne suit PAS le filtre de vue', async () => {
       const user = userEvent.setup()
       render(<ProductDetailView productId="p-alpha" />)
-      const heading = screen.getByTestId('product-detail-history').querySelector('h2')
-
-      expect(heading?.textContent).toContain('products.detail.eventsCount')
+      // #575 — le compteur a quitté le `h2` pour l'eyebrow au-dessus du titre.
+      expect(screen.getByTestId('product-detail-history-count').textContent).toContain(
+        'products.detail.eventsCount',
+      )
       const before = screen.getByTestId('product-detail-filter-active').textContent
 
       await user.click(screen.getByTestId('product-detail-filter-archived'))

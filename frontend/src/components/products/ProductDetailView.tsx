@@ -357,9 +357,10 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
         aria-label={t('timelineTitle')}
         data-testid="product-detail-timeline"
       >
-        <h2 className="text-ink-faint text-2xs mb-2 tracking-widest uppercase">
-          {t('timelineTitle')}
-        </h2>
+        {/* #575 — vrai titre de section (display 600, sentence case, `--text-sm`),
+            mêmes classes que les titres du dashboard (réf. `WeekAgenda`). Sous le
+            `h1` du produit (`text-xl`). Pas d'eyebrow : aucune information à porter. */}
+        <h2 className="text-ink font-display mb-2 text-sm font-semibold">{t('timelineTitle')}</h2>
         {events.length === 0 ? (
           <p className="text-ink-muted text-sm" data-testid="product-detail-timeline-empty">
             {timelineEmptyMessage}
@@ -371,9 +372,16 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
 
       {/* Historique des événements. */}
       <section aria-label={t('historyTitle')} data-testid="product-detail-history">
-        <h2 className="text-ink-faint text-2xs mb-2 tracking-widest uppercase">
-          {t('historyTitle')} · {t('eventsCount', { count: nonArchivedCount })}
-        </h2>
+        {/* #575 — Le titre et le compteur étaient fondus dans un seul eyebrow
+            (« HISTORIQUE DES ÉVÉNEMENTS · 3 ÉVÉNEMENTS »). Motif `GreetingHeader` :
+            le compteur (information, BR-EVE-011) reste en eyebrow `.mt-eyebrow`
+            AU-DESSUS, le `h2` porte le seul titre. */}
+        <div className="mb-2 flex flex-col gap-1">
+          <p className="mt-eyebrow" data-testid="product-detail-history-count">
+            {t('eventsCount', { count: nonArchivedCount })}
+          </p>
+          <h2 className="text-ink font-display text-sm font-semibold">{t('historyTitle')}</h2>
+        </div>
         {history.length === 0 ? (
           <p className="text-ink-muted text-sm" data-testid="product-detail-history-empty">
             {historyEmptyMessage}

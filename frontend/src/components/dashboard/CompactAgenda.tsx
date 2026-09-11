@@ -77,7 +77,10 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new 
       data-testid="dashboard-compact-agenda"
       aria-label={t('label')}
     >
-      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`). Les intertitres
+          « Aujourd'hui » / « Demain » plus bas RESTENT en mono capitales : ce sont
+          des en-têtes de groupe, l'usage que la charte réserve à ce style. */}
+      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {isEmpty ? (
         <p className="text-ink-muted text-xs" data-testid="dashboard-compact-agenda-empty">
           {t('empty')}

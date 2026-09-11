@@ -15,6 +15,7 @@
   "density": {
     "label": "Ereignisdichte über {days} Tage",
     "eyebrow": "Dichte · {days} Tage",
+    "title": "Zeitachse im Überblick",
     "empty": "Keine Ereignisse in diesem Zeitraum"
   },
   "week": {

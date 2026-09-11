@@ -108,8 +108,13 @@ import { safeErrorMessage } from '@/lib/safe-error'
  * `SettingsShell` (la source du motif) a reçu le MÊME état actif au même
  * commit : les deux doivent rester alignés sur la maquette, pas l'un sur l'autre.
  *
- * La CASSE et la POLICE des libellés de nav restent INCHANGÉES (sentence case) :
- * l'arbitrage mono-capitales de la maquette appartient à #575.
+ * #575 (DEC-S84-002) — CASSE ET POLICE DES LIBELLÉS DE NAV : la maquette pose
+ * `font-mono; 12px; letter-spacing:.06em; uppercase` sur chaque lien. Rendu par
+ * `.mt-nav-label` (DS `i18n.css` §2bis) + `text-2xs` (13px, token le plus proche :
+ * l'échelle n'a pas de 12px). Classe dédiée et non `.mt-eyebrow`, dont la couleur
+ * hors layer battrait l'encre de la pilule active. Périmètre : les 3 liens de
+ * `NAV_ITEMS` ; le lien « Réglages » du pied n'est pas un lien de la `<nav>` et
+ * garde son sentence case (point non tranché par la maquette recopiée).
  *
  * Overlay du bouton = `NewEventDrawer` (drawer 452px du handoff §6, #300 —
  * remplace le Dialog minimal placeholder de #210).
@@ -245,7 +250,10 @@ export function AppShell({ children }: AppShellProps) {
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span className="hidden lg:inline">{t(`nav.${id}`)}</span>
+                {/* #575 — mono capitales espacées de la maquette (`.mt-nav-label`,
+                    DS i18n.css §2bis, détendue en allemand). Reste le 1er `<span>`
+                    du lien : `e2e/sprint-73-tablet-sidebar.spec.ts:144` le cible. */}
+                <span className="mt-nav-label text-2xs hidden lg:inline">{t(`nav.${id}`)}</span>
               </Link>
             )
           })}

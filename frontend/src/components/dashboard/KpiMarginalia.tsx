@@ -49,7 +49,8 @@ export const KpiMarginalia: React.FC<KpiMarginaliaProps> = ({ kpis, locale }) =>
       data-testid="dashboard-kpi-marginalia"
       aria-label={t('label')}
     >
-      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
+      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       <ul className="flex flex-col">
         <KpiLine
           value={nf.format(kpis.activeProducts)}

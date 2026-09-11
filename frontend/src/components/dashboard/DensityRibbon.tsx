@@ -67,10 +67,27 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
       data-testid="dashboard-density-ribbon"
       aria-label={t('label', { days: rangeDays })}
     >
-      <div className="flex items-baseline justify-between">
-        <span className="text-ink-faint text-2xs font-mono tracking-widest uppercase">
-          {t('eyebrow', { days: rangeDays })}
-        </span>
+      {/* #575 — Ce `<span>` eyebrow était le SEUL intitulé de la section : le ruban
+          n'avait aucun titre. La maquette le nomme « Aperçu de la frise » (display
+          gras) : on restaure un `h2` et on garde l'eyebrow AU-DESSUS, motif de
+          `GreetingHeader`, parce qu'il porte une information (la fenêtre en jours).
+          L'eyebrow passe par `.mt-eyebrow` (DS i18n.css §2 : 10px, `ink-muted`,
+          espacement détendu en allemand) — aucune utilitaire de taille/couleur à
+          côté : la classe est HORS layer et les battrait.
+          `flex-wrap` : en `de` à 375 px, titre + plage ne tiennent pas sur une
+          ligne ; la plage passe dessous plutôt que de déborder le ruban. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="mt-eyebrow" data-testid="dashboard-density-eyebrow">
+            {t('eyebrow', { days: rangeDays })}
+          </p>
+          <h2
+            className="text-ink font-display text-sm font-semibold"
+            data-testid="dashboard-density-title"
+          >
+            {t('title')}
+          </h2>
+        </div>
         <span className="text-ink-muted text-2xs font-mono">{rangeLabel}</span>
       </div>
       {scrollable ? (

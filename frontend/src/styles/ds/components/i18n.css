@@ -52,6 +52,25 @@
 .mt-eyebrow--wrap{white-space:normal; text-wrap:balance; max-width:22ch;}
 .mt-eyebrow--title{text-transform:none; letter-spacing:.01em; font-weight:600;}
 
+/* 2bis · LIBELLÉS DE NAVIGATION MONO CAPITALES  →  même dégressivité DE
+   ------------------------------------------------------------
+   #575 (DEC-S84-002) — la maquette (`App.dc.html`) pose sur chaque lien de la
+   nav latérale `font-mono; 12px; letter-spacing:.06em; uppercase`. Appliqué aux
+   liens d'`AppShell` et aux onglets de `SettingsShell`.
+   POURQUOI PAS `.mt-eyebrow` : elle pose `color:ink-muted` et `font-size:10px`,
+   HORS layer — elle battrait donc `text-primary-ink` de la pilule active
+   (DEC-S83-005) et rendrait l'onglet sélectionné illisible.
+   Cette classe ne pose donc NI couleur, NI taille, NI graisse : la taille reste
+   à l'utilitaire du consommateur (`text-2xs` = 13px, token le plus proche des
+   12px de la maquette — l'échelle n'a pas de 12px), la couleur et la graisse à
+   l'état actif/inactif du lien. Règle hors layer : n'y ajouter AUCUNE propriété
+   qu'un consommateur poserait aussi en utilitaire (cf. PIT-S53-003).
+   `.06em` = `--tracking-wide` (valeur exacte de la maquette).
+   DE : `.02em`, comme `.mt-eyebrow` — les capitales espacées élargissent les
+   composés allemands (« EINSTELLUNGEN »). */
+.mt-nav-label{font-family:var(--font-mono); letter-spacing:var(--tracking-wide); text-transform:uppercase;}
+[lang="de"] .mt-nav-label, .mt-nav-label:lang(de){letter-spacing:.02em;}
+
 /* ============================================================
    3 · BOUTONS  →  wrap 2 lignes, JAMAIS d'ellipsis sur un CTA primaire
    ------------------------------------------------------------
