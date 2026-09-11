@@ -694,8 +694,12 @@ describe('TimelineView', () => {
       screen
         .getAllByTestId('timeline-sidebar-filter')
         .find((b) => b.getAttribute('data-category') === category)!
+    // #601 — l'en-tête porte désormais aussi le compteur : `textContent` n'est plus
+    // le nom seul, on vise l'attribut dédié.
     const headFor = (category: string) =>
-      screen.queryAllByTestId('timeline-group-head').find((h) => h.textContent === category)
+      screen
+        .queryAllByTestId('timeline-group-head')
+        .find((h) => h.getAttribute('data-category') === category)
     const laneTitles = () =>
       screen.queryAllByTestId('timeline-resource-title').map((el) => el.textContent)
     const pillFor = (id: string) =>

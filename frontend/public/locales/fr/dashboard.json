@@ -130,6 +130,9 @@
       "legend": "Légende",
       "legendEvent": "Événement"
     },
+    "groupHead": {
+      "label": "{category}, {count, plural, one {# produit} other {# produits}}"
+    },
     "actions": {
       "label": "Actions de l’événement"
     },

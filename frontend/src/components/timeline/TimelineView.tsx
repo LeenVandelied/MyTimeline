@@ -148,6 +148,8 @@ const PENDING_FOCUS_TTL_MS = 1000
 
 /** Tableau vide PARTAGÉ : une lane repliée garde ainsi une prop stable. */
 const NO_EVENTS: WindowedEvent[] = []
+/** #601 — Catégorie repliée absente de la table (ne devrait pas arriver) : rien à résumer. */
+const NO_POSITIONED: PositionedEvent[] = []
 
 /**
  * #392 — GOUTTIÈRE DE PISTE (px). Largeur réservée en tête de rail pour
@@ -285,29 +287,116 @@ const TimelineWeekends = React.memo<{
   )
 })
 
-/** En-tête d'accordéon catégorie (porte une icône SVG lucide → non gratuit ×12). */
+/**
+ * En-tête d'accordéon catégorie (porte une icône SVG lucide → non gratuit ×12).
+ *
+ * #601 — maquette `Vue Timeline.dc.html` §B/§C (`sprint-85/maquette-vue-timeline.md`).
+ * Partagé par les TROIS écrans qui montent la frise desktop (DEC-S85-005).
+ *
+ * STRUCTURE — le `<button>` EST la rangée entière (largeur du rail) :
+ *  - c'est l'élément MESURÉ par `useTimelineViewport` (`headHeight`,
+ *    `data-testid="timeline-group-head"`) → sa hauteur est FIXÉE en CSS (40 px),
+ *    identique plié et déplié : le modèle vertical de la virtualisation (#69) ne
+ *    saute pas au passage (critère 4) ;
+ *  - toute la rangée est la cible de clic (maquette : « clic = toggleCollapse ») ;
+ *  - l'identité visible (chevron, pastille, libellé, compteur) vit dans une
+ *    CELLULE STICKY de la largeur de la gouttière (`--lane-header-w`). Avant #601
+ *    c'est le bouton lui-même qui était `sticky` — avec une largeur égale à celle
+ *    de son conteneur, il n'avait aucune marge pour glisser et le libellé sortait
+ *    de l'écran dès `scrollLeft > 0` (signal de #592) ;
+ *  - repliée, la PISTE de la rangée porte le résumé compact : un trait par
+ *    événement, aux MÊMES coordonnées que les pastilles (`leftPx`/`widthPx`,
+ *    gouttière comprise en CSS) → il suit zoom et défilement par construction.
+ *
+ * A11Y — nom accessible « <catégorie>, N produits » (`aria-label`, pluriel ICU) :
+ * le chiffre nu n'est pas un nom. Pastille, compteur visible et résumé sont
+ * `aria-hidden` : l'information est portée par le nom et `aria-expanded`. Aucun
+ * élément interactif dans le bouton.
+ */
 const TimelineGroupHead = React.memo<{
   category: string
+  /** Couleur de catégorie (`categoryColorsOf`) ; `null` → contour neutre (DEC-S85-006). */
+  color: string | null
+  /** Nombre de PRODUITS (lanes) de la catégorie — DEC-S85-001, pas d'événements. */
+  productCount: number
+  /** Nom accessible traduit (« <catégorie>, N produits »). */
+  ariaLabel: string
   isCollapsed: boolean
   railWidth: number
+  /** Résumé plié FENÊTRÉ, identité stable (`NO_EVENTS` quand déplié). */
+  summary: WindowedEvent[]
   onToggle: (category: string) => void
-}>(function TimelineGroupHead({ category, isCollapsed, railWidth, onToggle }) {
+}>(function TimelineGroupHead({
+  category,
+  color,
+  productCount,
+  ariaLabel,
+  isCollapsed,
+  railWidth,
+  summary,
+  onToggle,
+}) {
   return (
     <button
       type="button"
       className="mt-tlv__group-head"
       aria-expanded={!isCollapsed}
+      aria-label={ariaLabel}
       onClick={() => onToggle(category)}
       style={{ width: `${railWidth}px` }}
       data-testid="timeline-group-head"
+      data-category={category}
     >
-      <ChevronRight
-        className={isCollapsed ? 'mt-tlv__chev' : 'mt-tlv__chev mt-tlv__chev--open'}
-        size={13}
-        strokeWidth={1.5}
-        aria-hidden="true"
-      />
-      {category}
+      <span className="mt-tlv__group-cell" data-testid="timeline-group-cell">
+        <ChevronRight
+          className={isCollapsed ? 'mt-tlv__chev' : 'mt-tlv__chev mt-tlv__chev--open'}
+          size={13}
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
+        <span
+          className="mt-tlv__group-swatch"
+          data-color={color === null ? 'none' : 'set'}
+          // Aplat + filet de la couleur. Sans couleur (DEC-S85-006) : AUCUN style
+          // inline, le CSS peint le contour neutre — même règle que la pastille
+          // de la sidebar (`.mt-tlv-side__swatch`).
+          style={color === null ? undefined : { backgroundColor: color, borderColor: color }}
+          aria-hidden="true"
+          data-testid="timeline-group-swatch"
+        />
+        <span className="mt-tlv__group-label" title={category}>
+          {category}
+        </span>
+        <span className="mt-tlv__group-count" aria-hidden="true" data-testid="timeline-group-count">
+          {productCount}
+        </span>
+      </span>
+      {isCollapsed && (
+        <span
+          className="mt-tlv__group-summary"
+          aria-hidden="true"
+          data-testid="timeline-group-summary"
+        >
+          {summary.map(({ event }) => (
+            <span
+              key={`${event.resourceId}|${event.id}`}
+              className={
+                event.extendedProps?.archived === true
+                  ? 'mt-tlv__group-bar mt-tlv__group-bar--archived'
+                  : 'mt-tlv__group-bar'
+              }
+              data-testid="timeline-group-summary-bar"
+              data-event-id={event.id}
+              style={{
+                left: `${event.leftPx}px`,
+                width: `${event.widthPx}px`,
+                // Même source de couleur que la pastille (`EventPill`).
+                backgroundColor: event.color || 'var(--color-accent)',
+              }}
+            />
+          ))}
+        </span>
+      )}
     </button>
   )
 })
@@ -563,6 +652,27 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // #592 (DEC-S85-006) — couleur de chaque catégorie : table UNIQUE, que la
   // pastille d'en-tête de catégorie (#601) consommera aussi.
   const categoryColors = useMemo(() => categoryColorsOf(resources), [resources])
+
+  // #601 — Événements de chaque catégorie REPLIÉE (résumé compact, maquette §C),
+  // tous produits confondus — y compris un produit replié individuellement :
+  // c'est la catégorie qu'on résume. Seules les catégories repliées ET visibles
+  // sont concaténées ; recalculé au zoom (`eventsByResource` change d'identité),
+  // jamais au défilement. Le fenêtrage horizontal est fait dans la pré-passe.
+  const collapsedCategoryEvents = useMemo(() => {
+    const byCategory = new Map<string, PositionedEvent[]>()
+    for (const [category, resList] of visibleGroups) {
+      if (!(collapsed[category] ?? false)) continue
+      const all: PositionedEvent[] = []
+      for (const resource of resList) {
+        const laneEvents = eventsByResource.get(resource.id)
+        // Boucle et non `push(...laneEvents)` : l'étalement passe chaque élément
+        // en argument et dépasse la pile au-delà de ~10⁵ événements.
+        if (laneEvents) for (const event of laneEvents) all.push(event)
+      }
+      byCategory.set(category, all)
+    }
+    return byCategory
+  }, [visibleGroups, collapsed, eventsByResource])
 
   // #69 — VIRTUALISATION. `geometryKey` force une remesure quand la géométrie du
   // rail change sans qu'aucun scroll ne survienne (zoom, étendue, collapse d'une
@@ -1220,10 +1330,29 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const windowCacheRef = useRef(new Map<string, WindowedEvent[]>())
   const previousWindows = windowCacheRef.current
   const nextWindows = new Map<string, WindowedEvent[]>()
+  // #601 — même cache d'identité pour le RÉSUMÉ PLIÉ, keyé par catégorie (map
+  // distincte : un nom de catégorie pourrait coïncider avec un id de produit).
+  // Sans lui, l'en-tête mémoïsé d'une catégorie repliée serait re-rendu à chaque
+  // frame de défilement (#349), avec tous ses traits.
+  const summaryCacheRef = useRef(new Map<string, WindowedEvent[]>())
+  const previousSummaries = summaryCacheRef.current
+  const nextSummaries = new Map<string, WindowedEvent[]>()
 
   // #592 — `visibleGroups` : une catégorie masquée n'a ni en-tête ni lanes.
   const renderGroups = visibleGroups.map(([category, resList]) => {
     const isCollapsed = collapsed[category] ?? false
+    // #601 — Résumé plié, fenêtré sur la MÊME bande horizontale que les lanes
+    // (une catégorie peut agréger des centaines d'événements).
+    let summary = NO_EVENTS
+    if (isCollapsed) {
+      const computed = windowEvents(
+        collapsedCategoryEvents.get(category) ?? NO_POSITIONED,
+        horizontalBand,
+      )
+      const previous = previousSummaries.get(category)
+      summary = previous && sameWindowedEvents(previous, computed) ? previous : computed
+      nextSummaries.set(category, summary)
+    }
     // #69 — Fenêtre verticale de CE groupe. Les en-têtes de catégorie restent
     // TOUJOURS montés (peu nombreux, et ils portent l'accordéon) ; seules les
     // lanes sont fenêtrées, avec des cales qui préservent la hauteur totale
@@ -1256,9 +1385,22 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
             rovingEvt: rovingNav !== null && rovingNav.lane === laneIdx ? rovingNav.evt : null,
           }
         })
-    return { category, isCollapsed, laneWindow, setSize: resList.length, lanes }
+    return {
+      category,
+      isCollapsed,
+      laneWindow,
+      setSize: resList.length,
+      lanes,
+      // #601 — props propres à l'en-tête (résumé plié + nom accessible).
+      // DEC-S85-001 — compteur = nombre de PRODUITS (lanes) de la catégorie.
+      head: {
+        summary,
+        label: t('dashboard.timeline.groupHead.label', { category, count: resList.length }),
+      },
+    }
   })
   windowCacheRef.current = nextWindows
+  summaryCacheRef.current = nextSummaries
 
   // Bulle `?` (layout `embedded` seulement) : même source que le pied de sidebar.
   const shortcuts = isScreen ? [] : buildTimelineShortcuts((key) => t(`dashboard.timeline.${key}`))
@@ -1431,12 +1573,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           {/* Lanes groupées par catégorie (accordéons). #349 — le fenêtrage et la
               stabilisation d'identité sont faits dans la pré-passe ci-dessus ; ici
               il ne reste que le montage de composants MÉMOÏSÉS. */}
-          {renderGroups.map(({ category, isCollapsed, laneWindow, setSize, lanes }) => (
+          {renderGroups.map(({ category, isCollapsed, laneWindow, setSize, lanes, head }) => (
             <div key={category} data-testid="timeline-group">
               <TimelineGroupHead
                 category={category}
+                color={categoryColors[category] ?? null}
+                productCount={setSize}
+                ariaLabel={head.label}
                 isCollapsed={isCollapsed}
                 railWidth={railWidth}
+                summary={head.summary}
                 onToggle={toggleCategory}
               />
 

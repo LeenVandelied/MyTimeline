@@ -5,7 +5,7 @@ import { Minus, MoreHorizontal, Plus, Map as MapIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
 import { cn } from '@/lib/utils'
-import { buildEventAriaLabel, eventInkColor, Resource } from './lib'
+import { buildEventAriaLabel, categoryColorsOf, eventInkColor, Resource } from './lib'
 import { Minimap } from './Minimap'
 import { TimelineLandscapeDrawer } from './TimelineLandscapeDrawer'
 import { TimelineActionSheet } from './TimelineActionSheet'
@@ -94,6 +94,8 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
     () => Object.entries(state.resourcesByCategory),
     [state.resourcesByCategory],
   )
+  // #601 — couleur de catégorie : même table que la frise desktop (DEC-S85-006).
+  const categoryColors = useMemo(() => categoryColorsOf(resources), [resources])
 
   return (
     <div className="mt-tlm mt-tlm--landscape" data-testid="timeline-mobile-landscape">
@@ -205,10 +207,46 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
               state.listTops[category] ?? 0,
               state.verticalBand,
             )
+            const color = categoryColors[category] ?? null
             return (
               <div key={category} data-testid="timeline-group">
-                <div className="mt-tlm__group-head" data-testid="timeline-group-head">
-                  {category}
+                {/* #601 — pastille + compteur de produits (DEC-S85-001/005), dans une
+                    CELLULE sticky : l'en-tête pleine largeur du rail, lui, ne peut
+                    pas glisser (même défaut que le desktop avant #601). Pas de repli
+                    de catégorie en mobile → pas de résumé plié. Nom lu par le
+                    lecteur d'écran = texte sr-only « <catégorie>, N produits ». */}
+                <div
+                  className="mt-tlm__group-head"
+                  data-testid="timeline-group-head"
+                  data-category={category}
+                >
+                  <span className="mt-tlm__group-cell">
+                    <span
+                      className="mt-tlm__group-swatch"
+                      data-color={color === null ? 'none' : 'set'}
+                      style={
+                        color === null ? undefined : { backgroundColor: color, borderColor: color }
+                      }
+                      aria-hidden="true"
+                      data-testid="timeline-group-swatch"
+                    />
+                    <span className="mt-tlm__group-label" aria-hidden="true">
+                      {category}
+                    </span>
+                    <span
+                      className="mt-tlm__group-count"
+                      aria-hidden="true"
+                      data-testid="timeline-group-count"
+                    >
+                      {resList.length}
+                    </span>
+                    <span className="sr-only">
+                      {t('dashboard.timeline.groupHead.label', {
+                        category,
+                        count: resList.length,
+                      })}
+                    </span>
+                  </span>
                 </div>
                 <div role="list" aria-label={category} data-testid="timeline-lane-list">
                   {laneWindow.topSpacerPx > 0 && (

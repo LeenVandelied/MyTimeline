@@ -192,8 +192,47 @@
 .mt-tlv__today-badge{position:absolute; top:2px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; letter-spacing:.1em; color:var(--color-accent-ink); background:var(--color-accent); padding:2px 6px; border-radius:var(--radius-xs); white-space:nowrap;}
 
 /* Lanes de la vue (compose .mt-lane du DS ; accordéon de catégorie au-dessus). */
-.mt-tlv__group-head{display:flex; align-items:center; gap:8px; width:100%; padding:7px 14px; background:var(--color-surface-2); border-top:1px solid var(--color-rule); border-bottom:1px solid var(--color-rule); font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted); cursor:pointer; position:sticky; left:0;}
-.mt-tlv__group-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
+/* #601 — EN-TÊTE DE CATÉGORIE (maquette §B, `buildRows`, `CATH = 40`).
+   La RANGÉE est le bouton (largeur du rail, posée en ligne) : cible de clic
+   entière, et élément MESURÉ par `useTimelineViewport` (`headHeight`). D'où la
+   hauteur FIXE — `box-sizing:border-box` compris, filet bas inclus : la rangée
+   fait 40 px pliée comme dépliée, sinon le modèle vertical de la virtualisation
+   (#69) sauterait au passage. Plus de filet HAUT : la lane précédente, la règle
+   ou l'en-tête précédent en portent déjà un (maquette : `border-bottom` seul).
+   Le bouton N'EST PLUS sticky : une boîte sticky aussi large que son conteneur
+   ne glisse pas (signal #592) → c'est la CELLULE ci-dessous qui l'est. */
+.mt-tlv__group-head{position:relative; display:flex; align-items:stretch; box-sizing:border-box; height:40px; margin:0; padding:0; border:0; border-bottom:1px solid var(--color-rule); background:var(--color-surface-2); color:var(--color-ink-muted); font:inherit; text-align:left; cursor:pointer;}
+/* Indicateur de focus porté par la CELLULE sticky : le contour de la rangée
+   (largeur du rail) aurait son bord gauche hors écran dès `scrollLeft > 0` et
+   serait recouvert par la cellule opaque. Contour TRANSPARENT (et non `none`)
+   sur la rangée : c'est lui que `forced-colors` repeint (DEC-S58-001). */
+.mt-tlv__group-head:focus-visible{outline:2px solid transparent; outline-offset:-2px;}
+.mt-tlv__group-head:focus-visible .mt-tlv__group-cell{outline:2px solid var(--color-focus); outline-offset:-2px;}
+/* Cellule sticky de la largeur de la GOUTTIÈRE (`--lane-header-w`, 168 px — la
+   maquette pose `LH = 176px`, on garde la gouttière réelle de la frise pour
+   rester aligné sur les en-têtes de lane et sur l'origine des pastilles).
+   Opaque + `--z-sticky` : les traits du résumé plié passent DESSOUS au
+   défilement, comme les pastilles sous l'en-tête de lane. */
+.mt-tlv__group-cell{position:sticky; left:0; z-index:var(--z-sticky); display:flex; align-items:center; gap:8px; flex:0 0 auto; box-sizing:border-box; width:var(--lane-header-w); min-width:0; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule);}
+/* Pastille 10 px (maquette). Couleur posée EN LIGNE (aplat + filet) ; ce repli
+   ne sert qu'aux catégories SANS couleur (DEC-S85-006) : contour neutre, jamais
+   une teinte inventée — même règle que `.mt-tlv-side__swatch`. */
+.mt-tlv__group-swatch{flex:0 0 auto; box-sizing:border-box; width:10px; height:10px; border-radius:3px; border:1px solid var(--color-rule-strong); background:transparent;}
+/* Libellé — maquette `600 13px var(--font-display)`, encre `ink`, ellipsis
+   (allemand +30 % dans une cellule de largeur fixe). */
+.mt-tlv__group-label{flex:1 1 auto; min-width:0; font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); line-height:1.2; color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+/* Compteur = nombre de PRODUITS (DEC-S85-001). Maquette `ink-faint` (2,82:1,
+   sous 4,5:1) → `ink-muted`, même écart que les compteurs de la sidebar (#592). */
+.mt-tlv__group-count{flex:0 0 auto; font-family:var(--font-mono); font-size:10px; line-height:1; color:var(--color-ink-muted);}
+/* Résumé plié (maquette §C) : piste de la rangée, traits décoratifs. */
+.mt-tlv__group-summary{position:absolute; top:0; right:0; bottom:0; left:0; pointer-events:none;}
+/* Mêmes `left`/`width` que la pastille (repère PISTE) + même gouttière
+   (`margin-left`, cf. bloc #392 ci-dessous) → alignés en x sur les pastilles,
+   à tout zoom et tout défilement. Centré verticalement, 8 px, `opacity:.85`
+   (maquette). Marque décorative `aria-hidden` : pas de plancher de contraste. */
+.mt-tlv__group-bar{position:absolute; top:50%; height:8px; margin-top:-4px; margin-left:var(--lane-header-w); border-radius:2px; opacity:.85;}
+/* Archivé : même désaturation que la pastille (`.mt-tlv__evt--archived`). */
+.mt-tlv__group-bar--archived{filter:grayscale(1);}
 .mt-tlv__chev{transition:transform 160ms var(--ease-quart); flex:0 0 auto;}
 .mt-tlv__chev--open{transform:rotate(90deg);}
 @media (prefers-reduced-motion:reduce){ .mt-tlv__chev{transition:none;} }
@@ -536,8 +575,20 @@
 .mt-tlm__today{position:absolute; top:0; bottom:0; width:2px; background:var(--color-accent); z-index:var(--z-cursor); pointer-events:none;}
 .mt-tlm__today-badge{position:absolute; top:2px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:8px; letter-spacing:.08em; color:var(--color-accent-ink); background:var(--color-accent); padding:1px 5px; border-radius:var(--radius-xs); white-space:nowrap;}
 
-/* En-tête de catégorie (sticky à gauche). */
-.mt-tlm__group-head{position:sticky; left:0; display:flex; align-items:center; padding:var(--space-1) var(--space-3); background:var(--color-surface-2); border-top:1px solid var(--color-rule); border-bottom:1px solid var(--color-rule); font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted); z-index:calc(var(--z-sticky) + 1);}
+/* En-tête de catégorie. #601 — la RANGÉE (pleine largeur du rail) n'est plus
+   sticky : une boîte sticky aussi large que son conteneur ne glisse pas, le
+   libellé sortait de l'écran au défilement. C'est la CELLULE qui l'est. La
+   rangée garde padding, fond et filets (hauteur mesurée par la virtualisation,
+   inchangée : la pastille 8 px tient dans l'interligne du texte 9 px). */
+.mt-tlm__group-head{display:flex; align-items:center; padding:var(--space-1) 0; background:var(--color-surface-2); border-top:1px solid var(--color-rule); border-bottom:1px solid var(--color-rule); font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted);}
+/* Cellule sticky : largeur du contenu, bornée pour qu'un nom long ne pousse pas
+   le compteur hors de l'écran (ellipsis sur le libellé). Fond de la rangée :
+   les lanes passent sous elle au défilement. */
+.mt-tlm__group-cell{position:-webkit-sticky; position:sticky; left:0; z-index:calc(var(--z-sticky) + 1); display:inline-flex; align-items:center; gap:6px; min-width:0; max-width:min(100%, 80vw); padding:0 var(--space-3); background:var(--color-surface-2);}
+/* Pastille — même règle de repli que `.mt-tlv__group-swatch` (DEC-S85-006). */
+.mt-tlm__group-swatch{flex:0 0 auto; box-sizing:border-box; width:8px; height:8px; border-radius:2px; border:1px solid var(--color-rule-strong); background:transparent;}
+.mt-tlm__group-label{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.mt-tlm__group-count{flex:0 0 auto; letter-spacing:0;}
 
 /* Lane compacte : densité réduite mais hauteur >= 44px (contrainte a11y PRIME
    sur la densité, réserve ui-design #1). */
