@@ -346,11 +346,12 @@ describe('#416 — encre du glyphe de coche des pastilles', () => {
   })
 
   it('#577 — orchidée, seule couleur de la palette dans l’ancienne bande, prend l’encre claire', () => {
-    // L = 0.1871 ∈ ]0.179 ; 0.1992[ : l'ancien seuil choisissait sombre (4.01:1)
-    // alors que clair donne 4.43:1. C'est la raison du changement de règle.
-    expect(swatchGlyphInk('#B056A8')).toBe(SWATCH_GLYPH_LIGHT)
-    expect(contrastRatio('#B056A8', SWATCH_GLYPH_LIGHT)).toBeCloseTo(4.43, 2)
-    expect(contrastRatio('#B056A8', SWATCH_GLYPH_DARK)).toBeCloseTo(4.01, 2)
+    // Valeur DEC-S84-003 (`#AE55A6`, remplace le `#B056A8` du handoff pour tenir
+    // AA texte). L = 0.1825 ∈ ]0.179 ; 0.1992[ : l'ancien seuil choisissait sombre
+    // (3.93:1) alors que clair donne 4.52:1. C'est la raison du changement de règle.
+    expect(swatchGlyphInk('#AE55A6')).toBe(SWATCH_GLYPH_LIGHT)
+    expect(contrastRatio('#AE55A6', SWATCH_GLYPH_LIGHT)).toBeCloseTo(4.52, 2)
+    expect(contrastRatio('#AE55A6', SWATCH_GLYPH_DARK)).toBeCloseTo(3.93, 2)
   })
 
   it('plancher de 4.21:1 pour N’IMPORTE QUEL hex (≥ 3:1, WCAG 1.4.11)', () => {

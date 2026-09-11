@@ -4,11 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Category } from '@/types/category'
 import { CategoryDrawer } from './CategoryDrawer'
 import {
+  contrastInk,
   contrastRatio,
   swatchGlyphInk,
   SWATCH_GLYPH_DARK,
   SWATCH_GLYPH_LIGHT,
   WCAG_AA_NON_TEXT,
+  WCAG_AA_NORMAL,
 } from '@/lib/color'
 import { EVENT_PALETTE } from '@/lib/event-palette'
 
@@ -287,9 +289,10 @@ describe('#416 — coche de la pastille sélectionnée', () => {
         +contrastRatio(hex, ink).toFixed(2),
       ]
     })
-    // Table figée (#577, palette du handoff) : un ratio qui bouge signale un hex
-    // modifié, pas un test à « remettre au vert ». Min = 4.43 (orchidée), seuil
-    // WCAG 1.4.11 = 3. Orchidée est en encre CLAIRE depuis #577 (cf. `swatchGlyphInk`).
+    // Table figée (#577, palette du handoff ; orchidée = valeur ajustée
+    // DEC-S84-003) : un ratio qui bouge signale un hex modifié, pas un test à
+    // « remettre au vert ». Min = 4.52 (orchidée), seuil WCAG 1.4.11 = 3.
+    // Orchidée est en encre CLAIRE depuis #577 (cf. `swatchGlyphInk`).
     expect(table).toEqual([
       ['red', 'sombre', 4.54],
       ['orange', 'sombre', 6.35],
@@ -300,7 +303,7 @@ describe('#416 — coche de la pastille sélectionnée', () => {
       ['sky', 'sombre', 4.96],
       ['cobalt', 'clair', 5.41],
       ['periwinkle', 'sombre', 4.69],
-      ['orchid', 'clair', 4.43],
+      ['orchid', 'clair', 4.52],
       ['rose', 'sombre', 5.12],
       ['graphite', 'clair', 4.83],
     ])
@@ -354,6 +357,29 @@ describe('#416 — coche de la pastille sélectionnée', () => {
     const glyph = screen.getByTestId('category-swatch-#E3A82B').querySelector('svg')
     expect(glyph).not.toBeNull()
     expect(glyph).toHaveStyle({ color: 'var(--gray-900)' })
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEC-S84-003 — orchidée ajustée `#B056A8` → `#AE55A6` pour tenir AA texte
+// (4.5:1). Avant l'ajustement, orchidée était la seule couleur de la palette à
+// déclencher `category-contrast-warning` (aperçu badge) : ce test protège le
+// sens correct — plus AUCUNE des 12 ne doit déclencher l'avertissement.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('DEC-S84-003 — avertissement de contraste (aperçu badge)', () => {
+  it('toutes les couleurs de la palette tiennent AA 4.5:1 (calcul pur)', () => {
+    for (const { hex } of EVENT_PALETTE) {
+      expect(contrastRatio(hex, contrastInk(hex)), hex).toBeGreaterThanOrEqual(WCAG_AA_NORMAL)
+    }
+  })
+
+  it('aucune des 12 pastilles ne déclenche l’avertissement « contraste faible »', async () => {
+    const user = userEvent.setup()
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+    for (const { hex } of EVENT_PALETTE) {
+      await user.click(screen.getByTestId(`category-swatch-${hex}`))
+      expect(screen.queryByTestId('category-contrast-warning'), hex).toBeNull()
+    }
   })
 })
 

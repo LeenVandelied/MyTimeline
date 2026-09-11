@@ -4,6 +4,7 @@ import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { EVENT_PALETTE, findPaletteEntry, paletteHex } from './event-palette'
+import type { EventPaletteRole } from './event-palette'
 
 /**
  * #577 — Verrou du MIROIR JS de la palette (cf. en-tête de `event-palette.ts`).
@@ -41,11 +42,25 @@ describe('#577 — EVENT_PALETTE est le miroir exact des tokens --evt-*', () => 
     expect(fromCss).toEqual(EVENT_PALETTE.map((e) => [e.token, e.hex]))
   })
 
-  it('les valeurs sont celles du handoff (graphite-handoff.md §Palette curatée)', () => {
+  it('les valeurs sont celles du handoff (graphite-handoff.md §Palette curatée), sauf orchidée (DEC-S84-003)', () => {
     // Rappel textuel de la colonne « Handoff » de l'issue : si ce test rougit, c'est
     // la CHARTE qui a bougé (ou une faute de frappe), pas un test à « remettre au vert ».
+    //
+    // Exception NOMMÉE : orchidée est le seul rôle qui s'écarte délibérément du
+    // handoff. `#B056A8` (valeur handoff) plafonnait à 4.43:1 en texte avec les
+    // encres du dépôt (`INK_LIGHT`/`INK_DARK`), sous AA 4.5:1 — DEC-S84-003
+    // (`docs/memory/decisions.md`) arbitre l'AA au-dessus de l'égalité exacte à la
+    // charte, et ajuste le token à `#AE55A6` (4.52:1). Les 11 autres rôles restent
+    // strictement égaux au handoff.
     const handoff = readFileSync(join(SRC_ROOT, '../../docs/design/graphite-handoff.md'), 'utf-8')
-    for (const { hex } of EVENT_PALETTE) {
+    const ORCHID_HANDOFF_EXCEPTION: EventPaletteRole = 'orchid'
+    for (const { role, hex } of EVENT_PALETTE) {
+      if (role === ORCHID_HANDOFF_EXCEPTION) {
+        expect(hex, 'orchidée doit être la valeur ajustée DEC-S84-003, pas celle du handoff').toBe(
+          '#AE55A6',
+        )
+        continue
+      }
       expect(handoff, `${hex} absent du handoff`).toContain(`\`${hex}\``)
     }
   })

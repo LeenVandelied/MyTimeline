@@ -422,28 +422,32 @@ donc pour clair ET sombre. Seules les colonnes « contre la surface » et
 | ciel | `#3E8BD6` | 0.2434 | sombre **5.47** ✅ | sombre 4.96 | 3.58 | 5.11 | 4.96 | 3.05 |
 | cobalt | `#3B62D4` | 0.1442 | blanche **5.41** ✅ | clair 5.41 | 5.41 | 3.38 | 3.28 | 4.62 |
 | pervenche | `#6C7BE0` | 0.2274 | sombre **5.17** ✅ | sombre 4.69 | 3.79 | 4.83 | 4.69 | 3.23 |
-| orchidée | `#B056A8` | 0.1871 | blanche **4.43** ❌ | clair 4.43 | 4.43 | 4.13 | 4.01 | 3.78 |
+| orchidée | `#AE55A6` | 0.1825 | blanche **4.52** ✅ | clair 4.52 | 4.52 | 4.05 | 3.93 | 3.86 |
 | rose | `#DD5C97` | 0.2526 | sombre **5.64** ✅ | sombre 5.12 | 3.47 | 5.27 | 5.12 | 2.96 |
 | graphite | `#6B7280` | 0.1672 | blanche **4.83** ✅ | clair 4.83 | 4.83 | 3.78 | 3.67 | 4.13 |
 
 Verdicts :
 
-- ❌ **Orchidée `#B056A8` n'atteint PAS 4.5:1 en texte**, avec aucune des deux
-  encres du dépôt : blanche 4.43, `#0B0C0E` 4.42 (elle franchirait 4.5 avec du noir
-  PUR, 4.74 — pas avec les encres de la charte). L'affirmation « AA-tunée » du
-  handoff est donc fausse pour cette couleur avec nos constantes. Valeur NON
-  modifiée par #577 (le critère d'acceptation impose les valeurs du handoff à
-  l'identique) : arbitrage renvoyé au design. Impact réel, par surface :
-  - frise (barres) : garde-fou existant `eventLabelReadableInside` → le libellé
-    passe HORS de la barre, lisible ;
-  - `CategoryDrawer` : l'aperçu affiche l'avertissement « contraste faible »
-    (non bloquant) — sur une couleur de la palette elle-même ;
-  - **sans garde-fou** : badge compteur de `CategoriesView` et badge catégorie de
-    `ProductsListView` (texte 12px sur la couleur, 4.43:1).
-- ✅ Glyphe de coche ≥ 3:1 partout (min **4.43**, orchidée). #577 a remplacé le
+- ✅ **Orchidée ajustée `#B056A8` → `#AE55A6` (DEC-S84-003), atteint 4.5:1 en
+  texte** : blanche **4.52** (l'encre retenue par `contrastInk`), `#0B0C0E`
+  4.33. La valeur handoff `#B056A8` plafonnait à 4.43:1 (blanche) / 4.42:1
+  (`#0B0C0E`) — sous AA 4.5, franchissable seulement avec du noir PUR (4.74, pas
+  une encre de la charte). L'affirmation « AA-tunée » du handoff était donc
+  fausse pour cette couleur avec nos constantes. **Seule exception aux 12
+  valeurs handoff** (les 11 autres restent à l'identique, verrouillé
+  `event-palette.test.ts`) : écart visuel imperceptible, AA tenu sur les 12.
+  Conséquence sur les surfaces auparavant à risque :
+  - frise (barres) : garde-fou existant `eventLabelReadableInside` → inchangé,
+    déjà lisible avant l'ajustement ;
+  - `CategoryDrawer` : l'avertissement « contraste faible » ne se déclenche plus
+    sur aucune des 12 couleurs de la palette (couvert par test) ;
+  - badge compteur de `CategoriesView` et badge catégorie de `ProductsListView`
+    (texte 12px sur la couleur) : passent de 4.43:1 à 4.52:1, AA tenu sans
+    garde-fou dédié.
+- ✅ Glyphe de coche ≥ 3:1 partout (min **4.52**, orchidée). #577 a remplacé le
   seuil de luminance fixe de #416 (0.179) par le choix de l'encre au meilleur
-  ratio : orchidée tombait dans la bande où le seuil choisissait la mauvaise
-  encre (sombre 4.01 au lieu de clair 4.43).
+  ratio : orchidée tombe dans la bande où le seuil choisissait la mauvaise
+  encre (sombre 3.93 au lieu de clair 4.52).
 - ⚠️ **Couleur contre la surface < 3:1** (orange, ambre, citron, sarcelle en clair).
   Non bloquant pour les pastilles : l'état n'est pas porté par la couleur
   (`aria-checked` + bordure + glyphe) et la pastille a une bordure `rule`. Pour les

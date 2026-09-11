@@ -60,8 +60,10 @@ import { createCategoryFormSchema, type CategoryFormValues } from '@/types/categ
  * catégorie déjà stockée avec une de ces anciennes valeurs s'ouvre en
  * « Personnalisé », valeur intacte, jamais réécrite (DEC-S84-001).
  * Aperçu live : badge coloré + nom, avec avertissement de contraste (non bloquant)
- * si le texte sur le fond choisi n'atteint pas WCAG AA 4.5:1 — cas d'une couleur de
- * la palette elle-même : orchidée `#B056A8` plafonne à 4.43:1 (`ds/a11y-audit.md` §9).
+ * si le texte sur le fond choisi n'atteint pas WCAG AA 4.5:1 — cas d'une couleur
+ * hors palette (« Personnalisé »). Les 12 couleurs de la palette tiennent toutes AA
+ * depuis l'ajustement d'orchidée `#B056A8` → `#AE55A6` (4.52:1, DEC-S84-003,
+ * `ds/a11y-audit.md` §9) : l'avertissement ne se déclenche plus sur aucune d'elles.
  */
 
 export type CategoryDrawerMode = 'create' | 'edit'

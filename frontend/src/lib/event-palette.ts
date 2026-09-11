@@ -59,7 +59,7 @@ export const EVENT_PALETTE: readonly EventPaletteEntry[] = [
   { role: 'sky', token: '--evt-sky', hex: '#3E8BD6' },
   { role: 'cobalt', token: '--evt-cobalt', hex: '#3B62D4' },
   { role: 'periwinkle', token: '--evt-periwinkle', hex: '#6C7BE0' },
-  { role: 'orchid', token: '--evt-orchid', hex: '#B056A8' },
+  { role: 'orchid', token: '--evt-orchid', hex: '#AE55A6' }, // DEC-S84-003
   { role: 'rose', token: '--evt-rose', hex: '#DD5C97' },
   { role: 'graphite', token: '--evt-graphite', hex: '#6B7280' },
 ]

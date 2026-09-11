@@ -310,8 +310,9 @@ export const SWATCH_GLYPH_DARK = '#16181D'
  * (`(L+0.05)² = 1.05 × (L(#16181D)+0.05)`) : dans la bande 0.179–0.1992 le seuil
  * choisissait l'encre sombre là où la claire contraste mieux. L'écart était
  * assumé tant qu'« aucune des 12 couleurs ne tombe dans la bande » — prémisse
- * devenue fausse avec la palette du handoff : orchidée `#B056A8` (L = 0.1871)
- * y tombe, sombre 4.01:1 contre clair 4.43:1. Le test qui gardait cette prémisse
+ * devenue fausse avec la palette du handoff : orchidée (L = 0.1871 pour la
+ * valeur handoff `#B056A8`, L = 0.1825 pour `#AE55A6` retenue par DEC-S84-003)
+ * y tombe, sombre 3.93:1 contre clair 4.52:1. Le test qui gardait cette prémisse
  * a rougi comme prévu ; on supprime la bande plutôt que de l'élargir en silence.
  * Sur les 11 autres couleurs le choix est inchangé.
  *
