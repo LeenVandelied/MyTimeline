@@ -243,11 +243,18 @@
 /* #392 — largeur FIXE (et non plus `max-width`) : l'en-tête remplit désormais
    la gouttière de piste, qui fait exactement `--lane-header-w`. Un en-tête plus
    étroit (nom de produit court) y laisserait un vide au lieu d'une colonne. */
-.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+/* #601-fix (S85, correctif revue) — hiérarchie catégorie/lane : maquette §B-bis
+   pose la cellule de lane en `background:var(--color-surface)` (et non
+   `surface-2`, réservé à l'en-tête de catégorie) + `font:500` (et non 600).
+   La distinction passe par le FOND + la GRAISSE + le RETRAIT (ci-dessous). */
+.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-medium); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
 /* #195 — Accordéon de 2e niveau (produit) : le label sticky devient un bouton
    toggle, mirror de .mt-tlv__group-head. Reset des styles bouton natifs, chevron
-   à gauche, cible cliquable (pointer-events réactivés). */
-.mt-tlv__lane-head{gap:6px; border-top:0; border-bottom:0; border-left:0; padding-left:8px; cursor:pointer; text-align:left; pointer-events:auto;}
+   à gauche, cible cliquable (pointer-events réactivés).
+   #601-fix — retrait porté à 33px (mesuré au navigateur, pas calculé sur le
+   papier) pour que ce chevron s'aligne sous la PASTILLE de l'en-tête de
+   catégorie (`.mt-tlv__group-cell` : padding 12px + chevron 13px + gap 8px). */
+.mt-tlv__lane-head{gap:6px; border-top:0; border-bottom:0; border-left:0; padding-left:33px; cursor:pointer; text-align:left; pointer-events:auto;}
 .mt-tlv__lane-head:focus-visible{outline:2px solid var(--color-focus); outline-offset:-2px;}
 .mt-tlv__lane-head-text{min-width:0; flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 

@@ -417,6 +417,59 @@ test.describe('#601 /timeline — en-tête de catégorie', () => {
       }
     }
   })
+
+  test('correctif hiérarchie : cellule de lane ≠ en-tête de catégorie (fond, graisse, retrait)', async ({
+    page,
+  }) => {
+    await gotoTimeline(page, SMALL, 3)
+    const groupCell = cell(page, CAT.vehicles.name)
+    const laneHead = page.getByTestId('timeline-resource-head').first()
+    const groupLabel = head(page, CAT.vehicles.name).locator('.mt-tlv__group-label')
+
+    for (const theme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme: theme })
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.classList.contains('dark')))
+        .toBe(theme === 'dark')
+
+      const groupCs = await groupCell.evaluate((el) => {
+        const cs = getComputedStyle(el)
+        return { bg: cs.backgroundColor, paddingLeft: parseFloat(cs.paddingLeft) }
+      })
+      const laneCs = await laneHead.evaluate((el) => {
+        const cs = getComputedStyle(el)
+        return {
+          bg: cs.backgroundColor,
+          fontWeight: cs.fontWeight,
+          paddingLeft: parseFloat(cs.paddingLeft),
+        }
+      })
+      const groupLabelWeight = await groupLabel.evaluate((el) => getComputedStyle(el).fontWeight)
+
+      test.info().annotations.push({
+        type: 'hierarchy',
+        description: `${theme} — lane bg=${laneCs.bg} pl=${laneCs.paddingLeft} weight=${laneCs.fontWeight} · catégorie bg=${groupCs.bg} pl=${groupCs.paddingLeft} weight=${groupLabelWeight}`,
+      })
+
+      // FOND — les deux niveaux ne partagent plus la même surface.
+      expect(laneCs.bg, `fond lane ≠ fond catégorie (${theme})`).not.toBe(groupCs.bg)
+      // GRAISSE — maquette §B-bis : lane 500, catégorie 600.
+      expect(laneCs.fontWeight, `graisse lane (${theme})`).toBe('500')
+      expect(groupLabelWeight, `graisse catégorie (${theme})`).toBe('600')
+      // RETRAIT — la lane est en retrait par rapport à la catégorie.
+      expect(laneCs.paddingLeft, `retrait lane > retrait catégorie (${theme})`).toBeGreaterThan(
+        groupCs.paddingLeft,
+      )
+    }
+
+    // ALIGNEMENT — le chevron de lane tombe sous la pastille de catégorie.
+    const swatchBox = await box(head(page, CAT.vehicles.name).getByTestId('timeline-group-swatch'))
+    const chevBox = await box(laneHead.locator('.mt-tlv__chev'))
+    expect(
+      Math.abs(chevBox.x - swatchBox.x),
+      `chevron de lane (x=${chevBox.x}) aligné sous la pastille (x=${swatchBox.x})`,
+    ).toBeLessThanOrEqual(1)
+  })
 })
 
 /* ---------------------------------------------------------------------------
