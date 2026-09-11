@@ -815,3 +815,15 @@ Issue à deux sujets de natures différentes. **Thème** : reste porté par `App
 **Décision.** Conserver #578 ; corriger la documentation du DS.
 **Pourquoi.** La maquette fait foi : `design_handoff_mytimeline/App.dc.html` pose `.app-nav.is-active { background: var(--color-primary); color: var(--color-primary-ink) }` et `background: var(--color-accent)` sur le CTA. Le commentaire de `colors.css` avait été écrit au S57 d'après le précédent interne (#86) que #578 corrige ; la phrase du handoff est ambiguë et contredite par son propre écran.
 **Portée.** Le commentaire de `colors.css` est réécrit ; « actif » au sens de l'accent désigne désormais les états focalisés de type survol (dropdown, burger) et le curseur *today*. (Sprint 83, clôture)
+
+## DEC-S84-001 — Palette unique de 12 couleurs : contrainte d'INTERFACE, aucune migration de données (ADR préalable de #577)
+**Contexte.** #577 fait des 12 tokens `--evt-*` (valeurs du handoff) la seule palette. Les couleurs déjà stockées (catégories créées avec l'ancienne `CATEGORY_SWATCHES`, produits et événements en hexa libre) tombent hors palette. Le plan du S84 posait cet arbitrage en précondition bloquante.
+**Décision.** (1) Aucune migration Flyway : les valeurs stockées ne sont jamais réécrites, ni par SQL ni en silence par l'interface ; une couleur hors palette s'affiche comme « Personnalisé » (repli du handoff). (2) La palette reste une contrainte de l'interface : le backend garde `@Pattern ^#[0-9a-fA-F]{6}$`, aucune nouvelle BR.
+**Pourquoi.** Rien n'est déployé : les seules données concernées sont locales. Une règle backend contredirait le repli « Personnalisé » prévu par le handoff et casserait l'existant. Une migration de correspondance ne traiterait que les 10 égalités exactes et serait irréversible.
+**Portée.** #577 reste front-only (`zod_dto_sync: NON`). Si un déploiement a lieu avant qu'on veuille recolorer l'existant, la question revient sous la forme d'une action « remettre à la palette » (non planifiée). (Sprint 84, démarrage — arbitrage du dev)
+
+## DEC-S84-002 — #575 absorbe la casse des libellés de navigation (suite de DEC-S83-002)
+**Contexte.** DEC-S83-002 renvoyait la casse de la nav à #575 ; la maquette (`App.dc.html`) pose `font-mono; 12px; letter-spacing:.06em; uppercase` sur les liens de nav, `10px; .14em; uppercase` sur le libellé de section.
+**Décision.** Traité dans #575 au S84 : liens de `AppShell.tsx` et tablist de `SettingsShell.tsx`, en plus des 8 titres de section.
+**Pourquoi.** Même motif typographique, fichiers disjoints des autres issues du sprint ; une issue séparée aurait rouvert la question de deux arbitrages concurrents.
+**Portée.** #575 passe de S à S+. (Sprint 84, démarrage — arbitrage du dev)

@@ -5912,9 +5912,9 @@ les issues #592-#644), `docs/design/graphite-handoff.md`, `docs/memory/decisions
 des sprints précédents, ce signal ne prouve rien — l'architect a vérifié chaque issue retenue
 directement dans le code (résultat : 11 énoncés démentis, voir plus bas).
 
-### Sprint 83 — 2026-09-07 → 2026-09-11 (EN CLÔTURE — PR #650 ouverte, cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
+### Sprint 83 — 2026-09-07 → 2026-09-11 (Terminé — merge PR #650 dans dev, commit `92f42c2`, cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
 **Objectif :** Fondation de charte (nav active, filet vs ombre, bascule de thème) + sémantique `<time>`
-**Milestone GitHub :** #84 (à fermer APRÈS le merge)
+**Milestone GitHub :** #84 (fermé)
 **Issues livrées (4) :** #578, #518, #574, #642 — à fermer APRÈS le merge (dev protégée)
 **Vagues exécutées :** V1 = #518 ∥ #578 | V2 = #574 | V3 = #642 — conformes au plan
 **Migrations :** aucune · **Fichiers backend touchés :** 0
@@ -5975,10 +5975,10 @@ l'affiché ; `SessionList` décalé du fuseau navigateur) · Packs `pit-*` rég�
 **Correction de dérive au passage :** titre du Sprint 78 resté « EN COURS » alors que sa PR #538
 est mergée depuis le 2026-09-06 et sa ligne `Status` dit « Terminé » — titre corrigé.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #650 ouverte, CI requise verte, merge autorisé par le dev ; titre et
-Status à solder au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
+**Status :** Terminé — PR #650 mergée le 2026-09-11 (`92f42c2`), milestone #84 fermé ; titre et
+Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 84 — 2026-09-07 (PLANIFIÉ — cohésion 0.40, Charte : palette unique et titres de section)
+### Sprint 84 — 2026-09-07 → en cours depuis 2026-09-11 (EN COURS — cohésion 0.40, Charte : palette unique et titres de section)
 **Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres
 **Milestone GitHub :** #85
 **Issues (3) :** #577, #575, #634
@@ -5987,8 +5987,9 @@ Status à solder au `/sprint start 84` (variante S57 : zéro PR supplémentaire)
 **Dépend de :** Sprint 83 (surfaces figées avant de toucher la couleur)
 **ADR préalable bloquant :** les catégories en base portent les couleurs de l'ancienne
 palette. Ni l'issue ni l'audit ne tranchent. Sans cet arbitrage, le sprint livre une palette
-cohérente et des données incohérentes.
-**Status :** Planifié
+cohérente et des données incohérentes. → **Tranché au démarrage (2026-09-11) : DEC-S84-001** (aucune
+migration, contrainte d'interface seulement) ; **DEC-S84-002** (#575 absorbe la casse des libellés de nav).
+**Status :** En cours
 
 **Ajout post-plan (clôture S83, décision du dev) :** #651 — MAJ `next` ≥ 15.5.24 + `sharp` (avis critiques, P0), rattachée au milestone et au label `sprint-84`, **à traiter en tête**. Hors du périmètre de l'architect : pas de mini-plan dans `architect-plans.md` ; vérifier au démarrage son absence de conflit avec les 3 issues planifiées (bump de dépendance = runtime partagé, cf. [[sprint-wave-shared-frontend-runtime]]).
 
