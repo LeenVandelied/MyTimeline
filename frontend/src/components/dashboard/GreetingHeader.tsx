@@ -37,8 +37,12 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
   const slot = timeOfDayKey(now.getHours())
 
   return (
+    // `min-w-0` + `break-words` : l'en-tête partage sa rangée avec le CTA `nowrap` du
+    // dashboard. Sans eux, un nom sans espace (identifiant long) impose sa largeur
+    // min-content et pousse le CTA hors de l'écran à 375 px (Sprint 84, relevé par
+    // `e2e/sprint-84-section-titles.spec.ts` — débordement indépendant de la locale).
     <header
-      className="border-rule flex flex-col gap-1 border-b pb-4"
+      className="border-rule flex min-w-0 flex-col gap-1 border-b pb-4"
       data-testid="dashboard-greeting"
     >
       <p
@@ -47,7 +51,9 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
       >
         {t('eyebrow')}
       </p>
-      <h1 className="text-ink text-md font-medium tracking-tight">{t(slot, { name })}</h1>
+      <h1 className="text-ink text-md font-medium tracking-tight break-words">
+        {t(slot, { name })}
+      </h1>
       {variant === 'full' && <p className="text-ink-muted text-xs">{t('subtitle')}</p>}
     </header>
   )

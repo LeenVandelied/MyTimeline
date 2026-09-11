@@ -52,7 +52,9 @@ body {
 
    Les 4 AUTRES propriétés restent layerisées : elles DOIVENT céder (c'est #339).
    · `margin` + `font-weight` → `<h4 class="mb-3 font-bold">` (FooterSection) ;
-   · `font-family` → bascule display→mono voulue sur les 5 titres du dashboard ;
+   · `font-family` → doit céder à toute utilitaire `font-*` posée sur un titre
+     (sémantique #339). Exemple historique : les 5 titres du dashboard
+     basculaient ainsi en mono — rendus à `font-display` par #575 (S84) ;
    · `letter-spacing` → peut céder sans risque : VÉRIFIÉ par compilation, une
      utilitaire `text-*` n'émet AUCUN `letter-spacing` (contrairement au
      `line-height`), il n'y a donc pas d'appariement qui puisse la faire dériver.

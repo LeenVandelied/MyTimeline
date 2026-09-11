@@ -45,7 +45,8 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   return (
     <section className="flex flex-col gap-3" data-testid="dashboard-product-carousel-section">
-      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
+      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {products.length === 0 ? (
         <p className="text-ink-muted text-xs" data-testid="dashboard-product-carousel-empty">
           {t('empty')}

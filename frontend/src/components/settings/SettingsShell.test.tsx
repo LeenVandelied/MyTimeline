@@ -108,4 +108,23 @@ describe('SettingsShell', () => {
     // L'onglet NON sélectionné garde l'encre muette : la pilule est le seul signal.
     expect(screen.getByTestId('settings-tab-security').className).toContain('text-ink-muted')
   })
+
+  // #575 (DEC-S84-002) — mêmes libellés mono capitales que la nav d'`AppShell`.
+  // Chaîne de classes seulement (jsdom n'applique pas les feuilles) ; le contrat
+  // CSS est dans `styles/__tests__/nav-label-class.test.ts`.
+  it('les libellés d’onglet portent `.mt-nav-label` + `text-2xs`, sans couleur propre (#575)', () => {
+    render(<SettingsShell />)
+    for (const id of ['profile', 'security', 'preferences', 'account']) {
+      const tab = screen.getByTestId(`settings-tab-${id}`)
+      const label = tab.querySelector('span')
+      expect(label?.textContent).toBe(`settings.nav.${id}`)
+      expect(label?.className).toContain('mt-nav-label')
+      expect(label?.className).toContain('text-2xs')
+      // La couleur reste portée par l'onglet (pilule active / encre muette).
+      expect(label?.className).not.toMatch(/\btext-(ink|primary|accent)/)
+      expect(label?.className).not.toContain('mt-eyebrow')
+      // Le nom accessible de l'onglet vient toujours de son contenu textuel.
+      expect(tab).toHaveAccessibleName(`settings.nav.${id}`)
+    }
+  })
 })

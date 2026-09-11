@@ -47,7 +47,12 @@ shadowed feature cards. The new system rejects all of that.
 - **Casing:** sentence case for UI labels and buttons ("New product", "Add event").
   **UPPERCASE + letter-spacing** is reserved for mono micro-labels (eyebrows,
   table headers, status badges, graduations) — that contrast is part of the
-  identity.
+  identity. Two consequences settled in Sprint 84 (#575): **section titles are
+  never eyebrows** — display 600, sentence case, `--text-sm`, full ink, with an
+  optional `.mt-eyebrow` *above* when it carries data (range, count); and the
+  **app navigation labels** (sidebar links, settings tabs) are mono uppercase per
+  `App.dc.html`, via `.mt-nav-label` (`i18n.css` §2bis — no colour/size, so the
+  active pill keeps its ink).
 - **Numbers, dates, durations, IDs:** always **mono**, tabular, ISO where it adds
   precision (`2026-05-14`, `14 d`, `1 px = 6 h`, `↻ every year`).
 - **Emoji:** never, as UI. Status is carried by colour + a mono word, not a glyph.

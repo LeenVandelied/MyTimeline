@@ -4,10 +4,10 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { Tag, FileText, Palette, Trash2, AlertTriangle, Check } from 'lucide-react'
+import { Tag, FileText, Palette, Trash2, AlertTriangle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { contrastRatio, contrastInk, WCAG_AA_NORMAL, swatchGlyphInkVar } from '@/lib/color'
+import { contrastRatio, contrastInk, WCAG_AA_NORMAL } from '@/lib/color'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -28,7 +28,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { PopoverPicker } from '@/components/ui/popoverPicker'
+import { PaletteColorPicker } from '@/components/ui/palette-color-picker'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { useCreateCategory } from '@/hooks/useCreateCategory'
 import { useUpdateCategory } from '@/hooks/useUpdateCategory'
@@ -54,27 +54,17 @@ import { createCategoryFormSchema, type CategoryFormValues } from '@/types/categ
  * catégorie système, les actions modifier/supprimer sont masquées/désactivées ; le
  * drawer bascule en lecture seule.
  *
- * Palette : 12 swatches (grille de boutons) + `PopoverPicker` (react-colorful) pour
- * une couleur libre — RÉUTILISÉS tels quels (pas de ColorSwatch séparé). Aperçu live :
- * badge coloré + nom, avec avertissement de contraste (non bloquant) si le texte sur
- * le fond choisi n'atteint pas WCAG AA 4.5:1.
+ * Palette (#577) : `PaletteColorPicker` partagé — les 12 couleurs du handoff
+ * (tokens `--evt-*`) + repli « Personnalisé » (picker libre). L'ancienne constante
+ * locale `CATEGORY_SWATCHES` (10 valeurs sur 12 hors charte) est SUPPRIMÉE. Une
+ * catégorie déjà stockée avec une de ces anciennes valeurs s'ouvre en
+ * « Personnalisé », valeur intacte, jamais réécrite (DEC-S84-001).
+ * Aperçu live : badge coloré + nom, avec avertissement de contraste (non bloquant)
+ * si le texte sur le fond choisi n'atteint pas WCAG AA 4.5:1 — cas d'une couleur
+ * hors palette (« Personnalisé »). Les 12 couleurs de la palette tiennent toutes AA
+ * depuis l'ajustement d'orchidée `#B056A8` → `#AE55A6` (4.52:1, DEC-S84-003,
+ * `ds/a11y-audit.md` §9) : l'avertissement ne se déclenche plus sur aucune d'elles.
  */
-
-/** Palette de 12 swatches (couleurs Graphite-friendly, hex `#RRGGBB`). */
-export const CATEGORY_SWATCHES = [
-  '#E5484D', // rouge
-  '#E5691E', // orange
-  '#F2A900', // ambre
-  '#A7B83A', // citron
-  '#46A758', // vert
-  '#12A594', // teal
-  '#0091C2', // cyan
-  '#3E63DD', // bleu
-  '#6E56CF', // violet
-  '#AB4ABA', // magenta
-  '#E93D82', // rose
-  '#8B8D98', // gris
-] as const
 
 export type CategoryDrawerMode = 'create' | 'edit'
 
@@ -125,7 +115,6 @@ export function CategoryDrawer({
   const deleteMutation = useDeleteCategory()
 
   const [color, setColor] = React.useState<string | null>(null)
-  const [pickerOpen, setPickerOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [nameConflict, setNameConflict] = React.useState(false)
   const [submitError, setSubmitError] = React.useState<string | null>(null)
@@ -173,12 +162,9 @@ export function CategoryDrawer({
     return contrastRatio(color, chosenInk) < WCAG_AA_NORMAL
   }, [color])
 
+  // Pastille de palette OU picker libre : même effet. Seul chemin d'écriture de la
+  // couleur hors réinitialisation — rien ne la touche à l'ouverture (DEC-S84-001).
   const setSwatch = (hex: string) => {
-    setColor(hex)
-    form.setValue('color', hex)
-  }
-
-  const onPickerChange = (hex: string) => {
     setColor(hex)
     form.setValue('color', hex)
   }
@@ -297,71 +283,20 @@ export function CategoryDrawer({
                 )}
               />
 
-              {/* Couleur : 12 swatches + picker libre. */}
+              {/* Couleur : palette curatée (12 tokens `--evt-*`) + repli « Personnalisé ». */}
               <div className="space-y-2">
                 <span className="text-foreground flex items-center gap-2 text-sm font-medium">
                   <Palette className="size-4" aria-hidden="true" />
                   {t('fields.color')}
                 </span>
-                <div
-                  className="flex flex-wrap items-center gap-2"
-                  role="group"
-                  aria-label={t('fields.color')}
-                >
-                  {CATEGORY_SWATCHES.map((hex) => {
-                    const selected = color?.toLowerCase() === hex.toLowerCase()
-                    return (
-                      <button
-                        key={hex}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        aria-label={hex}
-                        title={hex}
-                        data-testid={`category-swatch-${hex}`}
-                        disabled={readOnly || submitting}
-                        onClick={() => setSwatch(hex)}
-                        className={cn(
-                          // Aucune utilitaire de focus : l'indicateur est le contour
-                          // `:focus-visible` du DS, qui suit le `rounded-full` (#383).
-                          // La SÉLECTION est portée par `border-foreground` seul —
-                          // l'ancien `ring-2 ring-offset-1` la rendait indiscernable
-                          // du focus, qui posait le même anneau.
-                          // #416 : la bordure seule tombait à 1,61:1 contre le
-                          // remplissage sur le pire cas ; un glyphe de coche s'y
-                          // AJOUTE (la bordure reste). `flex` centre le glyphe sans
-                          // toucher `size-7` — la grille de pastilles ne bouge pas.
-                          'flex size-7 items-center justify-center rounded-full border transition',
-                          selected ? 'border-foreground' : 'border-rule',
-                          (readOnly || submitting) && 'cursor-not-allowed opacity-50',
-                        )}
-                        style={{ backgroundColor: hex }}
-                      >
-                        {/* Décoratif : l'état de sélection reste porté par
-                            `aria-checked` ci-dessus, pas par ce glyphe. Encre
-                            calculée sur la luminance du remplissage (cf.
-                            `swatchGlyphInk`, ≥ 4.54:1 sur les 12 couleurs). */}
-                        {selected && (
-                          <Check
-                            className="size-4"
-                            aria-hidden="true"
-                            style={{ color: swatchGlyphInkVar(hex) }}
-                          />
-                        )}
-                      </button>
-                    )
-                  })}
-                  {/* Picker libre (react-colorful). */}
-                  {!readOnly && (
-                    <div data-testid="category-color-picker">
-                      <PopoverPicker
-                        color={color ?? '#888888'}
-                        onChange={onPickerChange}
-                        isOpen={pickerOpen}
-                        onToggle={setPickerOpen}
-                      />
-                    </div>
-                  )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <PaletteColorPicker
+                    value={color}
+                    onChange={setSwatch}
+                    label={t('fields.color')}
+                    testIdPrefix="category"
+                    disabled={readOnly || submitting}
+                  />
                   {color && !readOnly && (
                     <Button
                       type="button"

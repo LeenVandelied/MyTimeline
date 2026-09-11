@@ -33,7 +33,8 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
       data-testid="dashboard-product-list"
       aria-label={t('label')}
     >
-      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
+      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {products.length === 0 ? (
         // #57 — État vide partagé (remplace le <p> inline). testId préservé pour
         // les tests #80 existants (dashboard-product-list-empty).

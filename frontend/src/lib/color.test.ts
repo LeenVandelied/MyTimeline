@@ -15,7 +15,6 @@ import {
   CONTRAST_FLOOR_MARGIN,
   SWATCH_GLYPH_DARK,
   SWATCH_GLYPH_LIGHT,
-  SWATCH_GLYPH_THRESHOLD,
   INK_DARK,
   INK_LIGHT,
   THEME_INK,
@@ -328,21 +327,41 @@ describe('#497 — les constantes de thème ne divergent pas des tokens du DS', 
 describe('#416 — encre du glyphe de coche des pastilles', () => {
   const css = readFileSync(join(__dirname, '../styles/ds/tokens/colors.css'), 'utf-8')
 
-  it('bascule au seuil de luminance, pas sur une encre fixe', () => {
+  it('dépend du remplissage, pas d’une encre fixe', () => {
     // Un blanc fixe échoue sur les couleurs claires, une encre fixe sur les
     // sombres : le choix DOIT dépendre du remplissage.
-    expect(swatchGlyphInk('#F2A900')).toBe(SWATCH_GLYPH_DARK) // ambre, L = 0.4725
-    expect(swatchGlyphInk('#3E63DD')).toBe(SWATCH_GLYPH_LIGHT) // bleu, L = 0.1517
+    expect(swatchGlyphInk('#E3A82B')).toBe(SWATCH_GLYPH_DARK) // ambre, L = 0.4451
+    expect(swatchGlyphInk('#3B62D4')).toBe(SWATCH_GLYPH_LIGHT) // cobalt, L = 0.1442
   })
 
-  it('applique bien SWATCH_GLYPH_THRESHOLD (strictement supérieur)', () => {
-    // Encadrement du seuil par deux gris dont la luminance l'entoure.
-    const below = '#757575' // L = 0.17789
-    const above = '#767676' // L = 0.18116
-    expect(relativeLuminance(below)).toBeLessThan(SWATCH_GLYPH_THRESHOLD)
-    expect(relativeLuminance(above)).toBeGreaterThan(SWATCH_GLYPH_THRESHOLD)
+  it('#577 — bascule au point d’égalisation RÉEL des deux encres (L ≈ 0.1992), pas à 0.179', () => {
+    // Encadrement du point d'égalisation par deux gris adjacents.
+    const below = '#7B7B7B' // L = 0.19807 → clair 4.233 > sombre 4.196
+    const above = '#7C7C7C' // L = 0.20156 → sombre 4.255 > clair 4.174
+    expect(relativeLuminance(below)).toBeLessThan(0.1992)
+    expect(relativeLuminance(above)).toBeGreaterThan(0.1992)
     expect(swatchGlyphInk(below)).toBe(SWATCH_GLYPH_LIGHT)
     expect(swatchGlyphInk(above)).toBe(SWATCH_GLYPH_DARK)
+    // L'ancien seuil 0.179 aurait rendu l'encre SOMBRE pour les deux.
+  })
+
+  it('#577 — orchidée, seule couleur de la palette dans l’ancienne bande, prend l’encre claire', () => {
+    // Valeur DEC-S84-003 (`#AE55A6`, remplace le `#B056A8` du handoff pour tenir
+    // AA texte). L = 0.1825 ∈ ]0.179 ; 0.1992[ : l'ancien seuil choisissait sombre
+    // (3.93:1) alors que clair donne 4.52:1. C'est la raison du changement de règle.
+    expect(swatchGlyphInk('#AE55A6')).toBe(SWATCH_GLYPH_LIGHT)
+    expect(contrastRatio('#AE55A6', SWATCH_GLYPH_LIGHT)).toBeCloseTo(4.52, 2)
+    expect(contrastRatio('#AE55A6', SWATCH_GLYPH_DARK)).toBeCloseTo(3.93, 2)
+  })
+
+  it('plancher de 4.21:1 pour N’IMPORTE QUEL hex (≥ 3:1, WCAG 1.4.11)', () => {
+    // Balayage des 256 gris + un échantillon de teintes : le pire cas est au point
+    // d'égalisation, où les deux encres se valent.
+    for (let v = 0; v < 256; v += 1) {
+      const c = v.toString(16).padStart(2, '0')
+      const gray = `#${c}${c}${c}`
+      expect(contrastRatio(gray, swatchGlyphInk(gray)), gray).toBeGreaterThan(4.21)
+    }
   })
 
   it('hex invalide → encre sombre, jamais `undefined`', () => {
@@ -353,8 +372,8 @@ describe('#416 — encre du glyphe de coche des pastilles', () => {
   it('la variante DS rend un token de PALETTE, pas un alias de thème', () => {
     // `--color-ink` / `--color-primary-foreground` s'inversent dans `.dark` : le
     // remplissage étant un hex inline, le glyphe disparaîtrait en thème sombre.
-    expect(swatchGlyphInkVar('#F2A900')).toBe('var(--gray-900)')
-    expect(swatchGlyphInkVar('#3E63DD')).toBe('var(--gray-0)')
+    expect(swatchGlyphInkVar('#E3A82B')).toBe('var(--gray-900)')
+    expect(swatchGlyphInkVar('#3B62D4')).toBe('var(--gray-0)')
   })
 
   it('`--gray-0` / `--gray-900` valent les constantes ET ne sont pas redéfinis en sombre', () => {

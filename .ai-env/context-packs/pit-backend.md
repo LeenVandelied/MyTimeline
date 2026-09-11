@@ -155,16 +155,8 @@ milestones fermés** (#151, #185, #230, #279, #338), donc invisibles au backlog 
 Cf. [[PIT-S46-004]] pour l'autre famille de faux positifs de clôture.
 
 
-## PIT-S57-001 — `git add` ciblé n'isole PAS un commit sur working tree partagé : `git commit` sans pathspec commite tout l'index
-Correction de [[PIT-S55-002]] / `sprint-parallel-commits-shared-worktree`, qui affirmait que le `git add`
-ciblé suffisait. **Il ne suffit pas.** S57 vague 1, deux agents en parallèle : celui de #312 (backend) avait
-bien `git add` ses 2 seuls fichiers Java, mais son `git commit` a emporté le `git mv` frontend que #299 avait
-déjà staged (rename pur, 0 diff — arbre correct, attribution fausse). Symétrique : **un `git mv` laissé
-stagé est du butin pour le commit du voisin**. Remède : pathspec sur le **commit** —
-`git commit -m "msg" -- <fichiers>`. Appliqué en vague 2 → les 2 commits sont restés parfaitement isolés.
-⚠ L'ordre compte : `git commit -- <fichiers> -m "msg"` **échoue** (après `--`, tout est pathspec, y compris
-`-m` et le message) ; utiliser `-m` avant le `--`, ou `-F <fichier>`.
-
+## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
+Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
 ## PIT-S57-003 — Un `curl` qui réussit ne disculpe PAS le CORS : il n'envoie pas d'en-tête `Origin`
 S57 : suite E2E entièrement rouge dès le projet `setup`, **trois diagnostics faux** avant le bon.
@@ -693,6 +685,17 @@ La règle `ls "$SPRINT_DIR" | grep -E "test-runner"` est satisfaite par n'import
 ## PIT-S83-015 — RTK corrompt la sortie BINAIRE de `git show`
 Lire les dimensions d'un PNG versionné par `git show HEAD:<png> | python …` a rendu `1146224640x32489405` : le flux binaire est altéré par le hook. `rtk proxy git show HEAD:<png>` rend les vraies dimensions (448×430). À appliquer à toute sortie binaire, en plus des cas déjà connus (`git diff` vide, `--reporter=line` réécrit en JSON). (Sprint 83, clôture)
 
+
+## PIT-S84-005 — `npx next lint` avec plusieurs `--file` peut rendre un faux `Errors: 1` sans détail hors `rtk proxy`
+Reproduit au S84 sur 2 puis 17 fichiers : `npx next lint --file a --file b …` nu rend `Errors: 1 | Warnings: 0` sans aucun message, alors que chaque fichier seul — ou le même lot via `rtk proxy` — est propre. Extension de [[PIT-S74-008]] (RTK et prettier) à `next lint`. Parade : `rtk proxy npx next lint --file …` pour tout lint multi-fichiers. (Sprint 84, correctifs post-vague)
+
+
+## PIT-S84-006 — `npx --prefix frontend prettier --check` lancé depuis la racine rend 1 sur un fichier conforme
+Le lead a vu `fmt=1` sur `GreetingHeader.tsx` après commit ; relancé DEPUIS `frontend/` (`rtk proxy npx prettier --check <fichier>`) : conforme, code 0. Le `--prefix` résout mal la configuration ou le binaire. Parade : lancer prettier et eslint depuis `frontend/`, jamais par `--prefix` depuis la racine — et ne jamais conclure « non formaté » sur ce seul code de sortie. (Sprint 84, lead)
+
+
+## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
+Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
 ---
 

@@ -35,7 +35,14 @@
   --blue-700: #0B4EA4;
   --blue-soft:#DBE9FC;
 
-  /* ---- curated 12 event colours (calendar-grade) ---- */
+  /* ---- curated 12 event colours (calendar-grade) ----
+     #577 — SEULE palette du dépôt (catégories, événements, surcharge produit).
+     Miroir JS obligé (un formulaire stocke un hex) : `src/lib/event-palette.ts`,
+     verrouillé sur CE bloc par `event-palette.test.ts` (nom, valeur, ordre).
+     Ne jamais redéfinir un `--evt-*` sous `.dark` (verrouillé aussi).
+     Mesures de contraste des 12 : `a11y-audit.md` §9. DEC-S84-003 : orchidée
+     ajustée `#B056A8` → `#AE55A6` (seule exception à la colonne Handoff, pour
+     tenir AA 4.5:1 en texte — 11/12 autres valeurs = handoff à l'identique). */
   --evt-red:        #E5484D;
   --evt-orange:     #EE7B30;
   --evt-amber:      #E3A82B;
@@ -45,7 +52,7 @@
   --evt-sky:        #3E8BD6;
   --evt-cobalt:     #3B62D4;
   --evt-periwinkle: #6C7BE0;
-  --evt-orchid:     #B056A8;
+  --evt-orchid:     #AE55A6;
   --evt-rose:       #DD5C97;
   --evt-graphite:   #6B7280;
 

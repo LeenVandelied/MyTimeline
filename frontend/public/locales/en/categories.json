@@ -35,5 +35,22 @@
     "nameRequired": "Name is required",
     "nameTooLong": "Name must not exceed 255 characters",
     "nameConflict": "A category with this name already exists."
+  },
+  "palette": {
+    "roles": {
+      "red": "Red",
+      "orange": "Orange",
+      "amber": "Amber",
+      "citron": "Citron",
+      "grass": "Grass",
+      "teal": "Teal",
+      "sky": "Sky",
+      "cobalt": "Cobalt",
+      "periwinkle": "Periwinkle",
+      "orchid": "Orchid",
+      "rose": "Rose",
+      "graphite": "Graphite"
+    },
+    "custom": "Custom"
   }
 }

@@ -2,14 +2,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Category } from '@/types/category'
-import { CategoryDrawer, CATEGORY_SWATCHES } from './CategoryDrawer'
+import { CategoryDrawer } from './CategoryDrawer'
 import {
+  contrastInk,
   contrastRatio,
   swatchGlyphInk,
   SWATCH_GLYPH_DARK,
   SWATCH_GLYPH_LIGHT,
   WCAG_AA_NON_TEXT,
+  WCAG_AA_NORMAL,
 } from '@/lib/color'
+import { EVENT_PALETTE } from '@/lib/event-palette'
 
 /**
  * #62 — Tests CategoryDrawer : création (POST name/color/description), édition
@@ -19,7 +22,9 @@ import {
  *
  * next-intl mocké → assertions sur les clés (`namespace.key`), locale-agnostique.
  * `PopoverPicker` (react-colorful) mocké (canvas non déterministe en jsdom) : les
- * swatches suffisent à couvrir la logique couleur.
+ * swatches suffisent à couvrir la logique couleur. #577 — le mock REND son
+ * déclencheur (`children`, le bouton « Personnalisé » de `PaletteColorPicker`),
+ * sans quoi l'état « Personnalisé actif » serait invérifiable ici.
  */
 
 const createMutateAsync = vi.fn()
@@ -43,10 +48,19 @@ vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
 }))
 vi.mock('@/components/ui/popoverPicker', () => ({
-  PopoverPicker: ({ onChange }: { onChange: (c: string) => void }) => (
-    <button type="button" data-testid="pick-color" onClick={() => onChange('#ff8800')}>
-      pick
-    </button>
+  PopoverPicker: ({
+    onChange,
+    children,
+  }: {
+    onChange: (c: string) => void
+    children?: React.ReactNode
+  }) => (
+    <>
+      {children}
+      <button type="button" data-testid="pick-color" onClick={() => onChange('#ff8800')}>
+        pick
+      </button>
+    </>
   ),
 }))
 // DeleteConfirmDialog utilise useCategories (fetch) : on le mocke par un bouton
@@ -75,7 +89,8 @@ vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
     ) : null,
 }))
 
-const SWATCH = '#3E63DD'
+/** Cobalt — `DEFAULT_COLOR` des événements, encre de glyphe CLAIRE. */
+const SWATCH = '#3B62D4'
 
 const editableCategory: Category = {
   id: 'cat-1',
@@ -263,43 +278,45 @@ describe('CategoryDrawer', () => {
 describe('#416 — coche de la pastille sélectionnée', () => {
   it('les 12 couleurs tiennent ≥ 3:1 contre leur glyphe (clair ET sombre)', () => {
     // Identique dans les deux thèmes PAR CONSTRUCTION : le remplissage est un
-    // hex inline et le glyphe un token de palette brut — aucun des deux n'est
-    // redéfini par `.dark` (verrou dans `lib/color.test.ts` §#416).
-    expect(CATEGORY_SWATCHES).toHaveLength(12)
-    const table = CATEGORY_SWATCHES.map((hex) => {
+    // token `--evt-*` défini sur `:root` seul et le glyphe un token de palette
+    // brut — aucun des deux n'est redéfini par `.dark` (verrous dans
+    // `lib/event-palette.test.ts` et `lib/color.test.ts` §#416).
+    const table = EVENT_PALETTE.map(({ role, hex }) => {
       const ink = swatchGlyphInk(hex)
       return [
-        hex,
+        role,
         ink === SWATCH_GLYPH_DARK ? 'sombre' : 'clair',
         +contrastRatio(hex, ink).toFixed(2),
       ]
     })
-    // Table figée : un ratio qui bouge signale un hex modifié, pas un test à
-    // « remettre au vert ». Min = 4.54 (rouge), seuil WCAG 1.4.11 = 3.
+    // Table figée (#577, palette du handoff ; orchidée = valeur ajustée
+    // DEC-S84-003) : un ratio qui bouge signale un hex modifié, pas un test à
+    // « remettre au vert ». Min = 4.52 (orchidée), seuil WCAG 1.4.11 = 3.
+    // Orchidée est en encre CLAIRE depuis #577 (cf. `swatchGlyphInk`).
     expect(table).toEqual([
-      ['#E5484D', 'sombre', 4.54],
-      ['#E5691E', 'sombre', 5.39],
-      ['#F2A900', 'sombre', 8.84],
-      ['#A7B83A', 'sombre', 8.08],
-      ['#46A758', 'sombre', 5.86],
-      ['#12A594', 'sombre', 5.78],
-      ['#0091C2', 'sombre', 4.93],
-      ['#3E63DD', 'clair', 5.21],
-      ['#6E56CF', 'clair', 5.39],
-      ['#AB4ABA', 'clair', 4.75],
-      ['#E93D82', 'sombre', 4.61],
-      ['#8B8D98', 'sombre', 5.38],
+      ['red', 'sombre', 4.54],
+      ['orange', 'sombre', 6.35],
+      ['amber', 'sombre', 8.37],
+      ['citron', 'sombre', 8.08],
+      ['grass', 'sombre', 5.74],
+      ['teal', 'sombre', 6.06],
+      ['sky', 'sombre', 4.96],
+      ['cobalt', 'clair', 5.41],
+      ['periwinkle', 'sombre', 4.69],
+      ['orchid', 'clair', 4.52],
+      ['rose', 'sombre', 5.12],
+      ['graphite', 'clair', 4.83],
     ])
     for (const [, , ratio] of table) {
       expect(ratio as number).toBeGreaterThanOrEqual(WCAG_AA_NON_TEXT)
     }
   })
 
-  it('aucun hex de la palette ne tombe dans la bande où le seuil est sous-optimal', () => {
-    // Entre SWATCH_GLYPH_THRESHOLD (0.179) et le point d'égalisation réel des
-    // deux encres (≈ 0.1992), le seuil choisit l'encre sombre là où la claire
-    // contrasterait mieux. Test qui rend cet écart VISIBLE si un hex bouge.
-    for (const hex of CATEGORY_SWATCHES) {
+  it('chaque couleur prend l’encre qui contraste le MIEUX (aucune bande sous-optimale)', () => {
+    // Avant #577, un seuil fixe (L > 0.179) laissait une bande où l'encre choisie
+    // n'était pas la meilleure ; ce test la rendait visible. Orchidée y est tombée
+    // avec la palette du handoff — la règle est désormais le maximum des deux.
+    for (const { hex } of EVENT_PALETTE) {
       const chosen = swatchGlyphInk(hex)
       const other = chosen === SWATCH_GLYPH_DARK ? SWATCH_GLYPH_LIGHT : SWATCH_GLYPH_DARK
       expect(contrastRatio(hex, chosen), hex).toBeGreaterThanOrEqual(contrastRatio(hex, other))
@@ -311,7 +328,7 @@ describe('#416 — coche de la pastille sélectionnée', () => {
     render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
 
     const target = screen.getByTestId(`category-swatch-${SWATCH}`)
-    const other = screen.getByTestId('category-swatch-#F2A900')
+    const other = screen.getByTestId('category-swatch-#E3A82B')
     expect(target.querySelector('svg')).toBeNull()
 
     await user.click(target)
@@ -334,11 +351,171 @@ describe('#416 — coche de la pastille sélectionnée', () => {
         open
         onOpenChange={noop}
         mode="edit"
-        category={{ ...editableCategory, color: '#F2A900' }}
+        category={{ ...editableCategory, color: '#E3A82B' }}
       />,
     )
-    const glyph = screen.getByTestId('category-swatch-#F2A900').querySelector('svg')
+    const glyph = screen.getByTestId('category-swatch-#E3A82B').querySelector('svg')
     expect(glyph).not.toBeNull()
     expect(glyph).toHaveStyle({ color: 'var(--gray-900)' })
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEC-S84-003 — orchidée ajustée `#B056A8` → `#AE55A6` pour tenir AA texte
+// (4.5:1). Avant l'ajustement, orchidée était la seule couleur de la palette à
+// déclencher `category-contrast-warning` (aperçu badge) : ce test protège le
+// sens correct — plus AUCUNE des 12 ne doit déclencher l'avertissement.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('DEC-S84-003 — avertissement de contraste (aperçu badge)', () => {
+  it('toutes les couleurs de la palette tiennent AA 4.5:1 (calcul pur)', () => {
+    for (const { hex } of EVENT_PALETTE) {
+      expect(contrastRatio(hex, contrastInk(hex)), hex).toBeGreaterThanOrEqual(WCAG_AA_NORMAL)
+    }
+  })
+
+  it('aucune des 12 pastilles ne déclenche l’avertissement « contraste faible »', async () => {
+    const user = userEvent.setup()
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+    for (const { hex } of EVENT_PALETTE) {
+      await user.click(screen.getByTestId(`category-swatch-${hex}`))
+      expect(screen.queryByTestId('category-contrast-warning'), hex).toBeNull()
+    }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// #577 — Palette unique (tokens `--evt-*`) et NON-RÉÉCRITURE des couleurs hors
+// palette (DEC-S84-001). Le second bloc est LE risque de régression de l'issue.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('#577 — palette du handoff dans CategoryDrawer', () => {
+  it('rend les 12 pastilles du handoff, dans l’ordre, peintes par leur token', () => {
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+    const radios = screen.getAllByRole('radio')
+    expect(radios.map((r) => r.getAttribute('data-testid'))).toEqual(
+      EVENT_PALETTE.map((e) => `category-swatch-${e.hex}`),
+    )
+    radios.forEach((radio, i) => {
+      // Le hex n'est PAS dans le style : c'est le token qui est peint.
+      expect(radio.getAttribute('style')).toContain(`var(${EVENT_PALETTE[i].token})`)
+      // Nom accessible = rôle traduit, jamais le hex.
+      expect(radio).toHaveAccessibleName(`categories.palette.roles.${EVENT_PALETTE[i].role}`)
+    })
+    expect(screen.getByRole('radiogroup')).toHaveAccessibleName('categories.drawer.fields.color')
+  })
+
+  it('aucune des 10 anciennes valeurs de CATEGORY_SWATCHES n’est proposée', () => {
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+    for (const legacy of [
+      '#E5691E',
+      '#F2A900',
+      '#46A758',
+      '#12A594',
+      '#0091C2',
+      '#3E63DD',
+      '#6E56CF',
+      '#AB4ABA',
+      '#E93D82',
+      '#8B8D98',
+    ]) {
+      expect(screen.queryByTestId(`category-swatch-${legacy}`), legacy).not.toBeInTheDocument()
+    }
+  })
+
+  it('le picker libre (« Personnalisé ») pose une couleur hors palette', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockResolvedValue({})
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(screen.getByTestId('category-name-input'), 'Libre')
+    await user.click(screen.getByTestId('pick-color'))
+    expect(screen.getByTestId('category-color-custom')).toHaveAttribute('aria-pressed', 'true')
+    await user.click(screen.getByTestId('category-submit'))
+
+    await waitFor(() =>
+      expect(createMutateAsync).toHaveBeenCalledWith({
+        name: 'Libre',
+        color: '#ff8800',
+        description: undefined,
+      }),
+    )
+  })
+})
+
+describe('#577 / DEC-S84-001 — une couleur stockée hors palette n’est JAMAIS réécrite', () => {
+  /** Ancien orange de `CATEGORY_SWATCHES` : valide en base, hors palette du handoff. */
+  const LEGACY_ORANGE = '#E5691E'
+  const legacyCategory: Category = { ...editableCategory, color: LEGACY_ORANGE }
+
+  it('à l’ouverture : aucune pastille cochée, « Personnalisé » actif', () => {
+    render(<CategoryDrawer open onOpenChange={noop} mode="edit" category={legacyCategory} />)
+    for (const radio of screen.getAllByRole('radio')) {
+      expect(radio, radio.getAttribute('data-testid') ?? '').toHaveAttribute(
+        'aria-checked',
+        'false',
+      )
+    }
+    expect(screen.getByTestId('category-color-custom')).toHaveAttribute('aria-pressed', 'true')
+    // Aucune écriture au montage : le composant n'a rien émis.
+    expect(updateMutateAsync).not.toHaveBeenCalled()
+  })
+
+  it('enregistrer SANS toucher la couleur renvoie la valeur stockée à l’identique', async () => {
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    render(<CategoryDrawer open onOpenChange={noop} mode="edit" category={legacyCategory} />)
+
+    const nameInput = screen.getByTestId('category-name-input')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Renommée')
+    await user.click(screen.getByTestId('category-submit'))
+
+    await waitFor(() =>
+      expect(updateMutateAsync).toHaveBeenCalledWith({
+        id: 'cat-1',
+        data: { name: 'Renommée', color: LEGACY_ORANGE, description: 'Voitures et motos' },
+      }),
+    )
+  })
+
+  it('la casse stockée est préservée même quand la couleur EST dans la palette', async () => {
+    // `#e5484d` = rouge de la palette : la pastille est cochée (comparaison
+    // insensible à la casse) mais la valeur n'est pas normalisée en `#E5484D`.
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    render(
+      <CategoryDrawer
+        open
+        onOpenChange={noop}
+        mode="edit"
+        category={{ ...editableCategory, color: '#e5484d' }}
+      />,
+    )
+    expect(screen.getByTestId('category-swatch-#E5484D')).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByTestId('category-color-custom')).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(screen.getByTestId('category-submit'))
+    await waitFor(() =>
+      expect(updateMutateAsync).toHaveBeenCalledWith({
+        id: 'cat-1',
+        data: { name: 'Véhicules', color: '#e5484d', description: 'Voitures et motos' },
+      }),
+    )
+  })
+
+  it('choisir une pastille remplace la couleur hors palette (action explicite)', async () => {
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    render(<CategoryDrawer open onOpenChange={noop} mode="edit" category={legacyCategory} />)
+
+    await user.click(screen.getByTestId('category-swatch-#EE7B30'))
+    expect(screen.getByTestId('category-color-custom')).toHaveAttribute('aria-pressed', 'false')
+    await user.click(screen.getByTestId('category-submit'))
+
+    await waitFor(() =>
+      expect(updateMutateAsync).toHaveBeenCalledWith({
+        id: 'cat-1',
+        data: { name: 'Véhicules', color: '#EE7B30', description: 'Voitures et motos' },
+      }),
+    )
   })
 })

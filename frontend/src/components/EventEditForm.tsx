@@ -15,7 +15,7 @@ import { Switch } from './ui/switch'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
-import { PopoverPicker } from './ui/popoverPicker'
+import { PaletteColorPicker } from './ui/palette-color-picker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
 import { ConflictDialog } from './shared/ConflictDialog'
 import { ArchiveConfirmDialog } from './events/ArchiveConfirmDialog'
@@ -62,8 +62,9 @@ export type { EventEditFormValues } from '@/types/event'
  * recalculerait la géométrie de la frise à chaque frappe.
  *
  * Responsive : le formulaire est rendu dans le drawer/bottom-sheet du parent
- * (`EventContent`, pattern `ProductDrawer.tsx:240-244`). Aucun breakpoint custom :
- * `sm:` (640px) unique — bottom-sheet < 640px (portrait ET paysage), drawer >= 640px.
+ * (`NewEventDrawer`/`TimelineEditHost`, pattern `ProductDrawer.tsx:240-244`).
+ * Aucun breakpoint custom : `sm:` (640px) unique — bottom-sheet < 640px (portrait
+ * ET paysage), drawer >= 640px.
  */
 export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
 
@@ -79,8 +80,8 @@ export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
  *                   qu'elle serait ignorée.
  *   - `recurrenceEndDate` : hors DTO create (BR-EVE-012).
  *
- * Défaut `'edit'` → les consommateurs existants (`EventContent`, `TimelineEditHost`)
- * sont inchangés, aucun champ ne disparaît de l'édition.
+ * Défaut `'edit'` → le consommateur existant (`TimelineEditHost`) est inchangé,
+ * aucun champ ne disparaît de l'édition.
  */
 export type EventFormMode = 'create' | 'edit'
 
@@ -159,8 +160,10 @@ interface EventEditFormProps {
    *
    * #495 — CONSOMMATEURS (l'inventaire, pas une liste de surfaces « inchangées ») :
    *   - `NewEventDrawer` (création) — épinglé >= lg, en flux dans la bottom sheet ;
-   *   - `TimelineEditHost` (édition) — épinglé >= sm, en flux sous 640px ;
-   *   - `EventContent` (chemin calendrier historique) — ne passe PAS la prop.
+   *   - `TimelineEditHost` (édition) — épinglé >= sm, en flux sous 640px.
+   * Seuls ces deux points de montage existent (`EventContent`, chemin calendrier
+   * historique qui ne passait PAS la prop, supprimé #634 : mort depuis la
+   * suppression d'`EventBar`/`Lane`).
    * ⚠ `EventDrawer` et `ConflictDialog` ne sont PAS des consommateurs : ni l'un ni
    * l'autre ne monte ce formulaire (le premier est un panneau de DÉTAIL en lecture
    * seule qui délègue l'édition via `onEdit` ; le second est rendu PAR ce formulaire).
@@ -243,7 +246,6 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    */
   const formId = React.useId()
 
-  const [isColorOpen, setIsColorOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   // #230 — confirmation d'ARCHIVAGE : ouverte par le toggle, jamais par le submit.
   const [archiveConfirmOpen, setArchiveConfirmOpen] = React.useState(false)
@@ -383,8 +385,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * (`timeline.css:325`), il ne requiert aucun ancêtre `.mt-drawer` : il s'applique
    * tel quel sur cette surface Tailwind.
    *
-   * EN FLUX (les chemins qui ne fournissent PAS la prop : `EventContent`, la bottom
-   * sheet de création < 1024px et le dialog d'édition < 640px) : classe HISTORIQUE,
+   * EN FLUX (les chemins qui ne fournissent PAS la prop : la bottom sheet de
+   * création < 1024px et le dialog d'édition < 640px) : classe HISTORIQUE,
    * strictement inchangée. Aucun de ces chemins ne place le libellé au contact d'un
    * titre → aucun mandat pour le reclasser (PAT-S44-001).
    * ⚠ `text-sm` rend **17px** ici (l'échelle du DS Graphite écrase celle de Tailwind,
@@ -805,7 +807,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     )}
                   </div>
 
-                  {/* Couleur unique (design v3 #44) + validation hex (BR-EVE-009). */}
+                  {/* Couleur unique (design v3 #44) + validation hex (BR-EVE-009).
+                      #577 — palette curatée (12 tokens `--evt-*`) + repli
+                      « Personnalisé » (picker libre), composant partagé avec les
+                      catégories. Le champ hexadécimal est CONSERVÉ en dessous : il
+                      reflète la valeur quelle qu'elle soit (saisir un hex de la
+                      palette y coche la pastille) et plusieurs E2E le pilotent.
+                      Sa place relève de la refonte de ce formulaire (#617/#618),
+                      pas de #577. Une couleur stockée hors palette s'ouvre en
+                      « Personnalisé » et repart INCHANGÉE (DEC-S84-001). */}
                   <div className="border-rule space-y-4 border-t pt-4">
                     <FormField
                       control={form.control}
@@ -815,14 +825,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           <FormLabel className="text-ink m-0 font-medium">
                             {tDetails('color')}
                           </FormLabel>
+                          <PaletteColorPicker
+                            value={field.value}
+                            onChange={(color) => handleColorChange(color, field)}
+                            label={tDetails('color')}
+                            testIdPrefix="event-form"
+                            disabled={locked}
+                            describedBy={locked ? lockedNoteId : undefined}
+                          />
                           <div className="flex items-center gap-2">
-                            <PopoverPicker
-                              isOpen={isColorOpen}
-                              color={field.value ?? ''}
-                              onChange={(color) => handleColorChange(color, field)}
-                              onToggle={(isOpen) => setIsColorOpen(isOpen)}
-                              disabled={locked}
-                            />
                             <input
                               type="text"
                               value={field.value ?? ''}

@@ -387,3 +387,72 @@ l'ancien `ring-*` (un `box-shadow`) était rogné exactement de la même façon.
   Contre-épreuve sur le tablist : en forçant l'ancien décalage (`+2px`), le
   contour redevient rogné sur **3 côtés** — le correctif est bien ce qui supprime
   le défaut.
+
+## 9 · Palette curatée des 12 couleurs — mesures (#577, Sprint 84)
+
+Source des valeurs : tokens `--evt-*` (`tokens/colors.css`), miroir JS
+`src/lib/event-palette.ts` verrouillé par `event-palette.test.ts`. Ces 12 couleurs
+sont, depuis #577, les SEULES proposées par les sélecteurs (catégorie, événement,
+surcharge produit) ; l'ancienne `CATEGORY_SWATCHES` (10 valeurs sur 12 hors
+charte) est supprimée. Jusqu'ici 9 d'entre elles n'étaient mesurées nulle part
+(#504).
+
+**Méthode** : calcul WCAG 2.x (`lib/color.ts`), avec les constantes RÉELLEMENT
+peintes ([[PIT-S61-004]]) — encres de texte `INK_DARK #0B0C0E` / `INK_LIGHT #FFFFFF`
+(`contrastInk`), encres du glyphe de coche `--gray-900 #16181D` / `--gray-0`
+(`swatchGlyphInk`), surfaces `--color-surface` `#FFFFFF` (clair) / `#131519`
+(sombre), bordure de sélection `border-foreground` = `--color-ink` `#16181D` /
+`#ECEDEF`. **Mesure navigateur** du glyphe et du remplissage peint : E2E
+`sprint-73-model-vs-rendered.spec.ts` (12 × 2 thèmes). Ce tableau, lui, est
+arithmétique.
+
+**Le remplissage est le même dans les deux thèmes** (aucun `--evt-*` n'est
+redéfini sous `.dark`, verrouillé) : les colonnes « texte » et « glyphe » valent
+donc pour clair ET sombre. Seules les colonnes « contre la surface » et
+« bordure de sélection » dépendent du thème.
+
+| Couleur | Hex | L | Texte sur la couleur (`contrastInk`, seuil 4.5) | Glyphe de coche (seuil 3) | vs surface clair | vs surface sombre | bordure sél. clair | bordure sél. sombre |
+|---|---|---|---|---|---|---|---|---|
+| rouge | `#E5484D` | 0.2183 | sombre **5.00** ✅ | sombre 4.54 | 3.91 | 4.67 | 4.54 | 3.34 |
+| orange | `#EE7B30` | 0.3256 | sombre **7.00** ✅ | sombre 6.35 | 2.80 | 6.54 | 6.35 | 2.39 |
+| ambre | `#E3A82B` | 0.4451 | sombre **9.23** ✅ | sombre 8.37 | 2.12 | 8.62 | 8.37 | 1.81 |
+| citron | `#A7B83A` | 0.4280 | sombre **8.91** ✅ | sombre 8.08 | 2.20 | 8.32 | 8.08 | 1.88 |
+| herbe | `#4FA459` | 0.2893 | sombre **6.32** ✅ | sombre 5.74 | 3.09 | 5.91 | 5.74 | 2.64 |
+| sarcelle | `#2FA7A2` | 0.3085 | sombre **6.68** ✅ | sombre 6.06 | 2.93 | 6.24 | 6.06 | 2.50 |
+| ciel | `#3E8BD6` | 0.2434 | sombre **5.47** ✅ | sombre 4.96 | 3.58 | 5.11 | 4.96 | 3.05 |
+| cobalt | `#3B62D4` | 0.1442 | blanche **5.41** ✅ | clair 5.41 | 5.41 | 3.38 | 3.28 | 4.62 |
+| pervenche | `#6C7BE0` | 0.2274 | sombre **5.17** ✅ | sombre 4.69 | 3.79 | 4.83 | 4.69 | 3.23 |
+| orchidée | `#AE55A6` | 0.1825 | blanche **4.52** ✅ | clair 4.52 | 4.52 | 4.05 | 3.93 | 3.86 |
+| rose | `#DD5C97` | 0.2526 | sombre **5.64** ✅ | sombre 5.12 | 3.47 | 5.27 | 5.12 | 2.96 |
+| graphite | `#6B7280` | 0.1672 | blanche **4.83** ✅ | clair 4.83 | 4.83 | 3.78 | 3.67 | 4.13 |
+
+Verdicts :
+
+- ✅ **Orchidée ajustée `#B056A8` → `#AE55A6` (DEC-S84-003), atteint 4.5:1 en
+  texte** : blanche **4.52** (l'encre retenue par `contrastInk`), `#0B0C0E`
+  4.33. La valeur handoff `#B056A8` plafonnait à 4.43:1 (blanche) / 4.42:1
+  (`#0B0C0E`) — sous AA 4.5, franchissable seulement avec du noir PUR (4.74, pas
+  une encre de la charte). L'affirmation « AA-tunée » du handoff était donc
+  fausse pour cette couleur avec nos constantes. **Seule exception aux 12
+  valeurs handoff** (les 11 autres restent à l'identique, verrouillé
+  `event-palette.test.ts`) : écart visuel imperceptible, AA tenu sur les 12.
+  Conséquence sur les surfaces auparavant à risque :
+  - frise (barres) : garde-fou existant `eventLabelReadableInside` → inchangé,
+    déjà lisible avant l'ajustement ;
+  - `CategoryDrawer` : l'avertissement « contraste faible » ne se déclenche plus
+    sur aucune des 12 couleurs de la palette (couvert par test) ;
+  - badge compteur de `CategoriesView` et badge catégorie de `ProductsListView`
+    (texte 12px sur la couleur) : passent de 4.43:1 à 4.52:1, AA tenu sans
+    garde-fou dédié.
+- ✅ Glyphe de coche ≥ 3:1 partout (min **4.52**, orchidée). #577 a remplacé le
+  seuil de luminance fixe de #416 (0.179) par le choix de l'encre au meilleur
+  ratio : orchidée tombe dans la bande où le seuil choisissait la mauvaise
+  encre (sombre 3.93 au lieu de clair 4.52).
+- ⚠️ **Couleur contre la surface < 3:1** (orange, ambre, citron, sarcelle en clair).
+  Non bloquant pour les pastilles : l'état n'est pas porté par la couleur
+  (`aria-checked` + bordure + glyphe) et la pastille a une bordure `rule`. Pour les
+  traits fins peints dans la couleur (connecteur, contour fantôme), le plancher
+  #497 s'applique déjà. Pas d'action.
+- ⚠️ **Bordure de sélection vs remplissage** : pire cas ambre en sombre **1.81:1**
+  (ex-`#F2A900` à 1.61:1 au §8bis). Même lecture qu'au §8bis : la sélection se
+  lit contre le fond de page et par le glyphe, pas par ce couple. Pas d'action.

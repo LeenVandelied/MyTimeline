@@ -94,7 +94,8 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await expect(page.getByTestId('category-drawer-form')).toBeVisible()
 
     await page.getByTestId('category-name-input').fill(name)
-    await page.getByTestId('category-swatch-#3E63DD').click()
+    // #577 — palette du handoff : cobalt (l'ancien bleu `#3E63DD` n'est plus proposé).
+    await page.getByTestId('category-swatch-#3B62D4').click()
     await page.getByTestId('category-submit').click()
 
     // Drawer fermé au succès + useCreateCategory invalide categories.all -> refetch.

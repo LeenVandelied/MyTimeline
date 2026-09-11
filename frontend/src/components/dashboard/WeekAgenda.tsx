@@ -39,7 +39,18 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
       data-testid="dashboard-week-agenda"
       aria-label={t('label')}
     >
-      <h2 className="text-ink-faint text-2xs font-mono tracking-widest uppercase">{t('title')}</h2>
+      {/* #575 — vrai titre de section et non plus un eyebrow mono (13px, capitales,
+          `ink-faint`). Classes RÉFÉRENCE des 8 titres de section du produit :
+            · `text-sm` = 17px, plus bas palier de l'échelle qui lit comme un titre,
+              sous le `h1` du dashboard (`GreetingHeader`, `text-md` 21px) ;
+            · `font-display font-semibold` : ce que la règle `h2` du DS pose déjà
+              (`base.css`, `@layer base`), écrit ici pour que l'intention se lise ;
+            · interligne : `text-sm` apparie un `line-height` (PIT-S53-001), mais sur
+              un `h1..h6` la règle HORS layer de `base.css` le ramène à 1.08 — ce
+              couple n'est donc sûr QUE sur un titre, pas sur un `<p>`/`<span>`.
+          Pas d'eyebrow au-dessus : l'ancien ne portait que ce même libellé, aucune
+          information (plage, compteur) à conserver. */}
+      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {weekEvents.length === 0 ? (
         <p className="text-ink-muted text-xs" data-testid="dashboard-week-agenda-empty">
           {t('empty')}

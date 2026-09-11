@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { paletteHex } from '@/lib/event-palette'
+
 // #150 — Sync Zod/types sur le contrat DTO events v3 (EventResponse livré par #165).
 // Rappels contrat (source de vérité) :
 //   - couleurs : champ UNIQUE `color` (bg/border/text supprimés backend, BR-EVE-009).
@@ -65,9 +67,9 @@ export type Event = z.infer<typeof eventSchema>
 //   { error, serverVersion: number|null, serverEvent: EventResponse }
 // `serverEvent` réutilise `eventSchema` (même projection que le GET/PATCH event) → toute
 // dérive de champ casse le parse et donc le diff. `.nullable()` sur serverVersion (jamais
-// absent, mais défensif). Consommé par EventContent (interception 409) → ConflictDialog
-// comparative. Pitfall projet : parse via safeParse (un corps 409 legacy/plat = pas de diff,
-// on retombe sur l'action « recharger »).
+// absent, mais défensif). Consommé par `useEventEditConflict` (interception 409, mount unique :
+// `TimelineEditHost`) → ConflictDialog comparative. Pitfall projet : parse via safeParse (un
+// corps 409 legacy/plat = pas de diff, on retombe sur l'action « recharger »).
 export const eventConflictBodySchema = z.object({
   error: z.string(),
   serverVersion: z.number().nullable(),
@@ -157,8 +159,8 @@ export type FullCalendarEvent = {
 /**
  * Couleur de repli d'un event sans `color` (BR-EVE-009). #300 : exportée pour
  * pré-remplir le formulaire de création (le champ est optionnel côté DTO).
- * SOURCE UNIQUE — `EventContent.tsx` importe cette constante (#393, fin de la
- * redéclaration locale qui pouvait diverger).
+ * SOURCE UNIQUE — `EventEditForm.tsx`/`NewEventDrawer.tsx` importent cette
+ * constante (#393, fin de la redéclaration locale qui pouvait diverger).
  *
  * #393 — l'ancien défaut `#6366f1` (indigo-500 Tailwind) plafonnait à **4.467:1**
  * (mesuré via `contrastRatio` de `lib/color.ts`, meilleure encre = blanc), sous le
@@ -175,8 +177,12 @@ export type FullCalendarEvent = {
  * → décalage visuel minime pour les events existants sans couleur.
  * Garde-fou anti-régression : `lib-a11y.test.ts` asserte
  * `eventLabelReadableInside(DEFAULT_COLOR) === true` sur cette constante importée.
+ *
+ * #577 — la valeur n'est plus recopiée ici : elle est LUE dans la palette unique
+ * (`lib/event-palette.ts`, miroir des tokens `--evt-*`). Même valeur (`#3B62D4`),
+ * mais une seule définition — cf. PIT-S56-003 (un « défaut » redéclaré diverge).
  */
-export const DEFAULT_COLOR = '#3B62D4'
+export const DEFAULT_COLOR = paletteHex('cobalt')
 
 export const mapToFullCalendarEvent = (
   event: Event,

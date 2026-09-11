@@ -1,8 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { EventEditForm, type EventEditFormValues } from './EventEditForm'
 import { useRecurrencePreview } from '@/hooks/useRecurrencePreview'
+import { EVENT_PALETTE } from '@/lib/event-palette'
+import { DEFAULT_COLOR } from '@/types/event'
 
 /**
  * #66 — Tests EventEditForm : submitState (4 états), validations inline
@@ -19,9 +21,13 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'fr',
 }))
 
+// #577 — le mock REND son déclencheur (`children` = bouton « Personnalisé » de
+// `PaletteColorPicker`) : sans lui, l'état « Personnalisé actif » serait invérifiable.
 vi.mock('@/components/ui/popoverPicker', () => ({
-  PopoverPicker: ({ color }: { color: string }) => (
-    <div data-testid="mock-picker" data-color={color} />
+  PopoverPicker: ({ color, children }: { color: string; children?: React.ReactNode }) => (
+    <div data-testid="mock-picker" data-color={color}>
+      {children}
+    </div>
   ),
 }))
 
@@ -417,6 +423,9 @@ describe('EventEditForm — #230 verrou d’édition d’un archivé (BR-EVE-013
     'event-form-end-date',
     'event-form-color-input',
     'event-form-recurring-toggle',
+    // #577 — la palette et son repli suivent le même verrou.
+    'event-form-swatch-#E5484D',
+    'event-form-color-custom',
   ]
 
   it('archived=true : les champs d’édition sont désactivés', () => {
@@ -788,5 +797,66 @@ describe('EventEditForm — #495 aperçu épinglé + ConflictDialog ouvert (409)
     } finally {
       host.remove()
     }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// #577 — Palette curatée + repli « Personnalisé » dans le formulaire d'événement,
+// et NON-RÉÉCRITURE d'une couleur stockée hors palette (DEC-S84-001).
+// ─────────────────────────────────────────────────────────────────────────────
+describe('EventEditForm — #577 palette curatée', () => {
+  it('propose les 12 pastilles du handoff + « Personnalisé »', () => {
+    setup()
+    const radios = screen.getAllByRole('radio')
+    expect(radios.map((r) => r.getAttribute('data-testid'))).toEqual(
+      EVENT_PALETTE.map((e) => `event-form-swatch-${e.hex}`),
+    )
+    expect(screen.getByRole('radiogroup')).toHaveAccessibleName('products.details.color')
+    expect(screen.getByTestId('event-form-color-custom')).toBeInTheDocument()
+  })
+
+  it('couleur par défaut d’un nouvel événement (cobalt) : sa pastille est cochée', () => {
+    setup({ mode: 'create', defaultValues: { ...baseDefaults, color: DEFAULT_COLOR } })
+    expect(screen.getByTestId(`event-form-swatch-${DEFAULT_COLOR}`)).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    expect(screen.getByTestId('event-form-color-custom')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('choisir une pastille met à jour le champ hex ET la valeur soumise', async () => {
+    const { onSubmit } = setup()
+    await userEvent.click(screen.getByTestId('event-form-swatch-#2FA7A2'))
+    expect(screen.getByTestId('event-form-color-input')).toHaveValue('#2FA7A2')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ color: '#2FA7A2' })
+  })
+
+  it('saisir un hex de la palette dans le champ coche la pastille correspondante', () => {
+    setup()
+    fireEvent.change(screen.getByTestId('event-form-color-input'), {
+      target: { value: '#6c7be0' },
+    })
+    expect(screen.getByTestId('event-form-swatch-#6C7BE0')).toHaveAttribute('aria-checked', 'true')
+  })
+})
+
+describe('EventEditForm — #577 / DEC-S84-001 couleur hors palette jamais réécrite', () => {
+  // `baseDefaults.color` = `#3B82F6` : hex libre, hors des 12 couleurs du handoff.
+  it('à l’ouverture : aucune pastille cochée, « Personnalisé » actif, champ hex intact', () => {
+    setup()
+    expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(0)
+    expect(screen.getByTestId('event-form-color-custom')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByTestId('event-form-color-input')).toHaveValue('#3B82F6')
+  })
+
+  it('enregistrer sans toucher la couleur la renvoie À L’IDENTIQUE', async () => {
+    const { onSubmit } = setup()
+    await userEvent.clear(screen.getByTestId('event-form-title-input'))
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Renommé')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ title: 'Renommé', color: '#3B82F6' })
   })
 })

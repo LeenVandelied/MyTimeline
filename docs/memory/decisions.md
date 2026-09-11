@@ -815,3 +815,37 @@ Issue à deux sujets de natures différentes. **Thème** : reste porté par `App
 **Décision.** Conserver #578 ; corriger la documentation du DS.
 **Pourquoi.** La maquette fait foi : `design_handoff_mytimeline/App.dc.html` pose `.app-nav.is-active { background: var(--color-primary); color: var(--color-primary-ink) }` et `background: var(--color-accent)` sur le CTA. Le commentaire de `colors.css` avait été écrit au S57 d'après le précédent interne (#86) que #578 corrige ; la phrase du handoff est ambiguë et contredite par son propre écran.
 **Portée.** Le commentaire de `colors.css` est réécrit ; « actif » au sens de l'accent désigne désormais les états focalisés de type survol (dropdown, burger) et le curseur *today*. (Sprint 83, clôture)
+
+## DEC-S84-001 — Palette unique de 12 couleurs : contrainte d'INTERFACE, aucune migration de données (ADR préalable de #577)
+**Contexte.** #577 fait des 12 tokens `--evt-*` (valeurs du handoff) la seule palette. Les couleurs déjà stockées (catégories créées avec l'ancienne `CATEGORY_SWATCHES`, produits et événements en hexa libre) tombent hors palette. Le plan du S84 posait cet arbitrage en précondition bloquante.
+**Décision.** (1) Aucune migration Flyway : les valeurs stockées ne sont jamais réécrites, ni par SQL ni en silence par l'interface ; une couleur hors palette s'affiche comme « Personnalisé » (repli du handoff). (2) La palette reste une contrainte de l'interface : le backend garde `@Pattern ^#[0-9a-fA-F]{6}$`, aucune nouvelle BR.
+**Pourquoi.** Rien n'est déployé : les seules données concernées sont locales. Une règle backend contredirait le repli « Personnalisé » prévu par le handoff et casserait l'existant. Une migration de correspondance ne traiterait que les 10 égalités exactes et serait irréversible.
+**Portée.** #577 reste front-only (`zod_dto_sync: NON`). Si un déploiement a lieu avant qu'on veuille recolorer l'existant, la question revient sous la forme d'une action « remettre à la palette » (non planifiée). (Sprint 84, démarrage — arbitrage du dev)
+
+## DEC-S84-002 — #575 absorbe la casse des libellés de navigation (suite de DEC-S83-002)
+**Contexte.** DEC-S83-002 renvoyait la casse de la nav à #575 ; la maquette (`App.dc.html`) pose `font-mono; 12px; letter-spacing:.06em; uppercase` sur les liens de nav, `10px; .14em; uppercase` sur le libellé de section.
+**Décision.** Traité dans #575 au S84 : liens de `AppShell.tsx` et tablist de `SettingsShell.tsx`, en plus des 8 titres de section.
+**Pourquoi.** Même motif typographique, fichiers disjoints des autres issues du sprint ; une issue séparée aurait rouvert la question de deux arbitrages concurrents.
+**Portée.** #575 passe de S à S+. (Sprint 84, démarrage — arbitrage du dev)
+
+## DEC-S84-003 — Orchidée `#B056A8` → `#AE55A6` : l'AA prime sur la valeur exacte du handoff
+**Contexte.** #577 imposait à la fois les 12 valeurs exactes du handoff (critère 4) et l'AA sur les 12 (critère 5). Mesuré avec les encres du dépôt (`INK_LIGHT #FFFFFF`, `INK_DARK #0B0C0E`) : orchidée `#B056A8` plafonne à 4.43:1 (blanc) / 4.42:1 (sombre). L'affirmation « AA-tunée » du handoff est fausse pour cette couleur avec nos constantes (elle ne passerait qu'avec un noir pur, 4.74).
+**Décision.** `--evt-orchid` = `#AE55A6` (4.52:1 sur blanc). Les 11 autres valeurs restent strictement égales au handoff ; le test de synchronisation porte une exception nommée pour orchidée.
+**Pourquoi.** Écart visuel imperceptible ; les deux autres voies (garder une couleur de palette sous AA et l'avertissement « contraste faible » qu'elle déclenche dans `CategoryDrawer`, ou retirer une couleur de la maquette) étaient pires.
+**Portée.** Aucune donnée migrée (DEC-S84-001) : une catégorie enregistrée en `#B056A8` s'ouvre désormais en « Personnalisé ». Acceptable, rien n'est déployé. (Sprint 84, arbitrage du dev)
+
+## DEC-S84-004 — Eyebrow au-dessus d'un titre de section seulement s'il porte une donnée
+**Contexte.** #575 demandait le « motif GreetingHeader » (eyebrow au-dessus du titre) sur 8 sections ; 6 d'entre elles n'avaient aucune information hors du titre — l'ancien eyebrow répétait le libellé.
+**Décision.** Eyebrow conservé sur 2 sections (ruban de densité : plage « 30 jours » ; historique produit : compteur), titre seul ailleurs. Validé par le dev au démarrage.
+**Pourquoi.** La maquette n'est pas dans le dépôt ; inventer un contenu d'eyebrow serait un arbitrage Designer.
+**Portée.** Follow-up : confirmer section par section avec la maquette. (Sprint 84 #575)
+
+## DEC-S84-005 — « Personnalisé » est un bouton `aria-pressed` HORS du radiogroup des 12 pastilles
+**Contexte.** Sélecteur de palette : 12 pastilles + un repli « Personnalisé » qui ouvre un popover.
+**Décision.** Radiogroup de 12 `radio` (flèches, Home/End, un seul tabstop) ; « Personnalisé » est un bouton séparé `aria-pressed`, pas un 13e `radio`.
+**Pourquoi.** Radix pose `aria-expanded`/`aria-haspopup` sur le déclencheur de popover, attributs non autorisés sur le rôle `radio`. L'état « hors palette » reste lisible : aucun radio coché + bouton pressé. (Sprint 84 #577)
+
+## DEC-S84-006 — Encre du glyphe de pastille = meilleur ratio, plus de seuil de luminance fixe
+**Contexte.** `swatchGlyphInk` basculait à un seuil fixe (L = 0.179), écart toléré au vrai point d'égalisation (0.1992) tant qu'aucune couleur de palette ne tombait dans la bande.
+**Décision.** Choisir l'encre au meilleur ratio de contraste.
+**Pourquoi.** Orchidée tombait dans la bande ; supprimer la bande coûte moins que maintenir une tolérance adossée à une prémisse qui dépend de la palette. Seul consommateur : `swatchGlyphInkVar` (vérifié en review). (Sprint 84 #577)

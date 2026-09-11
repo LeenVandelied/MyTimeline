@@ -38,7 +38,13 @@ import { AccountSection } from './AccountSection'
  * `--color-primary` → #ECEDEF / encre → #0B0C0E ; 17.8:1 en clair, 16.7:1 en
  * sombre). Corriger la copie sans corriger cette source-ci l'aurait laissée
  * réessaimer au prochain écran.
- * La CASSE des libellés d'onglet reste INCHANGÉE — arbitrage renvoyé à #575.
+ *
+ * #575 (DEC-S84-002) — LIBELLÉS D'ONGLET : mono capitales espacées de la maquette,
+ * par la même classe que les liens d'`AppShell` (`.mt-nav-label` + `text-2xs`), qui
+ * détend l'espacement en allemand. ESTIMATION arithmétique (Plex Mono = 0,6 em
+ * par glyphe, NON mesurée au navigateur) : en `de`, les 4 onglets tiennent ~500 px,
+ * sous les ~650 px utiles à 768 px (sidebar repliée) ; au-delà, la tablist défile
+ * (`overflow-x-auto`), elle ne fait pas déborder la page.
  */
 type ChapterId = 'profile' | 'security' | 'preferences' | 'account'
 
@@ -105,7 +111,9 @@ export function SettingsShell() {
               )}
             >
               <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {t(`nav.${chapter.id}`)}
+              {/* #575 — mono capitales espacées, alignées sur les liens d'`AppShell`
+                  (`.mt-nav-label`, DS i18n.css §2bis). */}
+              <span className="mt-nav-label text-2xs">{t(`nav.${chapter.id}`)}</span>
             </button>
           )
         })}

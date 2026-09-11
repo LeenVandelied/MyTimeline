@@ -5912,9 +5912,9 @@ les issues #592-#644), `docs/design/graphite-handoff.md`, `docs/memory/decisions
 des sprints précédents, ce signal ne prouve rien — l'architect a vérifié chaque issue retenue
 directement dans le code (résultat : 11 énoncés démentis, voir plus bas).
 
-### Sprint 83 — 2026-09-07 → 2026-09-11 (EN CLÔTURE — PR #650 ouverte, cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
+### Sprint 83 — 2026-09-07 → 2026-09-11 (Terminé — merge PR #650 dans dev, commit `92f42c2`, cohésion 0.53, Charte : surfaces, navigation, thème + sémantique des dates)
 **Objectif :** Fondation de charte (nav active, filet vs ombre, bascule de thème) + sémantique `<time>`
-**Milestone GitHub :** #84 (à fermer APRÈS le merge)
+**Milestone GitHub :** #84 (fermé)
 **Issues livrées (4) :** #578, #518, #574, #642 — à fermer APRÈS le merge (dev protégée)
 **Vagues exécutées :** V1 = #518 ∥ #578 | V2 = #574 | V3 = #642 — conformes au plan
 **Migrations :** aucune · **Fichiers backend touchés :** 0
@@ -5975,22 +5975,40 @@ l'affiché ; `SessionList` décalé du fuseau navigateur) · Packs `pit-*` rég�
 **Correction de dérive au passage :** titre du Sprint 78 resté « EN COURS » alors que sa PR #538
 est mergée depuis le 2026-09-06 et sa ligne `Status` dit « Terminé » — titre corrigé.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #650 ouverte, CI requise verte, merge autorisé par le dev ; titre et
-Status à solder au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
+**Status :** Terminé — PR #650 mergée le 2026-09-11 (`92f42c2`), milestone #84 fermé ; titre et
+Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 84 — 2026-09-07 (PLANIFIÉ — cohésion 0.40, Charte : palette unique et titres de section)
-**Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres
-**Milestone GitHub :** #85
-**Issues (3) :** #577, #575, #634
-**Vagues :** V1 (parallèle) = #577 + #575 + #634 — fichiers strictement disjoints
-**Migrations :** aucune (mais **décision de migration de DONNÉES à prendre**, voir ADR)
-**Dépend de :** Sprint 83 (surfaces figées avant de toucher la couleur)
-**ADR préalable bloquant :** les catégories en base portent les couleurs de l'ancienne
-palette. Ni l'issue ni l'audit ne tranchent. Sans cet arbitrage, le sprint livre une palette
-cohérente et des données incohérentes.
-**Status :** Planifié
-
-**Ajout post-plan (clôture S83, décision du dev) :** #651 — MAJ `next` ≥ 15.5.24 + `sharp` (avis critiques, P0), rattachée au milestone et au label `sprint-84`, **à traiter en tête**. Hors du périmètre de l'architect : pas de mini-plan dans `architect-plans.md` ; vérifier au démarrage son absence de conflit avec les 3 issues planifiées (bump de dépendance = runtime partagé, cf. [[sprint-wave-shared-frontend-runtime]]).
+### Sprint 84 — 2026-09-11 → 2026-09-11 (EN CLÔTURE — PR #662 ouverte, cohésion 0.40, Charte : palette unique et titres de section)
+**Objectif :** Une seule palette de couleurs branchée sur les tokens, titres de section rendus comme des titres ; en tête, MAJ `next`/`sharp` (P0)
+**Milestone GitHub :** #85 (4 issues, aucune héritée — à fermer APRÈS le merge)
+**Issues livrées (4) :** #651, #577, #575, #634
+**Vagues exécutées :** V0 = #651 seule (bump de dépendances = runtime partagé, jouée par le lead) | V1 (parallèle, fichiers disjoints) = #577 (opus) + #575 (opus) + #634 (sonnet) | correctifs post-vague = orchidée + suppression `EventContent` (1 agent sonnet) + débordement du salut (lead)
+**Cohésion score :** 0.40
+**Commits :** 13 sur `origin/dev..sprint/84` (+ consolidation) — #651 `4b78a47` ; #634 `6f64d87`, `6edb430` ; #575 `daa0c06`, `ededd26`, `79e76d7` ; #577 `2edd33f`, `8ea6304`, `89f9aa8` ; docs `c0c1552`, `599b497`, `2549b36`, `c5f2c1e`
+**Migrations :** aucune — **décision de migration de données tranchée au démarrage : DEC-S84-001** (aucune migration, contrainte d'interface)
+**BR impactées :** aucune BR backend (sprint 100 % frontend + dépendances ; `backend/` intact). Décisions : DEC-S84-001 → 006.
+**Arbitrages du dev pendant le sprint (4) :** DEC-S84-001 (pas de migration, UI seulement) ; DEC-S84-002 (#575 absorbe la casse de nav) ; DEC-S84-003 (orchidée `#AE55A6` : les critères 4 et 5 de #577 étaient incompatibles, 4.43:1 mesuré) ; suppression d'`EventContent` absorbée dans #634 ; eyebrow seulement là où il informe (DEC-S84-004).
+**Reviews :** reviewer palette 0/0/0 ; reviewer titres+nav+suppressions 0 CRITIQUE / 1 MAJEUR (correctif du salut gardé seulement implicitement → assertion dédiée armée `79e76d7`, RÉSOLU) ; ui-design CONFORME, 0 écart bloquant (2 mineurs préexistants → suites) ; vérification navigateur du lead (dashboard `/de` clair/sombre, contraste nav 17,8/16,7 actif et 6,1/5,9 repos, tiroir catégorie au clavier).
+**Tests :** Frontend 1456/1456 (124 fichiers) + build + typecheck + lint + format | E2E local 345/1/8 (le rouge = armement `sprint-77-theme-visual`, attendu sous `--ignore-snapshots`) | CI PR #662 : 7/7 verts (`security` repasse au vert — critère de #651) | Backend non modifié (job CI vert).
+**Absorbé en cours (hors plan) :** débordement du salut à 375 px (préexistant, révélé par la nouvelle spec de #575 : fr 390 px > de 377 px, donc indépendant de la locale) → `ededd26` + garde `79e76d7` ; suppression d'`EventContent` (mort depuis `EventBar`) avec report de sa couverture 409/`archived`.
+**Écarts constatés :** (1) #651 annonçait un saut 15.2 → 15.5, le lockfile était déjà en 15.5.22 ; (2) le plan architecte de #575 ratait les 2 `h2` de `ProductDetailView` (grep sur `font-mono`) ; (3) frontière de commit : la suppression d'`EventContent` est dans `89f9aa8` (#577) au lieu de `6edb430` (#634) — historique non réécrit ; (4) 1er run E2E rouge sur le setup (première compilation de `/fr/dashboard` à 4,5 s pour 5 s de budget), vert à chaud.
+**Nouveaux pitfalls :** PIT-S84-001 → 006 (+ PIT-S57-001 re-confirmé sans fan-out) · **Patterns :** PAT-S84-001 → 004 · **Décisions :** DEC-S84-001 → 006 · **Bugs résolus :** 1 (salut / CTA à 375 px) · Packs `pit-*` régénérés, 6 entrées classées (`--check` vert).
+**Follow-ups arbitrés (Phase 4 — proposition du lead validée par le dev, backlog libre) :**
+  - Harmoniser l'eyebrow de `GreetingHeader` (13 px) avec `.mt-eyebrow` (10 px) [S | design] → **commentaire sur #632**
+  - Eyebrows faits main non détendus en allemand [S | design] → **commentaire sur #632** (même sujet, état après #575)
+  - Champ hex du formulaire d'événement sans nom accessible (préexistant) [XS | a11y] → **commentaire sur #618**
+  - Casse du lien « Réglages » du pied de sidebar [XS | design] → #663
+  - Eyebrows informatifs des 6 sections, à confirmer avec la maquette [S | design] → #664
+  - Rangée de pastilles : cibles 28 px < 44 px mobile + 12e pastille orpheline [S | design] → #665
+  - Pastilles du tiroir produit sans E2E [XS | test] → #666
+  - Clés i18n orphelines après suppression d'`EventContent` [XS | i18n] → #667
+  - Relecture native des traductions de `density.title` [XS | i18n] → #668
+  - `ds/readme.md:153` cite `TimelineEventBar` → **discard** (composant du bundle DS, mention juste)
+  - `next lint` multi-`--file` sous RTK → **discard** (consigné en PIT-S84-005)
+  - Frontière de commit `EventContent` → **discard** (documentée PR #662 + PIT-S57-001)
+  Ratio : 6 issues / 3 commentaires / 3 discards / 0 absorbé en clôture (2 absorbés pendant le sprint, cf. ci-dessus).
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #662 ouverte, CI requise verte ; titre et Status à solder au `/sprint start 85` (variante S57 : zéro PR supplémentaire).
 
 ### Sprint 85 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
 **Objectif :** Filtres par catégorie, légende, pliage global, pastille/compteur, boutons Aujourd'hui et Nouvel événement

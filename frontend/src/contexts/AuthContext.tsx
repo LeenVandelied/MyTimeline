@@ -23,7 +23,8 @@ function safeErrorMessage(error: unknown): string {
  * Contexte d'authentification — source unique de l'état `user`.
  *
  * Avant #40 : chaque appel à `useAuth()` instanciait son propre `useState`
- * + `useEffect` (4 consumers : dashboard / login / AddProducts / EventContent),
+ * + `useEffect` (4 consumers : dashboard / login / AddProducts / EventContent —
+ * ce dernier supprimé #634, remplacé par `TimelineEditHost`/`useEventEditConflict`),
  * d'où un état incohérent (un login ne se propageait pas aux autres écrans).
  * Désormais l'état vit dans `<AuthProvider>` et tous les consumers lisent le
  * même contexte via `useAuth()`.

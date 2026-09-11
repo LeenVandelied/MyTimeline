@@ -207,6 +207,44 @@ describe('AppShell — lien actif', () => {
   })
 })
 
+// #575 (DEC-S84-002) — libellés de nav en mono capitales espacées (maquette
+// `App.dc.html`). Chaîne de classes, pas rendu : jsdom n'applique aucune feuille.
+// Le contrat CSS de `.mt-nav-label` est verrouillé par
+// `styles/__tests__/nav-label-class.test.ts`.
+describe('AppShell — libellés de nav (#575)', () => {
+  beforeEach(() => {
+    mockResolvedTheme = 'light'
+  })
+
+  it('chaque libellé de nav porte `.mt-nav-label` + `text-2xs`, et reste le 1er span du lien', () => {
+    mockPathname = '/fr/dashboard'
+    renderShell()
+    for (const id of ['dashboard', 'timeline', 'products']) {
+      const link = screen.getByTestId(`shell-sidebar-nav-link-${id}`)
+      // `e2e/sprint-73-tablet-sidebar.spec.ts:144` cible `locator('span').first()`.
+      const label = link.querySelector('span')
+      expect(label?.textContent).toBe(`shell.nav.${id}`)
+      expect(label?.className).toContain('mt-nav-label')
+      expect(label?.className).toContain('text-2xs')
+      // Le palier icon-only (#298) est conservé.
+      expect(label?.className).toContain('hidden')
+      expect(label?.className).toContain('lg:inline')
+    }
+  })
+
+  it('le libellé ne porte AUCUNE couleur : l’encre de la pilule active reste celle du lien', () => {
+    mockPathname = '/fr/dashboard'
+    renderShell()
+    const active = screen.getByTestId('shell-sidebar-nav-link-dashboard')
+    const label = active.querySelector('span')
+    expect(active.className).toContain('text-primary-ink')
+    // Ni utilitaire de couleur, ni `.mt-eyebrow` (dont la couleur HORS layer
+    // battrait `text-primary-ink` hérité — contraste de la pilule détruit).
+    expect(label?.className).not.toMatch(/\btext-(ink|primary|accent)/)
+    expect(label?.className).not.toContain('mt-eyebrow')
+  })
+})
+
 describe('AppShell — sélecteurs intégrés', () => {
   beforeEach(() => {
     mockResolvedTheme = 'light'

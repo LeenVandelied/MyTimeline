@@ -15,6 +15,7 @@
   "density": {
     "label": "Densité des événements sur {days} jours",
     "eyebrow": "Densité · {days} jours",
+    "title": "Aperçu de la frise",
     "empty": "Aucun événement sur la période"
   },
   "week": {

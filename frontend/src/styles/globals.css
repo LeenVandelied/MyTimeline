@@ -74,7 +74,7 @@
 
   --color-focus: var(--color-focus);
 
-  /* ---- 12 couleurs event (AA-tunées, cf. ds/a11y-audit.md) ---- */
+  /* ---- 12 couleurs event (mesures : ds/a11y-audit.md §9 — 11/12 AA en texte) ---- */
   --color-evt-red: var(--evt-red);
   --color-evt-orange: var(--evt-orange);
   --color-evt-amber: var(--evt-amber);
