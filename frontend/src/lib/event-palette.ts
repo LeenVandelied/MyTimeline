@@ -65,6 +65,18 @@ export const EVENT_PALETTE: readonly EventPaletteEntry[] = [
 ]
 
 /**
+ * Hex d'un rôle de la palette — pour nommer une couleur SANS en recopier la
+ * valeur (ex. `DEFAULT_COLOR` = cobalt, `types/event.ts`). Lève si le rôle manque :
+ * branche inatteignable tant que `EVENT_PALETTE` porte ses 12 entrées (verrouillé
+ * par test), présente pour ne jamais rendre `undefined` en silence.
+ */
+export function paletteHex(role: EventPaletteRole): string {
+  const entry = EVENT_PALETTE.find((e) => e.role === role)
+  if (!entry) throw new Error(`rôle de palette inconnu : ${role}`)
+  return entry.hex
+}
+
+/**
  * Entrée de palette correspondant à `color`, comparaison INSENSIBLE À LA CASSE
  * (`#e5484d` et `#E5484D` désignent la même couleur stockée). `undefined` pour une
  * valeur absente, vide ou hors palette — c'est-à-dire « Personnalisé » dès qu'une

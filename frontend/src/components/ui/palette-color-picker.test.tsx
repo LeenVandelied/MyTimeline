@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { NextIntlClientProvider } from 'next-intl'
 import { describe, expect, it, vi } from 'vitest'
 
-import { EVENT_PALETTE, type EventPaletteRole } from '@/lib/event-palette'
+import { EVENT_PALETTE, paletteHex } from '@/lib/event-palette'
 import { PaletteColorPicker, type PaletteColorPickerProps } from './palette-color-picker'
 import frCategories from '../../../public/locales/fr/categories.json'
 import enCategories from '../../../public/locales/en/categories.json'
@@ -21,21 +21,14 @@ import esCategories from '../../../public/locales/es/categories.json'
  * et `sprint-84-palette`.
  */
 
-/**
- * Hex d'un rôle, lu dans le miroir : ce fichier ne recopie PAS la palette (le
- * fil-piège de `event-palette.test.ts` refuse toute liste de ≥ 6 couleurs).
- */
-const hexOf = (role: EventPaletteRole): string => {
-  const entry = EVENT_PALETTE.find((e) => e.role === role)
-  if (!entry) throw new Error(`rôle ${role} absent de EVENT_PALETTE`)
-  return entry.hex
-}
-const RED = hexOf('red')
-const ORANGE = hexOf('orange')
-const TEAL = hexOf('teal')
-const COBALT = hexOf('cobalt')
-const ORCHID = hexOf('orchid')
-const GRAPHITE = hexOf('graphite')
+// Hex lus dans le miroir (`paletteHex`) : ce fichier ne recopie PAS la palette
+// (le fil-piège de `event-palette.test.ts` refuse toute liste de ≥ 6 couleurs).
+const RED = paletteHex('red')
+const ORANGE = paletteHex('orange')
+const TEAL = paletteHex('teal')
+const COBALT = paletteHex('cobalt')
+const ORCHID = paletteHex('orchid')
+const GRAPHITE = paletteHex('graphite')
 
 const MESSAGES = {
   fr: frCategories,

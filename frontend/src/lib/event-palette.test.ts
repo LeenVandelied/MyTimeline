@@ -3,7 +3,7 @@ import { join, relative } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { EVENT_PALETTE, findPaletteEntry } from './event-palette'
+import { EVENT_PALETTE, findPaletteEntry, paletteHex } from './event-palette'
 
 /**
  * #577 — Verrou du MIROIR JS de la palette (cf. en-tête de `event-palette.ts`).
@@ -66,6 +66,12 @@ describe('#577 — EVENT_PALETTE est le miroir exact des tokens --evt-*', () => 
     expect(EVENT_PALETTE).toHaveLength(12)
     expect(new Set(EVENT_PALETTE.map((e) => e.hex)).size).toBe(12)
     for (const { hex } of EVENT_PALETTE) expect(hex).toMatch(/^#[0-9A-F]{6}$/)
+  })
+})
+
+describe('#577 — paletteHex', () => {
+  it('rend le hex d’un rôle (DEFAULT_COLOR = cobalt passe par ici)', () => {
+    expect(paletteHex('cobalt')).toBe('#3B62D4')
   })
 })
 

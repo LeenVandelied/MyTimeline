@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { paletteHex } from '@/lib/event-palette'
+
 // #150 — Sync Zod/types sur le contrat DTO events v3 (EventResponse livré par #165).
 // Rappels contrat (source de vérité) :
 //   - couleurs : champ UNIQUE `color` (bg/border/text supprimés backend, BR-EVE-009).
@@ -175,8 +177,12 @@ export type FullCalendarEvent = {
  * → décalage visuel minime pour les events existants sans couleur.
  * Garde-fou anti-régression : `lib-a11y.test.ts` asserte
  * `eventLabelReadableInside(DEFAULT_COLOR) === true` sur cette constante importée.
+ *
+ * #577 — la valeur n'est plus recopiée ici : elle est LUE dans la palette unique
+ * (`lib/event-palette.ts`, miroir des tokens `--evt-*`). Même valeur (`#3B62D4`),
+ * mais une seule définition — cf. PIT-S56-003 (un « défaut » redéclaré diverge).
  */
-export const DEFAULT_COLOR = '#3B62D4'
+export const DEFAULT_COLOR = paletteHex('cobalt')
 
 export const mapToFullCalendarEvent = (
   event: Event,
