@@ -111,3 +111,6 @@ Cause : `toISOString()` convertit en UTC ; un événement du 16 juillet à 00:00
 
 ## `SessionList` affichait l'heure de dernière activité décalée du fuseau du navigateur (Sprint 83 #518, review cycle 1)
 Cause : `lastActivity` est un `LocalDateTime` Java sans offset ; `new Date(iso)` le lisait en heure LOCALE, alors que `ExportDataFlow` lisait le même type en UTC (#58). Défaut antérieur au sprint, devenu une affirmation machine fausse quand #518 l'a publié dans `<time dateTime>`. Solution : `parseServerDateTime` / `serverDateTime`, un seul parsing pour libellé et attribut ; 7 tests sous `TZ='Asia/Tokyo'` dont la contre-épreuve échoue aussi sous `TZ=UTC`. **Règle : un test de fuseau qui ne force pas `TZ` est vacant sur la CI Ubuntu.**
+
+## Le salut du dashboard poussait le CTA « Nouveau produit » hors de l'écran à 375 px (Sprint 84, absorbé dans #575)
+Cause : `GreetingHeader` est un flex item sans `min-w-0`, à côté d'un CTA `nowrap` ; un nom sans espace imposait sa largeur min-content (page à 377-394 px selon compte et locale, fr pire que de — défaut antérieur au sprint). Solution : `min-w-0` sur le `<header>` + `break-words` sur le `h1` (`ededd26`) ; garde E2E dédiée avec précondition et armement (`79e76d7`).

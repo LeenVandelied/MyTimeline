@@ -260,16 +260,8 @@ milestones fermés** (#151, #185, #230, #279, #338), donc invisibles au backlog 
 Cf. [[PIT-S46-004]] pour l'autre famille de faux positifs de clôture.
 
 
-## PIT-S57-001 — `git add` ciblé n'isole PAS un commit sur working tree partagé : `git commit` sans pathspec commite tout l'index
-Correction de [[PIT-S55-002]] / `sprint-parallel-commits-shared-worktree`, qui affirmait que le `git add`
-ciblé suffisait. **Il ne suffit pas.** S57 vague 1, deux agents en parallèle : celui de #312 (backend) avait
-bien `git add` ses 2 seuls fichiers Java, mais son `git commit` a emporté le `git mv` frontend que #299 avait
-déjà staged (rename pur, 0 diff — arbre correct, attribution fausse). Symétrique : **un `git mv` laissé
-stagé est du butin pour le commit du voisin**. Remède : pathspec sur le **commit** —
-`git commit -m "msg" -- <fichiers>`. Appliqué en vague 2 → les 2 commits sont restés parfaitement isolés.
-⚠ L'ordre compte : `git commit -- <fichiers> -m "msg"` **échoue** (après `--`, tout est pathspec, y compris
-`-m` et le message) ; utiliser `-m` avant le `--`, ou `-F <fichier>`.
-
+## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
+Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
 ## PIT-S57-002 — Vitest tronque le rapport d'échec passé comme valeur comparée → message décapité en CI
 Vitest 3.2.7 tronque à ~40 caractères les valeurs d'un `toBe` dans le message d'`AssertionError`
@@ -1111,6 +1103,7 @@ Les deux écrivent `frontend/.next` ; le premier meurt en cascade (`Cannot find 
 ## PIT-S81-024 — re-confirmé au Sprint 83
 Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
 
+
 ## PIT-S81-010 — Une sonde de déploiement qui ne traverse pas jusqu'au backend rend un vert menteur
 L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
 
@@ -1149,6 +1142,7 @@ L'heuristique de la Phase 8 balaie tous les `*.tsx` ajoutés, `.test.tsx` compri
 
 ## PIT-S81-024 — re-confirmé au Sprint 83
 Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
+
 
 ## PIT-S83-001 — Un clic Playwright sur un bouton VISIBLE mais non hydraté est un NO-OP silencieux
 Au premier run réel, la spec de #642 tombait 6 fois sur 11 : `waitUntil: 'domcontentloaded'` puis clic immédiat. Le bouton est visible, activé, cliquable — mais React n'a pas encore attaché `onClick`, et Playwright ne signale rien. Le seul test vert assérait `aria-pressed` AVANT de cliquer : une barrière d'hydratation **accidentelle**, puisque le composant ne pose `aria-pressed` qu'après sa garde `mounted`. Remède : une barrière **nommée** sur un attribut post-montage (`waitForToggleHydrated`). Le `toPass` qui rejoue le clic (`openMenu`, `landing-mobile-menu.spec.ts:52-63`) ne vaut que pour une action **idempotente** ; une bascule (`setTheme(inverse)`) exige une barrière, pas un réessai. Corollaire : une énumération DOM ne voit pas un élément monté conditionnellement — son absence au balayage est le **symptôme** du clic perdu, pas la preuve d'un testid faux (le lead l'a cru, à tort). (Sprint 83 #642)
@@ -1212,6 +1206,34 @@ Lire les dimensions d'un PNG versionné par `git show HEAD:<png> | python …` a
 
 ## PIT-S81-024 — re-confirmé au Sprint 83
 Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
+
+
+## PIT-S84-001 — Une classe `.mt-*` hors layer posée dans un lien actif écrase l'encre héritée de la pilule
+`.mt-eyebrow` pose `color` et `font-size` hors layer. Posée sur le libellé d'un lien de nav, elle bat l'encre que le lien actif reçoit par héritage (`text-primary-ink` sur la pilule graphite) : contraste détruit, sans erreur ni test rouge. Solution retenue au S84 (#575) : une classe dédiée `.mt-nav-label` qui ne pose ni couleur, ni taille, ni graisse, verrouillée par un test PostCSS (`nav-label-class.test.ts`, contrôle négatif sur `.mt-eyebrow`). Prévention : avant de réutiliser une classe `.mt-*` sur un élément dont un ancêtre pilote la couleur par état, lister ses déclarations compilées — toute propriété héritable qu'elle pose coupe l'héritage. (Sprint 84 #575)
+
+
+## PIT-S84-002 — « AA-tunée » dans une charte n'est pas une mesure : recalculer avec les encres du dépôt avant d'en faire un critère
+Le handoff annonçait une palette de 12 couleurs « AA-tunée sur les deux thèmes ». Recalculée avec `INK_LIGHT #FFFFFF` / `INK_DARK #0B0C0E`, orchidée `#B056A8` plafonnait à **4.43:1** (4.74 seulement avec du noir pur). Les critères « valeurs du handoff à l'identique » et « AA sur les 12 » de #577 étaient donc incompatibles — découvert en fin d'implémentation, arbitré par DEC-S84-003. Prévention : toute affirmation de contraste d'une source de design se recalcule avec les constantes réellement peintes AU MOMENT de rédiger/briefer l'issue, pas à la fin (famille [[PIT-S61-004]]). (Sprint 84 #577)
+
+
+## PIT-S84-003 — Un mock de composant qui ignore `children` fait disparaître ce qu'un appelant lui passe en déclencheur
+Les tests mockaient `PopoverPicker` par un bouton qui ne rendait pas `children`. Un composant qui passe SON déclencheur (« Personnalisé ») en `children` voit ce déclencheur disparaître du rendu de test : l'état « Personnalisé actif » devenait invérifiable, sans aucun signal. Solution : les mocks de `CategoryDrawer.test`, `EventEditForm.test`, `ProductDrawer.test` rendent `{children}`. Prévention : un mock d'un composant qui accepte `children` doit les rendre. (Sprint 84 #577)
+
+
+## PIT-S84-004 — Un débordement révélé par une nouvelle spec n'est pas forcément causé par le diff : corréler à la locale et au diff avant d'accuser
+La spec `sprint-84-section-titles` (dashboard mobile 375 px, allemand) a rougi : page à 377 px. L'hypothèse naturelle — les nouveaux titres de #575 en allemand — était fausse. Une sonde Playwright (éléments dont `right > clientWidth`) a désigné le CTA `nowrap` de la rangée du salut ; le débordement était **plus fort en français** (390 px) qu'en allemand, dans des fichiers que le sprint n'avait pas touchés. Cause : `GreetingHeader` flex item sans `min-w-0`, avec un nom E2E sans espace (cf. [[PIT-S63-013]] — ici le défaut adjacent est réel : un vrai nom long déborde pareil). Réflexe : sonder QUI déborde, comparer 2 locales, et `git diff --stat` des fichiers en cause avant de corriger. (Sprint 84, lead)
+
+
+## PIT-S84-005 — `npx next lint` avec plusieurs `--file` peut rendre un faux `Errors: 1` sans détail hors `rtk proxy`
+Reproduit au S84 sur 2 puis 17 fichiers : `npx next lint --file a --file b …` nu rend `Errors: 1 | Warnings: 0` sans aucun message, alors que chaque fichier seul — ou le même lot via `rtk proxy` — est propre. Extension de [[PIT-S74-008]] (RTK et prettier) à `next lint`. Parade : `rtk proxy npx next lint --file …` pour tout lint multi-fichiers. (Sprint 84, correctifs post-vague)
+
+
+## PIT-S84-006 — `npx --prefix frontend prettier --check` lancé depuis la racine rend 1 sur un fichier conforme
+Le lead a vu `fmt=1` sur `GreetingHeader.tsx` après commit ; relancé DEPUIS `frontend/` (`rtk proxy npx prettier --check <fichier>`) : conforme, code 0. Le `--prefix` résout mal la configuration ou le binaire. Parade : lancer prettier et eslint depuis `frontend/`, jamais par `--prefix` depuis la racine — et ne jamais conclure « non formaté » sur ce seul code de sortie. (Sprint 84, lead)
+
+
+## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
+Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
 ---
 

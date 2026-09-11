@@ -833,3 +833,19 @@ Issue à deux sujets de natures différentes. **Thème** : reste porté par `App
 **Décision.** `--evt-orchid` = `#AE55A6` (4.52:1 sur blanc). Les 11 autres valeurs restent strictement égales au handoff ; le test de synchronisation porte une exception nommée pour orchidée.
 **Pourquoi.** Écart visuel imperceptible ; les deux autres voies (garder une couleur de palette sous AA et l'avertissement « contraste faible » qu'elle déclenche dans `CategoryDrawer`, ou retirer une couleur de la maquette) étaient pires.
 **Portée.** Aucune donnée migrée (DEC-S84-001) : une catégorie enregistrée en `#B056A8` s'ouvre désormais en « Personnalisé ». Acceptable, rien n'est déployé. (Sprint 84, arbitrage du dev)
+
+## DEC-S84-004 — Eyebrow au-dessus d'un titre de section seulement s'il porte une donnée
+**Contexte.** #575 demandait le « motif GreetingHeader » (eyebrow au-dessus du titre) sur 8 sections ; 6 d'entre elles n'avaient aucune information hors du titre — l'ancien eyebrow répétait le libellé.
+**Décision.** Eyebrow conservé sur 2 sections (ruban de densité : plage « 30 jours » ; historique produit : compteur), titre seul ailleurs. Validé par le dev au démarrage.
+**Pourquoi.** La maquette n'est pas dans le dépôt ; inventer un contenu d'eyebrow serait un arbitrage Designer.
+**Portée.** Follow-up : confirmer section par section avec la maquette. (Sprint 84 #575)
+
+## DEC-S84-005 — « Personnalisé » est un bouton `aria-pressed` HORS du radiogroup des 12 pastilles
+**Contexte.** Sélecteur de palette : 12 pastilles + un repli « Personnalisé » qui ouvre un popover.
+**Décision.** Radiogroup de 12 `radio` (flèches, Home/End, un seul tabstop) ; « Personnalisé » est un bouton séparé `aria-pressed`, pas un 13e `radio`.
+**Pourquoi.** Radix pose `aria-expanded`/`aria-haspopup` sur le déclencheur de popover, attributs non autorisés sur le rôle `radio`. L'état « hors palette » reste lisible : aucun radio coché + bouton pressé. (Sprint 84 #577)
+
+## DEC-S84-006 — Encre du glyphe de pastille = meilleur ratio, plus de seuil de luminance fixe
+**Contexte.** `swatchGlyphInk` basculait à un seuil fixe (L = 0.179), écart toléré au vrai point d'égalisation (0.1992) tant qu'aucune couleur de palette ne tombait dans la bande.
+**Décision.** Choisir l'encre au meilleur ratio de contraste.
+**Pourquoi.** Orchidée tombait dans la bande ; supprimer la bande coûte moins que maintenir une tolérance adossée à une prémisse qui dépend de la palette. Seul consommateur : `swatchGlyphInkVar` (vérifié en review). (Sprint 84 #577)
