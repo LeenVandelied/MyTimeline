@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import { NextIntlClientProvider } from 'next-intl'
 import type { FullCalendarEvent } from '@/types/event'
-import { EventWithComputedPosition, Resource } from './lib'
+import { Resource } from './lib'
 import { PositionedEvent } from './zoom'
 import commonMessages from '../../../public/locales/fr/common.json'
 import dashboardMessages from '../../../public/locales/fr/dashboard.json'
@@ -19,43 +19,6 @@ export function makeDays(count: number, base = new Date(2026, 6, 1)): Date[] {
     d.setDate(base.getDate() + i)
     return d
   })
-}
-
-export const sampleResource: Resource = {
-  id: 'prod-1',
-  title: 'Lait entier bio',
-  category: 'Produits frais',
-}
-
-/**
- * Event factice positionné + statut, sans passer par `buildEventsByResource`.
- * ⚠ #393 — `color: '#6366f1'` est ici un input EXPLICITE et délibérément NON
- * conforme AA (4.47:1) qui exerce le chemin « libellé DEHORS ». Ce n'est plus
- * la couleur par défaut de l'app (`DEFAULT_COLOR`, désormais AA) : ne pas
- * resynchroniser les deux, les tests du fallback en dépendent.
- */
-export function makeEvent(
-  overrides: Partial<EventWithComputedPosition> = {},
-): EventWithComputedPosition {
-  return {
-    id: 'evt-1',
-    title: 'Péremption',
-    start: '2026-07-05T00:00:00.000Z',
-    end: '2026-07-10T00:00:00.000Z',
-    allDay: true,
-    resourceId: 'prod-1',
-    color: '#6366f1',
-    extendedProps: {
-      productId: 'prod-1',
-      productName: 'Lait entier bio',
-      category: 'Produits frais',
-      type: 'duration',
-    },
-    leftPercent: 12,
-    widthPercent: 18,
-    status: 'upcoming',
-    ...overrides,
-  }
 }
 
 /**
@@ -84,16 +47,6 @@ export function makePositionedEvent(overrides: Partial<PositionedEvent> = {}): P
   }
 }
 
-/**
- * Stub de contenu d'EventBar pour Storybook : évite les dépendances next-intl /
- * auth / services de `EventContent`. Reproduit l'aspect compact (titre tronqué).
- */
-export function stubEventContent(event: EventWithComputedPosition) {
-  return (
-    <span className="text-ink block truncate px-2 py-1 text-xs font-medium">{event.title}</span>
-  )
-}
-
 /* -------------------------------------------------------------------------- */
 /* #205 — Fixtures des vues mobiles (portrait #63 / paysage #64)               */
 /* -------------------------------------------------------------------------- */
@@ -101,8 +54,8 @@ export function stubEventContent(event: EventWithComputedPosition) {
 /**
  * Les vues mobiles consomment des `FullCalendarEvent` BRUTS (elles positionnent
  * elles-mêmes via `useTimelineMobileState` → `positionEvents`), contrairement à
- * `EventBar`/`EventPill` qui reçoivent des events DÉJÀ positionnés. D'où un jeu
- * de fixtures distinct de `makeEvent`/`makePositionedEvent` ci-dessus.
+ * `EventPill` qui reçoit des events DÉJÀ positionnés. D'où un jeu de fixtures
+ * distinct de `makePositionedEvent` ci-dessus.
  */
 
 /** « Aujourd'hui » figé : rend les statuts (expiré/en cours/à venir) déterministes. */
@@ -170,8 +123,8 @@ export const mobileResources: Resource[] = [
 /**
  * Décorateur i18n des stories Timeline mobiles.
  *
- * Contrairement à `EventBar`/`EventPill` (isolés de next-intl par
- * `stubEventContent`), `TimelineMobilePortrait`/`Landscape` appellent
+ * Contrairement à `EventPill` (qui n'a aucune dépendance next-intl),
+ * `TimelineMobilePortrait`/`Landscape` appellent
  * `useTranslations()` SANS namespace et lisent des clés pleinement qualifiées
  * (`dashboard.timeline.zoom.*`, `common.buttons.today`…). Sans provider, la
  * story crashe au montage.
