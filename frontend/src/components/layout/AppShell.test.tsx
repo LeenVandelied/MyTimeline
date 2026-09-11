@@ -5,6 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { AppShell } from './AppShell'
+import { useOpenCreateEvent } from './CreateEventContext'
 
 /**
  * #210 — Tests du shell applicatif (jsdom). next-intl / next-themes / navigation /
@@ -549,6 +550,83 @@ describe('AppShell — déclencheur mobile Nouvel événement (#455)', () => {
         `shell.newEvent doit exister et être non vide pour la locale ${locale}`,
       ).toBe(true)
     }
+  })
+})
+
+/**
+ * #602 (DEC-S85-003) — 3e déclencheur, porté par un ÉCRAN enveloppé (barre
+ * d'outils de `/timeline`) via `CreateEventContext`. Ce bloc prouve le câblage
+ * côté shell : le contexte ouvre LE drawer du shell (un seul état, une seule
+ * instance), avec une fonction d'identité stable. Le bouton lui-même est testé
+ * dans `TimelineView.test.tsx` / `TimelineToolbarActions.test.tsx` ; sa
+ * visibilité par palier, dans `e2e/sprint-85-timeline-toolbar.spec.ts`.
+ */
+describe('AppShell — contexte de création pour les écrans enveloppés (#602)', () => {
+  beforeEach(() => {
+    mockPathname = '/fr/timeline'
+    mockResolvedTheme = 'light'
+  })
+
+  const seen: Array<(() => void) | null> = []
+  function ScreenTrigger({ tag }: { tag: string }) {
+    const open = useOpenCreateEvent()
+    seen.push(open)
+    return (
+      <button type="button" data-testid="screen-trigger" data-tag={tag} onClick={open ?? undefined}>
+        screen
+      </button>
+    )
+  }
+
+  it('ouvre LE drawer du shell depuis l’écran : une seule instance montée', async () => {
+    render(
+      <AppShell>
+        <ScreenTrigger tag="a" />
+      </AppShell>,
+    )
+    drawerLifecycle.mockClear()
+    expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('screen-trigger'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    expect(screen.getAllByTestId('shell-new-event-drawer')).toHaveLength(1)
+
+    // Les déclencheurs du shell pilotent le MÊME état : un clic de plus ne monte rien.
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    fireEvent.click(screen.getByTestId('shell-mobile-new-event-button'))
+    expect(screen.getAllByTestId('shell-new-event-drawer')).toHaveLength(1)
+    expect(drawerLifecycle.mock.calls.filter(([phase]) => phase === 'mount')).toHaveLength(1)
+
+    // La fermeture démonte (PR #313), puis l'écran rouvre une instance neuve.
+    fireEvent.click(screen.getByTestId('mock-drawer-close'))
+    await waitFor(() => expect(drawerLifecycle).toHaveBeenCalledWith('unmount'))
+    fireEvent.click(screen.getByTestId('screen-trigger'))
+    await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+  })
+
+  it('fournit une fonction d’identité STABLE entre deux rendus du shell (BUG-S44-001)', () => {
+    seen.length = 0
+    const { rerender } = render(
+      <AppShell>
+        <ScreenTrigger tag="a" />
+      </AppShell>,
+    )
+    // Nouveaux `children` → le shell ET le consommateur sont re-rendus.
+    rerender(
+      <AppShell>
+        <ScreenTrigger tag="b" />
+      </AppShell>,
+    )
+    expect(screen.getByTestId('screen-trigger')).toHaveAttribute('data-tag', 'b')
+    const values = seen.filter((v) => v !== null)
+    expect(values.length).toBeGreaterThanOrEqual(2)
+    expect(new Set(values).size).toBe(1)
+  })
+
+  it('hors du shell, le hook rend `null` (aucun bouton inerte possible)', () => {
+    seen.length = 0
+    render(<ScreenTrigger tag="hors-shell" />)
+    expect(seen.at(-1)).toBeNull()
   })
 })
 

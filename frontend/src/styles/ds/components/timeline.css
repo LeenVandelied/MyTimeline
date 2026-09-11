@@ -446,6 +446,40 @@
 .mt-tlv-side-toggle[aria-expanded="true"]{background:var(--color-surface-2);}
 .mt-tlv-side-toggle:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
+/* #602 — Bouton « Aujourd'hui » de la barre d'outils (layout `screen`). Maquette
+   §D : `height:38px; padding:0 14px; border:1px solid rule-strong; background:
+   surface; color:ink; radius 7px; 500 13px font-ui`. ÉCARTS : (1) hauteur 26 px
+   et 12 px, alignés sur le bouton « Filtres » voisin — la barre de prod est plus
+   compacte que l'en-tête de la maquette ; (2) cadre `rule-emphasis` : fond
+   `surface` sur une barre `surface-2` (delta ~1,05:1), le cadre est sa seule
+   limite → tier FONCTIONNEL, même arbitrage que `.mt-zoom` / « Filtres » (#352). */
+.mt-tlv__today-btn{display:inline-flex; align-items:center; height:26px; padding:0 10px; border:1px solid var(--color-rule-emphasis); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-ink); font-family:var(--font-ui); font-size:12px; font-weight:500; white-space:nowrap; cursor:pointer; transition:background var(--dur-micro);}
+.mt-tlv__today-btn:hover{background:var(--color-surface-2);}
+.mt-tlv__today-btn:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
+
+/* #602 — PLACE DE LA MINIMAP dans la barre `screen`. Avec « Aujourd'hui » et
+   « Nouvel événement », les contrôles occupent ~470 px (fr, ≥ 1024 px) à ~560 px
+   (fr, < 1024 px, bouton « Filtres » compris). La minimap (`flex:1`, base 0)
+   absorbait seule le manque : MESURÉ à 1024 px, 9 px de large en français, 56 px
+   en allemand — un curseur de défilement inutilisable, sans aucun débordement
+   pour le signaler. Deux gardes :
+   (1) base de 160 px : si elle ne tient plus, la barre (`flex-wrap:wrap`) renvoie
+       à la ligne au lieu d'écraser la minimap — filet indépendant de la locale ;
+   (2) sous 700 px de BOÎTE DE CONTENU de barre (une requête de conteneur mesure
+       le contenu, padding exclu ; seuil = contrôles fr < 1024 px 520 px + gap +
+       160 px = 692 px mesurés), la minimap passe SEULE sur une 2e ligne pleine
+       largeur, les contrôles restant groupés sur la 1re, « Nouvel événement »
+       calé à droite (dernier, maquette §D). À 1280 px (contenu 710 px) : une
+       seule ligne.
+   `container-type` sur la barre `screen` seulement : le layout `embedded`
+   (dashboard, fiche produit) et sa bulle `?` en position absolue sont intacts. */
+.mt-tlv--screen > .mt-tlv__toolbar{container-type:inline-size;}
+.mt-tlv--screen .mt-tlv__minimap-slot{flex:1 1 160px;}
+.mt-tlv--screen .mt-tlv__new-event{margin-left:auto;}
+@container (max-width:700px){
+  .mt-tlv--screen .mt-tlv__minimap-slot{order:1; flex-basis:100%;}
+}
+
 /* < 1024 px (DEC-S85-004) : panneau superposé à la frise, fermé par défaut.
    `display:none` le retire aussi de l'arbre d'accessibilité et de l'ordre de
    tabulation quand il est fermé. Ombre `md` + filet : panneau flottant rempli

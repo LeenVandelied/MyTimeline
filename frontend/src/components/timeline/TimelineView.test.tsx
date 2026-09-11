@@ -6,6 +6,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { LANE_TRACK_OFFSET_PX, TimelineView } from './TimelineView'
+import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 
 /**
  * #55 — Tests d'intégration TimelineView (jsdom).
@@ -896,6 +897,132 @@ describe('TimelineView', () => {
       expect(await screen.findByTestId('timeline-drawer')).toBeInTheDocument()
       await user.keyboard('{Escape}')
       await waitFor(() => expect(screen.queryByTestId('timeline-drawer')).not.toBeInTheDocument())
+    })
+  })
+
+  // ==================== #602 — boutons Aujourd'hui / Nouvel événement ====================
+  // Câblage seulement. Libellés TRADUITS réels : `TimelineToolbarActions.test.tsx`
+  // (PIT-S63-006). Visibilité par palier (`hidden md:inline-flex` ⇔ FAB `md:hidden`)
+  // et drawer réel du shell : `e2e/sprint-85-timeline-toolbar.spec.ts` — jsdom
+  // n'applique aucune feuille, ces classes n'y sont que des chaînes.
+  describe('#602 barre d’outils (layout screen)', () => {
+    function renderToolbar(
+      opts: { layout?: 'embedded' | 'screen'; onOpenCreate?: (() => void) | null } = {},
+    ) {
+      const { layout = 'screen', onOpenCreate = vi.fn() } = opts
+      const view = (
+        <TimelineView
+          events={EVENTS}
+          resources={RESOURCES}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+          layout={layout}
+        />
+      )
+      return render(
+        onOpenCreate ? (
+          <CreateEventProvider onOpenCreate={onOpenCreate}>{view}</CreateEventProvider>
+        ) : (
+          view
+        ),
+      )
+    }
+
+    it('screen + shell : les deux boutons, dans l’ordre zoom → Aujourd’hui → … → Nouvel événement', () => {
+      renderToolbar()
+      const today = screen.getByTestId('timeline-today-button')
+      const create = screen.getByTestId('timeline-new-event')
+      expect(today).toHaveTextContent('common.buttons.today')
+      expect(create).toHaveTextContent('shell.newEvent')
+      // Ordre maquette §D : Aujourd'hui APRÈS le zoom ; Nouvel événement DERNIER.
+      const toolbarButtons = Array.from(
+        screen
+          .getByTestId('timeline-zoom-in')
+          .closest('.mt-tlv__toolbar')!
+          .querySelectorAll('button'),
+      )
+      const ids = toolbarButtons.map((b) => b.getAttribute('data-testid'))
+      expect(ids.indexOf('timeline-today-button')).toBe(ids.indexOf('timeline-zoom-in') + 1)
+      expect(ids.at(-1)).toBe('timeline-new-event')
+      // Le badge positionnel de la règle garde SON testid (ce n'est pas un bouton).
+      expect(screen.getByTestId('timeline-today').tagName).toBe('SPAN')
+    })
+
+    it('« Aujourd’hui » a le même effet que la touche T', async () => {
+      const user = userEvent.setup()
+      renderToolbar()
+      const scroll = screen.getByTestId('timeline-scroll')
+      fireEvent.keyDown(window, { key: ']' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(360))
+      await user.click(screen.getByTestId('timeline-today-button'))
+      // Même valeur que le test « raccourci T » (#228) : 35 jours × 12 px.
+      await waitFor(() => expect(scroll.scrollLeft).toBe(420))
+    })
+
+    it('« Nouvel événement » appelle UNE fois l’ouverture du shell, et annonce un dialog', async () => {
+      const user = userEvent.setup()
+      const onOpenCreate = vi.fn()
+      renderToolbar({ onOpenCreate })
+      const create = screen.getByTestId('timeline-new-event')
+      expect(create).toHaveAttribute('type', 'button')
+      expect(create).toHaveAttribute('aria-haspopup', 'dialog')
+      await user.click(create)
+      expect(onOpenCreate).toHaveBeenCalledTimes(1)
+      // Aucun drawer de création local : la surface est celle du shell.
+      expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument()
+    })
+
+    it('DEC-S85-003 : `hidden md:inline-flex` (jamais peint avec le FAB `md:hidden`) — chaîne, pas rendu', () => {
+      renderToolbar()
+      const classes = screen.getByTestId('timeline-new-event').className.split(/\s+/)
+      expect(classes).toContain('hidden')
+      expect(classes).toContain('md:inline-flex')
+      // `tailwind-merge` doit avoir retiré le `inline-flex` NU du Button : présent,
+      // il gagnerait sur `hidden` et peindrait le bouton sous 768 px.
+      expect(classes).not.toContain('inline-flex')
+      // Trio accent du CTA du shell (#578).
+      expect(classes).toEqual(
+        expect.arrayContaining(['bg-accent', 'hover:bg-accent-hover', 'text-accent-ink']),
+      )
+    })
+
+    it('en plein écran, quitte le plein écran AVANT d’ouvrir (drawer du shell hors `rootRef`)', async () => {
+      const user = userEvent.setup()
+      const onOpenCreate = vi.fn()
+      renderToolbar({ onOpenCreate })
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => screen.getByTestId('timeline-view'),
+      })
+      try {
+        await user.click(screen.getByTestId('timeline-new-event'))
+        expect(document.exitFullscreen).toHaveBeenCalledTimes(1)
+        expect(onOpenCreate).toHaveBeenCalledTimes(1)
+      } finally {
+        Object.defineProperty(document, 'fullscreenElement', {
+          configurable: true,
+          get: () => null,
+        })
+      }
+    })
+
+    it('hors plein écran, n’appelle pas `exitFullscreen`', async () => {
+      const user = userEvent.setup()
+      renderToolbar()
+      await user.click(screen.getByTestId('timeline-new-event'))
+      expect(document.exitFullscreen).not.toHaveBeenCalled()
+    })
+
+    it('embedded (dashboard, fiche produit) : AUCUN des deux boutons, même sous le shell', () => {
+      renderToolbar({ layout: 'embedded' })
+      expect(screen.queryByTestId('timeline-today-button')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
+    })
+
+    it('screen HORS shell : « Aujourd’hui » seul, pas de « Nouvel événement » inerte', () => {
+      renderToolbar({ onOpenCreate: null })
+      expect(screen.getByTestId('timeline-today-button')).toBeInTheDocument()
+      expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
     })
   })
 })

@@ -25,6 +25,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { NewEventDrawer } from '@/components/events/NewEventDrawer'
 import { safeErrorMessage } from '@/lib/safe-error'
+import { CreateEventProvider } from './CreateEventContext'
 
 /**
  * #210 — Shell applicatif (handoff §8). Nav latérale persistante 248px
@@ -85,8 +86,22 @@ import { safeErrorMessage } from '@/lib/safe-error'
  *   · `< md`      → bouton flottant SEUL ;
  *   · `md`..`lg`  → bouton de sidebar SEUL, icon-only (libellé `hidden lg:inline`) ;
  *   · `>= lg`     → bouton de sidebar SEUL, libellé visible.
- * Exactement un des deux déclencheurs est peint, à TOUTE largeur. Le `data-testid`
- * `shell-sidebar-new-event-button` et le handler sont INCHANGÉS.
+ * Exactement un des deux déclencheurs DU SHELL est peint, à TOUTE largeur. Le
+ * `data-testid` `shell-sidebar-new-event-button` et le handler sont INCHANGÉS.
+ *
+ * #602 (DEC-S85-003) — UN TROISIÈME DÉCLENCHEUR, sur `/timeline` seulement : le
+ * bouton « Nouvel événement » de la barre d'outils de la frise (`TimelineView`,
+ * `layout="screen"`, testid `timeline-new-event`). Il n'a NI état NI drawer à
+ * lui : il appelle `openCreate` ci-dessous, reçu par `useOpenCreateEvent()`
+ * (`CreateEventContext.tsx`, provider qui enveloppe `children`). Toujours un seul
+ * `showCreate`, donc toujours un seul `NewEventDrawer`. Règle de peinture :
+ *   · `< md`  → `hidden md:inline-flex` : JAMAIS en même temps que le bouton
+ *              flottant (seul déclencheur sous 768 px, l'invariant ci-dessus tient) ;
+ *   · `>= md` → coexiste avec le bouton de sidebar, comme la maquette (bouton du
+ *              shell + bouton accent de l'en-tête Vue Timeline).
+ * Le miroir `hidden md:flex` ⇔ `md:hidden` reste la seule chose qui garantit
+ * « au moins un » ; le 3e ne compense aucun palier et ne doit jamais descendre
+ * sous `md`.
  *
  * #578 — ÉTAT ACTIF ET CTA : LA RÉFÉRENCE EST LA MAQUETTE, PAS UN ÉCRAN VOISIN.
  * Le commentaire précédent disait que la classe active était « calquée sur
@@ -151,6 +166,10 @@ export function AppShell({ children }: AppShellProps) {
   // recréerait l'effet à chaque rendu du shell (thème, pathname…) → re-focus du
   // premier focusable, donc vol de focus pendant la saisie du formulaire.
   const closeCreate = useCallback(() => setShowCreate(false), [])
+  // #602 — même exigence d'identité stable : c'est la valeur du contexte
+  // `CreateEventProvider` ; une lambda inline re-rendrait tous ses consommateurs
+  // (dont la frise) à chaque rendu du shell.
+  const openCreate = useCallback(() => setShowCreate(true), [])
 
   const isDark = resolvedTheme === 'dark'
 
@@ -214,7 +233,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="px-2 pt-4 lg:px-3">
           <Button
             type="button"
-            onClick={() => setShowCreate(true)}
+            onClick={openCreate}
             aria-label={t('newEvent')}
             title={t('newEvent')}
             className="bg-accent hover:bg-accent-hover text-accent-ink w-full px-0 lg:px-4"
@@ -324,7 +343,8 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* -------- Contenu de l'écran enveloppé -------- */}
       <main className="min-w-0 flex-1" data-testid="shell-main">
-        {children}
+        {/* #602 — les écrans enveloppés peuvent ouvrir LE drawer du shell. */}
+        <CreateEventProvider onOpenCreate={openCreate}>{children}</CreateEventProvider>
       </main>
 
       {/* #455 — Bouton flottant « Nouvel événement », `md:hidden` depuis #298 (miroir
@@ -344,7 +364,7 @@ export function AppShell({ children }: AppShellProps) {
           `useFocusTrap` (cleanup au démontage du drawer) — rien à ajouter ici. */}
       <button
         type="button"
-        onClick={() => setShowCreate(true)}
+        onClick={openCreate}
         aria-label={t('newEvent')}
         aria-haspopup="dialog"
         data-testid="shell-mobile-new-event-button"

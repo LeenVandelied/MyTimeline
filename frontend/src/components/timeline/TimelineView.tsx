@@ -13,6 +13,8 @@ import React, {
 import { ChevronRight, Maximize2, Minus, Plus, SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
+import { Button } from '@/components/ui/button'
+import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 import {
   Resource,
   buildEventAriaLabel,
@@ -520,7 +522,8 @@ export interface TimelineViewProps {
    *
    * Nommée d'après le CONTEXTE et non d'après un bloc (`showSidebar`) : les
    * boutons « Aujourd'hui » / « Nouvel événement » de la barre d'outils (#602)
-   * sont eux aussi propres à l'écran et se brancheront sur cette même prop.
+   * sont eux aussi propres à l'écran et sont branchés sur cette même prop
+   * (« Nouvel événement » exige EN PLUS le contexte du shell, cf. plus bas).
    * Traverse `TimelineEditHost` → `TimelineResponsive` sans code dédié ; les
    * variantes MOBILES ne la reçoivent pas (`TimelineResponsive` la retient).
    */
@@ -1193,6 +1196,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     [trackWidth, recordScrollAnchor],
   )
 
+  // #602 — « Aujourd'hui » : UNE action, deux déclencheurs (touche `T` et bouton
+  // de la barre d'outils `screen`). Factorisée pour qu'ils ne divergent jamais.
+  const goToToday = useCallback(() => {
+    dispatch({ type: 'GO_TO_TODAY', todayOffsetDays: daysBetween(rangeStart, now) })
+    scrollToToday()
+  }, [rangeStart, now, scrollToToday])
+
   const toggleFullscreen = useCallback(() => {
     const node = rootRef.current
     if (!node) return
@@ -1202,6 +1212,18 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       void node.requestFullscreen?.()
     }
   }, [])
+
+  // #602 (DEC-S85-003) — « Nouvel événement » ouvre LE drawer du shell (contexte
+  // `CreateEventProvider`) : aucun état ni drawer ici. `null` hors shell → pas de
+  // bouton. Le drawer est monté par le shell, donc HORS de `rootRef` : en plein
+  // écran (qui ne peint que `rootRef`), il s'ouvrirait invisible derrière la frise,
+  // focus piégé dedans. On quitte donc le plein écran avant de l'ouvrir.
+  const openCreateEvent = useOpenCreateEvent()
+  const onNewEvent = useCallback(() => {
+    if (!openCreateEvent) return
+    if (document.fullscreenElement) void document.exitFullscreen?.()
+    openCreateEvent()
+  }, [openCreateEvent])
 
   // #395 — État plein écran DÉRIVÉ de l'événement `fullscreenchange` du document
   // (source de vérité du navigateur), et JAMAIS basculé à la main dans
@@ -1252,8 +1274,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       switch (e.key) {
         case 't':
         case 'T':
-          dispatch({ type: 'GO_TO_TODAY', todayOffsetDays: daysBetween(rangeStart, now) })
-          scrollToToday()
+          goToToday()
           break
         case '[':
           dispatch({ type: 'PREV_PERIOD' })
@@ -1278,15 +1299,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [
-    selected,
-    rangeStart,
-    now,
-    scrollToToday,
-    toggleFullscreen,
-    sidebarPanelOpen,
-    closeSidebarPanel,
-  ])
+  }, [selected, goToToday, toggleFullscreen, sidebarPanelOpen, closeSidebarPanel])
 
   const levelLabel = t(`dashboard.timeline.zoom.${zoom.level}`)
 
@@ -1491,7 +1504,22 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           </button>
         </div>
 
-        <div className="min-w-0 flex-1">
+        {/* #602 (DEC-S85-005) — « Aujourd'hui », écran `/timeline` seulement,
+            après le zoom (maquette §D). Même action que la touche `T`. Bouton
+            secondaire sans icône ; hauteur alignée sur le bouton « Filtres » de
+            la barre (26 px), pas les 38 px de l'en-tête de la maquette. */}
+        {isScreen && (
+          <button
+            type="button"
+            className="mt-tlv__today-btn"
+            onClick={goToToday}
+            data-testid="timeline-today-button"
+          >
+            {t('common.buttons.today')}
+          </button>
+        )}
+
+        <div className="mt-tlv__minimap-slot min-w-0 flex-1">
           <Minimap
             buckets={buckets}
             viewportStart={viewportStart}
@@ -1514,6 +1542,26 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         >
           <Maximize2 size={13} strokeWidth={1.5} aria-hidden="true" />
         </button>
+
+        {/* #602 (DEC-S85-003) — « Nouvel événement », dernier de la barre (maquette
+            §D). N'existe qu'en `screen` ET sous le shell (`openCreateEvent` non
+            nul). `hidden md:inline-flex` : jamais peint en même temps que le bouton
+            flottant du shell (`md:hidden`), cf. invariant #455 d'`AppShell.tsx`.
+            Trio accent du CTA du shell (#578). Le focus revient ici à la fermeture
+            (`useFocusTrap` du drawer mémorise l'élément actif à l'ouverture). */}
+        {isScreen && openCreateEvent && (
+          <Button
+            type="button"
+            size="sm"
+            onClick={onNewEvent}
+            aria-haspopup="dialog"
+            className="mt-tlv__new-event bg-accent hover:bg-accent-hover text-accent-ink hidden md:inline-flex"
+            data-testid="timeline-new-event"
+          >
+            <Plus aria-hidden="true" />
+            {t('shell.newEvent')}
+          </Button>
+        )}
 
         {/* #592 — en `screen`, les raccourcis vivent dans le pied de la sidebar. */}
         {!isScreen && (
