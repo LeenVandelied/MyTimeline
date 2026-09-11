@@ -83,6 +83,19 @@ seulement « tablette sidebar repliable » → DEC-S85-004).
      **`prods.length` = nombre de PRODUITS (lanes) de la catégorie** (DEC-S85-001).
 - Une catégorie masquée (A.2) ou sans produit n'a pas d'en-tête.
 
+## B-bis. Lane produit (sous un en-tête déplié) — ajouté à la revue de fin de sprint
+
+- Rangée : `position:relative; display:flex; height:<layout.height>px (min 46);
+  border-bottom:1px solid var(--color-rule)` (pas de fond propre : `--color-bg` du scroller).
+- Cellule sticky gauche : `position:sticky; left:0; width:176px (LH); background:
+  var(--color-surface); border-right:1px solid var(--color-rule); padding:0 14px 0 30px;
+  display:flex; flex-direction:column; justify-content:center; gap:2px`.
+- Nom du produit : `font:500 13px var(--font-display); color:var(--color-ink);
+  line-height:1.15; ellipsis`.
+- ⇒ **Hiérarchie de la maquette** : en-tête de catégorie = `surface-2` + `600` ; lane =
+  `surface` + `500` + retrait de 30 px. Deux niveaux distincts par le FOND, la GRAISSE et le
+  RETRAIT.
+
 ## C. Catégorie repliée → « résumé compact » (`renderCatSummary`)
 
 - Rendu DANS la piste de la rangée d'en-tête (40 px de haut, même canevas que les lanes :
