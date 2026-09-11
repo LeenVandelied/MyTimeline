@@ -35,5 +35,22 @@
     "nameRequired": "Name ist erforderlich",
     "nameTooLong": "Der Name darf 255 Zeichen nicht überschreiten",
     "nameConflict": "Eine Kategorie mit diesem Namen existiert bereits."
+  },
+  "palette": {
+    "roles": {
+      "red": "Rot",
+      "orange": "Orange",
+      "amber": "Bernstein",
+      "citron": "Zitrone",
+      "grass": "Grasgrün",
+      "teal": "Petrol",
+      "sky": "Himmelblau",
+      "cobalt": "Kobalt",
+      "periwinkle": "Immergrün",
+      "orchid": "Orchidee",
+      "rose": "Rosa",
+      "graphite": "Graphit"
+    },
+    "custom": "Benutzerdefiniert"
   }
 }

@@ -15,7 +15,7 @@ import { Switch } from './ui/switch'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
-import { PopoverPicker } from './ui/popoverPicker'
+import { PaletteColorPicker } from './ui/palette-color-picker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
 import { ConflictDialog } from './shared/ConflictDialog'
 import { ArchiveConfirmDialog } from './events/ArchiveConfirmDialog'
@@ -243,7 +243,6 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    */
   const formId = React.useId()
 
-  const [isColorOpen, setIsColorOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   // #230 — confirmation d'ARCHIVAGE : ouverte par le toggle, jamais par le submit.
   const [archiveConfirmOpen, setArchiveConfirmOpen] = React.useState(false)
@@ -805,7 +804,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                     )}
                   </div>
 
-                  {/* Couleur unique (design v3 #44) + validation hex (BR-EVE-009). */}
+                  {/* Couleur unique (design v3 #44) + validation hex (BR-EVE-009).
+                      #577 — palette curatée (12 tokens `--evt-*`) + repli
+                      « Personnalisé » (picker libre), composant partagé avec les
+                      catégories. Le champ hexadécimal est CONSERVÉ en dessous : il
+                      reflète la valeur quelle qu'elle soit (saisir un hex de la
+                      palette y coche la pastille) et plusieurs E2E le pilotent.
+                      Sa place relève de la refonte de ce formulaire (#617/#618),
+                      pas de #577. Une couleur stockée hors palette s'ouvre en
+                      « Personnalisé » et repart INCHANGÉE (DEC-S84-001). */}
                   <div className="border-rule space-y-4 border-t pt-4">
                     <FormField
                       control={form.control}
@@ -815,14 +822,15 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                           <FormLabel className="text-ink m-0 font-medium">
                             {tDetails('color')}
                           </FormLabel>
+                          <PaletteColorPicker
+                            value={field.value}
+                            onChange={(color) => handleColorChange(color, field)}
+                            label={tDetails('color')}
+                            testIdPrefix="event-form"
+                            disabled={locked}
+                            describedBy={locked ? lockedNoteId : undefined}
+                          />
                           <div className="flex items-center gap-2">
-                            <PopoverPicker
-                              isOpen={isColorOpen}
-                              color={field.value ?? ''}
-                              onChange={(color) => handleColorChange(color, field)}
-                              onToggle={(isOpen) => setIsColorOpen(isOpen)}
-                              disabled={locked}
-                            />
                             <input
                               type="text"
                               value={field.value ?? ''}

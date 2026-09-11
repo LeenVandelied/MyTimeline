@@ -150,8 +150,8 @@ export const CONTRAST_FLOOR_MARGIN = 0.05
 /**
  * Surfaces réellement peintes derrière ces deux traits, par thème.
  *
- * Ce sont des COPIES de `--color-surface` (`ds/tokens/colors.css` l.54 pour
- * `:root`, l.126 pour `.dark`). Une duplication de token est une dette : elle
+ * Ce sont des COPIES de `--color-surface` (`ds/tokens/colors.css` l.59 pour
+ * `:root`, l.138 pour `.dark`). Une duplication de token est une dette : elle
  * est ici inévitable (aucune fonction CSS ne calcule un contraste) et elle est
  * VERROUILLÉE par un test qui relit `colors.css` et compare — cf.
  * `color.test.ts` § « les constantes de thème ne divergent pas des tokens ».
@@ -275,18 +275,20 @@ export function outlineFloorVars(
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   #416 — GLYPHE DE COCHE de la pastille de couleur sélectionnée (CategoryDrawer)
+   #416 — GLYPHE DE COCHE de la pastille de couleur sélectionnée
+   (`ui/palette-color-picker.tsx` depuis #577, CategoryDrawer avant)
    ═══════════════════════════════════════════════════════════════════════════
 
    La sélection n'était signalée que par une bordure : sur le pire cas le rapport
    bordure/remplissage tombe à 1,61:1, la bordure se confond avec la couleur
    qu'elle entoure. Le glyphe rend le signal indépendant de la couleur choisie.
 
-   Le remplissage de la pastille est un hex INLINE (`style={{backgroundColor}}`),
+   Le remplissage de la pastille est un token `--evt-*` (#577 ; un hex inline
+   avant), défini sur `:root` SEULEMENT — verrou dans `event-palette.test.ts` —
    donc identique dans les deux thèmes. Pour que le contraste du glyphe le soit
    aussi, l'encre est un token de PALETTE BRUT (`--gray-0` / `--gray-900`), jamais
    un alias sémantique (`--color-ink`, `--color-primary-foreground`) : ces alias
-   s'inversent dans `.dark` (`ds/tokens/colors.css` l.123) et le glyphe
+   s'inversent dans `.dark` (`ds/tokens/colors.css` l.135) et le glyphe
    disparaîtrait en thème sombre. `--gray-0` et `--gray-900` ne sont définis que
    dans `:root` (l.7 et l.21) et ne sont redéfinis par AUCUN bloc de thème.
 
@@ -300,28 +302,29 @@ export const SWATCH_GLYPH_LIGHT = '#FFFFFF'
 export const SWATCH_GLYPH_DARK = '#16181D'
 
 /**
- * Seuil de luminance relative au-dessus duquel le glyphe passe en encre sombre
- * (valeur arbitrée par la charte, #416).
+ * Encre du glyphe (hex) qui se détache le mieux du remplissage `hex` : celle des
+ * deux qui MAXIMISE le ratio WCAG (égalité → sombre).
  *
- * Ce n'est PAS le point d'égalisation exact des deux encres, qui vaut ici
- * L ≈ 0.1992 (`(L+0.05)² = 1.05 × (L(#16181D)+0.05)`) : entre 0.179 et 0.1992 ce
- * seuil choisit donc l'encre sombre là où l'encre claire contrasterait un peu
- * mieux. Aucune des 12 couleurs de `CATEGORY_SWATCHES` ne tombe dans cette bande
- * (plus proches : magenta 0.1710, rouge 0.2183) et le pire cas hypothétique de la
- * bande reste à ~4.0:1 — très au-dessus des 3:1 exigés. Verrouillé par test.
- */
-export const SWATCH_GLYPH_THRESHOLD = 0.179
-
-/**
- * Encre du glyphe (hex) qui se détache du remplissage `hex`.
+ * #577 — Ce n'est plus un seuil de luminance fixe. #416 basculait à L > 0.179,
+ * alors que le point d'égalisation réel de CES deux encres vaut L ≈ 0.1992
+ * (`(L+0.05)² = 1.05 × (L(#16181D)+0.05)`) : dans la bande 0.179–0.1992 le seuil
+ * choisissait l'encre sombre là où la claire contraste mieux. L'écart était
+ * assumé tant qu'« aucune des 12 couleurs ne tombe dans la bande » — prémisse
+ * devenue fausse avec la palette du handoff : orchidée `#B056A8` (L = 0.1871)
+ * y tombe, sombre 4.01:1 contre clair 4.43:1. Le test qui gardait cette prémisse
+ * a rougi comme prévu ; on supprime la bande plutôt que de l'élargir en silence.
+ * Sur les 11 autres couleurs le choix est inchangé.
  *
- * Hex invalide → `SWATCH_GLYPH_DARK` : branche inatteignable depuis l'UI (le
- * glyphe n'est monté que sur les 12 constantes `CATEGORY_SWATCHES`, dont la
- * validité est verrouillée par test), présente pour ne pas rendre `undefined`.
+ * Plancher garanti pour TOUT hex (couleur personnalisée comprise) : 4.21:1, atteint
+ * au point d'égalisation — au-dessus des 3:1 de WCAG 1.4.11.
+ *
+ * Hex invalide → `SWATCH_GLYPH_DARK`, pour ne pas rendre `undefined`.
  */
 export function swatchGlyphInk(hex: string): string {
   if (!HEX_RE.test(hex)) return SWATCH_GLYPH_DARK
-  return relativeLuminance(hex) > SWATCH_GLYPH_THRESHOLD ? SWATCH_GLYPH_DARK : SWATCH_GLYPH_LIGHT
+  return contrastRatio(hex, SWATCH_GLYPH_DARK) >= contrastRatio(hex, SWATCH_GLYPH_LIGHT)
+    ? SWATCH_GLYPH_DARK
+    : SWATCH_GLYPH_LIGHT
 }
 
 /**

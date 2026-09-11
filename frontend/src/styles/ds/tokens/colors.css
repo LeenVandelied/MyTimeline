@@ -35,7 +35,12 @@
   --blue-700: #0B4EA4;
   --blue-soft:#DBE9FC;
 
-  /* ---- curated 12 event colours (calendar-grade) ---- */
+  /* ---- curated 12 event colours (calendar-grade) ----
+     #577 — SEULE palette du dépôt (catégories, événements, surcharge produit).
+     Miroir JS obligé (un formulaire stocke un hex) : `src/lib/event-palette.ts`,
+     verrouillé sur CE bloc par `event-palette.test.ts` (nom, valeur, ordre).
+     Ne jamais redéfinir un `--evt-*` sous `.dark` (verrouillé aussi).
+     Mesures de contraste des 12 : `a11y-audit.md` §9 (orchidée < 4.5:1 en texte). */
   --evt-red:        #E5484D;
   --evt-orange:     #EE7B30;
   --evt-amber:      #E3A82B;

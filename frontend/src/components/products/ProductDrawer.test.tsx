@@ -42,11 +42,22 @@ vi.mock('next-intl', () => ({
  * couleur du drawer (payload `color` en création, `color`/`clearColor` en PATCH).
  */
 const PICKED_COLOR = '#ff8800'
+// #577 — le mock REND aussi son déclencheur (`children` = bouton « Personnalisé » de
+// `PaletteColorPicker`), pour pouvoir asserter l'état « Personnalisé actif ».
 vi.mock('@/components/ui/popoverPicker', () => ({
-  PopoverPicker: ({ onChange }: { onChange: (c: string) => void }) => (
-    <button type="button" data-testid="pick-color" onClick={() => onChange(PICKED_COLOR)}>
-      pick
-    </button>
+  PopoverPicker: ({
+    onChange,
+    children,
+  }: {
+    onChange: (c: string) => void
+    children?: React.ReactNode
+  }) => (
+    <>
+      {children}
+      <button type="button" data-testid="pick-color" onClick={() => onChange(PICKED_COLOR)}>
+        pick
+      </button>
+    </>
   ),
 }))
 
@@ -261,5 +272,69 @@ describe('ProductDrawer', () => {
     expect(screen.getByText('products.drawer.fields.noCategory')).toBeInTheDocument()
     const submit = screen.getByText('products.drawer.actions.create').closest('button')
     expect(submit).toBeDisabled()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// #577 — Surcharge couleur produit : palette curatée + « Personnalisé ».
+// `value` du sélecteur = la SURCHARGE seule (héritage ≠ surcharge identique).
+// ─────────────────────────────────────────────────────────────────────────────
+describe('ProductDrawer — #577 palette de la surcharge couleur', () => {
+  beforeEach(() => {
+    mockCategories()
+    updateMutateAsync.mockReset()
+    createMutateAsync.mockReset()
+  })
+  afterEach(() => vi.clearAllMocks())
+
+  const baseProduct: Product = {
+    id: 'p1',
+    name: 'Ancien nom',
+    color: null,
+    category: { id: CAT_A, name: 'Véhicules', color: '#112233' },
+    events: [],
+  }
+
+  it('produit qui HÉRITE : aucune pastille cochée, « Personnalisé » inactif', () => {
+    render(<ProductDrawer open onOpenChange={noop} mode="edit" product={baseProduct} />)
+    expect(screen.getAllByRole('radio')).toHaveLength(12)
+    expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(0)
+    expect(screen.getByTestId('product-color-custom')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('choisir une pastille pose la surcharge (PATCH `color`)', async () => {
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    render(<ProductDrawer open onOpenChange={noop} mode="edit" product={baseProduct} />)
+
+    await user.click(screen.getByTestId('product-swatch-#DD5C97'))
+    await user.click(screen.getByText('products.drawer.actions.save'))
+
+    await waitFor(() =>
+      expect(updateMutateAsync).toHaveBeenCalledWith({
+        productId: 'p1',
+        data: { color: '#DD5C97' },
+      }),
+    )
+  })
+
+  it('DEC-S84-001 — surcharge hors palette : « Personnalisé » actif, rien renvoyé si rien ne change', async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    render(
+      <ProductDrawer
+        open
+        onOpenChange={onOpenChange}
+        mode="edit"
+        product={{ ...baseProduct, color: '#abcdef' }}
+      />,
+    )
+    expect(screen.getByTestId('product-color-custom')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(0)
+
+    // Diff partiel (BR-PRO-009) : couleur intacte → aucun PATCH, le drawer se ferme.
+    await user.click(screen.getByText('products.drawer.actions.save'))
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+    expect(updateMutateAsync).not.toHaveBeenCalled()
   })
 })

@@ -33,7 +33,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { PopoverPicker } from '@/components/ui/popoverPicker'
+import { PaletteColorPicker } from '@/components/ui/palette-color-picker'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { ProductSparkline } from './ProductSparkline'
 import { useCategories } from '@/hooks/useCategories'
@@ -121,7 +121,6 @@ export function ProductDrawer({
   const updateMutation = useUpdateProduct(userId)
 
   const [colorOverride, setColorOverride] = React.useState<string | null>(null)
-  const [pickerOpen, setPickerOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [submitError, setSubmitError] = React.useState<string | null>(null)
 
@@ -325,15 +324,23 @@ export function ProductDrawer({
                 )}
               />
 
-              {/* Couleur : héritée catégorie, surchargeable. */}
-              <div className="flex items-center justify-between">
+              {/* Couleur : héritée catégorie, surchargeable. #577 — la surcharge se
+                  choisit dans la palette curatée (12 tokens `--evt-*`) ou via le repli
+                  « Personnalisé ». `value` = la SURCHARGE seule : tant que le produit
+                  hérite, aucune pastille n'est cochée (cocher la couleur héritée
+                  confondrait « hérite » et « surcharge avec la même valeur », deux
+                  états distincts en base — `clearColor`). Une surcharge stockée hors
+                  palette s'ouvre en « Personnalisé », inchangée (DEC-S84-001). */}
+              <div className="space-y-2">
                 <span className="text-foreground text-sm font-medium">{t('fields.color')}</span>
-                <div className="flex items-center gap-2">
-                  <PopoverPicker
-                    color={effectiveColor ?? '#888888'}
+                <div className="flex flex-wrap items-center gap-2">
+                  <PaletteColorPicker
+                    value={colorOverride}
                     onChange={setColorOverride}
-                    isOpen={pickerOpen}
-                    onToggle={setPickerOpen}
+                    label={t('fields.color')}
+                    testIdPrefix="product"
+                    customInitialColor={effectiveColor}
+                    disabled={submitting}
                   />
                   {colorOverride && (
                     <Button

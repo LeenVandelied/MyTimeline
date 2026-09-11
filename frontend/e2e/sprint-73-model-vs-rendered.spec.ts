@@ -37,8 +37,9 @@ import {
  *    débordait de 400 px.
  *  · #416 (`1e3143e`) — « le glyphe de coche atteint >= 3:1 sur les 12
  *    couleurs ». Preuve fournie : un test unitaire de la fonction PURE
- *    `swatchGlyphInk` (minimum calculé 4,54:1). Il prouve l'arithmétique, pas
- *    que cette encre-là est celle qui arrive à l'écran — ni que
+ *    `swatchGlyphInk` (minimum calculé 4,54:1 — 4,43:1 depuis la palette de
+ *    #577). Il prouve l'arithmétique, pas que cette encre-là est celle qui
+ *    arrive à l'écran — ni que
  *    `var(--gray-0)` / `var(--gray-900)` résolvent comme prévu en thème sombre.
  *
  * C'est très exactement le motif `PIT-S48-002` (« CI verte != page correcte »)
@@ -80,10 +81,16 @@ import {
  *     mécaniquement plus bas.
  *
  * Les 12 couleurs sont lues DANS LE DOM (`[data-testid^="category-swatch-#"]`),
- * pas importées de `CategoryDrawer.tsx` : on mesure la palette réellement
- * rendue. Un contrôle exige la présence des deux pires appariements annoncés
- * par #416 (`#3E63DD` clair, `#F2A900` sombre) — si l'un disparaissait de la
- * palette, la sonde le dirait au lieu de couvrir 11 couleurs en silence.
+ * pas importées de `lib/event-palette.ts` : on mesure la palette réellement
+ * rendue. Un contrôle exige la présence des deux pires appariements de la
+ * bordure de sélection (#577 : `#3B62D4` cobalt en clair, 3,28:1 ; `#E3A82B` ambre
+ * en sombre, 1,81:1 — ex-`#3E63DD`/`#F2A900` de #416) — si l'un disparaissait de
+ * la palette, la sonde le dirait au lieu de couvrir 11 couleurs en silence.
+ *
+ * #577 — La pastille est désormais PEINTE par son token (`var(--evt-*)`) et non
+ * par un hex inline, alors que le testid porte le hex du miroir JS
+ * (`EVENT_PALETTE`). L'assertion « remplissage peint = hex demandé » ci-dessous
+ * est donc AUSSI la preuve navigateur que miroir et tokens concordent.
  *
  * THÈME SOMBRE : `test.use({ colorScheme })`, le ThemeProvider étant monté en
  * `defaultTheme="system" enableSystem` (`app/[locale]/layout.tsx:66`). Un TÉMOIN
@@ -365,7 +372,7 @@ test.describe('#458 — non-régression sur un titre de longueur normale', () =>
 })
 
 /** Pires appariements annoncés par #416 — leur absence invaliderait la couverture. */
-const WORST_CASES = { light: '#3E63DD', dark: '#F2A900' } as const
+const WORST_CASES = { light: '#3B62D4', dark: '#E3A82B' } as const
 
 const SCHEMES = ['light', 'dark'] as const
 

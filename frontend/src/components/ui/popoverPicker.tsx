@@ -8,6 +8,7 @@ export const PopoverPicker = ({
   isOpen,
   onToggle,
   disabled = false,
+  children,
 }: {
   color: string
   onChange: (color: string) => void
@@ -22,6 +23,14 @@ export const PopoverPicker = ({
    * son état annoncé, comme les autres champs verrouillés du formulaire.
    */
   disabled?: boolean
+  /**
+   * #577 — Déclencheur fourni par l'appelant (rendu via `asChild`), en remplacement
+   * du carré `<div>` par défaut. Sert au bouton « Personnalisé » de
+   * `PaletteColorPicker` : un VRAI `<button>` (focusable, nom accessible, état
+   * `aria-pressed`) là où le `<div>` historique n'est atteignable qu'à la souris.
+   * Absent → rendu historique inchangé.
+   */
+  children?: React.ReactElement
 }) => {
   const handlePickerMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -37,16 +46,18 @@ export const PopoverPicker = ({
   return (
     <Popover open={disabled ? false : isOpen} onOpenChange={disabled ? undefined : onToggle}>
       <PopoverTrigger asChild disabled={disabled}>
-        <div
-          className={
-            disabled
-              ? 'h-6 w-6 cursor-not-allowed rounded-lg border border-white opacity-60'
-              : 'h-6 w-6 cursor-pointer rounded-lg border border-white'
-          }
-          aria-disabled={disabled || undefined}
-          style={{ backgroundColor: color }}
-          onMouseDown={disabled ? undefined : handlePickerMouseDown}
-        />
+        {children ?? (
+          <div
+            className={
+              disabled
+                ? 'h-6 w-6 cursor-not-allowed rounded-lg border border-white opacity-60'
+                : 'h-6 w-6 cursor-pointer rounded-lg border border-white'
+            }
+            aria-disabled={disabled || undefined}
+            style={{ backgroundColor: color }}
+            onMouseDown={disabled ? undefined : handlePickerMouseDown}
+          />
+        )}
       </PopoverTrigger>
       <PopoverContent
         className="w-auto border-none bg-transparent p-0 shadow-none"
