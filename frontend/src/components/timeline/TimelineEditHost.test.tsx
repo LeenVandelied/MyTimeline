@@ -37,7 +37,7 @@ vi.mock('next-intl', () => ({
 }))
 
 vi.mock('./TimelineResponsive', () => {
-  const positionedEvent = (id: string, title: string): PositionedEvent => ({
+  const positionedEvent = (id: string, title: string, archived = false): PositionedEvent => ({
     id,
     title,
     start: '2026-01-01',
@@ -49,6 +49,7 @@ vi.mock('./TimelineResponsive', () => {
       productName: 'Produit',
       category: 'cat',
       type: 'single',
+      archived,
     },
     leftPx: 0,
     widthPx: 0,
@@ -73,6 +74,19 @@ vi.mock('./TimelineResponsive', () => {
           onClick={() => props.onEditEvent?.(positionedEvent('evt-desktop', 'Desktop event'))}
         >
           edit
+        </button>
+        {/* #188 / BR-EVE-013 — événement archivé, pour prouver le pré-remplissage
+            `defaultValues.archived` (porté depuis `EventContent.test.tsx` avant #634). */}
+        <button
+          type="button"
+          data-testid="desktop-edit-trigger-archived"
+          onClick={() =>
+            props.onEditEvent?.(
+              positionedEvent('evt-desktop-archived', 'Desktop archived event', true),
+            )
+          }
+        >
+          edit archived
         </button>
       </div>
     ),
@@ -121,6 +135,24 @@ describe('TimelineEditHost — invariant AuthProvider (#review S42)', () => {
     await waitFor(() =>
       expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument(),
     )
+  })
+})
+
+// #188 / BR-EVE-013 — pré-remplissage `defaultValues.archived` (`editing.extendedProps?.archived
+// ?? false`, TimelineEditHost.tsx). Comportement porté depuis `EventContent.test.tsx` (supprimé
+// #634, seule surface à couvrir la mapping event → defaultValues.archived sur un chemin vivant :
+// `EventEditForm.test.tsx` ne teste que le RENDU d'un `defaultValues` déjà fourni en prop).
+describe('TimelineEditHost — pré-remplissage archived (#188 / BR-EVE-013)', () => {
+  it('event archived=true → toggle event-form-archived-toggle pré-coché', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger-archived'))
+    expect(await screen.findByTestId('event-form-archived-toggle')).toBeChecked()
+  })
+
+  it('event non archivé → toggle event-form-archived-toggle décoché (fallback)', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    expect(await screen.findByTestId('event-form-archived-toggle')).not.toBeChecked()
   })
 })
 

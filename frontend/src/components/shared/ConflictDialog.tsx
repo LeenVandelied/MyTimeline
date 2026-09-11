@@ -32,8 +32,8 @@ import type { Event, EventEditFormValues } from '@/types/event'
  *    (`onTakeServer`, abandonne le local + rafraîchit).
  *
  * Composant présentationnel pur : il ne détecte pas le 409 lui-même. L'appelant
- * (`EventContent` via `EventEditForm`) intercepte le 409, parse le corps enrichi et
- * pilote `open` + les callbacks.
+ * (`useEventEditConflict`, monté par `TimelineEditHost`, via `EventEditForm`)
+ * intercepte le 409, parse le corps enrichi et pilote `open` + les callbacks.
  */
 
 export interface ConflictDialogProps {

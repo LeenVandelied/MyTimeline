@@ -7,12 +7,13 @@ import { statusToVar, type PositionedEvent } from './zoom'
  * #192 — EventPill : rendu compact d'un event sur la frise desktop continue.
  *
  * Décision (critère d'acceptation) : composant DÉDIÉ, PAS une réutilisation
- * d'`EventContent`. `EventContent` est le rendu « riche » du calendrier (dialog
- * d'édition, popover couleur, deps next-intl/auth/services). La frise desktop
- * (`TimelineView`) n'a besoin que d'une pastille cliquable (point de statut +
- * titre tronqué) qui ouvre le `EventDrawer` — un rendu volontairement léger,
- * sans les dépendances lourdes d'`EventContent`. `EventBar.tsx` (brique #47,
- * fenêtre fixe 30 j + `EventContent`) n'est PAS consommé par `TimelineView` :
+ * d'`EventContent` (rendu « riche » du calendrier — dialog d'édition, popover
+ * couleur, deps next-intl/auth/services — supprimé #634, mort depuis la
+ * suppression d'`EventBar`/`Lane`). La frise desktop (`TimelineView`) n'a besoin
+ * que d'une pastille cliquable (point de statut + titre tronqué) qui ouvre le
+ * `EventDrawer` — un rendu volontairement léger, sans ces dépendances lourdes.
+ * `EventBar.tsx` (brique #47, fenêtre fixe 30 j + `EventContent`, tous deux
+ * supprimés #634) n'était PAS consommé par `TimelineView` :
  * la vraie pastille compacte à extraire était le `<button className="mt-tlv__evt">`
  * inline de `TimelineView`. C'est ce bloc qui devient `EventPill`.
  *

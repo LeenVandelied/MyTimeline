@@ -12,9 +12,10 @@ import type { EventSubmitState } from '@/components/EventEditForm'
 
 /**
  * #absorb (BR-EVE-015) — Machine à états PARTAGÉE de soumission + conflit 409 comparatif
- * pour l'édition d'un event. Extraite du flux #231 d'`EventContent` (qui reste le mount
- * historique de la frise `EventBar`) afin d'être RÉUTILISÉE par `TimelineEditHost` (frise
- * routée dashboard / détail produit) SANS dupliquer la logique conflit.
+ * pour l'édition d'un event. Extraite du flux #231 d'`EventContent` (mount historique de
+ * la frise `EventBar`, supprimé #634 — `TimelineEditHost` est désormais le SEUL point de
+ * montage) afin d'être RÉUTILISÉE par `TimelineEditHost` (frise routée dashboard / détail
+ * produit) SANS dupliquer la logique conflit.
  *
  * Threading `version` (gap B) : le PATCH envoie la `version` détenue au chargement du form.
  * Sur 409 enrichi, `onKeepMine` RE-SOUMET avec la version SERVEUR (corps 409) — sinon le
@@ -118,8 +119,8 @@ export function useEventEditConflict(
     async (data: EventEditFormValues, fromKeepMine: boolean) => {
       setSubmitState('submitting')
       try {
-        // Garde `user?.id` coherente avec le reste du flux (`invalidateEvents`,
-        // color-path d'EventContent) : pas de PATCH sans utilisateur authentifie.
+        // Garde `user?.id` coherente avec le reste du flux (`invalidateEvents`) :
+        // pas de PATCH sans utilisateur authentifie.
         if (eventId && user?.id) {
           await updateEvent(eventId, data)
         }
@@ -169,8 +170,9 @@ export function useEventEditConflict(
   // ré-alignement de version, le PATCH redéclencherait un 409 (boucle).
   const onKeepMine = useCallback(() => {
     // #310 - Garde d'arret : au plafond, le callback devient INERTE. Le bouton est par
-    // ailleurs desactive cote dialog, mais la garde reste ici parce qu'elle protege les
-    // deux points de montage (`EventContent`, `TimelineEditHost`) et tout appelant futur.
+    // ailleurs desactive cote dialog, mais la garde reste ici parce qu'elle protege le
+    // point de montage (`TimelineEditHost`, seul depuis la suppression d'`EventContent`
+    // #634) et tout appelant futur.
     if (!conflict || keepMineExhausted) return
     void runSubmit({ ...conflict.local, version: conflict.server.version ?? null }, true)
   }, [conflict, keepMineExhausted, runSubmit])

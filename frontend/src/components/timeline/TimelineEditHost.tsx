@@ -20,8 +20,10 @@ import type { PositionedEvent } from './zoom'
  *
  * Contexte : `EventEditForm` (+ `ConflictDialog` #231) ne vivait que dans `EventContent`,
  * monté uniquement via un ancien composant calendrier → `Lane` → `EventBar`, que PLUS
- * AUCUNE page ne rend (régression S17, composant supprimé #350). Les pages routées
- * (`dashboard`, détail produit) rendent
+ * AUCUNE page ne rend (régression S17, composant supprimé #350). `EventContent` lui-même
+ * a été supprimé #634 (Sprint 84), une fois `Lane`/`EventBar` retirés : `TimelineEditHost`
+ * est désormais le SEUL point de montage de `EventEditForm`/`ConflictDialog`. Les pages
+ * routées (`dashboard`, détail produit) rendent
  * `TimelineResponsive` (desktop `EventDrawer` LECTURE SEULE, mobile `TimelineActionSheet`
  * dont l'`onEdit` n'était pas câblé). Ce host wrappe `TimelineResponsive`, câble
  * `onEditEvent` (desktop bouton « Éditer » d'`EventDrawer` + mobile action sheet) et ouvre

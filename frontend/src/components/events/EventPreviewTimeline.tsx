@@ -28,11 +28,12 @@ import { buildPreviewModel, type PreviewEventType, type PreviewSegment } from '.
  *     occurrences fantômes », `--mt-evt` / `--mt-evt-ink` = API du DS) ;
  *   - `.mt-tlv__today-badge` pour le badge TODAY, `.mt-recur` pour la récurrence.
  *
- * ⚠ `EventBar` (#47) n'est PAS réutilisé, volontairement : il porte en dur
- * `data-testid="timeline-event"` (les specs E2E comptent les barres de la frise
- * réelle) — un aperçu ouvert par-dessus la frise polluerait ces sélecteurs — et
- * son rendu par défaut monte `EventContent`, qui exige les contextes auth/i18n de
- * la page. La géométrie vient donc de `previewTimeline.ts` (fonctions pures).
+ * ⚠ `EventBar` (#47, supprimé #634) n'était PAS réutilisé, volontairement : il
+ * portait en dur `data-testid="timeline-event"` (les specs E2E comptent les
+ * barres de la frise réelle) — un aperçu ouvert par-dessus la frise polluerait
+ * ces sélecteurs — et son rendu par défaut montait `EventContent` (supprimé #634
+ * lui aussi), qui exigeait les contextes auth/i18n de la page. La géométrie vient
+ * donc de `previewTimeline.ts` (fonctions pures).
  *
  * ⚠ PERF (BR-EVE-017) : ce composant ne débounce RIEN lui-même. Les valeurs
  * arrivent déjà débouncées à 150 ms depuis `EventEditForm` — les brancher sur les

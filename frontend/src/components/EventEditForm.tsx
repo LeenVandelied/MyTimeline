@@ -62,8 +62,9 @@ export type { EventEditFormValues } from '@/types/event'
  * recalculerait la géométrie de la frise à chaque frappe.
  *
  * Responsive : le formulaire est rendu dans le drawer/bottom-sheet du parent
- * (`EventContent`, pattern `ProductDrawer.tsx:240-244`). Aucun breakpoint custom :
- * `sm:` (640px) unique — bottom-sheet < 640px (portrait ET paysage), drawer >= 640px.
+ * (`NewEventDrawer`/`TimelineEditHost`, pattern `ProductDrawer.tsx:240-244`).
+ * Aucun breakpoint custom : `sm:` (640px) unique — bottom-sheet < 640px (portrait
+ * ET paysage), drawer >= 640px.
  */
 export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
 
@@ -79,8 +80,8 @@ export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
  *                   qu'elle serait ignorée.
  *   - `recurrenceEndDate` : hors DTO create (BR-EVE-012).
  *
- * Défaut `'edit'` → les consommateurs existants (`EventContent`, `TimelineEditHost`)
- * sont inchangés, aucun champ ne disparaît de l'édition.
+ * Défaut `'edit'` → le consommateur existant (`TimelineEditHost`) est inchangé,
+ * aucun champ ne disparaît de l'édition.
  */
 export type EventFormMode = 'create' | 'edit'
 
@@ -159,8 +160,10 @@ interface EventEditFormProps {
    *
    * #495 — CONSOMMATEURS (l'inventaire, pas une liste de surfaces « inchangées ») :
    *   - `NewEventDrawer` (création) — épinglé >= lg, en flux dans la bottom sheet ;
-   *   - `TimelineEditHost` (édition) — épinglé >= sm, en flux sous 640px ;
-   *   - `EventContent` (chemin calendrier historique) — ne passe PAS la prop.
+   *   - `TimelineEditHost` (édition) — épinglé >= sm, en flux sous 640px.
+   * Seuls ces deux points de montage existent (`EventContent`, chemin calendrier
+   * historique qui ne passait PAS la prop, supprimé #634 : mort depuis la
+   * suppression d'`EventBar`/`Lane`).
    * ⚠ `EventDrawer` et `ConflictDialog` ne sont PAS des consommateurs : ni l'un ni
    * l'autre ne monte ce formulaire (le premier est un panneau de DÉTAIL en lecture
    * seule qui délègue l'édition via `onEdit` ; le second est rendu PAR ce formulaire).
@@ -382,8 +385,8 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * (`timeline.css:325`), il ne requiert aucun ancêtre `.mt-drawer` : il s'applique
    * tel quel sur cette surface Tailwind.
    *
-   * EN FLUX (les chemins qui ne fournissent PAS la prop : `EventContent`, la bottom
-   * sheet de création < 1024px et le dialog d'édition < 640px) : classe HISTORIQUE,
+   * EN FLUX (les chemins qui ne fournissent PAS la prop : la bottom sheet de
+   * création < 1024px et le dialog d'édition < 640px) : classe HISTORIQUE,
    * strictement inchangée. Aucun de ces chemins ne place le libellé au contact d'un
    * titre → aucun mandat pour le reclasser (PAT-S44-001).
    * ⚠ `text-sm` rend **17px** ici (l'échelle du DS Graphite écrase celle de Tailwind,

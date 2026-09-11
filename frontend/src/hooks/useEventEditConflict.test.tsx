@@ -222,3 +222,98 @@ describe('useEventEditConflict — garde anti-boucle keep-mine (#310)', () => {
     expect(result.current.submitState).toBe('idle')
   })
 })
+
+// #77/#231 — Statut HTTP → `submitState`, et pilotage du conflit comparatif.
+//
+// Porté depuis `EventContent.test.tsx` (supprimé #634, mount historique mort depuis la
+// suppression d'`EventBar`/`Lane`) : ces trois comportements n'étaient couverts QUE là.
+// `EventEditForm.test.tsx` ne teste que le RENDU d'un `submitState`/`conflictServerEvent`
+// déjà fournis en props ; c'est CE hook qui calcule `httpStatusOf`/`conflictServerEventOf`
+// et doit donc porter la preuve du mapping lui-même.
+describe('useEventEditConflict — statut HTTP → submitState (#77/#231)', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    updateEventMock = vi.fn()
+    invalidateQueriesMock.mockClear()
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('409 avec corps ENRICHI : conflict + serverEvent capturé', async () => {
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(result.current.conflict?.server.title).toBe('Titre serveur')
+    expect(result.current.conflict?.local).toBe(localValues)
+  })
+
+  it('409 avec corps PLAT (legacy, pas de serverEvent) : conflict SANS serverEvent (fallback recharger)', async () => {
+    updateEventMock.mockRejectedValue({ response: { status: 409 } })
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(result.current.conflict).toBeNull()
+  })
+
+  it.each([400, 404])('%i → submitState error (PAS conflict)', async (status) => {
+    updateEventMock.mockRejectedValue({ response: { status } })
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('error'))
+    expect(result.current.conflict).toBeNull()
+  })
+
+  it('onReload : invalidation ciblée products.withEvents + retour idle + onDone appelé (pas de reload page)', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+
+    invalidateQueriesMock.mockClear()
+    act(() => {
+      result.current.onReload()
+    })
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ['products', { userId: 'user-1', withEvents: true }],
+    })
+    expect(result.current.submitState).toBe('idle')
+    expect(onDone).toHaveBeenCalledTimes(1)
+  })
+
+  it('onTakeServer (« prendre la version serveur ») : même invalidation, abandon du local', async () => {
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+
+    invalidateQueriesMock.mockClear()
+    act(() => {
+      result.current.onTakeServer()
+    })
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ['products', { userId: 'user-1', withEvents: true }],
+    })
+    expect(result.current.submitState).toBe('idle')
+  })
+})
