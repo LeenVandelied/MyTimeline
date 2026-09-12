@@ -6010,7 +6010,7 @@ Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
 **Status :** Terminé — PR #662 mergée le 2026-09-11 (`6ef408c`), milestone #85 fermé, #651/#577/#575/#634 fermées ; titre et Status soldés au `/sprint start 85` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 85 — 2026-09-11 → 2026-09-12 (EN CLÔTURE — PR #669, cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
+### Sprint 85 — 2026-09-11 → 2026-09-12 (Terminé — merge PR #669 dans dev, commit `d786219`, cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
 **Objectif :** Filtres par catégorie, légende, pliage global, pastille/compteur, boutons Aujourd'hui et Nouvel événement
 **Milestone GitHub :** #86
 **Issues (3) :** #592, #601, #602
@@ -6078,21 +6078,25 @@ silencieuse du serveur `next dev` — rejoué en entier sur base neuve.
   - En-tête de catégorie non sticky (signalé par #592 pour #601) → **absorbé dans le sprint** (`a604e99`)
   Ratio : 5 issues / 0 commentaire / 2 discards / 1 absorbé / 1 sans destination (issues cibles fermées).
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #669 ouverte, CI 7/7 verte ; titre et Status à solder au
-`/sprint start 86` (variante S57 : zéro PR supplémentaire).
+**Status :** Terminé — PR #669 mergée le 2026-09-12 (`d786219`) ; milestone #86 fermé, #592/#601/#602
+fermées. Titre et Status soldés au `/sprint start 86` (variante S57 : zéro PR supplémentaire).
 
 ### Sprint 86 — 2026-09-07 (PLANIFIÉ — cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
 **Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie de bout en bout, hint de plafond exact
 **Milestone GitHub :** #87
 **Issues (3) :** #618, #617, #646
 **Vagues :** V1 = #618 ∥ #617-backend | V2 = #617-frontend | V3 = #646
-**Migrations :** **V10** (`V10__event_category.sql`, à créer — dernière existante = V9)
+**Migrations :** aucune (DEC-S86-001). ⚠ Le plan annonçait « V10, dernière = V9 » : **faux** —
+`ls | tail` trie lexicalement ; dernière réelle = V15, prochaine = V16.
 **Dépend de :** Sprint 84 (#617 a besoin de la palette unique) ; #618 avant le reste du formulaire
-**ADR préalable bloquant :** `category` dérivé du produit par défaut et surchargeable —
-trancher la nullabilité de la colonne et le lieu de la règle de repli (domaine, pas mapper).
-**Risque de taille :** #617 est classée M mais touche 9 fichiers backend + migration + 2
-surfaces frontend. Reclassement en L probable ; risque de débordement du sprint.
-**Status :** Planifié
+**ADR préalable bloquant :** **tranché au démarrage → DEC-S86-001 : catégorie DÉRIVÉE du produit**,
+non surchargeable (ProductEntity.category NOT NULL ; toute la frise S85 agrège par la catégorie
+du produit). #617 passe de M fullstack à **S frontend**, zéro backend.
+**Autres écarts du plan corrigés au démarrage :** dépendance #582 fermée par décision (DEC-S82-004,
+pas de seed) mais sans effet ici (un produit a toujours une catégorie) ; lignes décalées
+(`TimelineEditHost.tsx:210`, hint `EventEditForm.tsx:798`).
+**Branche :** `claude/sprint-start-86-9af6ff` (convention S85 : branche du worktree, pas de `sprint/86`)
+**Status :** En cours (démarré 2026-09-12)
 
 ### Sprint 87 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Landing publique : hero et frise du spec)
 **Objectif :** Hero 30/70 avec frise animée conforme au spec, purge des deux sections redondantes

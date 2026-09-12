@@ -2,6 +2,15 @@
 
 > Généré par /sprint plan (architect, 2026-09-07). Lu par /sprint start Phase 4.1.
 
+> **⚠ CORRECTIONS DU LEAD AU DÉMARRAGE (2026-09-12) — PRIMENT SUR LE TEXTE CI-DESSOUS**
+> 1. **ADR tranché : DEC-S86-001 — catégorie DÉRIVÉE du produit, non surchargeable.** Tout le
+>    volet backend de `issue_617` (Event.java, commands, DTO, mapper, entité, migration) est
+>    **ANNULÉ**. #617 = frontend seul, taille S.
+> 2. « V10, dernière = V9 » est **faux** (tri lexical de `ls`) : dernière = V15. Sans objet
+>    désormais (aucune migration).
+> 3. Lignes décalées : 480px en dur à `TimelineEditHost.tsx:210` ; hint à `EventEditForm.tsx:798`.
+> 4. Vagues révisées : V1 = #618 ∥ #646 (fichiers disjoints) · V2 = #617 (après #618).
+
 **Thème :** Formulaire d'événement : surface unifiée et champ Catégorie
 **Cohésion :** 0.45 (domaines : formulaire, frise, catégories, backend)
 **Effort :** 7 points (**probablement sous-estimé — voir risque #617**)
