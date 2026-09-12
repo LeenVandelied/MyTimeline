@@ -1,0 +1,2 @@
+Class <com.matimeline.eventmanager.domain.models.Role> implements interface <org.springframework.security.core.GrantedAuthority> in (Role.java:0)
+Class <com.matimeline.eventmanager.domain.ports.repositories.ProductRepository> is annotated with <org.springframework.stereotype.Repository> in (ProductRepository.java:0)

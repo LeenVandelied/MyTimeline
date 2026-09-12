@@ -1,0 +1,278 @@
+# Déploiement — build des images arm64 puis mise en ligne sur l'instance Oracle.
+# Cible et topologie : docs/adr/ADR-009-cible-de-deploiement.md. Issue #370.
+#
+# ARM : l'hôte est aarch64 (Ampere A1). Le build tourne sur `ubuntu-24.04-arm`,
+# runner GitHub natif arm64, GRATUIT sur ce dépôt car il est PUBLIC. Aucun QEMU,
+# aucune émulation — un build Maven émulé prendrait plusieurs dizaines de minutes.
+#
+# ⚠ STAGING NON IMPLÉMENTÉ ICI, et c'est un écart ASSUMÉ à #370.
+#   #370 demande « push sur dev déploie staging, production manuelle ». Une seule
+#   instance est disponible, et `NEXT_PUBLIC_API_URL` est BAKÉE dans l'image
+#   frontend : un staging exigerait une seconde image ET un second domaine. Or
+#   l'enveloppe Oracle Always Free laisse 2 OCPU / 12 Go libres — un staging sur
+#   une SECONDE VM gratuite est la bonne réponse, traitée par une issue dédiée.
+#   En attendant, la production est le seul environnement et n'est JAMAIS
+#   déclenchée automatiquement : uniquement `workflow_dispatch`.
+#
+# Branch protection : ce workflow n'en active aucune (même règle que ci.yml).
+
+name: deploy
+
+# DEUX déclencheurs, tous deux MANUELS. Aucun push de branche ne déploie.
+#
+# ⚠ `workflow_dispatch` n'est proposé par GitHub que si ce fichier existe sur la
+#   BRANCHE PAR DÉFAUT du dépôt (`main`). Or `main` est ~1100 commits derrière
+#   `dev` et ne porte pas ce workflow : le bouton n'apparaît donc pas aujourd'hui.
+#   Il est conservé pour le jour où le rôle de `main` sera tranché (#409).
+#
+# ⚠ Le déclencheur par TAG, lui, n'a AUCUNE exigence de branche par défaut : un
+#   push de tag exécute le workflow tel qu'il est défini AU COMMIT TAGUÉ. C'est
+#   la voie utilisable, et celle que #370 avait anticipée.
+#
+#   Déployer :  git tag deploy-2026-09-07 <sha> && git push origin deploy-2026-09-07
+#
+# Dans les deux cas le job `deploy` reste derrière l'environnement `production`,
+# donc derrière une approbation humaine explicite.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Ref à déployer (branche, tag ou SHA). Défaut : dev"
+        required: false
+        default: dev
+  push:
+    tags:
+      - "deploy-*"
+
+concurrency:
+  # JAMAIS `cancel-in-progress` : interrompre un déploiement en cours laisserait
+  # la stack dans un état mixte (images à moitié tirées, migrations engagées).
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build-arm64
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      owner: ${{ steps.meta.outputs.owner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # Sur un push de tag, le contexte `inputs` est vide : on retombe sur le
+          # tag lui-même, donc sur le code EXACT qui a déclenché le déploiement.
+          ref: ${{ inputs.ref || github.ref_name }}
+          persist-credentials: false
+
+      # Le propriétaire est repris de GITHUB_REPOSITORY_OWNER et FORCÉ EN MINUSCULES.
+      # Les noms de dépôt OCI n'acceptent que les minuscules, or le propriétaire est
+      # « LeenVandelied » : `${{ github.repository_owner }}` employé tel quel fait
+      # échouer le build sur `repository name must be lowercase`. Les expressions
+      # GitHub n'ont pas de fonction de mise en minuscules — d'où ce calcul en shell.
+      - name: Calculer le tag d'image et le proprietaire GHCR
+        id: meta
+        run: |
+          echo "tag=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Login GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # v6.13.0
+        with:
+          context: ./backend
+          push: true
+          platforms: linux/arm64
+          tags: ghcr.io/${{ steps.meta.outputs.owner }}/mytimeline-backend:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # NEXT_PUBLIC_API_URL est BAKÉE au build (ARG -> ENV du Dockerfile) : changer le
+      # domaine impose de RECONSTRUIRE cette image, pas seulement de redéployer.
+      - name: Build & push frontend
+        uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # v6.13.0
+        with:
+          context: ./frontend
+          push: true
+          platforms: linux/arm64
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}/api
+          tags: ghcr.io/${{ steps.meta.outputs.owner }}/mytimeline-frontend:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: deploy-production
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      # Nécessaire pour que l'hôte puisse TIRER les images : un package GHCR créé
+      # par un push du GITHUB_TOKEN est PRIVÉ par défaut, même sur un dépôt public.
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # Sur un push de tag, le contexte `inputs` est vide : on retombe sur le
+          # tag lui-même, donc sur le code EXACT qui a déclenché le déploiement.
+          ref: ${{ inputs.ref || github.ref_name }}
+          persist-credentials: false
+
+      # Clé SSH montée en mémoire, hôte épinglé par sa clé publique connue :
+      # `StrictHostKeyChecking` par défaut accepterait n'importe quel hôte au
+      # premier contact, ce qui rend un MITM indétectable sur le 1er déploiement.
+      - name: Préparer SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+
+      # Le compose et le Caddyfile sont versionnés : c'est le dépôt qui fait foi,
+      # pas une copie divergente restée sur le serveur.
+      - name: Publier compose + Caddyfile
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          scp -i ~/.ssh/id_deploy docker-compose.prod.yml Caddyfile \
+            "$USER@$HOST:/opt/matimeline/"
+
+      # Le jeton est éphémère (durée du job) et transite par STDIN : il n'apparaît
+      # ni dans la ligne de commande, ni dans la table des process de l'hôte.
+      # Alternative écartée : rendre les packages GHCR publics à la main — une étape
+      # manuelle de plus, et un oubli au premier déploiement suffirait à le casser.
+      - name: Authentifier l'hôte auprès de GHCR
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
+      - name: Déployer
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" bash -se <<EOSSH
+          set -euo pipefail
+          cd /opt/matimeline
+          # IMAGE_TAG est écrit dans .env.tag, lu en plus de .env (qui porte les secrets
+          # et n'est JAMAIS versionné ni réécrit par ce workflow).
+          echo "IMAGE_TAG=$TAG" > .env.tag
+          docker compose --env-file .env --env-file .env.tag \
+            -f docker-compose.prod.yml pull
+          docker compose --env-file .env --env-file .env.tag \
+            -f docker-compose.prod.yml up -d --remove-orphans
+
+          # ⚠ INDISPENSABLE — le Caddyfile est un fichier MONTÉ, pas une partie de
+          # l'image ni de la config du service. En changer le contenu ne modifie
+          # donc rien du point de vue de Compose : `up -d` laisse le conteneur
+          # Caddy intact, avec l'ANCIENNE configuration chargée en mémoire.
+          # Constaté sur le passage aux certificats de production : le fichier
+          # était à jour sur le disque et Caddy servait toujours l'ACME de test.
+          # `reload` est préféré à `restart` : rechargement à chaud, sans coupure.
+          docker compose --env-file .env --env-file .env.tag \
+            -f docker-compose.prod.yml exec -T caddy \
+            caddy reload --config /etc/caddy/Caddyfile
+
+          # Le jeton expire de toute façon avec le job ; on ne laisse pas
+          # d'identifiant périmé traîner dans ~/.docker/config.json.
+          docker logout ghcr.io >/dev/null
+          EOSSH
+
+      # PREUVE POSITIVE de bon fonctionnement, pas simple absence d'erreur : le job
+      # ne passe au vert que si l'application répond réellement en HTTPS depuis
+      # l'extérieur. Un conteneur « Up » mais cassé ferait autrement un déploiement vert.
+      # PREUVE POSITIVE, et sur les DEUX services.
+      #
+      # ⚠ Leçon du premier déploiement réel : ne sonder que `/fr/login` a rendu ce
+      # job VERT alors que le backend bouclait sur un crash. Cette page est servie
+      # par le frontend SEUL — elle répond 200 même sans backend. Il faut donc une
+      # sonde qui traverse Caddy jusqu'au backend.
+      #
+      # `/api/auth/me` sans cookie doit répondre 401 : c'est une réponse APPLICATIVE,
+      # donc la preuve que le backend a traité la requête. Un 502/504 signifierait
+      # que Caddy n'a trouvé personne derrière.
+      - name: Vérifier la mise en ligne
+        env:
+          ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://matimeline.com' }}
+        run: |
+          # Le Caddyfile est l'UNIQUE source de vérité sur le mode ACME. Tant que
+          # l'ACME de test est actif, le certificat n'est pas approuvé et une
+          # vérification TLS stricte ferait échouer ce job alors que l'application
+          # répond parfaitement.
+          if grep -qE '^[[:space:]]*acme_ca[[:space:]]+https://acme-staging' Caddyfile; then
+            echo "::warning::ACME de TEST actif — certificat non approuvé, vérification TLS désactivée pour ce run. Recommenter acme_ca dans le Caddyfile pour passer en production."
+            TLS_OPT="--insecure"
+          else
+            TLS_OPT=""
+          fi
+
+          front=""; back=""
+          for i in $(seq 1 30); do
+            front=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/fr/login" || true)
+            back=$(curl -s $TLS_OPT -o /dev/null -w '%{http_code}' "$ORIGIN/api/auth/me" || true)
+            echo "tentative $i : frontend=$front backend=$back"
+            if [ "$front" = "200" ] && [ "$back" = "401" ]; then
+              echo "OK : frontend 200 ET backend 401 (reponse applicative)"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "ÉCHEC après 5 minutes — frontend=$front backend=$back"
+          [ "$front" != "200" ] && echo "  le frontend ne sert pas /fr/login"
+          case "$back" in
+            502|504) echo "  502/504 sur /api/auth/me : Caddy ne joint PAS le backend (crash-loop ?)" ;;
+            "")      echo "  aucune reponse du backend" ;;
+            401)     : ;;
+            *)       echo "  /api/auth/me a repondu $back au lieu de 401" ;;
+          esac
+          exit 1
+
+      - name: Diagnostic si échec
+        if: failure()
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          # ⚠ Les `--env-file` sont OBLIGATOIRES : sans eux, Compose échoue sur
+          # `IMAGE_TAG is missing` et cette étape ne produit RIEN — le diagnostic
+          # se taisait exactement quand on en avait besoin.
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" bash -se <<'EOSSH'
+          cd /opt/matimeline
+          DC="docker compose --env-file .env --env-file .env.tag -f docker-compose.prod.yml"
+          echo "===== etat des conteneurs ====="
+          $DC ps
+          echo "===== certificat servi ====="
+          echo | openssl s_client -connect localhost:443 -servername matimeline.com 2>/dev/null \
+            | openssl x509 -noout -issuer -dates 2>/dev/null || echo "(aucun certificat lisible)"
+          echo "===== logs backend ====="
+          $DC logs backend --tail 60
+          echo "===== logs caddy ====="
+          $DC logs caddy --tail 40
+          EOSSH

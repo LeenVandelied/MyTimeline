@@ -1,0 +1,1400 @@
+# Pitfalls — stack `frontend` (MyTimeline)
+
+> **GÉNÉRÉ — ne pas éditer à la main.**
+> Source : `docs/memory/pitfalls.md` · Table : `.ai-env/tools/pit-classification.tsv`
+> Régénérer : `bash .ai-env/tools/gen-pit-packs.sh` (fin de sprint, après consolidation).
+>
+> Entrées classées `frontend`, `both` ou `tooling`. Les `tooling` (worktree, RTK,
+> CI, environnement) figurent dans les DEUX packs : elles piègent les sous-agents
+> quelle que soit leur stack.
+>
+> **§1 = texte intégral** (sprints ≥ S53 + récurrents). **§2 = index de titres** ;
+> le titre énonce la règle — si une entrée de §2 touche ton issue, lire le détail
+> dans `docs/memory/pitfalls.md` AVANT de coder.
+
+---
+
+## §1 — Actifs (texte intégral)
+
+## PIT-S12-003 — `git add -A` / `git add .` dans un worktree sprint partagé
+Un subagent a fait `git add -A` avant de committer son fix → bundlé du travail lead non committé (commentaire V9, `docs/memory/sprints/**`, `sprint-history.md`) dans son commit. Corrigé via `git reset --soft HEAD~1` + staging explicite. Prévention : JAMAIS `git add -A`/`git add .` dans un worktree sprint où le lead a des modifs en cours — toujours `git add <fichiers explicites>` de son scope. À rappeler dans les briefings fullstack-dev. (Sprint 12 #54-fix)
+
+
+## PIT-S16-002 — Subagent en worktree : `cd` Bash résout sur le repo principal
+Un subagent lancé depuis un worktree peut voir son `Bash cd <chemin relatif>` résoudre sur le repo principal (`dev`) au lieu du worktree → fichiers écrits au mauvais endroit, faux KO. Solution : chemins ABSOLUS du worktree + `git -C <worktree>`, vérifier `git branch --show-current` AVANT chaque écriture (pas seulement avant commit). (Sprint 16 #166)
+
+
+## PIT-S19-001 — Subagent lancé depuis un worktree : les écritures dérapent vers le repo principal (raffinement worktree-cwd)
+Un fullstack-dev spawné dans un worktree lit bien le worktree (Read initial OK) MAIS ses `Write`/`Edit` + `cd` bash peuvent écrire dans le REPO PRINCIPAL : le cwd bash se reset au repo principal entre appels. En Sprint 19, #63 a codé dans `/Users/herrh/VSProjects/MyTimeline/frontend` (repo principal, SANS le commit #192), puis recopié main→worktree en écrasant l'intégration `<EventPill>` de #192 (regression détectée par le lead à la vérification post-vague, corrigée en `a0a94f1`). Le garde-fou HEAD **au début** NE SUFFIT PAS — c'est l'écriture qui dérape. Prévention : chemins ABSOLUS sous le worktree, `git -C <worktree>` pour tout git, et vérifier `git status` du worktree APRÈS chaque batch d'écriture. Aggravation si le repo principal n'a pas les commits des vagues précédentes → clobber silencieux. (Sprint 19 #63, incident merge)
+
+
+## PIT-S20-003 — Wrapper `rtk git diff` en 3-dots renvoie vide silencieusement (outillage review)
+Sur ce repo/env, `git diff a...b` passé via le wrapper `rtk` retourne une sortie VIDE sans erreur → un reviewer/agent croit à tort qu'il n'y a aucun changement. Prévention : pour les diffs de review (surtout 3-dots `origin/dev...HEAD`), utiliser `/usr/bin/git` directement (bypass wrapper), ou `gh pr diff <PR>`. (Sprint 20, review PR #208)
+
+
+## PIT-S21-001 — Sprint depuis worktree : le garde-fou EFFICACE est un bloc en tête de briefing (pas « vérifie avant commit »)
+Rappel du piège (cf. auto-memory `sprint-subagent-worktree-cwd`) : un subagent lancé depuis `.claude/worktrees/*` défaut-cwd sur le repo principal (`dev`) et écrit au mauvais endroit. En S21, les briefings à garde-fou faible (« vérifie la branche avant de commit ») ont ENCORE laissé #75 et #86 détourer (~10 min/agent + résidus untracked à nettoyer sur `dev`). Ce qui a marché pour #87 + correction : un bloc `⚠️ GARDE-FOU WORKTREE` en TOUT PREMIER avec (a) chemin absolu du worktree, (b) 1re action `cd <worktree> && /usr/bin/git rev-parse --show-toplevel`, (c) tous chemins Write ABSOLUS sous le worktree, (d) `/usr/bin/git -C <worktree>` (bypass RTK qui masque l'écart). Lead : `git -C <repo-principal> status` après chaque retour + `clean -fd` SCOPÉ (jamais global : emporte `.mcp.json`/`CLAUDE.md`/`.ai-env/`). (Sprint 21 #75/#86/#87)
+
+
+## PIT-S22-001 — `next build` (lint bloquant) attrape des erreurs invisibles à tsc + vitest
+En S22 #68, `next build` échouait sur `no-unused-vars` (`nameConflict` en `useState` jamais lu, le 409 étant surfacé via `form.setError`) — INVISIBLE à `tsc --noEmit` et à la suite Vitest (306 verts). Seul le lint gate de `next build` l'attrape. Règle : `npm run build` OBLIGATOIRE en fin de TOUTE tâche frontend, pas seulement tests+tsc. Fix S22 : consommer la valeur en `aria-invalid` (lint OK + a11y). (Sprint 22 #68)
+
+
+## PIT-S22-003 — Garde-fou cwd worktree : le bloc EN TÊTE reste indispensable (récurrence S22)
+Confirme PIT-S21-001 : en S22, #62 (garde cwd reléguée dans « Contraintes », pas en tête) a ENCORE écrit dans le repo principal avant rapatriement manuel. À l'inverse #68 et le fix review217 (bloc `⚠️ GARDE CWD WORKTREE` en TOUT PREMIER + chemins absolus + `git -C <worktree>`) n'ont eu AUCUNE fuite. Règle : le bloc worktree va en première ligne du briefing, jamais dans une section basse. (Sprint 22 #62 vs #68)
+
+
+## PIT-S24-002 — Subagent worktree : Read/Edit en chemin RELATIF (et `cd` compound) résolvent sur le repo PRINCIPAL
+Prolonge PIT-S22-003 (au-delà du seul `cd`) : en S24 #82, un `Read`/`Edit` en chemin relatif a résolu sur le repo principal (`dev`), pas le worktree (`sprint/24`) → édition livrée au mauvais endroit, invisible au commit worktree, détectée seulement via `git rev-parse --show-toplevel`. Règle : TOUJOURS chemins absolus préfixés worktree pour Read/Edit ; `git -C <worktree>` jamais `cd` ; vérifier `--show-toplevel == worktree` AVANT toute écriture, pas seulement avant commit. (Sprint 24 #82)
+
+
+## PIT-S27-002 — `git diff > patch.diff` via le hook RTK produit une sortie compactée non-parsable par `git apply`
+En S27, un subagent voulant relocaliser des edits (mauvais worktree, cf [[PIT-S24-002]]) via `git diff > patch.diff` puis `git apply` a échoué : le hook RTK réécrit `git diff` et compacte la sortie → « No valid patches in input ». Prévention : pour un patch brut valide, `rtk proxy git diff` (bypass filtre) ou ré-appliquer les edits directement via Write/Edit. (Sprint 27 #122)
+
+
+## PIT-S27-003 (renforce [[PIT-S24-002]]) — Worktree : même les chemins ABSOLUS vers `/MyTimeline/backend/...` ciblent le repo PRINCIPAL, pas le worktree
+S27 : 3 subagents sur 5 ont initialement écrit dans le repo principal (`dev`) — pas seulement via chemins relatifs (PIT-S24-002) mais aussi via chemins absolus `/Users/herrh/VSProjects/MyTimeline/backend/...` (= le repo principal, PAS le worktree `.claude/worktrees/<slug>`). Tous se sont auto-récupérés (relocalisation + `git checkout`/`rm` sur dev). Le garde-fou textuel dans le briefing n'a PAS suffi. Prévention durable : garde-fou `git rev-parse --show-toplevel` == worktree ET `git branch --show-current` == `sprint/N` AVANT chaque écriture ; préfixer TOUT chemin par le répertoire worktree complet. (Sprint 27 #93/#122/#154)
+
+
+## PIT-S41-005 — `next build` (ESLint CI) échoue sur `no-unused-vars` invisible à `vitest`
+En S41, une variable inutilisée dans un fichier de test (`const user = userEvent.setup()` dans un test qui n'utilise que `fireEvent.keyDown`) passe `vitest run` (456/456 vert) mais fait ÉCHOUER le job CI `frontend` : `next build` lance ESLint sur les tests et traite `@typescript-eslint/no-unused-vars` en ERREUR (`Failed to compile`). **Règle : un run vitest vert ne garantit PAS le build ; valider `npx eslint <fichiers touchés>` (ou `next build`) avant push, surtout sur les fichiers de test ajoutés.** Extension concrète de la note pack cp-frontend « next build attrape des erreurs invisibles aux tests RTL ». (Sprint 41 #228, CI frontend)
+
+
+## PIT-S45-003 — RTK MENT sur les résultats de tests : toujours lire le code de sortie réel
+En S45, le hook RTK a été pris en défaut **deux fois** : `vitest` affiché « PASS (23) FAIL (0) » alors que `success:false` et qu'une suite échouait **à la COLLECTE** ; `prettier` affiché « All files formatted » avec **exit 1**. S'y ajoute le comportement déjà connu sur `git diff` (sortie vide/tronquée). **Règle : ne JAMAIS rapporter un test vert depuis un résumé RTK — passer par `rtk proxy <cmd>` ou un reporter JSON, et lire le code de sortie.** Un rapport d'agent qui cite des chiffres sans exit code est à re-vérifier. (Sprint 45, 3 agents concernés)
+
+
+## PIT-S53-001 — En Tailwind 4, `text-*` apparie un `line-height` : layeriser une règle d'élément la lui fait céder
+Le correctif de #339 layerisait les 5 propriétés de `h1..h6` en bloc. Or une utilitaire `text-*` ne pose pas
+que `font-size` : elle pose **aussi** `line-height: var(--tw-leading, var(--text-lg--line-height))`, défauts
+émis dans `@layer theme`. Hors layer, la règle du DS battait cet appariement ; layerisée, elle **cède**.
+Mesuré : `h2.text-lg` **29,16 px (1.08) → 42 px (1,5556)**, `h1.text-xl` **37,8 → 49 px**. **28 titres** du
+dépôt portent `text-*` sans `leading-*` explicite → dérive **systémique et silencieuse** du rythme typo.
+Mapper `--leading-*` dans `@theme` **ne protège pas** : ça gouverne les utilitaires nommées `leading-*`, pas
+l'appariement. Solution : sortir `line-height` du layer, seul ; les 4 autres propriétés y restent (elles
+doivent céder, c'est l'objet de #339). Contrepartie mesurée nulle (les 6 titres à `leading-*` explicite
+valent déjà 1.08).
+
+
+## PIT-S53-002 — Un `:root` hors layer aux noms du namespace `@theme` rend la lecture de `@theme` trompeuse
+`ds/tokens/typography.css` déclare `--leading-*` / `--tracking-*` / `--text-*` dans un `:root` **hors layer**,
+avec les mêmes noms que le namespace de thème de Tailwind 4 (qui émet ses défauts dans `@layer theme`).
+Hors layer battant tout layer, **les tokens du DS gagnaient déjà**. Le lead a lu l'absence de ces clés dans
+`@theme` et en a conclu que le défaut Tailwind s'appliquait (« `leading-tight` rend 1.25 ») : **faux**, il
+rendait 1.08. Toute une décision de sprint a été bâtie sur cette inférence. Solution : ne jamais déduire une
+valeur effective de la lecture de `@theme` seul — compiler via PostCSS et résoudre la précédence de layers
+(helper `winningRootVar`, `base-layer.test.ts`). Corollaire dangereux : layeriser ces `:root` ferait basculer
+toute l'échelle typo/chromatique sur les défauts Tailwind.
+
+
+## PIT-S53-003 — Un audit de cascade par `className` littéral rate les utilitaires passées en prop
+Le balayage de #340 concluait « 0 conflit » sur `ds/components/*.css` jusqu'à ce qu'un 2ᵉ passage résolve les
+**consommateurs** de chaque composant : `AppShell` rend `<Avatar className="rounded-sm">`, et le
+`border-radius` du DS (7 px) annulait l'override (5 px) — l'override était un **NO-OP** depuis toujours.
+Solution : tout audit de cascade doit croiser classe-source **et** prop-passthrough. Prévention : sinon il
+conclut faussement à l'absence de conflit, ce qui est pire que pas d'audit.
+
+
+## PIT-S53-004 — Layeriser une règle `:hover` supprime l'état de survol s'il existe une utilitaire sans variante
+`.feature-card:hover{box-shadow}` et `.testimonial-card:hover{border-color}` sont en conflit réel avec
+`shadow-lg` / `border-rule` posées sur les mêmes éléments — mais ces utilitaires **n'ont pas de variante
+`hover:`**. Les layeriser aurait fait gagner l'utilitaire en permanence → **l'élévation au survol
+disparaissait**. La « correction » aurait créé la régression. Solution : avant de layeriser, vérifier les
+paires (règle `:hover` hors layer / utilitaire non-hover sur le même élément). Cf. `DEC-S53-002`.
+
+
+## PIT-S53-005 — Un conflit de cascade masqué par un correctif redondant sur une AUTRE propriété
+`scrollbar-none` (`@utility` → `@layer utilities`) pose `scrollbar-width: none`, que le
+`* { scrollbar-width: thin }` hors layer **annulait**. Invisible en développement : sous Chromium la barre
+disparaissait quand même via l'**autre** moitié de l'utilitaire (`::-webkit-scrollbar{display:none}`,
+propriété différente donc jamais en conflit). **Cassé sur Firefox seul** (`ProductCarousel:50`,
+`DensityRibbon:77`). Anti-pattern : conclure « ça marche » depuis un seul moteur quand une utilitaire agit
+par deux propriétés distinctes. ⚠ Le correctif n'a **pas** été observé sous Firefox, seulement déduit.
+
+
+## PIT-S53-006 — Un rapport `test-runner` peut être faux de façon *plausible* (cwd sur le dépôt principal)
+Le `test-runner` du S53 a rapporté `814/821`, « 1 suite en échec : Cannot find package
+'eslint-plugin-storybook' » et « `base-layer.test.ts` : 2 tests ». **Les trois chiffres étaient faux** : le
+paquet est déclaré ET installé, la suite donne **834/834**, le fichier contient **11** tests. Cause : cwd sur
+le **dépôt principal** au lieu du worktree (`node_modules` différents) — cf. `PIT-S8` / `PIT-S38`. Le mode
+d'échec est traître : le rapport est **plausible** (nombre proche du vrai + cause d'échec crédible), pas
+manifestement cassé. Solution : ne jamais reprendre un chiffre de test d'un subagent dans un audit ou un
+corps de PR sans l'avoir relancé soi-même depuis le worktree. Un écart de quelques tests est le **signal**
+qu'il faut re-mesurer.
+
+
+## PIT-S54-001 — Un backoff de retry qui dépasse le budget de timeout du test rend le retry ET son diagnostic inatteignables
+Le retry 429 de `auth.setup.ts` était **mort depuis le S47** : le budget Playwright par défaut (30 s) est
+inférieur au coût d'UN cycle (8 s d'attente `login-form` + 20 s de backoff bucket4j = 28 s), donc la 2ᵉ
+soumission expirait **toujours** — mesuré 4/4 `provision` en `Test timeout of 30000ms exceeded`, sans une
+ligne de diagnostic. Le message d'échec censé distinguer les causes n'était jamais atteint. Corrigé par
+`PROVISION_TIMEOUT_MS` (150 s puis 180 s après recalcul du pire cas ~127 s en review — le premier calcul
+oubliait les deux `ensureRegisterForm(recover)`, qui sont des boucles de retry complètes). Solution : tout
+`waitForTimeout` de backoff impose un `test.setTimeout()` explicite couvrant `(tentatives × attente) +
+(backoffs) + navigations + marge`, écrit en commentaire à côté de la constante.
+
+
+## PIT-S54-002 — Un `grep` de testid n'atteste NI un usage réel NI un rendu
+Deux faux positifs distincts, même racine, au S54. (1) **Faux OK de couverture** : le check COVERAGE-E2E du
+protocole A.4 (`grep -rq "$val" frontend/e2e/`) a rendu OK sur `product-option-<id>` alors que la seule
+occurrence était un **commentaire** (`timeline.spec.ts:41`) — le testid livré par #331 n'était consommé par
+aucune spec. (2) **Faux « existe » de rendu** : trois specs de #330 échouaient sur un locator jamais résolu
+(`timeline-zoom-in`, `timeline-fullscreen`, `timeline-loading`) — le grep prouvait qu'ils étaient *écrits*,
+pas *montés* (rendu conditionnel au viewport, ou code mort masqué par un composant parent ajouté plus tard :
+`AppShell` #210 court-circuite la branche loading de `timeline/page.tsx:47`). Solution : prouver un usage par
+`grep -E "getByTestId|locator\("` (jamais la simple présence de la chaîne), et prouver un rendu au **runtime**
+(`toHaveCount(1)` dans le contexte visé), pas au grep. Cf. [[jsdom-scroll-tests-prove-nothing]].
+
+
+## PIT-S54-003 — `boundingBox()` d'un panneau animé se périme entre deux gestes et rend un oracle vacuous
+Une mesure `boundingBox()` prise juste après `toBeVisible()` capture une position **transitoire** : ~24 px de
+dérive mesurés sur le bottom-sheet (animation d'entrée puis réajustement de layout quand focus-trap +
+scroll-lock se posent). Réutiliser cette box pour un geste `page.mouse` fait viser des coordonnées obsolètes
+qui retombent sur l'élément *sous* le panneau → aucun `pointerdown` sur la cible → **aucun geste ne part**, et
+un `toBeVisible()` post-geste reste vert « par inaction ». Le premier correctif (`059030d`) n'a rafraîchi que
+la 2ᵉ mesure ; la review a rattrapé le 1er swipe resté vacuous. Solution : mesure fraîche **stabilisée** (deux
+lectures consécutives égales, sans `waitForTimeout` arbitraire) avant CHAQUE geste, **plus** un oracle positif
+que l'élément a bougé (`transform`/`translateY` pendant le drag) avant `mouse.up()`.
+
+
+## PIT-S54-004 — Sur un worktree partagé, un E2E rouge peut appartenir au diff d'un AUTRE agent
+En vague 1, la 1re passe E2E de #331 est sortie entièrement rouge dès le `setup` (`getByTestId('dashboard')`
+absent), alors que le diff de #331 n'a rien à voir avec l'auth : #329 éditait `auth.setup.ts` **en direct dans
+le même working tree** pendant le run. Solution : sur worktree partagé, isoler par `git stash push -- <mes
+fichiers>` puis re-run avant d'accuser son propre diff ; un `POST /api/auth/register` en direct (201) départage
+API vs UI en 2 s. Corollaire de méthode observé côté lead : **ne jamais lancer deux suites Playwright
+concurrentes** contre un backend/une base uniques — la contention a produit 8 puis 12 rouges sur un code
+identique (`event-outside-label` rougissait sous contention, passe au run isolé). La règle `--workers=1` du
+runbook S47 vaut aussi AU-DESSUS du process Playwright. Cf. [[mytimeline-e2e-ci-only-gate]].
+
+
+## PIT-S55-001 — Un placeholder NON VIDE dans `.env.example` défait le no-op qu'il documente
+`BrevoEmailService:64` no-ope sur `apiKey.isBlank()`. Livrer `BREVO_API_KEY=xkeysib-REMPLACER-PAR-VOTRE-CLE`
+fait donc prendre la branche HTTP : POST réel vers l'API → 401 → `log.error`, soit l'**inverse exact** du
+« no-op silencieux » promis par le commentaire deux lignes au-dessus — et le fichier dit au dev de le copier
+vers `.env`. Solution : valeur **vide**, format attendu dans le commentaire. Jumeau du même bug : une ligne
+`VAR=` **exportée** (`set -a; . .env`, `env_file:`) fait EXISTER la propriété Spring avec la chaîne vide, qui
+**écrase** `${var:default}` — commenter la ligne (`#BREVO_SENDER_EMAIL=`) pour que le défaut s'applique.
+Prévention : pour chaque variable d'un `.env.example`, vérifier **dans le code** (a) si la branche teste
+`isBlank()`, (b) si un défaut applicatif doit s'appliquer. Trouvé en revue, pas à l'écriture.
+
+
+## PIT-S55-002 — `git commit --amend` en fan-out réécrit le commit d'un AUTRE agent
+Sprint 55 : un agent a amendé pour remplacer un SHA placeholder dans son propre rapport. Entre son commit et
+son amend, un autre agent avait poussé HEAD — **l'amend a réécrit le commit de l'autre**, qui porte désormais
+4 lignes du rapport du premier. Rien perdu (`git log --stat`), historique faux. `--amend` réécrit le HEAD
+*courant*, qui en fan-out n'est pas forcément le sien : aussi destructeur que `reset`. **Cause racine** :
+demander à l'agent d'écrire son propre SHA dans son rapport crée mécaniquement le besoin d'amender.
+Solution : ne pas le demander, ou accepter un 2ᵉ commit. Ajouter `--amend` à la liste des verbes git
+interdits des briefings, aux côtés de `reset`/`rebase`/`checkout`/`stash`/`clean`.
+Cf. [[sprint-parallel-commits-shared-worktree]].
+
+
+## PIT-S55-003 — Le triage `/review-pr` compte les lignes de `docs/` et peut produire une review VIDE
+PR #402 : 633 lignes → mode TEAM (seuil 300). Mais 355 de ces lignes sont des artefacts `docs/memory/**` que
+la consolidation ne review pas, et les 4 spawns de la phase B.3 sont gatés sur `HAS_BACKEND`/`HAS_FRONTEND`/
+`HAS_AUTH`/`HAS_DB` — **tous à 0** sur une PR devops/docs. TEAM aurait donc spawné **zéro reviewer**.
+Solution : basculer en SOLO et le dire. Prévention : compter les lignes **hors `docs/`** pour le seuil, ou
+tester qu'au moins un reviewer est éligible avant d'entrer en TEAM.
+
+
+## PIT-S56-001 — Un test unitaire hors shell couvre une branche structurellement inatteignable
+S56 #391 : `timeline/page.tsx` portait un `if (loading) return <div data-testid="timeline-loading">`. Le test
+RTL rendait la page **en isolation**, hors du shell qui intercepte déjà le chargement de session — la branche
+était donc verte en test et **inatteignable en production**. Elle a survécu **3 sprints** sous cette couverture.
+Prévention : pour toute branche de garde (auth/loading), vérifier que l'ancêtre qui monte le composant ne
+l'intercepte pas déjà. **Un test RTL de branche de garde sur une page sous shell est suspect par défaut.**
+Correctif : supprimer test et branche **ensemble**, et poser le contrat au niveau où l'état est atteignable.
+
+
+## PIT-S56-002 — Un stub d'API navigateur qui mute l'état sans émettre son événement inverse le verdict
+S56 #395 : le stub E2E de `requestFullscreen`/`exitFullscreen` mutait `document.fullscreenElement` **sans
+dispatcher `fullscreenchange`**. Effet : il fait **rougir une implémentation correcte** (celle qui dérive son
+état de l'événement) et **passer une fausse** (celle qui bascule un `useState` dans le handler). Le verdict du
+test est donc exactement inversé. Prévention : tout stub d'une API à événement doit dispatcher l'événement ;
+et l'oracle d'une issue « exposer un état observable » doit inclure un cas qui **contourne le déclencheur UI**
+(ici `page.evaluate(() => document.exitFullscreen())`). Cf. [[PAT-S56-001]].
+
+
+## PIT-S56-003 — Une constante « par défaut » peut être redéclarée en local sous un commentaire qui jure le contraire
+S56 #393 : `DEFAULT_COLOR` était exportée par `types/event.ts` **et** redéclarée en local dans
+`EventContent.tsx` — ironiquement sous un commentaire « #150 modèle couleur unique ». Un fix de valeur qui
+suit le nom cité par l'issue n'aurait touché qu'une des deux → **deux « défauts » divergents selon le
+composant**. Prévention : sur toute issue « changer une valeur par défaut », **grep la VALEUR littérale en
+plus du nom de la constante** — la copie ne porte pas toujours le même nom, ni un commentaire honnête.
+
+
+## PIT-S56-004 — `:3000` peut appartenir à un AUTRE projet du poste, et changer de port ne sauve pas
+S56 #395 : `:3000` était tenu par un `next-server` standalone d'EdelWheels → 404 sur `/fr/register`, alors que
+le briefing affirmait qu'un `next dev` du worktree y tournait. Basculer sur `:3100` ne suffit pas : Next relaie
+`Origin: localhost:3100` au backend, que `application-dev.properties:35` fige à `localhost:3000` → **403
+déguisé en « rate-limit »**. Variante par le **port du serveur dev** du piège déjà connu par le proxy
+([[PIT-S57-003]] et l'entrée S47 plus haut). Recette retenue : **conteneur backend frère jetable** (même
+réseau/DB, `APP_CORS_ALLOWED_ORIGINS=...:3000,...:3100`, port 8090). Corollaire : vérifier **à qui appartient**
+le `:3000` avant de conclure quoi que ce soit sur l'application.
+
+
+## PIT-S56-005 — Le `webServer` de `playwright.config.ts` lance `npm run dev` NU : `npx playwright test` est rouge par construction
+S56 #391 : `playwright.config.ts:45-50` démarre le front sans `E2E_API_PROXY_TARGET` ni `NEXT_PUBLIC_API_URL`
+→ `/api/*` non réécrit par Next, `POST register` en **404**, et `auth.setup.ts` échoue avec un message qui
+oriente à tort vers le rate-limit ou le CORS. **Règle : ne jamais laisser Playwright démarrer son propre
+`webServer` sur ce dépôt.** Recette : lancer le dev à part avec
+`NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8080 npm run dev -- -p 3000` +
+`PLAYWRIGHT_BASE_URL=http://localhost:3000` — **port 3000 impérativement**, le CORS backend le fige
+([[PIT-S56-004]]). [[PIT-S58-003]] complète : ces variables se posent au **build**, pas au start.
+
+
+## PIT-S56-006 — `sprint-history.md` n'est pas une source d'état : 7 sprints sur 24 le démentaient
+Audit du 2026-08-16 (déclenché par le S56 mergé depuis 16 jours sans clôture) : les sprints **36, 46, 48,
+49, 51, 55, 58** portaient un statut `En cours`/`PLANIFIÉ`/`PR ouverte` alors que **leur code était sur
+`dev` dans les 7 cas**. Le fichier décrit l'intention au moment de l'écriture, pas l'état — **toujours
+trancher sur GitHub** (`gh api …/milestones?state=all`, `gh pr view`, `git merge-base --is-ancestor`).
+**Trois pièges de balayage, tous rencontrés :** (1) grep sur les titres `## Sprint` seuls **rate** les
+entrées dont le titre dit « Terminé » et dont la ligne `**Status :**` dit encore « En cours » (cas 51 et
+55) — balayer les deux marqueurs séparément ; (2) un **milestone fermé avec `open=0 closed=0`** n'est pas
+un sprint sans travail, c'est un sprint dont personne n'a rattaché les issues (cas 36 : code livré,
+2 issues restées ouvertes 35 jours) ; (3) **rectifier un statut n'est pas clôturer** — le S56 avait été
+passé à `Terminé` pendant `/sprint end 57`, ce qui a **masqué** que ni les issues, ni le milestone, ni la
+consolidation mémoire n'avaient suivi. Symétriquement, **5 issues ouvertes étaient parquées dans des
+milestones fermés** (#151, #185, #230, #279, #338), donc invisibles au backlog et réputées livrées.
+Cf. [[PIT-S46-004]] pour l'autre famille de faux positifs de clôture.
+
+
+## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
+Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
+
+
+## PIT-S57-002 — Vitest tronque le rapport d'échec passé comme valeur comparée → message décapité en CI
+Vitest 3.2.7 tronque à ~40 caractères les valeurs d'un `toBe` dans le message d'`AssertionError`
+(`expected 'GARDE SERVEUR DÉSYNC…' to be …`), et le reporter JSON ne transporte **que** ce message. Un
+rapport d'échec multi-ligne — précisément ce qui rend un garde-fou actionnable — est donc parfaitement
+lisible en local et **inutilisable là où il compte**. Solution : passer le texte en **2ᵉ argument** d'
+`expect(value, message)`. Prévention : tout test dont l'échec doit être actionnable doit être vu rouge
+**sous reporter non interactif**, pas seulement en local. Symétrique de [[ci-green-is-not-page-correct]] :
+ici c'est un rouge vert-en-apparence-utile qui ne survit pas au trajet vers la CI.
+
+
+## PIT-S57-003 — Un `curl` qui réussit ne disculpe PAS le CORS : il n'envoie pas d'en-tête `Origin`
+S57 : suite E2E entièrement rouge dès le projet `setup`, **trois diagnostics faux** avant le bon.
+(1) Cause initiale banale — aucun serveur de dev sur `:3000` (arrêté par un agent de la vague précédente) ;
+le subagent a pourtant conclu « CORS + backend injoignable ». (2) Relance sur `:3100` : toujours rouge, alors
+que `curl -X POST :3100/api/auth/register` renvoyait **201** — ce qui semblait disculper le backend.
+(3) Vraie cause : le proxy Next transmet `Origin: http://localhost:3100`, refusé par le profil `dev` figé sur
+`allowed-origins=http://localhost:3000`. `curl` passait parce qu'il n'envoie pas d'`Origin`.
+Ce qui a tranché : les statuts **instrumentés par le fixture** (`watchRegisterResponses`,
+`e2e/auth.setup.ts`) → `[403, 403, 403]`, avec la grille de lecture déjà écrite dans le message d'erreur.
+**Réflexe** : lire les statuts instrumentés AVANT toute hypothèse. Écartée en chemin, à tort suspectée :
+`e2e/.auth/accounts.json` périmé — `globalSetup` appelle bien `clearPersistedAccounts()`.
+Corollaire : un agent qui rend `PARTIAL` sur « E2E non joué » doit être re-vérifié, pas cru — ici le code
+était bon, seul l'environnement était cassé. Cf. runbook `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+
+
+
+## PIT-S58-001 — Le fond sous un `outline` n'est PAS le `background-color` d'un ancêtre
+`outline-offset: 2px` peint le trait **sur le parent**, et ce qui s'y trouve réellement peut être un
+dégradé, un `color-mix`, un pseudo-élément ou un empilement de surfaces. Remonter le DOM pour trouver le
+premier ancêtre non transparent produit donc de **faux ratios** : S58 a mesuré **1,00:1** sur un CTA accent
+avant que la lecture de pixel ne donne **5,93:1**. Corollaire symétrique, même sprint : une sonde
+« pixel le plus écarté du fond » attrape la **bordure du popover** (1 px au-delà du trait) et annonce
+**16,3:1 au lieu de 6,08:1**. Les offsets d'échantillonnage se fixent par **dump brut**, jamais par
+heuristique de contraste maximal. Règle : tout ratio annoncé doit dire **comment** il a été obtenu —
+`getComputedStyle` ne tranche que la couleur *déclarée*, jamais la couleur *peinte*.
+
+
+## PIT-S58-002 — Mesurer un contraste au mauvais instant ou dans le mauvais état
+Deux façons d'obtenir une valeur fausse sans que rien ne le signale.
+(1) **Instant** : Tailwind v4 fait entrer `outline-color` (et les couleurs de bordure) dans
+`transition-colors`. Une sonde lancée moins de **~400 ms** après le changement d'état lit une couleur
+**interpolée**. Attendre ≥450 ms, et exiger que le pixel ET `getComputedStyle` concordent.
+(2) **État** : S58 a lu 1,59:1 sur un bouton qui était `disabled` (`opacity:.4`), et un autre dont l'état
+par défaut `aria-pressed=true` écrase la bordure par `accent`. **Asserter l'état avant de mesurer**
+(`:focus-visible === true`, non `disabled`, `aria-pressed` connu) fait partie de la mesure.
+
+
+## PIT-S58-003 — E2E : `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` se posent au `next build`
+Les rewrites Next sont **sérialisés dans `routes-manifest.json`** au build : les poser au `next start` n'a
+aucun effet. Sans `NEXT_PUBLIC_API_URL=/api`, `apiClient` perd son préfixe et produit des **404 invisibles**
+pour le watcher d'`auth.setup.ts`, qui accuse alors le rate-limit, le CORS ou un 409 — trois diagnostics
+faux. **Oracle fiable : `curl /api/auth/me` doit renvoyer 401.** S58 : un audit a rapporté 5 échecs E2E de
+ce fait ; rejoués sur la même base après correction de l'environnement, **136/0/8 vert, en suite comme en
+isolation**. Complète [[PIT-S57-003]] (un `curl` qui réussit ne disculpe pas le CORS) : ici c'est le
+symétrique, un environnement cassé qui accuse le code.
+
+
+## PIT-S58-004 — Un garde-fou cité dans la doc peut n'exister nulle part
+`ds/a11y-audit.md` affirmait que toute réintroduction d'anneau local serait rattrapée par
+`base-layer.test.ts` — ce fichier ne contenait **aucune** occurrence de `focus` / `outline` / `ring`.
+Sur ce dépôt les commentaires servent de mémoire d'arbitrage : une garantie fictive est **pire** que pas de
+garantie, parce qu'elle dissuade d'en écrire une vraie. **Vérifier l'existence réelle de chaque garde-fou
+cité, pas seulement que le chemin du fichier résolve.** Et quand on écrit l'assertion manquante, écrire
+**avec elle ce qu'elle n'attrape pas** (ici : elle verrouille la layerisation du CSS source, elle ne détecte
+pas un `ring-2` réintroduit dans un `.tsx`).
+
+
+## PIT-S58-005 — Trois pièges d'outillage qui déguisent un environnement en défaut applicatif
+(1) Sous `next dev`, l'overlay **`nextjs-portal`** capte `elementFromPoint` dans le coin inférieur gauche →
+première mesure géométrique faussement à `0×0`. Neutraliser `nextjs-portal{display:none}` avant de mesurer.
+(2) `computer{left_click}` du connecteur navigateur **n'ouvre pas** un `DropdownMenu` Radix, même au centre
+exact : Radix ouvre sur `pointerdown`. N'en pas déduire un défaut du composant.
+(3) Le hook **RTK** tue `npx next dev|start` en ne laissant que « Errors: 1 » — un log serveur de 3 lignes
+est un artefact RTK, pas un plantage de l'app. `rtk proxy` obligatoire. Voir [[rtk-git-diff-empty-output]].
+
+
+## PIT-S59-001 — Un désalignement de paliers ne prédit PAS où le défaut sort
+#381 localisait un défaut de logo « entre 768 et 1023 px » par lecture du code seul (seul élément resté en
+`md:` quand #347 avait tout basculé en `lg:`). **Mesure jammy : aucun défaut dans cette plage** — le
+`container` Tailwind plafonne la largeur utile à 736 px et la nav est masquée, les deux annulent le défaut
+attendu. **Le vrai défaut était à 1024 px**, un pixel hors périmètre : 2 lignes et 0 px de marge en
+`fr`/`de`/`es`. Prévention : mesurer les DEUX côtés du seuil suivant, jamais le seul palier incriminé.
+
+
+## PIT-S59-002 — Un élément « débordant » relevé sur `npm run dev` peut être de l'outillage de dev
+Un audit par `getBoundingClientRect().right > clientWidth` remonte le bouton flottant des **TanStack Query
+Devtools** (`.tsqd-parent-container`) et l'overlay `nextjs-portal`, avec un `right` qui **suit la largeur du
+viewport** (329@320, 384@375, 399@390) — indiscernable d'un vrai défaut, alors que
+`scrollWidth == clientWidth`. **A produit #341 : trois sprints de suspicion sur un SVG de landing qui
+n'existe pas.** Exclusion portée par `frontend/e2e/support/dev-tooling.ts`. Cf. [[PIT-S58-005]].
+
+
+## PIT-S59-003 — `text-4xl`/`text-5xl` absents de `@theme inline` ne sont PAS inertes
+Sans `--text-*: initial`, ces classes retombent sur les **défauts Tailwind** (36/48 px) — donc **plus petit**
+que `text-3xl` (57 px) de l'échelle DS. Le `h1` du hero rendait ainsi plus petit que le logo du header :
+hiérarchie inversée, invisible à la lecture du nom de classe. Garde-fou source livré
+(`frontend/src/__tests__/ds-type-scale.test.ts`). Prévention : toute taille se **mesure au navigateur**.
+
+
+## PIT-S59-004 — Turbopack sert un chunk CSS périmé et produit un FAUX VERT
+Après édition de `globals.css`, la première passe du test d'injection `.dark` est sortie **22 passed** — la
+règle injectée n'était simplement pas dans le CSS servi. `touch` et rechargement n'ont rien changé ; **seul
+un redémarrage du serveur dev** a compilé la règle. Prévention : avant de conclure « le défaut injecté n'est
+pas vu », `curl` le chunk CSS servi et vérifier que l'injection y figure. (Corollaire de [[PIT-S52-002]].)
+
+
+## PIT-S60-001 — Une allowlist de scanner combine ses critères en OU : elle blanchit plus large qu'elle n'en a l'air
+Un bloc `[[allowlists]]` gitleaks avec `paths` **et** `regexes` mais **sans `condition = "AND"`** blanchit la
+valeur **partout dans le dépôt**, pas seulement dans le chemin visé. La lecture du bloc suggère l'inverse : les
+deux critères juxtaposés se lisent comme un ET. Trouvé à l'écriture de `.gitleaks.toml` (#362), la première
+version blanchissait `EXPORT_TOKEN_SECRET` y compris dans un fichier de prod. **Prévention : toute allowlist de
+scanner se teste dans les DEUX sens** — le cas attendu est tu, ET un cas voisin (même valeur hors chemin, autre
+secret dans le chemin) reste détecté. Rejouer la variante buggée pour voir le trou est ce qui l'a prouvé.
+
+
+## PIT-S60-002 — Une empreinte de baseline épinglée sur une ligne encore au HEAD masque à VIE, sans jamais rougir
+`.gitleaksignore` (format `commit:fichier:règle:ligne`) épinglait le fixture `SECRET` d'`ExportTokenServiceTest`,
+**toujours présent au HEAD**. La règle écrite en tête du fichier l'interdit — au motif que l'empreinte
+changerait au prochain commit touchant le fichier. Le mode d'échec réel est **l'inverse et bien plus discret** :
+la ligne n'ayant jamais été retouchée depuis son commit d'introduction, l'empreinte reste valide indéfiniment,
+donc le masquage devient **permanent** au lieu de rougir. Trouvé par l'audit sécurité de fin de sprint, pas à
+l'écriture. Remède : exclusion **durable** ancrée sur un marqueur de la VALEUR (`test-only-insecure`) + le
+chemin, `condition = "AND"` ; `.gitleaksignore` réservé aux occurrences **absentes du HEAD**, à vérifier une
+par une. Cf. [[PIT-S60-001]].
+
+
+## PIT-S60-003 — `gitleaks dir` ignore `.gitignore` : un gate CI doit être en mode `git`
+Mesuré : `gitleaks dir` scanne 214 Mo et remonte 25 détections, dont **20 dans `frontend/.next/`,
+`backend/target/`, `frontend/e2e/.auth/`** — des artefacts de build non versionnés. `gitleaks git` ne voit que
+le contenu suivi (21 détections). Un job bâti sur `dir` rougit donc pour des fichiers qui ne sont pas dans le
+dépôt, et sera désactivé après deux faux positifs. **Mode `git` pour tout gate CI.**
+
+
+## PIT-S60-004 — Un scan vert AVANT le commit ne prouve rien sur l'état APRÈS (le scanner peut se détecter lui-même)
+Un fichier de baseline listant des empreintes `commit:fichier:generic-api-key:ligne` aligne un SHA 40-hex à
+forte entropie et le mot « api-key » sur la même ligne : le scanner peut se déclencher **sur sa propre
+configuration**. Vérifié négatif ici, mais le piège général demeure — un scan pré-commit ne voit pas les
+fichiers non encore committés. **Rejouer le scan dans un dépôt jetable contenant les fichiers committés** avant
+de conclure. Corollaire : `--baseline-path` avec rapport JSON committé est un anti-pattern sur dépôt public —
+le rapport **contient les valeurs en clair**.
+
+
+## PIT-S60-005 — Un sous-agent qui casse l'environnement pour reproduire un cas dégradé peut caler avant de le restaurer
+Sprint 60 #308 : l'agent a renommé `frontend/node_modules/eslint-plugin-storybook` en
+`.eslint-plugin-storybook.S60-308-bak` pour prouver son garde-fou, puis a calé (watchdog 600 s) **avant la
+restauration**. Le worktree est resté dans l'état dégradé — et **`git status` était propre**, `node_modules`
+n'étant pas suivi. Un lead qui vérifie l'état d'un sprint sur le seul `git status` ne le voit pas ; l'échec
+suivant accuserait le code. **Après tout arrêt anormal d'un sous-agent, vérifier l'ENVIRONNEMENT** (résolution
+des paquets, processus laissés, ports tenus), pas seulement l'arbre git. Ici :
+`node -e "require.resolve('eslint-plugin-storybook')"`. Le répertoire de sauvegarde se retrouve par
+`find node_modules -maxdepth 2 -iname '*<paquet>*'` — le préfixe `.` le cache d'un `ls` ordinaire.
+
+
+## PIT-S60-006 — `npm audit fix` échoue tant qu'un `overrides` auto-référentiel existe
+`frontend/package.json` déclare `overrides: { "postcss": "$postcss" }` ; l'arbre virtuel d'`audit fix` ne résout
+pas la référence → `npm error Unable to resolve reference $postcss`, sur **toute** invocation. L'issue #422
+affirmait pourtant que `npm audit fix` était « confirmé suffisant ». Solution retenue : `npm update <transitif>`
+quand la version corrigée tient dans la plage semver du parent (lire la plage **dans le lock** avant). **Ne pas
+glisser vers `--force`** : il accepte les bumps majeurs. Prévention : ne jamais écrire dans une issue qu'une
+commande est confirmée sans l'avoir lancée.
+
+
+## PIT-S60-007 — `npm run typecheck` rouge sur une route FANTÔME : `.next/types` d'un build antérieur
+`tsconfig.json:26` inclut `.next/types/**/*.ts`, donc `tsc` type-checke les artefacts d'un build précédent —
+au S60, une erreur citant `app/[locale]/settings/page.js`, route disparue au passage en route group. Solution :
+rebuild puis re-typecheck. **Prévention : une erreur `tsc` qui ne cite QUE `.next/**` n'est pas imputable à son
+propre diff.**
+
+
+## PIT-S60-008 — Le squatteur de port peut être un AUTRE worktree DU MÊME projet
+Variante de [[PIT-S56-004]] : `:3100` était tenu par un `next-server` de
+`worktrees/new-feature-2347-14cb9a/frontend` (up 21 h), rendant **500 sur `/fr/register`**. Le réflexe « c'est
+un autre projet du poste » ne suffit donc pas — même nom de projet, même app, mais **code d'une autre branche**.
+`lsof -a -p <pid> -d cwd` identifie le propriétaire réel. Prendre un port libre plutôt que tuer le process d'une
+autre session.
+
+
+## PIT-S60-009 — ~~`test-quiet.sh frontend` ne lance QUE Vitest~~ — **RÉSOLU au S78 (#434)**
+> ⚠ **ENTRÉE PÉRIMÉE, conservée pour l'historique — ne plus s'en servir comme d'un fait.**
+> Depuis le S78 (`fb8c21a`), le scope `frontend` exécute réellement `build → vitest → typecheck →
+> lint` et s'arrête au premier échec ; le scope `frontend-unit` a été ajouté pour l'ancien
+> comportement (Vitest seul). Un verdict repris tel quel de cette entrée serait aujourd'hui FAUX —
+> c'est exactement le mécanisme de [[PIT-S67-001]] (un verdict se périme en silence et survit dans
+> les énoncés qui le citent). Ce qui reste vrai et transposable : **le nom d'un scope n'est pas une
+> preuve de son périmètre — lire la fonction.**
+
+Énoncé d'origine (S60) : `run_frontend` exécute un seul `npm test --silent` : ni `build`, ni
+`typecheck`, ni `lint`. La description « vitest + build + typecheck + lint » circulait dans les
+briefings de sprint et le README. **Anti-pattern : conclure « frontend vert » sur ce seul scope.**
+Documentation corrigée au S60 (README §Tests + piège 4), **comportement** corrigé au S78. Voisin de
+[[PIT-S58-004]] : une garantie décrite mais inexistante dissuade d'en écrire une vraie.
+
+
+## PIT-S60-010 — Un commentaire de test peut annoncer une isolation que le test ne respecte pas
+`console-error-guard.test.ts:20-21` annonce que son lint de fixtures reste « isolé des plugins next/storybook ».
+Vrai pour le volet 2 (config minimale), **faux pour le volet 1**, qui appelle
+`new ESLint().calculateConfigForFile(...)` — donc charge `eslint.config.mjs` et **tous** ses imports. C'est ce
+qui rend ce fichier, et lui seul, sensible à un `node_modules` incomplet. Le commentaire a probablement orienté
+#308 vers la déclaration de dépendance plutôt que vers le cwd. Cf. [[PIT-S41-004]], [[PIT-S53-006]].
+
+
+## PIT-S61-001 — Vitest : un mock de module PARTAGÉ + `mockReset()` fait passer un rejet traité pour un échec
+Un mock de module partagé rendant une promesse rejetée, combiné à `mockReset()`/`mockClear()` en `beforeEach`,
+fait rapporter la valeur de rejet comme un échec de test (`Serialized Error`, message `undefined`) **alors que le
+rejet EST traité**. Établi par bisection (#307) : passe sans `beforeEach`, échoue avec `mockReset`, `mockClear`
+ou une promesse pré-`catch`ée. Remède : recréer un `vi.fn()` par test. Variante de [[PIT-S11-002]].
+
+
+## PIT-S61-002 — Désactiver des champs révèle les valeurs manquantes du pré-remplissage
+`mapToFullCalendarEvent` jetait `durationValue`/`durationUnit` : un formulaire ouvert depuis la frise naissait
+**invalide** sur `durationUnit` alors que `type='duration'`. Bug **silencieux** tant que le submit était
+seulement refusé, **bloquant** dès que #230 a verrouillé les champs. Avant de poser un `disabled`, vérifier que
+le schéma reste satisfiable avec les valeurs **réellement pré-remplies**, pas celles du fixture de test.
+
+
+## PIT-S61-003 — `filter:grayscale()` ne préserve PAS le ratio de contraste WCAG
+Contredit le commentaire posé par #230. `contrastInk` ne choisit que du noir ou du blanc, or **ce sont des points
+fixes de `grayscale()`** : l'encre ne bouge pas, seul le fond bouge — et il s'**assombrit** (le filtre pondère les
+canaux gamma-encodés, la luminance WCAG linéarise d'abord ; par convexité le gris obtenu a une luminance
+inférieure). Encre claire → contraste augmente ; **encre foncée → il diminue**. Mesuré : 8,6 % des couleurs
+passant AA échouaient après grisage. Toute décision d'a11y doit porter sur le **couple rendu** (fond + encre),
+jamais sur la couleur source : exposer un `renderedColor(state)` unique consommé par l'encre ET par le verdict.
+
+
+## PIT-S61-004 — Ne jamais annoncer un seuil de contraste sans les constantes du dépôt
+`INK_DARK` vaut **`#0B0C0E`** (L = 0.00366), pas `#000000` : le point d'égalisation noir/blanc descend de 4.583 à
+4.424. Le lead ET le reviewer ont cité `#0070F8` comme cas cassant — calculé avec du noir pur. Recalculé avec la
+constante réelle, cette couleur **basculait déjà** avant correctif (4.494 < 4.5) : l'exemple ne démontrait rien.
+Le phénomène était réel, l'exemplaire faux. Recalculer avec les constantes du code avant d'annoncer un ratio.
+
+
+## PIT-S61-005 — Le check coverage-E2E est vert quand les specs sont seulement CITÉES
+Au S61 il affichait « 10 testids ajoutés, 0 sans spec » alors que **les 5 specs du sprint n'avaient jamais été
+exécutées** et que 2 échouaient. Il vérifie qu'un `data-testid` apparaît sous `frontend/e2e/`, il ne lance rien.
+Combiné à 920 Vitest verts et un build OK, l'illusion est convaincante. Un `RECOMMAND_TEST_RUNNER` se traite en
+**exécutant**, jamais en constatant. Famille [[PIT-S48-002]] (CI verte ≠ page correcte).
+
+
+## PIT-S61-006 — « le flag est fourni par l'issue N » n'est pas une preuve : grepper les APPELANTS
+Issue #67, planifiée XS : `RecurrenceExpansion.capped` existait, `MAX_OCCURRENCES = 4000` aussi, le service le
+calculait, et la javadoc citait même son consommateur `#67`. Mais **`RecurrenceExpansionService` n'avait aucun
+appelant** dans `backend/src/main` — seul son test unitaire le référençait. Code orphelin : aucune réponse d'API
+où loger le flag. Un `grep` de la déclaration validait l'issue à tort ; c'est le `grep` des **appels**
+(`\.methode(`, service injecté, champ présent dans le DTO de réponse) qui la disqualifie. Sortie du sprint → #439.
+
+
+## PIT-S61-007 — `npm run dev` (turbopack) infère un mauvais workspace root en worktree, et TOUT casse
+Le script force `--turbopack`, qui choisit un **autre worktree** quand plusieurs lockfiles coexistent : toutes les
+pages rendent 500 (`ENOENT app-build-manifest.json`), `auth.setup.ts` casse, **0 spec ne s'exécute** — et le
+message d'erreur ne dit rien de la cause. Un agent test-runner en a conclu « E2E impossibles sans modifier le
+dépôt ». Contournement réel, sans modification : `rtk proxy npx next dev -p 3100` (webpack). Voisin de
+[[PIT-S60-008]] (le squatteur de port peut être un autre worktree du même projet).
+
+
+## PIT-S62-001 — `elementsFromPoint()` n'est PAS une preuve de peinture
+Corollaire de [[PIT-S58-001]] côté hit-testing. Une couche Radix ouverte pose `body{pointer-events:none}` : tout le reste sort du test de survol et l'élément visé **remonte en tête de pile alors qu'il est recouvert**. S62 : la preuve DOM se lisait comme une *confirmation* que le popover était peint, tandis que le pixel montrait 100 % de panneau de drawer sur 15 offsets. `getComputedStyle` donne la couleur déclarée, `elementsFromPoint` la pile hit-testée — **jamais la peinte**. Seule la lecture de pixel tranche. (Sprint 62 #414)
+
+
+## PIT-S62-002 — `page.screenshot({clip})` intersecte le viewport en silence
+Toute échelle dérivée de `décodé/clip` devient fausse dès que l'élément touche le bord droit ou bas, et l'accesseur lit un pixel décalé. Mesuré : élément collé au bord bas, lecture « fond adjacent » à +6 px → rend **la couleur de l'élément lui-même**, unanimité **93 %** — donc indétectable par une garde d'unanimité. Clamper le clip sur `page.viewportSize()`, asserter `decoded ≈ clip × devicePixelRatio`, et **lever** au lieu de rabattre un point hors région. Une unanimité haute n'atteste ni de l'échelle ni de la position. (Sprint 62, review cycle 1)
+
+
+## PIT-S62-003 — Un garde-fou validé par des fixtures supprimées n'est pas armé
+S62 : 3 gardes ajoutées à `e2e/support/pixel.ts`, prouvées par des fixtures synthétiques **supprimées avant commit**. Les specs existantes restaient vertes — mais unanimité 100 % et éléments loin des bords : **aucune garde ne se déclenchait sur un cas réel du dépôt**. Toute régression future (seuil inversé, `<` en `<=`, tolérance élargie) serait passée en CI verte. Exiger un test **du garde lui-même**, avec contrôle négatif (sans lui, une garde qui lèverait *toujours* passe). Variante « garde-fou » de [[coverage-check-vert-ne-prouve-rien]]. (Sprint 62, review cycle 2)
+
+
+## PIT-S62-004 — Retirer un layout d'une route retire AUSSI sa `metadata`
+Pas seulement son `<html>`. La 1re passe de #413 a vu le document manquant et **pas** le `<title>` : `NEXT_MISSING_ROOT_TAGS` est bruyant, la perte de `metadata` est **silencieuse**. Après tout déplacement de `<html>`, mesurer le `<title>` **servi**, pas seulement la balise `<html>`. (Sprint 62 #413)
+
+
+## PIT-S62-005 — Layout racine transparent : Next casse la 404, et deux contournements ne marchent pas
+Next **exige** que le layout RACINE rende `<html>`/`<body>` pour servir `/_not-found`. Réduire `app/layout.tsx` à `{children}` (pattern next-intl) donne `NEXT_MISSING_ROOT_TAGS` sur toute URL non matchée. Mesuré inefficaces : `app/not-found.tsx` avec son propre `<html>` (**prérend** correctement mais **n'est jamais servi**) ; attrape-tout `[locale]/[...rest]` + `notFound()` (la route est atteinte mais `notFound()` **échappe** à `[locale]/not-found.tsx`). Seule forme servie : `experimental.globalNotFound` + `app/global-not-found.tsx` — cf. [[PAT-S62-002]]. (Sprint 62 #413)
+
+
+## PIT-S62-006 — Un écran prérendu hors layout ne peut pas résoudre la locale pendant le rendu
+Mismatch d'hydratation garanti sur `lang` **et** sur le texte. Poser la locale en `useEffect` (1er rendu = défaut des deux côtés). La voie `headers()` est interdite : elle sortirait la route du décompte `Generating static pages`. Corollaire : le `<title>` d'une telle page ne peut pas être localisé — `metadata` est résolue au build sur une page **unique** servie pour toutes les locales, sans `params` ni URL. (Sprint 62 #413)
+
+
+## PIT-S62-007 — Contrôle à `<input>` masqué : le contour `@layer base` est structurellement inopérant
+`opacity:0; width:0; height:0` → le contour se peint sur **0×0 px**. Tout composant qui masque son input doit porter le contour du DS sur sa **sœur visible**, sinon il n'a aucun indicateur de focus, quel que soit le token. Grep de détection : `input{...opacity:0...width:0}` + `+ .<classe>` sans `outline`. (Sprint 62 #415)
+
+
+## PIT-S62-008 — Sur Radix, « désactivé » est un attribut sur un `div`, jamais une propriété DOM
+Une garde d'état qui ne teste que `.disabled` (sur `HTMLInputElement`/`HTMLButtonElement`) est **inopérante** sur `Select`/`DropdownMenu`/`Checkbox`/`Switch` : Radix pose `aria-disabled` / `data-disabled`. Et un `Item`/`Group` **ancêtre** désactive ses descendants sans qu'aucune propriété DOM ne le signale → tester `el.closest('[aria-disabled="true"],[data-disabled]')`, pas `el` seul. Sans ça, le 1,59:1 de S58 (mesure sur contrôle désactivé) revient. (Sprint 62, review cycles 1 et 2)
+
+
+## PIT-S62-009 — Working tree partagé : `frontend/.next` est unique, et le `next dev` d'un agent meurt sans notification
+Un `next build` réécrit `.next` sous les pieds du serveur d'un autre agent, **sans autre signal que la mort de sa tâche de fond** — `git status` ne dit rien (variante « environnement » de [[PIT-S60-005]]). Un agent qui déclare « environnement laissé debout » doit **re-sonder le port**, pas se fier au fait qu'il l'a démarré. Pour builder sans casser le voisin : copie hors dépôt — `next build` webpack accepte un `node_modules` **symlinké**, **Turbopack le refuse** (`TurbopackInternalError: Symlink node_modules is invalid`), il faut hardlinker (`rsync --link-dest`). Et `next start` avec `output:'standalone'` sert de façon non fiable : utiliser `node .next/standalone/server.js` (+ copier `.next/static` et `public`). (Sprint 62)
+
+
+## PIT-S62-010 — RTK filtre plus que les commandes directes
+Famille [[PIT-S50-007]], élargie trois fois au S62. (1) `git diff` rendu quasi vide — connu. (2) **Les redirections vers fichier** : `npx next build > log 2>&1` a écrit un résumé RTK de 6 lignes (« 2 routes », faux) au lieu de la sortie Next. (3) **Les commandes à l'intérieur d'un `Bash` composé** : un run E2E a logué `PASS (200) FAIL (0)` sans la ligne `8 skipped`. (4) `ps aux | grep` → « 0 processus » alors que Playwright tournait. Parades : préfixer `rtk proxy`, ou mettre la commande dans un **fichier `.sh` exécuté par chemin** (le hook ne le réécrit pas) ; `/bin/ps -eo` ou `pgrep -fl` jamais `ps | grep` ; vérifier qu'un log de test contient bien les lignes par test avant d'en tirer un compteur. **Ne jamais reprendre un récap de commit RTK** : « 2 files changed » annoncé sur un commit de 4 / 282 lignes. (Sprint 62)
+
+
+## PIT-S62-011 — Deux runs E2E complets rapprochés ne PEUVENT pas passer
+`global-setup` purge `.auth/accounts.json`, donc chaque run ré-enregistre 4 comptes contre un bucket de **5/min/IP**. Le 2ᵉ échoue en `provision <compte>` avec `Test timeout of 180000ms` et « N did not run » — symptôme qui **ressemble à une panne d'infra**, pas à un rate-limit. Attendre ≥ 2,5 min entre deux runs. Cousin de [[e2e-cors-origin-proxy-trap]] : sur ce harnais, tout échec de provisioning se déguise en autre chose. (Sprint 62)
+
+
+## PIT-S62-012 — Sans `PLAYWRIGHT_BASE_URL`, Playwright démarre un serveur SANS le proxy `/api`
+`playwright.config.ts` fait `baseURL = PLAYWRIGHT_BASE_URL ?? localhost:3000` et, à défaut, lance son propre `webServer` (`npm run dev`) **sans** `E2E_API_PROXY_TARGET` : le rewrite `/api/*` n'existe pas, le `POST /api/auth/register` du projet `setup` tombe en **404**, les 4 comptes échouent et **aucun test ne démarre**. Un audit S62 en a conclu « BLOQUANT, régression du code » à tort. **Oracle : `401` sur `/api/auth/me` = proxy OK ; `404` = proxy absent.** Lire l'oracle avant toute hypothèse — cf. [[e2e-cors-origin-proxy-trap]]. (Sprint 62, audit Phase 6)
+
+
+## PIT-S62-013 — Importer `globals.css` dans un composant testé crache ~5 500 lignes de stderr
+jsdom + `css: true`. `vi.mock` de la feuille dans le test. (Sprint 62 #413)
+
+
+## PIT-S62-014 — Un briefing qui exige de citer un fichier supprimé est infalsifiable
+Erreur du lead au S62 : le briefing d'un subagent imposait de lire `briefing-415.md` et d'en citer les marqueurs comme preuve de chargement du context-pack — alors que les briefings venaient d'être **retirés avant l'ouverture de la PR** (convention anti-bloat). Soit l'agent invente les marqueurs, soit il bloque. L'agent a refusé d'inventer et l'a signalé en tête de rapport — bon comportement. Ne pas adosser une preuve de chargement à un artefact que la convention de sprint supprime. (Sprint 62)
+
+
+## PIT-S63-001 — `locator.count()` n'auto-attend pas : routage responsive en course silencieuse
+Router un parcours E2E par `getByTestId('x').count()` crée une course quand la bascule est un `matchMedia` JS. `useMediaQuery` rend **`false` au premier rendu** (SSR-safe) : la frise est DESKTOP avant hydratation. Aux largeurs mobiles le test prenait donc la branche desktop, cliquait la pastille (qui, elle, auto-attend et se résout), puis attendait un `event-drawer-edit` **jamais monté** par `TimelineMobilePortrait`. Parade : résoudre la variante par `matchMedia` **dans la page**, puis **vérifier la racine** de cette variante sous budget court. Famille [[PIT-S61-006]] (grepper les appelants) : le symbole existe, le chemin non. (Sprint 63 #74/#449)
+
+
+## PIT-S63-002 — `actionTimeout: 0` est le défaut Playwright : une erreur de routage coûte le budget du TEST
+Sans budget explicite sur les clics d'un parcours à branches, une attente impossible consomme les **300 s du test**, × `retries: 2`. Le job `e2e` est passé de ~15 min à **42 min** pour 4 tests. Poser un budget par clic fait échouer **vite** et **nommer** le chemin manquant. (Sprint 63 #449)
+
+
+## PIT-S63-003 — L'outillage de dev bloque le CLIC, pas seulement la MESURE
+`.tsqd-parent-container` (React Query Devtools) était exclu des mesures depuis le S59, mais **interceptait les clics** — 42 tentatives repoussées. La CI e2e tourne sur `next dev` : l'outillage est présent. Parade : `pointer-events: none` via `addInitScript`, en le **laissant dans le DOM** pour ne pas invalider l'exclusion de mesure existante. (Sprint 63 #449)
+
+
+## PIT-S63-004 — Invoquer un pitfall de MÉTRIQUE pour excuser un TIMEOUT est une erreur de catégorie
+Erreur du lead au S63 : 4 échecs E2E excusés par [[PIT-S52-001]] (« mesures de largeur non concluantes sur macOS »). Or ce pitfall couvre les écarts de **métrique de police** ; un test qui **expire** n'a produit **aucune** mesure. La cause réelle était un routage responsive faux ([[PIT-S63-001]]). Signal de reconnaissance : l'échec est un `locator.*: Test timeout`, pas un écart de valeur. Refuser ce raisonnement est ce qui a mené au vrai diagnostic. (Sprint 63)
+
+
+## PIT-S63-005 — Tailwind v4 : `max-[Npx]` compile en `width < N`, pas `<=`
+Le palier compact s'arrête donc à `N-1`, et **`N` devient un second creux local** (header `de` : 52 px à 359, **23 px à 360**). Vérifié deux fois (`columnGap` 4/8 px, `paddingLeft` 8/16 px). Une grille de largeurs qui saute de 320 à 375 est **aveugle** à ce creux. Mesurer `N-1` **et** `N` pour tout palier `max-[]`, comme [[PIT-S59-001]] l'exige déjà pour les seuils `min-`. (Sprint 63 #423)
+
+
+## PIT-S63-006 — Un mock i18n en `${ns}.${key}` rend un namespace FAUX indiscernable d'un juste
+`useTranslations('deleteDialog')` (namespace inexistant) et `('common.deleteDialog')` (juste) produisent **le même** résultat de test. Le défaut a survécu plusieurs sprints sous **3 fichiers de tests verts**, et les E2E ne ciblaient que des `data-testid`, jamais du texte. Prévention : tout composant à `useTranslations` doit avoir au moins une assertion sur un **libellé traduit**, via `NextIntlClientProvider` alimenté par les VRAIS messages + collecteur `onError`. (Sprint 63 #441)
+
+
+## PIT-S63-007 — `warn-test-delegation.sh` tue la commande entière, y compris un heredoc qui ÉCRIT
+Le hook PreToolUse détecte une chaîne d'invocation de runner de test **n'importe où** dans la commande — **y compris un `cat <<EOF` qui ne fait que rédiger un fichier** la contenant. Le fichier n'est jamais créé et l'échec suivant (« no such file ») oriente vers un faux diagnostic. Rencontré **deux fois** au S63, par un agent puis par le lead. Parade : écrire ces fichiers avec l'outil `Write` ; `SKIP_DELEGATION=1` pour un run ciblé. (Sprint 63 #442)
+
+
+## PIT-S63-008 — « Environnement laissé debout » est une promesse que rien ne tient
+Un agent a conclu son rapport par « `next dev` laissé debout, réutilisable » ; sa tâche de fond a été tuée **après** l'envoi, et l'affirmation est devenue fausse sans que rien ne la corrige. Survenu **3 fois** au S63. Prévention : ne jamais promettre un **état** à l'agent suivant — donner la **commande de relance** et un fait **horodaté**. Variante temporelle de [[PIT-S62-009]]. (Sprint 63 #442)
+
+
+## PIT-S63-009 — Un `test.fail()` laissé comme marqueur de dette fige le périmètre de l'issue suivante
+Le S62 avait figé le popover invisible en 2 `test.fail()` sur **un seul widget**. L'issue #446 a donc décrit un défaut de `ui/select` — alors que la cause est un **palier `z` partagé** : `PopoverPicker`, monté dans le même drawer, était cassé à l'identique (46-66 % de panneau mesurés) et absent du périmètre. Corriger le seul `Select` aurait laissé le champ voisin invisible **dans le formulaire qu'on prétendait réparer**. Grepper les **frères du composant** avant d'accepter le périmètre d'une issue de superposition. (Sprint 63 #446)
+
+
+## PIT-S63-010 — Étendre un matcher de test CSS par inertie fait rougir du CSS sain
+#447 demandait d'asserter le focus « des 3 sélecteurs surveillés » — or **aucun** ne porte de règle de focus : les indicateurs vivent sur des sélecteurs **composés frère-adjacent** (`.mt-check input:focus-visible + .mt-check__box`, `core.css:160/172/189`). Réutiliser le matcher exact existant aurait rendu `decls.length === 0` puis fait échouer `toBeGreaterThan(0)` **sur du CSS parfaitement sain**. Grepper la règle **réelle** avant d'étendre. Symétrique de [[PIT-S61-006]]. (Sprint 63 #447)
+
+
+## PIT-S63-011 — Recette docker jammy : `host.docker.internal` donne 403 CORS sur tout écran authentifié
+Le backend fige `localhost:3000` comme origine acceptée. Depuis le conteneur, viser `host.docker.internal:3000` rend **403** ; via un **forwarder TCP** `127.0.0.1:3000 → host.docker.internal:3000`, la requête atteint la logique applicative (400). Invisible pour les audits de **landing** (pages non authentifiées) — d'où sa découverte tardive. (Sprint 63 #74)
+
+
+## PIT-S63-012 — Balayage `rect.right > clientWidth` : exclure les défileurs, mais surtout PAS `<body>`
+La frise produit 9-16 faux positifs par largeur (défilement horizontal légitime). Mais exclure `<body>` est pire : un scroll-lock Radix ouvert y déclare **tout le document** comme « contenu » et **masque l'élément fautif**. (Sprint 63 #74)
+
+
+## PIT-S63-013 — `unique()` fabrique un faux débordement : jeton de 16 chiffres insécable
+`support/products.ts:40` produit un identifiant de 16 chiffres ; rendu dans un `h1`, il déborde de 50-53 px. Un audit a failli « corriger » ce non-défaut. **Signal de reconnaissance : le débordement n'est PAS corrélé à la locale.** Défaut réel adjacent tracé : le `h1` du titre produit n'a pas de `break-words`. (Sprint 63 #74)
+
+
+## PIT-S63-014 — `scrollLeft` est en pixels : toute échelle variable le périme
+Au zoom, l'échelle px/jour change ; le navigateur **rabat** la valeur périmée sur `scrollWidth − clientWidth` et la virtualisation horizontale démonte **toutes** les pastilles (0 dans le DOM, lanes toujours rendues). Mesuré : `31348 / 32330 / 982`. **Règle : une position de défilement mémorisée dans une vue à échelle variable se stocke dans l'unité du DOMAINE (jours), jamais en pixels.** (Sprint 63 #449/#451)
+
+
+## PIT-S63-015 — Mesurer `scrollLeft` sous `scroll-behavior: smooth` donne des valeurs fantômes
+4 lectures contradictoires (4, 16, 17, 17259) pour **deux** écritures identiques à 59677 : les mesures étaient prises **en pleine animation**. Attendre deux lectures consécutives égales avant toute mesure ; poser une position avec `behavior:'instant'` — l'animation est de toute façon rabattue par le clamp avant d'aboutir. Famille [[PIT-S54-003]]. (Sprint 63 #449)
+
+
+## PIT-S63-016 — Un effet de positionnement en `useEffect(..., [])` réussit sur des données absentes
+`computeRange([])` (`zoom.ts:122`) renvoie `min = max = today` puis ±30 j : une étendue **factice mais plausible**. `scrollToToday()` s'exécutait donc au montage **avant l'arrivée des données**, réussissait silencieusement sur cette étendue fausse, et n'était **jamais rejoué**. Résultat mesuré : frise ouverte **13 ans avant aujourd'hui**, **sans aucun symptôme d'erreur**. Keyer un effet de positionnement sur l'**identité des données**, pas sur le montage. (Sprint 63 #449)
+
+
+## PIT-S63-017 — Les garde-fous à `grep` ne distinguent pas une NÉGATION d'une demande
+Deux occurrences au S63. (1) `check-sprint-completeness.sh` a remonté 7 « signaux non traités » : **5 étaient des négations explicites** (« pas de `RECOMMAND_DB_EXPERT` car aucun schéma »), les 2 autres étaient traités. (2) La précondition Phase 9 `grep -q "\[MISSING\]"` aurait abandonné à tort sur les phrases « **Aucun** `[MISSING]` » de l'audit. Un `grep` de jeton lit la présence, jamais l'intention. Vérifier le contexte avant d'agir sur un tel garde-fou. (Sprint 63, clôture) — **S64 : les DEUX se sont reproduits**, et une 3e nuance est apparue : `check-sprint-completeness.sh` teste `ls $SPRINT_DIR | grep <marker>`, donc un **NOM DE FICHIER**, jamais le traitement réel. Un signal parfaitement traité par un AUTRE specialist reste « non traité » ; à l'inverse, un fichier vide nommé `*test-runner*` suffirait à passer. Voie de sortie honnête : reformuler le signal en négation (`Pas de RECOMMAND_X ouvert — clos car …`), jamais renommer un artefact pour tromper le grep.
+
+
+## PIT-S64-001 — Un `tsc` vert ne prouve RIEN du reporter Playwright
+`ReporterDescription` est typé `[string, any]` : `['html', { open: 'jamais' }]` **compile**. Contrôle négatif joué au S64 — `tsc --noEmit` EXIT=0 sur une valeur invalide. Seul un run CI réel atteste qu'un reporter écrit ce qu'on croit. Même famille que « coverage vert ne prouve rien ». (Sprint 64 #461)
+
+
+## PIT-S64-002 — Greper `playwright-report/index.html` est un faux négatif GARANTI
+Le reporter `html` embarque ses données en **base64** dans `<template id="playwrightReportBase64">` (441 Ko décodés → `report.json` + ~32 JSON). Chercher le nom d'un test échoué dans le HTML ne renvoie donc jamais rien, même quand l'échec y est. **Décoder avant de conclure.** (Sprint 64 #461)
+
+
+## PIT-S64-003 — Un correctif qui agit sur l'ordre d'EXÉCUTION ne corrige jamais une dépendance à l'ordre d'IMPORT
+La persistance de `.auth/accounts.json` a été présentée comme le correctif de [[PIT-S47-004]]. Elle ne l'était pas : `dependencies: ['setup']` ordonne l'**exécution**, pas le **moment de l'import du module**, et le projet `setup` étant lui-même `fullyParallel`, le worker qui écrivait le fichier n'était pas celui qui enregistrait les comptes. Mesuré au S64 (4 specs `settings-*` rouges par run dès `workers >= 2`). Le mécanisme d'identité a été refait au S65 (#469) : graine `E2E_RUN_ID` posée avant le fork des workers + résolution paresseuse. **La leçon durable n'est pas la valeur de `workers` mais la forme du raisonnement** — vérifier qu'un correctif agit sur la MÊME dimension que le défaut. (Sprint 64 #465, mécanisme refait S65 #469)
+
+## PIT-S64-004 — Le message « does not work with output: standalone » de `next start` est TROMPEUR
+`output: 'standalone'` est **additif** : `.next/standalone/` est produit EN PLUS, et `next start` reste pleinement fonctionnel. Vérifié au S64 sur le build exact : SSG 200, `/fr/nope` 404, chunks JS 200, CSS 200, `favicon.ico` 200, rewrite `/api/*` actif. **Contredit `PIT-S62-009`** qui l'annonçait « non fiable ». Ne pas basculer sur `.next/standalone/server.js` sur la foi de ce message. (Sprint 64 #462)
+
+
+## PIT-S64-005 — `curl … -w '%{http_code}' || echo 000` CONCATÈNE au lieu de substituer
+Le résultat est `000000`, qui passe un test `-lt 500` : une boucle d'attente se croit satisfaite au premier tour et laisse passer un service mort. Mesuré au S64 en écrivant les oracles du job `e2e`. (Sprint 64 #462)
+
+
+## PIT-S64-006 — `npx <cmd> &` : `$!` capture le WRAPPER, pas le process
+`npx` fork un enfant. Un `kill "$PID"` posé sur `$!` tue `npm exec` et **ment** sur ce qu'il arrête ; que l'enfant meure dépend du relais de SIGTERM par npm — un détail d'implémentation, pas un contrat. Utiliser le binaire direct (`./node_modules/.bin/<cmd>`, script à shebang exec'é) pour que `$!` soit le bon PID. (Sprint 64, revue)
+
+
+## PIT-S64-007 — Un step GitHub Actions dont la dernière commande est `echo >> "$GITHUB_ENV"` NE PEUT JAMAIS ÉCHOUER
+Le `echo` rend 0, donc le step sort en succès même si le service lancé juste avant est mort à la seconde 0. Le diagnostic est repoussé au step suivant, qui accuse alors l'attente plutôt que le démarrage (jusqu'à 180 s perdues). Terminer un tel step par un contrôle de vie explicite qui `exit 1`. (Sprint 64, revue)
+
+
+## PIT-S64-008 — Aucune CI ne tourne sur les branches `sprint/N`
+`.github/workflows/ci.yml` déclenche sur `pull_request: [dev, main]` et `push: [dev, main]` **uniquement**. Un `git push origin sprint/N` ne lance rien : le premier run réel d'un sprint est **l'ouverture de sa PR**. Toute preuve exigeant la CI en cours de sprint passe par une **PR jetable** vers `dev`. (Sprint 64 #461)
+
+
+## PIT-S64-009 — Les flakes de virtualisation de la timeline DISPARAISSENT quand on les isole
+La suite E2E sème une catégorie et un produit par spec **sans nettoyage** et dépasse désormais `LANE_VIRTUALIZATION_MIN_ROWS = 60` (`virtualization.ts:80`) — 76 lanes en CI, 77 en local : la lane semée n'est plus montée dans le DOM. Rejouer la spec seule ne sème qu'une catégorie ⇒ virtualisation inactive ⇒ **le test passe**. Le réflexe d'isolement fait donc disparaître le défaut. C'est une **famille** (le membre qui tombe varie), suivie par l'issue **#467**. (Sprint 64)
+
+
+## PIT-S65-002 — Un run de mesure lancé en ARRIÈRE-PLAN par un subagent meurt avec sa session — et deux campagnes concurrentes se corrompent en silence
+Deux campagnes de mesure de #469 ont été perdues ainsi. (1) Le subagent lançait ses runs en tâche de fond puis rendait la main : les process mouraient avec sa session, **aucun résultat capturé**. (2) Le lead, croyant les runs morts, a lancé les siens **pendant qu'ils tournaient encore** : les deux campagnes écrivaient dans les **mêmes fichiers de log** d'un scratchpad partagé et partageaient `e2e/.auth/` — d'où un faux rouge portant la signature [[PIT-S47-004]] pour une cause qui n'a rien à voir. Diagnostics fautifs du lead à ne pas reproduire : `find -maxdepth 4` trop court pour atteindre le scratchpad (« pas de logs » ≠ « runs morts ») et un `ps` tombé dans l'intervalle entre deux runs. **Parades** : mesurer au premier plan ; répertoire de logs **horodaté unique** par campagne ; et surtout **compter les blocs `Running N tests using M workers` par log — il doit y en avoir exactement 1**. Un log en contenant deux (`231 passed (7.0m)` ET `222 passed / 10 failed (8.2m)`) est la preuve de la concurrence. (Sprint 65 #469)
+
+
+## PIT-S65-003 — Un listing Playwright `--list` sans `rtk proxy` sort en `PASS (0) FAIL (0)`
+Le hook RTK tronque/mal-parse la sortie du listing : le résultat ressemble **exactement** à une suite vide — soit précisément le faux signal que #470 élimine par ailleurs. Préfixer `rtk proxy` pour tout listing Playwright. Même famille que [[PIT-S20-003]] (`git diff` vidé) et [[PIT-S27-002]]. (Sprint 65 #470)
+
+
+## PIT-S65-004 — Une boucle de poll CI dont la condition de sortie cherche un MOT dans la sortie texte se termine à tort
+Une boucle `if ! echo "$OUT" | grep -qE 'pending|queued'` est sortie **dès la 1re itération** sur la réponse `no checks reported on the branch` : juste après un push, les checks n'existent pas encore, la chaîne ne contient donc aucun de ces mots, et l'absence de checks se lit comme « CI stabilisée ». Variante de [[PIT-S55-*]] (watcher muet), mais ici le watcher ment au lieu de se taire. **Ne jamais faire porter la condition sur la présence d'un mot dans une sortie texte** : interroger le STATUT du run pour le SHA exact (`gh run list --json headSha,status --jq 'select(.headSha=="<sha>")'`) et n'accepter que `completed`. (Sprint 65)
+
+
+## PIT-S65-005 — ÉDITER le corps d'une entrée `PIT-*` existante périme les packs, pas seulement en AJOUTER une
+Le job CI **requis** `ai-env-packs` lance `gen-pit-packs.sh --check`. La note connue portait sur l'ajout d'entrées non classées ; en réalité **toute édition du corps d'une entrée existante** périme les packs dérivés. Au S65, `PIT-S47-004` et `PIT-S64-003` réécrits ⇒ `ai-env-packs` rouge en 12 s, découvert **après** l'ouverture de la PR. Réflexe : dès que `docs/memory/pitfalls.md` apparaît dans `git status`, relancer `gen-pit-packs.sh` avant de pousser. Nuance : seules les entrées de sprints **≥ S53** figurent en texte intégral dans les packs (les plus anciennes n'y sont qu'en index de titres) — éditer une vieille entrée peut donc ne produire **aucun** diff de pack tout en faisant échouer `--check` à cause d'une autre. (Sprint 65)
+
+
+## PIT-S66-001 — Une action centrale peut n'avoir qu'UN déclencheur, logé dans un conteneur `hidden lg:flex` : morte sous le palier, sans aucun test rouge
+Au S66 (#455), `setShowCreate(true)` n'avait qu'un appelant, dans l'`<aside className="hidden … lg:flex">` du shell : créer un événement était impossible sous 1024 px depuis le S44, et ni Vitest (jsdom sans layout) ni les E2E desktop ne pouvaient le voir. Un compte d'appelants > 0 ne prouve PAS l'atteignabilité : il faut grepper les appelants d'un `setX(true)` ET remonter leurs conteneurs responsive. Prévention : pour toute action centrale, un E2E qui exerce le palier dans les DEUX sens (borne basse ET borne haute), cf. PAT-S66-001.
+
+
+## PIT-S66-002 — Une utilitaire Tailwind `duration-*` SEULE arme une transition sur TOUTES les propriétés (`transition-property` initial = `all`)
+Au S66 (#79), un panneau portant `motion-safe:duration-200` (posé pour une animation d'entrée) a vu son `max-height` inline s'ANIMER : le DOM montrait `style.maxHeight = "462px"` mais `getComputedStyle` variait d'une lecture à l'autre (683 → 675 → 571 px) et un `!important` inline n'y changeait rien (une transition prime sur l'inline dans la cascade). Cause : `transition-duration` sans `transition-property` explicite → `all`. Fix : restreindre `transition-property` (ici `transform`). Prévention : quand une valeur calculée contredit un style inline, lire `el.getAnimations()` AVANT de chercher un `!important`, et se méfier de toute `duration-*` posée sans `transition-*`.
+
+
+## PIT-S67-001 — Un « blocage amont non corrigeable » se périme EN SILENCE, et survit dans un commentaire de CI puis dans les énoncés d'issues qui le citent
+Au S45, `.github/workflows/ci.yml` a consigné que l'advisory `brace-expansion` était incorrigible en aval : « le seul corrigé est 5.0.8, qui change sa forme d'export ; le forcer casse le lint (`expand is not a function`) ». Vrai à l'époque. Faux ~20 sprints plus tard : une `1.1.18` est sortie sur la branche 1.x, or `minimatch@3.1.5` déclare `brace-expansion: ^1.1.7` → elle y entre, la branche 5.x n'est jamais sollicitée, `npm run lint` sort exit 0 avec 0 occurrence de l'erreur. Le verdict avait été recopié tel quel dans l'énoncé de #438, ce qui orientait l'issue vers un arbitrage documentaire (« masquer le signal rouge ? ») au lieu d'une correction : les 8 entrées d'audit étaient TOUTES des patchs in-range, `npm audit` est passé de 8 à 0. Prévention : un blocage amont n'est pas un acquis — il se périme le jour où l'amont publie un patch dans la plage semver DÉJÀ déclarée, et rien ne le signale. Lire les plages dans le lockfile (`packages[].dependencies`) avant de croire un « non corrigeable », et re-tester à chaque sprint plutôt que recopier.
+
+
+## PIT-S67-002 — Retirer l'`overrides.postcss` de MyTimeline casserait l'étape CI BLOQUANTE : `next` épingle postcss en version EXACTE
+`next@15.5.22` déclare `postcss` en `8.4.31` **exact** (version vulnérable, GHSA-r28c-9q8g-f849 / GHSA-6g55-p6wh-862q). Sans l'override qui le hisse en `^8.5.23`, npm recrée un `node_modules/next/node_modules/postcss@8.4.31` imbriqué et `npm audit --omit=dev` — l'étape BLOQUANTE du job CI `security` — repasse de 0 à 2 vulnérabilités de PRODUCTION. Mesuré au S67 sur une copie hors dépôt. L'override `sharp` joue le même rôle. Prévention : ces deux `overrides` sont load-bearing, PAS du bruit à nettoyer ; leur raison d'être est inscrite dans `frontend/package.json` (clé `_overridesRationale`) et `frontend/README.md` § « Overrides npm ». À revoir si un futur bump de `next` change son pin postcss.
+
+
+## PIT-S67-003 — Le compteur « added N packages » de npm surestime massivement la churn réelle du lockfile
+Au S67, `npm` annonçait « 195 / 183 packages added » sur le bump de la chaîne Storybook : de quoi croire à une explosion du lockfile et refuser le changement. La churn réelle, mesurée en diffant les entrées `packages` du lock, était de **15 add / 10 remove** — l'écrasante majorité des « ajouts » sont des binaires de plateforme OPTIONNELS (`@oxc-resolver/binding-*`, `@emnapi/*`) déjà présents au lock. Prévention : juger l'ampleur d'un bump sur le diff du lockfile (add/remove/change + comparaison des majeurs), jamais sur la sortie texte de npm. Corollaire : c'est aussi en diffant le lock qu'on trouve ce que `npm audit fix --dry-run` ne montre pas — au S67, un downgrade subi `oxc-resolver 11.23.0 → 11.21.2` (+19 bindings), absent du relevé `--dry-run` du lead, épinglé en exact par `storybook@10.6.0`.
+
+
+## PIT-S67-004 — `check-sprint-completeness.sh` lit LIGNE À LIGNE : une négation « pas de RECOMMAND_X » repliée sur la ligne suivante compte comme signal NON traité
+Le hook extrait chaque ligne contenant `RECOMMAND_<SPEC>` et teste la négation (`pas de.{0,5}recommand`, `non applicable`, `aucun`…) sur **cette seule ligne**. Au S67, `issue-438-done.md` portait « …, pas de\n  `RECOMMAND_UI_DESIGN` (aucune surface visuelle). » : le « pas de » étant sur la ligne précédente, le signal a été compté comme actionnable et non traité, bloquant `/sprint end`. Second piège du même hook : il cherche un fichier dont le NOM contient `test-runner` / `db-expert` / `ui-design` **dans `docs/memory/sprints/sprint-N/`** — un test-runner réellement spawné dont le rapport n'est rangé que dans `docs/memory/audits/` reste invisible. Prévention : une négation `RECOMMAND_*` tient sur UNE ligne (un tiret par spécialiste), et le rapport d'un spécialiste spawné se dépose dans le dossier du sprint (convention S61 : `sprints/sprint-61/test-runner-report.md`).
+
+
+## PIT-S68-002 — La section « RETOMBÉE CI » d'un briefing peut être elle-même périmée : lire le job, pas l'énoncé de la spec
+Au S68, le lead a averti l'agent contre la lecture d'énoncés périmés, PUIS a écrit dans le même briefing une section « retombée CI » fausse : elle affirmait qu'`auth-signature.spec.ts` skippe en CI et que le mode dégradé virerait au rouge. Source de l'erreur : le lead a lu l'en-tête § « Conditionnement » de la spec (écrit au S50) au lieu de lire `ci.yml`. Depuis #462/S64, le job `e2e` lance DEUX serveurs Next (`:3000` dégradé, `:3001` vérifiant) encadrés par un oracle `probe_mode` — la spec ne skippe pas, elle tourne contre `:3001`. Le commentaire de spec était périmé de quatre sprints. Prévention : toute affirmation sur le comportement CI se vérifie dans `.github/workflows/ci.yml` à l'instant T, jamais dans un commentaire de code qui le décrit. Même famille que [[upstream-blocker-verdict-expires]] — la « retombée CI » d'un briefing n'est pas une source, c'est une hypothèse à valider.
+
+
+## PIT-S69-001 — Ajouter un `useQuery` dans un composant testé sans `QueryClientProvider` casse TOUS ses tests : mocker le HOOK, pas envelopper d'un provider
+Au S69 (#67), brancher `useRecurrencePreview` (TanStack `useQuery`) dans `EventEditForm` a fait échouer l'intégralité d'`EventEditForm.test.tsx` — le fichier ne monte aucun `QueryClientProvider`. Réflexe coûteux et mauvais : envelopper chaque `render` d'un provider (bruit dans ~45 tests, et on se met à tester TanStack plutôt que le composant). Solution retenue : `vi.mock('@/hooks/useRecurrencePreview')` et piloter le retour test par test — le composant est testé sur ce qu'il FAIT du `data`, pas sur la mécanique de query. **Second piège, dans la foulée** : `vi.clearAllMocks()` (souvent en `beforeEach` global) efface les appels ET les implémentations mais PAS de manière fiable les `mockReturnValue` posés au niveau module — il faut REPOSER le retour par défaut dans un `beforeEach` dédié, sinon un test hérite du `mockReturnValue` du précédent et devient vert/rouge selon l'ordre d'exécution.
+
+
+## PIT-S69-002 — `./scripts/test-quiet.sh frontend` échoue dans un worktree : `node_modules` absent, et le `node_modules` partagé du dépôt principal peut être périmé
+Un worktree git ne porte pas de `node_modules` (non versionné) : toute commande frontend y échoue d'entrée. Contournement appliqué au S69 : symlink temporaire `frontend/node_modules -> <dépôt principal>/frontend/node_modules`, **retiré après usage** (sinon il finit committé ou fausse un `git status`). Piège suivant, plus sournois : ce `node_modules` partagé peut être PÉRIMÉ par rapport au `package.json` de la branche — au S69 il manquait `eslint-plugin-storybook` (pourtant déclaré), ce que le préflight de `test-quiet.sh` signale en bloquant TOUTE la suite, et ce qui fait aussi cracher `tsc` sur les seuls `*.stories.tsx`. Ces échecs ne sont PAS des régressions du sprint. Prévention : lancer `vitest`/`tsc` directement et **juger sur les fichiers du diff** (`tsc --noEmit | grep <fichiers touchés>`), puis considérer la CI — qui installe frais — comme le gate autoritatif de la suite complète. Corollaire : ne jamais conclure « la suite est rouge » sur un préflight d'environnement.
+
+
+## PIT-S70-001 — Un briefing peut attribuer un identifiant `BR-*` à la mauvaise règle : grepper le pack AVANT de s'y appuyer
+Au S70, le briefing du lead affirmait « BR-EVE-009 = perf de l'aperçu live, débounce 150 ms ». **Faux** : `br-events.md:92` définit BR-EVE-009 comme le **modèle couleur event** (design v3 #44), et `grep -ci debounc` sur le pack rend **0**. Origine : les commentaires PRÉ-EXISTANTS `EventEditForm.tsx:174` et `:289` propagent déjà cette mauvaise attribution, et le lead les a recopiés sans vérifier la source. Le fullstack-dev a détecté l'écart et l'a **signalé sans corriger silencieusement** les deux commentaires — bon arbitrage : renommer ou réattribuer une BR est une décision, pas un nettoyage de passage. Prévention : tout identifiant `BR-*`/`PIT-*` cité dans un briefing se vérifie par un `grep` dans le pack correspondant, **y compris ceux que le lead fournit**. Même famille que [[PIT-S68-002]] et `upstream-blocker-verdict-expires` : l'énoncé n'est pas la source.
+
+
+## PIT-S70-002 — « Pré-existant, non lié au sprint » : l'étiquette d'un audit se réfute avec la CI de la base
+Au S70, le premier passage du `test-runner` a rendu `PARTIAL_FAILURE` avec deux verdicts faux, tous deux étiquetés « pré-existant ». (1) « `npm run build` FAIL, page `/terms` manquante » — la page existe, et surtout **la CI de `dev` était verte sur `fd954b2`, la base exacte du sprint**, alors que la CI lance le build. (2) « E2E 4 failed / 247 skipped, serveur `next dev` défaillant » — l'agent avait lancé un build **contre un `next dev` en cours**, piège nommé dans le runbook E2E S47, provoquant le 500 `InvariantError: clientReferenceManifest` qui tue `auth.setup.ts` ; il a donc créé la panne puis l'a imputée au code. Prévention, deux réflexes gratuits : **comparer tout échec dit « pré-existant » à la CI du SHA de base** (`gh run list --branch dev`), et **distinguer « rouge » de « non mesuré »** — une suite dont le `setup` échoue et qui passe 247 specs en `skipped` n'a rien mesuré, ne jamais l'écrire comme un résultat.
+
+
+## PIT-S70-003 — Un `opacity` cumulé à une variante déjà « faible » se paie sur le trait qui porte l'objet
+`.mt-evt--draft` (occurrence fantôme de l'aperçu) portait `opacity:.8` en plus d'un fond à 8 %, d'un contour pointillé, d'une encre `muted` et d'une absence d'ombre. Le dimmer ne retirait donc plus d'insistance — il retirait du **contraste**, précisément sur les deux seuls éléments qui rendent l'objet lisible : contour à **2,49:1** en thème sombre (sous le seuil WCAG 1.4.11 de 3:1) et date du fantôme à **3,59:1** en clair (sous 4.5:1). Correctif : **retirer le dimmer**, pas assouplir le seuil ; l'identité colorée est conservée (le contour reste peint par `--mt-evt`). Prévention : avant d'empiler un `opacity` sur un traitement déjà atténué, mesurer — et vérifier le nombre de consommateurs de la classe avant de la modifier (ici un seul, `EventPreviewTimeline.tsx:180`, d'où l'absence de risque sur la frise réelle).
+
+
+## PIT-S70-004 — `border-*-color` vaut `currentColor` quand aucune bordure n'est déclarée : la sonde répond, mais à une autre question
+En mesurant le contraste d'un contour, `getComputedStyle(el).borderTopColor` renvoie `currentColor` (donc la couleur du TEXTE) si l'élément ne déclare pas de bordure — la mesure réussit et produit un chiffre plausible qui ne décrit pas ce qu'on croit mesurer. Au S70, `e2e/support/contrast.ts` a reçu une garde qui **lève** dans ce cas plutôt que de rendre une valeur. Même famille que [[PIT-S53-001]] (une assertion sur `text-*` peut apparier un `line-height` au lieu d'une taille) : le danger n'est pas l'erreur bruyante, c'est la sonde silencieusement décalée. Prévention : toute sonde de style calculé doit échouer explicitement quand la propriété visée n'est pas réellement déclarée.
+
+
+## PIT-S70-005 — `check-sprint-completeness.sh` teste LIGNE PAR LIGNE : une négation coupée par un retour à la ligne n'est pas reconnue
+Le hook cherche `RECOMMAND_<SPEC>` puis teste, **sur la même ligne**, un motif de négation (`pas de.{0,5}recommand`, `^\s*-?\s*(pas de|aucun)`, `non applicable`, `n/a`…). Au S70, trois négations parfaitement explicites ont été comptées comme signaux non traités uniquement parce que le retour à la ligne d'un paragraphe markdown séparait le « Pas de » du `RECOMMAND_DB_EXPERT`. Symptôme trompeur : `/sprint end` bloque en Phase 1 alors que les `done.md` sont conformes sur le fond. Prévention : dans un `done.md`, écrire **une négation par ligne**, commençant par la négation et portant l'identifiant du signal sur cette même ligne (`- Pas de \`RECOMMAND_X\` : <raison>`). Ne jamais réécrire pour « faire passer » un signal réellement pendant — ici seule la mise en forme était en cause, le fond était déjà correct.
+
+
+## PIT-S70-006 — Un écart transmis par un agent qui n'a pas ouvert de navigateur est une HYPOTHÈSE, pas un constat
+La vague 1 du S70 a livré une liste de 4 « écarts visuels connus », que le lead a recopiée telle quelle dans le briefing de la vague 2 comme checklist d'entrée. La vérification mesurée en a **réfuté 2** : le « double filet » header/aperçu (filets réellement distants de **207 px** en clair, 187 px en sombre) et l'« amputation du corps défilant » (le bandeau occupe 29,6 % de 700 px, il reste 418 px). Les deux venaient d'une lecture de code, pas d'une observation. Prévention : étiqueter explicitement la provenance de chaque écart transmis entre vagues (`mesuré` vs `déduit du code`) — un agent qui n'a pas rendu la page ne peut produire que des hypothèses, et les propager comme des faits fait perdre du temps à la vague suivante.
+
+
+## PIT-S71-001 — Un inventaire fourni par un énoncé (surfaces, occurrences) est un point de départ, jamais le périmètre
+Deux occurrences au S71. (1) #495 : « les 3 surfaces d'édition `EventDrawer` / `TimelineEditHost` / `ConflictDialog` », affirmé par l'issue, par le `done.md` du S70 et par 2 blocs de commentaires d'`EventEditForm.tsx` — **deux des trois ne montent pas `EventEditForm`** ; un `grep -rn "<EventEditForm"` (2 s) réfute l'énoncé et divise le périmètre par 3. (2) #496 : le briefing nommait 2 renvois `BR-*` fautifs, le repo en portait **4**. Prévention : grepper l'inventaire sur le code AVANT d'agir, et classer chaque occurrence RECIBLÉ / INTACT — la trace du tri prouve qu'on n'a ratissé ni trop large ni trop court. Même famille que [[PIT-S70-001]] et [[upstream-blocker-verdict-expires]] : un énoncé recopié n'acquiert pas de vérité par répétition. (Sprint 71 #495 #496)
+
+
+## PIT-S71-002 — RTK ne fait pas que tronquer l'affichage : il CORROMPT des sorties qui servent de données
+Extension mesurée au S71 de [[rtk-git-diff-empty-output]] et [[BUG-S70-002]] (portée plus large qu'écrite). (1) `rtk proxy git diff > f` a produit un **patch inapplicable** (#134) : `git add -p` étant par ailleurs indisponible, le plumbing git est resté le seul chemin sûr. (2) `grep -oE` sur `br-events.md` a rendu une liste d'identifiants **amputée de BR-EVE-010** (#496) — choisir un id « libre » dessus aurait réutilisé un id OCCUPÉ ; `rtk proxy grep` a rétabli la liste. Prévention : toute sortie qui sert de DONNÉE (patch, liste d'identifiants, comptage) passe par `rtk proxy` ET se recoupe par une seconde commande. (Sprint 71 #134 #496)
+
+
+## PIT-S71-003 — Chrome renvoie `color(srgb ...)` et non `rgb()` pour un fond issu de `color-mix` : le parseur naïf SURESTIME le contraste
+Vérification navigateur S71 : l'instrument de mesure ne matchait que `rgb(...)`, n'a donc pas reconnu le fond composite et a lu le mauvais fond — ratio **surestimé de +0,18** (citron, thème clair). Une passe a11y menée avec cet outil peut déclarer conforme ce qui ne l'est pas, sans rien signaler. Prévention : accepter `color(srgb r g b)` autant que `rgb()`/`oklch()`, et faire **échouer explicitement** le parseur sur un format inconnu plutôt que retomber sur un ancêtre. Cousin de [[PIT-S58-001]] (mauvais élément) et [[PIT-S70-004]] (sonde silencieusement décalée) : ici l'élément est bon, c'est le FORMAT qui trahit. (Sprint 71, vérif navigateur)
+
+
+## PIT-S71-005 — Un `trap EXIT` de restauration à chemin RELATIF ment : il annonce `[restored]` sur un fichier encore muté
+Script de mutation testing (#495) : `trap restore EXIT`, puis la suite Playwright lancée depuis `frontend/` via un `cd`. Le trap s'exécute dans le cwd **final** → `FileNotFoundError` sur le chemin relatif, fichier source resté **muté** dans un working tree partagé par 3 autres agents — et le script a rendu `exit 0` en affichant `[restored]`. Prévention : chemins **absolus** dans tout trap de restauration, et vérifier la restauration par un `grep -c` du motif attendu, jamais par la sortie du script. (Sprint 71 #495)
+
+
+## PIT-S71-006 — Compter les tests d'un pack coverage par `grep -c '@Test'` est faux dès qu'il existe un `@ParameterizedTest`
+Une méthode `@ParameterizedTest` compte pour 1 déclaration et N exécutions (`PasswordPolicyTest` : 4 déclarées / **29 exécutées**). Au S71, la reprise des compteurs de `coverage-auth.md` depuis surefire a corrigé **7 écarts** (total 155 → 172) et exhumé une **classe fantôme inexistante à HEAD** (`JwtServiceSecretValidationTest`, renommée depuis N sprints) : un compteur faux survit indéfiniment parce que rien ne le confronte au réel. Prévention : compter depuis `target/surefire-reports/*.txt` (`Tests run:`), jamais depuis les annotations, et consigner la méthode en tête de pack. (Sprint 71, cycle de correction)
+
+
+## PIT-S71-007 — Un plancher de contraste ne se cherche pas par dichotomie : le prédicat n'est pas monotone
+Le long du chemin couleur→encre du thème, la luminance peut **traverser** celle du fond (couleur quasi noire en thème sombre) : le ratio descend jusqu'à 1,00:1 avant de remonter. Une recherche binaire converge donc vers un faux plancher. Prévention : balayage **linéaire** du paramètre de mélange, et vérification du ratio sur le hex **arrondi** effectivement rendu, pas sur la valeur flottante intermédiaire. (Sprint 71 #497)
+
+
+## PIT-S71-008 — Normaliser la casse d'un hex sur le chemin « déjà conforme » fait passer une identité pour une modification
+Une fonction de plancher qui `toLowerCase()` sa sortie avant même de décider qu'il n'y a rien à corriger renvoie une valeur ≠ de l'entrée : style inline recalculé à chaque frappe, `toBe` faussement rouge, diff bruyant. Prévention : court-circuiter (`return input`) sur le chemin conforme **avant** toute normalisation de format. (Sprint 71 #497)
+
+
+## PIT-S71-010 — Indexer ses seuls hunks dans un working tree partagé : plumbing git, jamais le working tree
+`UserControllerTest.java` était édité en parallèle par #134 et #148. `git add -p` est indisponible (mode non interactif) et le diff redirigé est corrompu ([[PIT-S71-002]]). Recette : `git cat-file -p HEAD:<path>` → reconstruction du contenu voulu → `git hash-object -w` → `git update-index --cacheinfo` : l'index reçoit la version voulue et **le working tree n'est jamais touché**, donc le WIP du voisin reste intact. Complément de [[sprint-parallel-commits-shared-worktree]]. (Sprint 71 #134)
+
+
+## PIT-S72-002 — « `tsc --noEmit` : 0 erreur » dans un rapport d'agent peut être faux — vitest ne typecheck pas
+L'agent de #72 a rapporté un typecheck propre ; `i18n-intl-classes.test.ts:65` levait pourtant TS2322 à HEAD. La suite vitest était verte parce qu'elle **ne typecheck pas** : seul le job frontend en CI l'aurait attrapé. L'écart a été trouvé par l'agent de l'autre issue, puis vérifié par le lead. Prévention : rejouer soi-même `tsc --noEmit` avant de reprendre un chiffre de typage dans un audit ; deux rapports d'agent qui se contredisent se tranchent par la mesure, jamais par l'ancienneté du rapport. Voir [[PIT-S71-...]] sur l'étiquette « pré-existant ». (Sprint 72)
+
+
+## PIT-S72-004 — Le premier hit d'une route sous `next dev` dépasse un timeout Playwright de 5 s
+La suite E2E est morte au projet `setup` (`provision shared`), 248 tests non exécutés : `expect(getByTestId('dashboard')).toBeVisible()` a 5 s de timeout, or le **premier** `GET /fr/dashboard` a pris **4172 ms** (compilation webpack 3,4 s) contre 72/59/35 ms ensuite — les 3 provisions suivantes sont passées. Diagnostic par lecture des durées dans le log `next dev`, pas par hypothèse. Prévention : préchauffer les routes ou relancer une fois avant de conclure à un défaut ; un échec du **seul premier** cas d'une série identique désigne l'environnement, pas le code. (Sprint 72)
+
+
+## PIT-S72-005 — Un conteneur e2e « prêt à l'emploi » peut porter une image antérieure au code du sprint
+`mytimeline-e2e-backend-e2e-1` était disponible et correctement configuré, mais son image précédait #142 : l'utiliser aurait rendu une suite verte **sans aucune valeur** sur le code à valider. Recette retenue : `./mvnw package -DskipTests` puis `java -jar` sur `:8086`, en ne réutilisant du conteneur que la base Postgres. Prévention : avant de s'appuyer sur un backend conteneurisé pour valider un diff, comparer la date de l'image aux commits à tester. Nuance [[mytimeline-e2e-ci-only-gate]] §S61 qui recommandait ce raccourci. (Sprint 72)
+
+
+## PIT-S72-006 — Un run de tests dans un working tree partagé n'est valable que si `git status` est stable de bout en bout
+La suite frontend est sortie rouge (4 tests / 1 fichier) pendant que l'agent de #142 éditait `authService.ts` dans le même arbre ; verte au re-run isolé. Prévention : en fan-out, re-jouer avant d'imputer un échec à son propre diff. Corollaire direct de l'étiquette « pré-existant » et complément de [[PIT-S71-010]]. (Sprint 72 #72)
+
+
+## PIT-S72-007 — Le callback de `walkDecls` (PostCSS) est typé `false | void` : une lambda-expression casse le typecheck
+`rule.walkDecls((d) => decls.set(d.prop, d.value))` renvoie la `Map` de `Map.set`, alors qu'une valeur non-`false` interrompt le parcours — d'où TS2322. Invisible sous vitest, rouge sous `tsc --noEmit`. Prévention : corps de bloc obligatoire pour tout visiteur PostCSS dont on ignore la valeur de retour. (Sprint 72 #72)
+
+
+## PIT-S73-001 — `break-words` seul ne corrige PAS un débordement quand l'élément est enfant direct d'un flex
+`min-width:auto` sur un item de flex conserve la taille min-content du mot le plus long, et `overflow-wrap:break-word` (contrairement à `anywhere`) ne réduit pas min-content : le texte déborde quand même. Solution : `min-w-0` **+** `break-words` sur l'élément, ou `overflow-wrap:anywhere`. Prévention : tout correctif de débordement textuel doit remonter la chaîne flex avant de conclure — PIT-S63-013 annonçait « il manque break-words » et c'était insuffisant. (Sprint 73 #458)
+
+
+## PIT-S73-002 — Encre calculée sur un fond peint en hex inline : n'utiliser que des tokens de PALETTE, jamais les alias sémantiques
+Pour choisir une couleur de glyphe par luminance sur un fond `style={{backgroundColor: hex}}`, utiliser `--gray-0` / `--gray-900` (palette brute). Les alias `--color-ink` / `--color-primary-foreground` s'inversent sous `.dark` → le glyphe disparaît en thème sombre, alors que le fond, lui, ne change pas. Prévention : verrouiller par test que le bloc dark ne redéfinit AUCUN des tokens de palette utilisés (vérifié au S73 : `--gray-*` définis uniquement sur `:root`). (Sprint 73 #416)
+
+
+## PIT-S73-003 — Changer le palier d'un conteneur de shell (`lg:` → `md:`) n'est jamais un changement local
+Déplacer le breakpoint de la sidebar a reclassé le viewport 844px de « mobile » en « tablette », invalidant 2 assertions de `sprint-66-mobile-create-event` et 3 de `settings-breakpoints`. Prévention : grepper les E2E pour les viewports tombant dans la NOUVELLE plage AVANT d'annoncer le périmètre. Un briefing qui liste `AppShell.tsx` + tokens comme périmètre sous-estime systématiquement le blast radius. (Sprint 73 #298)
+
+
+## PIT-S73-004 — Un `test-runner` délégué conclut « E2E impossible » à tort — 4 fois sur 4 sur ce projet
+S73 : verdict `INDETERMINE` sur « `next dev` échoue sur la branche du sprint, marche sur `origin/dev` ⇒ régression de build ». Réfuté en 45 s : `next dev` démarre en 1,25 s et la suite passe 249/0. Cause réelle = inférence de workspace root en worktree ([[PIT-S61-007]]), déjà documentée dans `frontend/playwright.config.ts` avec sa recette de contournement (webpack, pas turbopack). Prévention : le lead lance la suite lui-même (~6 min) plutôt que de déléguer ; lire `playwright.config.ts` AVANT tout diagnostic. Précédents : S49 ×2, S51. (Sprint 73)
+
+
+## PIT-S73-005 — Un briefing qui pointe un chemin de règles inexistant fait passer les subagents pour négligents
+Les 3 briefings du S73 citaient `.claude/rules-jit/frontend.md` : ce fichier n'existe pas (seul `ux-patterns.md` est présent sous `.claude/rules-jit/`). Les 3 subagents ont dûment rapporté « non lu » en écart au briefing — écart imputable au lead, qui avait recopié la liste générique du skill sans la vérifier. Prévention : `ls` les chemins de contexte avant de les inscrire dans un briefing. Voir aussi les chemins fantômes déjà relevés aux S45-S49. (Sprint 73)
+
+
+## PIT-S73-006 — Une spec E2E qui seede une donnée PATHOLOGIQUE sur un compte PARTAGÉ casse une AUTRE spec
+La sonde du S73 seedait un produit au nom de 64 caractères sans espace sur le compte `PROD` ; `seedProduct` ne nettoie rien, donc la donnée persiste. `sprint-62` utilise le même compte : son popover de `<Select>` s'élargit et le point échantillonné sort du viewport 390 px → 2 tests rouges en CI, à 1000 lignes du diff. Solution : helper `deleteProduct` + `afterEach` **inconditionnel** (jamais en fin de `test()` — non atteint quand le test échoue, précisément le jour où la pollution dure). Prévention : toute spec qui seede du hors-norme le supprime. (Sprint 73)
+
+
+## PIT-S73-007 — Un rejeu isolé vert ne prouve l'instabilité que si l'isolation ne supprime pas aussi la CAUSE
+PAT-S72-002 dit : deux verdicts opposés sur le même commit ⇒ instabilité. Au S73 le rejeu isolé de `sprint-62` était vert et a fait conclure à tort « flaky à `workers: 2` » — alors que l'isolation retirait la spec **polluante**, pas la charge. La CI à `workers: 1` a réfuté. Prévention : avant d'invoquer PAT-S72-002, énumérer ce que l'isolation retire d'AUTRE que le parallélisme (données seedées, ordre, état partagé). (Sprint 73)
+
+
+## PIT-S73-008 — Deux subagents en fan-out qui partagent la stack E2E se corrompent mutuellement
+Deux absorptions lancées en parallèle dans le même worktree ont chacune démarré `next dev` + Playwright : `.next` corrompu en cours de run (`Cannot find module './vendor-chunks/…'`, 500 sur `/fr/dashboard`) → tests rouges dont le diagnostic accuse FAUSSEMENT le code de la page ; puis 3 runs perdus sur le verrou `e2e/.auth/run.lock`. Prévention : sérialiser les agents qui ont besoin de la stack E2E, ou ne paralléliser que ceux qui n'en ont pas besoin. (Sprint 73)
+
+
+## PIT-S73-009 — `Date.now()` comme suffixe de nom sur un compte E2E partagé collisionne, et remonte en 500
+`uq_categories_owner_name` est `UNIQUE(owner, name)` : à `workers: 2`, deux tests seedant « S73 <timestamp> » dans la même milliseconde violent la contrainte. Le backend remonte **500** (pas 409) → diagnostiqué à tort comme « backend cassé ». Prévention : toujours le helper `unique()` de `frontend/e2e/support/products.ts`. (Sprint 73)
+
+
+## PIT-S74-001 — Tailwind 4 : `translate-*` et `transform` sont deux propriétés que la cascade ne départage jamais
+`hover:-translate-y-2` compile vers la propriété CSS **`translate`** ; `transform`, `rotate-*`, `skew-*` compilent vers **`transform`**. Une utilitaire de translation et un `transform: translateY()` de feuille ne sont donc PAS en conflit : elles se **composent**. `.feature-card` cumulait −8px (utilitaire) et −10px (feuille) = **−18px** au survol, −13px sous 768px, sans que `tsc`, `vitest` ni la CI ne voient quoi que ce soit. Prévention : chercher la PAIRE (utilitaire `translate-*` / déclaration `transform` sur le même élément) avant de conclure à un conflit de cascade — layeriser n'y changerait rien. (Sprint 74 #384)
+
+
+## PIT-S74-002 — Un `overflow-x-auto` Tailwind fait calculer `overflow-y` à `auto` : le contour de focus est rogné en HAUT et en BAS
+Symptôme « 1 côté peint sur 4 » qui n'a rien d'horizontal. Le tablist de `SettingsShell` (`overflow-x-auto`) rognait les traits haut/bas du contour `@layer base` (`outline-offset:2px`, donc 4px hors de la boîte de défilement) plus le trait gauche du premier onglet. Contre-épreuve faite au navigateur : en rétablissant l'offset positif, **3 côtés sur 4** redeviennent rognés. Prévention : tout conteneur `overflow-*-auto` clippe sur les DEUX axes ; vérifier la géométrie du contour, pas seulement l'axe nommé. (Sprint 74 #417)
+
+
+## PIT-S74-003 — Un énoncé d'issue peut nommer le mauvais composant, et la recon du lead peut relayer l'erreur
+« Le tablist des réglages » de #417 ne passe PAS par `.mt-tab` du DS : `SettingsShell.tsx` utilise des utilitaires Tailwind bruts, `.mt-tab` sert aux onglets **produits**. Appliquer le CSS nommé par l'issue aurait corrigé un composant voisin en laissant le vrai défaut. Le briefing du lead relayait l'erreur — une recon de lead ne l'immunise pas, elle déplace l'erreur d'un cran. Au S74, **3 énoncés sur 4** portaient une piste technique fausse ou périmée (chemin vidé par un sprint antérieur, lignes inexistantes, pattern non transposable). Prévention : `grep` du sélecteur **dans le `.tsx`** avant d'éditer le CSS nommé, et dire explicitement au subagent que le briefing peut se tromper. (Sprint 74 #417 / #342 / #343)
+
+
+## PIT-S74-004 — Un correctif d'imbrication a11y casse en silence tout locator E2E écrit en DESCENDANCE
+Sortir `<DropdownMenuItem>` de son `<Link>` fait que l'ancre EST le `menuitem` : un seul nœud porte `href` et `role`. Les locators `a[href="…"] [role="menuitem"]` (avec espace) passent alors à **0 élément** — invisible à `tsc` et `vitest`, rouge seulement en E2E. Prévention : `grep -rn 'role="…"\|a\[href=' e2e/` avant tout passage à `asChild`, et corriger en sélecteur composé (`a[href][role="menuitem"]`). Corollaire d'orchestration : si `frontend/e2e/` est hors du périmètre d'écriture du subagent (vague parallèle), il rendra `PARTIAL` — c'est le comportement voulu, au lead d'appliquer la retouche. (Sprint 74 #342)
+
+
+## PIT-S74-005 — « Utiliser le token du DS » et « rendu inchangé » ne sont compatibles que si le token vaut la valeur littérale
+#343 exigeait les deux. Or `--ease-quart` vaut `cubic-bezier(0.32, 0.72, 0, 1)` et non la Material `(0.4, 0, 0.2, 1)` qu'il remplaçait : **+0,54 de progression à 25 % de la course**, l'animation change de caractère. L'issue s'auto-contredisait sans que personne ne l'ait vu à la rédaction. Prévention : comparer la VALEUR du token à la littérale AVANT de coder ; si elles diffèrent, remonter l'arbitrage au développeur avec les chiffres plutôt que de choisir en silence. (Sprint 74 #343)
+
+
+## PIT-S74-006 — Un `outline-offset` négatif ne tient pas dans un contrôle plus court que son contenu
+Remède prescrit par #417 pour `.mt-zoom__btn` : bouton **30 × 16,5px**, icône **14 × 14px**. Un trait inset de 2px ne laisse que **8,5px** libres → le contour CROISE l'icône en haut, en bas et à gauche. Aucune valeur n'y échappe (`-1px` → 10,5px, `0` → 12,5px, toujours < 14px) : le facteur limitant est la HAUTEUR du contrôle, pas la valeur de l'offset. Prévention : avant de choisir un offset négatif, poser l'arithmétique `hauteur − 2×(|offset| + épaisseur)` contre la taille du contenu. Si elle est négative, le remède est ailleurs (déclipper le conteneur, cf. [[DEC-S74-002]]). (Sprint 74 #417)
+
+
+## PIT-S74-007 — `warn-test-delegation.sh` bloque aussi le heredoc qui CONTIENT la commande, et l'échec se déguise en lancement réussi
+Le hook scanne le texte de l'appel `Bash` : écrire un script avec un heredoc contenant `npx playwright test` est bloqué comme si on la lançait. Conséquence vécue au S74 : le heredoc bloqué n'a pas créé le `.sh`, l'appel suivant a lancé `nohup` dessus et a rendu un `pid=` rassurant — **10 minutes d'attente sur un run qui n'existait pas**. Prévention : préfixer de `SKIP_DELEGATION=1` **l'appel qui écrit le script**, pas seulement celui qui l'exécute, et vérifier `ls -l` du script avant tout `nohup`. (Sprint 74)
+
+
+## PIT-S74-008 — RTK transforme un `prettier --check` ROUGE en « All files formatted correctly »
+Famille [[PIT-S62-010]], élargie au S74. `npx prettier --check <fichier>` a rendu « Prettier: All files formatted correctly » (résumé RTK) là où la sortie brute disait `[warn] … Code style issues found`. Deux appels successifs sur le MÊME fichier intact ont donné les deux verdicts opposés — le filtre ne s'applique pas de façon déterministe. Conséquence évitée de justesse : croire que son propre edit avait cassé le formatage et lancer un `prettier --write` qui reformate 60 lignes sans rapport dans un fichier shadcn jamais conforme. Prévention : `rtk proxy npx prettier --check …` pour tout verdict de formatage, et **vérifier l'état de la BASE** (`git show origin/dev:<path>`) avant d'imputer une non-conformité à son propre diff. Note connexe : la CI de ce dépôt ne lance PAS prettier (aucune occurrence dans `.github/workflows/`) — le formatage n'est pas un gate. (Sprint 74)
+
+
+## PIT-S75-001 — Le `default export` d'un request-config next-intl est INTESTABLE sous Vitest : le stub react-client lève
+Vitest résout `next-intl/server` sur son bundle **react-client**, où `getRequestConfig` est remplacé par un stub qui lève « not supported in Client Components » — trois tests rouges d'emblée, pour une raison qui n'a rien à voir avec le code testé. Or c'est précisément la branche de repli de `resolveLocale` dont la sémantique changeait en #279, et `next build` ne l'exerce pas (il ne prérend que des segments valides). Remède retenu : extraire la logique pure (`resolveLocale`) et la tester ; le `default export` reste couvert par le build. Prévention : ne pas promettre de test unitaire sur un artefact RSC-only — le repérer AVANT d'annoncer une stratégie de test. (Sprint 75 #279)
+
+
+## PIT-S75-002 — RTK falsifie aussi la sortie de `next build`, et la redirection vers fichier ne désamorce RIEN
+Famille [[PIT-S74-008]] / [[BUG-S70-002]], élargie au cas le plus trompeur. `npx next build` filtré a rendu « **2 routes (1 static, 1 dynamic)** » en 8,2 s là où le vrai build produit **52/52 pages** sur 99 lignes. Le point nouveau et contre-intuitif : **`> log` capture la sortie DÉJÀ résumée** — le fichier fait 5 lignes, donc un `tail` comme une relecture complète du fichier **confirment le faux chiffre**. Le réflexe « je redirige pour ne pas me faire filtrer » ne protège pas. Prévention : sur toute commande dont la SORTIE EST LA PREUVE (build, test, check de formatage), passer par `rtk proxy` **d'emblée**, et vérifier `echo "exit=$?"`. (Sprint 75 #279)
+
+
+## PIT-S75-003 — Un énoncé qui se déclare « non-impactant au runtime » est une hypothèse à réfuter, pas un fait
+#279 affirmait noir sur blanc « Non-impactant au runtime actuel […] indépendant de `getRequestConfig` ». Faux : `next.config.mjs` fait `createNextIntlPlugin('./i18n.ts')`, ce qui en fait le request-config ACTIF, et les pages légales y résolvent leurs messages via `getTranslations`. La conséquence n'est pas académique — elle change la preuve exigible : un `vitest` vert ne prouvait rien, seul un `next build` le pouvait. Troisième sprint consécutif où l'énoncé se trompe ([[PIT-S74-003]], [[DEC-S72-004]]). Prévention : traiter toute clause d'innocuité d'une issue comme une affirmation à vérifier — ici, deux `grep` (le plugin, les appelants) suffisaient. (Sprint 75 #279)
+
+
+## PIT-S75-004 — Un glob dans un commentaire de bloc TS ferme le commentaire, et l'erreur tombe douze lignes plus bas
+Écrire `` `public/locales/*/legal.json` `` dans un `/* … */` insère un `*/` qui **termine le bloc** : le reste du commentaire devient du code, et esbuild rougit loin de la cause (« Expected ; but found 01 »). Les backquotes markdown ne protègent rien — le lexer TS ne les connaît pas. Effet de bord d'orchestration observé au S75 : le fichier momentanément invalide a rendu `tsc` et `next build` GLOBAUX rouges pour l'autre agent de la vague, dans un working tree partagé. Prévention : proscrire `*/` dans tout commentaire de bloc — écrire `<locale>` plutôt que `*`. (Sprint 75 #60)
+
+
+## PIT-S76-003 — `queryClient.refetchQueries()` sans filtre applique `type: "all"`, PAS « les queries actives »
+Le défaut de `matchQuery` (query-core 5.101.2, `utils.js` l.23) est `type = "all"` : un `refetchQueries()` nu rejoue **tout le cache**, y compris les queries d'écrans démontés. Contre-intuitif parce que `invalidateQueries`/`resetQueries` de la MÊME librairie forcent, eux, `type: "active"` (`queryClient.js` l.134/159). Un « ça ne relance que l'actif » énoncé de mémoire est faux. Lire `matchQuery` avant de raisonner sur un défaut de filtre TanStack. (Sprint 76 #237)
+
+
+## PIT-S76-004 — Un JSDoc peut décrire le comportement CIBLE et non le comportement RÉEL, depuis des sprints
+`NetworkStatusContext.tsx` l.22 affirmait depuis le S26 que `retry()` relançait « les requêtes TanStack Query échouées » alors que le code les relançait TOUTES. Le commentaire n'a jamais menti sur l'intention, seulement sur le fait. Corollaire opérationnel : un commentaire n'est pas une preuve du code, et une issue qui décrit un défaut peut être contredite par un commentaire voisin qui décrit la cible — ne pas en conclure que l'issue est un no-op. Famille [[PIT-S56-003]] (constante « par défaut » redéclarée sous un commentaire qui jure le contraire). (Sprint 76 #237)
+
+
+## PIT-S76-005 — zsh ne fait pas de word-splitting : `git add -- $F` avec une liste de chemins en variable ne stage RIEN
+Sous zsh (shell de ce poste), `$F` contenant plusieurs chemins arrive comme **UN SEUL** pathspec : `git add` sort en 128, rien n'est indexé. L'échec est bruyant donc bénin, mais il coûte un aller-retour à chaque agent d'une vague de fan-out — et le même piège produit des FAUX POSITIFS silencieux dans les boucles d'audit (`for tid in $NEW_TESTIDS` du check coverage-E2E a rendu un MAJEUR fantôme au S76). Écrire les chemins littéralement, ou `${=F}`, ou un tableau. À corriger dans les gabarits de briefing qui recommandent « `git add <fichiers exacts>` ». (Sprint 76 #310)
+
+
+## PIT-S76-006 — Un audit visuel cadré sur une surface trouve le défaut À CÔTÉ, et le réflexe n'est ni de l'ignorer ni de le corriger
+Le balayage armé de #527 a sorti le `<h1>` à **57 px** (`text-3xl` du DS ≠ 30 px Tailwind, cf. [[PIT-S53-001]]) débordant de +124 px à 375 px, alors que les deux surfaces auditées étaient saines. Avant d'imputer au sprint : `git log -S` sur la classe fautive (ici `2a2cd9a`, pas l'issue en cours) **et** mesurer les 4 locales (écart inter-locale 13 px ⇒ non-i18n). Deux commandes suffisent à classer le défaut. Et ne pas « réparer » par `break-words` un titre dont le correctif est une rampe typographique : mesurer la contrepartie (246 px de haut) avant de décider. (Sprint 76 #527)
+
+
+## PIT-S76-007 — Le vérificateur de complétude de sprint lit LIGNE À LIGNE : une négation `RECOMMAND_*` repliée par le formatage compte comme signal NON TRAITÉ
+Récurrence mesurée de [[PIT-S70-005]] / [[PIT-S67-004]] au S76 : le done.md de #310 portait « … ; pas\nde `RECOMMAND_DB_EXPERT` ni de `RECOMMAND_SECURITY_EXPERT` car … ». Le « pas » étant sur la ligne précédente, `check-sprint-completeness.sh` a compté **deux** signaux actionnables non traités et bloqué la clôture. Le piège n'est pas la rédaction mais **le repli à 100 colonnes** appliqué après coup. Écrire chaque négation sur UNE ligne, et le dire dans le done.md pour qu'un reformatage ultérieur ne la casse pas. Même famille : le garde-fou de Phase 9 grep `[MISSING]` littéralement et se déclenche sur la PHRASE QUI LE DOCUMENTE dans l'audit. (Sprint 76, clôture)
+
+
+
+## PIT-S77-001 — Un preview Storybook qui ne repose pas le shell du layout rend une AUTRE application
+Au S77, `.storybook/preview.ts` n'appliquait ni le thème ni les polices : `<html class="">` et `--font-display`/`-ui`/`-mono` à la **chaîne vide** — les 80 stories étaient rendues en police système. Conséquence rétroactive : **toute mesure typographique ou de thème prise dans Storybook avant ce constat est nulle**, y compris les magnitudes de débordement relevées par le lead pendant sa revue. Remède : décorateur + `globalTypes` posés sur `document.documentElement`, polices importées du même module que `app/[locale]/layout.tsx`. Prévention : avant de mesurer dans un preview, comparer son shell (`class`, `data-theme`, variables de police calculées) à celui de l'app. (Sprint 77 #191)
+
+
+## PIT-S77-002 — `Range.getClientRects()` ment DANS LES DEUX SENS sur un débordement — la sonde est `scrollWidth - clientWidth`
+Deux défauts opposés rencontrés sur la même issue. (1) L'API **ignore le rognage `overflow:hidden`** et rapporte le texte masqué : elle comptait un `sr-only` comme +6,9 px de débordement. (2) Inversement, elle renvoie des **boîtes de ligne bornées à la boîte de contenu**, donc un mot **insécable** plus large que sa boîte n'y apparaît **jamais** — elle rendait structurellement **0** sur un rognage réel de 15 px, et a produit deux lignes fausses dans un rapport d'agent (« 0/30 » là où le lead mesurait 30/30). Prévention : pour « ce contenu déborde-t-il de sa boîte ? », la sonde est `scrollWidth - clientWidth` sur l'élément qui rogne ; réserver `Range` à la mesure d'un texte NON contraint. (Sprint 77 #191)
+
+
+## PIT-S77-003 — Un seuil de requête de conteneur qui RÉVÈLE du contenu crée une bande cassée s'il n'est pas dérivé de la mesure — sur TOUTES les locales
+`@min-[N]:not-sr-only` choisi à vue (34 px) alors que le jeton le plus large exige 49,3 px : entre 34 et 50 px de cellule, le contenu **réapparaît sans la place de s'afficher** et se fait rogner — pire que de le masquer. La bande tombait **entre deux paliers testés** : 4 valeurs rondes ne la voient pas, seul un **balayage continu** la sort. Et le besoin dépend de la langue : **26 px d'écart** entre `de` (« Mo. » 25,8 px) et `fr` (« sam. » 33,3 px). Prévention : dériver le seuil de la largeur mesurée du jeton le plus large sur les 4 locales, valider par balayage continu. (Sprint 77 #191)
+
+
+## PIT-S77-004 — Un `CSSStyleRule` expose un `cssRules` VIDE mais DÉFINI : un `if (r.cssRules)` saute toutes les règles feuilles
+Parcours de `document.styleSheets` pour retrouver une règle : le garde `if (r.cssRules)` placé avant le test de `selectorText` rend **0 résultat** sur une règle pourtant présente. Tester `selectorText` d'ABORD, puis récurser sur `r.cssRules && r.cssRules.length`. (Sprint 77 #191)
+
+
+## PIT-S77-005 — Les transitions CSS n'avancent pas dans un iframe non peint : une valeur transitionnée y reste à son point de départ
+Lecture d'un état ouvert (tooltip) dans un iframe hors écran : `opacity` restait à 0 après 600 ms alors que la règle `opacity:1` s'appliquait bien. Neutraliser `transition` avant de lire une valeur cible, et ne jamais conclure « la règle ne s'applique pas » depuis une valeur transitionnée. Complète [[PIT-S58-002]], qui traite du cas inverse (lire trop tôt). (Sprint 77 #191)
+
+
+## PIT-S77-006 — Un commentaire de story est un énoncé périmable au même titre qu'un énoncé d'issue
+`timeline-ruler--thirty-days` se décrit « fenêtre pleine de 30 jours **comme le dashboard** » — faux. Le dashboard a son propre `TimelineRuler` en pixels absolus ; le seul consommateur de `Ruler`/`DateStamp` est `EventPreviewTimeline` (6 graduations, drawer 452 px). **Le briefing du lead a relayé ce commentaire comme un fait** et a dimensionné le correctif dessus ; l'agent l'a réfuté par un `grep` des appelants. Même famille que [[PIT-S71-001]] et [[PIT-S70-001]]. (Sprint 77 #191)
+
+
+## PIT-S77-007 — Un scan de classes Tailwind sur du TSX doit LEXER, pas grepper — et le bruit est écrasant
+Le dépôt porte 3 occurrences de `ring-2`/`outline-none` **en commentaire**, qui documentent leur propre retrait (#383), et **20 `variant="outline"`** qui sont des valeurs de PROP, pas des classes : soit **20 faux positifs pour 3 vraies violations**, un garde-fou à 87 % de bruit qu'on désarme à la première exécution. Remède : lexeur d'états (chaîne / gabarit / commentaire) + discriminant de multiplicité pour les formes nues homographes d'une valeur de prop. Voisin de [[PIT-S63-017]]. (Sprint 77 #457)
+
+
+## PIT-S77-008 — RTK corrompt `git log -1` ET avale le code de sortie : vérifier HEAD par `git rev-parse`
+Au S77, `git log --oneline -1` rendait le **parent** (`1271253`) là où `git rev-parse HEAD` rendait le vrai HEAD (`82d66b9`) — de quoi conclure à tort que le briefing du lead se trompait de base. Et `npx vitest … ; echo $?` rend une chaîne **vide** sous le hook. Le hook réécrit aussi les **arguments** : `npx storybook dev -p 6006` est devenu `storybook dev -p 6006 dev 6006`. Toute vérification de HEAD passe par `git rev-parse`, tout code de sortie et toute commande longue par `rtk proxy`. Élargit [[PIT-S45-003]] et [[PIT-S71-002]]. (Sprint 77)
+
+
+## PIT-S77-009 — `document.fonts.ready` ne suffit pas sous `next/font` en `display: swap`
+`waitForFonts()` (`e2e/support/contrast.ts`) n'attend que `document.fonts.ready`, qui ne se résout que sur les chargements **déjà en vol** : le texte reste peint dans la police de repli. Mesuré : **4 runs rouges sur 6**, ~13 700 px de diff, tout le texte dédoublé. Remède : relever les specs de police calculées, les demander via `document.fonts.load()`, attendre `fonts.ready`, puis exiger une géométrie de texte **stable**. Les specs de CONTRASTE existantes ne sont pas fausses (une substitution de police ne change pas les couleurs) — seules les specs sensibles à la GÉOMÉTRIE sont concernées. (Sprint 77 #294)
+
+
+## PIT-S77-010 — `toHaveScreenshot` se stabilise sur le MAUVAIS rendu : deux frames de repli consécutives sont identiques
+L'API rejoue la capture jusqu'à obtenir deux captures consécutives identiques avant de comparer — on en déduit à tort qu'elle attend un rendu **correct**. Deux frames en police de repli sont identiques : elle se stabilise dessus et compare celle-là. « Attendre la stabilité » ne remplace jamais « attendre la bonne condition » (police chargée, spinner retombé, section révélée). (Sprint 77 #294)
+
+
+## PIT-S77-011 — Une référence de diff visuel capture l'habillage dépendant de l'ENVIRONNEMENT — et `mask` est le mauvais remède
+Peints DANS la boîte de l'élément : indicateur de dev Next (`nextjs-portal`, absent sous `next start`), devtools TanStack (`.tsqd-parent-container`, dev only) et surtout `OfflineBanner` (`[data-testid="network-banner"]`), qui n'existe QUE quand l'API est injoignable — il **aurait rougi la CI en permanence**. Remède : injecter un `display:none` via `addStyleTag`, **pas** `toHaveScreenshot({ mask })` : un masque ne s'applique qu'aux éléments EXISTANTS, il graverait un rectangle dans la référence sans équivalent en CI. Prévention : avant de générer une référence, énumérer les éléments `position: fixed|sticky` et se demander lesquels dépendent du mode de build ou de la santé de l'API. (Sprint 77 #294)
+
+
+## PIT-S77-012 — Un commentaire JSX `{/* … */` sans son `}` fait dire à SWC « Unterminated regexp literal » en désignant une ligne PLUS BAS
+Commentaire de décision de 33 lignes inséré dans le JSX : les deux pages sont tombées en **500**, curseur pointé sur un `</div>` quatre lignes après le vrai défaut. Le `{` non refermé fait lire `/* …` comme le début d'une **regexp**. Un commentaire court « fonctionne » par accident car il forme une regexp syntaxiquement close — le piège ne se manifeste donc que sur les commentaires longs. Après insertion d'un bloc généré par script, vérifier la fermeture `*/}` et exiger un **200 sur la route** avant de mesurer quoi que ce soit. Diagnostic par bisection sur le serveur de dev, pas par relecture. (Sprint 77 #532)
+
+
+## PIT-S77-013 — Un balayage `rect.right > clientWidth` ne voit pas un texte qui déborde SA PROPRE boîte
+Le débordement de page allemand résiduel (+72 / +84 px @320) venait de `<h2>` dont le `scrollWidth` dépasse le `clientWidth` sans que leur rectangle grandisse : le balayage rendait **zéro fautif** alors que `documentElement.scrollWidth` était bien supérieur. **Un balayage qui rend « 0 fautif » sur une page qui déborde n'innocente pas la page : il dénonce l'instrument.** Joindre une passe `scrollWidth > clientWidth` sur tous les éléments avant de conclure. Complète [[PIT-S63-012]]. (Sprint 77 #532)
+
+
+## PIT-S77-014 — « Aucune traduction n'est identique à la source » est une assertion fausse par construction : les vrais cognats existent
+En `en`, `Introduction`, `Contact` et `Article 10 – Contact` sont identiques au français **à juste titre**. Une garde de non-identité doit donc porter une **allowlist nominative bornée et testée**, sinon elle pousse à inventer une différence pour la satisfaire — ou elle est désarmée en bloc. (Sprint 77 #533)
+
+
+## PIT-S77-015 — Les intitulés allemands des pages légales sont des composés non sécables de 19-20 caractères
+`Datenschutzerklärung` (20), `Nutzungsbedingungen` (19), `Begriffsbestimmungen` (20, en `<h2>`). Leur largeur `min-content` **ne peut pas** être réduite par un retour à la ligne : **+33 %** sur le français. Toute rampe typographique ou largeur fixe calibrée sur `fr`/`en` déborde en `de`. Corollaire éprouvé au S77 : après traduction des titres, l'anglais ne débordait **plus du tout** et l'allemand débordait **trois fois plus** que le français — une mesure « non corrélée à la locale » prise avant traduction ne vaut rien. (Sprint 77 #533 #532)
+
+
+## PIT-S77-016 — Une tolérance déplacée d'une config globale vers le point d'appel peut n'être plus délivrée — un run vert ne le prouve pas
+Sur un poste où le bruit visuel mesuré est de **0 pixel**, les captures passent AUSSI BIEN avec la tolérance qu'avec le défaut « aucun pixel toléré » : **11/11 vert ne prouve rien** sur la délivrance de l'option. Remède : **contrôle par élargissement** — porter temporairement `maxDiffPixelRatio` au-dessus du ratio produit par la mutation du contrôle négatif ; celui-ci DOIT alors échouer. Sur toute constante de tolérance, exiger une expérience qui **change le verdict**, jamais un run vert. (Sprint 77, cycle 2 de review)
+
+
+## PIT-S77-017 — Un contrôle négatif qui appelle `toHaveScreenshot` avec ses propres options perd la tolérance et se désarme EN SILENCE
+Y oublier la tolérance le fait retomber sur le défaut Playwright (aucun pixel toléré) : il **reste vert**, mais cesse de mesurer la tolérance réellement appliquée aux captures. Aucun signal. Remède : étaler la constante partagée (`{ ...VISUAL_TOLERANCE, timeout }`). Quand on sort une valeur d'une config globale, énumérer **tous** ses consommateurs, contrôle négatif compris. (Sprint 77, cycle 2 de review)
+
+
+## PIT-S77-018 — Une garde statique qui cherche un NOM NU rougit sur la prose des fichiers qu'elle garde
+Un garde-fou cherchant `--font-ui` se déclenche sur les commentaires qui **documentent justement la règle** — il se désarme au premier run, sur sa propre documentation. Remède : chercher la forme de CODE, le littéral **quoté**, que la prose n'emploie jamais, et figer ce choix par un test « la prose ne suffit pas à faire rougir ». Même famille que [[PIT-S63-017]] et [[PIT-S76-007]] : un garde à motif ne distingue pas l'usage de la mention. (Sprint 77, cycle 2 de review)
+
+
+## PIT-S77-019 — Références `toHaveScreenshot` : jammy ≠ noble rougit la CI, et `--update-snapshots` grave la mutation du contrôle négatif
+Deux pièges enchaînés, mesurés sur la PR #536. (1) **Plateforme** : Playwright suffixe `-chromium-linux` pour *toute* distribution. Des références générées en `playwright:v1.61.1-jammy` (22.04) sont donc **comparées** sur un runner `ubuntu-latest` = **noble 24.04**, pas signalées manquantes — écart **ratio 0,01** (717 à 1259 px sur les cartes auth), soit l'ordre de grandeur de la plus petite régression détectable (0,0117) : **élargir la tolérance désarme la spec**. Seul remède : régénérer sur l'image du runner, contre un build de **production** (la CI joue `next start`). (2) **Régénération** : `--update-snapshots` **écrase** les références existantes, donc grave la mutation d'interlettrage du contrôle négatif dans `landing-hero-light.png` (13 058 px d'écart au run suivant). La garde `existsSync` protège d'une *création*, pas d'un *écrasement*. Toujours `--grep-invert "armement"`, puis **rejouer SANS `--update-snapshots`** avant de conclure. Fragilité durable : un futur bump d'`ubuntu-latest` rougira pareil. (Sprint 77 #294, PR #536)
+
+
+## PIT-S77-020 — Playwright sort **exit 0** avec « N did not run » quand le projet `setup` échoue : lire le COMPTE de tests, pas le code de sortie
+Vérification du lead lancée sans `--no-deps` : Playwright a joué le projet `setup`, qui provisionne des comptes contre un backend absent ; les **11 tests visuels ont été sautés** et la sortie affichait « 1 passed, **11 did not run** » — **avec un code de sortie 0**. Une vérification qui ne vérifiait rien. Un code de sortie ne suffit jamais : lire le nombre de tests **réellement exécutés**. Voisin de [[PIT-S61-005]] et [[PIT-S45-003]]. (Sprint 77, audit de clôture)
+
+
+## PIT-S78-001 — `prettier-plugin-tailwindcss` disloque les ancres littérales de tests : une ancre doit être contiguë DANS L'ORDRE TRIÉ
+Le tri canonique réordonne les classes : une ancre écrite dans l'ordre humain (`peer h-4 w-4 shrink-0`) se retrouve dispersée, et tout test qui fait `toContain` sur une chaîne de classes casse le jour où le gate de formatage est activé. Rencontré au S78 sur `tsx-focus-utility.test.ts` (7 tests rouges), ancre rebasée sur `h-4 w-4 shrink-0`. **Règle : une ancre de test sur des classes doit être choisie dans l'ordre que prettier produit, pas dans celui où on les écrit** — et le test doit vérifier que l'ancre existe encore, sinon il se désarme en silence. (Sprint 78 #528)
+
+
+## PIT-S78-002 — Mesurer ce que la CI mesurera, pas ce qui ressemble au périmètre
+Le mini-plan architect annonçait 104 fichiers non conformes en mesurant `prettier --check src e2e`. Le script `format:check` du dépôt vaut `prettier --check .` : **119 fichiers**. 15 fichiers d'écart, dont `tailwind.config.ts` et 4 autres à la racine. Le chiffre qui compte est toujours celui que produit **la commande que la CI lance**, jamais une approximation de son périmètre. Même famille que [[PIT-S71-001]], appliquée à un chiffre plutôt qu'à un inventaire. (Sprint 78 #528)
+
+
+## PIT-S78-003 — Le `path:` d'`actions/upload-artifact` IGNORE le `working-directory` du job — artefact vide, job vert
+`defaults.run.working-directory` ne s'applique qu'aux steps `run:`. Le `path:` d'une action est résolu depuis la **racine du dépôt**. Un chemin écrit relativement au working-directory ne matche donc rien, et `upload-artifact` **warne au lieu d'échouer** : l'artefact est publié VIDE et le job reste vert. La seule preuve qui vaille est la taille de l'artefact sur un run réel (S78 : 1 208 873 o et 917 764 o), jamais le job vert. Ajouter `if-no-files-found: error` pour transformer le silence en échec. (Sprint 78 #169)
+
+
+## PIT-S78-006 — Un reformatage massif rend le check coverage-E2E entièrement FANTÔME
+L'heuristique de Phase 8 collecte les `data-testid` des lignes `^+` du diff. Après un reformatage de 119 fichiers, **chaque ligne touchée compte comme ajoutée** : le check a rendu un MAJEUR sur 9 testids « sans spec » qui existaient tous déjà sur `origin/dev`. Réfutation en une commande : `git grep <testid> origin/dev`. Le sprint n'introduisait aucun testid. Voisin de [[PIT-S61-005]] (le check est vert quand les specs sont seulement citées) — dans les deux sens, il mesure le diff, pas la réalité. (Sprint 78, Phase 8)
+
+
+## PIT-S78-007 — Un contrôle qui franchit une frontière de PROCESSUS ne teste pas le `set -e` d'une fonction
+Pour prouver qu'une fonction shell propage bien ses échecs hors du contexte protégé par `set -e`, le lead avait lancé `if ./scripts/test-quiet.sh frontend ; then …`. **Vacuous** : le script tourne dans son propre processus, dont le `set -e` n'est jamais désarmé par le `if` de l'appelant — le contrôle serait passé au vert AVANT le correctif aussi. Le cycle 2 de revue l'a vu, pas le cycle 1. Contrôle correct : extraire les fonctions (tout ce qui précède le dispatcher `case`), les sourcer, reposer les variables de chemin que `BASH_SOURCE` ne déduit plus après sourcing, puis appeler la fonction sous `if`. Résultat sur la version d'avant le correctif : build ROUGE **et** typecheck ROUGE, et pourtant `✓ OK (build + tests unitaires + typecheck + lint)` avec `return 0`. **Règle : un contrôle doit changer de verdict entre les deux versions du code ; s'il ne le fait pas, il ne mesure rien.** (Sprint 78, cycle 2 de revue)
+
+
+## PIT-S78-008 — Le hook `warn-test-delegation.sh` tue un heredoc pour la QUATRIÈME fois, et il a tué celui qui écrivait CETTE entrée
+Récurrence de [[PIT-S63-007]] et [[PIT-S74-007]]. Au S78 il a frappé deux fois **le lead**, et le second cas est le plus parlant : le heredoc qui ajoutait ce bloc à `pitfalls.md` contenait la chaîne d'invocation Playwright **en tant que citation dans le texte du pitfall**, et l'écriture entière a été bloquée. Le hook ne distingue ni un usage d'une **mention**, ni une commande d'une **négation** (famille [[PIT-S63-017]]) — il scanne le texte de l'appel `Bash`, point. Premier cas du même sprint : un heredoc rédigeant un briefing dont une consigne **interdisait** de lancer Playwright. Parade : dès qu'un texte parle d'un runner de test, l'écrire avec l'outil `Write`, ou passer par un fichier intermédiaire — jamais par heredoc. (Sprint 78, briefings et clôture)
+
+## PIT-S79-001 — Un budget annoncé par un COMMENTAIRE n'est pas un budget : la stack qui exécute la suite désarmait le garde-fou entier
+L'énoncé de #475 affirmait que la suite E2E consommait « 5 inscriptions pour un plafond de 5, marge nulle en CI ». Le job `e2e` pose en réalité `RATE_LIMIT_ENABLED: false` (`ci.yml:294`), qui court-circuite `RateLimitingFilter` **en entier** dès `doFilterInternal` — tous les slots, tous les endpoints. **Aucun plafond n'était en vigueur pendant un run E2E**, ni en CI ni en local. L'énoncé avait été écrit à partir des commentaires du harnais, jamais d'une mesure. Preuve corroborante immédiate : le job émet **9** inscriptions par run (deux passes), jusqu'à 11 avec les retries — armé à 5, la suite serait rouge depuis des mois. Règle : lire la configuration de la stack qui exécute réellement la suite (workflow + docker-compose) AVANT de croire un budget annoncé par un commentaire. Un budget qu'aucun test ne recompte n'est pas un budget : il dérive, et l'issue qui en naît est fausse dès sa première ligne. (Sprint 79 #475)
+
+
+## PIT-S79-002 — Un chiffre faux recopié dans un 3e fichier est déjà devenu un ARGUMENT de conception
+Le « 5 pour un plafond de 5 » avait essaimé dans `accounts.ts`, `auth.setup.ts` et `playwright.config.ts` — et dans ce dernier il **justifiait** le maintien de `workers: 1` en CI. Réfuter le chiffre ne suffit donc pas : il faut greper toutes ses copies et vérifier ce que **chacune justifie**, sinon une décision continue de reposer sur une valeur morte. Corollaire au S79 : la dépendance dure S79 → S80 (« à 2 workers, un 429 se déguise en timeout `/login` ») est tombée avec le chiffre. (Sprint 79 #475)
+
+
+## PIT-S79-007 — Playwright 1.61 ne permet pas de permuter l'ordre : ne pas promettre un « run en ordre inversé » comme si un flag l'offrait
+Pas de `--shuffle`, et l'ordre des fichiers passé en CLI est **ignoré** (Playwright trie par chemin — vérifié par contrôle négatif). Inverser l'ordre des fichiers suppose de les **renommer** par préfixe numérique inverse le temps du run, et l'ordre **intra-fichier** reste hors de portée — précisément le cas que décrivait #463. Parade : adosser la preuve à une **mesure d'état** (comptage en base de ce que la suite laisse derrière : 81 produits + 88 catégories → 0 + 2), qui couvre l'intra-fichier que la permutation n'atteint pas. Voisin de [[isolation-verte-ne-prouve-pas-flaky]] : un run isolé retire la charge polluante, il ne prouve rien seul. (Sprint 79 #463)
+
+
+## PIT-S79-008 — Un compteur de sources qui ne lit que les specs rate ce qui passe par les helpers, et il l'a fait sur ce dépôt
+La garde de budget livrée par #475 ne lisait que `e2e/*.spec.ts` : les inscriptions émises depuis `e2e/support/auth.ts#registerOnly` (appelé par `forgot-password.spec.ts` et `reset-password-failures.spec.ts`) lui étaient **invisibles**. Le budget réel était **8, pas 5** — le chiffre publié par le sprint lui-même était faux, et c'est le cycle 2 de revue qui l'a rattrapé. Parade : résoudre l'indirection helper (point fixe borné sur les fonctions exportées) et ancrer les motifs sur la **forme d'appel**, pas sur la présence d'une chaîne (un message d'erreur qui cite `/api/auth/register` n'émet rien). Prévention : **tout compteur de sources doit être exercé sur des sources synthétiques**, sinon il mesure ce qu'il voit et non ce qui existe. Angle mort résiduel assumé et figé par un test : un locator construit depuis une variable, ou un helper écrit en `export const f = async () =>`. (Sprint 79, cycle 2 de revue)
+
+
+## PIT-S80-001 — Une sonde de pixels qui prend une capture par offset paie N screenshots + N décodages PNG par test
+`probeHighlighted` prenait **18 `page.screenshot` + 18 décodages** par test. Invisible sur Chromium (0,25 s/capture), **fatal sur Gecko sous charge** (1,0 s) : 15-18 s des 30 s de budget. Le symptôme trompe — « le membre qui tombe varie » ressemble à un flake de composant, c'est un défaut de **coût** : tous les tests du fichier sont au même niveau de budget. Parade : une capture, N offsets (`readStrips`, marge dérivée de l'offset le plus éloigné). Mesuré 19,4-24,8 s → 3,3-5,1 s. Détection : cf. [[PAT-S80-001]]. (Sprint 80 #472)
+
+
+## PIT-S80-002 — `next dev` compile les routes App Router à la demande ET les évince après inactivité
+Une route déjà compilée est **RE-compilée plus tard dans le MÊME run** : `/[locale]/settings` 1,0 s puis **17,8 s** ; `reset-password` 1,8 s puis 8,9 s. Le budget par défaut d'un `expect` est 5 s ⇒ dépassement systématique. La compilation étant **sérielle**, elle frappe AUSSI le worker voisin (chunks clients en file). Signature : `toBeVisible` « element(s) not found » ou `toHaveURL` inchangée, expirés à 5 s, sur des specs **sans rapport entre elles**. Le log `next dev` tranche en une commande. **Strictement local** : #462 a retiré `next dev` de la CI pour ça — d'où une baseline locale qui ne peut pas être verte. (Sprint 80 #472)
+
+
+## PIT-S80-003 — Le hook RTK réécrit `npx playwright test` (pas seulement `--list`)
+Il y injecte `--reporter=json` et tronque la sortie à 2 000 caractères : log vide, `EXIT=` faux. Même famille que [[PIT-S65-003]] (le listing) et [[PIT-S20-003]] (`git diff` vidé), mais sur le **RUN**. Parade : `rtk proxy npx playwright test --reporter=json` + `PLAYWRIGHT_JSON_OUTPUT_NAME`. Le JSON est de toute façon le meilleur artefact : statuts, durées, `workerIndex`, `startTime`, `stdout` par test. (Sprint 80 #472)
+
+
+## PIT-S80-004 — `ci.yml` porte `concurrency: cancel-in-progress: true` groupé par ref
+Pousser un commit vide pour « obtenir un 2ᵉ run » **annule le 1er**. Le second run d'une campagne de mesure s'obtient par `gh run rerun <id>`, jamais par un push. Corollaire utile : deux PR jetables sur des refs **différentes** tournent bien en parallèle — c'est ce qui rend [[PAT-S80-002]] gratuit en temps. (Sprint 80 #476)
+
+
+## PIT-S80-005 — Un job `e2e` vert ne vaut que lu à TROIS niveaux
+(1) `Running N tests using M workers` — le M atteste que le changement de config a effectivement pris ; (2) le compte passés/skipped, sinon un « N did not run » passe pour un succès ([[PIT-S77-020]]) ; (3) **l'absence de `flaky`** — `retries: 2` transforme silencieusement une instabilité de charge en succès. Un vert lu à un seul niveau ne prouve rien. (Sprint 80 #476)
+
+
+## PIT-S80-006 — `gh pr close --delete-branch` BASCULE LE WORKTREE SUR `main`
+Sans le moindre avertissement. Les commits suivants atterrissent donc sur `main`. Rencontré en vague 3 du S80. Parade : revenir explicitement sur la branche de travail et **le vérifier** (`git rev-parse --abbrev-ref HEAD`) avant tout commit qui suit une fermeture de PR. (Sprint 80 #408)
+
+
+## PIT-S80-007 — Pour faire rougir un gate, casser une assertion d'ÉGALITÉ, jamais une attente
+Une attente d'élément absent expire, et sous `retries: 2` l'échec est rejoué **3 fois** en consommant le budget du test — c'est le mécanisme par lequel le job `e2e` est passé de 15 à 42 min ([[PIT-S63-002]]). Une assertion d'égalité sur une valeur **déjà en main** (`toBe(200)` → `toBe(418)`) échoue en millisecondes. Choisir aussi une spec **hors du périmètre du sprint**, pour que l'imputation reste nette. (Sprint 80 #408)
+
+
+## PIT-S80-008 — Un job rouge doit être rouge POUR LA RAISON PROVOQUÉE
+Symétrique de [[PIT-S77-020]]. Sans ce contrôle on prouve « la CI bloque quand elle casse », pas « ce gate-ci bloque ». Contrôle à trois niveaux : les steps du harnais tous `success` (l'infra n'est pas tombée), la somme passés+échoués+sautés = total annoncé, et **100 % des enregistrements d'échec portant la cause attendue** (24/24 sur `Expected: 418 / Received: 200` au S80). (Sprint 80 #408)
+
+
+## PIT-S80-009 — Les garde-fous du dépôt se déclenchent sur leur propre documentation — 3 fois en un sprint
+Constaté au S80 : (1) `warn-test-delegation.sh` bloque l'ÉCRITURE d'un briefing qui contient la chaîne `npx playwright test` — alors que la mémoire projet interdit précisément de déléguer l'E2E ([[PIT-S73-004]]) ; parade `SKIP_DELEGATION=1`. (2) Le gate de Phase 9 grep `[MISSING]` dans l'audit et mord sur la phrase « aucun `[MISSING]` » — ne jamais écrire le marqueur littéral, même en négation. (3) `check-sprint-completeness.sh` lit **ligne à ligne** : une négation « pas de … \n ni `RECOMMAND_SECURITY` » coupée par un retour à la ligne devient un signal non traité. Garder chaque négation sur UNE ligne. Déjà signalé au S76 sur 2 occurrences — le motif est structurel, pas anecdotique. (Sprint 80, lead)
+
+
+## PIT-S81-002 — Caddy 2 écrase X-Forwarded-For par défaut (rectifié empiriquement)
+J'avais écrit — sans le mesurer — que `reverse_proxy` **ajoute** à `X-Forwarded-For`, donc que sans `header_up X-Forwarded-For {remote_host}` un client forgerait l'en-tête et, `clientIp()` lisant `split(",")[0]`, contournerait le plafond anti-brute-force. **Faux.** Test : un backend écho derrière Caddy, client forgeant `X-Forwarded-For: 1.2.3.4`. AVEC `header_up` comme SANS, le backend reçoit **l'IP réelle du client**, pas le forgé — Caddy 2 **remplace** l'en-tête par défaut (il ne fait pas confiance au XFF entrant tant que `trusted_proxies` n'est pas configuré). Confirmé côté prod : login avec un XFF rotatif forgé → `10×401 puis 429`, le plafond tient sur la vraie IP source. Donc : la protection est assurée par le **défaut de Caddy** ; `header_up {remote_host}` est **redondant** (le warning « Unnecessary header_up » de Caddy avait raison) ; `app.rate-limit.trust-forwarded-header=true` reste nécessaire pour que le backend lise le XFF posé par Caddy. Deuxième fois que je conclus une propriété réseau par raisonnement au lieu de la mesurer (cf. [[isolation-verte-ne-prouve-pas-flaky]] et PIT-S81-005) — sur ce genre de point, mesurer d'abord.
+
+## PIT-S81-003 — Oracle Cloud : ouvrir un port exige DEUX niveaux, et `iptables -A` y est inerte
+La Security List/NSG de la console OCI ne suffit pas : les images Ubuntu d'Oracle embarquent une chaîne `INPUT` qui se termine par `-j REJECT --reject-with icmp-host-prohibited`. Une règle **ajoutée** (`-A`) atterrit APRÈS ce `REJECT` et ne sert à rien — il faut **insérer** (`-I INPUT <n>`) avant lui, puis persister via `netfilter-persistent` sinon tout disparaît au reboot. Vérifier **depuis l'extérieur** : une sonde locale passe par `lo`, accepté sans condition, et réussit même quand le port est fermé au monde. (Mise en ligne #561)
+
+
+## PIT-S81-004 — Un runbook qui se déclare « liste complète » peut omettre des variables fail-fast
+`docs/runbook/deploiement-profils.md` annonçait une liste « complète » qui « fait foi » en omettant **quatre** variables, dont `STORAGE_AVATAR_PATH` et `STORAGE_EXPORT_PATH` que `application-prod.properties` lit **sans default** : un opérateur suivant le runbook à la lettre n'arrivait pas à démarrer. La liste de #370 avait la même lacune, plus une variable supprimée depuis 20+ sprints (`AUTH_JWT_PUBLIC_KEY`, remplacée par `AUTH_JWKS_URL` en #358). Confronter toute liste de configuration au fichier `application-{profil}.properties`, jamais à sa description en prose. (Mise en ligne #213/#370)
+
+
+## PIT-S81-005 — `nc -z` ment sur un port fermé ; seul un test par CONTENU tranche
+`nc -z` (macOS) a rapporté « succeeded » sur les ports 80/443 alors que la Security List OCI les bloquait encore — faux positif pur. `curl`, lui, disait vrai (« Connection reset by peer » = injoignable). Confronté aux deux, j'ai **inventé** une explication qui réconciliait tout (« mon réseau intercepte 80/443 et complète la poignée de main ») et je l'ai consignée comme un fait. Elle était **fausse** : une fois les règles OCI posées, les mêmes commandes depuis le **même poste** ont rendu le contenu attendu. L'explication simple — le port était fermé — était la bonne.
+
+**La règle qui tient** : ne jamais conclure sur une ouverture de port à partir d'un code de retour de connexion. Servir un **jeton unique** sur l'hôte (`python3 -m http.server <port> --directory <dossier vide>`) et exiger ce jeton en retour. Un intercepteur peut fabriquer une poignée de main, jamais un jeton généré à l'instant. Corollaires : `--directory` obligatoire (sinon l'arborescence est servie en `root`), `setsid --fork` pour que l'écouteur survive à la fin de la session SSH, et vérifier qu'il écoute AVANT de conclure d'un échec distant. (Mise en ligne #561)
+
+## PIT-S81-006 — Une capture d'écran fournie par l'utilisateur n'est pas un inventaire
+Au 2026-09-07, une capture de la liste des domaines OVH en montrait **3** ; la console en contenait **4**, la liste étant tronquée par un défilement. J'en ai tiré « `matimeline.fr` est un domaine NON détenu », affirmation propagée dans un ADR, trois commentaires d'issue, un message de commit et une description de PR avant d'être réfutée en ouvrant la console. Une capture prouve ce qu'elle montre, **jamais l'absence de ce qu'elle ne montre pas** — et une liste avec barre de défilement est par construction partielle. Recouper avec la source (console, API, `dig`) avant d'en tirer un fait négatif, surtout si ce fait sert à qualifier quelque chose de bloquant. (Mise en ligne #338)
+
+
+## PIT-S81-008 — `github.repository_owner` casse le push GHCR quand il porte des majuscules
+Les noms de dépôt OCI n'acceptent **que des minuscules**. Le propriétaire ici est `LeenVandelied` : `ghcr.io/${{ github.repository_owner }}/...` fait échouer le build sur `ERROR: failed to build: invalid tag …: repository name must be lowercase`, après avoir consommé tout le temps de préparation du runner. Les expressions GitHub n'ont **pas** de fonction de mise en minuscules — le calcul doit se faire en shell : `echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"`. Le même piège frappe côté hôte : `GHCR_OWNER` dans le `.env` sert à construire l'URL du `pull`, il doit être en minuscules lui aussi. Aucune validation locale ne l'attrape — `docker compose config` accepte un nom d'image en majuscules, seul le registre le refuse. (Mise en ligne #370)
+
+
+## PIT-S81-020 — Un `Content-Type: application/json` d'instance axios DÉTRUIT tout upload `FormData`
+Axios ne se contente pas de laisser l'en-tête : son `transformRequest` **remplace le corps** — `isFormData && hasJSONContentType ? JSON.stringify(formDataToJSON(data)) : data` (`axios/lib/defaults/index.js`). Le fichier disparaît **sans aucune exception côté client**, et le serveur répond **415**, jamais 401. C'est ce qui cassait `POST /api/me/avatar` **en production**, pas seulement en E2E. Parade : retirer l'en-tête dans l'intercepteur de requête pour tout corps `FormData` (`config.headers.delete('Content-Type')`) — le navigateur pose alors lui-même `multipart/form-data` avec la boundary. Règle générale : un `Content-Type` JSON posé au niveau d'une instance axios est incompatible avec tout upload passant par cette instance. (Sprint 81 #215)
+
+
+## PIT-S81-021 — L'oracle réseau du projet reste VERT pendant que toutes les pages rendent 500
+`curl /api/auth/me` → 401 prouve que le rewrite `/api/*` est en place, **rien de plus** : la requête court-circuite le rendu React. Constaté deux fois au S81 — une fois par l'agent de la vague 3, une fois par le lead — avec `oracle = 401` et `/fr/home = 500` simultanément, ce qui fait mourir le projet `setup` de Playwright en `browserContext.close: Target page… has been closed` après 3 min par compte. Parade : sonder **aussi une page** (`/fr/login`, `/fr/register`, `/fr/home`) avant de déclarer un harnais sain. Cause au S81 : deux `next dev` partageant le même `frontend/.next`, puis un `next build` (scope `frontend`) lancé pendant qu'un `next dev` servait encore. Un simple redémarrage du serveur suffit — inutile de supprimer `.next`. (Sprint 81, lead + #215)
+
+
+## PIT-S81-022 — Deux `next dev` sur le même worktree se détruisent mutuellement
+Les deux écrivent `frontend/.next` ; le premier meurt en cascade (`Cannot find module './343.js'` depuis `webpack-runtime.js`, puis `ENOENT .next/server/vendor-chunks/lucide-react.js`). Interdire le remontage dans un briefing **ne suffit pas** : vérifier `lsof -nP -iTCP:3000 -sTCP:LISTEN` avant de conclure sur un rouge, et ne PAS relancer son propre serveur par-dessus celui d'un agent — on rejoue la corruption dans l'autre sens. Corollaire : ne pas lancer le scope `frontend` de `test-quiet.sh` (qui contient `next build`) tant qu'un `next dev` sert l'E2E. (Sprint 81, lead)
+
+
+## PIT-S81-024 — re-confirmé au Sprint 83
+Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
+
+
+## PIT-S81-010 — Une sonde de déploiement qui ne traverse pas jusqu'au backend rend un vert menteur
+L'étape de vérification de `deploy.yml` ne sondait que `https://…/fr/login`. Elle a rendu le job **VERT alors que le backend bouclait sur un crash** : cette page est servie par le frontend seul et répond 200 sans backend. Le déploiement a été déclaré réussi, et seule une inspection manuelle de `docker compose ps` a montré `backend restarting`. Une sonde de mise en ligne doit atteindre **chaque service**, par une réponse **applicative** : ici `/api/auth/me` sans cookie doit rendre **401** — un 502/504 signalerait que le reverse-proxy ne trouve personne derrière. Corollaire : choisir la sonde par ce qu'elle **exclut**, pas par ce qu'elle affiche. (Mise en ligne #370)
+
+
+## PIT-S81-011 — `APP_CANONICAL_HOST` fait sortir le healthcheck du conteneur
+Le healthcheck du frontend sondait `http://127.0.0.1:3000`. En production, `localePrefix: 'always'` plus le garde canonique #322 font répondre `307 → https://<domaine public>/fr` : le `wget` suit la redirection, **quitte le conteneur** et dépend alors de la DNS et du TLS publics — il échouait sur le certificat ACME de test alors que l'application répondait. Un healthcheck de conteneur ne doit jamais sortir du conteneur. Correctif : envoyer l'en-tête `Host` canonique (extrait d'`APP_CANONICAL_HOST`, une seule source de vérité) sur un chemin **déjà préfixé par la locale** — 200 direct, sans redirection. (Mise en ligne #370)
+
+
+## PIT-S81-012 — Un fichier de config MONTÉ n'est pas rechargé par `docker compose up -d`
+Le `Caddyfile` est un bind-mount : en changer le contenu ne modifie ni l'image ni la configuration du service, donc Compose considère le conteneur à jour et **le laisse intact, avec l'ancienne configuration en mémoire**. Constaté au passage vers les certificats de production : le fichier était correct sur le disque, `docker compose ps` montrait `caddy Up 56 minutes` quand backend et frontend avaient 6 minutes, et Caddy servait toujours l'ACME de test. Le déploiement doit **recharger explicitement** le service concerné après avoir publié le fichier (`caddy reload --config …`, préférable à `restart` : à chaud, sans coupure). Signal à surveiller : un `Up` bien plus ancien que les autres services après un déploiement. (Mise en ligne #370)
+
+
+## PIT-S81-013 — Changer `acme_ca` ne réémet aucun certificat existant
+Basculer de l'ACME de test vers la production ne suffit pas : Caddy retrouve en stockage un certificat **encore valide** pour chaque nom et le réutilise, quel que soit l'émetteur — `acme_ca` ne pilote que les émissions **futures**. Après rechargement, `openssl s_client` montrait toujours `(STAGING)`. Pour basculer réellement, supprimer les certificats de l'ancien CA dans le volume (`/data/caddy/certificates/<ca>-directory`) puis **REDÉMARRER le conteneur — `caddy reload` ne suffit pas**. Deux raisons cumulées : le reload répond `"config is unchanged"` et ne fait alors rien du tout, et Caddy sert de toute façon les certificats depuis son **cache mémoire**, que la suppression sur disque ne touche pas. Seul le redémarrage lui fait relire un stockage vide et demander au nouveau CA. Vérifié : après `restart`, 8 certificats obtenus sur `acme-v02` en ~30 s, sans erreur. ⚠ Le site n'a **plus de certificat** entre la suppression et l'émission réussie : la fenêtre est courte mais réelle, et une émission refusée (quota) la prolonge. (Mise en ligne #370)
+
+
+## PIT-S82-001 — Un test qui CITE une règle peut n'en garder aucune
+`NewEventDrawer.test.tsx` citait `BR-EVE-017` en commentaire, mais son assertion — un `waitFor(toHaveTextContent(…))` — passe **à l'identique avec et sans le débounce** : elle protégeait le portail d'affichage, pas la règle. Toute la valeur d'une garde tient dans le fait de l'avoir vue **rougir sur la violation**, jamais dans la citation d'un identifiant. Corollaire pour les règles de la forme « X passe par un intermédiaire » : l'assertion doit porter sur le **NON-effet pendant la fenêtre** (l'ancienne valeur est encore là à t+delay−1), jamais sur « la valeur finit par arriver » — cette dernière forme est vraie dans les deux mondes. `grep BR-XXX` mesure la citation, pas la couverture : même famille que [[coverage-check-vert-ne-prouve-rien]] (S61) et [[PIT-S70-001]] (un `BR-*` recopié d'un commentaire se propage jusque dans les briefings). (Sprint 82 #507)
+
+
+## PIT-S82-002 — Un seuil déduit d'un libellé i18n est un seuil inventé
+Le hint de récurrence affiche « la série dépasse **4 000** occurrences », et l'énoncé de #491 reprenait ce chiffre. Le déclencheur réel de `capped=true` n'est plus ce plafond depuis #452 (S65) : toute série **sans `recurrenceEndDate`** est tronquée à l'horizon de 5 ans et repart `capped`. Mesuré en sondant l'endpoint avant d'écrire la donnée de test : `MONTH` sans borne → `{count:61, capped:true}` ; `MONTH` borné +2 mois → `{count:3, capped:false}` ; `WEEK` sans borne → `{count:261, capped:true}`. Une fixture calibrée sur 4 000 n'aurait jamais atteint l'état visé. Le seuil vit dans le service d'expansion ; le libellé n'en est qu'une glose — ici **fausse**, ce qui en fait aussi un défaut produit. Sonder, jamais lire le libellé comme une spécification. (Sprint 82 #491)
+
+
+## PIT-S82-003 — La règle graduée de la frise n'est PAS virtualisée, contrairement aux pastilles
+`MAJOR_TICK_UNIT` (`zoom.ts`) vaut `'day'` aux niveaux **Semaine ET Jour**, et `TimelineRuler` mappe `ticks` **en entier**. Réutiliser par réflexe le fixture « large étendue » de #449/#451 (5501 j) pour un test qui descend vers Jour ou Semaine fait rendre ~5500 graduations et ~1570 segments de week-end **à chaque changement d'échelle**. Le S82 a dimensionné une étendue dédiée de 731 j. Avant de recycler un fixture large pour un test qui zoome vers le fin, calculer le nombre de graduations ET de segments qui seront réellement rendus — le coût n'est pas porté par les pastilles, qui elles sont virtualisées. (Sprint 82 #477)
+
+
+## PIT-S82-004 — « Restauré » et « oublié » ont le même `git status`
+Un contrôle négatif qui mute le code de production doit prouver sa restauration, et `git status` ne suffit pas : il ne montre pas le contenu. La preuve est `rtk proxy git diff HEAD -- <dossier>` **vide**, jointe au retour. Recette sur worktree : `cp` du fichier vers le scratchpad avant neutralisation, `cp` inverse après. `git stash` est **INTERDIT** ici — la pile est partagée entre worktrees et une autre session peut la popper ([[sprint-parallel-commits-shared-worktree]]). Sur un working tree partagé par un fan-out, la mutation du source est en outre proscrite tant qu'un autre agent tourne : préférer le contrôle négatif par la couche réseau ([[PAT-S82-002]]). (Sprint 82 #477)
+
+
+## PIT-S82-005 — Le check coverage-E2E compte les testids des fichiers de test
+L'heuristique de la Phase 8 balaie tous les `*.tsx` ajoutés, `.test.tsx` compris. Au S82 elle a signalé `mock-picker` en MAJEUR : c'est le testid d'un **composant mocké dans un test unitaire**, préexistant dans `EventEditForm.test.tsx`, sans aucune surface produit derrière. Le risque n'est pas le faux positif lui-même mais la réaction qu'il induit — écrire une spec E2E factice pour faire taire le check, ce qui ajoute du vert sans ajouter de preuve. Le check reste par ailleurs faible dans l'autre sens : il vérifie qu'un testid est **cité**, pas qu'une spec passe ([[coverage-check-vert-ne-prouve-rien]]). Filtrer `*.test.tsx` / `__tests__/` avant de conclure. (Sprint 82, Phase 8)
+
+
+## PIT-S81-024 — re-confirmé au Sprint 83
+Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
+
+
+## PIT-S83-001 — Un clic Playwright sur un bouton VISIBLE mais non hydraté est un NO-OP silencieux
+Au premier run réel, la spec de #642 tombait 6 fois sur 11 : `waitUntil: 'domcontentloaded'` puis clic immédiat. Le bouton est visible, activé, cliquable — mais React n'a pas encore attaché `onClick`, et Playwright ne signale rien. Le seul test vert assérait `aria-pressed` AVANT de cliquer : une barrière d'hydratation **accidentelle**, puisque le composant ne pose `aria-pressed` qu'après sa garde `mounted`. Remède : une barrière **nommée** sur un attribut post-montage (`waitForToggleHydrated`). Le `toPass` qui rejoue le clic (`openMenu`, `landing-mobile-menu.spec.ts:52-63`) ne vaut que pour une action **idempotente** ; une bascule (`setTheme(inverse)`) exige une barrière, pas un réessai. Corollaire : une énumération DOM ne voit pas un élément monté conditionnellement — son absence au balayage est le **symptôme** du clic perdu, pas la preuve d'un testid faux (le lead l'a cru, à tort). (Sprint 83 #642)
+
+
+## PIT-S83-002 — Le premier `requestAnimationFrame` posé par `addInitScript` n'est PAS une borne de peinture
+Une sonde anti-flash de thème qui échantillonne la classe de `<html>` au premier rAF donne un faux rouge ~1 run sur 3 : les feuilles bloquantes du `<head>` suspendent le rendu pendant que le compositeur tique déjà, et le `<body>` de Next s'ouvre sur un `<div hidden>` avant le script next-themes. Échantillonner la première frame où un enfant de `<body>` a `getClientRects().length > 0` — c'est un **resserrage** de l'oracle, pas un relâchement. (Sprint 83 #642)
+
+
+## PIT-S83-003 — Un locator E2E peut s'ancrer sur la classe même qu'une issue de charte supprime
+`AUTH_CARD` de `sprint-77-theme-visual.spec.ts` valait `div.bg-surface.max-w-md.rounded-lg.shadow-lg` : ancré sur l'ombre que #574 avait pour objet de retirer. Le mode d'échec n'aurait pas été un diff de pixels mais « élément introuvable » sur les 8 tests auth — et rien dans le périmètre de l'issue ne le laissait prévoir. Avant de commiter un retrait de classe, `grep` cette classe dans `frontend/e2e/` ; ancrer un locator visuel sur l'**invariant** exigé par la charte (`.border-rule`), jamais sur l'habillage. (Sprint 83 #574)
+
+
+## PIT-S83-004 — `next build` vert + `vitest` vert pendant que `tsc --noEmit` est ROUGE
+Les `.test.tsx` sortent du périmètre du build : un cast faux dans un fichier de test (`id` au lieu de `jobId`) passe le build et vitest, et ne rougit que `tsc`. Symétrique de PIT-S41-002 (le build attrape ce que RTL ne voit pas). Le verdict frontend, c'est `./scripts/test-quiet.sh frontend` **complet** — jamais build + vitest seuls. (Sprint 83 #518)
+
+
+## PIT-S83-005 — `test-quiet.sh frontend` n'exécute PAS `format:check`, que la CI exige
+Au S83, une double ligne vide introduite par `75f37c4` a traversé l'agent (build + vitest + typecheck + lint) puis le lead (`test-quiet.sh` : 1392/1392, exit 0) — et a rougi le job CI `frontend` sur `prettier --check`. Le verdict local ne couvrait pas toutes les étapes du job. Aggravant : sous RTK, `npx prettier --check <fichier>` renvoie « All files formatted correctly » **alors que le fichier est fautif** ; seul `rtk proxy npm run format:check` a dit vrai. Tant que `test-quiet.sh` n'intègre pas `format:check`, le lancer à part avant tout push. (Sprint 83, clôture)
+
+
+## PIT-S83-006 — JSX dans un littéral de TUPLE rougit `react/jsx-key`, donc le build
+`[['EventDrawer', <EventDrawer … />], …] as const` : la règle prend le tuple pour une liste d'enfants et exige une `key`, et le lint est une gate du build CI. Poser un `key` littéral sur chaque élément ; la règle ne sait pas distinguer un tuple d'un tableau d'enfants. (Sprint 83 #518)
+
+
+## PIT-S83-007 — `process.env.TZ = undefined` n'efface pas la variable : il la met à la CHAÎNE `"undefined"`
+Un test qui force `TZ='Asia/Tokyo'` puis restaure par `process.env.TZ = previousTz` contamine tout test suivant du même worker : `TZ` n'étant settée ni en CI ni dans un shell local, `previousTz` vaut presque toujours `undefined`, que Node coerce en `"undefined"` — zone invalide qui retombe sur UTC. Mesuré : `getTimezoneOffset()` rend 0 au lieu de -120. **Invisible sur la CI Ubuntu, déjà en UTC**, donc jamais rouge là où l'on regarde. Restaurer par `if (previousTz === undefined) delete process.env.TZ; else process.env.TZ = previousTz`. Plus généralement, un test de fuseau doit FORCER `TZ` — sinon il est vacant en CI, où le défaut qu'il couvre est un NO-OP — et sa contre-épreuve doit échouer aussi sous `TZ=UTC`. Trouvé par la review de **cycle 2**, sur un commit qui corrigeait lui-même le cycle 1. (Sprint 83 #518)
+
+
+## PIT-S83-008 — Un `LocalDateTime` Java arrive SANS offset, et `new Date(iso)` le lit dans le fuseau du NAVIGATEUR
+`SessionResponse.lastActivity/createdAt` et `ExportJobResponse.expiresAt` sont des `LocalDateTime` : Jackson écrit `2026-07-05T10:00:00`. `ExportDataFlow` ajoutait `Z` (référentiel serveur, #58), `SessionList` faisait `new Date(iso)` — deux lectures opposées du même contrat, dont une fausse du décalage local. Défaut **pré-existant**, promu par #518 en affirmation lisible par la machine (`<time dateTime>`). Passer par `parseServerDateTime` / `serverDateTime` de `lib/date-iso.ts`. ⚠ Rien ne verrouille la zone du backend en UTC (`Clock.systemDefaultZone()`, aucun `TZ` conteneur) : la convention repose sur un défaut Docker implicite. (Sprint 83 #518, review cycle 1)
+
+
+## PIT-S83-009 — `language-selector.i18n.test.ts` assère la liste EXACTE des clés de `common.navigation`
+Toute clé ajoutée sous `navigation` dans les 4 locales fait rougir ce test. Pour un nouveau contrôle transversal (ici la bascule de thème), ouvrir un objet frère (`common.theme`) plutôt qu'élargir `navigation`. (Sprint 83 #642)
+
+
+## PIT-S83-010 — Un commentaire de code peut institutionnaliser un écart — et tromper une revue de charte
+Deux fois au même sprint. (1) `AppShell.tsx` documentait sa classe active comme « calquée sur `SettingsShell` », transformant un précédent interne non sourcé (#86, `43d9e14`) en référence apparente ; le test assérait la même classe sous le même intitulé. (2) À la clôture, la revue `ui-design` a déclaré #578 en ÉCART en citant `colors.css:74-90` — un commentaire écrit au S57 **d'après ce même précédent** — alors que la maquette (`App.dc.html`, `.app-nav.is-active { background: var(--color-primary) }`) donnait raison à #578. Un commentaire qui cite un composant frère comme source de vérité visuelle est un signal de dérive, pas une justification ; face à un écart charte ↔ code, lire la **règle CSS de l'écran de maquette** avant de trancher. (Sprint 83 #578, clôture)
+
+
+## PIT-S83-011 — Un énoncé d'issue peut être faux alors que la plupart de ses références sont justes
+#518 nommait 5 composants à migrer ; 4 étaient justes, mais `CompactAgenda` n'affiche **aucune** date (documenté dans son en-tête depuis #83), `ProductsListView:295` est un `<td>` et `SessionList` un `<p>`. Le mini-plan architect se trompait lui aussi, dans l'autre sens (3 `<time>` comptés au lieu de 2, en incluant un fichier de test). Au même sprint, #574 annonçait 8 surfaces et 1 inversion de survol (il y en avait 9 et 2), puis 10 références visuelles invalidées (la CI en a rougi 8), et #642 reposait sur une préférence de thème « de compte » qui n'existe pas en base. Relire **chaque** élément nommé avant de briefer. (Sprint 83)
+
+
+## PIT-S83-012 — Une image de backend e2e se date ; une sonde HTTP, elle, ne prouve pas l'existence d'une route
+Au S83, `sprint-82-recurrence-capped-hint` échouait en local. L'image du conteneur backend (`docker inspect --format '{{.Created}}'`) datait du 2026-08-30 ; le flag `capped` a été livré le 2026-09-03 (`ba8f585`) : l'image ne **pouvait pas** contenir la fonctionnalité. La CI l'a confirmé (vert). La sonde HTTP, elle, ne tranchait rien : le filtre de sécurité rend **401 pour toute route non authentifiée, existante ou non** (calibré sur une route inventée). Dater l'image contre le commit de la fonctionnalité ; ne pas conclure d'un 401. (Sprint 83, Phase 6)
+
+
+## PIT-S83-013 — `check-sprint-completeness.sh` détecte la trace d'un spécialiste par NOM de fichier, pas par contenu
+La règle `ls "$SPRINT_DIR" | grep -E "test-runner"` est satisfaite par n'importe quel fichier bien nommé, vide compris ; inversement, un artefact complet qui traite un signal mais s'appelle autrement laisse le signal « non traité ». Au S83, un fichier `verification-ui-design-et-tests.md` a levé les 4 signaux `UI_DESIGN` mais aucun des 3 `TEST_RUNNER`, bien qu'il en contînt les résultats. Nommer l'artefact d'après le spécialiste **et** y mettre la preuve réelle ; ne jamais créer un fichier vide pour faire taire le contrôle. (Sprint 83, clôture)
+
+
+## PIT-S83-014 — `el.focus({ focusVisible: true })` ne déclenche PAS `:focus-visible` : faux négatif sur l'anneau de focus
+Au S83, un focus programmatique sur la bascule de thème a rendu `outline: none` et `matches(':focus-visible') === false` — ce qui aurait conclu à l'absence d'indicateur de focus. Une vraie navigation clavier (touche Tab depuis `body`) a rendu un anneau de 2px à 5,93:1 (clair) et 6,94:1 (sombre). Mesurer un indicateur de focus via le clavier réel, jamais via `focus()`. De même, une capture réduite à 0,8 a fait paraître pâle une icône mesurée ensuite à 16,7:1 : réduction d'un trait fin, pas un défaut. (Sprint 83, clôture)
+
+
+## PIT-S83-015 — RTK corrompt la sortie BINAIRE de `git show`
+Lire les dimensions d'un PNG versionné par `git show HEAD:<png> | python …` a rendu `1146224640x32489405` : le flux binaire est altéré par le hook. `rtk proxy git show HEAD:<png>` rend les vraies dimensions (448×430). À appliquer à toute sortie binaire, en plus des cas déjà connus (`git diff` vide, `--reporter=line` réécrit en JSON). (Sprint 83, clôture)
+
+
+## PIT-S81-024 — re-confirmé au Sprint 83
+Reproduit une troisième fois (lead, suite E2E complète) : `--reporter=list` réécrit en `--reporter=json` puis tronqué, sortie ressemblant à un dump de config. Parade inchangée : `rtk proxy` sur la commande Playwright, redirigée vers un fichier.
+
+
+## PIT-S84-001 — Une classe `.mt-*` hors layer posée dans un lien actif écrase l'encre héritée de la pilule
+`.mt-eyebrow` pose `color` et `font-size` hors layer. Posée sur le libellé d'un lien de nav, elle bat l'encre que le lien actif reçoit par héritage (`text-primary-ink` sur la pilule graphite) : contraste détruit, sans erreur ni test rouge. Solution retenue au S84 (#575) : une classe dédiée `.mt-nav-label` qui ne pose ni couleur, ni taille, ni graisse, verrouillée par un test PostCSS (`nav-label-class.test.ts`, contrôle négatif sur `.mt-eyebrow`). Prévention : avant de réutiliser une classe `.mt-*` sur un élément dont un ancêtre pilote la couleur par état, lister ses déclarations compilées — toute propriété héritable qu'elle pose coupe l'héritage. (Sprint 84 #575)
+
+
+## PIT-S84-002 — « AA-tunée » dans une charte n'est pas une mesure : recalculer avec les encres du dépôt avant d'en faire un critère
+Le handoff annonçait une palette de 12 couleurs « AA-tunée sur les deux thèmes ». Recalculée avec `INK_LIGHT #FFFFFF` / `INK_DARK #0B0C0E`, orchidée `#B056A8` plafonnait à **4.43:1** (4.74 seulement avec du noir pur). Les critères « valeurs du handoff à l'identique » et « AA sur les 12 » de #577 étaient donc incompatibles — découvert en fin d'implémentation, arbitré par DEC-S84-003. Prévention : toute affirmation de contraste d'une source de design se recalcule avec les constantes réellement peintes AU MOMENT de rédiger/briefer l'issue, pas à la fin (famille [[PIT-S61-004]]). (Sprint 84 #577)
+
+
+## PIT-S84-003 — Un mock de composant qui ignore `children` fait disparaître ce qu'un appelant lui passe en déclencheur
+Les tests mockaient `PopoverPicker` par un bouton qui ne rendait pas `children`. Un composant qui passe SON déclencheur (« Personnalisé ») en `children` voit ce déclencheur disparaître du rendu de test : l'état « Personnalisé actif » devenait invérifiable, sans aucun signal. Solution : les mocks de `CategoryDrawer.test`, `EventEditForm.test`, `ProductDrawer.test` rendent `{children}`. Prévention : un mock d'un composant qui accepte `children` doit les rendre. (Sprint 84 #577)
+
+
+## PIT-S84-004 — Un débordement révélé par une nouvelle spec n'est pas forcément causé par le diff : corréler à la locale et au diff avant d'accuser
+La spec `sprint-84-section-titles` (dashboard mobile 375 px, allemand) a rougi : page à 377 px. L'hypothèse naturelle — les nouveaux titres de #575 en allemand — était fausse. Une sonde Playwright (éléments dont `right > clientWidth`) a désigné le CTA `nowrap` de la rangée du salut ; le débordement était **plus fort en français** (390 px) qu'en allemand, dans des fichiers que le sprint n'avait pas touchés. Cause : `GreetingHeader` flex item sans `min-w-0`, avec un nom E2E sans espace (cf. [[PIT-S63-013]] — ici le défaut adjacent est réel : un vrai nom long déborde pareil). Réflexe : sonder QUI déborde, comparer 2 locales, et `git diff --stat` des fichiers en cause avant de corriger. (Sprint 84, lead)
+
+
+## PIT-S84-005 — `npx next lint` avec plusieurs `--file` peut rendre un faux `Errors: 1` sans détail hors `rtk proxy`
+Reproduit au S84 sur 2 puis 17 fichiers : `npx next lint --file a --file b …` nu rend `Errors: 1 | Warnings: 0` sans aucun message, alors que chaque fichier seul — ou le même lot via `rtk proxy` — est propre. Extension de [[PIT-S74-008]] (RTK et prettier) à `next lint`. Parade : `rtk proxy npx next lint --file …` pour tout lint multi-fichiers. (Sprint 84, correctifs post-vague)
+
+
+## PIT-S84-006 — `npx --prefix frontend prettier --check` lancé depuis la racine rend 1 sur un fichier conforme
+Le lead a vu `fmt=1` sur `GreetingHeader.tsx` après commit ; relancé DEPUIS `frontend/` (`rtk proxy npx prettier --check <fichier>`) : conforme, code 0. Le `--prefix` résout mal la configuration ou le binaire. Parade : lancer prettier et eslint depuis `frontend/`, jamais par `--prefix` depuis la racine — et ne jamais conclure « non formaté » sur ce seul code de sortie. (Sprint 84, lead)
+
+
+## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
+Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
+
+
+## PIT-S85-001 — Un `position:sticky` aussi large que son conteneur ne glisse JAMAIS
+`.mt-tlv__group-head` portait `position:sticky; left:0` **et** `width: railWidth` en ligne : une boîte sticky aussi large que son bloc conteneur n'a aucune marge de glissement, donc le libellé de catégorie défilait avec la piste et sortait de l'écran dès `scrollLeft > 0`. Latent sur le dashboard (rail rarement plus large que le viewport) mais **visible par défaut sur `/timeline` ≥ 1024 px** depuis que la sidebar rétrécit la colonne de 248 px. Parade : une CELLULE interne de largeur fixe (`--lane-header-w`) porte le sticky, pas la rangée entière. Prévention : tout sticky horizontal doit être plus ÉTROIT que son conteneur, et se vérifier au navigateur avec `scrollLeft > 0` — jsdom ne le voit pas. (Sprint 85 #592 constaté, #601 corrigé)
+
+
+## PIT-S85-002 — Un enfant `flex:1; min-width:0` absorbe tout le manque de place SANS jamais déborder
+Ajouter deux boutons dans `.mt-tlv__toolbar` (`flex-wrap:wrap`) a écrasé la minimap à **9 px de large** à 1024 px en français, avec `scrollWidth === clientWidth` : aucun contrôle de débordement ne pouvait le voir, y compris `sprint-63-de-overflow-audit`. La barre ne passe à la ligne que lorsque l'élément élastique ne peut plus rétrécir, et une base `0` le laisse rétrécir jusqu'à rien. Parade : base minimale (`flex:1 1 160px`) + requête de conteneur pour renvoyer l'élément sur une 2e ligne. Prévention : après tout ajout dans une barre flexible, **mesurer la largeur de l'élément élastique aux paliers**, pas seulement l'absence de débordement. (Sprint 85 #602)
+
+
+## PIT-S85-003 — Un overlay du shell ouvert depuis un conteneur en plein écran est INVISIBLE
+Le bouton « Nouvel événement » de la barre d'outils ouvre le `NewEventDrawer` monté par `AppShell`. Depuis la frise en plein écran (`requestFullscreen` sur la section), seuls l'élément plein écran et ses descendants sont peints : le drawer s'ouvre hors champ, invisible, avec le focus piégé dedans. Parade : quitter le plein écran avant d'ouvrir. Prévention : tout déclencheur d'overlay placé dans un conteneur « plein-écranable » doit tester `document.fullscreenElement`. (Sprint 85 #602)
+
+
+## PIT-S85-004 — La largeur RENDUE d'une pastille de frise n'est pas sa durée (20 px de padding)
+`.mt-tlv__evt` a 20 px de padding horizontal en border-box : une pastille d'un jour au zoom Mois (`widthPx` = 12) est peinte sur 20 px. Une assertion E2E qui compare la `boundingBox().width` d'une pastille à un autre marqueur temporel compare donc des choses différentes. Parade : comparer `style.width` (= `widthPx`). Prévention : toute assertion de géométrie sur les pastilles doit dire si elle vise la **durée** (`widthPx`) ou le **rendu** (≥ 20 px). (Sprint 85 #601)
+
+
+## PIT-S85-005 — Une garde E2E peut rester VERTE quand on retire ce qu'elle est censée protéger
+La garde « aucune zone vide après repli » était présentée comme protégeant `collapsed` dans `geometryKey`. Contrôle négatif : retirer `collapsed` de la clé **laisse la spec verte**. Raison : la bande verticale de `useTimelineViewport` est exprimée en repère RAIL, et replier une catégorie au-dessus ne déplace ni le rail ni `scrollY` — la bande reste juste. La virtualisation est robuste aux reflows internes du rail, mais pas à un changement de hauteur d'en-tête (celui-là rougit bien). Prévention : jouer le contrôle négatif AVANT d'affirmer ce qu'une garde protège. Famille de [[PIT-S61-005]]. (Sprint 85 #601)
+
+
+## PIT-S85-006 — Un testid « proposé » par un briefing peut être déjà pris ailleurs
+Le briefing de #602 proposait `timeline-today` ; l'identifiant était déjà porté par le badge positionnel de la règle dans 3 composants. Renommé `timeline-today-button`. Prévention : `grep -rn 'data-testid="<id>"' src e2e` avant d'adopter un testid suggéré — y compris quand la suggestion vient du lead. (Sprint 85 #602)
+
+
+## PIT-S86-001 — Un piège Échap maison sous des couches Radix ferme DEUX couches d'une seule frappe
+Le `DismissableLayer` de Radix (confirmations, `ConflictDialog`, `Select`) écoute `keydown` sur `document` en CAPTURE et fait `preventDefault()` en se fermant, SANS `stopPropagation`. Un listener Échap global en phase bulle (`useFocusTrap`) reçoit donc la même frappe et ferme aussi le panneau dessous. Solution : `if (e.key === 'Escape' && e.defaultPrevented) return`. Prévention : tout piège Échap global teste `defaultPrevented` ; garder un test « Échap dans la confirmation ne ferme que la confirmation », vu ROUGE sans la garde. (Sprint 86 #618)
+
+
+## PIT-S86-002 — `hideOthers` (paquet `aria-hidden`) épargne les régions `aria-live` ET tous leurs ancêtres
+La bibliothèque utilisée par Radix pour rendre le fond inerte ne pose pas `aria-hidden` sur un nœud qui contient une région `[aria-live]`. Une région live dans `<main>` (zoom de la frise) laisse `app-shell` et `<main>` sans `aria-hidden` : un oracle E2E « le fond est inerte » qui vise ces conteneurs rougit à tort. Solution : viser un élément hors de toute chaîne d'ancêtres aria-live (la sidebar). Prévention : documenter ce résidu plutôt que conclure que l'inertage « ne marche pas ». (Sprint 86, correctif de revue)
+
+
+## PIT-S86-003 — Mesurer une géométrie juste après l'ouverture d'un panneau animé mesure le panneau en vol
+L'audit de débordement `sprint-63` relevait le drawer à 1288-1298 px dans une fenêtre de 1280 : #618 avait ajouté une entrée `translateX(28px)` de 200 ms et `settle()` n'attendait que les polices. Débord variable d'un run à l'autre = signature de la mesure en vol. Solution : `settle()` attend `document.getAnimations()` → `finished` (animations infinies écartées, borne de temps). Prévention : tout `settle()` de mesure attend polices ET animations ; armer par un débord injecté AU REPOS. Ne jamais désactiver l'animation produit pour faire passer le test. (Sprint 86, suite E2E du lead)
+
+
+## PIT-S86-004 — Un mock `matchMedia` booléen global inverse silencieusement un test quand la requête change de sens
+Un mock qui renvoie le même `matches` pour toute requête passe tant que le composant interroge `min-width` ; dès qu'il interroge `max-width` (#618 : bascule sheet `< 1024 px`), l'assertion teste l'inverse de ce qu'elle nomme, et reste verte. Solution : évaluer `min-width`/`max-width` contre une largeur simulée. Prévention : jamais de mock `matchMedia` qui ignore le texte de la requête. (Sprint 86 #618)
+
+
+## PIT-S86-005 — Après un style inline passé à `undefined`, React laisse `style=""` sur le nœud
+`style={cond ? {...} : undefined}` sur un nœud déjà rendu : React retire les propriétés mais laisse l'attribut vide. `getAttribute('style') === null` n'est vrai qu'au PREMIER rendu sans style. Solution : asserter `el.style.<prop> === ''`. (Sprint 86 #617)
+
+
+## PIT-S86-006 — L'horizon de 5 ans ne borne QUE l'aperçu, et le plafond de 4000 n'a pas disparu
+`RecurrenceExpansionServiceImpl` n'a qu'un appelant (`RecurrencePreviewController`) : l'horizon de 5 ans sans date de fin borne le CALCUL de l'aperçu, pas la série (la frise n'étend aucune occurrence). Et le plafond de 4000 mord encore sur une date de fin explicite très lointaine (≈ 77 ans en WEEK, ≈ 333 ans en MONTH). Un libellé piloté par `capped` doit donc rester vrai dans les DEUX cas. Prévention : grepper les appelants d'une borne backend avant d'en décrire l'effet dans un texte utilisateur (cf. PIT-S82-002). (Sprint 86 #646)
+
+
+## PIT-S86-007 — Des specs E2E « ciblées » choisies à la main ratent l'audit transverse qui voit la régression
+Le grep des testids du drawer donnait 12 specs ; les briefings de #618/#617 en listaient 4 choisies à la main, sans `sprint-63-de-overflow-audit`. Les agents ont rendu « E2E ciblé vert » ; la suite complète du lead a trouvé 8 échecs (pied de sheet hors écran à 320 px). Prévention : coller dans le briefing la liste grep COMPLÈTE des specs qui citent la surface touchée ; garder la suite complète du lead en fin de sprint. (Sprint 86)
+
+
+## PIT-S86-008 — `test-quiet.sh frontend` contient `next build` : l'interdire et l'exiger dans le même briefing est contradictoire
+En vague parallèle, le briefing donnait l'exclusivité de `next dev`/`next build` à un agent ET exigeait `./scripts/test-quiet.sh frontend` des autres — scope qui lance `next build` (même `.next`, PIT-S81-022). Solution : `frontend-unit` + `tsc --noEmit` pour les agents sans navigateur ; le build complet est joué par l'agent exclusif ou par le lead. (Sprint 86 #646)
+
+
+## PIT-S86-009 — Sous RTK, un `grep -v` qui génère une contre-épreuve peut produire un fichier VIDE
+`grep -v '… && …'` via le hook RTK pour retirer une garde a produit un fichier vide → vitest « no tests found », pris un instant pour une contre-épreuve. Solution : `rtk proxy grep -v -F` et contrôle `wc -l` avant de substituer le fichier. (Sprint 86 #618)
+
+---
+
+## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
+
+- PIT-S1-004 — `git add -A` dans un worktree sprint capture les artefacts d'orchestration
+- PIT-S3-002 — Corriger `.gitignore` ne dé-tracke pas un fichier déjà suivi
+- PIT-S3-005 — Subagent fullstack-dev lancé depuis un worktree `/sprint` commite sur `dev` du checkout principal
+- PIT-S4-005 — `git add -A` dans un worktree `/sprint` aspire les artefacts d'orchestration du lead
+- PIT-S5-004 — Worktree partagé multi-agents (fan-out /sprint, même working tree)
+- PIT-S7-001 — jsdom n'exécute pas `window.location.href=` (no-op silencieux)
+- PIT-S7-002 — TanStack Query v5 : `staleTime:Infinity` + `initialData` fige la valeur du premier render
+- PIT-S7-003 — Logger l'objet axios `error` brut expose le password en clair
+- PIT-S8-001 — `next build` CSR bailout : `useSearchParams()` sans `<Suspense>`
+- PIT-S8-004 — (orchestration) L'audit tests ne lance PAS `next build`
+- PIT-S8-005 — `React.use(params)` (Next async params) incassable en vitest
+- PIT-S9-002 — br-auth pack pointe `useAuth.ts` mais la vraie source PII est `AuthContext.tsx`
+- PIT-S9-003 — Audit PII : `grep localStorage` seul insuffisant avec TanStack Query
+- PIT-S11-001 — Radix Select/Dialog en test Vitest+jsdom : Pointer Capture / scrollIntoView manquants
+- PIT-S11-002 — Tester le rejet d'une mutation TanStack v5 en isolation → unhandled rejection au runner
+- PIT-S11-003 — Assouplir un schéma Zod (désync DTO) sans auditer les schémas DÉRIVÉS qui l'héritent
+- PIT-S14-002 — Architect Phase 0.5 « aucune evidence » faux négatif : lire le fichier cible réel, pas grep du nom d'exception
+- PIT-S15-001 — `next dev`/`next build` réécrit `next-env.d.ts` → casse `npm run lint`
+- PIT-S15-002 — E2E full-stack cross-port : cookie JWT SameSite=Lax non envoyé sur POST
+- PIT-S15-004 — `next build` (ESLint strict) échoue là où vitest+tsc passent ; commitlint header ≤100
+- PIT-S16-003 — Codemod `storybook upgrade` laisse des packages périmés dans package.json
+- PIT-S16-004 — id généré via compteur module-level → mismatch d'hydratation SSR
+- PIT-S17-001 — Migration vers classes DS `.mt-*` : vérifier que `globals.css` importe la feuille DS
+- PIT-S17-002 — Concat de classes CSS en template string : l'espace séparateur saute silencieusement
+- PIT-S17-003 — Réécriture de composant : un `data-testid`/contenu couvert par E2E mais pas par l'unit se perd silencieusement
+- PIT-S18-001 — Migration modèle 1-couleur (BR-EVE-009) : appliquer AUSSI à la vue lecture, pas que le formulaire
+- PIT-S19-002 — Imports inutilisés dans un test : vitest vert mais `next build` (eslint strict) rouge en CI
+- PIT-S20-001 — Convertir une clé i18n string→objet casse les autres consommateurs (next-intl)
+- PIT-S20-002 — Masquer une scrollbar scroll-x : `scrollbar-width:none` seul ne suffit pas sous Chromium
+- PIT-S21-002 — Test swipe/pointer sous jsdom : `clientY` des synthetic pointer events = null
+- PIT-S21-003 — AuthContext détient son user en useState : `invalidateQueries` ne le rafraîchit PAS
+- PIT-S22-002 — Tester le threading d'une prop vers un enfant MOCKÉ : exposer la prop en data-attr
+- PIT-S24-001 — `.focus()` seul ne défile pas des conteneurs scrollables imbriqués → `scrollIntoView` explicite
+- PIT-S26-001 — Composant `useTranslations` (next-intl) monté au layout RACINE App Router → crash prerender SSG de TOUTES les pages
+- PIT-S26-002 — Timeout axios global requalifie les uploads multipart longs en erreur réseau
+- PIT-S28-001 — Un `case`-arm de test partagé entre scopes de nature différente = faux vert silencieux
+- PIT-S29-001 — RTK tronque/mélange la sortie de `docker compose build/ps`
+- PIT-S31-001 — `npm audit fix` tire des majeurs transitifs non voulus
+- PIT-S31-002 — Garde ESLint anti-fuite `console.error` : couvrir le mono-arg
+- PIT-S33-001 — URL absolue renvoyée par le backend + `apiClient.baseURL` finissant par `/api` → double `/api/api`
+- PIT-S33-002 — Liste de locales dupliquée dans N fichiers → 404 silencieux sur les langues non déclarées partout
+- PIT-S34-001 — `getRequestConfig({locale})` déprécié en next-intl (utiliser `requestLocale`)
+- PIT-S37-003 — E2E : DB dev locale bloquée à une vieille version Flyway → boot backend échoue sur données stale
+- PIT-S39-001 — Bordures UI Graphite : les tokens `rule`/`rule-strong` échouent le seuil WCAG AA ≥3:1
+- PIT-S40-001 — `git mv` d'un segment de route Next.js → `.next/types/**` périmé → `tsc` TS2307 fantômes
+- PIT-S40-002 — Shell client-only enveloppant `children` : la garde auth (redirection incluse) DOIT vivre dans le shell
+- PIT-S40-003 — Consolider la nav dans un shell casse les E2E desktop qui cliquaient la nav propre d'un écran (devenue `lg:hidden`)
+- PIT-S41-001 — Hitbox a11y `::before` (PAT-S24-002) clippée par un ancêtre `overflow:hidden` → cible < 44px aux bords
+- PIT-S41-002 — Flex item + `text-overflow:ellipsis` sans `min-width:0` → ellipsis muette, hard-clip du parent
+- PIT-S41-003 — CSS timeline vit dans le design system (`styles/ds/components/`), pas à côté des `.tsx`
+- PIT-S41-004 — `./scripts/test-quiet.sh frontend` lancé depuis le repo principal (pas le worktree) → faux échec `eslint-plugin-storybook`
+- PIT-S44-001 — `EventCreationRequest` : `durationValue`/`durationUnit` requis MÊME pour `type='single'`
+- PIT-S44-003 — `if (!open) return null` ne démonte PAS un composant : l'état interne survit
+- PIT-S44-004 — Copier un pattern a11y maison sans reprendre son invariant : `aria-hidden` sur spinner ⇒ état muet
+- PIT-S44-005 — Schéma Zod jamais `parse()` : un `superRefine` qui ne protège rien
+- PIT-S42-003 — Des `data-testid` en source ne prouvent PAS un flux atteignable
+- PIT-S45-001 — Middleware Next : un `Location` RELATIF renvoie 500 (`ERR_INVALID_URL`), build ET tests unitaires VERTS
+- PIT-S45-002 — Tester un `config.matcher` Next avec une regex reconstruite à la main : 3 itérations de trou de sécurité
+- PIT-S45-004 — `nextUrl.pathname` n'est PAS percent-décodé : toute garde comparant des segments en clair est contournable
+- PIT-S45-005 — Vagues parallèles : « prendre le prochain numéro libre » produit des collisions (2× ADR-004)
+- PIT-S45-006 — `npm audit fix` : une 2e passe AGGRAVE, et les « fix available » mentent
+- PIT-S45-007 — `frontend/.eslintcache` est TRACKÉ par git : tout run eslint pollue le working tree partagé
+- PIT-S45-008 — `node_modules` n'est PAS partagé entre worktrees ; setup vitest et `server.deps.inline`
+- PIT-S46-001 — Un `data-testid` en dur dans un composant partagé pollue les compteurs E2E des autres surfaces
+- PIT-S46-002 — Réutiliser un callback desktop pour un chemin mobile n'hérite PAS de ses protections
+- PIT-S46-003 — `DeleteConfirmDialog.onConfirm` transmet un `reassignToCategoryId?: string` à tout callback branché
+- PIT-S46-004 — Le gate `[MISSING]` de `/sprint end` grep le littéral : écrire « aucun [MISSING] » bloque la PR
+- PIT-S47-001 — Un `find` qui renvoie 0 ne prouve PAS une absence : le cwd du shell persiste entre les appels
+- PIT-S47-002 — Le profil `dev` fige `app.cors.allowed-origins=:3000` : un front sur un autre port échoue en accusant le rate-limit
+- PIT-S47-003 — La base de dev `eventmanager` est inmigrable : V7 casse sur des données que V9 nettoierait
+- PIT-S47-004 — `workers > 1` rougit 4 specs `settings-*` : DEUX causes distinctes, même signature
+- PIT-S47-005 — `npm run build` tue le `next dev` en cours, et Next 15.5.22 peut renvoyer un 500 fantôme après recompilation
+- PIT-S48-001 — Contraste bi-mode : la contrainte serrée change de fond selon le thème
+- PIT-S48-002 — Tailwind v4 scanne les COMMENTAIRES : citer une classe morte la ressuscite
+- PIT-S48-003 — `.section-animation { opacity: 0 }` sans repli = landing INVISIBLE, pas « non animée »
+- PIT-S48-004 — Changer une URL casse des specs E2E que le grep des `href` ne trouve pas
+- PIT-S48-005 — `<Button asChild>` remonte sur le `<a>` des propriétés qui ne s'appliquaient qu'à l'élément interne — DEUX régressions invisibles aux tests
+- PIT-S49-001 — Un couple `hover:bg-*` + `hover:text-*` dans un variant partagé est CASSABLE PAR CONSTRUCTION — 4 CTA invisibles en production
+- PIT-S49-002 — L'échelle typo du DS Graphite ÉCRASE celle de Tailwind — tout budget de largeur calculé sur les valeurs Tailwind est faux d'un facteur ~2
+- PIT-S49-003 — Un grep sur `frontend/src` RATE `frontend/app` (App Router hors `src/`) — le lead a « corrigé » une issue dans le mauvais sens
+- PIT-S49-004 — Les panneaux navigateur d'agent mentent : `document.hidden` tue `IntersectionObserver`, et `innerHeight` ≠ `clientHeight`
+- PIT-S49-005 — Trois façons dont un test de contraste/rendu passe au VERT à tort
+- PIT-S49-006 — Deux agents ont déclaré la stack E2E morte alors qu'elle tournait ; et `test-quiet.sh e2e` contourne le `--workers=1` du runbook
+- PIT-S49-007 — Tailwind v4 scanne les fichiers `.test.ts` : un témoin de test peut générer du CSS invalide et mettre l'app en 500
+- PIT-S49-008 — Un défaut de contraste peut n'exister QUE dans un état mixte souris + clavier
+- PIT-S50-003 — Passer une fonction en `async` casse les call sites de test EN SILENCE
+- PIT-S50-004 — `url.host = 'h'` ne supprime PAS le port existant (WHATWG)
+- PIT-S50-005 — `openssl … | base64` replie à 76 colonnes sur GNU, pas sur BSD/macOS
+- PIT-S50-006 — Un audit documentaire écrit en vague N est périmé par le code de la vague N+1 du MÊME sprint
+- PIT-S50-007 — Le hook RTK tronque les SORTIES, pas seulement les diffs : il fausse les MESURES
+- PIT-S52-001 — Mesurer un débordement de mise en page sur macOS seul ne prouve RIEN
+- PIT-S52-002 — Un port qui répond ne prouve pas que c'est VOTRE process qui répond
+- PIT-S52-003 — Un `text-*` posé sur le conteneur d'un composant Radix est hérité, donc cassable
+- PIT-S52-004 — L'indicateur de focus n'est pas forcément dans le `className` du composant
+- PIT-S52-005 — Sonde `wget localhost` en image alpine : `unhealthy` à vie sur une app qui répond 200
+- PIT-S52-006 — Un plan d'architecte peut produire le FAUX négatif de chemin fantôme
+- PIT-S52-007 — Le hook RTK décale aussi `git log` (amende PIT-S50-007)
+

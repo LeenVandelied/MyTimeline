@@ -1,0 +1,79 @@
+# .ai-env/config.yaml — configuration RUNTIME du Layer A (plugin ai-env).
+# Généré par /ai-env:setup pour MyTimeline.
+
+# --- Identité ---
+project_name: "MyTimeline"
+github_org: "LeenVandelied"
+github_repo: "MyTimeline"
+
+# --- Architecture backend ---
+architecture: "hexagonal"
+backend_language: "java"
+backend_package_root: "com.matimeline.eventmanager"
+
+# Imports INTERDITS dans domain/ (Spring Boot)
+domain_forbidden_import_prefixes: "org.springframework., jakarta.persistence., javax."
+# Exceptions tolérées dans domain/ (validation annotations)
+domain_allowed_import_prefixes: "jakarta.validation"
+# Imports INTERDITS dans application/
+application_forbidden_import_prefixes: "io.micrometer."
+
+# --- Modèles : ALIAS uniquement, jamais de version figée ---
+model_lead: "opus"
+model_worker: "sonnet"
+model_lightweight: "haiku"
+
+# --- Locale ---
+locale_code: "fr"
+
+# --- Logs PII (hook check-pii-logs) ---
+pii_scope_path_globs: "/infrastructure/security/, /application/, /domain/models/"
+pii_field_names: "userId, email, password"
+pii_substring_patterns: "user.getId(), .getMessage()"
+pii_masking_markers: "maskId(, maskEmail("
+
+# --- Frontend / lint ---
+frontend_dir: "frontend"
+frontend_src: "frontend/src"
+format_command: "npx eslint --fix"
+format_extensions: ".ts, .tsx, .js, .jsx"
+
+# --- Moteur JIT : domaines ---
+domains: "events, auth, products, categories"
+domain_events_keywords: "event|calendar|timeline|schedule|date|jalons"
+domain_events_paths: "/events?/|/calendar/|/event"
+domain_events_labels: "epic:events"
+domain_auth_keywords: "auth|login|register|jwt|token|password|user|role|security"
+domain_auth_paths: "/auth/|/security/|/user/|/register|/login"
+domain_auth_labels: "epic:auth"
+domain_products_keywords: "product|produit|catalogue|catalog|item|price|prix"
+domain_products_paths: "/products?/|/catalogue/"
+domain_products_labels: "epic:products"
+domain_categories_keywords: "categor|tag|label|classification"
+domain_categories_paths: "/categor/"
+domain_categories_labels: "epic:categories"
+
+# Répertoires Layer B
+packs_dir: ".ai-env/context-packs"
+rules_jit_dir: ".ai-env/rules-jit"
+
+# Mapping stack -> packs/règles
+stack_packs_backend: "cp-hexagonal, cp-backend"
+stack_packs_frontend: "cp-frontend"
+stack_rules_backend: "backend"
+# ux-patterns : referentiel a11y/interactions du DS, injecte dans tout briefing frontend
+# (au S59 le lead devait l'inliner a la main faute d'injection). Fichier reel :
+# .claude/rules-jit/ux-patterns.md, expose ici par symlink relatif (source unique).
+stack_rules_frontend: "frontend, ux-patterns"
+
+# --- Review d'intention ---
+tracker_provider: "github"
+intent_exploration_agent: "domain-researcher"
+intent_rule_notation: ""
+
+# --- Hooks de protection ---
+protected_tables: ""
+migrations_dir: ""
+schemas_dir: ""
+backend_src: "backend/src"
+heavy_test_commands: "mvn test, mvn verify, npx playwright test"

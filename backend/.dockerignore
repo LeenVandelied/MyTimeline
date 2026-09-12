@@ -1,0 +1,28 @@
+# Artefacts de build (recompilés dans l'image)
+target/
+build/
+
+# Git / IDE
+.git/
+.gitignore
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+
+# Docs & logs (inutiles au build)
+*.md
+logs/
+*.log
+
+# Secrets locaux (jamais dans l'image)
+.env
+.env.*
+src/main/resources/application-local.properties
+src/main/resources/application.yml
+
+# Divers
+.DS_Store
+archunit_store/
+pom.xml.correct

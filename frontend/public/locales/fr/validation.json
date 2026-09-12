@@ -5,17 +5,35 @@
   },
   "name": {
     "min": "Le nom doit contenir au moins 3 caractères",
+    "max": "Le nom ne doit pas dépasser 20 caractères",
     "required": "Le nom est requis"
   },
   "username": {
     "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+    "max": "Le nom d'utilisateur ne doit pas dépasser 20 caractères",
     "required": "Le nom d'utilisateur est requis"
   },
   "password": {
-    "min": "Le mot de passe doit contenir au moins 6 caractères",
+    "min": "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule et un chiffre",
+    "max": "Le mot de passe ne doit pas dépasser 100 caractères",
+    "loginMin": "Le mot de passe doit contenir au moins 6 caractères",
     "uppercase": "Le mot de passe doit contenir au moins une majuscule",
     "number": "Le mot de passe doit contenir au moins un chiffre",
     "match": "Les mots de passe ne correspondent pas",
-    "required": "Le mot de passe est requis"
+    "required": "Le mot de passe est requis",
+    "same": "Le nouveau mot de passe doit être différent de l'ancien"
+  },
+  "event": {
+    "titleRequired": "Le titre de l'événement est requis",
+    "titleMax": "Le titre ne peut dépasser 100 caractères",
+    "durationMin": "La durée doit être supérieure à 0",
+    "durationUnitRequired": "L'unité de durée est requise",
+    "recurrenceUnitRequired": "La fréquence de récurrence est requise",
+    "recurrenceEndBeforeStart": "La date de fin de récurrence doit être postérieure à la date de début",
+    "endBeforeStart": "La date de fin doit être postérieure ou égale à la date de début",
+    "colorInvalid": "Couleur invalide (format hexadécimal attendu, ex. #3B82F6)",
+    "submitError": "Une erreur est survenue lors de l'enregistrement, veuillez réessayer.",
+    "conflict": "Cet événement a été modifié entre-temps. Rechargez pour voir la dernière version.",
+    "reload": "Recharger"
   }
-} 
+}

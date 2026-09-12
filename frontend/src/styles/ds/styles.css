@@ -1,0 +1,13 @@
+/* MyTimeline Design System — global entry point.
+   Consumers link THIS one file. Keep it as @import lines only;
+   every token + font-face ships through this closure.
+   Direction: "Graphite" (validated) — near-monochrome, electric-blue accent. */
+
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+@import "./tokens/base.css";
+@import "./components/core.css";
+@import "./components/timeline.css";
+@import "./components/i18n.css";

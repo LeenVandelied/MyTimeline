@@ -1,0 +1,61 @@
+# =============================================================
+# EXEMPLE de configuration — documente TOUTES les variables d'env attendues.
+# Copier les valeurs réelles dans l'environnement (shell, .env, secret manager),
+# JAMAIS dans un fichier committé. Ce fichier ne contient AUCUNE vraie valeur.
+# =============================================================
+
+# --- Profil Spring ---
+# Profil actif : dev (defaut) | prod
+# Si absent, fallback SILENCIEUX vers 'dev' (confort dev). EN PRODUCTION, poser
+# explicitement SPRING_PROFILES_ACTIVE=prod.
+SPRING_PROFILES_ACTIVE=
+
+# --- Marqueur d'environnement (garde-fou #111) ---
+# Sert UNIQUEMENT au garde-fou fail-fast ProfileSafetyGuard : si ce marqueur vaut
+# 'production' (ou 'prod') ALORS que le profil Spring actif est 'dev', le boot est
+# REFUSE (IllegalStateException) pour empecher le fallback dev silencieux en prod.
+# Valeurs : production | prod (declenchent le garde) ; staging/autre/vide = ignore.
+# En PROD : poser ENVIRONMENT=production EN PLUS de SPRING_PROFILES_ACTIVE=prod.
+# Alternative acceptee : APP_ENV (meme semantique).
+ENVIRONMENT=
+
+# --- Base de données PostgreSQL ---
+# URL JDBC complete (default dev : jdbc:postgresql://localhost:5432/eventmanager)
+DB_URL=
+# Utilisateur DB (default dev : eventuser)
+DB_USERNAME=
+# Mot de passe DB — OBLIGATOIRE en prod, sinon le boot echoue
+DB_PASSWORD=
+
+# --- Securite JWT (#323 — RS256 asymetrique, JWT_SECRET SUPPRIME) ---
+# Cle PRIVEE RSA PKCS#8 en Base64, modulus >= 2048 bits. OBLIGATOIRE en prod.
+# Generer :
+#   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem
+#   openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64
+# La cle PUBLIQUE est DERIVEE au boot (pas de seconde variable cote backend) et PUBLIEE
+# sur GET /.well-known/jwks.json (#358, endpoint public, non authentifie) : le middleware
+# Next l'y decouvre. Il n'y a plus rien a recopier cote frontend (AUTH_JWT_PUBLIC_KEY a ete
+# SUPPRIMEE ; cote frontend, seule AUTH_JWKS_URL reste a poser).
+# Vide en dev/test : paire EPHEMERE generee au demarrage (sessions perdues au redemarrage).
+# Toute rotation invalide TOUS les tokens existants (deconnexion globale).
+JWT_PRIVATE_KEY=
+
+# --- Tokens de telechargement d'export RGPD (#58 / #323) ---
+# Secret HMAC DEDIE (plus de partage avec la signature d'auth). Base64, >= 32 octets.
+# OBLIGATOIRE. Generer : openssl rand -base64 48
+EXPORT_TOKEN_SECRET=
+
+# --- Email Brevo / mot de passe oublie (#49) ---
+# Cle API Brevo (POST https://api.brevo.com/v3/smtp/email).
+# OBLIGATOIRE en PROD pour que les emails de reinitialisation partent reellement.
+# Absente (dev/test) : BrevoEmailService passe en no-op (warning), le flux ne casse pas.
+# JAMAIS committer la vraie valeur.
+BREVO_API_KEY=
+# Expediteur affiche dans l'email (defaults : no-reply@mytimeline.app / MyTimeline)
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=
+# Base de l'URL de reinitialisation cote front (#53). Le token est ajoute en ?token=...
+# Default dev : http://localhost:3000/reset-password
+RESET_URL_BASE=
+# Duree de validite du token de reinitialisation en minutes (cadrage S8 : 15)
+PASSWORD_RESET_TOKEN_VALIDITY_MINUTES=

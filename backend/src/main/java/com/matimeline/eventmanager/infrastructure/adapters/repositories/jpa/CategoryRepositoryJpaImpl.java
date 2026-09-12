@@ -12,6 +12,7 @@ import com.matimeline.eventmanager.application.mappers.CategoryMapper;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
+import com.matimeline.eventmanager.infrastructure.entities.UserEntity;
 
 import jakarta.persistence.EntityManager;
 
@@ -38,31 +39,102 @@ public class CategoryRepositoryJpaImpl
 
     @Override
     public Optional<Category> findDomainCategoryByName(String name) {
-        String jpql = "SELECT c FROM CategoryEntity c WHERE c.name = :catName";
+        // Legacy (non scopé owner) — conservé pour compatibilité. L'unicité effective
+        // passe par findByOwnerAndName (BR-CAT-004). AP-CAT-08 : on borne le résultat
+        // pour ne plus dépendre d'un get(0) implicite sur une liste.
         List<CategoryEntity> results = entityManager
-            .createQuery(jpql, CategoryEntity.class)
+            .createQuery("SELECT c FROM CategoryEntity c WHERE c.name = :catName", CategoryEntity.class)
             .setParameter("catName", name)
+            .setMaxResults(1)
             .getResultList();
 
-        if (results.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(
-            categoryMapper.toDomain(results.get(0))
-        );
+        return results.isEmpty()
+            ? Optional.empty()
+            : Optional.of(categoryMapper.toDomain(results.get(0)));
     }
 
     @Override
-    public List<Category> findAllCategories() {
-        return super.findAll().stream()
+    public Optional<Category> findByOwnerAndName(UUID ownerId, String name) {
+        // #52 (BR-CAT-004) : unicité PAR UTILISATEUR. owner NULL == catégorie système :
+        // aucun utilisateur n'en crée via l'API après V8, donc ce chemin ne cible que
+        // les catégories possédées (ownerId non null attendu ici).
+        List<CategoryEntity> results = entityManager
+            .createQuery(
+                "SELECT c FROM CategoryEntity c WHERE c.owner.id = :ownerId AND c.name = :catName",
+                CategoryEntity.class)
+            .setParameter("ownerId", ownerId)
+            .setParameter("catName", name)
+            .setMaxResults(1)
+            .getResultList();
+
+        return results.isEmpty()
+            ? Optional.empty()
+            : Optional.of(categoryMapper.toDomain(results.get(0)));
+    }
+
+    @Override
+    public List<Category> findByOwnerIdOrSystem(UUID ownerId) {
+        // FIX review #153 : scoping cross-tenant. Renvoie les catégories du caller OU
+        // système (owner NULL). Filtre en JPQL bindé (pas de scan complet + filtre applicatif).
+        return entityManager
+            .createQuery(
+                "SELECT c FROM CategoryEntity c WHERE c.owner.id = :ownerId OR c.owner IS NULL",
+                CategoryEntity.class)
+            .setParameter("ownerId", ownerId)
+            .getResultList()
+            .stream()
             .map(categoryMapper::toDomain)
             .toList();
     }
 
     @Override
     public Category save(Category domainCategory) {
+        // Pitfall hérité de #50 : le domaine Category ne porte pas @Version. Reconstruire
+        // une CategoryEntity détachée (version=null) et la router vers save()/merge()
+        // casse un UPDATE (uninitialized version / OptimisticLock). Pour une MISE À JOUR
+        // (id existant en base) on charge donc l'entité GÉRÉE et on recopie les seuls
+        // champs mutables ; l'audit (@Version/updatedAt) reste piloté par Hibernate.
+        if (domainCategory.getId() != null) {
+            CategoryEntity managed = super.findById(domainCategory.getId()).orElse(null);
+            if (managed != null) {
+                managed.setName(domainCategory.getName());
+                managed.setColor(domainCategory.getColor());
+                managed.setDescription(domainCategory.getDescription());
+                applyOwner(managed, domainCategory.getOwnerId());
+                CategoryEntity flushed = super.save(managed);
+                return categoryMapper.toDomain(flushed);
+            }
+        }
+
+        // CRÉATION : entité neuve. L'owner est rattaché via une référence GÉRÉE
+        // (getReference) pour ne pas attacher un UserEntity détaché.
         CategoryEntity entity = categoryMapper.toEntity(domainCategory);
-        CategoryEntity saved = super.save(entity); 
+        applyOwner(entity, domainCategory.getOwnerId());
+        CategoryEntity saved = super.save(entity);
         return categoryMapper.toDomain(saved);
+    }
+
+    // #78 (RGPD) : purge des catégories POSSÉDÉES par le user. WHERE owner_id = :ownerId
+    // exclut naturellement les catégories système (owner_id IS NULL != :ownerId), qui
+    // restent intactes. Natif bindé (cohérent avec les autres purges #78) ; owner_id NOT
+    // NULL requis (jamais :ownerId null ici, le caller est résolu depuis le JWT).
+    @Override
+    public int deleteAllByOwnerId(UUID ownerId) {
+        return entityManager
+                .createNativeQuery("DELETE FROM categories WHERE owner_id = :ownerId")
+                .setParameter("ownerId", ownerId)
+                .executeUpdate();
+    }
+
+    /**
+     * Rattache (ou détache) le propriétaire à partir de son id, via une référence
+     * gérée. ownerId NULL -> catégorie système (owner NULL).
+     */
+    private void applyOwner(CategoryEntity entity, UUID ownerId) {
+        if (ownerId == null) {
+            entity.setOwner(null);
+        } else {
+            entity.setOwner(entityManager.getReference(UserEntity.class, ownerId));
+        }
     }
 }

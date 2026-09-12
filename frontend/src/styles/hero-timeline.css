@@ -1,0 +1,87 @@
+/*
+ * Frise horizontale animée du Hero de la landing (#56).
+ *
+ * Feuille DÉDIÉE et volontairement isolée : l'animation n'est pas spécifiée au design
+ * system et sera probablement remplacée. La retirer = supprimer ce fichier et son import
+ * dans `app/[locale]/page.tsx`. Rien d'autre n'en dépend, et aucun sélecteur ici ne
+ * déborde du préfixe `.hero-timeline`.
+ *
+ * PORTÉE (#343) : importée depuis la SEULE route landing `app/[locale]/page.tsx`, et non
+ * depuis `app/[locale]/layout.tsx` qui l'aurait servie à toutes les routes localisées.
+ * `HeroTimelineAnimation` n'est rendu que par `HeroSection` <- `HomePage` <- cette route :
+ * déplacer l'import ailleurs (ou rendre le composant depuis une autre route) casse
+ * l'animation SANS casser un test — jsdom ne charge pas les feuilles de la route.
+ *
+ * ZÉRO COULEUR — toutes les couleurs viennent des classes utilitaires DS posées dans le
+ * composant (`bg-rule`, `bg-accent`, `bg-surface`, `border-rule-emphasis`). Cette
+ * feuille ne pilote QUE du mouvement, elle suit donc clair/sombre sans le savoir.
+ *
+ * Les deux animations partagent la même durée : le pic du marqueur « aujourd'hui »
+ * (50 %) tombe pendant la course de la progression, la frise se lit comme un seul geste.
+ *
+ * EASING (#343) : `--ease-quart` (ds/tokens/spacing.css) remplace la valeur littérale
+ * `cubic-bezier(0.4, 0, 0.2, 1)` héritée de #56. Ce n'est PAS un no-op visuel — la courbe
+ * du DS décélère bien plus tôt (à 25 % de la course : 78 % de la largeur contre 24 %
+ * auparavant). Écart assumé : le DS est la source de vérité du motion, et la frise se lit
+ * comme un geste plus « lancé ». Le marqueur `today` garde `ease-in-out` : c'est une
+ * pulsation symétrique, aucun token du DS ne la couvre.
+ */
+
+.hero-timeline {
+  --hero-timeline-duration: 6s;
+}
+
+.hero-timeline__progress {
+  animation: hero-timeline-sweep var(--hero-timeline-duration) var(--ease-quart) infinite;
+}
+
+@keyframes hero-timeline-sweep {
+  0%,
+  5% {
+    transform: scaleX(0);
+  }
+  55%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.hero-timeline__today {
+  animation: hero-timeline-pulse var(--hero-timeline-duration) ease-in-out infinite;
+}
+
+@keyframes hero-timeline-pulse {
+  0%,
+  40% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+  60%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+}
+
+/*
+ * Mouvement réduit — on NEUTRALISE l'animation sans effacer le visuel : la progression
+ * se fige sur un état intermédiaire lisible et le marqueur reste pleinement opaque.
+ * Mettre `animation: none` seul aurait laissé la progression à `scaleX(1)` (rail
+ * entièrement accentué) et perdu la lecture « frise en cours ».
+ */
+@media (prefers-reduced-motion: reduce) {
+  .hero-timeline__progress {
+    animation: none;
+    transform: scaleX(0.62);
+  }
+
+  .hero-timeline__today {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}

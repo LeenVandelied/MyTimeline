@@ -1,150 +1,200 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
+import { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
+import { LegalDisclaimer } from '@/components/legal/legal-disclaimer'
+import { LegalTableOfContents } from '@/components/legal/legal-table-of-contents'
+import {
+  TERMS_SECTIONS,
+  LEGAL_LAST_UPDATED_ISO,
+  formatLegalDate,
+  shouldShowLegalDisclaimer,
+} from '@/lib/legal-pages'
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const locale = (await params).locale;
-  
-  const t = await getTranslations({ locale, namespace: 'legal' });
-  
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const locale = (await params).locale
+
+  const t = await getTranslations({ locale, namespace: 'legal' })
+
   return {
     title: `${t('terms.title')} | Ma Timeline`,
     description: t('terms.meta.description'),
-  };
+  }
 }
 
 export default async function TermsOfService({ params }: { params: Promise<{ locale: string }> }) {
-  const locale = (await params).locale;
-  
-  const t = await getTranslations({ locale, namespace: 'legal' });
+  const locale = (await params).locale
+
+  const t = await getTranslations({ locale, namespace: 'legal' })
+  // Les libellés « Retour » vivent depuis toujours dans `common.navigation`
+  // (`back`, `backToHome`), renseignés dans les 4 locales et déjà utilisés
+  // ailleurs — #60 les CÂBLE au lieu de dupliquer deux clés dans `legal`.
+  const tCommon = await getTranslations({ locale, namespace: 'common' })
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center mb-6">
+    <div className="bg-bg text-ink min-h-screen">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6 flex flex-wrap items-center gap-y-2">
           <Link href={`/${locale}`} passHref>
-            <Button variant="ghost" className="p-0 mr-4 hover:bg-transparent">
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              <span>Retour</span>
+            <Button variant="ghost" className="mr-4 p-0 hover:bg-transparent">
+              <ArrowLeft className="mr-2 h-5 w-5" />
+              <span>{tCommon('navigation.back')}</span>
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold gradient-text">{t('terms.title')}</h1>
+          {/* #532 — MÊME RAMPE QUE `/privacy`, dont le `<h1>` porte la justification
+              complète (paliers, relevés 4 locales × 5 largeurs, [[PIT-S73-001]],
+              [[PIT-S53-001]]) : `app/[locale]/privacy/page.tsx`.
+
+              Relevé propre à CETTE page avant correctif (2026-09-05, `next dev`, Chromium) :
+                de +395 px @320 · +340 @375 · +301 @414 · +75 @640   (« Nutzungsbedingungen »,
+                                                                      597 px à 57 px)
+                fr +107 @320 · +52 @375 · +13 @414 | es +116 / +61 / +22 | en aucun.
+              Les `<h2>` de section portent `break-words` pour la même raison : « Artikel 8 –
+              Änderung der Nutzungsbedingungen » débordait sa boîte de 133 px @320. */}
+          <h1 className="gradient-text w-full min-w-0 text-xl font-bold break-words hyphens-auto sm:w-auto md:text-2xl lg:text-3xl">
+            {t('terms.title')}
+          </h1>
         </div>
 
-        <div className="bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-700 mb-8">
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.preamble.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.preamble.content')}
-            </p>
+        {shouldShowLegalDisclaimer(locale) && (
+          <LegalDisclaimer>{t('disclaimerOriginalFrench')}</LegalDisclaimer>
+        )}
+
+        <LegalTableOfContents
+          sections={TERMS_SECTIONS}
+          label={t('tableOfContents')}
+          t={t}
+          testId="terms-toc"
+        />
+
+        <div className="bg-surface border-rule mb-8 rounded-lg border p-8">
+          <section id="preamble" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.preamble.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.preamble.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article1.title')}</h2>
-            <ul className="list-disc pl-6 space-y-2 text-gray-300">
+          <section id="article-1" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article1.title')}
+            </h2>
+            <ul className="text-ink-muted list-disc space-y-2 pl-6">
               <li>{t('terms.article1.site')}</li>
               <li>{t('terms.article1.user')}</li>
               <li>{t('terms.article1.content')}</li>
             </ul>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article2.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article2.content')}
-            </p>
+          <section id="article-2" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article2.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article2.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article3.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article3.content')}
-            </p>
+          <section id="article-3" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article3.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article3.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article4.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article4.content')}
-            </p>
+          <section id="article-4" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article4.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article4.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article5.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article5.content')}
-            </p>
+          <section id="article-5" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article5.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article5.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article6.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article6.content')}
-            </p>
+          <section id="article-6" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article6.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article6.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article7.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article7.content')}
-            </p>
+          <section id="article-7" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article7.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article7.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article8.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article8.content')}
-            </p>
+          <section id="article-8" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article8.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article8.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article9.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article9.content')}
-            </p>
+          <section id="article-9" className="mb-8 scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article9.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article9.content')}</p>
           </section>
 
-          <hr className="border-gray-700 my-6" />
+          <hr className="border-rule my-6" />
 
-          <section>
-            <h2 className="text-xl font-semibold mb-4">{t('terms.article10.title')}</h2>
-            <p className="text-gray-300 mb-2">
-              {t('terms.article10.content')}
-            </p>
+          <section id="article-10" className="scroll-mt-24">
+            <h2 className="mb-4 text-xl font-semibold break-words hyphens-auto">
+              {t('terms.article10.title')}
+            </h2>
+            <p className="text-ink-muted mb-2">{t('terms.article10.content')}</p>
           </section>
         </div>
 
         <div className="text-center">
-          <p className="text-gray-400 text-sm">
-            {t('terms.lastUpdated')}: 01/06/2023
+          <p className="text-ink-muted text-sm" data-testid="legal-last-updated">
+            {t('terms.lastUpdated')}:{' '}
+            {/* #518 — `<time datetime>` (convention DS `i18n.css` §7). La valeur
+                machine-lisible est la CONSTANTE `LEGAL_LAST_UPDATED_ISO` elle-même
+                (`YYYY-MM-DD`), pas une reconstruction : `formatLegalDate` la rend en
+                `timeZone:'UTC'`, l'attribut et le libellé nomment donc le même jour
+                dans toutes les locales. Pas de `.mt-date--*` : la ligne est une
+                phrase de prose (`text-sm`, 17px) et non un jeton de donnée — y
+                imposer 13px mono ferait décrocher la date du libellé qui la précède
+                sur la MÊME ligne. */}
+            <time dateTime={LEGAL_LAST_UPDATED_ISO}>{formatLegalDate(locale)}</time>
           </p>
           <Link href={`/${locale}`} passHref>
-            <Button variant="outline" className="mt-4 border-gray-700 hover:bg-gray-800">
-              Retour à l&apos;accueil
+            <Button variant="outline" className="border-rule hover:bg-surface mt-4">
+              {tCommon('navigation.backToHome')}
             </Button>
           </Link>
         </div>
       </div>
     </div>
-  );
-} 
+  )
+}

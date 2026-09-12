@@ -1,0 +1,90 @@
+# =============================================================
+# MyTimeline — reverse-proxy et terminaison TLS (ADR-009, issue #370)
+#
+# Topologie MONO-DOMAINE : le navigateur ne voit qu'une origine,
+# `https://matimeline.com`. Caddy route /api/* vers le backend et tout le
+# reste vers le frontend. Conséquences voulues : cookie `jwt` same-origin en
+# SameSite=Lax, aucun préflight CORS, CSP `connect-src 'self'` suffisante.
+#
+# Certificats Let's Encrypt obtenus et renouvelés automatiquement. Le volume
+# `caddy-data` porte les certificats et les clés de compte ACME : le PERDRE
+# force une réémission et peut heurter les quotas Let's Encrypt. Il fait donc
+# partie du périmètre de sauvegarde (#371).
+# =============================================================
+{
+	email {$ACME_EMAIL}
+	# ACME DE PRODUCTION (ligne ci-dessous COMMENTÉE = émetteur par défaut de Caddy,
+	# c'est-à-dire Let's Encrypt en production). Certificats approuvés par les
+	# navigateurs.
+	#
+	# L'ACME de TEST a servi au premier déploiement, le temps d'éprouver la chaîne
+	# sans risquer le quota (échecs de validation plafonnés à 5 par heure et par
+	# nom, pour 8 noms à émettre). La chaîne est désormais prouvée de bout en bout.
+	#
+	# POUR REVENIR AU TEST (mise au point, changement de topologie) : décommenter.
+	# L'étape de vérification de `deploy.yml` lit CE FICHIER pour savoir si elle
+	# doit exiger un certificat approuvé — les deux restent cohérents
+	# automatiquement, sans variable séparée à ne pas oublier.
+	#
+	# ⚠ CHANGER DE CA NE SUFFIT PAS À RÉÉMETTRE. Caddy retrouve en stockage un
+	# certificat encore valide pour chaque nom et le réutilise, quel que soit
+	# l'émetteur : `acme_ca` ne pilote que les émissions FUTURES. Pour basculer
+	# réellement d'un CA à l'autre, il faut supprimer les certificats de l'ancien
+	# dans le volume `caddy-data` :
+	#   docker compose … exec caddy rm -rf \
+	#     /data/caddy/certificates/acme-staging-v02.api.letsencrypt.org-directory
+	# puis recharger. ⚠ Le site n'a PLUS de certificat entre la suppression et
+	# l'émission réussie : opération à faire en connaissance de cause.
+	# Procédure détaillée : docs/runbook/deploiement-profils.md.
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# --- En-têtes de sécurité communs -------------------------------------------
+(securite) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		# Caddy annonce sa présence par défaut ; inutile de la publier.
+		-Server
+	}
+}
+
+# --- Domaine canonique ------------------------------------------------------
+matimeline.com {
+	import securite
+	encode zstd gzip
+
+	# X-Forwarded-For : AUCUN `header_up` explicite — VÉRIFIÉ empiriquement, Caddy 2
+	# REMPLACE déjà X-Forwarded-For par l'IP réelle de la connexion (il ne fait pas
+	# confiance au XFF entrant tant que `trusted_proxies` n'est pas configuré). Un
+	# `header_up X-Forwarded-For {remote_host}` serait redondant (Caddy émet
+	# d'ailleurs « Unnecessary header_up ») ET deviendrait un piège si un vrai
+	# proxy amont était ajouté un jour avec `trusted_proxies`. C'est ce défaut de
+	# Caddy qui protège le rate-limit par IP : APP_RATE_LIMIT_TRUST_FORWARDED_HEADER=true
+	# côté backend fait lire au filtre ce XFF, que Caddy garantit non forgeable.
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+
+	# Tout le reste : Next.js.
+	handle {
+		reverse_proxy frontend:3000
+	}
+}
+
+# --- Domaines secondaires : 301 vers le canonique ---------------------------
+# `matimeline.com` est le canonique (ADR-009 §2). Les TROIS autres domaines
+# détenus et les `www.` redirigent, en conservant chemin ET query string —
+# contrairement au garde applicatif #322, qui les supprime volontairement.
+www.matimeline.com,
+matimeline.fr,
+www.matimeline.fr,
+ma-timeline.com,
+www.ma-timeline.com,
+ma-timeline.fr,
+www.ma-timeline.fr {
+	import securite
+	redir https://matimeline.com{uri} permanent
+}

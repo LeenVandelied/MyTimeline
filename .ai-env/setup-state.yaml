@@ -1,0 +1,9 @@
+# .ai-env/setup-state.yaml — état du tunnel /ai-env:setup (resumable).
+# Géré par lib/setup-state.sh, lu par le Stop hook check-setup-complete.sh.
+sentinel: done
+phase_detect_stack: done
+phase_detect_tools: done
+phase_confirm: done
+phase_write_config: pending
+phase_domains: done
+phase_report: done
