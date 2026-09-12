@@ -6010,7 +6010,7 @@ Status soldés au `/sprint start 84` (variante S57 : zéro PR supplémentaire).
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
 **Status :** Terminé — PR #662 mergée le 2026-09-11 (`6ef408c`), milestone #85 fermé, #651/#577/#575/#634 fermées ; titre et Status soldés au `/sprint start 85` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 85 — 2026-09-11 → en cours (EN COURS — cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
+### Sprint 85 — 2026-09-11 → 2026-09-12 (EN CLÔTURE — PR #669, cohésion 0.70, Frise : sidebar de catégories et barre d'outils)
 **Objectif :** Filtres par catégorie, légende, pliage global, pastille/compteur, boutons Aujourd'hui et Nouvel événement
 **Milestone GitHub :** #86
 **Issues (3) :** #592, #601, #602
@@ -6023,8 +6023,63 @@ Chemin critique de 7 points en série — **ne pas lui affecter 3 agents**.
 (`sprints/sprint-85/maquette-vue-timeline.md`) ; 6 décisions DEC-S85-001 → 006
 (`sprints/sprint-85/decisions-demarrage.md`, 4 arbitrées par le dev). Écart d'énoncé
 majeur trouvé : `TimelineView` est monté par 3 écrans (frise, dashboard, fiche produit) —
-sidebar et boutons en opt-in `/timeline` (DEC-S85-005).
-**Status :** En cours
+sidebar et boutons en opt-in `/timeline` (DEC-S85-005). **`DesignSync` n'est pas transmis aux
+sous-agents** : le lead lit le `.dc.html` et en dépose un extrait vérifiable dans le dépôt.
+**Issues livrées (3) :** #592, #601, #602 — à fermer APRÈS le merge (`dev` protégée)
+**Vagues exécutées :** V1 = #592 | V2 = #601 | V3 = #602 — **sérialisées**, conformes au plan
+(sprint mono-fichier : `TimelineView.tsx`, 58 Ko)
+**Migrations :** aucune · **Fichiers backend touchés :** 0 (`git diff origin/dev..HEAD -- backend` vide)
+**Effort :** 7 points · **Cohésion :** 0.70
+**Commits :** 12 sur la branche (4 de code, 8 de documentation/orchestration) — `6f0c3eb` #592 ·
+`a604e99` #601 · `a2a3fce` #602 · `1fb477a` correctif de revue (hiérarchie lane) ·
+39 fichiers, +4279 / −221
+**BR impactées :** aucune (conformité de maquette, 100 % frontend)
+**Décisions :** DEC-S85-001 → 009 (001-006 au démarrage, 007-009 pendant les vagues)
+**Reviews :**
+- `reviewer` batch sur le diff complet — **0 CRITIQUE / 0 MAJEUR / 3 MINEUR** ; aucun mineur ne
+  justifiait une correction de code (garde E2E vacante → consignée PIT-S85-005 ; fermeture du
+  panneau au clic droit extérieur et commentaire CSS sur l'ordre des règles → écartés) ;
+- `ui-design` de clôture — **8 CONFORME / 1 ÉCART / 1 INDÉTERMINÉ**
+  (`sprints/sprint-85/specialists-ui-design.md`). L'INDÉTERMINÉ (hiérarchie catégorie/lane) a été
+  tranché par le lead en relisant le `.dc.html` — la maquette distingue les deux niveaux par le
+  fond, la graisse et un retrait, la prod les avait rendus identiques → correctif `1fb477a` et
+  **section B-bis ajoutée à l'extrait de maquette**. L'ÉCART restant (gouttière 168 vs 176 px)
+  touche une constante partagée hors périmètre → follow-up.
+- Vérification navigateur du lead : `/timeline` clair et sombre, filtre, repli et résumé, panneau
+  « Filtres » à 900 px, dashboard sans sidebar ni boutons, anneau de focus obtenu à la tabulation
+  RÉELLE (2 px, `:focus-visible`).
+**Tests :** Frontend **1511/1511** (127 fichiers) + `next build` 52/52 pages + typecheck + lint +
+`format:check` · E2E locale sur base recréée à vide **370 passés / 8 sautés / 1 échec** (l'échec =
+armement visuel `sprint-77`, impossible à juger hors Linux) · **CI PR #669 : 7/7 verts** ·
+Backend non modifié (job CI vert). Détail : `sprints/sprint-85/test-runner-par-le-lead.md`.
+**Absorbé en cours (hors plan) :** libellé de catégorie non sticky horizontalement (défaut
+antérieur, corrigé dans #601) ; minimap écrasée à 9 px par les nouveaux boutons (introduite et
+corrigée dans `a2a3fce`) — les deux consignés dans `bugs-resolved.md`.
+**Écarts constatés :** (1) l'énoncé de #601 demandait un compteur d'ÉVÉNEMENTS, la maquette pose
+un compteur de PRODUITS (DEC-S85-001, maquette suivie) ; (2) le plan annonçait une gouttière de
+176 px, le code en a 168 depuis #392 ; (3) le testid `timeline-today` proposé par le briefing du
+lead était déjà pris (PIT-S85-006) ; (4) premier run E2E complet interrompu à 318/378 par la mort
+silencieuse du serveur `next dev` — rejoué en entier sur base neuve.
+**Nouveaux pitfalls :** PIT-S85-001 → 006 · **Patterns :** PAT-S85-001 → 006 ·
+**Décisions :** DEC-S85-001 → 009 · **Bugs résolus :** 2 · Packs `pit-*` régénérés,
+6 entrées classées `frontend` (`--check` vert).
+**Follow-ups arbitrés (Phase 4 — proposition du lead validée par le dev, backlog libre) :**
+  - `--color-ink-faint` sous le seuil de contraste partout où il porte du texte [S | design] → **#670**
+  - Repli de catégorie + résumé plié en MOBILE (en-tête mobile non interactif) [S | events] → **#671**
+  - Raccourcis de la frise actifs derrière le drawer de création (`F` masque le drawer) [S | events] → **#672**
+  - Minimap à déplacer dans un pied sous la frise, comme la maquette [S | events] → **#673**
+  - Gouttière 168 → 176 px, audit d'impact requis (seul ÉCART de la revue de charte) [S | design] → **#674**
+  - Garde E2E qui ne protège pas `geometryKey` → **ni issue ni commentaire** : les deux issues de
+    virtualisation visées (#467, #69) sont FERMÉES ; le constat vit dans PIT-S85-005 et dans le
+    commentaire de la spec elle-même (`sprint-85-timeline-group-head.spec.ts:578-583`)
+  - Fermeture du panneau au clic droit extérieur (reviewer MINEUR) → **discard** (comportement
+    courant des popovers, aucun signalement utilisateur)
+  - Commentaire CSS sur l'ordre des règles `.mt-tlv-side-toggle` (reviewer MINEUR) → **discard**
+  - En-tête de catégorie non sticky (signalé par #592 pour #601) → **absorbé dans le sprint** (`a604e99`)
+  Ratio : 5 issues / 0 commentaire / 2 discards / 1 absorbé / 1 sans destination (issues cibles fermées).
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #669 ouverte, CI 7/7 verte ; titre et Status à solder au
+`/sprint start 86` (variante S57 : zéro PR supplémentaire).
 
 ### Sprint 86 — 2026-09-07 (PLANIFIÉ — cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
 **Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie de bout en bout, hint de plafond exact
