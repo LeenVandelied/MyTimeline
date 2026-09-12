@@ -350,10 +350,42 @@ function expectNoPageOverflow(
   ).toEqual([])
 }
 
-/** Mesure au repos : un élément survolé peut être mesuré dans un état élargi. */
+/**
+ * Borne de l'attente des animations CSS : l'entrée la plus longue du DS dure
+ * `--dur-base` (200 ms). 5 s laisse une marge large à `next dev` sans pouvoir
+ * bloquer le test si une animation ne se termine jamais.
+ */
+const ANIMATION_SETTLE_TIMEOUT_MS = 5_000
+
+/**
+ * Mesure au repos : un élément survolé peut être mesuré dans un état élargi, et
+ * un élément en cours d'animation dans une position TRANSITOIRE.
+ *
+ * S86 (#618) — le drawer de formulaire entre par
+ * `animation: mt-drawer-form-in var(--dur-base)` (200 ms, départ
+ * `transform: translateX(28px)`, `timeline.css`). Attendre les seules polices
+ * faisait tomber la mesure EN VOL : `.mt-drawer--form` relevé à 1288-1298 px de
+ * bord droit à 1280 px, valeur variable d'un run à l'autre. Ce n'était pas un
+ * défaut produit (panneau `position:fixed`, aucun défilement de page), mais le
+ * harnais ne doit mesurer que l'état de REPOS : on attend donc la fin des
+ * animations CSS en cours (`document.getAnimations()` → `finished`).
+ *
+ * Les animations INFINIES (spinner, squelette) sont écartées : leur `finished` ne
+ * se résout jamais et ne ferait qu'épuiser la borne. Rien n'est désactivé ni
+ * exclu : un débordement AU REPOS reste détecté (contre-épreuve S86, cf. done.md).
+ */
 async function settle(page: Page) {
   await waitForFonts(page)
   await page.mouse.move(0, 0)
+  await page.evaluate(async (timeoutMs) => {
+    const finite = document
+      .getAnimations()
+      .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+    await Promise.race([
+      Promise.allSettled(finite.map((a) => a.finished)),
+      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+    ])
+  }, ANIMATION_SETTLE_TIMEOUT_MS)
 }
 
 /* ------------------------------------------------------------------ FRISE */
