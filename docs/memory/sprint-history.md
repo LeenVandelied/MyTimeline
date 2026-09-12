@@ -6081,22 +6081,61 @@ silencieuse du serveur `next dev` — rejoué en entier sur base neuve.
 **Status :** Terminé — PR #669 mergée le 2026-09-12 (`d786219`) ; milestone #86 fermé, #592/#601/#602
 fermées. Titre et Status soldés au `/sprint start 86` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 86 — 2026-09-07 (PLANIFIÉ — cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
-**Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie de bout en bout, hint de plafond exact
+### Sprint 86 — 2026-09-12 → 2026-09-12 (EN CLÔTURE — PR #675, cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
+**Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie cohérent avec la frise, hint de plafond exact
 **Milestone GitHub :** #87
-**Issues (3) :** #618, #617, #646
-**Vagues :** V1 = #618 ∥ #617-backend | V2 = #617-frontend | V3 = #646
-**Migrations :** aucune (DEC-S86-001). ⚠ Le plan annonçait « V10, dernière = V9 » : **faux** —
-`ls | tail` trie lexicalement ; dernière réelle = V15, prochaine = V16.
-**Dépend de :** Sprint 84 (#617 a besoin de la palette unique) ; #618 avant le reste du formulaire
-**ADR préalable bloquant :** **tranché au démarrage → DEC-S86-001 : catégorie DÉRIVÉE du produit**,
-non surchargeable (ProductEntity.category NOT NULL ; toute la frise S85 agrège par la catégorie
-du produit). #617 passe de M fullstack à **S frontend**, zéro backend.
-**Autres écarts du plan corrigés au démarrage :** dépendance #582 fermée par décision (DEC-S82-004,
-pas de seed) mais sans effet ici (un produit a toujours une catégorie) ; lignes décalées
-(`TimelineEditHost.tsx:210`, hint `EventEditForm.tsx:798`).
+**Issues (3) :** #618, #646, #617 — à fermer APRÈS le merge (`dev` protégée)
 **Branche :** `claude/sprint-start-86-9af6ff` (convention S85 : branche du worktree, pas de `sprint/86`)
-**Status :** En cours (démarré 2026-09-12)
+**Démarrage (2026-09-12) :** 4 écarts du plan corrigés avant tout spawn — (1) migration « V10, dernière = V9 » **fausse**
+(tri lexical de `ls`, dernière = V15) ; (2) **ADR bloquant tranché par le dev → DEC-S86-001 : catégorie DÉRIVÉE du produit**,
+non surchargeable (`ProductEntity.category` NOT NULL, toute la frise S85 agrège par la catégorie du produit) — #617 passe de
+M fullstack (9 fichiers backend + migration) à S frontend, zéro backend ; (3) le sélecteur Produit vit dans `NewEventDrawer`,
+hors du formulaire, et n'existe pas en édition ; (4) dépendance #582 fermée par décision (DEC-S82-004) sans effet ici.
+Maquette `Formulaire Événement.dc.html` lue par le lead et déposée en extrait (`sprints/sprint-86/maquette-formulaire-evenement.md`).
+**Vagues exécutées :** V1 = #618 ∥ #646 (fichiers disjoints, exclusivité navigateur à #618) | V2 = #617 | V3 = corrections
+revue + E2E (C1/C2/C3, 1 agent)
+**Migrations :** aucune · **Fichiers backend touchés :** 0
+**Effort :** 7 points planifiés (#617 reclassée M → S par DEC-S86-001) · **Cohésion :** 0.45
+**Commits de code :** 6 — `e9a8b6c` #646 · `a517344` #618 · `566997d` #617 · `4b7f83e` C1 pied de sheet à 320 px ·
+`29f64fa` C2 audit `sprint-63` attend les animations · `f21eef8` C3 drawer modal (verrou de scroll + fond inerte) ;
++ commits `:memo:` d'orchestration et de clôture. Diff frontend : 22 fichiers, +1472 / −375.
+**BR impactées :** BR-EVE-018 (nouvelle — catégorie d'event = catégorie du produit) ; BR-EVE-002 et BR-EVE-006 non modifiées
+(texte du hint #452 corrigé)
+**Décisions :** DEC-S86-001
+**Reviews :**
+- `reviewer` batch cycle 1 : **0 CRITIQUE / 1 MAJEUR / 1 MINEUR** — MAJEUR retenu (la coque de #618 perdait le verrou de scroll
+  et l'inertage du fond qu'apportait le `Dialog` Radix) → corrigé en C3 ; MINEUR (garde `defaultPrevented` appliquée à tous les
+  consommateurs de `useFocusTrap`) vérifié sur les 13 consommateurs → amélioration, sans correction ;
+- `reviewer` cycle 2 (commits de correction) : MAJEUR **RÉSOLU**, **0 CRITIQUE / 0 MAJEUR / 3 MINEUR** (follow-ups) ;
+- `ui-design` : **11 CONFORME / 4 ÉCART acceptable / 0 à corriger / 3 INDÉTERMINÉ** (numéros de ligne de l'agent
+  inexploitables, omis) ; contraste de la valeur lecture seule tranché par calcul sur tokens : AA dans les deux thèmes.
+  Détail : `sprints/sprint-86/specialists-{reviewer,ui-design}.md`.
+**Tests :** `test-quiet.sh frontend` sur le code final : `next build` 52/52, **Vitest 129 fichiers / 1537 tests**, typecheck,
+lint · Prettier conforme · coverage-E2E 0 testid sans spec · **E2E complète run 1 : 366/9 échecs/8 sautés** (8 échecs
+`sprint-63` imputables au sprint → C1/C2) · **run 2 sur base neuve : 375 passés / 1 échec / 8 sautés** (armement visuel
+`sprint-77`, attendu hors Linux) · **CI PR #675 : 7/7 verts** (e2e Linux compris). Détail :
+`sprints/sprint-86/test-runner-par-le-lead.md`, `audits/sprint-86-test-coverage.md`.
+**Absorbé en cours (hors plan) :** garde Échap `defaultPrevented` dans `useFocusTrap` (confirmation Radix qui fermait aussi
+le drawer, #618) ; `create-form` à 320 px désormais asserté dans `sprint-63` (C1) ; dépendances directes
+`react-remove-scroll`/`aria-hidden` à la version déjà résolue (C3).
+**Écarts constatés :** (1) les agents ont rendu « E2E ciblé vert » sur 4 specs choisies à la main par le lead parmi 12 citant la
+surface — la suite complète a trouvé 8 échecs (PIT-S86-007) ; (2) comportement mobile modifié : l'édition < 1024 px est une
+bottom sheet comme la création (avant : panneau 480 px dès 640 px) ; (3) écarts de maquette assumés : titre « Modifier »,
+ligne « CRÉÉ LE » omise (donnée absente), animation 200 ms au lieu de 240, valeur Catégorie 36 px au lieu de 44.
+**Nouveaux pitfalls :** PIT-S86-001 → 009 · **Patterns :** PAT-S86-001 → 003 · **Bugs résolus :** BUG-S86-001, BUG-S86-002 ·
+**BR :** BR-EVE-018 · Packs `pit-*` régénérés, 9 entrées classées (5 frontend, 1 both, 3 tooling), `--check` vert.
+**Follow-ups arbitrés (Phase 4 — proposition du lead validée par le dev, backlog libre sans milestone) :**
+  - Série bornée éditée depuis la frise : borne non affichée + hint à tort (pas de perte de données) [S | events | bug P2] → **#676**
+  - Verrou/fond inerte prouvés en ÉDITION + empilement des confirmations Radix + résidu `aria-live` [S | events] → **#677**
+  - Date de création dans le view-model frise (« CRÉÉ LE · id ») [S | events] → **#678**
+  - Hint de plafond : spec WEEK + assertion sur le texte traduit [XS | events] → **#679**
+  - Commentaires « plafond 4000 » périmés (7 fichiers) [XS | chore] → **#680**
+  - Libellé « Éditer » vs « Modifier » → **discard** (écart jugé acceptable par `ui-design`, clé i18n existante)
+  - Réordonner Titre · Catégorie · Produit → **discard** (déjà porté par #622)
+  Ratio : 5 issues / 2 discards / 0 absorbé.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #675 ouverte, CI 7/7 verte au SHA `d3a5669` ; titre et Status à solder après le merge
+(variante S57 : au `/sprint start 87`).
 
 ### Sprint 87 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Landing publique : hero et frise du spec)
 **Objectif :** Hero 30/70 avec frise animée conforme au spec, purge des deux sections redondantes

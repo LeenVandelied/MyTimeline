@@ -699,6 +699,21 @@ Le lead a vu `fmt=1` sur `GreetingHeader.tsx` après commit ; relancé DEPUIS `f
 Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
 
+## PIT-S86-006 — L'horizon de 5 ans ne borne QUE l'aperçu, et le plafond de 4000 n'a pas disparu
+`RecurrenceExpansionServiceImpl` n'a qu'un appelant (`RecurrencePreviewController`) : l'horizon de 5 ans sans date de fin borne le CALCUL de l'aperçu, pas la série (la frise n'étend aucune occurrence). Et le plafond de 4000 mord encore sur une date de fin explicite très lointaine (≈ 77 ans en WEEK, ≈ 333 ans en MONTH). Un libellé piloté par `capped` doit donc rester vrai dans les DEUX cas. Prévention : grepper les appelants d'une borne backend avant d'en décrire l'effet dans un texte utilisateur (cf. PIT-S82-002). (Sprint 86 #646)
+
+
+## PIT-S86-007 — Des specs E2E « ciblées » choisies à la main ratent l'audit transverse qui voit la régression
+Le grep des testids du drawer donnait 12 specs ; les briefings de #618/#617 en listaient 4 choisies à la main, sans `sprint-63-de-overflow-audit`. Les agents ont rendu « E2E ciblé vert » ; la suite complète du lead a trouvé 8 échecs (pied de sheet hors écran à 320 px). Prévention : coller dans le briefing la liste grep COMPLÈTE des specs qui citent la surface touchée ; garder la suite complète du lead en fin de sprint. (Sprint 86)
+
+
+## PIT-S86-008 — `test-quiet.sh frontend` contient `next build` : l'interdire et l'exiger dans le même briefing est contradictoire
+En vague parallèle, le briefing donnait l'exclusivité de `next dev`/`next build` à un agent ET exigeait `./scripts/test-quiet.sh frontend` des autres — scope qui lance `next build` (même `.next`, PIT-S81-022). Solution : `frontend-unit` + `tsc --noEmit` pour les agents sans navigateur ; le build complet est joué par l'agent exclusif ou par le lead. (Sprint 86 #646)
+
+
+## PIT-S86-009 — Sous RTK, un `grep -v` qui génère une contre-épreuve peut produire un fichier VIDE
+`grep -v '… && …'` via le hook RTK pour retirer une garde a produit un fichier vide → vitest « no tests found », pris un instant pour une contre-épreuve. Solution : `rtk proxy grep -v -F` et contrôle `wc -l` avant de substituer le fichier. (Sprint 86 #618)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
