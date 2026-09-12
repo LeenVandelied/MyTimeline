@@ -557,7 +557,11 @@ test.describe('#74 — formulaire de création', () => {
       for (const width of [320, 375, 390] as const) {
         await page.setViewportSize({ width, height: 800 })
         await settle(page)
-        await measure(page, 'create-form', locale, width, 'état-non-atteignable')
+        const m = await measure(page, 'create-form', locale, width, 'état-non-atteignable')
+        // S86 — 320 px ASSERTÉ : le pied de la sheet (`actionsRow` d'`EventEditForm`,
+        // partagé avec l'édition) débordait à cette largeur. Relevé propre dans les 4
+        // locales après correction ; 375/390 restent relevés sans assertion.
+        if (width === 320) expectNoPageOverflow(m, 'create-form', locale, width)
       }
     })
   }
