@@ -2,16 +2,16 @@
 
 import React, { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Calendar } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
-import { cn } from '@/lib/utils'
 import { queryKeys } from '@/lib/query-keys'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
+import { EventCategoryField } from '@/components/events/EventCategoryField'
+import { EventFormDrawer } from '@/components/events/EventFormDrawer'
 import { useEventEditConflict } from '@/hooks/useEventEditConflict'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { deleteEvent } from '@/services/eventService'
+import { categoryColorsOf } from './lib'
 import { TimelineResponsive, type TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
 
@@ -22,12 +22,17 @@ import type { PositionedEvent } from './zoom'
  * monté uniquement via un ancien composant calendrier → `Lane` → `EventBar`, que PLUS
  * AUCUNE page ne rend (régression S17, composant supprimé #350). `EventContent` lui-même
  * a été supprimé #634 (Sprint 84), une fois `Lane`/`EventBar` retirés : `TimelineEditHost`
- * est désormais le SEUL point de montage de `EventEditForm`/`ConflictDialog`. Les pages
- * routées (`dashboard`, détail produit) rendent
- * `TimelineResponsive` (desktop `EventDrawer` LECTURE SEULE, mobile `TimelineActionSheet`
- * dont l'`onEdit` n'était pas câblé). Ce host wrappe `TimelineResponsive`, câble
- * `onEditEvent` (desktop bouton « Éditer » d'`EventDrawer` + mobile action sheet) et ouvre
- * `EventEditForm` pré-rempli dans un Dialog DS.
+ * est désormais le SEUL point de montage de `EventEditForm`/`ConflictDialog` en édition.
+ * Les pages routées (`dashboard`, détail produit) rendent `TimelineResponsive` (desktop
+ * `EventDrawer` LECTURE SEULE, mobile `TimelineActionSheet`). Ce host wrappe
+ * `TimelineResponsive`, câble `onEditEvent` (desktop bouton « Éditer » d'`EventDrawer` +
+ * mobile action sheet) et ouvre `EventEditForm` pré-rempli.
+ *
+ * #618 — SURFACE : `EventFormDrawer`, la MÊME coque que la création (`NewEventDrawer`) —
+ * drawer `.mt-drawer--form` au token `--drawer-width-form` `>= lg`, bottom sheet `< lg`,
+ * aperçu épinglé, pied sticky, focus-trap, fermeture croix / scrim / Échap. Remplace le
+ * `Dialog` shadcn stylé en panneau (`sm:w-[480px]` en dur, bascule à 640px) : l'édition
+ * bascule désormais au même seuil que la création (1024px).
  *
  * Réutilise SANS dupliquer : `EventEditForm`, `ConflictDialog` (via le form) et la machine
  * à états conflit 409 (`useEventEditConflict`, extraite du flux #231). La `version` threadée
@@ -37,7 +42,7 @@ import type { PositionedEvent } from './zoom'
  * `onEditEvent` ET `onDeleteEvent`.
  *
  * #309 — suppression mobile : `TimelineActionSheet` (mobile) désigne l'event ciblé SANS
- * passer par l'ouverture du dialog d'édition (contrairement au chemin desktop, qui supprime
+ * passer par l'ouverture de l'éditeur (contrairement au chemin desktop, qui supprime
  * via `EventEditForm` → `editing` déjà en state).
  *
  * ⚠ #review S46 (MAJEUR) — la suppression est un HARD-DELETE serveur (`br-events` §5
@@ -50,33 +55,11 @@ import type { PositionedEvent } from './zoom'
 export type TimelineEditHostProps = Omit<TimelineResponsiveProps, 'onEditEvent' | 'onDeleteEvent'>
 
 export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
+  const t = useTranslations('products.edit')
   const [editing, setEditing] = useState<PositionedEvent | null>(null)
   // Cible de suppression MOBILE (action sheet) : non nulle ⇒ dialog de confirmation ouvert.
   const [deleteTarget, setDeleteTarget] = useState<PositionedEvent | null>(null)
   const queryClient = useQueryClient()
-
-  /**
-   * #495 — APERÇU ÉPINGLÉ sur la surface d'ÉDITION (handoff §6 « création / édition »),
-   * extension de `PAT-S70-001` posé au S70 côté création (#326).
-   *
-   * ⚠ UN NŒUD, PAS UN `RefObject` (contrat de `previewPortalNode`) : `ref.current` vaut
-   * `null` au premier rendu et sa mutation ne re-rendrait RIEN — l'aperçu resterait à
-   * jamais en flux. Le setter de `useState` passé en ref callback est appelé en phase de
-   * commit, avant peinture : le portail se monte sans saut visuel.
-   */
-  const [previewNode, setPreviewNode] = useState<HTMLDivElement | null>(null)
-
-  /**
-   * #495 — Épinglage réservé à la variante PANNEAU LATÉRAL (`sm:` = 640px, le SEUL
-   * breakpoint de cette surface, cf. `DialogContent` ci-dessous). Sous 640px le dialog
-   * est une bottom sheet bornée à `max-h-[92vh]` : y épingler l'aperçu amputerait la
-   * zone de saisie, exactement le motif pour lequel #326 a laissé l'aperçu EN FLUX dans
-   * la sheet du drawer de création. Choix aligné, pas nouveau.
-   *
-   * ⚠ `useMediaQuery` rend `false` au premier passage (SSR-safe) → aperçu en flux puis
-   * portalisé après hydratation. Même comportement que `NewEventDrawer`.
-   */
-  const pinPreview = useMediaQuery('(min-width: 640px)')
 
   const closeEditor = useCallback(() => setEditing(null), [])
 
@@ -114,6 +97,16 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
       version: editing.extendedProps?.version ?? null,
     }
   }, [editing])
+
+  // #617 (DEC-S86-001) — catégorie de l'événement = celle de son produit, déjà portée
+  // par le view-model. Couleur : via `categoryColorsOf` (point unique de dérivation,
+  // DEC-S85-006), donc la MÊME pastille que la sidebar de la frise pour cette catégorie ;
+  // `null` si aucune ressource ne la colore → contour neutre, aucune teinte inventée.
+  const editingCategory = editing?.extendedProps?.category || null
+  const editingCategoryColor = useMemo(
+    () => (editingCategory ? (categoryColorsOf(props.resources)[editingCategory] ?? null) : null),
+    [editingCategory, props.resources],
+  )
 
   // Chemin MOBILE : le tap sur « Supprimer » de l'action sheet ARME la cible (ouvre la
   // confirmation) — il ne supprime rien. Stabilisé en `useCallback` : `TimelineActionSheet`
@@ -173,17 +166,12 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
     if (!open) setDeleteTarget(null)
   }, [])
 
+  // Instable (dépend de l'objet `conflict`) : `EventFormDrawer` le stabilise avant de le
+  // passer à `useFocusTrap` — pas de vol de focus à chaque rendu.
   const handleClose = useCallback(() => {
     conflict.reset()
     closeEditor()
   }, [conflict, closeEditor])
-
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (!open) handleClose()
-    },
-    [handleClose],
-  )
 
   return (
     <>
@@ -201,70 +189,30 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
         />
       )}
 
-      <Dialog open={Boolean(editing)} onOpenChange={handleOpenChange}>
-        <DialogContent
-          data-testid="timeline-edit-dialog"
-          className={cn(
-            'bg-bg border-rule overflow-y-auto p-0 shadow-xl',
-            'top-auto right-0 bottom-0 left-0 max-h-[92vh] max-w-full translate-x-0 translate-y-0 rounded-t-2xl rounded-b-none',
-            'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[480px] sm:max-w-[480px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',
-          )}
-        >
-          {/* #495 / review S71 — GRAMMAIRE DE SÉPARATION alignée sur la surface de
-              CRÉATION (`.mt-drawer__header` + `.mt-drawer__preview`, timeline.css) :
-              titre / aperçu / corps sont séparés par DEUX filets hairline
-              `border-b border-rule` pleine largeur, pas par une ombre.
-              Le `shadow-md` initial était un usage hors charte (`ds/readme.md:106`
-              réserve `md`/`lg` à l'élévation du modal LUI-MÊME — déjà portée par le
-              `shadow-xl` de `DialogContent` ci-dessus) ET une technique DIFFÉRENTE de
-              la création pour le même rôle fonctionnel.
-              Le padding migre du bloc sticky vers ses deux enfants : c'est la seule
-              façon d'obtenir des filets PLEINE LARGEUR (un `border-b` sur un bloc
-              `p-5` serait resté à l'intérieur du padding, encadré de 20px de vide).
-              Cotes reprises de la création : header `--space-5 --space-5 --space-4`
-              (px-5 pt-5 pb-4), aperçu `--space-4 --space-5` (px-5 py-4).
-              Aucune couleur en dur : `--color-rule` est défini dans les DEUX palettes
-              (clair + sombre), comme pour la création. */}
-          <div className="bg-surface sticky top-0 z-10 rounded-t-xl">
-            <DialogHeader className="border-rule border-b px-5 pt-5 pb-4">
-              <DialogTitle className="text-ink flex items-center text-xl font-bold">
-                <Calendar className="mr-2 h-5 w-5" aria-hidden="true" />
-                {editing?.title}
-              </DialogTitle>
-            </DialogHeader>
-
-            {/* #495 — Nœud hôte de l'aperçu épinglé. Placé DANS le bloc d'en-tête
-                DÉJÀ `sticky top-0 z-10` : on réutilise le mécanisme d'épinglage en
-                place au lieu d'en poser un second. Conséquence directe — AUCUN
-                nouveau `position:sticky`, AUCUN nouveau palier de z-index à arbitrer
-                (le palier `--z-modal` partagé `.mt-drawer`/`.mt-sheet` de #446 reste
-                intouché, comme au S70).
-
-                POURQUOI PAS un frère de la zone défilante (lettre de PAT-S70-001) :
-                ici le conteneur défilant EST `DialogContent` lui-même
-                (`overflow-y-auto`), il n'existe donc aucun frère où se placer. Rendre
-                la structure `header / body(overflow:auto) / footer` supposerait de
-                refaire la boîte du dialog (bottom sheet `max-h-[92vh]` + panneau
-                `sm:h-full`) — restructuration lourde sur une surface qui porte aussi
-                les deux chemins de suppression (#309) et la machine à conflit 409.
-
-                Ne contient rien en propre : `EventEditForm` y portalise SA mini-frise.
-                `empty:hidden` remplace le `:empty{display:none}` de
-                `.mt-drawer__preview` (classe DS non applicable ici : cette surface
-                n'est pas un `.mt-drawer`) — sans lui, le padding et le filet du nœud
-                vide laisseraient un liseré orphelin sous l'en-tête sous 640px et
-                pendant le rendu initial (avant hydratation, `useMediaQuery` rend
-                `false`). C'est le pendant exact de `.mt-drawer__preview:empty`
-                côté création : hôte vide ⇒ un SEUL filet visible (celui du header). */}
-            <div
-              ref={setPreviewNode}
-              className="border-rule border-b px-5 py-4 empty:hidden"
-              data-testid="timeline-edit-dialog-preview"
-            />
-          </div>
-
-          <div className="p-5">
-            {defaultValues && (
+      {/* #618 — En-tête : « Modifier l'événement » + l'événement ciblé en sous-titre.
+          La maquette y dessine « CRÉÉ LE <date> · <id> » : aucune date de création
+          n'existe dans le view-model de la frise (`PositionedEvent`), elle n'est donc
+          PAS inventée ici (follow-up signalé dans le done.md de #618). */}
+      <EventFormDrawer
+        open={Boolean(editing)}
+        onClose={handleClose}
+        title={t('title')}
+        subtitle={editing?.title}
+        testId="timeline-edit-dialog"
+        hasForm={Boolean(defaultValues)}
+      >
+        {({ compact, previewPortalNode, footerPortalNode }) =>
+          defaultValues && (
+            <>
+              {/* #617 (DEC-S86-001) — catégorie du produit de l'événement, lecture
+                  seule (le produit n'est pas modifiable en édition). MÊME position
+                  relative que la création : premier bloc du corps. */}
+              <EventCategoryField
+                name={editingCategory}
+                color={editingCategoryColor}
+                emptyReason="unknown"
+                testId="timeline-edit-dialog-category"
+              />
               <EventEditForm
                 defaultValues={defaultValues}
                 onSubmit={conflict.onSubmit}
@@ -279,14 +227,14 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
                 keepMineExhausted={conflict.keepMineExhausted}
                 onDelete={deleteEditing}
                 isRecurring={editing?.extendedProps?.isRecurring ?? false}
-                /* #495 — `null` sous 640px : l'aperçu y reste EN FLUX (PAT-S44-001,
-                   le mode historique reste le défaut là où rien ne le remplace). */
-                previewPortalNode={pinPreview ? previewNode : null}
+                compact={compact}
+                footerPortalNode={footerPortalNode}
+                previewPortalNode={previewPortalNode}
               />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+            </>
+          )
+        }
+      </EventFormDrawer>
     </>
   )
 }

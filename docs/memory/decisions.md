@@ -913,3 +913,9 @@ telle quelle (DEC-S84-001, aucune réécriture).
 **Décision.** « Aujourd'hui » à 26 px (jumeau de « Filtres »), CTA `Button size="sm"` à 32 px, et la minimap renvoyée sur une 2e ligne sous 700 px de barre.
 **Pourquoi.** Cohérence avec les contrôles déjà présents ; la maquette place la minimap dans un pied sous la frise, la prod l'a dans la barre — d'où la gestion de place. Follow-up ouvert pour déplacer la minimap conformément à la maquette.
 **Portée.** Revue `ui-design` : CONFORME (même arbitrage que `.mt-zoom`, #352). (Sprint 85 #602)
+
+## DEC-S86-001 — La catégorie d'un événement est DÉRIVÉE de son produit, pas surchargeable
+**Contexte.** Le handoff (`docs/design/graphite-handoff.md`, modèle `MyEvent.category`) veut une catégorie « dérivée du produit par défaut, surchargeable » ; #617 constatait que le champ n'existe pas au formulaire. Le plan architect du S86 en faisait un ADR bloquant (colonne nullable + règle de repli au domaine, migration).
+**Décision.** Catégorie **dérivée** : aucune colonne, aucune migration, aucun changement de contrat backend. Le formulaire affiche la catégorie en 2e position, alignée sur le produit sélectionné. Écart au handoff assumé.
+**Pourquoi.** (1) `ProductEntity.category` est `nullable = false` : un produit a toujours une catégorie, la dérivation est toujours définie — la crainte « compte sans catégorie » de #582 ne s'applique pas. (2) Toute la frise livrée au S85 agrège par la catégorie du PRODUIT (`groupResourcesByCategory`, `countEventsByCategory` via `resourceId`, filtres, résumé replié) : une surcharge par événement serait invisible ou contradictoire (événement « Santé » rendu, compté et masqué sous « Véhicules »). La porter imposerait de redéfinir ces surfaces, pour un besoin qu'aucun utilisateur n'a exprimé.
+**Portée.** Rouvrir si un cas d'usage réel de surcharge apparaît — alors en issue dédiée (migration + sémantique frise). Arbitré par le dev au `/sprint start 86`. (Sprint 86 #617)

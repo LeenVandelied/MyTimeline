@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import {
@@ -13,13 +12,11 @@ import {
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
-import { useFocusTrap } from '@/components/timeline/useFocusTrap'
+import { EventCategoryField } from '@/components/events/EventCategoryField'
+import { EventFormDrawer } from '@/components/events/EventFormDrawer'
 import { useAuth } from '@/hooks/useAuth'
 import { useCreateEvent } from '@/hooks/useCreateEvent'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { useMobileKeyboard } from '@/hooks/useMobileKeyboard'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
-import { cn } from '@/lib/utils'
 import { DEFAULT_COLOR, toEventCreationPayload } from '@/types/event'
 import type { EventSubmitState } from '@/components/EventEditForm'
 
@@ -27,22 +24,15 @@ import type { EventSubmitState } from '@/components/EventEditForm'
  * #300 — Drawer de CRÉATION d'événement (handoff §6, 452px).
  *
  * Remplace le Dialog placeholder du shell (#210). Composition, zéro duplication :
+ *   - la SURFACE (scrim, panneau drawer/sheet, en-tête, aperçu épinglé, pied sticky,
+ *     focus-trap, Échap, clavier virtuel) est `EventFormDrawer` (#618), partagée avec
+ *     l'édition (`TimelineEditHost`) — une seule implémentation ;
  *   - le formulaire est `EventEditForm` en `mode="create"` (mode-agnostique : piloté
  *     par `defaultValues` + `onSubmit`) — les champs PATCH-only (`archived`,
  *     `endDate`, `recurrenceEndDate`) y sont masqués par le mode, pas par ce composant ;
  *   - le sélecteur de produit vit ICI, HORS du formulaire : `productId` n'existe que
  *     sur le chemin create (BR-EVE-002) ; l'ajouter à `EventEditFormValues` polluerait
- *     le contrat d'édition, où le produit n'est pas modifiable ;
- *   - le focus-trap/Échap/restauration réutilise `useFocusTrap` (#63, déjà extrait
- *     d'`EventDrawer`) — aucune 3e copie du pattern.
- *
- * Surfaces (décisions Designer) :
- *   - `>= lg` : drawer latéral droit `.mt-drawer.mt-drawer--form` (452px via le token
- *     `--drawer-width-form`). `.mt-drawer` (420px, drawer de DÉTAIL) reste INTACT.
- *   - `< lg`  : bottom sheet `.mt-sheet` + bouton fermer tactile 44×44
- *     (`.mt-drawer__close--touch`), cohérent avec le détail mobile. Pas de 452px
- *     plein écran. NB : le bouton déclencheur du shell est aujourd'hui `lg`-only ;
- *     la variante sheet couvre le redimensionnement et les futurs déclencheurs mobiles.
+ *     le contrat d'édition, où le produit n'est pas modifiable.
  *
  * Récurrence : parité FONCTIONNELLE avec l'édition (WEEK/MONTH/YEAR du schéma).
  * DIVERGENCE ASSUMÉE vs le mock §6, qui n'affiche qu'Aucune/Mensuelle/Annuelle :
@@ -86,51 +76,20 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
   onKeyboardHide,
 }) => {
   const t = useTranslations('shell.createDrawer')
-  const tCommon = useTranslations('common')
   const { user } = useAuth()
-  const panelRef = useRef<HTMLDivElement>(null)
-
-  // `< lg` (1024px) : même seuil que la sidebar du shell (`hidden lg:flex`).
-  const isCompact = useMediaQuery('(max-width: 1023px)')
 
   const productsQuery = useProductsWithEvents(user?.id)
   const products = useMemo(() => productsQuery.data ?? [], [productsQuery.data])
 
   const [productId, setProductId] = useState<string>('')
   const [productError, setProductError] = useState(false)
+  /** #617 — produit choisi, source de la catégorie affichée (DEC-S86-001). */
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === productId) ?? null,
+    [products, productId],
+  )
 
   const createEvent = useCreateEvent()
-
-  useFocusTrap(panelRef, open, onClose)
-
-  /**
-   * #79 — Évitement du clavier virtuel. Armé UNIQUEMENT quand la sheet est ouverte
-   * ET en variante compacte : sur le drawer desktop aucun écouteur n'est posé et
-   * aucun style inline n'est produit (no-op strict, cf. `useMobileKeyboard`).
-   */
-  const { keyboardOpen, compact, availableHeight, offsetTop } = useMobileKeyboard({
-    enabled: open && isCompact,
-    onKeyboardShow,
-    onKeyboardHide,
-  })
-
-  /**
-   * #79 — Nœud du pied, porté par un STATE (et non un `useRef`) : le formulaire y
-   * portalise ses actions, or un `ref.current` lu au premier rendu vaut `null` et
-   * sa mutation ne re-rendrait rien. Le setter d'état est appelé par React en phase
-   * de commit (avant peinture) → pas de saut visuel entre le rendu en flux et le
-   * rendu portalisé.
-   */
-  const [footerNode, setFooterNode] = useState<HTMLDivElement | null>(null)
-
-  /**
-   * #326 — Nœud d'ACCUEIL DE L'APERÇU, même contrat que `footerNode` (state et non
-   * `useRef`, cf. ci-dessus). Le formulaire y portalise sa mini-frise ; le nœud vit
-   * ENTRE le header et `.mt-drawer__body` — donc hors du seul élément qui défile —
-   * ce qui épingle l'aperçu en haut du drawer sans `position:sticky` ni z-index
-   * (handoff §6). C'est la symétrie exacte du pied sticky de #79.
-   */
-  const [previewNode, setPreviewNode] = useState<HTMLDivElement | null>(null)
 
   const handleSubmit = useCallback(
     async (values: EventEditFormValues) => {
@@ -161,20 +120,8 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
       : 'idle'
 
   const hasProducts = products.length > 0
-  /** Le pied n'a de sens que si le formulaire est rendu (sinon : filet orphelin). */
+  /** Aperçu épinglé et pied n'ont de sens que si le formulaire est rendu. */
   const showForm = !productsQuery.isLoading && hasProducts
-  const showSheetFooter = isCompact && showForm
-  /**
-   * #326 — APERÇU ÉPINGLÉ : variante DRAWER (>= lg) UNIQUEMENT, périmètre du handoff §6
-   * (« drawer latéral 452px … aperçu live sticky en haut »).
-   *
-   * DIVERGENCE ASSUMÉE pour la bottom sheet : #79 y traite la hauteur visible comme une
-   * ressource rare (l'aperçu réduit RETIRE justement l'aperçu quand le clavier s'ouvre).
-   * Y épingler la mini-frise en permanence amputerait la zone de saisie sur le plus petit
-   * écran — l'inverse de l'intention. La sheet garde donc l'aperçu en flux (comportement
-   * actuel, aucune régression).
-   */
-  const showPinnedPreview = !isCompact && showForm
 
   const defaultValues: EventEditFormValues = {
     title: '',
@@ -194,168 +141,110 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
   }
 
   return (
-    <>
-      <div
-        className={isCompact ? 'mt-sheet__overlay' : 'mt-drawer__overlay'}
-        onClick={onClose}
-        data-testid="shell-new-event-drawer-overlay"
-      />
-      <div
-        ref={panelRef}
-        className={cn(isCompact ? 'mt-sheet' : 'mt-drawer mt-drawer--form')}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('title')}
-        data-testid="shell-new-event-drawer"
-        /* #79 — État observable du clavier (oracle E2E) ; ABSENT sur desktop, où le
-           hook n'est pas armé : l'attribut ne doit pas laisser croire à une mesure. */
-        data-keyboard={isCompact ? (keyboardOpen ? 'open' : 'closed') : undefined}
-        data-compact={isCompact && compact ? 'true' : undefined}
-        /**
-         * #79 — On NE remplace PAS le `max-height:80vh` du DS : on le BORNE à la
-         * hauteur réellement visible, et on répercute `offsetTop` (iOS déplace le
-         * viewport visuel sans bouger le viewport de mise en page auquel un
-         * `position:fixed` est ancré). Clavier fermé → `undefined`, donc retour
-         * intégral à la feuille de style (aucune transition : un `max-height`
-         * animé produirait un à-coup à chaque frappe).
-         */
-        style={
-          isCompact && keyboardOpen && availableHeight !== null
-            ? { maxHeight: `${availableHeight}px`, top: `${offsetTop}px` }
-            : undefined
-        }
-      >
-        <div className={isCompact ? 'mt-sheet__header' : 'mt-drawer__header'}>
-          <div>
-            <h2 className={isCompact ? 'mt-sheet__title' : 'mt-drawer__title'}>{t('title')}</h2>
-            <p className={isCompact ? 'mt-sheet__subtitle' : 'mt-drawer__subtitle'}>
-              {t('subtitle')}
-            </p>
-          </div>
-          <button
-            type="button"
-            className={cn(
-              isCompact ? 'mt-sheet__close' : 'mt-drawer__close',
-              isCompact && 'mt-drawer__close--touch',
-            )}
-            onClick={onClose}
-            aria-label={tCommon('buttons.close')}
-            data-testid="shell-new-event-drawer-close"
+    <EventFormDrawer
+      open={open}
+      onClose={onClose}
+      title={t('title')}
+      subtitle={t('subtitle')}
+      testId="shell-new-event-drawer"
+      hasForm={showForm}
+      onKeyboardShow={onKeyboardShow}
+      onKeyboardHide={onKeyboardHide}
+    >
+      {({ compact, previewPortalNode, footerPortalNode }) =>
+        productsQuery.isLoading ? (
+          <div
+            className="flex items-center gap-2"
+            role="status"
+            aria-live="polite"
+            data-testid="shell-new-event-drawer-loading"
           >
-            <X size={16} strokeWidth={1.5} aria-hidden="true" />
-          </button>
-        </div>
+            {/* Spinner purement visuel : la live-region est portée par ce div (texte
+                visible complet) → une seule annonce, et l'état reste annoncé. Le
+                `aria-hidden` seul, SANS live-region sur le wrapper, rendrait le
+                chargement muet (pattern complet : ExportDataFlow.tsx:138-148). */}
+            <Spinner label={t('loadingProducts')} aria-hidden="true" className="text-ink-muted" />
+            <span className="text-ink-muted text-sm">{t('loadingProducts')}</span>
+          </div>
+        ) : !hasProducts ? (
+          /* BR-EVE-002 : sans produit, aucun event n'est créable (le DTO exige un
+             `productId` existant). On l'explique plutôt que d'afficher un formulaire
+             condamné à échouer. */
+          <p className="text-ink-muted text-sm" data-testid="shell-new-event-drawer-empty">
+            {t('emptyProducts')}
+          </p>
+        ) : (
+          <>
+            {/* #617 (DEC-S86-001) — Catégorie DÉRIVÉE du produit choisi, en lecture
+                seule : suit `productId` au rendu, n'entre pas dans le formulaire.
+                Position : avant le produit (l'ordre Titre · Catégorie · Produit du
+                handoff est l'objet de #622). */}
+            <EventCategoryField
+              name={selectedProduct?.category.name ?? null}
+              color={selectedProduct?.category.color ?? null}
+              testId="shell-new-event-drawer-category"
+            />
 
-        {/* #326 — Aperçu épinglé : HORS de `.mt-drawer__body` (le seul élément à
-            `overflow:auto`), donc toujours visible pendant que le formulaire défile.
-            Ne contient rien en propre : `EventEditForm` y portalise SA mini-frise
-            (aucune duplication de markup, aucun second aperçu à synchroniser). */}
-        {showPinnedPreview && (
-          <div
-            ref={setPreviewNode}
-            className="mt-drawer__preview"
-            data-testid="shell-new-event-drawer-preview"
-          />
-        )}
-
-        <div className={isCompact ? 'mt-sheet__body' : 'mt-drawer__body'}>
-          {productsQuery.isLoading ? (
-            <div
-              className="flex items-center gap-2"
-              role="status"
-              aria-live="polite"
-              data-testid="shell-new-event-drawer-loading"
-            >
-              {/* Spinner purement visuel : la live-region est portée par ce div (texte
-                  visible complet) → une seule annonce, et l'état reste annoncé. Le
-                  `aria-hidden` seul, SANS live-region sur le wrapper, rendrait le
-                  chargement muet (pattern complet : ExportDataFlow.tsx:138-148). */}
-              <Spinner label={t('loadingProducts')} aria-hidden="true" className="text-ink-muted" />
-              <span className="text-ink-muted text-sm">{t('loadingProducts')}</span>
-            </div>
-          ) : !hasProducts ? (
-            /* BR-EVE-002 : sans produit, aucun event n'est créable (le DTO exige un
-               `productId` existant). On l'explique plutôt que d'afficher un formulaire
-               condamné à échouer. */
-            <p className="text-ink-muted text-sm" data-testid="shell-new-event-drawer-empty">
-              {t('emptyProducts')}
-            </p>
-          ) : (
-            <>
-              {/* Sélecteur de produit — Select shadcn/Radix EXISTANT (aucun combobox
-                  nouveau : hors charte). */}
-              <div className="mt-drawer__field">
-                <label className="mt-drawer__label" id="new-event-product-label">
-                  {t('product')}
-                </label>
-                <Select
-                  value={productId}
-                  onValueChange={(value) => {
-                    setProductId(value)
-                    setProductError(false)
-                  }}
+            {/* Sélecteur de produit — Select shadcn/Radix EXISTANT (aucun combobox
+                nouveau : hors charte). */}
+            <div className="mt-drawer__field">
+              <label className="mt-drawer__label" id="new-event-product-label">
+                {t('product')}
+              </label>
+              <Select
+                value={productId}
+                onValueChange={(value) => {
+                  setProductId(value)
+                  setProductError(false)
+                }}
+              >
+                <SelectTrigger
+                  className="bg-surface-2 text-ink border-rule-emphasis"
+                  aria-labelledby="new-event-product-label"
+                  aria-invalid={productError || undefined}
+                  data-testid="shell-new-event-drawer-product-trigger"
                 >
-                  <SelectTrigger
-                    className="bg-surface-2 text-ink border-rule-emphasis"
-                    aria-labelledby="new-event-product-label"
-                    aria-invalid={productError || undefined}
-                    data-testid="shell-new-event-drawer-product-trigger"
-                  >
-                    <SelectValue placeholder={t('productPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-surface-2 text-ink border-rule-strong">
-                    {products.map((product) => (
-                      <SelectItem
-                        key={product.id}
-                        value={product.id}
-                        data-testid={`product-option-${product.id}`}
-                      >
-                        {product.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {productError && (
-                  <p
-                    role="alert"
-                    className="mt-drawer__error"
-                    data-testid="shell-new-event-drawer-product-error"
-                  >
-                    {t('productRequired')}
-                  </p>
-                )}
-              </div>
+                  <SelectValue placeholder={t('productPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent className="bg-surface-2 text-ink border-rule-strong">
+                  {products.map((product) => (
+                    <SelectItem
+                      key={product.id}
+                      value={product.id}
+                      data-testid={`product-option-${product.id}`}
+                    >
+                      {product.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {productError && (
+                <p
+                  role="alert"
+                  className="mt-drawer__error"
+                  data-testid="shell-new-event-drawer-product-error"
+                >
+                  {t('productRequired')}
+                </p>
+              )}
+            </div>
 
-              <EventEditForm
-                mode="create"
-                defaultValues={defaultValues}
-                onSubmit={handleSubmit}
-                onCancel={onClose}
-                submitState={submitState}
-                /* #79 — opt-in : sur le drawer desktop les deux props sont
-                   neutres (`false` / `null`), le formulaire est INCHANGÉ. */
-                compact={isCompact && compact}
-                footerPortalNode={isCompact ? footerNode : null}
-                /* #326 — `null` en variante sheet : l'aperçu y reste en flux. */
-                previewPortalNode={showPinnedPreview ? previewNode : null}
-              />
-            </>
-          )}
-        </div>
-
-        {/* #79 — Pied STICKY : hors de `.mt-sheet__body` (le seul élément qui défile),
-            donc toujours visible — y compris quand le panneau est borné à la hauteur
-            laissée par le clavier. Il ne contient rien en propre : `EventEditForm` y
-            portalise SA rangée d'actions (aucune duplication de boutons). */}
-        {showSheetFooter && (
-          <div
-            ref={setFooterNode}
-            className="mt-sheet__footer"
-            data-testid="shell-new-event-drawer-footer"
-          />
-        )}
-      </div>
-    </>
+            <EventEditForm
+              mode="create"
+              defaultValues={defaultValues}
+              onSubmit={handleSubmit}
+              onCancel={onClose}
+              submitState={submitState}
+              /* #79 / #326 — nœuds résolus par la coque : `null` là où la variante
+                 n'en a pas (pied hors sheet, aperçu hors drawer) → rendu en flux. */
+              compact={compact}
+              footerPortalNode={footerPortalNode}
+              previewPortalNode={previewPortalNode}
+            />
+          </>
+        )
+      }
+    </EventFormDrawer>
   )
 }
 

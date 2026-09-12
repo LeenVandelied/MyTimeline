@@ -24,8 +24,9 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * ─────────────────────────────────────────────────────────────────────────────
  * LE SEUIL RÉEL N'EST PAS CELUI QUE LE LIBELLÉ ANNONCE — mesuré, pas déduit
  * ─────────────────────────────────────────────────────────────────────────────
- * Le texte du hint (`products.recurrenceCappedHint`, fr) dit « La série dépasse
- * 4 000 occurrences ». Ce N'EST PAS le déclencheur réel depuis #452 (S65) :
+ * Le texte du hint (`products.recurrenceCappedHint`, fr) disait au S82 « La série
+ * dépasse 4 000 occurrences » — libellé corrigé par #646 (S86). Ce N'ÉTAIT PAS le
+ * déclencheur réel depuis #452 (S65) :
  * `RecurrenceExpansionServiceImpl` force `capped = true` pour TOUTE série SANS
  * `recurrenceEndDate`, tronquée à l'horizon `MAX_UNBOUNDED_EXPANSION_YEARS = 5`.
  * Sondé sur le backend e2e de ce sprint (S82) :
@@ -190,7 +191,11 @@ test.describe('#491 — hint de plafond de récurrence (parcours réel)', () => 
       'LE DÉFAUT COUVERT PAR L’ISSUE : une série SANS date de fin est tronquée à ' +
         'l’horizon de 5 ans (`capped:true`), le hint DOIT donc s’afficher',
     ).toBeVisible({ timeout: CLICK_BUDGET })
-    await expect(hint).toHaveText(/4\s*000 occurrences/)
+    // #646 (S86) — le libellé décrit l'horizon réel (5 ans sans date de fin, cf.
+    // `RecurrenceExpansionServiceImpl`) et non plus un seuil de 4 000. `\s` couvre
+    // l'espace insécable ; la négation rougit si l'ancien libellé revient.
+    await expect(hint).toContainText(/5\s*ans qui suivent la date de début/)
+    await expect(hint).not.toContainText(/4\s*000/)
 
     // Le hint est informatif, pas une erreur : ton neutre exigé par #67.
     await expect(hint).toHaveAttribute('role', 'status')

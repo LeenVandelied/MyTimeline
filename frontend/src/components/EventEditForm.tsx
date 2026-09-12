@@ -414,11 +414,25 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
     </div>
   )
 
+  /**
+   * S86 (revue E2E #618) — PIED DE LA BOTTOM SHEET à 320 px.
+   *
+   * Portalisé dans `.mt-sheet__footer` (padding `--space-5` des deux côtés, 280 px utiles
+   * à 320 px), le rang [Supprimer] + [Annuler][Enregistrer] ne tenait pas sur UNE ligne :
+   * boutons `whitespace-nowrap`, aucun retour → le groupe sortait de l'écran (mesuré à
+   * 320 px : 376 px en `fr`, 346 en `es`, 379 en `de`). En pied, le rang et le groupe
+   * passent donc à la ligne : le groupe va sous « Supprimer », calé à droite par
+   * `ms-auto`, et ses deux boutons ne se séparent qu'en dernier recours. L'ordre DOM
+   * est inchangé (pas de `*-reverse`) : ordre visuel = ordre de tabulation. Aucune
+   * réduction de police ni libellé raccourci.
+   *
+   * EN FLUX (drawer >= lg) : classes historiques strictement inchangées.
+   */
   const actionsRow = (
     <div
       className={
         footerPortalNode
-          ? 'flex w-full items-center justify-between'
+          ? 'flex w-full flex-wrap items-center justify-between gap-2'
           : 'border-rule flex items-center justify-between border-t pt-4'
       }
     >
@@ -438,7 +452,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
       ) : (
         <span />
       )}
-      <div className="flex gap-2">
+      <div className={footerPortalNode ? 'ms-auto flex flex-wrap justify-end gap-2' : 'flex gap-2'}>
         <Button
           type="button"
           variant="outline"

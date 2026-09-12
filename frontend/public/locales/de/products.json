@@ -38,7 +38,7 @@
         "endDate": "Enddatum",
         "recurrenceEndDate": "Wiederholungsende",
         "recurrenceEndHint": "Optional — die Wiederholung wird auf dieses Datum begrenzt.",
-      "recurrenceCappedHint": "Die Serie überschreitet 4.000 Vorkommen. Legen Sie ein Enddatum fest, um die genaue Anzahl zu erhalten.",
+        "recurrenceCappedHint": "Ohne Enddatum werden die Vorkommen nur für die 5 Jahre ab dem Startdatum berechnet. Lege ein Enddatum fest, um die Serie zu begrenzen (auch ein sehr weit entferntes Datum wird gedeckelt).",
         "archived": "Archiviert",
         "archivedLockNote": "Dieses Ereignis ist archiviert: Seine Felder sind schreibgeschützt und es zählt nicht mehr zu deinen aktiven Ereignissen. Deaktiviere unten „Archiviert“, um es wieder zu bearbeiten."
       },
@@ -82,6 +82,11 @@
   "edit": {
     "title": "Ereignis bearbeiten",
     "save": "Änderungen speichern"
+  },
+  "eventCategory": {
+    "label": "Kategorie",
+    "noProduct": "Wählen Sie zuerst ein Produkt",
+    "unknown": "Unbekannte Kategorie"
   },
   "drawer": {
     "createTitle": "Neues Produkt",

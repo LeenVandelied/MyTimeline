@@ -1260,6 +1260,42 @@ La garde « aucune zone vide après repli » était présentée comme protégean
 ## PIT-S85-006 — Un testid « proposé » par un briefing peut être déjà pris ailleurs
 Le briefing de #602 proposait `timeline-today` ; l'identifiant était déjà porté par le badge positionnel de la règle dans 3 composants. Renommé `timeline-today-button`. Prévention : `grep -rn 'data-testid="<id>"' src e2e` avant d'adopter un testid suggéré — y compris quand la suggestion vient du lead. (Sprint 85 #602)
 
+
+## PIT-S86-001 — Un piège Échap maison sous des couches Radix ferme DEUX couches d'une seule frappe
+Le `DismissableLayer` de Radix (confirmations, `ConflictDialog`, `Select`) écoute `keydown` sur `document` en CAPTURE et fait `preventDefault()` en se fermant, SANS `stopPropagation`. Un listener Échap global en phase bulle (`useFocusTrap`) reçoit donc la même frappe et ferme aussi le panneau dessous. Solution : `if (e.key === 'Escape' && e.defaultPrevented) return`. Prévention : tout piège Échap global teste `defaultPrevented` ; garder un test « Échap dans la confirmation ne ferme que la confirmation », vu ROUGE sans la garde. (Sprint 86 #618)
+
+
+## PIT-S86-002 — `hideOthers` (paquet `aria-hidden`) épargne les régions `aria-live` ET tous leurs ancêtres
+La bibliothèque utilisée par Radix pour rendre le fond inerte ne pose pas `aria-hidden` sur un nœud qui contient une région `[aria-live]`. Une région live dans `<main>` (zoom de la frise) laisse `app-shell` et `<main>` sans `aria-hidden` : un oracle E2E « le fond est inerte » qui vise ces conteneurs rougit à tort. Solution : viser un élément hors de toute chaîne d'ancêtres aria-live (la sidebar). Prévention : documenter ce résidu plutôt que conclure que l'inertage « ne marche pas ». (Sprint 86, correctif de revue)
+
+
+## PIT-S86-003 — Mesurer une géométrie juste après l'ouverture d'un panneau animé mesure le panneau en vol
+L'audit de débordement `sprint-63` relevait le drawer à 1288-1298 px dans une fenêtre de 1280 : #618 avait ajouté une entrée `translateX(28px)` de 200 ms et `settle()` n'attendait que les polices. Débord variable d'un run à l'autre = signature de la mesure en vol. Solution : `settle()` attend `document.getAnimations()` → `finished` (animations infinies écartées, borne de temps). Prévention : tout `settle()` de mesure attend polices ET animations ; armer par un débord injecté AU REPOS. Ne jamais désactiver l'animation produit pour faire passer le test. (Sprint 86, suite E2E du lead)
+
+
+## PIT-S86-004 — Un mock `matchMedia` booléen global inverse silencieusement un test quand la requête change de sens
+Un mock qui renvoie le même `matches` pour toute requête passe tant que le composant interroge `min-width` ; dès qu'il interroge `max-width` (#618 : bascule sheet `< 1024 px`), l'assertion teste l'inverse de ce qu'elle nomme, et reste verte. Solution : évaluer `min-width`/`max-width` contre une largeur simulée. Prévention : jamais de mock `matchMedia` qui ignore le texte de la requête. (Sprint 86 #618)
+
+
+## PIT-S86-005 — Après un style inline passé à `undefined`, React laisse `style=""` sur le nœud
+`style={cond ? {...} : undefined}` sur un nœud déjà rendu : React retire les propriétés mais laisse l'attribut vide. `getAttribute('style') === null` n'est vrai qu'au PREMIER rendu sans style. Solution : asserter `el.style.<prop> === ''`. (Sprint 86 #617)
+
+
+## PIT-S86-006 — L'horizon de 5 ans ne borne QUE l'aperçu, et le plafond de 4000 n'a pas disparu
+`RecurrenceExpansionServiceImpl` n'a qu'un appelant (`RecurrencePreviewController`) : l'horizon de 5 ans sans date de fin borne le CALCUL de l'aperçu, pas la série (la frise n'étend aucune occurrence). Et le plafond de 4000 mord encore sur une date de fin explicite très lointaine (≈ 77 ans en WEEK, ≈ 333 ans en MONTH). Un libellé piloté par `capped` doit donc rester vrai dans les DEUX cas. Prévention : grepper les appelants d'une borne backend avant d'en décrire l'effet dans un texte utilisateur (cf. PIT-S82-002). (Sprint 86 #646)
+
+
+## PIT-S86-007 — Des specs E2E « ciblées » choisies à la main ratent l'audit transverse qui voit la régression
+Le grep des testids du drawer donnait 12 specs ; les briefings de #618/#617 en listaient 4 choisies à la main, sans `sprint-63-de-overflow-audit`. Les agents ont rendu « E2E ciblé vert » ; la suite complète du lead a trouvé 8 échecs (pied de sheet hors écran à 320 px). Prévention : coller dans le briefing la liste grep COMPLÈTE des specs qui citent la surface touchée ; garder la suite complète du lead en fin de sprint. (Sprint 86)
+
+
+## PIT-S86-008 — `test-quiet.sh frontend` contient `next build` : l'interdire et l'exiger dans le même briefing est contradictoire
+En vague parallèle, le briefing donnait l'exclusivité de `next dev`/`next build` à un agent ET exigeait `./scripts/test-quiet.sh frontend` des autres — scope qui lance `next build` (même `.next`, PIT-S81-022). Solution : `frontend-unit` + `tsc --noEmit` pour les agents sans navigateur ; le build complet est joué par l'agent exclusif ou par le lead. (Sprint 86 #646)
+
+
+## PIT-S86-009 — Sous RTK, un `grep -v` qui génère une contre-épreuve peut produire un fichier VIDE
+`grep -v '… && …'` via le hook RTK pour retirer une garde a produit un fichier vide → vitest « no tests found », pris un instant pour une contre-épreuve. Solution : `rtk proxy grep -v -F` et contrôle `wc -l` avant de substituer le fichier. (Sprint 86 #618)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

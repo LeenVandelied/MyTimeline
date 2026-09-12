@@ -38,7 +38,7 @@
         "endDate": "Fecha de fin",
         "recurrenceEndDate": "Fin de recurrencia",
         "recurrenceEndHint": "Opcional — la recurrencia se limitará a esta fecha.",
-      "recurrenceCappedHint": "La serie supera las 4.000 repeticiones. Define una fecha de fin para obtener el recuento exacto.",
+        "recurrenceCappedHint": "Sin fecha de fin, las repeticiones solo se calculan durante los 5 años siguientes a la fecha de inicio. Define una fecha de fin para limitar la serie (una fecha muy lejana también tiene un tope).",
         "archived": "Archivado",
         "archivedLockNote": "Este evento está archivado: sus campos son de solo lectura y ya no cuenta entre tus eventos activos. Desactiva «Archivado» más abajo para volver a editarlo."
       },
@@ -82,6 +82,11 @@
   "edit": {
     "title": "Editar Evento",
     "save": "Guardar Cambios"
+  },
+  "eventCategory": {
+    "label": "Categoría",
+    "noProduct": "Elige primero un producto",
+    "unknown": "Categoría desconocida"
   },
   "drawer": {
     "createTitle": "Nuevo producto",

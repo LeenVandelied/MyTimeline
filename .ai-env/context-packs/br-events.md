@@ -149,6 +149,12 @@ Le seul "état" implicite est le `type`, qui n'est PAS une transition mais une n
 **⚠ Ne PAS compter `NewEventDrawer.test.tsx` (« l'aperçu épinglé reste LIVE ») comme garde de cette règle** : son `waitFor(toHaveTextContent(…))` passe À L'IDENTIQUE avec et sans débounce — il protège le PORTAIL d'affichage, pas le contrat de perf. C'est le faux positif de couverture qui a motivé #507.
 **⚠ Historique de numérotation (issue #496)** : ces mêmes contraintes étaient commentées `BR-EVE-009` dans le code jusqu'au Sprint 71 — attribution **fausse**, BR-EVE-009 (ci-dessus) = **modèle couleur event**. Les renvois ont été reciblés ici. Cf. [[PIT-S70-001]] : un identifiant `BR-*` recopié depuis un commentaire de code se propage jusque dans les briefings.
 
+### BR-EVE-018 — La catégorie d'un event est celle de son produit (dérivée, non surchargeable)
+**Règle** : un event n'a PAS de catégorie propre. Sa catégorie MUST être celle de son produit (`ProductEntity.category`, NOT NULL) ; elle MUST NOT être persistée sur l'event ni ajoutée à `EventEditFormValues`, aux DTO ou aux schémas Zod d'événement. Le formulaire l'affiche en **lecture seule** : en création, catégorie du produit choisi (état vide tant qu'aucun produit) ; en édition, catégorie du produit de l'event. Couleur de catégorie `null` → contour neutre (DEC-S85-006).
+**Pourquoi** : la frise (groupes, compteurs, filtres, résumé replié — Sprint 85) agrège par la catégorie du PRODUIT ; une catégorie surchargée par event y serait invisible ou contradictoire. Écart assumé au handoff, qui la voulait « dérivée par défaut, surchargeable ». Décision : **DEC-S86-001**.
+**✅ IMPLÉMENTÉ (Sprint 86 #617)** : `frontend/src/components/events/EventCategoryField.tsx` (groupe étiqueté, non focalisable), monté par `NewEventDrawer.tsx` (au-dessus de Produit) et `TimelineEditHost.tsx` (couleur via `categoryColorsOf`). Aucun changement backend.
+**Test** : `EventCategoryField.test.tsx`, `NewEventDrawer.test.tsx` (la catégorie suit le produit choisi, hors du formulaire), `TimelineEditHost.test.tsx` ; E2E `frontend/e2e/sprint-86-event-category.spec.ts` (création + édition).
+
 ---
 
 ## 4. Dépendances inter-domaines
