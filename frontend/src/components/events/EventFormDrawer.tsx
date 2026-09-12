@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { hideOthers } from 'aria-hidden'
+import { RemoveScroll } from 'react-remove-scroll'
 
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -104,6 +106,26 @@ export const EventFormDrawer: React.FC<EventFormDrawerProps> = ({
 
   useFocusTrap(panelRef, open, handleClose)
 
+  /**
+   * Revue S86 (MAJEUR) — FOND INERTE. Le `Dialog` Radix que #618 a remplacé en édition
+   * posait `aria-hidden` sur tout le reste du document (`hideOthers`, même paquet et
+   * même version que Radix) ; `aria-modal` seul n'est pas honoré partout. Appliqué aux
+   * DEUX modes (la création ne l'avait jamais eu).
+   *
+   * `hideOthers` photographie les frères AU MOMENT de l'appel : un portail Radix ouvert
+   * ensuite depuis le panneau (liste de `Select`, `DeleteConfirmDialog`,
+   * `ConflictDialog`) n'est donc jamais masqué. Dépendance `[open]` seule : le panneau
+   * est le MÊME nœud en drawer et en sheet (seule sa classe change), relancer l'effet
+   * à la bascule de variante masquerait un portail déjà ouvert. Les éléments
+   * `[aria-live]` (toasts) sont préservés par la bibliothèque.
+   */
+  useEffect(() => {
+    if (!open) return
+    const panel = panelRef.current
+    if (!panel) return
+    return hideOthers(panel)
+  }, [open])
+
   /** #79 — armé UNIQUEMENT sheet ouverte : no-op strict sur le drawer. */
   const { keyboardOpen, compact, availableHeight, offsetTop } = useMobileKeyboard({
     enabled: open && isCompact,
@@ -138,72 +160,86 @@ export const EventFormDrawer: React.FC<EventFormDrawerProps> = ({
         onClick={handleClose}
         data-testid={`${testId}-overlay`}
       />
-      <div
-        ref={panelRef}
-        className={isCompact ? 'mt-sheet' : 'mt-drawer mt-drawer--form'}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        data-testid={testId}
-        /* #79 — état observable du clavier (oracle E2E), ABSENT sur le drawer. */
-        data-keyboard={isCompact ? (keyboardOpen ? 'open' : 'closed') : undefined}
-        data-compact={slots.compact ? 'true' : undefined}
-        /* #79 — borne le `max-height:80vh` du DS à la hauteur visible ; clavier fermé
+      {/* Revue S86 (MAJEUR) — VERROU DE DÉFILEMENT, repris du `Dialog` Radix remplacé
+          par #618 (`RemoveScroll`, même paquet et même version). `forwardProps` : aucun
+          nœud ajouté, le verrou s'accroche au panneau lui-même (ref fusionnée). Hors du
+          panneau (scrim compris) molette et glisser tactile sont annulés et `body` est
+          figé ; `.mt-drawer__body` / `.mt-sheet__body` défilent toujours. Un `Select`
+          ou une confirmation Radix ouverts depuis le panneau empilent leur propre verrou
+          (pile partagée, une seule copie du paquet) : leur liste reste défilable. */}
+      <RemoveScroll ref={panelRef} enabled allowPinchZoom forwardProps>
+        <div
+          className={isCompact ? 'mt-sheet' : 'mt-drawer mt-drawer--form'}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          data-testid={testId}
+          /* #79 — état observable du clavier (oracle E2E), ABSENT sur le drawer. */
+          data-keyboard={isCompact ? (keyboardOpen ? 'open' : 'closed') : undefined}
+          data-compact={slots.compact ? 'true' : undefined}
+          /* #79 — borne le `max-height:80vh` du DS à la hauteur visible ; clavier fermé
            → `undefined`, retour intégral à la feuille de style. */
-        style={
-          isCompact && keyboardOpen && availableHeight !== null
-            ? { maxHeight: `${availableHeight}px`, top: `${offsetTop}px` }
-            : undefined
-        }
-      >
-        <div className={isCompact ? 'mt-sheet__header' : 'mt-drawer__header'}>
-          <div className="min-w-0">
-            <h2 className={isCompact ? 'mt-sheet__title' : 'mt-drawer__title'}>{title}</h2>
-            {subtitle ? (
-              <p className={isCompact ? 'mt-sheet__subtitle' : 'mt-drawer__subtitle'}>{subtitle}</p>
-            ) : null}
-          </div>
-          <div className="mt-drawer__header-actions">
-            {/* Puce « Échap » de la maquette : indication clavier, drawer seulement (la
+          style={
+            isCompact && keyboardOpen && availableHeight !== null
+              ? { maxHeight: `${availableHeight}px`, top: `${offsetTop}px` }
+              : undefined
+          }
+        >
+          <div className={isCompact ? 'mt-sheet__header' : 'mt-drawer__header'}>
+            <div className="min-w-0">
+              <h2 className={isCompact ? 'mt-sheet__title' : 'mt-drawer__title'}>{title}</h2>
+              {subtitle ? (
+                <p className={isCompact ? 'mt-sheet__subtitle' : 'mt-drawer__subtitle'}>
+                  {subtitle}
+                </p>
+              ) : null}
+            </div>
+            <div className="mt-drawer__header-actions">
+              {/* Puce « Échap » de la maquette : indication clavier, drawer seulement (la
                 sheet sert le tactile). Décorative : la fermeture est portée par le
                 bouton, déjà nommé pour les technologies d'assistance. */}
-            {!isCompact && (
-              <kbd className="mt-drawer__kbd" aria-hidden="true">
-                {tHelp('escapeKey')}
-              </kbd>
-            )}
-            <button
-              type="button"
-              className={cn(
-                isCompact ? 'mt-sheet__close' : 'mt-drawer__close',
-                isCompact && 'mt-drawer__close--touch',
+              {!isCompact && (
+                <kbd className="mt-drawer__kbd" aria-hidden="true">
+                  {tHelp('escapeKey')}
+                </kbd>
               )}
-              onClick={handleClose}
-              aria-label={tCommon('buttons.close')}
-              data-testid={`${testId}-close`}
-            >
-              <X size={16} strokeWidth={1.5} aria-hidden="true" />
-            </button>
+              <button
+                type="button"
+                className={cn(
+                  isCompact ? 'mt-sheet__close' : 'mt-drawer__close',
+                  isCompact && 'mt-drawer__close--touch',
+                )}
+                onClick={handleClose}
+                aria-label={tCommon('buttons.close')}
+                data-testid={`${testId}-close`}
+              >
+                <X size={16} strokeWidth={1.5} aria-hidden="true" />
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* #326 — Aperçu épinglé : HORS du corps (seul élément à `overflow:auto`), donc
+          {/* #326 — Aperçu épinglé : HORS du corps (seul élément à `overflow:auto`), donc
             immobile pendant le défilement sans `position:sticky` ni z-index. */}
-        {showPinnedPreview && (
-          <div
-            ref={setPreviewNode}
-            className="mt-drawer__preview"
-            data-testid={`${testId}-preview`}
-          />
-        )}
+          {showPinnedPreview && (
+            <div
+              ref={setPreviewNode}
+              className="mt-drawer__preview"
+              data-testid={`${testId}-preview`}
+            />
+          )}
 
-        <div className={isCompact ? 'mt-sheet__body' : 'mt-drawer__body'}>{children(slots)}</div>
+          <div className={isCompact ? 'mt-sheet__body' : 'mt-drawer__body'}>{children(slots)}</div>
 
-        {/* #79 — Pied sticky de la sheet : hors du corps, visible au-dessus du clavier. */}
-        {showSheetFooter && (
-          <div ref={setFooterNode} className="mt-sheet__footer" data-testid={`${testId}-footer`} />
-        )}
-      </div>
+          {/* #79 — Pied sticky de la sheet : hors du corps, visible au-dessus du clavier. */}
+          {showSheetFooter && (
+            <div
+              ref={setFooterNode}
+              className="mt-sheet__footer"
+              data-testid={`${testId}-footer`}
+            />
+          )}
+        </div>
+      </RemoveScroll>
     </>,
     document.body,
   )
