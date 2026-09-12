@@ -58,13 +58,14 @@ export interface TimelineMetrics {
 
 /**
  * Défauts alignés sur `ds/tokens/spacing.css` (`--ruler-height: 44px`,
- * `--lane-height: 46px`) et sur la hauteur rendue de `.mt-tlv__group-head`.
+ * `--lane-height: 46px`) et sur la hauteur rendue de `.mt-tlv__group-head`
+ * (#601 : FIXÉE à 40 px en CSS, pliée comme dépliée — maquette `CATH = 40`).
  * Ils ne servent QUE le premier rendu : dès le premier `useLayoutEffect`, les
  * trois valeurs sont mesurées sur le DOM réel (immunité aux dérives du DS).
  */
 export const DEFAULT_METRICS: TimelineMetrics = {
   rulerHeight: 44,
-  headHeight: 29,
+  headHeight: 40,
   laneHeight: 46,
 }
 

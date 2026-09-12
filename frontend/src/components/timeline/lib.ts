@@ -127,6 +127,14 @@ export type Resource = {
   id: string
   title: string
   category: string
+  /**
+   * #592 (DEC-S85-006) — couleur de la CATÉGORIE (`product.category.color`, hex
+   * nullable du DTO produit). Optionnelle : les consommateurs historiques
+   * (stories, tests, mobile) ne la fournissent pas. `null`/absente = aucune
+   * couleur connue → le rendu retombe sur un contour NEUTRE, jamais sur une
+   * teinte inventée. Lire via `categoryColorsOf`, pas directement.
+   */
+  categoryColor?: string | null
 }
 
 /** Statut dérivé d'un event par rapport à `now` (pilote la couleur de la barre). */
@@ -267,6 +275,52 @@ export function groupResourcesByCategory(resources: Resource[]): Record<string, 
     grouped[r.category].push(r)
   }
   return grouped
+}
+
+/**
+ * #592 (DEC-S85-006) — Couleur de chaque catégorie, dérivée des ressources.
+ *
+ * POINT UNIQUE DE DÉRIVATION : la sidebar (#592) et la pastille d'en-tête de
+ * catégorie (#601) lisent la même table, pour ne jamais diverger. Toutes les
+ * ressources d'une catégorie portent la même `category.color` (elle vient du
+ * DTO catégorie) ; on retient la PREMIÈRE valeur non nulle rencontrée, ce qui
+ * reste juste si un consommateur ne la renseigne que sur une partie des lanes.
+ * Aucune entrée → `null` : l'appelant rend un contour neutre. Aucune
+ * réécriture de la valeur (DEC-S84-001 : une couleur hors palette s'affiche
+ * telle quelle).
+ */
+export function categoryColorsOf(resources: Resource[]): Record<string, string | null> {
+  const colors: Record<string, string | null> = {}
+  for (const r of resources) {
+    const current = colors[r.category]
+    if (current == null) colors[r.category] = r.categoryColor ?? null
+  }
+  return colors
+}
+
+/**
+ * #592 — Nombre d'ÉVÉNEMENTS par catégorie (compteur de la sidebar, maquette
+ * §A.2). Rattachement par `event.resourceId` → catégorie de la ressource : c'est
+ * la même clé que celle qui range l'événement dans sa lane, donc le compteur
+ * compte exactement ce que la lane affiche. Un événement dont la ressource est
+ * inconnue n'est compté nulle part (il n'est rendu dans aucune lane non plus).
+ * Le compte ne dépend PAS du masquage : une catégorie masquée garde son total.
+ */
+export function countEventsByCategory(
+  events: FullCalendarEvent[],
+  resources: Resource[],
+): Record<string, number> {
+  const categoryOf = new Map<string, string>()
+  const counts: Record<string, number> = {}
+  for (const r of resources) {
+    categoryOf.set(r.id, r.category)
+    if (counts[r.category] === undefined) counts[r.category] = 0
+  }
+  for (const e of events) {
+    const category = categoryOf.get(e.resourceId)
+    if (category !== undefined) counts[category] += 1
+  }
+  return counts
 }
 
 /** Classe de fond de la pastille de statut d'une EventBar (tokens DS). */

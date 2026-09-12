@@ -158,6 +158,7 @@ Cf. [[PIT-S46-004]] pour l'autre famille de faux positifs de clôture.
 ## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
 Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
+
 ## PIT-S57-003 — Un `curl` qui réussit ne disculpe PAS le CORS : il n'envoie pas d'en-tête `Origin`
 S57 : suite E2E entièrement rouge dès le projet `setup`, **trois diagnostics faux** avant le bon.
 (1) Cause initiale banale — aucun serveur de dev sur `:3000` (arrêté par un agent de la vague précédente) ;
@@ -696,6 +697,7 @@ Le lead a vu `fmt=1` sur `GreetingHeader.tsx` après commit ; relancé DEPUIS `f
 
 ## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
 Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
+
 
 ---
 

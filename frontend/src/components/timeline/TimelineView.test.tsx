@@ -6,6 +6,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { LANE_TRACK_OFFSET_PX, TimelineView } from './TimelineView'
+import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 
 /**
  * #55 — Tests d'intégration TimelineView (jsdom).
@@ -641,6 +642,387 @@ describe('TimelineView', () => {
       const match = spacing.match(/--lane-header-w:\s*(\d+(?:\.\d+)?)px/)
       expect(match, '--lane-header-w introuvable dans ds/tokens/spacing.css').not.toBeNull()
       expect(Number(match![1])).toBe(LANE_TRACK_OFFSET_PX)
+    })
+  })
+
+  /**
+   * #592 — Sidebar de l'écran Timeline (layout `screen`) : filtres de catégorie
+   * (`hiddenCats`), « tout plier / tout déplier » (`collapsed`), légende, pied
+   * de raccourcis, panneau superposé < 1024 px.
+   *
+   * ⚠ Ce que jsdom ne prouve PAS : la disposition (grille, 248 px, panneau
+   * superposé masqué en CSS) — aucune feuille n'est appliquée ici. Elle est
+   * prouvée au navigateur par `e2e/sprint-85-timeline-sidebar.spec.ts`.
+   */
+  describe('#592 sidebar (layout screen)', () => {
+    const mk = (id: string, resourceId: string, category: string, start: string) => ({
+      id,
+      title: `Event ${id}`,
+      start,
+      end: start,
+      allDay: true,
+      resourceId,
+      color: '#3B62D4',
+      extendedProps: { productId: resourceId, productName: resourceId, category, type: 'single' },
+    })
+    // 3 catégories × 1 produit ; Cat A porte 2 événements (compteur ≠ produits).
+    const SB_EVENTS: FullCalendarEvent[] = [
+      mk('a1', 'pa', 'Cat A', '2026-07-10'),
+      mk('a2', 'pa', 'Cat A', '2026-07-11'),
+      mk('b1', 'pb', 'Cat B', '2026-07-18'),
+      mk('c1', 'pc', 'Cat C', '2026-07-26'),
+    ]
+    const SB_RESOURCES: Resource[] = [
+      { id: 'pa', title: 'Prod A', category: 'Cat A', categoryColor: '#3E8BD6' },
+      { id: 'pb', title: 'Prod B', category: 'Cat B', categoryColor: '#4FA459' },
+      // Catégorie SANS couleur (DEC-S85-006) : contour neutre attendu.
+      { id: 'pc', title: 'Prod C', category: 'Cat C', categoryColor: null },
+    ]
+
+    function setupScreen() {
+      return render(
+        <TimelineView
+          events={SB_EVENTS}
+          resources={SB_RESOURCES}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+          layout="screen"
+        />,
+      )
+    }
+
+    const filterFor = (category: string) =>
+      screen
+        .getAllByTestId('timeline-sidebar-filter')
+        .find((b) => b.getAttribute('data-category') === category)!
+    // #601 — l'en-tête porte désormais aussi le compteur : `textContent` n'est plus
+    // le nom seul, on vise l'attribut dédié.
+    const headFor = (category: string) =>
+      screen
+        .queryAllByTestId('timeline-group-head')
+        .find((h) => h.getAttribute('data-category') === category)
+    const laneTitles = () =>
+      screen.queryAllByTestId('timeline-resource-title').map((el) => el.textContent)
+    const pillFor = (id: string) =>
+      screen
+        .getAllByTestId('timeline-event')
+        .find((p) => p.getAttribute('data-event-title') === `Event ${id}`)!
+
+    it('layout par défaut (`embedded`) : AUCUNE sidebar, bulle `?` conservée', () => {
+      render(
+        <TimelineView
+          events={SB_EVENTS}
+          resources={SB_RESOURCES}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+        />,
+      )
+      expect(screen.queryByTestId('timeline-sidebar')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('timeline-sidebar-toggle')).not.toBeInTheDocument()
+      expect(screen.getByTestId('timeline-help')).toBeInTheDocument()
+      expect(screen.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'embedded')
+    })
+
+    it('layout `screen` : sidebar présente, bulle `?` retirée, raccourcis dans le pied', () => {
+      setupScreen()
+      const sidebar = screen.getByTestId('timeline-sidebar')
+      expect(screen.queryByTestId('timeline-help')).not.toBeInTheDocument()
+      // Le bouton « Filtres » pilote la sidebar (aria-controls → id réel).
+      const toggle = screen.getByTestId('timeline-sidebar-toggle')
+      expect(toggle).toHaveAttribute('aria-controls', sidebar.id)
+      expect(toggle).toHaveAttribute('aria-expanded', 'false')
+      const keys = screen.getByTestId('timeline-sidebar-shortcuts')
+      expect(keys).toHaveTextContent('dashboard.timeline.help.today')
+      expect(keys).toHaveTextContent('dashboard.timeline.help.fullscreen')
+      // Une ligne de filtre par catégorie, dans l'ordre de la frise.
+      expect(
+        screen
+          .getAllByTestId('timeline-sidebar-filter')
+          .map((b) => b.getAttribute('data-category')),
+      ).toEqual(['Cat A', 'Cat B', 'Cat C'])
+    })
+
+    it('le compteur d’un filtre = nombre d’ÉVÉNEMENTS de la catégorie', () => {
+      setupScreen()
+      expect(filterFor('Cat A')).toHaveTextContent('2')
+      expect(filterFor('Cat B')).toHaveTextContent('1')
+    })
+
+    it('pastille : couleur de catégorie en aplat ; `null` → contour neutre sans style inline', () => {
+      setupScreen()
+      const swatchOf = (category: string) =>
+        filterFor(category).querySelector('[data-testid="timeline-sidebar-swatch"]') as HTMLElement
+      expect(swatchOf('Cat A')).toHaveAttribute('data-color', 'set')
+      expect(swatchOf('Cat A').style.backgroundColor).toBe('rgb(62, 139, 214)')
+      expect(swatchOf('Cat C')).toHaveAttribute('data-color', 'none')
+      expect(swatchOf('Cat C').getAttribute('style')).toBeNull()
+    })
+
+    it('masquer une catégorie retire son EN-TÊTE, ses LANES et ses barres de minimap', async () => {
+      const user = userEvent.setup()
+      const { container } = setupScreen()
+      const filledBars = () => container.querySelectorAll('.mt-minimap__bar--filled').length
+      const barsBefore = filledBars()
+      expect(filterFor('Cat A')).toHaveAttribute('aria-pressed', 'true')
+
+      await user.click(filterFor('Cat A'))
+
+      expect(filterFor('Cat A')).toHaveAttribute('aria-pressed', 'false')
+      expect(headFor('Cat A')).toBeUndefined()
+      expect(laneTitles()).not.toContain('Prod A')
+      expect(laneTitles()).toEqual(['Prod B', 'Prod C'])
+      // Les 2 événements de Cat A tombent dans des seaux distincts (dates voisines,
+      // étendue de ~76 j sur 60 seaux) : la minimap perd des barres pleines.
+      expect(filledBars()).toBeLessThan(barsBefore)
+      // Le filtre reste listé (sinon impossible de réafficher) et garde son total.
+      expect(filterFor('Cat A')).toHaveTextContent('2')
+
+      await user.click(filterFor('Cat A'))
+      expect(headFor('Cat A')).toBeDefined()
+      expect(laneTitles()).toEqual(['Prod A', 'Prod B', 'Prod C'])
+      expect(filledBars()).toBe(barsBefore)
+    })
+
+    it('masquer ≠ replier : réafficher rend la catégorie dans son état de repli', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      // Repli de Cat A par son en-tête d'accordéon.
+      await user.click(headFor('Cat A')!)
+      expect(headFor('Cat A')).toHaveAttribute('aria-expanded', 'false')
+      expect(laneTitles()).not.toContain('Prod A')
+
+      // Masquer puis réafficher : l'en-tête revient REPLIÉ (état `collapsed` intact).
+      await user.click(filterFor('Cat A'))
+      expect(headFor('Cat A')).toBeUndefined()
+      await user.click(filterFor('Cat A'))
+      expect(headFor('Cat A')).toHaveAttribute('aria-expanded', 'false')
+      expect(laneTitles()).not.toContain('Prod A')
+
+      // Et réciproquement : replier n'a pas masqué (le filtre reste pressé).
+      expect(filterFor('Cat A')).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('« Tout plier » / « Tout déplier » agissent sur TOUTES les catégories', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      await user.click(screen.getByTestId('timeline-sidebar-collapse-all'))
+      for (const head of screen.getAllByTestId('timeline-group-head')) {
+        expect(head).toHaveAttribute('aria-expanded', 'false')
+      }
+      expect(laneTitles()).toEqual([])
+
+      await user.click(screen.getByTestId('timeline-sidebar-expand-all'))
+      for (const head of screen.getAllByTestId('timeline-group-head')) {
+        expect(head).toHaveAttribute('aria-expanded', 'true')
+      }
+      expect(laneTitles()).toEqual(['Prod A', 'Prod B', 'Prod C'])
+      // Le pliage global n'a masqué aucune catégorie.
+      for (const f of screen.getAllByTestId('timeline-sidebar-filter')) {
+        expect(f).toHaveAttribute('aria-pressed', 'true')
+      }
+    })
+
+    it('« Tout plier » vaut aussi pour une catégorie MASQUÉE (repliée à son retour)', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      await user.click(filterFor('Cat B'))
+      await user.click(screen.getByTestId('timeline-sidebar-collapse-all'))
+      await user.click(filterFor('Cat B'))
+      expect(headFor('Cat B')).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    it('navigation clavier correcte APRÈS masquage d’une catégorie AU-DESSUS de la lane focalisée', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      // Focus sur la lane C (dernière) : A(a1) ↓ B ↓ C.
+      pillFor('a1').focus()
+      await user.keyboard('{ArrowDown}{ArrowDown}')
+      expect(pillFor('c1')).toHaveFocus()
+
+      // Masque Cat A (au-dessus) : `navLanes` rétrécit de 1.
+      await user.click(filterFor('Cat A'))
+      expect(screen.queryByText('Event a1')).not.toBeInTheDocument()
+      await waitFor(() => {
+        // L'arrêt de tabulation reste sur la même RESSOURCE (pas de glissement d'index).
+        expect(pillFor('c1')).toHaveAttribute('tabindex', '0')
+        expect(pillFor('b1')).toHaveAttribute('tabindex', '-1')
+      })
+
+      pillFor('c1').focus()
+      await user.keyboard('{ArrowUp}')
+      expect(pillFor('b1')).toHaveFocus()
+      // Aucune lane fantôme au-dessus : ↑ depuis la 1re lane visible ne bouge pas.
+      await user.keyboard('{ArrowUp}')
+      expect(pillFor('b1')).toHaveFocus()
+      await user.keyboard('{End}')
+      expect(pillFor('c1')).toHaveFocus()
+      await user.keyboard('{Home}')
+      expect(pillFor('b1')).toHaveFocus()
+    })
+
+    it('bouton « Filtres » : ouvre le panneau (focus dedans), Échap le ferme et rend le focus', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      const toggle = screen.getByTestId('timeline-sidebar-toggle')
+      const sidebar = screen.getByTestId('timeline-sidebar')
+      expect(sidebar).toHaveAttribute('data-open', 'false')
+
+      await user.click(toggle)
+      expect(toggle).toHaveAttribute('aria-expanded', 'true')
+      expect(sidebar).toHaveAttribute('data-open', 'true')
+      expect(screen.getByTestId('timeline-sidebar-expand-all')).toHaveFocus()
+
+      await user.keyboard('{Escape}')
+      expect(toggle).toHaveAttribute('aria-expanded', 'false')
+      expect(sidebar).toHaveAttribute('data-open', 'false')
+      expect(toggle).toHaveFocus()
+    })
+
+    it('panneau : un clic extérieur le ferme, un clic DEDANS le laisse ouvert', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      const toggle = screen.getByTestId('timeline-sidebar-toggle')
+      await user.click(toggle)
+      await user.click(filterFor('Cat B'))
+      expect(toggle).toHaveAttribute('aria-expanded', 'true')
+
+      await user.click(screen.getByTestId('timeline-ruler'))
+      expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    })
+
+    it('Échap sans panneau ouvert ferme toujours le drawer (priorité historique intacte)', async () => {
+      const user = userEvent.setup()
+      setupScreen()
+      await user.click(pillFor('b1'))
+      expect(await screen.findByTestId('timeline-drawer')).toBeInTheDocument()
+      await user.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByTestId('timeline-drawer')).not.toBeInTheDocument())
+    })
+  })
+
+  // ==================== #602 — boutons Aujourd'hui / Nouvel événement ====================
+  // Câblage seulement. Libellés TRADUITS réels : `TimelineToolbarActions.test.tsx`
+  // (PIT-S63-006). Visibilité par palier (`hidden md:inline-flex` ⇔ FAB `md:hidden`)
+  // et drawer réel du shell : `e2e/sprint-85-timeline-toolbar.spec.ts` — jsdom
+  // n'applique aucune feuille, ces classes n'y sont que des chaînes.
+  describe('#602 barre d’outils (layout screen)', () => {
+    function renderToolbar(
+      opts: { layout?: 'embedded' | 'screen'; onOpenCreate?: (() => void) | null } = {},
+    ) {
+      const { layout = 'screen', onOpenCreate = vi.fn() } = opts
+      const view = (
+        <TimelineView
+          events={EVENTS}
+          resources={RESOURCES}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+          layout={layout}
+        />
+      )
+      return render(
+        onOpenCreate ? (
+          <CreateEventProvider onOpenCreate={onOpenCreate}>{view}</CreateEventProvider>
+        ) : (
+          view
+        ),
+      )
+    }
+
+    it('screen + shell : les deux boutons, dans l’ordre zoom → Aujourd’hui → … → Nouvel événement', () => {
+      renderToolbar()
+      const today = screen.getByTestId('timeline-today-button')
+      const create = screen.getByTestId('timeline-new-event')
+      expect(today).toHaveTextContent('common.buttons.today')
+      expect(create).toHaveTextContent('shell.newEvent')
+      // Ordre maquette §D : Aujourd'hui APRÈS le zoom ; Nouvel événement DERNIER.
+      const toolbarButtons = Array.from(
+        screen
+          .getByTestId('timeline-zoom-in')
+          .closest('.mt-tlv__toolbar')!
+          .querySelectorAll('button'),
+      )
+      const ids = toolbarButtons.map((b) => b.getAttribute('data-testid'))
+      expect(ids.indexOf('timeline-today-button')).toBe(ids.indexOf('timeline-zoom-in') + 1)
+      expect(ids.at(-1)).toBe('timeline-new-event')
+      // Le badge positionnel de la règle garde SON testid (ce n'est pas un bouton).
+      expect(screen.getByTestId('timeline-today').tagName).toBe('SPAN')
+    })
+
+    it('« Aujourd’hui » a le même effet que la touche T', async () => {
+      const user = userEvent.setup()
+      renderToolbar()
+      const scroll = screen.getByTestId('timeline-scroll')
+      fireEvent.keyDown(window, { key: ']' })
+      await waitFor(() => expect(scroll.scrollLeft).toBe(360))
+      await user.click(screen.getByTestId('timeline-today-button'))
+      // Même valeur que le test « raccourci T » (#228) : 35 jours × 12 px.
+      await waitFor(() => expect(scroll.scrollLeft).toBe(420))
+    })
+
+    it('« Nouvel événement » appelle UNE fois l’ouverture du shell, et annonce un dialog', async () => {
+      const user = userEvent.setup()
+      const onOpenCreate = vi.fn()
+      renderToolbar({ onOpenCreate })
+      const create = screen.getByTestId('timeline-new-event')
+      expect(create).toHaveAttribute('type', 'button')
+      expect(create).toHaveAttribute('aria-haspopup', 'dialog')
+      await user.click(create)
+      expect(onOpenCreate).toHaveBeenCalledTimes(1)
+      // Aucun drawer de création local : la surface est celle du shell.
+      expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument()
+    })
+
+    it('DEC-S85-003 : `hidden md:inline-flex` (jamais peint avec le FAB `md:hidden`) — chaîne, pas rendu', () => {
+      renderToolbar()
+      const classes = screen.getByTestId('timeline-new-event').className.split(/\s+/)
+      expect(classes).toContain('hidden')
+      expect(classes).toContain('md:inline-flex')
+      // `tailwind-merge` doit avoir retiré le `inline-flex` NU du Button : présent,
+      // il gagnerait sur `hidden` et peindrait le bouton sous 768 px.
+      expect(classes).not.toContain('inline-flex')
+      // Trio accent du CTA du shell (#578).
+      expect(classes).toEqual(
+        expect.arrayContaining(['bg-accent', 'hover:bg-accent-hover', 'text-accent-ink']),
+      )
+    })
+
+    it('en plein écran, quitte le plein écran AVANT d’ouvrir (drawer du shell hors `rootRef`)', async () => {
+      const user = userEvent.setup()
+      const onOpenCreate = vi.fn()
+      renderToolbar({ onOpenCreate })
+      Object.defineProperty(document, 'fullscreenElement', {
+        configurable: true,
+        get: () => screen.getByTestId('timeline-view'),
+      })
+      try {
+        await user.click(screen.getByTestId('timeline-new-event'))
+        expect(document.exitFullscreen).toHaveBeenCalledTimes(1)
+        expect(onOpenCreate).toHaveBeenCalledTimes(1)
+      } finally {
+        Object.defineProperty(document, 'fullscreenElement', {
+          configurable: true,
+          get: () => null,
+        })
+      }
+    })
+
+    it('hors plein écran, n’appelle pas `exitFullscreen`', async () => {
+      const user = userEvent.setup()
+      renderToolbar()
+      await user.click(screen.getByTestId('timeline-new-event'))
+      expect(document.exitFullscreen).not.toHaveBeenCalled()
+    })
+
+    it('embedded (dashboard, fiche produit) : AUCUN des deux boutons, même sous le shell', () => {
+      renderToolbar({ layout: 'embedded' })
+      expect(screen.queryByTestId('timeline-today-button')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
+    })
+
+    it('screen HORS shell : « Aujourd’hui » seul, pas de « Nouvel événement » inerte', () => {
+      renderToolbar({ onOpenCreate: null })
+      expect(screen.getByTestId('timeline-today-button')).toBeInTheDocument()
+      expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
     })
   })
 })

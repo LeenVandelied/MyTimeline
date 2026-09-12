@@ -14,6 +14,9 @@ export * from './lib'
 // #55 — Vue Timeline desktop (frise continue, zoom, minimap, drawer, raccourcis).
 export { TimelineView } from './TimelineView'
 export type { TimelineViewProps } from './TimelineView'
+// #592 — Sidebar de l'écran Vue Timeline (layout `screen`).
+export { TimelineSidebar, buildTimelineShortcuts } from './TimelineSidebar'
+export type { TimelineSidebarProps, TimelineSidebarCategory } from './TimelineSidebar'
 export { Minimap } from './Minimap'
 export type { MinimapProps } from './Minimap'
 export { EventDrawer } from './EventDrawer'

@@ -115,7 +115,23 @@
       "period": "Previous / next period",
       "zoom": "Zoom in / out",
       "fullscreen": "Fullscreen",
-      "escape": "Close panel"
+      "escape": "Close panel",
+      "escapeKey": "Esc"
+    },
+    "sidebar": {
+      "label": "Timeline filters and legend",
+      "toggle": "Filters",
+      "accordions": "Accordions",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
+      "categories": "Categories",
+      "categoriesHint": "Each button shows or hides its category on the timeline.",
+      "filterLabel": "{category}, {count, plural, one {# event} other {# events}}",
+      "legend": "Legend",
+      "legendEvent": "Event"
+    },
+    "groupHead": {
+      "label": "{category}, {count, plural, one {# product} other {# products}}"
     },
     "actions": {
       "label": "Event actions"

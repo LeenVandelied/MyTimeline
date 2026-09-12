@@ -263,6 +263,7 @@ Cf. [[PIT-S46-004]] pour l'autre famille de faux positifs de clôture.
 ## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
 Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
 
+
 ## PIT-S57-002 — Vitest tronque le rapport d'échec passé comme valeur comparée → message décapité en CI
 Vitest 3.2.7 tronque à ~40 caractères les valeurs d'un `toBe` dans le message d'`AssertionError`
 (`expected 'GARDE SERVEUR DÉSYNC…' to be …`), et le reporter JSON ne transporte **que** ce message. Un
@@ -1234,6 +1235,30 @@ Le lead a vu `fmt=1` sur `GreetingHeader.tsx` après commit ; relancé DEPUIS `f
 
 ## PIT-S57-001 — re-confirmé au Sprint 84, sans fan-out
 Un agent SEUL, chargé de deux commits séquentiels, a fait le `git rm` de la tâche B pendant qu'il travaillait sur A, puis committé A avec un `git add` ciblé mais **sans pathspec sur le commit** : la suppression d'`EventContent` est partie dans le commit orchidée (#577, `89f9aa8`) au lieu du commit #634. Le piège n'exige donc pas plusieurs agents. Parade ajoutée au gabarit : « une tâche = modifications + commit, avant de toucher la suivante » + `git status --porcelain` avant chaque commit. Détecté par `git show --stat` du lead au retour.
+
+
+## PIT-S85-001 — Un `position:sticky` aussi large que son conteneur ne glisse JAMAIS
+`.mt-tlv__group-head` portait `position:sticky; left:0` **et** `width: railWidth` en ligne : une boîte sticky aussi large que son bloc conteneur n'a aucune marge de glissement, donc le libellé de catégorie défilait avec la piste et sortait de l'écran dès `scrollLeft > 0`. Latent sur le dashboard (rail rarement plus large que le viewport) mais **visible par défaut sur `/timeline` ≥ 1024 px** depuis que la sidebar rétrécit la colonne de 248 px. Parade : une CELLULE interne de largeur fixe (`--lane-header-w`) porte le sticky, pas la rangée entière. Prévention : tout sticky horizontal doit être plus ÉTROIT que son conteneur, et se vérifier au navigateur avec `scrollLeft > 0` — jsdom ne le voit pas. (Sprint 85 #592 constaté, #601 corrigé)
+
+
+## PIT-S85-002 — Un enfant `flex:1; min-width:0` absorbe tout le manque de place SANS jamais déborder
+Ajouter deux boutons dans `.mt-tlv__toolbar` (`flex-wrap:wrap`) a écrasé la minimap à **9 px de large** à 1024 px en français, avec `scrollWidth === clientWidth` : aucun contrôle de débordement ne pouvait le voir, y compris `sprint-63-de-overflow-audit`. La barre ne passe à la ligne que lorsque l'élément élastique ne peut plus rétrécir, et une base `0` le laisse rétrécir jusqu'à rien. Parade : base minimale (`flex:1 1 160px`) + requête de conteneur pour renvoyer l'élément sur une 2e ligne. Prévention : après tout ajout dans une barre flexible, **mesurer la largeur de l'élément élastique aux paliers**, pas seulement l'absence de débordement. (Sprint 85 #602)
+
+
+## PIT-S85-003 — Un overlay du shell ouvert depuis un conteneur en plein écran est INVISIBLE
+Le bouton « Nouvel événement » de la barre d'outils ouvre le `NewEventDrawer` monté par `AppShell`. Depuis la frise en plein écran (`requestFullscreen` sur la section), seuls l'élément plein écran et ses descendants sont peints : le drawer s'ouvre hors champ, invisible, avec le focus piégé dedans. Parade : quitter le plein écran avant d'ouvrir. Prévention : tout déclencheur d'overlay placé dans un conteneur « plein-écranable » doit tester `document.fullscreenElement`. (Sprint 85 #602)
+
+
+## PIT-S85-004 — La largeur RENDUE d'une pastille de frise n'est pas sa durée (20 px de padding)
+`.mt-tlv__evt` a 20 px de padding horizontal en border-box : une pastille d'un jour au zoom Mois (`widthPx` = 12) est peinte sur 20 px. Une assertion E2E qui compare la `boundingBox().width` d'une pastille à un autre marqueur temporel compare donc des choses différentes. Parade : comparer `style.width` (= `widthPx`). Prévention : toute assertion de géométrie sur les pastilles doit dire si elle vise la **durée** (`widthPx`) ou le **rendu** (≥ 20 px). (Sprint 85 #601)
+
+
+## PIT-S85-005 — Une garde E2E peut rester VERTE quand on retire ce qu'elle est censée protéger
+La garde « aucune zone vide après repli » était présentée comme protégeant `collapsed` dans `geometryKey`. Contrôle négatif : retirer `collapsed` de la clé **laisse la spec verte**. Raison : la bande verticale de `useTimelineViewport` est exprimée en repère RAIL, et replier une catégorie au-dessus ne déplace ni le rail ni `scrollY` — la bande reste juste. La virtualisation est robuste aux reflows internes du rail, mais pas à un changement de hauteur d'en-tête (celui-là rougit bien). Prévention : jouer le contrôle négatif AVANT d'affirmer ce qu'une garde protège. Famille de [[PIT-S61-005]]. (Sprint 85 #601)
+
+
+## PIT-S85-006 — Un testid « proposé » par un briefing peut être déjà pris ailleurs
+Le briefing de #602 proposait `timeline-today` ; l'identifiant était déjà porté par le badge positionnel de la règle dans 3 composants. Renommé `timeline-today-button`. Prévention : `grep -rn 'data-testid="<id>"' src e2e` avant d'adopter un testid suggéré — y compris quand la suggestion vient du lead. (Sprint 85 #602)
 
 ---
 

@@ -114,3 +114,9 @@ Cause : `lastActivity` est un `LocalDateTime` Java sans offset ; `new Date(iso)`
 
 ## Le salut du dashboard poussait le CTA « Nouveau produit » hors de l'écran à 375 px (Sprint 84, absorbé dans #575)
 Cause : `GreetingHeader` est un flex item sans `min-w-0`, à côté d'un CTA `nowrap` ; un nom sans espace imposait sa largeur min-content (page à 377-394 px selon compte et locale, fr pire que de — défaut antérieur au sprint). Solution : `min-w-0` sur le `<header>` + `break-words` sur le `h1` (`ededd26`) ; garde E2E dédiée avec précondition et armement (`79e76d7`).
+
+## Le libellé de catégorie de la frise sortait de l'écran au défilement horizontal (Sprint 85, corrigé dans #601)
+Cause : `.mt-tlv__group-head` cumulait `position:sticky; left:0` et `width: railWidth` — une boîte sticky aussi large que son conteneur n'a aucune marge pour glisser (cf. PIT-S85-001). Défaut antérieur au sprint, resté invisible tant que le rail dépassait rarement le viewport ; rendu systématique sur `/timeline` ≥ 1024 px par la sidebar de #592. Solution : la rangée reste le bouton mesuré, une cellule interne de largeur `--lane-header-w` porte le sticky (`a604e99`) ; garde E2E avec `scrollLeft > 0` dans `sprint-85-timeline-group-head.spec.ts`.
+
+## La minimap de la frise écrasée à 9 px par les nouveaux boutons (Sprint 85, corrigé dans #602)
+Cause : `.mt-tlv__toolbar` est `flex-wrap:wrap` et la minimap y est `flex:1; min-width:0` — elle absorbait tout le manque de place avant que la barre ne passe à la ligne, sans jamais produire de débordement détectable (`scrollWidth === clientWidth`). Introduit et corrigé dans le même commit (`a2a3fce`) : base `flex:1 1 160px` + requête de conteneur qui renvoie la minimap sur une 2e ligne sous 700 px de barre. Détecté en mesurant la largeur de l'élément élastique aux paliers, pas par un contrôle de débordement (cf. PIT-S85-002).
