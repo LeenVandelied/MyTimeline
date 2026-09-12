@@ -35,3 +35,31 @@ avec `RecurrenceExpansionServiceImpl`, horizon 5 ans), a11y `EventCategoryField`
 ## Signal mémoire
 `[MEMORY:pattern]` Remplacer un `Dialog` Radix par un portail maison : inventorier d'abord ses acquis implicites
 (`RemoveScroll`, `hideOthers`, restauration du focus) et les reporter explicitement.
+
+---
+
+# Cycle 2 — relecture des commits de correction (`4b7f83e` C1, `29f64fa` C2, `f21eef8` C3)
+
+**MAJEUR cycle 1 : RÉSOLU.** `RemoveScroll` (`forwardProps`, ref fusionnée au panneau) + `hideOthers(panel)` dans un effet lié à
+`open`, en création et en édition ; 8 tests unitaires sans stderr ; E2E `sprint-86-form-drawer-modal.spec.ts`.
+**Décompte cycle 2 : 0 CRITIQUE / 0 MAJEUR / 3 MINEUR.**
+
+## [OK]
+- C2 `settle()` : `Promise.allSettled` borné à 5 s, animations infinies écartées via `getComputedTiming().iterations`, aucun
+  `await` non protégé ; auto-contrôle #74 intact et toujours détecteur.
+- C1 : `expectNoPageOverflow` réellement appelé sur la mesure `create-form` à 320 px ; branche ≥ lg strictement inchangée ;
+  ordre DOM = ordre de tabulation.
+- C3 : API `RemoveScroll` conforme ; `package.json`/lockfile cohérents (entrée racine seule, aucune montée de version).
+
+## [MINEUR] — sans correction dans le sprint, follow-ups proposés au `/sprint end`
+1. Verrou/inertage : aucune preuve E2E côté ÉDITION (même coque, mais appelant différent) → test miroir.
+2. Oracle d'inertage de la spec limité à la sidebar : `hideOthers` épargne par construction les ancêtres des régions
+   `aria-live` (dont `<main>`, qui contient la région de zoom de la frise) — comportement identique à Radix. Résidu a11y à
+   documenter ou à tester.
+3. Empilement `DeleteConfirmDialog` / `ConflictDialog` par-dessus le panneau (double `hideOthers`, restauration à la fermeture
+   de la confirmation) non testé. Risque jugé faible par le lead (la bibliothèque `aria-hidden` compte les masquages imbriqués)
+   mais **non vérifié** en navigateur.
+
+## Signal mémoire
+`[MEMORY:pitfall]` Une dépendance directe ajoutée alors qu'elle est déjà présente en transitive : vérifier qu'une seule copie
+existe dans `node_modules` avant de soupçonner un doublon.
