@@ -210,6 +210,67 @@ describe('NewEventDrawer — sélecteur de produit (BR-EVE-002)', () => {
   })
 })
 
+/**
+ * #617 (DEC-S86-001) — la catégorie est DÉRIVÉE du produit choisi, en lecture seule.
+ * Mock i18n en `ns.key` ici : les libellés RÉELS sont prouvés par
+ * `EventCategoryField.test.tsx` (vrais messages, PIT-S63-006).
+ */
+describe('NewEventDrawer — catégorie dérivée du produit (#617)', () => {
+  const colored: Product[] = [
+    { ...mockProducts[0], category: { id: 'c1', name: 'Véhicules', color: '#3E8BD6' } },
+    { ...mockProducts[1], category: { id: 'c2', name: 'Santé', color: null } },
+  ]
+
+  it('aucun produit choisi : état vide explicite, sans pastille', () => {
+    mockProductsData = colored
+    renderDrawer()
+    const field = screen.getByTestId('shell-new-event-drawer-category')
+    expect(field).toHaveAttribute('data-empty', 'true')
+    expect(field).toHaveTextContent('products.eventCategory.noProduct')
+    expect(screen.queryByTestId('shell-new-event-drawer-category-swatch')).not.toBeInTheDocument()
+  })
+
+  it('choisir un produit affiche la catégorie de CE produit, puis la catégorie suit le changement', async () => {
+    mockProductsData = colored
+    renderDrawer()
+
+    await selectProduct('Produit Alpha')
+    const field = screen.getByTestId('shell-new-event-drawer-category')
+    expect(field).toHaveAttribute('data-empty', 'false')
+    expect(field).toHaveTextContent('Véhicules')
+    expect(screen.getByTestId('shell-new-event-drawer-category-swatch').style.backgroundColor).toBe(
+      'rgb(62, 139, 214)',
+    )
+
+    await selectProduct('Produit Beta')
+    expect(field).toHaveTextContent('Santé')
+    expect(field).not.toHaveTextContent('Véhicules')
+    // Catégorie sans couleur : contour neutre, aucune couleur inline. On lit les
+    // PROPRIÉTÉS et non l'attribut : sur le MÊME nœud, React retire les propriétés de
+    // l'objet `style` précédent mais laisse un attribut `style=""` vide.
+    const swatchB = screen.getByTestId('shell-new-event-drawer-category-swatch')
+    expect(swatchB).toHaveAttribute('data-color', 'none')
+    expect(swatchB.style.backgroundColor).toBe('')
+    expect(swatchB.style.borderColor).toBe('')
+  })
+
+  it('placé AVANT le sélecteur de produit, et hors du formulaire (ne soumet rien)', async () => {
+    mockProductsData = colored
+    renderDrawer()
+    const field = screen.getByTestId('shell-new-event-drawer-category')
+    const trigger = screen.getByTestId('shell-new-event-drawer-product-trigger')
+    expect(field.compareDocumentPosition(trigger) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByTestId('event-form').contains(field)).toBe(false)
+
+    await selectProduct('Produit Alpha')
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Contrôle technique')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+    await waitFor(() => expect(createEventMock).toHaveBeenCalledTimes(1))
+    // DEC-S86-001 : aucun champ catégorie dans le payload de création.
+    expect(JSON.stringify(createEventMock.mock.calls[0])).not.toMatch(/categor/i)
+  })
+})
+
 describe('NewEventDrawer — champs gouvernés par le contrat create', () => {
   it('masque les champs PATCH-only (archived / endDate / recurrenceEndDate)', async () => {
     renderDrawer()

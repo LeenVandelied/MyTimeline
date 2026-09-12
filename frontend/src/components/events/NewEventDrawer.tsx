@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
+import { EventCategoryField } from '@/components/events/EventCategoryField'
 import { EventFormDrawer } from '@/components/events/EventFormDrawer'
 import { useAuth } from '@/hooks/useAuth'
 import { useCreateEvent } from '@/hooks/useCreateEvent'
@@ -82,6 +83,11 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
 
   const [productId, setProductId] = useState<string>('')
   const [productError, setProductError] = useState(false)
+  /** #617 — produit choisi, source de la catégorie affichée (DEC-S86-001). */
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === productId) ?? null,
+    [products, productId],
+  )
 
   const createEvent = useCreateEvent()
 
@@ -169,6 +175,16 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
           </p>
         ) : (
           <>
+            {/* #617 (DEC-S86-001) — Catégorie DÉRIVÉE du produit choisi, en lecture
+                seule : suit `productId` au rendu, n'entre pas dans le formulaire.
+                Position : avant le produit (l'ordre Titre · Catégorie · Produit du
+                handoff est l'objet de #622). */}
+            <EventCategoryField
+              name={selectedProduct?.category.name ?? null}
+              color={selectedProduct?.category.color ?? null}
+              testId="shell-new-event-drawer-category"
+            />
+
             {/* Sélecteur de produit — Select shadcn/Radix EXISTANT (aucun combobox
                 nouveau : hors charte). */}
             <div className="mt-drawer__field">

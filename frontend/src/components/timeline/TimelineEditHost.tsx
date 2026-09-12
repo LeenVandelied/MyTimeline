@@ -7,9 +7,11 @@ import { useTranslations } from 'next-intl'
 import { queryKeys } from '@/lib/query-keys'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EventEditForm, type EventEditFormValues } from '@/components/EventEditForm'
+import { EventCategoryField } from '@/components/events/EventCategoryField'
 import { EventFormDrawer } from '@/components/events/EventFormDrawer'
 import { useEventEditConflict } from '@/hooks/useEventEditConflict'
 import { deleteEvent } from '@/services/eventService'
+import { categoryColorsOf } from './lib'
 import { TimelineResponsive, type TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
 
@@ -95,6 +97,16 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
       version: editing.extendedProps?.version ?? null,
     }
   }, [editing])
+
+  // #617 (DEC-S86-001) — catégorie de l'événement = celle de son produit, déjà portée
+  // par le view-model. Couleur : via `categoryColorsOf` (point unique de dérivation,
+  // DEC-S85-006), donc la MÊME pastille que la sidebar de la frise pour cette catégorie ;
+  // `null` si aucune ressource ne la colore → contour neutre, aucune teinte inventée.
+  const editingCategory = editing?.extendedProps?.category || null
+  const editingCategoryColor = useMemo(
+    () => (editingCategory ? (categoryColorsOf(props.resources)[editingCategory] ?? null) : null),
+    [editingCategory, props.resources],
+  )
 
   // Chemin MOBILE : le tap sur « Supprimer » de l'action sheet ARME la cible (ouvre la
   // confirmation) — il ne supprime rien. Stabilisé en `useCallback` : `TimelineActionSheet`
@@ -191,24 +203,35 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
       >
         {({ compact, previewPortalNode, footerPortalNode }) =>
           defaultValues && (
-            <EventEditForm
-              defaultValues={defaultValues}
-              onSubmit={conflict.onSubmit}
-              onCancel={handleClose}
-              submitState={conflict.submitState}
-              onReload={conflict.onReload}
-              onConflictDismiss={conflict.onConflictDismiss}
-              conflictServerEvent={conflict.conflict?.server}
-              conflictLocalValues={conflict.conflict?.local}
-              onKeepMine={conflict.onKeepMine}
-              onTakeServer={conflict.onTakeServer}
-              keepMineExhausted={conflict.keepMineExhausted}
-              onDelete={deleteEditing}
-              isRecurring={editing?.extendedProps?.isRecurring ?? false}
-              compact={compact}
-              footerPortalNode={footerPortalNode}
-              previewPortalNode={previewPortalNode}
-            />
+            <>
+              {/* #617 (DEC-S86-001) — catégorie du produit de l'événement, lecture
+                  seule (le produit n'est pas modifiable en édition). MÊME position
+                  relative que la création : premier bloc du corps. */}
+              <EventCategoryField
+                name={editingCategory}
+                color={editingCategoryColor}
+                emptyReason="unknown"
+                testId="timeline-edit-dialog-category"
+              />
+              <EventEditForm
+                defaultValues={defaultValues}
+                onSubmit={conflict.onSubmit}
+                onCancel={handleClose}
+                submitState={conflict.submitState}
+                onReload={conflict.onReload}
+                onConflictDismiss={conflict.onConflictDismiss}
+                conflictServerEvent={conflict.conflict?.server}
+                conflictLocalValues={conflict.conflict?.local}
+                onKeepMine={conflict.onKeepMine}
+                onTakeServer={conflict.onTakeServer}
+                keepMineExhausted={conflict.keepMineExhausted}
+                onDelete={deleteEditing}
+                isRecurring={editing?.extendedProps?.isRecurring ?? false}
+                compact={compact}
+                footerPortalNode={footerPortalNode}
+                previewPortalNode={previewPortalNode}
+              />
+            </>
           )
         }
       </EventFormDrawer>

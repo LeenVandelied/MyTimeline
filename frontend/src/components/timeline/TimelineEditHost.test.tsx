@@ -109,7 +109,7 @@ vi.mock('@/services/eventService', () => ({
  * `AuthProvider` s'en sert aussi). `invalidateQueries` est espionné sur l'instance pour
  * prouver l'invalidation de cache après suppression (absorption S46).
  */
-function renderUnderAuth() {
+function renderUnderAuth(resources: TimelineResponsiveProps['resources'] = []) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -118,7 +118,7 @@ function renderUnderAuth() {
     </QueryClientProvider>
   )
   return {
-    ...render(<TimelineEditHost events={[]} resources={[]} locale="fr" />, { wrapper }),
+    ...render(<TimelineEditHost events={[]} resources={resources} locale="fr" />, { wrapper }),
     invalidateQueries,
   }
 }
@@ -153,6 +153,39 @@ describe('TimelineEditHost — pré-remplissage archived (#188 / BR-EVE-013)', (
     renderUnderAuth()
     fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
     expect(await screen.findByTestId('event-form-archived-toggle')).not.toBeChecked()
+  })
+})
+
+// #617 (DEC-S86-001) — catégorie de l'événement édité = celle de son produit, en lecture
+// seule, premier bloc du corps. Couleur lue via `categoryColorsOf(resources)`.
+describe('TimelineEditHost — catégorie dérivée du produit (#617)', () => {
+  it('affiche la catégorie de l’événement avec la couleur de sa ressource', async () => {
+    renderUnderAuth([
+      { id: 'product-1', title: 'Produit', category: 'cat', categoryColor: '#3E8BD6' },
+    ])
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const field = await screen.findByTestId('timeline-edit-dialog-category')
+    expect(field).toHaveAttribute('data-empty', 'false')
+    expect(field).toHaveTextContent('cat')
+    expect(field).not.toHaveTextContent('products.eventCategory.unknown')
+    expect(screen.getByTestId('timeline-edit-dialog-category-swatch').style.backgroundColor).toBe(
+      'rgb(62, 139, 214)',
+    )
+    // Premier bloc du corps : AVANT le formulaire, hors du formulaire.
+    const form = screen.getByTestId('event-form')
+    expect(form.contains(field)).toBe(false)
+    expect(field.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('ressource sans couleur : pastille en contour neutre (aucun style inline)', async () => {
+    renderUnderAuth([{ id: 'product-1', title: 'Produit', category: 'cat', categoryColor: null }])
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    await screen.findByTestId('timeline-edit-dialog-category')
+    const swatch = screen.getByTestId('timeline-edit-dialog-category-swatch')
+    expect(swatch).toHaveAttribute('data-color', 'none')
+    expect(swatch.getAttribute('style')).toBeNull()
   })
 })
 

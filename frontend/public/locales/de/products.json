@@ -83,6 +83,11 @@
     "title": "Ereignis bearbeiten",
     "save": "Änderungen speichern"
   },
+  "eventCategory": {
+    "label": "Kategorie",
+    "noProduct": "Wählen Sie zuerst ein Produkt",
+    "unknown": "Unbekannte Kategorie"
+  },
   "drawer": {
     "createTitle": "Neues Produkt",
     "editTitle": "Produkt bearbeiten",
