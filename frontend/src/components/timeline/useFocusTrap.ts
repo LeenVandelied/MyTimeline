@@ -34,6 +34,11 @@ export function useFocusTrap(
     first?.focus()
 
     const onKeyDown = (e: KeyboardEvent) => {
+      // #618 — Échap DÉJÀ consommé par une couche superposée (Radix `DismissableLayer`
+      // écoute `document` en CAPTURE et fait `preventDefault()` quand il se ferme :
+      // Select ouvert, `DeleteConfirmDialog`, `ConflictDialog`…). Sans cette garde, la
+      // même frappe refermait AUSSI le panneau piégé dessous.
+      if (e.key === 'Escape' && e.defaultPrevented) return
       if (e.key === 'Escape' && onEscape) {
         e.stopPropagation()
         onEscape()

@@ -390,7 +390,22 @@
    sur le détail. `min(…, 92vw)` : même garde-fou d'étroitesse que la base.
    Le corps porte le formulaire (scroll interne) → pas de padding propre, `--space-5`
    est appliqué par `.mt-drawer__body`. */
-.mt-drawer--form{width:min(var(--drawer-width-form), 92vw);}
+.mt-drawer--form{width:min(var(--drawer-width-form), 92vw); animation:mt-drawer-form-in var(--dur-base) var(--ease-quart) both;}
+/* #618 — entrée de la maquette (`ef-slide` / `ef-fade`), portée par la variante FORMULAIRE
+   seule : création ET édition partagent désormais cette surface, donc la même animation.
+   Le drawer de DÉTAIL (`.mt-drawer` nu) et son scrim restent inchangés. Une seule
+   propriété animée par élément (`transform`) : aucune utilitaire `translate-*` ne s'y
+   compose ([[PIT-S74-001]]). */
+@keyframes mt-drawer-form-in{from{transform:translateX(28px); opacity:0;} to{transform:translateX(0); opacity:1;}}
+.mt-drawer__overlay--form{animation:mt-drawer-fade-in var(--dur-base) ease-out both;}
+@keyframes mt-drawer-fade-in{from{opacity:0;} to{opacity:1;}}
+@media (prefers-reduced-motion:reduce){ .mt-drawer--form, .mt-drawer__overlay--form{animation:none;} }
+/* #618 — groupe d'actions de l'en-tête (puce Échap + fermer), ne se comprime pas face
+   à un titre long. */
+.mt-drawer__header-actions{display:flex; align-items:center; gap:var(--space-2); flex:0 0 auto;}
+/* #618 — puce « Échap » de la maquette (mono 10px, bordure `rule`). Indication clavier
+   décorative (`aria-hidden`) : la fermeture est portée par le bouton. */
+.mt-drawer__kbd{font-family:var(--font-mono); font-size:10px; line-height:1; padding-block:4px; padding-inline:6px; border:1px solid var(--color-rule); border-radius:var(--radius-sm); color:var(--color-ink-muted); background:none;}
 /* Sous-titre du header (nom du produit ciblé / aide contextuelle). */
 .mt-drawer__subtitle{margin-top:2px; font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 /* #326 — BANDEAU D'APERÇU ÉPINGLÉ (handoff §6 : « aperçu live sticky en haut »).

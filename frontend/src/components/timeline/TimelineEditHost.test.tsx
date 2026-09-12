@@ -294,15 +294,24 @@ describe('TimelineEditHost — invalidation du cache après suppression', () => 
  *     ([[jsdom-scroll-tests-prove-nothing]]). Ces tests prouvent l'ARBRE DOM et la
  *     CLASSE, rien de la géométrie peinte — cf. le done.md, la preuve manque.
  *
- * `matchMedia` est piloté par test : le mock global de `vitest.setup.ts` rend
- * `matches:false` (= sous 640px, bottom sheet), ce qui sert précisément de
- * contre-épreuve de non-régression PAT-S44-001.
+ * `matchMedia` est piloté par test, et ÉVALUE la requête contre une largeur simulée.
+ * #618 — l'ancien mock rendait `matches` identique pour TOUTE requête : il ne tenait
+ * que parce que la surface d'édition interrogeait `(min-width: 640px)`. La coque
+ * partagée interroge `(max-width: 1023px)` (seuil de la création) — un booléen
+ * global y aurait inversé le sens de chaque test.
  */
-function mockViewport(matches: boolean) {
+function mockViewportWidth(width: number) {
+  const evaluate = (query: string): boolean => {
+    const min = /min-width:\s*(\d+)px/.exec(query)
+    const max = /max-width:\s*(\d+)px/.exec(query)
+    if (min && width < Number(min[1])) return false
+    if (max && width > Number(max[1])) return false
+    return Boolean(min || max)
+  }
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: (query: string) => ({
-      matches,
+      matches: evaluate(query),
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -314,9 +323,13 @@ function mockViewport(matches: boolean) {
   })
 }
 
+const DESKTOP_WIDTH = 1280
+/** 800px : l'ancien panneau latéral 480px (>= 640) — désormais sheet, comme la création. */
+const COMPACT_WIDTH = 800
+
 describe('TimelineEditHost — #495 aperçu épinglé (surface d’édition)', () => {
-  it('>= 640px : l’aperçu est PORTALISÉ dans l’en-tête et SORT du formulaire', async () => {
-    mockViewport(true)
+  it('>= lg : l’aperçu est PORTALISÉ dans l’en-tête et SORT du formulaire', async () => {
+    mockViewportWidth(DESKTOP_WIDTH)
     renderUnderAuth()
 
     fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
@@ -330,8 +343,8 @@ describe('TimelineEditHost — #495 aperçu épinglé (surface d’édition)', (
     expect(screen.getAllByTestId('event-form-preview')).toHaveLength(1)
   })
 
-  it('>= 640px : le libellé « Aperçu » bascule sur `.mt-drawer__label` (bascule VOULUE)', async () => {
-    mockViewport(true)
+  it('>= lg : le libellé « Aperçu » bascule sur `.mt-drawer__label` (bascule VOULUE)', async () => {
+    mockViewportWidth(DESKTOP_WIDTH)
     renderUnderAuth()
 
     fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
@@ -344,19 +357,101 @@ describe('TimelineEditHost — #495 aperçu épinglé (surface d’édition)', (
     expect(label).not.toHaveClass('text-sm')
   })
 
-  it('< 640px (bottom sheet) : aperçu EN FLUX + classe HISTORIQUE (PAT-S44-001)', async () => {
-    mockViewport(false)
+  it('< lg (bottom sheet) : aperçu EN FLUX + classe HISTORIQUE (PAT-S44-001)', async () => {
+    mockViewportWidth(COMPACT_WIDTH)
     renderUnderAuth()
 
     fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
 
+    await waitFor(() => expect(screen.getByTestId('timeline-edit-dialog')).toHaveClass('mt-sheet'))
     const preview = await screen.findByTestId('event-form-preview')
     expect(screen.getByTestId('event-form')).toContainElement(preview)
-    // Le nœud hôte existe mais reste VIDE → masqué par `empty:hidden`, aucun liseré.
-    expect(screen.getByTestId('timeline-edit-dialog-preview')).toBeEmptyDOMElement()
+    // #618 — comme la création : AUCUN hôte d'aperçu sur la sheet (plus d'hôte vide
+    // masqué par `empty:hidden`), donc aucun liseré possible.
+    expect(screen.queryByTestId('timeline-edit-dialog-preview')).not.toBeInTheDocument()
 
     const label = screen.getByText('products.details.preview')
     expect(label).toHaveClass('text-ink', 'mb-2', 'text-sm')
     expect(label).not.toHaveClass('mt-drawer__label')
+  })
+})
+
+/**
+ * #618 — UNE seule surface de formulaire. Ces tests prouvent que l'édition consomme la
+ * MÊME coque que la création (`EventFormDrawer`) : classes DS au token, fermeture
+ * identique, pied sticky en sheet. Ils ne prouvent RIEN de la géométrie peinte (largeur
+ * réelle 452px, animation) : c'est `sprint-71-edit-preview-pinned.spec.ts`.
+ */
+describe('TimelineEditHost — #618 surface unifiée avec la création', () => {
+  it('>= lg : drawer `.mt-drawer--form` (token), aucune largeur arbitraire, dialog étiqueté', async () => {
+    mockViewportWidth(DESKTOP_WIDTH)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const panel = await screen.findByTestId('timeline-edit-dialog')
+    await waitFor(() => expect(panel).toHaveClass('mt-drawer', 'mt-drawer--form'))
+    expect(panel.className).not.toMatch(/w-\[\d+px\]/)
+    expect(panel).toHaveAttribute('role', 'dialog')
+    expect(panel).toHaveAttribute('aria-modal', 'true')
+    expect(panel).toHaveAttribute('aria-label', 'products.edit.title')
+    // L'événement ciblé reste nommé dans l'en-tête (sous-titre).
+    expect(panel).toHaveTextContent('Desktop event')
+  })
+
+  it('ferme via la croix, le scrim et la touche Échap (comme la création)', async () => {
+    mockViewportWidth(DESKTOP_WIDTH)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    fireEvent.click(await screen.findByTestId('timeline-edit-dialog-close'))
+    await waitFor(() =>
+      expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument(),
+    )
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    fireEvent.click(await screen.findByTestId('timeline-edit-dialog-overlay'))
+    await waitFor(() =>
+      expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument(),
+    )
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    await screen.findByTestId('timeline-edit-dialog')
+    fireEvent.keyDown(document, { key: 'Escape' })
+    await waitFor(() =>
+      expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument(),
+    )
+  })
+
+  it('Échap dans la confirmation de suppression ne ferme QUE la confirmation', async () => {
+    mockViewportWidth(DESKTOP_WIDTH)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    fireEvent.click(await screen.findByTestId('event-form-delete'))
+    const confirm = await screen.findByTestId('delete-confirm-button')
+
+    // Radix ferme sa couche et marque l'événement (`preventDefault`) : le focus-trap du
+    // drawer DOIT l'ignorer, sinon une seule frappe referme les deux surfaces.
+    fireEvent.keyDown(confirm, { key: 'Escape' })
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
+    )
+    expect(screen.getByTestId('timeline-edit-dialog')).toBeInTheDocument()
+    expect(deleteEvent).not.toHaveBeenCalled()
+  })
+
+  it('< lg : bottom sheet avec pied sticky portant les actions (Supprimer inclus)', async () => {
+    mockViewportWidth(COMPACT_WIDTH)
+    renderUnderAuth()
+
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+
+    const footer = await screen.findByTestId('timeline-edit-dialog-footer')
+    await waitFor(() => expect(footer).toContainElement(screen.getByTestId('event-form-submit')))
+    expect(footer).toContainElement(screen.getByTestId('event-form-delete'))
+    expect(footer).toHaveClass('mt-sheet__footer')
+    expect(screen.getByTestId('timeline-edit-dialog-close')).toHaveClass('mt-drawer__close--touch')
   })
 })

@@ -23,11 +23,14 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * ─────────────────────────────────────────────────────────────────────────────
  * Sur le drawer de CRÉATION, l'épinglage est STRUCTUREL : le nœud hôte est un
  * FRÈRE de `.mt-drawer__body`, hors de la zone défilante (PAT-S70-001).
- * Ici, la zone défilante EST `DialogContent` lui-même (`overflow-y-auto`) : il
- * n'existe aucun frère où se placer. L'aperçu est donc hébergé DANS le bloc
- * d'en-tête déjà `sticky top-0 z-10` — l'immobilité repose sur `position:sticky`,
- * que jsdom n'évalue pas du tout. **Cette spec est donc la SEULE preuve du
- * comportement livré**, pas un complément de confort.
+ * ⚠ #618 (S86) — CE PARAGRAPHE DÉCRIT L'ÉTAT S71, PÉRIMÉ. L'édition était alors un
+ * `DialogContent` défilant, l'aperçu hébergé dans un en-tête `sticky`. Depuis #618 elle
+ * consomme la MÊME coque que la création (`EventFormDrawer`) : l'aperçu est un FRÈRE de
+ * `.mt-drawer__body`, et c'est ce corps qui défile. La spec mesure donc désormais le
+ * corps — la preuve reste la seule qui porte sur la géométrie peinte.
+ *
+ * PÉRIMÈTRE : variante drawer (>= lg, 1024px) ; en dessous, bottom sheet sans aperçu
+ * épinglé (cf. le describe #618 en bas de fichier).
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * CE QUE LA SPEC PROUVE
@@ -105,11 +108,17 @@ test.describe('#495 — aperçu épinglé sur la surface d’édition', () => {
     const witness = page.getByTestId('event-form-color-input')
     await expect(witness).toBeVisible()
 
-    // ── (1) PRÉCONDITION : le dialog déborde vraiment ────────────────────────
-    const overflow = await dialog.evaluate((el) => el.scrollHeight - el.clientHeight)
+    // #618 — la zone défilante n'est plus le panneau lui-même (ancien `DialogContent`
+    // `overflow-y-auto`) mais son corps `.mt-drawer__body`, exactement comme la
+    // création (`sprint-70-create-preview-pinned`). L'aperçu y est un FRÈRE du corps.
+    const body = dialog.locator('.mt-drawer__body')
+    await expect(body).toHaveCount(1)
+
+    // ── (1) PRÉCONDITION : le corps déborde vraiment ─────────────────────────
+    const overflow = await body.evaluate((el) => el.scrollHeight - el.clientHeight)
     expect(
       overflow,
-      'le dialog d’édition doit DÉBORDER, sinon « l’aperçu n’a pas bougé » ne prouve rien',
+      'le corps du drawer d’édition doit DÉBORDER, sinon « l’aperçu n’a pas bougé » ne prouve rien',
     ).toBeGreaterThan(80)
 
     const beforeHost = await host.boundingBox()
@@ -119,12 +128,12 @@ test.describe('#495 — aperçu épinglé sur la surface d’édition', () => {
 
     // ── (2) DÉFILEMENT RÉEL ──────────────────────────────────────────────────
     // On RELIT `scrollTop` au lieu de le supposer ([[PIT-S63-015]]).
-    await dialog.evaluate((el) => {
+    await body.evaluate((el) => {
       el.scrollTop = el.scrollHeight
     })
     await expect
-      .poll(async () => dialog.evaluate((el) => el.scrollTop), {
-        message: 'le dialog doit avoir RÉELLEMENT défilé (sinon le test est vacuellement vert)',
+      .poll(async () => body.evaluate((el) => el.scrollTop), {
+        message: 'le corps doit avoir RÉELLEMENT défilé (sinon le test est vacuellement vert)',
         timeout: 5_000,
       })
       .toBeGreaterThan(0)
@@ -156,5 +165,102 @@ test.describe('#495 — aperçu épinglé sur la surface d’édition', () => {
       afterHost!.y - dialogBox!.y,
       'l’aperçu doit rester dans le tiers HAUT du dialog d’édition (handoff §6)',
     ).toBeLessThan(dialogBox!.height / 3)
+  })
+})
+
+/**
+ * #618 (Sprint 86) — UNE SEULE SURFACE DE FORMULAIRE. L'édition était un `Dialog` shadcn
+ * à `sm:w-[480px]` en dur ; elle consomme désormais la coque de la création
+ * (`EventFormDrawer`). Les tests unitaires prouvent les CLASSES ; seul un moteur de rendu
+ * prouve la LARGEUR peinte (token `--drawer-width-form`) et la fermeture réelle.
+ */
+test.describe('#618 — édition et création : même surface', () => {
+  test.use({ storageState: PROD.storageState })
+
+  async function openEdit(page: import('@playwright/test').Page, label: string) {
+    await neutralizeDevToolingPointerEvents(page)
+    await ensureAuthenticated(page)
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique(`618 ${label} Cat`))
+    const product = await seedProduct(page, {
+      userId,
+      name: unique(`618 ${label} Prod`),
+      categoryId: cat.id,
+    })
+    await page.goto(`/fr/products/${product.id}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: FIRST_NAV_BUDGET,
+    })
+    await expect(page.getByTestId('product-detail-view')).toBeVisible({ timeout: FIRST_NAV_BUDGET })
+    await page.getByTestId('timeline-event').first().click({ timeout: CLICK_BUDGET })
+    await page.getByTestId('event-drawer-edit').click({ timeout: CLICK_BUDGET })
+    const dialog = page.getByTestId('timeline-edit-dialog')
+    await expect(dialog).toBeVisible({ timeout: CLICK_BUDGET })
+    return dialog
+  }
+
+  test('>= lg : largeur du token, identique à la création ; croix, scrim et Échap ferment', async ({
+    page,
+  }) => {
+    test.setTimeout(150_000)
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const dialog = await openEdit(page, 'Desktop')
+
+    await expect(dialog).toHaveClass(/\bmt-drawer--form\b/)
+    const tokenPx = await dialog.evaluate((el) =>
+      parseFloat(getComputedStyle(el).getPropertyValue('--drawer-width-form')),
+    )
+    expect(tokenPx, 'le token --drawer-width-form doit être résolu').toBeGreaterThan(0)
+    const editWidth = (await dialog.boundingBox())!.width
+    expect(
+      Math.abs(editWidth - tokenPx),
+      'la largeur peinte de l’édition doit être celle du token (plus de 480px en dur)',
+    ).toBeLessThanOrEqual(EPSILON)
+
+    // Échap : fermeture clavier, comme la création (sprint-85-timeline-toolbar).
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+
+    // Scrim.
+    await page.getByTestId('timeline-event').first().click({ timeout: CLICK_BUDGET })
+    await page.getByTestId('event-drawer-edit').click({ timeout: CLICK_BUDGET })
+    await expect(dialog).toBeVisible({ timeout: CLICK_BUDGET })
+    await page.getByTestId('timeline-edit-dialog-overlay').click({ position: { x: 20, y: 20 } })
+    await expect(dialog).toHaveCount(0)
+
+    // Croix.
+    await page.getByTestId('timeline-event').first().click({ timeout: CLICK_BUDGET })
+    await page.getByTestId('event-drawer-edit').click({ timeout: CLICK_BUDGET })
+    await expect(dialog).toBeVisible({ timeout: CLICK_BUDGET })
+    await page.getByTestId('timeline-edit-dialog-close').click()
+    await expect(dialog).toHaveCount(0)
+
+    // Création, même viewport : même largeur peinte.
+    await page.getByTestId('shell-sidebar-new-event-button').click({ timeout: CLICK_BUDGET })
+    const create = page.getByTestId('shell-new-event-drawer')
+    await expect(create).toBeVisible({ timeout: CLICK_BUDGET })
+    const createWidth = (await create.boundingBox())!.width
+    expect(
+      Math.abs(createWidth - editWidth),
+      'création et édition : même largeur',
+    ).toBeLessThanOrEqual(EPSILON)
+  })
+
+  test('< lg : l’édition bascule en bottom sheet, actions dans le pied sticky', async ({
+    page,
+  }) => {
+    test.setTimeout(150_000)
+    // 800px : frise DESKTOP (`EventDrawer` → « Éditer »), mais sous le seuil lg de la coque.
+    // Avant #618 c'était le panneau latéral 480px (bascule à 640px).
+    await page.setViewportSize({ width: 800, height: 900 })
+    const dialog = await openEdit(page, 'Compact')
+
+    await expect(dialog).toHaveClass(/\bmt-sheet\b/)
+    const footer = page.getByTestId('timeline-edit-dialog-footer')
+    await expect(footer).toBeVisible()
+    await expect(footer.getByTestId('event-form-submit')).toBeVisible()
+    await expect(footer.getByTestId('event-form-delete')).toBeVisible()
+    // Pas d'aperçu épinglé sur la sheet (même arbitrage que la création, #326).
+    await expect(page.getByTestId('timeline-edit-dialog-preview')).toHaveCount(0)
   })
 })
