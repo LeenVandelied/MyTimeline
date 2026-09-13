@@ -121,13 +121,23 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * property is absent, so this constant is the single source of the default. Asserted by
      * {@code RateLimitDefaultCeilingsIntegrationTest}.
      */
-    private static final int DEFAULT_REGISTER_PER_MINUTE = 5;
+    public static final int DEFAULT_REGISTER_PER_MINUTE = 5;
 
     /** #547 — default ceiling of {@link #LOGIN_KEY}; same single-source rule as register. */
-    private static final int DEFAULT_LOGIN_PER_MINUTE = 10;
+    public static final int DEFAULT_LOGIN_PER_MINUTE = 10;
 
     /** #547 — default PER-IP ceiling of {@link #RESET_PASSWORD_KEY}; same single-source rule. */
-    private static final int DEFAULT_RESET_PASSWORD_PER_MINUTE = 5;
+    public static final int DEFAULT_RESET_PASSWORD_PER_MINUTE = 5;
+
+    /*
+     * Property names of the three tunable ceilings. PUBLIC (with the defaults above) for one
+     * reason: {@code ProfileSafetyGuard} refuses the boot in effective prod when one of them is
+     * set ABOVE its default (S88 review). They are compile-time constants, inlined by javac, so the
+     * guard — which runs before any bean exists — never loads this class.
+     */
+    public static final String REGISTER_PER_MINUTE_PROPERTY = "app.rate-limit.register-per-minute";
+    public static final String LOGIN_PER_MINUTE_PROPERTY = "app.rate-limit.login-per-minute";
+    public static final String RESET_PASSWORD_PER_MINUTE_PROPERTY = "app.rate-limit.reset-password-per-minute";
 
     /**
      * Requests per minute per IP, per throttled {@code "METHOD /exact/path"} pair.
@@ -351,11 +361,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         this.rateLimitEnabled = rateLimitEnabled;
         Map<String, Integer> effective = new LinkedHashMap<>(DEFAULT_LIMITS);
         effective.put(REGISTER_KEY, tunableCeiling(
-                "app.rate-limit.register-per-minute", registerPerMinute, DEFAULT_REGISTER_PER_MINUTE));
+                REGISTER_PER_MINUTE_PROPERTY, registerPerMinute, DEFAULT_REGISTER_PER_MINUTE));
         effective.put(LOGIN_KEY, tunableCeiling(
-                "app.rate-limit.login-per-minute", loginPerMinute, DEFAULT_LOGIN_PER_MINUTE));
+                LOGIN_PER_MINUTE_PROPERTY, loginPerMinute, DEFAULT_LOGIN_PER_MINUTE));
         effective.put(RESET_PASSWORD_KEY, tunableCeiling(
-                "app.rate-limit.reset-password-per-minute", resetPasswordPerMinute,
+                RESET_PASSWORD_PER_MINUTE_PROPERTY, resetPasswordPerMinute,
                 DEFAULT_RESET_PASSWORD_PER_MINUTE));
         this.limits = Map.copyOf(effective);
         if (!rateLimitEnabled) {
@@ -368,6 +378,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * Resolves one profile-tunable ceiling: the configured value when present, else the
      * default constant. Rejects a value below 1 at boot (capacity 0 = every request 429) and
      * logs a warning when the default is overridden — intended for the {@code e2e} profile only.
+     *
+     * <p>No upper bound HERE, on purpose: a raised ceiling is legitimate in {@code e2e}. The upper
+     * bound lives in {@code ProfileSafetyGuard} (S88 review), which refuses the boot in effective
+     * prod when a value exceeds its default — the same place and model as the {@code enabled=false}
+     * refusal (#216). This method therefore never sees a raised value in prod.
      */
     private static int tunableCeiling(String property, Integer configured, int defaultValue) {
         int value = configured != null ? configured : defaultValue;

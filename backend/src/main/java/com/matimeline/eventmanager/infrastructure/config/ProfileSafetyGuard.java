@@ -1,12 +1,16 @@
 package com.matimeline.eventmanager.infrastructure.config;
 
+import com.matimeline.eventmanager.infrastructure.security.RateLimitingFilter;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Garde-fou fail-fast (#111) contre le fallback silencieux {@code SPRING_PROFILES_ACTIVE:dev}.
@@ -95,6 +99,22 @@ public class ProfileSafetyGuard
     /** Master-switch du rate-limit (défaut fail-safe {@code true}). */
     static final String RATE_LIMIT_ENABLED_KEY = "app.rate-limit.enabled";
 
+    /**
+     * #547 (revue S88) — plafonds de rate-limit réglables et leur défaut, refusés au-dessus de ce
+     * défaut en prod effectif. Ordre stable (register, login, reset-password) pour un message
+     * déterministe quand plusieurs sont relevés.
+     */
+    static final Map<String, Integer> TUNABLE_RATE_LIMIT_DEFAULTS = orderedTunableDefaults();
+
+    private static Map<String, Integer> orderedTunableDefaults() {
+        Map<String, Integer> defaults = new LinkedHashMap<>();
+        defaults.put(RateLimitingFilter.REGISTER_PER_MINUTE_PROPERTY, RateLimitingFilter.DEFAULT_REGISTER_PER_MINUTE);
+        defaults.put(RateLimitingFilter.LOGIN_PER_MINUTE_PROPERTY, RateLimitingFilter.DEFAULT_LOGIN_PER_MINUTE);
+        defaults.put(RateLimitingFilter.RESET_PASSWORD_PER_MINUTE_PROPERTY,
+                RateLimitingFilter.DEFAULT_RESET_PASSWORD_PER_MINUTE);
+        return Collections.unmodifiableMap(defaults);
+    }
+
     /** Flag {@code Secure} du cookie JWT (défaut fail-safe du garde-fou {@code false} ; défaut applicatif réel {@code true}, cf. application.properties). */
     static final String COOKIE_SECURE_KEY = "app.cookie.secure";
 
@@ -117,6 +137,7 @@ public class ProfileSafetyGuard
         checkE2eProfileInProduction(env);        // #283 (porte dérobée test-support : priorité absolue)
         checkDevProfileInProduction(env);        // #111 (inchangé)
         checkRateLimitDisabledInProduction(env); // #216
+        checkRateLimitCeilingRaisedInProduction(env); // #547 (revue S88)
         checkCookieInsecureInProduction(env);    // #254
         checkMissingCookieDomainInProduction(env); // #253
         checkMissingCorsOriginsInProduction(env);  // #253
@@ -234,6 +255,53 @@ public class ProfileSafetyGuard
                 + "ou profil Spring 'prod' actif). Désactiver le rate-limit en production est "
                 + "refusé (protection anti-abus). Retirer cette property ou la remettre à 'true' "
                 + "en prod ; la désactivation n'est légitime qu'en débogage local (profil test/dev).");
+    }
+
+    /**
+     * Check #547 (revue S88) : en prod effectif, un plafond de rate-limit réglable
+     * ({@code app.rate-limit.register|login|reset-password-per-minute}) SUPÉRIEUR à son défaut
+     * → refuse de booter. Même modèle que #216 : relever un plafond anti-abus coupe de fait le
+     * throttle ({@code APP_RATE_LIMIT_LOGIN_PER_MINUTE=100000} neutralise l'anti-bruteforce login)
+     * sans rien casser au démarrage — le filtre ne fait que journaliser un WARN.
+     *
+     * <p>Hors prod effectif, rien ne change : le profil {@code e2e} relève légitimement ces
+     * plafonds. En prod, une valeur absente ou blanche (variable d'env vide) vaut le défaut et
+     * passe ; une valeur ÉGALE ou INFÉRIEURE au défaut passe ; une valeur {@code < 1} ou non
+     * numérique est refusée plus tard par {@code RateLimitingFilter} (plancher, conversion).
+     * Les défauts sont lus dans les constantes du filtre (source unique, inlinées par javac).
+     */
+    private void checkRateLimitCeilingRaisedInProduction(ConfigurableEnvironment env) {
+        if (!isProductionEffective(env)) {
+            return; // Ni marqueur prod ni profil prod → dev/test/e2e, plafond relevé légitime.
+        }
+        for (Map.Entry<String, Integer> tunable : TUNABLE_RATE_LIMIT_DEFAULTS.entrySet()) {
+            Integer configured = readIntegerOrNull(env, tunable.getKey());
+            if (configured != null && configured > tunable.getValue()) {
+                throw new IllegalStateException(
+                        "ARRÊT FAIL-FAST (#547) : '" + tunable.getKey() + "=" + configured + "' dépasse "
+                        + "son défaut (" + tunable.getValue() + "/min/IP) en environnement de production "
+                        + "effective (marqueur ENVIRONMENT/APP_ENV=prod ou profil Spring 'prod' actif). "
+                        + "Relever un plafond anti-abus en production est refusé : il affaiblit le "
+                        + "throttle sans échec visible. Retirer cette property (ou sa variable d'env) "
+                        + "en prod ; un plafond relevé n'est légitime que dans le profil e2e.");
+            }
+        }
+    }
+
+    /**
+     * Valeur entière de la property, ou {@code null} si elle est absente, blanche, irrésoluble ou
+     * non numérique. Ces deux derniers cas ne sont PAS une validation : le binding
+     * {@code @Value Integer} de {@code RateLimitingFilter} les refuse au boot, avec son message.
+     */
+    private Integer readIntegerOrNull(ConfigurableEnvironment env, String key) {
+        if (isBlankProperty(env, key)) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(env.getProperty(key).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**
