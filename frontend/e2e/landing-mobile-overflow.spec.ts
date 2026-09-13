@@ -99,6 +99,47 @@ async function measureOverflow(page: Page): Promise<OverflowReport> {
         width: number
       }> = []
 
+      /**
+       * Revue S87 (C1) — BLOC CONTENEUR, pas parent DOM.
+       *
+       * Rend l'ancêtre qui sert de bloc conteneur à `el`, ou `null` quand c'est le
+       * viewport / le bloc initial (dans ce cas AUCUN ancêtre ne rogne `el`).
+       *  - `static` / `relative` / `sticky` : le parent (en flux, tout ancêtre rogne).
+       *  - `fixed` : le premier ancêtre qui crée un bloc conteneur pour les `fixed`
+       *    (`transform`, `perspective`, `filter`, `backdrop-filter`, `contain`
+       *    paint|layout|strict|content, `will-change` transform|perspective|filter,
+       *    `container-type` ≠ `normal`, `content-visibility: auto`), sinon le viewport.
+       *  - `absolute` : idem, OU le premier ancêtre positionné.
+       * CONSERVATEUR : une propriété créatrice oubliée ici fait remonter le bloc
+       * conteneur trop haut, donc borne MOINS — vrai positif possible, jamais faux vert.
+       */
+      const containingBlockOf = (el: Element): Element | null => {
+        const position = getComputedStyle(el).position
+        if (position !== 'fixed' && position !== 'absolute') return el.parentElement
+        for (let p = el.parentElement; p; p = p.parentElement) {
+          const s = getComputedStyle(p)
+          if (position === 'absolute' && s.position !== 'static') return p
+          if (
+            s.transform !== 'none' ||
+            s.perspective !== 'none' ||
+            s.filter !== 'none' ||
+            (s.backdropFilter ?? 'none') !== 'none' ||
+            /\b(paint|layout|strict|content)\b/.test(s.contain) ||
+            /\b(transform|perspective|filter)\b/.test(s.willChange) ||
+            (s.containerType ?? 'normal') !== 'normal' ||
+            s.contentVisibility === 'auto'
+          )
+            return p
+        }
+        return null
+      }
+
+      /** `overflow` ne s'applique pas à un `inline` ni à un `contents` : ils ne rognent rien. */
+      const clipsX = (p: Element): boolean => {
+        const s = getComputedStyle(p)
+        return s.overflowX !== 'visible' && s.display !== 'inline' && s.display !== 'contents'
+      }
+
       for (const el of Array.from(document.querySelectorAll('*'))) {
         // Outillage de DÉVELOPPEMENT, absent du bundle de production (cf.
         // `support/dev-tooling.ts`). Les inclure, c'est rouvrir #341 sur un
@@ -118,18 +159,31 @@ async function measureOverflow(page: Page): Promise<OverflowReport> {
          * ([[PIT-S77-002]]) : sans correction, ce balayage fabriquait ~70 faux
          * débordements par largeur.
          *
-         * On borne donc le bord droit par celui de chaque ancêtre qui ROGNE
-         * (`overflow-x` ≠ `visible`). Plus strict que l'exclusion de
+         * On borne donc le bord droit par celui des ancêtres qui ROGNENT RÉELLEMENT
+         * l'élément (`overflow-x` ≠ `visible`). Plus strict que l'exclusion de
          * `sprint-63-de-overflow-audit.spec.ts` (qui ignore tout contenu contenu) : un
          * conteneur rognant qui déborde LUI-MÊME reste un offender, et le contenu qu'il
          * laisse dépasser aussi. Remontée arrêtée AVANT `<body>` (scroll-lock Radix,
-         * même raison que dans `sprint-63`). Armé par la 2e sonde de l'auto-contrôle.
+         * même raison que dans `sprint-63`).
+         *
+         * Revue S87 (C1) : la remontée suit la CHAÎNE DES BLOCS CONTENEURS, pas la chaîne
+         * DOM. La 1re version bornait par TOUT ancêtre DOM rognant : un `position:fixed`
+         * (bloc conteneur = viewport) ou un `absolute` dont le bloc conteneur positionné est
+         * AU-DESSUS d'un `overflow:hidden` non positionné n'est PAS rogné par ce dernier —
+         * il déborde réellement à l'écran, et la spec l'aurait déclaré visible-borné (faux
+         * vert). Règle : un ancêtre rognant A rogne `el` ssi A est sur la chaîne
+         * `el → bloc conteneur → bloc conteneur du bloc conteneur…`. Les ancêtres DOM
+         * situés strictement ENTRE un élément hors flux et son bloc conteneur sont sautés.
+         * Armé par les sondes 2 à 5 de l'auto-contrôle (la 3e et la 4e rougissent avec
+         * l'ancienne remontée DOM — vérifié par mutation au S87).
          */
         let visibleRight = rect.right
-        for (let p = el.parentElement; p && p !== de && p !== document.body; p = p.parentElement) {
-          const ox = getComputedStyle(p).overflowX
-          if (ox !== 'visible')
-            visibleRight = Math.min(visibleRight, p.getBoundingClientRect().right)
+        for (
+          let cb = containingBlockOf(el);
+          cb && cb !== de && cb !== document.body;
+          cb = containingBlockOf(cb)
+        ) {
+          if (clipsX(cb)) visibleRight = Math.min(visibleRight, cb.getBoundingClientRect().right)
         }
         if (visibleRight > clientWidth + tolerance) {
           offenders.push({
@@ -251,5 +305,81 @@ test.describe('Landing — auto-contrôle du harnais de débordement', () => {
     ).toEqual(expect.arrayContaining([CLIP_ID, CHILD_ID]))
 
     await page.evaluate((id) => document.getElementById(id)?.remove(), CLIP_ID)
+
+    /**
+     * Revue S87 (C1) — un élément qui ÉCHAPPE au rognage de son ancêtre DOM doit rester
+     * détecté. Conteneurs ÉTROITS (100 px) `overflow:hidden`, SANS `transform` :
+     *  - 3. un `position:fixed` de 9999 px (bloc conteneur = viewport) — le wrapper est
+     *       positionné, ce qui NE crée PAS de bloc conteneur pour un `fixed` ;
+     *  - 4. un `position:absolute` de 9999 px sous un wrapper NON positionné (bloc
+     *       conteneur = bloc initial, au-dessus du wrapper).
+     * Tous deux débordent réellement à l'écran ; une borne par la chaîne DOM les masquait.
+     * Contre-épreuve (5.) : le MÊME `fixed` sous un wrapper `transform` (qui devient son
+     * bloc conteneur, donc le rogne) doit rester borné — sans elle, une implémentation
+     * « ne jamais borner » passerait les sondes 3-4 (la frise, elle, couvre flux + absolute).
+     */
+    const FIXED_ID = 'overflow-self-check-fixed'
+    const ABS_ID = 'overflow-self-check-absolute'
+    const CONTAINED_ID = 'overflow-self-check-fixed-in-transform'
+    const WRAPPER_IDS = [
+      'overflow-self-check-wrap-fixed',
+      'overflow-self-check-wrap-absolute',
+      'overflow-self-check-wrap-transform',
+    ]
+    await page.evaluate(
+      ({ fixed, abs, contained, wrappers }) => {
+        const narrow = 'width:100px;height:4px;overflow:hidden;transition:none;min-width:0;'
+        const wide = 'top:0;left:0;width:9999px;height:4px;transition:none;min-width:0;'
+        const specs: Array<[string, string, string, string]> = [
+          [
+            wrappers[0],
+            `position:absolute;top:0;left:0;${narrow}`,
+            fixed,
+            `position:fixed;${wide}`,
+          ],
+          [wrappers[1], narrow, abs, `position:absolute;${wide}`],
+          [
+            wrappers[2],
+            `position:absolute;top:0;left:0;transform:translateZ(0);${narrow}`,
+            contained,
+            `position:fixed;${wide}`,
+          ],
+        ]
+        for (const [wrapperId, wrapperCss, childId, childCss] of specs) {
+          const wrapper = document.createElement('div')
+          wrapper.id = wrapperId
+          wrapper.style.cssText = wrapperCss
+          const child = document.createElement('div')
+          child.id = childId
+          child.style.cssText = childCss
+          wrapper.appendChild(child)
+          document.body.appendChild(wrapper)
+        }
+      },
+      { fixed: FIXED_ID, abs: ABS_ID, contained: CONTAINED_ID, wrappers: WRAPPER_IDS },
+    )
+
+    const escaped = (await measureOverflow(page)).offenders
+    const escapedIds = escaped.map((o) => o.id)
+    expect(
+      escapedIds,
+      `un \`fixed\` / \`absolute\` qui échappe au rognage de son ancêtre DOM doit être ` +
+        `détecté — relevés : ${JSON.stringify(escaped)}`,
+    ).toEqual(expect.arrayContaining([FIXED_ID, ABS_ID]))
+    expect(
+      escapedIds,
+      'un `fixed` dont le bloc conteneur (`transform`) rogne doit rester borné',
+    ).not.toContain(CONTAINED_ID)
+    // Seules les deux sondes échappées sont relevées : la frise du hero (piste 1640 px,
+    // barres `absolute`, dans un viewport rogné) et le contenu rogné restent NON relevés.
+    expect(
+      escaped.filter((o) => o.id !== FIXED_ID && o.id !== ABS_ID),
+      'aucun autre élément (dont la frise du hero) ne doit être relevé',
+    ).toEqual([])
+
+    await page.evaluate(
+      (ids) => ids.forEach((id) => document.getElementById(id)?.remove()),
+      WRAPPER_IDS,
+    )
   })
 })
