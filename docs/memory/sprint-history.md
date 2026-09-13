@@ -6157,8 +6157,36 @@ régénération des références hero par le lead
 **Migrations :** aucune
 **Dépend de :** Sprint 83 (#574 filet, #642 bascule de thème), Sprint 85 (#611 reprend le rendu de frise réel)
 **Dette inter-sprint à honorer :** #574 (S83) pose un filet sur `HeroSection.tsx:113` ;
-#610 réécrit ce conteneur et **doit préserver ce filet**.
-**Status :** En cours
+#610 réécrit ce conteneur et **doit préserver ce filet** — **préservé** (filet `rule-strong`, `box-shadow:none` mesuré).
+**Vagues exécutées :** V1 = #610 ∥ #641 (exclusivité navigateur à #610) | V2 = #611 | V3 = corrections revue C1 + stabilité
+du diff visuel C2 (1 agent) | lead : `next build`, E2E complète, régénération des références Linux
+**Migrations :** aucune · **Fichiers backend touchés :** 0 · **Effort :** 9 points planifiés · **Cohésion :** 0.70
+**Commits de code :** 6 — `af01bb9` #641 · `0a04df6` #610 · `02a1b45` #611 · `571375d` C1 bornage du débordement par blocs
+conteneurs · `6481397` C2 gel exact de la frise avant capture · `6f8f6f4` références `landing-hero` régénérées (noble) ;
++ commits `:memo:` d'orchestration.
+**Harnais :** le build Docker du backend e2e a bloqué sur les métadonnées Docker Hub (`eclipse-temurin`) → image
+`s86full-backend-e2e` (bâtie 2026-09-11T09:53Z) re-taguée, **0 commit `backend/` ni `docker-compose.yml` depuis** (vérifié).
+**Reviews :**
+- `reviewer` cycle 1 : **0 CRITIQUE / 1 MAJEUR / 1 MINEUR** — MAJEUR : le bornage du garde-fou de débordement assoupli par
+  #611 suivait la chaîne DOM (faux vert possible pour `fixed`/`absolute`) → C1 ; MINEUR (commentaire historique
+  `base-layer.test.ts:357`) accepté ;
+- `reviewer` cycle 2 : MAJEUR **RÉSOLU**, **0 CRITIQUE / 0 MAJEUR / 2 MINEUR** (follow-ups) ; la règle `absolute` de l'agent
+  contredisait le briefing du lead — l'agent avait raison ;
+- `ui-design` : **5 CONFORME / 2 ÉCART acceptable / 0 à corriger** (ombre retirée #574 ; libellé chrome `ink-muted`).
+  Détail : `sprints/sprint-87/specialists-{reviewer,ui-design}.md`.
+**Tests :** `next build` production exit 0 · **Vitest 127 fichiers / 1536 tests** · tsc 0 · format:check conforme ·
+coverage-E2E 0 testid · **E2E complète (build de production) : 384 — 375 passés / 1 échec (armement, référence darwin
+absente, attendu) / 8 sautés** · **diff visuel noble : 3 runs consécutifs 11/11**. Détail : `audits/sprint-87-test-coverage.md`.
+**Écarts constatés :** (1) la référence visuelle `landing-hero` régénérée rougissait contre elle-même 1 min plus tard (2382 px)
+— `animations:'disabled'` ne rend pas une boucle infinie `transform` + `will-change` déterministe ; (2) écarts de maquette
+assumés : pas d'ombre sur le panneau (#574), encre sombre sur 4 couleurs de barre (WCAG, BR-EVE-009), libellé chrome
+`ink-muted`, 6e lane ajoutée (« Passeport · Documents ») pour l'AC ; (3) le « 30/70 » n'est atteint qu'à ~1536 px (flex borné
+de la maquette : 396/556 à 1024, 420/788 à 1280) ; (4) le CTA primaire du hero se replie sur 2-3 lignes entre 1024 et 1279 px.
+**Follow-ups proposés (à arbitrer au `/sprint end 87`) :**
+  - CTA du hero sur 2-3 lignes entre 1024 et 1279 px [XS | landing] (issue-610 — RECOMMAND_FOLLOWUP)
+  - `landing-mobile-overflow.spec.ts:126` `?? 'none'` → `|| 'none'` [XS | e2e] (reviewer cycle 2)
+  - `landing-mobile-overflow.spec.ts:181-187` documenter l'arrêt de la remontée avant `<html>` [XS | e2e] (reviewer cycle 2)
+**Status :** En cours — PR à ouvrir ; titre et Status à solder après le merge (variante S57 : au `/sprint start 88`).
 
 ### Matrice de conflits (fichiers partagés)
 
