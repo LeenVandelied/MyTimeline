@@ -257,8 +257,12 @@ DB_URL=jdbc:postgresql://localhost:5432/eventmanager_local ./mvnw spring-boot:ru
 
 **Remède destructif** — à réserver au cas où le contenu de la vieille base ne vous sert plus :
 `dropdb eventmanager && createdb eventmanager` pour un PostgreSQL de la machine, ou
-`docker compose down -v` si la base en cause est celle du volume Compose. Les deux **effacent
-définitivement** comptes, produits et événements ; rien ne permet de revenir en arrière sans
+`docker compose down -v` si la base en cause est celle du volume Compose. ⚠ `down -v` ne vise pas
+« la base » : il supprime **tous les volumes nommés du projet Compose** — la base (`postgres-data`)
+**et** les avatars téléversés (`avatars-data`), ainsi que les volumes de la pile e2e
+(`postgres-e2e-data`, `avatars-e2e-data`) s'ils ont été créés. À l'inverse, il ne touche **jamais**
+une base du PostgreSQL installé sur la machine : pour celle-ci, seul `dropdb` agit. Les deux
+commandes **effacent définitivement** comptes, produits et événements ; rien ne permet de revenir en arrière sans
 sauvegarde préalable (`pg_dump`).
 
 Ne corrigez pas ce cas par une migration : une `V16` ne s'exécuterait jamais avant V7, et modifier
