@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -19,8 +18,9 @@ interface HeroSectionProps {
  * fonctionnelle » du DS — 3.97:1 clair / 4.49:1 sombre, au-dessus du seuil UI
  * ≥ 3:1. Elle remplace l'emprunt provisoire au tier TEXTE `ink-muted` fait en
  * S39 faute de token de bordure conforme (nommer la classe ici suffirait à la
- * faire regénérer par Tailwind : on cite le token, pas l'utilitaire). Le cadre de l'image reste sur
- * `border-rule` : décoratif, non soumis au seuil. Tokens sémantiques DS
+ * faire regénérer par Tailwind : on cite le token, pas l'utilitaire). Le panneau de la
+ * frise et sa barre de chrome restent sur les tiers DÉCORATIFS (`rule-strong` / `rule`),
+ * non soumis au seuil — cf. #610 plus bas. Tokens sémantiques DS
  * uniquement, zéro hex hardcodé — suit clair/sombre via les variables CSS.
  *
  * #295 — les deux appels à l'action passent par `<Button asChild>` avec le lien À
@@ -40,14 +40,33 @@ interface HeroSectionProps {
  * `whitespace-normal` + `h-auto` (le variant Button impose `whitespace-nowrap` et
  * `h-9`) laissent les libellés se replier au lieu de forcer une largeur supérieure
  * au viewport mobile, et la rangée passe en `gap-4` + `sm:flex-wrap` — les deux
- * boutons demandent ~860 px pour 584 px disponibles à 1280 px, ils doivent donc
- * pouvoir revenir à la ligne. `gap-*` et non `space-x-*` : les marges de ce dernier
- * ne se réinitialisent pas en début de ligne. Garde-fou : `HeroSection.flex-min-size.test.tsx`.
+ * boutons demandaient ~860 px pour 584 px disponibles à 1280 px (et la colonne texte
+ * ne fait plus que ≤ 420 px depuis #610), ils doivent donc pouvoir revenir à la ligne.
+ * `gap-*` et non `space-x-*` : les marges de ce dernier ne se réinitialisent pas en
+ * début de ligne. Garde-fou : `HeroSection.flex-min-size.test.tsx`.
  *
- * #56 — la frise horizontale animée vit dans `HeroTimelineAnimation`, sous les deux
- * colonnes. La mise en page flex d'origine descend d'un cran (du `<section>` vers un
- * `<div>` interne) pour que la frise occupe toute la largeur au lieu de devenir une
- * troisième colonne.
+ * #610 — HERO ASYMÉTRIQUE « 30/70 ». La maquette (`Landing.dc.html`) ne pose PAS de
+ * pourcentages : c'est un flex BORNÉ — texte `flex:1 1 300px; min-width:300px;
+ * max-width:420px`, frise `flex:1 1 460px; min-width:340px`, gap 40px. Transcrit tel
+ * quel sous `lg` (1024, token `--breakpoint-lg`) : ~396/556 à 1024, 420/reste au-delà.
+ * La frise (`HeroTimelineAnimation`, qui vivait en bande pleine largeur SOUS les
+ * colonnes depuis #56) est montée DANS la colonne droite, dans un panneau bordé avec
+ * sa barre de chrome ; l'image statique `dashboard-preview.svg` qu'elle remplace est
+ * supprimée.
+ * - SOUS `lg` : empilement (texte puis panneau), et AUCUN `min-width` px. À 320 px,
+ *   `min-width:340px` + le padding du `container` déborderait : les planchers de la
+ *   maquette ne s'appliquent qu'en rangée. Le panneau reste visible (c'est l'image du
+ *   produit, pas un ornement) mais descend à `h-80` sous `md` ; 420 px au-delà.
+ * - ⚠ `min-w-0` sur la colonne frise n'est PAS décoratif : une piste animée plus large
+ *   que le panneau (#611) ferait remonter sa `min-content` via `min-width:auto` et
+ *   pousserait la page en largeur. `overflow-hidden` sur le panneau ne suffit pas — il
+ *   rogne le rendu, pas la taille intrinsèque.
+ * - ⚠ #574 — FILET 1px, SANS OMBRE AU REPOS. La maquette pose `box-shadow: shadow-md`
+ *   sur le panneau ; #574 a retiré précisément ce type d'ombre des surfaces de la
+ *   landing (charte : surface au repos = filet, élévation réservée aux popovers et
+ *   modales). Écart de maquette assumé : ne pas réintroduire l'ombre. Tier
+ *   `rule-strong` (maquette) : décoratif « appuyé » du DS, adapté à un panneau imbriqué
+ *   — le panneau n'est l'affordance d'aucun contrôle, donc PAS `rule-emphasis`.
  *
  * #348 — ÉCHELLE TYPOGRAPHIQUE. Le `h1` portait `text-4xl md:text-5xl`. Ces deux
  * tokens N'EXISTENT PAS dans `ds/tokens/typography.css` (échelle 13/15/17/21/27/35/
@@ -83,8 +102,8 @@ export function HeroSection({ locale }: HeroSectionProps) {
 
   return (
     <section className="section-animation container mx-auto px-4 py-20">
-      <div className="flex flex-col items-center md:flex-row">
-        <div className="mb-10 md:mb-0 md:w-1/2 md:pr-10">
+      <div className="flex flex-col gap-10 lg:flex-row lg:items-stretch">
+        <div className="flex min-w-0 flex-col justify-center lg:max-w-[420px] lg:min-w-[300px] lg:flex-[1_1_300px]">
           <h1 className="mb-6 text-xl font-bold md:text-2xl lg:text-3xl">
             {t('common.landing.hero.title')}
           </h1>
@@ -109,22 +128,29 @@ export function HeroSection({ locale }: HeroSectionProps) {
             </Button>
           </div>
         </div>
-        <div className="hero-image-container relative md:w-1/2">
-          <div className="bg-surface border-rule overflow-hidden rounded-xl border">
-            {/* Image de prévisualisation du tableau de bord */}
-            <div className="relative h-80 w-full md:h-96">
-              <Image
-                src="/images/dashboard-preview.svg"
-                alt={t('common.landing.images.dashboard')}
-                fill
-                className="object-cover"
-              />
+        <div className="min-w-0 lg:min-w-[340px] lg:flex-[1_1_460px]">
+          <div className="bg-surface border-rule-strong relative flex h-80 flex-col overflow-hidden rounded-xl border md:h-[420px]">
+            {/* Barre de chrome — décorative, d'où `aria-hidden` et le tier `rule`. */}
+            <div
+              className="border-rule flex shrink-0 items-center gap-2 border-b px-4 py-3"
+              aria-hidden="true"
+            >
+              <span className="bg-rule-strong block size-[9px] rounded-full" />
+              <span className="bg-rule-strong block size-[9px] rounded-full" />
+              <span className="bg-rule-strong block size-[9px] rounded-full" />
+              {/* #611 — libellé mono de la maquette ; style dans `hero-timeline.css`. */}
+              <span className="hero-timeline-chrome__label">
+                {t('common.landing.hero.timeline.chrome')}
+              </span>
+            </div>
+            {/* #611 — frise à fond perdu sous la barre de chrome (maquette : viewport sans
+                padding) ; `min-h-0` laisse la zone se réduire au panneau de 320 px. */}
+            <div className="relative min-h-0 flex-1">
+              <HeroTimelineAnimation />
             </div>
           </div>
         </div>
       </div>
-
-      <HeroTimelineAnimation />
     </section>
   )
 }

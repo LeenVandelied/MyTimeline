@@ -139,16 +139,55 @@
     "meta": {
       "description": "Meine Timeline hilft Ihnen, Ihre Termine zu verwalten, Ihre Zeit zu organisieren und Ihre Produktivität zu optimieren. Einfach, intuitiv und anpassbar."
     },
-    "images": {
-      "dashboard": "Vorschau des Meine Timeline Dashboards",
-      "timeline": "Beispiel einer Timeline",
-      "mobileApp": "Meine Timeline Mobilanwendung"
-    },
     "hero": {
       "title": "Organisieren Sie Ihr Leben mit Meine Timeline",
       "subtitle": "Ihr persönlicher Assistent zur Verwaltung von Terminen, Optimierung Ihrer Zeit und effizienterem Erreichen Ihrer Ziele.",
       "cta": "Kostenlos starten",
-      "secondary": "Entdecken Sie, wie es funktioniert"
+      "secondary": "Entdecken Sie, wie es funktioniert",
+      "timeline": {
+        "chrome": "app.mytimeline · Zeitleiste",
+        "today": "Heute",
+        "months": {
+          "may": "Mai",
+          "june": "Jun",
+          "july": "Jul",
+          "august": "Aug"
+        },
+        "lanes": {
+          "car": {
+            "name": "Renault Clio",
+            "category": "Fahrzeuge",
+            "insurance": "Kfz-Versicherung",
+            "inspection": "TÜV"
+          },
+          "home": {
+            "name": "Wohnung",
+            "category": "Versicherung",
+            "premium": "Jahresbeitrag"
+          },
+          "health": {
+            "name": "Gesundheit",
+            "category": "Medizin",
+            "prescription": "Rezept",
+            "checkup": "Check-up"
+          },
+          "subscriptions": {
+            "name": "Abos",
+            "category": "Finanzen",
+            "license": "Softwarelizenz"
+          },
+          "pantry": {
+            "name": "Vorrat",
+            "category": "Lebensmittel",
+            "oil": "Olivenöl · MHD"
+          },
+          "passport": {
+            "name": "Reisepass",
+            "category": "Dokumente",
+            "renewal": "Verlängerung"
+          }
+        }
+      }
     },
     "features": {
       "title": "Hauptfunktionen",
@@ -195,12 +234,6 @@
       "subtitle": "Beginnen Sie jetzt und verbessern Sie Ihre Produktivität",
       "button": "Erstellen Sie jetzt kostenlos Ihr Konto",
       "secondary": "Weitere Informationen"
-    },
-    "mobileApp": {
-      "title": "Bringen Sie Ihre Organisation überall hin mit",
-      "subtitle": "Greifen Sie auf Meine Timeline auf allen Ihren Geräten zu. Bleiben Sie überall organisiert.",
-      "ios": "Bald auf iOS",
-      "android": "Bald auf Android"
     },
     "footer": {
       "description": "Ihr persönlicher Assistent für Organisation und Zeitmanagement",

@@ -139,16 +139,55 @@
     "meta": {
       "description": "Mi Timeline te ayuda a gestionar tus plazos, organizar tu tiempo y optimizar tu productividad. Simple, intuitivo y personalizable."
     },
-    "images": {
-      "dashboard": "Vista previa del panel de Mi Timeline",
-      "timeline": "Ejemplo de timeline",
-      "mobileApp": "Aplicación móvil Mi Timeline"
-    },
     "hero": {
       "title": "Organiza tu vida con Mi Timeline",
       "subtitle": "Tu asistente personal para gestionar plazos, optimizar tu tiempo y alcanzar tus objetivos más eficientemente.",
       "cta": "Comenzar gratis",
-      "secondary": "Descubre cómo funciona"
+      "secondary": "Descubre cómo funciona",
+      "timeline": {
+        "chrome": "app.mytimeline · cronología",
+        "today": "Hoy",
+        "months": {
+          "may": "May",
+          "june": "Jun",
+          "july": "Jul",
+          "august": "Ago"
+        },
+        "lanes": {
+          "car": {
+            "name": "Renault Clio",
+            "category": "Vehículos",
+            "insurance": "Seguro del coche",
+            "inspection": "ITV"
+          },
+          "home": {
+            "name": "Vivienda",
+            "category": "Seguro",
+            "premium": "Prima anual"
+          },
+          "health": {
+            "name": "Salud",
+            "category": "Médico",
+            "prescription": "Receta",
+            "checkup": "Chequeo anual"
+          },
+          "subscriptions": {
+            "name": "Suscripciones",
+            "category": "Finanzas",
+            "license": "Licencia de software"
+          },
+          "pantry": {
+            "name": "Despensa",
+            "category": "Alimentación",
+            "oil": "Aceite de oliva · consumo pref."
+          },
+          "passport": {
+            "name": "Pasaporte",
+            "category": "Documentos",
+            "renewal": "Renovación"
+          }
+        }
+      }
     },
     "features": {
       "title": "Características principales",
@@ -195,12 +234,6 @@
       "subtitle": "Comienza ahora y mejora tu productividad",
       "button": "Crear mi cuenta gratis",
       "secondary": "Obtener más información"
-    },
-    "mobileApp": {
-      "title": "Lleva tu organización contigo",
-      "subtitle": "Accede a Mi Timeline en todos tus dispositivos. Mantente organizado dondequiera que estés.",
-      "ios": "Próximamente en iOS",
-      "android": "Próximamente en Android"
     },
     "footer": {
       "description": "Tu asistente personal de organización y gestión del tiempo",

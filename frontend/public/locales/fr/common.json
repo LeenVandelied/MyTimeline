@@ -179,16 +179,55 @@
     "meta": {
       "description": "Ma Timeline vous aide à gérer vos échéances, organiser votre temps et optimiser votre productivité. Simple, intuitif et personnalisable."
     },
-    "images": {
-      "dashboard": "Aperçu du tableau de bord Ma Timeline",
-      "timeline": "Exemple de timeline",
-      "mobileApp": "Application mobile Ma Timeline"
-    },
     "hero": {
       "title": "Organisez votre vie avec Ma Timeline",
       "subtitle": "Votre assistant personnel pour gérer vos échéances, optimiser votre temps et atteindre vos objectifs plus efficacement.",
       "cta": "Commencer gratuitement",
-      "secondary": "Découvrir comment ça marche"
+      "secondary": "Découvrir comment ça marche",
+      "timeline": {
+        "chrome": "app.mytimeline · frise",
+        "today": "Aujourd'hui",
+        "months": {
+          "may": "Mai",
+          "june": "Juin",
+          "july": "Juil",
+          "august": "Août"
+        },
+        "lanes": {
+          "car": {
+            "name": "Renault Clio",
+            "category": "Véhicules",
+            "insurance": "Assurance auto",
+            "inspection": "Contrôle"
+          },
+          "home": {
+            "name": "Habitation",
+            "category": "Assurance",
+            "premium": "Prime annuelle"
+          },
+          "health": {
+            "name": "Santé",
+            "category": "Médical",
+            "prescription": "Ordonnance",
+            "checkup": "Bilan annuel"
+          },
+          "subscriptions": {
+            "name": "Abonnements",
+            "category": "Finances",
+            "license": "Licence logiciel"
+          },
+          "pantry": {
+            "name": "Garde-manger",
+            "category": "Alimentation",
+            "oil": "Huile d'olive · DLUO"
+          },
+          "passport": {
+            "name": "Passeport",
+            "category": "Documents",
+            "renewal": "Renouvellement"
+          }
+        }
+      }
     },
     "features": {
       "title": "Fonctionnalités principales",
@@ -235,12 +274,6 @@
       "subtitle": "Commencez dès maintenant et améliorez votre productivité",
       "button": "Créer mon compte gratuitement",
       "secondary": "En savoir plus"
-    },
-    "mobileApp": {
-      "title": "Emportez votre organisation partout",
-      "subtitle": "Accédez à Ma Timeline sur tous vos appareils. Restez organisé où que vous soyez.",
-      "ios": "Bientôt sur iOS",
-      "android": "Bientôt sur Android"
     },
     "footer": {
       "description": "Votre assistant personnel d'organisation et de gestion du temps",
