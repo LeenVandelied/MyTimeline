@@ -42,10 +42,22 @@ const REFRESH_CEILING = 20
 
 test.use({ storageState: { cookies: [], origins: [] } })
 
+/**
+ * AUCUN RETRY (revue S88), quelle que soit la valeur globale (`retries: 2` en CI).
+ *
+ * Le seul signal qui prouve un créneau `refresh` PROPRE est le 429 pile à la 21e requête,
+ * et il ne vaut qu'au premier essai : un retry trouve le seau déjà vidé par l'essai
+ * précédent. Avec des retries, une POLLUTION du créneau (une spec qui se mettrait à
+ * appeler `refresh`, un refresh applicatif déclenché pendant le run) ferait échouer
+ * l'essai 0, puis passer l'essai 1 : résultat « flaky », job VERT, pollution invisible.
+ * Sans retry, elle rougit le job — c'est ce qu'on veut d'une preuve.
+ */
+test.describe.configure({ retries: 0 })
+
 test('le filtre de rate-limit est ARMÉ derrière le proxy Next (401 x20, puis 429, XFF ignoré)', async ({
   request,
   baseURL,
-}, testInfo) => {
+}) => {
   expect(baseURL, 'baseURL requise (PLAYWRIGHT_BASE_URL ou webServer)').toBeTruthy()
   const origin = new URL(baseURL!).origin
 
@@ -73,15 +85,12 @@ test('le filtre de rate-limit est ARMÉ derrière le proxy Next (401 x20, puis 4
     statuses.slice(0, firstThrottled).every((status) => status === 401),
     `avant le 429, seuls des 401 sont attendus — ${diagnosis}`,
   ).toBe(true)
-  if (testInfo.retry === 0) {
-    // Au premier essai le seau est plein (aucune spec ne le consomme) : le 429 tombe
-    // PILE à la 21e. Sur un retry, le seau a déjà été vidé par l'essai précédent ; seul
-    // compte alors qu'un 429 arrive, précédé exclusivement de 401.
-    expect(
-      firstThrottled,
-      `le 429 doit tomber à la requête ${REFRESH_CEILING + 1} — ${diagnosis}`,
-    ).toBe(REFRESH_CEILING)
-  }
+  // Seau plein au départ (aucune spec ne le consomme, et pas de retry — cf. `configure`
+  // ci-dessus) : le 429 tombe PILE à la 21e, sinon le créneau a été pollué.
+  expect(
+    firstThrottled,
+    `le 429 doit tomber à la requête ${REFRESH_CEILING + 1} — ${diagnosis}`,
+  ).toBe(REFRESH_CEILING)
 
   const spoofed = await request.post(REFRESH_PATH, {
     headers: { Origin: origin, 'X-Forwarded-For': '203.0.113.7' },

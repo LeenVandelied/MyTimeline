@@ -270,13 +270,51 @@ interface Pass {
   files: string[]
 }
 
+const PLAYWRIGHT_INVOCATION = /(?:npm run test:e2e|playwright test)/
+
+/**
+ * Les commandes shell des étapes `run:` du workflow, dans l'ordre : une par ligne pour
+ * `run: cmd` et `run: |` (bloc littéral), une seule pour `run: >` (bloc replié, lignes
+ * jointes par une espace). Les continuations `\` sont recollées, les commentaires shell
+ * ignorés. Revue S88 : la version précédente ne lisait que `run: cmd` sur une ligne — une
+ * 3e passe écrite dans un bloc `run: |` aurait été invisible.
+ */
+function readRunCommands(yaml: string): string[] {
+  const lines = yaml.split('\n')
+  const commands: string[] = []
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(/^(\s*)(?:-\s+)?run:\s*(.*)$/)
+    if (!match) continue
+    const indent = match[1].length
+    const value = match[2].trim()
+    const block = value.match(/^([|>])[-+]?\d*\s*(?:#.*)?$/)
+    if (!block) {
+      commands.push(value)
+      continue
+    }
+    const body: string[] = []
+    while (i + 1 < lines.length) {
+      const next = lines[i + 1]
+      if (next.trim() !== '' && next.length - next.trimStart().length <= indent) break
+      body.push(next.trim())
+      i++
+    }
+    const shell = body.filter((l) => l !== '' && !l.startsWith('#'))
+    if (block[1] === '>') {
+      commands.push(shell.join(' '))
+      continue
+    }
+    commands.push(...shell.join('\n').replace(/\\\n/g, ' ').split('\n'))
+  }
+  return commands
+}
+
 /** Les invocations Playwright du workflow CI, dans l'ordre. */
 function readCiPasses(yaml: string = readFileSync(CI_WORKFLOW, 'utf8')): Pass[] {
   const passes: Pass[] = []
-  for (const line of yaml.split('\n')) {
-    const match = line.match(/^\s*run:\s*(.*(?:npm run test:e2e|playwright test).*)$/)
-    if (!match) continue
-    const command = match[1].trim()
+  for (const raw of readRunCommands(yaml)) {
+    if (!PLAYWRIGHT_INVOCATION.test(raw)) continue
+    const command = raw.trim()
     const args = command.includes('test:e2e')
       ? (command.split(/\s--\s/)[1] ?? '').split(/\s+/)
       : command.split(/playwright test/)[1].split(/\s+/)
@@ -619,6 +657,41 @@ describe('#547 — la détection, exercée sur des sources synthétiques', () =>
     expect(passes.map((p) => ({ full: p.full, files: p.files }))).toEqual([
       { full: true, files: [] },
       { full: false, files: ['auth.setup.ts', 'auth-signature.spec.ts'] },
+    ])
+  })
+
+  it('lit les passes CI écrites dans un bloc `run: |` ou `run: >` — le trou de la revue S88', () => {
+    // Avant la revue S88, seules les lignes `run: cmd` étaient lues : ce workflow donnait
+    // 1 passe au lieu de 4, et les 3 invocations en bloc passaient inaperçues.
+    const passes = readCiPasses(
+      [
+        '      - name: passe 1',
+        '        run: npm run test:e2e -- --output=p1',
+        '      - name: passe 2 en bloc littéral',
+        '        run: |',
+        '          echo "préparation"',
+        '          # npx playwright test commented-out.spec.ts',
+        '          npx playwright test auth.setup.ts \\',
+        '            golden-path.spec.ts --output=p2',
+        '      - name: passe 3 en bloc replié',
+        '        run: >-',
+        '          npx playwright test',
+        '          forgot-password.spec.ts',
+        '          --output=p3',
+        '      - run: |',
+        '          npm run test:e2e -- settings-account.spec.ts',
+        '        env:',
+        '          CI: true',
+        '      - name: sans rapport',
+        '        run: |',
+        '          npm run lint',
+      ].join('\n'),
+    )
+    expect(passes.map((p) => ({ full: p.full, files: p.files }))).toEqual([
+      { full: true, files: [] },
+      { full: false, files: ['auth.setup.ts', 'golden-path.spec.ts'] },
+      { full: false, files: ['forgot-password.spec.ts'] },
+      { full: false, files: ['settings-account.spec.ts'] },
     ])
   })
 })
