@@ -6340,6 +6340,13 @@ worktree).
 **Démarrage (2026-09-13) :** branche `sprint/88` créée depuis `origin/dev` — le worktree portait `claude/sprint-88-start-d23619`
 basée sur `main` (convention S80 inapplicable). Arbitrages rendus par le dev : **#568 → `spring.test.mockmvc.print=none`
 global** ; **#547 → modification de `ci.yml` autorisée, 3 runs CI verts consécutifs exigés** (rejeux du SHA de tête).
+**Vague 1 livrée :** #568 `a911412` (`spring.test.mockmvc.print=none`, contrôle négatif 2→0→2 `eyJ`, backend 581/0) ·
+#545 `6cc9d73` (README piège n°5, PIT-S37-003/S47-003 corrigés — cause réelle : CHECK `events_recurrence_unit_check` hors Flyway
+dans le Postgres Homebrew du poste, pas dans le volume compose ; packs `--check` 0).
+**#547 — arbitrage en cours de sprint (dev, 2026-09-13) :** l'agent a stoppé en PARTIAL (4 créneaux non réglables dépassent
+leur plafond en pire cas CI : login 20/10, reset 12/5, forgot 9/5, change-password 6/5 ; mesuré local filtre armé aux défauts :
+0 × 429, pic 8 logins/min). **Option D retenue** : propriétés e2e login 30 + reset-password 15, register 20→30 ;
+forgot et change-password restent aux défauts (dépassement seulement sur double retry d'un test déjà en échec).
 **Status :** En cours
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
