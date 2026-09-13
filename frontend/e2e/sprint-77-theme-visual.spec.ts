@@ -51,11 +51,23 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
  *    `useSectionAnimation` (`IntersectionObserver`). Capturer sans attendre donnerait
  *    un hero VIDE. On défile, puis on ATTEND `opacity > 0.99` — pas un `toBeVisible()`,
  *    que Playwright rend vrai à `opacity: 0`.
- *  - `.hero-timeline__progress` et `.hero-timeline__today` (`src/styles/hero-timeline.css`)
- *    portent des animations INFINIES. `toHaveScreenshot` pose `animations: 'disabled'`
- *    par défaut, ce qui les ramène à leur état initial avant capture. On ne s'en remet
- *    pas à la théorie : la stabilité a été mesurée par rejeux successifs (cf.
- *    `docs/memory/sprints/sprint-77/issue-294-done.md`).
+ *  - La frise du hero (#611) défile en continu : `.hero-timeline__track`
+ *    (`src/styles/hero-timeline.css`) porte une animation INFINIE de 52 s en `transform`,
+ *    sur une couche composée (`will-change: transform`). On ne compte PAS sur
+ *    `animations: 'disabled'` de `toHaveScreenshot` pour la ramener à l'origine : mesuré au
+ *    S87 (image `playwright:v1.61.1-noble`, build de production), une référence recomparée
+ *    une minute après sa génération rougissait de 2382 px (ratio 0,01), le diff portant
+ *    UNIQUEMENT sur le texte de la piste décalé d'~1 px (`MAI` x=611 → 610). La boucle
+ *    avance d'environ 16 px/s (820 px / 52 s) : les quelques dizaines de ms entre la fin de
+ *    `prepare()` et l'annulation suffisent à une avancée fractionnaire, et la rastérisation
+ *    sur couche composée l'arrondit différemment d'un run à l'autre. Élargir la tolérance
+ *    désarmerait la spec ([[PIT-S77-019]]). `prepare()` FIGE donc la piste via
+ *    `FROZEN_MOTION_CSS` (`animation`/`transform` à `none`, `will-change: auto` → position
+ *    exacte `translateX(0)`, 1re copie entière, hors couche composée), puis ATTEND la
+ *    condition (`transform === 'none'` et `getAnimations().length === 0`) — pas une
+ *    stabilité de capture ([[PIT-S77-010]]). Le code produit n'est pas touché : la boucle
+ *    est vérifiée ailleurs (tests unitaires + mesures de #611). Les références du hero ont
+ *    été générées sur l'ANCIENNE frise (#56) : elles sont à régénérer (image Linux du runner).
  *  - Le curseur reste où Playwright l'a laissé, et `.cta-button::after` anime sa largeur
  *    au survol. On écarte donc la souris avant chaque capture (même motif que
  *    `readAtRest` dans `support/contrast.ts`).
@@ -179,6 +191,22 @@ const ENV_CHROME_CSS = `
   #_rht_toaster,
   [data-testid="network-banner"] {
     display: none !important;
+  }
+`
+
+/**
+ * Piste animée de la frise du hero (#611) — cf. bloc DÉTERMINISME en tête de fichier.
+ * Figée à `translateX(0)` exactement, hors couche composée, avant toute capture.
+ * `!important` : la feuille de production pose déjà `animation: none !important` sous
+ * `prefers-reduced-motion` ; injectée en dernier, cette feuille l'emporte dans tous les cas.
+ * NO-OP sur les écrans d'authentification (sélecteur absent).
+ */
+const HERO_TRACK = '.hero-timeline__track'
+const FROZEN_MOTION_CSS = `
+  ${HERO_TRACK} {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
   }
 `
 
@@ -432,6 +460,8 @@ async function prepare(
   // AVANT toute mesure : neutraliser l'habillage qui diffère entre `next dev` (poste) et
   // `next start` (CI), ou selon que l'API répond. Cf. `ENV_CHROME_CSS`.
   await page.addStyleTag({ content: ENV_CHROME_CSS })
+  // Gel de la frise du hero : cf. `FROZEN_MOTION_CSS` et le bloc DÉTERMINISME.
+  await page.addStyleTag({ content: FROZEN_MOTION_CSS })
 
   // Le thème est posé par next-themes APRÈS hydratation : l'attendre, ne pas le lire
   // trop tôt. `expect.poll` plutôt qu'un `waitForTimeout` arbitraire.
@@ -506,6 +536,31 @@ async function prepare(
     .toBeGreaterThan(0.99)
 
   await waitForRenderedFonts(page, target, label)
+
+  // GEL DE LA FRISE — attendre la CONDITION, pas une stabilité ([[PIT-S77-010]]).
+  // Sur le hero, la piste DOIT exister : un renommage de classe rendrait le gel inerte en
+  // silence et ramènerait le diff non déterministe de 2382 px.
+  const tracks = target.locator(HERO_TRACK)
+  if (screen.name === 'landing-hero') {
+    await expect(tracks, `[${label}] piste \`${HERO_TRACK}\` introuvable : gel inerte`).toHaveCount(
+      1,
+    )
+  }
+  if ((await tracks.count()) > 0) {
+    await expect
+      .poll(
+        async () =>
+          tracks.first().evaluate((el) => {
+            const s = getComputedStyle(el)
+            return `${s.transform}|${s.willChange}|${el.getAnimations().length}`
+          }),
+        {
+          message: `[${label}] la piste de la frise n'est pas figée (transform|will-change|animations)`,
+          timeout: 5_000,
+        },
+      )
+      .toBe('none|auto|0')
+  }
 
   await assertThemeApplied(page, scheme, label)
   await assertCaptureBox(target, label)

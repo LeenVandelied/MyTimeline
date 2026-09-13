@@ -919,3 +919,15 @@ telle quelle (DEC-S84-001, aucune réécriture).
 **Décision.** Catégorie **dérivée** : aucune colonne, aucune migration, aucun changement de contrat backend. Le formulaire affiche la catégorie en 2e position, alignée sur le produit sélectionné. Écart au handoff assumé.
 **Pourquoi.** (1) `ProductEntity.category` est `nullable = false` : un produit a toujours une catégorie, la dérivation est toujours définie — la crainte « compte sans catégorie » de #582 ne s'applique pas. (2) Toute la frise livrée au S85 agrège par la catégorie du PRODUIT (`groupResourcesByCategory`, `countEventsByCategory` via `resourceId`, filtres, résumé replié) : une surcharge par événement serait invisible ou contradictoire (événement « Santé » rendu, compté et masqué sous « Véhicules »). La porter imposerait de redéfinir ces surfaces, pour un besoin qu'aucun utilisateur n'a exprimé.
 **Portée.** Rouvrir si un cas d'usage réel de surcharge apparaît — alors en issue dédiée (migration + sémantique frise). Arbitré par le dev au `/sprint start 86`. (Sprint 86 #617)
+
+## DEC-S87-001 — Hero de la landing : filet 1px sans ombre au repos, contre le `shadow-md` de la maquette
+**Contexte.** `Landing.dc.html` pose `box-shadow: var(--shadow-md)` sur le panneau de la frise du hero. #574 (S83) avait retiré exactement ce type d'ombre au repos de 8 surfaces de la landing et de l'auth au profit d'un filet 1px.
+**Décision.** Panneau `border-rule-strong` + `rounded-xl`, `box-shadow: none` (verrou unitaire `not /shadow-/`). Écart de maquette assumé.
+**Pourquoi.** Charte : une surface au repos est un filet, l'élévation est réservée aux popovers et modales ; réintroduire l'ombre défaisait une décision fermée depuis 4 sprints.
+**Portée.** Revue `ui-design` : ÉCART acceptable. (Sprint 87 #610)
+
+## DEC-S87-002 — Encre des barres d'une frise illustrative : `contrastInk` traduit en primitives `--gray-0` / `--gray-950`
+**Contexte.** La frise du hero est une illustration (`aria-hidden`) aux couleurs `--evt-*` ; la maquette y écrit en blanc, sous 4,5:1 sur rouge (3,91) et pervenche (3,79). La règle projet interdit tout hex dans le DOM.
+**Décision.** Encre calculée par `contrastInk(paletteHex(role))` (BR-EVE-009), posée via `--gray-0` / `--gray-950` — mêmes valeurs qu'`INK_LIGHT`/`INK_DARK`, non redéfinies en sombre, comme les `--evt-*`. Écart maquette : encre sombre sur rouge, pervenche, orange et teal.
+**Pourquoi.** Cohérence avec la frise de l'application et WCAG, sans hex en dur ; rendu identique clair/sombre voulu.
+**Portée.** Revue `ui-design` : CONFORME. (Sprint 87 #611)

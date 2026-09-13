@@ -1,87 +1,216 @@
 /*
- * Frise horizontale animée du Hero de la landing (#56).
+ * Frise animée du Hero de la landing (#56 → #611).
  *
- * Feuille DÉDIÉE et volontairement isolée : l'animation n'est pas spécifiée au design
- * system et sera probablement remplacée. La retirer = supprimer ce fichier et son import
- * dans `app/[locale]/page.tsx`. Rien d'autre n'en dépend, et aucun sélecteur ici ne
- * déborde du préfixe `.hero-timeline`.
+ * Spec : `Landing.dc.html` §3 (extrait : `docs/memory/sprints/sprint-87/maquette-landing-hero.md`).
+ * Tous les sélecteurs sont préfixés `.hero-timeline` et les keyframes `hero-timeline-*` : un
+ * nom générique (`pan`, `pulse`) entrerait en collision avec une autre feuille chargée sur la
+ * même page (cf. le piège `pulse` documenté dans `landing.css`).
  *
  * PORTÉE (#343) : importée depuis la SEULE route landing `app/[locale]/page.tsx`, et non
  * depuis `app/[locale]/layout.tsx` qui l'aurait servie à toutes les routes localisées.
  * `HeroTimelineAnimation` n'est rendu que par `HeroSection` <- `HomePage` <- cette route :
- * déplacer l'import ailleurs (ou rendre le composant depuis une autre route) casse
- * l'animation SANS casser un test — jsdom ne charge pas les feuilles de la route.
+ * déplacer l'import ailleurs (ou rendre le composant depuis une autre route) casse la frise
+ * SANS casser un test — jsdom ne charge pas les feuilles de la route.
  *
- * ZÉRO COULEUR — toutes les couleurs viennent des classes utilitaires DS posées dans le
- * composant (`bg-rule`, `bg-accent`, `bg-surface`, `border-rule-emphasis`). Cette
- * feuille ne pilote QUE du mouvement, elle suit donc clair/sombre sans le savoir.
+ * COULEURS — uniquement des tokens DS (`--color-*`, `--evt-*` posés en ligne par le
+ * composant). Le masque utilise le mot-clé `black` : seul son canal ALPHA compte, ce n'est
+ * pas une couleur rendue.
  *
- * Les deux animations partagent la même durée : le pic du marqueur « aujourd'hui »
- * (50 %) tombe pendant la course de la progression, la frise se lit comme un seul geste.
+ * PERFORMANCE — une seule propriété animée, `transform`, sur un seul élément (la piste) :
+ * composée par le GPU, sans layout ni paint par image. `will-change` sur ce seul élément.
+ * DOM borné : 2 copies × (règle + 6 lanes), ~110 nœuds, aucune image.
  *
- * EASING (#343) : `--ease-quart` (ds/tokens/spacing.css) remplace la valeur littérale
- * `cubic-bezier(0.4, 0, 0.2, 1)` héritée de #56. Ce n'est PAS un no-op visuel — la courbe
- * du DS décélère bien plus tôt (à 25 % de la course : 78 % de la largeur contre 24 %
- * auparavant). Écart assumé : le DS est la source de vérité du motion, et la frise se lit
- * comme un geste plus « lancé ». Le marqueur `today` garde `ease-in-out` : c'est une
- * pulsation symétrique, aucun token du DS ne la couvre.
+ * EASING — `linear` (maquette `lp-pan 52s linear infinite`). Un défilement continu en boucle
+ * est linéaire par nature : une courbe DS (`--ease-quart`) le ferait accélérer puis ralentir
+ * à chaque tour, et le raccord deviendrait visible.
  */
 
 .hero-timeline {
-  --hero-timeline-duration: 6s;
+  --hero-timeline-duration: 52s;
+  --hero-timeline-block: 820px;
+  --hero-timeline-gutter: 120px;
+  --hero-timeline-ruler: 34px;
+  /* Panneau de 320 px sous `md` (#610) : 34 + 6 × 40 tient sous la barre de chrome ;
+     46 px (maquette) dès que le panneau passe à 420 px. */
+  --hero-timeline-lane: 40px;
+  position: relative;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
 }
 
-.hero-timeline__progress {
-  animation: hero-timeline-sweep var(--hero-timeline-duration) var(--ease-quart) infinite;
-}
-
-@keyframes hero-timeline-sweep {
-  0%,
-  5% {
-    transform: scaleX(0);
+@media (min-width: 48rem) {
+  .hero-timeline {
+    --hero-timeline-lane: 46px;
   }
-  55%,
-  100% {
-    transform: scaleX(1);
+}
+
+/* Fenêtre de la frise : rogne la piste et fond ses deux bords. */
+.hero-timeline__viewport {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+}
+
+/* Piste = deux copies identiques ; −50 % = exactement une copie → raccord invisible. */
+.hero-timeline__track {
+  display: flex;
+  width: calc(var(--hero-timeline-block) * 2);
+  animation: hero-timeline-pan var(--hero-timeline-duration) linear infinite;
+  will-change: transform;
+}
+
+@keyframes hero-timeline-pan {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 
+.hero-timeline__block {
+  flex: 0 0 var(--hero-timeline-block);
+}
+
+/* ---- Règle de mois ---- */
+.hero-timeline__ruler {
+  display: flex;
+  height: var(--hero-timeline-ruler);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.hero-timeline__gutter {
+  flex: 0 0 var(--hero-timeline-gutter);
+  border-right: 1px solid var(--color-rule);
+}
+
+/* Zone datée (règle comme lane) : repère des `left` en px de la maquette. */
+.hero-timeline__zone {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hero-timeline__month {
+  position: absolute;
+  top: 9px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-ink-muted);
+}
+
+/* ---- Lanes ---- */
+.hero-timeline__lane {
+  display: flex;
+  height: var(--hero-timeline-lane);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.hero-timeline__lane:last-child {
+  border-bottom: 0;
+}
+
+.hero-timeline__lane--zebra {
+  background: color-mix(in srgb, var(--color-ink) 2.6%, transparent);
+}
+
+.hero-timeline__head {
+  display: flex;
+  flex: 0 0 var(--hero-timeline-gutter);
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 14px;
+  border-right: 1px solid var(--color-rule);
+}
+
+.hero-timeline__name,
+.hero-timeline__cat {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-timeline__name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+.hero-timeline__cat {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* Barres (`.mt-evt`) et libellés de ponctuels (`.mt-tlv__evt-outside`) : le DS les pose à
+   `top:9px` pour la lane de l'application ; ici centrés verticalement, quelle que soit la
+   hauteur de lane (40 ou 46 px). */
+.hero-timeline__bar,
+.hero-timeline__point-label {
+  top: 50%;
+  margin-top: -13px;
+}
+
+/* Ponctuel : repère 10 × 16 dans la couleur de l'événement. */
+.hero-timeline__pin {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 3px;
+  background: var(--mt-evt);
+}
+
+/* ---- Curseur TODAY (fixe, hors piste) ---- */
 .hero-timeline__today {
-  animation: hero-timeline-pulse var(--hero-timeline-duration) ease-in-out infinite;
+  left: calc(var(--hero-timeline-gutter) + (100% - var(--hero-timeline-gutter)) * 0.46);
+  /* `--z-cursor` (20) est calibré pour la frise de l'application ; ici le curseur n'a qu'à
+     passer au-dessus de la piste, sa sœur. */
+  z-index: 1;
 }
 
-@keyframes hero-timeline-pulse {
-  0%,
-  40% {
-    transform: scale(1);
-    opacity: 0.85;
-  }
-  50% {
-    transform: scale(1.35);
-    opacity: 1;
-  }
-  60%,
-  100% {
-    transform: scale(1);
-    opacity: 0.85;
-  }
+.hero-timeline__today-badge {
+  top: 6px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---- Libellé de la barre de chrome du panneau (`HeroSection`) ---- */
+.hero-timeline-chrome__label {
+  margin-left: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  /* Maquette `ink-faint` (2,82:1, sous 4,5:1) → `ink-muted`, même écart que #592. */
+  color: var(--color-ink-muted);
 }
 
 /*
- * Mouvement réduit — on NEUTRALISE l'animation sans effacer le visuel : la progression
- * se fige sur un état intermédiaire lisible et le marqueur reste pleinement opaque.
- * Mettre `animation: none` seul aurait laissé la progression à `scaleX(1)` (rail
- * entièrement accentué) et perdu la lecture « frise en cours ».
+ * Mouvement réduit — la piste est FIGÉE sur sa position de départ (1re copie entière,
+ * curseur TODAY en place) : le visuel reste complet et lisible, seul le défilement
+ * disparaît. `!important` : la garde globale de `ds/tokens/base.css` impose déjà
+ * `animation-duration: 0.01ms !important` ; `animation: none` retire l'animation elle-même
+ * au lieu de la jouer une fois en un éclair.
  */
 @media (prefers-reduced-motion: reduce) {
-  .hero-timeline__progress {
-    animation: none;
-    transform: scaleX(0.62);
-  }
-
-  .hero-timeline__today {
-    animation: none;
-    transform: none;
-    opacity: 1;
+  .hero-timeline__track {
+    animation: none !important;
+    will-change: auto;
   }
 }

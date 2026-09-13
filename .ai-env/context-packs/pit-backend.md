@@ -714,6 +714,18 @@ En vague parallèle, le briefing donnait l'exclusivité de `next dev`/`next buil
 ## PIT-S86-009 — Sous RTK, un `grep -v` qui génère une contre-épreuve peut produire un fichier VIDE
 `grep -v '… && …'` via le hook RTK pour retirer une garde a produit un fichier vide → vitest « no tests found », pris un instant pour une contre-épreuve. Solution : `rtk proxy grep -v -F` et contrôle `wc -l` avant de substituer le fichier. (Sprint 86 #618)
 
+
+## PIT-S87-001 — Un `git commit` sans chemins embarque ce qu'un AUTRE agent a déjà stagé dans l'index partagé
+PIT-S12-003 couvre `git add -A` ; le cas symétrique mord aussi. En vague parallèle, #641 avait déjà `git rm` (donc indexé) ses suppressions quand #610 committait : un `git commit` nu les aurait emportées dans le commit de #610, même avec un `git add` strictement littéral. Solution : `git commit -- <chemins littéraux>` (sémantique `--only`), qui ne committe que ces chemins et laisse l'index du voisin intact ; puis `git show --stat HEAD`. (Sprint 87 #610)
+
+
+## PIT-S87-005 — Le `--build` du compose e2e peut pendre INDÉFINIMENT sur les métadonnées Docker Hub, sans erreur
+`docker compose --profile e2e up -d --build backend-e2e` est resté figé sur `load metadata for docker.io/library/eclipse-temurin:21-jre` ; la commande chaînée derrière (`next dev`) ne partait jamais. Parade sans toucher au dépôt : tuer le compose, réutiliser une image `*-backend-e2e` en cache APRÈS avoir prouvé qu'elle correspond au code (`git rev-list --count --since=<Created> HEAD -- backend/ docker-compose.yml` = 0, sinon PIT-S72-005), `docker tag` puis `up -d --no-build`. (Sprint 87, lead)
+
+
+## PIT-S87-006 — Un plan architect peut inverser l'ordre de dépendance que les DEUX énoncés d'issue posent
+Le plan du S87 mettait #611 (frise) en vague 1 et #610 (emplacement de la frise) en vague 2, alors que #610 se dit « bloquant » et que #611 se dit « à faire après ». Il citait aussi comme « composants DS existants » quatre noms (`TimelineRuler`…) qui n'existent que dans le DS Claude Design. Prévention : au `/sprint start`, relire la section « Dépendances » de CHAQUE issue et grepper chaque symbole cité avant de briefer (cf. mémoire « énoncés d'issue périmés »). (Sprint 87, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

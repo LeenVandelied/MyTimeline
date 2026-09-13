@@ -244,7 +244,7 @@ Ce sont des **questions**, pas des tâches. Quatre d'entre elles bloquent des lo
 | Récurrence hebdomadaire hors mock : acter la divergence | [#583](https://github.com/LeenVandelied/MyTimeline/issues/583) | #619 |
 | Champ Produit : `Select` ou combobox filtrant ? | [#584](https://github.com/LeenVandelied/MyTimeline/issues/584) | — |
 | Métrique « jour de série » hors spec | [#585](https://github.com/LeenVandelied/MyTimeline/issues/585) | — |
-| Landing : 2 sections hors spec, dont une annonce d'apps mobiles inexistantes | [#586](https://github.com/LeenVandelied/MyTimeline/issues/586) | #610 |
+| Landing : 2 sections hors spec, dont une annonce d'apps mobiles inexistantes | [#586](https://github.com/LeenVandelied/MyTimeline/issues/586) | résolu par #641 (retrait `MobileAppSection`/`TimelinePreviewSection`) ; #610 |
 | Bascule de thème hors connexion : globale ou réservée au shell ? | [#587](https://github.com/LeenVandelied/MyTimeline/issues/587) | landing, auth, frise |
 | Breakpoints ad hoc : Tailwind ou tokens `--bp-*` ? | [#588](https://github.com/LeenVandelied/MyTimeline/issues/588) | lot Mobile |
 | RTL : dette préventive assumée ou périmètre livrable ? | [#589](https://github.com/LeenVandelied/MyTimeline/issues/589) | — |

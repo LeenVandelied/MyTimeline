@@ -71,3 +71,37 @@ _#641 : XS, pas de mini-plan. Vérifié : `frontend/src/components/pages/HomePag
 monte `<TimelinePreviewSection />` et `<MobileAppSection />`. Fichiers à supprimer :
 `landing/MobileAppSection.tsx` + `.test.tsx`, `landing/TimelinePreviewSection.tsx` +
 `.test.tsx`. Clés i18n à purger dans `frontend/public/locales/{fr,en,es,de}/`._
+
+---
+
+## Corrections du lead au démarrage (2026-09-13) — PRIMENT sur ce qui précède
+
+1. **Vagues inversées.** Les deux énoncés GitHub contredisent le plan : #610 est « bloquant pour
+   l'issue frise du hero », #611 est « à faire après l'issue hero 30/70 ». Vagues retenues :
+   **V1 = #610 ∥ #641**, **V2 = #611**. La contrainte DEC-S82-008 (#641 après #611) vise la
+   mise en ligne ; rien ne part en production avant le merge de la PR entière.
+2. **Composants DS cités par #611 inexistants dans le dépôt.** `TimelineRuler`, `TimelineLane`,
+   `TimelineEventBar`, `TimelineCursor` sont les noms du DS Claude Design. Réels :
+   `components/timeline/Ruler.tsx` (grille de JOURS via `DateStamp`, gouttière en %),
+   `components/timeline/Cursor.tsx` (position en %), `components/timeline/EventPill.tsx` +
+   classe `.mt-evt` (`styles/ds/components/timeline.css`). La maquette dessine une règle de
+   MOIS et une gouttière de 120px fixes : réutiliser ce qui colle, justifier ce qui ne colle pas.
+3. **`issue_611.fichiers_cles` incomplet** : `HeroSection.tsx` n'y figure pas, or la frise
+   quitte la bande sous le hero pour le panneau de droite (#610). Et
+   `e2e/sprint-77-theme-visual.spec.ts` cite `.hero-timeline__progress`/`__today` et capture
+   `section.section-animation` (le hero) : références Linux `landing-hero-{light,dark}` à
+   régénérer par le lead (pas sur macOS).
+4. **Partage de fichiers en V1** : `frontend/public/locales/*/common.json` et
+   `src/styles/landing.css` sont attribués à UN agent chacun (voir briefings) ; les résidus
+   (`.timeline-preview` de `landing.css`, clé `common.landing.images.dashboard`) sont soldés
+   par #611 en V2.
+5. **Source visuelle** : `sprints/sprint-87/maquette-landing-hero.md` (extrait de
+   `Landing.dc.html` par le lead).
+6. **Résidus constatés après #641 (`af01bb9`), à solder par #611** : (a) bloc `.timeline-preview` de
+   `src/styles/landing.css` + commentaire `:121` qui cite `TimelinePreviewSection` ; (b)
+   `src/styles/__tests__/base-layer.test.ts:352-490` — garde-fou de cascade #340 dont le cas n°2 et
+   deux tests (`:452`, `:477`) ASSÈRENT l'existence de `.timeline-preview` dans `@layer components` :
+   supprimer la règle les rougit. Ne pas les supprimer à l'aveugle : le 2e test (`:477`) est le
+   contrôle négatif du détecteur — il doit rester armé sur une autre classe réellement présente
+   (ou sur une fixture inline, comme il l'est déjà). (c) clé `common.landing.images.dashboard`
+   devenue orpheline par #610.

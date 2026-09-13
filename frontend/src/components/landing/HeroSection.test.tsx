@@ -46,9 +46,60 @@ describe('HeroSection', () => {
     expect(html).toMatch(/\bborder-rule-emphasis\b/)
     expect(html).not.toMatch(/\bborder-ink-muted\b/)
 
-    // Le cadre de l'image est décoratif → il reste sur `border-rule` nu.
+    // #610 — le panneau de la frise et sa barre de chrome sont DÉCORATIFS : tiers
+    // `rule-strong` (panneau, maquette) et `rule` nu (filet de la barre).
     // (négative lookahead : `border-rule-emphasis` ne doit pas satisfaire ce test)
     expect(html).toMatch(/\bborder-rule(?![-\w])/)
+    expect(html).toMatch(/\bborder-rule-strong\b/)
+  })
+
+  it('#610 — monte la frise DANS un panneau bordé de la colonne droite, sans image', () => {
+    const { container } = render(<HeroSection locale="fr" />)
+
+    // Image statique retirée : ni `<img>`, ni référence à `dashboard-preview`.
+    expect(container.querySelector('img')).toBeNull()
+    expect(container.innerHTML).not.toMatch(/dashboard-preview/)
+
+    // La frise (`aria-hidden`, classe `.hero-timeline`) vit dans le panneau, et le
+    // panneau est la 2e colonne de la rangée — pas une bande sous les colonnes.
+    const timeline = container.querySelector('.hero-timeline')
+    expect(timeline).not.toBeNull()
+    const panel = timeline!.closest('.border-rule-strong')
+    expect(panel).not.toBeNull()
+    const row = container.querySelector('section > div')
+    expect(row?.children).toHaveLength(2)
+    expect(row!.children[1].contains(panel)).toBe(true)
+    expect(container.querySelector('section')!.children).toHaveLength(1)
+  })
+
+  it('#610 — flex borné de la maquette en rangée `lg`, sans plancher px en empilement', () => {
+    const { container } = render(<HeroSection locale="fr" />)
+    const row = container.querySelector('section > div')!
+    const [text, timeline] = [...row.children]
+
+    expect(row.className).toMatch(/(^|\s)flex-col(\s|$)/)
+    expect(row.className).toMatch(/\blg:flex-row\b/)
+
+    // Texte `flex:1 1 300px; min-width:300px; max-width:420px` ; frise `1 1 460px; 340px`.
+    expect(text.className).toMatch(/\blg:flex-\[1_1_300px\]/)
+    expect(text.className).toMatch(/\blg:min-w-\[300px\]/)
+    expect(text.className).toMatch(/\blg:max-w-\[420px\]/)
+    expect(timeline.className).toMatch(/\blg:flex-\[1_1_460px\]/)
+    expect(timeline.className).toMatch(/\blg:min-w-\[340px\]/)
+
+    // Sous `lg` : aucun `min-w-[Npx]` non préfixé (à 320 px, 340 px + padding déborde),
+    // et `min-w-0` pour que la largeur intrinsèque de la frise ne remonte pas.
+    for (const col of [text, timeline]) {
+      expect(col.className).not.toMatch(/(^|\s)min-w-\[\d+px\]/)
+      expect(col.className).toMatch(/(^|\s)min-w-0(\s|$)/)
+    }
+  })
+
+  it('#574 — le panneau porte un filet 1px et AUCUNE ombre au repos', () => {
+    const { container } = render(<HeroSection locale="fr" />)
+    const panel = container.querySelector('.hero-timeline')!.closest('.border-rule-strong')!
+    expect(panel.className).toMatch(/(^|\s)border(\s|$)/)
+    expect(panel.className).not.toMatch(/(^|\s|:)shadow-/)
   })
 
   it('ne contient aucune couleur hex hardcodée', () => {

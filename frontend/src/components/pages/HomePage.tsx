@@ -7,9 +7,7 @@ import { FooterSection } from '@/components/landing/FooterSection'
 import { HeaderSection } from '@/components/landing/HeaderSection'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection'
-import { MobileAppSection } from '@/components/landing/MobileAppSection'
 import TestimonialSection from '@/components/landing/TestimonialSection'
-import { TimelinePreviewSection } from '@/components/landing/TimelinePreviewSection'
 import { useSectionAnimation } from '@/hooks/useSectionAnimation'
 
 interface HomePageProps {
@@ -39,9 +37,7 @@ export default function HomePage({ params }: HomePageProps) {
       <HeroSection locale={locale} />
       <FeaturesSection />
       <HowItWorksSection />
-      <TimelinePreviewSection />
       <TestimonialSection />
-      <MobileAppSection />
       <CtaSection locale={locale} />
       <FooterSection locale={locale} />
     </div>

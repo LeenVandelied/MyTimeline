@@ -72,49 +72,11 @@
   border-color: var(--color-rule-strong);
 }
 
-/* Halo derrière l'image du héros.
- * `accent-soft` est le seul tint de la palette prévu pour un aplat de fond ; il est
- * découplé clair/sombre par le token, là où l'ancien dégradé indigo/violet restait
- * identique dans les deux modes. */
-.hero-image-container {
-  position: relative;
-}
-
-.hero-image-container::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
-  background: var(--color-accent-soft);
-  border-radius: var(--radius-xl);
-  z-index: -1;
-  filter: blur(20px);
-  opacity: 0.3;
-  animation: hero-halo-pulse 3s ease-in-out infinite;
-}
-
-/* ⚠ Nommage : ce keyframe s'appelait `pulse` — le MÊME nom que l'animation intégrée
- * de Tailwind derrière `animate-pulse`. `landing.css` étant importé APRÈS `globals.css`
- * dans `app/layout.tsx`, sa définition gagnait et remplaçait celle de Tailwind pour
- * TOUTE l'application : les squelettes de chargement (`LoadingSkeleton`, la page
- * `dashboard/loading`) clignotaient entre 20 % et 30 % d'opacité avec un scale, au lieu
- * du fondu à 50 % attendu. Préfixe obligatoire, comme dans `hero-timeline.css`. */
-@keyframes hero-halo-pulse {
-  0% {
-    opacity: 0.2;
-    transform: scale(0.98);
-  }
-  50% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0.2;
-    transform: scale(0.98);
-  }
-}
+/* #610 — le halo flou `.hero-image-container` (+ son keyframe `hero-halo-pulse`) est
+ * retiré avec l'image statique du hero : le panneau de la frise qui la remplace est une
+ * surface au repos, donc un filet sans halo ni ombre (#574). ⚠ Si un keyframe revient
+ * ici, le PRÉFIXER : un `@keyframes pulse` dans cette feuille (chargée après
+ * `globals.css`) a déjà écrasé l'`animate-pulse` de Tailwind dans toute l'application. */
 
 /* Cartes de témoignages — même tier de bordure décorative que `.feature-card`. */
 .testimonial-card {
@@ -151,42 +113,11 @@
   width: 100%;
 }
 
-/* Aperçu de la frise — cadre décoratif + élévation par token (le token d'ombre est
- * découplé clair/sombre, l'ombre noire littérale d'avant ne l'était pas). */
-/*
- * ⚠ CASCADE (#340) — cette règle DOIT rester dans `@layer components`. Hors layer
- * elle battait les utilitaires Tailwind (`@layer utilities`) posées sur le MÊME
- * élément quelle que soit la spécificité. Conflit MESURÉ : `TimelinePreviewSection`
- * pose `rounded-xl` (= `--radius-xl`, 14px) sur ce div, et le `border-radius` du DS
- * (`--radius-lg`, 10px) l'annulait silencieusement. Layerisée, l'utilitaire gagne :
- * 14px, ce que le composant demande. Les trois autres déclarations sont inertes
- * vis-à-vis du composant (`overflow-hidden` y porte la MÊME valeur ; aucune
- * utilitaire `shadow-*` ni `border-*` n'y est posée).
- *
- * `components` et PAS `base` : c'est une classe de composant, pas un défaut
- * d'élément. `base` marcherait (les deux précèdent `utilities`) mais rangerait un
- * composant dans le layer des resets — qui est aussi celui du preflight Tailwind.
- * Ce fichier est une feuille SÉPARÉE, chargée après `globals.css` par
- * `app/layout.tsx` : le layer `components` y est donc déjà déclaré, ce bloc le
- * REJOINT (il ne crée pas un rang nouveau). Cf. base-layer.test.ts. */
-@layer components {
-  .timeline-preview {
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--color-rule);
-  }
-}
-
 /* Médias requêtes pour la réactivité */
 @media (max-width: 768px) {
   /* Palier réduit du MÊME propriétaire que la règle ligne 54 — il n'a de sens que tant que la
    * lévitation reste portée par `transform` ici (cf. #384). */
   .feature-card:hover {
     transform: translateY(-5px);
-  }
-
-  .hero-image-container::before {
-    animation: none;
   }
 }

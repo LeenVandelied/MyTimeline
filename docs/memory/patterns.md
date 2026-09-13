@@ -827,3 +827,12 @@ Problème : le `Dialog` Radix apporte sans le dire un verrou de défilement (`Re
 
 ## PAT-S86-003 — Committer un seul hunk d'un fichier sans `git add -p`
 Problème : committer séparément deux corrections d'un même fichier dans un worktree partagé, sans mode interactif. Motif : construire le blob = HEAD + hunk voulu, `git hash-object -w <fichier-temporaire>`, puis `git update-index --cacheinfo 100644,<sha>,<chemin>` ; le working tree garde les deux hunks. Anti-pattern : `git stash` (pile partagée entre worktrees et sessions). (Sprint 86, correctifs C1/C2)
+
+## PAT-S87-001 — Panneau `overflow:hidden` contenant une piste plus large, dans un flex item : `min-w-0` sur l'ITEM
+Problème : la colonne du hero contient un panneau rogné dans lequel défile une piste de 1640 px. Motif : `min-w-0` (ou un `min-width` px explicite) sur le flex item lui-même ; `overflow:hidden` posé sur un DESCENDANT rogne le rendu mais ne réduit pas la `min-content` que `min-width:auto` fait remonter jusqu'à la page. Anti-pattern : compter sur l'`overflow-hidden` du panneau pour empêcher le débordement horizontal. (Sprint 87 #610)
+
+## PAT-S87-002 — Défilement CSS en boucle sans raccord : deux copies, `translateX(0 → -50%)`, état initial = état de référence
+Problème : frise illustrative qui défile en continu, sans saut au raccord, sur une page publique. Motif : piste = deux copies identiques d'un bloc de largeur fixe, `@keyframes { to { transform: translateX(-50%) } }` en `linear infinite` (une courbe d'easing rend le raccord visible), seule propriété animée `transform`, curseur fixe HORS de la piste ; `prefers-reduced-motion` → `animation:none` qui laisse la 1re copie lisible. L'état initial sert d'état de référence visuelle — mais il faut le FIGER explicitement sous capture (PIT-S87-003). (Sprint 87 #611)
+
+## PAT-S87-003 — Prouver qu'un correctif d'algorithme de sonde E2E ferme le défaut : la mutation inverse
+Problème : une nouvelle sonde d'auto-contrôle verte ne prouve pas qu'elle détecte le défaut signalé. Motif : sauvegarder le nouvel algorithme, réintroduire temporairement l'ANCIEN, jouer seulement l'auto-contrôle, exiger le rouge sur la nouvelle sonde (ici : relevés `[]`), restaurer et rejouer vert. Anti-pattern : ajouter une sonde qu'on n'a jamais vue rougir. (Sprint 87, correctif de revue C1)

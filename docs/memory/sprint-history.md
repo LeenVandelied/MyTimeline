@@ -6081,7 +6081,7 @@ silencieuse du serveur `next dev` — rejoué en entier sur base neuve.
 **Status :** Terminé — PR #669 mergée le 2026-09-12 (`d786219`) ; milestone #86 fermé, #592/#601/#602
 fermées. Titre et Status soldés au `/sprint start 86` (variante S57 : zéro PR supplémentaire).
 
-### Sprint 86 — 2026-09-12 → 2026-09-12 (EN CLÔTURE — PR #675, cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
+### Sprint 86 — 2026-09-12 → 2026-09-12 (Terminé — merge PR #675 dans dev, commit `55023f0`, cohésion 0.45, Formulaire d'événement : surface unifiée et champ Catégorie)
 **Objectif :** Une seule surface de formulaire au token du DS, champ Catégorie cohérent avec la frise, hint de plafond exact
 **Milestone GitHub :** #87
 **Issues (3) :** #618, #646, #617 — à fermer APRÈS le merge (`dev` protégée)
@@ -6134,19 +6134,70 @@ ligne « CRÉÉ LE » omise (donnée absente), animation 200 ms au lieu de 240, 
   - Réordonner Titre · Catégorie · Produit → **discard** (déjà porté par #622)
   Ratio : 5 issues / 2 discards / 0 absorbé.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #675 ouverte, CI 7/7 verte au SHA `d3a5669` ; titre et Status à solder après le merge
-(variante S57 : au `/sprint start 87`).
+**Status :** Terminé — PR #675 mergée dans `dev` le 2026-09-12 (commit `55023f0`) ; issues #617/#618/#646 fermées,
+milestone #87 fermé (3/3). Soldé au `/sprint start 87` (variante S57).
 
-### Sprint 87 — 2026-09-07 (PLANIFIÉ — cohésion 0.70, Landing publique : hero et frise du spec)
+### Sprint 87 — 2026-09-13 (EN COURS — cohésion 0.70, Landing publique : hero et frise du spec)
 **Objectif :** Hero 30/70 avec frise animée conforme au spec, purge des deux sections redondantes
 **Milestone GitHub :** #88
-**Issues (3) :** #611, #610, #641
-**Vagues :** V1 = #611 | V2 (parallèle) = #610 ∥ #641
+**Issues (3) :** #610, #611, #641 — à fermer APRÈS le merge (`dev` protégée)
+**Branche :** `claude/sprint-87-start-d38d36` (convention S85 : branche du worktree, pas de `sprint/87`)
+**Démarrage (2026-09-13) :** 3 écarts du plan corrigés avant tout spawn — (1) **ordre des vagues inversé** : le plan mettait
+#611 en V1, or les DEUX énoncés disent l'inverse (#610 « bloquant pour la frise du hero », #611 « à faire après le hero
+30/70 ») → V1 = #610 ∥ #641, V2 = #611 ; la contrainte DEC-S82-008 (« retirer `TimelinePreviewSection` après #611 ») porte
+sur la mise en ligne, or rien n'est publié avant le merge de la PR entière → #641 en V1 sans trou visible en production ;
+(2) **composants cités par #611 inexistants** : `TimelineRuler`/`TimelineLane`/`TimelineEventBar`/`TimelineCursor` sont les
+noms du DS Claude Design, pas du dépôt (réels : `timeline/Ruler.tsx` à grille de jours `DateStamp`, `timeline/Cursor.tsx`,
+`timeline/EventPill.tsx` + `.mt-evt`) ; la maquette dessine une frise illustrative à règle de MOIS, non transposable telle
+quelle sur `Ruler` ; (3) **références visuelles Linux `landing-hero-{light,dark}-chromium-linux.png`** (`sprint-77-theme-visual`)
+invalidées par construction par #610/#611 — non régénérables sur macOS, à régénérer par le lead dans l'image Playwright du
+runner CI. Maquette `Landing.dc.html` lue par le lead et déposée en extrait (`sprints/sprint-87/maquette-landing-hero.md`).
+**Vagues :** V1 (parallèle) = #610 ∥ #641 (exclusivité navigateur à #610) | V2 = #611 | fin : `next build` + E2E complète +
+régénération des références hero par le lead
 **Migrations :** aucune
 **Dépend de :** Sprint 83 (#574 filet, #642 bascule de thème), Sprint 85 (#611 reprend le rendu de frise réel)
 **Dette inter-sprint à honorer :** #574 (S83) pose un filet sur `HeroSection.tsx:113` ;
-#610 réécrit ce conteneur et **doit préserver ce filet**.
-**Status :** Planifié
+#610 réécrit ce conteneur et **doit préserver ce filet** — **préservé** (filet `rule-strong`, `box-shadow:none` mesuré).
+**Vagues exécutées :** V1 = #610 ∥ #641 (exclusivité navigateur à #610) | V2 = #611 | V3 = corrections revue C1 + stabilité
+du diff visuel C2 (1 agent) | lead : `next build`, E2E complète, régénération des références Linux
+**Migrations :** aucune · **Fichiers backend touchés :** 0 · **Effort :** 9 points planifiés · **Cohésion :** 0.70
+**Commits de code :** 6 — `af01bb9` #641 · `0a04df6` #610 · `02a1b45` #611 · `571375d` C1 bornage du débordement par blocs
+conteneurs · `6481397` C2 gel exact de la frise avant capture · `6f8f6f4` références `landing-hero` régénérées (noble) ;
++ commits `:memo:` d'orchestration.
+**Harnais :** le build Docker du backend e2e a bloqué sur les métadonnées Docker Hub (`eclipse-temurin`) → image
+`s86full-backend-e2e` (bâtie 2026-09-11T09:53Z) re-taguée, **0 commit `backend/` ni `docker-compose.yml` depuis** (vérifié).
+**Reviews :**
+- `reviewer` cycle 1 : **0 CRITIQUE / 1 MAJEUR / 1 MINEUR** — MAJEUR : le bornage du garde-fou de débordement assoupli par
+  #611 suivait la chaîne DOM (faux vert possible pour `fixed`/`absolute`) → C1 ; MINEUR (commentaire historique
+  `base-layer.test.ts:357`) accepté ;
+- `reviewer` cycle 2 : MAJEUR **RÉSOLU**, **0 CRITIQUE / 0 MAJEUR / 2 MINEUR** (follow-ups) ; la règle `absolute` de l'agent
+  contredisait le briefing du lead — l'agent avait raison ;
+- `ui-design` : **5 CONFORME / 2 ÉCART acceptable / 0 à corriger** (ombre retirée #574 ; libellé chrome `ink-muted`).
+  Détail : `sprints/sprint-87/specialists-{reviewer,ui-design}.md`.
+**Tests :** `next build` production exit 0 · **Vitest 127 fichiers / 1536 tests** · tsc 0 · format:check conforme ·
+coverage-E2E 0 testid · **E2E complète (build de production) : 384 — 375 passés / 1 échec (armement, référence darwin
+absente, attendu) / 8 sautés** · **diff visuel noble : 3 runs consécutifs 11/11**. Détail : `audits/sprint-87-test-coverage.md`.
+**Écarts constatés :** (1) la référence visuelle `landing-hero` régénérée rougissait contre elle-même 1 min plus tard (2382 px)
+— `animations:'disabled'` ne rend pas une boucle infinie `transform` + `will-change` déterministe ; (2) écarts de maquette
+assumés : pas d'ombre sur le panneau (#574), encre sombre sur 4 couleurs de barre (WCAG, BR-EVE-009), libellé chrome
+`ink-muted`, 6e lane ajoutée (« Passeport · Documents ») pour l'AC ; (3) le « 30/70 » n'est atteint qu'à ~1536 px (flex borné
+de la maquette : 396/556 à 1024, 420/788 à 1280) ; (4) le CTA primaire du hero se replie sur 2-3 lignes entre 1024 et 1279 px.
+**CI PR #681 :** 7/7 verts au SHA `8652ce5` (`e2e` Linux x86_64 compris) — les références `landing-hero` générées sur hôte
+arm64 dans l'image noble tiennent sur le runner.
+**Nouveaux pitfalls :** PIT-S87-001 → 006 (3 frontend, 3 tooling) · **Patterns :** PAT-S87-001 → 003 · **Décisions :**
+DEC-S87-001 (filet sans ombre contre la maquette), DEC-S87-002 (encre des barres via primitives gris) · **Bugs résolus :**
+BUG-S87-001, BUG-S87-002 · Packs `pit-*` régénérés, `--check` exit 0.
+**Follow-ups arbitrés (Phase 4 — triage item par item par le dev) :**
+  - CTA du hero sur 2-3 lignes entre 1024 et 1279 px [XS | landing] (issue-610) → **issue #682** (backlog, pas de milestone
+    Sprint 88)
+  - `landing-mobile-overflow.spec.ts` `?? 'none'` → `|| 'none'` [XS | e2e] (reviewer cycle 2) → **absorbé** (appliqué aussi à
+    `containerType`, même défaut)
+  - Arrêt de la remontée avant `<body>`/`<html>` non documenté [XS | e2e] (reviewer cycle 2) → **absorbé** (commentaire)
+  Ratio : 1 issue / 0 discard / 2 absorbés. Les 2 absorptions (1 caractère + 1 commentaire, spec seule) ont été appliquées
+  par le lead et non par un fullstack-dev spawné — écart au skill assumé, vérifié par la spec + `sprint-63` + tsc/eslint/format.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #681, merge à confirmer par le dev ; issues #610/#611/#641 à fermer APRÈS le merge ; titre et
+Status à solder au `/sprint start 88` (variante S57).
 
 ### Matrice de conflits (fichiers partagés)
 
