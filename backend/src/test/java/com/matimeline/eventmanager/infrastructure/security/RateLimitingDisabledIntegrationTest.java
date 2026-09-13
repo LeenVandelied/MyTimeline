@@ -14,7 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
 
 /**
- * Contract for the CI/e2e escape hatch: with {@code app.rate-limit.enabled=false}
+ * Contract for the local-debugging escape hatch (no longer used by the CI/e2e stack since
+ * #547, which runs armed with per-profile ceilings): with {@code app.rate-limit.enabled=false}
  * the {@link RateLimitingFilter} bypasses entirely — even a burst of logins from a
  * single IP well past the normal threshold (login limit = 10) never returns 429.
  *

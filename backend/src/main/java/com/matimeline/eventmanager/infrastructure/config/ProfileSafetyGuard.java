@@ -29,8 +29,9 @@ import java.util.Locale;
  * {@code app.rate-limit.enabled} vaut {@code false} ALORS que l'environnement est
  * <em>prod effectif</em> (marqueur prod OU profil {@code prod} actif). Désactiver le
  * rate-limit en production ne doit jamais résulter d'une simple fuite de config.
- * Le job CI e2e qui pose légitimement {@code false} tourne en profil {@code test}/{@code dev}
- * SANS marqueur prod : il n'est donc jamais bloqué (pas de collision avec ce check).
+ * Un boot {@code dev}/{@code test} SANS marqueur prod qui pose {@code false} (session de
+ * débogage locale) n'est jamais bloqué. Depuis #547 le job CI e2e ne pose plus {@code false} :
+ * il tourne filtre armé avec les plafonds du profil {@code e2e}.
  *
  * <p>Note de numérotation : les ordinaux ci-dessous (Troisième, Quatrième...) reflètent
  * l'ORDRE D'EXÉCUTION dans {@link #onApplicationEvent}, PAS la chronologie des numéros
@@ -217,7 +218,7 @@ public class ProfileSafetyGuard
     /**
      * Check #216 : en prod effectif, {@code app.rate-limit.enabled=false} → refuse de
      * booter. Ne se déclenche QU'en prod effectif ; un boot dev/test qui désactive le
-     * rate-limit (job CI e2e) reste autorisé.
+     * rate-limit (débogage local — plus le job CI e2e depuis #547) reste autorisé.
      */
     private void checkRateLimitDisabledInProduction(ConfigurableEnvironment env) {
         if (!isProductionEffective(env)) {
@@ -232,7 +233,7 @@ public class ProfileSafetyGuard
                 + "en environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod "
                 + "ou profil Spring 'prod' actif). Désactiver le rate-limit en production est "
                 + "refusé (protection anti-abus). Retirer cette property ou la remettre à 'true' "
-                + "en prod ; la désactivation n'est légitime que dans le job CI e2e (profil test/dev).");
+                + "en prod ; la désactivation n'est légitime qu'en débogage local (profil test/dev).");
     }
 
     /**

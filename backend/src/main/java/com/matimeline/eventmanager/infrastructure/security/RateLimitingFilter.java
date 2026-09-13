@@ -100,17 +100,34 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitingFilter.class);
 
-    /** Bucket key of the one slot whose ceiling is profile-tunable (see {@link #registerPerMinute}). */
+    /** Bucket key of {@code register}, one of the three profile-tunable slots (see {@link #limits}). */
     private static final String REGISTER_KEY = "POST /api/auth/register";
+
+    /** #547 — bucket key of {@code login}, profile-tunable (see {@link #limits}). */
+    private static final String LOGIN_KEY = "POST /api/auth/login";
+
+    /**
+     * #141 / #547 — bucket key of {@code reset-password}: profile-tunable PER-IP ceiling (#547)
+     * AND the single pair that additionally triggers the PER-TOKEN throttle branch below
+     * (body is parsed to extract the reset token). The per-token ceiling
+     * ({@link #TOKEN_ATTEMPT_LIMIT}) is NOT tunable.
+     */
+    private static final String RESET_PASSWORD_KEY = "POST /api/auth/reset-password";
 
     /**
      * #475 — default ceiling of {@link #REGISTER_KEY}, in force in EVERY profile that does
      * not override {@code app.rate-limit.register-per-minute} (prod included). Declared here
      * and NOWHERE else: the {@code @Value} placeholder below resolves to {@code null} when the
      * property is absent, so this constant is the single source of the default. Asserted by
-     * {@code RegisterRateLimitConfigurableIntegrationTest#defaultProfile_registerCeilingIsFive}.
+     * {@code RateLimitDefaultCeilingsIntegrationTest}.
      */
     private static final int DEFAULT_REGISTER_PER_MINUTE = 5;
+
+    /** #547 — default ceiling of {@link #LOGIN_KEY}; same single-source rule as register. */
+    private static final int DEFAULT_LOGIN_PER_MINUTE = 10;
+
+    /** #547 — default PER-IP ceiling of {@link #RESET_PASSWORD_KEY}; same single-source rule. */
+    private static final int DEFAULT_RESET_PASSWORD_PER_MINUTE = 5;
 
     /**
      * Requests per minute per IP, per throttled {@code "METHOD /exact/path"} pair.
@@ -119,21 +136,22 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * path is otherwise POST-only here).
      *
      * <p>DEFAULTS ONLY. The table actually consulted at runtime is the per-instance
-     * {@link #limits}, which is this map with {@link #REGISTER_KEY} overridden by
-     * {@code app.rate-limit.register-per-minute} when that property is set.
+     * {@link #limits}, which is this map with {@link #REGISTER_KEY}, {@link #LOGIN_KEY} and
+     * {@link #RESET_PASSWORD_KEY} overridden by their {@code app.rate-limit.*-per-minute}
+     * property when set.
      */
     private static final Map<String, Integer> DEFAULT_LIMITS = Map.ofEntries(
             // Map.ofEntries (et non Map.of) : Map.of plafonne à 10 paires. La map en
             // comptait 8 avant #134 et en compte 10 après — pile la limite. ofEntries n'a
             // pas ce plafond : ajouter un futur slot ne demande plus de refactor. (#499 a
             // ajouté ce 11e slot sans toucher au format — c'était précisément le pari.)
-            Map.entry("POST /api/auth/login", 10),
+            Map.entry(LOGIN_KEY, DEFAULT_LOGIN_PER_MINUTE),
             Map.entry(REGISTER_KEY, DEFAULT_REGISTER_PER_MINUTE),
             Map.entry("POST /api/auth/refresh", 20),
             // #49 : forgot-password est une cible d'abus (spam mail / énumération).
             // Throttle strict par IP, cohérent avec le slot reset-password (#33).
             Map.entry("POST /api/auth/forgot-password", 5),
-            Map.entry("POST /api/auth/reset-password", 5),
+            Map.entry(RESET_PASSWORD_KEY, DEFAULT_RESET_PASSWORD_PER_MINUTE),
             // #58 : soumission de job d'export RGPD (POST /api/export) — opération lourde
             // (pool async borné + écriture fichier sur disque, aucun quota). Sans throttle un
             // user authentifié peut spammer les soumissions → épuisement du pool + accumulation
@@ -172,12 +190,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     );
 
     private static final Duration WINDOW = Duration.ofMinutes(1);
-
-    /**
-     * #141 — the single {@code (method, path)} pair that additionally triggers the
-     * PER-TOKEN throttle branch below (body is parsed to extract the reset token).
-     */
-    private static final String RESET_PASSWORD_KEY = "POST /api/auth/reset-password";
 
     /**
      * #141 — max validation attempts allowed against ANY single reset-token value
@@ -267,41 +279,42 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     /**
      * Master switch for the whole filter. Defaults to {@code true} (fail-safe): rate
      * limiting is always ON unless explicitly disabled via
-     * {@code app.rate-limit.enabled=false}. The ONLY intended use of {@code false} is
-     * the ephemeral CI/e2e job, whose Playwright setup provisions several accounts from
-     * the single runner IP and would otherwise trip the per-IP throttle. Never disable
-     * this in prod or any long-lived environment.
+     * {@code app.rate-limit.enabled=false}. Since #547 NO environment of the project sets
+     * it to {@code false} — not even the E2E stack (CI job {@code e2e}, compose service
+     * {@code backend-e2e}), which runs ARMED with the per-profile ceilings described on
+     * {@link #limits}. The switch stays a supported feature (asserted by
+     * {@code RateLimitingDisabledIntegrationTest}) for a local debugging session only.
+     * Never disable this in prod or any long-lived environment ({@code ProfileSafetyGuard}
+     * refuses the boot in effective prod).
      */
     private final boolean rateLimitEnabled;
 
     /**
-     * #475 — effective ceiling of {@link #REGISTER_KEY} for THIS instance, i.e. the value of
-     * {@code app.rate-limit.register-per-minute} when set, else {@link #DEFAULT_REGISTER_PER_MINUTE}.
+     * #475 / #547 — the limit table actually consulted by {@link #doFilterInternal}:
+     * {@link #DEFAULT_LIMITS} with THREE slots remapped to their profile value when set —
+     * {@link #REGISTER_KEY} ({@code app.rate-limit.register-per-minute}), {@link #LOGIN_KEY}
+     * ({@code app.rate-limit.login-per-minute}) and {@link #RESET_PASSWORD_KEY}
+     * ({@code app.rate-limit.reset-password-per-minute}, per-IP only). Built once, immutable.
      *
-     * <p><b>Why this one slot is tunable and the others are not.</b> {@code POST /api/auth/register}
-     * is the only throttled endpoint an automated test suite must legitimately hit SEVERAL times in
-     * a row from ONE IP: the Playwright {@code setup} project provisions the fixed E2E accounts
-     * ({@code frontend/e2e/support/accounts.ts}) and the golden path self-registers. Every other
-     * slot models an abuse pattern that no test needs to reproduce in bulk.
+     * <p><b>Why these three slots, and not the others (#547 corrects the premise of #475).</b>
+     * #475 (DEC-S79-002) made {@code register} alone tunable on the premise that it was "the only
+     * throttled endpoint an automated suite must legitimately hit several times in a row from one
+     * IP". The #547 recount, from the sources AND measured on an armed stack behind a counting
+     * proxy, refutes that premise: behind the Next proxy every E2E request counts on ONE IP, and a
+     * CI job (two Playwright passes against the same JVM, {@code retries: 2}) emits
+     * {@code login} 12 nominal / 20 worst case against a default of 10, and {@code reset-password}
+     * 4 / 12 against 5. {@code forgot-password} (3 / 9 vs 5) and {@code change-password} (2 / 6 vs 5)
+     * only overflow when a failing test is retried twice within the minute — that test is already
+     * red, so they keep their default (documented in {@code application-e2e.properties}). The
+     * figures are recounted by {@code frontend/src/__tests__/e2e-rate-limit-budget.test.ts}.
      *
-     * <p><b>What this replaces, and what it does NOT.</b> Before #475 the E2E stack had exactly one
-     * way to get through: {@code app.rate-limit.enabled=false} (CI job {@code e2e}, ci.yml; service
-     * {@code backend-e2e}, docker-compose.yml), which bypasses the WHOLE filter — every slot, every
-     * endpoint. That is strictly worse than an IP exemption: the filter the suite runs against is
-     * not throttled at all, so nothing the suite does can ever exercise it, and the register budget
-     * quoted all over the E2E harness ("5 per run vs 5/min") was measuring a ceiling that was not
-     * in force. A dedicated per-profile ceiling lets the {@code e2e} profile keep the filter ARMED
-     * with a documented margin instead. It does NOT by itself re-arm the CI job — that flip is a
-     * separate change (the login slot, 10/min, has its own budget to recount first).
+     * <p><b>What this replaces.</b> Before #547 the E2E stack ran with
+     * {@code app.rate-limit.enabled=false}, which bypasses the WHOLE filter: nothing the suite did
+     * could exercise the real network path (Next proxy, socket-IP key, CORS/rate-limit interplay).
+     * Per-profile ceilings keep the filter ARMED with a documented margin instead.
      *
-     * <p>Floor-checked at construction: a value below 1 would silently throttle EVERY register
-     * (bucket capacity 0) and is rejected at boot rather than at the first user signup.
-     */
-    private final int registerPerMinute;
-
-    /**
-     * #475 — the limit table actually consulted by {@link #doFilterInternal}: {@link #DEFAULT_LIMITS}
-     * with {@link #REGISTER_KEY} remapped to {@link #registerPerMinute}. Built once, immutable.
+     * <p>Every value is floor-checked at construction: a value below 1 gives a bucket capacity of 0,
+     * which would 429 EVERY request of that slot, and is rejected at boot.
      */
     private final Map<String, Integer> limits;
 
@@ -312,41 +325,63 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * @param trustForwardedHeader opt-in trust of {@code X-Forwarded-For}
      *                             ({@code app.rate-limit.trust-forwarded-header}, default false).
      * @param rateLimitEnabled     master switch ({@code app.rate-limit.enabled}, default true).
-     *                             {@code false} bypasses the filter entirely — CI/e2e only.
+     *                             {@code false} bypasses the filter entirely — local debugging only.
      * @param registerPerMinute    per-IP ceiling of {@code POST /api/auth/register}
-     *                             ({@code app.rate-limit.register-per-minute}). Injected as a boxed
-     *                             {@code Integer} defaulting to {@code null} ON PURPOSE: the numeric
-     *                             default then lives in {@link #DEFAULT_REGISTER_PER_MINUTE} alone,
-     *                             instead of being duplicated in a placeholder literal that nothing
-     *                             would keep in sync. Only {@code application-e2e.properties} sets it.
+     *                             ({@code app.rate-limit.register-per-minute}).
+     * @param loginPerMinute       per-IP ceiling of {@code POST /api/auth/login}
+     *                             ({@code app.rate-limit.login-per-minute}, #547).
+     * @param resetPasswordPerMinute per-IP ceiling of {@code POST /api/auth/reset-password}
+     *                             ({@code app.rate-limit.reset-password-per-minute}, #547) — the
+     *                             per-token ceiling is unaffected.
+     *                             The three ceilings are injected as boxed {@code Integer}s defaulting
+     *                             to {@code null} ON PURPOSE: each numeric default then lives in its
+     *                             {@code DEFAULT_*_PER_MINUTE} constant alone, instead of being
+     *                             duplicated in a placeholder literal that nothing would keep in sync.
+     *                             Only {@code application-e2e.properties} sets them.
      */
     public RateLimitingFilter(
             TimeMeter timeMeter,
             @Value("${app.rate-limit.trust-forwarded-header:false}") boolean trustForwardedHeader,
             @Value("${app.rate-limit.enabled:true}") boolean rateLimitEnabled,
-            @Value("${app.rate-limit.register-per-minute:#{null}}") Integer registerPerMinute) {
+            @Value("${app.rate-limit.register-per-minute:#{null}}") Integer registerPerMinute,
+            @Value("${app.rate-limit.login-per-minute:#{null}}") Integer loginPerMinute,
+            @Value("${app.rate-limit.reset-password-per-minute:#{null}}") Integer resetPasswordPerMinute) {
         this.timeMeter = timeMeter;
         this.trustForwardedHeader = trustForwardedHeader;
         this.rateLimitEnabled = rateLimitEnabled;
-        this.registerPerMinute = registerPerMinute != null ? registerPerMinute : DEFAULT_REGISTER_PER_MINUTE;
-        if (this.registerPerMinute < 1) {
-            throw new IllegalArgumentException(
-                    "app.rate-limit.register-per-minute must be >= 1 (got " + this.registerPerMinute
-                            + "): a ceiling of 0 gives every register bucket a capacity of 0, which "
-                            + "429s EVERY signup. Use app.rate-limit.enabled=false to bypass the filter.");
-        }
         Map<String, Integer> effective = new LinkedHashMap<>(DEFAULT_LIMITS);
-        effective.put(REGISTER_KEY, this.registerPerMinute);
+        effective.put(REGISTER_KEY, tunableCeiling(
+                "app.rate-limit.register-per-minute", registerPerMinute, DEFAULT_REGISTER_PER_MINUTE));
+        effective.put(LOGIN_KEY, tunableCeiling(
+                "app.rate-limit.login-per-minute", loginPerMinute, DEFAULT_LOGIN_PER_MINUTE));
+        effective.put(RESET_PASSWORD_KEY, tunableCeiling(
+                "app.rate-limit.reset-password-per-minute", resetPasswordPerMinute,
+                DEFAULT_RESET_PASSWORD_PER_MINUTE));
         this.limits = Map.copyOf(effective);
-        if (this.registerPerMinute != DEFAULT_REGISTER_PER_MINUTE) {
-            log.warn("register rate limit OVERRIDDEN to {}/min/IP (default {}) via "
-                    + "app.rate-limit.register-per-minute — intended for the e2e profile only.",
-                    this.registerPerMinute, DEFAULT_REGISTER_PER_MINUTE);
-        }
         if (!rateLimitEnabled) {
-            log.warn("rate limiting DISABLED (app.rate-limit.enabled=false) — CI/e2e only. "
-                    + "Do NOT run this configuration in prod or any long-lived environment.");
+            log.warn("rate limiting DISABLED (app.rate-limit.enabled=false) — local debugging only. "
+                    + "Do NOT run this configuration in CI, prod or any long-lived environment.");
         }
+    }
+
+    /**
+     * Resolves one profile-tunable ceiling: the configured value when present, else the
+     * default constant. Rejects a value below 1 at boot (capacity 0 = every request 429) and
+     * logs a warning when the default is overridden — intended for the {@code e2e} profile only.
+     */
+    private static int tunableCeiling(String property, Integer configured, int defaultValue) {
+        int value = configured != null ? configured : defaultValue;
+        if (value < 1) {
+            throw new IllegalArgumentException(
+                    property + " must be >= 1 (got " + value + "): a ceiling of 0 gives every bucket of "
+                            + "this slot a capacity of 0, which 429s EVERY request. Use "
+                            + "app.rate-limit.enabled=false to bypass the filter.");
+        }
+        if (value != defaultValue) {
+            log.warn("rate limit OVERRIDDEN via {} to {}/min/IP (default {}) — intended for the e2e "
+                    + "profile only.", property, value, defaultValue);
+        }
+        return value;
     }
 
     @Override
