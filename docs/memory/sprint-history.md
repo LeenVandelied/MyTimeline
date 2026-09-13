@@ -6347,6 +6347,13 @@ dans le Postgres Homebrew du poste, pas dans le volume compose ; packs `--check`
 leur plafond en pire cas CI : login 20/10, reset 12/5, forgot 9/5, change-password 6/5 ; mesuré local filtre armé aux défauts :
 0 × 429, pic 8 logins/min). **Option D retenue** : propriétés e2e login 30 + reset-password 15, register 20→30 ;
 forgot et change-password restent aux défauts (dépassement seulement sur double retry d'un test déjà en échec).
+**#547 livré (option D) :** `33ea579` backend · `396c372` budget + preuve · `9e49b8f` flag retiré (ci.yml, compose).
+**Revues cycle 1 :** reviewer 0 CRITIQUE / 0 MAJEUR / 6 MINEUR · security-expert 0 / 0 / 3 MINEUR
+(`sprints/sprint-88/specialists-{reviewer,security}.md`) → MINEUR absorbés en un cycle : `e940ac8` (passes CI multi-lignes,
+preuve sans retry) · `d7b2328` (README `down -v`) · `dcb222d` (boot refusé en prod si un plafond réglable dépasse son défaut).
+**Second arbitrage #547 (dev, 2026-09-14) :** le recomptage conscient des boucles donne register pire cas **36 > 30**
+(boucle `REGISTER_RETRIES` d'`auth.setup.ts` qui ré-inscrit sur page lente) → **retry seulement sur échec** de la requête
+(ni sur 201/409, ni sur 429) ; aucun plafond relevé.
 **Status :** En cours
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
