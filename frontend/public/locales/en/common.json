@@ -139,14 +139,55 @@
     "meta": {
       "description": "My Timeline helps you manage your deadlines, organize your time, and optimize your productivity. Simple, intuitive, and customizable."
     },
-    "images": {
-      "dashboard": "My Timeline dashboard preview"
-    },
     "hero": {
       "title": "Organize your life with My Timeline",
       "subtitle": "Your personal assistant to manage deadlines, optimize your time, and achieve your goals more efficiently.",
       "cta": "Start for free",
-      "secondary": "Discover how it works"
+      "secondary": "Discover how it works",
+      "timeline": {
+        "chrome": "app.mytimeline · timeline",
+        "today": "Today",
+        "months": {
+          "may": "May",
+          "june": "Jun",
+          "july": "Jul",
+          "august": "Aug"
+        },
+        "lanes": {
+          "car": {
+            "name": "Renault Clio",
+            "category": "Vehicles",
+            "insurance": "Car insurance",
+            "inspection": "Inspection"
+          },
+          "home": {
+            "name": "Home",
+            "category": "Insurance",
+            "premium": "Annual premium"
+          },
+          "health": {
+            "name": "Health",
+            "category": "Medical",
+            "prescription": "Prescription",
+            "checkup": "Annual checkup"
+          },
+          "subscriptions": {
+            "name": "Subscriptions",
+            "category": "Finance",
+            "license": "Software license"
+          },
+          "pantry": {
+            "name": "Pantry",
+            "category": "Food",
+            "oil": "Olive oil · best before"
+          },
+          "passport": {
+            "name": "Passport",
+            "category": "Documents",
+            "renewal": "Renewal"
+          }
+        }
+      }
     },
     "features": {
       "title": "Key Features",

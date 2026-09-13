@@ -107,12 +107,36 @@ async function measureOverflow(page: Page): Promise<OverflowReport> {
 
         const rect = el.getBoundingClientRect()
         if (rect.width === 0 && rect.height === 0) continue
-        if (rect.right > clientWidth + tolerance) {
+
+        /**
+         * #611 — BORD DROIT VISIBLE, pas bord droit de la boîte.
+         *
+         * La frise du hero est une piste de 1640 px qui défile DANS un panneau
+         * `overflow:hidden` : à 320 px, ses barres finissent bien au-delà du bord
+         * droit du document alors que rien n'en dépasse à l'écran (`scrollWidth ===
+         * clientWidth`, `maxScrollX === 0`). `getBoundingClientRect` ignore le rognage
+         * ([[PIT-S77-002]]) : sans correction, ce balayage fabriquait ~70 faux
+         * débordements par largeur.
+         *
+         * On borne donc le bord droit par celui de chaque ancêtre qui ROGNE
+         * (`overflow-x` ≠ `visible`). Plus strict que l'exclusion de
+         * `sprint-63-de-overflow-audit.spec.ts` (qui ignore tout contenu contenu) : un
+         * conteneur rognant qui déborde LUI-MÊME reste un offender, et le contenu qu'il
+         * laisse dépasser aussi. Remontée arrêtée AVANT `<body>` (scroll-lock Radix,
+         * même raison que dans `sprint-63`). Armé par la 2e sonde de l'auto-contrôle.
+         */
+        let visibleRight = rect.right
+        for (let p = el.parentElement; p && p !== de && p !== document.body; p = p.parentElement) {
+          const ox = getComputedStyle(p).overflowX
+          if (ox !== 'visible')
+            visibleRight = Math.min(visibleRight, p.getBoundingClientRect().right)
+        }
+        if (visibleRight > clientWidth + tolerance) {
           offenders.push({
             tag: el.tagName.toLowerCase(),
             id: el.id,
             cls: (el.getAttribute('class') ?? '').slice(0, 80),
-            right: Math.round(rect.right * 100) / 100,
+            right: Math.round(visibleRight * 100) / 100,
             width: Math.round(rect.width * 100) / 100,
           })
         }
@@ -197,5 +221,35 @@ test.describe('Landing — auto-contrôle du harnais de débordement', () => {
     ).toContain(PROBE_ID)
 
     await page.evaluate((id) => document.getElementById(id)?.remove(), PROBE_ID)
+
+    /**
+     * #611 — la borne par les ancêtres rognants ne doit pas AVEUGLER le harnais : un
+     * conteneur `overflow:hidden` lui-même trop large reste un débordement, et son
+     * contenu aussi. Sans cette sonde, une remontée « contenu ⇒ ignoré » passerait.
+     */
+    const CLIP_ID = 'overflow-self-check-clip'
+    const CHILD_ID = 'overflow-self-check-clip-child'
+    await page.evaluate(
+      ({ clip, child }) => {
+        const wrapper = document.createElement('div')
+        wrapper.id = clip
+        wrapper.style.cssText =
+          'position:absolute;top:0;left:0;width:9999px;height:4px;overflow:hidden;transition:none;min-width:0;'
+        const inner = document.createElement('div')
+        inner.id = child
+        inner.style.cssText = 'width:9999px;height:4px;'
+        wrapper.appendChild(inner)
+        document.body.appendChild(wrapper)
+      },
+      { clip: CLIP_ID, child: CHILD_ID },
+    )
+
+    const clipped = (await measureOverflow(page)).offenders.map((o) => o.id)
+    expect(
+      clipped,
+      `un conteneur rognant trop large et son contenu doivent rester détectés — relevés : ${JSON.stringify(clipped)}`,
+    ).toEqual(expect.arrayContaining([CLIP_ID, CHILD_ID]))
+
+    await page.evaluate((id) => document.getElementById(id)?.remove(), CLIP_ID)
   })
 })

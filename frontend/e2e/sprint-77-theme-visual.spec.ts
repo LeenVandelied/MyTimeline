@@ -51,11 +51,14 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
  *    `useSectionAnimation` (`IntersectionObserver`). Capturer sans attendre donnerait
  *    un hero VIDE. On défile, puis on ATTEND `opacity > 0.99` — pas un `toBeVisible()`,
  *    que Playwright rend vrai à `opacity: 0`.
- *  - `.hero-timeline__progress` et `.hero-timeline__today` (`src/styles/hero-timeline.css`)
- *    portent des animations INFINIES. `toHaveScreenshot` pose `animations: 'disabled'`
- *    par défaut, ce qui les ramène à leur état initial avant capture. On ne s'en remet
- *    pas à la théorie : la stabilité a été mesurée par rejeux successifs (cf.
- *    `docs/memory/sprints/sprint-77/issue-294-done.md`).
+ *  - La frise du hero (#611) défile en continu : `.hero-timeline__track`
+ *    (`src/styles/hero-timeline.css`) porte une animation INFINIE de 52 s en `transform`.
+ *    `toHaveScreenshot` pose `animations: 'disabled'` par défaut, qui ANNULE une animation
+ *    infinie et ramène la piste à son état initial (`translateX(0)`, 1re copie entière) :
+ *    la capture est donc prise à une position déterministe, jamais en plein défilement.
+ *    Vérifié au navigateur au S87 (`getAnimations()[0].cancel()` → `transform: none`,
+ *    cf. `docs/memory/sprints/sprint-87/issue-611-done.md`). Les références du hero ont
+ *    été générées sur l'ANCIENNE frise (#56) : elles sont à régénérer (image Linux du runner).
  *  - Le curseur reste où Playwright l'a laissé, et `.cta-button::after` anime sa largeur
  *    au survol. On écarte donc la souris avant chaque capture (même motif que
  *    `readAtRest` dans `support/contrast.ts`).

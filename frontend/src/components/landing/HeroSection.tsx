@@ -138,8 +138,14 @@ export function HeroSection({ locale }: HeroSectionProps) {
               <span className="bg-rule-strong block size-[9px] rounded-full" />
               <span className="bg-rule-strong block size-[9px] rounded-full" />
               <span className="bg-rule-strong block size-[9px] rounded-full" />
+              {/* #611 — libellé mono de la maquette ; style dans `hero-timeline.css`. */}
+              <span className="hero-timeline-chrome__label">
+                {t('common.landing.hero.timeline.chrome')}
+              </span>
             </div>
-            <div className="relative flex min-h-0 flex-1 items-center px-6">
+            {/* #611 — frise à fond perdu sous la barre de chrome (maquette : viewport sans
+                padding) ; `min-h-0` laisse la zone se réduire au panneau de 320 px. */}
+            <div className="relative min-h-0 flex-1">
               <HeroTimelineAnimation />
             </div>
           </div>
