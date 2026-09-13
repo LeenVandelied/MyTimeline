@@ -123,10 +123,12 @@ async function measureOverflow(page: Page): Promise<OverflowReport> {
             s.transform !== 'none' ||
             s.perspective !== 'none' ||
             s.filter !== 'none' ||
-            (s.backdropFilter ?? 'none') !== 'none' ||
+            // `||` et non `??` : un navigateur sans support rend une chaîne VIDE, pas
+            // `undefined` — `??` la laisserait passer pour un bloc conteneur (revue S87).
+            (s.backdropFilter || 'none') !== 'none' ||
             /\b(paint|layout|strict|content)\b/.test(s.contain) ||
             /\b(transform|perspective|filter)\b/.test(s.willChange) ||
-            (s.containerType ?? 'normal') !== 'normal' ||
+            (s.containerType || 'normal') !== 'normal' ||
             s.contentVisibility === 'auto'
           )
             return p
@@ -164,7 +166,10 @@ async function measureOverflow(page: Page): Promise<OverflowReport> {
          * `sprint-63-de-overflow-audit.spec.ts` (qui ignore tout contenu contenu) : un
          * conteneur rognant qui déborde LUI-MÊME reste un offender, et le contenu qu'il
          * laisse dépasser aussi. Remontée arrêtée AVANT `<body>` (scroll-lock Radix,
-         * même raison que dans `sprint-63`).
+         * même raison que dans `sprint-63`) et donc avant `<html>` : un `overflow-x`
+         * posé sur l'un ou l'autre ne borne JAMAIS. Coût assumé et à sens unique — au
+         * pire un débordement rogné par la racine est relevé (faux positif), jamais un
+         * débordement réel masqué (faux vert).
          *
          * Revue S87 (C1) : la remontée suit la CHAÎNE DES BLOCS CONTENEURS, pas la chaîne
          * DOM. La 1re version bornait par TOUT ancêtre DOM rognant : un `position:fixed`
