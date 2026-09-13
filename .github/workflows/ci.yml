@@ -288,11 +288,13 @@ jobs:
           JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
           # Secret HMAC dédié aux tokens de download d'export (CI-only, non secret).
           EXPORT_TOKEN_SECRET: Q0lPbmx5SW5zZWN1cmVFeHBvcnRUb2tlblNlY3JldEZvckUyRVRlc3RzMDEyMzQ1Njc4OQ==
-          # E2E-ONLY : désactive le rate-limit auth. La suite provisionne plusieurs
-          # comptes depuis l'IP unique du runner -> déclencherait le throttle par IP
-          # (register 5/min, login 10/min) et ferait échouer le projet Playwright `setup`.
-          # Défaut TOUJOURS true partout ailleurs (prod + jobs backend/frontend intacts).
-          RATE_LIMIT_ENABLED: false
+          # #547 — rate-limit ARMÉ : AUCUN `RATE_LIMIT_ENABLED: false` ici. Les deux passes
+          # Playwright ci-dessous comptent sur UNE IP (loopback du serveur Next, les deux ports
+          # :3000/:3001 partagent le seau, et les seaux survivent entre passes dans la JVM).
+          # Elles tiennent grâce aux plafonds dédiés du profil `e2e` (register 30, login 30,
+          # reset-password 15), dimensionnés sur le budget des DEUX passes retries compris
+          # (application-e2e.properties, recompté par e2e-rate-limit-budget.test.ts). Un 429 ici
+          # est un vrai signal : recompter le budget, NE PAS remettre le drapeau.
           # #462 — DEUX origines, pas une. Depuis le passage en build de production, le
           # frontend tourne sur DEUX ports (:3000 degrade, :3001 verifiant, cf. plus bas).
           # Le profil `dev` fige `app.cors.allowed-origins=http://localhost:3000`
@@ -563,8 +565,9 @@ jobs:
         # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
         # ⚠ Depuis #462 ce filtre est ENCORE PLUS nécessaire : le `storageState` de la passe 1
         # porte un cookie posé sur :3000, et cette passe interroge :3001. Re-provisionner est le
-        # seul chemin correct. Le rate-limit register (5/min/IP) ne s'y oppose pas :
-        # `RATE_LIMIT_ENABLED: false` est posé au démarrage du backend.
+        # seul chemin correct. Le rate-limit (ARMÉ depuis #547) ne s'y oppose pas : ces 4 register
+        # + 4 login s'ajoutent à ceux de la passe 1 dans les MÊMES seaux, et le budget des deux
+        # passes (12 register, 12 login en nominal) tient sous les plafonds du profil `e2e` (30/30).
         run: npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
 
       # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
