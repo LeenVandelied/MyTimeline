@@ -6137,7 +6137,7 @@ ligne « CRÉÉ LE » omise (donnée absente), animation 200 ms au lieu de 240, 
 **Status :** Terminé — PR #675 mergée dans `dev` le 2026-09-12 (commit `55023f0`) ; issues #617/#618/#646 fermées,
 milestone #87 fermé (3/3). Soldé au `/sprint start 87` (variante S57).
 
-### Sprint 87 — 2026-09-13 (EN COURS — cohésion 0.70, Landing publique : hero et frise du spec)
+### Sprint 87 — 2026-09-13 (Terminé — merge PR #681 dans dev, `77666e7` — cohésion 0.70, Landing publique : hero et frise du spec)
 **Objectif :** Hero 30/70 avec frise animée conforme au spec, purge des deux sections redondantes
 **Milestone GitHub :** #88
 **Issues (3) :** #610, #611, #641 — à fermer APRÈS le merge (`dev` protégée)
@@ -6196,8 +6196,8 @@ BUG-S87-001, BUG-S87-002 · Packs `pit-*` régénérés, `--check` exit 0.
   Ratio : 1 issue / 0 discard / 2 absorbés. Les 2 absorptions (1 caractère + 1 commentaire, spec seule) ont été appliquées
   par le lead et non par un fullstack-dev spawné — écart au skill assumé, vérifié par la spec + `sprint-63` + tsc/eslint/format.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #681, merge à confirmer par le dev ; issues #610/#611/#641 à fermer APRÈS le merge ; titre et
-Status à solder au `/sprint start 88` (variante S57).
+**Status :** Terminé — PR #681 mergée le 2026-09-13T16:36Z (`77666e7`) ; issues #610/#611/#641 fermées ; milestone #88 fermé
+(0 issue ouverte, compteur API). Titre et Status soldés au `/sprint start 88` (variante S57).
 
 ### Matrice de conflits (fichiers partagés)
 
@@ -6328,7 +6328,7 @@ compteur UI sans archivés (#546), Spring Boot 3.5.16 dans `pom.xml` (CLAUDE.md 
 **Pas de branche `sprint/88` créée** (convention S85 : `/sprint start` travaille sur la branche de son
 worktree).
 
-### Sprint 88 — 2026-09-13 (PLANIFIÉ — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
+### Sprint 88 — 2026-09-13 (EN COURS — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
 **Objectif :** Plus de JWT valide dans les logs CI d'un dépôt public ; rate-limit ré-armé et prouvé en E2E ; dépannage base locale documenté
 **Milestone GitHub :** #89
 **Issues :** #568 (P1, M→S), #547 (P1, M), #545 (P1, M→S doc)
@@ -6337,7 +6337,10 @@ worktree).
 **Dépend de :** aucune
 **Cohésion < 0.3 assumée** (DEC-S57-003) : split #545 → S89 proposé et écarté (thème commun zéro code produit, #545 = doc seule).
 **À confirmer au démarrage :** #568 option `spring.test.mockmvc.print=none` global ; #547 modifie `ci.yml` (confirmation explicite), recompter TOUS les créneaux, nombre de runs CI verts exigés (proposé : 3).
-**Status :** Planifié
+**Démarrage (2026-09-13) :** branche `sprint/88` créée depuis `origin/dev` — le worktree portait `claude/sprint-88-start-d23619`
+basée sur `main` (convention S80 inapplicable). Arbitrages rendus par le dev : **#568 → `spring.test.mockmvc.print=none`
+global** ; **#547 → modification de `ci.yml` autorisée, 3 runs CI verts consécutifs exigés** (rejeux du SHA de tête).
+**Status :** En cours
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau
