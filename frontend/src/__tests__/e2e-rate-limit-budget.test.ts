@@ -13,6 +13,7 @@ import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 import { ALL_ACCOUNTS } from '../../e2e/support/accounts'
+import { classifyRegisterResponse } from '../../e2e/support/register-retry'
 
 /**
  * #475 → #547 — LE BUDGET RATE-LIMIT DE LA SUITE E2E, RECOMPTÉ DEPUIS LES SOURCES.
@@ -47,11 +48,18 @@ import { ALL_ACCOUNTS } from '../../e2e/support/accounts'
  *   nominal CI  = Σ passes [ setup + émissions des specs de la passe ]
  *   pire cas CI = Σ passes [ setup + émissions des specs × (1 + retries) ]
  *
- * Le setup n'est PAS multiplié par les retries, et c'est prouvé, pas supposé : un
- * `provision` retenté ré-inscrit un compte FIXE, prend 409, reste sur /fr/register
- * et lève AVANT le login (`auth.setup.ts`). Il émet donc au plus UN register et UN
- * login par compte par passe. Le total d'une passe est un majorant du pic par minute
- * (refill `intervally` : si le total tient sous le plafond, aucun 429 n'est possible).
+ * Une émission dans une boucle compte × la BORNE de la boucle ; une boucle qui émet sans
+ * borne lisible fait échouer le recompte (revue S88). SEULE exception, sous contrat vérifié :
+ * une boucle annotée `rate-limit-budget: retry-on-request-failure` compte 1 — elle ne
+ * ré-émet que si la requête a échoué (5xx, aucune réponse), décision prise par une table
+ * de statuts testée ici (`classifyRegisterResponse`). Arbitrage dev du 2026-09-14.
+ *
+ * Le setup est multiplié par (1 + SES retries), LUS dans `auth.setup.ts` : 0 depuis la
+ * revue S88. Avant, l'exemption reposait sur « un provision retenté prend 409 et lève
+ * avant le login » — faux dès que 409 vaut succès, et muet sur la boucle interne qui
+ * ré-émettait sur page lente (pire cas register réel 36 pour un plafond de 30). Le total
+ * d'une passe est un majorant du pic par minute (refill `intervally` : si le total tient
+ * sous le plafond, aucun 429 n'est possible).
  *
  * ⚠ CE QU'IL NE PROUVE PAS. Il lit de la CONFIGURATION et du TEXTE SOURCE, pas un
  * run. L'application effective des plafonds est prouvée côté backend par
@@ -136,10 +144,208 @@ function isDirectEmission(call: ts.CallExpression, signature: Signature): boolea
   return false
 }
 
-/** Émissions dans `node` : directes + appels de fonctions émettrices × leur propre compte. */
+const numericConstantsCache = new WeakMap<ts.SourceFile, Map<string, ts.Expression>>()
+
+/** Initialiseurs des `const X = …` de niveau module, pour résoudre une borne de boucle. */
+function moduleConstants(source: ts.SourceFile): Map<string, ts.Expression> {
+  const cached = numericConstantsCache.get(source)
+  if (cached) return cached
+  const constants = new Map<string, ts.Expression>()
+  for (const statement of source.statements) {
+    if (!ts.isVariableStatement(statement)) continue
+    if (!(statement.declarationList.flags & ts.NodeFlags.Const)) continue
+    for (const decl of statement.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name) && decl.initializer)
+        constants.set(decl.name.text, decl.initializer)
+    }
+  }
+  numericConstantsCache.set(source, constants)
+  return constants
+}
+
+/** Littéral, ou constante de module qui en est un ; sinon `null`. */
+function resolveConstant(node: ts.Expression): ts.Expression {
+  if (!ts.isIdentifier(node)) return node
+  return moduleConstants(node.getSourceFile()).get(node.text) ?? node
+}
+
+function numericValue(node: ts.Expression): number | null {
+  const resolved = resolveConstant(node)
+  return ts.isNumericLiteral(resolved) ? Number(resolved.text) : null
+}
+
+/** Opérandes d'une chaîne `a && b && c` (une condition simple est sa propre chaîne). */
+function conjuncts(node: ts.Expression): ts.Expression[] {
+  if (ts.isParenthesizedExpression(node)) return conjuncts(node.expression)
+  if (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+  )
+    return [...conjuncts(node.left), ...conjuncts(node.right)]
+  return [node]
+}
+
+/** Vrai si `incrementor` avance `counter` de exactement 1 (`i++`, `++i`, `i += 1`). */
+function stepsByOne(incrementor: ts.Expression | undefined, counter: string): boolean {
+  if (!incrementor) return false
+  if (ts.isPostfixUnaryExpression(incrementor) || ts.isPrefixUnaryExpression(incrementor)) {
+    return (
+      incrementor.operator === ts.SyntaxKind.PlusPlusToken &&
+      ts.isIdentifier(incrementor.operand) &&
+      incrementor.operand.text === counter
+    )
+  }
+  return (
+    ts.isBinaryExpression(incrementor) &&
+    incrementor.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken &&
+    ts.isIdentifier(incrementor.left) &&
+    incrementor.left.text === counter &&
+    numericValue(incrementor.right) === 1
+  )
+}
+
+/**
+ * Nombre MAXIMAL de tours d'une boucle, lu statiquement, ou `null` s'il n'est pas lisible.
+ * Résolus : `for (let i = A; i < B | i <= B [&& …]; i++)` avec A et B littéraux ou `const` de
+ * module, et `for (… of [littéral de tableau])`. Une condition `&& !fini` ne fait que
+ * RACCOURCIR la boucle : la borne reste un majorant, c'est ce qu'un pire cas veut.
+ */
+function loopBound(loop: ts.IterationStatement): number | null {
+  if (ts.isForOfStatement(loop)) {
+    const iterable = resolveConstant(loop.expression)
+    return ts.isArrayLiteralExpression(iterable) && !iterable.elements.some(ts.isSpreadElement)
+      ? iterable.elements.length
+      : null
+  }
+  if (!ts.isForStatement(loop) || !loop.initializer || !loop.condition) return null
+  if (!ts.isVariableDeclarationList(loop.initializer)) return null
+  const [decl, ...others] = loop.initializer.declarations
+  if (others.length > 0 || !ts.isIdentifier(decl.name) || !decl.initializer) return null
+  const counter = decl.name.text
+  const start = numericValue(decl.initializer)
+  if (start === null || !stepsByOne(loop.incrementor, counter)) return null
+  for (const operand of conjuncts(loop.condition)) {
+    if (!ts.isBinaryExpression(operand) || !ts.isIdentifier(operand.left)) continue
+    if (operand.left.text !== counter) continue
+    const end = numericValue(operand.right)
+    if (end === null) return null
+    if (operand.operatorToken.kind === ts.SyntaxKind.LessThanToken) return Math.max(0, end - start)
+    if (operand.operatorToken.kind === ts.SyntaxKind.LessThanEqualsToken)
+      return Math.max(0, end - start + 1)
+    return null
+  }
+  return null
+}
+
+function where(node: ts.Node): string {
+  const source = node.getSourceFile()
+  const { line } = source.getLineAndCharacterOfPosition(node.getStart())
+  return `${source.fileName}:${line + 1}`
+}
+
+/**
+ * CONVENTION « retry sur échec de requête » (arbitrage dev du 2026-09-14, revue S88).
+ *
+ * Pourquoi une annotation plutôt qu'un retry encapsulé dans un helper : un helper qui reçoit
+ * l'émission en callback (`withRetry(() => click())`) serait compté 1 par l'ANGLE MORT du
+ * compteur, pour n'importe quelle raison de retenter, sans que rien ne le dise. L'annotation
+ * rend l'exception VISIBLE et VÉRIFIÉE : la boucle doit (1) garder une borne lisible,
+ * (2) ne continuer que sur `<issue> === 'retry'`, (3) n'assigner `<issue>` que par un
+ * classificateur de statuts dont la table est testée ci-dessous, (4) ne contenir aucun
+ * try/catch (une page lente ou une assertion ratée deviendrait sinon une raison de retenter).
+ * Et le dépôt n'en compte qu'UNE, dans `auth.setup.ts` — en ajouter une rougit l'ancrage.
+ */
+const RETRY_ON_FAILURE_ANNOTATION = 'rate-limit-budget: retry-on-request-failure'
+const RETRY_CLASSIFIERS = new Set(['classifyRegisterResponse'])
+
+function isRetryOnFailureLoop(loop: ts.IterationStatement): boolean {
+  const source = loop.getSourceFile()
+  return (ts.getLeadingCommentRanges(source.text, loop.getFullStart()) ?? []).some((range) =>
+    source.text.slice(range.pos, range.end).includes(RETRY_ON_FAILURE_ANNOTATION),
+  )
+}
+
+/** Première clause du contrat violée, ou `null` si la boucle le respecte. */
+function retryContractViolation(loop: ts.IterationStatement): string | null {
+  if (!ts.isForStatement(loop) || !loop.condition || loopBound(loop) === null)
+    return 'une boucle `for` à borne lisible est exigée'
+  const guard = conjuncts(loop.condition).find(
+    (operand): operand is ts.BinaryExpression =>
+      ts.isBinaryExpression(operand) &&
+      operand.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+      ts.isIdentifier(operand.left) &&
+      ts.isStringLiteral(operand.right) &&
+      operand.right.text === 'retry',
+  )
+  if (!guard) return "la condition doit contenir `<issue> === 'retry'`"
+  const outcome = (guard.left as ts.Identifier).text
+  const classifiers = [...RETRY_CLASSIFIERS].join(', ')
+  const violations: string[] = []
+  let classified = 0
+  const visit = (n: ts.Node): void => {
+    if (ts.isTryStatement(n)) violations.push('try/catch interdit dans la boucle')
+    if (
+      ts.isBinaryExpression(n) &&
+      n.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(n.left) &&
+      n.left.text === outcome
+    ) {
+      const call = n.right
+      if (
+        ts.isCallExpression(call) &&
+        ts.isIdentifier(call.expression) &&
+        RETRY_CLASSIFIERS.has(call.expression.text)
+      )
+        classified += 1
+      else violations.push(`\`${outcome}\` assigné autrement que par ${classifiers}`)
+    }
+    ts.forEachChild(n, visit)
+  }
+  visit(loop.statement)
+  if (violations.length > 0) return violations[0]
+  return classified === 1 ? null : `\`${outcome}\` doit être assigné une fois par ${classifiers}`
+}
+
+/**
+ * Émissions dans `node` : directes + appels de fonctions émettrices × leur propre compte.
+ *
+ * Revue S88 : une émission dans une boucle est multipliée par la BORNE de la boucle
+ * (`loopBound`). Une boucle qui émet et dont la borne n'est pas lisible fait ÉCHOUER le
+ * recompte, explicitement — la compter 1 en silence est exactement le trou qui a laissé
+ * passer la boucle `REGISTER_RETRIES` d'`auth.setup.ts`.
+ */
 function countIn(node: ts.Node, signature: Signature, emitting: Map<string, number>): number {
   let total = 0
   const visit = (n: ts.Node): void => {
+    if (ts.isIterationStatement(n, false)) {
+      const perTurn = countIn(n.statement, signature, emitting)
+      if (perTurn > 0 && isRetryOnFailureLoop(n)) {
+        const violation = retryContractViolation(n)
+        if (violation !== null) {
+          throw new Error(
+            `${where(n)} — boucle annotée « ${RETRY_ON_FAILURE_ANNOTATION} » HORS CONTRAT : ` +
+              `${violation}. Elle serait comptée 1 alors qu'elle peut ré-émettre ` +
+              `${signature.apiPath} pour une autre raison qu'un échec de requête.`,
+          )
+        }
+        total += perTurn
+      } else if (perTurn > 0) {
+        const bound = loopBound(n)
+        if (bound === null) {
+          throw new Error(
+            `${where(n)} — boucle qui émet ${signature.apiPath} ` +
+              `(${perTurn} par tour) sans borne lisible statiquement. Le budget ne peut pas ` +
+              'être recompté : borner la boucle par un littéral ou une `const` de module ' +
+              '(`for (let i = 0; i < N; i++)`), ou sortir l’émission de la boucle.',
+          )
+        }
+        total += perTurn * bound
+      }
+      ts.forEachChild(n, (child) => {
+        if (child !== n.statement) visit(child)
+      })
+      return
+    }
     if (ts.isCallExpression(n)) {
       if (isDirectEmission(n, signature)) total += 1
       if (ts.isIdentifier(n.expression)) total += emitting.get(n.expression.text) ?? 0
@@ -336,6 +542,25 @@ function readRetries(): number {
   return Number(match![1])
 }
 
+/**
+ * Retries Playwright du projet `setup` : ceux de `setup.describe.configure({ retries: N })`
+ * dans `auth.setup.ts`, sinon la valeur CI globale — un essai retenté ré-émet register et login.
+ */
+function readSetupRetries(setupFile: string = SETUP_FILE): number {
+  const match = readFileSync(setupFile, 'utf8').match(
+    /^setup\.describe\.configure\(\{\s*retries:\s*(\d+)\s*\}\)/m,
+  )
+  return match ? Number(match[1]) : readRetries()
+}
+
+/** Fichiers `.ts` de `dir` (récursif) qui portent l'annotation « retry sur échec de requête ». */
+function annotatedFiles(dir: string): string[] {
+  return readdirSync(dir, { recursive: true, encoding: 'utf8' })
+    .filter((file) => file.endsWith('.ts'))
+    .filter((file) => readFileSync(join(dir, file), 'utf8').includes(RETRY_ON_FAILURE_ANNOTATION))
+    .sort()
+}
+
 /** Spécs rejouées une 2e fois dans la même passe par le projet `firefox` (testMatch restreint). */
 function readFirefoxMatch(): RegExp {
   const text = readFileSync(PLAYWRIGHT_CONFIG, 'utf8')
@@ -401,7 +626,8 @@ function computeBudget(slot: SlotName): Budget {
   const retries = readRetries()
   const firefox = readFirefoxMatch()
   const { perFile } = countSpecs(slot)
-  const setupPerPass = ALL_ACCOUNTS.length * setupEmissionsPerAccount(slot)
+  const setupPerPass =
+    ALL_ACCOUNTS.length * setupEmissionsPerAccount(slot) * (1 + readSetupRetries())
   let nominal = 0
   let worst = 0
   const detail: string[] = []
@@ -444,10 +670,33 @@ describe('#547 — budget rate-limit de la suite E2E (dépôt réel)', () => {
     expect(passIncludes(passes[1], 'auth.setup.ts')).toBe(true)
   })
 
-  it('le setup émet exactement 1 register et 1 login par compte, et provisionne 4 comptes', () => {
+  it('le setup émet 1 register et 1 login par compte, sans retry Playwright, pour 4 comptes', () => {
+    // Revue S88 : la seule boucle de ré-émission est annotée « retry sur échec de requête » et
+    // respecte son contrat ; le login est hors boucle ; le projet `setup` n'a aucun retry.
     expect(ALL_ACCOUNTS.length).toBe(4)
     expect(setupEmissionsPerAccount('register')).toBe(1)
     expect(setupEmissionsPerAccount('login')).toBe(1)
+    expect(readSetupRetries()).toBe(0)
+  })
+
+  it('convention « retry sur échec de requête » : une seule boucle annotée, table de statuts vérifiée', () => {
+    expect(annotatedFiles(E2E_DIR)).toEqual(['auth.setup.ts'])
+    // Ré-émis : échec de la REQUÊTE seulement.
+    expect([null, 500, 502, 503].map(classifyRegisterResponse)).toEqual([
+      'retry',
+      'retry',
+      'retry',
+      'retry',
+    ])
+    // Jamais ré-émis : compte créé, compte existant (idempotent), 429, refus.
+    expect([200, 201, 409, 429, 400, 403].map(classifyRegisterResponse)).toEqual([
+      'created',
+      'created',
+      'exists',
+      'throttled',
+      'refused',
+      'refused',
+    ])
   })
 
   for (const { slot, property } of TUNABLE) {
@@ -612,6 +861,133 @@ describe('#547 — la détection, exercée sur des sources synthétiques', () =>
       },
     })
     expect(countSpecs('login', specs, support).perFile['local.spec.ts']).toBe(3)
+  })
+
+  it('multiplie une émission dans une boucle par sa borne — le trou de la revue S88', () => {
+    // Avant la revue S88, chacune de ces boucles comptait 1.
+    const [specs, support] = scratch({
+      support: {
+        'setup.ts':
+          `const RETRIES = 3\n` +
+          `async function fill(page) {\n  ${SUBMIT}\n}\n` +
+          `export async function provision(page) {\n` +
+          `  let ok = false\n` +
+          `  for (let attempt = 1; attempt <= RETRIES && !ok; attempt++) {\n` +
+          `    await fill(page)\n  }\n}\n`,
+      },
+      specs: {
+        'literal.spec.ts': `test('x', async ({ page }) => {\n  for (let i = 0; i < 4; i++) { ${SUBMIT} }\n})\n`,
+        'retries.spec.ts': `test('x', async ({ page }) => { await provision(page) })\n`,
+        'nested.spec.ts':
+          `const PAIRS = ['a', 'b']\n` +
+          `test('x', async ({ page }) => {\n` +
+          `  for (const p of PAIRS) { for (let i = 0; i < 3; i += 1) { ${SUBMIT} } }\n})\n`,
+      },
+    })
+    expect(countSpecs('register', specs, support).perFile).toEqual({
+      'literal.spec.ts': 4,
+      'retries.spec.ts': 3,
+      'nested.spec.ts': 6,
+    })
+  })
+
+  it('ÉCHOUE explicitement sur une boucle qui émet sans borne lisible', () => {
+    const [specs, support] = scratch({
+      specs: {
+        'while.spec.ts': `test('x', async ({ page }) => {\n  while (!done) { ${SUBMIT} }\n})\n`,
+      },
+    })
+    expect(() => countSpecs('register', specs, support)).toThrow(
+      /while\.spec\.ts:2 — boucle qui émet \/api\/auth\/register \(1 par tour\) sans borne lisible/,
+    )
+    const [specs2, support2] = scratch({
+      specs: {
+        'dynamic.spec.ts':
+          `test('x', async ({ page }) => {\n` +
+          `  for (let i = 0; i < accounts.length; i++) { ${SUBMIT} }\n})\n`,
+      },
+    })
+    expect(() => countSpecs('register', specs2, support2)).toThrow(/sans borne lisible/)
+  })
+
+  it("ne réclame aucune borne à une boucle qui n'émet pas", () => {
+    const [specs, support] = scratch({
+      specs: {
+        'quiet.spec.ts':
+          `test('x', async ({ page }) => {\n` +
+          `  while (!done) { await page.reload() }\n  ${SUBMIT}\n})\n`,
+      },
+    })
+    expect(countSpecs('register', specs, support).perFile['quiet.spec.ts']).toBe(1)
+  })
+
+  describe('boucle annotée « retry sur échec de requête » (arbitrage dev 2026-09-14)', () => {
+    const ANNOTATION = '// rate-limit-budget: retry-on-request-failure'
+    const HELPER = `const ATTEMPTS = 3\nasync function submit(page) {\n  ${SUBMIT}\n  return 201\n}\n`
+    const retrySpec = (body: string, annotated = true) =>
+      HELPER +
+      `test('x', async ({ page }) => {\n  let outcome = 'retry'\n` +
+      (annotated ? `  ${ANNOTATION}\n` : '') +
+      `  for (let attempt = 1; attempt <= ATTEMPTS && outcome === 'retry'; attempt++) {\n` +
+      `${body}\n  }\n})\n`
+    const CLASSIFIED = '    outcome = classifyRegisterResponse(await submit(page))'
+
+    it('compte 1 une boucle conforme — et × borne la même boucle sans annotation', () => {
+      const [specs, support] = scratch({
+        specs: {
+          'annotated.spec.ts': retrySpec(CLASSIFIED),
+          'plain.spec.ts': retrySpec(CLASSIFIED, false),
+        },
+      })
+      expect(countSpecs('register', specs, support).perFile).toEqual({
+        'annotated.spec.ts': 1,
+        'plain.spec.ts': 3,
+      })
+    })
+
+    it('ÉCHOUE si la boucle annotée retente sur une page lente (try/catch autour du formulaire)', () => {
+      // Exactement le défaut que la revue S88 a trouvé dans auth.setup.ts.
+      const [specs, support] = scratch({
+        specs: {
+          'slow.spec.ts': retrySpec(
+            `    try {\n      await submit(page)\n` +
+              `      await expect(page.getByTestId('login-form')).toBeVisible({ timeout: 8000 })\n` +
+              `      outcome = classifyRegisterResponse(201)\n` +
+              `    } catch {\n      outcome = classifyRegisterResponse(null)\n    }`,
+          ),
+        },
+      })
+      expect(() => countSpecs('register', specs, support)).toThrow(
+        /slow\.spec\.ts:\d+ — boucle annotée .* HORS CONTRAT : try\/catch interdit/,
+      )
+    })
+
+    it("ÉCHOUE si l'issue n'est pas décidée par le classificateur de statuts", () => {
+      const [specs, support] = scratch({
+        specs: {
+          'adhoc.spec.ts': retrySpec(
+            "    outcome = (await submit(page)) === 201 ? 'created' : 'retry'",
+          ),
+        },
+      })
+      expect(() => countSpecs('register', specs, support)).toThrow(
+        /HORS CONTRAT : `outcome` assigné autrement que par classifyRegisterResponse/,
+      )
+    })
+
+    it("ÉCHOUE si la boucle annotée n'a pas de borne lisible", () => {
+      const [specs, support] = scratch({
+        specs: {
+          'unbounded.spec.ts':
+            HELPER +
+            `test('x', async ({ page }) => {\n  let outcome = 'retry'\n  ${ANNOTATION}\n` +
+            `  while (outcome === 'retry') {\n${CLASSIFIED}\n  }\n})\n`,
+        },
+      })
+      expect(() => countSpecs('register', specs, support)).toThrow(
+        /HORS CONTRAT : une boucle `for` à borne lisible est exigée/,
+      )
+    })
   })
 
   it('ne compte ni un import seul, ni une URL citée dans un message', () => {
