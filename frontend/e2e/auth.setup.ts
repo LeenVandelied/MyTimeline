@@ -11,12 +11,13 @@ import { ensureRegisterForm } from './support/register-page'
  * register par test.
  *
  * Le setup ne se rejoue PAS quand un test échoue et retry (seuls les tests
- * retryent). Nombre de registers émis ici = `ALL_ACCOUNTS.length`, soit 4 — et NON
- * 3, chiffre qu'affirmait ce commentaire depuis l'ajout du compte `prod` (#218).
- * Le budget complet (4 + 1 auto-inscription golden-path = 5) et sa marge face au
- * plafond backend sont documentés dans `support/accounts.ts` (§ LE BUDGET, EN
- * CHIFFRES) et RECOMPTÉS par `src/__tests__/e2e-register-budget.test.ts` — c'est
- * ce recomptage, pas ce paragraphe, qui fait foi.
+ * retryent). Il émet UN register et UN login par compte de `ALL_ACCOUNTS` (4), par
+ * passe — et c'est vrai même si un `provision` est retenté : le retry ré-inscrit un
+ * compte FIXE, prend 409, reste sur /fr/register et lève AVANT le login. En CI la
+ * passe 2 rejoue ce fichier contre le même backend (seaux partagés). Le budget
+ * complet (filtre ARMÉ en E2E depuis #547) est RECOMPTÉ par
+ * `src/__tests__/e2e-rate-limit-budget.test.ts`, qui lit la fonction `provision`
+ * ci-dessous — c'est ce recomptage, pas ce paragraphe, qui fait foi.
  *
  * Chaque compte est provisionné en SÉRIE (registers espacés dans le même job) et
  * dans son propre `browser.newContext` pour isoler les cookies avant sauvegarde.
@@ -33,12 +34,11 @@ type Page = import('@playwright/test').Page
  * /fr/register (aucune redirection vers /fr/login) -> le `provision` échoue (flaky
  * `[setup]`, cf. run 28752900622).
  *
- * DEPUIS #475 le profil `e2e` porte un plafond dédié de 20/min/IP (marge 12 pour un
- * budget de 8 recompté au S79) : le
- * dépassement n'est plus attendu. On GARDE néanmoins cette résilience — elle ne coûte
- * rien quand rien ne rate, et elle reste le seul filet si la stack tourne un jour
- * contre un backend au plafond par défaut (5). La retirer, ce serait miser sur une
- * configuration qui n'est vérifiée nulle part au runtime.
+ * DEPUIS #475 / #547 le profil `e2e` porte un plafond register dédié de 30/min/IP
+ * (pire cas CI recompté : 20), et le filtre est ARMÉ pendant les runs : le dépassement
+ * n'est pas attendu. On GARDE néanmoins cette résilience — elle ne coûte rien quand
+ * rien ne rate, et elle reste le seul filet si la stack tourne un jour contre un
+ * backend sans le profil `e2e` (plafond par défaut 5).
  *
  * Mécanique : si après submit on ne bascule pas sur le formulaire de login dans un
  * délai court, on ATTEND que le bucket se recharge (~1 min par minute) et on RETENTE
@@ -136,7 +136,8 @@ async function provision(account: E2eAccount, page: Page): Promise<void> {
         throw new Error(
           `ÉCHEC DE SOUMISSION du register ${account.key} après ${REGISTER_RETRIES} tentatives — ` +
             `le formulaire register s'est bien AFFICHÉ, ce n'est donc PAS un échec de rendu. ` +
-            `${observed}. Lecture: 429 = rate-limit register 5/min/IP (bucket non rechargé) ; ` +
+            `${observed}. Lecture: 429 = rate-limit register (seau PARTAGÉ par toute la suite, ` +
+            `30/min/IP sous le profil e2e, 5 sans lui — budget : e2e-rate-limit-budget.test.ts) ; ` +
             `403 = CORS refusé (le profil dev fige app.cors.allowed-origins=http://localhost:3000, ` +
             `cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md §pièges) ; ` +
             `409 = username/email déjà enregistré. Dernière erreur: ${err}`,

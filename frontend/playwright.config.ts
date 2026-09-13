@@ -162,15 +162,18 @@ export default defineConfig({
   //
   // ⚠ CORRECTION #475 — L'ARGUMENT QUI FIGURAIT ICI ÉTAIT FAUX. Ce paragraphe
   // justifiait `workers: 1` en CI par « le budget `register` de la suite est DÉJÀ au
-  // plafond (5 par run vs 5/min/IP) ». Deux erreurs, dans le même argument :
-  //   1. le job CI `e2e` démarre le backend avec `RATE_LIMIT_ENABLED=false`
-  //      (ci.yml), qui court-circuite le filtre ENTIER : aucun plafond n'est en
-  //      vigueur pendant un run, donc aucun budget n'y est « au plafond » ;
-  //   2. depuis #475 le profil `e2e` porte de toute façon un plafond dédié de
-  //      20/min/IP (application-e2e.properties), soit 8 émis pour 20 — marge 12.
-  //      (8 et non 5 : le compte a été corrigé au cycle 2 de revue du S79, les 3
-  //      inscriptions émises via `support/auth.ts#registerOnly` manquaient.)
-  // Le rate-limit `register` n'est donc PAS une raison de rester à 1 worker en CI.
+  // plafond (5 par run vs 5/min/IP) ». À l'époque le filtre était de toute façon
+  // désarmé en E2E (`RATE_LIMIT_ENABLED=false`).
+  //
+  // ⚠ MISE À JOUR #547 — le filtre est désormais ARMÉ pendant les runs E2E. Le nombre
+  // de workers reste SANS effet sur le budget : les seaux sont par IP et par minute,
+  // et toute la suite compte sur UNE IP (le serveur Next) quel que soit le
+  // parallélisme ; `workers` déplace les émissions dans le temps, il ne les multiplie
+  // pas. Ce qui compte, ce sont les TOTAUX des deux passes CI, retries compris :
+  // register 12 / 20 (pire cas), login 12 / 20, reset-password 4 / 12, contre des
+  // plafonds e2e de 30 / 30 / 15 (application-e2e.properties). Recompté depuis les
+  // sources par `src/__tests__/e2e-rate-limit-budget.test.ts`.
+  // Le rate-limit n'est donc PAS une raison de rester à 1 worker en CI.
   //
   // Restait alors une SEULE inconnue, et c'est elle qui motivait la valeur 1 en CI :
   // la borne de CHARGE héritée de #465 (mort du serveur Next sous parallélisme, cause
@@ -268,9 +271,10 @@ export default defineConfig({
   },
   projects: [
     // Projet `setup` : provisionne UNE fois les comptes E2E fixes (register+login)
-    // et sauvegarde leur storageState. Anti rate-limit register (5/min/IP) : les
-    // specs réutilisent ces cookies via `test.use({ storageState })` au lieu de
-    // register par test. Ne se rejoue PAS sur retry de test. Cf. e2e/auth.setup.ts.
+    // et sauvegarde leur storageState. Borne le budget rate-limit (filtre ARMÉ en
+    // E2E depuis #547) : les specs réutilisent ces cookies via
+    // `test.use({ storageState })` au lieu de register+login par test. Ne se rejoue
+    // PAS sur retry de test. Cf. e2e/auth.setup.ts.
     {
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
@@ -304,10 +308,26 @@ export default defineConfig({
       testMatch: /sprint-62-select-focus-indicator\.spec\.ts/,
       use: { ...devices['Desktop Firefox'] },
       // Même dépendance que `chromium` : les comptes E2E sont provisionnés une
-      // fois (anti rate-limit register, cf. projet `setup` ci-dessus) et leur
+      // fois (budget rate-limit, cf. projet `setup` ci-dessus) et leur
       // `storageState` est réutilisé tel quel — le cookie JWT n'est pas lié au
       // moteur.
       dependencies: ['setup'],
+    },
+    // #547 — PREUVE D'ARMEMENT du rate-limit sur le chemin réseau réel (proxy Next).
+    //
+    // Elle VIDE le seau `POST /api/auth/refresh`, partagé par toute la suite (une seule
+    // IP derrière le proxy). D'où un projet DÉDIÉ qui dépend de `chromium` ET `firefox` :
+    // il ne démarre qu'une fois toutes les specs terminées, jamais en concurrence avec
+    // elles. Aucune spec ne consomme ce créneau (vérifié par
+    // `src/__tests__/e2e-rate-limit-budget.test.ts`). Le suffixe `.proof.ts` le tient
+    // hors du `testMatch` par défaut de `chromium` et hors du filtre de la passe 2 CI.
+    // ⚠ Si une spec dont il dépend échoue, il ne tourne pas (« did not run ») : le
+    // jouer seul avec `--project=rate-limit-armed --no-deps` (détail dans le fichier).
+    {
+      name: 'rate-limit-armed',
+      testMatch: /rate-limit-armed\.proof\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['chromium', 'firefox'],
     },
   ],
   // #472 (Sprint 80) — CE QUE LE SERVEUR LOCAL COÛTE À LA SUITE, ET POURQUOI LA CI

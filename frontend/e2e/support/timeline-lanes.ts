@@ -41,10 +41,10 @@ import { expect, type Page } from '@playwright/test'
  *
  * ⚠ MISE À JOUR #463 — LE PARAGRAPHE QUI SUIVAIT ÉTAIT PÉRIMÉ. Il annonçait que la
  * réponse de fond (« semis isolé par spec ») était « bloquée par le rate-limit
- * register (5/min/IP) ». Deux fois faux aujourd'hui : le profil `e2e` porte un
- * plafond dédié de 20/min/IP depuis #475, et le job CI `e2e` comme le service
- * `backend-e2e` posent `RATE_LIMIT_ENABLED=false`, qui court-circuite le filtre
- * entier — aucun plafond n'est en vigueur pendant un run.
+ * register (5/min/IP) ». Faux aujourd'hui : le profil `e2e` porte un plafond
+ * `register` dédié (30/min/IP depuis #547, filtre ARMÉ pendant les runs) avec une
+ * marge recomptée par `src/__tests__/e2e-rate-limit-budget.test.ts`. Un compte de
+ * plus reste possible — à condition de le faire apparaître dans ce recompte.
  *
  * CE QUI A ÉTÉ FAIT À LA PLACE (#463) : le NETTOYAGE post-test
  * (`support/seed-cleanup.ts`), branché sur `seedCategory`/`seedProduct` par une

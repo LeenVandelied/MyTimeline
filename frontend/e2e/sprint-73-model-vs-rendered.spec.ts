@@ -213,10 +213,11 @@ async function readTitleGeometry(h1: Locator): Promise<{
  * ⚠ L'OBSTACLE INVOQUÉ CI-DESSOUS EST LUI AUSSI PÉRIMÉ. La suppression du
  * chevauchement demanderait un compte dédié, donc un `register` de plus — ce
  * paragraphe l'écartait au motif d'un « budget déjà au plafond (5/min/IP) ».
- * Cet argument est FAUX depuis #475 (S79) : le job CI `e2e` démarre le backend
- * avec `RATE_LIMIT_ENABLED=false`, et le profil `e2e` porte de toute façon
- * 20/min/IP pour 8 inscriptions émises. Un compte dédié est donc redevenu
- * possible — c'est la vraie parade, si le risque se matérialise.
+ * Cet argument est FAUX depuis #475 (S79) : le profil `e2e` porte un plafond
+ * `register` dédié (30/min/IP depuis #547, filtre ARMÉ pendant les runs) pour
+ * 12 inscriptions émises par job CI. Un compte dédié est donc possible — c'est la
+ * vraie parade, si le risque se matérialise — à condition de le compter dans
+ * `src/__tests__/e2e-rate-limit-budget.test.ts`.
  *
  * CE QUI EST NETTOYÉ, ET CE QUI NE PEUT PAS L'ÊTRE. Le PRODUIT au nom long est
  * supprimé — c'est lui, et lui seul, qui causait la régression. La CATÉGORIE
