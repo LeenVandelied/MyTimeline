@@ -6182,11 +6182,22 @@ absente, attendu) / 8 sautés** · **diff visuel noble : 3 runs consécutifs 11/
 assumés : pas d'ombre sur le panneau (#574), encre sombre sur 4 couleurs de barre (WCAG, BR-EVE-009), libellé chrome
 `ink-muted`, 6e lane ajoutée (« Passeport · Documents ») pour l'AC ; (3) le « 30/70 » n'est atteint qu'à ~1536 px (flex borné
 de la maquette : 396/556 à 1024, 420/788 à 1280) ; (4) le CTA primaire du hero se replie sur 2-3 lignes entre 1024 et 1279 px.
-**Follow-ups proposés (à arbitrer au `/sprint end 87`) :**
-  - CTA du hero sur 2-3 lignes entre 1024 et 1279 px [XS | landing] (issue-610 — RECOMMAND_FOLLOWUP)
-  - `landing-mobile-overflow.spec.ts:126` `?? 'none'` → `|| 'none'` [XS | e2e] (reviewer cycle 2)
-  - `landing-mobile-overflow.spec.ts:181-187` documenter l'arrêt de la remontée avant `<html>` [XS | e2e] (reviewer cycle 2)
-**Status :** En cours — PR à ouvrir ; titre et Status à solder après le merge (variante S57 : au `/sprint start 88`).
+**CI PR #681 :** 7/7 verts au SHA `8652ce5` (`e2e` Linux x86_64 compris) — les références `landing-hero` générées sur hôte
+arm64 dans l'image noble tiennent sur le runner.
+**Nouveaux pitfalls :** PIT-S87-001 → 006 (3 frontend, 3 tooling) · **Patterns :** PAT-S87-001 → 003 · **Décisions :**
+DEC-S87-001 (filet sans ombre contre la maquette), DEC-S87-002 (encre des barres via primitives gris) · **Bugs résolus :**
+BUG-S87-001, BUG-S87-002 · Packs `pit-*` régénérés, `--check` exit 0.
+**Follow-ups arbitrés (Phase 4 — triage item par item par le dev) :**
+  - CTA du hero sur 2-3 lignes entre 1024 et 1279 px [XS | landing] (issue-610) → **issue #682** (backlog, pas de milestone
+    Sprint 88)
+  - `landing-mobile-overflow.spec.ts` `?? 'none'` → `|| 'none'` [XS | e2e] (reviewer cycle 2) → **absorbé** (appliqué aussi à
+    `containerType`, même défaut)
+  - Arrêt de la remontée avant `<body>`/`<html>` non documenté [XS | e2e] (reviewer cycle 2) → **absorbé** (commentaire)
+  Ratio : 1 issue / 0 discard / 2 absorbés. Les 2 absorptions (1 caractère + 1 commentaire, spec seule) ont été appliquées
+  par le lead et non par un fullstack-dev spawné — écart au skill assumé, vérifié par la spec + `sprint-63` + tsc/eslint/format.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
+**Status :** En clôture — PR #681, merge à confirmer par le dev ; issues #610/#611/#641 à fermer APRÈS le merge ; titre et
+Status à solder au `/sprint start 88` (variante S57).
 
 ### Matrice de conflits (fichiers partagés)
 
