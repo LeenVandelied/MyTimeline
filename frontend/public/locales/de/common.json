@@ -140,9 +140,7 @@
       "description": "Meine Timeline hilft Ihnen, Ihre Termine zu verwalten, Ihre Zeit zu organisieren und Ihre Produktivität zu optimieren. Einfach, intuitiv und anpassbar."
     },
     "images": {
-      "dashboard": "Vorschau des Meine Timeline Dashboards",
-      "timeline": "Beispiel einer Timeline",
-      "mobileApp": "Meine Timeline Mobilanwendung"
+      "dashboard": "Vorschau des Meine Timeline Dashboards"
     },
     "hero": {
       "title": "Organisieren Sie Ihr Leben mit Meine Timeline",
@@ -195,12 +193,6 @@
       "subtitle": "Beginnen Sie jetzt und verbessern Sie Ihre Produktivität",
       "button": "Erstellen Sie jetzt kostenlos Ihr Konto",
       "secondary": "Weitere Informationen"
-    },
-    "mobileApp": {
-      "title": "Bringen Sie Ihre Organisation überall hin mit",
-      "subtitle": "Greifen Sie auf Meine Timeline auf allen Ihren Geräten zu. Bleiben Sie überall organisiert.",
-      "ios": "Bald auf iOS",
-      "android": "Bald auf Android"
     },
     "footer": {
       "description": "Ihr persönlicher Assistent für Organisation und Zeitmanagement",

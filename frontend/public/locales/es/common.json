@@ -140,9 +140,7 @@
       "description": "Mi Timeline te ayuda a gestionar tus plazos, organizar tu tiempo y optimizar tu productividad. Simple, intuitivo y personalizable."
     },
     "images": {
-      "dashboard": "Vista previa del panel de Mi Timeline",
-      "timeline": "Ejemplo de timeline",
-      "mobileApp": "Aplicación móvil Mi Timeline"
+      "dashboard": "Vista previa del panel de Mi Timeline"
     },
     "hero": {
       "title": "Organiza tu vida con Mi Timeline",
@@ -195,12 +193,6 @@
       "subtitle": "Comienza ahora y mejora tu productividad",
       "button": "Crear mi cuenta gratis",
       "secondary": "Obtener más información"
-    },
-    "mobileApp": {
-      "title": "Lleva tu organización contigo",
-      "subtitle": "Accede a Mi Timeline en todos tus dispositivos. Mantente organizado dondequiera que estés.",
-      "ios": "Próximamente en iOS",
-      "android": "Próximamente en Android"
     },
     "footer": {
       "description": "Tu asistente personal de organización y gestión del tiempo",

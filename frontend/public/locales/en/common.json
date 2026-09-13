@@ -140,9 +140,7 @@
       "description": "My Timeline helps you manage your deadlines, organize your time, and optimize your productivity. Simple, intuitive, and customizable."
     },
     "images": {
-      "dashboard": "My Timeline dashboard preview",
-      "timeline": "Timeline example",
-      "mobileApp": "My Timeline mobile app"
+      "dashboard": "My Timeline dashboard preview"
     },
     "hero": {
       "title": "Organize your life with My Timeline",
@@ -195,12 +193,6 @@
       "subtitle": "Start now and improve your productivity",
       "button": "Create my free account",
       "secondary": "Learn more"
-    },
-    "mobileApp": {
-      "title": "Take your organization everywhere",
-      "subtitle": "Access My Timeline on all your devices. Stay organized wherever you are.",
-      "ios": "Coming soon on iOS",
-      "android": "Coming soon on Android"
     },
     "footer": {
       "description": "Your personal time management and organization assistant",

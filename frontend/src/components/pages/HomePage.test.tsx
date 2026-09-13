@@ -20,7 +20,6 @@ describe('HomePage', () => {
     expect(screen.getByText('common.landing.features.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.howItWorks.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.testimonials.title')).toBeInTheDocument()
-    expect(screen.getByText('common.landing.mobileApp.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.cta.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.footer.description')).toBeInTheDocument()
   })
