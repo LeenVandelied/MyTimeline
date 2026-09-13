@@ -97,3 +97,11 @@ monte `<TimelinePreviewSection />` et `<MobileAppSection />`. Fichiers à suppri
    par #611 en V2.
 5. **Source visuelle** : `sprints/sprint-87/maquette-landing-hero.md` (extrait de
    `Landing.dc.html` par le lead).
+6. **Résidus constatés après #641 (`af01bb9`), à solder par #611** : (a) bloc `.timeline-preview` de
+   `src/styles/landing.css` + commentaire `:121` qui cite `TimelinePreviewSection` ; (b)
+   `src/styles/__tests__/base-layer.test.ts:352-490` — garde-fou de cascade #340 dont le cas n°2 et
+   deux tests (`:452`, `:477`) ASSÈRENT l'existence de `.timeline-preview` dans `@layer components` :
+   supprimer la règle les rougit. Ne pas les supprimer à l'aveugle : le 2e test (`:477`) est le
+   contrôle négatif du détecteur — il doit rester armé sur une autre classe réellement présente
+   (ou sur une fixture inline, comme il l'est déjà). (c) clé `common.landing.images.dashboard`
+   devenue orpheline par #610.
