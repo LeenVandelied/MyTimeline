@@ -202,6 +202,72 @@ Ce que le préflight **n'attrape pas** : il ne lit que les `import` **mono-ligne
 passerait sous son radar — et le symptôme trompeur reviendrait tel quel. À garder en tête si un
 futur plugin ESLint est ajouté autrement qu'en une ligne.
 
+### 5. Une base locale ancienne reste bloquée en V6 : V7 échoue sur `events_recurrence_unit_check`
+
+Concerne un backend lancé **depuis l'hôte** (`./mvnw spring-boot:run`, IDE) : son `DB_URL` par
+défaut vaut `jdbc:postgresql://localhost:5432/eventmanager`, donc il atteint le PostgreSQL **de la
+machine** s'il y en a un (voir le piège 1). Le symptôme au démarrage :
+
+```
+Migrating schema "public" to version "7 - design v3 schema"
+ERROR: Migration of schema "public" to version "7 - design v3 schema" failed! Changes successfully rolled back.
+Message    : ERROR: new row for relation "events" violates check constraint "events_recurrence_unit_check"
+Location   : V7__design_v3_schema.sql   Line : 88
+```
+
+La transaction est annulée : la base reste en V6 à chaque tentative.
+
+**Cause.** Aucune migration ne crée `events_recurrence_unit_check`. C'est le nom qu'attribue
+PostgreSQL à une contrainte CHECK **sans nom**, créée avant l'arrivée de Flyway sur une base qui a
+ensuite été adoptée telle quelle (`spring.flyway.baseline-on-migrate=true` : la première ligne de
+`flyway_schema_history` est alors `<< Flyway Baseline >>`, et V1 n'a jamais tourné dessus). Cette
+contrainte n'admet que `weeks`/`months`/`years` en minuscules. V7 retire la contrainte qu'elle
+connaît (`ck_events_recurrence_unit`) puis réécrit les valeurs en `WEEK`/`MONTH`/`YEAR` : la
+contrainte oubliée rejette la réécriture. Les données, elles, sont valides — le pré-vol de V7 les
+accepte, et V9 ne changerait rien (elle ne retire, elle aussi, que `ck_events_recurrence_unit`).
+
+Si la table `events` de la vieille base ne contient **aucune** ligne récurrente, V7 passe et le
+démarrage réussit… mais la contrainte survit jusqu'en V15 et refuse ensuite la **création** de
+tout événement récurrent (`WEEK`). Même cause, symptôme plus tardif.
+
+**Pourquoi la CI est verte.** Le job `flyway-smoke` démarre le backend sur un PostgreSQL 16
+**vierge** et vérifie que V1..V15 ont toutes été rejouées depuis un schéma vide. Une base construite
+par Flyway depuis V1 — celle d'un clone neuf, ou d'un volume `docker compose` créé depuis — n'a
+jamais eu cette contrainte : elle n'est pas concernée.
+
+**Diagnostic** (lecture seule) :
+
+```sql
+SELECT version, description, type FROM flyway_schema_history ORDER BY installed_rank;
+SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid = 'events'::regclass;
+```
+
+Une ligne `BASELINE` en tête et des contraintes nommées `events_*_check` à côté des `ck_events_*`
+confirment le cas.
+
+**Remède recommandé, sans perte de données** : laisser la vieille base intacte et pointer le
+backend sur une base neuve, que Flyway construit de V1 à V15.
+
+```bash
+createdb eventmanager_local
+DB_URL=jdbc:postgresql://localhost:5432/eventmanager_local ./mvnw spring-boot:run
+```
+
+(`DB_USERNAME` / `DB_PASSWORD` selon le rôle qui possède la nouvelle base.)
+
+**Remède destructif** — à réserver au cas où le contenu de la vieille base ne vous sert plus :
+`dropdb eventmanager && createdb eventmanager` pour un PostgreSQL de la machine, ou
+`docker compose down -v` si la base en cause est celle du volume Compose. Les deux **effacent
+définitivement** comptes, produits et événements ; rien ne permet de revenir en arrière sans
+sauvegarde préalable (`pg_dump`).
+
+Ne corrigez pas ce cas par une migration : une `V16` ne s'exécuterait jamais avant V7, et modifier
+V7 change son checksum, ce qui fait échouer la validation Flyway sur toutes les bases déjà migrées.
+
+Des bases `eventmanager_e2e` ou `eventmanager_s79` peuvent exister sur un poste de développement :
+ce sont des **contournements jetables** créés par des sessions précédentes pour démarrer malgré
+ce problème. Elles ne sont ni une référence de schéma ni une source de données.
+
 ## Tests
 
 Depuis la racine, [`scripts/test-quiet.sh`](scripts/test-quiet.sh) condense la sortie et ne

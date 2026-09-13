@@ -1366,7 +1366,7 @@ Le plan du S87 mettait #611 (frise) en vague 1 et #610 (emplacement de la frise)
 - PIT-S33-001 — URL absolue renvoyée par le backend + `apiClient.baseURL` finissant par `/api` → double `/api/api`
 - PIT-S33-002 — Liste de locales dupliquée dans N fichiers → 404 silencieux sur les langues non déclarées partout
 - PIT-S34-001 — `getRequestConfig({locale})` déprécié en next-intl (utiliser `requestLocale`)
-- PIT-S37-003 — E2E : DB dev locale bloquée à une vieille version Flyway → boot backend échoue sur données stale
+- PIT-S37-003 — E2E : DB dev locale bloquée à une vieille version Flyway → boot backend échoue à V7 sur une contrainte hors Flyway
 - PIT-S39-001 — Bordures UI Graphite : les tokens `rule`/`rule-strong` échouent le seuil WCAG AA ≥3:1
 - PIT-S40-001 — `git mv` d'un segment de route Next.js → `.next/types/**` périmé → `tsc` TS2307 fantômes
 - PIT-S40-002 — Shell client-only enveloppant `children` : la garde auth (redirection incluse) DOIT vivre dans le shell
@@ -1393,7 +1393,7 @@ Le plan du S87 mettait #611 (frise) en vague 1 et #610 (emplacement de la frise)
 - PIT-S46-004 — Le gate `[MISSING]` de `/sprint end` grep le littéral : écrire « aucun [MISSING] » bloque la PR
 - PIT-S47-001 — Un `find` qui renvoie 0 ne prouve PAS une absence : le cwd du shell persiste entre les appels
 - PIT-S47-002 — Le profil `dev` fige `app.cors.allowed-origins=:3000` : un front sur un autre port échoue en accusant le rate-limit
-- PIT-S47-003 — La base de dev `eventmanager` est inmigrable : V7 casse sur des données que V9 nettoierait
+- PIT-S47-003 — La base de dev `eventmanager` ne passe pas V7 : une contrainte CHECK créée hors Flyway rejette la conversion en majuscules
 - PIT-S47-004 — `workers > 1` rougit 4 specs `settings-*` : DEUX causes distinctes, même signature
 - PIT-S47-005 — `npm run build` tue le `next dev` en cours, et Next 15.5.22 peut renvoyer un 500 fantôme après recompilation
 - PIT-S48-001 — Contraste bi-mode : la contrainte serrée change de fond selon le thème
