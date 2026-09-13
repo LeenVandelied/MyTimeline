@@ -6302,3 +6302,133 @@ arbitrages de l'audit ne doit plus être citée telle quelle dans un briefing.**
 - **#638** — bloquée par #577, planifiable dès S85.
 - **#517** — sera de fait re-tranchée par #518 (S83) : le précédent du dépôt écarte
   délibérément `.mt-date--short`.
+
+## Vague de planification S88 → S92 — 2026-09-13 (`/sprint plan 5 -c "focus mvp"`)
+
+**Axe retenu (arbitrage dev explicite) :** *P1 fonctionnelles d'abord, puis conformité maquette*.
+« focus mvp » avait été lu « robustesse » (S78-S82) puis « écart maquette » (S83-S87) : question
+posée au dev plutôt que devinée. S88-S89 = P1 qui touchent le critère MVP local ; S90-S92 = lots de
+conformité au meilleur rapport effet/effort. Hors scope : milestone #55 « Mise en ligne (GELÉ) ».
+
+**Intrants :** 197 issues ouvertes, 52 candidates. **NO-OP :** aucune référencée « closes » par une PR
+mergée (60 dernières). **Phase 0.5 :** 52/52 `possibly_done:false`, signal réputé vide sur ce dépôt →
+l'architect a vérifié les 11 retenues dans le code (aucune déjà faite, **13 écarts énoncé ↔ code**).
+Contre-vérifiés par le lead : `flyway-smoke` vert au SHA `77666e7` (#545), comptage natif volontaire +
+compteur UI sans archivés (#546), Spring Boot 3.5.16 dans `pom.xml` (CLAUDE.md dit 3.4.13).
+
+**Arbitrages tranchés au plan (commentaires posés sur les issues) :**
+- **#545** — requalifiée en documentation (M → S) : `ck_events_recurrence_unit` est le seul nom posé par
+  V4/V7/V9 ; `events_recurrence_unit_check` = contrainte créée hors Flyway sur la base du poste. Un clone
+  n'est pas cassé.
+- **#546** — option A : un produit archivé occupe sa catégorie ; correctif UI (bascule en réassignation),
+  pas de V16, pas de modification du comptage natif (FK NOT NULL → 500).
+- **#652** — option A : `LocalDate` = date civile, lecture locale via un helper unique ; périmètre réel
+  ~30 lectures, frise comprise (S → M).
+
+**Pas de branche `sprint/88` créée** (convention S85 : `/sprint start` travaille sur la branche de son
+worktree).
+
+### Sprint 88 — 2026-09-13 (PLANIFIÉ — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
+**Objectif :** Plus de JWT valide dans les logs CI d'un dépôt public ; rate-limit ré-armé et prouvé en E2E ; dépannage base locale documenté
+**Milestone GitHub :** #89
+**Issues :** #568 (P1, M→S), #547 (P1, M), #545 (P1, M→S doc)
+**Vagues :** V1 = #568 ∥ #545 | V2 = #547 (pile E2E exclusive)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Cohésion < 0.3 assumée** (DEC-S57-003) : split #545 → S89 proposé et écarté (thème commun zéro code produit, #545 = doc seule).
+**À confirmer au démarrage :** #568 option `spring.test.mockmvc.print=none` global ; #547 modifie `ci.yml` (confirmation explicite), recompter TOUS les créneaux, nombre de runs CI verts exigés (proposé : 3).
+**Status :** Planifié
+
+### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
+**Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau
+**Milestone GitHub :** #90
+**Issues :** #546 (P1, M), #652 (P1, S→M)
+**Vagues :** V1 = #546 ∥ #652 (exclusivité navigateur à #652)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (arbitrages tranchés au plan)
+**Garde-fou :** tests de fuseau non vacants (`TZ=America/New_York` au lancement de Vitest, `timezoneId` Playwright) — la CI tourne en UTC.
+**Status :** Planifié
+
+### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
+**Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés
+**Milestone GitHub :** #91
+**Issues :** #624 (P2, S), #629 (P2, S), #630 (P2, S)
+**Vagues :** V1 = #624 ∥ #629 | V2 = #630
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 89 (#652 touche WeekAgenda / ProductList)
+**Consigne dure :** #624 re-route d'abord `golden-path.spec.ts:129-140` (preuve E2E du MVP vérifiée dans la frise du dashboard).
+**À trancher au démarrage :** portée réelle du squelette (#629, pages `'use client'`) ; emplacement de la création de produit (#624).
+**Status :** Planifié
+
+### Sprint 91 — 2026-09-13 (PLANIFIÉ — cohésion 1.00, Frise : instant, durée, série)
+**Objectif :** Ponctuel rendu en pin, récurrence visible (↻ + occurrences fantômes), borne de série conservée en édition depuis la frise
+**Milestone GitHub :** #92
+**Issues :** #676 (P2, S), #594 (P2, S), #595 (P2, S)
+**Vagues :** V1 = #676 ∥ #594 | V2 = #595
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 89 (#652 : `timeline/lib.ts`, `zoom.ts`), Sprint 90 (#624)
+**Status :** Planifié
+
+### Sprint 92 — 2026-09-13 (PLANIFIÉ — cohésion 0.67, Retour d'action et échéances produit)
+**Objectif :** Un seul mécanisme de toast présent sur les surfaces métier ; « prochain événement » sur la liste produits ; détail produit avec Archiver + Nouvel événement pré-rempli
+**Milestone GitHub :** #93
+**Issues :** #621 (P2, S), #603 (P2, M), #605 (P2, S)
+**Vagues :** V1 = #621 ∥ #603 | V2 = #605
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 89 (#652), Sprint 91 (#676 : `TimelineEditHost`)
+**À trancher au démarrage :** brancher ou supprimer `ui/toast.tsx` (#621) ; garder « Dernière activité » (#603) ; vocabulaire « Archiver » (#605).
+**Status :** Planifié
+
+### Matrice de conflits inter-sprints (S88-S92)
+
+| Issue A | Issue B | Fichier(s) en commun |
+|---|---|---|
+| 652 (S89) | 603, 605 (S92) | `ProductsListView.tsx`, `ProductDetailView.tsx`, `dashboard/lib.ts` |
+| 652 (S89) | 630 (S90) | `WeekAgenda.tsx`, `ProductList.tsx` |
+| 652 (S89) | 594, 595 (S91) | `timeline/lib.ts`, `timeline/zoom.ts` |
+| 624 (S90) | 594, 595 (S91) | specs `sprint-85-*`, `timeline.spec.ts`, `golden-path.spec.ts` |
+| 676 (S91) | 621 (S92) | `TimelineEditHost.tsx` |
+| 546 (S89) | 605 (S92) | `DeleteConfirmDialog.tsx` |
+| 630, 624, 603, 605 | — | `frontend/public/locales/*/` (un seul écrivain par namespace) |
+
+### Écarts énoncé ↔ code constatés au plan (13, détail dans `sprints/sprint-8{8,9}/`, `sprint-9{0,1,2}/architect-plans.md`)
+
+1. #545 prémisse fausse pour un clone (cf. arbitrage) ; PIT-S47 (`pitfalls.md:406`) inexact.
+2. #568 : jeton signé par une paire RSA éphémère par contexte ; helper #500 dans une seule classe sur 17.
+3. #546 : requête native volontaire, défaut dans l'UI (`CategoriesView.tsx:47-57`).
+4. #652 : ~30 lectures au lieu de 5 composants ; `ProductDetailView:419` → `:435-437` ; `toLocalIsoDate` non fautif.
+5. #547 : le flag coupe tous les créneaux (`application-e2e.properties:43`) ; commentaire `ci.yml:292` périmé.
+6. #621 : `CategoryDrawer.tsx` n'appelle plus toast.
+7. #603 : `products.list.count` à `:137`, compte des produits ; `nextEvent` existe déjà.
+8. #630 : 4 états vides ad hoc existent déjà.
+9. #597/#672 : numéros de ligne périmés dans `TimelineView.tsx` (garde clavier `:1261`, touche F `:1292`).
+10. `TimelineView.tsx` pèse 74,4 Ko, pas 58.
+11. #605 : `useOpenCreateEvent()` sans paramètre produit.
+12. #563 : aucune colonne locale sur `users` ; locale transmise = celle de la requête.
+13. #624 : seule la branche desktop du dashboard monte la frise.
++ **CLAUDE.md** : Spring Boot 3.5.16 réel, pas 3.4.13.
+
+### Risques identifiés pour la vague
+
+1. **#624 casse la preuve E2E du MVP** si `golden-path` n'est pas re-routé en premier.
+2. **#652 invisible en CI (UTC)** : sans `timezoneId`, test vacant ; la géométrie peut bouger au poste Europe/Paris.
+3. **#547 ré-arme tous les créneaux sous workers:2 × 2 frontends** : 429 intermittents possibles ; modification CI à confirmer.
+4. **Locales partagées en S90 et S92** : un seul agent par namespace.
+5. **#629 peut n'avoir aucun effet visible** (pages client) : vérification navigateur exigée.
+6. **Aucun rendu observé pour ce plan** : verdict navigateur requis pour #594, #595, #603, #605, #621, #624, #629, #630, #652.
+7. **Non vérifié :** l'API renvoie-t-elle une ligne par série (#595) ; mapping 500 sur violation FK ; contenu réel de la base locale ; barème de points supposé XS=1/S=2/M=3.
+
+### Issues non planifiées notables
+
+- **#563** — sans effet en local (Brevo no-op, DEC-S8-001) et l'AC2 exige une V16.
+- **#672 + #597 + #593** — même gestionnaire clavier / reducer de `TimelineView.tsx` : prochain lot frise.
+- **#600** — après le vocabulaire « Archiver » fixé par #605.
+- **#638** — débloquée (#577 livrée S84) : complément naturel de #630, candidate S93.
+- **#625** — aucun groupe `(auth)` sous `app/[locale]/` (DEC-S82-001 non implémentée) : M.
+- **#673 / #674** — minimap dans la toolbar ; `--lane-header-w: 168px` exige un audit d'impact.
+- **#678** — `created_at` existe depuis V3, absent d'`EventResponse` : DTO + Zod sans migration.
+- **#612 avant #615** — `FeaturesSection` et `HowItWorksSection` toujours présentes.
+- **#671** — décision UX mobile requise (maquette desktop seulement).
+- **#628, #682, #679, #680** — XS, bouche-trous possibles.
+
+**Score cohésion global :** S88 0.00 · S89 0.33 · S90 0.87 · S91 1.00 · S92 0.67 → **0.57**. Aucun sprint > 3 issues ni > 10 points.
