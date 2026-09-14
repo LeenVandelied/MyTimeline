@@ -11,11 +11,16 @@ import { PROD } from './support/accounts'
  * par un CONNECTEUR pointillé. Trois frises : desktop, mobile portrait, mobile paysage.
  *
  * CE QUE JSDOM NE PEUT PAS PROUVER (d'où cette spec) :
- *  - l'ORDRE DE PEINTURE et la NON-CAPTATION du clic : la prod n'empile pas les événements
- *    d'une lane (arbitrage dev 2026-09-15), fantômes et connecteurs d'une série passent donc
- *    SOUS les occurrences réelles d'une autre. Preuve par `elementFromPoint` : au centre de
- *    chaque occurrence réelle, et en chaque point où une marque croise une occurrence réelle,
- *    le hit-test rend l'occurrence réelle ;
+ *  - l'ORDRE DE PEINTURE : la prod n'empile pas les événements d'une lane (arbitrage dev
+ *    2026-09-15), fantômes et connecteurs d'une série passent donc SOUS les occurrences
+ *    réelles d'une autre — une occurrence réelle n'est JAMAIS masquée par une marque. Preuve
+ *    par `elementFromPoint` APRÈS avoir forcé `pointer-events:auto` sur toutes les marques
+ *    de la lane (sans ce forçage, le hit-test traverse une marque `pointer-events:none` peinte
+ *    par-dessus et la preuve serait vacante) : au centre de chaque partie peinte d'une
+ *    occurrence réelle, et en chaque point où une marque croise une occurrence réelle, le
+ *    hit-test rend l'occurrence réelle, jamais la marque ;
+ *  - la NON-CAPTATION du clic (propriété distincte) : `pointer-events` calculé `none` sur
+ *    toutes les marques de la lane, relevé AVANT le forçage, + clic réel sur B au zoom Jour ;
  *  - la VIRTUALISATION réelle des fantômes (bande mesurée, pas `UNBOUNDED_BAND`) ;
  *  - que le glyphe `↻` est effectivement PEINT (visible), pas seulement présent au DOM.
  *
@@ -31,7 +36,9 @@ import { PROD } from './support/accounts'
  * deux bornes ±400 j (étendue large : la piste doit défiler, cf. `sprint-91-event-pin`).
  *
  * CE QUE LA SPEC NE PROUVE PAS : la lisibilité de deux occurrences RÉELLES superposées
- * (pas d'empilage en rangées, issue dédiée) ; le rendu en thème sombre du contour planché.
+ * (pas d'empilage en rangées, issue dédiée) ; le rendu en thème sombre du contour planché ;
+ * l'ordre de peinture en dehors des points sondés (centres des parties réelles, centres des
+ * fantômes, aplomb des centres réels sur les connecteurs).
  */
 
 test.use({ storageState: PROD.storageState })
@@ -294,6 +301,8 @@ async function ghostDates(page: Page, eventId: string): Promise<string[]> {
 }
 
 interface HitProbe {
+  marksChecked: number
+  capturingMarks: string[]
   realsChecked: number
   realMisses: string[]
   overlaps: number
@@ -301,10 +310,19 @@ interface HitProbe {
 }
 
 /**
- * Hit-test RÉEL de la lane des séries, dans la zone visible de la piste (hors colonne
- * sticky d'en-tête, `gutterPx`) :
+ * Sonde de la lane des séries, dans la zone visible de la piste (hors colonne sticky
+ * d'en-tête, `gutterPx`).
+ *
+ * 0. NON-CAPTATION DU CLIC : chaque marque `[data-recurrence-mark]` de la lane a un
+ *    `pointer-events` calculé `none` (relevé AVANT le forçage ci-dessous).
+ *
+ * ORDRE DE PEINTURE : `elementFromPoint` IGNORE les éléments `pointer-events:none` — tel
+ * quel, il traverserait un fantôme peint PAR-DESSUS une barre et rendrait la barre quand
+ * même (mutation `z-index` restée verte). On pose donc temporairement `pointer-events:auto`
+ * en ligne sur TOUTES les marques de la lane (restauré dans un `finally`) : le hit-test rend
+ * alors l'élément réellement peint au-dessus du point.
  *  1. au centre de chaque partie peinte d'une occurrence réelle (barre ; pin ET libellé),
- *     `elementFromPoint` doit rendre CETTE occurrence ;
+ *     le hit-test doit rendre CETTE occurrence (pas une marque) ;
  *  2. au centre de chaque fantôme, et sur chaque connecteur à l'aplomb d'une occurrence
  *     réelle, si le point tombe DANS une occurrence réelle, le hit-test doit rendre une
  *     occurrence réelle qui le contient — jamais la marque, jamais le fond de lane.
@@ -312,75 +330,103 @@ interface HitProbe {
  */
 async function probeLane(lane: Locator, gutterPx: number): Promise<HitProbe> {
   return lane.evaluate((row, gutter) => {
-    const scroller = row.closest('.mt-tlv__scroll, .mt-tlm__scroll')
-    if (!scroller) throw new Error('conteneur de défilement introuvable')
-    const view = scroller.getBoundingClientRect()
-    const inView = (x: number, y: number) =>
-      x > view.left + gutter + 2 && x < view.right - 2 && y > 0 && y < window.innerHeight
-    const reals = [...row.querySelectorAll<HTMLElement>('[data-testid="timeline-event"]')]
-    const titleOf = (el: Element | null) => el?.getAttribute('data-event-title') ?? String(el)
-    const partsOf = (el: HTMLElement): DOMRect[] =>
-      el.getAttribute('data-event-kind') === 'single'
-        ? [el.querySelector('.mt-evt-pin'), el.querySelector('.mt-evt-pin__label')].map((n) => {
-            if (!n) throw new Error('pin incomplet')
-            return n.getBoundingClientRect()
-          })
-        : [el.getBoundingClientRect()]
-    const hitReal = (x: number, y: number) =>
-      document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-testid="timeline-event"]') ??
-      null
-    const inside = (r: DOMRect, x: number, y: number) =>
-      x > r.left + 1 && x < r.right - 1 && y > r.top + 1 && y < r.bottom - 1
+    const marks = [...row.querySelectorAll<HTMLElement>('[data-recurrence-mark]')]
+    const markLabel = (el: Element) =>
+      `${el.getAttribute('data-recurrence-mark')} ${el.getAttribute('data-event-id')} ${el.getAttribute('data-occurrence-date') ?? ''}`.trim()
+    const capturingMarks = marks
+      .filter((m) => getComputedStyle(m).pointerEvents !== 'none')
+      .map(markLabel)
+    const saved = marks.map((m) => ({
+      el: m,
+      value: m.style.getPropertyValue('pointer-events'),
+      priority: m.style.getPropertyPriority('pointer-events'),
+    }))
+    for (const m of marks) m.style.setProperty('pointer-events', 'auto', 'important')
+    try {
+      const scroller = row.closest('.mt-tlv__scroll, .mt-tlm__scroll')
+      if (!scroller) throw new Error('conteneur de défilement introuvable')
+      const view = scroller.getBoundingClientRect()
+      const inView = (x: number, y: number) =>
+        x > view.left + gutter + 2 && x < view.right - 2 && y > 0 && y < window.innerHeight
+      const reals = [...row.querySelectorAll<HTMLElement>('[data-testid="timeline-event"]')]
+      const titleOf = (el: Element | null) => el?.getAttribute('data-event-title') ?? String(el)
+      const partsOf = (el: HTMLElement): DOMRect[] =>
+        el.getAttribute('data-event-kind') === 'single'
+          ? [el.querySelector('.mt-evt-pin'), el.querySelector('.mt-evt-pin__label')].map((n) => {
+              if (!n) throw new Error('pin incomplet')
+              return n.getBoundingClientRect()
+            })
+          : [el.getBoundingClientRect()]
+      /** Élément PEINT au point : marque (prioritaire, c'est le défaut cherché) ou occurrence. */
+      const hitAt = (x: number, y: number) => {
+        const el = document.elementFromPoint(x, y)
+        const mark = el?.closest<HTMLElement>('[data-recurrence-mark]') ?? null
+        const real = el?.closest<HTMLElement>('[data-testid="timeline-event"]') ?? null
+        return {
+          real: mark ? null : real,
+          label: mark ? `marque ${markLabel(mark)}` : titleOf(real),
+        }
+      }
+      const inside = (r: DOMRect, x: number, y: number) =>
+        x > r.left + 1 && x < r.right - 1 && y > r.top + 1 && y < r.bottom - 1
 
-    const out = {
-      realsChecked: 0,
-      realMisses: [] as string[],
-      overlaps: 0,
-      overlapMisses: [] as string[],
-    }
-    for (const real of reals) {
-      for (const part of partsOf(real)) {
-        const x = part.left + part.width / 2
-        const y = part.top + part.height / 2
-        if (!inView(x, y)) continue
-        out.realsChecked++
-        const hit = hitReal(x, y)
-        if (hit !== real) out.realMisses.push(`${titleOf(real)} → ${titleOf(hit)}`)
+      const out: HitProbe = {
+        marksChecked: marks.length,
+        capturingMarks,
+        realsChecked: 0,
+        realMisses: [],
+        overlaps: 0,
+        overlapMisses: [],
       }
-    }
-    const checkPoint = (label: string, x: number, y: number) => {
-      if (!inView(x, y)) return
-      const covering = reals.filter((real) => partsOf(real).some((p) => inside(p, x, y)))
-      if (covering.length === 0) return
-      out.overlaps++
-      const hit = hitReal(x, y)
-      if (!hit || !covering.includes(hit)) {
-        out.overlapMisses.push(`${label} sous ${covering.map(titleOf).join('|')} → ${titleOf(hit)}`)
-      }
-    }
-    for (const ghost of row.querySelectorAll('[data-recurrence-mark="ghost"]')) {
-      const b = ghost.getBoundingClientRect()
-      checkPoint(
-        `fantôme ${ghost.getAttribute('data-occurrence-date')}`,
-        b.left + b.width / 2,
-        b.top + b.height / 2,
-      )
-    }
-    for (const connector of row.querySelectorAll('[data-recurrence-mark="connector"]')) {
-      const c = connector.getBoundingClientRect()
       for (const real of reals) {
         for (const part of partsOf(real)) {
           const x = part.left + part.width / 2
-          if (x > c.left && x < c.right)
-            checkPoint(
-              `connecteur ${connector.getAttribute('data-event-id')}`,
-              x,
-              c.top + c.height / 2,
-            )
+          const y = part.top + part.height / 2
+          if (!inView(x, y)) continue
+          out.realsChecked++
+          const hit = hitAt(x, y)
+          if (hit.real !== real) out.realMisses.push(`${titleOf(real)} → ${hit.label}`)
         }
       }
+      const checkPoint = (label: string, x: number, y: number) => {
+        if (!inView(x, y)) return
+        const covering = reals.filter((real) => partsOf(real).some((p) => inside(p, x, y)))
+        if (covering.length === 0) return
+        out.overlaps++
+        const hit = hitAt(x, y)
+        if (!hit.real || !covering.includes(hit.real)) {
+          out.overlapMisses.push(`${label} sous ${covering.map(titleOf).join('|')} → ${hit.label}`)
+        }
+      }
+      for (const ghost of row.querySelectorAll('[data-recurrence-mark="ghost"]')) {
+        const b = ghost.getBoundingClientRect()
+        checkPoint(
+          `fantôme ${ghost.getAttribute('data-occurrence-date')}`,
+          b.left + b.width / 2,
+          b.top + b.height / 2,
+        )
+      }
+      for (const connector of row.querySelectorAll('[data-recurrence-mark="connector"]')) {
+        const c = connector.getBoundingClientRect()
+        for (const real of reals) {
+          for (const part of partsOf(real)) {
+            const x = part.left + part.width / 2
+            if (x > c.left && x < c.right)
+              checkPoint(
+                `connecteur ${connector.getAttribute('data-event-id')}`,
+                x,
+                c.top + c.height / 2,
+              )
+          }
+        }
+      }
+      return out
+    } finally {
+      for (const { el, value, priority } of saved) {
+        if (value) el.style.setProperty('pointer-events', value, priority)
+        else el.style.removeProperty('pointer-events')
+      }
     }
-    return out
   }, gutterPx)
 }
 
@@ -391,15 +437,28 @@ async function probeLane(lane: Locator, gutterPx: number): Promise<HitProbe> {
  */
 async function assertRealOccurrencesOnTop(page: Page, where: string, gutterPx: number) {
   const lane = seriesLane(page)
-  const total: HitProbe = { realsChecked: 0, realMisses: [], overlaps: 0, overlapMisses: [] }
+  const total: HitProbe = {
+    marksChecked: 0,
+    capturingMarks: [],
+    realsChecked: 0,
+    realMisses: [],
+    overlaps: 0,
+    overlapMisses: [],
+  }
   for (const title of [A_TITLE, B_TITLE, C_TITLE]) {
     await revealEvent(page, title)
     const p = await probeLane(lane, gutterPx)
+    total.marksChecked += p.marksChecked
+    total.capturingMarks.push(...p.capturingMarks)
     total.realsChecked += p.realsChecked
     total.realMisses.push(...p.realMisses)
     total.overlaps += p.overlaps
     total.overlapMisses.push(...p.overlapMisses)
   }
+  // Non-captation du clic (propriété distincte de l'ordre de peinture), relevée sans forçage.
+  expect(total.capturingMarks, `[${where}] marques captant le clic`).toEqual([])
+  expect(total.marksChecked, `[${where}] marques sondées`).toBeGreaterThan(0)
+  // Ordre de peinture (marques forcées `pointer-events:auto` pendant le hit-test).
   expect(total.realMisses, `[${where}] centre des occurrences réelles`).toEqual([])
   expect(total.overlapMisses, `[${where}] marques sous les occurrences réelles`).toEqual([])
   // Non vacant : A (barre), B (pin + libellé) ont été sondés, et au moins deux croisements
