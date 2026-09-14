@@ -16,7 +16,8 @@
     "label": "Densité des événements sur {days} jours",
     "eyebrow": "Densité · {days} jours",
     "title": "Aperçu de la frise",
-    "empty": "Aucun événement sur la période"
+    "empty": "Aucun événement sur la période",
+    "openTimeline": "Ouvrir la frise"
   },
   "week": {
     "title": "Cette semaine",

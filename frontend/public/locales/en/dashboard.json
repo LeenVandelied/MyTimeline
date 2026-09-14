@@ -16,7 +16,8 @@
     "label": "Event density over {days} days",
     "eyebrow": "Density · {days} days",
     "title": "Timeline overview",
-    "empty": "No events in this period"
+    "empty": "No events in this period",
+    "openTimeline": "Open timeline"
   },
   "week": {
     "title": "This week",

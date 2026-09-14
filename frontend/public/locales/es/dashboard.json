@@ -16,7 +16,8 @@
     "label": "Densidad de eventos en {days} días",
     "eyebrow": "Densidad · {days} días",
     "title": "Vista de la cronología",
-    "empty": "Sin eventos en este período"
+    "empty": "Sin eventos en este período",
+    "openTimeline": "Abrir la cronología"
   },
   "week": {
     "title": "Esta semana",

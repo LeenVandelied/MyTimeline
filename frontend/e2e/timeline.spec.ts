@@ -683,12 +683,19 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
   }) => {
     // #592 (DEC-S85-005) — sur l'écran `/timeline`, la bulle `?` est REMPLACÉE par
     // le pied de la sidebar (couvert par `sprint-85-timeline-sidebar.spec.ts`).
-    // Elle reste sur les frises INCRUSTÉES : on la vérifie donc sur le dashboard,
-    // qui monte le même `TimelineView` en layout `embedded`.
+    // Elle reste sur les frises INCRUSTÉES : on la vérifie donc sur la fiche produit,
+    // qui monte le même `TimelineView` en layout `embedded`. (#624 — c'était le
+    // dashboard, qui ne monte plus de frise : son aperçu est le ruban de densité.)
     const userId = await getUserId(page)
     const cat = await seedCategory(page, unique('Toolbar Cat'))
-    await seedProduct(page, { userId, name: unique('Toolbar Prod'), categoryId: cat.id })
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Toolbar Prod'),
+      categoryId: cat.id,
+    })
     await ensureAuthenticated(page)
+    await page.goto(`/fr/products/${product.id}`, { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('product-detail-timeline')).toBeVisible()
     await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'embedded')
     // `.mt-tlv__help-pop` est TOUJOURS dans le DOM avec un bounding-box non vide
     // (`opacity:0;pointer-events:none` par défaut, timeline.css:190) : une

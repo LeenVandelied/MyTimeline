@@ -266,6 +266,16 @@ test.describe('#575 — dashboard mobile portrait en allemand (375 px)', () => {
       r.clientWidth,
     )
 
+    // #624 — « Zeitachse öffnen » partage l'en-tête du ruban (`flex-wrap`) : en
+    // allemand à 375 px, le lien doit passer à la ligne DANS le ruban, pas en sortir.
+    const open = page.getByTestId('dashboard-open-timeline')
+    await expect(open).toBeVisible()
+    const ob = (await open.boundingBox())!
+    const rb = (await ribbon.boundingBox())!
+    expect(ob.x + ob.width, '« Ouvrir la frise » sort du ruban').toBeLessThanOrEqual(
+      rb.x + rb.width,
+    )
+
     for (const testid of [
       'dashboard-density-ribbon',
       'dashboard-compact-agenda',
@@ -328,16 +338,23 @@ test.describe('#575 — détail produit', () => {
   })
 })
 
-/* ------------------------------ SALUT + CTA, MOBILE PORTRAIT (non-régression) */
+/* ------------------------------ SALUT, MOBILE PORTRAIT (non-régression) */
 
-test.describe('#575 — salut et CTA « Nouveau produit » à 375 px', () => {
+test.describe('#575 — salut à 375 px avec un nom insécable', () => {
   test.use({ viewport: { width: 375, height: 812 } })
 
-  // `GreetingHeader` partage sa rangée avec le CTA `nowrap` : sans `min-w-0` +
-  // `break-words`, un nom sans espace impose sa largeur min-content et pousse le CTA
-  // hors de l'écran (mesuré : page à 390 px en fr, 377 px en de — plus large en
-  // français, donc indépendant de la locale). Le français est le pire cas mesuré.
-  test('le CTA reste dans l’écran quand le nom est un jeton insécable', async ({ page }) => {
+  // Origine (#575) : `GreetingHeader` partageait sa rangée avec le CTA `nowrap`
+  // `add-product-button` ; sans `min-w-0` + `break-words`, un nom sans espace imposait
+  // sa largeur min-content et poussait le CTA hors de l'écran (mesuré : page à
+  // 390 px en fr, 377 px en de).
+  //
+  // #624 — ce CTA est RETIRÉ du dashboard (cf. en-tête de `dashboard/page.tsx`) : la
+  // mesure de sa boîte n'a plus d'objet. Le RISQUE demeure pour le salut lui-même :
+  // sans `break-words`, le jeton élargit toujours la page. L'assertion est donc
+  // re-ciblée sur le bord droit du `h1` du salut ; le débordement de page reste
+  // asserté. Le lien « Ouvrir la frise » est mesuré à 375 px en allemand, plus haut
+  // (describe « mobile portrait en allemand »), là où il vit : l'en-tête du ruban.
+  test('le salut reste dans l’écran quand le nom est un jeton insécable', async ({ page }) => {
     await openDashboard(page, 'fr')
     await expect(page.getByTestId('dashboard-mobile-portrait')).toBeVisible()
 
@@ -353,9 +370,9 @@ test.describe('#575 — salut et CTA « Nouveau produit » à 375 px', () => {
       'précondition : un jeton d’au moins 14 caractères dans le salut',
     ).toBeGreaterThanOrEqual(14)
 
-    const box = await page.getByTestId('add-product-button').boundingBox()
-    expect(box, 'CTA rendu').not.toBeNull()
-    expect(box!.x + box!.width, 'CTA poussé hors de l’écran').toBeLessThanOrEqual(375)
+    const box = await page.getByTestId('dashboard-greeting').locator('h1').boundingBox()
+    expect(box, 'salut rendu').not.toBeNull()
+    expect(box!.x + box!.width, 'salut élargi hors de l’écran').toBeLessThanOrEqual(375)
 
     const doc = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,

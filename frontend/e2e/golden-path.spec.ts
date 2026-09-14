@@ -7,8 +7,11 @@ import { test, expect, type Page } from '@playwright/test'
  *   1. Inscription d'un nouvel utilisateur (écran register)
  *   2. Connexion (écran login) -> dashboard
  *   3. Création d'un produit avec un événement associé (ProductDrawer, création
- *      couplée : produit + 1er événement ponctuel `single` non récurrent)
- *   4. Vérification de l'affichage de l'événement dans la timeline
+ *      couplée : produit + 1er événement ponctuel `single` non récurrent), depuis
+ *      l'écran Produits atteint par la nav du shell (#624)
+ *   4. Vérification de l'affichage de l'événement dans la timeline, atteinte par
+ *      le bouton « Ouvrir la frise » du dashboard (#624 : le dashboard ne monte
+ *      plus la frise complète)
  *
  * CONTRAINTES respectées :
  *   - Sélecteurs `data-testid` UNIQUEMENT (jamais texte / classe CSS). Les seuls
@@ -107,7 +110,12 @@ test.describe('Golden path : inscription -> connexion -> produit+événement -> 
     expect(seededCategory.id).toBeTruthy()
 
     // ---- 3. CRÉATION PRODUIT + ÉVÉNEMENT COUPLÉ (single, non récurrent) -----
-    await page.getByTestId('add-product-button').click()
+    // #624 — le dashboard ne porte plus de CTA produit (cf. en-tête de
+    // `dashboard/page.tsx`) : la création passe par l'écran Produits, atteint par la
+    // nav du shell (viewport Desktop Chrome 1280 px ⇒ sidebar peinte, `hidden md:flex`).
+    await page.getByTestId('shell-sidebar-nav-link-products').click()
+    await expect(page.getByTestId('products-list-view')).toBeVisible()
+    await page.getByTestId('products-new-button').click()
     await expect(page.getByTestId('product-drawer-form')).toBeVisible()
 
     await page.getByTestId('product-name-input').fill(productName)
@@ -126,8 +134,20 @@ test.describe('Golden path : inscription -> connexion -> produit+événement -> 
     await expect(page.getByTestId('product-drawer-form')).toBeHidden()
 
     // ---- 4. VÉRIFICATION TIMELINE ------------------------------------------
-    // Le dashboard refetch (onSuccess) : le produit apparaît comme ligne de la
-    // timeline et l'événement créé y est rendu.
+    // #624 — Retour au dashboard : il affiche l'APERÇU (ruban) et plus la frise
+    // complète. Le nom du produit dans `dashboard-product-list` prouve que les
+    // données sont chargées : l'absence de `timeline-view` n'est donc pas lue
+    // pendant un état de chargement (où elle serait vraie par construction).
+    await page.getByTestId('shell-sidebar-nav-link-dashboard').click()
+    await expect(page.getByTestId('dashboard')).toBeVisible()
+    await expect(page.getByTestId('dashboard-product-list')).toContainText(productName)
+    await expect(page.getByTestId('timeline-view')).toHaveCount(0)
+
+    // « Ouvrir la frise » mène à l'écran dédié, où le produit créé est une ligne
+    // de la frise et l'événement couplé y est rendu.
+    await page.getByTestId('dashboard-open-timeline').click()
+    await expect(page).toHaveURL(/\/fr\/timeline$/)
+    await expect(page.getByTestId('timeline-screen')).toBeVisible()
     await assertTimelineShowsProductAndEvent(page, productName)
   })
 })

@@ -16,7 +16,8 @@
     "label": "Ereignisdichte über {days} Tage",
     "eyebrow": "Dichte · {days} Tage",
     "title": "Zeitachse im Überblick",
-    "empty": "Keine Ereignisse in diesem Zeitraum"
+    "empty": "Keine Ereignisse in diesem Zeitraum",
+    "openTimeline": "Zeitachse öffnen"
   },
   "week": {
     "title": "Diese Woche",

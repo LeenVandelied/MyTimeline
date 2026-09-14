@@ -237,10 +237,15 @@ test.describe('#602 /timeline — la barre tient à toute largeur (minimap non �
   }
 })
 
-test.describe('#602 dashboard — frise incrustée SANS les boutons de l’écran (DEC-S85-005)', () => {
+// #624 — Ce describe visait le dashboard, qui ne monte plus de frise (aperçu = ruban).
+// La fiche produit est désormais la seule frise INCRUSTÉE : l'invariant DEC-S85-005 y
+// est vérifié. Le listing stubbé alimente aussi la fiche (même endpoint).
+test.describe('#602 frise incrustée (fiche produit) — SANS les boutons de l’écran (DEC-S85-005)', () => {
   test('ni « Aujourd’hui » ni « Nouvel événement » dans la barre de la frise', async ({ page }) => {
     await stubProducts(page)
     await ensureAuthenticated(page)
+    await page.goto(`/fr/products/${PRODUCT_ID}`, { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('product-detail-timeline')).toBeVisible()
     await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'embedded')
     await expect(page.getByTestId('timeline-today-button')).toHaveCount(0)
     await expect(page.getByTestId('timeline-new-event')).toHaveCount(0)

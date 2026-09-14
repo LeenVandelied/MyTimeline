@@ -5,11 +5,9 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
-import AddProductButton from '@/components/products/AddProductButton'
 import { AppFooter } from '@/components/ui/footer-app'
 import { CalendarDays, Menu } from 'lucide-react'
 import { safeErrorMessage } from '@/lib/safe-error'
-import { TimelineEditHost } from '@/components/timeline'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import {
@@ -46,6 +44,24 @@ import {
  * le hamburger, lequel n'apparaît qu'en portrait (masqué en paysage, où le rail
  * vertical le remplace). Langue / réglages / déconnexion sont fournis par le pied
  * de la sidebar du shell dès `md`, et par le `MobileDrawer` en dessous.
+ *
+ * #624 — APERÇU, PAS FRISE. Le handoff décrit le tableau de bord avec un aperçu
+ * compact de la frise (le ruban de densité) et un bouton « Ouvrir la frise » vers
+ * l'écran dédié. La frise complète (`TimelineEditHost`) montée sous la grille
+ * desktop est RETIRÉE : elle dupliquait `/timeline`. Le lien est porté par le ruban
+ * (`timelineHref`) dans CHACUNE des trois branches — elles sont exclusives (ternaire),
+ * donc exactement un lien est rendu à une largeur donnée.
+ *
+ * #624 — CTA SUPÉRIEUR DROIT RETIRÉ SANS REMPLACEMENT (arbitrage 2026-09-14). La
+ * maquette place « Nouvel événement » à côté du salut ; le code y montait
+ * `AddProductButton`. On NE le remplace PAS par un « Nouvel événement » : le shell
+ * en fournit déjà exactement UN à chaque largeur — `shell-sidebar-new-event-button`
+ * (>= md) et `shell-mobile-new-event-button` (< md), miroir `hidden md:flex` ⇔
+ * `md:hidden` de `AppShell.tsx`. En ajouter un ici le doublonnerait à TOUTES les
+ * largeurs. La création de produit reste accessible sur `/products`
+ * (`products-new-button`, même `ProductDrawer` en mode create). Un audit qui
+ * compare cet écran à la maquette et relève « pas de CTA à côté du salut » doit
+ * lire ce paragraphe avant de rouvrir l'écart.
  */
 export default function Dashboard() {
   const t = useTranslations()
@@ -55,7 +71,7 @@ export default function Dashboard() {
   const { user, loading } = useAuthGuard()
   const { logout } = useAuth()
   const router = useRouter()
-  const { events, products, kpis, isLoading, resources, refetch } = useDashboardData(user?.id)
+  const { events, products, kpis } = useDashboardData(user?.id)
   const isMobile = useMediaQuery('(max-width: 767px)')
   // #85 — Paysage mobile : hauteur contrainte impose le rail vertical plutôt que
   // le hamburger portrait. Prioritaire sur `isMobile` dans le switch ternaire.
@@ -63,6 +79,8 @@ export default function Dashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   // #85 — Réf sur la colonne produits paysage (scroll ciblé sans querySelector DOM).
   const landscapeProductsRef = useRef<HTMLDivElement>(null)
+  // #624 — Cible du bouton « Ouvrir la frise » (route localisée, `localePrefix: 'always'`).
+  const timelineHref = `/${locale}/timeline`
 
   const handleLogout = async () => {
     try {
@@ -185,7 +203,12 @@ export default function Dashboard() {
               className="flex min-w-0 flex-col gap-4"
               data-testid="dashboard-landscape-products"
             >
-              <DensityRibbon events={events} locale={locale} scrollable />
+              <DensityRibbon
+                events={events}
+                locale={locale}
+                scrollable
+                timelineHref={timelineHref}
+              />
               <ProductCarousel products={products} locale={locale} />
             </div>
           </div>
@@ -196,26 +219,23 @@ export default function Dashboard() {
           className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6"
           data-testid="dashboard-mobile-portrait"
         >
-          <div className="flex items-start justify-between gap-4">
-            <GreetingHeader name={user.username} variant="compact" />
-            <AddProductButton onProductAdded={refetch} />
-          </div>
+          {/* #624 — seul sur sa rangée depuis le retrait d'`AddProductButton` (cf.
+              en-tête). `GreetingHeader` garde `min-w-0` + `break-words` : un nom
+              insécable ne doit toujours pas élargir la page. */}
+          <GreetingHeader name={user.username} variant="compact" />
 
-          <DensityRibbon events={events} locale={locale} scrollable />
+          <DensityRibbon events={events} locale={locale} scrollable timelineHref={timelineHref} />
 
           <CompactAgenda events={events} />
 
           <ProductCarousel products={products} locale={locale} />
         </div>
       ) : (
-        // -------- Desktop (#80, inchangé) --------
+        // -------- Desktop (#80) --------
         <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between gap-4">
-            <GreetingHeader name={user.username} />
-            <AddProductButton onProductAdded={refetch} />
-          </div>
+          <GreetingHeader name={user.username} />
 
-          <DensityRibbon events={events} locale={locale} />
+          <DensityRibbon events={events} locale={locale} timelineHref={timelineHref} />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
             <WeekAgenda events={events} locale={locale} variant="table" />
@@ -224,19 +244,6 @@ export default function Dashboard() {
               <ProductList products={products} locale={locale} />
             </aside>
           </div>
-
-          <section
-            className="bg-surface border-rule rounded-lg border p-3"
-            aria-label={t('dashboard.recentEvents.title')}
-          >
-            {isLoading ? (
-              <div className="flex h-64 items-center justify-center" role="status">
-                <span className="text-ink-muted text-xs">{t('common.loading.default')}</span>
-              </div>
-            ) : (
-              <TimelineEditHost events={events} resources={resources} locale={locale} />
-            )}
-          </section>
         </div>
       )}
 
