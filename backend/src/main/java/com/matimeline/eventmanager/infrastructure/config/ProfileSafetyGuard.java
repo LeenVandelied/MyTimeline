@@ -4,6 +4,7 @@ import com.matimeline.eventmanager.infrastructure.security.RateLimitingFilter;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.util.NumberUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -266,9 +267,14 @@ public class ProfileSafetyGuard
      *
      * <p>Hors prod effectif, rien ne change : le profil {@code e2e} relève légitimement ces
      * plafonds. En prod, une valeur absente ou blanche (variable d'env vide) vaut le défaut et
-     * passe ; une valeur ÉGALE ou INFÉRIEURE au défaut passe ; une valeur {@code < 1} ou non
-     * numérique est refusée plus tard par {@code RateLimitingFilter} (plancher, conversion).
-     * Les défauts sont lus dans les constantes du filtre (source unique, inlinées par javac).
+     * passe ; une valeur ÉGALE ou INFÉRIEURE au défaut passe ; une valeur illisible comme entier
+     * est REFUSÉE ici ; une valeur {@code < 1} est refusée plus tard par {@code RateLimitingFilter}
+     * (plancher). Les défauts sont lus dans les constantes du filtre (source unique, inlinées).
+     *
+     * <p>La valeur est lue par le MÊME chemin que le binding {@code @Value Integer} du filtre
+     * ({@link NumberUtils#parseNumber}, qui décode {@code 0x}/{@code #}) — revue S88, cycle 2 :
+     * avec {@code Integer.valueOf}, {@code 0x3E8} devenait illisible donc ignoré ici, alors que
+     * Spring l'appliquait comme 1000 en production.
      */
     private void checkRateLimitCeilingRaisedInProduction(ConfigurableEnvironment env) {
         if (!isProductionEffective(env)) {
@@ -289,18 +295,25 @@ public class ProfileSafetyGuard
     }
 
     /**
-     * Valeur entière de la property, ou {@code null} si elle est absente, blanche, irrésoluble ou
-     * non numérique. Ces deux derniers cas ne sont PAS une validation : le binding
-     * {@code @Value Integer} de {@code RateLimitingFilter} les refuse au boot, avec son message.
+     * Valeur entière de la property, convertie comme le binding {@code @Value Integer} de
+     * {@code RateLimitingFilter} ({@link NumberUtils#parseNumber} : décimal, {@code 0x}, {@code #}).
+     * {@code null} si elle est absente, blanche ou irrésoluble (= défaut). Appelée en prod
+     * effective seulement : une valeur ILLISIBLE y refuse le boot — la laisser passer supposerait
+     * que la conversion du filtre la rejette toujours, ce que ce garde ne peut pas garantir.
      */
     private Integer readIntegerOrNull(ConfigurableEnvironment env, String key) {
         if (isBlankProperty(env, key)) {
             return null;
         }
+        String raw = env.getProperty(key).trim();
         try {
-            return Integer.valueOf(env.getProperty(key).trim());
-        } catch (NumberFormatException e) {
-            return null;
+            return NumberUtils.parseNumber(raw, Integer.class);
+        } catch (IllegalArgumentException e) { // NumberFormatException comprise
+            throw new IllegalStateException(
+                    "ARRÊT FAIL-FAST (#547) : '" + key + "=" + raw + "' n'est pas un entier lisible en "
+                    + "environnement de production effective (marqueur ENVIRONMENT/APP_ENV=prod ou "
+                    + "profil Spring 'prod' actif). Retirer cette property (ou sa variable d'env) : "
+                    + "le défaut s'applique.");
         }
     }
 
