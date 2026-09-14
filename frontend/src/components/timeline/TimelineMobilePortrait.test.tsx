@@ -111,6 +111,31 @@ describe('TimelineMobilePortrait', () => {
     expect(events[1]).not.toHaveAttribute('data-archived')
   })
 
+  it('#594 — le ponctuel est un PIN centré sur sa date ; la durée reste une barre', () => {
+    renderPortrait()
+    const [bar, pin] = screen.getAllByTestId('timeline-event')
+    expect(bar).toHaveAttribute('data-event-kind', 'duration')
+    expect(bar.querySelector('.mt-evt-pin')).toBeNull()
+    expect(bar.style.width).not.toBe('')
+
+    expect(pin).toHaveAttribute('data-event-kind', 'single')
+    expect(pin).toHaveClass('mt-tlm__evt--pin')
+    // Ni largeur ni fond posés : le pin ne s'étire pas, le libellé n'est pas peint
+    // sur la couleur de l'événement (encre de page, CSS).
+    expect(pin.style.width).toBe('')
+    expect(pin.style.background).toBe('')
+    expect(pin.style.getPropertyValue('--mt-evt')).toBe('#4FA459')
+    expect(pin.querySelector('.mt-evt-pin')).toHaveAttribute('aria-hidden', 'true')
+    expect(pin.querySelector('.mt-evt-pin__label')).toHaveTextContent('Livraison pain')
+    // Centré : rangeStart = 10 juil − 30 j = 10 juin ; 20 juil = +40 j × 12 px = 480 → 475.
+    expect((pin.closest('.mt-tlm__evt-wrap') as HTMLElement).style.left).toBe('475px')
+    // Le `⋯` voisin n'hérite pas de l'encre calculée sur la couleur de l'événement.
+    const wrap = pin.closest('.mt-tlm__evt-wrap') as HTMLElement
+    expect(
+      (wrap.querySelector('[data-testid="timeline-event-more"]') as HTMLElement).style.color,
+    ).toBe('')
+  })
+
   it('affiche le nom du produit dans chaque lane', () => {
     renderPortrait()
     const titles = screen.getAllByTestId('timeline-resource-title').map((el) => el.textContent)

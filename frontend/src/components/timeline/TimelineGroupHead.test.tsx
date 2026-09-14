@@ -236,6 +236,35 @@ describe('#601 — en-tête de catégorie (frise desktop)', () => {
     expect(bars.get('a3')!.style.backgroundColor).toBe('var(--color-accent)')
   })
 
+  it('#594 — un ponctuel replié est un trait de 6 px CENTRÉ sur sa date, pas son emprise réservée', async () => {
+    const user = userEvent.setup()
+    const single = mk('a4', 'pa2', 'Cat A', '2026-07-22', '2026-07-22', '#3B62D4')
+    single.extendedProps.type = 'single'
+    renderWithIntl(
+      <TimelineView
+        events={[...EVENTS, single]}
+        resources={RESOURCES}
+        locale="fr-FR"
+        today={new Date(2026, 6, 15)}
+      />,
+      'fr',
+    )
+    const pin = screen
+      .getAllByTestId('timeline-event')
+      .find((p) => p.getAttribute('data-event-title') === 'Event a4')!
+    expect(pin).toHaveAttribute('data-event-kind', 'single')
+    // Date du pin = bord gauche + demi-largeur (5 px).
+    const dateX = parseFloat(pin.style.left) + 5
+
+    await user.click(headFor('Cat A'))
+    const bar = screen
+      .getAllByTestId('timeline-group-summary-bar')
+      .find((b) => b.getAttribute('data-event-id') === 'a4')!
+    expect(bar).toHaveAttribute('data-event-kind', 'single')
+    expect(bar.style.width).toBe('6px')
+    expect(parseFloat(bar.style.left) + 3).toBe(dateX)
+  })
+
   it('le résumé suit le zoom : largeurs/positions re-projetées à la nouvelle échelle', async () => {
     const user = userEvent.setup()
     renderView()

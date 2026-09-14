@@ -88,6 +88,99 @@ describe('EventPill', () => {
     expect(pill.style.getPropertyValue('--mt-evt-ink')).toBe(INK_LIGHT)
   })
 
+  // ==================== #594 — ponctuel = pin + libellé ====================
+  describe('#594 rendu pin d’un événement ponctuel', () => {
+    const single = (over: Partial<Parameters<typeof makePositionedEvent>[0]> = {}) =>
+      makePositionedEvent({
+        leftPx: 80,
+        widthPx: 100,
+        extendedProps: {
+          productId: 'prod-1',
+          productName: 'Lait entier bio',
+          category: 'Produits frais',
+          type: 'single',
+        },
+        ...over,
+      })
+
+    it('ponctuel → pin + libellé ; durée → barre (attribut data-event-kind, même testid)', () => {
+      const { container, rerender } = render(
+        <EventPill event={single()} ariaLabel="x" onSelect={() => {}} />,
+      )
+      const pin = screen.getByTestId('timeline-event')
+      expect(pin).toHaveAttribute('data-event-kind', 'single')
+      expect(pin).toHaveClass('mt-tlv__evt--pin')
+      expect(container.querySelector('.mt-evt-pin')).toHaveAttribute('aria-hidden', 'true')
+      expect(container.querySelector('.mt-tlv__evt-dot')).toBeNull()
+
+      rerender(<EventPill event={makePositionedEvent()} ariaLabel="x" onSelect={() => {}} />)
+      const bar = screen.getByTestId('timeline-event')
+      expect(bar).toHaveAttribute('data-event-kind', 'duration')
+      expect(bar).not.toHaveClass('mt-tlv__evt--pin')
+      expect(container.querySelector('.mt-evt-pin')).toBeNull()
+    })
+
+    it('centré sur la date (left − 5) et SANS largeur posée : le pin ne s’étire pas', () => {
+      render(<EventPill event={single()} ariaLabel="x" onSelect={() => {}} />)
+      const pin = screen.getByTestId('timeline-event')
+      expect(pin.style.left).toBe('75px')
+      // `widthPx` est une emprise réservée (100 px), pas une largeur à peindre.
+      expect(pin.style.width).toBe('')
+      expect(pin.style.getPropertyValue('--mt-evt')).toBe('#6366f1')
+    })
+
+    it('libellé DANS la cible, non masqué, et JAMAIS de libellé extérieur de secours', () => {
+      // #6366f1 fait sortir le libellé d'une BARRE (4.47:1) : pour un pin le
+      // garde-fou est sans objet — un seul libellé, toujours sur le fond de lane.
+      render(<EventPill event={single()} ariaLabel="Péremption, à venir" onSelect={() => {}} />)
+      const pin = screen.getByTestId('timeline-event')
+      const label = within(pin).getByText('Péremption')
+      expect(label).toHaveClass('mt-evt-pin__label')
+      expect(label).not.toHaveAttribute('aria-hidden')
+      expect(pin.style.getPropertyValue('--mt-evt-ink')).toBe('')
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('conserve roving tabindex, data-evt-nav, ref, clavier et état archivé (#81, #230)', async () => {
+      const user = userEvent.setup()
+      const onSelect = vi.fn()
+      const onKeyDown = vi.fn()
+      const pillRef = vi.fn()
+      const event = single({
+        extendedProps: {
+          productId: 'prod-1',
+          productName: 'Lait entier bio',
+          category: 'Produits frais',
+          type: 'single',
+          archived: true,
+        },
+      })
+      render(
+        <EventPill
+          event={event}
+          ariaLabel="x"
+          onSelect={onSelect}
+          tabIndex={0}
+          navKey="0:1"
+          onKeyDown={onKeyDown}
+          pillRef={pillRef}
+        />,
+      )
+      const pin = screen.getByTestId('timeline-event')
+      expect(pin).toHaveAttribute('tabindex', '0')
+      expect(pin).toHaveAttribute('data-evt-nav', '0:1')
+      expect(pin).toHaveAttribute('data-archived', 'true')
+      expect(pin).toHaveClass('mt-tlv__evt--archived')
+      expect(pillRef).toHaveBeenCalledWith(pin)
+      // Clic sur le LIBELLÉ : il fait partie de la cible.
+      await user.click(within(pin).getByText('Péremption'))
+      expect(onSelect).toHaveBeenCalledWith(event)
+      pin.focus()
+      await user.keyboard('{ArrowRight}')
+      expect(onKeyDown).toHaveBeenCalled()
+    })
+  })
+
   // ==================== #228 — aria-hidden conditionnel ====================
   // Le span titre interne ne doit PAS rester masqué aux lecteurs d'écran quand
   // il est le SEUL rendu visible du titre (readableInside). Il ne redevient

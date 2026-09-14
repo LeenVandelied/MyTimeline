@@ -12,6 +12,11 @@ import {
   isWeekend,
   positionEvents,
   zoomReducer,
+  DAY_WIDTH_PX,
+  PIN_FOOTPRINT_PX,
+  PIN_HALF_WIDTH_PX,
+  eventKind,
+  eventTrackExtent,
   type ZoomState,
 } from './zoom'
 
@@ -21,7 +26,20 @@ import {
  * reducer de zoom (invariant clé : le zoom ne touche QUE le niveau/offset).
  */
 
-function evt(id: string, start: string, end: string, resourceId = 'r1'): FullCalendarEvent {
+/**
+ * #594 — le type par défaut du helper passe de `single` à `duration`. Avant #594 il
+ * n'avait aucun effet sur la géométrie ; les tests de `positionEvents` ci-dessous
+ * assertent une LARGEUR PROPORTIONNELLE À LA DURÉE (5 j × 10 px, plancher d'un jour),
+ * ce qui est la définition d'une barre de durée. Un ponctuel a désormais une emprise
+ * constante : il est couvert par le bloc « #594 » dédié, en `type: 'single'` explicite.
+ */
+function evt(
+  id: string,
+  start: string,
+  end: string,
+  resourceId = 'r1',
+  type: 'single' | 'duration' = 'duration',
+): FullCalendarEvent {
   return {
     id,
     title: id,
@@ -30,7 +48,7 @@ function evt(id: string, start: string, end: string, resourceId = 'r1'): FullCal
     allDay: true,
     resourceId,
     color: '#123456',
-    extendedProps: { productId: resourceId, productName: 'P', category: 'C', type: 'single' },
+    extendedProps: { productId: resourceId, productName: 'P', category: 'C', type },
   }
 }
 
@@ -153,6 +171,67 @@ describe('positionEvents', () => {
       new Date(2026, 6, 5),
     )
     expect(map.get('r1')![0].status).toBe('ongoing')
+  })
+})
+
+describe('#594 ponctuel (pin) vs durée d’un jour', () => {
+  const rangeStart = new Date(2026, 6, 1)
+  const now = new Date(2026, 6, 20)
+  const single = evt('pin', '2026-07-11', '2026-07-11', 'r1', 'single')
+  const oneDay = evt('bar', '2026-07-11', '2026-07-12', 'r1', 'duration')
+
+  it('eventKind : seul `type === single` produit un pin (toute autre valeur garde la barre)', () => {
+    expect(eventKind(single)).toBe('single')
+    expect(eventKind(oneDay)).toBe('duration')
+    expect(eventKind({ extendedProps: { ...oneDay.extendedProps, type: 'autre' } })).toBe(
+      'duration',
+    )
+  })
+
+  it('un ponctuel garde la MÊME emprise à tous les zooms ; une durée d’un jour, non', () => {
+    const pinWidths = new Set<number>()
+    const barWidths = new Set<number>()
+    for (const dayWidth of Object.values(DAY_WIDTH_PX)) {
+      const [pin, bar] = positionEvents([single, oneDay], rangeStart, dayWidth, now).get('r1')!
+      pinWidths.add(pin.widthPx)
+      barWidths.add(bar.widthPx)
+      // Même date d'ancrage : la distinction ne vient QUE de la géométrie.
+      expect(pin.leftPx).toBe(bar.leftPx)
+    }
+    expect([...pinWidths]).toEqual([PIN_FOOTPRINT_PX.desktop])
+    // 96 / 34 / 12 / 6 (plancher sur 5) / 6 (plancher sur 2,2) → 4 valeurs distinctes.
+    expect(barWidths.size).toBe(4)
+  })
+
+  it('l’emprise du pin est paramétrable (mobile : 90 px) sans toucher aux durées', () => {
+    const [pin, bar] = positionEvents(
+      [single, oneDay],
+      rangeStart,
+      12,
+      now,
+      6,
+      PIN_FOOTPRINT_PX.mobile,
+    ).get('r1')!
+    expect(pin.widthPx).toBe(90)
+    expect(bar.widthPx).toBe(12)
+  })
+
+  it('eventTrackExtent : le pin déborde de sa demi-largeur à gauche, la barre commence à la date', () => {
+    const [pin, bar] = positionEvents([single, oneDay], rangeStart, 12, now).get('r1')!
+    // 10 jours × 12 px = 120.
+    expect(eventTrackExtent(pin)).toEqual({ start: 120 - PIN_HALF_WIDTH_PX, end: 220 })
+    expect(eventTrackExtent(bar)).toEqual({ start: 120, end: 132 })
+  })
+
+  it('empilage de fait : l’emprise réservée d’un pin couvre la place de son libellé', () => {
+    // Pas d'empilage en rangées en prod (toutes les pastilles d'une lane sont à
+    // `top` fixe) : l'emprise réservée est ce qui garantit qu'un événement dont le
+    // début tombe AVANT la fin réservée est reconnu comme chevauchant le libellé.
+    const next = evt('next', '2026-07-15', '2026-07-16', 'r1', 'duration')
+    const [pin, , after] = positionEvents([single, oneDay, next], rangeStart, 12, now).get('r1')!
+    // Libellé à `x + 11` (maquette) : 4 jours × 12 px = 48 px plus loin, DANS les 100 px.
+    expect(eventTrackExtent(after).start).toBeLessThan(eventTrackExtent(pin).end)
+    expect(eventTrackExtent(after).start).toBeGreaterThan(pin.leftPx + 11)
   })
 })
 

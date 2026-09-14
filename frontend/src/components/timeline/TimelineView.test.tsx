@@ -434,11 +434,14 @@ describe('TimelineView', () => {
               // `DEFAULT_COLOR` vaut `#3B62D4` (5.407:1) depuis #393 — ne pas
               // resynchroniser cette valeur sur le défaut, le test perdrait son objet.
               color: '#6366f1',
+              // #594 — `duration` (était `single`) : le garde-fou de contraste ne
+              // concerne plus que les BARRES ; un ponctuel est un pin dont le libellé
+              // est toujours dehors, sans libellé de secours (test suivant).
               extendedProps: {
                 productId: 'p3',
                 productName: 'Prod3',
                 category: 'Cat3',
-                type: 'single',
+                type: 'duration',
               },
             },
           ]}
@@ -454,6 +457,37 @@ describe('TimelineView', () => {
 
     it('ne rend PAS de libellé extérieur quand le contraste passe AA dedans', () => {
       setup() // events #3B62D4 (5.41) et #4FA459 → lisibles dedans
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('#594 — un ponctuel de même couleur faible est un PIN : un seul libellé, pas de secours', () => {
+      render(
+        <TimelineView
+          events={[
+            {
+              id: 'e4',
+              title: 'Pin contraste faible',
+              start: '2026-07-12',
+              end: '2026-07-12',
+              allDay: true,
+              resourceId: 'p4',
+              color: '#6366f1',
+              extendedProps: {
+                productId: 'p4',
+                productName: 'Prod4',
+                category: 'Cat4',
+                type: 'single',
+              },
+            },
+          ]}
+          resources={[{ id: 'p4', title: 'Prod4', category: 'Cat4' }]}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+        />,
+      )
+      const pin = screen.getByTestId('timeline-event')
+      expect(pin).toHaveAttribute('data-event-kind', 'single')
+      expect(screen.getAllByText('Pin contraste faible')).toHaveLength(1)
       expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
     })
   })

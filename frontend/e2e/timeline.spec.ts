@@ -854,8 +854,13 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
  * Nécessaire pour `timeline-event-outside-label` : `seedProduct` (création
  * imbriquée `POST /api/users/{id}/products`) ne permet PAS de fixer `color` sur
  * son event imbriqué (BR-EVE-014 : `color` n'est exposé qu'au create DIRECT).
- * PIT-S44-001 : `durationValue`/`durationUnit` restent INCONDITIONNELS même en
- * `type='single'` -> valeurs neutres sans effet métier.
+ *
+ * #594 — type `duration` (1 jour), était `single`. Le libellé extérieur de secours
+ * est un garde-fou de la BARRE (titre peint sur la couleur de l'événement) : un
+ * ponctuel est désormais un PIN dont le libellé est TOUJOURS dehors, en encre de
+ * page, sans libellé de secours. Semé en `single`, ce test perdrait son objet (la
+ * variable COULEUR ne déclencherait plus rien). La distinction pin/barre est
+ * couverte par `sprint-91-event-pin.spec.ts`.
  */
 async function seedEventWithColor(
   page: Page,
@@ -864,8 +869,8 @@ async function seedEventWithColor(
   const res = await page.request.post(`${API}/events`, {
     data: {
       name: opts.name,
-      type: 'single',
-      durationValue: 0,
+      type: 'duration',
+      durationValue: 1,
       durationUnit: 'days',
       isRecurring: false,
       date: todayIsoDate(),
@@ -1587,6 +1592,8 @@ const MONTH_PERIOD_STEP_DAYS = 30
 const PERIOD_PRESSES = 10
 /** Gouttière de l'en-tête de lane sticky (`TimelineView.tsx`, `LANE_TRACK_OFFSET_PX`). */
 const LANE_TRACK_OFFSET_PX = 168
+/** #594 — demi-largeur du pin d'un ponctuel = `PIN_HALF_WIDTH_PX` (`zoom.ts`). */
+const PIN_HALF_WIDTH_PX = 5
 /** Échelles px/jour des deux niveaux traversés (`DAY_WIDTH_PX`, `zoom.ts`). */
 const DAY_WIDTH_MONTH_PX = 12
 const DAY_WIDTH_QUARTER_PX = 5
@@ -1626,10 +1633,15 @@ async function stubEarlyRangeFixture(page: Page, oracleTitle: string): Promise<v
 }
 
 /**
- * Écart, en px écran, entre le bord gauche du conteneur défilant et le bord
- * gauche de la pastille. C'est la grandeur que #392 fixe à
+ * Écart, en px écran, entre le bord gauche du conteneur défilant et l'abscisse
+ * de la DATE de la pastille. C'est la grandeur que #392 fixe à
  * `LANE_TRACK_OFFSET_PX` quand la position vient du repère PISTE : la pastille
  * affleure l'en-tête sticky au lieu de passer dessous.
+ *
+ * #594 — un ponctuel est rendu en PIN CENTRÉ sur sa date (bouton posé à
+ * `x − PIN_HALF_WIDTH_PX`, maquette `left: x − 5`). Son bord gauche n'est donc plus
+ * la date : on lui rend sa demi-largeur. Pour une barre de durée, bord gauche = date.
+ * La grandeur épinglée par #392/#451/#477 (le JOUR ancré) est inchangée.
  */
 async function pillOffsetFromViewportLeft(page: Page, title: string): Promise<number> {
   const pill = page.locator(`[data-testid="timeline-event"][data-event-title="${title}"]`)
@@ -1638,7 +1650,8 @@ async function pillOffsetFromViewportLeft(page: Page, title: string): Promise<nu
   const scrollBox = await page.getByTestId('timeline-scroll').boundingBox()
   expect(pillBox, 'la pastille doit être mesurable').not.toBeNull()
   expect(scrollBox, 'le conteneur de scroll doit être mesurable').not.toBeNull()
-  return pillBox!.x - scrollBox!.x
+  const kind = await pill.getAttribute('data-event-kind')
+  return pillBox!.x - scrollBox!.x + (kind === 'single' ? PIN_HALF_WIDTH_PX : 0)
 }
 
 test.describe('#451 /timeline — le zoom arrière conserve le JOUR regardé, pas seulement le bord', () => {

@@ -1,7 +1,8 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { eventInkColor, eventLabelReadableInside } from './lib'
-import { statusToVar, type PositionedEvent } from './zoom'
+import { EventPinContent } from './EventPin'
+import { eventKind, PIN_HALF_WIDTH_PX, statusToVar, type PositionedEvent } from './zoom'
 
 /**
  * #192 — EventPill : rendu compact d'un event sur la frise desktop continue.
@@ -77,6 +78,44 @@ export const EventPill: React.FC<EventPillProps> = ({
    * surfaces (PIT-S46-001).
    */
   const archived = event.extendedProps?.archived === true
+
+  /**
+   * #594 — PONCTUEL : pin 10 px + libellé à droite (maquette §2), PAS une barre.
+   * Même `<button>` que la barre (roving tabindex #81, `data-evt-nav`, `pillRef`,
+   * état archivé #230, `aria-label` de l'appelant) : seule la peinture change.
+   *  - `left = leftPx − 5` : le pin est CENTRÉ sur la date (maquette `left: x − 5`) ;
+   *  - aucune largeur posée : le bouton épouse pin + libellé, et sa hauteur de 44 px
+   *    (CSS `.mt-tlv__evt--pin`) fait de la zone de frappe ≥ 44 × 44 sans agrandir le
+   *    pin visuel ;
+   *  - pas d'encre calculée ni de libellé extérieur de secours : le libellé est
+   *    TOUJOURS dehors, sur le fond de lane, en `--color-ink`.
+   * `data-event-kind` est un CROCHET D'ASSERTION (attribut, pas un testid : PIT-S46-001).
+   */
+  if (eventKind(event) === 'single') {
+    return (
+      <button
+        type="button"
+        ref={pillRef}
+        className={cn('mt-tlv__evt', 'mt-tlv__evt--pin', archived && 'mt-tlv__evt--archived')}
+        data-testid="timeline-event"
+        data-event-title={event.title}
+        data-event-kind="single"
+        data-archived={archived ? 'true' : undefined}
+        data-evt-nav={navKey}
+        aria-label={ariaLabel}
+        tabIndex={tabIndex}
+        onClick={() => onSelect(event)}
+        onKeyDown={onKeyDown}
+        style={{
+          left: `${event.leftPx - PIN_HALF_WIDTH_PX}px`,
+          ['--mt-evt' as string]: bg,
+        }}
+      >
+        <EventPinContent title={event.title} />
+      </button>
+    )
+  }
+
   // #81 point 6 — si l'encre calculée ne passe pas AA À L'INTÉRIEUR de la barre,
   // on masque le titre dedans (aria-hidden, décoratif) et on le répète dehors.
   // #230 (correction review S61) — le calcul porte sur la couleur RENDUE : pour
@@ -91,6 +130,7 @@ export const EventPill: React.FC<EventPillProps> = ({
         className={cn('mt-tlv__evt', archived && 'mt-tlv__evt--archived')}
         data-testid="timeline-event"
         data-event-title={event.title}
+        data-event-kind="duration"
         data-archived={archived ? 'true' : undefined}
         data-evt-nav={navKey}
         aria-label={ariaLabel}

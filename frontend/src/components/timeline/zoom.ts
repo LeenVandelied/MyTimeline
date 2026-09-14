@@ -149,11 +149,62 @@ export function computeRange(
 }
 
 export interface PositionedEvent extends FullCalendarEvent {
-  /** Décalage gauche en px depuis `rangeStart` (échelle px/jour du zoom). */
+  /** Abscisse px de la DATE de début depuis `rangeStart` (échelle px/jour du zoom). */
   leftPx: number
-  /** Largeur en px (≥ minWidth pour rester cliquable même sur 1 jour). */
+  /**
+   * #594 — EMPRISE HORIZONTALE RÉSERVÉE à droite de `leftPx`, pas la largeur peinte :
+   *  - durée : `max(minWidth, durée × px/jour)` (≥ minWidth pour rester cliquable) ;
+   *  - ponctuel : `pinFootprintPx` CONSTANT (pin + place du libellé, maquette
+   *    `layoutLane` : 100 px desktop / 90 px mobile), invariant au zoom.
+   * La géométrie exacte d'un événement sur la piste passe par `eventTrackExtent`
+   * (le pin déborde de sa demi-largeur à GAUCHE de la date).
+   */
   widthPx: number
   status: 'expired' | 'ongoing' | 'upcoming'
+}
+
+/**
+ * #594 — Deux rendus distincts sur la frise (handoff « Traitement visuel des barres ») :
+ * `duration` = barre pleine proportionnelle à la durée, `single` = pin compact centré
+ * sur la date + libellé à droite en encre de page. Seul `type === 'single'` produit un
+ * pin : toute autre valeur garde la barre (comportement historique, aucune donnée
+ * existante ne change de rendu par défaut).
+ */
+export type EventKind = 'single' | 'duration'
+
+export function eventKind(event: Pick<FullCalendarEvent, 'extendedProps'>): EventKind {
+  return event.extendedProps?.type === 'single' ? 'single' : 'duration'
+}
+
+/** Largeur minimale (px) d'une barre de durée aux zooms larges. */
+export const DEFAULT_MIN_WIDTH_PX = 6
+
+/** #594 — Largeur peinte du pin (maquette : 10 px, centré sur la date). */
+export const PIN_WIDTH_PX = 10
+/** Demi-largeur : le pin commence à `leftPx − PIN_HALF_WIDTH_PX` (maquette `left: x − 5`). */
+export const PIN_HALF_WIDTH_PX = PIN_WIDTH_PX / 2
+/**
+ * #594 — Emprise réservée APRÈS la date d'un ponctuel (maquette `layoutLane` : fin
+ * réservée = début + 100 px desktop / 90 px mobile). Sert à la virtualisation et à
+ * `ensureVisible` : un pin dont le libellé est à l'écran ne doit pas être démonté.
+ * Le libellé peint peut être plus long (plafonné en CSS à 240 px, très en deçà de
+ * `OVERSCAN_X_PX` = 600) : la marge de rendu absorbe l'écart.
+ */
+export const PIN_FOOTPRINT_PX = { desktop: 100, mobile: 90 } as const
+/** #594 — Largeur d'un ponctuel dans le résumé d'une catégorie repliée (maquette §C : 6 px). */
+export const SUMMARY_PIN_WIDTH_PX = 6
+
+/**
+ * #594 — Intervalle [start, end] réellement occupé par un événement dans le repère
+ * PISTE. Un pin déborde de `PIN_HALF_WIDTH_PX` à gauche de sa date ; une barre
+ * commence exactement à la date. Consommé par la virtualisation horizontale et
+ * par l'élargissement de fenêtre avant focus clavier.
+ */
+export function eventTrackExtent(
+  event: Pick<PositionedEvent, 'leftPx' | 'widthPx' | 'extendedProps'>,
+): { start: number; end: number } {
+  const start = eventKind(event) === 'single' ? event.leftPx - PIN_HALF_WIDTH_PX : event.leftPx
+  return { start, end: event.leftPx + event.widthPx }
 }
 
 /**
@@ -216,7 +267,8 @@ export function indexEventsByResource(
 export function scaleEventPositions(
   indexed: Map<string, EventGeometry[]>,
   dayWidth: number,
-  minWidth = 6,
+  minWidth = DEFAULT_MIN_WIDTH_PX,
+  pinFootprintPx: number = PIN_FOOTPRINT_PX.desktop,
 ): Map<string, PositionedEvent[]> {
   const map = new Map<string, PositionedEvent[]>()
   for (const [resourceId, geometries] of indexed) {
@@ -226,7 +278,13 @@ export function scaleEventPositions(
       positioned[i] = {
         ...g.event,
         leftPx: g.dayOffset * dayWidth,
-        widthPx: Math.max(minWidth, g.spanDays * dayWidth),
+        // #594 — un ponctuel ne s'étire JAMAIS avec le zoom : emprise constante.
+        // L'ancien `Math.max(minWidth, spanDays × dayWidth)` en faisait une barre
+        // d'un jour, indiscernable d'une durée d'un jour.
+        widthPx:
+          eventKind(g.event) === 'single'
+            ? pinFootprintPx
+            : Math.max(minWidth, g.spanDays * dayWidth),
         status: g.status,
       }
     }
@@ -250,9 +308,15 @@ export function positionEvents(
   rangeStart: Date,
   dayWidth: number,
   now: Date,
-  minWidth = 6,
+  minWidth = DEFAULT_MIN_WIDTH_PX,
+  pinFootprintPx: number = PIN_FOOTPRINT_PX.desktop,
 ): Map<string, PositionedEvent[]> {
-  return scaleEventPositions(indexEventsByResource(events, rangeStart, now), dayWidth, minWidth)
+  return scaleEventPositions(
+    indexEventsByResource(events, rangeStart, now),
+    dayWidth,
+    minWidth,
+    pinFootprintPx,
+  )
 }
 
 export interface RulerTick {

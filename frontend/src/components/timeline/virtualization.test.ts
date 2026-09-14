@@ -35,6 +35,27 @@ function evt(id: string, leftPx: number, widthPx: number): PositionedEvent {
   } as PositionedEvent
 }
 
+describe('#594 fenêtrage d’un ponctuel (pin)', () => {
+  const pin = (id: string, leftPx: number): PositionedEvent =>
+    ({
+      ...evt(id, leftPx, 100),
+      extendedProps: { productId: 'p1', productName: 'P', category: 'C', type: 'single' },
+    }) as PositionedEvent
+
+  it('reste monté quand SEUL son libellé (emprise réservée) croise la bande', () => {
+    // Date à 150, emprise [145, 250] ; la bande commence à 200 : le pin est hors
+    // bande, son libellé non → il ne doit pas être démonté.
+    expect(windowEvents([pin('p', 150)], { start: 200, end: 400 })).toHaveLength(1)
+  })
+
+  it('reste monté quand seule sa DEMI-LARGEUR gauche croise la bande', () => {
+    // Date à 403 : le pin est peint dès 398, dans une bande qui s'arrête à 400.
+    expect(windowEvents([pin('p', 403)], { start: 0, end: 400 })).toHaveLength(1)
+    // Une barre ancrée au même endroit commence à la date : hors bande.
+    expect(windowEvents([evt('b', 403, 100)], { start: 0, end: 400 })).toHaveLength(0)
+  })
+})
+
 describe('#69 bandes', () => {
   it('UNBOUNDED_BAND est reconnue et n’est pas élargie', () => {
     expect(isUnboundedBand(UNBOUNDED_BAND)).toBe(true)

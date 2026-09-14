@@ -15,7 +15,14 @@ import {
   type TimelineMobileSelection,
 } from './useTimelineMobileSelection'
 import { useTimelineMobileGestures, type TimelineMobileGestures } from './useTimelineMobileGestures'
-import { statusToVar, ZOOM_LEVELS, type PositionedEvent } from './zoom'
+import { EventPinContent } from './EventPin'
+import {
+  eventKind,
+  PIN_HALF_WIDTH_PX,
+  statusToVar,
+  ZOOM_LEVELS,
+  type PositionedEvent,
+} from './zoom'
 import { windowEvents, windowLanes } from './virtualization'
 
 /**
@@ -287,17 +294,27 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                           const ink = event.color
                             ? eventInkColor(event.color, archived)
                             : 'var(--color-accent-ink)'
+                          // #594 — ponctuel = pin + libellé, MÊME règle que le portrait
+                          // et le desktop (corps partagé `EventPinContent`).
+                          const pin = eventKind(event) === 'single'
                           return (
                             <div
                               key={event.id}
-                              className="mt-tlm__evt-wrap"
-                              style={{ left: `${event.leftPx}px` }}
+                              className={cn('mt-tlm__evt-wrap', pin && 'mt-tlm__evt-wrap--pin')}
+                              style={{
+                                left: `${pin ? event.leftPx - PIN_HALF_WIDTH_PX : event.leftPx}px`,
+                              }}
                             >
                               <button
                                 type="button"
-                                className={cn('mt-tlm__evt', archived && 'mt-tlm__evt--archived')}
+                                className={cn(
+                                  'mt-tlm__evt',
+                                  pin && 'mt-tlm__evt--pin',
+                                  archived && 'mt-tlm__evt--archived',
+                                )}
                                 data-testid="timeline-event"
                                 data-event-title={event.title}
+                                data-event-kind={pin ? 'single' : 'duration'}
                                 data-archived={archived ? 'true' : undefined}
                                 aria-label={buildEventAriaLabel(event, locale, t)}
                                 onClick={gestures.onEvtClick(event)}
@@ -305,21 +322,34 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                                 onPointerMove={gestures.onEvtPointerMove}
                                 onPointerUp={gestures.clearLongPress}
                                 onPointerCancel={gestures.clearLongPress}
-                                style={{
-                                  width: `${event.widthPx}px`,
-                                  background: color,
-                                  color: ink,
-                                  ['--mt-evt-status' as string]: statusToVar(event.status),
-                                }}
+                                style={
+                                  pin
+                                    ? { ['--mt-evt' as string]: color }
+                                    : {
+                                        width: `${event.widthPx}px`,
+                                        background: color,
+                                        color: ink,
+                                        ['--mt-evt-status' as string]: statusToVar(event.status),
+                                      }
+                                }
                               >
-                                {/* #230 — `.mt-evt--archived` sur le seul décoratif
-                                    (opacité .45 interdite sur du texte, cf. #307). */}
-                                <span
-                                  className={cn('mt-tlm__evt-dot', archived && 'mt-evt--archived')}
-                                  style={{ background: statusToVar(event.status) }}
-                                  aria-hidden="true"
-                                />
-                                <span className="mt-tlm__evt-title">{event.title}</span>
+                                {pin ? (
+                                  <EventPinContent title={event.title} />
+                                ) : (
+                                  <>
+                                    {/* #230 — `.mt-evt--archived` sur le seul décoratif
+                                        (opacité .45 interdite sur du texte, cf. #307). */}
+                                    <span
+                                      className={cn(
+                                        'mt-tlm__evt-dot',
+                                        archived && 'mt-evt--archived',
+                                      )}
+                                      style={{ background: statusToVar(event.status) }}
+                                      aria-hidden="true"
+                                    />
+                                    <span className="mt-tlm__evt-title">{event.title}</span>
+                                  </>
+                                )}
                               </button>
                               <button
                                 type="button"
@@ -327,7 +357,8 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                                 onClick={() => setActionTarget(event)}
                                 aria-label={t('dashboard.timeline.actions.label')}
                                 data-testid="timeline-event-more"
-                                style={{ color: ink }}
+                                // Pin : `⋯` sur le fond de lane → encre de page (CSS).
+                                style={pin ? undefined : { color: ink }}
                               >
                                 <MoreHorizontal size={16} strokeWidth={2} aria-hidden="true" />
                               </button>

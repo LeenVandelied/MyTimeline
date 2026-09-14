@@ -42,6 +42,9 @@ import {
   indexEventsByResource,
   initialZoomState,
   scaleEventPositions,
+  eventKind,
+  eventTrackExtent,
+  SUMMARY_PIN_WIDTH_PX,
   zoomReducer,
   type PositionedEvent,
   type RulerTick,
@@ -379,24 +382,31 @@ const TimelineGroupHead = React.memo<{
           aria-hidden="true"
           data-testid="timeline-group-summary"
         >
-          {summary.map(({ event }) => (
-            <span
-              key={`${event.resourceId}|${event.id}`}
-              className={
-                event.extendedProps?.archived === true
-                  ? 'mt-tlv__group-bar mt-tlv__group-bar--archived'
-                  : 'mt-tlv__group-bar'
-              }
-              data-testid="timeline-group-summary-bar"
-              data-event-id={event.id}
-              style={{
-                left: `${event.leftPx}px`,
-                width: `${event.widthPx}px`,
-                // Même source de couleur que la pastille (`EventPill`).
-                backgroundColor: event.color || 'var(--color-accent)',
-              }}
-            />
-          ))}
+          {summary.map(({ event }) => {
+            // #594 — un ponctuel n'a pas de durée à dire : trait de 6 px CENTRÉ sur
+            // sa date (maquette §C « ponctuel : 6px »), comme le pin l'est. Son
+            // `widthPx` est une emprise réservée (libellé), pas une durée.
+            const pin = eventKind(event) === 'single'
+            return (
+              <span
+                key={`${event.resourceId}|${event.id}`}
+                className={
+                  event.extendedProps?.archived === true
+                    ? 'mt-tlv__group-bar mt-tlv__group-bar--archived'
+                    : 'mt-tlv__group-bar'
+                }
+                data-testid="timeline-group-summary-bar"
+                data-event-id={event.id}
+                data-event-kind={pin ? 'single' : 'duration'}
+                style={{
+                  left: `${pin ? event.leftPx - SUMMARY_PIN_WIDTH_PX / 2 : event.leftPx}px`,
+                  width: `${pin ? SUMMARY_PIN_WIDTH_PX : event.widthPx}px`,
+                  // Même source de couleur que la pastille (`EventPill`).
+                  backgroundColor: event.color || 'var(--color-accent)',
+                }}
+              />
+            )
+          })}
         </span>
       )}
     </button>
@@ -855,13 +865,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       const event = target.events[evt]
       if (event) {
         const laneTop = verticalModel.laneTops.get(target.resourceId) ?? 0
+        // #594 — intervalle réel (un pin déborde à gauche de sa date).
+        const extent = eventTrackExtent(event)
         // #392 — `useTimelineViewport` publie ses bandes en repère RAIL (elles
         // viennent de `scrollLeft`) : on y convertit la cible, qui est en repère
         // piste. Sans ça les deux repères se mélangeraient dans le même état.
         ensureVisible(
           {
-            start: LANE_TRACK_OFFSET_PX + event.leftPx,
-            end: LANE_TRACK_OFFSET_PX + event.leftPx + event.widthPx,
+            start: LANE_TRACK_OFFSET_PX + extent.start,
+            end: LANE_TRACK_OFFSET_PX + extent.end,
           },
           { start: laneTop, end: laneTop + laneHeight },
         )

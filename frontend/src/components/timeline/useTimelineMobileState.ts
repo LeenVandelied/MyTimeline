@@ -20,6 +20,8 @@ import {
   daysBetween,
   initialZoomState,
   positionEvents,
+  DEFAULT_MIN_WIDTH_PX,
+  PIN_FOOTPRINT_PX,
   zoomReducer,
   type PositionedEvent,
   type ZoomLevel,
@@ -138,7 +140,16 @@ export function useTimelineMobileState(
   )
 
   const eventsByResource = useMemo(
-    () => positionEvents(events, rangeStart, dayWidth, now),
+    // #594 — emprise réservée d'un ponctuel : 90 px en mobile (maquette `layoutLane`).
+    () =>
+      positionEvents(
+        events,
+        rangeStart,
+        dayWidth,
+        now,
+        DEFAULT_MIN_WIDTH_PX,
+        PIN_FOOTPRINT_PX.mobile,
+      ),
     [events, rangeStart, dayWidth, now],
   )
   const resourcesByCategory = useMemo(() => groupResourcesByCategory(resources), [resources])

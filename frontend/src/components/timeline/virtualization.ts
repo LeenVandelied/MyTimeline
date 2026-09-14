@@ -1,5 +1,5 @@
 import type { Resource } from './lib'
-import type { PositionedEvent } from './zoom'
+import { eventTrackExtent, type PositionedEvent } from './zoom'
 
 /**
  * #69 — Cœur PUR de la virtualisation de la frise (aucun React, aucun DOM).
@@ -120,7 +120,10 @@ export function windowEvents(events: PositionedEvent[], band: Band): WindowedEve
   const out: WindowedEvent[] = []
   for (let index = 0; index < events.length; index++) {
     const event = events[index]
-    if (segmentIntersectsBand(event.leftPx, event.widthPx, band)) out.push({ event, index })
+    // #594 — intervalle RÉEL : un pin déborde de sa demi-largeur à gauche de la date
+    // et réserve la place de son libellé à droite (cf. `eventTrackExtent`).
+    const { start, end } = eventTrackExtent(event)
+    if (segmentIntersectsBand(start, end - start, band)) out.push({ event, index })
   }
   return out
 }
