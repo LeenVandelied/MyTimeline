@@ -362,31 +362,71 @@ test.describe('#575 — salut à 375 px avec un nom insécable', () => {
     await openDashboard(page, 'fr')
     await expect(page.getByTestId('dashboard-mobile-portrait')).toBeVisible()
 
-    // Précondition anti-vacuité : ce test ne prouve quelque chose QUE si le salut
-    // porte un jeton long. Les comptes E2E ont un identifiant de ~13 chiffres
-    // (PIT-S63-013) ; si la fixture change, ce test doit le dire, pas passer à vide.
-    const longest = await page
+    // Review S90 cycle 2 — précondition GÉOMÉTRIQUE. Compter des caractères ne prouvait
+    // rien : l'identifiant E2E (≤ 20 car., `e2e/support/accounts.ts`) tient dans la
+    // colonne de ~343 px même sans `break-words`, et le test passait à vide. On remplace
+    // donc le nom (`user.username`, passé à `GreetingHeader` par `dashboard/page.tsx`)
+    // par un jeton insécable PLUS LARGE que la colonne, et on le vérifie en pixels.
+    //
+    // Tout se fait dans UN SEUL `evaluate` synchrone : aucun rendu React ne peut
+    // s'intercaler entre l'injection et la mesure. Le nœud texte est modifié EN PLACE
+    // (`nodeValue`), jamais remplacé, pour ne pas désynchroniser React.
+    //
+    // ARMEMENT (fait à la main, pas de test permanent) : ajouter en première ligne du
+    // callback `h1.classList.remove('break-words')`. La précondition passe toujours
+    // (la règle mesure le jeton en `nowrap`), puis le jeton déborde du `h1` :
+    // `scrollWidth > clientWidth` → rouge sur « jeton du salut qui déborde de son titre ».
+    const m = await page
       .getByTestId('dashboard-greeting')
       .locator('h1')
-      .evaluate((el) => Math.max(...(el.textContent ?? '').split(/\s+/).map((w) => w.length)))
+      .evaluate((h1, name) => {
+        const TOKEN = 'W'.repeat(60)
+        let replaced = false
+        const walker = document.createTreeWalker(h1, NodeFilter.SHOW_TEXT)
+        for (let node = walker.nextNode(); node !== null && !replaced; node = walker.nextNode()) {
+          const value = node.nodeValue ?? ''
+          if (name.length > 0 && value.includes(name)) {
+            node.nodeValue = value.replace(name, TOKEN)
+            replaced = true
+          }
+        }
+
+        // Règle : le jeton seul, enfant du `h1` pour hériter de SA typographie (police,
+        // taille, graisse, interlettrage), sorti du flux et interdit de coupure. Retirée
+        // AVANT de mesurer le `h1`.
+        const ruler = document.createElement('span')
+        ruler.textContent = TOKEN
+        ruler.style.cssText =
+          'position:absolute;visibility:hidden;white-space:nowrap;overflow-wrap:normal;word-break:normal;'
+        h1.appendChild(ruler)
+        const tokenWidth = ruler.getBoundingClientRect().width
+        ruler.remove()
+
+        return {
+          replaced,
+          hasToken: (h1.textContent ?? '').includes(TOKEN),
+          tokenWidth,
+          scrollWidth: h1.scrollWidth,
+          clientWidth: h1.clientWidth,
+          docScrollWidth: document.documentElement.scrollWidth,
+          docClientWidth: document.documentElement.clientWidth,
+        }
+      }, PROD.username)
+
     expect(
-      longest,
-      'précondition : un jeton d’au moins 14 caractères dans le salut',
-    ).toBeGreaterThanOrEqual(14)
+      m.replaced,
+      `précondition : le nom « ${PROD.username} » doit figurer dans le salut pour être remplacé`,
+    ).toBe(true)
+    expect(m.hasToken, 'précondition : le jeton injecté est dans le salut').toBe(true)
+    expect(m.clientWidth, 'salut rendu').toBeGreaterThan(0)
+    expect(
+      m.tokenWidth,
+      'précondition : largeur naturelle du jeton (nowrap) > largeur du titre, sinon test vacant',
+    ).toBeGreaterThan(m.clientWidth)
 
-    const title = await page
-      .getByTestId('dashboard-greeting')
-      .locator('h1')
-      .evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }))
-    expect(title.clientWidth, 'salut rendu').toBeGreaterThan(0)
-    expect(title.scrollWidth, 'jeton du salut qui déborde de son titre').toBeLessThanOrEqual(
-      title.clientWidth,
+    expect(m.scrollWidth, 'jeton du salut qui déborde de son titre').toBeLessThanOrEqual(
+      m.clientWidth,
     )
-
-    const doc = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth,
-    }))
-    expect(doc.scrollWidth, 'débordement horizontal de page').toBeLessThanOrEqual(doc.clientWidth)
+    expect(m.docScrollWidth, 'débordement horizontal de page').toBeLessThanOrEqual(m.docClientWidth)
   })
 })
