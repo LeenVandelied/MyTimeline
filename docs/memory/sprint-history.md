@@ -6407,7 +6407,7 @@ hors preuve — à chaque essai. Aucun aléa du setup. Le commit de clôture rel
 **Status :** Terminé — PR #684 mergée le 2026-09-14 à 09:17 (merge `bebf889`, tête `60f296b`) ; issues #568/#547/#545 fermées et
 milestone #89 fermé (constaté au `/sprint start 89`, variante S57).
 
-### Sprint 89 — 2026-09-13 (EN COURS — cohésion 0.33, Données affichées = données saisies)
+### Sprint 89 — 2026-09-13 → 2026-09-14 (Terminé — merge PR #687 dans dev, commit `a6b39ad` — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau
 **Milestone GitHub :** #90
 **Issues :** #546 (P1, M), #652 (P1, S→M), #685 (P2, S — follow-up S88 ajouté à la clôture, hors plan architect)
@@ -6458,8 +6458,7 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
   - Compteur de la carte catégorie trompeur avec des archivés [M | categories] → **issue #695 (backlog)**
   Ratio : 8 issues (0 avec milestone) / 3 discard / 0 absorbé.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
-**Status :** Prêt à merger — PR #687, CI 7/7 verte sur `959a7dd` ; le commit de clôture relance une CI, c'est son SHA qui fait foi.
-Titre, Status et fermeture des issues à solder APRÈS le merge (au `/sprint start 90`, variante S57).
+**Status :** Terminé — PR #687 mergée le 2026-09-14 (`a6b39ad`). Soldé au `/sprint start 90` (variante S57) : issues #546, #652, #685 fermées et milestone #90 fermé, constatés via `gh` ; seuls le titre et ce Status restaient à écrire.
 
 ### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
 **Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés
@@ -6470,7 +6469,12 @@ Titre, Status et fermeture des issues à solder APRÈS le merge (au `/sprint sta
 **Dépend de :** Sprint 89 (#652 touche WeekAgenda / ProductList)
 **Consigne dure :** #624 re-route d'abord `golden-path.spec.ts:129-140` (preuve E2E du MVP vérifiée dans la frise du dashboard).
 **À trancher au démarrage :** portée réelle du squelette (#629, pages `'use client'`) ; emplacement de la création de produit (#624).
-**Status :** Planifié
+**Démarrage (2026-09-14) :** worktree basé sur `main` → branche `sprint/90` créée depuis `origin/dev` (`a6b39ad`) et poussée.
+**Arbitrages rendus (dev, 2026-09-14) :**
+- **#624** — `AddProductButton` retiré du dashboard **sans remplacement**. Motif vérifié : le shell fournit déjà exactement un « Nouvel événement » à chaque largeur (`shell-sidebar-new-event-button` ≥ md, `shell-mobile-new-event-button` < md, miroir `hidden md:flex` ⇔ `md:hidden`, `AppShell.tsx:218,351`) ; un CTA « Nouvel événement » en haut à droite aurait doublonné à toutes les largeurs, contre le critère « aucun doublon ». Création de produit : `/products` (`products-new-button`, `ProductsListView.tsx:151`).
+- **#629** — `loading.tsx` (timeline, products, settings) **et** remplacement des branches de chargement internes (frise `timeline-data-loading`, `products-loading`, catégories) par le squelette, testids conservés.
+**Prémisses corrigées du plan :** `golden-path.spec.ts` dépend du dashboard à DEUX endroits — `:110` (`add-product-button`) en plus de `:140` (`timeline-view`) ; `sprint-84-section-titles.spec.ts:356` mesure la boîte d'`add-product-button` sur le dashboard (non listée par l'architect). Les autres specs « frise » du plan vont directement sur `/timeline` et ne sont pas affectées par #624.
+**Status :** En cours
 
 ### Sprint 91 — 2026-09-13 (PLANIFIÉ — cohésion 1.00, Frise : instant, durée, série)
 **Objectif :** Ponctuel rendu en pin, récurrence visible (↻ + occurrences fantômes), borne de série conservée en édition depuis la frise
