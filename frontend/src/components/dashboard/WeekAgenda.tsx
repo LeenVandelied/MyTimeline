@@ -4,7 +4,7 @@ import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { getWeekRange, getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
-import { toLocalIsoDate } from '@/lib/date-iso'
+import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #80 — Agenda de la semaine courante (spec Designer §3). Filets (pas de `<Card>`
@@ -76,9 +76,9 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
                   l'helper rend `null` et l'attribut est simplement omis. */}
               <time
                 className="text-ink-muted mt-date--long w-16 shrink-0"
-                dateTime={toLocalIsoDate(new Date(event.start)) ?? undefined}
+                dateTime={toLocalIsoDate(parseLocalDate(event.start)) ?? undefined}
               >
-                {dayFmt.format(new Date(event.start))}
+                {dayFmt.format(parseLocalDate(event.start))}
               </time>
               <span
                 className="h-6 w-0.5 shrink-0 rounded-full"

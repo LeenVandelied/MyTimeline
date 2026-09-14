@@ -35,6 +35,65 @@ export function toLocalIsoDate(date: Date): string | null {
   return `${date.getFullYear()}-${month}-${day}`
 }
 
+/* --------------------------------------------------------------------------
+ * #652 (S89) — Dates CIVILES venues du backend (`LocalDate`).
+ *
+ * ARBITRAGE (tranché le 2026-09-13, option A) : une `LocalDate` Java est une date
+ * CIVILE — « le 24 juin », sans heure ni fuseau. Elle se lit en heure LOCALE,
+ * partout, via CE module. `EventResponse.startDate/endDate/recurrenceEndDate`
+ * sont sérialisés `"2026-06-24"`.
+ *
+ * LE DÉFAUT CORRIGÉ : `new Date("2026-06-24")` — chaîne date-SEULE — est lue par
+ * JS en UTC (minuit UTC), puis `Intl` et `getDate()` la projettent dans le fuseau
+ * du navigateur. À l'OUEST de Greenwich, minuit UTC tombe la VEILLE au soir :
+ * l'événement du 24 s'affiche le 23, et la frise le place un jour trop tôt.
+ * Invisible depuis Paris (à l'est) comme sur la CI (UTC) — même famille que
+ * DEC-S75-001. `toLocalIsoDate` était juste : l'erreur était à la LECTURE, en amont.
+ *
+ * FRONTIÈRE — quel helper pour quelle donnée :
+ *  - `LocalDate` (`YYYY-MM-DD`) → `parseLocalDate` / `parseLocalIsoDate` (ci-dessous) :
+ *    minuit LOCAL du jour civil ;
+ *  - `LocalDateTime` backend (`YYYY-MM-DDTHH:mm:ss`, sans offset) →
+ *    `parseServerDateTime` / `serverDateTime` (référentiel serveur UTC, DEC-S83-004) ;
+ *  - date légale figée (`legal-pages.ts`) → `Intl` avec `timeZone: 'UTC'` épinglé
+ *    (DEC-S75-001) — n'utilise PAS ce helper ;
+ *  - instants (`Date.now()`, `new Date()`, horodatage complet avec offset) → hors
+ *    sujet, `new Date` reste correct.
+ * Un appelant n'a donc plus le droit d'écrire `new Date(event.startDate)`.
+ * ------------------------------------------------------------------------ */
+
+const LOCAL_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
+
+/**
+ * `YYYY-MM-DD` STRICT → `Date` à minuit LOCAL, ou `null` (absente, vide, ou pas
+ * au format date-seule). Déplacé depuis `components/events/previewTimeline.ts`
+ * (#652), qui le ré-exporte pour ses appelants. Usage : saisie de formulaire,
+ * où « pas une date » doit se distinguer d'une date.
+ */
+export function parseLocalIsoDate(value?: string | null): Date | null {
+  if (!value) return null
+  const match = LOCAL_DATE.exec(value)
+  if (!match) return null
+  const [, year, month, day] = match
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day))
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+/**
+ * `LocalDate` backend → `Date` à minuit LOCAL du jour civil. Remplace
+ * `new Date(event.startDate)` et en garde le CONTRAT : rend toujours une `Date`,
+ * éventuellement invalide (`NaN`) — les gardes `Number.isNaN(d.getTime())` des
+ * appelants restent valables.
+ *
+ * TOLÉRANCE : une chaîne qui n'est PAS une date-seule (horodatage complet
+ * `…T00:00:00.000Z`, fixtures de test historiques) désigne un INSTANT explicite ;
+ * elle est passée telle quelle à `new Date`, comme avant. Seule la forme
+ * `YYYY-MM-DD` change de lecture.
+ */
+export function parseLocalDate(value: string): Date {
+  return parseLocalIsoDate(value) ?? new Date(LOCAL_DATE.test(value) ? Number.NaN : value)
+}
+
 /** Instant complet ISO 8601 (UTC), ou `null` si la `Date` est invalide. */
 export function toIsoInstant(date: Date): string | null {
   if (Number.isNaN(date.getTime())) return null

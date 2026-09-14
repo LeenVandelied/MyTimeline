@@ -1,4 +1,5 @@
 import { FullCalendarEvent } from '@/types/event'
+import { parseLocalDate } from '@/lib/date-iso'
 import { contrastRatio, contrastInk, grayscaleHex, WCAG_AA_NORMAL } from '@/lib/color'
 
 /**
@@ -32,8 +33,8 @@ export function buildEventAriaLabel(
   t: (key: string) => string,
 ): string {
   const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
-  const start = fmt.format(new Date(event.start))
-  const end = fmt.format(new Date(event.end || event.start))
+  const start = fmt.format(parseLocalDate(event.start))
+  const end = fmt.format(parseLocalDate(event.end || event.start))
   const status = t(`dashboard.timeline.status.${event.status}`)
   const product = event.extendedProps?.productName
   const parts = [event.title, status]
@@ -229,8 +230,8 @@ export function buildEventsByResource(
     const resourceId = event.resourceId
     if (!resourceId) continue
 
-    const eventStart = new Date(event.start)
-    const eventEnd = new Date(event.end || event.start)
+    const eventStart = parseLocalDate(event.start)
+    const eventEnd = parseLocalDate(event.end || event.start)
 
     // Clamp à la vue courante.
     const clampedStart = new Date(Math.max(eventStart.getTime(), start.getTime()))
@@ -373,7 +374,7 @@ export function buildDensityBuckets(
   const windowStart = days[0]
 
   for (const event of events) {
-    const s = new Date(event.start)
+    const s = parseLocalDate(event.start)
     if (Number.isNaN(s.getTime())) continue
     const dayStart = new Date(s.getFullYear(), s.getMonth(), s.getDate())
     const idx = Math.round((dayStart.getTime() - windowStart.getTime()) / 86_400_000)
@@ -419,8 +420,8 @@ export function getEventsInRange(
 ): FullCalendarEvent[] {
   return events
     .filter((e) => {
-      const s = new Date(e.start)
+      const s = parseLocalDate(e.start)
       return !Number.isNaN(s.getTime()) && s >= start && s <= end
     })
-    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+    .sort((a, b) => parseLocalDate(a.start).getTime() - parseLocalDate(b.start).getTime())
 }

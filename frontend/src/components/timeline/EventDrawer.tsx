@@ -5,7 +5,7 @@ import { Pencil, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { PositionedEvent } from './zoom'
 import { useFocusTrap } from './useFocusTrap'
-import { toLocalIsoDate } from '@/lib/date-iso'
+import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 
 /**
  * #55 — Drawer latéral de détail événement.
@@ -40,8 +40,8 @@ export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose
   if (!event) return null
 
   const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
-  const startDate = new Date(event.start)
-  const endDate = new Date(event.end || event.start)
+  const startDate = parseLocalDate(event.start)
+  const endDate = parseLocalDate(event.end || event.start)
   const startLabel = fmt.format(startDate)
   const endLabel = fmt.format(endDate)
   const statusLabel = t(`dashboard.timeline.status.${event.status}`)

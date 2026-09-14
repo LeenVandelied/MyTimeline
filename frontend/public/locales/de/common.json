@@ -31,7 +31,8 @@
       "description": "Diese Aktion kann nicht rückgängig gemacht werden.",
       "reassignLabel": "Produkte verschieben nach…",
       "reassignPlaceholder": "Zielkategorie auswählen",
-      "noOtherCategory": "Keine andere Kategorie verfügbar, um die Produkte neu zuzuordnen. Erstellen Sie zuerst eine weitere Kategorie."
+      "noOtherCategory": "Keine andere Kategorie verfügbar, um die Produkte neu zuzuordnen. Erstellen Sie zuerst eine weitere Kategorie.",
+      "reassignRequired": "Diese Kategorie ist noch mit Produkten verknüpft, auch mit archivierten. Wählen Sie eine Kategorie, in die sie verschoben werden, um sie löschen zu können."
     },
     "errors": {
       "notFound": "Diese Kategorie existiert nicht mehr.",

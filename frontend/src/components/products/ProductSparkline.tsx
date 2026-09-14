@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { parseLocalDate } from '@/lib/date-iso'
 
 /**
  * #61 — Mini-sparkline d'aperçu live du produit pendant la saisie.
@@ -43,7 +44,7 @@ export function ProductSparkline({ dates, color, label }: ProductSparklineProps)
 
     for (const raw of dates) {
       if (!raw) continue
-      const date = raw instanceof Date ? raw : new Date(raw)
+      const date = raw instanceof Date ? raw : parseLocalDate(raw)
       if (Number.isNaN(date.getTime())) continue
       const dayIndex = toDayIndex(date, now)
       if (dayIndex === null || seen.has(dayIndex)) continue

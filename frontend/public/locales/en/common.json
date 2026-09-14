@@ -31,7 +31,8 @@
       "description": "This action cannot be undone.",
       "reassignLabel": "Move products to…",
       "reassignPlaceholder": "Choose a destination category",
-      "noOtherCategory": "No other category available to reassign the products. Create another category first."
+      "noOtherCategory": "No other category available to reassign the products. Create another category first.",
+      "reassignRequired": "This category is still linked to products, including archived ones. Choose a category to move them to before deleting it."
     },
     "errors": {
       "notFound": "This category no longer exists.",

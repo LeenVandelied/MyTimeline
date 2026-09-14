@@ -5,6 +5,7 @@ import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { mapToFullCalendarEvent, type FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
 import type { Resource } from '@/components/timeline'
+import { parseLocalDate } from '@/lib/date-iso'
 
 /**
  * #80 — Source de données UNIQUE du dashboard desktop (TanStack Query).
@@ -46,7 +47,7 @@ export interface DashboardData {
 function computeStreak(events: FullCalendarEvent[], now: Date): number {
   const daysWithEvent = new Set(
     events.map((e) => {
-      const d = new Date(e.start)
+      const d = parseLocalDate(e.start)
       return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
     }),
   )
@@ -95,7 +96,7 @@ export function useDashboardData(
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
     const eventsThisMonth = events.filter((e) => {
-      const s = new Date(e.start)
+      const s = parseLocalDate(e.start)
       return s >= monthStart && s <= monthEnd
     }).length
 

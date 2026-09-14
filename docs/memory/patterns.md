@@ -848,3 +848,12 @@ Problème : retirer un flag ne prouve pas l'armement, et une spec qui vide un se
 
 ## PAT-S88-004 — Exempter une boucle de ré-émission légitime d'un compteur statique sans ouvrir d'angle mort
 Problème : un retry légitime ferait compter N fois une émission unique. Motif : annotation explicite + contrat vérifié par AST (borne lisible, condition `=== 'retry'`, issue décidée uniquement par un classificateur testé, aucun try/catch) + ancrage « une seule boucle annotée ». Limite connue : le contrat ne lit pas les helpers appelés (issue de suivi #685). (Sprint 88 #547, revue)
+
+## PAT-S89-001 — Un compteur local sur un listing filtré n'est qu'une indication : le refus serveur fait foi
+Problème : une garde UI armée sur un compteur calculé depuis un listing filtré (soft delete) laisse partir une requête vouée au refus. Motif : traiter le refus serveur comme la source de vérité et basculer l'UI dans le mode qu'il exige (ici la réassignation), plutôt qu'afficher une erreur sans issue. Ne discriminer par statut que si ce statut n'a qu'une cause possible dans le contexte. Anti-pattern : aligner le comptage backend sur le listing filtré, qui transforme le 409 en 500 FK. (Sprint 89 #546)
+
+## PAT-S89-002 — Test de fuseau non vacant : aucune `Date` locale au niveau module
+Problème : un test qui force `process.env.TZ` en `beforeAll` reste vacant si une `Date` locale est construite au chargement du module, donc dans le fuseau ambiant. Motif : fabriques `now()` / `civil()` appelées dans les tests ; assertion de non-vacance en tête (`getTimezoneOffset() > 0`, et lecture naïve qui recule d'un jour) ; restauration sans `TZ = undefined` (PIT-S83-007) ; contre-épreuve rouge sans TZ shell ET sous `TZ=UTC`. Anti-pattern : `const NOW = new Date(2026, 6, 15)` en tête d'un fichier qui force `TZ`. (Sprint 89 #652)
+
+## PAT-S89-003 — Exemption vérifiée par AST : suivre la provenance à travers les helpers, et tester sur une copie mutée du vrai fichier
+Problème : une exemption de compteur vérifiée sur le seul corps de boucle se contourne par un helper (limite annoncée de PAT-S88-004). Motif : suivre la provenance de la valeur décisive le long des appels du fichier (retours autorisés, émission seulement en position de retour, forme figée de la fonction qui émet) ; compter les occurrences exemptées (`fichier:ligne`), pas les fichiers ; exercer la garde sur une copie mutée du vrai fichier dont l'ancre est affirmée présente. Limite restante : un alias d'import du classificateur n'est pas reconnu (pré-existant). (Sprint 89 #685)

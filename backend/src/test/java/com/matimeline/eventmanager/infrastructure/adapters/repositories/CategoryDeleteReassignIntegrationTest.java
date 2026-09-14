@@ -176,6 +176,61 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         assertThat(archivedCat.longValue()).isEqualTo(1L);
     }
 
+    /**
+     * #546 (scénario S79 #463) — catégorie ne portant QU'UN produit archivé, DELETE sans
+     * cible -> 409, la catégorie survit. DÉCISION #546 (option A) : un produit archivé
+     * OCCUPE toujours sa catégorie. `products.category_id` est NOT NULL + FK (V1) : si le
+     * comptage excluait les archivés, `deleteById` violerait la FK sur la ligne archivée
+     * (500). Ce test verrouille ce contrat ; le correctif est côté UI (bascule du dialog
+     * en réassignation sur 409).
+     */
+    @Test
+    void deleteCategory_onlyArchivedProducts_withoutReassign_throws409_andKeepsCategory() {
+        UserEntity user = persistUser();
+        CategoryEntity cat = persistCategory(user, "ArchivedOnly-" + UUID.randomUUID());
+        ProductEntity archived = persistProduct(user, cat, true);
+        em.flush();
+        em.clear();
+
+        assertThatThrownBy(() -> categoryService.deleteCategory(cat.getId(), null))
+                .isInstanceOf(CategoryInUseException.class);
+
+        assertThat(categoryRepository.existsById(cat.getId())).isTrue();
+        Number stillLinked = (Number) em.createNativeQuery(
+                        "SELECT count(*) FROM products WHERE id = :id AND category_id = :cat")
+                .setParameter("id", archived.getId())
+                .setParameter("cat", cat.getId())
+                .getSingleResult();
+        assertThat(stillLinked.longValue()).isEqualTo(1L);
+    }
+
+    /**
+     * #546 critère 3 — contournement `?reassignToCategoryId=` : une catégorie ne portant
+     * QUE des produits archivés est supprimable en réassignant vers une cible ; le produit
+     * archivé migre (pas d'orphelin FK) et reste archivé.
+     */
+    @Test
+    void deleteCategory_onlyArchivedProducts_withReassign_movesArchived_thenDeletesSource() {
+        UserEntity user = persistUser();
+        CategoryEntity source = persistCategory(user, "ArchivedOnly-" + UUID.randomUUID());
+        CategoryEntity target = persistCategory(user, "Bin-" + UUID.randomUUID());
+        ProductEntity archived = persistProduct(user, source, true);
+        em.flush();
+        em.clear();
+
+        categoryService.deleteCategory(source.getId(), target.getId());
+        em.flush();
+        em.clear();
+
+        assertThat(categoryRepository.existsById(source.getId())).isFalse();
+        Number moved = (Number) em.createNativeQuery(
+                        "SELECT count(*) FROM products WHERE id = :id AND category_id = :cat AND archived = true")
+                .setParameter("id", archived.getId())
+                .setParameter("cat", target.getId())
+                .getSingleResult();
+        assertThat(moved.longValue()).isEqualTo(1L);
+    }
+
     /** Suppression d'une catégorie non référencée -> supprimée directement (204 côté API). */
     @Test
     void deleteCategory_noProducts_deletes() {

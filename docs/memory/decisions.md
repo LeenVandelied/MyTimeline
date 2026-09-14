@@ -957,3 +957,15 @@ telle quelle (DEC-S84-001, aucune réécriture).
 **Décision.** Ré-émission seulement sur 5xx ou absence de réponse, après relecture des statuts observés et de l'URL (201 tardif = succès) ; 201/409 = succès ; 429 et autres 4xx = échec immédiat ; boucle annotée exemptée du compteur sous contrat vérifié par AST ; projet `setup` à `retries: 0`.
 **Pourquoi.** Register et login reviennent à 20 contre 30 sans relever aucun plafond ; un 429 n'est plus jamais retenté dans la fenêtre. Coût accepté : un aléa du setup rougit le job e2e. Hors budget, documenté : jusqu'à 36 si le backend renvoie des 5xx pendant le setup (symptôme d'instabilité).
 **Portée.** Trois arbitrages dev successifs (retry sur échec, `retries: 0`, correctifs du cycle 2). (Sprint 88 #547, revue)
+
+## DEC-S89-001 — Un produit archivé occupe toujours sa catégorie : le refus serveur bascule l'UI en réassignation
+**Contexte.** Une catégorie ne portant que des produits archivés rendait 409 pour toujours à la suppression, et le dialogue n'offrait aucune issue (#546, découvert au S79, PIT-S79-006).
+**Décision.** Option A (arbitrage dev du 2026-09-13) : le comptage natif `countByCategoryId` reste inchangé, archivés inclus. Sur un 409 reçu pour un DELETE de catégorie SANS cible, `DeleteConfirmDialog` passe en réassignation obligatoire (note liée au select par `aria-describedby`, bouton bloqué sans cible, message dédié s'il n'existe aucune autre catégorie).
+**Pourquoi.** `products.category_id` est NOT NULL avec FK (V1__baseline.sql) : exclure les archivés du comptage ferait supprimer une catégorie encore référencée, donc un 500. Aucune UI ne désarchive un produit : réassigner est la seule sortie. Sans cible, le seul 409 possible est `CategoryInUseException`, ce qui rend la discrimination par statut sûre.
+**Portée.** Frontend seul, pas de migration. Le compteur de la carte catégorie reste trompeur (follow-up). (Sprint 89 #546)
+
+## DEC-S89-002 — Une `LocalDate` est une date civile, lue à minuit local par un helper unique
+**Contexte.** `startDate`/`endDate`/`recurrenceEndDate` arrivent en `YYYY-MM-DD` ; `new Date(str)` les lit à minuit UTC, donc la veille à l'ouest de Greenwich, sur le dashboard, les produits et la frise (#652).
+**Décision.** Option A (arbitrage dev du 2026-09-13) : lecture par `parseLocalDate` / `parseLocalIsoDate` de `frontend/src/lib/date-iso.ts`, jamais `new Date(<LocalDate>)` chez un appelant. Frontière écrite dans la JSDoc : `LocalDateTime` serveur → `parseServerDateTime` en UTC (DEC-S83-004) ; date légale → `timeZone: 'UTC'` (DEC-S75-001) ; instants → `new Date`.
+**Pourquoi.** Le libellé, l'attribut `datetime` et la géométrie de frise nomment le jour saisi, dans tout fuseau ; un « tout UTC » aurait décalé la frise par rapport au `now` local.
+**Portée.** 35 lectures migrées ; tests de fuseau non vacants (Vitest qui force `America/New_York`, E2E `timezoneId`). Risque connu non couvert : jour de passage à l'heure d'été sans minuit local. (Sprint 89 #652)

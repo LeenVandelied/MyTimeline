@@ -1,4 +1,9 @@
 import type { DurationUnit, RecurrenceUnit } from '@/types/event'
+import { parseLocalIsoDate } from '@/lib/date-iso'
+
+// #652 — `parseLocalIsoDate` vit désormais dans `lib/date-iso.ts` (helper UNIQUE
+// des dates civiles `LocalDate`) ; ré-exporté ici pour ses appelants existants.
+export { parseLocalIsoDate }
 
 /**
  * #315 — Modèle de la MINI-FRISE d'aperçu du formulaire d'événement (handoff §6).
@@ -114,20 +119,6 @@ function resolveNextOccurrence(ghostStart: Date, unit: RecurrenceUnit, today: Da
     steps += 1
   }
   return occurrence
-}
-
-/**
- * Parse une date de formulaire `YYYY-MM-DD` en date LOCALE. `new Date('2026-05-01')`
- * serait interprétée en UTC → décalage d'un jour côté UTC−, exactement le piège
- * évité par `todayLocalIso()` dans `NewEventDrawer`.
- */
-export function parseLocalIsoDate(value?: string | null): Date | null {
-  if (!value) return null
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
-  if (!match) return null
-  const [, year, month, day] = match
-  const parsed = new Date(Number(year), Number(month) - 1, Number(day))
-  return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
 /** Segment positionné dans la fenêtre de l'aperçu (barre pleine ou fantôme). */

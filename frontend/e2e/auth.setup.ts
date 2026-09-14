@@ -110,6 +110,11 @@ function isRegisterPost(response: Response): boolean {
  * SEUL point d'émission du `POST /api/auth/register` de ce fichier : un clic, et le statut de
  * SA réponse. Sans réponse dans le délai, on relit ce qui a déjà été observé (201 tardif, page
  * déjà sur le login) avant de conclure `null` (erreur réseau, backend muet).
+ *
+ * Forme FIGÉE (#685) : `waitForResponse` + `click`, puis `response.status()` ou
+ * `acceptedRegisterStatus(…)` — aucune autre attente, aucune autre valeur renvoyée. Une attente
+ * glissée ici ferait d'une page lente « aucune réponse » après un 201, et la boucle ré-émettrait :
+ * `e2e-rate-limit-budget.test.ts` (clause 5 du contrat) rougit dans ce cas.
  */
 async function submitRegister(page: Page, observed: readonly number[]): Promise<number | null> {
   try {

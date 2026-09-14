@@ -71,7 +71,8 @@
       "description": "Cette action est irréversible.",
       "reassignLabel": "Déplacer les produits vers…",
       "reassignPlaceholder": "Choisissez une catégorie de destination",
-      "noOtherCategory": "Aucune autre catégorie disponible pour réassigner les produits. Créez d'abord une autre catégorie."
+      "noOtherCategory": "Aucune autre catégorie disponible pour réassigner les produits. Créez d'abord une autre catégorie.",
+      "reassignRequired": "Cette catégorie est encore rattachée à des produits, archivés compris. Choisissez une catégorie vers laquelle les déplacer pour pouvoir la supprimer."
     },
     "errors": {
       "notFound": "Cette catégorie n'existe plus.",
