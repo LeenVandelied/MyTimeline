@@ -59,6 +59,16 @@ import {
   type TimelineMetrics,
   type WindowedEvent,
 } from './virtualization'
+import {
+  NO_RECURRENCE_MARKS,
+  NO_SERIES,
+  indexRecurrenceByResource,
+  sameRecurrenceMarks,
+  scaleRecurrenceMarks,
+  windowRecurrenceMarks,
+  type LaneRecurrenceMarks,
+} from './recurrence-marks'
+import { RecurrenceMarks } from './RecurrenceMarks'
 
 /**
  * #55 — Vue Timeline desktop.
@@ -422,6 +432,8 @@ interface TimelineLaneRowProps {
   dayWidth: number
   /** Fenêtre horizontale de la lane — identité STABLE tant que le contenu l'est. */
   windowed: WindowedEvent[]
+  /** #595 — fantômes + connecteurs montés (fenêtrés), identité STABLE (cache de rendu). */
+  recurrence: LaneRecurrenceMarks
   /** Index de la lane dans `navLanes` (coordonnée clavier #81), -1 si absente. */
   laneIdx: number
   /** Index de l'event portant `tabIndex=0` DANS CETTE lane, sinon `null`. */
@@ -447,6 +459,7 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
   isCollapsed,
   dayWidth,
   windowed,
+  recurrence,
   laneIdx,
   rovingEvt,
   locale,
@@ -487,6 +500,10 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
           {resource.title}
         </span>
       </button>
+      {/* #595 — fantômes + connecteurs de série AVANT les pastilles : même contexte
+          d'empilement, donc une occurrence réelle (de n'importe quelle série de la lane)
+          est toujours peinte par-dessus. Non interactifs, hors roving tabindex. */}
+      <RecurrenceMarks marks={recurrence} variant="desktop" />
       {windowed.map(({ event, index: evtIdx }) => {
         const key = navKeyOf(laneIdx, evtIdx)
         return (
@@ -636,6 +653,17 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // `scaleEventPositions` ne consomme que la largeur de jour → clé suffisante.
   const eventsByResource = useZoomCache(indexedEvents, `${dayWidth}`, () =>
     scaleEventPositions(indexedEvents, dayWidth),
+  )
+  // #595 — Marques de récurrence (fantômes + connecteurs), mêmes deux passes : dates en
+  // jours (invariantes au zoom, coupées à l'étendue EXISTANTE — jamais étirée), puis mise
+  // à l'échelle mémoïsée par niveau. `trackWidth` ne dépend que de `dayWidth` une fois
+  // `totalDays` fixé par la source.
+  const recurrenceIndex = useMemo(
+    () => indexRecurrenceByResource(events, rangeStart, totalDays),
+    [events, rangeStart, totalDays],
+  )
+  const recurrenceByResource = useZoomCache(recurrenceIndex, `${dayWidth}`, () =>
+    scaleRecurrenceMarks(recurrenceIndex, dayWidth, trackWidth),
   )
 
   const resourcesByCategory = useMemo(() => groupResourcesByCategory(resources), [resources])
@@ -1362,6 +1390,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const summaryCacheRef = useRef(new Map<string, WindowedEvent[]>())
   const previousSummaries = summaryCacheRef.current
   const nextSummaries = new Map<string, WindowedEvent[]>()
+  // #595 — même cache d'identité pour les marques de récurrence (fantômes + connecteurs)
+  // de chaque lane : sans lui, `windowRecurrenceMarks` rendrait un objet neuf à chaque
+  // frame et casserait `React.memo` sur `TimelineLaneRow`.
+  const recurrenceCacheRef = useRef(new Map<string, LaneRecurrenceMarks>())
+  const previousRecurrence = recurrenceCacheRef.current
+  const nextRecurrence = new Map<string, LaneRecurrenceMarks>()
 
   // #592 — `visibleGroups` : une catégorie masquée n'a ni en-tête ni lanes.
   const renderGroups = visibleGroups.map(([category, resList]) => {
@@ -1400,12 +1434,27 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           const previous = previousWindows.get(resource.id)
           const windowed = previous && sameWindowedEvents(previous, computed) ? previous : computed
           nextWindows.set(resource.id, windowed)
+          // #595 — marques de récurrence de la lane, fenêtrées sur la MÊME bande mais
+          // indépendamment des pastilles (une série hors bande garde ses fantômes).
+          const computedMarks = isResCollapsed
+            ? NO_RECURRENCE_MARKS
+            : windowRecurrenceMarks(
+                recurrenceByResource.get(resource.id) ?? NO_SERIES,
+                horizontalBand,
+              )
+          const previousMarks = previousRecurrence.get(resource.id)
+          const recurrence =
+            previousMarks && sameRecurrenceMarks(previousMarks, computedMarks)
+              ? previousMarks
+              : computedMarks
+          nextRecurrence.set(resource.id, recurrence)
           const laneIdx = laneIndexByResource.get(resource.id) ?? -1
           return {
             resource,
             laneOrdinal: laneWindow.startIndex + i,
             isResCollapsed,
             windowed,
+            recurrence,
             laneIdx,
             rovingEvt: rovingNav !== null && rovingNav.lane === laneIdx ? rovingNav.evt : null,
           }
@@ -1426,6 +1475,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   })
   windowCacheRef.current = nextWindows
   summaryCacheRef.current = nextSummaries
+  recurrenceCacheRef.current = nextRecurrence
 
   // Bulle `?` (layout `embedded` seulement) : même source que le pied de sidebar.
   const shortcuts = isScreen ? [] : buildTimelineShortcuts((key) => t(`dashboard.timeline.${key}`))
@@ -1672,6 +1722,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       isCollapsed={lane.isResCollapsed}
                       dayWidth={dayWidth}
                       windowed={lane.windowed}
+                      recurrence={lane.recurrence}
                       laneIdx={lane.laneIdx}
                       rovingEvt={lane.rovingEvt}
                       locale={locale}

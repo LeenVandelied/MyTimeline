@@ -230,9 +230,20 @@ export const TimelineSidebar = React.memo<TimelineSidebarProps>(function Timelin
             {t('sidebar.legend')}
           </h2>
           <ul className="mt-tlv-side__legend" data-testid="timeline-sidebar-legend">
-            <li className="mt-tlv-side__legend-item">
+            <li className="mt-tlv-side__legend-item" data-legend="event">
               <span className="mt-tlv-side__legend-evt" aria-hidden="true" />
               {t('sidebar.legendEvent')}
+            </li>
+            {/* #595 (DEC-S85-002) — les deux marques de récurrence sont désormais rendues
+                par la frise : occurrence fantôme et connecteur de série. */}
+            <li className="mt-tlv-side__legend-item" data-legend="ghost">
+              <span className="mt-tlv-side__legend-ghost" aria-hidden="true" />
+              {t('sidebar.legendGhost')}
+            </li>
+            <li className="mt-tlv-side__legend-item" data-legend="recurrence">
+              <span className="mt-tlv-side__legend-recur" aria-hidden="true" />
+              {t('sidebar.legendRecurrence')}
+              <span aria-hidden="true">↻</span>
             </li>
           </ul>
         </section>

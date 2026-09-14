@@ -20,14 +20,26 @@ import React from 'react'
  * Le libellé n'est PAS `aria-hidden` : c'est le seul rendu visible du titre, inclus
  * dans l'`aria-label` du bouton (Label-in-Name, WCAG 2.5.3 — même règle que #228).
  *
- * #595 ajoutera autour de ce pin le glyphe `↻` (préfixe du libellé), les occurrences
- * fantômes (petits carrés `left: x − 4`) et le connecteur : ils vivent HORS de ce
- * composant (instances non cliquables, `pointer-events:none`).
+ * #595 — série récurrente : libellé = `"↻ " + titre` (maquette §2), dans la police du
+ * libellé. Le glyphe est `aria-hidden` (l'`aria-label` du bouton annonce déjà la
+ * récurrence, BR-EVE-006) et n'est PAS une icône directionnelle : pas de classe de
+ * retournement RTL (`i18n.css`). Les occurrences fantômes et le connecteur vivent HORS
+ * de ce composant (`RecurrenceMarks`, non cliquables).
  */
-export const EventPinContent: React.FC<{ title: string }> = ({ title }) => (
+export const EventPinContent: React.FC<{ title: string; recurring?: boolean }> = ({
+  title,
+  recurring = false,
+}) => (
   <>
     <span className="mt-evt-pin" aria-hidden="true" />
-    <span className="mt-evt-pin__label">{title}</span>
+    <span className="mt-evt-pin__label">
+      {recurring && (
+        <span className="mt-evt-pin__recur" aria-hidden="true">
+          {'↻ '}
+        </span>
+      )}
+      {title}
+    </span>
   </>
 )
 

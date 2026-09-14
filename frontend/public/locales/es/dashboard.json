@@ -133,7 +133,9 @@
       "categoriesHint": "Cada botón muestra u oculta su categoría en la cronología.",
       "filterLabel": "{category}, {count, plural, one {# evento} other {# eventos}}",
       "legend": "Leyenda",
-      "legendEvent": "Evento"
+      "legendEvent": "Evento",
+      "legendGhost": "Próxima ocurrencia",
+      "legendRecurrence": "Recurrencia"
     },
     "groupHead": {
       "label": "{category}, {count, plural, one {# producto} other {# productos}}"

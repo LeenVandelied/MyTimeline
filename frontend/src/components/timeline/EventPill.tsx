@@ -2,6 +2,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { eventInkColor, eventLabelReadableInside } from './lib'
 import { EventPinContent } from './EventPin'
+import { isRecurringSeries } from './recurrence-marks'
 import { eventKind, PIN_HALF_WIDTH_PX, statusToVar, type PositionedEvent } from './zoom'
 
 /**
@@ -78,6 +79,13 @@ export const EventPill: React.FC<EventPillProps> = ({
    * surfaces (PIT-S46-001).
    */
   const archived = event.extendedProps?.archived === true
+  /**
+   * #595 (BR-EVE-006) — série récurrente : glyphe `↻` en préfixe (barre : `<span>` mono,
+   * maquette §4 ; pin : `"↻ " + titre`, maquette §2). Décoratif (`aria-hidden`) : le
+   * bouton annonce déjà la récurrence via `ariaLabel`. Conservé sur une série ARCHIVÉE
+   * (elle reste une série), qui n'a en revanche ni fantôme ni connecteur.
+   */
+  const recurring = isRecurringSeries(event)
 
   /**
    * #594 — PONCTUEL : pin 10 px + libellé à droite (maquette §2), PAS une barre.
@@ -111,7 +119,7 @@ export const EventPill: React.FC<EventPillProps> = ({
           ['--mt-evt' as string]: bg,
         }}
       >
-        <EventPinContent title={event.title} />
+        <EventPinContent title={event.title} recurring={recurring} />
       </button>
     )
   }
@@ -166,6 +174,11 @@ export const EventPill: React.FC<EventPillProps> = ({
               inclus dans l'`aria-label` du bouton → Label-in-Name (WCAG 2.5.3) OK.
             - `readableInside` faux → le titre est répété DEHORS (garde-fou contraste
               #81) → ce span interne devient purement décoratif → `aria-hidden`. */}
+        {recurring && (
+          <span className="mt-evt-recur" aria-hidden="true">
+            ↻
+          </span>
+        )}
         <span aria-hidden={readableInside ? undefined : true}>{event.title}</span>
       </button>
       {/* #81 point 6 — libellé extérieur de secours si contraste < 4.5:1 dedans.
@@ -177,7 +190,8 @@ export const EventPill: React.FC<EventPillProps> = ({
           aria-hidden="true"
           style={{ left: `${event.leftPx + event.widthPx + 6}px` }}
         >
-          {event.title}
+          {/* #595 — le titre répété dehors garde son préfixe de série. */}
+          {recurring ? `↻ ${event.title}` : event.title}
         </span>
       )}
     </>

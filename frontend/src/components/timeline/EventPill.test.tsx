@@ -12,6 +12,66 @@ import { DEFAULT_COLOR } from '@/types/event'
  * #163), positionnement px, callback de sélection, et l'encre calculée par
  * contraste WCAG (BR-EVE-009 : pas de blanc hardcodé sur fond clair).
  */
+describe('#595 EventPill — glyphe ↻ des séries récurrentes', () => {
+  const recurringProps = {
+    productId: 'prod-1',
+    productName: 'Lait entier bio',
+    category: 'Produits frais',
+    isRecurring: true,
+    recurrenceUnit: 'MONTH' as const,
+  }
+
+  it('barre récurrente : `↻` décoratif en préfixe du titre (mono, aria-hidden)', () => {
+    render(
+      <EventPill
+        event={makePositionedEvent({
+          title: 'Assurance',
+          extendedProps: { ...recurringProps, type: 'duration' },
+        })}
+        ariaLabel="Assurance, récurrent chaque mois"
+        onSelect={() => {}}
+      />,
+    )
+    const pill = screen.getByTestId('timeline-event')
+    const glyph = pill.querySelector('.mt-evt-recur')
+    expect(glyph).toHaveTextContent('↻')
+    expect(glyph).toHaveAttribute('aria-hidden', 'true')
+    // Préfixe : le glyphe précède le titre ; aucune classe de retournement RTL.
+    expect(glyph?.nextElementSibling).toHaveTextContent('Assurance')
+    expect(glyph).not.toHaveClass('mt-dir-icon')
+    expect(pill).toHaveAttribute('aria-label', 'Assurance, récurrent chaque mois')
+  })
+
+  it('pin récurrent : libellé « ↻ » + titre, glyphe aria-hidden', () => {
+    render(
+      <EventPill
+        event={makePositionedEvent({
+          title: 'Vidange',
+          extendedProps: { ...recurringProps, type: 'single' },
+        })}
+        ariaLabel="Vidange"
+        onSelect={() => {}}
+      />,
+    )
+    const label = screen.getByTestId('timeline-event').querySelector('.mt-evt-pin__label')
+    expect(label).toHaveTextContent('↻ Vidange')
+    expect(label?.querySelector('.mt-evt-pin__recur')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('BR-EVE-006 : sans unité de récurrence, aucun glyphe', () => {
+    render(
+      <EventPill
+        event={makePositionedEvent({
+          extendedProps: { ...recurringProps, recurrenceUnit: null, type: 'duration' },
+        })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('timeline-event').querySelector('.mt-evt-recur')).toBeNull()
+  })
+})
+
 describe('EventPill', () => {
   it('rend le titre et préserve data-testid + data-event-title', () => {
     render(

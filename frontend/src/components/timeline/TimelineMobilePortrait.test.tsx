@@ -111,6 +111,38 @@ describe('TimelineMobilePortrait', () => {
     expect(events[1]).not.toHaveAttribute('data-archived')
   })
 
+  it('#595 — ponctuel hebdomadaire non borné : « ↻ » + carrés fantômes coupés à l’étendue', () => {
+    const { container } = renderPortrait({
+      events: [
+        EVENTS[0],
+        {
+          ...EVENTS[1],
+          extendedProps: { ...EVENTS[1].extendedProps, isRecurring: true, recurrenceUnit: 'WEEK' },
+        },
+      ],
+    })
+    // Deux occurrences réelles seulement : les marques ne sont pas des `timeline-event`.
+    const [, pin] = screen.getAllByTestId('timeline-event')
+    expect(screen.getAllByTestId('timeline-event')).toHaveLength(2)
+    expect(pin.querySelector('.mt-evt-pin__recur')).toHaveAttribute('aria-hidden', 'true')
+    expect(pin.querySelector('.mt-evt-pin__label')).toHaveTextContent('↻ Livraison pain')
+    // Étendue : 10 juin → 19 août. Hebdo depuis le 20 juil. : 27/07, 03/08, 10/08, 17/08.
+    const ghosts = [...container.querySelectorAll('[data-recurrence-mark="ghost"]')]
+    expect(ghosts.map((g) => g.getAttribute('data-occurrence-date'))).toEqual([
+      '2026-07-27',
+      '2026-08-03',
+      '2026-08-10',
+      '2026-08-17',
+    ])
+    expect(ghosts[0]).toHaveClass('mt-evt-pin--ghost', 'mt-tlm__ghost-pin')
+    expect(ghosts[0]).toHaveAttribute('aria-hidden', 'true')
+    // 27 juil. = +47 j × 12 px = 564 → carré de 8 px centré : 560.
+    expect((ghosts[0] as HTMLElement).style.left).toBe('560px')
+    expect(container.querySelectorAll('[data-recurrence-mark="connector"]')).toHaveLength(1)
+    // La barre non récurrente n'a pas de glyphe.
+    expect(screen.getAllByTestId('timeline-event')[0].querySelector('.mt-evt-recur')).toBeNull()
+  })
+
   it('#594 — le ponctuel est un PIN centré sur sa date ; la durée reste une barre', () => {
     renderPortrait()
     const [bar, pin] = screen.getAllByTestId('timeline-event')

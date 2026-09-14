@@ -24,6 +24,8 @@ import {
   type PositionedEvent,
 } from './zoom'
 import { windowEvents, windowLanes } from './virtualization'
+import { isRecurringSeries, NO_SERIES, windowRecurrenceMarks } from './recurrence-marks'
+import { RecurrenceMarks } from './RecurrenceMarks'
 
 /**
  * #63 — Vue Timeline mobile portrait.
@@ -272,6 +274,15 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                         >
                           {resource.title}
                         </span>
+                        {/* #595 — fantômes + connecteurs AVANT les occurrences réelles
+                            (ordre de peinture), fenêtrés sur la même bande. */}
+                        <RecurrenceMarks
+                          variant="mobile"
+                          marks={windowRecurrenceMarks(
+                            state.recurrenceByResource.get(resource.id) ?? NO_SERIES,
+                            state.horizontalBand,
+                          )}
+                        />
                         {laneEvents.map((event) => {
                           const color = event.color || 'var(--color-accent)'
                           // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
@@ -326,7 +337,10 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                 }
                               >
                                 {pin ? (
-                                  <EventPinContent title={event.title} />
+                                  <EventPinContent
+                                    title={event.title}
+                                    recurring={isRecurringSeries(event)}
+                                  />
                                 ) : (
                                   <>
                                     {/* #230 — `.mt-evt--archived` (opacity .45) réutilisée
@@ -340,6 +354,12 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                       style={{ background: statusToVar(event.status) }}
                                       aria-hidden="true"
                                     />
+                                    {/* #595 — glyphe de série (décoratif, cf. `EventPill`). */}
+                                    {isRecurringSeries(event) && (
+                                      <span className="mt-evt-recur" aria-hidden="true">
+                                        ↻
+                                      </span>
+                                    )}
                                     <span className="mt-tlm__evt-title">{event.title}</span>
                                   </>
                                 )}
