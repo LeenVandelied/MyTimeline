@@ -102,6 +102,32 @@ describe('mapToFullCalendarEvent', () => {
     expect(mapped.extendedProps.durationUnit).toBe('days')
   })
 
+  it('#676 — propage recurrenceEndDate au view-model (série bornée, BR-EVE-012)', () => {
+    // Sans cette propagation, l'édition ouverte depuis la frise affiche un champ de
+    // borne VIDE et la preview part sans borne → hint « limitée à 5 ans » à tort.
+    const ev: Event = eventSchema.parse(baseResponse)
+    const mapped = mapToFullCalendarEvent(ev, 'Prod', 'cat', 'p1')
+    expect(mapped.extendedProps.recurrenceEndDate).toBe('2026-12-31')
+  })
+
+  it('#676 — série non bornée : recurrenceEndDate reste vide (null ou absent), rien d’inventé', () => {
+    const nullEnd = mapToFullCalendarEvent(
+      eventSchema.parse({ ...baseResponse, recurrenceEndDate: null }),
+      'Prod',
+      'cat',
+      'p1',
+    )
+    expect(nullEnd.extendedProps.recurrenceEndDate).toBeNull()
+
+    const noEnd: Record<string, unknown> = { ...baseResponse }
+    delete noEnd.recurrenceEndDate
+    const absent = mapToFullCalendarEvent(eventSchema.parse(noEnd), 'Prod', 'cat', 'p1')
+    expect(absent.extendedProps.recurrenceEndDate ?? null).toBeNull()
+    // Les champs voisins restent propagés (pas de régression #81/#230).
+    expect(absent.extendedProps.recurrenceUnit).toBe('WEEK')
+    expect(absent.extendedProps.durationUnit).toBe('days')
+  })
+
   it('#188 — propage archived au view-model (BR-EVE-013)', () => {
     const ev: Event = eventSchema.parse({ ...baseResponse, archived: true })
     const mapped = mapToFullCalendarEvent(ev, 'Prod', 'cat', 'p1')

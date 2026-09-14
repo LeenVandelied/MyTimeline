@@ -136,6 +136,13 @@ export type FullCalendarEvent = {
     // = event non récurrent (annonce vocale silencieuse sur la récurrence).
     isRecurring?: boolean
     recurrenceUnit?: RecurrenceUnit | null
+    // #676 — borne de série (BR-EVE-012) remontée au view-model, MÊME motif que
+    // `archived`/`durationUnit` : `eventSchema` la porte déjà, on cesse de la JETER.
+    // SANS elle, `TimelineEditHost` pré-remplissait `null` : champ vide ET preview
+    // interrogée sans borne → `capped:true` → hint « limitée à 5 ans » affiché à tort
+    // sur une série pourtant bornée. Format `YYYY-MM-DD` (LocalDate Java).
+    // Consommé aussi par #595 (bornage des occurrences fantômes en avant).
+    recurrenceEndDate?: string | null
     // #188 — `archived` (soft-delete amorcé, BR-EVE-013) remonté au view-model
     // pour pré-remplir le toggle d'édition. AJOUT frontend : contrat Zod/DTO
     // (`eventSchema.archived`) inchangé, on ne fait que ne plus le JETER au mapping.
@@ -207,6 +214,9 @@ export const mapToFullCalendarEvent = (
       // agrégé de la frise. Ne modifie ni le DTO ni le schéma Zod.
       isRecurring: event.isRecurring,
       recurrenceUnit: event.recurrenceUnit,
+      // #676 — propage la borne de série (BR-EVE-012) : pré-remplissage de l'édition
+      // depuis la frise, et donc `capped` correct côté preview.
+      recurrenceEndDate: event.recurrenceEndDate,
       // #188 — propage `archived` pour pré-remplir le toggle d'édition (BR-EVE-013).
       archived: event.archived,
       // #230 — propage la durée : sans elle, le formulaire ouvert depuis la frise

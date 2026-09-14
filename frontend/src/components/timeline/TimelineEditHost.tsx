@@ -84,10 +84,17 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
       // est `.optional()` côté schéma, il n'accepte pas `null`.
       durationValue: editing.extendedProps?.durationValue ?? undefined,
       durationUnit: editing.extendedProps?.durationUnit ?? undefined,
-      // `recurrenceEndDate` reste absent du view-model frise (non pré-rempli).
       isRecurring: editing.extendedProps?.isRecurring ?? false,
       recurrenceUnit: editing.extendedProps?.recurrenceUnit ?? undefined,
-      recurrenceEndDate: null,
+      // #676 — borne de série pré-remplie depuis le view-model (BR-EVE-012). Avant,
+      // `null` en dur : champ vide ET `useRecurrencePreview` interrogé SANS borne →
+      // `capped:true` → hint de plafond 5 ans affiché à tort sur une série bornée. Le
+      // hint dérive de la VALEUR du formulaire : pré-remplir suffit. `null` (et non
+      // `undefined`) : le schéma d'édition est `.nullable()` et le PATCH partiel backend
+      // ignore un `null` (aucune borne effacée à l'enregistrement).
+      recurrenceEndDate: editing.extendedProps?.recurrenceEndDate
+        ? editing.extendedProps.recurrenceEndDate.slice(0, 10)
+        : null,
       // `type=date` attend `YYYY-MM-DD` ; start/end sont ISO.
       startDate: editing.start ? editing.start.slice(0, 10) : undefined,
       endDate: editing.end ? editing.end.slice(0, 10) : undefined,
