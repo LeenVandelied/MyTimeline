@@ -34,6 +34,7 @@
 - `tsc` exit 0 ; `prettier --check` (19 fichiers) exit 0 ; `next lint --no-cache` exit 0.
 - E2E, 13 specs de la liste (sans `timeline-mobile`) : 95 passés / 0 échec.
 - E2E `sprint-91-event-pin` + `timeline-mobile` + `sprint-63-de-overflow-audit` : 39 passés / 1 échec — `sprint-63:397` (en · 12 largeurs), rejoué 2 fois : assertions vertes, la **purge post-test** prend un 500 backend (`duplicate key uq_categories_owner_name` sur `zz-purge`). Imputation au sprint NON tranchée → A/B sur la base à faire en Phase 6.
+  **Lecture du lead (sans exécution, vague 2 en cours) :** cause très probablement préexistante. `resolveTrashCategory` (`frontend/e2e/support/seed-cleanup.ts:~203`) fait GET puis POST de `zz-purge` sans verrou, et son commentaire dit « deux workers qui la créent au même instant en produisent deux — sans conséquence » ; or `uq_categories_owner_name` existe depuis `V8__category_ownership.sql` (2026-07-01) → le 2e POST concurrent prend un 500. Helper introduit par #463 (2026-09-06), dernier changement #547 (2026-09-13), **aucun commit du Sprint 91 sous `frontend/e2e/support/`**. À confirmer par l'A/B de la Phase 6 avant de l'écrire comme fait.
 - Version finale de `sprint-91-event-pin` : 3/3.
 - **Contrôle négatif (spec neuve rouge sur l'ancien code) : non joué.**
 - `test-quiet.sh frontend` jamais lancé (correction du lead reçue en cours de route).
