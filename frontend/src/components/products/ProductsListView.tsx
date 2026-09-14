@@ -83,21 +83,40 @@ export function ProductsListView() {
   const [search, setSearch] = React.useState('')
   const [sort, setSort] = React.useState<SortKey>('lastActivityDesc')
   const [createOpen, setCreateOpen] = React.useState(false)
-  // Review S90 — focus au retour du drawer de création. Ouvert depuis le CTA d'état
-  // vide, son déclencheur disparaît dès qu'un produit existe : Radix rendrait alors le
-  // focus à un nœud détaché, donc à `body`. On le rend au bouton permanent.
+  // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide.
+  // Ce déclencheur disparaît dès qu'un produit existe ; Radix rendrait alors le focus à
+  // un nœud détaché, donc à `body`. Deux cas, selon l'état du CTA à la fermeture :
+  //   · CTA déjà démonté (liste rechargée avant la fin de l'animation) : on rend le
+  //     focus au bouton permanent ;
+  //   · CTA encore monté (annulation, OU invalidation non attendue par la mutation) :
+  //     Radix rend le focus au CTA, sans interception. S'il se démonte ensuite en
+  //     détenant ce focus, l'effet ci-dessous le rend au bouton permanent.
   const newButtonRef = React.useRef<HTMLButtonElement>(null)
+  const emptyCtaRef = React.useRef<HTMLButtonElement>(null)
   const createFromEmptyRef = React.useRef(false)
+  const focusBackToEmptyCtaRef = React.useRef(false)
   const openCreate = (fromEmpty: boolean) => {
     createFromEmptyRef.current = fromEmpty
+    focusBackToEmptyCtaRef.current = false
     setCreateOpen(true)
   }
   const handleCreateCloseAutoFocus = (event: Event) => {
     if (!createFromEmptyRef.current) return
     createFromEmptyRef.current = false
+    if (emptyCtaRef.current?.isConnected) {
+      focusBackToEmptyCtaRef.current = true
+      return
+    }
     event.preventDefault()
     newButtonRef.current?.focus()
   }
+  const hasProducts = products.length > 0
+  React.useEffect(() => {
+    if (!hasProducts || !focusBackToEmptyCtaRef.current) return
+    focusBackToEmptyCtaRef.current = false
+    const active = document.activeElement
+    if (active === null || active === document.body) newButtonRef.current?.focus()
+  }, [hasProducts])
   const [editProduct, setEditProduct] = React.useState<Product | null>(null)
   const [archiveProduct, setArchiveProduct] = React.useState<Product | null>(null)
 
@@ -237,7 +256,12 @@ export function ProductsListView() {
         <EmptyState
           title={t('empty')}
           action={
-            <Button type="button" onClick={() => openCreate(true)} data-testid="products-empty-cta">
+            <Button
+              type="button"
+              ref={emptyCtaRef}
+              onClick={() => openCreate(true)}
+              data-testid="products-empty-cta"
+            >
               {t('emptyCta')}
             </Button>
           }

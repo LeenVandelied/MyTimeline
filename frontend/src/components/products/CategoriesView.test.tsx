@@ -35,37 +35,52 @@ vi.mock('next-intl', () => ({
 }))
 
 // Review S90 — « close » rejoue la fermeture Radix : `onOpenChange(false)` puis
-// `onCloseAutoFocus(event annulable)` (cf. `ProductsListView.test.tsx`).
-vi.mock('@/components/categories/CategoryDrawer', () => ({
-  CategoryDrawer: ({
-    open,
-    mode,
-    category,
-    onOpenChange,
-    onCloseAutoFocus,
-  }: {
-    open: boolean
-    mode?: string
-    category?: Category
-    onOpenChange: (open: boolean) => void
-    onCloseAutoFocus?: (event: Event) => void
-  }) =>
-    open ? (
-      <div data-testid={`category-drawer-${mode}`} data-category={category?.id ?? ''}>
-        drawer
-        <button
-          type="button"
-          data-testid={`category-drawer-${mode}-close`}
-          onClick={() => {
-            onOpenChange(false)
-            onCloseAutoFocus?.(new Event('focusScope.autoFocusOnUnmount', { cancelable: true }))
-          }}
-        >
-          close
-        </button>
-      </div>
-    ) : null,
-}))
+// `onCloseAutoFocus(event annulable)` ; non annulé, focus rendu à l'élément qui l'avait à
+// l'ouverture (cf. `ProductsListView.test.tsx`).
+const drawerClose = vi.hoisted(() => ({ lastPrevented: null as boolean | null }))
+
+vi.mock('@/components/categories/CategoryDrawer', async () => {
+  const React = await import('react')
+  return {
+    CategoryDrawer: ({
+      open,
+      mode,
+      category,
+      onOpenChange,
+      onCloseAutoFocus,
+    }: {
+      open: boolean
+      mode?: string
+      category?: Category
+      onOpenChange: (open: boolean) => void
+      onCloseAutoFocus?: (event: Event) => void
+    }) => {
+      const triggerRef = React.useRef<Element | null>(null)
+      React.useEffect(() => {
+        if (open) triggerRef.current = document.activeElement
+      }, [open])
+      return open ? (
+        <div data-testid={`category-drawer-${mode}`} data-category={category?.id ?? ''}>
+          drawer
+          <button
+            type="button"
+            data-testid={`category-drawer-${mode}-close`}
+            onClick={() => {
+              onOpenChange(false)
+              const event = new Event('focusScope.autoFocusOnUnmount', { cancelable: true })
+              onCloseAutoFocus?.(event)
+              drawerClose.lastPrevented = event.defaultPrevented
+              const trigger = triggerRef.current
+              if (!event.defaultPrevented && trigger instanceof HTMLElement) trigger.focus()
+            }}
+          >
+            close
+          </button>
+        </div>
+      ) : null
+    },
+  }
+})
 vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
   DeleteConfirmDialog: ({
     open,
@@ -128,6 +143,7 @@ function mockAll(catOverrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  drawerClose.lastPrevented = null
   mockAll()
 })
 
@@ -200,13 +216,54 @@ describe('CategoriesView', () => {
     expect(screen.getByTestId('category-drawer-create')).toBeInTheDocument()
   })
 
-  it('review S90 — drawer ouvert depuis le CTA d’état vide : à la fermeture, focus sur « Nouvelle catégorie »', async () => {
+  it('review S90 — ouvert depuis le CTA d’état vide, catégorie créée (liste rechargée avant la fermeture) : focus sur « Nouvelle catégorie »', async () => {
+    const user = userEvent.setup()
+    mockAll({ data: [] })
+    const { rerender } = render(<CategoriesView />)
+    await user.click(screen.getByTestId('categories-empty-cta'))
+    // Création réussie : la liste n'est plus vide, le CTA d'état vide est démonté.
+    mockAll()
+    rerender(<CategoriesView />)
+    expect(screen.queryByTestId('categories-empty-cta')).not.toBeInTheDocument()
+    await user.click(screen.getByTestId('category-drawer-create-close'))
+    expect(screen.queryByTestId('category-drawer-create')).not.toBeInTheDocument()
+    expect(drawerClose.lastPrevented).toBe(true)
+    expect(document.activeElement).toBe(screen.getByTestId('categories-new-button'))
+  })
+
+  it('review S90 — ouvert depuis le CTA d’état vide, catégorie créée (liste rechargée APRÈS la fermeture) : focus sur « Nouvelle catégorie »', async () => {
+    const user = userEvent.setup()
+    mockAll({ data: [] })
+    const { rerender } = render(<CategoriesView />)
+    await user.click(screen.getByTestId('categories-empty-cta'))
+    await user.click(screen.getByTestId('category-drawer-create-close'))
+    // Invalidation non attendue par la mutation : à la fermeture, le CTA est encore là.
+    expect(drawerClose.lastPrevented).toBe(false)
+    expect(document.activeElement).toBe(screen.getByTestId('categories-empty-cta'))
+    mockAll()
+    rerender(<CategoriesView />)
+    expect(screen.queryByTestId('categories-empty-cta')).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(screen.getByTestId('categories-new-button'))
+  })
+
+  it('review S90 — ouvert depuis le CTA d’état vide puis annulé : Radix rend le focus au CTA', async () => {
     const user = userEvent.setup()
     mockAll({ data: [] })
     render(<CategoriesView />)
     await user.click(screen.getByTestId('categories-empty-cta'))
     await user.click(screen.getByTestId('category-drawer-create-close'))
     expect(screen.queryByTestId('category-drawer-create')).not.toBeInTheDocument()
+    expect(drawerClose.lastPrevented).toBe(false)
+    expect(document.activeElement).toBe(screen.getByTestId('categories-empty-cta'))
+  })
+
+  it('review S90 — drawer ouvert depuis « Nouvelle catégorie » : focus rendu par Radix, sans interception', async () => {
+    const user = userEvent.setup()
+    mockAll({ data: [] })
+    render(<CategoriesView />)
+    await user.click(screen.getByTestId('categories-new-button'))
+    await user.click(screen.getByTestId('category-drawer-create-close'))
+    expect(drawerClose.lastPrevented).toBe(false)
     expect(document.activeElement).toBe(screen.getByTestId('categories-new-button'))
   })
 

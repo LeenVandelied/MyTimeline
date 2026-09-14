@@ -58,21 +58,37 @@ export function CategoriesView() {
   }, [productsQuery.data])
 
   const [createOpen, setCreateOpen] = React.useState(false)
-  // Review S90 — focus au retour du drawer de création (cf. `ProductsListView`) : ouvert
-  // depuis le CTA d'état vide, le déclencheur disparaît à la première catégorie créée ;
-  // le focus va au bouton permanent au lieu de retomber sur `body`.
+  // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide
+  // (même logique que `ProductsListView`) : CTA déjà démonté à la fermeture → bouton
+  // permanent ; CTA encore monté → Radix lui rend le focus, et s'il se démonte ensuite
+  // en le détenant (invalidation non attendue par la mutation), l'effet ci-dessous le
+  // rend au bouton permanent.
   const newButtonRef = React.useRef<HTMLButtonElement>(null)
+  const emptyCtaRef = React.useRef<HTMLButtonElement>(null)
   const createFromEmptyRef = React.useRef(false)
+  const focusBackToEmptyCtaRef = React.useRef(false)
   const openCreate = (fromEmpty: boolean) => {
     createFromEmptyRef.current = fromEmpty
+    focusBackToEmptyCtaRef.current = false
     setCreateOpen(true)
   }
   const handleCreateCloseAutoFocus = (event: Event) => {
     if (!createFromEmptyRef.current) return
     createFromEmptyRef.current = false
+    if (emptyCtaRef.current?.isConnected) {
+      focusBackToEmptyCtaRef.current = true
+      return
+    }
     event.preventDefault()
     newButtonRef.current?.focus()
   }
+  const hasCategories = categories.length > 0
+  React.useEffect(() => {
+    if (!hasCategories || !focusBackToEmptyCtaRef.current) return
+    focusBackToEmptyCtaRef.current = false
+    const active = document.activeElement
+    if (active === null || active === document.body) newButtonRef.current?.focus()
+  }, [hasCategories])
   const [editCategory, setEditCategory] = React.useState<Category | null>(null)
   const [deleteCategoryState, setDeleteCategoryState] = React.useState<Category | null>(null)
 
@@ -125,6 +141,7 @@ export function CategoriesView() {
           action={
             <Button
               type="button"
+              ref={emptyCtaRef}
               onClick={() => openCreate(true)}
               data-testid="categories-empty-cta"
             >
