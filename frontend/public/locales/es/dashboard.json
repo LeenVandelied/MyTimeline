@@ -68,7 +68,7 @@
     "title": "Tus productos",
     "label": "Lista de productos",
     "empty": "Añade un primer producto para seguir sus vencimientos",
-    "emptyCta": "Añadir un producto",
+    "emptyCta": "Ir a los productos",
     "noUpcoming": "Sin vencimientos"
   },
   "stats": {

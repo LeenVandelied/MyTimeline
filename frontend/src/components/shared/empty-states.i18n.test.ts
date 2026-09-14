@@ -65,5 +65,21 @@ describe('#630 — libellés des états vides', () => {
         )
       }
     })
+
+    // Review S90 — `dashboard.productList.emptyCta` est un LIEN vers `/products` (ProductList,
+    // ProductCarousel) : il ne doit pas reprendre un libellé de CRÉATION, qui promettrait une
+    // action que le clic n'exécute pas. Garde minimale et vérifiable : distinct des deux
+    // libellés qui, eux, ouvrent réellement le drawer de création sur `/products`.
+    it(`${locale} : le lien produits du dashboard ne se libelle pas comme une création`, () => {
+      const link = resolve(load(locale, 'dashboard'), 'productList.emptyCta')
+      const creationLabels = [
+        resolve(load(locale, 'products'), 'list.emptyCta'),
+        resolve(load(locale, 'products'), 'list.newProduct'),
+      ]
+      for (const label of creationLabels) {
+        expect(typeof label, `${locale} : libellé de création introuvable`).toBe('string')
+        expect(link, `${locale} : dashboard.productList.emptyCta`).not.toBe(label)
+      }
+    })
   }
 })

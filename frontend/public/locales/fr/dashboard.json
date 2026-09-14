@@ -68,7 +68,7 @@
     "title": "Tes produits",
     "label": "Liste des produits",
     "empty": "Ajoute un premier produit pour suivre ses échéances",
-    "emptyCta": "Ajouter un produit",
+    "emptyCta": "Aller aux produits",
     "noUpcoming": "Aucune échéance"
   },
   "stats": {

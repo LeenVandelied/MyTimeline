@@ -42,6 +42,9 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
         // les tests #80 existants (dashboard-product-list-empty).
         // #630 — CTA vers la liste produits : depuis #624 (retrait d'`AddProductButton`)
         // c'est le seul chemin visible du dashboard vers la création d'un produit.
+        // Review S90 — simple lien vers `/products` (la création y demande un second
+        // clic) : le libellé décrit la NAVIGATION (« Aller aux produits »), pas une
+        // création. Pas de `?new=1` : la page ne lit aucun paramètre d'ouverture.
         <EmptyState
           compact
           title={t('empty')}

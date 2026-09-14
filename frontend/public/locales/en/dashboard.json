@@ -68,7 +68,7 @@
     "title": "Your products",
     "label": "Product list",
     "empty": "Add a first product to track its deadlines",
-    "emptyCta": "Add a product",
+    "emptyCta": "Go to products",
     "noUpcoming": "No upcoming"
   },
   "stats": {

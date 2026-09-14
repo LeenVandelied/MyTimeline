@@ -53,6 +53,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
       {products.length === 0 ? (
         // #630 — Miroir mobile de `ProductList` : même état vide compact, même CTA
         // vers la liste produits (seul chemin de création depuis le dashboard, #624).
+        // Review S90 — même libellé de navigation que `ProductList` (lien, pas création).
         <EmptyState
           compact
           title={t('empty')}
