@@ -790,6 +790,15 @@ Au S89, `compose up --build` restait figé sur `load metadata for docker.io/...`
 ## PIT-S89-007 — « 1 did not run » n'est pas identifiable au reporter `line`, et une comparaison `--list` / progression non normalisée ment
 Le reporter `line` ne nomme pas le test non exécuté. Une première comparaison entre `playwright test --list` et les lignes `[n/N]` a déclaré la moitié de la suite « jamais vue » : le préfixe `[chromium] ›` n'avait été retiré que d'un côté. Normalisée (texte après `[chromium] › `, chemin sans `e2e/`), elle ne donnait plus aucun écart — parce que 387 tests ne portent que 371 titres distincts. Prévention : pour identifier un test non exécuté, ajouter `--reporter=json` au run ; ne jamais conclure d'une comparaison textuelle non normalisée. (Sprint 89, lead)
 
+
+## PIT-S90-006 — Sous le hook, `grep` passe par `rg` : un motif avec accolades rend « 0 matches » sur ERREUR de regex
+`grep -c "track={false}"` a répondu « 0 matches » alors que la mutation d'armement était présente (accolades lues comme quantificateur) ; même symptôme sur `grep -n "evaluate((h1, name) => {"`. Un « la mutation a disparu » vérifié ainsi est faux. Prévention : `/usr/bin/grep -F` ou `git diff --quiet -- <fichier>` pour tout contrôle de retour arrière. (Sprint 90 #630)
+
+
+## PIT-S90-009 — Le hook PostToolUse a réécrit un `let` en `const` et cassé 12 tests
+Un `let` de niveau module, lu par un `vi.mock` et réassigné dans un `beforeEach`, a été réécrit en `const` par l'autofix `prefer-const` du hook : `tsc` TS2588 et 12 tests rouges, alors que prettier et eslint passaient. Prévention : relancer `tsc` et les tests après CHAQUE édition, pas seulement à la fin ; préférer un objet porteur mutable. (Sprint 90 review cycle 1)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

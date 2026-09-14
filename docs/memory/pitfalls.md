@@ -1721,3 +1721,36 @@ Au S89, `compose up --build` restait figé sur `load metadata for docker.io/...`
 
 ## PIT-S89-007 — « 1 did not run » n'est pas identifiable au reporter `line`, et une comparaison `--list` / progression non normalisée ment
 Le reporter `line` ne nomme pas le test non exécuté. Une première comparaison entre `playwright test --list` et les lignes `[n/N]` a déclaré la moitié de la suite « jamais vue » : le préfixe `[chromium] ›` n'avait été retiré que d'un côté. Normalisée (texte après `[chromium] › `, chemin sans `e2e/`), elle ne donnait plus aucun écart — parce que 387 tests ne portent que 371 titres distincts. Prévention : pour identifier un test non exécuté, ajouter `--reporter=json` au run ; ne jamais conclure d'une comparaison textuelle non normalisée. (Sprint 89, lead)
+
+## PIT-S90-001 — Retirer un composant d'un écran : les specs qui y arrivent IMPLICITEMENT ne citent pas l'écran
+Au S90 (#624), le plan listait 2 specs dépendantes de la frise du dashboard ; il y en avait 5. Les 3 manquantes n'écrivaient jamais « dashboard » : elles y arrivaient via `ensureAuthenticated()`, qui fait `goto('/fr/dashboard')`, puis cherchaient `timeline-view` sans nouveau `goto`. Prévention : croiser les specs qui appellent `ensureAuthenticated` sans navigation ultérieure avec les testids de l'élément retiré. (Sprint 90 #624)
+
+## PIT-S90-002 — Un `loading.tsx` enveloppe aussi TOUS les segments enfants
+`products/loading.tsx` seul serait devenu le fallback de `/products/[productId]` : un squelette de liste pendant l'ouverture d'une fiche. Remède : `[productId]/loading.tsx` dédié. Prévention : à chaque `loading.tsx` ajouté, lister les sous-dossiers de route du segment. (Sprint 90 #629)
+
+## PIT-S90-003 — Le fallback `loading.tsx` d'une route atteinte par `router.push` ne se fige pas en retenant la requête RSC
+Sans `<Link>`, aucun préchargement : retenir la requête `?_rsc=` de navigation ne peint aucun fallback. Ce qui le fige : retenir le chunk client de la page (`/_next/static/chunks/app/…/page-<hash>.js`), qui n'est chargé qu'au premier accès. Pour une route atteinte par un `<Link>` du shell, voir PAT-S90-003. (Sprint 90, couverture E2E)
+
+## PIT-S90-004 — Semer des données E2E APRÈS le premier `goto` : le listing reste servi depuis le cache TanStack
+`useProductsWithEvents` a `staleTime` 30 s (`QueryProvider.tsx:28`) ; `ensureAuthenticated` charge le dashboard donc le listing. Un produit semé ensuite n'apparaît pas. Prévention : `getUserId` + semis via `page.request` AVANT toute navigation. (Sprint 90, couverture E2E)
+
+## PIT-S90-005 — Armer « porte relâchée avant l'assertion » reste VERT et ne prouve rien
+Sur `next start` local, le fallback de segment est encore peint au premier sondage `toBeVisible` même sans porte. La porte stabilise l'état, elle n'est pas la preuve. Armer par un testid volontairement faux ou en retirant le nœud (MutationObserver en `addInitScript`). (Sprint 90, couverture E2E)
+
+## PIT-S90-006 — Sous le hook, `grep` passe par `rg` : un motif avec accolades rend « 0 matches » sur ERREUR de regex
+`grep -c "track={false}"` a répondu « 0 matches » alors que la mutation d'armement était présente (accolades lues comme quantificateur) ; même symptôme sur `grep -n "evaluate((h1, name) => {"`. Un « la mutation a disparu » vérifié ainsi est faux. Prévention : `/usr/bin/grep -F` ou `git diff --quiet -- <fichier>` pour tout contrôle de retour arrière. (Sprint 90 #630)
+
+## PIT-S90-007 — Une précondition anti-vacuité en CARACTÈRES ne dit rien d'un débordement en PIXELS
+`sprint-84-section-titles` exigeait un nom ≥ 14 caractères puis `scrollWidth <= clientWidth` à 375 px : mesuré au navigateur, le plus long jeton faisait 178 px pour un `h1` de 343 px, donc retirer `break-words` ne rougissait rien — et le correctif du cycle 1 de review avait remplacé une assertion vacante par une autre. Remède : injecter un jeton plus large que la colonne, asserter la précondition en pixels, armer en retirant la classe du DOM (reçu 1159 > 343). (Sprint 90 review cycle 2)
+
+## PIT-S90-008 — `mutateAsync` de création résout AVANT le rechargement de la liste
+`useCreateProduct` / `useCreateCategory` ne retournent pas la promesse d'`invalidateQueries` dans `onSuccess` : le drawer se ferme pendant que la liste est encore vide. Toute logique qui lit « l'état de la liste à la fermeture » (focus, CTA d'état vide encore monté) est une course contre l'animation de fermeture. (Sprint 90 review cycle 2)
+
+## PIT-S90-009 — Le hook PostToolUse a réécrit un `let` en `const` et cassé 12 tests
+Un `let` de niveau module, lu par un `vi.mock` et réassigné dans un `beforeEach`, a été réécrit en `const` par l'autofix `prefer-const` du hook : `tsc` TS2588 et 12 tests rouges, alors que prettier et eslint passaient. Prévention : relancer `tsc` et les tests après CHAQUE édition, pas seulement à la fin ; préférer un objet porteur mutable. (Sprint 90 review cycle 1)
+
+## PIT-S90-010 — `sprint-84-palette.spec.ts:128` est instable sur `dev` : ne pas l'imputer au sprint en cours
+La flèche droite déplace la sélection (`aria-checked="true"`) mais le focus est repris ensuite. A/B au S90, même spec ×5 contre le même backend : base `a6b39ad` 2 rouges, branche 3 rouges ; aucun fichier du parcours touché. Rouge sur ce seul test → rejouer isolé ×5 avant toute enquête. Cause non localisée (issue de suivi). (Sprint 90)
+
+## PIT-S90-011 — Une spec Playwright neuve n'hérite d'aucune session
+Le compte est déclaré PAR FICHIER (`test.use({ storageState: <COMPTE>.storageState })`, `e2e/support/accounts.ts`). Sans cette ligne, `ensureAuthenticated` échoue sur `getByTestId('dashboard')` : la page reste sur la landing publique. Première sonde du lead au S90 : 3/3 rouges pour cette seule raison. (Sprint 90)
