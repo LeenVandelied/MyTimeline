@@ -6360,6 +6360,10 @@ unique « boucle annotée » sous contrat vérifié). Budget final register et l
 **Troisième arbitrage #547 (dev, 2026-09-14) :** `setup.describe.configure({ retries: 0 })` **accepté** — sans lui, un setup
 retenté par Playwright ré-émet register + login (28/36 > 30). Coût assumé : un aléa du setup rougit le job e2e au lieu d'être
 rattrapé ; mesuré par les 3 runs CI exigés, retour au dev avant merge si un aléa de setup apparaît.
+**Revue cycle 2 :** 0 CRITIQUE / 0 MAJEUR / 5 MINEUR ; MINEUR cycle 1 fermés 6/7. **Quatrième arbitrage (dev, 2026-09-14) :**
+corriger n°1 (201 tardif traité en échec → setup rouge au mauvais motif), n°3 (pire cas annoncé hors ré-émissions sur 5xx),
+n°4 (`ProfileSafetyGuard` contourné par une valeur hexa `0x3E8` que Spring décode) ; relecture du diff par le lead, pas de
+3e cycle reviewer ; n°2 et n°5 → follow-ups.
 **Status :** En cours
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
