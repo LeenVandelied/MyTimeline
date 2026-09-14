@@ -30,3 +30,35 @@ export function classifyRegisterResponse(status: number | null): RegisterOutcome
   if (status >= 500) return 'retry'
   return 'refused'
 }
+
+/**
+ * Register DÉJÀ ACCEPTÉ pour ce compte, à relire AVANT toute ré-émission (revue S88, cycle 2).
+ *
+ * « Aucune réponse » dans le délai ne veut pas dire « requête ratée » : un 201 TARDIF arrive
+ * après le délai, l'écouteur de la page l'enregistre, et l'app a déjà navigué vers le login.
+ * Ré-émettre prendrait un 409 et un jeton de plus ; relancer `ensureRegisterForm` sur la page
+ * de login échouerait trois fois et rougirait le setup au mauvais motif.
+ *
+ * Renvoie le dernier statut 2xx ou 409 observé, sinon `201` si la page est déjà sur `/login`
+ * alors qu'un POST est parti (`postSent`), sinon `null` (rien d'acquis : ré-émission permise).
+ */
+export function acceptedRegisterStatus(
+  observed: readonly number[],
+  url: string,
+  postSent: boolean,
+): number | null {
+  const accepted = [...observed].reverse().find((status) => {
+    const outcome = classifyRegisterResponse(status)
+    return outcome === 'created' || outcome === 'exists'
+  })
+  if (accepted !== undefined) return accepted
+  return postSent && isLoginUrl(url) ? 201 : null
+}
+
+function isLoginUrl(url: string): boolean {
+  try {
+    return /\/login\/?$/.test(new URL(url).pathname)
+  } catch {
+    return false
+  }
+}

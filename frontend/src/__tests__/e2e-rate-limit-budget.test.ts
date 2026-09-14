@@ -13,7 +13,7 @@ import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 import { ALL_ACCOUNTS } from '../../e2e/support/accounts'
-import { classifyRegisterResponse } from '../../e2e/support/register-retry'
+import { acceptedRegisterStatus, classifyRegisterResponse } from '../../e2e/support/register-retry'
 
 /**
  * #475 → #547 — LE BUDGET RATE-LIMIT DE LA SUITE E2E, RECOMPTÉ DEPUIS LES SOURCES.
@@ -697,6 +697,24 @@ describe('#547 — budget rate-limit de la suite E2E (dépôt réel)', () => {
       'refused',
       'refused',
     ])
+  })
+
+  it('201 tardif : réponse non observée dans le délai mais 201/409 déjà vu ou page sur le login → succès (revue S88, cycle 2)', () => {
+    const REGISTER = 'http://localhost:3100/fr/register'
+    const LOGIN = 'http://localhost:3100/fr/login'
+    // Réponse non observée par `waitForResponse` (null), mais l'écouteur a vu un 201 / 409 : succès.
+    expect(classifyRegisterResponse(acceptedRegisterStatus([201], REGISTER, true))).toBe('created')
+    expect(classifyRegisterResponse(acceptedRegisterStatus([502, 409], REGISTER, true))).toBe(
+      'exists',
+    )
+    // Aucun statut vu, mais l'app a déjà navigué vers le login après un POST parti : succès.
+    expect(classifyRegisterResponse(acceptedRegisterStatus([], LOGIN, true))).toBe('created')
+    // Rien d'acquis : ré-émission permise.
+    expect(acceptedRegisterStatus([], REGISTER, true)).toBeNull()
+    expect(acceptedRegisterStatus([500, 503], REGISTER, true)).toBeNull()
+    // Sur le login SANS POST parti, rien n'est acquis ; un 429 ou un 403 n'est jamais un succès.
+    expect(acceptedRegisterStatus([], LOGIN, false)).toBeNull()
+    expect(acceptedRegisterStatus([429, 403], REGISTER, true)).toBeNull()
   })
 
   for (const { slot, property } of TUNABLE) {

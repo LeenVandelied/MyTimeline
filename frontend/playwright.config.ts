@@ -172,7 +172,9 @@ export default defineConfig({
   // pas. Ce qui compte, ce sont les TOTAUX des deux passes CI, retries compris :
   // register 12 / 20 (pire cas), login 12 / 20, reset-password 4 / 12, contre des
   // plafonds e2e de 30 / 30 / 15 (application-e2e.properties). Recompté depuis les
-  // sources par `src/__tests__/e2e-rate-limit-budget.test.ts`.
+  // sources par `src/__tests__/e2e-rate-limit-budget.test.ts`. Le 20 de register EXCLUT
+  // les ré-émissions du setup sur 5xx / absence de réponse (borne 36 en les comptant) :
+  // un 429 register sur un backend instable est un symptôme, pas un défaut de budget.
   // Le rate-limit n'est donc PAS une raison de rester à 1 worker en CI.
   //
   // Restait alors une SEULE inconnue, et c'est elle qui motivait la valeur 1 en CI :

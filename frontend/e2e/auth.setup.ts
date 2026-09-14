@@ -1,7 +1,11 @@
 import { test as setup, expect } from '@playwright/test'
 import { ALL_ACCOUNTS, persistAccounts, type E2eAccount } from './support/accounts'
 import { ensureRegisterForm } from './support/register-page'
-import { classifyRegisterResponse, type RegisterOutcome } from './support/register-retry'
+import {
+  acceptedRegisterStatus,
+  classifyRegisterResponse,
+  type RegisterOutcome,
+} from './support/register-retry'
 
 /**
  * PROJET `setup` (dépendance de `chromium`, cf. playwright.config.ts).
@@ -19,6 +23,10 @@ import { classifyRegisterResponse, type RegisterOutcome } from './support/regist
  *      (arbitrage dev du 2026-09-14, revue S88 — elle ré-émettait jusqu'à 3 fois) ;
  *   2. le projet n'a AUCUN retry Playwright (`configure` ci-dessous) : depuis que 409 vaut
  *      succès, un `provision` retenté irait jusqu'au login et ré-émettrait register ET login.
+ * ⚠ Ces ré-émissions sur échec consomment un jeton et sont EXCLUES du pire cas écrit (20) :
+ * en les comptant, register est borné à 36 (3 soumissions × 4 comptes × 2 passes + 12 des
+ * specs), au-dessus du plafond de 30. Un backend qui renvoie des 5xx fait donc rougir le job ;
+ * un 429 register dans ce contexte est un symptôme de l'instabilité, pas un défaut de budget.
  * En CI la passe 2 rejoue ce fichier contre le même backend (seaux partagés). Le budget
  * complet est RECOMPTÉ par `src/__tests__/e2e-rate-limit-budget.test.ts`, qui lit la
  * fonction `provision`, la boucle annotée et le `configure` — c'est ce recomptage, pas
@@ -47,6 +55,13 @@ const REGISTER_ATTEMPTS = 3
 
 /** Délai d'attente de la réponse `POST /api/auth/register` (hachage BCrypt compris). */
 const REGISTER_RESPONSE_TIMEOUT_MS = 10_000
+
+/**
+ * Délai du clic de soumission, INFÉRIEUR au délai de réponse (revue S88, cycle 2) : quand
+ * `Promise.all` rend la main, le clic est forcément résolu ou abandonné — aucun clic resté en
+ * attente ne peut émettre un POST non compté pendant le backoff ou la tentative suivante.
+ */
+const REGISTER_CLICK_TIMEOUT_MS = 5_000
 
 /** Respiration avant une ré-émission (5xx / aucune réponse) — pas une attente de seau. */
 const REGISTER_RETRY_BACKOFF_MS = 5_000
@@ -93,18 +108,42 @@ function isRegisterPost(response: Response): boolean {
 
 /**
  * SEUL point d'émission du `POST /api/auth/register` de ce fichier : un clic, et le statut de
- * SA réponse — `null` si aucune n'arrive dans le délai (erreur réseau, backend muet).
+ * SA réponse. Sans réponse dans le délai, on relit ce qui a déjà été observé (201 tardif, page
+ * déjà sur le login) avant de conclure `null` (erreur réseau, backend muet).
  */
-async function submitRegister(page: Page): Promise<number | null> {
+async function submitRegister(page: Page, observed: readonly number[]): Promise<number | null> {
   try {
     const [response] = await Promise.all([
       page.waitForResponse(isRegisterPost, { timeout: REGISTER_RESPONSE_TIMEOUT_MS }),
-      page.getByTestId('register-submit').click(),
+      page.getByTestId('register-submit').click({ timeout: REGISTER_CLICK_TIMEOUT_MS }),
     ])
     return response.status()
   } catch {
-    return null
+    return acceptedRegisterStatus(observed, page.url(), true)
   }
+}
+
+/**
+ * Une tentative de register. Une RÉ-émission (`retry`) n'a lieu que si rien d'acquis n'a été
+ * observé, relu avant ET après le backoff (revue S88, cycle 2) : un 201 tardif ou une page
+ * déjà sur le login mène au login, sans ré-émettre et sans `ensureRegisterForm`.
+ */
+async function attemptRegister(
+  account: E2eAccount,
+  page: Page,
+  observed: readonly number[],
+  retry: boolean,
+): Promise<number | null> {
+  if (retry) {
+    const before = acceptedRegisterStatus(observed, page.url(), true)
+    if (before !== null) return before
+    await page.waitForTimeout(REGISTER_RETRY_BACKOFF_MS)
+    const after = acceptedRegisterStatus(observed, page.url(), true)
+    if (after !== null) return after
+    await ensureRegisterForm(page, { label: account.key, mode: 'recover' })
+  }
+  await fillRegister(account, page)
+  return submitRegister(page, observed)
 }
 
 /**
@@ -176,13 +215,12 @@ async function provision(account: E2eAccount, page: Page): Promise<void> {
     if (attempt > 1) {
       console.warn(
         `[setup] register ${account.key} : échec de requête (statuts [${registerStatuses.join(', ')}]), ` +
-          `nouvelle soumission ${attempt}/${REGISTER_ATTEMPTS}`,
+          `tentative ${attempt}/${REGISTER_ATTEMPTS} (ré-émission seulement si rien d'acquis)`,
       )
-      await page.waitForTimeout(REGISTER_RETRY_BACKOFF_MS)
-      await ensureRegisterForm(page, { label: account.key, mode: 'recover' })
     }
-    await fillRegister(account, page)
-    outcome = classifyRegisterResponse(await submitRegister(page))
+    outcome = classifyRegisterResponse(
+      await attemptRegister(account, page, registerStatuses, attempt > 1),
+    )
   }
 
   if (outcome !== 'created' && outcome !== 'exists') {
