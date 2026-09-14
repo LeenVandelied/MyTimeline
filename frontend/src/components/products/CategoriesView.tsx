@@ -9,6 +9,7 @@ import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useCategories } from '@/hooks/useCategories'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
@@ -100,9 +101,23 @@ export function CategoriesView() {
           {t('error')}
         </p>
       ) : categories.length === 0 ? (
-        <p className="text-ink-muted text-sm" data-testid="categories-empty">
-          {t('empty')}
-        </p>
+        // #630 — État vide partagé + CTA : même handler que `categories-new-button`
+        // (ouvre le `CategoryDrawer` de création). Aucune catégorie semée ni
+        // suggérée ici (DEC-S82-004, suggestions = #638).
+        <EmptyState
+          title={t('empty')}
+          action={
+            <Button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              data-testid="categories-empty-cta"
+            >
+              {t('emptyCta')}
+            </Button>
+          }
+          className="border-rule rounded-lg border px-4"
+          testId="categories-empty"
+        />
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}

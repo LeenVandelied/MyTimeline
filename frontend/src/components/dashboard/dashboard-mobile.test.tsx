@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
+import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 import { DensityRibbon } from './DensityRibbon'
 import { CompactAgenda } from './CompactAgenda'
 import { ProductCarousel } from './ProductCarousel'
@@ -91,6 +92,28 @@ describe('CompactAgenda', () => {
     render(<CompactAgenda events={[]} now={NOW} />)
     expect(screen.getByTestId('dashboard-compact-agenda-empty')).toBeInTheDocument()
   })
+
+  it('#630 — état vide sous le shell : instruction + CTA qui ouvre le drawer, sans piste', () => {
+    const openCreate = vi.fn()
+    render(
+      <CreateEventProvider onOpenCreate={openCreate}>
+        <CompactAgenda events={[]} now={NOW} />
+      </CreateEventProvider>,
+    )
+    const empty = screen.getByTestId('dashboard-compact-agenda-empty')
+    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByText('dashboard.mobile.compactAgenda.emptyTitle')).toBeInTheDocument()
+    expect(
+      within(empty).queryByTestId('dashboard-compact-agenda-empty-track'),
+    ).not.toBeInTheDocument()
+    fireEvent.click(within(empty).getByTestId('dashboard-compact-agenda-empty-cta'))
+    expect(openCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('#630 — hors shell : aucun CTA', () => {
+    render(<CompactAgenda events={[]} now={NOW} />)
+    expect(screen.queryByTestId('dashboard-compact-agenda-empty-cta')).not.toBeInTheDocument()
+  })
 })
 
 describe('ProductCarousel', () => {
@@ -113,6 +136,18 @@ describe('ProductCarousel', () => {
   it('affiche l’état vide sans produit', () => {
     render(<ProductCarousel products={[]} now={NOW} locale={LOCALE} />)
     expect(screen.getByTestId('dashboard-product-carousel-empty')).toBeInTheDocument()
+  })
+
+  it('#630 — état vide : CTA vers la liste produits, sans piste', () => {
+    render(<ProductCarousel products={[]} now={NOW} locale={LOCALE} />)
+    const empty = screen.getByTestId('dashboard-product-carousel-empty')
+    expect(empty).toHaveAttribute('role', 'status')
+    expect(
+      within(empty).queryByTestId('dashboard-product-carousel-empty-track'),
+    ).not.toBeInTheDocument()
+    const cta = within(empty).getByTestId('dashboard-product-carousel-empty-cta')
+    expect(cta).toHaveAttribute('href', '/fr/products')
+    expect(cta).toHaveTextContent('dashboard.productList.emptyCta')
   })
 })
 

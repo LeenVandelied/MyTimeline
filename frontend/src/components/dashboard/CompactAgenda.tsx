@@ -4,6 +4,9 @@ import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 
 /**
  * #83 — Agenda compact mobile portrait : liste verticale des événements du JOUR
@@ -53,6 +56,7 @@ const AgendaRow: React.FC<{ event: FullCalendarEvent }> = ({ event }) => (
 
 export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new Date() }) => {
   const t = useTranslations('dashboard.mobile.compactAgenda')
+  const openCreateEvent = useOpenCreateEvent()
 
   const today = useMemo(() => dayBounds(now), [now])
   const tomorrow = useMemo(() => {
@@ -82,9 +86,27 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new 
           des en-têtes de groupe, l'usage que la charte réserve à ce style. */}
       <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {isEmpty ? (
-        <p className="text-ink-muted text-xs" data-testid="dashboard-compact-agenda-empty">
-          {t('empty')}
-        </p>
+        // #630 — Miroir mobile de `WeekAgenda` : état vide compact + CTA qui ouvre le
+        // drawer du shell (absent hors shell). `emptyTitle` (instruction) est distinct
+        // de `empty`, qui reste le constat court du sous-groupe « Aujourd'hui » vide.
+        <EmptyState
+          compact
+          title={t('emptyTitle')}
+          action={
+            openCreateEvent ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={openCreateEvent}
+                data-testid="dashboard-compact-agenda-empty-cta"
+              >
+                {t('emptyCta')}
+              </Button>
+            ) : undefined
+          }
+          testId="dashboard-compact-agenda-empty"
+        />
       ) : (
         <>
           <div className="flex flex-col gap-1" data-testid="dashboard-compact-agenda-today">

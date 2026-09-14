@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Category } from '@/types/category'
@@ -169,6 +169,19 @@ describe('CategoriesView', () => {
     mockAll({ data: [] })
     render(<CategoriesView />)
     expect(screen.getByTestId('categories-empty')).toBeInTheDocument()
+  })
+
+  it('#630 — état vide : le CTA ouvre le CategoryDrawer de création, sans piste', async () => {
+    const user = userEvent.setup()
+    mockAll({ data: [] })
+    render(<CategoriesView />)
+    const empty = screen.getByTestId('categories-empty')
+    expect(empty).toHaveAttribute('role', 'status')
+    expect(screen.getByText('products.categories.empty')).toBeInTheDocument()
+    expect(within(empty).queryByTestId('categories-empty-track')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('category-drawer-create')).not.toBeInTheDocument()
+    await user.click(within(empty).getByTestId('categories-empty-cta'))
+    expect(screen.getByTestId('category-drawer-create')).toBeInTheDocument()
   })
 
   it('affiche l’état d’erreur', () => {

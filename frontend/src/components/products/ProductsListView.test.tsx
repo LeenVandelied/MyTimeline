@@ -147,6 +147,35 @@ describe('ProductsListView', () => {
     expect(screen.getByTestId('products-empty-search')).toBeInTheDocument()
   })
 
+  it('#630 — recherche vide : action « effacer » (pas de CTA de création), focus rendu au champ', async () => {
+    const user = userEvent.setup()
+    render(<ProductsListView />)
+    const input = screen.getByTestId('products-search-input')
+    await user.type(input, 'zzz')
+    const empty = screen.getByTestId('products-empty-search')
+    expect(empty).toHaveAttribute('role', 'status')
+    expect(screen.queryByTestId('products-empty-cta')).not.toBeInTheDocument()
+    expect(within(empty).queryByTestId('products-empty-search-track')).not.toBeInTheDocument()
+    await user.click(within(empty).getByTestId('products-empty-search-cta'))
+    expect(input).toHaveValue('')
+    expect(input).toHaveFocus()
+    expect(screen.getByTestId('products-row-p-alpha')).toBeInTheDocument()
+    expect(screen.queryByTestId('products-empty-search')).not.toBeInTheDocument()
+  })
+
+  it('#630 — liste vide : le CTA ouvre le ProductDrawer de création, sans piste', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    render(<ProductsListView />)
+    const empty = screen.getByTestId('products-empty')
+    expect(empty).toHaveAttribute('role', 'status')
+    expect(screen.getByText('products.list.empty')).toBeInTheDocument()
+    expect(within(empty).queryByTestId('products-empty-track')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
+    await user.click(within(empty).getByTestId('products-empty-cta'))
+    expect(screen.getByTestId('product-drawer-create')).toBeInTheDocument()
+  })
+
   it('ouvre le ProductDrawer en création via « Nouveau produit »', async () => {
     const user = userEvent.setup()
     render(<ProductsListView />)

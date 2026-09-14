@@ -20,6 +20,7 @@ import {
 import { ProductDrawer } from './ProductDrawer'
 import { ProductSparkline } from './ProductSparkline'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useAuth } from '@/hooks/useAuth'
@@ -131,6 +132,12 @@ export function ProductsListView() {
     [router, locale],
   )
 
+  const searchInputRef = React.useRef<HTMLInputElement>(null)
+  const handleClearSearch = () => {
+    setSearch('')
+    searchInputRef.current?.focus()
+  }
+
   const handleArchiveConfirm = async () => {
     if (!userId || !archiveProduct) throw new Error('userId/produit manquant')
     await deleteProduct(userId, archiveProduct.id)
@@ -164,6 +171,7 @@ export function ProductsListView() {
             aria-hidden="true"
           />
           <Input
+            ref={searchInputRef}
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -207,13 +215,43 @@ export function ProductsListView() {
           {t('error')}
         </p>
       ) : products.length === 0 ? (
-        <p className="text-ink-muted text-sm" data-testid="products-empty">
-          {t('empty')}
-        </p>
+        // #630 — État vide partagé + CTA : même action que `products-new-button`
+        // (ouvre le `ProductDrawer` de création). Cadre = celui du tableau et du
+        // squelette `products-loading`, pour que la zone ne change pas de forme.
+        <EmptyState
+          title={t('empty')}
+          action={
+            <Button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              data-testid="products-empty-cta"
+            >
+              {t('emptyCta')}
+            </Button>
+          }
+          className="border-rule rounded-lg border px-4"
+          testId="products-empty"
+        />
       ) : visible.length === 0 ? (
-        <p className="text-ink-muted text-sm" data-testid="products-empty-search">
-          {t('emptySearch')}
-        </p>
+        // #630 — Recherche sans résultat : l'utilisateur A des produits, donc PAS de
+        // CTA de création. Action = effacer le filtre, puis rendre le focus au champ
+        // (le bouton disparaît avec l'état vide : sans ça, le focus tomberait sur body).
+        <EmptyState
+          title={t('emptySearch')}
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClearSearch}
+              data-testid="products-empty-search-cta"
+            >
+              {t('clearSearch')}
+            </Button>
+          }
+          className="border-rule rounded-lg border px-4"
+          testId="products-empty-search"
+        />
       ) : (
         <div className="border-rule overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse text-left text-sm" data-testid="products-table">

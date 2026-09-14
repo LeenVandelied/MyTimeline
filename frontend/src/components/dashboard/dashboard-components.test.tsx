@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
+import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 import { GreetingHeader } from './GreetingHeader'
 import { DensityRibbon } from './DensityRibbon'
 import { WeekAgenda } from './WeekAgenda'
@@ -65,6 +66,26 @@ describe('WeekAgenda', () => {
     render(<WeekAgenda events={[evt('e1', '2026-08-30')]} now={NOW} locale={LOCALE} />)
     expect(screen.getByTestId('dashboard-week-agenda-empty')).toBeInTheDocument()
   })
+
+  it('#630 — état vide sous le shell : CTA qui ouvre le drawer de création, sans piste', () => {
+    const openCreate = vi.fn()
+    render(
+      <CreateEventProvider onOpenCreate={openCreate}>
+        <WeekAgenda events={[]} now={NOW} locale={LOCALE} />
+      </CreateEventProvider>,
+    )
+    const empty = screen.getByTestId('dashboard-week-agenda-empty')
+    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).queryByTestId('dashboard-week-agenda-empty-track')).not.toBeInTheDocument()
+    fireEvent.click(within(empty).getByTestId('dashboard-week-agenda-empty-cta'))
+    expect(openCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('#630 — hors shell : aucun CTA (pas de bouton inerte)', () => {
+    render(<WeekAgenda events={[]} now={NOW} locale={LOCALE} />)
+    expect(screen.getByTestId('dashboard-week-agenda-empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-week-agenda-empty-cta')).not.toBeInTheDocument()
+  })
 })
 
 describe('KpiMarginalia', () => {
@@ -124,5 +145,16 @@ describe('ProductList', () => {
   it('affiche l’état vide sans produit', () => {
     render(<ProductList products={[]} locale={LOCALE} now={NOW} />)
     expect(screen.getByTestId('dashboard-product-list-empty')).toBeInTheDocument()
+  })
+
+  it('#630 — état vide : CTA vers la liste produits localisée, sans piste', () => {
+    render(<ProductList products={[]} locale="de" now={NOW} />)
+    const empty = screen.getByTestId('dashboard-product-list-empty')
+    expect(
+      within(empty).queryByTestId('dashboard-product-list-empty-track'),
+    ).not.toBeInTheDocument()
+    const cta = within(empty).getByTestId('dashboard-product-list-empty-cta')
+    expect(cta).toHaveAttribute('href', '/de/products')
+    expect(cta).toHaveTextContent('dashboard.productList.emptyCta')
   })
 })

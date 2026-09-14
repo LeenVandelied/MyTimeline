@@ -164,6 +164,20 @@ test.describe('#314 /timeline — écran (états)', () => {
 
     await expect(page.getByTestId('timeline-empty')).toBeVisible()
     await expect(page.getByTestId('timeline-host')).toHaveCount(0)
+
+    // #630 — état vide DÉDIÉ : frise vide en pointillés (3 lanes de `--lane-height`)
+    // + CTA de création de PRODUIT (BR-EVE-002 : pas d'événement sans produit).
+    await expect(page.getByTestId('timeline-empty-track')).toBeVisible()
+    const cta = page.getByTestId('timeline-empty-cta')
+    await expect(cta).toBeVisible()
+    await expect(cta).toHaveAttribute('href', '/fr/products')
+
+    // Le CTA mène à la liste produits ; le listing stubbé (route déjà installée) y
+    // reste vide, donc l'état vide produits et son propre CTA de création s'affichent.
+    await cta.click()
+    await expect(page).toHaveURL(/\/fr\/products$/)
+    await expect(page.getByTestId('products-empty')).toBeVisible()
+    await expect(page.getByTestId('products-empty-cta')).toBeVisible()
   })
 
   /**

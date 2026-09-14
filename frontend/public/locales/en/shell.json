@@ -27,8 +27,9 @@
   "timeline": {
     "eyebrow": "Timeline",
     "title": "Timeline",
-    "emptyTitle": "No products yet",
-    "emptyBody": "Create a product and add events to it to see your chronological timeline.",
+    "emptyTitle": "Add a first product to draw your timeline",
+    "emptyBody": "Each product gets its own lane; its events are placed along it in time.",
+    "emptyCta": "Create a product",
     "loading": "Loading…"
   }
 }

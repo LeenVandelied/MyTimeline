@@ -22,7 +22,8 @@
   "week": {
     "title": "Esta semana",
     "label": "Agenda de la semana actual",
-    "empty": "Sin eventos esta semana"
+    "empty": "Nada esta semana: añade un evento para seguirlo aquí",
+    "emptyCta": "Añadir un evento"
   },
   "mobile": {
     "menu": "Abrir menú",
@@ -40,7 +41,9 @@
       "label": "Agenda compacta de hoy y mañana",
       "today": "Hoy",
       "tomorrow": "Mañana",
-      "empty": "Sin eventos hoy ni mañana"
+      "empty": "Sin eventos hoy ni mañana",
+      "emptyTitle": "Nada hoy ni mañana: añade un evento para seguirlo aquí",
+      "emptyCta": "Añadir un evento"
     },
     "carousel": {
       "label": "Productos, desplazamiento horizontal"
@@ -64,7 +67,8 @@
   "productList": {
     "title": "Tus productos",
     "label": "Lista de productos",
-    "empty": "Aún no hay productos",
+    "empty": "Añade un primer producto para seguir sus vencimientos",
+    "emptyCta": "Añadir un producto",
     "noUpcoming": "Sin vencimientos"
   },
   "stats": {
