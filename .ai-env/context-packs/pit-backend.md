@@ -766,6 +766,30 @@ Rendre login/reset-password réglables au S88 a ouvert `APP_RATE_LIMIT_LOGIN_PER
 ## PIT-S88-016 — Exiger N runs CI verts sur un même SHA : `gh run rerun` + `run_attempt`, et ne rien pousser entre les runs
 Aucune CI ne tourne sur `sprint/N` (PIT-S64-008) : les runs se font sur la PR. Recette S88 : `gh run rerun <id>`, attendre `run_attempt == N && status == completed` via `gh api …/actions/runs/<id>`, lire les jobs de CET essai via `…/attempts/<N>/jobs`, sauver le log `e2e` avant le rejeu suivant. Tout push crée un nouveau SHA et annule le rejeu en cours : les écritures mémoire attendent le dernier run. (Sprint 88, lead)
 
+
+## PIT-S89-002 — Muter la `ConversionService` ne fait pas rougir un test de binding `@Value Integer` : muter le type déclaré
+Un convertisseur qui lève sur `""` laisse le test vert : `TypeConverterDelegate` avale l'échec et retombe sur `CustomNumberEditor(allowEmpty=true)` pour les types boxés. La contre-épreuve qui marche : passer `Integer` en `int` (les cas blancs rougissent sur `NumberFormatException: For input string: ""`) ou retirer le défaut `#{null}` du placeholder. Prévention : viser ce qui peut réellement régresser (type, clé, défaut) et VOIR chaque mutation rouge — une mutation plausible peut être vacante. (Sprint 89 #685)
+
+
+## PIT-S89-003 — Un serveur lancé en fond sous RTK écrit un log déjà résumé : l'erreur de démarrage disparaît
+Variante de PIT-S75-002 pour les serveurs de fond. `npx next dev … > log 2>&1` sous le hook RTK n'a laissé qu'un résumé (« Errors: 1 ») sans le message réel (port occupé), et `rtk proxy cat log` ne le restitue pas : la sortie est résumée à la source. Prévention : lancer d'emblée `rtk proxy npx next dev …` (ou `./node_modules/.bin/next`) quand le log est la seule trace. (Sprint 89 #652)
+
+
+## PIT-S89-004 — Oracles E2E 404/404 : le port peut être tenu par le serveur d'un AUTRE projet du poste
+Au S89, `:3000` était pris par le `next-server` standalone d'un autre projet (EdelWheels), qui répondait 404 aux deux oracles : ce n'était ni un proxy absent ni un build cassé. Identifier le propriétaire (`lsof -a -p <pid> -d cwd`), puis prendre `:3100`, le seul autre port présent dans `APP_CORS_ALLOWED_ORIGINS` du conteneur e2e (`docker inspect … Config.Env`). Variante inter-projets de PIT-S60-008. (Sprint 89 #652)
+
+
+## PIT-S89-005 — Sous zsh, `echo ====` coupe la commande composée
+L'expansion `=cmd` de zsh interprète `====` et lève `==== not found`, ce qui interrompt le reste de la commande. Même famille que PIT-S88-002. Prévention : aucun séparateur commençant par `=` ; `printf -- '---\n'`. (Sprint 89 #685)
+
+
+## PIT-S89-006 — Docker Desktop : le helper `credsStore: desktop` peut geler TOUT pull, alors que Docker Hub répond
+Au S89, `compose up --build` restait figé sur `load metadata for docker.io/...` et un `docker pull` simple dépassait 90 s, pendant que `curl https://registry-1.docker.io/v2/` répondait 401 en 0,4 s. Cause : le helper de credentials, pas le réseau (différent du gel S87). Contournement sans toucher au poste : `DOCKER_CONFIG=<dossier temporaire>` avec un `config.json` vide et un lien vers `~/.docker/cli-plugins`, plus `DOCKER_HOST=unix://$HOME/.docker/run/docker.sock` ; images publiques tirées en anonyme. Piège associé : un build arrêté peut finir plus tard en `exit 0` apparent (`lease does not exist`) — vérifier la date de création des conteneurs, pas le code de sortie. (Sprint 89, lead)
+
+
+## PIT-S89-007 — « 1 did not run » n'est pas identifiable au reporter `line`, et une comparaison `--list` / progression non normalisée ment
+Le reporter `line` ne nomme pas le test non exécuté. Une première comparaison entre `playwright test --list` et les lignes `[n/N]` a déclaré la moitié de la suite « jamais vue » : le préfixe `[chromium] ›` n'avait été retiré que d'un côté. Normalisée (texte après `[chromium] › `, chemin sans `e2e/`), elle ne donnait plus aucun écart — parce que 387 tests ne portent que 371 titres distincts. Prévention : pour identifier un test non exécuté, ajouter `--reporter=json` au run ; ne jamais conclure d'une comparaison textuelle non normalisée. (Sprint 89, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

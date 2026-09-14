@@ -6432,7 +6432,34 @@ Vitest sous New_York forcé par le test, spec E2E `timezoneId`). Périmètres v�
 (`sprints/sprint-89/specialists-reviewer-{backend,frontend}.md`) — non corrigés, soumis à l'arbitrage du dev.
 **Tests (lead) :** backend 610/0 seul · `next build` 52/52 · E2E complète 368 passés / 10 échecs darwin attendus / 8 sautés /
 1 non exécuté non identifié · coverage testids OK. Agents : Vitest 1587/0, tsc/lint OK. Audit : `audits/sprint-89-test-coverage.md`.
-**Status :** En cours — PR à ouvrir
+**PR #687** (base `dev`) ouverte sur `333b817`. **Arbitrage dev des MINEUR (2026-09-14) :** deux corrigés avant la fusion par le lead
+— `f5729ba` (`aria-describedby` note ↔ select + 2 assertions, contre-épreuve rouge, 18/18 ; javadoc `bindingRunner` précisée,
+`RateLimitTunableCeilingTest` 10/10) ; trois passés au triage. **CI 7/7 verte sur `959a7dd`**, job `e2e` Linux compris (confirme
+que les 10 échecs `sprint-77-theme-visual` locaux étaient des faux rouges darwin). Pile `s89e2e` démontée après la CI verte.
+**Clôture `/sprint end 89` (2026-09-14) — tout ce qui est vrai AVANT le merge :**
+**Issues livrées (3) :** #546, #652, #685 — à fermer APRÈS le merge (`dev` protégée, pas d'auto-close).
+**Commits de code :** 5 — `ad57148` #546 · `062c903` `6eee23e` #685 · `7ed997c` #652 · `f5729ba` correctifs de revue ; + commits
+`:memo:` d'orchestration.
+**Complétude :** `check-sprint-completeness.sh` rouge au premier passage (`RECOMMAND_TEST_RUNNER` de #546 sans trace par nom de
+fichier, piège S83) — traité par le lead, preuves dans `sprints/sprint-89/specialists-test-runner.md` ; vert au second passage.
+**Mémoire consolidée :** DEC-S89-001 → 002 · PAT-S89-001 → 003 · PIT-S89-001 → 007 (1 frontend, 1 backend, 5 tooling — classés) ·
+BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
+**Follow-ups arbitrés (Phase 4 — triage item par item par le dev) :**
+  - Chemin périmé de `ProductRepositoryJpaImpl` dans le briefing #546 [XS | doc] → discard (briefing supprimé, aucune trace dans le dépôt)
+  - Payload `ProductDrawer.tsx:209` en `YYYY-MM-DD` [XS | events] → **issue #688 (backlog)**
+  - `calculateRemainingTime` sans appelant [XS | events] → **issue #689 (backlog)**
+  - Binding « valeur vide » étendu à register et reset-password [XS | auth/test] → **issue #690 (backlog)**
+  - Alias d'import du classificateur qui contourne l'ancrage du budget [XS | auth/test, pré-existant] → **issue #691 (backlog)**
+  - Assertion couplée à `NumberFormatException` [XS | auth/test] → discard (rougirait bruyamment, correctif d'une ligne)
+  - Arguments d'`acceptedRegisterStatus` non vérifiés [XS | auth/test] → discard (angle mort déjà documenté en javadoc)
+  - Code d'erreur stable pour distinguer les 409 catégorie [S | categories] → **issue #692 (backlog)**
+  - Passage à l'heure d'été sans minuit local dans `parseLocalDate` [S | events/test] → **issue #693 (backlog)**
+  - E2E `timezoneId` sur les vues mobiles [S | events/test] → **issue #694 (backlog)**
+  - Compteur de la carte catégorie trompeur avec des archivés [M | categories] → **issue #695 (backlog)**
+  Ratio : 8 issues (0 avec milestone) / 3 discard / 0 absorbé.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
+**Status :** Prêt à merger — PR #687, CI 7/7 verte sur `959a7dd` ; le commit de clôture relance une CI, c'est son SHA qui fait foi.
+Titre, Status et fermeture des issues à solder APRÈS le merge (au `/sprint start 90`, variante S57).
 
 ### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
 **Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés

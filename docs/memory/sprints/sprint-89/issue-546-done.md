@@ -62,6 +62,7 @@ Option A (arbitrage 2026-09-13) : un produit archivé occupe toujours sa catégo
 ## Recommandations suite
 
 - RECOMMAND_TEST_RUNNER (lead) : jouer `frontend/e2e/categories.spec.ts`, les 5 tests dont le nouveau, contre `next build` + `next start`, et `next build` lui-même (PIT-S86-008). Les specs qui citent les testids touchés, liste grep complète : `frontend/e2e/categories.spec.ts`, `frontend/e2e/sprint-73-model-vs-rendered.spec.ts`, `frontend/e2e/support/products.ts`. Le nouveau testid `delete-reassign-required-note` n'est cité que par `categories.spec.ts`.
+- Traité par le lead (test-runner non délégué, l'E2E ne se délègue pas sur ce projet) : `next build` de production 52/52 et suite E2E complète sur `7ed997c`, dont les 5 tests de `categories.spec.ts` (nouveau cas l.197 compris), aucun en échec — preuves dans `specialists-test-runner.md`.
 - Pas de RECOMMAND_DB_EXPERT car aucune migration ni requête n'a été modifiée (option A).
 - Pas de RECOMMAND_SECURITY car aucun changement d'auth, d'ownership ou d'endpoint.
 - Pas de RECOMMAND_ZOD_DTO_SYNC car aucun DTO ni schéma Zod n'a été touché.
