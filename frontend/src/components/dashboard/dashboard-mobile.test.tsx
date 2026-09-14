@@ -93,11 +93,11 @@ describe('CompactAgenda', () => {
     expect(screen.getByTestId('dashboard-compact-agenda-empty')).toBeInTheDocument()
   })
 
-  it('#630 — état vide sous le shell : instruction + CTA qui ouvre le drawer, sans piste', () => {
+  it('#630 — état vide sous le shell, avec produit : instruction + CTA qui ouvre le drawer, sans piste', () => {
     const openCreate = vi.fn()
     render(
       <CreateEventProvider onOpenCreate={openCreate}>
-        <CompactAgenda events={[]} now={NOW} />
+        <CompactAgenda events={[]} now={NOW} canCreateEvent />
       </CreateEventProvider>,
     )
     const empty = screen.getByTestId('dashboard-compact-agenda-empty')
@@ -108,6 +108,19 @@ describe('CompactAgenda', () => {
     ).not.toBeInTheDocument()
     fireEvent.click(within(empty).getByTestId('dashboard-compact-agenda-empty-cta'))
     expect(openCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('review S90 — état vide sous le shell, SANS produit : instruction sans CTA', () => {
+    const openCreate = vi.fn()
+    render(
+      <CreateEventProvider onOpenCreate={openCreate}>
+        <CompactAgenda events={[]} now={NOW} canCreateEvent={false} />
+      </CreateEventProvider>,
+    )
+    const empty = screen.getByTestId('dashboard-compact-agenda-empty')
+    expect(within(empty).getByText('dashboard.mobile.compactAgenda.emptyTitle')).toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-compact-agenda-empty-cta')).not.toBeInTheDocument()
+    expect(within(empty).queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('#630 — hors shell : aucun CTA', () => {

@@ -20,6 +20,17 @@ export interface WeekAgendaProps {
   now?: Date
   locale: string
   variant?: 'table' | 'stack'
+  /**
+   * Review S90 — `false` quand l'utilisateur n'a AUCUN produit : l'état vide ne porte
+   * alors pas de CTA « Ajouter un événement » (le drawer ne pourrait qu'expliquer
+   * BR-EVE-002 ; l'état vide produits voisin porte déjà l'action utile).
+   *
+   * Défaut `true` : le CTA reste gouverné par le seul provider du shell pour tout
+   * montage qui ne connaît pas les produits (tests, montages hors page). Le seul
+   * montage qui les connaît, `dashboard/page.tsx`, passe la valeur explicitement, et
+   * `dashboard/page.test.tsx` verrouille cette transmission dans les 3 branches.
+   */
+  canCreateEvent?: boolean
 }
 
 export const WeekAgenda: React.FC<WeekAgendaProps> = ({
@@ -27,6 +38,7 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
   now = new Date(),
   locale,
   variant = 'table',
+  canCreateEvent = true,
 }) => {
   const t = useTranslations('dashboard.week')
   const openCreateEvent = useOpenCreateEvent()
@@ -58,13 +70,13 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
       {weekEvents.length === 0 ? (
         // #630 — État vide partagé (compact) + CTA « Ajouter un événement » qui ouvre
         // LE drawer du shell (`useOpenCreateEvent`). Hors shell (null), aucun bouton
-        // plutôt qu'un bouton inerte. Sans produit, le drawer explique lui-même qu'il
-        // faut d'abord en créer un (BR-EVE-002).
+        // plutôt qu'un bouton inerte. Review S90 : sans produit (`canCreateEvent`
+        // false), aucun bouton non plus — plus de détour par un drawer bloqué.
         <EmptyState
           compact
           title={t('empty')}
           action={
-            openCreateEvent ? (
+            openCreateEvent && canCreateEvent ? (
               <Button
                 type="button"
                 variant="outline"

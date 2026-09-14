@@ -81,6 +81,9 @@ export default function Dashboard() {
   const landscapeProductsRef = useRef<HTMLDivElement>(null)
   // #624 — Cible du bouton « Ouvrir la frise » (route localisée, `localePrefix: 'always'`).
   const timelineHref = `/${locale}/timeline`
+  // Review S90 — sans produit, les agendas vides ne proposent pas « Ajouter un
+  // événement » (BR-EVE-002) : l'état vide produits voisin porte déjà l'action.
+  const canCreateEvent = products.length > 0
 
   const handleLogout = async () => {
     try {
@@ -195,7 +198,7 @@ export default function Dashboard() {
           <div className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 overflow-y-auto px-4 py-4">
             {/* Colonne gauche : agenda compact jour + lendemain. */}
             <div className="min-w-0" data-testid="dashboard-landscape-agenda">
-              <CompactAgenda events={events} />
+              <CompactAgenda events={events} canCreateEvent={canCreateEvent} />
             </div>
             {/* Colonne droite : ruban densité (scrollable) + produits. */}
             <div
@@ -226,7 +229,7 @@ export default function Dashboard() {
 
           <DensityRibbon events={events} locale={locale} scrollable timelineHref={timelineHref} />
 
-          <CompactAgenda events={events} />
+          <CompactAgenda events={events} canCreateEvent={canCreateEvent} />
 
           <ProductCarousel products={products} locale={locale} />
         </div>
@@ -238,7 +241,12 @@ export default function Dashboard() {
           <DensityRibbon events={events} locale={locale} timelineHref={timelineHref} />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <WeekAgenda events={events} locale={locale} variant="table" />
+            <WeekAgenda
+              events={events}
+              locale={locale}
+              variant="table"
+              canCreateEvent={canCreateEvent}
+            />
             <aside className="flex flex-col gap-6">
               <KpiMarginalia kpis={kpis} locale={locale} />
               <ProductList products={products} locale={locale} />

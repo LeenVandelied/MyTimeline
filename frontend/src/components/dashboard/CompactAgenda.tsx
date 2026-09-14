@@ -27,6 +27,11 @@ import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 export interface CompactAgendaProps {
   events: FullCalendarEvent[]
   now?: Date
+  /**
+   * Review S90 — `false` sans aucun produit : pas de CTA dans l'état vide (le carousel
+   * produits voisin porte l'action). Défaut `true`, même contrat que `WeekAgenda`.
+   */
+  canCreateEvent?: boolean
 }
 
 /** Bornes [00:00, 23:59:59.999] d'un jour donné. */
@@ -54,7 +59,11 @@ const AgendaRow: React.FC<{ event: FullCalendarEvent }> = ({ event }) => (
   </li>
 )
 
-export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new Date() }) => {
+export const CompactAgenda: React.FC<CompactAgendaProps> = ({
+  events,
+  now = new Date(),
+  canCreateEvent = true,
+}) => {
   const t = useTranslations('dashboard.mobile.compactAgenda')
   const openCreateEvent = useOpenCreateEvent()
 
@@ -87,13 +96,14 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({ events, now = new 
       <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {isEmpty ? (
         // #630 — Miroir mobile de `WeekAgenda` : état vide compact + CTA qui ouvre le
-        // drawer du shell (absent hors shell). `emptyTitle` (instruction) est distinct
-        // de `empty`, qui reste le constat court du sous-groupe « Aujourd'hui » vide.
+        // drawer du shell (absent hors shell, et absent sans produit — review S90).
+        // `emptyTitle` (instruction) est distinct de `empty`, qui reste le constat
+        // court du sous-groupe « Aujourd'hui » vide.
         <EmptyState
           compact
           title={t('emptyTitle')}
           action={
-            openCreateEvent ? (
+            openCreateEvent && canCreateEvent ? (
               <Button
                 type="button"
                 variant="outline"

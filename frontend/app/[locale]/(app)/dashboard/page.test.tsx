@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Dashboard from './page'
 import type { DashboardData } from '@/hooks/useDashboardData'
+import type { Product } from '@/types/product'
 
 /**
  * #624 — Le tableau de bord montre un APERÇU de la frise (ruban de densité) et un
@@ -42,8 +43,17 @@ const emptyData: DashboardData = {
   isError: false,
   refetch: vi.fn(),
 }
+const oneProduct: Product = {
+  id: 'p1',
+  name: 'Produit A',
+  color: null,
+  category: { id: 'c1', name: 'Cat', color: null },
+  events: [],
+}
+// Objet muable (lu à l’appel du mock) : chaque test peut remplacer `data`.
+const dashboardState: { data: DashboardData } = { data: emptyData }
 vi.mock('@/hooks/useDashboardData', () => ({
-  useDashboardData: () => emptyData,
+  useDashboardData: () => dashboardState.data,
 }))
 
 const media = { mobile: false, landscape: false }
@@ -68,10 +78,16 @@ vi.mock('@/components/dashboard', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/dashboard')>()
   return {
     ...actual,
-    WeekAgenda: () => null,
+    // Review S90 — stubs qui EXPOSENT `canCreateEvent` : la transmission par la page
+    // est observable (un seul agenda monté par branche, desktop ou compact).
+    WeekAgenda: ({ canCreateEvent }: { canCreateEvent?: boolean }) => (
+      <div data-testid="agenda-stub" data-can-create-event={String(canCreateEvent)} />
+    ),
     KpiMarginalia: () => null,
     ProductList: () => null,
-    CompactAgenda: () => null,
+    CompactAgenda: ({ canCreateEvent }: { canCreateEvent?: boolean }) => (
+      <div data-testid="agenda-stub" data-can-create-event={String(canCreateEvent)} />
+    ),
     ProductCarousel: () => null,
     MobileDrawer: () => null,
     CompactRail: () => null,
@@ -85,6 +101,7 @@ vi.mock('@/components/ui/footer-app', () => ({
 beforeEach(() => {
   media.mobile = false
   media.landscape = false
+  dashboardState.data = emptyData
   hostSpy.mockClear()
 })
 
@@ -124,5 +141,15 @@ describe.each(BRANCHES)('Dashboard #624 — branche $name', ({ mobile, landscape
     expect(screen.queryByTestId('timeline-edit-host-stub')).not.toBeInTheDocument()
     expect(hostSpy).not.toHaveBeenCalled()
     expect(screen.queryByTestId('add-product-button')).not.toBeInTheDocument()
+  })
+
+  it('review S90 — agenda : canCreateEvent=false sans produit, true avec ≥ 1 produit', () => {
+    const { unmount } = render(<Dashboard />)
+    expect(screen.getByTestId('agenda-stub')).toHaveAttribute('data-can-create-event', 'false')
+    unmount()
+
+    dashboardState.data = { ...emptyData, products: [oneProduct] }
+    render(<Dashboard />)
+    expect(screen.getByTestId('agenda-stub')).toHaveAttribute('data-can-create-event', 'true')
   })
 })

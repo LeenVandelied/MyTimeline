@@ -67,11 +67,11 @@ describe('WeekAgenda', () => {
     expect(screen.getByTestId('dashboard-week-agenda-empty')).toBeInTheDocument()
   })
 
-  it('#630 — état vide sous le shell : CTA qui ouvre le drawer de création, sans piste', () => {
+  it('#630 — état vide sous le shell, avec produit : CTA qui ouvre le drawer de création, sans piste', () => {
     const openCreate = vi.fn()
     render(
       <CreateEventProvider onOpenCreate={openCreate}>
-        <WeekAgenda events={[]} now={NOW} locale={LOCALE} />
+        <WeekAgenda events={[]} now={NOW} locale={LOCALE} canCreateEvent />
       </CreateEventProvider>,
     )
     const empty = screen.getByTestId('dashboard-week-agenda-empty')
@@ -79,6 +79,19 @@ describe('WeekAgenda', () => {
     expect(within(empty).queryByTestId('dashboard-week-agenda-empty-track')).not.toBeInTheDocument()
     fireEvent.click(within(empty).getByTestId('dashboard-week-agenda-empty-cta'))
     expect(openCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('review S90 — état vide sous le shell, SANS produit : aucun CTA (pas de détour par le drawer)', () => {
+    const openCreate = vi.fn()
+    render(
+      <CreateEventProvider onOpenCreate={openCreate}>
+        <WeekAgenda events={[]} now={NOW} locale={LOCALE} canCreateEvent={false} />
+      </CreateEventProvider>,
+    )
+    const empty = screen.getByTestId('dashboard-week-agenda-empty')
+    expect(within(empty).getByText('dashboard.week.empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-week-agenda-empty-cta')).not.toBeInTheDocument()
+    expect(within(empty).queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('#630 — hors shell : aucun CTA (pas de bouton inerte)', () => {
