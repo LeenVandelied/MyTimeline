@@ -132,3 +132,6 @@ Cause : #611 (`02a1b45`) a borné le bord droit de `landing-mobile-overflow` par
 
 ## BUG-S87-002 — Référence visuelle `landing-hero` non déterministe (introduit et corrigé au Sprint 87)
 Cause : la frise de #611 est une boucle `transform` infinie avec `will-change` ; `animations:'disabled'` laissait une avancée fractionnaire avant capture. Symptôme : référence régénérée dans l'image noble rouge contre elle-même 1 min plus tard (2382 px). Trouvé par le lead au rejeu de contrôle, avant tout commit de référence. Solution (`6481397`) : gel exact de la piste dans `prepare()` + attente de la condition ; références régénérées (`6f8f6f4`), 3 recomparaisons 11/11. Voir [[PIT-S87-003]]. (Sprint 87, lead)
+
+## BUG-S88-001 — PIT-S47-003 attribuait l'échec de V7 à des données invalides (diagnostic faux depuis le Sprint 47)
+Cause : le diagnostic lisait le nom de contrainte dans l'erreur sans interroger `pg_constraint` ni les valeurs ; la contrainte était héritée hors Flyway et les données étaient convertibles (weeks ×1, years ×2, NULL ×16), V9 ne pouvait rien. Symptôme : 41 sprints de consigne « base inmigrable, ne pas réparer ». Correctif : PIT-S37-003 et PIT-S47-003 corrigés en place, README piège n°5. Règle : un diagnostic de migration cite la contrainte ET les valeurs lues, sinon il est marqué déduit. (Sprint 88 #545)

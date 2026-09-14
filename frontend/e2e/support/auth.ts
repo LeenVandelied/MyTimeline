@@ -50,8 +50,9 @@ export function uniqueIdentity(prefix = 'e2e'): E2eIdentity {
  * point de factorisation possible.
  *
  * ⚠ Ne fait AUCUN login : les parcours de reset de mot de passe testent
- * précisément la (re)connexion, et un login superflu consommerait une tentative
- * (rate-limit 5/min/IP, verrou #141).
+ * précisément la (re)connexion, et un login superflu consommerait un jeton du seau
+ * `login` PARTAGÉ par toute la suite (une seule IP derrière le proxy Next ; profil e2e
+ * 30/min/IP, budget recompté par `src/__tests__/e2e-rate-limit-budget.test.ts`).
  */
 export async function registerOnly(page: Page, prefix = 'e2e'): Promise<E2eIdentity> {
   const identity = uniqueIdentity(prefix)

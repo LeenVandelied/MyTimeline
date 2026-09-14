@@ -6137,7 +6137,7 @@ ligne « CRÉÉ LE » omise (donnée absente), animation 200 ms au lieu de 240, 
 **Status :** Terminé — PR #675 mergée dans `dev` le 2026-09-12 (commit `55023f0`) ; issues #617/#618/#646 fermées,
 milestone #87 fermé (3/3). Soldé au `/sprint start 87` (variante S57).
 
-### Sprint 87 — 2026-09-13 (EN COURS — cohésion 0.70, Landing publique : hero et frise du spec)
+### Sprint 87 — 2026-09-13 (Terminé — merge PR #681 dans dev, `77666e7` — cohésion 0.70, Landing publique : hero et frise du spec)
 **Objectif :** Hero 30/70 avec frise animée conforme au spec, purge des deux sections redondantes
 **Milestone GitHub :** #88
 **Issues (3) :** #610, #611, #641 — à fermer APRÈS le merge (`dev` protégée)
@@ -6196,8 +6196,8 @@ BUG-S87-001, BUG-S87-002 · Packs `pit-*` régénérés, `--check` exit 0.
   Ratio : 1 issue / 0 discard / 2 absorbés. Les 2 absorptions (1 caractère + 1 commentaire, spec seule) ont été appliquées
   par le lead et non par un fullstack-dev spawné — écart au skill assumé, vérifié par la spec + `sprint-63` + tsc/eslint/format.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable disponible dans la session).
-**Status :** En clôture — PR #681, merge à confirmer par le dev ; issues #610/#611/#641 à fermer APRÈS le merge ; titre et
-Status à solder au `/sprint start 88` (variante S57).
+**Status :** Terminé — PR #681 mergée le 2026-09-13T16:36Z (`77666e7`) ; issues #610/#611/#641 fermées ; milestone #88 fermé
+(0 issue ouverte, compteur API). Titre et Status soldés au `/sprint start 88` (variante S57).
 
 ### Matrice de conflits (fichiers partagés)
 
@@ -6328,7 +6328,7 @@ compteur UI sans archivés (#546), Spring Boot 3.5.16 dans `pom.xml` (CLAUDE.md 
 **Pas de branche `sprint/88` créée** (convention S85 : `/sprint start` travaille sur la branche de son
 worktree).
 
-### Sprint 88 — 2026-09-13 (PLANIFIÉ — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
+### Sprint 88 — 2026-09-13 (EN COURS — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
 **Objectif :** Plus de JWT valide dans les logs CI d'un dépôt public ; rate-limit ré-armé et prouvé en E2E ; dépannage base locale documenté
 **Milestone GitHub :** #89
 **Issues :** #568 (P1, M→S), #547 (P1, M), #545 (P1, M→S doc)
@@ -6337,7 +6337,75 @@ worktree).
 **Dépend de :** aucune
 **Cohésion < 0.3 assumée** (DEC-S57-003) : split #545 → S89 proposé et écarté (thème commun zéro code produit, #545 = doc seule).
 **À confirmer au démarrage :** #568 option `spring.test.mockmvc.print=none` global ; #547 modifie `ci.yml` (confirmation explicite), recompter TOUS les créneaux, nombre de runs CI verts exigés (proposé : 3).
-**Status :** Planifié
+**Démarrage (2026-09-13) :** branche `sprint/88` créée depuis `origin/dev` — le worktree portait `claude/sprint-88-start-d23619`
+basée sur `main` (convention S80 inapplicable). Arbitrages rendus par le dev : **#568 → `spring.test.mockmvc.print=none`
+global** ; **#547 → modification de `ci.yml` autorisée, 3 runs CI verts consécutifs exigés** (rejeux du SHA de tête).
+**Vague 1 livrée :** #568 `a911412` (`spring.test.mockmvc.print=none`, contrôle négatif 2→0→2 `eyJ`, backend 581/0) ·
+#545 `6cc9d73` (README piège n°5, PIT-S37-003/S47-003 corrigés — cause réelle : CHECK `events_recurrence_unit_check` hors Flyway
+dans le Postgres Homebrew du poste, pas dans le volume compose ; packs `--check` 0).
+**#547 — arbitrage en cours de sprint (dev, 2026-09-13) :** l'agent a stoppé en PARTIAL (4 créneaux non réglables dépassent
+leur plafond en pire cas CI : login 20/10, reset 12/5, forgot 9/5, change-password 6/5 ; mesuré local filtre armé aux défauts :
+0 × 429, pic 8 logins/min). **Option D retenue** : propriétés e2e login 30 + reset-password 15, register 20→30 ;
+forgot et change-password restent aux défauts (dépassement seulement sur double retry d'un test déjà en échec).
+**#547 livré (option D) :** `33ea579` backend · `396c372` budget + preuve · `9e49b8f` flag retiré (ci.yml, compose).
+**Revues cycle 1 :** reviewer 0 CRITIQUE / 0 MAJEUR / 6 MINEUR · security-expert 0 / 0 / 3 MINEUR
+(`sprints/sprint-88/specialists-{reviewer,security}.md`) → MINEUR absorbés en un cycle : `e940ac8` (passes CI multi-lignes,
+preuve sans retry) · `d7b2328` (README `down -v`) · `dcb222d` (boot refusé en prod si un plafond réglable dépasse son défaut).
+**Second arbitrage #547 (dev, 2026-09-14) :** le recomptage conscient des boucles donne register pire cas **36 > 30**
+(boucle `REGISTER_RETRIES` d'`auth.setup.ts` qui ré-inscrit sur page lente) → **retry seulement sur échec** de la requête
+(ni sur 201/409, ni sur 429) ; aucun plafond relevé.
+**Cycle de corrections terminé :** `46afa05` (register du setup ré-émis seulement sur 5xx / absence de réponse ; 201/409 =
+succès ; 429 = échec immédiat) · `cae1f77` (compteur conscient des boucles : × borne, borne illisible = échec ; exception
+unique « boucle annotée » sous contrat vérifié). Budget final register et login : nominal CI 12, pire cas 20, plafond e2e 30.
+**Troisième arbitrage #547 (dev, 2026-09-14) :** `setup.describe.configure({ retries: 0 })` **accepté** — sans lui, un setup
+retenté par Playwright ré-émet register + login (28/36 > 30). Coût assumé : un aléa du setup rougit le job e2e au lieu d'être
+rattrapé ; mesuré par les 3 runs CI exigés, retour au dev avant merge si un aléa de setup apparaît.
+**Revue cycle 2 :** 0 CRITIQUE / 0 MAJEUR / 5 MINEUR ; MINEUR cycle 1 fermés 6/7. **Quatrième arbitrage (dev, 2026-09-14) :**
+corriger n°1 (201 tardif traité en échec → setup rouge au mauvais motif), n°3 (pire cas annoncé hors ré-émissions sur 5xx),
+n°4 (`ProfileSafetyGuard` contourné par une valeur hexa `0x3E8` que Spring décode) ; relecture du diff par le lead, pas de
+3e cycle reviewer ; n°2 et n°5 → follow-ups.
+**Dernière passe (n°1/3/4 du cycle 2) :** `e5c2f4b` (201 tardif = succès, clic borné à 5 s < réponse 10 s, pire cas register
+36/30 documenté comme symptôme d'instabilité 5xx) · `30ecdc8` (`ProfileSafetyGuard` convertit via `NumberUtils.parseNumber`
+comme le binding Spring : `0x3E8` refusé en prod, valeur illisible refusée en prod, hors prod inchangé). **Relue par le lead**
+(appelant unique de `readIntegerOrNull` derrière `isProductionEffective`, test « profil test + illisible → autorisé » présent).
+**Tests (agents, non rejoués par le lead) :** backend 603/0 · Vitest 1553/0 · tsc/lint/format conformes · packs `--check` 0 ·
+E2E complète locale filtre armé 374 passés / 1 échec darwin attendu / 1 flaky hors throttle · ciblée post-correctifs setup 5,
+golden-path 6, auth 29. Audit : `audits/sprint-88-test-coverage.md`.
+**Écarts d'orchestration :** `spawn-ref-547.txt` jamais écrit avant le spawn de #547 (recovery `/resume-failed` impossible pour
+cette issue ; sans conséquence, aucun crash) ; briefings supprimés AVANT la PR (jamais committés).
+**Follow-ups à trianger au `/sprint end` :** reviewer cycle 2 n°2 (contrat de boucle annotée contournable via helper) et n°5
+(vide via vrai binding) · sécurité n°3 (`trust-forwarded-header=true` en prod dépend de Caddy ; traces Playwright publiques) ·
+#545 : sort des bases `eventmanager`/`eventmanager_s79`/`eventmanager_flywaytest` du Postgres Homebrew (décision dev) · README
+§3 « CI en `workers: 1` » périmé · noms d'anciennes IT rate-limit cités dans `docs/memory/**`.
+**Clôture `/sprint end 88` (2026-09-14) — tout ce qui est vrai AVANT le merge :**
+**Issues livrées (3) :** #568, #545, #547 — à fermer APRÈS le merge (`dev` protégée, pas d'auto-close).
+**Vagues exécutées :** V1 = #568 ∥ #545 | V2 = #547 (PARTIAL → option D) | correctifs revue cycle 1 (PARTIAL → retry sur échec,
+`retries: 0`) | correctifs revue cycle 2 (n°1/3/4).
+**Commits de code et doc produit :** 12 — `a911412` #568 · `6cc9d73` `d7b2328` #545 · `33ea579` `396c372` `9e49b8f` `e940ac8`
+`dcb222d` `46afa05` `cae1f77` `e5c2f4b` `30ecdc8` #547 ; + commits `:memo:` d'orchestration.
+**Reviews :** reviewer cycle 1 — 0 CRITIQUE / 0 MAJEUR / 6 MINEUR (tous corrigés) · security-expert — 0 / 0 / 3 MINEUR (2 corrigés,
+1 antérieur → #686) · reviewer cycle 2 — 0 / 0 / 5 MINEUR (3 corrigés, relus par le lead ; 2 → #685).
+**CI PR #684 :** **3 runs verts consécutifs sur `df2337e`** (run 34818041467, essais 1-3) : 7/7 checks, E2E passe 1
+`Running 385` = 377 passés + 8 sautés (preuve `rate-limit-armed` comprise, 0 failed/flaky/did not run), passe 2 13/13, 0 × 429
+hors preuve — à chaque essai. Aucun aléa du setup. Le commit de clôture relance une CI : c'est son SHA qui fait foi pour le merge.
+**Tests (agents) :** backend 603/0 · Vitest 1553/0 · tsc/lint/format conformes · packs `--check` 0.
+**Nouveaux pitfalls :** PIT-S88-001 → 016 (5 backend, 7 frontend, 1 both, 4 tooling — classés) · **Décisions :** DEC-S88-001 → 004
++ amendement DEC-S79-002 · **Patterns :** PAT-S88-001 → 004 · **Bugs :** BUG-S88-001 · packs `pit-*` régénérés, `--check` 0.
+**Follow-ups arbitrés (Phase 4 — triage par le dev) :**
+  - Contrat de boucle annotée contournable via helper + « vide = défaut » non testé via le vrai binding [S | auth/test]
+    (reviewer cycle 2 n°2 et n°5) → **issue #685 (Sprint 89, label `sprint-89`)**
+  - `trust-forwarded-header=true` en prod dépend de Caddy + traces Playwright publiques [S | sécurité/devops] (security n°3)
+    → **issue #686 (backlog)**
+  - README §3 « CI en `workers: 1` » périmé [XS | docs] → **absorbé** dans le commit de clôture (paragraphe réécrit : la vraie
+    contrainte restante est deux runs simultanés dans la même copie de travail)
+  - Bases `eventmanager` (V6, contrainte legacy), `eventmanager_s79`, `eventmanager_flywaytest` du Postgres Homebrew du poste
+    → **laissées en place** (suppression = décision et geste du dev ; README piège n°5 donne la voie non destructive)
+  - Absorbés d'office par le lead (mémoire, sans code) : prémisse de DEC-S79-002 amendée ; recette pile locale sans
+    `NEXT_PUBLIC_API_URL` au build → PIT-S88-009 ; noms d'anciennes IT cités dans `docs/memory/**` → laissés (archives de sprint).
+  Ratio : 2 issues / 0 discard / 1 absorbé code-doc / 3 absorbés mémoire.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
+**Status :** Prêt à merger — PR #684, CI 3/3 verte sur `df2337e`, confirmation dev en attente ; titre, Status et fermeture des issues
+à solder APRÈS le merge (au `/sprint start 89`, variante S57).
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau

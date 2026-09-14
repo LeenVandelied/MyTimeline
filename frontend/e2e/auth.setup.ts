@@ -1,6 +1,11 @@
 import { test as setup, expect } from '@playwright/test'
 import { ALL_ACCOUNTS, persistAccounts, type E2eAccount } from './support/accounts'
 import { ensureRegisterForm } from './support/register-page'
+import {
+  acceptedRegisterStatus,
+  classifyRegisterResponse,
+  type RegisterOutcome,
+} from './support/register-retry'
 
 /**
  * PROJET `setup` (dépendance de `chromium`, cf. playwright.config.ts).
@@ -10,75 +15,84 @@ import { ensureRegisterForm } from './support/register-page'
  * Les specs chargent ensuite ce state via `test.use({ storageState })` : ZÉRO
  * register par test.
  *
- * Le setup ne se rejoue PAS quand un test échoue et retry (seuls les tests
- * retryent). Nombre de registers émis ici = `ALL_ACCOUNTS.length`, soit 4 — et NON
- * 3, chiffre qu'affirmait ce commentaire depuis l'ajout du compte `prod` (#218).
- * Le budget complet (4 + 1 auto-inscription golden-path = 5) et sa marge face au
- * plafond backend sont documentés dans `support/accounts.ts` (§ LE BUDGET, EN
- * CHIFFRES) et RECOMPTÉS par `src/__tests__/e2e-register-budget.test.ts` — c'est
- * ce recomptage, pas ce paragraphe, qui fait foi.
+ * BUDGET RATE-LIMIT (filtre ARMÉ en E2E depuis #547). Par compte et par passe CI, ce
+ * fichier émet UN login et UN register — plus une ré-émission du register UNIQUEMENT
+ * quand la requête elle-même a échoué (5xx ou aucune réponse, cf.
+ * `support/register-retry.ts`). Ce n'est vrai que parce que :
+ *   1. la boucle de soumission ne ré-émet plus sur une page lente, ni après 201/409/429
+ *      (arbitrage dev du 2026-09-14, revue S88 — elle ré-émettait jusqu'à 3 fois) ;
+ *   2. le projet n'a AUCUN retry Playwright (`configure` ci-dessous) : depuis que 409 vaut
+ *      succès, un `provision` retenté irait jusqu'au login et ré-émettrait register ET login.
+ * ⚠ Ces ré-émissions sur échec consomment un jeton et sont EXCLUES du pire cas écrit (20) :
+ * en les comptant, register est borné à 36 (3 soumissions × 4 comptes × 2 passes + 12 des
+ * specs), au-dessus du plafond de 30. Un backend qui renvoie des 5xx fait donc rougir le job ;
+ * un 429 register dans ce contexte est un symptôme de l'instabilité, pas un défaut de budget.
+ * En CI la passe 2 rejoue ce fichier contre le même backend (seaux partagés). Le budget
+ * complet est RECOMPTÉ par `src/__tests__/e2e-rate-limit-budget.test.ts`, qui lit la
+ * fonction `provision`, la boucle annotée et le `configure` — c'est ce recomptage, pas
+ * ce paragraphe, qui fait foi.
  *
- * Chaque compte est provisionné en SÉRIE (registers espacés dans le même job) et
- * dans son propre `browser.newContext` pour isoler les cookies avant sauvegarde.
+ * Chaque compte est provisionné dans son propre `browser.newContext` pour isoler les
+ * cookies avant sauvegarde.
  */
 
 type Page = import('@playwright/test').Page
+type Response = import('@playwright/test').Response
 
 /**
- * Résilience au 429 sur le register.
+ * AUCUN RETRY PLAYWRIGHT (revue S88), quelle que soit la valeur globale (`retries: 2` en CI).
  *
- * MOTIF D'ORIGINE : le setup enchaîne 4 registers, plus le self-register du
- * golden-path, pour une fenêtre bucket4j alors plafonnée à 5 req/min/IP. Sous charge
- * (retry, réordonnancement) la file dépassait le seuil -> 429 -> l'app RESTE sur
- * /fr/register (aucune redirection vers /fr/login) -> le `provision` échoue (flaky
- * `[setup]`, cf. run 28752900622).
- *
- * DEPUIS #475 le profil `e2e` porte un plafond dédié de 20/min/IP (marge 12 pour un
- * budget de 8 recompté au S79) : le
- * dépassement n'est plus attendu. On GARDE néanmoins cette résilience — elle ne coûte
- * rien quand rien ne rate, et elle reste le seul filet si la stack tourne un jour
- * contre un backend au plafond par défaut (5). La retirer, ce serait miser sur une
- * configuration qui n'est vérifiée nulle part au runtime.
- *
- * Mécanique : si après submit on ne bascule pas sur le formulaire de login dans un
- * délai court, on ATTEND que le bucket se recharge (~1 min par minute) et on RETENTE
- * le submit. Déterministe (pas de register par test réintroduit ; on ne fait que
- * temporiser le provisioning fixe).
+ * Le budget ci-dessus en dépend : un essai retenté ré-inscrit le compte (409 = succès) puis
+ * ré-émet le login, soit jusqu'à 3 register et 3 login par compte par passe. Ce que ce
+ * retry rattrapait est déjà couvert À L'INTÉRIEUR d'un essai : le 500 de rendu
+ * (`ensureRegisterForm`, 3 tentatives) et l'échec de requête register (boucle ci-dessous).
+ * Le reste (login refusé, dashboard absent) est un vrai rouge, pas une instabilité.
  */
-const REGISTER_RETRIES = 3
-const REGISTER_BACKOFF_MS = 20_000
+setup.describe.configure({ retries: 0 })
+
+/** Soumissions au plus, en comptant la première. Seul un échec de REQUÊTE en consomme une autre. */
+const REGISTER_ATTEMPTS = 3
+
+/** Délai d'attente de la réponse `POST /api/auth/register` (hachage BCrypt compris). */
+const REGISTER_RESPONSE_TIMEOUT_MS = 10_000
+
+/**
+ * Délai du clic de soumission, INFÉRIEUR au délai de réponse (revue S88, cycle 2) : quand
+ * `Promise.all` rend la main, le clic est forcément résolu ou abandonné — aucun clic resté en
+ * attente ne peut émettre un POST non compté pendant le backoff ou la tentative suivante.
+ */
+const REGISTER_CLICK_TIMEOUT_MS = 5_000
+
+/** Respiration avant une ré-émission (5xx / aucune réponse) — pas une attente de seau. */
+const REGISTER_RETRY_BACKOFF_MS = 5_000
+
+/** Attente du formulaire de login après un register accepté (page lente ≠ ré-inscription). */
+const LOGIN_FORM_TIMEOUT_MS = 20_000
 
 /**
  * Budget par test `provision` (#329).
  *
- * MESURÉ — le budget Playwright par défaut (30 s) est INFÉRIEUR au coût d'UN SEUL
- * cycle de retry 429 (8 s d'attente du login-form + 20 s de backoff bucket4j = 28 s,
- * avant même la 2e soumission). Conséquence : quand le 429 survenait, le test EXPIRAIT
- * sur `Test timeout of 30000ms exceeded` — le retry n'aboutissait jamais et le message
- * d'échec explicatif n'était JAMAIS atteint. Constaté au S54 : 4/4 `provision` en
- * `timedOut` à 30 s, sans une seule ligne de diagnostic exploitable.
+ * Le budget Playwright par défaut (30 s) est inférieur au pire cas d'un essai : sans ce
+ * budget, le test expirait avant d'atteindre le message d'échec explicatif (constaté au S54 :
+ * 4/4 `provision` en `timedOut` à 30 s, sans diagnostic).
  *
- * Pire cas RECALCULÉ (review S54 — le calcul précédent annonçait ~110 s en OUBLIANT
- * les deux `ensureRegisterForm(mode:'recover')` du bloc catch, qui ne sont pas des
- * vérifications instantanées mais des boucles de retry complètes) :
+ * Pire cas RECALCULÉ après la revue S88 (retry seulement sur échec de requête) :
  *
- *   rendu initial, succès à la dernière tentative     8 + 2 + 8 + 2      = 20 s
- *   itération 1 : attente login-form + backoff + recover   8 + 20 + 20   = 48 s
- *   itération 2 : idem                                     8 + 20 + 20   = 48 s
- *   itération 3 : attente login-form puis `throw`                        =  8 s
- *   remplissage du formulaire (3 x ~1 s)                                 =  3 s
- *                                                                     ------------
- *                                                                        ~127 s
+ *   rendu initial : 3 × 8 s + 2 × 2 s                           = 28 s
+ *   tentative 1 : remplissage ~3 s + réponse 10 s              = 13 s
+ *   backoff 5 s + `ensureRegisterForm(recover)` jusqu'à 28 s   = 33 s
+ *   tentative 2                                                = 13 s
+ *   backoff + recover                                          = 33 s
+ *   tentative 3                                                = 13 s
+ *   formulaire de login lent 20 s, puis `goto` + 20 s          = 42 s
+ *   login + dashboard (expect par défaut 5 s) + saisie         = ~8 s
+ *                                                            ------------
+ *                                                              ~183 s
  *
- * Le budget doit couvrir ce pire cas SANS expirer, sinon on retombe exactement dans
- * le défaut que #329 corrige : le message de diagnostic n'est jamais atteint. 150 s
- * ne laissait que ~23 s de marge sur une infrastructure PARTAGÉE par les 134 tests
- * (un dépassement ici les bloque tous) -> porté à 180 s.
- *
- * Note : si un `recover` épuise ses 3 tentatives, il lève AVANT (à ~28 s) avec le
- * message d'ÉCHEC DE RENDU — chemin plus court, déjà couvert.
+ * Ce total additionne des pires cas qui s'excluent en pratique (un formulaire de login lent
+ * suit un 201, pas trois échecs de requête) ; il est gardé comme majorant : 210 s.
  */
-const PROVISION_TIMEOUT_MS = 180_000
+const PROVISION_TIMEOUT_MS = 210_000
 
 async function fillRegister(account: E2eAccount, page: Page): Promise<void> {
   await page.getByTestId('register-email').fill(account.email)
@@ -86,70 +100,133 @@ async function fillRegister(account: E2eAccount, page: Page): Promise<void> {
   await page.getByTestId('register-username').fill(account.username)
   await page.getByTestId('register-password').fill(account.password)
   await page.getByTestId('register-confirm-password').fill(account.password)
-  await page.getByTestId('register-submit').click()
+}
+
+function isRegisterPost(response: Response): boolean {
+  return response.request().method() === 'POST' && response.url().includes('/api/auth/register')
+}
+
+/**
+ * SEUL point d'émission du `POST /api/auth/register` de ce fichier : un clic, et le statut de
+ * SA réponse. Sans réponse dans le délai, on relit ce qui a déjà été observé (201 tardif, page
+ * déjà sur le login) avant de conclure `null` (erreur réseau, backend muet).
+ */
+async function submitRegister(page: Page, observed: readonly number[]): Promise<number | null> {
+  try {
+    const [response] = await Promise.all([
+      page.waitForResponse(isRegisterPost, { timeout: REGISTER_RESPONSE_TIMEOUT_MS }),
+      page.getByTestId('register-submit').click({ timeout: REGISTER_CLICK_TIMEOUT_MS }),
+    ])
+    return response.status()
+  } catch {
+    return acceptedRegisterStatus(observed, page.url(), true)
+  }
+}
+
+/**
+ * Une tentative de register. Une RÉ-émission (`retry`) n'a lieu que si rien d'acquis n'a été
+ * observé, relu avant ET après le backoff (revue S88, cycle 2) : un 201 tardif ou une page
+ * déjà sur le login mène au login, sans ré-émettre et sans `ensureRegisterForm`.
+ */
+async function attemptRegister(
+  account: E2eAccount,
+  page: Page,
+  observed: readonly number[],
+  retry: boolean,
+): Promise<number | null> {
+  if (retry) {
+    const before = acceptedRegisterStatus(observed, page.url(), true)
+    if (before !== null) return before
+    await page.waitForTimeout(REGISTER_RETRY_BACKOFF_MS)
+    const after = acceptedRegisterStatus(observed, page.url(), true)
+    if (after !== null) return after
+    await ensureRegisterForm(page, { label: account.key, mode: 'recover' })
+  }
+  await fillRegister(account, page)
+  return submitRegister(page, observed)
 }
 
 /**
  * Statuts HTTP réellement observés sur `POST /api/auth/register` pour cette page.
- * POURQUOI — le message d'échec de la soumission accusait le 429 EN DUR ; or trois
- * causes distinctes laissent l'app sur /fr/register : 429 (rate-limit), 403 (CORS —
- * le profil dev fige `allowed-origins=http://localhost:3000`, cf. runbook S47) et
- * 409 (compte déjà pris). On rapporte donc le statut MESURÉ, jamais une supposition.
+ * POURQUOI — trois causes distinctes laissent l'app sur /fr/register : 429 (rate-limit),
+ * 403 (CORS — le profil dev fige `allowed-origins=http://localhost:3000`, cf. runbook S47)
+ * et 409 (compte déjà pris). On rapporte donc le statut MESURÉ, jamais une supposition.
  */
 function watchRegisterResponses(page: Page): number[] {
   const statuses: number[] = []
   page.on('response', (response) => {
-    if (response.request().method() === 'POST' && response.url().includes('/api/auth/register')) {
-      statuses.push(response.status())
-    }
+    if (isRegisterPost(response)) statuses.push(response.status())
   })
   return statuses
+}
+
+function registerFailure(account: E2eAccount, outcome: RegisterOutcome, statuses: number[]): Error {
+  const observed = statuses.length
+    ? `statuts HTTP observés sur POST /api/auth/register: [${statuses.join(', ')}]`
+    : 'AUCUNE réponse POST /api/auth/register observée (requête jamais partie : ' +
+      'validation RHF côté client, ou proxy /api injoignable)'
+  const cause =
+    outcome === 'throttled'
+      ? `429 NON retenté (seau register PARTAGÉ par toute la suite, 30/min/IP sous le profil ` +
+        `e2e, 5 sans lui — le budget a cédé : e2e-rate-limit-budget.test.ts)`
+      : outcome === 'refused'
+        ? 'refus non retentable'
+        : `échec de requête (5xx ou aucune réponse) après ${REGISTER_ATTEMPTS} soumissions`
+  return new Error(
+    `ÉCHEC DE SOUMISSION du register ${account.key} — ${cause}. Le formulaire register s'est ` +
+      `bien AFFICHÉ, ce n'est donc PAS un échec de rendu. ${observed}. Lecture: 429 = ` +
+      `rate-limit register ; 403 = CORS refusé (le profil dev fige ` +
+      `app.cors.allowed-origins=http://localhost:3000, cf. ` +
+      `docs/memory/sprints/sprint-47/e2e-local-runbook.md §pièges) ; 400 = validation ; ` +
+      `409 = déjà enregistré (traité comme un succès, n'apparaît ici qu'à côté d'un autre statut).`,
+  )
+}
+
+/** Après un register accepté : attendre le formulaire de login, ou y aller — sans ré-inscrire. */
+async function reachLoginForm(page: Page, outcome: 'created' | 'exists'): Promise<void> {
+  const loginForm = page.getByTestId('login-form')
+  if (outcome === 'created') {
+    try {
+      await expect(loginForm).toBeVisible({ timeout: LOGIN_FORM_TIMEOUT_MS })
+      return
+    } catch (err) {
+      console.warn(`[setup] register accepté mais formulaire de login absent, navigation: ${err}`)
+    }
+  }
+  await page.goto('/fr/login')
+  await expect(loginForm).toBeVisible({ timeout: LOGIN_FORM_TIMEOUT_MS })
 }
 
 async function provision(account: E2eAccount, page: Page): Promise<void> {
   const registerStatuses = watchRegisterResponses(page)
 
-  // ---- Inscription (résiliente au 500 de RENDU puis au 429 de SOUMISSION) ----
+  // ---- Inscription ----------------------------------------------------------
   // Rendu : retry par `page.reload()` (#329) — un 500 transitoire du serveur de dev
   // tuait sinon tout le run dès le setup.
   await ensureRegisterForm(page, { label: account.key })
 
-  let registered = false
-  for (let attempt = 1; attempt <= REGISTER_RETRIES && !registered; attempt++) {
-    await fillRegister(account, page)
-    try {
-      // Register OK -> redirection vers /fr/login. Fenêtre courte : si on n'y bascule
-      // pas, c'est probablement un 429 (l'app reste sur /fr/register).
-      await expect(page.getByTestId('login-form')).toBeVisible({ timeout: 8_000 })
-      registered = true
-    } catch (err) {
-      // Log AVANT retry : distingue un 429 réel (rate-limit) d'une régression UI
-      // que le retry masquerait autrement silencieusement.
+  let outcome: RegisterOutcome = 'retry'
+  // La ré-émission n'a lieu QUE sur échec de la requête : le compteur de budget ne
+  // multiplie donc pas cette boucle par sa borne, SOUS CONTRAT (condition sur 'retry',
+  // `outcome` assigné par `classifyRegisterResponse` seul, aucun try/catch) — cf.
+  // e2e-rate-limit-budget.test.ts. Toute autre raison de retenter rompt le contrat.
+  // rate-limit-budget: retry-on-request-failure
+  for (let attempt = 1; attempt <= REGISTER_ATTEMPTS && outcome === 'retry'; attempt++) {
+    if (attempt > 1) {
       console.warn(
-        `[setup] register/login ${account.key} retry (tentative ${attempt}/${REGISTER_RETRIES}) après erreur: ${err}`,
+        `[setup] register ${account.key} : échec de requête (statuts [${registerStatuses.join(', ')}]), ` +
+          `tentative ${attempt}/${REGISTER_ATTEMPTS} (ré-émission seulement si rien d'acquis)`,
       )
-      if (attempt === REGISTER_RETRIES) {
-        const observed = registerStatuses.length
-          ? `statuts HTTP observés sur POST /api/auth/register: [${registerStatuses.join(', ')}]`
-          : 'AUCUNE réponse POST /api/auth/register observée (requête jamais partie : ' +
-            'validation RHF côté client, ou proxy /api injoignable)'
-        throw new Error(
-          `ÉCHEC DE SOUMISSION du register ${account.key} après ${REGISTER_RETRIES} tentatives — ` +
-            `le formulaire register s'est bien AFFICHÉ, ce n'est donc PAS un échec de rendu. ` +
-            `${observed}. Lecture: 429 = rate-limit register 5/min/IP (bucket non rechargé) ; ` +
-            `403 = CORS refusé (le profil dev fige app.cors.allowed-origins=http://localhost:3000, ` +
-            `cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md §pièges) ; ` +
-            `409 = username/email déjà enregistré. Dernière erreur: ${err}`,
-        )
-      }
-      // Bucket4j se recharge par minute : on attend puis on RETENTE le submit sur la
-      // même page (le formulaire register est toujours affiché après un 429). Le
-      // rendu est re-vérifié en mode `recover` : même protection 500 qu'à l'entrée
-      // (#329 — cette re-vérification jetait elle aussi sans retry).
-      await page.waitForTimeout(REGISTER_BACKOFF_MS)
-      await ensureRegisterForm(page, { label: account.key, mode: 'recover' })
     }
+    outcome = classifyRegisterResponse(
+      await attemptRegister(account, page, registerStatuses, attempt > 1),
+    )
   }
+
+  if (outcome !== 'created' && outcome !== 'exists') {
+    throw registerFailure(account, outcome, registerStatuses)
+  }
+  await reachLoginForm(page, outcome)
 
   // ---- Connexion ---------------------------------------------------------
   await page.getByTestId('login-username').fill(account.username)
@@ -169,7 +246,7 @@ setup('persist account identities', async () => {
 
 for (const account of ALL_ACCOUNTS) {
   setup(`provision ${account.key}`, async ({ browser }) => {
-    // Sans ce budget, les retrys (rendu ET soumission) expirent avant d'aboutir et le
+    // Sans ce budget, les retrys (rendu ET requête) expirent avant d'aboutir et le
     // message d'échec explicatif n'est jamais produit. Cf. PROVISION_TIMEOUT_MS.
     setup.setTimeout(PROVISION_TIMEOUT_MS)
     // Contexte neuf par compte : cookies isolés avant sauvegarde du storageState.

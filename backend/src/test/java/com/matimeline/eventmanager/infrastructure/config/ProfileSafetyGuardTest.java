@@ -289,6 +289,186 @@ class ProfileSafetyGuardTest {
                 .hasMessageContaining("#216");
     }
 
+    // --- #547 (revue S88) : refuse le boot si un plafond de rate-limit réglable dépasse son défaut en prod ---
+
+    /** Environnement prod satisfaisant TOUS les autres garde-fous : isole le check #547. */
+    private MockEnvironment prodEnvSatisfyingAllOtherChecks() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.cookie.secure", "true")
+                .withProperty("app.cookie.domain", "example.com")
+                .withProperty("app.cors.allowed-origins", "https://app.example.com")
+                .withProperty("jwt.private-key", "cle-privee-factice-non-lue-par-le-garde-fou")
+                .withProperty("app.export.token-secret", "secret-factice-non-lu-par-le-garde-fou");
+        env.setActiveProfiles("prod");
+        return env;
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + login-per-minute 1000 (> défaut 10) → refuse de booter (propriété, valeur, défaut)")
+    void shouldFail_whenProdProfileAndLoginCeilingAboveDefault() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.login-per-minute", "1000");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#547")
+                .hasMessageContaining("app.rate-limit.login-per-minute=1000")
+                .hasMessageContaining("(10/min/IP)");
+    }
+
+    @Test
+    @DisplayName("#547 marqueur prod + register-per-minute 6 (défaut 5 + 1) → refuse de booter")
+    void shouldFail_whenProdMarkerAndRegisterCeilingOneAboveDefault() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("ENVIRONMENT", "production")
+                .withProperty("app.rate-limit.register-per-minute", "6");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("app.rate-limit.register-per-minute=6")
+                .hasMessageContaining("(5/min/IP)");
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + reset-password-per-minute 15 (valeur e2e) → refuse de booter")
+    void shouldFail_whenProdProfileAndResetPasswordCeilingAtE2eValue() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.reset-password-per-minute", "15");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("app.rate-limit.reset-password-per-minute=15")
+                .hasMessageContaining("(5/min/IP)");
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + plafonds ÉGAUX à leur défaut → boot autorisé (seul le dépassement est refusé)")
+    void shouldPass_whenProdProfileAndCeilingsEqualDefaults() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.register-per-minute", "5")
+                .withProperty("app.rate-limit.login-per-minute", "10")
+                .withProperty("app.rate-limit.reset-password-per-minute", "5");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + plafond abaissé (login 3) → boot autorisé (durcir reste permis)")
+    void shouldPass_whenProdProfileAndCeilingLowered() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.login-per-minute", "3");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + variable d'env VIDE (APP_RATE_LIMIT_LOGIN_PER_MINUTE=) → boot autorisé (vide = défaut)")
+    void shouldPass_whenProdProfileAndCeilingBlank() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.login-per-minute", "  ");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#547 profils 'dev,e2e' SANS marqueur prod + plafonds relevés (30/30/15) → boot autorisé (job CI e2e)")
+    void shouldPass_whenE2eStackRaisesCeilingsWithoutProdMarker() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.register-per-minute", "30")
+                .withProperty("app.rate-limit.login-per-minute", "30")
+                .withProperty("app.rate-limit.reset-password-per-minute", "15");
+        env.setActiveProfiles("dev", "e2e");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    // Revue S88, cycle 2 : conversion identique au binding @Value Integer (NumberUtils décode 0x / #).
+
+    @Test
+    @DisplayName("#547 profil prod + login-per-minute 0x3E8 (= 1000 pour Spring) → refuse de booter")
+    void shouldFail_whenProdProfileAndLoginCeilingHexAboveDefault() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.login-per-minute", "0x3E8");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("app.rate-limit.login-per-minute=1000")
+                .hasMessageContaining("(10/min/IP)");
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + register-per-minute #6 (= 6 > défaut 5) → refuse de booter")
+    void shouldFail_whenProdProfileAndRegisterCeilingHashHexAboveDefault() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.register-per-minute", "#6");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("app.rate-limit.register-per-minute=6")
+                .hasMessageContaining("(5/min/IP)");
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + reset-password-per-minute #A (= 10 > défaut 5) → refuse de booter")
+    void shouldFail_whenProdProfileAndResetPasswordCeilingHashHexAboveDefault() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.reset-password-per-minute", "#A");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("app.rate-limit.reset-password-per-minute=10")
+                .hasMessageContaining("(5/min/IP)");
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + valeur illisible (douze) → refuse de booter (propriété et valeur nommées)")
+    void shouldFail_whenProdProfileAndCeilingUnreadable() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.login-per-minute", "douze");
+
+        assertThatThrownBy(() -> guard.onApplicationEvent(eventFor(env)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("#547")
+                .hasMessageContaining("app.rate-limit.login-per-minute=douze")
+                .hasMessageContaining("n'est pas un entier lisible");
+    }
+
+    @Test
+    @DisplayName("#547 profil prod + login-per-minute 0xA (= 10, le défaut) → boot autorisé")
+    void shouldPass_whenProdProfileAndLoginCeilingHexEqualsDefault() {
+        MockEnvironment env = prodEnvSatisfyingAllOtherChecks()
+                .withProperty("app.rate-limit.login-per-minute", "0xA");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#547 profil test + valeur illisible → boot autorisé par le garde (hors prod inchangé)")
+    void shouldPass_whenTestProfileAndCeilingUnreadable() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.login-per-minute", "douze");
+        env.setActiveProfiles("test");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("#547 profil test + plafond relevé → boot autorisé (comportement hors prod inchangé)")
+    void shouldPass_whenTestProfileRaisesCeiling() {
+        MockEnvironment env = new MockEnvironment()
+                .withProperty("app.rate-limit.login-per-minute", "1000");
+        env.setActiveProfiles("test");
+
+        assertThatCode(() -> guard.onApplicationEvent(eventFor(env)))
+                .doesNotThrowAnyException();
+    }
+
     // --- #254 : refuse le boot si cookie JWT non-Secure en prod effectif ---
 
     @Test

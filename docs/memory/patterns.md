@@ -836,3 +836,15 @@ Problème : frise illustrative qui défile en continu, sans saut au raccord, sur
 
 ## PAT-S87-003 — Prouver qu'un correctif d'algorithme de sonde E2E ferme le défaut : la mutation inverse
 Problème : une nouvelle sonde d'auto-contrôle verte ne prouve pas qu'elle détecte le défaut signalé. Motif : sauvegarder le nouvel algorithme, réintroduire temporairement l'ANCIEN, jouer seulement l'auto-contrôle, exiger le rouge sur la nouvelle sonde (ici : relevés `[]`), restaurer et rejouer vert. Anti-pattern : ajouter une sonde qu'on n'a jamais vue rougir. (Sprint 87, correctif de revue C1)
+
+## PAT-S88-001 — Prouver qu'une propriété de configuration de test ferme une fuite : trois runs sur le même échec forcé
+Problème : un seul run « avec le correctif » à 0 est vacant si le test ne fuyait pas. Motif : forcer un échec qui fuit, puis A sans le correctif (> 0, le contrôle sait voir), B avec (0), C avec + surcharge locale documentée (> 0, la voie de diagnostic marche). Compter aussi dans les rapports persistés, pas seulement stdout. (Sprint 88 #568)
+
+## PAT-S88-002 — Vérifier un budget rate-limit statique contre le trafic réel : proxy HTTP de comptage
+Problème : un recompte statique peut être juste sur le papier et faux au réseau. Motif : un proxy Node d'une quarantaine de lignes intercalé via `E2E_API_PROXY_TARGET`, qui logge méthode, chemin et statut des créneaux throttlés, analysé sur une fenêtre glissante de 60 s. Au S88, mesuré = statique sur 10 créneaux, deux fois. (Sprint 88 #547)
+
+## PAT-S88-003 — Prouver qu'un filtre anti-abus est armé sur le chemin réseau réel sans polluer la suite
+Problème : retirer un flag ne prouve pas l'armement, et une spec qui vide un seau partagé casse les autres. Motif : choisir un créneau qu'aucune spec ne consomme (vérifié par le test statique), mettre la preuve dans un projet Playwright dédié qui dépend de tous les autres (suffixe `.proof.ts` hors `testMatch` par défaut), `retries: 0`, assertion exacte (N passent, N+1 prend 429) et en-tête `X-Forwarded-For` forgé ignoré. (Sprint 88 #547)
+
+## PAT-S88-004 — Exempter une boucle de ré-émission légitime d'un compteur statique sans ouvrir d'angle mort
+Problème : un retry légitime ferait compter N fois une émission unique. Motif : annotation explicite + contrat vérifié par AST (borne lisible, condition `=== 'retry'`, issue décidée uniquement par un classificateur testé, aucun try/catch) + ancrage « une seule boucle annotée ». Limite connue : le contrat ne lit pas les helpers appelés (issue de suivi #685). (Sprint 88 #547, revue)

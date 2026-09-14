@@ -155,7 +155,7 @@ openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64 | tr -d '\n'
 En profil `prod`, l'absence de cette variable fait **échouer le démarrage** : elle ne dégrade
 jamais silencieusement.
 
-### 3. E2E : le 403 CORS déguisé en « rate-limit », et `workers > 1`
+### 3. E2E : le 403 CORS déguisé en « rate-limit », et deux runs simultanés
 
 - Le profil `dev` fige `app.cors.allowed-origins=http://localhost:3000`
   (`backend/src/main/resources/application-dev.properties`, aucun placeholder d'environnement).
@@ -164,10 +164,11 @@ jamais silencieusement.
   `POST /api/auth/register` : la page reste sur `/fr/register` et le setup Playwright accuse un
   « rate-limit register 5/min/IP » **qui n'a jamais eu lieu**. Correctif : démarrer le backend
   avec `--app.cors.allowed-origins=http://localhost:3000,http://localhost:3100`.
-- **`--workers=1` est obligatoire en local.** Au-delà, quatre specs `settings-*` deviennent
-  rouges : deux workers génèrent chacun leur identité de test et l'assertion `toHaveValue`
-  compare deux identifiants différents. Rien à voir avec le code testé. (La CI est déjà en
-  `workers: 1`.)
+- **Ne lancez pas deux runs E2E en même temps dans la même copie de travail.** Ils partagent
+  `frontend/e2e/.auth/` (identités et sessions) : l'un se retrouve connecté sur le compte de
+  l'autre, et quatre specs `settings-*` rougissent sur un `toHaveValue` sans rapport avec le code.
+  Un verrou refuse désormais le second run. `workers: 2` est la valeur normale, en local comme
+  en CI : les identités sont dérivées d'une graine unique posée avant le démarrage des workers.
 
 ### 4. `node_modules` est propre à chaque copie de travail, et son absence ment sur la cause
 
@@ -201,6 +202,76 @@ Ce que le préflight **n'attrape pas** : il ne lit que les `import` **mono-ligne
 `frontend/eslint.config.mjs`. Un import réparti sur plusieurs lignes, ou un `import()` dynamique,
 passerait sous son radar — et le symptôme trompeur reviendrait tel quel. À garder en tête si un
 futur plugin ESLint est ajouté autrement qu'en une ligne.
+
+### 5. Une base locale ancienne reste bloquée en V6 : V7 échoue sur `events_recurrence_unit_check`
+
+Concerne un backend lancé **depuis l'hôte** (`./mvnw spring-boot:run`, IDE) : son `DB_URL` par
+défaut vaut `jdbc:postgresql://localhost:5432/eventmanager`, donc il atteint le PostgreSQL **de la
+machine** s'il y en a un (voir le piège 1). Le symptôme au démarrage :
+
+```
+Migrating schema "public" to version "7 - design v3 schema"
+ERROR: Migration of schema "public" to version "7 - design v3 schema" failed! Changes successfully rolled back.
+Message    : ERROR: new row for relation "events" violates check constraint "events_recurrence_unit_check"
+Location   : V7__design_v3_schema.sql   Line : 88
+```
+
+La transaction est annulée : la base reste en V6 à chaque tentative.
+
+**Cause.** Aucune migration ne crée `events_recurrence_unit_check`. C'est le nom qu'attribue
+PostgreSQL à une contrainte CHECK **sans nom**, créée avant l'arrivée de Flyway sur une base qui a
+ensuite été adoptée telle quelle (`spring.flyway.baseline-on-migrate=true` : la première ligne de
+`flyway_schema_history` est alors `<< Flyway Baseline >>`, et V1 n'a jamais tourné dessus). Cette
+contrainte n'admet que `weeks`/`months`/`years` en minuscules. V7 retire la contrainte qu'elle
+connaît (`ck_events_recurrence_unit`) puis réécrit les valeurs en `WEEK`/`MONTH`/`YEAR` : la
+contrainte oubliée rejette la réécriture. Les données, elles, sont valides — le pré-vol de V7 les
+accepte, et V9 ne changerait rien (elle ne retire, elle aussi, que `ck_events_recurrence_unit`).
+
+Si la table `events` de la vieille base ne contient **aucune** ligne récurrente, V7 passe et le
+démarrage réussit… mais la contrainte survit jusqu'en V15 et refuse ensuite la **création** de
+tout événement récurrent (`WEEK`). Même cause, symptôme plus tardif.
+
+**Pourquoi la CI est verte.** Le job `flyway-smoke` démarre le backend sur un PostgreSQL 16
+**vierge** et vérifie que V1..V15 ont toutes été rejouées depuis un schéma vide. Une base construite
+par Flyway depuis V1 — celle d'un clone neuf, ou d'un volume `docker compose` créé depuis — n'a
+jamais eu cette contrainte : elle n'est pas concernée.
+
+**Diagnostic** (lecture seule) :
+
+```sql
+SELECT version, description, type FROM flyway_schema_history ORDER BY installed_rank;
+SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid = 'events'::regclass;
+```
+
+Une ligne `BASELINE` en tête et des contraintes nommées `events_*_check` à côté des `ck_events_*`
+confirment le cas.
+
+**Remède recommandé, sans perte de données** : laisser la vieille base intacte et pointer le
+backend sur une base neuve, que Flyway construit de V1 à V15.
+
+```bash
+createdb eventmanager_local
+DB_URL=jdbc:postgresql://localhost:5432/eventmanager_local ./mvnw spring-boot:run
+```
+
+(`DB_USERNAME` / `DB_PASSWORD` selon le rôle qui possède la nouvelle base.)
+
+**Remède destructif** — à réserver au cas où le contenu de la vieille base ne vous sert plus :
+`dropdb eventmanager && createdb eventmanager` pour un PostgreSQL de la machine, ou
+`docker compose down -v` si la base en cause est celle du volume Compose. ⚠ `down -v` ne vise pas
+« la base » : il supprime **tous les volumes nommés du projet Compose** — la base (`postgres-data`)
+**et** les avatars téléversés (`avatars-data`), ainsi que les volumes de la pile e2e
+(`postgres-e2e-data`, `avatars-e2e-data`) s'ils ont été créés. À l'inverse, il ne touche **jamais**
+une base du PostgreSQL installé sur la machine : pour celle-ci, seul `dropdb` agit. Les deux
+commandes **effacent définitivement** comptes, produits et événements ; rien ne permet de revenir en arrière sans
+sauvegarde préalable (`pg_dump`).
+
+Ne corrigez pas ce cas par une migration : une `V16` ne s'exécuterait jamais avant V7, et modifier
+V7 change son checksum, ce qui fait échouer la validation Flyway sur toutes les bases déjà migrées.
+
+Des bases `eventmanager_e2e` ou `eventmanager_s79` peuvent exister sur un poste de développement :
+ce sont des **contournements jetables** créés par des sessions précédentes pour démarrer malgré
+ce problème. Elles ne sont ni une référence de schéma ni une source de données.
 
 ## Tests
 

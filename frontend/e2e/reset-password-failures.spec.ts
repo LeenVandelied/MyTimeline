@@ -27,7 +27,10 @@ import { waitForResetToken } from './support/reset-token'
  *      ni tentative : le throttle PAR TOKEN de `RateLimitingFilter` (#141,
  *      TOKEN_ATTEMPT_LIMIT = 5 tentatives/token/minute) ne peut pas déborder d'un
  *      test sur l'autre. Budget consommé par compte : 1 forgot, <=2 reset, 1 login
- *      — sous TOUTES les limites par IP (forgot 5/min, reset 5/min, login 10/min).
+ *      — mais les seaux PAR IP sont PARTAGÉS par toute la suite (une seule IP derrière
+ *      le proxy Next) : c'est le budget GLOBAL qui compte, recompté par
+ *      `src/__tests__/e2e-rate-limit-budget.test.ts` (profil e2e : reset 15, login 30 ;
+ *      forgot au défaut 5).
  *
  *  (b) ASSERTIONS SUR LE CODE HTTP RÉEL, pas seulement sur le message affiché.
  *      C'est le point décisif : l'UI rend le MÊME `data-testid` (`reset-error`,
@@ -38,10 +41,10 @@ import { waitForResetToken } from './support/reset-token'
  *      (400 rejet de token / 401 credentials) : un 429 fait échouer le test avec un
  *      diff explicite (`Expected 400, Received 429`), immédiatement diagnosticable.
  *
- *  (c) Le job CI `e2e` pose `RATE_LIMIT_ENABLED=false` (ci.yml, filtre entièrement
- *      bypassé) — le lockout ne devrait donc PAS se déclencher aujourd'hui. Ce
- *      point ne dispense de rien : (a) et (b) gardent la spec valide et
- *      diagnosticable si cette variable disparaît un jour.
+ *  (c) Depuis #547 le filtre est ARMÉ pendant les runs E2E (plus de
+ *      `RATE_LIMIT_ENABLED=false`) : un 429 est donc possible pour de vrai si le
+ *      budget global déborde. (a) et (b) sont ce qui rend alors l'échec lisible
+ *      (`Expected 400, Received 429`) au lieu d'un faux vert.
  *
  * ---------------------------------------------------------------------------
  * CONTRAINTES (identiques à la spec nominale) :

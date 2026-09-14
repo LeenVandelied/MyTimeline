@@ -36,8 +36,8 @@ import {
  *    `timeline.spec.ts`, 15 dans `timeline-mobile.spec.ts`) ; des comptes par
  *    fichier laisseraient ces tests-là se marcher dessus exactement comme avant.
  *    Elle déplace la frontière du problème sans le supprimer. (Le rate-limit
- *    register n'est PAS l'argument : #475 a porté le plafond du profil `e2e` à
- *    20/min/IP, et le job CI `e2e` pose de toute façon `RATE_LIMIT_ENABLED=false`.)
+ *    register n'est PAS l'argument : le profil `e2e` porte un plafond dédié
+ *    (30/min/IP depuis #547, filtre armé), avec une marge recomptée.)
  *
  * 2) « Espace de noms unique par test » — ÉCARTÉE, et c'est le point contre-
  *    intuitif : ELLE EST DÉJÀ EN PLACE. `unique()` (`support/products.ts`) suffixe

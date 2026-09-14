@@ -73,7 +73,7 @@ import {
  * cd backend && SPRING_PROFILES_ACTIVE=dev,e2e \
  *   DB_URL=jdbc:postgresql://localhost:5432/eventmanager_e2e \
  *   DB_USERNAME=eventuser DB_PASSWORD=motdepasse_dev_local \
- *   JWT_PRIVATE_KEY="$(cat /tmp/priv.b64)" RATE_LIMIT_ENABLED=false \
+ *   JWT_PRIVATE_KEY="$(cat /tmp/priv.b64)" \
  *   java -jar target/*.jar --app.cors.allowed-origins=http://localhost:3000,http://localhost:3100
  *
  * # 3. Frontend :3100 — URL du JWKS (lue au RUNTIME par le middleware, cf. middleware.ts).

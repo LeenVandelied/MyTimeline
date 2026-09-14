@@ -125,8 +125,13 @@ services:
   # - `SPRING_PROFILES_ACTIVE=dev,e2e` en dur (liste ADDITIVE, cf. javadoc
   #   `E2eResetTokenController`) : ce service N'EXISTE QUE pour l'E2E, aucune
   #   raison de le rendre configurable vers autre chose.
-  # - `RATE_LIMIT_ENABLED=false` : la suite Playwright provisionne plusieurs
-  #   comptes depuis une IP unique (localhost), même besoin que le job CI `e2e`.
+  # - Rate-limit ARMÉ (#547) : AUCUN `RATE_LIMIT_ENABLED=false` ici. Toute la suite
+  #   Playwright compte sur UNE IP (la passerelle Docker vue par le backend, derrière
+  #   le proxy Next) ; elle tient grâce aux plafonds dédiés du profil `e2e`
+  #   (register 30, login 30, reset-password 15 — calcul dans
+  #   backend/src/main/resources/application-e2e.properties). Ne pas remettre le
+  #   drapeau pour « débloquer » un 429 : recompter le budget
+  #   (frontend/src/__tests__/e2e-rate-limit-budget.test.ts).
   # Sécurité : `ProfileSafetyGuard` (#283) refuse le boot si le profil `e2e`
   # est actif ALORS qu'un marqueur d'environnement de production est présent —
   # aucune variable de ce service n'en pose un.
@@ -165,7 +170,6 @@ services:
       # auth-signature.spec.ts).
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
       EXPORT_TOKEN_SECRET: ${EXPORT_TOKEN_SECRET:-ZGV2LW9ubHktaW5zZWN1cmUtZXhwb3J0LXRva2VuLXNlY3JldC1jaGFuZ2UtbWUhIQ==}
-      RATE_LIMIT_ENABLED: "false"
       STORAGE_AVATAR_PATH: /app/var/avatars
       # application-dev.properties fige `app.cors.allowed-origins=http://localhost:3000`
       # EN DUR (pas de placeholder ${...} — piège #2 du runbook). Une variable d'env

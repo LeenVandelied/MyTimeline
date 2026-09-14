@@ -29,30 +29,24 @@ import path from 'node:path'
  * contient 4. Le chiffre faux avait essaimé jusqu'à `playwright.config.ts`, où il
  * SERVAIT D'ARGUMENT pour maintenir `workers: 1` en CI.
  *
- * ÉTAT RÉEL depuis #475, CHIFFRE CORRIGÉ au cycle 2 de revue du S79 :
- *   budget suite  =  4 (ALL_ACCOUNTS) + 1 (golden-path)
- *                    + 3 (helper `registerOnly`)           =  8 / min / IP
- *   plafond e2e   =  app.rate-limit.register-per-minute    = 20 / min / IP
+ * ÉTAT RÉEL depuis #547 (S88) — le filtre est ARMÉ pendant les runs E2E :
+ *   passe 1 CI    =  4 (ALL_ACCOUNTS) + 1 (golden-path)
+ *                    + 3 (helper `registerOnly`)           =  8
+ *   passe 2 CI    =  4 (`auth.setup.ts` rejoué contre le MÊME backend)
+ *   nominal CI    =                                          12 / min / IP
+ *   pire cas CI   =  4 + 4 x 3 (retries: 2) + 4            = 20
+ *   plafond e2e   =  app.rate-limit.register-per-minute    = 30 / min / IP
  *                    (backend/src/main/resources/application-e2e.properties)
- *   marge         =                                          12
  *
- * ⚠ CE COMMENTAIRE A ANNONCÉ 5 PENDANT TOUT LE S79. Le recompte automatique ne
- * regardait alors que les fichiers `*.spec.ts` : une inscription émise depuis un
- * helper de `e2e/support/` lui était invisible, et il en manquait 3. La détection
- * résout maintenant cette indirection, et elle est elle-même exercée sur des
- * sources synthétiques dans `e2e-register-budget.test.ts`.
+ * ⚠ HISTORIQUE DES CHIFFRES FAUX. Ce commentaire a annoncé 5 pendant le S79 (les 3
+ * inscriptions de `registerOnly` manquaient), puis 8 jusqu'au S88 (la passe 2 CI
+ * manquait). Le même budget existe pour `login` (4 comptes aussi) et `reset-password`.
  *
- * ⚠ ET LA NUANCE QUI DÉCIDE DE TOUT : le job CI `e2e` et le service `backend-e2e`
- * posent `RATE_LIMIT_ENABLED=false`, qui court-circuite le filtre ENTIER. Pendant
- * un run E2E, AUCUN plafond n'est aujourd'hui en vigueur — ni 5, ni 20. Un run
- * vert ne prouve donc rien sur ce budget, et n'a jamais rien prouvé. Le plafond
- * de 20 est ce qui rend le re-armement du filtre possible ; il ne le fait pas.
- *
- * Ces trois nombres ne sont plus tenus par ce commentaire : ils sont RECOMPTÉS
- * depuis les sources par `frontend/src/__tests__/e2e-register-budget.test.ts`
- * (comptes + specs vs plafond backend), et le plafond est exercé pour de vrai par
- * `RegisterRateLimitE2eProfileIntegrationTest` côté backend. Ajouter une identité
- * ici fait rougir le premier : c'est voulu, recompter est le point.
+ * Ces nombres ne sont pas tenus par ce commentaire : ils sont RECOMPTÉS depuis les
+ * sources par `frontend/src/__tests__/e2e-rate-limit-budget.test.ts` (comptes, specs,
+ * passes lues dans ci.yml, retries vs plafonds backend), et les plafonds sont exercés
+ * pour de vrai par `RateLimitE2eProfileIntegrationTest` côté backend. Ajouter une
+ * identité ici fait bouger le premier : c'est voulu, recompter est le point.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * IDENTITÉS PARTAGÉES ENTRE PROCESS — #469, ce qui a VRAIMENT été corrigé
@@ -110,7 +104,7 @@ import path from 'node:path'
  * - isolation inter-process : la graine mélange `CI_JOB_ID`, le `pid` du process
  *   principal, l'horloge et un aléa — deux jobs partageant l'horloge sur un même
  *   runner ne peuvent pas collisionner ;
- * - budget register inchangé (5 par run, cf. « LE BUDGET, EN CHIFFRES » plus haut).
+ * - budget register inchangé par #469 (cf. « LE BUDGET, EN CHIFFRES » plus haut).
  */
 
 /** Variable d'environnement portant la graine d'identités partagée par tous les process. */
