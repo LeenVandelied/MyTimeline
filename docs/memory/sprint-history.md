@@ -6499,7 +6499,11 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Vagues :** V1 = #676 ∥ #594 | V2 = #595
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 89 (#652 : `timeline/lib.ts`, `zoom.ts`), Sprint 90 (#624)
-**Status :** Planifié
+**Démarrage (2026-09-14) :** attendu la fusion de la PR de clôture S90 #703 (`3e9aa77`) avant de brancher, pour des packs à jour ; worktree basé sur `main` → branche `sprint/91` créée depuis `origin/dev` (`3e9aa77`) et poussée.
+**Arbitrage rendu (dev, 2026-09-14) :** #594 et #595 couvrent **desktop ET mobile** (portrait + paysage). Motif : les vues mobiles ne consomment pas `EventPill` — elles dessinent leurs événements en ligne (`TimelineMobilePortrait.tsx:299`, `TimelineMobileLandscape.tsx:309`) ; sans elles, « distincts à tous les niveaux de zoom » et « identifiable sans lecteur d'écran » seraient faux sous 768 px.
+**Prémisses du plan vérifiées au démarrage :** #676 conforme (`TimelineEditHost.tsx:87-90`, champ absent de `mapToFullCalendarEvent`, `event.ts:187`) ; #594 conforme (aucune branche `single`, `Math.max(minWidth…)` à `zoom.ts:229`) ; #595 — le `[D]` de l'architect est confirmé : l'API renvoie une ligne par série (`RecurrenceExpansionService` n'est appelé que par `RecurrencePreviewController`), les fantômes se calculent donc côté frontend. Corrections : `HeroTimelineAnimation` ne consomme PAS `EventPill` (commentaire seulement) ; `widthPx` alimente aussi l'empilage (`TimelineView.tsx:864`), la virtualisation (`virtualization.ts:123`) et les deux vues mobiles ; 14 specs E2E citent les pastilles (13 au plan).
+**Source visuelle :** `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md` (extrait des maquettes desktop et mobile, lu par le lead — DesignSync indisponible aux agents).
+**Status :** En cours
 
 ### Sprint 92 — 2026-09-13 (PLANIFIÉ — cohésion 0.67, Retour d'action et échéances produit)
 **Objectif :** Un seul mécanisme de toast présent sur les surfaces métier ; « prochain événement » sur la liste produits ; détail produit avec Archiver + Nouvel événement pré-rempli
