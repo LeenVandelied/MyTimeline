@@ -9,6 +9,7 @@ import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useCategories } from '@/hooks/useCategories'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useDeleteCategory } from '@/hooks/useDeleteCategory'
@@ -86,9 +87,14 @@ export function CategoriesView() {
       </div>
 
       {categoriesQuery.isLoading ? (
-        <p className="text-ink-muted text-sm" role="status" data-testid="categories-loading">
-          {t('loading')}
-        </p>
+        // #629 — Variante `cards` : même grille 1/2/3 colonnes `gap-4` et cartes
+        // `rounded-lg border p-4` que la liste réelle. Testid et libellé inchangés.
+        <LoadingSkeleton
+          variant="cards"
+          rows={6}
+          label={t('loading')}
+          testId="categories-loading"
+        />
       ) : categoriesQuery.isError ? (
         <p className="text-destructive text-sm" role="alert" data-testid="categories-error">
           {t('error')}

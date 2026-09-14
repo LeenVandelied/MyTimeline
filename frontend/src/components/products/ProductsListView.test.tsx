@@ -199,6 +199,17 @@ describe('ProductsListView', () => {
     expect(screen.getByTestId('products-error')).toBeInTheDocument()
   })
 
+  it('affiche le squelette de chargement (#629) sous le testid products-loading', () => {
+    mockProducts({ data: undefined, isLoading: true })
+    render(<ProductsListView />)
+    const loading = screen.getByTestId('products-loading')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(loading).toHaveAttribute('aria-busy', 'true')
+    expect(within(loading).getByText('products.list.loading')).toBeInTheDocument()
+    expect(within(loading).getAllByTestId('loading-skeleton-item')).toHaveLength(6)
+    expect(screen.queryByTestId('products-table')).not.toBeInTheDocument()
+  })
+
   it('rend une pastille catégorie colorée par ligne', () => {
     render(<ProductsListView />)
     const cat = within(screen.getByTestId('products-row-p-alpha')).getByTestId(

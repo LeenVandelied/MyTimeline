@@ -5,6 +5,7 @@ import { GanttChartSquare } from 'lucide-react'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { TimelineEditHost } from '@/components/timeline'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 
 /**
  * #301 — Écran frise/timeline COMPLET sous le shell applicatif (`(app)/layout.tsx`).
@@ -67,13 +68,16 @@ export default function TimelinePage() {
       </header>
 
       {isLoading ? (
-        <div
-          className="flex flex-1 items-center justify-center"
-          data-testid="timeline-data-loading"
-          role="status"
-        >
-          <span className="text-ink-muted text-xs">{t('loading')}</span>
-        </div>
+        // #629 — Squelette en lanes (handoff : barres horizontales sur une frise), même
+        // forme que `timeline/loading.tsx`. Testid conservé : `e2e/timeline.spec.ts`
+        // l'attend visible puis absent.
+        <LoadingSkeleton
+          variant="timeline"
+          rows={6}
+          label={t('loading')}
+          className="min-w-0 flex-1"
+          testId="timeline-data-loading"
+        />
       ) : resources.length === 0 ? (
         <div
           className="border-rule text-ink-muted flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center"

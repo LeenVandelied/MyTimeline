@@ -176,4 +176,15 @@ describe('CategoriesView', () => {
     render(<CategoriesView />)
     expect(screen.getByTestId('categories-error')).toBeInTheDocument()
   })
+
+  it('affiche le squelette en cartes (#629) sous le testid categories-loading', () => {
+    mockAll({ data: undefined, isLoading: true })
+    render(<CategoriesView />)
+    const loading = screen.getByTestId('categories-loading')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(loading).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByText('products.categories.loading')).toBeInTheDocument()
+    expect(screen.getAllByTestId('loading-skeleton-item')).toHaveLength(6)
+    expect(screen.queryByTestId('categories-empty')).not.toBeInTheDocument()
+  })
 })

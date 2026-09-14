@@ -90,6 +90,18 @@ describe('TimelinePage — écran frise', () => {
     expect(screen.queryByTestId('timeline-edit-host-stub')).not.toBeInTheDocument()
   })
 
+  it('#629 — le chargement des données est le squelette en lanes, libellé conservé', () => {
+    mockDashboard = makeData({ isLoading: true })
+    render(<TimelinePage />)
+    const loading = screen.getByTestId('timeline-data-loading')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(loading).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByText('shell.timeline.loading')).toBeInTheDocument()
+    const lanes = screen.getAllByTestId('loading-skeleton-item')
+    expect(lanes.length).toBeGreaterThan(0)
+    for (const lane of lanes) expect(lane.style.height).toBe('var(--lane-height)')
+  })
+
   it('affiche l’état vide quand aucun produit (resources vide)', () => {
     mockDashboard = makeData({ resources: [], events: [] })
     render(<TimelinePage />)

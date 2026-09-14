@@ -20,6 +20,7 @@ import {
 import { ProductDrawer } from './ProductDrawer'
 import { ProductSparkline } from './ProductSparkline'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { deleteProduct } from '@/services/productService'
@@ -192,9 +193,15 @@ export function ProductsListView() {
 
       {/* États : chargement / erreur / vide / tableau. */}
       {query.isLoading ? (
-        <p className="text-ink-muted text-sm" role="status" data-testid="products-loading">
-          {t('loading')}
-        </p>
+        // #629 — Squelette en lignes dans le cadre bordé du tableau (`products-table`),
+        // au lieu d'une ligne de texte. Testid et libellé inchangés.
+        <LoadingSkeleton
+          variant="list"
+          rows={6}
+          label={t('loading')}
+          className="border-rule rounded-lg border px-4"
+          testId="products-loading"
+        />
       ) : query.isError ? (
         <p className="text-destructive text-sm" role="alert" data-testid="products-error">
           {t('error')}
