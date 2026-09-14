@@ -35,6 +35,11 @@ import {
  * les GET de listing (motif `stubProductsList` de `timeline.spec.ts`) ; toute autre
  * méthode passe au réseau réel. Aucun CTA n'est soumis.
  *
+ * Review S90 — agendas : le CTA « Ajouter un événement » n'existe QUE si l'utilisateur
+ * a au moins un produit (sans produit, le drawer ne pouvait qu'expliquer BR-EVE-002).
+ * Chaque agenda est donc joué deux fois : un produit SANS événement (CTA → vrai
+ * formulaire), et aucun produit (état vide sans CTA).
+ *
  * ─────────────────────────────────────────────────────────────────────────────
  * FALLBACKS DE SEGMENT — la porte RSC
  * ─────────────────────────────────────────────────────────────────────────────
@@ -78,15 +83,40 @@ const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 /** `GET /api/categories` — `categoryService.getCategories` (`useCategories`). */
 const CATEGORIES_LIST_RE = /\/api\/categories(\?.*)?$/
 
-/** Stub d'un listing GET vide ; les écritures passent au réseau réel. */
-async function stubEmptyList(page: Page, re: RegExp): Promise<void> {
+/** Stub d'un listing GET (vide par défaut) ; les écritures passent au réseau réel. */
+async function stubEmptyList(page: Page, re: RegExp, items: unknown[] = []): Promise<void> {
   await page.route(re, async (route: Route) => {
     if (route.request().method() !== 'GET') {
       await route.continue()
       return
     }
-    await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(items),
+    })
   })
+}
+
+/**
+ * Review S90 — UN produit SANS événement, à la forme exacte de `productSchema`
+ * (`src/types/product.ts` : `color` et `category.color` `.nullable()`, `events` tableau).
+ * Un stub mal formé ne donnerait pas un état vide mais une erreur. Jamais soumis :
+ * aucun événement n'est créé contre cet id fictif.
+ */
+const PRODUCT_WITHOUT_EVENTS = {
+  id: '00000000-0000-7000-8000-000000000090',
+  name: 'S90 produit sans événement',
+  color: null,
+  category: { id: '00000000-0000-7000-8000-000000000091', name: 'S90 catégorie', color: null },
+  events: [],
+}
+
+/** Promesse résolue quand le listing produits (GET, stubbé) a répondu. */
+function waitForProductsList(page: Page): Promise<unknown> {
+  return page.waitForResponse(
+    (res) => PRODUCTS_LIST_RE.test(res.url()) && res.request().method() === 'GET',
+  )
 }
 
 /** Vrai pour une requête RSC vers `pathname` (préchargement OU navigation). */
@@ -235,12 +265,18 @@ test.describe('#630 — états vides avec CTA (desktop)', () => {
     await expect(row).toBeVisible()
   })
 
-  test('dashboard : agenda de la semaine vide → le CTA ouvre le drawer « Nouvel événement » du shell', async ({
+  test('dashboard : un produit sans événement → le CTA de l’agenda ouvre le vrai formulaire', async ({
     page,
   }) => {
-    await stubEmptyList(page, PRODUCTS_LIST_RE)
+    await stubEmptyList(page, PRODUCTS_LIST_RE, [PRODUCT_WITHOUT_EVENTS])
+    const listed = waitForProductsList(page)
     await ensureAuthenticated(page)
+    await listed
 
+    // Témoin : le produit stubbé est bien celui que lit le dashboard.
+    await expect(
+      page.getByTestId(`dashboard-product-list-row-${PRODUCT_WITHOUT_EVENTS.id}`),
+    ).toBeVisible()
     await expect(page.getByTestId('dashboard-week-agenda-empty')).toBeVisible()
     await expect(page.getByTestId('shell-new-event-drawer')).toHaveCount(0)
 
@@ -249,8 +285,22 @@ test.describe('#630 — états vides avec CTA (desktop)', () => {
     await cta.click()
 
     await expect(page.getByTestId('shell-new-event-drawer')).toBeVisible()
-    // Aucun produit (stub) : le drawer l'explique lui-même (BR-EVE-002).
-    await expect(page.getByTestId('shell-new-event-drawer-empty')).toBeVisible()
+    await expect(page.getByTestId('event-form')).toBeVisible()
+    await expect(page.getByTestId('shell-new-event-drawer-empty')).toHaveCount(0)
+  })
+
+  test('dashboard : aucun produit → agenda vide SANS CTA (l’action vit dans l’état vide produits)', async ({
+    page,
+  }) => {
+    await stubEmptyList(page, PRODUCTS_LIST_RE)
+    const listed = waitForProductsList(page)
+    await ensureAuthenticated(page)
+    await listed
+
+    await expect(page.getByTestId('dashboard-week-agenda-empty')).toBeVisible()
+    // L'action est portée par l'état vide produits voisin, rendu dans la même vue.
+    await expect(page.getByTestId('dashboard-product-list-empty-cta')).toBeVisible()
+    await expect(page.getByTestId('dashboard-week-agenda-empty-cta')).toHaveCount(0)
   })
 
   test('dashboard : aucun produit → le CTA mène à la liste produits', async ({ page }) => {
@@ -275,11 +325,19 @@ test.describe('#630 — états vides avec CTA (mobile portrait)', () => {
   // Viewport fixée AVANT `goto` : le dashboard choisit sa branche par `useMediaQuery`.
   test.use({ viewport: MOBILE_PORTRAIT })
 
-  test('agenda compact vide → le CTA ouvre la création d’événement', async ({ page }) => {
-    await stubEmptyList(page, PRODUCTS_LIST_RE)
+  test('agenda compact vide, un produit sans événement → le CTA ouvre le vrai formulaire', async ({
+    page,
+  }) => {
+    await stubEmptyList(page, PRODUCTS_LIST_RE, [PRODUCT_WITHOUT_EVENTS])
+    const listed = waitForProductsList(page)
     await ensureAuthenticated(page)
+    await listed
     await expect(page.getByTestId('dashboard-mobile-portrait')).toBeVisible()
 
+    // Témoin : la carte du produit stubbé est rendue dans le carousel.
+    await expect(
+      page.getByTestId(`dashboard-product-carousel-card-${PRODUCT_WITHOUT_EVENTS.id}`),
+    ).toBeVisible()
     await expect(page.getByTestId('dashboard-compact-agenda-empty')).toBeVisible()
     await expect(page.getByTestId('shell-new-event-drawer')).toHaveCount(0)
 
@@ -288,6 +346,22 @@ test.describe('#630 — états vides avec CTA (mobile portrait)', () => {
     await cta.click()
 
     await expect(page.getByTestId('shell-new-event-drawer')).toBeVisible()
+    await expect(page.getByTestId('event-form')).toBeVisible()
+    await expect(page.getByTestId('shell-new-event-drawer-empty')).toHaveCount(0)
+  })
+
+  test('agenda compact vide, aucun produit → pas de CTA (l’action vit dans le carousel vide)', async ({
+    page,
+  }) => {
+    await stubEmptyList(page, PRODUCTS_LIST_RE)
+    const listed = waitForProductsList(page)
+    await ensureAuthenticated(page)
+    await listed
+    await expect(page.getByTestId('dashboard-mobile-portrait')).toBeVisible()
+
+    await expect(page.getByTestId('dashboard-compact-agenda-empty')).toBeVisible()
+    await expect(page.getByTestId('dashboard-product-carousel-empty-cta')).toBeVisible()
+    await expect(page.getByTestId('dashboard-compact-agenda-empty-cta')).toHaveCount(0)
   })
 
   test('carousel produits vide → le CTA mène à la liste produits', async ({ page }) => {

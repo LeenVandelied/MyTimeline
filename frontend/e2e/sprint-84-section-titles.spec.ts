@@ -351,8 +351,12 @@ test.describe('#575 — salut à 375 px avec un nom insécable', () => {
   // #624 — ce CTA est RETIRÉ du dashboard (cf. en-tête de `dashboard/page.tsx`) : la
   // mesure de sa boîte n'a plus d'objet. Le RISQUE demeure pour le salut lui-même :
   // sans `break-words`, le jeton élargit toujours la page. L'assertion est donc
-  // re-ciblée sur le bord droit du `h1` du salut ; le débordement de page reste
-  // asserté. Le lien « Ouvrir la frise » est mesuré à 375 px en allemand, plus haut
+  // re-ciblée sur le `h1` du salut ; le débordement de page reste asserté.
+  //
+  // Review S90 — l'ancienne mesure `box.x + box.width <= 375` était VACANTE : le `h1`
+  // est un bloc dans une colonne `flex-col min-w-0`, sa boîte a la largeur du conteneur
+  // quel que soit son contenu, un jeton qui déborde ne l'élargit pas. Ce qui déborde,
+  // c'est le TEXTE hors de la boîte : `scrollWidth > clientWidth` sur le `h1` lui-même. Le lien « Ouvrir la frise » est mesuré à 375 px en allemand, plus haut
   // (describe « mobile portrait en allemand »), là où il vit : l'en-tête du ruban.
   test('le salut reste dans l’écran quand le nom est un jeton insécable', async ({ page }) => {
     await openDashboard(page, 'fr')
@@ -370,9 +374,14 @@ test.describe('#575 — salut à 375 px avec un nom insécable', () => {
       'précondition : un jeton d’au moins 14 caractères dans le salut',
     ).toBeGreaterThanOrEqual(14)
 
-    const box = await page.getByTestId('dashboard-greeting').locator('h1').boundingBox()
-    expect(box, 'salut rendu').not.toBeNull()
-    expect(box!.x + box!.width, 'salut élargi hors de l’écran').toBeLessThanOrEqual(375)
+    const title = await page
+      .getByTestId('dashboard-greeting')
+      .locator('h1')
+      .evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }))
+    expect(title.clientWidth, 'salut rendu').toBeGreaterThan(0)
+    expect(title.scrollWidth, 'jeton du salut qui déborde de son titre').toBeLessThanOrEqual(
+      title.clientWidth,
+    )
 
     const doc = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
