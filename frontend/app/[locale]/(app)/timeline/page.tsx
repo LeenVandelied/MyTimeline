@@ -1,10 +1,14 @@
 'use client'
 
+import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { GanttChartSquare } from 'lucide-react'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { TimelineEditHost } from '@/components/timeline'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 
 /**
  * #301 — Écran frise/timeline COMPLET sous le shell applicatif (`(app)/layout.tsx`).
@@ -67,21 +71,36 @@ export default function TimelinePage() {
       </header>
 
       {isLoading ? (
-        <div
-          className="flex flex-1 items-center justify-center"
-          data-testid="timeline-data-loading"
-          role="status"
-        >
-          <span className="text-ink-muted text-xs">{t('loading')}</span>
-        </div>
+        // #629 — Squelette en lanes (handoff : barres horizontales sur une frise), même
+        // forme que `timeline/loading.tsx`. Testid conservé : `e2e/timeline.spec.ts`
+        // l'attend visible puis absent.
+        <LoadingSkeleton
+          variant="timeline"
+          rows={6}
+          label={t('loading')}
+          className="min-w-0 flex-1"
+          testId="timeline-data-loading"
+        />
       ) : resources.length === 0 ? (
-        <div
-          className="border-rule text-ink-muted flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center"
-          data-testid="timeline-empty"
-        >
-          <p className="text-ink text-sm font-medium">{t('emptyTitle')}</p>
-          <p className="text-ink-muted text-sm">{t('emptyBody')}</p>
-        </div>
+        // #630 — État vide DÉDIÉ de la frise : `EmptyState` avec piste pointillée
+        // (`track`), instruction et CTA. Le CTA mène à la création de PRODUIT et non
+        // à « Nouvel événement » : sans produit, aucun événement n'est créable
+        // (BR-EVE-002). `flex-1` conserve l'encombrement de l'ancien bloc ; le cadre
+        // passe en filet plein, les pointillés étant désormais portés par la piste.
+        <EmptyState
+          track
+          title={t('emptyTitle')}
+          description={t('emptyBody')}
+          action={
+            <Button asChild>
+              <Link href={`/${locale}/products`} data-testid="timeline-empty-cta">
+                {t('emptyCta')}
+              </Link>
+            </Button>
+          }
+          className="border-rule flex-1 rounded-lg border px-6 py-16"
+          testId="timeline-empty"
+        />
       ) : (
         <div className="min-w-0 flex-1" data-testid="timeline-host">
           {/* #592 (DEC-S85-005) — seul écran à passer `layout="screen"` : sidebar

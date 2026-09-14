@@ -6407,7 +6407,7 @@ hors preuve — à chaque essai. Aucun aléa du setup. Le commit de clôture rel
 **Status :** Terminé — PR #684 mergée le 2026-09-14 à 09:17 (merge `bebf889`, tête `60f296b`) ; issues #568/#547/#545 fermées et
 milestone #89 fermé (constaté au `/sprint start 89`, variante S57).
 
-### Sprint 89 — 2026-09-13 (EN COURS — cohésion 0.33, Données affichées = données saisies)
+### Sprint 89 — 2026-09-13 → 2026-09-14 (Terminé — merge PR #687 dans dev, commit `a6b39ad` — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau
 **Milestone GitHub :** #90
 **Issues :** #546 (P1, M), #652 (P1, S→M), #685 (P2, S — follow-up S88 ajouté à la clôture, hors plan architect)
@@ -6458,8 +6458,7 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
   - Compteur de la carte catégorie trompeur avec des archivés [M | categories] → **issue #695 (backlog)**
   Ratio : 8 issues (0 avec milestone) / 3 discard / 0 absorbé.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
-**Status :** Prêt à merger — PR #687, CI 7/7 verte sur `959a7dd` ; le commit de clôture relance une CI, c'est son SHA qui fait foi.
-Titre, Status et fermeture des issues à solder APRÈS le merge (au `/sprint start 90`, variante S57).
+**Status :** Terminé — PR #687 mergée le 2026-09-14 (`a6b39ad`). Soldé au `/sprint start 90` (variante S57) : issues #546, #652, #685 fermées et milestone #90 fermé, constatés via `gh` ; seuls le titre et ce Status restaient à écrire.
 
 ### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
 **Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés
@@ -6470,7 +6469,18 @@ Titre, Status et fermeture des issues à solder APRÈS le merge (au `/sprint sta
 **Dépend de :** Sprint 89 (#652 touche WeekAgenda / ProductList)
 **Consigne dure :** #624 re-route d'abord `golden-path.spec.ts:129-140` (preuve E2E du MVP vérifiée dans la frise du dashboard).
 **À trancher au démarrage :** portée réelle du squelette (#629, pages `'use client'`) ; emplacement de la création de produit (#624).
-**Status :** Planifié
+**Démarrage (2026-09-14) :** worktree basé sur `main` → branche `sprint/90` créée depuis `origin/dev` (`a6b39ad`) et poussée.
+**Arbitrages rendus (dev, 2026-09-14) :**
+- **#624** — `AddProductButton` retiré du dashboard **sans remplacement**. Motif vérifié : le shell fournit déjà exactement un « Nouvel événement » à chaque largeur (`shell-sidebar-new-event-button` ≥ md, `shell-mobile-new-event-button` < md, miroir `hidden md:flex` ⇔ `md:hidden`, `AppShell.tsx:218,351`) ; un CTA « Nouvel événement » en haut à droite aurait doublonné à toutes les largeurs, contre le critère « aucun doublon ». Création de produit : `/products` (`products-new-button`, `ProductsListView.tsx:151`).
+- **#629** — `loading.tsx` (timeline, products, settings) **et** remplacement des branches de chargement internes (frise `timeline-data-loading`, `products-loading`, catégories) par le squelette, testids conservés.
+**Prémisses corrigées du plan :** `golden-path.spec.ts` dépend du dashboard à DEUX endroits — `:110` (`add-product-button`) en plus de `:140` (`timeline-view`) ; `sprint-84-section-titles.spec.ts:356` mesure la boîte d'`add-product-button` sur le dashboard (non listée par l'architect). Les autres specs « frise » du plan vont directement sur `/timeline` et ne sont pas affectées par #624.
+**Vagues exécutées :** V1 = #624 (`c6f4130`) ∥ #629 (`ec6d9f6`) | V2 = #630 (`f4a8e1d`) | couverture E2E (`5ad23f3`) | correctifs review cycle 1 (`e04f7df`, `d21235c`, `ef5a1be`, `d6f17e4`) | correctifs review cycle 2 (`8276b9a`, `0de3ec6`). Commits de chaque agent vérifiés par `show --stat` + `branch --contains` ; dépôt principal resté à `a6b39ad`.
+**Écarts au plan (assumés) :** 5 specs re-routées par #624 au lieu d'1 (dont 3 basculées sur la frise embarquée de la fiche produit) ; « Ouvrir la frise » dans l'en-tête du ruban (sinon les titres de section sortaient des 800 px exigés par `sprint-84`) ; #629 ajoute `products/[productId]/loading.tsx` (sinon héritage du squelette de liste) ; spec de couverture E2E des 10 testids neufs écrite AVANT la PR (pile locale disponible) plutôt que renvoyée à `/create-e2e`.
+**Reviews :** cycle 1 — 0 CRITIQUE / 0 MAJEUR / 6 MINEUR, **absorbés sur décision dev** (région live, `aria-busy`, focus, CTA agenda sans produit, libellé du lien produits, assertion vacante) ; cycle 2 (relecture des correctifs) — 0 / **1 MAJEUR** / 2 MINEUR : l'assertion de `sprint-84` réécrite au cycle 1 restait vacante (mesuré : jeton 178 px pour un `h1` de 343 px) → corrigée et **armée par le lead** (reçu 1159 > 343 sans `break-words`) ; mineur focus-après-annulation corrigé ; mineur « région live insérée peuplée » → suivi (test lecteur d'écran réel).
+**Tests :** Vitest 1651/1651 (lead, `0de3ec6`) · `tsc`/`prettier --check .`/`next lint` exit 0 · `next build` exit 0 · E2E suite complète sur le code final `0de3ec6` : 388 passés / 2 échoués / 8 sautés / 1 non exécuté — échecs hors sprint : faux rouge darwin `sprint-77-theme-visual:620` et instabilité **préexistante** `sprint-84-palette:128` (A/B même spec ×5 : base `a6b39ad` 2 rouges, sprint 3 rouges ; aucun fichier du parcours palette touché) · vérifications navigateur réelles par sondes jetables (lanes 46 px, 0 décalage à la bascule, mouvement réduit 1e-05 s, piste pointillée clair/sombre, dashboard vide 375 px en allemand sans débordement).
+**Audit :** `docs/memory/audits/sprint-90-test-coverage.md`.
+**Follow-ups proposés (NON-XS, à trier au `/sprint end`) :** `AddProductButton` sans consommateur + clés `dashboard.recentEvents.*` orphelines ; DEC-S85-005 et en-tête de `sprint-42-events` citent encore le dashboard comme écran à frise ; bouton « Ouvrir la frise » 32 px vs 44 px du FAB (Designer) ; enveloppe de `dashboard/loading.tsx` (`max-w-3xl` vs `max-w-7xl`) ; branches mortes `products-page-loading` / `product-detail-page-loading` et branche texte `product-detail-loading` ; `router.prefetch` au survol d'une ligne produit ; annonce des régions live insérées peuplées à valider au lecteur d'écran réel ; **instabilité préexistante `sprint-84-palette:128`** (focus repris après la flèche, ~2/5 rouges sur `dev` comme sur la branche, cause non localisée). Détail et sources : `issue-*-done.md`, `e2e-coverage-done.md`, `review-fixes*-done.md`.
+**Status :** PR à ouvrir vers `dev` (issues fermées et milestone #91 fermé APRÈS merge, au `/sprint end 90`)
 
 ### Sprint 91 — 2026-09-13 (PLANIFIÉ — cohésion 1.00, Frise : instant, durée, série)
 **Objectif :** Ponctuel rendu en pin, récurrence visible (↻ + occurrences fantômes), borne de série conservée en édition depuis la frise

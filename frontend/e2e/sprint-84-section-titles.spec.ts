@@ -266,6 +266,16 @@ test.describe('#575 — dashboard mobile portrait en allemand (375 px)', () => {
       r.clientWidth,
     )
 
+    // #624 — « Zeitachse öffnen » partage l'en-tête du ruban (`flex-wrap`) : en
+    // allemand à 375 px, le lien doit passer à la ligne DANS le ruban, pas en sortir.
+    const open = page.getByTestId('dashboard-open-timeline')
+    await expect(open).toBeVisible()
+    const ob = (await open.boundingBox())!
+    const rb = (await ribbon.boundingBox())!
+    expect(ob.x + ob.width, '« Ouvrir la frise » sort du ruban').toBeLessThanOrEqual(
+      rb.x + rb.width,
+    )
+
     for (const testid of [
       'dashboard-density-ribbon',
       'dashboard-compact-agenda',
@@ -328,39 +338,95 @@ test.describe('#575 — détail produit', () => {
   })
 })
 
-/* ------------------------------ SALUT + CTA, MOBILE PORTRAIT (non-régression) */
+/* ------------------------------ SALUT, MOBILE PORTRAIT (non-régression) */
 
-test.describe('#575 — salut et CTA « Nouveau produit » à 375 px', () => {
+test.describe('#575 — salut à 375 px avec un nom insécable', () => {
   test.use({ viewport: { width: 375, height: 812 } })
 
-  // `GreetingHeader` partage sa rangée avec le CTA `nowrap` : sans `min-w-0` +
-  // `break-words`, un nom sans espace impose sa largeur min-content et pousse le CTA
-  // hors de l'écran (mesuré : page à 390 px en fr, 377 px en de — plus large en
-  // français, donc indépendant de la locale). Le français est le pire cas mesuré.
-  test('le CTA reste dans l’écran quand le nom est un jeton insécable', async ({ page }) => {
+  // Origine (#575) : `GreetingHeader` partageait sa rangée avec le CTA `nowrap`
+  // `add-product-button` ; sans `min-w-0` + `break-words`, un nom sans espace imposait
+  // sa largeur min-content et poussait le CTA hors de l'écran (mesuré : page à
+  // 390 px en fr, 377 px en de).
+  //
+  // #624 — ce CTA est RETIRÉ du dashboard (cf. en-tête de `dashboard/page.tsx`) : la
+  // mesure de sa boîte n'a plus d'objet. Le RISQUE demeure pour le salut lui-même :
+  // sans `break-words`, le jeton élargit toujours la page. L'assertion est donc
+  // re-ciblée sur le `h1` du salut ; le débordement de page reste asserté.
+  //
+  // Review S90 — l'ancienne mesure `box.x + box.width <= 375` était VACANTE : le `h1`
+  // est un bloc dans une colonne `flex-col min-w-0`, sa boîte a la largeur du conteneur
+  // quel que soit son contenu, un jeton qui déborde ne l'élargit pas. Ce qui déborde,
+  // c'est le TEXTE hors de la boîte : `scrollWidth > clientWidth` sur le `h1` lui-même. Le lien « Ouvrir la frise » est mesuré à 375 px en allemand, plus haut
+  // (describe « mobile portrait en allemand »), là où il vit : l'en-tête du ruban.
+  test('le salut reste dans l’écran quand le nom est un jeton insécable', async ({ page }) => {
     await openDashboard(page, 'fr')
     await expect(page.getByTestId('dashboard-mobile-portrait')).toBeVisible()
 
-    // Précondition anti-vacuité : ce test ne prouve quelque chose QUE si le salut
-    // porte un jeton long. Les comptes E2E ont un identifiant de ~13 chiffres
-    // (PIT-S63-013) ; si la fixture change, ce test doit le dire, pas passer à vide.
-    const longest = await page
+    // Review S90 cycle 2 — précondition GÉOMÉTRIQUE. Compter des caractères ne prouvait
+    // rien : l'identifiant E2E (≤ 20 car., `e2e/support/accounts.ts`) tient dans la
+    // colonne de ~343 px même sans `break-words`, et le test passait à vide. On remplace
+    // donc le nom (`user.username`, passé à `GreetingHeader` par `dashboard/page.tsx`)
+    // par un jeton insécable PLUS LARGE que la colonne, et on le vérifie en pixels.
+    //
+    // Tout se fait dans UN SEUL `evaluate` synchrone : aucun rendu React ne peut
+    // s'intercaler entre l'injection et la mesure. Le nœud texte est modifié EN PLACE
+    // (`nodeValue`), jamais remplacé, pour ne pas désynchroniser React.
+    //
+    // ARMEMENT (fait à la main, pas de test permanent) : ajouter en première ligne du
+    // callback `h1.classList.remove('break-words')`. La précondition passe toujours
+    // (la règle mesure le jeton en `nowrap`), puis le jeton déborde du `h1` :
+    // `scrollWidth > clientWidth` → rouge sur « jeton du salut qui déborde de son titre ».
+    const m = await page
       .getByTestId('dashboard-greeting')
       .locator('h1')
-      .evaluate((el) => Math.max(...(el.textContent ?? '').split(/\s+/).map((w) => w.length)))
+      .evaluate((h1, name) => {
+        const TOKEN = 'W'.repeat(60)
+        let replaced = false
+        const walker = document.createTreeWalker(h1, NodeFilter.SHOW_TEXT)
+        for (let node = walker.nextNode(); node !== null && !replaced; node = walker.nextNode()) {
+          const value = node.nodeValue ?? ''
+          if (name.length > 0 && value.includes(name)) {
+            node.nodeValue = value.replace(name, TOKEN)
+            replaced = true
+          }
+        }
+
+        // Règle : le jeton seul, enfant du `h1` pour hériter de SA typographie (police,
+        // taille, graisse, interlettrage), sorti du flux et interdit de coupure. Retirée
+        // AVANT de mesurer le `h1`.
+        const ruler = document.createElement('span')
+        ruler.textContent = TOKEN
+        ruler.style.cssText =
+          'position:absolute;visibility:hidden;white-space:nowrap;overflow-wrap:normal;word-break:normal;'
+        h1.appendChild(ruler)
+        const tokenWidth = ruler.getBoundingClientRect().width
+        ruler.remove()
+
+        return {
+          replaced,
+          hasToken: (h1.textContent ?? '').includes(TOKEN),
+          tokenWidth,
+          scrollWidth: h1.scrollWidth,
+          clientWidth: h1.clientWidth,
+          docScrollWidth: document.documentElement.scrollWidth,
+          docClientWidth: document.documentElement.clientWidth,
+        }
+      }, PROD.username)
+
     expect(
-      longest,
-      'précondition : un jeton d’au moins 14 caractères dans le salut',
-    ).toBeGreaterThanOrEqual(14)
+      m.replaced,
+      `précondition : le nom « ${PROD.username} » doit figurer dans le salut pour être remplacé`,
+    ).toBe(true)
+    expect(m.hasToken, 'précondition : le jeton injecté est dans le salut').toBe(true)
+    expect(m.clientWidth, 'salut rendu').toBeGreaterThan(0)
+    expect(
+      m.tokenWidth,
+      'précondition : largeur naturelle du jeton (nowrap) > largeur du titre, sinon test vacant',
+    ).toBeGreaterThan(m.clientWidth)
 
-    const box = await page.getByTestId('add-product-button').boundingBox()
-    expect(box, 'CTA rendu').not.toBeNull()
-    expect(box!.x + box!.width, 'CTA poussé hors de l’écran').toBeLessThanOrEqual(375)
-
-    const doc = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth,
-    }))
-    expect(doc.scrollWidth, 'débordement horizontal de page').toBeLessThanOrEqual(doc.clientWidth)
+    expect(m.scrollWidth, 'jeton du salut qui déborde de son titre').toBeLessThanOrEqual(
+      m.clientWidth,
+    )
+    expect(m.docScrollWidth, 'débordement horizontal de page').toBeLessThanOrEqual(m.docClientWidth)
   })
 })

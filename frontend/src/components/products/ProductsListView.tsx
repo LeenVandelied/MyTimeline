@@ -20,6 +20,8 @@ import {
 import { ProductDrawer } from './ProductDrawer'
 import { ProductSparkline } from './ProductSparkline'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { deleteProduct } from '@/services/productService'
@@ -81,6 +83,40 @@ export function ProductsListView() {
   const [search, setSearch] = React.useState('')
   const [sort, setSort] = React.useState<SortKey>('lastActivityDesc')
   const [createOpen, setCreateOpen] = React.useState(false)
+  // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide.
+  // Ce déclencheur disparaît dès qu'un produit existe ; Radix rendrait alors le focus à
+  // un nœud détaché, donc à `body`. Deux cas, selon l'état du CTA à la fermeture :
+  //   · CTA déjà démonté (liste rechargée avant la fin de l'animation) : on rend le
+  //     focus au bouton permanent ;
+  //   · CTA encore monté (annulation, OU invalidation non attendue par la mutation) :
+  //     Radix rend le focus au CTA, sans interception. S'il se démonte ensuite en
+  //     détenant ce focus, l'effet ci-dessous le rend au bouton permanent.
+  const newButtonRef = React.useRef<HTMLButtonElement>(null)
+  const emptyCtaRef = React.useRef<HTMLButtonElement>(null)
+  const createFromEmptyRef = React.useRef(false)
+  const focusBackToEmptyCtaRef = React.useRef(false)
+  const openCreate = (fromEmpty: boolean) => {
+    createFromEmptyRef.current = fromEmpty
+    focusBackToEmptyCtaRef.current = false
+    setCreateOpen(true)
+  }
+  const handleCreateCloseAutoFocus = (event: Event) => {
+    if (!createFromEmptyRef.current) return
+    createFromEmptyRef.current = false
+    if (emptyCtaRef.current?.isConnected) {
+      focusBackToEmptyCtaRef.current = true
+      return
+    }
+    event.preventDefault()
+    newButtonRef.current?.focus()
+  }
+  const hasProducts = products.length > 0
+  React.useEffect(() => {
+    if (!hasProducts || !focusBackToEmptyCtaRef.current) return
+    focusBackToEmptyCtaRef.current = false
+    const active = document.activeElement
+    if (active === null || active === document.body) newButtonRef.current?.focus()
+  }, [hasProducts])
   const [editProduct, setEditProduct] = React.useState<Product | null>(null)
   const [archiveProduct, setArchiveProduct] = React.useState<Product | null>(null)
 
@@ -130,6 +166,12 @@ export function ProductsListView() {
     [router, locale],
   )
 
+  const searchInputRef = React.useRef<HTMLInputElement>(null)
+  const handleClearSearch = () => {
+    setSearch('')
+    searchInputRef.current?.focus()
+  }
+
   const handleArchiveConfirm = async () => {
     if (!userId || !archiveProduct) throw new Error('userId/produit manquant')
     await deleteProduct(userId, archiveProduct.id)
@@ -147,7 +189,8 @@ export function ProductsListView() {
         <Button
           variant="outline"
           className="bg-accent hover:bg-accent-hover text-accent-ink flex items-center gap-2 border-none"
-          onClick={() => setCreateOpen(true)}
+          ref={newButtonRef}
+          onClick={() => openCreate(false)}
           data-testid="products-new-button"
         >
           <PlusCircle size={16} aria-hidden="true" />
@@ -163,6 +206,7 @@ export function ProductsListView() {
             aria-hidden="true"
           />
           <Input
+            ref={searchInputRef}
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -192,21 +236,58 @@ export function ProductsListView() {
 
       {/* États : chargement / erreur / vide / tableau. */}
       {query.isLoading ? (
-        <p className="text-ink-muted text-sm" role="status" data-testid="products-loading">
-          {t('loading')}
-        </p>
+        // #629 — Squelette en lignes dans le cadre bordé du tableau (`products-table`),
+        // au lieu d'une ligne de texte. Testid et libellé inchangés.
+        <LoadingSkeleton
+          variant="list"
+          rows={6}
+          label={t('loading')}
+          className="border-rule rounded-lg border px-4"
+          testId="products-loading"
+        />
       ) : query.isError ? (
         <p className="text-destructive text-sm" role="alert" data-testid="products-error">
           {t('error')}
         </p>
       ) : products.length === 0 ? (
-        <p className="text-ink-muted text-sm" data-testid="products-empty">
-          {t('empty')}
-        </p>
+        // #630 — État vide partagé + CTA : même action que `products-new-button`
+        // (ouvre le `ProductDrawer` de création). Cadre = celui du tableau et du
+        // squelette `products-loading`, pour que la zone ne change pas de forme.
+        <EmptyState
+          title={t('empty')}
+          action={
+            <Button
+              type="button"
+              ref={emptyCtaRef}
+              onClick={() => openCreate(true)}
+              data-testid="products-empty-cta"
+            >
+              {t('emptyCta')}
+            </Button>
+          }
+          className="border-rule rounded-lg border px-4"
+          testId="products-empty"
+        />
       ) : visible.length === 0 ? (
-        <p className="text-ink-muted text-sm" data-testid="products-empty-search">
-          {t('emptySearch')}
-        </p>
+        // #630 — Recherche sans résultat : l'utilisateur A des produits, donc PAS de
+        // CTA de création. Action = effacer le filtre, puis rendre le focus au champ
+        // (le bouton disparaît avec l'état vide : sans ça, le focus tomberait sur body).
+        <EmptyState
+          title={t('emptySearch')}
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClearSearch}
+              data-testid="products-empty-search-cta"
+            >
+              {t('clearSearch')}
+            </Button>
+          }
+          className="border-rule rounded-lg border px-4"
+          testId="products-empty-search"
+        />
       ) : (
         <div className="border-rule overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse text-left text-sm" data-testid="products-table">
@@ -343,7 +424,12 @@ export function ProductsListView() {
       )}
 
       {/* Création — ProductDrawer réutilisé (#61). */}
-      <ProductDrawer open={createOpen} onOpenChange={setCreateOpen} mode="create" />
+      <ProductDrawer
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        onCloseAutoFocus={handleCreateCloseAutoFocus}
+      />
 
       {/* Édition — même drawer préfilé. `key` force un remount propre au switch. */}
       {editProduct && (

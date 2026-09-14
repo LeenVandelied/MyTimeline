@@ -16,12 +16,14 @@
     "label": "Event density over {days} days",
     "eyebrow": "Density · {days} days",
     "title": "Timeline overview",
-    "empty": "No events in this period"
+    "empty": "No events in this period",
+    "openTimeline": "Open timeline"
   },
   "week": {
     "title": "This week",
     "label": "Current week agenda",
-    "empty": "No events this week"
+    "empty": "Nothing this week: add an event to follow it here",
+    "emptyCta": "Add an event"
   },
   "mobile": {
     "menu": "Open menu",
@@ -39,7 +41,9 @@
       "label": "Compact agenda for today and tomorrow",
       "today": "Today",
       "tomorrow": "Tomorrow",
-      "empty": "No events today or tomorrow"
+      "empty": "No events today or tomorrow",
+      "emptyTitle": "Nothing today or tomorrow: add an event to follow it here",
+      "emptyCta": "Add an event"
     },
     "carousel": {
       "label": "Products, horizontal scroll"
@@ -63,7 +67,8 @@
   "productList": {
     "title": "Your products",
     "label": "Product list",
-    "empty": "No products yet",
+    "empty": "Add a first product to track its deadlines",
+    "emptyCta": "Go to products",
     "noUpcoming": "No upcoming"
   },
   "stats": {

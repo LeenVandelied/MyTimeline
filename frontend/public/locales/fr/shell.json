@@ -27,8 +27,9 @@
   "timeline": {
     "eyebrow": "Frise",
     "title": "Timeline",
-    "emptyTitle": "Aucun produit pour l'instant",
-    "emptyBody": "Créez un produit et ajoutez-y des événements pour voir votre frise chronologique.",
+    "emptyTitle": "Ajoutez un premier produit pour tracer votre frise",
+    "emptyBody": "Chaque produit occupe une ligne ; ses événements s'y placent dans le temps.",
+    "emptyCta": "Créer un produit",
     "loading": "Chargement…"
   }
 }

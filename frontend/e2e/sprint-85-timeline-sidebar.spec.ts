@@ -298,10 +298,16 @@ test.describe('#592 /timeline — sidebar < 1024 px (repliée, DEC-S85-004)', ()
   })
 })
 
-test.describe('#592 dashboard — frise incrustée SANS sidebar (DEC-S85-005)', () => {
+// #624 — Ce describe visait le dashboard, qui ne monte plus de frise (aperçu = ruban).
+// La fiche produit est désormais la seule frise INCRUSTÉE (`ProductDetailView`,
+// `TimelineEditHost` sans `layout`) : l'invariant DEC-S85-005 y est vérifié. Le
+// listing stubbé alimente aussi la fiche (`useProductsWithEvents`, même endpoint).
+test.describe('#592 frise incrustée (fiche produit) — SANS sidebar (DEC-S85-005)', () => {
   test('ni sidebar ni bouton Filtres ; la bulle ? reste', async ({ page }) => {
     await stubProducts(page)
     await ensureAuthenticated(page)
+    await page.goto(`/fr/products/${PRODUCTS[0].id}`, { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('product-detail-timeline')).toBeVisible()
     const view = page.getByTestId('timeline-view')
     await expect(view).toHaveAttribute('data-layout', 'embedded')
     await expect(page.getByTestId('timeline-sidebar')).toHaveCount(0)

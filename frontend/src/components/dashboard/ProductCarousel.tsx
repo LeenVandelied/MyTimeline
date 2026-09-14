@@ -1,9 +1,12 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { nextEvent } from './lib'
 
 /**
@@ -48,9 +51,21 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
       {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
       <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {products.length === 0 ? (
-        <p className="text-ink-muted text-xs" data-testid="dashboard-product-carousel-empty">
-          {t('empty')}
-        </p>
+        // #630 — Miroir mobile de `ProductList` : même état vide compact, même CTA
+        // vers la liste produits (seul chemin de création depuis le dashboard, #624).
+        // Review S90 — même libellé de navigation que `ProductList` (lien, pas création).
+        <EmptyState
+          compact
+          title={t('empty')}
+          action={
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/${locale}/products`} data-testid="dashboard-product-carousel-empty-cta">
+                {t('emptyCta')}
+              </Link>
+            </Button>
+          }
+          testId="dashboard-product-carousel-empty"
+        />
       ) : (
         <ul
           className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1"

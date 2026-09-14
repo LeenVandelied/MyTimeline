@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import TimelinePage from './page'
 import type { DashboardData } from '@/hooks/useDashboardData'
@@ -90,12 +90,39 @@ describe('TimelinePage — écran frise', () => {
     expect(screen.queryByTestId('timeline-edit-host-stub')).not.toBeInTheDocument()
   })
 
+  it('#629 — le chargement des données est le squelette en lanes, libellé conservé', () => {
+    mockDashboard = makeData({ isLoading: true })
+    render(<TimelinePage />)
+    const loading = screen.getByTestId('timeline-data-loading')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(loading).not.toHaveAttribute('aria-busy')
+    expect(screen.getByText('shell.timeline.loading')).toBeInTheDocument()
+    const lanes = screen.getAllByTestId('loading-skeleton-item')
+    expect(lanes.length).toBeGreaterThan(0)
+    for (const lane of lanes) expect(lane.style.height).toBe('var(--lane-height)')
+  })
+
   it('affiche l’état vide quand aucun produit (resources vide)', () => {
     mockDashboard = makeData({ resources: [], events: [] })
     render(<TimelinePage />)
     expect(screen.getByTestId('timeline-empty')).toBeInTheDocument()
     expect(screen.getByText('shell.timeline.emptyTitle')).toBeInTheDocument()
     expect(screen.queryByTestId('timeline-edit-host-stub')).not.toBeInTheDocument()
+  })
+
+  it('#630 — état vide dédié : EmptyState + piste pointillée + CTA vers les produits', () => {
+    mockDashboard = makeData({ resources: [], events: [] })
+    render(<TimelinePage />)
+    const empty = screen.getByTestId('timeline-empty')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
+    // Encombrement conservé (l'écran vide ne « remonte » pas).
+    expect(empty.className).toContain('flex-1')
+    expect(within(empty).getByTestId('timeline-empty-track')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(empty).getByText('shell.timeline.emptyBody')).toBeInTheDocument()
+    // CTA = créer un PRODUIT (BR-EVE-002), pas « Nouvel événement ».
+    const cta = within(empty).getByTestId('timeline-empty-cta')
+    expect(cta).toHaveAttribute('href', '/fr/products')
+    expect(cta).toHaveTextContent('shell.timeline.emptyCta')
   })
 
   it('monte TimelineEditHost avec les données agrégées quand des produits existent', () => {

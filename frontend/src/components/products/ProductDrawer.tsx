@@ -81,6 +81,12 @@ export interface ProductDrawerProps {
   onSuccess?: () => void
   /** Callback post-suppression (mode edit) si le produit a été supprimé. */
   onDeleted?: () => void
+  /**
+   * Relayé tel quel à `DialogContent` (Radix) : appelé quand le drawer rend le focus
+   * à sa fermeture. `event.preventDefault()` + focus explicite permet à l'appelant de
+   * choisir la cible quand le déclencheur a disparu (CTA d'état vide, sprint 90).
+   */
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 /** Lit `error.response.status` défensivement (axios ou générique, sans `any`). */
@@ -106,6 +112,7 @@ export function ProductDrawer({
   product,
   onSuccess,
   onDeleted,
+  onCloseAutoFocus,
 }: ProductDrawerProps) {
   const t = useTranslations('products.drawer')
   const { user } = useAuth()
@@ -242,6 +249,7 @@ export function ProductDrawer({
             // Desktop (sm+) : drawer latéral droit 452px, pleine hauteur.
             'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[452px] sm:max-w-[452px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',
           )}
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

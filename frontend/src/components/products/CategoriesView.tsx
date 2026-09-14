@@ -9,6 +9,8 @@ import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useCategories } from '@/hooks/useCategories'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useDeleteCategory } from '@/hooks/useDeleteCategory'
@@ -56,6 +58,37 @@ export function CategoriesView() {
   }, [productsQuery.data])
 
   const [createOpen, setCreateOpen] = React.useState(false)
+  // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide
+  // (même logique que `ProductsListView`) : CTA déjà démonté à la fermeture → bouton
+  // permanent ; CTA encore monté → Radix lui rend le focus, et s'il se démonte ensuite
+  // en le détenant (invalidation non attendue par la mutation), l'effet ci-dessous le
+  // rend au bouton permanent.
+  const newButtonRef = React.useRef<HTMLButtonElement>(null)
+  const emptyCtaRef = React.useRef<HTMLButtonElement>(null)
+  const createFromEmptyRef = React.useRef(false)
+  const focusBackToEmptyCtaRef = React.useRef(false)
+  const openCreate = (fromEmpty: boolean) => {
+    createFromEmptyRef.current = fromEmpty
+    focusBackToEmptyCtaRef.current = false
+    setCreateOpen(true)
+  }
+  const handleCreateCloseAutoFocus = (event: Event) => {
+    if (!createFromEmptyRef.current) return
+    createFromEmptyRef.current = false
+    if (emptyCtaRef.current?.isConnected) {
+      focusBackToEmptyCtaRef.current = true
+      return
+    }
+    event.preventDefault()
+    newButtonRef.current?.focus()
+  }
+  const hasCategories = categories.length > 0
+  React.useEffect(() => {
+    if (!hasCategories || !focusBackToEmptyCtaRef.current) return
+    focusBackToEmptyCtaRef.current = false
+    const active = document.activeElement
+    if (active === null || active === document.body) newButtonRef.current?.focus()
+  }, [hasCategories])
   const [editCategory, setEditCategory] = React.useState<Category | null>(null)
   const [deleteCategoryState, setDeleteCategoryState] = React.useState<Category | null>(null)
 
@@ -77,7 +110,8 @@ export function CategoriesView() {
         <Button
           variant="outline"
           className="bg-accent hover:bg-accent-hover text-accent-ink flex items-center gap-2 border-none"
-          onClick={() => setCreateOpen(true)}
+          ref={newButtonRef}
+          onClick={() => openCreate(false)}
           data-testid="categories-new-button"
         >
           <PlusCircle size={16} aria-hidden="true" />
@@ -86,17 +120,37 @@ export function CategoriesView() {
       </div>
 
       {categoriesQuery.isLoading ? (
-        <p className="text-ink-muted text-sm" role="status" data-testid="categories-loading">
-          {t('loading')}
-        </p>
+        // #629 — Variante `cards` : même grille 1/2/3 colonnes `gap-4` et cartes
+        // `rounded-lg border p-4` que la liste réelle. Testid et libellé inchangés.
+        <LoadingSkeleton
+          variant="cards"
+          rows={6}
+          label={t('loading')}
+          testId="categories-loading"
+        />
       ) : categoriesQuery.isError ? (
         <p className="text-destructive text-sm" role="alert" data-testid="categories-error">
           {t('error')}
         </p>
       ) : categories.length === 0 ? (
-        <p className="text-ink-muted text-sm" data-testid="categories-empty">
-          {t('empty')}
-        </p>
+        // #630 — État vide partagé + CTA : même handler que `categories-new-button`
+        // (ouvre le `CategoryDrawer` de création). Aucune catégorie semée ni
+        // suggérée ici (DEC-S82-004, suggestions = #638).
+        <EmptyState
+          title={t('empty')}
+          action={
+            <Button
+              type="button"
+              ref={emptyCtaRef}
+              onClick={() => openCreate(true)}
+              data-testid="categories-empty-cta"
+            >
+              {t('emptyCta')}
+            </Button>
+          }
+          className="border-rule rounded-lg border px-4"
+          testId="categories-empty"
+        />
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}
@@ -179,7 +233,12 @@ export function CategoriesView() {
       )}
 
       {/* Création — CategoryDrawer livré par #62 (EMBARQUÉ, non réécrit). */}
-      <CategoryDrawer open={createOpen} onOpenChange={setCreateOpen} mode="create" />
+      <CategoryDrawer
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        onCloseAutoFocus={handleCreateCloseAutoFocus}
+      />
 
       {/* Édition — même drawer préfilé (`key` = remount propre au switch). */}
       {editCategory && (

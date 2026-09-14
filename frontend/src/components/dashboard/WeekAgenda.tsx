@@ -5,6 +5,9 @@ import { useTranslations } from 'next-intl'
 import { getWeekRange, getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 
 /**
  * #80 — Agenda de la semaine courante (spec Designer §3). Filets (pas de `<Card>`
@@ -17,6 +20,17 @@ export interface WeekAgendaProps {
   now?: Date
   locale: string
   variant?: 'table' | 'stack'
+  /**
+   * Review S90 — `false` quand l'utilisateur n'a AUCUN produit : l'état vide ne porte
+   * alors pas de CTA « Ajouter un événement » (le drawer ne pourrait qu'expliquer
+   * BR-EVE-002 ; l'état vide produits voisin porte déjà l'action utile).
+   *
+   * Défaut `true` : le CTA reste gouverné par le seul provider du shell pour tout
+   * montage qui ne connaît pas les produits (tests, montages hors page). Le seul
+   * montage qui les connaît, `dashboard/page.tsx`, passe la valeur explicitement, et
+   * `dashboard/page.test.tsx` verrouille cette transmission dans les 3 branches.
+   */
+  canCreateEvent?: boolean
 }
 
 export const WeekAgenda: React.FC<WeekAgendaProps> = ({
@@ -24,8 +38,10 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
   now = new Date(),
   locale,
   variant = 'table',
+  canCreateEvent = true,
 }) => {
   const t = useTranslations('dashboard.week')
+  const openCreateEvent = useOpenCreateEvent()
   const { start, end } = useMemo(() => getWeekRange(now), [now])
   const weekEvents = useMemo(() => getEventsInRange(events, start, end), [events, start, end])
   const dayFmt = useMemo(
@@ -52,9 +68,28 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
           information (plage, compteur) à conserver. */}
       <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       {weekEvents.length === 0 ? (
-        <p className="text-ink-muted text-xs" data-testid="dashboard-week-agenda-empty">
-          {t('empty')}
-        </p>
+        // #630 — État vide partagé (compact) + CTA « Ajouter un événement » qui ouvre
+        // LE drawer du shell (`useOpenCreateEvent`). Hors shell (null), aucun bouton
+        // plutôt qu'un bouton inerte. Review S90 : sans produit (`canCreateEvent`
+        // false), aucun bouton non plus — plus de détour par un drawer bloqué.
+        <EmptyState
+          compact
+          title={t('empty')}
+          action={
+            openCreateEvent && canCreateEvent ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={openCreateEvent}
+                data-testid="dashboard-week-agenda-empty-cta"
+              >
+                {t('emptyCta')}
+              </Button>
+            ) : undefined
+          }
+          testId="dashboard-week-agenda-empty"
+        />
       ) : (
         <ul className="flex flex-col" data-variant={variant}>
           {weekEvents.map((event) => (

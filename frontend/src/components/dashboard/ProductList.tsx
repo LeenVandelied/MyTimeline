@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
+import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { nextEvent } from './lib'
 
@@ -38,7 +40,23 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
       {products.length === 0 ? (
         // #57 — État vide partagé (remplace le <p> inline). testId préservé pour
         // les tests #80 existants (dashboard-product-list-empty).
-        <EmptyState compact title={t('empty')} testId="dashboard-product-list-empty" />
+        // #630 — CTA vers la liste produits : depuis #624 (retrait d'`AddProductButton`)
+        // c'est le seul chemin visible du dashboard vers la création d'un produit.
+        // Review S90 — simple lien vers `/products` (la création y demande un second
+        // clic) : le libellé décrit la NAVIGATION (« Aller aux produits »), pas une
+        // création. Pas de `?new=1` : la page ne lit aucun paramètre d'ouverture.
+        <EmptyState
+          compact
+          title={t('empty')}
+          action={
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/${locale}/products`} data-testid="dashboard-product-list-empty-cta">
+                {t('emptyCta')}
+              </Link>
+            </Button>
+          }
+          testId="dashboard-product-list-empty"
+        />
       ) : (
         <ul className="flex flex-col">
           {products.map((product) => {

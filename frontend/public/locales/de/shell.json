@@ -27,8 +27,9 @@
   "timeline": {
     "eyebrow": "Zeitachse",
     "title": "Zeitachse",
-    "emptyTitle": "Noch keine Produkte",
-    "emptyBody": "Erstellen Sie ein Produkt und fügen Sie Ereignisse hinzu, um Ihre Zeitachse zu sehen.",
+    "emptyTitle": "Fügen Sie ein erstes Produkt hinzu, um Ihre Zeitachse aufzubauen",
+    "emptyBody": "Jedes Produkt erhält eine eigene Zeile; seine Ereignisse werden darauf zeitlich eingeordnet.",
+    "emptyCta": "Produkt erstellen",
     "loading": "Wird geladen…"
   }
 }

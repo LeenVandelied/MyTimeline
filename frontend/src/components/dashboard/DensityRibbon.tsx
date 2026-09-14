@@ -2,7 +2,9 @@
 
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { buildDensityBuckets } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
 
@@ -27,6 +29,11 @@ export interface DensityRibbonProps {
   scrollable?: boolean
   /** #83 — Largeur mini d'une barre en mode scrollable (px). Défaut 12. */
   minBarWidth?: number
+  /**
+   * #624 — Route de l'écran frise dédié (déjà localisée, ex. `/fr/timeline`). Fournie :
+   * rend le lien « Ouvrir la frise » dans l'en-tête du ruban. Absente : aucun lien.
+   */
+  timelineHref?: string
 }
 
 export const DensityRibbon: React.FC<DensityRibbonProps> = ({
@@ -36,6 +43,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
   locale,
   scrollable = false,
   minBarWidth = 12,
+  timelineHref,
 }) => {
   const t = useTranslations('dashboard.density')
   const tm = useTranslations('dashboard.mobile')
@@ -88,7 +96,25 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
             {t('title')}
           </h2>
         </div>
-        <span className="text-ink-muted text-2xs font-mono">{rangeLabel}</span>
+        {/* #624 — « Ouvrir la frise » : le ruban est l'APERÇU compact de la frise
+            (handoff), l'écran dédié `/timeline` en est le détail. Le lien vit DANS
+            la rangée d'en-tête, pas dans une rangée à lui : `size="sm"` (32 px) tient
+            dans la hauteur eyebrow + titre, donc aucun titre de section du dashboard
+            ne descend sous la ligne de flottaison à 1280×800
+            (`e2e/sprint-84-section-titles.spec.ts`). `flex-wrap` : en `de` à 375 px,
+            plage et lien passent dessous plutôt que de déborder. Rendu seulement si
+            `timelineHref` est fourni : le composant reste utilisable sans navigation. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-ink-muted text-2xs font-mono">{rangeLabel}</span>
+          {timelineHref && (
+            <Button asChild variant="outline" size="sm">
+              <Link href={timelineHref} data-testid="dashboard-open-timeline">
+                <span>{t('openTimeline')}</span>
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
       {scrollable ? (
         // Rail scrollable-x : barres à largeur mini fixe, indicateur de scroll

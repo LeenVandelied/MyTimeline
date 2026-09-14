@@ -27,8 +27,9 @@
   "timeline": {
     "eyebrow": "Cronología",
     "title": "Cronología",
-    "emptyTitle": "Aún no hay productos",
-    "emptyBody": "Crea un producto y añádele eventos para ver tu cronología.",
+    "emptyTitle": "Añade un primer producto para trazar tu cronología",
+    "emptyBody": "Cada producto ocupa una línea; sus eventos se sitúan en ella a lo largo del tiempo.",
+    "emptyCta": "Crear un producto",
     "loading": "Cargando…"
   }
 }

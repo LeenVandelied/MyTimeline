@@ -1,9 +1,12 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
 import { describe, expect, it } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import { DensityRibbon } from './DensityRibbon'
 import dashboardMessages from '../../../public/locales/fr/dashboard.json'
+import enDashboard from '../../../public/locales/en/dashboard.json'
+import esDashboard from '../../../public/locales/es/dashboard.json'
+import deDashboard from '../../../public/locales/de/dashboard.json'
 
 /**
  * #FU6 — Régression console : `aria-label={t('label')}` était appelé SANS le
@@ -59,5 +62,52 @@ describe('DensityRibbon — intégration next-intl réelle (anti-régression FU6
 
   it('ne lève aucune IntlError au rendu mobile scrollable', () => {
     expect(renderWithRealIntl({ scrollable: true })).toEqual([])
+  })
+})
+
+/**
+ * #624 — Lien « Ouvrir la frise ». Rendu avec les VRAIS messages des 4 locales : une
+ * clé `dashboard.density.openTimeline` absente d'une locale lève `MISSING_MESSAGE`
+ * (capté par `onError`) et afficherait le chemin de clé brut — ce que le mock
+ * `ns.key` des autres tests ne peut pas voir.
+ */
+const LOCALE_MESSAGES = {
+  fr: { messages: dashboardMessages, label: 'Ouvrir la frise' },
+  en: { messages: enDashboard, label: 'Open timeline' },
+  es: { messages: esDashboard, label: 'Abrir la cronología' },
+  de: { messages: deDashboard, label: 'Zeitachse öffnen' },
+} as const
+
+describe('DensityRibbon — lien « Ouvrir la frise » (#624)', () => {
+  it.each(Object.keys(LOCALE_MESSAGES) as (keyof typeof LOCALE_MESSAGES)[])(
+    'libellé résolu sans IntlError, href transmis · %s',
+    (locale) => {
+      const { messages, label } = LOCALE_MESSAGES[locale]
+      const errors: string[] = []
+      render(
+        <NextIntlClientProvider
+          locale={locale}
+          timeZone="Europe/Paris"
+          messages={{ dashboard: messages }}
+          onError={(error) => errors.push(error.message)}
+        >
+          <DensityRibbon
+            events={[]}
+            now={NOW}
+            locale={locale}
+            timelineHref={`/${locale}/timeline`}
+          />
+        </NextIntlClientProvider>,
+      )
+      expect(errors).toEqual([])
+      const link = screen.getByTestId('dashboard-open-timeline')
+      expect(link).toHaveAttribute('href', `/${locale}/timeline`)
+      expect(link).toHaveTextContent(label)
+    },
+  )
+
+  it('sans `timelineHref`, aucun lien', () => {
+    renderWithRealIntl()
+    expect(screen.queryByTestId('dashboard-open-timeline')).not.toBeInTheDocument()
   })
 })

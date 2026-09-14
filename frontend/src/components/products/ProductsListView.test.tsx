@@ -36,14 +36,54 @@ vi.mock('next-intl', () => ({
 }))
 
 // Drawers/dialog mockés : on expose leur `open` + le mode pour l'assertion.
-vi.mock('./ProductDrawer', () => ({
-  ProductDrawer: ({ open, mode, product }: { open: boolean; mode?: string; product?: Product }) =>
-    open ? (
-      <div data-testid={`product-drawer-${mode}`} data-product={product?.id ?? ''}>
-        drawer
-      </div>
-    ) : null,
-}))
+// Review S90 — le bouton « close » rejoue la séquence de fermeture Radix : `onOpenChange(false)`
+// puis `onCloseAutoFocus(event annulable)`. Non annulé, Radix rend le focus à l'élément qui
+// l'avait à l'ouverture (FocusScope) ; un nœud détaché ne prend pas le focus, qui reste
+// alors sur `body`. `drawerClose.lastPrevented` garde la trace de l'interception.
+const drawerClose = vi.hoisted(() => ({ lastPrevented: null as boolean | null }))
+
+vi.mock('./ProductDrawer', async () => {
+  const React = await import('react')
+  return {
+    ProductDrawer: ({
+      open,
+      mode,
+      product,
+      onOpenChange,
+      onCloseAutoFocus,
+    }: {
+      open: boolean
+      mode?: string
+      product?: Product
+      onOpenChange: (open: boolean) => void
+      onCloseAutoFocus?: (event: Event) => void
+    }) => {
+      const triggerRef = React.useRef<Element | null>(null)
+      React.useEffect(() => {
+        if (open) triggerRef.current = document.activeElement
+      }, [open])
+      return open ? (
+        <div data-testid={`product-drawer-${mode}`} data-product={product?.id ?? ''}>
+          drawer
+          <button
+            type="button"
+            data-testid={`product-drawer-${mode}-close`}
+            onClick={() => {
+              onOpenChange(false)
+              const event = new Event('focusScope.autoFocusOnUnmount', { cancelable: true })
+              onCloseAutoFocus?.(event)
+              drawerClose.lastPrevented = event.defaultPrevented
+              const trigger = triggerRef.current
+              if (!event.defaultPrevented && trigger instanceof HTMLElement) trigger.focus()
+            }}
+          >
+            close
+          </button>
+        </div>
+      ) : null
+    },
+  }
+})
 vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
   DeleteConfirmDialog: ({
     open,
@@ -107,6 +147,7 @@ function mockProducts(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  drawerClose.lastPrevented = null
   mockProducts()
 })
 
@@ -145,6 +186,86 @@ describe('ProductsListView', () => {
     render(<ProductsListView />)
     await user.type(screen.getByTestId('products-search-input'), 'zzz')
     expect(screen.getByTestId('products-empty-search')).toBeInTheDocument()
+  })
+
+  it('#630 — recherche vide : action « effacer » (pas de CTA de création), focus rendu au champ', async () => {
+    const user = userEvent.setup()
+    render(<ProductsListView />)
+    const input = screen.getByTestId('products-search-input')
+    await user.type(input, 'zzz')
+    const empty = screen.getByTestId('products-empty-search')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
+    expect(screen.queryByTestId('products-empty-cta')).not.toBeInTheDocument()
+    expect(within(empty).queryByTestId('products-empty-search-track')).not.toBeInTheDocument()
+    await user.click(within(empty).getByTestId('products-empty-search-cta'))
+    expect(input).toHaveValue('')
+    expect(input).toHaveFocus()
+    expect(screen.getByTestId('products-row-p-alpha')).toBeInTheDocument()
+    expect(screen.queryByTestId('products-empty-search')).not.toBeInTheDocument()
+  })
+
+  it('#630 — liste vide : le CTA ouvre le ProductDrawer de création, sans piste', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    render(<ProductsListView />)
+    const empty = screen.getByTestId('products-empty')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
+    expect(screen.getByText('products.list.empty')).toBeInTheDocument()
+    expect(within(empty).queryByTestId('products-empty-track')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
+    await user.click(within(empty).getByTestId('products-empty-cta'))
+    expect(screen.getByTestId('product-drawer-create')).toBeInTheDocument()
+  })
+
+  it('review S90 — ouvert depuis le CTA d’état vide, produit créé (liste rechargée avant la fermeture) : focus sur « Nouveau produit »', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    const { rerender } = render(<ProductsListView />)
+    await user.click(screen.getByTestId('products-empty-cta'))
+    // Création réussie : la liste n'est plus vide, le CTA d'état vide est démonté.
+    mockProducts()
+    rerender(<ProductsListView />)
+    expect(screen.queryByTestId('products-empty-cta')).not.toBeInTheDocument()
+    await user.click(screen.getByTestId('product-drawer-create-close'))
+    expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
+    expect(drawerClose.lastPrevented).toBe(true)
+    expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
+  })
+
+  it('review S90 — ouvert depuis le CTA d’état vide, produit créé (liste rechargée APRÈS la fermeture) : focus sur « Nouveau produit »', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    const { rerender } = render(<ProductsListView />)
+    await user.click(screen.getByTestId('products-empty-cta'))
+    await user.click(screen.getByTestId('product-drawer-create-close'))
+    // Invalidation non attendue par la mutation : à la fermeture, le CTA est encore là.
+    expect(drawerClose.lastPrevented).toBe(false)
+    expect(document.activeElement).toBe(screen.getByTestId('products-empty-cta'))
+    mockProducts()
+    rerender(<ProductsListView />)
+    expect(screen.queryByTestId('products-empty-cta')).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
+  })
+
+  it('review S90 — ouvert depuis le CTA d’état vide puis annulé : Radix rend le focus au CTA', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    render(<ProductsListView />)
+    await user.click(screen.getByTestId('products-empty-cta'))
+    await user.click(screen.getByTestId('product-drawer-create-close'))
+    expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
+    expect(drawerClose.lastPrevented).toBe(false)
+    expect(document.activeElement).toBe(screen.getByTestId('products-empty-cta'))
+  })
+
+  it('review S90 — drawer ouvert depuis « Nouveau produit » : focus rendu par Radix, sans interception', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    render(<ProductsListView />)
+    await user.click(screen.getByTestId('products-new-button'))
+    await user.click(screen.getByTestId('product-drawer-create-close'))
+    expect(drawerClose.lastPrevented).toBe(false)
+    expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
   })
 
   it('ouvre le ProductDrawer en création via « Nouveau produit »', async () => {
@@ -197,6 +318,17 @@ describe('ProductsListView', () => {
     mockProducts({ data: undefined, isError: true })
     render(<ProductsListView />)
     expect(screen.getByTestId('products-error')).toBeInTheDocument()
+  })
+
+  it('affiche le squelette de chargement (#629) sous le testid products-loading', () => {
+    mockProducts({ data: undefined, isLoading: true })
+    render(<ProductsListView />)
+    const loading = screen.getByTestId('products-loading')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(loading).not.toHaveAttribute('aria-busy')
+    expect(within(loading).getByText('products.list.loading')).toBeInTheDocument()
+    expect(within(loading).getAllByTestId('loading-skeleton-item')).toHaveLength(6)
+    expect(screen.queryByTestId('products-table')).not.toBeInTheDocument()
   })
 
   it('rend une pastille catégorie colorée par ligne', () => {
