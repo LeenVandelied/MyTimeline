@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
-import { toLocalIsoDate } from '@/lib/date-iso'
+import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { nextEvent } from './lib'
 
@@ -69,9 +69,9 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                         delta de taille ici. */}
                     <time
                       className="mt-date--long"
-                      dateTime={toLocalIsoDate(new Date(next.start)) ?? undefined}
+                      dateTime={toLocalIsoDate(parseLocalDate(next.start)) ?? undefined}
                     >
-                      {fmt.format(new Date(next.start))}
+                      {fmt.format(parseLocalDate(next.start))}
                     </time>
                   </span>
                 ) : (

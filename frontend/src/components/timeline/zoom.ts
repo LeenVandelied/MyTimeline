@@ -1,4 +1,5 @@
 import { FullCalendarEvent } from '@/types/event'
+import { parseLocalDate } from '@/lib/date-iso'
 
 /**
  * #55 — Cœur (pur, testable) de la Vue Timeline desktop.
@@ -127,8 +128,8 @@ export function computeRange(
   let min = Infinity
   let max = -Infinity
   for (const e of events) {
-    const s = new Date(e.start).getTime()
-    const en = new Date(e.end || e.start).getTime()
+    const s = parseLocalDate(e.start).getTime()
+    const en = parseLocalDate(e.end || e.start).getTime()
     if (!Number.isNaN(s)) min = Math.min(min, s)
     if (!Number.isNaN(en)) max = Math.max(max, en)
   }
@@ -186,8 +187,8 @@ export function indexEventsByResource(
     const resourceId = event.resourceId
     if (!resourceId) continue
 
-    const eventStart = new Date(event.start)
-    const eventEnd = new Date(event.end || event.start)
+    const eventStart = parseLocalDate(event.start)
+    const eventEnd = parseLocalDate(event.end || event.start)
     if (Number.isNaN(eventStart.getTime())) continue
 
     const dayOffset = daysBetween(rangeStart, eventStart)
@@ -356,7 +357,7 @@ export function buildMinimapBuckets(
   const buckets = new Array<number>(bucketCount).fill(0)
   const span = Math.max(1, totalDays)
   for (const e of events) {
-    const s = new Date(e.start)
+    const s = parseLocalDate(e.start)
     if (Number.isNaN(s.getTime())) continue
     const dayOffset = daysBetween(rangeStart, s)
     const idx = Math.min(bucketCount - 1, Math.max(0, Math.floor((dayOffset / span) * bucketCount)))

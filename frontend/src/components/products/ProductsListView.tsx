@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Pencil, Archive, PlusCircle, Search } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { toLocalIsoDate } from '@/lib/date-iso'
+import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,7 +61,7 @@ function lastActivityMs(product: Product): number | null {
   let max: number | null = null
   for (const event of product.events ?? []) {
     if (event.archived) continue
-    const ms = new Date(event.startDate).getTime()
+    const ms = parseLocalDate(event.startDate).getTime()
     if (Number.isNaN(ms)) continue
     if (max === null || ms > max) max = ms
   }

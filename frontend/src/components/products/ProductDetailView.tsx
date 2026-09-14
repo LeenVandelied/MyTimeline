@@ -7,7 +7,7 @@ import { ArchiveRestore, ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 
 import { contrastInk } from '@/lib/color'
 import { cn } from '@/lib/utils'
-import { toLocalIsoDate } from '@/lib/date-iso'
+import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductDrawer } from './ProductDrawer'
@@ -266,7 +266,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   const history = (product.events ?? [])
     .filter((e) => matchesEventFilter(e.archived, filter))
     .slice()
-    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+    .sort((a, b) => parseLocalDate(b.startDate).getTime() - parseLocalDate(a.startDate).getTime())
 
   // Vue « archivés » vide : message dédié (« aucun archivé ») plutôt que le message
   // générique « aucun événement », qui laisserait croire que le produit est vide.
@@ -432,9 +432,9 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                       au #72 : la taille d'une date longue appartient au DS. */}
                   <time
                     className="text-ink-muted mt-date--long"
-                    dateTime={toLocalIsoDate(new Date(event.startDate)) ?? undefined}
+                    dateTime={toLocalIsoDate(parseLocalDate(event.startDate)) ?? undefined}
                   >
-                    {dateFmt.format(new Date(event.startDate))}
+                    {dateFmt.format(parseLocalDate(event.startDate))}
                   </time>
                   {event.archived && (
                     <Button
