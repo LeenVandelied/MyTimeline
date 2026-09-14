@@ -6328,7 +6328,7 @@ compteur UI sans archivés (#546), Spring Boot 3.5.16 dans `pom.xml` (CLAUDE.md 
 **Pas de branche `sprint/88` créée** (convention S85 : `/sprint start` travaille sur la branche de son
 worktree).
 
-### Sprint 88 — 2026-09-13 (EN COURS — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
+### Sprint 88 — 2026-09-13 → 2026-09-14 (Terminé — merge PR #684 dans dev — cohésion 0.00, Harnais de confiance : logs CI, rate-limit E2E, base locale)
 **Objectif :** Plus de JWT valide dans les logs CI d'un dépôt public ; rate-limit ré-armé et prouvé en E2E ; dépannage base locale documenté
 **Milestone GitHub :** #89
 **Issues :** #568 (P1, M→S), #547 (P1, M), #545 (P1, M→S doc)
@@ -6404,18 +6404,25 @@ hors preuve — à chaque essai. Aucun aléa du setup. Le commit de clôture rel
     `NEXT_PUBLIC_API_URL` au build → PIT-S88-009 ; noms d'anciennes IT cités dans `docs/memory/**` → laissés (archives de sprint).
   Ratio : 2 issues / 0 discard / 1 absorbé code-doc / 3 absorbés mémoire.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
-**Status :** Prêt à merger — PR #684, CI 3/3 verte sur `df2337e`, confirmation dev en attente ; titre, Status et fermeture des issues
-à solder APRÈS le merge (au `/sprint start 89`, variante S57).
+**Status :** Terminé — PR #684 mergée le 2026-09-14 à 09:17 (merge `bebf889`, tête `60f296b`) ; issues #568/#547/#545 fermées et
+milestone #89 fermé (constaté au `/sprint start 89`, variante S57).
 
-### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
+### Sprint 89 — 2026-09-13 (EN COURS — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau
 **Milestone GitHub :** #90
-**Issues :** #546 (P1, M), #652 (P1, S→M)
-**Vagues :** V1 = #546 ∥ #652 (exclusivité navigateur à #652)
+**Issues :** #546 (P1, M), #652 (P1, S→M), #685 (P2, S — follow-up S88 ajouté à la clôture, hors plan architect)
+**Vagues :** V1 = #546 ∥ #652 ∥ #685 (fichiers disjoints ; exclusivité navigateur et `next` à #652 ; verrou Maven partagé #546/#685)
 **Migrations Flyway :** aucune
-**Dépend de :** aucune (arbitrages tranchés au plan)
+**Dépend de :** Sprint 88 (#685 durcit ses garde-fous — démarrage différé jusqu'au merge de #684)
 **Garde-fou :** tests de fuseau non vacants (`TZ=America/New_York` au lancement de Vitest, `timezoneId` Playwright) — la CI tourne en UTC.
-**Status :** Planifié
+**Démarrage (2026-09-14) :** branche du worktree `claude/sprint-89-start-6c6966` avancée en fast-forward sur `origin/dev` (`bebf889`)
+— pas de branche `sprint/89` (convention S85). Prémisses revérifiées sur le code mergé : #685 exactes (`submitRegister`
+`auth.setup.ts:114`, ancrage par fichiers l.557/683, `null` passé au constructeur) ; #546 défaut UI confirmé
+(`CategoriesView.tsx:47-57`) ; #652 = 87 `new Date(` dans le périmètre (pas tous date-seule) + `ProductDrawer.tsx:209` hors
+périmètre, 21 fichiers E2E citent les testids touchés. Interaction : le Vitest budget de #685 lit `frontend/e2e/` statiquement.
+Environnement : `node_modules` absent (installé par le lead) ; aucune image `backend-e2e` postérieure au dernier commit backend
+de S88 → pile dédiée `s89e2e` rebâtie (8086/5436).
+**Status :** En cours
 
 ### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
 **Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés
