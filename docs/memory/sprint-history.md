@@ -6354,6 +6354,12 @@ preuve sans retry) · `d7b2328` (README `down -v`) · `dcb222d` (boot refusé en
 **Second arbitrage #547 (dev, 2026-09-14) :** le recomptage conscient des boucles donne register pire cas **36 > 30**
 (boucle `REGISTER_RETRIES` d'`auth.setup.ts` qui ré-inscrit sur page lente) → **retry seulement sur échec** de la requête
 (ni sur 201/409, ni sur 429) ; aucun plafond relevé.
+**Cycle de corrections terminé :** `46afa05` (register du setup ré-émis seulement sur 5xx / absence de réponse ; 201/409 =
+succès ; 429 = échec immédiat) · `cae1f77` (compteur conscient des boucles : × borne, borne illisible = échec ; exception
+unique « boucle annotée » sous contrat vérifié). Budget final register et login : nominal CI 12, pire cas 20, plafond e2e 30.
+**Troisième arbitrage #547 (dev, 2026-09-14) :** `setup.describe.configure({ retries: 0 })` **accepté** — sans lui, un setup
+retenté par Playwright ré-émet register + login (28/36 > 30). Coût assumé : un aléa du setup rougit le job e2e au lieu d'être
+rattrapé ; mesuré par les 3 runs CI exigés, retour au dev avant merge si un aléa de setup apparaît.
 **Status :** En cours
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
