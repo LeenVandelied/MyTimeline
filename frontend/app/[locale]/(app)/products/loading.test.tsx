@@ -13,7 +13,7 @@ describe('ProductsLoading (#629)', () => {
     render(<ProductsLoading />)
     const root = screen.getByTestId('products-loading-skeleton')
     expect(root).toHaveAttribute('role', 'status')
-    expect(root).toHaveAttribute('aria-busy', 'true')
+    expect(root).not.toHaveAttribute('aria-busy')
     expect(screen.getByText('products.list.loading')).toBeInTheDocument()
     expect(screen.getAllByTestId('loading-skeleton-item')).toHaveLength(6)
   })

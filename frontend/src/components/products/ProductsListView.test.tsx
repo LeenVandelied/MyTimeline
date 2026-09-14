@@ -36,11 +36,36 @@ vi.mock('next-intl', () => ({
 }))
 
 // Drawers/dialog mockés : on expose leur `open` + le mode pour l'assertion.
+// Review S90 — le bouton « close » rejoue la séquence de fermeture Radix : `onOpenChange(false)`
+// puis `onCloseAutoFocus(event annulable)`. Non annulé, Radix rend le focus au déclencheur ;
+// ici le bouton cliqué (qui détient le focus) se démonte, le focus retombe donc sur `body`.
 vi.mock('./ProductDrawer', () => ({
-  ProductDrawer: ({ open, mode, product }: { open: boolean; mode?: string; product?: Product }) =>
+  ProductDrawer: ({
+    open,
+    mode,
+    product,
+    onOpenChange,
+    onCloseAutoFocus,
+  }: {
+    open: boolean
+    mode?: string
+    product?: Product
+    onOpenChange: (open: boolean) => void
+    onCloseAutoFocus?: (event: Event) => void
+  }) =>
     open ? (
       <div data-testid={`product-drawer-${mode}`} data-product={product?.id ?? ''}>
         drawer
+        <button
+          type="button"
+          data-testid={`product-drawer-${mode}-close`}
+          onClick={() => {
+            onOpenChange(false)
+            onCloseAutoFocus?.(new Event('focusScope.autoFocusOnUnmount', { cancelable: true }))
+          }}
+        >
+          close
+        </button>
       </div>
     ) : null,
 }))
@@ -153,7 +178,7 @@ describe('ProductsListView', () => {
     const input = screen.getByTestId('products-search-input')
     await user.type(input, 'zzz')
     const empty = screen.getByTestId('products-empty-search')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     expect(screen.queryByTestId('products-empty-cta')).not.toBeInTheDocument()
     expect(within(empty).queryByTestId('products-empty-search-track')).not.toBeInTheDocument()
     await user.click(within(empty).getByTestId('products-empty-search-cta'))
@@ -168,12 +193,32 @@ describe('ProductsListView', () => {
     mockProducts({ data: [] })
     render(<ProductsListView />)
     const empty = screen.getByTestId('products-empty')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     expect(screen.getByText('products.list.empty')).toBeInTheDocument()
     expect(within(empty).queryByTestId('products-empty-track')).not.toBeInTheDocument()
     expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
     await user.click(within(empty).getByTestId('products-empty-cta'))
     expect(screen.getByTestId('product-drawer-create')).toBeInTheDocument()
+  })
+
+  it('review S90 — drawer ouvert depuis le CTA d’état vide : à la fermeture, focus sur « Nouveau produit »', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    render(<ProductsListView />)
+    await user.click(screen.getByTestId('products-empty-cta'))
+    await user.click(screen.getByTestId('product-drawer-create-close'))
+    expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
+  })
+
+  it('review S90 — drawer ouvert depuis « Nouveau produit » : focus rendu par Radix, sans interception', async () => {
+    const user = userEvent.setup()
+    mockProducts({ data: [] })
+    render(<ProductsListView />)
+    await user.click(screen.getByTestId('products-new-button'))
+    await user.click(screen.getByTestId('product-drawer-create-close'))
+    // Pas de preventDefault : la restitution reste celle de Radix (ici émulée → body).
+    expect(document.activeElement).not.toBe(screen.getByTestId('products-new-button'))
   })
 
   it('ouvre le ProductDrawer en création via « Nouveau produit »', async () => {
@@ -233,7 +278,7 @@ describe('ProductsListView', () => {
     render(<ProductsListView />)
     const loading = screen.getByTestId('products-loading')
     expect(loading).toHaveAttribute('role', 'status')
-    expect(loading).toHaveAttribute('aria-busy', 'true')
+    expect(loading).not.toHaveAttribute('aria-busy')
     expect(within(loading).getByText('products.list.loading')).toBeInTheDocument()
     expect(within(loading).getAllByTestId('loading-skeleton-item')).toHaveLength(6)
     expect(screen.queryByTestId('products-table')).not.toBeInTheDocument()

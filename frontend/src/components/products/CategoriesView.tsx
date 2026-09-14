@@ -58,6 +58,21 @@ export function CategoriesView() {
   }, [productsQuery.data])
 
   const [createOpen, setCreateOpen] = React.useState(false)
+  // Review S90 — focus au retour du drawer de création (cf. `ProductsListView`) : ouvert
+  // depuis le CTA d'état vide, le déclencheur disparaît à la première catégorie créée ;
+  // le focus va au bouton permanent au lieu de retomber sur `body`.
+  const newButtonRef = React.useRef<HTMLButtonElement>(null)
+  const createFromEmptyRef = React.useRef(false)
+  const openCreate = (fromEmpty: boolean) => {
+    createFromEmptyRef.current = fromEmpty
+    setCreateOpen(true)
+  }
+  const handleCreateCloseAutoFocus = (event: Event) => {
+    if (!createFromEmptyRef.current) return
+    createFromEmptyRef.current = false
+    event.preventDefault()
+    newButtonRef.current?.focus()
+  }
   const [editCategory, setEditCategory] = React.useState<Category | null>(null)
   const [deleteCategoryState, setDeleteCategoryState] = React.useState<Category | null>(null)
 
@@ -79,7 +94,8 @@ export function CategoriesView() {
         <Button
           variant="outline"
           className="bg-accent hover:bg-accent-hover text-accent-ink flex items-center gap-2 border-none"
-          onClick={() => setCreateOpen(true)}
+          ref={newButtonRef}
+          onClick={() => openCreate(false)}
           data-testid="categories-new-button"
         >
           <PlusCircle size={16} aria-hidden="true" />
@@ -109,7 +125,7 @@ export function CategoriesView() {
           action={
             <Button
               type="button"
-              onClick={() => setCreateOpen(true)}
+              onClick={() => openCreate(true)}
               data-testid="categories-empty-cta"
             >
               {t('emptyCta')}
@@ -200,7 +216,12 @@ export function CategoriesView() {
       )}
 
       {/* Création — CategoryDrawer livré par #62 (EMBARQUÉ, non réécrit). */}
-      <CategoryDrawer open={createOpen} onOpenChange={setCreateOpen} mode="create" />
+      <CategoryDrawer
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        onCloseAutoFocus={handleCreateCloseAutoFocus}
+      />
 
       {/* Édition — même drawer préfilé (`key` = remount propre au switch). */}
       {editCategory && (

@@ -34,19 +34,35 @@ vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
 }))
 
+// Review S90 — « close » rejoue la fermeture Radix : `onOpenChange(false)` puis
+// `onCloseAutoFocus(event annulable)` (cf. `ProductsListView.test.tsx`).
 vi.mock('@/components/categories/CategoryDrawer', () => ({
   CategoryDrawer: ({
     open,
     mode,
     category,
+    onOpenChange,
+    onCloseAutoFocus,
   }: {
     open: boolean
     mode?: string
     category?: Category
+    onOpenChange: (open: boolean) => void
+    onCloseAutoFocus?: (event: Event) => void
   }) =>
     open ? (
       <div data-testid={`category-drawer-${mode}`} data-category={category?.id ?? ''}>
         drawer
+        <button
+          type="button"
+          data-testid={`category-drawer-${mode}-close`}
+          onClick={() => {
+            onOpenChange(false)
+            onCloseAutoFocus?.(new Event('focusScope.autoFocusOnUnmount', { cancelable: true }))
+          }}
+        >
+          close
+        </button>
       </div>
     ) : null,
 }))
@@ -176,12 +192,22 @@ describe('CategoriesView', () => {
     mockAll({ data: [] })
     render(<CategoriesView />)
     const empty = screen.getByTestId('categories-empty')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     expect(screen.getByText('products.categories.empty')).toBeInTheDocument()
     expect(within(empty).queryByTestId('categories-empty-track')).not.toBeInTheDocument()
     expect(screen.queryByTestId('category-drawer-create')).not.toBeInTheDocument()
     await user.click(within(empty).getByTestId('categories-empty-cta'))
     expect(screen.getByTestId('category-drawer-create')).toBeInTheDocument()
+  })
+
+  it('review S90 — drawer ouvert depuis le CTA d’état vide : à la fermeture, focus sur « Nouvelle catégorie »', async () => {
+    const user = userEvent.setup()
+    mockAll({ data: [] })
+    render(<CategoriesView />)
+    await user.click(screen.getByTestId('categories-empty-cta'))
+    await user.click(screen.getByTestId('category-drawer-create-close'))
+    expect(screen.queryByTestId('category-drawer-create')).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(screen.getByTestId('categories-new-button'))
   })
 
   it('affiche l’état d’erreur', () => {
@@ -195,7 +221,7 @@ describe('CategoriesView', () => {
     render(<CategoriesView />)
     const loading = screen.getByTestId('categories-loading')
     expect(loading).toHaveAttribute('role', 'status')
-    expect(loading).toHaveAttribute('aria-busy', 'true')
+    expect(loading).not.toHaveAttribute('aria-busy')
     expect(screen.getByText('products.categories.loading')).toBeInTheDocument()
     expect(screen.getAllByTestId('loading-skeleton-item')).toHaveLength(6)
     expect(screen.queryByTestId('categories-empty')).not.toBeInTheDocument()

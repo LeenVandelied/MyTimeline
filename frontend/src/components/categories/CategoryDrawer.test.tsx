@@ -120,6 +120,23 @@ describe('CategoryDrawer', () => {
   })
   afterEach(() => vi.clearAllMocks())
 
+  it('review S90 — onCloseAutoFocus est relayé au Dialog Radix (appelé à la fermeture)', async () => {
+    const onCloseAutoFocus = vi.fn()
+    const { rerender } = render(
+      <CategoryDrawer open onOpenChange={noop} mode="create" onCloseAutoFocus={onCloseAutoFocus} />,
+    )
+    expect(onCloseAutoFocus).not.toHaveBeenCalled()
+    rerender(
+      <CategoryDrawer
+        open={false}
+        onOpenChange={noop}
+        mode="create"
+        onCloseAutoFocus={onCloseAutoFocus}
+      />,
+    )
+    await waitFor(() => expect(onCloseAutoFocus).toHaveBeenCalledTimes(1))
+  })
+
   it('mode création : POST avec name + color (swatch) + description', async () => {
     const user = userEvent.setup()
     createMutateAsync.mockResolvedValue({})

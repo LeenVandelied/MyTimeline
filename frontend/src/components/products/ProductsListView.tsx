@@ -83,6 +83,21 @@ export function ProductsListView() {
   const [search, setSearch] = React.useState('')
   const [sort, setSort] = React.useState<SortKey>('lastActivityDesc')
   const [createOpen, setCreateOpen] = React.useState(false)
+  // Review S90 — focus au retour du drawer de création. Ouvert depuis le CTA d'état
+  // vide, son déclencheur disparaît dès qu'un produit existe : Radix rendrait alors le
+  // focus à un nœud détaché, donc à `body`. On le rend au bouton permanent.
+  const newButtonRef = React.useRef<HTMLButtonElement>(null)
+  const createFromEmptyRef = React.useRef(false)
+  const openCreate = (fromEmpty: boolean) => {
+    createFromEmptyRef.current = fromEmpty
+    setCreateOpen(true)
+  }
+  const handleCreateCloseAutoFocus = (event: Event) => {
+    if (!createFromEmptyRef.current) return
+    createFromEmptyRef.current = false
+    event.preventDefault()
+    newButtonRef.current?.focus()
+  }
   const [editProduct, setEditProduct] = React.useState<Product | null>(null)
   const [archiveProduct, setArchiveProduct] = React.useState<Product | null>(null)
 
@@ -155,7 +170,8 @@ export function ProductsListView() {
         <Button
           variant="outline"
           className="bg-accent hover:bg-accent-hover text-accent-ink flex items-center gap-2 border-none"
-          onClick={() => setCreateOpen(true)}
+          ref={newButtonRef}
+          onClick={() => openCreate(false)}
           data-testid="products-new-button"
         >
           <PlusCircle size={16} aria-hidden="true" />
@@ -221,11 +237,7 @@ export function ProductsListView() {
         <EmptyState
           title={t('empty')}
           action={
-            <Button
-              type="button"
-              onClick={() => setCreateOpen(true)}
-              data-testid="products-empty-cta"
-            >
+            <Button type="button" onClick={() => openCreate(true)} data-testid="products-empty-cta">
               {t('emptyCta')}
             </Button>
           }
@@ -388,7 +400,12 @@ export function ProductsListView() {
       )}
 
       {/* Création — ProductDrawer réutilisé (#61). */}
-      <ProductDrawer open={createOpen} onOpenChange={setCreateOpen} mode="create" />
+      <ProductDrawer
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        onCloseAutoFocus={handleCreateCloseAutoFocus}
+      />
 
       {/* Édition — même drawer préfilé. `key` force un remount propre au switch. */}
       {editProduct && (

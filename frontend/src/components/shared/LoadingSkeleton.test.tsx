@@ -3,14 +3,19 @@ import { describe, expect, it } from 'vitest'
 
 import { LoadingSkeleton } from './LoadingSkeleton'
 
-/** #57 — LoadingSkeleton : a11y (role=status, aria-busy) + variantes. */
+/** #57 — LoadingSkeleton : a11y (role=status, libellé annoncé) + variantes. */
 describe('LoadingSkeleton', () => {
-  it('role=status + aria-busy + libellé sr-only', () => {
+  it('role=status + libellé sr-only dans la région', () => {
     render(<LoadingSkeleton label="Chargement" />)
     const root = screen.getByTestId('loading-skeleton')
     expect(root).toHaveAttribute('role', 'status')
-    expect(root).toHaveAttribute('aria-busy', 'true')
-    expect(screen.getByText('Chargement')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Chargement')
+  })
+
+  it('review S90 — aucun aria-busy (la région se démonte sans repasser à false)', () => {
+    const { container } = render(<LoadingSkeleton label="Chargement" variant="timeline" />)
+    expect(screen.getByTestId('loading-skeleton')).not.toHaveAttribute('aria-busy')
+    expect(container.querySelector('[aria-busy]')).toBeNull()
   })
 
   it('variant list : rend `rows` éléments', () => {

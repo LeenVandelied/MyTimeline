@@ -17,7 +17,7 @@ describe('TimelineLoading (#629)', () => {
     render(<TimelineLoading />)
     const root = screen.getByTestId('timeline-loading-skeleton')
     expect(root).toHaveAttribute('role', 'status')
-    expect(root).toHaveAttribute('aria-busy', 'true')
+    expect(root).not.toHaveAttribute('aria-busy')
     expect(screen.getByText('shell.timeline.loading')).toBeInTheDocument()
     const lanes = screen.getAllByTestId('loading-skeleton-item')
     expect(lanes).toHaveLength(6)

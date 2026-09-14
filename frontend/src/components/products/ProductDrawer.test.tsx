@@ -318,6 +318,23 @@ describe('ProductDrawer — #577 palette de la surcharge couleur', () => {
     )
   })
 
+  it('review S90 — onCloseAutoFocus est relayé au Dialog Radix (appelé à la fermeture)', async () => {
+    const onCloseAutoFocus = vi.fn()
+    const { rerender } = render(
+      <ProductDrawer open onOpenChange={noop} mode="create" onCloseAutoFocus={onCloseAutoFocus} />,
+    )
+    expect(onCloseAutoFocus).not.toHaveBeenCalled()
+    rerender(
+      <ProductDrawer
+        open={false}
+        onOpenChange={noop}
+        mode="create"
+        onCloseAutoFocus={onCloseAutoFocus}
+      />,
+    )
+    await waitFor(() => expect(onCloseAutoFocus).toHaveBeenCalledTimes(1))
+  })
+
   it('DEC-S84-001 — surcharge hors palette : « Personnalisé » actif, rien renvoyé si rien ne change', async () => {
     const user = userEvent.setup()
     const onOpenChange = vi.fn()

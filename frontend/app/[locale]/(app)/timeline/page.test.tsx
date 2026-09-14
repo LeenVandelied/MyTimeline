@@ -95,7 +95,7 @@ describe('TimelinePage — écran frise', () => {
     render(<TimelinePage />)
     const loading = screen.getByTestId('timeline-data-loading')
     expect(loading).toHaveAttribute('role', 'status')
-    expect(loading).toHaveAttribute('aria-busy', 'true')
+    expect(loading).not.toHaveAttribute('aria-busy')
     expect(screen.getByText('shell.timeline.loading')).toBeInTheDocument()
     const lanes = screen.getAllByTestId('loading-skeleton-item')
     expect(lanes.length).toBeGreaterThan(0)
@@ -114,7 +114,7 @@ describe('TimelinePage — écran frise', () => {
     mockDashboard = makeData({ resources: [], events: [] })
     render(<TimelinePage />)
     const empty = screen.getByTestId('timeline-empty')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     // Encombrement conservé (l'écran vide ne « remonte » pas).
     expect(empty.className).toContain('flex-1')
     expect(within(empty).getByTestId('timeline-empty-track')).toHaveAttribute('aria-hidden', 'true')

@@ -13,7 +13,7 @@ describe('SettingsLoading (#629)', () => {
     render(<SettingsLoading />)
     const root = screen.getByTestId('settings-loading-skeleton')
     expect(root).toHaveAttribute('role', 'status')
-    expect(root).toHaveAttribute('aria-busy', 'true')
+    expect(root).not.toHaveAttribute('aria-busy')
     // DEC-S82-003 : clé du namespace, pas le générique `common.spinner.loading`.
     expect(screen.getByText('settings.loading')).toBeInTheDocument()
     expect(screen.queryByText('common.spinner.loading')).not.toBeInTheDocument()

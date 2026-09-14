@@ -1,16 +1,37 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { EmptyState } from './EmptyState'
 
 /** #57 — EmptyState : composant présentationnel pur (libellés en props). */
 describe('EmptyState', () => {
-  it('rend le titre + role=status', () => {
-    render(<EmptyState title="Aucun produit" />)
+  it('rend le titre dans une région role=status portée par le message', () => {
+    render(<EmptyState title="Aucun produit" description="Précision" />)
     const root = screen.getByTestId('empty-state')
     expect(root).toBeInTheDocument()
-    expect(root).toHaveAttribute('role', 'status')
-    expect(screen.getByText('Aucun produit')).toBeInTheDocument()
+    const status = within(root).getByRole('status')
+    expect(status).toHaveTextContent('Aucun produit')
+    expect(status).toHaveTextContent('Précision')
+  })
+
+  it('review S90 — le CTA est HORS de la région live (non annoncé avec le message)', () => {
+    render(
+      <EmptyState
+        title="Vide"
+        description="Rien ici"
+        action={<button type="button">Ajouter</button>}
+        testId="dashboard-week-agenda-empty"
+      />,
+    )
+    const root = screen.getByTestId('dashboard-week-agenda-empty')
+    const status = screen.getByRole('status')
+    const button = screen.getByRole('button', { name: 'Ajouter' })
+    // Le testid reste sur la racine, qui contient le bouton…
+    expect(root).toContainElement(button)
+    // …mais la région live ne le contient pas, et la racine n'est pas elle-même live.
+    expect(status).not.toContainElement(button)
+    expect(root).not.toHaveAttribute('role')
+    expect(screen.getAllByRole('status')).toHaveLength(1)
   })
 
   it('description, icône et action optionnelles', () => {

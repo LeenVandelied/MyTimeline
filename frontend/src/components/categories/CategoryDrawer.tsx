@@ -81,6 +81,12 @@ export interface CategoryDrawerProps {
   onDeleted?: () => void
   /** Variante category : nb de produits liés, pour forcer le select de réassignation à la suppression. */
   linkedProductsCount?: number
+  /**
+   * Relayé tel quel à `DialogContent` (Radix) : appelé quand le drawer rend le focus
+   * à sa fermeture. `event.preventDefault()` + focus explicite permet à l'appelant de
+   * choisir la cible quand le déclencheur a disparu (CTA d'état vide, sprint 90).
+   */
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 /** Lit `error.response.status` défensivement (axios ou générique, sans `any`). */
@@ -102,6 +108,7 @@ export function CategoryDrawer({
   onSuccess,
   onDeleted,
   linkedProductsCount = 0,
+  onCloseAutoFocus,
 }: CategoryDrawerProps) {
   const t = useTranslations('categories.drawer')
   const tValidation = useTranslations('categories.validation')
@@ -232,6 +239,7 @@ export function CategoryDrawer({
             'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[452px] sm:max-w-[452px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',
           )}
           data-testid="category-drawer"
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

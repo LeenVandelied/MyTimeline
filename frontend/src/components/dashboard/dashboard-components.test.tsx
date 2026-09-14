@@ -75,7 +75,7 @@ describe('WeekAgenda', () => {
       </CreateEventProvider>,
     )
     const empty = screen.getByTestId('dashboard-week-agenda-empty')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     expect(within(empty).queryByTestId('dashboard-week-agenda-empty-track')).not.toBeInTheDocument()
     fireEvent.click(within(empty).getByTestId('dashboard-week-agenda-empty-cta'))
     expect(openCreate).toHaveBeenCalledTimes(1)

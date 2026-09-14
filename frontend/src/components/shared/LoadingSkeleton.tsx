@@ -9,9 +9,15 @@ import { cn } from '@/lib/utils'
  *  - `cards`    : grille de cartes (listes produits en cartes).
  *  - `timeline` : lanes horizontales (hauteur `--lane-height` du DS).
  *
- * A11y : conteneur `role="status"` + `aria-busy="true"` ; le libellé accessible
- * (`label`, déjà traduit par l'appelant) est exposé en `sr-only`. Les blocs sont
- * `aria-hidden` (bruit visuel pur). Aucun texte hardcodé : `label` est fourni
+ * A11y : conteneur `role="status"` ; le libellé accessible (`label`, déjà traduit
+ * par l'appelant) est exposé en `sr-only` DANS la région. Les blocs sont
+ * `aria-hidden` (bruit visuel pur).
+ *
+ * Sprint 90 (review cycle 1) — PAS d'`aria-busy`. Le squelette se démonte à
+ * l'arrivée des données sans jamais repasser à `false` : VoiceOver retient les
+ * annonces d'une région `aria-busy="true"` jusqu'à la fin de l'occupation, donc
+ * n'annonçait jamais le libellé. Un `aria-busy` sur la seule zone `aria-hidden`
+ * n'aurait aucun effet pour les technologies d'assistance : rien n'est posé. Aucun texte hardcodé : `label` est fourni
  * par l'appelant via next-intl. Couleurs via tokens Graphite (clair + sombre).
  */
 
@@ -104,7 +110,7 @@ export function LoadingSkeleton({
   testId = 'loading-skeleton',
 }: LoadingSkeletonProps) {
   return (
-    <div data-testid={testId} role="status" aria-busy="true" className={cn('w-full', className)}>
+    <div data-testid={testId} role="status" className={cn('w-full', className)}>
       {label ? <span className="sr-only">{label}</span> : null}
       {variant === 'cards' ? <Cards rows={rows} /> : null}
       {variant === 'timeline' ? <Lanes rows={rows} /> : null}

@@ -101,7 +101,7 @@ describe('CompactAgenda', () => {
       </CreateEventProvider>,
     )
     const empty = screen.getByTestId('dashboard-compact-agenda-empty')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     expect(within(empty).getByText('dashboard.mobile.compactAgenda.emptyTitle')).toBeInTheDocument()
     expect(
       within(empty).queryByTestId('dashboard-compact-agenda-empty-track'),
@@ -141,7 +141,7 @@ describe('ProductCarousel', () => {
   it('#630 — état vide : CTA vers la liste produits, sans piste', () => {
     render(<ProductCarousel products={[]} now={NOW} locale={LOCALE} />)
     const empty = screen.getByTestId('dashboard-product-carousel-empty')
-    expect(empty).toHaveAttribute('role', 'status')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
     expect(
       within(empty).queryByTestId('dashboard-product-carousel-empty-track'),
     ).not.toBeInTheDocument()
