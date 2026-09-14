@@ -134,6 +134,12 @@ class RateLimitTunableCeilingTest {
      *       {@code APP_RATE_LIMIT_LOGIN_PER_MINUTE} → {@code app.rate-limit.login-per-minute}, et
      *       isolement des variables réellement exportées sur le poste.</li>
      * </ul>
+     * Les deux cas « valeur blanche » ci-dessous sont COMPLÉMENTAIRES, pas redondants : ils posent la
+     * même valeur {@code ""} par deux sources différentes. {@code withPropertyValues} injecte
+     * {@code app.rate-limit.login-per-minute=} comme une propriété de configuration (équivalent d'une
+     * ligne blanche dans un {@code application-*.properties}) ; le paramètre {@code env} passe par
+     * {@link SystemEnvironmentPropertySource}, qui traduit {@code APP_RATE_LIMIT_LOGIN_PER_MINUTE=} vers
+     * le même nom de propriété (cas d'une variable exportée vide sur l'hôte ou dans le compose).
      */
     private static ApplicationContextRunner bindingRunner(Map<String, Object> env) {
         return new ApplicationContextRunner()

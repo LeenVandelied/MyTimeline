@@ -101,6 +101,8 @@ describe('DeleteConfirmDialog', () => {
       />,
     )
     expect(screen.getByText('common.deleteDialog.category.reassignLabel')).toBeInTheDocument()
+    // Revue S89 : sans bascule serveur, aucune note → aucun aria-describedby vers un id absent.
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-describedby')
     const confirmBtn = screen.getByRole('button', { name: 'common.deleteDialog.confirm' })
     expect(confirmBtn).toBeDisabled()
   })
@@ -246,6 +248,15 @@ describe('DeleteConfirmDialog', () => {
         'common.deleteDialog.category.reassignRequired',
       )
       expect(screen.getByRole('combobox')).toBeInTheDocument()
+      // Revue S89 : la raison reste liée au select pour un lecteur d'écran, et l'id pointé existe.
+      expect(screen.getByRole('combobox')).toHaveAttribute(
+        'aria-describedby',
+        'reassign-required-note',
+      )
+      expect(screen.getByTestId('delete-reassign-required-note')).toHaveAttribute(
+        'id',
+        'reassign-required-note',
+      )
       expect(screen.queryByText('common.deleteDialog.errors.conflict')).not.toBeInTheDocument()
       // Le select est désormais OBLIGATOIRE : confirmer reste bloqué sans cible.
       expect(screen.getByRole('button', { name: 'common.deleteDialog.confirm' })).toBeDisabled()

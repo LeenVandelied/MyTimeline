@@ -205,6 +205,7 @@ export function DeleteConfirmDialog({
             {/* #546 : explique pourquoi la réassignation apparaît après coup. */}
             {reassignRequiredByServer && (
               <p
+                id="reassign-required-note"
                 role="alert"
                 className="text-muted-foreground text-sm"
                 data-testid="delete-reassign-required-note"
@@ -226,6 +227,9 @@ export function DeleteConfirmDialog({
                 <SelectTrigger
                   id="reassign-select"
                   aria-label={t('category.reassignLabel')}
+                  // #546 (revue S89) : le lecteur d'écran relit la raison en revenant sur le select,
+                  // pas seulement à l'apparition de la note (role="alert").
+                  aria-describedby={reassignRequiredByServer ? 'reassign-required-note' : undefined}
                   data-testid="delete-reassign-select"
                 >
                   <SelectValue placeholder={t('category.reassignPlaceholder')} />
