@@ -6422,7 +6422,17 @@ milestone #89 fermé (constaté au `/sprint start 89`, variante S57).
 périmètre, 21 fichiers E2E citent les testids touchés. Interaction : le Vitest budget de #685 lit `frontend/e2e/` statiquement.
 Environnement : `node_modules` absent (installé par le lead) ; aucune image `backend-e2e` postérieure au dernier commit backend
 de S88 → pile dédiée `s89e2e` rebâtie (8086/5436).
-**Status :** En cours
+**Vague 1 livrée (3 agents parallèles) :** #546 `ad57148` (bascule du dialogue en réassignation sur 409, IT S79, cas E2E) ·
+#685 `062c903` (provenance du statut + comptage des boucles annotées) `6eee23e` (propriété blanche via le vrai binding,
+`ApplicationContextRunner` sans datasource) · #652 `7ed997c` (helper `parseLocalDate`, 35 lectures de date seule migrées, test
+Vitest sous New_York forcé par le test, spec E2E `timezoneId`). Périmètres vérifiés par le lead : aucun recouvrement entre commits.
+**Environnement :** Docker Desktop — le helper `credsStore: desktop` gelait tout pull ; contourné par un `DOCKER_CONFIG` temporaire
+(config vide + `cli-plugins`), poste non modifié. Ports 3000/3100 : l'agent #652 a trouvé 3000 pris par un autre projet.
+**Revues cycle 1 :** backend 0 CRITIQUE / 0 MAJEUR / 2 MINEUR · frontend 0 / 0 / 3 MINEUR
+(`sprints/sprint-89/specialists-reviewer-{backend,frontend}.md`) — non corrigés, soumis à l'arbitrage du dev.
+**Tests (lead) :** backend 610/0 seul · `next build` 52/52 · E2E complète 368 passés / 10 échecs darwin attendus / 8 sautés /
+1 non exécuté non identifié · coverage testids OK. Agents : Vitest 1587/0, tsc/lint OK. Audit : `audits/sprint-89-test-coverage.md`.
+**Status :** En cours — PR à ouvrir
 
 ### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
 **Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés
