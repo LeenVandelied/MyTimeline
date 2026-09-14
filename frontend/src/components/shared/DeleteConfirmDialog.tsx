@@ -39,6 +39,9 @@ import { useCategories } from '@/hooks/useCategories'
  *     la catégorie en cours de suppression (garde self-target côté API aussi).
  *   - `DELETE /api/categories/{id}?reassignToCategoryId=<uuid>` : le uuid choisi
  *     est remonté via `onConfirm(reassignToCategoryId)`.
+ *   - #546 : un produit archivé occupe toujours sa catégorie (décision option A,
+ *     FK `category_id` NOT NULL). `linkedProductsCount` des appelants ignore les
+ *     archivés ; un 409 sur DELETE sans cible bascule donc le dialog en réassignation.
  *
  * Le composant ne fait AUCUN appel réseau de suppression : il délègue à
  * `onConfirm` (renvoyé par l'appelant, ex. drawer produit #61). Il gère
@@ -95,9 +98,17 @@ export function DeleteConfirmDialog({
   const [deleting, setDeleting] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [reassignTo, setReassignTo] = React.useState<string | undefined>(undefined)
+  // #546 — réassignation exigée par le serveur alors que le compteur local était à 0.
+  const [reassignRequiredByServer, setReassignRequiredByServer] = React.useState(false)
 
   const isCategory = variant === 'category'
-  const needsReassign = isCategory && linkedProductsCount > 0
+  // DÉCISION #546 (option A) : un produit ARCHIVÉ occupe toujours sa catégorie
+  // (`products.category_id` NOT NULL + FK, le comptage backend inclut les archivés).
+  // Les appelants dérivent `linkedProductsCount` d'un listing SANS archivés : il peut
+  // valoir 0 pour une catégorie encore occupée. Un 409 sur un DELETE sans cible ne peut
+  // alors signifier que « catégorie occupée » → on bascule en réassignation au lieu
+  // d'un message d'erreur sans issue.
+  const needsReassign = isCategory && (linkedProductsCount > 0 || reassignRequiredByServer)
 
   // Ne fetch les catégories que pour la variante category avec produits liés et
   // dialog ouvert (évite un GET inutile pour event/product).
@@ -119,6 +130,7 @@ export function DeleteConfirmDialog({
       setDeleting(false)
       setErrorMessage(null)
       setReassignTo(undefined)
+      setReassignRequiredByServer(false)
     }
   }, [open])
 
@@ -134,7 +146,10 @@ export function DeleteConfirmDialog({
       const status = httpStatusOf(error)
       // BR-CAT-002 : 404 (catégorie inexistante) géré inline. 409 = conflit de
       // réassignation (S10 #52). Autres → message générique.
-      if (status === 404) setErrorMessage(t('errors.notFound'))
+      // #546 : 409 sur un DELETE catégorie SANS cible = catégorie encore occupée
+      // (produits archivés, ou listing local périmé) → bascule en réassignation.
+      if (status === 409 && isCategory && !needsReassign) setReassignRequiredByServer(true)
+      else if (status === 404) setErrorMessage(t('errors.notFound'))
       else if (status === 409) setErrorMessage(t('errors.conflict'))
       else setErrorMessage(t('errors.generic'))
     } finally {
@@ -186,6 +201,17 @@ export function DeleteConfirmDialog({
             >
               {t('category.reassignLabel')}
             </label>
+
+            {/* #546 : explique pourquoi la réassignation apparaît après coup. */}
+            {reassignRequiredByServer && (
+              <p
+                role="alert"
+                className="text-muted-foreground text-sm"
+                data-testid="delete-reassign-required-note"
+              >
+                {t('category.reassignRequired')}
+              </p>
+            )}
 
             {noOtherCategory ? (
               <p role="note" className="text-muted-foreground text-sm">

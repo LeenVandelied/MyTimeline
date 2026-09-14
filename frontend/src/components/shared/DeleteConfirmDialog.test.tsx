@@ -209,23 +209,141 @@ describe('DeleteConfirmDialog', () => {
     )
   })
 
-  it('erreur 409 : affiche le message conflict inline', async () => {
+  // #546 : ce cas visait la variante category SANS cible — c'était le défaut (message sans
+  // issue). Ce chemin bascule désormais en réassignation (cf. describe #546 ci-dessous) ;
+  // le message conflict reste pour les variantes non-category et le 409 AVEC cible.
+  it('erreur 409 (variante event) : affiche le message conflict inline', async () => {
     const user = userEvent.setup()
     const onConfirm = vi.fn().mockRejectedValue({ response: { status: 409 } })
-    render(
-      <DeleteConfirmDialog
-        open
-        variant="category"
-        linkedProductsCount={0}
-        categoryId="cat-current"
-        onOpenChange={noop}
-        onConfirm={onConfirm}
-      />,
-    )
+    render(<DeleteConfirmDialog open variant="event" onOpenChange={noop} onConfirm={onConfirm} />)
     await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'common.deleteDialog.errors.conflict',
     )
+  })
+
+  describe('#546 — catégorie occupée par des produits archivés (compteur local à 0)', () => {
+    it('409 sans cible : bascule en réassignation (note explicative + select), sans message conflict', async () => {
+      const user = userEvent.setup()
+      const onConfirm = vi.fn().mockRejectedValueOnce({ response: { status: 409 } })
+      render(
+        <DeleteConfirmDialog
+          open
+          variant="category"
+          linkedProductsCount={0}
+          categoryId="cat-current"
+          onOpenChange={noop}
+          onConfirm={onConfirm}
+        />,
+      )
+      expect(screen.queryByTestId('delete-reassign-label')).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+
+      expect(await screen.findByTestId('delete-reassign-label')).toBeInTheDocument()
+      expect(onConfirm).toHaveBeenCalledWith(undefined)
+      expect(screen.getByTestId('delete-reassign-required-note')).toHaveTextContent(
+        'common.deleteDialog.category.reassignRequired',
+      )
+      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.queryByText('common.deleteDialog.errors.conflict')).not.toBeInTheDocument()
+      // Le select est désormais OBLIGATOIRE : confirmer reste bloqué sans cible.
+      expect(screen.getByRole('button', { name: 'common.deleteDialog.confirm' })).toBeDisabled()
+      // Les cibles sont bien chargées après la bascule.
+      expect(useCategoriesMock).toHaveBeenLastCalledWith(true)
+    })
+
+    it('après bascule : la sélection d’une cible relance onConfirm avec l’id', async () => {
+      const user = userEvent.setup()
+      const onOpenChange = vi.fn()
+      const onConfirm = vi
+        .fn()
+        .mockRejectedValueOnce({ response: { status: 409 } })
+        .mockResolvedValueOnce(undefined)
+      render(
+        <DeleteConfirmDialog
+          open
+          variant="category"
+          linkedProductsCount={0}
+          categoryId="cat-current"
+          onOpenChange={onOpenChange}
+          onConfirm={onConfirm}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+      await user.click(await screen.findByRole('combobox'))
+      await user.click(await screen.findByText('Cible A'))
+
+      const confirmBtn = screen.getByRole('button', { name: 'common.deleteDialog.confirm' })
+      await waitFor(() => expect(confirmBtn).toBeEnabled())
+      await user.click(confirmBtn)
+
+      expect(onConfirm).toHaveBeenLastCalledWith('cat-a')
+      await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+    })
+
+    it('409 sans cible et AUCUNE autre catégorie : message noOtherCategory, confirmer bloqué', async () => {
+      const user = userEvent.setup()
+      mockCategories({ data: [{ id: 'cat-current', name: 'Seule', system: false }] })
+      const onConfirm = vi.fn().mockRejectedValueOnce({ response: { status: 409 } })
+      render(
+        <DeleteConfirmDialog
+          open
+          variant="category"
+          linkedProductsCount={0}
+          categoryId="cat-current"
+          onOpenChange={noop}
+          onConfirm={onConfirm}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+
+      expect(
+        await screen.findByText('common.deleteDialog.category.noOtherCategory'),
+      ).toBeInTheDocument()
+      expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'common.deleteDialog.confirm' })).toBeDisabled()
+    })
+
+    it('409 AVEC cible (réassignation déjà demandée) : reste le message conflict', async () => {
+      const user = userEvent.setup()
+      const onConfirm = vi.fn().mockRejectedValue({ response: { status: 409 } })
+      render(
+        <DeleteConfirmDialog
+          open
+          variant="category"
+          linkedProductsCount={2}
+          categoryId="cat-current"
+          onOpenChange={noop}
+          onConfirm={onConfirm}
+        />,
+      )
+      await user.click(screen.getByRole('combobox'))
+      await user.click(await screen.findByText('Cible A'))
+      const confirmBtn = screen.getByRole('button', { name: 'common.deleteDialog.confirm' })
+      await waitFor(() => expect(confirmBtn).toBeEnabled())
+      await user.click(confirmBtn)
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'common.deleteDialog.errors.conflict',
+      )
+      expect(screen.queryByTestId('delete-reassign-required-note')).not.toBeInTheDocument()
+    })
+
+    it('variante product : un 409 ne bascule jamais en réassignation', async () => {
+      const user = userEvent.setup()
+      const onConfirm = vi.fn().mockRejectedValue({ response: { status: 409 } })
+      render(
+        <DeleteConfirmDialog open variant="product" onOpenChange={noop} onConfirm={onConfirm} />,
+      )
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'common.deleteDialog.errors.conflict',
+      )
+      expect(screen.queryByTestId('delete-reassign-label')).not.toBeInTheDocument()
+    })
   })
 
   it('succès : appelle onOpenChange(false) après confirmation', async () => {

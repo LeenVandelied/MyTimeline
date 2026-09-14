@@ -188,4 +188,54 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await gotoProducts(page)
     await expect(page.getByTestId(`products-row-category-${product.id}`)).toContainText(target.name)
   })
+
+  // #546 — catégorie ne portant QU'UN produit ARCHIVÉ. Décision #546 (option A) : un
+  // produit archivé occupe toujours sa catégorie (FK `category_id` NOT NULL, comptage
+  // backend natif incluant les archivés) → DELETE sans cible = 409. Le compteur de la
+  // carte (listing sans archivés) affiche 0 : le dialog part SANS select, reçoit le 409
+  // et doit basculer en réassignation au lieu d'afficher une erreur sans issue.
+  test("suppression d'une catégorie ne portant qu'un produit archivé bascule en réassignation", async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const source = await seedCategory(page, unique('Archived Only'), '#E5484D')
+    const target = await seedCategory(page, unique('Bin'), '#46A758')
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Prod Archived'),
+      categoryId: source.id,
+    })
+    // Archivage (soft delete BR-PRO-007) via l'API. Helper local : `support/products.ts`
+    // est hors du périmètre de #546.
+    const archived = await page.request.delete(`/api/users/${userId}/products/${product.id}`)
+    expect(
+      archived.status(),
+      `archivage produit doit renvoyer 204 (obtenu ${archived.status()})`,
+    ).toBe(204)
+
+    await openCategoriesTab(page)
+    // Compteur local = 0 (ICU fr `=0 {aucun produit}`) : l'archivé est absent du listing.
+    await expect(page.getByTestId(`categories-count-${source.id}`)).toHaveText('aucun produit')
+
+    await page.getByTestId(`categories-delete-${source.id}`).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await expect(page.getByTestId('delete-reassign-label')).toHaveCount(0)
+
+    // 1er clic : DELETE sans cible → 409 → bascule en réassignation.
+    await page.getByTestId('delete-confirm-button').click()
+    await expect(page.getByTestId('delete-reassign-required-note')).toBeVisible()
+    await expect(page.getByTestId('delete-reassign-label')).toBeVisible()
+    await expect(page.getByTestId('delete-confirm-button')).toBeDisabled()
+    // Catégorie toujours présente (409, rien supprimé).
+    await expect(page.getByTestId(`categories-card-${source.id}`)).toBeVisible()
+
+    await page.getByTestId('delete-reassign-select').click()
+    await page.getByRole('option', { name: target.name }).click()
+    await page.getByTestId('delete-confirm-button').click()
+
+    await expect(dialog).toBeHidden()
+    await expect(page.getByTestId(`categories-card-${source.id}`)).toHaveCount(0)
+    await expect(page.getByTestId(`categories-card-${target.id}`)).toBeVisible()
+  })
 })

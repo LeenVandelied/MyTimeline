@@ -31,7 +31,8 @@
       "description": "Esta acción no se puede deshacer.",
       "reassignLabel": "Mover los productos a…",
       "reassignPlaceholder": "Elige una categoría de destino",
-      "noOtherCategory": "No hay otra categoría disponible para reasignar los productos. Crea primero otra categoría."
+      "noOtherCategory": "No hay otra categoría disponible para reasignar los productos. Crea primero otra categoría.",
+      "reassignRequired": "Esta categoría sigue vinculada a productos, incluidos los archivados. Elige una categoría a la que moverlos para poder eliminarla."
     },
     "errors": {
       "notFound": "Esta categoría ya no existe.",
