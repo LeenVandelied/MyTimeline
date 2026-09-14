@@ -17,4 +17,9 @@
 3. `frontend/src/__tests__/e2e-rate-limit-budget.test.ts:326-330` (`calleeName`) — le classificateur est reconnu par son nom textuel ; un alias d'import (`import { classifyRegisterResponse as c }`) contournerait l'ancrage. **Pré-existant, pas introduit par #685** ; signalé pour mémoire.
 
 ## Décision du lead
-Aucun correctif appliqué pendant la suite E2E complète en cours sur `7ed997c` (un commit invaliderait la preuve) ; les 5 MINEUR (2 backend + 3 frontend) sont soumis à l'arbitrage du dev avec la PR.
+Aucun correctif appliqué pendant la suite E2E complète en cours sur `7ed997c` (un commit invaliderait la preuve) ; les 5 MINEUR (2 backend + 3 frontend) ont été soumis à l'arbitrage du dev avec la PR #687.
+
+## Arbitrage du dev (2026-09-14) : corriger les deux MINEUR utiles avant la fusion
+- **MINEUR 1 — CORRIGÉ par le lead.** `DeleteConfirmDialog.tsx` : `id="reassign-required-note"` sur la note, `aria-describedby` sur le `SelectTrigger` posé seulement quand la note est affichée. Deux assertions dans `DeleteConfirmDialog.test.tsx` (lien présent après bascule avec id existant ; aucun `aria-describedby` sans bascule). Contre-épreuve : ligne retirée → le cas « 409 sans cible » rougit ; restaurée → 18/18.
+- **MINEUR 2 (heure d'été sans minuit) — non corrigé**, reste en follow-up : risque plausible, jamais constaté.
+- **MINEUR 3 (alias d'import du classificateur) — non corrigé**, pré-existant au S89, reste en follow-up.

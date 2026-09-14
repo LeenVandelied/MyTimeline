@@ -15,6 +15,8 @@
 - Revue frontend (cycle 1) : 0 CRITIQUE / 0 MAJEUR / 3 MINEUR → `specialists-reviewer-frontend.md`. MINEUR non corrigés pendant l'E2E (arbitrage dev à la PR).
 - E2E suite complète sur `7ed997c` (base `s89e2e` recréée à 11:53, oracles 401/200, 2 workers, `next start` :3100) : 368 passés / 10 échoués / 8 sautés / 1 non exécuté en 2,5 min. Les 10 échecs = `sprint-77-theme-visual` `doesn't exist` (darwin, 0 `did not match`), PNG générés supprimés. Le non-exécuté n'est pas identifié (371 titres distincts tous vus, l'un des 16 doublons). `categories.spec.ts` (5, dont le cas l.197) et `sprint-89-local-date-west.spec.ts` exécutés et verts. `next start` arrêté ensuite.
 - Audit écrit : `docs/memory/audits/sprint-89-test-coverage.md`. Briefings supprimés avant la PR.
+- PR #687 ouverte (base `dev`, tête `333b817`).
+- Arbitrage dev : corriger les deux MINEUR utiles avant la fusion. Faits par le lead : `aria-describedby` note ↔ select (`DeleteConfirmDialog.tsx` + 2 assertions, contre-épreuve rouge, 18/18, tsc 0, eslint 0, prettier formaté — la version `HEAD` était conforme, l'écart venait des nouvelles assertions) ; javadoc `bindingRunner` précisée (`RateLimitTunableCeilingTest` 10/10). Les 3 autres MINEUR restent en follow-ups.
 
 ## Environnement
 - Pile E2E `s89e2e` : backend :8086, Postgres :5436, créée 2026-09-14T09:35:36Z (postérieure au dernier commit backend S88), healthy.
