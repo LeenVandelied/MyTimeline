@@ -857,3 +857,30 @@ Problème : un test qui force `process.env.TZ` en `beforeAll` reste vacant si un
 
 ## PAT-S89-003 — Exemption vérifiée par AST : suivre la provenance à travers les helpers, et tester sur une copie mutée du vrai fichier
 Problème : une exemption de compteur vérifiée sur le seul corps de boucle se contourne par un helper (limite annoncée de PAT-S88-004). Motif : suivre la provenance de la valeur décisive le long des appels du fichier (retours autorisés, émission seulement en position de retour, forme figée de la fonction qui émet) ; compter les occurrences exemptées (`fichier:ligne`), pas les fichiers ; exercer la garde sur une copie mutée du vrai fichier dont l'ancre est affirmée présente. Limite restante : un alias d'import du classificateur n'est pas reconnu (pré-existant). (Sprint 89 #685)
+
+## PAT-S90-001 — Ajouter une action sous une assertion « au-dessus de la ligne de flottaison » : l'héberger dans une rangée existante
+Problème : une rangée dédiée repousse la grille (~60 px) et fait sortir des titres des 800 px exigés par une spec. Motif : loger l'action dans la rangée d'en-tête existante (`size="sm"`, `flex-wrap`). (Sprint 90 #624)
+
+## PAT-S90-002 — Squelette sur une page `'use client'` : même variante et même enveloppe dans `loading.tsx` ET dans la branche `isLoading`
+Problème : le vrai temps d'attente d'une page client est sa branche interne, pas le fallback de segment. Motif : même variante `LoadingSkeleton` et même enveloppe (en-tête réel inclus) aux deux endroits ; testid historique de la branche conservé via `testId`, testid distinct pour le fallback de segment. Mesuré sans décalage au navigateur (en-tête immobile, contenu au top du squelette). (Sprint 90 #629)
+
+## PAT-S90-003 — Figer un fallback `loading.tsx` atteint par un `<Link>` du shell sur `next start`
+Motif : `page.route` sur le pathname + `_rsc` ; laisser passer la requête `next-router-prefetch: 1` et ATTENDRE sa réponse avant le clic ; retenir la requête `rsc: 1` sans en-tête de préchargement ; asserter ; libérer. Anti-pattern : retenir aussi le préchargement (plus aucune frontière de chargement). Variante `router.push` : PIT-S90-003. (Sprint 90, couverture E2E)
+
+## PAT-S90-004 — État vide actionnable sur une surface montée sous le shell ET testée hors shell
+Motif : CTA branché sur `useOpenCreateEvent()` et rendu seulement si la fonction n'est pas `null` ; test sous `CreateEventProvider` (handler appelé) + test hors provider (aucun bouton). Anti-pattern : bouton toujours rendu avec `onClick` optionnel → bouton inerte. (Sprint 90 #630)
+
+## PAT-S90-005 — État vide accessible : `role="status"` sur le message seul, l'action en frère de la région
+Anti-pattern : région live qui contient le bouton, dont le libellé est annoncé avec le message. Le testid reste sur la racine du composant. (Sprint 90 review cycle 1)
+
+## PAT-S90-006 — Rendre le focus quand le déclencheur d'un Dialog Radix se démonte
+Motif : le drawer expose `onCloseAutoFocus` et le relaie à `DialogContent` ; l'appelant note l'origine de l'ouverture dans une ref. À la fermeture : déclencheur encore connecté (`isConnected`) → laisser Radix rendre le focus (annulation) ; déjà démonté → `preventDefault()` + focus sur le bouton permanent ; démonté plus tard en détenant le focus (rechargement lent, PIT-S90-008) → effet sur « liste non vide » qui ne refocalise que si le focus est sur `body`. (Sprint 90 review cycles 1 et 2)
+
+## PAT-S90-007 — Tester sous jsdom qui détient le focus après un Dialog Radix moqué
+Motif : le mock capture `document.activeElement` à l'ouverture, rejoue `onOpenChange(false)` puis `onCloseAutoFocus(Event annulable)`, refocalise l'élément capturé si l'événement n'est pas annulé, et expose `defaultPrevented`. Compléter par un test qui vérifie que le vrai `DialogContent` appelle bien le callback. (Sprint 90 review cycle 2)
+
+## PAT-S90-008 — Attribuer un échec E2E intermittent : A/B sur un worktree jetable de la base
+Motif : `git worktree add --detach <scratch>/base <sha>` ; lien symbolique vers `frontend/node_modules` SEULEMENT si `git diff --quiet <sha>..HEAD -- frontend/package*.json` ; `next build` + `next start` sur un second port déjà autorisé par le CORS du backend e2e ; même spec rejouée N fois de chaque côté, EN SÉQUENCE (comptes partagés). Au S90 : 2/5 contre 3/5 → préexistant. (Sprint 90)
+
+## PAT-S90-009 — Prouver au navigateur ce que jsdom ne mesure pas : spec-sonde jetable du lead
+Motif : `frontend/e2e/zz-lead-s<N>-*.spec.ts` non committée, supprimée dans la même commande qui la joue (le test de budget rate-limit recense les specs) ; `test.use({ storageState })` ; porte `page.route` pour figer l'état transitoire ; mesures `boundingBox` / `getComputedStyle` / `scrollWidth` loggées et captures clair/sombre. Au S90 : lanes 46 px, 0 décalage à la bascule, mouvement réduit 1e-05 s, assertion vacante démontrée (178 px / 343 px). (Sprint 90)

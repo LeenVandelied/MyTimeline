@@ -6460,7 +6460,7 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
 **Status :** Terminé — PR #687 mergée le 2026-09-14 (`a6b39ad`). Soldé au `/sprint start 90` (variante S57) : issues #546, #652, #685 fermées et milestone #90 fermé, constatés via `gh` ; seuls le titre et ce Status restaient à écrire.
 
-### Sprint 90 — 2026-09-13 (PLANIFIÉ — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
+### Sprint 90 — 2026-09-14 (Terminé — merge PR #696 dans dev, commit `9e42e1b` — cohésion 0.87, Premier contact : tableau de bord, états vides, chargement)
 **Objectif :** Dashboard sans frise dupliquée avec « Ouvrir la frise », états vides du DS avec CTA, squelettes montés
 **Milestone GitHub :** #91
 **Issues :** #624 (P2, S), #629 (P2, S), #630 (P2, S)
@@ -6479,8 +6479,18 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Reviews :** cycle 1 — 0 CRITIQUE / 0 MAJEUR / 6 MINEUR, **absorbés sur décision dev** (région live, `aria-busy`, focus, CTA agenda sans produit, libellé du lien produits, assertion vacante) ; cycle 2 (relecture des correctifs) — 0 / **1 MAJEUR** / 2 MINEUR : l'assertion de `sprint-84` réécrite au cycle 1 restait vacante (mesuré : jeton 178 px pour un `h1` de 343 px) → corrigée et **armée par le lead** (reçu 1159 > 343 sans `break-words`) ; mineur focus-après-annulation corrigé ; mineur « région live insérée peuplée » → suivi (test lecteur d'écran réel).
 **Tests :** Vitest 1651/1651 (lead, `0de3ec6`) · `tsc`/`prettier --check .`/`next lint` exit 0 · `next build` exit 0 · E2E suite complète sur le code final `0de3ec6` : 388 passés / 2 échoués / 8 sautés / 1 non exécuté — échecs hors sprint : faux rouge darwin `sprint-77-theme-visual:620` et instabilité **préexistante** `sprint-84-palette:128` (A/B même spec ×5 : base `a6b39ad` 2 rouges, sprint 3 rouges ; aucun fichier du parcours palette touché) · vérifications navigateur réelles par sondes jetables (lanes 46 px, 0 décalage à la bascule, mouvement réduit 1e-05 s, piste pointillée clair/sombre, dashboard vide 375 px en allemand sans débordement).
 **Audit :** `docs/memory/audits/sprint-90-test-coverage.md`.
-**Follow-ups proposés (NON-XS, à trier au `/sprint end`) :** `AddProductButton` sans consommateur + clés `dashboard.recentEvents.*` orphelines ; DEC-S85-005 et en-tête de `sprint-42-events` citent encore le dashboard comme écran à frise ; bouton « Ouvrir la frise » 32 px vs 44 px du FAB (Designer) ; enveloppe de `dashboard/loading.tsx` (`max-w-3xl` vs `max-w-7xl`) ; branches mortes `products-page-loading` / `product-detail-page-loading` et branche texte `product-detail-loading` ; `router.prefetch` au survol d'une ligne produit ; annonce des régions live insérées peuplées à valider au lecteur d'écran réel ; **instabilité préexistante `sprint-84-palette:128`** (focus repris après la flèche, ~2/5 rouges sur `dev` comme sur la branche, cause non localisée). Détail et sources : `issue-*-done.md`, `e2e-coverage-done.md`, `review-fixes*-done.md`.
-**Status :** PR à ouvrir vers `dev` (issues fermées et milestone #91 fermé APRÈS merge, au `/sprint end 90`)
+**Follow-ups arbitrés (Phase 4 triage, option « regrouper » choisie par le dev) :** 18 signaux `RECOMMAND_*` dans les done.md → 4 déjà résolus pendant le sprint (CTA hors région live `e04f7df`, couverture E2E des CTA et squelettes `5ad23f3`, 2 `RECOMMAND_TEST_RUNNER` joués par le lead) ; 14 restants (13 des agents + l'instabilité palette relevée par le lead) regroupés en **6 issues, sans milestone** (le milestone Sprint 91 est sélectionné par label, un follow-up y serait enterré) :
+  - nettoyage post-S90 : `AddProductButton` sans consommateur, clés `dashboard.recentEvents.*`, DEC-S85-005 et en-tête `sprint-42-events`, branches mortes `products-page-loading` / `product-detail-page-loading` [XS–S] → **#697**
+  - fiche produit : branche texte `product-detail-loading` → squelette, enveloppe de `dashboard/loading.tsx`, `router.prefetch` au survol, décision produit sur l'attente de l'invalidation après création [S] → **#698**
+  - arbitrages Designer : cible tactile 32 px de « Ouvrir la frise », token de la piste vide [XS] → **#699**
+  - accessibilité réelle : annonces VoiceOver/NVDA des états vides et squelettes, E2E de l'enchaînement de focus Radix [S] → **#700**
+  - libellé faux `compactAgenda.empty` pour le sous-groupe « Aujourd'hui » [XS] → **#701**
+  - instabilité préexistante `sprint-84-palette:128` (A/B 2/5 contre 3/5) [S] → **#702**
+  Ratio : 6 issues (0 avec milestone) / 0 discard / 0 absorbé à la clôture (les 6 mineurs de review avaient été absorbés avant la PR).
+**Mémoire consolidée :** `pitfalls.md` PIT-S90-001 à 011 (classés dans `pit-classification.tsv`, packs régénérés, `gen-pit-packs.sh --check` OK) ; `patterns.md` PAT-S90-001 à 009 ; `decisions.md` DEC-S90-001 à 005 ; aucun `[MEMORY:bug]` ni `[MEMORY:business-rule]`.
+**Clôture (2026-09-14) :** PR #696 mergée sur demande explicite du dev AVANT `/sprint end` (commit de merge `9e42e1b`, épinglé par `--match-head-commit` sur `5461b48`) ; CI de `dev` post-merge verte (`push` et `pull_request`) ; issues #624, #629, #630 fermées avec commentaire ; milestone #91 fermé (3/3) ; branche locale `sprint/90` supprimée (branche distante conservée : suppression soumise à confirmation) ; consolidation poussée par une PR dédiée depuis `sprint/90-end` (conséquence du merge anticipé, `dev` étant protégée). Briefings jamais committés, supprimés localement avant la PR.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
+**Status :** Terminé — PR #696 mergée dans `dev` (`9e42e1b`), issues et milestone #91 fermés.
 
 ### Sprint 91 — 2026-09-13 (PLANIFIÉ — cohésion 1.00, Frise : instant, durée, série)
 **Objectif :** Ponctuel rendu en pin, récurrence visible (↻ + occurrences fantômes), borne de série conservée en édition depuis la frise

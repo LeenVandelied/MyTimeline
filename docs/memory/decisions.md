@@ -969,3 +969,18 @@ telle quelle (DEC-S84-001, aucune réécriture).
 **Décision.** Option A (arbitrage dev du 2026-09-13) : lecture par `parseLocalDate` / `parseLocalIsoDate` de `frontend/src/lib/date-iso.ts`, jamais `new Date(<LocalDate>)` chez un appelant. Frontière écrite dans la JSDoc : `LocalDateTime` serveur → `parseServerDateTime` en UTC (DEC-S83-004) ; date légale → `timeZone: 'UTC'` (DEC-S75-001) ; instants → `new Date`.
 **Pourquoi.** Le libellé, l'attribut `datetime` et la géométrie de frise nomment le jour saisi, dans tout fuseau ; un « tout UTC » aurait décalé la frise par rapport au `now` local.
 **Portée.** 35 lectures migrées ; tests de fuseau non vacants (Vitest qui force `America/New_York`, E2E `timezoneId`). Risque connu non couvert : jour de passage à l'heure d'été sans minuit local. (Sprint 89 #652)
+
+## DEC-S90-001 — Dashboard : pas de CTA « Nouvel événement » en haut à droite, contre la maquette
+La maquette place « Nouvel événement » en haut à droite du tableau de bord. Or le shell en fournit déjà **exactement un** à chaque largeur (`shell-sidebar-new-event-button` ≥ md, `shell-mobile-new-event-button` < md, miroir `hidden md:flex` ⇔ `md:hidden`, `AppShell.tsx`). En ajouter un doublonnerait à toutes les largeurs, contre le critère « aucun doublon de déclencheur ». Retenu : `AddProductButton` retiré du dashboard sans remplacement ; création de produit sur `/products`. Sur un compte neuf, ce sont les états vides du dashboard (#630) qui portent le chemin vers la création de produit. (Sprint 90 #624, arbitrage dev)
+
+## DEC-S90-002 — Squelettes : `loading.tsx` ET branches de chargement internes
+Les pages applicatives sont `'use client'` : un `loading.tsx` ne s'affiche qu'au changement de segment, l'attente réelle est la branche `isLoading` interne. Monter le squelette seulement dans `loading.tsx` aurait eu un effet visible quasi nul. Retenu : les deux, testids historiques conservés. (Sprint 90 #629, arbitrage dev)
+
+## DEC-S90-003 — Pas de `motion-reduce:animate-none` sur `LoadingSkeleton`
+`base.css:179` neutralise déjà toute animation sous `prefers-reduced-motion` (durée 0.01 ms, 1 itération, `!important` hors layer) et le keyframe `pulse` finit à opacité 1. Vérifié au navigateur par le lead : `animationDuration` = 1e-05 s sous `reducedMotion: reduce`. Ajouter la classe serait redondant. (Sprint 90 #629)
+
+## DEC-S90-004 — Frise vide : le CTA mène à la création de PRODUIT ; agendas vides sans produit : aucun CTA
+BR-EVE-002 : sans produit, aucun événement n'est créable. La frise vide propose donc « Créer un produit » (`/products`), pas « Nouvel événement ». Sur le dashboard, un agenda vide **sans aucun produit** n'affiche pas de CTA : l'état vide de la liste produits voisine porte déjà l'action, un second lien doublonnerait. Avec ≥ 1 produit, « Ajouter un événement » ouvre le vrai formulaire. Prop `canCreateEvent` optionnelle, défaut `true`, passée explicitement par `dashboard/page.tsx` aux 3 montages et verrouillée par `page.test` (une prop requise aurait imposé du churn sur ~6 fichiers de test). Le lien vers `/products` du dashboard est libellé comme une navigation (« Aller aux produits »), pas comme une création. (Sprint 90 #630 + review cycle 1)
+
+## DEC-S90-005 — `EmptyState` : la piste pointillée est ignorée en mode `compact`
+Les usages compacts sont des colonnes étroites sous un titre de section : 3 lanes de 46 px écraseraient le contenu, et une lane réduite se lit comme un filet séparateur. (Sprint 90 #630)
