@@ -1320,6 +1320,50 @@ Un test Vitest (environnement jsdom) qui relit une feuille CSS par `fileURLToPat
 ## PIT-S87-006 — Un plan architect peut inverser l'ordre de dépendance que les DEUX énoncés d'issue posent
 Le plan du S87 mettait #611 (frise) en vague 1 et #610 (emplacement de la frise) en vague 2, alors que #610 se dit « bloquant » et que #611 se dit « à faire après ». Il citait aussi comme « composants DS existants » quatre noms (`TimelineRuler`…) qui n'existent que dans le DS Claude Design. Prévention : au `/sprint start`, relire la section « Dépendances » de CHAQUE issue et grepper chaque symbole cité avant de briefer (cf. mémoire « énoncés d'issue périmés »). (Sprint 87, lead)
 
+
+## PIT-S88-002 — Sous zsh, une commande ou une liste rangée dans une variable ne se découpe pas : `$P <<SQL` et `set -- $T` échouent en silence
+Deux occurrences au S88. (1) Repro #545 : `P="docker exec … psql"; $P <<SQL` donne `command not found`, le script continue, et la « migration réussie » portait sur une base vide de sens. (2) Watcher CI du lead : `T="7 0"; set -- $T` laisse `$1="7 0"` et `$2` vide, la condition « 7 checks et 0 en attente » n'est jamais vraie, et le watcher tourne jusqu'à son timeout alors que la CI était verte. Même famille que `git add -- $F` (S76). **Règle : sous zsh, jamais de commande ni de liste dans une variable scalaire — fonction shell, tableau `${=T}`, ou parsing en Python ; et vérifier l'état produit, pas le code de sortie.** (Sprint 88 #545, lead)
+
+
+## PIT-S88-003 — Derrière le proxy Next, TOUTE la suite E2E compte sur une seule IP : register n'est pas le seul créneau qu'elle martèle
+La prémisse de DEC-S79-002 (« register est le seul créneau qu'une suite automatisée martèle depuis une IP ») est fausse : le navigateur ne parle pas au backend, le proxy Next relaie, et avec `trust-forwarded-header=false` les 2 workers, les retries et les 2 serveurs CI partagent un seul seau par créneau. Recompté au S88 : login 12 nominal / 20 pire cas pour un défaut de 10, reset-password 4/12 pour 5. **Règle : tout budget rate-limit E2E recompte TOUS les créneaux throttlés, pas seulement celui qui a déjà cassé.** (Sprint 88 #547)
+
+
+## PIT-S88-004 — Un budget rate-limit E2E doit sommer les passes CI qui rejouent le setup contre le même backend
+Le budget register de #475 annonçait 8 ; la CI en émet 12, car la passe 2 (`auth.setup.ts auth-signature.spec.ts`) re-provisionne contre le MÊME backend, dont les seaux Bucket4j survivent entre les passes. Le test Vitest lit désormais les passes dans `ci.yml`, y compris les blocs `run: |` multi-lignes. **Règle : un budget qui ne lit que la suite locale sous-estime la CI de toutes les passes supplémentaires.** (Sprint 88 #547)
+
+
+## PIT-S88-005 — Un compteur d'émissions par regex manque les fonctions locales appelées N fois et les émissions en boucle
+Le compteur de #475 comptait une fois une fonction locale de spec émettrice appelée plusieurs fois (`submitLogin` ×2, `submitResetPassword` ×3), et une émission dans une boucle `REGISTER_RETRIES` comptait 1. Correctif S88 : AST TypeScript (`ts.createSourceFile`), fonctions résolues en point fixe, appels comptés, émission en boucle × borne littérale, borne illisible = échec explicite. **Règle : un compteur statique compte des APPELS et des ITÉRATIONS, jamais des occurrences de texte ; ce qu'il ne sait pas borner le fait rougir.** (Sprint 88 #547, revue)
+
+
+## PIT-S88-006 — Rendre un 409 « succès idempotent » dans un setup rend les retries du runner PRODUCTIFS
+Tant qu'un register en double prenait 409 et arrêtait le setup, un retry Playwright du projet `setup` était stérile. Dès que 409 = succès, le retry va jusqu'au login et ré-émet register ET login : 28 nominal / 36 pire cas contre un plafond de 30. Correctif S88 : `setup.describe.configure({ retries: 0 })`, lu par le Vitest budget (arbitrage dev ; un aléa du setup rougit désormais le job). **Règle : toute modification de l'idempotence d'un setup se paie dans le recompte de ses retries.** (Sprint 88 #547, revue)
+
+
+## PIT-S88-007 — Un projet Playwright à `dependencies` ne tourne pas si une spec d'un projet dont il dépend échoue
+Au S88, la preuve d'armement `rate-limit-armed` dépend de `chromium` et `firefox`. En local darwin, le rouge attendu de `sprint-77-theme-visual.spec.ts:620` (référence Linux) la saute : « 1 did not run ». La jouer seule avec `--project=rate-limit-armed --no-deps`. En CI, CI n'imprime pas les noms de tests : c'est l'égalité `Running T tests` = passed + skipped, avec 0 failed/flaky/did not run, qui prouve qu'elle a tourné. **Règle : lire « did not run » dans le résumé, jamais seulement le vert du job.** (Sprint 88 #547, lead)
+
+
+## PIT-S88-009 — Pile E2E locale en `next build` : sans `NEXT_PUBLIC_API_URL=/api` AU BUILD, aucun POST ne part alors que les oracles répondent
+`NEXT_PUBLIC_*` est figé à la compilation. Construit sans la variable, le client appelle une base indéfinie : le setup affiche « AUCUNE réponse POST observée » pendant que `/api/auth/me` rend 401 et `/fr/login` 200 (les oracles passent par le rewrite, pas par le client). Au S88 l'agent a d'abord accusé son correctif ; l'A/B avec la version précédente de la fixture, rouge à l'identique, a désigné l'environnement. **Règle : `NEXT_PUBLIC_API_URL=/api` ET `E2E_API_PROXY_TARGET` au build ; devant un rouge, rejouer l'ancienne fixture avant d'accuser la nouvelle.** (Sprint 88 #547, revue)
+
+
+## PIT-S88-010 — Le hook `block-destructive` inspecte toute la ligne Bash, message de commit en heredoc compris
+Au S88 un commit dont le message citait la commande Compose de suppression de volumes a été refusé, alors qu'aucune commande destructive n'était exécutée. Parade sans contournement : écrire le message dans un fichier et `git commit -F <fichier>`. (Sprint 88 #545, revue)
+
+
+## PIT-S88-011 — RTK réécrit `npx next start` par son filtre de build et masque la vraie erreur
+Symptôme S88 : log réduit à « Errors: 1 », exit 1, cause invisible. Lancer `./node_modules/.bin/next start` ou préfixer `rtk proxy` pour tout serveur long. Même famille que les logs `next dev` avalés (S61). (Sprint 88 #547)
+
+
+## PIT-S88-013 — « Aucune réponse dans le délai » n'est pas « requête ratée » : un 201 tardif déclenchait une ré-inscription
+Au S88, `submitRegister` renvoyait `null` sur timeout ; la boucle ré-émettait alors que le 201 arrivait après le délai et que l'app avait déjà navigué vers le login, où `ensureRegisterForm` échouait trois fois au mauvais motif. Et un `click` sans timeout pouvait émettre un POST après la fin de `Promise.all`. Correctif : relire les statuts observés et l'URL avant toute ré-émission ; timeout du clic (5 s) inférieur au délai de réponse (10 s). **Règle : un retry sur timeout vérifie d'abord que l'effet n'a pas déjà eu lieu.** (Sprint 88 #547, revue cycle 2)
+
+
+## PIT-S88-016 — Exiger N runs CI verts sur un même SHA : `gh run rerun` + `run_attempt`, et ne rien pousser entre les runs
+Aucune CI ne tourne sur `sprint/N` (PIT-S64-008) : les runs se font sur la PR. Recette S88 : `gh run rerun <id>`, attendre `run_attempt == N && status == completed` via `gh api …/actions/runs/<id>`, lire les jobs de CET essai via `…/attempts/<N>/jobs`, sauver le log `e2e` avant le rejeu suivant. Tout push crée un nouveau SHA et annule le rejeu en cours : les écritures mémoire attendent le dernier run. (Sprint 88, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

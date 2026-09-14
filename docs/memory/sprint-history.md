@@ -6377,7 +6377,35 @@ cette issue ; sans conséquence, aucun crash) ; briefings supprimés AVANT la PR
 (vide via vrai binding) · sécurité n°3 (`trust-forwarded-header=true` en prod dépend de Caddy ; traces Playwright publiques) ·
 #545 : sort des bases `eventmanager`/`eventmanager_s79`/`eventmanager_flywaytest` du Postgres Homebrew (décision dev) · README
 §3 « CI en `workers: 1` » périmé · noms d'anciennes IT rate-limit cités dans `docs/memory/**`.
-**Status :** En revue CI — PR `sprint/88` → `dev` ; merge conditionné à 3 runs CI verts consécutifs (preuve `rate-limit-armed` `passed`) et à la confirmation du dev.
+**Clôture `/sprint end 88` (2026-09-14) — tout ce qui est vrai AVANT le merge :**
+**Issues livrées (3) :** #568, #545, #547 — à fermer APRÈS le merge (`dev` protégée, pas d'auto-close).
+**Vagues exécutées :** V1 = #568 ∥ #545 | V2 = #547 (PARTIAL → option D) | correctifs revue cycle 1 (PARTIAL → retry sur échec,
+`retries: 0`) | correctifs revue cycle 2 (n°1/3/4).
+**Commits de code et doc produit :** 12 — `a911412` #568 · `6cc9d73` `d7b2328` #545 · `33ea579` `396c372` `9e49b8f` `e940ac8`
+`dcb222d` `46afa05` `cae1f77` `e5c2f4b` `30ecdc8` #547 ; + commits `:memo:` d'orchestration.
+**Reviews :** reviewer cycle 1 — 0 CRITIQUE / 0 MAJEUR / 6 MINEUR (tous corrigés) · security-expert — 0 / 0 / 3 MINEUR (2 corrigés,
+1 antérieur → #686) · reviewer cycle 2 — 0 / 0 / 5 MINEUR (3 corrigés, relus par le lead ; 2 → #685).
+**CI PR #684 :** **3 runs verts consécutifs sur `df2337e`** (run 34818041467, essais 1-3) : 7/7 checks, E2E passe 1
+`Running 385` = 377 passés + 8 sautés (preuve `rate-limit-armed` comprise, 0 failed/flaky/did not run), passe 2 13/13, 0 × 429
+hors preuve — à chaque essai. Aucun aléa du setup. Le commit de clôture relance une CI : c'est son SHA qui fait foi pour le merge.
+**Tests (agents) :** backend 603/0 · Vitest 1553/0 · tsc/lint/format conformes · packs `--check` 0.
+**Nouveaux pitfalls :** PIT-S88-001 → 016 (5 backend, 7 frontend, 1 both, 4 tooling — classés) · **Décisions :** DEC-S88-001 → 004
++ amendement DEC-S79-002 · **Patterns :** PAT-S88-001 → 004 · **Bugs :** BUG-S88-001 · packs `pit-*` régénérés, `--check` 0.
+**Follow-ups arbitrés (Phase 4 — triage par le dev) :**
+  - Contrat de boucle annotée contournable via helper + « vide = défaut » non testé via le vrai binding [S | auth/test]
+    (reviewer cycle 2 n°2 et n°5) → **issue #685 (Sprint 89, label `sprint-89`)**
+  - `trust-forwarded-header=true` en prod dépend de Caddy + traces Playwright publiques [S | sécurité/devops] (security n°3)
+    → **issue #686 (backlog)**
+  - README §3 « CI en `workers: 1` » périmé [XS | docs] → **absorbé** dans le commit de clôture (paragraphe réécrit : la vraie
+    contrainte restante est deux runs simultanés dans la même copie de travail)
+  - Bases `eventmanager` (V6, contrainte legacy), `eventmanager_s79`, `eventmanager_flywaytest` du Postgres Homebrew du poste
+    → **laissées en place** (suppression = décision et geste du dev ; README piège n°5 donne la voie non destructive)
+  - Absorbés d'office par le lead (mémoire, sans code) : prémisse de DEC-S79-002 amendée ; recette pile locale sans
+    `NEXT_PUBLIC_API_URL` au build → PIT-S88-009 ; noms d'anciennes IT cités dans `docs/memory/**` → laissés (archives de sprint).
+  Ratio : 2 issues / 0 discard / 1 absorbé code-doc / 3 absorbés mémoire.
+**Saturation contexte lead :** non mesurée (aucun compteur fiable dans la session).
+**Status :** Prêt à merger — PR #684, CI 3/3 verte sur `df2337e`, confirmation dev en attente ; titre, Status et fermeture des issues
+à solder APRÈS le merge (au `/sprint start 89`, variante S57).
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau

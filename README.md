@@ -155,7 +155,7 @@ openssl pkcs8 -topk8 -nocrypt -in jwt.pem -outform DER | base64 | tr -d '\n'
 En profil `prod`, l'absence de cette variable fait **échouer le démarrage** : elle ne dégrade
 jamais silencieusement.
 
-### 3. E2E : le 403 CORS déguisé en « rate-limit », et `workers > 1`
+### 3. E2E : le 403 CORS déguisé en « rate-limit », et deux runs simultanés
 
 - Le profil `dev` fige `app.cors.allowed-origins=http://localhost:3000`
   (`backend/src/main/resources/application-dev.properties`, aucun placeholder d'environnement).
@@ -164,10 +164,11 @@ jamais silencieusement.
   `POST /api/auth/register` : la page reste sur `/fr/register` et le setup Playwright accuse un
   « rate-limit register 5/min/IP » **qui n'a jamais eu lieu**. Correctif : démarrer le backend
   avec `--app.cors.allowed-origins=http://localhost:3000,http://localhost:3100`.
-- **`--workers=1` est obligatoire en local.** Au-delà, quatre specs `settings-*` deviennent
-  rouges : deux workers génèrent chacun leur identité de test et l'assertion `toHaveValue`
-  compare deux identifiants différents. Rien à voir avec le code testé. (La CI est déjà en
-  `workers: 1`.)
+- **Ne lancez pas deux runs E2E en même temps dans la même copie de travail.** Ils partagent
+  `frontend/e2e/.auth/` (identités et sessions) : l'un se retrouve connecté sur le compte de
+  l'autre, et quatre specs `settings-*` rougissent sur un `toHaveValue` sans rapport avec le code.
+  Un verrou refuse désormais le second run. `workers: 2` est la valeur normale, en local comme
+  en CI : les identités sont dérivées d'une graine unique posée avant le démarrage des workers.
 
 ### 4. `node_modules` est propre à chaque copie de travail, et son absence ment sur la cause
 

@@ -70,8 +70,8 @@ Diff commit : README +66, pitfalls.md 4 lignes modifiées, pit-backend.md/pit-fr
 [MEMORY:bug] Cause: PIT-S47-003 attribuait l'échec V7 à des données invalides « que V9 nettoierait » sans lire `pg_constraint` ni les valeurs ; les données étaient convertibles. Solution: PIT corrigé en place S88. Rule: un diagnostic de migration cite la contrainte ET les valeurs lues, sinon il est marqué déduit.
 
 ## Recommandations suite
-RECOMMAND_DB_EXPERT: non — aucune migration à écrire ; seule question ouverte = effet des CHECK legacy `events_duration_unit_check`/`events_type_check`/`users_role_check` sur V8..V15 de la vraie base, sans enjeu tant qu'elle n'est pas migrée.
-RECOMMAND_TEST_RUNNER: non — doc seule, aucun test impacté.
+Pas de RECOMMAND_DB_EXPERT car #545 est une documentation seule : aucune migration écrite, aucun schéma touché, diagnostic en lecture seule.
+Pas de RECOMMAND_TEST_RUNNER car #545 ne touche aucun test ni code exécutable (README + pitfalls + packs, `gen-pit-packs --check` 0).
 RECOMMAND_DEV_DECISION: oui — sort de `eventmanager`, `eventmanager_s79`, `eventmanager_flywaytest` (suppression éventuelle = décision du dev, non faite).
 RECOMMAND_README_FOLLOWUP: oui — README §3 affirme « La CI est déjà en `workers: 1` », périmé depuis S80 (CI en `workers: 2`), hors scope #545.
 

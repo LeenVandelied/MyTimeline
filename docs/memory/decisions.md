@@ -708,6 +708,8 @@ Issu de la revue du sprint (2 MAJEUR). La politique héritée « script npm abse
 ## DEC-S79-002 — Dimensionner UN slot de rate-limit plutôt que désarmer le filtre ou exempter une IP
 Décision : rendre le seul slot `register` configurable (`app.rate-limit.register-per-minute`, défaut **5 inchangé partout ailleurs**) et le porter à **20** dans un nouveau `application-e2e.properties`. Pourquoi : c'est le seul endpoint throttlé qu'une suite automatisée doit légitimement marteler depuis une IP unique ; les autres slots modélisent des abus qu'aucun test n'a besoin de reproduire en masse. Exempter l'IP du runner ou désarmer le filtre supprimerait le symptôme **en supprimant ce que la suite est censée traverser**. Le plafond reste un plafond : 429 à la 21e. Portée explicite : cette propriété est une condition **nécessaire** au ré-armement du filtre en E2E, pas le ré-armement — celui-ci suppose de recompter d'abord le slot `login`. (Sprint 79 #475)
 
+**Amendée au S88 (DEC-S88-002).** La prémisse « register est le seul créneau qu'une suite martèle depuis une IP » est fausse : derrière le proxy Next toute la suite partage une IP, et login dépasse son défaut en CI nominale (PIT-S88-003). La décision de dimensionner plutôt que désarmer tient, étendue à login et reset-password.
+
 ## DEC-S79-003 — Nettoyage post-test, parce que le namespacing était déjà là et n'avait rien empêché
 #463 proposait trois stratégies. *Comptes par fichier* : écartés, ils ne corrigent pas la dépendance **intra-fichier** que l'issue décrit (29 tests dans `timeline.spec.ts`). *Namespacing par test* : écarté parce qu'il **était déjà en place** — 89 appels à `unique()` — et n'a empêché ni #467 ni l'incident du S73, car il supprime les collisions de **nom** et non la **visibilité**. Retenu : nettoyage post-test branché sur `seedCategory`/`seedProduct` + fixture `auto`. Mesure qui tranche : 81 produits visibles et 88 catégories laissés en fin de run baseline → **0 et 2** avec le correctif, et la spec verte-seule/rouge-en-suite passe des deux côtés. (Sprint 79 #463)
 
@@ -931,3 +933,27 @@ telle quelle (DEC-S84-001, aucune réécriture).
 **Décision.** Encre calculée par `contrastInk(paletteHex(role))` (BR-EVE-009), posée via `--gray-0` / `--gray-950` — mêmes valeurs qu'`INK_LIGHT`/`INK_DARK`, non redéfinies en sombre, comme les `--evt-*`. Écart maquette : encre sombre sur rouge, pervenche, orange et teal.
 **Pourquoi.** Cohérence avec la frise de l'application et WCAG, sans hex en dur ; rendu identique clair/sombre voulu.
 **Portée.** Revue `ui-design` : CONFORME. (Sprint 87 #611)
+
+## DEC-S88-001 — Le dump d'échec MockMvc est coupé globalement dans le profil `test`
+**Contexte.** `@AutoConfigureMockMvc` publiait `Set-Cookie: jwt=eyJ…` dans les logs CI d'un dépôt public (17 classes, stdout et rapports surefire).
+**Décision.** `spring.test.mockmvc.print=none` dans `application-test.properties` ; réactivation uniquement locale via `-Dspring.test.mockmvc.print=default`, jamais committée ni passée à un job CI.
+**Pourquoi.** Une propriété couvre les 17 classes et toute classe future du profil `test`. Alternatives écartées : annotation classe par classe (rien ne force une nouvelle classe à la poser), impression maison masquante (coût et risque de câblage). Coût accepté : perte du dump d'échec Spring.
+**Portée.** Contrôle négatif 2 → 0 → 2 `eyJ`. Arbitrage dev. (Sprint 88 #568)
+
+## DEC-S88-002 — Rate-limit ré-armé en E2E : login et reset-password réglables, forgot et change-password au défaut (option D)
+**Contexte.** `RATE_LIMIT_ENABLED=false` désarmait le filtre entier dans le job CI `e2e` et le service `backend-e2e` ; le recompte (2 passes CI, retries) faisait dépasser 4 créneaux non réglables.
+**Décision.** Propriétés `app.rate-limit.login-per-minute` (e2e 30) et `app.rate-limit.reset-password-per-minute` (e2e 15, seau par IP ; throttle par token inchangé) ; register e2e 20 → 30 ; forgot-password (9/5) et change-password (6/5) restent au défaut ; flag retiré de `ci.yml` et `docker-compose.yml`. Défauts prod inchangés (10/5/5).
+**Pourquoi.** Seuls login et reset débordent sans échec préalable ; forgot et change-password ne dépassent que sur double retry d'un test déjà en échec, qui doit alors rougir. Une carte générique de surcharges aurait quitté le modèle #475 et exigé un garde supplémentaire.
+**Portée.** Budget versionné (`e2e-rate-limit-budget.test.ts`) ; preuve d'armement `rate-limit-armed.proof.ts` ; 3 runs CI verts sur `df2337e`. Amende la prémisse de DEC-S79-002. Arbitrage dev. (Sprint 88 #547)
+
+## DEC-S88-003 — En production, un plafond de rate-limit relevé ou illisible refuse le boot
+**Contexte.** Les plafonds réglables n'avaient qu'un plancher (>= 1) ; une variable d'env en prod pouvait supprimer de fait le throttle login.
+**Décision.** `ProfileSafetyGuard` refuse le boot en prod effective (marqueur `ENVIRONMENT`/`APP_ENV=prod` ou profil `prod`) si login, register ou reset-password dépasse son défaut, ou si la valeur est illisible ; conversion par `NumberUtils.parseNumber`, comme le binding. Valeur blanche = défaut. Hors prod : inchangé.
+**Pourquoi.** Même modèle que le refus de `enabled=false` en prod (#216) : un plafond relevé en prod affaiblit la protection sans échec visible.
+**Portée.** `ProfileSafetyGuardTest` (+14 cas dont hexa), `RateLimitTunableCeilingTest`. (Sprint 88 #547, revue + security-expert)
+
+## DEC-S88-004 — Le setup E2E ne ré-inscrit un compte que sur échec de requête, et ne se retente pas
+**Contexte.** La boucle `REGISTER_RETRIES` d'`auth.setup.ts` ré-inscrivait sur page lente : register à 36 contre 30 en pire cas.
+**Décision.** Ré-émission seulement sur 5xx ou absence de réponse, après relecture des statuts observés et de l'URL (201 tardif = succès) ; 201/409 = succès ; 429 et autres 4xx = échec immédiat ; boucle annotée exemptée du compteur sous contrat vérifié par AST ; projet `setup` à `retries: 0`.
+**Pourquoi.** Register et login reviennent à 20 contre 30 sans relever aucun plafond ; un 429 n'est plus jamais retenté dans la fenêtre. Coût accepté : un aléa du setup rougit le job e2e. Hors budget, documenté : jusqu'à 36 si le backend renvoie des 5xx pendant le setup (symptôme d'instabilité).
+**Portée.** Trois arbitrages dev successifs (retry sur échec, `retries: 0`, correctifs du cycle 2). (Sprint 88 #547, revue)

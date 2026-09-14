@@ -122,12 +122,12 @@ Les lignes `BUDGET` de `application-e2e.properties` sont comparées au recompte.
 
 ## Recommandations suite
 
-RECOMMAND_TEST_RUNNER: non — suites backend/vitest/tsc/lint/format et E2E locale déjà jouées ; la CI (3 runs) revient au lead.
+Pas de RECOMMAND_TEST_RUNNER car les suites backend/Vitest/tsc/lint/format et une E2E complète filtre armé ont été jouées par l'agent, puis 3 runs CI verts consécutifs sur df2337e (lead).
 RECOMMAND_LEAD_CI: oui — sur la PR de sprint, vérifier dans chaque run : 0 × 429 dans `backend.log`, la ligne `[rate-limit-armed]` passée, et l'absence de « did not run ».
 RECOMMAND_LEAD_DEC: oui — rédiger la DEC #547 et amender la prémisse de DEC-S79-002 (signaux ci-dessus).
 RECOMMAND_REVIEWER: oui — diff backend (filtre, 2 IT renommées) et frontend (Vitest AST, preuve, projet Playwright) ; rappel RTK : `rtk proxy git diff`.
 RECOMMAND_SECURITY_EXPERT: non — plafonds e2e ≤ 3× défaut, profil jamais actif en prod, défauts prod assertés par IT, XFF toujours ignoré (vérifié en live).
-RECOMMAND_DB_EXPERT: non — aucune donnée ni migration.
+Pas de RECOMMAND_DB_EXPERT car #547 ne touche ni données, ni schéma, ni migration.
 RECOMMAND_DOCS: oui — les références historiques à `e2e-register-budget.test.ts` / `RegisterRateLimit*IntegrationTest` dans `docs/memory/**` (audits S79, done S79/S88) sont laissées telles quelles, hors périmètre de cet agent.
 
 STATUS: COMPLETED

@@ -726,6 +726,46 @@ PIT-S12-003 couvre `git add -A` ; le cas symétrique mord aussi. En vague parall
 ## PIT-S87-006 — Un plan architect peut inverser l'ordre de dépendance que les DEUX énoncés d'issue posent
 Le plan du S87 mettait #611 (frise) en vague 1 et #610 (emplacement de la frise) en vague 2, alors que #610 se dit « bloquant » et que #611 se dit « à faire après ». Il citait aussi comme « composants DS existants » quatre noms (`TimelineRuler`…) qui n'existent que dans le DS Claude Design. Prévention : au `/sprint start`, relire la section « Dépendances » de CHAQUE issue et grepper chaque symbole cité avant de briefer (cf. mémoire « énoncés d'issue périmés »). (Sprint 87, lead)
 
+
+## PIT-S88-001 — Une contrainte CHECK SANS NOM reçoit un nom automatique que `drop constraint if exists ck_*` ne retire jamais
+Au S88 (#545), V7 échouait sur la base locale `eventmanager` avec `events_recurrence_unit_check` : ce nom n'apparaît dans AUCUNE migration. C'est le nom qu'attribue Postgres (`<table>_<colonne>_check`) à un CHECK créé hors Flyway (ancien `ddl-auto=update`) puis adopté par `baseline-on-migrate=true`. V4/V7/V9 ne retirent que `ck_events_recurrence_unit` : la contrainte héritée survit et rejette la réécriture `weeks` → `WEEK`. **Règle : diagnostiquer une migration qui casse sur une contrainte par `SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint` sur la colonne, jamais par le seul nom lu dans l'erreur ; une migration de réconciliation legacy retire les contraintes par colonne, pas par nom supposé.** (Sprint 88 #545)
+
+
+## PIT-S88-002 — Sous zsh, une commande ou une liste rangée dans une variable ne se découpe pas : `$P <<SQL` et `set -- $T` échouent en silence
+Deux occurrences au S88. (1) Repro #545 : `P="docker exec … psql"; $P <<SQL` donne `command not found`, le script continue, et la « migration réussie » portait sur une base vide de sens. (2) Watcher CI du lead : `T="7 0"; set -- $T` laisse `$1="7 0"` et `$2` vide, la condition « 7 checks et 0 en attente » n'est jamais vraie, et le watcher tourne jusqu'à son timeout alors que la CI était verte. Même famille que `git add -- $F` (S76). **Règle : sous zsh, jamais de commande ni de liste dans une variable scalaire — fonction shell, tableau `${=T}`, ou parsing en Python ; et vérifier l'état produit, pas le code de sortie.** (Sprint 88 #545, lead)
+
+
+## PIT-S88-003 — Derrière le proxy Next, TOUTE la suite E2E compte sur une seule IP : register n'est pas le seul créneau qu'elle martèle
+La prémisse de DEC-S79-002 (« register est le seul créneau qu'une suite automatisée martèle depuis une IP ») est fausse : le navigateur ne parle pas au backend, le proxy Next relaie, et avec `trust-forwarded-header=false` les 2 workers, les retries et les 2 serveurs CI partagent un seul seau par créneau. Recompté au S88 : login 12 nominal / 20 pire cas pour un défaut de 10, reset-password 4/12 pour 5. **Règle : tout budget rate-limit E2E recompte TOUS les créneaux throttlés, pas seulement celui qui a déjà cassé.** (Sprint 88 #547)
+
+
+## PIT-S88-008 — Le dump d'échec MockMvc est aussi recopié dans les rapports surefire XML
+`@AutoConfigureMockMvc` imprime l'échange complet sur échec (`Set-Cookie: jwt=eyJ…`) dans la sortie standard ET dans `target/surefire-reports/TEST-*.xml` (`<system-out>`). `spring.test.mockmvc.print=none` couvre les deux (mesuré 0/0 au S88). **Règle : ne jamais ajouter `surefire-reports` à un `upload-artifact` d'un dépôt public sans vérifier ce point, et ne jamais réactiver `print` dans un job CI.** (Sprint 88 #568)
+
+
+## PIT-S88-010 — Le hook `block-destructive` inspecte toute la ligne Bash, message de commit en heredoc compris
+Au S88 un commit dont le message citait la commande Compose de suppression de volumes a été refusé, alors qu'aucune commande destructive n'était exécutée. Parade sans contournement : écrire le message dans un fichier et `git commit -F <fichier>`. (Sprint 88 #545, revue)
+
+
+## PIT-S88-011 — RTK réécrit `npx next start` par son filtre de build et masque la vraie erreur
+Symptôme S88 : log réduit à « Errors: 1 », exit 1, cause invisible. Lancer `./node_modules/.bin/next start` ou préfixer `rtk proxy` pour tout serveur long. Même famille que les logs `next dev` avalés (S61). (Sprint 88 #547)
+
+
+## PIT-S88-012 — Un garde de configuration doit convertir la property EXACTEMENT comme son consommateur
+Le garde prod ajouté au S88 parsait avec `Integer.valueOf`, qui refuse l'hexadécimal et renvoyait `null` (= défaut). Le binding `@Value Integer` passe par `NumberUtils.parseNumber`, qui décode `0x`/`#` : `APP_RATE_LIMIT_LOGIN_PER_MINUTE=0x3E8` bootait en prod avec un plafond login de 1000. Correctif : même chemin de conversion, valeur illisible = boot refusé en prod. **Règle : un garde qui valide une property la lit avec le convertisseur de son consommateur, jamais avec un parseur « équivalent ».** (Sprint 88 #547, revue cycle 2)
+
+
+## PIT-S88-014 — Un plafond de rate-limit réglable n'a qu'un plancher : sans borne haute en prod, une variable d'env coupe le throttle sans échec
+Rendre login/reset-password réglables au S88 a ouvert `APP_RATE_LIMIT_LOGIN_PER_MINUTE=100000` en prod : boot réussi, simple WARN, anti-bruteforce supprimé de fait (le même trou existait pour register depuis #475). Correctif : `ProfileSafetyGuard` refuse le boot en prod effective si une valeur dépasse son défaut (DEC-S88-003). **Règle : toute propriété qui ASSOUPLIT une protection reçoit, avec elle, son garde prod.** (Sprint 88, revue + security-expert)
+
+
+## PIT-S88-015 — `trust-forwarded-header=false` n'est vrai qu'en dev/e2e : la prod le met à `true`, et sa sûreté dépend de Caddy
+`docker-compose.prod.yml` pose `app.rate-limit.trust-forwarded-header=true` : la clé du rate-limit vient de `X-Forwarded-For`. C'est sûr uniquement parce que Caddy remplace l'en-tête et que le backend n'expose aucun port. Un proxy amont ou un `trusted_proxies` Caddy le rend forgeable (PIT-S2-005). Au S88, un brief d'audit affirmait l'inverse. **Règle : relire la valeur par profil avant d'affirmer quoi que ce soit sur la clé de comptage.** Suivi : issue de backlog du S88. (Sprint 88, security-expert)
+
+
+## PIT-S88-016 — Exiger N runs CI verts sur un même SHA : `gh run rerun` + `run_attempt`, et ne rien pousser entre les runs
+Aucune CI ne tourne sur `sprint/N` (PIT-S64-008) : les runs se font sur la PR. Recette S88 : `gh run rerun <id>`, attendre `run_attempt == N && status == completed` via `gh api …/actions/runs/<id>`, lire les jobs de CET essai via `…/attempts/<N>/jobs`, sauver le log `e2e` avant le rejeu suivant. Tout push crée un nouveau SHA et annule le rejeu en cours : les écritures mémoire attendent le dernier run. (Sprint 88, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
