@@ -6364,7 +6364,20 @@ rattrapé ; mesuré par les 3 runs CI exigés, retour au dev avant merge si un a
 corriger n°1 (201 tardif traité en échec → setup rouge au mauvais motif), n°3 (pire cas annoncé hors ré-émissions sur 5xx),
 n°4 (`ProfileSafetyGuard` contourné par une valeur hexa `0x3E8` que Spring décode) ; relecture du diff par le lead, pas de
 3e cycle reviewer ; n°2 et n°5 → follow-ups.
-**Status :** En cours
+**Dernière passe (n°1/3/4 du cycle 2) :** `e5c2f4b` (201 tardif = succès, clic borné à 5 s < réponse 10 s, pire cas register
+36/30 documenté comme symptôme d'instabilité 5xx) · `30ecdc8` (`ProfileSafetyGuard` convertit via `NumberUtils.parseNumber`
+comme le binding Spring : `0x3E8` refusé en prod, valeur illisible refusée en prod, hors prod inchangé). **Relue par le lead**
+(appelant unique de `readIntegerOrNull` derrière `isProductionEffective`, test « profil test + illisible → autorisé » présent).
+**Tests (agents, non rejoués par le lead) :** backend 603/0 · Vitest 1553/0 · tsc/lint/format conformes · packs `--check` 0 ·
+E2E complète locale filtre armé 374 passés / 1 échec darwin attendu / 1 flaky hors throttle · ciblée post-correctifs setup 5,
+golden-path 6, auth 29. Audit : `audits/sprint-88-test-coverage.md`.
+**Écarts d'orchestration :** `spawn-ref-547.txt` jamais écrit avant le spawn de #547 (recovery `/resume-failed` impossible pour
+cette issue ; sans conséquence, aucun crash) ; briefings supprimés AVANT la PR (jamais committés).
+**Follow-ups à trianger au `/sprint end` :** reviewer cycle 2 n°2 (contrat de boucle annotée contournable via helper) et n°5
+(vide via vrai binding) · sécurité n°3 (`trust-forwarded-header=true` en prod dépend de Caddy ; traces Playwright publiques) ·
+#545 : sort des bases `eventmanager`/`eventmanager_s79`/`eventmanager_flywaytest` du Postgres Homebrew (décision dev) · README
+§3 « CI en `workers: 1` » périmé · noms d'anciennes IT rate-limit cités dans `docs/memory/**`.
+**Status :** En revue CI — PR `sprint/88` → `dev` ; merge conditionné à 3 runs CI verts consécutifs (preuve `rate-limit-armed` `passed`) et à la confirmation du dev.
 
 ### Sprint 89 — 2026-09-13 (PLANIFIÉ — cohésion 0.33, Données affichées = données saisies)
 **Objectif :** Une catégorie ayant porté un produit archivé redevient supprimable ; le jour affiché = le jour saisi dans tout fuseau
