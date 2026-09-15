@@ -746,15 +746,17 @@
 .mt-tlm__evt--pin::before{content:none;}
 .mt-tlm__evt--pin .mt-evt-pin{height:28px;}
 .mt-tlm__evt--pin .mt-evt-pin__label{font-size:12.5px;}
-.mt-tlm__evt--pin + .mt-tlm__evt-more{color:var(--color-ink);}
 /* #595 — marques de récurrence mobiles, centrées sur la barre de la lane (le wrap des
    événements est `top:0; bottom:0` + flex centré) : barre portrait 28 px. Déclarées
    APRÈS `.mt-evt` (même spécificité) : elles remplacent son `top:9px; height:26px`. */
 .mt-tlm__ghost{top:calc(50% - 14px); height:28px;}
 .mt-tlm__ghost-pin{top:calc(50% - 4px);}
 .mt-tlm__connector{position:absolute; top:calc(50% - 1px); height:0;}
-/* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px. */
-.mt-tlm__evt-more{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:-2px; background:transparent; border:0; border-radius:var(--radius-sm); cursor:pointer; flex:0 0 auto;}
+/* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px.
+   Encre de PAGE pour tous les événements (barre comme pin) : le `⋯` est posé À CÔTÉ
+   de la barre, jamais dessus — l'encre calculée pour la couleur de la barre y tombait
+   à 1,07:1 (barre claire, sombre). `--color-ink` : même rendu que le pin (#594). */
+.mt-tlm__evt-more{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:-2px; background:transparent; border:0; border-radius:var(--radius-sm); color:var(--color-ink); cursor:pointer; flex:0 0 auto;}
 .mt-tlm__evt-more:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* Minimap compacte (hauteur réduite vs desktop, JS Minimap inchangé). */

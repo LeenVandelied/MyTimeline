@@ -168,6 +168,19 @@ describe('TimelineMobilePortrait', () => {
     ).toBe('')
   })
 
+  it('le `⋯` d’une BARRE de durée n’a aucune encre inline (fond de lane, pas la barre)', () => {
+    renderPortrait()
+    const [bar] = screen.getAllByTestId('timeline-event')
+    // La barre garde son encre calculée sur sa couleur…
+    expect(bar.style.color).not.toBe('')
+    // …mais pas le `⋯` voisin, posé sur la lane : encre de page via le DS.
+    const more = (bar.closest('.mt-tlm__evt-wrap') as HTMLElement).querySelector(
+      '[data-testid="timeline-event-more"]',
+    ) as HTMLElement
+    expect(more.style.color).toBe('')
+    expect(more.getAttribute('style')).toBeNull()
+  })
+
   it('affiche le nom du produit dans chaque lane', () => {
     renderPortrait()
     const titles = screen.getAllByTestId('timeline-resource-title').map((el) => el.textContent)

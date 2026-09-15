@@ -370,8 +370,8 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                 onClick={() => setActionTarget(event)}
                                 aria-label={t('dashboard.timeline.actions.label')}
                                 data-testid="timeline-event-more"
-                                // Pin : `⋯` sur le fond de lane → encre de page (CSS).
-                                style={pin ? undefined : { color: ink }}
+                                // Pas d'encre inline : le `⋯` est sur le fond de lane,
+                                // jamais sur la barre → encre de page (CSS `.mt-tlm__evt-more`).
                               >
                                 <MoreHorizontal size={16} strokeWidth={2} aria-hidden="true" />
                               </button>
