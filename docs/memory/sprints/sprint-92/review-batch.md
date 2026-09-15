@@ -28,5 +28,13 @@ Pause survol/focus (arbitrage dev) ⇒ la carte capte le pointeur ; en `top-righ
 - Aucune issue ouverte ne le porte (`gh issue list --search "archiv produit liste"` / `"invalidat"` : vides).
 - → **RECOMMAND_FOLLOWUP** [XS | frontend products] : hook `useArchiveProduct` (mutation + invalidation `products.all`), comme `useUpdateProduct` / `useDeleteCategory`. À trier au `/sprint end`.
 
+## Relecture de cycle 2 (`5c64e01`, `87dca1d`, `fa8b102`, `bca8b20`)
+- **[MAJEUR → reclassé MINEUR par le lead] `ui/toaster.tsx:107-116`** — `focused` pourrait rester `true` si le toast focalisé expire alors qu'un autre reste visible → survivant en pause jusqu'au démontage (~1 s, `removeDelay` 1000). PLAUSIBLE, non rejoué. **Motif du reclassement** : le même reviewer VÉRIFIE que `pausedAt` est global au store (`dist/index.mjs` case 5/6) → tant que le focus est dans un toast, AUCUN toast n'expire par minuterie, donc le scénario exige un retrait hors minuterie ; et l'effet s'auto-corrige en ~1 s. Pas de correction dans le sprint (re-review limitée à 1 cycle ; une correction imposerait build + E2E de nouveau). → suivi : stocker l'id focalisé plutôt qu'un booléen [XS].
+- **[MINEUR] `ui/toaster.tsx:99-116`** — survol/focus d'UN toast met TOUS les toasts en pause (comportement de la lib, VÉRIFIÉ) → à documenter dans la JSDoc [XS, suivi].
+- **[MINEUR] `ui/toaster.tsx`** — focus non restauré quand le toast focalisé disparaît (retombe sur `<body>`). PLAUSIBLE, comportement standard → suivi [XS].
+- **[OK VÉRIFIÉS]** double `useToaster()` idempotent (aucun toast retiré deux fois ni jamais) ; survol natif malgré `#_rht_toaster` en `none` (handlers sur le conteneur, bubbling) ; `tabIndex`/handlers posés sur le nœud `role="status"` ; garde `runSubmit` → `error`, bouton réactivé, message `event-form-error` rendu (`EventEditForm.tsx:924-926`), seul appelant `TimelineEditHost.tsx:97` ; `console.error` du test couvert par le spy parent ; `TOASTER_TOP_OFFSET` = tokens confirmés (`spacing.css:11,14,18`) ; `stableBox` ne passe jamais à vide (`expect.poll`) + garde « même colonne » ; spec d'archivage : données dédiées, `waitForResponse` armé avant le clic, rechargement réel.
+
+**Verdict cycle 2 : aucun bloquant pour la PR.**
+
 ## Cycle de corrections
 Briefing `briefing-review-fixes.md`, spawn ref consigné dans `spawn-ref-review-fixes.txt`. Relecture cycle 2 obligatoire (mémoire : les commits qui corrigent la review doivent eux-mêmes être relus).
