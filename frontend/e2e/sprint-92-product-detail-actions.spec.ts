@@ -3,7 +3,7 @@ import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
-import { getUserId, seedCategory, seedProduct, unique } from './support/products'
+import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
 
 /**
  * #605 (Sprint 92) — DÉTAIL PRODUIT : « Nouvel événement » prérempli et « Archiver ».
@@ -25,9 +25,15 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  *   4. « Archiver » : le dialog dit « Archiver ce produit ? », son bouton dit « Archiver »,
  *      aucun « supprim… » ; la confirmation archive (DELETE 204), revient à la liste et
  *      affiche le toast « Produit archivé ».
+ *   5. « Archiver » DEPUIS LE DRAWER D'ÉDITION (`product-drawer-archive`, ouvert depuis la
+ *      liste) : même vocabulaire (titre + bouton), DELETE 204, toast « Produit archivé »,
+ *      drawer refermé, et le produit n'est plus listé (liste RECHARGÉE, avec un produit
+ *      témoin visible pour que l'absence ne soit pas vacante).
  *
- * CE QU'ELLE NE PROUVE PAS : les autres locales (unitaires) ; le drawer produit et la
- * liste (unitaires `ProductDrawer.test.tsx` / `ProductsListView.test.tsx`) ; le cas
+ * CE QU'ELLE NE PROUVE PAS : les autres locales (unitaires) ; le formulaire du drawer
+ * produit hors archivage (unitaires `ProductDrawer.test.tsx` / `ProductsListView.test.tsx`) ;
+ * le retrait de la ligne SANS rechargement (ni la liste ni le drawer n'invalident la query
+ * `products.withEvents` après `deleteProduct` — non asserté ici, signalé au lead) ; le cas
  * « liste de produits en cours de chargement » (unitaire `NewEventDrawer.test.tsx`).
  *
  * ÉCRITURES : une catégorie + un produit seedés par test (purge `seed-cleanup`, qui
@@ -138,5 +144,69 @@ test.describe('#605 — actions du détail produit (desktop)', () => {
     await expect(
       page.locator('#_rht_toaster').getByRole('status').filter({ hasText: 'Produit archivé' }),
     ).toBeVisible({ timeout: CLICK_BUDGET })
+  })
+
+  test('« Archiver » depuis le drawer d’édition : confirmation qui dit archiver, toast, produit retiré', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000)
+    await neutralizeDevToolingPointerEvents(page)
+    await ensureAuthenticated(page)
+    const userId = await getUserId(page)
+    const category = await seedCategory(page, unique('605 DrawerArchive Cat'))
+    // Produit DÉDIÉ (archivé par ce test) + témoin (reste listé : l'absence n'est pas vacante).
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('605 DrawerArchive Prod'),
+      categoryId: category.id,
+    })
+    const witness = await seedProduct(page, {
+      userId,
+      name: unique('605 DrawerArchive Witness'),
+      categoryId: category.id,
+    })
+
+    await gotoProducts(page)
+    await expect(page.getByTestId(`products-row-${product.id}`)).toBeVisible({
+      timeout: FIRST_NAV_BUDGET,
+    })
+    await page.getByTestId(`products-edit-${product.id}`).click({ timeout: CLICK_BUDGET })
+
+    const drawerArchive = page.getByTestId('product-drawer-archive')
+    await expect(drawerArchive).toBeVisible({ timeout: CLICK_BUDGET })
+    await expect(drawerArchive).toHaveText('Archiver')
+    await drawerArchive.click({ timeout: CLICK_BUDGET })
+
+    // Deux dialogs Radix sont montés (drawer + confirmation) : on cible la confirmation.
+    const confirmDialog = page.getByRole('dialog').filter({ hasText: 'Archiver ce produit ?' })
+    await expect(confirmDialog).toBeVisible({ timeout: CLICK_BUDGET })
+    const confirm = page.getByTestId('delete-confirm-button')
+    await expect(confirm).toHaveText('Archiver')
+    await expect(
+      confirmDialog,
+      'LE DÉFAUT DE #605 : aucun « supprimer » pour un archivage',
+    ).not.toContainText(/supprim/i)
+
+    const archived = page.waitForResponse(
+      (r) =>
+        r.url().includes(`/api/users/${userId}/products/${product.id}`) &&
+        r.request().method() === 'DELETE',
+    )
+    await confirm.click({ timeout: CLICK_BUDGET })
+    expect((await archived).status(), 'DELETE produit (soft delete) doit renvoyer 204').toBe(204)
+
+    await expect(
+      page.locator('#_rht_toaster').getByRole('status').filter({ hasText: 'Produit archivé' }),
+    ).toBeVisible({ timeout: CLICK_BUDGET })
+    await expect(drawerArchive, 'le drawer d’édition se referme après archivage').toBeHidden({
+      timeout: CLICK_BUDGET,
+    })
+
+    // Liste RECHARGÉE : le témoin prouve qu'elle est peinte, le produit archivé en est absent.
+    await gotoProducts(page)
+    await expect(page.getByTestId(`products-row-${witness.id}`)).toBeVisible({
+      timeout: FIRST_NAV_BUDGET,
+    })
+    await expect(page.getByTestId(`products-row-${product.id}`)).toHaveCount(0)
   })
 })
