@@ -121,13 +121,23 @@ export function useEventEditConflict(
    */
   const runSubmit = useCallback(
     async (data: EventEditFormValues, fromKeepMine: boolean) => {
+      // Garde `user?.id` coherente avec le reste du flux (`invalidateEvents`) : pas de
+      // PATCH sans utilisateur authentifie ni event cible. #621 (revue) — la garde ne doit
+      // PAS se solder en succes : avant, `invalidateEvents` + `onDone(data)` s'executaient
+      // quand meme, et le parent affichait « Événement modifié » sans PATCH envoye (session
+      // expiree pendant l'edition). Echec = etat `error` (message `event-form-error` du
+      // form, cle generique existante), ni invalidation ni `onDone`.
+      if (!eventId || !user?.id) {
+        setSubmitState('error')
+        setKeepMineAttempts(0)
+        console.error(
+          "Erreur lors de la mise à jour de l'événement : aucun PATCH envoyé (utilisateur ou événement absent)",
+        )
+        return
+      }
       setSubmitState('submitting')
       try {
-        // Garde `user?.id` coherente avec le reste du flux (`invalidateEvents`) :
-        // pas de PATCH sans utilisateur authentifie.
-        if (eventId && user?.id) {
-          await updateEvent(eventId, data)
-        }
+        await updateEvent(eventId, data)
         invalidateEvents()
         setConflict(null)
         setSubmitState('idle')
