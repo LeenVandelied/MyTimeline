@@ -141,3 +141,9 @@ Cause : le compteur de `CategoriesView` / `CategoryDrawer` se construit sur un l
 
 ## BUG-S89-002 — Les `LocalDate` s'affichaient au jour précédent à l'ouest de Greenwich
 Cause : `new Date("YYYY-MM-DD")` lit une date seule à minuit UTC, puis `Intl` la projette en heure locale. Symptôme : la veille sur le dashboard, les listes et le détail produit, et une pastille décalée dans la frise, invisible depuis l'Europe et sous la CI en UTC. Correctif : helper unique `parseLocalDate` (minuit local), 35 lectures migrées (DEC-S89-002) ; tests qui forcent `America/New_York` eux-mêmes. Règle : un test de fuseau force son fuseau et affirme sa non-vacance (PAT-S89-002). (Sprint 89 #652)
+
+## BUG-S92-001 — Le « prochain événement » du dashboard ignorait les récurrences et l'événement du jour
+Cause : `nextEvent` (`dashboard/lib.ts`) ne lisait que `startDate` et comparait à `now`. Symptôme : une série mensuelle démarrée dans le passé n'avait « aucune échéance », et l'événement du jour sortait des « à venir ». Correctif : helper mutualisé `lib/next-occurrence.ts` (`nextStart`, `nextEvent`), occurrence k calculée depuis l'origine, bornée par `seriesHorizon`, comparaison au début du jour local ; consommé par la liste produits et le dashboard (DEC-S92-003, PIT-S92-006). (Sprint 92 #603)
+
+## BUG-S92-002 — Toast « Événement modifié » affiché alors qu'aucun PATCH n'était envoyé
+Cause : `useEventEditConflict.runSubmit` gardait `if (eventId && user?.id) await updateEvent(...)` sans lever, puis appelait `invalidateEvents()` et `onDone(data)` quoi qu'il arrive. Préexistant, rendu visible par le toast de #621. Correctif : garde échouée → `submitState='error'` (message `event-form-error` existant), ni PATCH, ni invalidation, ni `onDone`. Règle : une garde silencieuse suivie d'un callback de succès est un faux succès dès qu'un retour utilisateur s'y branche. (Sprint 92, review batch `fa8b102`)
