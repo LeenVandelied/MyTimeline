@@ -129,7 +129,7 @@ async function createEventThroughDrawer(page: Page, productId: string, title: st
 test.describe('#621 — toasts métier (desktop)', () => {
   test.use({ storageState: PROD.storageState, viewport: DESKTOP })
 
-  test('création d’un événement : toast DS « Événement créé », au jeton --z-toast, non bloquant', async ({
+  test('création d’un événement : toast DS « Événement créé », au jeton --z-toast, carte captante (conteneur transparent au pointeur) hors de la croix du drawer', async ({
     page,
   }) => {
     test.setTimeout(120_000)
