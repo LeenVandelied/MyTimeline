@@ -6521,7 +6521,7 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
   - harmoniser le connecteur DS avec la maquette (1.5px dotted) [XS | design] → **discard** (écart délibéré, plancher de contraste #497, APPROUVÉ par le Designer)
   - empilage en rangées des événements qui se chevauchent [M | frontend] → issue **#709** (backlog)
   Bilan : 5 issues créées sans milestone (#705-#709, labels posés par project-manager, aucun `sprint-*`), 1 absorbée, 1 discard (1/7).
-**Status :** PR #704 prête — merge, fermeture des issues #676/#594/#595 et du milestone #92 au terme du `/sprint end 91` (statut définitif à solder au `/sprint start 92`)
+**Status :** Terminé — PR #704 fusionnée le 2026-09-15 (`43a7870`), issues #676/#594/#595 et milestone #92 fermés (vérifié sur GitHub au `/sprint start 92`)
 
 ### Sprint 92 — 2026-09-13 (PLANIFIÉ — cohésion 0.67, Retour d'action et échéances produit)
 **Objectif :** Un seul mécanisme de toast présent sur les surfaces métier ; « prochain événement » sur la liste produits ; détail produit avec Archiver + Nouvel événement pré-rempli
@@ -6530,8 +6530,13 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Vagues :** V1 = #621 ∥ #603 | V2 = #605
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 89 (#652), Sprint 91 (#676 : `TimelineEditHost`)
-**À trancher au démarrage :** brancher ou supprimer `ui/toast.tsx` (#621) ; garder « Dernière activité » (#603) ; vocabulaire « Archiver » (#605).
-**Status :** Planifié
+**Démarrage (2026-09-15) :** S91 soldé sur GitHub ; branche `sprint/92` créée depuis `origin/dev` (`43a7870`) et poussée ; `frontend/node_modules` du worktree = symlink vers le dépôt principal (lock identique).
+**Arbitrages rendus (dev, 2026-09-15) :**
+  - #621 — **brancher** `ui/toast.tsx` comme rendu de react-hot-toast (les 15 appels existants, réglages compris, prennent le traitement DS) ; `--z-toast` consommé → #460 fermable.
+  - #603 — **retirer** « Dernière activité » : colonnes du handoff §5 (Produit · Prochain événement · mini-frise 90 j · nb d'événements), tris `lastActivity*` remplacés par « Prochain événement ».
+  - #605 — vocabulaire **« Archiver »** pour le soft delete produit ; vaudra pour #600.
+**Prémisses du plan vérifiées au démarrage :** #621 — `CategoryDrawer` n'appelle pas `toast` (commentaire :50 seulement), l'architect a raison contre l'énoncé ; 4 appelants hors `apiClient` (`ProfileSection`, `SecuritySection`, `useDeleteAccountFlow`) ; `sprint-77-theme-visual.spec.ts` masque `#_rht_toaster` (référence visuelle non concernée) ; aucune spec n'asserte un texte de toast. #603 — `nextEvent` (`dashboard/lib.ts:15`) ignore toujours la récurrence (lecture locale corrigée par #652) ; `src/lib/recurrence.ts` expose déjà `nextOccurrenceStart` / `occurrenceStart` / `seriesHorizon` (livrés S91) → à réutiliser ; clé `products.list.count` à `:139`, compte des produits ; aucune spec E2E ne cite `products-sort` ni `lastActivity`. #605 — boutons `ProductDetailView.tsx:282-301`, dialog `common.deleteDialog.product` (« Supprimer ce produit ? ») ; `useOpenCreateEvent()` sans argument confirmé.
+**Status :** En cours
 
 ### Matrice de conflits inter-sprints (S88-S92)
 
