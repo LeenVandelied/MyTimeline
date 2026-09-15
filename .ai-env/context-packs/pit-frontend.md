@@ -1432,6 +1432,50 @@ La flèche droite déplace la sélection (`aria-checked="true"`) mais le focus e
 ## PIT-S90-011 — Une spec Playwright neuve n'hérite d'aucune session
 Le compte est déclaré PAR FICHIER (`test.use({ storageState: <COMPTE>.storageState })`, `e2e/support/accounts.ts`). Sans cette ligne, `ensureAuthenticated` échoue sur `getByTestId('dashboard')` : la page reste sur la landing publique. Première sonde du lead au S90 : 3/3 rouges pour cette seule raison. (Sprint 90)
 
+
+## PIT-S91-001 — `./scripts/test-quiet.sh frontend` lance `next build` : interdit quand un `next dev` du worktree sert le harnais E2E
+Le scope `frontend` enchaîne build → Vitest → tsc → lint ; le build réécrit `frontend/.next` sous le serveur de dev et tue le harnais (toutes les pages en 500). Le gabarit de briefing du lead le prescrivait au S91 alors qu'il interdisait `next build` : corrigé en cours de vague. Agents pendant une vague : `frontend-unit` ; le lead joue `frontend` après avoir arrêté `next dev`. (Sprint 91)
+
+
+## PIT-S91-002 — Le listing Playwright (`--list`) refuse de charger la config sans les variables du harnais
+`assertWebServerEnv` (`frontend/playwright.config.ts`) exige `PLAYWRIGHT_BASE_URL`, `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` même pour `--list`, qui n'exécute rien. Passer les trois en ligne. (Sprint 91 #676)
+
+
+## PIT-S91-003 — Frise mobile : une cible tactile qui déborde de sa lane est recouverte par la lane suivante
+Les lanes mobiles sont en `position:relative` : la partie d'une zone de frappe absolue qui dépasse (pin de 44 px dans une lane paysage de 34 px) passe sous la lane suivante, et la hitbox `::before` des barres est rognée par `overflow:hidden`. Parade : `z-index` sur le wrap. Mesurer une cible avec `elementFromPoint` au point visé, jamais `boundingBox`. (Sprint 91 #594)
+
+
+## PIT-S91-004 — Purge E2E : deux workers créent `zz-purge` en même temps → 500 `uq_categories_owner_name`
+`resolveTrashCategory` (`e2e/support/seed-cleanup.ts`) fait GET puis POST sans verrou et son commentaire tient la double création pour « sans conséquence » ; or la contrainte d'unicité existe depuis V8. Vu une fois par #594 sur `sprint-63:397` (assertions vertes, purge rouge), non reproduit dans deux runs complets. Cause probable, non instrumentée. (Sprint 91)
+
+
+## PIT-S91-005 — E2E de frise : la virtualisation horizontale ne monte que la bande visible ± 600 px
+Au chargement la frise est centrée sur aujourd'hui : une occurrence posée 20 j plus loin n'est pas forcément montée (mesuré : 2 occurrences sur 3), et au zoom Année une piste de ~1 830 px dépasse la bande en portrait (53 fantômes montés sur 57). Défiler jusqu'à la date (marqueur TODAY + jours × px/jour) AVANT de chercher un élément, et réunir plusieurs cadrages pour un compte exact. (Sprint 91 #595)
+
+
+## PIT-S91-006 — `elementFromPoint` ignore les éléments `pointer-events:none` : un hit-test ne prouve pas l'ordre de peinture
+Fantômes et connecteurs de récurrence sont `pointer-events:none` : le hit-test les traverse et rend l'occurrence réelle même si la marque est peinte PAR-DESSUS. La spec de #595 prouvait donc la non-captation du clic, pas « jamais masquée » ; une mutation de `z-index` restait verte. Voir PAT-S91-001. (Sprint 91 #595, review)
+
+
+## PIT-S91-007 — Un subagent qui attend un process long via un monitor d'arrière-plan s'arrête sans RETOUR
+L'agent de #595 a lancé son run E2E en tâche de fond puis « attendu le monitor » : deux arrêts, aucun commit, travail intact. Exiger dans le briefing une attente BLOQUANTE (`until …; do sleep 5; done`). Sur un retour sans `STATUS:` : `pgrep` + `git status` avant de conclure au crash, puis relance par message. (Sprint 91)
+
+
+## PIT-S91-008 — Suite E2E contre `next dev` : 4 faux rouges `sprint-90-first-contact` (squelettes #629)
+Les 4 tests attendent une réponse RSC `next-router-prefetch: 1` ; Next.js ne précharge les liens qu'en build de production. 392/5 contre `next dev`, 24/24 sur la même spec contre `next build` + `next start` (variables proxy passées AU BUILD et au start). Ne pas les diagnostiquer : les rejouer en production. (Sprint 91)
+
+
+## PIT-S91-009 — Le `⋯` des barres mobiles prend l'encre de la BARRE alors qu'il est posé sur la lane
+`style={{ color: ink }}` sur `.mt-tlm__evt-more`, frère de la barre dans `.mt-tlm__evt-wrap` : l'encre calculée pour le fond de la barre se retrouve sur le fond de lane. Mesuré 1,07:1 en sombre derrière une barre claire (WCAG 1.4.11 exige 3:1). Préexistant (identique sur `3e9aa77`), corrigé pour les pins par #594 puis pour les barres en clôture du S91. (Sprint 91, sonde visuelle du lead)
+
+
+## PIT-S91-010 — Un rapport de reviewer peut citer des numéros de ligne du DUMP DE DIFF, pas des fichiers
+Verdict APPROUVÉ à 0 finding avec des ancrages `virtualization.ts:3312`, `TimelineView.tsx:2653` sur des fichiers qui n'ont pas ce nombre de lignes : les `[OK]` étaient invérifiables. La relecture ciblée du lead a trouvé un MAJEUR dans la spec échantillonnée. Un « 0 finding » dont la moitié des points à risque sont « non vérifiés » n'est pas une preuve. (Sprint 91)
+
+
+## PIT-S91-011 — Mesurer un contraste sur une lane mobile : le helper refuse la grille `background-image`
+`readTextRendering` (`frontend/e2e/support/contrast.ts`) lève dès qu'il traverse un dégradé ; or `.mt-tlm__lane` peint sa grille en `background-image`. Vérifier que ce dégradé est le seul traversé, le passer à `none` le temps de la mesure, puis mesurer contre le fond réellement peint (`--color-surface`). Motif : `frontend/e2e/sprint-91-more-contrast.spec.ts`. (Sprint 91, absorption `⋯`)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

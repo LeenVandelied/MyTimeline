@@ -799,6 +799,30 @@ Le reporter `line` ne nomme pas le test non exécuté. Une première comparaison
 Un `let` de niveau module, lu par un `vi.mock` et réassigné dans un `beforeEach`, a été réécrit en `const` par l'autofix `prefer-const` du hook : `tsc` TS2588 et 12 tests rouges, alors que prettier et eslint passaient. Prévention : relancer `tsc` et les tests après CHAQUE édition, pas seulement à la fin ; préférer un objet porteur mutable. (Sprint 90 review cycle 1)
 
 
+## PIT-S91-001 — `./scripts/test-quiet.sh frontend` lance `next build` : interdit quand un `next dev` du worktree sert le harnais E2E
+Le scope `frontend` enchaîne build → Vitest → tsc → lint ; le build réécrit `frontend/.next` sous le serveur de dev et tue le harnais (toutes les pages en 500). Le gabarit de briefing du lead le prescrivait au S91 alors qu'il interdisait `next build` : corrigé en cours de vague. Agents pendant une vague : `frontend-unit` ; le lead joue `frontend` après avoir arrêté `next dev`. (Sprint 91)
+
+
+## PIT-S91-002 — Le listing Playwright (`--list`) refuse de charger la config sans les variables du harnais
+`assertWebServerEnv` (`frontend/playwright.config.ts`) exige `PLAYWRIGHT_BASE_URL`, `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` même pour `--list`, qui n'exécute rien. Passer les trois en ligne. (Sprint 91 #676)
+
+
+## PIT-S91-004 — Purge E2E : deux workers créent `zz-purge` en même temps → 500 `uq_categories_owner_name`
+`resolveTrashCategory` (`e2e/support/seed-cleanup.ts`) fait GET puis POST sans verrou et son commentaire tient la double création pour « sans conséquence » ; or la contrainte d'unicité existe depuis V8. Vu une fois par #594 sur `sprint-63:397` (assertions vertes, purge rouge), non reproduit dans deux runs complets. Cause probable, non instrumentée. (Sprint 91)
+
+
+## PIT-S91-007 — Un subagent qui attend un process long via un monitor d'arrière-plan s'arrête sans RETOUR
+L'agent de #595 a lancé son run E2E en tâche de fond puis « attendu le monitor » : deux arrêts, aucun commit, travail intact. Exiger dans le briefing une attente BLOQUANTE (`until …; do sleep 5; done`). Sur un retour sans `STATUS:` : `pgrep` + `git status` avant de conclure au crash, puis relance par message. (Sprint 91)
+
+
+## PIT-S91-008 — Suite E2E contre `next dev` : 4 faux rouges `sprint-90-first-contact` (squelettes #629)
+Les 4 tests attendent une réponse RSC `next-router-prefetch: 1` ; Next.js ne précharge les liens qu'en build de production. 392/5 contre `next dev`, 24/24 sur la même spec contre `next build` + `next start` (variables proxy passées AU BUILD et au start). Ne pas les diagnostiquer : les rejouer en production. (Sprint 91)
+
+
+## PIT-S91-010 — Un rapport de reviewer peut citer des numéros de ligne du DUMP DE DIFF, pas des fichiers
+Verdict APPROUVÉ à 0 finding avec des ancrages `virtualization.ts:3312`, `TimelineView.tsx:2653` sur des fichiers qui n'ont pas ce nombre de lignes : les `[OK]` étaient invérifiables. La relecture ciblée du lead a trouvé un MAJEUR dans la spec échantillonnée. Un « 0 finding » dont la moitié des points à risque sont « non vérifiés » n'est pas une preuve. (Sprint 91)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

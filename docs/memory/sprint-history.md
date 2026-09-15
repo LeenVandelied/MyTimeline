@@ -6510,7 +6510,18 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Tests :** `test-quiet.sh frontend` OK (build · Vitest 1698/1698 · tsc · lint) · E2E suite complète contre `next dev` 392 passés / 5 échoués / 8 sautés / 1 non exécuté — échecs hors sprint : faux rouge darwin `sprint-77-theme-visual:620` et 4 × `sprint-90-first-contact` (préchargement RSC absent en `next dev`) · **passe en build de production** `sprint-90-first-contact` + 3 specs du sprint : 24/24 · sonde visuelle clair/sombre des 3 frises (jetable) · audit `docs/memory/audits/sprint-91-test-coverage.md`.
 **Coverage-E2E :** OK — les 2 testids signalés vivent dans `TimelineEditHost.test.tsx` (le check lit aussi les `*.test.tsx`).
 **Follow-ups proposés (NON-XS, à trier au `/sprint end`) :** empilage en rangées (`layoutLane`) ; `⋯` des barres mobiles illisible en sombre (1,07:1 mesuré, **préexistant**, corrigé pour les pins seulement) ; mobile — événements des ~120 premiers px sous la colonne sticky ; `RecurrenceExpansionServiceImpl.advance` (dérive au 28) ; fantômes avant le début de série (besoin produit) ; purge E2E `zz-purge` (course de création, 500 `uq_categories_owner_name`). Sources : `issue-*-done.md`, `review-batch.md`.
-**Status :** PR à ouvrir vers `dev` (issues fermées et milestone #92 fermé APRÈS merge, au `/sprint end 91`)
+**PR :** #704 (`sprint/91` → `dev`), ouverte le 2026-09-15 ; CI 7/7 verte sur `afb4368`.
+**Clôture (`/sprint end 91`, 2026-09-15) :** contrôle de complétude bloqué sur 2 `RECOMMAND_UI_DESIGN` (#594, #595) alors que le Designer avait bien été spawné — son verdict vivait dans `review-batch.md` et le hook cherche un NOM de fichier → artefact `docs/memory/sprints/sprint-91/ui-design-review.md` (verdict + arbitrage), contrôle vert sans `--force`. Consolidation mémoire : PIT-S91-001 à -010 (classés dans `pit-classification.tsv`, packs régénérés, `--check` exit 0), PAT-S91-001/-002, DEC-S91-001 à -005.
+**Follow-ups arbitrés (Phase 4, triage item par item par le dev) :**
+  - `⋯` des barres mobiles illisible en sombre (1,07:1, préexistant) [XS | frontend a11y] → **absorbé** avant merge (commit : voir `issue-absorb-more-contrast-done.md`)
+  - purge E2E `zz-purge`, création concurrente → 500 [XS | tooling] → issue **#705** (backlog)
+  - frise mobile : événements des ~120 premiers px sous la colonne sticky [S | frontend] → issue **#706** (backlog)
+  - `RecurrenceExpansionServiceImpl.advance` : dérive au 28 du mois [S | backend] → issue **#707** (backlog)
+  - fantômes avant le début d'une série : besoin produit à trancher [S | produit] → issue **#708** (backlog)
+  - harmoniser le connecteur DS avec la maquette (1.5px dotted) [XS | design] → **discard** (écart délibéré, plancher de contraste #497, APPROUVÉ par le Designer)
+  - empilage en rangées des événements qui se chevauchent [M | frontend] → issue **#709** (backlog)
+  Bilan : 5 issues créées sans milestone (#705-#709, labels posés par project-manager, aucun `sprint-*`), 1 absorbée, 1 discard (1/7).
+**Status :** PR #704 prête — merge, fermeture des issues #676/#594/#595 et du milestone #92 au terme du `/sprint end 91` (statut définitif à solder au `/sprint start 92`)
 
 ### Sprint 92 — 2026-09-13 (PLANIFIÉ — cohésion 0.67, Retour d'action et échéances produit)
 **Objectif :** Un seul mécanisme de toast présent sur les surfaces métier ; « prochain événement » sur la liste produits ; détail produit avec Archiver + Nouvel événement pré-rempli
