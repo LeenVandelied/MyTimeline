@@ -3,7 +3,9 @@ import { join } from 'node:path'
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { queryKeys } from '@/lib/query-keys'
 import type { Product } from '@/types/product'
 import { toLocalIsoDate } from '@/lib/date-iso'
 import { CreateEventProvider } from '@/components/layout/CreateEventContext'
@@ -34,6 +36,36 @@ vi.mock('@/hooks/useAuth', () => ({
 vi.mock('@/services/productService', () => ({
   deleteProduct: (...args: unknown[]) => deleteProductMock(...args),
 }))
+// PIT-S92-004 — archivage par la mutation `useArchiveProduct`. Par défaut, mutation mockée
+// (branchement asserté ici, cache/invalidation dans `useArchiveProduct.test.tsx`) ; le bloc
+// « cache réel » bascule `archiveHooks.real` pour exécuter les VRAIS hooks sur un vrai
+// `QueryClient` (seul `deleteProduct` reste mocké) et prouver l'ordre navigation/cache.
+const archiveMutateAsync = vi.fn()
+const archiveHooks = vi.hoisted(() => ({ real: false }))
+vi.mock('@/hooks/useArchiveProduct', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks/useArchiveProduct')>()
+  const fakeUseArchiveProduct = (userId: string | undefined) => {
+    void userId
+    return { mutateAsync: archiveMutateAsync, isPending: false }
+  }
+  const fakeUseIsProductArchivedHere = (productId: string) => {
+    void productId
+    return false
+  }
+  return {
+    ...actual,
+    useArchiveProduct: (userId: string | undefined) => {
+      const impl = archiveHooks.real ? actual.useArchiveProduct : fakeUseArchiveProduct
+      return impl(userId)
+    },
+    useIsProductArchivedHere: (productId: string) => {
+      const impl = archiveHooks.real
+        ? actual.useIsProductArchivedHere
+        : fakeUseIsProductArchivedHere
+      return impl(productId)
+    },
+  }
+})
 // #307 — la mutation de (dés)archivage est mockée au niveau du hook : son invalidation
 // TanStack est couverte par `useSetEventArchived.test.tsx` (isolation des responsabilités).
 vi.mock('@/hooks/useSetEventArchived', () => ({
@@ -68,8 +100,23 @@ vi.mock('@/components/timeline', () => ({
   },
 }))
 vi.mock('./ProductDrawer', () => ({
-  ProductDrawer: ({ open, product }: { open: boolean; product?: Product }) =>
-    open ? <div data-testid="product-drawer" data-product={product?.id ?? ''} /> : null,
+  ProductDrawer: ({
+    open,
+    product,
+    onDeleted,
+  }: {
+    open: boolean
+    product?: Product
+    onDeleted?: () => void
+  }) =>
+    open ? (
+      <div data-testid="product-drawer" data-product={product?.id ?? ''}>
+        {/* Rejoue la sortie du drawer après un archivage réussi (`onDeleted`). */}
+        <button type="button" data-testid="product-drawer-archived" onClick={() => onDeleted?.()}>
+          archived
+        </button>
+      </div>
+    ) : null,
 }))
 vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
   DeleteConfirmDialog: ({
@@ -254,25 +301,100 @@ describe('ProductDetailView', () => {
 
   it('archive (soft delete #50), confirme par toast, puis revient à la liste', async () => {
     const user = userEvent.setup()
-    deleteProductMock.mockResolvedValue(undefined)
+    archiveMutateAsync.mockResolvedValue(undefined)
     render(<ProductDetailView productId="p-alpha" />)
     await user.click(screen.getByTestId('product-detail-archive'))
     await user.click(screen.getByTestId('delete-dialog'))
-    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha')
+    expect(archiveMutateAsync).toHaveBeenCalledWith({ productId: 'p-alpha' })
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/fr/products'))
     expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived')
   })
 
   it('archivage en échec : ni toast ni retour à la liste (erreur laissée au dialog)', async () => {
     const user = userEvent.setup()
-    deleteProductMock.mockRejectedValue({ response: { status: 404 } })
+    archiveMutateAsync.mockRejectedValue({ response: { status: 404 } })
     render(<ProductDetailView productId="p-alpha" />)
     await user.click(screen.getByTestId('product-detail-archive'))
     await user.click(screen.getByTestId('delete-dialog'))
-    await waitFor(() => expect(deleteProductMock).toHaveBeenCalled())
+    await waitFor(() => expect(archiveMutateAsync).toHaveBeenCalled())
     await Promise.resolve()
     expect(toastSuccessMock).not.toHaveBeenCalled()
     expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('archivé depuis le drawer d’édition : retour à la liste', async () => {
+    const user = userEvent.setup()
+    render(<ProductDetailView productId="p-alpha" />)
+    await user.click(screen.getByTestId('product-detail-edit'))
+    await user.click(screen.getByTestId('product-drawer-archived'))
+    expect(pushMock).toHaveBeenCalledWith('/fr/products')
+  })
+
+  /* ------------------------------------------------------- PIT-S92-004 */
+
+  describe('PIT-S92-004 — archivage sur cache réel (vrais hooks, vrai QueryClient)', () => {
+    afterEach(() => {
+      archiveHooks.real = false
+    })
+
+    function renderWithRealCache(getProducts: () => Promise<Product[]>) {
+      archiveHooks.real = true
+      const client = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false, gcTime: Infinity, staleTime: Infinity },
+          mutations: { retry: false },
+        },
+      })
+      client.setQueryData(queryKeys.products.withEvents('user-1'), [PRODUCT, OTHER])
+      // `useProductsWithEvents` lit la VRAIE clé de cache : le retrait et l'invalidation
+      // opérés par `useArchiveProduct` atteignent la vue comme en production.
+      useProductsMock.mockImplementation((userId: string | undefined) =>
+        useQuery({ queryKey: queryKeys.products.withEvents(userId ?? ''), queryFn: getProducts }),
+      )
+      render(
+        <QueryClientProvider client={client}>
+          <ProductDetailView productId="p-alpha" />
+        </QueryClientProvider>,
+      )
+      return client
+    }
+
+    it('retire le produit du cache, sans jamais afficher « introuvable » avant le retour liste', async () => {
+      const user = userEvent.setup()
+      deleteProductMock.mockResolvedValue(undefined)
+      const getProducts = vi.fn().mockResolvedValue([OTHER])
+      const notFoundSeen = { value: false }
+      const observer = new MutationObserver(() => {
+        if (screen.queryByTestId('product-detail-not-found')) notFoundSeen.value = true
+      })
+      observer.observe(document.body, { childList: true, subtree: true })
+
+      const client = renderWithRealCache(getProducts)
+      await user.click(screen.getByTestId('product-detail-archive'))
+      await user.click(screen.getByTestId('delete-dialog'))
+
+      expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha')
+      await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/fr/products'))
+      // L'invalidation a relancé la requête active et le cache ne contient plus le produit.
+      await waitFor(() => expect(getProducts).toHaveBeenCalled())
+      await waitFor(() => expect(client.isFetching()).toBe(0))
+      const cached = client.getQueryData<Product[]>(queryKeys.products.withEvents('user-1'))
+      expect(cached?.map((p) => p.id)).toEqual(['p-beta'])
+
+      // Le routeur est mocké : la vue reste montée, ce qui rend l'éventuel flash PERMANENT
+      // et donc observable.
+      observer.disconnect()
+      expect(notFoundSeen.value, 'la fiche ne doit pas passer sur « introuvable »').toBe(false)
+      expect(screen.getByTestId('product-detail-card')).toHaveTextContent('Alpha')
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived')
+    })
+
+    it('produit retiré du cache SANS archivage lancé d’ici (archivé ailleurs) : « introuvable »', async () => {
+      const getProducts = vi.fn().mockResolvedValue([OTHER])
+      const client = renderWithRealCache(getProducts)
+      client.setQueryData(queryKeys.products.withEvents('user-1'), [OTHER])
+      expect(await screen.findByTestId('product-detail-not-found')).toBeInTheDocument()
+    })
   })
 
   /* ------------------------------------------------------------------ #605 */

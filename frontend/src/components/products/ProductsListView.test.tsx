@@ -18,7 +18,8 @@ import { ProductsListView } from './ProductsListView'
 
 const useProductsMock = vi.fn()
 const pushMock = vi.fn()
-const deleteProductMock = vi.fn()
+const archiveMutateAsync = vi.fn()
+const useArchiveProductSpy = vi.fn()
 
 vi.mock('@/hooks/useProductsWithEvents', () => ({
   useProductsWithEvents: (...args: unknown[]) => useProductsMock(...args),
@@ -26,8 +27,13 @@ vi.mock('@/hooks/useProductsWithEvents', () => ({
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }))
-vi.mock('@/services/productService', () => ({
-  deleteProduct: (...args: unknown[]) => deleteProductMock(...args),
+// PIT-S92-004 — archivage par la mutation (retrait du cache + invalidation couverts par
+// `useArchiveProduct.test.tsx`) : on assert ICI le branchement.
+vi.mock('@/hooks/useArchiveProduct', () => ({
+  useArchiveProduct: (...args: unknown[]) => {
+    useArchiveProductSpy(...args)
+    return { mutateAsync: archiveMutateAsync, isPending: false }
+  },
 }))
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
@@ -381,11 +387,12 @@ describe('ProductsListView', () => {
 
   it('archive un produit via DeleteConfirmDialog (soft delete #50)', async () => {
     const user = userEvent.setup()
-    deleteProductMock.mockResolvedValue(undefined)
+    archiveMutateAsync.mockResolvedValue(undefined)
     render(<ProductsListView />)
     await user.click(screen.getByTestId('products-archive-p-alpha'))
     await user.click(screen.getByTestId('delete-dialog-product'))
-    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha')
+    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1')
+    expect(archiveMutateAsync).toHaveBeenCalledWith({ productId: 'p-alpha' })
     // #605 — confirmation APRÈS la réponse serveur.
     await waitFor(() =>
       expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived'),

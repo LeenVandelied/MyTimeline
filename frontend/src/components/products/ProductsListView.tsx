@@ -24,7 +24,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useAuth } from '@/hooks/useAuth'
-import { deleteProduct } from '@/services/productService'
+import { useArchiveProduct } from '@/hooks/useArchiveProduct'
 import type { Product } from '@/types/product'
 
 /**
@@ -57,7 +57,7 @@ import type { Product } from '@/types/product'
  *   - « Nouveau produit » → `ProductDrawer` (mode create), réutilisé tel quel (#61).
  *   - Éditer → `ProductDrawer` (mode edit) préfilé.
  *   - Archiver → `DeleteConfirmDialog` variant="product" (le DELETE backend est un
- *     soft delete #50) qui appelle `deleteProduct`.
+ *     soft delete #50) qui appelle `useArchiveProduct` (liste rafraîchie en place).
  *   - Clic/Entrée/Espace sur une ligne → navigation vers le détail produit.
  */
 
@@ -115,6 +115,7 @@ export function ProductsListView() {
   }, [hasProducts])
   const [editProduct, setEditProduct] = React.useState<Product | null>(null)
   const [archiveProduct, setArchiveProduct] = React.useState<Product | null>(null)
+  const archiveMutation = useArchiveProduct(userId)
 
   const numberFmt = React.useMemo(() => new Intl.NumberFormat(locale), [locale])
 
@@ -168,9 +169,10 @@ export function ProductsListView() {
   }
 
   // #605 — toast APRÈS la réponse serveur ; un rejet remonte au dialog (pitfall #65).
+  // PIT-S92-004 — la mutation retire la ligne du cache et invalide `products.all`.
   const handleArchiveConfirm = async () => {
     if (!userId || !archiveProduct) throw new Error('userId/produit manquant')
-    await deleteProduct(userId, archiveProduct.id)
+    await archiveMutation.mutateAsync({ productId: archiveProduct.id })
     toast.success(tToast('productArchived'))
     setArchiveProduct(null)
   }

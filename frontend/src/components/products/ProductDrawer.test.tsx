@@ -31,10 +31,15 @@ vi.mock('@/hooks/useUpdateProduct', () => ({
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }))
-// #605 — archivage (soft delete #50) : service mocké, on assert l'appel et la suite.
-const deleteProductMock = vi.hoisted(() => vi.fn())
-vi.mock('@/services/productService', () => ({
-  deleteProduct: deleteProductMock,
+// #605 — archivage (soft delete #50) : mutation mockée, on assert l'appel et la suite.
+// PIT-S92-004 — retrait du cache + invalidation couverts par `useArchiveProduct.test.tsx`.
+const archiveMutateAsync = vi.hoisted(() => vi.fn())
+const useArchiveProductSpy = vi.hoisted(() => vi.fn())
+vi.mock('@/hooks/useArchiveProduct', () => ({
+  useArchiveProduct: (...args: unknown[]) => {
+    useArchiveProductSpy(...args)
+    return { mutateAsync: archiveMutateAsync, isPending: false }
+  },
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
@@ -199,7 +204,7 @@ describe('ProductDrawer', () => {
 
   it('#605 — édition : « Archiver » (jamais « Supprimer »), confirmation archiver, toast', async () => {
     const user = userEvent.setup()
-    deleteProductMock.mockResolvedValue(undefined)
+    archiveMutateAsync.mockResolvedValue(undefined)
     const onDeleted = vi.fn()
     const product: Product = {
       id: 'p3',
@@ -225,7 +230,8 @@ describe('ProductDrawer', () => {
     expect(confirm).toHaveTextContent(/^common\.deleteDialog\.product\.confirm$/)
     await user.click(confirm)
 
-    await waitFor(() => expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p3'))
+    await waitFor(() => expect(archiveMutateAsync).toHaveBeenCalledWith({ productId: 'p3' }))
+    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1')
     await waitFor(() =>
       expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived'),
     )

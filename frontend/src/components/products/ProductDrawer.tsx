@@ -40,7 +40,7 @@ import { ProductSparkline } from './ProductSparkline'
 import { useCategories } from '@/hooks/useCategories'
 import { useCreateProduct } from '@/hooks/useCreateProduct'
 import { useUpdateProduct } from '@/hooks/useUpdateProduct'
-import { deleteProduct } from '@/services/productService'
+import { useArchiveProduct } from '@/hooks/useArchiveProduct'
 import { useAuth } from '@/hooks/useAuth'
 import type { Product, ProductCreate, ProductUpdate } from '@/types/product'
 import { productCreateSchema, productUpdateSchema } from '@/types/product'
@@ -128,6 +128,7 @@ export function ProductDrawer({
 
   const createMutation = useCreateProduct(userId)
   const updateMutation = useUpdateProduct(userId)
+  const archiveMutation = useArchiveProduct(userId)
 
   const [colorOverride, setColorOverride] = React.useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
@@ -235,10 +236,11 @@ export function ProductDrawer({
 
   // #605 — ARCHIVAGE (soft delete #50, BR-PRO-007) délégué à DeleteConfirmDialog (#65),
   // variante `product`. L'erreur DOIT rejeter pour que le dialog l'affiche inline
-  // (pitfall #65) ; le toast ne part qu'après la réponse serveur.
+  // (pitfall #65) ; le toast ne part qu'après la réponse serveur. PIT-S92-004 — la mutation
+  // retire le produit du cache de la liste et invalide `products.all`.
   const handleDeleteConfirm = async () => {
     if (!userId || !product) throw new Error('userId/produit manquant')
-    await deleteProduct(userId, product.id)
+    await archiveMutation.mutateAsync({ productId: product.id })
     toast.success(tToast('productArchived'))
     setDeleteOpen(false)
     onDeleted?.()

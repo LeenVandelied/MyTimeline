@@ -24,17 +24,21 @@ import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './su
  *   3. Le bouton du shell rouvre ensuite un drawer VIERGE (le prérempli ne fuit pas).
  *   4. « Archiver » : le dialog dit « Archiver ce produit ? », son bouton dit « Archiver »,
  *      aucun « supprim… » ; la confirmation archive (DELETE 204), revient à la liste et
- *      affiche le toast « Produit archivé ».
+ *      affiche le toast « Produit archivé ». PIT-S92-004 : la liste atteinte SANS
+ *      rechargement n'affiche plus le produit, et affiche un témoin seedé APRÈS le chargement
+ *      du détail (preuve que la liste a été rafraîchie, pas relue d'un cache figé).
  *   5. « Archiver » DEPUIS LE DRAWER D'ÉDITION (`product-drawer-archive`, ouvert depuis la
  *      liste) : même vocabulaire (titre + bouton), DELETE 204, toast « Produit archivé »,
- *      drawer refermé, et le produit n'est plus listé (liste RECHARGÉE, avec un produit
- *      témoin visible pour que l'absence ne soit pas vacante).
+ *      drawer refermé, et le produit n'est plus listé — EN PLACE d'abord (PIT-S92-004 :
+ *      rougit si l'archivage n'invalide pas la liste), puis après rechargement ; un produit
+ *      témoin visible rend l'absence non vacante.
  *
  * CE QU'ELLE NE PROUVE PAS : les autres locales (unitaires) ; le formulaire du drawer
  * produit hors archivage (unitaires `ProductDrawer.test.tsx` / `ProductsListView.test.tsx`) ;
- * le retrait de la ligne SANS rechargement (ni la liste ni le drawer n'invalident la query
- * `products.withEvents` après `deleteProduct` — non asserté ici, signalé au lead) ; le cas
- * « liste de produits en cours de chargement » (unitaire `NewEventDrawer.test.tsx`).
+ * l'absence de passage transitoire par « Produit introuvable » sur le détail pendant la
+ * navigation (unitaire `ProductDetailView.test.tsx`, trop bref pour une assertion E2E
+ * fiable) ; le cas « liste de produits en cours de chargement » (unitaire
+ * `NewEventDrawer.test.tsx`).
  *
  * ÉCRITURES : une catégorie + un produit seedés par test (purge `seed-cleanup`, qui
  * accepte le 404 d'un produit déjà archivé par le test).
@@ -115,7 +119,14 @@ test.describe('#605 — actions du détail produit (desktop)', () => {
 
   test('« Archiver » : confirmation qui dit archiver, retour liste et toast', async ({ page }) => {
     test.setTimeout(120_000)
-    const { userId, product } = await seedAndOpenDetail(page, 'Archive')
+    const { userId, category, product } = await seedAndOpenDetail(page, 'Archive')
+    // Témoin seedé APRÈS le chargement du détail : absent du cache, il n'apparaît dans la
+    // liste que si elle a été rafraîchie.
+    const witness = await seedProduct(page, {
+      userId,
+      name: unique('605 Archive Witness'),
+      categoryId: category.id,
+    })
 
     const archive = page.getByTestId('product-detail-archive')
     await expect(archive).toHaveText('Archiver')
@@ -144,6 +155,15 @@ test.describe('#605 — actions du détail produit (desktop)', () => {
     await expect(
       page.locator('#_rht_toaster').getByRole('status').filter({ hasText: 'Produit archivé' }),
     ).toBeVisible({ timeout: CLICK_BUDGET })
+
+    // PIT-S92-004 — liste atteinte par le retour, SANS rechargement.
+    await expect(page.getByTestId(`products-row-${witness.id}`)).toBeVisible({
+      timeout: CLICK_BUDGET,
+    })
+    await expect(
+      page.getByTestId(`products-row-${product.id}`),
+      'PIT-S92-004 : le produit archivé ne doit plus être listé au retour du détail',
+    ).toHaveCount(0)
   })
 
   test('« Archiver » depuis le drawer d’édition : confirmation qui dit archiver, toast, produit retiré', async ({
@@ -201,6 +221,14 @@ test.describe('#605 — actions du détail produit (desktop)', () => {
     await expect(drawerArchive, 'le drawer d’édition se referme après archivage').toBeHidden({
       timeout: CLICK_BUDGET,
     })
+
+    // PIT-S92-004 — liste EN PLACE (aucun rechargement) : le témoin prouve qu'elle est peinte,
+    // le produit archivé doit en disparaître sans attendre un refetch ultérieur.
+    await expect(page.getByTestId(`products-row-${witness.id}`)).toBeVisible()
+    await expect(
+      page.getByTestId(`products-row-${product.id}`),
+      'PIT-S92-004 : la ligne archivée doit disparaître de la liste en place',
+    ).toHaveCount(0)
 
     // Liste RECHARGÉE : le témoin prouve qu'elle est peinte, le produit archivé en est absent.
     await gotoProducts(page)

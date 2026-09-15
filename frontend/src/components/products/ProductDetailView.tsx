@@ -19,8 +19,9 @@ import type { Resource } from '@/components/timeline'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useSetEventArchived } from '@/hooks/useSetEventArchived'
 import { useAuth } from '@/hooks/useAuth'
-import { deleteProduct } from '@/services/productService'
+import { useArchiveProduct, useIsProductArchivedHere } from '@/hooks/useArchiveProduct'
 import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/types/event'
+import type { Product } from '@/types/product'
 
 /**
  * #68 — Vue détail d'un produit.
@@ -100,10 +101,22 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   const userId = user?.id
 
   const query = useProductsWithEvents(userId)
-  const product = React.useMemo(
+  const liveProduct = React.useMemo(
     () => (query.data ?? []).find((p) => p.id === productId) ?? null,
     [query.data, productId],
   )
+
+  // PIT-S92-004 — l'archivage retire le produit du cache (puis invalide `products.all`) AVANT
+  // que `router.push` n'ait démonté la vue : sans garde, la fiche passerait sur « Produit
+  // introuvable ou archivé » pendant la navigation. Tant qu'un archivage de CE produit, lancé
+  // d'ici (dialog ou drawer), est en cours ou réussi, on garde la dernière fiche vue. Motif
+  // « état dérivé pendant le rendu » (pas de ref lue au rendu, pas d'effet). Un nouveau montage
+  // part de la valeur live : un produit archivé ailleurs reste « introuvable ».
+  const archivedHere = useIsProductArchivedHere(productId)
+  const [lastProduct, setLastProduct] = React.useState<Product | null>(liveProduct)
+  if (liveProduct && liveProduct !== lastProduct) setLastProduct(liveProduct)
+  const product = liveProduct ?? (archivedHere ? lastProduct : null)
+  const archiveMutation = useArchiveProduct(userId)
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [archiveOpen, setArchiveOpen] = React.useState(false)
@@ -231,7 +244,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   // au dialog (affichage inline, pitfall #65) et n'émet aucun toast.
   const handleArchiveConfirm = async () => {
     if (!userId || !product) throw new Error('userId/produit manquant')
-    await deleteProduct(userId, product.id)
+    await archiveMutation.mutateAsync({ productId: product.id })
     toast.success(tToast('productArchived'))
     setArchiveOpen(false)
     goBack()
@@ -502,8 +515,15 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
         )}
       </section>
 
-      {/* Édition — ProductDrawer réutilisé (#61). */}
-      <ProductDrawer open={editOpen} onOpenChange={setEditOpen} mode="edit" product={product} />
+      {/* Édition — ProductDrawer réutilisé (#61). Archivé depuis le drawer : même sortie que
+          le dialog (retour liste), sinon la fiche d'un produit archivé resterait affichée. */}
+      <ProductDrawer
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        mode="edit"
+        product={product}
+        onDeleted={goBack}
+      />
 
       {/* Archivage — soft delete backend (#50), retour liste au succès. */}
       <DeleteConfirmDialog
