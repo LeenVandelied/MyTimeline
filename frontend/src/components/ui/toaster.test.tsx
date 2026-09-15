@@ -4,7 +4,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import toast from 'react-hot-toast'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { AppToaster, TOASTER_CONTAINER_STYLE, toastVariantOf } from './toaster'
+import { AppToaster, TOASTER_CONTAINER_STYLE, TOASTER_TOP_OFFSET, toastVariantOf } from './toaster'
 
 /**
  * #621 — `AppToaster` : react-hot-toast = moteur, `ui/toast` (DS) = rendu de TOUS les toasts.
@@ -99,6 +99,23 @@ describe('AppToaster — rendu DS des toasts react-hot-toast (#621)', () => {
     const container = document.getElementById('_rht_toaster')
     expect(container).not.toBeNull()
     expect(TOASTER_CONTAINER_STYLE.zIndex).toBe('var(--z-toast)')
+  })
+
+  it('position : haut-droite, décalé SOUS la zone des contrôles par jetons DS (arbitrage 2026-09-15)', async () => {
+    // Déclaration seulement : jsdom ne résout ni `var()` ni `env()` et ne peint rien. La
+    // non-intersection peinte avec la croix du drawer / le hamburger est l'oracle E2E
+    // (`sprint-92-business-toasts.spec.ts`).
+    render(<AppToaster />)
+    const card = showSuccess('Quatre')
+    await screen.findByRole('status')
+    expect(TOASTER_CONTAINER_STYLE.top).toBe(TOASTER_TOP_OFFSET)
+    expect(TOASTER_TOP_OFFSET).toBe(
+      'calc(var(--space-5) + var(--space-11) + var(--space-2) + env(safe-area-inset-top, 0px))',
+    )
+    // Plus de littéral 16px (ancienne position, qui recouvrait la croix des drawers).
+    expect(TOASTER_TOP_OFFSET).not.toMatch(/\b16px\b/)
+    // Ligne d'empilement de la bibliothèque : alignée à droite (`top-right`).
+    expect(card.parentElement?.style.justifyContent).toBe('flex-end')
   })
 
   it('toastVariantOf : success→success, error→danger, blank/loading/custom→info', () => {

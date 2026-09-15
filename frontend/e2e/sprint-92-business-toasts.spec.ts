@@ -22,9 +22,16 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  *      dans `#_rht_toaster`, avec la classe DS `.mt-toast--success`. Rougit si le
  *      toast manque, ou s'il est rendu par le `ToastBar` par défaut (pas de `.mt-toast`).
  *   2. Pile : le `z-index` CALCULÉ du conteneur égale `--z-toast` résolu (jeton consommé).
- *   3. Non bloquant : `pointer-events` calculé = `none` sur le toast.
- *   4. Modification (desktop, depuis la frise du détail produit) : « Événement modifié ».
- *   5. Mobile (390px) : le toast ne recouvre PAS le bouton flottant « Nouvel événement ».
+ *   3. Pointeur : le conteneur plein écran `#_rht_toaster` reste en `pointer-events:none`
+ *      (rien n'est bloqué hors de la carte) ; la CARTE visible est en `auto` (pause au
+ *      survol, WCAG 2.2.1). Rougit si la carte repasse en `none` (pause impossible) ou si
+ *      le conteneur se met à capter.
+ *   4. Géométrie (desktop) : drawer « Nouvel événement » rouvert PENDANT le toast (mis en
+ *      pause par survol), la boîte de la carte n'intersecte pas la cible 44px de la croix
+ *      du drawer. Rougit si le décalage haut revient à 16px (carte ≈ 16–62px, cible 12–56px).
+ *   5. Modification (desktop, depuis la frise du détail produit) : « Événement modifié ».
+ *   6. Mobile (390px) : le toast ne recouvre ni le bouton flottant « Nouvel événement » ni
+ *      le hamburger du header du tableau de bord.
  *
  * CE QU'ELLE NE PROUVE PAS : l'annonce réelle par un lecteur d'écran ; l'archivage
  * (couvert unitairement, `TimelineEditHost.test.tsx`) ; produit / catégorie
@@ -58,6 +65,49 @@ async function seed(page: Page, label: string) {
     categoryId: cat.id,
   })
   return { userId, product }
+}
+
+type Box = { x: number; y: number; width: number; height: number }
+
+/** Deux boîtes se chevauchent-elles (bords jointifs = pas de chevauchement) ? */
+function intersects(a: Box, b: Box): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+}
+
+/** Boîte agrandie à la cible tactile minimale (44px, centrée) — cf. `.mt-drawer__close::before`. */
+function hitArea(box: Box, min = 44): Box {
+  const dw = Math.max(0, min - box.width) / 2
+  const dh = Math.max(0, min - box.height) / 2
+  return { x: box.x - dw, y: box.y - dh, width: box.width + 2 * dw, height: box.height + 2 * dh }
+}
+
+/**
+ * Boîte STABILISÉE (PIT-S54-003) : deux lectures consécutives égales. Le drawer formulaire
+ * entre en `translateX(28px)` : une lecture prise pendant l'animation serait transitoire.
+ */
+async function stableBox(locator: Locator): Promise<Box> {
+  const reads: { previous: Box | null; stable: Box | null } = { previous: null, stable: null }
+  await expect
+    .poll(
+      async () => {
+        const current = await locator.boundingBox()
+        const last = reads.previous
+        const same =
+          current !== null &&
+          last !== null &&
+          current.x === last.x &&
+          current.y === last.y &&
+          current.width === last.width &&
+          current.height === last.height
+        reads.previous = current
+        if (same) reads.stable = current
+        return same
+      },
+      { timeout: CLICK_BUDGET },
+    )
+    .toBe(true)
+  if (!reads.stable) throw new Error('boîte non stabilisée')
+  return reads.stable
 }
 
 /** Remplit le drawer de création (produit + titre) et soumet ; attend le POST 2xx. */
@@ -108,8 +158,36 @@ test.describe('#621 — toasts métier (desktop)', () => {
     expect(layers.token, '`--z-toast` doit être défini par le DS').not.toBe('')
     expect(layers.computed, 'le conteneur doit consommer `--z-toast`').toBe(layers.token)
 
-    // (3) Non bloquant.
-    expect(await toast.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none')
+    // (3) Pointeur : conteneur plein écran non bloquant, carte captante (pause au survol).
+    const pointer = await toast.evaluate((el) => ({
+      card: getComputedStyle(el).pointerEvents,
+      host: getComputedStyle(document.getElementById('_rht_toaster') as HTMLElement).pointerEvents,
+    }))
+    expect(pointer.host, 'le conteneur plein écran ne doit rien capter').toBe('none')
+    expect(pointer.card, 'la carte visible capte le pointeur (pause au survol)').toBe('auto')
+
+    // (4) Géométrie : drawer rouvert PENDANT le toast. Le survol suspend le décompte (4 s),
+    // donc la mesure ne court pas contre l'expiration.
+    await page.getByTestId('shell-sidebar-new-event-button').click({ timeout: CLICK_BUDGET })
+    const panel = page.getByTestId('shell-new-event-drawer')
+    await expect(panel).toBeVisible({ timeout: CLICK_BUDGET })
+    await toast.hover({ timeout: CLICK_BUDGET })
+    await expect(toast, 'le toast doit encore être affiché pendant la mesure').toBeVisible()
+
+    const close = page.getByTestId('shell-new-event-drawer-close')
+    await expect(close).toBeVisible({ timeout: CLICK_BUDGET })
+    const closeHit = hitArea(await stableBox(close))
+    const cardBox = await stableBox(toast)
+    expect(
+      intersects(cardBox, closeHit),
+      `la carte (${JSON.stringify(cardBox)}) ne doit pas recouvrir la cible de la croix du drawer (${JSON.stringify(closeHit)})`,
+    ).toBe(false)
+    // Même colonne (bord droit) : sans ce contrôle, un toast parti ailleurs rendrait
+    // l'absence d'intersection triviale.
+    expect(cardBox.x + cardBox.width).toBeGreaterThan(closeHit.x)
+
+    await page.keyboard.press('Escape')
+    await expect(panel).toBeHidden({ timeout: CLICK_BUDGET })
   })
 
   test('modification d’un événement depuis la frise : toast « Événement modifié »', async ({
@@ -176,15 +254,22 @@ test.describe('#621 — toasts métier (mobile portrait)', () => {
     expect(toastBox, 'le toast doit avoir une boîte').not.toBeNull()
     expect(fabBox, 'le FAB doit avoir une boîte').not.toBeNull()
     if (!toastBox || !fabBox) return
-    const overlaps =
-      toastBox.x < fabBox.x + fabBox.width &&
-      fabBox.x < toastBox.x + toastBox.width &&
-      toastBox.y < fabBox.y + fabBox.height &&
-      fabBox.y < toastBox.y + toastBox.height
     expect(
-      overlaps,
+      intersects(toastBox, fabBox),
       `le toast (${JSON.stringify(toastBox)}) ne doit pas recouvrir le FAB (${JSON.stringify(fabBox)})`,
     ).toBe(false)
+
+    // Hamburger du header mobile (44px, 6–50px) : la carte capte le pointeur, elle ne doit
+    // pas s'y poser (décalage haut 72px, arbitrage 2026-09-15).
+    const hamburger = page.getByTestId('dashboard-mobile-menu-button')
+    await expect(hamburger).toBeVisible()
+    const hamburgerBox = hitArea(await stableBox(hamburger))
+    expect(
+      intersects(toastBox, hamburgerBox),
+      `le toast (${JSON.stringify(toastBox)}) ne doit pas recouvrir le hamburger (${JSON.stringify(hamburgerBox)})`,
+    ).toBe(false)
+    // Même colonne : la carte couvre l'abscisse du hamburger (sinon oracle trivial).
+    expect(toastBox.x).toBeLessThan(hamburgerBox.x + hamburgerBox.width)
     // Le toast reste dans la largeur du viewport (aucun débordement horizontal).
     expect(toastBox.x).toBeGreaterThanOrEqual(0)
     expect(toastBox.x + toastBox.width).toBeLessThanOrEqual(MOBILE_PORTRAIT.width)

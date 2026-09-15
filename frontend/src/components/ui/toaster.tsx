@@ -35,12 +35,28 @@ import { Toast } from '@/components/ui/toast'
  * `toast.success(t('…'))`. Variante déduite du type : success → success, error → danger,
  * blank / loading / custom → info. Le message est le TITRE du toast (une ligne, sobre).
  *
- * POSITION — `top-right` à toutes les largeurs :
+ * POSITION — `top-right` à toutes les largeurs, SOUS la zone des contrôles du haut
+ * (arbitrage dev 2026-09-15, conséquence de la pause au survol ci-dessous) :
  *   - le bouton flottant « Nouvel événement » (`AppShell`, `md:hidden`) est ancré en BAS
  *     à droite : un toast en haut ne peut pas le masquer ;
  *   - sous ~372px de viewport le toast (max 340px, `.mt-toast`) occupe la largeur utile,
  *     donc « haut-droite » y équivaut à « haut » : pas de variante mobile à maintenir ;
- *   - décalage haut = 16px (défaut de la bibliothèque) + encoche iOS.
+ *   - décalage haut = `--space-5 + --space-11 + --space-2` (20 + 44 + 8 = 72px) + encoche
+ *     iOS. MOTIF : le plus bas des contrôles FIXES du bord haut droit est le bouton fermer
+ *     TACTILE d'un drawer (`.mt-drawer__header` padding-top `--space-5`, puis
+ *     `.mt-drawer__close--touch` 44px = `--space-11`, `timeline.css`) : il finit à 64px ;
+ *     `--space-2` de respiration. La carte (≈46px : padding 12×2 + bordures + titre
+ *     13px × `--leading-normal`) occupe donc ≈ 72–118px.
+ *   - CONTRÔLES DÉGAGÉS (relevés dans le code, non peints) : bouton fermer des drawers
+ *     desktop (`.mt-drawer__close`, cible 44px → 12–56px), fermer tactile du drawer paysage
+ *     (20–64px), header mobile du tableau de bord (`h-14` → 0–56px, hamburger `h-11`
+ *     → 6–50px), croix du `ProductDrawer` desktop (`ui/dialog`, `top-4` → 16–32px).
+ *   - NON DÉGAGÉS (aucune constante ne le peut) : la croix du `ProductDrawer` en bottom
+ *     sheet mobile (`max-h-[92vh]` : à ≥ 8vh + 16px, soit ≈ 84–100px à 844px de haut quand
+ *     le formulaire remplit la sheet) ; le contenu EN FLUX (barre d'outils de la frise,
+ *     haut du corps d'un drawer formulaire ouvert — seul un toast d'ERREUR s'y affiche,
+ *     les succès partent après fermeture) ; le pied d'action d'un drawer, en bas, n'est
+ *     jamais atteint.
  *
  * PAUSE AU SURVOL ET AU FOCUS (revue Designer #621, arbitrage dev 2026-09-15) — WCAG 2.2.1
  * (durée ajustable) : tant que le pointeur survole un toast OU que le focus clavier est sur
@@ -72,12 +88,11 @@ import { Toast } from '@/components/ui/toast'
  *   - Toast retiré sous le pointeur ou le focus (aucun `mouseleave`/`focusout`) : dès qu'il
  *     ne reste aucun toast visible, les deux états retombent et la pause est levée — sinon
  *     les toasts suivants ne se fermeraient plus.
- * RECOUVREMENT (mesure par le code, non peinte) : carte = [16px + safe-area ; ~62px] en
- *   hauteur, [vw−16−largeur ; vw−16] en largeur. Elle recouvre le bouton fermer des drawers
- *   (`.mt-drawer__close`, cible 44px centrée à 20px du coin) et le hamburger du header mobile
- *   du tableau de bord (44px, `px-4`, header `h-14`) : un clic y tombant PENDANT l'affichage
- *   met le toast en pause au lieu d'actionner le contrôle. Position validée par le Designer,
- *   non modifiée ici.
+ * RECOUVREMENT : la carte capte le pointeur, donc tout contrôle SOUS elle deviendrait
+ *   inopérant pendant l'affichage (un clic mettrait le toast en pause). À 16px du haut elle
+ *   recouvrait la croix des drawers et le hamburger mobile : d'où le décalage de POSITION
+ *   ci-dessus. Oracle peint : `e2e/sprint-92-business-toasts.spec.ts` (intersection des
+ *   boîtes carte / croix du drawer / hamburger).
  *
  * PILE — `--z-toast` (DS) : au-dessus des drawers / sheets / modales, pour qu'une erreur
  *   levée pendant une saisie (`apiClient`) ne soit pas peinte SOUS le drawer ouvert ;
@@ -99,10 +114,17 @@ export function toastVariantOf(type: ToastType): AppToastVariant {
   }
 }
 
+/**
+ * Décalage haut : padding-top du header de drawer (`--space-5`) + fermer tactile 44px
+ * (`--space-11`) + respiration (`--space-2`) = 72px, plus l'encoche. Voir POSITION.
+ */
+export const TOASTER_TOP_OFFSET =
+  'calc(var(--space-5) + var(--space-11) + var(--space-2) + env(safe-area-inset-top, 0px))'
+
 /** Style du conteneur `#_rht_toaster` (fusionné APRÈS le style par défaut de la bibliothèque). */
 export const TOASTER_CONTAINER_STYLE: React.CSSProperties = {
   zIndex: 'var(--z-toast)',
-  top: 'calc(16px + env(safe-area-inset-top, 0px))',
+  top: TOASTER_TOP_OFFSET,
 }
 
 /** Durée de lecture : le défaut success (2 s) est trop court pour une phrase ; error = 4 s déjà. */
