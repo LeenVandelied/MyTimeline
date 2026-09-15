@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Hook commit-msg (#29) — valide le message via commitlint (convention gitmoji).
+# Layout worktree + sous-dossier : on se place dans frontend/ (binaires locaux).
+# $1 = chemin du fichier message, fourni par git relativement au cwd (racine
+# worktree) → on le résout en absolu AVANT de cd dans frontend/.
+MSG_FILE="$1"
+case "$MSG_FILE" in
+  /*) : ;;                                  # déjà absolu
+  *) MSG_FILE="$(pwd)/$MSG_FILE" ;;         # rend absolu depuis la racine worktree
+esac
+cd "$(dirname "$0")/.." || exit 1
+exec npx --no-install commitlint --edit "$MSG_FILE"

@@ -5,19 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
+import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -45,25 +46,42 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Product createProduct(ProductCreationRequest request) {
-        Category category = categoryRepository.findDomainCategoryById(request.getCategory())
-                .orElseThrow(() -> new CategoryNotFoundException(request.getCategory()));
-    
         User user = userRepository.findDomainUserById(request.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
-    
-        Product product = new Product(UUID.randomUUID(), request.getName(), category, user, new ArrayList<>());
-    
-        request.getEvents().forEach(eventCreationRequest -> {
+
+        // #50 (faille cross-tenant) : la catégorie cible doit appartenir à l'appelant
+        // OU être système (ownerId == null). Sinon -> 404 (anti-énumération).
+        Category category = resolveAssignableCategory(request.getCategory(), user.getId());
+
+        // PIT-S10-003 / convention create : id NULL à la création. ProductEntity porte
+        // @Version + @GeneratedValue(AUTO) ; un id pré-assigné route persist() vers l'état
+        // « détaché » (Hibernate 6.4 : "detached entity with generated id has an
+        // uninitialized version value null") et casse l'INSERT réel Postgres. En laissant
+        // l'id à null, @GeneratedValue l'attribue et @Version s'initialise (aligné sur
+        // CategoryServiceImpl : new Category(null, ...)).
+        Product product = new Product(null, request.getName(), category, user, new ArrayList<>());
+        // #158 : surcharge couleur produit (null = héritage de la catégorie côté front).
+        product.setColor(request.getColor());
+
+        // #186 (BR-PRO-005) : un produit SANS événement est autorisé. getEvents() peut être
+        // null (pas de @NotNull sur le DTO ; Zod z.array sans .min(1)) -> null traité comme
+        // liste vide pour éviter la NPE (500). Le produit est déjà construit avec 0 event (L63).
+        Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {
             LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
     
+            // id NULL (idem product) : l'EventEntity imbriquée est persistée en cascade,
+            // @GeneratedValue attribue l'id et @Version l'initialise. Un id pré-assigné
+            // reproduirait la PropertyValueException "detached entity ... uninitialized
+            // version" sur l'insert de l'event. Le lien au produit passe par l'objet parent
+            // (ProductMapper.toEntity), pas par ce productId (null ici, sans effet).
             Event event = new Event(
-                    UUID.randomUUID(),
+                    null,
                     eventCreationRequest.getName(),
                     eventCreationRequest.getType(),
                     eventCreationRequest.getDurationValue(),
                     eventCreationRequest.getDurationUnit(),
                     eventCreationRequest.getIsRecurring(),
-                    eventCreationRequest.getRecurrenceUnit(),
+                    RecurrenceUnit.fromString(eventCreationRequest.getRecurrenceUnit()),
                     startDate,
                     Utils.calculateEndDate(eventCreationRequest, startDate),
                     product.getId(),
@@ -75,13 +93,74 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(product);
     }
 
+    /**
+     * Liste des produits de l'utilisateur (endpoint principal {@code GET
+     * /users/{userId}/products}).
+     *
+     * <p>#124 : le filtrage par {@code userId} est fait EN SQL via
+     * {@link ProductRepository#findByUserId} ({@code WHERE user_id = ?}, index
+     * {@code idx_products_user}) — remplace l'ancien {@code findAllProducts()} + filtre
+     * Java (full scan O(N)).
+     *
+     * <p>#41 : le filtre {@code Product::hasEvents} est SUPPRIMÉ — un produit existe
+     * indépendamment de ses événements (règle métier), donc un produit SANS événement
+     * est désormais visible. Sa liste {@code events} est vide (jamais {@code null} :
+     * garanti par {@code ProductMapper.toDomain} puis {@code ProductResponse.fromDomain}).
+     *
+     * <p>Le nom {@code getProductsWithEvents} devient un léger abus (la méthode liste
+     * TOUS les produits) — conservé pour ne pas propager un renommage au port/controller/
+     * tests dans ce sprint ; renommage possible en follow-up.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<Product> getProductsWithEvents(UUID userId) {
-        return productRepository.findAllProducts().stream()
-                .filter(product -> product.getUser().getId().equals(userId))
-                .filter(Product::hasEvents)
-                .collect(Collectors.toList());
+        return productRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public Product updateProduct(UUID id, ProductUpdateRequest request) {
+        Product product = productRepository.findDomainProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        if (request.getName() != null) {
+            product.setName(request.getName());
+        }
+
+        if (request.getCategoryId() != null) {
+            // #50 (faille cross-tenant) : l'ownership du produit est déjà garanti au niveau
+            // controller (path == JWT). On valide donc la catégorie cible contre le
+            // propriétaire du produit chargé -> catégorie d'autrui traitée comme inexistante (404).
+            Category category = resolveAssignableCategory(request.getCategoryId(), product.getUser().getId());
+            product.setCategory(category);
+        }
+
+        // #158 : surcharge couleur produit. clearColor prime (reset -> null = ré-héritage
+        // catégorie) ; sinon un color non-null pose la surcharge ; color null = inchangé.
+        if (request.isClearColor()) {
+            product.setColor(null);
+        } else if (request.getColor() != null) {
+            product.setColor(request.getColor());
+        }
+
+        return productRepository.save(product);
+    }
+
+    /**
+     * #50 (faille cross-tenant + oracle d'énumération) : une catégorie n'est assignable
+     * à un produit que si elle est possédée par l'appelant OU système (ownerId == null).
+     * Une catégorie possédée par un autre utilisateur est traitée comme INEXISTANTE du
+     * point de vue de l'appelant -> {@link CategoryNotFoundException} (404). Le choix du
+     * 404 (et non 403) ferme l'oracle : un 403 confirmerait l'existence de l'UUID.
+     */
+    private Category resolveAssignableCategory(UUID categoryId, UUID callerId) {
+        Category category = categoryRepository.findDomainCategoryById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        UUID owner = category.getOwnerId();
+        if (owner != null && !owner.equals(callerId)) {
+            throw new CategoryNotFoundException(categoryId);
+        }
+        return category;
     }
 
     @Override
@@ -92,11 +171,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void deleteById(UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
-        }
-        productRepository.deleteById(id);
+    public void archiveById(UUID id) {
+        Product product = productRepository.findDomainProductById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        product.setArchived(true);
+        productRepository.save(product);
     }
 
     @Override

@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Backend — dépendances Maven (Spring Boot, etc.)
+  - package-ecosystem: maven
+    directory: /backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: ":arrow_up: #deps —"
+
+  # Frontend — dépendances npm (Next.js, etc.)
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: ":arrow_up: #deps —"
+
+  # Actions GitHub utilisées par les workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ":arrow_up: #deps —"

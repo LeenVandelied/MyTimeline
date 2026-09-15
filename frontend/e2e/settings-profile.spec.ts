@@ -1,0 +1,186 @@
+import { test, expect } from '@playwright/test'
+import { openSettingsChapter, minimalPngBuffer } from './support/auth'
+import { SHARED } from './support/accounts'
+
+/**
+ * #86 / #75 — E2E chapitre Profil (desktop) : upload/recadrage/suppression
+ * d'avatar (POST/DELETE /api/me/avatar) + édition des champs name/username/email
+ * (PATCH /api/me) avec persistance vérifiée par reload.
+ *
+ * Sélecteurs `data-testid` UNIQUEMENT, routes `/fr/...` (localePrefix always).
+ * PRÉREQUIS RUNTIME (job CI `e2e`) : backend Spring (:8080) + Postgres, front :3000.
+ *
+ * Les toasts (react-hot-toast) n'exposent pas de `data-testid` : on assure la
+ * vérification sur des CHANGEMENTS d'état DOM déterministes (cropper qui se ferme,
+ * <img> avatar qui apparaît/disparaît, valeur de champ persistée après reload),
+ * jamais sur du texte de toast.
+ */
+
+// Compte partagé fixe (storageState) : ZÉRO register par test (anti rate-limit).
+// Ce fichier MUTE l'état backend du compte partagé (nom, avatar) -> `serial` pour
+// éviter tout entrelacement entre tests (et clobber du compte partagé).
+test.use({ storageState: SHARED.storageState })
+test.describe.configure({ mode: 'serial' })
+
+test.describe('Réglages — Profil : avatar + champs', () => {
+  // #215 — Ce test a longtemps été `test.fixme` sur l'hypothèse d'un 401 propre à
+  // l'environnement E2E (« le proxy Next dev ne propagerait pas le cookie JWT sur du
+  // multipart »). MESURÉ le 2026-09-07, c'était FAUX sur les deux points :
+  //   - le statut réel n'était pas 401 mais **415 Unsupported Media Type**, corps
+  //     `{"status":415,...,"path":"/api/me/avatar"}` — un 401 d'auth aurait rendu
+  //     `{"error":"unauthorized"}` (entry point Spring Security) ;
+  //   - le cookie `jwt` ÉTAIT bien envoyé, et le même POST multipart rejoué à travers
+  //     le proxy rendait 200. Le proxy Next est hors de cause.
+  // Cause réelle, côté client et donc VALABLE EN PRODUCTION : le `Content-Type:
+  // application/json` de l'instance axios survivait à un corps `FormData`, ce qui
+  // pousse axios à sérialiser le formulaire en JSON (le fichier n'était jamais
+  // transmis). Corrigé dans `apiClient` (intercepteur de requête), pas dans la
+  // chaîne d'auth backend.
+  test('upload avatar (crop -> confirm), puis suppression', async ({ page }) => {
+    await openSettingsChapter(page, 'profile')
+
+    const avatar = page.getByTestId('avatar-upload')
+    await expect(avatar).toBeVisible()
+    // Au départ : pas d'avatar -> pas de <img> dans la zone.
+    await expect(avatar.locator('img')).toHaveCount(0)
+
+    // ---- Upload : setInputFiles avec un PNG valide en mémoire ---------------
+    // setInputFiles contourne l'attribut accept="image/*" ; le PNG valide fait
+    // que Image().onload se déclenche -> le cropper s'affiche.
+    await page.getByTestId('avatar-input').setInputFiles({
+      name: 'avatar.png',
+      mimeType: 'image/png',
+      buffer: minimalPngBuffer(),
+    })
+
+    // Le recadreur apparaît (canvas + slider zoom).
+    await expect(page.getByTestId('avatar-cropper')).toBeVisible()
+    await expect(page.getByTestId('avatar-zoom')).toBeVisible()
+
+    // Confirmer le crop -> `canvas.toBlob('image/png')` -> POST /api/me/avatar
+    // (multipart part `file`) -> onSuccess `refreshUser()` re-fetch GET /api/auth/me
+    // (avatarUrl posé) -> ProfileSection rend `<img src={avatarUrl}>`.
+    //
+    // DIAGNOSTIC (run 28752900622 : <img> count 0) : on CAPTURE la réponse RÉELLE du
+    // POST avatar pour trancher la cause d'un échec éventuel — et on l'assert :
+    //   - toBlob a-t-il produit un blob (sinon confirmCrop est un no-op -> AUCUN POST) ?
+    //   - le blob PNG passe-t-il les MAGIC BYTES backend (200) ou est-il rejeté (400) ?
+    // Chromium headless produit un PNG conforme via `canvas.toBlob('image/png')` (en-tête
+    // 89 50 4E 47…), donc on ATTEND 200. Un statut != 200 fait échouer le test avec un
+    // message actionnable (au lieu d'un opaque « <img> count 0 »).
+    const avatarPost = page.waitForResponse(
+      (res) => /\/api\/me\/avatar$/.test(res.url()) && res.request().method() === 'POST',
+      { timeout: 15_000 },
+    )
+    // Le refetch /me qui SUIT le POST (onSuccess) : c'est lui qui hydrate `avatarUrl`
+    // et déclenche le montage du <img>. On l'attend explicitement (CI lente).
+    const meResync = page.waitForResponse(
+      (res) => /\/api\/auth\/me$/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15_000 },
+    )
+
+    await page.getByTestId('avatar-confirm').click()
+
+    const postResp = await avatarPost
+    // Assertion explicite du statut : trace le statut observé et échoue proprement si
+    // le blob de crop headless était invalide (400) ou absent (pas de POST -> timeout).
+    expect(
+      postResp.status(),
+      `POST /api/me/avatar attendu 200 (blob PNG issu du crop canvas headless) ; ` +
+        `reçu ${postResp.status()} — 400 = magic bytes rejetés (crop invalide), ` +
+        `5xx = backend, timeout = toBlob null (aucun POST).`,
+    ).toBe(200)
+
+    await meResync
+
+    // Le cropper se ferme et l'avatar (<img src=/api/me/avatar>) apparaît.
+    await expect(page.getByTestId('avatar-cropper')).toHaveCount(0)
+    // Attente DÉTERMINISTE sur l'état DOM (pas le rendu pixel) : le <img> est monté
+    // et porte un src d'avatar. `currentAvatarUrl` (AuthContext resync post-upload)
+    // est non-null -> ProfileSection rend le <img src={avatarUrl}>. On n'exige PAS
+    // que l'image ait fini de charger (GET authentifié potentiellement lent) ; on
+    // laisse une marge de timeout au re-render post-resync.
+    const uploadedImg = avatar.locator('img')
+    await expect(uploadedImg).toHaveCount(1, { timeout: 15_000 })
+    await expect(uploadedImg).toHaveAttribute('src', /\S/)
+    // Le bouton de suppression n'apparaît que lorsqu'un avatar existe.
+    await expect(page.getByTestId('avatar-delete')).toBeVisible()
+
+    // ---- Suppression : DELETE /api/me/avatar -> avatarUrl repasse à null ----
+    //
+    // SYMÉTRIE VOULUE avec la moitié « upload » ci-dessus (review E2E S81). Sans elle,
+    // le `toHaveCount(0)` retombait sur le timeout Playwright PAR DÉFAUT (5 s) pour
+    // couvrir un DELETE **plus** le `refreshUser()` + `invalidateQueries` qui suit —
+    // alors que la moitié upload s'accorde 15 s pour la même chaîne.
+    //
+    // POURQUOI CE N'EST PAS COSMÉTIQUE. Ce fichier est en `mode: 'serial'` sur le
+    // compte PARTAGÉ (`SHARED.storageState`) et ce test MUTE l'avatar de ce compte.
+    // S'il expire avant que le DELETE ait abouti, il ne rate pas seulement lui-même :
+    // il laisse un avatar RÉSIDUEL en base, et c'est l'assertion d'ouverture du
+    // PROCHAIN run (`expect(avatar.locator('img')).toHaveCount(0)`) qui rougit — un
+    // échec déporté, dans un autre run, sur une autre ligne. En CI la suite tourne à
+    // `workers: 2` depuis #476 : la marge de 5 s n'est pas une hypothèse sûre.
+    const avatarDelete = page.waitForResponse(
+      (res) => /\/api\/me\/avatar$/.test(res.url()) && res.request().method() === 'DELETE',
+      { timeout: 15_000 },
+    )
+    // Le refetch /me qui SUIT le DELETE (onSuccess) : c'est lui qui remet `avatarUrl`
+    // à null et démonte le <img>. Même raisonnement que pour l'upload.
+    const meResyncAfterDelete = page.waitForResponse(
+      (res) => /\/api\/auth\/me$/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15_000 },
+    )
+
+    await page.getByTestId('avatar-delete').click()
+
+    const deleteResp = await avatarDelete
+    expect(
+      deleteResp.status(),
+      `DELETE /api/me/avatar attendu 204 ; reçu ${deleteResp.status()} — ` +
+        `401 = session perdue, 5xx = backend. L'endpoint est IDEMPOTENT ` +
+        `(UserController.deleteAvatar : caller sans avatar -> no-op 204), il n'y a donc ` +
+        `pas de 404 possible ici. Timeout = aucune requête émise (le bouton n'a rien déclenché).`,
+    ).toBe(204)
+
+    await meResyncAfterDelete
+
+    await expect(avatar.locator('img')).toHaveCount(0, { timeout: 15_000 })
+    await expect(page.getByTestId('avatar-delete')).toHaveCount(0)
+  })
+
+  test('fichier non-image -> message d’erreur avatar', async ({ page }) => {
+    await openSettingsChapter(page, 'profile')
+
+    // Un fichier texte (mimeType non image) : loadFile rejette avant tout upload.
+    await page.getByTestId('avatar-input').setInputFiles({
+      name: 'notes.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('pas une image', 'utf-8'),
+    })
+
+    await expect(page.getByTestId('avatar-error')).toBeVisible()
+    // Aucun recadreur ne doit s'être ouvert.
+    await expect(page.getByTestId('avatar-cropper')).toHaveCount(0)
+  })
+
+  test('édition du nom -> PATCH /me -> persistance après reload', async ({ page }) => {
+    await openSettingsChapter(page, 'profile')
+
+    await expect(page.getByTestId('profile-form')).toBeVisible()
+    // Le formulaire est pré-rempli depuis AuthContext (compte partagé fixe).
+    await expect(page.getByTestId('profile-username')).toHaveValue(SHARED.username)
+
+    // Nouveau nom unique par run (borné 20) : PATCH /me modifie SEULEMENT `name`.
+    const newName = `N${Date.now().toString().slice(-8)}`.slice(0, 20)
+    await page.getByTestId('profile-name').fill(newName)
+    await page.getByTestId('profile-submit').click()
+
+    // Persistance : après reload, la valeur vient du backend (PATCH /me a réussi).
+    await page.reload()
+    await openSettingsChapter(page, 'profile')
+    await expect(page.getByTestId('profile-name')).toHaveValue(newName)
+    // username/email inchangés.
+    await expect(page.getByTestId('profile-username')).toHaveValue(SHARED.username)
+    await expect(page.getByTestId('profile-email')).toHaveValue(SHARED.email)
+  })
+})

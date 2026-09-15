@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.repositories.jpa;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,18 +23,15 @@ public class EventRepositoryJpaImpl
 
     private final EntityManager entityManager;
     private final EventMapper eventMapper;
-    private final ProductRepositoryJpaImpl productRepositoryJpa;
 
     @Autowired
     public EventRepositoryJpaImpl(
         EntityManager em,
-        EventMapper eventMapper,
-        ProductRepositoryJpaImpl productRepositoryJpa
+        EventMapper eventMapper
     ) {
         super(EventEntity.class, em);
         this.entityManager = em;
         this.eventMapper = eventMapper;
-        this.productRepositoryJpa = productRepositoryJpa;
     }
     
     @Override
@@ -50,14 +48,135 @@ public class EventRepositoryJpaImpl
 
     @Override
     public Event save(Event domainEvent) {
+        // #165 : découplage infra-infra. On dépendait de la classe concrète
+        // ProductRepositoryJpaImpl pour charger la ProductEntity FK. On récupère désormais
+        // une RÉFÉRENCE GÉRÉE (proxy) via l'EntityManager — même pattern que
+        // ProductRepositoryJpaImpl.save (getReference pour attacher une FK sans charger la
+        // ligne). L'existence du produit est déjà validée en amont (ProductNotFoundException
+        // dans EventServiceImpl.createEvent / ownership dans EventController), donc pas de
+        // findById redondant ici. getReference lève EntityNotFoundException à l'usage si l'id
+        // n'existe pas (défense en profondeur).
         UUID productId = domainEvent.getProductId();
-        ProductEntity productEntity = productRepositoryJpa
-            .findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductEntity productEntity = entityManager.getReference(ProductEntity.class, productId);
+
+        // PIT-S10-003 / convention 4 (#54) : le domaine ne porte pas @Version. Reconstruire
+        // l'EventEntity via le mapper produit une entité DÉTACHÉE (version=null) : sur un
+        // UPDATE, SimpleJpaRepository.save la route vers persist() (isNew=true) -> échec
+        // "uninitialized version value", ou merge() -> OptimisticLock. Pour une MISE À JOUR
+        // (id existant en base) on charge donc l'entité GÉRÉE et on recopie les champs
+        // mutables ; l'audit (@Version/updated_at) reste piloté par Hibernate. Aligné sur
+        // ProductRepositoryJpaImpl.save. La CRÉATION garde le chemin persist du mapper.
+        if (domainEvent.getId() != null) {
+            EventEntity managed = super.findById(domainEvent.getId()).orElse(null);
+            if (managed != null) {
+                copyMutableFields(domainEvent, managed, productEntity);
+                EventEntity flushed = super.save(managed);
+                return eventMapper.toDomain(flushed);
+            }
+        }
 
         EventEntity entity = eventMapper.toEntity(domainEvent, productEntity);
         EventEntity saved = super.save(entity);
 
         return eventMapper.toDomain(saved);
+    }
+
+    private void copyMutableFields(Event source, EventEntity target, ProductEntity productEntity) {
+        target.setTitle(source.getTitle());
+        target.setType(source.getType());
+        target.setDurationValue(source.getDurationValue());
+        target.setDurationUnit(source.getDurationUnit());
+        target.setIsRecurring(source.getIsRecurring());
+        target.setRecurrenceUnit(source.getRecurrenceUnit());
+        target.setRecurrenceEndDate(source.getRecurrenceEndDate());
+        target.setStartDate(source.getStartDate());
+        target.setEndDate(source.getEndDate());
+        target.setIsAllDay(source.getIsAllDay());
+        target.setColor(source.getColor());
+        target.setArchived(source.isArchived());
+        target.setProduct(productEntity);
+    }
+    
+    // #78 — SQL NATIF volontaire. events n'a PAS de user_id : l'appartenance passe par
+    // product_id -> products.user_id. Un sous-select JPQL sur ProductEntity serait filtré
+    // par son @SQLRestriction("archived = false"), laissant les events des produits
+    // archivés (dont le product_id resterait, bloquant ensuite le DELETE products). Le
+    // natif voit TOUS les produits du user, archivés inclus.
+    @Override
+    public int deleteAllByUserId(UUID userId) {
+        return entityManager
+                .createNativeQuery(
+                        "DELETE FROM events WHERE product_id IN "
+                        + "(SELECT id FROM products WHERE user_id = :uid)")
+                .setParameter("uid", userId)
+                .executeUpdate();
+    }
+
+    // #175 — DELETE bulk JPQL : UNE SEULE instruction JDBC, et le nombre de lignes
+    // touchées porte le contrat 404 du service (0 ligne -> EventNotFoundException).
+    // Remplace le deleteById(UUID) hérité de SimpleJpaRepository
+    // (findById().ifPresent(delete) = SELECT + DELETE), lui-même précédé d'un
+    // existsById (SELECT count(*)) : 3 instructions mesurées pour une suppression
+    // unitaire (EventDeleteStatisticsIntegrationTest).
+    //
+    // JPQL et non SQL natif (contrairement à deleteAllByUserId ci-dessus) : EventEntity
+    // ne porte AUCUN @SQLRestriction — rien à contourner — et le bulk JPQL déclare son
+    // entity space, donc Hibernate auto-flushe les mutations en attente sur `events`
+    // avant de l'exécuter. Aucune FK enfant ne référence events : pas de cascade à
+    // orchestrer. Comme tout bulk, il n'évince pas l'entité du cache de 1er niveau :
+    // sous open-in-view, une EventEntity chargée plus tôt dans la MÊME requête (contrôle
+    // d'ownership du contrôleur) y reste, non modifiée — le contrôleur répond
+    // ok().build() sans relecture, le dirty-check de fin de transaction est vide, aucun
+    // UPDATE post-DELETE n'est émis.
+    //
+    // ─── DÉCISION ASSUMÉE : la suppression NE PORTE PLUS LE VERROU OPTIMISTE ───────────
+    // EventEntity porte @Version. L'ancien chemin finissait par em.remove(entity), qui
+    // émet DELETE ... WHERE id=? AND version=? ; ce bulk émet WHERE id=? seul. Un event
+    // édité concurremment est donc désormais supprimé au lieu de lever un
+    // StaleStateException. C'est un CHOIX, pas un effet de bord subi :
+    //   1. DELETE /api/events/{id} ne transporte AUCUNE version (contrairement au PATCH,
+    //      dont EventUpdateRequest.version porte le contrat 409 de BR-EVE-015). Le client
+    //      ne peut donc pas exprimer « supprime la version que j'ai vue » : il n'y a
+    //      aucune intention utilisateur à protéger, et un 409 sur DELETE serait
+    //      inexploitable côté frontend (rien à comparer dans la modale de conflit).
+    //   2. La fenêtre réellement couverte par l'ancien verrou n'était PAS « quelqu'un a
+    //      édité pendant que j'avais la page ouverte » mais les quelques millisecondes
+    //      INTERNES à la requête DELETE, entre le SELECT d'ownership et le flush — sous
+    //      open-in-view, le findById du deleteById tapait le cache de 1er niveau et
+    //      réutilisait la version lue par le contrôle d'ownership.
+    //   3. Sémantique retenue : « la suppression gagne toujours ». Une suppression
+    //      demandée par le propriétaire est un acte terminal ; perdre une édition
+    //      concurrente sur une ligne qui part de toute façon est sans conséquence.
+    // Si ce choix devait être REVU (p.ex. si le frontend se mettait à envoyer une version
+    // au DELETE), le coût serait : ajouter un paramètre version au port et au DTO, passer
+    // à `DELETE ... WHERE e.id = :id AND e.version = :version`, et distinguer les deux cas
+    // de rowcount 0 (inexistant -> 404 / version périmée -> 409) par une relecture — soit
+    // une 2e instruction sur le seul chemin de conflit.
+    // Comportement épinglé par EventOptimisticLockConflictIntegrationTest (#175).
+    @Override
+    public int deleteByIdReturningRowCount(UUID id) {
+        return entityManager
+                .createQuery("DELETE FROM EventEntity e WHERE e.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    @Override
+    public Optional<Event> findEventById(UUID id) {
+        Optional<EventEntity> optionalEntity = super.findById(id);
+        if (optionalEntity.isPresent()) {
+            EventEntity entity = optionalEntity.get();
+            return Optional.of(eventMapper.toDomain(entity));
+        }
+        return Optional.empty();
+    }
+
+    // BR-EVE-015 (#231) : la version @Version vit sur EventEntity (infra) ; on l'extrait
+    // ici sans laisser fuiter l'entité JPA vers le domaine. Utilisé sur le chemin de
+    // conflit optimiste (rare) pour enrichir le 409 — la transaction du update ayant
+    // rollbacké, ce find lit l'état serveur GAGNANT committé.
+    @Override
+    public Optional<Integer> findVersionById(UUID id) {
+        return super.findById(id).map(EventEntity::getVersion);
     }
 }

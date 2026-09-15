@@ -3,6 +3,9 @@ package com.matimeline.eventmanager.application.dtos;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,8 +33,35 @@ public class EventCreationRequest {
 
     private Boolean isAllDay;
 
+    /**
+     * BR-EVE-014 (#168) : couleur d'affichage de l'événement, fournie DÈS la création
+     * (auparavant seul {@code EventUpdateRequest} l'exposait -> il fallait créer puis PATCH).
+     * Champ ADDITIF optionnel (nullable) : les clients existants qui ne l'envoient pas
+     * restent valides (non-cassant). Aligné sur {@code EventUpdateRequest.color} (String
+     * libre, aucune contrainte de format hex côté backend — cf. BR-EVE-009). Le refine Zod
+     * frontend correspondant reste à répercuter (#150, S15).
+     */
+    private String color;
+
     @NotNull(message = "Product ID is required")
     private UUID productId;
+
+    /**
+     * BR-EVE-006 (#54) : validation conditionnelle — {@code recurrenceUnit} MUST être non-null
+     * (et non vide) quand {@code isRecurring=true}. Une récurrence sans unité est inexploitable.
+     * {@code @AssertTrue} sur ce getter dérivé : déclenché par {@code @Valid} -> HTTP 400 si violé.
+     * {@code @JsonIgnore} pour ne pas exposer/attendre ce champ calculé sur le wire.
+     * Retourne {@code true} (valide) quand {@code isRecurring} est null/false : la contrainte
+     * ne s'applique qu'à la récurrence active.
+     */
+    @JsonIgnore
+    @AssertTrue(message = "recurrenceUnit is required when isRecurring is true")
+    public boolean isRecurrenceUnitConsistent() {
+        if (!Boolean.TRUE.equals(isRecurring)) {
+            return true;
+        }
+        return recurrenceUnit != null && !recurrenceUnit.trim().isEmpty();
+    }
 
     public String getName() {
         return name;
@@ -103,5 +133,13 @@ public class EventCreationRequest {
 
     public void setIsAllDay(Boolean isAllDay) {
         this.isAllDay = isAllDay;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

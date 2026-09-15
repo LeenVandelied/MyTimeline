@@ -1,0 +1,392 @@
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { MAX_KEEP_MINE_ATTEMPTS, useEventEditConflict } from './useEventEditConflict'
+import type { EventEditFormValues } from '@/types/event'
+
+/**
+ * #310 — GARDE ANTI-BOUCLE sur « garder mes modifications » (409 répétés).
+ *
+ * Ce que ces tests PROUVENT (et pas seulement exécutent) :
+ *  1. sous 409 permanents, le nombre d'appels réseau est BORNÉ à
+ *     1 (soumission initiale) + MAX_KEEP_MINE_ATTEMPTS (re-soumissions), et `onKeepMine`
+ *     devient inerte ensuite (`keepMineExhausted`) ;
+ *  2. un succès intercalé REMET le compteur à zéro — sans quoi la garde punirait un
+ *     utilisateur légitime qui traverse plusieurs conflits successifs ;
+ *  3. une soumission INITIALE en 409 n'est pas comptée comme une re-soumission.
+ *
+ * ⚠ Pièges d'outillage respectés ici :
+ *  - PIT-S69-001 : `useAuth` et `useQueryClient` sont MOCKÉS AU NIVEAU DU HOOK ; on
+ *    n'enveloppe pas d'un `QueryClientProvider` (on testerait TanStack, pas la garde).
+ *  - PIT-S61-001 : le mock de module partagé rend des promesses REJETÉES ; on RECRÉE un
+ *    `vi.fn()` à chaque test au lieu de `mockReset()`/`mockClear()`, qui feraient
+ *    rapporter le rejet TRAITÉ comme un échec de test.
+ *  - Aucune horloge : la garde est un PLAFOND, pas un backoff (cf. PIT-S54-001).
+ */
+
+let updateEventMock = vi.fn()
+const invalidateQueriesMock = vi.fn()
+
+vi.mock('@/services/eventService', () => ({
+  updateEvent: (...args: unknown[]) => updateEventMock(...args),
+}))
+/** Porteur MUTABLE (PIT-S90-009 : pas de `let` réassigné lu par un `vi.mock`). */
+const authState: { user: { id: string } | null } = { user: { id: 'user-1' } }
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: authState.user }),
+}))
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: () => ({ invalidateQueries: invalidateQueriesMock }),
+}))
+
+/** Corps 409 ENRICHI (#231) : c'est lui qui fait naître l'état `conflict`. */
+function conflictError(serverVersion: number) {
+  return {
+    response: {
+      status: 409,
+      data: {
+        error: 'conflict',
+        serverVersion,
+        serverEvent: {
+          id: 'evt-1',
+          title: 'Titre serveur',
+          type: 'duration',
+          durationValue: 2,
+          durationUnit: 'days',
+          isRecurring: false,
+          recurrenceUnit: null,
+          recurrenceEndDate: null,
+          startDate: '2026-05-01',
+          endDate: '2026-05-02',
+          productId: 'prod-1',
+          isAllDay: false,
+          color: '#222222',
+          archived: false,
+          version: serverVersion,
+        },
+      },
+    },
+  }
+}
+
+const localValues = {
+  title: 'Mon titre',
+  type: 'duration',
+  durationValue: 3,
+  durationUnit: 'days',
+  isRecurring: false,
+  recurrenceUnit: null,
+  recurrenceEndDate: null,
+  startDate: '2026-05-01',
+  endDate: '2026-05-03',
+  color: '#111111',
+  archived: false,
+  version: 1,
+} as unknown as EventEditFormValues
+
+describe('useEventEditConflict — garde anti-boucle keep-mine (#310)', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    updateEventMock = vi.fn()
+    invalidateQueriesMock.mockClear()
+    // Le hook logue l'erreur interceptée : bruit stderr attendu, pas un échec.
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('borne les re-soumissions à MAX_KEEP_MINE_ATTEMPTS sous 409 permanents', async () => {
+    // Le serveur reste en contention : la version renvoyée BOUGE à chaque fois, donc
+    // le ré-alignement de version d'`onKeepMine` ne suffit pas — c'est exactement le
+    // cas que la garde doit borner (un tiers réécrit entre le 409 et la re-soumission).
+    let serverVersion = 2
+    updateEventMock.mockImplementation(() => Promise.reject(conflictError(serverVersion++)))
+
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(updateEventMock).toHaveBeenCalledTimes(1)
+    expect(result.current.keepMineExhausted).toBe(false)
+
+    // On INSISTE bien au-delà du plafond : les clics supplémentaires doivent être inertes.
+    for (let i = 0; i < MAX_KEEP_MINE_ATTEMPTS + 4; i += 1) {
+      await act(async () => {
+        result.current.onKeepMine()
+      })
+    }
+
+    await waitFor(() => expect(result.current.keepMineExhausted).toBe(true))
+    // 1 soumission initiale + MAX re-soumissions, PAS PLUS malgré 4 clics de trop.
+    expect(updateEventMock).toHaveBeenCalledTimes(1 + MAX_KEEP_MINE_ATTEMPTS)
+    // Le dialog reste ouvert (état terminal `conflict`) pour porter le message.
+    expect(result.current.submitState).toBe('conflict')
+    expect(result.current.conflict).not.toBeNull()
+  })
+
+  it('un succès intercalé remet le compteur à zéro', async () => {
+    let serverVersion = 2
+    updateEventMock.mockImplementation(() => Promise.reject(conflictError(serverVersion++)))
+
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+
+    // Deux re-soumissions en 409 : le compteur monte sans atteindre le plafond.
+    for (let i = 0; i < MAX_KEEP_MINE_ATTEMPTS - 1; i += 1) {
+      await act(async () => {
+        result.current.onKeepMine()
+      })
+    }
+    expect(result.current.keepMineExhausted).toBe(false)
+    expect(updateEventMock).toHaveBeenCalledTimes(MAX_KEEP_MINE_ATTEMPTS)
+
+    // Succès : l'épisode de contention est clos.
+    updateEventMock.mockImplementation(() => Promise.resolve({}))
+    await act(async () => {
+      result.current.onKeepMine()
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('idle'))
+    const callsAfterSuccess = updateEventMock.mock.calls.length
+
+    // Nouvel épisode : le budget complet est de nouveau disponible (sinon la garde
+    // punirait un utilisateur légitime qui traverse plusieurs conflits successifs).
+    updateEventMock.mockImplementation(() => Promise.reject(conflictError(serverVersion++)))
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(result.current.keepMineExhausted).toBe(false)
+
+    for (let i = 0; i < MAX_KEEP_MINE_ATTEMPTS + 2; i += 1) {
+      await act(async () => {
+        result.current.onKeepMine()
+      })
+    }
+    await waitFor(() => expect(result.current.keepMineExhausted).toBe(true))
+    expect(updateEventMock).toHaveBeenCalledTimes(callsAfterSuccess + 1 + MAX_KEEP_MINE_ATTEMPTS)
+  })
+
+  it("une soumission initiale en 409 n'entame pas le budget de re-soumissions", async () => {
+    let serverVersion = 2
+    updateEventMock.mockImplementation(() => Promise.reject(conflictError(serverVersion++)))
+
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    // Deux soumissions INITIALES successives (l'utilisateur re-soumet le formulaire) :
+    // on compte les 409 des RE-soumissions, pas ceux-ci.
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(result.current.keepMineExhausted).toBe(false)
+    expect(updateEventMock).toHaveBeenCalledTimes(2)
+
+    for (let i = 0; i < MAX_KEEP_MINE_ATTEMPTS; i += 1) {
+      await act(async () => {
+        result.current.onKeepMine()
+      })
+    }
+    await waitFor(() => expect(result.current.keepMineExhausted).toBe(true))
+    expect(updateEventMock).toHaveBeenCalledTimes(2 + MAX_KEEP_MINE_ATTEMPTS)
+  })
+
+  it('abandonner le flux (onConflictDismiss) libère le budget', async () => {
+    let serverVersion = 2
+    updateEventMock.mockImplementation(() => Promise.reject(conflictError(serverVersion++)))
+
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    for (let i = 0; i < MAX_KEEP_MINE_ATTEMPTS; i += 1) {
+      await act(async () => {
+        result.current.onKeepMine()
+      })
+    }
+    await waitFor(() => expect(result.current.keepMineExhausted).toBe(true))
+
+    act(() => {
+      result.current.onConflictDismiss()
+    })
+    expect(result.current.keepMineExhausted).toBe(false)
+    expect(result.current.submitState).toBe('idle')
+  })
+})
+
+// #77/#231 — Statut HTTP → `submitState`, et pilotage du conflit comparatif.
+//
+// Porté depuis `EventContent.test.tsx` (supprimé #634, mount historique mort depuis la
+// suppression d'`EventBar`/`Lane`) : ces trois comportements n'étaient couverts QUE là.
+// `EventEditForm.test.tsx` ne teste que le RENDU d'un `submitState`/`conflictServerEvent`
+// déjà fournis en props ; c'est CE hook qui calcule `httpStatusOf`/`conflictServerEventOf`
+// et doit donc porter la preuve du mapping lui-même.
+describe('useEventEditConflict — statut HTTP → submitState (#77/#231)', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    updateEventMock = vi.fn()
+    invalidateQueriesMock.mockClear()
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
+
+  it('409 avec corps ENRICHI : conflict + serverEvent capturé', async () => {
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(result.current.conflict?.server.title).toBe('Titre serveur')
+    expect(result.current.conflict?.local).toBe(localValues)
+  })
+
+  it('409 avec corps PLAT (legacy, pas de serverEvent) : conflict SANS serverEvent (fallback recharger)', async () => {
+    updateEventMock.mockRejectedValue({ response: { status: 409 } })
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    expect(result.current.conflict).toBeNull()
+  })
+
+  it.each([400, 404])('%i → submitState error (PAS conflict)', async (status) => {
+    updateEventMock.mockRejectedValue({ response: { status } })
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('error'))
+    expect(result.current.conflict).toBeNull()
+  })
+
+  it('onReload : invalidation ciblée products.withEvents + retour idle + onDone appelé (pas de reload page)', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+
+    invalidateQueriesMock.mockClear()
+    act(() => {
+      result.current.onReload()
+    })
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ['products', { userId: 'user-1', withEvents: true }],
+    })
+    expect(result.current.submitState).toBe('idle')
+    expect(onDone).toHaveBeenCalledTimes(1)
+  })
+
+  // #621 — le parent confirme par un toast SSI des valeurs ont été enregistrées : le hook
+  // doit donc distinguer le succès (valeurs transmises) de l'abandon (aucun argument).
+  it('#621 — succès : onDone reçoit les valeurs ENREGISTRÉES', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(onDone).toHaveBeenCalledWith(localValues)
+  })
+
+  describe('#621 revue — garde sans PATCH : aucune confirmation', () => {
+    afterEach(() => {
+      authState.user = { id: 'user-1' }
+    })
+
+    it('utilisateur absent : pas de PATCH, pas d’onDone (donc pas de toast), pas d’invalidation, erreur exposée', async () => {
+      authState.user = null
+      const onDone = vi.fn()
+      updateEventMock.mockResolvedValue(undefined)
+      const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+      await act(async () => {
+        await result.current.onSubmit(localValues)
+      })
+
+      expect(updateEventMock).not.toHaveBeenCalled()
+      // Le toast « Événement modifié » est émis par le parent DANS `onDone(saved)`
+      // (`TimelineEditHost`) : pas d'`onDone` ⇒ pas de toast.
+      expect(onDone).not.toHaveBeenCalled()
+      expect(invalidateQueriesMock).not.toHaveBeenCalled()
+      // `error` = état rendu par `EventEditForm` (`event-form-error`, `submitError`).
+      expect(result.current.submitState).toBe('error')
+      expect(result.current.conflict).toBeNull()
+    })
+
+    it('événement absent : même issue (erreur, ni PATCH ni onDone)', async () => {
+      const onDone = vi.fn()
+      updateEventMock.mockResolvedValue(undefined)
+      const { result } = renderHook(() => useEventEditConflict(undefined, onDone))
+
+      await act(async () => {
+        await result.current.onSubmit(localValues)
+      })
+
+      expect(updateEventMock).not.toHaveBeenCalled()
+      expect(onDone).not.toHaveBeenCalled()
+      expect(result.current.submitState).toBe('error')
+    })
+  })
+
+  it('#621 — abandon (onReload) : onDone appelé SANS valeurs (rien à confirmer)', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    act(() => {
+      result.current.onReload()
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(onDone.mock.calls[0]).toHaveLength(0)
+  })
+
+  it('onTakeServer (« prendre la version serveur ») : même invalidation, abandon du local', async () => {
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1'))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+
+    invalidateQueriesMock.mockClear()
+    act(() => {
+      result.current.onTakeServer()
+    })
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ['products', { userId: 'user-1', withEvents: true }],
+    })
+    expect(result.current.submitState).toBe('idle')
+  })
+})

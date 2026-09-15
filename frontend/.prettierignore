@@ -1,0 +1,10 @@
+.next
+node_modules
+package-lock.json
+tsconfig.tsbuildinfo
+public/locales
+coverage
+playwright-report
+test-results
+storybook-static
+src/styles/ds
