@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import toast from 'react-hot-toast'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AppToaster, TOASTER_CONTAINER_STYLE, toastVariantOf } from './toaster'
 
@@ -11,17 +11,35 @@ import { AppToaster, TOASTER_CONTAINER_STYLE, toastVariantOf } from './toaster'
  *
  * Ce que ces tests prouvent : un appel `toast.success/error/toast()` INCHANGÉ (forme des 15
  * appels existants) rend le composant DS, avec la bonne variante, un seul `role="status"`
- * (pas de `ToastBar` résiduel en doublon), et le conteneur `#_rht_toaster` conservé.
- * Ce qu'ils NE prouvent PAS (jsdom : aucun layout, aucune cascade CSS) : la position peinte,
- * la pile réelle au-dessus d'un drawer, l'annonce effective par un lecteur d'écran —
- * `e2e/sprint-92-business-toasts.spec.ts` couvre les deux premiers.
+ * (pas de `ToastBar` résiduel en doublon), et le conteneur `#_rht_toaster` conservé ;
+ * la durée est suspendue au survol et au focus (WCAG 2.2.1), sans vol de focus.
+ * Ce qu'ils NE prouvent PAS (jsdom : aucun layout, aucune cascade CSS, aucun hit-testing) :
+ * la position peinte, la pile réelle au-dessus d'un drawer, que la carte capte VRAIMENT le
+ * pointeur (`fireEvent` ignore `pointer-events`), la police réellement appliquée au titre,
+ * l'annonce effective par un lecteur d'écran — `e2e/sprint-92-business-toasts.spec.ts`
+ * couvre les deux premiers.
  */
 
 afterEach(() => {
   act(() => {
     toast.remove()
   })
+  vi.useRealTimers()
 })
+
+/** Affiche un succès (durée 4 s) et renvoie la carte DS. */
+function showSuccess(message = 'Événement créé'): HTMLElement {
+  act(() => {
+    toast.success(message)
+  })
+  return screen.getByRole('status')
+}
+
+function advance(ms: number) {
+  act(() => {
+    vi.advanceTimersByTime(ms)
+  })
+}
 
 describe('AppToaster — rendu DS des toasts react-hot-toast (#621)', () => {
   it('toast.success(msg) : composant DS, variante success, message en titre', async () => {
@@ -72,15 +90,6 @@ describe('AppToaster — rendu DS des toasts react-hot-toast (#621)', () => {
     )
   })
 
-  it('toast non bloquant : pointer-events none (ne capte pas les clics de ce qu’il couvre)', async () => {
-    render(<AppToaster />)
-    act(() => {
-      toast.success('Deux')
-    })
-    const status = await screen.findByRole('status')
-    expect(status.style.pointerEvents).toBe('none')
-  })
-
   it('conteneur `#_rht_toaster` conservé (masqué par sprint-77-theme-visual) et piloté par --z-toast', async () => {
     render(<AppToaster />)
     act(() => {
@@ -98,6 +107,158 @@ describe('AppToaster — rendu DS des toasts react-hot-toast (#621)', () => {
     expect(toastVariantOf('blank')).toBe('info')
     expect(toastVariantOf('loading')).toBe('info')
     expect(toastVariantOf('custom')).toBe('info')
+  })
+})
+
+describe('AppToaster — pause au survol et au focus (WCAG 2.2.1, revue Designer #621)', () => {
+  it('carte visible : pointer-events auto et focusable ; conteneur plein écran non bloquant ; en sortie : none', () => {
+    render(<AppToaster />)
+    const card = showSuccess()
+    // Ancre de non-régression : l'ancien `none` rendait le survol impossible. jsdom ne
+    // fait aucun hit-testing — ceci vérifie la déclaration, pas la captation peinte.
+    expect(card.style.pointerEvents).toBe('auto')
+    expect(card).toHaveAttribute('tabindex', '0')
+    expect(document.getElementById('_rht_toaster')?.style.pointerEvents).toBe('none')
+
+    act(() => {
+      toast.dismiss()
+    })
+    expect(card).toHaveAttribute('data-visible', 'false')
+    expect(card.style.pointerEvents).toBe('none')
+    expect(card).toHaveAttribute('tabindex', '-1')
+  })
+
+  it('survol : la durée ne s’écoule pas pendant le survol, reprend à la sortie', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const card = showSuccess()
+
+    act(() => {
+      fireEvent.mouseEnter(card)
+    })
+    advance(10_000)
+    expect(card).toHaveAttribute('data-visible', 'true')
+
+    act(() => {
+      fireEvent.mouseLeave(card)
+    })
+    advance(3_900)
+    expect(card).toHaveAttribute('data-visible', 'true')
+    advance(200)
+    expect(card).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('focus clavier : focusin suspend, focusout reprend', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const card = showSuccess()
+
+    act(() => {
+      fireEvent.focusIn(card)
+    })
+    advance(10_000)
+    expect(card).toHaveAttribute('data-visible', 'true')
+
+    act(() => {
+      fireEvent.focusOut(card)
+    })
+    advance(3_900)
+    expect(card).toHaveAttribute('data-visible', 'true')
+    advance(200)
+    expect(card).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('souris sortie mais focus toujours sur le toast : reste en pause (la bibliothèque relance sur mouseleave)', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const card = showSuccess()
+
+    act(() => {
+      fireEvent.focusIn(card)
+    })
+    act(() => {
+      fireEvent.mouseEnter(card)
+    })
+    act(() => {
+      fireEvent.mouseLeave(card)
+    })
+    advance(10_000)
+    expect(card).toHaveAttribute('data-visible', 'true')
+
+    act(() => {
+      fireEvent.focusOut(card)
+    })
+    advance(4_100)
+    expect(card).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('focus sorti mais pointeur toujours dessus : reste en pause', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const card = showSuccess()
+
+    act(() => {
+      fireEvent.mouseEnter(card)
+    })
+    act(() => {
+      fireEvent.focusIn(card)
+    })
+    act(() => {
+      fireEvent.focusOut(card)
+    })
+    advance(10_000)
+    expect(card).toHaveAttribute('data-visible', 'true')
+
+    act(() => {
+      fireEvent.mouseLeave(card)
+    })
+    advance(4_100)
+    expect(card).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('toast retiré pendant le focus (sans focusout) : la pause est levée pour les toasts suivants', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const first = showSuccess('Premier')
+    act(() => {
+      fireEvent.focusIn(first)
+    })
+    act(() => {
+      toast.remove()
+    })
+
+    const second = showSuccess('Second')
+    advance(4_100)
+    expect(second).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('le toast ne prend JAMAIS le focus à son apparition', () => {
+    render(
+      <>
+        <button type="button">Enregistrer</button>
+        <AppToaster />
+      </>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Enregistrer' })
+    trigger.focus()
+    const card = showSuccess()
+
+    expect(document.activeElement).toBe(trigger)
+    expect(card).not.toHaveFocus()
+  })
+})
+
+describe('.mt-toast__title — police display (revue Designer #621)', () => {
+  // Lecture STATIQUE de la source CSS : prouve la déclaration, pas la police calculée
+  // (jsdom n'applique pas la cascade ni next/font).
+  it('le titre du toast déclare --font-display, comme .mt-dialog__title', () => {
+    const css = readFileSync(
+      join(process.cwd(), 'src', 'styles', 'ds', 'components', 'core.css'),
+      'utf8',
+    )
+    const rule = css.match(/\.mt-toast__title\{([^}]*)\}/)
+    expect(rule).not.toBeNull()
+    expect(rule?.[1]).toContain('font-family:var(--font-display)')
   })
 })
 

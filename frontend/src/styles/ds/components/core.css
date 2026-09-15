@@ -287,7 +287,7 @@
 .mt-toast--success .mt-toast__icon{color:var(--color-success);}
 .mt-toast--danger .mt-toast__icon{color:var(--color-danger);}
 .mt-toast__icon svg{width:17px; height:17px; display:block;}
-.mt-toast__title{font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink);}
+.mt-toast__title{font-family:var(--font-display); font-size:13px; font-weight:var(--weight-semibold); color:var(--color-ink);}
 .mt-toast__msg{font-size:12px; color:var(--color-ink-muted); margin-top:2px;}
 
 /* ---------------- Tooltip ---------------- */
