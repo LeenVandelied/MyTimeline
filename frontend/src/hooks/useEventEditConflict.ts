@@ -76,11 +76,15 @@ export interface UseEventEditConflict {
 
 /**
  * @param eventId  id de l'event édité (le PATCH cible `/events/{eventId}`).
- * @param onDone   appelé après un succès (fermer le dialog d'édition du parent).
+ * @param onDone   appelé à la sortie du flux (fermer le dialog d'édition du parent).
+ *                 #621 — reçoit les valeurs ENREGISTRÉES après un PATCH réussi (le parent
+ *                 confirme alors par un toast) ; appelé SANS argument quand l'utilisateur
+ *                 abandonne ses modifications (`onReload` / `onTakeServer`) : rien n'a été
+ *                 enregistré, rien ne doit être confirmé.
  */
 export function useEventEditConflict(
   eventId: string | undefined,
-  onDone?: () => void,
+  onDone?: (saved?: EventEditFormValues) => void,
 ): UseEventEditConflict {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -129,7 +133,8 @@ export function useEventEditConflict(
         setSubmitState('idle')
         // Succes : l'episode de contention est clos, le plafond repart de zero.
         setKeepMineAttempts(0)
-        onDone?.()
+        // #621 — valeurs enregistrées transmises : le parent confirme par un toast.
+        onDone?.(data)
       } catch (error) {
         const status = httpStatusOf(error)
         if (status === 409) {

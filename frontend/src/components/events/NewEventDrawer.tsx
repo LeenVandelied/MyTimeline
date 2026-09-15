@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import toast from 'react-hot-toast'
 
 import {
   Select,
@@ -90,6 +91,7 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
   )
 
   const createEvent = useCreateEvent()
+  const tToast = useTranslations('common.toast')
 
   const handleSubmit = useCallback(
     async (values: EventEditFormValues) => {
@@ -102,13 +104,16 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
       setProductError(false)
       try {
         await createEvent.mutateAsync(toEventCreationPayload(values, productId))
+        // #621 — confirmation APRÈS la réponse serveur : le drawer se referme, le toast
+        // (hôte `AppToaster`, hors du drawer) reste la seule trace du succès.
+        toast.success(tToast('eventCreated'))
         onClose()
       } catch {
         // L'état d'erreur est porté par la mutation (`isError`) → `submitState='error'`
         // affiche le message inline du formulaire. Le service a déjà loggé (safeErrorMessage).
       }
     },
-    [createEvent, onClose, productId],
+    [createEvent, onClose, productId, tToast],
   )
 
   if (!open) return null

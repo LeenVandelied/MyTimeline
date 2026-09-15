@@ -28,6 +28,14 @@ vi.mock('@/services/eventService', () => ({
   createEvent: createEventMock,
 }))
 
+// #621 — confirmation par toast : on assert l'APPEL (clé i18n), le rendu DS est couvert
+// par `ui/toaster.test.tsx`. `default` ET `toast` : les deux formes d'import coexistent.
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
+}))
+
 const mockProducts: Product[] = [
   {
     id: '11111111-1111-4111-8111-111111111111',
@@ -292,6 +300,32 @@ describe('NewEventDrawer — champs gouvernés par le contrat create', () => {
       new Date().toLocaleDateString('sv-SE'), // YYYY-MM-DD local
     )
     expect(screen.getByTestId('event-form-preview')).toBeInTheDocument()
+  })
+})
+
+describe('NewEventDrawer — confirmation par toast (#621)', () => {
+  beforeEach(() => toastSuccessMock.mockClear())
+
+  it('succès : un toast confirme la création, puis le drawer se referme', async () => {
+    renderDrawer()
+    await selectProduct('Produit Alpha')
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Confirmé')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+    expect(toastSuccessMock).toHaveBeenCalledTimes(1)
+    expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.eventCreated')
+  })
+
+  it('échec serveur : AUCUN toast de succès (seule l’erreur inline est rendue)', async () => {
+    createEventMock.mockRejectedValue({ response: { status: 500 } })
+    renderDrawer()
+    await selectProduct('Produit Alpha')
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Boom')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+
+    await waitFor(() => expect(screen.getByTestId('event-form-error')).toBeInTheDocument())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
   })
 })
 

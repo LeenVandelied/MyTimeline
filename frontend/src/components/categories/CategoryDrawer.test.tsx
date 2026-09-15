@@ -47,6 +47,12 @@ vi.mock('@/hooks/useDeleteCategory', () => ({
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
 }))
+// #621 — confirmation de création par toast (appel asserté, rendu couvert par `ui/toaster`).
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
+}))
 vi.mock('@/components/ui/popoverPicker', () => ({
   PopoverPicker: ({
     onChange,
@@ -173,6 +179,45 @@ describe('CategoryDrawer', () => {
         description: undefined,
       }),
     )
+  })
+
+  it('#621 — création réussie : toast de confirmation', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockResolvedValue({})
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(screen.getByTestId('category-name-input'), 'Santé')
+    await user.click(screen.getByTestId('category-submit'))
+
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.categoryCreated'),
+    )
+  })
+
+  it('#621 — 409 nom dupliqué : aucun toast de succès (erreur inline seule)', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockRejectedValue({ response: { status: 409 } })
+    render(<CategoryDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(screen.getByTestId('category-name-input'), 'Doublon')
+    await user.click(screen.getByTestId('category-submit'))
+
+    await waitFor(() => expect(createMutateAsync).toHaveBeenCalled())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('#621 — édition : pas de toast de création (hors périmètre)', async () => {
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    render(<CategoryDrawer open onOpenChange={noop} mode="edit" category={editableCategory} />)
+
+    const nameInput = screen.getByTestId('category-name-input')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Motos')
+    await user.click(screen.getByTestId('category-submit'))
+
+    await waitFor(() => expect(updateMutateAsync).toHaveBeenCalled())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
   })
 
   it('rejette un nom vide (Zod BR-CAT-001, pas de POST)', async () => {

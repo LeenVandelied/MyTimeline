@@ -4,7 +4,6 @@ import '../../src/styles/animations.css'
 import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
-import { Toaster } from 'react-hot-toast'
 import { loadMessages } from '../../i18n'
 import { fontVariables, fontUiStyle } from '../fonts'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -12,6 +11,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/contexts/QueryProvider'
 import { NetworkStatusProvider } from '@/contexts/NetworkStatusContext'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
+import { AppToaster } from '@/components/ui/toaster'
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/locales'
 
 /**
@@ -82,7 +82,8 @@ export default async function LocaleLayout({
             </QueryProvider>
           </AuthProvider>
         </ThemeProvider>
-        <Toaster position="top-right" />
+        {/* #621 — hôte UNIQUE des toasts : moteur react-hot-toast, rendu DS `ui/toast`. */}
+        <AppToaster />
       </body>
     </html>
   )

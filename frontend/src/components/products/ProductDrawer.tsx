@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
+import toast from 'react-hot-toast'
 import { Package, Tag, Calendar, Trash2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -115,6 +116,7 @@ export function ProductDrawer({
   onCloseAutoFocus,
 }: ProductDrawerProps) {
   const t = useTranslations('products.drawer')
+  const tToast = useTranslations('common.toast')
   const { user } = useAuth()
   const userId = user?.id
 
@@ -217,6 +219,8 @@ export function ProductDrawer({
         }
         productCreateSchema.parse(payload)
         await createMutation.mutateAsync(payload)
+        // #621 — confirmation de CRÉATION uniquement (l'édition ne relève pas du périmètre).
+        toast.success(tToast('productCreated'))
       }
       onSuccess?.()
       onOpenChange(false)

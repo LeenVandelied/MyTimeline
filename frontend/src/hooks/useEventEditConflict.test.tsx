@@ -298,6 +298,36 @@ describe('useEventEditConflict — statut HTTP → submitState (#77/#231)', () =
     expect(onDone).toHaveBeenCalledTimes(1)
   })
 
+  // #621 — le parent confirme par un toast SSI des valeurs ont été enregistrées : le hook
+  // doit donc distinguer le succès (valeurs transmises) de l'abandon (aucun argument).
+  it('#621 — succès : onDone reçoit les valeurs ENREGISTRÉES', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(onDone).toHaveBeenCalledWith(localValues)
+  })
+
+  it('#621 — abandon (onReload) : onDone appelé SANS valeurs (rien à confirmer)', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    act(() => {
+      result.current.onReload()
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(onDone.mock.calls[0]).toHaveLength(0)
+  })
+
   it('onTakeServer (« prendre la version serveur ») : même invalidation, abandon du local', async () => {
     updateEventMock.mockRejectedValue(conflictError(3))
     const { result } = renderHook(() => useEventEditConflict('evt-1'))

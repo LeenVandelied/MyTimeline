@@ -160,6 +160,15 @@ vi.mock('@/services/authService', () => ({
 
 vi.mock('@/services/eventService', () => ({
   deleteEvent: vi.fn(),
+  // #621 — le PATCH d'édition passe par `useEventEditConflict` → `updateEvent`.
+  updateEvent: vi.fn(),
+}))
+
+// #621 — confirmation d'édition / d'archivage par toast (appel asserté).
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
 }))
 
 /**
@@ -200,6 +209,69 @@ describe('TimelineEditHost — invariant AuthProvider (#review S42)', () => {
 // ?? false`, TimelineEditHost.tsx). Comportement porté depuis `EventContent.test.tsx` (supprimé
 // #634, seule surface à couvrir la mapping event → defaultValues.archived sur un chemin vivant :
 // `EventEditForm.test.tsx` ne teste que le RENDU d'un `defaultValues` déjà fourni en prop).
+// #621 — confirmation de la MODIFICATION et de l'ARCHIVAGE d'un événement. Le PATCH part
+// de `useEventEditConflict` (seul point d'appel de `updateEvent`), le toast du host.
+describe('TimelineEditHost — confirmation par toast (#621)', () => {
+  it('modification enregistrée → toast « événement modifié », éditeur refermé', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    const title = await screen.findByTestId('event-form-title-input')
+    fireEvent.change(title, { target: { value: 'Titre modifié' } })
+    fireEvent.click(screen.getByTestId('event-form-submit'))
+
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.eventUpdated'))
+    expect(toastSuccessMock).toHaveBeenCalledTimes(1)
+    await waitFor(() =>
+      expect(screen.queryByTestId('timeline-edit-dialog')).not.toBeInTheDocument(),
+    )
+  })
+
+  it('archivage (bascule confirmée puis enregistrée) → toast « événement archivé »', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    fireEvent.click(await screen.findByTestId('event-form-archived-toggle'))
+    fireEvent.click(await screen.findByTestId('event-archive-confirm-button'))
+    await waitFor(() => expect(screen.getByTestId('event-form-archived-toggle')).toBeChecked())
+    fireEvent.click(screen.getByTestId('event-form-submit'))
+
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.eventArchived'))
+  })
+
+  it('désarchivage enregistré → toast « événement désarchivé »', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger-archived'))
+    const toggle = await screen.findByTestId('event-form-archived-toggle')
+    fireEvent.click(toggle)
+    await waitFor(() => expect(toggle).not.toBeChecked())
+    fireEvent.click(screen.getByTestId('event-form-submit'))
+
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.eventUnarchived'),
+    )
+  })
+
+  it('PATCH en échec → AUCUN toast de succès, éditeur maintenu ouvert', async () => {
+    const { updateEvent } = await import('@/services/eventService')
+    vi.mocked(updateEvent).mockRejectedValueOnce({ response: { status: 500 } })
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    renderUnderAuth()
+    // L'appel réseau n'a lieu qu'avec un utilisateur restauré (garde `user?.id` du hook) :
+    // la restauration (`getUserProfile`, mock résolu) se solde pendant l'attente du formulaire.
+    const { getUserProfile } = await import('@/services/authService')
+    await waitFor(() => expect(vi.mocked(getUserProfile)).toHaveBeenCalled())
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
+    await screen.findByTestId('event-form')
+    fireEvent.click(screen.getByTestId('event-form-submit'))
+
+    // Une SEULE soumission : le rejet a bien été servi, l'erreur est rendue inline.
+    await waitFor(() => expect(vi.mocked(updateEvent)).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(screen.getByTestId('event-form-error')).toBeInTheDocument())
+    expect(screen.getByTestId('timeline-edit-dialog')).toBeInTheDocument()
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+    consoleError.mockRestore()
+  })
+})
+
 describe('TimelineEditHost — pré-remplissage archived (#188 / BR-EVE-013)', () => {
   it('event archived=true → toggle event-form-archived-toggle pré-coché', async () => {
     renderUnderAuth()

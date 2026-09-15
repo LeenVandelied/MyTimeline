@@ -1,4 +1,12 @@
 {
+  "toast": {
+    "eventCreated": "Ereignis erstellt",
+    "eventUpdated": "Ereignis aktualisiert",
+    "eventArchived": "Ereignis archiviert",
+    "eventUnarchived": "Ereignis wiederhergestellt",
+    "productCreated": "Produkt erstellt",
+    "categoryCreated": "Kategorie erstellt"
+  },
   "login": {
     "title": "Einloggen",
     "username": "Benutzername",

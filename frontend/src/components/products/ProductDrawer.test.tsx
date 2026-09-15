@@ -34,6 +34,12 @@ vi.mock('@/hooks/useAuth', () => ({
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
 }))
+// #621 — confirmation de création par toast (appel asserté, rendu couvert par `ui/toaster`).
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
+}))
 
 /**
  * #158 — `react-colorful` (HexColorPicker) est piloté au pointeur/canvas, non
@@ -130,6 +136,60 @@ describe('ProductDrawer', () => {
       expect(createMutateAsync).toHaveBeenCalledWith({ name: 'Ma voiture', category: CAT_A }),
     )
     await waitFor(() => expect(onSuccess).toHaveBeenCalled())
+  })
+
+  it('#621 — création réussie : toast de confirmation', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockResolvedValue({})
+    render(<ProductDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(
+      screen.getByPlaceholderText('products.drawer.fields.namePlaceholder'),
+      'Ma moto',
+    )
+    await selectCategory(user, 'Véhicules')
+    await user.click(screen.getByText('products.drawer.actions.create'))
+
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productCreated'),
+    )
+  })
+
+  it('#621 — création en échec (409) : aucun toast de succès', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockRejectedValue({ response: { status: 409 } })
+    render(<ProductDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(
+      screen.getByPlaceholderText('products.drawer.fields.namePlaceholder'),
+      'Doublon',
+    )
+    await selectCategory(user, 'Véhicules')
+    await user.click(screen.getByText('products.drawer.actions.create'))
+
+    await waitFor(() => expect(createMutateAsync).toHaveBeenCalled())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('#621 — édition : pas de toast de création (hors périmètre)', async () => {
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    const product: Product = {
+      id: 'p2',
+      name: 'Avant',
+      color: null,
+      category: { id: CAT_A, name: 'Véhicules', color: '#112233' },
+      events: [],
+    }
+    render(<ProductDrawer open onOpenChange={noop} mode="edit" product={product} />)
+
+    const nameInput = screen.getByPlaceholderText('products.drawer.fields.namePlaceholder')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Après')
+    await user.click(screen.getByText('products.drawer.actions.save'))
+
+    await waitFor(() => expect(updateMutateAsync).toHaveBeenCalled())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
   })
 
   it('rejette un nom vide (Zod min(1), pas de POST)', async () => {
