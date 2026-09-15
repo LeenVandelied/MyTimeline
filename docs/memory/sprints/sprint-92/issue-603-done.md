@@ -22,6 +22,10 @@
 - Armement : récurrence désactivée → 11 rouges ; comparaison à `now` → 3 rouges ; fichier restauré (`cmp`).
 - **E2E NON exécuté par l'agent — à jouer par le lead après la vague** : `sprint-92-products-next-event`, `sprint-89-local-date-west`, `products`, `categories`, `sprint-90-first-contact`.
 
+## E2E joué par le lead (après la vague 1)
+- `next build` (`NEXT_PUBLIC_API_URL=/api`, `E2E_API_PROXY_TARGET=http://localhost:8086` au build) exit 0, lint compris ; `next start -p 3100` ; backend `s92e2e` :8086 (image S91 re-taguée, 0 commit backend depuis).
+- Suite complète `--ignore-snapshots` sur `2739675` : **405 passés / 1 échoué / 8 sautés / 1 non exécuté** en 2,6 min. Seul rouge : `sprint-77-theme-visual:620` (armement visuel, échec mécanique hors Linux, connu). `sprint-92-products-next-event` 2/2, `products`, `categories` verts.
+
 ## Fichiers de contexte lus (déclaration de l'agent)
 - cp-frontend (Sync Zod, i18n) ; br-events BR-EVE-006/011/012/013 ; br-products BR-PRO-007 l.83 ; pit-frontend PIT-S82-002, PIT-S91-002 l.1440 ; handoff l.105-120, l.182-191.
 - `.claude/rules/frontend-stack.md` NON LU ; `.claude/rules/conventions.md` NON LU.

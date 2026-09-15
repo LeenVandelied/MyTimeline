@@ -23,6 +23,9 @@
 - Armement : appel toast retiré → rouge (0 appel) → restauré.
 - **E2E NON exécuté par l'agent — à jouer par le lead** : `sprint-92-business-toasts`, `settings-profile`, `settings-security`, `categories`, `timeline`, `sprint-91-edit-bounded-series-end-date`.
 
+## E2E joué par le lead (après la vague 1)
+- Même run que #603 (build de production sur `2739675`) : **405 passés / 1 échoué / 8 sautés / 1 non exécuté**. Seul rouge : `sprint-77-theme-visual:620` (armement visuel hors Linux, connu). `sprint-92-business-toasts` 3/3, `settings-profile`, `settings-security`, `sprint-91-edit-bounded-series-end-date` verts → aucun toast ne masque un contrôle cliqué par une spec.
+
 ## Fichiers de contexte lus (déclaration de l'agent)
 - cp-frontend.md (§i18n, §Tests) ; pit-frontend.md grep PIT-S86-002 l.1268 ; handoff l.207, l.259.
 - br-events.md NON LU (BR-EVE-013 lu dans `EventEditForm.tsx:76`) ; `.claude/rules/*.md` NON LU.
