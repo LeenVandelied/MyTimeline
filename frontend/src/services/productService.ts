@@ -60,7 +60,15 @@ export const updateProduct = async (
 }
 
 /**
- * #61 / #50 — Suppression (soft delete backend, BR-PRO) d'un produit.
+ * #61 / #50 — ARCHIVAGE d'un produit (le nom `deleteProduct` suit le verbe HTTP, pas le
+ * comportement).
+ *
+ * #605 — archiver = soft delete : données conservées côté backend (#50, BR-PRO-007,
+ * `archived = true`), produit masqué partout (`@SQLRestriction`), AUCUNE restauration
+ * exposée à ce jour. Les surfaces disent donc « Archiver », jamais « Supprimer » ; ce
+ * dernier verbe est réservé aux suppressions physiques (événements, catégories). Une
+ * éventuelle suppression définitive de produit exigerait un endpoint et un libellé
+ * distincts — ne pas la faire passer par cette fonction.
  *
  * `DELETE /users/{userId}/products/{productId}` → 204. On propage l'erreur axios
  * (`error.response.status`) pour l'affichage inline 404/403/409 via

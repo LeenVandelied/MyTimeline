@@ -112,7 +112,7 @@
       "create": "Créer",
       "save": "Enregistrer",
       "cancel": "Annuler",
-      "delete": "Supprimer",
+      "archive": "Archiver",
       "submitting": "Enregistrement en cours"
     },
     "errors": {
@@ -163,8 +163,9 @@
     "back": "Retour aux produits",
     "notFound": "Produit introuvable ou archivé.",
     "loading": "Chargement du produit…",
+    "newEvent": "Nouvel événement",
     "edit": "Modifier",
-    "delete": "Supprimer",
+    "archive": "Archiver",
     "timelineTitle": "Frise du produit",
     "timelineEmpty": "Aucun événement à afficher pour ce produit.",
     "historyTitle": "Historique des événements",

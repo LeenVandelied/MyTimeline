@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
+import toast from 'react-hot-toast'
 import { Pencil, Archive, PlusCircle, Search } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -66,6 +67,7 @@ const SORT_KEYS: SortKey[] = ['nextEvent', 'nameAsc', 'nameDesc']
 
 export function ProductsListView() {
   const t = useTranslations('products.list')
+  const tToast = useTranslations('common.toast')
   const locale = useLocale()
   const router = useRouter()
   const { user } = useAuth()
@@ -165,9 +167,11 @@ export function ProductsListView() {
     searchInputRef.current?.focus()
   }
 
+  // #605 — toast APRÈS la réponse serveur ; un rejet remonte au dialog (pitfall #65).
   const handleArchiveConfirm = async () => {
     if (!userId || !archiveProduct) throw new Error('userId/produit manquant')
     await deleteProduct(userId, archiveProduct.id)
+    toast.success(tToast('productArchived'))
     setArchiveProduct(null)
   }
 

@@ -112,7 +112,7 @@
       "create": "Create",
       "save": "Save",
       "cancel": "Cancel",
-      "delete": "Delete",
+      "archive": "Archive",
       "submitting": "Saving"
     },
     "errors": {
@@ -163,8 +163,9 @@
     "back": "Back to products",
     "notFound": "Product not found or archived.",
     "loading": "Loading product…",
+    "newEvent": "New event",
     "edit": "Edit",
-    "delete": "Delete",
+    "archive": "Archive",
     "timelineTitle": "Product timeline",
     "timelineEmpty": "No events to display for this product.",
     "historyTitle": "Event history",

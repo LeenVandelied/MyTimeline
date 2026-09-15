@@ -31,6 +31,11 @@ vi.mock('@/hooks/useUpdateProduct', () => ({
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }))
+// #605 — archivage (soft delete #50) : service mocké, on assert l'appel et la suite.
+const deleteProductMock = vi.hoisted(() => vi.fn())
+vi.mock('@/services/productService', () => ({
+  deleteProduct: deleteProductMock,
+}))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
 }))
@@ -190,6 +195,41 @@ describe('ProductDrawer', () => {
 
     await waitFor(() => expect(updateMutateAsync).toHaveBeenCalled())
     expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('#605 — édition : « Archiver » (jamais « Supprimer »), confirmation archiver, toast', async () => {
+    const user = userEvent.setup()
+    deleteProductMock.mockResolvedValue(undefined)
+    const onDeleted = vi.fn()
+    const product: Product = {
+      id: 'p3',
+      name: 'À archiver',
+      color: null,
+      category: { id: CAT_A, name: 'Véhicules', color: '#112233' },
+      events: [],
+    }
+    render(
+      <ProductDrawer
+        open
+        onOpenChange={noop}
+        mode="edit"
+        product={product}
+        onDeleted={onDeleted}
+      />,
+    )
+
+    const archive = screen.getByTestId('product-drawer-archive')
+    expect(archive).toHaveTextContent(/^products\.drawer\.actions\.archive$/)
+    await user.click(archive)
+    const confirm = await screen.findByTestId('delete-confirm-button')
+    expect(confirm).toHaveTextContent(/^common\.deleteDialog\.product\.confirm$/)
+    await user.click(confirm)
+
+    await waitFor(() => expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p3'))
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived'),
+    )
+    expect(onDeleted).toHaveBeenCalled()
   })
 
   it('rejette un nom vide (Zod min(1), pas de POST)', async () => {

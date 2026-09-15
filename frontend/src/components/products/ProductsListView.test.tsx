@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '@/types/product'
@@ -35,6 +35,12 @@ vi.mock('next/navigation', () => ({
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
   useLocale: () => 'fr',
+}))
+// #605 — confirmation d'archivage par toast (appel asserté, rendu couvert par `ui/toaster`).
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
 }))
 
 // Drawers/dialog mockés : on expose leur `open` + le mode pour l'assertion.
@@ -380,6 +386,10 @@ describe('ProductsListView', () => {
     await user.click(screen.getByTestId('products-archive-p-alpha'))
     await user.click(screen.getByTestId('delete-dialog-product'))
     expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha')
+    // #605 — confirmation APRÈS la réponse serveur.
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived'),
+    )
   })
 
   it('navigue vers le détail au clic sur une ligne', async () => {

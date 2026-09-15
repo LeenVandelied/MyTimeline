@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import toast from 'react-hot-toast'
-import { Package, Tag, Calendar, Trash2 } from 'lucide-react'
+import { Archive, Package, Tag, Calendar } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -80,7 +80,7 @@ export interface ProductDrawerProps {
   product?: Product
   /** Callback post-succès (création ou édition), ex. refetch parent. */
   onSuccess?: () => void
-  /** Callback post-suppression (mode edit) si le produit a été supprimé. */
+  /** Callback post-archivage (mode edit) si le produit a été archivé (soft delete #50). */
   onDeleted?: () => void
   /**
    * Relayé tel quel à `DialogContent` (Radix) : appelé quand le drawer rend le focus
@@ -233,11 +233,13 @@ export function ProductDrawer({
     }
   }
 
-  // Suppression déléguée à DeleteConfirmDialog (#65), variante `product`.
-  // L'erreur DOIT rejeter pour que le dialog l'affiche inline (pitfall #65).
+  // #605 — ARCHIVAGE (soft delete #50, BR-PRO-007) délégué à DeleteConfirmDialog (#65),
+  // variante `product`. L'erreur DOIT rejeter pour que le dialog l'affiche inline
+  // (pitfall #65) ; le toast ne part qu'après la réponse serveur.
   const handleDeleteConfirm = async () => {
     if (!userId || !product) throw new Error('userId/produit manquant')
     await deleteProduct(userId, product.id)
+    toast.success(tToast('productArchived'))
     setDeleteOpen(false)
     onDeleted?.()
     onOpenChange(false)
@@ -426,9 +428,10 @@ export function ProductDrawer({
                     className="text-destructive"
                     onClick={() => setDeleteOpen(true)}
                     disabled={submitting}
+                    data-testid="product-drawer-archive"
                   >
-                    <Trash2 className="size-4" aria-hidden="true" />
-                    {t('actions.delete')}
+                    <Archive className="size-4" aria-hidden="true" />
+                    {t('actions.archive')}
                   </Button>
                 ) : (
                   <span />
@@ -459,7 +462,7 @@ export function ProductDrawer({
         </DialogContent>
       </Dialog>
 
-      {/* Suppression produit (mode édition) — réutilise DeleteConfirmDialog #65. */}
+      {/* Archivage produit (mode édition, soft delete #50) — DeleteConfirmDialog #65. */}
       {isEdit && product && (
         <DeleteConfirmDialog
           open={deleteOpen}

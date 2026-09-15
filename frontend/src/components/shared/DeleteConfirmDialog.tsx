@@ -43,6 +43,20 @@ import { useCategories } from '@/hooks/useCategories'
  *     FK `category_id` NOT NULL). `linkedProductsCount` des appelants ignore les
  *     archivés ; un 409 sur DELETE sans cible bascule donc le dialog en réassignation.
  *
+ * #605 — ARCHIVER ≠ SUPPRIMER. Le vocabulaire suit le comportement backend :
+ *   - « archiver » = soft delete : données CONSERVÉES côté backend (produit : `DELETE` →
+ *     `archived = true`, #50 / BR-PRO-007), produit masqué partout (`@SQLRestriction`),
+ *     AUCUNE restauration exposée à ce jour (ni endpoint ni surface). Variante `product` :
+ *     titre, bouton et libellé d'attente disent « archiver » (`product.confirm`,
+ *     `product.confirming`) ; le texte ne promet aucun retour. Le bouton reste
+ *     `destructive` : l'utilisateur perd l'accès au produit ;
+ *   - « supprimer » = suppression PHYSIQUE : événement (`deleteById`, br-events §1),
+ *     catégorie (`CategoryServiceImpl.deleteCategory` → `deleteById`, aucun
+ *     `@SQLDelete`/`@SQLRestriction` sur `CategoryEntity`). Variantes `event`/`category` :
+ *     clés partagées `confirm` / `deleting`.
+ * Si une suppression définitive de produit devait exister un jour, elle serait une
+ * VARIANTE DISTINCTE (clés « supprimer ») : ne jamais réemployer `product` pour elle.
+ *
  * Le composant ne fait AUCUN appel réseau de suppression : il délègue à
  * `onConfirm` (renvoyé par l'appelant, ex. drawer produit #61). Il gère
  * uniquement l'état local `deleting` et l'affichage inline de l'erreur API.
@@ -135,6 +149,12 @@ export function DeleteConfirmDialog({
   }, [open])
 
   const confirmDisabled = deleting || (needsReassign && (noOtherCategory || !reassignTo))
+
+  // #605 — libellés d'action PAR VARIANTE : `product` archive (soft delete), les autres
+  // suppriment. Clés LITTÉRALES (extraction i18n statiquement lisible).
+  const isProduct = variant === 'product'
+  const confirmLabel = isProduct ? t('product.confirm') : t('confirm')
+  const pendingLabel = isProduct ? t('product.confirming') : t('deleting')
 
   const handleConfirm = async () => {
     setErrorMessage(null)
@@ -264,8 +284,8 @@ export function DeleteConfirmDialog({
             disabled={confirmDisabled}
             data-testid="delete-confirm-button"
           >
-            {deleting && <Spinner label={t('deleting')} className="text-current" />}
-            {t('confirm')}
+            {deleting && <Spinner label={pendingLabel} className="text-current" />}
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

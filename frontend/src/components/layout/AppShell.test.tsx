@@ -5,7 +5,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { AppShell } from './AppShell'
-import { useOpenCreateEvent } from './CreateEventContext'
+import {
+  toCreateEventPrefill,
+  useOpenCreateEvent,
+  type CreateEventOptions,
+  type OpenCreateEvent,
+} from './CreateEventContext'
 
 /**
  * #210 — Tests du shell applicatif (jsdom). next-intl / next-themes / navigation /
@@ -43,13 +48,27 @@ vi.mock('next-themes', () => ({
 // rendre `null` ne distinguerait pas « démonté » de « monté mais invisible ».
 const drawerLifecycle = vi.hoisted(() => vi.fn())
 vi.mock('@/components/events/NewEventDrawer', () => ({
-  NewEventDrawer: ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  NewEventDrawer: ({
+    open,
+    onClose,
+    initialProductId,
+  }: {
+    open: boolean
+    onClose: () => void
+    initialProductId?: string
+  }) => {
     React.useEffect(() => {
       drawerLifecycle('mount')
       return () => drawerLifecycle('unmount')
     }, [])
+    // #605 — le prérempli reçu est exposé tel quel (`typeof` compris) : un objet
+    // événement transmis par erreur s'y lirait « object », jamais « string ».
     return open ? (
-      <div data-testid="shell-new-event-drawer">
+      <div
+        data-testid="shell-new-event-drawer"
+        data-initial-product-id={typeof initialProductId === 'string' ? initialProductId : ''}
+        data-initial-product-type={typeof initialProductId}
+      >
         <button type="button" data-testid="mock-drawer-close" onClick={onClose}>
           close
         </button>
@@ -567,12 +586,17 @@ describe('AppShell — contexte de création pour les écrans enveloppés (#602)
     mockResolvedTheme = 'light'
   })
 
-  const seen: Array<(() => void) | null> = []
+  const seen: Array<OpenCreateEvent | null> = []
   function ScreenTrigger({ tag }: { tag: string }) {
     const open = useOpenCreateEvent()
     seen.push(open)
     return (
-      <button type="button" data-testid="screen-trigger" data-tag={tag} onClick={open ?? undefined}>
+      <button
+        type="button"
+        data-testid="screen-trigger"
+        data-tag={tag}
+        onClick={open ? () => open() : undefined}
+      >
         screen
       </button>
     )
@@ -627,6 +651,111 @@ describe('AppShell — contexte de création pour les écrans enveloppés (#602)
     seen.length = 0
     render(<ScreenTrigger tag="hors-shell" />)
     expect(seen.at(-1)).toBeNull()
+  })
+})
+
+/**
+ * #605 — PRÉREMPLI transmis par le contexte (détail produit → drawer du shell), et piège
+ * du `onClick={open}` : l'événement souris ne doit jamais devenir le prérempli.
+ */
+describe('AppShell — prérempli de création (#605)', () => {
+  beforeEach(() => {
+    mockPathname = '/fr/products/p-42'
+    mockResolvedTheme = 'light'
+  })
+
+  function PrefillTrigger() {
+    const open = useOpenCreateEvent()
+    return (
+      <button
+        type="button"
+        data-testid="prefill-trigger"
+        onClick={open ? () => open({ productId: 'p-42' }) : undefined}
+      >
+        prefill
+      </button>
+    )
+  }
+
+  /** Simule un appelant NON TYPÉ (`onClick={open}` en JS, ou via un cast). */
+  function RawEventTrigger() {
+    const open = useOpenCreateEvent()
+    return (
+      <button
+        type="button"
+        data-testid="raw-event-trigger"
+        onClick={(event) => open?.(event as unknown as CreateEventOptions)}
+      >
+        raw
+      </button>
+    )
+  }
+
+  it('transmet le produit au drawer ; une ouverture suivante SANS option repart vierge', async () => {
+    render(
+      <AppShell>
+        <PrefillTrigger />
+      </AppShell>,
+    )
+    fireEvent.click(screen.getByTestId('prefill-trigger'))
+    await waitFor(() =>
+      expect(screen.getByTestId('shell-new-event-drawer')).toHaveAttribute(
+        'data-initial-product-id',
+        'p-42',
+      ),
+    )
+
+    fireEvent.click(screen.getByTestId('mock-drawer-close'))
+    await waitFor(() =>
+      expect(screen.queryByTestId('shell-new-event-drawer')).not.toBeInTheDocument(),
+    )
+    fireEvent.click(screen.getByTestId('shell-sidebar-new-event-button'))
+    const drawer = await screen.findByTestId('shell-new-event-drawer')
+    expect(drawer).toHaveAttribute('data-initial-product-id', '')
+    expect(drawer).toHaveAttribute('data-initial-product-type', 'undefined')
+  })
+
+  it('un MouseEvent passé en `options` ouvre un drawer VIERGE (aucun objet en prérempli)', async () => {
+    render(
+      <AppShell>
+        <RawEventTrigger />
+      </AppShell>,
+    )
+    fireEvent.click(screen.getByTestId('raw-event-trigger'))
+    const drawer = await screen.findByTestId('shell-new-event-drawer')
+    expect(drawer).toHaveAttribute('data-initial-product-type', 'undefined')
+  })
+
+  it('les boutons du shell (sidebar, FAB) ouvrent toujours sans prérempli', async () => {
+    renderShell()
+    fireEvent.click(screen.getByTestId('shell-mobile-new-event-button'))
+    const drawer = await screen.findByTestId('shell-new-event-drawer')
+    expect(drawer).toHaveAttribute('data-initial-product-type', 'undefined')
+  })
+})
+
+describe('toCreateEventPrefill — normalisation de l’argument d’ouverture (#605)', () => {
+  it('accepte un objet simple portant un `productId` chaîne non vide', () => {
+    expect(toCreateEventPrefill({ productId: 'p-1' })).toBe('p-1')
+    const bare = Object.create(null) as { productId?: string }
+    bare.productId = 'p-2'
+    expect(toCreateEventPrefill(bare)).toBe('p-2')
+  })
+
+  it('rejette un événement souris, même porteur d’un `productId`', () => {
+    expect(toCreateEventPrefill(new MouseEvent('click'))).toBeUndefined()
+    expect(
+      toCreateEventPrefill(Object.assign(new MouseEvent('click'), { productId: 'p-1' })),
+    ).toBeUndefined()
+  })
+
+  it('rejette absence, valeurs non objet et `productId` invalide', () => {
+    expect(toCreateEventPrefill(undefined)).toBeUndefined()
+    expect(toCreateEventPrefill(null)).toBeUndefined()
+    expect(toCreateEventPrefill('p-1')).toBeUndefined()
+    expect(toCreateEventPrefill({})).toBeUndefined()
+    expect(toCreateEventPrefill({ productId: '' })).toBeUndefined()
+    expect(toCreateEventPrefill({ productId: 42 })).toBeUndefined()
   })
 })
 

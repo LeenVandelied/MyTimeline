@@ -5,6 +5,7 @@
     "eventArchived": "Event archived",
     "eventUnarchived": "Event unarchived",
     "productCreated": "Product created",
+    "productArchived": "Product archived",
     "categoryCreated": "Category created"
   },
   "login": {
@@ -31,8 +32,10 @@
       "recurringWarning": "This only deletes this event, not the series."
     },
     "product": {
-      "title": "Delete this product?",
-      "description": "The product will be archived and no longer appear in your lists."
+      "title": "Archive this product?",
+      "description": "The product will be archived and no longer appear in your lists.",
+      "confirm": "Archive",
+      "confirming": "Archiving"
     },
     "category": {
       "title": "Delete this category?",

@@ -3,7 +3,8 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { ArchiveRestore, ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { Archive, ArchiveRestore, ArrowLeft, Pencil, Plus } from 'lucide-react'
 
 import { contrastInk } from '@/lib/color'
 import { cn } from '@/lib/utils'
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductDrawer } from './ProductDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 import { TimelineEditHost } from '@/components/timeline'
 import type { Resource } from '@/components/timeline'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
@@ -32,8 +34,14 @@ import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/ty
  * #50 : les produits archivés sont invisibles côté backend → un produit absent de
  * la liste (archivé ou inexistant) affiche l'état « introuvable ».
  *
- * Actions : « Modifier » → `ProductDrawer` (edit) ; « Supprimer » →
- * `DeleteConfirmDialog` variant="product" (soft delete #50) puis retour liste.
+ * Actions (#605, handoff §5, dans cet ordre) :
+ *   - « Nouvel événement » → LE drawer de création du shell (`useOpenCreateEvent`), produit
+ *     prérempli. Hors shell (`null`), aucun bouton plutôt qu'un bouton inerte ;
+ *   - « Modifier » → `ProductDrawer` (edit). Le handoff dit « Éditer », mais tout le domaine
+ *     produit dit « Modifier » (liste, drawer) : clé existante conservée ;
+ *   - « Archiver » → `DeleteConfirmDialog` variant="product" puis retour liste + toast. Le
+ *     `DELETE` produit est un soft delete (#50, BR-PRO-007) : le libellé « Supprimer » qu'il
+ *     portait jusqu'au #605 contredisait le comportement.
  *
  * #307 (OPTION A) — un événement archivé (BR-EVE-013) restait INTROUVABLE : la vue
  * filtrait `!archived` en dur, donc plus aucune surface ne permettait de le rouvrir
@@ -84,7 +92,9 @@ function httpStatusOf(error: unknown): number | undefined {
 
 export function ProductDetailView({ productId }: ProductDetailViewProps) {
   const t = useTranslations('products.detail')
+  const tToast = useTranslations('common.toast')
   const locale = useLocale()
+  const openCreateEvent = useOpenCreateEvent()
   const router = useRouter()
   const { user } = useAuth()
   const userId = user?.id
@@ -96,7 +106,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   )
 
   const [editOpen, setEditOpen] = React.useState(false)
-  const [deleteOpen, setDeleteOpen] = React.useState(false)
+  const [archiveOpen, setArchiveOpen] = React.useState(false)
   // #307 — état de vue par défaut « actifs » : le comportement historique (archivés
   // masqués) reste celui de l'arrivée sur la page, la découverte se fait par l'onglet.
   const [filter, setFilter] = React.useState<EventViewFilter>('active')
@@ -217,10 +227,13 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
     router.push(`/${locale}/products`)
   }, [router, locale])
 
-  const handleDeleteConfirm = async () => {
+  // #605 — archivage (soft delete #50). Toast APRÈS la réponse serveur ; un rejet remonte
+  // au dialog (affichage inline, pitfall #65) et n'émet aucun toast.
+  const handleArchiveConfirm = async () => {
     if (!userId || !product) throw new Error('userId/produit manquant')
     await deleteProduct(userId, product.id)
-    setDeleteOpen(false)
+    toast.success(tToast('productArchived'))
+    setArchiveOpen(false)
     goBack()
   }
 
@@ -278,7 +291,22 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
     <div className="flex flex-col gap-6" data-testid="product-detail-view">
       <div className="flex flex-wrap items-center justify-between gap-3">
         {backButton}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {openCreateEvent && (
+            <Button
+              type="button"
+              variant="outline"
+              // CTA primaire de l'écran : trio accent des CTA du produit (« Nouveau
+              // produit » de la liste, bouton du shell, #578).
+              className="bg-accent hover:bg-accent-hover text-accent-ink flex items-center gap-2 border-none"
+              onClick={() => openCreateEvent({ productId: product.id })}
+              aria-haspopup="dialog"
+              data-testid="product-detail-new-event"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              {t('newEvent')}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -293,11 +321,11 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
             type="button"
             variant="ghost"
             className="text-destructive flex items-center gap-2"
-            onClick={() => setDeleteOpen(true)}
-            data-testid="product-detail-delete"
+            onClick={() => setArchiveOpen(true)}
+            data-testid="product-detail-archive"
           >
-            <Trash2 className="size-4" aria-hidden="true" />
-            {t('delete')}
+            <Archive className="size-4" aria-hidden="true" />
+            {t('archive')}
           </Button>
         </div>
       </div>
@@ -477,12 +505,12 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
       {/* Édition — ProductDrawer réutilisé (#61). */}
       <ProductDrawer open={editOpen} onOpenChange={setEditOpen} mode="edit" product={product} />
 
-      {/* Suppression — soft delete backend (#50), retour liste au succès. */}
+      {/* Archivage — soft delete backend (#50), retour liste au succès. */}
       <DeleteConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
         variant="product"
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleArchiveConfirm}
       />
     </div>
   )

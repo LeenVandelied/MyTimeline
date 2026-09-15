@@ -5,6 +5,7 @@
     "eventArchived": "Événement archivé",
     "eventUnarchived": "Événement désarchivé",
     "productCreated": "Produit créé",
+    "productArchived": "Produit archivé",
     "categoryCreated": "Catégorie créée"
   },
   "login": {
@@ -71,8 +72,10 @@
       "recurringWarning": "Cette action supprime uniquement cet événement, pas la série."
     },
     "product": {
-      "title": "Supprimer ce produit ?",
-      "description": "Le produit sera archivé et n'apparaîtra plus dans vos listes."
+      "title": "Archiver ce produit ?",
+      "description": "Le produit sera archivé et n'apparaîtra plus dans vos listes.",
+      "confirm": "Archiver",
+      "confirming": "Archivage en cours"
     },
     "category": {
       "title": "Supprimer cette catégorie ?",

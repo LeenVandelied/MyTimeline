@@ -81,7 +81,8 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={openCreateEvent}
+                // #605 — enveloppé : le MouseEvent ne doit pas devenir `options`.
+                onClick={() => openCreateEvent()}
                 data-testid="dashboard-week-agenda-empty-cta"
               >
                 {t('emptyCta')}

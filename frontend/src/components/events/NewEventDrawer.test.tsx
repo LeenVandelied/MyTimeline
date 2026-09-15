@@ -87,17 +87,20 @@ vi.mock('@/contexts/NetworkStatusContext', () => ({
 
 const onClose = vi.fn()
 
-const renderDrawer = (open = true) => {
+const renderDrawer = (open = true, initialProductId?: string) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
   const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
-  const utils = render(
+  const tree = () => (
     <QueryClientProvider client={queryClient}>
-      <NewEventDrawer open={open} onClose={onClose} />
-    </QueryClientProvider>,
+      <NewEventDrawer open={open} onClose={onClose} initialProductId={initialProductId} />
+    </QueryClientProvider>
   )
-  return { ...utils, invalidateSpy }
+  const utils = render(tree())
+  /** Re-rend la MÊME instance (état conservé) après mutation des mocks de données. */
+  const rerenderDrawer = () => utils.rerender(tree())
+  return { ...utils, invalidateSpy, rerenderDrawer }
 }
 
 /**
@@ -223,6 +226,64 @@ describe('NewEventDrawer — sélecteur de produit (BR-EVE-002)', () => {
  * Mock i18n en `ns.key` ici : les libellés RÉELS sont prouvés par
  * `EventCategoryField.test.tsx` (vrais messages, PIT-S63-006).
  */
+/**
+ * #605 — Ouverture depuis le détail produit : `initialProductId` présélectionne le produit.
+ * Un id absent de la liste chargée (archivé, périmé) ne doit JAMAIS partir au backend.
+ */
+describe('NewEventDrawer — produit prérempli (#605)', () => {
+  const ALPHA_ID = '11111111-1111-4111-8111-111111111111'
+
+  it('id connu : produit sélectionné, catégorie dérivée, payload porteur de CE produit', async () => {
+    renderDrawer(true, ALPHA_ID)
+    expect(screen.getByTestId('shell-new-event-drawer-product-trigger')).toHaveTextContent(
+      'Produit Alpha',
+    )
+    expect(screen.getByTestId('shell-new-event-drawer-category')).toHaveTextContent('Cat A')
+
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Depuis la fiche')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+
+    await waitFor(() => expect(createEventMock).toHaveBeenCalledTimes(1))
+    expect(createEventMock.mock.calls[0][0]).toMatchObject({ productId: ALPHA_ID })
+    expect(screen.queryByTestId('shell-new-event-drawer-product-error')).not.toBeInTheDocument()
+  })
+
+  it('id inconnu (produit archivé) : sélecteur vide, garde BR-EVE-002, AUCUN appel réseau', async () => {
+    renderDrawer(true, 'archived-product-id')
+    const trigger = screen.getByTestId('shell-new-event-drawer-product-trigger')
+    expect(trigger).not.toHaveTextContent('Produit Alpha')
+    expect(trigger).not.toHaveTextContent('Produit Beta')
+
+    await userEvent.type(screen.getByTestId('event-form-title-input'), 'Orphelin')
+    await userEvent.click(screen.getByTestId('event-form-submit'))
+
+    expect(await screen.findByTestId('shell-new-event-drawer-product-error')).toBeInTheDocument()
+    expect(createEventMock).not.toHaveBeenCalled()
+  })
+
+  it('liste en cours de chargement : le prérempli devient effectif quand le produit arrive', () => {
+    mockProductsLoading = true
+    mockProductsData = []
+    const { rerenderDrawer } = renderDrawer(true, ALPHA_ID)
+    expect(screen.getByTestId('shell-new-event-drawer-loading')).toBeInTheDocument()
+
+    mockProductsLoading = false
+    mockProductsData = mockProducts
+    rerenderDrawer()
+
+    expect(screen.getByTestId('shell-new-event-drawer-product-trigger')).toHaveTextContent(
+      'Produit Alpha',
+    )
+  })
+
+  it('sans prérempli : sélecteur vide (comportement historique)', () => {
+    renderDrawer(true)
+    expect(screen.getByTestId('shell-new-event-drawer-product-trigger')).toHaveTextContent(
+      'shell.createDrawer.productPlaceholder',
+    )
+  })
+})
+
 describe('NewEventDrawer — catégorie dérivée du produit (#617)', () => {
   const colored: Product[] = [
     { ...mockProducts[0], category: { id: 'c1', name: 'Véhicules', color: '#3E8BD6' } },

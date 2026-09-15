@@ -1,8 +1,12 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '@/types/product'
 import { toLocalIsoDate } from '@/lib/date-iso'
+import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 import { ProductDetailView } from './ProductDetailView'
 
 /**
@@ -42,6 +46,12 @@ vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
   useLocale: () => 'fr',
 }))
+// #605 — confirmation d'archivage par toast (appel asserté, rendu couvert par `ui/toaster`).
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
+}))
 
 // TimelineResponsive mocké : on capture events/resources reçus pour prouver le
 // filtrage amont (ce produit uniquement, pas toute la liste).
@@ -70,7 +80,15 @@ vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
     onConfirm: () => void | Promise<void>
   }) =>
     open ? (
-      <button type="button" data-testid="delete-dialog" onClick={() => onConfirm()}>
+      // Le vrai dialog `await` la promesse dans un try/catch (erreur inline) : le mock
+      // absorbe le rejet de la même façon, pour tester le cas d'échec sans rejet non géré.
+      <button
+        type="button"
+        data-testid="delete-dialog"
+        onClick={() => {
+          Promise.resolve(onConfirm()).catch(() => {})
+        }}
+      >
         confirm
       </button>
     ) : null,
@@ -234,14 +252,104 @@ describe('ProductDetailView', () => {
     expect(screen.getByTestId('product-drawer')).toHaveAttribute('data-product', 'p-alpha')
   })
 
-  it('supprime (soft delete) puis revient à la liste', async () => {
+  it('archive (soft delete #50), confirme par toast, puis revient à la liste', async () => {
     const user = userEvent.setup()
     deleteProductMock.mockResolvedValue(undefined)
     render(<ProductDetailView productId="p-alpha" />)
-    await user.click(screen.getByTestId('product-detail-delete'))
+    await user.click(screen.getByTestId('product-detail-archive'))
     await user.click(screen.getByTestId('delete-dialog'))
     expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha')
-    expect(pushMock).toHaveBeenCalledWith('/fr/products')
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/fr/products'))
+    expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived')
+  })
+
+  it('archivage en échec : ni toast ni retour à la liste (erreur laissée au dialog)', async () => {
+    const user = userEvent.setup()
+    deleteProductMock.mockRejectedValue({ response: { status: 404 } })
+    render(<ProductDetailView productId="p-alpha" />)
+    await user.click(screen.getByTestId('product-detail-archive'))
+    await user.click(screen.getByTestId('delete-dialog'))
+    await waitFor(() => expect(deleteProductMock).toHaveBeenCalled())
+    await Promise.resolve()
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+    expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  /* ------------------------------------------------------------------ #605 */
+
+  describe('#605 — actions du détail (handoff §5 : Nouvel événement · Éditer · Archiver)', () => {
+    function renderInShell(openCreate = vi.fn()) {
+      render(
+        <CreateEventProvider onOpenCreate={openCreate}>
+          <ProductDetailView productId="p-alpha" />
+        </CreateEventProvider>,
+      )
+      return openCreate
+    }
+
+    it('rend les trois actions dans l’ordre, avec « Archiver » et plus aucun « Supprimer »', () => {
+      renderInShell()
+      const [newEvent, edit, archive] = [
+        'product-detail-new-event',
+        'product-detail-edit',
+        'product-detail-archive',
+      ].map((id) => screen.getByTestId(id))
+      expect(newEvent.compareDocumentPosition(edit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(edit.compareDocumentPosition(archive) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(newEvent).toHaveTextContent('products.detail.newEvent')
+      expect(edit).toHaveTextContent('products.detail.edit')
+      expect(archive).toHaveTextContent('products.detail.archive')
+      expect(screen.queryByTestId('product-detail-delete')).not.toBeInTheDocument()
+      expect(document.body.textContent).not.toMatch(/products\.detail\.delete/)
+    })
+
+    it('« Nouvel événement » ouvre LE drawer du shell avec CE produit prérempli', async () => {
+      const user = userEvent.setup()
+      const openCreate = renderInShell()
+      await user.click(screen.getByTestId('product-detail-new-event'))
+      expect(openCreate).toHaveBeenCalledTimes(1)
+      expect(openCreate).toHaveBeenCalledWith({ productId: 'p-alpha' })
+    })
+
+    it('hors shell (contexte `null`) : aucun bouton « Nouvel événement » inerte', () => {
+      render(<ProductDetailView productId="p-alpha" />)
+      expect(screen.queryByTestId('product-detail-new-event')).not.toBeInTheDocument()
+      expect(screen.getByTestId('product-detail-edit')).toBeInTheDocument()
+      expect(screen.getByTestId('product-detail-archive')).toBeInTheDocument()
+    })
+
+    // Le mock i18n (`ns.key`) ne distingue pas une clé vraie d'une fausse ([[PIT-S63-006]]) :
+    // on vérifie les clés elles-mêmes dans les 4 locales servies.
+    it('les clés i18n ajoutées existent dans les 4 locales', () => {
+      const read = (locale: string, ns: string) =>
+        JSON.parse(
+          readFileSync(join(process.cwd(), 'public', 'locales', locale, `${ns}.json`), 'utf-8'),
+        ) as {
+          detail?: Record<string, unknown>
+          drawer?: { actions?: Record<string, unknown> }
+          toast?: Record<string, unknown>
+          deleteDialog?: { product?: Record<string, unknown> }
+        }
+      const filled = (value: unknown) => typeof value === 'string' && value.length > 0
+      for (const locale of ['fr', 'en', 'es', 'de']) {
+        const products = read(locale, 'products')
+        const common = read(locale, 'common')
+        expect(filled(products.detail?.newEvent), `${locale} detail.newEvent`).toBe(true)
+        expect(filled(products.detail?.archive), `${locale} detail.archive`).toBe(true)
+        expect(products.detail?.delete, `${locale} detail.delete retirée`).toBeUndefined()
+        expect(filled(products.drawer?.actions?.archive), `${locale} drawer.actions.archive`).toBe(
+          true,
+        )
+        expect(filled(common.toast?.productArchived), `${locale} toast.productArchived`).toBe(true)
+        expect(filled(common.deleteDialog?.product?.confirm), `${locale} product.confirm`).toBe(
+          true,
+        )
+        expect(
+          filled(common.deleteDialog?.product?.confirming),
+          `${locale} product.confirming`,
+        ).toBe(true)
+      }
+    })
   })
 
   it('affiche « introuvable » si le produit est absent/archivé', () => {
