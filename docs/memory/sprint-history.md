@@ -6614,3 +6614,98 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 - **#628, #682, #679, #680** — XS, bouche-trous possibles.
 
 **Score cohésion global :** S88 0.00 · S89 0.33 · S90 0.87 · S91 1.00 · S92 0.67 → **0.57**. Aucun sprint > 3 issues ni > 10 points.
+
+## Vague de planification S93 → S97 — 2026-09-15 (`/sprint plan 5 -c "focus MVP"`)
+
+**Axe retenu (arbitrage dev explicite) :** *bugs du parcours quotidien*. 4e lecture de « focus mvp »
+après robustesse (S78-S82), écart maquette (S83-S87), P1 puis conformité (S88-S92). S93 porte #711, seule P1
+fonctionnelle ; puis les bugs P2 visibles sur auth → tableau de bord → produits → événements → frise. Conformité
+maquette, refactors et chores d'outillage relégués. Hors scope : #212 (avatar S3 = mise en ligne) et milestone #55 (GELÉ).
+
+**Intrants :** 187 issues ouvertes hors #55, 69 candidates P1/P2. **NO-OP :** aucune référencée « closes/fixes » par les
+80 dernières PR mergées. **Phase 0.5 :** 32/69 `possibly_done:true`, toutes des faux positifs (l'évidence est le
+commit ou le done.md qui a CRÉÉ l'issue) ; l'architect a vérifié les 16 retenues dans le code, aucune déjà faite.
+**Contre-vérifié par le lead :** aucun endpoint restore (#711), compteur client sans archivés (#695), 0 `aria-modal`
+dans Radix Dialog vs `EventDrawer.tsx:56` (#672), `onNewEvent` quitte le plein écran mais pas `onEdit` (#712),
+label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `apiClient.ts` (#713), 57 `ink-faint` (#670).
+**Arbitrage S93 :** #711 + #695 (et non #711 + #712 + #713) — mêmes ports produits et même règle « un archivé occupe sa catégorie ».
+**Pas de PR de planification** (choix dev) ; pas de branche `sprint/N` (convention S85). Aucune migration sur la vague : V16 reste libre.
+
+### Sprint 93 — 2026-09-15 (PLANIFIÉ — cohésion 0.50, Archivage produit réversible)
+**Objectif :** Un produit archivé se restaure ; la carte d'une catégorie compte ses produits archivés
+**Milestone GitHub :** #94
+**Issues :** #711 (P1, M), #695 (P2, M) — 8 pts
+**Vagues :** V1 = #711 | V2 = #695
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 92 (mergé)
+**À confirmer au démarrage :** surface des archivés (route ou filtre) ; libellé du compteur #695 ; IDOR sur la native de restauration ; BR-PRO-007 (Archived n'est plus définitif).
+**Status :** Planifié
+
+### Sprint 94 — 2026-09-15 (PLANIFIÉ — cohésion 1.00, Frise : clavier, plein écran, mobile)
+**Objectif :** Les raccourcis n'agissent plus derrière un formulaire ; l'édition marche en plein écran ; aucun événement caché sous la colonne sticky mobile
+**Milestone GitHub :** #95
+**Issues :** #672 (S), #706 (S, risque M), #712 (S) — 6 pts (+#677 si capacité)
+**Vagues :** V1 = #672 (unit) ∥ #706 (E2E exclusif) | V2 = #712 + E2E de #672
+**Migrations Flyway :** aucune
+**Dépend de :** aucun fichier commun avec S93
+**À confirmer au démarrage :** garde des raccourcis (dialog Radix hors rootRef, pas `aria-modal`) ; #706 structurel, liste grep complète des specs mobiles ; `requestFullscreen` en headless.
+**Status :** Planifié
+
+### Sprint 95 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Toasts et messages)
+**Objectif :** Ce que l'application affiche en retour : toast qui ne masque plus de contrôle, erreurs réseau traduites, messages vides justes
+**Milestone GitHub :** #96
+**Issues :** #714 (S), #713 (S), #701 (XS), #508 (XS) — 6 pts
+**Vagues :** V1 = #714 (E2E exclusif) ∥ #713 ∥ #701 ∥ #508
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 94 (#712 ajoute un oracle de toast)
+**À confirmer au démarrage :** arbitrage Designer #714 (bloquant) ; règle du 400 et mécanisme i18n hors React (#713).
+**Status :** Planifié
+
+### Sprint 96 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Contrôles atteignables au doigt)
+**Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
+**Milestone GitHub :** #97
+**Issues :** #702 (S), #633 (XS), #665 (S), #656 (XS) — 6 pts
+**Vagues :** V1 = #702 (E2E exclusif, A/B) ∥ #633 | V2 = #665 | V3 = #656
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 93 (drawers voisins), Sprint 95 (#714 position des overlays)
+**Status :** Planifié
+
+### Sprint 97 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
+**Objectif :** Les occurrences qui se chevauchent restent cliquables ; l'encre la plus claire passe le contraste
+**Milestone GitHub :** #98
+**Issues :** #670 (S), #716 (XS), #709 (M) — 7 pts
+**Vagues :** V1 = #670 ∥ #716 | V2 = #709 (E2E exclusif)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 94 (TimelineView + frise mobile), Sprint 95 (#701 sur CompactAgenda)
+**À confirmer au démarrage :** décision Designer #670 (relever le token ou le réserver au décoratif).
+**Status :** Planifié
+
+### Matrice de conflits inter-sprints (S93-S97)
+
+| A | B | Fichiers communs |
+|---|---|---|
+| 711 | 695 | `ProductRepository.java`, `ProductRepositoryJpaImpl.java`, `products.json`, `useArchiveProduct.ts` |
+| 672, 712 | 709 | `TimelineView.tsx` |
+| 706 | 709 | `TimelineMobilePortrait/Landscape.tsx`, `useTimelineMobileState.ts`, `timeline.css` |
+| 712 | 714 | `e2e/sprint-92-business-toasts.spec.ts` |
+| 701 | 670 | `CompactAgenda.tsx:128` |
+| 702 | 665 | `sprint-84-palette.spec.ts`, `palette-color-picker.tsx` |
+
+### Risques identifiés pour la vague
+
+1. **#711 IDOR** si la native de restauration ne lie pas `user_id` ; invalidation `categories.all` oubliée → carte #695 fausse.
+2. **#672** : un test qui injecte un faux `aria-modal` passe vert sans bloquer le vrai drawer Radix → E2E avec `NewEventDrawer` exigé.
+3. **#706** structurel (S → M) : 10+ specs mobiles à rejouer.
+4. **#714 / #670** bloqués sans arbitrage Designer ; références visuelles régénérables en CI Linux uniquement.
+5. **#709** M dans le fichier le plus partagé de la frise (virtualisation verticale, navigation clavier).
+6. **Garde-fou HEAD sous RTK** : `git log --oneline -1` affiche le parent sur un commit de merge → utiliser `rtk proxy git rev-parse HEAD`.
+7. **Non vérifié :** aucun bug reproduit au navigateur ; `requestFullscreen` headless ; cause du flake #702 ; consommateurs de `PasswordStrength` ; ratios #670.
+
+### Issues non planifiées notables
+
+- **#692** extension naturelle de S93 si capacité ; **#677** extension de S94.
+- **#597, #593** conformité sur le gestionnaire clavier de `TimelineView` : après S97.
+- **#563** exige une V16 ; **#671, #715** décision produit préalable ; **#700** vérification lecteur d'écran non faisable par agent.
+- **#459** partiellement périmée (`Lane.tsx` n'existe pas ; reste `SessionList.tsx:108,116`).
+
+**Score cohésion global :** S93 0.50 · S94 1.00 · S95 0.00 · S96 0.00 · S97 0.00 → **0.30**. Aucun sprint > ~10 points ; S95 et S96 à 4 issues pour 6 points.
