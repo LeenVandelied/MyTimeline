@@ -1500,6 +1500,14 @@ Le briefing de #605 demandait une JSDoc « soft delete réversible » ; `br-prod
 ## PIT-S92-006 — « Prochain événement ≥ aujourd'hui » comparé à `now` exclut l'événement du jour
 `nextEvent` filtrait `parseLocalDate(startDate) >= now` : une `LocalDate` du jour vaut minuit local, donc est < maintenant dès 00:00:01 → l'événement du jour disparaissait des « à venir » du dashboard. Comparer au début du jour local (`startOfLocalDay(now)`). Même famille que PIT-S83-007 : un test qui fige `now` à minuit pile ne voit rien ; armer avec un `now` en milieu de journée. (Sprint 92 #603)
 
+
+## PIT-S92-007 — Test de hook : un rejet de `mutateAsync` sous `renderHook` remonte en erreur de test
+Même avec un `vi.fn()` neuf par test et un vrai `Error`, le rejet d'un `mutateAsync` appelé sous `renderHook` fait échouer le test au lieu d'être capturé. Tester le cas d'erreur d'un hook de mutation via `mutate` + `result.current.isError`, et prouver le rejet de `mutateAsync` au niveau du COMPOSANT consommateur (où le contrat de rejet compte, ex. `DeleteConfirmDialog`). Piège déjà rencontré dans `useSetEventArchived.test.tsx`. (Sprint 92, absorption A `ea5d02f`)
+
+
+## PIT-S92-008 — Reclasser un finding sur un fait vérifié peut sous-estimer le défaut
+Au S92 le lead a reclassé MAJEUR → MINEUR une pause de toast « bloquée ~1 s » en s'appuyant sur un fait vérifié (pause globale au store : aucun toast n'expire tant que le focus est dans un toast). Le fait ne couvrait pas le retrait HORS minuterie : sous jsdom, le toast survivant restait en pause indéfiniment. Avant de reclasser, énumérer les chemins que le fait NE couvre PAS ; quand le correctif est XS, l'absorber plutôt que débattre de la gravité. (Sprint 92, clôture, `cabacd7`)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

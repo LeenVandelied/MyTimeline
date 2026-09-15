@@ -6542,8 +6542,24 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Reviews :** batch — 0 CRITIQUE / 1 MAJEUR (toast « Événement modifié » sans PATCH, préexistant rendu visible → `fa8b102`) / 2 MINEURS (E2E archivage depuis le drawer → `bca8b20` ; `nextById` périmé à minuit → écarté). Constat préexistant : liste produits non invalidée après archivage (aucune issue). Cycle 2 sur les commits de correction : en cours. Détail : `sprints/sprint-92/review-batch.md`.
 **Tests :** Vitest 1777/1777 · tsc · format:check · next lint · build de production exit 0 · E2E suite complète contre `next build`+`next start` : **408 passés / 1 échoué / 8 sautés / 1 non exécuté** (seul rouge : `sprint-77-theme-visual:620`, armement darwin) · 8/8 tests des specs du sprint · audit `docs/memory/audits/sprint-92-test-coverage.md`.
 **Coverage-E2E :** OK — 8/12 testids cités par une spec, les 4 autres n'existent que dans des `*.test.tsx`.
-**Follow-ups proposés (NON-XS ou hors périmètre, à trier au `/sprint end`) :** invalidation des requêtes produits après archivage (`useArchiveProduct`, préexistant) ; restauration d'un produit archivé (aucun endpoint) ; série non bornée > 5 ans sans échéance ; `apiClient` messages français en dur ; toast invisible depuis la frise en plein écran ; ADR-008 à jour de `--z-toast` 78 ; recouvrement résiduel du toast (bottom sheet mobile, haut d'un drawer ouvert) ; clés `add.event(s).remove` mortes. Sources : `issue-*-done.md`, `review-fixes-done.md`, `review-batch.md`.
-**Status :** En cours — PR à ouvrir après la relecture de cycle 2
+**Relecture de cycle 2 :** aucun bloquant — 1 MAJEUR plausible reclassé MINEUR par le lead (pause du toast), 2 MINEURS ; tous absorbés en clôture (voir ci-dessous). **Le reclassement sous-estimait le défaut** : pause bloquée indéfiniment, pas ~1 s (PIT-S92-008, BUG-S92-003).
+**PR :** #710 (`sprint/92` → `dev`), ouverte le 2026-09-15 ; CI 7/7 verte sur `842bd54`.
+**Clôture (`/sprint end 92`, 2026-09-15) :** PR `CLEAN`/`MERGEABLE` sur `842bd54`, `dev` inchangée (`43a7870`), contrôle de complétude vert sans `--force`, audit présent ; milestone #93 = exactement les 3 issues du label `sprint-92` (vérifié dans les deux sens), #460 hors milestone, fermée par #621. Consolidation mémoire (`6d2071f`) : PIT-S92-001 à -006, BUG-S92-001/-002, DEC-S92-001 à -004, PAT-S92-001, classés et packs régénérés (`--check` exit 0) ; complément après absorptions : PIT-S92-007/-008, BUG-S92-003, PAT-S92-002. ADR-008 amendé (`fb76813`) : `--z-toast` 78.
+**Follow-ups arbitrés (Phase 4, triage par le dev, en 3 groupes) :**
+  - Liste produits non rafraîchie après archivage (préexistant, rendu visible par #605) [XS | frontend products] → **absorbé** `ea5d02f` (`useArchiveProduct` : retrait du cache après succès + invalidation `products.all`, fiche gardée pendant l'archivage depuis le détail, E2E sans rechargement)
+  - Toast : pause par booléen, pause globale non documentée, focus perdu à la disparition (cycle 2) [XS | frontend a11y] → **absorbé** `cabacd7`
+  - Titre du test l.132 « non bloquant » devenu faux [XS | e2e] → **absorbé** `d51c6f6`
+  - ADR-008 décrit encore `--z-toast` 60 sans consommateur [XS | docs] → **absorbé** `fb76813` (lead)
+  - Restauration d'un produit archivé [M | fullstack products] → issue **#711** (backlog)
+  - Édition depuis la frise en plein écran : drawer et toast invisibles [S | frontend events] → issue **#712** (backlog)
+  - `apiClient` : messages français en dur, 400 signalé deux fois [S | frontend transversal] → issue **#713** (backlog)
+  - Recouvrement résiduel du toast (croix du `ProductDrawer` en bottom sheet mobile, haut d'un drawer ouvert) [S | frontend design] → issue **#714** (backlog)
+  - Série non bornée démarrée il y a plus de 5 ans : « aucune échéance » [XS | produit] → issue **#715** (backlog)
+  - Clés i18n `add.event(s).remove` probablement mortes [XS | frontend transversal] → issue **#716** (backlog)
+  - `nextById` périmé à cheval sur minuit (MINEUR de la review batch) → **discard** par le lead (résorbé au refetch)
+  Bilan : 4 absorbés, 6 issues créées sans milestone ni label `sprint-*` (#711-#716, labels posés par project-manager, vérifiés), 1 discard (1/11).
+**Tests finaux (lead, arbre propre `ea5d02f`) :** Vitest 139 fichiers / 1791 tests verts · tsc exit 0 · `format:check` exit 0. E2E des absorptions : job `e2e` de la CI (pile locale démontée).
+**Status :** PR #710 prête — merge, fermeture des issues #603/#605/#621/#460 et du milestone #93 au terme du `/sprint end 92` (statut définitif à solder au `/sprint start 93`)
 
 ### Matrice de conflits inter-sprints (S88-S92)
 

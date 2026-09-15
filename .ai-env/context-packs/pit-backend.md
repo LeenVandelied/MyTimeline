@@ -835,6 +835,9 @@ Le hook intercepte toute ligne `npx playwright test`, `--list` compris : un agen
 Le briefing de #605 demandait une JSDoc « soft delete réversible » ; `br-products.md` §1 dit « définitif pour cette wave (pas d'endpoint de restauration) ». Rattrapé par `SendMessage` en cours de vague, avant commit. Avant toute consigne de vocabulaire, de JSDoc ou de texte de confirmation sur une transition d'état, lire le §1 « Lifecycles » du pack `br-*` concerné. (Sprint 92, lead)
 
 
+## PIT-S92-008 — Reclasser un finding sur un fait vérifié peut sous-estimer le défaut
+Au S92 le lead a reclassé MAJEUR → MINEUR une pause de toast « bloquée ~1 s » en s'appuyant sur un fait vérifié (pause globale au store : aucun toast n'expire tant que le focus est dans un toast). Le fait ne couvrait pas le retrait HORS minuterie : sous jsdom, le toast survivant restait en pause indéfiniment. Avant de reclasser, énumérer les chemins que le fait NE couvre PAS ; quand le correctif est XS, l'absorber plutôt que débattre de la gravité. (Sprint 92, clôture, `cabacd7`)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
