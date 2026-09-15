@@ -8,6 +8,7 @@ import type { TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { deleteEvent } from '@/services/eventService'
+import { useRecurrencePreview } from '@/hooks/useRecurrencePreview'
 import { queryKeys } from '@/lib/query-keys'
 
 /**
@@ -37,7 +38,12 @@ vi.mock('next-intl', () => ({
 }))
 
 vi.mock('./TimelineResponsive', () => {
-  const positionedEvent = (id: string, title: string, archived = false): PositionedEvent => ({
+  const positionedEvent = (
+    id: string,
+    title: string,
+    archived = false,
+    extra: Partial<PositionedEvent['extendedProps']> = {},
+  ): PositionedEvent => ({
     id,
     title,
     start: '2026-01-01',
@@ -50,6 +56,7 @@ vi.mock('./TimelineResponsive', () => {
       category: 'cat',
       type: 'single',
       archived,
+      ...extra,
     },
     leftPx: 0,
     widthPx: 0,
@@ -88,10 +95,61 @@ vi.mock('./TimelineResponsive', () => {
         >
           edit archived
         </button>
+        {/* #676 / BR-EVE-012 — séries mensuelles, bornée puis non bornée (contrôle négatif). */}
+        <button
+          type="button"
+          data-testid="desktop-edit-trigger-bounded-series"
+          onClick={() =>
+            props.onEditEvent?.(
+              positionedEvent('evt-bounded', 'Bounded series', false, {
+                isRecurring: true,
+                recurrenceUnit: 'MONTH',
+                recurrenceEndDate: '2026-06-30',
+              }),
+            )
+          }
+        >
+          edit bounded series
+        </button>
+        <button
+          type="button"
+          data-testid="desktop-edit-trigger-unbounded-series"
+          onClick={() =>
+            props.onEditEvent?.(
+              positionedEvent('evt-unbounded', 'Unbounded series', false, {
+                isRecurring: true,
+                recurrenceUnit: 'MONTH',
+                recurrenceEndDate: null,
+              }),
+            )
+          }
+        >
+          edit unbounded series
+        </button>
       </div>
     ),
   }
 })
+
+// #676 — la preview réseau (#439) est remplacée par un double qui REPRODUIT la règle
+// backend mesurée (PIT-S82-002, `RecurrenceExpansionServiceImpl`) : une série SANS
+// `recurrenceEndDate` est tronquée à 5 ans → `capped:true` ; une borne courte → `false`.
+// Désarmé (`data: undefined`) hors récurrence complète, comme l'`enabled` du vrai hook.
+// Ainsi le hint dépend de la VALEUR réellement transmise par le formulaire, pas d'un
+// `capped` figé par le test.
+vi.mock('@/hooks/useRecurrencePreview', () => ({
+  useRecurrencePreview: vi.fn(
+    (p: {
+      isRecurring: boolean
+      startDate?: string
+      recurrenceUnit?: string
+      recurrenceEndDate?: string | null
+    }) =>
+      p.isRecurring && p.startDate && p.recurrenceUnit
+        ? { data: p.recurrenceEndDate ? { count: 6, capped: false } : { count: 61, capped: true } }
+        : { data: undefined },
+  ),
+}))
 
 vi.mock('@/services/authService', () => ({
   getUserProfile: vi.fn().mockResolvedValue({ id: 'user-1', name: 'Test', email: 't@e.st' }),
@@ -153,6 +211,37 @@ describe('TimelineEditHost — pré-remplissage archived (#188 / BR-EVE-013)', (
     renderUnderAuth()
     fireEvent.click(screen.getByTestId('desktop-edit-trigger'))
     expect(await screen.findByTestId('event-form-archived-toggle')).not.toBeChecked()
+  })
+})
+
+// #676 / BR-EVE-012 — borne de série pré-remplie depuis le view-model frise. Avant, le host
+// posait `recurrenceEndDate: null` en dur : champ vide + hint de plafond 5 ans à tort.
+describe('TimelineEditHost — pré-remplissage de la borne de série (#676 / BR-EVE-012)', () => {
+  it('série bornée : le champ affiche la date de fin et le hint de plafond est ABSENT', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger-bounded-series'))
+
+    const endDate = await screen.findByTestId('event-form-recurrence-end-date')
+    expect(endDate).toHaveValue('2026-06-30')
+    // La borne atteint bien la preview (source du hint), pas seulement l'input.
+    await waitFor(() =>
+      expect(vi.mocked(useRecurrencePreview)).toHaveBeenCalledWith(
+        expect.objectContaining({ isRecurring: true, recurrenceEndDate: '2026-06-30' }),
+      ),
+    )
+    expect(vi.mocked(useRecurrencePreview)).not.toHaveBeenCalledWith(
+      expect.objectContaining({ isRecurring: true, recurrenceEndDate: null }),
+    )
+    expect(screen.queryByTestId('event-form-recurrence-capped-hint')).not.toBeInTheDocument()
+  })
+
+  it('série NON bornée (contrôle négatif) : champ vide et hint de plafond TOUJOURS affiché', async () => {
+    renderUnderAuth()
+    fireEvent.click(screen.getByTestId('desktop-edit-trigger-unbounded-series'))
+
+    const endDate = await screen.findByTestId('event-form-recurrence-end-date')
+    expect(endDate).toHaveValue('')
+    expect(await screen.findByTestId('event-form-recurrence-capped-hint')).toBeInTheDocument()
   })
 })
 

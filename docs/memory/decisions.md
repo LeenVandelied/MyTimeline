@@ -984,3 +984,18 @@ BR-EVE-002 : sans produit, aucun événement n'est créable. La frise vide propo
 
 ## DEC-S90-005 — `EmptyState` : la piste pointillée est ignorée en mode `compact`
 Les usages compacts sont des colonnes étroites sous un titre de section : 3 lanes de 46 px écraseraient le contenu, et une lane réduite se lit comme un filet séparateur. (Sprint 90 #630)
+
+## DEC-S91-001 — Les marques de la frise (pin, `↻`, fantômes) couvrent desktop ET mobile
+Les vues `TimelineMobilePortrait` / `TimelineMobileLandscape` ne consomment pas `EventPill` : elles dessinent leurs événements en ligne. Sans elles, « distincts à tous les niveaux de zoom » et « identifiable sans lecteur d'écran » étaient faux sous 768 px. Arbitrage dev. (Sprint 91 #594 #595)
+
+## DEC-S91-002 — Pas d'empilage en rangées : les marques de récurrence passent DERRIÈRE les occurrences réelles
+La prod n'a qu'une hauteur de lane fixe (`laneHeight`) ; la maquette empile (`layoutLane`). Fantômes et connecteurs sont rendus avant les occurrences réelles, non interactifs, sans `data-testid="timeline-event"`, virtualisés. Le critère « lisible quand plusieurs séries se chevauchent » est lu comme « une occurrence réelle n'est jamais masquée par une marque ». L'empilage relève d'une issue dédiée. Arbitrage dev. (Sprint 91 #595)
+
+## DEC-S91-003 — `widthPx` d'un ponctuel = emprise RÉSERVÉE, pas largeur peinte
+`leftPx` = date ; ponctuel : `widthPx` = 100 px desktop / 90 px mobile, constant au zoom (place du libellé) ; durée : durée × px/jour. L'intervalle réel (demi-pin inclus) passe par `eventTrackExtent`, consommé par la virtualisation et `ensureVisible`. Toute assertion de géométrie sur un ponctuel lit `data-event-kind`. (Sprint 91 #594)
+
+## DEC-S91-004 — Occurrences de série calculées côté frontend, depuis l'origine
+L'API renvoie une ligne par série. `frontend/src/lib/recurrence.ts` (partagé avec l'aperçu du formulaire) calcule l'occurrence k depuis la date d'origine (31 janv. mensuel → 28 févr. → 31 mars), pas de proche en proche comme `RecurrenceExpansionServiceImpl.advance`. Bornes : après le début uniquement ; `recurrenceEndDate` incluse (parité backend) ; série non bornée → 5 ans + plafond 4000 ; coupe à l'étendue existante, jamais étirée ; série archivée → `↻` sans fantôme ni connecteur. (Sprint 91 #595)
+
+## DEC-S91-005 — Plancher de largeur des barres de durée conservé à 6 px contre l'avis du Designer
+Le Designer demandait `max(12, …)` / `max(14, …)` (maquette). Les barres ont `padding:0 10px` desktop / `0 8px` mobile : elles sont peintes sur ≥ 20 / ≥ 16 px, donc relever le plancher de `widthPx` ne change rien à l'écran mais change la virtualisation et les assertions qui lisent `style.width` (PIT-S85-004). Plancher antérieur au sprint. (Sprint 91, revue ui-design)

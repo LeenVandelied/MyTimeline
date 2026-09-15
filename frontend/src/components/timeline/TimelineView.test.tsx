@@ -76,6 +76,79 @@ function setup() {
   )
 }
 
+describe('#595 TimelineView — série récurrente : ↻, fantômes et connecteur', () => {
+  // e1 : durée mensuelle bornée au 10 sept. ; étendue = 10 juin → 19 août (fin max + 30 j).
+  // Fantômes attendus : 10 août seulement (10 sept. est HORS étendue, jamais étirée).
+  const SERIES: FullCalendarEvent[] = [
+    {
+      ...EVENTS[0],
+      extendedProps: {
+        ...EVENTS[0].extendedProps,
+        isRecurring: true,
+        recurrenceUnit: 'MONTH',
+        recurrenceEndDate: '2026-09-10',
+      },
+    },
+    EVENTS[1],
+  ]
+  const renderSeries = (events = SERIES) =>
+    render(
+      <TimelineView
+        events={events}
+        resources={RESOURCES}
+        locale="fr-FR"
+        today={new Date(2026, 6, 15)}
+      />,
+    )
+
+  it('rend les marques NON interactives, avant la pastille, hors du compteur timeline-event', () => {
+    const { container } = renderSeries()
+    expect(screen.getAllByTestId('timeline-event')).toHaveLength(2)
+    const ghosts = container.querySelectorAll('[data-recurrence-mark="ghost"]')
+    expect([...ghosts].map((g) => g.getAttribute('data-occurrence-date'))).toEqual(['2026-08-10'])
+    const connectors = container.querySelectorAll('[data-recurrence-mark="connector"]')
+    expect(connectors).toHaveLength(1)
+    for (const mark of [...ghosts, ...connectors]) {
+      expect(mark).toHaveAttribute('aria-hidden', 'true')
+      expect(mark).not.toHaveAttribute('data-testid')
+      expect(mark).not.toHaveAttribute('tabindex')
+    }
+    expect(ghosts[0]).toHaveClass('mt-evt', 'mt-evt--draft', 'mt-tlv__ghost')
+    expect(connectors[0]).toHaveClass('mt-evt-connector', 'mt-tlv__connector')
+    // Ordre de peinture : les marques précèdent la pastille réelle dans la lane.
+    const pill = screen.getAllByTestId('timeline-event')[0]
+    expect(ghosts[0].compareDocumentPosition(pill) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(
+      connectors[0].compareDocumentPosition(pill) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    // Glyphe ↻ décoratif sur la barre récurrente, absent du ponctuel non récurrent.
+    expect(pill.querySelector('.mt-evt-recur')).toHaveAttribute('aria-hidden', 'true')
+    expect(
+      screen.getAllByTestId('timeline-event')[1].querySelector('.mt-evt-pin__recur'),
+    ).toBeNull()
+  })
+
+  it('série archivée : ↻ conservé, aucun fantôme ni connecteur', () => {
+    const archived = [
+      { ...SERIES[0], extendedProps: { ...SERIES[0].extendedProps, archived: true } },
+      EVENTS[1],
+    ]
+    const { container } = renderSeries(archived)
+    expect(container.querySelectorAll('[data-recurrence-mark]')).toHaveLength(0)
+    expect(screen.getAllByTestId('timeline-event')[0].querySelector('.mt-evt-recur')).not.toBeNull()
+  })
+
+  it('catégorie repliée : pas de fantôme dans le résumé', async () => {
+    const { container } = renderSeries()
+    const head = container.querySelector(
+      '[data-testid="timeline-group-head"][data-category="Frais"]',
+    )
+    fireEvent.click(head as HTMLElement)
+    await waitFor(() => expect(screen.getByTestId('timeline-group-summary')).toBeInTheDocument())
+    expect(container.querySelectorAll('[data-recurrence-mark]')).toHaveLength(0)
+  })
+})
+
 describe('TimelineView', () => {
   it('rend la frise, la règle et les events', () => {
     setup()
@@ -434,11 +507,14 @@ describe('TimelineView', () => {
               // `DEFAULT_COLOR` vaut `#3B62D4` (5.407:1) depuis #393 — ne pas
               // resynchroniser cette valeur sur le défaut, le test perdrait son objet.
               color: '#6366f1',
+              // #594 — `duration` (était `single`) : le garde-fou de contraste ne
+              // concerne plus que les BARRES ; un ponctuel est un pin dont le libellé
+              // est toujours dehors, sans libellé de secours (test suivant).
               extendedProps: {
                 productId: 'p3',
                 productName: 'Prod3',
                 category: 'Cat3',
-                type: 'single',
+                type: 'duration',
               },
             },
           ]}
@@ -454,6 +530,37 @@ describe('TimelineView', () => {
 
     it('ne rend PAS de libellé extérieur quand le contraste passe AA dedans', () => {
       setup() // events #3B62D4 (5.41) et #4FA459 → lisibles dedans
+      expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
+    })
+
+    it('#594 — un ponctuel de même couleur faible est un PIN : un seul libellé, pas de secours', () => {
+      render(
+        <TimelineView
+          events={[
+            {
+              id: 'e4',
+              title: 'Pin contraste faible',
+              start: '2026-07-12',
+              end: '2026-07-12',
+              allDay: true,
+              resourceId: 'p4',
+              color: '#6366f1',
+              extendedProps: {
+                productId: 'p4',
+                productName: 'Prod4',
+                category: 'Cat4',
+                type: 'single',
+              },
+            },
+          ]}
+          resources={[{ id: 'p4', title: 'Prod4', category: 'Cat4' }]}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+        />,
+      )
+      const pin = screen.getByTestId('timeline-event')
+      expect(pin).toHaveAttribute('data-event-kind', 'single')
+      expect(screen.getAllByText('Pin contraste faible')).toHaveLength(1)
       expect(screen.queryByTestId('timeline-event-outside-label')).not.toBeInTheDocument()
     })
   })

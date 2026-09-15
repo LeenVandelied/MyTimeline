@@ -156,6 +156,33 @@ describe('TimelineMobileLandscape', () => {
     expect(screen.getAllByTestId('timeline-event')).toHaveLength(2)
   })
 
+  it('#594 — paysage : le ponctuel est un PIN centré sur sa date, la durée reste une barre', () => {
+    renderLandscape()
+    const [bar, pin] = screen.getAllByTestId('timeline-event')
+    expect(bar).toHaveAttribute('data-event-kind', 'duration')
+    expect(bar.querySelector('.mt-evt-pin')).toBeNull()
+    expect(pin).toHaveAttribute('data-event-kind', 'single')
+    expect(pin).toHaveClass('mt-tlm__evt--pin')
+    expect(pin.style.width).toBe('')
+    expect(pin.style.background).toBe('')
+    expect(pin.querySelector('.mt-evt-pin__label')).toHaveTextContent('Livraison pain')
+    // Même géométrie que le portrait (état partagé) : 40 j × 12 px − 5 = 475.
+    expect((pin.closest('.mt-tlm__evt-wrap') as HTMLElement).style.left).toBe('475px')
+  })
+
+  it('paysage : aucun `⋯` (barre ni pin) ne porte d’encre inline — fond de lane', () => {
+    renderLandscape()
+    const [bar] = screen.getAllByTestId('timeline-event')
+    // La barre garde son encre calculée sur sa couleur, pas les `⋯`.
+    expect(bar.style.color).not.toBe('')
+    const mores = screen.getAllByTestId('timeline-event-more')
+    expect(mores).toHaveLength(2)
+    for (const more of mores) {
+      expect(more.style.color).toBe('')
+      expect(more.getAttribute('style')).toBeNull()
+    }
+  })
+
   it('préserve data-testid + data-event-title en paysage (dépendance E2E #163)', () => {
     renderLandscape()
     const events = screen.getAllByTestId('timeline-event')

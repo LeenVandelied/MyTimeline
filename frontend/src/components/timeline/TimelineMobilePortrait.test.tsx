@@ -111,6 +111,76 @@ describe('TimelineMobilePortrait', () => {
     expect(events[1]).not.toHaveAttribute('data-archived')
   })
 
+  it('#595 — ponctuel hebdomadaire non borné : « ↻ » + carrés fantômes coupés à l’étendue', () => {
+    const { container } = renderPortrait({
+      events: [
+        EVENTS[0],
+        {
+          ...EVENTS[1],
+          extendedProps: { ...EVENTS[1].extendedProps, isRecurring: true, recurrenceUnit: 'WEEK' },
+        },
+      ],
+    })
+    // Deux occurrences réelles seulement : les marques ne sont pas des `timeline-event`.
+    const [, pin] = screen.getAllByTestId('timeline-event')
+    expect(screen.getAllByTestId('timeline-event')).toHaveLength(2)
+    expect(pin.querySelector('.mt-evt-pin__recur')).toHaveAttribute('aria-hidden', 'true')
+    expect(pin.querySelector('.mt-evt-pin__label')).toHaveTextContent('↻ Livraison pain')
+    // Étendue : 10 juin → 19 août. Hebdo depuis le 20 juil. : 27/07, 03/08, 10/08, 17/08.
+    const ghosts = [...container.querySelectorAll('[data-recurrence-mark="ghost"]')]
+    expect(ghosts.map((g) => g.getAttribute('data-occurrence-date'))).toEqual([
+      '2026-07-27',
+      '2026-08-03',
+      '2026-08-10',
+      '2026-08-17',
+    ])
+    expect(ghosts[0]).toHaveClass('mt-evt-pin--ghost', 'mt-tlm__ghost-pin')
+    expect(ghosts[0]).toHaveAttribute('aria-hidden', 'true')
+    // 27 juil. = +47 j × 12 px = 564 → carré de 8 px centré : 560.
+    expect((ghosts[0] as HTMLElement).style.left).toBe('560px')
+    expect(container.querySelectorAll('[data-recurrence-mark="connector"]')).toHaveLength(1)
+    // La barre non récurrente n'a pas de glyphe.
+    expect(screen.getAllByTestId('timeline-event')[0].querySelector('.mt-evt-recur')).toBeNull()
+  })
+
+  it('#594 — le ponctuel est un PIN centré sur sa date ; la durée reste une barre', () => {
+    renderPortrait()
+    const [bar, pin] = screen.getAllByTestId('timeline-event')
+    expect(bar).toHaveAttribute('data-event-kind', 'duration')
+    expect(bar.querySelector('.mt-evt-pin')).toBeNull()
+    expect(bar.style.width).not.toBe('')
+
+    expect(pin).toHaveAttribute('data-event-kind', 'single')
+    expect(pin).toHaveClass('mt-tlm__evt--pin')
+    // Ni largeur ni fond posés : le pin ne s'étire pas, le libellé n'est pas peint
+    // sur la couleur de l'événement (encre de page, CSS).
+    expect(pin.style.width).toBe('')
+    expect(pin.style.background).toBe('')
+    expect(pin.style.getPropertyValue('--mt-evt')).toBe('#4FA459')
+    expect(pin.querySelector('.mt-evt-pin')).toHaveAttribute('aria-hidden', 'true')
+    expect(pin.querySelector('.mt-evt-pin__label')).toHaveTextContent('Livraison pain')
+    // Centré : rangeStart = 10 juil − 30 j = 10 juin ; 20 juil = +40 j × 12 px = 480 → 475.
+    expect((pin.closest('.mt-tlm__evt-wrap') as HTMLElement).style.left).toBe('475px')
+    // Le `⋯` voisin n'hérite pas de l'encre calculée sur la couleur de l'événement.
+    const wrap = pin.closest('.mt-tlm__evt-wrap') as HTMLElement
+    expect(
+      (wrap.querySelector('[data-testid="timeline-event-more"]') as HTMLElement).style.color,
+    ).toBe('')
+  })
+
+  it('le `⋯` d’une BARRE de durée n’a aucune encre inline (fond de lane, pas la barre)', () => {
+    renderPortrait()
+    const [bar] = screen.getAllByTestId('timeline-event')
+    // La barre garde son encre calculée sur sa couleur…
+    expect(bar.style.color).not.toBe('')
+    // …mais pas le `⋯` voisin, posé sur la lane : encre de page via le DS.
+    const more = (bar.closest('.mt-tlm__evt-wrap') as HTMLElement).querySelector(
+      '[data-testid="timeline-event-more"]',
+    ) as HTMLElement
+    expect(more.style.color).toBe('')
+    expect(more.getAttribute('style')).toBeNull()
+  })
+
   it('affiche le nom du produit dans chaque lane', () => {
     renderPortrait()
     const titles = screen.getAllByTestId('timeline-resource-title').map((el) => el.textContent)

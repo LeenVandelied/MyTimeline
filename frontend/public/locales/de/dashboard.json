@@ -133,7 +133,9 @@
       "categoriesHint": "Jede Schaltfläche blendet ihre Kategorie in der Zeitleiste ein oder aus.",
       "filterLabel": "{category}, {count, plural, one {# Ereignis} other {# Ereignisse}}",
       "legend": "Legende",
-      "legendEvent": "Ereignis"
+      "legendEvent": "Ereignis",
+      "legendGhost": "Künftiger Termin",
+      "legendRecurrence": "Wiederholung"
     },
     "groupHead": {
       "label": "{category}, {count, plural, one {# Produkt} other {# Produkte}}"

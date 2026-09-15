@@ -20,10 +20,17 @@ import {
   daysBetween,
   initialZoomState,
   positionEvents,
+  DEFAULT_MIN_WIDTH_PX,
+  PIN_FOOTPRINT_PX,
   zoomReducer,
   type PositionedEvent,
   type ZoomLevel,
 } from './zoom'
+import {
+  indexRecurrenceByResource,
+  scaleRecurrenceMarks,
+  type SeriesMarks,
+} from './recurrence-marks'
 
 /**
  * #63 — État partagé des vues Timeline mobiles (portrait #63 + paysage #64).
@@ -94,6 +101,8 @@ export interface TimelineMobileState {
   railWidth: number
   ticks: ReturnType<typeof buildRulerTicks>
   eventsByResource: Map<string, PositionedEvent[]>
+  /** #595 — marques de récurrence (fantômes + connecteur) par lane, à fenêtrer au rendu. */
+  recurrenceByResource: Map<string, SeriesMarks[]>
   resourcesByCategory: Record<string, Resource[]>
   buckets: number[]
   weekendSegments: ReturnType<typeof buildWeekendSegments>
@@ -138,8 +147,28 @@ export function useTimelineMobileState(
   )
 
   const eventsByResource = useMemo(
-    () => positionEvents(events, rangeStart, dayWidth, now),
+    // #594 — emprise réservée d'un ponctuel : 90 px en mobile (maquette `layoutLane`).
+    () =>
+      positionEvents(
+        events,
+        rangeStart,
+        dayWidth,
+        now,
+        DEFAULT_MIN_WIDTH_PX,
+        PIN_FOOTPRINT_PX.mobile,
+      ),
     [events, rangeStart, dayWidth, now],
+  )
+  // #595 — occurrences fantômes + connecteurs (mêmes passes que le desktop). La passe en
+  // jours ne dépend pas du zoom ; la mise à l'échelle, si. Coupe à l'étendue `railWidth`
+  // (la piste mobile n'a pas de gouttière).
+  const recurrenceIndex = useMemo(
+    () => indexRecurrenceByResource(events, rangeStart, totalDays),
+    [events, rangeStart, totalDays],
+  )
+  const recurrenceByResource = useMemo(
+    () => scaleRecurrenceMarks(recurrenceIndex, dayWidth, railWidth),
+    [recurrenceIndex, dayWidth, railWidth],
   )
   const resourcesByCategory = useMemo(() => groupResourcesByCategory(resources), [resources])
   const buckets = useMemo(
@@ -306,6 +335,7 @@ export function useTimelineMobileState(
     railWidth,
     ticks,
     eventsByResource,
+    recurrenceByResource,
     resourcesByCategory,
     buckets,
     weekendSegments,

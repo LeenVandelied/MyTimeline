@@ -63,7 +63,25 @@ describe('TimelineSidebar — libellés réels (next-intl, 4 locales)', () => {
     expect(screen.getByRole('heading', { name: 'Légende' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tout déplier' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tout plier' })).toBeInTheDocument()
-    expect(screen.getByTestId('timeline-sidebar-legend')).toHaveTextContent('Événement')
+    const legend = screen.getByTestId('timeline-sidebar-legend')
+    expect(legend).toHaveTextContent('Événement')
+    // #595 (DEC-S85-002) — les deux marques de récurrence rendues par la frise.
+    expect(legend.querySelectorAll('li')).toHaveLength(3)
+    expect(legend.querySelector('[data-legend="ghost"]')).toHaveTextContent('Occurrence à venir')
+    // Libellé et glyphe sont deux enfants flex (espacés par `gap`, pas par une espace).
+    const recurrenceItem = legend.querySelector('[data-legend="recurrence"]')
+    expect(recurrenceItem).toHaveTextContent('Récurrence')
+    expect(recurrenceItem?.querySelector('span[aria-hidden="true"]:last-child')).toHaveTextContent(
+      '↻',
+    )
+    expect(legend.querySelector('.mt-tlv-side__legend-ghost')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
+    expect(legend.querySelector('.mt-tlv-side__legend-recur')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
     const keys = screen.getByRole('list', { name: 'Raccourcis clavier' })
     expect(keys).toHaveTextContent('Aller à aujourd’hui')
     expect(keys).toHaveTextContent('Plein écran')

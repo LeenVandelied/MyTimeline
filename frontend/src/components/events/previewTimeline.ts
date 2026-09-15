@@ -1,5 +1,6 @@
 import type { DurationUnit, RecurrenceUnit } from '@/types/event'
 import { parseLocalIsoDate } from '@/lib/date-iso'
+import { addDays, addMonths, nextOccurrenceStart } from '@/lib/recurrence'
 
 // #652 — `parseLocalIsoDate` vit désormais dans `lib/date-iso.ts` (helper UNIQUE
 // des dates civiles `LocalDate`) ; ré-exporté ici pour ses appelants existants.
@@ -44,24 +45,10 @@ export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-export function addDays(date: Date, amount: number): Date {
-  const next = new Date(date)
-  next.setDate(next.getDate() + amount)
-  return next
-}
-
-/**
- * Ajout de mois avec CLAMP en fin de mois (31 janv. + 1 mois = 28/29 févr.),
- * parité `java.time.LocalDate.plusMonths` utilisé par `Utils.calculateEndDate`.
- * `setMonth` natif déborderait sur le mois suivant (3 mars) → aperçu faux.
- */
-export function addMonths(date: Date, amount: number): Date {
-  const day = date.getDate()
-  const shifted = new Date(date.getFullYear(), date.getMonth() + amount, 1)
-  const lastDayOfMonth = new Date(shifted.getFullYear(), shifted.getMonth() + 1, 0).getDate()
-  shifted.setDate(Math.min(day, lastDayOfMonth))
-  return shifted
-}
+// #595 — `addDays` / `addMonths` / `nextOccurrenceStart` DÉPLACÉS dans `lib/recurrence.ts`
+// (helper d'occurrences mutualisé avec les fantômes de la frise) ; ré-exportés ici pour
+// les appelants et tests existants. Comportement inchangé.
+export { addDays, addMonths, nextOccurrenceStart }
 
 /** Durée d'événement (BR-EVE-003) — unités MINUSCULES `days/weeks/months/years`. */
 export function addDurationUnits(date: Date, amount: number, unit: DurationUnit): Date {
@@ -74,18 +61,6 @@ export function addDurationUnits(date: Date, amount: number, unit: DurationUnit)
       return addMonths(date, amount)
     case 'years':
       return addMonths(date, amount * 12)
-  }
-}
-
-/** Récurrence (BR-EVE-006) — enum MAJUSCULE `WEEK/MONTH/YEAR` (≠ `durationUnit`). */
-export function nextOccurrenceStart(start: Date, unit: RecurrenceUnit): Date {
-  switch (unit) {
-    case 'WEEK':
-      return addDays(start, 7)
-    case 'MONTH':
-      return addMonths(start, 1)
-    case 'YEAR':
-      return addMonths(start, 12)
   }
 }
 

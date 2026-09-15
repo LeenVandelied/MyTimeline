@@ -292,7 +292,10 @@
 .mt-tlv__rail > .mt-tlv__weekend,
 .mt-tlv__rail > .mt-tlv__today,
 .mt-tlv__lane > .mt-tlv__evt,
-.mt-tlv__lane > .mt-tlv__evt-outside{margin-left:var(--lane-header-w);}
+.mt-tlv__lane > .mt-tlv__evt-outside,
+.mt-tlv__lane > .mt-tlv__ghost,
+.mt-tlv__lane > .mt-tlv__ghost-pin,
+.mt-tlv__lane > .mt-tlv__connector{margin-left:var(--lane-header-w);}
 /* La trame de jours du fond de lane suit la piste, pas le bord du rail. */
 .mt-tlv__lane{background-position-x:var(--lane-header-w);}
 /* Coin haut-gauche : masque la gouttière SUR LA RÈGLE. `buildRulerTicks` peut
@@ -317,6 +320,56 @@
    visuel. On réutilise le `:focus-visible` fourni par le DS. */
 .mt-tlv__evt:focus-visible{outline:2px solid var(--color-accent); outline-offset:2px;}
 .mt-tlv__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
+
+/* #594 — ÉVÉNEMENT PONCTUEL = pin + libellé, PAS une barre (maquette « Vue Timeline »
+   §2, `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`).
+   Le bouton garde `.mt-tlv__evt` (gouttière `margin-left`, focus, archivé, sélecteurs
+   E2E) et le modificateur neutralise la BARRE : ni fond, ni padding, ni ombre.
+   - Pin (`.mt-evt-pin`) : 10 × 26 px, rayon 3, couleur de l'événement, ombre sm.
+   - Libellé (`.mt-evt-pin__label`) : à droite (gap 6 px ⇒ `x + 11` depuis la date,
+     le bouton étant posé à `x − 5`), `600 12px`, ENCRE DE LA PAGE — il est posé sur le
+     fond de lane, jamais sur la couleur de l'événement.
+   - CIBLE ≥ 44 px (critère #594, non traité par la maquette) : le bouton fait 44 px de
+     haut (lane de 46 px, pin recentré à 9 px comme les barres) et au moins 44 px de
+     large ; pin ET libellé sont dedans, donc cliquables. Un bouton plein plutôt qu'un
+     pseudo-élément débordant : sa `boundingBox()` EST la zone de frappe, et l'anneau
+     de focus entoure toute la cible. `overflow:visible` : le pin ne doit pas être
+     rogné par la troncature héritée de la barre.
+   - Libellé plafonné à 240 px (ellipse) : la maquette ne tronque pas ; le plafond
+     borne un titre de 100 caractères sous `OVERSCAN_X_PX` (600 px) de la
+     virtualisation, qui ne réserve que 100 px (`PIN_FOOTPRINT_PX`). */
+.mt-tlv__evt--pin{top:0; height:44px; min-width:44px; padding:0; gap:6px; border-radius:var(--radius-sm); background:transparent; color:var(--color-ink); box-shadow:none; overflow:visible;}
+.mt-tlv__evt--pin:hover{box-shadow:none; filter:none;}
+.mt-tlv__evt--pin:hover .mt-evt-pin{box-shadow:var(--shadow-md);}
+.mt-evt-pin{flex:0 0 auto; width:10px; height:26px; border-radius:3px; background:var(--mt-evt, var(--color-accent)); box-shadow:var(--shadow-sm); transition:box-shadow var(--dur-micro);}
+.mt-evt-pin__label{min-width:0; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:16px; font-weight:var(--weight-semibold); color:var(--color-ink);}
+
+/* #595 — RÉCURRENCE sur les trois frises (maquette §1, §3, §4, §5 de
+   `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`). Pas de trame de
+   stries (direction rejetée) : occurrence réelle pleine + glyphe `↻`, occurrences
+   FANTÔMES et CONNECTEUR pointillé (`RecurrenceMarks.tsx`).
+   - Glyphe de BARRE (`.mt-evt-recur`, maquette §4) : mono 11 px, opacity .85, préfixe
+     du titre. Sur un PIN, `↻ ` est un préfixe du libellé dans sa propre police
+     (`.mt-evt-pin__recur`, maquette §2) : aucune règle dédiée.
+   - Fantôme de DURÉE = `.mt-evt` + `.mt-evt--draft` (DS, inchangés) ; connecteur =
+     `.mt-evt-connector` (DS, inchangé : 2 px dashed là où la maquette dit 1,5 px dotted
+     + opacity .5 — écart assumé, la classe est partagée avec l'aperçu du formulaire).
+   - Fantôme de PONCTUEL = `.mt-evt-pin--ghost` (NOUVEAU, le DS n'avait pas d'équivalent) :
+     carré 8 px, rayon 3, fond surface, trait PLEIN 1,5 px. Contour planché à 3:1 comme
+     `.mt-evt--draft` (#497, `--mt-evt-outline*` posées en ligne) et SANS l'opacity .65
+     de la maquette : même arbitrage que #325 (un dimmer sur un trait déjà atténué retire
+     du contraste, pas de l'insistance).
+   - Les classes `__ghost`, `__ghost-pin`, `__connector` de chaque vue ne portent QUE le
+     placement vertical (centré sur la barre de la vue) et `pointer-events:none` : une
+     marque de récurrence ne capte jamais un clic destiné à une occurrence réelle. */
+.mt-evt-recur{flex:0 0 auto; font-family:var(--font-mono); font-size:11px; font-weight:400; opacity:.85;}
+.mt-evt-pin--ghost{position:absolute; box-sizing:border-box; width:8px; height:8px; border-radius:3px; background:var(--color-surface); border:1.5px solid var(--mt-evt-outline, var(--mt-evt, var(--color-rule-emphasis)));}
+.dark .mt-evt-pin--ghost, [data-theme="dark"] .mt-evt-pin--ghost{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
+.mt-tlv__ghost, .mt-tlv__ghost-pin, .mt-tlv__connector,
+.mt-tlm__ghost, .mt-tlm__ghost-pin, .mt-tlm__connector{pointer-events:none;}
+/* Desktop : barre `top:9px; height:26px` (centre 22 px) — `.mt-evt` pose déjà ce placement. */
+.mt-tlv__ghost-pin{top:18px;}
+.mt-tlv__connector{position:absolute; top:21px; height:0;}
 
 /* #230 — ÉVÉNEMENT ARCHIVÉ sur la frise (BR-EVE-011 : un archivé n'est plus actif).
    Grisé, PAS masqué : il reste visible et cliquable là où le filtre de vue #307 le
@@ -345,6 +398,14 @@
 .mt-tlv__evt--archived,
 .mt-tlm__evt--archived{filter:grayscale(1); box-shadow:none; outline:1px dashed var(--color-rule-strong); outline-offset:-1px;}
 .mt-tlv__evt--archived:hover{filter:grayscale(1) brightness(1.04); box-shadow:none;}
+/* #594 — pin archivé : le contour pointillé (#230) épouse le PIN, pas la cible de
+   44 px qui l'entoure (un cadre pointillé autour du libellé se lirait comme un champ).
+   Le grisage reste porté par le bouton ; l'anneau de focus n'est pas neutralisé
+   (`:not(:focus-visible)`). */
+.mt-tlv__evt--pin.mt-tlv__evt--archived:not(:focus-visible),
+.mt-tlm__evt--pin.mt-tlm__evt--archived:not(:focus-visible){outline:none;}
+.mt-tlv__evt--archived .mt-evt-pin,
+.mt-tlm__evt--archived .mt-evt-pin{box-shadow:none; outline:1px dashed var(--color-rule-strong); outline-offset:1px;}
 
 /* #81 point 6 — libellé de secours HORS barre : rendu quand le contraste du
    titre À L'INTÉRIEUR de la barre est < 4.5:1 (fond clair + barre étroite). Posé
@@ -574,6 +635,12 @@
 .mt-tlv-side__legend{display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; font-size:13px; color:var(--color-ink-muted);}
 .mt-tlv-side__legend-item{display:flex; align-items:center; gap:9px;}
 .mt-tlv-side__legend-evt{flex:0 0 auto; width:22px; height:12px; border-radius:4px; background:var(--color-accent); box-shadow:var(--shadow-sm);}
+/* #595 — « Occurrence à venir » (maquette §A.3 du S85, valeurs exactes) et « Récurrence ».
+   Le filet de récurrence reprend le trait RENDU par la frise (`.mt-evt-connector` :
+   2 px dashed), pas le 1,5 px dotted de la maquette : une légende décrit ce qui est à
+   l'écran (DEC-S85-002). */
+.mt-tlv-side__legend-ghost{flex:0 0 auto; box-sizing:border-box; width:22px; height:12px; border-radius:4px; border:1.5px dashed var(--color-ink-faint); background:color-mix(in srgb, var(--color-ink-faint) 8%, var(--color-surface));}
+.mt-tlv-side__legend-recur{flex:0 0 auto; width:22px; height:0; border-top:2px dashed var(--color-ink-muted);}
 
 /* Pied « raccourcis » — maquette : mono 10.5px, interligne 2, filet haut
    décoratif. Texte `ink-faint` / touches `ink-muted` dans la maquette : décalé
@@ -671,8 +738,25 @@
 .mt-tlm__evt:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 .mt-tlm__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
 .mt-tlm__evt-title{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-/* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px. */
-.mt-tlm__evt-more{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:-2px; background:transparent; border:0; border-radius:var(--radius-sm); cursor:pointer; flex:0 0 auto;}
+/* #594 — ponctuel mobile : même règle que `.mt-tlv__evt--pin` (pin + libellé en encre
+   de page, cible ≥ 44 × 44 portée par le bouton lui-même). Le pseudo-élément de
+   hitbox des barres est inutile ici ET inopérant (rogné par leur `overflow:hidden`).
+   Pin à la hauteur des barres mobiles de prod (28 px), libellé `12.5px` (maquette). */
+.mt-tlm__evt--pin{height:44px; min-height:44px; min-width:44px; padding:0; gap:6px; border-radius:var(--radius-sm); background:transparent; color:var(--color-ink); box-shadow:none; overflow:visible;}
+.mt-tlm__evt--pin::before{content:none;}
+.mt-tlm__evt--pin .mt-evt-pin{height:28px;}
+.mt-tlm__evt--pin .mt-evt-pin__label{font-size:12.5px;}
+/* #595 — marques de récurrence mobiles, centrées sur la barre de la lane (le wrap des
+   événements est `top:0; bottom:0` + flex centré) : barre portrait 28 px. Déclarées
+   APRÈS `.mt-evt` (même spécificité) : elles remplacent son `top:9px; height:26px`. */
+.mt-tlm__ghost{top:calc(50% - 14px); height:28px;}
+.mt-tlm__ghost-pin{top:calc(50% - 4px);}
+.mt-tlm__connector{position:absolute; top:calc(50% - 1px); height:0;}
+/* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px.
+   Encre de PAGE pour tous les événements (barre comme pin) : le `⋯` est posé À CÔTÉ
+   de la barre, jamais dessus — l'encre calculée pour la couleur de la barre y tombait
+   à 1,07:1 (barre claire, sombre). `--color-ink` : même rendu que le pin (#594). */
+.mt-tlm__evt-more{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:-2px; background:transparent; border:0; border-radius:var(--radius-sm); color:var(--color-ink); cursor:pointer; flex:0 0 auto;}
 .mt-tlm__evt-more:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
 /* Minimap compacte (hauteur réduite vs desktop, JS Minimap inchangé). */
@@ -750,6 +834,21 @@
    pseudo `::before` (touch target PRIME sur la densité — réserve ui-design #1). */
 .mt-tlm--landscape .mt-tlm__evt{height:24px; min-height:24px; font-size:10.5px;}
 .mt-tlm--landscape .mt-tlm__evt::before{top:-10px; bottom:-10px;}
+/* #594 — pin en paysage : la lane dense (34 px) ne peut pas CONTENIR une cible de 44 px.
+   Même arbitrage que la hitbox des barres ci-dessus (−10 px ⇒ 44 px) : le bouton garde
+   44 px et déborde de 5 px de part et d'autre de la lane (centré par le wrap flex).
+   Pin à la hauteur des barres paysage (24 px). Redéclaré ici car
+   `.mt-tlm--landscape .mt-tlm__evt` (0,2,0) écrase `.mt-tlm__evt--pin` (0,1,0). */
+.mt-tlm--landscape .mt-tlm__evt--pin{height:44px; min-height:44px;}
+/* Débordement BAS recouvert sinon : la lane suivante (`position:relative`, plus loin dans
+   le DOM) se peint par-dessus le wrap absolu de la lane courante — mesuré en E2E,
+   `elementFromPoint` au bas de la cible ne rendait plus le pin (cible réelle ≈ 39 px).
+   z-index 1 : au-dessus des lanes, SOUS l'étiquette sticky (`--z-sticky`) et la ligne
+   TODAY (`--z-cursor`). */
+.mt-tlm--landscape .mt-tlm__evt-wrap--pin{z-index:1;}
+.mt-tlm--landscape .mt-tlm__evt--pin .mt-evt-pin{height:24px;}
+/* #595 — fantôme de durée à la hauteur des barres paysage (24 px), centré sur la lane. */
+.mt-tlm--landscape .mt-tlm__ghost{top:calc(50% - 12px); height:24px;}
 .mt-tlm--landscape .mt-tlm__lane-label{font-size:10px;}
 .mt-tlm--landscape .mt-tlm__group-head{padding-top:2px; padding-bottom:2px;}
 

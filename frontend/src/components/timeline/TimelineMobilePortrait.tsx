@@ -15,8 +15,17 @@ import {
   type TimelineMobileSelection,
 } from './useTimelineMobileSelection'
 import { useTimelineMobileGestures, type TimelineMobileGestures } from './useTimelineMobileGestures'
-import { statusToVar, ZOOM_LEVELS, type PositionedEvent } from './zoom'
+import { EventPinContent } from './EventPin'
+import {
+  eventKind,
+  PIN_HALF_WIDTH_PX,
+  statusToVar,
+  ZOOM_LEVELS,
+  type PositionedEvent,
+} from './zoom'
 import { windowEvents, windowLanes } from './virtualization'
+import { isRecurringSeries, NO_SERIES, windowRecurrenceMarks } from './recurrence-marks'
+import { RecurrenceMarks } from './RecurrenceMarks'
 
 /**
  * #63 — Vue Timeline mobile portrait.
@@ -265,6 +274,15 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                         >
                           {resource.title}
                         </span>
+                        {/* #595 — fantômes + connecteurs AVANT les occurrences réelles
+                            (ordre de peinture), fenêtrés sur la même bande. */}
+                        <RecurrenceMarks
+                          variant="mobile"
+                          marks={windowRecurrenceMarks(
+                            state.recurrenceByResource.get(resource.id) ?? NO_SERIES,
+                            state.horizontalBand,
+                          )}
+                        />
                         {laneEvents.map((event) => {
                           const color = event.color || 'var(--color-accent)'
                           // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
@@ -277,17 +295,29 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                           const ink = event.color
                             ? eventInkColor(event.color, archived)
                             : 'var(--color-accent-ink)'
+                          // #594 — ponctuel = pin + libellé (même règle que desktop,
+                          // corps partagé `EventPinContent`). Le wrap est centré sur la
+                          // date (`left − 5`), le bouton épouse pin + libellé (44 px
+                          // de haut, CSS `.mt-tlm__evt--pin`) ; le `⋯` reste à côté.
+                          const pin = eventKind(event) === 'single'
                           return (
                             <div
                               key={event.id}
-                              className="mt-tlm__evt-wrap"
-                              style={{ left: `${event.leftPx}px` }}
+                              className={cn('mt-tlm__evt-wrap', pin && 'mt-tlm__evt-wrap--pin')}
+                              style={{
+                                left: `${pin ? event.leftPx - PIN_HALF_WIDTH_PX : event.leftPx}px`,
+                              }}
                             >
                               <button
                                 type="button"
-                                className={cn('mt-tlm__evt', archived && 'mt-tlm__evt--archived')}
+                                className={cn(
+                                  'mt-tlm__evt',
+                                  pin && 'mt-tlm__evt--pin',
+                                  archived && 'mt-tlm__evt--archived',
+                                )}
                                 data-testid="timeline-event"
                                 data-event-title={event.title}
+                                data-event-kind={pin ? 'single' : 'duration'}
                                 data-archived={archived ? 'true' : undefined}
                                 aria-label={buildEventAriaLabel(event, locale, t)}
                                 onClick={gestures.onEvtClick(event)}
@@ -295,22 +325,44 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                 onPointerMove={gestures.onEvtPointerMove}
                                 onPointerUp={gestures.clearLongPress}
                                 onPointerCancel={gestures.clearLongPress}
-                                style={{
-                                  width: `${event.widthPx}px`,
-                                  background: color,
-                                  color: ink,
-                                  ['--mt-evt-status' as string]: statusToVar(event.status),
-                                }}
+                                style={
+                                  pin
+                                    ? { ['--mt-evt' as string]: color }
+                                    : {
+                                        width: `${event.widthPx}px`,
+                                        background: color,
+                                        color: ink,
+                                        ['--mt-evt-status' as string]: statusToVar(event.status),
+                                      }
+                                }
                               >
-                                {/* #230 — `.mt-evt--archived` (opacity .45) réutilisée
-                                    sur le seul élément DÉCORATIF : sur la barre elle
-                                    ferait passer le titre sous AA (décision #307). */}
-                                <span
-                                  className={cn('mt-tlm__evt-dot', archived && 'mt-evt--archived')}
-                                  style={{ background: statusToVar(event.status) }}
-                                  aria-hidden="true"
-                                />
-                                <span className="mt-tlm__evt-title">{event.title}</span>
+                                {pin ? (
+                                  <EventPinContent
+                                    title={event.title}
+                                    recurring={isRecurringSeries(event)}
+                                  />
+                                ) : (
+                                  <>
+                                    {/* #230 — `.mt-evt--archived` (opacity .45) réutilisée
+                                        sur le seul élément DÉCORATIF : sur la barre elle
+                                        ferait passer le titre sous AA (décision #307). */}
+                                    <span
+                                      className={cn(
+                                        'mt-tlm__evt-dot',
+                                        archived && 'mt-evt--archived',
+                                      )}
+                                      style={{ background: statusToVar(event.status) }}
+                                      aria-hidden="true"
+                                    />
+                                    {/* #595 — glyphe de série (décoratif, cf. `EventPill`). */}
+                                    {isRecurringSeries(event) && (
+                                      <span className="mt-evt-recur" aria-hidden="true">
+                                        ↻
+                                      </span>
+                                    )}
+                                    <span className="mt-tlm__evt-title">{event.title}</span>
+                                  </>
+                                )}
                               </button>
                               <button
                                 type="button"
@@ -318,7 +370,8 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                 onClick={() => setActionTarget(event)}
                                 aria-label={t('dashboard.timeline.actions.label')}
                                 data-testid="timeline-event-more"
-                                style={{ color: ink }}
+                                // Pas d'encre inline : le `⋯` est sur le fond de lane,
+                                // jamais sur la barre → encre de page (CSS `.mt-tlm__evt-more`).
                               >
                                 <MoreHorizontal size={16} strokeWidth={2} aria-hidden="true" />
                               </button>

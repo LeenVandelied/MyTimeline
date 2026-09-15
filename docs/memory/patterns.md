@@ -884,3 +884,9 @@ Motif : `git worktree add --detach <scratch>/base <sha>` ; lien symbolique vers 
 
 ## PAT-S90-009 — Prouver au navigateur ce que jsdom ne mesure pas : spec-sonde jetable du lead
 Motif : `frontend/e2e/zz-lead-s<N>-*.spec.ts` non committée, supprimée dans la même commande qui la joue (le test de budget rate-limit recense les specs) ; `test.use({ storageState })` ; porte `page.route` pour figer l'état transitoire ; mesures `boundingBox` / `getComputedStyle` / `scrollWidth` loggées et captures clair/sombre. Au S90 : lanes 46 px, 0 décalage à la bascule, mouvement réduit 1e-05 s, assertion vacante démontrée (178 px / 343 px). (Sprint 90)
+
+## PAT-S91-001 — Prouver l'ordre de peinture d'une marque décorative : forcer `pointer-events:auto` pendant le hit-test
+Relever d'abord `getComputedStyle(el).pointerEvents === 'none'` sur toutes les marques (preuve de non-captation du clic), puis poser `pointer-events:auto !important` en ligne, faire les `elementFromPoint` (au centre de chaque occurrence réelle et à chaque croisement marque × occurrence), restaurer dans un `finally`. Garder des gardes anti-vacuité (points sondés, croisements > 0). Armement : `z-index` élevé sur les marques → la spec doit rougir sur l'assertion d'ordre. Référence : `frontend/e2e/sprint-91-recurrence-marks.spec.ts` (`probeLane`). (Sprint 91 #595)
+
+## PAT-S91-002 — Contrôle négatif sans `stash` ni `checkout` en worktree partagé
+Neutraliser le correctif directement dans le code (retour anticipé, `z-index` forcé), rejouer la spec et constater l'échec sur l'assertion ATTENDUE, restaurer par copie et prouver la restauration par `shasum` avant/après. Au S91 : #676 (`null` réintroduit), #595 (`return null`), correctif de review (`z-index:50`). (Sprint 91)

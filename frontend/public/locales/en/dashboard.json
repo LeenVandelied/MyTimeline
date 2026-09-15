@@ -133,7 +133,9 @@
       "categoriesHint": "Each button shows or hides its category on the timeline.",
       "filterLabel": "{category}, {count, plural, one {# event} other {# events}}",
       "legend": "Legend",
-      "legendEvent": "Event"
+      "legendEvent": "Event",
+      "legendGhost": "Upcoming occurrence",
+      "legendRecurrence": "Recurrence"
     },
     "groupHead": {
       "label": "{category}, {count, plural, one {# product} other {# products}}"

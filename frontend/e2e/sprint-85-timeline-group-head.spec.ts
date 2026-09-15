@@ -178,13 +178,32 @@ const VEHICLE_EVENTS = SMALL.slice(0, 2).flatMap((p) =>
   p.events.map((e) => ({ id: e.id, title: e.title })),
 )
 
-/** `x` rendu + largeur temporelle (`style.width` = `widthPx`) des pastilles de Véhicules. */
+/** #594 — demi-largeur du pin (`PIN_HALF_WIDTH_PX`) et trait d'un ponctuel replié (`SUMMARY_PIN_WIDTH_PX`). */
+const PIN_HALF_WIDTH_PX = 5
+const SUMMARY_PIN_WIDTH_PX = 6
+
+/**
+ * Géométrie ATTENDUE du trait de résumé, lue sur la pastille dépliée de chaque
+ * événement de Véhicules : `x` écran + largeur.
+ *  - Durée : `x` rendu de la barre + largeur temporelle (`style.width` = `widthPx`).
+ *  - #594 — Ponctuel : la pastille est un PIN centré sur sa date (bouton à
+ *    `x − 5`, sans largeur posée : `widthPx` y est une emprise réservée au libellé,
+ *    pas une durée). Son trait fait 6 px CENTRÉ sur la même date (maquette §C
+ *    « ponctuel : 6px ») : attendu `x = bord du pin + 5 − 3`, largeur 6.
+ */
 async function pillGeometry(page: Page, ids?: string[]) {
   const out = new Map<string, { x: number; widthPx: number }>()
   for (const e of VEHICLE_EVENTS) {
     if (ids && !ids.includes(e.id)) continue
     const p = pill(page, e.title)
     const b = await box(p)
+    if ((await p.getAttribute('data-event-kind')) === 'single') {
+      out.set(e.id, {
+        x: b.x + PIN_HALF_WIDTH_PX - SUMMARY_PIN_WIDTH_PX / 2,
+        widthPx: SUMMARY_PIN_WIDTH_PX,
+      })
+      continue
+    }
     const widthPx = await p.evaluate((el) => parseFloat((el as HTMLElement).style.width))
     out.set(e.id, { x: b.x, widthPx })
   }
