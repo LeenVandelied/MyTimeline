@@ -6639,7 +6639,13 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 92 (mergé)
 **À confirmer au démarrage :** surface des archivés (route ou filtre) ; libellé du compteur #695 ; IDOR sur la native de restauration ; BR-PRO-007 (Archived n'est plus définitif).
-**Status :** Planifié
+**Démarrage (2026-09-15) :** S92 soldé (PR #710 fusionnée, `c54d5b39` = `origin/dev`). Le plan S93→S97 (`27d72439`) ne vivait que sur la branche locale `claude/sprint-93-start-933159` (aucun worktree attaché, aucune session concurrente) → repris par cherry-pick (`f56f8f24`). Travail sur la branche de worktree `claude/sprint-93-start-54837d`, PR depuis elle (convention S85). `frontend/node_modules` présent (pas de symlink posé).
+**Arbitrages rendus (dev, 2026-09-15) :**
+  - #711 — surface = **3e onglet « Archivés »** sur `/products` (à côté de Produits | Catégories), pas de route dédiée ni de filtre.
+  - #711 — désarchivage **avec dialog de confirmation** puis toast (contrairement au désarchivage d'événement, direct).
+  - #695 — libellé **actifs + « N archivés »** (ex. « 2 produits · 1 archivé »), pas de total unique.
+**Prémisses vérifiées au démarrage :** onglets `Tabs` DS dans `app/[locale]/(app)/products/page.tsx` (état local `products|categories`) ; désarchivage événement = bouton `outline` `ArchiveRestore` sans confirmation (`ProductDetailView.tsx:480-492`) ; `useArchiveProduct.ts` JSDoc affirme « `categories.all` ne porte pas de compteur » (deviendra faux avec #695) ; PIT-S79-006 (natif ignore `@SQLRestriction`) et PIT-S92-004 (invalidation) directement applicables ; aucun conteneur e2e MyTimeline actif.
+**Status :** En cours
 
 ### Sprint 94 — 2026-09-15 (PLANIFIÉ — cohésion 1.00, Frise : clavier, plein écran, mobile)
 **Objectif :** Les raccourcis n'agissent plus derrière un formulaire ; l'édition marche en plein écran ; aucun événement caché sous la colonne sticky mobile
