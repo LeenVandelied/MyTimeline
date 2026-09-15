@@ -31,8 +31,24 @@ vi.mock('@/hooks/useUpdateProduct', () => ({
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }))
+// #605 — archivage (soft delete #50) : mutation mockée, on assert l'appel et la suite.
+// PIT-S92-004 — retrait du cache + invalidation couverts par `useArchiveProduct.test.tsx`.
+const archiveMutateAsync = vi.hoisted(() => vi.fn())
+const useArchiveProductSpy = vi.hoisted(() => vi.fn())
+vi.mock('@/hooks/useArchiveProduct', () => ({
+  useArchiveProduct: (...args: unknown[]) => {
+    useArchiveProductSpy(...args)
+    return { mutateAsync: archiveMutateAsync, isPending: false }
+  },
+}))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+}))
+// #621 — confirmation de création par toast (appel asserté, rendu couvert par `ui/toaster`).
+const toastSuccessMock = vi.hoisted(() => vi.fn())
+vi.mock('react-hot-toast', () => ({
+  default: { success: toastSuccessMock, error: vi.fn() },
+  toast: { success: toastSuccessMock, error: vi.fn() },
 }))
 
 /**
@@ -130,6 +146,96 @@ describe('ProductDrawer', () => {
       expect(createMutateAsync).toHaveBeenCalledWith({ name: 'Ma voiture', category: CAT_A }),
     )
     await waitFor(() => expect(onSuccess).toHaveBeenCalled())
+  })
+
+  it('#621 — création réussie : toast de confirmation', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockResolvedValue({})
+    render(<ProductDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(
+      screen.getByPlaceholderText('products.drawer.fields.namePlaceholder'),
+      'Ma moto',
+    )
+    await selectCategory(user, 'Véhicules')
+    await user.click(screen.getByText('products.drawer.actions.create'))
+
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productCreated'),
+    )
+  })
+
+  it('#621 — création en échec (409) : aucun toast de succès', async () => {
+    const user = userEvent.setup()
+    createMutateAsync.mockRejectedValue({ response: { status: 409 } })
+    render(<ProductDrawer open onOpenChange={noop} mode="create" />)
+
+    await user.type(
+      screen.getByPlaceholderText('products.drawer.fields.namePlaceholder'),
+      'Doublon',
+    )
+    await selectCategory(user, 'Véhicules')
+    await user.click(screen.getByText('products.drawer.actions.create'))
+
+    await waitFor(() => expect(createMutateAsync).toHaveBeenCalled())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('#621 — édition : pas de toast de création (hors périmètre)', async () => {
+    const user = userEvent.setup()
+    updateMutateAsync.mockResolvedValue({})
+    const product: Product = {
+      id: 'p2',
+      name: 'Avant',
+      color: null,
+      category: { id: CAT_A, name: 'Véhicules', color: '#112233' },
+      events: [],
+    }
+    render(<ProductDrawer open onOpenChange={noop} mode="edit" product={product} />)
+
+    const nameInput = screen.getByPlaceholderText('products.drawer.fields.namePlaceholder')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Après')
+    await user.click(screen.getByText('products.drawer.actions.save'))
+
+    await waitFor(() => expect(updateMutateAsync).toHaveBeenCalled())
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('#605 — édition : « Archiver » (jamais « Supprimer »), confirmation archiver, toast', async () => {
+    const user = userEvent.setup()
+    archiveMutateAsync.mockResolvedValue(undefined)
+    const onDeleted = vi.fn()
+    const product: Product = {
+      id: 'p3',
+      name: 'À archiver',
+      color: null,
+      category: { id: CAT_A, name: 'Véhicules', color: '#112233' },
+      events: [],
+    }
+    render(
+      <ProductDrawer
+        open
+        onOpenChange={noop}
+        mode="edit"
+        product={product}
+        onDeleted={onDeleted}
+      />,
+    )
+
+    const archive = screen.getByTestId('product-drawer-archive')
+    expect(archive).toHaveTextContent(/^products\.drawer\.actions\.archive$/)
+    await user.click(archive)
+    const confirm = await screen.findByTestId('delete-confirm-button')
+    expect(confirm).toHaveTextContent(/^common\.deleteDialog\.product\.confirm$/)
+    await user.click(confirm)
+
+    await waitFor(() => expect(archiveMutateAsync).toHaveBeenCalledWith({ productId: 'p3' }))
+    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1')
+    await waitFor(() =>
+      expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived'),
+    )
+    expect(onDeleted).toHaveBeenCalled()
   })
 
   it('rejette un nom vide (Zod min(1), pas de POST)', async () => {

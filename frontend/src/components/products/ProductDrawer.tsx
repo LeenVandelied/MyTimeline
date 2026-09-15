@@ -4,7 +4,8 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { Package, Tag, Calendar, Trash2 } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { Archive, Package, Tag, Calendar } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -39,7 +40,7 @@ import { ProductSparkline } from './ProductSparkline'
 import { useCategories } from '@/hooks/useCategories'
 import { useCreateProduct } from '@/hooks/useCreateProduct'
 import { useUpdateProduct } from '@/hooks/useUpdateProduct'
-import { deleteProduct } from '@/services/productService'
+import { useArchiveProduct } from '@/hooks/useArchiveProduct'
 import { useAuth } from '@/hooks/useAuth'
 import type { Product, ProductCreate, ProductUpdate } from '@/types/product'
 import { productCreateSchema, productUpdateSchema } from '@/types/product'
@@ -79,7 +80,7 @@ export interface ProductDrawerProps {
   product?: Product
   /** Callback post-succès (création ou édition), ex. refetch parent. */
   onSuccess?: () => void
-  /** Callback post-suppression (mode edit) si le produit a été supprimé. */
+  /** Callback post-archivage (mode edit) si le produit a été archivé (soft delete #50). */
   onDeleted?: () => void
   /**
    * Relayé tel quel à `DialogContent` (Radix) : appelé quand le drawer rend le focus
@@ -115,6 +116,7 @@ export function ProductDrawer({
   onCloseAutoFocus,
 }: ProductDrawerProps) {
   const t = useTranslations('products.drawer')
+  const tToast = useTranslations('common.toast')
   const { user } = useAuth()
   const userId = user?.id
 
@@ -126,6 +128,7 @@ export function ProductDrawer({
 
   const createMutation = useCreateProduct(userId)
   const updateMutation = useUpdateProduct(userId)
+  const archiveMutation = useArchiveProduct(userId)
 
   const [colorOverride, setColorOverride] = React.useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
@@ -217,6 +220,8 @@ export function ProductDrawer({
         }
         productCreateSchema.parse(payload)
         await createMutation.mutateAsync(payload)
+        // #621 — confirmation de CRÉATION uniquement (l'édition ne relève pas du périmètre).
+        toast.success(tToast('productCreated'))
       }
       onSuccess?.()
       onOpenChange(false)
@@ -229,11 +234,14 @@ export function ProductDrawer({
     }
   }
 
-  // Suppression déléguée à DeleteConfirmDialog (#65), variante `product`.
-  // L'erreur DOIT rejeter pour que le dialog l'affiche inline (pitfall #65).
+  // #605 — ARCHIVAGE (soft delete #50, BR-PRO-007) délégué à DeleteConfirmDialog (#65),
+  // variante `product`. L'erreur DOIT rejeter pour que le dialog l'affiche inline
+  // (pitfall #65) ; le toast ne part qu'après la réponse serveur. PIT-S92-004 — la mutation
+  // retire le produit du cache de la liste et invalide `products.all`.
   const handleDeleteConfirm = async () => {
     if (!userId || !product) throw new Error('userId/produit manquant')
-    await deleteProduct(userId, product.id)
+    await archiveMutation.mutateAsync({ productId: product.id })
+    toast.success(tToast('productArchived'))
     setDeleteOpen(false)
     onDeleted?.()
     onOpenChange(false)
@@ -422,9 +430,10 @@ export function ProductDrawer({
                     className="text-destructive"
                     onClick={() => setDeleteOpen(true)}
                     disabled={submitting}
+                    data-testid="product-drawer-archive"
                   >
-                    <Trash2 className="size-4" aria-hidden="true" />
-                    {t('actions.delete')}
+                    <Archive className="size-4" aria-hidden="true" />
+                    {t('actions.archive')}
                   </Button>
                 ) : (
                   <span />
@@ -455,7 +464,7 @@ export function ProductDrawer({
         </DialogContent>
       </Dialog>
 
-      {/* Suppression produit (mode édition) — réutilise DeleteConfirmDialog #65. */}
+      {/* Archivage produit (mode édition, soft delete #50) — DeleteConfirmDialog #65. */}
       {isEdit && product && (
         <DeleteConfirmDialog
           open={deleteOpen}

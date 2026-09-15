@@ -108,7 +108,8 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={openCreateEvent}
+                // #605 — enveloppé : le MouseEvent ne doit pas devenir `options`.
+                onClick={() => openCreateEvent()}
                 data-testid="dashboard-compact-agenda-empty-cta"
               >
                 {t('emptyCta')}

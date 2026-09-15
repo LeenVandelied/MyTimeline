@@ -76,11 +76,15 @@ export interface UseEventEditConflict {
 
 /**
  * @param eventId  id de l'event édité (le PATCH cible `/events/{eventId}`).
- * @param onDone   appelé après un succès (fermer le dialog d'édition du parent).
+ * @param onDone   appelé à la sortie du flux (fermer le dialog d'édition du parent).
+ *                 #621 — reçoit les valeurs ENREGISTRÉES après un PATCH réussi (le parent
+ *                 confirme alors par un toast) ; appelé SANS argument quand l'utilisateur
+ *                 abandonne ses modifications (`onReload` / `onTakeServer`) : rien n'a été
+ *                 enregistré, rien ne doit être confirmé.
  */
 export function useEventEditConflict(
   eventId: string | undefined,
-  onDone?: () => void,
+  onDone?: (saved?: EventEditFormValues) => void,
 ): UseEventEditConflict {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -117,19 +121,30 @@ export function useEventEditConflict(
    */
   const runSubmit = useCallback(
     async (data: EventEditFormValues, fromKeepMine: boolean) => {
+      // Garde `user?.id` coherente avec le reste du flux (`invalidateEvents`) : pas de
+      // PATCH sans utilisateur authentifie ni event cible. #621 (revue) — la garde ne doit
+      // PAS se solder en succes : avant, `invalidateEvents` + `onDone(data)` s'executaient
+      // quand meme, et le parent affichait « Événement modifié » sans PATCH envoye (session
+      // expiree pendant l'edition). Echec = etat `error` (message `event-form-error` du
+      // form, cle generique existante), ni invalidation ni `onDone`.
+      if (!eventId || !user?.id) {
+        setSubmitState('error')
+        setKeepMineAttempts(0)
+        console.error(
+          "Erreur lors de la mise à jour de l'événement : aucun PATCH envoyé (utilisateur ou événement absent)",
+        )
+        return
+      }
       setSubmitState('submitting')
       try {
-        // Garde `user?.id` coherente avec le reste du flux (`invalidateEvents`) :
-        // pas de PATCH sans utilisateur authentifie.
-        if (eventId && user?.id) {
-          await updateEvent(eventId, data)
-        }
+        await updateEvent(eventId, data)
         invalidateEvents()
         setConflict(null)
         setSubmitState('idle')
         // Succes : l'episode de contention est clos, le plafond repart de zero.
         setKeepMineAttempts(0)
-        onDone?.()
+        // #621 — valeurs enregistrées transmises : le parent confirme par un toast.
+        onDone?.(data)
       } catch (error) {
         const status = httpStatusOf(error)
         if (status === 409) {

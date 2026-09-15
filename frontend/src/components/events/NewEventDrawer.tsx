@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import toast from 'react-hot-toast'
 
 import {
   Select,
@@ -58,6 +59,14 @@ export interface NewEventDrawerProps {
   onKeyboardShow?: () => void
   /** #79 — Transition inverse (clavier refermé). */
   onKeyboardHide?: () => void
+  /**
+   * #605 — Produit présélectionné (ouverture depuis le détail produit). Lu au MONTAGE
+   * seulement (le shell monte le drawer conditionnellement, une instance par ouverture).
+   * Un id absent de la liste chargée (produit archivé, id périmé) n'est PAS retenu : le
+   * sélecteur reste vide et la garde BR-EVE-002 s'applique. Pendant le chargement de la
+   * liste, l'id est conservé et devient effectif dès que le produit apparaît.
+   */
+  initialProductId?: string
 }
 
 /** Date du jour en `YYYY-MM-DD` LOCAL. `toISOString()` serait en UTC → décalerait
@@ -74,6 +83,7 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
   onClose,
   onKeyboardShow,
   onKeyboardHide,
+  initialProductId,
 }) => {
   const t = useTranslations('shell.createDrawer')
   const { user } = useAuth()
@@ -81,34 +91,44 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
   const productsQuery = useProductsWithEvents(user?.id)
   const products = useMemo(() => productsQuery.data ?? [], [productsQuery.data])
 
-  const [productId, setProductId] = useState<string>('')
+  const [productId, setProductId] = useState<string>(initialProductId ?? '')
   const [productError, setProductError] = useState(false)
   /** #617 — produit choisi, source de la catégorie affichée (DEC-S86-001). */
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === productId) ?? null,
     [products, productId],
   )
+  /**
+   * #605 — id RETENU : seulement s'il désigne un produit de la liste chargée. Un
+   * prérempli inconnu (archivé, périmé) ne part jamais au backend (404 évité) et ne
+   * laisse pas le `Select` Radix sur une valeur sans option.
+   */
+  const effectiveProductId = selectedProduct?.id ?? ''
 
   const createEvent = useCreateEvent()
+  const tToast = useTranslations('common.toast')
 
   const handleSubmit = useCallback(
     async (values: EventEditFormValues) => {
       // BR-EVE-002 : `productId` requis. Gardé ICI (hors schéma du formulaire) → un
       // submit sans produit ne part PAS en 400 backend, l'erreur est inline.
-      if (!productId) {
+      if (!effectiveProductId) {
         setProductError(true)
         return
       }
       setProductError(false)
       try {
-        await createEvent.mutateAsync(toEventCreationPayload(values, productId))
+        await createEvent.mutateAsync(toEventCreationPayload(values, effectiveProductId))
+        // #621 — confirmation APRÈS la réponse serveur : le drawer se referme, le toast
+        // (hôte `AppToaster`, hors du drawer) reste la seule trace du succès.
+        toast.success(tToast('eventCreated'))
         onClose()
       } catch {
         // L'état d'erreur est porté par la mutation (`isError`) → `submitState='error'`
         // affiche le message inline du formulaire. Le service a déjà loggé (safeErrorMessage).
       }
     },
-    [createEvent, onClose, productId],
+    [createEvent, onClose, effectiveProductId, tToast],
   )
 
   if (!open) return null
@@ -192,7 +212,7 @@ export const NewEventDrawer: React.FC<NewEventDrawerProps> = ({
                 {t('product')}
               </label>
               <Select
-                value={productId}
+                value={effectiveProductId}
                 onValueChange={(value) => {
                   setProductId(value)
                   setProductError(false)

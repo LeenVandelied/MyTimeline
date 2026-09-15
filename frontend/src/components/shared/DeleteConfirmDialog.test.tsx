@@ -75,6 +75,31 @@ describe('DeleteConfirmDialog', () => {
     expect(screen.getByText('common.deleteDialog.product.title')).toBeInTheDocument()
   })
 
+  // #605 — le DELETE produit est un soft delete : sa confirmation porte ses PROPRES clés
+  // (« Archiver »), les variantes à suppression physique gardent la clé partagée.
+  it('variante product : bouton de confirmation et libellé d’attente propres (archiver)', async () => {
+    const user = userEvent.setup()
+    let resolve: () => void = () => {}
+    const onConfirm = vi.fn(() => new Promise<void>((r) => (resolve = r)))
+    render(<DeleteConfirmDialog open variant="product" onOpenChange={noop} onConfirm={onConfirm} />)
+    const confirmBtn = screen.getByTestId('delete-confirm-button')
+    expect(confirmBtn).toHaveTextContent(/^common\.deleteDialog\.product\.confirm$/)
+    await user.click(confirmBtn)
+    expect(await screen.findByText('common.deleteDialog.product.confirming')).toBeInTheDocument()
+    expect(screen.queryByText('common.deleteDialog.deleting')).not.toBeInTheDocument()
+    resolve()
+  })
+
+  it.each(['event', 'category'] as const)(
+    'variante %s : garde la clé partagée « confirm » (suppression physique)',
+    (variant) => {
+      render(<DeleteConfirmDialog open variant={variant} onOpenChange={noop} onConfirm={noop} />)
+      expect(screen.getByTestId('delete-confirm-button')).toHaveTextContent(
+        /^common\.deleteDialog\.confirm$/,
+      )
+    },
+  )
+
   it('variante category sans produits liés : pas de select de réassignation', () => {
     render(
       <DeleteConfirmDialog
@@ -170,10 +195,12 @@ describe('DeleteConfirmDialog', () => {
     let resolveConfirm: () => void = () => {}
     const onConfirm = vi.fn(() => new Promise<void>((resolve) => (resolveConfirm = resolve)))
     const onOpenChange = vi.fn()
+    // #605 — variante `event` : elle porte les clés PARTAGÉES `confirm` / `deleting` ;
+    // l'attente propre à `product` (archiver) est couverte plus haut.
     render(
       <DeleteConfirmDialog
         open
-        variant="product"
+        variant="event"
         onOpenChange={onOpenChange}
         onConfirm={onConfirm}
       />,
@@ -349,7 +376,7 @@ describe('DeleteConfirmDialog', () => {
       render(
         <DeleteConfirmDialog open variant="product" onOpenChange={noop} onConfirm={onConfirm} />,
       )
-      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.product.confirm' }))
       expect(await screen.findByRole('alert')).toHaveTextContent(
         'common.deleteDialog.errors.conflict',
       )
@@ -369,7 +396,7 @@ describe('DeleteConfirmDialog', () => {
         onConfirm={onConfirm}
       />,
     )
-    await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+    await user.click(screen.getByRole('button', { name: 'common.deleteDialog.product.confirm' }))
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
   })
 })

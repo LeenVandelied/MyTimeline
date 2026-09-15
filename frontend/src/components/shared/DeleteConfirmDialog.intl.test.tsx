@@ -84,10 +84,19 @@ describe('DeleteConfirmDialog — intégration next-intl réelle (#441)', () => 
 
   it('variante product : titre et description TRADUITS, aucune IntlError', () => {
     const errors = renderWithRealIntl({ variant: 'product' })
-    expect(screen.getByText('Supprimer ce produit ?')).toBeInTheDocument()
+    expect(screen.getByText('Archiver ce produit ?')).toBeInTheDocument()
     expect(
       screen.getByText("Le produit sera archivé et n'apparaîtra plus dans vos listes."),
     ).toBeInTheDocument()
+    expect(errors).toEqual([])
+  })
+
+  // #605 — le DELETE produit est un soft delete : ni le titre ni le bouton ne disent
+  // « supprimer ». Les variantes à suppression physique gardent « Supprimer » (cas suivant).
+  it('variante product : bouton « Archiver », aucun « Supprimer » dans le dialog', () => {
+    const errors = renderWithRealIntl({ variant: 'product' })
+    expect(screen.getByTestId('delete-confirm-button')).toHaveTextContent(/^Archiver$/)
+    expect(screen.getByRole('dialog').textContent).not.toMatch(/supprim/i)
     expect(errors).toEqual([])
   })
 

@@ -112,7 +112,7 @@
       "create": "Crear",
       "save": "Guardar",
       "cancel": "Cancelar",
-      "delete": "Eliminar",
+      "archive": "Archivar",
       "submitting": "Guardando"
     },
     "errors": {
@@ -125,7 +125,7 @@
   },
   "list": {
     "title": "Productos",
-    "subtitle": "Tus productos y su actividad reciente.",
+    "subtitle": "Tus productos y sus próximos vencimientos.",
     "newProduct": "Nuevo producto",
     "search": "Buscar un producto",
     "searchPlaceholder": "Filtrar por nombre…",
@@ -138,20 +138,19 @@
     "error": "No se pudieron cargar los productos.",
     "count": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
     "columns": {
-      "name": "Nombre",
-      "category": "Categoría",
+      "product": "Producto",
+      "nextEvent": "Próximo evento",
       "activity": "Actividad (90 d)",
-      "lastActivity": "Última actividad",
+      "events": "Eventos",
       "actions": "Acciones"
     },
     "noCategory": "Sin categoría",
-    "noActivity": "Sin actividad",
+    "noUpcoming": "Sin vencimientos próximos",
+    "eventsCount": "{count, plural, =0 {ningún evento} one {# evento} other {# eventos}}",
     "sort": {
+      "nextEvent": "Próximo evento",
       "nameAsc": "Nombre (A→Z)",
-      "nameDesc": "Nombre (Z→A)",
-      "categoryAsc": "Categoría (A→Z)",
-      "lastActivityDesc": "Actividad reciente",
-      "lastActivityAsc": "Actividad antigua"
+      "nameDesc": "Nombre (Z→A)"
     },
     "actions": {
       "edit": "Editar",
@@ -164,8 +163,9 @@
     "back": "Volver a los productos",
     "notFound": "Producto no encontrado o archivado.",
     "loading": "Cargando producto…",
+    "newEvent": "Nuevo evento",
     "edit": "Editar",
-    "delete": "Eliminar",
+    "archive": "Archivar",
     "timelineTitle": "Cronología del producto",
     "timelineEmpty": "No hay eventos para mostrar de este producto.",
     "historyTitle": "Historial de eventos",

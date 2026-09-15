@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
+import toast from 'react-hot-toast'
 import { Tag, FileText, Palette, Trash2, AlertTriangle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -112,6 +113,7 @@ export function CategoryDrawer({
 }: CategoryDrawerProps) {
   const t = useTranslations('categories.drawer')
   const tValidation = useTranslations('categories.validation')
+  const tToast = useTranslations('common.toast')
 
   const isEdit = mode === 'edit' && Boolean(category)
   const isSystem = isEdit && category?.system === true
@@ -198,6 +200,8 @@ export function CategoryDrawer({
           description: values.description ? values.description : undefined,
         }
         await createMutation.mutateAsync(payload)
+        // #621 — confirmation de CRÉATION uniquement (l'édition ne relève pas du périmètre).
+        toast.success(tToast('categoryCreated'))
       }
       onSuccess?.()
       onOpenChange(false)

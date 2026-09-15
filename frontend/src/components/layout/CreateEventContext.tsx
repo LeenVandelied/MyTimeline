@@ -16,15 +16,48 @@ import React, { createContext, useContext } from 'react'
  * consommateur mémoïsé n'est pas re-rendu quand le shell change de thème ou de
  * pathname.
  *
+ * #605 — PRÉREMPLI : `open({ productId })` ouvre le drawer avec ce produit déjà
+ * choisi (détail produit, handoff §5). Sans option, le drawer s'ouvre vierge.
+ *
+ * PIÈGE DU `onClick={open}` : passée telle quelle en gestionnaire, la fonction
+ * reçoit l'événement souris comme `options`. Deux gardes, volontairement cumulées :
+ *   - au typage, `CreateEventOptions` n'a aucune propriété commune avec un
+ *     `MouseEvent` → `tsc` refuse `onClick={open}` (les appelants enveloppent :
+ *     `() => open()`) ;
+ *   - à l'exécution, le shell normalise l'argument par `toCreateEventPrefill`, qui
+ *     n'accepte qu'un objet SIMPLE portant un `productId` chaîne non vide. Un appel
+ *     non typé (JS, cast, test) retombe sur un drawer vierge, jamais sur un produit
+ *     `undefined` ou un objet événement stocké dans l'état.
+ *
  * Hors provider (tests unitaires, montage hors shell), `useOpenCreateEvent()`
  * rend `null` : le consommateur n'affiche alors AUCUN bouton, plutôt qu'un
  * bouton inerte.
  */
-const CreateEventContext = createContext<(() => void) | null>(null)
+export interface CreateEventOptions {
+  /** Produit présélectionné dans le drawer (ignoré s'il n'est pas dans la liste chargée). */
+  productId?: string
+}
+
+export type OpenCreateEvent = (options?: CreateEventOptions) => void
+
+/**
+ * Extrait le `productId` d'un argument d'ouverture NON FIABLE. Rend `undefined` pour
+ * tout ce qui n'est pas un objet simple (`MouseEvent`, événement synthétique React,
+ * `null`, chaîne…) ou dont le `productId` n'est pas une chaîne non vide.
+ */
+export function toCreateEventPrefill(value: unknown): string | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const prototype: unknown = Object.getPrototypeOf(value)
+  if (prototype !== Object.prototype && prototype !== null) return undefined
+  const productId: unknown = (value as { productId?: unknown }).productId
+  return typeof productId === 'string' && productId.length > 0 ? productId : undefined
+}
+
+const CreateEventContext = createContext<OpenCreateEvent | null>(null)
 
 export interface CreateEventProviderProps {
   /** Ouvre le drawer de création du shell. Identité stable attendue. */
-  onOpenCreate: () => void
+  onOpenCreate: OpenCreateEvent
   children: React.ReactNode
 }
 
@@ -33,6 +66,6 @@ export function CreateEventProvider({ onOpenCreate, children }: CreateEventProvi
 }
 
 /** Fonction qui ouvre le drawer de création du shell, ou `null` hors shell. */
-export function useOpenCreateEvent(): (() => void) | null {
+export function useOpenCreateEvent(): OpenCreateEvent | null {
   return useContext(CreateEventContext)
 }

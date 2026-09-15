@@ -83,13 +83,20 @@
        · > `--z-modal` (70)     : le popover surmonte drawers, sheets, modales ;
        · < `--z-netbanner` (80) : la bannière réseau (#76) reste au-dessus de
                                   TOUT, y compris d'un popover ouvert.
+
+     `--z-toast` (78, #621) — premier consommateur : le conteneur des toasts
+     (`ui/toaster.tsx`). L'ancienne valeur 60, jamais consommée, plaçait le toast
+     SOUS `--z-modal` : une erreur `apiClient` levée pendant une saisie aurait été
+     peinte sous le drawer ouvert (452px à droite = là où le toast s'affiche).
+     ]75, 80[ : au-dessus des modales ET des overlays portalisés, sous la bannière
+     réseau. Le toast est `pointer-events:none`, il ne bloque rien de ce qu'il couvre.
      ───────────────────────────────────────────────────────────────────────── */
   --z-sticky:  10; /* @kind other */
   --z-cursor:  20; /* @kind other */
   --z-popover: 50; /* popovers DANS LE FLUX (passent sous les modales) @kind other */
-  --z-toast:   60; /* @kind other */
   --z-modal:   70; /* @kind other */
   --z-popover-over-modal: 75; /* #446 overlays Radix portalisés : au-dessus des modales @kind other */
+  --z-toast:   78; /* #621 conteneur des toasts : au-dessus des modales, sous la bannière @kind other */
   --z-netbanner: 80; /* #76 bannière réseau : AU-DESSUS des sheets/modales (z-modal) @kind other */
 }
 

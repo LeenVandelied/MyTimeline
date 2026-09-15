@@ -7,8 +7,12 @@ type ToastVariant = 'info' | 'success' | 'warning' | 'danger'
 
 /**
  * Toast — notification transitoire, DS Graphite (classes `.mt-toast`).
- * Présentation seule (l'orchestration se fait via react-hot-toast côté app) :
- * bordure gauche colorée par variante + icône. `role="status"` pour l'a11y.
+ * Bordure gauche colorée par variante + icône. `role="status"` pour l'a11y.
+ *
+ * #621 — RENDU UNIQUE des toasts de l'application, via react-hot-toast : le moteur
+ * (file, durées, retrait) reste la bibliothèque, et `AppToaster` (`ui/toaster.tsx`)
+ * rend CHAQUE toast avec ce composant. Ne pas monter un second `<Toaster>` ni un
+ * rendu maison : appeler `toast.success(msg)` / `toast.error(msg)` suffit.
  */
 export interface ToastProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   variant?: ToastVariant

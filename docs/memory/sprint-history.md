@@ -6521,7 +6521,7 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
   - harmoniser le connecteur DS avec la maquette (1.5px dotted) [XS | design] → **discard** (écart délibéré, plancher de contraste #497, APPROUVÉ par le Designer)
   - empilage en rangées des événements qui se chevauchent [M | frontend] → issue **#709** (backlog)
   Bilan : 5 issues créées sans milestone (#705-#709, labels posés par project-manager, aucun `sprint-*`), 1 absorbée, 1 discard (1/7).
-**Status :** PR #704 prête — merge, fermeture des issues #676/#594/#595 et du milestone #92 au terme du `/sprint end 91` (statut définitif à solder au `/sprint start 92`)
+**Status :** Terminé — PR #704 fusionnée le 2026-09-15 (`43a7870`), issues #676/#594/#595 et milestone #92 fermés (vérifié sur GitHub au `/sprint start 92`)
 
 ### Sprint 92 — 2026-09-13 (PLANIFIÉ — cohésion 0.67, Retour d'action et échéances produit)
 **Objectif :** Un seul mécanisme de toast présent sur les surfaces métier ; « prochain événement » sur la liste produits ; détail produit avec Archiver + Nouvel événement pré-rempli
@@ -6530,8 +6530,36 @@ BUG-S89-001 → 002 · packs `pit-*` régénérés, `--check` 0.
 **Vagues :** V1 = #621 ∥ #603 | V2 = #605
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 89 (#652), Sprint 91 (#676 : `TimelineEditHost`)
-**À trancher au démarrage :** brancher ou supprimer `ui/toast.tsx` (#621) ; garder « Dernière activité » (#603) ; vocabulaire « Archiver » (#605).
-**Status :** Planifié
+**Démarrage (2026-09-15) :** S91 soldé sur GitHub ; branche `sprint/92` créée depuis `origin/dev` (`43a7870`) et poussée ; `frontend/node_modules` du worktree = symlink vers le dépôt principal (lock identique).
+**Arbitrages rendus (dev, 2026-09-15) :**
+  - #621 — **brancher** `ui/toast.tsx` comme rendu de react-hot-toast (les 15 appels existants, réglages compris, prennent le traitement DS) ; `--z-toast` consommé → #460 fermable.
+  - #603 — **retirer** « Dernière activité » : colonnes du handoff §5 (Produit · Prochain événement · mini-frise 90 j · nb d'événements), tris `lastActivity*` remplacés par « Prochain événement ».
+  - #605 — vocabulaire **« Archiver »** pour le soft delete produit ; vaudra pour #600.
+**Prémisses du plan vérifiées au démarrage :** #621 — `CategoryDrawer` n'appelle pas `toast` (commentaire :50 seulement), l'architect a raison contre l'énoncé ; 4 appelants hors `apiClient` (`ProfileSection`, `SecuritySection`, `useDeleteAccountFlow`) ; `sprint-77-theme-visual.spec.ts` masque `#_rht_toaster` (référence visuelle non concernée) ; aucune spec n'asserte un texte de toast. #603 — `nextEvent` (`dashboard/lib.ts:15`) ignore toujours la récurrence (lecture locale corrigée par #652) ; `src/lib/recurrence.ts` expose déjà `nextOccurrenceStart` / `occurrenceStart` / `seriesHorizon` (livrés S91) → à réutiliser ; clé `products.list.count` à `:139`, compte des produits ; aucune spec E2E ne cite `products-sort` ni `lastActivity`. #605 — boutons `ProductDetailView.tsx:282-301`, dialog `common.deleteDialog.product` (« Supprimer ce produit ? ») ; `useOpenCreateEvent()` sans argument confirmé.
+**Vague 1 exécutée (2026-09-15) :** #603 (`f1bf100`) ∥ #621 (`2739675`) — commits vérifiés par `show --stat` + `branch --contains`, fichiers disjoints. **Incident causé par le lead** : symlink `frontend/node_modules` posé alors que le dossier existait → `node_modules/node_modules` imbriqué, Vitest/eslint cassés pour les 2 agents ; retiré par l'agent de #603. Build de production + suite E2E complète : 405 passés, seul rouge l'armement visuel darwin connu.
+**Vague 2 exécutée :** #605 (`ec7a076`). Correction du briefing en cours de route : l'archivage produit n'est PAS restaurable (br-products §1) — le briefing suggérait « réversible ».
+**Designer :** vague 1 — #603 APPROUVÉ ; #621 : `--z-toast` 78 et position approuvés, police display à corriger, pause survol/focus arbitrée par le dev → `5c64e01`. Conséquence relevée : la carte captant le pointeur recouvrait la croix des drawers et le hamburger mobile → **arbitrage dev : décaler sous la barre** (`87dca1d`, 72 px). Vague 2 — #605 CONFORME ; Archiver reste `destructive` (tranché par le lead sur recommandation du Designer). Détail : `sprints/sprint-92/ui-design-review.md`.
+**Reviews :** batch — 0 CRITIQUE / 1 MAJEUR (toast « Événement modifié » sans PATCH, préexistant rendu visible → `fa8b102`) / 2 MINEURS (E2E archivage depuis le drawer → `bca8b20` ; `nextById` périmé à minuit → écarté). Constat préexistant : liste produits non invalidée après archivage (aucune issue). Cycle 2 sur les commits de correction : en cours. Détail : `sprints/sprint-92/review-batch.md`.
+**Tests :** Vitest 1777/1777 · tsc · format:check · next lint · build de production exit 0 · E2E suite complète contre `next build`+`next start` : **408 passés / 1 échoué / 8 sautés / 1 non exécuté** (seul rouge : `sprint-77-theme-visual:620`, armement darwin) · 8/8 tests des specs du sprint · audit `docs/memory/audits/sprint-92-test-coverage.md`.
+**Coverage-E2E :** OK — 8/12 testids cités par une spec, les 4 autres n'existent que dans des `*.test.tsx`.
+**Relecture de cycle 2 :** aucun bloquant — 1 MAJEUR plausible reclassé MINEUR par le lead (pause du toast), 2 MINEURS ; tous absorbés en clôture (voir ci-dessous). **Le reclassement sous-estimait le défaut** : pause bloquée indéfiniment, pas ~1 s (PIT-S92-008, BUG-S92-003).
+**PR :** #710 (`sprint/92` → `dev`), ouverte le 2026-09-15 ; CI 7/7 verte sur `842bd54`.
+**Clôture (`/sprint end 92`, 2026-09-15) :** PR `CLEAN`/`MERGEABLE` sur `842bd54`, `dev` inchangée (`43a7870`), contrôle de complétude vert sans `--force`, audit présent ; milestone #93 = exactement les 3 issues du label `sprint-92` (vérifié dans les deux sens), #460 hors milestone, fermée par #621. Consolidation mémoire (`6d2071f`) : PIT-S92-001 à -006, BUG-S92-001/-002, DEC-S92-001 à -004, PAT-S92-001, classés et packs régénérés (`--check` exit 0) ; complément après absorptions : PIT-S92-007/-008, BUG-S92-003, PAT-S92-002. ADR-008 amendé (`fb76813`) : `--z-toast` 78.
+**Follow-ups arbitrés (Phase 4, triage par le dev, en 3 groupes) :**
+  - Liste produits non rafraîchie après archivage (préexistant, rendu visible par #605) [XS | frontend products] → **absorbé** `ea5d02f` (`useArchiveProduct` : retrait du cache après succès + invalidation `products.all`, fiche gardée pendant l'archivage depuis le détail, E2E sans rechargement)
+  - Toast : pause par booléen, pause globale non documentée, focus perdu à la disparition (cycle 2) [XS | frontend a11y] → **absorbé** `cabacd7`
+  - Titre du test l.132 « non bloquant » devenu faux [XS | e2e] → **absorbé** `d51c6f6`
+  - ADR-008 décrit encore `--z-toast` 60 sans consommateur [XS | docs] → **absorbé** `fb76813` (lead)
+  - Restauration d'un produit archivé [M | fullstack products] → issue **#711** (backlog)
+  - Édition depuis la frise en plein écran : drawer et toast invisibles [S | frontend events] → issue **#712** (backlog)
+  - `apiClient` : messages français en dur, 400 signalé deux fois [S | frontend transversal] → issue **#713** (backlog)
+  - Recouvrement résiduel du toast (croix du `ProductDrawer` en bottom sheet mobile, haut d'un drawer ouvert) [S | frontend design] → issue **#714** (backlog)
+  - Série non bornée démarrée il y a plus de 5 ans : « aucune échéance » [XS | produit] → issue **#715** (backlog)
+  - Clés i18n `add.event(s).remove` probablement mortes [XS | frontend transversal] → issue **#716** (backlog)
+  - `nextById` périmé à cheval sur minuit (MINEUR de la review batch) → **discard** par le lead (résorbé au refetch)
+  Bilan : 4 absorbés, 6 issues créées sans milestone ni label `sprint-*` (#711-#716, labels posés par project-manager, vérifiés), 1 discard (1/11).
+**Tests finaux (lead, arbre propre `ea5d02f`) :** Vitest 139 fichiers / 1791 tests verts · tsc exit 0 · `format:check` exit 0. E2E des absorptions : job `e2e` de la CI (pile locale démontée).
+**Status :** PR #710 prête — merge, fermeture des issues #603/#605/#621/#460 et du milestone #93 au terme du `/sprint end 92` (statut définitif à solder au `/sprint start 93`)
 
 ### Matrice de conflits inter-sprints (S88-S92)
 

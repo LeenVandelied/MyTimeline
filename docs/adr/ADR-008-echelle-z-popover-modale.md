@@ -14,7 +14,7 @@ L'échelle `z` du design system (`frontend/src/styles/ds/tokens/spacing.css`) co
 | `--z-sticky` | 10 | règles/en-têtes collants de la frise (`timeline.css`) |
 | `--z-cursor` | 20 | curseur et ligne TODAY (`timeline.css`) |
 | `--z-popover` | 50 | `.mt-select__menu`, `.mt-tooltip__bubble` (`core.css:97,286`), `.mt-tlv__help-pop` (`timeline.css:316`) |
-| `--z-toast` | 60 | **aucun consommateur** (`react-hot-toast` pose son propre `z-index` en ligne) |
+| `--z-toast` | 60 | **aucun consommateur** (`react-hot-toast` pose son propre `z-index` en ligne) — *état au S63 ; voir l'amendement S92 : 78, consommé par `AppToaster`* |
 | `--z-modal` | 70 | `.mt-drawer` / `.mt-drawer__overlay` (271, 270), `.mt-sheet` (406), `.mt-actionsheet` (432), `.mt-dialog__overlay` (`core.css:293`) |
 | `--z-netbanner` | 80 | `.mt-sysbanner--sticky` (`i18n.css:122`, #76) |
 
@@ -123,11 +123,10 @@ d'un `position` sur `PopoverContent`.
   déclencheur qui vit DANS cette surface), mais cela signifie qu'aucune couche autre que
   `--z-netbanner` ne peut plus le masquer. Toute future surface qui devrait le recouvrir doit se
   placer au-dessus de 75, pas entre 70 et 75.
-- `--z-toast` (60) reste **sans consommateur** : les toasts viennent de `react-hot-toast`, dont
-  le `Toaster` pose `zIndex: 9999` en ligne (`node_modules/react-hot-toast/dist/index.js:178`,
-  vérifié). Les toasts restent donc au-dessus des popovers — le changement ne les touche pas. Si
-  un jour un toast maison remplace la librairie, il naîtrait SOUS les popovers portalisés : à
-  trancher à ce moment-là, pas avant.
+- ~~`--z-toast` (60) reste **sans consommateur**~~ — **dépassé au Sprint 92, voir l'amendement
+  ci-dessous.** Texte d'origine : les toasts venaient de `react-hot-toast`, dont le `Toaster` posait
+  `zIndex: 9999` en ligne ; un toast rendu par le design system naîtrait SOUS les popovers
+  portalisés, « à trancher à ce moment-là ».
 
 **Garde-fou exécutable**
 
@@ -171,3 +170,31 @@ pour vérifier que la garde est ARMÉE et non simplement verte (`PIT-S62-003`) :
 
 Le défaut revient intégralement quand on remet 50, sur les deux widgets et les deux surfaces :
 le token porte bien la correction.
+
+## Amendement — Sprint 92 (2026-09-15, #621, ferme #460)
+
+**Ce qui a changé.** Le « moment » prévu par la puce ci-dessus est arrivé : `ui/toast.tsx` est
+devenu le rendu unique des toasts, via la render-prop `children` du `<Toaster>` de
+`react-hot-toast` (`frontend/src/components/ui/toaster.tsx`, `AppToaster` — `DEC-S92-001`). Le
+conteneur `#_rht_toaster` consomme désormais `--z-toast`.
+
+**Valeur retenue : 78**, dans l'intervalle `]75, 80[` :
+
+- `> --z-popover-over-modal` (75) → un toast reste au-dessus d'un popover portalisé ouvert, comme
+  il l'était avec le `9999` de la librairie : aucune régression d'empilement ;
+- `> --z-modal` (70) → une confirmation ou une erreur `apiClient` ne passe plus sous un drawer ou
+  une sheet ouverts (à 60, elle y passait) ;
+- `< --z-netbanner` (80) → la bannière réseau (#76) reste au-dessus de **tout**, invariant de cet
+  ADR préservé.
+
+Valeur approuvée par la revue Designer du S92 (`docs/memory/sprints/sprint-92/ui-design-review.md`).
+
+**Conséquence d'interaction, hors échelle `z`.** Pour la pause au survol et au focus (WCAG 2.2.1,
+`DEC-S92-002`), la carte visible capte le pointeur ; le conteneur reste `pointer-events: none`.
+La carte est posée à 72 px du haut pour ne pas recouvrir les boutons de fermeture des en-têtes
+(`PIT-S92-003`). Deux recouvrements résiduels sont suivis hors de cet ADR (croix du
+`ProductDrawer` en bottom sheet mobile, haut d'un drawer ouvert).
+
+**Nouvelle règle pour toute future couche** : l'ordre complet est désormais
+`sticky 10 < cursor 20 < popover 50 < modal 70 < popover-over-modal 75 < toast 78 < netbanner 80`.
+Une surface qui devrait recouvrir un toast doit se placer à 80 ou au-dessus, pas entre 75 et 80.

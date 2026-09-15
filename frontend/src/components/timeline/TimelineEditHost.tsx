@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
+import toast from 'react-hot-toast'
 
 import { queryKeys } from '@/lib/query-keys'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
@@ -56,6 +57,7 @@ export type TimelineEditHostProps = Omit<TimelineResponsiveProps, 'onEditEvent' 
 
 export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   const t = useTranslations('products.edit')
+  const tToast = useTranslations('common.toast')
   const [editing, setEditing] = useState<PositionedEvent | null>(null)
   // Cible de suppression MOBILE (action sheet) : non nulle ⇒ dialog de confirmation ouvert.
   const [deleteTarget, setDeleteTarget] = useState<PositionedEvent | null>(null)
@@ -63,12 +65,36 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
 
   const closeEditor = useCallback(() => setEditing(null), [])
 
+  /**
+   * #621 — Sortie du flux d'édition. `saved` n'est fourni qu'après un PATCH RÉUSSI
+   * (soumission ou « garder mes modifications ») → toast de confirmation. L'abandon
+   * (« recharger » / « prendre la version serveur ») arrive sans `saved` : aucun toast.
+   * Le libellé distingue l'archivage (BR-EVE-013, bascule `archived` portée par le même
+   * PATCH) et le désarchivage d'une modification ordinaire.
+   */
+  const editingArchived = editing?.extendedProps?.archived ?? false
+  const handleEditDone = useCallback(
+    (saved?: EventEditFormValues) => {
+      if (saved) {
+        const key =
+          saved.archived && !editingArchived
+            ? 'eventArchived'
+            : !saved.archived && editingArchived
+              ? 'eventUnarchived'
+              : 'eventUpdated'
+        toast.success(tToast(key))
+      }
+      closeEditor()
+    },
+    [closeEditor, editingArchived, tToast],
+  )
+
   // INVARIANT (#review S42) : ce host DOIT être monté sous un <AuthProvider>.
   // `useEventEditConflict` appelle `useAuth()` (invalidation ciblée `products.withEvents`
   // par userId), qui LÈVE hors provider. OK aujourd'hui (dashboard + ProductDetailView
   // rendent sous AuthProvider) ; verrouillé par TimelineEditHost.test.tsx (montage sous
   // AuthProvider). Toute nouvelle page routant cette frise doit préserver l'ancêtre.
-  const conflict = useEventEditConflict(editing?.id, closeEditor)
+  const conflict = useEventEditConflict(editing?.id, handleEditDone)
 
   const defaultValues = useMemo<EventEditFormValues | null>(() => {
     if (!editing) return null

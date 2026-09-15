@@ -1,4 +1,13 @@
 {
+  "toast": {
+    "eventCreated": "Ereignis erstellt",
+    "eventUpdated": "Ereignis aktualisiert",
+    "eventArchived": "Ereignis archiviert",
+    "eventUnarchived": "Ereignis wiederhergestellt",
+    "productCreated": "Produkt erstellt",
+    "productArchived": "Produkt archiviert",
+    "categoryCreated": "Kategorie erstellt"
+  },
   "login": {
     "title": "Einloggen",
     "username": "Benutzername",
@@ -23,8 +32,10 @@
       "recurringWarning": "Dies löscht nur dieses Ereignis, nicht die Serie."
     },
     "product": {
-      "title": "Dieses Produkt löschen?",
-      "description": "Das Produkt wird archiviert und erscheint nicht mehr in Ihren Listen."
+      "title": "Dieses Produkt archivieren?",
+      "description": "Das Produkt wird archiviert und erscheint nicht mehr in Ihren Listen.",
+      "confirm": "Archivieren",
+      "confirming": "Wird archiviert"
     },
     "category": {
       "title": "Diese Kategorie löschen?",

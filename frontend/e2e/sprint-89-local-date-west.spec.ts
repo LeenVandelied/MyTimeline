@@ -104,13 +104,11 @@ test.describe('#652 — LocalDate affichée au jour civil sous America/New_York'
     await expect(dashTime).toHaveAttribute('datetime', civil)
     await expect(dashTime).toHaveText(label(civil, { day: 'numeric', month: 'short' }))
 
-    // --- Liste Produits (dernière activité) -------------------------------------
+    // --- Liste Produits (prochain événement, date ISO depuis #603) ---------------
     await gotoProducts(page)
-    const listTime = page.getByTestId(`products-row-${product.id}`).locator('time')
+    const listTime = page.getByTestId(`products-row-next-${product.id}`).locator('time')
     await expect(listTime).toHaveAttribute('datetime', civil)
-    await expect(listTime).toHaveText(
-      label(civil, { day: 'numeric', month: 'short', year: 'numeric' }),
-    )
+    await expect(listTime).toHaveText(civil)
 
     // --- Détail produit (historique) --------------------------------------------
     await page.goto(`/fr/products/${product.id}`, { waitUntil: 'domcontentloaded' })

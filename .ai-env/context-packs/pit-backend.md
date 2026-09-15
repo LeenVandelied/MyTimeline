@@ -823,6 +823,21 @@ Les 4 tests attendent une réponse RSC `next-router-prefetch: 1` ; Next.js ne pr
 Verdict APPROUVÉ à 0 finding avec des ancrages `virtualization.ts:3312`, `TimelineView.tsx:2653` sur des fichiers qui n'ont pas ce nombre de lignes : les `[OK]` étaient invérifiables. La relecture ciblée du lead a trouvé un MAJEUR dans la spec échantillonnée. Un « 0 finding » dont la moitié des points à risque sont « non vérifiés » n'est pas une preuve. (Sprint 91)
 
 
+## PIT-S92-001 — `ln -s <cible> node_modules` sur un dossier existant crée `node_modules/node_modules`, que Node résout en premier
+Au démarrage du S92 le lead a lu « (empty) » d'un `ls -d node_modules` résumé par RTK comme « absent » et posé un symlink vers le `node_modules` du dépôt principal : le dossier existait, le lien est donc parti DEDANS. La résolution Node privilégie ce `node_modules` imbriqué → versions étrangères chargées, Vitest (`eachMapping`) et eslint (`eslint-patch`) en erreur pour les 2 agents de la vague. Tester l'existence sans RTK (`test -d frontend/node_modules`) avant tout lien ; ne jamais conclure « absent » d'un `ls` résumé. (Sprint 92, lead)
+
+
+## PIT-S92-002 — Hook `warn-test-delegation` : `SKIP_DELEGATION=1` requis même pour `playwright test --list` ; `npx eslint` cassé
+Le hook intercepte toute ligne `npx playwright test`, `--list` compris : un agent briefé pour « vérifier le chargement de sa spec » est bloqué. Et `npx eslint <fichier>` échoue dans ce dépôt (config ESLint 9) : prescrire `npx next lint --file <f>`. Les deux commandes sont à écrire telles quelles dans les gabarits de briefing. (Sprint 92 #621)
+
+
+## PIT-S92-005 — Un briefing du lead peut prescrire un libellé contraire au cycle de vie métier
+Le briefing de #605 demandait une JSDoc « soft delete réversible » ; `br-products.md` §1 dit « définitif pour cette wave (pas d'endpoint de restauration) ». Rattrapé par `SendMessage` en cours de vague, avant commit. Avant toute consigne de vocabulaire, de JSDoc ou de texte de confirmation sur une transition d'état, lire le §1 « Lifecycles » du pack `br-*` concerné. (Sprint 92, lead)
+
+
+## PIT-S92-008 — Reclasser un finding sur un fait vérifié peut sous-estimer le défaut
+Au S92 le lead a reclassé MAJEUR → MINEUR une pause de toast « bloquée ~1 s » en s'appuyant sur un fait vérifié (pause globale au store : aucun toast n'expire tant que le focus est dans un toast). Le fait ne couvrait pas le retrait HORS minuterie : sous jsdom, le toast survivant restait en pause indéfiniment. Avant de reclasser, énumérer les chemins que le fait NE couvre PAS ; quand le correctif est XS, l'absorber plutôt que débattre de la gravité. (Sprint 92, clôture, `cabacd7`)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

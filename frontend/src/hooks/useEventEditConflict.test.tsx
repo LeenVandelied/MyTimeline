@@ -30,8 +30,11 @@ const invalidateQueriesMock = vi.fn()
 vi.mock('@/services/eventService', () => ({
   updateEvent: (...args: unknown[]) => updateEventMock(...args),
 }))
+/** Porteur MUTABLE (PIT-S90-009 : pas de `let` réassigné lu par un `vi.mock`). */
+const authState: { user: { id: string } | null } = { user: { id: 'user-1' } }
+
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 'user-1' } }),
+  useAuth: () => ({ user: authState.user }),
 }))
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: invalidateQueriesMock }),
@@ -296,6 +299,76 @@ describe('useEventEditConflict — statut HTTP → submitState (#77/#231)', () =
     })
     expect(result.current.submitState).toBe('idle')
     expect(onDone).toHaveBeenCalledTimes(1)
+  })
+
+  // #621 — le parent confirme par un toast SSI des valeurs ont été enregistrées : le hook
+  // doit donc distinguer le succès (valeurs transmises) de l'abandon (aucun argument).
+  it('#621 — succès : onDone reçoit les valeurs ENREGISTRÉES', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockResolvedValue(undefined)
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(onDone).toHaveBeenCalledWith(localValues)
+  })
+
+  describe('#621 revue — garde sans PATCH : aucune confirmation', () => {
+    afterEach(() => {
+      authState.user = { id: 'user-1' }
+    })
+
+    it('utilisateur absent : pas de PATCH, pas d’onDone (donc pas de toast), pas d’invalidation, erreur exposée', async () => {
+      authState.user = null
+      const onDone = vi.fn()
+      updateEventMock.mockResolvedValue(undefined)
+      const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+      await act(async () => {
+        await result.current.onSubmit(localValues)
+      })
+
+      expect(updateEventMock).not.toHaveBeenCalled()
+      // Le toast « Événement modifié » est émis par le parent DANS `onDone(saved)`
+      // (`TimelineEditHost`) : pas d'`onDone` ⇒ pas de toast.
+      expect(onDone).not.toHaveBeenCalled()
+      expect(invalidateQueriesMock).not.toHaveBeenCalled()
+      // `error` = état rendu par `EventEditForm` (`event-form-error`, `submitError`).
+      expect(result.current.submitState).toBe('error')
+      expect(result.current.conflict).toBeNull()
+    })
+
+    it('événement absent : même issue (erreur, ni PATCH ni onDone)', async () => {
+      const onDone = vi.fn()
+      updateEventMock.mockResolvedValue(undefined)
+      const { result } = renderHook(() => useEventEditConflict(undefined, onDone))
+
+      await act(async () => {
+        await result.current.onSubmit(localValues)
+      })
+
+      expect(updateEventMock).not.toHaveBeenCalled()
+      expect(onDone).not.toHaveBeenCalled()
+      expect(result.current.submitState).toBe('error')
+    })
+  })
+
+  it('#621 — abandon (onReload) : onDone appelé SANS valeurs (rien à confirmer)', async () => {
+    const onDone = vi.fn()
+    updateEventMock.mockRejectedValue(conflictError(3))
+    const { result } = renderHook(() => useEventEditConflict('evt-1', onDone))
+
+    await act(async () => {
+      await result.current.onSubmit(localValues)
+    })
+    await waitFor(() => expect(result.current.submitState).toBe('conflict'))
+    act(() => {
+      result.current.onReload()
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(onDone.mock.calls[0]).toHaveLength(0)
   })
 
   it('onTakeServer (« prendre la version serveur ») : même invalidation, abandon du local', async () => {

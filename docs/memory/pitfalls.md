@@ -1787,3 +1787,27 @@ Verdict APPROUVÉ à 0 finding avec des ancrages `virtualization.ts:3312`, `Time
 
 ## PIT-S91-011 — Mesurer un contraste sur une lane mobile : le helper refuse la grille `background-image`
 `readTextRendering` (`frontend/e2e/support/contrast.ts`) lève dès qu'il traverse un dégradé ; or `.mt-tlm__lane` peint sa grille en `background-image`. Vérifier que ce dégradé est le seul traversé, le passer à `none` le temps de la mesure, puis mesurer contre le fond réellement peint (`--color-surface`). Motif : `frontend/e2e/sprint-91-more-contrast.spec.ts`. (Sprint 91, absorption `⋯`)
+
+## PIT-S92-001 — `ln -s <cible> node_modules` sur un dossier existant crée `node_modules/node_modules`, que Node résout en premier
+Au démarrage du S92 le lead a lu « (empty) » d'un `ls -d node_modules` résumé par RTK comme « absent » et posé un symlink vers le `node_modules` du dépôt principal : le dossier existait, le lien est donc parti DEDANS. La résolution Node privilégie ce `node_modules` imbriqué → versions étrangères chargées, Vitest (`eachMapping`) et eslint (`eslint-patch`) en erreur pour les 2 agents de la vague. Tester l'existence sans RTK (`test -d frontend/node_modules`) avant tout lien ; ne jamais conclure « absent » d'un `ls` résumé. (Sprint 92, lead)
+
+## PIT-S92-002 — Hook `warn-test-delegation` : `SKIP_DELEGATION=1` requis même pour `playwright test --list` ; `npx eslint` cassé
+Le hook intercepte toute ligne `npx playwright test`, `--list` compris : un agent briefé pour « vérifier le chargement de sa spec » est bloqué. Et `npx eslint <fichier>` échoue dans ce dépôt (config ESLint 9) : prescrire `npx next lint --file <f>`. Les deux commandes sont à écrire telles quelles dans les gabarits de briefing. (Sprint 92 #621)
+
+## PIT-S92-003 — `pointer-events:none` sur un toast interdit toute pause au survol ; `auto` le fait recouvrir les boutons de fermeture
+Posé pour « ne gêner aucun clic », `none` rend la pause au survol de react-hot-toast inopérante (WCAG 2.2.1) ; la piste « `auto` au seul `:hover` » est irréalisable, un élément en `none` ne reçoit jamais le survol. Repassée en `auto`, la carte posée à 16 px du haut recouvrait la croix des drawers (y 12–56) et le hamburger mobile (y 6–50). Dimensionner le décalage d'un élément flottant qui capte le pointeur sur les hauteurs MESURÉES des en-têtes (ici 72 px), pas sur un pas d'espacement du DS ; react-hot-toast ne gère pas le focus, seule API publique de pause : `useToaster().handlers`. (Sprint 92 #621, revue Designer)
+
+## PIT-S92-004 — Archivage produit : aucune invalidation des requêtes, et une spec « après rechargement » ne le voit pas
+`deleteProduct` est un `apiClient.delete` nu hors `useMutation` ; ni `ProductsListView`, ni `ProductDrawer`, ni `ProductDetailView` n'invalident `products.*` après succès → la ligne archivée peut rester affichée jusqu'au refetch, alors que le toast « Produit archivé » est déjà parti. Préexistant (`origin/dev`), rendu visible par #605. La spec E2E vérifie l'absence après `gotoProducts` (rechargement réel) : elle ne peut pas détecter ce défaut. Vérifier aussi l'état EN PLACE après une mutation. (Sprint 92, agent de corrections de revue)
+
+## PIT-S92-005 — Un briefing du lead peut prescrire un libellé contraire au cycle de vie métier
+Le briefing de #605 demandait une JSDoc « soft delete réversible » ; `br-products.md` §1 dit « définitif pour cette wave (pas d'endpoint de restauration) ». Rattrapé par `SendMessage` en cours de vague, avant commit. Avant toute consigne de vocabulaire, de JSDoc ou de texte de confirmation sur une transition d'état, lire le §1 « Lifecycles » du pack `br-*` concerné. (Sprint 92, lead)
+
+## PIT-S92-006 — « Prochain événement ≥ aujourd'hui » comparé à `now` exclut l'événement du jour
+`nextEvent` filtrait `parseLocalDate(startDate) >= now` : une `LocalDate` du jour vaut minuit local, donc est < maintenant dès 00:00:01 → l'événement du jour disparaissait des « à venir » du dashboard. Comparer au début du jour local (`startOfLocalDay(now)`). Même famille que PIT-S83-007 : un test qui fige `now` à minuit pile ne voit rien ; armer avec un `now` en milieu de journée. (Sprint 92 #603)
+
+## PIT-S92-007 — Test de hook : un rejet de `mutateAsync` sous `renderHook` remonte en erreur de test
+Même avec un `vi.fn()` neuf par test et un vrai `Error`, le rejet d'un `mutateAsync` appelé sous `renderHook` fait échouer le test au lieu d'être capturé. Tester le cas d'erreur d'un hook de mutation via `mutate` + `result.current.isError`, et prouver le rejet de `mutateAsync` au niveau du COMPOSANT consommateur (où le contrat de rejet compte, ex. `DeleteConfirmDialog`). Piège déjà rencontré dans `useSetEventArchived.test.tsx`. (Sprint 92, absorption A `ea5d02f`)
+
+## PIT-S92-008 — Reclasser un finding sur un fait vérifié peut sous-estimer le défaut
+Au S92 le lead a reclassé MAJEUR → MINEUR une pause de toast « bloquée ~1 s » en s'appuyant sur un fait vérifié (pause globale au store : aucun toast n'expire tant que le focus est dans un toast). Le fait ne couvrait pas le retrait HORS minuterie : sous jsdom, le toast survivant restait en pause indéfiniment. Avant de reclasser, énumérer les chemins que le fait NE couvre PAS ; quand le correctif est XS, l'absorber plutôt que débattre de la gravité. (Sprint 92, clôture, `cabacd7`)

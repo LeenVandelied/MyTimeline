@@ -25,7 +25,11 @@ import { Avatar } from '@/components/ui/avatar'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { NewEventDrawer } from '@/components/events/NewEventDrawer'
 import { safeErrorMessage } from '@/lib/safe-error'
-import { CreateEventProvider } from './CreateEventContext'
+import {
+  CreateEventProvider,
+  toCreateEventPrefill,
+  type OpenCreateEvent,
+} from './CreateEventContext'
 
 /**
  * #210 — Shell applicatif (handoff §8). Nav latérale persistante 248px
@@ -160,6 +164,11 @@ export function AppShell({ children }: AppShellProps) {
   const { user, loading } = useAuthGuard()
   const { resolvedTheme, setTheme } = useTheme()
   const [showCreate, setShowCreate] = useState(false)
+  // #605 — produit présélectionné de l'ouverture COURANTE. Réécrit à chaque ouverture
+  // (y compris à `undefined`) : une ouverture sans option repart vierge.
+  const [createPrefillProductId, setCreatePrefillProductId] = useState<string | undefined>(
+    undefined,
+  )
 
   // #300 — identité STABLE obligatoire : `NewEventDrawer` la passe en `onEscape` à
   // `useFocusTrap`, dont l'effet a `onEscape` en dépendance. Une lambda inline
@@ -169,7 +178,15 @@ export function AppShell({ children }: AppShellProps) {
   // #602 — même exigence d'identité stable : c'est la valeur du contexte
   // `CreateEventProvider` ; une lambda inline re-rendrait tous ses consommateurs
   // (dont la frise) à chaque rendu du shell.
-  const openCreate = useCallback(() => setShowCreate(true), [])
+  // #605 — l'argument est NORMALISÉ (`toCreateEventPrefill`) : un `MouseEvent` passé par
+  // un `onClick={openCreate}` non typé ouvre un drawer vierge (cf. `CreateEventContext`).
+  const openCreate = useCallback<OpenCreateEvent>((options) => {
+    setCreatePrefillProductId(toCreateEventPrefill(options))
+    setShowCreate(true)
+  }, [])
+  // Déclencheurs DU SHELL : jamais de prérempli, et l'événement souris n'atteint pas
+  // `openCreate` (identité stable conservée, deps = `openCreate` lui-même stable).
+  const openCreateBlank = useCallback(() => openCreate(), [openCreate])
 
   const isDark = resolvedTheme === 'dark'
 
@@ -233,7 +250,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="px-2 pt-4 lg:px-3">
           <Button
             type="button"
-            onClick={openCreate}
+            onClick={openCreateBlank}
             aria-label={t('newEvent')}
             title={t('newEvent')}
             className="bg-accent hover:bg-accent-hover text-accent-ink w-full px-0 lg:px-4"
@@ -364,7 +381,7 @@ export function AppShell({ children }: AppShellProps) {
           `useFocusTrap` (cleanup au démontage du drawer) — rien à ajouter ici. */}
       <button
         type="button"
-        onClick={openCreate}
+        onClick={openCreateBlank}
         aria-label={t('newEvent')}
         aria-haspopup="dialog"
         data-testid="shell-mobile-new-event-button"
@@ -382,7 +399,9 @@ export function AppShell({ children }: AppShellProps) {
           une erreur de soumission réapparaissait telle quelle à la réouverture suivante
           (revue PR #313). La restauration du focus reste assurée : `useFocusTrap` la fait
           dans son cleanup, que React exécute au démontage. */}
-      {showCreate && <NewEventDrawer open onClose={closeCreate} />}
+      {showCreate && (
+        <NewEventDrawer open onClose={closeCreate} initialProductId={createPrefillProductId} />
+      )}
     </div>
   )
 }
