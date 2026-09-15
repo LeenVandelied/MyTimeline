@@ -35,6 +35,19 @@ function showSuccess(message = 'Événement créé'): HTMLElement {
   return screen.getByRole('status')
 }
 
+/** Affiche un succès et renvoie son identifiant et sa carte DS (plusieurs toasts à la fois). */
+function showToastWithId(message: string): { id: string; card: HTMLElement } {
+  const holder: { id: string } = { id: '' }
+  act(() => {
+    holder.id = toast.success(message)
+  })
+  const card = screen
+    .getAllByRole('status')
+    .find((el) => el.querySelector('.mt-toast__title')?.textContent === message)
+  if (!card) throw new Error(`toast « ${message} » introuvable`)
+  return { id: holder.id, card }
+}
+
 function advance(ms: number) {
   act(() => {
     vi.advanceTimersByTime(ms)
@@ -247,6 +260,103 @@ describe('AppToaster — pause au survol et au focus (WCAG 2.2.1, revue Designer
     const second = showSuccess('Second')
     advance(4_100)
     expect(second).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('2 toasts, focus sur le 1er puis 1er retiré (dismiss) : le 2e reprend son décompte (cycle 2)', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const first = showToastWithId('Premier')
+    const second = showToastWithId('Second')
+
+    act(() => {
+      fireEvent.focusIn(first.card)
+    })
+    advance(10_000)
+    expect(second.card).toHaveAttribute('data-visible', 'true')
+
+    // Retrait HORS minuterie du toast focalisé, sans focusout : l'autre reste visible.
+    act(() => {
+      toast.dismiss(first.id)
+    })
+    advance(3_900)
+    expect(second.card).toHaveAttribute('data-visible', 'true')
+    advance(200)
+    expect(second.card).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('2 toasts, survol du 1er puis 1er retiré (dismiss) : le 2e reprend son décompte', () => {
+    vi.useFakeTimers()
+    render(<AppToaster />)
+    const first = showToastWithId('Premier')
+    const second = showToastWithId('Second')
+
+    act(() => {
+      fireEvent.mouseEnter(first.card)
+    })
+    advance(10_000)
+    expect(second.card).toHaveAttribute('data-visible', 'true')
+
+    act(() => {
+      toast.dismiss(first.id)
+    })
+    advance(3_900)
+    expect(second.card).toHaveAttribute('data-visible', 'true')
+    advance(200)
+    expect(second.card).toHaveAttribute('data-visible', 'false')
+  })
+
+  it('toast focalisé retiré : le focus est rendu à l’élément qui l’avait avant (cycle 2)', () => {
+    vi.useFakeTimers()
+    render(
+      <>
+        <button type="button">Enregistrer</button>
+        <AppToaster />
+      </>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Enregistrer' })
+    trigger.focus()
+    const { id, card } = showToastWithId('Événement créé')
+
+    act(() => {
+      card.focus()
+    })
+    expect(card).toHaveFocus()
+    advance(10_000)
+    expect(card).toHaveAttribute('data-visible', 'true')
+
+    act(() => {
+      toast.dismiss(id)
+    })
+    expect(trigger).toHaveFocus()
+  })
+
+  it('toast focalisé retiré, élément précédent sorti du DOM : aucun focus volé', () => {
+    vi.useFakeTimers()
+    render(
+      <>
+        <button type="button">Autre contrôle</button>
+        <AppToaster />
+      </>,
+    )
+    // Nœud hors React : on peut le retirer sans perturber le démontage.
+    const detached = document.createElement('button')
+    detached.textContent = 'Déclencheur éphémère'
+    document.body.appendChild(detached)
+    detached.focus()
+    const { id, card } = showToastWithId('Événement créé')
+
+    act(() => {
+      card.focus()
+    })
+    detached.remove()
+    act(() => {
+      toast.dismiss(id)
+    })
+
+    expect(document.activeElement).not.toBe(detached)
+    expect(screen.getByRole('button', { name: 'Autre contrôle' })).not.toHaveFocus()
+    // Rien n'a été fait : le focus reste où il était (la carte en sortie).
+    expect(document.activeElement).toBe(card)
   })
 
   it('le toast ne prend JAMAIS le focus à son apparition', () => {

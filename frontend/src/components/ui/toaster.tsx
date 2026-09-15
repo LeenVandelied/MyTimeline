@@ -70,24 +70,39 @@ import { Toast } from '@/components/ui/toast'
  *   - SURVOL : géré par la bibliothèque — `<Toaster>` pose `onMouseEnter/onMouseLeave` →
  *     `handlers.startPause/endPause` sur `#_rht_toaster` (dist/index.mjs, ligne `Oe=`) ; il
  *     ne se déclenchait jamais tant que la carte était en `pointer-events:none`.
+ *   - PAUSE GLOBALE AU STORE (comportement de la bibliothèque, vérifié dans dist/index.mjs :
+ *     action 5 pose UN `pausedAt` pour tout le store, action 6 ajoute la durée de pause à
+ *     `pauseDuration` de CHAQUE toast, et l'effet de minuterie ne programme rien tant que
+ *     `pausedAt` est défini) : survoler ou focaliser UN toast suspend TOUS les toasts
+ *     visibles. VOULU — WCAG 2.2.1 : pendant que l'utilisateur lit un toast, aucun autre ne
+ *     doit disparaître sous ses yeux ; tous reprennent ensemble, sans perdre de durée.
  *   - FOCUS : la bibliothèque ne gère pas le focus. La carte visible est `tabIndex=0` (hors
  *     tabulation en sortie) : dernier nœud du `<body>`, elle est atteinte par Tab en fin de
- *     page ou Maj+Tab depuis le début. `focusin`/`focusout` sur la carte tiennent un état
- *     `focused` ; l'état `hovered` est suivi en parallèle sur la même carte. Un effet
- *     réconcilie `(hovered || focused)` avec `pausedAt` du store (`useToasterStore`) et
- *     appelle `useToaster().handlers` — seule API publique qui suspend (`startPause` =
- *     action 5, `endPause` = action 6, dist/index.mjs l.2). La réconciliation couvre le cas
- *     « souris sortie mais focus toujours sur le toast » : la bibliothèque relance le
- *     décompte sur `mouseleave`, l'effet re-suspend aussitôt.
+ *     page ou Maj+Tab depuis le début. `focusin`/`focusout` sur la carte tiennent
+ *     l'IDENTIFIANT du toast focalisé (`focusedId`) ; l'identifiant du toast survolé
+ *     (`hoveredId`) est suivi en parallèle. Un toast n'est « actif » que si son identifiant
+ *     figure parmi les toasts `visible`. Un effet réconcilie `(survol actif || focus actif)`
+ *     avec `pausedAt` du store (`useToasterStore`) et appelle `useToaster().handlers` — seule
+ *     API publique qui suspend (`startPause` = action 5, `endPause` = action 6). La
+ *     réconciliation couvre le cas « souris sortie mais focus toujours sur le toast » : la
+ *     bibliothèque relance le décompte sur `mouseleave`, l'effet re-suspend aussitôt.
  *   - JAMAIS DE VOL DE FOCUS : aucun `focus()` à l'apparition ; le focus reste sur le
  *     déclencheur (test « ne prend pas le focus »).
+ *   - RESTAURATION DU FOCUS : au `focusin` venant de HORS des toasts, `relatedTarget` (l'élément
+ *     quitté) est mémorisé ; un passage d'un toast à l'autre le conserve, une sortie du focus
+ *     vers la page l'oublie. Si le toast focalisé se retire, le focus est rendu à cet élément
+ *     à trois conditions : il est encore dans le document, focusable (ni `:disabled`, ni sous
+ *     `inert`/`hidden`), et le focus n'a pas déjà été porté ailleurs (il est encore sur une
+ *     carte ou retombé sur `<body>`). Sinon rien : le focus n'est jamais envoyé ailleurs.
  *   - `useToaster(TOAST_OPTIONS)` rejoue l'effet de minuterie de `<Toaster>` : deux
  *     `dismiss` du même id au même instant sont idempotents (action 3), la file de retrait
  *     est dédoublonnée par une `Map`. Les options sont PARTAGÉES (`TOAST_OPTIONS`) : sans
  *     elles, la seconde minuterie fermerait les succès à 2 s (défaut bibliothèque).
- *   - Toast retiré sous le pointeur ou le focus (aucun `mouseleave`/`focusout`) : dès qu'il
- *     ne reste aucun toast visible, les deux états retombent et la pause est levée — sinon
- *     les toasts suivants ne se fermeraient plus.
+ *   - Toast retiré sous le pointeur ou le focus (`toast.dismiss`/`toast.remove`, aucun
+ *     `mouseleave`/`focusout`) : dès que SON identifiant quitte les toasts visibles (action 3
+ *     `visible:false`, immédiate — sans attendre le démontage `removeDelay` de 1 s), l'état
+ *     retombe et la pause est levée, même si d'autres toasts restent affichés. Un booléen
+ *     n'aurait retombé qu'avec le dernier toast visible : les survivants restaient en pause.
  * RECOUVREMENT : la carte capte le pointeur, donc tout contrôle SOUS elle deviendrait
  *   inopérant pendant l'affichage (un clic mettrait le toast en pause). À 16px du haut elle
  *   recouvrait la croix des drawers et le hamburger mobile : d'où le décalage de POSITION
@@ -135,30 +150,68 @@ const TOAST_OPTIONS: DefaultToastOptions = { success: { duration: SUCCESS_DURATI
 
 const TOAST_SELECTOR = '[data-testid="app-toast"]'
 
+/** Élément encore dans le document et focusable (ni désactivé, ni sous `inert` / `hidden`). */
+function canReceiveFocus(el: HTMLElement): boolean {
+  return el.isConnected && !el.matches(':disabled') && el.closest('[inert],[hidden]') === null
+}
+
+/**
+ * Le focus est-il resté « orphelin » du toast (encore sur une carte, ou retombé sur `<body>`
+ * après démontage) ? Faux si l'utilisateur l'a déjà porté ailleurs : on ne le reprend pas.
+ */
+function focusIsOrphaned(): boolean {
+  const active = document.activeElement
+  return active === null || active === document.body || active.closest(TOAST_SELECTOR) !== null
+}
+
 export function AppToaster() {
   const { toasts, pausedAt } = useToasterStore(TOAST_OPTIONS)
   const {
     handlers: { startPause, endPause },
   } = useToaster(TOAST_OPTIONS)
-  const [hovered, setHovered] = React.useState(false)
-  const [focused, setFocused] = React.useState(false)
-  const hasVisible = toasts.some((t) => t.visible)
+  const [hoveredId, setHoveredId] = React.useState<string | null>(null)
+  const [focusedId, setFocusedId] = React.useState<string | null>(null)
+  /** Élément focalisé AVANT l'entrée du focus dans les toasts (cible de restauration). */
+  const returnFocusRef = React.useRef<HTMLElement | null>(null)
+
+  const visibleIds = toasts.filter((t) => t.visible).map((t) => t.id)
+  const hoverActive = hoveredId !== null && visibleIds.includes(hoveredId)
+  const focusActive = focusedId !== null && visibleIds.includes(focusedId)
+
+  // Toast survolé / focalisé retiré (dismiss, remove) sans `mouseleave` / `focusout` : son
+  // identifiant n'est plus parmi les visibles → l'état retombe, même si d'AUTRES toasts restent.
+  React.useEffect(() => {
+    if (hoveredId !== null && !hoverActive) setHoveredId(null)
+  }, [hoveredId, hoverActive])
 
   React.useEffect(() => {
-    if (!hasVisible && (hovered || focused)) {
-      setHovered(false)
-      setFocused(false)
-      return
-    }
-    const wantPause = hasVisible && (hovered || focused)
+    if (focusedId === null || focusActive) return
+    const target = returnFocusRef.current
+    returnFocusRef.current = null
+    setFocusedId(null)
+    if (target && canReceiveFocus(target) && focusIsOrphaned()) target.focus()
+  }, [focusedId, focusActive])
+
+  React.useEffect(() => {
+    const wantPause = hoverActive || focusActive
     if (wantPause && pausedAt === undefined) startPause()
     else if (!wantPause && pausedAt !== undefined) endPause()
-  }, [hasVisible, hovered, focused, pausedAt, startPause, endPause])
+  }, [hoverActive, focusActive, pausedAt, startPause, endPause])
+
+  const handleFocus = React.useCallback((id: string, event: React.FocusEvent<HTMLDivElement>) => {
+    const previous = event.relatedTarget
+    // Passage d'un toast à l'autre : on garde la cible mémorisée à l'entrée.
+    if (previous instanceof HTMLElement && previous.closest(TOAST_SELECTOR) === null) {
+      returnFocusRef.current = previous
+    }
+    setFocusedId(id)
+  }, [])
 
   const handleBlur = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget
     if (next instanceof Element && next.closest(TOAST_SELECTOR)) return
-    setFocused(false)
+    returnFocusRef.current = null
+    setFocusedId(null)
   }, [])
 
   return (
@@ -177,9 +230,9 @@ export function AppToaster() {
           data-toast-type={t.type}
           data-visible={t.visible ? 'true' : 'false'}
           tabIndex={t.visible ? 0 : -1}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          onFocus={() => setFocused(true)}
+          onMouseEnter={() => setHoveredId(t.id)}
+          onMouseLeave={() => setHoveredId((current) => (current === t.id ? null : current))}
+          onFocus={(event) => handleFocus(t.id, event)}
           onBlur={handleBlur}
           style={{
             opacity: t.visible ? 1 : 0,
