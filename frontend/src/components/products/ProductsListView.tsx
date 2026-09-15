@@ -6,8 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Pencil, Archive, PlusCircle, Search } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
-import { contrastInk } from '@/lib/color'
+import { nextEvent, type NextEvent } from '@/lib/next-occurrence'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -36,9 +35,22 @@ import type { Product } from '@/types/product'
  *   - #50 : les produits archivés sont déjà exclus côté backend
  *     (`@SQLRestriction("archived=false")`) — aucun filtre archived côté client.
  *
- * Recherche et tri sont LOCAUX (client, aucun refetch réseau — critère d'accept.).
- * Le tableau réutilise `ProductSparkline` (fenêtre 90 j bornée) par ligne et une
- * pastille catégorie colorée (couleur effective `product.color ?? category.color`).
+ * #603 — Colonnes du handoff §5 : Produit (pastille + nom + catégorie mono) · Prochain
+ * événement (titre + date ISO) · mini-frise 90 j · nombre d'événements · Actions.
+ * « Prochain événement » = `nextEvent` (`@/lib/next-occurrence`, partagé avec le tableau
+ * de bord) : prochaine occurrence ≥ aujourd'hui, récurrences comprises, archivés exclus.
+ * Le nombre d'événements compte les NON archivés (BR-EVE-011, même base que le compteur
+ * du détail produit et du tableau de bord).
+ *
+ * Paliers responsive : Produit, Prochain événement et Actions toujours visibles (c'est la
+ * raison d'être de la liste) ; le compteur (étroit) dès `sm` ; la mini-frise (220 px) dès
+ * `md`. La catégorie passe SOUS le nom (handoff) au lieu d'occuper sa propre colonne, ce
+ * qui libère la largeur mobile pour la prochaine échéance ; son testid
+ * `products-row-category-*` est conservé.
+ *
+ * Recherche et tri sont LOCAUX (client, aucun refetch réseau). Tris : Prochain événement
+ * (défaut ; le plus proche d'abord, sans échéance en dernier, départage par nom), Nom A→Z,
+ * Nom Z→A.
  *
  * Actions :
  *   - « Nouveau produit » → `ProductDrawer` (mode create), réutilisé tel quel (#61).
@@ -48,27 +60,9 @@ import type { Product } from '@/types/product'
  *   - Clic/Entrée/Espace sur une ligne → navigation vers le détail produit.
  */
 
-type SortKey = 'nameAsc' | 'nameDesc' | 'categoryAsc' | 'lastActivityDesc' | 'lastActivityAsc'
+type SortKey = 'nextEvent' | 'nameAsc' | 'nameDesc'
 
-const SORT_KEYS: SortKey[] = [
-  'lastActivityDesc',
-  'lastActivityAsc',
-  'nameAsc',
-  'nameDesc',
-  'categoryAsc',
-]
-
-/** Timestamp du dernier événement (non archivé) d'un produit, ou null. */
-function lastActivityMs(product: Product): number | null {
-  let max: number | null = null
-  for (const event of product.events ?? []) {
-    if (event.archived) continue
-    const ms = parseLocalDate(event.startDate).getTime()
-    if (Number.isNaN(ms)) continue
-    if (max === null || ms > max) max = ms
-  }
-  return max
-}
+const SORT_KEYS: SortKey[] = ['nextEvent', 'nameAsc', 'nameDesc']
 
 export function ProductsListView() {
   const t = useTranslations('products.list')
@@ -81,7 +75,7 @@ export function ProductsListView() {
   const products = React.useMemo(() => query.data ?? [], [query.data])
 
   const [search, setSearch] = React.useState('')
-  const [sort, setSort] = React.useState<SortKey>('lastActivityDesc')
+  const [sort, setSort] = React.useState<SortKey>('nextEvent')
   const [createOpen, setCreateOpen] = React.useState(false)
   // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide.
   // Ce déclencheur disparaît dès qu'un produit existe ; Radix rendrait alors le focus à
@@ -120,10 +114,13 @@ export function ProductsListView() {
   const [editProduct, setEditProduct] = React.useState<Product | null>(null)
   const [archiveProduct, setArchiveProduct] = React.useState<Product | null>(null)
 
-  const dateFmt = React.useMemo(
-    () => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }),
-    [locale],
-  )
+  const numberFmt = React.useMemo(() => new Intl.NumberFormat(locale), [locale])
+
+  // Prochaine échéance par produit, calculée une fois par jeu de données (tri + rendu).
+  const nextById = React.useMemo(() => {
+    const now = new Date()
+    return new Map<string, NextEvent | null>(products.map((p) => [p.id, nextEvent(p, now)]))
+  }, [products])
 
   const visible = React.useMemo(() => {
     const needle = search.trim().toLowerCase()
@@ -138,26 +135,22 @@ export function ProductsListView() {
           return byName(a, b)
         case 'nameDesc':
           return byName(b, a)
-        case 'categoryAsc': {
-          const c = (a.category?.name ?? '').localeCompare(b.category?.name ?? '', locale)
-          return c !== 0 ? c : byName(a, b)
-        }
-        case 'lastActivityAsc':
-        case 'lastActivityDesc': {
-          const la = lastActivityMs(a)
-          const lb = lastActivityMs(b)
-          // Produits sans activité repoussés en fin de liste dans les deux sens.
-          if (la === null && lb === null) return byName(a, b)
-          if (la === null) return 1
-          if (lb === null) return -1
-          return sort === 'lastActivityDesc' ? lb - la : la - lb
+        case 'nextEvent': {
+          const na = nextById.get(a.id) ?? null
+          const nb = nextById.get(b.id) ?? null
+          // Sans échéance : en fin de liste. `start` est un `YYYY-MM-DD` → ordre lexical = chronologique.
+          if (na === null && nb === null) return byName(a, b)
+          if (na === null) return 1
+          if (nb === null) return -1
+          if (na.start !== nb.start) return na.start < nb.start ? -1 : 1
+          return byName(a, b)
         }
         default:
           return 0
       }
     })
     return filtered
-  }, [products, search, sort, locale])
+  }, [products, search, sort, locale, nextById])
 
   const goToDetail = React.useCallback(
     (productId: string) => {
@@ -294,16 +287,16 @@ export function ProductsListView() {
             <thead>
               <tr className="border-rule text-ink-muted border-b text-xs">
                 <th scope="col" className="px-4 py-2 font-medium">
-                  {t('columns.name')}
+                  {t('columns.product')}
                 </th>
                 <th scope="col" className="px-4 py-2 font-medium">
-                  {t('columns.category')}
-                </th>
-                <th scope="col" className="hidden px-4 py-2 font-medium sm:table-cell">
-                  {t('columns.activity')}
+                  {t('columns.nextEvent')}
                 </th>
                 <th scope="col" className="hidden px-4 py-2 font-medium md:table-cell">
-                  {t('columns.lastActivity')}
+                  {t('columns.activity')}
+                </th>
+                <th scope="col" className="hidden px-4 py-2 text-right font-medium sm:table-cell">
+                  {t('columns.events')}
                 </th>
                 <th scope="col" className="px-4 py-2 text-right font-medium">
                   {t('columns.actions')}
@@ -314,8 +307,8 @@ export function ProductsListView() {
               {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}
               {visible.map((product) => {
                 const effectiveColor = product.color ?? product.category?.color ?? null
-                const lastMs = lastActivityMs(product)
-                const categoryName = product.category?.name ?? t('noCategory')
+                const next = nextById.get(product.id) ?? null
+                const eventCount = (product.events ?? []).filter((e) => !e.archived).length
                 return (
                   <tr
                     key={product.id}
@@ -335,54 +328,66 @@ export function ProductsListView() {
                     )}
                     data-testid={`products-row-${product.id}`}
                   >
+                    {/* Produit : pastille + nom + catégorie mono (handoff §5). */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-start gap-2">
                         <span
-                          className="size-2.5 shrink-0 rounded-full"
+                          className="mt-1.5 size-2.5 shrink-0 rounded-full"
                           style={{ background: effectiveColor ?? 'var(--color-rule-strong)' }}
                           aria-hidden="true"
                         />
-                        <span className="text-ink truncate font-medium">{product.name}</span>
+                        <div className="flex min-w-0 flex-col">
+                          <span className="text-ink truncate font-medium">{product.name}</span>
+                          {product.category ? (
+                            <span
+                              className="text-ink-muted truncate font-mono text-xs"
+                              data-testid={`products-row-category-${product.id}`}
+                            >
+                              {product.category.name}
+                            </span>
+                          ) : (
+                            <span className="text-ink-faint font-mono text-xs">
+                              {t('noCategory')}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      {product.category ? (
-                        <span
-                          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                          style={{
-                            backgroundColor: effectiveColor ?? 'var(--color-rule-strong)',
-                            color: contrastInk(effectiveColor),
-                          }}
-                          data-testid={`products-row-category-${product.id}`}
-                        >
-                          {categoryName}
-                        </span>
+                    {/* Prochain événement : titre + date ISO `YYYY-MM-DD` en `<time datetime>`
+                        (#518, `i18n.css` §7 : `.mt-date--long` = mono + tabular-nums, sans
+                        transformation de casse — le texte ISO est rendu tel quel). */}
+                    <td className="px-4 py-3" data-testid={`products-row-next-${product.id}`}>
+                      {next ? (
+                        <div className="flex max-w-48 min-w-0 flex-col sm:max-w-64">
+                          <span className="text-ink truncate text-xs">{next.title}</span>
+                          <time className="mt-date--long text-ink-muted" dateTime={next.start}>
+                            {next.start}
+                          </time>
+                        </div>
                       ) : (
-                        <span className="text-ink-faint text-xs">{t('noCategory')}</span>
+                        <span className="text-ink-faint">
+                          <span aria-hidden="true">—</span>
+                          <span className="sr-only">{t('noUpcoming')}</span>
+                        </span>
                       )}
                     </td>
-                    <td className="hidden px-4 py-3 sm:table-cell">
+                    <td className="hidden px-4 py-3 md:table-cell">
                       <ProductSparkline
                         dates={(product.events ?? []).map((e) => e.startDate)}
                         color={effectiveColor}
                         label={t('sparklineLabel', { name: product.name })}
                       />
                     </td>
-                    {/* #518 — la cellule garde ses utilitaires (ils habillent AUSSI le
-                        repli « aucune activité », qui n'est pas une date) ; seule la
-                        branche DATE devient un `<time datetime>` porteur de
-                        `.mt-date--long` (convention DS, `i18n.css` §7). */}
-                    <td className="text-ink-muted hidden px-4 py-3 font-mono text-xs md:table-cell">
-                      {lastMs !== null ? (
-                        <time
-                          className="mt-date--long"
-                          dateTime={toLocalIsoDate(new Date(lastMs)) ?? undefined}
-                        >
-                          {dateFmt.format(new Date(lastMs))}
-                        </time>
-                      ) : (
-                        t('noActivity')
-                      )}
+                    {/* Nombre d'événements NON archivés : chiffre mono visible, forme plurielle
+                        pour les lecteurs d'écran. */}
+                    <td
+                      className="hidden px-4 py-3 text-right sm:table-cell"
+                      data-testid={`products-row-events-count-${product.id}`}
+                    >
+                      <span className="text-ink-muted mt-num text-xs" aria-hidden="true">
+                        {numberFmt.format(eventCount)}
+                      </span>
+                      <span className="sr-only">{t('eventsCount', { count: eventCount })}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">

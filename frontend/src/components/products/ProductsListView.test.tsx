@@ -2,16 +2,18 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '@/types/product'
-import { toLocalIsoDate } from '@/lib/date-iso'
 import { ProductsListView } from './ProductsListView'
 
 /**
  * #68 — Tests ProductsListView : rendu du tableau (produits du user), recherche
- * locale, ordre par défaut (activité récente), ouverture drawer création/édition,
+ * locale, ordre par défaut (prochain événement, #603), ouverture drawer création/édition,
  * archivage (DeleteConfirmDialog), navigation vers le détail.
  *
  * next-intl mocké → assertions sur les clés. Drawers/dialogs mockés (leurs tests
  * vivent dans #61/#65) : on vérifie ICI qu'ils sont pilotés (open + props).
+ *
+ * #603 — horloge FIGÉE (seul `Date` est simulé : les minuteries de user-event restent
+ * réelles) au mardi 15 sept. 2026 10 h locale, pour que « à venir » soit déterministe.
  */
 
 const useProductsMock = vi.fn()
@@ -112,20 +114,33 @@ const mkEvent = (id: string, startDate: string, archived = false) => ({
   archived,
 })
 
+/** Mardi 15 sept. 2026, 10 h LOCALE (horloge figée, cf. en-tête). */
+const FROZEN_NOW = () => new Date(2026, 8, 15, 10, 0, 0)
+
 const PRODUCTS: Product[] = [
   {
     id: 'p-alpha',
     name: 'Alpha',
     color: '#112233',
     category: { id: 'c-1', name: 'Véhicules', color: '#445566' },
-    events: [mkEvent('e1', '2026-06-01T10:00:00Z')],
+    // Ponctuel passé + série MENSUELLE partie en janvier : prochaine occurrence le 20 sept.
+    events: [
+      mkEvent('e1', '2026-06-01'),
+      {
+        ...mkEvent('e1r', '2026-01-20'),
+        isRecurring: true,
+        recurrenceUnit: 'MONTH',
+        recurrenceEndDate: null,
+      },
+    ],
   },
   {
     id: 'p-beta',
     name: 'Beta',
     color: null,
     category: { id: 'c-2', name: 'Assurance', color: '#778899' },
-    events: [mkEvent('e2', '2026-07-04T10:00:00Z')],
+    // Archivé DEMAIN (écarté) + ponctuel le 17 → échéance le 17, compteur 1.
+    events: [mkEvent('e2a', '2026-09-16', true), mkEvent('e2', '2026-09-17')],
   },
   {
     id: 'p-gamma',
@@ -147,11 +162,18 @@ function mockProducts(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(FROZEN_NOW())
   drawerClose.lastPrevented = null
   mockProducts()
 })
 
-afterEach(() => vi.clearAllMocks())
+afterEach(() => {
+  vi.useRealTimers()
+  vi.clearAllMocks()
+})
+
+const rowIds = () => screen.getAllByRole('link').map((row) => row.getAttribute('data-testid'))
 
 describe('ProductsListView', () => {
   it('affiche les produits du user dans le tableau', () => {
@@ -162,13 +184,81 @@ describe('ProductsListView', () => {
     expect(screen.getByTestId('products-row-p-gamma')).toBeInTheDocument()
   })
 
-  it('trie par activité récente par défaut (Beta avant Alpha, sans activité en dernier)', () => {
+  it('#603 — colonnes du handoff : Produit · Prochain événement · mini-frise · nb d’événements · Actions', () => {
     render(<ProductsListView />)
-    const rows = screen.getAllByRole('link')
-    // p-beta (2026-07-04) > p-alpha (2026-06-01) > p-gamma (aucune activité).
-    expect(rows[0]).toHaveAttribute('data-testid', 'products-row-p-beta')
-    expect(rows[1]).toHaveAttribute('data-testid', 'products-row-p-alpha')
-    expect(rows[2]).toHaveAttribute('data-testid', 'products-row-p-gamma')
+    const headers = screen.getAllByRole('columnheader').map((th) => th.textContent)
+    expect(headers).toEqual([
+      'products.list.columns.product',
+      'products.list.columns.nextEvent',
+      'products.list.columns.activity',
+      'products.list.columns.events',
+      'products.list.columns.actions',
+    ])
+  })
+
+  it('#603 — trie par prochain événement par défaut (le plus proche d’abord, sans échéance en dernier)', () => {
+    render(<ProductsListView />)
+    // p-beta (17 sept.) < p-alpha (20 sept., récurrence avancée) < p-gamma (aucune).
+    expect(rowIds()).toEqual([
+      'products-row-p-beta',
+      'products-row-p-alpha',
+      'products-row-p-gamma',
+    ])
+  })
+
+  it('#603 — tri prochain événement : à échéance égale ou absente, départage par nom', () => {
+    mockProducts({
+      data: [
+        { ...PRODUCTS[2], id: 'p-zulu', name: 'Zulu' },
+        { ...PRODUCTS[1], id: 'p-bis', name: 'Bis' },
+        { ...PRODUCTS[2], id: 'p-aardvark', name: 'Aardvark' },
+        PRODUCTS[1],
+      ],
+    })
+    render(<ProductsListView />)
+    expect(rowIds()).toEqual([
+      'products-row-p-beta',
+      'products-row-p-bis',
+      'products-row-p-aardvark',
+      'products-row-p-zulu',
+    ])
+  })
+
+  it('#603 — la colonne montre la prochaine occurrence d’une série, en ISO dans un <time datetime>', () => {
+    render(<ProductsListView />)
+    const cell = screen.getByTestId('products-row-next-p-alpha')
+    const time = cell.querySelector('time')
+    expect(time?.getAttribute('datetime')).toBe('2026-09-20')
+    expect(time).toHaveTextContent(/^2026-09-20$/)
+    expect(cell).toHaveTextContent('evt-e1r')
+    // L'événement archivé du 16 est écarté : Beta affiche le 17.
+    expect(screen.getByTestId('products-row-next-p-beta').querySelector('time')).toHaveTextContent(
+      '2026-09-17',
+    )
+  })
+
+  it('#603 — sans échéance : tiret décoratif + texte accessible, aucun <time>', () => {
+    render(<ProductsListView />)
+    const cell = screen.getByTestId('products-row-next-p-gamma')
+    expect(cell.querySelector('time')).toBeNull()
+    expect(within(cell).getByText('—')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(cell).getByText('products.list.noUpcoming')).toHaveClass('sr-only')
+  })
+
+  it('#603 — nombre d’événements NON archivés, avec forme plurielle accessible', () => {
+    render(<ProductsListView />)
+    const beta = screen.getByTestId('products-row-events-count-p-beta')
+    expect(within(beta).getByText('1')).toHaveAttribute('aria-hidden', 'true')
+    expect(within(beta).getByText('products.list.eventsCount')).toHaveClass('sr-only')
+    expect(screen.getByTestId('products-row-events-count-p-alpha')).toHaveTextContent(/^2/)
+    expect(screen.getByTestId('products-row-events-count-p-gamma')).toHaveTextContent(/^0/)
+  })
+
+  it('#603 — expose les tris Prochain événement / Nom, sans « dernière activité »', () => {
+    render(<ProductsListView />)
+    expect(screen.getByTestId('products-sort-trigger')).toHaveTextContent(
+      'products.list.sort.nextEvent',
+    )
   })
 
   it('filtre localement via la recherche (sans refetch)', async () => {
@@ -331,34 +421,13 @@ describe('ProductsListView', () => {
     expect(screen.queryByTestId('products-table')).not.toBeInTheDocument()
   })
 
-  it('rend une pastille catégorie colorée par ligne', () => {
+  it('rend la catégorie sous le nom, dans la cellule Produit (#603, handoff §5)', () => {
     render(<ProductsListView />)
     const cat = within(screen.getByTestId('products-row-p-alpha')).getByTestId(
       'products-row-category-p-alpha',
     )
     expect(cat).toHaveTextContent('Véhicules')
-  })
-
-  /**
-   * #518 — la dernière activité est une DATE : elle se rend en `<time datetime>`
-   * (convention DS `i18n.css` §7), pas en texte nu dans la cellule. Rien n'est
-   * vérifié ici de sa TENUE visuelle (`.mt-date--long` n'a aucun effet sous jsdom).
-   */
-  it('rend la dernière activité en <time datetime> et laisse le repli en texte nu', () => {
-    render(<ProductsListView />)
-    const withActivity = within(screen.getByTestId('products-row-p-alpha')).getByText(
-      new Intl.DateTimeFormat('fr', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }).format(new Date('2026-06-01T10:00:00Z')),
-    )
-    expect(withActivity.tagName).toBe('TIME')
-    expect(withActivity.getAttribute('datetime')).toBe(
-      toLocalIsoDate(new Date('2026-06-01T10:00:00Z')),
-    )
-    // p-gamma n'a AUCUN événement : « aucune activité » n'est pas une date, donc
-    // aucun `<time>` ne doit apparaître dans sa ligne.
-    expect(screen.getByTestId('products-row-p-gamma').querySelector('time')).toBeNull()
+    expect(cat).toHaveClass('font-mono')
+    expect(cat.closest('td')).toHaveTextContent('Alpha')
   })
 })

@@ -125,7 +125,7 @@
   },
   "list": {
     "title": "Products",
-    "subtitle": "Your products and their recent activity.",
+    "subtitle": "Your products and their upcoming deadlines.",
     "newProduct": "New product",
     "search": "Search a product",
     "searchPlaceholder": "Filter by name…",
@@ -138,20 +138,19 @@
     "error": "Unable to load products.",
     "count": "{count, plural, =0 {no products} one {# product} other {# products}}",
     "columns": {
-      "name": "Name",
-      "category": "Category",
+      "product": "Product",
+      "nextEvent": "Next event",
       "activity": "Activity (90 d)",
-      "lastActivity": "Last activity",
+      "events": "Events",
       "actions": "Actions"
     },
     "noCategory": "No category",
-    "noActivity": "No activity",
+    "noUpcoming": "No upcoming deadline",
+    "eventsCount": "{count, plural, =0 {no events} one {# event} other {# events}}",
     "sort": {
+      "nextEvent": "Next event",
       "nameAsc": "Name (A→Z)",
-      "nameDesc": "Name (Z→A)",
-      "categoryAsc": "Category (A→Z)",
-      "lastActivityDesc": "Recent activity",
-      "lastActivityAsc": "Oldest activity"
+      "nameDesc": "Name (Z→A)"
     },
     "actions": {
       "edit": "Edit",

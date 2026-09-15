@@ -155,6 +155,30 @@ describe('ProductList', () => {
     expect(row).toHaveTextContent('1')
   })
 
+  it('#603 — prochaine échéance : une série passée est avancée à sa prochaine occurrence', () => {
+    const p = product('p1', {
+      events: [
+        {
+          id: 'rec',
+          title: 'Mensuel',
+          type: 'single',
+          startDate: '2026-05-20',
+          endDate: '2026-05-20',
+          productId: 'p1',
+          archived: false,
+          isRecurring: true,
+          recurrenceUnit: 'MONTH',
+          recurrenceEndDate: null,
+        },
+      ],
+    })
+    render(<ProductList products={[p]} locale={LOCALE} now={NOW} />)
+    const row = screen.getByTestId('dashboard-product-list-row-p1')
+    // NOW = 15 juil. 2026 : l'occurrence du 20 juil. (avant #603 : « aucune échéance »).
+    expect(row.querySelector('time')?.getAttribute('datetime')).toBe('2026-07-20')
+    expect(row).toHaveTextContent('Mensuel')
+  })
+
   it('affiche l’état vide sans produit', () => {
     render(<ProductList products={[]} locale={LOCALE} now={NOW} />)
     expect(screen.getByTestId('dashboard-product-list-empty')).toBeInTheDocument()

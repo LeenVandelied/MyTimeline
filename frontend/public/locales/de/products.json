@@ -125,7 +125,7 @@
   },
   "list": {
     "title": "Produkte",
-    "subtitle": "Deine Produkte und ihre jüngste Aktivität.",
+    "subtitle": "Deine Produkte und ihre nächsten Fristen.",
     "newProduct": "Neues Produkt",
     "search": "Produkt suchen",
     "searchPlaceholder": "Nach Name filtern…",
@@ -138,20 +138,19 @@
     "error": "Produkte konnten nicht geladen werden.",
     "count": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
     "columns": {
-      "name": "Name",
-      "category": "Kategorie",
+      "product": "Produkt",
+      "nextEvent": "Nächstes Ereignis",
       "activity": "Aktivität (90 T)",
-      "lastActivity": "Letzte Aktivität",
+      "events": "Ereignisse",
       "actions": "Aktionen"
     },
     "noCategory": "Keine Kategorie",
-    "noActivity": "Keine Aktivität",
+    "noUpcoming": "Keine anstehende Frist",
+    "eventsCount": "{count, plural, =0 {keine Ereignisse} one {# Ereignis} other {# Ereignisse}}",
     "sort": {
+      "nextEvent": "Nächstes Ereignis",
       "nameAsc": "Name (A→Z)",
-      "nameDesc": "Name (Z→A)",
-      "categoryAsc": "Kategorie (A→Z)",
-      "lastActivityDesc": "Neueste Aktivität",
-      "lastActivityAsc": "Älteste Aktivität"
+      "nameDesc": "Name (Z→A)"
     },
     "actions": {
       "edit": "Bearbeiten",
