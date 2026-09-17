@@ -206,6 +206,31 @@
     "edit": "Edit",
     "openEdit": "Edit {name}"
   },
+  "archived": {
+    "title": "Archived",
+    "loading": "Loading archived products…",
+    "error": "Could not load archived products.",
+    "empty": "No archived products.",
+    "emptyDescription": "Products you archive show up here, where you can unarchive them.",
+    "tableLabel": "Archived products",
+    "columns": {
+      "product": "Product",
+      "actions": "Actions"
+    },
+    "restore": "Unarchive",
+    "restoreLabel": "Unarchive {name}"
+  },
+  "restoreDialog": {
+    "title": "Unarchive this product?",
+    "description": "“{name}” and its events will reappear in your lists and on your timeline.",
+    "cancel": "Cancel",
+    "confirm": "Unarchive",
+    "confirming": "Unarchiving",
+    "errors": {
+      "notFound": "This product is no longer archived. The list has been refreshed.",
+      "generic": "Unarchiving failed. Try again."
+    }
+  },
   "archiveDialog": {
     "title": "Archive this event?",
     "quotaEffect": "Once archived, this event no longer counts towards your active events.",

@@ -20,7 +20,7 @@ export interface ArchiveProductVariables {
  * PIT-S92-004 — ARCHIVAGE d'un produit via TanStack Query v5 (mutation).
  *
  * `DELETE /users/{userId}/products/{productId}` → 204 : soft delete (#50, BR-PRO-007),
- * aucune restauration exposée (cf. JSDoc de `deleteProduct`). Les trois surfaces
+ * réversible depuis #711 (onglet « Archivés », `useRestoreProduct`). Les trois surfaces
  * (`ProductsListView`, `ProductDrawer`, `ProductDetailView`) appelaient le service brut,
  * sans invalidation : la ligne archivée restait affichée jusqu'au refetch suivant alors que
  * le toast « Produit archivé » était déjà parti.
@@ -31,8 +31,9 @@ export interface ArchiveProductVariables {
  *      cache périmé et peint la ligne archivée le temps du refetch.
  *   2. `invalidateQueries(products.all)` : préfixe `['products']` qui COUVRE par matching
  *      `products.withEvents(userId)` (liste produits, tableau de bord `useDashboardData`,
- *      compteurs de `CategoriesView` — tous lisent `useProductsWithEvents`) et
- *      `products.detail(id)`. Aucune autre clé n'affiche de produit : `categories.all` ne
+ *      compteurs de `CategoriesView` — tous lisent `useProductsWithEvents`),
+ *      `products.detail(id)` et, depuis #711, `products.archived(userId)` (l'onglet
+ *      « Archivés » voit arriver le produit). Aucune autre clé n'affiche de produit : `categories.all` ne
  *      porte pas de compteur (dérivé côté client des produits), et aucune requête
  *      `events.*` ne liste les événements d'un produit. La promesse n'est PAS retournée :
  *      le toast part à la réponse du DELETE, pas à la fin du refetch (PIT-S90-008 assumé,

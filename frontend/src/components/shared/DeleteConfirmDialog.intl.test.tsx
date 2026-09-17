@@ -85,8 +85,11 @@ describe('DeleteConfirmDialog — intégration next-intl réelle (#441)', () => 
   it('variante product : titre et description TRADUITS, aucune IntlError', () => {
     const errors = renderWithRealIntl({ variant: 'product' })
     expect(screen.getByText('Archiver ce produit ?')).toBeInTheDocument()
+    // #711 — l'archivage n'est plus définitif : la description dit où le retrouver.
     expect(
-      screen.getByText("Le produit sera archivé et n'apparaîtra plus dans vos listes."),
+      screen.getByText(
+        "Le produit n'apparaîtra plus dans vos listes, mais rien n'est perdu : vous pourrez le désarchiver depuis l'onglet « Archivés ».",
+      ),
     ).toBeInTheDocument()
     expect(errors).toEqual([])
   })

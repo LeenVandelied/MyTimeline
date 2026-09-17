@@ -38,6 +38,17 @@ export const productSchema = z.object({
 export type Product = z.infer<typeof productSchema>
 
 /**
+ * #711 — Produit ARCHIVÉ (`GET /users/{userId}/products/archived`), DTO backend
+ * `ArchivedProductResponse {id, name, color, category:{id,name,color}}`.
+ *
+ * PAS d'`events` : le backend ne les charge pas pour cette route (la surface « Archivés »
+ * n'en affiche aucun). Ne pas réutiliser `productSchema`, dont `events` est requis.
+ */
+export const archivedProductSchema = productSchema.omit({ events: true })
+
+export type ArchivedProduct = z.infer<typeof archivedProductSchema>
+
+/**
  * Payload de création `POST /users/{userId}/products`.
  *
  * DTO backend `ProductCreationRequest {name, category(UUID), userId, events[]}`

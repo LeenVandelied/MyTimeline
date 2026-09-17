@@ -1,5 +1,5 @@
 import apiClient from './apiClient'
-import { Product, ProductCreate, ProductUpdate } from '@/types/product'
+import { ArchivedProduct, Product, ProductCreate, ProductUpdate } from '@/types/product'
 import { safeErrorMessage } from '@/lib/safe-error'
 
 export const getProducts = async (userId: string): Promise<Product[]> => {
@@ -64,8 +64,9 @@ export const updateProduct = async (
  * comportement).
  *
  * #605 — archiver = soft delete : données conservées côté backend (#50, BR-PRO-007,
- * `archived = true`), produit masqué partout (`@SQLRestriction`), AUCUNE restauration
- * exposée à ce jour. Les surfaces disent donc « Archiver », jamais « Supprimer » ; ce
+ * `archived = true`), produit masqué des listes (`@SQLRestriction`). #711 — l'archivage
+ * n'est PAS définitif : le produit se retrouve dans l'onglet « Archivés » et se restaure
+ * via `restoreProduct`. Les surfaces disent donc « Archiver », jamais « Supprimer » ; ce
  * dernier verbe est réservé aux suppressions physiques (événements, catégories). Une
  * éventuelle suppression définitive de produit exigerait un endpoint et un libellé
  * distincts — ne pas la faire passer par cette fonction.
@@ -79,6 +80,35 @@ export const deleteProduct = async (userId: string, productId: string): Promise<
     await apiClient.delete(`/users/${userId}/products/${productId}`)
   } catch (error) {
     console.error('Erreur lors de la suppression du produit :', safeErrorMessage(error))
+    throw error
+  }
+}
+
+/**
+ * #711 — Produits ARCHIVÉS de l'utilisateur (`GET /users/{userId}/products/archived`).
+ * Réponse sans `events` (cf. `archivedProductSchema`).
+ */
+export const getArchivedProducts = async (userId: string): Promise<ArchivedProduct[]> => {
+  try {
+    const response = await apiClient.get(`/users/${userId}/products/archived`)
+    return response.data
+  } catch (error) {
+    console.error('Erreur lors de la récupération des produits archivés :', safeErrorMessage(error))
+    throw error
+  }
+}
+
+/**
+ * #711 — DÉSARCHIVAGE d'un produit (BR-PRO-007/011) : `POST
+ * /users/{userId}/products/{productId}/restore` → 204. Un produit inconnu, déjà actif ou
+ * appartenant à un autre utilisateur répond 404 (réponse unique, anti-énumération). L'erreur
+ * axios est propagée telle quelle pour l'affichage inline du dialog de confirmation.
+ */
+export const restoreProduct = async (userId: string, productId: string): Promise<void> => {
+  try {
+    await apiClient.post(`/users/${userId}/products/${productId}/restore`)
+  } catch (error) {
+    console.error('Erreur lors du désarchivage du produit :', safeErrorMessage(error))
     throw error
   }
 }

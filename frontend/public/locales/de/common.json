@@ -6,6 +6,7 @@
     "eventUnarchived": "Ereignis wiederhergestellt",
     "productCreated": "Produkt erstellt",
     "productArchived": "Produkt archiviert",
+    "productRestored": "Produkt wiederhergestellt",
     "categoryCreated": "Kategorie erstellt"
   },
   "login": {
@@ -33,7 +34,7 @@
     },
     "product": {
       "title": "Dieses Produkt archivieren?",
-      "description": "Das Produkt wird archiviert und erscheint nicht mehr in Ihren Listen.",
+      "description": "Das Produkt erscheint nicht mehr in Ihren Listen, es wird aber nichts gelöscht: Sie können es im Reiter „Archiviert“ wiederherstellen.",
       "confirm": "Archivieren",
       "confirming": "Wird archiviert"
     },

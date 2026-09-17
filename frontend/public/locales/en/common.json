@@ -6,6 +6,7 @@
     "eventUnarchived": "Event unarchived",
     "productCreated": "Product created",
     "productArchived": "Product archived",
+    "productRestored": "Product unarchived",
     "categoryCreated": "Category created"
   },
   "login": {
@@ -33,7 +34,7 @@
     },
     "product": {
       "title": "Archive this product?",
-      "description": "The product will be archived and no longer appear in your lists.",
+      "description": "The product will no longer appear in your lists, but nothing is deleted: you can unarchive it from the “Archived” tab.",
       "confirm": "Archive",
       "confirming": "Archiving"
     },

@@ -206,6 +206,31 @@
     "edit": "Editar",
     "openEdit": "Editar {name}"
   },
+  "archived": {
+    "title": "Archivados",
+    "loading": "Cargando productos archivados…",
+    "error": "No se pudieron cargar los productos archivados.",
+    "empty": "No hay productos archivados.",
+    "emptyDescription": "Los productos que archives aparecen aquí, donde puedes desarchivarlos.",
+    "tableLabel": "Productos archivados",
+    "columns": {
+      "product": "Producto",
+      "actions": "Acciones"
+    },
+    "restore": "Desarchivar",
+    "restoreLabel": "Desarchivar {name}"
+  },
+  "restoreDialog": {
+    "title": "¿Desarchivar este producto?",
+    "description": "«{name}» y sus eventos volverán a aparecer en tus listas y en tu línea de tiempo.",
+    "cancel": "Cancelar",
+    "confirm": "Desarchivar",
+    "confirming": "Desarchivando",
+    "errors": {
+      "notFound": "Este producto ya no está archivado. La lista se ha actualizado.",
+      "generic": "No se pudo desarchivar. Inténtalo de nuevo."
+    }
+  },
   "archiveDialog": {
     "title": "¿Archivar este evento?",
     "quotaEffect": "Una vez archivado, este evento dejará de contar entre tus eventos activos.",

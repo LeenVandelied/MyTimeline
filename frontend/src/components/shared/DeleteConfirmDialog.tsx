@@ -45,11 +45,13 @@ import { useCategories } from '@/hooks/useCategories'
  *
  * #605 — ARCHIVER ≠ SUPPRIMER. Le vocabulaire suit le comportement backend :
  *   - « archiver » = soft delete : données CONSERVÉES côté backend (produit : `DELETE` →
- *     `archived = true`, #50 / BR-PRO-007), produit masqué partout (`@SQLRestriction`),
- *     AUCUNE restauration exposée à ce jour (ni endpoint ni surface). Variante `product` :
- *     titre, bouton et libellé d'attente disent « archiver » (`product.confirm`,
- *     `product.confirming`) ; le texte ne promet aucun retour. Le bouton reste
- *     `destructive` : l'utilisateur perd l'accès au produit ;
+ *     `archived = true`, #50 / BR-PRO-007), produit masqué des listes, de la frise et du
+ *     tableau de bord (`@SQLRestriction`). #711 : RÉVERSIBLE — onglet « Archivés » de
+ *     `/products`, `POST …/restore` (confirmation dédiée `products/RestoreProductDialog`).
+ *     Variante `product` : titre, bouton et libellé d'attente disent « archiver »
+ *     (`product.confirm`, `product.confirming`) ; la description dit que rien n'est supprimé
+ *     et que le produit se désarchive depuis cet onglet. Le bouton reste `destructive` : le
+ *     produit quitte toutes les vues actives ;
  *   - « supprimer » = suppression PHYSIQUE : événement (`deleteById`, br-events §1),
  *     catégorie (`CategoryServiceImpl.deleteCategory` → `deleteById`, aucun
  *     `@SQLDelete`/`@SQLRestriction` sur `CategoryEntity`). Variantes `event`/`category` :
