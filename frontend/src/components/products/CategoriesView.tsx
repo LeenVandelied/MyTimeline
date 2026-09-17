@@ -12,9 +12,7 @@ import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useCategories } from '@/hooks/useCategories'
-import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useDeleteCategory } from '@/hooks/useDeleteCategory'
-import { useAuth } from '@/hooks/useAuth'
 import type { Category } from '@/types/category'
 
 /**
@@ -24,38 +22,43 @@ import type { Category } from '@/types/category'
  *   - BR-CAT-007 : chargement dynamique des catégories (`useCategories`).
  *   - BR-CAT-001 : nom obligatoire (géré par `CategoryDrawer`, non ré-implémenté).
  *
- * Cards = palette (pastille couleur) + nom + compteur de produits liés (dérivé
- * localement de `useProductsWithEvents`, aucun endpoint compteur dédié). Actions :
+ * Cards = palette (pastille couleur) + nom + compteurs de produits liés. #695 : les
+ * compteurs viennent du BACKEND (`CategoryResponse.productCount` /
+ * `archivedProductCount`, `GET /api/categories`), plus de `useProductsWithEvents`.
+ * Pourquoi : le listing produits exclut les archivés (`@SQLRestriction`) alors qu'un
+ * produit archivé occupe toujours sa catégorie (DEC-S89-001) — une catégorie ne portant
+ * que des archivés affichait « aucun produit » puis refusait sa propre suppression.
+ * Les deux populations restent SÉPARÉES à l'écran (badge coloré = actifs, mention
+ * discrète = archivés) : un total unique ferait croire à des produits visibles dans les
+ * listes. Actions :
  *   - « Nouvelle catégorie » → `CategoryDrawer` create (livré par #62, EMBARQUÉ).
  *   - Clic card → `CategoryDrawer` edit (catégorie système = lecture seule, géré
  *     par le drawer via `category.system`).
  *   - Supprimer → `DeleteConfirmDialog` variant="category". On passe
- *     `linkedProductsCount` (connu localement) + `categoryId` pour forcer le select
- *     de réassignation EN AMONT quand des produits sont liés (sinon 409 backend).
+ *     `linkedProductsCount` = actifs + ARCHIVÉS (#695) + `categoryId` pour forcer le
+ *     select de réassignation EN AMONT quand des produits sont liés — c'est bien le
+ *     total, archivés compris, qui déclenche le 409 backend (`countByCategoryId`).
  *     Les catégories système ne sont pas supprimables (bouton masqué).
  */
 
 export function CategoriesView() {
   const t = useTranslations('products.categories')
-  const { user } = useAuth()
-  const userId = user?.id
 
   const categoriesQuery = useCategories(true)
-  const productsQuery = useProductsWithEvents(userId)
   const deleteMutation = useDeleteCategory()
 
   const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data])
 
-  // Compteur de produits par catégorie (produits archivés déjà exclus API #50).
-  const countByCategory = React.useMemo(() => {
-    const map = new Map<string, number>()
-    for (const product of productsQuery.data ?? []) {
-      const id = product.category?.id
-      if (!id) continue
-      map.set(id, (map.get(id) ?? 0) + 1)
-    }
-    return map
-  }, [productsQuery.data])
+  /**
+   * #695 — total occupant la catégorie : actifs + archivés, tels que le backend les
+   * compte. C'est ce total qui arme le select de réassignation (le 409 de suppression
+   * se déclenche sur les archivés aussi). Les champs sont `.optional()` côté Zod (ils
+   * n'existent que sur `GET /api/categories`) : `?? 0` est un repli de contrat, pas
+   * une valeur métier — le repli `reassignRequiredByServer` de `DeleteConfirmDialog`
+   * reste la défense si ce compteur est périmé (PAT-S89-001 : le refus serveur fait foi).
+   */
+  const linkedCountOf = (category: Category) =>
+    (category.productCount ?? 0) + (category.archivedProductCount ?? 0)
 
   const [createOpen, setCreateOpen] = React.useState(false)
   // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide
@@ -155,7 +158,12 @@ export function CategoriesView() {
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* TODO(perf, follow-up sprint): virtualiser si > 50 items (react-virtual) — cf. audit S22. */}
           {categories.map((category) => {
-            const count = countByCategory.get(category.id) ?? 0
+            const activeCount = category.productCount ?? 0
+            const archivedCount = category.archivedProductCount ?? 0
+            // Badge coloré (actifs) masqué quand la catégorie ne porte QUE des archivés :
+            // il dirait « aucun produit » à côté de la mention « N archivé(s) ». Il reste
+            // affiché à 0/0, où « aucun produit » est vrai (revue Designer #695).
+            const showActiveBadge = activeCount > 0 || archivedCount === 0
             const color = category.color ?? null
             return (
               <li key={category.id}>
@@ -195,17 +203,34 @@ export function CategoriesView() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                      style={{
-                        backgroundColor: color ?? 'var(--color-rule-strong)',
-                        color: contrastInk(color),
-                      }}
-                      data-testid={`categories-count-${category.id}`}
-                    >
-                      {t('productCount', { count })}
-                    </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      {showActiveBadge && (
+                        <span
+                          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                          style={{
+                            backgroundColor: color ?? 'var(--color-rule-strong)',
+                            color: contrastInk(color),
+                          }}
+                          data-testid={`categories-count-${category.id}`}
+                        >
+                          {t('productCount', { count: activeCount })}
+                        </span>
+                      )}
+
+                      {/* #695 — nœud FRÈRE hors du badge coloré (revue Designer) : les
+                          archivés ne sont pas des produits visibles, ils ne partagent
+                          donc pas l'emphase du badge. Deux compteurs = conditionnel JSX,
+                          l'ICU d'une seule clé ne peut pas exprimer la combinaison. */}
+                      {archivedCount > 0 && (
+                        <span
+                          className="text-ink-muted text-2xs"
+                          data-testid={`categories-archived-count-${category.id}`}
+                        >
+                          {t('archivedCount', { count: archivedCount })}
+                        </span>
+                      )}
+                    </div>
 
                     {/* Suppression réservée aux catégories NON système (ADR-002). */}
                     {!category.system && (
@@ -250,7 +275,7 @@ export function CategoriesView() {
           }}
           mode="edit"
           category={editCategory}
-          linkedProductsCount={countByCategory.get(editCategory.id) ?? 0}
+          linkedProductsCount={linkedCountOf(editCategory)}
         />
       )}
 
@@ -263,7 +288,7 @@ export function CategoriesView() {
           }}
           variant="category"
           categoryId={deleteCategoryState.id}
-          linkedProductsCount={countByCategory.get(deleteCategoryState.id) ?? 0}
+          linkedProductsCount={linkedCountOf(deleteCategoryState)}
           onConfirm={handleDeleteConfirm}
         />
       )}

@@ -13,6 +13,13 @@ import { z } from 'zod'
  *     par le `ProductDrawer` comme couleur héritée par défaut du produit. Backend
  *     `Category.getColor()` peut être `null` → `.nullable().optional()` (défensif,
  *     et rétro-compatible avec les fixtures #65 qui l'omettent).
+ *   - `productCount` / `archivedProductCount` (#695) : produits DU CALLER rattachés à
+ *     la catégorie, actifs et archivés SÉPARÉS (un produit archivé occupe toujours sa
+ *     catégorie, DEC-S89-001). `.optional()` et NON `.nullable()` : le backend pose
+ *     `@JsonInclude(NON_NULL)` sur ces deux champs, ils sont donc ABSENTS de la réponse
+ *     (jamais `null`) partout sauf sur `GET /api/categories`, seule route qui les
+ *     calcule. Un consommateur qui lit une catégorie issue d'un POST/PATCH n'a donc
+ *     PAS de compteur — il ne doit pas en inventer un.
  *
  * `id`/`name`/`system` : champs backend toujours présents → pas d'`.optional()`.
  */
@@ -22,6 +29,8 @@ export const categorySchema = z.object({
   system: z.boolean(),
   color: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
+  productCount: z.number().int().nonnegative().optional(),
+  archivedProductCount: z.number().int().nonnegative().optional(),
 })
 
 export type Category = z.infer<typeof categorySchema>

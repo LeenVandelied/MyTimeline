@@ -30,14 +30,20 @@ export interface ArchiveProductVariables {
  *      TOUT DE SUITE. Sans ce retrait, la liste atteinte depuis le détail se monte sur le
  *      cache périmé et peint la ligne archivée le temps du refetch.
  *   2. `invalidateQueries(products.all)` : préfixe `['products']` qui COUVRE par matching
- *      `products.withEvents(userId)` (liste produits, tableau de bord `useDashboardData`,
- *      compteurs de `CategoriesView` — tous lisent `useProductsWithEvents`),
+ *      `products.withEvents(userId)` (liste produits, tableau de bord `useDashboardData`),
  *      `products.detail(id)` et, depuis #711, `products.archived(userId)` (l'onglet
- *      « Archivés » voit arriver le produit). Aucune autre clé n'affiche de produit : `categories.all` ne
- *      porte pas de compteur (dérivé côté client des produits), et aucune requête
- *      `events.*` ne liste les événements d'un produit. La promesse n'est PAS retournée :
- *      le toast part à la réponse du DELETE, pas à la fin du refetch (PIT-S90-008 assumé,
- *      le retrait 1. rend la liste juste sans l'attendre).
+ *      « Archivés » voit arriver le produit).
+ *   3. `invalidateQueries(categories.all)` — #695. La note précédente (« `categories.all`
+ *      ne porte pas de compteur, dérivé côté client des produits ») est PÉRIMÉE : depuis
+ *      #695 les compteurs de la carte catégorie sont des champs de `CategoryResponse`
+ *      (`productCount` / `archivedProductCount`) servis par `GET /api/categories`. Sans
+ *      cette ligne, archiver un produit puis passer à l'onglet Catégories laisse la carte
+ *      affirmer qu'il est encore actif jusqu'au refetch suivant (PIT-S92-004 : vérifier
+ *      l'état EN PLACE, pas seulement après rechargement).
+ *
+ * Aucune requête `events.*` ne liste les événements d'un produit. Les promesses
+ * d'invalidation ne sont PAS retournées : le toast part à la réponse du DELETE, pas à la
+ * fin du refetch (PIT-S90-008 assumé, le retrait 1. rend la liste juste sans l'attendre).
  *
  * L'erreur axios n'est PAS avalée : `mutateAsync` rejette pour que `DeleteConfirmDialog`
  * (#65) l'affiche inline (404/403/409) — `onConfirm` doit REJETER. Aucune invalidation
@@ -61,6 +67,7 @@ export function useArchiveProduct(userId: string | undefined) {
         )
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
     },
   })
 }

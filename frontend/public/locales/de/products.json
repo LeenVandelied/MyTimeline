@@ -202,6 +202,7 @@
     "error": "Kategorien konnten nicht geladen werden.",
     "system": "System",
     "productCount": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
+    "archivedCount": "{count, plural, one {# archiviert} other {# archiviert}}",
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "openEdit": "{name} bearbeiten"

@@ -119,6 +119,7 @@
 ## 4. Dépendances inter-domaines
 
 - **`products` -> `categories`** : `Product` `@ManyToOne Category`, FK `category_id NOT NULL`. Création échoue (`CategoryNotFoundException`) si la catégorie n'existe pas.
+- **`categories` -> `products` EN LECTURE (S93 #695)** : `GET /api/categories` porte désormais `productCount` / `archivedProductCount` (produits DU CALLER, actifs et archivés séparés), calculés par `ProductRepository.countByCategoryForUser` — une requête native groupée, scopée `user_id` (les catégories système sont partagées). Voir BR-CAT-008 dans `br-categories.md`. **Conséquence côté produits** : toute mutation du cycle de vie d'un produit DOIT invalider `queryKeys.categories.all` côté front — `useArchiveProduct` (#695) et `useRestoreProduct` (#711) le font tous les deux. Ne pas confondre ce comptage avec `countByCategoryId` (tous utilisateurs, arme le 409 / protège la FK).
 - **`products` -> `users`** : `Product` `@ManyToOne User`, FK `user_id` nullable (⚠️ pas de `nullable=false`). Ownership et autorisation reposent sur `User`.
 - **`products` -> `events`** : `Product` `@OneToMany Event` (`cascade=ALL`, `orphanRemoval=true`, `mappedBy='product'`). Le domaine `products` crée/supprime les events en cascade ; leur cycle de vie est piloté par le produit.
 - **Couplage hexagonal inversé (anti-pattern)** : `domain/ports/services/ProductService` importe le DTO applicatif `ProductCreationRequest` — le domaine dépend de la couche application (cf. §5).

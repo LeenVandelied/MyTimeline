@@ -202,6 +202,7 @@
     "error": "Impossible de charger les catégories.",
     "system": "Système",
     "productCount": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "archivedCount": "{count, plural, one {# archivé} other {# archivés}}",
     "delete": "Supprimer",
     "edit": "Modifier",
     "openEdit": "Modifier {name}"
