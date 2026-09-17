@@ -1,79 +1,50 @@
-# Sprint 85 — Frise : sidebar de catégories et barre d'outils
+## Objectif
 
-Écart maquette ↔ produit sur l'écran cœur. Les trois issues écrivent dans le même
-`TimelineView.tsx` : sprint **sérialisé**, un agent par vague.
+Un produit archivé cesse d'être perdu : il se retrouve et se restaure. Et la carte d'une catégorie cesse de mentir en affichant « aucun produit » alors qu'elle porte des produits archivés.
 
 ## Issues traitées
 
-| # | Titre | Commit |
-|---|---|---|
-| #592 | Frise : sidebar absente — filtres par catégorie, légende et pliage global | `6f0c3eb` |
-| #601 | Frise : en-têtes de catégorie sans pastille ni compteur, et repli qui n'affiche rien | `a604e99` |
-| #602 | Frise : ni bouton Aujourd'hui ni bouton Nouvel événement dans la barre d'outils | `a2a3fce` |
-| — | Correctif de revue : hiérarchie en-tête de catégorie / lane | `1fb477a` |
+- **#711** (P1, M) — [FEATURE] Restaurer un produit archivé
+- **#695** (P2, M) — [BUG] La carte d'une catégorie affiche « aucun produit » alors qu'elle porte des produits archivés
+
+Vagues : V1 = #711, puis V2 = #695 (mêmes ports produits, même règle « un archivé occupe sa catégorie »). Cohésion 0.50.
+
+## Arbitrages rendus par le dev au démarrage
+
+- Surface des archivés : **3e onglet « Archivés »** sur `/products`, plutôt qu'une route dédiée ou un filtre dans la liste.
+- Désarchivage **avec confirmation** puis toast (le désarchivage d'un événement, lui, reste direct).
+- Carte catégorie : **actifs + « N archivés »** séparés, plutôt qu'un total unique.
 
 ## Changements clés
 
-- **Sidebar de la Vue Timeline** (`TimelineSidebar.tsx`, nouveau) : accordéons « Tout déplier /
-  Tout plier », filtres par catégorie (état `hiddenCats`, **distinct** du repli `collapsed`),
-  légende, raccourcis clavier. Permanente ≥ 1024 px, repliée derrière un bouton « Filtres »
-  en dessous (panneau superposé, Échap et clic extérieur, focus rendu).
-- **Filtrage en amont de la géométrie** : `visibleGroups` alimente `buildVerticalModel`,
-  `navLanes` (coordonnées clavier #81), le rendu et la minimap ; `hiddenCats` entre dans
-  `geometryKey`. C'était le risque principal identifié au plan.
-- **En-tête de catégorie** : pastille de couleur, compteur de produits, résumé compact quand la
-  catégorie est repliée (barrettes fenêtrées, mêmes coordonnées que les pastilles). Hauteur
-  fixée à 40 px, identique pliée et dépliée (la virtualisation mesure cette hauteur).
-- **Barre d'outils** : boutons « Aujourd'hui » et « Nouvel événement ». Ce dernier ouvre le
-  drawer **du shell** via un contexte (`CreateEventContext`) : un seul état, un seul drawer.
-- **Opt-in `/timeline`** : `TimelineView` est monté par trois écrans (frise, dashboard, fiche
-  produit) ; la sidebar et les deux boutons ne s'affichent que sur l'écran frise
-  (prop `layout="screen"`). L'en-tête de catégorie, partagé, change sur les trois.
+### #711 — Restauration
+- `GET /api/users/{userId}/products/archived` → `ArchivedProductResponse[]` (sans les événements) ; `POST /api/users/{userId}/products/{productId}/restore` → 204.
+- `ProductEntity` porte `@SQLRestriction("archived = false")` : la lecture et la restauration passent donc par des requêtes **natives**, seules capables de voir une ligne archivée. Le filtre `archived` y est posé explicitement (PIT-S79-006).
+- **L'ownership est porté par la clause `WHERE` de l'UPDATE** (`id` + `user_id` + `archived = true`) : 0 ligne modifiée ⇒ 404 uniforme (inconnu, déjà actif, ou appartenant à un autre utilisateur), conformément à l'anti-énumération de BR-PRO-010. Le 403 path ≠ JWT reste celui des autres routes.
+- Front : onglet « Archivés », `ArchivedProductsView`, `RestoreProductDialog` (dialog dédié, non destructif), `useArchivedProducts` / `useRestoreProduct`, retrait en place + invalidation `products.all` et `categories.all` (PIT-S92-004). Textes du dialog d'archivage réécrits : l'archivage est réversible.
 
-## Défauts trouvés en chemin, corrigés
+### #695 — Compteurs de la carte
+- Une **seule requête native groupée** (`count(*) FILTER …` par catégorie, scopée à l'appelant) — pas de N+1. Le scope utilisateur est ici un **contrôle d'isolation**, les catégories système étant partagées.
+- `countByCategoryId`, qui garde le 409 de suppression, est laissé **intact** : la divergence entre les deux comptages est volontaire et documentée.
+- `productCount` / `archivedProductCount` sont **absents du JSON** sur POST / GET par id / PATCH (un `0` y rouvrirait le bug) ; Zod en `.optional()`.
+- Carte : badge coloré pour les actifs (masqué s'il n'y a que des archivés), mention discrète « N archivés » à côté. `linkedProductsCount` reçoit actifs + archivés, donc le select de réassignation s'arme d'emblée — le repli serveur 409 est conservé et reste testé.
 
-- **Libellé de catégorie qui sortait de l'écran** au défilement horizontal (`position:sticky` sur
-  une boîte aussi large que son conteneur) — antérieur au sprint, révélé par la pastille.
-- **Minimap écrasée à 9 px** par les nouveaux boutons à 1024 px, sans débordement visible pour
-  le signaler (`flex:1; min-width:0` absorbe tout le manque de place).
-- **Hiérarchie perdue** entre en-tête de catégorie et en-tête de lane (même fond, même graisse)
-  après #601 : la maquette les distingue par le fond, la graisse et un retrait.
+## Règles métier impactées
 
-## Décisions (DEC-S85-001 → 006)
+- **BR-PRO-007 amendée** : l'archivage produit n'est plus définitif.
+- **BR-PRO-011 créée** : lecture des archivés et restauration, ownership natif et 404 uniforme.
+- **BR-CAT-008 créée** : les compteurs de la carte viennent du backend, archivés distingués.
+- Packs `br-products.md` et `br-categories.md` mis à jour en conséquence.
 
-Arbitrées au démarrage, détail dans `docs/memory/sprints/sprint-85/decisions-demarrage.md` :
-compteur d'en-tête = nombre de **produits** (maquette) ; légende limitée aux marques réellement
-rendues (les occurrences fantômes et le glyphe ↻ viennent avec #595) ; bouton de création masqué
-sous 768 px là où le shell a son bouton flottant ; sidebar repliée sous 1024 px ; opt-in
-`/timeline` ; couleur de catégorie issue de `product.category.color`, contour neutre si absente.
+## Qualité
 
-**Écarts à la maquette assumés** (revue de charte : 8 conformes, 1 écart, tous tracés dans les
-`issue-*-done.md`) : l'état « catégorie masquée » est barré en encre lisible au lieu d'une
-opacité de 40 % (2,52:1 → 6,11:1) ; le texte de sidebar utilise `ink-muted` et non `ink-faint`
-(2,82:1). L'écart restant — gouttière à 168 px au lieu de 176 — touche une constante partagée
-hors périmètre : suite dédiée.
+- **Designer** consulté avant implémentation : approuvé avec corrections, toutes appliquées (dialog dédié plutôt qu'extension de `DeleteConfirmDialog`, mention archivés hors du badge coloré).
+- **Audit sécurité** dédié sur #711 (l'ownership par clause SQL est un motif nouveau au dépôt) : **verdict RAS**.
+- **Revue batch** : 0 constat.
+- **Tests** : backend 632 verts (627 avant) · Vitest 1824 verts (1818 avant) · `tsc`, `next lint`, `format:check` verts · suite E2E complète jouée en local contre `next build` + `next start` : **410 passés / 2 échoués / 8 sautés**.
+- Les 2 échecs sont **hors périmètre** : l'armement de comparaison de captures du S77, qui échoue mécaniquement hors Linux, et le flake de palette du S84 (mesuré ~2/5 sur `dev` comme sur branche, et repassé vert seul ici). Aucun fichier du sprint ne touche ces surfaces.
+- Aucune migration Flyway : la colonne `archived` existe depuis V7. **V16 reste libre.**
 
-## Tests
-
-- **Frontend** : `next build` 52/52 pages · **1511 tests unitaires** (127 fichiers) · typecheck ·
-  lint · `format:check` — tous verts, mesurés par le lead.
-- **E2E**, base e2e recréée à vide : **370 passés / 8 sautés / 1 échec en 6,9 min**. L'échec est
-  le contrôle d'armement de `sprint-77-theme-visual`, qui échoue mécaniquement sur macOS
-  (références suffixées `-chromium-linux`) : c'est la CI Linux qui juge le visuel.
-- **Backend** : aucune ligne modifiée.
-- Audit complet : `docs/memory/audits/sprint-85-test-coverage.md`.
-
-## Revues
-
-- **Code** (batch, diff complet) : 0 CRITIQUE / 0 MAJEUR / 3 MINEUR — aucun ne justifie une
-  correction de code ; le plus utile (une garde E2E qui ne protège pas l'invariant qu'elle croit
-  tester) part en suite.
-- **Charte** : 8 CONFORME / 1 ÉCART / 1 INDÉTERMINÉ ; l'indéterminé a été tranché par le lead sur
-  la maquette et corrigé (`1fb477a`).
-- **Vérification navigateur du lead** : `/timeline` en clair et en sombre, filtre, repli et
-  résumé, panneau « Filtres » à 900 px, dashboard sans sidebar ni boutons, anneau de focus
-  obtenu par une vraie tabulation (2 px, `:focus-visible`).
-
-Closes #592, #601, #602 (`dev` n'est pas la branche par défaut : les issues seront fermées à la main après le merge).
+Détail : `docs/memory/sprints/sprint-93/` (done.md par issue, revue Designer, audit sécurité, revue batch) et `docs/memory/audits/sprint-93-test-coverage.md`.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
