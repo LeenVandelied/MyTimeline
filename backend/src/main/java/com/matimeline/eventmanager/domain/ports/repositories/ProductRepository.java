@@ -1,11 +1,13 @@
 package com.matimeline.eventmanager.domain.ports.repositories;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.models.Product;
 
 @Repository
@@ -35,6 +37,28 @@ public interface ProductRepository {
      * FK sur des produits archivés.
      */
     long countByCategoryId(UUID categoryId);
+
+    /**
+     * #695 : pour CHAQUE catégorie portant au moins un produit de {@code userId}, le nombre
+     * de produits actifs et archivés — en UNE seule requête groupée (pas de comptage par
+     * catégorie, qui serait un N+1 sur la page des catégories).
+     *
+     * <p>Scopé {@code user_id = :userId} : les catégories SYSTÈME sont partagées entre tous
+     * les utilisateurs, y compter les produits d'autrui publierait une information
+     * inter-utilisateurs sur une surface de lecture banale.
+     *
+     * <p>L'implémentation est du SQL NATIF : {@code @SQLRestriction("archived = false")} sur
+     * {@code ProductEntity} masquerait les archivés d'un comptage JPQL (PIT-S79-006), et ce
+     * sont EUX que l'on veut distinguer. Contrepartie : le natif ne filtre rien de lui-même,
+     * la séparation actifs / archivés est posée à la main.
+     *
+     * <p>Une catégorie SANS aucun produit de cet utilisateur est ABSENTE de la map (pas de
+     * ligne à grouper) : l'appelant substitue {@link CategoryProductCounts#EMPTY}.
+     *
+     * <p>Distinct de {@link #countByCategoryId(UUID)}, qui reste le comptage TOUS
+     * utilisateurs confondus qui arme le 409 de suppression : ne pas confondre les deux.
+     */
+    Map<UUID, CategoryProductCounts> countByCategoryForUser(UUID userId);
 
     /**
      * #52 : réassigne en masse tous les produits d'une catégorie source vers une

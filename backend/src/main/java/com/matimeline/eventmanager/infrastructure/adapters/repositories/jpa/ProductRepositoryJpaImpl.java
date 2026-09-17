@@ -2,7 +2,9 @@ package com.matimeline.eventmanager.infrastructure.adapters.repositories.jpa;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import com.matimeline.eventmanager.application.mappers.CategoryMapper;
 import com.matimeline.eventmanager.application.mappers.ProductMapper;
 import com.matimeline.eventmanager.application.mappers.UserMapper;
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
@@ -139,6 +142,47 @@ public class ProductRepositoryJpaImpl
                 .setParameter("cat", categoryId)
                 .getSingleResult();
         return count.longValue();
+    }
+
+    // #695 — Compteurs de la carte catégorie. UNE requête groupée pour toute la page
+    // (un comptage par catégorie serait un N+1). SQL NATIF pour la MÊME raison que
+    // countByCategoryId, mais avec l'effet inverse recherché : le @SQLRestriction ne
+    // s'appliquant pas (PIT-S79-006), les deux populations sont visibles ICI et c'est
+    // `FILTER (WHERE archived = ...)` qui les sépare — le natif ne filtre rien seul.
+    // `WHERE user_id = :uid` n'est PAS une optimisation : les catégories système sont
+    // partagées, sans lui la carte publierait le nombre de produits d'autres comptes.
+    @Override
+    public Map<UUID, CategoryProductCounts> countByCategoryForUser(UUID userId) {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = entityManager
+                .createNativeQuery(
+                        "SELECT category_id, "
+                                + "count(*) FILTER (WHERE archived = false) AS active_count, "
+                                + "count(*) FILTER (WHERE archived = true) AS archived_count "
+                                + "FROM products WHERE user_id = :uid GROUP BY category_id")
+                .setParameter("uid", userId)
+                .getResultList();
+
+        Map<UUID, CategoryProductCounts> counts = new HashMap<>();
+        for (Object[] row : rows) {
+            UUID categoryId = toUuid(row[0]);
+            if (categoryId == null) continue;
+            counts.put(categoryId, new CategoryProductCounts(
+                    ((Number) row[1]).longValue(),
+                    ((Number) row[2]).longValue()));
+        }
+        return counts;
+    }
+
+    /**
+     * Le pilote JDBC rend une colonne {@code uuid} en {@link UUID}, mais une projection
+     * native n'est pas typée par une entité : on ne suppose pas le type rendu (lecture
+     * défensive plutôt qu'un cast qui casserait à la première divergence de pilote).
+     */
+    private UUID toUuid(Object raw) {
+        if (raw instanceof UUID uuid) return uuid;
+        if (raw instanceof String text) return UUID.fromString(text);
+        return null;
     }
 
     @Override

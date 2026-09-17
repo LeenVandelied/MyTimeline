@@ -10,11 +10,13 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictExcepti
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.models.Category;
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,6 +88,16 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> getCategoriesForOwner(UUID callerId) {
         // FIX review #153 : listing scopé au caller + catégories système (owner NULL).
         return categoryRepository.findByOwnerIdOrSystem(callerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<UUID, CategoryProductCounts> getProductCountsForOwner(UUID callerId) {
+        // #695 : délégué tel quel au port (requête groupée UNIQUE, scopée au caller).
+        // NE PAS reconstruire ce compteur à partir de countByCategoryId : ce dernier
+        // compte TOUS utilisateurs confondus (il arme le 409 / la FK) et fuirait le
+        // nombre de produits d'autrui sur les catégories système.
+        return productRepository.countByCategoryForUser(callerId);
     }
 
     @Override
