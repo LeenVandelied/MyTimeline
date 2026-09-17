@@ -1,5 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.repositories.jpa;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.matimeline.eventmanager.application.mappers.CategoryMapper;
 import com.matimeline.eventmanager.application.mappers.ProductMapper;
+import com.matimeline.eventmanager.application.mappers.UserMapper;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
@@ -23,15 +27,21 @@ public class ProductRepositoryJpaImpl
     implements ProductRepository {
 
     private final ProductMapper productMapper;
+    private final CategoryMapper categoryMapper;
+    private final UserMapper userMapper;
     private final EntityManager entityManager;
 
     @Autowired
     public ProductRepositoryJpaImpl(
         EntityManager em,
-        ProductMapper productMapper
+        ProductMapper productMapper,
+        CategoryMapper categoryMapper,
+        UserMapper userMapper
     ) {
         super(ProductEntity.class, em);
         this.productMapper = productMapper;
+        this.categoryMapper = categoryMapper;
+        this.userMapper = userMapper;
         this.entityManager = em;
     }
 
@@ -148,6 +158,58 @@ public class ProductRepositoryJpaImpl
     public int deleteAllByUserId(UUID userId) {
         return entityManager
                 .createNativeQuery("DELETE FROM products WHERE user_id = :uid")
+                .setParameter("uid", userId)
+                .executeUpdate();
+    }
+
+    // #711 — SQL NATIF volontaire (PIT-S79-006) : @SQLRestriction masque les archivés de
+    // toute lecture HQL/findById, c'est donc le seul moyen de les lire. Contrepartie : le
+    // natif ne filtre RIEN de lui-même, `archived = true` ET `user_id` sont posés à la main.
+    // Mapping manuel (sans ProductMapper.toDomain) : ce dernier parcourt `getEvents()` et
+    // déclencherait un chargement paresseux par produit, inutile pour la surface.
+    @Override
+    public List<Product> findArchivedByUserId(UUID userId) {
+        @SuppressWarnings("unchecked")
+        List<ProductEntity> rows = entityManager
+                .createNativeQuery(
+                        "SELECT * FROM products WHERE user_id = :uid AND archived = true "
+                                + "ORDER BY updated_at DESC, id",
+                        ProductEntity.class)
+                .setParameter("uid", userId)
+                .getResultList();
+        return rows.stream().map(this::toDomainWithoutEvents).toList();
+    }
+
+    /**
+     * Produit domaine SANS ses événements (liste vide, jamais {@code null}). Le mapping vit
+     * ICI et non dans {@code ProductMapper} : ce dernier réside en {@code application}, et lui
+     * ajouter une méthode qui parle {@code ProductEntity} creuserait la dette hexagonale gelée
+     * par {@code ArchitectureTest} (application -> infrastructure). L'adaptateur JPA, lui, a le
+     * droit de connaître les deux.
+     */
+    private Product toDomainWithoutEvents(ProductEntity entity) {
+        return new Product(
+                entity.getId(),
+                entity.getName(),
+                categoryMapper.toDomain(entity.getCategory()),
+                userMapper.toDomain(entity.getUser()),
+                new ArrayList<>(),
+                entity.isArchived(),
+                entity.getColor());
+    }
+
+    // #711 — UPDATE NATIF : l'entité archivée est introuvable par findById (@SQLRestriction),
+    // l'update-in-place de save() est donc impossible. Ownership ET état dans le MÊME WHERE
+    // (anti-IDOR) ; le nombre de lignes modifiées décide du 404 côté service. `version` et
+    // `updated_at` sont tenus à la main (le natif court-circuite @Version et l'audit JPA).
+    @Override
+    public int restoreArchivedByIdAndUserId(UUID productId, UUID userId) {
+        return entityManager
+                .createNativeQuery(
+                        "UPDATE products SET archived = false, version = version + 1, updated_at = :now "
+                                + "WHERE id = :id AND user_id = :uid AND archived = true")
+                .setParameter("now", LocalDateTime.now())
+                .setParameter("id", productId)
                 .setParameter("uid", userId)
                 .executeUpdate();
     }

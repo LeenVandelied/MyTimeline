@@ -180,6 +180,27 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Product> getArchivedProducts(UUID userId) {
+        return productRepository.findArchivedByUserId(userId);
+    }
+
+    /**
+     * #711 — Désarchivage. L'ownership n'est PAS vérifié par une lecture préalable : un
+     * produit archivé est introuvable par {@code findDomainProductById} (@SQLRestriction).
+     * Il est porté par le WHERE de l'UPDATE natif (id + user_id + archived = true) ; 0 ligne
+     * = 404 uniforme (BR-PRO-011).
+     */
+    @Override
+    @Transactional
+    public void restoreProduct(UUID productId, UUID userId) {
+        int restored = productRepository.restoreArchivedByIdAndUserId(productId, userId);
+        if (restored == 0) {
+            throw new ProductNotFoundException(productId);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existsById(UUID id) {
         return productRepository.existsById(id);
     }

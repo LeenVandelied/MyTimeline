@@ -55,4 +55,27 @@ public interface ProductRepository {
      * la suppression des catégories ({@code products.category_id} NOT NULL).
      */
     int deleteAllByUserId(UUID userId);
+
+    /**
+     * #711 : produits ARCHIVÉS de {@code userId} (surface « Archivés », BR-PRO-011).
+     *
+     * <p>{@code @SQLRestriction("archived = false")} rend ces lignes invisibles à toute
+     * lecture Hibernate : l'implémentation DOIT être du SQL NATIF (PIT-S79-006) et filtrer
+     * EXPLICITEMENT {@code user_id = :userId AND archived = true} — le natif ne pose aucun
+     * filtre de lui-même. Aucun filtre « a des événements » : un archivé sans événement
+     * doit rester restaurable. Tri : archivés les plus récemment modifiés d'abord.
+     *
+     * <p>Les événements ne sont PAS chargés (liste vide, jamais {@code null}) : la surface
+     * n'en affiche aucun, et leur chargement paresseux passerait par l'entité restreinte.
+     */
+    List<Product> findArchivedByUserId(UUID userId);
+
+    /**
+     * #711 : restaure ({@code archived = false}) le produit {@code productId} SI ET SEULEMENT
+     * SI il appartient à {@code userId} ET est archivé — les deux conditions sont dans le
+     * {@code WHERE} du même UPDATE natif (anti-IDOR, BR-PRO-011). Retourne le nombre de
+     * lignes modifiées : 0 = inconnu, non archivé ou produit d'autrui (indistinguables pour
+     * l'appelant, anti-énumération).
+     */
+    int restoreArchivedByIdAndUserId(UUID productId, UUID userId);
 }

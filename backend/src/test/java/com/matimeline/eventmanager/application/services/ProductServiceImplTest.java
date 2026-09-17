@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
@@ -368,5 +369,36 @@ class ProductServiceImplTest {
 
         assertThat(product.getColor()).isNull();
         verify(productRepository).save(product);
+    }
+
+    // -------------------------------------------------------------------------
+    // #711 — désarchivage (BR-PRO-011) : la ligne modifiée par l'UPDATE natif décide.
+    // -------------------------------------------------------------------------
+
+    @Test
+    void restoreProduct_oneRowRestored_passesProductAndCallerIds() {
+        when(productRepository.restoreArchivedByIdAndUserId(productId, callerId)).thenReturn(1);
+
+        service.restoreProduct(productId, callerId);
+
+        verify(productRepository).restoreArchivedByIdAndUserId(productId, callerId);
+        verify(productRepository, never()).save(any(Product.class));
+    }
+
+    /** 0 ligne = inconnu, non archivé ou produit d'autrui : même exception (404 uniforme). */
+    @Test
+    void restoreProduct_noRowRestored_throwsProductNotFound() {
+        when(productRepository.restoreArchivedByIdAndUserId(productId, callerId)).thenReturn(0);
+
+        assertThatThrownBy(() -> service.restoreProduct(productId, callerId))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    @Test
+    void getArchivedProducts_delegatesToNativeUserScopedQuery() {
+        Product archived = new Product(productId, "Archivé", null, caller, new ArrayList<>(), true, null);
+        when(productRepository.findArchivedByUserId(callerId)).thenReturn(List.of(archived));
+
+        assertThat(service.getArchivedProducts(callerId)).containsExactly(archived);
     }
 }
