@@ -6654,7 +6654,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Coverage-E2E :** OK — 5 des 7 testids statiques ajoutés sont cités par une spec ; les 2 autres (`product-restore-error`, `products-archived-error`) sont des états d'erreur couverts en Vitest.
 **PR :** #717 (`claude/sprint-93-start-54837d` → `dev`), ouverte le 2026-09-17. **CI 7/7 verte sur `95ae2f52`** (SHA épinglé), `MERGEABLE`/`CLEAN`. Le job `e2e` Linux vert tranche les 2 rouges locaux. Pile e2e démontée après coup.
 **Follow-ups détectés (à arbitrer en Phase 4 de `/sprint end`) :** #711 — pagination/index des archivés [XS], détail d'un produit archivé en lecture seule [S], `useIsProductArchivedHere` non purgé à la restauration [XS] ; #695 — index composite `(user_id, category_id, archived)` [XS], ventilation actifs/archivés dans `CategoryDrawer` [XS], aucune surface pour les archivés D'UNE catégorie [S]. Volet non couvert du `RECOMMAND_SECURITY` : oracle temporel du 404, et scope des 3 autres natifs (l'audit a jugé leur portée OK sans mesurer le temps de réponse).
-**Status :** En cours — PR #717 ouverte, CI verte, en attente de `/sprint end 93`
+**Consolidation mémoire (`/sprint end 93`, 2026-09-18) :** PIT-S93-001 à -008, PAT-S93-001 à -003, DEC-S93-001 à -003 ; BR-PRO-011 et BR-CAT-008 écrites directement dans les packs `br-products.md` / `br-categories.md` par les agents (ce dépôt n'a pas de `business-rules.md`). `pit-classification.tsv` complété (8 entrées) et packs `pit-*` régénérés, `--check` exit 0.
+**Follow-ups arbitrés (Phase 4, triage par le dev, 6 items) :** aucun discard, aucune absorption — tous en backlog libre, sans milestone ni label `sprint-*`.
+  - Fiche en lecture seule d'un produit archivé [S | fullstack products] → issue **#718**
+  - Atteindre les produits archivés d'une catégorie donnée [S | fullstack categories] → issue **#719**
+  - Compléter l'audit des natifs : canal temporel du 404 uniforme + portée des 3 autres requêtes [S | backend] → issue **#720**
+  - Index et pagination des lectures d'archivés (2 signaux fusionnés sur demande du dev) [XS | backend] → issue **#721**
+  - `useIsProductArchivedHere` non purgé à la restauration [XS | frontend] → issue **#722**
+  - `CategoryDrawer` sans ventilation actifs/archivés [XS | frontend] → issue **#723**
+  Bilan : 6 issues créées (0 avec milestone), 0 discard, 0 absorption. Ratio discard 0/6 — les deux agents n'ont pas sur-signalé.
+**Status :** En cours — PR #717 prête au merge (CI 7/7 verte, triage fait), en attente du feu vert du dev
 
 ### Sprint 94 — 2026-09-15 (PLANIFIÉ — cohésion 1.00, Frise : clavier, plein écran, mobile)
 **Objectif :** Les raccourcis n'agissent plus derrière un formulaire ; l'édition marche en plein écran ; aucun événement caché sous la colonne sticky mobile
