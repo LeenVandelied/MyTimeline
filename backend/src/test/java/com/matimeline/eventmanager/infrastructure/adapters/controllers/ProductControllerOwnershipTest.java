@@ -3,6 +3,7 @@ package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
+import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
@@ -278,6 +280,104 @@ class ProductControllerOwnershipTest {
                 .andExpect(status().isNoContent());
 
         verify(productService).archiveById(productId);
+    }
+
+    // ---------------------------------------------------------------------
+    // #711 — liste des archivés + désarchivage (BR-PRO-011). L'ownership de la cible est
+    // dans le SQL natif (couvert par ProductRestoreIntegrationTest) ; ici, le contrat du
+    // contrôleur : 401/403 avant tout appel service, délégation (productId, userId), 204/404.
+    // ---------------------------------------------------------------------
+
+    @Test
+    void getArchivedProducts_unauthenticated_returns401() throws Exception {
+        when(callerResolver.currentUser()).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/users/" + callerId + "/products/archived"))
+                .andExpect(status().isUnauthorized());
+
+        verify(productService, never()).getArchivedProducts(any());
+    }
+
+    @Test
+    void getArchivedProducts_pathUserDiffersFromCaller_returns403() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+
+        mockMvc.perform(get("/api/users/" + otherUserId + "/products/archived"))
+                .andExpect(status().isForbidden());
+
+        verify(productService, never()).getArchivedProducts(any());
+    }
+
+    @Test
+    void getArchivedProducts_own_returns200_withArchivedShape_withoutEventsNorUser() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "s3cr3t", "ROLE_USER", "c@c.com");
+        UUID categoryId = UUID.randomUUID();
+        Category category = new Category(categoryId, "Travail", "#112233", "desc", callerId);
+        Product archived = new Product(productId, "vieux", category, caller, List.of(), true, "#abcdef");
+
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+        when(productService.getArchivedProducts(callerId)).thenReturn(List.of(archived));
+
+        mockMvc.perform(get("/api/users/" + callerId + "/products/archived"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(productId.toString()))
+                .andExpect(jsonPath("$[0].name").value("vieux"))
+                .andExpect(jsonPath("$[0].color").value("#abcdef"))
+                .andExpect(jsonPath("$[0].category.id").value(categoryId.toString()))
+                .andExpect(jsonPath("$[0].category.color").value("#112233"))
+                .andExpect(jsonPath("$[0].events").doesNotExist())
+                .andExpect(jsonPath("$[0].archived").doesNotExist())
+                .andExpect(jsonPath("$[0].user").doesNotExist())
+                .andExpect(jsonPath("$[0].category.ownerId").doesNotExist());
+    }
+
+    @Test
+    void restoreProduct_unauthenticated_returns401() throws Exception {
+        when(callerResolver.currentUser()).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/users/" + callerId + "/products/" + productId + "/restore"))
+                .andExpect(status().isUnauthorized());
+
+        verify(productService, never()).restoreProduct(any(), any());
+    }
+
+    @Test
+    void restoreProduct_pathUserDiffersFromCaller_returns403_andDoesNotRestore() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+
+        mockMvc.perform(post("/api/users/" + otherUserId + "/products/" + productId + "/restore"))
+                .andExpect(status().isForbidden());
+
+        verify(productService, never()).restoreProduct(any(), any());
+    }
+
+    /** Délégation : l'id du CALLER (== path) est passé au service, qui le lie dans le WHERE natif. */
+    @Test
+    void restoreProduct_own_returns204_andDelegatesWithCallerId() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+
+        mockMvc.perform(post("/api/users/" + callerId + "/products/" + productId + "/restore"))
+                .andExpect(status().isNoContent());
+
+        verify(productService).restoreProduct(productId, callerId);
+    }
+
+    /** Aucune ligne restaurée (inconnu / non archivé / d'autrui) -> ProductNotFoundException -> 404. */
+    @Test
+    void restoreProduct_serviceNotFound_returns404() throws Exception {
+        MockMvc withAdvice = MockMvcBuilders
+                .standaloneSetup(new ProductController(productService, eventService, callerResolver))
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+        doThrow(new ProductNotFoundException(productId)).when(productService).restoreProduct(productId, callerId);
+
+        withAdvice.perform(post("/api/users/" + callerId + "/products/" + productId + "/restore"))
+                .andExpect(status().isNotFound());
     }
 
     // ---------------------------------------------------------------------

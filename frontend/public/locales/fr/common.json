@@ -6,6 +6,7 @@
     "eventUnarchived": "Événement désarchivé",
     "productCreated": "Produit créé",
     "productArchived": "Produit archivé",
+    "productRestored": "Produit désarchivé",
     "categoryCreated": "Catégorie créée"
   },
   "login": {
@@ -73,7 +74,7 @@
     },
     "product": {
       "title": "Archiver ce produit ?",
-      "description": "Le produit sera archivé et n'apparaîtra plus dans vos listes.",
+      "description": "Le produit n'apparaîtra plus dans vos listes, mais rien n'est perdu : vous pourrez le désarchiver depuis l'onglet « Archivés ».",
       "confirm": "Archiver",
       "confirming": "Archivage en cours"
     },

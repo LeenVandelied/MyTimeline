@@ -1,10 +1,12 @@
 package com.matimeline.eventmanager.domain.ports.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.matimeline.eventmanager.domain.models.Category;
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 
 public interface CategoryService {
 
@@ -31,6 +33,17 @@ public interface CategoryService {
      * {@code GET /api/categories}.
      */
     List<Category> getCategoriesForOwner(UUID callerId);
+
+    /**
+     * #695 : compteurs de produits (actifs / archivés) des catégories, du point de vue de
+     * {@code callerId}, en UNE requête groupée. Accompagne {@link #getCategoriesForOwner}
+     * pour que la carte d'une catégorie ne dise plus « aucun produit » alors que la
+     * suppression exige une réassignation (DEC-S89-001).
+     *
+     * <p>Une catégorie sans aucun produit du caller est ABSENTE de la map : l'appelant
+     * substitue {@link CategoryProductCounts#EMPTY}.
+     */
+    Map<UUID, CategoryProductCounts> getProductCountsForOwner(UUID callerId);
 
     Optional<Category> getCategoryById(UUID id);
     Optional<Category> getCategoryByName(String name);

@@ -896,3 +896,12 @@ Neutraliser le correctif directement dans le code (retour anticipé, `z-index` f
 
 ## PAT-S92-002 — Vue détail pendant l'archivage de son entité : garder la dernière fiche via `useMutationState`
 Quand une mutation retire l'entité affichée du cache avant la navigation, la vue détail repasse une frame par « introuvable ». Motif : `useMutationState` filtré sur la clé de mutation ET l'id de l'entité ; tant qu'une mutation de CETTE entité, lancée depuis cette vue, est en cours ou réussie, garder la dernière valeur vue (état dérivé au rendu, pas d'effet). Mettre à jour le cache (retrait) APRÈS succès, puis invalider le préfixe. Anti-patterns : naviguer puis compter sur le démontage ; ne pas toucher au cache et laisser la ligne visible jusqu'au refetch. Référence : `useArchiveProduct` / `useIsProductArchivedHere` ; armement : sans fiche gardée → rouge « introuvable ». (Sprint 92, absorption A `ea5d02f`)
+
+## PAT-S93-001 — Corriger un texte d'UI sans affaiblir le garde de vocabulaire d'un sprint antérieur
+Le garde #605 interdit toute occurrence de « supprim… » dans le dialog produit. La nouvelle copie « rien n'est supprimé » (pour dire que l'archivage est réversible) le faisait rougir à juste titre. Reformuler le texte (« rien n'est perdu ») plutôt que relâcher l'assertion : un garde de vocabulaire qui a déjà attrapé une régression vaut plus que la formulation qu'on préférait. (Sprint 93 #711)
+
+## PAT-S93-002 — Comptage par parent : UNE requête groupée rendue en `Map<UUID, RecordDomaine>`
+`count(*) FILTER (WHERE …) … GROUP BY parent_id` en une seule requête native, remontée en `Map<UUID, CategoryProductCounts>` (record de domaine). Jamais un comptage par ligne affichée (N+1 proportionnel à la page), jamais un `Object[]` de projection JPA remonté dans un port de `domain/` — ArchitectureTest ne l'attrape pas toujours, la dette est réelle quand même. (Sprint 93 #695)
+
+## PAT-S93-003 — Deux compteurs affichés ensemble ne se modélisent pas par une clé ICU
+`{count, plural, …}` ne porte qu'un seul argument de pluriel : « 2 produits · 1 archivé » exige deux clés et un conditionnel JSX, pas une clé unique. Et deux nœuds frères plutôt qu'une concaténation dans un même badge coloré — la concaténation donne au compteur secondaire l'emphase visuelle du principal (revue Designer #695). (Sprint 93 #695)

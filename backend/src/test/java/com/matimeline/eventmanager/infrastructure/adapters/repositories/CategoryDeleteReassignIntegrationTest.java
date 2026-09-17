@@ -3,6 +3,7 @@ package com.matimeline.eventmanager.infrastructure.adapters.repositories;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
@@ -244,5 +246,83 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         em.clear();
 
         assertThat(categoryRepository.existsById(cat.getId())).isFalse();
+    }
+
+    // ------------- #695 : compteurs de la carte catégorie (actifs / archivés) -------------
+
+    /**
+     * #695 — `countByCategoryForUser` sépare actifs et archivés pour UNE catégorie. C'est
+     * le cas qui motive l'issue : une catégorie ne portant QUE des archivés n'est pas vide
+     * (elle refuse la suppression sans réassignation, cf. le test 409 ci-dessus), et le
+     * listing produits ne peut pas le dire (`@SQLRestriction`, PIT-S79-006). Contre un vrai
+     * Postgres : `count(*) FILTER (...)` est du SQL natif, un mock ne prouverait rien.
+     */
+    @Test
+    void countByCategoryForUser_separatesActiveFromArchived() {
+        UserEntity user = persistUser();
+        CategoryEntity mixed = persistCategory(user, "Mixed-" + UUID.randomUUID());
+        CategoryEntity archivedOnly = persistCategory(user, "ArchivedOnly-" + UUID.randomUUID());
+        CategoryEntity untouched = persistCategory(user, "Empty-" + UUID.randomUUID());
+        persistProduct(user, mixed, false);
+        persistProduct(user, mixed, false);
+        persistProduct(user, mixed, true);
+        persistProduct(user, archivedOnly, true);
+        em.flush();
+        em.clear();
+
+        Map<UUID, CategoryProductCounts> counts =
+                productRepository.countByCategoryForUser(user.getId());
+
+        assertThat(counts.get(mixed.getId())).isEqualTo(new CategoryProductCounts(2L, 1L));
+        // LE cas de l'issue : 0 actif, 1 archivé -> la carte ne doit PLUS dire « aucun produit ».
+        assertThat(counts.get(archivedOnly.getId())).isEqualTo(new CategoryProductCounts(0L, 1L));
+        // Catégorie sans produit : ABSENTE de la map (aucune ligne à grouper), pas un (0,0).
+        assertThat(counts).doesNotContainKey(untouched.getId());
+    }
+
+    /**
+     * #695 — scope utilisateur. Les catégories SYSTÈME (owner NULL) sont partagées : sans
+     * `WHERE user_id = :uid`, la carte d'un utilisateur publierait le nombre de produits
+     * d'un AUTRE compte. Deux utilisateurs posent ici des produits sur la MÊME catégorie
+     * système ; chacun ne doit voir que les siens.
+     */
+    @Test
+    void countByCategoryForUser_countsOnlyCallerProducts_onSharedSystemCategory() {
+        UserEntity mine = persistUser();
+        UserEntity other = persistUser();
+        CategoryEntity system = persistSystemCategory("SharedSystem-" + UUID.randomUUID());
+        persistProduct(mine, system, false);
+        persistProduct(other, system, false);
+        persistProduct(other, system, false);
+        persistProduct(other, system, true);
+        em.flush();
+        em.clear();
+
+        assertThat(productRepository.countByCategoryForUser(mine.getId()).get(system.getId()))
+                .isEqualTo(new CategoryProductCounts(1L, 0L));
+        assertThat(productRepository.countByCategoryForUser(other.getId()).get(system.getId()))
+                .isEqualTo(new CategoryProductCounts(2L, 1L));
+    }
+
+    /**
+     * #695 — `countByCategoryForUser` (carte, scopé au caller) et `countByCategoryId`
+     * (armement du 409 / intégrité FK, TOUS utilisateurs) ne comptent PAS la même chose :
+     * le test les oppose pour qu'aucune refonte ne remplace l'un par l'autre.
+     */
+    @Test
+    void countByCategoryForUser_isNotCountByCategoryId() {
+        UserEntity mine = persistUser();
+        UserEntity other = persistUser();
+        CategoryEntity system = persistSystemCategory("SharedSystem-" + UUID.randomUUID());
+        persistProduct(mine, system, false);
+        persistProduct(other, system, true);
+        em.flush();
+        em.clear();
+
+        CategoryProductCounts forMe =
+                productRepository.countByCategoryForUser(mine.getId()).get(system.getId());
+        assertThat(forMe.total()).isEqualTo(1L);
+        // Le comptage global voit les deux produits (c'est lui qui protège la FK).
+        assertThat(productRepository.countByCategoryId(system.getId())).isEqualTo(2L);
     }
 }

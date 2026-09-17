@@ -20,7 +20,7 @@ CRUD simple — pas de lifecycle d'état.
 | Action | `user` (ROLE_USER) | `admin` | `system` | Notes |
 |---|---|---|---|---|
 | Créer une catégorie (`POST /api/categories`) | ✅ | n/a | ❌ | Aucun garde admin — fallthrough `.anyRequest().authenticated()` (`SecurityConfig`) |
-| Lister les catégories (`GET /api/categories`) | ✅ | n/a | ❌ | Retourne `List<Category>` brut |
+| Lister les catégories (`GET /api/categories`) | ✅ | n/a | ❌ | `List<CategoryResponse>` scopé caller ∪ système. SEULE route qui porte les compteurs `productCount` / `archivedProductCount` (#695, BR-CAT-008) |
 | Lire une catégorie (`GET /api/categories/{id}`) | ✅ | n/a | ❌ | 404 si absente |
 | Supprimer une catégorie (`DELETE /api/categories/{id}`) | ✅ | n/a | ❌ | Suppression physique, pas de soft delete |
 | Modifier une catégorie (`PUT/PATCH`) | ❌ | ❌ | ❌ | ⚠️ Aucun endpoint exposé — `updateCategory` implémenté mais mort (cf. BR-CAT-006) |
@@ -74,13 +74,23 @@ CRUD simple — pas de lifecycle d'état.
 **Implémentation** : ⚠️ NON IMPLÉMENTÉ. `AddProducts.tsx` court-circuite `GET /api/categories`.
 **Test attendu** : test de composant `AddProducts` — le select de catégorie est peuplé depuis un fetch mocké de `GET /api/categories`, sans UUID en dur.
 
+### BR-CAT-008 — Compteurs de produits d'une catégorie : source BACKEND, actifs et archivés séparés ✅ (S93 #695)
+**Règle** : la carte d'une catégorie MUST afficher un nombre de produits cohérent avec le refus de suppression. `GET /api/categories` porte donc deux compteurs SCOPÉS AU CALLER : `productCount` (produits non archivés) et `archivedProductCount` (produits archivés). « aucun produit » n'est affichable QUE si les deux sont à 0.
+**Pourquoi** : un produit archivé occupe toujours sa catégorie (DEC-S89-001, FK `category_id` NOT NULL), mais il est invisible du listing produits (`@SQLRestriction`). Un compteur dérivé côté client de ce listing affichait donc « aucun produit » sur une catégorie que l'API refusait ensuite de supprimer sans réassignation (BUG-S89-001). Deux compteurs et non un total : un total unique ferait croire à des produits présents dans les listes.
+**Implémentation** : `ProductRepository.countByCategoryForUser(userId)` → `Map<UUID, CategoryProductCounts>` (record domaine `active`/`archived`), UNE requête native groupée (`count(*) FILTER (WHERE archived = …) … GROUP BY category_id`), jamais un comptage par catégorie (N+1). SQL natif obligatoire : `@SQLRestriction` masquerait les archivés d'un comptage JPQL (PIT-S79-006) ; contrepartie, le natif ne filtre rien seul, `user_id` est lié À LA MAIN. `CategoryServiceImpl.getProductCountsForOwner` → `CategoryController.getAllCategories` zippe via `CategoryResponse.fromDomain(category, counts)`. Front : `categorySchema.productCount/.archivedProductCount` en `.optional()`, `CategoriesView` (badge coloré = actifs, masqué si 0 actif et ≥1 archivé ; mention `categories-archived-count-{id}` = archivés ; clé ICU `products.categories.archivedCount`).
+**⚠ SCOPE UTILISATEUR, PAS UNE OPTIMISATION** : les catégories SYSTÈME (owner NULL) sont partagées entre tous les comptes. Sans `WHERE user_id = :caller`, la carte publierait le nombre de produits d'AUTRES utilisateurs — fuite inter-utilisateurs sur une lecture banale.
+**⚠ NE PAS CONFONDRE avec `countByCategoryId`** : celui-ci compte TOUS utilisateurs confondus et arme le 409 / protège la FK (AP-CAT-05). Les deux coexistent volontairement ; remplacer l'un par l'autre casse soit l'intégrité FK, soit l'isolation des comptes.
+**Compteur ≠ garde** : `linkedProductsCount` (actifs + archivés) arme le select de réassignation D'EMBLÉE, mais le repli `reassignRequiredByServer` sur 409 est CONSERVÉ — une carte peut être périmée, le refus serveur fait foi (PAT-S89-001).
+**Test attendu** : `CategoryDeleteReassignIntegrationTest` (séparation actifs/archivés, scope utilisateur sur catégorie système, opposition à `countByCategoryId`) ; `CategoryControllerTest` (compteurs exposés au listing, ABSENTS du POST) ; `CategoriesView.test.tsx` (badge masqué à 0 actif / N archivés) ; `e2e/categories.spec.ts`.
+
 ---
 
 ## 4. Dépendances inter-domaines
 
 - **`products` dépend de `categories`** : `CategoryEntity -> ProductEntity` en `OneToMany` (côté inverse), `ProductEntity.category` en `@ManyToOne @JoinColumn(name='category_id', nullable=false)`. FK requise en base, mais **aucun cascade** côté `Category` : supprimer une catégorie référencée par des produits provoque une violation de contrainte FK (suppression physique non protégée — voir AP-CAT-05).
 - **`categories` dépend de `auth`** : tout accès passe par le fallthrough `.anyRequest().authenticated()` (JWT ROLE_USER). **Depuis Sprint 10 (#52, ADR-002) : ownership PAR UTILISATEUR** — `Category.ownerId` (FK users, NULLABLE) ; `owner NULL` = catégorie « système » (lisible de tous, non modifiable/supprimable → 403). PATCH/DELETE exigent `owner_id == JWT` (403 sinon). Lecture scopée : `GET` liste ne renvoie que `owner == caller ∪ système`, `GET /{id}` d'autrui → 404 (anti-énumération), DTO `CategoryResponse` n'expose PAS l'`ownerId` (booléen `system`).
-- **`Category` (domain model)** : value object pur `id` + `name`, sans champ de relation. Le lien vers les produits n'existe qu'au niveau infrastructure (`CategoryEntity`/`ProductEntity`).
+- **`Category` (domain model)** : value object pur `id` + `name`, sans champ de relation. Le lien vers les produits n'existe qu'au niveau infrastructure (`CategoryEntity`/`ProductEntity`). Les compteurs de #695 ne sont donc PAS des champs de `Category` : ils voyagent à part (`CategoryProductCounts`, record domaine) et sont zippés dans le DTO au niveau du contrôleur.
+- **DÉPENDANCE DE LECTURE `categories` → `products` (S93 #695)** : le service catégories interroge désormais `ProductRepository` non seulement pour l'intégrité FK (`countByCategoryId`, `updateCategoryForProducts`) mais aussi pour AFFICHER (`countByCategoryForUser`). Conséquence côté front : toute mutation du cycle de vie d'un produit doit invalider `queryKeys.categories.all` — `useArchiveProduct` (#695) et `useRestoreProduct` (#711) le font. L'oublier laisse une carte qui ment jusqu'au refetch suivant (PIT-S92-004).
 
 ---
 
@@ -105,6 +115,7 @@ CRUD simple — pas de lifecycle d'état.
 ## Référence
 
 - Coverage actuelle : `coverage-categories.md`
+- #695 : `domain/models/CategoryProductCounts.java` (record), `ProductRepository.countByCategoryForUser`, `ProductRepositoryJpaImpl` (natif groupé), `CategoryService.getProductCountsForOwner`, `CategoryResponse.fromDomain(category, counts)` ; front `CategoriesView.tsx`, `types/category.ts`, `hooks/useArchiveProduct.ts`, `public/locales/*/products.json` (`categories.archivedCount`).
 - Backend : `backend/src/main/java/com/matimeline/eventmanager/` (`infrastructure/adapters/controllers/CategoryController.java`, `application/services/CategoryServiceImpl.java`, `infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java`, `infrastructure/entities/CategoryEntity.java`, `domain/models/Category.java`, `domain/exceptions/CategoryNotFoundException.java`)
 - Frontend : `frontend/src/types/product.ts` (schémas Zod), `frontend/src/components/.../AddProducts.tsx` (formulaire de création produit)
 
@@ -115,3 +126,9 @@ CRUD simple — pas de lifecycle d'état.
 - **Front livré** : `CategoryDrawer` (create/edit desktop+mobile, réassignation via `DeleteConfirmDialog variant="category"`), page catégories (`CategoriesView`), hooks `useCreateCategory`/`useUpdateCategory` + `categoryService` (create/update/delete). Color = **String libre** côté Zod (`.max(255).optional()`, PAS de `@Pattern` hex — cf. PAT-S22-001).
 - **PATCH clear-via-clé-omise (⚠ contrat implicite, cf. PAT-S22-003)** : `CategoryServiceImpl.updateCategory` fait `existing.setColor(color)` / `setDescription(...)` **INCONDITIONNEL** ; `CategoryUpdateRequest` a des champs `String` simples → une clé JSON absente arrive `null` (Jackson) → le champ est **effacé**. Conséquence : le front DOIT toujours porter `name` + toute valeur à conserver ; omettre `color` = l'effacer (c'est ainsi que le bouton « reset couleur » du drawer fonctionne). **NE PAS** refactorer le DTO en `Optional<String>` ni passer le service en « update-si-non-null » sans casser silencieusement le reset.
 - **Suppression catégorie liée** : exige `reassignToCategoryId` (sinon `CategoryInUseException` → 409). Tout appelant de `DeleteConfirmDialog variant="category"` DOIT passer `linkedProductsCount` pour armer le select de réassignation (cf. BUG-S22-002).
+
+
+## MàJ Sprint 93 (#695) — compteur de carte servi par l'API
+
+- La carte catégorie ne dérive PLUS son compteur de `useProductsWithEvents` : `CategoriesView` ne consomme plus ce hook du tout. Voir BR-CAT-008 pour le contrat complet (deux compteurs, scope caller, natif groupé, non-confusion avec `countByCategoryId`).
+- Contrat DTO : `productCount` / `archivedProductCount` sont `Integer` + `@JsonInclude(NON_NULL)` — ABSENTS du JSON sur POST / GET `{id}` / PATCH, qui n'ont pas de quoi les calculer. Un `0` y serait indistinguable d'une catégorie vide et rouvrirait le bug. Côté Zod : `.optional()`, **jamais** `.nullable()`.

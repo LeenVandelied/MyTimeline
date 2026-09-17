@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.adapters.controllers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import com.matimeline.eventmanager.application.dtos.CategoryRequest;
 import com.matimeline.eventmanager.application.dtos.CategoryResponse;
 import com.matimeline.eventmanager.application.dtos.CategoryUpdateRequest;
 import com.matimeline.eventmanager.domain.models.Category;
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
 import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
@@ -64,8 +66,15 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User caller = callerOpt.get();
+        // #695 : compteurs joints au listing. UNE requête groupée pour toute la page, pas
+        // un comptage par carte. Une catégorie absente de la map n'a aucun produit DU
+        // CALLER (cas normal des catégories système) -> EMPTY, pas d'exception.
+        Map<UUID, CategoryProductCounts> counts =
+                categoryService.getProductCountsForOwner(caller.getId());
         List<CategoryResponse> body = categoryService.getCategoriesForOwner(caller.getId()).stream()
-                .map(CategoryResponse::fromDomain)
+                .map(category -> CategoryResponse.fromDomain(
+                        category,
+                        counts.getOrDefault(category.getId(), CategoryProductCounts.EMPTY)))
                 .toList();
         return ResponseEntity.ok(body);
     }

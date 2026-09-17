@@ -7,14 +7,14 @@
 
 ## 1. Lifecycles (machines à états)
 
-**Product** — soft delete depuis Sprint 10 (#50). Champ `archived` (booléen, défaut `false`, ajouté V7/#44) sur `ProductEntity` + `@SQLRestriction("archived = false")` sur l'entité → les produits archivés sont invisibles de TOUTES les lectures Hibernate (listings produits ET join-fetch events).
+**Product** — soft delete depuis Sprint 10 (#50), RÉVERSIBLE depuis Sprint 93 (#711). Champ `archived` (booléen, défaut `false`, ajouté V7/#44) sur `ProductEntity` + `@SQLRestriction("archived = false")` sur l'entité → les produits archivés sont invisibles de TOUTES les lectures Hibernate (listings produits ET join-fetch events). Seul le SQL **natif** les atteint (PIT-S79-006) : c'est ce qui rend la lecture des archivés et leur restauration possibles (cf. BR-PRO-011).
 
 | Etat | Description | Transitions sortantes |
 | --- | --- | --- |
 | (Created) | Produit créé via `POST`, événements créés en cascade | modifiable via `PATCH` ; -> (Archived) via `DELETE` |
-| (Archived) | Soft delete : `archived = true`, `DELETE` retourne **204**. Invisible partout via `@SQLRestriction` | définitif pour cette wave (pas d'endpoint de restauration) |
+| (Archived) | Soft delete : `archived = true`, `DELETE` retourne **204**. Invisible des lectures Hibernate via `@SQLRestriction` ; listé par `GET .../products/archived` (SQL natif), onglet « Archivés » de `/products` | -> (Created) via `POST /users/{userId}/products/{productId}/restore` → **204** (#711, S93). Transition NON destructive : les événements du produit réapparaissent avec lui |
 
-✅ Soft delete implémenté S10 (#50). Historique (avant S10) : suppression PHYSIQUE (`deleteById`) — corrigé.
+✅ Soft delete implémenté S10 (#50). Historique (avant S10) : suppression PHYSIQUE (`deleteById`) — corrigé. ⚠️ L'énoncé « définitif pour cette wave (pas d'endpoint de restauration) » a tenu jusqu'au S92 inclus (il a fait écrire des libellés « aucun retour possible », cf. PIT-S92-005) : il est PÉRIMÉ depuis #711.
 
 **Event** (entité agrégée) — pas de lifecycle propre côté `products` ; cycle de vie piloté par le produit (`cascade=ALL`, `orphanRemoval=true`).
 
@@ -28,7 +28,9 @@
 | `GET` lister produits (avec events) | ✅ self uniquement | ❌ | ⚠️ filtre user in-memory (perf) ; archived filtrés en SQL (`@SQLRestriction`) | accepte cookie JWT **OU** header Bearer (incohérent) |
 | `GET` produit par id | ✅ self uniquement | ❌ | — | 404 si absent/archivé |
 | `PATCH` produit (S10 #50) | ✅ self uniquement | ❌ | — | maj partielle nom/catégorie. 200/400/404/403. Catégorie cible validée (BR-PRO-010) |
-| `DELETE` produit | ✅ self uniquement | ❌ | — | soft delete `archived=true`, retourne **204** (S10 #50) |
+| `DELETE` produit | ✅ self uniquement | ❌ | — | soft delete `archived=true`, retourne **204** (S10 #50), réversible (#711) |
+| `GET` lister produits ARCHIVÉS (#711) | ✅ self uniquement | ❌ | ⚠️ lecture SQL NATIVE (contourne `@SQLRestriction`) | `GET /users/{userId}/products/archived` → **200** `ArchivedProductResponse[]` (SANS `events`). 403 si path ≠ JWT |
+| `POST` restaurer un produit archivé (#711) | ✅ self uniquement | ❌ | ⚠️ UPDATE natif `archived=false` | `POST /users/{userId}/products/{productId}/restore` → **204** ; **404** si inconnu / non archivé / d'autrui (BR-PRO-011) ; 403 si path ≠ JWT |
 | `GET` events d'un produit | ✅ self uniquement | ❌ | — | ⚠️ 404 si liste vide (sémantique erronée) |
 
 ⚠️ Contrôle d'ownership fait **manuellement** dans le controller (extraction username depuis JWT cookie -> load User -> compare `user.getId()` au path `{userId}`), sans `@PreAuthorize` ni Spring Security method security.
@@ -80,11 +82,12 @@
 **Test attendu** : `ProductServiceImplTest#getProductsWithEvents_filtersByUserAndHasEvents`.
 **⚠️ PERF (anti-pattern)** : aucun filtre SQL `WHERE user_id = ?` — scan complet de la table puis filtre Java (O(N)). Ne passe pas à l'échelle. -> requête JPQL/Panache avec filtre DB.
 
-### BR-PRO-007 — Soft delete (archive) conditionné à l'existence ✅ (S10 #50)
-**Règle** : `DELETE` MUST vérifier l'existence (`orElseThrow(ProductNotFoundException)`) puis positionner `archived = true` (soft delete, PAS de suppression physique) ; retourne **204**.
-**Pourquoi** : réversibilité + convention projet soft-delete ; retour d'erreur explicite si absent.
-**Implémentation** : `ProductServiceImpl.archiveById` (ex-`deleteById`) + `@SQLRestriction("archived = false")` sur `ProductEntity` (invisibilité globale). Ownership vérifié en amont (BR-PRO-004).
-**Test attendu** : `ProductServiceImplTest`, `ProductControllerOwnershipTest`, `ProductArchivedFilterIntegrationTest` (archived invisible partout).
+### BR-PRO-007 — Soft delete (archive) conditionné à l'existence, RÉVERSIBLE ✅ (S10 #50, S93 #711)
+**Règle** : `DELETE` MUST vérifier l'existence (`orElseThrow(ProductNotFoundException)`) puis positionner `archived = true` (soft delete, PAS de suppression physique) ; retourne **204**. L'état (Archived) N'EST PAS définitif : il MUST rester atteignable (`GET .../products/archived`) et réversible (`POST .../restore`, BR-PRO-011).
+**Pourquoi** : réversibilité + convention projet soft-delete ; retour d'erreur explicite si absent. Un archivage par erreur laissait l'utilisateur sans issue avant #711 (le produit disparaissait de toute l'application).
+**Implémentation** : `ProductServiceImpl.archiveById` (ex-`deleteById`) + `@SQLRestriction("archived = false")` sur `ProductEntity` (invisibilité des lectures Hibernate) ; restauration `ProductServiceImpl.restoreProduct`. Ownership vérifié en amont (BR-PRO-004).
+**Vocabulaire** : « archiver », jamais « supprimer » (#605) ; les textes de confirmation MUST dire que le produit reste récupérable depuis l'onglet « Archivés » (#711) — `common.json` `deleteDialog.product.description`.
+**Test attendu** : `ProductServiceImplTest`, `ProductControllerOwnershipTest`, `ProductArchivedFilterIntegrationTest` (archived invisible des lectures Hibernate), `ProductRestoreIntegrationTest` (retour en (Created), événements compris).
 **⚠️ Pitfall JPA (PIT-S10-003)** : l'update-in-place charge l'entité gérée et recopie les champs (le domaine sans `@Version` casse un `save(mapper.toEntity(domain))` détaché).
 
 ### BR-PRO-009 — Mise à jour partielle produit (PATCH) ✅ (S10 #50)
@@ -98,6 +101,12 @@
 **Implémentation** : helper `ProductServiceImpl.resolveAssignableCategory(categoryId, callerId)` (callerId = `user.getId()` en create, `product.getUser().getId()` en update). Voir [[PIT-S10-005]].
 **Test attendu** : `ProductServiceImplTest` (create/update vers catégorie d'autrui → 404 ; système/propre → OK).
 
+### BR-PRO-011 — Archivés : lecture et restauration scopées au propriétaire, 404 uniforme ✅ (S93 #711)
+**Règle** : la liste des archivés MUST être filtrée `user_id = :caller AND archived = true` EN SQL, sans filtre « possède au moins un événement » (un archivé sans événement doit rester restaurable). La restauration MUST porter l'ownership ET l'état dans le WHERE du MÊME `UPDATE` natif (`WHERE id = :id AND user_id = :caller AND archived = true`) ; 0 ligne modifiée → `ProductNotFoundException` → **404**, qu'il s'agisse d'un id inconnu, d'un produit déjà actif ou du produit d'un autre utilisateur (réponse UNIQUE : anti-énumération d'UUID, même choix que BR-PRO-010). Le **403** reste réservé au path `{userId}` ≠ subject JWT (BR-PRO-004).
+**Pourquoi** : `@SQLRestriction` ne s'applique PAS au SQL natif (PIT-S79-006). C'est ce qui rend la lecture possible, et c'est exactement ce qui rend le natif dangereux : sans `user_id` lié dans le WHERE, n'importe quel utilisateur restaurerait — donc rendrait visible — le produit d'un autre (IDOR). L'ownership habituel du contrôleur (`findDomainProductById` + `productBelongsToUser`) est INAPPLICABLE ici : un produit archivé y est introuvable et répondrait toujours 404.
+**Implémentation** : `ProductRepositoryJpaImpl.findArchivedByUserId` / `restoreArchivedByIdAndUserId` (natifs bindés, `version` et `updated_at` tenus à la main car le natif court-circuite `@Version` et l'audit JPA), `ProductServiceImpl.getArchivedProducts` / `restoreProduct`, `ProductController` (`GET .../products/archived`, `POST .../products/{productId}/restore`). Réponse de liste : `ArchivedProductResponse` (sans `events` : la surface n'en affiche aucun, et les charger passerait par la collection paresseuse d'une entité filtrée).
+**Test attendu** : `ProductRestoreIntegrationTest` (Postgres réel + chaîne Security) — archivé d'autrui → 404 et RESTE archivé ; produit actif → 404 ; inconnu → 404 ; path ≠ caller → 403 ; nominal → 204 + produit ET événements de retour dans `findByUserId`.
+
 ### BR-PRO-008 — Sémantique 404 sur collection d'events vide (NON CONFORME)
 **Règle attendue** : `GET /products/{productId}/events` DEVRAIT retourner `200` avec une liste (éventuellement vide).
 **Implémentation actuelle** : retourne `404` quand la liste d'events est vide — confond "ressource introuvable" et "collection vide".
@@ -110,6 +119,7 @@
 ## 4. Dépendances inter-domaines
 
 - **`products` -> `categories`** : `Product` `@ManyToOne Category`, FK `category_id NOT NULL`. Création échoue (`CategoryNotFoundException`) si la catégorie n'existe pas.
+- **`categories` -> `products` EN LECTURE (S93 #695)** : `GET /api/categories` porte désormais `productCount` / `archivedProductCount` (produits DU CALLER, actifs et archivés séparés), calculés par `ProductRepository.countByCategoryForUser` — une requête native groupée, scopée `user_id` (les catégories système sont partagées). Voir BR-CAT-008 dans `br-categories.md`. **Conséquence côté produits** : toute mutation du cycle de vie d'un produit DOIT invalider `queryKeys.categories.all` côté front — `useArchiveProduct` (#695) et `useRestoreProduct` (#711) le font tous les deux. Ne pas confondre ce comptage avec `countByCategoryId` (tous utilisateurs, arme le 409 / protège la FK).
 - **`products` -> `users`** : `Product` `@ManyToOne User`, FK `user_id` nullable (⚠️ pas de `nullable=false`). Ownership et autorisation reposent sur `User`.
 - **`products` -> `events`** : `Product` `@OneToMany Event` (`cascade=ALL`, `orphanRemoval=true`, `mappedBy='product'`). Le domaine `products` crée/supprime les events en cascade ; leur cycle de vie est piloté par le produit.
 - **Couplage hexagonal inversé (anti-pattern)** : `domain/ports/services/ProductService` importe le DTO applicatif `ProductCreationRequest` — le domaine dépend de la couche application (cf. §5).
@@ -142,6 +152,6 @@ Le produit porte désormais un `color` propre persisté : `ProductCreationReques
 ## Référence
 
 - Coverage actuelle : `coverage-products.md`
-- Backend : `backend/src/main/java/com/matimeline/eventmanager/` — `domain/ports/services/ProductService.java`, `domain/ports/repositories/ProductRepository.java`, `application/.../ProductServiceImpl.java` (`resolveAssignableCategory`, `updateProduct`, `archiveById`), `infrastructure/.../ProductEntity.java` (`@SQLRestriction`), `infrastructure/.../ProductController.java`, DTOs `ProductCreationRequest` / `ProductUpdateRequest` / `ProductResponse` / `EventResponse` (S10)
+- Backend : `backend/src/main/java/com/matimeline/eventmanager/` — `domain/ports/services/ProductService.java`, `domain/ports/repositories/ProductRepository.java`, `application/.../ProductServiceImpl.java` (`resolveAssignableCategory`, `updateProduct`, `archiveById`), `infrastructure/.../ProductEntity.java` (`@SQLRestriction`), `infrastructure/.../ProductController.java`, DTOs `ProductCreationRequest` / `ProductUpdateRequest` / `ProductResponse` / `EventResponse` (S10) / `ArchivedProductResponse` (#711)
 - Conventions transverses backend : voir `cp-backend.md` §Conventions MyTimeline (DTO en HTTP, ownership cible + 404, update-in-place JPA, DataIntegrity→409 scopé)
-- Frontend : `frontend/src/components/products/` — sélecteur de catégorie + schémas Zod `productCreateSchema` / `productSchema` (`eventCreationSchema` réutilisé)
+- Frontend : `frontend/src/components/products/` — sélecteur de catégorie + schémas Zod `productCreateSchema` / `productSchema` / `archivedProductSchema` (`eventCreationSchema` réutilisé). #711 : onglet « Archivés » (`app/[locale]/(app)/products/page.tsx`, 3e onglet en état local), `ArchivedProductsView.tsx`, `RestoreProductDialog.tsx` (confirmation NON destructive, distincte de `shared/DeleteConfirmDialog`), hooks `useArchivedProducts` / `useRestoreProduct` (clé `queryKeys.products.archived(userId)` sous le préfixe `['products']`), i18n `products.archived.*` / `products.restoreDialog.*` / `common.toast.productRestored` (4 locales)

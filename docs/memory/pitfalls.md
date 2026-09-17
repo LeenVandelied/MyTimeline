@@ -1811,3 +1811,27 @@ Même avec un `vi.fn()` neuf par test et un vrai `Error`, le rejet d'un `mutateA
 
 ## PIT-S92-008 — Reclasser un finding sur un fait vérifié peut sous-estimer le défaut
 Au S92 le lead a reclassé MAJEUR → MINEUR une pause de toast « bloquée ~1 s » en s'appuyant sur un fait vérifié (pause globale au store : aucun toast n'expire tant que le focus est dans un toast). Le fait ne couvrait pas le retrait HORS minuterie : sous jsdom, le toast survivant restait en pause indéfiniment. Avant de reclasser, énumérer les chemins que le fait NE couvre PAS ; quand le correctif est XS, l'absorber plutôt que débattre de la gravité. (Sprint 92, clôture, `cabacd7`)
+
+## PIT-S93-001 — Un soft delete masqué par `@SQLRestriction` rend l'ownership du contrôleur INAPPLICABLE
+Le motif habituel « charger la ressource, comparer le propriétaire, 403/404 » ne marche plus sur une entité que `@SQLRestriction("archived = false")` rend invisible : toute lecture répond 404, y compris pour le propriétaire. L'autorisation doit alors migrer DANS la requête native (`WHERE id = :id AND user_id = :uid AND archived = true`), et son absence ne se voit **à aucun endroit du contrôleur** — une revue qui lit le contrôleur conclut à tort qu'il n'y a pas de contrôle. Corollaire : 0 ligne modifiée ⇒ 404 uniforme (inconnu / déjà actif / d'autrui), le 403 restant réservé au path ≠ JWT. (Sprint 93 #711)
+
+## PIT-S93-002 — Armer un test d'IDOR en retirant la clause SQL sans le binding produit un faux rouge
+Retirer `AND user_id = :uid` en laissant le `setParameter("uid", …)` correspondant fait échouer la requête sur un **paramètre non lié** : le test rougit pour une erreur technique, pas parce que l'IDOR est devenu possible. L'armement ne prouve alors rien. Retirer **clause ET binding** ensemble, et vérifier que le rouge est bien sémantique (204 au lieu de 404). (Sprint 93 #711)
+
+## PIT-S93-003 — `FreezingArchRule` gèle par VIOLATION, pas par classe
+Ajouter à un mapper de `application/` une méthode qui prend une entité JPA casse `ArchitectureTest` **même quand la classe viole déjà la règle** : le gel enregistre chaque violation individuellement, pas la classe fautive. Une nouvelle méthode = une nouvelle violation non gelée. Mettre le mapping dans l'adaptateur `infrastructure/` plutôt que d'étendre le gel. (Sprint 93 #711)
+
+## PIT-S93-004 — `playwright test --list` exige les variables d'environnement, et RTK résume sa sortie
+`playwright.config.ts` réclame `NEXT_PUBLIC_API_URL` et `E2E_API_PROXY_TARGET` **même pour une simple collecte** : sans elles `--list` échoue avec un message qui parle du serveur `next dev` et oriente vers un faux diagnostic. Et sous le hook RTK, `--list` est résumé en « PASS (0) FAIL (0) » : passer par `rtk proxy` pour voir la liste réelle. `SKIP_DELEGATION=1` reste requis même pour `--list`. (Sprint 93 #711)
+
+## PIT-S93-005 — Sur une entité PARTAGÉE, le filtre `user_id` d'un comptage est un contrôle d'isolation, pas une optimisation
+Les catégories « système » (owner NULL) sont visibles de tous. Un comptage de produits liés sans `WHERE user_id = :caller` publie donc, sur une simple carte, le nombre de produits d'autres comptes. Le filtre ressemble à une optimisation et se fait supprimer comme telle en revue de performance. Corollaire : deux comptages de la même table peuvent avoir des scopes **volontairement** différents (`countByCategoryForUser` = affichage scopé ; `countByCategoryId` = intégrité FK, tous utilisateurs) — les unifier casse soit l'isolation, soit la garde du 409. Un test qui les OPPOSE explicitement est le seul garde-fou. (Sprint 93 #695)
+
+## PIT-S93-006 — Réparer un compteur périme en silence le test E2E du chemin d'erreur que sa fausseté déclenchait
+Le test de réassignation #546 n'atteignait le 409 que parce que `linkedProductsCount` valait 0 à tort. Le compteur corrigé, le select s'arme d'emblée, le repli serveur n'est plus exercé — et le test **reste vert** : la couverture disparaît sans aucun signal. Reprovoquer le chemin autrement (carte rendue avant l'arrivée du produit) plutôt que supprimer le test ou affaiblir le correctif. (Sprint 93 #695)
+
+## PIT-S93-007 — Une JSDoc qui documente une ABSENCE devient fausse en silence, et sert d'argument pour ne pas agir
+`useArchiveProduct` affirmait « `categories.all` ne porte pas de compteur » pour justifier de ne pas l'invalider. Dès que #695 a ajouté ce compteur, la phrase est devenue fausse — et elle restait un argument écrit contre l'invalidation nécessaire. Avant d'ajouter un champ à un DTO de lecture, grepper les négations de ce genre dans les hooks voisins. (Sprint 93 #695)
+
+## PIT-S93-008 — `grep` sous le hook RTK peut rendre « 0 résultat » sur un fichier qui contient la chaîne
+Le contrôle coverage-E2E du lead a rendu **0 testid** sur un diff de 60 Ko non tronqué, puis **7** avec `/usr/bin/grep`. Le piège RTK connu portait sur les gros diffs, `vitest` et `prettier --check` ; il vaut aussi pour un `grep`/`wc` d'analyse — et `rtk proxy` devant la commande qui ÉCRIT le fichier n'y change rien, c'est le `grep` suivant qui ment. Pour toute MESURE, appeler le binaire par chemin absolu. (Sprint 93, lead)

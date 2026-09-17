@@ -2,30 +2,27 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Category } from '@/types/category'
-import type { Product } from '@/types/product'
 import { CategoriesView } from './CategoriesView'
 
 /**
- * #68 — Tests CategoriesView : cards (compteur produits dérivé localement +
- * palette), ouverture CategoryDrawer create/edit (#62 embarqué), suppression via
- * DeleteConfirmDialog variant category avec linkedProductsCount + categoryId,
- * masquage des actions pour les catégories système (ADR-002).
+ * #68 — Tests CategoriesView : cards (compteurs produits + palette), ouverture
+ * CategoryDrawer create/edit (#62 embarqué), suppression via DeleteConfirmDialog
+ * variant category avec linkedProductsCount + categoryId, masquage des actions pour
+ * les catégories système (ADR-002).
+ *
+ * #695 — les compteurs viennent du BACKEND (`productCount` / `archivedProductCount` de
+ * `CategoryResponse`), plus de `useProductsWithEvents` : ce hook n'est donc plus mocké
+ * ici, et son absence du composant est elle-même vérifiée (une catégorie ne portant que
+ * des archivés ne peut plus afficher « aucun produit »).
  */
 
 const useCategoriesMock = vi.fn()
-const useProductsMock = vi.fn()
 // #245 : la suppression passe désormais par le hook useDeleteCategory (useMutation
 // + invalidation categories.all/products.all), plus par le service brut.
 const deleteMutateAsync = vi.fn()
 
 vi.mock('@/hooks/useCategories', () => ({
   useCategories: (...args: unknown[]) => useCategoriesMock(...args),
-}))
-vi.mock('@/hooks/useProductsWithEvents', () => ({
-  useProductsWithEvents: (...args: unknown[]) => useProductsMock(...args),
-}))
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 'user-1' } }),
 }))
 vi.mock('@/hooks/useDeleteCategory', () => ({
   useDeleteCategory: () => ({ mutateAsync: deleteMutateAsync, isPending: false }),
@@ -108,26 +105,36 @@ vi.mock('@/components/shared/DeleteConfirmDialog', () => ({
     ) : null,
 }))
 
+/**
+ * #695 — trois cas de compteurs, tels que `GET /api/categories` les sert :
+ *   - `c-1` : 2 actifs + 1 archivé (badge + mention) ;
+ *   - `c-2` : 0 actif, 1 archivé — LE cas de l'issue (badge masqué, mention seule) ;
+ *   - `c-sys` : 0 / 0 (badge « aucun produit », pas de mention).
+ */
 const CATEGORIES: Category[] = [
-  { id: 'c-1', name: 'Véhicules', system: false, color: '#445566' },
-  { id: 'c-2', name: 'Assurance', system: false, color: null },
-  { id: 'c-sys', name: 'Système', system: true, color: '#778899' },
-]
-
-const PRODUCTS: Product[] = [
   {
-    id: 'p1',
-    name: 'A',
-    color: null,
-    category: { id: 'c-1', name: 'Véhicules', color: '#445566' },
-    events: [],
+    id: 'c-1',
+    name: 'Véhicules',
+    system: false,
+    color: '#445566',
+    productCount: 2,
+    archivedProductCount: 1,
   },
   {
-    id: 'p2',
-    name: 'B',
+    id: 'c-2',
+    name: 'Assurance',
+    system: false,
     color: null,
-    category: { id: 'c-1', name: 'Véhicules', color: '#445566' },
-    events: [],
+    productCount: 0,
+    archivedProductCount: 1,
+  },
+  {
+    id: 'c-sys',
+    name: 'Système',
+    system: true,
+    color: '#778899',
+    productCount: 0,
+    archivedProductCount: 0,
   },
 ]
 
@@ -138,7 +145,6 @@ function mockAll(catOverrides: Record<string, unknown> = {}) {
     isError: false,
     ...catOverrides,
   })
-  useProductsMock.mockReturnValue({ data: PRODUCTS, isLoading: false, isError: false })
 }
 
 beforeEach(() => {
@@ -153,9 +159,49 @@ describe('CategoriesView', () => {
   it('affiche une card par catégorie avec compteur de produits liés', () => {
     render(<CategoriesView />)
     expect(screen.getByTestId('categories-card-c-1')).toBeInTheDocument()
-    // c-1 référencée par 2 produits ; le message compteur est traduit (clé mockée).
+    // c-1 : 2 actifs -> badge présent (le message est traduit, clé mockée).
     expect(screen.getByTestId('categories-count-c-1')).toBeInTheDocument()
-    expect(screen.getByTestId('categories-count-c-2')).toBeInTheDocument()
+    // c-sys : 0 actif ET 0 archivé -> le badge « aucun produit » reste, il est vrai.
+    expect(screen.getByTestId('categories-count-c-sys')).toBeInTheDocument()
+  })
+
+  /**
+   * #695 — LE bug : une catégorie ne portant que des produits ARCHIVÉS affichait
+   * « aucun produit » puis refusait sa suppression. Le badge des actifs (qui dirait
+   * « aucun produit ») est masqué, seule la mention des archivés reste.
+   */
+  it('#695 — 0 actif + N archivés : badge des actifs masqué, mention des archivés', () => {
+    render(<CategoriesView />)
+    expect(screen.queryByTestId('categories-count-c-2')).not.toBeInTheDocument()
+    expect(screen.getByTestId('categories-archived-count-c-2')).toBeInTheDocument()
+  })
+
+  it('#695 — actifs ET archivés : les deux nœuds coexistent, sans concaténation', () => {
+    render(<CategoriesView />)
+    const badge = screen.getByTestId('categories-count-c-1')
+    const archived = screen.getByTestId('categories-archived-count-c-1')
+    expect(badge).toBeInTheDocument()
+    expect(archived).toBeInTheDocument()
+    // Nœuds FRÈRES (revue Designer) : la mention n'est pas DANS le badge coloré.
+    expect(badge).not.toContainElement(archived)
+  })
+
+  it('#695 — 0 archivé : aucune mention d’archivés (pas de « 0 archivé »)', () => {
+    render(<CategoriesView />)
+    expect(screen.queryByTestId('categories-archived-count-c-sys')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('categories-archived-count-c-1')).toBeInTheDocument()
+  })
+
+  /**
+   * #695 — contrat Zod : `productCount` / `archivedProductCount` sont `.optional()`
+   * (absents hors `GET /api/categories`). Une catégorie sans compteur ne doit pas
+   * planter ni inventer un nombre : elle retombe sur 0/0.
+   */
+  it('#695 — compteurs absents du DTO : repli 0/0 sans mention d’archivés', () => {
+    mockAll({ data: [{ id: 'c-x', name: 'Sans compteur', system: false, color: null }] })
+    render(<CategoriesView />)
+    expect(screen.getByTestId('categories-count-c-x')).toBeInTheDocument()
+    expect(screen.queryByTestId('categories-archived-count-c-x')).not.toBeInTheDocument()
   })
 
   it('marque les catégories système et masque leur suppression (ADR-002)', () => {
@@ -186,15 +232,29 @@ describe('CategoriesView', () => {
     render(<CategoriesView />)
     await user.click(screen.getByTestId('categories-delete-c-1'))
     const dialog = screen.getByTestId('delete-dialog-category')
-    // Réassignation forcée en amont : count=2 pour c-1, categoryId exclu du select.
+    // #695 — réassignation armée EN AMONT sur le total qui arme le 409 backend :
+    // actifs + ARCHIVÉS (2 + 1 = 3 pour c-1), pas les seuls actifs.
     expect(dialog).toHaveAttribute('data-category-id', 'c-1')
-    expect(dialog).toHaveAttribute('data-linked', '2')
+    expect(dialog).toHaveAttribute('data-linked', '3')
     await user.click(dialog)
     // #245 : passe par la mutation (qui invalide categories.all + products.all).
     expect(deleteMutateAsync).toHaveBeenCalledWith({
       id: 'c-1',
       reassignToCategoryId: 'reassign-target',
     })
+  })
+
+  /**
+   * #695 — une catégorie ne portant QUE des archivés arme quand même le select de
+   * réassignation : sans cela le dialog partait sans cible, prenait un 409 et
+   * basculait après coup (le repli `reassignRequiredByServer` reste, mais n'est plus
+   * le chemin nominal).
+   */
+  it('#695 — catégorie ne portant que des archivés : linkedProductsCount > 0 d’emblée', async () => {
+    const user = userEvent.setup()
+    render(<CategoriesView />)
+    await user.click(screen.getByTestId('categories-delete-c-2'))
+    expect(screen.getByTestId('delete-dialog-category')).toHaveAttribute('data-linked', '1')
   })
 
   it('affiche l’état vide', () => {

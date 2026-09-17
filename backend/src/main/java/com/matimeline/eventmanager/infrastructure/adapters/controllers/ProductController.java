@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.matimeline.eventmanager.application.dtos.ArchivedProductResponse;
 import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductResponse;
@@ -81,6 +82,53 @@ public class ProductController {
                 .map(ProductResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * #711 — Produits archivés du caller (surface « Archivés »). Route littérale : Spring MVC
+     * la préfère à {@code /products/{productId}} (segment littéral plus spécifique qu'une
+     * variable) — verrouillé par {@code ProductRestoreIntegrationTest}.
+     */
+    @GetMapping("/users/{userId}/products/archived")
+    public ResponseEntity<List<ArchivedProductResponse>> getArchivedProducts(@PathVariable UUID userId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!callerOpt.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<ArchivedProductResponse> response = productService.getArchivedProducts(userId).stream()
+                .map(ArchivedProductResponse::fromDomain)
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * #711 — Désarchivage (BR-PRO-007/011) : 204 comme le DELETE d'archivage (transition
+     * d'état sans représentation à renvoyer ; le front rafraîchit ses listes par invalidation).
+     *
+     * <p>PAS de lecture préalable {@code findDomainProductById} + {@code productBelongsToUser} :
+     * un archivé y est invisible (@SQLRestriction) et répondrait toujours 404. L'ownership de
+     * la CIBLE est dans l'UPDATE natif ; produit inconnu / non archivé / d'autrui ->
+     * {@code ProductNotFoundException} -> 404 uniforme (GlobalExceptionHandler). Le 403 reste
+     * réservé au path {userId} ≠ caller, comme sur les autres routes.
+     */
+    @PostMapping("/users/{userId}/products/{productId}/restore")
+    public ResponseEntity<Void> restoreProduct(
+            @PathVariable UUID userId,
+            @PathVariable UUID productId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!callerOpt.get().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        productService.restoreProduct(productId, userId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/users/{userId}/products/{productId}")

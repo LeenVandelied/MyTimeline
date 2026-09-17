@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNameConflictException;
 import com.matimeline.eventmanager.domain.exceptions.CategoryReassignTargetInvalidException;
 import com.matimeline.eventmanager.domain.models.Category;
+import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.CategoryService;
 import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
@@ -146,6 +148,9 @@ class CategoryControllerTest {
         when(categoryService.getCategoriesForOwner(callerId)).thenReturn(List.of(
                 owned(UUID.randomUUID(), "Mine"),
                 new Category(sysId, "Système", null, null, null)));
+        // #695 : le listing joint les compteurs — stub neutre ici, le contrat des
+        // compteurs est vérifié par les deux tests dédiés plus bas.
+        when(categoryService.getProductCountsForOwner(callerId)).thenReturn(Map.of());
 
         mockMvc.perform(get("/api/categories").cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isOk())
@@ -158,6 +163,62 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$[1].ownerId").doesNotExist());
 
         verify(categoryService).getCategoriesForOwner(callerId);
+    }
+
+    /**
+     * #695 — le listing expose `productCount` / `archivedProductCount` DU CALLER, actifs et
+     * archivés SÉPARÉS. Le cas qui motive l'issue est la 2e catégorie : 0 actif, 1 archivé —
+     * la carte doit pouvoir dire « 1 archivé » au lieu de « aucun produit ». La 3e catégorie
+     * est absente de la map de compteurs (aucun produit) et retombe sur 0/0, pas sur une
+     * absence de champ : le front distingue « pas de produit » de « route sans compteur ».
+     */
+    @Test
+    void getAllCategories_exposesActiveAndArchivedProductCounts() throws Exception {
+        stubCaller();
+        UUID mixedId = UUID.randomUUID();
+        UUID archivedOnlyId = UUID.randomUUID();
+        UUID emptyId = UUID.randomUUID();
+        when(categoryService.getCategoriesForOwner(callerId)).thenReturn(List.of(
+                owned(mixedId, "Mixte"),
+                owned(archivedOnlyId, "Archivés seulement"),
+                owned(emptyId, "Vide")));
+        when(categoryService.getProductCountsForOwner(callerId)).thenReturn(Map.of(
+                mixedId, new CategoryProductCounts(2L, 1L),
+                archivedOnlyId, new CategoryProductCounts(0L, 1L)));
+
+        mockMvc.perform(get("/api/categories").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productCount").value(2))
+                .andExpect(jsonPath("$[0].archivedProductCount").value(1))
+                .andExpect(jsonPath("$[1].productCount").value(0))
+                .andExpect(jsonPath("$[1].archivedProductCount").value(1))
+                .andExpect(jsonPath("$[2].productCount").value(0))
+                .andExpect(jsonPath("$[2].archivedProductCount").value(0));
+
+        verify(categoryService).getProductCountsForOwner(callerId);
+    }
+
+    /**
+     * #695 — hors listing, les compteurs sont ABSENTS du JSON (et pas à 0) : POST/GET{id}/
+     * PATCH n'ont pas de quoi les calculer, et un 0 s'y lirait comme « catégorie vide ».
+     * C'est ce qui justifie le `.optional()` côté Zod ; si le champ apparaissait ici à 0,
+     * la carte pourrait se peindre sur une réponse de PATCH et retomber dans le bug #695.
+     */
+    @Test
+    void createCategory_omitsProductCounts() throws Exception {
+        stubCaller();
+        UUID created = UUID.randomUUID();
+        when(categoryService.createCategory(eq("Neuve"), any(), any(), eq(callerId)))
+                .thenReturn(owned(created, "Neuve"));
+
+        mockMvc.perform(post("/api/categories")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Neuve\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Neuve"))
+                .andExpect(jsonPath("$.productCount").doesNotExist())
+                .andExpect(jsonPath("$.archivedProductCount").doesNotExist());
     }
 
     @Test

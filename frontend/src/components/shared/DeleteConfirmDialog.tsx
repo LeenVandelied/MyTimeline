@@ -39,17 +39,21 @@ import { useCategories } from '@/hooks/useCategories'
  *     la catégorie en cours de suppression (garde self-target côté API aussi).
  *   - `DELETE /api/categories/{id}?reassignToCategoryId=<uuid>` : le uuid choisi
  *     est remonté via `onConfirm(reassignToCategoryId)`.
- *   - #546 : un produit archivé occupe toujours sa catégorie (décision option A,
- *     FK `category_id` NOT NULL). `linkedProductsCount` des appelants ignore les
- *     archivés ; un 409 sur DELETE sans cible bascule donc le dialog en réassignation.
+ *   - #546 : un produit archivé occupe toujours sa catégorie (DEC-S89-001, FK
+ *     `category_id` NOT NULL). #695 : `linkedProductsCount` INCLUT désormais les
+ *     archivés (`CategoryResponse.productCount + archivedProductCount`, source backend),
+ *     le select s'arme donc d'emblée. La bascule sur 409 reste la défense quand ce
+ *     compteur est PÉRIMÉ (archivage fait ailleurs, carte non rafraîchie).
  *
  * #605 — ARCHIVER ≠ SUPPRIMER. Le vocabulaire suit le comportement backend :
  *   - « archiver » = soft delete : données CONSERVÉES côté backend (produit : `DELETE` →
- *     `archived = true`, #50 / BR-PRO-007), produit masqué partout (`@SQLRestriction`),
- *     AUCUNE restauration exposée à ce jour (ni endpoint ni surface). Variante `product` :
- *     titre, bouton et libellé d'attente disent « archiver » (`product.confirm`,
- *     `product.confirming`) ; le texte ne promet aucun retour. Le bouton reste
- *     `destructive` : l'utilisateur perd l'accès au produit ;
+ *     `archived = true`, #50 / BR-PRO-007), produit masqué des listes, de la frise et du
+ *     tableau de bord (`@SQLRestriction`). #711 : RÉVERSIBLE — onglet « Archivés » de
+ *     `/products`, `POST …/restore` (confirmation dédiée `products/RestoreProductDialog`).
+ *     Variante `product` : titre, bouton et libellé d'attente disent « archiver »
+ *     (`product.confirm`, `product.confirming`) ; la description dit que rien n'est supprimé
+ *     et que le produit se désarchive depuis cet onglet. Le bouton reste `destructive` : le
+ *     produit quitte toutes les vues actives ;
  *   - « supprimer » = suppression PHYSIQUE : événement (`deleteById`, br-events §1),
  *     catégorie (`CategoryServiceImpl.deleteCategory` → `deleteById`, aucun
  *     `@SQLDelete`/`@SQLRestriction` sur `CategoryEntity`). Variantes `event`/`category` :
@@ -116,12 +120,12 @@ export function DeleteConfirmDialog({
   const [reassignRequiredByServer, setReassignRequiredByServer] = React.useState(false)
 
   const isCategory = variant === 'category'
-  // DÉCISION #546 (option A) : un produit ARCHIVÉ occupe toujours sa catégorie
-  // (`products.category_id` NOT NULL + FK, le comptage backend inclut les archivés).
-  // Les appelants dérivent `linkedProductsCount` d'un listing SANS archivés : il peut
-  // valoir 0 pour une catégorie encore occupée. Un 409 sur un DELETE sans cible ne peut
-  // alors signifier que « catégorie occupée » → on bascule en réassignation au lieu
-  // d'un message d'erreur sans issue.
+  // DEC-S89-001 : un produit ARCHIVÉ occupe toujours sa catégorie (`products.category_id`
+  // NOT NULL + FK, le comptage backend inclut les archivés). #695 : `linkedProductsCount`
+  // vient désormais du backend, archivés compris — il n'est plus structurellement faux.
+  // Il peut rester PÉRIMÉ, donc la bascule est CONSERVÉE : un 409 sur un DELETE sans cible
+  // ne peut signifier que « catégorie occupée » → réassignation, au lieu d'un message
+  // d'erreur sans issue (PAT-S89-001 : le refus serveur fait foi, pas le compteur client).
   const needsReassign = isCategory && (linkedProductsCount > 0 || reassignRequiredByServer)
 
   // Ne fetch les catégories que pour la variante category avec produits liés et

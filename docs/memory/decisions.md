@@ -1011,3 +1011,12 @@ Arbitrage dev (#603). Colonnes : Produit (catégorie mono sous le nom, donc plus
 
 ## DEC-S92-004 — « Archiver » pour le produit, « Supprimer » conservé pour événements et catégories
 Arbitrage dev (#605, vaut pour #600). Le DELETE produit est un soft delete (BR-PRO-007) sans restauration exposée : libellés, icône `Archive` et confirmation dédiée à la variante `product` de `DeleteConfirmDialog`, aucun texte ne promet de retour. Événements (`deleteById`) et catégories (`CategoryServiceImpl.java:136`) sont supprimés physiquement : leur vocabulaire ne change pas. Archiver reste en `destructive` (perte d'accès côté utilisateur, aucun jeton neutre dans la charte ; tranché par le lead sur recommandation du Designer). « Modifier » conservé malgré « Éditer » dans le handoff (cohérence du produit). (Sprint 92 #605)
+
+## DEC-S93-001 — Listing des produits archivés : DTO dédié SANS `events`
+`ArchivedProductResponse` n'expose pas les événements, au lieu d'un `ProductResponse` avec `events: []`. La surface n'en affiche aucun, et les charger passerait par la collection paresseuse d'une entité filtrée par `@SQLRestriction` (N+1 et chargement à travers l'entité restreinte). Un DTO sans le champ ne ment pas ; un `events: []` ferait croire à un produit sans événements. (Sprint 93 #711)
+
+## DEC-S93-002 — Clé de cache des archivés placée sous le préfixe `['products']`
+`queryKeys.products.archived(userId)` vit sous `products.all` : l'invalidation déjà faite par `useArchiveProduct` rafraîchit donc l'onglet « Archivés » sans modifier ce hook, et toute future mutation produit couvre la nouvelle surface par construction. (Sprint 93 #711)
+
+## DEC-S93-003 — Un compteur qu'une route ne sait pas calculer est ABSENT du JSON, jamais `0`
+`Integer` + `@JsonInclude(NON_NULL)` **au niveau champ**, `.optional()` côté Zod : sur POST / PATCH / GET `{id}`, un `0` serait indistinguable d'une catégorie réellement vide, et il suffirait qu'une surface peigne une carte sur une réponse de PATCH pour rouvrir exactement le bug #695. L'annotation est posée au niveau du champ et non de la classe : un `NON_NULL` global aurait aussi fait disparaître `color` et `description` nuls, changeant le contrat existant sans le dire. (Sprint 93 #695)

@@ -202,9 +202,35 @@
     "error": "Kategorien konnten nicht geladen werden.",
     "system": "System",
     "productCount": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
+    "archivedCount": "{count, plural, one {# archiviert} other {# archiviert}}",
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "openEdit": "{name} bearbeiten"
+  },
+  "archived": {
+    "title": "Archiviert",
+    "loading": "Archivierte Produkte werden geladen…",
+    "error": "Archivierte Produkte konnten nicht geladen werden.",
+    "empty": "Keine archivierten Produkte.",
+    "emptyDescription": "Produkte, die du archivierst, erscheinen hier – dort kannst du sie wiederherstellen.",
+    "tableLabel": "Archivierte Produkte",
+    "columns": {
+      "product": "Produkt",
+      "actions": "Aktionen"
+    },
+    "restore": "Wiederherstellen",
+    "restoreLabel": "{name} wiederherstellen"
+  },
+  "restoreDialog": {
+    "title": "Dieses Produkt wiederherstellen?",
+    "description": "„{name}“ und seine Ereignisse erscheinen wieder in deinen Listen und auf deiner Zeitleiste.",
+    "cancel": "Abbrechen",
+    "confirm": "Wiederherstellen",
+    "confirming": "Wird wiederhergestellt",
+    "errors": {
+      "notFound": "Dieses Produkt ist nicht mehr archiviert. Die Liste wurde aktualisiert.",
+      "generic": "Wiederherstellen fehlgeschlagen. Versuche es erneut."
+    }
   },
   "archiveDialog": {
     "title": "Dieses Ereignis archivieren?",

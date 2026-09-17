@@ -28,5 +28,17 @@ public interface ProductService {
      */
     void archiveById(UUID id);
 
+    /**
+     * #711 (BR-PRO-011) : produits archivés de l'utilisateur, événements non chargés.
+     */
+    List<Product> getArchivedProducts(UUID userId);
+
+    /**
+     * #711 (BR-PRO-007/011) : (Archived) -> (Created). Throws ProductNotFoundException when
+     * no row matched — unknown id, product not archived, or owned by another user (a single
+     * outcome on purpose: anti-enumeration, same as BR-PRO-010).
+     */
+    void restoreProduct(UUID productId, UUID userId);
+
     boolean existsById(UUID id);
 }

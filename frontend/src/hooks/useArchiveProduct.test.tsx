@@ -86,6 +86,28 @@ describe('useArchiveProduct', () => {
     expect(client.getQueryState(LIST_KEY)?.isInvalidated).toBe(true)
   })
 
+  /**
+   * #695 — les compteurs de la carte catégorie sont désormais des champs de
+   * `CategoryResponse` (source backend), pas un dérivé client du listing produits :
+   * archiver sans invalider `categories.all` laisse la carte affirmer que le produit
+   * est encore actif. On assert l'INVALIDATION EFFECTIVE de la query (pas seulement
+   * l'appel du spy) : c'est elle qui fait refetcher l'onglet Catégories en place.
+   */
+  it('#695 — succès : invalide aussi categories.all (compteurs de carte)', async () => {
+    deleteProductMock.mockResolvedValue(undefined)
+    const client = makeClient()
+    client.setQueryData(queryKeys.categories.all, [])
+    const invalidateSpy = vi.spyOn(client, 'invalidateQueries')
+    const { result } = renderHook(() => useArchiveProduct('user-1'), {
+      wrapper: makeWrapper(client),
+    })
+
+    await result.current.mutateAsync({ productId: 'p-1' })
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.categories.all })
+    expect(client.getQueryState(queryKeys.categories.all)?.isInvalidated).toBe(true)
+  })
+
   it('échec serveur : erreur exposée telle quelle, ni invalidation ni retrait du cache', async () => {
     const serverError = { response: { status: 404 } }
     deleteProductMock.mockRejectedValue(serverError)

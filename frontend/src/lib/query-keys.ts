@@ -26,6 +26,12 @@ export const queryKeys = {
      * `GET /api/users/{userId}/products` (cf. useProductsWithEvents).
      */
     withEvents: (userId: string) => ['products', { userId, withEvents: true }] as const,
+    /**
+     * #711 — Produits ARCHIVÉS d'un utilisateur (`GET /api/users/{userId}/products/archived`).
+     * Placée SOUS le préfixe `['products']` volontairement : l'invalidation `products.all`
+     * de `useArchiveProduct` rafraîchit ainsi l'onglet « Archivés » sans le connaître.
+     */
+    archived: (userId: string) => ['products', { userId, archived: true }] as const,
   },
   events: {
     all: ['events'] as const,

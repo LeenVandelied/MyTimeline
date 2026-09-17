@@ -202,9 +202,35 @@
     "error": "Impossible de charger les catégories.",
     "system": "Système",
     "productCount": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "archivedCount": "{count, plural, one {# archivé} other {# archivés}}",
     "delete": "Supprimer",
     "edit": "Modifier",
     "openEdit": "Modifier {name}"
+  },
+  "archived": {
+    "title": "Archivés",
+    "loading": "Chargement des produits archivés…",
+    "error": "Impossible de charger les produits archivés.",
+    "empty": "Aucun produit archivé.",
+    "emptyDescription": "Les produits que tu archives apparaissent ici, d'où tu peux les désarchiver.",
+    "tableLabel": "Produits archivés",
+    "columns": {
+      "product": "Produit",
+      "actions": "Actions"
+    },
+    "restore": "Désarchiver",
+    "restoreLabel": "Désarchiver {name}"
+  },
+  "restoreDialog": {
+    "title": "Désarchiver ce produit ?",
+    "description": "« {name} » et ses événements réapparaîtront dans tes listes et sur ta frise.",
+    "cancel": "Annuler",
+    "confirm": "Désarchiver",
+    "confirming": "Désarchivage en cours",
+    "errors": {
+      "notFound": "Ce produit n'est plus dans les archivés. La liste a été rafraîchie.",
+      "generic": "Le désarchivage a échoué. Réessaie."
+    }
   },
   "archiveDialog": {
     "title": "Archiver cet événement ?",

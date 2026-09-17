@@ -33,6 +33,16 @@ import {
  *     `linkedProductsCount > 0` (bouton confirmer désactivé tant qu'aucune cible),
  *     cible = toutes catégories SAUF celle supprimée (systèmes incluses).
  *
+ * #695 (Sprint 93) — les compteurs de la carte ne sont PLUS dérivés du listing produits
+ * (qui exclut les archivés) mais servis par `GET /api/categories`
+ * (`productCount` / `archivedProductCount`). Conséquences sur ce fichier :
+ *   - `linkedProductsCount` = actifs + archivés → le select s'arme d'emblée pour une
+ *     catégorie ne portant QUE des archivés (l'ancien scénario #546 n'y passait plus par
+ *     le 409) ;
+ *   - la couverture du repli serveur (409 → `reassignRequiredByServer`, PAT-S89-001) est
+ *     CONSERVÉE, provoquée autrement : une carte rendue avant l'arrivée du produit ;
+ *   - un test vérifie la mise à jour EN PLACE de la carte après archivage (PIT-S92-004).
+ *
  * #245 — La suppression passe par `useDeleteCategory` (useMutation) qui invalide
  *   `categories.all` + `products.all` sur succès : la liste se rafraîchit SEULE, sans
  *   reload. Les assertions de disparition observent donc la vue courante directement.
@@ -161,8 +171,10 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     })
 
     await openCategoriesTab(page)
-    // linkedProductsCount dérivé du listing : la source compte bien 1 produit.
+    // #695 — compteur SERVI PAR L'API (`CategoryResponse.productCount`) : 1 produit actif.
     await expect(page.getByTestId(`categories-count-${source.id}`)).toContainText('1')
+    // Aucun archivé ici -> pas de mention d'archivés à côté du badge.
+    await expect(page.getByTestId(`categories-archived-count-${source.id}`)).toHaveCount(0)
 
     await page.getByTestId(`categories-delete-${source.id}`).click()
     const dialog = page.getByRole('dialog')
@@ -189,12 +201,14 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await expect(page.getByTestId(`products-row-category-${product.id}`)).toContainText(target.name)
   })
 
-  // #546 — catégorie ne portant QU'UN produit ARCHIVÉ. Décision #546 (option A) : un
-  // produit archivé occupe toujours sa catégorie (FK `category_id` NOT NULL, comptage
-  // backend natif incluant les archivés) → DELETE sans cible = 409. Le compteur de la
-  // carte (listing sans archivés) affiche 0 : le dialog part SANS select, reçoit le 409
-  // et doit basculer en réassignation au lieu d'afficher une erreur sans issue.
-  test("suppression d'une catégorie ne portant qu'un produit archivé bascule en réassignation", async ({
+  // #695 — catégorie ne portant QU'UN produit ARCHIVÉ. DEC-S89-001 : un produit archivé
+  // occupe toujours sa catégorie (FK `category_id` NOT NULL, comptage backend natif
+  // archivés inclus) → DELETE sans cible = 409. AVANT #695 la carte affichait « aucun
+  // produit » et le dialog partait SANS select, prenait le 409 et basculait après coup.
+  // DEPUIS #695 les compteurs viennent de l'API (`productCount` / `archivedProductCount`) :
+  // la carte annonce l'archivé et le select est armé D'EMBLÉE. Le repli sur 409 n'a pas
+  // disparu, il n'est plus le chemin nominal — il est couvert par le test SUIVANT.
+  test("catégorie ne portant qu'un produit archivé : la carte l'annonce et arme la réassignation", async ({
     page,
   }) => {
     const userId = await getUserId(page)
@@ -205,8 +219,7 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
       name: unique('Prod Archived'),
       categoryId: source.id,
     })
-    // Archivage (soft delete BR-PRO-007) via l'API. Helper local : `support/products.ts`
-    // est hors du périmètre de #546.
+    // Archivage (soft delete BR-PRO-007) via l'API, AVANT le premier rendu de la carte.
     const archived = await page.request.delete(`/api/users/${userId}/products/${product.id}`)
     expect(
       archived.status(),
@@ -214,8 +227,51 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     ).toBe(204)
 
     await openCategoriesTab(page)
-    // Compteur local = 0 (ICU fr `=0 {aucun produit}`) : l'archivé est absent du listing.
+    // LE critère d'acceptation de #695 : plus de « aucun produit ». Le badge des actifs
+    // (qui dirait exactement cela) est masqué, la mention des archivés le remplace.
+    await expect(page.getByTestId(`categories-count-${source.id}`)).toHaveCount(0)
+    await expect(page.getByTestId(`categories-archived-count-${source.id}`)).toContainText('1')
+
+    await page.getByTestId(`categories-delete-${source.id}`).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    // Réassignation armée D'EMBLÉE (linkedProductsCount = actifs + archivés = 1), donc
+    // SANS avoir eu besoin du 409 : pas de note « réassignation requise ».
+    await expect(page.getByTestId('delete-reassign-label')).toBeVisible()
+    await expect(page.getByTestId('delete-reassign-required-note')).toHaveCount(0)
+    await expect(page.getByTestId('delete-confirm-button')).toBeDisabled()
+
+    await page.getByTestId('delete-reassign-select').click()
+    await page.getByRole('option', { name: target.name }).click()
+    await page.getByTestId('delete-confirm-button').click()
+
+    await expect(dialog).toBeHidden()
+    await expect(page.getByTestId(`categories-card-${source.id}`)).toHaveCount(0)
+    await expect(page.getByTestId(`categories-card-${target.id}`)).toBeVisible()
+  })
+
+  // #695 — REPLI SERVEUR (PAT-S89-001) : le compteur de la carte vient maintenant du
+  // backend, mais il peut être PÉRIMÉ — la carte a été rendue avant qu'un produit
+  // n'arrive dans la catégorie. Le 409 doit alors TOUJOURS basculer le dialog en
+  // réassignation (`reassignRequiredByServer`), sinon l'utilisateur reste devant une
+  // erreur sans issue. Ce test remplace la couverture du 409 que l'ancien scénario
+  // « catégorie ne portant qu'un archivé » exerçait par accident.
+  test('carte périmée : le 409 serveur arme encore la réassignation', async ({ page }) => {
+    const userId = await getUserId(page)
+    const source = await seedCategory(page, unique('Stale Source'), '#E5484D')
+    const target = await seedCategory(page, unique('Stale Bin'), '#46A758')
+
+    await openCategoriesTab(page)
+    // Carte rendue AVANT le produit : 0 actif / 0 archivé -> « aucun produit », pas de select.
     await expect(page.getByTestId(`categories-count-${source.id}`)).toHaveText('aucun produit')
+
+    // Le produit arrive APRÈS le rendu, par l'API : la carte affichée est désormais fausse
+    // (c'est précisément l'état contre lequel le repli existe).
+    await seedProduct(page, {
+      userId,
+      name: unique('Prod Stale'),
+      categoryId: source.id,
+    })
 
     await page.getByTestId(`categories-delete-${source.id}`).click()
     const dialog = page.getByRole('dialog')
@@ -237,5 +293,37 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await expect(dialog).toBeHidden()
     await expect(page.getByTestId(`categories-card-${source.id}`)).toHaveCount(0)
     await expect(page.getByTestId(`categories-card-${target.id}`)).toBeVisible()
+  })
+
+  // #695 — mise à jour EN PLACE (PIT-S92-004 : ne pas se contenter d'un rechargement).
+  // Archivage depuis l'onglet Produits, puis bascule d'onglet SANS `page.goto` : la carte
+  // doit avoir perdu son produit actif et gagné la mention « 1 archivé ». C'est ce que
+  // l'invalidation `categories.all` de `useArchiveProduct` garantit (#695) ; sans elle la
+  // carte resterait à « 1 produit » jusqu'au refetch suivant.
+  test('archiver un produit met à jour la carte catégorie sans rechargement', async ({ page }) => {
+    const userId = await getUserId(page)
+    const category = await seedCategory(page, unique('In Place'), '#8E4EC6')
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Prod In Place'),
+      categoryId: category.id,
+    })
+
+    await openCategoriesTab(page)
+    await expect(page.getByTestId(`categories-count-${category.id}`)).toContainText('1')
+    await expect(page.getByTestId(`categories-archived-count-${category.id}`)).toHaveCount(0)
+
+    // Retour à l'onglet Produits (même page, pas de navigation) puis archivage à la souris.
+    await page.getByTestId('products-tabs').getByRole('tab', { name: 'Produits' }).click()
+    await expect(page.getByTestId(`products-row-${product.id}`)).toBeVisible()
+    await page.getByTestId(`products-archive-${product.id}`).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await page.getByTestId('delete-confirm-button').click()
+    await expect(page.getByTestId(`products-row-${product.id}`)).toHaveCount(0)
+
+    // Bascule d'onglet SANS rechargement : la carte reflète déjà l'archivage.
+    await page.getByTestId('products-tabs').getByRole('tab', { name: 'Catégories' }).click()
+    await expect(page.getByTestId(`categories-archived-count-${category.id}`)).toContainText('1')
+    await expect(page.getByTestId(`categories-count-${category.id}`)).toHaveCount(0)
   })
 })
