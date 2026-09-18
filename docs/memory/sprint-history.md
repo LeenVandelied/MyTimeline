@@ -6685,7 +6685,14 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Nouveaux pitfalls / patterns / décisions :** PIT-S94-001 à -007, PAT-S94-001 à -004, DEC-S94-001 à -004 (packs `pit-*` régénérés, `pit-classification.tsv` complété).
 **CI :** 7/7 verte sur `d3da09a7` (SHA final épinglé) — `backend`, `frontend`, `e2e`, `ai-env-packs` (requis) + `flyway-smoke`, `secret-scan`, `security`. Le job `e2e` a tranché les 10 faux rouges macOS de `sprint-77-theme-visual` : aucune référence visuelle n'a été régénérée.
 **Saturation contexte lead (mesure) :** non mesurée cette session.
-**Status :** Terminé — merge de la PR #725 dans `dev` ; le SHA du commit de merge n'est pas consigné ici (l'entrée est écrite AVANT le merge, `dev` étant protégée et ne recevant pas de commit direct)
+**Follow-ups arbitrés (Phase 4 triage — 4 items, 0 discard, 0 absorption) :**
+  - retirer le stub Fullscreen de `timeline.spec.ts` (#330), prémisse infirmée par mesure [XS | events] → issue #726 (backlog)
+  - `scrollToToday` exposé mais câblé nulle part en mobile [S | events] → issue #727 (backlog)
+  - lanes mobiles sans trame de jours faute de `background-size` [S | events] → issue #728 (backlog)
+  - auditer les autres listeners `window keydown` pour le défaut de #672 [XS | events] → issue #729 (backlog)
+  Ratio discard 0/4. Backlog libre choisi par le dev : le milestone Sprint 95 porte un autre thème (toasts et messages), y verser des issues de frise aurait dégradé sa cohésion.
+**Clôture (`/sprint end 94`, 2026-09-18) :** PR #725 `CLEAN`/`MERGEABLE`, CI **7/7 verte sur `19edb13b`** (SHA épinglé au merge via `--match-head-commit`), fusionnée dans `dev` (merge `0484ba72`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #95 = exactement les 3 issues du label `sprint-94` (vérifié dans les deux sens), fermé après le merge. Briefings supprimés AVANT la PR (`dev` protégée). Aucune pile E2E laissée debout.
+**Status :** Terminé — merge PR #725 dans `dev` le 2026-09-18 (`0484ba72`), issues #672/#706/#712 et milestone #95 fermés
 
 ### Sprint 95 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Toasts et messages)
 **Objectif :** Ce que l'application affiche en retour : toast qui ne masque plus de contrôle, erreurs réseau traduites, messages vides justes
