@@ -367,14 +367,17 @@ describe('#706 — gouttière de piste mobile', () => {
     // un vide et la colonne cesse d'être continue.
     expect(css).toMatch(/\.mt-tlm__lane-label\{[^}]*width:var\(--lane-header-w-m\)/)
     expect(css).not.toMatch(/\.mt-tlm__lane-label\{[^}]*max-width:120px/)
-    // Les quatre familles d'éléments positionnés du rail subissent le MÊME
-    // décalage — c'est ce qui garde règle et piste alignées.
+    // Les familles d'éléments positionnés du rail subissent TOUTES le MÊME
+    // décalage — c'est ce qui garde règle et piste alignées. `__ghost-pin` est
+    // listée à part de `__ghost` : le sélecteur de cette dernière en est un
+    // préfixe, donc `toContain` seul ne la couvrirait pas (review S94).
     for (const selector of [
       '.mt-tlm__ruler > .mt-tlm__tick',
       '.mt-tlm__rail > .mt-tlm__weekend',
       '.mt-tlm__rail > .mt-tlm__today',
       '.mt-tlm__lane > .mt-tlm__evt-wrap',
       '.mt-tlm__lane > .mt-tlm__ghost',
+      '.mt-tlm__lane > .mt-tlm__ghost-pin',
       '.mt-tlm__lane > .mt-tlm__connector',
     ]) {
       expect(css, `${selector} doit porter la gouttière`).toContain(selector)
