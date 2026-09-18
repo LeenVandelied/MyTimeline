@@ -727,7 +727,68 @@
 /* Lane compacte : densité réduite mais hauteur >= 44px (contrainte a11y PRIME
    sur la densité, réserve ui-design #1). */
 .mt-tlm__lane{position:relative; height:44px; border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
-.mt-tlm__lane-label{position:-webkit-sticky; position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; max-width:120px; height:100%; padding:0 var(--space-2); background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:11px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+/* #706 — largeur FIXE (et non plus `max-width:120px`), même raison que #392 côté
+   desktop : l'en-tête remplit désormais la gouttière de piste, qui fait
+   exactement `--lane-header-w-m`. Un en-tête plus étroit (nom de produit court)
+   y laisserait un vide au lieu d'une colonne continue. `box-sizing:border-box`
+   explicite : la largeur doit inclure le `border-right`, sinon la colonne
+   déborde d'1px sur la piste. */
+.mt-tlm__lane-label{position:-webkit-sticky; position:sticky; left:0; z-index:var(--z-sticky); box-sizing:border-box; display:inline-flex; align-items:center; width:var(--lane-header-w-m); height:100%; padding:0 var(--space-2); background:var(--color-surface-2); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:11px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+
+/* ---------------------------------------------------------------------------
+   #706 — GOUTTIÈRE DE PISTE MOBILE. Miroir exact de #392 (desktop, plus haut),
+   qui n'avait PAS d'équivalent ici : l'en-tête de lane mobile est
+   `position:sticky; left:0` et OPAQUE, il recouvre donc en permanence les
+   `--lane-header-w-m` premiers pixels du viewport, à TOUT niveau de scroll. Un
+   événement dont l'origine sur la piste est inférieure à cette largeur naissait
+   sous lui et n'en sortait à AUCUN défilement — c'est le cas nominal à
+   l'ouverture, où `computeRange` pose `rangeStart` 30 jours avant le premier
+   événement (30 j × 2,2 px = 66 px au zoom Année, sous les 120 px de la
+   colonne).
+
+   DIFFÉRENCE AVEC LE DESKTOP, et pourquoi le défaut est resté invisible plus
+   longtemps ici : `.mt-tlm__lane-label` est `pointer-events:none` (il n'est pas
+   un accordéon, contrairement à `.mt-tlv__lane-head` de #195). Le bloc restait
+   donc CLIQUABLE sous la colonne — le symptôme était purement visuel (libellé
+   tronqué ou accolé au nom de la lane, constaté au S91), pas une perte
+   d'atteignabilité. Conséquence directe pour les tests : un `elementFromPoint`
+   au centre du bloc NE PEUT PAS voir cette colonne (PIT-S91-006) et ne prouve
+   rien ici ; l'oracle est une comparaison de rectangles.
+
+   POURQUOI `margin-left` (et pas un padding du rail) : ces éléments sont tous
+   `position:absolute`, or `left` se résout sur la boîte de PADDING du bloc
+   conteneur — un `padding-left` ne les déplacerait pas. Sélecteurs bornés à
+   l'enfant DIRECT du conteneur concerné : les mêmes classes servent hors frise
+   et ne doivent pas hériter de la gouttière. L'alignement règle/piste tient
+   parce que les quatre familles subissent EXACTEMENT le même décalage.
+   --------------------------------------------------------------------------- */
+.mt-tlm__ruler > .mt-tlm__tick,
+.mt-tlm__ruler > .mt-tlm__today,
+.mt-tlm__rail > .mt-tlm__weekend,
+.mt-tlm__rail > .mt-tlm__today,
+.mt-tlm__lane > .mt-tlm__evt-wrap,
+.mt-tlm__lane > .mt-tlm__ghost,
+.mt-tlm__lane > .mt-tlm__ghost-pin,
+.mt-tlm__lane > .mt-tlm__connector{margin-left:var(--lane-header-w-m);}
+/* PAS de `background-position-x` ici, contrairement au desktop (`.mt-tlv__lane`)
+   — et c'est délibéré. Le desktop pose `background-size:<dayWidth>px 100%` EN
+   LIGNE (`TimelineView.tsx`), donc son fond de lane est une vraie trame de jours
+   qu'il faut recaler sur la piste. Les vues mobiles ne posent AUCUN
+   `background-size` : le dégradé occupe toute la lane, ce qui ne peint qu'UN
+   trait de 1px à l'origine du rail (aujourd'hui masqué par la colonne d'en-têtes
+   au repos). Le décaler ne réalignerait aucune trame — il déplacerait ce trait
+   unique contre le `border-right` de l'en-tête, soit un filet doublé à l'écran.
+   La trame de jours mobile est un manque à part entière, hors périmètre #706. */
+/* Coin haut-gauche : masque la gouttière SUR LA RÈGLE. `buildRulerTicks` peut
+   émettre des graduations à offset NÉGATIF ; hors gouttière elles étaient hors
+   rail donc invisibles, la gouttière les ferait apparaître comme un libellé de
+   date flottant au-dessus de la colonne produit. Bloc STICKY en flux (les
+   graduations, elles, sont absolues) : il tient le bord gauche à tout niveau de
+   scroll, exactement comme l'en-tête de lane en dessous. Fond `surface-2` =
+   celui de `.mt-tlm__lane-label` et de `.mt-tlm__group-cell` → la gouttière est
+   une colonne d'une seule teinte. `--z-sticky` : la ligne TODAY (`--z-cursor`)
+   passe par-dessus, même convention que le desktop. */
+.mt-tlm__ruler::before{content:""; position:-webkit-sticky; position:sticky; left:0; z-index:var(--z-sticky); display:block; width:var(--lane-header-w-m); height:100%; background:var(--color-surface-2); border-right:1px solid var(--color-rule);}
 
 /* Bloc event compact + son bouton `⋯`. Le wrap positionne (left absolu), le
    bouton event porte la largeur. Hitbox verticale = toute la lane (44px). */

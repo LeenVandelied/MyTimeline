@@ -3,6 +3,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { TimelineResponsive } from './TimelineResponsive'
+import { MOBILE_LANE_TRACK_OFFSET_PX } from './useTimelineMobileState'
 
 /**
  * #328 — Le scroll horizontal de la frise mobile survit à la rotation.
@@ -152,6 +153,15 @@ function railWidth(): number {
   return Number.parseFloat(rail!.style.width)
 }
 
+/**
+ * #706 — Étendue de la PISTE : le rail porte en plus la gouttière d'en-têtes de
+ * lane. La minimap cartographie la piste, pas le rail — c'est cette largeur-là
+ * qui normalise `viewportStart`.
+ */
+function trackWidth(): number {
+  return railWidth() - MOBILE_LANE_TRACK_OFFSET_PX
+}
+
 function scrollEl(): HTMLElement {
   return screen.getByTestId('timeline-scroll')
 }
@@ -215,8 +225,8 @@ describe('#328 — rotation portrait ↔ paysage et scroll horizontal', () => {
     media = mockMatchMedia(isPortrait)
     renderResponsive()
 
-    const width = railWidth()
-    expect(width).toBeGreaterThan(0)
+    const track = trackWidth()
+    expect(track).toBeGreaterThan(0)
     act(() => {
       scrollEl().scrollLeft = 400
     })
@@ -224,7 +234,10 @@ describe('#328 — rotation portrait ↔ paysage et scroll horizontal', () => {
     media.rotate(isLandscape)
 
     // `aria-valuenow` = fraction de départ de la fenêtre visible, en % arrondi.
-    expect(minimapValueNow()).toBe(Math.round((400 / width) * 100))
+    // #706 — `scrollLeft` est en repère RAIL, la minimap en repère PISTE : la
+    // gouttière est retirée avant normalisation (sinon la fenêtre dériverait de
+    // `MOBILE_LANE_TRACK_OFFSET_PX / trackWidth` sur toute la course).
+    expect(minimapValueNow()).toBe(Math.round(((400 - MOBILE_LANE_TRACK_OFFSET_PX) / track) * 100))
     expect(scrollEl().scrollLeft).toBe(400)
   })
 
@@ -238,7 +251,12 @@ describe('#328 — rotation portrait ↔ paysage et scroll horizontal', () => {
       (document.querySelector('.mt-tlm__today') as HTMLElement).style.left,
     )
     expect(todayLeftPx).toBeGreaterThan(0)
-    expect(scrollEl().scrollLeft).toBe(todayLeftPx)
+    // #706 — `.mt-tlm__today` porte un `left` en repère PISTE ; `scrollLeft` est en
+    // repère RAIL. La cible du centrage vaut donc `gouttière + todayLeftPx` (moins
+    // la demi-largeur visible, nulle sous jsdom). C'est précisément ce décalage qui
+    // empêche l'événement du jour de naître SOUS la colonne d'en-têtes quand le
+    // centrage est rabattu à 0 (plage courte).
+    expect(scrollEl().scrollLeft).toBe(MOBILE_LANE_TRACK_OFFSET_PX + todayLeftPx)
 
     // Position utilisateur ≠ centrage : la rotation ne doit PAS rejouer le centrage.
     act(() => {

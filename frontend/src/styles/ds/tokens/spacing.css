@@ -46,6 +46,15 @@
   /* timeline-specific */
   --lane-height:   46px;
   --lane-header-w: 168px;
+  /* #706 — gouttière de piste MOBILE (portrait + paysage). Pendant de
+     `--lane-header-w` pour les vues `.mt-tlm*`, qui ne peuvent pas réserver
+     168px sur un écran de 390px. La valeur reprend le plafond que
+     `.mt-tlm__lane-label` déclarait déjà (`max-width:120px`) : on le promeut en
+     largeur FIXE pour que la colonne d'en-têtes soit continue et que la piste
+     commence exactement là où elle s'arrête. Miroir JS :
+     `MOBILE_LANE_TRACK_OFFSET_PX` (`useTimelineMobileState.ts`), verrouillé par
+     un test de dérive. */
+  --lane-header-w-m: 120px;
   --ruler-height:  44px;
 
   /* layout-specific (#210 shell applicatif — nav latérale persistante) */

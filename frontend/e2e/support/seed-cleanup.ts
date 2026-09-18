@@ -197,29 +197,56 @@ const trashCategoryByUser = new Map<string, string>()
 
 /** Nom FIXE, pas suffixé par worker : `TEST_WORKER_INDEX` grimpe quand Playwright
  *  recycle un worker (mesuré : 6 poubelles pour 2 workers sur un run complet). On
- *  cherche donc d'abord une poubelle existante sur le compte. Deux workers qui la
- *  créent au même instant en produisent deux — sans conséquence, c'est borné. */
+ *  cherche donc d'abord une poubelle existante sur le compte.
+ *  ⚠ #706 (S94) — la phrase qui suivait ici (« deux workers qui la créent au même
+ *  instant en produisent deux — sans conséquence ») était FAUSSE : la contrainte
+ *  `uq_categories_owner_name` rend un 500 au perdant de la course, ce qui tuait un
+ *  test vert. Voir le traitement dans `resolveTrashCategory`. */
 const TRASH_CATEGORY_NAME = 'zz-purge'
+
+/** Cherche la poubelle déjà présente sur le compte. `null` si elle n'existe pas. */
+async function findTrashCategory(api: APIRequestContext): Promise<string | null> {
+  const existing = await api.get(`${API}/categories`)
+  if (!existing.ok()) return null
+  const found = ((await existing.json()) as { id: string; name: string }[]).find(
+    (c) => c.name === TRASH_CATEGORY_NAME,
+  )
+  return found?.id ?? null
+}
 
 async function resolveTrashCategory(api: APIRequestContext, userId: string): Promise<string> {
   const memo = trashCategoryByUser.get(userId)
   if (memo) return memo
 
-  const existing = await api.get(`${API}/categories`)
-  if (existing.ok()) {
-    const found = ((await existing.json()) as { id: string; name: string }[]).find(
-      (c) => c.name === TRASH_CATEGORY_NAME,
-    )
-    if (found) {
-      trashCategoryByUser.set(userId, found.id)
-      return found.id
-    }
+  const before = await findTrashCategory(api)
+  if (before) {
+    trashCategoryByUser.set(userId, before)
+    return before
   }
 
   const res = await api.post(`${API}/categories`, {
     data: { name: TRASH_CATEGORY_NAME, color: '#6E6E6E' },
   })
   if (res.status() !== 201) {
+    // #706 (S94) — LE COMMENTAIRE DE `TRASH_CATEGORY_NAME` ÉTAIT FAUX. Il annonçait
+    // que « deux workers qui la créent au même instant en produisent deux — sans
+    // conséquence ». La table porte en réalité une contrainte d'unicité
+    // `uq_categories_owner_name (owner_id, name)` : le perdant de la course reçoit un
+    // **500** (`DataIntegrityViolationException`), et comme l'échec de purge est
+    // FATAL, il TUE un test qui avait par ailleurs réussi. Mesuré 2 fois sur 3 runs
+    // ciblés, sur un jeu de comptes neuf (`E2E_RUN_ID` change à chaque run, donc la
+    // poubelle n'existe jamais au premier nettoyage : les deux workers la créent
+    // ensemble). Signature backend : `duplicate key value violates unique constraint
+    // "uq_categories_owner_name" … (owner_id, name)=(…, zz-purge)`.
+    //
+    // La création est donc RENDUE IDEMPOTENTE : on relit le compte avant de conclure.
+    // On ne masque rien — un échec qui n'est PAS la course (droits, backend éteint)
+    // ne trouvera pas de poubelle et lèvera comme avant, avec le statut d'origine.
+    const afterRace = await findTrashCategory(api)
+    if (afterRace) {
+      trashCategoryByUser.set(userId, afterRace)
+      return afterRace
+    }
     throw new Error(`purge : création de la catégorie poubelle a rendu ${res.status()}`)
   }
   const id = ((await res.json()) as { id: string }).id
