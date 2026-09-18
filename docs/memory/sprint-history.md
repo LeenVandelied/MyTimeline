@@ -6666,7 +6666,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Clôture (`/sprint end 93`, 2026-09-18) :** PR #717 `CLEAN`/`MERGEABLE`, CI 7/7 verte sur `4d43bb74` (SHA épinglé au merge via `--match-head-commit`), fusionnée dans `dev` (`54bfa066`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #94 = exactement les 2 issues du label `sprint-93` (vérifié dans les deux sens), fermé après le merge avec #711 et #695. Briefings supprimés AVANT la PR (dev protégée). Pile e2e démontée.
 **Status :** Terminé — merge PR #717 dans `dev` le 2026-09-18 (`54bfa066`), issues #711/#695 et milestone #94 fermés
 
-### Sprint 94 — 2026-09-15 (PLANIFIÉ — cohésion 1.00, Frise : clavier, plein écran, mobile)
+### Sprint 94 — 2026-09-15 → en cours (EN COURS — cohésion 1.00, Frise : clavier, plein écran, mobile)
 **Objectif :** Les raccourcis n'agissent plus derrière un formulaire ; l'édition marche en plein écran ; aucun événement caché sous la colonne sticky mobile
 **Milestone GitHub :** #95
 **Issues :** #672 (S), #706 (S, risque M), #712 (S) — 6 pts (+#677 si capacité)
@@ -6674,7 +6674,18 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** aucun fichier commun avec S93
 **À confirmer au démarrage :** garde des raccourcis (dialog Radix hors rootRef, pas `aria-modal`) ; #706 structurel, liste grep complète des specs mobiles ; `requestFullscreen` en headless.
-**Status :** Planifié
+**Vérifications du lead au démarrage (2026-09-18) :** `aria-modal` absent des bundles `@radix-ui/react-dialog` (présent seulement dans les `.map`) → prémisse architect confirmée, la piste de l'énoncé #672 est inopérante. Garde `onKey` de `TimelineView.tsx:1296-1301` limitée à `INPUT`/`TEXTAREA`/`contentEditable`, `Escape` traité AVANT la garde. Listes grep complètes des specs impactées collées dans les briefings.
+**Branche :** `claude/sprint-94-start-9afca9` (worktree, basée sur `origin/dev` 515f1288)
+**Vagues exécutées :** V1 = #672 (unitaires) + #706 (exclusivité Playwright), en parallèle | V2 = #712 + E2E de #672
+**Commits (5) :** `1be053a9` (#672 garde de raccourcis) · `0ec6114d` (#706 gouttière mobile) · `9fbbbe2d` (#712 sortie de plein écran) · `36931a46` (#672 E2E) · `7efca10e` (correction MINEUR de review)
+**BR impactées :** aucune (3 bugs d'interaction ; pas de schéma, d'endpoint ni d'auth)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 2 MINEURS ; 1 corrigé (`7efca10e`), 1 laissé en risque documenté (`isOverlayLayerOpen()` ne couvre pas `role=menu`/`listbox` — aucun composant concerné aujourd'hui, grep vérifié)
+**Tests :** Backend 632/632 · Frontend 1839/1839 (+ build, typecheck, lint, prettier) · E2E 133/133 sur la liste grep complète des surfaces touchées. Suite E2E complète NON rejouée au HEAD final (10 faux rouges macOS `sprint-77-theme-visual`, références Linux absentes en local) — la CI tranche.
+**Prémisses d'énoncé infirmées au démarrage :** #672 (`aria-modal` n'est pas le bon discriminant — c'est la containment DOM), #706 (défaut structurel, pas `ensureVisible` ; pas d'`ensureVisible` en mobile), #712 (`requestFullscreen` EST supporté en Chromium headless, contrairement à la prémisse de `timeline.spec.ts` #330).
+**Nouveaux pitfalls / patterns / décisions :** PIT-S94-001 à -007, PAT-S94-001 à -004, DEC-S94-001 à -004 (packs `pit-*` régénérés, `pit-classification.tsv` complété).
+**CI :** 7/7 verte sur `d3da09a7` (SHA final épinglé) — `backend`, `frontend`, `e2e`, `ai-env-packs` (requis) + `flyway-smoke`, `secret-scan`, `security`. Le job `e2e` a tranché les 10 faux rouges macOS de `sprint-77-theme-visual` : aucune référence visuelle n'a été régénérée.
+**Saturation contexte lead (mesure) :** non mesurée cette session.
+**Status :** Terminé — merge de la PR #725 dans `dev` ; le SHA du commit de merge n'est pas consigné ici (l'entrée est écrite AVANT le merge, `dev` étant protégée et ne recevant pas de commit direct)
 
 ### Sprint 95 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Toasts et messages)
 **Objectif :** Ce que l'application affiche en retour : toast qui ne masque plus de contrôle, erreurs réseau traduites, messages vides justes

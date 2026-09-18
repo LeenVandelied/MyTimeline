@@ -1835,3 +1835,24 @@ Le test de réassignation #546 n'atteignait le 409 que parce que `linkedProducts
 
 ## PIT-S93-008 — `grep` sous le hook RTK peut rendre « 0 résultat » sur un fichier qui contient la chaîne
 Le contrôle coverage-E2E du lead a rendu **0 testid** sur un diff de 60 Ko non tronqué, puis **7** avec `/usr/bin/grep`. Le piège RTK connu portait sur les gros diffs, `vitest` et `prettier --check` ; il vaut aussi pour un `grep`/`wc` d'analyse — et `rtk proxy` devant la commande qui ÉCRIT le fichier n'y change rien, c'est le `grep` suivant qui ment. Pour toute MESURE, appeler le binaire par chemin absolu. (Sprint 93, lead)
+
+## PIT-S94-001 — Un primitif Radix qui ne pose pas un attribut ne prouve RIEN sur la coque du projet
+Le lead a réfuté la piste de l'énoncé #672 (`[role="dialog"][aria-modal="true"]`) en grepant `frontend/node_modules/@radix-ui/react-dialog/dist/` : `aria-modal` n'y est que dans les `.map`, donc Radix n'en pose aucun — **fait exact, conclusion fausse**. `frontend/src/components/events/EventFormDrawer.tsx:173-174` pose `role="dialog"` ET `aria-modal="true"` à la main. Pour réfuter un sélecteur, chercher l'attribut dans `src/` AVANT `node_modules/`. (Sprint 94, #672, fullstack-dev contre le briefing du lead)
+
+## PIT-S94-002 — Un mock `exitFullscreen` en `async () => { el = null }` efface la course qu'il prétend tester
+Le corps d'une fonction `async` s'exécute SYNCHRONEMENT jusqu'au premier `await` : la mutation est déjà faite quand l'appelant reprend la main, donc le code NON corrigé (qui n'attend pas la promesse) passe au VERT. Le 1er jet du test unitaire de #712 était dans ce cas. Différer la mutation par un `setTimeout` dans un `new Promise` — et vérifier que le test rougit sans le correctif. (Sprint 94, #712)
+
+## PIT-S94-003 — `.mt-tlm__lane > .mt-tlm__ghost` est un PRÉFIXE de `…__ghost-pin` : `toContain` ne couvre pas les deux
+Le test de dérive de la gouttière mobile listait six sélecteurs et croyait couvrir sept familles : l'assertion `expect(css).toContain('.mt-tlm__lane > .mt-tlm__ghost')` est satisfaite par la ligne de `__ghost-pin` seule. Un sélecteur dont un autre est le préfixe doit être asserté séparément. Trouvé en review, corrigé en `7efca10e`. (Sprint 94, #706, reviewer)
+
+## PIT-S94-004 — `elementFromPoint` ne peut JAMAIS désigner la colonne sticky de la frise mobile
+`.mt-tlm__lane-label` est en `pointer-events:none` (`timeline.css`, bloc partagé avec `__ghost`/`__connector`). L'oracle exigé par l'énoncé #706 — « mesure par `elementFromPoint` au centre de l'événement » — était donc vacuous par construction : il aurait rendu VERT avant comme après. Le symptôme est visuel, l'oracle doit comparer des `getBoundingClientRect`. Généralise [[PIT-S91-006]]. (Sprint 94, #706)
+
+## PIT-S94-005 — `requestFullscreen` EST supporté en Chromium headless : la prémisse inverse dormait dans une spec depuis #330
+`timeline.spec.ts` stubbe l'API Fullscreen au motif qu'« aucune garantie de support » n'existe en headless. Mesuré au S94 par sonde jetable : `requestFullscreen` et `exitFullscreen` fonctionnent, avec et sans geste utilisateur, et `fullscreenElement` est fidèle. Pire, un stub qui résout immédiatement MASQUE l'asynchronie d'`exitFullscreen` — c'est-à-dire exactement le défaut de #712. Famille [[upstream-blocker-verdict-expires]]. (Sprint 94, #712)
+
+## PIT-S94-006 — Le hook `warn-test-delegation.sh` a tué un heredoc qui ÉCRIVAIT l'audit (5e occurrence)
+Le fichier `docs/memory/audits/sprint-94-test-coverage.md` contient la chaîne `playwright test` dans son tableau de résultats : le heredoc qui l'écrit est bloqué comme s'il LANÇAIT la suite. Préfixer `SKIP_DELEGATION=1`. Suite de [[PIT-S63-007]], [[PIT-S74-007]], [[PIT-S78-008]]. Et le gate de Phase 9 grep `\[MISSING\]` : ne pas écrire ce jeton dans la prose de l'audit lui-même ([[PIT-S80-009]]). (Sprint 94, lead)
+
+## PIT-S94-007 — `pr-sprint.md` est un fichier SUIVI : l'écraser comme brouillon détruit le corps de PR du sprint précédent
+Le lead y a écrit le corps de la PR #725 en le croyant intermédiaire, puis l'a supprimé — `git status` a rendu ` D` et non `??`. Chaque sprint commite son corps de PR dans ce fichier (`95ae2f52` pour le S93). Regarder la cible avant d'écraser, et commiter le nouveau corps plutôt que restaurer l'ancien. (Sprint 94, lead)

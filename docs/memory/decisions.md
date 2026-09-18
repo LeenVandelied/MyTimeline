@@ -1020,3 +1020,15 @@ Arbitrage dev (#605, vaut pour #600). Le DELETE produit est un soft delete (BR-P
 
 ## DEC-S93-003 — Un compteur qu'une route ne sait pas calculer est ABSENT du JSON, jamais `0`
 `Integer` + `@JsonInclude(NON_NULL)` **au niveau champ**, `.optional()` côté Zod : sur POST / PATCH / GET `{id}`, un `0` serait indistinguable d'une catégorie réellement vide, et il suffirait qu'une surface peigne une carte sur une réponse de PATCH pour rouvrir exactement le bug #695. L'annotation est posée au niveau du champ et non de la classe : un `NON_NULL` global aurait aussi fait disparaître `color` et `description` nuls, changeant le contrat existant sans le dire. (Sprint 93 #695)
+
+## DEC-S94-001 — La garde des raccourcis se fonde sur la containment DOM, pas sur `CreateEventContext`
+Alternative écartée : exposer l'état d'ouverture par le contexte. La détection DOM couvre aussi `TimelineEditHost`, `ConflictDialog` et toute future modale du shell sans élargir le contrat du contexte. Limite assumée : les rôles `menu`/`listbox` (Popover, DropdownMenu Radix montés hors dialog) échappent à la garde — aucun composant concerné à ce jour (grep vérifié en review), à revoir à l'ajout d'un tel composant. (Sprint 94 #672)
+
+## DEC-S94-002 — Gouttière mobile à 120 px, et `background-position-x` volontairement non transposé
+`--lane-header-w-m: 120px` reprend le `max-width` que le DS déclarait déjà pour `.mt-tlm__lane-label` — ce n'est pas un seuil déduit du « ~120 px » de l'énoncé. Le desktop reste à 168 px (`LANE_TRACK_OFFSET_PX`), les deux vues n'ayant pas la même place. Le décalage de trame du desktop n'est PAS porté : les lanes mobiles n'ont aucun `background-size`, le décaler peindrait un filet doublé au lieu d'aligner une trame. (Sprint 94 #706)
+
+## DEC-S94-003 — Les overlays du shell sortent du plein écran ; ils n'y sont pas portés
+Stratégie (a) de l'énoncé #712 retenue, (b) écartée : le toaster est global au layout, le déplacer dans l'élément en plein écran aurait une portée bien au-delà de l'issue et changerait le montage de toutes les notifications de l'application. (Sprint 94 #712)
+
+## DEC-S94-004 — Les specs neuves exercent l'API Fullscreen RÉELLE, pas le stub de `timeline.spec.ts`
+Le support en Chromium headless a été mesuré (cf. [[PIT-S94-005]]). Un stub résolvant immédiatement masquerait l'asynchronie d'`exitFullscreen`, donc le défaut même que #712 corrige. Le stub de `timeline.spec.ts` (#330) reste en place pour l'instant — son retrait est un follow-up. (Sprint 94 #712)

@@ -1253,17 +1253,49 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
   }, [])
 
+  /**
+   * #712 — Exécute `action` hors du plein écran, en ATTENDANT la sortie.
+   *
+   * Le navigateur ne peint QUE l'élément passé à `requestFullscreen` (ici `rootRef`).
+   * Toute couche montée par le shell — le drawer de création (`CreateEventProvider`),
+   * le drawer d'édition (`TimelineEditHost`), le toaster global du layout — vit HORS
+   * de `rootRef` : ouverte en plein écran, elle est invisible, et son focus-trap
+   * piège le clavier sur un élément hors champ. On quitte donc le plein écran avant.
+   *
+   * L'attente n'est pas cosmétique : `exitFullscreen()` est ASYNCHRONE. Agir avant
+   * sa résolution monte la couche (et son piège de focus) dans un document ENCORE
+   * en plein écran — exactement le symptôme qu'on corrige. `#602` (DEC-S85-003)
+   * n'attendait pas ; les deux chemins passent désormais par ici.
+   *
+   * Le chemin nominal (pas de plein écran) reste SYNCHRONE : le différer casserait
+   * l'ouverture immédiate attendue par les tests et par l'utilisateur.
+   */
+  const runOutsideFullscreen = useCallback((action: () => void) => {
+    if (!document.fullscreenElement) {
+      action()
+      return
+    }
+    // `exitFullscreen` est absent de jsdom et des navigateurs sans l'API : on ne se
+    // fie pas au type, seulement à la valeur rendue.
+    const exiting: Promise<void> | undefined = document.exitFullscreen?.()
+    if (!exiting?.then) {
+      action()
+      return
+    }
+    // Rejet possible (sortie concurrente, document détaché) : on ouvre quand même,
+    // une couche visible derrière la frise vaut mieux qu'un clic sans effet.
+    void exiting.then(action, action)
+  }, [])
+
   // #602 (DEC-S85-003) — « Nouvel événement » ouvre LE drawer du shell (contexte
   // `CreateEventProvider`) : aucun état ni drawer ici. `null` hors shell → pas de
-  // bouton. Le drawer est monté par le shell, donc HORS de `rootRef` : en plein
-  // écran (qui ne peint que `rootRef`), il s'ouvrirait invisible derrière la frise,
-  // focus piégé dedans. On quitte donc le plein écran avant de l'ouvrir.
+  // bouton. Le drawer est monté par le shell, donc HORS de `rootRef` → cf.
+  // `runOutsideFullscreen`.
   const openCreateEvent = useOpenCreateEvent()
   const onNewEvent = useCallback(() => {
     if (!openCreateEvent) return
-    if (document.fullscreenElement) void document.exitFullscreen?.()
-    openCreateEvent()
-  }, [openCreateEvent])
+    runOutsideFullscreen(openCreateEvent)
+  }, [openCreateEvent, runOutsideFullscreen])
 
   // #395 — État plein écran DÉRIVÉ de l'événement `fullscreenchange` du document
   // (source de vérité du navigateur), et JAMAIS basculé à la main dans
@@ -1291,10 +1323,41 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     dispatch(e.deltaY < 0 ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' })
   }, [])
 
+  /**
+   * #672 — Vrai dès qu'un dialogue (maison ou Radix) est monté HORS de la frise,
+   * c.-à-d. superposé à elle. Lu à la frappe et non mémorisé : ces couches
+   * apparaissent sans re-rendre `TimelineView`, un état dérivé serait périmé.
+   */
+  const isOverlayLayerOpen = useCallback((): boolean => {
+    const root = rootRef.current
+    const layers = document.querySelectorAll('[role="dialog"], [role="alertdialog"]')
+    return Array.from(layers).some((layer) => !root || !root.contains(layer))
+  }, [])
+
   // Raccourcis clavier globaux (T/[/]/+/-/F/Échap/?). Ignore quand un champ a le
-  // focus (saisie utilisateur). Échap ferme le drawer en priorité.
+  // focus (saisie utilisateur) ou qu'une couche modale recouvre la frise. Échap
+  // ferme le drawer en priorité.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // #672 — COUCHE MODALE PAR-DESSUS LA FRISE. Le panneau de création du shell
+      // (`NewEventDrawer`), l'édition (`TimelineEditHost`) et les confirmations Radix
+      // se portalisent dans `document.body`, donc HORS de `rootRef`. La garde `typing`
+      // ci-dessous ne couvrait que les champs de saisie : une frappe sur un BOUTON du
+      // panneau retombait sur la frise — `F` la passait en plein écran (qui ne peint
+      // que `rootRef`) et le panneau, resté ouvert et saisi, devenait invisible.
+      //
+      // Les surfaces modales de la frise ELLE-MÊME (`EventDrawer`, sheets mobiles) sont
+      // peintes DANS `rootRef` : volontairement exclues de la garde, `T`/`[`/`]`
+      // continuent d'y répondre comme avant (c'est le faux positif qu'un sélecteur
+      // « tout dialogue » aurait introduit).
+      //
+      // Détection par le DOM et non par un état React : `@radix-ui/react-dialog` ne pose
+      // AUCUN `aria-modal` (la chaîne n'existe que dans ses source maps), et le shell
+      // n'expose pas l'ouverture de son drawer. Le rôle ARIA est le seul dénominateur
+      // commun aux couches maison et Radix ; toutes sont DÉMONTÉES à la fermeture, leur
+      // simple présence vaut donc « ouverte ». Échap inclus : la couche la gère elle-même,
+      // la frise ne doit pas fermer une seconde chose de la même frappe (PIT-S86-001).
+      if (isOverlayLayerOpen()) return
       const target = e.target as HTMLElement | null
       const typing =
         target &&
@@ -1339,7 +1402,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [selected, goToToday, toggleFullscreen, sidebarPanelOpen, closeSidebarPanel])
+  }, [
+    selected,
+    goToToday,
+    toggleFullscreen,
+    sidebarPanelOpen,
+    closeSidebarPanel,
+    isOverlayLayerOpen,
+  ])
 
   const levelLabel = t(`dashboard.timeline.zoom.${zoom.level}`)
 
@@ -1748,6 +1818,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         </div>
       </div>
 
+      {/* #712 — « Éditer » ouvre `EventFormDrawer` via `TimelineEditHost`, monté HORS
+          de `rootRef` (comme le toaster qui confirmera l'enregistrement, #621) : on
+          quitte le plein écran d'abord, symétriquement à « Nouvel événement » (#602).
+          `EventDrawer` lui-même est DANS `rootRef`, donc peint en plein écran. */}
       <EventDrawer
         event={selected}
         locale={locale}
@@ -1756,7 +1830,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           onEditEvent
             ? (event) => {
                 setSelected(null)
-                onEditEvent(event)
+                runOutsideFullscreen(() => onEditEvent(event))
               }
             : undefined
         }

@@ -905,3 +905,15 @@ Le garde #605 interdit toute occurrence de « supprim… » dans le dialog produ
 
 ## PAT-S93-003 — Deux compteurs affichés ensemble ne se modélisent pas par une clé ICU
 `{count, plural, …}` ne porte qu'un seul argument de pluriel : « 2 produits · 1 archivé » exige deux clés et un conditionnel JSX, pas une clé unique. Et deux nœuds frères plutôt qu'une concaténation dans un même badge coloré — la concaténation donne au compteur secondaire l'emphase visuelle du principal (revue Designer #695). (Sprint 93 #695)
+
+## PAT-S94-001 — Neutraliser des raccourcis globaux sous une modale : containment DOM, pas attribut ARIA
+La question n'est pas « une modale est-elle ouverte ? » mais « est-elle SUPERPOSÉE à ma surface ou INTERNE à elle ? ». Un attribut (`aria-modal`, `data-state=open`) ne distingue pas les deux : le drawer de détail de la frise est dans `rootRef` et doit laisser passer `T`/`[`/`]`, le panneau de création est hors `rootRef` et doit tout bloquer. Tester `!rootRef.current?.contains(layer)` sur `[role=dialog],[role=alertdialog]`, et LIRE le DOM à la frappe plutôt que dériver un état React — ces couches ne re-rendent pas le composant qui écoute. (`TimelineView.isOverlayLayerOpen`, Sprint 94 #672)
+
+## PAT-S94-002 — Ouvrir une couche du shell depuis un conteneur en plein écran : `runOutsideFullscreen(action)`
+Le navigateur ne peint que l'élément passé à `requestFullscreen` ; toute couche montée hors de lui est invisible et piège le focus. Le helper quitte le plein écran et **attend la promesse** avant d'exécuter l'action ; hors plein écran il reste synchrone. `exitFullscreen()` sans `await` ne suffit pas : la couche s'ouvre pendant la transition et le focus reste sur le déclencheur. Généralise DEC-S85-003, qui ne couvrait que « Nouvel événement ». (`TimelineView`, Sprint 94 #712)
+
+## PAT-S94-003 — Prouver la non-vacuité d'un oracle de géométrie, sans toucher au working tree partagé
+Deux sources indépendantes : asserter la PRÉCONDITION du défaut sur une grandeur du MODÈLE (le `left` en ligne) et l'ORACLE sur le LAYOUT (`getBoundingClientRect`). Puis contrôle négatif par `page.addStyleTag` qui neutralise le correctif à l'exécution — pas de rebuild, pas de mutation d'un fichier que d'autres agents partagent. (Sprint 94 #706 ; l'E2E de #712 fait l'équivalent en neutralisant la garde puis en rebuildant.)
+
+## PAT-S94-004 — Oracle E2E de « la couche s'ouvre hors plein écran »
+Ni `toBeVisible` (Playwright ne mesure pas la peinture, donc il voit une couche invisible comme visible), ni « `exitFullscreen` a été appelé » (n'atteste pas l'attente). L'oracle est `document.fullscreenElement === null` PENDANT que la couche est ouverte, doublé du `data-testid` de l'ancêtre de `document.activeElement` pour prouver que le focus a bien suivi. (Sprint 94 #712)

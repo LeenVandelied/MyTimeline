@@ -72,6 +72,33 @@ import {
  * `scrollWidth` déjà à sa valeur finale) — aucun `rAF` / `useLayoutEffect` n'est
  * requis pour que l'écriture de `scrollLeft` porte.
  */
+/**
+ * #706 — GOUTTIÈRE DE PISTE MOBILE (px). Pendant de `LANE_TRACK_OFFSET_PX`
+ * (desktop, #392) pour les vues `.mt-tlm*`. Largeur réservée en tête de rail
+ * pour l'en-tête de lane sticky (`.mt-tlm__lane-label`), qui est OPAQUE et
+ * recouvre en permanence le bord gauche du viewport : sans elle, un événement
+ * posé à moins de cette distance de `rangeStart` naît SOUS la colonne et aucun
+ * défilement ne l'en sort. C'est le cas nominal à l'ouverture — `computeRange`
+ * pose `rangeStart` 30 jours avant le premier événement, soit 66px au zoom
+ * Année (30 × 2,2) pour 120px de colonne.
+ *
+ * DEUX REPÈRES cohabitent donc, et il ne faut pas les confondre :
+ *  - repère PISTE  : `leftPx` des events / graduations, origine = `rangeStart` ;
+ *  - repère RAIL   : ce que mesure `scrollLeft`, origine = bord du rail
+ *                    = repère piste + cette gouttière.
+ * Le décalage lui-même est appliqué en CSS (`margin-left:var(--lane-header-w-m)`
+ * sur les enfants positionnés du rail, cf. `ds/components/timeline.css`) : le JS
+ * n'en a besoin que là où il raisonne en repère RAIL (largeur du rail, scroll,
+ * minimap, bandes de virtualisation).
+ *
+ * ⚠ MIROIR du token `--lane-header-w-m` (`ds/tokens/spacing.css`). Il ne peut
+ * pas être lu depuis le DOM : `railWidth` participe au rendu SERVEUR et un
+ * `getComputedStyle` divergerait à l'hydratation. Même convention que
+ * `LANE_TRACK_OFFSET_PX`, et verrouillé par un test de dérive
+ * (`TimelineMobilePortrait.test.tsx`).
+ */
+export const MOBILE_LANE_TRACK_OFFSET_PX = 120
+
 export interface TimelineMobileState {
   /**
    * Lecture seule : l'élément scrollable actuellement monté. Le câblage JSX passe
@@ -98,6 +125,9 @@ export interface TimelineMobileState {
   rangeStart: Date
   totalDays: number
   dayWidth: number
+  /** #706 — étendue TEMPORELLE en px (repère PISTE), gouttière EXCLUE. */
+  trackWidth: number
+  /** #706 — largeur défilable du rail = `trackWidth` + gouttière (repère RAIL). */
   railWidth: number
   ticks: ReturnType<typeof buildRulerTicks>
   eventsByResource: Map<string, PositionedEvent[]>
@@ -139,7 +169,12 @@ export function useTimelineMobileState(
   const dayWidth = DAY_WIDTH_PX[zoom.level]
 
   const { rangeStart, totalDays } = useMemo(() => computeRange(events, now), [events, now])
-  const railWidth = useMemo(() => totalDays * dayWidth, [totalDays, dayWidth])
+  // #706 — `trackWidth` = étendue TEMPORELLE en px (repère piste) ; `railWidth` =
+  // largeur réellement défilable, gouttière d'en-tête comprise (repère rail).
+  // Distinguer les deux est ce qui garde la minimap exacte : elle représente la
+  // piste, pas la gouttière.
+  const trackWidth = useMemo(() => totalDays * dayWidth, [totalDays, dayWidth])
+  const railWidth = trackWidth + MOBILE_LANE_TRACK_OFFSET_PX
 
   const ticks = useMemo(
     () => buildRulerTicks(rangeStart, totalDays, zoom.level, dayWidth, locale),
@@ -160,15 +195,17 @@ export function useTimelineMobileState(
     [events, rangeStart, dayWidth, now],
   )
   // #595 — occurrences fantômes + connecteurs (mêmes passes que le desktop). La passe en
-  // jours ne dépend pas du zoom ; la mise à l'échelle, si. Coupe à l'étendue `railWidth`
-  // (la piste mobile n'a pas de gouttière).
+  // jours ne dépend pas du zoom ; la mise à l'échelle, si.
+  // #706 — coupe à `trackWidth` : `scaleRecurrenceMarks` raisonne en repère PISTE
+  // (cf. son paramètre `trackWidth`). Couper à `railWidth` laisserait désormais
+  // passer une marque au-delà de la fin de plage, sur la largeur de la gouttière.
   const recurrenceIndex = useMemo(
     () => indexRecurrenceByResource(events, rangeStart, totalDays),
     [events, rangeStart, totalDays],
   )
   const recurrenceByResource = useMemo(
-    () => scaleRecurrenceMarks(recurrenceIndex, dayWidth, railWidth),
-    [recurrenceIndex, dayWidth, railWidth],
+    () => scaleRecurrenceMarks(recurrenceIndex, dayWidth, trackWidth),
+    [recurrenceIndex, dayWidth, trackWidth],
   )
   const resourcesByCategory = useMemo(() => groupResourcesByCategory(resources), [resources])
   const buckets = useMemo(
@@ -198,12 +235,28 @@ export function useTimelineMobileState(
       ? viewport.vertical
       : UNBOUNDED_BAND
 
+  // #706 — `useTimelineViewport` publie ses bandes en repère RAIL (elles viennent
+  // de `scrollLeft`) ; les `leftPx` fenêtrés sont en repère PISTE. On recale donc
+  // la bande horizontale, exactement comme le desktop depuis #392. `±Infinity`
+  // traverse la soustraction : `UNBOUNDED_BAND` (jsdom, conteneur non mesurable)
+  // reste non bornée → rendu complet, comme avant.
+  const horizontalBand = useMemo(
+    () => ({
+      start: viewport.horizontal.start - MOBILE_LANE_TRACK_OFFSET_PX,
+      end: viewport.horizontal.end - MOBILE_LANE_TRACK_OFFSET_PX,
+    }),
+    [viewport.horizontal],
+  )
+
+  // #706 — la minimap cartographie la PISTE (buckets d'events par jour), pas le
+  // rail : on retire la gouttière de `scrollLeft` avant de normaliser, sinon la
+  // fenêtre dérive de `MOBILE_LANE_TRACK_OFFSET_PX / trackWidth` sur toute la course.
   const rawOnScroll = useCallback(() => {
     const el = scrollRef.current
-    if (!el || railWidth === 0) return
-    setViewportStart(el.scrollLeft / railWidth)
-    setViewportRatio(Math.min(1, el.clientWidth / railWidth))
-  }, [railWidth])
+    if (!el || trackWidth === 0) return
+    setViewportStart(Math.max(0, (el.scrollLeft - MOBILE_LANE_TRACK_OFFSET_PX) / trackWidth))
+    setViewportRatio(Math.min(1, el.clientWidth / trackWidth))
+  }, [trackWidth])
 
   // #69 — Coalescence à une mesure par frame : `onScroll` déclenchait un rendu
   // complet de la frise à CHAQUE événement de scroll (premier poste de coût du
@@ -234,31 +287,33 @@ export function useTimelineMobileState(
     (start: number) => {
       const el = scrollRef.current
       if (!el) return
-      el.scrollLeft = start * railWidth
+      // #706 — réciproque exacte de `rawOnScroll` (repère piste → rail).
+      el.scrollLeft = MOBILE_LANE_TRACK_OFFSET_PX + start * trackWidth
       setViewportStart(start)
     },
-    [railWidth],
+    [trackWidth],
   )
 
   const scrollToToday = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
-    const target = todayLeftPx - el.clientWidth / 2
+    // #706 — `todayLeftPx` est en repère PISTE → passage en repère rail.
+    const target = MOBILE_LANE_TRACK_OFFSET_PX + todayLeftPx - el.clientWidth / 2
     el.scrollLeft = Math.max(0, target)
   }, [todayLeftPx])
 
   // #328 — Valeurs fraîches lisibles depuis `setScrollNode`, dont l'identité doit
   // rester STABLE (une ref callback re-créée serait rappelée null→node à chaque
   // rendu, ce qui rejouerait une restauration parasite).
-  const railWidthRef = useRef(railWidth)
-  railWidthRef.current = railWidth
+  const trackWidthRef = useRef(trackWidth)
+  trackWidthRef.current = trackWidth
   const todayLeftPxRef = useRef(todayLeftPx)
   todayLeftPxRef.current = todayLeftPx
   const rawOnScrollRef = useRef(rawOnScroll)
   rawOnScrollRef.current = rawOnScroll
 
-  /** Position mémorisée au démontage de la variante précédente (px + échelle). */
-  const detachedScrollRef = useRef<{ scrollLeft: number; railWidth: number } | null>(null)
+  /** Position mémorisée au démontage de la variante précédente (px rail + échelle piste). */
+  const detachedScrollRef = useRef<{ scrollLeft: number; trackWidth: number } | null>(null)
   /** Le centrage initial sur aujourd'hui n'a lieu qu'au TOUT premier attachement. */
   const anchoredRef = useRef(false)
 
@@ -273,7 +328,7 @@ export function useTimelineMobileState(
       if (previous) {
         detachedScrollRef.current = {
           scrollLeft: previous.scrollLeft,
-          railWidth: railWidthRef.current,
+          trackWidth: trackWidthRef.current,
         }
       }
       scrollRef.current = null
@@ -291,20 +346,32 @@ export function useTimelineMobileState(
       //
       // LIMITE ASSUMÉE de la branche « fraction » : `saved.scrollLeft` a été lu au
       // détachement, donc DÉJÀ CLAMPÉ à `scrollWidth - clientWidth` par le relayout
-      // (cf. commentaire du détachement ci-dessus). `saved.scrollLeft /
-      // saved.railWidth` n'est donc pas la fraction VOULUE par l'utilisateur mais
-      // celle de sa position clampée : si le clamp a mordu, on reporte une fraction
-      // sous-estimée. Le report en px (branche `else`) est immunisé — le clamp y est
-      // idempotent — la fraction ne l'est pas. Corriger exigerait de capturer la
-      // position sur les scrolls utilisateur, pas au détachement. Non fait : la
-      // branche n'est atteignable que si le zoom change PENDANT la rotation, cas
-      // qu'aucun test ne couvre et qu'aucun parcours produit ne produit.
+      // (cf. commentaire du détachement ci-dessus). La fraction reportée n'est donc
+      // pas celle VOULUE par l'utilisateur mais celle de sa position clampée : si le
+      // clamp a mordu, on reporte une fraction sous-estimée. Le report en px (branche
+      // `else`) est immunisé — le clamp y est idempotent — la fraction ne l'est pas.
+      // Corriger exigerait de capturer la position sur les scrolls utilisateur, pas
+      // au détachement. Non fait : la branche n'est atteignable que si le zoom change
+      // PENDANT la rotation, cas qu'aucun test ne couvre et qu'aucun parcours produit
+      // ne produit.
+      //
+      // #706 — la re-projection se fait en repère PISTE (gouttière retirée puis
+      // remise) : la gouttière est une constante en px, elle ne se met PAS à
+      // l'échelle avec le zoom. La mettre à l'échelle décalerait la position de
+      // `MOBILE_LANE_TRACK_OFFSET_PX × (track/savedTrack − 1)` px.
+      const savedTrack = saved.trackWidth
+      const track = trackWidthRef.current
       node.scrollLeft =
-        saved.railWidth > 0 && railWidthRef.current > 0 && saved.railWidth !== railWidthRef.current
-          ? (saved.scrollLeft / saved.railWidth) * railWidthRef.current
+        savedTrack > 0 && track > 0 && savedTrack !== track
+          ? MOBILE_LANE_TRACK_OFFSET_PX +
+            ((saved.scrollLeft - MOBILE_LANE_TRACK_OFFSET_PX) / savedTrack) * track
           : saved.scrollLeft
     } else if (!anchoredRef.current) {
-      node.scrollLeft = Math.max(0, todayLeftPxRef.current - node.clientWidth / 2)
+      // #706 — repère RAIL + centrage (identique à `scrollToToday`).
+      node.scrollLeft = Math.max(
+        0,
+        MOBILE_LANE_TRACK_OFFSET_PX + todayLeftPxRef.current - node.clientWidth / 2,
+      )
     }
     anchoredRef.current = true
 
@@ -325,13 +392,14 @@ export function useTimelineMobileState(
     scrollRef,
     setScrollNode,
     railRef,
-    horizontalBand: viewport.horizontal,
+    horizontalBand,
     verticalBand,
     metrics: viewport.metrics,
     listTops: verticalModel.listTops,
     rangeStart,
     totalDays,
     dayWidth,
+    trackWidth,
     railWidth,
     ticks,
     eventsByResource,

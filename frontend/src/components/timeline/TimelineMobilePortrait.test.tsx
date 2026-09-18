@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -5,6 +7,7 @@ import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { TimelineMobilePortrait } from './TimelineMobilePortrait'
 import { TimelineResponsive } from './TimelineResponsive'
+import { MOBILE_LANE_TRACK_OFFSET_PX } from './useTimelineMobileState'
 
 /**
  * #63 — Tests vue mobile portrait (jsdom).
@@ -332,5 +335,58 @@ describe('TimelineResponsive (switch)', () => {
     } finally {
       window.matchMedia = original
     }
+  })
+})
+
+/**
+ * #706 — GOUTTIÈRE DE PISTE MOBILE.
+ *
+ * ⚠ CE QUE CE FICHIER NE PEUT PAS PROUVER. jsdom ne fait aucun layout : ni la
+ * colonne `position:sticky`, ni le recouvrement d'un événement par cette
+ * colonne, ni sa correction ne s'y observent. Un test qui prétendrait le faire
+ * serait un faux témoin (piège déjà payé au S51 sur les tests de scroll). La
+ * preuve visuelle vit dans `e2e/sprint-94-mobile-lane-gutter.spec.ts`.
+ *
+ * Ce que ces deux cas VERROUILLENT, en revanche : la duplication assumée du
+ * token `--lane-header-w-m` côté JS (le décalage est appliqué en CSS, le JS doit
+ * lui rester égal, sinon largeur du rail, minimap et bandes de virtualisation se
+ * désalignent silencieusement de l'écart) — et le fait que la feuille du DS
+ * applique bien ce décalage aux quatre familles d'éléments positionnés.
+ */
+describe('#706 — gouttière de piste mobile', () => {
+  it('MOBILE_LANE_TRACK_OFFSET_PX reste égal au token --lane-header-w-m du DS', () => {
+    const spacing = readFileSync(resolve(__dirname, '../../styles/ds/tokens/spacing.css'), 'utf8')
+    const match = spacing.match(/--lane-header-w-m:\s*(\d+(?:\.\d+)?)px/)
+    expect(match, '--lane-header-w-m introuvable dans ds/tokens/spacing.css').not.toBeNull()
+    expect(Number(match![1])).toBe(MOBILE_LANE_TRACK_OFFSET_PX)
+  })
+
+  it("la feuille DS décale la piste mobile ET fixe la largeur de l'en-tête de lane", () => {
+    const css = readFileSync(resolve(__dirname, '../../styles/ds/components/timeline.css'), 'utf8')
+    // L'en-tête REMPLIT la gouttière (largeur fixe), sinon un nom court y laisse
+    // un vide et la colonne cesse d'être continue.
+    expect(css).toMatch(/\.mt-tlm__lane-label\{[^}]*width:var\(--lane-header-w-m\)/)
+    expect(css).not.toMatch(/\.mt-tlm__lane-label\{[^}]*max-width:120px/)
+    // Les familles d'éléments positionnés du rail subissent TOUTES le MÊME
+    // décalage — c'est ce qui garde règle et piste alignées. `__ghost-pin` est
+    // listée à part de `__ghost` : le sélecteur de cette dernière en est un
+    // préfixe, donc `toContain` seul ne la couvrirait pas (review S94).
+    for (const selector of [
+      '.mt-tlm__ruler > .mt-tlm__tick',
+      '.mt-tlm__rail > .mt-tlm__weekend',
+      '.mt-tlm__rail > .mt-tlm__today',
+      '.mt-tlm__lane > .mt-tlm__evt-wrap',
+      '.mt-tlm__lane > .mt-tlm__ghost',
+      '.mt-tlm__lane > .mt-tlm__ghost-pin',
+      '.mt-tlm__lane > .mt-tlm__connector',
+    ]) {
+      expect(css, `${selector} doit porter la gouttière`).toContain(selector)
+    }
+    expect(css).toMatch(
+      /\.mt-tlm__lane > \.mt-tlm__connector\{margin-left:var\(--lane-header-w-m\)/,
+    )
+    // Coin haut-gauche de la règle : masque la gouttière, sinon une graduation à
+    // offset négatif flotte au-dessus de la colonne produit.
+    expect(css).toMatch(/\.mt-tlm__ruler::before\{[^}]*width:var\(--lane-header-w-m\)/)
   })
 })
