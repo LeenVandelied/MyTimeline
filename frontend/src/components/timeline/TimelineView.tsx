@@ -1291,10 +1291,41 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     dispatch(e.deltaY < 0 ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' })
   }, [])
 
+  /**
+   * #672 — Vrai dès qu'un dialogue (maison ou Radix) est monté HORS de la frise,
+   * c.-à-d. superposé à elle. Lu à la frappe et non mémorisé : ces couches
+   * apparaissent sans re-rendre `TimelineView`, un état dérivé serait périmé.
+   */
+  const isOverlayLayerOpen = useCallback((): boolean => {
+    const root = rootRef.current
+    const layers = document.querySelectorAll('[role="dialog"], [role="alertdialog"]')
+    return Array.from(layers).some((layer) => !root || !root.contains(layer))
+  }, [])
+
   // Raccourcis clavier globaux (T/[/]/+/-/F/Échap/?). Ignore quand un champ a le
-  // focus (saisie utilisateur). Échap ferme le drawer en priorité.
+  // focus (saisie utilisateur) ou qu'une couche modale recouvre la frise. Échap
+  // ferme le drawer en priorité.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // #672 — COUCHE MODALE PAR-DESSUS LA FRISE. Le panneau de création du shell
+      // (`NewEventDrawer`), l'édition (`TimelineEditHost`) et les confirmations Radix
+      // se portalisent dans `document.body`, donc HORS de `rootRef`. La garde `typing`
+      // ci-dessous ne couvrait que les champs de saisie : une frappe sur un BOUTON du
+      // panneau retombait sur la frise — `F` la passait en plein écran (qui ne peint
+      // que `rootRef`) et le panneau, resté ouvert et saisi, devenait invisible.
+      //
+      // Les surfaces modales de la frise ELLE-MÊME (`EventDrawer`, sheets mobiles) sont
+      // peintes DANS `rootRef` : volontairement exclues de la garde, `T`/`[`/`]`
+      // continuent d'y répondre comme avant (c'est le faux positif qu'un sélecteur
+      // « tout dialogue » aurait introduit).
+      //
+      // Détection par le DOM et non par un état React : `@radix-ui/react-dialog` ne pose
+      // AUCUN `aria-modal` (la chaîne n'existe que dans ses source maps), et le shell
+      // n'expose pas l'ouverture de son drawer. Le rôle ARIA est le seul dénominateur
+      // commun aux couches maison et Radix ; toutes sont DÉMONTÉES à la fermeture, leur
+      // simple présence vaut donc « ouverte ». Échap inclus : la couche la gère elle-même,
+      // la frise ne doit pas fermer une seconde chose de la même frappe (PIT-S86-001).
+      if (isOverlayLayerOpen()) return
       const target = e.target as HTMLElement | null
       const typing =
         target &&
@@ -1339,7 +1370,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [selected, goToToday, toggleFullscreen, sidebarPanelOpen, closeSidebarPanel])
+  }, [
+    selected,
+    goToToday,
+    toggleFullscreen,
+    sidebarPanelOpen,
+    closeSidebarPanel,
+    isOverlayLayerOpen,
+  ])
 
   const levelLabel = t(`dashboard.timeline.zoom.${zoom.level}`)
 
