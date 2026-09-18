@@ -6682,7 +6682,10 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 2 MINEURS ; 1 corrigé (`7efca10e`), 1 laissé en risque documenté (`isOverlayLayerOpen()` ne couvre pas `role=menu`/`listbox` — aucun composant concerné aujourd'hui, grep vérifié)
 **Tests :** Backend 632/632 · Frontend 1839/1839 (+ build, typecheck, lint, prettier) · E2E 133/133 sur la liste grep complète des surfaces touchées. Suite E2E complète NON rejouée au HEAD final (10 faux rouges macOS `sprint-77-theme-visual`, références Linux absentes en local) — la CI tranche.
 **Prémisses d'énoncé infirmées au démarrage :** #672 (`aria-modal` n'est pas le bon discriminant — c'est la containment DOM), #706 (défaut structurel, pas `ensureVisible` ; pas d'`ensureVisible` en mobile), #712 (`requestFullscreen` EST supporté en Chromium headless, contrairement à la prémisse de `timeline.spec.ts` #330).
-**Status :** En cours — PR ouverte, en attente de CI puis de `/sprint end 94`
+**Nouveaux pitfalls / patterns / décisions :** PIT-S94-001 à -007, PAT-S94-001 à -004, DEC-S94-001 à -004 (packs `pit-*` régénérés, `pit-classification.tsv` complété).
+**CI :** 7/7 verte sur `d3da09a7` (SHA final épinglé) — `backend`, `frontend`, `e2e`, `ai-env-packs` (requis) + `flyway-smoke`, `secret-scan`, `security`. Le job `e2e` a tranché les 10 faux rouges macOS de `sprint-77-theme-visual` : aucune référence visuelle n'a été régénérée.
+**Saturation contexte lead (mesure) :** non mesurée cette session.
+**Status :** Terminé — merge de la PR #725 dans `dev` ; le SHA du commit de merge n'est pas consigné ici (l'entrée est écrite AVANT le merge, `dev` étant protégée et ne recevant pas de commit direct)
 
 ### Sprint 95 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Toasts et messages)
 **Objectif :** Ce que l'application affiche en retour : toast qui ne masque plus de contrôle, erreurs réseau traduites, messages vides justes

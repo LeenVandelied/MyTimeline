@@ -862,6 +862,14 @@ Les catégories « système » (owner NULL) sont visibles de tous. Un comptage d
 ## PIT-S93-008 — `grep` sous le hook RTK peut rendre « 0 résultat » sur un fichier qui contient la chaîne
 Le contrôle coverage-E2E du lead a rendu **0 testid** sur un diff de 60 Ko non tronqué, puis **7** avec `/usr/bin/grep`. Le piège RTK connu portait sur les gros diffs, `vitest` et `prettier --check` ; il vaut aussi pour un `grep`/`wc` d'analyse — et `rtk proxy` devant la commande qui ÉCRIT le fichier n'y change rien, c'est le `grep` suivant qui ment. Pour toute MESURE, appeler le binaire par chemin absolu. (Sprint 93, lead)
 
+
+## PIT-S94-006 — Le hook `warn-test-delegation.sh` a tué un heredoc qui ÉCRIVAIT l'audit (5e occurrence)
+Le fichier `docs/memory/audits/sprint-94-test-coverage.md` contient la chaîne `playwright test` dans son tableau de résultats : le heredoc qui l'écrit est bloqué comme s'il LANÇAIT la suite. Préfixer `SKIP_DELEGATION=1`. Suite de [[PIT-S63-007]], [[PIT-S74-007]], [[PIT-S78-008]]. Et le gate de Phase 9 grep `\[MISSING\]` : ne pas écrire ce jeton dans la prose de l'audit lui-même ([[PIT-S80-009]]). (Sprint 94, lead)
+
+
+## PIT-S94-007 — `pr-sprint.md` est un fichier SUIVI : l'écraser comme brouillon détruit le corps de PR du sprint précédent
+Le lead y a écrit le corps de la PR #725 en le croyant intermédiaire, puis l'a supprimé — `git status` a rendu ` D` et non `??`. Chaque sprint commite son corps de PR dans ce fichier (`95ae2f52` pour le S93). Regarder la cible avant d'écraser, et commiter le nouveau corps plutôt que restaurer l'ancien. (Sprint 94, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
