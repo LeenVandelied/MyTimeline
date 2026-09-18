@@ -6663,7 +6663,8 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - `useIsProductArchivedHere` non purgé à la restauration [XS | frontend] → issue **#722**
   - `CategoryDrawer` sans ventilation actifs/archivés [XS | frontend] → issue **#723**
   Bilan : 6 issues créées (0 avec milestone), 0 discard, 0 absorption. Ratio discard 0/6 — les deux agents n'ont pas sur-signalé.
-**Status :** En cours — PR #717 prête au merge (CI 7/7 verte, triage fait), en attente du feu vert du dev
+**Clôture (`/sprint end 93`, 2026-09-18) :** PR #717 `CLEAN`/`MERGEABLE`, CI 7/7 verte sur `4d43bb74` (SHA épinglé au merge via `--match-head-commit`), fusionnée dans `dev` (`54bfa066`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #94 = exactement les 2 issues du label `sprint-93` (vérifié dans les deux sens), fermé après le merge avec #711 et #695. Briefings supprimés AVANT la PR (dev protégée). Pile e2e démontée.
+**Status :** Terminé — merge PR #717 dans `dev` le 2026-09-18 (`54bfa066`), issues #711/#695 et milestone #94 fermés
 
 ### Sprint 94 — 2026-09-15 (PLANIFIÉ — cohésion 1.00, Frise : clavier, plein écran, mobile)
 **Objectif :** Les raccourcis n'agissent plus derrière un formulaire ; l'édition marche en plein écran ; aucun événement caché sous la colonne sticky mobile
