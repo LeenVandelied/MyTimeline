@@ -3,7 +3,11 @@
     "register": "Error al registrarse",
     "login": "Error al iniciar sesión",
     "logout": "Error al cerrar sesión",
-    "sessionExpired": "Su sesión ha expirado. Por favor, vuelva a conectarse"
+    "sessionExpired": "Su sesión ha expirado. Por favor, vuelva a conectarse",
+    "forbiddenRedirect": "Su sesión ha expirado, redirigiendo a la página de inicio de sesión..."
+  },
+  "validation": {
+    "error": "Error de validación, por favor compruebe sus datos."
   },
   "network": {
     "offline": "Está desconectado. Por favor, verifique su conexión",
