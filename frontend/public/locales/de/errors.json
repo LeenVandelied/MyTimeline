@@ -1,16 +1,32 @@
 {
   "auth": {
-    "register": "Erreur lors de l'inscription",
-    "login": "Erreur lors de la connexion",
-    "logout": "Erreur lors de la déconnexion",
-    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter"
+    "register": "Fehler bei der Registrierung",
+    "login": "Anmeldefehler",
+    "logout": "Fehler beim Abmelden",
+    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an"
   },
   "network": {
-    "offline": "Vous êtes hors ligne. Veuillez vérifier votre connexion",
-    "timeout": "Délai d'attente dépassé. Veuillez réessayer"
+    "offline": "Sie sind offline. Bitte überprüfen Sie Ihre Verbindung",
+    "timeout": "Zeitüberschreitung. Bitte versuchen Sie es erneut"
   },
   "server": {
-    "error": "Erreur serveur. Veuillez réessayer plus tard",
-    "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
+    "error": "Serverfehler. Bitte versuchen Sie es später erneut",
+    "maintenance": "Der Server wird gewartet. Bitte versuchen Sie es später erneut"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "backHome": "Zurück zur Startseite"
+  },
+  "forbidden": {
+    "title": "Zugriff verweigert",
+    "description": "Sie haben nicht die erforderlichen Berechtigungen für diese Seite.",
+    "backHome": "Zurück zur Startseite"
+  },
+  "crash": {
+    "title": "Ein Fehler ist aufgetreten",
+    "description": "Ein unerwartetes Problem ist aufgetreten. Versuchen Sie es erneut oder kehren Sie zur Startseite zurück.",
+    "retry": "Erneut versuchen",
+    "backHome": "Zurück zur Startseite"
   }
 }

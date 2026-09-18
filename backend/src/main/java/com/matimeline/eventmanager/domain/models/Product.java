@@ -9,6 +9,8 @@ public class Product {
     private Category category;
     private User user;
     private List<Event> events;
+    private boolean archived;
+    private String color;
 
     public Product(UUID id, String name, Category category, User user, List<Event> events) {
         this.id = id;
@@ -16,6 +18,14 @@ public class Product {
         this.category = category;
         this.user = user;
         this.events = events;
+        this.archived = false;
+    }
+
+    public Product(UUID id, String name, Category category, User user, List<Event> events,
+                   boolean archived, String color) {
+        this(id, name, category, user, events);
+        this.archived = archived;
+        this.color = color;
     }
 
     public UUID getId() {
@@ -59,5 +69,21 @@ public class Product {
 
     public boolean hasEvents() {
         return events != null && !events.isEmpty();
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

@@ -1,0 +1,16 @@
+{
+  "offline": {
+    "message": "Vous êtes hors ligne. Vérifiez votre connexion.",
+    "hint": "Action indisponible hors ligne"
+  },
+  "retrying": {
+    "message": "Nouvelle tentative de connexion…"
+  },
+  "timeout": {
+    "message": "Le serveur met trop de temps à répondre."
+  },
+  "server-error": {
+    "message": "Une erreur serveur est survenue."
+  },
+  "retry": "Réessayer"
+}

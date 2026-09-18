@@ -1,54 +1,238 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 
+import jakarta.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import com.matimeline.eventmanager.application.dtos.JwkResponse;
+import com.matimeline.eventmanager.application.dtos.JwksResponse;
 
 @Service
 public class JwtService {
-    @Value("${jwt.secret}")
-    private String secretKey;
-    
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
+    // Durée de vie du token = 2 jours (BR-AUT-007). Extrait en constante pour
+    // aligner l'expiration du JWT et celle enregistrée en base (SessionEntity.expiresAt).
+    public static final long TOKEN_VALIDITY_MS = 1000L * 60 * 60 * 24 * 2;
+
+    /**
+     * Clé privée de signature, PKCS#8 Base64 (armure PEM tolérée), via {@code JWT_PRIVATE_KEY}.
+     * VIDE = paire éphémère générée au boot (dev/test uniquement, cf. {@link #initKeyMaterial()}).
+     * Le profil {@code prod} exige une valeur explicite (garde-fou {@code ProfileSafetyGuard} #323).
+     */
+    @Value("${jwt.private-key:}")
+    private String privateKeyMaterial;
+
+    private PrivateKey signingKey;
+    private PublicKey verificationKey;
+
+    /**
+     * Garde-fou de boot (fail-fast) : charge et valide le matériel de signature AU DÉMARRAGE
+     * plutôt qu'à chaque requête. Une clé mal formée faisait auparavant échouer la signature à
+     * CHAQUE login/refresh -> 500 opaque en boucle ; ici l'app refuse de démarrer.
+     *
+     * <p>⚠ Le message d'erreur ne reprend NI la valeur configurée NI le message de l'exception
+     * sous-jacente (seulement son type) : sur une clé privée, un décodeur bavard pourrait
+     * recracher du matériel dans les logs. C'est un durcissement par rapport à HS256 (#323).
+     *
+     * <p>Matériel absent -> paire ÉPHÉMÈRE : le dépôt étant PUBLIC, aucune clé RSA, même
+     * « de dev », n'y est committée. Conséquence assumée et journalisée en WARN : les sessions
+     * ne survivent pas à un redémarrage local.
+     */
+    @PostConstruct
+    void initKeyMaterial() {
+        KeyPair keyPair = privateKeyMaterial == null || privateKeyMaterial.isBlank()
+                ? ephemeralKeyPair()
+                : configuredKeyPair();
+        this.signingKey = keyPair.getPrivate();
+        this.verificationKey = keyPair.getPublic();
+
+        // ⚠ Journalisée dans LES DEUX cas, pas seulement sur le chemin éphémère.
+        // #358 — ce log n'est PLUS une étape de configuration : la clé publique est désormais
+        // PUBLIÉE par le backend sur /.well-known/jwks.json et découverte par le middleware
+        // Next, il n'y a plus rien à recopier à la main (AUTH_JWT_PUBLIC_KEY n'existe plus).
+        // Il reste un outil de DIAGNOSTIC : c'est la seule façon de constater d'un coup d'œil,
+        // dans les logs, quelle clé un backend donné utilise réellement — utile après une
+        // rotation, ou pour distinguer deux instances. Une clé PUBLIQUE n'est pas un secret.
+        // ⚠ Passe par l'accesseur PUBLIC plutôt que de rappeler `RsaKeyMaterial.toSpkiBase64` :
+        // sans cela `getPublicKeySpkiBase64()` n'aurait aucun appelant dans `main/`, et rien ne
+        // garantirait que la valeur journalisée reste celle que l'accesseur produit.
+        log.info("Clé PUBLIQUE de vérification RS256 (SPKI Base64) : {}", getPublicKeySpkiBase64());
+    }
+
+    private KeyPair configuredKeyPair() {
+        try {
+            return RsaKeyMaterial.fromPkcs8(privateKeyMaterial);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "jwt.private-key (JWT_PRIVATE_KEY) invalide : attendu une clé privée RSA "
+                    + "PKCS#8 en Base64 (corps d'un PEM '-----BEGIN PRIVATE KEY-----', armure et "
+                    + "sauts de ligne tolérés), de modulus >= " + RsaKeyMaterial.MIN_MODULUS_BITS
+                    + " bits (RS256). Générer : openssl genpkey -algorithm RSA "
+                    + "-pkeyopt rsa_keygen_bits:" + RsaKeyMaterial.MIN_MODULUS_BITS
+                    + ". Cause : " + e.getClass().getSimpleName()
+                    + " (valeur et détail volontairement non journalisés).",
+                    e);
+        }
+    }
+
+    private KeyPair ephemeralKeyPair() {
+        KeyPair keyPair = RsaKeyMaterial.generateEphemeral();
+        log.warn("jwt.private-key (JWT_PRIVATE_KEY) non configurée : paire RS256 ÉPHÉMÈRE générée "
+                 + "au démarrage. Tous les jetons émis seront invalidés au prochain redémarrage. "
+                 + "Acceptable en dev/test UNIQUEMENT — le profil 'prod' refuse ce mode.");
+        // La clé publique est journalisée par `initKeyMaterial`, commune aux deux chemins.
+        return keyPair;
+    }
+
+    /**
+     * Clé PUBLIQUE de vérification au format SPKI Base64. Ce n'est PAS un secret.
+     *
+     * <p>#358 — n'est plus destinée à être recopiée dans une variable d'environnement du
+     * frontend : elle sert au log de démarrage (diagnostic) et à l'outillage de test. La
+     * distribution de la clé au middleware Edge passe désormais par {@link #getPublicJwks()}.
+     */
+    public String getPublicKeySpkiBase64() {
+        return RsaKeyMaterial.toSpkiBase64(verificationKey);
+    }
+
+    /**
+     * Document JWK Set publiant la clé PUBLIQUE de vérification courante (#358).
+     *
+     * <p>C'est la SOURCE DE VÉRITÉ de la clé pour le middleware Next : celui-ci la découvre via
+     * {@code /.well-known/jwks.json} au lieu de la lire dans une variable d'environnement
+     * recopiée à la main. La classe de panne « clé publique dépareillée » disparaît par
+     * construction — la valeur publiée est DÉRIVÉE, à chaque appel, du matériel qui signe
+     * réellement les jetons, et non d'une seconde configuration qui pourrait diverger.
+     *
+     * <p>Une seule entrée : {@code JWT_PRIVATE_KEY} est unique (cf. {@code RsaKeyMaterial}).
+     *
+     * @throws IllegalStateException matériel de clé non encodable en JWK — inatteignable avec
+     *                               une paire RSA, remonté en 500 plutôt que servi tronqué :
+     *                               un JWKS incomplet ferait rejeter TOUS les cookies.
+     */
+    public JwksResponse getPublicJwks() {
+        try {
+            String modulus = RsaKeyMaterial.modulusBase64Url(verificationKey);
+            String exponent = RsaKeyMaterial.publicExponentBase64Url(verificationKey);
+            return new JwksResponse(List.of(new JwkResponse(
+                    "RSA", "sig", Jwts.SIG.RS256.getId(),
+                    RsaKeyMaterial.jwkThumbprint(modulus, exponent),
+                    modulus, exponent)));
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(
+                    "Publication JWKS impossible : " + e.getClass().getSimpleName()
+                    + " (détail volontairement non journalisé).", e);
+        }
     }
 
     public String generateToken(String username) {
         return Jwts.builder()
-                   .setSubject(username)
-                   .setIssuedAt(new Date())
-                   .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 2))
-                   .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                   .subject(username)
+                   .issuedAt(new Date())
+                   .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
+                   // Algo RS256 explicite (#323) : la vérification se fait aussi dans le
+                   // middleware Next (Edge), qui exige `alg: RS256` dans l'en-tête et rejette
+                   // tout autre algorithme (défense contre la confusion d'algorithme). Figer
+                   // l'algo ici garantit que les deux côtés ne peuvent pas diverger.
+                   .signWith(signingKey, Jwts.SIG.RS256)
                    .compact();
     }
 
+    /**
+     * #73 : chaque token émis embarque un claim {@code jti} (UUID) unique, support de
+     * la révocation côté serveur (une session = un jti en base). Générer le jti ICI
+     * (et non côté appelant) garantit qu'aucun token n'est émis sans jti. Le caller
+     * récupère le jti via {@link #extractJti(String)} pour enregistrer la session.
+     */
     public String generateToken(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         return Jwts.builder()
-                .setSubject(authentication.getName())
+                .subject(authentication.getName())
+                .id(UUID.randomUUID().toString()) // claim "jti"
                 .claim("role", userDetails.getAuthorities())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 2))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_MS))
+                .signWith(signingKey, Jwts.SIG.RS256)
                 .compact();
     }
 
+    /**
+     * Extrait le claim {@code jti} du token (#73). Renvoie {@code null} pour un token
+     * legacy émis avant l'introduction du jti (aucun échec — le filtre traite l'absence
+     * de jti comme "non révocable", cf. JwtFilter). Propage {@link ExpiredJwtException}
+     * et les {@link JwtException} de signature/format, comme {@link #extractUsername}.
+     */
+    public String extractJti(String token) {
+        if (token == null) {
+            return null;
+        }
+        return parseClaims(token).getId();
+    }
+
     public String extractUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return parseClaims(token).getSubject();
+    }
+
+    /**
+     * Vérifie la signature ET FIGE l'algorithme à {@code RS256} (revue S50).
+     *
+     * <p>{@code verifyWith(PublicKey)} seul laisse jjwt accepter tout algorithme compatible
+     * avec une clé RSA — {@code RS384}, {@code RS512}, {@code PS256}… — alors que le
+     * middleware Edge (`auth-token-verify.ts`) exige STRICTEMENT {@code alg: RS256}. Les deux
+     * moitiés de la garde divergeaient donc sur leur définition de « jeton acceptable ». Non
+     * exploitable en l'état (forger un tel jeton exige la clé PRIVÉE), mais une divergence de
+     * contrat entre deux vérificateurs n'a pas à exister : {@link #generateToken} n'émet que
+     * du RS256, la lecture n'accepte que du RS256.
+     *
+     * <p>Lève une {@link JwtException} (comme le reste du chemin de parsing) : les appelants
+     * — {@code JwtFilter}, {@link #validateToken} — la traitent déjà comme « jeton refusé ».
+     *
+     * <p>FU2 (S57) : un jeton {@code null}/blanc (cookie {@code jwt=} vide) fait lever à jjwt
+     * une {@link IllegalArgumentException} — HORS de la hiérarchie {@link JwtException}. Cette
+     * exception échappait donc au {@code catch (JwtException)} de {@code AuthController}
+     * (#312) et retombait dans son {@code catch (Exception)} générique -> 500 + stacktrace,
+     * alors qu'un token invalide/expiré/malformé renvoie 401. Ce 500 recréait exactement le
+     * side-channel que #312 voulait supprimer (distinguer « token vide » de « token invalide »).
+     * Gardé ICI plutôt que dans chaque appelant : {@link #parseClaims} est le SEUL chokepoint
+     * commun à {@link #extractUsername}, {@link #extractJti}, {@link #extractExpiration} et
+     * {@link #validateToken} — {@code AuthController} (/me, /refresh) ET {@code JwtFilter}
+     * (chemin non-auth) en bénéficient sans dupliquer la garde. Lève {@link MalformedJwtException}
+     * (sous-type de {@code JwtException}) : un jeton vide n'est pas structurellement différent
+     * d'un jeton malformé pour l'appelant, qui doit déjà catcher {@code JwtException}.
+     */
+    private Claims parseClaims(String token) {
+        if (token == null || token.isBlank()) {
+            throw new MalformedJwtException("Jeton JWT absent ou blanc.");
+        }
+        Jws<Claims> jws = Jwts.parser()
+                .verifyWith(verificationKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .parseSignedClaims(token);
+
+        String algorithm = jws.getHeader().getAlgorithm();
+        if (!Jwts.SIG.RS256.getId().equals(algorithm)) {
+            throw new UnsupportedJwtException(
+                    "Algorithme de signature refusé : seul " + Jwts.SIG.RS256.getId()
+                    + " est accepté (cohérence avec la vérification du middleware Edge, #323).");
+        }
+        return jws.getPayload();
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
@@ -65,11 +249,6 @@ public class JwtService {
     }
 
     private Date extractExpiration(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
+        return parseClaims(token).getExpiration();
     }
 }

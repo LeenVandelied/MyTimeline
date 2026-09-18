@@ -1,0 +1,28 @@
+# Artefacts outils de test / build frontend (#29).
+# (node_modules/ et .next/ sont déjà ignorés par le .gitignore racine.)
+
+# Storybook
+storybook-static/
+
+# ESLint
+.eslintcache
+
+# Vitest / couverture
+coverage/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+# storageState des comptes E2E (auth.setup.ts) — secrets de session, jamais commité.
+/e2e/.auth/
+
+# TS build info
+*.tsbuildinfo
+
+# Logs de serveur Next (#462, Sprint 64) — `next-degraded.log` / `next-verifying.log`
+# sont redirigés par le job CI `e2e` au démarrage des deux `next start`. Ils ne
+# naissent qu'en CI, mais rien n'empêchait un `git add` local de les ramasser si
+# quelqu'un rejouait la recette à la main. Motif ignoré, pas seulement ces 2 noms.
+*.log

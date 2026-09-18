@@ -1,5 +1,7 @@
 package com.matimeline.eventmanager.application.dtos;
 
+import com.matimeline.eventmanager.application.validation.StrongPassword;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,7 +21,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    @StrongPassword
     private String password;
 
     public String getName() {

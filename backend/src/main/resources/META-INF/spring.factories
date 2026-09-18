@@ -1,0 +1,6 @@
+# Listeners enregistrés au plus tôt dans le cycle de démarrage Spring Boot.
+# ProfileSafetyGuard (#111) : fail-fast si profil 'dev' actif alors qu'un marqueur
+# d'environnement de production (ENVIRONMENT/APP_ENV) est présent. S'exécute sur
+# ApplicationEnvironmentPreparedEvent, avant la création du contexte.
+org.springframework.context.ApplicationListener=\
+  com.matimeline.eventmanager.infrastructure.config.ProfileSafetyGuard

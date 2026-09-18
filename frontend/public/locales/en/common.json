@@ -1,4 +1,14 @@
 {
+  "toast": {
+    "eventCreated": "Event created",
+    "eventUpdated": "Event updated",
+    "eventArchived": "Event archived",
+    "eventUnarchived": "Event unarchived",
+    "productCreated": "Product created",
+    "productArchived": "Product archived",
+    "productRestored": "Product unarchived",
+    "categoryCreated": "Category created"
+  },
   "login": {
     "title": "Login",
     "username": "Username",
@@ -6,7 +16,71 @@
     "submit": "Sign in",
     "loading": "Signing in...",
     "noAccount": "Don't have an account yet?",
-    "register": "Sign up"
+    "register": "Sign up",
+    "forgotPassword": "Forgot password?",
+    "errors": {
+      "invalidCredentials": "Incorrect username or password",
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "deleteDialog": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "deleting": "Deleting",
+    "event": {
+      "title": "Delete this event?",
+      "description": "This action cannot be undone.",
+      "recurringWarning": "This only deletes this event, not the series."
+    },
+    "product": {
+      "title": "Archive this product?",
+      "description": "The product will no longer appear in your lists, but nothing is deleted: you can unarchive it from the “Archived” tab.",
+      "confirm": "Archive",
+      "confirming": "Archiving"
+    },
+    "category": {
+      "title": "Delete this category?",
+      "description": "This action cannot be undone.",
+      "reassignLabel": "Move products to…",
+      "reassignPlaceholder": "Choose a destination category",
+      "noOtherCategory": "No other category available to reassign the products. Create another category first.",
+      "reassignRequired": "This category is still linked to products, including archived ones. Choose a category to move them to before deleting it."
+    },
+    "errors": {
+      "notFound": "This category no longer exists.",
+      "conflict": "Cannot reassign the products to this category.",
+      "generic": "An error occurred while deleting, please try again."
+    }
+  },
+  "conflictDialog": {
+    "title": "Modified elsewhere",
+    "description": "This item was modified from another tab or by someone else. Reload the up-to-date data before continuing; your unsaved changes will be lost.",
+    "reload": "Reload up-to-date data",
+    "dismiss": "Cancel",
+    "comparativeDescription": "This event was modified elsewhere while you were editing. Compare your changes with the server version, then choose which one to keep.",
+    "field": "Field",
+    "yourValue": "Your changes",
+    "serverValue": "Server version",
+    "keepMine": "Keep my changes",
+    "keepMineExhausted": "Too many attempts: this event keeps being modified elsewhere. Use the server version, or close and redo your change from the up-to-date data.",
+    "takeServer": "Use the server version",
+    "empty": "—",
+    "yes": "Yes",
+    "no": "No",
+    "noChanges": "No visible field difference.",
+    "fields": {
+      "title": "Title",
+      "type": "Type",
+      "durationValue": "Duration",
+      "durationUnit": "Duration unit",
+      "isRecurring": "Recurring",
+      "recurrenceUnit": "Frequency",
+      "recurrenceEndDate": "Recurrence end",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "color": "Color",
+      "archived": "Archived"
+    }
   },
   "validation": {
     "username": "Username must contain at least 3 characters",
@@ -20,11 +94,13 @@
     "edit": "Edit",
     "back": "Back",
     "logout": "Logout",
+    "settings": "Settings",
     "previous": "Previous",
     "next": "Next",
     "today": "Today",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "close": "Close"
   },
   "loading": {
     "default": "Loading...",
@@ -36,7 +112,13 @@
     "profile": "Profile",
     "settings": "Settings",
     "back": "Back",
-    "backToHome": "Back to home"
+    "backToHome": "Back to home",
+    "changeLanguage": "Change language"
+  },
+  "theme": {
+    "toggle": "Change theme",
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
   },
   "time": {
     "year": "year",
@@ -47,12 +129,22 @@
     "days": "days",
     "expired": "Expired"
   },
+  "events": {
+    "ongoing": "Ongoing",
+    "expired": "Expired",
+    "upcoming": "Upcoming",
+    "duration": "Duration",
+    "single": "Single date"
+  },
   "landing": {
     "title": "My Timeline | Your personal organization assistant",
     "navigation": {
       "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials"
+      "testimonials": "Testimonials",
+      "menuOpen": "Open menu",
+      "menuClose": "Close menu",
+      "menuTitle": "Menu"
     },
     "buttons": {
       "register": "Sign up"
@@ -60,16 +152,55 @@
     "meta": {
       "description": "My Timeline helps you manage your deadlines, organize your time, and optimize your productivity. Simple, intuitive, and customizable."
     },
-    "images": {
-      "dashboard": "My Timeline dashboard preview",
-      "timeline": "Timeline example",
-      "mobileApp": "My Timeline mobile app"
-    },
     "hero": {
       "title": "Organize your life with My Timeline",
       "subtitle": "Your personal assistant to manage deadlines, optimize your time, and achieve your goals more efficiently.",
       "cta": "Start for free",
-      "secondary": "Discover how it works"
+      "secondary": "Discover how it works",
+      "timeline": {
+        "chrome": "app.mytimeline · timeline",
+        "today": "Today",
+        "months": {
+          "may": "May",
+          "june": "Jun",
+          "july": "Jul",
+          "august": "Aug"
+        },
+        "lanes": {
+          "car": {
+            "name": "Renault Clio",
+            "category": "Vehicles",
+            "insurance": "Car insurance",
+            "inspection": "Inspection"
+          },
+          "home": {
+            "name": "Home",
+            "category": "Insurance",
+            "premium": "Annual premium"
+          },
+          "health": {
+            "name": "Health",
+            "category": "Medical",
+            "prescription": "Prescription",
+            "checkup": "Annual checkup"
+          },
+          "subscriptions": {
+            "name": "Subscriptions",
+            "category": "Finance",
+            "license": "Software license"
+          },
+          "pantry": {
+            "name": "Pantry",
+            "category": "Food",
+            "oil": "Olive oil · best before"
+          },
+          "passport": {
+            "name": "Passport",
+            "category": "Documents",
+            "renewal": "Renewal"
+          }
+        }
+      }
     },
     "features": {
       "title": "Key Features",
@@ -117,12 +248,6 @@
       "button": "Create my free account",
       "secondary": "Learn more"
     },
-    "mobileApp": {
-      "title": "Take your organization everywhere",
-      "subtitle": "Access My Timeline on all your devices. Stay organized wherever you are.",
-      "ios": "Coming soon on iOS",
-      "android": "Coming soon on Android"
-    },
     "footer": {
       "description": "Your personal time management and organization assistant",
       "product": "Product",
@@ -139,8 +264,54 @@
     }
   },
   "footer": {
-    "allRightsReserved": "Tous droits réservés.",
-    "termsOfService": "Conditions d'utilisation",
-    "privacyPolicy": "Politique de confidentialité"
+    "allRightsReserved": "All rights reserved.",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "legalNotice": "Legal Notice",
+    "product": "Product",
+    "features": "Features",
+    "howItWorks": "How it works",
+    "testimonials": "Testimonials",
+    "legal": "Legal"
+  },
+  "register": {
+    "errors": {
+      "usernameTaken": "Username already taken",
+      "generic": "Something went wrong during sign up, please try again"
+    },
+    "success": "Account created, redirecting to login..."
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "description": "Enter your email address to receive a reset link.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send link",
+    "loading": "Sending...",
+    "neutralMessage": "If an account exists for this address, a reset email has been sent.",
+    "backToLogin": "Back to login",
+    "errors": {
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "resetPassword": {
+    "title": "New password",
+    "description": "Choose a new password for your account.",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "••••••",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "••••••",
+    "submit": "Reset password",
+    "loading": "Resetting...",
+    "success": "Password reset. You can now sign in.",
+    "goToLogin": "Sign in",
+    "missingToken": "Invalid or incomplete reset link.",
+    "errors": {
+      "invalidToken": "This reset link is invalid or expired.",
+      "generic": "Something went wrong, please try again"
+    }
+  },
+  "spinner": {
+    "loading": "Loading"
   }
-} 
+}

@@ -1,10 +1,29 @@
-@tailwind utilities;
+/* Mouvement de la landing page.
+ *
+ * #335 — ce fichier est la SOURCE UNIQUE des règles qui vivaient en double avec
+ * `landing.css` : `.section-animation` (+ `.visible`), `.cta-button`, `.feature-icon`
+ * et `.card-gradient-border`. Les deux copies s'appliquaient simultanément au même
+ * élément, avec des pseudo-éléments différents — donc deux brillances superposées sur
+ * le CTA et deux bordures décoratives empilées sur les cartes. Le style STATIQUE de la
+ * landing reste dans `landing.css` ; seul le mouvement est ici.
+ *
+ * (`@tailwind utilities;` ouvrait ce fichier : directive Tailwind v3 sans effet en v4
+ * — vérifié, elle ne générait aucun utilitaire et ressortait telle quelle dans le CSS
+ * livré. Retirée.)
+ */
 
-/* Animations pour les sections */
+/* Révélation des sections au défilement.
+ * ⚠ `opacity: 0` par défaut : sans la classe `visible`, la landing est INVISIBLE.
+ * Le repli quand `IntersectionObserver` est absent est porté par `useSectionAnimation`
+ * (il révèle tout immédiatement). On ajoute ici le repli CSS pour `prefers-reduced-motion` :
+ * la garde globale de `ds/tokens/base.css` ne fait que ramener les durées à 0.01ms, elle
+ * ne neutralise pas l'état initial — on force donc l'état révélé pour ces utilisateurs. */
 .section-animation {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
 }
 
 .section-animation.visible {
@@ -12,7 +31,18 @@
   transform: translateY(0);
 }
 
-/* Bordure dégradée pour les cartes */
+@media (prefers-reduced-motion: reduce) {
+  .section-animation {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Halo tournant au survol des cartes de fonctionnalités.
+ * Teinte : `accent-soft` (découplé clair/sombre) — l'ancienne version de ce fichier
+ * utilisait un conique violet en valeur littérale, celle de `landing.css` un
+ * dégradé violet→indigo masqué en bordure 1px. Les deux étaient hors palette, et la
+ * seconde empilait une 2ᵉ bordure par-dessus le `border-rule` déjà porté par la carte. */
 .card-gradient-border {
   position: relative;
   z-index: 0;
@@ -30,17 +60,18 @@
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: 0 0;
-  background-image: conic-gradient(transparent, rgba(124, 58, 237, 0.1), transparent 30%);
+  background-image: conic-gradient(transparent, var(--color-accent-soft), transparent 30%);
   opacity: 0;
   transition: opacity 0.7s ease;
+  pointer-events: none;
 }
 
 .card-gradient-border:hover::before {
   opacity: 1;
-  animation: rotate 4s linear infinite;
+  animation: card-halo-rotate 4s linear infinite;
 }
 
-@keyframes rotate {
+@keyframes card-halo-rotate {
   100% {
     transform: rotate(1turn);
   }
@@ -55,10 +86,34 @@
   transform: scale(1.1);
 }
 
-/* Animation du CTA */
+/* Brillance du CTA — UNE SEULE, le balayage `::after`.
+ *
+ * Choix (#335) : `landing.css` portait un `::before` (bandeau en dégradé blanc balayant
+ * `left: -100% → 100%` en 0,6 s), `animations.css` ce `::after` (voile plein dont la
+ * largeur passe de 0 à 100 % en 0,3 s). On garde le `::after` pour trois raisons :
+ *   1. 300 ms reste dans la fourchette de mouvement du DS (120–280 ms) ; 600 ms en sort ;
+ *   2. le DS proscrit les dégradés décoratifs — le `::before` en était un ;
+ *   3. le voile plein se teinte par token, le dégradé blanc non.
+ *
+ * ⚠ Contraste (PIT-S48-001) — le voile blanc semi-opaque d'origine FAISAIT CHUTER le
+ * CTA sous AA en clair : texte blanc sur `accent` part de 4.71:1, et tout voile
+ * ÉCLAIRCISSANT le fait descendre (mesuré 4.01:1 à 10 % de blanc — échec pour du
+ * texte 18 px non gras, seuil 4.5:1). Le voile prend donc `--color-ink`, qui assombrit en
+ * clair et éclaircit en sombre : dans les DEUX modes il ÉLOIGNE le fond de la couleur du
+ * texte. Mesuré : clair 4.71 → 5.26:1 (repos+voile) et 6.08 → 6.70:1 (survol+voile) ;
+ * sombre 6.94 → 7.49:1 et 8.78 → 9.27:1. Aucun état ne descend sous 4.71:1.
+ *
+ * `.cta-button > *` remonte le contenu au-dessus du voile : sans cela le voile teinte
+ * AUSSI le texte (un pseudo-élément positionné peint par-dessus le contenu non positionné)
+ * et le calcul de contraste ci-dessus ne tient plus. */
 .cta-button {
   position: relative;
   overflow: hidden;
+}
+
+.cta-button > * {
+  position: relative;
+  z-index: 1;
 }
 
 .cta-button::after {
@@ -68,10 +123,11 @@
   left: 0;
   width: 0;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--color-ink) 8%, transparent);
   transition: width 0.3s ease;
+  pointer-events: none;
 }
 
 .cta-button:hover::after {
   width: 100%;
-} 
+}

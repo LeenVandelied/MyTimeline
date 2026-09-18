@@ -1,0 +1,16 @@
+{
+  "offline": {
+    "message": "You are offline. Check your connection.",
+    "hint": "Unavailable while offline"
+  },
+  "retrying": {
+    "message": "Retrying connection…"
+  },
+  "timeout": {
+    "message": "The server is taking too long to respond."
+  },
+  "server-error": {
+    "message": "A server error occurred."
+  },
+  "retry": "Retry"
+}
