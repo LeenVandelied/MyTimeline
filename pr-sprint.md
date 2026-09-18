@@ -1,50 +1,64 @@
 ## Objectif
 
-Un produit archivé cesse d'être perdu : il se retrouve et se restaure. Et la carte d'une catégorie cesse de mentir en affichant « aucun produit » alors qu'elle porte des produits archivés.
+Trois bugs d'interaction de la frise : les raccourcis clavier n'agissent plus derrière un formulaire, l'édition fonctionne en plein écran, et aucun événement n'est plus caché sous la colonne sticky mobile.
+
+Milestone : **Sprint 94** (#95). Cohésion 1.00, 3 issues, 6 points.
 
 ## Issues traitées
 
-- **#711** (P1, M) — [FEATURE] Restaurer un produit archivé
-- **#695** (P2, M) — [BUG] La carte d'une catégorie affiche « aucun produit » alors qu'elle porte des produits archivés
+| Issue | Commits | Changement |
+|---|---|---|
+| #672 — Les raccourcis de la frise agissent derrière le formulaire de création | `1be053a9`, `36931a46` | Garde `isOverlayLayerOpen()` : toute couche `[role=dialog]`/`[role=alertdialog]` montée **hors** de `rootRef` suspend `F`/`T`/`+`/`-`/`[`/`]` et `Escape`. Les couches internes (EventDrawer de la frise) restent transparentes. |
+| #706 — Frise mobile : événements sous la colonne sticky des lanes | `0ec6114d`, `7efca10e` | Gouttière de piste : token `--lane-header-w-m: 120px`, `.mt-tlm__lane-label` en largeur fixe, `margin-left` sur les familles d'éléments positionnés du rail, `MOBILE_LANE_TRACK_OFFSET_PX` côté état (rail, minimap, `scrollToToday`, restauration #328). |
+| #712 — Modifier un événement en plein écran : drawer et toast invisibles | `9fbbbe2d` | Helper `runOutsideFullscreen(action)` : quitte le plein écran et **attend la promesse** avant de monter une couche du shell. Branché sur « Éditer » et sur `onNewEvent`. |
 
-Vagues : V1 = #711, puis V2 = #695 (mêmes ports produits, même règle « un archivé occupe sa catégorie »). Cohésion 0.50.
+## Trois prémisses d'énoncé infirmées pendant le sprint
 
-## Arbitrages rendus par le dev au démarrage
+Elles changent la lecture des correctifs, donc elles sont listées ici plutôt qu'enfouies dans les artefacts.
 
-- Surface des archivés : **3e onglet « Archivés »** sur `/products`, plutôt qu'une route dédiée ou un filtre dans la liste.
-- Désarchivage **avec confirmation** puis toast (le désarchivage d'un événement, lui, reste direct).
-- Carte catégorie : **actifs + « N archivés »** séparés, plutôt qu'un total unique.
+1. **#672** — l'énoncé proposait de filtrer sur `[role="dialog"][aria-modal="true"]`. L'attribut existe bien (posé à la main par `EventFormDrawer.tsx:173-174`, Radix n'en pose aucun), mais il **ne distingue pas une couche superposée d'une couche interne** : il aurait coupé `T`/`[`/`]` sous le drawer de détail de la frise. Le discriminant retenu est la containment DOM.
+2. **#706** — l'énoncé ciblait `ensureVisible` / le centrage « Aujourd'hui ». La frise mobile **n'a pas d'`ensureVisible`** et `scrollToToday` centre déjà. Le défaut est **structurel** : étiquette `sticky left:0` en flux, événements `absolute` sans décalage de piste. Un correctif limité au défilement aurait laissé le bug sur tout événement en début de plage.
+3. **#712** — `requestFullscreen` **est** supporté en Chromium headless (mesuré par sonde). La prémisse inverse, inscrite dans `timeline.spec.ts` (#330), est périmée. Par ailleurs `onNewEvent` — cité comme le modèle à suivre — appelait `exitFullscreen()` **sans attendre** : la course était réelle, elle est corrigée elle aussi.
 
-## Changements clés
+## Tests
 
-### #711 — Restauration
-- `GET /api/users/{userId}/products/archived` → `ArchivedProductResponse[]` (sans les événements) ; `POST /api/users/{userId}/products/{productId}/restore` → 204.
-- `ProductEntity` porte `@SQLRestriction("archived = false")` : la lecture et la restauration passent donc par des requêtes **natives**, seules capables de voir une ligne archivée. Le filtre `archived` y est posé explicitement (PIT-S79-006).
-- **L'ownership est porté par la clause `WHERE` de l'UPDATE** (`id` + `user_id` + `archived = true`) : 0 ligne modifiée ⇒ 404 uniforme (inconnu, déjà actif, ou appartenant à un autre utilisateur), conformément à l'anti-énumération de BR-PRO-010. Le 403 path ≠ JWT reste celui des autres routes.
-- Front : onglet « Archivés », `ArchivedProductsView`, `RestoreProductDialog` (dialog dédié, non destructif), `useArchivedProducts` / `useRestoreProduct`, retrait en place + invalidation `products.all` et `categories.all` (PIT-S92-004). Textes du dialog d'archivage réécrits : l'archivage est réversible.
+| Suite | Résultat | Exit |
+|---|---|:---:|
+| Backend unitaire | 632 passed / 0 failed | 0 |
+| Frontend build + unit + typecheck + lint | 145 fichiers, 1839 passed / 0 failed | 0 |
+| `prettier --check` | conforme | 0 |
+| E2E — liste grep complète des surfaces touchées (22 specs) | **133 passed / 0 failed / 0 skipped / 0 flaky** | 0 |
 
-### #695 — Compteurs de la carte
-- Une **seule requête native groupée** (`count(*) FILTER …` par catégorie, scopée à l'appelant) — pas de N+1. Le scope utilisateur est ici un **contrôle d'isolation**, les catégories système étant partagées.
-- `countByCategoryId`, qui garde le 409 de suppression, est laissé **intact** : la divergence entre les deux comptages est volontaire et documentée.
-- `productCount` / `archivedProductCount` sont **absents du JSON** sur POST / GET par id / PATCH (un `0` y rouvrirait le bug) ; Zod en `.optional()`.
-- Carte : badge coloré pour les actifs (masqué s'il n'y a que des archivés), mention discrète « N archivés » à côté. `linkedProductsCount` reçoit actifs + archivés, donc le select de réassignation s'arme d'emblée — le repli serveur 409 est conservé et reste testé.
+**Chaque spec neuve a un contrôle négatif documenté** : garde neutralisée puis rejeu, pour prouver qu'elle rougit. Le test unitaire de #712 a d'ailleurs été refait — avec un mock `exitFullscreen` synchrone il restait vert sur du code non corrigé.
 
-## Règles métier impactées
+Audit détaillé : `docs/memory/audits/sprint-94-test-coverage.md`.
 
-- **BR-PRO-007 amendée** : l'archivage produit n'est plus définitif.
-- **BR-PRO-011 créée** : lecture des archivés et restauration, ownership natif et 404 uniforme.
-- **BR-CAT-008 créée** : les compteurs de la carte viennent du backend, archivés distingués.
-- Packs `br-products.md` et `br-categories.md` mis à jour en conséquence.
+## Ce qui n'a pas été vérifié en local
 
-## Qualité
+- **La suite E2E complète n'a pas été rejouée au HEAD final.** Au commit `0ec6114d` elle rendait 404 expected / 9 skipped / 10 unexpected, les 10 étant `sprint-77-theme-visual` avec « A snapshot doesn't exist … `-chromium-darwin.png` » : références absentes sur macOS, pas des rendus divergents. **Aucune référence visuelle n'a été régénérée** — le job `e2e` de cette CI est le seul arbitre.
+- `sprint-62-select-focus-indicator` (projet firefox) n'a pas été joué en local.
+- Flake préexistant, non imputable à ce sprint : `sprint-84-palette.spec.ts:128` (~2/5 sur `dev` comme sur branche).
 
-- **Designer** consulté avant implémentation : approuvé avec corrections, toutes appliquées (dialog dédié plutôt qu'extension de `DeleteConfirmDialog`, mention archivés hors du badge coloré).
-- **Audit sécurité** dédié sur #711 (l'ownership par clause SQL est un motif nouveau au dépôt) : **verdict RAS**.
-- **Revue batch** : 0 constat.
-- **Tests** : backend 632 verts (627 avant) · Vitest 1824 verts (1818 avant) · `tsc`, `next lint`, `format:check` verts · suite E2E complète jouée en local contre `next build` + `next start` : **410 passés / 2 échoués / 8 sautés**.
-- Les 2 échecs sont **hors périmètre** : l'armement de comparaison de captures du S77, qui échoue mécaniquement hors Linux, et le flake de palette du S84 (mesuré ~2/5 sur `dev` comme sur branche, et repassé vert seul ici). Aucun fichier du sprint ne touche ces surfaces.
-- Aucune migration Flyway : la colonne `archived` existe depuis V7. **V16 reste libre.**
+## Review
 
-Détail : `docs/memory/sprints/sprint-93/` (done.md par issue, revue Designer, audit sécurité, revue batch) et `docs/memory/audits/sprint-93-test-coverage.md`.
+Reviewer batch : **0 CRITIQUE / 0 MAJEUR / 2 MINEURS**, verdict `MERGEABLE`.
+
+- MINEUR corrigé (`7efca10e`) : la boucle de dérive de `TimelineMobilePortrait.test.tsx` omettait `.mt-tlm__lane > .mt-tlm__ghost-pin` (le sélecteur de `__ghost` en est un préfixe, donc `toContain` seul ne le couvrait pas).
+- MINEUR laissé, en risque documenté : `isOverlayLayerOpen()` ne couvre que `role=dialog`/`alertdialog` ; un futur Popover ou DropdownMenu Radix (`role=menu`/`listbox`) monté hors dialog échapperait à la garde. Aucun composant concerné aujourd'hui (grep vérifié).
+
+## Suivi
+
+Aucune migration Flyway. Aucun changement backend, d'auth ni de schéma.
+
+Follow-ups signalés par les agents, à trier en `/sprint end 94` :
+- garde symétrique pour les raccourcis globaux hors frise (aucun autre listener `window keydown` audité) — XS
+- `scrollToToday` exposé par `useTimelineMobileState` mais câblé nulle part en mobile (aucun bouton « Aujourd'hui ») — S
+- les lanes mobiles n'ont pas de trame de jours faute de `background-size`, contrairement au desktop — S
+- retirer le stub Fullscreen de `timeline.spec.ts` (#330), sa prémisse étant infirmée par mesure — XS
+
+Closes #672
+Closes #706
+Closes #712
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
