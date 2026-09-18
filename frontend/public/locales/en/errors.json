@@ -3,7 +3,11 @@
     "register": "Error during registration",
     "login": "Error during login",
     "logout": "Error during logout",
-    "sessionExpired": "Your session has expired. Please login again"
+    "sessionExpired": "Your session has expired. Please login again",
+    "forbiddenRedirect": "Your session has expired, redirecting to the login page..."
+  },
+  "validation": {
+    "error": "Validation error, please check your input."
   },
   "network": {
     "offline": "You are offline. Please check your connection",

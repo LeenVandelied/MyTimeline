@@ -26,11 +26,25 @@ type Translate = (key: string) => string
    --------------------------------------------------------------------------- */
 
 /**
- * #148 — Réplique EXACTE de la politique serveur : `@StrongPassword`
+ * #148 — Réplique de la politique serveur : `@StrongPassword`
  * (`backend/.../application/validation/StrongPasswordValidator.java`).
  * Le backend est la source de vérité ; ces valeurs n'existent ici que pour
  * afficher l'erreur avant l'aller-retour réseau. Toute divergence recrée le bug
  * d'origine (un mot de passe accepté à un endroit, refusé à un autre).
+ *
+ * ⚠ DIVERGENCE CONNUE, NON RÉSOLUE (relevée en revue #508, Sprint 95) — la
+ * réplique n'est PAS exacte, contrairement à ce que ce commentaire affirmait.
+ * Le validateur serveur teste `Character.isUpperCase(c)` / `Character.isDigit(c)`
+ * (`StrongPasswordValidator.java:35,37`), qui sont UNICODE. Les regex ci-dessous
+ * sont ASCII. Un mot de passe dont la seule majuscule et/ou le seul chiffre sont
+ * non-ASCII (ex. `Ωabcdefg١` : oméga majuscule + chiffre arabe-indic) est
+ * ACCEPTÉ par le serveur et REFUSÉ ici — le formulaire bloque donc une saisie
+ * que le backend aurait prise.
+ * Le sens de l'écart est le moins nuisible (on sur-contraint, on ne laisse pas
+ * passer), et le cas est marginal en pratique, mais il est RÉEL et couvert par
+ * un test qui le fige (`password-policy.test.ts`) plutôt que laissé implicite.
+ * Aligner ces regex sur `/\p{Lu}/u` et `/\p{Nd}/u` changerait la validation de
+ * register/reset/change-password : à traiter dans une issue dédiée, pas ici.
  */
 export const PASSWORD_POLICY = {
   minLength: 8,

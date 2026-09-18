@@ -97,8 +97,8 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
       {isEmpty ? (
         // #630 — Miroir mobile de `WeekAgenda` : état vide compact + CTA qui ouvre le
         // drawer du shell (absent hors shell, et absent sans produit — review S90).
-        // `emptyTitle` (instruction) est distinct de `empty`, qui reste le constat
-        // court du sous-groupe « Aujourd'hui » vide.
+        // `emptyTitle` (instruction, « rien aujourd'hui NI demain ») est distinct de
+        // `emptyToday`, constat court du seul sous-groupe « Aujourd'hui » vide.
         <EmptyState
           compact
           title={t('emptyTitle')}
@@ -125,7 +125,10 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
               {t('today')}
             </span>
             {todayEvents.length === 0 ? (
-              <p className="text-ink-faint text-2xs">{t('empty')}</p>
+              // #701 — `emptyToday` et PAS `empty`/`emptyTitle` : on n'est ici que si
+              // `isEmpty` est faux, donc demain porte forcément des events. Dire
+              // « ni demain » (ancien libellé) mentait à l'utilisateur.
+              <p className="text-ink-faint text-2xs">{t('emptyToday')}</p>
             ) : (
               <ul className="flex flex-col">
                 {todayEvents.map((event) => (
@@ -134,6 +137,10 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
               </ul>
             )}
           </div>
+          {/* #701 — PAS de défaut symétrique ici : quand demain est vide, le groupe
+              n'est pas rendu du tout, donc aucun message mensonger. L'asymétrie de
+              traitement (« Rien aujourd'hui » affiché / groupe demain masqué) est
+              délibérée : aujourd'hui est l'ancre du composant. */}
           {tomorrowEvents.length > 0 && (
             <div className="flex flex-col gap-1" data-testid="dashboard-compact-agenda-tomorrow">
               <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">

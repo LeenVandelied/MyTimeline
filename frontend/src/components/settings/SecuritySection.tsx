@@ -52,6 +52,11 @@ export function SecuritySection() {
       form.reset({ oldPassword: '', newPassword: '', confirmPassword: '' })
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
+        // #713 — SEUL signalement du 400 : `/me/change-password` figure dans
+        // `INLINE_VALIDATION_ENDPOINTS` (`services/apiClient.ts`), qui supprime le
+        // toast générique pour cette route. Retirer ce `setError` rendrait donc
+        // l'échec TOTALEMENT muet — les deux moitiés se tiennent, ne modifier
+        // l'une qu'en regardant l'autre.
         form.setError('oldPassword', { message: t('security.password.wrongOld') })
       } else {
         form.setError('root', { message: t('common.genericError') })

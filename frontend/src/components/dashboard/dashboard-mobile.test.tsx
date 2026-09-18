@@ -123,6 +123,35 @@ describe('CompactAgenda', () => {
     expect(within(empty).queryByRole('button')).not.toBeInTheDocument()
   })
 
+  it('#701 — aujourd’hui vide + demain non vide : « rien aujourd’hui », JAMAIS « ni demain »', () => {
+    // `now` est figé par le prop `NOW` (mer. 15 juil. 2026) : le test ne dépend ni de
+    // l'heure du run ni du fuseau, contrairement à un `new Date()` par défaut.
+    render(<CompactAgenda events={[evt('tom1', '2026-07-16')]} now={NOW} />)
+
+    // Pas l'état vide GLOBAL : demain porte un event.
+    expect(screen.queryByTestId('dashboard-compact-agenda-empty')).not.toBeInTheDocument()
+    expect(screen.getByTestId('dashboard-compact-agenda-row-tom1')).toBeInTheDocument()
+
+    const today = screen.getByTestId('dashboard-compact-agenda-today')
+    expect(within(today).getByText('dashboard.mobile.compactAgenda.emptyToday')).toBeInTheDocument()
+    // Garde anti-régression : ni l'ancienne clé « ni demain », ni l'instruction globale.
+    expect(
+      within(today).queryByText('dashboard.mobile.compactAgenda.empty'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(today).queryByText('dashboard.mobile.compactAgenda.emptyTitle'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('#701 — demain vide + aujourd’hui non vide : groupe demain absent, aucun message trompeur', () => {
+    render(<CompactAgenda events={[evt('today1', '2026-07-15')]} now={NOW} />)
+
+    expect(screen.getByTestId('dashboard-compact-agenda-row-today1')).toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-compact-agenda-tomorrow')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-compact-agenda-empty')).not.toBeInTheDocument()
+    expect(screen.queryByText('dashboard.mobile.compactAgenda.emptyToday')).not.toBeInTheDocument()
+  })
+
   it('#630 — hors shell : aucun CTA', () => {
     render(<CompactAgenda events={[]} now={NOW} />)
     expect(screen.queryByTestId('dashboard-compact-agenda-empty-cta')).not.toBeInTheDocument()

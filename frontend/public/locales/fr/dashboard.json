@@ -41,7 +41,7 @@
       "label": "Agenda compact du jour et du lendemain",
       "today": "Aujourd'hui",
       "tomorrow": "Demain",
-      "empty": "Aucun événement aujourd'hui ni demain",
+      "emptyToday": "Rien aujourd'hui",
       "emptyTitle": "Rien aujourd'hui ni demain : ajoute un événement pour le suivre ici",
       "emptyCta": "Ajouter un événement"
     },

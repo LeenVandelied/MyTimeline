@@ -11,6 +11,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { QueryProvider } from '@/contexts/QueryProvider'
 import { NetworkStatusProvider } from '@/contexts/NetworkStatusContext'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
+import { ApiErrorTranslatorBridge } from '@/services/ApiErrorTranslatorBridge'
 import { AppToaster } from '@/components/ui/toaster'
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/locales'
 
@@ -74,6 +75,11 @@ export default async function LocaleLayout({
                     exige NextIntlClientProvider — sinon throw au prerender SSG,
                     cf. PIT-S26-001). QueryProvider reste ancêtre →
                     useQueryClient du bus résout. */}
+                {/* #713 : pont i18n de la couche transport. Rend `null` ; doit
+                    rester SOUS le provider i18n (il appelle useTranslations) et
+                    AVANT les sous-arbres qui déclenchent des requêtes, pour que
+                    l'intercepteur axios dispose du traducteur dès le 1er échec. */}
+                <ApiErrorTranslatorBridge />
                 <NetworkStatusProvider>
                   <OfflineBanner />
                   {children}

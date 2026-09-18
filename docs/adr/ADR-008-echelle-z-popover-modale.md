@@ -192,8 +192,17 @@ Valeur approuvée par la revue Designer du S92 (`docs/memory/sprints/sprint-92/u
 **Conséquence d'interaction, hors échelle `z`.** Pour la pause au survol et au focus (WCAG 2.2.1,
 `DEC-S92-002`), la carte visible capte le pointeur ; le conteneur reste `pointer-events: none`.
 La carte est posée à 72 px du haut pour ne pas recouvrir les boutons de fermeture des en-têtes
-(`PIT-S92-003`). Deux recouvrements résiduels sont suivis hors de cet ADR (croix du
-`ProductDrawer` en bottom sheet mobile, haut d'un drawer ouvert).
+(`PIT-S92-003`). Les deux recouvrements résiduels (croix du `ProductDrawer` en bottom sheet
+mobile, haut d'un drawer ouvert) ne sont plus « suivis » : **`#714` les a TRANCHÉS** — acceptés
+en l'état, sans ancrage contextuel et sans changer le décalage. Motif : ce décalage fixe de
+72 px garantit par construction un ruban d'overlay tapable en haut d'écran, **disjoint** de la
+carte, et c'est lui — non la croix recouverte — qui est la sortie de l'utilisateur ; le toast
+d'erreur s'auto-retire par ailleurs à 4 s.
+
+⚠ La mesure de `#714` a aussi **corrigé la géométrie** que le S92 prêtait à ce cas : le
+formulaire ne remplit pas la sheet à 844 px de haut (contenu ≈ 672 px < 92 vh = 776 px), donc
+**à 390×844 il n'y a aucun recouvrement** ; il n'apparaît qu'en dessous de ≈ 730 px de viewport.
+Chiffres et oracle : JSDoc § POSITION de `ui/toaster.tsx` et `e2e/sprint-95-toast-overlap.spec.ts`.
 
 **Nouvelle règle pour toute future couche** : l'ordre complet est désormais
 `sticky 10 < cursor 20 < popover 50 < modal 70 < popover-over-modal 75 < toast 78 < netbanner 80`.
