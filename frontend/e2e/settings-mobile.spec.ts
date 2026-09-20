@@ -94,7 +94,7 @@ test.describe('Réglages mobile : drill-down + bottom sheet suppression', () => 
 
     // Aucun débordement horizontal du document au viewport mobile.
     const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )
     expect.soft(overflow, 'débordement horizontal du document (px)').toBeLessThanOrEqual(0)
 
