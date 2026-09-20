@@ -75,7 +75,19 @@ Focus-trap + `Escape` déjà câblés (audit DS). Restent les attributs.
   `aria-labelledby`. Le grabber décoratif → `aria-hidden="true"`.
 - ⚠️ **Touch targets** : le `✕` de fermeture fait 24–28 px. Conserver le
   visuel mais étendre la **zone cliquable à 44×44** (padding ou
-  pseudo-élément). Idem swatches couleur (34 px de haut) : élargir la cible.
+  pseudo-élément).
+  - ✅ **Swatches couleur — FAIT (#665, S96).** L'énoncé « 34 px de haut »
+    était périmé : mesure au navigateur avant correction = **28×28** sur les
+    trois surfaces (`CategoryDrawer`, `ProductDrawer`, `EventEditForm`).
+    `ui/palette-color-picker.tsx` porte désormais pastilles et bouton
+    « Personnalisé » à **44×44 sous le point de rupture `sm`** (28×28 au-delà,
+    desktop inchangé). Ici la cible est AGRANDIE, pas étendue par un `::before`
+    à la PAT-S24-002 : au pas de grille d'origine (36 px) des pseudos de 44 px
+    se chevaucheraient, et les trois surfaces sont des panneaux défilants qui
+    clipperaient le débordement (PIT PAT-S24-002). La charte n'impose
+    « conserver le visuel » qu'au `✕` ; pour les swatches elle ne demande que
+    d'élargir la cible. Garde-fou : `e2e/sprint-96-palette-geometry.spec.ts`
+    (12 pastilles + « Personnalisé », 3 surfaces, clair ET sombre, à 375 px).
 - ✅ Labels mono associés à chaque champ (`<label for>` / `aria-labelledby`),
   messages d'erreur reliés par `aria-describedby` + `aria-invalid`.
 

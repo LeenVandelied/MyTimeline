@@ -41,6 +41,47 @@ import { PopoverPicker } from './popoverPicker'
  * PEINTURE : `background-color: var(--evt-*)` et non le hex JS — c'est le token
  * qui est peint, le hex n'est que la valeur émise vers le formulaire. Les deux
  * sont verrouillés l'un sur l'autre (cf. `lib/event-palette.ts`).
+ *
+ * GÉOMÉTRIE (#665) — deux défauts MESURÉS au navigateur (Chromium, `next start`,
+ * sonde `sprint-96-palette-geometry.spec.ts`), pas déduits :
+ *
+ *   1. LIGNE ORPHELINE. Le groupe était un `flex flex-wrap` : le nombre de
+ *      pastilles par ligne dépendait de la largeur DISPONIBLE, donc de chaque
+ *      surface. Mesures AVANT correction, largeur du `radiogroup` entre
+ *      parenthèses : `CategoryDrawer` 11+1 à 1280 px (402 px) — la 12e (graphite)
+ *      seule sur sa ligne, exactement le défaut de l'issue ; `ProductDrawer`
+ *      11+1 à 1280 ET à 375 px (402 / 400 px) ; `EventEditForm` 10+2 à 1280 px
+ *      (377 px). Trois surfaces, trois découpages, aucun voulu.
+ *      → `grid-cols-6` + `w-fit` : 6×2 par CONSTRUCTION, à toute largeur. Le
+ *      découpage ne dépend plus d'une mesure de layout, donc plus d'une surface.
+ *
+ *   2. CIBLE TACTILE. Pastilles et bouton « Personnalisé » mesuraient 28×28 px
+ *      (`size-7` / `h-7`) — au-dessus du minimum AA 2.5.8 (24 px), sous les
+ *      44×44 que `styles/ds/a11y-audit.md` exige (§1 ligne 24, §Mobile Form
+ *      lignes 77-78 « Idem swatches couleur : élargir la cible », §4 ligne 140
+ *      « Switch / Checkbox / Radio : cible >= 44×44 sur mobile »).
+ *      → `size-11` / `h-11` sous le point de rupture `sm` (640 px), `size-7` /
+ *      `h-7` au-delà. Le rendu DESKTOP est donc inchangé au pixel près.
+ *
+ *      ÉCART ASSUMÉ À PAT-S24-002 (`::before` transparent 44×44, motif de
+ *      `language-selector` / `theme-toggle` / `.mt-zoom__btn`) : ici la cible
+ *      est AGRANDIE au lieu d'être étendue hors flux. Deux raisons mesurables.
+ *      (a) Avec un pas de grille de 36 px (28 + `gap-2`), des pseudos de 44 px
+ *      se CHEVAUCHERAIENT de 8 px : deux cibles adjacentes se disputeraient les
+ *      mêmes pixels, ce qu'aucune tolérance ne rattrape. (b) PIT PAT-S24-002 :
+ *      le pseudo déborde du groupe et un ancêtre défilant le clippe en silence
+ *      (`overflow-y:auto` force `overflow-x` à `auto`) — les trois surfaces sont
+ *      des panneaux défilants. La charte n'impose « conserver le visuel » qu'au
+ *      `✕` de fermeture ; pour les swatches elle demande seulement d'« élargir
+ *      la cible ». C'est ce que fait la boîte réelle, vérifiable par
+ *      `boundingBox()` sans sonde de pseudo-élément.
+ *
+ * NAVIGATION CLAVIER — inchangée, et volontairement LINÉAIRE (le `radiogroup`
+ * APG ne connaît qu'un ordre, pas une grille) : ←/↑ = précédent, →/↓ = suivant,
+ * dans l'ordre DOM = l'ordre de lecture de la grille. Conséquence de la grille
+ * 6×2 : `ArrowRight` depuis la 6e pastille descend visuellement d'une ligne, et
+ * `ArrowDown` avance d'UNE case (pas de six). Aucun roving tabindex nouveau :
+ * l'arrêt de tabulation unique reste `tabStop`. Point d'entrée de #702.
  */
 export interface PaletteColorPickerProps {
   /** Couleur stockée. `null`/`undefined`/`''` = aucune (rien de coché). */
@@ -115,7 +156,18 @@ export function PaletteColorPicker({
         role="radiogroup"
         aria-label={label}
         aria-describedby={describedBy}
-        className="flex flex-wrap items-center gap-2"
+        // `w-fit` + `grid-cols-6` : les colonnes se dimensionnent sur leur
+        // contenu (44 px puis 28 px), jamais sur la largeur disponible — c'est
+        // ce qui rend le découpage 6×2 indépendant de la surface (#665).
+        //
+        // `gap-1.5` en mobile, et non `gap-2` : `w-fit` = `min(max-content,
+        // disponible)`. Avec 8 px d'écart, la largeur intrinsèque vaut
+        // 6×44 + 5×8 = 304 px, soit 3 px de plus que les 301 px disponibles
+        // dans `EventEditForm` à 375 px (MESURÉ) ; les colonnes se compriment
+        // alors à 43,5 px et les boutons, eux figés à 44 px, dépassent leur
+        // cellule. À 6 px d'écart l'intrinsèque tombe à 294 px : les colonnes
+        // valent exactement 44 px sur les TROIS surfaces. Desktop inchangé.
+        className="grid w-fit grid-cols-6 gap-1.5 sm:gap-2"
       >
         {EVENT_PALETTE.map((entry, index) => {
           const checked = index === selectedIndex
@@ -141,7 +193,9 @@ export function PaletteColorPicker({
                 // `:focus-visible` du DS, qui suit le `rounded-full` (#383).
                 // La SÉLECTION est portée par `border-foreground` + le glyphe
                 // (#416 : la bordure seule tombe à 1,81:1 contre l'ambre en sombre).
-                'flex size-7 items-center justify-center rounded-full border transition',
+                // 44×44 en viewport mobile (cible tactile #665), 28×28 au-delà
+                // de `sm` — le rendu desktop est inchangé.
+                'flex size-11 items-center justify-center rounded-full border transition sm:size-7',
                 checked ? 'border-foreground' : 'border-rule',
                 disabled && 'cursor-not-allowed opacity-50',
               )}
@@ -152,7 +206,7 @@ export function PaletteColorPicker({
                   ≥ 4.43:1 sur les 12 — cf. `ds/a11y-audit.md` §9). */}
               {checked && (
                 <Check
-                  className="size-4"
+                  className="size-5 sm:size-4"
                   aria-hidden="true"
                   style={{ color: swatchGlyphInkVar(entry.hex) }}
                 />
@@ -179,7 +233,9 @@ export function PaletteColorPicker({
           data-testid={`${testIdPrefix}-color-custom`}
           disabled={disabled}
           className={cn(
-            'inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition',
+            // Hauteur 44 px en mobile (#665) ; la largeur dépasse déjà 44 px
+            // partout (libellé + pastille d'aperçu), mesurée 133-153 px.
+            'inline-flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-xs font-medium transition sm:h-7 sm:px-2.5',
             isCustom ? 'border-foreground text-ink' : 'border-rule-emphasis text-ink-muted',
             disabled && 'cursor-not-allowed opacity-50',
           )}
