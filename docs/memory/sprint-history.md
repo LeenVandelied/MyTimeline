@@ -6741,14 +6741,15 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée cette session.
 **Status :** Terminé — merge PR #731 dans `dev` le 2026-09-20 (`17340d50`), issues #508/#701/#713/#714 et milestone #96 fermés
 
-### Sprint 96 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Contrôles atteignables au doigt)
+### Sprint 96 — 2026-09-15 → en cours (EN COURS — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
 **Milestone GitHub :** #97
 **Issues :** #702 (S), #633 (XS), #665 (S), #656 (XS) — 6 pts
-**Vagues :** V1 = #702 (E2E exclusif, A/B) ∥ #633 | V2 = #665 | V3 = #656
+**Vagues (révisées au démarrage) :** V1 = #665 (Playwright exclusif) ∥ #633 (code+spec, sans run) | V2 = #702 (Playwright exclusif, 10 runs) | V3 = #656
+**Écart au plan architect :** #665 passe AVANT #702. #665 restructure la grille de `palette-color-picker.tsx` (6×2) et change donc l'ordre de navigation clavier que `sprint-84-palette.spec.ts:128` exerce — stabiliser le flake avant cette restructuration invaliderait la preuve des 10 runs.
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 93 (drawers voisins), Sprint 95 (#714 position des overlays)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-09-21, branche `claude/sprint-96-start-b98611`)
 
 ### Sprint 97 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
 **Objectif :** Les occurrences qui se chevauchent restent cliquables ; l'encre la plus claire passe le contraste
