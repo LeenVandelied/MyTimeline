@@ -6694,7 +6694,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Clôture (`/sprint end 94`, 2026-09-18) :** PR #725 `CLEAN`/`MERGEABLE`, CI **7/7 verte sur `19edb13b`** (SHA épinglé au merge via `--match-head-commit`), fusionnée dans `dev` (merge `0484ba72`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #95 = exactement les 3 issues du label `sprint-94` (vérifié dans les deux sens), fermé après le merge. Briefings supprimés AVANT la PR (`dev` protégée). Aucune pile E2E laissée debout.
 **Status :** Terminé — merge PR #725 dans `dev` le 2026-09-18 (`0484ba72`), issues #672/#706/#712 et milestone #95 fermés
 
-### Sprint 95 — 2026-09-15 → en cours (EN COURS — cohésion 0.00 assumée, Toasts et messages)
+### Sprint 95 — 2026-09-15 → 2026-09-20 (Terminé — merge PR #731 dans dev)
 **Objectif :** Ce que l'application affiche en retour : toast qui ne masque plus de contrôle, erreurs réseau traduites, messages vides justes
 **Milestone GitHub :** #96
 **Issues :** #714 (S), #713 (S), #701 (XS), #508 (XS) — 6 pts
@@ -6729,7 +6729,17 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - balayage des autres constantes UI dupliquées depuis une règle backend [XS | auth] → **discard** (dev)
   Bilan : 4 issues créées (0 avec milestone), 4 discards, 0 absorption. Ratio discard 4/8 — sous le seuil d'alerte, et les 4 écartés sont tous des XS spéculatifs, pas des défauts constatés. Backlog libre choisi par le dev pour les 4 créées.
 **Écart de convention corrigé en clôture :** le corps de PR n'avait pas été commité dans `pr-sprint.md` en Phase 9 (le fichier portait encore celui du S94) — cf. PIT-S94-007. Rattrapé avant le merge.
-**Status :** En cours — PR #731 ouverte, CI 7/7 verte sur `72b5355d`, en attente du merge
+**Déblocage CI en clôture (hors périmètre du sprint, assumé) :** le job `e2e` est passé au ROUGE sur `de070cbd` — un commit pourtant 100 % documentaire. Deux tentatives CI rouges sur le même SHA (déterministe, pas un flake). **A/B au même instant, même hôte, même pile : `dev` (`ad91bb09`, zéro ligne du S95) échouait à l'identique, deux fois.** Défaut donc PRÉ-EXISTANT, déclenché par le changement de date, pas par le sprint.
+  Cause réelle (mon premier diagnostic était FAUX — j'avais incriminé le saut de mois de `A_START` et un écart A→B de 55→54 j) : **hystérésis de virtualisation**, `useTimelineViewport.ts:173-176` ne recalcule la bande que si la fenêtre visible en SORT ; au chargement la bande couvre `[4510, 6050]` et `scrollToDay` visait 5710 — la fenêtre tenait PILE dedans, donc aucun recalcul, et B (6091 px) restait hors bande. Seuil : `A_START − TODAY ≤ 45 j`, atteint ssi `TODAY+40 j` est le dernier jour d'un mois — **14 jours sur 400**.
+  **DEUX non-déterminismes, pas un.** Le second, indépendant et lui aussi pré-existant : si `RANGE_END − C_START ≡ 0 (mod 7)` (1 jour sur 7), le dernier fantôme de C tombe sur le dernier jour de l'étendue, où `recurrence-marks.ts:193` le retire (débord de peinture de 4 px) — fixture 54 attendus, frise 53 rendus.
+  Correctif `47ba3ef0`, **entièrement dans la spec, zéro fichier applicatif** : saut de défilement en deux temps (force le recalcul de bande) + bornes d'étendue ancrées sur `A_START` et non sur aujourd'hui (`totalDays` = 862 et écart = 452 j invariants). **Aucune assertion relâchée.**
+  Preuve : 14 dates rejouées horloge figée → 14/14 à 8/8, **plus un contrôle négatif** sur le code d'avant aux mêmes dates (5 dates hostiles rouges, dont une à 3 échecs) — c'est ce contrôle qui distingue un correctif d'une coïncidence. Boucle sur 400 dates : invariants constants.
+  ⚠ Gisement non traité : **10 autres specs dérivent de `new Date()`**. Même classe de fragilité, non auditée.
+**Commits (10) :** les 7 du sprint + `de070cbd` (consolidation) + `47ba3ef0` (déblocage CI) + le merge.
+**CI finale :** 7/7 verte sur `47ba3ef0` — `backend`, `frontend`, `e2e`, `ai-env-packs` (requis) + `flyway-smoke`, `secret-scan`, `security`. SHA épinglé au merge via `--match-head-commit`.
+**Clôture (`/sprint end 95`, 2026-09-20) :** PR #731 `CLEAN`/`MERGEABLE`, fusionnée dans `dev` (merge `17340d50`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #96 = exactement les 4 issues du label `sprint-95` (vérifié dans les DEUX sens avant fermeture) ; issues fermées APRÈS le merge (`Closes #N` ne ferme rien sur base `dev`) ; milestone fermé ensuite. Briefings supprimés AVANT la PR. Aucune pile E2E ni navigateur laissé debout.
+**Saturation contexte lead (mesure) :** non mesurée cette session.
+**Status :** Terminé — merge PR #731 dans `dev` le 2026-09-20 (`17340d50`), issues #508/#701/#713/#714 et milestone #96 fermés
 
 ### Sprint 96 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
