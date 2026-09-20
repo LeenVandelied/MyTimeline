@@ -1032,3 +1032,17 @@ Stratégie (a) de l'énoncé #712 retenue, (b) écartée : le toaster est global
 
 ## DEC-S94-004 — Les specs neuves exercent l'API Fullscreen RÉELLE, pas le stub de `timeline.spec.ts`
 Le support en Chromium headless a été mesuré (cf. [[PIT-S94-005]]). Un stub résolvant immédiatement masquerait l'asynchronie d'`exitFullscreen`, donc le défaut même que #712 corrige. Le stub de `timeline.spec.ts` (#330) reste en place pour l'instant — son retrait est un follow-up. (Sprint 94 #712)
+## DEC-S95-001 — `levelFromPassword` plafonne à `weak` tout mot de passe non conforme, sans gradation
+Le critère de #508 exigeait qu'une saisie refusée par le serveur ne s'affiche jamais `strong`. Graduer un mot de passe de toute façon refusé n'apporte rien à l'utilisateur et rouvre la porte à la contradiction. L'invariant `weak ⇔ refusé serveur` tient en une assertion et ne peut plus dériver. (Sprint 95, #508)
+
+## DEC-S95-002 — Pas de symétrie « Rien demain » dans #701
+`CompactAgenda` masque entièrement le groupe « Demain » quand il est vide, là où « Aujourd'hui » vide affiche un constat. L'asymétrie est conservée : aucun message trompeur n'est produit, et rendre le groupe ferait apparaître `dashboard-compact-agenda-tomorrow` dans un état couvert par deux specs E2E non rejouables pendant le sprint (exclusivité Playwright). Asymétrie documentée en commentaire dans le composant. (Sprint 95, #701)
+
+## DEC-S95-003 — Opt-out 400 ciblé, et liste DISTINCTE de `INLINE_AUTH_ENDPOINTS`
+Le double signalement d'un 400 est corrigé en retirant le toast global pour les seules routes qui rendent l'erreur inline, PAS en supprimant le toast 400 global : la majorité des formulaires n'ont aucune gestion inline et deviendraient muets (régression silencieuse, pire que la redondance). Corollaire : la liste doit rester distincte d'`INLINE_AUTH_ENDPOINTS`, qui court-circuite TOUS les statuts — la réutiliser aurait désarmé la redirection sur un vrai 401 de `/me/change-password`. (Sprint 95, #713)
+
+## DEC-S95-004 — #714 : décision B, acceptation du recouvrement résiduel, position du toast inchangée
+Le décalage fixe de 72px garantit PAR CONSTRUCTION un ruban d'overlay tapable en haut d'écran, disjoint de la carte de toast ; le tap y ferme la sheet (mesuré en E2E), et le toast d'erreur est borné à 4000 ms (défaut de la lib, vérifié dans `react-hot-toast/dist`). L'ancrage contextuel (option A) n'a pour signal que `body{pointer-events:none}` posé par Radix — faux ami documenté ([[PIT-S62-001]], ADR-008). Arbitrage rendu DEUX fois : la première version s'appuyait sur un « swipe-down natif » inexistant (commentaire `ProductDrawer.tsx:255`, aucun handler tactile, `vaul` absent). (Sprint 95, #714)
+
+## DEC-S95-005 — La divergence ASCII/Unicode de `PASSWORD_POLICY` est FIGÉE par des tests, pas corrigée
+Le validateur serveur teste `Character.isUpperCase`/`isDigit` (Unicode), la réplique Zod des regex ASCII : `Ωabcdefg١` est accepté serveur et refusé par le formulaire. Écart pré-existant (#148) dont la JSDoc affirmait une réplique « EXACTE » — c'est cette affirmation fausse qui l'a masqué. Le sens est prudent (sur-contrainte, jamais laxisme) et l'invariant de #508 tient. Trois tests le figent et DOIVENT rougir si quelqu'un aligne les regex sur `\p{Lu}`/`\p{Nd}` : c'est leur rôle, pas un défaut à réparer. Alignement réel renvoyé à une issue dédiée. (Sprint 95, revue #508)

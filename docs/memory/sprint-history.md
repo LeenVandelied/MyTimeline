@@ -6717,7 +6717,19 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Signaux `RECOMMAND_TEST_RUNNER` (#701, #713) :** traités par exécution DIRECTE du lead, pas par délégation (4 faux verdicts « E2E impossible » d'un test-runner délégué dans l'historique). Motif consigné dans `docs/memory/sprints/sprint-95/test-runner-decision.md`.
 **Coverage-E2E :** OK — 0 nouveau `data-testid`.
 **Saturation contexte lead (mesure) :** non mesurée cette session.
-**Status :** En cours — PR ouverte, en attente de CI puis de `/sprint end 95`
+**Nouveaux pitfalls / patterns / décisions :** PIT-S95-001 à -007, PAT-S95-001 à -004, DEC-S95-001 à -005 (packs `pit-*` régénérés, `pit-classification.tsv` complété).
+**Follow-ups arbitrés (Phase 4 triage — 8 items) :**
+  - croix du `ProductDrawer` hors viewport à 390×600 (`y=-12`, `absolute top-4` dans un `overflow-y-auto`) [S | design] → issue **#732** (backlog, ouverte à la demande du dev avant la clôture). Portée élargie par le lead de 1 à 2 composants : `CategoryDrawer.tsx:241` porte le même motif ; `ConflictDialog` non concerné (overflow sur un `div` interne).
+  - 403 sémantiquement faux : « session expirée » + déconnexion sur un accès refusé [S | auth] → issue **#733** (backlog)
+  - couverture E2E du pont i18n et du 400 inline — le pont n'est prouvé qu'en jsdom [S | auth] → issue **#734** (backlog)
+  - aligner `PASSWORD_POLICY` sur `\p{Lu}`/`\p{Nd}` (cf. DEC-S95-005) [S | auth] → issue **#735** (backlog)
+  - symétrie « Rien demain » dans l'agenda [XS | events] → **discard** : déjà arbitré en DEC-S95-002, en faire une issue rouvrirait une décision prise
+  - cotes « DÉGAGÉS » non mesurées de la JSDoc `toaster.tsx` [XS | design] → **discard** (dev)
+  - spec E2E mobile pour « aujourd'hui vide / demain plein » [XS | events] → **discard** (dev)
+  - balayage des autres constantes UI dupliquées depuis une règle backend [XS | auth] → **discard** (dev)
+  Bilan : 4 issues créées (0 avec milestone), 4 discards, 0 absorption. Ratio discard 4/8 — sous le seuil d'alerte, et les 4 écartés sont tous des XS spéculatifs, pas des défauts constatés. Backlog libre choisi par le dev pour les 4 créées.
+**Écart de convention corrigé en clôture :** le corps de PR n'avait pas été commité dans `pr-sprint.md` en Phase 9 (le fichier portait encore celui du S94) — cf. PIT-S94-007. Rattrapé avant le merge.
+**Status :** En cours — PR #731 ouverte, CI 7/7 verte sur `72b5355d`, en attente du merge
 
 ### Sprint 96 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé

@@ -917,3 +917,14 @@ Deux sources indépendantes : asserter la PRÉCONDITION du défaut sur une grand
 
 ## PAT-S94-004 — Oracle E2E de « la couche s'ouvre hors plein écran »
 Ni `toBeVisible` (Playwright ne mesure pas la peinture, donc il voit une couche invisible comme visible), ni « `exitFullscreen` a été appelé » (n'atteste pas l'attente). L'oracle est `document.fullscreenElement === null` PENDANT que la couche est ouverte, doublé du `data-testid` de l'ancêtre de `document.activeElement` pour prouver que le focus a bien suivi. (Sprint 94 #712)
+## PAT-S95-001 — Indicateur heuristique : séparer la PORTE du DEGRÉ
+Un score agrégé (0..4) peut afficher « fort » sur une saisie que le serveur refuse, et corriger un seuil ne le corrige pas — le score combine des critères indépendants. Séparer une PORTE (réplique booléenne de la validation serveur) d'un DEGRÉ (le score) : le degré ne se calcule que si la porte passe, sinon niveau plancher. Donne un invariant testable en une assertion (`weak ⇔ refusé serveur`). Anti-pattern : régler les pondérations en espérant que le cas refusé retombe sous le seuil d'affichage. (Sprint 95, #508)
+
+## PAT-S95-002 — Avant d'ajouter une clé i18n corrective, greper les appelants de l'ancienne
+Si le seul appelant de la clé fautive est celui qu'on corrige : RENOMMER, ne pas ajouter à côté. Ajouter laisse la clé d'origine morte dans les 4 locales, et elle ressort en review dix sprints plus tard. Greper avec le binaire absolu (`/usr/bin/grep`), le `grep` du shell étant réécrit sur ce poste. (Sprint 95, #701)
+
+## PAT-S95-003 — Pont transport→React par registre de module
+Pour traduire depuis un module hors React (intercepteur axios) : registre de module (`setX(t)` / `translateX(key)`) alimenté par un composant `null` monté SOUS le `NextIntlClientProvider`, avec repli et garde anti-clé-brute. `useTranslations` est un hook, et `loadMessages` (`frontend/i18n.ts`) est du code serveur (`node:fs`) : ni l'un ni l'autre n'est atteignable depuis un module client. Le dépôt porte désormais DEUX ponts de cette forme (`networkStatus.ts` #76, `apiErrorMessages.ts` #713). Anti-pattern : recopier les libellés dans un fichier TS — 2e source de vérité ; le neutraliser par un test qui compare le repli au JSON `fr` valeur par valeur. (Sprint 95, #713)
+
+## PAT-S95-004 — Tester une décision d'ACCEPTATION sans fabriquer un test complaisant
+Quand on décide d'accepter un défaut résiduel, l'oracle ne peut pas être « le défaut est absent ». Combiner une assertion ENCADRANTE (borne min ET max sur la valeur mesurée — une amélioration silencieuse doit rougir autant qu'une dégradation) et une assertion FALSIFIANTE isolée qui fait tomber la décision si elle rougit (ici : le tap sur l'overlay ferme bien la sheet malgré le toast). Anti-pattern : n'asserter qu'un plafond. (Sprint 95, #714)

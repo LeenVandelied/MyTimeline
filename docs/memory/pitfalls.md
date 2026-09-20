@@ -1856,3 +1856,23 @@ Le fichier `docs/memory/audits/sprint-94-test-coverage.md` contient la chaîne `
 
 ## PIT-S94-007 — `pr-sprint.md` est un fichier SUIVI : l'écraser comme brouillon détruit le corps de PR du sprint précédent
 Le lead y a écrit le corps de la PR #725 en le croyant intermédiaire, puis l'a supprimé — `git status` a rendu ` D` et non `??`. Chaque sprint commite son corps de PR dans ce fichier (`95ae2f52` pour le S93). Regarder la cible avant d'écraser, et commiter le nouveau corps plutôt que restaurer l'ancien. (Sprint 94, lead)
+## PIT-S95-001 — Un `next build` pendant qu'un `next start` sert le même `.next` : toutes les pages rendent 200, mais l'hydratation est morte
+`test-quiet.sh frontend` reconstruit `.next` ; si un `next start` sert la même arborescence, le symptôme ne ressemble PAS à une panne de build : les pages rendent 200, et c'est le projet `setup` Playwright qui échoue sur `register-form` introuvable — ce qui se diagnostique spontanément en rate-limit ou en CORS. Extension du couple `next dev` de [[PIT-S81]] au couple build/start. Remède : rebuild + restart, et ne jamais lancer `test-quiet.sh` pendant un run E2E. (Sprint 95, #714)
+
+## PIT-S95-002 — `--repeat-each` rejoue AUSSI le projet `setup`, qui course sur `.auth/accounts.json`
+`npx playwright test --repeat-each=N` relance le projet `setup` à chaque passe ; les passes se disputent le fichier d'identités partagé et 12 tests rendent « did not run ». Pour rejouer une spec N fois sur ce dépôt : N invocations séquentielles du runner. `--repeat-each` est inutilisable ici. (Sprint 95, #714)
+
+## PIT-S95-003 — Sur macOS les captures visuelles ne rougissent plus, elles VERDISSENT à tort (inversion de [[PIT-S82]])
+Seules les références `*-chromium-linux.png` sont suivies. Sur macOS Playwright cherche des `-darwin` absentes — et comme `updateSnapshots: 'missing'` est désormais le DÉFAUT, il les CRÉE et fait PASSER les tests au lieu d'échouer. Au S95 la suite a rendu `422 passed / 0 failed` dont **10 « passed » vides** (portée réelle : 412). Le rapport ne le signale nulle part ; le seul indice est `git status` (10 PNG `-darwin` non suivis apparus après le run). Le constat mémorisé au S82 comme « 10 faux ROUGES » décrit donc l'ANCIEN symptôme. Remède : `git status --porcelain | /usr/bin/grep darwin` AVANT de conclure d'un vert, supprimer les PNG générés, retrancher ces tests du décompte annoncé. (Sprint 95, lead)
+
+## PIT-S95-004 — Un seuil numérique recopié dans un composant de feedback dérive en silence (6 vs 8 pendant 24 sprints)
+`PasswordStrength.tsx` scorait `length >= 6` alors que la politique était passée à 8 au S71 (#148) : rien ne reliait la valeur à sa source, et sa propre JSDoc affirmait encore « la contrainte réelle (>= 6) ». Toute valeur d'un composant d'UI qui reflète une règle serveur doit être IMPORTÉE de la constante partagée, jamais retapée. (Sprint 95, #508)
+
+## PIT-S95-005 — Une clé i18n d'état vide réutilisée pour deux portées devient un mensonge
+`CompactAgenda` réutilisait `compactAgenda.empty` (« ni aujourd'hui ni demain ») dans la branche du groupe « Aujourd'hui », atteinte uniquement quand `isEmpty` est FAUX par construction — donc quand des événements existent demain. Une clé par portée ; et en review i18n, relire le libellé À CÔTÉ de sa condition de rendu, pas la seule liste de clés. (Sprint 95, #701)
+
+## PIT-S95-006 — Remplacer une chaîne en dur par une clé i18n casse les regex de test qui citaient l'ancienne chaîne
+`apiClient.test.ts:64` assertait `/session expirée/i` ; la clé réutilisée dit « session **a** expiré » — l'accord grammatical diffère, et l'échec n'est pas visible à la lecture du diff. Après tout remplacement de ce type, grepper les regex de test qui citent l'ancien libellé ; le run ciblé du seul fichier modifié ne suffit pas. (Sprint 95, #713)
+
+## PIT-S95-007 — Une affirmation géométrique écrite sans oracle a survécu 3 sprints avec 3 chiffres faux, et un arbitrage s'est appuyé dessus
+La JSDoc de `toaster.tsx` (S92) situait la croix du `ProductDrawer` « à ≈84–100px à 844px quand le formulaire remplit la sheet ». Mesure S95 : à 390×844 le contenu (672px) n'atteint JAMAIS 92vh (776px), le recouvrement est **nul**, et le cas n'existe qu'en dessous de ≈730px. Deux autres cotes étaient fausses (carte 65px et non ≈46px ; haut de sheet 171px et non ≈68px). L'arbitrage Designer de #714 s'était appuyé sur ces chiffres. Toute affirmation géométrique consignée dans un commentaire doit citer la spec qui la mesure. (Sprint 95, #714)
