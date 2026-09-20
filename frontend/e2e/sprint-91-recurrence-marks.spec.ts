@@ -33,7 +33,7 @@ import { PROD } from './support/accounts'
  *    fantômes du jour A et de A + 7 tombent DANS la barre réelle de A.
  * A démarre un 5 du mois (aucun clamp de fin de mois) et ≥ 41 j après aujourd'hui (C reste
  * à ≥ 20 j de la ligne TODAY, qui intercepterait sinon le hit-test). Une seconde lane porte
- * deux bornes ±400 j (étendue large : la piste doit défiler, cf. `sprint-91-event-pin`).
+ * deux bornes à ±400 j de A (étendue large : la piste doit défiler, cf. `sprint-91-event-pin`).
  *
  * CE QUE LA SPEC NE PROUVE PAS : la lisibilité de deux occurrences RÉELLES superposées
  * (pas d'empilage en rangées, issue dédiée) ; le rendu en thème sombre du contour planché ;
@@ -84,8 +84,25 @@ const A_SERIES_END = addMonths(A_START, 3)
 const B_START = addDays(addMonths(A_START, 1), 3)
 const B_SERIES_END = addDays(B_START, 21)
 const C_START = addDays(A_START, -21)
-const BOUND_PAST = addDays(TODAY, -400)
-const BOUND_FUTURE = addDays(TODAY, 400)
+/**
+ * Bornes d'étendue, ancrées sur `A_START` et NON sur aujourd'hui — c'est ce qui rend
+ * `C_GHOST_COUNT` invariant. `computeRange` (`zoom.ts:123`) pose l'étendue à
+ * [min − 30 j, max + 30 j] : ancrées ici, `rangeStart` vaut `A_START − 430 j`,
+ * `RANGE_END` vaut `A_START + 431 j` et `totalDays` vaut 862 QUEL QUE SOIT le jour où la
+ * spec est jouée (aujourd'hui reste dans l'étendue : `A_START − 400 j` est toujours dans
+ * le passé, `A_START` étant à 45–75 j d'ici).
+ *
+ * Ancrées sur aujourd'hui, l'écart `RANGE_END − C_START` valait `452 − (A_START − TODAY)`
+ * et tombait sur un multiple de 7 un jour sur sept : le dernier fantôme de C atterrissait
+ * alors PILE sur le dernier jour de l'étendue, où `scaleRecurrenceMarks`
+ * (`recurrence-marks.ts:193`) le RETIRE — sa peinture (`leftPx + GHOST_PIN_HALF_PX`,
+ * 4 px) déborderait la piste. `assertGhostBounds` attendait 54 fantômes, la frise en
+ * rendait 53 (mesuré horloge figée au 2026-09-22). Ancré, l'écart vaut toujours 452 j,
+ * soit 64 fantômes dont le dernier à `RANGE_END − 4 j` (8,8 px de marge au zoom Année,
+ * pour 4 px de débord) — la coupe de peinture n'est jamais frôlée.
+ */
+const BOUND_PAST = addDays(A_START, -400)
+const BOUND_FUTURE = addDays(A_START, 400)
 
 const A_ID = uuid('91d59500', 1)
 const B_ID = uuid('91d59500', 2)
@@ -231,10 +248,20 @@ const seriesLane = (page: Page): Locator =>
     .getByTestId('timeline-resource-row')
     .filter({ has: page.getByTestId('timeline-resource-title').filter({ hasText: LANE_TITLE }) })
 
-async function twoFrames(page: Page): Promise<void> {
+async function frames(page: Page, count = 2): Promise<void> {
   await page.evaluate(
-    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null)))),
+    (n: number) =>
+      new Promise<void>((resolve) => {
+        const step = (left: number) =>
+          left <= 0 ? resolve() : requestAnimationFrame(() => step(left - 1))
+        step(n)
+      }),
+    count,
   )
+}
+
+async function twoFrames(page: Page): Promise<void> {
+  await frames(page, 2)
 }
 
 async function centerOn(page: Page, target: Locator): Promise<void> {
@@ -262,17 +289,40 @@ const EVENT_DAYS: Record<string, Date> = {
 const daysFrom = (a: Date, b: Date) => Math.round((b.getTime() - a.getTime()) / 86_400_000)
 
 /**
- * Amène `day` au centre de la piste AVANT toute recherche d'occurrence : la virtualisation
- * horizontale (#69) ne monte que la bande visible ± 600 px — au chargement, centré sur
- * aujourd'hui, les séries (≥ 20 j plus loin) ne sont pas toutes montées (mesuré au 1er run :
- * 2 occurrences sur 3). Position = marqueur TODAY de la règle (+ sa gouttière desktop) +
- * jours × px/jour du niveau courant.
+ * Amène `day` au centre de la piste ET garantit que la BANDE RENDUE le suive, AVANT toute
+ * recherche d'occurrence : la virtualisation horizontale (#69) ne monte que la bande visible
+ * ± 600 px — au chargement, centré sur aujourd'hui, les séries (≥ 20 j plus loin) ne sont pas
+ * toutes montées (mesuré au 1er run : 2 occurrences sur 3). Position = marqueur TODAY de la
+ * règle (+ sa gouttière desktop) + jours × px/jour du niveau courant.
+ *
+ * ⚠ HYSTÉRÉSIS — pourquoi le saut se fait en DEUX temps. `useTimelineViewport.ts:173-176` ne
+ * recalcule la bande QUE si la fenêtre visible SORT de la bande précédente (`bandCovers`) :
+ * c'est ce qui rend le scroll gratuit (`virtualization.ts:34-41`). Un saut PROGRAMMATIQUE qui
+ * atterrit DANS la bande précédente ne la déplace donc pas — la bande reste centrée sur le
+ * cadrage d'avant, et tout ce qui est à plus de ~770 px de CE centre demeure démonté malgré
+ * le scroll. Mesuré au navigateur le 2026-09-21 (portrait 390 px, zoom Mois, `clientWidth`
+ * 340) : au chargement la bande vaut `aujourd'hui ± 770 px` ; `scrollToDay(A + 5 j)` visait
+ * `scrollLeft` 5710 et la fenêtre visible [5710, 6050] tenait ENTIÈREMENT dans la bande
+ * [4510, 6050] → aucun recalcul, B (piste 6091 px) restait hors bande, `toHaveCount(3)`
+ * rendait 2. Le seuil est exactement `A_START − TODAY ≤ 45 j`, atteint quand `TODAY + 40 j`
+ * tombe le DERNIER jour d'un mois (≈ 12 jours par an) : la spec était non déterministe.
+ *
+ * Le passage par l'origine de la piste force le recalcul : la bande y devient
+ * [−600, `clientWidth` + 600], que la fenêtre visible de la cible (≥ 5 000 px ici) ne peut
+ * pas satisfaire → la bande finale est TOUJOURS centrée sur `day` (± 770 px en portrait).
+ * Aucune assertion n'est relâchée : le jeu d'occurrences montées cesse simplement de dépendre
+ * de l'historique de défilement, donc du jour où l'on joue la spec.
  */
 async function scrollToDay(page: Page, day: Date): Promise<void> {
   const label = ((await page.getByTestId('timeline-zoom-level').textContent()) ?? '').trim()
   const dayWidth = DAY_WIDTH_BY_LEVEL[label]
   if (!dayWidth) throw new Error(`niveau de zoom inconnu : ${label}`)
-  await page.getByTestId('timeline-scroll').evaluate(
+  const scroll = page.getByTestId('timeline-scroll')
+  // 1. Purge de l'hystérésis (cf. supra) — la bande est recalée sur l'origine de la piste.
+  await scroll.evaluate((el) => el.scrollTo({ left: 0, behavior: 'instant' }))
+  await frames(page, 3)
+  // 2. Cadrage réel : la fenêtre visible sort forcément de la bande de l'étape 1.
+  await scroll.evaluate(
     (el, { offsetDays, width }) => {
       const today = el.querySelector<HTMLElement>(
         '.mt-tlv__ruler > .mt-tlv__today, .mt-tlm__ruler > .mt-tlm__today',
@@ -284,7 +334,7 @@ async function scrollToDay(page: Page, day: Date): Promise<void> {
     },
     { offsetDays: daysFrom(TODAY, day), width: dayWidth },
   )
-  await twoFrames(page)
+  await frames(page, 3)
 }
 
 async function revealEvent(page: Page, title: string): Promise<Locator> {
@@ -475,7 +525,12 @@ async function assertSeriesIdentifiable(page: Page, where: string) {
   const lane = seriesLane(page)
   const a = await revealEvent(page, A_TITLE)
   // Les marques ne polluent pas le compteur des occurrences (PIT-S46-001). Centré sur A,
-  // les trois occurrences réelles (A − 21 j … A + 34 j) sont dans la bande rendue.
+  // les trois occurrences réelles sont dans la bande rendue — `scrollToDay` garantit qu'elle
+  // est centrée sur A + 5 j, soit ± 770 px au zoom Mois en portrait (le cadrage le plus
+  // étroit). Étendues mesurées, relatives au bord gauche de A : C [−257, −167] px et
+  // B [12 g − 5, 12 g + 139] px où g = jours A→B = `addMonths(A, 1) + 3 j` ∈ [31, 34] selon
+  // la longueur du mois. Pire cas g = 34 : marge de 283 px à droite, 453 px à gauche — la
+  // couverture ne dépend donc NI du jour où la spec est jouée NI du mois de A.
   await expect(lane.getByTestId('timeline-event'), `[${where}] occurrences réelles`).toHaveCount(3)
 
   const glyph = a.locator('.mt-evt-recur')
@@ -534,9 +589,10 @@ async function assertGhostBounds(page: Page, where: string) {
     ).toHaveCount(1)
   }
 
-  // C (non bornée) court jusqu'à la fin de l'étendue : ≈ 1 830 px au zoom Année, PLUS que la
-  // bande rendue en portrait (390 + 2 × 600 px) — mesuré au 2e run : 53 fantômes montés sur 57.
-  // On réunit donc deux cadrages (autour de A, puis fin de l'étendue).
+  // C (non bornée) court jusqu'à la fin de l'étendue : 64 fantômes sur ≈ 986 px au zoom
+  // Année, PLUS que la bande rendue en portrait (340 + 2 × 600 px) — la frise n'en monte
+  // qu'une partie. On réunit donc deux cadrages (autour de A, puis fin de l'étendue), dont
+  // les bandes se recouvrent quel que soit l'écart aujourd'hui → A (45 à 75 j).
   const cDates = new Set(await ghostDates(page, C_ID))
   await scrollToDay(page, RANGE_END)
   await expect

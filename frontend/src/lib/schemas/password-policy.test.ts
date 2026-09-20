@@ -133,4 +133,33 @@ describe('Politique de mot de passe (BR-AUT-003, #148)', () => {
       expect(ResetPasswordSchema.safeParse({ token: 'tok', newPassword }).success).toBe(false)
     })
   })
+
+  /**
+   * Relevé en revue du Sprint 95 (#508). Ces tests NE VALIDENT PAS le
+   * comportement : ils FIGENT une divergence connue entre la réplique Zod (ASCII)
+   * et le validateur serveur (`Character.isUpperCase`/`isDigit`, Unicode).
+   * Si quelqu'un aligne `PASSWORD_POLICY` sur `/\p{Lu}/u` et `/\p{Nd}/u`, ces
+   * tests DOIVENT rougir — c'est leur rôle : signaler que l'écart est refermé et
+   * que ce bloc doit être supprimé, pas être « réparés » pour repasser au vert.
+   */
+  describe('divergence ASCII/Unicode avec le serveur (connue, non résolue)', () => {
+    /** Oméga majuscule + chiffre arabe-indic : le serveur ACCEPTE (Unicode). */
+    const UNICODE_ACCEPTED_BY_SERVER = '\u03A9abcdefg\u0661'
+
+    it('a bien la longueur requise et serait accepté par le validateur serveur', () => {
+      expect(UNICODE_ACCEPTED_BY_SERVER.length).toBeGreaterThanOrEqual(PASSWORD_POLICY.minLength)
+    })
+
+    it('les regex ASCII de PASSWORD_POLICY ne le reconnaissent PAS', () => {
+      expect(PASSWORD_POLICY.uppercase.test(UNICODE_ACCEPTED_BY_SERVER)).toBe(false)
+      expect(PASSWORD_POLICY.digit.test(UNICODE_ACCEPTED_BY_SERVER)).toBe(false)
+    })
+
+    it("le schéma brut le REFUSE alors que le serveur l'accepterait (sur-contrainte)", () => {
+      expect(
+        ResetPasswordSchema.safeParse({ token: 'tok', newPassword: UNICODE_ACCEPTED_BY_SERVER })
+          .success,
+      ).toBe(false)
+    })
+  })
 })

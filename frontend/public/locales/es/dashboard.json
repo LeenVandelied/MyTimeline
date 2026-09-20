@@ -41,7 +41,7 @@
       "label": "Agenda compacta de hoy y mañana",
       "today": "Hoy",
       "tomorrow": "Mañana",
-      "empty": "Sin eventos hoy ni mañana",
+      "emptyToday": "Nada hoy",
       "emptyTitle": "Nada hoy ni mañana: añade un evento para seguirlo aquí",
       "emptyCta": "Añadir un evento"
     },

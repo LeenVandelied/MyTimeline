@@ -61,7 +61,9 @@ describe('apiClient response interceptor', () => {
     await expect(rejectionHandler!(makeError(401))).rejects.toBeDefined()
 
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
-    expect(toastErrorMock.mock.calls[0][0]).toMatch(/session expirée/i)
+    // #713 — le libellé vient désormais de `errors.auth.sessionExpired`
+    // (« Votre session a expiré… »), plus d'une chaîne française en dur.
+    expect(toastErrorMock.mock.calls[0][0]).toMatch(/session a expiré/i)
     // #135 — l'intercepteur ne touche plus à localStorage (aucun miroir user
     // n'y est écrit) : le user PII est sorti du storage. Rien à purger côté client.
     vi.useRealTimers()
@@ -136,6 +138,85 @@ describe('apiClient response interceptor', () => {
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
     expect(toastErrorMock.mock.calls[0][0]).toMatch(/serveur/i)
     vi.useRealTimers()
+  })
+
+  /**
+   * #713 — Règle du 400 : UN SEUL signalement.
+   *
+   * L'opt-out est CIBLÉ, pas global : supprimer le toast 400 pour tout le monde
+   * rendrait muets les formulaires sans gestion inline (l'utilisateur ne verrait
+   * plus rien). Les deux tests suivants figent donc les DEUX moitiés de la règle
+   * — sans le premier, une liste d'opt-out élargie par erreur passerait en vert.
+   */
+  it('toaste le 400 sur une route SANS gestion inline (défaut conservé)', async () => {
+    await expect(rejectionHandler!(makeError(400))).rejects.toBeDefined()
+    expect(toastErrorMock).toHaveBeenCalledTimes(1)
+    expect(toastErrorMock.mock.calls[0][0]).toMatch(/validation/i)
+    vi.useRealTimers()
+  })
+
+  it('ne toaste PAS le 400 de /me/change-password (rendu inline par le formulaire)', async () => {
+    // `SecuritySection.tsx` fait `form.setError('oldPassword', …)` sur ce 400 :
+    // sans cette exclusion, l'utilisateur voyait un toast générique EN PLUS du
+    // message sous le champ, comme si deux problèmes distincts s'étaient produits.
+    const error = {
+      response: { status: 400 },
+      config: { url: '/me/change-password', method: 'post' },
+    }
+    await expect(rejectionHandler!(error)).rejects.toBeDefined()
+    expect(toastErrorMock).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('un 401 sur /me/change-password redirige TOUJOURS (opt-out limité au 400)', async () => {
+    // Portée de l'opt-out : `INLINE_AUTH_ENDPOINTS` court-circuite tous les
+    // statuts ; la liste du 400 ne doit court-circuiter QUE le 400. Une session
+    // réellement expirée sur cette route doit continuer à ramener au login.
+    const setHref = vi.fn()
+    const originalDescriptor = Object.getOwnPropertyDescriptor(window, 'location')
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        pathname: '/de/settings',
+        set href(value: string) {
+          setHref(value)
+        },
+      },
+    })
+
+    try {
+      const error = {
+        response: { status: 401 },
+        config: { url: '/me/change-password', method: 'post' },
+      }
+      await expect(rejectionHandler!(error)).rejects.toBeDefined()
+
+      expect(toastErrorMock).toHaveBeenCalledTimes(1)
+      vi.advanceTimersByTime(1500)
+      expect(setHref).toHaveBeenCalledWith('/de/login')
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'location', originalDescriptor)
+      }
+      vi.useRealTimers()
+    }
+  })
+
+  /**
+   * #713 — L'intercepteur ne contient plus de libellé en dur : il passe par le
+   * registre de `apiErrorMessages`. Alimenté (ce que fait `ApiErrorTranslatorBridge`
+   * sous le provider i18n), le toast sort dans la langue de l'utilisateur.
+   */
+  it('toaste le libellé TRADUIT quand le registre i18n est alimenté', async () => {
+    const { setApiErrorTranslator } = await import('./apiErrorMessages')
+    setApiErrorTranslator((key) => `DE:${key}`)
+    try {
+      await expect(rejectionHandler!(makeError(500))).rejects.toBeDefined()
+      expect(toastErrorMock).toHaveBeenCalledWith('DE:server.error')
+    } finally {
+      setApiErrorTranslator(null)
+      vi.useRealTimers()
+    }
   })
 
   // #76 — classification vers le bus d'état réseau (store transport).

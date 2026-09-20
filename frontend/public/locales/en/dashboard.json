@@ -41,7 +41,7 @@
       "label": "Compact agenda for today and tomorrow",
       "today": "Today",
       "tomorrow": "Tomorrow",
-      "empty": "No events today or tomorrow",
+      "emptyToday": "Nothing today",
       "emptyTitle": "Nothing today or tomorrow: add an event to follow it here",
       "emptyCta": "Add an event"
     },

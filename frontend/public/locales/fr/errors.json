@@ -3,7 +3,11 @@
     "register": "Erreur lors de l'inscription",
     "login": "Erreur lors de la connexion",
     "logout": "Erreur lors de la déconnexion",
-    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter"
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter",
+    "forbiddenRedirect": "Votre session a expiré, redirection vers la page de connexion..."
+  },
+  "validation": {
+    "error": "Erreur de validation, veuillez vérifier vos données."
   },
   "network": {
     "offline": "Vous êtes hors ligne. Veuillez vérifier votre connexion",
@@ -29,4 +33,4 @@
     "retry": "Réessayer",
     "backHome": "Retour à l'accueil"
   }
-} 
+}

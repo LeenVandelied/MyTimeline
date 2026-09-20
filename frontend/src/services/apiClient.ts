@@ -2,6 +2,7 @@ import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { refreshToken } from './authService'
 import { networkStatusStore } from './networkStatus'
+import { API_ERROR_KEYS, translateApiError } from './apiErrorMessages'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/locales'
 
 /**
@@ -142,6 +143,39 @@ const isInlineAuthRequest = (url?: string): boolean => {
   )
 }
 
+/**
+ * #713 — Endpoints NON-auth dont les 400 sont déjà rendus INLINE par leur
+ * formulaire. Sans cette liste, un 400 est signalé DEUX FOIS : le toast global
+ * ci-dessous ET le message sous le champ — l'utilisateur croit à deux problèmes
+ * distincts.
+ *
+ * POURQUOI UNE LISTE D'OPT-OUT ET PAS LA SUPPRESSION DU TOAST 400 GLOBAL :
+ * la majorité des formulaires du dépôt n'ont AUCUNE gestion inline du 400.
+ * Retirer le toast global les rendrait muets — l'utilisateur cliquerait
+ * « enregistrer » et ne verrait plus rien du tout. Régression silencieuse, bien
+ * pire que la redondance qu'on corrige. Le défaut reste donc « toast global »,
+ * et une route ne s'en retire qu'en prouvant qu'elle affiche l'erreur elle-même.
+ *
+ * POURQUOI PAS `INLINE_AUTH_ENDPOINTS` : cette liste-là court-circuite TOUS les
+ * statuts (401/403/500 compris), ce qui est voulu pour les écrans Login/Register
+ * (un 401 y est un identifiant invalide, pas une session morte). Ici on ne veut
+ * neutraliser QUE le 400 : un 401 sur `/me/change-password` signifie une vraie
+ * session expirée et DOIT continuer à rediriger vers la page de connexion.
+ * D'où un test distinct, appliqué uniquement dans la branche 400.
+ *
+ * Contrat pour ajouter une route ici : elle DOIT rendre elle-même le détail du
+ * 400 (cf. `SecuritySection.tsx` → `form.setError('oldPassword', …)`).
+ */
+const INLINE_VALIDATION_ENDPOINTS = ['/me/change-password']
+
+const isInlineValidationRequest = (url?: string): boolean => {
+  if (typeof url !== 'string') return false
+  const pathname = pathnameOf(url)
+  return INLINE_VALIDATION_ENDPOINTS.some(
+    (endpoint) => pathname === endpoint || pathname.endsWith(endpoint),
+  )
+}
+
 apiClient.interceptors.response.use(
   (response) => {
     // #76 — toute réponse OK atteste que la connectivité serveur est rétablie :
@@ -166,11 +200,15 @@ apiClient.interceptors.response.use(
       return Promise.reject(error)
     }
     if (error.response?.status === 400) {
-      toast.error('Erreur de validation, veuillez vérifier vos données.')
+      // #713 — un seul signalement : si le formulaire rend le 400 lui-même, on
+      // se tait (sinon toast générique + message sous le champ = doublon).
+      if (!isInlineValidationRequest(error.config?.url)) {
+        toast.error(translateApiError(API_ERROR_KEYS.validation))
+      }
     } else if (error.response?.status === 401) {
       if (!isRedirecting) {
         isRedirecting = true
-        toast.error('Session expirée, redirection vers la page de connexion...')
+        toast.error(translateApiError(API_ERROR_KEYS.sessionExpired))
         // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
         setTimeout(() => {
           window.location.href = loginUrlForCurrentLocale()
@@ -189,14 +227,19 @@ apiClient.interceptors.response.use(
           data: error.response?.data,
         })
         // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
-        toast.error('Votre session a expiré, redirection vers la page de connexion...')
+        // #713 — clé DÉDIÉE (`auth.forbiddenRedirect`), pas `auth.sessionExpired` :
+        // ce libellé est sémantiquement faux sur un 403 (accès refusé ≠ session
+        // expirée). Il est traduit TEL QUEL ici — le corriger relève d'un suivi,
+        // pas de #713 — mais sa clé propre garde la correction faisable en un
+        // point unique au lieu de la diluer dans la clé du 401.
+        toast.error(translateApiError(API_ERROR_KEYS.forbidden))
         setTimeout(() => {
           window.location.href = loginUrlForCurrentLocale()
           isRedirecting = false
         }, 1500)
       }
     } else if (error.response?.status === 500) {
-      toast.error('Erreur serveur, veuillez réessayer plus tard.')
+      toast.error(translateApiError(API_ERROR_KEYS.serverError))
     }
     return Promise.reject(error)
   },

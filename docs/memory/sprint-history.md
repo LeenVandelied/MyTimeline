@@ -6694,7 +6694,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Clôture (`/sprint end 94`, 2026-09-18) :** PR #725 `CLEAN`/`MERGEABLE`, CI **7/7 verte sur `19edb13b`** (SHA épinglé au merge via `--match-head-commit`), fusionnée dans `dev` (merge `0484ba72`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #95 = exactement les 3 issues du label `sprint-94` (vérifié dans les deux sens), fermé après le merge. Briefings supprimés AVANT la PR (`dev` protégée). Aucune pile E2E laissée debout.
 **Status :** Terminé — merge PR #725 dans `dev` le 2026-09-18 (`0484ba72`), issues #672/#706/#712 et milestone #95 fermés
 
-### Sprint 95 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Toasts et messages)
+### Sprint 95 — 2026-09-15 → en cours (EN COURS — cohésion 0.00 assumée, Toasts et messages)
 **Objectif :** Ce que l'application affiche en retour : toast qui ne masque plus de contrôle, erreurs réseau traduites, messages vides justes
 **Milestone GitHub :** #96
 **Issues :** #714 (S), #713 (S), #701 (XS), #508 (XS) — 6 pts
@@ -6702,7 +6702,34 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 94 (#712 ajoute un oracle de toast)
 **À confirmer au démarrage :** arbitrage Designer #714 (bloquant) ; règle du 400 et mécanisme i18n hors React (#713).
-**Status :** Planifié
+**Branche :** `claude/sprint-95-start-5d5903` (worktree, basée sur `origin/dev` ad91bb09)
+**Vérifications du lead au démarrage (2026-09-18) :** les 4 chaînes FR en dur de `apiClient.ts` confirmées (l.169/173/192/199) ; double signalement du 400 confirmé sur `/me/change-password` seulement (`SecuritySection.tsx:54-57`) ; `PASSWORD_POLICY` = `minLength: 8` + majuscule + chiffre (`lib/schemas/auth.ts:35`), donc `PasswordStrength.tsx` est périmé DANS SON CODE (seuil 6, l.19) **et dans sa JSDoc** (« la contrainte réelle (>= 6) », l.7-13) — l'énoncé #508 ne mentionnait que le premier ; seul consommateur applicatif de `PasswordStrength` = `SecuritySection.tsx` (le register ne l'utilise pas) ; branche `todayEvents.length === 0` de `CompactAgenda.tsx:127-128` confirmée. Listes grep complètes des specs impactées collées dans les briefings.
+**Vagues exécutées :** V1 = #713 ∥ #701 ∥ #508 (unitaires, worktree partagé) | V2 = #714 (exclusivité Playwright)
+**Commits (7) :** `d1913309` (#508) · `76514471` (#701) · `130da4a6` (#713) · `a3b23f24` (#714) · `09f44619`/`1d846b09` (comptes rendus) · `32272373` (correction de revue)
+**Arbitrage Designer #714 :** **décision B — acceptation documentée**, rendue DEUX FOIS. La 1re version s'appuyait sur une sortie « swipe-down natif » qui N'EXISTE PAS (`ProductDrawer.tsx:255` est un commentaire ; 0 handler tactile, `vaul` absent, Radix Dialog sans swipe). Réfutée par le lead, le Designer a ré-émis B sur la vraie sortie (tap sur la bande d'overlay Radix, y≈0–68px, disjointe du toast) et sourcé la durée du toast d'erreur (4000 ms) dans la lib et non dans un commentaire.
+**Prémisses d'énoncé infirmées (4, dont 3 portaient l'arbitrage) :** (1) `ProductDrawer.tsx:255` « swipe-down » faux ; (2) **la plus lourde — à 390×844 le recouvrement est NUL** : le contenu (672px) n'atteint jamais 92vh (776px), le cas n'existe qu'en dessous de ≈730px de viewport ; mesurer au seul viewport prescrit aurait conclu « pas de bug » ; (3) carte de toast mesurée à 65px (et non ≈46px comme l'affirmait le S92) ; (4) haut de sheet à 171px et non ≈68px — la bande tapable est bornée par la CARTE, pas par la sheet.
+**Écart #508 :** relever le seuil 6→8 n'aurait PAS corrigé le bug (`Abc123!`, 7 car. refusé serveur, s'affichait `strong`). Correctif retenu : séparer la PORTE (`meetsPolicy`) du DEGRÉ (`scorePassword`), invariant `weak ⇔ refusé serveur`.
+**BR impactées :** BR-AUT-003 (réplique UI de la politique de mot de passe). Aucune migration, aucun commit `backend/`.
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR de code / 2 MINEURS. Le mineur Unicode a été traité par `32272373` (cycle 2), dont la garde a été **mutation-testée** (regex alignées sur `\p{Lu}`/`\p{Nd}` → 2 tests rouges).
+**Divergence documentée (revue) :** `PASSWORD_POLICY` (ASCII) n'est PAS la réplique « EXACTE » du serveur (`Character.isUpperCase`/`isDigit`, Unicode) qu'affirmait sa JSDoc. Écart PRÉ-EXISTANT (#148) touchant register/reset/change-password : un mot de passe type `Ωabcdefg١` est accepté serveur et refusé par le formulaire. Sens prudent (sur-contrainte), figé par 3 tests, alignement réel renvoyé à une issue dédiée.
+**Tests :** Backend 632/632 · Frontend build+unit+typecheck+lint OK · `format:check` propre · **E2E 422 passed / 8 skipped / 0 failed (430, 2,7 min)** — pile montée ET démontée par le lead.
+**⚠ 10 des 422 « passed » sont VIDES :** `sprint-77-theme-visual` ne dispose que de références `-linux` ; sur macOS Playwright applique `updateSnapshots:'missing'` par DÉFAUT, a donc **créé 10 références `-darwin` et fait passer les tests** au lieu d'échouer. Portée réelle : **412 tests porteurs**. Les 10 PNG ont été supprimés, jamais commités. Le piège mémorisé au S82 comme « 10 faux ROUGES » s'est INVERSÉ en faux verts — mémoire amendée. Seule la CI Linux vérifie ces captures.
+**Signaux `RECOMMAND_TEST_RUNNER` (#701, #713) :** traités par exécution DIRECTE du lead, pas par délégation (4 faux verdicts « E2E impossible » d'un test-runner délégué dans l'historique). Motif consigné dans `docs/memory/sprints/sprint-95/test-runner-decision.md`.
+**Coverage-E2E :** OK — 0 nouveau `data-testid`.
+**Saturation contexte lead (mesure) :** non mesurée cette session.
+**Nouveaux pitfalls / patterns / décisions :** PIT-S95-001 à -007, PAT-S95-001 à -004, DEC-S95-001 à -005 (packs `pit-*` régénérés, `pit-classification.tsv` complété).
+**Follow-ups arbitrés (Phase 4 triage — 8 items) :**
+  - croix du `ProductDrawer` hors viewport à 390×600 (`y=-12`, `absolute top-4` dans un `overflow-y-auto`) [S | design] → issue **#732** (backlog, ouverte à la demande du dev avant la clôture). Portée élargie par le lead de 1 à 2 composants : `CategoryDrawer.tsx:241` porte le même motif ; `ConflictDialog` non concerné (overflow sur un `div` interne).
+  - 403 sémantiquement faux : « session expirée » + déconnexion sur un accès refusé [S | auth] → issue **#733** (backlog)
+  - couverture E2E du pont i18n et du 400 inline — le pont n'est prouvé qu'en jsdom [S | auth] → issue **#734** (backlog)
+  - aligner `PASSWORD_POLICY` sur `\p{Lu}`/`\p{Nd}` (cf. DEC-S95-005) [S | auth] → issue **#735** (backlog)
+  - symétrie « Rien demain » dans l'agenda [XS | events] → **discard** : déjà arbitré en DEC-S95-002, en faire une issue rouvrirait une décision prise
+  - cotes « DÉGAGÉS » non mesurées de la JSDoc `toaster.tsx` [XS | design] → **discard** (dev)
+  - spec E2E mobile pour « aujourd'hui vide / demain plein » [XS | events] → **discard** (dev)
+  - balayage des autres constantes UI dupliquées depuis une règle backend [XS | auth] → **discard** (dev)
+  Bilan : 4 issues créées (0 avec milestone), 4 discards, 0 absorption. Ratio discard 4/8 — sous le seuil d'alerte, et les 4 écartés sont tous des XS spéculatifs, pas des défauts constatés. Backlog libre choisi par le dev pour les 4 créées.
+**Écart de convention corrigé en clôture :** le corps de PR n'avait pas été commité dans `pr-sprint.md` en Phase 9 (le fichier portait encore celui du S94) — cf. PIT-S94-007. Rattrapé avant le merge.
+**Status :** En cours — PR #731 ouverte, CI 7/7 verte sur `72b5355d`, en attente du merge
 
 ### Sprint 96 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé

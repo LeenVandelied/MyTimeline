@@ -252,7 +252,10 @@ export function ProductDrawer({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className={cn(
-            // Mobile : bottom sheet plein écran, swipe-down = fermeture native.
+            // Mobile : bottom sheet plein écran. SORTIES RÉELLES = Escape et tap sur la
+            // bande d'overlay laissée libre au-dessus de la sheet (#714). PAS de swipe-down :
+            // zéro handler tactile ici ou dans `ui/dialog`, `vaul` absent, et Radix Dialog
+            // n'implémente pas le swipe-to-dismiss.
             'top-auto right-0 bottom-0 left-0 max-h-[92vh] max-w-full translate-x-0 translate-y-0 overflow-y-auto rounded-t-2xl rounded-b-none',
             // Desktop (sm+) : drawer latéral droit 452px, pleine hauteur.
             'sm:top-0 sm:right-0 sm:bottom-0 sm:left-auto sm:h-full sm:max-h-screen sm:w-[452px] sm:max-w-[452px] sm:translate-x-0 sm:translate-y-0 sm:rounded-none',

@@ -51,12 +51,61 @@ import { Toast } from '@/components/ui/toast'
  *     desktop (`.mt-drawer__close`, cible 44px → 12–56px), fermer tactile du drawer paysage
  *     (20–64px), header mobile du tableau de bord (`h-14` → 0–56px, hamburger `h-11`
  *     → 6–50px), croix du `ProductDrawer` desktop (`ui/dialog`, `top-4` → 16–32px).
- *   - NON DÉGAGÉS (aucune constante ne le peut) : la croix du `ProductDrawer` en bottom
- *     sheet mobile (`max-h-[92vh]` : à ≥ 8vh + 16px, soit ≈ 84–100px à 844px de haut quand
- *     le formulaire remplit la sheet) ; le contenu EN FLUX (barre d'outils de la frise,
- *     haut du corps d'un drawer formulaire ouvert — seul un toast d'ERREUR s'y affiche,
- *     les succès partent après fermeture) ; le pied d'action d'un drawer, en bas, n'est
- *     jamais atteint.
+ *   - RECOUVREMENTS RÉSIDUELS — ARBITRÉS ET ACCEPTÉS (#714, arbitrage Designer S95).
+ *     Aucun décalage fixe ne les dégage, et l'ancrage contextuel est ÉCARTÉ ; la position
+ *     et `TOASTER_TOP_OFFSET` restent donc INCHANGÉS. Deux cas : (i) la croix du
+ *     `ProductDrawer` en bottom sheet mobile ; (ii) le contenu EN FLUX (barre d'outils de
+ *     la frise, haut du corps d'un drawer formulaire ouvert — seul un toast d'ERREUR s'y
+ *     affiche, les succès partent après fermeture). Le pied d'action d'un drawer, en bas,
+ *     n'est jamais atteint.
+ *     ⚠ GÉOMÉTRIE DU CAS (i) — CORRIGÉE PAR LA MESURE (#714). La note du S92 le situait
+ *     « à ≈ 84–100px à 844px de haut quand le formulaire remplit la sheet » : les deux
+ *     moitiés de cette phrase sont FAUSSES, et l'écart n'est pas anodin puisque c'est le
+ *     cas sur lequel l'arbitrage portait.
+ *       · Le formulaire ne REMPLIT PAS la sheet à 844px. Le contenu du drawer de création
+ *         mesure ≈ 672px ; `max-h-[92vh]` vaut 776px à cette hauteur, donc le plafond
+ *         n'est jamais atteint, la sheet se dimensionne à son contenu et démarre à
+ *         ≈ 170px. La croix tombe à ≈ 188px, soit 50px SOUS la carte : à 390×844 le
+ *         recouvrement est NUL. La sheet ne se fait clamper qu'en dessous de ≈ 730px de
+ *         viewport (0,92·H < 672).
+ *       · La carte ne fait pas ≈ 46px : le message d'erreur se replie sur deux lignes, la
+ *         carte mesure ≈ 65px — bande ≈ 72–137px.
+ *       · Le recouvrement EXISTE, mais sur les viewports COURTS. Pire cas mesuré à
+ *         390×740 (sheet libre démarrant à 67px) : la croix, 84–100px, est ENTIÈREMENT
+ *         dans la bande. À 390×667 la sheet est clampée à 92vh et démarre à 53px : croix
+ *         70–86px, recouvrement PARTIEL de ≈ 14px.
+ *     POURQUOI PAS L'ANCRAGE CONTEXTUEL : le seul signal DOM qui dirait « une couche
+ *     modale est ouverte » est le `pointer-events:none` que Radix pose sur `<body>` —
+ *     faux ami documenté (PIT-S62-001, ADR-008 § conséquence d'interaction). Il ne
+ *     distingue ni la sheet du drawer latéral, ni l'ouverture de la fermeture animée :
+ *     un décalage qui en dépendrait sauterait au montage ET au démontage de CHAQUE
+ *     couche, pour ne rien dire des popovers portalisés. On échangerait un recouvrement
+ *     borné contre une position instable.
+ *     POURQUOI C'EST TOLÉRABLE — la sortie utilisateur n'est PAS la croix recouverte :
+ *     c'est le tap sur la bande d'overlay Radix (`ui/dialog.tsx`, overlay `fixed inset-0`)
+ *     laissée libre en HAUT D'ÉCRAN. Elle va de 0 jusqu'au premier obstacle : le haut de
+ *     la sheet, ou le haut de la carte. Comme la carte est à 72px par CONSTRUCTION, ce
+ *     ruban existe toujours et est DISJOINT d'elle — 0–67px à 390×740, 0–53px à 390×667,
+ *     0–72px à 390×844. C'est ce décalage fixe, et non un hasard de gabarit, qui garantit
+ *     la sortie. Cette bande ferme réellement :
+ *     ni `onPointerDownOutside`, ni `onInteractOutside`, ni `onEscapeKeyDown` ne sont
+ *     interceptés sur `ProductDrawer` / `ui/dialog`, et aucune garde de formulaire sale
+ *     ne retient `onOpenChange` (appelé nu). Escape ferme de même.
+ *     ⚠ Ce n'est PAS un « swipe-down » : le geste N'EXISTE PAS dans le dépôt (zéro
+ *     handler tactile sur `ProductDrawer` / `ui/dialog`, `vaul` absent de `package.json`,
+ *     et Radix Dialog n'implémente pas le swipe-to-dismiss). Deux commentaires
+ *     l'affirmaient ; corrigés en #714.
+ *     BORNE DE DURÉE : un toast d'ERREUR vit 4 s — valeur de la BIBLIOTHÈQUE
+ *     (`react-hot-toast/dist/index.js`, `{blank:4e3, error:4e3, success:2e3, …}`), pas
+ *     d'un commentaire ; `TOAST_OPTIONS` ne surcharge QUE `success`. Sans bouton fermer
+ *     (DEC-S92-002) et sans `hover` tactile pour prolonger la pause, le recouvrement est
+ *     BORNÉ dans le temps sans action de l'utilisateur.
+ *     ORACLE PEINT (#714) : `e2e/sprint-95-toast-overlap.spec.ts`, sur les TROIS régimes
+ *     de hauteur (390×844 non recouvrant, 390×740 pire cas, 390×667 clampé) — borne du
+ *     recouvrement mesurée par une assertion ENCADRANTE (elle rougit si la géométrie
+ *     dérive dans un sens COMME dans l'autre, pas seulement si elle empire), disjonction
+ *     bande/carte, et fermeture par tap sur la bande ALORS QUE le toast est affiché. Si
+ *     ce dernier point rougit, c'est CETTE DÉCISION qui tombe — pas le test à ajuster.
  *
  * PAUSE AU SURVOL ET AU FOCUS (revue Designer #621, arbitrage dev 2026-09-15) — WCAG 2.2.1
  * (durée ajustable) : tant que le pointeur survole un toast OU que le focus clavier est sur
