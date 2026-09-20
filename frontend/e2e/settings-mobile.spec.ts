@@ -49,4 +49,57 @@ test.describe('Réglages mobile : drill-down + bottom sheet suppression', () => 
     await page.getByTestId('delete-account-sheet-backdrop').click()
     await expect(sheet).toHaveCount(0)
   })
+
+  /**
+   * #633 — cible tactile du bouton retour (WCAG 2.5.5 « Target Size (Minimum) »).
+   *
+   * Le bouton était en `h-9 w-9` (36px) SANS zone d'expansion, seule exception du
+   * produit au seuil de 44px du handoff (token `--space-11`). Il est passé à
+   * `h-11 w-11`. Cette spec MESURE la boîte rendue : c'est le seul oracle: la valeur
+   * lue dans la classe Tailwind est DÉCLARÉE, pas mesurée, et un test de géométrie
+   * sous jsdom ne prouverait rien (jsdom ne met pas en page).
+   *
+   * Le viewport 375px et la session viennent du `test.use` en tête de fichier.
+   */
+  test('bouton retour : cible tactile >= 44x44 et en-tête sans débordement', async ({ page }) => {
+    await ensureAuthenticated(page)
+    await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
+
+    // Le bouton retour n'existe que sur un écran DÉTAIL (l'index n'en a pas).
+    await expect(page.getByTestId('settings-index')).toBeVisible()
+    await page.getByTestId('settings-index-preferences').click()
+    await expect(page.getByTestId('mobile-settings-detail-preferences')).toBeVisible()
+
+    // ---- Critère 1 : 44x44 de cible effective -----------------------------
+    const back = page.getByTestId('mobile-settings-back')
+    await expect(back).toBeVisible()
+    const box = await back.boundingBox()
+    expect(box, 'le bouton retour doit avoir une boîte rendue').not.toBeNull()
+    // `!` sûr : l'assertion ci-dessus a déjà échoué si la boîte est nulle.
+    expect.soft(box!.width, 'largeur de la cible tactile').toBeGreaterThanOrEqual(44)
+    expect.soft(box!.height, 'hauteur de la cible tactile').toBeGreaterThanOrEqual(44)
+
+    // ---- Critère 2 : l'en-tête absorbe l'agrandissement -------------------
+    // Le titre du chapitre reste visible et n'est pas poussé hors du viewport
+    // par les 8px gagnés en largeur par le bouton.
+    // Locator STRUCTUREL (le `<span>` frère du bouton dans l'en-tête) et non
+    // `getByText('Préférences')` : la section elle-même porte ce même libellé,
+    // un locator textuel apparierait plusieurs noeuds.
+    const title = back.locator('xpath=following-sibling::span')
+    await expect(title).toBeVisible()
+    await expect(title).toHaveText('Préférences')
+    const titleBox = await title.boundingBox()
+    expect(titleBox, 'le titre du chapitre doit avoir une boîte rendue').not.toBeNull()
+    expect.soft(titleBox!.x + titleBox!.width, 'bord droit du titre').toBeLessThanOrEqual(375)
+
+    // Aucun débordement horizontal du document au viewport mobile.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    )
+    expect.soft(overflow, 'débordement horizontal du document (px)').toBeLessThanOrEqual(0)
+
+    // ---- Le bouton reste FONCTIONNEL après l'agrandissement ---------------
+    await back.click()
+    await expect(page.getByTestId('settings-index')).toBeVisible()
+  })
 })

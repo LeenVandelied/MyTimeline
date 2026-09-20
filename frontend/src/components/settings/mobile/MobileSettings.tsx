@@ -44,12 +44,19 @@ export function MobileSettings() {
   return (
     <div className="mx-auto w-full max-w-md" data-testid={`mobile-settings-detail-${active}`}>
       <div className="mb-4 flex items-center gap-2">
+        {/* #633 — cible tactile 44x44 (WCAG 2.5.5) : `h-11 w-11` = `--space-11` = 44px.
+            On AGRANDIT la boîte visuelle plutôt que d'ajouter un `::before` d'expansion
+            (motif `.mt-zoom__btn`) : ce dernier sert aux barres d'outils DENSES où le
+            visuel doit rester petit ; ici l'en-tête ne porte que ce bouton et un titre
+            court, rien ne contraint la largeur. Mêmes classes que le bouton fermer du
+            `BottomSheet` voisin (BottomSheet.tsx:181) — une seule façon de dessiner un
+            bouton-icône bordé sur les surfaces mobiles des réglages. */}
         <button
           type="button"
           onClick={() => setActive(null)}
           aria-label={t('mobile.backToIndex')}
           data-testid="mobile-settings-back"
-          className="border-rule text-ink-muted -ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border"
+          className="border-rule text-ink-muted -ml-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-md border"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         </button>
