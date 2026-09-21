@@ -66,9 +66,9 @@ Commits : `9e12ef35` `:bug: fix(timeline): réserve des libellés longs et exté
 ## Recommandations suite
 - RECOMMAND_FOLLOWUP: E2E de collision aux zooms Semaine/Trimestre et sur une lane à 3+ rangées (pins longs successifs) [triage XS]
 - RECOMMAND_FOLLOWUP: mesurer la largeur réelle de `↻ ` et de titres en majuscules pour affiner la chasse (actuellement 0,525 em, 3 car. pour le glyphe) [triage XS]
-- RECOMMAND_TEST_RUNNER: non
-- RECOMMAND_DB_EXPERT: non
-- RECOMMAND_SECURITY: non
+- Pas de RECOMMAND_TEST_RUNNER : suite complète (Vitest 1953, E2E 478) jouée par le lead en Phase 6.
+- Pas de RECOMMAND_DB_EXPERT : aucun fichier backend ni migration SQL touché.
+- Pas de RECOMMAND_SECURITY : géométrie d'affichage, aucune surface auth, PII ou donnée externe.
 
 ## Fichiers de contexte lus
 - `docs/memory/sprints/sprint-98/ui-design-746.md` — LU (options A/B/C, valeurs x+11, « Décision du dev » : réserve estimée, plancher 100/90, plafond 240).

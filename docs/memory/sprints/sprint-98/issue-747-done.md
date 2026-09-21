@@ -47,8 +47,8 @@ Les 2 frises mobiles (portrait + paysage) conservent la date regardée au change
 
 ## Recommandations suite
 - RECOMMAND_FOLLOWUP: E2E pinch 2 pointeurs sur frise mobile (ré-ancrage via `onPinchZoom`, aujourd'hui couvert par construction seulement) [triage S]
-- RECOMMAND_TEST_RUNNER: non
-- RECOMMAND_DB_EXPERT: non
+- Pas de RECOMMAND_TEST_RUNNER : suite complète (Vitest 1953, E2E 478) jouée par le lead en Phase 6.
+- Pas de RECOMMAND_DB_EXPERT : aucun fichier backend ni migration SQL touché.
 
 ## Fichiers de contexte lus
 - `docs/memory/sprints/sprint-98/briefing-747.md` — PIT-S97-002 (l.179), PIT-S94-004 (l.169), PIT-S61-007, PIT-S72-005, PIT-S94-003.
