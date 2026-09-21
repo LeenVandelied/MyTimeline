@@ -74,3 +74,27 @@ describe('DialogContent — cible tactile de la croix (#754)', () => {
     expect(unprefixedSize).toEqual([])
   })
 })
+
+/**
+ * #757 — la croix porte son propre fond OPAQUE et une encre à pleine opacité : le
+ * contenu défile SOUS l'ancre sticky. Le contraste réel (clair/sombre, repos/survol,
+ * sheet défilée) est MESURÉ par `e2e/sprint-101-dialog-close-contrast.spec.ts` ; ici on
+ * fige les deux décisions qu'une retouche de classes déferait sans bruit :
+ *   - aucune opacité réduite sur la croix (elle rendrait aussi le fond translucide) ;
+ *   - le survol ne change que la surface, jamais l'encre (PIT-S49-001).
+ */
+describe('DialogContent — lisibilité de la croix sur contenu défilé (#757)', () => {
+  it('fond opaque du DS, encre atténuée, aucune opacité réduite', () => {
+    const { close } = renderOpenDialog()
+    expect(close).toHaveClass('bg-background', 'text-muted-foreground', 'rounded-full')
+    const opacityClasses = [...close.classList].filter((c) => /(^|:)opacity-/.test(c))
+    expect(opacityClasses).toEqual([])
+  })
+
+  it('le survol ne change que la surface', () => {
+    const { close } = renderOpenDialog()
+    expect(close).toHaveClass('hover:bg-accent-soft')
+    const hoverInk = [...close.classList].filter((c) => /^hover:text-/.test(c))
+    expect(hoverInk).toEqual([])
+  })
+})
