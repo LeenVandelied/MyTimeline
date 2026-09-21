@@ -10,6 +10,7 @@ import {
   TimelineMetrics,
   UNBOUNDED_BAND,
   buildVerticalModel,
+  type VerticalModel,
 } from './virtualization'
 import {
   DAY_WIDTH_PX,
@@ -31,6 +32,17 @@ import {
   scaleRecurrenceMarks,
   type SeriesMarks,
 } from './recurrence-marks'
+import {
+  LANE_GAP_PX,
+  LANE_ROW_PITCH_PX,
+  MOBILE_MORE_BUTTON_PX,
+  laneExtraHeightPx,
+  layoutLanes,
+  type LaneLayout,
+} from './lane-layout'
+
+/** #709 — Variante mobile (le pas de rangée et la hauteur de lane en dépendent). */
+export type MobileVariant = 'portrait' | 'landscape'
 
 /**
  * #63 — État partagé des vues Timeline mobiles (portrait #63 + paysage #64).
@@ -119,8 +131,18 @@ export interface TimelineMobileState {
   verticalBand: Band
   /** #69 — Géométrie verticale mesurée (hauteur de règle / d'en-tête / de lane). */
   metrics: TimelineMetrics
-  /** #69 — Top (px) de la liste de lanes de chaque catégorie. */
-  listTops: Record<string, number>
+  /**
+   * #709 — Modèle vertical de CHAQUE variante (tops de liste + sommes préfixées des
+   * hauteurs de lanes, entrée de `windowLanes`). L'état est partagé par portrait et
+   * paysage (#64), or leurs lanes n'ont ni la même base (44 / 34 px) ni le même pas de
+   * rangée (35 / 31 px) : chaque variante lit le sien.
+   */
+  verticalModels: Record<MobileVariant, VerticalModel>
+  /**
+   * #709 — Empilage en rangées de chaque lane (identique pour les deux variantes : gap
+   * 10 px, réservation 90 px d'un ponctuel, `⋯` de 44 px).
+   */
+  laneLayouts: Map<string, LaneLayout>
   /** Positions calculées + métadonnées de la frise (échelle du zoom courant). */
   rangeStart: Date
   totalDays: number
@@ -226,12 +248,33 @@ export function useTimelineMobileState(
   const geometryKey = `${dayWidth}|${totalDays}|${resources.length}`
   const viewport = useTimelineViewport(scrollRef, railRef, geometryKey)
   const groups = useMemo(() => Object.entries(resourcesByCategory), [resourcesByCategory])
-  const verticalModel = useMemo(
-    () => buildVerticalModel(groups, {}, viewport.metrics),
-    [groups, viewport.metrics],
+  // #709 — empilage en rangées (maquette `layoutLane`, gap mobile 10 px) ; le `⋯` qui suit
+  // chaque occurrence est réservé, sinon il se poserait sur la suivante de la rangée.
+  const laneLayouts = useMemo(
+    () =>
+      layoutLanes(eventsByResource, {
+        gapPx: LANE_GAP_PX.mobile,
+        trailingPx: MOBILE_MORE_BUTTON_PX,
+      }),
+    [eventsByResource],
   )
+  // `viewport.metrics.laneHeight` = hauteur de BASE mesurée sur la variante MONTÉE
+  // (44 portrait / 34 paysage) : seul le modèle de la variante montée est donc exact, et
+  // c'est le seul consommé. L'autre se recale à la mesure qui suit la rotation.
+  const verticalModels = useMemo(() => {
+    const model = (variant: MobileVariant) =>
+      buildVerticalModel(
+        groups,
+        {},
+        viewport.metrics,
+        (resource) =>
+          viewport.metrics.laneHeight +
+          laneExtraHeightPx(laneLayouts.get(resource.id)?.rows ?? 1, LANE_ROW_PITCH_PX[variant]),
+      )
+    return { portrait: model('portrait'), landscape: model('landscape') }
+  }, [groups, viewport.metrics, laneLayouts])
   const verticalBand =
-    verticalModel.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS
+    verticalModels.portrait.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS
       ? viewport.vertical
       : UNBOUNDED_BAND
 
@@ -395,7 +438,8 @@ export function useTimelineMobileState(
     horizontalBand,
     verticalBand,
     metrics: viewport.metrics,
-    listTops: verticalModel.listTops,
+    verticalModels,
+    laneLayouts,
     rangeStart,
     totalDays,
     dayWidth,

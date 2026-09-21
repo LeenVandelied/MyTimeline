@@ -86,6 +86,21 @@ function measure(root: HTMLElement, testId: string): number | null {
 }
 
 /**
+ * #709 — Hauteur de BASE d'une lane (une rangée), mesurée sur la première lane rendue.
+ * Une lane empilée sur plusieurs rangées est plus haute : elle publie la hauteur ajoutée
+ * par ses rangées dans `data-lane-extra` (px, posé par la vue qui l'a calculée), qu'on
+ * retranche. Mesurer brutalement la première lane — comportement d'avant #709 — faisait
+ * de la hauteur d'une lane empilée la hauteur de TOUTES les lanes du modèle.
+ */
+function measureBaseLane(root: HTMLElement): number | null {
+  const el = root.querySelector('[data-testid="timeline-resource-row"]')
+  if (!el) return null
+  const extra = Number.parseFloat(el.getAttribute('data-lane-extra') ?? '0') || 0
+  const height = el.getBoundingClientRect().height - extra
+  return height > 0 ? height : null
+}
+
+/**
  * Relit la géométrie verticale sur le DOM. Toute valeur non mesurable (élément
  * hors fenêtre à cet instant) conserve la dernière valeur connue — on ne
  * régresse jamais vers les défauts après une mesure réussie.
@@ -94,7 +109,7 @@ function readMetrics(railEl: HTMLElement, previous: TimelineMetrics): TimelineMe
   return {
     rulerHeight: measure(railEl, 'timeline-ruler') ?? previous.rulerHeight,
     headHeight: measure(railEl, 'timeline-group-head') ?? previous.headHeight,
-    laneHeight: measure(railEl, 'timeline-resource-row') ?? previous.laneHeight,
+    laneHeight: measureBaseLane(railEl) ?? previous.laneHeight,
   }
 }
 

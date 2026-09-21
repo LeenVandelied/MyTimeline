@@ -23,9 +23,10 @@ import {
   ZOOM_LEVELS,
   type PositionedEvent,
 } from './zoom'
-import { windowEvents, windowLanes } from './virtualization'
+import { NO_LANE_OFFSETS, windowEvents, windowLanes } from './virtualization'
 import { isRecurringSeries, NO_SERIES, windowRecurrenceMarks } from './recurrence-marks'
 import { RecurrenceMarks } from './RecurrenceMarks'
+import { LANE_ROW_PITCH_PX, SINGLE_ROW_LAYOUT, inRowOrder, laneExtraHeightPx } from './lane-layout'
 
 /**
  * #64 — Vue Timeline mobile PAYSAGE.
@@ -210,10 +211,11 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
 
           {/* #69 — virtualisation 2 axes, identique au portrait (mêmes primitives). */}
           {groups.map(([category, resList]) => {
+            // #709 — lanes à hauteur variable (empilage) : modèle de CETTE variante.
+            const model = state.verticalModels.landscape
             const laneWindow = windowLanes(
-              resList.length,
-              state.metrics.laneHeight,
-              state.listTops[category] ?? 0,
+              model.laneOffsetsByCategory[category] ?? NO_LANE_OFFSETS,
+              model.listTops[category] ?? 0,
               state.verticalBand,
             )
             const color = categoryColors[category] ?? null
@@ -267,10 +269,20 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                     />
                   )}
                   {resList.slice(laneWindow.startIndex, laneWindow.endIndex).map((resource, i) => {
-                    const laneEvents = windowEvents(
-                      state.eventsByResource.get(resource.id) || [],
-                      state.horizontalBand,
-                    ).map((w) => w.event)
+                    // #709 — empilage en rangées : chaque occurrence est posée sur sa
+                    // rangée (`--mt-row-y`), la lane grandit d'un pas par rangée en plus
+                    // (`--mt-lane-extra`), et l'ordre DOM — donc de tabulation — suit les
+                    // rangées (`inRowOrder`).
+                    const layout = state.laneLayouts.get(resource.id) ?? SINGLE_ROW_LAYOUT
+                    const pitch = LANE_ROW_PITCH_PX.landscape
+                    const extra = laneExtraHeightPx(layout.rows, pitch)
+                    const laneEvents = inRowOrder(
+                      windowEvents(
+                        state.eventsByResource.get(resource.id) || [],
+                        state.horizontalBand,
+                      ),
+                      layout,
+                    )
                     return (
                       <div
                         key={resource.id}
@@ -279,6 +291,11 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                         aria-posinset={laneWindow.startIndex + i + 1}
                         aria-setsize={resList.length}
                         data-testid="timeline-resource-row"
+                        data-lane-rows={layout.rows}
+                        data-lane-extra={extra}
+                        style={
+                          extra > 0 ? { ['--mt-lane-extra' as string]: `${extra}px` } : undefined
+                        }
                       >
                         <span
                           className="mt-tlm__lane-label"
@@ -295,8 +312,10 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                             state.recurrenceByResource.get(resource.id) ?? NO_SERIES,
                             state.horizontalBand,
                           )}
+                          rowByEventId={layout.rowByEventId}
+                          rowPitchPx={pitch}
                         />
-                        {laneEvents.map((event) => {
+                        {laneEvents.map(({ item: { event }, row }) => {
                           const color = event.color || 'var(--color-accent)'
                           // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
                           const archived = event.extendedProps?.archived === true
@@ -314,6 +333,9 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                               className={cn('mt-tlm__evt-wrap', pin && 'mt-tlm__evt-wrap--pin')}
                               style={{
                                 left: `${pin ? event.leftPx - PIN_HALF_WIDTH_PX : event.leftPx}px`,
+                                ...(row > 0
+                                  ? { ['--mt-row-y' as string]: `${row * pitch}px` }
+                                  : null),
                               }}
                             >
                               <button

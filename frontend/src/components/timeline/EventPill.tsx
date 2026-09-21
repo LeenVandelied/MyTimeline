@@ -55,6 +55,12 @@ export interface EventPillProps {
   navKey?: string
   /** #81 — ref callback (le parent indexe les nodes pour `.focus()` défensif). */
   pillRef?: (node: HTMLButtonElement | null) => void
+  /**
+   * #709 — décalage vertical (px) de la RANGÉE de l'événement dans sa lane (empilage,
+   * `lane-layout.ts`). Posé en `--mt-row-y`, que le DS ajoute au `top` de la barre, du
+   * pin et du libellé extérieur (`timeline.css`). 0 / absent : rangée 0, rendu inchangé.
+   */
+  rowOffsetPx?: number
 }
 
 export const EventPill: React.FC<EventPillProps> = ({
@@ -65,7 +71,11 @@ export const EventPill: React.FC<EventPillProps> = ({
   onKeyDown,
   navKey,
   pillRef,
+  rowOffsetPx = 0,
 }) => {
+  // #709 — variable posée seulement hors rangée 0 : une lane mono-rangée garde un DOM
+  // strictement identique à l'avant-empilage.
+  const rowVar = rowOffsetPx > 0 ? { ['--mt-row-y' as string]: `${rowOffsetPx}px` } : undefined
   const statusVar = statusToVar(event.status)
   const bg = event.color || 'var(--color-accent)'
   /**
@@ -117,6 +127,7 @@ export const EventPill: React.FC<EventPillProps> = ({
         style={{
           left: `${event.leftPx - PIN_HALF_WIDTH_PX}px`,
           ['--mt-evt' as string]: bg,
+          ...rowVar,
         }}
       >
         <EventPinContent title={event.title} recurring={recurring} />
@@ -154,6 +165,7 @@ export const EventPill: React.FC<EventPillProps> = ({
           // #230 : sur la couleur RENDUE (désaturée si archivé) — sinon l'encre
           // décrit un fond qui n'est plus à l'écran.
           ['--mt-evt-ink' as string]: eventInkColor(event.color, archived),
+          ...rowVar,
         }}
       >
         {/* #230 — `.mt-evt--archived` (DS, opacity .45 + grayscale .5) RÉUTILISÉE
@@ -188,7 +200,7 @@ export const EventPill: React.FC<EventPillProps> = ({
           className="mt-tlv__evt-outside"
           data-testid="timeline-event-outside-label"
           aria-hidden="true"
-          style={{ left: `${event.leftPx + event.widthPx + 6}px` }}
+          style={{ left: `${event.leftPx + event.widthPx + 6}px`, ...rowVar }}
         >
           {/* #595 — le titre répété dehors garde son préfixe de série. */}
           {recurring ? `↻ ${event.title}` : event.title}
