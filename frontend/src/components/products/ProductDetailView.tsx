@@ -10,6 +10,7 @@ import { contrastInk } from '@/lib/color'
 import { cn } from '@/lib/utils'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductDrawer } from './ProductDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
@@ -482,7 +483,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="flex shrink-0 items-center gap-2"
+                      className={cn('flex shrink-0 items-center gap-2', TOUCH_TARGET_HITBOX)}
                       onClick={() => void handleUnarchive(event)}
                       disabled={unarchivingId === event.id}
                       data-testid={`product-detail-unarchive-${event.id}`}

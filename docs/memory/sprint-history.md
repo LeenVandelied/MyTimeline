@@ -6901,3 +6901,32 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 - **#459** partiellement périmée (`Lane.tsx` n'existe pas ; reste `SessionList.tsx:108,116`).
 
 **Score cohésion global :** S93 0.50 · S94 1.00 · S95 0.00 · S96 0.00 · S97 0.00 → **0.30**. Aucun sprint > ~10 points ; S95 et S96 à 4 issues pour 6 points.
+
+### Sprint 101 — 2026-09-21 → 2026-09-22 (Terminé — merge PR #760 dans dev — cohésion ≈ 0.40, 403 sans déconnexion, politique de mot de passe Unicode, cibles tactiles et croix des dialogues)
+**Objectif :** un 403 ne déconnecte plus ; le formulaire accepte les mots de passe non-ASCII que le serveur accepte ; contrôles mobiles ≥ 44 px hors réglages ; croix des dialogues lisible ; FAB vs tableau de bord paysage mesuré
+**Milestone GitHub :** #102 (fermé après merge)
+**Issues livrées (5) :** #733, #735, #754, #757, #758 (étiquette `sprint-101` posée au démarrage sur #754/#757/#758 — périmètre arbitré par le dev : tout le milestone)
+**Vagues exécutées :** V1 = A (#733, #735, Vitest) ∥ ui-design → B (#754, #757, Playwright exclusif) | V2 = C (#758) ∥ ui-design (validation a posteriori)
+**Migrations Flyway :** aucune
+**Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-101/architect-plans.md`) — pas de `/sprint plan`
+**Arbitrage dev #733 :** 403 → toast « Accès refusé » sans redirection (DEC-S101-001)
+**Arbitrage ui-design #754/#757 :** `docs/memory/sprints/sprint-101/arbitrage-ui-design-754-757.md` (APPROUVE, puis validation a posteriori APPROUVE des 3 contrôles hors arbitrage)
+**Commits :** 07f82b22 (#733), 449ad984 (#735), 3db3c867 (#754), 1762df30 (#757), fd9da74e (#758, spec seule), fbd08fb4 (#754, retour de review), e5694463 (docs avant PR), + commit de clôture (consolidation mémoire, absorptions)
+**Écarts d'énoncé :** #735 : regex `\p{Uppercase}` bornée au BMP et non `\p{Lu}` (contre-test jshell, PIT-S101-002) ; #754 : croix des dialogues (16 px) ajoutée au périmètre + 3 contrôles du formulaire d'événement ; #758 : **aucun recouvrement** — prémisse du lead fausse (PIT-S101-005), spec de mesure seule, aucun code de production
+**BR impactées :** BR-AUT-003 (politique de mot de passe front alignée sur le serveur)
+**Tests :** Vitest 154 fichiers / 1975 verts | `next build` vert | E2E suite complète chromium contre `next build`+`next start` : 496 verts, 8 sautés, 1 rouge attendu local (armement visuel `sprint-77`, darwin) | après `fbd08fb4` : 8 specs citant la surface, 39/39 | CI 7/7 verte (`e2e` Linux compris)
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (hitboxes adjacentes bord à bord, résolu par `fbd08fb4`) / 0 MINEUR ; cycle 2 sur le correctif : OK
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S101-001…008, PAT-S101-001…003, DEC-S101-001…003 (DEC-S95-005 marquée caduque), BUG-S101-001…003 ; packs pitfalls régénérés, `--check` = 0
+**Incidents lead :** symlink `node_modules` vers le principal périmé → faux rouges agent A (PIT-S101-001) ; ancien `next-server` survivant au `pkill` pendant un rebuild → 33 faux rouges (PIT-S101-007)
+**Contrôle de complétude :** vert sans `--force`
+**Saturation contexte lead :** non mesurée
+**Absorbé en clôture (XS) :** commentaire #85 périmé de `dashboard/page.tsx` (« largeur > 667px » absent de la media query) ; compteur `password-policy.test.ts` 49 → 58 dans `br-auth.md`
+**Follow-ups arbitrés (Phase 4 — proposition du lead validée en bloc par le dev) :**
+  - Double signalement du 403 dans les drawers (inline + toast) [S | auth] → issue #761 (backlog)
+  - `scorePassword` compte le non-ASCII comme symbole [XS | auth] → issue #762 (backlog)
+  - `label.mt-switch` absent du sélecteur de `sprint-99-touch-targets` [XS | design] → issue #763 (backlog)
+  - Mesurer à 375 px feuille d'actions de la frise, sheet de lecture, CTA d'état vide [S | design] → issue #764 (backlog)
+  - Réinstaller `node_modules` du repo principal [XS | tooling] → discard (leçon PIT-S101-001 : `npm ci` dans le worktree)
+  - Commentaire #85 [XS] et compteur br-auth [XS] → absorbés (commit de clôture)
+  Ratio discard 1/7.
+**Status :** Terminé — PR #760 mergée, issues #733/#735/#754/#757/#758 et milestone #102 fermés après merge

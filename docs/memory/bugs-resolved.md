@@ -174,3 +174,12 @@ Les deux `<p className="truncate">` de `SessionList.tsx` perdaient le texte au-d
 
 ## BUG-S100-002 — Croix de fermeture des bottom sheets hors viewport après défilement
 `DialogPrimitive.Close` en `absolute top-4 right-4` dans un `DialogContent` en `overflow-y-auto` (ProductDrawer, CategoryDrawer) défilait avec le contenu : y = -123 / -100 px à 390×600, formulaire défilé en bas. Correctif : ancre `sticky top-0 h-0 order-first -mb-4` restée dernière du DOM (focus initial Radix inchangé). E2E `sprint-100-dialog-close-reachable`, armé (rouge sur l'ancien code). (Sprint 100, #732/#740)
+
+## BUG-S101-001 — Un 403 déconnectait de fait l'utilisateur avec un message « session expirée »
+`apiClient.ts` : branche 403 = toast au libellé du 401 + redirection vers `/login` après 1,5 s, alors qu'un 403 vise un utilisateur authentifié. Correctif : toast « Accès refusé » sans redirection ni verrou (DEC-S101-001) ; test Vitest : aucun `setHref` même après 5 s, puis un 401 redirige toujours. (Sprint 101, #733)
+
+## BUG-S101-002 — Le formulaire refusait des mots de passe que le serveur accepte (majuscule/chiffre non-ASCII)
+`PASSWORD_POLICY` en `/[A-Z]/` et `/[0-9]/` : `Ωabcdefg١` bloqué à l'inscription, à la réinitialisation et au changement de mot de passe. Écart présent depuis #148 (S71). Correctif : DEC-S101-002 ; bloc de tests « divergence connue » supprimé, 9 tests ajoutés. (Sprint 101, #735)
+
+## BUG-S101-003 — Croix de fermeture des dialogues à 16×16 px et pieds de drawers à 36 px en mobile
+La croix de `DialogContent` (icône sans padding) était une cible de 16 px dans TOUS les dialogues et bottom sheets, et sans fond (`opacity-70`) sur contenu défilé ; pieds à 36 px, rangées denses à 32 px. Correctif : DEC-S101-003 ; specs `sprint-101-touch-targets` (rouge sur la base) et `sprint-101-dialog-close-contrast` (rouge sur l'ancien `dialog.tsx`, 2 thèmes). (Sprint 101, #754/#757)

@@ -6,6 +6,8 @@ import toast from 'react-hot-toast'
 import { ArchiveRestore } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useAuth } from '@/hooks/useAuth'
@@ -132,7 +134,7 @@ export function ArchivedProductsView() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="flex shrink-0 items-center gap-2"
+                          className={cn('flex shrink-0 items-center gap-2', TOUCH_TARGET_HITBOX)}
                           aria-label={t('restoreLabel', { name: product.name })}
                           onClick={() => openRestore(product)}
                           data-testid={`products-archived-restore-${product.id}`}

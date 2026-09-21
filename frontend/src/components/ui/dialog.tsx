@@ -68,9 +68,32 @@ const DialogContent = React.forwardRef<
        *     `sprint-100-dialog-close-reachable`) ;
        *   - `z-10` : en flex, `order` modifie aussi l'ordre de peinture — sans
        *     stacking context, un descendant positionné du contenu la recouvrirait.
+       *
+       * #754 — CIBLE TACTILE. Sous 768 px la croix passe de 16×16 (la taille de son
+       * icône) à 44×44 (`max-md:h-11 max-md:w-11`, icône centrée en flex). La boîte
+       * GRANDIT VERS LA GAUCHE ET VERS LE BAS : `top`/`right` ancrent son coin
+       * haut-droit, donc ce qui reste à 16 px du bord de la sheet est le bord HAUT
+       * et le bord DROIT de la boîte — jamais son centre ni sa hauteur. Au-dessus de
+       * 768 px, rien ne change (16×16, `e2e/sprint-101-touch-targets.spec.ts`). Les
+       * oracles au pixel qui en dérivent (`sprint-95-toast-overlap`) relisent la
+       * hauteur MESURÉE de la croix.
+       *
+       * #757 — LISIBILITÉ SUR CONTENU DÉFILÉ. Le contenu défile SOUS cette ancre :
+       * la croix porte donc son propre fond OPAQUE (`bg-background`, disque
+       * `rounded-full`, liseré `shadow-xs` sans ajout de taille) et une encre
+       * `text-muted-foreground` à pleine opacité. L'ancienne opacité réduite (70 %,
+       * pleine au survol) a été RETIRÉE : appliquée à la boîte entière, elle rendait
+       * aussi le fond translucide et laissait transparaître le contenu. Retiré aussi :
+       * le fond et l'encre conditionnés à l'état « ouvert » de Radix — cet état est
+       * permanent tant que le dialog est visible, c'était un no-op trompeur. Au
+       * survol, SEULE la surface change (`hover:bg-accent-soft`), jamais l'encre
+       * (convention de `ui/button.tsx`, PIT-S49-001). Mesuré par
+       * `e2e/sprint-101-dialog-close-contrast.spec.ts` (sheet défilée, clair et
+       * sombre, repos et survol) : 5,96:1 / 6,26:1 au repos, 4,97:1 / 4,90:1 au
+       * survol — seuil 3:1 (WCAG 1.4.11).
        */}
       <div className="sticky top-0 z-10 order-first -mb-4 h-0">
-        <DialogPrimitive.Close className="data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute -top-2 -right-2 rounded-xs opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none">
+        <DialogPrimitive.Close className="bg-background text-muted-foreground hover:bg-accent-soft absolute -top-2 -right-2 flex items-center justify-center rounded-full shadow-xs transition-colors disabled:pointer-events-none max-md:h-11 max-md:w-11">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

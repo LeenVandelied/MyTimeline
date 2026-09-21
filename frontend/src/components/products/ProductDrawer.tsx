@@ -10,6 +10,7 @@ import { Archive, Package, Tag, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Form,
@@ -366,6 +367,7 @@ export function ProductDrawer({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className={TOUCH_TARGET_BUTTON}
                       onClick={() => setColorOverride(null)}
                     >
                       {t('fields.resetColor')}
@@ -430,7 +432,7 @@ export function ProductDrawer({
                   <Button
                     type="button"
                     variant="ghost"
-                    className="text-destructive"
+                    className={cn('text-destructive', TOUCH_TARGET_BUTTON)}
                     onClick={() => setDeleteOpen(true)}
                     disabled={submitting}
                     data-testid="product-drawer-archive"
@@ -445,6 +447,7 @@ export function ProductDrawer({
                   <Button
                     type="button"
                     variant="outline"
+                    className={TOUCH_TARGET_BUTTON}
                     onClick={() => onOpenChange(false)}
                     disabled={submitting}
                   >
@@ -452,6 +455,7 @@ export function ProductDrawer({
                   </Button>
                   <Button
                     type="submit"
+                    className={TOUCH_TARGET_BUTTON}
                     disabled={submitting || noCategory}
                     data-testid="product-submit"
                   >

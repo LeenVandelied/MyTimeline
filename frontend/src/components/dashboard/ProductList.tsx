@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import type { Product } from '@/types/product'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { nextEvent } from './lib'
 
@@ -49,7 +50,7 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
           compact
           title={t('empty')}
           action={
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className={TOUCH_TARGET_BUTTON}>
               <Link href={`/${locale}/products`} data-testid="dashboard-product-list-empty-cta">
                 {t('emptyCta')}
               </Link>

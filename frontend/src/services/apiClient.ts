@@ -62,7 +62,7 @@ apiClient.interceptors.request.use((config) => {
 let isRedirecting = false
 
 /**
- * Cible de redirection 401/403 préfixée par la locale courante
+ * Cible de redirection 401 préfixée par la locale courante
  * (#40 : avant on redirigeait vers `/login` non préfixé, cassé par
  * `localePrefix: 'always'`). On lit le 1er segment du pathname ; à défaut
  * la locale par défaut `fr`.
@@ -216,28 +216,34 @@ apiClient.interceptors.response.use(
         }, 1500)
       }
     } else if (error.response?.status === 403) {
-      if (!isRedirecting) {
-        isRedirecting = true
-        // NE PAS logger error.config.headers : contient l'en-tête Authorization
-        // (jeton porteur) + cookies → fuite de credentials dans la console / les
-        // agrégateurs de logs. On se limite aux métadonnées non sensibles.
-        console.error('Erreur 403 - Accès refusé:', {
-          url: error.config?.url,
-          method: error.config?.method,
-          data: error.response?.data,
-        })
-        // #135 — plus de miroir localStorage du user à purger (PII sortie du storage).
-        // #713 — clé DÉDIÉE (`auth.forbiddenRedirect`), pas `auth.sessionExpired` :
-        // ce libellé est sémantiquement faux sur un 403 (accès refusé ≠ session
-        // expirée). Il est traduit TEL QUEL ici — le corriger relève d'un suivi,
-        // pas de #713 — mais sa clé propre garde la correction faisable en un
-        // point unique au lieu de la diluer dans la clé du 401.
-        toast.error(translateApiError(API_ERROR_KEYS.forbidden))
-        setTimeout(() => {
-          window.location.href = loginUrlForCurrentLocale()
-          isRedirecting = false
-        }, 1500)
-      }
+      // #733 — un 403 N'EST PAS une session expirée : toast « accès refusé »,
+      // SANS redirection vers /login et SANS prendre le verrou `isRedirecting`
+      // (un 401 qui suit doit toujours pouvoir rediriger).
+      //
+      // POURQUOI NE PAS DÉCONNECTER. Côté backend, un 403 n'est émis que dans
+      // deux cas, et tous deux supposent un utilisateur AUTHENTIFIÉ :
+      //  - ownership refusée : `ProductController` / `CategoryController`
+      //    (`ResponseEntity.status(FORBIDDEN)`) et `EventController`
+      //    (`throw new AccessDeniedException`) ;
+      //  - règle `hasAuthority("ROLE_USER")` → `SecurityConfig.accessDeniedHandler`.
+      // Un jeton absent/invalide/expiré tombe, lui, dans `authenticationEntryPoint`
+      // → 401 (branche ci-dessus). Et le CSRF est désactivé (`csrf.disable()`) :
+      // aucun 403 « jeton CSRF périmé » ne peut masquer une session morte.
+      // Renvoyer l'utilisateur au login lui ferait perdre son écran pour une
+      // ressource qu'il n'a simplement pas le droit de toucher.
+      //
+      // Les écrans qui gèrent le 403 inline (`ProductDrawer`, `CategoryDrawer`,
+      // `TimelineEditHost`) le font dans leur `catch` sans supposer de navigation.
+      //
+      // NE PAS logger error.config.headers : contient l'en-tête Authorization
+      // (jeton porteur) + cookies → fuite de credentials dans la console / les
+      // agrégateurs de logs. On se limite aux métadonnées non sensibles.
+      console.error('Erreur 403 - Accès refusé:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.response?.data,
+      })
+      toast.error(translateApiError(API_ERROR_KEYS.forbidden))
     } else if (error.response?.status === 500) {
       toast.error(translateApiError(API_ERROR_KEYS.serverError))
     }

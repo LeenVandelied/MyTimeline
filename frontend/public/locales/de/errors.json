@@ -4,7 +4,7 @@
     "login": "Anmeldefehler",
     "logout": "Fehler beim Abmelden",
     "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an",
-    "forbiddenRedirect": "Ihre Sitzung ist abgelaufen, Weiterleitung zur Anmeldeseite..."
+    "forbidden": "Zugriff verweigert: Sie sind nicht berechtigt, diese Aktion auszuführen."
   },
   "validation": {
     "error": "Validierungsfehler, bitte überprüfen Sie Ihre Eingaben."

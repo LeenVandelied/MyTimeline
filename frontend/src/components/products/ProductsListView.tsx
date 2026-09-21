@@ -9,6 +9,7 @@ import { Pencil, Archive, PlusCircle, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { nextEvent, type NextEvent } from '@/lib/next-occurrence'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON, TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -278,6 +279,7 @@ export function ProductsListView() {
               type="button"
               variant="outline"
               size="sm"
+              className={TOUCH_TARGET_BUTTON}
               onClick={handleClearSearch}
               data-testid="products-empty-search-cta"
             >
@@ -396,11 +398,17 @@ export function ProductsListView() {
                       <span className="sr-only">{t('eventsCount', { count: eventCount })}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
+                      {/* #754 (review S101) — `max-md:gap-2` : chaque icône porte une
+                          pseudo-hitbox de 44 px centrée sur un bouton de 40 px. Avec
+                          l'écart de 4 px, les deux zones se touchaient bord à bord (marge
+                          nulle) ; 8 px leur laissent 4 px de dégagement, prouvé par
+                          `e2e/sprint-101-touch-targets.spec.ts`. Desktop inchangé. */}
+                      <div className="flex items-center justify-end gap-1 max-md:gap-2">
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
+                          className={TOUCH_TARGET_HITBOX}
                           aria-label={t('actions.edit')}
                           onClick={(e) => {
                             e.stopPropagation()
@@ -414,7 +422,7 @@ export function ProductsListView() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="text-destructive"
+                          className={cn('text-destructive', TOUCH_TARGET_HITBOX)}
                           aria-label={t('actions.archive')}
                           onClick={(e) => {
                             e.stopPropagation()

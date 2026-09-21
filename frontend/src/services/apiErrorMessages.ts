@@ -25,21 +25,19 @@
 /**
  * Clés relatives au namespace `errors` (= `public/locales/<locale>/errors.json`).
  *
- * ⚠ `forbidden` (403) pointe volontairement sur une clé DÉDIÉE et non sur
- * `auth.sessionExpired`. Le message servi aujourd'hui sur un 403 dit « votre
- * session a expiré », ce qui est sémantiquement FAUX (403 = accès refusé, pas
- * session expirée). Le traduire tel quel préserve le comportement actuel ; lui
- * faire pointer `auth.sessionExpired` aurait GRAVÉ l'erreur sémantique dans les
- * 4 locales et rendu la correction future indétectable. L'écart est signalé en
- * suivi de sprint, hors périmètre de #713.
+ * `forbidden` (403) pointe sur une clé DÉDIÉE (`auth.forbidden`, « accès
+ * refusé »), jamais sur `auth.sessionExpired` : un 403 vise un utilisateur
+ * AUTHENTIFIÉ à qui l'on refuse une ressource, pas une session morte (#733).
+ * Ne pas confondre avec le groupe `errors.forbidden` (title/description/backHome),
+ * qui sert l'écran plein page `app/[locale]/error.tsx`, pas le toast.
  */
 export const API_ERROR_KEYS = {
   /** 400 — échec de validation générique (formulaires sans gestion inline). */
   validation: 'validation.error',
   /** 401 — session expirée, suivie d'une redirection vers /[locale]/login. */
   sessionExpired: 'auth.sessionExpired',
-  /** 403 — voir l'avertissement ci-dessus : libellé historique, clé dédiée. */
-  forbidden: 'auth.forbiddenRedirect',
+  /** 403 — accès refusé, toast SANS redirection (#733). */
+  forbidden: 'auth.forbidden',
   /** 500 — erreur serveur. */
   serverError: 'server.error',
 } as const
@@ -53,7 +51,7 @@ export type ApiErrorKey = (typeof API_ERROR_KEYS)[keyof typeof API_ERROR_KEYS]
 const FR_FALLBACK: Record<ApiErrorKey, string> = {
   'validation.error': 'Erreur de validation, veuillez vérifier vos données.',
   'auth.sessionExpired': 'Votre session a expiré. Veuillez vous reconnecter',
-  'auth.forbiddenRedirect': 'Votre session a expiré, redirection vers la page de connexion...',
+  'auth.forbidden': "Accès refusé : vous n'avez pas l'autorisation d'effectuer cette action.",
   'server.error': 'Erreur serveur. Veuillez réessayer plus tard',
 }
 

@@ -7,6 +7,7 @@ import { PlusCircle, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -238,7 +239,7 @@ export function CategoriesView() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="text-destructive"
+                        className={cn('text-destructive', TOUCH_TARGET_HITBOX)}
                         aria-label={t('delete')}
                         onClick={(e) => {
                           e.stopPropagation()

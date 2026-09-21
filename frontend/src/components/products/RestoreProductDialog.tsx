@@ -6,6 +6,7 @@ import { ArchiveRestore } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Dialog,
@@ -119,6 +120,7 @@ export function RestoreProductDialog({
           <Button
             type="button"
             variant="outline"
+            className={TOUCH_TARGET_BUTTON}
             onClick={handleCancel}
             disabled={pending}
             data-testid="product-restore-cancel"
@@ -127,6 +129,7 @@ export function RestoreProductDialog({
           </Button>
           <Button
             type="button"
+            className={TOUCH_TARGET_BUTTON}
             onClick={() => void handleConfirm()}
             disabled={pending}
             data-testid="product-restore-confirm-button"

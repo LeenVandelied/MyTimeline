@@ -6,6 +6,7 @@ import { getWeekRange, getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 
@@ -81,6 +82,7 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
                 type="button"
                 variant="outline"
                 size="sm"
+                className={TOUCH_TARGET_BUTTON}
                 // #605 — enveloppé : le MouseEvent ne doit pas devenir `options`.
                 onClick={() => openCreateEvent()}
                 data-testid="dashboard-week-agenda-empty-cta"

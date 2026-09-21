@@ -32,25 +32,26 @@ type Translate = (key: string) => string
  * afficher l'erreur avant l'aller-retour réseau. Toute divergence recrée le bug
  * d'origine (un mot de passe accepté à un endroit, refusé à un autre).
  *
- * ⚠ DIVERGENCE CONNUE, NON RÉSOLUE (relevée en revue #508, Sprint 95) — la
- * réplique n'est PAS exacte, contrairement à ce que ce commentaire affirmait.
- * Le validateur serveur teste `Character.isUpperCase(c)` / `Character.isDigit(c)`
- * (`StrongPasswordValidator.java:35,37`), qui sont UNICODE. Les regex ci-dessous
- * sont ASCII. Un mot de passe dont la seule majuscule et/ou le seul chiffre sont
- * non-ASCII (ex. `Ωabcdefg١` : oméga majuscule + chiffre arabe-indic) est
- * ACCEPTÉ par le serveur et REFUSÉ ici — le formulaire bloque donc une saisie
- * que le backend aurait prise.
- * Le sens de l'écart est le moins nuisible (on sur-contraint, on ne laisse pas
- * passer), et le cas est marginal en pratique, mais il est RÉEL et couvert par
- * un test qui le fige (`password-policy.test.ts`) plutôt que laissé implicite.
- * Aligner ces regex sur `/\p{Lu}/u` et `/\p{Nd}/u` changerait la validation de
- * register/reset/change-password : à traiter dans une issue dédiée, pas ici.
+ * #735 — Les deux regex répliquent la sémantique du validateur (à la version
+ * Unicode près entre le JDK et le moteur JS), qui balaie la chaîne `char` par
+ * `char` (unités UTF-16) avec :
+ *  - `Character.isUpperCase(char)` = catégorie `Lu` OU propriété
+ *    `Other_Uppercase` → propriété dérivée Unicode `\p{Uppercase}` (et non
+ *    `\p{Lu}`, qui refuserait `Ⓐ` ou `Ⅰ` que le serveur accepte) ;
+ *  - `Character.isDigit(char)` = catégorie `Nd` → `\p{Nd}`.
+ * Le préfixe `(?=[\0-\uFFFF])` restreint au plan multilingue de base : un
+ * caractère hors BMP (ex. `𝐀` U+1D400, `𝟎` U+1D7CE) est une paire de
+ * substitution côté Java, dont aucune moitié n'est majuscule ni chiffre — le
+ * serveur le REFUSE. Sans ce préfixe, le formulaire accepterait une saisie que
+ * le serveur rejette et l'indicateur de force l'afficherait conforme (invariant
+ * #508 rompu). Le drapeau `u` est obligatoire : sans lui, `\p{…}` n'est pas
+ * une classe Unicode.
  */
 export const PASSWORD_POLICY = {
   minLength: 8,
   maxLength: 100,
-  uppercase: /[A-Z]/,
-  digit: /[0-9]/,
+  uppercase: /(?=[\0-\uFFFF])\p{Uppercase}/u,
+  digit: /(?=[\0-\uFFFF])\p{Nd}/u,
 } as const
 
 /**

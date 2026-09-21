@@ -9,6 +9,7 @@ import {
   createResetPasswordFormSchema,
 } from '@/lib/schemas/auth'
 import { createChangePasswordSchema } from '@/lib/schemas/settings'
+import { levelFromPassword, meetsPolicy } from '@/components/settings/PasswordStrength'
 
 /**
  * #148 — Politique de mot de passe UNIQUE (BR-AUT-003).
@@ -135,31 +136,70 @@ describe('Politique de mot de passe (BR-AUT-003, #148)', () => {
   })
 
   /**
-   * Relevé en revue du Sprint 95 (#508). Ces tests NE VALIDENT PAS le
-   * comportement : ils FIGENT une divergence connue entre la réplique Zod (ASCII)
-   * et le validateur serveur (`Character.isUpperCase`/`isDigit`, Unicode).
-   * Si quelqu'un aligne `PASSWORD_POLICY` sur `/\p{Lu}/u` et `/\p{Nd}/u`, ces
-   * tests DOIVENT rougir — c'est leur rôle : signaler que l'écart est refermé et
-   * que ce bloc doit être supprimé, pas être « réparés » pour repasser au vert.
+   * #735 — Sémantique Unicode du validateur serveur, répliquée char par char.
+   *
+   * `StrongPasswordValidator` teste `Character.isUpperCase(char)` (Lu +
+   * Other_Uppercase) et `Character.isDigit(char)` (Nd) sur chaque unité UTF-16.
+   * Chaque cas ci-dessous a été vérifié contre le JDK 21 (jshell). Les deux
+   * sens comptent : « accepté serveur ⇒ accepté ici » (sinon on bloque la
+   * saisie) ET « refusé serveur ⇒ refusé ici » (sinon invariant #508 rompu).
    */
-  describe('divergence ASCII/Unicode avec le serveur (connue, non résolue)', () => {
-    /** Oméga majuscule + chiffre arabe-indic : le serveur ACCEPTE (Unicode). */
-    const UNICODE_ACCEPTED_BY_SERVER = '\u03A9abcdefg\u0661'
+  describe('alignement Unicode avec le serveur (#735)', () => {
+    /** Oméga majuscule + chiffre arabe-indic : le serveur ACCEPTE. */
+    const UNICODE_ACCEPTED = '\u03A9abcdefg\u0661'
 
-    it('a bien la longueur requise et serait accepté par le validateur serveur', () => {
-      expect(UNICODE_ACCEPTED_BY_SERVER.length).toBeGreaterThanOrEqual(PASSWORD_POLICY.minLength)
+    it('Ωabcdefg١ est accepté par les trois schémas de formulaire', () => {
+      expect(registerAccepts(UNICODE_ACCEPTED)).toBe(true)
+      expect(resetAccepts(UNICODE_ACCEPTED)).toBe(true)
+      expect(changeAccepts(UNICODE_ACCEPTED)).toBe(true)
     })
 
-    it('les regex ASCII de PASSWORD_POLICY ne le reconnaissent PAS', () => {
-      expect(PASSWORD_POLICY.uppercase.test(UNICODE_ACCEPTED_BY_SERVER)).toBe(false)
-      expect(PASSWORD_POLICY.digit.test(UNICODE_ACCEPTED_BY_SERVER)).toBe(false)
-    })
-
-    it("le schéma brut le REFUSE alors que le serveur l'accepterait (sur-contrainte)", () => {
+    it('Ωabcdefg١ est accepté par les schémas bruts de contrat', () => {
       expect(
-        ResetPasswordSchema.safeParse({ token: 'tok', newPassword: UNICODE_ACCEPTED_BY_SERVER })
-          .success,
-      ).toBe(false)
+        RegisterSchema.safeParse({
+          name: 'Valid Name',
+          username: 'validUser',
+          email: 'valid@example.com',
+          password: UNICODE_ACCEPTED,
+        }).success,
+      ).toBe(true)
+      expect(
+        ResetPasswordSchema.safeParse({ token: 'tok', newPassword: UNICODE_ACCEPTED }).success,
+      ).toBe(true)
+    })
+
+    it('meetsPolicy suit (dérivé de PASSWORD_POLICY) et l’indicateur ne le dit pas faible', () => {
+      expect(meetsPolicy(UNICODE_ACCEPTED)).toBe(true)
+      expect(levelFromPassword(UNICODE_ACCEPTED)).not.toBe('weak')
+    })
+
+    // Other_Uppercase : majuscule pour Java, mais PAS de catégorie Lu.
+    it.each([
+      ['Ⓐ (U+24B6, lettre encerclée)', '\u24B6bcdefg1'],
+      ['Ⅰ (U+2160, chiffre romain)', '\u2160bcdefg1'],
+    ])('%s compte comme majuscule, comme côté serveur', (_label, password) => {
+      expect(meetsPolicy(password)).toBe(true)
+      expect(resetAccepts(password)).toBe(true)
+    })
+
+    // Refusés par le serveur : ils ne doivent JAMAIS passer ici.
+    it.each([
+      // Hors BMP : paire de substitution, aucune moitié n'est majuscule/chiffre en Java.
+      ['𝐀 (U+1D400) seule majuscule', '\u{1D400}bcdefg1'],
+      ['𝟎 (U+1D7CE) seul chiffre', 'Abcdefg\u{1D7CE}'],
+      // Titlecase (Lt) : Character.isUpperCase('ǅ') = false.
+      ['ǅ (U+01C5, titlecase) seule « majuscule »', '\u01C5bcdefg1'],
+      // Exposant : catégorie No, pas Nd → Character.isDigit('²') = false.
+      ['² (U+00B2, exposant) seul « chiffre »', 'Abcdefg\u00B2'],
+    ])('%s : refusé partout, et affiché faible (invariant #508)', (_label, password) => {
+      expect(meetsPolicy(password)).toBe(false)
+      expect(levelFromPassword(password)).toBe('weak')
+      expect(registerAccepts(password)).toBe(false)
+      expect(resetAccepts(password)).toBe(false)
+      expect(changeAccepts(password)).toBe(false)
+      expect(ResetPasswordSchema.safeParse({ token: 'tok', newPassword: password }).success).toBe(
+        false,
+      )
     })
   })
 })
