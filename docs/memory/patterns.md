@@ -961,3 +961,6 @@ Une spec de non-collision peut être verte pour une mauvaise raison : la troncat
 
 ## PAT-S99-001 — Spec de cibles tactiles par requête DOM générique + seuil anti-vacuité
 Pour prouver qu'un écran respecte 44 px : sélectionner les contrôles par requête (`button, a[href], input:not([type=hidden]), [role=button|combobox|option]`) visibles dans le panneau, mesurer par `getBoundingClientRect` (pas `toHaveCSS`), nommer les exemptions en commentaire (poignée DEC-S99-002, input `sr-only`), et exiger un nombre minimal de contrôles par étape pour qu'une requête vide rougisse. Une liste de testids figée resterait verte quand un nouveau bouton non conforme apparaît. Exemple : `e2e/sprint-99-touch-targets.spec.ts`. (Sprint 99, #738)
+
+## PAT-S100-001 — Prouver qu'un élément `fixed` ne recouvre pas la fin du contenu : sonde + témoin sans réserve
+Ne pas se contenter du dernier focusable réel (vacant sur un écran vide ou centré). Ajouter une sonde pleine largeur en fin de conteneur, asserter que `elementFromPoint` au milieu de la bande verticale commune avec l'élément fixe la désigne, puis rejouer avec la réserve neutralisée (`padding-bottom:0`) et EXIGER le recouvrement — sinon l'oracle ne prouve rien. Exemple : `e2e/sprint-100-fab-clearance.spec.ts` (armement lead : 5 rouges / 6 sans la réserve). (Sprint 100, #480)

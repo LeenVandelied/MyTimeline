@@ -1655,6 +1655,22 @@ Une spec qui simule deux jobs d'export successifs avec le même `jobId` voit l'�
 ## PIT-S99-003 — RTK réécrit aussi `find`
 Sous le hook RTK, `find … -path` renvoie « unknown flag » et un `find -iname` légitime peut rendre 0 résultat sans erreur. Pour toute vérification factuelle (review, mesure), utiliser `/usr/bin/find` et `/usr/bin/grep`. Même famille que PIT-S98-002 et les `grep`/`git diff`/`prettier --check` réécrits. (Sprint 99, review)
 
+
+## PIT-S100-001 — `playwright test --list` exige `PLAYWRIGHT_BASE_URL`, même sans serveur et avec `SKIP_DELEGATION=1`
+`assertWebServerEnv()` (`frontend/playwright.config.ts:59`) fait échouer la commande avant tout listage si la variable manque : la recette `SKIP_DELEGATION=1 npx playwright test <spec> --list` des briefings ne marche pas telle quelle. Poser `PLAYWRIGHT_BASE_URL=http://localhost:<port quelconque>` suffit (aucun serveur n'est contacté). (Sprint 100, #480)
+
+
+## PIT-S100-002 — Le seuil `top` d'un `position:sticky` se compte depuis le bord de CONTENU du scrollport
+Dans un dialog défilant en `p-6`, `top-6` décalait la croix de 24 px de trop (sheet + 41 au lieu de sheet + 16) : le padding du conteneur défilant est déjà déduit. Il fallait `top-0`. Mesurer `enfant.y − conteneur.y` APRÈS défilement, pas seulement à `scrollTop` 0. (Sprint 100, #732/#740)
+
+
+## PIT-S100-003 — Un sticky posé comme item direct d'une grille ne glisse jamais
+Le bloc conteneur d'un item de grille est sa ZONE de grille : un sticky de hauteur nulle dans sa propre piste n'a aucune course, et une marge négative ne compense pas le `gap` (une piste ne descend pas sous 0). Parade : `flex flex-col` + `order-first` + `-mb-{gap}` (`ui/dialog.tsx`, garde structurelle `ui/dialog.test.tsx`). Généralise [[PIT-S85-001]]. (Sprint 100, #732/#740)
+
+
+## PIT-S100-004 — Un oracle géométrique au pixel peut encoder un débordement horizontal comme valeur de référence
+`sprint-95-toast-overlap` (TALL 390×844) encadrait un recouvrement toast/croix de 3,5 px, arbitré au S99 (DEC-S99-003). C'était un artefact : la sheet débordait de 60 px en largeur (BUG-S100-001), le texte se repliait sur 400 px au lieu de 340, et un `scrollLeft` de 24 px résiduel décalait la croix. Toute spec de géométrie dans un conteneur `overflow:auto` neutralise `scrollTop` ET `scrollLeft`, et asserte `scrollWidth <= clientWidth` avant de mesurer. Suite de [[PIT-S96-004]] et [[PIT-S95-007]]. (Sprint 100, #732/#740)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

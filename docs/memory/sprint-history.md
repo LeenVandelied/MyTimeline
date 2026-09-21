@@ -6848,9 +6848,9 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 1/4 (hors item soldé).
 **Status :** Terminé — PR #753 mergée, issues #738/#739/#459 et milestone #100 fermés après merge
 
-### Sprint 100 — 2026-09-21 (Exécuté — PR vers dev, cohésion 1.00, croix de fermeture et FAB atteignables)
+### Sprint 100 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #756 dans dev — cohésion 1.00, croix de fermeture et FAB atteignables)
 **Objectif :** croix de fermeture des dialogues et bottom sheets toujours atteignable après défilement ; dernier élément des écrans mobiles non recouvert par le FAB
-**Milestone GitHub :** #101
+**Milestone GitHub :** #101 (fermé après merge)
 **Issues :** #732, #740 (même cause, un seul agent), #480 — #754 exclue par le dev au démarrage (dans le milestone sans l'étiquette)
 **Vagues :** V1 = A (#732+#740, Playwright exclusif) ∥ B (#480, Vitest seul ; E2E joué par le lead)
 **Migrations Flyway :** aucune
@@ -6861,12 +6861,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Écarts d'énoncé :** #480 : seuil `md` (768) et non `lg` ; la réserve est sur `shell-main` et couvre les 5 écrans (l'argument « le dashboard a un AppFooter » était faux).
 **Tests :** Vitest 152 fichiers / 1957 verts | E2E suite complète sous `next build`+`next start` : 495 verts, 8 sautés, 1 rouge attendu (armement visuel `sprint-77`, hors Linux) | `next build` et `format:check` verts
 **Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (résolu par `1c23a71b`) / 2 MINEURS (1 sans défaut, 1 hors diff → follow-up) ; cycle 2 sur le correctif
-**Follow-ups proposés (à trier en /sprint end) :**
-  - Fond de la croix pour la lisibilité quand le contenu défile dessous [XS | design] (#732/#740)
-  - Défilement interne de `dashboard-landscape` sous le FAB [XS | design] (#480)
-  - JSDoc contradictoire « swipe-down » de `ProductDrawer`/`CategoryDrawer` [XS | design] (review)
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S100-001…004, PAT-S100-001, DEC-S100-001 (remplace le « 3,5 px » de DEC-S99-003), BUG-S100-001…002 ; packs pitfalls régénérés, `--check` = 0
+**Contrôle de complétude :** vert sans `--force`
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — triage item par item par le dev) :**
+  - Lisibilité de la croix fixe quand le contenu défile dessous [XS | design] → issue #757 (Sprint 101)
+  - FAB vs défilement interne du dashboard en paysage mobile, à mesurer d'abord [XS | design] → issue #758 (Sprint 101)
+  - JSDoc contradictoires « swipe-down » ProductDrawer/CategoryDrawer [XS | design] → issue #759 (backlog libre)
+  Ratio discard 0/3.
 **#754 :** exclue par le dev, déplacée du milestone Sprint 100 vers Sprint 101 (toujours sans étiquette `sprint-101`)
-**Status :** PR ouverte — en attente de CI et de `/sprint end 100`
+**Status :** Terminé — PR #756 mergée, issues #732/#740/#480 et milestone #101 fermés après merge
 
 ### Matrice de conflits inter-sprints (S93-S97)
 
