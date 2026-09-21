@@ -6805,8 +6805,12 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Plan :** pas d'entrée PLANIFIÉ ni d'`architect-plans.md` produits par `/sprint plan` (milestone et labels posés à la clôture du S97) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code
 **Vagues :** V1 = #747 (Playwright exclusif) ∥ #748 (Vitest seul) ∥ ui-design (arbitrage de charte #746, lecture seule) | V2 = #746 (Playwright exclusif ; après #748 — même `lane-layout.ts`/`.test.ts` — et après arbitrage du dev)
 **Branche :** `claude/sprint-98-start-ff8362` (worktree, pas de `sprint/98` — même convention que S96/S97)
-**Migrations Flyway :** aucune
-**Status :** En cours
+**Migrations Flyway :** aucune | **BR impactées :** aucune (géométrie de frise)
+**Décisions :** #747 ancre de zoom mobile au CENTRE de la piste (lead) ; #746 réserve ESTIMÉE sans DOM (dev, contre la troncature 84/74 px recommandée par ui-design — `sprint-98/ui-design-746.md`)
+**Commits code :** `95ed65b2` (#748), `32527dbb` (#747), `9e12ef35` + `47484557` (#746)
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR reclassé MINEUR par le lead (cache `useZoomCache` clé `dayWidth` sans la vue : hypothétique, le cache est propre à `TimelineView` et la vue y est figée à `desktop`) / 3 MINEURS
+**Tests (lead) :** Vitest 1953/1953 | tsc, format, `next build` OK | E2E complet contre `next build`+`next start` 478 passed / 1 failed (armement `sprint-77` sous `--ignore-snapshots`, mécanique) / 8 skipped / 1 did not run | audit `docs/memory/audits/sprint-98-test-coverage.md`
+**Status :** En cours — PR ouverte vers `dev`
 
 ### Matrice de conflits inter-sprints (S93-S97)
 
