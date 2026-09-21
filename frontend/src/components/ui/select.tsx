@@ -50,10 +50,11 @@ const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
+  // #738 (DEC-S99-001) — `max-md:h-11` : cible tactile 44 px sous 768 px, 36 px au-dessus.
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'border-input data-placeholder:text-muted-foreground flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+      'border-input data-placeholder:text-muted-foreground flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs disabled:cursor-not-allowed disabled:opacity-50 max-md:h-11 [&>span]:line-clamp-1',
       className,
     )}
     {...props}
@@ -142,10 +143,12 @@ const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => (
+  // #738 (DEC-S99-001) — `max-md:min-h-11` : option à 44 px sous 768 px (36,3 px mesurés
+  // avant). `min-h` plutôt qu'un padding : le seuil ne dépend pas des métriques de police.
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'text-popover-foreground focus:bg-accent-soft relative flex w-full cursor-default items-center rounded-xs py-1.5 pr-8 pl-2 text-sm select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+      'text-popover-foreground focus:bg-accent-soft relative flex w-full cursor-default items-center rounded-xs py-1.5 pr-8 pl-2 text-sm select-none data-disabled:pointer-events-none data-disabled:opacity-50 max-md:min-h-11',
       className,
     )}
     {...props}

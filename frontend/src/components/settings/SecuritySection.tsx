@@ -8,6 +8,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Form,
@@ -167,7 +168,12 @@ export function SecuritySection() {
               </p>
             )}
 
-            <Button type="submit" disabled={changePassword.isPending} data-testid="password-submit">
+            <Button
+              className={SETTINGS_TOUCH_BUTTON}
+              type="submit"
+              disabled={changePassword.isPending}
+              data-testid="password-submit"
+            >
               {changePassword.isPending ? (
                 <Spinner label={t('common.saving')} />
               ) : (

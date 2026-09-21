@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl'
 import { Monitor, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import { serverDateTime } from '@/lib/date-iso'
@@ -128,6 +129,7 @@ export function SessionList({
             </div>
             {!session.current && (
               <Button
+                className={SETTINGS_TOUCH_BUTTON}
                 type="button"
                 variant="outline"
                 size="sm"
@@ -149,6 +151,7 @@ export function SessionList({
 
       {otherSessionsCount > 0 && (
         <Button
+          className={SETTINGS_TOUCH_BUTTON}
           type="button"
           variant="destructive"
           size="sm"

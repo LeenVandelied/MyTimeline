@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { Check } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Form,
@@ -160,7 +161,12 @@ export function ProfileSection() {
           )}
 
           <div className="flex items-center gap-3">
-            <Button type="submit" disabled={updateProfile.isPending} data-testid="profile-submit">
+            <Button
+              className={SETTINGS_TOUCH_BUTTON}
+              type="submit"
+              disabled={updateProfile.isPending}
+              data-testid="profile-submit"
+            >
               {updateProfile.isPending ? <Spinner label={t('common.saving')} /> : t('common.save')}
             </Button>
             {saved && !updateProfile.isPending && (
