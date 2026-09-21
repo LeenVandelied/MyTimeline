@@ -37,6 +37,59 @@ describe('scorePassword', () => {
   })
 })
 
+/**
+ * #762 — Classes Unicode de l'heuristique (alignées sur #735). Chaque cas isole UNE
+ * classe : avec l'ancien `/[a-z]/` + `/[^A-Za-z0-9]/`, une lettre non-ASCII passait
+ * de « casse » à « symbole » et le total restait souvent identique — seuls des cas
+ * discriminants prouvent quelque chose.
+ */
+describe('scorePassword — sémantique Unicode (#762)', () => {
+  it('Ωabcdefg١ n’est plus fort : Ω et ١ ne sont pas des symboles (score 3, medium)', () => {
+    // Longueur 9 (+1), casse Ω + minuscules (+1), chiffre arabe-indien ١ ∈ Nd (+1).
+    expect(scorePassword('Ωabcdefg١')).toBe(3)
+    expect(levelFromPassword('Ωabcdefg١')).toBe('medium')
+  })
+
+  it('une minuscule non-ASCII compte pour la casse mixte', () => {
+    // Longueur 9 (+1), casse A..G + é (+1), symbole « ! » (+1). Ancien calcul : 2.
+    expect(scorePassword('ABCDEFGé!')).toBe(3)
+    expect(scorePassword('ABCDEFGß!')).toBe(3)
+  })
+
+  it('un diacritique combinant (NFD) n’est pas un symbole', () => {
+    const nfd = 'Abcde\u0301fg1' // « Abcdéfg1 » décomposé, 9 unités
+    expect(nfd.normalize('NFC')).toBe('Abcdéfg1')
+    // Longueur 9 (+1), casse (+1), chiffre (+1), aucun symbole. Ancien calcul : 4 (strong).
+    expect(scorePassword(nfd)).toBe(3)
+    expect(levelFromPassword(nfd)).toBe('medium')
+  })
+
+  it('un emoji est un symbole (itération par point de code)', () => {
+    // 'abcdef😀' = 8 unités UTF-16 (+1), emoji \p{So} (+1).
+    expect(scorePassword('abcdef😀')).toBe(2)
+  })
+
+  it('une lettre hors BMP n’est ni symbole ni majuscule/minuscule', () => {
+    // Borne BMP de PASSWORD_POLICY : 𝐀 (U+1D400) / 𝐚 (U+1D41A) ne comptent pas pour la
+    // casse ; lettres pour \p{L}, donc pas de symbole. Seul le point de longueur reste.
+    expect(scorePassword('abcdef𝐀')).toBe(1)
+    expect(scorePassword('ABCDEF𝐚')).toBe(1)
+  })
+
+  it('invariant #508 intact sur des saisies non-ASCII', () => {
+    // Refusés serveur (pas de majuscule BMP / majuscule hors BMP) → toujours weak.
+    for (const refused of ['ωabcdefg١!', '𝐀bcdefgh1!', 'Ωabcdefgh']) {
+      expect(meetsPolicy(refused)).toBe(false)
+      expect(levelFromPassword(refused)).toBe('weak')
+    }
+    // Acceptés → jamais weak.
+    for (const accepted of ['Ωabcdefg١', 'ÉCOLEété1', 'Abcde\u0301fg1']) {
+      expect(meetsPolicy(accepted)).toBe(true)
+      expect(levelFromPassword(accepted)).not.toBe('weak')
+    }
+  })
+})
+
 describe('meetsPolicy', () => {
   it('réplique la politique serveur (longueur + majuscule + chiffre)', () => {
     expect(meetsPolicy('Abcdefg1')).toBe(true)

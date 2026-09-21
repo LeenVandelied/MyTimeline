@@ -35,14 +35,40 @@ export function meetsPolicy(password: string): boolean {
   )
 }
 
+/**
+ * #762 — Minuscule, même sémantique Unicode que `PASSWORD_POLICY.uppercase` (#735) :
+ * `\p{Lowercase}` (Ll + Other_Lowercase, pendant de `Character.isLowerCase`) borné
+ * au BMP par `(?=[\0-\uFFFF])`. Avant, `/[a-z]/` ignorait `é`, `ω`, `ß` : un mot de
+ * passe en lettres accentuées perdait le point « casse mixte ». La borne BMP garde
+ * la symétrie avec la majuscule : `𝐚` (U+1D41A) ne compte pas plus que `𝐀`.
+ */
+const LOWERCASE = /(?=[\0-\uFFFF])\p{Lowercase}/u
+
+/**
+ * #762 — Symbole = point de code qui n'est NI lettre (`\p{L}`), NI marque (`\p{M}`),
+ * NI chiffre/nombre (`\p{N}`). Avant, `/[^A-Za-z0-9]/` comptait toute lettre ou tout
+ * chiffre non-ASCII comme symbole : `Ωabcdefg١` scorait 4 (`strong`) au lieu de 3.
+ *
+ * Heuristique purement locale (le serveur n'exige aucun symbole), d'où ces choix :
+ *  - drapeau `u` → itération par POINT DE CODE : une lettre hors BMP (`𝐀`) est une
+ *    lettre, jamais un « symbole » par ses deux moitiés de paire de substitution.
+ *    Elle ne compte pas non plus comme majuscule (politique bornée au BMP) : elle
+ *    n'apporte donc aucun point — sous-estimer vaut mieux que surévaluer ;
+ *  - diacritique combinant (NFD : `e` + U+0301) = `\p{M}`, partie de la lettre qu'il
+ *    accentue : pas un symbole, sinon un `é` décomposé noterait plus fort qu'un `é`
+ *    précomposé ;
+ *  - emoji, ponctuation, espace = symbole (ni lettre, ni marque, ni nombre).
+ */
+const SYMBOL = /[^\p{L}\p{M}\p{N}]/u
+
 export function scorePassword(password: string): number {
   if (!password) return 0
   let score = 0
   if (password.length >= PASSWORD_POLICY.minLength) score++
   if (password.length >= 10) score++
-  if (PASSWORD_POLICY.uppercase.test(password) && /[a-z]/.test(password)) score++
+  if (PASSWORD_POLICY.uppercase.test(password) && LOWERCASE.test(password)) score++
   if (PASSWORD_POLICY.digit.test(password)) score++
-  if (/[^A-Za-z0-9]/.test(password)) score++
+  if (SYMBOL.test(password)) score++
   return Math.min(score, 4)
 }
 
