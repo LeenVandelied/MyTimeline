@@ -79,7 +79,7 @@ export function StateScreen({
             insérerait un séparateur de milliers à partir de 1000. */}
         {code ? (
           <p
-            className="text-ink-faint mt-num text-2xl font-semibold tracking-widest"
+            className="text-ink-muted mt-num text-2xl font-semibold tracking-widest"
             data-testid="state-screen-code"
           >
             {code}

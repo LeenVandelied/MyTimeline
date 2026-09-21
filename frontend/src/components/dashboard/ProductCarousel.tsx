@@ -108,11 +108,11 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
                     </time>
                   </span>
                 ) : (
-                  <span className="text-ink-faint text-2xs">{t('noUpcoming')}</span>
+                  <span className="text-ink-muted text-2xs">{t('noUpcoming')}</span>
                 )}
                 {/* #72 — `.mt-num` (DS i18n.css §7) remplace `font-mono … tabular-nums` :
                     même rendu, plus l'isolation bidi (`direction:ltr; unicode-bidi:isolate`). */}
-                <span className="text-ink-faint mt-num text-2xs mt-auto">{nf.format(count)}</span>
+                <span className="text-ink-muted mt-num text-2xs mt-auto">{nf.format(count)}</span>
               </li>
             )
           })}

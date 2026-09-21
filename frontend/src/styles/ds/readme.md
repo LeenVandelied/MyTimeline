@@ -189,8 +189,14 @@ render cleanly; `check_design_system` reports no issues.
 - `Select` and `Dialog` are **hand-rolled with keyboard a11y built in** (no npm
   dependency). They're solid for app use; if you'd rather lean on the audited
   Radix primitives already in the codebase, the props line up 1:1.
-- **`--color-ink-faint`** (~2.8:1 on white) is a **decorative/faint tier** by design
-  (eyebrows, placeholders, disabled hints) — do **not** use it for essential text.
+- **`--color-ink-faint`** (~2.8:1 on white) is a **decorative, non-text tier**
+  (#670, DEC-S97-001). **Never use it for text — placeholders, eyebrows, counters,
+  captions and timestamps included**: they take `ink-muted` (≥5.3:1 on every
+  surface, both modes). Icons or state indicators of a control take `ink-muted`
+  or `rule-emphasis` (1.4.11, ≥3:1). `ink-faint` remains for purely decorative
+  marks only (month rules, hover borders, scrollbar thumb, ghost swatch). Its
+  value is deliberately unchanged: raising it to 4.5:1 would merge it with
+  `ink-muted`. Guarded by `e2e/sprint-97-ink-faint-contrast.spec.ts`.
 - **`--color-rule` / `--color-rule-strong`** are likewise a **decorative tier**
   (1.2–1.5:1). Control boundaries take **`--color-rule-emphasis`** (≥3.97:1 both
   modes, #293) — see *Borders & cards* above.

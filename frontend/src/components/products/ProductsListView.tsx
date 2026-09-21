@@ -201,7 +201,7 @@ export function ProductsListView() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1">
           <Search
-            className="text-ink-faint pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+            className="text-ink-muted pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
             aria-hidden="true"
           />
           <Input
@@ -352,7 +352,7 @@ export function ProductsListView() {
                               {product.category.name}
                             </span>
                           ) : (
-                            <span className="text-ink-faint font-mono text-xs">
+                            <span className="text-ink-muted font-mono text-xs">
                               {t('noCategory')}
                             </span>
                           )}
@@ -371,7 +371,7 @@ export function ProductsListView() {
                           </time>
                         </div>
                       ) : (
-                        <span className="text-ink-faint">
+                        <span className="text-ink-muted">
                           <span aria-hidden="true">—</span>
                           <span className="sr-only">{t('noUpcoming')}</span>
                         </span>
