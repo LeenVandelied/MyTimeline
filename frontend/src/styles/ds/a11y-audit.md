@@ -494,7 +494,9 @@ plus AUCUN texte. Mesures WCAG (luminance relative sRGB) :
   `.mt-tlv__tick--month`, `.mt-tlm__tick--month`), pouce de barre de défilement au
   survol, pastille fantôme de légende, chevron `aria-hidden` de l'index des réglages
   mobile, illustration d'`EmptyState`.
-- ⚠️ **Reste ouvert (hors #670)** : la bordure AU SURVOL de `.mt-btn--secondary`,
-  `.mt-iconbtn` et `.mt-select__trigger` passe de `rule-emphasis` (≥3:1) à
-  `ink-faint` (<3:1) — le survol AFFAIBLIT la limite du contrôle. Suivi séparé.
+- ❌ → ✅ **Bordure au survol** (arbitrage ui-design en review, DEC-S97-006) :
+  `.mt-btn--secondary`, `.mt-iconbtn` et `.mt-select__trigger` passaient de
+  `rule-emphasis` (≥3:1) à `ink-faint` (<3:1) au survol — le survol AFFAIBLISSAIT
+  la limite du contrôle (1.4.11). Désormais `ink-muted` (≥5,3:1) : le survol la
+  renforce.
 - 🔒 Garde-fou : `e2e/sprint-97-ink-faint-contrast.spec.ts` (clair + sombre).

@@ -194,7 +194,10 @@ render cleanly; `check_design_system` reports no issues.
   captions and timestamps included**: they take `ink-muted` (≥5.3:1 on every
   surface, both modes). Icons or state indicators of a control take `ink-muted`
   or `rule-emphasis` (1.4.11, ≥3:1). `ink-faint` remains for purely decorative
-  marks only (month rules, hover borders, scrollbar thumb, ghost swatch). Its
+  marks only (month rules, scrollbar thumb, ghost swatch). **Not** the hover
+  border of a control whose border is its affordance (`.mt-btn--secondary`,
+  `.mt-iconbtn`, `.mt-select__trigger`): on hover it goes to `ink-muted`, so the
+  boundary strengthens instead of dropping under 3:1 (DEC-S97-006). Its
   value is deliberately unchanged: raising it to 4.5:1 would merge it with
   `ink-muted`. Guarded by `e2e/sprint-97-ink-faint-contrast.spec.ts`.
 - **`--color-rule` / `--color-rule-strong`** are likewise a **decorative tier**

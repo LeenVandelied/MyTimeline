@@ -114,4 +114,18 @@ describe('#670 — `ink-faint` ne porte aucun texte', () => {
     }
     expect(offenders).toEqual([])
   })
+
+  it('DEC-S97-006 — le survol d’un contrôle à bordure fonctionnelle ne retombe pas sur `ink-faint`', () => {
+    // Bordure = affordance (repos `rule-emphasis`, ≥3:1) : au survol elle doit
+    // rester ≥3:1 (1.4.11). `ink-faint` y mesure 2,56-2,99:1.
+    const controls = ['.mt-btn--secondary:hover', '.mt-iconbtn:hover', '.mt-select__trigger:hover']
+    const root = postcss.parse(readFileSync(join(STYLES, 'ds/components/core.css'), 'utf8'))
+    const borders = new Map<string, string>()
+    root.walkDecls('border-color', (decl) => {
+      const selector = decl.parent && 'selector' in decl.parent ? String(decl.parent.selector) : ''
+      if (controls.includes(selector)) borders.set(selector, decl.value)
+    })
+    expect([...borders.keys()].sort()).toEqual([...controls].sort())
+    for (const [selector, value] of borders) expect(value, selector).not.toContain('ink-faint')
+  })
 })
