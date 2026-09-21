@@ -52,14 +52,26 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ local
   }
 
   return (
-    <div className="bg-bg text-ink flex min-h-screen flex-col">
+    <div className="bg-bg text-ink relative flex min-h-screen flex-col">
       {/* #642 (DEC-S82-009) — la bascule de thème rejoint le sélecteur de langue
           dans le coin haut-droit, sur les 4 pages d'auth à l'identique. Deux
           boutons à icône seule de 36 px, `gap-1` : le bloc passe de 36 à 76 px
           de large dans un coin libre, sans croiser la carte (`max-w-md` centrée)
           — `e2e/sprint-77-theme-visual.spec.ts` capture la CARTE
           (`div.bg-surface.border-rule.max-w-md.rounded-lg`), pas ce coin, ses
-          10 références restent donc valides. */}
+          10 références restent donc valides.
+
+          #656 — `relative` CI-DESSUS N'EST PAS DÉCORATIF. Sans lui, le bloc
+          conteneur de cet `absolute` est le BLOC CONTENEUR INITIAL (aucun ancêtre
+          positionné) : le coin restait ancré à l'origine du DOCUMENT à y=16 alors
+          que `OfflineBanner` (`sticky`, DANS le flux, 32 px) poussait la page à
+          y=32 — 16 px du visuel et 20 px de la cible tactile 44 px passaient sous
+          la bannière. Ancré à la PAGE, le coin suit la poussée : y=48 bannière
+          affichée, y=16 sans bannière (INCHANGÉ — le correctif est un no-op visuel
+          tant que l'API répond). Mesuré par `e2e/sprint-96-auth-banner-overlap.spec.ts`
+          (boîtes + `elementFromPoint`, bannière forcée par un 500 sur
+          `/api/auth/me`) : les captures de `sprint-77` MASQUENT la bannière et ne
+          peuvent donc PAS voir ce défaut. */}
       <div className="absolute top-4 right-4 flex items-center gap-1">
         <ThemeToggle testId="auth-theme-toggle" />
         <LanguageSelector />
