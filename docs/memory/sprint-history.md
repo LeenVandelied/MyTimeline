@@ -6744,11 +6744,11 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 ### Sprint 96 — 2026-09-21 → en cours (EN COURS — clôture en attente du merge de la PR #737 — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
 **Milestone GitHub :** #97
-**Issues livrées (4) :** #665 (S), #633 (XS), #702 (S), #656 (XS) — 6 pts
+**Issues livrées (4) :** #665 (S), #633 (XS), #702 (S), #656 (XS) — 6 pts (+ 1 absorption en clôture, voir triage)
 **Vagues exécutées :** V1 = #665 (Playwright exclusif) ∥ #633 (code + spec, sans exécution) | V2 = #702 (+ exécution de la spec de #633) | V3 = #656
 **Écart au plan architect :** #665 passé AVANT #702 — la grille 6×2 change l'ordre de navigation clavier qu'exerce `sprint-84-palette.spec.ts:128` ; stabiliser le flake avant aurait invalidé la preuve des 10 runs.
 **Migrations Flyway :** aucune | **BR impactées :** aucune (a11y / géométrie / stabilité de test)
-**Commits :** 12 sur la branche `claude/sprint-96-start-b98611` — code : `237a89f6` (#633) + `3ef041a1` (prettier), `14363a50` (#665), `efe88983` (#702, test seul), `362418a9` (#656), `7301c1b7` (correction de review) ; le reste = docs de processus.
+**Commits :** 14 sur la branche `claude/sprint-96-start-b98611` — code : `237a89f6` (#633) + `3ef041a1` (prettier), `14363a50` (#665), `efe88983` (#702, test seul), `362418a9` (#656), `7301c1b7` (correction de review), `e8fea26c` (absorption `settings-back`) ; le reste = docs de processus.
 **Reviews :** batch — 0 CRITIQUE / 1 MAJEUR / 2 MINEURS. MAJEUR RÉSOLU (`7301c1b7`) : la spec de garde de #665 ne tournait qu'à 375 px alors que le défaut avait été mesuré à 1280 px. 1 MINEUR résolu par la même correction (renvoi de couverture faux), 1 MINEUR → follow-up (commentaire #656 dupliqué 4×). Cycle 2 sur le commit de correction : 0 finding.
 **Tests :** Vitest 1876/1876 | E2E suite complète 440 passed / 0 failed de portée réelle (450 bruts, dont 10 « passed » VIDES `-darwin` retranchés) | #702 : 6 échecs/10 → 0/10 (invocations séquentielles), contrôle négatif 2/6 | CI 7/7 verte sur `d87bf871`, **e2e Linux compris** (références visuelles validées là où elles peuvent l'être).
 **Arbitrage ui-design (clôture) :** sémantique clavier de la grille → verdict A, navigation linéaire conservée (DEC-S96-005, `ui-design-grid-semantics.md`).
@@ -6757,6 +6757,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Contrôle de complétude :** vert sans `--force` après tri — 7 signaux signalés, 6 faux positifs (négations « `RECOMMAND_X` : NON » non reconnues, PIT-S96-010), 1 vrai traité par l'arbitrage ui-design.
 **Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S96-001…010, PAT-S96-001…004, DEC-S96-001…005, BUG-S96-001…002 ; packs pitfalls régénérés, `--check` = 0.
 **Correction d'historique :** titre du Sprint 94 rectifié (« EN COURS » alors que sa ligne `Status` disait déjà « Terminé » — la PR #730 n'avait soldé que l'un des deux).
+**Follow-ups arbitrés (Phase 4 — option « proposition du lead » retenue par le dev) :**
+  - `settings-back` à 36 px, même écran que le bouton corrigé par #633 [XS | design] → **absorbé** (`e8fea26c` : 44×44 à 390/767/768/1023 px, bloc réservé de `loading.tsx` synchronisé ; contrôle négatif 4 rouges sur l'ancien code)
+  - Primitives shadcn sous 44 px — cause systémique de #633 [M | design] → issue #738 (backlog libre)
+  - Grabber du `BottomSheet` à 28 px [XS | design] → issue #739 (backlog libre)
+  - Croix de `DialogContent` qui défile avec le contenu [S | design] → issue #740 (backlog libre)
+  - Résidu de 32 px sous la bannière après défilement [S | design] → issue #741 (backlog libre)
+  - 4 conteneurs langue/thème dupliqués + commentaire ×4 [S | auth] → issue #742 (backlog libre)
+  - Sémantique clavier ↓=+6 de la grille → soldé par l'arbitrage ui-design (verdict A), sans issue
+  - Reformatage prettier de `settings-mobile.spec.ts` → déjà fait en cours de sprint (`3ef041a1`)
+  Ratio discard 0/8. Backlog libre plutôt que milestone Sprint 97 : son thème est la frise (même raisonnement qu'au S95).
 **Status :** En cours — PR #737 ouverte, CI verte ; merge, fermeture des issues et du milestone en attente de confirmation
 
 ### Sprint 97 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
