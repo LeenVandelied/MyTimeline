@@ -28,18 +28,24 @@ import { getUserId, seedCategory, unique } from './support/products'
  * moitiés de cette phrase sont fausses :
  *
  *   1. LE FORMULAIRE NE REMPLIT JAMAIS LA SHEET À 844px. Le contenu réel du drawer
- *      de création (nom + catégorie + palette + date + aperçu + pied) mesure ≈ 672px.
- *      `max-h-[92vh]` vaut 776px à 844px de haut : le plafond n'est JAMAIS atteint,
- *      la sheet se dimensionne à son contenu et démarre à ≈ 170px. La croix tombe
- *      alors à ≈ 187px — 50px SOUS la carte du toast. **À 390×844, il n'y a AUCUN
- *      recouvrement.** La sheet ne se fait clamper qu'en dessous de ≈ 730px de haut
- *      (0,92·H < 672).
+ *      de création (nom + catégorie + palette + date + aperçu + pied) mesurait ≈ 672px
+ *      au S95 (≈ 702px au S99 avant #738), et `max-h-[92vh]` vaut 776px à 844px de
+ *      haut : le plafond n'est pas atteint, la sheet se dimensionne à son contenu.
+ *      Tant que la croix tombait SOUS la carte, 390×844 ne recouvrait pas.
+ *      ⚠ #738 (S99, DEC-S99-001) a déplacé ce régime : les champs passent à 44px en
+ *      mobile (`Input` / `SelectTrigger` `max-md:h-11`), soit +8px × 3 champs = +24px
+ *      de contenu (≈ 726px, toujours < 776px : la sheet reste LIBRE). Elle démarre à
+ *      ≈ 117px, la croix à ≈ 134–150px : elle EFFLEURE le bas de la carte (≈ 137px),
+ *      recouvrement PARTIEL de ≈ 3,5px (darwin). Accepté par le dev comme extension
+ *      de la décision B. La sheet ne se fait clamper qu'en dessous de ≈ 790px de haut
+ *      (0,92·H < 726).
  *   2. LA CARTE NE FAIT PAS 46px. Le message d'erreur se replie sur deux lignes :
  *      la carte mesure ≈ 65px, soit une bande ≈ 72–137px et non 72–118px.
  *
  * Le recouvrement EXISTE donc bel et bien — mais sur les viewports COURTS, pas sur
  * celui que la note du S92 citait. On mesure les trois régimes plutôt qu'un seul :
- *   • TALL  390×844 — sheet libre, croix SOUS la bande : recouvrement NUL ;
+ *   • TALL  390×844 — sheet libre, croix qui EFFLEURE la bande : recouvrement
+ *                     PARTIEL et faible (≈ 3,5px depuis #738, NUL avant) ;
  *   • MID   390×740 — sheet libre mais assez haute : croix ENTIÈREMENT recouverte
  *                     (pire cas, et c'est là que la sortie de secours compte) ;
  *   • SHORT 390×667 — sheet CLAMPÉE à `max-h-[92vh]` : croix partiellement recouverte.
@@ -54,7 +60,8 @@ import { getUserId, seedCategory, unique } from './support/products'
  *       opaque pendant 4 s. C'est l'assertion à NE JAMAIS assouplir.
  *   (c) LA DISJONCTION — la bande tapable et la carte du toast ne doivent pas se
  *       chevaucher, sinon la sortie de (b) est fortuite et non structurelle.
- *   (a) LA BORNE DU RECOUVREMENT — ATTENDU sur MID/SHORT, NUL sur TALL. On l'ENCADRE
+ *   (a) LA BORNE DU RECOUVREMENT — ATTENDU sur les trois régimes, PARTIEL sur TALL et
+ *       SHORT, TOTAL sur MID. On l'ENCADRE
  *       (min ET max) : la spec rougit si la géométrie DÉRIVE dans un sens COMME dans
  *       l'autre. Un recouvrement qui RÉTRÉCIT est tout aussi significatif — il
  *       signifierait que le gabarit a bougé sous la décision, et que les motifs
@@ -101,7 +108,7 @@ import { getUserId, seedCategory, unique } from './support/products'
 
 /** Les trois régimes de hauteur. La largeur est constante : seule la hauteur décide. */
 const VIEWPORTS = {
-  /** Sheet libre, croix SOUS la bande du toast : recouvrement NUL. */
+  /** Sheet libre, croix qui effleure le bas de la bande : recouvrement PARTIEL faible (#738). */
   tall: { width: 390, height: 844 },
   /** Sheet libre mais haute : croix ENTIÈREMENT dans la bande — pire cas. */
   mid: { width: 390, height: 740 },
@@ -353,30 +360,51 @@ async function measureRegime(page: Page, viewport: { width: number; height: numb
   return { sheetBox, closeBox, cardBox, band, overlapPx, contentScrollHeight }
 }
 
-test.describe('#714 — TALL 390×844 : la sheet ne se remplit PAS, aucun recouvrement', () => {
+test.describe('#714/#738 — TALL 390×844 : sheet libre, recouvrement PARTIEL faible', () => {
   test.use({ storageState: PROD.storageState, viewport: VIEWPORTS.tall })
 
-  test('(a) la croix tombe SOUS la bande du toast — la note du S92 situait ce cas à tort', async ({
+  test('(a) sheet libre, la croix EFFLEURE le bas de la carte : recouvrement partiel, ni nul ni total', async ({
     page,
   }) => {
     test.setTimeout(120_000)
     await openFilledCreateSheet(page, 'Tall')
     const m = await measureRegime(page, VIEWPORTS.tall)
 
-    // Le contenu ne peut PAS atteindre le plafond : c'est la prémisse infirmée du S92.
+    // Le contenu n'atteint PAS le plafond : la sheet reste libre à 844px, y compris
+    // avec les +24px de #738 (≈ 726px < 776px). Si cela bascule, ce régime devient
+    // clampé (comme SHORT) et la note de toaster.tsx doit être réécrite.
     expect(
       m.contentScrollHeight,
-      `à ${VIEWPORTS.tall.height}px de haut, 92vh = ${Math.round(SHEET_MAX_VH * VIEWPORTS.tall.height)}px ; le contenu (${m.contentScrollHeight}px) doit rester DESSOUS — si un jour il passe au-dessus, ce régime devient recouvrant et la note de toaster.tsx doit être réécrite`,
+      `à ${VIEWPORTS.tall.height}px de haut, 92vh = ${Math.round(SHEET_MAX_VH * VIEWPORTS.tall.height)}px ; le contenu (${m.contentScrollHeight}px) doit rester DESSOUS — si un jour il passe au-dessus, ce régime devient clampé et la note de toaster.tsx doit être réécrite`,
     ).toBeLessThan(SHEET_MAX_VH * VIEWPORTS.tall.height)
 
+    // ENCADREMENT (#738, DEC-S99-001 — extension de la décision B acceptée par le dev).
+    // Avant #738 la croix tombait SOUS la carte (recouvrement nul) ; les champs mobiles
+    // à 44px (+24px de contenu) l'ont fait remonter de 24px : elle EFFLEURE désormais
+    // le bas de la carte (≈ 3,5px mesurés sur darwin, carte ≈ 72–137px, croix ≈ 134–150px).
+    //  - borne basse STRICTE (> 0) : un recouvrement qui DISPARAÎT signale que le
+    //    gabarit a bougé sous la décision (champs rétrécis, sheet déplacée) ;
+    //  - borne haute STRICTE (< hauteur de la croix) : une croix TOTALEMENT couverte
+    //    ferait rejoindre à ce régime le pire cas MID — ce serait une aggravation.
+    // Marge de police (la carte et le contenu sont du texte, Linux ≠ darwin) : la fenêtre
+    // admise est ]0 ; 16[ px autour de 3,5px, soit ≈ 3,5px de marge vers le bas et ≈ 12px
+    // vers le haut. Une carte plus courte de plus de ≈ 3,5px sous Linux ferait rougir la
+    // borne basse : c'est alors la JSDoc de toaster.tsx qu'il faut relire avant de
+    // retoucher cette borne, pas la borne qu'il faut élargir à 0.
     expect(
       m.overlapPx,
-      `à 390×844 le recouvrement doit être NUL (croix=[${fmt(m.closeBox)}] sous la carte=[${fmt(m.cardBox)}])`,
-    ).toBe(0)
+      `à 390×844 le recouvrement doit être NON NUL depuis #738 (croix=[${fmt(m.closeBox)}] carte=[${fmt(m.cardBox)}]) — s'il a disparu, le gabarit a bougé sous la décision B`,
+    ).toBeGreaterThan(0)
+    expect(
+      m.overlapPx,
+      `à 390×844 le recouvrement (${m.overlapPx.toFixed(1)}px) doit rester STRICTEMENT inférieur à la hauteur de la croix (${Math.round(m.closeBox.height)}px) — sinon ce régime rejoint le pire cas MID`,
+    ).toBeLessThan(m.closeBox.height)
+    // La croix n'est couverte que par le BAS de la carte : son haut reste sous le haut
+    // de la carte (72px par construction) — valeur de layout pur, sans métrique de police.
     expect(
       m.closeBox.y,
-      'la croix doit être SOUS le bas de la carte du toast',
-    ).toBeGreaterThanOrEqual(m.cardBox.y + m.cardBox.height)
+      `le haut de la croix (${Math.round(m.closeBox.y)}px) doit rester SOUS le haut de la carte (${TOAST_TOP_OFFSET}px)`,
+    ).toBeGreaterThan(TOAST_TOP_OFFSET + EPSILON)
   })
 })
 

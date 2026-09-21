@@ -4,6 +4,7 @@ import { useEffect, useReducer, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { AlertTriangle, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Select,
@@ -115,6 +116,7 @@ export function ExportDataFlow() {
           </p>
 
           <Button
+            className={SETTINGS_TOUCH_BUTTON}
             type="button"
             onClick={flow.start}
             disabled={flow.isBusy}
@@ -160,6 +162,7 @@ export function ExportDataFlow() {
               <div className="space-y-2" data-testid="export-expired">
                 <p className="text-danger text-sm">{t('ready.expired')}</p>
                 <Button
+                  className={SETTINGS_TOUCH_BUTTON}
                   type="button"
                   variant="outline"
                   onClick={flow.reset}
@@ -173,6 +176,7 @@ export function ExportDataFlow() {
               <div className="space-y-2" data-testid="export-ready-async">
                 <p className="text-success text-sm">{t('ready.asyncReady')}</p>
                 <Button
+                  className={SETTINGS_TOUCH_BUTTON}
                   type="button"
                   onClick={flow.downloadCompleted}
                   disabled={flow.isBusy}
@@ -215,7 +219,13 @@ export function ExportDataFlow() {
             </p>
           )}
 
-          <Button type="button" variant="ghost" onClick={flow.reset} data-testid="export-again">
+          <Button
+            className={SETTINGS_TOUCH_BUTTON}
+            type="button"
+            variant="ghost"
+            onClick={flow.reset}
+            data-testid="export-again"
+          >
             {t('actions.again')}
           </Button>
         </div>
@@ -228,7 +238,13 @@ export function ExportDataFlow() {
             <AlertTriangle className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             {t(`errors.${flow.errorKey ?? 'network'}`)}
           </p>
-          <Button type="button" variant="outline" onClick={flow.reset} data-testid="export-retry">
+          <Button
+            className={SETTINGS_TOUCH_BUTTON}
+            type="button"
+            variant="outline"
+            onClick={flow.reset}
+            data-testid="export-retry"
+          >
             {t('actions.retry')}
           </Button>
         </div>

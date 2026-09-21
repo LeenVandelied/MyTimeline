@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { useDeleteAccountFlow } from './useDeleteAccountFlow'
 import { DeleteAccountSteps } from './DeleteAccountSteps'
@@ -64,6 +65,7 @@ export function AccountSection({ deleteContainer = 'dialog' }: AccountSectionPro
         </h3>
         <p className="text-ink-muted text-sm">{t('account.delete.description')}</p>
         <Button
+          className={SETTINGS_TOUCH_BUTTON}
           type="button"
           variant="destructive"
           onClick={() => setDeleteOpen(true)}

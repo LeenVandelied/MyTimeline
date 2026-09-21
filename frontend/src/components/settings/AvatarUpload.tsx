@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Upload, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON, SETTINGS_TOUCH_ICON_BUTTON } from './touchTarget'
 import { cn } from '@/lib/utils'
 
 /**
@@ -192,6 +193,7 @@ export function AvatarUpload({
 
           {currentAvatarUrl && onDelete && (
             <Button
+              className={SETTINGS_TOUCH_ICON_BUTTON}
               type="button"
               variant="ghost"
               size="icon"
@@ -238,15 +240,28 @@ export function AvatarUpload({
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full"
+              // #738 — curseur natif de 16 px : piste tactile 44 px en mobile.
+              className="w-full max-md:h-11"
               data-testid="avatar-zoom"
             />
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={cancelCrop}>
+            <Button
+              className={SETTINGS_TOUCH_BUTTON}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={cancelCrop}
+            >
               {t('common.cancel')}
             </Button>
-            <Button type="button" size="sm" onClick={confirmCrop} data-testid="avatar-confirm">
+            <Button
+              className={SETTINGS_TOUCH_BUTTON}
+              type="button"
+              size="sm"
+              onClick={confirmCrop}
+              data-testid="avatar-confirm"
+            >
               {t('profile.avatar.apply')}
             </Button>
           </div>

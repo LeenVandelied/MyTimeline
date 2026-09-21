@@ -856,7 +856,9 @@
    ci-dessus porte `touch-action:none; cursor:grab` et est branchée sur le drag
    de fermeture (`TimelineBottomSheet.tsx`). Cette pastille est le seul signal
    visuel de ce contrôle → fonctionnelle. (Diverge de
-   `.mt-actionsheet__grabber`, qui n'est qu'une marque ornementale.) */
+   `.mt-actionsheet__grabber`, qui n'est qu'une marque ornementale.)
+   #739 — la zone reste à 28 px : exemptée du seuil 44 px par WCAG 2.5.8
+   « Equivalent » (`.mt-sheet__close` 44×44 + Escape), cf. `ds/a11y-audit.md`. */
 .mt-sheet__grabber{width:36px; height:4px; border-radius:var(--radius-pill); background:var(--color-rule-emphasis);}
 .mt-sheet__header{display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-4); padding:0 var(--space-5) var(--space-3); border-bottom:1px solid var(--color-rule);}
 .mt-sheet__title{font-family:var(--font-display); font-size:18px; letter-spacing:-.01em; color:var(--color-ink);}

@@ -162,3 +162,9 @@ Le hook mobile ne rejouait que la synchro minimap quand `dayWidth` changeait : `
 
 ## BUG-S98-002 — Frise : libellés longs et libellé extérieur débordaient sur l'occurrence suivante de la rangée
 L'empilage (#709) ne réservait que `PIN_FOOTPRINT_PX` (100/90 px) pour un pin, et rien pour le libellé extérieur de secours. Correctif : réserve estimée + libellé borné en CSS (DEC-S98-001). E2E hit-test desktop, portrait, paysage ; contrôles négatifs 3/3. (Sprint 98, #746)
+
+## BUG-S99-001 — Réglages mobiles : champs, menus et boutons sous 44 px
+Primitives `Input`/`SelectTrigger` 36 px, options de Select 36,28 px, boutons 32/36 px à 375 px ; aucune règle tactile ne les rattrapait. Correctif : DEC-S99-001 (primitives de champ + boutons des réglages en `max-md:`), desktop mesuré inchangé. E2E `sprint-99-touch-targets` 13 tests, contrôle négatif 4 rouges. (Sprint 99, #738)
+
+## BUG-S99-002 — Sessions actives : nom d'appareil et IP tronqués sans `title`
+Les deux `<p className="truncate">` de `SessionList.tsx` perdaient le texte au-delà de la largeur. Correctif : `title` = nom d'appareil (sans le badge « actuelle ») et IP · horodatage (`serverDateTime`), replis i18n couverts. Vitest + sonde navigateur 375/1280. (Sprint 99, #459)

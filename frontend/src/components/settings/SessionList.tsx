@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl'
 import { Monitor, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import { serverDateTime } from '@/lib/date-iso'
@@ -105,7 +106,10 @@ export function SessionList({
             <div className="flex min-w-0 items-center gap-3">
               <Monitor className="text-ink-muted h-5 w-5 shrink-0" aria-hidden="true" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
+                <p
+                  className="truncate text-sm font-medium"
+                  title={session.deviceInfo ?? t('security.sessions.unknownDevice')}
+                >
                   {session.deviceInfo ?? t('security.sessions.unknownDevice')}
                   {session.current && (
                     <span className="text-accent ml-2 text-xs font-semibold">
@@ -113,7 +117,10 @@ export function SessionList({
                     </span>
                   )}
                 </p>
-                <p className="text-ink-muted truncate text-xs">
+                <p
+                  className="text-ink-muted truncate text-xs"
+                  title={`${session.ipAddress ?? t('security.sessions.unknownIp')} · ${serverDateTime(session.lastActivity, locale).label}`}
+                >
                   {session.ipAddress ?? t('security.sessions.unknownIp')}
                   {' · '}
                   <SessionTimestamp iso={session.lastActivity} locale={locale} />
@@ -122,6 +129,7 @@ export function SessionList({
             </div>
             {!session.current && (
               <Button
+                className={SETTINGS_TOUCH_BUTTON}
                 type="button"
                 variant="outline"
                 size="sm"
@@ -143,6 +151,7 @@ export function SessionList({
 
       {otherSessionsCount > 0 && (
         <Button
+          className={SETTINGS_TOUCH_BUTTON}
           type="button"
           variant="destructive"
           size="sm"

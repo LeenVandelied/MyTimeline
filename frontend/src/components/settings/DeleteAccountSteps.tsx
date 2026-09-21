@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { SETTINGS_TOUCH_BUTTON } from './touchTarget'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import {
@@ -52,10 +53,16 @@ export function DeleteAccountSteps({
           </p>
         </div>
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="ghost" onClick={onCancel}>
+          <Button
+            className={SETTINGS_TOUCH_BUTTON}
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+          >
             {t('common.cancel')}
           </Button>
           <Button
+            className={SETTINGS_TOUCH_BUTTON}
             type="button"
             variant="destructive"
             onClick={flow.goConfirm}
@@ -97,10 +104,16 @@ export function DeleteAccountSteps({
           )}
         />
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="ghost" onClick={flow.goWarn}>
+          <Button
+            className={SETTINGS_TOUCH_BUTTON}
+            type="button"
+            variant="ghost"
+            onClick={flow.goWarn}
+          >
             {t('common.back')}
           </Button>
           <Button
+            className={SETTINGS_TOUCH_BUTTON}
             type="submit"
             variant="destructive"
             disabled={flow.isPending}

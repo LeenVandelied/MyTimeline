@@ -1643,6 +1643,18 @@ Il ne vérifie que la résolution des racines de namespace (le fichier existe), 
 ## PIT-S98-002 — Le résumé RTK de `next lint --file` peut annoncer une erreur qui n'existe pas
 Sous le hook RTK, `npx next lint --file <f>` a résumé « Errors: 1 » alors que `rtk proxy npx next lint --file <f>` (sortie brute, même fichier) donnait « No ESLint warnings or errors ». Ne jamais qualifier un lint de rouge sur le résumé RTK : contre-vérifier par `rtk proxy`. Même famille que les `grep`/`git diff`/`prettier --check` réécrits par RTK. (Sprint 98, #748)
 
+
+## PIT-S99-001 — Mock E2E d'un job asynchrone : un `jobId` par étape, sinon le cache TanStack répond à la place du mock
+Une spec qui simule deux jobs d'export successifs avec le même `jobId` voit l'état « expiré » ne jamais apparaître : `queryKeys.export.job(jobId)` est en cache et rend l'ancienne réponse `COMPLETED`, et `toBeVisible` échoue sans message qui oriente vers le cache. Générer un identifiant distinct par étape simulée. (Sprint 99, #738)
+
+
+## PIT-S99-002 — Grossir une primitive partagée fait basculer les specs de géométrie au pixel d'autres écrans
+`Input`/`Select` à 44 px en mobile (+8 px × 3 champs dans le drawer produit) ont suffi à rendre rouge `sprint-95-toast-overlap`, qui encode la géométrie de la décision B #714 au pixel près. Avant de toucher une primitive, rejouer TOUTES les specs géométriques de ses consommateurs (pas seulement celles de l'écran visé) et trancher chaque rouge par un A/B sur le commit précédent. (Sprint 99, #738)
+
+
+## PIT-S99-003 — RTK réécrit aussi `find`
+Sous le hook RTK, `find … -path` renvoie « unknown flag » et un `find -iname` légitime peut rendre 0 résultat sans erreur. Pour toute vérification factuelle (review, mesure), utiliser `/usr/bin/find` et `/usr/bin/grep`. Même famille que PIT-S98-002 et les `grep`/`git diff`/`prettier --check` réécrits. (Sprint 99, review)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
