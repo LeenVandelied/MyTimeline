@@ -93,8 +93,10 @@ import { getUserId, seedCategory, unique } from './support/products'
  * POURQUOI PAS UN 500 (levier le plus évident) : à ≥ 500, `apiClient` appelle AUSSI
  * `networkStatusStore.reportServerError()`, qui monte `OfflineBanner` — une barre de
  * 32px en `--z-netbanner`, donc AU-DESSUS de tout, y compris de la bande d'overlay
- * qu'on veut taper. On mesurerait la géométrie d'une autre page. Le 400 est le seul
- * statut qui produise un toast d'erreur SANS effet de bord : 401 et 403 redirigent.
+ * qu'on veut taper. On mesurerait la géométrie d'une autre page. Le 400 est le
+ * statut retenu pour un toast d'erreur SANS effet de bord : 401 redirige vers /login ;
+ * le 403 ne redirige plus depuis #733 (toast « accès refusé » seul), mais la spec
+ * n'en dépend pas.
  *
  * ON NE FABRIQUE PAS LA GÉOMÉTRIE : aucune feuille de style n'est injectée, aucune
  * position n'est forcée. On intercepte une RÉPONSE SERVEUR et on mesure ce que

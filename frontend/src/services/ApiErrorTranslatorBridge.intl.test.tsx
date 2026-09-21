@@ -42,7 +42,7 @@ describe('ApiErrorTranslatorBridge — les messages réseau suivent la locale (#
 
       expect(translateApiError(API_ERROR_KEYS.validation)).toBe(expected.validation.error)
       expect(translateApiError(API_ERROR_KEYS.sessionExpired)).toBe(expected.auth.sessionExpired)
-      expect(translateApiError(API_ERROR_KEYS.forbidden)).toBe(expected.auth.forbiddenRedirect)
+      expect(translateApiError(API_ERROR_KEYS.forbidden)).toBe(expected.auth.forbidden)
       expect(translateApiError(API_ERROR_KEYS.serverError)).toBe(expected.server.error)
 
       // Le défaut corrigé, énoncé frontalement : plus une seule chaîne française.
@@ -55,7 +55,7 @@ describe('ApiErrorTranslatorBridge — les messages réseau suivent la locale (#
     const fr = readErrors('fr')
     renderBridge('fr')
     expect(translateApiError(API_ERROR_KEYS.validation)).toBe(fr.validation.error)
-    expect(translateApiError(API_ERROR_KEYS.forbidden)).toBe(fr.auth.forbiddenRedirect)
+    expect(translateApiError(API_ERROR_KEYS.forbidden)).toBe(fr.auth.forbidden)
   })
 
   it('ne rend aucun élément dans le DOM (pont, pas interface)', () => {

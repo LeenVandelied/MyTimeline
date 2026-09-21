@@ -86,10 +86,23 @@ describe('apiErrorMessages — les 4 messages réseau existent dans les 4 locale
   })
 
   it("le 403 n'est PAS aiguillé sur la clé du 401", () => {
-    // Le libellé du 403 est sémantiquement faux (accès refusé ≠ session
-    // expirée). Le faire pointer sur `auth.sessionExpired` graverait l'erreur
-    // dans les 4 locales et rendrait la correction future indétectable.
+    // 403 = accès refusé à un utilisateur authentifié ; 401 = session morte.
+    // Partager la clé ferait dire « session expirée » à un refus d'accès (#733).
     expect(API_ERROR_KEYS.forbidden).not.toBe(API_ERROR_KEYS.sessionExpired)
+  })
+
+  it('le libellé du 403 dit « accès refusé » et ne parle NI de session NI de redirection (#733)', () => {
+    const expected = {
+      fr: { denied: /accès refusé/i, banned: /session|expir|connexion|redirect/i },
+      en: { denied: /access denied/i, banned: /session|expir|login|redirect/i },
+      es: { denied: /acceso denegado/i, banned: /sesión|expir|inicio de sesión|redirig/i },
+      de: { denied: /zugriff verweigert/i, banned: /sitzung|abgelaufen|anmeld|weiterleit/i },
+    } as const
+    for (const locale of LOCALES) {
+      const label = leaf(readErrors(locale), API_ERROR_KEYS.forbidden)
+      expect(label, `errors.auth.forbidden en \`${locale}\``).toMatch(expected[locale].denied)
+      expect(label, `errors.auth.forbidden en \`${locale}\``).not.toMatch(expected[locale].banned)
+    }
   })
 })
 

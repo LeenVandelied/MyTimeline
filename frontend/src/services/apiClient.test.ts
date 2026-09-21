@@ -133,6 +133,86 @@ describe('apiClient response interceptor', () => {
     }
   })
 
+  /**
+   * #733 — Un 403 = accès refusé à un utilisateur AUTHENTIFIÉ (ownership ou
+   * `hasAuthority`), pas une session morte. Toast « accès refusé », AUCUNE
+   * redirection, et le verrou `isRedirecting` n'est pas pris : un 401 qui suit
+   * doit toujours ramener au login (sinon un 403 préalable neutraliserait la
+   * vraie expiration de session).
+   */
+  it('403 : toast « accès refusé », jamais de redirection, un 401 suivant redirige toujours', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const setHref = vi.fn()
+    const originalDescriptor = Object.getOwnPropertyDescriptor(window, 'location')
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        pathname: '/es/dashboard',
+        set href(value: string) {
+          setHref(value)
+        },
+      },
+    })
+
+    try {
+      await expect(rejectionHandler!(makeError(403))).rejects.toBeDefined()
+
+      expect(toastErrorMock).toHaveBeenCalledTimes(1)
+      expect(toastErrorMock.mock.calls[0][0]).toMatch(/accès refusé/i)
+      // PIT-S95-006 : l'ancien libellé du 403 parlait de session expirée.
+      expect(toastErrorMock.mock.calls[0][0]).not.toMatch(/session|connexion/i)
+
+      // Bien au-delà du délai de redirection du 401 (1500 ms).
+      vi.advanceTimersByTime(5000)
+      expect(setHref).not.toHaveBeenCalled()
+
+      // Le verrou n'a pas été pris : un 401 immédiatement après redirige.
+      await expect(rejectionHandler!(makeError(401))).rejects.toBeDefined()
+      expect(toastErrorMock).toHaveBeenCalledTimes(2)
+      expect(toastErrorMock.mock.calls[1][0]).toMatch(/session a expiré/i)
+      vi.advanceTimersByTime(1500)
+      expect(setHref).toHaveBeenCalledTimes(1)
+      expect(setHref).toHaveBeenCalledWith('/es/login')
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'location', originalDescriptor)
+      }
+      consoleErrorSpy.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+
+  it('403 répétés : un toast par 403, toujours sans redirection', async () => {
+    // Avant #733, le verrou `isRedirecting` pris par le 1er 403 rendait les
+    // suivants MUETS pendant 1,5 s. Sans redirection, chaque refus est signalé.
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const setHref = vi.fn()
+    const originalDescriptor = Object.getOwnPropertyDescriptor(window, 'location')
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        pathname: '/fr/dashboard',
+        set href(value: string) {
+          setHref(value)
+        },
+      },
+    })
+
+    try {
+      await expect(rejectionHandler!(makeError(403))).rejects.toBeDefined()
+      await expect(rejectionHandler!(makeError(403))).rejects.toBeDefined()
+      expect(toastErrorMock).toHaveBeenCalledTimes(2)
+      vi.advanceTimersByTime(5000)
+      expect(setHref).not.toHaveBeenCalled()
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'location', originalDescriptor)
+      }
+      consoleErrorSpy.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+
   it('affiche un toast serveur sur 500 sans rediriger', async () => {
     await expect(rejectionHandler!(makeError(500))).rejects.toBeDefined()
     expect(toastErrorMock).toHaveBeenCalledTimes(1)

@@ -4,7 +4,7 @@
     "login": "Error al iniciar sesión",
     "logout": "Error al cerrar sesión",
     "sessionExpired": "Su sesión ha expirado. Por favor, vuelva a conectarse",
-    "forbiddenRedirect": "Su sesión ha expirado, redirigiendo a la página de inicio de sesión..."
+    "forbidden": "Acceso denegado: no tiene permiso para realizar esta acción."
   },
   "validation": {
     "error": "Error de validación, por favor compruebe sus datos."

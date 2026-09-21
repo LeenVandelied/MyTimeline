@@ -4,7 +4,7 @@
     "login": "Erreur lors de la connexion",
     "logout": "Erreur lors de la déconnexion",
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter",
-    "forbiddenRedirect": "Votre session a expiré, redirection vers la page de connexion..."
+    "forbidden": "Accès refusé : vous n'avez pas l'autorisation d'effectuer cette action."
   },
   "validation": {
     "error": "Erreur de validation, veuillez vérifier vos données."
