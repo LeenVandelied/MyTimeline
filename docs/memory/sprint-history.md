@@ -6823,6 +6823,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 4/7. Backlog libre plutôt que milestone Sprint 99 : son thème est les cibles tactiles (#738, #739, #459).
 **Status :** Terminé — PR #749 mergée, issues #746/#747/#748 et milestone #99 fermés après merge
 
+### Sprint 99 — 2026-09-21 → en cours (cohésion 1.00, cibles tactiles)
+**Objectif :** Les contrôles mobiles atteignent 44 px (primitives partagées, poignée du BottomSheet) ; les textes tronqués des sessions actives restent lisibles
+**Milestone GitHub :** #100
+**Issues :** #738 (M, P1), #739 (XS, P3), #459 (XS, P3, périmètre réduit à `SessionList.tsx`) — 6 pts, `epic:design`, frontend seul
+**Plan :** aucun `/sprint plan` n'avait produit d'entrée PLANIFIÉ ni d'`architect-plans.md` (milestone et labels posés au triage de clôture du S98) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code
+**Vagues prévues :** V1 = #459 (Vitest seul) ∥ ui-design (arbitrage #738 + #739, lecture seule) | V2 = #738 (Playwright exclusif) ∥ #739, après arbitrage du dev
+**Branche :** `claude/sprint-99-start-c2743b` (worktree, pas de `sprint/99` — même convention que S96-S98)
+**Migrations Flyway :** aucune | **BR impactées :** aucune
+**Status :** En cours
+
 ### Matrice de conflits inter-sprints (S93-S97)
 
 | A | B | Fichiers communs |
