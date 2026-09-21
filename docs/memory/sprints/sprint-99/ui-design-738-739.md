@@ -18,7 +18,11 @@
 - Action : corriger `a11y-audit.md:113` et `:149` (« grabber 28 px, exempté par équivalence 2.5.8 (bouton fermer 44×44 + Escape) »).
 
 ## Non vérifié (ui-design)
-Ordre de sortie CSS Tailwind v4 entre `h-9` et `max-md:h-11` ; `useMediaQuery.ts` ; `test.use({viewport})` locaux de `sprint-77-theme-visual` (le lead a vérifié : 1280×720 aux lignes 577 et 617) ; `max-md` actif en v4 (le lead : utilisé ailleurs dans le dépôt, cf. `max-[360px]:`) ; hauteur réelle de `SelectItem max-md:py-3`.
+Ordre de sortie CSS Tailwind v4 entre `h-9` et `max-md:h-11` ; `useMediaQuery.ts` ; `test.use({viewport})` locaux de `sprint-77-theme-visual` (le lead a vérifié : 1280×720 aux lignes 577 et 617) ; `max-md` actif en v4 (variante native de Tailwind v4 ; le dépôt utilise déjà `max-[360px]:`, pas encore `max-md:` — à confirmer par compilation) ; hauteur réelle de `SelectItem max-md:py-3`.
 
 ## Objection du lead (avant décision du dev)
 La reco Q1 laisse les 18 `<Button>` des écrans de réglages (AvatarUpload 3, ExportDataFlow 5, DeleteAccountSteps 4, SessionList 2, Account/Profile/Security 1 chacun, `settings/page.tsx` 1) à 32/36 px : le 1er critère d'acceptation de #738 (« boutons, champs, menus déroulants ≥ 44 px à 375 px ») ne serait PAS rempli. Par ailleurs, en Tailwind v4 les utilitaires à variante (`max-md:`) sortent après les utilitaires nus : l'ordre n'est pas aléatoire, `max-md:h-11` gagnerait sur un `h-9` de consommateur — le risque est un agrandissement réel des icônes au pas serré, pas une indétermination.
+
+## Décisions du dev (2026-09-21)
+- **#738 → « Boutons réglages seuls »** (DEC-S99-001) : Input / SelectTrigger / SelectItem agrandis sur la primitive sous 768 px ; `Button` : primitive inchangée, `max-md:h-11` (et `max-md:w-11` pour les icônes) posé sur les boutons des écrans de réglages. Le balayage du reste de l'app mobile → issue de suivi.
+- **#739 → « Exception + doc »** (DEC-S99-002) : poignée conservée à 28 px sur les deux sheets (réglages + frise), `a11y-audit.md` corrigé, commentaire de condition dans `BottomSheet.tsx` et `timeline.css`. Livré par le lead (documentation seule, pas de fullstack-dev).
