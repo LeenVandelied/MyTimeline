@@ -30,8 +30,9 @@ import {
  * par le hamburger. Le rendu DESKTOP #80 est INCHANGÉ : les composants #80 sont
  * réutilisés (variantes / props), aucune donnée n'est chargée hors `useDashboardData`.
  *
- * #85 — Variante mobile PAYSAGE (orientation landscape, hauteur < 500px, largeur
- * > 667px) : rail vertical persistant 64px (`CompactRail`) au bord gauche +
+ * #85 — Variante mobile PAYSAGE (`(orientation: landscape) and (max-height: 500px)`,
+ * sans condition de largeur — cf. `isLandscape` plus bas ; #758 a mesuré ce profil
+ * à 667, 740 et 844 px de large) : rail vertical persistant 64px (`CompactRail`) au bord gauche +
  * contenu en 2 colonnes (CSS Grid) à droite. Le hamburger portrait est masqué
  * (remplacé par le rail). Aucun composant recréé : `CompactAgenda`, `DensityRibbon`
  * (scrollable), `ProductCarousel` réutilisés tels quels ; même source data

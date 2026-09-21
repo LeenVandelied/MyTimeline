@@ -914,6 +914,18 @@ Sous le hook RTK, `find … -path` renvoie « unknown flag » et un `find -iname
 `assertWebServerEnv()` (`frontend/playwright.config.ts:59`) fait échouer la commande avant tout listage si la variable manque : la recette `SKIP_DELEGATION=1 npx playwright test <spec> --list` des briefings ne marche pas telle quelle. Poser `PLAYWRIGHT_BASE_URL=http://localhost:<port quelconque>` suffit (aucun serveur n'est contacté). (Sprint 100, #480)
 
 
+## PIT-S101-001 — Un lockfile IDENTIQUE ne prouve pas un `node_modules` à jour : ne pas symlinker celui du repo principal
+Le lead a relié `frontend/node_modules` du worktree à celui du repo principal après `cmp` des deux `package-lock.json` (identiques) : le principal avait vitest 2.1.9 installé pour `^3.2.7` déclaré, sans `eslint-plugin-storybook`. L'agent #733/#735 a vu 2 fichiers Vitest rouges et un lint impossible, tous environnementaux. `npm ci` dans le worktree prend ~7 s : c'est le défaut. À défaut, comparer la version INSTALLÉE (`node -p "require('./node_modules/vitest/package.json').version"`) au lock. (Sprint 101, lead + #733)
+
+
+## PIT-S101-002 — Répliquer un validateur Java en JS : la catégorie Unicode ne suffit pas, l'itération et la définition comptent
+La prescription « `/\p{Lu}/u` » répliquait la catégorie de `Character.isUpperCase` mais pas son itération `charAt(i)` (unités UTF-16 : un caractère hors BMP n'est jamais majuscule côté serveur) ni sa définition (Lu + Other_Uppercase : `Ⓐ`, `Ⅰ`). Résultat mesuré : `𝐀`/`𝟎` acceptés par le formulaire et refusés par le serveur (invariant #508 rompu), `Ⓐ`/`Ⅰ` dans l'autre sens. Regex retenue : `/(?=[\0-\uFFFF])\p{Uppercase}/u`. Vérifier les deux sens sur hors BMP, Other_Uppercase, Lt, No avec `jshell`, pas seulement le cas qui a motivé l'issue. (Sprint 101, #735)
+
+
+## PIT-S101-007 — `pkill -f node_modules/.bin/next` ne tue pas un `next start`
+Le processus qui écoute s'appelle `next-server (v15.x)`. L'ancien serveur a survécu, la build suivante a réécrit `.next` sous lui ([[PIT-S95-001]]) et le nouveau `next start` est mort en `EADDRINUSE` : 33 rouges sur 39, alors que l'oracle `/api/auth/me` (401) ET `/fr/login` (200) restaient verts. Arrêter par le PID qui écoute (`lsof -nP -iTCP:3000 -sTCP:LISTEN`, cwd vérifié par `lsof -a -p <pid> -d cwd`), contrôler que le port est libre, lire le log du nouveau serveur. (Sprint 101, lead)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

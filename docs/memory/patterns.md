@@ -964,3 +964,12 @@ Pour prouver qu'un écran respecte 44 px : sélectionner les contrôles par requ
 
 ## PAT-S100-001 — Prouver qu'un élément `fixed` ne recouvre pas la fin du contenu : sonde + témoin sans réserve
 Ne pas se contenter du dernier focusable réel (vacant sur un écran vide ou centré). Ajouter une sonde pleine largeur en fin de conteneur, asserter que `elementFromPoint` au milieu de la bande verticale commune avec l'élément fixe la désigne, puis rejouer avec la réserve neutralisée (`padding-bottom:0`) et EXIGER le recouvrement — sinon l'oracle ne prouve rien. Exemple : `e2e/sprint-100-fab-clearance.spec.ts` (armement lead : 5 rouges / 6 sans la réserve). (Sprint 100, #480)
+
+## PAT-S101-001 — Prouver qu'une pseudo-hitbox `::before` est réellement cliquable
+`elementFromPoint` aux 4 coins (1 px dedans) de la zone 44×44 centrée sur l'hôte doit désigner l'hôte : le hit-testing attribue le pseudo à l'hôte, donc un coin hors de la boîte visible qui le désigne ne peut venir que du pseudo ; un ancêtre qui le rogne ([[PIT-S41-001]]) fait désigner autre chose. Logger les nœuds touchés en cas d'échec. Anti-pattern : asserter la largeur calculée du `::before`. Exemple : `e2e/sprint-101-touch-targets.spec.ts` `measureHitbox`. Compléter par l'entraxe entre hitboxes voisines ([[PIT-S101-008]]). (Sprint 101, #754)
+
+## PAT-S101-002 — Contraste d'un contrôle posé sur un contenu qui défile dessous
+Rendre le fond du contrôle OPAQUE, puis prouver les 3 prémisses : un nœud défilé est bien SOUS le contrôle (`elementsFromPoint`), le fond calculé a alpha 1 et l'opacité effective (contrôle + ancêtres) vaut 1, les pixels peints de la zone de fond égalent ce fond ; mesurer encre/fond au repos ET au survol, en clair ET en sombre. Anti-pattern : mesurer contre le fond d'un ancêtre sans vérifier l'alpha, ou à défilement nul. Exemple : `e2e/sprint-101-dialog-close-contrast.spec.ts`. (Sprint 101, #757)
+
+## PAT-S101-003 — Un verdict « pas de défaut » verrouille la CAUSE de l'absence, et ce verrou doit savoir rougir
+#758 : aucun recouvrement du FAB mesuré. La spec asserte aussi la structure qui l'explique (grille paysage non défilante), et ce contrôle a été armé en injectant le changement hypothétique (`height:100vh` sur le dashboard → 2 rouges), en plus du témoin sans réserve de [[PAT-S100-001]]. Sans ce verrou, un futur `h-screen` réintroduirait le défaut sans qu'aucune spec ne rougisse. Exemple : `e2e/sprint-101-fab-landscape.spec.ts`. (Sprint 101, #758)

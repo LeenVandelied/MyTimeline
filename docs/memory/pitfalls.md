@@ -1945,3 +1945,27 @@ Le bloc conteneur d'un item de grille est sa ZONE de grille : un sticky de haute
 
 ## PIT-S100-004 — Un oracle géométrique au pixel peut encoder un débordement horizontal comme valeur de référence
 `sprint-95-toast-overlap` (TALL 390×844) encadrait un recouvrement toast/croix de 3,5 px, arbitré au S99 (DEC-S99-003). C'était un artefact : la sheet débordait de 60 px en largeur (BUG-S100-001), le texte se repliait sur 400 px au lieu de 340, et un `scrollLeft` de 24 px résiduel décalait la croix. Toute spec de géométrie dans un conteneur `overflow:auto` neutralise `scrollTop` ET `scrollLeft`, et asserte `scrollWidth <= clientWidth` avant de mesurer. Suite de [[PIT-S96-004]] et [[PIT-S95-007]]. (Sprint 100, #732/#740)
+
+## PIT-S101-001 — Un lockfile IDENTIQUE ne prouve pas un `node_modules` à jour : ne pas symlinker celui du repo principal
+Le lead a relié `frontend/node_modules` du worktree à celui du repo principal après `cmp` des deux `package-lock.json` (identiques) : le principal avait vitest 2.1.9 installé pour `^3.2.7` déclaré, sans `eslint-plugin-storybook`. L'agent #733/#735 a vu 2 fichiers Vitest rouges et un lint impossible, tous environnementaux. `npm ci` dans le worktree prend ~7 s : c'est le défaut. À défaut, comparer la version INSTALLÉE (`node -p "require('./node_modules/vitest/package.json').version"`) au lock. (Sprint 101, lead + #733)
+
+## PIT-S101-002 — Répliquer un validateur Java en JS : la catégorie Unicode ne suffit pas, l'itération et la définition comptent
+La prescription « `/\p{Lu}/u` » répliquait la catégorie de `Character.isUpperCase` mais pas son itération `charAt(i)` (unités UTF-16 : un caractère hors BMP n'est jamais majuscule côté serveur) ni sa définition (Lu + Other_Uppercase : `Ⓐ`, `Ⅰ`). Résultat mesuré : `𝐀`/`𝟎` acceptés par le formulaire et refusés par le serveur (invariant #508 rompu), `Ⓐ`/`Ⅰ` dans l'autre sens. Regex retenue : `/(?=[\0-\uFFFF])\p{Uppercase}/u`. Vérifier les deux sens sur hors BMP, Other_Uppercase, Lt, No avec `jshell`, pas seulement le cas qui a motivé l'issue. (Sprint 101, #735)
+
+## PIT-S101-003 — Le sélecteur de mesure PAT-S99-001 ne voit pas `ui/switch.tsx`
+Son `<input>` est à 0×0 et opacité 0 (filtré comme invisible) ; la cible peinte est un `<label class="mt-switch">` 38×22 sans rôle. Une spec de cibles tactiles est donc verte par omission sur tout interrupteur. `sprint-101-touch-targets` ajoute `label.mt-switch` ; `sprint-99-touch-targets` ne l'a pas. Tout contrôle « input masqué + label visible » doit être nommé dans le sélecteur. (Sprint 101, #754)
+
+## PIT-S101-004 — Mesurer juste après un `scrollIntoView` animé lit une position périmée
+Dans la sheet d'édition mobile, la cible était lue à y = 946 dans un viewport de 812 (défilement `smooth` hérité, non terminé) : `elementFromPoint` rendait `null` aux 4 coins, faux rouge « pseudo rogné ». `behavior: 'instant'` + `expect.poll` sur `rect.bottom <= innerHeight` avant toute mesure. (Sprint 101, #754)
+
+## PIT-S101-005 — Un `overflow-y-auto` dans le code ne prouve pas un défilement interne
+Le lead a briefé #758 sur la prémisse « la grille paysage du dashboard défile en interne, hors de la réserve de `shell-main` ». Faux : la racine est `min-h-screen`, pas `h-screen` ; rien ne borne la hauteur, la grille grandit (417/417 px à 740×390) et c'est la PAGE qui défile. Un scrollport interne exige un ancêtre de hauteur bornée : mesurer `scrollHeight` vs `clientHeight` avant de raisonner, citer la mesure, pas la classe. (Sprint 101, #758)
+
+## PIT-S101-006 — Une sonde en fin de colonne mesurée page défilée en bas est hors fenêtre
+En paysage, la fin de colonne sort par le haut quand la page est défilée au maximum : `elementFromPoint` y rend un faux négatif. Remonter la fenêtre de `fab.top − probe.bottom` (borné à 0) avant de mesurer. (Sprint 101, #758)
+
+## PIT-S101-007 — `pkill -f node_modules/.bin/next` ne tue pas un `next start`
+Le processus qui écoute s'appelle `next-server (v15.x)`. L'ancien serveur a survécu, la build suivante a réécrit `.next` sous lui ([[PIT-S95-001]]) et le nouveau `next start` est mort en `EADDRINUSE` : 33 rouges sur 39, alors que l'oracle `/api/auth/me` (401) ET `/fr/login` (200) restaient verts. Arrêter par le PID qui écoute (`lsof -nP -iTCP:3000 -sTCP:LISTEN`, cwd vérifié par `lsof -a -p <pid> -d cwd`), contrôler que le port est libre, lire le log du nouveau serveur. (Sprint 101, lead)
+
+## PIT-S101-008 — Valider chaque pseudo-hitbox isolément ne voit pas deux zones voisines qui se touchent
+Icônes éditer/archiver de `ProductsListView` : `size="sm"` (40 px) en `gap-1`, pseudo 44×44 centré ⇒ entraxe 44 = zones bord à bord, marge nulle. Le test des 4 coins passait pour chacune (1 px de marge), la review l'a vu. Toute rangée à plusieurs hitboxes asserte aussi `entraxe − 44 ≥ 2` (correctif `max-md:gap-2`, entraxe 48). (Sprint 101, #754, review)
