@@ -10,9 +10,10 @@ import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
  * Reproduit l'enveloppe de `page.tsx` (paddings, `max-w-5xl`, en-tête `mb-6` avec le
  * VRAI `<h1>` `settings.pageTitle`) et celle de `SettingsShell` (barre d'onglets
  * `h-11` bordée en bas, `gap-6` avant le panneau). L'emplacement du bouton retour
- * (`settings-back`, `size="icon"` = `h-9 w-9`, `lg:hidden`) est réservé par un bloc
- * vide de même taille : sans lui, le titre glisserait de 48 px à l'arrivée de la
- * page sous 1024 px.
+ * (`settings-back`, `h-11 w-11` = 44 px depuis la clôture du Sprint 96, `lg:hidden`)
+ * est réservé par un bloc vide de même taille : sans lui, le titre glisserait de
+ * 56 px (44 + `gap-3`) à l'arrivée de la page sous 1024 px. Les deux tailles doivent
+ * rester synchrones.
  *
  * Variante `list` pour le panneau : les chapitres sont des formulaires empilés
  * (champ + libellé par ligne), plus proches de lignes que de cartes ou de lanes.
@@ -31,7 +32,11 @@ export default function SettingsLoading() {
       <div className="flex-grow px-4 py-6 md:px-6 md:py-8">
         <div className="mx-auto w-full max-w-5xl">
           <div className="mb-6 flex items-center gap-3">
-            <div className="h-9 w-9 lg:hidden" aria-hidden="true" />
+            <div
+              className="h-11 w-11 shrink-0 lg:hidden"
+              aria-hidden="true"
+              data-testid="settings-back-placeholder"
+            />
             <h1 className="text-xl font-semibold">{t('pageTitle')}</h1>
           </div>
 
