@@ -23,13 +23,8 @@ export type StrengthLevel = 'weak' | 'medium' | 'strong'
 
 /**
  * Le mot de passe satisferait-il la validation serveur (`@StrongPassword`) ?
- *
- * ⚠ Réplique APPROCHÉE, pas exacte : `PASSWORD_POLICY.uppercase` / `.digit` sont
- * ASCII alors que le serveur teste `Character.isUpperCase` / `isDigit` (Unicode).
- * Conséquence ici : un mot de passe conforme au serveur mais dont la majuscule
- * et le chiffre sont non-ASCII s'affiche `weak` (faux négatif). L'invariant
- * « jamais `strong` sur une saisie refusée » tient malgré tout — l'écart ne va
- * que dans le sens prudent. Détail et suivi : JSDoc de `PASSWORD_POLICY`.
+ * Dérive entièrement de `PASSWORD_POLICY` (même sémantique Unicode que le
+ * serveur, #735) : aucune règle n'est recodée ici.
  */
 export function meetsPolicy(password: string): boolean {
   return (
