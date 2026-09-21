@@ -6823,18 +6823,30 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 4/7. Backlog libre plutôt que milestone Sprint 99 : son thème est les cibles tactiles (#738, #739, #459).
 **Status :** Terminé — PR #749 mergée, issues #746/#747/#748 et milestone #99 fermés après merge
 
-### Sprint 99 — 2026-09-21 → en cours (cohésion 1.00, cibles tactiles)
-**Objectif :** Les contrôles mobiles atteignent 44 px (primitives partagées, poignée du BottomSheet) ; les textes tronqués des sessions actives restent lisibles
-**Milestone GitHub :** #100
-**Issues :** #738 (M, P1), #739 (XS, P3), #459 (XS, P3, périmètre réduit à `SessionList.tsx`) — 6 pts, `epic:design`, frontend seul
-**Plan :** aucun `/sprint plan` n'avait produit d'entrée PLANIFIÉ ni d'`architect-plans.md` (milestone et labels posés au triage de clôture du S98) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code
-**Vagues exécutées :** V1 = #459 (sonnet, Vitest seul) ∥ ui-design (arbitrage #738 + #739) | décisions du dev | V2 = #738 (opus, Playwright exclusif) ; #739 livré par le lead (doc seule)
-**Décisions :** DEC-S99-001 (#738 : Input/SelectTrigger/SelectItem agrandis sur la primitive sous 768 px ; Button : primitive inchangée, `max-md:h-11` sur les boutons des réglages seulement — le dev a écarté la reco ui-design qui laissait les boutons hors critère) ; DEC-S99-002 (#739 : poignées des deux bottom sheets exemptées par WCAG 2.5.8 « Equivalent », conditionnées à croix 44×44 + Escape) ; arbitrage en cours de vague : oracle TALL 390×844 de #714 réécrit en recouvrement partiel encadré (+24 px de contenu dans le drawer produit → 3,5 px sous le toast)
-**Tests (lead) :** Vitest 1956/1956 | tsc, format, `next build` OK | E2E complet contre `next build`+`next start` : 486 passed / 1 failed (armement `sprint-77` sous `--ignore-snapshots`, mécanique) / 8 skipped / 1 did not run | #459 vérifié au navigateur à 375/1280 (sonde jetable)
-**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 4 MINEURS (2 sans objet, 2 robustesse de spec sans défaut constaté)
+### Sprint 99 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #753 dans dev — cohésion 1.00, cibles tactiles)
+**Objectif :** Les contrôles mobiles atteignent 44 px (primitives de champ, boutons des réglages) ; la poignée des bottom sheets est arbitrée ; les textes tronqués des sessions actives restent lisibles
+**Milestone GitHub :** #100 (fermé après merge)
+**Issues livrées (3) :** #738 (M, P1), #739 (XS, P3, documentation seule), #459 (XS, P3, périmètre réduit à `SessionList.tsx`) — 6 pts, `epic:design`, frontend seul
+**Plan :** aucun `/sprint plan` n'avait produit d'entrée PLANIFIÉ ni d'`architect-plans.md` (milestone et labels posés au triage de clôture du S98) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code (#459 : `Lane.tsx` n'existe plus ; #739 : la ligne d'`a11y-audit.md` citée avait glissé, et la frise a la même poignée)
+**Vagues exécutées :** V1 = #459 (sonnet, Vitest seul) ∥ ui-design (arbitrage #738 + #739, lecture seule) | décisions du dev | V2 = #738 (opus, Playwright exclusif, harnais monté par le lead) ; #739 livré par le lead (doc seule)
 **Branche :** `claude/sprint-99-start-c2743b` (worktree, pas de `sprint/99` — même convention que S96-S98)
-**Migrations Flyway :** aucune | **BR impactées :** aucune
-**Status :** En cours — PR ouverte, `/sprint end 99` à jouer
+**Migrations Flyway :** aucune | **BR impactées :** aucune (a11y)
+**Décisions :** DEC-S99-001 (#738 : champs agrandis sur la primitive, boutons au consommateur dans les réglages — le dev a écarté la reco ui-design, qui laissait les boutons hors critère) ; DEC-S99-002 (#739 : poignées des deux sheets exemptées par WCAG 2.5.8 « Equivalent », sous condition croix 44×44 + Escape) ; DEC-S99-003 (décision B #714 étendue : recouvrement partiel toast/croix de 3,5 px accepté à 390×844, oracle TALL réécrit en cours de vague)
+**Commits :** code : `f690e178` (#459), `718b418e` (#739), `8dc84e0d` + `4d9d7e81` + `fb54ec2a` (#738) ; docs : démarrage, done ×3 + mise à jour #738, arbitrage ui-design + décisions, audit, bilan, clôture
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 4 MINEURS, tous sans suite (2 sans objet : `max-width: 767px` ≡ `< 768 px`, curseur `avatar-zoom` mesuré et conforme ; 2 robustesse de spec sans défaut constaté). ui-design pré-implémentation (#738/#739). Pas de cycle 2 : aucune correction de review.
+**Tests (lead) :** Vitest 1956/1956 | tsc, format, `next build` OK | backend non rejoué (0 fichier backend) | E2E complet contre `next build`+`next start` : 486 passed / 1 failed (armement `sprint-77` sous `--ignore-snapshots`, mécanique) / 8 skipped / 1 did not run | nouvelles specs avec contrôle négatif (agent) : `sprint-99-touch-targets` (4 rouges / 14 étapes sur le code d'avant), oracle TALL `sprint-95-toast-overlap` (rouge « non nul » sur primitives d'avant) | #459 vérifié au navigateur 375/1280 (sonde jetable) | CI 7/7 verte sur `02e12ddb`, e2e Linux compris (la marge de ≈ 3,5 px de l'oracle TALL tient sous Linux)
+**Écarts d'énoncé :** #738 citait `size="sm"` à 32 px et SelectItem non chiffré — option mesurée à 36,28 px, `max-md:min-h-11` retenu au lieu de `py-3` ; 17 boutons au lieu de 18 (celui de `settings/page.tsx` était déjà à 44) ; effet de bord hors réglages sur `sprint-95-toast-overlap` (PIT-S99-002). #459 : partie frise déjà livrée. #739 : décision étendue à la poignée de la frise.
+**Non vérifié :** Firefox/WebKit ; tablette 768–1023 ; rendu visuel des consommateurs Input/Select hors réglages (leurs specs sont vertes) ; boutons mobiles hors réglages (→ #754)
+**Contrôle de complétude :** vert sans `--force`
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S99-001…003, PAT-S99-001, DEC-S99-001…003, BUG-S99-001…002 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — option « proposition du lead » retenue par le dev) :**
+  - Cibles < 44 px hors réglages (pieds de drawers mobiles, `DeleteConfirmDialog`, `size="sm"` denses) [M | design] → issue #754 (milestone Sprint 100 : mêmes drawers que #732/#740)
+  - Badge « Session actuelle » masqué par la troncature d'un nom d'appareil long à 375 px (trouvé par le lead) [XS | design] → issue #755 (backlog libre)
+  - Vérification au survol de #459 → soldée par le lead (sonde navigateur), sans issue
+  - 4 mineurs de review → discard : sans défaut constaté
+  Ratio discard 1/4 (hors item soldé).
+**Status :** Terminé — PR #753 mergée, issues #738/#739/#459 et milestone #100 fermés après merge
 
 ### Matrice de conflits inter-sprints (S93-S97)
 

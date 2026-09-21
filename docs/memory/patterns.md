@@ -958,3 +958,6 @@ Au zoom arrière, le navigateur rabat `scrollLeft` dès le rendu à la nouvelle 
 
 ## PAT-S98-002 — Contrôle négatif qui discrimine les options de charte
 Une spec de non-collision peut être verte pour une mauvaise raison : la troncature seule supprime aussi la collision. Ajouter une assertion de largeur LISIBLE (> ancienne réserve) en plus du hit-test, et jouer deux contrôles négatifs distincts — l'ancien comportement (doit rougir sur la collision) et l'option de charte écartée (doit rougir sur la largeur). (Sprint 98, #746)
+
+## PAT-S99-001 — Spec de cibles tactiles par requête DOM générique + seuil anti-vacuité
+Pour prouver qu'un écran respecte 44 px : sélectionner les contrôles par requête (`button, a[href], input:not([type=hidden]), [role=button|combobox|option]`) visibles dans le panneau, mesurer par `getBoundingClientRect` (pas `toHaveCSS`), nommer les exemptions en commentaire (poignée DEC-S99-002, input `sr-only`), et exiger un nombre minimal de contrôles par étape pour qu'une requête vide rougisse. Une liste de testids figée resterait verte quand un nouveau bouton non conforme apparaît. Exemple : `e2e/sprint-99-touch-targets.spec.ts`. (Sprint 99, #738)

@@ -905,6 +905,10 @@ Sa regex n'accepte que « Pas de RECOMMAND_X », « aucun… », « non applicab
 ## PIT-S98-002 — Le résumé RTK de `next lint --file` peut annoncer une erreur qui n'existe pas
 Sous le hook RTK, `npx next lint --file <f>` a résumé « Errors: 1 » alors que `rtk proxy npx next lint --file <f>` (sortie brute, même fichier) donnait « No ESLint warnings or errors ». Ne jamais qualifier un lint de rouge sur le résumé RTK : contre-vérifier par `rtk proxy`. Même famille que les `grep`/`git diff`/`prettier --check` réécrits par RTK. (Sprint 98, #748)
 
+
+## PIT-S99-003 — RTK réécrit aussi `find`
+Sous le hook RTK, `find … -path` renvoie « unknown flag » et un `find -iname` légitime peut rendre 0 résultat sans erreur. Pour toute vérification factuelle (review, mesure), utiliser `/usr/bin/find` et `/usr/bin/grep`. Même famille que PIT-S98-002 et les `grep`/`git diff`/`prettier --check` réécrits. (Sprint 99, review)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
