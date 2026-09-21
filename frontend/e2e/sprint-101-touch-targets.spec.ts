@@ -273,6 +273,22 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
     // Rangée dense de la liste : icônes éditer / archiver (pseudo-hitbox).
     await expectHitbox('products-edit', page.getByTestId(`products-edit-${product.id}`))
     await expectHitbox('products-archive', page.getByTestId(`products-archive-${product.id}`))
+    // Review S101 — deux zones 44×44 VOISINES ne doivent pas se toucher : l'icône
+    // « archiver », peinte après, capterait sinon le bord de « éditer ». Zones
+    // centrées sur leur hôte ⇒ écart entre zones = entraxe − 44. Avec `gap-1` il
+    // valait 0 (bord à bord) ; on exige un dégagement franc de 2 px au moins.
+    const centerX = (id: string) =>
+      page
+        .getByTestId(id)
+        .evaluate((el) => el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2)
+    const pitch =
+      (await centerX(`products-archive-${product.id}`)) -
+      (await centerX(`products-edit-${product.id}`))
+    console.log(`[#754 hitbox products-edit/archive] entraxe=${pitch.toFixed(1)} px`)
+    expect(
+      pitch - MIN_TARGET,
+      'dégagement entre les zones éditer / archiver',
+    ).toBeGreaterThanOrEqual(2)
 
     // Édition : + « Archiver » en pied.
     await page.getByTestId(`products-edit-${product.id}`).click({ timeout: BUDGET })

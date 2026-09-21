@@ -398,7 +398,12 @@ export function ProductsListView() {
                       <span className="sr-only">{t('eventsCount', { count: eventCount })}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
+                      {/* #754 (review S101) — `max-md:gap-2` : chaque icône porte une
+                          pseudo-hitbox de 44 px centrée sur un bouton de 40 px. Avec
+                          l'écart de 4 px, les deux zones se touchaient bord à bord (marge
+                          nulle) ; 8 px leur laissent 4 px de dégagement, prouvé par
+                          `e2e/sprint-101-touch-targets.spec.ts`. Desktop inchangé. */}
+                      <div className="flex items-center justify-end gap-1 max-md:gap-2">
                         <Button
                           type="button"
                           variant="ghost"
