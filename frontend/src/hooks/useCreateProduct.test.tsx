@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react-query'
 import { useCreateProduct } from './useCreateProduct'
 import type { Product, ProductCreate } from '@/types/product'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 
 /**
  * #61 — Mutation création : appelle `createProduct(userId, data)` et invalide le
@@ -47,7 +48,20 @@ describe('useCreateProduct', () => {
     const payload: ProductCreate = { name: 'Voiture', category: 'c1' }
     await result.current.mutateAsync(payload)
 
-    expect(createProductMock).toHaveBeenCalledWith('user-1', payload)
+    // #761 — sans option, le hook ne pose AUCUN opt-out (3e argument undefined).
+    expect(createProductMock).toHaveBeenCalledWith('user-1', payload, undefined)
+  })
+
+  it("#761 — relaie l'opt-out 403 fourni par l'écran au service", async () => {
+    createProductMock.mockResolvedValue(FAKE)
+    const { result } = renderHook(() => useCreateProduct('user-1', HANDLES_FORBIDDEN_INLINE), {
+      wrapper: makeWrapper(),
+    })
+
+    const payload: ProductCreate = { name: 'Voiture', category: 'c1' }
+    await result.current.mutateAsync(payload)
+
+    expect(createProductMock).toHaveBeenCalledWith('user-1', payload, HANDLES_FORBIDDEN_INLINE)
   })
 
   it('rejette sans appeler le service si userId absent', async () => {

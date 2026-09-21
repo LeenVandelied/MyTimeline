@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createCategory } from '@/services/categoryService'
 import { queryKeys } from '@/lib/query-keys'
 import type { Category, CategoryCreate } from '@/types/category'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 
 /**
  * #62 — Création d'une catégorie via TanStack Query v5 (mutation).
@@ -16,11 +17,11 @@ import type { Category, CategoryCreate } from '@/types/category'
  * avalée : le composant lit `error.response.status` (409 = nom dupliqué BR-CAT-004)
  * pour l'affichage inline sous le champ `name`.
  */
-export function useCreateCategory() {
+export function useCreateCategory(options?: InlineErrorOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<Category, unknown, CategoryCreate>({
-    mutationFn: (data: CategoryCreate) => createCategory(data),
+    mutationFn: (data: CategoryCreate) => createCategory(data, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
     },

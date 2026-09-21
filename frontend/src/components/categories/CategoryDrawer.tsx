@@ -34,6 +34,7 @@ import { PaletteColorPicker } from '@/components/ui/palette-color-picker'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { useCreateCategory } from '@/hooks/useCreateCategory'
 import { useUpdateCategory } from '@/hooks/useUpdateCategory'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { useDeleteCategory } from '@/hooks/useDeleteCategory'
 import type { Category, CategoryCreate, CategoryUpdate } from '@/types/category'
 import { createCategoryFormSchema, type CategoryFormValues } from '@/types/category'
@@ -120,8 +121,10 @@ export function CategoryDrawer({
   const isSystem = isEdit && category?.system === true
   const readOnly = isSystem
 
-  const createMutation = useCreateCategory()
-  const updateMutation = useUpdateCategory()
+  // #761 — le `catch` de `onSubmit` affiche `errors.forbidden` sur un 403 : on retire
+  // ces deux requêtes du toast global « accès refusé » (sinon double signalement).
+  const createMutation = useCreateCategory(HANDLES_FORBIDDEN_INLINE)
+  const updateMutation = useUpdateCategory(HANDLES_FORBIDDEN_INLINE)
   const deleteMutation = useDeleteCategory()
 
   const [color, setColor] = React.useState<string | null>(null)

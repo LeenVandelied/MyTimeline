@@ -1,6 +1,7 @@
 import apiClient from './apiClient'
 import { ArchivedProduct, Product, ProductCreate, ProductUpdate } from '@/types/product'
 import { safeErrorMessage } from '@/lib/safe-error'
+import type { InlineErrorOptions } from './inlineErrorHandling'
 
 export const getProducts = async (userId: string): Promise<Product[]> => {
   try {
@@ -17,6 +18,8 @@ export const getProducts = async (userId: string): Promise<Product[]> => {
 export const createProduct = async (
   userId: string,
   productData: ProductCreate,
+  // #761 — optionnel et rétro-compatible : seul un écran qui rend le 403 inline le passe.
+  options?: InlineErrorOptions,
 ): Promise<Product> => {
   try {
     // #163 — `ProductCreationRequest.userId` est `@NotNull` et validé par `@Valid`
@@ -26,10 +29,14 @@ export const createProduct = async (
     // `ProductControllerOwnershipTest` (le body POST inclut `userId`). On l'injecte
     // donc ici. L'ownership reste dérivé du path/JWT (le userId du body est écrasé
     // côté backend) : aucune élévation de privilège possible.
-    const response = await apiClient.post(`/users/${userId}/products`, {
-      ...productData,
-      userId,
-    })
+    const response = await apiClient.post(
+      `/users/${userId}/products`,
+      {
+        ...productData,
+        userId,
+      },
+      options,
+    )
     return response.data
   } catch (error) {
     console.error('Erreur lors de la création du produit :', safeErrorMessage(error))
@@ -49,9 +56,14 @@ export const updateProduct = async (
   userId: string,
   productId: string,
   productData: ProductUpdate,
+  options?: InlineErrorOptions,
 ): Promise<Product> => {
   try {
-    const response = await apiClient.patch(`/users/${userId}/products/${productId}`, productData)
+    const response = await apiClient.patch(
+      `/users/${userId}/products/${productId}`,
+      productData,
+      options,
+    )
     return response.data
   } catch (error) {
     console.error('Erreur lors de la mise à jour du produit :', safeErrorMessage(error))
