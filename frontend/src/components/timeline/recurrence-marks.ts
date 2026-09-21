@@ -20,7 +20,8 @@ import { isUnboundedBand, segmentIntersectsBand, type Band } from './virtualizat
  *  3. `windowRecurrenceMarks` — DÉPENDANT DE LA BANDE : ne garde que les marques qui
  *     croisent la bande rendue (virtualisation #69), sans recréer d'objet.
  *
- * INVARIANTS (arbitrage dev 2026-09-15, pas d'empilage en rangées) :
+ * INVARIANTS (arbitrage dev 2026-09-15 ; #709 a depuis ajouté l'empilage en rangées — les
+ * marques d'une série suivent la rangée de son occurrence réelle, `RecurrenceMarks`) :
  *  - les marques ne sont JAMAIS des `timeline-event` : pas de testid, `aria-hidden`,
  *    `pointer-events:none`, hors roving tabindex — elles n'existent pas pour la navigation ;
  *  - elles sont rendues AVANT les occurrences réelles de la lane (ordre de peinture) :

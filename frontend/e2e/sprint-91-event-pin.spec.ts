@@ -33,8 +33,8 @@ import { PROD } from './support/accounts'
  * du pin sur la boîte de `.mt-evt-pin`.
  *
  * CE QUE LA SPEC NE PROUVE PAS : le non-chevauchement d'un libellé de pin avec
- * l'événement SUIVANT de la même lane — la prod n'empile pas les événements en
- * rangées (tous à `top` fixe), la maquette si (`layoutLane`). Hors périmètre #594.
+ * l'événement SUIVANT de la même lane — hors périmètre #594. Depuis #709 (S97) la
+ * prod empile en rangées (`layoutLane`) : cf. `sprint-97-lane-stacking.spec.ts`.
  */
 
 test.use({ storageState: PROD.storageState })

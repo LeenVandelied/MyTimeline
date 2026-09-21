@@ -262,9 +262,15 @@ intuition.
 
 ### Limites connues
 
-- Le fenêtrage suppose des lanes de hauteur **uniforme**. Une lane à hauteur
+- ~~Le fenêtrage suppose des lanes de hauteur **uniforme**. Une lane à hauteur
   variable (multi-pistes, chevauchements empilés) invaliderait `buildVerticalModel`
-  et demanderait une mesure par ligne.
+  et demanderait une mesure par ligne.~~ **Levée par #709 (Sprint 97)** : les
+  chevauchements sont empilés en rangées (`lane-layout.ts`), la hauteur d'une lane
+  devient `base + (rangées − 1) × pas`. Elle reste CALCULÉE, pas mesurée : seule la
+  hauteur de base est lue sur le DOM (hauteur ajoutée retranchée via
+  `data-lane-extra`), `buildVerticalModel` produit des sommes préfixées par
+  catégorie et `windowLanes` y cherche par dichotomie. Toujours aucune mesure par
+  ligne ni `ResizeObserver`.
 - Les en-têtes de catégorie sont **toujours** montés (12 nœuds ici). Une frise à
   plusieurs centaines de catégories demanderait de les fenêtrer aussi.
 - `computeRange`, `positionEvents` et `buildMinimapBuckets` restent **O(n) sur
