@@ -384,6 +384,8 @@ for (const variant of [
         await expect(level).toHaveText(label)
         // Pas de raccourci « T » en mobile : on recentre sur la graduation TODAY
         // (toujours rendue) pour ramener les événements dans la bande de rendu.
+        // Depuis #747 le zoom ré-ancre le jour au CENTRE de la piste : la parade est
+        // gardée pour découpler cette spec (pin vs barre) de l'ancre de défilement.
         const todayLeft = await page
           .locator('.mt-tlm__ruler .mt-tlm__today')
           .evaluate((el) => parseFloat((el as HTMLElement).style.left))

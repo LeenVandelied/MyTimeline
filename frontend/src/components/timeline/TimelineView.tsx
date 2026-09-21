@@ -78,6 +78,7 @@ import {
   layoutLanes,
   type LaneLayout,
 } from './lane-layout'
+import { applyLabelReserves } from './label-reserve'
 
 /**
  * #55 — Vue Timeline desktop.
@@ -696,8 +697,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     [events, rangeStart, now],
   )
   // `scaleEventPositions` ne consomme que la largeur de jour → clé suffisante.
+  // #746 — réserves de libellé (pin long, libellé extérieur) posées ici, AVANT l'empilage :
+  // estimation pure, identique à chaque niveau de zoom (`label-reserve.ts`).
   const eventsByResource = useZoomCache(indexedEvents, `${dayWidth}`, () =>
-    scaleEventPositions(indexedEvents, dayWidth),
+    applyLabelReserves(scaleEventPositions(indexedEvents, dayWidth), 'desktop'),
   )
   // #595 — Marques de récurrence (fantômes + connecteurs), mêmes deux passes : dates en
   // jours (invariantes au zoom, coupées à l'étendue EXISTANTE — jamais étirée), puis mise

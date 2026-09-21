@@ -901,6 +901,10 @@ Sa regex n'accepte que « Pas de RECOMMAND_X », « aucun… », « non applicab
 ## PIT-S97-004 — Une grandeur de maquette recopiée dans une issue peut perdre son axe
 #709 annonçait « écart de 8 px / 10 px entre rangées » : la maquette distingue un `gap` HORIZONTAL d'empilage (8/10 px, converti en jours) et un `VGAP` VERTICAL (8/7 px). Implémenter l'énoncé aurait donné des rangées mobiles espacées de 10 px et un empilage indépendant du zoom. Avant de briefer une issue qui cite des cotes de maquette, relire l'extrait de maquette et vérifier l'AXE et l'UNITÉ de chaque grandeur ; signaler l'écart dans le briefing plutôt que de laisser l'agent le découvrir. (Sprint 97, lead)
 
+
+## PIT-S98-002 — Le résumé RTK de `next lint --file` peut annoncer une erreur qui n'existe pas
+Sous le hook RTK, `npx next lint --file <f>` a résumé « Errors: 1 » alors que `rtk proxy npx next lint --file <f>` (sortie brute, même fichier) donnait « No ESLint warnings or errors ». Ne jamais qualifier un lint de rouge sur le résumé RTK : contre-vérifier par `rtk proxy`. Même famille que les `grep`/`git diff`/`prettier --check` réécrits par RTK. (Sprint 98, #748)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

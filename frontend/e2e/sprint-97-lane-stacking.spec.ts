@@ -294,9 +294,12 @@ for (const variant of [
       for (const [i, label] of LEVELS.entries()) {
         if (i > 0) await page.getByTestId('timeline-zoom-out').click()
         await expect(level).toHaveText(label)
-        // Pas de raccourci « T » ni de ré-ancrage au zoom en mobile : on recentre sur la
-        // graduation TODAY (toujours rendue) pour ramener A et B dans la bande de rendu
-        // (même parade que `sprint-91-event-pin`).
+        // Pas de raccourci « T » en mobile : on recentre sur la graduation TODAY (toujours
+        // rendue) pour ramener A et B dans la bande de rendu (même parade que
+        // `sprint-91-event-pin`). Depuis #747 le zoom mobile ré-ancre le jour au CENTRE
+        // de la piste (`sprint-98-mobile-zoom-anchor`) : la parade n'est plus requise
+        // par un défaut, elle est gardée pour que cette spec ne dépende pas de l'ancre
+        // (elle porte sur l'empilage, pas sur le défilement).
         const todayLeft = await page
           .locator('.mt-tlm__ruler .mt-tlm__today')
           .evaluate((el) => parseFloat((el as HTMLElement).style.left))

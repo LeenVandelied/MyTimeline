@@ -156,3 +156,9 @@ Conteneur `absolute top-4 right-4` sous une racine `position: static` : son bloc
 
 ## BUG-S96-002 — Ligne orpheline dans la palette sur les trois surfaces, pas une
 `flex-wrap` : découpage dépendant de la largeur disponible — 11+1 (`CategoryDrawer` et `ProductDrawer` à 1280), 10+2 (`EventEditForm`). L'issue n'avait vu que le tiroir catégorie. Correctif `grid grid-cols-6 w-fit` : 6×2 par construction, gardé à 375 ET 1280 px. (Sprint 96, #665)
+
+## BUG-S98-001 — Frises mobiles : la zone regardée sortait de l'écran au changement de zoom
+Le hook mobile ne rejouait que la synchro minimap quand `dayWidth` changeait : `scrollLeft` restait en pixels de l'ancienne échelle. Correctif : ancre en jours relevée avant le zoom, re-projection au centre de piste en `useLayoutEffect` (DEC-S98-002, PAT-S98-001). E2E portrait + paysage, contrôle négatif 2/2. (Sprint 98, #747)
+
+## BUG-S98-002 — Frise : libellés longs et libellé extérieur débordaient sur l'occurrence suivante de la rangée
+L'empilage (#709) ne réservait que `PIN_FOOTPRINT_PX` (100/90 px) pour un pin, et rien pour le libellé extérieur de secours. Correctif : réserve estimée + libellé borné en CSS (DEC-S98-001). E2E hit-test desktop, portrait, paysage ; contrôles négatifs 3/3. (Sprint 98, #746)

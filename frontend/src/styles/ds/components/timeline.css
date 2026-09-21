@@ -343,14 +343,15 @@
      pseudo-élément débordant : sa `boundingBox()` EST la zone de frappe, et l'anneau
      de focus entoure toute la cible. `overflow:visible` : le pin ne doit pas être
      rogné par la troncature héritée de la barre.
-   - Libellé plafonné à 240 px (ellipse) : la maquette ne tronque pas ; le plafond
-     borne un titre de 100 caractères sous `OVERSCAN_X_PX` (600 px) de la
-     virtualisation, qui ne réserve que 100 px (`PIN_FOOTPRINT_PX`). */
+   - Libellé borné à la place que l'empilage lui RÉSERVE (#746, `--mt-label-max` posée
+     en ligne = emprise estimée − 11 px, `label-reserve.ts`), ellipse au-delà + `title`
+     = titre complet : il ne se peint plus sur l'occurrence suivante de sa rangée.
+     Repli 240 px (plafond historique) si la variable est absente. */
 .mt-tlv__evt--pin{top:var(--mt-row-y, 0px); height:44px; min-width:44px; padding:0; gap:6px; border-radius:var(--radius-sm); background:transparent; color:var(--color-ink); box-shadow:none; overflow:visible;}
 .mt-tlv__evt--pin:hover{box-shadow:none; filter:none;}
 .mt-tlv__evt--pin:hover .mt-evt-pin{box-shadow:var(--shadow-md);}
 .mt-evt-pin{flex:0 0 auto; width:10px; height:26px; border-radius:3px; background:var(--mt-evt, var(--color-accent)); box-shadow:var(--shadow-sm); transition:box-shadow var(--dur-micro);}
-.mt-evt-pin__label{min-width:0; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:16px; font-weight:var(--weight-semibold); color:var(--color-ink);}
+.mt-evt-pin__label{min-width:0; max-width:var(--mt-label-max, 240px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:16px; font-weight:var(--weight-semibold); color:var(--color-ink);}
 
 /* #595 — RÉCURRENCE sur les trois frises (maquette §1, §3, §4, §5 de
    `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`). Pas de trame de
@@ -419,8 +420,11 @@
 
 /* #81 point 6 — libellé de secours HORS barre : rendu quand le contraste du
    titre À L'INTÉRIEUR de la barre est < 4.5:1 (fond clair + barre étroite). Posé
-   sur le fond de lane (ink lisible), aligné verticalement sur la barre. */
-.mt-tlv__evt-outside{position:absolute; top:calc(9px + var(--mt-row-y, 0px)); height:26px; display:inline-flex; align-items:center; padding:0 4px; font-size:12px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; pointer-events:none;}
+   sur le fond de lane (ink lisible), aligné verticalement sur la barre.
+   #746 — boîte bornée à la place réservée dans l'empilage (`--mt-label-max`, posée en
+   ligne par `EventPill`, repli 240 px) et coupée par ellipse : bloc + `line-height`
+   plutôt que flex, car `text-overflow` ne s'applique pas au texte d'un conteneur flex. */
+.mt-tlv__evt-outside{position:absolute; top:calc(9px + var(--mt-row-y, 0px)); box-sizing:border-box; display:block; height:26px; line-height:26px; max-width:var(--mt-label-max, 240px); padding:0 4px; overflow:hidden; text-overflow:ellipsis; font-size:12px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; pointer-events:none;}
 
 /* Minimap waveform : barres de densité + fenêtre draggable focusable. */
 .mt-minimap__bar--filled{background:var(--color-accent);}

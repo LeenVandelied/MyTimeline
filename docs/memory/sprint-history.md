@@ -6798,6 +6798,31 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 2/10. Backlog libre : aucun milestone Sprint 98 n'existe.
 **Status :** Terminé — PR #743 mergée, issues #670/#709/#716 et milestone #98 fermés après merge
 
+### Sprint 98 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #749 dans dev — cohésion 1.00, Frise lisible sur mobile et en rangées)
+**Objectif :** Le zoom mobile garde la zone regardée ; aucun libellé ne déborde sur l'occurrence suivante de sa rangée ; `layoutLane` couvert sur ses cas limites
+**Milestone GitHub :** #99 (fermé après merge)
+**Issues livrées (3) :** #748 (XS), #747 (M, réel S), #746 (S, réel M) — 7 pts, follow-ups du S97 (frise, `epic:events`, frontend seul)
+**Plan :** aucun `/sprint plan` n'avait produit d'entrée PLANIFIÉ ni d'`architect-plans.md` (milestone et labels posés au triage de clôture du S97) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code
+**Vagues exécutées :** V1 = #747 (Playwright exclusif) ∥ #748 (Vitest seul) ∥ ui-design (arbitrage de charte #746, lecture seule) | V2 = #746 (Playwright exclusif) — conforme au plan
+**Branche :** `claude/sprint-98-start-ff8362` (worktree, pas de `sprint/98` — même convention que S96/S97)
+**Migrations Flyway :** aucune | **BR impactées :** aucune (géométrie de frise)
+**Décisions :** DEC-S98-001 (#746, réserve ESTIMÉE sans DOM, choisie par le dev contre la troncature 84/74 px recommandée par ui-design) ; DEC-S98-002 (#747, ancre de zoom mobile au CENTRE de la piste, lead)
+**Commits :** 8 — code : `95ed65b2` (#748), `32527dbb` (#747), `9e12ef35` + `47484557` (#746) ; docs : démarrage, artefacts vague 1, done #746 + audit + review, clôture
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR reclassé MINEUR par le lead (clé `useZoomCache` sans la vue : hypothétique, cache propre à `TimelineView`, vue figée à `desktop`) / 3 MINEURS — les 4 sans suite. ui-design pré-implémentation (#746) : recommandation A (troncature) non retenue par le dev.
+**Tests (lead) :** Vitest 1953/1953 | tsc, format, `next build` OK | backend non rejoué (0 fichier backend) | E2E complet contre `next build`+`next start`, base recréée : 478 passed / 1 failed (armement `sprint-77` sous `--ignore-snapshots`, mécanique) / 8 skipped / 1 did not run | nouvelles specs avec contrôle négatif (agents) : `sprint-98-mobile-zoom-anchor` (2/2 rouges), `sprint-98-label-collision` (3/3 rouges, + option de charte écartée 3/3 rouges) | CI 7/7 verte sur `3c645a00`, e2e Linux compris
+**Écarts d'énoncé :** #747 annonçait deux logiques séparées, un seul hook couvre portrait et paysage (M → S) ; #746 : le libellé extérieur ne réservait pas « trop peu » mais 0 px, et n'avait ni max-width ni ellipse ; un conteneur flex rendait l'ellipse inopérante (PIT-S98-001)
+**Non vérifié :** pinch réel à 2 pointeurs (#750) ; dates proches des bornes de la frise ; #746 en thème sombre, 4 locales réelles, largeur de ↻ et titres en capitales (#752), zooms autres que Mois et lane à 3+ rangées (#751)
+**Contrôle de complétude :** vert sans `--force`, après reformulation de 5 négations « `RECOMMAND_X: non` » (forme non reconnue, PIT-S96-010) — vérifiées une à une, toutes sans objet
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S98-001…002, PAT-S98-001…002, DEC-S98-001…002, BUG-S98-001…002 ; PIT-S97-002 marqué résolu pour sa première moitié ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — option « proposition du lead » retenue par le dev) :**
+  - E2E du pinch à 2 pointeurs sur frise mobile [S | frise] → issue #750 (backlog libre)
+  - E2E de collision aux zooms Semaine/Trimestre et sur une lane à 3+ rangées [XS | frise] → issue #751 (backlog libre)
+  - Mesurer ↻ et les titres en capitales pour affiner la chasse de la réserve [XS | frise] → issue #752 (backlog libre)
+  - 4 mineurs de review (clé de cache hypothétique, commentaire sur `title` d'un libellé `aria-hidden`, verrou visuel du libellé extérieur passé en bloc, cas `clientWidth` < gouttière) → discard : sans défaut constaté
+  Ratio discard 4/7. Backlog libre plutôt que milestone Sprint 99 : son thème est les cibles tactiles (#738, #739, #459).
+**Status :** Terminé — PR #749 mergée, issues #746/#747/#748 et milestone #99 fermés après merge
+
 ### Matrice de conflits inter-sprints (S93-S97)
 
 | A | B | Fichiers communs |

@@ -1,6 +1,15 @@
 'use client'
 
-import { RefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import { FullCalendarEvent } from '@/types/event'
 import { Resource, groupResourcesByCategory } from './lib'
 import { useTimelineViewport } from './useTimelineViewport'
@@ -40,6 +49,8 @@ import {
   layoutLanes,
   type LaneLayout,
 } from './lane-layout'
+import { centerDayFromScroll, scrollLeftForCenterDay } from './mobile-zoom-anchor'
+import { applyLabelReserves } from './label-reserve'
 
 /** #709 — Variante mobile (le pas de rangée et la hauteur de lane en dépendent). */
 export type MobileVariant = 'portrait' | 'landscape'
@@ -198,21 +209,95 @@ export function useTimelineMobileState(
   const trackWidth = useMemo(() => totalDays * dayWidth, [totalDays, dayWidth])
   const railWidth = trackWidth + MOBILE_LANE_TRACK_OFFSET_PX
 
+  /* ==========================================================================
+   * #747 — RÉ-ANCRAGE AU ZOOM (pendant mobile de #449, cf. `mobile-zoom-anchor.ts`).
+   *
+   * Ancre = jour au CENTRE de la zone de PISTE visible (DEC-S98, ≠ bord gauche du
+   * desktop). Elle est relevée par `captureZoomAnchor` AVANT chaque dispatch de
+   * zoom (boutons ET pinch), tant que DOM et `dayWidth` sont encore à l'ancienne
+   * échelle : relue APRÈS le rendu, la valeur serait celle déjà rabattue par le
+   * navigateur au zoom arrière (rail rétréci), c'est-à-dire le défaut corrigé.
+   *
+   * La re-projection vit dans un `useLayoutEffect` :
+   *  - armé UNIQUEMENT sur un changement de `dayWidth` (un re-rendu quelconque ne
+   *    doit jamais déplacer le défilement de l'utilisateur) ;
+   *  - écrit AVANT la peinture (pas de frame sur la position périmée) ;
+   *  - déclaré AVANT `useTimelineViewport` : ses effets de layout s'exécutent dans
+   *    l'ordre de déclaration, la bande de virtualisation est donc mesurée sur le
+   *    `scrollLeft` DÉJÀ re-projeté (sinon une frame de piste vide autour de l'ancre).
+   * La minimap (`rawOnScroll`, `useEffect` sur `dayWidth`) passe après : elle lit la
+   * position re-projetée.
+   *
+   * N'interfère ni avec le centrage initial (`anchoredRef`, `dayWidth` inchangé au
+   * montage) ni avec le report à la rotation (`setScrollNode`, pas de changement
+   * de `dayWidth`). `scrollLeft =` et non `scrollTo` : `.mt-tlm__scroll` n'a pas de
+   * `scroll-behavior:smooth`, et jsdom n'implémente pas `Element.scrollTo`.
+   * ========================================================================== */
+  const lastDayWidthRef = useRef(dayWidth)
+  const dayWidthRef = useRef(dayWidth)
+  dayWidthRef.current = dayWidth
+  /** Jour ancré relevé avant le dernier dispatch de zoom (consommé à la re-projection). */
+  const pendingZoomAnchorRef = useRef<number | null>(null)
+
+  const captureZoomAnchor = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    pendingZoomAnchorRef.current = centerDayFromScroll(
+      el.scrollLeft,
+      el.clientWidth,
+      dayWidthRef.current,
+      MOBILE_LANE_TRACK_OFFSET_PX,
+    )
+  }, [])
+
+  useLayoutEffect(() => {
+    const previousDayWidth = lastDayWidthRef.current
+    if (dayWidth === previousDayWidth) return
+    lastDayWidthRef.current = dayWidth
+    const pending = pendingZoomAnchorRef.current
+    pendingZoomAnchorRef.current = null
+    const el = scrollRef.current
+    if (!el) return
+    // Repli (aucun chemin produit ne l'atteint : tout changement d'échelle passe par
+    // `captureZoomAnchor`) : relecture du DOM à l'ancienne échelle — exacte au zoom
+    // avant, déjà rabattue au zoom arrière si le rail a rétréci sous `scrollLeft`.
+    const day =
+      pending ??
+      centerDayFromScroll(
+        el.scrollLeft,
+        el.clientWidth,
+        previousDayWidth,
+        MOBILE_LANE_TRACK_OFFSET_PX,
+      )
+    if (day === null) return
+    // La borne haute est laissée au navigateur (clamp sur la largeur réelle du rail).
+    el.scrollLeft = scrollLeftForCenterDay(
+      day,
+      el.clientWidth,
+      dayWidth,
+      MOBILE_LANE_TRACK_OFFSET_PX,
+    )
+  }, [dayWidth])
+
   const ticks = useMemo(
     () => buildRulerTicks(rangeStart, totalDays, zoom.level, dayWidth, locale),
     [rangeStart, totalDays, zoom.level, dayWidth, locale],
   )
 
   const eventsByResource = useMemo(
-    // #594 — emprise réservée d'un ponctuel : 90 px en mobile (maquette `layoutLane`).
+    // #594 — emprise réservée d'un ponctuel : 90 px en mobile (maquette `layoutLane`),
+    // #746 — élargie à la place estimée de son libellé (police mobile 12,5 px).
     () =>
-      positionEvents(
-        events,
-        rangeStart,
-        dayWidth,
-        now,
-        DEFAULT_MIN_WIDTH_PX,
-        PIN_FOOTPRINT_PX.mobile,
+      applyLabelReserves(
+        positionEvents(
+          events,
+          rangeStart,
+          dayWidth,
+          now,
+          DEFAULT_MIN_WIDTH_PX,
+          PIN_FOOTPRINT_PX.mobile,
+        ),
+        'mobile',
       ),
     [events, rangeStart, dayWidth, now],
   )
@@ -423,12 +508,21 @@ export function useTimelineMobileState(
     rawOnScrollRef.current()
   }, [])
 
-  const zoomIn = useCallback(() => dispatch({ type: 'ZOOM_IN' }), [])
-  const zoomOut = useCallback(() => dispatch({ type: 'ZOOM_OUT' }), [])
+  // #747 — chaque action de zoom relève l'ancre AVANT de changer l'échelle.
+  const zoomIn = useCallback(() => {
+    captureZoomAnchor()
+    dispatch({ type: 'ZOOM_IN' })
+  }, [captureZoomAnchor])
+  const zoomOut = useCallback(() => {
+    captureZoomAnchor()
+    dispatch({ type: 'ZOOM_OUT' })
+  }, [captureZoomAnchor])
   const onPinchZoom = useCallback(
-    (direction: 'in' | 'out') =>
-      dispatch(direction === 'in' ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' }),
-    [],
+    (direction: 'in' | 'out') => {
+      captureZoomAnchor()
+      dispatch(direction === 'in' ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' })
+    },
+    [captureZoomAnchor],
   )
 
   return {

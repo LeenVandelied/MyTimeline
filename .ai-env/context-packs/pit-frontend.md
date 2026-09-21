@@ -1625,7 +1625,7 @@ Sa regex n'accepte que « Pas de RECOMMAND_X », « aucun… », « non applicab
 
 
 ## PIT-S97-002 — Frises mobiles : pas de ré-ancrage au zoom, et l'ordre des assertions arme le contrôle négatif
-Les frises mobiles ne ré-ancrent pas `scrollLeft` quand le niveau de zoom change : une spec qui zoome puis cherche un événement proche d'aujourd'hui doit recentrer sur `.mt-tlm__ruler .mt-tlm__today`. Et pour qu'un contrôle négatif E2E prouve le défaut, placer l'assertion du SYMPTÔME (hit-test `elementFromPoint`) avant les assertions de crochets (`data-lane-rows`) : sinon la spec rougit sur un attribut absent et ne dit rien du défaut. (Sprint 97, #709)
+Les frises mobiles ne ré-ancrent pas `scrollLeft` quand le niveau de zoom change : une spec qui zoome puis cherche un événement proche d'aujourd'hui doit recentrer sur `.mt-tlm__ruler .mt-tlm__today`. Et pour qu'un contrôle négatif E2E prouve le défaut, placer l'assertion du SYMPTÔME (hit-test `elementFromPoint`) avant les assertions de crochets (`data-lane-rows`) : sinon la spec rougit sur un attribut absent et ne dit rien du défaut. (Sprint 97, #709) **Mise à jour S98 : la première moitié est RÉSOLUE par #747** (ré-ancrage au centre, DEC-S98-002) ; les parades « recentrer sur TODAY » restent dans `sprint-91-event-pin`/`sprint-97-lane-stacking` pour découpler ces specs de l'ancre. La seconde moitié (ordre des assertions) reste valable.
 
 
 ## PIT-S97-003 — `i18n-namespaces.test.ts` ne prouve rien sur une clé individuelle
@@ -1634,6 +1634,14 @@ Il ne vérifie que la résolution des racines de namespace (le fichier existe), 
 
 ## PIT-S97-004 — Une grandeur de maquette recopiée dans une issue peut perdre son axe
 #709 annonçait « écart de 8 px / 10 px entre rangées » : la maquette distingue un `gap` HORIZONTAL d'empilage (8/10 px, converti en jours) et un `VGAP` VERTICAL (8/7 px). Implémenter l'énoncé aurait donné des rangées mobiles espacées de 10 px et un empilage indépendant du zoom. Avant de briefer une issue qui cite des cotes de maquette, relire l'extrait de maquette et vérifier l'AXE et l'UNITÉ de chaque grandeur ; signaler l'écart dans le briefing plutôt que de laisser l'agent le découvrir. (Sprint 97, lead)
+
+
+## PIT-S98-001 — `text-overflow:ellipsis` ne coupe rien dans un conteneur flex
+`.mt-tlv__evt-outside` était `display:inline-flex` : son texte est un item anonyme du flex, sur lequel `overflow:hidden; text-overflow:ellipsis` ne s'applique pas proprement. Pour borner un libellé en ellipse, passer le conteneur en `display:block` (alignement vertical par `line-height` = hauteur de barre) ou envelopper le texte dans un `span` bloc. (Sprint 98, #746)
+
+
+## PIT-S98-002 — Le résumé RTK de `next lint --file` peut annoncer une erreur qui n'existe pas
+Sous le hook RTK, `npx next lint --file <f>` a résumé « Errors: 1 » alors que `rtk proxy npx next lint --file <f>` (sortie brute, même fichier) donnait « No ESLint warnings or errors ». Ne jamais qualifier un lint de rouge sur le résumé RTK : contre-vérifier par `rtk proxy`. Même famille que les `grep`/`git diff`/`prettier --check` réécrits par RTK. (Sprint 98, #748)
 
 ---
 

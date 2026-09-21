@@ -16,6 +16,7 @@ import {
 } from './useTimelineMobileSelection'
 import { useTimelineMobileGestures, type TimelineMobileGestures } from './useTimelineMobileGestures'
 import { EventPinContent } from './EventPin'
+import { pinLabelMaxPx } from './label-reserve'
 import {
   eventKind,
   PIN_HALF_WIDTH_PX,
@@ -370,6 +371,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                                   <EventPinContent
                                     title={event.title}
                                     recurring={isRecurringSeries(event)}
+                                    labelMaxPx={pinLabelMaxPx(event.widthPx)}
                                   />
                                 ) : (
                                   <>

@@ -952,3 +952,9 @@ Hauteur CALCULÉE : base mesurée une fois + pas × rangées supplémentaires ; 
 
 ## PAT-S97-004 — Clé i18n morte : tracer les chemins complets, pas le nom de feuille
 Deux clés `remove` vivaient sous `add.event` et `add.events` : un grep sur `remove` seul donne des faux positifs. Relever les `useTranslations(namespace)` réellement appelés par les consommateurs et reconstituer le chemin complet de chaque `t('…')`, y compris les clés construites dynamiquement. (Sprint 97, #716)
+
+## PAT-S98-001 — Re-projeter le défilement au zoom : ancre relevée AVANT le dispatch, effet déclaré AVANT la mesure de bande
+Au zoom arrière, le navigateur rabat `scrollLeft` dès le rendu à la nouvelle échelle : le lire dans un effet post-rendu enregistre la valeur fausse. Relever l'ancre (en jours) dans le handler de zoom (boutons, pinch) avant le `dispatch`, puis re-projeter dans un `useLayoutEffect([dayWidth])` DÉCLARÉ avant le hook qui mesure la bande de virtualisation (les layout effects s'exécutent dans l'ordre de déclaration) — sinon une frame vide. (Sprint 98, #747, `mobile-zoom-anchor.ts`)
+
+## PAT-S98-002 — Contrôle négatif qui discrimine les options de charte
+Une spec de non-collision peut être verte pour une mauvaise raison : la troncature seule supprime aussi la collision. Ajouter une assertion de largeur LISIBLE (> ancienne réserve) en plus du hit-test, et jouer deux contrôles négatifs distincts — l'ancien comportement (doit rougir sur la collision) et l'option de charte écartée (doit rougir sur la largeur). (Sprint 98, #746)

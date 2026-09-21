@@ -26,13 +26,27 @@ import React from 'react'
  * retournement RTL (`i18n.css`). Les occurrences fantômes et le connecteur vivent HORS
  * de ce composant (`RecurrenceMarks`, non cliquables).
  */
-export const EventPinContent: React.FC<{ title: string; recurring?: boolean }> = ({
-  title,
-  recurring = false,
-}) => (
+export const EventPinContent: React.FC<{
+  title: string
+  recurring?: boolean
+  /**
+   * #746 — largeur (px) RÉSERVÉE au libellé dans l'empilage (`pinLabelMaxPx`,
+   * `label-reserve.ts`), posée en `--mt-label-max` : au-delà, le libellé est coupé
+   * (ellipse) au lieu de se peindre sur l'occurrence suivante de sa rangée. Absente :
+   * plafond CSS historique (240 px).
+   */
+  labelMaxPx?: number
+}> = ({ title, recurring = false, labelMaxPx }) => (
   <>
     <span className="mt-evt-pin" aria-hidden="true" />
-    <span className="mt-evt-pin__label">
+    {/* #746 — `title` : le titre complet reste lisible au survol quand il est coupé. */}
+    <span
+      className="mt-evt-pin__label"
+      title={title}
+      style={
+        labelMaxPx === undefined ? undefined : { ['--mt-label-max' as string]: `${labelMaxPx}px` }
+      }
+    >
       {recurring && (
         <span className="mt-evt-pin__recur" aria-hidden="true">
           {'↻ '}
