@@ -297,7 +297,8 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
   /**
    * #763 — SONDE du sélecteur (critère « un interrupteur ajouté plus tard serait bien
    * mesuré ») : on injecte dans la page des réglages un interrupteur au balisage exact
-   * de `ui/switch.tsx` (piste DS 38×22, sans libellé ⇒ < 44 px). La mesure doit le
+   * de `ui/switch.tsx`, de taille FIXE 38×22 en style inline (indépendante du CSS du
+   * DS). La mesure doit le
    * VOIR (par son label, l'input 0×0 restant filtré) et le classer sous 44 px.
    * Test séparé : l'injection ne touche pas les mesures réelles des autres tests.
    */
@@ -310,6 +311,9 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
       const label = document.createElement('label')
       label.className = 'mt-switch'
       label.setAttribute('data-testid', 'zz-probe-switch')
+      // Taille FIXE (review S102) : la sonde teste le SÉLECTEUR, pas le CSS du DS.
+      // Un `.mt-switch` agrandi un jour à 44 px ne doit pas la faire rougir.
+      label.style.cssText = 'display:inline-block;width:38px;height:22px;overflow:hidden'
       const input = document.createElement('input')
       input.type = 'checkbox'
       input.setAttribute('role', 'switch')
@@ -327,7 +331,9 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     // Vu une fois, par le label (l'input 0×0 est filtré comme invisible).
     expect(probe).toHaveLength(1)
     expect(probe[0]!.label.startsWith('label[')).toBe(true)
-    // Et signalé : la piste seule fait 38×22, sous le seuil.
+    // Et signalé : taille imposée 38×22, sous le seuil.
+    expect(probe[0]!.width).toBeCloseTo(38, 0)
+    expect(probe[0]!.height).toBeCloseTo(22, 0)
     expect(probe[0]!.width < MIN_TARGET - EPS || probe[0]!.height < MIN_TARGET - EPS).toBe(true)
   })
 
