@@ -2,6 +2,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { eventInkColor, eventLabelReadableInside } from './lib'
 import { EventPinContent } from './EventPin'
+import { OUTSIDE_LABEL_GAP_PX, outsideLabelMaxPx, pinLabelMaxPx } from './label-reserve'
 import { isRecurringSeries } from './recurrence-marks'
 import { eventKind, PIN_HALF_WIDTH_PX, statusToVar, type PositionedEvent } from './zoom'
 
@@ -130,7 +131,11 @@ export const EventPill: React.FC<EventPillProps> = ({
           ...rowVar,
         }}
       >
-        <EventPinContent title={event.title} recurring={recurring} />
+        <EventPinContent
+          title={event.title}
+          recurring={recurring}
+          labelMaxPx={pinLabelMaxPx(event.widthPx)}
+        />
       </button>
     )
   }
@@ -200,7 +205,17 @@ export const EventPill: React.FC<EventPillProps> = ({
           className="mt-tlv__evt-outside"
           data-testid="timeline-event-outside-label"
           aria-hidden="true"
-          style={{ left: `${event.leftPx + event.widthPx + 6}px`, ...rowVar }}
+          // #746 — `title` : titre complet au survol quand la réserve le coupe.
+          title={event.title}
+          style={{
+            left: `${event.leftPx + event.widthPx + OUTSIDE_LABEL_GAP_PX}px`,
+            // #746 — boîte bornée à la place réservée dans l'empilage (`labelTrailPx`) :
+            // coupée (ellipse) plutôt que peinte sur l'occurrence suivante.
+            ...(event.labelTrailPx === undefined
+              ? null
+              : { ['--mt-label-max' as string]: `${outsideLabelMaxPx(event.labelTrailPx)}px` }),
+            ...rowVar,
+          }}
         >
           {/* #595 — le titre répété dehors garde son préfixe de série. */}
           {recurring ? `↻ ${event.title}` : event.title}

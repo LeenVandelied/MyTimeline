@@ -154,12 +154,20 @@ export interface PositionedEvent extends FullCalendarEvent {
   /**
    * #594 — EMPRISE HORIZONTALE RÉSERVÉE à droite de `leftPx`, pas la largeur peinte :
    *  - durée : `max(minWidth, durée × px/jour)` (≥ minWidth pour rester cliquable) ;
-   *  - ponctuel : `pinFootprintPx` CONSTANT (pin + place du libellé, maquette
-   *    `layoutLane` : 100 px desktop / 90 px mobile), invariant au zoom.
+   *  - ponctuel : `pinFootprintPx` (pin + place du libellé, maquette `layoutLane` :
+   *    100 px desktop / 90 px mobile), invariant au zoom. #746 : les vues l'élargissent
+   *    ensuite à la place ESTIMÉE de leur libellé (`label-reserve.ts`), ce plancher
+   *    compris.
    * La géométrie exacte d'un événement sur la piste passe par `eventTrackExtent`
    * (le pin déborde de sa demi-largeur à GAUCHE de la date).
    */
   widthPx: number
+  /**
+   * #746 — Emprise réservée APRÈS la barre (px) pour son libellé EXTÉRIEUR de secours
+   * (barre à faible contraste, desktop), posée par `applyLabelReserves`. Absente : aucun
+   * libellé dehors. Consommée par l'empilage (`layoutLane`), jamais peinte.
+   */
+  labelTrailPx?: number
   status: 'expired' | 'ongoing' | 'upcoming'
 }
 
@@ -187,8 +195,9 @@ export const PIN_HALF_WIDTH_PX = PIN_WIDTH_PX / 2
  * #594 — Emprise réservée APRÈS la date d'un ponctuel (maquette `layoutLane` : fin
  * réservée = début + 100 px desktop / 90 px mobile). Sert à la virtualisation et à
  * `ensureVisible` : un pin dont le libellé est à l'écran ne doit pas être démonté.
- * Le libellé peint peut être plus long (plafonné en CSS à 240 px, très en deçà de
- * `OVERSCAN_X_PX` = 600) : la marge de rendu absorbe l'écart.
+ * #746 — c'est un PLANCHER : `applyLabelReserves` (`label-reserve.ts`) élargit l'emprise
+ * d'un pin à la place estimée de son libellé (plafond 11 + 240 px), et le CSS coupe le
+ * libellé à cette place (`--mt-label-max`) : il ne dépasse plus son emprise.
  */
 export const PIN_FOOTPRINT_PX = { desktop: 100, mobile: 90 } as const
 /** #594 — Largeur d'un ponctuel dans le résumé d'une catégorie repliée (maquette §C : 6 px). */

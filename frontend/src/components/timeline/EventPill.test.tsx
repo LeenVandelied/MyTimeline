@@ -409,3 +409,54 @@ describe('EventPill', () => {
     })
   })
 })
+
+describe('#746 EventPill — libellés bornés à leur réserve d’empilage', () => {
+  it('pin : `--mt-label-max` = emprise − 11 px, `title` = titre complet', () => {
+    const title = 'Steuererklärung für das Geschäftsjahr abgeben'
+    render(
+      <EventPill
+        event={makePositionedEvent({
+          title,
+          widthPx: 180,
+          extendedProps: {
+            productId: 'prod-1',
+            productName: 'P',
+            category: 'C',
+            type: 'single',
+          },
+        })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    const label = screen.getByTestId('timeline-event').querySelector('.mt-evt-pin__label')
+    expect(label).toHaveAttribute('title', title)
+    expect((label as HTMLElement).style.getPropertyValue('--mt-label-max')).toBe('169px')
+  })
+
+  it('libellé extérieur : `--mt-label-max` = réserve − écart 6 px, `title` complet', () => {
+    render(
+      <EventPill
+        event={makePositionedEvent({ color: '#787878', labelTrailPx: 120 })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    const outside = screen.getByTestId('timeline-event-outside-label')
+    expect(outside).toHaveAttribute('title', 'Péremption')
+    expect(outside.style.getPropertyValue('--mt-label-max')).toBe('114px')
+    expect(outside.style.left).toBe(`${40 + 120 + 6}px`)
+  })
+
+  it('libellé extérieur sans réserve (`labelTrailPx` absent) : repli CSS, pas de variable', () => {
+    render(
+      <EventPill
+        event={makePositionedEvent({ color: '#787878' })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    const outside = screen.getByTestId('timeline-event-outside-label')
+    expect(outside.style.getPropertyValue('--mt-label-max')).toBe('')
+  })
+})

@@ -188,3 +188,20 @@ describe('#709 hauteur de lane (DEC-S97-003)', () => {
     expect(LANE_ROW_PITCH_PX.landscape).toBeGreaterThan(24)
   })
 })
+
+describe('#746 réserve du libellé extérieur (`labelTrailPx`)', () => {
+  it('prolonge l’emprise d’une barre : la suivante qui tombait dans le libellé change de rangée', () => {
+    const a = evt('a', 0, 60)
+    const b = evt('b', 80, 40)
+    expect(layoutLane([a, b], desktop).rows).toBe(1)
+    expect(layoutLane([{ ...a, labelTrailPx: 60 }, b], desktop).rows).toBe(2)
+  })
+
+  it('s’ajoute AVANT le `⋯` mobile (`trailingPx`) et le gap', () => {
+    const opts = { gapPx: LANE_GAP_PX.mobile, trailingPx: MOBILE_MORE_BUTTON_PX }
+    const a = { ...evt('a', 0, 50), labelTrailPx: 20 }
+    // Fin réservée = 50 + 20 + 44 = 114 ; + gap 10 = 124.
+    expect(layoutLane([a, evt('b', 124, 10)], opts).rows).toBe(1)
+    expect(layoutLane([a, evt('b', 123, 10)], opts).rows).toBe(2)
+  })
+})

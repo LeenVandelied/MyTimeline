@@ -50,6 +50,7 @@ import {
   type LaneLayout,
 } from './lane-layout'
 import { centerDayFromScroll, scrollLeftForCenterDay } from './mobile-zoom-anchor'
+import { applyLabelReserves } from './label-reserve'
 
 /** #709 — Variante mobile (le pas de rangée et la hauteur de lane en dépendent). */
 export type MobileVariant = 'portrait' | 'landscape'
@@ -284,15 +285,19 @@ export function useTimelineMobileState(
   )
 
   const eventsByResource = useMemo(
-    // #594 — emprise réservée d'un ponctuel : 90 px en mobile (maquette `layoutLane`).
+    // #594 — emprise réservée d'un ponctuel : 90 px en mobile (maquette `layoutLane`),
+    // #746 — élargie à la place estimée de son libellé (police mobile 12,5 px).
     () =>
-      positionEvents(
-        events,
-        rangeStart,
-        dayWidth,
-        now,
-        DEFAULT_MIN_WIDTH_PX,
-        PIN_FOOTPRINT_PX.mobile,
+      applyLabelReserves(
+        positionEvents(
+          events,
+          rangeStart,
+          dayWidth,
+          now,
+          DEFAULT_MIN_WIDTH_PX,
+          PIN_FOOTPRINT_PX.mobile,
+        ),
+        'mobile',
       ),
     [events, rangeStart, dayWidth, now],
   )

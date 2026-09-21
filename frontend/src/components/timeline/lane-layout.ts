@@ -12,8 +12,11 @@ import type { PositionedEvent } from './zoom'
  *    précédente + `gap` est ≤ son début ;
  *  - `gap` = 8 px desktop / 10 px mobile, en PIXELS (la maquette les convertit en jours
  *    via px/jour : raisonner directement en px, repère PISTE, est équivalent) ;
- *  - un ponctuel réserve 100 px (desktop) / 90 px (mobile) après sa date pour son
- *    libellé — c'est EXACTEMENT son `widthPx` (`PIN_FOOTPRINT_PX`, `zoom.ts`) ;
+ *  - un ponctuel réserve après sa date la place de son libellé — son `widthPx`, au moins
+ *    100 px (desktop) / 90 px (mobile) (`PIN_FOOTPRINT_PX`, `zoom.ts`), élargi à la
+ *    largeur ESTIMÉE du titre (#746, `label-reserve.ts`, plafond 11 + 240 px) ;
+ *  - une barre dont le titre est répété DEHORS (contraste insuffisant, desktop) réserve
+ *    en plus la place de ce libellé extérieur : `labelTrailPx` (#746) ;
  *  - seule l'occurrence RÉELLE entre dans l'empilage : fantômes et connecteur de série
  *    (`recurrence-marks.ts`) suivent la rangée de leur événement.
  *
@@ -85,13 +88,14 @@ export const SINGLE_ROW_LAYOUT: LaneLayout = Object.freeze({
 
 /**
  * Empile les événements d'une lane (repère PISTE : `leftPx` = date de début,
- * `widthPx` = emprise réservée, cf. `PositionedEvent`).
+ * `widthPx` + `labelTrailPx` = emprise réservée, cf. `PositionedEvent`). Les réserves
+ * de libellé sont calculées EN AMONT (`applyLabelReserves`) : cette fonction reste pure.
  *
  * Tri STABLE par début (à début égal, l'ordre d'entrée départage) : deux rendus du même
  * jeu donnent la même disposition, condition d'un DOM stable et de tests déterministes.
  */
 export function layoutLane(
-  events: readonly Pick<PositionedEvent, 'id' | 'leftPx' | 'widthPx'>[],
+  events: readonly Pick<PositionedEvent, 'id' | 'leftPx' | 'widthPx' | 'labelTrailPx'>[],
   options: LaneLayoutOptions,
 ): LaneLayout {
   if (events.length === 0) return SINGLE_ROW_LAYOUT
@@ -105,7 +109,7 @@ export function layoutLane(
   const lines: number[][] = []
   for (const i of order) {
     const start = events[i].leftPx
-    const end = start + events[i].widthPx + trailing
+    const end = start + events[i].widthPx + (events[i].labelTrailPx ?? 0) + trailing
     let row = rowEnds.findIndex((rowEnd) => rowEnd + options.gapPx <= start)
     if (row === -1) {
       row = rowEnds.length
