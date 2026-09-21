@@ -168,3 +168,9 @@ Primitives `Input`/`SelectTrigger` 36 px, options de Select 36,28 px, boutons 32
 
 ## BUG-S99-002 — Sessions actives : nom d'appareil et IP tronqués sans `title`
 Les deux `<p className="truncate">` de `SessionList.tsx` perdaient le texte au-delà de la largeur. Correctif : `title` = nom d'appareil (sans le badge « actuelle ») et IP · horodatage (`serverDateTime`), replis i18n couverts. Vitest + sonde navigateur 375/1280. (Sprint 99, #459)
+
+## BUG-S100-001 — `ProductDrawer` mobile débordait horizontalement de 60 px (champs coupés à droite)
+`DialogContent` en `grid` à piste implicite `auto` : le min-content d'un seul enfant (sparkline 220 px + libellé, `ProductDrawer.tsx:411`) élargissait TOUS les enfants à 400 px dans une zone de 340 px (scrollWidth 448 / clientWidth 388 à 390 px). Invisible aux specs qui ne relisaient pas `scrollLeft`. Correctif : `flex flex-col *:shrink-0` dans `ui/dialog.tsx` ; garde de largeur ajoutée à `sprint-95-toast-overlap`. (Sprint 100, #732/#740)
+
+## BUG-S100-002 — Croix de fermeture des bottom sheets hors viewport après défilement
+`DialogPrimitive.Close` en `absolute top-4 right-4` dans un `DialogContent` en `overflow-y-auto` (ProductDrawer, CategoryDrawer) défilait avec le contenu : y = -123 / -100 px à 390×600, formulaire défilé en bas. Correctif : ancre `sticky top-0 h-0 order-first -mb-4` restée dernière du DOM (focus initial Radix inchangé). E2E `sprint-100-dialog-close-reachable`, armé (rouge sur l'ancien code). (Sprint 100, #732/#740)

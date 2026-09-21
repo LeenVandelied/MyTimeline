@@ -507,6 +507,32 @@ describe('AppShell — déclencheur mobile Nouvel événement (#455)', () => {
     expect(fab.className).toContain('fixed')
   })
 
+  // #480 — Réserve basse de `shell-main` sous le FAB. Chaîne, pas rendu : le
+  // non-recouvrement réel est prouvé par `e2e/sprint-100-fab-clearance.spec.ts`.
+  it('réserve un padding bas sur shell-main, sous md seulement, calé par tokens sur le FAB', () => {
+    renderShell()
+    const main = screen.getByTestId('shell-main')
+    const fab = screen.getByTestId('shell-mobile-new-event-button')
+    const reserve = main.className.split(/\s+/).filter((c) => c.includes('pb-'))
+    // Une SEULE classe de padding bas, et conditionnée au même palier que le FAB
+    // (`max-md:` ⇔ `md:hidden`) : un `pb-` nu toucherait le desktop, un `max-lg:`
+    // réserverait 768..1023 où le FAB n'est pas peint.
+    expect(reserve).toHaveLength(1)
+    expect(reserve[0].startsWith('max-md:pb-')).toBe(true)
+    expect(fab.className).toContain('md:hidden')
+    // Tokens de la géométrie du FAB (hauteur, offset, encoche) + respiration : pas
+    // de valeur magique en pixels.
+    for (const token of [
+      'var(--space-13)',
+      'var(--space-6)',
+      'var(--space-4)',
+      'env(safe-area-inset-bottom)',
+    ]) {
+      expect(reserve[0]).toContain(token)
+    }
+    expect(reserve[0]).not.toMatch(/\d+px/)
+  })
+
   it('ouvre le MÊME drawer que le bouton desktop (état unique, une seule instance)', async () => {
     renderShell()
     drawerLifecycle.mockClear()

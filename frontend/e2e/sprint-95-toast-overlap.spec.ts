@@ -27,28 +27,34 @@ import { getUserId, seedCategory, unique } from './support/products'
  * à 844px de haut quand le formulaire remplit la sheet ». MESURÉ ICI, les deux
  * moitiés de cette phrase sont fausses :
  *
- *   1. LE FORMULAIRE NE REMPLIT JAMAIS LA SHEET À 844px. Le contenu réel du drawer
- *      de création (nom + catégorie + palette + date + aperçu + pied) mesurait ≈ 672px
- *      au S95 (≈ 702px au S99 avant #738), et `max-h-[92vh]` vaut 776px à 844px de
- *      haut : le plafond n'est pas atteint, la sheet se dimensionne à son contenu.
- *      Tant que la croix tombait SOUS la carte, 390×844 ne recouvrait pas.
- *      ⚠ #738 (S99, DEC-S99-001) a déplacé ce régime : les champs passent à 44px en
- *      mobile (`Input` / `SelectTrigger` `max-md:h-11`), soit +8px × 3 champs = +24px
- *      de contenu (≈ 726px, toujours < 776px : la sheet reste LIBRE). Elle démarre à
- *      ≈ 117px, la croix à ≈ 134–150px : elle EFFLEURE le bas de la carte (≈ 137px),
- *      recouvrement PARTIEL de ≈ 3,5px (darwin). Accepté par le dev comme extension
- *      de la décision B. La sheet ne se fait clamper qu'en dessous de ≈ 790px de haut
- *      (0,92·H < 726).
+ *   1. « LE FORMULAIRE NE REMPLIT JAMAIS LA SHEET À 844px » — VRAI DU S95 AU S99,
+ *      FAUX DEPUIS #732/#740 (S100). Le contenu du drawer de création mesurait
+ *      ≈ 672px au S95, ≈ 726px au S99 après #738, sous le plafond `max-h-[92vh]`
+ *      (776px à 844px) : la sheet restait libre. MAIS ces valeurs étaient FAUSSÉES
+ *      par un débordement horizontal : `DialogContent` en `grid`, piste implicite
+ *      `auto` élargie au min-content de l'aperçu (sparkline 220px) — enfants à 400px
+ *      dans une zone de contenu de 340px, sheet défilable de 60px en largeur
+ *      (scrollWidth 448 / clientWidth 388). Le texte se repliait donc sur 400px.
+ *      #732/#740 passe `DialogContent` en `flex flex-col` : les enfants retombent à
+ *      340px, le texte se replie à la bonne largeur et le contenu mesure ≈ 802px
+ *      (Chromium darwin, relu par le `console.log` de `measureRegime` de CETTE spec).
+ *      802 > 0,92·H pour tout H < ≈ 872px : les TROIS régimes sont désormais CLAMPÉS.
+ *      À 844px la sheet démarre à ≈ 68px, croix ≈ 85–101px : ENTIÈREMENT dans la bande
+ *      du toast. DÉCISION B #714 ÉTENDUE AU RÉGIME TALL par le dev (2026-09-21).
  *   2. LA CARTE NE FAIT PAS 46px. Le message d'erreur se replie sur deux lignes :
  *      la carte mesure ≈ 65px, soit une bande ≈ 72–137px et non 72–118px.
  *
  * Le recouvrement EXISTE donc bel et bien — mais sur les viewports COURTS, pas sur
  * celui que la note du S92 citait. On mesure les trois régimes plutôt qu'un seul :
- *   • TALL  390×844 — sheet libre, croix qui EFFLEURE la bande : recouvrement
- *                     PARTIEL et faible (≈ 3,5px depuis #738, NUL avant) ;
- *   • MID   390×740 — sheet libre mais assez haute : croix ENTIÈREMENT recouverte
- *                     (pire cas, et c'est là que la sortie de secours compte) ;
- *   • SHORT 390×667 — sheet CLAMPÉE à `max-h-[92vh]` : croix partiellement recouverte.
+ * Cotes relues par le `console.log` `[#714]` de `measureRegime` (CETTE spec, S100,
+ * Chromium darwin) :
+ *   • TALL  390×844 — sheet CLAMPÉE (y≈68, h=776), croix ≈ 85–101px : ENTIÈREMENT
+ *                     recouverte (16px). Avant #732/#740 : sheet libre, recouvrement
+ *                     PARTIEL de ≈ 3,5px — artefact du débordement horizontal ;
+ *   • MID   390×740 — sheet CLAMPÉE (y≈59, h≈681), croix ≈ 76–92px : ENTIÈREMENT
+ *                     recouverte (c'est là que la sortie de secours compte) ;
+ *   • SHORT 390×667 — sheet CLAMPÉE (y≈53, h≈614), croix ≈ 70–86px : PARTIELLEMENT
+ *                     recouverte (≈ 14,4px), elle dépasse par le haut de la carte.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * CE QUE LA SPEC MESURE, dans l'ordre de ce qui ferait tomber la décision
@@ -60,8 +66,8 @@ import { getUserId, seedCategory, unique } from './support/products'
  *       opaque pendant 4 s. C'est l'assertion à NE JAMAIS assouplir.
  *   (c) LA DISJONCTION — la bande tapable et la carte du toast ne doivent pas se
  *       chevaucher, sinon la sortie de (b) est fortuite et non structurelle.
- *   (a) LA BORNE DU RECOUVREMENT — ATTENDU sur les trois régimes, PARTIEL sur TALL et
- *       SHORT, TOTAL sur MID. On l'ENCADRE
+ *   (a) LA BORNE DU RECOUVREMENT — ATTENDU sur les trois régimes, PARTIEL sur SHORT,
+ *       TOTAL sur MID et TALL (depuis #732/#740). On l'ENCADRE
  *       (min ET max) : la spec rougit si la géométrie DÉRIVE dans un sens COMME dans
  *       l'autre. Un recouvrement qui RÉTRÉCIT est tout aussi significatif — il
  *       signifierait que le gabarit a bougé sous la décision, et que les motifs
@@ -108,9 +114,9 @@ import { getUserId, seedCategory, unique } from './support/products'
 
 /** Les trois régimes de hauteur. La largeur est constante : seule la hauteur décide. */
 const VIEWPORTS = {
-  /** Sheet libre, croix qui effleure le bas de la bande : recouvrement PARTIEL faible (#738). */
+  /** Sheet CLAMPÉE depuis #732/#740 : croix ENTIÈREMENT dans la bande (décision B étendue). */
   tall: { width: 390, height: 844 },
-  /** Sheet libre mais haute : croix ENTIÈREMENT dans la bande — pire cas. */
+  /** Sheet CLAMPÉE : croix ENTIÈREMENT dans la bande — pire cas. */
   mid: { width: 390, height: 740 },
   /** Sheet CLAMPÉE à `max-h-[92vh]` : croix partiellement dans la bande. */
   short: { width: 390, height: 667 },
@@ -269,15 +275,12 @@ async function measureRegime(page: Page, viewport: { width: number; height: numb
 
   const sheetBox = await stableBox(sheet(page), 'sheet ProductDrawer')
 
-  // #665 (S96) — REMISE À ZÉRO DU DÉFILEMENT AVANT DE MESURER LA CROIX.
+  // #665 (S96), #732/#740 (S100) — REMISE À ZÉRO DU DÉFILEMENT, DANS LES DEUX AXES.
   //
-  // La croix de `DialogContent` (`ui/dialog.tsx` l.47) est `absolute top-4
-  // right-4` À L'INTÉRIEUR du `[role="dialog"]`, qui est AUSSI le conteneur
-  // défilant (c'est son `scrollHeight` que `portalMetrics` relit). Un descendant
-  // en `position:absolute` d'un conteneur défilant DÉFILE avec le contenu : son
-  // ordonnée à l'écran vaut `sheet.y + 16 − scrollTop`, pas `sheet.y + 16`.
-  // L'invariant vérifié juste en dessous est donc un invariant DE MISE EN PAGE,
-  // qui ne tient qu'à défilement nul.
+  // Jusqu'au S99, la croix de `DialogContent` était `absolute top-4 right-4` À
+  // L'INTÉRIEUR du `[role="dialog"]`, qui est AUSSI le conteneur défilant (c'est
+  // son `scrollHeight` que `portalMetrics` relit) : elle défilait avec le contenu,
+  // à `sheet.y + 16 − scrollTop`.
   //
   // Jusqu'au S95 il tenait par accident : `openFilledCreateSheet` remplit
   // `product-first-event-date`, et Playwright amène le champ visé dans le
@@ -290,14 +293,30 @@ async function measureRegime(page: Page, viewport: { width: number; height: numb
   // `sheet.y + 3` au lieu de `sheet.y + 16`, et la spec accusait #665 d'un
   // défaut de position qu'il ne cause pas.
   //
-  // On remet donc `scrollTop` à 0 : c'est l'état où l'invariant est DÉFINI, et
-  // celui que les valeurs de référence du S95 décrivent (390×667 : croix y=70,
-  // recouvrement 14,4 px). Ce que ce garde-fou ne couvre PAS, et qui reste à
-  // trancher : sur un viewport court, une croix `absolute` qui défile finit par
-  // sortir du haut de la sheet. Voir le follow-up ouvert au S96.
-  await sheet(page).evaluate((el) => {
+  //
+  // DEPUIS #732/#740 la croix est ancrée dans une boîte `sticky` de hauteur nulle
+  // (`ui/dialog.tsx`) : elle reste à `sheet.y + 16` À TOUT `scrollTop` — mesuré
+  // après défilement maximal par `e2e/sprint-100-dialog-close-reachable.spec.ts`.
+  // La remise à 0 n'est donc plus indispensable pour l'axe vertical ; on la garde
+  // parce que c'est l'état que décrivent les valeurs de référence de cette spec
+  // (390×667 : croix y=70, recouvrement 14,4 px, relus par le `console.log`
+  // `[#714]` ci-dessous).
+  //
+  // PRÉMISSE HORIZONTALE (S100) : `scrollLeft` est remis à 0 AUSSI. Tant que
+  // `DialogContent` débordait en largeur (grid élargi à 400px dans 340px), le
+  // remplissage du formulaire faisait défiler la sheet horizontalement de 24px, et
+  // la croix était mesurée à x=333 au lieu de x=357. Si un débordement horizontal
+  // réapparaît, cette remise à 0 le masquerait pour la mesure : c'est pourquoi on
+  // ASSERTE aussi l'absence de débordement (scrollWidth ≤ clientWidth) juste après.
+  const overflowX = await sheet(page).evaluate((el) => {
     el.scrollTop = 0
+    el.scrollLeft = 0
+    return { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }
   })
+  expect(
+    overflowX.scrollWidth,
+    `la sheet ne doit pas déborder en largeur (scrollWidth=${overflowX.scrollWidth}, clientWidth=${overflowX.clientWidth}) — c'est ce débordement qui faussait la géométrie jusqu'au S99`,
+  ).toBeLessThanOrEqual(overflowX.clientWidth)
 
   const close = sheet(page).getByRole('button', { name: 'Close' })
   const closeBox = await stableBox(close, 'croix de la sheet')
@@ -360,51 +379,43 @@ async function measureRegime(page: Page, viewport: { width: number; height: numb
   return { sheetBox, closeBox, cardBox, band, overlapPx, contentScrollHeight }
 }
 
-test.describe('#714/#738 — TALL 390×844 : sheet libre, recouvrement PARTIEL faible', () => {
+test.describe('#714/#732 — TALL 390×844 : sheet CLAMPÉE, croix ENTIÈREMENT recouverte (décision B étendue)', () => {
   test.use({ storageState: PROD.storageState, viewport: VIEWPORTS.tall })
 
-  test('(a) sheet libre, la croix EFFLEURE le bas de la carte : recouvrement partiel, ni nul ni total', async ({
+  test('(a)+(c) la sheet atteint `max-h-[92vh]` et le recouvrement vaut TOUTE la hauteur de la croix', async ({
     page,
   }) => {
     test.setTimeout(120_000)
     await openFilledCreateSheet(page, 'Tall')
     const m = await measureRegime(page, VIEWPORTS.tall)
 
-    // Le contenu n'atteint PAS le plafond : la sheet reste libre à 844px, y compris
-    // avec les +24px de #738 (≈ 726px < 776px). Si cela bascule, ce régime devient
-    // clampé (comme SHORT) et la note de toaster.tsx doit être réécrite.
+    // #732/#740 (S100) — le contenu (≈ 802px, relu par le `console.log` `[#714]` de
+    // `measureRegime`) DÉPASSE 92vh = 776px : ce régime est désormais CLAMPÉ. Avant,
+    // il restait libre (≈ 726px) uniquement parce que le `grid` de `DialogContent`
+    // débordait en largeur et repliait le texte sur 400px au lieu de 340px.
+    // DÉCISION B #714 ÉTENDUE AU RÉGIME TALL par le dev (2026-09-21).
     expect(
       m.contentScrollHeight,
-      `à ${VIEWPORTS.tall.height}px de haut, 92vh = ${Math.round(SHEET_MAX_VH * VIEWPORTS.tall.height)}px ; le contenu (${m.contentScrollHeight}px) doit rester DESSOUS — si un jour il passe au-dessus, ce régime devient clampé et la note de toaster.tsx doit être réécrite`,
-    ).toBeLessThan(SHEET_MAX_VH * VIEWPORTS.tall.height)
+      `à ${VIEWPORTS.tall.height}px de haut, le contenu (${m.contentScrollHeight}px) doit DÉPASSER 92vh (${Math.round(SHEET_MAX_VH * VIEWPORTS.tall.height)}px) depuis #732/#740 — s'il repasse dessous, le gabarit a bougé sous la décision`,
+    ).toBeGreaterThan(SHEET_MAX_VH * VIEWPORTS.tall.height)
+    expect(Math.abs(m.sheetBox.height - SHEET_MAX_VH * VIEWPORTS.tall.height)).toBeLessThanOrEqual(
+      EPSILON + 2,
+    )
 
-    // ENCADREMENT (#738, DEC-S99-001 — extension de la décision B acceptée par le dev).
-    // Avant #738 la croix tombait SOUS la carte (recouvrement nul) ; les champs mobiles
-    // à 44px (+24px de contenu) l'ont fait remonter de 24px : elle EFFLEURE désormais
-    // le bas de la carte (≈ 3,5px mesurés sur darwin, carte ≈ 72–137px, croix ≈ 134–150px).
-    //  - borne basse STRICTE (> 0) : un recouvrement qui DISPARAÎT signale que le
-    //    gabarit a bougé sous la décision (champs rétrécis, sheet déplacée) ;
-    //  - borne haute STRICTE (< hauteur de la croix) : une croix TOTALEMENT couverte
-    //    ferait rejoindre à ce régime le pire cas MID — ce serait une aggravation.
-    // Marge de police (la carte et le contenu sont du texte, Linux ≠ darwin) : la fenêtre
-    // admise est ]0 ; 16[ px autour de 3,5px, soit ≈ 3,5px de marge vers le bas et ≈ 12px
-    // vers le haut. Une carte plus courte de plus de ≈ 3,5px sous Linux ferait rougir la
-    // borne basse : c'est alors la JSDoc de toaster.tsx qu'il faut relire avant de
-    // retoucher cette borne, pas la borne qu'il faut élargir à 0.
+    expect(
+      intersects(m.cardBox, m.closeBox),
+      `DÉCISION B (étendue) : le recouvrement est ACCEPTÉ et donc ATTENDU ici. carte=[${fmt(m.cardBox)}] croix=[${fmt(m.closeBox)}]`,
+    ).toBe(true)
+
+    // ENCADREMENT identique à MID : croix INTÉGRALEMENT dans la bande du toast.
     expect(
       m.overlapPx,
-      `à 390×844 le recouvrement doit être NON NUL depuis #738 (croix=[${fmt(m.closeBox)}] carte=[${fmt(m.cardBox)}]) — s'il a disparu, le gabarit a bougé sous la décision B`,
-    ).toBeGreaterThan(0)
-    expect(
-      m.overlapPx,
-      `à 390×844 le recouvrement (${m.overlapPx.toFixed(1)}px) doit rester STRICTEMENT inférieur à la hauteur de la croix (${Math.round(m.closeBox.height)}px) — sinon ce régime rejoint le pire cas MID`,
-    ).toBeLessThan(m.closeBox.height)
-    // La croix n'est couverte que par le BAS de la carte : son haut reste sous le haut
-    // de la carte (72px par construction) — valeur de layout pur, sans métrique de police.
-    expect(
-      m.closeBox.y,
-      `le haut de la croix (${Math.round(m.closeBox.y)}px) doit rester SOUS le haut de la carte (${TOAST_TOP_OFFSET}px)`,
-    ).toBeGreaterThan(TOAST_TOP_OFFSET + EPSILON)
+      `recouvrement mesuré ${m.overlapPx.toFixed(1)}px pour une croix de ${Math.round(m.closeBox.height)}px : elle doit être ENTIÈREMENT couverte`,
+    ).toBeGreaterThanOrEqual(m.closeBox.height - EPSILON)
+    expect(m.overlapPx).toBeLessThanOrEqual(m.closeBox.height + EPSILON)
+
+    // Même colonne : sans ce contrôle, un toast parti ailleurs rendrait le reste trivial.
+    expect(m.cardBox.x + m.cardBox.width).toBeGreaterThan(m.closeBox.x)
   })
 })
 
@@ -480,7 +491,7 @@ test.describe('#714 — SHORT 390×667 : sheet CLAMPÉE à 92vh, croix partielle
     await openFilledCreateSheet(page, 'Short')
     const m = await measureRegime(page, VIEWPORTS.short)
 
-    // C'est ICI, et nulle part ailleurs, que le cas littéral du S92 se produit.
+    // Clampé depuis le S95 ; depuis #732/#740, MID et TALL le sont aussi (cotes : en-tête).
     expect(
       m.contentScrollHeight,
       `ce régime n'a de sens que si le contenu (${m.contentScrollHeight}px) DÉPASSE 92vh (${Math.round(SHEET_MAX_VH * VIEWPORTS.short.height)}px) : la sheet doit être clampée`,

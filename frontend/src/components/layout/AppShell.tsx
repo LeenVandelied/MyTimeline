@@ -359,7 +359,20 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       {/* -------- Contenu de l'écran enveloppé -------- */}
-      <main className="min-w-0 flex-1" data-testid="shell-main">
+      {/* #480 — Réserve basse sous le FAB : sous `md` (miroir EXACT de son
+          `md:hidden`), le dernier élément de CHAQUE écran enveloppé (dashboard,
+          timeline, produits, fiche produit, réglages — pieds de page `AppFooter`
+          compris) doit pouvoir défiler au-dessus du bouton flottant. Réserve portée
+          par le shell plutôt qu'écran par écran : un seul point de vérité, calé sur
+          la géométrie du FAB par tokens — hauteur `--space-13` + offset `--space-6`
+          + encoche `env(safe-area-inset-bottom)` + respiration `--space-4`. Le
+          document défile au niveau fenêtre (`min-h-screen`, `<main>` sans
+          `overflow`, frise mobile en `overflow-y:hidden`) : le padding allonge donc
+          bien la page défilable. ≥ 768 px : aucun padding, desktop inchangé. */}
+      <main
+        className="min-w-0 flex-1 max-md:pb-[calc(var(--space-13)+var(--space-6)+var(--space-4)+env(safe-area-inset-bottom))]"
+        data-testid="shell-main"
+      >
         {/* #602 — les écrans enveloppés peuvent ouvrir LE drawer du shell. */}
         <CreateEventProvider onOpenCreate={openCreate}>{children}</CreateEventProvider>
       </main>

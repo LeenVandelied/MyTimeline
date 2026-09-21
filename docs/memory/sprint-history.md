@@ -6848,6 +6848,30 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 1/4 (hors item soldé).
 **Status :** Terminé — PR #753 mergée, issues #738/#739/#459 et milestone #100 fermés après merge
 
+### Sprint 100 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #756 dans dev — cohésion 1.00, croix de fermeture et FAB atteignables)
+**Objectif :** croix de fermeture des dialogues et bottom sheets toujours atteignable après défilement ; dernier élément des écrans mobiles non recouvert par le FAB
+**Milestone GitHub :** #101 (fermé après merge)
+**Issues :** #732, #740 (même cause, un seul agent), #480 — #754 exclue par le dev au démarrage (dans le milestone sans l'étiquette)
+**Vagues :** V1 = A (#732+#740, Playwright exclusif) ∥ B (#480, Vitest seul ; E2E joué par le lead)
+**Migrations Flyway :** aucune
+**Depend de :** aucune
+**Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-100/architect-plans.md`) — pas de `/sprint plan`
+**Commits :** 263465ce (#480), 0eb0a59a (#732, #740), 1c23a71b (test structurel de l'ancre, retour de review)
+**Arbitrage dev en cours de sprint :** passer `DialogContent` de `grid` à `flex` corrige aussi un débordement horizontal existant de la sheet produit mobile (scrollWidth 448/388, champs coupés). Le texte se replie, la sheet se plafonne à 92vh dès 390×844, et la croix y est entièrement recouverte par le toast d'erreur → **décision B #714 étendue au régime TALL** (option 1). `sprint-95-toast-overlap` réécrit : `scrollLeft` neutralisé, garde de largeur, TALL = recouvrement total. Les 3,5 px « acceptés » au S99 étaient un artefact du débordement.
+**Écarts d'énoncé :** #480 : seuil `md` (768) et non `lg` ; la réserve est sur `shell-main` et couvre les 5 écrans (l'argument « le dashboard a un AppFooter » était faux).
+**Tests :** Vitest 152 fichiers / 1957 verts | E2E suite complète sous `next build`+`next start` : 495 verts, 8 sautés, 1 rouge attendu (armement visuel `sprint-77`, hors Linux) | `next build` et `format:check` verts
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (résolu par `1c23a71b`) / 2 MINEURS (1 sans défaut, 1 hors diff → follow-up) ; cycle 2 sur le correctif
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S100-001…004, PAT-S100-001, DEC-S100-001 (remplace le « 3,5 px » de DEC-S99-003), BUG-S100-001…002 ; packs pitfalls régénérés, `--check` = 0
+**Contrôle de complétude :** vert sans `--force`
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — triage item par item par le dev) :**
+  - Lisibilité de la croix fixe quand le contenu défile dessous [XS | design] → issue #757 (Sprint 101)
+  - FAB vs défilement interne du dashboard en paysage mobile, à mesurer d'abord [XS | design] → issue #758 (Sprint 101)
+  - JSDoc contradictoires « swipe-down » ProductDrawer/CategoryDrawer [XS | design] → issue #759 (backlog libre)
+  Ratio discard 0/3.
+**#754 :** exclue par le dev, déplacée du milestone Sprint 100 vers Sprint 101 (toujours sans étiquette `sprint-101`)
+**Status :** Terminé — PR #756 mergée, issues #732/#740/#480 et milestone #101 fermés après merge
+
 ### Matrice de conflits inter-sprints (S93-S97)
 
 | A | B | Fichiers communs |

@@ -909,6 +909,11 @@ Sous le hook RTK, `npx next lint --file <f>` a résumé « Errors: 1 » alors qu
 ## PIT-S99-003 — RTK réécrit aussi `find`
 Sous le hook RTK, `find … -path` renvoie « unknown flag » et un `find -iname` légitime peut rendre 0 résultat sans erreur. Pour toute vérification factuelle (review, mesure), utiliser `/usr/bin/find` et `/usr/bin/grep`. Même famille que PIT-S98-002 et les `grep`/`git diff`/`prettier --check` réécrits. (Sprint 99, review)
 
+
+## PIT-S100-001 — `playwright test --list` exige `PLAYWRIGHT_BASE_URL`, même sans serveur et avec `SKIP_DELEGATION=1`
+`assertWebServerEnv()` (`frontend/playwright.config.ts:59`) fait échouer la commande avant tout listage si la variable manque : la recette `SKIP_DELEGATION=1 npx playwright test <spec> --list` des briefings ne marche pas telle quelle. Poser `PLAYWRIGHT_BASE_URL=http://localhost:<port quelconque>` suffit (aucun serveur n'est contacté). (Sprint 100, #480)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
