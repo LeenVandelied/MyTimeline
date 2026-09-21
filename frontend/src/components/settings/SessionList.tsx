@@ -105,7 +105,10 @@ export function SessionList({
             <div className="flex min-w-0 items-center gap-3">
               <Monitor className="text-ink-muted h-5 w-5 shrink-0" aria-hidden="true" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
+                <p
+                  className="truncate text-sm font-medium"
+                  title={session.deviceInfo ?? t('security.sessions.unknownDevice')}
+                >
                   {session.deviceInfo ?? t('security.sessions.unknownDevice')}
                   {session.current && (
                     <span className="text-accent ml-2 text-xs font-semibold">
@@ -113,7 +116,10 @@ export function SessionList({
                     </span>
                   )}
                 </p>
-                <p className="text-ink-muted truncate text-xs">
+                <p
+                  className="text-ink-muted truncate text-xs"
+                  title={`${session.ipAddress ?? t('security.sessions.unknownIp')} · ${serverDateTime(session.lastActivity, locale).label}`}
+                >
                   {session.ipAddress ?? t('security.sessions.unknownIp')}
                   {' · '}
                   <SessionTimestamp iso={session.lastActivity} locale={locale} />

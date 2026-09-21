@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { SessionList } from './SessionList'
+import { serverDateTime } from '@/lib/date-iso'
 import type { Session } from '@/types/settings'
 
 /**
@@ -117,6 +118,70 @@ describe('SessionList', () => {
     )
     fireEvent.click(screen.getByTestId('revoke-other-sessions'))
     expect(onRevokeOthers).toHaveBeenCalled()
+  })
+
+  it("#459 — title = nom d'appareil SEUL (sans le badge) sur la session courante", () => {
+    render(
+      <SessionList
+        sessions={SESSIONS}
+        isLoading={false}
+        isError={false}
+        revokingId={null}
+        onRevoke={noop}
+        onRevokeOthers={noop}
+        isRevokingOthers={false}
+      />,
+    )
+    expect(screen.getByText('Chrome / macOS').closest('p')).toHaveAttribute(
+      'title',
+      'Chrome / macOS',
+    )
+  })
+
+  it('#459 — title = IP (ou repli) + horodatage complet sur la ligne tronquée', () => {
+    render(
+      <SessionList
+        sessions={SESSIONS}
+        isLoading={false}
+        isError={false}
+        revokingId={null}
+        onRevoke={noop}
+        onRevokeOthers={noop}
+        isRevokingOthers={false}
+      />,
+    )
+    const { label } = serverDateTime(SESSIONS[1].lastActivity, 'fr')
+    expect(screen.getByText('10.0.0.0', { exact: false }).closest('p')).toHaveAttribute(
+      'title',
+      `10.0.0.0 · ${label}`,
+    )
+  })
+
+  it('#459 — title couvre les replis deviceInfo/ipAddress absents', () => {
+    const sessionSansInfos: Session = {
+      ...SESSIONS[1],
+      id: 'sess-sans-infos',
+      deviceInfo: null,
+      ipAddress: null,
+    }
+    render(
+      <SessionList
+        sessions={[sessionSansInfos]}
+        isLoading={false}
+        isError={false}
+        revokingId={null}
+        onRevoke={noop}
+        onRevokeOthers={noop}
+        isRevokingOthers={false}
+      />,
+    )
+    const { label } = serverDateTime(sessionSansInfos.lastActivity, 'fr')
+    expect(
+      screen.getByText('settings.security.sessions.unknownDevice').closest('p'),
+    ).toHaveAttribute('title', 'settings.security.sessions.unknownDevice')
+    expect(
+      screen.getByText('settings.security.sessions.unknownIp', { exact: false }).closest('p'),
+    ).toHaveAttribute('title', `settings.security.sessions.unknownIp · ${label}`)
   })
 
   it("masque « révoquer les autres » s'il n'y a que la session courante", () => {
