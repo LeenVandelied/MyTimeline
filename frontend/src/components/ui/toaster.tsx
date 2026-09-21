@@ -62,21 +62,22 @@ import { Toast } from '@/components/ui/toast'
  *     « à ≈ 84–100px à 844px de haut quand le formulaire remplit la sheet » : les deux
  *     moitiés de cette phrase sont FAUSSES, et l'écart n'est pas anodin puisque c'est le
  *     cas sur lequel l'arbitrage portait.
- *       · Le formulaire ne REMPLIT PAS la sheet à 844px. `max-h-[92vh]` vaut 776px à
- *         cette hauteur ; le contenu du drawer de création mesure ≈ 726px depuis #738
- *         (S99, DEC-S99-001 : `Input` / `SelectTrigger` à 44px en mobile, +8px × 3
- *         champs = +24px ; ≈ 702px avant, ≈ 672px au S95). La sheet reste donc LIBRE,
- *         dimensionnée à son contenu ; elle ne se fait clamper qu'en dessous de ≈ 790px
- *         de viewport (0,92·H < 726).
+ *       · « Le formulaire ne remplit pas la sheet à 844px » : vrai du S95 au S99
+ *         (≈ 672px puis ≈ 726px après #738, sous `max-h-[92vh]` = 776px), FAUX depuis
+ *         #732/#740 (S100). Ces hauteurs étaient faussées par un débordement horizontal
+ *         de `DialogContent` (`grid` élargi à 400px dans 340px) ; passé en `flex`, le
+ *         texte se replie à la bonne largeur et le contenu mesure ≈ 802px. Les trois
+ *         régimes ci-dessous sont donc CLAMPÉS (0,92·H < 802 pour H < ≈ 872px).
  *       · La carte ne fait pas ≈ 46px : le message d'erreur se replie sur deux lignes, la
  *         carte mesure ≈ 65px — bande ≈ 72–137px.
- *       · TROIS RÉGIMES, mesurés au S99 après #738 (Chromium darwin, dpr 1) :
- *           390×844 — sheet libre démarrant à ≈ 117px, croix ≈ 134–150px : elle EFFLEURE
- *                     le bas de la carte, recouvrement PARTIEL de ≈ 3,5px. (NUL avant
- *                     #738 : sheet à ≈ 141px, croix à ≈ 158px. Le dev a accepté ce
- *                     recouvrement comme extension de la décision B.)
- *           390×740 — sheet libre démarrant à ≈ 59px, croix ≈ 76–92px : ENTIÈREMENT
- *                     dans la bande — pire cas.
+ *       · TROIS RÉGIMES, mesurés au S100 après #732/#740 (Chromium darwin, dpr 1,
+ *         `console.log` `[#714]` de `e2e/sprint-95-toast-overlap.spec.ts`) :
+ *           390×844 — sheet CLAMPÉE démarrant à ≈ 68px, croix ≈ 85–101px : ENTIÈREMENT
+ *                     dans la bande. Décision B ÉTENDUE à ce régime par le dev
+ *                     (2026-09-21). (Avant #732/#740 : sheet libre, croix ≈ 134–150px,
+ *                     recouvrement partiel ≈ 3,5px — artefact du débordement.)
+ *           390×740 — sheet CLAMPÉE démarrant à ≈ 59px, croix ≈ 76–92px : ENTIÈREMENT
+ *                     dans la bande.
  *           390×667 — sheet CLAMPÉE à 92vh, démarrant à ≈ 53px, croix ≈ 70–86px :
  *                     recouvrement PARTIEL de ≈ 14px.
  *     POURQUOI PAS L'ANCRAGE CONTEXTUEL : le seul signal DOM qui dirait « une couche
@@ -91,7 +92,7 @@ import { Toast } from '@/components/ui/toast'
  *     laissée libre en HAUT D'ÉCRAN. Elle va de 0 jusqu'au premier obstacle : le haut de
  *     la sheet, ou le haut de la carte. Comme la carte est à 72px par CONSTRUCTION, ce
  *     ruban existe toujours et est DISJOINT d'elle — 0–59px à 390×740, 0–53px à 390×667,
- *     0–72px à 390×844. C'est ce décalage fixe, et non un hasard de gabarit, qui garantit
+ *     0–68px à 390×844 (mêmes relevés `[#714]`). C'est ce décalage fixe, et non un hasard de gabarit, qui garantit
  *     la sortie. Cette bande ferme réellement :
  *     ni `onPointerDownOutside`, ni `onInteractOutside`, ni `onEscapeKeyDown` ne sont
  *     interceptés sur `ProductDrawer` / `ui/dialog`, et aucune garde de formulaire sale
@@ -106,7 +107,7 @@ import { Toast } from '@/components/ui/toast'
  *     (DEC-S92-002) et sans `hover` tactile pour prolonger la pause, le recouvrement est
  *     BORNÉ dans le temps sans action de l'utilisateur.
  *     ORACLE PEINT (#714) : `e2e/sprint-95-toast-overlap.spec.ts`, sur les TROIS régimes
- *     de hauteur (390×844 effleurement ≈ 3,5px, 390×740 pire cas, 390×667 clampé) — borne du
+ *     de hauteur (390×844 et 390×740 recouvrement total, 390×667 partiel) — borne du
  *     recouvrement mesurée par une assertion ENCADRANTE (elle rougit si la géométrie
  *     dérive dans un sens COMME dans l'autre, pas seulement si elle empire), disjonction
  *     bande/carte, et fermeture par tap sur la bande ALORS QUE le toast est affiché. Si
