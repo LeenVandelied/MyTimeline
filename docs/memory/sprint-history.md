@@ -6741,7 +6741,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée cette session.
 **Status :** Terminé — merge PR #731 dans `dev` le 2026-09-20 (`17340d50`), issues #508/#701/#713/#714 et milestone #96 fermés
 
-### Sprint 96 — 2026-09-21 → en cours (EN COURS — clôture en attente du merge de la PR #737 — cohésion 0.00 assumée, Contrôles atteignables au doigt)
+### Sprint 96 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #737 dans dev — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
 **Milestone GitHub :** #97
 **Issues livrées (4) :** #665 (S), #633 (XS), #702 (S), #656 (XS) — 6 pts (+ 1 absorption en clôture, voir triage)
@@ -6767,17 +6767,18 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - Sémantique clavier ↓=+6 de la grille → soldé par l'arbitrage ui-design (verdict A), sans issue
   - Reformatage prettier de `settings-mobile.spec.ts` → déjà fait en cours de sprint (`3ef041a1`)
   Ratio discard 0/8. Backlog libre plutôt que milestone Sprint 97 : son thème est la frise (même raisonnement qu'au S95).
-**Status :** En cours — PR #737 ouverte, CI verte ; merge, fermeture des issues et du milestone en attente de confirmation
+**Status :** Terminé — PR #737 mergée le 2026-09-21 (09:53 UTC), milestone #97 fermé, 0 issue ouverte (constat au démarrage du S97 : titre et `Status` n'avaient pas été basculés après le merge)
 
-### Sprint 97 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
+### Sprint 97 — 2026-09-21 → en cours (EN COURS — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
 **Objectif :** Les occurrences qui se chevauchent restent cliquables ; l'encre la plus claire passe le contraste
 **Milestone GitHub :** #98
 **Issues :** #670 (S), #716 (XS), #709 (M) — 7 pts
 **Vagues :** V1 = #670 ∥ #716 | V2 = #709 (E2E exclusif)
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 94 (TimelineView + frise mobile), Sprint 95 (#701 sur CompactAgenda)
-**À confirmer au démarrage :** décision Designer #670 (relever le token ou le réserver au décoratif).
-**Status :** Planifié
+**Décision #670 (dev, au démarrage, 2026-09-21) :** réserver `--color-ink-faint` au non-textuel ; tout texte (placeholders compris) migre vers `ink-muted`. Raison mesurée : relever le token à 4,5:1 sur `surface-2` exige #6C7079 (clair) / #82868B (sombre), soit quasi `ink-muted` (#5E626B / #8E9299) — la hiérarchie à 3 paliers disparaîtrait. Cohérent avec `src/styles/ds/readme.md` §192 (palier « décoratif » par construction).
+**Branche :** `claude/sprint-97-start-20c8b4` (worktree, pas de `sprint/97` — même convention que S96).
+**Status :** En cours
 
 ### Matrice de conflits inter-sprints (S93-S97)
 
