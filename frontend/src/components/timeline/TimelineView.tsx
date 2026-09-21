@@ -56,6 +56,7 @@ import {
   buildVerticalModel,
   windowEvents,
   windowLanes,
+  NO_LANE_OFFSETS,
   type TimelineMetrics,
   type WindowedEvent,
 } from './virtualization'
@@ -69,6 +70,14 @@ import {
   type LaneRecurrenceMarks,
 } from './recurrence-marks'
 import { RecurrenceMarks } from './RecurrenceMarks'
+import {
+  LANE_GAP_PX,
+  LANE_ROW_PITCH_PX,
+  SINGLE_ROW_LAYOUT,
+  laneExtraHeightPx,
+  layoutLanes,
+  type LaneLayout,
+} from './lane-layout'
 
 /**
  * #55 — Vue Timeline desktop.
@@ -98,10 +107,13 @@ import { RecurrenceMarks } from './RecurrenceMarks'
  *    bouton primaire « Nouvel événement » reste atteignable en ≤ 6 Tab (point 4).
  *
  *  - NAVIGATION FLÈCHES (déléguée par `EventPill.onKeyDown`) :
- *      ← / →  : pastille précédente / suivante DANS la lane (puis déborde sur la
- *               lane voisine aux extrémités) ;
- *      ↑ / ↓  : lane précédente / suivante, en conservant l'index de colonne
- *               (clampé au nombre de pastilles de la lane cible) ;
+ *      ← / →  : pastille précédente / suivante DANS la rangée (puis déborde sur la
+ *               rangée voisine aux extrémités) ;
+ *      ↑ / ↓  : rangée précédente / suivante, en conservant l'index de colonne
+ *               (clampé au nombre de pastilles de la rangée cible) ;
+ *    #709 — l'unité de navigation est la RANGÉE (une lane empilée en compte
+ *    plusieurs, `lane-layout.ts`), parcourue dans l'ordre de lecture : lanes de
+ *    haut en bas, rangées de haut en bas dans une lane, pastilles par date.
  *      Home / End : première / dernière pastille de la frise.
  *    Enter / Espace ouvrent le drawer NATIVEMENT (`<button>`) — aucun handler
  *    custom (pas de double-ouverture). Les lanes COLLAPSÉES sont exclues de la
@@ -191,7 +203,10 @@ const NO_POSITIONED: PositionedEvent[] = []
  */
 export const LANE_TRACK_OFFSET_PX = 168
 
-/** #81 — Clé de coordonnée clavier d'une pastille (« indexDeLane:indexDEvent »). */
+/**
+ * #81 — Clé de coordonnée clavier d'une pastille. #709 : « indexDeRangée:rangDansLaRangée »
+ * (une rangée de navigation = une rangée d'empilage d'une lane, cf. `navLines`).
+ */
 const navKeyOf = (lane: number, evt: number) => `${lane}:${evt}`
 
 /** Même contenu (mêmes events, mêmes index) → on peut réutiliser l'ancien tableau. */
@@ -434,10 +449,20 @@ interface TimelineLaneRowProps {
   windowed: WindowedEvent[]
   /** #595 — fantômes + connecteurs montés (fenêtrés), identité STABLE (cache de rendu). */
   recurrence: LaneRecurrenceMarks
-  /** Index de la lane dans `navLanes` (coordonnée clavier #81), -1 si absente. */
-  laneIdx: number
-  /** Index de l'event portant `tabIndex=0` DANS CETTE lane, sinon `null`. */
-  rovingEvt: number | null
+  /**
+   * #709 — Empilage de la lane (rangée et rang de chaque événement), identité stable
+   * par niveau de zoom. `SINGLE_ROW_LAYOUT` pour une lane repliée.
+   */
+  layout: LaneLayout
+  /** #709 — Hauteur ajoutée par les rangées au-delà de la première (px). */
+  extraHeightPx: number
+  /**
+   * Index, dans `navLines`, de la RANGÉE 0 de cette lane (coordonnée clavier #81) ; les
+   * rangées suivantes sont contiguës. -1 si la lane est hors navigation.
+   */
+  navLine0: number
+  /** Clé de navigation (`navKeyOf`) de la pastille portant `tabIndex=0`, si elle est ici. */
+  rovingKey: string | null
   locale: string
   t: (key: string) => string
   onToggle: (resourceId: string) => void
@@ -460,8 +485,10 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
   dayWidth,
   windowed,
   recurrence,
-  laneIdx,
-  rovingEvt,
+  layout,
+  extraHeightPx,
+  navLine0,
+  rovingKey,
   locale,
   t,
   onToggle,
@@ -475,8 +502,16 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
       role="listitem"
       aria-posinset={laneOrdinal + 1}
       aria-setsize={setSize}
-      style={{ backgroundSize: `${dayWidth}px 100%` }}
+      style={{
+        backgroundSize: `${dayWidth}px 100%`,
+        // #709 — lane empilée : `timeline.css` ajoute `--mt-lane-extra` à `--lane-height`.
+        ...(extraHeightPx > 0 ? { ['--mt-lane-extra' as string]: `${extraHeightPx}px` } : null),
+      }}
       data-testid="timeline-resource-row"
+      // #709 — crochets : nombre de rangées (assertions) et hauteur ajoutée, que
+      // `useTimelineViewport` retranche pour mesurer la hauteur de BASE d'une lane.
+      data-lane-rows={isCollapsed ? 1 : layout.rows}
+      data-lane-extra={extraHeightPx}
     >
       {/* #195 — Accordéon de 2e niveau : le label produit sticky devient un bouton
           toggle (mirror de `mt-tlv__group-head`). Bouton natif → clavier
@@ -503,18 +538,28 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
       {/* #595 — fantômes + connecteurs de série AVANT les pastilles : même contexte
           d'empilement, donc une occurrence réelle (de n'importe quelle série de la lane)
           est toujours peinte par-dessus. Non interactifs, hors roving tabindex. */}
-      <RecurrenceMarks marks={recurrence} variant="desktop" />
+      <RecurrenceMarks
+        marks={recurrence}
+        variant="desktop"
+        rowByEventId={layout.rowByEventId}
+        rowPitchPx={LANE_ROW_PITCH_PX.desktop}
+      />
       {windowed.map(({ event, index: evtIdx }) => {
-        const key = navKeyOf(laneIdx, evtIdx)
+        // #709 — coordonnée clavier = (rangée de navigation, rang dans la rangée).
+        const row = layout.rowOf[evtIdx] ?? 0
+        const line = navLine0 + row
+        const pos = layout.posInRow[evtIdx] ?? evtIdx
+        const key = navKeyOf(line, pos)
         return (
           <EventPill
             key={event.id}
             event={event}
             ariaLabel={buildEventAriaLabel(event, locale, t)}
             onSelect={onSelect}
-            tabIndex={rovingEvt === evtIdx ? 0 : -1}
+            tabIndex={rovingKey === key ? 0 : -1}
             navKey={key}
-            onKeyDown={(e) => onPillKeyDown(e, laneIdx, evtIdx)}
+            rowOffsetPx={row * LANE_ROW_PITCH_PX.desktop}
+            onKeyDown={(e) => onPillKeyDown(e, line, pos)}
             pillRef={(node) => {
               // Indexe le node pour `.focus()` ; nettoie à l'unmount (refs
               // pendantes au collapse ET au démontage par la virtualisation, #69).
@@ -666,6 +711,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     scaleRecurrenceMarks(recurrenceIndex, dayWidth, trackWidth),
   )
 
+  // #709 — Empilage en rangées de chaque lane (maquette `layoutLane`). Dépend du zoom
+  // (gap et réservation des ponctuels en px) : recalculé quand `eventsByResource` change
+  // d'identité, c'est-à-dire au changement de niveau ou d'événements — jamais au scroll.
+  const laneLayouts = useMemo(
+    () => layoutLanes(eventsByResource, { gapPx: LANE_GAP_PX.desktop }),
+    [eventsByResource],
+  )
+
   const resourcesByCategory = useMemo(() => groupResourcesByCategory(resources), [resources])
 
   const groups = useMemo(() => Object.entries(resourcesByCategory), [resourcesByCategory])
@@ -738,12 +791,29 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     metricsRef.current = viewport.metrics
   }
   const metrics = metricsRef.current
-  const laneHeight = metrics.laneHeight
 
-  // Modèle vertical (tops en px de chaque liste de lanes / de chaque lane).
+  // #709 — Hauteur ajoutée par l'empilage à chaque lane (0 pour une lane mono-rangée
+  // ou repliée : ses pastilles ne sont pas rendues, elle garde la hauteur de base).
+  const laneExtraOf = useCallback(
+    (resourceId: string) =>
+      (collapsedResources[resourceId] ?? false)
+        ? 0
+        : laneExtraHeightPx(laneLayouts.get(resourceId)?.rows ?? 1, LANE_ROW_PITCH_PX.desktop),
+    [collapsedResources, laneLayouts],
+  )
+
+  // Modèle vertical (tops en px de chaque liste de lanes / de chaque lane). #709 —
+  // hauteurs VARIABLES : base mesurée + pas de rangée × (rangées − 1), calculées ici et
+  // jamais relues dans le DOM (pas de boucle mesure → rendu).
   const verticalModel = useMemo(
-    () => buildVerticalModel(visibleGroups, collapsed, metrics),
-    [visibleGroups, collapsed, metrics],
+    () =>
+      buildVerticalModel(
+        visibleGroups,
+        collapsed,
+        metrics,
+        (resource) => metrics.laneHeight + laneExtraOf(resource.id),
+      ),
+    [visibleGroups, collapsed, metrics, laneExtraOf],
   )
 
   // #69 — La virtualisation VERTICALE ne s'enclenche qu'au-delà du seuil : en
@@ -787,12 +857,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   )
 
   // #81 — Modèle plat de navigation clavier : la « grille » des lanes VISIBLES
-  // (catégorie non collapsée) → chaque entrée = { resourceId, events[] }. L'ordre
-  // suit le rendu (catégories puis ressources). Les lanes des catégories
-  // collapsées sont EXCLUES (pastilles non rendues → non focusables).
-  // #592 — idem pour les catégories MASQUÉES : `visibleGroups` ne les contient pas.
-  const navLanes = useMemo(() => {
-    const lanes: Array<{ resourceId: string; events: PositionedEvent[] }> = []
+  // (catégorie non collapsée). L'ordre suit le rendu (catégories puis ressources).
+  // Les lanes des catégories collapsées sont EXCLUES (pastilles non rendues → non
+  // focusables). #592 — idem pour les catégories MASQUÉES (`visibleGroups`).
+  // #709 — une entrée par RANGÉE d'empilage (et non plus par lane) : une lane de trois
+  // rangées fournit trois lignes consécutives, chacune triée par date. ↑/↓ passent
+  // ainsi d'une rangée à l'autre DANS la lane avant de changer de lane, et ←/→ suivent
+  // l'ordre de lecture visuel. Une lane vide garde UNE ligne vide (sautée par la nav).
+  const navLines = useMemo(() => {
+    const lines: Array<{ resourceId: string; row: number; events: PositionedEvent[] }> = []
+    const line0ByResource = new Map<string, number>()
     for (const [category, resList] of visibleGroups) {
       if (collapsed[category] ?? false) continue
       for (const resource of resList) {
@@ -800,29 +874,33 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         // l'exclut aussi de la nav clavier (comme les catégories collapsées),
         // sinon ←→↑↓ cibleraient des pastilles masquées (bug focus).
         if (collapsedResources[resource.id] ?? false) continue
-        lanes.push({ resourceId: resource.id, events: eventsByResource.get(resource.id) || [] })
+        const laneEvents = eventsByResource.get(resource.id) || []
+        const layout = laneLayouts.get(resource.id) ?? SINGLE_ROW_LAYOUT
+        line0ByResource.set(resource.id, lines.length)
+        layout.lines.forEach((indices, row) => {
+          lines.push({ resourceId: resource.id, row, events: indices.map((i) => laneEvents[i]) })
+        })
       }
     }
-    return lanes
-  }, [visibleGroups, collapsed, collapsedResources, eventsByResource])
+    return { lines, line0ByResource }
+  }, [visibleGroups, collapsed, collapsedResources, eventsByResource, laneLayouts])
+  const navLanes = navLines.lines
 
   // #81 — Roving tabindex : la pastille active (celle qui porte tabIndex=0) est
-  // repérée par sa RESSOURCE (`resourceId`) + son index d'event, PAS par un index
-  // de lane. Motif (MAJEUR-2) : `navLanes` rétrécit quand une catégorie AU-DESSUS
-  // se collapse → un index de lane mémorisé glisserait vers une AUTRE ressource.
-  // Une clé resource-keyée est stable face au collapse/expand. `null` = aucune
-  // encore focalisée → la 1re pastille non vide devient l'arrêt par défaut.
-  const [activeNav, setActiveNav] = useState<{ resourceId: string; evt: number } | null>(null)
+  // repérée par sa RESSOURCE (`resourceId`), PAS par un index de lane. Motif
+  // (MAJEUR-2) : `navLanes` rétrécit quand une catégorie AU-DESSUS se collapse → un
+  // index de lane mémorisé glisserait vers une AUTRE ressource. Une clé resource-keyée
+  // est stable face au collapse/expand. #709 — l'événement est repéré par son `id` (et
+  // non plus par son index) : un changement de zoom ré-empile la lane et déplacerait
+  // un index de rangée. `null` = aucune encore focalisée → la 1re pastille non vide
+  // devient l'arrêt par défaut.
+  const [activeNav, setActiveNav] = useState<{ resourceId: string; eventId: string } | null>(null)
   // Index des nodes DOM des pastilles (clé "laneIdx:evtIdx") pour `.focus()`.
   const pillNodes = useRef(new Map<string, HTMLButtonElement>())
 
-  // Lookup resourceId → index de lane dans `navLanes` (le rendu itère par
+  // Lookup resourceId → index de sa RANGÉE 0 dans `navLanes` (le rendu itère par
   // ressource ; on retrouve ainsi la coordonnée de navigation de chaque pastille).
-  const laneIndexByResource = useMemo(() => {
-    const m = new Map<string, number>()
-    navLanes.forEach((l, i) => m.set(l.resourceId, i))
-    return m
-  }, [navLanes])
+  const laneIndexByResource = navLines.line0ByResource
 
   // Première pastille non vide de la frise (fallback de l'arrêt de tabulation).
   const firstNav = useMemo(() => {
@@ -836,13 +914,18 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // d'index provoqué par le collapse d'une catégorie au-dessus (MAJEUR-2).
   const rovingNav = useMemo(() => {
     if (activeNav) {
-      const lane = laneIndexByResource.get(activeNav.resourceId)
-      if (lane != null && activeNav.evt < navLanes[lane].events.length) {
-        return { lane, evt: activeNav.evt }
+      const line0 = laneIndexByResource.get(activeNav.resourceId)
+      if (line0 != null) {
+        for (let lane = line0; lane < navLanes.length; lane++) {
+          if (navLanes[lane].resourceId !== activeNav.resourceId) break
+          const evt = navLanes[lane].events.findIndex((e) => e.id === activeNav.eventId)
+          if (evt !== -1) return { lane, evt }
+        }
       }
     }
     return firstNav
   }, [activeNav, navLanes, laneIndexByResource, firstNav])
+  const rovingKey = rovingNav === null ? null : navKeyOf(rovingNav.lane, rovingNav.evt)
 
   // #69 — Cible de focus EN ATTENTE. La virtualisation démonte les pastilles hors
   // fenêtre : une cible clavier peut ne pas encore exister dans le DOM au moment
@@ -887,31 +970,33 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     (lane: number, evt: number) => {
       const target = navLanes[lane]
       if (!target) return
-      setActiveNav({ resourceId: target.resourceId, evt })
+      const event = target.events[evt]
+      if (!event) return
+      setActiveNav({ resourceId: target.resourceId, eventId: event.id })
 
       // Élargit la fenêtre de rendu à la cible AVANT de tenter le focus.
-      const event = target.events[evt]
-      if (event) {
-        const laneTop = verticalModel.laneTops.get(target.resourceId) ?? 0
-        // #594 — intervalle réel (un pin déborde à gauche de sa date).
-        const extent = eventTrackExtent(event)
-        // #392 — `useTimelineViewport` publie ses bandes en repère RAIL (elles
-        // viennent de `scrollLeft`) : on y convertit la cible, qui est en repère
-        // piste. Sans ça les deux repères se mélangeraient dans le même état.
-        ensureVisible(
-          {
-            start: LANE_TRACK_OFFSET_PX + extent.start,
-            end: LANE_TRACK_OFFSET_PX + extent.end,
-          },
-          { start: laneTop, end: laneTop + laneHeight },
-        )
-      }
+      // #709 — bande verticale = la RANGÉE de la cible (lane à hauteur variable).
+      const rowTop =
+        (verticalModel.laneTops.get(target.resourceId) ?? 0) +
+        target.row * LANE_ROW_PITCH_PX.desktop
+      // #594 — intervalle réel (un pin déborde à gauche de sa date).
+      const extent = eventTrackExtent(event)
+      // #392 — `useTimelineViewport` publie ses bandes en repère RAIL (elles
+      // viennent de `scrollLeft`) : on y convertit la cible, qui est en repère
+      // piste. Sans ça les deux repères se mélangeraient dans le même état.
+      ensureVisible(
+        {
+          start: LANE_TRACK_OFFSET_PX + extent.start,
+          end: LANE_TRACK_OFFSET_PX + extent.end,
+        },
+        { start: rowTop, end: rowTop + metrics.laneHeight },
+      )
 
       pendingFocusRef.current = { key: navKeyOf(lane, evt), at: performance.now() }
       // Cas nominal (cible déjà montée) : focus immédiat, aucun rendu supplémentaire.
       flushPendingFocus()
     },
-    [navLanes, verticalModel, ensureVisible, laneHeight, flushPendingFocus],
+    [navLanes, verticalModel, ensureVisible, metrics.laneHeight, flushPendingFocus],
   )
 
   // #81 — Navigation clavier déléguée par `EventPill`. ←→ dans/entre lanes,
@@ -1487,8 +1572,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     // lanes sont fenêtrées, avec des cales qui préservent la hauteur totale
     // (scrollbar et ligne TODAY inchangées).
     const laneWindow = windowLanes(
-      resList.length,
-      laneHeight,
+      verticalModel.laneOffsetsByCategory[category] ?? NO_LANE_OFFSETS,
       verticalModel.listTops[category] ?? 0,
       verticalBand,
     )
@@ -1518,15 +1602,24 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
               ? previousMarks
               : computedMarks
           nextRecurrence.set(resource.id, recurrence)
-          const laneIdx = laneIndexByResource.get(resource.id) ?? -1
+          const navLine0 = laneIndexByResource.get(resource.id) ?? -1
+          const layout = isResCollapsed
+            ? SINGLE_ROW_LAYOUT
+            : (laneLayouts.get(resource.id) ?? SINGLE_ROW_LAYOUT)
           return {
             resource,
             laneOrdinal: laneWindow.startIndex + i,
             isResCollapsed,
             windowed,
             recurrence,
-            laneIdx,
-            rovingEvt: rovingNav !== null && rovingNav.lane === laneIdx ? rovingNav.evt : null,
+            layout,
+            extraHeightPx: laneExtraOf(resource.id),
+            navLine0,
+            // Clé passée à la seule lane qui la porte : les autres gardent `null` (memo).
+            rovingKey:
+              rovingNav !== null && navLanes[rovingNav.lane]?.resourceId === resource.id
+                ? rovingKey
+                : null,
           }
         })
     return {
@@ -1793,8 +1886,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       dayWidth={dayWidth}
                       windowed={lane.windowed}
                       recurrence={lane.recurrence}
-                      laneIdx={lane.laneIdx}
-                      rovingEvt={lane.rovingEvt}
+                      layout={lane.layout}
+                      extraHeightPx={lane.extraHeightPx}
+                      navLine0={lane.navLine0}
+                      rovingKey={lane.rovingKey}
                       locale={locale}
                       t={translate}
                       onToggle={toggleResource}

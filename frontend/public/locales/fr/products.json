@@ -19,7 +19,6 @@
       "title": "Ajouter un événement",
       "list": "Événements ajoutés",
       "empty": "Aucun événement ajouté",
-      "remove": "Supprimer",
       "form": {
         "name": "Nom de l'événement",
         "namePlaceholder": "Nom de l'événement",
@@ -55,8 +54,7 @@
     },
     "events": {
       "list": "Événements ajoutés",
-      "empty": "Aucun événement ajouté",
-      "remove": "Supprimer"
+      "empty": "Aucun événement ajouté"
     },
     "description": "Ajoutez un nouveau produit avec ses événements associés"
   },

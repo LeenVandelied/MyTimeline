@@ -236,7 +236,15 @@
 .mt-tlv__chev{transition:transform 160ms var(--ease-quart); flex:0 0 auto;}
 .mt-tlv__chev--open{transform:rotate(90deg);}
 @media (prefers-reduced-motion:reduce){ .mt-tlv__chev{transition:none;} }
-.mt-tlv__lane{position:relative; height:var(--lane-height); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+/* #709 — EMPILAGE EN RANGÉES (`lane-layout.ts`) : une lane dont des occurrences réelles se
+   chevauchent grandit d'un PAS par rangée supplémentaire (desktop 34 px = barre 26 + VGAP 8
+   de la maquette ; portrait 35 ; paysage 31). Le pas vit en JS (le modèle vertical de la
+   virtualisation en a besoin, #69) ; il n'arrive au CSS que sous deux variables posées en
+   ligne, et seulement hors cas mono-rangée (DOM inchangé pour une lane d'une rangée) :
+   - `--mt-lane-extra` (sur la lane) : hauteur ajoutée aux hauteurs de base ci-dessous ;
+   - `--mt-row-y` (sur chaque occurrence, libellé extérieur, fantôme, connecteur) : décalage
+     de sa rangée, ajouté au `top` historique de la rangée 0. */
+.mt-tlv__lane{position:relative; height:calc(var(--lane-height) + var(--mt-lane-extra, 0px)); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
 /* Label produit sticky à gauche : identifie la lane, reste ancré pendant le
    scroll horizontal. Fond opaque + z-index pour passer au-dessus des event bars
    sans casser leur positionnement absolu (left:leftPx). */
@@ -308,7 +316,7 @@
    `--z-sticky` (et non plus) : la ligne TODAY (`--z-cursor`) passe par-dessus,
    même convention que l'en-tête de lane. */
 .mt-tlv__ruler::before{content:""; position:sticky; left:0; z-index:var(--z-sticky); display:block; width:var(--lane-header-w); height:100%; background:var(--color-surface-2); border-right:1px solid var(--color-rule);}
-.mt-tlv__evt{position:absolute; top:9px; height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
+.mt-tlv__evt{position:absolute; top:calc(9px + var(--mt-row-y, 0px)); height:26px; display:flex; align-items:center; gap:6px; padding:0 10px; border-radius:6px; background:var(--mt-evt, var(--color-accent)); color:var(--mt-evt-ink, #fff); font-size:12px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); transition:filter var(--dur-micro), box-shadow var(--dur-micro);}
 .mt-tlv__evt:hover{box-shadow:var(--shadow-md); filter:brightness(1.04);}
 /* #81 — Focus ring (point 5). ÉCART INTENTIONNEL de token : les pastilles
    d'événement utilisent `--color-accent` (et non `--color-focus` comme les
@@ -338,7 +346,7 @@
    - Libellé plafonné à 240 px (ellipse) : la maquette ne tronque pas ; le plafond
      borne un titre de 100 caractères sous `OVERSCAN_X_PX` (600 px) de la
      virtualisation, qui ne réserve que 100 px (`PIN_FOOTPRINT_PX`). */
-.mt-tlv__evt--pin{top:0; height:44px; min-width:44px; padding:0; gap:6px; border-radius:var(--radius-sm); background:transparent; color:var(--color-ink); box-shadow:none; overflow:visible;}
+.mt-tlv__evt--pin{top:var(--mt-row-y, 0px); height:44px; min-width:44px; padding:0; gap:6px; border-radius:var(--radius-sm); background:transparent; color:var(--color-ink); box-shadow:none; overflow:visible;}
 .mt-tlv__evt--pin:hover{box-shadow:none; filter:none;}
 .mt-tlv__evt--pin:hover .mt-evt-pin{box-shadow:var(--shadow-md);}
 .mt-evt-pin{flex:0 0 auto; width:10px; height:26px; border-radius:3px; background:var(--mt-evt, var(--color-accent)); box-shadow:var(--shadow-sm); transition:box-shadow var(--dur-micro);}
@@ -367,9 +375,11 @@
 .dark .mt-evt-pin--ghost, [data-theme="dark"] .mt-evt-pin--ghost{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
 .mt-tlv__ghost, .mt-tlv__ghost-pin, .mt-tlv__connector,
 .mt-tlm__ghost, .mt-tlm__ghost-pin, .mt-tlm__connector{pointer-events:none;}
-/* Desktop : barre `top:9px; height:26px` (centre 22 px) — `.mt-evt` pose déjà ce placement. */
-.mt-tlv__ghost-pin{top:18px;}
-.mt-tlv__connector{position:absolute; top:21px; height:0;}
+/* Desktop : barre `top:9px; height:26px` (centre 22 px), placement de `.mt-evt` redéclaré
+   ici pour lui ajouter le décalage de rangée (#709). */
+.mt-tlv__ghost{top:calc(9px + var(--mt-row-y, 0px));}
+.mt-tlv__ghost-pin{top:calc(18px + var(--mt-row-y, 0px));}
+.mt-tlv__connector{position:absolute; top:calc(21px + var(--mt-row-y, 0px)); height:0;}
 
 /* #230 — ÉVÉNEMENT ARCHIVÉ sur la frise (BR-EVE-011 : un archivé n'est plus actif).
    Grisé, PAS masqué : il reste visible et cliquable là où le filtre de vue #307 le
@@ -410,7 +420,7 @@
 /* #81 point 6 — libellé de secours HORS barre : rendu quand le contraste du
    titre À L'INTÉRIEUR de la barre est < 4.5:1 (fond clair + barre étroite). Posé
    sur le fond de lane (ink lisible), aligné verticalement sur la barre. */
-.mt-tlv__evt-outside{position:absolute; top:9px; height:26px; display:inline-flex; align-items:center; padding:0 4px; font-size:12px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; pointer-events:none;}
+.mt-tlv__evt-outside{position:absolute; top:calc(9px + var(--mt-row-y, 0px)); height:26px; display:inline-flex; align-items:center; padding:0 4px; font-size:12px; font-weight:var(--weight-semibold); color:var(--color-ink); white-space:nowrap; pointer-events:none;}
 
 /* Minimap waveform : barres de densité + fenêtre draggable focusable. */
 .mt-minimap__bar--filled{background:var(--color-accent);}
@@ -726,7 +736,7 @@
 
 /* Lane compacte : densité réduite mais hauteur >= 44px (contrainte a11y PRIME
    sur la densité, réserve ui-design #1). */
-.mt-tlm__lane{position:relative; height:44px; border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+.mt-tlm__lane{position:relative; height:calc(44px + var(--mt-lane-extra, 0px)); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
 /* #706 — largeur FIXE (et non plus `max-width:120px`), même raison que #392 côté
    desktop : l'en-tête remplit désormais la gouttière de piste, qui fait
    exactement `--lane-header-w-m`. Un en-tête plus étroit (nom de produit court)
@@ -792,7 +802,11 @@
 
 /* Bloc event compact + son bouton `⋯`. Le wrap positionne (left absolu), le
    bouton event porte la largeur. Hitbox verticale = toute la lane (44px). */
-.mt-tlm__evt-wrap{position:absolute; top:0; bottom:0; display:flex; align-items:center; gap:2px;}
+/* #709 — lane empilée : le wrap n'occupe plus toute la lane mais la BANDE de sa rangée,
+   de la hauteur d'une lane de base (`--mt-lane-extra` est hérité de la lane) :
+   top = décalage de rangée, bottom = hauteur ajoutée − ce décalage. Rangée 0 d'une lane
+   mono-rangée : `top:0; bottom:0`, exactement comme avant. */
+.mt-tlm__evt-wrap{position:absolute; top:var(--mt-row-y, 0px); bottom:calc(var(--mt-lane-extra, 0px) - var(--mt-row-y, 0px)); display:flex; align-items:center; gap:2px;}
 .mt-tlm__evt{position:relative; display:flex; align-items:center; gap:5px; height:28px; min-height:28px; padding:0 8px; border-radius:6px; font-size:11px; font-weight:var(--weight-semibold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; box-shadow:var(--shadow-sm); border:0;}
 /* Pseudo-élément : étend la zone tap à 44px de haut sans agrandir le visuel. */
 .mt-tlm__evt::before{content:""; position:absolute; top:-8px; bottom:-8px; left:0; right:0;}
@@ -810,9 +824,11 @@
 /* #595 — marques de récurrence mobiles, centrées sur la barre de la lane (le wrap des
    événements est `top:0; bottom:0` + flex centré) : barre portrait 28 px. Déclarées
    APRÈS `.mt-evt` (même spécificité) : elles remplacent son `top:9px; height:26px`. */
-.mt-tlm__ghost{top:calc(50% - 14px); height:28px;}
-.mt-tlm__ghost-pin{top:calc(50% - 4px);}
-.mt-tlm__connector{position:absolute; top:calc(50% - 1px); height:0;}
+/* #709 — `50% − extra/2` = milieu de la bande d'une lane de BASE (inchangé hors empilage),
+   décalé de la rangée de la série (`--mt-row-y`). */
+.mt-tlm__ghost{top:calc(50% - var(--mt-lane-extra, 0px) / 2 + var(--mt-row-y, 0px) - 14px); height:28px;}
+.mt-tlm__ghost-pin{top:calc(50% - var(--mt-lane-extra, 0px) / 2 + var(--mt-row-y, 0px) - 4px);}
+.mt-tlm__connector{position:absolute; top:calc(50% - var(--mt-lane-extra, 0px) / 2 + var(--mt-row-y, 0px) - 1px); height:0;}
 /* Bouton `⋯` : alternative a11y visible au long-press, cible tap >= 44px.
    Encre de PAGE pour tous les événements (barre comme pin) : le `⋯` est posé À CÔTÉ
    de la barre, jamais dessus — l'encre calculée pour la couleur de la barre y tombait
@@ -889,7 +905,7 @@
    visibles sans scroll vertical (hauteur d'écran réduite en paysage).
    Valeurs ad hoc : ruler 34px (vs 44), lane 34px (vs 44). */
 .mt-tlm--landscape{--ruler-height:34px; --lane-height:34px;}
-.mt-tlm--landscape .mt-tlm__lane{height:var(--lane-height);}
+.mt-tlm--landscape .mt-tlm__lane{height:calc(var(--lane-height) + var(--mt-lane-extra, 0px));}
 .mt-tlm--landscape .mt-tlm__ruler{height:var(--ruler-height);}
 /* Bloc event compacté visuellement (24px) MAIS hitbox ≥ 44px conservée via le
    pseudo `::before` (touch target PRIME sur la densité — réserve ui-design #1). */

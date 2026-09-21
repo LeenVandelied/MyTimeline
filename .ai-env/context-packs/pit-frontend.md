@@ -1619,6 +1619,22 @@ Le commentaire déléguait la couverture desktop à deux specs « qui tournent �
 ## PIT-S96-010 — `check-sprint-completeness.sh` ne reconnaît pas « `RECOMMAND_X` : NON » comme une négation
 Sa regex n'accepte que « Pas de RECOMMAND_X », « aucun… », « non applicable » ; une négation formulée « `RECOMMAND_X` : NON » ou coupée sur deux lignes ressort en `UNTREATED_SIGNAL`. Au S96 : 7 signaux signalés, 6 faux positifs, 1 vrai (sémantique de grille, traité par un arbitrage ui-design). Reformuler en « Pas de `RECOMMAND_X` » sur UNE ligne — et trier avant de reformuler : le contrôle attrape aussi de vrais signaux, `--force` les enterrerait. Prescrire ce format dans les gabarits de briefing. (Sprint 96, lead)
 
+
+## PIT-S97-001 — Contrôle négatif de contraste en sombre : `ink-faint` passe 3:1 sur `bg`
+`ink-faint` sombre (#5E626B) mesure 3,20:1 sur `bg` : au-dessus du seuil NON textuel (1.4.11). Un contrôle négatif qui ne vise que des icônes posées sur `bg` ne rougit donc pas en sombre — au S97, 7 rouges sur 8, le 8e (loupe sombre) vert à juste titre. Pour qu'un contrôle négatif prouve quelque chose dans les deux thèmes, inclure au moins un consommateur TEXTE (4,5:1) ou posé sur `surface`/`surface-2`. (Sprint 97, #670)
+
+
+## PIT-S97-002 — Frises mobiles : pas de ré-ancrage au zoom, et l'ordre des assertions arme le contrôle négatif
+Les frises mobiles ne ré-ancrent pas `scrollLeft` quand le niveau de zoom change : une spec qui zoome puis cherche un événement proche d'aujourd'hui doit recentrer sur `.mt-tlm__ruler .mt-tlm__today`. Et pour qu'un contrôle négatif E2E prouve le défaut, placer l'assertion du SYMPTÔME (hit-test `elementFromPoint`) avant les assertions de crochets (`data-lane-rows`) : sinon la spec rougit sur un attribut absent et ne dit rien du défaut. (Sprint 97, #709)
+
+
+## PIT-S97-003 — `i18n-namespaces.test.ts` ne prouve rien sur une clé individuelle
+Il ne vérifie que la résolution des racines de namespace (le fichier existe), jamais la présence, l'absence ou la parité inter-locales d'une clé. Ne pas le citer comme garde-fou d'un ajout ou d'une suppression de clé : la preuve est la recherche d'appelants tracée (chemins complets `namespace.parent.feuille`, pas le nom de feuille seul). Pas de test de parité inter-locales à ce jour (follow-up S97). (Sprint 97, #716)
+
+
+## PIT-S97-004 — Une grandeur de maquette recopiée dans une issue peut perdre son axe
+#709 annonçait « écart de 8 px / 10 px entre rangées » : la maquette distingue un `gap` HORIZONTAL d'empilage (8/10 px, converti en jours) et un `VGAP` VERTICAL (8/7 px). Implémenter l'énoncé aurait donné des rangées mobiles espacées de 10 px et un empilage indépendant du zoom. Avant de briefer une issue qui cite des cotes de maquette, relire l'extrait de maquette et vérifier l'AXE et l'UNITÉ de chaque grandeur ; signaler l'écart dans le briefing plutôt que de laisser l'agent le découvrir. (Sprint 97, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

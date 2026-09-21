@@ -27,7 +27,8 @@
 .mt-btn--primary:hover{background:var(--color-primary-hover);}
 /* Outline button: the border is the only thing marking the hit area → functional. */
 .mt-btn--secondary{background:var(--color-surface); color:var(--color-ink); border-color:var(--color-rule-emphasis);}
-.mt-btn--secondary:hover{background:var(--color-surface-2); border-color:var(--color-ink-faint);}
+/* Survol : la limite se RENFORCE (ink-muted ≥5,3:1) au lieu de retomber sous 3:1 (ink-faint) — #670, DEC-S97-006. */
+.mt-btn--secondary:hover{background:var(--color-surface-2); border-color:var(--color-ink-muted);}
 .mt-btn--ghost{background:transparent; color:var(--color-ink-muted);}
 .mt-btn--ghost:hover{background:var(--color-surface-2); color:var(--color-ink);}
 .mt-btn--accent{background:var(--color-accent); color:var(--color-accent-ink);}
@@ -47,7 +48,7 @@
   color:var(--color-ink-muted); cursor:pointer;
   transition:background var(--dur-micro), border-color var(--dur-micro), color var(--dur-micro);
 }
-.mt-iconbtn:hover{background:var(--color-surface-2); color:var(--color-ink); border-color:var(--color-ink-faint);}
+.mt-iconbtn:hover{background:var(--color-surface-2); color:var(--color-ink); border-color:var(--color-ink-muted);}
 .mt-iconbtn:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 .mt-iconbtn--sm{width:28px; height:28px;}
 .mt-iconbtn--ghost{border-color:transparent; background:transparent;}
@@ -64,7 +65,9 @@
   transition:border-color var(--dur-micro), box-shadow var(--dur-micro);
 }
 .mt-textarea{min-height:84px; resize:vertical; line-height:1.5;}
-.mt-input::placeholder, .mt-textarea::placeholder{color:var(--color-ink-faint);}
+/* #670 (DEC-S97-001) — un placeholder est du TEXTE (1.4.3) : `ink-muted`, jamais
+   `ink-faint` (2,56:1 sur surface-2 clair). */
+.mt-input::placeholder, .mt-textarea::placeholder{color:var(--color-ink-muted);}
 .mt-input:focus, .mt-textarea:focus{border-color:var(--color-accent); box-shadow:var(--shadow-focus);}
 .mt-input:disabled, .mt-textarea:disabled{opacity:.5; cursor:not-allowed;}
 .mt-input--invalid, .mt-textarea--invalid{border-color:var(--color-danger);}
@@ -73,7 +76,8 @@
 .mt-error{font-size:12px; color:var(--color-danger);}
 .mt-input-affix{position:relative; display:flex; align-items:center;}
 .mt-input-affix .mt-input{padding-left:32px;}
-.mt-input-affix__icon{position:absolute; left:10px; color:var(--color-ink-faint); display:flex; pointer-events:none;}
+/* #670 — icône d'affixe = indice du champ (1.4.11, ≥ 3:1) → `ink-muted`. */
+.mt-input-affix__icon{position:absolute; left:10px; color:var(--color-ink-muted); display:flex; pointer-events:none;}
 .mt-input-affix__icon svg{width:15px;height:15px;}
 
 /* ---------------- Select ---------------- */
@@ -86,10 +90,10 @@
   border-radius:var(--radius-md); padding:9px 11px; cursor:pointer; text-align:left;
   transition:border-color var(--dur-micro), box-shadow var(--dur-micro);
 }
-.mt-select__trigger:hover{border-color:var(--color-ink-faint);}
+.mt-select__trigger:hover{border-color:var(--color-ink-muted);}
 .mt-select__trigger[aria-expanded="true"]{border-color:var(--color-accent); box-shadow:var(--shadow-focus);}
 .mt-select__trigger:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
-.mt-select__placeholder{color:var(--color-ink-faint);}
+.mt-select__placeholder{color:var(--color-ink-muted);} /* #670 — texte → `ink-muted` */
 .mt-select__chev{color:var(--color-ink-muted); transition:transform var(--dur-micro) var(--ease-quart); flex:0 0 auto;}
 .mt-select__chev svg{width:15px;height:15px;display:block;}
 .mt-select__trigger[aria-expanded="true"] .mt-select__chev{transform:rotate(180deg);}
@@ -181,7 +185,10 @@
   background:var(--color-surface-2); border:1.5px solid var(--color-rule-emphasis);
   position:relative; transition:all var(--dur-micro) var(--ease-quart); flex:0 0 auto;
 }
-.mt-switch__thumb{position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--color-ink-faint); transition:all var(--dur-micro) var(--ease-quart);}
+.mt-switch__thumb{position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--color-rule-emphasis); transition:all var(--dur-micro) var(--ease-quart);}
+/* #670 — pouce à l'état off = indicateur d'état du contrôle (1.4.11, ≥ 3:1) :
+   `rule-emphasis` (3,70:1 clair / 4,10:1 sombre sur surface-2), et non plus
+   `ink-faint` (2,56 / 2,73). Même palier que le contour de la piste. */
 .mt-switch input:checked + .mt-switch__track{background:var(--color-accent); border-color:var(--color-accent);}
 .mt-switch input:checked + .mt-switch__track .mt-switch__thumb{left:18px; background:#fff;}
 /* #415 — cf. le bloc de `.mt-check__box`. SEUL des trois à avoir un montage
@@ -207,7 +214,8 @@
 /* ---------------- Tag ---------------- */
 .mt-tag{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 8px; border-radius:var(--radius-sm); background:var(--color-surface-2); color:var(--color-ink); border:1px solid var(--color-rule);}
 .mt-tag__swatch{width:9px; height:9px; border-radius:2px; flex:0 0 auto;}
-.mt-tag__x{cursor:pointer; color:var(--color-ink-faint); display:flex; border:0; background:none; padding:0;}
+/* #670 — bouton de suppression = contrôle (1.4.11, ≥ 3:1) → `ink-muted`. */
+.mt-tag__x{cursor:pointer; color:var(--color-ink-muted); display:flex; border:0; background:none; padding:0;}
 .mt-tag__x:hover{color:var(--color-ink);}
 .mt-tag__x svg{width:13px; height:13px;}
 

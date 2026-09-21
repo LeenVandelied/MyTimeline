@@ -224,9 +224,9 @@ describe('#594 ponctuel (pin) vs durée d’un jour', () => {
   })
 
   it('empilage de fait : l’emprise réservée d’un pin couvre la place de son libellé', () => {
-    // Pas d'empilage en rangées en prod (toutes les pastilles d'une lane sont à
-    // `top` fixe) : l'emprise réservée est ce qui garantit qu'un événement dont le
-    // début tombe AVANT la fin réservée est reconnu comme chevauchant le libellé.
+    // L'emprise réservée est ce qui garantit qu'un événement dont le début tombe AVANT
+    // la fin réservée est reconnu comme chevauchant le libellé — c'est elle que
+    // l'empilage en rangées (#709, `lane-layout.ts`) consomme.
     const next = evt('next', '2026-07-15', '2026-07-16', 'r1', 'duration')
     const [pin, , after] = positionEvents([single, oneDay, next], rangeStart, 12, now).get('r1')!
     // Libellé à `x + 11` (maquette) : 4 jours × 12 px = 48 px plus loin, DANS les 100 px.

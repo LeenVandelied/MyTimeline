@@ -11,8 +11,9 @@ import { PROD } from './support/accounts'
  * par un CONNECTEUR pointillé. Trois frises : desktop, mobile portrait, mobile paysage.
  *
  * CE QUE JSDOM NE PEUT PAS PROUVER (d'où cette spec) :
- *  - l'ORDRE DE PEINTURE : la prod n'empile pas les événements d'une lane (arbitrage dev
- *    2026-09-15), fantômes et connecteurs d'une série passent donc SOUS les occurrences
+ *  - l'ORDRE DE PEINTURE : la prod n'empilait pas les événements d'une lane au S91 (arbitrage
+ *    dev 2026-09-15 ; #709 l'a ajouté au S97, les marques suivent la rangée de leur série),
+ *    fantômes et connecteurs d'une série passent donc SOUS les occurrences
  *    réelles d'une autre — une occurrence réelle n'est JAMAIS masquée par une marque. Preuve
  *    par `elementFromPoint` APRÈS avoir forcé `pointer-events:auto` sur toutes les marques
  *    de la lane (sans ce forçage, le hit-test traverse une marque `pointer-events:none` peinte
@@ -36,7 +37,7 @@ import { PROD } from './support/accounts'
  * deux bornes à ±400 j de A (étendue large : la piste doit défiler, cf. `sprint-91-event-pin`).
  *
  * CE QUE LA SPEC NE PROUVE PAS : la lisibilité de deux occurrences RÉELLES superposées
- * (pas d'empilage en rangées, issue dédiée) ; le rendu en thème sombre du contour planché ;
+ * (traitée par #709, `sprint-97-lane-stacking.spec.ts`) ; le rendu en thème sombre du contour planché ;
  * l'ordre de peinture en dehors des points sondés (centres des parties réelles, centres des
  * fantômes, aplomb des centres réels sur les connecteurs).
  */

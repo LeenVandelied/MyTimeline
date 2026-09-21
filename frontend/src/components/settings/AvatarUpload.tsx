@@ -154,7 +154,7 @@ export function AvatarUpload({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="text-ink-faint flex h-full w-full items-center justify-center text-xl">
+              <div className="text-ink-muted flex h-full w-full items-center justify-center text-xl">
                 ?
               </div>
             )}
@@ -187,7 +187,7 @@ export function AvatarUpload({
           >
             <Upload className="text-ink-muted h-5 w-5" aria-hidden="true" />
             <span className="text-sm">{t('profile.avatar.dropzone')}</span>
-            <span className="text-ink-faint text-xs">{t('profile.avatar.hint')}</span>
+            <span className="text-ink-muted text-xs">{t('profile.avatar.hint')}</span>
           </div>
 
           {currentAvatarUrl && onDelete && (

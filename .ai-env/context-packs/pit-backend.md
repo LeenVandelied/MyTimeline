@@ -897,6 +897,10 @@ Après correctif, la cible avait glissé de la ligne 128 à 154 : 10 invocations
 ## PIT-S96-010 — `check-sprint-completeness.sh` ne reconnaît pas « `RECOMMAND_X` : NON » comme une négation
 Sa regex n'accepte que « Pas de RECOMMAND_X », « aucun… », « non applicable » ; une négation formulée « `RECOMMAND_X` : NON » ou coupée sur deux lignes ressort en `UNTREATED_SIGNAL`. Au S96 : 7 signaux signalés, 6 faux positifs, 1 vrai (sémantique de grille, traité par un arbitrage ui-design). Reformuler en « Pas de `RECOMMAND_X` » sur UNE ligne — et trier avant de reformuler : le contrôle attrape aussi de vrais signaux, `--force` les enterrerait. Prescrire ce format dans les gabarits de briefing. (Sprint 96, lead)
 
+
+## PIT-S97-004 — Une grandeur de maquette recopiée dans une issue peut perdre son axe
+#709 annonçait « écart de 8 px / 10 px entre rangées » : la maquette distingue un `gap` HORIZONTAL d'empilage (8/10 px, converti en jours) et un `VGAP` VERTICAL (8/7 px). Implémenter l'énoncé aurait donné des rangées mobiles espacées de 10 px et un empilage indépendant du zoom. Avant de briefer une issue qui cite des cotes de maquette, relire l'extrait de maquette et vérifier l'AXE et l'UNITÉ de chaque grandeur ; signaler l'écart dans le briefing plutôt que de laisser l'agent le découvrir. (Sprint 97, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

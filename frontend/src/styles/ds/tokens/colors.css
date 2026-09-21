@@ -63,6 +63,13 @@
   --color-surface-sunken: var(--gray-50);
   --color-ink:         var(--gray-900);
   --color-ink-muted:   var(--gray-500);
+  /* #670 / DEC-S97-001 — palier NON TEXTUEL. `ink-faint` = 2,75 bg / 2,82 surface /
+     2,56 surface-2 (clair), 3,20 / 2,99 / 2,73 (sombre) : sous 4,5:1 (texte) ET
+     sous 3:1 (1.4.11). Réservé au purement décoratif (filets de mois, bordures
+     de survol, pouce de défilement, pastille fantôme). JAMAIS pour du texte,
+     placeholders compris (→ `ink-muted`), ni pour une icône/un indicateur de
+     contrôle (→ `ink-muted` ou `rule-emphasis`). Valeur volontairement
+     inchangée : la relever à 4,5:1 la confondrait avec `ink-muted`. */
   --color-ink-faint:   var(--gray-400);
   --color-rule:        var(--gray-100);
   --color-rule-strong: var(--gray-200);
@@ -142,7 +149,7 @@
   --color-surface-sunken: #0E1013;
   --color-ink:         #ECEDEF;
   --color-ink-muted:   #8E9299;
-  --color-ink-faint:   #5E626B;
+  --color-ink-faint:   #5E626B; /* non textuel seulement — cf. bloc clair (#670) */
   --color-rule:        #20232A;
   --color-rule-strong: #2E323A;
   /* NON inversé volontairement (#293) : `gray-450` est le seul palier qui tient

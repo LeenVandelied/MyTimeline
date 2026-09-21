@@ -468,3 +468,35 @@ Verdicts :
 - ⚠️ **Bordure de sélection vs remplissage** : pire cas ambre en sombre **1.81:1**
   (ex-`#F2A900` à 1.61:1 au §8bis). Même lecture qu'au §8bis : la sélection se
   lit contre le fond de page et par le glyphe, pas par ce couple. Pas d'action.
+
+---
+
+## 10 · Palier `ink-faint` — réservé au non-textuel (#670, Sprint 97)
+
+Décision **DEC-S97-001** : `--color-ink-faint` reste à sa valeur, mais ne porte
+plus AUCUN texte. Mesures WCAG (luminance relative sRGB) :
+
+| Token | `bg` clair | `surface` clair | `surface-2` clair | `bg` sombre | `surface` sombre | `surface-2` sombre |
+|---|--:|--:|--:|--:|--:|--:|
+| `ink-faint` | ❌ 2.75 | ❌ 2.82 | ❌ 2.56 | ⚠️ 3.20 | ❌ 2.99 | ❌ 2.73 |
+| `rule-emphasis` | ✅ 3.97 | ✅ 4.07 | ✅ 3.70 | ✅ 4.81 | ✅ 4.49 | ✅ 4.10 |
+| `ink-muted` | ✅ 5.96 | ✅ 6.11 | ✅ 5.55 | ✅ 6.26 | ✅ 5.85 | ✅ 5.34 |
+
+(`rule-emphasis` jugé à 3:1 — composant UI ; `ink-muted` à 4.5:1 — texte.)
+
+- ❌ → ✅ **Texte** (eyebrows timeline/dashboard, placeholders `.mt-input` /
+  `.mt-textarea` / `.mt-select__placeholder`, compteurs, légendes, mentions
+  « aucun… », pied de page, code d'erreur de `StateScreen`) : migré sur `ink-muted`.
+- ❌ → ✅ **Indicateurs de contrôle** : `.mt-tag__x`, `.mt-input-affix__icon`,
+  loupe de recherche produits → `ink-muted` ; pouce off de `.mt-switch` →
+  `rule-emphasis` (même palier que le contour de la piste).
+- ➖ **Décoratif conservé** : filets de mois (`.mt-tl-ruler__maj--month`,
+  `.mt-tlv__tick--month`, `.mt-tlm__tick--month`), pouce de barre de défilement au
+  survol, pastille fantôme de légende, chevron `aria-hidden` de l'index des réglages
+  mobile, illustration d'`EmptyState`.
+- ❌ → ✅ **Bordure au survol** (arbitrage ui-design en review, DEC-S97-006) :
+  `.mt-btn--secondary`, `.mt-iconbtn` et `.mt-select__trigger` passaient de
+  `rule-emphasis` (≥3:1) à `ink-faint` (<3:1) au survol — le survol AFFAIBLISSAIT
+  la limite du contrôle (1.4.11). Désormais `ink-muted` (≥5,3:1) : le survol la
+  renforce.
+- 🔒 Garde-fou : `e2e/sprint-97-ink-faint-contrast.spec.ts` (clair + sombre).

@@ -93,12 +93,12 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                     </time>
                   </span>
                 ) : (
-                  <span className="text-ink-faint text-2xs hidden sm:inline">
+                  <span className="text-ink-muted text-2xs hidden sm:inline">
                     {t('noUpcoming')}
                   </span>
                 )}
                 {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums + isolation bidi. */}
-                <span className="text-ink-faint mt-num text-2xs">{nf.format(count)}</span>
+                <span className="text-ink-muted mt-num text-2xs">{nf.format(count)}</span>
               </li>
             )
           })}

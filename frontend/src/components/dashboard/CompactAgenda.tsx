@@ -53,7 +53,7 @@ const AgendaRow: React.FC<{ event: FullCalendarEvent }> = ({ event }) => (
       aria-hidden="true"
     />
     <span className="text-ink min-w-0 flex-1 truncate text-xs font-medium">{event.title}</span>
-    <span className="text-ink-faint text-2xs shrink-0 truncate">
+    <span className="text-ink-muted text-2xs shrink-0 truncate">
       {event.extendedProps.productName}
     </span>
   </li>
@@ -128,7 +128,7 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
               // #701 — `emptyToday` et PAS `empty`/`emptyTitle` : on n'est ici que si
               // `isEmpty` est faux, donc demain porte forcément des events. Dire
               // « ni demain » (ancien libellé) mentait à l'utilisateur.
-              <p className="text-ink-faint text-2xs">{t('emptyToday')}</p>
+              <p className="text-ink-muted text-2xs">{t('emptyToday')}</p>
             ) : (
               <ul className="flex flex-col">
                 {todayEvents.map((event) => (

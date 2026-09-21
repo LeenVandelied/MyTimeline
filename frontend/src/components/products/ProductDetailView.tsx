@@ -362,7 +362,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
 
         <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <dt className="text-ink-faint text-2xs tracking-widest uppercase">
+            <dt className="text-ink-muted text-2xs tracking-widest uppercase">
               {t('fields.category')}
             </dt>
             <dd className="mt-1">
@@ -378,12 +378,12 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                   {product.category.name}
                 </span>
               ) : (
-                <span className="text-ink-faint text-sm">{t('fields.noCategory')}</span>
+                <span className="text-ink-muted text-sm">{t('fields.noCategory')}</span>
               )}
             </dd>
           </div>
           <div>
-            <dt className="text-ink-faint text-2xs tracking-widest uppercase">
+            <dt className="text-ink-muted text-2xs tracking-widest uppercase">
               {t('fields.color')}
             </dt>
             <dd className="text-ink mt-1 font-mono text-sm">{effectiveColor ?? '—'}</dd>
@@ -460,7 +460,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                   />
                   <span className="text-ink min-w-0 flex-1 truncate text-sm">{event.title}</span>
                   {event.archived && (
-                    <span className="text-ink-faint text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
+                    <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
                       {t('archivedBadge')}
                     </span>
                   )}

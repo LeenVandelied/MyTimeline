@@ -941,8 +941,12 @@ describe('TimelineView', () => {
     it('navigation clavier correcte APRÈS masquage d’une catégorie AU-DESSUS de la lane focalisée', async () => {
       const user = userEvent.setup()
       setupScreen()
-      // Focus sur la lane C (dernière) : A(a1) ↓ B ↓ C.
+      // Focus sur la lane C (dernière). #709 — a1 et a2 (ponctuels à 1 jour d'écart,
+      // réservation 100 px > 12 px/j) sont EMPILÉS : la lane A a deux rangées, que ↓
+      // parcourt avant de changer de lane : A(a1) ↓ A(a2) ↓ B ↓ C.
       pillFor('a1').focus()
+      await user.keyboard('{ArrowDown}')
+      expect(pillFor('a2')).toHaveFocus()
       await user.keyboard('{ArrowDown}{ArrowDown}')
       expect(pillFor('c1')).toHaveFocus()
 

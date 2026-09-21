@@ -6741,7 +6741,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée cette session.
 **Status :** Terminé — merge PR #731 dans `dev` le 2026-09-20 (`17340d50`), issues #508/#701/#713/#714 et milestone #96 fermés
 
-### Sprint 96 — 2026-09-21 → en cours (EN COURS — clôture en attente du merge de la PR #737 — cohésion 0.00 assumée, Contrôles atteignables au doigt)
+### Sprint 96 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #737 dans dev — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
 **Milestone GitHub :** #97
 **Issues livrées (4) :** #665 (S), #633 (XS), #702 (S), #656 (XS) — 6 pts (+ 1 absorption en clôture, voir triage)
@@ -6767,17 +6767,36 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - Sémantique clavier ↓=+6 de la grille → soldé par l'arbitrage ui-design (verdict A), sans issue
   - Reformatage prettier de `settings-mobile.spec.ts` → déjà fait en cours de sprint (`3ef041a1`)
   Ratio discard 0/8. Backlog libre plutôt que milestone Sprint 97 : son thème est la frise (même raisonnement qu'au S95).
-**Status :** En cours — PR #737 ouverte, CI verte ; merge, fermeture des issues et du milestone en attente de confirmation
+**Status :** Terminé — PR #737 mergée le 2026-09-21 (09:53 UTC), milestone #97 fermé, 0 issue ouverte (constat au démarrage du S97 : titre et `Status` n'avaient pas été basculés après le merge)
 
-### Sprint 97 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
+### Sprint 97 — 2026-09-21 → 2026-09-21 (Terminé — merge PR #743 dans dev — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
 **Objectif :** Les occurrences qui se chevauchent restent cliquables ; l'encre la plus claire passe le contraste
-**Milestone GitHub :** #98
-**Issues :** #670 (S), #716 (XS), #709 (M) — 7 pts
-**Vagues :** V1 = #670 ∥ #716 | V2 = #709 (E2E exclusif)
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 94 (TimelineView + frise mobile), Sprint 95 (#701 sur CompactAgenda)
-**À confirmer au démarrage :** décision Designer #670 (relever le token ou le réserver au décoratif).
-**Status :** Planifié
+**Milestone GitHub :** #98 (fermé après merge)
+**Issues livrées (3) :** #670 (S), #716 (XS), #709 (M) — 7 pts
+**Vagues exécutées :** V1 = #670 (Playwright exclusif) ∥ #716 | V2 = #709 (Playwright exclusif) — conforme au plan architect
+**Décision #670 (dev, au démarrage) :** réserver `--color-ink-faint` au non-textuel (DEC-S97-001) ; relever le token à 4,5:1 l'aurait confondu avec `ink-muted` (#6C7079 / #82868B contre #5E626B / #8E9299).
+**Branche :** `claude/sprint-97-start-20c8b4` (worktree, pas de `sprint/97` — même convention que S96)
+**Migrations Flyway :** aucune | **BR impactées :** aucune (a11y, géométrie de frise, i18n)
+**Commits :** 9 — code : `e55091b6` (#716), `272cc9b8` (#670), `3e5beba3` + `07d3ea42` + `2fc017a2` (#709), `e665d82c` (correction de review ui-design) ; docs : démarrage, done.md #709, audit tests.
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (→ 1 issue, 2 sans suite). ui-design post-implémentation — 5 points : 4 APPROUVÉS (pas mobile 35/31 px, recouvrement des cibles 44 px, libellé centré, réservation du `⋯`, pouce de switch), 1 CORRECTION appliquée à la demande du dev (bordures au survol, DEC-S97-006, `e665d82c`). Pas de cycle 2 de review sur `e665d82c` (3 déclarations CSS + garde statique, contrôle négatif joué par le lead).
+**Tests :** Vitest 1918/1918 | backend 632 OK (aucun fichier backend touché) | E2E local suite complète 473 passed / 1 failed / 8 skipped (échec = armement `sprint-77` sous `--ignore-snapshots`, mécanique) | nouvelles specs avec contrôle négatif joué : `sprint-97-ink-faint-contrast` (7/8 rouges avant migration), `sprint-97-lane-stacking` (3/3 rouges empilage neutralisé) | CI 7/7 verte sur `993a8e0e`, **e2e Linux compris** (références visuelles inchangées).
+**Écarts d'énoncé :** #709 confondait l'écart horizontal d'empilage (8/10 px, en jours → le nombre de rangées dépend du zoom) et l'écart vertical entre rangées (8/7 px) — repéré par le lead avant spawn (PIT-S97-004) ; la mesure de hauteur prise sur la 1re lane devenait fausse dès qu'elle était empilée (trouvé par l'agent). #670 : 64 occurrences réelles au lieu de 66 comptées (lignes de commentaire).
+**Non vérifié :** virtualisation verticale ≥ 60 lanes avec lanes empilées en navigateur ; contrôle visuel humain d'une lane à 3+ rangées et du recouvrement des bords de cibles en paysage (demandé par ui-design, sans issue par arbitrage du dev) ; contraste E2E de settings/avatar, 404, footer (garde statique seulement) ; `e665d82c` non rejoué en E2E local (CI seulement).
+**Contrôle de complétude :** vert sans `--force`.
+**Nouveaux pitfalls / patterns / décisions :** PIT-S97-001…004, PAT-S97-001…004, DEC-S97-001…006 ; packs pitfalls régénérés, `--check` = 0.
+**Saturation contexte lead :** non mesurée.
+**Follow-ups arbitrés (Phase 4 — option « proposition du lead » retenue par le dev) :**
+  - Bordures au survol sous 3:1 [XS | design] → **absorbé** (`e665d82c`, DEC-S97-006)
+  - Clés i18n `add.event(s).{list,empty}` probablement mortes [XS | i18n] → issue #744 (backlog libre)
+  - Pas de test de parité des clés i18n entre locales [S | i18n] → issue #745 (backlog libre)
+  - Libellé extérieur de secours + libellé de pin > 100/90 px chevauchent l'événement suivant de la rangée [S | frise] → issue #746 (backlog libre, 2 follow-ups regroupés)
+  - Frises mobiles sans ré-ancrage au changement de zoom [M | frise] → issue #747 (backlog libre)
+  - Cas limites de `layoutLane` non testés (review) [XS | frise] → issue #748 (backlog libre)
+  - `layoutLane` en O(n×rangées) (review) → discard : sans effet aux volumes actuels, à revoir si un produit accumule des centaines d'occurrences chevauchantes
+  - `verticalModels` portrait + paysage calculés tous deux (review) → discard : compromis documenté dans le code
+  - Contrôle visuel humain lane 3+ rangées (ui-design) → noté « non vérifié », sans issue
+  Ratio discard 2/10. Backlog libre : aucun milestone Sprint 98 n'existe.
+**Status :** Terminé — PR #743 mergée, issues #670/#709/#716 et milestone #98 fermés après merge
 
 ### Matrice de conflits inter-sprints (S93-S97)
 

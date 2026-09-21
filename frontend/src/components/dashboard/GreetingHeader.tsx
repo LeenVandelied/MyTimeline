@@ -46,7 +46,7 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
       data-testid="dashboard-greeting"
     >
       <p
-        className="text-ink-faint text-2xs font-mono tracking-widest uppercase"
+        className="text-ink-muted text-2xs font-mono tracking-widest uppercase"
         data-testid="dashboard-greeting-eyebrow"
       >
         {t('eyebrow')}

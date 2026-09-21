@@ -124,7 +124,7 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
               <span className="text-ink min-w-0 flex-1 truncate text-xs font-medium">
                 {event.title}
               </span>
-              <span className="text-ink-faint text-2xs hidden truncate sm:inline">
+              <span className="text-ink-muted text-2xs hidden truncate sm:inline">
                 {event.extendedProps.productName}
               </span>
             </li>

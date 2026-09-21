@@ -13,9 +13,12 @@ import { eventTrackExtent, type PositionedEvent } from './zoom'
  *    d'INTERSECTION d'intervalles, pas un calcul d'index — le modèle
  *    `index → estimateSize` des libs de windowing ne s'y applique pas.
  *
- *  - AXE VERTICAL (lanes) : les lanes ont une hauteur UNIFORME connue
- *    (`--lane-height` du DS) → un simple modèle arithmétique suffit, sans
- *    mesure par ligne ni observateur de taille.
+ *  - AXE VERTICAL (lanes) : #709 — les lanes n'ont PLUS une hauteur uniforme
+ *    (empilage en rangées, `lane-layout.ts`), mais leur hauteur reste CALCULÉE,
+ *    jamais mesurée : hauteur de base (`--lane-height`, mesurée une fois) + un pas
+ *    par rangée supplémentaire. Le modèle reste arithmétique (sommes préfixées +
+ *    recherche dichotomique), sans mesure par ligne ni observateur de taille — une
+ *    boucle mesure → rendu → mesure est exactement ce qu'on évite.
  *
  * INVARIANT DE NON-RÉGRESSION : le fenêtrage ne touche QUE ce qui est monté.
  * Les index (`index` de `WindowedEvent`, position des lanes) restent ceux du
@@ -139,31 +142,66 @@ export interface LaneWindow {
 }
 
 /**
- * Fenêtrage VERTICAL d'une liste de lanes de hauteur uniforme, commençant à
- * `listTopPx` dans le repère du rail.
+ * #709 — Sommes préfixées des hauteurs d'une liste de lanes : `offsets[i]` = top de
+ * la lane `i` relatif au haut de la liste, `offsets[n]` = hauteur totale. Construit
+ * une fois par changement de géométrie (`buildVerticalModel`), consommé à chaque
+ * rendu par `windowLanes` en O(log n).
+ */
+export function laneOffsets(heights: readonly number[]): number[] {
+  const offsets = new Array<number>(heights.length + 1)
+  offsets[0] = 0
+  for (let i = 0; i < heights.length; i++) offsets[i + 1] = offsets[i] + heights[i]
+  return offsets
+}
+
+/** Offsets d'une liste de `count` lanes de hauteur UNIFORME (tests, repli). */
+export function uniformLaneOffsets(count: number, laneHeight: number): number[] {
+  return laneOffsets(new Array<number>(count).fill(laneHeight))
+}
+
+/** Plus petit `i` dans `[lo, hi]` tel que `pred(i)` (prédicat monotone faux → vrai). */
+function lowerBound(lo: number, hi: number, pred: (i: number) => boolean): number {
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (pred(mid)) hi = mid
+    else lo = mid + 1
+  }
+  return lo
+}
+
+/**
+ * Fenêtrage VERTICAL d'une liste de lanes de hauteurs VARIABLES (#709), décrite par
+ * ses sommes préfixées (`laneOffsets`) et commençant à `listTopPx` dans le repère du
+ * rail. Monte toute lane dont l'intervalle `[top, bottom)` croise la bande.
  *
  * Les cales (`topSpacerPx` / `bottomSpacerPx`) rendent la hauteur totale de la
  * liste INVARIANTE : la barre de défilement, la position des groupes suivants et
  * l'indicateur TODAY (positionné en absolu sur toute la hauteur) ne bougent pas
  * — la virtualisation reste visuellement transparente.
+ *
+ * Hauteurs uniformes : résultat IDENTIQUE à l'ancien calcul `floor`/`ceil` (#69).
  */
-export function windowLanes(
-  count: number,
-  laneHeight: number,
-  listTopPx: number,
-  band: Band,
-): LaneWindow {
-  if (isUnboundedBand(band) || count === 0 || laneHeight <= 0) {
+export function windowLanes(offsets: readonly number[], listTopPx: number, band: Band): LaneWindow {
+  const count = Math.max(0, offsets.length - 1)
+  const total = count > 0 ? offsets[count] : 0
+  if (isUnboundedBand(band) || count === 0 || total <= 0) {
     return { startIndex: 0, endIndex: count, topSpacerPx: 0, bottomSpacerPx: 0 }
   }
-  const clamp = (v: number) => Math.min(Math.max(v, 0), count)
-  const startIndex = clamp(Math.floor((band.start - listTopPx) / laneHeight))
-  const endIndex = Math.max(startIndex, clamp(Math.ceil((band.end - listTopPx) / laneHeight)))
+  const start = band.start - listTopPx
+  const end = band.end - listTopPx
+  // 1re lane dont le BAS dépasse le début de bande (une lane qui finit pile au
+  // début de bande n'est pas montée — même convention que l'ancien `floor`).
+  const startIndex = lowerBound(0, count, (i) => offsets[i + 1] > start)
+  // 1re lane dont le HAUT atteint la fin de bande = fin exclue.
+  const endIndex = Math.max(
+    startIndex,
+    lowerBound(0, count, (i) => offsets[i] >= end),
+  )
   return {
     startIndex,
     endIndex,
-    topSpacerPx: startIndex * laneHeight,
-    bottomSpacerPx: (count - endIndex) * laneHeight,
+    topSpacerPx: offsets[startIndex],
+    bottomSpacerPx: total - offsets[endIndex],
   }
 }
 
@@ -171,26 +209,42 @@ export function windowLanes(
 export interface VerticalModel {
   /** Top de la LISTE de lanes de chaque catégorie (sous son en-tête). */
   listTops: Record<string, number>
+  /**
+   * #709 — Sommes préfixées des hauteurs de lanes de chaque catégorie DÉPLIÉE
+   * (`laneOffsets`) : entrée de `windowLanes`. Absente pour une catégorie repliée.
+   */
+  laneOffsetsByCategory: Record<string, number[]>
   /** Top de chaque lane, par `resourceId` (lanes des catégories dépliées). */
   laneTops: Map<string, number>
+  /** #709 — Hauteur de chaque lane, par `resourceId` (lanes des catégories dépliées). */
+  laneHeights: Map<string, number>
   /** Hauteur totale du flux (règle + en-têtes + lanes). */
   totalHeight: number
   /** Nombre de lanes effectivement en flux (catégories dépliées). */
   visibleLaneCount: number
 }
 
+/** Liste de lanes vide (catégorie repliée / inconnue) — entrée neutre de `windowLanes`. */
+export const NO_LANE_OFFSETS: readonly number[] = Object.freeze([0])
+
 /**
  * Modèle arithmétique de la disposition verticale. Exact dès que `metrics` est
  * mesuré : seuls la règle, les en-têtes de catégorie et les lanes participent au
  * flux (week-ends, ligne TODAY et labels sont en position absolue ou sticky).
+ *
+ * #709 — `laneHeightOf` donne la hauteur d'une lane (empilage en rangées) ; absent,
+ * toutes les lanes font `metrics.laneHeight` (comportement #69 inchangé).
  */
 export function buildVerticalModel(
   groups: Array<[string, Resource[]]>,
   collapsedCategories: Record<string, boolean>,
   metrics: TimelineMetrics,
+  laneHeightOf?: (resource: Resource) => number,
 ): VerticalModel {
   const listTops: Record<string, number> = {}
+  const laneOffsetsByCategory: Record<string, number[]> = {}
   const laneTops = new Map<string, number>()
+  const laneHeights = new Map<string, number>()
   let y = metrics.rulerHeight
   let visibleLaneCount = 0
 
@@ -198,12 +252,26 @@ export function buildVerticalModel(
     y += metrics.headHeight
     listTops[category] = y
     if (collapsedCategories[category] ?? false) continue
-    for (const resource of resources) {
+    const offsets = new Array<number>(resources.length + 1)
+    offsets[0] = 0
+    for (let i = 0; i < resources.length; i++) {
+      const resource = resources[i]
+      const height = laneHeightOf ? laneHeightOf(resource) : metrics.laneHeight
       laneTops.set(resource.id, y)
-      y += metrics.laneHeight
+      laneHeights.set(resource.id, height)
+      y += height
+      offsets[i + 1] = offsets[i] + height
       visibleLaneCount += 1
     }
+    laneOffsetsByCategory[category] = offsets
   }
 
-  return { listTops, laneTops, totalHeight: y, visibleLaneCount }
+  return {
+    listTops,
+    laneOffsetsByCategory,
+    laneTops,
+    laneHeights,
+    totalHeight: y,
+    visibleLaneCount,
+  }
 }

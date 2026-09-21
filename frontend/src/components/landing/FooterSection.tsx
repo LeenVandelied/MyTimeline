@@ -117,7 +117,7 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
             </div>
           </div>
         </div>
-        <div className="border-rule text-ink-faint mt-12 border-t pt-8 text-center">
+        <div className="border-rule text-ink-muted mt-12 border-t pt-8 text-center">
           <p>
             &copy; {currentYear} Ma Timeline. {t('common.footer.allRightsReserved')}
           </p>

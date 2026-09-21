@@ -152,7 +152,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
             className="from-surface pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent"
             aria-hidden="true"
           />
-          <span className="text-ink-faint text-2xs mt-1 flex items-center justify-end gap-1 font-mono">
+          <span className="text-ink-muted text-2xs mt-1 flex items-center justify-end gap-1 font-mono">
             <ChevronRight className="h-3 w-3" aria-hidden="true" />
             {tm('scrollHint')}
           </span>

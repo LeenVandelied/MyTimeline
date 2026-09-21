@@ -19,7 +19,6 @@
       "title": "Ereignis hinzufügen",
       "list": "Hinzugefügte Ereignisse",
       "empty": "Keine Ereignisse hinzugefügt",
-      "remove": "Entfernen",
       "form": {
         "name": "Ereignisname",
         "namePlaceholder": "Ereignisname eingeben",
@@ -55,8 +54,7 @@
     },
     "events": {
       "list": "Hinzugefügte Ereignisse",
-      "empty": "Keine Ereignisse hinzugefügt",
-      "remove": "Entfernen"
+      "empty": "Keine Ereignisse hinzugefügt"
     },
     "description": "Fügen Sie ein neues Produkt mit zugehörigen Ereignissen hinzu"
   },

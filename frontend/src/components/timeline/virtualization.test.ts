@@ -11,6 +11,8 @@ import {
   segmentIntersectsBand,
   windowEvents,
   windowLanes,
+  uniformLaneOffsets,
+  laneOffsets,
 } from './virtualization'
 
 /**
@@ -101,7 +103,7 @@ describe('#69 fenêtrage vertical des lanes', () => {
   it('sélectionne la tranche visible et compense EXACTEMENT avec des cales', () => {
     // 100 lanes de 46px à partir de 44px : la fenêtre [1000, 1400] couvre les
     // lanes d'index 20..29 (1000-44)/46 = 20,78 → floor 20 ; (1400-44)/46 = 29,5 → ceil 30.
-    const win = windowLanes(100, 46, 44, { start: 1000, end: 1400 })
+    const win = windowLanes(uniformLaneOffsets(100, 46), 44, { start: 1000, end: 1400 })
     expect(win.startIndex).toBe(20)
     expect(win.endIndex).toBe(30)
     const rendered = win.endIndex - win.startIndex
@@ -109,7 +111,7 @@ describe('#69 fenêtrage vertical des lanes', () => {
   })
 
   it('groupe entièrement au-dessus de la fenêtre → aucune lane, cale haute pleine', () => {
-    const win = windowLanes(10, 46, 0, { start: 5000, end: 6000 })
+    const win = windowLanes(uniformLaneOffsets(10, 46), 0, { start: 5000, end: 6000 })
     expect(win.startIndex).toBe(10)
     expect(win.endIndex).toBe(10)
     expect(win.topSpacerPx).toBe(460)
@@ -117,7 +119,7 @@ describe('#69 fenêtrage vertical des lanes', () => {
   })
 
   it('groupe entièrement en dessous de la fenêtre → aucune lane, cale basse pleine', () => {
-    const win = windowLanes(10, 46, 5000, { start: 0, end: 800 })
+    const win = windowLanes(uniformLaneOffsets(10, 46), 5000, { start: 0, end: 800 })
     expect(win.startIndex).toBe(0)
     expect(win.endIndex).toBe(0)
     expect(win.topSpacerPx).toBe(0)
@@ -125,13 +127,13 @@ describe('#69 fenêtrage vertical des lanes', () => {
   })
 
   it('bande non bornée ou hauteur inconnue → toutes les lanes, aucune cale', () => {
-    expect(windowLanes(10, 46, 0, UNBOUNDED_BAND)).toEqual({
+    expect(windowLanes(uniformLaneOffsets(10, 46), 0, UNBOUNDED_BAND)).toEqual({
       startIndex: 0,
       endIndex: 10,
       topSpacerPx: 0,
       bottomSpacerPx: 0,
     })
-    expect(windowLanes(10, 0, 0, { start: 0, end: 100 }).endIndex).toBe(10)
+    expect(windowLanes(uniformLaneOffsets(10, 0), 0, { start: 0, end: 100 }).endIndex).toBe(10)
   })
 })
 
@@ -165,5 +167,76 @@ describe('#69 modèle vertical', () => {
     expect(model.listTops.B).toBe(R + 2 * H)
     expect(model.totalHeight).toBe(R + 2 * H + L)
     expect(model.visibleLaneCount).toBe(1)
+  })
+})
+
+describe('#709 fenêtrage vertical à hauteurs VARIABLES (empilage en rangées)', () => {
+  // Lanes : 46, 80 (2 rangées), 46, 114 (3 rangées), 46 → tops 0, 46, 126, 172, 286 ; total 332.
+  const heights = [46, 80, 46, 114, 46]
+  const offsets = laneOffsets(heights)
+
+  it('sommes préfixées : top de chaque lane + hauteur totale', () => {
+    expect(offsets).toEqual([0, 46, 126, 172, 286, 332])
+  })
+
+  it('monte exactement les lanes qui croisent la bande, cales exactes', () => {
+    // Bande [100, 200] (liste à 0) : lane 1 [46,126), lane 2 [126,172), lane 3 [172,286).
+    const win = windowLanes(offsets, 0, { start: 100, end: 200 })
+    expect(win).toEqual({ startIndex: 1, endIndex: 4, topSpacerPx: 46, bottomSpacerPx: 46 })
+    const rendered = heights.slice(win.startIndex, win.endIndex).reduce((a, b) => a + b, 0)
+    expect(win.topSpacerPx + rendered + win.bottomSpacerPx).toBe(332)
+  })
+
+  it('une lane haute qui commence AVANT la bande et la couvre reste montée', () => {
+    // Bande [200, 250] entièrement dans la lane 3 (3 rangées, [172, 286)).
+    const win = windowLanes(offsets, 0, { start: 200, end: 250 })
+    expect([win.startIndex, win.endIndex]).toEqual([3, 4])
+  })
+
+  it('bornes : lane qui finit pile au début de bande exclue, lane qui commence pile à la fin exclue', () => {
+    const win = windowLanes(offsets, 0, { start: 126, end: 172 })
+    expect([win.startIndex, win.endIndex]).toEqual([2, 3])
+  })
+
+  it('repère du rail : `listTopPx` décale la liste', () => {
+    const win = windowLanes(offsets, 1000, { start: 1100, end: 1200 })
+    expect([win.startIndex, win.endIndex]).toEqual([1, 4])
+  })
+
+  it('hauteurs uniformes : identique à l’ancien calcul floor/ceil (#69)', () => {
+    for (const [start, end] of [
+      [0, 10],
+      [45, 47],
+      [46, 92],
+      [1000, 1400],
+      [-500, 30],
+      [4000, 9000],
+    ]) {
+      const win = windowLanes(uniformLaneOffsets(100, 46), 44, { start, end })
+      const clamp = (v: number) => Math.min(Math.max(v, 0), 100)
+      const s = clamp(Math.floor((start - 44) / 46))
+      const e = Math.max(s, clamp(Math.ceil((end - 44) / 46)))
+      expect([win.startIndex, win.endIndex]).toEqual([s, e])
+    }
+  })
+
+  it('buildVerticalModel : `laneHeightOf` porte la hauteur de chaque lane', () => {
+    const resources: Resource[] = [
+      { id: 'a1', title: 'A1', category: 'A' },
+      { id: 'a2', title: 'A2', category: 'A' },
+      { id: 'b1', title: 'B1', category: 'B' },
+    ]
+    const groups: Array<[string, Resource[]]> = [
+      ['A', [resources[0], resources[1]]],
+      ['B', [resources[2]]],
+    ]
+    const { rulerHeight: R, headHeight: H, laneHeight: L } = DEFAULT_METRICS
+    const tall = new Map([['a1', L + 34]])
+    const model = buildVerticalModel(groups, {}, DEFAULT_METRICS, (r) => tall.get(r.id) ?? L)
+    expect(model.laneTops.get('a2')).toBe(R + H + L + 34)
+    expect(model.listTops.B).toBe(R + H + 2 * L + 34 + H)
+    expect(model.laneHeights.get('a1')).toBe(L + 34)
+    expect(model.laneOffsetsByCategory.A).toEqual([0, L + 34, 2 * L + 34])
+    expect(model.totalHeight).toBe(R + 2 * H + 3 * L + 34)
   })
 })
