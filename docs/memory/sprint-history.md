@@ -6828,10 +6828,13 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Milestone GitHub :** #100
 **Issues :** #738 (M, P1), #739 (XS, P3), #459 (XS, P3, périmètre réduit à `SessionList.tsx`) — 6 pts, `epic:design`, frontend seul
 **Plan :** aucun `/sprint plan` n'avait produit d'entrée PLANIFIÉ ni d'`architect-plans.md` (milestone et labels posés au triage de clôture du S98) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code
-**Vagues prévues :** V1 = #459 (Vitest seul) ∥ ui-design (arbitrage #738 + #739, lecture seule) | V2 = #738 (Playwright exclusif) ∥ #739, après arbitrage du dev
+**Vagues exécutées :** V1 = #459 (sonnet, Vitest seul) ∥ ui-design (arbitrage #738 + #739) | décisions du dev | V2 = #738 (opus, Playwright exclusif) ; #739 livré par le lead (doc seule)
+**Décisions :** DEC-S99-001 (#738 : Input/SelectTrigger/SelectItem agrandis sur la primitive sous 768 px ; Button : primitive inchangée, `max-md:h-11` sur les boutons des réglages seulement — le dev a écarté la reco ui-design qui laissait les boutons hors critère) ; DEC-S99-002 (#739 : poignées des deux bottom sheets exemptées par WCAG 2.5.8 « Equivalent », conditionnées à croix 44×44 + Escape) ; arbitrage en cours de vague : oracle TALL 390×844 de #714 réécrit en recouvrement partiel encadré (+24 px de contenu dans le drawer produit → 3,5 px sous le toast)
+**Tests (lead) :** Vitest 1956/1956 | tsc, format, `next build` OK | E2E complet contre `next build`+`next start` : 486 passed / 1 failed (armement `sprint-77` sous `--ignore-snapshots`, mécanique) / 8 skipped / 1 did not run | #459 vérifié au navigateur à 375/1280 (sonde jetable)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 4 MINEURS (2 sans objet, 2 robustesse de spec sans défaut constaté)
 **Branche :** `claude/sprint-99-start-c2743b` (worktree, pas de `sprint/99` — même convention que S96-S98)
 **Migrations Flyway :** aucune | **BR impactées :** aucune
-**Status :** En cours
+**Status :** En cours — PR ouverte, `/sprint end 99` à jouer
 
 ### Matrice de conflits inter-sprints (S93-S97)
 
