@@ -6848,6 +6848,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 1/4 (hors item soldé).
 **Status :** Terminé — PR #753 mergée, issues #738/#739/#459 et milestone #100 fermés après merge
 
+### Sprint 100 — 2026-09-21 (En cours — cohésion 1.00, croix de fermeture et FAB atteignables)
+**Objectif :** croix de fermeture des dialogues et bottom sheets toujours atteignable après défilement ; dernier élément des écrans mobiles non recouvert par le FAB
+**Milestone GitHub :** #101
+**Issues :** #732, #740 (même cause, un seul agent), #480 — #754 exclue par le dev au démarrage (dans le milestone sans l'étiquette)
+**Vagues :** V1 = A (#732+#740, Playwright exclusif) ∥ B (#480, Vitest seul ; E2E joué par le lead)
+**Migrations Flyway :** aucune
+**Depend de :** aucune
+**Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-100/architect-plans.md`) — pas de `/sprint plan`
+**Status :** En cours
+
 ### Matrice de conflits inter-sprints (S93-S97)
 
 | A | B | Fichiers communs |
