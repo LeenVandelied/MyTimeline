@@ -6798,6 +6798,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 2/10. Backlog libre : aucun milestone Sprint 98 n'existe.
 **Status :** Terminé — PR #743 mergée, issues #670/#709/#716 et milestone #98 fermés après merge
 
+### Sprint 98 — 2026-09-21 (En cours — cohésion 1.00, Frise lisible sur mobile et en rangées)
+**Objectif :** Le zoom mobile garde la zone regardée ; aucun libellé ne déborde sur l'occurrence suivante de sa rangée ; `layoutLane` couvert sur ses cas limites
+**Milestone GitHub :** #99
+**Issues :** #748 (XS), #747 (M), #746 (S) — 7 pts, toutes follow-ups du S97 (frise, `epic:events`, frontend seul)
+**Plan :** pas d'entrée PLANIFIÉ ni d'`architect-plans.md` produits par `/sprint plan` (milestone et labels posés à la clôture du S97) → mini-plans rédigés par le lead au démarrage, énoncés contre-vérifiés dans le code
+**Vagues :** V1 = #747 (Playwright exclusif) ∥ #748 (Vitest seul) ∥ ui-design (arbitrage de charte #746, lecture seule) | V2 = #746 (Playwright exclusif ; après #748 — même `lane-layout.ts`/`.test.ts` — et après arbitrage du dev)
+**Branche :** `claude/sprint-98-start-ff8362` (worktree, pas de `sprint/98` — même convention que S96/S97)
+**Migrations Flyway :** aucune
+**Status :** En cours
+
 ### Matrice de conflits inter-sprints (S93-S97)
 
 | A | B | Fichiers communs |
