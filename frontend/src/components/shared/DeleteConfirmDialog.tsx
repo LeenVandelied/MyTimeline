@@ -6,6 +6,7 @@ import { AlertTriangle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Dialog,
@@ -278,12 +279,19 @@ export function DeleteConfirmDialog({
         )}
 
         <DialogFooter className="gap-2">
-          <Button type="button" variant="outline" onClick={handleCancel} disabled={deleting}>
+          <Button
+            type="button"
+            variant="outline"
+            className={TOUCH_TARGET_BUTTON}
+            onClick={handleCancel}
+            disabled={deleting}
+          >
             {t('cancel')}
           </Button>
           <Button
             type="button"
             variant="destructive"
+            className={TOUCH_TARGET_BUTTON}
             onClick={handleConfirm}
             disabled={confirmDisabled}
             data-testid="delete-confirm-button"

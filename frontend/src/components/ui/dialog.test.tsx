@@ -56,3 +56,21 @@ describe('DialogContent — ancre de la croix (#732/#740)', () => {
     expect(close).not.toHaveFocus()
   })
 })
+
+/**
+ * #754 — cible tactile de la croix : 44×44 sous 768 px, coin haut-droit ANCRÉ.
+ * jsdom ne met pas en page : la taille rendue et le « desktop inchangé » (16×16)
+ * sont mesurés par `e2e/sprint-101-touch-targets.spec.ts`. Ici on fige le couplage :
+ * la boîte grandit par `max-md:` seulement, et `-top-2 -right-2` reste l'ancre (le
+ * bord haut et le bord droit restent à 16 px du dialog, cf. sprint-100/sprint-95).
+ */
+describe('DialogContent — cible tactile de la croix (#754)', () => {
+  it('44×44 en mobile seulement, coin haut-droit ancré, icône centrée', () => {
+    const { close } = renderOpenDialog()
+    expect(close).toHaveClass('max-md:h-11', 'max-md:w-11', '-top-2', '-right-2', 'absolute')
+    expect(close).toHaveClass('flex', 'items-center', 'justify-center')
+    // Aucune taille hors `max-md:` : au-dessus de 768 px la boîte reste celle de l'icône.
+    const unprefixedSize = [...close.classList].filter((c) => /^(h|w|size)-/.test(c))
+    expect(unprefixedSize).toEqual([])
+  })
+})

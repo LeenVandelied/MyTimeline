@@ -70,7 +70,7 @@ const DialogContent = React.forwardRef<
        *     stacking context, un descendant positionné du contenu la recouvrirait.
        */}
       <div className="sticky top-0 z-10 order-first -mb-4 h-0">
-        <DialogPrimitive.Close className="data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute -top-2 -right-2 rounded-xs opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none">
+        <DialogPrimitive.Close className="bg-background text-muted-foreground hover:bg-accent-soft absolute -top-2 -right-2 flex items-center justify-center rounded-full shadow-xs transition-colors disabled:pointer-events-none max-md:h-11 max-md:w-11">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

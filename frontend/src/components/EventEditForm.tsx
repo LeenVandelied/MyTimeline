@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from './ui/checkbox'
 import { Switch } from './ui/switch'
 import { Button } from './ui/button'
+import { cn } from '@/lib/utils'
+import { TOUCH_TARGET_BUTTON, TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
 import { PaletteColorPicker } from './ui/palette-color-picker'
@@ -440,7 +442,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         <Button
           type="button"
           variant="ghost"
-          className="text-destructive"
+          className={cn('text-destructive', TOUCH_TARGET_BUTTON)}
           onClick={() => setDeleteOpen(true)}
           disabled={submitting || !isOnline}
           title={!isOnline ? tNet('offline.hint') : undefined}
@@ -456,7 +458,10 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         <Button
           type="button"
           variant="outline"
-          className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
+          className={cn(
+            'border-rule-emphasis text-ink-muted hover:bg-surface-2',
+            TOUCH_TARGET_BUTTON,
+          )}
           onClick={onCancel}
           disabled={submitting}
         >
@@ -465,7 +470,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         <Button
           type="submit"
           form={formId}
-          className="bg-accent hover:bg-accent-hover text-accent-ink"
+          className={cn('bg-accent hover:bg-accent-hover text-accent-ink', TOUCH_TARGET_BUTTON)}
           disabled={submitting || !isOnline}
           title={!isOnline ? tNet('offline.hint') : undefined}
           data-testid="event-form-submit"
@@ -716,7 +721,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                               disabled={locked}
                               aria-describedby={locked ? lockedNoteId : undefined}
                               data-testid="event-form-recurring-toggle"
-                              className="data-[state=checked]:bg-accent"
+                              // #754 — case 16×16 : zone tactile 44×44 en mobile par
+                              // pseudo-élément (PAT-S24-002), boîte visible inchangée.
+                              className={cn('data-[state=checked]:bg-accent', TOUCH_TARGET_HITBOX)}
                             />
                           </FormControl>
                           <FormLabel className="text-ink cursor-pointer font-normal">
@@ -862,7 +869,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                               // FAISAIT DISPARAÎTRE la silhouette du champ au focus sans rien
                               // mettre en place — le contour du DS est posé 2px PLUS LOIN
                               // (`outline-offset: 2px`), il ne bouche pas ce trou.
-                              className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm"
+                              // #754 — champ natif hors primitive `Input` : il reçoit le
+                              // même agrandissement mobile que la primitive (DEC-S99-001).
+                              className="bg-surface-2 text-ink border-rule-emphasis flex-1 rounded-md border px-3 py-2 text-sm max-md:h-11"
                             />
                           </div>
                           <FormMessage data-testid="event-form-color-error" />
@@ -893,6 +902,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
                       <FormItem className="flex flex-row items-center space-y-0 space-x-3">
                         <FormControl>
                           <Switch
+                            // #754 — piste 38×22 : zone tactile 44×44 en mobile par
+                            // pseudo-élément sur le `<label>` (PAT-S24-002).
+                            className={TOUCH_TARGET_HITBOX}
                             checked={field.value ?? false}
                             /**
                              * #230 — ARCHIVER passe par une CONFIRMATION (effet quota

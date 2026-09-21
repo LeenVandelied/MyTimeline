@@ -6,6 +6,7 @@ import { Archive } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import {
   Dialog,
   DialogContent,
@@ -82,12 +83,18 @@ export function ArchiveConfirmDialog({ open, onOpenChange, onConfirm }: ArchiveC
           <Button
             type="button"
             variant="outline"
+            className={TOUCH_TARGET_BUTTON}
             onClick={() => onOpenChange(false)}
             data-testid="event-archive-cancel"
           >
             {t('cancel')}
           </Button>
-          <Button type="button" onClick={onConfirm} data-testid="event-archive-confirm-button">
+          <Button
+            type="button"
+            className={TOUCH_TARGET_BUTTON}
+            onClick={onConfirm}
+            data-testid="event-archive-confirm-button"
+          >
             {t('confirm')}
           </Button>
         </DialogFooter>

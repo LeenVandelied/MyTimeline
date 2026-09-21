@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { buildDensityBuckets } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
 
@@ -103,11 +104,13 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
             ne descend sous la ligne de flottaison à 1280×800
             (`e2e/sprint-84-section-titles.spec.ts`). `flex-wrap` : en `de` à 375 px,
             plage et lien passent dessous plutôt que de déborder. Rendu seulement si
-            `timelineHref` est fourni : le composant reste utilisable sans navigation. */}
+            `timelineHref` est fourni : le composant reste utilisable sans navigation.
+            #754 — sous 768 px la zone TACTILE passe à 44×44 par pseudo-élément
+            (`TOUCH_TARGET_HITBOX`) : la boîte visible, donc la flottaison, ne bouge pas. */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-ink-muted text-2xs font-mono">{rangeLabel}</span>
           {timelineHref && (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className={TOUCH_TARGET_HITBOX}>
               <Link href={timelineHref} data-testid="dashboard-open-timeline">
                 <span>{t('openTimeline')}</span>
                 <ArrowRight aria-hidden="true" />

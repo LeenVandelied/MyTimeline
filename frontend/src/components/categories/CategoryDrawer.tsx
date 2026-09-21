@@ -12,6 +12,7 @@ import { contrastRatio, contrastInk, WCAG_AA_NORMAL } from '@/lib/color'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { Spinner } from '@/components/ui/spinner'
 import {
   Form,
@@ -314,6 +315,7 @@ export function CategoryDrawer({
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className={TOUCH_TARGET_BUTTON}
                       onClick={() => {
                         setColor(null)
                         form.setValue('color', '')
@@ -391,7 +393,7 @@ export function CategoryDrawer({
                   <Button
                     type="button"
                     variant="ghost"
-                    className="text-destructive"
+                    className={cn('text-destructive', TOUCH_TARGET_BUTTON)}
                     onClick={() => setDeleteOpen(true)}
                     disabled={submitting}
                     data-testid="category-delete-button"
@@ -406,13 +408,19 @@ export function CategoryDrawer({
                   <Button
                     type="button"
                     variant="outline"
+                    className={TOUCH_TARGET_BUTTON}
                     onClick={() => onOpenChange(false)}
                     disabled={submitting}
                   >
                     {t('actions.cancel')}
                   </Button>
                   {!readOnly && (
-                    <Button type="submit" disabled={submitting} data-testid="category-submit">
+                    <Button
+                      type="submit"
+                      className={TOUCH_TARGET_BUTTON}
+                      disabled={submitting}
+                      data-testid="category-submit"
+                    >
                       {submitting && (
                         <Spinner label={t('actions.submitting')} className="text-current" />
                       )}

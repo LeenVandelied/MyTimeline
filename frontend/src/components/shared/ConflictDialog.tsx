@@ -6,6 +6,7 @@ import { AlertTriangle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import {
   Dialog,
   DialogContent,
@@ -230,7 +231,10 @@ export function ConflictDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
+                className={cn(
+                  'border-rule-emphasis text-ink-muted hover:bg-surface-2',
+                  TOUCH_TARGET_BUTTON,
+                )}
                 onClick={() => onTakeServer?.()}
                 disabled={isSubmitting}
                 data-testid="conflict-dialog-take-server"
@@ -239,7 +243,10 @@ export function ConflictDialog({
               </Button>
               <Button
                 type="button"
-                className="bg-accent hover:bg-accent-hover text-accent-ink"
+                className={cn(
+                  'bg-accent hover:bg-accent-hover text-accent-ink',
+                  TOUCH_TARGET_BUTTON,
+                )}
                 onClick={() => onKeepMine?.()}
                 disabled={isSubmitting || keepMineExhausted}
                 data-testid="conflict-dialog-keep-mine"
@@ -254,13 +261,19 @@ export function ConflictDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
-                className="border-rule-emphasis text-ink-muted hover:bg-surface-2"
+                className={cn(
+                  'border-rule-emphasis text-ink-muted hover:bg-surface-2',
+                  TOUCH_TARGET_BUTTON,
+                )}
               >
                 {t('dismiss')}
               </Button>
               <Button
                 type="button"
-                className="bg-accent hover:bg-accent-hover text-accent-ink"
+                className={cn(
+                  'bg-accent hover:bg-accent-hover text-accent-ink',
+                  TOUCH_TARGET_BUTTON,
+                )}
                 onClick={handleReload}
                 disabled={isSubmitting}
                 data-testid="conflict-dialog-reload"
