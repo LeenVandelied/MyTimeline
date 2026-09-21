@@ -33,6 +33,11 @@ import { EVENT_PALETTE } from '../src/lib/event-palette'
  *       hitbox invisible à sonder, donc rien qu'un ancêtre défilant puisse
  *       clipper en silence (PIT PAT-S24-002).
  *
+ *       Cet oracle est MOBILE-SEULEMENT. Au-delà du point de rupture `sm`
+ *       (640 px) la correction repasse DÉLIBÉRÉMENT à 28×28 (`sm:size-7` /
+ *       `sm:h-7`) : y appliquer le seuil de 44 px serait un faux rouge. Le bloc
+ *       desktop asserte donc 28×28 (non-régression de taille), pas 44.
+ *
  *   (b) AUCUNE LIGNE ORPHELINE — les 12 pastilles sont groupées par ordonnée
  *       arrondie. Oracle : aucun groupe de cardinal 1. On vérifie EN PLUS le
  *       découpage exact attendu (6 + 6) : « pas d'orpheline » seul serait
@@ -48,14 +53,33 @@ import { EVENT_PALETTE } from '../src/lib/event-palette'
  * la largeur DISPONIBLE : il se présentait en 11+1 sur deux d'entre elles et en
  * 10+2 sur la troisième. Une seule surface ne prouverait rien des deux autres.
  *
- * EN THÈME CLAIR ET SOMBRE : la géométrie n'a aucune raison d'en dépendre, et
- * c'est précisément ce que le critère d'acceptation demande de VÉRIFIER plutôt
- * que de supposer. Le surcoût est de 2 exécutions, pas d'un second oracle.
+ * À 375 px ET À 1280 px (review #665) — parce que le défaut a été MESURÉ aux
+ * deux largeurs, et principalement à 1280 : cf. la JSDoc de
+ * `palette-color-picker.tsx` (§GÉOMÉTRIE), `CategoryDrawer` 11+1 à 1280 px « la
+ * 12e (graphite) seule sur sa ligne, exactement le défaut de l'issue »,
+ * `EventEditForm` 10+2 à 1280 px, `ProductDrawer` 11+1 à 1280 ET à 375 px. Une
+ * garde qui ne tournerait qu'en 375 px laisserait donc passer une régression de
+ * layout à la largeur même où le défaut principal a été constaté.
  *
- * NE PROUVE PAS : le contraste peint (couvert par `sprint-73-model-vs-rendered`),
- * la non-réécriture des couleurs hors palette (`sprint-84-palette`), ni le rendu
- * desktop — inchangé au pixel près par construction (`sm:size-7` / `sm:h-7`),
- * et déjà tenu par les deux specs ci-dessus qui tournent à 1280 px.
+ * EN THÈME CLAIR ET SOMBRE (bloc mobile) : la géométrie n'a aucune raison d'en
+ * dépendre, et c'est précisément ce que le critère d'acceptation demande de
+ * VÉRIFIER plutôt que de supposer. Le surcoût est de 2 exécutions, pas d'un
+ * second oracle. Le bloc desktop ne rejoue PAS les deux thèmes : l'indépendance
+ * au thème est déjà établie par le bloc mobile sur le même composant, et la
+ * rejouer serait payer 3 exécutions pour zéro information nouvelle.
+ *
+ * NE PROUVE PAS : le contraste peint (couvert par `sprint-73-model-vs-rendered`)
+ * ni la non-réécriture des couleurs hors palette (`sprint-84-palette`).
+ *
+ * RECTIFICATIF (review #665) — une version antérieure de ce commentaire tenait
+ * le rendu desktop pour « déjà tenu par les deux specs ci-dessus qui tournent à
+ * 1280 px ». C'est FAUX, et vérifié faux avant réécriture :
+ * `sprint-84-palette.spec.ts` tourne bien à 1280 px (l.40) mais n'appelle jamais
+ * `boundingBox()` — il asserte des couleurs peintes, des comptes de `radio` et
+ * de l'ARIA, aucune géométrie ; `sprint-95-toast-overlap.spec.ts` mesure bien
+ * des boîtes, mais celles du TOAST, et à 390 px de large (l.103-109), jamais à
+ * 1280. Aucune des deux ne gardait le découpage de la palette à desktop. C'est
+ * le trou que comble le bloc `@1280` ci-dessous.
  */
 
 test.use({ storageState: PROD.storageState })
@@ -67,10 +91,24 @@ const TOUCH_TARGET_MIN_PX = 44
 const MOBILE = { width: 375, height: 812 } as const
 
 /**
+ * Viewport desktop de référence : la largeur à laquelle le défaut d'origine a
+ * été mesuré sur les trois surfaces (JSDoc de `palette-color-picker.tsx`).
+ */
+const DESKTOP = { width: 1280, height: 900 } as const
+
+/**
+ * Taille des pastilles au-delà du point de rupture `sm` — `size-7` / `h-7`.
+ * C'est la valeur d'AVANT #665 : l'asserter, c'est garder la promesse « la
+ * TAILLE desktop est inchangée » que porte la JSDoc du composant.
+ */
+const DESKTOP_SWATCH_PX = 28
+
+/**
  * Tolérance d'appariement de ligne. Deux pastilles d'une même rangée de grille
  * partagent leur ordonnée à la sous-pixellisation près ; deux rangées sont
- * séparées d'au moins la hauteur d'une pastille (44 px). 4 px discrimine donc
- * sans ambiguïté, et sans confondre un arrondi avec un retour à la ligne.
+ * séparées d'au moins le pas de grille, soit 44 + 6 = 50 px en mobile et
+ * 28 + 8 = 36 px à desktop. 4 px discrimine donc sans ambiguïté aux deux
+ * largeurs, et sans confondre un arrondi avec un retour à la ligne.
  */
 const ROW_TOLERANCE_PX = 4
 
@@ -115,6 +153,33 @@ function shape(rows: Box[][]): string {
   return rows.map((r) => r.length).join(' + ')
 }
 
+/**
+ * (b) AUCUNE LIGNE ORPHELINE + découpage 6 + 6, et (c) ORDRE DE LECTURE.
+ *
+ * C'est le SEUL invariant commun aux deux largeurs : la taille des pastilles,
+ * elle, change volontairement au point de rupture `sm`. Extrait en helper par
+ * la review #665 pour que le bloc desktop réutilise le regroupement en lignes
+ * déjà écrit ici plutôt que d'en refonder un second, divergent.
+ */
+function assertRowLayout(boxes: Box[], surface: string): void {
+  const rows = toRows(boxes)
+  const orphans = rows.filter((r) => r.length === 1)
+  expect(
+    orphans.map((r) => r[0].hex),
+    `${surface} — pastille(s) seule(s) sur leur ligne (découpage ${shape(rows)})`,
+  ).toEqual([])
+  expect(
+    rows.map((r) => r.length),
+    `${surface} — découpage obtenu : ${shape(rows)}`,
+  ).toEqual([6, 6])
+
+  // (c) ORDRE DE LECTURE = ordre DOM = ordre d'`EVENT_PALETTE`.
+  expect(
+    rows.flat().map((b) => b.hex),
+    `${surface} — la grille réordonne les pastilles par rapport au DOM`,
+  ).toEqual(EVENT_PALETTE.map((e) => e.hex))
+}
+
 async function assertPaletteGeometry(page: Page, surface: string, prefix: string): Promise<void> {
   const boxes = await swatchBoxes(page, prefix)
 
@@ -135,23 +200,48 @@ async function assertPaletteGeometry(page: Page, surface: string, prefix: string
       `minimum ${TOUCH_TARGET_MIN_PX}`,
   ).toBeGreaterThanOrEqual(TOUCH_TARGET_MIN_PX)
 
-  // (b) AUCUNE LIGNE ORPHELINE, et découpage 6 + 6.
-  const rows = toRows(boxes)
-  const orphans = rows.filter((r) => r.length === 1)
-  expect(
-    orphans.map((r) => r[0].hex),
-    `${surface} — pastille(s) seule(s) sur leur ligne (découpage ${shape(rows)})`,
-  ).toEqual([])
-  expect(
-    rows.map((r) => r.length),
-    `${surface} — découpage obtenu : ${shape(rows)}`,
-  ).toEqual([6, 6])
+  // (b) AUCUNE LIGNE ORPHELINE, découpage 6 + 6, et (c) ordre de lecture.
+  assertRowLayout(boxes, surface)
+}
 
-  // (c) ORDRE DE LECTURE = ordre DOM = ordre d'`EVENT_PALETTE`.
+/**
+ * Géométrie desktop. Deux assertions, et PAS celle des 44 px :
+ *
+ *   — le découpage 6 + 6 sans ligne orpheline, à la largeur où le défaut de
+ *     #665 a été mesuré (`CategoryDrawer` 11+1, `EventEditForm` 10+2) ;
+ *   — la non-régression de la TAILLE à 28×28, qui est la promesse explicite de
+ *     `sm:size-7` / `sm:h-7`. Sans elle, « le desktop garde sa taille » resterait
+ *     une affirmation de commentaire sans oracle — exactement PIT-S95-007.
+ *
+ * La tolérance de 0,5 px absorbe la sous-pixellisation du moteur de rendu ; elle
+ * ne peut pas absorber un passage à 44 px (16 px d'écart) ni à 36 px.
+ */
+async function assertDesktopPaletteGeometry(
+  page: Page,
+  surface: string,
+  prefix: string,
+): Promise<void> {
+  const boxes = await swatchBoxes(page, prefix)
+
+  assertRowLayout(boxes, surface)
+
+  for (const b of boxes) {
+    expect(
+      b.width,
+      `${surface} — pastille ${b.hex} : largeur ${b.width} px, attendu ${DESKTOP_SWATCH_PX} (sm:size-7)`,
+    ).toBeCloseTo(DESKTOP_SWATCH_PX, 0)
+    expect(
+      b.height,
+      `${surface} — pastille ${b.hex} : hauteur ${b.height} px, attendu ${DESKTOP_SWATCH_PX} (sm:size-7)`,
+    ).toBeCloseTo(DESKTOP_SWATCH_PX, 0)
+  }
+
+  const custom = await page.getByTestId(`${prefix}-color-custom`).boundingBox()
+  expect(custom, `${surface} — bouton « Personnalisé » non rendu`).not.toBeNull()
   expect(
-    rows.flat().map((b) => b.hex),
-    `${surface} — la grille réordonne les pastilles par rapport au DOM`,
-  ).toEqual(EVENT_PALETTE.map((e) => e.hex))
+    custom!.height,
+    `${surface} — « Personnalisé » : hauteur ${custom!.height} px, attendu ${DESKTOP_SWATCH_PX} (sm:h-7)`,
+  ).toBeCloseTo(DESKTOP_SWATCH_PX, 0)
 }
 
 /** Ouvre le drawer d'édition d'une catégorie seedée. */
@@ -172,9 +262,12 @@ async function openProductDrawer(page: Page): Promise<void> {
 }
 
 /**
- * Ouvre le formulaire d'événement. Le déclencheur est `lg:hidden` / `hidden lg:…`
- * selon le viewport : en 375 px c'est `shell-mobile-new-event-button` qui est
- * rendu, le déclencheur de barre latérale y est CACHÉ (cf. `AppShell`, et
+ * Ouvre le formulaire d'événement. La bascule est au point de rupture `md`
+ * (768 px), et non `lg` comme l'affirmait ce commentaire avant la review #665 :
+ * la FAB `shell-mobile-new-event-button` est `md:hidden` (`AppShell` l.387) et
+ * la barre latérale qui porte `shell-sidebar-new-event-button` est
+ * `hidden … md:flex` (l.235). En 375 px c'est donc la FAB qui est rendue, le
+ * déclencheur de barre latérale y est CACHÉ (cf. aussi
  * `sprint-66-mobile-create-event.spec.ts` qui verrouille cette bascule).
  */
 async function openEventForm(page: Page): Promise<void> {
@@ -197,10 +290,52 @@ async function openEventForm(page: Page): Promise<void> {
   await page.getByTestId(`event-form-swatch-${EVENT_PALETTE[0].hex}`).scrollIntoViewIfNeeded()
 }
 
+/**
+ * Même formulaire, déclencheur desktop. À 1280 px la FAB mobile est `md:hidden`
+ * (`AppShell` l.387) : c'est `shell-sidebar-new-event-button` (l.257) qui est
+ * rendu. L'attente de restitution du focus du `Select` reprend le correctif
+ * `efe88983` de #702 — sans elle, Radix rend le focus au déclencheur APRÈS
+ * notre mesure et la sonde devient instable.
+ */
+async function openEventFormDesktop(page: Page): Promise<void> {
+  const userId = await getUserId(page)
+  const cat = await seedCategory(page, unique('665 DCat'))
+  const product = await seedProduct(page, {
+    userId,
+    name: unique('665 DProd'),
+    categoryId: cat.id,
+  })
+  await ensureAuthenticated(page)
+  await page.goto('/fr/dashboard', { waitUntil: 'domcontentloaded', timeout: NAV_BUDGET })
+  await page.getByTestId('shell-sidebar-new-event-button').click({ timeout: CLICK_BUDGET })
+  await expect(page.getByTestId('shell-new-event-drawer')).toBeVisible({ timeout: CLICK_BUDGET })
+  const productTrigger = page.getByTestId('shell-new-event-drawer-product-trigger')
+  await productTrigger.click({ timeout: CLICK_BUDGET })
+  await page.getByTestId(`product-option-${product.id}`).click({ timeout: CLICK_BUDGET })
+  await expect(page.getByTestId('event-form')).toBeVisible({ timeout: CLICK_BUDGET })
+  await expect(productTrigger).toBeFocused({ timeout: CLICK_BUDGET })
+  await page.getByTestId(`event-form-swatch-${EVENT_PALETTE[0].hex}`).scrollIntoViewIfNeeded()
+}
+
 const SURFACES = [
-  { name: 'CategoryDrawer', prefix: 'category', open: openCategoryDrawer },
-  { name: 'ProductDrawer', prefix: 'product', open: openProductDrawer },
-  { name: 'EventEditForm', prefix: 'event-form', open: openEventForm },
+  {
+    name: 'CategoryDrawer',
+    prefix: 'category',
+    open: openCategoryDrawer,
+    openDesktop: openCategoryDrawer,
+  },
+  {
+    name: 'ProductDrawer',
+    prefix: 'product',
+    open: openProductDrawer,
+    openDesktop: openProductDrawer,
+  },
+  {
+    name: 'EventEditForm',
+    prefix: 'event-form',
+    open: openEventForm,
+    openDesktop: openEventFormDesktop,
+  },
 ] as const
 
 for (const scheme of ['light', 'dark'] as const) {
@@ -216,3 +351,21 @@ for (const scheme of ['light', 'dark'] as const) {
     }
   })
 }
+
+/**
+ * BLOC DESKTOP (review #665) — la largeur à laquelle le défaut PRINCIPAL de
+ * l'issue a été constaté, et que la version initiale de cette spec ne gardait
+ * pas (elle ne tournait qu'en 375 px). Voir le RECTIFICATIF en tête de fichier :
+ * aucune autre spec n'assertait la géométrie de la palette à 1280 px.
+ */
+test.describe('#665 — palette, géométrie desktop', () => {
+  test.use({ viewport: DESKTOP })
+
+  for (const surface of SURFACES) {
+    test(`${surface.name} @1280 : grille 6×2 sans orpheline, pastilles 28×28`, async ({ page }) => {
+      await neutralizeDevToolingPointerEvents(page)
+      await surface.openDesktop(page)
+      await assertDesktopPaletteGeometry(page, `${surface.name}@1280`, surface.prefix)
+    })
+  }
+})

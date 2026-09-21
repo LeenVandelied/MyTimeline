@@ -61,7 +61,9 @@ import { PopoverPicker } from './popoverPicker'
  *      lignes 77-78 « Idem swatches couleur : élargir la cible », §4 ligne 140
  *      « Switch / Checkbox / Radio : cible >= 44×44 sur mobile »).
  *      → `size-11` / `h-11` sous le point de rupture `sm` (640 px), `size-7` /
- *      `h-7` au-delà. Le rendu DESKTOP est donc inchangé au pixel près.
+ *      `h-7` au-delà. La TAILLE desktop est donc inchangée au pixel près
+ *      (28×28 ; la DISPOSITION, elle, change — cf. point 1). Mesuré par le bloc
+ *      « géométrie desktop » de `sprint-96-palette-geometry.spec.ts` (@1280).
  *
  *      ÉCART ASSUMÉ À PAT-S24-002 (`::before` transparent 44×44, motif de
  *      `language-selector` / `theme-toggle` / `.mt-zoom__btn`) : ici la cible
@@ -166,7 +168,21 @@ export function PaletteColorPicker({
         // dans `EventEditForm` à 375 px (MESURÉ) ; les colonnes se compriment
         // alors à 43,5 px et les boutons, eux figés à 44 px, dépassent leur
         // cellule. À 6 px d'écart l'intrinsèque tombe à 294 px : les colonnes
-        // valent exactement 44 px sur les TROIS surfaces. Desktop inchangé.
+        // valent exactement 44 px sur les TROIS surfaces. Au-delà de `sm`,
+        // `sm:gap-2` restitue l'écart de 8 px d'avant #665.
+        //
+        // CE QUI CHANGE, ET CE QUI NE CHANGE PAS, À DESKTOP — précisé par la
+        // review #665, qui a jugé « Desktop inchangé. » trop large pour ne pas
+        // finir un jour en argument d'arbitrage :
+        //   — la TAILLE est inchangée : pastilles 28×28 (`sm:size-7`), bouton
+        //     « Personnalisé » 28 px de haut (`sm:h-7`), écart 8 px
+        //     (`sm:gap-2`) ;
+        //   — la DISPOSITION change DÉLIBÉRÉMENT : `grid-cols-6` impose 6×2 à
+        //     TOUTE largeur, là où le `flex flex-wrap` d'avant rendait 11+1
+        //     (`CategoryDrawer`, `ProductDrawer`) et 10+2 (`EventEditForm`) à
+        //     1280 px. C'est la correction de #665, pas un effet de bord.
+        // Les deux sont mesurées par `sprint-96-palette-geometry.spec.ts`,
+        // bloc « #665 — palette, géométrie desktop » (@1280).
         className="grid w-fit grid-cols-6 gap-1.5 sm:gap-2"
       >
         {EVENT_PALETTE.map((entry, index) => {
@@ -194,7 +210,8 @@ export function PaletteColorPicker({
                 // La SÉLECTION est portée par `border-foreground` + le glyphe
                 // (#416 : la bordure seule tombe à 1,81:1 contre l'ambre en sombre).
                 // 44×44 en viewport mobile (cible tactile #665), 28×28 au-delà
-                // de `sm` — le rendu desktop est inchangé.
+                // de `sm` — la TAILLE desktop est inchangée (la disposition, elle,
+                // passe à 6×2 : cf. le commentaire du `radiogroup` ci-dessus).
                 'flex size-11 items-center justify-center rounded-full border transition sm:size-7',
                 checked ? 'border-foreground' : 'border-rule',
                 disabled && 'cursor-not-allowed opacity-50',
