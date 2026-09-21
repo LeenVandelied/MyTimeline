@@ -6901,3 +6901,20 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 - **#459** partiellement périmée (`Lane.tsx` n'existe pas ; reste `SessionList.tsx:108,116`).
 
 **Score cohésion global :** S93 0.50 · S94 1.00 · S95 0.00 · S96 0.00 · S97 0.00 → **0.30**. Aucun sprint > ~10 points ; S95 et S96 à 4 issues pour 6 points.
+
+### Sprint 101 — 2026-09-21 → 2026-09-22 (PR ouverte vers dev — cohésion ≈ 0.40, 403 sans déconnexion, politique de mot de passe Unicode, cibles tactiles et croix des dialogues)
+**Objectif :** un 403 ne déconnecte plus ; le formulaire accepte les mots de passe non-ASCII que le serveur accepte ; contrôles mobiles ≥ 44 px hors réglages ; croix des dialogues lisible ; FAB vs tableau de bord paysage mesuré
+**Milestone GitHub :** #102
+**Issues :** #733, #735, #754, #757, #758 (étiquette `sprint-101` posée au démarrage sur #754/#757/#758 — périmètre arbitré par le dev)
+**Vagues :** V1 = A (#733, #735, Vitest) ∥ ui-design → B (#754, #757, Playwright exclusif) | V2 = C (#758) ∥ ui-design (validation a posteriori)
+**Migrations Flyway :** aucune
+**Depend de :** aucune
+**Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-101/architect-plans.md`) — pas de `/sprint plan`
+**Arbitrage dev #733 :** 403 → toast « Accès refusé » sans redirection
+**Arbitrage ui-design #754/#757 :** `docs/memory/sprints/sprint-101/arbitrage-ui-design-754-757.md` (APPROUVE, puis validation a posteriori APPROUVE des 3 contrôles hors arbitrage)
+**Commits :** 07f82b22 (#733), 449ad984 (#735), 3db3c867 (#754), 1762df30 (#757), fd9da74e (#758, spec seule), fbd08fb4 (#754, retour de review)
+**Écarts d'énoncé :** #735 : regex `\p{Uppercase}` bornée au BMP et non `\p{Lu}` (contre-test jshell : `\p{Lu}` aurait rompu l'invariant #508 sur hors-BMP et refusé Other_Uppercase) ; #754 : croix des dialogues (16 px) ajoutée au périmètre + 3 contrôles du formulaire d'événement ; #758 : **aucun recouvrement** — prémisse du lead fausse (racine `min-h-screen`, la grille paysage ne défile jamais seule, la page défile et la réserve de `shell-main` s'applique) → spec de mesure seule, aucun code de production
+**Tests :** Vitest 154 fichiers / 1975 verts | `next build` vert | E2E suite complète chromium contre `next build`+`next start` : 496 verts, 8 sautés, 1 rouge attendu (armement visuel `sprint-77`, hors Linux) | après `fbd08fb4` : 8 specs citant la surface, 39/39
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (hitboxes adjacentes éditer/archiver bord à bord, résolu par `fbd08fb4`) / 0 MINEUR ; cycle 2 sur le correctif : OK
+**Incidents lead :** symlink `node_modules` vers le principal périmé (vitest 2 pour 3 déclaré) → faux rouges agent A, remplacé par `npm ci` ; ancien `next-server` survivant au `pkill` pendant un rebuild → 33 faux rouges, rejoué après arrêt par PID
+**Status :** PR ouverte — en attente de CI puis `/sprint end 101`
