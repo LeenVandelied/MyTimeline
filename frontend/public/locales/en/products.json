@@ -19,7 +19,6 @@
       "title": "Add Event",
       "list": "Added Events",
       "empty": "No events added",
-      "remove": "Remove",
       "form": {
         "name": "Event Name",
         "namePlaceholder": "Enter event name",
@@ -55,8 +54,7 @@
     },
     "events": {
       "list": "Added Events",
-      "empty": "No events added",
-      "remove": "Remove"
+      "empty": "No events added"
     },
     "description": "Add a new product with its associated events"
   },
