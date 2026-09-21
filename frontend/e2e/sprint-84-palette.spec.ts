@@ -52,7 +52,30 @@ async function paintedFill(locator: Locator): Promise<string> {
   return locator.evaluate((el) => getComputedStyle(el).backgroundColor)
 }
 
-/** Ouvre le drawer de création d'événement sur un produit seedé. */
+/**
+ * Ouvre le drawer de création d'événement sur un produit seedé.
+ *
+ * #702 — POURQUOI ON ATTEND LE RETOUR DU FOCUS SUR LE DÉCLENCHEUR. Le sélecteur
+ * de produit est un `Select` Radix (`NewEventDrawer.tsx` l.214). À sa fermeture,
+ * son `FocusScope` REND le focus au déclencheur, et il le fait de façon DIFFÉRÉE
+ * (restitution au démontage du contenu, après l'animation de sortie). Mesuré à la
+ * sonde `focusin` sur ce poste, `next build` + `next start`, 3 passes : la
+ * restitution tombe à **t = 28-29 ms** après le clic sur l'option, exactement UNE
+ * fois, et plus jamais ensuite.
+ *
+ * `expect(event-form).toBeVisible()` — le seul point d'attente qu'il y avait ici —
+ * se résout à **t = 20-32 ms**, c'est-à-dire À CHEVAL sur cette restitution. Quand
+ * il gagne la course, le test enchaîne `focus()` + `ArrowRight` sur une pastille,
+ * puis la restitution différée atterrit PAR-DESSUS et ramène le focus au
+ * déclencheur : `aria-checked` a bien avancé (le `onChange` a eu lieu), seul
+ * `toBeFocused()` échoue. C'est la signature exacte de #702 — 6 échecs / 10
+ * invocations séquentielles avant cette attente, 0 / 10 après.
+ *
+ * L'attente ci-dessous n'est donc ni un `waitForTimeout`, ni un assouplissement
+ * d'assertion : c'est l'attente DÉTERMINISTE de l'événement réel qui manquait. Le
+ * produit, lui, ne vole rien — une fois la restitution passée, le focus posé par
+ * le clavier TIENT (oracle de durabilité dans le test clavier ci-dessous).
+ */
 async function openNewEventForm(page: Page): Promise<void> {
   const userId = await getUserId(page)
   const cat = await seedCategory(page, unique('577 Cat'))
@@ -65,9 +88,12 @@ async function openNewEventForm(page: Page): Promise<void> {
   await page.goto('/fr/dashboard', { waitUntil: 'domcontentloaded', timeout: FIRST_NAV_BUDGET })
   await page.getByTestId('shell-sidebar-new-event-button').click({ timeout: CLICK_BUDGET })
   await expect(page.getByTestId('shell-new-event-drawer')).toBeVisible({ timeout: CLICK_BUDGET })
-  await page.getByTestId('shell-new-event-drawer-product-trigger').click({ timeout: CLICK_BUDGET })
+  const productTrigger = page.getByTestId('shell-new-event-drawer-product-trigger')
+  await productTrigger.click({ timeout: CLICK_BUDGET })
   await page.getByTestId(`product-option-${product.id}`).click({ timeout: CLICK_BUDGET })
   await expect(page.getByTestId('event-form')).toBeVisible()
+  // La restitution de focus du `Select` a eu lieu : plus rien ne bougera derrière nous.
+  await expect(productTrigger).toBeFocused({ timeout: CLICK_BUDGET })
 }
 
 test.describe('#577 — non-réécriture d’une couleur hors palette (DEC-S84-001)', () => {
@@ -143,5 +169,21 @@ test.describe('#577 — palette du handoff dans le formulaire d’événement', 
     await expect(periwinkle).toHaveAttribute('aria-checked', 'true')
     await expect(cobalt).toHaveAttribute('aria-checked', 'false')
     await expect(page.getByTestId('event-form-color-input')).toHaveValue('#6C7BE0')
+
+    // #702 — ORACLE DE DURABILITÉ, et garde-fou contre le masquage. Les assertions
+    // ci-dessus RÉESSAIENT : un `toBeFocused()` vert ne dirait donc pas si le focus
+    // a été repris une fraction de seconde plus tard. Ici, lecture UNIQUE et NON
+    // réessayée de `document.activeElement` après une fenêtre de repos délibérée.
+    // C'est ce qui distingue « le test a fini par verdir » de « le produit garde le
+    // focus » : si un re-rendu du formulaire ou du drawer volait le focus au
+    // clavier, cette lecture le verrait, là où l'attente ajoutée dans
+    // `openNewEventForm` ne le masquerait pas.
+    await page.waitForTimeout(600)
+    const stillFocused = await page.evaluate(() =>
+      document.activeElement?.getAttribute('data-testid'),
+    )
+    expect(stillFocused, 'le focus clavier a été repris après la flèche droite').toBe(
+      'event-form-swatch-#6C7BE0',
+    )
   })
 })
