@@ -47,11 +47,15 @@ export default function SettingsPage() {
           {/* Titre de page aligné sur le panneau : plus de bandeau `border-b`
               pleine largeur, le shell fournit déjà le cadre applicatif. */}
           <div className="mb-6 flex items-center gap-3" data-testid="settings-header">
+            {/* Cible tactile 44x44 (WCAG 2.5.5, absorbé en clôture du Sprint 96, suite
+                #633) : `h-11 w-11` (= `--space-11`) prime sur le `h-9 w-9` de
+                `size="icon"` via `cn()`/tailwind-merge — même gabarit que le retour
+                de `MobileSettings`. Le bloc réservé de `loading.tsx` suit. */}
             <Button
               asChild
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="h-11 w-11 shrink-0 lg:hidden"
               aria-label={t('backToDashboard')}
             >
               <Link href={`/${locale}/dashboard`} data-testid="settings-back">

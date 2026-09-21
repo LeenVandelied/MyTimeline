@@ -1579,6 +1579,46 @@ Seules les références `*-chromium-linux.png` sont suivies. Sur macOS Playwrigh
 ## PIT-S95-007 — Une affirmation géométrique écrite sans oracle a survécu 3 sprints avec 3 chiffres faux, et un arbitrage s'est appuyé dessus
 La JSDoc de `toaster.tsx` (S92) situait la croix du `ProductDrawer` « à ≈84–100px à 844px quand le formulaire remplit la sheet ». Mesure S95 : à 390×844 le contenu (672px) n'atteint JAMAIS 92vh (776px), le recouvrement est **nul**, et le cas n'existe qu'en dessous de ≈730px. Deux autres cotes étaient fausses (carte 65px et non ≈46px ; haut de sheet 171px et non ≈68px). L'arbitrage Designer de #714 s'était appuyé sur ces chiffres. Toute affirmation géométrique consignée dans un commentaire doit citer la spec qui la mesure. (Sprint 95, #714)
 
+
+## PIT-S96-001 — RTK falsifie les VERDICTS d'outils dans les deux sens, pas seulement les recherches
+`npx prettier --check` a répondu « All files formatted correctly » sur un fichier que le binaire direct refusait (la CI aurait rougi : `test-quiet.sh` n'exécute pas `format:check`) ; `npx next lint --file` a rendu `Errors: 1` sur un fichier réellement propre. Le faux négatif fait rater un défaut, le faux positif fait chasser un fantôme — et `npx` EST intercepté. Tout verdict d'outil (PASS/FAIL, 0/1 erreur, nombre de résultats) se relit via `rtk proxy` ou le binaire direct (`./node_modules/.bin/prettier`). Piégés : 1 agent ET le lead, sur le même fichier. Suite de PIT-S93-004 et PIT-S93-008. (Sprint 96, #633 / #665 / lead)
+
+
+## PIT-S96-002 — Un `flex-wrap` découpe différemment selon chaque surface qui le monte
+La même palette rendait 11+1, 11+1 et 10+2 selon l'écran d'accueil ; l'issue n'en avait vu qu'un. Dès qu'un retour à la ligne inesthétique est signalé sur UN écran, mesurer les AUTRES points de montage avant de corriger. Remède structurel : `grid-cols-N` + `w-fit`, le découpage devient une propriété du composant et non de son contexte. (Sprint 96, #665)
+
+
+## PIT-S96-003 — `w-fit` sur une grille : des colonnes comprimées font déborder des enfants à taille figée
+`w-fit` vaut `min(max-content, disponible)` : si l'intrinsèque dépasse de peu le conteneur, les colonnes se compriment (43,5 px) pendant que des enfants `size-11` débordent de leur cellule — 0,5 px, invisible à l'œil comme à un test de classes. Dimensionner l'écart pour que l'intrinsèque tienne dans la plus ÉTROITE des surfaces (294 ≤ 301 px ici), et mesurer `max(x+w) − (min(x) + largeurGroupe)` sur toutes. (Sprint 96, #665)
+
+
+## PIT-S96-004 — Un `absolute` dans un conteneur défilant bouge avec le contenu : « enfant.y == parent.y + c » n'est vrai qu'à `scrollTop` 0
+`sprint-95-toast-overlap` assertait la position de la croix d'un `DialogContent` relativement au sheet ; +30 px de contenu (palette 44 px) l'ont fait tomber, et le message accusait la correction d'un défaut de position qu'elle ne causait pas. Toute assertion de cette forme dans un conteneur `overflow:auto` doit neutraliser le défilement (`scrollTop = 0`) ou le mesurer, et écrire la prémisse. (Sprint 96, #665)
+
+
+## PIT-S96-005 — Ce qu'une spec visuelle MASQUE est exactement ce qu'elle ne prouve pas
+`sprint-77-theme-visual` pose `display:none` sur `network-banner` avant chaque capture (à raison). Conséquence non écrite : le recouvrement de #656 a vécu ≥ 13 sprints derrière ce masque, invisible dans les deux sens. Avant de conclure d'un vert de captures, lister ce que la spec neutralise ; ces éléments exigent un oracle de géométrie (`boundingBox` + `elementFromPoint`, élément FORCÉ à l'écran). (Sprint 96, #656)
+
+
+## PIT-S96-006 — Rejouer une spec N fois sans pacing épuise le seau `register` et fabrique de faux échecs
+Chaque invocation purge `.auth/accounts.json` et ré-inscrit 4 comptes ; le seau `register` est partagé, 30/min/IP. Autour de la 8e invocation serrée, `setup` échoue en 429 et la cible ne tourne même pas : une campagne a rendu « 5/10 » dont 3 échecs de `setup`. Espacer (`sleep 15`) ET classer chaque run `SETUP-KO` / `CIBLE-KO` / `OK` en lisant le log. Un chiffre de flake sans pacing mélange le flake et l'épuisement qu'il provoque. (Sprint 96, #702)
+
+
+## PIT-S96-007 — Sélectionner un test par numéro de ligne dans une boucle de mesure : « exit ≠ 0 » ≠ « échec »
+Après correctif, la cible avait glissé de la ligne 128 à 154 : 10 invocations ont rendu `No tests found` avec un code non nul, comptées « 10 échecs » — le pire résultat possible alors que rien n'avait tourné. Sélectionner par titre (`--grep`), vérifier la cardinalité par `--list` avant la campagne, et compter les tests RÉELLEMENT exécutés, jamais le seul code de retour. (Sprint 96, #702)
+
+
+## PIT-S96-008 — Une spec de garde peut ne garder que la moitié du défaut qu'elle documente
+La JSDoc de la palette mesurait le défaut à 1280 px ; la spec livrée avec ne tournait qu'à 375 px. Le critère d'acceptation principal n'était donc pas gardé là où le défaut avait été constaté — et l'audit de Phase 6 du lead l'avait déclaré couvert. Quand une spec et le commentaire qu'elle sert citent des conditions différentes (viewport, thème, état), l'écart EST le trou : les lire côte à côte. Trouvé par la review batch. (Sprint 96, review #665)
+
+
+## PIT-S96-009 — Un renvoi « déjà couvert par la spec X » se vérifie en deux temps
+Le commentaire déléguait la couverture desktop à deux specs « qui tournent à 1280 px » : l'une y tourne sans aucun `boundingBox`, l'autre mesure des boîtes mais à 390 px. Vérifier que X tourne à la bonne CONDITION **et** asserte la bonne PROPRIÉTÉ — greper l'oracle (`boundingBox`, `toHaveScreenshot`…), pas seulement `viewport`/`test.use`. (Sprint 96, review #665)
+
+
+## PIT-S96-010 — `check-sprint-completeness.sh` ne reconnaît pas « `RECOMMAND_X` : NON » comme une négation
+Sa regex n'accepte que « Pas de RECOMMAND_X », « aucun… », « non applicable » ; une négation formulée « `RECOMMAND_X` : NON » ou coupée sur deux lignes ressort en `UNTREATED_SIGNAL`. Au S96 : 7 signaux signalés, 6 faux positifs, 1 vrai (sémantique de grille, traité par un arbitrage ui-design). Reformuler en « Pas de `RECOMMAND_X` » sur UNE ligne — et trier avant de reformuler : le contrôle attrape aussi de vrais signaux, `--force` les enterrerait. Prescrire ce format dans les gabarits de briefing. (Sprint 96, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

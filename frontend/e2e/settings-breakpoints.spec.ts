@@ -106,6 +106,51 @@ function measureOverflow(page: Page): Promise<{ scrollWidth: number; clientWidth
   }))
 }
 
+/** Seuil tactile du DS (`--space-11`, `ds/a11y-audit.md`, WCAG 2.5.5). */
+const TOUCH_TARGET = 44
+
+/**
+ * Clôture du Sprint 96 (suite #633) — `settings-back` est une cible tactile d'au moins
+ * 44x44 à TOUS les paliers où il est peint (< 1024 px), et l'en-tête `settings-header`
+ * absorbe l'agrandissement : la boîte du bouton reste contenue dans celle de l'en-tête
+ * (ni débordement vertical, ni sortie à droite).
+ *
+ * `size="icon"` de shadcn pose `h-9 w-9` (36 px) ; seule la priorité de `h-11 w-11`
+ * via `cn()`/tailwind-merge le porte à 44. Une régression de cette fusion (ou le
+ * retrait de la classe) ramènerait 36x36 : c'est ce que cette garde attrape, mesurée
+ * dans le navigateur (jsdom ne met pas en page).
+ */
+async function expectBackTouchTarget(page: Page, width: number): Promise<void> {
+  const back = page.getByTestId('settings-back')
+  const header = page.getByTestId('settings-header')
+  const backBox = await back.boundingBox()
+  const headerBox = await header.boundingBox()
+  expect(backBox, `settings-back doit avoir une boîte mesurable à ${width} px`).not.toBeNull()
+  expect(headerBox, `settings-header doit avoir une boîte mesurable à ${width} px`).not.toBeNull()
+  if (!backBox || !headerBox) return
+  expect(
+    backBox.width,
+    `settings-back : largeur ${backBox.width}px < ${TOUCH_TARGET}px à ${width} px`,
+  ).toBeGreaterThanOrEqual(TOUCH_TARGET)
+  expect(
+    backBox.height,
+    `settings-back : hauteur ${backBox.height}px < ${TOUCH_TARGET}px à ${width} px`,
+  ).toBeGreaterThanOrEqual(TOUCH_TARGET)
+  // L'en-tête absorbe l'agrandissement : le bouton ne déborde pas de sa boîte.
+  expect(
+    backBox.y,
+    `settings-back déborde au-dessus de settings-header à ${width} px`,
+  ).toBeGreaterThanOrEqual(headerBox.y)
+  expect(
+    backBox.y + backBox.height,
+    `settings-back déborde sous settings-header à ${width} px`,
+  ).toBeLessThanOrEqual(headerBox.y + headerBox.height)
+  expect(
+    backBox.x + backBox.width,
+    `settings-back déborde à droite de settings-header à ${width} px`,
+  ).toBeLessThanOrEqual(headerBox.x + headerBox.width)
+}
+
 // ---------------------------------------------------------------------------
 // 1. La matrice, un test par palier (viewport figée par `test.use` : aucun
 //    redimensionnement en cours de test, donc aucune dépendance à la
@@ -185,6 +230,7 @@ for (const bp of BREAKPOINTS) {
       if (bp.back) {
         await expect(back, `le retour doit être visible à ${bp.width} px (< ${LG})`).toBeVisible()
         await expect(back).toHaveAttribute('href', '/fr/dashboard')
+        await expectBackTouchTarget(page, bp.width)
       } else {
         await expect(
           back,
@@ -286,6 +332,8 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
       })
       .toBe(SIDEBAR_WIDTH_COLLAPSED)
     await expect(header, 'le header reste rendu à 1023 px').toBeVisible()
+    // Dernier pixel où le retour est peint : la cible tactile y tient aussi.
+    await expectBackTouchTarget(page, LG - 1)
 
     // Bascule vers le desktop : masquage CSS pur (aucune remontée `matchMedia`
     // n’est nécessaire pour `lg:hidden`), la sidebar se déplie, le retour part.
@@ -334,6 +382,7 @@ test.describe('Réglages responsive — frontières exactes des paliers', () => 
     await expect(tablist, 'à 767 px les onglets ne doivent pas être dans le DOM').toHaveCount(0)
     // Le retour est visible des DEUX côtés de cette frontière (elle est sous `lg`).
     await expect(page.getByTestId('settings-back')).toBeVisible()
+    await expectBackTouchTarget(page, MD - 1)
 
     await page.setViewportSize({ width: MD, height: 900 })
     await expect(

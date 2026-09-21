@@ -261,6 +261,37 @@ async function measureRegime(page: Page, viewport: { width: number; height: numb
   const toast = await submitAndExpectErrorToast(page)
 
   const sheetBox = await stableBox(sheet(page), 'sheet ProductDrawer')
+
+  // #665 (S96) — REMISE À ZÉRO DU DÉFILEMENT AVANT DE MESURER LA CROIX.
+  //
+  // La croix de `DialogContent` (`ui/dialog.tsx` l.47) est `absolute top-4
+  // right-4` À L'INTÉRIEUR du `[role="dialog"]`, qui est AUSSI le conteneur
+  // défilant (c'est son `scrollHeight` que `portalMetrics` relit). Un descendant
+  // en `position:absolute` d'un conteneur défilant DÉFILE avec le contenu : son
+  // ordonnée à l'écran vaut `sheet.y + 16 − scrollTop`, pas `sheet.y + 16`.
+  // L'invariant vérifié juste en dessous est donc un invariant DE MISE EN PAGE,
+  // qui ne tient qu'à défilement nul.
+  //
+  // Jusqu'au S95 il tenait par accident : `openFilledCreateSheet` remplit
+  // `product-first-event-date`, et Playwright amène le champ visé dans le
+  // viewport avant de le remplir. Ce champ était le dernier au-dessus de la
+  // ligne de flottaison, `scrollTop` restait à 0 et personne ne s'en apercevait.
+  // #665 a porté les pastilles de couleur à 44×44 px en viewport mobile (cible
+  // tactile WCAG 2.5.5, `ds/a11y-audit.md` §1 l.24) : le contenu de la sheet
+  // s'allonge, le champ de date passe sous la ligne de flottaison, et le
+  // remplissage fait défiler de 13 px — la croix était alors mesurée à
+  // `sheet.y + 3` au lieu de `sheet.y + 16`, et la spec accusait #665 d'un
+  // défaut de position qu'il ne cause pas.
+  //
+  // On remet donc `scrollTop` à 0 : c'est l'état où l'invariant est DÉFINI, et
+  // celui que les valeurs de référence du S95 décrivent (390×667 : croix y=70,
+  // recouvrement 14,4 px). Ce que ce garde-fou ne couvre PAS, et qui reste à
+  // trancher : sur un viewport court, une croix `absolute` qui défile finit par
+  // sortir du haut de la sheet. Voir le follow-up ouvert au S96.
+  await sheet(page).evaluate((el) => {
+    el.scrollTop = 0
+  })
+
   const close = sheet(page).getByRole('button', { name: 'Close' })
   const closeBox = await stableBox(close, 'croix de la sheet')
   const cardBox = await stableBox(toast, 'carte du toast')

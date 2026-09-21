@@ -150,3 +150,9 @@ Cause : `useEventEditConflict.runSubmit` gardait `if (eventId && user?.id) await
 
 ## BUG-S92-003 — Pause du toast bloquée quand le toast focalisé est retiré alors qu'un autre reste visible
 Cause : l'état de survol/focus d'`AppToaster` était un booléen global, remis à zéro seulement quand plus AUCUN toast n'était visible ; un toast retiré hors minuterie (dismiss) n'émet pas de `focusout` au démontage. Symptôme : le toast survivant restait en pause indéfiniment (constaté sous jsdom). Introduit et corrigé dans le sprint, jamais livré sur `dev`. Correctif : `hoveredId` / `focusedId`, actifs seulement si l'id figure parmi les toasts `visible`, et restauration du focus à l'élément mémorisé au `focusin` sous conditions. Règle : l'état d'un élément de liste se garde par identifiant, jamais par booléen global (PIT-S92-008). (Sprint 92, cycle 2 → absorption B `cabacd7`)
+
+## BUG-S96-001 — La bannière d'erreur serveur recouvrait le coin langue/thème des 4 pages d'auth
+Conteneur `absolute top-4 right-4` sous une racine `position: static` : son bloc conteneur était le bloc conteneur INITIAL (document), pas la page. La bannière `sticky` en flux poussait la page de 32 px sans emporter le conteneur, resté à y=16 → 16 px masqués, 24 px de cible restants. Correctif : `relative` sur la racine des 4 pages. Règle : un `absolute` sans bloc conteneur posé explicitement s'ancre au document ; dès qu'un élément en flux peut s'insérer au-dessus, l'ancrage implicite devient un recouvrement. Invisible ≥ 13 sprints derrière le masque de `sprint-77-theme-visual` (PIT-S96-005). (Sprint 96, #656)
+
+## BUG-S96-002 — Ligne orpheline dans la palette sur les trois surfaces, pas une
+`flex-wrap` : découpage dépendant de la largeur disponible — 11+1 (`CategoryDrawer` et `ProductDrawer` à 1280), 10+2 (`EventEditForm`). L'issue n'avait vu que le tiroir catégorie. Correctif `grid grid-cols-6 w-fit` : 6×2 par construction, gardé à 375 ET 1280 px. (Sprint 96, #665)
