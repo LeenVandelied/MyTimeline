@@ -940,3 +940,15 @@ Une sonde Playwright jetable imprime les boîtes en JSON sur une ligne marquée 
 
 ## PAT-S96-004 — E2E clavier après la fermeture d'un overlay Radix : attendre la restitution du focus
 Le `FocusScope` de Radix (`Select`, `Popover`, `Dialog`, `DropdownMenu`) rend le focus au déclencheur de façon DIFFÉRÉE, au démontage du contenu — mesuré à t ≈ 28-29 ms après le clic sur l'option. `await expect(trigger).toBeFocused()` juste après la fermeture, AVANT tout geste clavier. `toBeVisible()` n'est pas un point de synchronisation du focus : au S96 les deux se résolvaient à ~10 ms d'écart, d'où un flake à 6/10. Anti-pattern : `waitForTimeout`, `retries`, ou assertion assouplie — les trois masqueraient un vrai vol de focus. (Sprint 96, #702)
+
+## PAT-S97-001 — Mesurer le contraste d'un `::placeholder`
+`readTextRendering` (`e2e/support/contrast.ts`) lit la `color` de l'élément, pas celle du placeholder. Garder son fond composité et remplacer l'encre par `getComputedStyle(el, '::placeholder').color`, normalisée par canvas (cf. `e2e/sprint-97-ink-faint-contrast.spec.ts`). Anti-pattern : mesurer la `color` d'un `<textarea>` vide et conclure sur le placeholder. (Sprint 97, #670)
+
+## PAT-S97-002 — Virtualisation verticale à hauteurs variables sans boucle mesure → rendu
+Hauteur CALCULÉE : base mesurée une fois + pas × rangées supplémentaires ; la vue publie la part ajoutée en `data-lane-extra`, que la mesure retranche ; modèle en sommes préfixées + recherche dichotomique (`virtualization.ts`). Anti-pattern : mesurer chaque lane dans le DOM, ou prendre « la première lane » comme hauteur de toutes (faux dès qu'elle est empilée). (Sprint 97, #709)
+
+## PAT-S97-003 — Décaler un `top` du DS par variable CSS plutôt qu'en JS
+`top: calc(<valeur historique> + var(--mt-row-y, 0px))`, la variable n'étant posée en ligne que si ≠ 0 ; pour un enfant qui doit rester centré sur la bande de base d'un parent agrandi : `calc(50% - var(--mt-lane-extra)/2 + var(--mt-row-y))` (variable héritée). Anti-pattern : réécrire tous les `top` en ligne depuis le JS — deux sources de vérité, et le DOM des lanes mono-rangée change. (Sprint 97, #709)
+
+## PAT-S97-004 — Clé i18n morte : tracer les chemins complets, pas le nom de feuille
+Deux clés `remove` vivaient sous `add.event` et `add.events` : un grep sur `remove` seul donne des faux positifs. Relever les `useTranslations(namespace)` réellement appelés par les consommateurs et reconstituer le chemin complet de chaque `t('…')`, y compris les clés construites dynamiquement. (Sprint 97, #716)

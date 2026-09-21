@@ -1061,3 +1061,21 @@ La sonde `focusin` établit que le `Select` rend le focus une seule fois, ~29 ms
 
 ## DEC-S96-005 — Palette en grille 6×2 : la navigation clavier reste LINÉAIRE
 Arbitrage ui-design en clôture (verdict A). Motif APG `radiogroup` : un seul ordre, flèches équivalentes (`palette-color-picker.tsx:81-86`, `ds/a11y-audit.md:153`). La seule grille 2D du produit (la frise) est un widget « grid » à rôle `button`, pas un `radiogroup` : aucune contradiction interne. Aucun test n'asserte ↑/↓. Une sémantique ↓ = +6 demanderait une issue neuve. Et l'oracle des 44 px ne s'applique pas à desktop, où la taille 28×28 est voulue : le seul invariant commun aux deux largeurs est le découpage en lignes. (Sprint 96, clôture + review #665)
+
+## DEC-S97-001 — `--color-ink-faint` réservé au non-textuel, valeur inchangée
+Décision du dev au démarrage. Mesures : 2,56–2,82:1 (clair) / 2,73–3,20:1 (sombre). Relever le token à 4,5:1 sur `surface-2` exigerait #6C7079 / #82868B, soit quasi `ink-muted` (#5E626B / #8E9299) : la hiérarchie à 3 paliers disparaîtrait. Donc : tout texte (placeholders, eyebrows, compteurs, légendes) → `ink-muted` ; icône ou indicateur de contrôle → `ink-muted` ou `rule-emphasis` (≥3:1) ; décoratif (filets de mois, pouce de scrollbar, pastille fantôme, 2 icônes `aria-hidden` illustratives) → reste `ink-faint`. Gardé par `src/styles/__tests__/ink-faint-non-text.test.ts` et `e2e/sprint-97-ink-faint-contrast.spec.ts`. Aligne le code sur `ds/readme.md` §192. (Sprint 97, #670)
+
+## DEC-S97-002 — L'empilage en rangées dépend du zoom
+Le `gap` d'empilage (8/10 px) et la réservation des ponctuels (100/90 px) de la maquette sont en PIXELS convertis en jours : l'empilage est recalculé par niveau de zoom, donc le nombre de rangées et la hauteur des lanes varient avec lui. Un gap en jours constants rendrait les pins illisibles au zoom large. (Sprint 97, #709)
+
+## DEC-S97-003 — Hauteur de lane = base historique + pas × rangées supplémentaires
+Base 46 / 44 / 34 px (desktop / portrait / paysage) + (rangées − 1) × (barre rendue + VGAP maquette) = 34 / 35 / 31 px. Égale la formule maquette en desktop ; en mobile, dérivée des barres réellement rendues (28 / 24 px ≠ maquette 24). La rangée 0 ne bouge pas au pixel : aucune lane mono-rangée n'est déplacée, les specs de géométrie existantes restent vraies. Validé par ui-design. (Sprint 97, #709)
+
+## DEC-S97-004 — Le `⋯` mobile est réservé dans l'empilage
+La prod ajoute un bouton `⋯` de 44 px après chaque occurrence mobile ; sans réservation, il capterait les taps de l'occurrence suivante de la même rangée. Validé par ui-design. (Sprint 97, #709)
+
+## DEC-S97-005 — Navigation clavier par rangée, roving repéré par id d'événement
+↑/↓ traversent les rangées d'une lane avant de changer de lane ; le roving tabindex est repéré par id d'événement, car un index de rangée glisserait au ré-empilage d'un changement de zoom. Ordre DOM mobile en rangées. (Sprint 97, #709)
+
+## DEC-S97-006 — Bordure au survol d'un contrôle à bordure fonctionnelle : `ink-muted`
+`.mt-btn--secondary`, `.mt-iconbtn` et `.mt-select__trigger` passaient au survol de `rule-emphasis` (≥3:1) à `ink-faint` (2,56–2,99:1) : le survol affaiblissait la limite du contrôle (1.4.11). La phrase « hover borders » décoratifs de `ds/readme.md` contredisait sa propre table des paliers de bordure. Arbitrage ui-design en review (requalifié de follow-up en correction), appliqué à la demande du dev : `ink-muted` (≥5,3:1), le survol renforce la limite. Garde statique étendu, contrôle négatif joué. (Sprint 97, review #670, `e665d82c`)
