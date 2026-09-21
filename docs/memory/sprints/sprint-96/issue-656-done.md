@@ -139,7 +139,7 @@ sont inchangées) sur `login`, `register`, `forgot-password`,
 | 390×844 | `x=298 y=16 w=76 h=36` | `x=298 y=16 w=76 h=36` | 844 / 844 |
 
 **Zéro déplacement perçu tant que l'API répond.** C'est ce qui rend
-`RECOMMAND_UI_DESIGN` inutile ici (voir Recommandations).
+l'arbitrage Designer inutile ici (voir Recommandations).
 
 ### Résidu assumé, ENCADRÉ et non tu
 
@@ -309,7 +309,7 @@ perdra le proxy.
 
 ## Recommandations suite
 
-**`RECOMMAND_UI_DESIGN` : NON — négation explicite et motivée.**
+**Pas de `RECOMMAND_UI_DESIGN` — négation explicite et motivée.**
 Le briefing demandait de la poser si la correction déplace visiblement les contrôles
 « en permanence, pas seulement quand la bannière est là ». **Mesuré : elle ne les
 déplace pas du tout hors bannière** — conteneur à `x=1188 y=16 w=76 h=36` avant
@@ -317,10 +317,10 @@ comme après, aux deux viewports, sur les 4 pages, et `scrollHeight === clientHe
 inchangé. Le seul déplacement (16 → 48) survient **quand la bannière est affichée**,
 c'est-à-dire quand le décalage est la correction elle-même. Rien à arbitrer.
 
-**`RECOMMAND_TEST_RUNNER` : NON.** Suite complète jouée ici (2 campagnes), portes
+**Pas de `RECOMMAND_TEST_RUNNER`.** Suite complète jouée ici (2 campagnes), portes
 locales vertes. Rien à déléguer.
 
-**`RECOMMAND_DB_EXPERT` / `RECOMMAND_SECURITY` : NON.** Aucune ligne backend, aucun
+**Pas de `RECOMMAND_DB_EXPERT`, pas de `RECOMMAND_SECURITY`.** Aucune ligne backend, aucun
 schéma, aucune surface d'authentification modifiée (les pages d'auth le sont dans
 leur seule mise en page).
 

@@ -191,8 +191,7 @@ Oracle avant chaque campagne : `/api/auth/me` → **401**, `/fr/login` → **200
   **je n'y ai pas touché** — mais c'est un arbitrage produit, pas un oubli, et il mérite d'être
   tranché explicitement plutôt que de rester implicite. Je ne l'ai pas tranché seul, comme le
   demandait le briefing.
-- Pas de `RECOMMAND_DB_EXPERT`, pas de `RECOMMAND_TEST_RUNNER`, pas de
-  `RECOMMAND_SECURITY` : rien dans cette issue ne touche la base, le backend ni la sécurité.
+- Pas de `RECOMMAND_DB_EXPERT`, pas de `RECOMMAND_TEST_RUNNER`, pas de `RECOMMAND_SECURITY` : rien dans cette issue ne touche la base, le backend ni la sécurité.
 
 ---
 

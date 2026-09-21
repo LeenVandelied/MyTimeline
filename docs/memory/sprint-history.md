@@ -6666,7 +6666,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Clôture (`/sprint end 93`, 2026-09-18) :** PR #717 `CLEAN`/`MERGEABLE`, CI 7/7 verte sur `4d43bb74` (SHA épinglé au merge via `--match-head-commit`), fusionnée dans `dev` (`54bfa066`). Contrôle de complétude vert sans `--force` ; audit présent ; milestone #94 = exactement les 2 issues du label `sprint-93` (vérifié dans les deux sens), fermé après le merge avec #711 et #695. Briefings supprimés AVANT la PR (dev protégée). Pile e2e démontée.
 **Status :** Terminé — merge PR #717 dans `dev` le 2026-09-18 (`54bfa066`), issues #711/#695 et milestone #94 fermés
 
-### Sprint 94 — 2026-09-15 → en cours (EN COURS — cohésion 1.00, Frise : clavier, plein écran, mobile)
+### Sprint 94 — 2026-09-15 → 2026-09-18 (Terminé — merge PR #725 dans dev — cohésion 1.00, Frise : clavier, plein écran, mobile)
 **Objectif :** Les raccourcis n'agissent plus derrière un formulaire ; l'édition marche en plein écran ; aucun événement caché sous la colonne sticky mobile
 **Milestone GitHub :** #95
 **Issues :** #672 (S), #706 (S, risque M), #712 (S) — 6 pts (+#677 si capacité)
@@ -6741,15 +6741,23 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée cette session.
 **Status :** Terminé — merge PR #731 dans `dev` le 2026-09-20 (`17340d50`), issues #508/#701/#713/#714 et milestone #96 fermés
 
-### Sprint 96 — 2026-09-15 → en cours (EN COURS — cohésion 0.00 assumée, Contrôles atteignables au doigt)
+### Sprint 96 — 2026-09-21 → en cours (EN COURS — clôture en attente du merge de la PR #737 — cohésion 0.00 assumée, Contrôles atteignables au doigt)
 **Objectif :** Plus de contrôle trop petit ou recouvert ; flake palette stabilisé
 **Milestone GitHub :** #97
-**Issues :** #702 (S), #633 (XS), #665 (S), #656 (XS) — 6 pts
-**Vagues (révisées au démarrage) :** V1 = #665 (Playwright exclusif) ∥ #633 (code+spec, sans run) | V2 = #702 (Playwright exclusif, 10 runs) | V3 = #656
-**Écart au plan architect :** #665 passe AVANT #702. #665 restructure la grille de `palette-color-picker.tsx` (6×2) et change donc l'ordre de navigation clavier que `sprint-84-palette.spec.ts:128` exerce — stabiliser le flake avant cette restructuration invaliderait la preuve des 10 runs.
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 93 (drawers voisins), Sprint 95 (#714 position des overlays)
-**Status :** En cours (démarré 2026-09-21, branche `claude/sprint-96-start-b98611`)
+**Issues livrées (4) :** #665 (S), #633 (XS), #702 (S), #656 (XS) — 6 pts
+**Vagues exécutées :** V1 = #665 (Playwright exclusif) ∥ #633 (code + spec, sans exécution) | V2 = #702 (+ exécution de la spec de #633) | V3 = #656
+**Écart au plan architect :** #665 passé AVANT #702 — la grille 6×2 change l'ordre de navigation clavier qu'exerce `sprint-84-palette.spec.ts:128` ; stabiliser le flake avant aurait invalidé la preuve des 10 runs.
+**Migrations Flyway :** aucune | **BR impactées :** aucune (a11y / géométrie / stabilité de test)
+**Commits :** 12 sur la branche `claude/sprint-96-start-b98611` — code : `237a89f6` (#633) + `3ef041a1` (prettier), `14363a50` (#665), `efe88983` (#702, test seul), `362418a9` (#656), `7301c1b7` (correction de review) ; le reste = docs de processus.
+**Reviews :** batch — 0 CRITIQUE / 1 MAJEUR / 2 MINEURS. MAJEUR RÉSOLU (`7301c1b7`) : la spec de garde de #665 ne tournait qu'à 375 px alors que le défaut avait été mesuré à 1280 px. 1 MINEUR résolu par la même correction (renvoi de couverture faux), 1 MINEUR → follow-up (commentaire #656 dupliqué 4×). Cycle 2 sur le commit de correction : 0 finding.
+**Tests :** Vitest 1876/1876 | E2E suite complète 440 passed / 0 failed de portée réelle (450 bruts, dont 10 « passed » VIDES `-darwin` retranchés) | #702 : 6 échecs/10 → 0/10 (invocations séquentielles), contrôle négatif 2/6 | CI 7/7 verte sur `d87bf871`, **e2e Linux compris** (références visuelles validées là où elles peuvent l'être).
+**Arbitrage ui-design (clôture) :** sémantique clavier de la grille → verdict A, navigation linéaire conservée (DEC-S96-005, `ui-design-grid-semantics.md`).
+**Écarts d'énoncé :** 3 issues sur 4 avaient une cause ou une étendue inexacte — #633 « une exception » infirmé ; #665 ligne orpheline sur 3 surfaces et non 1 ; #656 cause réelle (racine `static`) absente de l'énoncé.
+**Faux verts attrapés :** `npx prettier --check` sous RTK (« All formatted » sur un fichier refusé — attrapé par un agent, manqué une fois par le lead) ; 10 captures `-darwin` vides ; l'audit de Phase 6 du lead déclarait couvert un critère qui ne l'était pas (rectifié `d87bf871`).
+**Contrôle de complétude :** vert sans `--force` après tri — 7 signaux signalés, 6 faux positifs (négations « `RECOMMAND_X` : NON » non reconnues, PIT-S96-010), 1 vrai traité par l'arbitrage ui-design.
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S96-001…010, PAT-S96-001…004, DEC-S96-001…005, BUG-S96-001…002 ; packs pitfalls régénérés, `--check` = 0.
+**Correction d'historique :** titre du Sprint 94 rectifié (« EN COURS » alors que sa ligne `Status` disait déjà « Terminé » — la PR #730 n'avait soldé que l'un des deux).
+**Status :** En cours — PR #737 ouverte, CI verte ; merge, fermeture des issues et du milestone en attente de confirmation
 
 ### Sprint 97 — 2026-09-15 (PLANIFIÉ — cohésion 0.00 assumée, Frise lisible : chevauchements et encre)
 **Objectif :** Les occurrences qui se chevauchent restent cliquables ; l'encre la plus claire passe le contraste
