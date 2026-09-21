@@ -157,7 +157,9 @@ export function BottomSheet({
           top: keyboardOpen ? `${offsetTop}px` : undefined,
         }}
       >
-        {/* Grabber décoratif + zone de swipe-down. */}
+        {/* Grabber décoratif + zone de swipe-down. 28 px (`h-7`) VOULUS : exemptés
+            du seuil 44 px par WCAG 2.5.8 « Equivalent » tant que le bouton croix
+            reste 44×44 et Escape câblé (#739, cf. `ds/a11y-audit.md`). */}
         <div
           className="flex h-7 shrink-0 cursor-grab touch-none items-center justify-center"
           onPointerDown={onGrabberPointerDown}

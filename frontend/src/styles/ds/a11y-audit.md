@@ -110,7 +110,16 @@ Focus-trap + `Escape` déjà câblés (audit DS). Restent les attributs.
   `role="alertdialog"` (et non `dialog`) + `aria-modal="true"` +
   `aria-labelledby` (« Supprimer cet événement ? ») + `aria-describedby`
   (le récap). Le focus initial va sur le bouton **non destructif** (« Annuler »).
-- ⚠️ **Touch targets** mobile : `✕` et grabber → zone 44×44 (cf. Mobile Form).
+- ⚠️ **Touch targets** mobile : `✕` → zone 44×44 (cf. Mobile Form).
+- ✅ **Grabber (poignée de swipe) — exempté, 28 px conservés (#739, S99, DEC-S99-002).**
+  WCAG 2.5.8 admet l'exception « Equivalent » : la même action (fermer) est
+  offerte sur le même panneau par un contrôle conforme — bouton `✕` 44×44 +
+  `Escape` ; ce même bouton satisfait 2.5.7 (alternative mono-pointeur au
+  glisser). Vaut pour les deux sheets : réglages mobiles
+  (`settings/mobile/BottomSheet.tsx`, zone `h-7`) et frise
+  (`.mt-sheet__grabber-zone`, `timeline.css`). Condition de l'exemption : le
+  `✕` reste ≥ 44×44 et `Escape` reste câblé — retirer l'un des deux
+  ré-ouvre l'obligation d'agrandir la poignée.
 - ✅ Cachet d'éphéméride décoratif → `aria-hidden="true"` (déjà du décor).
 
 ---
@@ -146,7 +155,7 @@ naviguer caractère par caractère ni élément décoratif par élément décora
 | Composant | Attributs requis |
 |---|---|
 | **Dialog** | `role="dialog"` (`alertdialog` si destructif), `aria-modal="true"`, `aria-labelledby`, `aria-describedby`, focus-trap, `Escape`, restauration du focus déclencheur |
-| **Bottom sheet (mobile)** | idem Dialog + grabber `aria-hidden="true"` + bouton/`Escape` équivalents au swipe |
+| **Bottom sheet (mobile)** | idem Dialog + grabber `aria-hidden="true"` + bouton/`Escape` équivalents au swipe (ce sont eux qui exemptent la poignée de 28 px du seuil 44, #739) |
 | **Button / IconButton** | `aria-label` si icône seule ; `aria-pressed` pour les toggles ; `aria-disabled` + `title` pour `data-net="offline"` |
 | **Input / Textarea / Select** | `<label for>` ou `aria-labelledby` ; erreurs via `aria-describedby` + `aria-invalid="true"` ; Select = pattern listbox (`aria-activedescendant`, déjà implémenté) |
 | **Switch / Checkbox / Radio** | `role` natif + `aria-checked` ; cible ≥ 44×44 sur mobile |
