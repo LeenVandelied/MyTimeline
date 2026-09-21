@@ -125,6 +125,44 @@ describe('#709 layoutLane — empilage en rangées (maquette `layoutLane`)', () 
   })
 })
 
+describe('cas limites (#748)', () => {
+  it('widthPx = 0 : l’occurrence occupe un point ; un voisin dans le gap ouvre une rangée, au-delà il réutilise la rangée 0', () => {
+    // a et b commencent tous deux à 100, largeur nulle : gap (8 px) non respecté → 2 rangées.
+    const overlap = layoutLane([evt('a', 100, 0), evt('b', 100, 0)], desktop)
+    expect(overlap.rows).toBe(2)
+    expect(overlap.rowOf).toEqual([0, 1])
+
+    // c commence à 108 (= fin de a 100 + gap 8) : rangée 0 libre.
+    const reuse = layoutLane([evt('a', 100, 0), evt('c', 108, 0)], desktop)
+    expect(reuse.rows).toBe(1)
+    expect(reuse.rowOf).toEqual([0, 0])
+  })
+
+  it('leftPx négatif (événement commencé avant le début visible) : tri et « première rangée libre » tiennent', () => {
+    // a commence avant 0 (fin à -50+100=50) ; b à 58 (= 50 + gap 8) tient sur la même rangée.
+    const sameRow = layoutLane([evt('a', -50, 100), evt('b', 58, 20)], desktop)
+    expect(sameRow.rows).toBe(1)
+    expect(sameRow.rowOf).toEqual([0, 0])
+
+    // b commence trop tôt (57 < 50 + 8) → 2e rangée.
+    const overlap = layoutLane([evt('a', -50, 100), evt('b', 57, 20)], desktop)
+    expect(overlap.rows).toBe(2)
+    expect(overlap.rowOf).toEqual([0, 1])
+  })
+
+  it('deux occurrences strictement identiques (même position, même durée) : 2 rangées, ordre d’entrée conservé', () => {
+    const layout = layoutLane([evt('x', 100, 50), evt('y', 100, 50)], desktop)
+    expect(layout.rows).toBe(2)
+    expect(layout.rowOf).toEqual([0, 1])
+    expect(layout.rowByEventId.get('x')).toBe(0)
+    expect(layout.rowByEventId.get('y')).toBe(1)
+    // Cohérence lines/posInRow pour chaque événement : lines[rowOf[i]][posInRow[i]] === i.
+    layout.rowOf.forEach((row, i) => {
+      expect(layout.lines[row][layout.posInRow[i]]).toBe(i)
+    })
+  })
+})
+
 describe('#709 hauteur de lane (DEC-S97-003)', () => {
   /** Formule desktop de la maquette. */
   const maquetteDesktop = (rows: number) => Math.max(46, 10 * 2 + rows * 26 + (rows - 1) * 8)
