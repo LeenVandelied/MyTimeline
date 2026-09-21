@@ -6848,7 +6848,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 1/4 (hors item soldé).
 **Status :** Terminé — PR #753 mergée, issues #738/#739/#459 et milestone #100 fermés après merge
 
-### Sprint 100 — 2026-09-21 (En cours — cohésion 1.00, croix de fermeture et FAB atteignables)
+### Sprint 100 — 2026-09-21 (Exécuté — PR vers dev, cohésion 1.00, croix de fermeture et FAB atteignables)
 **Objectif :** croix de fermeture des dialogues et bottom sheets toujours atteignable après défilement ; dernier élément des écrans mobiles non recouvert par le FAB
 **Milestone GitHub :** #101
 **Issues :** #732, #740 (même cause, un seul agent), #480 — #754 exclue par le dev au démarrage (dans le milestone sans l'étiquette)
@@ -6856,7 +6856,17 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Depend de :** aucune
 **Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-100/architect-plans.md`) — pas de `/sprint plan`
-**Status :** En cours
+**Commits :** 263465ce (#480), 0eb0a59a (#732, #740), 1c23a71b (test structurel de l'ancre, retour de review)
+**Arbitrage dev en cours de sprint :** passer `DialogContent` de `grid` à `flex` corrige aussi un débordement horizontal existant de la sheet produit mobile (scrollWidth 448/388, champs coupés). Le texte se replie, la sheet se plafonne à 92vh dès 390×844, et la croix y est entièrement recouverte par le toast d'erreur → **décision B #714 étendue au régime TALL** (option 1). `sprint-95-toast-overlap` réécrit : `scrollLeft` neutralisé, garde de largeur, TALL = recouvrement total. Les 3,5 px « acceptés » au S99 étaient un artefact du débordement.
+**Écarts d'énoncé :** #480 : seuil `md` (768) et non `lg` ; la réserve est sur `shell-main` et couvre les 5 écrans (l'argument « le dashboard a un AppFooter » était faux).
+**Tests :** Vitest 152 fichiers / 1957 verts | E2E suite complète sous `next build`+`next start` : 495 verts, 8 sautés, 1 rouge attendu (armement visuel `sprint-77`, hors Linux) | `next build` et `format:check` verts
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (résolu par `1c23a71b`) / 2 MINEURS (1 sans défaut, 1 hors diff → follow-up) ; cycle 2 sur le correctif
+**Follow-ups proposés (à trier en /sprint end) :**
+  - Fond de la croix pour la lisibilité quand le contenu défile dessous [XS | design] (#732/#740)
+  - Défilement interne de `dashboard-landscape` sous le FAB [XS | design] (#480)
+  - JSDoc contradictoire « swipe-down » de `ProductDrawer`/`CategoryDrawer` [XS | design] (review)
+**#754 :** exclue par le dev, déplacée du milestone Sprint 100 vers Sprint 101 (toujours sans étiquette `sprint-101`)
+**Status :** PR ouverte — en attente de CI et de `/sprint end 100`
 
 ### Matrice de conflits inter-sprints (S93-S97)
 
