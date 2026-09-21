@@ -6930,3 +6930,19 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - Commentaire #85 [XS] et compteur br-auth [XS] → absorbés (commit de clôture)
   Ratio discard 1/7.
 **Status :** Terminé — PR #760 mergée, issues #733/#735/#754/#757/#758 et milestone #102 fermés après merge
+
+### Sprint 102 — 2026-09-22 → (En cours — cohésion ≈ 0.40, suites du S101 : 403 signalé une fois, force de mot de passe Unicode, cibles tactiles restantes)
+**Objectif :** un 403 déjà affiché dans un drawer ne déclenche plus le toast global ; l'indicateur de force suit la sémantique Unicode ; le test des réglages voit les interrupteurs ; feuille d'actions de la frise, fenêtre de lecture et CTA d'état vide mesurés à 375 px
+**Milestone GitHub :** #103
+**Issues :** #761, #762, #763, #764 (étiquette `sprint-102` et milestone posés par le lead au démarrage — périmètre arbitré par le dev : les 4 suites du S101)
+**Vagues :** V1 = A (#761, #762, Vitest) ∥ B (#763, #764, Playwright exclusif)
+**Migrations Flyway :** aucune
+**Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-102/architect-plans.md`) — pas de `/sprint plan`
+**Branche :** `claude/sprint-102-start-0f4450` (worktree, pas de `sprint/102`)
+**Commits :** 22cb2de7 (#761), cd8f5e63 (#762), 67ee5618 (#763, spec seule), a535a960 (#764, spec seule), 80aa644e (#761, retour de review), 1c3bc02f (#763, retour de review), + commit docs avant PR
+**Écarts d'énoncé :** #761 : `TimelineEditHost` ne gère PAS le 403 inline (message générique, le toast y est le seul porteur de la cause) → hors périmètre, suite proposée ; opt-out PAR REQUÊTE (champ axios typé `inlineHandledStatuses`, restreint au 403) et non par URL ; #762 : symbole = `[^\p{L}\p{M}\p{N}]` (plus large que l'énoncé) ; #764 : aucune cible < 44 px → aucune correction de production ; fenêtre de lecture = `TimelineBottomSheet` ; WeekAgenda/ProductList non rendus à 375 px (absence assertée)
+**Erreur du lead :** contre-vérification #764 fausse — les testids `timeline-actionsheet-{edit,delete,cancel}` existent (grep `--include` mal formé sous zsh) ; sans conséquence, l'agent l'a relevée
+**Tests :** Vitest 157 fichiers / 1997 verts | `next build`, `lint`, `format:check` verts | E2E suite complète contre `next build`+`next start` : 499 verts, 8 sautés, 2 rouges hors sprint (`sprint-77` armement darwin attendu ; `sprint-101-fab-landscape:271` préexistant prouvé par A/B sur `origin/dev`)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (2 résolus : `80aa644e`, `1c3bc02f` ; factorisation de `measureControls` → suite) ; cycle 2 relu par le lead : OK
+**Audit tests :** `docs/memory/audits/sprint-102-test-coverage.md`
+**Status :** En cours — PR ouverte, en attente de `/ai-env:sprint end 102`
