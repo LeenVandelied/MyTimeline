@@ -1,6 +1,12 @@
 import { test, expect, type Page } from '@playwright/test'
 import { EVENT_PALETTE } from '../src/lib/event-palette'
-import { waitForFonts } from './support/contrast'
+import {
+  readStable,
+  waitForFonts,
+  WCAG_AA_NON_TEXT,
+  WCAG_AA_NORMAL,
+  type TextRendering,
+} from './support/contrast'
 
 /**
  * Sprint 103 — #612 : « Comment ça marche » devient une FRISE DE CAS D'USAGE à 4 jalons.
@@ -247,6 +253,109 @@ for (const scheme of SCHEMES) {
         `débordement horizontal à 375 px : ${g.docScrollWidth} > ${g.docClientWidth}`,
       ).toBeLessThanOrEqual(g.docClientWidth)
       expect(g.featuresSections).toBe(0)
+    })
+  })
+}
+
+/**
+ * #615 — CONTRASTE DES ENCRES DÉCORATIVES REBASCULÉES SUR LA RAMPE NEUTRE.
+ *
+ * L'accent ne pare plus la section : étiquettes (maquette : accent), surtitre et textes
+ * sont en `ink-muted`, titres en `ink`. Tout cela est du TEXTE : seuil 4,5:1 (1.4.3),
+ * y compris l'étiquette mono 13 px, loin du « grand texte ». Mesure par `readStable`
+ * (fond composité des ancêtres, helper #337, constantes du dépôt — PIT-S61-004).
+ *
+ * PASTILLES ET FILET : NON soumis au 3:1 de 1.4.11. Ils ne portent aucune information
+ * que le texte du jalon ne porte déjà (`aria-hidden`, couleur = rythme visuel), et
+ * `rule-strong` est un filet DÉCORATIF par charte (`colors.css` : `rule`/`rule-strong`
+ * décoratifs, `rule-emphasis` pour les affordances). Leurs ratios sont RELEVÉS en
+ * annotation pour que la décision reste révisable sur pièce, pas assertés.
+ *
+ * CONTRÔLE NÉGATIF PERMANENT (PIT-S97-001) : une feuille injectée repeint les
+ * étiquettes en `ink-faint` — un consommateur TEXTE — et la mesure DOIT tomber sous
+ * 4,5:1 dans les deux thèmes. Sans lui, un sélecteur qui ne mesurerait rien serait
+ * vert par vacuité.
+ */
+const TEXT_TARGETS = [
+  { label: 'surtitre', css: '#how-it-works > div > p:first-child' },
+  { label: 'h2', css: '#how-it-works h2' },
+  { label: 'paragraphe', css: '#how-it-works h2 + p' },
+  { label: 'étiquette', css: '[data-testid="landing-frieze-tag"]' },
+  { label: 'titre de jalon', css: '[data-testid="landing-frieze-milestone"] h3' },
+  { label: 'texte de jalon', css: '[data-testid="landing-frieze-milestone"] h3 + p' },
+] as const
+
+function note(r: TextRendering, tag: string): void {
+  test.info().annotations.push({
+    type: 'contraste',
+    description: `${tag} ${r.foreground} sur ${r.background} = ${r.ratio.toFixed(2)}:1`,
+  })
+}
+
+for (const scheme of SCHEMES) {
+  test.describe(`Frise — contraste des encres neutres (#615) — ${scheme}`, () => {
+    test('surtitre, titres, étiquettes et textes ≥ 4,5:1', async ({ page }) => {
+      await openLanding(page, 1280, scheme)
+      let measured = 0
+      for (const { label, css } of TEXT_TARGETS) {
+        const all = page.locator(css)
+        const count = await all.count()
+        expect(count, `${label} : aucune cible (${css})`).toBeGreaterThan(0)
+        for (let i = 0; i < count; i++) {
+          const r = await readStable(all.nth(i))
+          const tag = `${scheme}/${label} ${i + 1}`
+          note(r, tag)
+          expect
+            .soft(r.effectiveOpacity, `${tag} : section pas encore révélée`)
+            .toBeGreaterThan(0.99)
+          expect
+            .soft(
+              r.ratio,
+              `${tag} ${r.foreground} sur ${r.background} = ${r.ratio.toFixed(2)}:1 (seuil 4,5)`,
+            )
+            .toBeGreaterThanOrEqual(WCAG_AA_NORMAL)
+          measured++
+        }
+      }
+      // 1 surtitre + 1 h2 + 1 paragraphe + 4 × (étiquette, titre, texte).
+      expect(measured, 'nombre de lectures').toBe(15)
+
+      // Relevé (non asserté) des pastilles et du filet — cf. bloc de tête.
+      for (const [i, role] of EXPECTED_ROLES.entries()) {
+        const li = page.getByTestId('landing-frieze-milestone').nth(i)
+        const dot = await readStable(li.getByTestId('landing-frieze-dot'), 3_000, 'backgroundColor')
+        note(
+          dot,
+          `${scheme}/pastille ${role} (relevé, seuil 1.4.11 ${WCAG_AA_NON_TEXT} non requis)`,
+        )
+      }
+      const rule = await readStable(
+        page.getByTestId('landing-frieze-rule').first(),
+        3_000,
+        'backgroundColor',
+      )
+      note(rule, `${scheme}/filet rule-strong (relevé, décoratif)`)
+    })
+
+    test('ARMEMENT : des étiquettes en `ink-faint` font tomber la mesure sous 4,5:1', async ({
+      page,
+    }) => {
+      await openLanding(page, 1280, scheme)
+      await page.addStyleTag({
+        content:
+          '[data-testid="landing-frieze-tag"] { color: var(--color-ink-faint) !important; transition: none !important }',
+      })
+      const tags = page.getByTestId('landing-frieze-tag')
+      await expect(tags).toHaveCount(4)
+      for (let i = 0; i < 4; i++) {
+        const r = await readStable(tags.nth(i))
+        note(r, `${scheme}/étiquette ${i + 1} MUTÉE ink-faint`)
+        expect(
+          r.ratio,
+          `la mutation doit rougir la mesure : ${r.foreground} sur ${r.background} = ` +
+            `${r.ratio.toFixed(2)}:1 — si ≥ 4,5, le sélecteur ne mesure pas l'étiquette`,
+        ).toBeLessThan(WCAG_AA_NORMAL)
+      }
     })
   })
 }
