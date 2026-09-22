@@ -521,7 +521,8 @@ test.describe('Landing — aucun débordement horizontal, tous paliers', () => {
       await waitForFonts(page)
 
       const panel = await openMenu(page)
-      await expect(panel.locator('nav a')).toHaveCount(3)
+      // #613 : `#testimonials` retirée — restent `#features` et `#how-it-works`.
+      await expect(panel.locator('nav a')).toHaveCount(2)
       const login = panel.getByTestId(LANDING_CTA.menuLogin)
       await expect(login).toHaveCount(1)
       await expect(login).toHaveAttribute('href', '/fr/login')

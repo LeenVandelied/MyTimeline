@@ -120,7 +120,6 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   const navLinks = [
     { href: '#features', label: t('common.landing.navigation.features') },
     { href: '#how-it-works', label: t('common.landing.navigation.howItWorks') },
-    { href: '#testimonials', label: t('common.landing.navigation.testimonials') },
   ]
 
   return (

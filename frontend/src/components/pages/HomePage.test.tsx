@@ -19,16 +19,27 @@ describe('HomePage', () => {
     expect(screen.getByText('common.landing.hero.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.features.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.howItWorks.title')).toBeInTheDocument()
-    expect(screen.getByText('common.landing.testimonials.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.cta.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.footer.description')).toBeInTheDocument()
   })
 
   it('expose les ancres ciblées par la navigation et le pied de page', () => {
     const { container } = render(<HomePage params={{ locale: 'fr' }} />)
-    for (const id of ['features', 'how-it-works', 'testimonials']) {
+    for (const id of ['features', 'how-it-works']) {
       expect(container.querySelector(`#${id}`)).not.toBeNull()
     }
+  })
+
+  /**
+   * #613 — la section témoignages est retirée (avis nominatifs inventés). Elle ne doit
+   * pas revenir par un simple ré-import : ni la section, ni son titre, ni aucun lien
+   * vers son ancre.
+   */
+  it('ne rend plus la section témoignages ni aucun lien vers elle (#613)', () => {
+    const { container } = render(<HomePage params={{ locale: 'fr' }} />)
+    expect(container.querySelector('#testimonials')).toBeNull()
+    expect(container.querySelector('a[href="#testimonials"]')).toBeNull()
+    expect(container.innerHTML).not.toMatch(/testimonial/i)
   })
 
   it('propage la locale reçue aux sections qui construisent des liens', () => {

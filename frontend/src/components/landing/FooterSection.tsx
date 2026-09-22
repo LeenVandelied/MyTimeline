@@ -75,11 +75,6 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
                     {t('common.landing.footer.howItWorks')}
                   </a>
                 </li>
-                <li>
-                  <a href="#testimonials" className="hover:text-accent transition">
-                    {t('common.landing.footer.testimonials')}
-                  </a>
-                </li>
               </ul>
             </div>
             <div>

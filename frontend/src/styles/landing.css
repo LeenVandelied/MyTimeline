@@ -78,18 +78,6 @@
  * ici, le PRÉFIXER : un `@keyframes pulse` dans cette feuille (chargée après
  * `globals.css`) a déjà écrasé l'`animate-pulse` de Tailwind dans toute l'application. */
 
-/* Cartes de témoignages — même tier de bordure décorative que `.feature-card`. */
-.testimonial-card {
-  transition: all 0.3s ease;
-  border-color: var(--color-rule);
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-rule-strong);
-}
-
 /* Liens de navigation — le soulignement au survol est l'affordance de lien, donc
  * `accent` (rôle « today / active / links » du DS). Trait plein : le DS proscrit les
  * dégradés décoratifs. Mesuré : 4.59:1 (clair/bg) à 6.94:1 (sombre/bg). */

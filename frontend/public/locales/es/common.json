@@ -98,8 +98,6 @@
     "previous": "Anterior",
     "next": "Siguiente",
     "today": "Hoy",
-    "showMore": "Ver más",
-    "showLess": "Ver menos",
     "close": "Cerrar"
   },
   "loading": {
@@ -141,7 +139,6 @@
     "navigation": {
       "features": "Características",
       "howItWorks": "Cómo funciona",
-      "testimonials": "Testimonios",
       "menuOpen": "Abrir el menú",
       "menuClose": "Cerrar el menú",
       "menuTitle": "Menú"
@@ -238,10 +235,6 @@
         "description": "Visualiza, sigue y modifica fácilmente todos tus plazos en un único lugar."
       }
     },
-    "testimonials": {
-      "title": "Qué dicen nuestros usuarios",
-      "subtitle": "Descubre cómo Mi Timeline ha transformado la organización diaria de nuestros usuarios"
-    },
     "cta": {
       "title": "¿Listo para transformar tu organización?",
       "subtitle": "Comienza ahora y mejora tu productividad",
@@ -253,7 +246,6 @@
       "product": "Producto",
       "features": "Características",
       "howItWorks": "Cómo funciona",
-      "testimonials": "Testimonios",
       "legal": "Legal",
       "terms": "Términos de servicio",
       "privacy": "Política de privacidad",
@@ -271,7 +263,6 @@
     "product": "Productos",
     "features": "Características",
     "howItWorks": "Cómo funciona",
-    "testimonials": "Testimonios",
     "legal": "Legal"
   },
   "register": {

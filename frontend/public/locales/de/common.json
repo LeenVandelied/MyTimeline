@@ -98,8 +98,6 @@
     "previous": "Zurück",
     "next": "Weiter",
     "today": "Heute",
-    "showMore": "Mehr anzeigen",
-    "showLess": "Weniger anzeigen",
     "close": "Schließen"
   },
   "loading": {
@@ -141,7 +139,6 @@
     "navigation": {
       "features": "Funktionen",
       "howItWorks": "So funktioniert es",
-      "testimonials": "Bewertungen",
       "menuOpen": "Menü öffnen",
       "menuClose": "Menü schließen",
       "menuTitle": "Menü"
@@ -238,10 +235,6 @@
         "description": "Visualisieren, verfolgen und ändern Sie alle Ihre Fristen einfach an einem Ort."
       }
     },
-    "testimonials": {
-      "title": "Das sagen unsere Nutzer",
-      "subtitle": "Erfahren Sie, wie Meine Timeline die tägliche Organisation unserer Nutzer verändert hat"
-    },
     "cta": {
       "title": "Bereit, Ihre Organisation zu transformieren?",
       "subtitle": "Beginnen Sie jetzt und verbessern Sie Ihre Produktivität",
@@ -253,7 +246,6 @@
       "product": "Produkt",
       "features": "Funktionen",
       "howItWorks": "So funktioniert es",
-      "testimonials": "Bewertungen",
       "legal": "Rechtliches",
       "terms": "Nutzungsbedingungen",
       "privacy": "Datenschutzrichtlinie",
@@ -271,7 +263,6 @@
     "product": "Produkte",
     "features": "Funktionen",
     "howItWorks": "So funktioniert es",
-    "testimonials": "Bewertungen",
     "legal": "Rechtliches"
   },
   "register": {

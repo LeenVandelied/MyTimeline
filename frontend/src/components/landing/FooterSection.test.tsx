@@ -38,10 +38,8 @@ describe('FooterSection', () => {
       'href',
       '#how-it-works',
     )
-    expect(screen.getByText('common.landing.footer.testimonials')).toHaveAttribute(
-      'href',
-      '#testimonials',
-    )
+    // #613 — section témoignages retirée : plus d'ancre vers `#testimonials`.
+    expect(screen.queryByText('common.landing.footer.testimonials')).not.toBeInTheDocument()
   })
 
   it('n’utilise aucune couleur hex hardcodée', () => {

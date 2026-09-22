@@ -138,8 +138,6 @@
     "previous": "Précédent",
     "next": "Suivant",
     "today": "Aujourd'hui",
-    "showMore": "Voir plus",
-    "showLess": "Voir moins",
     "close": "Fermer"
   },
   "loading": {
@@ -181,7 +179,6 @@
     "navigation": {
       "features": "Fonctionnalités",
       "howItWorks": "Comment ça marche",
-      "testimonials": "Témoignages",
       "menuOpen": "Ouvrir le menu",
       "menuClose": "Fermer le menu",
       "menuTitle": "Menu"
@@ -278,10 +275,6 @@
         "description": "Visualisez, suivez et modifiez facilement toutes vos échéances en un seul endroit."
       }
     },
-    "testimonials": {
-      "title": "Ce que disent nos utilisateurs",
-      "subtitle": "Découvrez comment Ma Timeline a transformé l'organisation quotidienne de nos utilisateurs"
-    },
     "cta": {
       "title": "Prêt à transformer votre organisation ?",
       "subtitle": "Commencez dès maintenant et améliorez votre productivité",
@@ -293,7 +286,6 @@
       "product": "Produit",
       "features": "Fonctionnalités",
       "howItWorks": "Comment ça marche",
-      "testimonials": "Témoignages",
       "legal": "Légal",
       "terms": "Conditions d'utilisation",
       "privacy": "Politique de confidentialité",
@@ -311,7 +303,6 @@
     "product": "Produits",
     "features": "Fonctionnalités",
     "howItWorks": "Comment ça marche",
-    "testimonials": "Témoignages",
     "legal": "Légal"
   }
 }

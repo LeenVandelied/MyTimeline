@@ -20,7 +20,7 @@ vi.mock('next-intl', () => ({
 }))
 
 describe('HeaderSection', () => {
-  it('rend les trois ancres de navigation', () => {
+  it('rend les ancres de navigation, sans lien vers la section témoignages retirée (#613)', () => {
     render(<HeaderSection locale="fr" />)
     expect(screen.getByText('common.landing.navigation.features')).toHaveAttribute(
       'href',
@@ -30,10 +30,7 @@ describe('HeaderSection', () => {
       'href',
       '#how-it-works',
     )
-    expect(screen.getByText('common.landing.navigation.testimonials')).toHaveAttribute(
-      'href',
-      '#testimonials',
-    )
+    expect(screen.queryByText('common.landing.navigation.testimonials')).not.toBeInTheDocument()
   })
 
   it('préfixe les liens d’authentification par la locale reçue', () => {

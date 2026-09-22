@@ -98,8 +98,6 @@
     "previous": "Previous",
     "next": "Next",
     "today": "Today",
-    "showMore": "Show more",
-    "showLess": "Show less",
     "close": "Close"
   },
   "loading": {
@@ -141,7 +139,6 @@
     "navigation": {
       "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials",
       "menuOpen": "Open menu",
       "menuClose": "Close menu",
       "menuTitle": "Menu"
@@ -238,10 +235,6 @@
         "description": "Visualize, track, and easily modify all your deadlines in one place."
       }
     },
-    "testimonials": {
-      "title": "What our users say",
-      "subtitle": "Discover how My Timeline has transformed our users' daily organization"
-    },
     "cta": {
       "title": "Ready to transform your organization?",
       "subtitle": "Start now and improve your productivity",
@@ -253,7 +246,6 @@
       "product": "Product",
       "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials",
       "legal": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
@@ -271,7 +263,6 @@
     "product": "Product",
     "features": "Features",
     "howItWorks": "How it works",
-    "testimonials": "Testimonials",
     "legal": "Legal"
   },
   "register": {
