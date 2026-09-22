@@ -13,9 +13,12 @@
     "subtitle": "Your upcoming deadlines, at a glance."
   },
   "density": {
-    "label": "Event density over {days} days",
-    "eyebrow": "Density · {days} days",
+    "label": "Event density over the next {days} days",
+    "eyebrow": "Next {days} days",
     "title": "Timeline overview",
+    "today": "Today",
+    "window": "Window · {range}",
+    "viewport": "{days}-day preview window",
     "empty": "No events in this period",
     "openTimeline": "Open timeline"
   },
@@ -60,9 +63,11 @@
   "kpi": {
     "title": "At a glance",
     "label": "Key indicators",
-    "activeProducts": "{count, plural, one {active product} other {active products}}",
-    "eventsThisMonth": "{count, plural, one {event this month} other {events this month}}",
-    "currentStreak": "{count, plural, one {day streak} other {days streak}}"
+    "week": "You have <weekNum>{weekValue}</weekNum> {week, plural, one {event} other {events}} this week, including <recurringNum>{recurringValue}</recurringNum> recurring.",
+    "dueSoon": "<dueNum>{dueValue}</dueNum> {due, plural, one {falls} other {fall}} due within <daysNum>{daysValue}</daysNum> {days, plural, one {day} other {days}}.",
+    "ongoing": "<ongoingNum>{ongoingValue}</ongoingNum> {ongoing, plural, one {coverage period is} other {coverage periods are}} currently active.",
+    "busiestCategory": "Busiest category this month: <categoryName>{category}</categoryName>.",
+    "busiestCategoryNone": "—"
   },
   "productList": {
     "title": "Your products",

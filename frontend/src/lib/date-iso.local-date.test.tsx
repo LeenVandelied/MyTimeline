@@ -165,40 +165,40 @@ describe('#652 — dashboard', () => {
     expect(el?.textContent).toBe(fmt.format(civil(2026, 7, 16)))
   })
 
-  it('useDashboardData : série courante et KPI du mois comptent le jour CIVIL', () => {
+  it('useDashboardData : les KPIs « En bref » (#640) comptent le jour CIVIL', () => {
+    const single = (id: string, startDate: string) => ({
+      id,
+      title: `Event ${id}`,
+      startDate,
+      endDate: startDate,
+      archived: false,
+      productId: 'p1',
+      type: 'single',
+    })
     productsFixture.current = [
       {
         id: 'p1',
         name: 'Produit A',
         color: null,
         category: { id: 'c1', name: 'Cat', color: '#4FA459' },
-        events: [
-          {
-            id: 'e1',
-            title: 'Aujourd’hui',
-            startDate: '2026-07-15',
-            endDate: '2026-07-15',
-            archived: false,
-            productId: 'p1',
-            type: 'single',
-          },
-          {
-            id: 'e2',
-            title: 'Août',
-            startDate: '2026-08-01',
-            endDate: '2026-08-01',
-            archived: false,
-            productId: 'p1',
-            type: 'single',
-          },
-        ],
+        // Lundi 13 (début de semaine ISO) et mercredi 29 juillet (J+14).
+        events: [single('e1', '2026-07-13'), single('e3', '2026-07-29')],
+      },
+      {
+        id: 'p2',
+        name: 'Produit B',
+        color: null,
+        category: { id: 'c2', name: 'Août', color: '#4FA459' },
+        events: [single('e2', '2026-08-01'), single('e4', '2026-08-01')],
       },
     ]
     const fixedNow = now()
     const { result } = renderHook(() => useDashboardData('u1', fixedNow))
-    // Sans le correctif : e1 = 14 juil. 20 h (série 0) ; e2 = 31 juil. 20 h (compté en juillet).
-    expect(result.current.kpis.currentStreak).toBe(1)
-    expect(result.current.kpis.eventsThisMonth).toBe(1)
+    // Sans le correctif : e1 = dim. 12 juil. 20 h → hors semaine (0) ; e2/e4 = 31 juil.
+    // 20 h → « Août » compterait 2 en juillet, ex æquo avec « Cat » et devant elle.
+    expect(result.current.kpis.week).toBe(1)
+    expect(result.current.kpis.dueSoon).toBe(1)
+    expect(result.current.kpis.busiestCategory).toBe('Cat')
   })
 })
 

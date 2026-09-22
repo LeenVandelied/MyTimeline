@@ -1796,6 +1796,18 @@ Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet 
 ## PIT-S107-002 — Un `sr-only` dans un conteneur `overflow-x-auto` NON positionné fait défiler la page
 `sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608)
 
+
+## PIT-S108-001 — jsdom n'a pas de `PointerEvent` : un test de glisser passe vert sans rien prouver
+Sous jsdom 25, `fireEvent.pointerDown/Move(el, { clientX })` produit un `Event` nu. `e.clientX` vaut alors `undefined`, le calcul px→jours donne `NaN` puis 0 après bornage : le test « en glisser » passe sans qu'aucun déplacement n'ait eu lieu. Solution : polyfill LOCAL au fichier (`class extends MouseEvent` avec `pointerId`/`pointerType`, `vi.stubGlobal` en `beforeAll`, `vi.unstubAllGlobals` en `afterAll`) et espion sur `getBoundingClientRect` de la piste. Prévention : tout test pointeur asserte un DÉPLACEMENT non nul, pas seulement l'état. (Sprint 108 #623, `DensityRibbon.window.test.tsx`)
+
+
+## PIT-S108-002 — `formatRange` insère des espaces fines que `toHaveTextContent` ne normalise que d'un côté
+`Intl.DateTimeFormat#formatRange` entoure le tiret d'espaces fines (U+2009). `toHaveTextContent` normalise les blancs du texte REÇU mais pas de l'attendu : l'échec affiche deux chaînes identiques. Solution : comparer `el.textContent` avec `toBe` (Playwright `toHaveText` normalise les deux côtés). (Sprint 108 #623)
+
+
+## PIT-S108-003 — Passer un composant de `t()` à `t.rich` casse tous les mocks `(ns) => (k) => ns.k`
+« t.rich is not a function » dans chaque fichier de test qui mocke `useTranslations` et rend le composant, même indirectement (3 fichiers dashboard au S108). Solution : exposer `rich` dans le mock (`Object.assign(t, { rich: t })`) ou déplacer les assertions du composant dans un `*.intl.test.tsx` avec les vrais messages. Prévention : avant d'introduire `t.rich`, grepper les tests qui importent le composant ou son parent. Voir PAT-S83-002. (Sprint 108 #640)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

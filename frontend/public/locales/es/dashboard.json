@@ -13,9 +13,12 @@
     "subtitle": "Tus próximos vencimientos, de un vistazo."
   },
   "density": {
-    "label": "Densidad de eventos en {days} días",
-    "eyebrow": "Densidad · {days} días",
+    "label": "Densidad de eventos en los próximos {days} días",
+    "eyebrow": "Próximos {days} días",
     "title": "Vista de la cronología",
+    "today": "Hoy",
+    "window": "Ventana · {range}",
+    "viewport": "Ventana de vista previa de {days} días",
     "empty": "Sin eventos en este período",
     "openTimeline": "Abrir la cronología"
   },
@@ -60,9 +63,11 @@
   "kpi": {
     "title": "En resumen",
     "label": "Indicadores clave",
-    "activeProducts": "{count, plural, one {producto activo} other {productos activos}}",
-    "eventsThisMonth": "{count, plural, one {evento este mes} other {eventos este mes}}",
-    "currentStreak": "{count, plural, one {día de racha} other {días de racha}}"
+    "week": "Tienes <weekNum>{weekValue}</weekNum> {week, plural, one {evento} other {eventos}} esta semana, incluidos <recurringNum>{recurringValue}</recurringNum> {recurring, plural, one {recurrente} other {recurrentes}}.",
+    "dueSoon": "<dueNum>{dueValue}</dueNum> {due, plural, one {vence} other {vencen}} en los próximos <daysNum>{daysValue}</daysNum> {days, plural, one {día} other {días}}.",
+    "ongoing": "<ongoingNum>{ongoingValue}</ongoingNum> {ongoing, plural, one {periodo de cobertura está en curso} other {periodos de cobertura están en curso}} actualmente.",
+    "busiestCategory": "Categoría con más actividad este mes: <categoryName>{category}</categoryName>.",
+    "busiestCategoryNone": "—"
   },
   "productList": {
     "title": "Tus productos",

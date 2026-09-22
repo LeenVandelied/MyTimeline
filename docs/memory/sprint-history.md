@@ -7111,15 +7111,28 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 0/2.
 **Status :** Terminé — PR #814 mergée, issues #524/#609/#608 et milestone #108 fermés après merge
 
-### Sprint 108 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Tableau de bord : ruban et « En bref »)
+### Sprint 108 — 2026-09-22 → 2026-09-23 (Terminé — merge PR #817 dans dev — cohésion 0.70, Tableau de bord : ruban et « En bref »)
 **Objectif :** ruban de densité avec règle graduée et viewport déplaçable ; métriques « En bref » du handoff
-**Milestone GitHub :** #109
-**Issues :** #623 (P2, S), #640 (P3, S), #699 (P3, XS) — 5 pts
-**Vagues :** V1 = #623 ∥ #640 ∥ #699 (E2E séquentiels)
-**Migrations Flyway :** aucune
-**Dépend de :** aucune
-**À confirmer au démarrage :** synchro ruban ↔ frise ; définition de « couverture en cours » ; token de la piste vide (#699, moitié livrée par #754)
-**Status :** Planifié
+**Milestone GitHub :** #109 (fermé après merge)
+**Issues livrées (3) :** #640, #623, #699 — 5 pts
+**Arbitrages dev au démarrage :** #623 : fenêtre des 30 PROCHAINS jours, règle et viewport de 9 j, histogramme conservé, aucune synchro puisque le dashboard n'a pas de frise (DEC-S108-003) ; #640 : les 4 phrases de la maquette remplacent les 3 lignes (DEC-S108-004) ; #699 : aucun code, deux décisions consignées (DEC-S108-001/002). Ces arbitrages ont été pris sur l'extrait de maquette relevé par le lead (`sprints/sprint-108/maquette-dashboard.md`), qui a révélé que la prod montrait les 30 DERNIERS jours, un écart que l'issue ne mentionnait pas.
+**Vagues exécutées :** V1 = #640, puis V2 = #623 (séquentiel, contre le V1 parallèle de l'architect : `page.tsx`, `dashboard.json` et 4 fichiers de tests partagés) ; #699 traitée par le lead
+**Commits (4 + docs) :** `c03a98f1` #640 · `be0280ed` #623 · `69d8691b` correctif de revue (`pointerId`, multi-touch) · `6c5e69a7` docs avant PR · commit de clôture
+**Tests :** Vitest 2136/2136 | tsc, lint, format verts | `next build` OK | E2E : specs ciblées 95/95, nouvelles specs ×3 86/86, suite complète 581 verts / 9 sautés / 11 rouges hors sprint (identiques S105-S107) | 11 mutations détectées | CI 7/7 verte
+**Reviews :** reviewer groupé : 0 CRITIQUE / 0 MAJEUR / 3 MINEURS. `pointerId` corrigé (69d8691b, vérifié par mutation) ; longueur d'`occurrencesInMonth` et double passage dans `kpis.ts` non traités, sans effet mesurable
+**Audit tests :** `docs/memory/audits/sprint-108-test-coverage.md`
+**Harnais E2E :** backend `:8086` (worktree S105) ; front `next build` + `next start` `:3107` derrière un relais `:8187` qui réécrit l'`Origin` (PIT-S106-003, rejoué sans accroc). Le hook `warn-test-delegation` bloque `npx playwright test` : contourné consciemment (`SKIP_DELEGATION=1`, sortie JSON dans un fichier), la délégation au test-runner étant proscrite par la mémoire du projet
+**Vérification visuelle :** sonde jetable à 1280×800 (clair, sombre, `de`) et 375 px (fr, `de`), avec et sans données : pas de débordement, dernier titre de section à 633 px ; elle a confirmé l'écart ruban ↔ « échéances sous 14 j » sur les séries récurrentes (→ #818)
+**Écarts d'énoncé :** #623 demandait de mutualiser avec la Minimap : écarté (DEC-S108-006) ; #699 moitié livrée par #754
+**Nouveaux pitfalls / patterns / décisions :** PIT-S108-001 (jsdom sans `PointerEvent`) · PIT-S108-002 (`formatRange` et U+2009) · PIT-S108-003 (`t.rich` casse les mocks `ns.k`) · PAT-S108-001 (contrôle frère du `role="img"`) · PAT-S108-002 (filtre partagé liste/compteur) · DEC-S108-001..006 ; signal « `t.rich` par phrase » non ajouté, déjà PAT-S83-002 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 4 signalés) :**
+  - Ruban : projeter occurrences récurrentes et durées en cours [S | frontend/dashboard] → issue #818 (backlog, P2)
+  - « Cette semaine » : 7 prochains jours avec récurrences et durées (maquette) [S | frontend/dashboard] → issue #819 (backlog)
+  - « Couvertures en cours » et durées récurrentes [XS | frontend/events] → issue #820 (backlog, question produit)
+  - Hauteur de l'en-tête du ruban à 375 px [XS] → écarté (mesuré sur captures fr/de : lisible, sans débordement ; cibles à 375 px déjà suivies par #767)
+  Ratio discard 1/4.
+**Status :** Terminé — PR #817 mergée, issues #623/#640/#699 et milestone #109 fermés après merge
 
 ### Sprint 109 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
 **Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), sur-titres conformes à la maquette, restes du S90 supprimés

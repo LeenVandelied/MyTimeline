@@ -6,7 +6,6 @@ import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 import { GreetingHeader } from './GreetingHeader'
 import { DensityRibbon } from './DensityRibbon'
 import { WeekAgenda } from './WeekAgenda'
-import { KpiMarginalia } from './KpiMarginalia'
 import { ProductList } from './ProductList'
 
 /**
@@ -101,19 +100,9 @@ describe('WeekAgenda', () => {
   })
 })
 
-describe('KpiMarginalia', () => {
-  it('rend les 3 KPIs en chiffres inline', () => {
-    render(
-      <KpiMarginalia
-        kpis={{ activeProducts: 4, eventsThisMonth: 7, currentStreak: 2 }}
-        locale={LOCALE}
-      />,
-    )
-    expect(screen.getByTestId('dashboard-kpi-active-products')).toHaveTextContent('4')
-    expect(screen.getByTestId('dashboard-kpi-events-month')).toHaveTextContent('7')
-    expect(screen.getByTestId('dashboard-kpi-streak')).toHaveTextContent('2')
-  })
-})
+// #640 — `KpiMarginalia` rend ses phrases par `t.rich` : ses tests vivent dans
+// `KpiMarginalia.intl.test.tsx`, avec les VRAIS messages (le mock `ns.key` ci-dessus
+// n'a pas de `rich` et ne résoudrait ni pluriels ni balises).
 
 const product = (id: string, overrides: Partial<Product> = {}): Product => ({
   id,

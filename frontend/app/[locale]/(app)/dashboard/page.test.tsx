@@ -38,7 +38,7 @@ const emptyData: DashboardData = {
   products: [],
   events: [],
   resources: [],
-  kpis: { activeProducts: 0, eventsThisMonth: 0, currentStreak: 0 },
+  kpis: { week: 0, weekRecurring: 0, dueSoon: 0, ongoing: 0, busiestCategory: null },
   isLoading: false,
   isError: false,
   refetch: vi.fn(),
