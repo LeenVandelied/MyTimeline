@@ -45,6 +45,25 @@ interface HeroSectionProps {
  * `gap-*` et non `space-x-*` : les marges de ce dernier ne se réinitialisent pas en
  * début de ligne. Garde-fou : `HeroSection.flex-min-size.test.tsx`.
  *
+ * #682 — GABARIT `lg` DU DS SUR LES DEUX CTA. L'ancien gabarit (padding 32/24 px et
+ * corps de 27 px — l'échelle DS, pas Tailwind, cf. PIT-S49-002) donnait 406 × 90 px au
+ * CTA primaire en `fr` : plus large que la colonne de 396 px à 1024, il se repliait
+ * entre 1024 et 1279 px (396 × 132). La maquette pose `Button variant="accent"
+ * size="lg"`, dont la métrique vit dans le DS Graphite et PAS dans le `size lg` shadcn
+ * de `ui/button.tsx` (hauteur fixe de 40 px, qui couperait un libellé replié) :
+ * `ds/components/core.css` `.mt-btn--lg` (padding 12/22 px, 14 px) et
+ * `ds/components/i18n.css` `.mt-btn--wrap.mt-btn--lg` (hauteur minimale 46 px, qui tient
+ * aussi la cible tactile ≥ 44 px sous `lg`). Transcrite en utilitaires plutôt qu'en
+ * classes DS : ces classes supposent la base `.mt-btn` (hors layer, elle écraserait les
+ * utilitaires de couleur et de survol verrouillés par `landing.hover-pairing.test.ts`).
+ * `py-3` suit le token `--space-3` ; 22 px et 14 px n'ont pas de token (le DS les
+ * écrit en dur), d'où les valeurs arbitraires. `leading-snug` (1.28) plutôt que le 1.18
+ * du DS : token existant, et l'écart n'apparaît qu'en cas de repli. Rayon : celui du
+ * variant (`--radius-md`, comme `.mt-btn`). La flèche passe à 16 px (≈ 1.05em du DS) et
+ * perd sa marge : le `gap-2` du variant l'espace déjà de 8 px, comme `.mt-btn`.
+ * `whitespace-normal` + `min-w-min` restent le filet si une locale ou une largeur
+ * future ne tient plus. Verrou : `e2e/sprint-104-hero-cta-single-line.spec.ts`.
+ *
  * #610 — HERO ASYMÉTRIQUE « 30/70 ». La maquette (`Landing.dc.html`) ne pose PAS de
  * pourcentages : c'est un flex BORNÉ — texte `flex:1 1 300px; min-width:300px;
  * max-width:420px`, frise `flex:1 1 460px; min-width:340px`, gap 40px. Transcrit tel
@@ -113,16 +132,16 @@ export function HeroSection({ locale }: HeroSectionProps) {
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <Button
               asChild
-              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
+              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink h-auto min-h-[46px] min-w-min px-[22px] py-3 text-center text-[14px] leading-snug whitespace-normal transition-all"
             >
               <Link href={`/${locale}/register`} data-testid="landing-hero-cta-primary">
-                {t('common.landing.hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
+                {t('common.landing.hero.cta')} <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
-              className="border-rule-emphasis text-ink hover:bg-surface h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
+              className="border-rule-emphasis text-ink hover:bg-surface h-auto min-h-[46px] min-w-min px-[22px] py-3 text-center text-[14px] leading-snug whitespace-normal transition-all"
             >
               <a href="#how-it-works" data-testid="landing-hero-cta-secondary">
                 {t('common.landing.hero.secondary')}
