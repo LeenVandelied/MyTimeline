@@ -73,7 +73,7 @@
 			la version est donc EPINGLEE ici, comme jjwt. 0.8.13 = premiere ligne qui
 			instrumente le bytecode Java 21 sans avertissement de classfile version.
 		-->
-		<jacoco.version>0.8.13</jacoco.version>
+		<jacoco.version>0.8.15</jacoco.version>
 	</properties>
 	<dependencies>
 		<dependency>
