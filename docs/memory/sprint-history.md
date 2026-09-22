@@ -7041,7 +7041,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
 **À confirmer au démarrage :** zébrures desktop seul ou mobile aussi ; compatibilité de l'action FIT avec #593 (zoom continu)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-09-22 — arbitrages : zébrures bureau+mobile, grille verticale retirée ; plein écran au bouton seul, sans raccourci)
 
 ### Sprint 106 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Fiche produit)
 **Objectif :** fiche d'inventaire au motif du DS, désaturation des événements passés, squelette de chargement cohérent
