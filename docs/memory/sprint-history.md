@@ -7033,15 +7033,36 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Déjà traités dans le sprint : références `landing-hero` régénérées (`04b3c120`), CI Linux verte sur ces références, largeur de capture < 1340 px vérifiée, JSDoc #642 remis à jour (`8c8e7023`). Ratio discard 0/9.
 **Status :** Terminé — PR #798 mergée, issues #616/#614/#793/#682/#425 et milestone #105 fermés après merge
 
-### Sprint 105 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Frise : gouttière, zébrures, recadrage)
+### Sprint 105 — 2026-09-22 (Terminé — merge PR #803 dans dev — cohésion 0.50, Frise : gouttière, zébrures, recadrage)
 **Objectif :** gouttière de 176 px, zébrures de lanes au lieu de la grille de jours, touche F qui recadre
 **Milestone GitHub :** #106
 **Issues :** #674 (P2, S), #429 (P3, XS), #596 (P3, XS), #597 (P2, S — bug admis) — 6 pts
-**Vagues :** V1 = #674 + #429 (même agent) | V2 = #596 ∥ #597 (E2E séquentiels)
+**Vagues :** planifiées V1 = #674 + #429 | V2 = #596 ∥ #597 ; **exécutées** V1 = #674 + #429 + #596 (un agent, les trois dans `timeline.css`) | V2 = #597 — séquentiel : #597 et #674 touchent tous deux `TimelineView.tsx` sur un working tree partagé
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
-**À confirmer au démarrage :** zébrures desktop seul ou mobile aussi ; compatibilité de l'action FIT avec #593 (zoom continu)
-**Status :** Planifié
+**Arbitrages dev au démarrage :** zébrures bureau + mobile, grille verticale retirée partout ; plein écran au bouton seul, sans raccourci
+**Arbitrages du lead au démarrage :** repli `var(--lane-header-w, 160px)` supprimé plutôt qu'aligné (#429) ; F = niveau discret le plus fin où l'étendue tient, calculé d'abord en px/jour (compatible #593) ; `help.fullscreen` conservé comme `aria-label` du bouton, `help.fit` ajouté
+**Commits (5) :** `a0baf8bd` #674 + #429 · `3497a5d7` #596 · `7f4ac55c` #597 · `c2472a40` (audit + historique avant PR) · consolidation mémoire (ce commit)
+**Écarts d'énoncé :** #429 : fallback à `timeline.css:258`, pas `:161` · #597 : `case 'f'` à `TimelineView.tsx:1483`, pas `:1051` ; `computeFit` sans paramètre `rangeStart` (étendue déjà en jours depuis lui) · #596 : `.mt-lane__track` n'a aucun consommateur applicatif
+**Tests :** Vitest 2029/2029 | `next build` vert | E2E suite complète contre `next build`+`next start` : 555 verts, 8 sautés, 11 rouges hors sprint (10 captures `sprint-77` darwin ; `sprint-101-fab-landscape:271` rouge aussi sur la base `afa08f81` en A/B, #769) | baseline frise sur `ade5dba6` : 87/1 (`sprint-63:571` es, non reproduit ensuite)
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 2 MINEURS ; MAJEUR (F silencieux quand rien n'est affiché) écarté : no-op voulu, cohérent avec `+`/`-` en butée → #807 ; MINEURS documentaires non traités
+**Audit tests :** `docs/memory/audits/sprint-105-test-coverage.md`
+**Harnais E2E :** backend compilé depuis HEAD sur `:8086` + Postgres `mytimeline-e2e-postgres-e2e-1` (`:5436`) ; front sur `:3100` (`:3000` squatté par un autre projet) ; A/B de base dans un worktree jetable
+**Non vérifié :** contrôle négatif de l'adaptation `sprint-91-more-contrast` ; règle CSS de zébrure du `.dc.html` (valeur prise au handoff écrit)
+**Issues livrées (4) :** #674, #429, #596, #597 — milestone #106 fermé après merge
+**Nouveaux pitfalls / patterns / décisions :** PIT-S105-001…004 (`:nth-child` sur liste virtualisée ; `scrollLeft =` faux quand zoom et position changent ensemble ; 878 px de piste utile et 30 j de rail à 1600 px ; canvas 1×1 inapte à un alpha de 2,6 %) · PIT-S91-011 marqué périmé · PAT-S105-001…002 (token lu par les E2E ; couleur `color-mix` vérifiée en E2E) · DEC-S105-001…003 (gouttière 176 sans repli ; zébrures bureau + mobile ; F recadre, plein écran au bouton) · aucun bug ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 8 signalés, proposition du lead retenue) :**
+  - Libellé de pin coupé en bout d'étendue après F [XS | events] → issue #804 (backlog)
+  - `[`/`]`/`T` sous `scroll-behavior:smooth` quand le niveau change aussi [S | events] → issue #805 (backlog)
+  - Marge de rail de 30 j empêchant un recadrage centré [XS | events] → issue #806 (backlog)
+  - Annonce `aria-live` quand F n'a rien à cadrer (MAJEUR de review) [XS | events] → issue #807 (backlog)
+  - Primitive `.mt-lane*` sans consommateur [XS | design] → issue #808 (backlog)
+  - `--spacing-lane-header` sans consommateur [XS | design] → issue #809 (backlog)
+  - PIT-S91-011 périmé [XS | mémoire] → absorbé dans le commit de consolidation
+  - Mentions 168 px dans `patterns.md` / `decisions.md` [XS | mémoire] → absorbé dans le commit de consolidation
+  Ratio discard 0/8.
+**Status :** Terminé — PR #803 mergée, issues #674/#429/#596/#597 et milestone #106 fermés après merge
 
 ### Sprint 106 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Fiche produit)
 **Objectif :** fiche d'inventaire au motif du DS, désaturation des événements passés, squelette de chargement cohérent

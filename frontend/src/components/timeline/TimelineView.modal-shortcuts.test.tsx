@@ -144,11 +144,18 @@ describe('#672 raccourcis de la frise sous le panneau de création du shell', ()
     expect(active.isContentEditable).toBeFalsy()
   })
 
-  it('panneau ouvert : "F" ne passe PAS la frise en plein écran', async () => {
+  it('panneau ouvert : "F" ne recadre PAS la frise (ni ne la passe en plein écran)', async () => {
     renderTimeline({ createOpen: true })
+    // #597 — `F` recadre désormais. Viewport mesurable : sans largeur, le recadrage
+    // serait un no-op et l'assertion ci-dessous vacante.
+    const scroll = screen.getByTestId('timeline-scroll')
+    Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 1000 })
+    const level = screen.getByTestId('timeline-zoom-level')
+    const before = { level: level.textContent, scroll: scroll.scrollLeft }
     expect(pressFromFocus('f')).toBe('BUTTON')
     pressFromFocus('F')
     await waitFor(() => expect(screen.getByTestId('shell-new-event-drawer')).toBeInTheDocument())
+    expect({ level: level.textContent, scroll: scroll.scrollLeft }).toEqual(before)
     expect(requestFullscreenMock).not.toHaveBeenCalled()
   })
 
@@ -182,14 +189,11 @@ describe('#672 raccourcis de la frise sous le panneau de création du shell', ()
     expect(exitFullscreenMock).not.toHaveBeenCalled()
   })
 
-  it('NON-RÉGRESSION — panneau fermé : "F", "+", "]" et "T" agissent normalement', async () => {
+  it('NON-RÉGRESSION — panneau fermé : "+", "]", "T" et "F" agissent normalement', async () => {
     renderTimeline()
     const level = screen.getByTestId('timeline-zoom-level')
     const scroll = screen.getByTestId('timeline-scroll')
     const beforeLevel = level.textContent
-
-    fireEvent.keyDown(window, { key: 'f' })
-    expect(requestFullscreenMock).toHaveBeenCalledTimes(1)
 
     fireEvent.keyDown(window, { key: '+' })
     await waitFor(() => expect(level.textContent).not.toBe(beforeLevel))
@@ -203,6 +207,12 @@ describe('#672 raccourcis de la frise sous le panneau de création du shell', ()
     // T = GO_TO_TODAY : 35 j × 12 px (même repère que `TimelineView.test.tsx`).
     fireEvent.keyDown(window, { key: 't' })
     await waitFor(() => expect(scroll.scrollLeft).toBe(420))
+
+    // #597 — F RECADRE (4 j dans 744 px utiles → niveau `day`), sans plein écran.
+    Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 1000 })
+    fireEvent.keyDown(window, { key: 'f' })
+    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.day'))
+    expect(requestFullscreenMock).not.toHaveBeenCalled()
   })
 
   it('NON-RÉGRESSION — le drawer de détail de la frise (DANS `rootRef`) laisse les raccourcis actifs', async () => {
