@@ -123,9 +123,7 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
       ) : (
         <>
           <div className="flex flex-col gap-1" data-testid="dashboard-compact-agenda-today">
-            <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
-              {t('today')}
-            </span>
+            <span className="mt-eyebrow">{t('today')}</span>
             {todayEvents.length === 0 ? (
               // #701 — `emptyToday` et PAS `empty`/`emptyTitle` : on n'est ici que si
               // `isEmpty` est faux, donc demain porte forcément des events. Dire
@@ -145,9 +143,7 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
               délibérée : aujourd'hui est l'ancre du composant. */}
           {tomorrowEvents.length > 0 && (
             <div className="flex flex-col gap-1" data-testid="dashboard-compact-agenda-tomorrow">
-              <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
-                {t('tomorrow')}
-              </span>
+              <span className="mt-eyebrow">{t('tomorrow')}</span>
               <ul className="flex flex-col">
                 {tomorrowEvents.map((event) => (
                   <AgendaRow key={event.id} event={event} />

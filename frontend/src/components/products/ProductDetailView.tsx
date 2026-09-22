@@ -496,8 +496,11 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                       textuelle pour les technologies d'assistance ; à l'écran, la date
                       visible et l'écart de luminance ink → ink-muted le portent. */}
                     {past && <span className="sr-only">{t('pastLabel')}</span>}
+                    {/* #632 — BADGE, pas un sur-titre : `.mt-eyebrow` (mono 10 px, sans
+                      bordure) n'en a ni la forme ni le rôle. Il garde son style mais se
+                      détend en `de` comme les eyebrows du DS (.16em → .02em). */}
                     {event.archived && (
-                      <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
+                      <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase [&:lang(de)]:tracking-[.02em]">
                         {t('archivedBadge')}
                       </span>
                     )}
