@@ -1006,3 +1006,9 @@ Lire `getComputedStyle(el).backgroundColor`, parser localement la forme `color(s
 
 ## PAT-S106-001 — Réutiliser le motif clé/valeur `.mt-drawer__row` hors du tiroir avec des valeurs longues
 `min-width:0` + `overflow-wrap:anywhere` sur `.mt-drawer__v`, `flex-shrink:0` sur `.mt-drawer__k` (ajout commenté au DS) : `break-word` ne suffit pas, il n'abaisse pas la largeur min-content qui compte pour le rétrécissement flex. Vérifié en `de` à 390 px, sans régression sur le drawer d'événement ni sur le bottom sheet. Anti-pattern : `truncate` sur la valeur, ou règle Tailwind locale concurrente au DS. Alias neutre `.mt-kv*` en follow-up. (Sprint 106, #606)
+
+## PAT-S107-001 — Prouver qu'un contour de focus n'est PAS rogné : deux oracles concordants et une mutation qui doit les rougir
+Complète [[PAT-S74-004]] pour le cas négatif. Oracle 1 : géométrie, rect du contour (`rect ± (offset + width)`) face par face contre chaque ancêtre qui clippe. Oracle 2 : lecture des pixels sur les 4 côtés, comparée à l'`outlineColor` calculée ; il attrape aussi un frère peint par-dessus, que la géométrie ignore. Contre-épreuve : injecter `overflow-x:auto` sur le conteneur doit faire rougir les DEUX oracles. Sans elle, « non rogné » peut venir d'un oracle vacant. Garder une spec E2E légère quand le seul remède possible est de ne jamais rogner (offset négatif exclu). (Sprint 107 #524, `e2e/sprint-107-tab-focus-outline.spec.ts`)
+
+## PAT-S107-002 — Appliquer un motif DS à une partie d'un composant : une constante de classes Tailwind, pas une classe DS
+Besoin : le motif `.mt-table th` sur les seuls en-têtes, sans `.mt-table` qui change aussi `td`, le zébrage et la police. Solution : une constante `TH` de classes Tailwind équivalentes, avec un commentaire qui pointe vers `core.css`. Anti-pattern : créer une classe DS `.mt-th`. `core.css` est hors `@layer`, donc elle écraserait les utilitaires (`text-right`, `px-*`) posés sur la même cellule. (Sprint 107 #609)

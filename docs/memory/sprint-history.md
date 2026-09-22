@@ -7091,15 +7091,25 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 0/4.
 **Status :** Terminé — PR #810 mergée, issues #606/#607/#698 et milestone #107 fermés après merge
 
-### Sprint 107 — 2026-09-22 (EN COURS — cohésion 0.50, Liste produits + onglets)
+### Sprint 107 — 2026-09-22 (Terminé — merge PR #814 dans dev — cohésion 0.50, Liste produits + onglets)
 **Objectif :** en-têtes de colonnes au motif `.mt-table th`, mini-frise visible sous `md`, focus des onglets vérifié
-**Milestone GitHub :** #108
-**Issues :** #609 (P3, XS), #524 (P3, XS), #608 (P3, S — bug admis) — 4 pts
-**Vagues :** V1 = #609 ∥ #524 | V2 = #608
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 106
-**À confirmer au démarrage :** #609 à moitié livrée (catégorie déjà fusionnée) ; #524 à fermer sans code si la mesure ne montre rien de rogné
-**Status :** En cours (démarré 2026-09-22 ; arbitrages dev : #608 frise conservée sous md, densité adaptée ; #609 en-têtes seuls, catégorie déjà fusionnée)
+**Milestone GitHub :** #108 (fermé après merge)
+**Issues livrées (3) :** #524, #609, #608 — 4 pts
+**Arbitrages dev au démarrage :** #608 frise conservée sous `md` en densité adaptée ; #609 en-têtes seuls (catégorie déjà fusionnée en mono sous le nom). En revue de PR : troncature du nom à ~5-7 caractères à 390 px acceptée (DEC-S107-002)
+**Vagues exécutées :** V1 = #524 seul (mesure au navigateur, exclusivité du harnais) | V2 = #609 → #608, un seul agent (même `<table>`). L'architect prévoyait #609 ∥ #524 ; séquencé pour ne pas partager le harnais E2E
+**Commits (3 + docs) :** `c3112b0a` #524 (mesure + garde E2E, 0 CSS) · `703c8eaf` #609 · `aa12e4c0` #608 (+ spec `sprint-92-products-next-event` alignée : frise attendue à 390)
+**Tests :** Vitest 2060/2060 | tsc/lint/format verts | E2E suite complète 573 verts / 9 sautés / 11 rouges hors sprint (identiques S105/S106 : 10 captures darwin `sprint-77`, `sprint-101-fab-landscape:271` #769) | nouvelles specs 20/20 et 9/9 en `--repeat-each=3` | CI 7/7 verte
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS non traités (largeur du nom non verrouillée en E2E, `seedEvent` dupliqué, `max-w-20` sans justification)
+**Audit tests :** `docs/memory/audits/sprint-107-test-coverage.md`
+**Harnais E2E :** backend `:8086` (worktree S105) ; front `next start` `:3107` derrière un relais `:8187` qui réécrit l'`Origin` (recette PIT-S106-003, rejouée sans accroc)
+**Écarts d'énoncé :** #609 : moitié déjà livrée ; #524 : hypothèse de rognage réfutée par la mesure (24 cas)
+**Nouveaux pitfalls / patterns / décisions :** PIT-S107-001 (flèches des Tabs sans focus) · PIT-S107-002 (`sr-only` dans un `overflow` non positionné) · PAT-S107-001 (deux oracles + mutation pour un « non rogné ») · PAT-S107-002 (motif DS partiel par constante Tailwind) · DEC-S107-001 (frise compacte sous `md`) · DEC-S107-002 (troncature acceptée) ; signal `POST /api/events` écarté, déjà PIT-S44-001 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 2 signalés) :**
+  - Tabs du DS : flèches/Home/End doivent déplacer le focus [S | frontend/a11y] → issue #815 (backlog)
+  - Liste produits ≥ `sm` : nom long qui déborde + `sr-only` qui fait défiler la page [S | products] → issue #816 (backlog)
+  Ratio discard 0/2.
+**Status :** Terminé — PR #814 mergée, issues #524/#609/#608 et milestone #108 fermés après merge
 
 ### Sprint 108 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Tableau de bord : ruban et « En bref »)
 **Objectif :** ruban de densité avec règle graduée et viewport déplaçable ; métriques « En bref » du handoff

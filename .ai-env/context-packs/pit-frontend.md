@@ -1788,6 +1788,14 @@ Contrairement à `<Link>` (préchargement AUTO avec `next-router-prefetch: 1`), 
 ## PIT-S106-003 — Harnais E2E sur un port libre : CORS du backend partagé et `NEXT_PUBLIC_API_URL` au build
 Front sur `:3106` contre un backend `:8086` lancé ailleurs : son CORS dev n'autorise que `:3000`/`:3100`, donc 403 au `register` du projet `setup`. Relais `:8186` → `:8086` qui réécrit `Origin` vers une origine autorisée, build avec `E2E_API_PROXY_TARGET` pointé dessus. Un rebuild sans `NEXT_PUBLIC_API_URL=/api` donne un autre échec du `setup` : « AUCUNE réponse POST /api/auth/register observée » alors que `curl` via le proxy répond. Avant la suite : sonder `OPTIONS /api/auth/register` avec l'`Origin` du port, et exporter les DEUX variables au build. (Sprint 106, harnais)
 
+
+## PIT-S107-001 — Tabs du DS : les flèches changent `aria-selected` sans déplacer le focus
+Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet voisin mais n'appellent aucun `.focus()` : le focus reste sur l'onglet précédent, devenu `tabIndex=-1` et non sélectionné (8/8 configurations mesurées, `/products` et fiche produit). Contraire au motif APG « tablist à activation automatique ». Prévention : tout test clavier de Tabs vérifie `toBeFocused()` sur l'onglet NOUVELLEMENT sélectionné, pas seulement `aria-selected`. Correctif suivi en #815. (Sprint 107 #524)
+
+
+## PIT-S107-002 — Un `sr-only` dans un conteneur `overflow-x-auto` NON positionné fait défiler la page
+`sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
