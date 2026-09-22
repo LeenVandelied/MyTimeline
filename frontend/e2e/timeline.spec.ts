@@ -3,7 +3,7 @@ import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
-import { revealSeededLane } from './support/timeline-lanes'
+import { LANE_GUTTER_PX, revealSeededLane } from './support/timeline-lanes'
 
 /**
  * #330 (lot b) — stub PAGE de l'API Fullscreen pour `timeline-fullscreen` (cf.
@@ -1038,7 +1038,7 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     // #330-fix (Sprint 54) — BUG PRODUIT trouvé à la mesure (signalé, pas maquillé) :
     // au zoom Trimestre, un événement proche du début de l'étendue (`rangeStart`,
     // `computeRange` = 30j avant le 1er event) se positionne à `daysBetween *
-    // dayWidth` = 30*5 = 150px < `--lane-header-w` (168px, `spacing.css:48`).
+    // dayWidth` = 30*5 = 150px < `--lane-header-w` (168px à l'époque, 176px depuis #674).
     // L'en-tête de lane STICKY (`.mt-tlv__lane-label`, `position:sticky;left:0`,
     // `TimelineView.tsx:331` `timeline-resource-head`) recouvre alors la pastille :
     // Playwright confirme "intercepts pointer events" — reproduit hors suite,
@@ -1191,14 +1191,16 @@ test.describe('#330 (étape 1bis, #331) — options de récurrence WEEK et YEAR'
  *
  * BUG (constaté #330/Sprint 54, PR #390) : `.mt-tlv__lane-label` est
  * `position:sticky; left:0` et OPAQUE. Elle recouvre donc TOUJOURS les
- * `--lane-header-w` (168px) premiers pixels du viewport de la frise. Une
- * pastille dont l'origine sur la piste est < 168px est alors inatteignable à
+ * `--lane-header-w` (168px au constat, 176px depuis #674) premiers pixels du
+ * viewport de la frise. Une pastille dont l'origine sur la piste est < cette
+ * gouttière est alors inatteignable à
  * la SOURIS À TOUT NIVEAU DE SCROLL : défiler vers la droite déplace l'en-tête
  * avec le viewport, il recouvre toujours autant. `computeRange` (zoom.ts) pose
  * `rangeStart` à 30 jours avant le 1er event → le 1er event est à
- * `30 * dayWidth` px, ce qui passe SOUS 168px à deux niveaux de zoom :
- *   Trimestre 30*5   = 150px  < 168  ✗
- *   Année     30*2.2 =  66px  < 168  ✗
+ * `30 * dayWidth` px, ce qui passe SOUS la gouttière à deux niveaux de zoom
+ * (classement identique à 168 et à 176 px — #674 n'en fait basculer aucun) :
+ *   Trimestre 30*5   = 150px  < 176  ✗
+ *   Année     30*2.2 =  66px  < 176  ✗
  *   Mois      30*12  = 360px         ✓
  *   Semaine   30*34  = 1020px        ✓
  *   Jour      30*96  = 2880px        ✓
@@ -1306,7 +1308,7 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
     await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
 
     // Prémisse : à ce zoom la pastille tombe bien dans la zone que l'en-tête
-    // recouvrait (30j * 5px = 150px < 168px). Sans cette garde le test pourrait
+    // recouvrait (30j * 5px = 150px < 176px, gouttière #674). Sans cette garde le test pourrait
     // devenir vert à vide si la géométrie de l'étendue changeait.
     const scroll = page.getByTestId('timeline-scroll')
     const noOverflow = await scroll.evaluate((el) => el.scrollWidth <= el.clientWidth)
@@ -1563,9 +1565,9 @@ test.describe('#449 /timeline — le zoom arrière conserve la zone temporelle',
  *
  * MESURES (zoom Mois 12 px/j → Trimestre 5 px/j, pastille au jour 300) :
  *   avec la re-projection  : scrollLeft 3600 → 1500 (= 300 j × 5), bande de
- *                            rendu ≈ [732, 2932] px piste, pastille à 1500 px
+ *                            rendu ≈ [724, 2924] px piste, pastille à 1500 px
  *                            → MONTÉE ;
- *   sans (contrôle négatif) : scrollLeft reste 3600, bande ≈ [2832, 5032],
+ *   sans (contrôle négatif) : scrollLeft reste 3600, bande ≈ [2824, 5024],
  *                            pastille à 1500 px hors bande → DÉMONTÉE (0).
  *
  * NON-RÉGRESSION #392 DANS LE MÊME OPÉRATEUR. Le repère retenu par #392 est le
@@ -1590,8 +1592,11 @@ const EARLY_PRODUCT_ID = '4a1f0000-0000-4000-8000-000000000451'
 const MONTH_PERIOD_STEP_DAYS = 30
 /** Nombre de `]` joués : 10 × 30 j = jour 300 de l'étendue. */
 const PERIOD_PRESSES = 10
-/** Gouttière de l'en-tête de lane sticky (`TimelineView.tsx`, `LANE_TRACK_OFFSET_PX`). */
-const LANE_TRACK_OFFSET_PX = 168
+/**
+ * Gouttière de l'en-tête de lane sticky (`TimelineView.tsx`, `LANE_TRACK_OFFSET_PX`) —
+ * #674 : lue dans le token `--lane-header-w`, plus recopiée en dur.
+ */
+const LANE_TRACK_OFFSET_PX = LANE_GUTTER_PX
 /** #594 — demi-largeur du pin d'un ponctuel = `PIN_HALF_WIDTH_PX` (`zoom.ts`). */
 const PIN_HALF_WIDTH_PX = 5
 /** Échelles px/jour des deux niveaux traversés (`DAY_WIDTH_PX`, `zoom.ts`). */
@@ -1771,18 +1776,18 @@ test.describe('#451 /timeline — le zoom arrière conserve le JOUR regardé, pa
  * suffit très largement à la démonstration (cf. arithmétique ci-dessous).
  *
  * ARITHMÉTIQUE (étendue 731 j, oracle au jour 120, aujourd'hui au jour 630 ;
- * bande de virtualisation ≈ [scrollLeft − 768, scrollLeft + 1432], soit
- * `OVERSCAN_X_PX` 600 + `LANE_TRACK_OFFSET_PX` 168 de part et d'autre d'un
- * conteneur de ~1000 px) :
+ * bande de virtualisation ≈ [scrollLeft − 776, scrollLeft + 1424], soit
+ * `OVERSCAN_X_PX` 600 + `LANE_TRACK_OFFSET_PX` 176 de part et d'autre d'un
+ * conteneur de ~1000 px ; bornes recalculées à 176 px par #674) :
  *
  *   niveau    px/j   scrollLeft attendu   bande de rendu    pastille à
- *   Mois       12    1440 (= 120 × 12)    [ 672,  2872]     1440  → MONTÉE
- *   Semaine    34    4080 (= 120 × 34)    [3312,  5512]     4080  → MONTÉE
- *   Jour       96   11520 (= 120 × 96)    [10752,12952]    11520  → MONTÉE
+ *   Mois       12    1440 (= 120 × 12)    [ 664,  2864]     1440  → MONTÉE
+ *   Semaine    34    4080 (= 120 × 34)    [3304,  5504]     4080  → MONTÉE
+ *   Jour       96   11520 (= 120 × 96)    [10744,12944]    11520  → MONTÉE
  *
  *   contrôle négatif (`useLayoutEffect` neutralisé) : `scrollLeft` RESTE à
- *   1440 aux trois niveaux, la bande reste [672, 2872], et la pastille passe à
- *   4080 puis 11520 px — hors bande de 1208 px puis de 8648 px → DÉMONTÉE (0).
+ *   1440 aux trois niveaux, la bande reste [664, 2864], et la pastille passe à
+ *   4080 puis 11520 px — hors bande de 1216 px puis de 8656 px → DÉMONTÉE (0).
  *
  * AUCUN RABATTEMENT N'EST EN CAUSE, et la spec l'ASSERTE : `scrollLeft` reste
  * très en dessous du maximum aux trois niveaux (la piste ne fait que grandir).

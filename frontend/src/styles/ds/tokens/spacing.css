@@ -49,10 +49,13 @@
 
   /* timeline-specific */
   --lane-height:   46px;
-  --lane-header-w: 168px;
+  /* #674 — 176 px = `LH` de la maquette (`.dc.html`, qui fait foi). Miroir JS :
+     `LANE_TRACK_OFFSET_PX` (`TimelineView.tsx`), verrouillé par un test de dérive ;
+     les specs E2E de géométrie lisent CE token (`e2e/support/timeline-lanes.ts`). */
+  --lane-header-w: 176px;
   /* #706 — gouttière de piste MOBILE (portrait + paysage). Pendant de
      `--lane-header-w` pour les vues `.mt-tlm*`, qui ne peuvent pas réserver
-     168px sur un écran de 390px. La valeur reprend le plafond que
+     176px sur un écran de 390px. La valeur reprend le plafond que
      `.mt-tlm__lane-label` déclarait déjà (`max-width:120px`) : on le promeut en
      largeur FIXE pour que la colonne d'en-têtes soit continue et que la piste
      commence exactement là où elle s'arrête. Miroir JS :

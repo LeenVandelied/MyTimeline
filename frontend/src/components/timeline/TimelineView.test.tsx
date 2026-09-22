@@ -750,6 +750,21 @@ describe('TimelineView', () => {
       expect(match, '--lane-header-w introuvable dans ds/tokens/spacing.css').not.toBeNull()
       expect(Number(match![1])).toBe(LANE_TRACK_OFFSET_PX)
     })
+
+    /**
+     * #429 — un repli `var(--lane-header-w, 160px)` recopiait une valeur du token
+     * (fausse de 8 px, puis de 16 px après #674) : le token est défini sous `:root`,
+     * le repli ne sert jamais et ne peut que diverger (PIT-S56-003). Aucun repli ne
+     * doit réapparaître sur ce token, dans aucune feuille de la frise.
+     */
+    it('--lane-header-w ne porte aucun repli dupliquant sa valeur (#429)', () => {
+      const css = readFileSync(
+        resolve(__dirname, '../../styles/ds/components/timeline.css'),
+        'utf8',
+      )
+      expect(css).toMatch(/\.mt-tlv__lane-label\{[^}]*width:var\(--lane-header-w\);/)
+      expect(css).not.toMatch(/var\(--lane-header-w\s*,/)
+    })
   })
 
   /**

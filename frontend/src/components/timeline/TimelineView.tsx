@@ -202,7 +202,7 @@ const NO_POSITIONED: PositionedEvent[] = []
  * `DEFAULT_METRICS` (`virtualization.ts`), et verrouillé par un test de dérive
  * (`TimelineView.test.tsx`).
  */
-export const LANE_TRACK_OFFSET_PX = 168
+export const LANE_TRACK_OFFSET_PX = 176
 
 /**
  * #81 — Clé de coordonnée clavier d'une pastille. #709 : « indexDeRangée:rangDansLaRangée »

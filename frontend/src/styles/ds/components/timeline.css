@@ -208,9 +208,9 @@
    sur la rangée : c'est lui que `forced-colors` repeint (DEC-S58-001). */
 .mt-tlv__group-head:focus-visible{outline:2px solid transparent; outline-offset:-2px;}
 .mt-tlv__group-head:focus-visible .mt-tlv__group-cell{outline:2px solid var(--color-focus); outline-offset:-2px;}
-/* Cellule sticky de la largeur de la GOUTTIÈRE (`--lane-header-w`, 168 px — la
-   maquette pose `LH = 176px`, on garde la gouttière réelle de la frise pour
-   rester aligné sur les en-têtes de lane et sur l'origine des pastilles).
+/* Cellule sticky de la largeur de la GOUTTIÈRE (`--lane-header-w` = `LH = 176px`
+   de la maquette depuis #674) : alignée sur les en-têtes de lane et sur
+   l'origine des pastilles, qui partagent le même token.
    Opaque + `--z-sticky` : les traits du résumé plié passent DESSOUS au
    défilement, comme les pastilles sous l'en-tête de lane. */
 .mt-tlv__group-cell{position:sticky; left:0; z-index:var(--z-sticky); display:flex; align-items:center; gap:8px; flex:0 0 auto; box-sizing:border-box; width:var(--lane-header-w); min-width:0; padding:0 12px; background:var(--color-surface-2); border-right:1px solid var(--color-rule);}
@@ -255,7 +255,7 @@
    pose la cellule de lane en `background:var(--color-surface)` (et non
    `surface-2`, réservé à l'en-tête de catégorie) + `font:500` (et non 600).
    La distinction passe par le FOND + la GRAISSE + le RETRAIT (ci-dessous). */
-.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w, 160px); height:100%; padding:0 12px; background:var(--color-surface); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-medium); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+.mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w); height:100%; padding:0 12px; background:var(--color-surface); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-medium); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
 /* #195 — Accordéon de 2e niveau (produit) : le label sticky devient un bouton
    toggle, mirror de .mt-tlv__group-head. Reset des styles bouton natifs, chevron
    à gauche, cible cliquable (pointer-events réactivés).
