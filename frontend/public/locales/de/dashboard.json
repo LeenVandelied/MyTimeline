@@ -60,9 +60,11 @@
   "kpi": {
     "title": "Kurzüberblick",
     "label": "Kennzahlen",
-    "activeProducts": "{count, plural, one {aktives Produkt} other {aktive Produkte}}",
-    "eventsThisMonth": "{count, plural, one {Ereignis diesen Monat} other {Ereignisse diesen Monat}}",
-    "currentStreak": "{count, plural, one {Tag Serie} other {Tage Serie}}"
+    "week": "Du hast diese Woche <weekNum>{weekValue}</weekNum> {week, plural, one {Ereignis} other {Ereignisse}}, davon <recurringNum>{recurringValue}</recurringNum> wiederkehrend.",
+    "dueSoon": "<dueNum>{dueValue}</dueNum> {due, plural, one {wird} other {werden}} innerhalb von <daysNum>{daysValue}</daysNum> {days, plural, one {Tag} other {Tagen}} fällig.",
+    "ongoing": "<ongoingNum>{ongoingValue}</ongoingNum> {ongoing, plural, one {Deckungszeitraum läuft} other {Deckungszeiträume laufen}} derzeit.",
+    "busiestCategory": "Aktivste Kategorie in diesem Monat: <categoryName>{category}</categoryName>.",
+    "busiestCategoryNone": "—"
   },
   "productList": {
     "title": "Deine Produkte",

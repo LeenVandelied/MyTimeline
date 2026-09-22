@@ -2,13 +2,13 @@
 
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { getWeekRange, getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
 import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
+import { currentWeekEvents } from './kpis'
 
 /**
  * #80 — Agenda de la semaine courante (spec Designer §3). Filets (pas de `<Card>`
@@ -43,8 +43,8 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
 }) => {
   const t = useTranslations('dashboard.week')
   const openCreateEvent = useOpenCreateEvent()
-  const { start, end } = useMemo(() => getWeekRange(now), [now])
-  const weekEvents = useMemo(() => getEventsInRange(events, start, end), [events, start, end])
+  // #640 — même source que le compteur « … événements cette semaine » de `KpiMarginalia`.
+  const weekEvents = useMemo(() => currentWeekEvents(events, now), [events, now])
   const dayFmt = useMemo(
     () => new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric' }),
     [locale],

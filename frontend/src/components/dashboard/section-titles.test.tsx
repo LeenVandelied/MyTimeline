@@ -27,8 +27,11 @@ import { ProductCarousel } from './ProductCarousel'
  * `e2e/sprint-84-section-titles.spec.ts`.
  */
 vi.mock('next-intl', () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
+  // #640 — `KpiMarginalia` appelle `t.rich` : le mock l'expose (même rendu `ns.key`).
+  useTranslations: (namespace?: string) => {
+    const t = (key: string) => (namespace ? `${namespace}.${key}` : key)
+    return Object.assign(t, { rich: t })
+  },
 }))
 
 const NOW = new Date(2026, 6, 15, 9, 0, 0)
@@ -78,7 +81,13 @@ describe('#575 — titres de section du dashboard', () => {
       name: 'KpiMarginalia',
       ui: () => (
         <KpiMarginalia
-          kpis={{ activeProducts: 1, eventsThisMonth: 2, currentStreak: 3 }}
+          kpis={{
+            week: 1,
+            weekRecurring: 0,
+            dueSoon: 2,
+            ongoing: 3,
+            busiestCategory: 'Cat',
+          }}
           locale={LOCALE}
         />
       ),
