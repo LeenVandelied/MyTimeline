@@ -13,9 +13,12 @@
     "subtitle": "Your upcoming deadlines, at a glance."
   },
   "density": {
-    "label": "Event density over {days} days",
-    "eyebrow": "Density · {days} days",
+    "label": "Event density over the next {days} days",
+    "eyebrow": "Next {days} days",
     "title": "Timeline overview",
+    "today": "Today",
+    "window": "Window · {range}",
+    "viewport": "{days}-day preview window",
     "empty": "No events in this period",
     "openTimeline": "Open timeline"
   },

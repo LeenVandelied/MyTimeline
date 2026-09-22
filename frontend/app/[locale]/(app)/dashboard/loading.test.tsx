@@ -32,6 +32,16 @@ describe('DashboardLoading (#698)', () => {
     expect(grid).toContainElement(screen.getByTestId('dashboard-loading-skeleton'))
   })
 
+  it('#623 — ruban : règle + barres dans un seul bloc `h-24`, comme le ruban réel', () => {
+    render(<DashboardLoading />)
+    const ribbon = screen.getByTestId('dashboard-loading-ribbon')
+    const plots = ribbon.querySelectorAll('.h-24')
+    expect(plots).toHaveLength(1)
+    const [ruler, bars] = Array.from(plots[0].children)
+    expect(ruler).toHaveClass('h-4.5')
+    expect(bars).toHaveClass('flex-1')
+  })
+
   it('une SEULE région status, avec le libellé accessible', () => {
     render(<DashboardLoading />)
     const statuses = screen.getAllByRole('status')

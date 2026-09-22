@@ -13,9 +13,12 @@
     "subtitle": "Deine anstehenden Termine auf einen Blick."
   },
   "density": {
-    "label": "Ereignisdichte über {days} Tage",
-    "eyebrow": "Dichte · {days} Tage",
+    "label": "Ereignisdichte in den nächsten {days} Tagen",
+    "eyebrow": "Nächste {days} Tage",
     "title": "Zeitachse im Überblick",
+    "today": "Heute",
+    "window": "Fenster · {range}",
+    "viewport": "Vorschaufenster über {days} Tage",
     "empty": "Keine Ereignisse in diesem Zeitraum",
     "openTimeline": "Zeitachse öffnen"
   },

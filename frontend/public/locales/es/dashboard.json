@@ -13,9 +13,12 @@
     "subtitle": "Tus próximos vencimientos, de un vistazo."
   },
   "density": {
-    "label": "Densidad de eventos en {days} días",
-    "eyebrow": "Densidad · {days} días",
+    "label": "Densidad de eventos en los próximos {days} días",
+    "eyebrow": "Próximos {days} días",
     "title": "Vista de la cronología",
+    "today": "Hoy",
+    "window": "Ventana · {range}",
+    "viewport": "Ventana de vista previa de {days} días",
     "empty": "Sin eventos en este período",
     "openTimeline": "Abrir la cronología"
   },

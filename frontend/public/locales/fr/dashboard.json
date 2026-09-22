@@ -13,9 +13,12 @@
     "subtitle": "Tes échéances des prochains jours, en un coup d'œil."
   },
   "density": {
-    "label": "Densité des événements sur {days} jours",
-    "eyebrow": "Densité · {days} jours",
+    "label": "Densité des événements sur les {days} prochains jours",
+    "eyebrow": "{days} prochains jours",
     "title": "Aperçu de la frise",
+    "today": "Auj.",
+    "window": "Fenêtre · {range}",
+    "viewport": "Fenêtre d’aperçu de {days} jours",
     "empty": "Aucun événement sur la période",
     "openTimeline": "Ouvrir la frise"
   },
