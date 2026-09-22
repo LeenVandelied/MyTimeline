@@ -28,6 +28,12 @@ interface CtaSectionProps {
  * WCAG AA de 3:1 applicable au grand texte (≥24px gras). Le `<p>` juste en dessous
  * utilisait déjà `text-accent-ink` (6.94:1) : l'omission sur le titre était un oubli.
  * Aligné sur `text-accent-ink`. Défaut PRÉEXISTANT (même classe dans le monolithe).
+ *
+ * #425 — le `<h2>` ne porte VOLONTAIREMENT aucun `leading-*`. Son interligne vient de
+ * `ds/tokens/base.css` (`h1..h6 { line-height: var(--leading-tight) }`, hors layer,
+ * donc imbattable par une utilitaire) : 1.08, mesuré 29,16 px à 27 px et 37,8 px à
+ * 35 px, IDENTIQUE avant et après le retrait de l'utilitaire inerte qu'il portait.
+ * Ne s'applique qu'aux titres : le `<p>` en dessous n'est pas couvert par cette règle.
  */
 export function CtaSection({ locale }: CtaSectionProps) {
   const t = useTranslations()
@@ -35,7 +41,7 @@ export function CtaSection({ locale }: CtaSectionProps) {
   return (
     <section className="bg-accent section-animation py-20">
       <div className="container-landing px-4 text-center">
-        <h2 className="text-accent-ink mb-6 text-lg leading-tight font-bold md:text-xl">
+        <h2 className="text-accent-ink mb-6 text-lg font-bold md:text-xl">
           {t('common.landing.cta.title')}
         </h2>
         <p className="text-accent-ink text-md mx-auto mb-10 max-w-3xl md:text-lg">
