@@ -8,7 +8,8 @@ import HomePage from './HomePage'
  * son propre test dans `components/landing/`.
  */
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+  // Préfixe le namespace : `HowItWorksSection` appelle `useTranslations('common.landing.howItWorks')`.
+  useTranslations: (ns?: string) => (key: string) => (ns ? `${ns}.${key}` : key),
   useLocale: () => 'fr',
 }))
 
@@ -17,16 +18,30 @@ describe('HomePage', () => {
     render(<HomePage params={{ locale: 'fr' }} />)
 
     expect(screen.getByText('common.landing.hero.title')).toBeInTheDocument()
-    expect(screen.getByText('common.landing.features.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.howItWorks.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.cta.title')).toBeInTheDocument()
     expect(screen.getByText('common.landing.footer.description')).toBeInTheDocument()
   })
 
-  it('expose les ancres ciblées par la navigation et le pied de page', () => {
+  it('expose l’ancre ciblée par la navigation, le pied de page et le hero', () => {
     const { container } = render(<HomePage params={{ locale: 'fr' }} />)
-    for (const id of ['features', 'how-it-works']) {
-      expect(container.querySelector(`#${id}`)).not.toBeNull()
+    expect(container.querySelector('#how-it-works')).not.toBeNull()
+  })
+
+  /**
+   * #612 — une seule section explicative : la frise de cas d'usage remplace les 3 cartes
+   * de `FeaturesSection`. Ni la section, ni son ancre, ni aucun lien vers elle ne doivent
+   * revenir — et toute ancre interne de la page doit avoir sa cible (pas de lien mort).
+   */
+  it('ne rend plus la section fonctionnalités ni aucun lien vers elle (#612)', () => {
+    const { container } = render(<HomePage params={{ locale: 'fr' }} />)
+    expect(container.querySelector('#features')).toBeNull()
+    expect(container.querySelector('a[href="#features"]')).toBeNull()
+    expect(container.innerHTML).not.toContain('landing.features')
+    expect(container.querySelectorAll('section#how-it-works')).toHaveLength(1)
+    for (const a of Array.from(container.querySelectorAll('a[href^="#"]'))) {
+      const id = a.getAttribute('href')!.slice(1)
+      expect(container.querySelector(`#${id}`), `cible de ${a.outerHTML}`).not.toBeNull()
     }
   })
 

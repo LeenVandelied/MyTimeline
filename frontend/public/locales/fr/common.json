@@ -177,7 +177,6 @@
   "landing": {
     "title": "Ma Timeline | Votre assistant d'organisation personnel",
     "navigation": {
-      "features": "Fonctionnalités",
       "howItWorks": "Comment ça marche",
       "menuOpen": "Ouvrir le menu",
       "menuClose": "Fermer le menu",
@@ -239,40 +238,31 @@
         }
       }
     },
-    "features": {
-      "title": "Fonctionnalités principales",
-      "subtitle": "Ma Timeline combine les meilleurs outils de gestion du temps pour vous aider à atteindre une organisation optimale.",
-      "timeline": {
-        "title": "Visualisation temporelle",
-        "description": "Visualisez vos échéances et engagements sur une timeline intuitive. Obtenez une vue d'ensemble claire de vos projets."
-      },
-      "reminders": {
-        "title": "Rappels intelligents",
-        "description": "Recevez des notifications adaptées à vos habitudes et à l'importance de vos tâches. Ne manquez plus jamais une échéance."
-      },
-      "organization": {
-        "title": "Organisation par projet",
-        "description": "Groupez vos tâches par projet et catégorie. Suivez vos progrès et définissez des priorités pour chaque activité."
-      }
-    },
     "howItWorks": {
-      "title": "Comment ça marche",
-      "subtitle": "Ma Timeline simplifie votre organisation en quelques étapes simples",
-      "step1": {
-        "title": "Créez votre compte",
-        "description": "Inscrivez-vous en quelques secondes pour commencer votre parcours d'organisation."
-      },
-      "step2": {
-        "title": "Ajoutez vos projets",
-        "description": "Définissez vos projets, produits ou catégories que vous souhaitez suivre."
-      },
-      "step3": {
-        "title": "Créez vos échéances",
-        "description": "Ajoutez vos événements et définissez leur durée, type et importance."
-      },
-      "step4": {
-        "title": "Restez organisé",
-        "description": "Visualisez, suivez et modifiez facilement toutes vos échéances en un seul endroit."
+      "eyebrow": "Comment ça marche",
+      "title": "La même frise, du rappel à l'échéance.",
+      "subtitle": "Chaque événement vit sa vie sur la frise. Voici comment Ma Timeline vous accompagne, du premier rappel jusqu'au renouvellement.",
+      "milestones": {
+        "reminder": {
+          "tag": "−30 jours · rappel",
+          "title": "Vous êtes prévenu à temps",
+          "text": "Un rappel avant chaque échéance, calé sur la frise — jamais après coup."
+        },
+        "recurrence": {
+          "tag": "↻ récurrence",
+          "title": "Les renouvellements se répètent",
+          "text": "Assurance, abonnement, prime : posez la récurrence une fois, elle se reporte seule."
+        },
+        "coverage": {
+          "tag": "durée · garantie",
+          "title": "Visualisez les couvertures",
+          "text": "Garanties et baux s'affichent en barres pleines : vous voyez d'un coup d'œil ce qui court."
+        },
+        "deadline": {
+          "tag": "J0 · échéance",
+          "title": "Rien ne vous échappe",
+          "text": "DLUO, expirations de papiers, deadlines : tout converge sur une seule vue, rangé par produit et par catégorie."
+        }
       }
     },
     "cta": {
@@ -284,7 +274,6 @@
     "footer": {
       "description": "Votre assistant personnel d'organisation et de gestion du temps",
       "product": "Produit",
-      "features": "Fonctionnalités",
       "howItWorks": "Comment ça marche",
       "legal": "Légal",
       "terms": "Conditions d'utilisation",

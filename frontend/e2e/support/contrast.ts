@@ -541,7 +541,9 @@ export const MOBILE_MENU = {
  *
  * « Connexion » est ciblé par son `data-testid` (#354) ; les ancres de navigation
  * restent repérées par position dans la `nav` du panneau (ce ne sont pas des CTA) :
- * deux depuis le retrait de la section témoignages (#613) — `#features`, `#how-it-works`.
+ * UNE seule depuis le retrait des sections témoignages (#613) et fonctionnalités
+ * (#612) — `#how-it-works`. `landing-mobile-menu.spec.ts` fige `toHaveCount(1)` : les
+ * deux se modifient ensemble (ciblage positionnel).
  * Jamais de libellé : la suite tourne en `fr`/`en`/`es`/`de`.
  */
 export function mobileMenuTargets(page: Page): CtaTarget[] {
@@ -549,7 +551,6 @@ export function mobileMenuTargets(page: Page): CtaTarget[] {
   return [
     { name: 'menu/titre', locator: panel.locator('h2') },
     { name: 'menu/ancre-1', locator: panel.locator('nav a').nth(0) },
-    { name: 'menu/ancre-2', locator: panel.locator('nav a').nth(1) },
     { name: 'menu/connexion', locator: panel.getByTestId(LANDING_CTA.menuLogin) },
   ]
 }

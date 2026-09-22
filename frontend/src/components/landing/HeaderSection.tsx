@@ -117,10 +117,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   }, [isDesktop])
 
   /** Ancres de navigation — même ordre que les sections rendues par `HomePage`. */
-  const navLinks = [
-    { href: '#features', label: t('common.landing.navigation.features') },
-    { href: '#how-it-works', label: t('common.landing.navigation.howItWorks') },
-  ]
+  const navLinks = [{ href: '#how-it-works', label: t('common.landing.navigation.howItWorks') }]
 
   return (
     <header className="container mx-auto flex items-center justify-between px-4 py-6">

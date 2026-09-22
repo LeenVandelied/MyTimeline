@@ -33,11 +33,12 @@ describe('FooterSection', () => {
 
   it('cible les ancres de sections de la landing', () => {
     render(<FooterSection locale="fr" />)
-    expect(screen.getByText('common.landing.footer.features')).toHaveAttribute('href', '#features')
     expect(screen.getByText('common.landing.footer.howItWorks')).toHaveAttribute(
       'href',
       '#how-it-works',
     )
+    // #612 — section fonctionnalités retirée : plus d'ancre vers `#features`.
+    expect(screen.queryByText('common.landing.footer.features')).not.toBeInTheDocument()
     // #613 — section témoignages retirée : plus d'ancre vers `#testimonials`.
     expect(screen.queryByText('common.landing.footer.testimonials')).not.toBeInTheDocument()
   })
