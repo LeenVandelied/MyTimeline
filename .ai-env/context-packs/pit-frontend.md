@@ -1735,6 +1735,30 @@ Le halo `--color-bg` des pastilles de la frise, écrit `ring-4 ring-bg`, a fait 
 ## PIT-S103-004 — Une affirmation du briefing sur l'état du code se greppe avant d'être écrite
 Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)
 
+
+## PIT-S104-001 — `test.use({ reducedMotion })` n'existe pas, et une section animée glisse encore après l'arrêt du défilement
+`reducedMotion` n'est pas une option de `test.use` (tsc TS2353, donc muette si personne ne lance `tsc`) : écrire `contextOptions: { reducedMotion: 'reduce' }` ou `page.emulateMedia`. Et pour mesurer une position d'ancre, figer `.section-animation` par feuille injectée : la section glisse encore de ~20 px après l'arrêt du défilement (écart lu −3,5 à −4,9 px). (Sprint 104, #614)
+
+
+## PIT-S104-002 — Une mutation de géométrie sur un élément `transition-all` se relit aux ANCIENNES valeurs
+Étend PIT-S58-002 au-delà des couleurs : l'auto-contrôle du CTA du hero mutait padding et `font-size`, et `getComputedStyle`/`getBoundingClientRect` rendaient les valeurs de départ de la transition — la feuille injectée semblait « sans effet ». Poser `transition: none !important` AVANT la mutation, ou attendre la fin de la transition. (Sprint 104, #682)
+
+
+## PIT-S104-003 — `html{font-size:200%}` ne prouve RIEN sur la tenue à 200 % de texte dans ce dépôt
+Le DS Graphite écrit ses tailles en px : agrandir la racine ne change aucun corps de texte, et un « tient à 200 % » conclu ainsi est vacant. Simuler un zoom texte seul en doublant les tokens `--text-*`. Fait ainsi, la barre collante de la landing débordait réellement (texte sorti de 11,5 px sous la barre, 12,5 px au-dessus, en `de` à 1024 px). (Sprint 104, #614, review)
+
+
+## PIT-S104-004 — Une même sonde DOM réutilisée pour deux tokens de couleur rend deux fois la PREMIÈRE valeur
+Constaté sous Chromium : `span.style.color = var(--a)`, lecture, puis `style.color = var(--b)` dans le même `evaluate` — la 2ᵉ lecture rend encore la valeur de `--a`. Créer une sonde neuve par token. (Sprint 104, #614)
+
+
+## PIT-S104-005 — Le stdout du reporter JSON de Playwright est pollué par les lignes `[e2e]` du harnais
+Parser `--reporter=json` depuis stdout donne un JSON invalide dans ce dépôt (préfixe `[e2e] …`). Passer par `PLAYWRIGHT_JSON_OUTPUT_NAME=<fichier>`. (Sprint 104, #793)
+
+
+## PIT-S104-006 — Dans un `<Button>` shadcn, la variante `[&_svg]:size-4` bat le `h-5 w-5` posé sur l'icône
+Sélecteur descendant (0,1,1) contre classe simple (0,1,0) : l'icône reste à 16 px malgré la classe. Pour la dimensionner, surcharger la variante sur le bouton, pas la classe de l'enfant. (Déduit de la spécificité, non mesuré — Sprint 104, #682)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

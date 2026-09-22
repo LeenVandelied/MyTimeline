@@ -7004,7 +7004,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Déjà résolues dans le sprint : `menu/ancre-2` (B), clés `footer.*` orphelines (`ecfcadb9`). Ratio discard 0/7.
 **Status :** Terminé — PR #792 mergée, issues #354/#612/#613/#615 et milestone #104 fermés après merge
 
-### Sprint 104 — 2026-09-22 (EN COURS — cohésion 0.70, Landing : navigation, conteneur, CTA du hero)
+### Sprint 104 — 2026-09-22 (Terminé — merge PR #798 dans dev — cohésion 0.70, Landing : navigation, conteneur, CTA du hero)
 **Objectif :** nav sticky au spec, conteneur 1340 px réservé à la landing, CTA du hero sur une ligne entre 1024 et 1279 px
 **Milestone GitHub :** #105
 **Issues :** #616 (P3, XS), #614 (P2, S), #682 (P3, XS), #425 (P3, XS), #793 (P3, XS — follow-up S103 arbitré « Sprint 104 », étiquette ajoutée au démarrage) — 6 pts
@@ -7021,7 +7021,17 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Audit tests :** `docs/memory/audits/sprint-104-test-coverage.md`
 **Harnais E2E :** pile dédiée `s104e2e` (backend `:8088`, Postgres `:5438`, image `s102e2e` re-taguée, 0 commit `backend/` depuis sa création) ; image `mcr.microsoft.com/playwright:v1.61.1-noble` téléchargée (>10 min)
 **Suites proposées par les agents (à arbitrer au `/sprint end`) :** marge horizontale de la landing à 40 px comme la maquette [S] ; header qui déborde en largeur au texte ×2 (375 px, 1024 `de`) [S] ; `<p>` du bandeau final sans `leading-*` [XS] ; CTA du bandeau final et du header hors gabarit DS [XS] ; vérification Safari/Firefox (`:has()`) + lecteur d'écran [XS]
-**Status :** En revue — PR vers `dev` ouverte, `/sprint end 104` après merge
+**Issues livrées (5) :** #616, #614, #793, #682, #425 — milestone #105 fermé après merge
+**Nouveaux pitfalls / patterns / décisions :** PIT-S104-001…006 (dont : `test.use({reducedMotion})` inexistant ; une mutation de géométrie sur `transition-all` se relit aux anciennes valeurs ; `html{font-size:200%}` ne prouve rien sur ce DS en px) · PAT-S104-001…003 (plafond de conteneur Tailwind 4 hors paliers ; ancres sous barre collante + bannière optionnelle ; liste ciblée par les tests sans dépendre de l'ordre) · DEC-S104-001 (gabarit `lg` des CTA pris au DS, pas à shadcn) · DEC-S104-002 (plafond 1340 px réservé à la landing) · aucun bug ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 8 signalés, 4 déjà traités dans le sprint) :**
+  - Audit WCAG 1.4.4, texte ×2, débordement horizontal du header [S | design] → issue #799 (backlog)
+  - Marges horizontales de la landing à 40 px comme la maquette [S | design] → issue #800 (backlog)
+  - Bandeau final et header : taille de bouton hors DS ? [XS | design] → issue #801 (backlog)
+  - `<p>` du bandeau final sans `leading-*` [XS | design] → issue #802 (backlog)
+  - Safari, Firefox (`:has()`) et lecteur d'écran non vérifiés [XS | design] → consigné ici, pas d'issue (arbitrage dev)
+  Déjà traités dans le sprint : références `landing-hero` régénérées (`04b3c120`), CI Linux verte sur ces références, largeur de capture < 1340 px vérifiée, JSDoc #642 remis à jour (`8c8e7023`). Ratio discard 0/9.
+**Status :** Terminé — PR #798 mergée, issues #616/#614/#793/#682/#425 et milestone #105 fermés après merge
 
 ### Sprint 105 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Frise : gouttière, zébrures, recadrage)
 **Objectif :** gouttière de 176 px, zébrures de lanes au lieu de la grille de jours, touche F qui recadre
