@@ -1,4 +1,5 @@
 import { parseLocalDate } from '@/lib/date-iso'
+import { MAX_OCCURRENCES, occurrenceStart, seriesHorizon } from '@/lib/recurrence'
 import type { Event } from '@/types/event'
 
 /**
@@ -14,43 +15,63 @@ import type { Event } from '@/types/event'
  *
  * Série récurrente (hors énoncé, dérivé de la même règle) : sa fin n'est pas celle de la
  * 1re occurrence. Sans `recurrenceEndDate`, elle ne se termine jamais → jamais passée.
- * Bornée : la dernière occurrence DÉBUTE au plus tard à `recurrenceEndDate` et dure
- * autant que la première ; la série est passée quand CETTE fin-là est révolue.
+ * Bornée : `recurrenceEndDate` est un HORIZON inclusif (BR-EVE-012, `seriesHorizon`), PAS
+ * le début de la dernière occurrence. La dernière occurrence est la plus grande
+ * `occurrenceStart(start, unit, k) <= horizon` (même calcul, depuis l'origine et avec le
+ * clamp de fin de mois, que la frise et `nextStart`) ; elle dure autant que la 1re, et la
+ * série est passée quand CETTE fin-là est révolue. Correctif de review S106 : la 1re
+ * version prenait `recurrenceEndDate` pour ce début et finissait la série trop tard
+ * quand la borne tombait hors cadence.
+ * `isRecurring` sans `recurrenceUnit` (donnée incohérente) : traité comme un ponctuel,
+ * comme le fait `nextStart`.
  *
  * Donnée illisible (date invalide) → `false` : on ne désature pas sur une supposition.
  */
 export type PastEventInput = Pick<
   Event,
-  'startDate' | 'endDate' | 'isRecurring' | 'recurrenceEndDate'
+  'startDate' | 'endDate' | 'isRecurring' | 'recurrenceUnit' | 'recurrenceEndDate'
 >
 
 const civilDay = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
 const isValid = (date: Date): boolean => !Number.isNaN(date.getTime())
 
+/** Écart en JOURS CIVILS (pas en ms : un changement d'heure fausserait la division). */
+const civilDaysBetween = (from: Date, to: Date): number =>
+  Math.round(
+    (Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) -
+      Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) /
+      86_400_000,
+  )
+
 export function isPastEvent(event: PastEventInput, today: Date): boolean {
   const start = parseLocalDate(event.startDate)
   const rawEnd = event.endDate ? parseLocalDate(event.endDate) : start
   const end = isValid(rawEnd) ? rawEnd : start
   if (!isValid(end)) return false
+  const todayDay = civilDay(today).getTime()
 
-  let lastEnd = civilDay(end)
-  if (event.isRecurring) {
-    if (!event.recurrenceEndDate) return false
-    const lastStart = parseLocalDate(event.recurrenceEndDate)
-    if (!isValid(lastStart) || !isValid(start)) return false
-    // Écart en JOURS CIVILS (pas en ms : un changement d'heure fausserait la division).
-    const firstStart = civilDay(start)
-    const spanDays = Math.round(
-      (Date.UTC(lastEnd.getFullYear(), lastEnd.getMonth(), lastEnd.getDate()) -
-        Date.UTC(firstStart.getFullYear(), firstStart.getMonth(), firstStart.getDate())) /
-        86_400_000,
-    )
-    lastEnd = new Date(
-      lastStart.getFullYear(),
-      lastStart.getMonth(),
-      lastStart.getDate() + Math.max(0, spanDays),
-    )
+  const unit = event.isRecurring ? event.recurrenceUnit : null
+  if (!unit) return civilDay(end).getTime() < todayDay
+
+  if (!event.recurrenceEndDate) return false
+  const bound = parseLocalDate(event.recurrenceEndDate)
+  if (!isValid(bound) || !isValid(start)) return false
+  const origin = civilDay(start)
+  const horizon = seriesHorizon({ start: origin, unit, endDate: civilDay(bound) }).getTime()
+
+  // Dernier début d'occurrence <= horizon (l'origine en fait toujours partie).
+  let lastStart = origin
+  for (let k = 1; k < MAX_OCCURRENCES; k++) {
+    const next = occurrenceStart(origin, unit, k)
+    if (next.getTime() > horizon) break
+    lastStart = next
   }
-  return lastEnd.getTime() < civilDay(today).getTime()
+  const span = Math.max(0, civilDaysBetween(origin, civilDay(end)))
+  const lastEnd = new Date(
+    lastStart.getFullYear(),
+    lastStart.getMonth(),
+    lastStart.getDate() + span,
+  )
+  return lastEnd.getTime() < todayDay
 }

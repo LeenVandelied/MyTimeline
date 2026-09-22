@@ -307,6 +307,90 @@ test.describe('#607 — ligne passée désaturée', () => {
   }
 })
 
+/**
+ * Correctif review S106 — séries récurrentes. Deux événements ponctuels à −120 j, mis en
+ * série par PATCH (`recurrenceEndDate` est PATCH-only, BR-EVE-012) :
+ *  - hebdomadaire BORNÉE à −10 j (borne hors cadence : 110 j n'est pas un multiple de 7,
+ *    dernière occurrence à −15 j) → série PASSÉE, ligne désaturée ;
+ *  - mensuelle SANS borne → jamais passée, bien que sa 1re occurrence le soit.
+ */
+test.describe('#607 — séries récurrentes dans l’historique', () => {
+  test.use({ viewport: DESKTOP })
+
+  test('série bornée passée : désaturée ; série sans fin : non désaturée', async ({ page }) => {
+    const userId = await getUserId(page)
+    const cat = await seedCategory(page, unique('S106 Serie'))
+    const names = { bounded: unique('S106 serie bornee'), open: unique('S106 serie ouverte') }
+    const at = (days: number) => new Date(`${localIsoDate(days)}T12:00:00`).toISOString()
+    const res = await page.request.post(`${API}/users/${userId}/products`, {
+      data: {
+        name: unique('S106 Serie'),
+        category: cat.id,
+        userId,
+        events: [
+          { name: names.bounded, type: 'single', date: at(-120) },
+          { name: names.open, type: 'single', date: at(-120) },
+        ],
+      },
+    })
+    expect(res.status(), `seed produit 2xx (obtenu ${res.status()})`).toBeLessThan(300)
+    const { id: productId } = (await res.json()) as { id: string }
+    await trackSeed(page, { kind: 'product', userId, id: productId })
+
+    const eventsUrl = `${API}/users/${userId}/products/${productId}/events`
+    const events = (await (await page.request.get(eventsUrl)).json()) as ApiEvent[]
+    const find = (title: string): ApiEvent => {
+      const found = events.find((e) => e.title === title)
+      expect(found, `event seedé « ${title} »`).toBeTruthy()
+      return found as ApiEvent
+    }
+    const bounded = find(names.bounded)
+    const open = find(names.open)
+    const patchBounded = await page.request.patch(`${API}/events/${bounded.id}`, {
+      data: {
+        isRecurring: true,
+        recurrenceUnit: 'WEEK',
+        recurrenceEndDate: localIsoDate(-10),
+        version: bounded.version,
+      },
+    })
+    expect(patchBounded.status(), 'mise en série hebdomadaire bornée').toBe(200)
+    const patchOpen = await page.request.patch(`${API}/events/${open.id}`, {
+      data: { isRecurring: true, recurrenceUnit: 'MONTH', version: open.version },
+    })
+    expect(patchOpen.status(), 'mise en série mensuelle sans borne').toBe(200)
+    // Précondition serveur : la borne est persistée, la série ouverte n'en a pas.
+    const reread = (await (await page.request.get(eventsUrl)).json()) as Array<
+      ApiEvent & { isRecurring?: boolean; recurrenceEndDate?: string | null }
+    >
+    const boundedNow = reread.find((e) => e.id === bounded.id)
+    const openNow = reread.find((e) => e.id === open.id)
+    expect(boundedNow?.isRecurring).toBe(true)
+    expect(boundedNow?.recurrenceEndDate?.slice(0, 10)).toBe(localIsoDate(-10))
+    expect(openNow?.isRecurring).toBe(true)
+    expect(openNow?.recurrenceEndDate ?? null).toBeNull()
+
+    await ensureAuthenticated(page)
+    await page.goto(`/fr/products/${productId}`, { waitUntil: 'domcontentloaded' })
+    const row = (id: string): Locator => page.getByTestId(`product-detail-history-row-${id}`)
+    await expect(row(bounded.id)).toHaveAttribute('data-past', 'true')
+    await expect(row(open.id)).toHaveAttribute('data-past', 'false')
+
+    const boundedR = await readAtRest(
+      page,
+      row(bounded.id).getByText(names.bounded, { exact: true }),
+    )
+    const openR = await readAtRest(page, row(open.id).getByText(names.open, { exact: true }))
+    expect(boundedR.foreground, 'série passée désaturée ≠ série ouverte').not.toBe(openR.foreground)
+    expect(
+      boundedR.ratio,
+      describeRendering('série bornée passée', boundedR),
+    ).toBeGreaterThanOrEqual(WCAG_AA_NORMAL)
+    await expect(row(bounded.id).locator('.sr-only')).toHaveText('Passé')
+    await expect(row(open.id).locator('.sr-only')).toHaveCount(0)
+  })
+})
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // #698 — squelettes et préchargement
 // ═══════════════════════════════════════════════════════════════════════════════
