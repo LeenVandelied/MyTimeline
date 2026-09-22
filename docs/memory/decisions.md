@@ -1134,3 +1134,12 @@ Arbitrage dev au démarrage du S105. Grille retirée sur bureau, portrait et pay
 
 ## DEC-S105-003 — La touche F recadre la frise ; le plein écran n'a plus de raccourci
 Arbitrage dev au démarrage du S105 : plein écran au bouton seul (`timeline-fullscreen`), Échap le quitte toujours ; `help.fullscreen` reste l'`aria-label` du bouton, `help.fit` décrit F. « Affiché » suit la règle du rendu : catégorie masquée exclue, catégorie repliée incluse (résumé #601), produit replié exclu. Niveau choisi = le plus fin où l'étendue tient (marge 40 px), calculé d'abord en px/jour pour rester compatible avec le zoom continu (#593). Aucun événement affiché : no-op silencieux (annonce `aria-live` versée en follow-up). (Sprint 105, #597)
+
+## DEC-S106-001 — Historique produit : un événement passé change d'encre, sans filtre ni opacité sur le texte
+Arbitrage dev au démarrage du S106 : ligne entière traitée, archivé cumulé (pastille `.mt-evt--archived` à .45 + badge). Mise en œuvre : encre `ink-muted` sur la ligne, `grayscale(1)` sur la seule pastille décorative, mention sr-only « passé » dans les 4 locales, sans badge visible (validé par le dev : presque tout l'historique est passé, un badge répété serait du bruit). Contraste mesuré 5,96:1 (clair) / 6,26:1 (sombre). Anti-pattern : `.mt-evt--archived` ou une opacité sur du texte (PIT-S61-003, PIT-S70-003). (Sprint 106, #607)
+
+## DEC-S106-002 — Critère « passé » d'un événement : `isPastEvent`
+Fin (ou début si l'événement est ponctuel) strictement antérieure au jour civil local ; série bornée = fin de la dernière occurrence réelle ≤ horizon (PIT-S106-001) ; série sans fin = jamais passée (validé par le dev). Série marquée récurrente sans unité : traitée comme ponctuelle, comme `nextStart`. (Sprint 106, #607)
+
+## DEC-S106-003 — Création de produit/catégorie : l'invalidation du cache n'est pas attendue
+Arbitrage dev au démarrage du S106, écrit en commentaire de #698 : `onSuccess` de `useCreateProduct` / `useCreateCategory` lance `invalidateQueries` sans retourner la promesse. Le tiroir se ferme dès la réponse ; la liste peut montrer l'état précédent pendant un aller-retour. Alternative écartée : attendre l'invalidation (+1 requête de latence perçue sur le bouton). Aucun code modifié. (Sprint 106, #698)
