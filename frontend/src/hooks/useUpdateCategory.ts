@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateCategory } from '@/services/categoryService'
 import { queryKeys } from '@/lib/query-keys'
 import type { Category, CategoryUpdate } from '@/types/category'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 
 /**
  * #62 — Mise à jour partielle d'une catégorie via TanStack Query v5 (mutation).
@@ -17,11 +18,11 @@ import type { Category, CategoryUpdate } from '@/types/category'
  * `error.response.status` pour distinguer 404 / 409 (nom dupliqué) / 403 (ownership,
  * ex. catégorie système) et l'afficher inline. NE PAS avaler l'erreur ici.
  */
-export function useUpdateCategory() {
+export function useUpdateCategory(options?: InlineErrorOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<Category, unknown, { id: string; data: CategoryUpdate }>({
-    mutationFn: ({ id, data }) => updateCategory(id, data),
+    mutationFn: ({ id, data }) => updateCategory(id, data, options),
     onSuccess: (_result, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.detail(id) })

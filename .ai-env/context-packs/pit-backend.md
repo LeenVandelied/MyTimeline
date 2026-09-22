@@ -926,6 +926,13 @@ La prescription « `/\p{Lu}/u` » répliquait la catégorie de `Character.isUppe
 Le processus qui écoute s'appelle `next-server (v15.x)`. L'ancien serveur a survécu, la build suivante a réécrit `.next` sous lui ([[PIT-S95-001]]) et le nouveau `next start` est mort en `EADDRINUSE` : 33 rouges sur 39, alors que l'oracle `/api/auth/me` (401) ET `/fr/login` (200) restaient verts. Arrêter par le PID qui écoute (`lsof -nP -iTCP:3000 -sTCP:LISTEN`, cwd vérifié par `lsof -a -p <pid> -d cwd`), contrôler que le port est libre, lire le log du nouveau serveur. (Sprint 101, lead)
 
 
+## PIT-S102-003 — `next dev` + un autre agent qui édite le même working tree : pages bloquées sur « Chargement… »
+Chaque édition déclenche une recompilation HMR pendant la spec ; la page reste sur son squelette et l'assertion suivante expire. Signature : lignes `✓ Compiled in …` intercalées dans le log Next pendant le test. Rejouer à chaud avant tout diagnostic, ou jouer contre `next build` + `next start` (sans HMR) dès qu'un fan-out partage le working tree. (Sprint 102, #764)
+
+
+## PIT-S102-004 — Un grep de `data-testid` sans résultat ne prouve pas l'absence du testid
+Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,cancel}` n'existait : le grep ne trouvait que `timeline-actionsheet-overlay`, les autres identifiants étant composés dynamiquement, et la spec `sprint-101-touch-targets` les citait déjà. Avant d'écrire « n'existe pas » dans un briefing, chercher aussi dans `frontend/e2e/` (une spec qui cite l'identifiant prouve qu'il est rendu) et le préfixe seul. L'agent l'a relevé, sans conséquence. (Sprint 102, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

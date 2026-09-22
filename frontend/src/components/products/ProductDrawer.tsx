@@ -41,6 +41,7 @@ import { ProductSparkline } from './ProductSparkline'
 import { useCategories } from '@/hooks/useCategories'
 import { useCreateProduct } from '@/hooks/useCreateProduct'
 import { useUpdateProduct } from '@/hooks/useUpdateProduct'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { useArchiveProduct } from '@/hooks/useArchiveProduct'
 import { useAuth } from '@/hooks/useAuth'
 import type { Product, ProductCreate, ProductUpdate } from '@/types/product'
@@ -127,8 +128,10 @@ export function ProductDrawer({
   const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data])
   const noCategory = open && categoriesQuery.isSuccess && categories.length === 0
 
-  const createMutation = useCreateProduct(userId)
-  const updateMutation = useUpdateProduct(userId)
+  // #761 — le `catch` de `onSubmit` affiche `errors.forbidden` sur un 403 : on retire
+  // ces deux requêtes du toast global « accès refusé » (sinon double signalement).
+  const createMutation = useCreateProduct(userId, HANDLES_FORBIDDEN_INLINE)
+  const updateMutation = useUpdateProduct(userId, HANDLES_FORBIDDEN_INLINE)
   const archiveMutation = useArchiveProduct(userId)
 
   const [colorOverride, setColorOverride] = React.useState<string | null>(null)

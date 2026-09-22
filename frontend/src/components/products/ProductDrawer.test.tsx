@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Category } from '@/types/category'
 import type { Product } from '@/types/product'
 import { ProductDrawer } from './ProductDrawer'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 
 /**
  * #61 — Tests ProductDrawer : création (combobox peuplée depuis fetch, aucun UUID
@@ -22,11 +23,20 @@ const updateState = { mutateAsync: updateMutateAsync, isPending: false }
 vi.mock('@/hooks/useCategories', () => ({
   useCategories: (...args: unknown[]) => useCategoriesMock(...args),
 }))
+// #761 — espions sur les ARGUMENTS des hooks : le drawer doit leur passer l'opt-out 403.
+const useCreateProductSpy = vi.hoisted(() => vi.fn())
+const useUpdateProductSpy = vi.hoisted(() => vi.fn())
 vi.mock('@/hooks/useCreateProduct', () => ({
-  useCreateProduct: () => createState,
+  useCreateProduct: (...args: unknown[]) => {
+    useCreateProductSpy(...args)
+    return createState
+  },
 }))
 vi.mock('@/hooks/useUpdateProduct', () => ({
-  useUpdateProduct: () => updateState,
+  useUpdateProduct: (...args: unknown[]) => {
+    useUpdateProductSpy(...args)
+    return updateState
+  },
 }))
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
@@ -116,6 +126,27 @@ describe('ProductDrawer', () => {
     updateMutateAsync.mockReset()
   })
   afterEach(() => vi.clearAllMocks())
+
+  it("#761 — 403 : errors.forbidden inline, et les hooks create/update reçoivent l'opt-out du toast", async () => {
+    // Le toast lui-même est tu par l'intercepteur (couvert par `apiClient.test.ts` et,
+    // chaîne réelle, par `CategoryDrawer.forbidden.test.tsx`) ; ici on fige que CE
+    // drawer, qui rend le 403 inline, déclare bien l'opt-out à ses deux mutations.
+    const user = userEvent.setup()
+    createMutateAsync.mockRejectedValue({ response: { status: 403 } })
+    render(<ProductDrawer open onOpenChange={noop} mode="create" />)
+
+    expect(useCreateProductSpy).toHaveBeenLastCalledWith('user-1', HANDLES_FORBIDDEN_INLINE)
+    expect(useUpdateProductSpy).toHaveBeenLastCalledWith('user-1', HANDLES_FORBIDDEN_INLINE)
+
+    await user.type(
+      screen.getByPlaceholderText('products.drawer.fields.namePlaceholder'),
+      'Voiture',
+    )
+    await selectCategory(user, 'Véhicules')
+    await user.click(screen.getByText('products.drawer.actions.create'))
+
+    expect(await screen.findByText('products.drawer.errors.forbidden')).toBeInTheDocument()
+  })
 
   it('mode création : peuple la combobox depuis useCategories (aucun UUID en dur)', async () => {
     const user = userEvent.setup()

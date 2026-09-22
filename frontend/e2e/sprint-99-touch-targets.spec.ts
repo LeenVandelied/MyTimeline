@@ -26,6 +26,11 @@ import { SHARED } from './support/accounts'
  *    n'est de toute façon pas appariée par le sélecteur (div sans rôle) ; la
  *    clause d'exclusion la nomme pour qu'un futur `role="button"` n'y change rien.
  *
+ * INTERRUPTEURS (#763) : le sélecteur couvre `[role="switch"]`, `[role="checkbox"]`
+ * et `label.mt-switch` (même liste que `sprint-101-touch-targets.spec.ts`). Aucun
+ * réglage n'en monte aujourd'hui ; la sonde « interrupteur injecté » prouve qu'un
+ * interrupteur ajouté plus tard serait mesuré ET signalé s'il faisait moins de 44 px.
+ *
  * DONNÉES : le compte partagé n'a en général ni avatar, ni autre session, ni
  * export async. Ces états sont donc FOURNIS par `page.route` (réponses conformes
  * aux schémas Zod `UserSchema` / `SessionSchema` / `exportJobResponseSchema`),
@@ -74,6 +79,12 @@ async function measureControls(root: Locator): Promise<Measured[]> {
       '[role="button"]',
       '[role="combobox"]',
       '[role="option"]',
+      // #763 — interrupteurs et cases : sans ces entrées, un `Switch` (`ui/switch.tsx`)
+      // ou un `Checkbox` ajouté aux réglages échapperait à la mesure. L'`<input>` du
+      // Switch est à 0×0 (filtré comme invisible) : la cible visible est son label.
+      '[role="switch"]',
+      '[role="checkbox"]',
+      'label.mt-switch',
     ].join(',')
     const isExempt = (node: Element): boolean =>
       // input file `sr-only` de l'avatar (cf. en-tête).
@@ -281,6 +292,49 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     await expectOptionsTouchable(page, 'pref-language', 4)
     await expectOptionsTouchable(page, 'pref-theme', 3)
     await expectOptionsTouchable(page, 'pref-density', 3)
+  })
+
+  /**
+   * #763 — SONDE du sélecteur (critère « un interrupteur ajouté plus tard serait bien
+   * mesuré ») : on injecte dans la page des réglages un interrupteur au balisage exact
+   * de `ui/switch.tsx`, de taille FIXE 38×22 en style inline (indépendante du CSS du
+   * DS). La mesure doit le
+   * VOIR (par son label, l'input 0×0 restant filtré) et le classer sous 44 px.
+   * Test séparé : l'injection ne touche pas les mesures réelles des autres tests.
+   */
+  test('sonde : un interrupteur injecté est mesuré et signalé sous 44 px', async ({ page }) => {
+    await ensureAuthenticated(page)
+    await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('settings-index')).toBeVisible()
+    const root = page.getByTestId('settings-page')
+    await root.evaluate((el) => {
+      const label = document.createElement('label')
+      label.className = 'mt-switch'
+      label.setAttribute('data-testid', 'zz-probe-switch')
+      // Taille FIXE (review S102) : la sonde teste le SÉLECTEUR, pas le CSS du DS.
+      // Un `.mt-switch` agrandi un jour à 44 px ne doit pas la faire rougir.
+      label.style.cssText = 'display:inline-block;width:38px;height:22px;overflow:hidden'
+      const input = document.createElement('input')
+      input.type = 'checkbox'
+      input.setAttribute('role', 'switch')
+      const track = document.createElement('span')
+      track.className = 'mt-switch__track'
+      track.setAttribute('aria-hidden', 'true')
+      label.append(input, track)
+      el.prepend(label)
+    })
+    const measured = await measureControls(root)
+    const probe = measured.filter((m) => m.label.includes('zz-probe-switch'))
+    console.log(
+      `[#763 sonde] ${probe.map((m) => `${m.label}=${m.width.toFixed(1)}x${m.height.toFixed(1)}`).join(' | ')}`,
+    )
+    // Vu une fois, par le label (l'input 0×0 est filtré comme invisible).
+    expect(probe).toHaveLength(1)
+    expect(probe[0]!.label.startsWith('label[')).toBe(true)
+    // Et signalé : taille imposée 38×22, sous le seuil.
+    expect(probe[0]!.width).toBeCloseTo(38, 0)
+    expect(probe[0]!.height).toBeCloseTo(22, 0)
+    expect(probe[0]!.width < MIN_TARGET - EPS || probe[0]!.height < MIN_TARGET - EPS).toBe(true)
   })
 
   test('compte : export (toutes les étapes) + sheet de suppression', async ({ page }) => {

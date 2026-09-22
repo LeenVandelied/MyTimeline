@@ -183,3 +183,9 @@ Les deux `<p className="truncate">` de `SessionList.tsx` perdaient le texte au-d
 
 ## BUG-S101-003 — Croix de fermeture des dialogues à 16×16 px et pieds de drawers à 36 px en mobile
 La croix de `DialogContent` (icône sans padding) était une cible de 16 px dans TOUS les dialogues et bottom sheets, et sans fond (`opacity-70`) sur contenu défilé ; pieds à 36 px, rangées denses à 32 px. Correctif : DEC-S101-003 ; specs `sprint-101-touch-targets` (rouge sur la base) et `sprint-101-dialog-close-contrast` (rouge sur l'ancien `dialog.tsx`, 2 thèmes). (Sprint 101, #754/#757)
+
+## BUG-S102-001 — Un 403 était signalé deux fois dans les drawers produit et catégorie (message inline + toast)
+`apiClient.ts` toastait tout 403 alors que `ProductDrawer`/`CategoryDrawer` affichent déjà `errors.forbidden`. Correctif : opt-out typé par requête (PAT-S102-001), activé seulement par les 4 appels création/édition des 2 drawers ; formulaire d'événement et `DeleteConfirmDialog` exclus (message inline générique, le toast y est le seul porteur de la cause → issue de suite). (Sprint 102, #761)
+
+## BUG-S102-002 — L'indicateur de force annonçait « fort » en comptant les lettres non-ASCII comme symboles
+`PasswordStrength.tsx` : `/[a-z]/` et `/[^A-Za-z0-9]/`. Correctif : classes Unicode (DEC-S102-001) ; `Ωabcdefg١` passe de 4 (« fort ») à 3 (« moyen »). (Sprint 102, #762)

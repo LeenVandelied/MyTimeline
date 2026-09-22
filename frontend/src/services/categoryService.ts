@@ -6,6 +6,7 @@ import {
   type CategoryUpdate,
 } from '@/types/category'
 import { safeErrorMessage } from '@/lib/safe-error'
+import type { InlineErrorOptions } from './inlineErrorHandling'
 
 /**
  * Statuts métier attendus (surfacés inline par l'UI) : ne PAS polluer la console.
@@ -55,9 +56,13 @@ export const getCategories = async (): Promise<Category[]> => {
  * de contrat tôt. L'erreur axios est propagée telle quelle : l'appelant lit
  * `error.response.status` (409 = nom dupliqué BR-CAT-004) pour l'inline.
  */
-export const createCategory = async (data: CategoryCreate): Promise<Category> => {
+export const createCategory = async (
+  data: CategoryCreate,
+  // #761 — optionnel et rétro-compatible : seul un écran qui rend le 403 inline le passe.
+  options?: InlineErrorOptions,
+): Promise<Category> => {
   try {
-    const response = await apiClient.post('/categories', data)
+    const response = await apiClient.post('/categories', data, options)
     return categorySchema.parse(response.data)
   } catch (error) {
     logUnexpected('Erreur lors de la création de la catégorie :', error)
@@ -72,9 +77,13 @@ export const createCategory = async (data: CategoryCreate): Promise<Category> =>
  * autrui, 409 si le nouveau nom collisionne (BR-CAT-004). L'erreur est propagée
  * pour l'affichage inline.
  */
-export const updateCategory = async (id: string, data: CategoryUpdate): Promise<Category> => {
+export const updateCategory = async (
+  id: string,
+  data: CategoryUpdate,
+  options?: InlineErrorOptions,
+): Promise<Category> => {
   try {
-    const response = await apiClient.patch(`/categories/${id}`, data)
+    const response = await apiClient.patch(`/categories/${id}`, data, options)
     return categorySchema.parse(response.data)
   } catch (error) {
     logUnexpected('Erreur lors de la mise à jour de la catégorie :', error)

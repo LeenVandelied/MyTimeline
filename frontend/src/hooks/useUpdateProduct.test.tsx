@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react-query'
 import { useUpdateProduct } from './useUpdateProduct'
 import type { Product, ProductUpdate } from '@/types/product'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 
 /**
  * #61 — Mutation PATCH partielle : `updateProduct(userId, productId, data)`.
@@ -45,7 +46,20 @@ describe('useUpdateProduct', () => {
     const patch: ProductUpdate = { name: 'Renommé' }
     await result.current.mutateAsync({ productId: 'p1', data: patch })
 
-    expect(updateProductMock).toHaveBeenCalledWith('user-1', 'p1', patch)
+    // #761 — sans option, le hook ne pose AUCUN opt-out (4e argument undefined).
+    expect(updateProductMock).toHaveBeenCalledWith('user-1', 'p1', patch, undefined)
+  })
+
+  it("#761 — relaie l'opt-out 403 fourni par l'écran au service", async () => {
+    updateProductMock.mockResolvedValue(FAKE)
+    const { result } = renderHook(() => useUpdateProduct('user-1', HANDLES_FORBIDDEN_INLINE), {
+      wrapper: makeWrapper(),
+    })
+
+    const patch: ProductUpdate = { name: 'Renommé' }
+    await result.current.mutateAsync({ productId: 'p1', data: patch })
+
+    expect(updateProductMock).toHaveBeenCalledWith('user-1', 'p1', patch, HANDLES_FORBIDDEN_INLINE)
   })
 
   // NB : la propagation d'erreur (404 produit supprimé, affichée inline) est

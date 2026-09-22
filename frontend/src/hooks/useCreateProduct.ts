@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createProduct } from '@/services/productService'
 import { queryKeys } from '@/lib/query-keys'
 import type { Product, ProductCreate } from '@/types/product'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 
 /**
  * #61 — Création d'un produit via TanStack Query v5 (mutation).
@@ -16,7 +17,7 @@ import type { Product, ProductCreate } from '@/types/product'
  * avalée : le composant lit `error` (état `isError`) et `error.response.status`
  * pour l'affichage inline (submitting / error / conflict 409).
  */
-export function useCreateProduct(userId: string | undefined) {
+export function useCreateProduct(userId: string | undefined, options?: InlineErrorOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<Product, unknown, ProductCreate>({
@@ -24,7 +25,7 @@ export function useCreateProduct(userId: string | undefined) {
       if (!userId) {
         return Promise.reject(new Error('userId manquant'))
       }
-      return createProduct(userId, data)
+      return createProduct(userId, data, options)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })

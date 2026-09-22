@@ -6930,3 +6930,31 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - Commentaire #85 [XS] et compteur br-auth [XS] → absorbés (commit de clôture)
   Ratio discard 1/7.
 **Status :** Terminé — PR #760 mergée, issues #733/#735/#754/#757/#758 et milestone #102 fermés après merge
+
+### Sprint 102 — 2026-09-22 → 2026-09-22 (Terminé — merge PR #765 dans dev — cohésion ≈ 0.40, suites du S101 : 403 signalé une fois, force de mot de passe Unicode, cibles tactiles restantes)
+**Objectif :** un 403 déjà affiché dans un drawer ne déclenche plus le toast global ; l'indicateur de force suit la sémantique Unicode ; le test des réglages voit les interrupteurs ; feuille d'actions de la frise, fenêtre de lecture et CTA d'état vide mesurés à 375 px
+**Milestone GitHub :** #103 (fermé après merge)
+**Issues livrées (4) :** #761, #762, #763, #764 (étiquette `sprint-102` et milestone posés par le lead au démarrage — périmètre arbitré par le dev : les 4 suites du S101)
+**Vagues exécutées :** V1 = A (#761, #762, Vitest) ∥ B (#763, #764, Playwright exclusif) | retours de review : A (`80aa644e`) ∥ B (`1c3bc02f`)
+**Migrations Flyway :** aucune
+**Mini-plans :** rédigés par le lead (`docs/memory/sprints/sprint-102/architect-plans.md`) — pas de `/sprint plan`
+**Branche :** `claude/sprint-102-start-0f4450` (worktree, pas de `sprint/102`)
+**Commits :** 22cb2de7 (#761), cd8f5e63 (#762), 67ee5618 (#763, spec seule), a535a960 (#764, spec seule), 80aa644e (#761, retour de review), 1c3bc02f (#763, retour de review), f91ea245 (docs avant PR), + commit de clôture (consolidation mémoire, packs pitfalls)
+**Écarts d'énoncé :** #761 : `TimelineEditHost` ne gère PAS le 403 inline (message générique, le toast y est le seul porteur de la cause) → hors périmètre, suite proposée ; opt-out PAR REQUÊTE (champ axios typé `inlineHandledStatuses`, restreint au 403) et non par URL ; #762 : symbole = `[^\p{L}\p{M}\p{N}]` (plus large que l'énoncé) ; #764 : aucune cible < 44 px → aucune correction de production ; fenêtre de lecture = `TimelineBottomSheet` ; WeekAgenda/ProductList non rendus à 375 px (absence assertée)
+**Erreur du lead :** contre-vérification #764 fausse — les testids `timeline-actionsheet-{edit,delete,cancel}` existent (grep `--include` mal formé sous zsh) ; sans conséquence, l'agent l'a relevée
+**Tests :** Vitest 157 fichiers / 1997 verts | `next build`, `lint`, `format:check` verts | E2E suite complète contre `next build`+`next start` : 499 verts, 8 sautés, 2 rouges hors sprint (`sprint-77` armement darwin attendu ; `sprint-101-fab-landscape:271` préexistant prouvé par A/B sur `origin/dev`)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (2 résolus : `80aa644e`, `1c3bc02f` ; factorisation de `measureControls` → suite) ; cycle 2 relu par le lead : OK
+**Audit tests :** `docs/memory/audits/sprint-102-test-coverage.md`
+**BR impactées :** BR-AUT-003 (indicateur de force aligné sur la sémantique Unicode de la politique, invariant #508 conservé)
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S102-001…004, PAT-S102-001…002, DEC-S102-001…002, BUG-S102-001…002 ; PIT-S101-003 marqué résolu ; packs pitfalls régénérés, `--check` = 0
+**Harnais E2E :** pile dédiée `s102e2e` (backend `:8087`, image `s101e2e` re-taguée, 0 commit backend depuis), démontée après CI verte ; A/B `origin/dev` dans un worktree jetable (supprimé avec l'accord du dev)
+**CI :** 7/7 verte sur `f91ea245` (`e2e` Linux compris)
+**Contrôle de complétude :** vert sans `--force`
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 4 items, tous « issue backlog » sur recommandation du lead) :**
+  - 403 expliqué inline dans le formulaire d'événement et `DeleteConfirmDialog`, puis opt-out [S | auth] → issue #766 (backlog)
+  - Mesurer à 375 px les dernières cibles tactiles (CTA vides produits/catégories, « désarchiver », `⋯` de la frise) [S | design] → issue #767 (backlog)
+  - Factoriser `measureControls` (3 copies) [XS | design] → issue #768 (backlog)
+  - `sprint-101-fab-landscape:271` rouge local selon l'heure, préexistant (A/B) [XS | tests] → issue #769 (backlog)
+  Ratio discard 0/4.
+**Status :** Terminé — PR #765 mergée, issues #761/#762/#763/#764 et milestone #103 fermés après merge

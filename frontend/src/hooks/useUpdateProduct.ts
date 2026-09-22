@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateProduct } from '@/services/productService'
 import { queryKeys } from '@/lib/query-keys'
 import type { Product, ProductUpdate } from '@/types/product'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 
 /**
  * #61 / #50 — Mise à jour partielle d'un produit via TanStack Query v5 (mutation).
@@ -16,7 +17,7 @@ import type { Product, ProductUpdate } from '@/types/product'
  * pour distinguer 404 (produit supprimé) / 409 (catégorie supprimée entre-temps)
  * / 403 (ownership) et l'afficher inline. NE PAS avaler l'erreur ici.
  */
-export function useUpdateProduct(userId: string | undefined) {
+export function useUpdateProduct(userId: string | undefined, options?: InlineErrorOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<Product, unknown, { productId: string; data: ProductUpdate }>({
@@ -24,7 +25,7 @@ export function useUpdateProduct(userId: string | undefined) {
       if (!userId) {
         return Promise.reject(new Error('userId manquant'))
       }
-      return updateProduct(userId, productId, data)
+      return updateProduct(userId, productId, data, options)
     },
     onSuccess: (_result, { productId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })

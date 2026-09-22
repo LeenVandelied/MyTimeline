@@ -1953,7 +1953,7 @@ Le lead a relié `frontend/node_modules` du worktree à celui du repo principal 
 La prescription « `/\p{Lu}/u` » répliquait la catégorie de `Character.isUpperCase` mais pas son itération `charAt(i)` (unités UTF-16 : un caractère hors BMP n'est jamais majuscule côté serveur) ni sa définition (Lu + Other_Uppercase : `Ⓐ`, `Ⅰ`). Résultat mesuré : `𝐀`/`𝟎` acceptés par le formulaire et refusés par le serveur (invariant #508 rompu), `Ⓐ`/`Ⅰ` dans l'autre sens. Regex retenue : `/(?=[\0-\uFFFF])\p{Uppercase}/u`. Vérifier les deux sens sur hors BMP, Other_Uppercase, Lt, No avec `jshell`, pas seulement le cas qui a motivé l'issue. (Sprint 101, #735)
 
 ## PIT-S101-003 — Le sélecteur de mesure PAT-S99-001 ne voit pas `ui/switch.tsx`
-Son `<input>` est à 0×0 et opacité 0 (filtré comme invisible) ; la cible peinte est un `<label class="mt-switch">` 38×22 sans rôle. Une spec de cibles tactiles est donc verte par omission sur tout interrupteur. `sprint-101-touch-targets` ajoute `label.mt-switch` ; `sprint-99-touch-targets` ne l'a pas. Tout contrôle « input masqué + label visible » doit être nommé dans le sélecteur. (Sprint 101, #754)
+Son `<input>` est à 0×0 et opacité 0 (filtré comme invisible) ; la cible peinte est un `<label class="mt-switch">` 38×22 sans rôle. Une spec de cibles tactiles est donc verte par omission sur tout interrupteur. `sprint-101-touch-targets` ajoute `label.mt-switch` ; `sprint-99-touch-targets` ne l'a pas. Tout contrôle « input masqué + label visible » doit être nommé dans le sélecteur. (Sprint 101, #754) — **Résolu au S102 (#763)** : `sprint-99-touch-targets` nomme `[role=switch]`, `[role=checkbox]`, `label.mt-switch`, et une sonde permanente le prouve.
 
 ## PIT-S101-004 — Mesurer juste après un `scrollIntoView` animé lit une position périmée
 Dans la sheet d'édition mobile, la cible était lue à y = 946 dans un viewport de 812 (défilement `smooth` hérité, non terminé) : `elementFromPoint` rendait `null` aux 4 coins, faux rouge « pseudo rogné ». `behavior: 'instant'` + `expect.poll` sur `rect.bottom <= innerHeight` avant toute mesure. (Sprint 101, #754)
@@ -1969,3 +1969,15 @@ Le processus qui écoute s'appelle `next-server (v15.x)`. L'ancien serveur a sur
 
 ## PIT-S101-008 — Valider chaque pseudo-hitbox isolément ne voit pas deux zones voisines qui se touchent
 Icônes éditer/archiver de `ProductsListView` : `size="sm"` (40 px) en `gap-1`, pseudo 44×44 centré ⇒ entraxe 44 = zones bord à bord, marge nulle. Le test des 4 coins passait pour chacune (1 px de marge), la review l'a vu. Toute rangée à plusieurs hitboxes asserte aussi `entraxe − 44 ≥ 2` (correctif `max-md:gap-2`, entraxe 48). (Sprint 101, #754, review)
+
+## PIT-S102-001 — « Aucun toast » est vacant dans un test de composant aux hooks de mutation mockés
+Le toast global vient de l'intercepteur axios : si les hooks de mutation sont mockés, la requête ne part jamais, et `expect(toast.error).not.toHaveBeenCalled()` passe avec ou sans correctif. Garder la chaîne réelle (drawer → hook → service → intercepteur) et ne remplacer que `apiClient.defaults.adapter` ; ajouter dans le même montage un témoin (même statut SANS opt-out) qui DOIT toaster. Exemple : `ProductDrawer.forbidden.test.tsx`, `CategoryDrawer.forbidden.test.tsx`. (Sprint 102, #761, review)
+
+## PIT-S102-002 — Passer d'une classe ASCII à une classe Unicode dans un score additif laisse souvent le total inchangé
+Une lettre non-ASCII qui passait de « symbole » à « casse » garde le même score global : un test sur le seul total ne discrimine rien. Construire des cas qui isolent une classe (ex. `ABCDEFGé!`, où le symbole est fourni par `!`) et vérifier par mutation qu'ils rougissent sur l'ancien code (4 des 6 nouveaux tests de `PasswordStrength.test.tsx`). (Sprint 102, #762)
+
+## PIT-S102-003 — `next dev` + un autre agent qui édite le même working tree : pages bloquées sur « Chargement… »
+Chaque édition déclenche une recompilation HMR pendant la spec ; la page reste sur son squelette et l'assertion suivante expire. Signature : lignes `✓ Compiled in …` intercalées dans le log Next pendant le test. Rejouer à chaud avant tout diagnostic, ou jouer contre `next build` + `next start` (sans HMR) dès qu'un fan-out partage le working tree. (Sprint 102, #764)
+
+## PIT-S102-004 — Un grep de `data-testid` sans résultat ne prouve pas l'absence du testid
+Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,cancel}` n'existait : le grep ne trouvait que `timeline-actionsheet-overlay`, les autres identifiants étant composés dynamiquement, et la spec `sprint-101-touch-targets` les citait déjà. Avant d'écrire « n'existe pas » dans un briefing, chercher aussi dans `frontend/e2e/` (une spec qui cite l'identifiant prouve qu'il est rendu) et le préfixe seul. L'agent l'a relevé, sans conséquence. (Sprint 102, lead)

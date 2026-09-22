@@ -4,6 +4,7 @@ import { refreshToken } from './authService'
 import { networkStatusStore } from './networkStatus'
 import { API_ERROR_KEYS, translateApiError } from './apiErrorMessages'
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/locales'
+import { handlesStatusInline } from './inlineErrorHandling'
 
 /**
  * #76 — Timeout par défaut (15 s). Couvre les requêtes API JSON normales sans
@@ -232,8 +233,16 @@ apiClient.interceptors.response.use(
       // Renvoyer l'utilisateur au login lui ferait perdre son écran pour une
       // ressource qu'il n'a simplement pas le droit de toucher.
       //
-      // Les écrans qui gèrent le 403 inline (`ProductDrawer`, `CategoryDrawer`,
-      // `TimelineEditHost`) le font dans leur `catch` sans supposer de navigation.
+      // #761 — UN SEUL SIGNALEMENT. Une requête qui a déclaré rendre le 403 elle-même
+      // (`inlineHandledStatuses`, cf. `inlineErrorHandling.ts`) n'a pas de toast :
+      // aujourd'hui `ProductDrawer` et `CategoryDrawer` (création/édition), qui
+      // affichent `errors.forbidden` dans leur `catch`. Opt-out PAR REQUÊTE et non par
+      // URL : un futur appelant de la même route sans gestion inline garde le toast.
+      //
+      // ⚠ `TimelineEditHost` (formulaire d'événement) et `DeleteConfirmDialog`
+      // n'affichent PAS la cause d'un 403 : ils rendent un message générique. Sur ces
+      // écrans, ce toast est le SEUL porteur de « accès refusé » — ne pas les faire
+      // opter out tant qu'ils n'affichent pas `errors.forbidden` eux-mêmes.
       //
       // NE PAS logger error.config.headers : contient l'en-tête Authorization
       // (jeton porteur) + cookies → fuite de credentials dans la console / les
@@ -243,7 +252,9 @@ apiClient.interceptors.response.use(
         method: error.config?.method,
         data: error.response?.data,
       })
-      toast.error(translateApiError(API_ERROR_KEYS.forbidden))
+      if (!handlesStatusInline(error.config, 403)) {
+        toast.error(translateApiError(API_ERROR_KEYS.forbidden))
+      }
     } else if (error.response?.status === 500) {
       toast.error(translateApiError(API_ERROR_KEYS.serverError))
     }

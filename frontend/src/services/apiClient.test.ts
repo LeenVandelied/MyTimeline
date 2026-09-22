@@ -213,6 +213,81 @@ describe('apiClient response interceptor', () => {
     }
   })
 
+  /**
+   * #761 — Règle du 403 : UN SEUL SIGNALEMENT, opt-out PAR REQUÊTE.
+   *
+   * Les trois tests figent les trois bords : l'opt-out tait le toast ; son absence
+   * le conserve (non-régression #733, cf. tests ci-dessus) ; et il ne neutralise
+   * JAMAIS le 401 (la redirection de session expirée doit survivre).
+   */
+  it('403 avec inlineHandledStatuses [403] : aucun toast, promesse rejetée, log assaini conservé', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const error = {
+        response: { status: 403 },
+        config: {
+          url: '/categories',
+          method: 'post',
+          inlineHandledStatuses: [403],
+          headers: { Authorization: 'Bearer secret' },
+        },
+      }
+      await expect(rejectionHandler!(error)).rejects.toBe(error)
+      expect(toastErrorMock).not.toHaveBeenCalled()
+      // Le log du 403 reste émis, sans en-têtes (jeton porteur / cookies).
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
+      expect(JSON.stringify(consoleErrorSpy.mock.calls[0])).not.toContain('secret')
+    } finally {
+      consoleErrorSpy.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+
+  it("403 sur la même route SANS l'option : le toast « accès refusé » est conservé", async () => {
+    // Opt-out par requête, pas par URL : un autre appelant de `/categories` qui ne
+    // rend pas le 403 lui-même doit garder son unique signalement.
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const error = { response: { status: 403 }, config: { url: '/categories', method: 'post' } }
+      await expect(rejectionHandler!(error)).rejects.toBe(error)
+      expect(toastErrorMock).toHaveBeenCalledTimes(1)
+      expect(toastErrorMock.mock.calls[0][0]).toMatch(/accès refusé/i)
+    } finally {
+      consoleErrorSpy.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+
+  it('401 avec inlineHandledStatuses [403] : toaste et redirige TOUJOURS', async () => {
+    const setHref = vi.fn()
+    const originalDescriptor = Object.getOwnPropertyDescriptor(window, 'location')
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        pathname: '/en/products',
+        set href(value: string) {
+          setHref(value)
+        },
+      },
+    })
+    try {
+      const error = {
+        response: { status: 401 },
+        config: { url: '/categories', method: 'post', inlineHandledStatuses: [403] },
+      }
+      await expect(rejectionHandler!(error)).rejects.toBe(error)
+      expect(toastErrorMock).toHaveBeenCalledTimes(1)
+      expect(toastErrorMock.mock.calls[0][0]).toMatch(/session a expiré/i)
+      vi.advanceTimersByTime(1500)
+      expect(setHref).toHaveBeenCalledWith('/en/login')
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'location', originalDescriptor)
+      }
+      vi.useRealTimers()
+    }
+  })
+
   it('affiche un toast serveur sur 500 sans rediriger', async () => {
     await expect(rejectionHandler!(makeError(500))).rejects.toBeDefined()
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
