@@ -149,7 +149,9 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
   const [vpStart, setVpStart] = useState(0)
   const [dragging, setDragging] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<{ x0: number; origin: number } | null>(null)
+  // `pointerId` : seul le pointeur qui a saisi le viewport le pilote — un 2e doigt
+  // (multi-touch accidentel) ne doit ni le déplacer ni terminer le glisser.
+  const dragRef = useRef<{ pointerId: number; x0: number; origin: number } | null>(null)
   const start = clampViewportStart(vpStart, rangeDays)
   const startDay = Math.round(start)
 
@@ -159,8 +161,8 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
     fmt.formatRange(addCalendarDays(from, a), addCalendarDays(from, b))
   const shownRange = scrollable ? formatDays(0, rangeDays) : formatDays(startDay, startDay + vpDays)
 
-  const endDrag = useCallback(() => {
-    if (!dragRef.current) return
+  const endDrag = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId !== e.pointerId) return
     dragRef.current = null
     setDragging(false)
     // Fin du glisser : on se cale sur le jour affiché par le libellé.
@@ -170,8 +172,9 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return
+      if (dragRef.current) return
       e.currentTarget.setPointerCapture?.(e.pointerId)
-      dragRef.current = { x0: e.clientX, origin: start }
+      dragRef.current = { pointerId: e.pointerId, x0: e.clientX, origin: start }
       setDragging(true)
     },
     [start],
@@ -180,7 +183,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current
-      if (!drag) return
+      if (!drag || drag.pointerId !== e.pointerId) return
       const trackWidthPx = trackRef.current?.getBoundingClientRect().width ?? 0
       setVpStart(
         dragViewportStart({

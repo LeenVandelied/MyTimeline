@@ -268,6 +268,29 @@ describe('#623 — viewport : slider accessible', () => {
     expect(vp).not.toHaveAttribute('data-dragging')
   })
 
+  it('multi-touch : un 2e pointeur ne déplace ni ne termine le glisser en cours', () => {
+    renderRibbon()
+    stubTrackWidth(600)
+    const vp = screen.getByRole('slider')
+
+    fireEvent.pointerDown(vp, { pointerId: 1, clientX: 100, pointerType: 'touch' })
+    fireEvent.pointerMove(vp, { pointerId: 1, clientX: 160, pointerType: 'touch' })
+    expect(vp).toHaveAttribute('aria-valuenow', '3')
+
+    // 2e doigt : sa saisie, ses mouvements et son lâcher sont ignorés.
+    fireEvent.pointerDown(vp, { pointerId: 2, clientX: 500, pointerType: 'touch' })
+    fireEvent.pointerMove(vp, { pointerId: 2, clientX: 100_000, pointerType: 'touch' })
+    expect(vp).toHaveAttribute('aria-valuenow', '3')
+    fireEvent.pointerUp(vp, { pointerId: 2, clientX: 100_000, pointerType: 'touch' })
+    expect(vp).toHaveAttribute('data-dragging', 'true')
+
+    // Le 1er doigt pilote toujours, depuis SA propre origine.
+    fireEvent.pointerMove(vp, { pointerId: 1, clientX: 200, pointerType: 'touch' })
+    expect(vp).toHaveAttribute('aria-valuenow', '5')
+    fireEvent.pointerUp(vp, { pointerId: 1, clientX: 200, pointerType: 'touch' })
+    expect(vp).not.toHaveAttribute('data-dragging')
+  })
+
   it('le toucher glisse aussi (pointerType touch), le clic droit ne saisit rien', () => {
     renderRibbon()
     stubTrackWidth(600)
