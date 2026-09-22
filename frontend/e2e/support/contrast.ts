@@ -544,6 +544,9 @@ export const MOBILE_MENU = {
  * UNE seule depuis le retrait des sections témoignages (#613) et fonctionnalités
  * (#612) — `#how-it-works`. `landing-mobile-menu.spec.ts` fige `toHaveCount(1)` : les
  * deux se modifient ensemble (ciblage positionnel).
+ * Compte au S103 : 5 cibles (titre, 3 ancres, connexion) → 3 (titre, 1 ancre,
+ * connexion). Toute baisse future doit correspondre à un lien RETIRÉ de la nav,
+ * jamais à un sélecteur qui ne trouve plus rien.
  * Jamais de libellé : la suite tourne en `fr`/`en`/`es`/`de`.
  */
 export function mobileMenuTargets(page: Page): CtaTarget[] {

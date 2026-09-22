@@ -247,12 +247,7 @@
   "footer": {
     "allRightsReserved": "Todos los derechos reservados.",
     "termsOfService": "Términos de servicio",
-    "privacyPolicy": "Política de privacidad",
-    "legalNotice": "Aviso legal",
-    "product": "Productos",
-    "features": "Características",
-    "howItWorks": "Cómo funciona",
-    "legal": "Legal"
+    "privacyPolicy": "Política de privacidad"
   },
   "register": {
     "errors": {
