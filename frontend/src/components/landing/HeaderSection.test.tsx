@@ -20,20 +20,14 @@ vi.mock('next-intl', () => ({
 }))
 
 describe('HeaderSection', () => {
-  it('rend les trois ancres de navigation', () => {
+  it('rend l’ancre de navigation, sans lien vers les sections retirées (#612, #613)', () => {
     render(<HeaderSection locale="fr" />)
-    expect(screen.getByText('common.landing.navigation.features')).toHaveAttribute(
-      'href',
-      '#features',
-    )
     expect(screen.getByText('common.landing.navigation.howItWorks')).toHaveAttribute(
       'href',
       '#how-it-works',
     )
-    expect(screen.getByText('common.landing.navigation.testimonials')).toHaveAttribute(
-      'href',
-      '#testimonials',
-    )
+    expect(screen.queryByText('common.landing.navigation.features')).not.toBeInTheDocument()
+    expect(screen.queryByText('common.landing.navigation.testimonials')).not.toBeInTheDocument()
   })
 
   it('préfixe les liens d’authentification par la locale reçue', () => {
@@ -171,8 +165,9 @@ describe('HeaderSection', () => {
       'true',
     )
 
-    // Les 3 ancres + « Connexion » sont atteignables depuis le panneau (critère 2).
-    expect(within(panel).getByText('common.landing.navigation.features')).toBeInTheDocument()
+    // L'ancre restante + « Connexion » sont atteignables depuis le panneau (critère 2).
+    expect(within(panel).getByText('common.landing.navigation.howItWorks')).toBeInTheDocument()
+    expect(within(panel).queryByText('common.landing.navigation.features')).not.toBeInTheDocument()
     expect(within(panel).getByText('common.login.title').closest('a')).toHaveAttribute(
       'href',
       '/fr/login',
@@ -194,7 +189,7 @@ describe('HeaderSection', () => {
 
     await open()
     const panel = screen.getByTestId('landing-header-menu')
-    await user.click(within(panel).getByText('common.landing.navigation.features'))
+    await user.click(within(panel).getByText('common.landing.navigation.howItWorks'))
     expect(screen.queryByTestId('landing-header-menu')).not.toBeInTheDocument()
   })
 

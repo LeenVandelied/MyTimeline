@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import {
+  LANDING_CTA,
   MOBILE_MENU,
   describeRendering,
   expectNotTruncated,
@@ -520,8 +521,12 @@ test.describe('Landing — aucun débordement horizontal, tous paliers', () => {
       await waitForFonts(page)
 
       const panel = await openMenu(page)
-      await expect(panel.locator('nav a')).toHaveCount(3)
-      await expect(panel.locator('a[href="/fr/login"]')).toHaveCount(1)
+      // #613 : `#testimonials` retirée, #612 : `#features` retirée — reste `#how-it-works`.
+      await expect(panel.locator('nav a')).toHaveCount(1)
+      await expect(panel.locator('nav a')).toHaveAttribute('href', '#how-it-works')
+      const login = panel.getByTestId(LANDING_CTA.menuLogin)
+      await expect(login).toHaveCount(1)
+      await expect(login).toHaveAttribute('href', '/fr/login')
 
       // Le panneau lui-même ne doit pas réintroduire de débordement : il est en
       // `fixed`, mais `min(320px,85vw)` reste dans le cadre à toute largeur.

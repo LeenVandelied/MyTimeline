@@ -933,6 +933,10 @@ Chaque édition déclenche une recompilation HMR pendant la spec ; la page reste
 ## PIT-S102-004 — Un grep de `data-testid` sans résultat ne prouve pas l'absence du testid
 Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,cancel}` n'existait : le grep ne trouvait que `timeline-actionsheet-overlay`, les autres identifiants étant composés dynamiquement, et la spec `sprint-101-touch-targets` les citait déjà. Avant d'écrire « n'existe pas » dans un briefing, chercher aussi dans `frontend/e2e/` (une spec qui cite l'identifiant prouve qu'il est rendu) et le préfixe seul. L'agent l'a relevé, sans conséquence. (Sprint 102, lead)
 
+
+## PIT-S103-004 — Une affirmation du briefing sur l'état du code se greppe avant d'être écrite
+Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

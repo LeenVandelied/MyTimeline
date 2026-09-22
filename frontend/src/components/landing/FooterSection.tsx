@@ -66,18 +66,8 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
               <h4 className="text-ink mb-3 font-bold">{t('common.landing.footer.product')}</h4>
               <ul className="text-ink-muted space-y-2">
                 <li>
-                  <a href="#features" className="hover:text-accent transition">
-                    {t('common.landing.footer.features')}
-                  </a>
-                </li>
-                <li>
                   <a href="#how-it-works" className="hover:text-accent transition">
                     {t('common.landing.footer.howItWorks')}
-                  </a>
-                </li>
-                <li>
-                  <a href="#testimonials" className="hover:text-accent transition">
-                    {t('common.landing.footer.testimonials')}
                   </a>
                 </li>
               </ul>

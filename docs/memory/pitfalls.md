@@ -1981,3 +1981,15 @@ Chaque édition déclenche une recompilation HMR pendant la spec ; la page reste
 
 ## PIT-S102-004 — Un grep de `data-testid` sans résultat ne prouve pas l'absence du testid
 Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,cancel}` n'existait : le grep ne trouvait que `timeline-actionsheet-overlay`, les autres identifiants étant composés dynamiquement, et la spec `sprint-101-touch-targets` les citait déjà. Avant d'écrire « n'existe pas » dans un briefing, chercher aussi dans `frontend/e2e/` (une spec qui cite l'identifiant prouve qu'il est rendu) et le préfixe seul. L'agent l'a relevé, sans conséquence. (Sprint 102, lead)
+
+## PIT-S103-001 — Un halo décoratif en `ring-*` est refusé par le garde-fou DEC-S58-001, même hors focus
+Le halo `--color-bg` des pastilles de la frise, écrit `ring-4 ring-bg`, a fait rougir le garde-fou Vitest qui refuse tout `ring-*` / `outline-none` dans un `.tsx` (réservés à l'indicateur de focus). Écrire le halo en `shadow-[0_0_0_4px_var(--color-bg)]`, comme la maquette (`box-shadow`). (Sprint 103, #612)
+
+## PIT-S103-002 — Un mock `useTranslations` qui ignore le namespace casse les tests PARENTS quand un enfant passe à `useTranslations('ns')`
+`HomePage.test` mockait `useTranslations: () => (k) => k` : dès que `HowItWorksSection` a appelé `useTranslations('common.landing.howItWorks')`, la clé rendue a perdu son préfixe et le test parent est devenu rouge. Mock tolérant : `(ns) => (k) => ns ? \`${ns}.${k}\` : k`. Cousin de PIT-S63-006. (Sprint 103, #612)
+
+## PIT-S103-003 — `mobileMenuTargets` cible les ancres du burger PAR POSITION, et la spec fige leur nombre
+`e2e/support/contrast.ts` vise `nav a`.nth(i) et `landing-mobile-menu.spec.ts` asserte `toHaveCount(N)` : retirer un lien de `navLinks` (ici `#testimonials` en #613, puis `#features` en #612) oblige à modifier les DEUX, sans quoi une ancre « disparaît » des mesures ou la spec rougit sans raison apparente. Grepper `ancre-` et `toHaveCount` avant de toucher la nav. Suite proposée : cibler ces ancres par testid. (Sprint 103, #613/#612)
+
+## PIT-S103-004 — Une affirmation du briefing sur l'état du code se greppe avant d'être écrite
+Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)

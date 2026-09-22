@@ -11,9 +11,11 @@
  * fichier reste franc (et par PIT-S48-002 : ce qui traîne en commentaire revient).
  *
  * Les règles de MOUVEMENT dupliquées avec `animations.css` (`.section-animation`,
- * `.cta-button`, `.card-gradient-border`, `.feature-icon`) ont été retirées d'ici :
- * `animations.css` en est la source unique. Ce fichier ne porte plus que le style
- * statique de la landing.
+ * `.cta-button`) ont été retirées d'ici : `animations.css` en est la source unique.
+ * Ce fichier ne porte plus que le style statique de la landing.
+ *
+ * #612 (Sprint 103) — `.feature-card` (et son palier `max-width: 768px`) est retirée
+ * avec `FeaturesSection`, son seul consommateur.
  */
 
 /* Titre en dégradé — pages légales (`privacy`, `terms`).
@@ -41,54 +43,11 @@
   }
 }
 
-/* Cartes de fonctionnalités.
- * Bordure DÉCORATIVE (cadre de carte, son retrait ne coûte aucune information) :
- * tier `rule`, et `rule-strong` d'un cran au survol — cf. tableau des tiers de
- * bordure du DS (readme). Ce n'est PAS `rule-emphasis` : la bordure n'est ici
- * l'affordance d'aucun contrôle.
- *
- * ⚠ PROPRIÉTAIRE UNIQUE DU MOUVEMENT (#384). Le `transform` de `:hover` ci-dessous est la SEULE
- * déclaration qui lève la carte. `FeaturesSection.tsx` portait en plus `hover:-translate-y-2` :
- * en Tailwind 4 cette utilitaire compile vers la propriété `translate`, distincte de `transform`,
- * donc les deux s'appliquaient et se COMPOSAIENT — -18px au survol au lieu de -10, -13px sous
- * 768px. L'utilitaire a été retirée du composant ; ne pas la réintroduire, et ne pas dupliquer
- * cette élévation par une utilitaire `translate-*`/`transform` côté TSX.
- *
- * ⚠ NE PAS LAYERISER ce bloc (PIT-S53-004) : `border-rule` est posée sur le même élément SANS
- * variante `hover:`. Sous `@layer`, l'utilitaire gagnerait en permanence et le passage à
- * `rule-strong` au survol disparaîtrait — la « correction » créerait la régression.
- * Cf. `sprint-53/audit-css-layers-340.md` §3.5.
- * Le `box-shadow` ci-dessous est désormais la SEULE ombre de la carte : #574 a retiré le
- * `shadow-lg` au repos (charte : surface au repos = filet, l'élévation est réservée aux
- * popovers/modales), qui faisait de surcroît DIMINUER l'ombre au survol. */
-.feature-card {
-  transition: all 0.3s ease;
-  border-color: var(--color-rule);
-}
-
-.feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-rule-strong);
-}
-
 /* #610 — le halo flou `.hero-image-container` (+ son keyframe `hero-halo-pulse`) est
  * retiré avec l'image statique du hero : le panneau de la frise qui la remplace est une
  * surface au repos, donc un filet sans halo ni ombre (#574). ⚠ Si un keyframe revient
  * ici, le PRÉFIXER : un `@keyframes pulse` dans cette feuille (chargée après
  * `globals.css`) a déjà écrasé l'`animate-pulse` de Tailwind dans toute l'application. */
-
-/* Cartes de témoignages — même tier de bordure décorative que `.feature-card`. */
-.testimonial-card {
-  transition: all 0.3s ease;
-  border-color: var(--color-rule);
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-rule-strong);
-}
 
 /* Liens de navigation — le soulignement au survol est l'affordance de lien, donc
  * `accent` (rôle « today / active / links » du DS). Trait plein : le DS proscrit les
@@ -111,13 +70,4 @@
 
 .nav-link:hover::after {
   width: 100%;
-}
-
-/* Médias requêtes pour la réactivité */
-@media (max-width: 768px) {
-  /* Palier réduit du MÊME propriétaire que la règle ligne 54 — il n'a de sens que tant que la
-   * lévitation reste portée par `transform` ici (cf. #384). */
-  .feature-card:hover {
-    transform: translateY(-5px);
-  }
 }

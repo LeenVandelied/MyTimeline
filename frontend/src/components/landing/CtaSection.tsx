@@ -45,7 +45,9 @@ export function CtaSection({ locale }: CtaSectionProps) {
           asChild
           className="bg-primary text-primary-ink hover:bg-primary-hover h-auto rounded-lg px-10 py-6 text-lg whitespace-normal transition-all"
         >
-          <Link href={`/${locale}/register`}>{t('common.landing.cta.button')}</Link>
+          <Link href={`/${locale}/register`} data-testid="landing-final-cta-register">
+            {t('common.landing.cta.button')}
+          </Link>
         </Button>
       </div>
     </section>

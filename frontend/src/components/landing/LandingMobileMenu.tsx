@@ -137,6 +137,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
           <Link
             href={`/${locale}/login`}
             onClick={onClose}
+            data-testid="landing-menu-cta-login"
             className="border-rule-emphasis text-accent hover:bg-accent hover:text-accent-ink flex min-h-11 items-center justify-center rounded-md border text-xs font-medium transition-colors duration-200"
           >
             {t('common.login.title')}

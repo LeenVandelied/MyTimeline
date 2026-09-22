@@ -98,8 +98,6 @@
     "previous": "Previous",
     "next": "Next",
     "today": "Today",
-    "showMore": "Show more",
-    "showLess": "Show less",
     "close": "Close"
   },
   "loading": {
@@ -139,9 +137,7 @@
   "landing": {
     "title": "My Timeline | Your personal organization assistant",
     "navigation": {
-      "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials",
       "menuOpen": "Open menu",
       "menuClose": "Close menu",
       "menuTitle": "Menu"
@@ -202,45 +198,32 @@
         }
       }
     },
-    "features": {
-      "title": "Key Features",
-      "subtitle": "My Timeline combines the best time management tools to help you achieve optimal organization.",
-      "timeline": {
-        "title": "Time Visualization",
-        "description": "Visualize your deadlines and commitments on an intuitive timeline. Get a clear overview of your projects."
-      },
-      "reminders": {
-        "title": "Smart Reminders",
-        "description": "Receive notifications adapted to your habits and the importance of your tasks. Never miss a deadline again."
-      },
-      "organization": {
-        "title": "Project Organization",
-        "description": "Group your tasks by project and category. Track your progress and set priorities for each activity."
-      }
-    },
     "howItWorks": {
-      "title": "How It Works",
-      "subtitle": "My Timeline simplifies your organization in a few simple steps",
-      "step1": {
-        "title": "Create your account",
-        "description": "Sign up in seconds to start your organization journey."
-      },
-      "step2": {
-        "title": "Add your projects",
-        "description": "Define the projects, products, or categories you want to track."
-      },
-      "step3": {
-        "title": "Create your deadlines",
-        "description": "Add your events and define their duration, type, and importance."
-      },
-      "step4": {
-        "title": "Stay organized",
-        "description": "Visualize, track, and easily modify all your deadlines in one place."
+      "eyebrow": "How it works",
+      "title": "One timeline, from reminder to deadline.",
+      "subtitle": "Every event plays out on the timeline. Here is how My Timeline supports you, from the first reminder to the renewal.",
+      "milestones": {
+        "reminder": {
+          "tag": "−30 days · reminder",
+          "title": "You are warned in time",
+          "text": "A reminder ahead of every deadline, set on the timeline — never after the fact."
+        },
+        "recurrence": {
+          "tag": "↻ recurrence",
+          "title": "Renewals repeat themselves",
+          "text": "Insurance, subscription, premium: set the recurrence once, it carries itself forward."
+        },
+        "coverage": {
+          "tag": "duration · warranty",
+          "title": "See what is covered",
+          "text": "Warranties and leases show up as solid bars: you see at a glance what is still running."
+        },
+        "deadline": {
+          "tag": "D0 · deadline",
+          "title": "Nothing slips through",
+          "text": "Best-before dates, expiring documents, deadlines: everything converges on a single view, sorted by product and category."
+        }
       }
-    },
-    "testimonials": {
-      "title": "What our users say",
-      "subtitle": "Discover how My Timeline has transformed our users' daily organization"
     },
     "cta": {
       "title": "Ready to transform your organization?",
@@ -251,9 +234,7 @@
     "footer": {
       "description": "Your personal time management and organization assistant",
       "product": "Product",
-      "features": "Features",
       "howItWorks": "How it works",
-      "testimonials": "Testimonials",
       "legal": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
@@ -266,13 +247,7 @@
   "footer": {
     "allRightsReserved": "All rights reserved.",
     "termsOfService": "Terms of Service",
-    "privacyPolicy": "Privacy Policy",
-    "legalNotice": "Legal Notice",
-    "product": "Product",
-    "features": "Features",
-    "howItWorks": "How it works",
-    "testimonials": "Testimonials",
-    "legal": "Legal"
+    "privacyPolicy": "Privacy Policy"
   },
   "register": {
     "errors": {

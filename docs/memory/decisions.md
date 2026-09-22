@@ -1113,3 +1113,9 @@ Contexte : `scorePassword` comptait toute lettre ou tout chiffre non-ASCII comme
 
 ## DEC-S102-002 — Les CTA d'état vide desktop-only sont déclarés absents à 375 px, pas mesurés
 `WeekAgenda` et `ProductList` ne sont rendus que par la branche desktop du tableau de bord : `sprint-102-touch-targets` asserte leur ABSENCE à 375 px. S'ils apparaissent un jour en mobile, la spec rougit et force leur mesure (même logique que PAT-S101-003). (Sprint 102, #764)
+
+## DEC-S103-001 — Section témoignages retirée de la landing ; la bande « avis presse » ne revient qu'avec des citations réelles sourcées
+`testimonials.json` portait 4 avis nominatifs inventés (FR en dur, hors i18n) et la maquette cite des magazines inventés. Publier l'un ou l'autre fabriquerait des avis sur un dépôt public. Composants, données, ancres `#testimonials` et clés i18n supprimés. Arbitrage dev au plan S103. (Sprint 103, #613)
+
+## DEC-S103-002 — Frise de cas d'usage : verticale < 640 px, 2×2 de 640 à 1023 px, 4 colonnes ≥ 1024 px ; étiquettes en `ink-muted`
+La maquette ne dessine que 4 colonnes. Verticale sous 640 px (arbitrage dev) ; 2×2 entre 640 et 1023 px, car à 4 colonnes chaque jalon ne fait que 131 à 163 px et les étiquettes passent sur 2 lignes dans les 4 locales (mesuré). Les étiquettes sont en `ink-muted` et non en accent comme dans la maquette : la charte (#615) prime. `id="how-it-works"` est conservé ; la nav sera refaite au S104. (Sprint 103, #612/#615)

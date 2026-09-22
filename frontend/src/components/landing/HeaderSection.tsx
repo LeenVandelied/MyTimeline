@@ -117,11 +117,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   }, [isDesktop])
 
   /** Ancres de navigation — même ordre que les sections rendues par `HomePage`. */
-  const navLinks = [
-    { href: '#features', label: t('common.landing.navigation.features') },
-    { href: '#how-it-works', label: t('common.landing.navigation.howItWorks') },
-    { href: '#testimonials', label: t('common.landing.navigation.testimonials') },
-  ]
+  const navLinks = [{ href: '#how-it-works', label: t('common.landing.navigation.howItWorks') }]
 
   return (
     <header className="container mx-auto flex items-center justify-between px-4 py-6">
@@ -193,7 +189,9 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             variant="outline"
             className="border-accent text-accent hover:bg-accent hover:text-accent-ink transition-all"
           >
-            <Link href={`/${locale}/login`}>{t('common.login.title')}</Link>
+            <Link href={`/${locale}/login`} data-testid="landing-header-cta-login">
+              {t('common.login.title')}
+            </Link>
           </Button>
         </div>
 
@@ -279,7 +277,9 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
           asChild
           className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-2 max-[360px]:text-xs lg:h-9"
         >
-          <Link href={`/${locale}/register`}>{t('common.landing.buttons.register')}</Link>
+          <Link href={`/${locale}/register`} data-testid="landing-header-cta-register">
+            {t('common.landing.buttons.register')}
+          </Link>
         </Button>
 
         {/* `aria-controls` n'est posé QUE si la cible existe : le panneau n'est
