@@ -224,3 +224,29 @@ html[data-density='comfortable'] {
     display: none;
   }
 }
+
+/* #616 — Largeur maximale de la landing : 1340 px (handoff, maquette
+   `<section style="max-width:1340px;margin:0 auto">`). Le `container` Tailwind
+   montait jusqu'à 1536 px au-delà de `2xl`.
+   - Le token `--container-landing` vit dans le namespace `--container-*` de
+     Tailwind 4 : UNE source, lue ici par `--theme()` (le seuil d'un `@media` ne
+     peut pas lire une variable CSS runtime).
+   - `container-landing` REPREND les paliers de `container` (via `@apply`) puis
+     plafonne à 1340 px dès que la fenêtre les atteint : rendu strictement
+     identique sous 1340 px (640/768/1024/1280), 1340 px au-delà. Le palier
+     `2xl` (1536) hérité est écrasé : le seuil 1340 le suit dans la source et
+     le couvre.
+   - Réservée aux sections de la landing (`components/landing/`). `container`
+     reste inchangé pour le reste de l'app (footer applicatif, pages légales) :
+     ne PAS redéfinir `container` globalement. */
+@theme {
+  --container-landing: 1340px;
+}
+
+@utility container-landing {
+  @apply container;
+  margin-inline: auto;
+  @media (width >= --theme(--container-landing)) {
+    max-width: --theme(--container-landing);
+  }
+}

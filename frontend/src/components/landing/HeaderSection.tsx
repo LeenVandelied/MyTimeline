@@ -57,8 +57,8 @@ interface HeaderSectionProps {
  * était factuel ; le défaut visible qu'on lui prêtait entre 768 et 1023 px, NON —
  * mesuré dans `mcr.microsoft.com/playwright:v1.61.1-jammy` (4 locales × clair/sombre),
  * le logo y tenait sur UNE ligne (57 px, 330 px de large, 223 à 262 px de marge), sans
- * débordement. Le `container` y est plafonné à 768 px, la nav est masquée : la place ne
- * manquait pas.
+ * débordement. Le conteneur (`container-landing`, #616) y est plafonné à 768 px, la nav
+ * est masquée : la place ne manquait pas.
  *
  * Le vrai défaut était 1 px plus loin, à 1024 px, là où la nav revient :
  *
@@ -120,7 +120,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   const navLinks = [{ href: '#how-it-works', label: t('common.landing.navigation.howItWorks') }]
 
   return (
-    <header className="container mx-auto flex items-center justify-between px-4 py-6">
+    <header className="container-landing flex items-center justify-between px-4 py-6">
       <div className="flex items-center">
         {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
             `text-md` (21 px) puis `text-lg` (27 px) à partir de `sm`, et

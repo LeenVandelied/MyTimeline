@@ -34,7 +34,7 @@ export function CtaSection({ locale }: CtaSectionProps) {
 
   return (
     <section className="bg-accent section-animation py-20">
-      <div className="container mx-auto px-4 text-center">
+      <div className="container-landing px-4 text-center">
         <h2 className="text-accent-ink mb-6 text-lg leading-tight font-bold md:text-xl">
           {t('common.landing.cta.title')}
         </h2>

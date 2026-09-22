@@ -55,7 +55,7 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
 
   return (
     <footer className="bg-bg border-rule border-t py-12">
-      <div className="container mx-auto px-4">
+      <div className="container-landing px-4">
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="mb-6 md:mb-0">
             <div className="text-accent text-md mb-2 font-bold sm:text-lg">Ma Timeline</div>
