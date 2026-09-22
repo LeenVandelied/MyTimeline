@@ -48,9 +48,12 @@ export default function DashboardLoading() {
           aria-hidden="true"
           data-testid="dashboard-loading-greeting"
         >
-          {/* Hauteurs calées sur le rendu mesuré (eyebrow 14 · titre 28 · sous-titre 20 px) :
-              le ruban qui suit démarre à la même ordonnée que sur la page réelle. */}
-          <Block className="h-3.5 w-28" />
+          {/* Hauteurs calées sur le rendu mesuré : le ruban qui suit démarre à la même
+              ordonnée que sur la page réelle (`sprint-106-product-detail`, tolérance 6 px).
+              #632 (S109) — l'eyebrow passe sur `.mt-eyebrow` (10 px × 1,3 = 13 px au lieu de
+              13 px × 1,5 = 19,5 px) : la salutation réelle perd 6,3 px, le bloc aussi
+              (14 → 8 px). Les blocs ne reproduisent pas chaque ligne, seulement le total. */}
+          <Block className="h-2 w-28" />
           <Block className="h-7 w-64 max-w-full" />
           <Block className="h-5 w-80 max-w-full" />
         </div>
