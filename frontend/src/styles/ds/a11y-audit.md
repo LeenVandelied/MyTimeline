@@ -409,6 +409,45 @@ l'ancien `ring-*` (un `box-shadow`) était rogné exactement de la même façon.
   contour redevient rogné sur **3 côtés** — le correctif est bien ce qui supprime
   le défaut.
 
+#### `.mt-tab` (onglets produits) — #524, Sprint 107 : NON rogné, aucun remède
+
+La troisième zone, laissée hors mesure au S74, était une hypothèse géométrique :
+le contour de `.mt-tab` (`outline 2px` + `offset 3px`) sort de **5px** de la boîte
+de l'onglet. **Mesuré au navigateur** (`next build` + `next start`, Chromium, dpr 1,
+focus armé par un vrai `Shift+Tab` / `Tab`) sur les deux consommateurs de `Tabs` :
+la tablist de `/{locale}/products` (`products-tabs`) et celle de la fiche produit
+(`product-detail-filter`). Matrice : 2 routes × desktop 1280 / mobile 390 × clair /
+sombre × 1er et dernier onglet sélectionnés, + 1er onglet **non** sélectionné mais
+focalisé (atteint par `→`, cf. plus bas) — **24 cas, 4 côtés peints sur 4 partout.**
+
+- **Géométrie** : AUCUN ancêtre ne clippe (`overflow` = `visible` sur toute la
+  chaîne, ni `clip-path` ni `contain:paint`), et le contour reste dans le viewport
+  (mobile : gauche du 1er onglet à **11px**, le conteneur `px-4` laisse 16px). Aucune
+  tablist ne déborde à 390px (`scrollWidth` = `clientWidth` = 358).
+- **Pixels** (dump brut 0..8px vers l'extérieur, `support/pixel.ts`) : trait à
+  +4/+5px (haut, bas, gauche) et +3/+4px (droite, bord fractionnaire), unanimité
+  100 %. Aucun frère peint par-dessus. Contraste du trait sur le fond réellement
+  peint :
+
+  | Thème | trait | fond sous le trait | contraste |
+  |---|---|---|---|
+  | clair | `#0E5FC4` | `#FCFCFD` | **5,93:1** |
+  | sombre | `#4D9BFF` | `#0B0C0E` | **6,94:1** |
+
+- **Contre-épreuve** : `overflow-x:auto` injecté sur la tablist (le cas des
+  réglages de #417) → la géométrie voit **haut, bas, gauche** rognés, et les pixels
+  les voient disparaître (la droite reste peinte : rien ne la clippe). La sonde
+  détecte donc un rognage quand il existe.
+- **Donc aucun remède**, et le §8ter ci-dessus tient : l'offset négatif reste
+  exclu pour `.mt-tab`. La seule protection est de **ne jamais clipper la
+  tablist** (réflexe à proscrire : `overflow-x-auto` « parce qu'elle déborde à
+  390px ») — garde E2E `e2e/sprint-107-tab-focus-outline.spec.ts` (clair,
+  2 routes × 2 largeurs, + auto-contrôle par la même mutation).
+- ⚠️ **Constaté en passant, hors périmètre** : `→` / `←` déplacent la **sélection**
+  mais PAS le focus (`components/ui/tabs.tsx` n'appelle aucun `.focus()`). Le focus
+  reste sur un onglet devenu `aria-selected="false"` et `tabIndex=-1` — écart au
+  motif APG « tablist à activation automatique ». Cf. RECOMMAND_FOLLOWUP du S107.
+
 ## 9 · Palette curatée des 12 couleurs — mesures (#577, Sprint 84)
 
 Source des valeurs : tokens `--evt-*` (`tokens/colors.css`), miroir JS
