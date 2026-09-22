@@ -361,15 +361,19 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
           </h1>
         </div>
 
-        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <dt className="text-ink-muted text-2xs tracking-widest uppercase">
-              {t('fields.category')}
-            </dt>
-            <dd className="mt-1">
+        {/* #606 — fiche d'INVENTAIRE (handoff §5 : libellés mono à gauche, valeurs à droite,
+            filets). Motif DS existant `.mt-drawer__row/__k/__v` (`timeline.css`), celui du
+            drawer d'événement : aucune règle locale concurrente. Valeur longue (catégorie en
+            `de`, mot insécable) → retour à la ligne, jamais tronquée : porté par le DS. */}
+        <dl className="flex flex-col" data-testid="product-detail-inventory">
+          <div className="mt-drawer__row" data-testid="product-detail-inventory-row">
+            <dt className="mt-drawer__k">{t('fields.category')}</dt>
+            <dd className="mt-drawer__v">
               {product.category ? (
                 <span
-                  className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                  // `inline-block max-w-full` (et non `inline-flex`) : une pastille à
+                  // nom long passe à la ligne DANS la valeur au lieu de l'élargir.
+                  className="inline-block max-w-full rounded-full px-2 py-0.5 text-xs font-medium"
                   style={{
                     backgroundColor: effectiveColor ?? 'var(--color-rule-strong)',
                     color: contrastInk(effectiveColor),
@@ -379,15 +383,14 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                   {product.category.name}
                 </span>
               ) : (
-                <span className="text-ink-muted text-sm">{t('fields.noCategory')}</span>
+                <span className="text-ink-muted">{t('fields.noCategory')}</span>
               )}
             </dd>
           </div>
-          <div>
-            <dt className="text-ink-muted text-2xs tracking-widest uppercase">
-              {t('fields.color')}
-            </dt>
-            <dd className="text-ink mt-1 font-mono text-sm">{effectiveColor ?? '—'}</dd>
+          <div className="mt-drawer__row" data-testid="product-detail-inventory-row">
+            <dt className="mt-drawer__k">{t('fields.color')}</dt>
+            {/* Valeur hexadécimale : seule valeur en mono (donnée machine). */}
+            <dd className="mt-drawer__v font-mono">{effectiveColor ?? '—'}</dd>
           </div>
         </dl>
       </section>

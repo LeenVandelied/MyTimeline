@@ -211,6 +211,32 @@ describe('ProductDetailView', () => {
     expect(screen.getByTestId('product-detail-category')).toHaveTextContent('Véhicules')
   })
 
+  // #606 — fiche d'inventaire = motif DS `.mt-drawer__row/__k/__v` (libellé mono à gauche,
+  // valeur à droite, filet). Classes seulement : le rendu (mono, filets, retour à la ligne
+  // d'une valeur longue en `de`) est mesuré par `e2e/sprint-106-product-detail.spec.ts`.
+  it('#606 — l’en-tête est une fiche d’inventaire au motif DS, sans grille ad hoc', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    const inventory = screen.getByTestId('product-detail-inventory')
+    expect(inventory.tagName).toBe('DL')
+    expect(inventory.className).not.toMatch(/grid/)
+    const rows = screen.getAllByTestId('product-detail-inventory-row')
+    expect(rows).toHaveLength(2)
+    for (const row of rows) {
+      expect(row).toHaveClass('mt-drawer__row')
+      expect(row.querySelector('dt')).toHaveClass('mt-drawer__k')
+      expect(row.querySelector('dd')).toHaveClass('mt-drawer__v')
+    }
+    expect(rows[0]).toHaveTextContent('products.detail.fields.category')
+    expect(rows[0].querySelector('dd')).toContainElement(
+      screen.getByTestId('product-detail-category'),
+    )
+    // La valeur hexadécimale reste la seule valeur en mono.
+    const colorValue = rows[1].querySelector('dd')
+    expect(colorValue).toHaveTextContent('#112233')
+    expect(colorValue).toHaveClass('font-mono')
+    expect(rows[0].querySelector('dd')).not.toHaveClass('font-mono')
+  })
+
   // jsdom ne calcule aucun layout : ce test verifie uniquement que les classes de
   // gestion de debordement sont bien portees par le h1 du titre. L'absence reelle de
   // debordement pixel n'est PAS prouvee ici (cf. non_verifie / E2E).
