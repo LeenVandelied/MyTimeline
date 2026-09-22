@@ -76,6 +76,22 @@ function setup() {
   )
 }
 
+/**
+ * #596 — rang (`aria-posinset`) → zébrée ?, par catégorie (liste `role="list"`).
+ * Sans layout (jsdom), seule la PARITÉ posée par le composant est vérifiable ici ; la
+ * couleur résolue et la stabilité sous virtualisation réelle vivent dans
+ * `e2e/sprint-105-lane-zebra.spec.ts`.
+ */
+function zebraByCategory(container: HTMLElement, altClass: string) {
+  const out: Record<string, Array<[number, boolean]>> = {}
+  for (const list of Array.from(container.querySelectorAll('[data-testid="timeline-lane-list"]'))) {
+    out[list.getAttribute('aria-label') ?? ''] = Array.from(
+      list.querySelectorAll('[data-testid="timeline-resource-row"]'),
+    ).map((row) => [Number(row.getAttribute('aria-posinset')), row.classList.contains(altClass)])
+  }
+  return out
+}
+
 describe('#595 TimelineView — série récurrente : ↻, fantômes et connecteur', () => {
   // e1 : durée mensuelle bornée au 10 sept. ; étendue = 10 juin → 19 août (fin max + 30 j).
   // Fantômes attendus : 10 août seulement (10 sept. est HORS étendue, jamais étirée).
@@ -764,6 +780,66 @@ describe('TimelineView', () => {
       )
       expect(css).toMatch(/\.mt-tlv__lane-label\{[^}]*width:var\(--lane-header-w\);/)
       expect(css).not.toMatch(/var\(--lane-header-w\s*,/)
+    })
+  })
+
+  /**
+   * #596 — ZÉBRURES au lieu de la grille verticale de jours. Verrouille (a) la
+   * parité posée par le composant d'après `laneOrdinal` — rang STABLE dans la
+   * catégorie, jamais la position DOM (faussée par la cale de virtualisation #69) —
+   * et (b) la feuille du DS : aplat d'encre 2,6 %, cellule sticky relayée, plus
+   * aucune grille en dégradé ni son recalage (`background-position-x`).
+   */
+  describe('#596 — zébrures de lanes', () => {
+    it('une lane sur deux par catégorie porte `mt-tlv__lane--alt`', () => {
+      const { container } = render(
+        <TimelineView
+          events={[]}
+          resources={[
+            { id: 'z1', title: 'Zèbre 1', category: 'Frais' },
+            { id: 'z2', title: 'Zèbre 2', category: 'Frais' },
+            { id: 'z3', title: 'Zèbre 3', category: 'Frais' },
+            { id: 'z4', title: 'Zèbre 4', category: 'Boulangerie' },
+            { id: 'z5', title: 'Zèbre 5', category: 'Boulangerie' },
+          ]}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+        />,
+      )
+      const zebra = zebraByCategory(container, 'mt-tlv__lane--alt')
+      expect(zebra).toEqual({
+        Frais: [
+          [1, false],
+          [2, true],
+          [3, false],
+        ],
+        // Remise à zéro par catégorie : la 1re lane sous l'en-tête est claire.
+        Boulangerie: [
+          [1, false],
+          [2, true],
+        ],
+      })
+      // Plus de trame de jours posée en ligne (`background-size:<dayWidth>px`).
+      for (const row of screen.getAllByTestId('timeline-resource-row')) {
+        expect(row.style.backgroundSize).toBe('')
+      }
+    })
+
+    it('la feuille DS peint la zébrure en aplat et retire la grille de jours', () => {
+      const css = readFileSync(
+        resolve(__dirname, '../../styles/ds/components/timeline.css'),
+        'utf8',
+      )
+      expect(css).toMatch(
+        /\.mt-tlv__lane--alt,\n\.mt-tlm__lane--alt\{background-color:color-mix\(in srgb, var\(--color-ink\) 2\.6%, transparent\);\}/,
+      )
+      expect(css).toMatch(
+        /\.mt-tlv__lane--alt > \.mt-tlv__lane-label\{background-color:color-mix\(in srgb, var\(--color-ink\) 2\.6%, var\(--color-surface\)\);\}/,
+      )
+      // Grille verticale RETIRÉE des trois familles de lanes, et son recalage avec.
+      expect(css).not.toMatch(/linear-gradient\(90deg, var\(--color-rule\) 1px, transparent 1px\)/)
+      expect(css).not.toMatch(/background-position-x:var\(--lane-header-w\)/)
+      expect(css).not.toMatch(/--mt-grid-step/)
     })
   })
 

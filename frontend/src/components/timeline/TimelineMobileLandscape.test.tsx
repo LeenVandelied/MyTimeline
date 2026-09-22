@@ -433,3 +433,51 @@ describe('TimelineResponsive — orientation switch (transition sans perte d’�
     }
   })
 })
+
+/**
+ * #596 — rang (`aria-posinset`) → zébrée ?, par catégorie (liste `role="list"`).
+ * Sans layout (jsdom), seule la PARITÉ posée par le composant est vérifiable ici ; la
+ * couleur résolue et la stabilité sous virtualisation réelle vivent dans
+ * `e2e/sprint-105-lane-zebra.spec.ts`.
+ */
+function zebraByCategory(container: HTMLElement, altClass: string) {
+  const out: Record<string, Array<[number, boolean]>> = {}
+  for (const list of Array.from(container.querySelectorAll('[data-testid="timeline-lane-list"]'))) {
+    out[list.getAttribute('aria-label') ?? ''] = Array.from(
+      list.querySelectorAll('[data-testid="timeline-resource-row"]'),
+    ).map((row) => [Number(row.getAttribute('aria-posinset')), row.classList.contains(altClass)])
+  }
+  return out
+}
+
+describe('#596 — zébrures de lanes (paysage)', () => {
+  it('une lane sur deux par catégorie porte `mt-tlm__lane--alt`', () => {
+    const { container } = render(
+      <TimelineMobileLandscape
+        events={[]}
+        resources={[
+          { id: 'z1', title: 'Zèbre 1', category: 'Frais' },
+          { id: 'z2', title: 'Zèbre 2', category: 'Frais' },
+          { id: 'z3', title: 'Zèbre 3', category: 'Frais' },
+          { id: 'z4', title: 'Zèbre 4', category: 'Boulangerie' },
+          { id: 'z5', title: 'Zèbre 5', category: 'Boulangerie' },
+        ]}
+        locale="fr-FR"
+        today={new Date(2026, 6, 15)}
+      />,
+    )
+    const zebra = zebraByCategory(container, 'mt-tlm__lane--alt')
+    expect(zebra).toEqual({
+      Frais: [
+        [1, false],
+        [2, true],
+        [3, false],
+      ],
+      // Remise à zéro par catégorie : la 1re lane sous l'en-tête est claire.
+      Boulangerie: [
+        [1, false],
+        [2, true],
+      ],
+    })
+  })
+})

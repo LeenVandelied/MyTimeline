@@ -445,7 +445,6 @@ interface TimelineLaneRowProps {
   laneOrdinal: number
   setSize: number
   isCollapsed: boolean
-  dayWidth: number
   /** Fenêtre horizontale de la lane — identité STABLE tant que le contenu l'est. */
   windowed: WindowedEvent[]
   /** #595 — fantômes + connecteurs montés (fenêtrés), identité STABLE (cache de rendu). */
@@ -483,7 +482,6 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
   laneOrdinal,
   setSize,
   isCollapsed,
-  dayWidth,
   windowed,
   recurrence,
   layout,
@@ -499,15 +497,16 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
 }) {
   return (
     <div
-      className="mt-tlv__lane"
+      // #596 — zébrure : une lane sur deux DANS SA CATÉGORIE, d'après le rang stable
+      // `laneOrdinal` (et non `:nth-child`, faussé par la cale de virtualisation #69).
+      className={laneOrdinal % 2 === 1 ? 'mt-tlv__lane mt-tlv__lane--alt' : 'mt-tlv__lane'}
       role="listitem"
       aria-posinset={laneOrdinal + 1}
       aria-setsize={setSize}
-      style={{
-        backgroundSize: `${dayWidth}px 100%`,
+      style={
         // #709 — lane empilée : `timeline.css` ajoute `--mt-lane-extra` à `--lane-height`.
-        ...(extraHeightPx > 0 ? { ['--mt-lane-extra' as string]: `${extraHeightPx}px` } : null),
-      }}
+        extraHeightPx > 0 ? { ['--mt-lane-extra' as string]: `${extraHeightPx}px` } : undefined
+      }
       data-testid="timeline-resource-row"
       // #709 — crochets : nombre de rangées (assertions) et hauteur ajoutée, que
       // `useTimelineViewport` retranche pour mesurer la hauteur de BASE d'une lane.
@@ -1886,7 +1885,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       laneOrdinal={lane.laneOrdinal}
                       setSize={setSize}
                       isCollapsed={lane.isResCollapsed}
-                      dayWidth={dayWidth}
                       windowed={lane.windowed}
                       recurrence={lane.recurrence}
                       layout={lane.layout}

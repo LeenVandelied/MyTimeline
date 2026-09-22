@@ -34,7 +34,25 @@
 .mt-lane__head{width:var(--lane-header-w); flex:0 0 auto; padding:11px 14px; border-right:1px solid var(--color-rule); background:var(--color-surface); display:flex; flex-direction:column; justify-content:center; gap:2px;}
 .mt-lane__name{font-family:var(--font-display); font-size:15px; font-weight:var(--weight-semibold); color:var(--color-ink); line-height:1.2;}
 .mt-lane__cat{font-family:var(--font-mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted);}
-.mt-lane__track{flex:1; position:relative; min-height:var(--lane-height); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px); background-size:var(--mt-grid-step, 12.5%) 100%;}
+.mt-lane__track{flex:1; position:relative; min-height:var(--lane-height);}
+/* #596 — ZÉBRURES DE LANES (handoff Graphite : « Lanes en zébrures très subtiles
+   (`ink 2.6%`) pour le suivi visuel »). Elles REMPLACENT la grille verticale de
+   jours (`linear-gradient` 1 px par jour) qui peignait le fond des trois familles
+   de lanes : la règle porte déjà les graduations, la grille doublait l'information
+   et concurrençait les barres. Une lane sur deux reçoit un APLAT d'encre à 2,6 %
+   (`background-color`, pas de dégradé : c'est aussi ce qui laisse le harnais de
+   contraste E2E compositer le fond réel, PIT-S91-011).
+   PARITÉ — posée par le COMPOSANT (modificateur `--alt`), jamais par
+   `:nth-child` : les lanes d'une catégorie sont précédées d'une cale de
+   virtualisation (#69) montée/démontée au défilement, et seules les lanes de la
+   bande sont montées — un `:nth-child(even)` inverserait la zébrure en cours de
+   défilement. L'index vient du rang de la lane DANS SA CATÉGORIE (`aria-posinset`
+   − 1), stable au scroll et au pliage : chaque catégorie repart sur une lane
+   claire sous son en-tête (`surface-2`), ce qui garde la hiérarchie lisible.
+   `.mt-lane` (primitive DS, sans consommateur TSX aujourd'hui) suit la même règle. */
+.mt-lane--alt > .mt-lane__track,
+.mt-tlv__lane--alt,
+.mt-tlm__lane--alt{background-color:color-mix(in srgb, var(--color-ink) 2.6%, transparent);}
 
 /* ---------------- TimelineEventBar ----------------
    Solid, calendar-grade bars (modernised): the event colour reads as a real
@@ -244,7 +262,7 @@
    - `--mt-lane-extra` (sur la lane) : hauteur ajoutée aux hauteurs de base ci-dessous ;
    - `--mt-row-y` (sur chaque occurrence, libellé extérieur, fantôme, connecteur) : décalage
      de sa rangée, ajouté au `top` historique de la rangée 0. */
-.mt-tlv__lane{position:relative; height:calc(var(--lane-height) + var(--mt-lane-extra, 0px)); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+.mt-tlv__lane{position:relative; height:calc(var(--lane-height) + var(--mt-lane-extra, 0px)); border-bottom:1px solid var(--color-rule);}
 /* Label produit sticky à gauche : identifie la lane, reste ancré pendant le
    scroll horizontal. Fond opaque + z-index pour passer au-dessus des event bars
    sans casser leur positionnement absolu (left:leftPx). */
@@ -256,6 +274,16 @@
    `surface-2`, réservé à l'en-tête de catégorie) + `font:500` (et non 600).
    La distinction passe par le FOND + la GRAISSE + le RETRAIT (ci-dessous). */
 .mt-tlv__lane-label{position:sticky; left:0; z-index:var(--z-sticky); display:inline-flex; align-items:center; width:var(--lane-header-w); height:100%; padding:0 12px; background:var(--color-surface); border-right:1px solid var(--color-rule); font-family:var(--font-display); font-size:13px; font-weight:var(--weight-medium); color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;}
+/* #596 — la cellule sticky SUIT la zébrure de sa lane (bureau) : elle est opaque
+   (les pastilles passent dessous) et peinte en `surface` comme le fond sur lequel
+   la lane se pose (`.mt-tlv`) — l'aplat d'encre 2,6 % composé sur `surface` rend
+   donc exactement la teinte de la piste zébrée, et la rangée se lit d'un seul
+   tenant de l'en-tête au bord droit. Sans ce relais, la cellule resterait claire
+   au-dessus d'une piste teintée : une colonne blanche découpant chaque zébrure.
+   Le MOBILE ne le fait PAS, délibérément : sa gouttière est une colonne d'une
+   seule teinte `surface-2` (#706), distincte de la piste — la zébrure s'y arrête
+   au filet de la colonne. */
+.mt-tlv__lane--alt > .mt-tlv__lane-label{background-color:color-mix(in srgb, var(--color-ink) 2.6%, var(--color-surface));}
 /* #195 — Accordéon de 2e niveau (produit) : le label sticky devient un bouton
    toggle, mirror de .mt-tlv__group-head. Reset des styles bouton natifs, chevron
    à gauche, cible cliquable (pointer-events réactivés).
@@ -304,8 +332,6 @@
 .mt-tlv__lane > .mt-tlv__ghost,
 .mt-tlv__lane > .mt-tlv__ghost-pin,
 .mt-tlv__lane > .mt-tlv__connector{margin-left:var(--lane-header-w);}
-/* La trame de jours du fond de lane suit la piste, pas le bord du rail. */
-.mt-tlv__lane{background-position-x:var(--lane-header-w);}
 /* Coin haut-gauche : masque la gouttière SUR LA RÈGLE. `buildRulerTicks` peut
    émettre des graduations à offset NÉGATIF (première frontière de mois avant
    `rangeStart`) ; hors gouttière elles étaient hors rail donc invisibles, la
@@ -740,7 +766,7 @@
 
 /* Lane compacte : densité réduite mais hauteur >= 44px (contrainte a11y PRIME
    sur la densité, réserve ui-design #1). */
-.mt-tlm__lane{position:relative; height:calc(44px + var(--mt-lane-extra, 0px)); border-bottom:1px solid var(--color-rule); background-image:linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);}
+.mt-tlm__lane{position:relative; height:calc(44px + var(--mt-lane-extra, 0px)); border-bottom:1px solid var(--color-rule);}
 /* #706 — largeur FIXE (et non plus `max-width:120px`), même raison que #392 côté
    desktop : l'en-tête remplit désormais la gouttière de piste, qui fait
    exactement `--lane-header-w-m`. Un en-tête plus étroit (nom de produit court)
@@ -784,15 +810,6 @@
 .mt-tlm__lane > .mt-tlm__ghost,
 .mt-tlm__lane > .mt-tlm__ghost-pin,
 .mt-tlm__lane > .mt-tlm__connector{margin-left:var(--lane-header-w-m);}
-/* PAS de `background-position-x` ici, contrairement au desktop (`.mt-tlv__lane`)
-   — et c'est délibéré. Le desktop pose `background-size:<dayWidth>px 100%` EN
-   LIGNE (`TimelineView.tsx`), donc son fond de lane est une vraie trame de jours
-   qu'il faut recaler sur la piste. Les vues mobiles ne posent AUCUN
-   `background-size` : le dégradé occupe toute la lane, ce qui ne peint qu'UN
-   trait de 1px à l'origine du rail (aujourd'hui masqué par la colonne d'en-têtes
-   au repos). Le décaler ne réalignerait aucune trame — il déplacerait ce trait
-   unique contre le `border-right` de l'en-tête, soit un filet doublé à l'écran.
-   La trame de jours mobile est un manque à part entière, hors périmètre #706. */
 /* Coin haut-gauche : masque la gouttière SUR LA RÈGLE. `buildRulerTicks` peut
    émettre des graduations à offset NÉGATIF ; hors gouttière elles étaient hors
    rail donc invisibles, la gouttière les ferait apparaître comme un libellé de
