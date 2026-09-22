@@ -36,8 +36,21 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
       data-testid="dashboard-product-list"
       aria-label={t('label')}
     >
-      {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
-      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`).
+          #664 — Maquette `Dashboard.dc.html` (relevé S109) : AUCUN sur-titre sur
+          « Tes produits » (absence voulue) ; compteur « {n} produits » à droite
+          (nombre TOTAL de produits listés). Classes et règles : cf. `WeekAgenda`. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="text-ink font-display min-w-0 text-sm font-semibold">{t('title')}</h2>
+        {products.length > 0 && (
+          <p
+            className="text-ink-muted text-2xs font-mono whitespace-nowrap"
+            data-testid="dashboard-product-list-count"
+          >
+            {t('count', { count: products.length })}
+          </p>
+        )}
+      </div>
       {products.length === 0 ? (
         // #57 — État vide partagé (remplace le <p> inline). testId préservé pour
         // les tests #80 existants (dashboard-product-list-empty).

@@ -93,8 +93,27 @@ export const CompactAgenda: React.FC<CompactAgendaProps> = ({
     >
       {/* #575 — vrai titre de section (cf. `WeekAgenda`). Les intertitres
           « Aujourd'hui » / « Demain » plus bas RESTENT en mono capitales : ce sont
-          des en-têtes de groupe, l'usage que la charte réserve à ce style. */}
-      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
+          des en-têtes de groupe, l'usage que la charte réserve à ce style.
+          #664 — Maquette `Mobile Dashboard.dc.html` (relevé S109) : AUCUN sur-titre
+          (absence voulue) ; compteur à droite du titre. La maquette compte « cette
+          semaine » ; ce composant n'affiche QUE aujourd'hui + demain, donc il compte
+          CE QU'IL MONTRE (pas la semaine). Forme longue « {n} événements » et non
+          l'abréviation « évén. » de la maquette : aucune abréviation stable dans les
+          4 langues (de « Ereign. » n'existe pas), un lecteur d'écran la lit telle
+          quelle, et la place ne manque pas. Même classes que `WeekAgenda`. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="text-ink font-display min-w-0 text-sm font-semibold">{t('title')}</h2>
+        {!isEmpty && (
+          <p
+            className="text-ink-muted text-2xs font-mono whitespace-nowrap"
+            data-testid="dashboard-compact-agenda-count"
+          >
+            {/* `getEventsInRange` filtre sur la date de DÉBUT : un événement n'est
+                jamais dans les deux groupes, la somme ne compte donc aucun doublon. */}
+            {t('count', { count: todayEvents.length + tomorrowEvents.length })}
+          </p>
+        )}
+      </div>
       {isEmpty ? (
         // #630 — Miroir mobile de `WeekAgenda` : état vide compact + CTA qui ouvre le
         // drawer du shell (absent hors shell, et absent sans produit — review S90).
