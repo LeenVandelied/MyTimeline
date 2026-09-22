@@ -1161,3 +1161,9 @@ Arbitrage dev au démarrage du S108 (#623). La maquette `Dashboard.dc.html` mont
 
 ## DEC-S108-004 — « En bref » : les 4 phrases de la maquette remplacent les 3 lignes
 Arbitrage dev au démarrage du S108 (#640). Retirés : « produits actifs » (déjà compté dans « Tes produits »), « événements ce mois », « jours de série » (DEC-S82-007). Affichés : événements de la semaine dont récurrents, échéances sous 14 jours, couvertures en cours (événement de type durée dont la période contient aujourd'hui), catégorie la plus chargée. Celle-ci est comptée sur le **mois calendaire** (le libellé dit « ce mois »), pas sur la fenêtre de 30 jours du script de la maquette. (Sprint 108, #640)
+
+## DEC-S108-005 — « Catégorie la plus chargée » ex æquo : collator à locale figée, puis points de code
+Départage par `Intl.Collator('en')` (collation racine, locale FIGÉE), puis par points de code. Le résultat ne dépend ni de l'ordre renvoyé par l'API ni de la locale du navigateur. Les points de code seuls rangeraient « É » après « Z ». (Sprint 108 #640, `frontend/src/components/dashboard/kpis.ts`)
+
+## DEC-S108-006 — Viewport du ruban : pas de hook partagé avec la Minimap de la frise
+La Minimap fait un seek absolu recentré au clic (composant contrôlé, fraction), alors que le ruban déplace sa fenêtre par delta depuis la saisie (état local, jours, calage au lâcher). Un hook commun imposait de changer le contrat de `Minimap`, dont dépendent la virtualisation et le zoom de la frise. La géométrie du ruban vit en fonctions pures dans `densityWindow.ts`, contrairement à ce que demandait l'énoncé de #623 (« mutualiser »). (Sprint 108 #623)

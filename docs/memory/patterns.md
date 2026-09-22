@@ -1012,3 +1012,9 @@ Complète [[PAT-S74-004]] pour le cas négatif. Oracle 1 : géométrie, rect du 
 
 ## PAT-S107-002 — Appliquer un motif DS à une partie d'un composant : une constante de classes Tailwind, pas une classe DS
 Besoin : le motif `.mt-table th` sur les seuls en-têtes, sans `.mt-table` qui change aussi `td`, le zébrage et la police. Solution : une constante `TH` de classes Tailwind équivalentes, avec un commentaire qui pointe vers `core.css`. Anti-pattern : créer une classe DS `.mt-th`. `core.css` est hors `@layer`, donc elle écraserait les utilitaires (`text-right`, `px-*`) posés sur la même cellule. (Sprint 107 #609)
+
+## PAT-S108-001 — Un contrôle superposé à un graphique `role="img"` en est le frère, jamais l'enfant
+Les descendants d'un `role="img"` sont présentationnels : un `role="slider"` placé dedans disparaît de l'arbre d'accessibilité. Solution : un conteneur `relative` qui porte le graphique `role="img"` ET, à côté, le contrôle positionné en `absolute`. Test RTL : `expect(img).not.toContainElement(slider)`. (Sprint 108 #623, viewport du ruban)
+
+## PAT-S108-002 — Un compteur qui doit égaler une liste rendue ailleurs partage son filtre, en fonction pure
+Problème : « Tu as X événements cette semaine » doit égaler les lignes de « Cette semaine ». Solution : extraire le filtre de la liste (`currentWeekEvents`) en fonction pure, appelée par la liste ET par le calcul du compteur ; un test rend les deux et compare. Anti-pattern : recoder le filtre dans le hook de données, ce qui produit une divergence silencieuse au premier changement de règle. (Sprint 108 #640)
