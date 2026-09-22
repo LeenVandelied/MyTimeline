@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useArchiveProduct, useIsProductArchivedHere } from '@/hooks/useArchiveProduct'
 import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
+import { isPastEvent } from './isPastEvent'
 
 /**
  * #68 — Vue détail d'un produit.
@@ -290,6 +291,8 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   // BR-EVE-011 : compteur d'events ACTIFS, jamais dérivé du filtre de vue.
   const nonArchivedCount = counts.active
 
+  // #607 — jour de référence du critère « passé », lu une fois par rendu.
+  const today = new Date()
   const history = (product.events ?? [])
     .filter((e) => matchesEventFilter(e.archived, filter))
     .slice()
@@ -441,80 +444,103 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
           </p>
         ) : (
           <ul className="flex flex-col">
-            {history.map((event) => (
-              <li
-                key={event.id}
-                className="border-rule flex flex-col gap-1 border-b py-2 last:border-b-0"
-                data-testid={`product-detail-history-row-${event.id}`}
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    // `.mt-evt--archived` (DS, déjà défini) porte le repli visuel d'un
-                    // archivé. Appliqué à la PASTILLE décorative seulement : le poser sur
-                    // le titre le rendrait à 45 % d'opacité (contraste sous AA). Le sens
-                    // est porté par le badge textuel, à pleine encre.
-                    className={cn(
-                      'size-2 shrink-0 rounded-full',
-                      event.archived && 'mt-evt--archived',
-                    )}
-                    style={{
-                      background: event.color ?? effectiveColor ?? 'var(--color-rule-strong)',
-                    }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-ink min-w-0 flex-1 truncate text-sm">{event.title}</span>
-                  {event.archived && (
-                    <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
-                      {t('archivedBadge')}
+            {history.map((event) => {
+              // #607 — « passé » = fin (ou début) antérieure au jour LOCAL (`isPastEvent`).
+              const past = isPastEvent(event, today)
+              return (
+                <li
+                  key={event.id}
+                  className="border-rule flex flex-col gap-1 border-b py-2 last:border-b-0"
+                  data-testid={`product-detail-history-row-${event.id}`}
+                  data-past={past ? 'true' : 'false'}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      // `.mt-evt--archived` (DS, déjà défini) porte le repli visuel d'un
+                      // archivé. Appliqué à la PASTILLE décorative seulement : le poser sur
+                      // le titre le rendrait à 45 % d'opacité (contraste sous AA). Le sens
+                      // est porté par le badge textuel, à pleine encre.
+                      // #607 — `.mt-evt--past` : grisage COMPLET de la pastille, sans opacité.
+                      // Passé + archivé = cumul (opacité .45 de l'archivé + grisage complet).
+                      className={cn(
+                        'size-2 shrink-0 rounded-full',
+                        event.archived && 'mt-evt--archived',
+                        past && 'mt-evt--past',
+                      )}
+                      style={{
+                        background: event.color ?? effectiveColor ?? 'var(--color-rule-strong)',
+                      }}
+                      aria-hidden="true"
+                    />
+                    {/* #607 — ligne PASSÉE désaturée SANS filtre ni opacité sur le texte
+                      (PIT-S61-003, PIT-S70-003) : le titre passe à l'encre `ink-muted`,
+                      token AA sur `bg` en clair comme en sombre (mesuré par
+                      `e2e/sprint-106-product-detail.spec.ts`). Date et badge y sont déjà. */}
+                    <span
+                      className={cn(
+                        'min-w-0 flex-1 truncate text-sm',
+                        past ? 'text-ink-muted' : 'text-ink',
+                      )}
+                    >
+                      {event.title}
                     </span>
-                  )}
-                  {/* #518 — convention DS (`i18n.css` §7) : `<time datetime>` et non
+                    {/* WCAG 1.4.1 — le sens ne repose pas sur la seule teinte : mention
+                      textuelle pour les technologies d'assistance ; à l'écran, la date
+                      visible et l'écart de luminance ink → ink-muted le portent. */}
+                    {past && <span className="sr-only">{t('pastLabel')}</span>}
+                    {event.archived && (
+                      <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
+                        {t('archivedBadge')}
+                      </span>
+                    )}
+                    {/* #518 — convention DS (`i18n.css` §7) : `<time datetime>` et non
                       `<span>`. `.mt-date--long` REMPLACE `font-mono text-xs tabular-nums`
                       (elle pose les trois, plus `unicode-bidi:isolate` et `nowrap`) :
                       les garder serait un triplon dont `text-xs` (15px) perdrait de
                       toute façon face à la règle HORS layer du DS (13px). Le delta de
                       taille 15→13px est ASSUMÉ — même arbitrage qu'`EventPreviewTimeline`
                       au #72 : la taille d'une date longue appartient au DS. */}
-                  <time
-                    className="text-ink-muted mt-date--long"
-                    dateTime={toLocalIsoDate(parseLocalDate(event.startDate)) ?? undefined}
-                  >
-                    {dateFmt.format(parseLocalDate(event.startDate))}
-                  </time>
-                  {event.archived && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className={cn('flex shrink-0 items-center gap-2', TOUCH_TARGET_HITBOX)}
-                      onClick={() => void handleUnarchive(event)}
-                      disabled={unarchivingId === event.id}
-                      data-testid={`product-detail-unarchive-${event.id}`}
+                    <time
+                      className="text-ink-muted mt-date--long"
+                      dateTime={toLocalIsoDate(parseLocalDate(event.startDate)) ?? undefined}
                     >
-                      <ArchiveRestore className="size-4" aria-hidden="true" />
-                      {unarchivingId === event.id ? t('unarchiving') : t('unarchive')}
-                    </Button>
+                      {dateFmt.format(parseLocalDate(event.startDate))}
+                    </time>
+                    {event.archived && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={cn('flex shrink-0 items-center gap-2', TOUCH_TARGET_HITBOX)}
+                        onClick={() => void handleUnarchive(event)}
+                        disabled={unarchivingId === event.id}
+                        data-testid={`product-detail-unarchive-${event.id}`}
+                      >
+                        <ArchiveRestore className="size-4" aria-hidden="true" />
+                        {unarchivingId === event.id ? t('unarchiving') : t('unarchive')}
+                      </Button>
+                    )}
+                  </div>
+                  {unarchiveError?.id === event.id && (
+                    // #442 — point d'accroche E2E. `role="alert"` reste le contrat a11y
+                    // (et celui de `ProductDetailView.test.tsx`) ; le testid s'y ajoute
+                    // pour que la spec du conflit 409 ne dépende pas d'un texte traduit
+                    // (4 locales). `data-kind` expose la VARIANTE (conflit vs générique),
+                    // sans quoi une spec devrait comparer le message rendu.
+                    <p
+                      className="text-destructive text-xs"
+                      role="alert"
+                      data-testid={`product-detail-unarchive-error-${event.id}`}
+                      data-kind={unarchiveError.kind}
+                    >
+                      {unarchiveError.kind === 'conflict'
+                        ? t('unarchiveConflict')
+                        : t('unarchiveError')}
+                    </p>
                   )}
-                </div>
-                {unarchiveError?.id === event.id && (
-                  // #442 — point d'accroche E2E. `role="alert"` reste le contrat a11y
-                  // (et celui de `ProductDetailView.test.tsx`) ; le testid s'y ajoute
-                  // pour que la spec du conflit 409 ne dépende pas d'un texte traduit
-                  // (4 locales). `data-kind` expose la VARIANTE (conflit vs générique),
-                  // sans quoi une spec devrait comparer le message rendu.
-                  <p
-                    className="text-destructive text-xs"
-                    role="alert"
-                    data-testid={`product-detail-unarchive-error-${event.id}`}
-                    data-kind={unarchiveError.kind}
-                  >
-                    {unarchiveError.kind === 'conflict'
-                      ? t('unarchiveConflict')
-                      : t('unarchiveError')}
-                  </p>
-                )}
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
         )}
       </section>
