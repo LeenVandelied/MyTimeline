@@ -988,3 +988,12 @@ Chaque jalon porte son propre segment, prolongé sur la gouttière (`-right-<gap
 
 ## PAT-S103-003 — Verrouiller « l'accent n'est qu'un signal » sur le DOM RENDU, avec dérogations nommées
 Balayer le DOM rendu (menus ouverts compris) et exiger, pour chaque utilitaire d'accent, un ancêtre `a`/`button`, une section CTA reconnue par son testid, ou une dérogation NOMMÉE assortie d'un test de péremption. Anti-pattern : un grep de classes par fichier, dont la liste blanche ne dit pas pourquoi et rate le panneau fermé par défaut. Exemple : `components/pages/HomePage.accent-roles.test.tsx`. (Sprint 103, #615)
+
+## PAT-S104-001 — Plafonner un conteneur Tailwind 4 hors paliers sans toucher `container`
+`@utility x { @apply container; margin-inline:auto; @media (width >= --theme(--token)) { max-width: --theme(--token) } }`, le token déclaré dans `@theme` (namespace `--container-*`) : la règle du seuil est émise après les paliers, donc gagne. Anti-pattern : `container max-w-(--token)` (deux `max-width` concurrents, issue dépendante du tri) ou un `max-w-[…]` répété. Exemple : `styles/globals.css` `container-landing` (1340 px), vérifié non fuitant sur `/fr/privacy`. (Sprint 104, #616)
+
+## PAT-S104-002 — Décaler les ancres sous une barre collante, bannière optionnelle comprise
+Hauteur de barre en variable CSS (plancher en CSS, hauteur réelle publiée par `ResizeObserver` pour le texte agrandi), `top` de la barre = variable qui vaut la hauteur de bannière via `:root:has(.bannière)`, et `html:has(.barre) { scroll-padding-top: calc(top + hauteur) }` — ce qui couvre d'un coup les ancres, `scrollIntoView` et le focus clavier (WCAG 2.4.11). Anti-pattern : un `scroll-margin-top` section par section, qui oublie le focus et les sections futures. Exemple : `styles/landing.css` + `HeaderSection.tsx`. (Sprint 104, #614)
+
+## PAT-S104-003 — Une liste rendue, ciblée par les tests sans dépendre de l'ordre
+Déclarer la liste dans un module TS pur (`components/landing/landing-nav.ts`) importé par le composant ET par Playwright, avec une fonction qui dérive le `data-testid` de chaque entrée ; cibles et compte attendu dérivent alors de la liste. Anti-pattern : `nav a`.nth(i) + `toHaveCount(N)` littéral, qui oblige à modifier deux fichiers de test à chaque retrait de lien (PIT-S103-003). (Sprint 104, #793)

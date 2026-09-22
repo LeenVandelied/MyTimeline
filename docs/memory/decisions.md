@@ -1119,3 +1119,9 @@ Contexte : `scorePassword` comptait toute lettre ou tout chiffre non-ASCII comme
 
 ## DEC-S103-002 — Frise de cas d'usage : verticale < 640 px, 2×2 de 640 à 1023 px, 4 colonnes ≥ 1024 px ; étiquettes en `ink-muted`
 La maquette ne dessine que 4 colonnes. Verticale sous 640 px (arbitrage dev) ; 2×2 entre 640 et 1023 px, car à 4 colonnes chaque jalon ne fait que 131 à 163 px et les étiquettes passent sur 2 lignes dans les 4 locales (mesuré). Les étiquettes sont en `ink-muted` et non en accent comme dans la maquette : la charte (#615) prime. `id="how-it-works"` est conservé ; la nav sera refaite au S104. (Sprint 103, #612/#615)
+
+## DEC-S104-001 — Le gabarit `lg` des CTA de la landing vient du DS Graphite, pas de `ui/button.tsx`
+`size="lg"` de shadcn pose une hauteur FIXE de 40 px, qui couperait un libellé replié ; la maquette pose ~46 px. La métrique retenue est celle de `.mt-btn--lg` (padding 12/22 px, corps 14 px) + `.mt-btn--wrap.mt-btn--lg` (hauteur minimale 46 px, qui tient aussi la cible tactile ≥ 44 px), transcrite dans l'utilitaire `cta-lg` de `globals.css` — et non les classes DS elles-mêmes, qui supposent la base `.mt-btn` importée hors layer et écraseraient les utilitaires de couleur et de survol du hero. `cta-lg` ne déclare aucune couleur et cible `&:is(a, button)` pour battre les utilitaires du variant sans dépendre de l'ordre d'émission. (Sprint 104, #682, review)
+
+## DEC-S104-002 — La landing est plafonnée à 1340 px par un utilitaire dédié, `container` reste inchangé
+`container` sert aussi au footer applicatif et aux pages légales : un plafond global les modifierait. Le token `--container-landing` (1340 px) et l'utilitaire `container-landing` ne s'appliquent qu'aux 5 sections de la landing. Conséquence assumée : entre 1340 et 1535 px la landing s'élargit de 1280 à 1340 px, et au-delà de 1536 px elle se resserre de 1536 à 1340. (Sprint 104, #616)

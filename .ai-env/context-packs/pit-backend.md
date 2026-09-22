@@ -937,6 +937,7 @@ Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,
 ## PIT-S103-004 — Une affirmation du briefing sur l'état du code se greppe avant d'être écrite
 Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)
 
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

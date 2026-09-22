@@ -1,4 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test'
+import {
+  LANDING_NAV_ANCHORS,
+  landingMenuLinkTestId,
+} from '../../src/components/landing/landing-nav'
 
 /**
  * Mesure de contraste WCAG et de troncature, sur le rendu RÉEL (#337).
@@ -539,21 +543,25 @@ export const MOBILE_MENU = {
  * CTA ne pouvait les atteindre. « Connexion », déplacé ici par #334, n'était
  * mesuré nulle part — c'est le trou que cette fonction ferme.
  *
- * « Connexion » est ciblé par son `data-testid` (#354) ; les ancres de navigation
- * restent repérées par position dans la `nav` du panneau (ce ne sont pas des CTA) :
- * UNE seule depuis le retrait des sections témoignages (#613) et fonctionnalités
- * (#612) — `#how-it-works`. `landing-mobile-menu.spec.ts` fige `toHaveCount(1)` : les
- * deux se modifient ensemble (ciblage positionnel).
- * Compte au S103 : 5 cibles (titre, 3 ancres, connexion) → 3 (titre, 1 ancre,
- * connexion). Toute baisse future doit correspondre à un lien RETIRÉ de la nav,
- * jamais à un sélecteur qui ne trouve plus rien.
+ * « Connexion » est ciblé par son `data-testid` (#354). Les ancres de navigation le
+ * sont aussi depuis #793 : UNE cible par entrée de `LANDING_NAV_ANCHORS`
+ * (`src/components/landing/landing-nav.ts`, source partagée avec le composant), via
+ * `landingMenuLinkTestId(anchor)`. Plus de `nav a`.nth(i) : une ancre ajoutée ou
+ * retirée de la source l'est ici AUTOMATIQUEMENT, et une ancre de la source que le
+ * panneau ne rend pas fait rougir le `toHaveCount(1)` du consommateur au lieu de
+ * disparaître des mesures (PIT-S103-003).
+ * Compte au S104 : 3 cibles (titre, 1 ancre `how-it-works`, connexion) — identique
+ * au S103, soit 8 lectures par thème dans `landing-mobile-menu.spec.ts`.
  * Jamais de libellé : la suite tourne en `fr`/`en`/`es`/`de`.
  */
 export function mobileMenuTargets(page: Page): CtaTarget[] {
   const panel = page.getByTestId(MOBILE_MENU.panel)
   return [
     { name: 'menu/titre', locator: panel.locator('h2') },
-    { name: 'menu/ancre-1', locator: panel.locator('nav a').nth(0) },
+    ...LANDING_NAV_ANCHORS.map((anchor) => ({
+      name: `menu/ancre-${anchor}`,
+      locator: panel.getByTestId(landingMenuLinkTestId(anchor)),
+    })),
     { name: 'menu/connexion', locator: panel.getByTestId(LANDING_CTA.menuLogin) },
   ]
 }

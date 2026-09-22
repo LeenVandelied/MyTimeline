@@ -26,7 +26,11 @@
   --radius-md:   7px;
   --radius-lg:   10px;
   --radius-xl:   14px;
-  --radius-pill: 999px;  /* reserve for switches / true pills only */
+  --radius-pill: 999px;  /* reserve for switches / true pills only —
+                            and for true circles (#616): equal-sided decorative
+                            dots/badges (feature icons, step numbers, avatars,
+                            milestones) use `rounded-full` legitimately (no
+                            dedicated token). Not a licence for containers. */
 
   /* elevation — used sparingly; rules come first */
   --shadow-xs: 0 1px 2px rgba(16, 18, 29, 0.06);

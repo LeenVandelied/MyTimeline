@@ -69,7 +69,7 @@ export function HowItWorksSection() {
 
   return (
     <section id="how-it-works" className="section-animation py-20">
-      <div className="container mx-auto px-4">
+      <div className="container-landing px-4">
         <p className="text-ink-muted text-2xs mb-2.5 font-mono leading-normal tracking-widest uppercase">
           {t('eyebrow')}
         </p>
