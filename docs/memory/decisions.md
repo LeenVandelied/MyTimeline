@@ -1149,3 +1149,15 @@ Arbitrage dev au démarrage du S107 (#608) : la frise reste sous `md` (« frise 
 
 ## DEC-S107-002 — Liste produits à 390 px : la troncature du nom à 5-7 caractères est acceptée
 Arbitrage dev en revue de la PR #814 : 4 colonnes à 390 px (Produit, Prochain événement, frise, Actions) laissent ~58 px au nom. Le dev préfère ce compromis à un tableau de 978 px qui défile horizontalement.
+
+## DEC-S108-001 — « Ouvrir la frise » : boîte visible 32 px, zone tactile 44×44 sous 768 px
+Arbitrage dev au démarrage du S108 (#699, point 1). Le critère AAA 2.5.5 (44 px) est visé **par la zone tactile**, pas par la boîte : `TOUCH_TARGET_HITBOX` (#754, S102) étend la cible à 44×44 par pseudo-élément sous 768 px, la boîte `size="sm"` (32 px) reste dans la rangée d'en-tête du ruban. Grossir la boîte ferait descendre les titres de section sous la flottaison à 1280×800 (`e2e/sprint-84-section-titles.spec.ts`). Aucun code modifié : la décision entérine l'état livré par #754, déjà gardé par `e2e/sprint-101-touch-targets.spec.ts`. (Sprint 108, #699)
+
+## DEC-S108-002 — Piste de frise vide : `rule-emphasis` conservé malgré l'usage décoratif
+Arbitrage dev au démarrage du S108 (#699, point 2). `EmptyState` (`track`) garde `border-rule-emphasis`, le token que le DS réserve aux bordures fonctionnelles : c'est le même que celui du connecteur pointillé de la frise (`.mt-evt-connector`), dont la piste vide est l'image, et il n'est pas inversé en sombre (≈ 4,1:1 clair, ≈ 4,7:1 sombre). Écarté : `rule-strong` (1,46:1), trop pâle pour un tireté de 2 px qui doit se lire comme une frise et pas comme un filet. Exception documentée à la règle d'usage de `ds/readme.md` § Border tiers. Aucun code modifié. (Sprint 108, #699)
+
+## DEC-S108-003 — Ruban du tableau de bord : 30 prochains jours, règle, viewport de 9 jours ; histogramme conservé
+Arbitrage dev au démarrage du S108 (#623). La maquette `Dashboard.dc.html` montre les **30 prochains jours** (« AUJ. » à gauche), la prod montrait les 30 derniers : on s'aligne sur la maquette. Règle graduée tous les 5 jours, viewport de 9 jours déplaçable qui pilote le libellé « Fenêtre · … ». Aucune synchronisation avec la frise : le tableau de bord n'en rend pas. L'histogramme de densité est conservé ; le rendu en barres d'événements empilées de la maquette reste un écart suivi à part. Extrait de maquette : `docs/memory/sprints/sprint-108/maquette-dashboard.md`. (Sprint 108, #623)
+
+## DEC-S108-004 — « En bref » : les 4 phrases de la maquette remplacent les 3 lignes
+Arbitrage dev au démarrage du S108 (#640). Retirés : « produits actifs » (déjà compté dans « Tes produits »), « événements ce mois », « jours de série » (DEC-S82-007). Affichés : événements de la semaine dont récurrents, échéances sous 14 jours, couvertures en cours (événement de type durée dont la période contient aujourd'hui), catégorie la plus chargée. Celle-ci est comptée sur le **mois calendaire** (le libellé dit « ce mois »), pas sur la fenêtre de 30 jours du script de la maquette. (Sprint 108, #640)

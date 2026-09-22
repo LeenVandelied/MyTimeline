@@ -7118,8 +7118,9 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Vagues :** V1 = #623 ∥ #640 ∥ #699 (E2E séquentiels)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
-**À confirmer au démarrage :** synchro ruban ↔ frise ; définition de « couverture en cours » ; token de la piste vide (#699, moitié livrée par #754)
-**Status :** Planifié
+**Arbitrages dev au démarrage :** #623 fenêtre des 30 PROCHAINS jours + règle + viewport 9 j, histogramme conservé, aucune synchro (pas de frise sur le dashboard) — DEC-S108-003 ; #640 les 4 phrases de la maquette remplacent les 3 lignes — DEC-S108-004 ; #699 aucun code, deux décisions consignées — DEC-S108-001/002
+**Vagues révisées :** V1 = #640 puis V2 = #623 (séquentiel : `page.tsx`, `dashboard.json` et 4 fichiers de tests partagés) ; #699 traité par le lead (docs seules)
+**Status :** En cours
 
 ### Sprint 109 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
 **Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), sur-titres conformes à la maquette, restes du S90 supprimés
