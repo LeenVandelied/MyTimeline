@@ -358,7 +358,7 @@ documentait l'en-tête de `ci.yml` — le `PUT` réécrit toute la protection et
 et les reviews au passage. Vérifié après coup : `enforce_admins: true` et reviews `0` inchangés.
 
 ## DEC-S56-001 — En-tête de lane : gouttière de piste, et surtout PAS `pointer-events:none`
-S56 #392. L'en-tête sticky opaque recouvrait les 168 px (`--lane-header-w`) de tête du viewport ; aux zooms
+S56 #392. L'en-tête sticky opaque recouvrait les 168 px (`--lane-header-w`, 176 px depuis #674 au S105) de tête du viewport ; aux zooms
 **Trimestre (150 px) et Année (66 px)** le 1er événement naissait dessous. L'option tentante — neutraliser
 l'en-tête aux pointeurs — était **fausse**, mais pas pour la raison que dit l'artefact de #392. **Vérifié dans
 le CSS au moment de la clôture :** `.mt-tlv__lane-label` porte **déjà** `pointer-events:none`, et ce depuis
@@ -1025,7 +1025,7 @@ Arbitrage dev (#605, vaut pour #600). Le DELETE produit est un soft delete (BR-P
 Alternative écartée : exposer l'état d'ouverture par le contexte. La détection DOM couvre aussi `TimelineEditHost`, `ConflictDialog` et toute future modale du shell sans élargir le contrat du contexte. Limite assumée : les rôles `menu`/`listbox` (Popover, DropdownMenu Radix montés hors dialog) échappent à la garde — aucun composant concerné à ce jour (grep vérifié en review), à revoir à l'ajout d'un tel composant. (Sprint 94 #672)
 
 ## DEC-S94-002 — Gouttière mobile à 120 px, et `background-position-x` volontairement non transposé
-`--lane-header-w-m: 120px` reprend le `max-width` que le DS déclarait déjà pour `.mt-tlm__lane-label` — ce n'est pas un seuil déduit du « ~120 px » de l'énoncé. Le desktop reste à 168 px (`LANE_TRACK_OFFSET_PX`), les deux vues n'ayant pas la même place. Le décalage de trame du desktop n'est PAS porté : les lanes mobiles n'ont aucun `background-size`, le décaler peindrait un filet doublé au lieu d'aligner une trame. (Sprint 94 #706)
+`--lane-header-w-m: 120px` reprend le `max-width` que le DS déclarait déjà pour `.mt-tlm__lane-label` — ce n'est pas un seuil déduit du « ~120 px » de l'énoncé. Le desktop reste à 168 px (`LANE_TRACK_OFFSET_PX` ; 176 px depuis #674 au S105), les deux vues n'ayant pas la même place. Le décalage de trame du desktop n'est PAS porté : les lanes mobiles n'ont aucun `background-size`, le décaler peindrait un filet doublé au lieu d'aligner une trame. (Sprint 94 #706)
 
 ## DEC-S94-003 — Les overlays du shell sortent du plein écran ; ils n'y sont pas portés
 Stratégie (a) de l'énoncé #712 retenue, (b) écartée : le toaster est global au layout, le déplacer dans l'élément en plein écran aurait une portée bien au-delà de l'issue et changerait le montage de toutes les notifications de l'application. (Sprint 94 #712)
@@ -1125,3 +1125,12 @@ La maquette ne dessine que 4 colonnes. Verticale sous 640 px (arbitrage dev) ; 2
 
 ## DEC-S104-002 — La landing est plafonnée à 1340 px par un utilitaire dédié, `container` reste inchangé
 `container` sert aussi au footer applicatif et aux pages légales : un plafond global les modifierait. Le token `--container-landing` (1340 px) et l'utilitaire `container-landing` ne s'appliquent qu'aux 5 sections de la landing. Conséquence assumée : entre 1340 et 1535 px la landing s'élargit de 1280 à 1340 px, et au-delà de 1536 px elle se resserre de 1536 à 1340. (Sprint 104, #616)
+
+## DEC-S105-001 — Gouttière desktop de la frise à 176 px, sans valeur de repli
+`--lane-header-w: 176px` et `LANE_TRACK_OFFSET_PX = 176` : la maquette `.dc.html` (`LH = 176px`) fait foi sur l'écart relevé au S85. Le repli `var(--lane-header-w, 160px)` est supprimé (#429) : un repli sur un token défini sous `:root` ne sert jamais et ne peut que diverger (PIT-S56-003). Gouttière mobile (120 px) inchangée. (Sprint 105, #674/#429)
+
+## DEC-S105-002 — Zébrures de lanes au lieu de la grille verticale de jours, bureau et mobile
+Arbitrage dev au démarrage du S105. Grille retirée sur bureau, portrait et paysage (la règle porte déjà les graduations) ; une lane sur deux par catégorie en aplat `color-mix(in srgb, var(--color-ink) 2.6%, transparent)` (handoff écrit ; la règle CSS du `.dc.html` n'a pas été relue). La cellule sticky de lane suit la zébrure sur bureau ; la colonne mobile reste `surface-2` (#706). (Sprint 105, #596)
+
+## DEC-S105-003 — La touche F recadre la frise ; le plein écran n'a plus de raccourci
+Arbitrage dev au démarrage du S105 : plein écran au bouton seul (`timeline-fullscreen`), Échap le quitte toujours ; `help.fullscreen` reste l'`aria-label` du bouton, `help.fit` décrit F. « Affiché » suit la règle du rendu : catégorie masquée exclue, catégorie repliée incluse (résumé #601), produit replié exclu. Niveau choisi = le plus fin où l'étendue tient (marge 40 px), calculé d'abord en px/jour pour rester compatible avec le zoom continu (#593). Aucun événement affiché : no-op silencieux (annonce `aria-live` versée en follow-up). (Sprint 105, #597)

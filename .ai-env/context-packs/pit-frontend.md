@@ -1475,6 +1475,7 @@ Verdict APPROUVÉ à 0 finding avec des ancrages `virtualization.ts:3312`, `Time
 
 ## PIT-S91-011 — Mesurer un contraste sur une lane mobile : le helper refuse la grille `background-image`
 `readTextRendering` (`frontend/e2e/support/contrast.ts`) lève dès qu'il traverse un dégradé ; or `.mt-tlm__lane` peint sa grille en `background-image`. Vérifier que ce dégradé est le seul traversé, le passer à `none` le temps de la mesure, puis mesurer contre le fond réellement peint (`--color-surface`). Motif : `frontend/e2e/sprint-91-more-contrast.spec.ts`. (Sprint 91, absorption `⋯`)
+⚠ **PÉRIMÉ DEPUIS LE S105 (#596)** : les lanes (bureau et mobile) n'ont plus de `background-image` — la grille de jours est remplacée par une zébrure en aplat (`background-color` à 2,6 % d'encre, une lane sur deux). `sprint-91-more-contrast` mesure désormais le fond réel, sans neutralisation. Le piège ne vaut plus que pour un futur dégradé réintroduit sur une lane.
 
 
 ## PIT-S92-001 — `ln -s <cible> node_modules` sur un dossier existant crée `node_modules/node_modules`, que Node résout en premier
@@ -1758,6 +1759,22 @@ Parser `--reporter=json` depuis stdout donne un JSON invalide dans ce dépôt (p
 
 ## PIT-S104-006 — Dans un `<Button>` shadcn, la variante `[&_svg]:size-4` bat le `h-5 w-5` posé sur l'icône
 Sélecteur descendant (0,1,1) contre classe simple (0,1,0) : l'icône reste à 16 px malgré la classe. Pour la dimensionner, surcharger la variante sur le bouton, pas la classe de l'enfant. (Déduit de la spécificité, non mesuré — Sprint 104, #682)
+
+
+## PIT-S105-001 — Zébrure « une lane sur deux » sur une liste virtualisée : jamais `:nth-child`
+La cale haute de virtualisation (`timeline-lane-spacer`) est un enfant de la liste et le premier rang monté varie au défilement : `:nth-child(even)` tient sans virtualisation puis inverse la parité (mesuré : casse à `scroll 1522`, lane 21, sous 70 lanes). Tirer la parité du rang STABLE (`startIndex + i`, rang dans la catégorie) et la poser en classe depuis le composant. Un test jsdom ou une petite fixture ne peut pas le voir : exiger une fixture au-delà de `LANE_VIRTUALIZATION_MIN_ROWS`. (Sprint 105, #596)
+
+
+## PIT-S105-002 — Changer le zoom ET la position de la frise dans la même action : `scrollLeft =` rend une position fausse
+L'effet #392 (`el.scrollLeft = offsetDays × dayWidth`, gardé sur la VALEUR d'`offsetDays`) donne en navigateur réel une position finale fausse quand le niveau change en même temps (332 px mesurés contre 216 attendus ; cause supposée : `scroll-behavior:smooth` du conteneur, non vérifiée) et ne rejoue rien si l'offset est identique (F après un défilement manuel). Appliquer le défilement dans un `useLayoutEffect` ordonné APRÈS la re-projection #449, armé par un ref, avec `scrollTo({behavior:'instant'})`, et le prouver par `getBoundingClientRect` en E2E (jsdom ne clampe rien). (Sprint 105, #597)
+
+
+## PIT-S105-003 — Frise `/timeline` à 1600 px : ~878 px de piste utile et 30 jours de marge de rail
+Hors shell, sidebar et gouttière (176 px), la piste utile ne fait que ~878 px, et `computeRange` ne laisse que 30 jours de marge : un cadrage « centré » sur tous les événements bute sur le bord du rail. En E2E, asserter la largeur utile en prémisse et ne mesurer le centrage que quand le rail a de la place des deux côtés. (Sprint 105, #597)
+
+
+## PIT-S105-004 — Une couleur à 2,6 % d'alpha ne se vérifie pas par un canvas 1×1
+Le `toRgba` de `contrast.ts` passe par un canvas 8 bits prémultiplié : à alpha 7/255 les canaux sont quantifiés. Parser `getComputedStyle().backgroundColor` (Chromium sérialise `color(srgb r g b / a)` en flottants 0-1) et résoudre les tokens par un témoin `background-color:var(--token)`. (Sprint 105, #596)
 
 ---
 
