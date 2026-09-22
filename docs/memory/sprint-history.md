@@ -7091,7 +7091,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 0/4.
 **Status :** Terminé — PR #810 mergée, issues #606/#607/#698 et milestone #107 fermés après merge
 
-### Sprint 107 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Liste produits + onglets)
+### Sprint 107 — 2026-09-22 (EN COURS — cohésion 0.50, Liste produits + onglets)
 **Objectif :** en-têtes de colonnes au motif `.mt-table th`, mini-frise visible sous `md`, focus des onglets vérifié
 **Milestone GitHub :** #108
 **Issues :** #609 (P3, XS), #524 (P3, XS), #608 (P3, S — bug admis) — 4 pts
@@ -7099,7 +7099,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 106
 **À confirmer au démarrage :** #609 à moitié livrée (catégorie déjà fusionnée) ; #524 à fermer sans code si la mesure ne montre rien de rogné
-**Status :** Planifié
+**Status :** En cours (démarré 2026-09-22 ; arbitrages dev : #608 frise conservée sous md, densité adaptée ; #609 en-têtes seuls, catégorie déjà fusionnée)
 
 ### Sprint 108 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Tableau de bord : ruban et « En bref »)
 **Objectif :** ruban de densité avec règle graduée et viewport déplaçable ; métriques « En bref » du handoff
