@@ -14,6 +14,7 @@ import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductDrawer } from './ProductDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
 import { TimelineEditHost } from '@/components/timeline'
 import type { Resource } from '@/components/timeline'
@@ -269,9 +270,16 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
     return (
       <div className="flex flex-col gap-4" data-testid="product-detail-view">
         {backButton}
-        <p className="text-ink-muted text-sm" role="status" data-testid="product-detail-loading">
-          {t('loading')}
-        </p>
+        {/* #698 — squelette VISUEL au lieu d'un texte brut, MÊME composition que le fallback
+            de segment `[productId]/loading.tsx` (bouton retour + 3 lanes) : le passage
+            fallback de segment → chargement des données ne fait pas sauter la page.
+            Testid, `role="status"` et libellé accessible (`sr-only`) conservés. */}
+        <LoadingSkeleton
+          variant="timeline"
+          rows={3}
+          label={t('loading')}
+          testId="product-detail-loading"
+        />
       </div>
     )
   }

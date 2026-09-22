@@ -163,6 +163,22 @@ export function ProductsListView() {
     [router, locale],
   )
 
+  // #698 — la ligne navigue par `router.push` (pas de `<Link>`, donc aucun préchargement) :
+  // l'écran de liste restait affiché pendant tout l'aller-retour RSC. On précharge la fiche
+  // dès l'intention (survol OU focus clavier), UNE fois par fiche : le Set borne les appels
+  // (le routeur déduplique aussi, mais un survol répété n'a pas à le solliciter).
+  // Sans effet en `next dev` (Next ne précharge qu'en build de production, PIT-S91-008).
+  const prefetchedRef = React.useRef<Set<string>>(new Set())
+  const prefetchDetail = React.useCallback(
+    (productId: string) => {
+      const href = `/${locale}/products/${productId}`
+      if (prefetchedRef.current.has(href)) return
+      prefetchedRef.current.add(href)
+      router.prefetch(href)
+    },
+    [router, locale],
+  )
+
   const searchInputRef = React.useRef<HTMLInputElement>(null)
   const handleClearSearch = () => {
     setSearch('')
@@ -324,6 +340,8 @@ export function ProductsListView() {
                     tabIndex={0}
                     aria-label={t('actions.openDetail')}
                     onClick={() => goToDetail(product.id)}
+                    onMouseEnter={() => prefetchDetail(product.id)}
+                    onFocus={() => prefetchDetail(product.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()

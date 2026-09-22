@@ -502,6 +502,21 @@ describe('ProductDetailView', () => {
     })
   })
 
+  // #698 — squelette VISUEL (et non plus un texte brut), aligné sur `[productId]/loading.tsx`.
+  it('#698 — chargement : squelette en lanes, testid, role status et libellé conservés', () => {
+    mockData({ data: undefined, isLoading: true })
+    render(<ProductDetailView productId="p-alpha" />)
+    const loading = screen.getByTestId('product-detail-loading')
+    expect(loading.tagName).toBe('DIV')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(within(loading).getByText('products.detail.loading')).toHaveClass('sr-only')
+    const lanes = within(loading).getAllByTestId('loading-skeleton-item')
+    expect(lanes).toHaveLength(3)
+    for (const lane of lanes) expect(lane.style.height).toBe('var(--lane-height)')
+    // Le bouton retour reste rendu, comme dans le fallback de segment.
+    expect(screen.getByTestId('product-detail-back')).toBeInTheDocument()
+  })
+
   it('affiche « introuvable » si le produit est absent/archivé', () => {
     render(<ProductDetailView productId="does-not-exist" />)
     expect(screen.getByTestId('product-detail-not-found')).toBeInTheDocument()
