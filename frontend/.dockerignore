@@ -1,0 +1,26 @@
+# Dépendances & build (réinstallés/recompilés dans l'image)
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Git / IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Secrets & env locaux
+.env
+.env.*
+
+# Tests / artefacts
+test-results/
+playwright-report/
+*.tsbuildinfo
+.eslintcache
+
+# Divers
+*.log
+.DS_Store

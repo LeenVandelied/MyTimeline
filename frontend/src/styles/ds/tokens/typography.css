@@ -1,0 +1,44 @@
+/* MyTimeline · Typography tokens
+   Archivo for display + UI, IBM Plex Mono for everything temporal.
+   Non-standard ~1.27 modular scale (13 / 15 / 17 / 21 / 27 / 35 / 45 / 57)
+   so the rhythm reads intentional, never Tailwind-default. */
+
+:root {
+  /* --font-display / --font-ui / --font-mono sont fournis par next/font
+     (self-host) via les variables CSS posées sur <html> dans app/layout.tsx.
+     Ne pas les redéclarer ici : next/font en est la source unique. */
+
+  /* type scale */
+  --text-2xs: 13px;
+  --text-xs:  15px;
+  --text-sm:  17px;
+  --text-md:  21px;
+  --text-lg:  27px;
+  --text-xl:  35px;
+  --text-2xl: 45px;
+  --text-3xl: 57px;
+
+  /* line heights — tight in display, generous in body */
+  --leading-none:    1;
+  --leading-tight:   1.08;
+  --leading-snug:    1.28;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+
+  /* tracking */
+  --tracking-tighter: -0.03em;
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.06em;
+  --tracking-wider:   0.1em;
+  --tracking-widest:  0.16em;  /* mono eyebrows / labels */
+
+  /* weights */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* mono number rendering */
+  --mono-features: "tnum" 1, "zero" 1; /* @kind other */
+}

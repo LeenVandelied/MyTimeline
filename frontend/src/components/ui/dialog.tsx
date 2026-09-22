@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
+import * as React from 'react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { X } from 'lucide-react'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 const Dialog = DialogPrimitive.Root
 
@@ -21,8 +21,8 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
+      'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80',
+      className,
     )}
     {...props}
   />
@@ -38,48 +38,83 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
+        'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 flex w-full max-w-lg translate-x-[-50%] translate-y-[-50%] flex-col gap-4 border p-6 shadow-lg duration-200 *:shrink-0 sm:rounded-lg',
+        className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
+      {/*
+       * #732/#740 — ANCRE DE LA CROIX, NON DÉFILANTE. Plusieurs consommateurs
+       * (`ProductDrawer`, `CategoryDrawer`) posent `overflow-y-auto` sur ce
+       * `Content` : il devient le conteneur défilant, et une croix `absolute`
+       * directe défilait avec le contenu (y = -123 px à 390×600, formulaire
+       * défilé — `e2e/sprint-100-dialog-close-reachable.spec.ts`).
+       *
+       * L'ancre est une boîte `sticky` de hauteur NULLE :
+       *   - `order-first` la place visuellement en tête SANS changer l'ordre DOM :
+       *     la croix reste le DERNIER focusable, le focus initial Radix ne bouge pas ;
+       *   - `-mb-4` annule le `gap-4` qui la suit : à défilement nul, la géométrie
+       *     des enfants est inchangée. Ce n'est possible qu'en FLEX (en grid, une
+       *     piste ne descend pas sous 0 et la zone de grille — de hauteur nulle —
+       *     serait le bloc conteneur du sticky, qui ne glisserait jamais) ;
+       *   - `top-0` et NON `top-6` : le seuil `sticky` se compte depuis le bord de
+       *     CONTENU du scrollport (son `p-6` déjà déduit). `top-6` décalait la croix
+       *     de 24 px de trop (mesuré : sheet + 41 au lieu de sheet + 16). Avec
+       *     `top-0`, l'ancre est déjà à sa position collée à défilement nul (pas de
+       *     saut) et reste ensuite à 24 px du haut du dialog ;
+       *   - `-top-2 -right-2` sur la croix : 24 − 8 = 16 px, soit l'ancien
+       *     `top-4 right-4` (mesuré par `sprint-95-toast-overlap` et
+       *     `sprint-100-dialog-close-reachable`) ;
+       *   - `z-10` : en flex, `order` modifie aussi l'ordre de peinture — sans
+       *     stacking context, un descendant positionné du contenu la recouvrirait.
+       *
+       * #754 — CIBLE TACTILE. Sous 768 px la croix passe de 16×16 (la taille de son
+       * icône) à 44×44 (`max-md:h-11 max-md:w-11`, icône centrée en flex). La boîte
+       * GRANDIT VERS LA GAUCHE ET VERS LE BAS : `top`/`right` ancrent son coin
+       * haut-droit, donc ce qui reste à 16 px du bord de la sheet est le bord HAUT
+       * et le bord DROIT de la boîte — jamais son centre ni sa hauteur. Au-dessus de
+       * 768 px, rien ne change (16×16, `e2e/sprint-101-touch-targets.spec.ts`). Les
+       * oracles au pixel qui en dérivent (`sprint-95-toast-overlap`) relisent la
+       * hauteur MESURÉE de la croix.
+       *
+       * #757 — LISIBILITÉ SUR CONTENU DÉFILÉ. Le contenu défile SOUS cette ancre :
+       * la croix porte donc son propre fond OPAQUE (`bg-background`, disque
+       * `rounded-full`, liseré `shadow-xs` sans ajout de taille) et une encre
+       * `text-muted-foreground` à pleine opacité. L'ancienne opacité réduite (70 %,
+       * pleine au survol) a été RETIRÉE : appliquée à la boîte entière, elle rendait
+       * aussi le fond translucide et laissait transparaître le contenu. Retiré aussi :
+       * le fond et l'encre conditionnés à l'état « ouvert » de Radix — cet état est
+       * permanent tant que le dialog est visible, c'était un no-op trompeur. Au
+       * survol, SEULE la surface change (`hover:bg-accent-soft`), jamais l'encre
+       * (convention de `ui/button.tsx`, PIT-S49-001). Mesuré par
+       * `e2e/sprint-101-dialog-close-contrast.spec.ts` (sheet défilée, clair et
+       * sombre, repos et survol) : 5,96:1 / 6,26:1 au repos, 4,97:1 / 4,90:1 au
+       * survol — seuil 3:1 (WCAG 1.4.11).
+       */}
+      <div className="sticky top-0 z-10 order-first -mb-4 h-0">
+        <DialogPrimitive.Close className="bg-background text-muted-foreground hover:bg-accent-soft absolute -top-2 -right-2 flex items-center justify-center rounded-full shadow-xs transition-colors disabled:pointer-events-none max-md:h-11 max-md:w-11">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </div>
     </DialogPrimitive.Content>
   </DialogPortal>
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-const DialogHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
-      className
-    )}
-    {...props}
-  />
+const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
 )
-DialogHeader.displayName = "DialogHeader"
+DialogHeader.displayName = 'DialogHeader'
 
-const DialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
-    )}
+    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
     {...props}
   />
 )
-DialogFooter.displayName = "DialogFooter"
+DialogFooter.displayName = 'DialogFooter'
 
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
@@ -87,10 +122,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className
-    )}
+    className={cn('text-lg leading-none font-semibold tracking-tight', className)}
     {...props}
   />
 ))
@@ -102,7 +134,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn('text-muted-foreground text-sm', className)}
     {...props}
   />
 ))

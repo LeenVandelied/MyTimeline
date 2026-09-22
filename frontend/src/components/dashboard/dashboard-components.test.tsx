@@ -1,0 +1,197 @@
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import type { FullCalendarEvent } from '@/types/event'
+import type { Product } from '@/types/product'
+import { CreateEventProvider } from '@/components/layout/CreateEventContext'
+import { GreetingHeader } from './GreetingHeader'
+import { DensityRibbon } from './DensityRibbon'
+import { WeekAgenda } from './WeekAgenda'
+import { KpiMarginalia } from './KpiMarginalia'
+import { ProductList } from './ProductList'
+
+/**
+ * #80 — Tests de rendu des composants dashboard. next-intl mocké → assertions
+ * locale-agnostiques (clés `ns.key`). On vérifie : data-testid contractuels
+ * (E2E #83/#85), délégation aux helpers, filet couleur, chiffres mono inline.
+ */
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
+}))
+
+const NOW = new Date(2026, 6, 15, 9, 0, 0) // mer. 15 juil. 2026, 9h (matin)
+const LOCALE = 'fr'
+
+const evt = (id: string, start: string, color = '#3E8BD6'): FullCalendarEvent => ({
+  id,
+  title: `Event ${id}`,
+  start,
+  end: start,
+  allDay: true,
+  resourceId: 'p1',
+  color,
+  extendedProps: { productId: 'p1', productName: 'Produit A', category: 'Cat', type: 'single' },
+})
+
+describe('GreetingHeader', () => {
+  it('rend la salutation du matin en fonction de l’heure locale', () => {
+    render(<GreetingHeader name="Alice" now={NOW} />)
+    expect(screen.getByTestId('dashboard-greeting')).toBeInTheDocument()
+    expect(screen.getByRole('heading')).toHaveTextContent('dashboard.greeting.morning')
+  })
+
+  it('bascule sur le soir après 18h', () => {
+    render(<GreetingHeader name="Alice" now={new Date(2026, 6, 15, 20)} />)
+    expect(screen.getByRole('heading')).toHaveTextContent('dashboard.greeting.evening')
+  })
+})
+
+describe('DensityRibbon', () => {
+  it('rend une barre par jour de la fenêtre et marque TODAY', () => {
+    render(
+      <DensityRibbon events={[evt('a', '2026-07-15')]} now={NOW} locale={LOCALE} rangeDays={30} />,
+    )
+    expect(screen.getByTestId('dashboard-density-ribbon')).toBeInTheDocument()
+    expect(screen.getByTestId('dashboard-density-today')).toBeInTheDocument()
+  })
+})
+
+describe('WeekAgenda', () => {
+  it('liste les events de la semaine courante avec data-testid par ligne', () => {
+    render(<WeekAgenda events={[evt('e1', '2026-07-15')]} now={NOW} locale={LOCALE} />)
+    expect(screen.getByTestId('dashboard-week-agenda-row-e1')).toBeInTheDocument()
+  })
+
+  it('affiche l’état vide hors semaine', () => {
+    render(<WeekAgenda events={[evt('e1', '2026-08-30')]} now={NOW} locale={LOCALE} />)
+    expect(screen.getByTestId('dashboard-week-agenda-empty')).toBeInTheDocument()
+  })
+
+  it('#630 — état vide sous le shell, avec produit : CTA qui ouvre le drawer de création, sans piste', () => {
+    const openCreate = vi.fn()
+    render(
+      <CreateEventProvider onOpenCreate={openCreate}>
+        <WeekAgenda events={[]} now={NOW} locale={LOCALE} canCreateEvent />
+      </CreateEventProvider>,
+    )
+    const empty = screen.getByTestId('dashboard-week-agenda-empty')
+    expect(within(empty).getByRole('status')).toBeInTheDocument()
+    expect(within(empty).queryByTestId('dashboard-week-agenda-empty-track')).not.toBeInTheDocument()
+    fireEvent.click(within(empty).getByTestId('dashboard-week-agenda-empty-cta'))
+    expect(openCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('review S90 — état vide sous le shell, SANS produit : aucun CTA (pas de détour par le drawer)', () => {
+    const openCreate = vi.fn()
+    render(
+      <CreateEventProvider onOpenCreate={openCreate}>
+        <WeekAgenda events={[]} now={NOW} locale={LOCALE} canCreateEvent={false} />
+      </CreateEventProvider>,
+    )
+    const empty = screen.getByTestId('dashboard-week-agenda-empty')
+    expect(within(empty).getByText('dashboard.week.empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-week-agenda-empty-cta')).not.toBeInTheDocument()
+    expect(within(empty).queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('#630 — hors shell : aucun CTA (pas de bouton inerte)', () => {
+    render(<WeekAgenda events={[]} now={NOW} locale={LOCALE} />)
+    expect(screen.getByTestId('dashboard-week-agenda-empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('dashboard-week-agenda-empty-cta')).not.toBeInTheDocument()
+  })
+})
+
+describe('KpiMarginalia', () => {
+  it('rend les 3 KPIs en chiffres inline', () => {
+    render(
+      <KpiMarginalia
+        kpis={{ activeProducts: 4, eventsThisMonth: 7, currentStreak: 2 }}
+        locale={LOCALE}
+      />,
+    )
+    expect(screen.getByTestId('dashboard-kpi-active-products')).toHaveTextContent('4')
+    expect(screen.getByTestId('dashboard-kpi-events-month')).toHaveTextContent('7')
+    expect(screen.getByTestId('dashboard-kpi-streak')).toHaveTextContent('2')
+  })
+})
+
+const product = (id: string, overrides: Partial<Product> = {}): Product => ({
+  id,
+  name: `Produit ${id}`,
+  color: '#3E8BD6',
+  category: { id: 'c1', name: 'Cat', color: '#4FA459' },
+  events: [],
+  ...overrides,
+})
+
+describe('ProductList', () => {
+  it('rend une ligne par produit avec compteur d’events non archivés', () => {
+    const p = product('p1', {
+      events: [
+        {
+          id: 'ev',
+          title: 'Prochain',
+          type: 'single',
+          startDate: '2026-08-01',
+          endDate: '2026-08-01',
+          productId: 'p1',
+          archived: false,
+        },
+        {
+          id: 'ev2',
+          title: 'Archivé',
+          type: 'single',
+          startDate: '2026-08-02',
+          endDate: '2026-08-02',
+          productId: 'p1',
+          archived: true,
+        },
+      ],
+    })
+    render(<ProductList products={[p]} locale={LOCALE} now={NOW} />)
+    const row = screen.getByTestId('dashboard-product-list-row-p1')
+    expect(row).toBeInTheDocument()
+    // 1 event non archivé → compteur "1".
+    expect(row).toHaveTextContent('1')
+  })
+
+  it('#603 — prochaine échéance : une série passée est avancée à sa prochaine occurrence', () => {
+    const p = product('p1', {
+      events: [
+        {
+          id: 'rec',
+          title: 'Mensuel',
+          type: 'single',
+          startDate: '2026-05-20',
+          endDate: '2026-05-20',
+          productId: 'p1',
+          archived: false,
+          isRecurring: true,
+          recurrenceUnit: 'MONTH',
+          recurrenceEndDate: null,
+        },
+      ],
+    })
+    render(<ProductList products={[p]} locale={LOCALE} now={NOW} />)
+    const row = screen.getByTestId('dashboard-product-list-row-p1')
+    // NOW = 15 juil. 2026 : l'occurrence du 20 juil. (avant #603 : « aucune échéance »).
+    expect(row.querySelector('time')?.getAttribute('datetime')).toBe('2026-07-20')
+    expect(row).toHaveTextContent('Mensuel')
+  })
+
+  it('affiche l’état vide sans produit', () => {
+    render(<ProductList products={[]} locale={LOCALE} now={NOW} />)
+    expect(screen.getByTestId('dashboard-product-list-empty')).toBeInTheDocument()
+  })
+
+  it('#630 — état vide : CTA vers la liste produits localisée, sans piste', () => {
+    render(<ProductList products={[]} locale="de" now={NOW} />)
+    const empty = screen.getByTestId('dashboard-product-list-empty')
+    expect(
+      within(empty).queryByTestId('dashboard-product-list-empty-track'),
+    ).not.toBeInTheDocument()
+    const cta = within(empty).getByTestId('dashboard-product-list-empty-cta')
+    expect(cta).toHaveAttribute('href', '/de/products')
+    expect(cta).toHaveTextContent('dashboard.productList.emptyCta')
+  })
+})

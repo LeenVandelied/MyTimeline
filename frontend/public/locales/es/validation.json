@@ -1,21 +1,39 @@
 {
   "email": {
-    "invalid": "L'email est invalide",
-    "required": "L'email est requis"
+    "invalid": "El email es inválido",
+    "required": "El email es requerido"
   },
   "name": {
-    "min": "Le nom doit contenir au moins 3 caractères",
-    "required": "Le nom est requis"
+    "min": "El nombre debe contener al menos 3 caracteres",
+    "required": "El nombre es requerido",
+    "max": "El nombre no debe superar los 20 caracteres"
   },
   "username": {
-    "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "required": "Le nom d'utilisateur est requis"
+    "min": "El nombre de usuario debe contener al menos 3 caracteres",
+    "required": "El nombre de usuario es requerido",
+    "max": "El nombre de usuario no debe superar los 20 caracteres"
   },
   "password": {
-    "min": "Le mot de passe doit contenir au moins 6 caractères",
-    "uppercase": "Le mot de passe doit contenir au moins une majuscule",
-    "number": "Le mot de passe doit contenir au moins un chiffre",
-    "match": "Les mots de passe ne correspondent pas",
-    "required": "Le mot de passe est requis"
+    "min": "La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula y un número",
+    "max": "La contraseña no debe superar los 100 caracteres",
+    "loginMin": "La contraseña debe tener al menos 6 caracteres",
+    "uppercase": "La contraseña debe contener al menos una mayúscula",
+    "number": "La contraseña debe contener al menos un número",
+    "match": "Las contraseñas no coinciden",
+    "required": "La contraseña es requerida",
+    "same": "La nueva contraseña debe ser diferente de la anterior"
+  },
+  "event": {
+    "titleRequired": "El título del evento es obligatorio",
+    "titleMax": "El título no puede superar los 100 caracteres",
+    "durationMin": "La duración debe ser mayor que 0",
+    "durationUnitRequired": "La unidad de duración es obligatoria",
+    "recurrenceUnitRequired": "La frecuencia de recurrencia es obligatoria",
+    "recurrenceEndBeforeStart": "La fecha de fin de recurrencia debe ser posterior o igual a la fecha de inicio",
+    "endBeforeStart": "La fecha de fin debe ser posterior o igual a la fecha de inicio",
+    "colorInvalid": "Color inválido (se espera formato hexadecimal, p. ej. #3B82F6)",
+    "submitError": "Se produjo un error al guardar, inténtalo de nuevo.",
+    "conflict": "Este evento se modificó mientras tanto. Recarga para ver la última versión.",
+    "reload": "Recargar"
   }
 }

@@ -1,0 +1,132 @@
+'use client'
+
+import { useMemo } from 'react'
+import { useTranslations } from 'next-intl'
+import { cn } from '@/lib/utils'
+import { PASSWORD_POLICY } from '@/lib/schemas/auth'
+
+/**
+ * #86 — Indicateur de force du mot de passe (faible / moyen / fort) en temps réel.
+ *
+ * Score 0..4 heuristique local (aucune donnée envoyée) : longueur + variété de
+ * classes de caractères. Purement visuel — la contrainte réelle est la politique
+ * UNIQUE `PASSWORD_POLICY` (#148, BR-AUT-003) : 8..100 caractères, au moins une
+ * majuscule et un chiffre. Le backend (`@StrongPassword`) en est la source de
+ * vérité ; on la RÉPLIQUE ici en important `PASSWORD_POLICY` plutôt qu'en
+ * recodant des seuils (#508 : le seuil était resté à 6 après le durcissement).
+ *
+ * Invariant : un mot de passe que le serveur REFUSERAIT est toujours affiché
+ * `weak` — l'indicateur ne peut plus contredire la règle réellement appliquée.
+ * Accessible : `aria-live="polite"` annonce le niveau.
+ */
+export type StrengthLevel = 'weak' | 'medium' | 'strong'
+
+/**
+ * Le mot de passe satisferait-il la validation serveur (`@StrongPassword`) ?
+ * Dérive entièrement de `PASSWORD_POLICY` (même sémantique Unicode que le
+ * serveur, #735) : aucune règle n'est recodée ici.
+ */
+export function meetsPolicy(password: string): boolean {
+  return (
+    password.length >= PASSWORD_POLICY.minLength &&
+    password.length <= PASSWORD_POLICY.maxLength &&
+    PASSWORD_POLICY.uppercase.test(password) &&
+    PASSWORD_POLICY.digit.test(password)
+  )
+}
+
+/**
+ * #762 — Minuscule, même sémantique Unicode que `PASSWORD_POLICY.uppercase` (#735) :
+ * `\p{Lowercase}` (Ll + Other_Lowercase, pendant de `Character.isLowerCase`) borné
+ * au BMP par `(?=[\0-\uFFFF])`. Avant, `/[a-z]/` ignorait `é`, `ω`, `ß` : un mot de
+ * passe en lettres accentuées perdait le point « casse mixte ». La borne BMP garde
+ * la symétrie avec la majuscule : `𝐚` (U+1D41A) ne compte pas plus que `𝐀`.
+ */
+const LOWERCASE = /(?=[\0-\uFFFF])\p{Lowercase}/u
+
+/**
+ * #762 — Symbole = point de code qui n'est NI lettre (`\p{L}`), NI marque (`\p{M}`),
+ * NI chiffre/nombre (`\p{N}`). Avant, `/[^A-Za-z0-9]/` comptait toute lettre ou tout
+ * chiffre non-ASCII comme symbole : `Ωabcdefg١` scorait 4 (`strong`) au lieu de 3.
+ *
+ * Heuristique purement locale (le serveur n'exige aucun symbole), d'où ces choix :
+ *  - drapeau `u` → itération par POINT DE CODE : une lettre hors BMP (`𝐀`) est une
+ *    lettre, jamais un « symbole » par ses deux moitiés de paire de substitution.
+ *    Elle ne compte pas non plus comme majuscule (politique bornée au BMP) : elle
+ *    n'apporte donc aucun point — sous-estimer vaut mieux que surévaluer ;
+ *  - diacritique combinant (NFD : `e` + U+0301) = `\p{M}`, partie de la lettre qu'il
+ *    accentue : pas un symbole, sinon un `é` décomposé noterait plus fort qu'un `é`
+ *    précomposé ;
+ *  - emoji, ponctuation, espace = symbole (ni lettre, ni marque, ni nombre).
+ */
+const SYMBOL = /[^\p{L}\p{M}\p{N}]/u
+
+export function scorePassword(password: string): number {
+  if (!password) return 0
+  let score = 0
+  if (password.length >= PASSWORD_POLICY.minLength) score++
+  if (password.length >= 10) score++
+  if (PASSWORD_POLICY.uppercase.test(password) && LOWERCASE.test(password)) score++
+  if (PASSWORD_POLICY.digit.test(password)) score++
+  if (SYMBOL.test(password)) score++
+  return Math.min(score, 4)
+}
+
+export function levelFromScore(score: number): StrengthLevel {
+  if (score <= 1) return 'weak'
+  if (score <= 3) return 'medium'
+  return 'strong'
+}
+
+/**
+ * Niveau affiché. Le score seul ne suffit pas : `Abc123!` (7 caractères) scorait
+ * 4 → `strong` alors que le serveur le REFUSE. On passe donc d'abord la porte
+ * `meetsPolicy`. Corollaire : tout mot de passe conforme score ≥ 2 (longueur +
+ * chiffre), donc `medium` au minimum — aucun faux `weak` sur un mot de passe
+ * accepté. `weak` ⇔ refusé par le serveur.
+ */
+export function levelFromPassword(password: string): StrengthLevel {
+  if (!meetsPolicy(password)) return 'weak'
+  return levelFromScore(scorePassword(password))
+}
+
+const LEVEL_STYLES: Record<StrengthLevel, { bars: number; barClass: string; textClass: string }> = {
+  weak: { bars: 1, barClass: 'bg-danger', textClass: 'text-danger' },
+  medium: { bars: 2, barClass: 'bg-warning', textClass: 'text-warning' },
+  strong: { bars: 4, barClass: 'bg-success', textClass: 'text-success' },
+}
+
+interface PasswordStrengthProps {
+  password: string
+}
+
+export function PasswordStrength({ password }: PasswordStrengthProps) {
+  const t = useTranslations('settings')
+  const { level, filled } = useMemo(() => {
+    const computed = levelFromPassword(password)
+    return { level: computed, filled: LEVEL_STYLES[computed].bars }
+  }, [password])
+
+  if (!password) return null
+
+  const style = LEVEL_STYLES[level]
+
+  return (
+    <div className="mt-2 space-y-1" data-testid="password-strength">
+      <div className="flex gap-1" aria-hidden="true">
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={i}
+            className={cn(
+              'h-1 flex-1 rounded-full transition-colors',
+              i < filled ? style.barClass : 'bg-rule',
+            )}
+          />
+        ))}
+      </div>
+      <p className={cn('text-xs font-medium', style.textClass)} aria-live="polite">
+        {t(`security.strength.${level}`)}
+      </p>
+    </div>
+  )
+}

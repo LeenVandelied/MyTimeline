@@ -1,0 +1,35 @@
+{
+  "brand": "MyTimeline",
+  "newEvent": "Neues Ereignis",
+  "settings": "Einstellungen",
+  "profile": "Profil",
+  "logout": "Abmelden",
+  "loading": "Wird geladen…",
+  "nav": {
+    "aria": "Hauptnavigation",
+    "dashboard": "Übersicht",
+    "timeline": "Zeitachse",
+    "products": "Produkte"
+  },
+  "theme": {
+    "toLight": "Zum hellen Design wechseln",
+    "toDark": "Zum dunklen Design wechseln"
+  },
+  "createDrawer": {
+    "title": "Neues Ereignis",
+    "subtitle": "Einem Produkt zugeordnet",
+    "product": "Produkt",
+    "productPlaceholder": "Produkt auswählen",
+    "productRequired": "Bitte wählen Sie ein Produkt aus.",
+    "loadingProducts": "Produkte werden geladen…",
+    "emptyProducts": "Erstellen Sie zuerst ein Produkt: Ein Ereignis ist immer einem Produkt zugeordnet."
+  },
+  "timeline": {
+    "eyebrow": "Zeitachse",
+    "title": "Zeitachse",
+    "emptyTitle": "Fügen Sie ein erstes Produkt hinzu, um Ihre Zeitachse aufzubauen",
+    "emptyBody": "Jedes Produkt erhält eine eigene Zeile; seine Ereignisse werden darauf zeitlich eingeordnet.",
+    "emptyCta": "Produkt erstellen",
+    "loading": "Wird geladen…"
+  }
+}

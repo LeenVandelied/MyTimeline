@@ -1,6 +1,5 @@
 HELP.md
 target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -45,7 +44,10 @@ build/
 
 # === BACKEND (Spring Boot) ===
 backend/target/
-backend/.mvn/
+# Maven wrapper TRACKÉ (cd backend && ./mvnw) — type only-script, pas de jar.
+# On garde le wrapper versionné mais on ignore les éventuels artefacts .mvn locaux.
+backend/.mvn/*
+!backend/.mvn/wrapper/
 backend/.idea/
 backend/*.iml
 backend/*.iws
@@ -62,6 +64,12 @@ backend/.env
 backend/.env.local
 backend/.env.production
 backend/.env.development
+# application.properties + profils dev/prod restent TRACKÉS mais SANS secret en clair
+# (valeurs via ${VAR} / variables d'environnement). Cf. issue #34.
+# On ignore uniquement les overrides LOCAUX susceptibles de contenir des secrets :
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application.yml
+backend/src/main/resources/application.yaml
 backend/application.properties
 backend/application.yml
 backend/application.yaml
@@ -75,6 +83,8 @@ frontend/build/
 frontend/.idea/
 frontend/.vscode/
 frontend/dist/
+frontend/*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
 
 # === FRONTEND : Fichiers sensibles ===
 frontend/.env
@@ -85,3 +95,12 @@ frontend/.env.development
 
 # === GEENERAL : Fichiers sensibles ===
 node_modules/
+
+# === Outillage local Claude Code (métriques tokens, worktrees, cache — non projet) ===
+.claude/
+
+# === Config MCP locale (contient des clés API — ne jamais committer) ===
+.mcp.json
+
+# === State local du plugin ai-env (régénérable, non projet) ===
+frontend/.ai-env/

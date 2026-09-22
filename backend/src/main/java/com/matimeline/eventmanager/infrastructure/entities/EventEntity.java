@@ -1,28 +1,60 @@
 package com.matimeline.eventmanager.infrastructure.entities;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 
 @Entity
 @Table(name = "events")
+@EntityListeners(AuditingEntityListener.class)
 public class EventEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Version
+    @Column(nullable = false)
+    private Integer version;
+
     private String title;
     private String type;
     private Integer durationValue;
     private String durationUnit;
     private Boolean isRecurring;
-    private String recurrenceUnit;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recurrence_unit")
+    private RecurrenceUnit recurrenceUnit;
+
+    @Column(name = "recurrence_end_date")
+    private LocalDate recurrenceEndDate;
+
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean isAllDay;
+    private String color;
+
+    @Column(nullable = false)
+    private boolean archived = false;
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
@@ -76,12 +108,20 @@ public class EventEntity {
         this.isRecurring = isRecurring;
     }
 
-    public String getRecurrenceUnit() {
+    public RecurrenceUnit getRecurrenceUnit() {
         return recurrenceUnit;
     }
 
-    public void setRecurrenceUnit(String recurrenceUnit) {
+    public void setRecurrenceUnit(RecurrenceUnit recurrenceUnit) {
         this.recurrenceUnit = recurrenceUnit;
+    }
+
+    public LocalDate getRecurrenceEndDate() {
+        return recurrenceEndDate;
+    }
+
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
     }
 
     public LocalDate getStartDate() {
@@ -116,4 +156,44 @@ public class EventEntity {
         this.isAllDay = isAllDay;
     }
     
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EventEntity that = (EventEntity) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
