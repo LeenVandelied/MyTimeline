@@ -70,4 +70,34 @@ Handoff §1 (`docs/design/graphite-handoff.md:140`) : « nav sticky (logo + lien
 - `frontend/playwright.config.ts` — NON LU en entier ; grep `viewport` / `reducedMotion`.
 - Code : `HeaderSection.tsx`, `LandingMobileMenu.tsx`, `HomePage.tsx`, `OfflineBanner.tsx`, `app/[locale]/layout.tsx:60-96`, `styles/landing.css`, `ds/components/i18n.css:60-142`, `ds/tokens/spacing.css:76-114`, `globals.css:231-252`, `animations.css:22-40`, `HeaderSection.test.tsx`, `nav-label-class.test.ts` (en-tête), `landing.hover-pairing.test.ts:270-300`, `e2e/support/contrast.ts:495-560`, `e2e/landing-mobile-menu.spec.ts`, `e2e/landing-header-logo.spec.ts` (sélecteurs structurels), `e2e/sprint-77-theme-visual.spec.ts` (capture hero).
 
+## Correctif de review (cycle 1)
+
+Base `16bb2616`. Deux MINEURS.
+
+1. **JSDoc de `HeaderSection` périmé** (tableaux #381/#642 relevés avec trois ancres). Remplacé par un relevé à 1024 px avec la nav actuelle (une ancre en mono capitales, filet du groupe compris), sur **macOS, Chromium Playwright, `next dev`**. La CI Linux tranche via `landing-header-logo.spec.ts` :
+
+   | locale | marge logo→nav | nav | groupe droit | débordement |
+   |---|---|---|---|---|
+   | de | 164,6 | 145,1 | 362,5 | 0 |
+   | fr | 167,6 | 145,9 | 355,8 | 0 |
+   | es | 172,3 | 111,5 | 380,5 | 0 |
+   | en | 221,0 | 103,0 | 291,8 | 0 |
+
+   Le bloc #381 est marqué HISTORIQUE, le bloc #642 renvoie au nouveau tableau, et la note provisoire du filet a été retirée. Le texte ajouté ne contient pas de nouvelle utilitaire Tailwind (PIT-S48-002).
+2. **Hauteur figée `--landing-bar-height: 93px`** : mesures faites avec une sonde Playwright (fichier jetable, supprimé).
+   - `html{font-size:200%}` ne change **rien** : l'échelle typo et l'espacement du DS sont en px. Barre 93 px, 0 débordement (1280/1024/375 px, fr/de).
+   - Le zoom navigateur global agrandit aussi les px : cela revient à une fenêtre plus étroite, cas déjà couvert.
+   - Pour simuler un zoom « texte seul », on double les tokens `--text-*`. Avec la hauteur figée, à 1024 px en `de`, la nav passe sur deux lignes et le texte **déborde de 11,5 px sous la barre et de 12,5 px au-dessus**. Autres cas : 0.
+
+   Défaut réel, donc correction appliquée :
+   - `.landing-sticky-bar` passe en `display:flex; min-height: var(--landing-bar-min-height)` (93 px), sans `overflow:hidden`. Le header devient un item étiré avec `py-2`, `h-full` est retiré.
+   - `HeaderSection` publie la hauteur réelle dans `--landing-bar-height` sur `<html>` (ResizeObserver, retiré au démontage). `scroll-padding-top` lit cette valeur, avec repli sur le plancher.
+   - Après correctif : hauteur de base inchangée (93 px partout). Avec le texte ×2, la barre passe à 134 px (`de` 1024) ou 101 px (autres cas), 0 débordement vertical, et l'ancre suit.
+- Spec : nouveau test « 1024 px, de, texte ×2 » (le texte reste dans la barre, et l'ancre démarre au bas réel de la barre après publication de la hauteur).
+- Contrôles négatifs : `min-height` remis en `height` → rouge (la barre ne grandit pas) ; `scroll-padding` limité au plancher → rouge (section à 93,2 px pour une barre de 134). Fichier restauré (`cmp`), vert.
+- Rejeu : `sprint-104-landing-sticky-nav`, `landing-header-logo`, `landing-mobile-overflow`, `landing-mobile-menu` → **62 verts**. Vitest landing/styles/pages : 176 verts. tsc OK, lint OK, prettier OK.
+- Hors périmètre, non traité : avec le texte ×2, le header **déborde horizontalement** (375 px : scrollWidth 504/529 ; 1024 px `de` : 1054). Le budget de largeur du header n'est pas prévu pour un texte doublé, et ce défaut précède #614.
+- RECOMMAND_FOLLOWUP: audit WCAG 1.4.4 (texte ×2) de la landing, en particulier le débordement horizontal du header à 375 et 1024 px [triage S | frontend]
+- [MEMORY:pitfall] Contexte : vérifier la tenue d'une mise en page à 200 % de texte dans ce dépôt. Solution : le DS est en px, donc `html{font-size:200%}` ne prouve rien. Il faut doubler les tokens `--text-*` pour simuler un zoom « texte seul ». Prévention : ne jamais conclure « tient à 200 % » à partir d'un réglage de `font-size` racine.
+
 STATUS: COMPLETED

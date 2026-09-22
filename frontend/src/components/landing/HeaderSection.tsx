@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Menu } from 'lucide-react'
@@ -61,7 +61,8 @@ interface HeaderSectionProps {
  * débordement. Le conteneur (`container-landing`, #616) y est plafonné à 768 px, la nav
  * est masquée : la place ne manquait pas.
  *
- * Le vrai défaut était 1 px plus loin, à 1024 px, là où la nav revient :
+ * Le vrai défaut était 1 px plus loin, à 1024 px, là où la nav revient (relevé
+ * HISTORIQUE, nav à TROIS ancres — relevé à jour dans le bloc #642 plus bas) :
  *
  *   locale | avant #381 (57 px)          | après #381 (27 px)
  *   fr     | 2 lignes, marge 0 px        | 1 ligne, 159 px, marge 58,5 px
@@ -128,22 +129,48 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
     label: t(LANDING_NAV_LABEL_KEYS[anchor]),
   }))
 
+  /**
+   * #614 (correctif de review) — hauteur RÉELLE de la barre collante, publiée sur
+   * `<html>` en `--landing-bar-height` pour le `scroll-padding-top` des ancres
+   * (`landing.css`). La barre n'a qu'un PLANCHER (`--landing-bar-min-height`, 93 px) :
+   * sous agrandissement du texte elle grandit, et un décalage figé ferait passer le
+   * titre de section sous la barre. Retirée au démontage (autres pages).
+   */
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const bar = barRef.current
+    if (!bar || typeof ResizeObserver === 'undefined') return
+    const root = document.documentElement
+    const sync = () =>
+      root.style.setProperty('--landing-bar-height', `${bar.getBoundingClientRect().height}px`)
+    sync()
+    const observer = new ResizeObserver(sync)
+    observer.observe(bar)
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--landing-bar-height')
+    }
+  }, [])
+
   return (
     <>
       {/* #614 — BARRE COLLANTE PLEINE LARGEUR (`.landing-sticky-bar`, `landing.css`).
           Fond opaque `bg` et filet bas sur toute la fenêtre ; le `<header>` qu'elle
           contient reste plafonné à 1340 px (`container-landing`, #616). Hauteur
-          FIXE (`--landing-bar-height` = 92 px + 1 px de filet) : c'est elle que
-          lit le `scroll-padding-top` des ancres. Le header remplit la barre
-          (`h-full`) et centre son contenu — l'ancien `py-6` donnait 92 px sous
-          `lg` et 90 au-dessus ; la barre vaut désormais 92 px de contenu à
-          TOUTES les largeurs (+2 px au-dessus de `lg`, contenu recentré).
+          PLANCHER (`--landing-bar-min-height` = 92 px + 1 px de filet), hauteur
+          réelle publiée pour le `scroll-padding-top` (effet ci-dessus). Le header,
+          item étiré de la barre `flex`, remplit le plancher et centre son contenu
+          — l'ancien `py-6` donnait 92 px sous `lg` et 90 au-dessus ; la barre
+          vaut 93 px à TOUTES les largeurs tant que le texte tient (+2 px
+          au-dessus de `lg`, contenu recentré), et grandit au-delà. `py-2` :
+          marge du texte agrandi contre les bords de la barre.
           Garde-fou : `e2e/sprint-104-landing-sticky-nav.spec.ts`. */}
       <div
+        ref={barRef}
         data-testid="landing-header-bar"
         className="landing-sticky-bar bg-bg border-rule border-b"
       >
-        <header className="container-landing flex h-full items-center justify-between px-4">
+        <header className="container-landing flex items-center justify-between px-4 py-2">
           <div className="flex items-center">
             {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
             `text-md` (21 px) puis `text-lg` (27 px) à partir de `sm`, et
@@ -181,10 +208,8 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
               et le budget de largeur mobile (marge de 13 px en `de` à 320 px, cf.
               plus bas) reste STRICTEMENT inchangé. Coût à `lg` : 17 px (filet +
               `pl-4`), soit −8,5 px sur chacun des deux écarts du `justify-between`.
-              Relevé macOS à 1024 px AVANT ce filet, capitales mono comprises :
-              écart logo→nav `en` 229,5 · `es` 180,8 · `fr` 176,1 · `de` 173,1 px
-              (le tableau #642 plus bas datait de TROIS ancres ; il n'en reste
-              qu'une depuis le S103). */}
+              Relevé du budget APRÈS ce filet : tableau « RELEVÉ ACTUEL » du bloc
+              #642 ci-dessous. */}
           <div className="lg:border-rule flex items-center gap-2 max-[360px]:gap-1 lg:gap-4 lg:border-l lg:pl-4">
             {/* Bascule dans `LandingMobileMenu` sous `lg` — cf. #334, seuil remonté par #347. */}
             <div className="hidden items-center gap-4 lg:flex">
@@ -205,18 +230,25 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
               36 + 4 = 40 px, soit −20 px par écart ; avec `gap-4` (52 px, −26)
               le pire cas n'aurait plus que ~8 px de réserve.
 
-              RELEVÉ APRÈS CORRECTIF, 1024 px, Chromium sur `next start` de
-              production — ⚠ macOS, PAS l'image jammy dont sortent les chiffres
-              de #381 ci-dessus ; les deux séries ne se comparent pas terme à
-              terme, seul l'ORDRE des locales est stable :
+              ⚠ Les chiffres de #381 et de #642 ci-dessus datent d'une nav à TROIS
+              ancres (témoignages et fonctionnalités retirées au S103) : ils
+              expliquent le choix de `gap-1`, ils ne décrivent PLUS le code.
 
-                locale | marge logo→nav | groupe droit | débordement
-                fr     | 46,0           | 338,7        | 0
-                es     | 57,9           | 363,5        | 0
-                de     | 68,3           | 345,4        | 0
-                en     | 130,2          | 274,8        | 0
+              RELEVÉ ACTUEL (#614, review S104), 1024 px — nav à UNE ancre en mono
+              capitales, filet `lg:border-l` du groupe compris. Plateforme :
+              macOS, Chromium Playwright sur `next dev` — PAS l'image jammy : les
+              métriques de police d'Ubuntu diffèrent (PIT-S52-001), seul l'ORDRE
+              des locales se transpose. La CI Linux tranche via
+              `e2e/landing-header-logo.spec.ts` (plancher 24 px) :
 
-              `fr` reste le pire cas, à 22 px au-dessus du plancher de 24 px.
+                locale | marge logo→nav | nav   | groupe droit | débordement
+                de     | 164,6          | 145,1 | 362,5        | 0
+                fr     | 167,6          | 145,9 | 355,8        | 0
+                es     | 172,3          | 111,5 | 380,5        | 0
+                en     | 221,0          | 103,0 | 291,8        | 0
+
+              `de` est le pire cas, à ~140 px au-dessus du plancher : le budget
+              de largeur n'est plus la contrainte serrée à 1024 px.
               Sous `lg` RIEN NE BOUGE — vérifié à 320 px en `de` : le groupe
               vaut 146,6 px, la bascule a `display:none` héritée du parent, et
               `scrollWidth === clientWidth`. C'est la spec ci-dessus qui tranche

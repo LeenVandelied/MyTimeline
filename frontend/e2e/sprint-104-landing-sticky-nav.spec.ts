@@ -250,6 +250,70 @@ test.describe('#614 — barre collante de la landing', () => {
   })
 })
 
+/**
+ * Correctif de review #614 — AGRANDISSEMENT DU TEXTE SEUL (WCAG 1.4.4).
+ *
+ * Méthode : les tailles typographiques du DS sont en px (`ds/tokens/typography.css`),
+ * donc `html{font-size:200%}` n'agrandit RIEN (mesuré : barre 93 px inchangée). On
+ * double donc les tokens `--text-*` eux-mêmes — ce que fait un zoom « texte
+ * seulement », qui agrandit les polices sans toucher les boîtes en px.
+ * Mesuré avant correctif (hauteur FIGÉE 93 px), 1024 px `de` : nav sur deux lignes,
+ * texte débordant de 11,5 px sous la barre et 12,5 px au-dessus. Après : la barre
+ * grandit (134 px) et l'ancre suit sa hauteur réelle.
+ */
+const TEXT_X2_CSS =
+  ':root{--text-2xs:26px!important;--text-xs:30px!important;--text-sm:34px!important;' +
+  '--text-md:42px!important;--text-lg:54px!important;--text-xl:70px!important}'
+
+test('1024 px, de, texte ×2 — la barre contient son texte et l’ancre suit sa hauteur', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 800 })
+  await gotoLanding(page, 'de')
+  await page.addStyleTag({ content: TEXT_X2_CSS })
+  await waitForFonts(page)
+
+  const bar = page.getByTestId(BAR)
+  // Le cas n'a de sens que si le texte agrandi dépasse le plancher.
+  await expect
+    .poll(async () => (await boxOf(page, barSelector)).height)
+    .toBeGreaterThan(BAR_HEIGHT + 10)
+
+  const m = await bar.evaluate((el) => {
+    const b = el.getBoundingClientRect()
+    let top = Infinity
+    let bottom = -Infinity
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!n.textContent?.trim()) continue
+      const range = document.createRange()
+      range.selectNodeContents(n)
+      for (const r of Array.from(range.getClientRects())) {
+        if (!r.height) continue
+        top = Math.min(top, r.top)
+        bottom = Math.max(bottom, r.bottom)
+      }
+    }
+    return { barTop: b.top, barBottom: b.bottom, textTop: top, textBottom: bottom }
+  })
+  const detail = JSON.stringify(m)
+  expect(m.textTop, `texte au-dessus de la barre — ${detail}`).toBeGreaterThanOrEqual(m.barTop)
+  expect(m.textBottom, `texte sous la barre — ${detail}`).toBeLessThanOrEqual(m.barBottom)
+
+  // Hauteur réelle publiée par `HeaderSection` (ResizeObserver, après hydratation) :
+  // l'attendre, sinon l'ancre partirait avec le plancher de 93 px.
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.style.getPropertyValue('--landing-bar-height')),
+    )
+    .toBe(`${m.barBottom - m.barTop}px`)
+
+  await page.evaluate(() => {
+    window.location.hash = '#how-it-works'
+  })
+  await expectSectionUnder(page, m.barBottom, 'texte ×2')
+})
+
 test.describe('#614 — traitement des liens et de la barre', () => {
   for (const locale of LOCALES) {
     test(`1024 px, ${locale} — mono capitales, filets, une ligne, sans débordement`, async ({
