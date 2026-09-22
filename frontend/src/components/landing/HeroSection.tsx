@@ -115,7 +115,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
               asChild
               className="cta-button bg-accent hover:bg-accent-hover text-accent-ink h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
             >
-              <Link href={`/${locale}/register`}>
+              <Link href={`/${locale}/register`} data-testid="landing-hero-cta-primary">
                 {t('common.landing.hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -124,7 +124,9 @@ export function HeroSection({ locale }: HeroSectionProps) {
               variant="outline"
               className="border-rule-emphasis text-ink hover:bg-surface h-auto min-w-min rounded-lg px-8 py-6 text-center text-lg whitespace-normal transition-all"
             >
-              <a href="#how-it-works">{t('common.landing.hero.secondary')}</a>
+              <a href="#how-it-works" data-testid="landing-hero-cta-secondary">
+                {t('common.landing.hero.secondary')}
+              </a>
             </Button>
           </div>
         </div>

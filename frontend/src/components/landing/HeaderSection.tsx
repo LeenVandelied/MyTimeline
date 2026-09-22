@@ -193,7 +193,9 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             variant="outline"
             className="border-accent text-accent hover:bg-accent hover:text-accent-ink transition-all"
           >
-            <Link href={`/${locale}/login`}>{t('common.login.title')}</Link>
+            <Link href={`/${locale}/login`} data-testid="landing-header-cta-login">
+              {t('common.login.title')}
+            </Link>
           </Button>
         </div>
 
@@ -279,7 +281,9 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
           asChild
           className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-2 max-[360px]:text-xs lg:h-9"
         >
-          <Link href={`/${locale}/register`}>{t('common.landing.buttons.register')}</Link>
+          <Link href={`/${locale}/register`} data-testid="landing-header-cta-register">
+            {t('common.landing.buttons.register')}
+          </Link>
         </Button>
 
         {/* `aria-controls` n'est posé QUE si la cible existe : le panneau n'est

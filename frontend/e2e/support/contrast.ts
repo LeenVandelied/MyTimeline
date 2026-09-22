@@ -485,35 +485,42 @@ export interface CtaTarget {
 }
 
 /**
- * Les appels à l'action de la landing.
+ * Identifiants de test des appels à l'action de la landing (#354).
  *
- * Aucun de ces boutons ne porte de `data-testid` à ce jour et les ajouter
- * sortait du périmètre de #337 (les composants `landing/` étaient modifiés en
- * parallèle). On s'ancre donc sur la STRUCTURE et sur les `href`, jamais sur les
- * libellés : la suite tourne en `fr`/`en`/`es`/`de` et un texte français en dur
- * casserait dans trois locales sur quatre.
+ * Jusqu'au Sprint 103, `landingCtas` s'ancrait sur la STRUCTURE et les `href`
+ * (`a.cta-button`, `section a[href="#how-it-works"]`, `header a[href$="/login"]`…).
+ * Au Sprint 49, « Connexion » a changé de conteneur et est sorti des mesures sans
+ * que rien ne rougisse. Un `data-testid` suit l'élément où qu'il soit rendu :
+ * déplacer un CTA ne le retire plus du harnais, et en retirer l'identifiant fait
+ * rougir le `toHaveCount(1)` des specs.
  *
- * - `header a[href$="/register"]` — CTA primaire de l'en-tête.
- * - `header a[href$="/login"]` — « Connexion ». ⚠ En `display:none` sous `md`
- *   depuis #334 : la spec des CTA le saute alors (`continue`), il n'était donc
- *   mesuré dans AUCUN test à 375 px, dans aucun thème. C'est `mobileMenuTargets`
- *   qui couvre sa copie du panneau burger — les deux sont nécessaires.
- * - `a.cta-button` — CTA primaire du hero (classe portée par lui seul).
- * - `section a[href="#how-it-works"]` — CTA secondaire du hero. Le `<header>`
- *   porte la même ancre dans sa navigation : la restreindre à `section` suffit
- *   à les distinguer sans dépendre d'un ordre.
- * - `section a[href$="/register"]:not(.cta-button)` — CTA du bandeau final.
+ * Jamais de libellé : la suite tourne en `fr`/`en`/`es`/`de`.
+ */
+export const LANDING_CTA = {
+  headerRegister: 'landing-header-cta-register',
+  headerLogin: 'landing-header-cta-login',
+  heroPrimary: 'landing-hero-cta-primary',
+  heroSecondary: 'landing-hero-cta-secondary',
+  finalRegister: 'landing-final-cta-register',
+  /** Copie de « Connexion » dans le panneau burger (sous `lg`). */
+  menuLogin: 'landing-menu-cta-login',
+} as const
+
+/**
+ * Les cinq appels à l'action de la landing.
+ *
+ * ⚠ `header/connexion` est en `display:none` sous `lg` (#334, seuil remonté par
+ * #347) : la spec des CTA le saute alors, de façon TRACÉE. Sa copie du panneau
+ * burger (`LANDING_CTA.menuLogin`) est mesurée par `mobileMenuTargets` — les deux
+ * sont nécessaires.
  */
 export function landingCtas(page: Page): CtaTarget[] {
   return [
-    { name: 'header/inscription', locator: page.locator('header a[href$="/register"]') },
-    { name: 'header/connexion', locator: page.locator('header a[href$="/login"]') },
-    { name: 'hero/primaire', locator: page.locator('a.cta-button') },
-    { name: 'hero/secondaire', locator: page.locator('section a[href="#how-it-works"]') },
-    {
-      name: 'bandeau-final/inscription',
-      locator: page.locator('section a[href$="/register"]:not(.cta-button)'),
-    },
+    { name: 'header/inscription', locator: page.getByTestId(LANDING_CTA.headerRegister) },
+    { name: 'header/connexion', locator: page.getByTestId(LANDING_CTA.headerLogin) },
+    { name: 'hero/primaire', locator: page.getByTestId(LANDING_CTA.heroPrimary) },
+    { name: 'hero/secondaire', locator: page.getByTestId(LANDING_CTA.heroSecondary) },
+    { name: 'bandeau-final/inscription', locator: page.getByTestId(LANDING_CTA.finalRegister) },
   ]
 }
 
@@ -532,8 +539,9 @@ export const MOBILE_MENU = {
  * CTA ne pouvait les atteindre. « Connexion », déplacé ici par #334, n'était
  * mesuré nulle part — c'est le trou que cette fonction ferme.
  *
- * Ancrage sur la structure et les `href`, jamais sur les libellés : la suite
- * tourne en `fr`/`en`/`es`/`de`.
+ * « Connexion » est ciblé par son `data-testid` (#354) ; les ancres de navigation
+ * restent repérées par position dans la `nav` du panneau (ce ne sont pas des CTA).
+ * Jamais de libellé : la suite tourne en `fr`/`en`/`es`/`de`.
  */
 export function mobileMenuTargets(page: Page): CtaTarget[] {
   const panel = page.getByTestId(MOBILE_MENU.panel)
@@ -542,6 +550,6 @@ export function mobileMenuTargets(page: Page): CtaTarget[] {
     { name: 'menu/ancre-1', locator: panel.locator('nav a').nth(0) },
     { name: 'menu/ancre-2', locator: panel.locator('nav a').nth(1) },
     { name: 'menu/ancre-3', locator: panel.locator('nav a').nth(2) },
-    { name: 'menu/connexion', locator: panel.locator('a[href$="/login"]') },
+    { name: 'menu/connexion', locator: panel.getByTestId(LANDING_CTA.menuLogin) },
   ]
 }

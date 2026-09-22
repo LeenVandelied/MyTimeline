@@ -3,6 +3,7 @@ import {
   describeRendering,
   expectNotTruncated,
   expectReadable,
+  LANDING_CTA,
   landingCtas,
   readAtRest,
   readTextRendering,
@@ -35,13 +36,16 @@ import {
  * régression pré-#335 de 4.01:1 passerait, ce qui viderait la spec de son objet.
  *
  * Aucune authentification : la landing est publique. Aucun libellé en dur : la
- * suite tourne en fr/en/es/de, l'ancrage se fait sur la structure et les `href`.
+ * suite tourne en fr/en/es/de, l'ancrage se fait sur les `data-testid` (#354).
  *
  * Lancement local : cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`
  * (frontend sur :3100, `PLAYWRIGHT_BASE_URL`, `--workers=1`).
  */
 
 const SCHEMES = ['light', 'dark'] as const
+
+/** Sélecteur CSS du CTA primaire du hero, pour les mutations injectées par `addStyleTag`. */
+const HERO_PRIMARY_CSS = `[data-testid="${LANDING_CTA.heroPrimary}"]`
 
 /**
  * CTA attendus PAR VIEWPORT — et non un simple « au moins un ».
@@ -98,7 +102,7 @@ for (const scheme of SCHEMES) {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
 
-      const heroCta = page.locator('a.cta-button')
+      const heroCta = page.getByTestId(LANDING_CTA.heroPrimary)
       await expect(heroCta).toHaveCount(1)
 
       // SANS défilement : la section au-dessus de la ligne de flottaison doit
@@ -224,7 +228,7 @@ for (const scheme of SCHEMES) {
     test('auto-contrôle : une dégradation injectée est bien détectée', async ({ page }) => {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
-      const hero = page.locator('a.cta-button')
+      const hero = page.getByTestId(LANDING_CTA.heroPrimary)
       await readAtRest(page, hero)
 
       // 1. Contraste — fond = couleur du texte : le cas « bleu sur bleu » du S48,
@@ -234,8 +238,7 @@ for (const scheme of SCHEMES) {
       // rgb(91,156,236) à mi-chemin entre l'accent et le blanc) — la dégradation
       // paraîtrait alors non détectée alors qu'elle l'est 300ms plus tard.
       await page.addStyleTag({
-        content:
-          '.cta-button { background-color: currentColor !important; transition: none !important }',
+        content: `${HERO_PRIMARY_CSS} { background-color: currentColor !important; transition: none !important }`,
       })
       const degraded = await readTextRendering(hero)
       expect(degraded.ratio, 'la mesure ne voit pas un fond identique au texte').toBeLessThan(1.1)
@@ -254,8 +257,7 @@ for (const scheme of SCHEMES) {
       // `min-content` posé au S48 contre la troncature), qui l'emporte sur
       // `width` et rendrait la mutation inopérante.
       await page.addStyleTag({
-        content:
-          '.cta-button { white-space: nowrap !important; min-width: 0 !important; width: 120px !important; transition: none !important }',
+        content: `${HERO_PRIMARY_CSS} { white-space: nowrap !important; min-width: 0 !important; width: 120px !important; transition: none !important }`,
       })
       const clipped = await readTextRendering(hero)
       expect(
@@ -273,7 +275,7 @@ for (const scheme of SCHEMES) {
     test('auto-contrôle : le harnais ne se trompe plus du côté permissif', async ({ page }) => {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
-      const hero = page.locator('a.cta-button')
+      const hero = page.getByTestId(LANDING_CTA.heroPrimary)
       await readAtRest(page, hero)
 
       // 1. OPACITÉ. `effectiveOpacity` était calculé mais jamais appliqué au
@@ -281,7 +283,7 @@ for (const scheme of SCHEMES) {
       // `expectReadable` au survol lisait donc l'encre PLEINE d'un élément
       // semi-transparent et rendait un ratio optimiste.
       await page.addStyleTag({
-        content: '.cta-button { opacity: 0.3 !important; transition: none !important }',
+        content: `${HERO_PRIMARY_CSS} { opacity: 0.3 !important; transition: none !important }`,
       })
       const faded = await readTextRendering(hero)
       expect(faded.effectiveOpacity, "l'opacité injectée n'est pas vue").toBeLessThan(0.4)
@@ -305,11 +307,11 @@ for (const scheme of SCHEMES) {
       // couleur était composée comme un NOIR PLEIN — sur fond clair, un ratio
       // faussement excellent. On empoisonne `getComputedStyle` pour ce seul
       // élément et cette seule propriété : la mesure doit LEVER, pas deviner.
-      await page.evaluate(() => {
+      await page.evaluate((testId: string) => {
         const original = window.getComputedStyle.bind(window)
         window.getComputedStyle = ((element: Element, pseudo?: string | null) => {
           const style = original(element, pseudo ?? undefined)
-          if (pseudo || !element.classList?.contains('cta-button')) return style
+          if (pseudo || element.getAttribute('data-testid') !== testId) return style
           return new Proxy(style, {
             get: (target, property) => {
               if (property === 'color') return 'ceci-nest-pas-une-couleur(42)'
@@ -318,7 +320,7 @@ for (const scheme of SCHEMES) {
             },
           })
         }) as typeof window.getComputedStyle
-      })
+      }, LANDING_CTA.heroPrimary)
       await expect(
         readTextRendering(hero),
         'une couleur CSS non analysable est composée silencieusement au lieu de lever',
@@ -344,7 +346,7 @@ for (const scheme of SCHEMES) {
       await page.goto('/fr', { waitUntil: 'domcontentloaded' })
       await waitForFonts(page)
 
-      const secondary = page.locator('section a[href="#how-it-works"]')
+      const secondary = page.getByTestId(LANDING_CTA.heroSecondary)
       // Même attente qu'au-dessus : sans elle, le survol peut tomber pendant le
       // fondu d'apparition de la section et mesurer 1.00:1 à `opacity: 0`.
       await revealForMeasurement(secondary)
