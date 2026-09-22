@@ -82,11 +82,6 @@
     "upcomingEvents": "Upcoming events",
     "completedEvents": "Completed events"
   },
-  "recentEvents": {
-    "title": "Recent events",
-    "noEvents": "No recent events",
-    "viewAll": "View all"
-  },
   "actions": {
     "createEvent": "Create event",
     "viewCalendar": "View calendar",

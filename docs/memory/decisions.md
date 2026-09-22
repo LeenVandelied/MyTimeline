@@ -890,6 +890,11 @@ dashboard et la fiche produit ont leur propre CTA de création. → prop opt-in 
 `page → TimelineEditHost → TimelineResponsive → TimelineView`, défaut = comportement
 actuel. En revanche la pastille, le compteur et le résumé plié (#601) vivent dans
 `TimelineGroupHead`, partagé : ils s'appliquent aux trois écrans.
+**Correctif S109 (#697)** : depuis S90 (#624), le dashboard ne monte plus la frise (ruban et
+agenda à la place). `TimelineEditHost` n'est plus monté que par DEUX écrans : `/timeline`
+(`app/[locale]/(app)/timeline/page.tsx`, `layout="screen"`) et la fiche produit
+(`ProductDetailView.tsx`). La décision opt-in reste valable ; lire « trois écrans » ci-dessus
+comme « deux ».
 
 ## DEC-S85-006 — Couleur de catégorie : `product.category.color`, repli neutre si `null`
 `Resource` n'a pas de couleur ; le DTO produit expose `category.color` (hex nullable,

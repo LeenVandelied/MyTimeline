@@ -30,7 +30,7 @@ function isProductsTab(value: string): value is ProductsTab {
 export default function ProductsPage() {
   const t = useTranslations('products')
   // #210 — Garde d'auth factorisée (defense-in-depth : le shell garde aussi).
-  const { user, loading } = useAuthGuard()
+  const { user } = useAuthGuard()
 
   const [tab, setTab] = useState<ProductsTab>('products')
 
@@ -43,22 +43,13 @@ export default function ProductsPage() {
     [t],
   )
 
-  if (loading) {
-    return (
-      <div
-        className="bg-bg flex h-screen items-center justify-center"
-        data-testid="products-page-loading"
-      >
-        <div
-          className="border-accent h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
-          role="status"
-        >
-          <span className="sr-only">{t('list.loading')}</span>
-        </div>
-      </div>
-    )
-  }
-
+  // #697 — PAS de branche `loading` ici (même motif que #391 / DEC-S56-003 sur
+  // `/timeline`). `AppShell` ne rend `children` qu'une fois `loading` retombé ET `user`
+  // présent (`app-shell-loading` = SEUL testid du chargement de session), et `loading`
+  // ne repasse à `true` que dans `login`/`register`, appelés hors du groupe `(app)`.
+  // L'ancien `products-page-loading` était donc inatteignable. `if (!user) return null`
+  // reste : filet defense-in-depth sans UI. Chargement des DONNÉES = `products-loading`
+  // (`ProductsListView`), lui atteignable.
   if (!user) return null
 
   return (

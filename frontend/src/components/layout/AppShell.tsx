@@ -122,7 +122,8 @@ import {
  *    contraste encre/pilule 17.8:1 en clair, 16.7:1 en sombre.
  *  · bouton Nouvel événement : BLEU ACCENT —
  *    `bg-accent hover:bg-accent-hover text-accent-ink`, le trio déjà porté par
- *    tous les CTA primaires du produit (login, register, AddProductButton…),
+ *    tous les CTA primaires du produit (login, register, « Nouveau produit »
+ *    `products-new-button` de `ProductsListView`…),
  *    et non le `bg-primary` par défaut du `Button`.
  * `SettingsShell` (la source du motif) a reçu le MÊME état actif au même
  * commit : les deux doivent rester alignés sur la maquette, pas l'un sur l'autre.
