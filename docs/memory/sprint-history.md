@@ -6958,3 +6958,115 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - `sprint-101-fab-landscape:271` rouge local selon l'heure, préexistant (A/B) [XS | tests] → issue #769 (backlog)
   Ratio discard 0/4.
 **Status :** Terminé — PR #765 mergée, issues #761/#762/#763/#764 et milestone #103 fermés après merge
+
+---
+
+> **Plan S103 → S112 (2026-09-22)** — `/sprint plan 10 -c "focus design et mvp"`, base `e0a3dab8`.
+> Axe arbitré par le dev : **écart maquette ↔ produit** (écrans visibles d'abord, puis a11y et dette du DS en complément) ;
+> bugs hors `epic:design` admis seulement sur un écran qu'un sprint touche déjà (#597, #607, #608, #632 retenus ; #444, #563, #620, #722, #766 au backlog).
+> Phase 0.5 scriptée **sautée** (32/69 faux positifs au S93) : contre-vérification manuelle par l'architect sur chaque issue retenue,
+> puis par le lead sur 7 affirmations clés (toutes confirmées ; seule correction : `.mt-evt--draft` à `timeline.css:88`, pas `:66`).
+> Détection NO-OP de l'étape 5 non jouée (inutilisable ici : `Closes #N` ne ferme rien sur la base `dev`).
+> 33 issues, 57 pts, cohésion moyenne 0.56. Fermées au plan : #418 (déjà livrée, `timeline.css:88`), #426 (absorbée par #612).
+> Arbitrage #613 : **section témoignages retirée** (4 avis nominatifs inventés dans `testimonials.json` ; pas de faux « avis presse »).
+> Branche : aucune créée au plan ; chaque `/sprint start` travaille sur sa branche de worktree (convention S85).
+> Ordre imposé : S103 → S104 ; S106 → S107, S109, S112 ; S108 → S109 ; S109 → S111. Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
+
+### Sprint 103 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Landing : sections du milieu)
+**Objectif :** la frise de cas d'usage à 4 jalons remplace les deux sections redondantes ; la section témoignages inventés disparaît ; l'accent bleu redevient un signal
+**Milestone GitHub :** #104
+**Issues :** #354 (P3, XS), #612 (P2, M), #613 (P3, S — périmètre : retirer la section), #615 (P3, S) — 9 pts
+**Vagues :** V1 = #354 | V2 = #612 ∥ #613 (E2E séquentiels) | V3 = #615
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**À confirmer au démarrage :** rendu < 640 px de la frise de jalons (maquette) ; partie `.eslintcache` de #354 déjà livrée
+**Status :** Planifié
+
+### Sprint 104 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Landing : navigation, conteneur, CTA du hero)
+**Objectif :** nav sticky au spec, conteneur 1340 px réservé à la landing, CTA du hero sur une ligne entre 1024 et 1279 px
+**Milestone GitHub :** #105
+**Issues :** #616 (P3, XS), #614 (P2, S), #682 (P3, XS), #425 (P3, XS) — 5 pts
+**Vagues :** V1 = #616 | V2 = #614 ∥ #682 ∥ #425 (E2E séquentiels)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 103 (ancres finales de la nav)
+**À confirmer au démarrage :** interaction nav sticky × bannière réseau sticky ; taille `lg` du CTA (maquette) ; références `landing-hero-*` régénérées sur la CI Linux uniquement
+**Status :** Planifié
+
+### Sprint 105 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Frise : gouttière, zébrures, recadrage)
+**Objectif :** gouttière de 176 px, zébrures de lanes au lieu de la grille de jours, touche F qui recadre
+**Milestone GitHub :** #106
+**Issues :** #674 (P2, S), #429 (P3, XS), #596 (P3, XS), #597 (P2, S — bug admis) — 6 pts
+**Vagues :** V1 = #674 + #429 (même agent) | V2 = #596 ∥ #597 (E2E séquentiels)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**À confirmer au démarrage :** zébrures desktop seul ou mobile aussi ; compatibilité de l'action FIT avec #593 (zoom continu)
+**Status :** Planifié
+
+### Sprint 106 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Fiche produit)
+**Objectif :** fiche d'inventaire au motif du DS, désaturation des événements passés, squelette de chargement cohérent
+**Milestone GitHub :** #107
+**Issues :** #606 (P3, S), #607 (P3, S — bug admis), #698 (P2, S) — 6 pts
+**Vagues :** V1 = #606 | V2 = #607 | V3 = #698 (même fichier `ProductDetailView.tsx`)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (précède S107, S109, S112)
+**À confirmer au démarrage :** arbitrage `onSuccess` de #698 (décision produit écrite) ; specs de squelette contre `next build` + `next start`
+**Status :** Planifié
+
+### Sprint 107 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Liste produits + onglets)
+**Objectif :** en-têtes de colonnes au motif `.mt-table th`, mini-frise visible sous `md`, focus des onglets vérifié
+**Milestone GitHub :** #108
+**Issues :** #609 (P3, XS), #524 (P3, XS), #608 (P3, S — bug admis) — 4 pts
+**Vagues :** V1 = #609 ∥ #524 | V2 = #608
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 106
+**À confirmer au démarrage :** #609 à moitié livrée (catégorie déjà fusionnée) ; #524 à fermer sans code si la mesure ne montre rien de rogné
+**Status :** Planifié
+
+### Sprint 108 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Tableau de bord : ruban et « En bref »)
+**Objectif :** ruban de densité avec règle graduée et viewport déplaçable ; métriques « En bref » du handoff
+**Milestone GitHub :** #109
+**Issues :** #623 (P2, S), #640 (P3, S), #699 (P3, XS) — 5 pts
+**Vagues :** V1 = #623 ∥ #640 ∥ #699 (E2E séquentiels)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**À confirmer au démarrage :** synchro ruban ↔ frise ; définition de « couverture en cours » ; token de la piste vide (#699, moitié livrée par #754)
+**Status :** Planifié
+
+### Sprint 109 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
+**Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), sur-titres conformes à la maquette, restes du S90 supprimés
+**Milestone GitHub :** #110
+**Issues :** #632 (P2, S — bug admis), #697 (P3, S), #664 (P3, S) — 6 pts
+**Vagues :** V1 = #632 ∥ #697 | V2 = #664
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 106, Sprint 108
+**À confirmer au démarrage :** contenu des sur-titres relevé dans la maquette par le lead avant le briefing de #664
+**Status :** Planifié
+
+### Sprint 110 — 2026-09-22 (PLANIFIÉ — cohésion 0.45, Pages d'erreur 404 / 500)
+**Objectif :** 404 en éphéméride datée, référence d'incident sur la 500, `.mt-num` étendue aux `span`
+**Milestone GitHub :** #111
+**Issues :** #627 (P3, S), #516 (P3, XS), #628 (P3, XS) — 4 pts
+**Vagues :** V1 = #627 ∥ #516 | V2 = #628
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Status :** Planifié
+
+### Sprint 111 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Thème : une seule bascule, puis préférence de compte)
+**Objectif :** un seul point d'écriture du thème, puis préférence de thème persistée sur le compte
+**Milestone GitHub :** #112
+**Issues :** #655 (P3, S), #653 (P2, M) — 6 pts
+**Vagues :** V1 = #655 ∥ backend de #653 | V2 = frontend de #653
+**Migrations Flyway :** V16 (`theme_preference` nullable sur `users`)
+**Dépend de :** Sprint 109
+**À confirmer au démarrage :** ADR-010 (endpoint dédié `PUT /api/me/preferences`, PATCH /api/me exigeant 3 champs `@NotBlank`) ; revue db-expert + security-expert
+**Status :** Planifié
+
+### Sprint 112 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Cibles tactiles et focus mesurés)
+**Objectif :** helper de mesure unique, 4 dernières cibles mesurées à 375 px, retour du focus vérifié en E2E
+**Milestone GitHub :** #113
+**Issues :** #768 (P3, XS), #767 (P2, S), #700 (P2, S) — 5 pts
+**Vagues :** V1 = #768 | V2 = #767 | V3 = #700
+**Migrations Flyway :** aucune
+**Dépend de :** Sprints 105, 106, 107
+**À confirmer au démarrage :** volet VoiceOver/NVDA de #700 à faire par le dev
+**Status :** Planifié
