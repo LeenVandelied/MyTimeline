@@ -1143,3 +1143,9 @@ Fin (ou début si l'événement est ponctuel) strictement antérieure au jour ci
 
 ## DEC-S106-003 — Création de produit/catégorie : l'invalidation du cache n'est pas attendue
 Arbitrage dev au démarrage du S106, écrit en commentaire de #698 : `onSuccess` de `useCreateProduct` / `useCreateCategory` lance `invalidateQueries` sans retourner la promesse. Le tiroir se ferme dès la réponse ; la liste peut montrer l'état précédent pendant un aller-retour. Alternative écartée : attendre l'invalidation (+1 requête de latence perçue sur le bouton). Aucun code modifié. (Sprint 106, #698)
+
+## DEC-S107-001 — Liste produits : mini-frise 90 j conservée sous `md`, en version compacte
+Arbitrage dev au démarrage du S107 (#608) : la frise reste sous `md` (« frise = ADN » du handoff), en 64×24 au lieu de 220×40 ; la fenêtre reste 90 jours. Deux SVG sont basculés en CSS (`block md:hidden` / `hidden md:block`), sans hook média : pas de saut à l'hydratation, et un seul SVG dans l'arbre d'accessibilité. Redimensionner le SVG 220 en CSS aurait réduit les points de r=3 à ~0,9 px. `ProductSparkline` prend `width`/`height`, avec 220×40 par défaut (tiroir inchangé). Documenté dans `docs/design/graphite-handoff.md` §5.
+
+## DEC-S107-002 — Liste produits à 390 px : la troncature du nom à 5-7 caractères est acceptée
+Arbitrage dev en revue de la PR #814 : 4 colonnes à 390 px (Produit, Prochain événement, frise, Actions) laissent ~58 px au nom. Le dev préfère ce compromis à un tableau de 978 px qui défile horizontalement.

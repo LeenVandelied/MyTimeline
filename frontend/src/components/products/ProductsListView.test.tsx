@@ -209,6 +209,67 @@ describe('ProductsListView', () => {
     ])
   })
 
+  it('#609 — en-têtes au motif DS `.mt-table th` : mono 9 px capitales, ink-muted, filet rule-strong', () => {
+    render(<ProductsListView />)
+    const headers = screen.getAllByRole('columnheader')
+    expect(headers).toHaveLength(5)
+    for (const th of headers) {
+      expect(th).toHaveAttribute('scope', 'col')
+      expect(th).toHaveClass(
+        'font-mono',
+        'text-[9px]',
+        'uppercase',
+        'tracking-[.1em]',
+        'text-ink-muted',
+        'font-medium',
+        'border-b-[1.5px]',
+        'border-rule-strong',
+      )
+    }
+    // Colonnes numérique et actions : alignement à droite conservé.
+    expect(headers[3]).toHaveClass('text-right')
+    expect(headers[4]).toHaveClass('text-right')
+    expect(headers[0]).not.toHaveClass('text-right')
+  })
+
+  it('#608 — la mini-frise est rendue à tous les paliers : compacte 64×24 sous md, 220×40 dès md', () => {
+    mockProducts({
+      data: [
+        {
+          id: 'p-delta',
+          name: 'Delta',
+          color: '#224466',
+          category: { id: 'c-1', name: 'Véhicules', color: '#445566' },
+          // Deux ponctuels PASSÉS dans la fenêtre de 90 j (15 sept. figé).
+          events: [mkEvent('d1', '2026-08-01'), mkEvent('d2', '2026-09-10')],
+        },
+      ],
+    })
+    render(<ProductsListView />)
+    const activityTh = screen.getAllByRole('columnheader')[2]
+    expect(activityTh).toHaveTextContent('products.list.columns.activity')
+    expect(activityTh).not.toHaveClass('hidden')
+
+    const cell = screen.getByTestId('products-row-activity-p-delta')
+    expect(cell).not.toHaveClass('hidden')
+    const svgs = within(cell).getAllByRole('img', { name: 'products.list.sparklineLabel' })
+    expect(svgs).toHaveLength(2)
+    const [compact, full] = svgs
+    // Compacte : bascule CSS `md:hidden`, géométrie recalculée à 64×24 (pas un 220 étiré).
+    expect(compact).toHaveClass('block', 'md:hidden')
+    expect(compact).toHaveAttribute('viewBox', '0 0 64 24')
+    expect(compact).toHaveAttribute('width', '64')
+    expect(compact).not.toHaveAttribute('preserveAspectRatio')
+    // Pleine : identique à l'aperçu du drawer, affichée dès md.
+    expect(full).toHaveClass('hidden', 'md:block')
+    expect(full).toHaveAttribute('viewBox', '0 0 220 40')
+    for (const svg of svgs) {
+      const circles = svg.querySelectorAll('circle')
+      expect(circles).toHaveLength(2)
+      circles.forEach((c) => expect(c).toHaveAttribute('r', '3'))
+    }
+  })
+
   it('#603 — trie par prochain événement par défaut (le plus proche d’abord, sans échéance en dernier)', () => {
     render(<ProductsListView />)
     // p-beta (17 sept.) < p-alpha (20 sept., récurrence avancée) < p-gamma (aucune).
