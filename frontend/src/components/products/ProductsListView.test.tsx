@@ -18,6 +18,7 @@ import { ProductsListView } from './ProductsListView'
 
 const useProductsMock = vi.fn()
 const pushMock = vi.fn()
+const prefetchMock = vi.fn()
 const archiveMutateAsync = vi.fn()
 const useArchiveProductSpy = vi.fn()
 
@@ -36,7 +37,7 @@ vi.mock('@/hooks/useArchiveProduct', () => ({
   },
 }))
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, prefetch: prefetchMock }),
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
@@ -413,6 +414,32 @@ describe('ProductsListView', () => {
     row.focus()
     await user.keyboard('{Enter}')
     expect(pushMock).toHaveBeenCalledWith('/fr/products/p-beta')
+  })
+
+  // #698 — la ligne navigue par `router.push` (aucun `<Link>`) : sans préchargement,
+  // l'écran de liste restait affiché pendant tout l'aller-retour RSC.
+  it('#698 — précharge la fiche au survol d’une ligne, une seule fois', async () => {
+    const user = userEvent.setup()
+    render(<ProductsListView />)
+    const row = screen.getByTestId('products-row-p-alpha')
+    expect(prefetchMock).not.toHaveBeenCalled()
+    await user.hover(row)
+    expect(prefetchMock).toHaveBeenCalledWith('/fr/products/p-alpha')
+    await user.unhover(row)
+    await user.hover(row)
+    expect(prefetchMock).toHaveBeenCalledTimes(1)
+    expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('#698 — précharge la fiche au focus clavier d’une ligne', async () => {
+    const user = userEvent.setup()
+    render(<ProductsListView />)
+    const row = screen.getByTestId('products-row-p-beta')
+    // Tabule jusqu'à la ligne (vrai parcours clavier, pas `row.focus()`).
+    for (let i = 0; i < 30 && document.activeElement !== row; i += 1) await user.tab()
+    expect(row).toHaveFocus()
+    expect(prefetchMock).toHaveBeenCalledWith('/fr/products/p-beta')
+    expect(pushMock).not.toHaveBeenCalled()
   })
 
   it('affiche l’état vide quand aucun produit', () => {

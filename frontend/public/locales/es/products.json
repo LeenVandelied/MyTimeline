@@ -170,6 +170,7 @@
     "historyEmpty": "No hay eventos registrados.",
     "archivedEmpty": "No hay eventos archivados.",
     "archivedBadge": "Archivado",
+    "pastLabel": "Pasado",
     "unarchive": "Desarchivar",
     "unarchiving": "Desarchivando…",
     "unarchiveError": "No se pudo desarchivar. Inténtalo de nuevo.",

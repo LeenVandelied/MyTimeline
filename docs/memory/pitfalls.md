@@ -2024,3 +2024,12 @@ Hors shell, sidebar et gouttière (176 px), la piste utile ne fait que ~878 px, 
 
 ## PIT-S105-004 — Une couleur à 2,6 % d'alpha ne se vérifie pas par un canvas 1×1
 Le `toRgba` de `contrast.ts` passe par un canvas 8 bits prémultiplié : à alpha 7/255 les canaux sont quantifiés. Parser `getComputedStyle().backgroundColor` (Chromium sérialise `color(srgb r g b / a)` en flottants 0-1) et résoudre les tokens par un témoin `background-color:var(--token)`. (Sprint 105, #596)
+
+## PIT-S106-001 — Fin d'une série récurrente bornée : `recurrenceEndDate` est un horizon, pas une occurrence
+La première version d'`isPastEvent` prenait `recurrenceEndDate` pour le début de la dernière occurrence : une borne hors cadence (série WEEK du lundi bornée un mercredi) repoussait la fin de ~3 jours et laissait « à venir » une série terminée. La dernière occurrence est la plus grande `occurrenceStart(start, unit, k) ≤ seriesHorizon` : réutiliser `lib/recurrence.ts` comme `lib/next-occurrence.ts#nextStart`, jamais un calcul local. Les tests unitaires alignés sur la cadence ne le voient pas : exiger un cas hors cadence (WEEK, MONTH le 31). (Sprint 106, #607 — trouvé en review)
+
+## PIT-S106-002 — `router.prefetch()` part en mode FULL, sans l'en-tête `next-router-prefetch`
+Contrairement à `<Link>` (préchargement AUTO avec `next-router-prefetch: 1`), un `router.prefetch(href)` impératif charge la page entière : le `waitForPrefetch` de `sprint-90`, qui filtre sur cet en-tête, ne le voit pas. En E2E, reconnaître la requête `?_rsc=` vers l'URL cible ET vérifier que l'URL de page n'a pas changé. (Sprint 106, #698)
+
+## PIT-S106-003 — Harnais E2E sur un port libre : CORS du backend partagé et `NEXT_PUBLIC_API_URL` au build
+Front sur `:3106` contre un backend `:8086` lancé ailleurs : son CORS dev n'autorise que `:3000`/`:3100`, donc 403 au `register` du projet `setup`. Relais `:8186` → `:8086` qui réécrit `Origin` vers une origine autorisée, build avec `E2E_API_PROXY_TARGET` pointé dessus. Un rebuild sans `NEXT_PUBLIC_API_URL=/api` donne un autre échec du `setup` : « AUCUNE réponse POST /api/auth/register observée » alors que `curl` via le proxy répond. Avant la suite : sonder `OPTIONS /api/auth/register` avec l'`Origin` du port, et exporter les DEUX variables au build. (Sprint 106, harnais)

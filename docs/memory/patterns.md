@@ -1003,3 +1003,6 @@ Un helper E2E lit le token dans la feuille (`LANE_GUTTER_PX` dans `e2e/support/t
 
 ## PAT-S105-002 — Vérifier une couleur semi-transparente issue de `color-mix` en E2E
 Lire `getComputedStyle(el).backgroundColor`, parser localement la forme `color(srgb r g b / a)` (flottants 0-1), et comparer à la valeur attendue résolue par un élément témoin `background-color:var(--token)`. Anti-pattern : le canvas 1×1 (PIT-S105-004). Exemple : `frontend/e2e/sprint-105-lane-zebra.spec.ts`. (Sprint 105, #596)
+
+## PAT-S106-001 — Réutiliser le motif clé/valeur `.mt-drawer__row` hors du tiroir avec des valeurs longues
+`min-width:0` + `overflow-wrap:anywhere` sur `.mt-drawer__v`, `flex-shrink:0` sur `.mt-drawer__k` (ajout commenté au DS) : `break-word` ne suffit pas, il n'abaisse pas la largeur min-content qui compte pour le rétrécissement flex. Vérifié en `de` à 390 px, sans régression sur le drawer d'événement ni sur le bottom sheet. Anti-pattern : `truncate` sur la valeur, ou règle Tailwind locale concurrente au DS. Alias neutre `.mt-kv*` en follow-up. (Sprint 106, #606)

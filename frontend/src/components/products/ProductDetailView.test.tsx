@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -209,6 +209,32 @@ describe('ProductDetailView', () => {
     render(<ProductDetailView productId="p-alpha" />)
     expect(screen.getByTestId('product-detail-card')).toHaveTextContent('Alpha')
     expect(screen.getByTestId('product-detail-category')).toHaveTextContent('Véhicules')
+  })
+
+  // #606 — fiche d'inventaire = motif DS `.mt-drawer__row/__k/__v` (libellé mono à gauche,
+  // valeur à droite, filet). Classes seulement : le rendu (mono, filets, retour à la ligne
+  // d'une valeur longue en `de`) est mesuré par `e2e/sprint-106-product-detail.spec.ts`.
+  it('#606 — l’en-tête est une fiche d’inventaire au motif DS, sans grille ad hoc', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    const inventory = screen.getByTestId('product-detail-inventory')
+    expect(inventory.tagName).toBe('DL')
+    expect(inventory.className).not.toMatch(/grid/)
+    const rows = screen.getAllByTestId('product-detail-inventory-row')
+    expect(rows).toHaveLength(2)
+    for (const row of rows) {
+      expect(row).toHaveClass('mt-drawer__row')
+      expect(row.querySelector('dt')).toHaveClass('mt-drawer__k')
+      expect(row.querySelector('dd')).toHaveClass('mt-drawer__v')
+    }
+    expect(rows[0]).toHaveTextContent('products.detail.fields.category')
+    expect(rows[0].querySelector('dd')).toContainElement(
+      screen.getByTestId('product-detail-category'),
+    )
+    // La valeur hexadécimale reste la seule valeur en mono.
+    const colorValue = rows[1].querySelector('dd')
+    expect(colorValue).toHaveTextContent('#112233')
+    expect(colorValue).toHaveClass('font-mono')
+    expect(rows[0].querySelector('dd')).not.toHaveClass('font-mono')
   })
 
   // jsdom ne calcule aucun layout : ce test verifie uniquement que les classes de
@@ -458,6 +484,8 @@ describe('ProductDetailView', () => {
         const common = read(locale, 'common')
         expect(filled(products.detail?.newEvent), `${locale} detail.newEvent`).toBe(true)
         expect(filled(products.detail?.archive), `${locale} detail.archive`).toBe(true)
+        // #607 — mention non chromatique d'un événement passé.
+        expect(filled(products.detail?.pastLabel), `${locale} detail.pastLabel`).toBe(true)
         expect(products.detail?.delete, `${locale} detail.delete retirée`).toBeUndefined()
         expect(filled(products.drawer?.actions?.archive), `${locale} drawer.actions.archive`).toBe(
           true,
@@ -472,6 +500,21 @@ describe('ProductDetailView', () => {
         ).toBe(true)
       }
     })
+  })
+
+  // #698 — squelette VISUEL (et non plus un texte brut), aligné sur `[productId]/loading.tsx`.
+  it('#698 — chargement : squelette en lanes, testid, role status et libellé conservés', () => {
+    mockData({ data: undefined, isLoading: true })
+    render(<ProductDetailView productId="p-alpha" />)
+    const loading = screen.getByTestId('product-detail-loading')
+    expect(loading.tagName).toBe('DIV')
+    expect(loading).toHaveAttribute('role', 'status')
+    expect(within(loading).getByText('products.detail.loading')).toHaveClass('sr-only')
+    const lanes = within(loading).getAllByTestId('loading-skeleton-item')
+    expect(lanes).toHaveLength(3)
+    for (const lane of lanes) expect(lane.style.height).toBe('var(--lane-height)')
+    // Le bouton retour reste rendu, comme dans le fallback de segment.
+    expect(screen.getByTestId('product-detail-back')).toBeInTheDocument()
   })
 
   it('affiche « introuvable » si le produit est absent/archivé', () => {
@@ -508,6 +551,60 @@ describe('ProductDetailView', () => {
       // (TimelineEditHost, monté par la vue, ouvre le formulaire pré-rempli).
       const call = timelineSpy.mock.calls.at(-1)?.[0] as { events: Array<{ id: string }> }
       expect(call.events.map((e) => e.id)).toEqual(['e-arch'])
+    })
+
+    // #607 — « passé » (fin antérieure au jour local) ≠ « archivé ». Horloge figée au
+    // 15 mai 2026 : `e1` (1er juin) est À VENIR, `e-arch` (1er mai) est PASSÉ + ARCHIVÉ.
+    // Seule `Date` est simulée : les timers réels restent à `userEvent`.
+    describe('#607 — ligne passée désaturée, cumul passé + archivé', () => {
+      beforeEach(() => {
+        vi.useFakeTimers({ toFake: ['Date'] })
+        vi.setSystemTime(new Date(2026, 4, 15, 12, 0))
+      })
+      afterEach(() => vi.useRealTimers())
+
+      it('désature la LIGNE entière d’un passé (titre ink-muted, pastille grisée, mention)', async () => {
+        const user = userEvent.setup()
+        render(<ProductDetailView productId="p-alpha" />)
+        await user.click(screen.getByTestId('product-detail-filter-all'))
+
+        const past = screen.getByTestId('product-detail-history-row-e-arch')
+        const upcoming = screen.getByTestId('product-detail-history-row-e1')
+        expect(past).toHaveAttribute('data-past', 'true')
+        expect(upcoming).toHaveAttribute('data-past', 'false')
+
+        // Titre : encre `ink-muted` (token AA), jamais d'opacité ni de filtre sur le texte.
+        const pastTitle = within(past).getByText('Archivé')
+        expect(pastTitle).toHaveClass('text-ink-muted')
+        expect(pastTitle).not.toHaveClass('text-ink')
+        expect(pastTitle.className).not.toMatch(/opacity|grayscale|mt-evt--/)
+        expect(within(upcoming).getByText('Vidange')).toHaveClass('text-ink')
+
+        // Indice non chromatique (WCAG 1.4.1) : mention sr-only, seulement sur le passé.
+        expect(within(past).getByText('products.detail.pastLabel')).toHaveClass('sr-only')
+        expect(within(upcoming).queryByText('products.detail.pastLabel')).toBeNull()
+
+        // Cumul : la pastille de l'archivé passé porte les DEUX traitements.
+        const pastDot = past.querySelector('span[aria-hidden="true"]')
+        expect(pastDot).toHaveClass('mt-evt--past')
+        expect(pastDot).toHaveClass('mt-evt--archived')
+        const upcomingDot = upcoming.querySelector('span[aria-hidden="true"]')
+        expect(upcomingDot).not.toHaveClass('mt-evt--past')
+        expect(upcomingDot).not.toHaveClass('mt-evt--archived')
+        // L'archivé garde son badge textuel.
+        expect(within(past).getByText('products.detail.archivedBadge')).toBeInTheDocument()
+      })
+
+      it('un passé NON archivé est désaturé aussi (le critère n’est plus « archivé »)', () => {
+        vi.setSystemTime(new Date(2026, 6, 1, 12, 0)) // 1er juillet : e1 (1er juin) est passé
+        render(<ProductDetailView productId="p-alpha" />)
+        const row = screen.getByTestId('product-detail-history-row-e1')
+        expect(row).toHaveAttribute('data-past', 'true')
+        expect(within(row).getByText('Vidange')).toHaveClass('text-ink-muted')
+        const dot = row.querySelector('span[aria-hidden="true"]')
+        expect(dot).toHaveClass('mt-evt--past')
+        expect(dot).not.toHaveClass('mt-evt--archived')
+      })
     })
 
     it('l’onglet « tous » liste actifs et archivés ensemble', async () => {

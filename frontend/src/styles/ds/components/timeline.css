@@ -106,6 +106,15 @@
 .mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt-outline, var(--mt-evt, var(--color-rule-emphasis))); color:var(--color-ink-muted); box-shadow:none;}
 .dark .mt-evt--draft, [data-theme="dark"] .mt-evt--draft{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
 .mt-evt--archived{opacity:.45; filter:grayscale(.5);}
+/* #607 — ÉVÉNEMENT PASSÉ (historique du détail produit, handoff §5 « gris désaturé »).
+   Réservé, comme `.mt-evt--archived`, à la PASTILLE décorative (`aria-hidden`) : grisage
+   COMPLET, SANS opacité. Le TEXTE de la ligne passe, lui, à l'encre `ink-muted` (token
+   AA) côté composant — jamais de filtre ni d'opacité sur du texte (PIT-S61-003 : le
+   grisage déplace le ratio ; PIT-S70-003 : l'opacité le fait tomber sous AA).
+   Cumul passé + archivé : l'archivé garde son opacité .45 et prend le grisage complet.
+   Sélecteur composé (0,2,0) pour ne pas dépendre de l'ordre des sources. */
+.mt-evt--past,
+.mt-evt--past.mt-evt--archived{filter:grayscale(1);}
 /* Connecteur pointillé entre occurrences (aperçu du formulaire). Était peint
    en style INLINE par `EventPreviewTimeline.tsx` (`borderColor: color`) : une
    valeur inline ne peut pas être commutée par thème, d'où cette classe. Le
@@ -469,6 +478,16 @@
 .mt-drawer__row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--color-rule); font-size:13px;}
 .mt-drawer__k{font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-ink-muted);}
 .mt-drawer__v{color:var(--color-ink); text-align:right;}
+/* #606 — ce motif porte aussi la FICHE D'INVENTAIRE du détail produit
+   (`ProductDetailView`, handoff §5). Valeur longue (catégorie en `de`, mot insécable) :
+   RETOUR À LA LIGNE, jamais troncature ni débordement. Sans `min-width:0`, un item flex
+   ne descend pas sous la largeur de son mot le plus long et pousse la ligne hors du
+   cadre ; `overflow-wrap:anywhere` (et non `break-word`) abaisse AUSSI la largeur
+   min-content, seule à compter pour le rétrécissement flex. C'est la valeur qui passe à
+   la ligne, pas le libellé (`flex-shrink:0`). Sans effet sur une valeur courte : drawer
+   d'événement et bottom sheet inchangés. */
+.mt-drawer__k{flex-shrink:0;}
+.mt-drawer__v{min-width:0; overflow-wrap:anywhere;}
 /* #352 — bouton fermer à ICÔNE SEULE, `background:none` : aucun remplissage ne
    le distingue du header, la bordure porte toute l'affordance. Même appel que
    `.mt-iconbtn` (`core.css`) → fonctionnelle. */

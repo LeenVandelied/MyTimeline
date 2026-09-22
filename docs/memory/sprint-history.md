@@ -7064,15 +7064,32 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 0/8.
 **Status :** Terminé — PR #803 mergée, issues #674/#429/#596/#597 et milestone #106 fermés après merge
 
-### Sprint 106 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Fiche produit)
+### Sprint 106 — 2026-09-22 (Terminé — merge PR #810 dans dev — cohésion 0.50, Fiche produit)
 **Objectif :** fiche d'inventaire au motif du DS, désaturation des événements passés, squelette de chargement cohérent
 **Milestone GitHub :** #107
 **Issues :** #606 (P3, S), #607 (P3, S — bug admis), #698 (P2, S) — 6 pts
 **Vagues :** V1 = #606 | V2 = #607 | V3 = #698 (même fichier `ProductDetailView.tsx`)
 **Migrations Flyway :** aucune
 **Dépend de :** aucune (précède S107, S109, S112)
-**À confirmer au démarrage :** arbitrage `onSuccess` de #698 (décision produit écrite) ; specs de squelette contre `next build` + `next start`
-**Status :** Planifié
+**Arbitrages dev au démarrage :** #698 `onSuccess` sans attente de l'invalidation (décision écrite en commentaire de #698, aucun changement de code) ; #607 passé = ligne entière désaturée sans opacité, archivé garde en plus pastille .45 + badge (cumul)
+**Vagues exécutées :** un seul agent, séquentiel #606 → #607 → #698 (même fichier), puis correctif de review
+**Commits (4 + docs) :** `4b879807` #606 · `0b0f8b68` #607 · `9fbca3c4` #698 (+ spec E2E commune) · `44c7dd75` correctif review #607 (série bornée = dernière occurrence réelle ≤ horizon)
+**Tests :** Vitest 2056/2056 | tsc/lint/format verts | E2E suite complète 564 verts / 9 sautés / 11 rouges hors sprint (identiques S105) | ciblé post-correctif 61/61
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (récurrence hors cadence, corrigé `44c7dd75`) / 2 MINEURS (couverture, traités dans le même commit)
+**Audit tests :** `docs/memory/audits/sprint-106-test-coverage.md`
+**Harnais E2E :** backend `:8086` du worktree S105 ; front `:3106` (`:3000`/`:3100` squattés) derrière un relais `:8186` qui réécrit l'`Origin` (CORS dev limité à 3000/3100) ; build avec `NEXT_PUBLIC_API_URL=/api` ET `E2E_API_PROXY_TARGET` (sans le premier, le setup échoue en « aucune réponse POST register »)
+**Issues livrées (3) :** #606, #607, #698 — milestone #107 fermé après merge
+**Écarts d'énoncé :** #606 : grille à `:364`, pas `:313` ; #607 : classe à `:455`, pas `:394` ; #698 : chemins `frontend/app/[locale]/(app)/…`, pas `frontend/src/app/…`
+**Choix de l'agent validés par le dev à la clôture :** indice « passé » en sr-only seul, sans badge visible ; série sans fin jamais passée
+**Nouveaux pitfalls / patterns / décisions :** PIT-S106-001…003 (horizon d'une série bornée ; `router.prefetch` en mode FULL ; harnais sur port libre : CORS + `NEXT_PUBLIC_API_URL` au build) · PAT-S106-001 (motif clé/valeur hors tiroir, valeurs longues) · DEC-S106-001…003 (passé = changement d'encre ; critère `isPastEvent` ; invalidation non attendue) · aucun bug ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 4 signalés, proposition du lead retenue) :**
+  - Squelette du dashboard aligné sur les vues mobile portrait et paysage [S | products] → issue #811 (backlog)
+  - Frise : traitement « passé » cohérent avec l'historique [S | events] → issue #812 (backlog)
+  - Alias neutre `.mt-kv*` pour le motif `.mt-drawer__row` [XS | design] → issue #813 (backlog)
+  - Sonde CORS du harnais sur port libre [XS | tooling] → absorbée dans la consolidation (PIT-S106-003)
+  Ratio discard 0/4.
+**Status :** Terminé — PR #810 mergée, issues #606/#607/#698 et milestone #107 fermés après merge
 
 ### Sprint 107 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Liste produits + onglets)
 **Objectif :** en-têtes de colonnes au motif `.mt-table th`, mini-frise visible sous `md`, focus des onglets vérifié
