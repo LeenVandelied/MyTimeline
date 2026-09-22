@@ -7,6 +7,7 @@ import { X } from 'lucide-react'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
+import { landingMenuLinkTestId, type LandingNavAnchor } from './landing-nav'
 
 /**
  * #334 — Panneau off-canvas de la landing, ouvert par le burger du header sous `lg`.
@@ -50,6 +51,8 @@ import { useFocusTrap } from '@/components/timeline/useFocusTrap'
  * Garde-fou : `landing.hover-pairing.test.ts`.
  */
 export interface LandingMobileMenuNavLink {
+  /** #793 — identifiant de section (sans `#`) : dérive le `data-testid` du lien. */
+  anchor: LandingNavAnchor
   href: string
   label: string
 }
@@ -126,6 +129,7 @@ export const LandingMobileMenu: React.FC<LandingMobileMenuProps> = ({
               key={link.href}
               href={link.href}
               onClick={onClose}
+              data-testid={landingMenuLinkTestId(link.anchor)}
               className="text-ink hover:bg-accent-soft flex min-h-11 items-center rounded-sm px-3 text-xs transition-colors duration-200"
             >
               {link.label}

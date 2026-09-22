@@ -9,6 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LandingMobileMenu } from './LandingMobileMenu'
+import { LANDING_NAV_ANCHORS, LANDING_NAV_LABEL_KEYS } from './landing-nav'
 
 interface HeaderSectionProps {
   locale: string
@@ -116,8 +117,16 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
     if (isDesktop) setMenuOpen(false)
   }, [isDesktop])
 
-  /** Ancres de navigation — même ordre que les sections rendues par `HomePage`. */
-  const navLinks = [{ href: '#how-it-works', label: t('common.landing.navigation.howItWorks') }]
+  /**
+   * Ancres de navigation — même ordre que les sections rendues par `HomePage`.
+   * #793 : dérivées de `LANDING_NAV_ANCHORS` (`landing-nav.ts`), source partagée
+   * avec le panneau burger et le harnais E2E.
+   */
+  const navLinks = LANDING_NAV_ANCHORS.map((anchor) => ({
+    anchor,
+    href: `#${anchor}`,
+    label: t(LANDING_NAV_LABEL_KEYS[anchor]),
+  }))
 
   return (
     <>
