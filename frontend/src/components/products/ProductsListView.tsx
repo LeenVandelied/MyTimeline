@@ -29,6 +29,17 @@ import { useArchiveProduct } from '@/hooks/useArchiveProduct'
 import type { Product } from '@/types/product'
 
 /**
+ * #609 — En-tête de colonne au motif DS `.mt-table th` (`ds/components/core.css`, bloc
+ * « Table ») : mono 9 px, capitales, interlettrage .1em, `ink-muted`, graisse medium,
+ * filet bas `rule-strong` 1,5 px. On NE pose PAS `.mt-table` sur la table : elle
+ * changerait aussi les `td` (padding 8/11, zébrage, corps 13 px), hors périmètre. Seul
+ * écart assumé : le padding horizontal reste `px-4`, aligné sur celui des cellules, pour
+ * que l'en-tête tombe à l'aplomb du contenu de sa colonne.
+ */
+const TH =
+  'border-rule-strong text-ink-muted border-b-[1.5px] px-4 py-2 font-mono text-[9px] font-medium tracking-[.1em] uppercase'
+
+/**
  * #68 — Vue liste des produits.
  *
  * BR touchées :
@@ -309,20 +320,20 @@ export function ProductsListView() {
         <div className="border-rule overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse text-left text-sm" data-testid="products-table">
             <thead>
-              <tr className="border-rule text-ink-muted border-b text-xs">
-                <th scope="col" className="px-4 py-2 font-medium">
+              <tr>
+                <th scope="col" className={TH}>
                   {t('columns.product')}
                 </th>
-                <th scope="col" className="px-4 py-2 font-medium">
+                <th scope="col" className={TH}>
                   {t('columns.nextEvent')}
                 </th>
-                <th scope="col" className="hidden px-4 py-2 font-medium md:table-cell">
+                <th scope="col" className={cn(TH, 'hidden md:table-cell')}>
                   {t('columns.activity')}
                 </th>
-                <th scope="col" className="hidden px-4 py-2 text-right font-medium sm:table-cell">
+                <th scope="col" className={cn(TH, 'hidden text-right sm:table-cell')}>
                   {t('columns.events')}
                 </th>
-                <th scope="col" className="px-4 py-2 text-right font-medium">
+                <th scope="col" className={cn(TH, 'text-right')}>
                   {t('columns.actions')}
                 </th>
               </tr>

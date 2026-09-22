@@ -209,6 +209,29 @@ describe('ProductsListView', () => {
     ])
   })
 
+  it('#609 — en-têtes au motif DS `.mt-table th` : mono 9 px capitales, ink-muted, filet rule-strong', () => {
+    render(<ProductsListView />)
+    const headers = screen.getAllByRole('columnheader')
+    expect(headers).toHaveLength(5)
+    for (const th of headers) {
+      expect(th).toHaveAttribute('scope', 'col')
+      expect(th).toHaveClass(
+        'font-mono',
+        'text-[9px]',
+        'uppercase',
+        'tracking-[.1em]',
+        'text-ink-muted',
+        'font-medium',
+        'border-b-[1.5px]',
+        'border-rule-strong',
+      )
+    }
+    // Colonnes numérique et actions : alignement à droite conservé.
+    expect(headers[3]).toHaveClass('text-right')
+    expect(headers[4]).toHaveClass('text-right')
+    expect(headers[0]).not.toHaveClass('text-right')
+  })
+
   it('#603 — trie par prochain événement par défaut (le plus proche d’abord, sans échéance en dernier)', () => {
     render(<ProductsListView />)
     // p-beta (17 sept.) < p-alpha (20 sept., récurrence avancée) < p-gamma (aucune).
