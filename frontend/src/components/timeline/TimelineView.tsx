@@ -37,8 +37,10 @@ import {
   buildMinimapBuckets,
   buildRulerTicks,
   buildWeekendSegments,
+  computeFit,
   computeRange,
   daysBetween,
+  displayedEventDayExtent,
   indexEventsByResource,
   initialZoomState,
   scaleEventPositions,
@@ -1330,6 +1332,56 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     scrollToToday()
   }, [rangeStart, now, scrollToToday])
 
+  /**
+   * #597 — RECADRAGE (touche `F`) sur les événements AFFICHÉS : catégorie masquée →
+   * exclue ; catégorie repliée → incluse (son résumé peint TOUS ses événements, #601) ;
+   * produit replié dans une catégorie dépliée → exclu (sa lane ne peint rien, #195).
+   * Même règle que le rendu (`renderGroups`). Étendue lue sur les données en JOURS
+   * (`indexedEvents`, invariante au zoom), pas sur le DOM virtualisé (PIT-S91-005).
+   *
+   * Le défilement est appliqué par l'effet de mise en page ci-dessous, pas ici : le
+   * rail n'a sa nouvelle largeur qu'APRÈS le rendu du nouveau niveau.
+   */
+  const pendingFitRef = useRef(false)
+  const fitToEvents = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const displayed: string[] = []
+    for (const [category, resList] of visibleGroups) {
+      const categoryCollapsed = collapsed[category] ?? false
+      for (const resource of resList) {
+        if (categoryCollapsed || !(collapsedResources[resource.id] ?? false)) {
+          displayed.push(resource.id)
+        }
+      }
+    }
+    const fit = computeFit(
+      displayedEventDayExtent(indexedEvents, displayed),
+      el.clientWidth - LANE_TRACK_OFFSET_PX,
+    )
+    if (!fit) return
+    pendingFitRef.current = true
+    dispatch({ type: 'FIT', ...fit })
+  }, [visibleGroups, collapsed, collapsedResources, indexedEvents])
+
+  /**
+   * #597 — Applique le cadrage APRÈS la re-projection d'ancre #449 (effet de mise en
+   * page déclaré plus haut, donc exécuté avant celui-ci dans le même commit) : sans
+   * cet ordre, la re-projection d'un changement de niveau écraserait l'offset voulu.
+   * Armé par `pendingFitRef` et non par `offsetDays` : un 2e `F` après un défilement
+   * manuel rend le MÊME offset, que l'effet #392 (gardé sur sa valeur) ignorerait.
+   * `lastOffsetRef` est aligné pour que cet effet-là ne rejoue pas le même défilement.
+   */
+  useLayoutEffect(() => {
+    if (!pendingFitRef.current) return
+    pendingFitRef.current = false
+    const el = scrollRef.current
+    if (!el) return
+    lastOffsetRef.current = zoom.offsetDays
+    el.scrollTo({ left: Math.max(0, zoom.offsetDays * dayWidth), behavior: 'instant' })
+    recordScrollAnchor()
+  }, [zoom, dayWidth, recordScrollAnchor])
+
   const toggleFullscreen = useCallback(() => {
     const node = rootRef.current
     if (!node) return
@@ -1386,10 +1438,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   // #395 — État plein écran DÉRIVÉ de l'événement `fullscreenchange` du document
   // (source de vérité du navigateur), et JAMAIS basculé à la main dans
-  // `toggleFullscreen`. Le plein écran s'entre/se quitte par au moins 4 chemins
-  // qui ne passent pas tous par le bouton : la touche Échap gérée plus bas,
-  // le raccourci F, l'Échap NATIF du navigateur, F11/le menu du navigateur.
-  // Un `useState` basculé dans le handler dériverait sur les cas 1/3/4 →
+  // `toggleFullscreen`. Le plein écran se quitte aussi SANS le bouton : la touche
+  // Échap gérée plus bas, l'Échap NATIF du navigateur, F11/le menu du navigateur
+  // (#597 : le raccourci F, qui l'ouvrait, recadre désormais).
+  // Un `useState` basculé dans le handler dériverait sur ces trois cas →
   // `aria-pressed` annoncerait « activé » hors plein écran, c.-à-d. un attribut
   // qui MENT au lecteur d'écran (pire que l'absence d'état observable).
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -1479,9 +1531,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         case '-':
           dispatch({ type: 'ZOOM_OUT' })
           break
+        // #597 — `F` RECADRE (maquette) ; le plein écran n'a plus que son bouton.
         case 'f':
         case 'F':
-          toggleFullscreen()
+          fitToEvents()
           break
         default:
           break
@@ -1489,14 +1542,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [
-    selected,
-    goToToday,
-    toggleFullscreen,
-    sidebarPanelOpen,
-    closeSidebarPanel,
-    isOverlayLayerOpen,
-  ])
+  }, [selected, goToToday, fitToEvents, sidebarPanelOpen, closeSidebarPanel, isOverlayLayerOpen])
 
   const levelLabel = t(`dashboard.timeline.zoom.${zoom.level}`)
 

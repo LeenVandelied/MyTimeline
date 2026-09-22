@@ -84,7 +84,9 @@ describe('TimelineSidebar — libellés réels (next-intl, 4 locales)', () => {
     )
     const keys = screen.getByRole('list', { name: 'Raccourcis clavier' })
     expect(keys).toHaveTextContent('Aller à aujourd’hui')
-    expect(keys).toHaveTextContent('Plein écran')
+    // #597 — `F` recadre ; le plein écran n'a plus de raccourci.
+    expect(keys).toHaveTextContent('Recadrer sur les événements')
+    expect(keys).not.toHaveTextContent('Plein écran')
     expect(keys).toHaveTextContent('Échap')
     expect(errors).toEqual([])
   })
@@ -99,16 +101,17 @@ describe('TimelineSidebar — libellés réels (next-intl, 4 locales)', () => {
   })
 
   it.each([
-    ['en', 'Véhicules, 3 events', 'Santé, 1 event', 'Esc'],
-    ['es', 'Véhicules, 3 eventos', 'Santé, 1 evento', 'Esc'],
-    ['de', 'Véhicules, 3 Ereignisse', 'Santé, 1 Ereignis', 'Esc'],
+    ['en', 'Véhicules, 3 events', 'Santé, 1 event', 'Esc', 'Fit to events'],
+    ['es', 'Véhicules, 3 eventos', 'Santé, 1 evento', 'Esc', 'Encuadrar los eventos'],
+    ['de', 'Véhicules, 3 Ereignisse', 'Santé, 1 Ereignis', 'Esc', 'Auf Ereignisse einpassen'],
   ] as const)(
-    '%s : aucune IntlError, pluriels et touche Échap localisés',
-    (locale, many, one, esc) => {
+    '%s : aucune IntlError, pluriels, touche Échap et recadrage (#597) localisés',
+    (locale, many, one, esc, fit) => {
       const { errors } = renderSidebar(locale)
       expect(screen.getByRole('button', { name: many })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: one })).toBeInTheDocument()
       expect(screen.getByTestId('timeline-sidebar-shortcuts')).toHaveTextContent(esc)
+      expect(screen.getByTestId('timeline-sidebar-shortcuts')).toHaveTextContent(fit)
       expect(errors).toEqual([])
     },
   )

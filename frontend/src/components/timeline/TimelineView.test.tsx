@@ -267,16 +267,20 @@ describe('TimelineView', () => {
   it('le raccourci "F" ne hijacke pas Cmd/Ctrl+F (recherche navigateur)', async () => {
     const user = userEvent.setup()
     setup()
-    const fsSpy = Element.prototype.requestFullscreen as ReturnType<typeof vi.fn>
+    // #597 — `F` recadre : viewport mesurable, sinon le recadrage est un no-op vacant.
+    const scroll = screen.getByTestId('timeline-scroll')
+    Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 1000 })
+    const level = screen.getByTestId('timeline-zoom-level')
+    const before = level.textContent
 
-    // Cmd+F et Ctrl+F ne doivent PAS déclencher le plein écran.
+    // Cmd+F et Ctrl+F ne doivent PAS recadrer.
     await user.keyboard('{Meta>}f{/Meta}')
     await user.keyboard('{Control>}f{/Control}')
-    expect(fsSpy).not.toHaveBeenCalled()
+    expect(level.textContent).toBe(before)
 
-    // "f" seul déclenche bien le plein écran.
+    // "f" seul recadre bien.
     await user.keyboard('f')
-    await waitFor(() => expect(fsSpy).toHaveBeenCalled())
+    await waitFor(() => expect(level.textContent).not.toBe(before))
   })
 
   it('#395 — `aria-pressed` du bouton plein écran suit `fullscreenchange`, y compris une sortie hors bouton', async () => {
@@ -931,7 +935,9 @@ describe('TimelineView', () => {
       expect(toggle).toHaveAttribute('aria-expanded', 'false')
       const keys = screen.getByTestId('timeline-sidebar-shortcuts')
       expect(keys).toHaveTextContent('dashboard.timeline.help.today')
-      expect(keys).toHaveTextContent('dashboard.timeline.help.fullscreen')
+      // #597 — `F` recadre ; le plein écran n'a plus de raccourci à annoncer.
+      expect(keys).toHaveTextContent('dashboard.timeline.help.fit')
+      expect(keys).not.toHaveTextContent('dashboard.timeline.help.fullscreen')
       // Une ligne de filtre par catégorie, dans l'ordre de la frise.
       expect(
         screen

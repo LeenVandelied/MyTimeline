@@ -725,7 +725,9 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     await page.getByTestId('timeline-help').hover()
     await expect(pop).toHaveCSS('opacity', '1')
     await expect(pop).toContainText('Aller à aujourd’hui')
-    await expect(pop).toContainText('Plein écran')
+    // #597 — `F` recadre ; le plein écran n'a plus de raccourci (bouton seul).
+    await expect(pop).toContainText('Recadrer sur les événements')
+    await expect(pop).not.toContainText('Plein écran')
 
     await page.mouse.move(0, 0)
     await expect(pop).toHaveCSS('opacity', '0')

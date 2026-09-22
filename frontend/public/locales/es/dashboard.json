@@ -119,6 +119,7 @@
       "today": "Ir a hoy",
       "period": "Periodo anterior / siguiente",
       "zoom": "Acercar / alejar",
+      "fit": "Encuadrar los eventos",
       "fullscreen": "Pantalla completa",
       "escape": "Cerrar panel",
       "escapeKey": "Esc"

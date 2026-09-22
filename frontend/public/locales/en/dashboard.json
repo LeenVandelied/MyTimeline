@@ -119,6 +119,7 @@
       "today": "Go to today",
       "period": "Previous / next period",
       "zoom": "Zoom in / out",
+      "fit": "Fit to events",
       "fullscreen": "Fullscreen",
       "escape": "Close panel",
       "escapeKey": "Esc"
