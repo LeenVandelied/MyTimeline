@@ -114,8 +114,11 @@
    droite (flex:0 0 auto). Le message complet vit dans title + l'écran
    d'état dédié.
    ============================================================ */
+/* #614 — la hauteur est une variable : la barre collante de la landing (`landing.css`)
+   se décale d'autant quand la bannière est montée, pour ne pas passer dessous. */
+:root{--sysbanner-height:32px;}
 .mt-sysbanner{
-  display:flex; align-items:center; gap:10px; height:32px; padding:0 12px;
+  display:flex; align-items:center; gap:10px; height:var(--sysbanner-height); padding:0 12px;
   border-bottom:1px solid var(--color-rule-strong);
   background:var(--color-surface-2); overflow:hidden;
 }

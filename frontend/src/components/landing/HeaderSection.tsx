@@ -120,34 +120,66 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   const navLinks = [{ href: '#how-it-works', label: t('common.landing.navigation.howItWorks') }]
 
   return (
-    <header className="container-landing flex items-center justify-between px-4 py-6">
-      <div className="flex items-center">
-        {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
+    <>
+      {/* #614 — BARRE COLLANTE PLEINE LARGEUR (`.landing-sticky-bar`, `landing.css`).
+          Fond opaque `bg` et filet bas sur toute la fenêtre ; le `<header>` qu'elle
+          contient reste plafonné à 1340 px (`container-landing`, #616). Hauteur
+          FIXE (`--landing-bar-height` = 92 px + 1 px de filet) : c'est elle que
+          lit le `scroll-padding-top` des ancres. Le header remplit la barre
+          (`h-full`) et centre son contenu — l'ancien `py-6` donnait 92 px sous
+          `lg` et 90 au-dessus ; la barre vaut désormais 92 px de contenu à
+          TOUTES les largeurs (+2 px au-dessus de `lg`, contenu recentré).
+          Garde-fou : `e2e/sprint-104-landing-sticky-nav.spec.ts`. */}
+      <div
+        data-testid="landing-header-bar"
+        className="landing-sticky-bar bg-bg border-rule border-b"
+      >
+        <header className="container-landing flex h-full items-center justify-between px-4">
+          <div className="flex items-center">
+            {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
             `text-md` (21 px) puis `text-lg` (27 px) à partir de `sm`, et
             `whitespace-nowrap` à TOUTES les largeurs. Ni `md:text-3xl` ni
             `md:whitespace-normal` : le wordmark ne se coupe plus jamais.
             Justification chiffrée dans le bloc JSDoc du composant. */}
-        <div className="text-accent text-md font-bold whitespace-nowrap sm:text-lg">
-          Ma Timeline
-        </div>
-      </div>
+            <div className="text-accent text-md font-bold whitespace-nowrap sm:text-lg">
+              Ma Timeline
+            </div>
+          </div>
 
-      <nav className="text-ink-muted hidden space-x-8 lg:flex">
-        {navLinks.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            className="nav-link hover:text-accent transition duration-200"
-          >
-            {link.label}
-          </a>
-        ))}
-      </nav>
+          {/* #614 — TRAITEMENT DU SPEC : mono capitales espacées (`.mt-nav-label`, la
+          classe DS des libellés de nav, #575 — elle ne pose ni couleur, ni taille,
+          ni graisse : `text-2xs` = 13 px comme `AppShell`, couleur de la nav), et
+          liens SÉPARÉS PAR UN FILET vertical 1 px (`border-rule`) posé sur tout
+          lien qui en suit un autre. Avec UNE seule ancre (état depuis le S103),
+          aucun filet inter-liens n'est peint — la règle vaut pour N liens et ne
+          coûte rien à N = 1. Le filet qui sépare les liens du groupe
+          langue/thème/CTA est porté par ce groupe (`lg:border-l`, plus bas). */}
+          <nav className="text-ink-muted [&>a+a]:border-rule hidden items-center gap-4 lg:flex [&>a+a]:border-l [&>a+a]:pl-4">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="nav-link mt-nav-label text-2xs hover:text-accent transition duration-200"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
 
-      <div className="flex items-center gap-2 max-[360px]:gap-1 lg:gap-4">
-        {/* Bascule dans `LandingMobileMenu` sous `lg` — cf. #334, seuil remonté par #347. */}
-        <div className="hidden items-center gap-4 lg:flex">
-          {/* #642 (DEC-S82-009) — BASCULE DE THÈME HORS CONNEXION.
+          {/* #614 — `lg:border-l` : filet vertical 1 px entre les liens et le groupe
+              langue/thème/CTA (« liens … séparés par filet + langue + thème + CTA »).
+              `lg:` UNIQUEMENT : sous `lg` la nav est masquée, il ne séparerait rien,
+              et le budget de largeur mobile (marge de 13 px en `de` à 320 px, cf.
+              plus bas) reste STRICTEMENT inchangé. Coût à `lg` : 17 px (filet +
+              `pl-4`), soit −8,5 px sur chacun des deux écarts du `justify-between`.
+              Relevé macOS à 1024 px AVANT ce filet, capitales mono comprises :
+              écart logo→nav `en` 229,5 · `es` 180,8 · `fr` 176,1 · `de` 173,1 px
+              (le tableau #642 plus bas datait de TROIS ancres ; il n'en reste
+              qu'une depuis le S103). */}
+          <div className="lg:border-rule flex items-center gap-2 max-[360px]:gap-1 lg:gap-4 lg:border-l lg:pl-4">
+            {/* Bascule dans `LandingMobileMenu` sous `lg` — cf. #334, seuil remonté par #347. */}
+            <div className="hidden items-center gap-4 lg:flex">
+              {/* #642 (DEC-S82-009) — BASCULE DE THÈME HORS CONNEXION.
               Elle vit dans le groupe `hidden lg:flex`, donc elle n'existe qu'à
               partir de 1024 px : les paliers 320–1023 px, où le budget de
               largeur du header est compté au pixel (marge de 13 px en `de` à
@@ -180,22 +212,22 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
               vaut 146,6 px, la bascule a `display:none` héritée du parent, et
               `scrollWidth === clientWidth`. C'est la spec ci-dessus qui tranche
               en CI, aux métriques de police d'Ubuntu. */}
-          <div className="flex items-center gap-1">
-            <ThemeToggle testId="landing-header-theme-toggle" />
-            <LanguageSelector />
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className="border-accent text-accent hover:bg-accent hover:text-accent-ink transition-all"
-          >
-            <Link href={`/${locale}/login`} data-testid="landing-header-cta-login">
-              {t('common.login.title')}
-            </Link>
-          </Button>
-        </div>
+              <div className="flex items-center gap-1">
+                <ThemeToggle testId="landing-header-theme-toggle" />
+                <LanguageSelector />
+              </div>
+              <Button
+                asChild
+                variant="outline"
+                className="border-accent text-accent hover:bg-accent hover:text-accent-ink transition-all"
+              >
+                <Link href={`/${locale}/login`} data-testid="landing-header-cta-login">
+                  {t('common.login.title')}
+                </Link>
+              </Button>
+            </div>
 
-        {/* CTA primaire : reste visible à toutes les largeurs. `h-11` = 44 px de cible
+            {/* CTA primaire : reste visible à toutes les largeurs. `h-11` = 44 px de cible
             tactile sous `lg` (donc aussi sur le palier tablette, où l'on touche encore),
             `lg:h-9` restaure la hauteur desktop d'origine.
 
@@ -273,32 +305,39 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             #381 — CE BLOC RESTE EXACT pour les paliers concernés : le correctif de
             #381 ne touche que >= `sm` (640 px), à 320 px le logo était et reste à
             `text-md` (21 px, boîte 122 px). */}
-        <Button
-          asChild
-          className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-2 max-[360px]:text-xs lg:h-9"
-        >
-          <Link href={`/${locale}/register`} data-testid="landing-header-cta-register">
-            {t('common.landing.buttons.register')}
-          </Link>
-        </Button>
+            <Button
+              asChild
+              className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-2 max-[360px]:text-xs lg:h-9"
+            >
+              <Link href={`/${locale}/register`} data-testid="landing-header-cta-register">
+                {t('common.landing.buttons.register')}
+              </Link>
+            </Button>
 
-        {/* `aria-controls` n'est posé QUE si la cible existe : le panneau n'est
+            {/* `aria-controls` n'est posé QUE si la cible existe : le panneau n'est
             pas rendu à l'état fermé (`if (!open) return null`), et un idref
             pendant est une référence invalide pour les technologies d'assistance. */}
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          aria-expanded={menuOpen}
-          aria-controls={menuOpen ? 'landing-header-menu' : undefined}
-          aria-label={t('common.landing.navigation.menuOpen')}
-          data-testid="landing-header-menu-toggle"
-          className="text-ink-muted border-rule-emphasis hover:bg-accent-soft flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border transition-colors duration-200 lg:hidden"
-        >
-          <Menu className="h-4 w-4" aria-hidden="true" />
-        </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-expanded={menuOpen}
+              aria-controls={menuOpen ? 'landing-header-menu' : undefined}
+              aria-label={t('common.landing.navigation.menuOpen')}
+              data-testid="landing-header-menu-toggle"
+              className="text-ink-muted border-rule-emphasis hover:bg-accent-soft flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border transition-colors duration-200 lg:hidden"
+            >
+              <Menu className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        </header>
       </div>
 
+      {/* #614 — le panneau burger est rendu HORS de la barre collante. La barre
+          porte un `z-index` (`--z-sticky`) et crée donc un contexte d'empilement :
+          monté dedans, l'overlay (`z-40`) et le panneau (`z-50`) n'auraient été
+          comparés au reste de la page qu'au palier de la barre. Frère de la barre,
+          ils restent dans le contexte racine, AU-DESSUS d'elle. */}
       <LandingMobileMenu open={menuOpen} onClose={closeMenu} locale={locale} navLinks={navLinks} />
-    </header>
+    </>
   )
 }

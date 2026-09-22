@@ -71,3 +71,48 @@
 .nav-link:hover::after {
   width: 100%;
 }
+
+/* #614 — BARRE DE NAVIGATION COLLANTE DE LA LANDING (handoff §1 : « nav sticky »).
+ *
+ * Trois variables, UNE source chacune — la barre, le décalage hors ligne et le
+ * `scroll-padding` des ancres les lisent toutes :
+ *   · `--landing-bar-height` : hauteur TOTALE de la barre, filet bas compris
+ *     (92 px de header + 1 px de filet). La barre est dimensionnée par elle, et non
+ *     par son contenu : sans hauteur fixe, le décalage des ancres ne pourrait pas
+ *     être connu en CSS (le header valait 92 px sous `lg`, 90 au-dessus).
+ *   · `--landing-sticky-top` : 0 en temps normal ; la hauteur de la bannière réseau
+ *     (`--sysbanner-height`, DS `i18n.css`) quand elle est montée. La bannière est
+ *     elle aussi collée à `top:0` (`--z-netbanner`, au-dessus de tout) : sans ce
+ *     décalage, la barre passait DESSOUS et perdait ses 32 px du haut.
+ *   · le `scroll-padding-top` du document = les deux sommés. Posé sur le
+ *     SCROLLPORT (`html`) et non en `scroll-margin` sur chaque section : il couvre
+ *     les ancres (`#how-it-works`, desktop ET burger), mais aussi tout
+ *     `scrollIntoView` et le défilement au focus clavier (WCAG 2.4.11, focus non
+ *     masqué) — une section ajoutée plus tard n'a rien à déclarer.
+ *     Borné à la landing par `:has(.landing-sticky-bar)` : aucune autre page
+ *     n'hérite d'un décalage pour une barre qu'elle n'a pas.
+ *
+ * La barre est PLEINE LARGEUR (fond opaque `bg` + filet sur toute la fenêtre) ;
+ * c'est le `<header>` qu'elle contient qui reste plafonné à 1340 px
+ * (`container-landing`, #616). Elle est l'enfant d'un bloc de la hauteur de toute
+ * la page (`HomePage`), donc elle a toute la course nécessaire pour glisser
+ * (PIT-S85-001 / PIT-S100-003 : un sticky sans course ne colle jamais). */
+:root {
+  --landing-bar-height: 93px;
+  --landing-sticky-top: 0px;
+}
+
+:root:has(.mt-sysbanner--sticky) {
+  --landing-sticky-top: var(--sysbanner-height);
+}
+
+html:has(.landing-sticky-bar) {
+  scroll-padding-top: calc(var(--landing-sticky-top) + var(--landing-bar-height));
+}
+
+.landing-sticky-bar {
+  position: sticky;
+  top: var(--landing-sticky-top);
+  z-index: var(--z-sticky);
+  height: var(--landing-bar-height);
+}

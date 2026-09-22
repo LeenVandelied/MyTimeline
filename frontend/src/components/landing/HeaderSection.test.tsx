@@ -193,6 +193,25 @@ describe('HeaderSection', () => {
     expect(screen.queryByTestId('landing-header-menu')).not.toBeInTheDocument()
   })
 
+  /**
+   * #614 — la barre collante porte un `z-index` (`--z-sticky`), donc un contexte
+   * d'empilement. Monté DEDANS, l'overlay (`z-40`) et le panneau (`z-50`) ne seraient
+   * comparés au reste de la page qu'au palier de la barre. Ce test garde la
+   * STRUCTURE (frères de la barre) ; la peinture est mesurée au navigateur
+   * (`e2e/sprint-104-landing-sticky-nav.spec.ts`).
+   */
+  it('rend le panneau burger et son overlay HORS de la barre collante (#614)', async () => {
+    const user = userEvent.setup()
+    render(<HeaderSection locale="fr" />)
+    const bar = screen.getByTestId('landing-header-bar')
+    expect(bar.classList.contains('landing-sticky-bar')).toBe(true)
+    expect(bar.querySelector('header')).not.toBeNull()
+
+    await user.click(screen.getByTestId('landing-header-menu-toggle'))
+    expect(bar.contains(screen.getByTestId('landing-header-menu'))).toBe(false)
+    expect(bar.contains(screen.getByTestId('landing-header-menu-overlay'))).toBe(false)
+  })
+
   it('restaure le focus sur le burger à la fermeture (#334)', async () => {
     const user = userEvent.setup()
     render(<HeaderSection locale="fr" />)
