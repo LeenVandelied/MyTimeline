@@ -59,7 +59,7 @@ La charte impose un filet 1 px sur les surfaces au repos et réserve les ombres 
 modales. Le commentaire du token le dit : *« rules come first »* (`ds/tokens/spacing.css:3-4,31`).
 Pourtant `shadow-lg` est posée au repos sur **8 surfaces** : landing (3), pages Auth (4),
 pages légales (2 — qui portent déjà un filet). Sur `FeaturesSection.tsx:65`, l'ombre *diminue*
-au survol : l'effet est inversé.
+au survol : l'effet est inversé. *(Soldé au S103 : `FeaturesSection` supprimée par #612.)*
 
 **Réglages est le seul écran indemne** des trois premiers motifs — s'en servir comme référence.
 

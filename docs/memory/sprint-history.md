@@ -6972,16 +6972,16 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 > Branche : aucune créée au plan ; chaque `/sprint start` travaille sur sa branche de worktree (convention S85).
 > Ordre imposé : S103 → S104 ; S106 → S107, S109, S112 ; S108 → S109 ; S109 → S111. Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
 
-### Sprint 103 — 2026-09-22 → 2026-09-22 (PR ouverte vers dev — cohésion 0.70, Landing : sections du milieu)
+### Sprint 103 — 2026-09-22 → 2026-09-22 (Terminé — merge PR #792 dans dev — cohésion 0.70, Landing : sections du milieu)
 **Objectif :** la frise de cas d'usage à 4 jalons remplace les deux sections redondantes ; la section témoignages inventés disparaît ; l'accent bleu redevient un signal ; CTA de la landing ciblés par `data-testid`
-**Milestone GitHub :** #104
+**Milestone GitHub :** #104 (fermé après merge)
 **Issues livrées (4) :** #354, #613, #612, #615
 **Arbitrages au démarrage (dev) :** maquette lue par le lead (`Landing.dc.html` via DesignSync, extrait `sprints/sprint-103/maquette-landing-frise-cas-usage.md`) — aucun rendu mobile dessiné → frise **verticale < 640 px** ; étiquettes des jalons en `ink-muted` (#615 prime sur la maquette qui les met en accent) ; vagues revues en **2 agents séquentiels** (`HeaderSection`/`FooterSection`/`HomePage` touchés par 3 issues)
 **Vagues exécutées :** A (#354 → #613) puis B (#612 → #615), séquentiels | retour de review par le lead
 **Migrations Flyway :** aucune
 **Mini-plans :** `docs/memory/sprints/sprint-103/architect-plans.md` (issu de `/sprint plan 10`, PR #791 non mergée au démarrage : branche avancée en fast-forward sur `468f79fc`, qui fait donc partie de cette PR)
 **Branche :** `claude/sprint-103-start-f844e1` (worktree, pas de `sprint/103`)
-**Commits :** 0f945537 (#354), ee44f21e (#613), 2f5edd2f (#612), e61b0969 (#615, verrou + mesure), ecfcadb9 (retour de review), + commit docs avant PR
+**Commits :** 0f945537 (#354), ee44f21e (#613), 2f5edd2f (#612), e61b0969 (#615, verrou + mesure), ecfcadb9 (retour de review), + d93f63d1 (docs avant PR), + commit de clôture (consolidation mémoire, packs pitfalls, 2 docs absorbées)
 **Écarts d'énoncé :** #354 : moitié `.eslintcache` déjà livrée (`a2d8e8e7`, #373) — seule la moitié testids livrée ; 6 testids (5 CTA + copie « Connexion » du burger) ; #613 : périmètre « retirer la section » (arbitrage plan) ; #612 : disposition choisie sur mesure — verticale < 640, **2×2 de 640 à 1023** (4 colonnes = 131-163 px, étiquettes sur 2 lignes dans les 4 locales), 4 colonnes ≥ 1024 ; `id="how-it-works"` conservé ; FR au vouvoiement, ES au tutoiement (déjà celui du produit) ; #615 : plus rien à retirer après #612/#613 → livré comme verrou (Vitest sur le DOM rendu + mesure E2E du contraste, armement `ink-faint`) ; AC #1 non tenue à la lettre : le wordmark reste en accent (dérogation nommée, à arbitrer)
 **Erreur du lead :** le briefing B affirmait « surtitre du hero en accent dans le code » — il n'existe que dans la maquette ; relevé par l'agent B, sans conséquence
 **Tests :** Vitest 157 fichiers / 2004 verts | `next build`, `lint`, `format:check`, `tsc` verts | E2E suite complète contre `next build`+`next start` : 510 verts, 8 sautés, 11 rouges hors sprint (10 × `sprint-77` darwin attendus ; `sprint-101-fab-landscape:271` préexistant, #769) | après retour de review : 89/89 sur les specs ciblées
@@ -6989,9 +6989,20 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 1 MINEUR, tous résolus (`ecfcadb9` : clés `footer.*` orphelines retirées ×4 dont 3 préexistantes, compte des cibles du burger chiffré) ; cycle 2 relu par le lead : OK
 **Audit tests :** `docs/memory/audits/sprint-103-test-coverage.md`
 **BR impactées :** aucune (landing) — mais la landing promet des rappels qui n'existent pas dans le produit (signal `business-rule` de l'agent B, suite proposée)
+**CI :** 7/7 verte sur `d93f63d1` (`e2e` Linux compris — les specs typographie et frise tiennent avec les polices Linux)
+**Contrôle de complétude :** vert sans `--force`
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S103-001…004, PAT-S103-001…003, DEC-S103-001…002, aucun bug ; packs pitfalls régénérés, `--check` = 0 ; signal `business-rule` (promesse de rappels) porté par l'issue #797, aucune BR créée (landing hors domaine)
+**Saturation contexte lead :** non mesurée
 **Harnais E2E :** pile dédiée `s103e2e` (backend `:8087`, Postgres `:5437`, image `s102e2e` re-taguée, 0 commit `backend/` depuis sa création)
-**Suites proposées (à arbitrer au `/sprint end`) :** promesse de rappels sans fonctionnalité [S] ; wordmark en accent [XS] ; `.gradient-text` des pages légales [XS] ; surtitre du hero non implémenté [XS] ; ancres du burger par testid [XS] ; `cp-frontend.md` périmé (`FeaturesSection`, `Testimonial*`) [XS] ; audit 2026-09-07 cite `FeaturesSection` [XS] — déjà résolues dans le sprint : `menu/ancre-2` (B), clés `footer.*` orphelines (`ecfcadb9`)
-**Status :** PR ouverte — merge, fermeture des issues et du milestone #104 au `/sprint end 103`
+**Follow-ups arbitrés (Phase 4 — 7 items, recommandations du lead suivies) :**
+  - Ancres du burger ciblées par testid [XS | design] → issue #793 (Sprint 104)
+  - `cp-frontend.md` §Structure périmé (`Testimonial*`) + audit 2026-09-07 qui cite `FeaturesSection` [XS | docs] → absorbés (commit de clôture)
+  - Wordmark en accent, dérogation du verrou #615 [XS | design] → issue #794 (backlog)
+  - `.gradient-text` des pages légales [XS | design] → issue #795 (backlog)
+  - Surtitre du hero de la maquette non implémenté [XS | design] → issue #796 (backlog)
+  - La landing promet des rappels inexistants [S | produit] → issue #797 (backlog, P2)
+  Déjà résolues dans le sprint : `menu/ancre-2` (B), clés `footer.*` orphelines (`ecfcadb9`). Ratio discard 0/7.
+**Status :** Terminé — PR #792 mergée, issues #354/#612/#613/#615 et milestone #104 fermés après merge
 
 ### Sprint 104 — 2026-09-22 (PLANIFIÉ — cohésion 0.70, Landing : navigation, conteneur, CTA du hero)
 **Objectif :** nav sticky au spec, conteneur 1340 px réservé à la landing, CTA du hero sur une ligne entre 1024 et 1279 px

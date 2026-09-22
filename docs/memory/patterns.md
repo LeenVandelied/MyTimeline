@@ -979,3 +979,12 @@ Problème : un intercepteur (toast d'erreur) doublonne un écran qui affiche dé
 
 ## PAT-S102-002 — Prouver qu'un sélecteur de mesure couvre un composant absent de l'écran aujourd'hui
 Sonde : injecter le balisage exact du composant avec une taille FIXE inline sous le seuil (ne pas dépendre du CSS de production, qui peut légitimement grandir), asserter qu'il est vu une fois ET signalé ; puis rejouer une fois avec l'ancien sélecteur pour voir la sonde rougir (0 contrôle vu). Test séparé des mesures réelles. Anti-pattern : affirmer « un interrupteur ajouté serait mesuré » sur la seule lecture du sélecteur. Exemple : `e2e/sprint-99-touch-targets.spec.ts`. (Sprint 102, #763)
+
+## PAT-S103-001 — Prouver qu'un changement de ciblage E2E ne perd aucune mesure : compter les annotations, puis « déplacer » et « retirer l'id »
+Émettre une annotation par mesure, lire le reporter JSON (`--reporter=line,json` + `PLAYWRIGHT_JSON_OUTPUT_NAME`) avant ET après, et comparer les noms mesurés (S103 : 52 = 52). Puis deux contrôles négatifs : déplacer un CTA dans un autre conteneur (l'ancien sélecteur tombe à 0, le nouveau garde la mesure) et retirer temporairement un testid (la spec doit rougir). Anti-pattern : comparer seulement « N passed ». (Sprint 103, #354)
+
+## PAT-S103-002 — Frise à filet continu en 1, 2×2 et 4 colonnes : un segment de filet PAR élément, rogné par le conteneur
+Chaque jalon porte son propre segment, prolongé sur la gouttière (`-right-<gap>` / `-bottom-<gap>`), et la liste a `overflow-hidden` pour couper le dernier. Anti-pattern : une ligne unique en `absolute` sur le conteneur (elle traverse la 2ᵉ rangée en 2×2) ou des `nth-child` par breakpoint. Exemple : `components/landing/HowItWorksSection.tsx`. (Sprint 103, #612)
+
+## PAT-S103-003 — Verrouiller « l'accent n'est qu'un signal » sur le DOM RENDU, avec dérogations nommées
+Balayer le DOM rendu (menus ouverts compris) et exiger, pour chaque utilitaire d'accent, un ancêtre `a`/`button`, une section CTA reconnue par son testid, ou une dérogation NOMMÉE assortie d'un test de péremption. Anti-pattern : un grep de classes par fichier, dont la liste blanche ne dit pas pourquoi et rate le panneau fermé par défaut. Exemple : `components/pages/HomePage.accent-roles.test.tsx`. (Sprint 103, #615)
