@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { parseLocalDate } from '@/lib/date-iso'
+import { cn } from '@/lib/utils'
 
 /**
  * #61 — Mini-sparkline d'aperçu live du produit pendant la saisie.
@@ -13,11 +14,17 @@ import { parseLocalDate } from '@/lib/date-iso'
  *
  * `color` : couleur héritée de la catégorie, surchargeable au niveau produit —
  * pilote le trait de la sparkline pour matérialiser le choix en direct.
+ *
+ * #608 — `width`/`height` : densité réglable (défaut 220×40, celui de l'aperçu du
+ * drawer, inchangé). La géométrie est RECALCULÉE à la taille demandée (viewBox =
+ * taille en px) au lieu d'étirer le dessin de 220 px : un simple redimensionnement
+ * CSS réduirait les points à r≈0,9 px à 64 px de large, illisibles. Points (r=3) et
+ * trait (2 px) gardent donc leur taille ; seule la fenêtre de 90 j se resserre.
  */
 
 const WINDOW_DAYS = 90
-const WIDTH = 220
-const HEIGHT = 40
+const DEFAULT_WIDTH = 220
+const DEFAULT_HEIGHT = 40
 const PADDING = 4
 
 export interface ProductSparklineProps {
@@ -26,6 +33,11 @@ export interface ProductSparklineProps {
   /** Couleur du trait (héritée catégorie ou surcharge produit). */
   color?: string | null
   label: string
+  /** Largeur en px (défaut 220, aperçu du drawer). */
+  width?: number
+  /** Hauteur en px (défaut 40). */
+  height?: number
+  className?: string
 }
 
 function toDayIndex(date: Date, todayMs: number): number | null {
@@ -35,10 +47,17 @@ function toDayIndex(date: Date, todayMs: number): number | null {
   return WINDOW_DAYS - diffDays
 }
 
-export function ProductSparkline({ dates, color, label }: ProductSparklineProps) {
+export function ProductSparkline({
+  dates,
+  color,
+  label,
+  width = DEFAULT_WIDTH,
+  height = DEFAULT_HEIGHT,
+  className,
+}: ProductSparklineProps) {
   const points = React.useMemo(() => {
     const now = Date.now()
-    const usableWidth = WIDTH - PADDING * 2
+    const usableWidth = width - PADDING * 2
     const seen = new Set<number>()
     const result: Array<{ x: number; y: number }> = []
 
@@ -52,28 +71,28 @@ export function ProductSparkline({ dates, color, label }: ProductSparklineProps)
       const x = PADDING + (dayIndex / WINDOW_DAYS) * usableWidth
       // Hauteur constante médiane : la sparkline matérialise la répartition
       // temporelle, pas une valeur quantitative (aucune magnitude côté events).
-      result.push({ x, y: HEIGHT / 2 })
+      result.push({ x, y: height / 2 })
     }
     return result.sort((a, b) => a.x - b.x)
-  }, [dates])
+  }, [dates, width, height])
 
   const stroke = color || 'var(--color-accent, currentColor)'
 
   return (
     <svg
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      width={WIDTH}
-      height={HEIGHT}
+      viewBox={`0 0 ${width} ${height}`}
+      width={width}
+      height={height}
       role="img"
       aria-label={label}
-      className="text-ink-muted"
+      className={cn('text-ink-muted', className)}
     >
       {/* Ligne de base (fenêtre 90 j). */}
       <line
         x1={PADDING}
-        y1={HEIGHT / 2}
-        x2={WIDTH - PADDING}
-        y2={HEIGHT / 2}
+        y1={height / 2}
+        x2={width - PADDING}
+        y2={height / 2}
         stroke="currentColor"
         strokeOpacity={0.25}
         strokeWidth={1}

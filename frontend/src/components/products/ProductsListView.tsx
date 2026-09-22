@@ -33,11 +33,11 @@ import type { Product } from '@/types/product'
  * « Table ») : mono 9 px, capitales, interlettrage .1em, `ink-muted`, graisse medium,
  * filet bas `rule-strong` 1,5 px. On NE pose PAS `.mt-table` sur la table : elle
  * changerait aussi les `td` (padding 8/11, zébrage, corps 13 px), hors périmètre. Seul
- * écart assumé : le padding horizontal reste `px-4`, aligné sur celui des cellules, pour
- * que l'en-tête tombe à l'aplomb du contenu de sa colonne.
+ * écart assumé : le padding horizontal suit celui des cellules (`px-2`, `px-4` dès `sm`),
+ * pour que l'en-tête tombe à l'aplomb du contenu de sa colonne.
  */
 const TH =
-  'border-rule-strong text-ink-muted border-b-[1.5px] px-4 py-2 font-mono text-[9px] font-medium tracking-[.1em] uppercase'
+  'border-rule-strong text-ink-muted border-b-[1.5px] px-2 py-2 font-mono text-[9px] font-medium tracking-[.1em] uppercase sm:px-4'
 
 /**
  * #68 — Vue liste des produits.
@@ -55,11 +55,14 @@ const TH =
  * Le nombre d'événements compte les NON archivés (BR-EVE-011, même base que le compteur
  * du détail produit et du tableau de bord).
  *
- * Paliers responsive : Produit, Prochain événement et Actions toujours visibles (c'est la
- * raison d'être de la liste) ; le compteur (étroit) dès `sm` ; la mini-frise (220 px) dès
- * `md`. La catégorie passe SOUS le nom (handoff) au lieu d'occuper sa propre colonne, ce
- * qui libère la largeur mobile pour la prochaine échéance ; son testid
- * `products-row-category-*` est conservé.
+ * Paliers responsive : Produit, Prochain événement, mini-frise et Actions toujours visibles ;
+ * le compteur (étroit) dès `sm`. #608 — la mini-frise reste sous `md` (la frise est l'ADN
+ * du produit, conservée sur mobile comme dans la Vue Timeline, handoff §5) en densité
+ * compacte (64 px) ; 220 px dès `md`. La catégorie passe SOUS le nom (handoff) au lieu
+ * d'occuper sa propre colonne ; son testid `products-row-category-*` est conservé.
+ * Sous `sm`, tout est dimensionné pour tenir dans 390 px SANS défilement horizontal :
+ * cellules `px-2`, titre du prochain événement plafonné à la largeur de sa date, et la
+ * colonne Produit prend le reste (`w-full max-w-0`) pour que la troncature du nom joue.
  *
  * Recherche et tri sont LOCAUX (client, aucun refetch réseau). Tris : Prochain événement
  * (défaut ; le plus proche d'abord, sans échéance en dernier, départage par nom), Nom A→Z,
@@ -327,7 +330,7 @@ export function ProductsListView() {
                 <th scope="col" className={TH}>
                   {t('columns.nextEvent')}
                 </th>
-                <th scope="col" className={cn(TH, 'hidden md:table-cell')}>
+                <th scope="col" className={cn(TH, 'px-0')}>
                   {t('columns.activity')}
                 </th>
                 <th scope="col" className={cn(TH, 'hidden text-right sm:table-cell')}>
@@ -344,6 +347,8 @@ export function ProductsListView() {
                 const effectiveColor = product.color ?? product.category?.color ?? null
                 const next = nextById.get(product.id) ?? null
                 const eventCount = (product.events ?? []).filter((e) => !e.archived).length
+                const sparkDates = (product.events ?? []).map((e) => e.startDate)
+                const sparkLabel = t('sparklineLabel', { name: product.name })
                 return (
                   <tr
                     key={product.id}
@@ -365,8 +370,10 @@ export function ProductsListView() {
                     )}
                     data-testid={`products-row-${product.id}`}
                   >
-                    {/* Produit : pastille + nom + catégorie mono (handoff §5). */}
-                    <td className="px-4 py-3">
+                    {/* Produit : pastille + nom + catégorie mono (handoff §5). Sous `sm`,
+                        `w-full max-w-0` : la colonne prend la largeur restante sans que le
+                        nom (tronqué) ne l'élargisse — sinon un nom long fait défiler la table. */}
+                    <td className="px-2 py-3 max-sm:w-full max-sm:max-w-0 sm:px-4">
                       <div className="flex min-w-0 items-start gap-2">
                         <span
                           className="mt-1.5 size-2.5 shrink-0 rounded-full"
@@ -393,9 +400,12 @@ export function ProductsListView() {
                     {/* Prochain événement : titre + date ISO `YYYY-MM-DD` en `<time datetime>`
                         (#518, `i18n.css` §7 : `.mt-date--long` = mono + tabular-nums, sans
                         transformation de casse — le texte ISO est rendu tel quel). */}
-                    <td className="px-4 py-3" data-testid={`products-row-next-${product.id}`}>
+                    <td
+                      className="px-2 py-3 sm:px-4"
+                      data-testid={`products-row-next-${product.id}`}
+                    >
                       {next ? (
-                        <div className="flex max-w-48 min-w-0 flex-col sm:max-w-64">
+                        <div className="flex max-w-20 min-w-0 flex-col sm:max-w-64">
                           <span className="text-ink truncate text-xs">{next.title}</span>
                           <time className="mt-date--long text-ink-muted" dateTime={next.start}>
                             {next.start}
@@ -408,17 +418,34 @@ export function ProductsListView() {
                         </span>
                       )}
                     </td>
-                    <td className="hidden px-4 py-3 md:table-cell">
+                    {/* #608 — mini-frise 90 j CONSERVÉE sous `md` (frise = ADN du produit, comme
+                        la Vue Timeline sur mobile) : compacte 64×24 sous `md`, 220×40 dès `md`.
+                        Deux rendus bascules en CSS (un seul est affiché, donc un seul dans
+                        l'arbre d'accessibilité) : sans JS de média, pas de saut à l'hydratation.
+                        `px-0` sous `sm` : le SVG porte déjà 4 px de marge interne. */}
+                    <td
+                      className="px-0 py-3 sm:px-4"
+                      data-testid={`products-row-activity-${product.id}`}
+                    >
                       <ProductSparkline
-                        dates={(product.events ?? []).map((e) => e.startDate)}
+                        dates={sparkDates}
                         color={effectiveColor}
-                        label={t('sparklineLabel', { name: product.name })}
+                        label={sparkLabel}
+                        width={64}
+                        height={24}
+                        className="block md:hidden"
+                      />
+                      <ProductSparkline
+                        dates={sparkDates}
+                        color={effectiveColor}
+                        label={sparkLabel}
+                        className="hidden md:block"
                       />
                     </td>
                     {/* Nombre d'événements NON archivés : chiffre mono visible, forme plurielle
                         pour les lecteurs d'écran. */}
                     <td
-                      className="hidden px-4 py-3 text-right sm:table-cell"
+                      className="hidden px-2 py-3 text-right sm:table-cell sm:px-4"
                       data-testid={`products-row-events-count-${product.id}`}
                     >
                       <span className="text-ink-muted mt-num text-xs" aria-hidden="true">
@@ -426,7 +453,7 @@ export function ProductsListView() {
                       </span>
                       <span className="sr-only">{t('eventsCount', { count: eventCount })}</span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3 sm:px-4">
                       {/* #754 (review S101) — `max-md:gap-2` : chaque icône porte une
                           pseudo-hitbox de 44 px centrée sur un bouton de 40 px. Avec
                           l'écart de 4 px, les deux zones se touchaient bord à bord (marge
