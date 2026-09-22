@@ -36,9 +36,10 @@ interface HeroSectionProps {
  * taille minimale automatique de ZÉRO. Le CTA primaire absorbait donc toute la
  * compression de la rangée — 130 px rendus pour 268 px de contenu à 1280 px, soit
  * « cer gratuit » coupé en plein mot. `min-w-min` rétablit le plancher `min-content`
- * sans toucher à `overflow`, donc sans casser la brillance. En complément :
- * `whitespace-normal` + `h-auto` (le variant Button impose `whitespace-nowrap` et
- * `h-9`) laissent les libellés se replier au lieu de forcer une largeur supérieure
+ * sans toucher à `overflow`, donc sans casser la brillance. En complément, le
+ * repli (`white-space: normal`) et la hauteur libre (le variant Button impose
+ * `whitespace-nowrap` et `h-9`) — portés depuis #682 par l'utilitaire `cta-lg` —
+ * laissent les libellés se replier au lieu de forcer une largeur supérieure
  * au viewport mobile, et la rangée passe en `gap-4` + `sm:flex-wrap` — les deux
  * boutons demandaient ~860 px pour 584 px disponibles à 1280 px (et la colonne texte
  * ne fait plus que ≤ 420 px depuis #610), ils doivent donc pouvoir revenir à la ligne.
@@ -53,16 +54,17 @@ interface HeroSectionProps {
  * de `ui/button.tsx` (hauteur fixe de 40 px, qui couperait un libellé replié) :
  * `ds/components/core.css` `.mt-btn--lg` (padding 12/22 px, 14 px) et
  * `ds/components/i18n.css` `.mt-btn--wrap.mt-btn--lg` (hauteur minimale 46 px, qui tient
- * aussi la cible tactile ≥ 44 px sous `lg`). Transcrite en utilitaires plutôt qu'en
- * classes DS : ces classes supposent la base `.mt-btn` (hors layer, elle écraserait les
- * utilitaires de couleur et de survol verrouillés par `landing.hover-pairing.test.ts`).
- * `py-3` suit le token `--space-3` ; 22 px et 14 px n'ont pas de token (le DS les
- * écrit en dur), d'où les valeurs arbitraires. `leading-snug` (1.28) plutôt que le 1.18
- * du DS : token existant, et l'écart n'apparaît qu'en cas de repli. Rayon : celui du
- * variant (`--radius-md`, comme `.mt-btn`). La flèche passe à 16 px (≈ 1.05em du DS) et
- * perd sa marge : le `gap-2` du variant l'espace déjà de 8 px, comme `.mt-btn`.
- * `whitespace-normal` + `min-w-min` restent le filet si une locale ou une largeur
- * future ne tient plus. Verrou : `e2e/sprint-104-hero-cta-single-line.spec.ts`.
+ * aussi la cible tactile ≥ 44 px sous `lg`). UNE source pour les deux CTA :
+ * l'utilitaire `cta-lg` (`styles/globals.css`, à côté de `container-landing`), qui
+ * reprend cette métrique sur les tokens existants et documente les valeurs sans token.
+ * Pas les classes DS elles-mêmes : elles supposent la base `.mt-btn` (hors layer, elle
+ * écraserait les utilitaires de couleur et de survol verrouillés par
+ * `landing.hover-pairing.test.ts`) ; `cta-lg` ne déclare aucune couleur. Rayon : celui
+ * du variant (`--radius-md`, comme `.mt-btn`). La flèche passe à 16 px (≈ 1.05em du DS)
+ * et perd sa marge : le `gap-2` du variant l'espace déjà de 8 px, comme `.mt-btn`.
+ * Le repli reste autorisé (`cta-lg`) et `min-w-min` reste le plancher : c'est le filet
+ * si une locale ou une largeur future ne tient plus. Verrous :
+ * `e2e/sprint-104-hero-cta-single-line.spec.ts` (rendu), `HeroSection.test.tsx` (structure).
  *
  * #610 — HERO ASYMÉTRIQUE « 30/70 ». La maquette (`Landing.dc.html`) ne pose PAS de
  * pourcentages : c'est un flex BORNÉ — texte `flex:1 1 300px; min-width:300px;
@@ -132,7 +134,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
             <Button
               asChild
-              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink h-auto min-h-[46px] min-w-min px-[22px] py-3 text-center text-[14px] leading-snug whitespace-normal transition-all"
+              className="cta-button bg-accent hover:bg-accent-hover text-accent-ink cta-lg min-w-min transition-all"
             >
               <Link href={`/${locale}/register`} data-testid="landing-hero-cta-primary">
                 {t('common.landing.hero.cta')} <ArrowRight className="h-4 w-4" />
@@ -141,7 +143,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
             <Button
               asChild
               variant="outline"
-              className="border-rule-emphasis text-ink hover:bg-surface h-auto min-h-[46px] min-w-min px-[22px] py-3 text-center text-[14px] leading-snug whitespace-normal transition-all"
+              className="border-rule-emphasis text-ink hover:bg-surface cta-lg min-w-min transition-all"
             >
               <a href="#how-it-works" data-testid="landing-hero-cta-secondary">
                 {t('common.landing.hero.secondary')}

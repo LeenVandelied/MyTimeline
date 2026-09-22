@@ -250,3 +250,37 @@ html[data-density='comfortable'] {
     max-width: --theme(--container-landing);
   }
 }
+
+/* #682 — Gabarit `lg` du DS Graphite pour un CTA de la landing : UNE source pour
+   les deux appels à l'action du hero (maquette : `Button variant="accent" size="lg"`).
+   Reprend la métrique de `ds/components/core.css` `.mt-btn--lg` (padding 12/22 px,
+   corps 14 px) et de `ds/components/i18n.css` `.mt-btn--wrap.mt-btn--lg` (repli
+   autorisé, centré, hauteur minimale 46 px — qui tient aussi la cible tactile ≥ 44 px).
+   - Tokens : `--space-3` (12 px) et `--leading-snug` (1.28). Pas de token DS pour
+     22 px, 14 px ni 46 px : le DS les écrit en dur dans `.mt-btn--lg` et
+     `.mt-btn--wrap.mt-btn--lg`, repris ici à l'identique — les modifier LÀ-BAS
+     impose de les modifier ICI.
+   - Pourquoi pas les classes `.mt-btn--*` elles-mêmes : elles supposent la base
+     `.mt-btn`, dont les feuilles sont importées HORS layer et écraseraient les
+     utilitaires de couleur et de survol du hero (`landing.hover-pairing.test.ts`).
+     Cette utilitaire ne déclare AUCUNE couleur.
+   - `&:is(a, button)` n'est pas décoratif : le variant `Button` pose aussi une
+     hauteur fixe, un padding, un corps et `white-space: nowrap` en utilitaires, que
+     `tailwind-merge` ne sait pas retirer face à une classe qu'il ne connaît pas, et
+     dont l'ordre d'émission relatif à celle-ci n'est pas garanti. La spécificité
+     (0,1,1) contre (0,1,0) tranche sans dépendre de cet ordre, tout en restant
+     dans le layer `utilities` (une variante `hover:` à (0,2,0) garde la main).
+   Verrous : `HeroSection.test.tsx` (structure), `e2e/sprint-104-hero-cta-single-line.spec.ts`
+   (une ligne entre 1024 et 1279 px, 4 locales). */
+@utility cta-lg {
+  &:is(a, button) {
+    height: auto;
+    min-height: 46px;
+    padding-block: var(--space-3);
+    padding-inline: 22px;
+    font-size: 14px;
+    line-height: var(--leading-snug);
+    text-align: center;
+    white-space: normal;
+  }
+}
