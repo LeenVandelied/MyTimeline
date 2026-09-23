@@ -7134,7 +7134,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 1/4.
 **Status :** Terminé — PR #817 mergée, issues #623/#640/#699 et milestone #109 fermés après merge
 
-### Sprint 109 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
+### Sprint 109 — 2026-09-22 → (En cours depuis 2026-09-23 — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
 **Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), sur-titres conformes à la maquette, restes du S90 supprimés
 **Milestone GitHub :** #110
 **Issues :** #632 (P2, S — bug admis), #697 (P3, S), #664 (P3, S) — 6 pts
@@ -7142,7 +7142,12 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 106, Sprint 108
 **À confirmer au démarrage :** contenu des sur-titres relevé dans la maquette par le lead avant le briefing de #664
-**Status :** Planifié
+**Arbitrages dev au démarrage :** #664 : la maquette n'a AUCUN sur-titre de section ; ajouter les compteurs à droite du titre (semaine, produits desktop + mobile, plage de la frise produit), « En bref » et Historique inchangés (extrait : `sprints/sprint-109/maquette-sections.md`) ; #632 : `GreetingHeader` passe sur `.mt-eyebrow`, tranché par la maquette (10 px `ink-muted`)
+**Commits :** `db43be3e` #697 · `16736017` #632 · `9fc28be8` #664 · `821c0c31` squelette de la salutation (régression #632 trouvée par la suite E2E complète)
+**Tests :** Vitest 2173/2173 | tsc, format verts | `next build` OK | E2E complète 589 / 9 sautés / 11 rouges (10 captures darwin + 1 régression du sprint, corrigée) ; 7 specs ×3 = 245/245 après correctif
+**Reviews :** reviewer groupé : 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (non corrigés)
+**Audit tests :** `docs/memory/audits/sprint-109-test-coverage.md`
+**Status :** En revue — PR ouverte vers dev
 
 ### Sprint 110 — 2026-09-22 (PLANIFIÉ — cohésion 0.45, Pages d'erreur 404 / 500)
 **Objectif :** 404 en éphéméride datée, référence d'incident sur la 500, `.mt-num` étendue aux `span`
