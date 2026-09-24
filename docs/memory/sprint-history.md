@@ -7159,19 +7159,30 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 2/9.
 **Status :** Terminé — PR #821 mergée, issues #632/#664/#697 et milestone #110 fermés après merge
 
-### Sprint 110 — 2026-09-22 (PLANIFIÉ — cohésion 0.45, Pages d'erreur 404 / 500)
-**Objectif :** 404 en éphéméride datée, référence d'incident sur la 500, `.mt-num` étendue aux `span`
-**Milestone GitHub :** #111
-**Issues :** #627 (P3, S), #516 (P3, XS), #628 (P3, XS) — 4 pts
-**Vagues :** V1 = #627 ∥ #516 | V2 = #628
-**Migrations Flyway :** aucune
-**Dépend de :** aucune
-**Status :** Implémenté — PR vers `dev` (démarré 2026-09-24, branche `claude/sprint-110-start-76781f`) ; clôture par `/sprint end 110`
+### Sprint 110 — 2026-09-24 → 2026-09-24 (Terminé — merge PR #826 dans dev)
+**Objectif :** 404 en éphéméride datée, référence d'incident sur la 500, portée de `.mt-num` tranchée
+**Milestone GitHub :** #111 (fermé après merge)
+**Issues livrées (3) :** #627 (P3, S), #628 (P3, XS), #516 (P3, XS) — fermées après merge
+**Vagues exécutées :** V1 = #627 (opus) ∥ #516 (sonnet) | V2 = #628 (sonnet) | lead : `next build`, E2E complet, vérification navigateur, review batch
+**Cohésion score :** 0.45
+**Commits :** 7 — #516 `3a99352a` · #627 `9cb3e062` + `0aadfa68` (feuillet `bg-surface`, lead) + `5de8617f` (test a11y, suite de review) · #628 `ce359ede` · docs `cbda0301` · consolidation (ce commit)
+**BR impactées :** aucune (design system / écrans d'erreur)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (1 corrigé `5de8617f`, 1 écarté : 2 appels `Intl` sur une page 404, 1 écarté au triage : génération des messages inlinés)
+**Tests :** Vitest 2217/2217 (1 rouge non identifié au 1er de 3 runs complets → PIT-S110-003) | tsc/lint/format OK | `next build` 52/52, `/_not-found` statique sans date servie | E2E local 602 passés / 2 rouges hors sprint (armement visuel `sprint-77` sur darwin, `settings-profile:166` vert en isolé) | CI PR 7/7
+**Nouveaux pitfalls / décisions / patterns :** PIT-S110-001..003 · DEC-S110-001..002 · PAT-S110-001..002
+**Écarts de briefing :** 2 prémisses du lead fausses (voix es, `ink-faint` de la maquette), corrigées par l'agent #627 → PIT-S110-002
+**Absorbé en cours (XS) :** 1 — `e2e/document-lang.spec.ts` suit le nouveau titre allemand du 404 (#627)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `[locale]/not-found.tsx` atteint par aucune route [S | frontend] → issue #827 (Sprint 111, label `sprint-111` posé)
+  - « Revenir à aujourd'hui » vers le tableau de bord pour une personne connectée [S | frontend] → issue #828 (backlog)
+  - Générer les messages inlinés `global-*` depuis `errors.json` [S | frontend] → écarté (le test de parité suffit)
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé — PR #826 mergée dans `dev`, issues #627/#628/#516 et milestone #111 fermés après merge
 
 ### Sprint 111 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Thème : une seule bascule, puis préférence de compte)
 **Objectif :** un seul point d'écriture du thème, puis préférence de thème persistée sur le compte
 **Milestone GitHub :** #112
-**Issues :** #655 (P3, S), #653 (P2, M) — 6 pts
+**Issues :** #655 (P3, S), #653 (P2, M), #827 (P2, S, follow-up S110) — 8 pts
 **Vagues :** V1 = #655 ∥ backend de #653 | V2 = frontend de #653
 **Migrations Flyway :** V16 (`theme_preference` nullable sur `users`)
 **Dépend de :** Sprint 109
