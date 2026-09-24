@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.mappers.UserMapper;
 import com.matimeline.eventmanager.domain.models.ThemePreference;
@@ -122,7 +123,11 @@ public class UserRepositoryJpaImpl
         target.setAvatar(source.getAvatar());
     }
 
+    // @Transactional explicite (revue db-expert S111) : sans lui, la méthode hérite du
+    // readOnly=true de SimpleJpaRepository et ne fonctionne que parce que le service
+    // ouvre déjà une transaction en écriture.
     @Override
+    @Transactional
     public Optional<User> updateThemePreference(UUID userId, ThemePreference preference) {
         // Entité GÉRÉE (même motif que la branche mise à jour de save) : @Version et
         // updated_at restent pilotés par Hibernate.

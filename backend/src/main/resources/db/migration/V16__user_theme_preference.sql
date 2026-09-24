@@ -29,15 +29,16 @@
 -- NE PAS éditer V1..V15 (déjà appliquées -> checksum mismatch Flyway). V16 only.
 -- =============================================================
 
-alter table users
-    add column if not exists theme_preference varchar(16);
+-- Un seul ALTER TABLE (un seul verrou ACCESS EXCLUSIVE au lieu de trois) et un
+-- lock_timeout local : sur base peuplée, la migration échoue vite plutôt que de
+-- bloquer les lectures de `users` derrière une transaction longue (revue db-expert S111).
+set local lock_timeout = '5s';
 
 alter table users
-    drop constraint if exists ck_users_theme_preference;
-
-alter table users
+    add column if not exists theme_preference varchar(16),
+    drop constraint if exists ck_users_theme_preference,
     add constraint ck_users_theme_preference
-    check (theme_preference in ('light', 'dark', 'system'));
+        check (theme_preference in ('light', 'dark', 'system'));
 
 -- =============================================================
 -- ROLLBACK (manuel — Flyway Community ne rejoue pas les undo) :
