@@ -12,8 +12,9 @@ import { basename, join } from 'node:path'
 import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
-import { ALL_ACCOUNTS } from '../../e2e/support/accounts'
+import { ALL_ACCOUNTS, type E2eAccount } from '../../e2e/support/accounts'
 import { acceptedRegisterStatus, classifyRegisterResponse } from '../../e2e/support/register-retry'
+import { assertUsableSession, sessionState } from '../../e2e/support/session'
 
 /**
  * #475 → #547 — LE BUDGET RATE-LIMIT DE LA SUITE E2E, RECOMPTÉ DEPUIS LES SOURCES.
@@ -1024,7 +1025,16 @@ describe('#547 — budget rate-limit de la suite E2E (dépôt réel)', () => {
 
   it('ancrages sur le dépôt : helpers de support ET helpers locaux de spec', () => {
     const register = countSpecs('register')
-    expect(register.helpers).toEqual(expect.arrayContaining(['registerOnly', 'registerAndLogin']))
+    expect(register.helpers).toEqual(['registerOnly'])
+    // #832 (S112) : AUCUN helper de support ne se connecte par le formulaire. Une spec
+    // authentifiée qui ne teste pas la connexion prend sa session par
+    // `e2e/support/session.ts#sessionState` (0 jeton) ; `registerAndLogin`, qui invitait à
+    // payer 3 jetons au pire cas pour rien, a été supprimé (zéro appelant).
+    expect(
+      countSpecs('login').helpers,
+      'helper de connexion par formulaire réintroduit dans e2e/support/ : passer par ' +
+        'sessionState (support/session.ts), ou recompter le budget login et le justifier',
+    ).toEqual([])
     expect(register.perFile).toMatchObject({
       'golden-path.spec.ts': 1,
       'forgot-password.spec.ts': 1,
@@ -1551,5 +1561,72 @@ describe('#547 — la détection, exercée sur des sources synthétiques', () =>
       { full: false, files: ['forgot-password.spec.ts'] },
       { full: false, files: ['settings-account.spec.ts'] },
     ])
+  })
+})
+
+/**
+ * #832 (S112) — `sessionState`, la session sans formulaire : son contrôle de démarrage,
+ * exercé sur des `storageState` synthétiques (jamais les fichiers du dernier run).
+ */
+describe('#832 — sessionState refuse une session inutilisable avec la cause nommée', () => {
+  const NOW = Date.parse('2026-09-24T12:00:00Z')
+
+  function accountWith(state: unknown | null): E2eAccount {
+    const dir = mkdtempSync(join(tmpdir(), 'session-state-'))
+    const file = join(dir, 'shared.json')
+    if (state !== null) writeFileSync(file, JSON.stringify(state))
+    // Identité littérale : étaler `ALL_ACCOUNTS[0]` résoudrait ses getters (graine, trace).
+    const id = 'sh-synthetique'
+    return {
+      key: 'shared',
+      username: id,
+      name: id,
+      email: `${id}@example.com`,
+      password: 'x',
+      storageState: file,
+    }
+  }
+
+  const jwt = (expires: number) => ({ name: 'jwt', value: 'a.b.c', expires })
+
+  it('accepte un cookie jwt non expiré, et un cookie de session (expires = -1)', () => {
+    expect(() =>
+      assertUsableSession(accountWith({ cookies: [jwt(NOW / 1000 + 3600)] }), NOW),
+    ).not.toThrow()
+    expect(() => assertUsableSession(accountWith({ cookies: [jwt(-1)] }), NOW)).not.toThrow()
+  })
+
+  it('fichier absent (`--no-deps`, setup en échec) : ABSENT', () => {
+    expect(() => assertUsableSession(accountWith(null), NOW)).toThrow(/ABSENT/)
+  })
+
+  it('aucun cookie jwt (login du setup non abouti) : SANS cookie', () => {
+    const noJwt = { cookies: [{ name: 'NEXT_LOCALE', value: 'fr', expires: -1 }] }
+    expect(() => assertUsableSession(accountWith(noJwt), NOW)).toThrow(/SANS cookie/)
+    expect(() => assertUsableSession(accountWith({ cookies: [] }), NOW)).toThrow(/SANS cookie/)
+  })
+
+  it("cookie jwt expiré (fichier d'un run précédent) : PÉRIMÉ", () => {
+    expect(() => assertUsableSession(accountWith({ cookies: [jwt(NOW / 1000 - 1)] }), NOW)).toThrow(
+      /PÉRIMÉ/,
+    )
+  })
+
+  it('la fixture contrôle AVANT de remettre le chemin, et ne remet rien si le contrôle lève', async () => {
+    const valid = accountWith({ cookies: [jwt(Date.now() / 1000 + 3600)] })
+    const received: string[] = []
+    await sessionState(valid)({}, async (path) => {
+      received.push(path)
+    })
+    expect(received).toEqual([valid.storageState])
+
+    const missing = accountWith(null)
+    const untouched: string[] = []
+    await expect(
+      sessionState(missing)({}, async (path) => {
+        untouched.push(path)
+      }),
+    ).rejects.toThrow(/ABSENT/)
+    expect(untouched).toEqual([])
   })
 })

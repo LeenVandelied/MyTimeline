@@ -1,7 +1,11 @@
 import { expect, type Page } from '@playwright/test'
 
 /**
- * Helper d'auth E2E factorisé (register UI -> login UI -> cookie JWT HttpOnly).
+ * Helpers d'auth E2E factorisés : inscription par le formulaire (`registerOnly`) et
+ * restauration d'une session `storageState` (`ensureAuthenticated`, `openSettings*`).
+ *
+ * Une spec authentifiée prend sa session par `support/session.ts#sessionState`, jamais
+ * par une connexion au formulaire qu'elle ne teste pas (budget `login`, #832).
  *
  * Reprend le pattern EXACT des specs existantes (golden-path, settings-*) :
  *  - identité UNIQUE par run (`Date.now()` + aléatoire) -> retry CI safe, aucune
@@ -10,9 +14,6 @@ import { expect, type Page } from '@playwright/test'
  *  - sélecteurs `data-testid` UNIQUEMENT ;
  *  - password respectant `createRegisterFormSchema` (>= 6 + une MAJ + un chiffre),
  *    faute de quoi RHF bloque le submit (pas de POST /auth/register).
- *
- * Après cette fonction, `page` porte le cookie de session : `page.request.*`
- * partage ce cookie (same-origin via le proxy Next `/api`).
  */
 
 export interface E2eIdentity {
@@ -42,7 +43,8 @@ export function uniqueIdentity(prefix = 'e2e'): E2eIdentity {
  *
  * SEULE implémentation de l'interaction avec le formulaire d'inscription dans la
  * suite E2E (revue S45). Elle existait auparavant en TROIS copies identiques
- * (`registerAndLogin` ici, `registerFreshUser` dans `forgot-password.spec.ts` et
+ * (`registerAndLogin` ici — supprimé par #832, zéro appelant —, `registerFreshUser` dans
+ * `forgot-password.spec.ts` et
  * dans `reset-password-failures.spec.ts`) : une dérive de `data-testid` du
  * formulaire n'aurait été détectée que sur la copie touchée. Les specs ne peuvent
  * pas s'importer entre elles (importer un `*.spec.ts` en enregistrerait les tests
@@ -68,25 +70,6 @@ export async function registerOnly(page: Page, prefix = 'e2e'): Promise<E2eIdent
 
   // Register OK -> redirection vers /fr/login (router.push après succès).
   await expect(page.getByTestId('login-form')).toBeVisible()
-
-  return identity
-}
-
-/**
- * Inscrit puis connecte un nouvel utilisateur, laissant `page` sur le dashboard
- * avec un cookie JWT valide. Retourne l'identité pour les assertions suivantes.
- */
-export async function registerAndLogin(page: Page, prefix = 'e2e'): Promise<E2eIdentity> {
-  // ---- Inscription (implémentation unique, cf. `registerOnly`) ------------
-  const identity = await registerOnly(page, prefix)
-
-  // ---- Connexion ---------------------------------------------------------
-  await page.getByTestId('login-username').fill(identity.username)
-  await page.getByTestId('login-password').fill(identity.password)
-  await page.getByTestId('login-submit').click()
-
-  // Login OK -> cookie JWT HttpOnly posé, AuthContext restaure, redirection dashboard.
-  await expect(page.getByTestId('dashboard')).toBeVisible()
 
   return identity
 }

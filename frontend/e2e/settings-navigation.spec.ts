@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #86 — E2E Réglages desktop : accès depuis le dashboard + navigation par
@@ -8,11 +9,13 @@ import { SHARED } from './support/accounts'
  * `data-testid` (jamais texte / classe), i18n `localePrefix: 'always'` (`/fr/...`).
  *
  * PRÉREQUIS RUNTIME (job CI `e2e`) : backend Spring Boot (:8080) + Postgres migré,
- * frontend Next (:3000). Auth via `storageState` (compte fixe provisionné par le
- * projet `setup`) -> ZÉRO register par test (anti rate-limit register 5/min/IP).
+ * frontend Next (:3000). Auth via `sessionState` (storageState du compte fixe
+ * provisionné par le projet `setup`, contrôlé au démarrage du test) -> ZÉRO register
+ * et ZÉRO connexion par test : la spec ne teste pas le formulaire, elle ne consomme
+ * rien du seau `login` (#832, `support/session.ts`).
  * Test de LECTURE (navigation seule, aucune mutation) : compte partagé.
  */
-test.use({ storageState: SHARED.storageState })
+test.use({ storageState: sessionState(SHARED) })
 
 test.describe('Réglages desktop : accès + navigation 4 chapitres', () => {
   test('depuis le dashboard, navigation entre les chapitres', async ({ page }) => {
