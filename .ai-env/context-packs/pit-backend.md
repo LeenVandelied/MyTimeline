@@ -973,6 +973,7 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 ## PIT-S112-009 — `while pgrep -f "<motif>"` ne se termine jamais quand le motif figure dans la commande qui boucle
 `pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
 
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

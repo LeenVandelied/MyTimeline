@@ -1880,6 +1880,11 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 ## PIT-S112-009 — `while pgrep -f "<motif>"` ne se termine jamais quand le motif figure dans la commande qui boucle
 `pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
 
+
+## PIT-S112-010 — Un test Vitest qui analyse l'AST de tout le dépôt passe en local et dépasse 5 s en CI sous couverture
+`e2e-rate-limit-budget.test.ts` « les lignes BUDGET… disent vrai » : 870 ms en local, > 5 s (délai par défaut) sur le runner CI avec couverture (~6× plus lent) — rouge sur un commit de docs seules, vert sur le précédent. Tout test qui parcourt le dépôt réel porte un délai explicite (`describe(nom, { timeout }, fn)`) ; un rouge « Test timed out » sur un diff sans code se relit comme une lenteur, pas comme un budget faux. (Sprint 112, lead, clôture)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
