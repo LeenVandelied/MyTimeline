@@ -7166,7 +7166,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Vagues :** V1 = #627 ∥ #516 | V2 = #628
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
-**Status :** Planifié
+**Status :** Implémenté — PR vers `dev` (démarré 2026-09-24, branche `claude/sprint-110-start-76781f`) ; clôture par `/sprint end 110`
 
 ### Sprint 111 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Thème : une seule bascule, puis préférence de compte)
 **Objectif :** un seul point d'écriture du thème, puis préférence de thème persistée sur le compte
