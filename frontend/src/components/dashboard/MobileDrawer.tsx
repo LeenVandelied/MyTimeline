@@ -2,17 +2,17 @@
 
 import React, { useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { useTheme } from 'next-themes'
-import { X, Sun, Moon, LogOut } from 'lucide-react'
+import { X, LogOut } from 'lucide-react'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
 
 /**
  * #83 — Drawer off-canvas mobile portrait. Panneau glissant depuis la droite,
  * ouvert par le bouton hamburger du header mobile. Contient : sélecteur de langue
- * (réutilise `LanguageSelector`), toggle de thème clair/sombre (`next-themes`) et
- * bouton de déconnexion.
+ * (réutilise `LanguageSelector`), bascule de thème clair/sombre (`ThemeToggle`,
+ * gabarit `labeled` — #655) et bouton de déconnexion.
  *
  * A11y (critère d'acceptation + réserve Designer) : `role="dialog"
  * aria-modal="true"` + `aria-labelledby`, FOCUS TRAP + restauration focus
@@ -32,15 +32,12 @@ export interface MobileDrawerProps {
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLogout }) => {
   const t = useTranslations('dashboard.mobile.drawer')
   const tc = useTranslations('common.buttons')
-  const { resolvedTheme, setTheme } = useTheme()
   const panelRef = useRef<HTMLDivElement>(null)
 
   // Focus-trap mutualisé (S19) + fermeture Escape via `onEscape` (#208 review).
   useFocusTrap(panelRef, open, onClose)
 
   if (!open) return null
-
-  const isDark = resolvedTheme === 'dark'
 
   return (
     <>
@@ -84,20 +81,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
 
           <div className="flex flex-col gap-2">
             <span className="mt-eyebrow">{t('theme')}</span>
-            <Button
-              variant="ghost"
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              data-testid="dashboard-mobile-drawer-theme-toggle"
-              aria-pressed={isDark}
-              className="text-ink hover:bg-accent-soft border-rule flex items-center justify-start gap-2 border"
-            >
-              {isDark ? (
-                <Sun className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Moon className="h-4 w-4" aria-hidden="true" />
-              )}
-              <span>{isDark ? t('themeLight') : t('themeDark')}</span>
-            </Button>
+            {/* #655 — gabarit `labeled` de la bascule unique (`ui/theme-toggle.tsx`). */}
+            <ThemeToggle variant="labeled" testId="dashboard-mobile-drawer-theme-toggle" />
           </div>
         </div>
 

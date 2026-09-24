@@ -74,7 +74,12 @@ import jakarta.servlet.http.HttpServletResponse;
  *   <li>{@code GET /api/me} and {@code GET /api/me/avatar} — reads polled by the SPA on
  *       every navigation; a per-IP cap would break normal browsing (and shared-NAT users);</li>
  *   <li>{@code DELETE /api/me} — terminal, single-shot, guarded by a username re-type;</li>
- *   <li>{@code DELETE /api/me/avatar} — idempotent no-op reset.</li>
+ *   <li>{@code DELETE /api/me/avatar} — idempotent no-op reset;</li>
+ *   <li>{@code PUT /api/me/preferences} (#653, ADR-010 § 7) — theme preference of the
+ *       caller: idempotent single-row UPDATE on its own record, same response whatever
+ *       the state of other accounts (no oracle); a cap would only break a user toggling the
+ *       theme several times in a row, or users behind a shared NAT. Abuse stays
+ *       authenticated, hence attributable and revocable.</li>
  * </ul>
  * <p><b>Avatar upload (#499):</b> {@code POST /api/me/avatar} (multipart upload, 5 MiB cap,
  * magic-byte validation + disk write + delete of the previous file) IS now throttled — it was

@@ -35,9 +35,7 @@
       "title": "Einstellungen",
       "close": "Menü schließen",
       "language": "Sprache",
-      "theme": "Design",
-      "themeLight": "Hell",
-      "themeDark": "Dunkel"
+      "theme": "Design"
     },
     "scrollHint": "Horizontal scrollen",
     "compactAgenda": {

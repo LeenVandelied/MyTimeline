@@ -575,3 +575,7 @@ PIT-S109-004	frontend
 PIT-S110-001	frontend
 PIT-S110-002	frontend
 PIT-S110-003	tooling
+PIT-S111-001	backend
+PIT-S111-002	both
+PIT-S111-003	frontend
+PIT-S111-004	tooling

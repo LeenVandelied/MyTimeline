@@ -33,6 +33,7 @@ const FAKE_USER: User = {
   email: 'alice@example.com',
   role: 'ROLE_USER',
   avatarUrl: null,
+  themePreference: null,
 }
 
 function makeWrapper() {

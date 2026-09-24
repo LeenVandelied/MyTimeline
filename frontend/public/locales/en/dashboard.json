@@ -35,9 +35,7 @@
       "title": "Settings",
       "close": "Close menu",
       "language": "Language",
-      "theme": "Theme",
-      "themeLight": "Light",
-      "themeDark": "Dark"
+      "theme": "Theme"
     },
     "scrollHint": "Scroll horizontally",
     "compactAgenda": {

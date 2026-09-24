@@ -1030,3 +1030,18 @@ Quand une spec attend `toHaveCount(0)` sur un testid de chargement qu'on supprim
 
 ## PAT-S110-002 — Traitement identique sur deux écrans hors provider : composant pur partagé + test de parité des messages inlinés
 `[locale]/error.tsx` (dans next-intl) et `global-error.tsx` (hors provider, `MESSAGES` inlinés) affichent la même référence d'incident : un composant pur (`IncidentReference`, `StateScreen.tsx`) qui reçoit libellé et valeur déjà résolus garantit l'identité par construction ; un test `it.each` compare les `MESSAGES` inlinés aux 4 `errors.json` et rougit à la moindre dérive (même motif pour `global-not-found-screen.tsx`). (Sprint 110 #627, #628)
+
+## PAT-S111-001 — Champ écrit par un seul cas d'usage : port dédié, exclu de la recopie générique
+Ajouter `themePreference` à `User`, reconstruit puis sauvé par 5 chemins (PATCH, change/reset-password, avatar ×2) via `copyMutableFields`, l'aurait effacé sur chaque chemin oublié. Le champ s'écrit par `UserRepository.updateThemePreference` et la recopie générique l'exclut ; un test d'intégration armé (`patchProfile_afterPreference_doesNotEraseIt`) prouve la non-régression sur un autre chemin. Anti-motif : mettre à jour les N `new User(...)` à la main. (Sprint 111 #653)
+
+## PAT-S111-002 — Nouveau champ d'entité : hydratation dans l'adaptateur JPA, pas dans le `UserMapper` gelé
+`UserMapper` (application) porte une dette figée par ArchUnit ; tout nouvel accès à l'entité y ajoute une violation (666/667). Hydrater dans `UserRepositoryJpaImpl.toDomain` (+ `withX` côté domaine), comme `toDomainWithoutEvents` (#711). Anti-motif : régénérer le store de gel ArchUnit. (Sprint 111 #653)
+
+## PAT-S111-003 — Garde `mounted` par `useSyncExternalStore`, pas `useState` + `useEffect`
+`useSyncExternalStore(noop, () => true, () => false)` vaut `false` au SSR et à l'hydratation, `true` dès le premier rendu d'un montage client (tiroir, dialog ouverts après coup) — là où `useEffect(() => setMounted(true))` impose un rendu « non monté » à chaque ouverture. Testable par `renderToString`. (Sprint 111 #655, `useThemeChoice.ts`)
+
+## PAT-S111-004 — PUT idempotent dédupliqué sur la valeur ATTENDUE, avec numéro de séquence
+Dédupliquer sur la valeur serveur confirmée saute l'aller-retour rapide (A en vol, retour à B confirmé → sauté, le serveur finit sur A). Comparer à la valeur attendue (confirmée ou dernière en vol), ignorer les réponses périmées par un numéro de séquence, revenir à la valeur confirmée sur échec du dernier PUT. (Sprint 111 #653, `AuthContext.persistThemeChoice`)
+
+## PAT-S111-005 — Avant de croire un `not-found.tsx` de segment atteint, trouver l'appelant de `notFound()`
+Un `notFound()` levé dans un `layout.tsx` remonte au 404 racine (PIT-S62-005) ; seul un `notFound()` de **page** rend le `not-found.tsx` du segment. `/usr/bin/grep -rn "notFound()" frontend/app` et regarder si chaque appel est dans une page ou un layout. (Sprint 111 #827)

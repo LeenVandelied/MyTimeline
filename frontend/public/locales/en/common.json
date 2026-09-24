@@ -116,7 +116,9 @@
   "theme": {
     "toggle": "Change theme",
     "toLight": "Switch to light theme",
-    "toDark": "Switch to dark theme"
+    "toDark": "Switch to dark theme",
+    "light": "Light",
+    "dark": "Dark"
   },
   "time": {
     "year": "year",

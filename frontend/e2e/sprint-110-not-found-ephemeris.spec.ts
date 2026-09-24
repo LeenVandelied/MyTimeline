@@ -6,8 +6,10 @@ import { test, expect, type Page } from '@playwright/test'
  *
  * QUEL ÉCRAN. Une URL inconnue sous une locale valide est servie par
  * `app/global-not-found.tsx` (document autonome, PRÉRENDU au build, cf.
- * `e2e/document-lang.spec.ts`) — pas par `app/[locale]/not-found.tsx`, qu'aucune
- * page n'atteint aujourd'hui (aucun appel à `notFound()` hors du layout).
+ * `e2e/document-lang.spec.ts`) — désormais l'UNIQUE écran 404 : `#827`
+ * (Sprint 111) a supprimé `app/[locale]/not-found.tsx`, qu'aucune page
+ * n'atteignait (seul `notFound()` du layout, qui échappe de toute façon au
+ * `not-found.tsx` du même segment, PIT-S62-005).
  *
  * CE QUE LA SPEC PROUVE :
  *  - le HTML SERVI (`request.get`, sans JS) ne contient AUCUNE date : le

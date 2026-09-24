@@ -4,7 +4,6 @@ import React, { useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { useTheme } from 'next-themes'
 import {
   CalendarDays,
   LayoutDashboard,
@@ -13,8 +12,6 @@ import {
   Plus,
   Settings,
   LogOut,
-  Sun,
-  Moon,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -23,6 +20,7 @@ import { useAuthGuard } from '@/hooks/useAuthGuard'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { LanguageSelector } from '@/components/ui/language-selector'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NewEventDrawer } from '@/components/events/NewEventDrawer'
 import { safeErrorMessage } from '@/lib/safe-error'
 import {
@@ -163,7 +161,6 @@ export function AppShell({ children }: AppShellProps) {
   // ici : le shell enveloppe `children`, donc un spinner anticipé sans monter
   // `children` empêcherait la garde d'une page enfant de se déclencher.
   const { user, loading } = useAuthGuard()
-  const { resolvedTheme, setTheme } = useTheme()
   const [showCreate, setShowCreate] = useState(false)
   // #605 — produit présélectionné de l'ouverture COURANTE. Réécrit à chaque ouverture
   // (y compris à `undefined`) : une ouverture sans option repart vierge.
@@ -188,8 +185,6 @@ export function AppShell({ children }: AppShellProps) {
   // Déclencheurs DU SHELL : jamais de prérempli, et l'événement souris n'atteint pas
   // `openCreate` (identité stable conservée, deps = `openCreate` lui-même stable).
   const openCreateBlank = useCallback(() => openCreate(), [openCreate])
-
-  const isDark = resolvedTheme === 'dark'
 
   const handleLogout = async () => {
     try {
@@ -303,21 +298,9 @@ export function AppShell({ children }: AppShellProps) {
               `size="icon"` → aucun changement à lui apporter. */}
           <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-between">
             <LanguageSelector />
-            <button
-              type="button"
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              aria-pressed={isDark}
-              aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
-              title={isDark ? t('theme.toLight') : t('theme.toDark')}
-              data-testid="shell-sidebar-theme-toggle"
-              className="text-ink-muted hover:bg-surface-2 flex h-11 w-11 items-center justify-center rounded-md transition-colors"
-            >
-              {isDark ? (
-                <Sun className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Moon className="h-4 w-4" aria-hidden="true" />
-              )}
-            </button>
+            {/* #655 — gabarit `square` de la bascule unique (`ui/theme-toggle.tsx`) :
+                mêmes classes et testid qu'avant, plus la garde de montage. */}
+            <ThemeToggle variant="square" testId="shell-sidebar-theme-toggle" />
           </div>
 
           <Link

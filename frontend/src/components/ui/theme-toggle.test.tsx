@@ -118,3 +118,68 @@ describe('ThemeToggle — bascule', () => {
     expect(setTheme).toHaveBeenCalledWith('light')
   })
 })
+
+/**
+ * #655 — les gabarits `square` (pied de sidebar du shell) et `labeled` (tiroir
+ * mobile du dashboard). Même contrat de garde de montage que `icon` : aucune
+ * valeur dépendant du thème dans le HTML serveur, les deux icônes servies.
+ */
+describe('ThemeToggle — gabarits applicatifs (#655)', () => {
+  it.each(['square', 'labeled'] as const)(
+    '%s : HTML serveur générique, sans aria-pressed, deux icônes',
+    (variant) => {
+      resolvedTheme = 'dark'
+      const html = renderToString(<ThemeToggle testId="t" variant={variant} />)
+
+      expect(html).toContain('theme.toggle')
+      for (const key of ['theme.toLight', 'theme.toDark', 'theme.light', 'theme.dark']) {
+        expect(html).not.toContain(`${key}<`)
+        expect(html).not.toContain(`"${key}"`)
+      }
+      expect(html).not.toContain('aria-pressed')
+      expect(html.match(/<svg/g)).toHaveLength(2)
+      expect(html).toContain('dark:block')
+      expect(html).toContain('dark:hidden')
+    },
+  )
+
+  it('square : carré 44×44, nom accessible = destination après montage', () => {
+    resolvedTheme = 'light'
+    render(<ThemeToggle testId="t" variant="square" />)
+
+    const button = screen.getByTestId('t')
+    expect(button.tagName).toBe('BUTTON')
+    expect(button).toHaveAttribute('type', 'button')
+    expect(button.className).toContain('h-11')
+    expect(button.className).toContain('w-11')
+    expect(button).toHaveAttribute('aria-label', 'theme.toDark')
+    expect(button).toHaveAttribute('title', 'theme.toDark')
+    expect(button).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('labeled : libellé VISIBLE = destination, pas d’aria-label', () => {
+    resolvedTheme = 'dark'
+    render(<ThemeToggle testId="t" variant="labeled" />)
+
+    const button = screen.getByTestId('t')
+    expect(button).toHaveTextContent('theme.light')
+    expect(button).not.toHaveAttribute('aria-label')
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+    expect(button.className).toContain('border-rule')
+    expect(button.className).toContain('justify-start')
+    expect(screen.getByRole('button', { name: 'theme.light' })).toBe(button)
+  })
+
+  it.each([
+    ['square', 'light', 'dark'],
+    ['square', 'dark', 'light'],
+    ['labeled', 'light', 'dark'],
+    ['labeled', 'dark', 'light'],
+  ] as const)('%s : depuis %s, demande %s', async (variant, from, to) => {
+    resolvedTheme = from
+    render(<ThemeToggle testId="t" variant={variant} />)
+
+    await userEvent.click(screen.getByTestId('t'))
+    expect(setTheme).toHaveBeenCalledWith(to)
+  })
+})

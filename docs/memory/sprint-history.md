@@ -7179,20 +7179,35 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé — PR #826 mergée dans `dev`, issues #627/#628/#516 et milestone #111 fermés après merge
 
-### Sprint 111 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Thème : une seule bascule, puis préférence de compte)
-**Objectif :** un seul point d'écriture du thème, puis préférence de thème persistée sur le compte
-**Milestone GitHub :** #112
-**Issues :** #655 (P3, S), #653 (P2, M), #827 (P2, S, follow-up S110) — 8 pts
-**Vagues :** V1 = #655 ∥ backend de #653 | V2 = frontend de #653
-**Migrations Flyway :** V16 (`theme_preference` nullable sur `users`)
-**Dépend de :** Sprint 109
-**À confirmer au démarrage :** ADR-010 (endpoint dédié `PUT /api/me/preferences`, PATCH /api/me exigeant 3 champs `@NotBlank`) ; revue db-expert + security-expert
-**Status :** Planifié
+### Sprint 111 — 2026-09-24 → 2026-09-24 (Terminé — merge PR #829 dans dev)
+**Objectif :** un seul point d'écriture du thème, puis préférence de thème portée par le compte ; 404 localisé inatteignable retiré
+**Milestone GitHub :** #112 (fermé après merge)
+**Issues livrées (3) :** #655 (P3, S), #653 (P2, M), #827 (P2, S) — fermées après merge
+**Décisions de démarrage (dev) :** #827 → option (b) suppression ; ADR-010 validé tel quel (colonne nullable + `PUT /api/me/preferences`)
+**Vagues exécutées :** V1 = #655 (opus) ∥ #653 backend (opus) ∥ #827 (sonnet) | revues db-expert + security-expert ∥ V2 = #653 frontend (opus) | lead : `next build`, E2E complet, sonde visuelle, review batch ×2 (backend, frontend)
+**Cohésion score :** 0.53
+**Migrations Flyway :** V16 (`users.theme_preference`) — prochaine V17
+**Commits :** 13 — #827 `2d9ac7d8` · #655 `a78d4485` · #653 `f602cd25` + `03dc445e` (backend) + `97d4d8a2` (suites db-expert, lead) + `6fbaa74a` + `a9f1695f` + `1166cdf6` (frontend) + `f20d277d` (helper E2E, lead) + `a18c6e2c` (ADR, revues) + `22738933` (commentaire, revue batch) · docs `56a08225` · consolidation (ce commit)
+**BR impactées :** BR-AUT-013 (nouvelle), BR-AUT-008 (projection `/me`)
+**Reviews :** db-expert 0/0/3 MINEURS (2 appliqués, 1 documenté) · security-expert 0/0/1 (plafond de débit → DEC-S111-005, follow-up #831) · reviewer backend 0/0/2 (1 corrigé, 1 réfuté : le conflit optimiste est déjà mappé en 409) · reviewer frontend 0/0/2 (1 commenté, 1 → #830)
+**Tests :** Backend 667/667 (+ classes ciblées 48/48 après correctifs du lead) | Vitest 2267/2267 | tsc/lint/format verts | `next build` 52/52 | E2E complet contre `next build`+`next start`, backend construit depuis HEAD (V1→V16 base neuve) : 604 passés / 8 sautés / 2 rouges hors sprint (`sprint-77-theme-visual:620` captures darwin ; `sprint-101-fab-landscape:271` = #769, 24/24 isolé) ; 1 erreur hors test du helper E2E du sprint corrigée (`f20d277d`) | CI PR 7/7 sur `56a08225`
+**Nouveaux pitfalls / décisions / patterns :** PIT-S111-001..004 · DEC-S111-001..005 · PAT-S111-001..005 · ADR-010
+**Écarts de briefing :** l'agent #653 front a dû toucher `application-e2e.properties` (commentaires de budget) malgré « pas de backend » → PIT-S111-002 ; un spawn refusé par le hook pour pack abrégé → PIT-S111-004
+**Absorbé en cours (XS) :** 2 — spec #655 sortie du compte partagé (`keepThemeOffSharedAccount`) ; clés i18n de thème regroupées dans `common`
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Bascule du tiroir mobile 36 → 44 px [XS | frontend] → issue #830 (Sprint 112)
+  - Plafond de débit par utilisateur sur `PUT /api/me/preferences` [S | backend] → issue #831 (Sprint 112)
+  - Budget de connexions E2E à 26/30 au pire cas CI [S | e2e] → issue #832 (Sprint 112)
+  - Pas de toast global sur l'échec du PUT de thème [XS | frontend] → issue #833 (Sprint 112)
+  - `AuthController.register` avec id pré-assigné [XS | auth] → issue #834 (backlog)
+  Ratio discard 0/5.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé — PR #829 mergée dans `dev`, issues #653/#655/#827 et milestone #112 fermés après merge
 
 ### Sprint 112 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Cibles tactiles et focus mesurés)
 **Objectif :** helper de mesure unique, 4 dernières cibles mesurées à 375 px, retour du focus vérifié en E2E
 **Milestone GitHub :** #113
-**Issues :** #768 (P3, XS), #767 (P2, S), #700 (P2, S) — 5 pts
+**Issues :** #768 (P3, XS), #767 (P2, S), #700 (P2, S) — 5 pts ; + 4 follow-ups du S111 rattachés au triage de clôture du S111 (#830 XS, #831 S, #832 S, #833 XS) → 7 issues, ~11 pts : recalibrer le périmètre au `/sprint start 112`
 **Vagues :** V1 = #768 | V2 = #767 | V3 = #700
 **Migrations Flyway :** aucune
 **Dépend de :** Sprints 105, 106, 107

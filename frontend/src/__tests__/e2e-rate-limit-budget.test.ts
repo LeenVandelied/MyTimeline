@@ -1029,13 +1029,17 @@ describe('#547 — budget rate-limit de la suite E2E (dépôt réel)', () => {
       'golden-path.spec.ts': 1,
       'forgot-password.spec.ts': 1,
       'reset-password-failures.spec.ts': 2,
+      // #653 (S111) : UN compte neuf pour la préférence de thème (jamais `SHARED`).
+      'sprint-111-theme-account-preference.spec.ts': 1,
     })
     // `submitLogin` / `submitResetPassword` sont des fonctions LOCALES de la spec, appelées
     // 2 et 3 fois : le compteur par regex de #475 les aurait vues 1 fois chacune.
+    // Idem `loginViaForm` (#653), appelée 2 fois : deux appareils, un seul compte.
     expect(countSpecs('login').perFile).toEqual({
       'golden-path.spec.ts': 1,
       'forgot-password.spec.ts': 1,
       'reset-password-failures.spec.ts': 2,
+      'sprint-111-theme-account-preference.spec.ts': 2,
     })
     expect(countSpecs('reset-password').perFile).toEqual({
       'forgot-password.spec.ts': 1,

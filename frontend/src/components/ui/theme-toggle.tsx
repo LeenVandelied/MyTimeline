@@ -1,35 +1,51 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
+import { useThemeChoice } from '@/hooks/useThemeChoice'
 import { Button } from './button'
 
 /**
- * #642 (DEC-S82-009) — Bascule de thème EXPOSABLE HORS CONNEXION.
+ * #642 (DEC-S82-009) puis #655 — LA bascule de thème de l'application, en trois
+ * gabarits.
  *
- * POURQUOI CE COMPOSANT EXISTE. Avant #642 le dépôt portait DEUX bascules de
- * thème, toutes deux derrière l'authentification et toutes deux écrites en
- * ligne dans leur hôte : `layout/AppShell.tsx` (pied de sidebar) et
- * `dashboard/MobileDrawer.tsx` (rangée étiquetée du tiroir). Aucune n'était
- * réutilisable — l'une est un carré 44×44 dans une colonne de 48 px, l'autre un
- * `<Button>` pleine largeur avec libellé visible. Les exposer sur la landing et
- * les pages d'auth aurait donc voulu dire recopier une troisième fois la même
- * logique `useTheme` + `mounted`. Ce fichier extrait cette logique UNE fois,
- * sous la forme du seul gabarit dont les surfaces publiques ont besoin : un
- * bouton à ICÔNE SEULE, jumeau visuel de `ui/language-selector.tsx`, avec lequel
- * il est systématiquement monté (landing desktop, panneau mobile, 4 pages
- * d'auth). Les deux bascules applicatives N'ONT PAS été converties (`AppShell`
- * est hors périmètre de l'issue) : leur convergence est laissée en suivi.
+ * HISTORIQUE. #642 a extrait ce composant pour exposer la bascule HORS
+ * CONNEXION, sous le seul gabarit dont les surfaces publiques avaient besoin
+ * (icône seule). Deux bascules écrites en ligne subsistaient alors, derrière
+ * l'authentification, sans garde de montage : le carré 44×44 du pied de
+ * `layout/AppShell.tsx` et le bouton libellé pleine largeur de
+ * `dashboard/MobileDrawer.tsx`. #655 les a converties : il n'existe plus
+ * qu'UNE implémentation, avec une `variant` par gabarit.
+ *
+ *  - `icon` (défaut) — surfaces publiques : landing desktop, panneau mobile de
+ *    la landing, 4 pages d'auth. Visuel 36×36, jumeau de `ui/language-selector`,
+ *    cible étendue à 44×44 par pseudo-élément (cf. plus bas).
+ *  - `square` — pied de sidebar du shell : carré 44×44 plein, qui tient dans la
+ *    colonne de 48 px utiles de la sidebar repliée (#298).
+ *  - `labeled` — tiroir mobile du dashboard : bouton bordé, icône + libellé
+ *    VISIBLE nommant le thème de destination (« Sombre » en clair, « Clair » en
+ *    sombre). Le libellé est le nom accessible : pas d'`aria-label`.
+ *
+ * Classes et `data-testid` de chaque gabarit sont repris à l'identique de leur
+ * ancien emplacement (`shell-sidebar-theme-toggle`,
+ * `dashboard-mobile-drawer-theme-toggle`). Libellés : les trois gabarits lisent
+ * le seul namespace `common` (`theme.*`). Les clés `shell.theme.*` (valeurs
+ * identiques à `common.theme.*` dans les 4 locales) et
+ * `dashboard.mobile.drawer.themeLight/themeDark` (déplacées en
+ * `common.theme.light/dark`, mêmes valeurs) ont été retirées.
+ *
+ * ÉCRITURE DU THÈME. Ce composant n'appelle pas next-themes : il passe par
+ * `useThemeChoice` (`hooks/useThemeChoice.ts`), SEUL point d'écriture du thème
+ * de l'application, où #653 branche la persistance sur le compte.
  *
  * ────────────────────────────────────────────────────────────────────────────
  * L'ICÔNE EST CHOISIE PAR CSS, PAS PAR JS — ET C'EST LE POINT CENTRAL.
  *
- * Les deux bascules préexistantes lisent `resolvedTheme` SANS garde de montage
- * et rendent `isDark ? <Sun/> : <Moon/>`. Côté serveur `resolvedTheme` vaut
- * `undefined`, donc le HTML servi contient TOUJOURS la lune ; après hydratation
+ * Les deux bascules applicatives d'avant #655 lisaient `resolvedTheme` SANS
+ * garde de montage et rendaient `isDark ? <Sun/> : <Moon/>`. Côté serveur
+ * `resolvedTheme` vaut `undefined`, donc le HTML servi contenait TOUJOURS la
+ * lune ; après hydratation
  * next-themes résout le thème et l'icône peut sauter. Sur une route protégée
  * c'est invisible (rien n'est prérendu de toute façon) ; sur les routes
  * PUBLIQUES, qui sont statiques (`generateStaticParams` de
@@ -45,20 +61,25 @@ import { Button } from './button'
  * — même mécanisme que le reste du DS Graphite, dont tous les tokens sont déjà
  * commutés par cette classe.
  *
- * LE NOM ACCESSIBLE, LUI, NE PEUT PAS ÊTRE FAIT EN CSS. Il dépend donc d'un
- * `mounted` : avant montage (et donc dans le HTML servi) le bouton annonce
- * l'action GÉNÉRIQUE `common.theme.toggle` (« Changer de thème »), qui est vraie
- * dans les deux thèmes ; après montage il annonce la destination exacte
- * (`toLight` / `toDark`) et expose `aria-pressed`. Le premier rendu client est
- * identique au HTML serveur — c'est ce qui rend l'hydratation propre. C'est la
- * même garde `mounted` que `settings/PreferencesSection.tsx`.
+ * Les TROIS gabarits servent cette paire d'icônes : aucun ne choisit son icône
+ * en JS, donc aucun n'a d'icône dépendant du thème avant montage.
+ *
+ * LE NOM ACCESSIBLE, LUI, NE PEUT PAS ÊTRE FAIT EN CSS. Il dépend donc de la
+ * garde `mounted` de `useThemeChoice` : avant montage (et donc dans le HTML
+ * servi) le bouton annonce l'action GÉNÉRIQUE `common.theme.toggle` (« Changer
+ * de thème »), qui est vraie dans les deux thèmes ; après montage il annonce la
+ * destination exacte (`toLight` / `toDark` en `aria-label` pour `icon` et
+ * `square`, `light` / `dark` en libellé visible pour `labeled`) et expose
+ * `aria-pressed`. Le premier rendu client est identique au HTML serveur — c'est
+ * ce qui rend l'hydratation propre. Même garde que
+ * `settings/PreferencesSection.tsx`, qui lit le même hook.
  *
  * ⚠ NE PAS remplacer la paire d'icônes par `isDark ? … : …` « pour simplifier » :
  * cela réintroduirait exactement l'écart d'hydratation décrit plus haut sur les
  * pages statiques.
  *
  * ────────────────────────────────────────────────────────────────────────────
- * GABARIT VISUEL ET CIBLE TACTILE — PAT-S24-002.
+ * GABARIT VISUEL ET CIBLE TACTILE (variante `icon`) — PAT-S24-002.
  *
  * Le visuel est 36×36 (`h-9 w-9`, comme le déclencheur du sélecteur de langue,
  * dont ce bouton est le voisin immédiat partout où il est monté) ; un `::before`
@@ -71,7 +92,8 @@ import { Button } from './button'
  * `:focus-visible` du DS, layerisé dans `@layer base` (#383).
  *
  * ────────────────────────────────────────────────────────────────────────────
- * MESURÉ AU NAVIGATEUR (Chromium, `next start` de production, macOS, #642) —
+ * MESURÉ AU NAVIGATEUR (variante `icon`, Chromium, `next start` de production,
+ * macOS, #642) —
  * ⚠ métriques macOS, PAS celles de l'image jammy de la CI (PIT du header : c'est
  * Ubuntu qui fait basculer les budgets de largeur, cf. `HeaderSection`).
  *
@@ -91,6 +113,8 @@ import { Button } from './button'
  * comportement sous les métriques de police de la CI. jsdom, lui, ne résout
  * aucune mise en page.
  */
+export type ThemeToggleVariant = 'icon' | 'square' | 'labeled'
+
 export interface ThemeToggleProps {
   /**
    * `data-testid` OBLIGATOIRE et propre au point de montage : sur la landing, le
@@ -98,26 +122,77 @@ export interface ThemeToggleProps {
    * le DOM quand le menu est ouvert, un identifiant partagé y serait ambigu.
    */
   testId: string
+  /** Gabarit — cf. pavé d'en-tête. Défaut : `icon` (surfaces publiques). */
+  variant?: ThemeToggleVariant
   className?: string
 }
 
-export function ThemeToggle({ testId, className }: ThemeToggleProps) {
+/** Paire d'icônes commune aux trois gabarits : la variante `dark:` tranche. */
+function ThemeIcons() {
+  return (
+    <>
+      <Sun className="hidden h-4 w-4 dark:block" aria-hidden="true" />
+      <Moon className="h-4 w-4 dark:hidden" aria-hidden="true" />
+    </>
+  )
+}
+
+export function ThemeToggle({ testId, variant = 'icon', className }: ThemeToggleProps) {
   const t = useTranslations('common')
-  const { resolvedTheme, setTheme } = useTheme()
+  const { mounted, isDark, toggle } = useThemeChoice()
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  // `aria-pressed` n'existe qu'après montage : c'est aussi la barrière
+  // d'hydratation des specs E2E (`waitForToggleHydrated`, PIT-S83-001).
+  const pressed = mounted ? isDark : undefined
 
-  const isDark = mounted && resolvedTheme === 'dark'
+  if (variant === 'labeled') {
+    const text = mounted ? (isDark ? t('theme.light') : t('theme.dark')) : t('theme.toggle')
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={toggle}
+        aria-pressed={pressed}
+        data-testid={testId}
+        className={cn(
+          'text-ink hover:bg-accent-soft border-rule flex items-center justify-start gap-2 border',
+          className,
+        )}
+      >
+        <ThemeIcons />
+        <span>{text}</span>
+      </Button>
+    )
+  }
+
   const label = mounted ? (isDark ? t('theme.toLight') : t('theme.toDark')) : t('theme.toggle')
+
+  if (variant === 'square') {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        aria-pressed={pressed}
+        aria-label={label}
+        title={label}
+        data-testid={testId}
+        className={cn(
+          'text-ink-muted hover:bg-surface-2 flex h-11 w-11 items-center justify-center rounded-md transition-colors',
+          className,
+        )}
+      >
+        <ThemeIcons />
+      </button>
+    )
+  }
 
   return (
     <Button
       type="button"
       variant="ghost"
       size="icon"
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      aria-pressed={mounted ? isDark : undefined}
+      onClick={toggle}
+      aria-pressed={pressed}
       aria-label={label}
       title={label}
       data-testid={testId}
@@ -127,8 +202,7 @@ export function ThemeToggle({ testId, className }: ThemeToggleProps) {
       )}
     >
       {/* Une seule des deux est peinte, la variante `dark:` tranche — cf. pavé. */}
-      <Sun className="hidden h-4 w-4 dark:block" aria-hidden="true" />
-      <Moon className="h-4 w-4 dark:hidden" aria-hidden="true" />
+      <ThemeIcons />
     </Button>
   )
 }

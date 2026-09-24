@@ -23,7 +23,8 @@ const here = fileURLToPath(new URL('.', import.meta.url))
 const read = (rel: string) => readFileSync(`${here}${rel}`, 'utf8')
 
 const LOCALES = ['fr', 'en', 'es', 'de'] as const
-const THEME_KEYS = ['toggle', 'toLight', 'toDark'] as const
+// #655 — `light` / `dark` : libellés visibles du gabarit `labeled` (tiroir mobile).
+const THEME_KEYS = ['toggle', 'toLight', 'toDark', 'light', 'dark'] as const
 
 type CommonMessages = { theme?: Record<string, string> }
 
@@ -32,7 +33,7 @@ function readCommon(locale: string): CommonMessages {
 }
 
 describe('common.theme — les 4 locales', () => {
-  it.each(LOCALES)('renseigne les 3 clés en %s', (locale) => {
+  it.each(LOCALES)('renseigne les 5 clés en %s', (locale) => {
     const theme = readCommon(locale).theme ?? {}
     for (const key of THEME_KEYS) {
       expect(typeof theme[key], `${locale}.theme.${key}`).toBe('string')
@@ -54,6 +55,8 @@ describe('common.theme — les 4 locales', () => {
     expect(source).toContain("t('theme.toLight')")
     expect(source).toContain("t('theme.toDark')")
     expect(source).toContain("t('theme.toggle')")
+    expect(source).toContain("t('theme.light')")
+    expect(source).toContain("t('theme.dark')")
   })
 })
 
@@ -84,6 +87,40 @@ describe('ThemeToggle — points de montage publics', () => {
     // vit dans `ui/theme-toggle.tsx` et nulle part ailleurs côté public.
     for (const [, rel] of MOUNTS) {
       expect(read(rel), rel).not.toContain("from 'next-themes'")
+    }
+  })
+})
+
+/**
+ * #655 — les deux bascules APPLICATIVES montent le même composant, sous leur
+ * gabarit, et n'ont plus de logique de thème propre. Même limite que plus haut :
+ * cela ne prouve pas que la bascule soit atteignable au rendu
+ * (`e2e/sprint-111-theme-toggle-unified.spec.ts` s'en charge).
+ */
+describe('ThemeToggle — points de montage applicatifs (#655)', () => {
+  const MOUNTS: Array<[string, string, string]> = [
+    ['shell (pied de sidebar)', '../layout/AppShell.tsx', 'variant="square"'],
+    ['tiroir mobile du dashboard', '../dashboard/MobileDrawer.tsx', 'variant="labeled"'],
+  ]
+
+  it.each(MOUNTS)('%s monte <ThemeToggle> sous son gabarit', (_name, rel, variant) => {
+    const source = read(rel)
+    expect(source).toContain("from '@/components/ui/theme-toggle'")
+    expect(source).toContain(`<ThemeToggle ${variant}`)
+    expect(source, rel).not.toContain("from 'next-themes'")
+  })
+
+  it('les clés de thème dupliquées hors `common` ont disparu des 4 locales', () => {
+    for (const locale of LOCALES) {
+      const shell = JSON.parse(read(`../../../public/locales/${locale}/shell.json`)) as {
+        theme?: unknown
+      }
+      const dashboard = JSON.parse(read(`../../../public/locales/${locale}/dashboard.json`)) as {
+        mobile?: { drawer?: Record<string, unknown> }
+      }
+      expect(shell.theme, `${locale}/shell.json`).toBeUndefined()
+      expect(dashboard.mobile?.drawer?.themeLight, `${locale}/dashboard.json`).toBeUndefined()
+      expect(dashboard.mobile?.drawer?.themeDark, `${locale}/dashboard.json`).toBeUndefined()
     }
   })
 })

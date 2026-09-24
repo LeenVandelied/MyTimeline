@@ -1,12 +1,29 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import {
   getUserProfile,
   login as loginService,
   logout as logoutService,
   registerUser,
 } from '@/services/authService'
+import { updatePreferences } from '@/services/userService'
+import {
+  ThemePersistenceContext,
+  readStoredThemeChoice,
+  useApplyAccountTheme,
+  type ThemeChoice,
+  type ThemeChoicePersister,
+} from '@/hooks/useThemeChoice'
 import type { AuthContextType, User } from '@/types/auth'
 
 /**
@@ -38,38 +55,158 @@ function safeErrorMessage(error: unknown): string {
  * `GET /api/auth/me` (le cookie voyage automatiquement, `withCredentials`)
  * pour restaurer l'état d'auth depuis la source de vérité serveur. `loading`
  * reste `true` le temps de ce re-fetch → pas de flash non-authentifié.
+ *
+ * #653 — PRÉFÉRENCE DE THÈME DU COMPTE (ADR-010, BR-AUT-013).
+ *  - ARBITRAGE à la CONNEXION EXPLICITE seulement (succès de `login`), jamais à
+ *    la restauration de session au montage : si le compte porte une préférence,
+ *    elle est appliquée localement SANS réécriture ; sinon un choix local
+ *    EXPLICITE (clé next-themes présente) est posé sur le compte ; sinon rien
+ *    (le compte reste `null`). `register` n'ouvre pas de session (le backend ne
+ *    pose aucun cookie, l'écran renvoie vers /login) : l'arbitrage a lieu au
+ *    login qui suit.
+ *  - ENSUITE, `persistThemeChoice` (injecté dans `useThemeChoice` via
+ *    `ThemePersistenceContext`) écrit chaque bascule sur le compte si un
+ *    utilisateur est authentifié. Échec réseau : log assaini, thème local
+ *    conservé, aucun retour arrière visuel.
+ *  - Logout : le thème local n'est pas touché.
  */
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const applyAccountTheme = useApplyAccountTheme()
 
-  const fetchUser = useCallback(async () => {
-    try {
-      const data = await getUserProfile()
-      setUser(data)
-    } catch (error) {
-      // Pas de session valide (401/pas de cookie) OU /me en erreur : anonyme.
-      console.error('User fetch failed', safeErrorMessage(error))
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
+  // #653 — miroirs synchrones de l'état, lus par `persistThemeChoice` (appelé
+  // hors rendu, depuis un clic) : l'état React n'y serait qu'une photo périmée.
+  //  - `userRef` : user courant (ou `null`) ;
+  //  - `accountThemeRef` : valeur que le compte porte OU portera une fois le
+  //    dernier PUT en vol abouti. Comparer au seul `user.themePreference`
+  //    confirmé raterait l'aller-retour rapide (sombre, PUT en vol, puis retour
+  //    à la valeur confirmée : sauté à tort, le compte finirait sur sombre) ;
+  //  - `persistSeqRef` : numéro du dernier PUT émis — seule SA réponse fait foi.
+  const userRef = useRef<User | null>(null)
+  const accountThemeRef = useRef<ThemeChoice | null>(null)
+  const persistSeqRef = useRef(0)
+
+  const commitUser = useCallback((next: User | null) => {
+    userRef.current = next
+    accountThemeRef.current = next?.themePreference ?? null
+    setUser(next)
   }, [])
+
+  /**
+   * Restaure le user depuis `/api/auth/me` ; renvoie le user chargé, ou `null`.
+   * `beforeCommit` s'exécute juste avant la publication du user, dans le même
+   * tour (rendu groupé par React 18) : l'écran de connexion, qui navigue dès que
+   * `user` existe, ne peut pas peindre le thème local avant celui du compte.
+   */
+  const loadUser = useCallback(
+    async (beforeCommit?: (loaded: User) => void): Promise<User | null> => {
+      try {
+        const data = await getUserProfile()
+        beforeCommit?.(data)
+        commitUser(data)
+        return data
+      } catch (error) {
+        // Pas de session valide (401/pas de cookie) OU /me en erreur : anonyme.
+        console.error('User fetch failed', safeErrorMessage(error))
+        commitUser(null)
+        return null
+      } finally {
+        setLoading(false)
+      }
+    },
+    [commitUser],
+  )
+
+  const refreshUser = useCallback(async () => {
+    await loadUser()
+  }, [loadUser])
 
   // Restauration de session au montage depuis la source de vérité serveur (/me),
   // et non depuis un miroir localStorage (#135). Le cookie JWT HttpOnly suffit.
+  // #653 — AUCUN arbitrage de thème ici (décision S111 : connexion explicite
+  // seulement ; un appareil déjà connecté suit le compte à sa reconnexion).
   useEffect(() => {
-    void fetchUser()
-  }, [fetchUser])
+    void loadUser()
+  }, [loadUser])
+
+  /**
+   * #653 — Pose `choice` sur le compte si un utilisateur est authentifié et que
+   * le compte ne le porte pas déjà. Ne lève jamais : l'échec est journalisé
+   * (message assaini, jamais l'objet axios) et le thème local reste appliqué.
+   * 401, 409 (verrou optimiste) et échec réseau sont traités à l'identique :
+   * la redirection vers /login sur 401 reste l'affaire de l'intercepteur de
+   * `services/apiClient.ts` — ne pas la dupliquer ici (revue S111).
+   */
+  const persistThemeChoice = useCallback(
+    async (choice: ThemeChoice): Promise<void> => {
+      const owner = userRef.current
+      if (owner === null || accountThemeRef.current === choice) return
+      accountThemeRef.current = choice
+      const seq = ++persistSeqRef.current
+      try {
+        const updated = await updatePreferences({ themePreference: choice })
+        // Réponse périmée (un PUT plus récent est parti) ou session changée
+        // entre-temps (logout, autre compte) : on ne la recopie pas.
+        if (seq === persistSeqRef.current && userRef.current?.id === updated.id) {
+          commitUser(updated)
+        }
+      } catch (error) {
+        console.error('Theme preference save failed', safeErrorMessage(error))
+        // Le compte n'a pas bougé : la valeur attendue redevient la confirmée,
+        // pour qu'une bascule ultérieure vers `choice` ne soit pas sautée.
+        if (seq === persistSeqRef.current) {
+          accountThemeRef.current = userRef.current?.themePreference ?? null
+        }
+      }
+    },
+    [commitUser],
+  )
+
+  const themePersister = useCallback<ThemeChoicePersister>(
+    (choice) => {
+      void persistThemeChoice(choice)
+    },
+    [persistThemeChoice],
+  )
+
+  /*
+   * #653 — arbitrage à la connexion (règle BR-AUT-013, décision S111), en deux
+   * temps parce que le second exige un user publié (`persistThemeChoice` n'écrit
+   * que pour un utilisateur authentifié) et que le premier doit le précéder :
+   *  1. `applyAccountThemeAtLogin` (avant publication) : le compte porte une
+   *     préférence → appliquée localement, JAMAIS réécrite ;
+   *  2. `adoptLocalThemeAtLogin` (après) : compte sans préférence → le choix
+   *     local EXPLICITE devient celui du compte ; sans choix local, rien.
+   */
+  const applyAccountThemeAtLogin = useCallback(
+    (account: User) => {
+      if (account.themePreference !== null) applyAccountTheme(account.themePreference)
+    },
+    [applyAccountTheme],
+  )
+
+  const adoptLocalThemeAtLogin = useCallback(
+    async (account: User): Promise<void> => {
+      if (account.themePreference !== null) return
+      const local = readStoredThemeChoice()
+      if (local === null) return // aucun choix nulle part : le compte reste `null`
+      await persistThemeChoice(local)
+    },
+    [persistThemeChoice],
+  )
 
   const login = useCallback(
     async (username: string, password: string) => {
       setLoading(true)
       try {
         await loginService(username, password)
-        await fetchUser()
+        const account = await loadUser(applyAccountThemeAtLogin)
+        // Attendu avant de rendre la main ; ne lève pas — un PUT en échec ne
+        // fait pas échouer la connexion.
+        if (account !== null) await adoptLocalThemeAtLogin(account)
       } catch (error) {
         // #53 — on relance après log assaini : la page Login mappe l'erreur
         // (401 = identifiants invalides) vers un message inline. Sans rethrow,
@@ -80,7 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false)
       }
     },
-    [fetchUser],
+    [loadUser, applyAccountThemeAtLogin, adoptLocalThemeAtLogin],
   )
 
   const register = useCallback(
@@ -108,15 +245,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       // #135 — plus de miroir localStorage à purger : l'état vit en mémoire (React)
       // et la session dans le cookie JWT HttpOnly (invalidé par POST /auth/logout).
-      setUser(null)
+      // #653 — le thème local n'est PAS touché.
+      commitUser(null)
     }
-  }, [])
+  }, [commitUser])
+
+  // Mémoïsé : `useApplyAccountTheme` abonne ce fournisseur au contexte de thème,
+  // qui change à chaque bascule — sans mémo, tous les `useAuth()` re-rendraient.
+  const value = useMemo<AuthContextType>(
+    () => ({ user, login, register, logout, refreshUser, loading }),
+    [user, login, register, logout, refreshUser, loading],
+  )
 
   return (
-    <AuthContext.Provider
-      value={{ user, login, register, logout, refreshUser: fetchUser, loading }}
-    >
-      {children}
+    <AuthContext.Provider value={value}>
+      <ThemePersistenceContext.Provider value={themePersister}>
+        {children}
+      </ThemePersistenceContext.Provider>
     </AuthContext.Provider>
   )
 }

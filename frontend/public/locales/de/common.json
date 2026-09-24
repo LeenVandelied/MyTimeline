@@ -116,7 +116,9 @@
   "theme": {
     "toggle": "Design wechseln",
     "toLight": "Zum hellen Design wechseln",
-    "toDark": "Zum dunklen Design wechseln"
+    "toDark": "Zum dunklen Design wechseln",
+    "light": "Hell",
+    "dark": "Dunkel"
   },
   "time": {
     "year": "Jahr",

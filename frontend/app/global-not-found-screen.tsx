@@ -68,9 +68,11 @@ import type { CSSProperties } from 'react'
  * ce qui est ce que WCAG 3.1.1 demande. Le HTML servi reste `fr` — best-effort
  * assumé sur un écran de dernier recours, comme pour `global-error`.
  *
- * #627 — ÉPHÉMÉRIDE. En pratique c'est CET écran que voit toute URL inconnue,
- * `/fr/nope` compris (mesuré : aucune page n'appelle `notFound()`, cf.
- * `app/[locale]/not-found.tsx`). Le feuillet daté suit la même règle que `lang` :
+ * #627 — ÉPHÉMÉRIDE. C'est CET écran que voit toute URL inconnue, `/fr/nope`
+ * compris (#827 : `app/[locale]/not-found.tsx` a été supprimé au Sprint 111,
+ * aucune page n'appelant jamais `notFound()` — seul un `notFound()` de layout,
+ * qui échappe de toute façon au `not-found.tsx` du même segment, PIT-S62-005).
+ * Le feuillet daté suit la même règle que `lang` :
  * la date n'est calculée qu'APRÈS montage (`EphemerisLeaf`), jamais au prérendu —
  * sinon le HTML statique servirait le jour du BUILD, indéfiniment. Ses libellés
  * (jour, mois) suivent la locale posée par l'effet ci-dessous.

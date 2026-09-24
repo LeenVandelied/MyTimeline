@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useTheme } from 'next-themes'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -13,20 +11,22 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { useDensity } from '@/hooks/useDensity'
+import { isThemeChoice, useThemeChoice } from '@/hooks/useThemeChoice'
 import {
   DENSITY_OPTIONS,
   LOCALE_OPTIONS,
   THEME_OPTIONS,
   type DensityOption,
   type LocaleOption,
-  type ThemeOption,
 } from '@/types/settings'
 
 /**
  * #86 — Chapitre Préférences : langue (fr/en/es/de), thème (clair/sombre/système),
  * densité (compact/normal/confortable).
  *
- * - Thème : `next-themes` -> applique immédiatement sans rechargement (critère).
+ * - Thème : `useThemeChoice` (#655, seul point d'écriture du thème, sur next-themes)
+ *   -> applique immédiatement sans rechargement (critère), puis persiste le choix
+ *   sur le compte si l'utilisateur est authentifié (#653, `PUT /api/me/preferences`).
  * - Densité : `useDensity` -> `data-density` sur <html> + localStorage, immédiat.
  * - Langue : next-intl `localePrefix: 'always'` -> navigation vers `/<locale>/...`.
  */
@@ -35,12 +35,10 @@ export function PreferencesSection() {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname() ?? ''
-  const { theme, setTheme } = useTheme()
+  // next-themes ne résout `theme` que côté client : `theme` vaut `undefined`
+  // avant montage (garde du hook) -> 'system' au rendu serveur, sans mismatch.
+  const { theme, setThemeChoice } = useThemeChoice()
   const { density, setDensity } = useDensity()
-
-  // next-themes hydrate `theme` uniquement côté client -> éviter le mismatch.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
 
   const changeLocale = (next: LocaleOption) => {
     if (next === locale) return
@@ -78,8 +76,10 @@ export function PreferencesSection() {
       <div className="space-y-2">
         <Label htmlFor="pref-theme">{t('preferences.theme.label')}</Label>
         <Select
-          value={mounted ? ((theme as ThemeOption) ?? 'system') : 'system'}
-          onValueChange={(v) => setTheme(v as ThemeOption)}
+          value={theme ?? 'system'}
+          onValueChange={(v) => {
+            if (isThemeChoice(v)) setThemeChoice(v)
+          }}
         >
           <SelectTrigger id="pref-theme" data-testid="pref-theme">
             <SelectValue />

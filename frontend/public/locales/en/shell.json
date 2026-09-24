@@ -11,10 +11,6 @@
     "timeline": "Timeline",
     "products": "Products"
   },
-  "theme": {
-    "toLight": "Switch to light theme",
-    "toDark": "Switch to dark theme"
-  },
   "createDrawer": {
     "title": "New event",
     "subtitle": "Linked to a product",

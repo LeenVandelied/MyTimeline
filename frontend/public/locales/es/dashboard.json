@@ -35,9 +35,7 @@
       "title": "Ajustes",
       "close": "Cerrar menú",
       "language": "Idioma",
-      "theme": "Tema",
-      "themeLight": "Claro",
-      "themeDark": "Oscuro"
+      "theme": "Tema"
     },
     "scrollHint": "Desplázate horizontalmente",
     "compactAgenda": {
