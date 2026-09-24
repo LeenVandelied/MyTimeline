@@ -156,7 +156,9 @@
   "theme": {
     "toggle": "Changer de thème",
     "toLight": "Passer au thème clair",
-    "toDark": "Passer au thème sombre"
+    "toDark": "Passer au thème sombre",
+    "light": "Clair",
+    "dark": "Sombre"
   },
   "time": {
     "year": "an",

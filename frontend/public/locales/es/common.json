@@ -116,7 +116,9 @@
   "theme": {
     "toggle": "Cambiar de tema",
     "toLight": "Cambiar al tema claro",
-    "toDark": "Cambiar al tema oscuro"
+    "toDark": "Cambiar al tema oscuro",
+    "light": "Claro",
+    "dark": "Oscuro"
   },
   "time": {
     "year": "año",
