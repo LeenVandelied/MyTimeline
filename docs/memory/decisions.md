@@ -1184,3 +1184,18 @@ Voix : celle déjà en place par locale (vous en fr/de/en, tu en es), pas le tut
 
 ## DEC-S110-002 — La neutralisation `color`/`text-decoration` reste limitée à `time.mt-num`
 Le DS est chargé hors `@layer` : un `color:inherit` sur `.mt-num` nu battrait toute utilitaire Tailwind (`@layer utilities`) posée sur le même élément — `text-ink-muted` du code de `StateScreen`, couleurs des `span` de `KpiMarginalia`. Restriction commentée dans `i18n.css` et testée (`i18n-intl-classes.test.ts`). Le motif réel de la règle est défensif (un `<time>` imbriqué dans un lien), `<time>` n'ayant aucun style natif. (Sprint 110 #516)
+
+## DEC-S111-001 — Préférence de thème du compte : colonne nullable V16 et endpoint dédié (ADR-010)
+`users.theme_preference` nullable (NULL = aucun choix, distinct de `system`), CHECK light/dark/system, écrite par `PUT /api/me/preferences` ; `PATCH /api/me` inchangé (il exige name/username/email). Validé par le dev au démarrage du sprint. Détail : `docs/adr/ADR-010-preference-de-theme-du-compte.md`, BR-AUT-013. (Sprint 111 #653)
+
+## DEC-S111-002 — L'arbitrage du thème n'a lieu qu'à la connexion explicite
+`AuthContext.login` seulement : le compte gagne s'il a une préférence (appliquée avant publication du user, jamais réécrite) ; sinon le choix local EXPLICITE est adopté ; sinon rien. Aucun arbitrage à la restauration de session ni au `register` (pas de session). Raisons : lecture littérale de « à la connexion » (DEC-S82-009) ; ~20 specs E2E fixent le thème par `localStorage` sous la session partagée. Conséquence assumée : un appareil déjà connecté ne suit un changement fait ailleurs qu'à sa reconnexion. (Sprint 111, lead + #653)
+
+## DEC-S111-003 — `useThemeChoice` est le seul écrivain du thème ; la persistance lui est injectée
+Seul `hooks/useThemeChoice.ts` appelle `setTheme` (garde-fou textuel dans son test). La persistance serveur passe par `ThemePersistenceContext` (défaut `null` = local seul) fourni par `AuthProvider` ; `useApplyAccountTheme` applique sans réécrire. Évite de coupler le hook à `useAuth`, qui lève hors provider. (Sprint 111 #655 + #653)
+
+## DEC-S111-004 — Un seul écran 404 : `[locale]/not-found.tsx` supprimé
+Option (b) de #827, choisie par le dev : brancher `notFound()` sur `/products/[productId]` aurait remplacé le message « produit introuvable » du shell par un écran 404 plein document. `app/global-not-found.tsx` reste seul ; `next build` inchangé (52 pages). (Sprint 111 #827)
+
+## DEC-S111-005 — Pas de plafond de débit sur `PUT /api/me/preferences` pour l'instant
+security-expert (MINEUR) recommandait 10/min/IP comme `PATCH /api/me`. Non appliqué : le limiteur est armé en E2E (#547) et compte par IP, toutes les specs authentifiées partageraient le seau de 127.0.0.1 avec des 429 silencieux. La bonne forme est un plafond par utilisateur → follow-up. (Sprint 111, lead, ADR-010 § 7)

@@ -1836,6 +1836,18 @@ Le lead a prescrit le vouvoiement partout et les couleurs de la maquette `États
 ## PIT-S110-003 — `test-quiet.sh frontend-unit` ne conserve pas de log : un rouge isolé devient inidentifiable
 Suite complète : 2216/2217 au 1er run, puis 2217/2217 ×2 — le nom du test rouge était perdu (aucun fichier de log, sortie résumée). Pour tout run complet dont on devra peut-être expliquer un rouge, lancer `rtk proxy npx vitest run --reporter=json --outputFile=<fichier>` et lire `numFailedTests` + `assertionResults` en Python. (Sprint 110, lead)
 
+
+## PIT-S111-002 — Une spec E2E à comptes neufs impose une retouche backend, même dans un briefing « frontend seulement »
+`src/__tests__/e2e-rate-limit-budget.test.ts` recompte les connexions par formulaire et les `register` des specs et exige la mise à jour des lignes `BUDGET` de `backend/src/main/resources/application-e2e.properties`. Le briefing interdisait `backend/**` : l'agent a dû y déroger. Après #653, login au pire cas CI = 26/30 — deux connexions de plus dépassent le plafond. Briefer d'avance cette exception, et regarder le budget avant de demander une spec qui se connecte. (Sprint 111 #653 front)
+
+
+## PIT-S111-003 — Un gestionnaire `page.route` qui attend une requête réseau survit à la fin du test
+`keepThemeOffSharedAccount` relisait `GET /api/auth/me` DANS le gestionnaire de `PUT /api/me/preferences` : la dernière bascule d'un test encore en vol faisait partir la requête après la fin du test → « 1 error was not a part of any test » en suite complète (invisible en spec isolée). Lire les données nécessaires AVANT de poser la route, et répondre sans I/O depuis le gestionnaire. (Sprint 111, lead)
+
+
+## PIT-S111-004 — Abréger le pack d'un briefing fait refuser le spawn par `pre-spawn-fullstack.sh`
+Le hook exige un prompt `fullstack-dev` ≥ 8 000 octets avec un marqueur `<!-- ===== cp-/br-/pit- ===== -->`. Un briefing dont le pack a été résumé à la main (7 792 octets) est bloqué : inliner le pack complet (`cp-frontend.md` fait 8,4 Ko) plutôt que d'en couper des passages. (Sprint 111, lead, #827)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
