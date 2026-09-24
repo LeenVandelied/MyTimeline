@@ -7204,7 +7204,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé — PR #829 mergée dans `dev`, issues #653/#655/#827 et milestone #112 fermés après merge
 
-### Sprint 112 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Cibles tactiles et focus mesurés)
+### Sprint 112 — 2026-09-22 → (En cours depuis 2026-09-24 — cohésion 0.53, Cibles tactiles et focus mesurés)
 **Objectif :** helper de mesure unique, 4 dernières cibles mesurées à 375 px, retour du focus vérifié en E2E
 **Milestone GitHub :** #113
 **Issues :** #768 (P3, XS), #767 (P2, S), #700 (P2, S) — 5 pts ; + 4 follow-ups du S111 rattachés au triage de clôture du S111 (#830 XS, #831 S, #832 S, #833 XS) → 7 issues, ~11 pts : recalibrer le périmètre au `/sprint start 112`
@@ -7212,4 +7212,6 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprints 105, 106, 107
 **À confirmer au démarrage :** volet VoiceOver/NVDA de #700 à faire par le dev
-**Status :** Planifié
+**Recalibrage au démarrage (dev, 2026-09-24) :** les 7 issues gardées (~11 pts) ; #832 → option helper `storageState` (plafond e2e inchangé) ; #700 → E2E du focus livrés ici, l'issue RESTE OUVERTE jusqu'au rapport VoiceOver/NVDA manuel du dev
+**Vagues retenues :** V1 = #768 (seul détenteur de Playwright) ∥ #833 (Vitest) ∥ #831 (backend) | V2 = #767 + #830 (un agent, Playwright) | V3 = #832 (Playwright) | V4 = #700 (Playwright) | lead : `next build`, E2E complet, review batch
+**Status :** En cours
