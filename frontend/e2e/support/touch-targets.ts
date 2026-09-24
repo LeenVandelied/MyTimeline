@@ -44,6 +44,10 @@ import { expect, type Locator } from '@playwright/test'
  * prouve la zone CLIQUABLE par `elementFromPoint`. Elle ne voit pas deux zones
  * voisines qui se touchent (PIT-S101-008) : une rangée à plusieurs hitboxes asserte
  * en plus son entraxe (`entraxe − MIN_TARGET ≥ 2`, cf. `sprint-101`).
+ *
+ * CIBLES DONT LA BOÎTE FAIT DÉJÀ 44 px, SANS PSEUDO (#767, `⋯` de la frise mobile) :
+ * `expectClickableBox` prouve par `elementFromPoint` que la boîte n'est ni recouverte
+ * ni rognée (8 points de bord, coins rentrés du `border-radius`).
  */
 
 /** Seuil WCAG 2.5.5 (AAA) retenu par DEC-S99-001, en px CSS. */
@@ -193,14 +197,8 @@ export interface HitboxMeasure {
   debug: string[]
 }
 
-/**
- * Zone cliquable d'une cible dense : boîte du `::before` + preuve par
- * `elementFromPoint` aux 4 coins (1 px à l'intérieur) de la zone 44×44 centrée sur
- * l'hôte. Le pseudo est attribué à l'hôte par le hit-testing : un coin qui désigne
- * l'hôte HORS de sa boîte visible ne peut venir que du pseudo, et un ancêtre qui le
- * rogne (PIT-S41-001) fait désigner autre chose.
- */
-export async function measureHitbox(target: Locator): Promise<HitboxMeasure> {
+/** Amène la cible au centre du viewport avant un `elementFromPoint`. */
+async function scrollToCenter(target: Locator): Promise<void> {
   // `behavior: 'instant'` : un `scroll-behavior: smooth` hérité animerait le
   // défilement et la mesure lirait une position intermédiaire (hors viewport).
   await target.evaluate((el) =>
@@ -209,6 +207,17 @@ export async function measureHitbox(target: Locator): Promise<HitboxMeasure> {
   await expect
     .poll(() => target.evaluate((el) => el.getBoundingClientRect().bottom <= window.innerHeight))
     .toBe(true)
+}
+
+/**
+ * Zone cliquable d'une cible dense : boîte du `::before` + preuve par
+ * `elementFromPoint` aux 4 coins (1 px à l'intérieur) de la zone 44×44 centrée sur
+ * l'hôte. Le pseudo est attribué à l'hôte par le hit-testing : un coin qui désigne
+ * l'hôte HORS de sa boîte visible ne peut venir que du pseudo, et un ancêtre qui le
+ * rogne (PIT-S41-001) fait désigner autre chose.
+ */
+export async function measureHitbox(target: Locator): Promise<HitboxMeasure> {
+  await scrollToCenter(target)
   return target.evaluate((el, size) => {
     const host = el.getBoundingClientRect()
     const pseudo = getComputedStyle(el, '::before')
@@ -257,4 +266,74 @@ export async function expectHitbox(
   expect
     .soft(m.cornersHit, `${label} : zone 44×44 cliquable aux 4 coins (hôte ${m.host})`)
     .toEqual([true, true, true, true])
+}
+
+/**
+ * #767 — Asserte qu'une cible SANS pseudo-hitbox, dont la BOÎTE porte déjà la taille
+ * (ex. `⋯` de la frise mobile, `.mt-tlm__evt-more` 44×44 en CSS), est CLIQUABLE sur
+ * toute sa boîte : boîte rendue >= 44 dans les deux dimensions, et 8 points de bord
+ * (4 milieux d'arête à 1 px à l'intérieur, 4 coins) désignent l'hôte par
+ * `elementFromPoint`. Une boîte conforme mais recouverte en partie par un voisin peint
+ * après (lane suivante, PIT-S91-003) ou rognée par un ancêtre `overflow:hidden` fait
+ * rougir : `expectAllTouchable` ne lit que la boîte et ne le verrait pas.
+ *
+ * POURQUOI PAS `expectHitbox` : il exige un `::before` de 44 px, que ces cibles n'ont
+ * pas. POURQUOI LES COINS SONT RENTRÉS DU RAYON : le hit-testing suit `border-radius`
+ * (mesuré au S112 sur le `⋯`, rayon 5 px : un coin pris à 1 px de l'arête tombe HORS
+ * de l'arrondi et désigne le parent). Un coin est donc sondé à
+ * `1 + ceil(r·(1 − 1/√2))` px de chaque arête, point le plus extérieur encore dans
+ * l'arrondi : l'arrondi n'est pas une perte de cible (WCAG 2.5.5 mesure la boîte),
+ * un recouvrement l'est.
+ */
+export async function expectClickableBox(
+  label: string,
+  target: Locator,
+  options: Pick<TouchTargetOptions, 'tag'>,
+): Promise<void> {
+  await expect(target).toBeVisible({ timeout: HITBOX_VISIBLE_TIMEOUT })
+  await scrollToCenter(target)
+  const m = await target.evaluate((el) => {
+    const box = el.getBoundingClientRect()
+    const style = getComputedStyle(el)
+    const radius = Math.max(
+      ...[
+        style.borderTopLeftRadius,
+        style.borderTopRightRadius,
+        style.borderBottomLeftRadius,
+        style.borderBottomRightRadius,
+      ].map((v) => parseFloat(v) || 0),
+    )
+    const inset = 1 + Math.ceil(radius * (1 - Math.SQRT1_2))
+    const { left, top, right, bottom } = box
+    const cx = left + box.width / 2
+    const cy = top + box.height / 2
+    const points: Array<[string, number, number]> = [
+      ['haut', cx, top + 1],
+      ['bas', cx, bottom - 1],
+      ['gauche', left + 1, cy],
+      ['droite', right - 1, cy],
+      ['haut-gauche', left + inset, top + inset],
+      ['haut-droite', right - inset, top + inset],
+      ['bas-gauche', left + inset, bottom - inset],
+      ['bas-droite', right - inset, bottom - inset],
+    ]
+    const describe = (n: Element | null): string =>
+      n
+        ? `${n.tagName}.${(n.getAttribute('class') ?? '').slice(0, 40)}#${n.getAttribute('data-testid') ?? ''}`
+        : 'null'
+    const missed: string[] = []
+    for (const [name, x, y] of points) {
+      const hit = document.elementFromPoint(x, y)
+      if (hit === null || !(hit === el || el.contains(hit))) {
+        missed.push(`${name}(${Math.round(x)},${Math.round(y)}):${describe(hit)}`)
+      }
+    }
+    return { width: box.width, height: box.height, radius, inset, missed }
+  })
+  console.log(
+    `[${options.tag} zone ${label}] boîte=${m.width.toFixed(1)}x${m.height.toFixed(1)} rayon=${m.radius} coins rentrés de ${m.inset} px, points manqués=${m.missed.length}${m.missed.length ? ` — ${m.missed.join(' ; ')}` : ''}`,
+  )
+  expect.soft(m.width, `${label} : largeur de la boîte`).toBeGreaterThanOrEqual(MIN_TARGET - EPS)
+  expect.soft(m.height, `${label} : hauteur de la boîte`).toBeGreaterThanOrEqual(MIN_TARGET - EPS)
+  expect.soft(m.missed, `${label} : points de bord qui ne désignent pas l'hôte`).toEqual([])
 }

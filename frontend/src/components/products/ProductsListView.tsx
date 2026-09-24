@@ -290,6 +290,8 @@ export function ProductsListView() {
               type="button"
               ref={emptyCtaRef}
               onClick={() => openCreate(true)}
+              // #767 — mesuré 168×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
+              className={TOUCH_TARGET_BUTTON}
               data-testid="products-empty-cta"
             >
               {t('emptyCta')}

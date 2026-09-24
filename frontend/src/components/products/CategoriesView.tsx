@@ -7,7 +7,7 @@ import { PlusCircle, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
-import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
+import { TOUCH_TARGET_BUTTON, TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -147,6 +147,8 @@ export function CategoriesView() {
               type="button"
               ref={emptyCtaRef}
               onClick={() => openCreate(true)}
+              // #767 — mesuré 182×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
+              className={TOUCH_TARGET_BUTTON}
               data-testid="categories-empty-cta"
             >
               {t('emptyCta')}
