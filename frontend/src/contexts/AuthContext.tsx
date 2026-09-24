@@ -136,6 +136,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * #653 — Pose `choice` sur le compte si un utilisateur est authentifié et que
    * le compte ne le porte pas déjà. Ne lève jamais : l'échec est journalisé
    * (message assaini, jamais l'objet axios) et le thème local reste appliqué.
+   * 401, 409 (verrou optimiste) et échec réseau sont traités à l'identique :
+   * la redirection vers /login sur 401 reste l'affaire de l'intercepteur de
+   * `services/apiClient.ts` — ne pas la dupliquer ici (revue S111).
    */
   const persistThemeChoice = useCallback(
     async (choice: ThemeChoice): Promise<void> => {
