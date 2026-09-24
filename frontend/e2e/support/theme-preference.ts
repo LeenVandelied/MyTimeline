@@ -26,15 +26,19 @@ import type { Page, Request } from '@playwright/test'
  */
 export async function keepThemeOffSharedAccount(page: Page): Promise<string[]> {
   const requested: string[] = []
+  // `/me` lu UNE fois, pendant le test, AVANT de poser la route. Le relire dans le
+  // gestionnaire (version initiale) laissait partir un `page.request.get` après la
+  // fin du test quand la dernière bascule était encore en vol : Playwright le
+  // signale en « error was not a part of any test » (constaté par le lead, S111).
+  // `page.request` porte les cookies du contexte : c'est le vrai /me du compte.
+  const me = await page.request.get('/api/auth/me')
+  if (!me.ok()) throw new Error(`keepThemeOffSharedAccount : GET /api/auth/me → ${me.status()}`)
+  const user = (await me.json()) as Record<string, unknown>
   await page.route('**/api/me/preferences', async (route) => {
     if (route.request().method() !== 'PUT') return route.fallback()
     const body = route.request().postDataJSON() as { themePreference?: unknown }
     const value = String(body?.themePreference)
     requested.push(value)
-    // `page.request` porte les cookies du contexte et n'est pas intercepté par
-    // `page.route` : c'est le vrai /me du compte courant.
-    const me = await page.request.get('/api/auth/me')
-    const user = (await me.json()) as Record<string, unknown>
     await route.fulfill({ status: 200, json: { ...user, themePreference: value } })
   })
   return requested
