@@ -3,8 +3,8 @@
 import '../src/styles/globals.css'
 
 import { useEffect, useState } from 'react'
-import { Compass } from 'lucide-react'
 
+import { EphemerisLeaf } from '@/components/shared/EphemerisLeaf'
 import { StateScreen, stateActionPrimary } from '@/components/shared/StateScreen'
 import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from '@/i18n/locales'
 import { fontVariables } from './fonts'
@@ -67,10 +67,20 @@ import type { CSSProperties } from 'react'
  * locale de l'URL : les deux états successifs restent cohérents entre eux,
  * ce qui est ce que WCAG 3.1.1 demande. Le HTML servi reste `fr` — best-effort
  * assumé sur un écran de dernier recours, comme pour `global-error`.
+ *
+ * #627 — ÉPHÉMÉRIDE. En pratique c'est CET écran que voit toute URL inconnue,
+ * `/fr/nope` compris (mesuré : aucune page n'appelle `notFound()`, cf.
+ * `app/[locale]/not-found.tsx`). Le feuillet daté suit la même règle que `lang` :
+ * la date n'est calculée qu'APRÈS montage (`EphemerisLeaf`), jamais au prérendu —
+ * sinon le HTML statique servirait le jour du BUILD, indéfiniment. Ses libellés
+ * (jour, mois) suivent la locale posée par l'effet ci-dessous.
  */
 type NotFoundMessages = {
+  eyebrow: string
   title: string
   description: string
+  /** Gabarit ICU `{week}` ; substitué à la main (aucun formateur next-intl ici). */
+  week: string
   backHome: string
 }
 
@@ -81,23 +91,35 @@ type NotFoundMessages = {
  */
 const MESSAGES: Record<Locale, NotFoundMessages> = {
   fr: {
-    title: 'Page introuvable',
-    description: "La page que vous recherchez n'existe pas ou a été déplacée.",
+    eyebrow: 'Erreur 404',
+    title: "Cette page n'a pas de date dans l'almanach.",
+    description:
+      "La page que vous cherchez a expiré, déménagé, ou n'a jamais existé. Revenez à l'accueil — c'est toujours une valeur sûre.",
+    week: 'Semaine {week}',
     backHome: "Retour à l'accueil",
   },
   en: {
-    title: 'Page not found',
-    description: "The page you are looking for doesn't exist or has been moved.",
+    eyebrow: 'Error 404',
+    title: "This page isn't in the almanac.",
+    description:
+      "The page you're looking for has expired, moved, or never existed. Head back home — it's always a safe bet.",
+    week: 'Week {week}',
     backHome: 'Back to home',
   },
   es: {
-    title: 'Página no encontrada',
-    description: 'La página que buscas no existe o ha sido movida.',
+    eyebrow: 'Error 404',
+    title: 'Esta página no figura en el almanaque.',
+    description:
+      'La página que buscas ha caducado, se ha mudado o nunca existió. Vuelve al inicio: siempre es una apuesta segura.',
+    week: 'Semana {week}',
     backHome: 'Volver al inicio',
   },
   de: {
-    title: 'Seite nicht gefunden',
-    description: 'Die gesuchte Seite existiert nicht oder wurde verschoben.',
+    eyebrow: 'Fehler 404',
+    title: 'Für diese Seite gibt es kein Kalenderblatt.',
+    description:
+      'Die gesuchte Seite ist abgelaufen, umgezogen oder hat nie existiert. Kehren Sie zur Startseite zurück – dort sind Sie immer richtig.',
+    week: 'KW {week}',
     backHome: 'Zurück zur Startseite',
   },
 }
@@ -126,8 +148,13 @@ export default function GlobalNotFoundScreen() {
       <body>
         <StateScreen
           testId="global-not-found-screen"
-          code="404"
-          icon={<Compass />}
+          eyebrow={m.eyebrow}
+          aside={
+            <EphemerisLeaf
+              locale={locale}
+              formatWeek={(week) => m.week.replace('{week}', String(week))}
+            />
+          }
           title={m.title}
           description={m.description}
           actions={

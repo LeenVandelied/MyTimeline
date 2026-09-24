@@ -18,8 +18,10 @@
     "maintenance": "Server is under maintenance. Please try again later"
   },
   "notFound": {
-    "title": "Page not found",
-    "description": "The page you are looking for doesn't exist or has been moved.",
+    "eyebrow": "Error 404",
+    "title": "This page isn't in the almanac.",
+    "description": "The page you're looking for has expired, moved, or never existed. Head back home — it's always a safe bet.",
+    "week": "Week {week}",
     "backHome": "Back to home"
   },
   "forbidden": {

@@ -18,8 +18,10 @@
     "maintenance": "Der Server wird gewartet. Bitte versuchen Sie es später erneut"
   },
   "notFound": {
-    "title": "Seite nicht gefunden",
-    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "eyebrow": "Fehler 404",
+    "title": "Für diese Seite gibt es kein Kalenderblatt.",
+    "description": "Die gesuchte Seite ist abgelaufen, umgezogen oder hat nie existiert. Kehren Sie zur Startseite zurück – dort sind Sie immer richtig.",
+    "week": "KW {week}",
     "backHome": "Zurück zur Startseite"
   },
   "forbidden": {

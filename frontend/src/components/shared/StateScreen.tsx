@@ -28,6 +28,21 @@ export interface StateScreenProps {
   icon?: React.ReactNode
   /** Actions (liens/bouton). Déjà traduites et préfixées locale par l'appelant. */
   actions?: React.ReactNode
+  /**
+   * #627 — Sur-titre mono au-dessus du titre (`.mt-eyebrow`), déjà traduit
+   * (ex. « Erreur 404 »). Absent par défaut : aucun appelant existant n'en porte.
+   */
+  eyebrow?: string
+  /**
+   * #627 — Élément latéral (feuillet d'éphéméride du 404). Quand il est fourni,
+   * la mise en page passe en « feuillet + texte » : colonne sur mobile, rangée à
+   * partir de `sm`, texte aligné à gauche. L'appelant gère son accessibilité
+   * (le feuillet se déclare lui-même `aria-hidden`). Dans cette variante, `icon`
+   * et `code` ne sont PAS rendus : la maquette ne porte le code que dans le
+   * sur-titre (`eyebrow`). Sans `aside`, le rendu est STRICTEMENT celui d'avant
+   * #627 (écrans 500 / 403 inchangés).
+   */
+  aside?: React.ReactNode
   className?: string
   /** `data-testid` de la racine. Défaut `state-screen`. */
   testId?: string
@@ -55,9 +70,53 @@ export function StateScreen({
   description,
   icon,
   actions,
+  eyebrow,
+  aside,
   className,
   testId = 'state-screen',
 }: StateScreenProps) {
+  const eyebrowNode = eyebrow ? (
+    <p className="mt-eyebrow" data-testid="state-screen-eyebrow">
+      {eyebrow}
+    </p>
+  ) : null
+
+  if (aside) {
+    // #627 — Variante « feuillet + texte » (maquette 404, `gap:28px`). Le titre
+    // reste un `<h1>` : c'est le titre de la PAGE (le `h2` de la maquette est un
+    // artefact de planche). Police display, graisse et `tracking-tight` viennent
+    // déjà de la règle `h1` du DS (`ds/tokens/base.css`). Tailles au barème DS :
+    // titre `text-lg` (27 px, maquette 25 px), paragraphe `text-xs` (15 px,
+    // maquette 14 px) avec `leading-normal` explicite (1.5, maquette) contre le
+    // `line-height` apparié à `text-*` (PIT-S53-001).
+    return (
+      <main
+        data-testid={testId}
+        className={cn(
+          'bg-bg text-ink flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16',
+          className,
+        )}
+      >
+        <div
+          data-testid="state-screen-with-aside"
+          className="flex w-full max-w-xl flex-col items-start gap-7 sm:flex-row sm:items-center"
+        >
+          {aside}
+          <div className="flex min-w-0 flex-1 flex-col items-start text-left">
+            {eyebrowNode ? <div className="mb-2.5">{eyebrowNode}</div> : null}
+            <h1 className="text-ink mb-2.5 text-lg font-semibold text-balance">{title}</h1>
+            {description ? (
+              <p className="text-ink-muted text-xs leading-normal text-pretty">{description}</p>
+            ) : null}
+            {actions ? (
+              <div className="mt-5 flex flex-wrap items-center justify-start gap-3">{actions}</div>
+            ) : null}
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main
       data-testid={testId}
@@ -72,6 +131,7 @@ export function StateScreen({
             {icon}
           </div>
         ) : null}
+        {eyebrowNode}
         {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums (rendu identique)
             + `direction:ltr; unicode-bidi:isolate`, pour qu'un code ne se réordonne
             pas en contexte RTL. PAS d'`Intl.NumberFormat` ici : `code` est un

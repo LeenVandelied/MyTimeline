@@ -18,8 +18,10 @@
     "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
   },
   "notFound": {
-    "title": "Page introuvable",
-    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "eyebrow": "Erreur 404",
+    "title": "Cette page n'a pas de date dans l'almanach.",
+    "description": "La page que vous cherchez a expiré, déménagé, ou n'a jamais existé. Revenez à l'accueil — c'est toujours une valeur sûre.",
+    "week": "Semaine {week}",
     "backHome": "Retour à l'accueil"
   },
   "forbidden": {

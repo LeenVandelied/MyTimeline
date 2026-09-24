@@ -18,8 +18,10 @@
     "maintenance": "El servidor está en mantenimiento. Por favor, inténtelo más tarde"
   },
   "notFound": {
-    "title": "Página no encontrada",
-    "description": "La página que buscas no existe o ha sido movida.",
+    "eyebrow": "Error 404",
+    "title": "Esta página no figura en el almanaque.",
+    "description": "La página que buscas ha caducado, se ha mudado o nunca existió. Vuelve al inicio: siempre es una apuesta segura.",
+    "week": "Semana {week}",
     "backHome": "Volver al inicio"
   },
   "forbidden": {
