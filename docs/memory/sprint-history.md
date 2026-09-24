@@ -7187,7 +7187,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** V16 (`theme_preference` nullable sur `users`)
 **Dépend de :** Sprint 109
 **À confirmer au démarrage :** ADR-010 (endpoint dédié `PUT /api/me/preferences`, PATCH /api/me exigeant 3 champs `@NotBlank`) ; revue db-expert + security-expert
-**Status :** Planifié
+**Status :** En cours — implémentation, revues et E2E terminés, PR ouverte vers `dev` (démarré 2026-09-24 ; décisions de démarrage : #827 → option (b) suppression ; ADR-010 validé tel quel)
 
 ### Sprint 112 — 2026-09-22 (PLANIFIÉ — cohésion 0.53, Cibles tactiles et focus mesurés)
 **Objectif :** helper de mesure unique, 4 dernières cibles mesurées à 375 px, retour du focus vérifié en E2E
