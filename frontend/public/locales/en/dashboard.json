@@ -24,6 +24,7 @@
   },
   "week": {
     "title": "This week",
+    "count": "{count, plural, one {# event} other {# events}}",
     "label": "Current week agenda",
     "empty": "Nothing this week: add an event to follow it here",
     "emptyCta": "Add an event"
@@ -41,6 +42,7 @@
     "scrollHint": "Scroll horizontally",
     "compactAgenda": {
       "title": "Today and tomorrow",
+      "count": "{count, plural, one {# event} other {# events}}",
       "label": "Compact agenda for today and tomorrow",
       "today": "Today",
       "tomorrow": "Tomorrow",
@@ -71,6 +73,7 @@
   },
   "productList": {
     "title": "Your products",
+    "count": "{count, plural, one {# product} other {# products}}",
     "label": "Product list",
     "empty": "Add a first product to track its deadlines",
     "emptyCta": "Go to products",
@@ -81,11 +84,6 @@
     "totalEvents": "Total events",
     "upcomingEvents": "Upcoming events",
     "completedEvents": "Completed events"
-  },
-  "recentEvents": {
-    "title": "Recent events",
-    "noEvents": "No recent events",
-    "viewAll": "View all"
   },
   "actions": {
     "createEvent": "Create event",

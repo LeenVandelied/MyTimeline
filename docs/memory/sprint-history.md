@@ -7134,15 +7134,30 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 1/4.
 **Status :** Terminé — PR #817 mergée, issues #623/#640/#699 et milestone #109 fermés après merge
 
-### Sprint 109 — 2026-09-22 (PLANIFIÉ — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
-**Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), sur-titres conformes à la maquette, restes du S90 supprimés
-**Milestone GitHub :** #110
-**Issues :** #632 (P2, S — bug admis), #697 (P3, S), #664 (P3, S) — 6 pts
-**Vagues :** V1 = #632 ∥ #697 | V2 = #664
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 106, Sprint 108
-**À confirmer au démarrage :** contenu des sur-titres relevé dans la maquette par le lead avant le briefing de #664
-**Status :** Planifié
+### Sprint 109 — 2026-09-23 → 2026-09-24 (Terminé — merge PR #821 dans dev — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
+**Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), en-têtes de section conformes à la maquette, restes du S90 supprimés
+**Milestone GitHub :** #110 (fermé après merge)
+**Issues livrées (3) :** #632, #697, #664 — 6 pts
+**Arbitrages dev au démarrage :** #664 : la maquette n'a AUCUN sur-titre de section ; compteurs à droite du titre (semaine, produits desktop + mobile, plage de la sous-frise), « En bref » et Historique inchangés (DEC-S109-001, extrait `sprints/sprint-109/maquette-sections.md`) ; #632 : `GreetingHeader` sur `.mt-eyebrow`, tranché par la maquette (DEC-S109-002)
+**Vagues exécutées :** V1 = #632 ∥ #697 (parallèles, working tree partagé, commits isolés par chemins littéraux) | V2 = #664
+**Commits (4 + docs) :** `db43be3e` #697 · `16736017` #632 · `9fc28be8` #664 · `821c0c31` squelette de la salutation (régression #632) · docs avant PR · commit de clôture
+**Tests :** Vitest 2173/2173 (rejoué par le lead) | tsc, format verts | `next build` OK | E2E complète 589 / 9 sautés / 11 rouges (10 captures darwin + 1 régression du sprint `sprint-106-product-detail`, corrigée) ; 7 specs ×3 = 245/245 après correctif ; 10/11 mutations détectées (1 équivalente) | CI 7/7 verte
+**Reviews :** reviewer groupé : 0 CRITIQUE / 0 MAJEUR / 3 MINEURS non corrigés (condition redondante `ProductDetailView:426`, `process.cwd()` des tests de scan, compteurs 13 px)
+**Audit tests :** `docs/memory/audits/sprint-109-test-coverage.md`
+**Harnais E2E :** backend `:8086` ; front `next build` + `next start` `:3107` derrière un relais `:8187` qui réécrit l'`Origin` (PIT-S106-003, rejoué sans accroc) ; `sprint-101-fab-landscape:271` (#769), rouge S105-S108, vert dans ce run
+**Vérification visuelle :** sonde jetable fr/de × clair/sombre × 1280/375, données bouchonnées avec noms allemands longs : 0 débordement, `letter-spacing` 0,2 px en `de` contre 0,8 px en `fr` ; a révélé le nom écrasé dans `ProductList` (préexistant → #825)
+**Écarts d'énoncé :** #632 : liste de l'énoncé périmée (S84), motif réel `.16em` et non `.1em` ; #697 : chemins `frontend/src/app/…` faux, consommateur `sprint-100-fab-clearance` non signalé ; #664 : prémisse « sur-titres informatifs » réfutée par la maquette
+**Nouveaux pitfalls / patterns / décisions :** PIT-S109-001 (squelette calé sur un en-tête réduit) · PIT-S109-002 (RTK et `next lint`) · PIT-S109-003 (sauvegarde de mutation, mutant équivalent `formatRange`) · PIT-S109-004 (`\u2009` via Write) · PAT-S109-001 (garde par ligne de code) · PAT-S109-002 (ré-armer une attente E2E) · DEC-S109-001/002 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 9 signalés, regroupés) :**
+  - Détente `de` de `.mt-drawer__k`, `.mt-badge`, en-têtes de `ProductsListView` + §8 RTL dormante [XS ×3 | frontend/DS] → issue #822 (backlog)
+  - Branche `dashboard-loading` inatteignable + attente vacante, clés `dashboard.*` à prouver orphelines [XS ×2 | frontend/dashboard] → issue #823 (backlog)
+  - Plage de la sous-frise = fenêtre visible [S | frontend/products] → issue #824 (backlog)
+  - Nom de produit écrasé dans « Tes produits » desktop (trouvé par le lead) [S | frontend/dashboard] → issue #825 (backlog, bug P2)
+  - Compteurs 11/10 px (arbitrage designer) [XS] → écarté (13 px entériné, DEC-S109-001)
+  - E2E des compteurs en paysage et 768–1023 px [XS] → écarté (faible risque, disposition identique au desktop)
+  Ratio discard 2/9.
+**Status :** Terminé — PR #821 mergée, issues #632/#664/#697 et milestone #110 fermés après merge
 
 ### Sprint 110 — 2026-09-22 (PLANIFIÉ — cohésion 0.45, Pages d'erreur 404 / 500)
 **Objectif :** 404 en éphéméride datée, référence d'incident sur la 500, `.mt-num` étendue aux `span`

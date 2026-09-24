@@ -1018,3 +1018,9 @@ Les descendants d'un `role="img"` sont présentationnels : un `role="slider"` pl
 
 ## PAT-S108-002 — Un compteur qui doit égaler une liste rendue ailleurs partage son filtre, en fonction pure
 Problème : « Tu as X événements cette semaine » doit égaler les lignes de « Cette semaine ». Solution : extraire le filtre de la liste (`currentWeekEvents`) en fonction pure, appelée par la liste ET par le calcul du compteur ; un test rend les deux et compare. Anti-pattern : recoder le filtre dans le hook de données, ce qui produit une divergence silencieuse au premier changement de règle. (Sprint 108 #640)
+
+## PAT-S109-001 — Bannir un motif Tailwind fait main : garde par ligne de code, pas par littéral
+Problème : empêcher le retour de `font-mono tracking-widest uppercase` hors `.mt-eyebrow`. Solution : test statique qui balaie le source LIGNE par ligne (commentaires exclus) + contrôle négatif + anti-vacuité + liste blanche elle-même testée (rougit quand une entrée meurt) — `frontend/src/styles/__tests__/eyebrow-consumers.test.tsx`. Anti-pattern : balayer les littéraux entre guillemets : les apostrophes des commentaires FR désapparient les paires (faux négatifs). (Sprint 109 #632)
+
+## PAT-S109-002 — Testid d'une branche morte supprimé : ré-armer l'attente E2E, ne pas la vider
+Quand une spec attend `toHaveCount(0)` sur un testid de chargement qu'on supprime, la re-cibler sur le testid de chargement des DONNÉES monté sous le `ready` (`products-loading`, `product-detail-loading`), pas `loading: ''` qui supprime l'attente. (Sprint 109 #697, `sprint-100-fab-clearance`)

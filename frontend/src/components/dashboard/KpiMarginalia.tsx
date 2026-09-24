@@ -58,7 +58,9 @@ export const KpiMarginalia: React.FC<KpiMarginaliaProps> = ({ kpis, locale }) =>
       data-testid="dashboard-kpi-marginalia"
       aria-label={t('label')}
     >
-      {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`).
+          #664 — Maquette `Dashboard.dc.html` (relevé S109) : « En bref » n'a NI
+          sur-titre NI compteur à droite — titre seul, absence voulue. */}
       <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
       <div className="border-rule text-ink-muted flex flex-col gap-3 rounded-lg border p-4 text-xs leading-normal">
         <p data-testid="dashboard-kpi-week-sentence">

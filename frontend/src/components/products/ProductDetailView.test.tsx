@@ -693,4 +693,63 @@ describe('ProductDetailView', () => {
       )
     })
   })
+
+  /* ------------------------------------------------------------------ #664 */
+
+  // #664 — maquette `Produits.dc.html` : plage de dates à droite de « Frise du produit »
+  // (pas de sur-titre). Plage = étendue des événements TRACÉS, filtre de vue compris.
+  // Horloge figée au 15 mai 2026 : les deux events tombent dans l'année courante → pas
+  // d'année. PIT-S108-002 : espaces fines de `formatRange` normalisées avant comparaison.
+  describe('#664 — plage de dates à droite du titre de la sous-frise', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date(2026, 4, 15, 12, 0))
+    })
+    afterEach(() => vi.useRealTimers())
+
+    const rangeText = () =>
+      screen
+        .getByTestId('product-detail-timeline-range')
+        .textContent?.replace(/[\u2009\u202F\u00A0]/g, ' ')
+
+    it('suit le filtre de vue : actifs → 1 date, tous → plage, archivés → 1 date', async () => {
+      const user = userEvent.setup()
+      render(<ProductDetailView productId="p-alpha" />)
+      expect(rangeText()).toBe('1 juin')
+
+      await user.click(screen.getByTestId('product-detail-filter-all'))
+      expect(rangeText()).toBe('1 mai – 1 juin')
+
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+      expect(rangeText()).toBe('1 mai')
+    })
+
+    it('même rangée que le h2, après lui ; mono `ink-muted`, ni capitales ni eyebrow', () => {
+      render(<ProductDetailView productId="p-alpha" />)
+      const range = screen.getByTestId('product-detail-timeline-range')
+      const row = range.parentElement!
+      expect(row.className.split(/\s+/)).toEqual(
+        expect.arrayContaining(['flex', 'flex-wrap', 'items-baseline', 'justify-between']),
+      )
+      const h2 = row.querySelector('h2')!
+      expect(h2).toHaveTextContent('products.detail.timelineTitle')
+      expect(h2.className).toContain('min-w-0')
+      expect(h2.compareDocumentPosition(range) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      const classes = range.className.split(/\s+/)
+      for (const cls of ['font-mono', 'text-ink-muted', 'text-2xs', 'whitespace-nowrap'])
+        expect(classes).toContain(cls)
+      for (const cls of ['uppercase', 'mt-eyebrow']) expect(classes).not.toContain(cls)
+      // Le sur-titre reste absent : rien AVANT le h2 dans sa rangée.
+      expect(h2.previousElementSibling).toBeNull()
+    })
+
+    it('sous-frise vide (vue « archivés » sans archivé) : pas de plage', async () => {
+      const user = userEvent.setup()
+      render(<ProductDetailView productId="p-beta" />)
+      expect(screen.getByTestId('product-detail-timeline-range')).toBeInTheDocument()
+      await user.click(screen.getByTestId('product-detail-filter-archived'))
+      expect(screen.getByTestId('product-detail-timeline-empty')).toBeInTheDocument()
+      expect(screen.queryByTestId('product-detail-timeline-range')).not.toBeInTheDocument()
+    })
+  })
 })

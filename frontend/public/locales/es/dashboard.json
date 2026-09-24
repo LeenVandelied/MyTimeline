@@ -24,6 +24,7 @@
   },
   "week": {
     "title": "Esta semana",
+    "count": "{count, plural, one {# evento} other {# eventos}}",
     "label": "Agenda de la semana actual",
     "empty": "Nada esta semana: añade un evento para seguirlo aquí",
     "emptyCta": "Añadir un evento"
@@ -41,6 +42,7 @@
     "scrollHint": "Desplázate horizontalmente",
     "compactAgenda": {
       "title": "Hoy y mañana",
+      "count": "{count, plural, one {# evento} other {# eventos}}",
       "label": "Agenda compacta de hoy y mañana",
       "today": "Hoy",
       "tomorrow": "Mañana",
@@ -71,6 +73,7 @@
   },
   "productList": {
     "title": "Tus productos",
+    "count": "{count, plural, one {# producto} other {# productos}}",
     "label": "Lista de productos",
     "empty": "Añade un primer producto para seguir sus vencimientos",
     "emptyCta": "Ir a los productos",
@@ -81,11 +84,6 @@
     "totalEvents": "Eventos totales",
     "upcomingEvents": "Próximos eventos",
     "completedEvents": "Eventos completados"
-  },
-  "recentEvents": {
-    "title": "Eventos recientes",
-    "noEvents": "No hay eventos recientes",
-    "viewAll": "Ver todo"
   },
   "actions": {
     "createEvent": "Crear evento",

@@ -78,16 +78,12 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
 
         <div className="flex flex-1 flex-col gap-6 p-4">
           <div className="flex flex-col gap-2">
-            <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
-              {t('language')}
-            </span>
+            <span className="mt-eyebrow">{t('language')}</span>
             <LanguageSelector />
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
-              {t('theme')}
-            </span>
+            <span className="mt-eyebrow">{t('theme')}</span>
             <Button
               variant="ghost"
               onClick={() => setTheme(isDark ? 'light' : 'dark')}

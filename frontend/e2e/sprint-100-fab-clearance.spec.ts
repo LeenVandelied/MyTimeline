@@ -81,13 +81,18 @@ const SCREENS: readonly Screen[] = [
     name: 'products',
     path: () => '/fr/products',
     ready: 'products-page',
-    loading: 'products-page-loading',
+    // #697 — `products-page-loading` (branche d'auth de la page) supprimé : inatteignable
+    // sous `AppShell`, l'attente `toHaveCount(0)` était VACANTE. On attend le chargement
+    // des DONNÉES, monté sous `products-page` (`ProductsListView`), comme `timeline`.
+    loading: 'products-loading',
   },
   {
     name: 'product-detail',
     path: (id) => `/fr/products/${id}`,
     ready: 'product-detail-page',
-    loading: 'product-detail-page-loading',
+    // #697 — idem : `product-detail-page-loading` supprimé ; chargement des DONNÉES de
+    // la fiche (`ProductDetailView`), monté sous `product-detail-page`.
+    loading: 'product-detail-loading',
   },
   { name: 'settings', path: () => '/fr/settings', ready: 'settings-page', loading: '' },
 ]

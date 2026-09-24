@@ -25,6 +25,7 @@ import { useArchiveProduct, useIsProductArchivedHere } from '@/hooks/useArchiveP
 import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
 import { isPastEvent } from './isPastEvent'
+import { formatEventSpan } from './eventSpan'
 
 /**
  * #68 — Vue détail d'un produit.
@@ -301,6 +302,8 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
 
   // #607 — jour de référence du critère « passé », lu une fois par rendu.
   const today = new Date()
+  // #664 — plage des événements tracés par la sous-frise (mêmes `events` filtrés).
+  const timelineRange = formatEventSpan(events, locale, today)
   const history = (product.events ?? [])
     .filter((e) => matchesEventFilter(e.archived, filter))
     .slice()
@@ -423,8 +426,28 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
       >
         {/* #575 — vrai titre de section (display 600, sentence case, `--text-sm`),
             mêmes classes que les titres du dashboard (réf. `WeekAgenda`). Sous le
-            `h1` du produit (`text-xl`). Pas d'eyebrow : aucune information à porter. */}
-        <h2 className="text-ink font-display mb-2 text-sm font-semibold">{t('timelineTitle')}</h2>
+            `h1` du produit (`text-xl`).
+            #664 — Pas d'eyebrow : absence VOULUE, confirmée par la maquette
+            `Produits.dc.html` (relevé S109), qui n'a aucun sur-titre sur « Frise du
+            produit ». Elle porte à droite du titre une plage de dates, rendue ici :
+            l'étendue des événements TRACÉS (premier début → dernière fin, filtre de
+            vue compris), PAS la fenêtre visible — zoom et défilement vivent dans la
+            frise et ne remontent pas jusqu'ici. Mono, `ink-muted`, `text-2xs`
+            (11 px maquette → plus bas palier du DS). `flex-wrap` : en `de` à 375 px,
+            titre + plage avec années peuvent dépasser la carte → la plage passe dessous. */}
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h2 className="text-ink font-display min-w-0 text-sm font-semibold">
+            {t('timelineTitle')}
+          </h2>
+          {events.length > 0 && timelineRange && (
+            <p
+              className="text-ink-muted text-2xs font-mono whitespace-nowrap"
+              data-testid="product-detail-timeline-range"
+            >
+              {timelineRange}
+            </p>
+          )}
+        </div>
         {events.length === 0 ? (
           <p className="text-ink-muted text-sm" data-testid="product-detail-timeline-empty">
             {timelineEmptyMessage}
@@ -496,8 +519,11 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
                       textuelle pour les technologies d'assistance ; à l'écran, la date
                       visible et l'écart de luminance ink → ink-muted le portent. */}
                     {past && <span className="sr-only">{t('pastLabel')}</span>}
+                    {/* #632 — BADGE, pas un sur-titre : `.mt-eyebrow` (mono 10 px, sans
+                      bordure) n'en a ni la forme ni le rôle. Il garde son style mais se
+                      détend en `de` comme les eyebrows du DS (.16em → .02em). */}
                     {event.archived && (
-                      <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase">
+                      <span className="text-ink-muted text-2xs border-rule shrink-0 rounded-full border px-2 py-0.5 tracking-widest uppercase [&:lang(de)]:tracking-[.02em]">
                         {t('archivedBadge')}
                       </span>
                     )}

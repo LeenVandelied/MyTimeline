@@ -29,22 +29,13 @@ export default function ProductDetailPage() {
     }
   }, [user, loading, router, locale])
 
-  if (loading) {
-    return (
-      <div
-        className="bg-bg flex h-screen items-center justify-center"
-        data-testid="product-detail-page-loading"
-      >
-        <div
-          className="border-accent h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
-          role="status"
-        >
-          <span className="sr-only">{t('detail.loading')}</span>
-        </div>
-      </div>
-    )
-  }
-
+  // #697 — PAS de branche `loading` ici (même motif que #391 / DEC-S56-003 sur
+  // `/timeline`). `AppShell` ne rend `children` qu'une fois `loading` retombé ET `user`
+  // présent (`app-shell-loading` = SEUL testid du chargement de session), et `loading`
+  // ne repasse à `true` que dans `login`/`register`, appelés hors du groupe `(app)`.
+  // L'ancien `product-detail-page-loading` était donc inatteignable. `loading` reste lu
+  // par la garde ci-dessus ; `if (!user) return null` reste : filet defense-in-depth
+  // sans UI. Chargement des DONNÉES = `product-detail-loading` (`ProductDetailView`).
   if (!user) return null
 
   return (

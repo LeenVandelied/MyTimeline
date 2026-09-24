@@ -24,6 +24,7 @@
   },
   "week": {
     "title": "Diese Woche",
+    "count": "{count, plural, one {# Ereignis} other {# Ereignisse}}",
     "label": "Agenda der aktuellen Woche",
     "empty": "Nichts diese Woche: Füge ein Ereignis hinzu, um es hier zu sehen",
     "emptyCta": "Ereignis hinzufügen"
@@ -41,6 +42,7 @@
     "scrollHint": "Horizontal scrollen",
     "compactAgenda": {
       "title": "Heute und morgen",
+      "count": "{count, plural, one {# Ereignis} other {# Ereignisse}}",
       "label": "Kompakte Agenda für heute und morgen",
       "today": "Heute",
       "tomorrow": "Morgen",
@@ -71,6 +73,7 @@
   },
   "productList": {
     "title": "Deine Produkte",
+    "count": "{count, plural, one {# Produkt} other {# Produkte}}",
     "label": "Produktliste",
     "empty": "Füge ein erstes Produkt hinzu, um seine Fristen zu verfolgen",
     "emptyCta": "Zu den Produkten",
@@ -81,11 +84,6 @@
     "totalEvents": "Gesamtereignisse",
     "upcomingEvents": "Kommende Ereignisse",
     "completedEvents": "Abgeschlossene Ereignisse"
-  },
-  "recentEvents": {
-    "title": "Letzte Ereignisse",
-    "noEvents": "Keine aktuellen Ereignisse",
-    "viewAll": "Alle ansehen"
   },
   "actions": {
     "createEvent": "Ereignis erstellen",

@@ -1808,6 +1808,22 @@ Sous jsdom 25, `fireEvent.pointerDown/Move(el, { clientX })` produit un `Event` 
 ## PIT-S108-003 — Passer un composant de `t()` à `t.rich` casse tous les mocks `(ns) => (k) => ns.k`
 « t.rich is not a function » dans chaque fichier de test qui mocke `useTranslations` et rend le composant, même indirectement (3 fichiers dashboard au S108). Solution : exposer `rich` dans le mock (`Object.assign(t, { rich: t })`) ou déplacer les assertions du composant dans un `*.intl.test.tsx` avec les vrais messages. Prévention : avant d'introduire `t.rich`, grepper les tests qui importent le composant ou son parent. Voir PAT-S83-002. (Sprint 108 #640)
 
+
+## PIT-S109-001 — Réduire un sur-titre décale le squelette calé sur la hauteur totale de l'en-tête
+`GreetingHeader` passé sur `.mt-eyebrow` (10 px × 1,3 au lieu de 13 px × 1,5) : la salutation perd 6,3 px, et `dashboard/loading.tsx`, calé au total, dépasse la tolérance de 6 px de `sprint-106-product-detail`. Vitest, tsc, build et les specs ciblées des agents étaient verts ; seule la suite E2E complète l'a vu. Prévention : tout changement de taille/interligne d'un en-tête → grepper les `loading.tsx` qui le miment. (Sprint 109, lead)
+
+
+## PIT-S109-002 — Sous RTK, `next lint` résume « Errors: 1 » sur une sortie propre
+La sortie brute dit « No ESLint warnings or errors ». Lire tout verdict lint/prettier sous `rtk proxy`, jamais le résumé. (Sprint 109 #697)
+
+
+## PIT-S109-003 — Une sauvegarde de mutation vers un chemin qui est un dossier empile les mutations
+`cp f $SP/bak` avec `bak` dossier existant : copie refusée, restauration inopérante, mutations M2..M6 contaminées. Solution : nom de sauvegarde unique + `cmp -s` après chaque restauration. Corollaire : `formatRange` ICU ajoute l'année d'office sur une plage à cheval sur deux ans, donc une mutation de la condition `year` peut être un mutant équivalent — le vérifier au lieu d'écrire un test vacant. (Sprint 109 #664)
+
+
+## PIT-S109-004 — ` ` écrit par l'outil Write atterrit comme caractère invisible dans une regex
+La séquence d'échappement devient le caractère U+2009 littéral. Contrôler les octets (`od -c`) après écriture d'une regex d'espaces Unicode. (Sprint 109 #664)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
