@@ -64,6 +64,45 @@ export const stateActionSecondary = cn(
   'border border-rule-emphasis text-ink transition-colors hover:bg-surface-2',
 )
 
+/**
+ * #628 — Référence d'incident (`error.digest`) affichée dans la rangée
+ * d'actions des écrans 500 / 403 (`[locale]/error.tsx`, `global-error.tsx`).
+ * `digest` n'existe que pour les erreurs SERVEUR en production (Next masque le
+ * message ailleurs) : `null`/`undefined`/`''` → rien de rendu, pas d'espace
+ * réservé. `label` est déjà traduit par l'appelant et doit expliciter l'usage
+ * (« à communiquer au support ») : le texte visible porte l'explication, pas
+ * un `title` seul. Taille au barème DS : `text-2xs` (13 px, le token le plus
+ * proche des 11 px de la maquette — même convention que `HowItWorksSection`).
+ * Couleur `text-ink-muted` (DEC-S97-001 réserve `ink-faint` au non-textuel).
+ * Valeur en `.mt-num` (mono + tabular-nums, DS `i18n.css` §7) avec `break-all`
+ * pour ne pas déborder à 375 px, et `select-all` pour rester copiable en un
+ * geste vers le support.
+ */
+export interface IncidentReferenceProps {
+  /** `error.digest` — hash opaque non réversible (cf. preuve node_modules/next). */
+  digest?: string
+  /** Libellé déjà traduit expliquant l'usage, terminé par « : ». */
+  label: string
+  /** `data-testid` du conteneur ; la valeur porte `${testId}-value`. */
+  testId?: string
+}
+
+export function IncidentReference({
+  digest,
+  label,
+  testId = 'incident-ref',
+}: IncidentReferenceProps) {
+  if (!digest) return null
+  return (
+    <span className="text-ink-muted text-2xs" data-testid={testId}>
+      {label}{' '}
+      <span className="mt-num break-all select-all" data-testid={`${testId}-value`}>
+        {digest}
+      </span>
+    </span>
+  )
+}
+
 export function StateScreen({
   code,
   title,

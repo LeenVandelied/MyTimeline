@@ -27,12 +27,14 @@
   "forbidden": {
     "title": "Accès refusé",
     "description": "Vous n'avez pas les autorisations nécessaires pour accéder à cette page.",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "incidentRef": "Référence à communiquer au support :"
   },
   "crash": {
     "title": "Une erreur est survenue",
     "description": "Un problème inattendu s'est produit. Réessayez ou revenez à l'accueil.",
     "retry": "Réessayer",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "incidentRef": "Référence à communiquer au support :"
   }
 }

@@ -27,12 +27,14 @@
   "forbidden": {
     "title": "Access denied",
     "description": "You don't have the required permissions to view this page.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "incidentRef": "Reference for support:"
   },
   "crash": {
     "title": "Something went wrong",
     "description": "An unexpected error occurred. Try again or go back home.",
     "retry": "Try again",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "incidentRef": "Reference for support:"
   }
 }
