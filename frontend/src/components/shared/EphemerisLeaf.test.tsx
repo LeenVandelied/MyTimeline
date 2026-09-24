@@ -65,11 +65,13 @@ describe('EphemerisLeaf', () => {
     expect(html.match(/data-testid="ephemeris-/g)).toHaveLength(5)
   })
 
-  it('décoratif : aria-hidden, et hors de l’arbre d’accessibilité', () => {
+  it('décoratif : aria-hidden posé sur la racine du feuillet, qui porte bien la date', () => {
     render(<EphemerisLeaf locale="fr" formatWeek={formatWeek} />)
-    expect(screen.getByTestId('ephemeris-leaf')).toHaveAttribute('aria-hidden', 'true')
-    expect(screen.queryByText('24')).toBeInTheDocument()
-    expect(screen.queryByRole('time')).not.toBeInTheDocument()
+    // `<time>` n'a pas de rôle ARIA implicite : un `queryByRole('time')` vide ne
+    // prouverait rien. La preuve est l'attribut sur la racine qui CONTIENT le jour.
+    const leaf = screen.getByTestId('ephemeris-leaf')
+    expect(leaf).toHaveAttribute('aria-hidden', 'true')
+    expect(leaf).toContainElement(screen.getByText('24'))
   })
 
   it('tokens Graphite uniquement (clair + sombre par les tokens) : ni hex ni ink-faint', () => {
