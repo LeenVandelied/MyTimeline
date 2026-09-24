@@ -154,7 +154,8 @@ public class UserController {
      * jamais du corps (ownership structurel). 401 si non authentifié ; 200 +
      * {@code UserResponse} à jour (BR-AUT-008 : jamais le hash).
      *
-     * <p>Hors rate-limit, délibérément (cf. {@code RateLimitingFilter}, ADR-010 § 7).
+     * <p>Plafonné PAR UTILISATEUR authentifié (30/min), pas par IP : {@code UserRateLimitingFilter}
+     * (#831, ADR-010 § 7 amendé S112) — 429 {@code {"error":"too_many_requests"}} au-delà.
      */
     @PutMapping("/preferences")
     public ResponseEntity<?> updatePreferences(@Valid @RequestBody UpdatePreferencesRequest request) {

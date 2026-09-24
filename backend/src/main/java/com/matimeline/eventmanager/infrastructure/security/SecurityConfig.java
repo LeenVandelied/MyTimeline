@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.web.cors.CorsConfiguration;
@@ -47,6 +48,8 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final RateLimitingFilter rateLimitingFilter;
+    // #831 — plafond PAR UTILISATEUR authentifié (PUT /api/me/preferences), monté APRÈS JwtFilter.
+    private final UserRateLimitingFilter userRateLimitingFilter;
 
     // CORS (#120) — origines autorisées externalisées par profil
     // (app.cors.allowed-origins, liste séparée par virgules). En dur,
@@ -75,9 +78,11 @@ public class SecurityConfig {
     // authenticationManager(...) (où Spring le résout), pas via ce constructeur.
     public SecurityConfig(@Lazy JwtFilter jwtFilter,
                           RateLimitingFilter rateLimitingFilter,
+                          UserRateLimitingFilter userRateLimitingFilter,
                           @Value(ALLOWED_ORIGINS_EXPRESSION) List<String> allowedOrigins) {
         this.jwtFilter = jwtFilter;
         this.rateLimitingFilter = rateLimitingFilter;
+        this.userRateLimitingFilter = userRateLimitingFilter;
         this.allowedOrigins = allowedOrigins;
     }
 
@@ -185,7 +190,14 @@ public class SecurityConfig {
             // sensitive auth POSTs are exactly what must be throttled, so the
             // rate-limit filter has to run on them ahead of everything.
             .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            // #831 — plafond PAR UTILISATEUR : il lit le principal posé par jwtFilter, donc il
+            // DOIT s'exécuter après l'authentification. Ancré sur AuthorizationFilter (ordre
+            // intégré à Spring Security, toujours en aval de jwtFilter) et non via
+            // addFilterAfter(…, JwtFilter.class) : jwtFilter est injecté @Lazy (proxy), l'ordre
+            // est enregistré sous la classe du proxy — rien ne garantit qu'une recherche par
+            // JwtFilter.class le trouve. Anonyme -> laissé passer, AuthorizationFilter répond 401.
+            .addFilterBefore(userRateLimitingFilter, AuthorizationFilter.class);
 
         return http.build();
     }

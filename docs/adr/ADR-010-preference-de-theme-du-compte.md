@@ -130,8 +130,11 @@ deux primitives (lecture avec `null` distinguable, écriture stricte).
 
 ### 7. Rate-limit et CSRF
 
-- **Rate-limit : hors périmètre, délibérément** (rangé dans la liste « DELIBERATELY out of
-  scope » de `RateLimitingFilter`). La route n'expose aucun oracle inter-comptes (ownership
+- **Rate-limit : plafond PAR UTILISATEUR authentifié, 30/min — amendé Sprint 112 (#831).**
+  Voir le sous-point « Amendement S112 » ci-dessous ; le texte qui suit est la décision S111,
+  conservée pour l'historique.
+  *Décision S111 (remplacée)* : hors périmètre, délibérément (rangé dans la liste « DELIBERATELY
+  out of scope » de `RateLimitingFilter`). La route n'expose aucun oracle inter-comptes (ownership
   structurel, réponse identique quel que soit l'état des autres comptes), elle est idempotente
   et coûte un `UPDATE` mono-ligne sur l'enregistrement du caller. Un plafond par IP pénaliserait
   une bascule répétée légitime et les utilisateurs derrière un NAT partagé. L'abus reste
@@ -142,6 +145,31 @@ deux primitives (lecture avec `null` distinguable, écriture stricte).
   partageraient le seau de `127.0.0.1`, avec des 429 silencieux (le front tolère l'échec du `PUT`)
   qui rendraient intermittentes les assertions sur la préférence du compte. La bonne forme est un
   plafond **par utilisateur** : renvoyé à un follow-up.
+  **Amendement S112 (#831, 2026-09-24)** — plafond appliqué, **30 `PUT`/min par utilisateur**,
+  429 `{"error":"too_many_requests"}` identique aux autres routes throttlées.
+  - *Emplacement* : un filtre dédié, `UserRateLimitingFilter` (`infrastructure/security`), monté
+    **après** l'authentification (`addFilterBefore(…, AuthorizationFilter.class)`). Il ne pouvait
+    pas être un créneau de `RateLimitingFilter` : celui-ci s'exécute AVANT `JwtFilter` (il doit
+    throttler les `POST /api/auth/*` en `permitAll`), le `SecurityContext` y est vide, seule l'IP
+    est disponible. Une garde applicative (port domaine + exception mappée en 429) a été écartée :
+    le débit est une préoccupation de transport (statut HTTP, table de routes, état bucket4j en
+    mémoire), la placer à côté du limiteur par IP laisse `domain/` et `application/` intacts et
+    garantit la même réponse 429 (méthode partagée).
+  - *Clé* : l'**id** de l'utilisateur (UUID porté par `CustomUserDetails`), pas le username — un
+    renommage (`PATCH /api/me`) ne remet pas le compteur à zéro. Requête anonyme : non comptée,
+    l'autorisation répond 401.
+  - *Plafond* : une bascule = au plus un `PUT` (le front n'écrit pas une valeur que le compte
+    porte déjà) ; 30/min couvre un utilisateur qui compare les thèmes en cliquant plusieurs fois,
+    et borne chaque compte à un `UPDATE` mono-ligne toutes les 2 s. **Non réglable par profil** :
+    la suite E2E émet au plus UN `PUT` réel par compte (`sprint-111-theme-account-preference`, compte
+    neuf ; les specs du compte partagé répondent au `PUT` dans le navigateur,
+    `e2e/support/theme-preference.ts`) et un seau par utilisateur est insensible à l'IP partagée
+    `127.0.0.1` — aucune propriété, donc aucun garde prod à ajouter (PIT-S88-014).
+  - *Mémoire* : LRU synchronisée bornée à 100 000 seaux (motif de `tokenBuckets`, #141) ; par
+    instance JVM, comme le limiteur par IP.
+  - *Preuve* : `PreferencesUserRateLimitIntegrationTest` (A au-delà du plafond → 429, y compris
+    depuis une autre IP ; B depuis la même IP → 200 ; anonyme → 401). Monter le filtre avant
+    l'authentification rend les 3 tests rouges (mutation vérifiée).
 - **CSRF** : aucune mesure spécifique, alignement sur les autres routes mutantes `/api/me`
   (`csrf.disable()` global, mitigation par le cookie `SameSite=Lax` — BR-AUT-007 — qu'un `PUT`
   cross-site n'emporte pas, et par le pré-vol CORS qu'impose un `PUT` JSON).
