@@ -26,10 +26,13 @@ import GlobalNotFoundScreen from './global-not-found-screen'
  *    route est bien atteinte, mais `notFound()` ÉCHAPPE à
  *    `[locale]/not-found.tsx` et remonte au boundary racine.
  *
- * PÉRIMÈTRE. Ce fichier ne remplace PAS `app/[locale]/not-found.tsx`, qui reste
- * l'écran des `notFound()` déclenchés PAR une page (rendu, lui, dans le
- * `NextIntlClientProvider`, donc entièrement traduit). Celui-ci ne couvre que
- * ce qui n'atteint aucune route.
+ * PÉRIMÈTRE (#827 — décision documentée). `app/[locale]/not-found.tsx` a été
+ * SUPPRIMÉ au Sprint 111 : c'était l'écran des `notFound()` déclenchés PAR une
+ * page, mais aucune page n'en appelait — seul `[locale]/layout.tsx` appelle
+ * `notFound()` (locale invalide), et un `notFound()` levé depuis un layout
+ * ÉCHAPPE au `not-found.tsx` du même segment (PIT-S62-005) : il remontait déjà
+ * jusqu'ici. Ce fichier est donc désormais l'UNIQUE écran 404 de l'application,
+ * quelle que soit la cause (URL non matchée OU locale invalide).
  *
  * ── POURQUOI CE FICHIER EST UN SERVER COMPONENT QUI NE REND (PRESQUE) RIEN ──
  *
