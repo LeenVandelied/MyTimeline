@@ -1,9 +1,18 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { renderToString } from 'react-dom/server'
+import type { ReactNode } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { isThemeChoice, useThemeChoice, type ThemeChoiceState } from './useThemeChoice'
+import {
+  THEME_STORAGE_KEY,
+  ThemePersistenceContext,
+  isThemeChoice,
+  readStoredThemeChoice,
+  useApplyAccountTheme,
+  useThemeChoice,
+  type ThemeChoiceState,
+} from './useThemeChoice'
 
 /**
  * #655 — `useThemeChoice`, point d'écriture UNIQUE du thème.
@@ -107,6 +116,67 @@ describe('useThemeChoice — écriture', () => {
     expect(['light', 'dark', 'system'].every(isThemeChoice)).toBe(true)
     expect(isThemeChoice('sepia')).toBe(false)
     expect(isThemeChoice(undefined)).toBe(false)
+  })
+})
+
+describe('#653 — persistance sur le compte', () => {
+  const persist = vi.fn()
+  const withPersister = ({ children }: { children: ReactNode }) => (
+    <ThemePersistenceContext.Provider value={persist}>{children}</ThemePersistenceContext.Provider>
+  )
+
+  beforeEach(() => {
+    persist.mockReset()
+    localStorage.clear()
+  })
+
+  it('setThemeChoice écrit localement PUIS confie le choix au persisteur', () => {
+    const { result } = renderHook(() => useThemeChoice(), { wrapper: withPersister })
+    act(() => result.current.setThemeChoice('dark'))
+    expect(setTheme).toHaveBeenCalledWith('dark')
+    expect(persist).toHaveBeenCalledWith('dark')
+    expect(setTheme.mock.invocationCallOrder[0]).toBeLessThan(persist.mock.invocationCallOrder[0])
+  })
+
+  it('toggle passe aussi par le persisteur', () => {
+    resolvedTheme = 'dark'
+    const { result } = renderHook(() => useThemeChoice(), { wrapper: withPersister })
+    act(() => result.current.toggle())
+    expect(persist).toHaveBeenCalledWith('light')
+  })
+
+  it('sans persisteur (hors AuthProvider) : écriture purement locale, sans erreur', () => {
+    const { result } = renderHook(() => useThemeChoice())
+    act(() => result.current.setThemeChoice('dark'))
+    expect(setTheme).toHaveBeenCalledWith('dark')
+    expect(persist).not.toHaveBeenCalled()
+  })
+
+  it('useApplyAccountTheme applique SANS passer par le persisteur', () => {
+    const { result } = renderHook(() => useApplyAccountTheme(), { wrapper: withPersister })
+    act(() => result.current('light'))
+    expect(setTheme).toHaveBeenCalledWith('light')
+    expect(persist).not.toHaveBeenCalled()
+  })
+
+  it('readStoredThemeChoice : choix explicite, ou null (absent / hors domaine / stockage KO)', () => {
+    expect(readStoredThemeChoice()).toBeNull()
+    localStorage.setItem(THEME_STORAGE_KEY, 'system')
+    expect(readStoredThemeChoice()).toBe('system')
+    localStorage.setItem(THEME_STORAGE_KEY, 'sepia')
+    expect(readStoredThemeChoice()).toBeNull()
+
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('SecurityError')
+    })
+    expect(readStoredThemeChoice()).toBeNull()
+    getItem.mockRestore()
+  })
+
+  it('la clé lue est celle imposée à next-themes par ThemeProvider', () => {
+    const source = readFileSync(join(process.cwd(), 'src/components/theme-provider.tsx'), 'utf8')
+    expect(source).toMatch(/storageKey=\{THEME_STORAGE_KEY\}/)
+    expect(THEME_STORAGE_KEY).toBe('theme')
   })
 })
 

@@ -32,8 +32,11 @@ export type Session = z.infer<typeof SessionSchema>
 export const SessionListSchema = z.array(SessionSchema)
 
 /* ---------------------------------------------------------------------------
-   Préférences (client-only pour l'instant — aucun endpoint backend dédié).
-   Langue : gérée par next-intl (redirection locale). Thème : next-themes.
+   Préférences.
+   Langue : gérée par next-intl (redirection locale).
+   Thème : appliqué par next-themes (localStorage) ET porté par le compte
+   (#653, `PUT /api/me/preferences`, arbitrage à la connexion — BR-AUT-013) ;
+   seul point d'écriture : `hooks/useThemeChoice.ts`.
    Densité : persistée localStorage (non-PII) + appliquée via data-attribute.
    --------------------------------------------------------------------------- */
 

@@ -25,7 +25,8 @@ import {
  * densité (compact/normal/confortable).
  *
  * - Thème : `useThemeChoice` (#655, seul point d'écriture du thème, sur next-themes)
- *   -> applique immédiatement sans rechargement (critère).
+ *   -> applique immédiatement sans rechargement (critère), puis persiste le choix
+ *   sur le compte si l'utilisateur est authentifié (#653, `PUT /api/me/preferences`).
  * - Densité : `useDensity` -> `data-density` sur <html> + localStorage, immédiat.
  * - Langue : next-intl `localePrefix: 'always'` -> navigation vers `/<locale>/...`.
  */

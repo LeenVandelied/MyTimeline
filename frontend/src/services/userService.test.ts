@@ -24,6 +24,7 @@ const USER_RESPONSE = {
   email: 'jane@ex.com',
   role: 'ROLE_USER',
   avatarUrl: '/api/me/avatar',
+  themePreference: null,
 }
 
 describe('userService avatar', () => {
