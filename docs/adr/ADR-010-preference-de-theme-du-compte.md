@@ -4,7 +4,7 @@
 - Date : 2026-09-24
 - Contexte : Sprint 111, issue #653 — follow-up de #642 (Sprint 83, PR #650)
 - Domaine impacté : `auth` (profil de l'utilisateur courant, projection `/me`, export RGPD)
-- Décisions amont : DEC-S82-009 (`docs/memory/decisions.md:773` — bascule de thème globale,
+- Décisions amont : DEC-S82-009 (`docs/memory/decisions.md`, section DEC-S82-009 — bascule de thème globale,
   exposée hors connexion, persistance en 3 temps) ; DEC-S83-003 (seul le temps 1, local, livré)
 
 ## Contexte
@@ -136,6 +136,12 @@ deux primitives (lecture avec `null` distinguable, écriture stricte).
   et coûte un `UPDATE` mono-ligne sur l'enregistrement du caller. Un plafond par IP pénaliserait
   une bascule répétée légitime et les utilisateurs derrière un NAT partagé. L'abus reste
   authentifié, donc attribuable et révocable (sessions).
+  *Revue security-expert (S111)* : MINEUR — la route écrit en base à chaque appel, un plafond
+  comme `PATCH /api/me` (10/min/IP) est recommandé. **Non appliqué au S111** : le limiteur est
+  armé en E2E (#547) et compte par IP ; toutes les specs authentifiées qui basculent le thème
+  partageraient le seau de `127.0.0.1`, avec des 429 silencieux (le front tolère l'échec du `PUT`)
+  qui rendraient intermittentes les assertions sur la préférence du compte. La bonne forme est un
+  plafond **par utilisateur** : renvoyé à un follow-up.
 - **CSRF** : aucune mesure spécifique, alignement sur les autres routes mutantes `/api/me`
   (`csrf.disable()` global, mitigation par le cookie `SameSite=Lax` — BR-AUT-007 — qu'un `PUT`
   cross-site n'emporte pas, et par le pré-vol CORS qu'impose un `PUT` JSON).
@@ -170,6 +176,19 @@ deux primitives (lecture avec `null` distinguable, écriture stricte).
 - **Course à la première connexion simultanée sur deux appareils sans préférence** : les deux
   peuvent envoyer leur choix local ; le dernier `PUT` gagne. Sans gravité (préférence
   d'affichage), pas de verrou.
+
+- **Ancien V16 dans une base locale** : un premier `V16__delete_unbounded_recurring_events.sql`
+  (#452) a été ajouté puis retiré de l'historique le 2026-09-02 (`072a40a6` → `61ca5d0f`). Une
+  base qui aurait démarré entre ces deux commits porte un `flyway_schema_history` avec un V16 de
+  description et de checksum différents → le boot échoue. Vérifié : base e2e à V15 ; volume dev
+  local non vérifié ; rien n'est déployé. Remédiation (revue db-expert S111) :
+  ```sql
+  SELECT version, description FROM flyway_schema_history WHERE version = '16';
+  -- si 'delete unbounded recurring events' :
+  DELETE FROM flyway_schema_history WHERE version = '16';  -- puis redémarrer (V16 est idempotente)
+  ```
+  **Jamais `flyway repair`** : il marquerait V16 comme appliquée sans créer la colonne, et
+  `ddl-auto=validate` échouerait ensuite sur l'entité.
 
 ## Alternatives écartées
 
