@@ -79,7 +79,7 @@ describe('EphemerisLeaf', () => {
       .join(' ')
 
     expect(classes).toContain('border-rule-strong')
-    expect(classes).toContain('bg-bg')
+    expect(classes).toContain('bg-surface')
     expect(classes).toContain('text-accent')
     expect(classes).toContain('uppercase')
     expect(classes).not.toMatch(/#[0-9a-f]{3,8}\b/i)

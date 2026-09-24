@@ -27,6 +27,11 @@ import { cn } from '@/lib/utils'
  * TEXTE EN `ink-muted`, PAS `ink-faint` comme la maquette : `ink-faint` est
  * réservé au non-textuel (DEC-S97-001, ≤ 3,20:1). Tokens Graphite seulement →
  * le rendu sombre suit `.dark` sans variante.
+ *
+ * FOND `bg-surface`, PAS `bg-bg` comme la maquette : sur la planche, le feuillet
+ * (`bg`) se détache d'une CARTE (`surface`) ; ici il est posé directement sur la
+ * page, elle-même en `bg-bg`. Garder `bg` l'y fondrait (seule la bordure le
+ * dessinerait) ; `surface` rétablit le même écart de fond, dans l'autre sens.
  */
 
 const NBSP = ' '
@@ -59,7 +64,7 @@ export function EphemerisLeaf({ locale, formatWeek, className }: EphemerisLeafPr
       data-testid="ephemeris-leaf"
       data-ephemeris-ready={parts ? 'true' : 'false'}
       className={cn(
-        'border-rule-strong bg-bg flex w-[150px] shrink-0 flex-col items-center rounded-xl border px-2.5 py-4 text-center font-mono',
+        'border-rule-strong bg-surface flex w-[150px] shrink-0 flex-col items-center rounded-xl border px-2.5 py-4 text-center font-mono',
         className,
       )}
     >
