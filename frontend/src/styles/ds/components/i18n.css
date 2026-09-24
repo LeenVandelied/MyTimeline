@@ -194,7 +194,19 @@
 }
 .mt-date--short{font-size:11px; text-transform:uppercase; letter-spacing:.06em;}
 .mt-date--long{font-size:13px;}
-/* time[] hérite des couleurs ; on neutralise l'éventuel style natif. */
+/* #516 — Neutralisation VOLONTAIREMENT limitée au sélecteur préfixé `time`.
+   `<time>` n'a en réalité aucun style natif de couleur/soulignement (contrairement
+   à `<a>`) : la règle est défensive, pour le jour où un `<time class="mt-num">`
+   se retrouverait DANS un lien (ex. une carte cliquable) — le bleu et le
+   soulignement de l'ancre traverseraient sinon visuellement le `<time>` enfant.
+   Aujourd'hui aucun `<time>` du dépôt n'est imbriqué dans un `<a>` (vérifié) :
+   impact visuel nul, la règle attend un cas encore hypothétique.
+   Sciemment PAS élargi à `.mt-num` nu (donc pas aux `<span>`/`<p>` qui le
+   portent dans KpiMarginalia/ProductList/ProductCarousel/ProductsListView/
+   StateScreen) : `i18n.css` est chargé HORS layer (`globals.css`), donc un
+   `color:inherit` non préfixé y battrait toujours les utilitaires Tailwind
+   `text-ink-muted`/`text-ink`/`text-accent` posés sur ces mêmes éléments,
+   quelle que soit leur spécificité — régression de couleur immédiate. */
 time.mt-date--short, time.mt-date--long, time.mt-num{text-decoration:none; color:inherit;}
 
 /* ============================================================
