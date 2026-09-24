@@ -45,10 +45,22 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * <p><b>Key.</b> The user id (UUID) carried by {@link CustomUserDetails} — stable across a
  * username change ({@code PATCH /api/me}), so renaming the account does not reset the bucket.
- * Falls back to the principal name when the principal is not a {@link CustomUserDetails}
- * (never the case with {@code JwtFilter}, kept as a defensive default). An anonymous request
- * is NOT throttled here: it passes through and the authorization filter answers 401 — the
- * route is unreachable without a valid, non-revoked session.
+ * An anonymous request is NOT throttled here: it passes through and the authorization filter
+ * answers 401 — the route is unreachable without a valid, non-revoked session.
+ *
+ * <p><b>Fail-closed on an authenticated principal without an account id</b> (review S112).
+ * In this chain the ONLY authentication source is {@code JwtFilter}, which always sets a
+ * {@link CustomUserDetails} loaded from the database (non-null id): {@code SecurityConfig}
+ * enables neither {@code httpBasic}, {@code formLogin}, remember-me nor OAuth2, and the session
+ * is {@code STATELESS} (the context set by {@code AuthController.login} dies with that request).
+ * Any other authenticated principal therefore signals a new authentication mechanism wired
+ * without updating this filter. The former fallback keyed such a caller on
+ * {@code "name:" + getName()} — unreachable, never tested, and a second key space whose
+ * collision with a username nobody had reasoned about. Letting it through unthrottled would
+ * silently void the ceiling for that mechanism. The request is instead REFUSED with the same
+ * {@code 401 {"error":"unauthorized"}} as the entry point ({@link SecurityConfig#writeJsonError}),
+ * consistent with {@link CallerResolver}, which answers 401 when no account can be resolved
+ * (BR-AUT-005): a caller the limiter cannot tie to an account cannot write through it.
  *
  * <p><b>Ceiling.</b> {@value #DEFAULT_PREFERENCES_PER_MINUTE}/min/user on
  * {@code PUT /api/me/preferences}: one theme toggle = at most one {@code PUT} (the front skips
@@ -117,10 +129,16 @@ public class UserRateLimitingFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        String userKey = authenticatedUserKey();
-        if (userKey == null) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (isAnonymous(authentication)) {
             // Anonyme : l'AuthorizationFilter en aval répond 401 ; rien à compter ici.
             chain.doFilter(request, response);
+            return;
+        }
+        String userKey = accountIdKey(authentication);
+        if (userKey == null) {
+            // Authentifié mais sans id de compte : fail-closed (voir JavaDoc de classe).
+            SecurityConfig.writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, "unauthorized");
             return;
         }
         // computeIfAbsent atomique sur la map synchronisée ; l'éviction LRU s'exécute sous le
@@ -134,17 +152,18 @@ public class UserRateLimitingFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /**
-     * Stable key of the authenticated caller, or {@code null} when the request carries no
-     * usable authentication (absent, unauthenticated, anonymous).
-     */
-    private static String authenticatedUserKey() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null
+    /** No usable authentication: absent, not authenticated, or the anonymous token. */
+    private static boolean isAnonymous(Authentication authentication) {
+        return authentication == null
                 || !authentication.isAuthenticated()
-                || authentication instanceof AnonymousAuthenticationToken) {
-            return null;
-        }
+                || authentication instanceof AnonymousAuthenticationToken;
+    }
+
+    /**
+     * {@code "id:<UUID>"} of the account behind an authenticated caller, or {@code null} when the
+     * principal is not a {@link CustomUserDetails} carrying an id — the fail-closed case.
+     */
+    private static String accountIdKey(Authentication authentication) {
         if (authentication.getPrincipal() instanceof CustomUserDetails details
                 && details.getUser() != null) {
             UUID id = details.getUser().getId();
@@ -152,7 +171,6 @@ public class UserRateLimitingFilter extends OncePerRequestFilter {
                 return "id:" + id;
             }
         }
-        String name = authentication.getName();
-        return name == null || name.isEmpty() ? null : "name:" + name;
+        return null;
     }
 }

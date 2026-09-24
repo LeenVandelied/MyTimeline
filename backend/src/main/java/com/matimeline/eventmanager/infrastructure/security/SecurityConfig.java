@@ -247,8 +247,11 @@ public class SecurityConfig {
      * "forbidden"), mais une concaténation manuelle produirait un JSON
      * invalide/injectable si un futur appelant passait une valeur dynamique
      * contenant des guillemets ou un backslash.
+     *
+     * Package-private (#831, revue S112) : {@link UserRateLimitingFilter} le réutilise pour son
+     * refus fail-closed, afin que ce 401 soit octet pour octet celui de l'entry point.
      */
-    private static void writeJsonError(HttpServletResponse response, int status, String error)
+    static void writeJsonError(HttpServletResponse response, int status, String error)
             throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
