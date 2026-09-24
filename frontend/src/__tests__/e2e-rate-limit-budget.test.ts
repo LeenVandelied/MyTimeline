@@ -895,168 +895,182 @@ const AT_DEFAULT: SlotName[] = ['forgot-password', 'change-password']
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('#547 — budget rate-limit de la suite E2E (dépôt réel)', () => {
-  it('le job CI joue bien les passes attendues, dont la passe 2 qui re-provisionne', () => {
-    const passes = readCiPasses()
-    expect(
-      passes.length,
-      `invocations Playwright lues dans ci.yml : ${JSON.stringify(passes)}`,
-    ).toBe(2)
-    expect(passes[0].full).toBe(true)
-    expect(passIncludes(passes[1], 'auth.setup.ts')).toBe(true)
-  })
+/**
+ * Délai explicite : ces cas analysent l'AST de TOUTES les specs du dépôt. Mesuré au S112 :
+ * 870 ms en local pour « les lignes BUDGET… disent vrai », mais > 5 s (délai Vitest par
+ * défaut) sur le runner CI sous couverture, où la suite tourne ~6× plus lentement — un
+ * échec par délai, pas par budget. 30 s laisse la marge sans masquer une boucle infinie.
+ */
+const REAL_REPO_TIMEOUT_MS = 30_000
 
-  it('le setup émet 1 register et 1 login par compte, sans retry Playwright, pour 4 comptes', () => {
-    // Revue S88 : la seule boucle de ré-émission est annotée « retry sur échec de requête » et
-    // respecte son contrat ; le login est hors boucle ; le projet `setup` n'a aucun retry.
-    expect(ALL_ACCOUNTS.length).toBe(4)
-    expect(setupEmissionsPerAccount('register')).toBe(1)
-    expect(setupEmissionsPerAccount('login')).toBe(1)
-    expect(readSetupRetries()).toBe(0)
-  })
-
-  it('convention « retry sur échec de requête » : une seule boucle annotée, table de statuts vérifiée', () => {
-    expectSingleAnnotatedLoop(E2E_DIR)
-    // Ré-émis : échec de la REQUÊTE seulement.
-    expect([null, 500, 502, 503].map(classifyRegisterResponse)).toEqual([
-      'retry',
-      'retry',
-      'retry',
-      'retry',
-    ])
-    // Jamais ré-émis : compte créé, compte existant (idempotent), 429, refus.
-    expect([200, 201, 409, 429, 400, 403].map(classifyRegisterResponse)).toEqual([
-      'created',
-      'created',
-      'exists',
-      'throttled',
-      'refused',
-      'refused',
-    ])
-  })
-
-  it('201 tardif : réponse non observée dans le délai mais 201/409 déjà vu ou page sur le login → succès (revue S88, cycle 2)', () => {
-    const REGISTER = 'http://localhost:3100/fr/register'
-    const LOGIN = 'http://localhost:3100/fr/login'
-    // Réponse non observée par `waitForResponse` (null), mais l'écouteur a vu un 201 / 409 : succès.
-    expect(classifyRegisterResponse(acceptedRegisterStatus([201], REGISTER, true))).toBe('created')
-    expect(classifyRegisterResponse(acceptedRegisterStatus([502, 409], REGISTER, true))).toBe(
-      'exists',
-    )
-    // Aucun statut vu, mais l'app a déjà navigué vers le login après un POST parti : succès.
-    expect(classifyRegisterResponse(acceptedRegisterStatus([], LOGIN, true))).toBe('created')
-    // Rien d'acquis : ré-émission permise.
-    expect(acceptedRegisterStatus([], REGISTER, true)).toBeNull()
-    expect(acceptedRegisterStatus([500, 503], REGISTER, true)).toBeNull()
-    // Sur le login SANS POST parti, rien n'est acquis ; un 429 ou un 403 n'est jamais un succès.
-    expect(acceptedRegisterStatus([], LOGIN, false)).toBeNull()
-    expect(acceptedRegisterStatus([429, 403], REGISTER, true)).toBeNull()
-  })
-
-  for (const { slot, property } of TUNABLE) {
-    it(`${slot} : le plafond e2e couvre le pire cas CI, avec la marge exigée`, () => {
-      const ceiling = readProperty(property)
-      expect(ceiling, `${property} absente de application-e2e.properties`).not.toBeNull()
-      const { nominal, worst, detail } = computeBudget(slot)
-      const retries = readRetries()
-      const report = [
-        `Créneau ${slot} : nominal CI ${nominal}, pire cas CI ${worst}, plafond e2e ${ceiling}.`,
-        ...detail,
-        '',
-        'Deux corrections possibles, PAS interchangeables :',
-        '  - mutualiser un compte / retirer une émission -> baisse le budget ;',
-        `  - relever ${property} (application-e2e.properties) -> relève le plafond ;`,
-        '    mettre alors à jour la ligne BUDGET et RateLimitE2eProfileIntegrationTest.',
-        "NE PAS remettre RATE_LIMIT_ENABLED=false : c'est ce que #547 a retiré.",
-      ].join('\n')
-
-      expect(worst, report).toBeLessThanOrEqual(ceiling!)
-      expect(ceiling! - nominal, report).toBeGreaterThanOrEqual(MIN_MARGIN)
-      // Critère #475 généralisé : UNE émission de plus dans une spec (retries compris)
-      // ne fait pas déborder le pire cas.
-      expect(worst + (1 + retries), report).toBeLessThanOrEqual(ceiling!)
+describe(
+  '#547 — budget rate-limit de la suite E2E (dépôt réel)',
+  { timeout: REAL_REPO_TIMEOUT_MS },
+  () => {
+    it('le job CI joue bien les passes attendues, dont la passe 2 qui re-provisionne', () => {
+      const passes = readCiPasses()
+      expect(
+        passes.length,
+        `invocations Playwright lues dans ci.yml : ${JSON.stringify(passes)}`,
+      ).toBe(2)
+      expect(passes[0].full).toBe(true)
+      expect(passIncludes(passes[1], 'auth.setup.ts')).toBe(true)
     })
-  }
 
-  for (const slot of AT_DEFAULT) {
-    it(`${slot} : reste au plafond par défaut, et un run vert du premier coup ne peut pas l'atteindre`, () => {
-      const property = `app.rate-limit.${slot}-per-minute`
-      expect(
-        readProperty(property),
-        `${property} est posée : l'arbitrage #547 (option D) laisse ${slot} au défaut. ` +
-          'La réglage de ce créneau est une décision à re-soumettre, pas un détail.',
-      ).toBeNull()
-      const defaultCeiling = readDefaultCeiling(slot)
-      const { nominal, worst, detail } = computeBudget(slot)
-      expect(
-        nominal,
-        [
-          `${slot} : nominal CI ${nominal} pour un défaut de ${defaultCeiling} (pire cas ${worst}).`,
+    it('le setup émet 1 register et 1 login par compte, sans retry Playwright, pour 4 comptes', () => {
+      // Revue S88 : la seule boucle de ré-émission est annotée « retry sur échec de requête » et
+      // respecte son contrat ; le login est hors boucle ; le projet `setup` n'a aucun retry.
+      expect(ALL_ACCOUNTS.length).toBe(4)
+      expect(setupEmissionsPerAccount('register')).toBe(1)
+      expect(setupEmissionsPerAccount('login')).toBe(1)
+      expect(readSetupRetries()).toBe(0)
+    })
+
+    it('convention « retry sur échec de requête » : une seule boucle annotée, table de statuts vérifiée', () => {
+      expectSingleAnnotatedLoop(E2E_DIR)
+      // Ré-émis : échec de la REQUÊTE seulement.
+      expect([null, 500, 502, 503].map(classifyRegisterResponse)).toEqual([
+        'retry',
+        'retry',
+        'retry',
+        'retry',
+      ])
+      // Jamais ré-émis : compte créé, compte existant (idempotent), 429, refus.
+      expect([200, 201, 409, 429, 400, 403].map(classifyRegisterResponse)).toEqual([
+        'created',
+        'created',
+        'exists',
+        'throttled',
+        'refused',
+        'refused',
+      ])
+    })
+
+    it('201 tardif : réponse non observée dans le délai mais 201/409 déjà vu ou page sur le login → succès (revue S88, cycle 2)', () => {
+      const REGISTER = 'http://localhost:3100/fr/register'
+      const LOGIN = 'http://localhost:3100/fr/login'
+      // Réponse non observée par `waitForResponse` (null), mais l'écouteur a vu un 201 / 409 : succès.
+      expect(classifyRegisterResponse(acceptedRegisterStatus([201], REGISTER, true))).toBe(
+        'created',
+      )
+      expect(classifyRegisterResponse(acceptedRegisterStatus([502, 409], REGISTER, true))).toBe(
+        'exists',
+      )
+      // Aucun statut vu, mais l'app a déjà navigué vers le login après un POST parti : succès.
+      expect(classifyRegisterResponse(acceptedRegisterStatus([], LOGIN, true))).toBe('created')
+      // Rien d'acquis : ré-émission permise.
+      expect(acceptedRegisterStatus([], REGISTER, true)).toBeNull()
+      expect(acceptedRegisterStatus([500, 503], REGISTER, true)).toBeNull()
+      // Sur le login SANS POST parti, rien n'est acquis ; un 429 ou un 403 n'est jamais un succès.
+      expect(acceptedRegisterStatus([], LOGIN, false)).toBeNull()
+      expect(acceptedRegisterStatus([429, 403], REGISTER, true)).toBeNull()
+    })
+
+    for (const { slot, property } of TUNABLE) {
+      it(`${slot} : le plafond e2e couvre le pire cas CI, avec la marge exigée`, () => {
+        const ceiling = readProperty(property)
+        expect(ceiling, `${property} absente de application-e2e.properties`).not.toBeNull()
+        const { nominal, worst, detail } = computeBudget(slot)
+        const retries = readRetries()
+        const report = [
+          `Créneau ${slot} : nominal CI ${nominal}, pire cas CI ${worst}, plafond e2e ${ceiling}.`,
           ...detail,
-        ].join('\n'),
-      ).toBeLessThanOrEqual(defaultCeiling)
-    })
-  }
+          '',
+          'Deux corrections possibles, PAS interchangeables :',
+          '  - mutualiser un compte / retirer une émission -> baisse le budget ;',
+          `  - relever ${property} (application-e2e.properties) -> relève le plafond ;`,
+          '    mettre alors à jour la ligne BUDGET et RateLimitE2eProfileIntegrationTest.',
+          "NE PAS remettre RATE_LIMIT_ENABLED=false : c'est ce que #547 a retiré.",
+        ].join('\n')
 
-  it('les lignes BUDGET de application-e2e.properties disent vrai', () => {
-    const lines = readBudgetLines()
-    for (const slot of [...TUNABLE.map((t) => t.slot), ...AT_DEFAULT]) {
-      const line = lines[slot]
-      expect(line, `ligne « BUDGET ${slot} » absente de application-e2e.properties`).toBeDefined()
-      const { nominal, worst } = computeBudget(slot)
-      const tunable = TUNABLE.find((t) => t.slot === slot)
-      const ceiling = tunable ? readProperty(tunable.property)! : readDefaultCeiling(slot)
-      expect(line, `ligne BUDGET ${slot} périmée — la recopier depuis le recompte`).toEqual({
-        nominal,
-        worst,
-        ceiling,
-        defaultCeiling: readDefaultCeiling(slot),
+        expect(worst, report).toBeLessThanOrEqual(ceiling!)
+        expect(ceiling! - nominal, report).toBeGreaterThanOrEqual(MIN_MARGIN)
+        // Critère #475 généralisé : UNE émission de plus dans une spec (retries compris)
+        // ne fait pas déborder le pire cas.
+        expect(worst + (1 + retries), report).toBeLessThanOrEqual(ceiling!)
       })
     }
-  })
 
-  it("aucune spec ne consomme le créneau de la preuve d'armement (refresh)", () => {
-    expect(countSpecs('refresh').perFile).toEqual({})
-    const config = readFileSync(PLAYWRIGHT_CONFIG, 'utf8')
-    expect(config, 'projet Playwright dédié `rate-limit-armed` attendu').toMatch(
-      /name:\s*'rate-limit-armed',\s*testMatch:\s*\/rate-limit-armed\\\.proof\\\.ts\/,[\s\S]*?dependencies:\s*\['chromium',\s*'firefox'\]/,
-    )
-  })
+    for (const slot of AT_DEFAULT) {
+      it(`${slot} : reste au plafond par défaut, et un run vert du premier coup ne peut pas l'atteindre`, () => {
+        const property = `app.rate-limit.${slot}-per-minute`
+        expect(
+          readProperty(property),
+          `${property} est posée : l'arbitrage #547 (option D) laisse ${slot} au défaut. ` +
+            'La réglage de ce créneau est une décision à re-soumettre, pas un détail.',
+        ).toBeNull()
+        const defaultCeiling = readDefaultCeiling(slot)
+        const { nominal, worst, detail } = computeBudget(slot)
+        expect(
+          nominal,
+          [
+            `${slot} : nominal CI ${nominal} pour un défaut de ${defaultCeiling} (pire cas ${worst}).`,
+            ...detail,
+          ].join('\n'),
+        ).toBeLessThanOrEqual(defaultCeiling)
+      })
+    }
 
-  it('ancrages sur le dépôt : helpers de support ET helpers locaux de spec', () => {
-    const register = countSpecs('register')
-    expect(register.helpers).toEqual(['registerOnly'])
-    // #832 (S112) : AUCUN helper de support ne se connecte par le formulaire. Une spec
-    // authentifiée qui ne teste pas la connexion prend sa session par
-    // `e2e/support/session.ts#sessionState` (0 jeton) ; `registerAndLogin`, qui invitait à
-    // payer 3 jetons au pire cas pour rien, a été supprimé (zéro appelant).
-    expect(
-      countSpecs('login').helpers,
-      'helper de connexion par formulaire réintroduit dans e2e/support/ : passer par ' +
-        'sessionState (support/session.ts), ou recompter le budget login et le justifier',
-    ).toEqual([])
-    expect(register.perFile).toMatchObject({
-      'golden-path.spec.ts': 1,
-      'forgot-password.spec.ts': 1,
-      'reset-password-failures.spec.ts': 2,
-      // #653 (S111) : UN compte neuf pour la préférence de thème (jamais `SHARED`).
-      'sprint-111-theme-account-preference.spec.ts': 1,
+    it('les lignes BUDGET de application-e2e.properties disent vrai', () => {
+      const lines = readBudgetLines()
+      for (const slot of [...TUNABLE.map((t) => t.slot), ...AT_DEFAULT]) {
+        const line = lines[slot]
+        expect(line, `ligne « BUDGET ${slot} » absente de application-e2e.properties`).toBeDefined()
+        const { nominal, worst } = computeBudget(slot)
+        const tunable = TUNABLE.find((t) => t.slot === slot)
+        const ceiling = tunable ? readProperty(tunable.property)! : readDefaultCeiling(slot)
+        expect(line, `ligne BUDGET ${slot} périmée — la recopier depuis le recompte`).toEqual({
+          nominal,
+          worst,
+          ceiling,
+          defaultCeiling: readDefaultCeiling(slot),
+        })
+      }
     })
-    // `submitLogin` / `submitResetPassword` sont des fonctions LOCALES de la spec, appelées
-    // 2 et 3 fois : le compteur par regex de #475 les aurait vues 1 fois chacune.
-    // Idem `loginViaForm` (#653), appelée 2 fois : deux appareils, un seul compte.
-    expect(countSpecs('login').perFile).toEqual({
-      'golden-path.spec.ts': 1,
-      'forgot-password.spec.ts': 1,
-      'reset-password-failures.spec.ts': 2,
-      'sprint-111-theme-account-preference.spec.ts': 2,
+
+    it("aucune spec ne consomme le créneau de la preuve d'armement (refresh)", () => {
+      expect(countSpecs('refresh').perFile).toEqual({})
+      const config = readFileSync(PLAYWRIGHT_CONFIG, 'utf8')
+      expect(config, 'projet Playwright dédié `rate-limit-armed` attendu').toMatch(
+        /name:\s*'rate-limit-armed',\s*testMatch:\s*\/rate-limit-armed\\\.proof\\\.ts\/,[\s\S]*?dependencies:\s*\['chromium',\s*'firefox'\]/,
+      )
     })
-    expect(countSpecs('reset-password').perFile).toEqual({
-      'forgot-password.spec.ts': 1,
-      'reset-password-failures.spec.ts': 3,
+
+    it('ancrages sur le dépôt : helpers de support ET helpers locaux de spec', () => {
+      const register = countSpecs('register')
+      expect(register.helpers).toEqual(['registerOnly'])
+      // #832 (S112) : AUCUN helper de support ne se connecte par le formulaire. Une spec
+      // authentifiée qui ne teste pas la connexion prend sa session par
+      // `e2e/support/session.ts#sessionState` (0 jeton) ; `registerAndLogin`, qui invitait à
+      // payer 3 jetons au pire cas pour rien, a été supprimé (zéro appelant).
+      expect(
+        countSpecs('login').helpers,
+        'helper de connexion par formulaire réintroduit dans e2e/support/ : passer par ' +
+          'sessionState (support/session.ts), ou recompter le budget login et le justifier',
+      ).toEqual([])
+      expect(register.perFile).toMatchObject({
+        'golden-path.spec.ts': 1,
+        'forgot-password.spec.ts': 1,
+        'reset-password-failures.spec.ts': 2,
+        // #653 (S111) : UN compte neuf pour la préférence de thème (jamais `SHARED`).
+        'sprint-111-theme-account-preference.spec.ts': 1,
+      })
+      // `submitLogin` / `submitResetPassword` sont des fonctions LOCALES de la spec, appelées
+      // 2 et 3 fois : le compteur par regex de #475 les aurait vues 1 fois chacune.
+      // Idem `loginViaForm` (#653), appelée 2 fois : deux appareils, un seul compte.
+      expect(countSpecs('login').perFile).toEqual({
+        'golden-path.spec.ts': 1,
+        'forgot-password.spec.ts': 1,
+        'reset-password-failures.spec.ts': 2,
+        'sprint-111-theme-account-preference.spec.ts': 2,
+      })
+      expect(countSpecs('reset-password').perFile).toEqual({
+        'forgot-password.spec.ts': 1,
+        'reset-password-failures.spec.ts': 3,
+      })
     })
-  })
-})
+  },
+)
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
