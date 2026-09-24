@@ -94,14 +94,18 @@ export function ProductsListView() {
   const [search, setSearch] = React.useState('')
   const [sort, setSort] = React.useState<SortKey>('nextEvent')
   const [createOpen, setCreateOpen] = React.useState(false)
-  // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide.
-  // Ce déclencheur disparaît dès qu'un produit existe ; Radix rendrait alors le focus à
-  // un nœud détaché, donc à `body`. Deux cas, selon l'état du CTA à la fermeture :
-  //   · CTA déjà démonté (liste rechargée avant la fin de l'animation) : on rend le
-  //     focus au bouton permanent ;
-  //   · CTA encore monté (annulation, OU invalidation non attendue par la mutation) :
-  //     Radix rend le focus au CTA, sans interception. S'il se démonte ensuite en
-  //     détenant ce focus, l'effet ci-dessous le rend au bouton permanent.
+  // Review S90, #700 — focus au retour du drawer de création. Le drawer est contrôlé
+  // (`open`), sans `Dialog.Trigger` : la fermeture de `DialogContent` modal (Radix
+  // Dialog 1.1.6) appelle `preventDefault()` puis `triggerRef.current?.focus()` sur une
+  // ref NULLE — Radix ne rend donc le focus à RIEN, et il tombait sur `body` (mesuré en
+  // E2E, `e2e/sprint-112-focus-return.spec.ts` : rouge avant ce correctif, y compris à
+  // l'ouverture depuis le bouton permanent). On le place donc TOUJOURS nous-mêmes :
+  //   · ouvert depuis le bouton permanent : retour au bouton permanent ;
+  //   · ouvert depuis le CTA d'état vide, CTA encore monté (annulation, OU invalidation
+  //     non attendue par la mutation, PIT-S90-008) : retour au CTA. S'il se démonte
+  //     ensuite en détenant ce focus, l'effet ci-dessous le rend au bouton permanent ;
+  //   · ouvert depuis le CTA, CTA déjà démonté (liste rechargée avant la fin de
+  //     l'animation) : bouton permanent.
   const newButtonRef = React.useRef<HTMLButtonElement>(null)
   const emptyCtaRef = React.useRef<HTMLButtonElement>(null)
   const createFromEmptyRef = React.useRef(false)
@@ -112,13 +116,16 @@ export function ProductsListView() {
     setCreateOpen(true)
   }
   const handleCreateCloseAutoFocus = (event: Event) => {
-    if (!createFromEmptyRef.current) return
+    // #700 — TOUJOURS intercepté : sans `Dialog.Trigger`, Radix ne rend le focus à rien.
+    event.preventDefault()
+    const fromEmpty = createFromEmptyRef.current
     createFromEmptyRef.current = false
-    if (emptyCtaRef.current?.isConnected) {
+    const emptyCta = emptyCtaRef.current
+    if (fromEmpty && emptyCta?.isConnected) {
       focusBackToEmptyCtaRef.current = true
+      emptyCta.focus()
       return
     }
-    event.preventDefault()
     newButtonRef.current?.focus()
   }
   const hasProducts = products.length > 0

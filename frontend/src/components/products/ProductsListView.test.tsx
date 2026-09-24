@@ -52,9 +52,12 @@ vi.mock('react-hot-toast', () => ({
 
 // Drawers/dialog mockés : on expose leur `open` + le mode pour l'assertion.
 // Review S90 — le bouton « close » rejoue la séquence de fermeture Radix : `onOpenChange(false)`
-// puis `onCloseAutoFocus(event annulable)`. Non annulé, Radix rend le focus à l'élément qui
-// l'avait à l'ouverture (FocusScope) ; un nœud détaché ne prend pas le focus, qui reste
-// alors sur `body`. `drawerClose.lastPrevented` garde la trace de l'interception.
+// puis `onCloseAutoFocus(event annulable)`. `drawerClose.lastPrevented` garde la trace de
+// l'interception. #700 — l'ancienne version de ce mock rendait le focus à l'élément actif à
+// l'ouverture quand l'événement n'était pas annulé : c'est ce que fait `FocusScope` NU, pas
+// `DialogContent` modal, qui annule l'événement et vise un `Dialog.Trigger` absent ici. Le
+// mock donnait donc raison au composant là où le navigateur réel perdait le focus sur `body`
+// (`e2e/sprint-112-focus-return.spec.ts`, rouge avant correctif).
 const drawerClose = vi.hoisted(() => ({ lastPrevented: null as boolean | null }))
 
 vi.mock('./ProductDrawer', async () => {
@@ -73,10 +76,6 @@ vi.mock('./ProductDrawer', async () => {
       onOpenChange: (open: boolean) => void
       onCloseAutoFocus?: (event: Event) => void
     }) => {
-      const triggerRef = React.useRef<Element | null>(null)
-      React.useEffect(() => {
-        if (open) triggerRef.current = document.activeElement
-      }, [open])
       return open ? (
         <div data-testid={`product-drawer-${mode}`} data-product={product?.id ?? ''}>
           drawer
@@ -88,8 +87,10 @@ vi.mock('./ProductDrawer', async () => {
               const event = new Event('focusScope.autoFocusOnUnmount', { cancelable: true })
               onCloseAutoFocus?.(event)
               drawerClose.lastPrevented = event.defaultPrevented
-              const trigger = triggerRef.current
-              if (!event.defaultPrevented && trigger instanceof HTMLElement) trigger.focus()
+              // #700 — fidèle à Radix Dialog 1.1.6 (`DialogContentModal`) : non annulé,
+              // Radix appelle `triggerRef.current?.focus()` — ref NULLE sans
+              // `Dialog.Trigger` — donc ne rend le focus à RIEN. Le bouton qui détenait le
+              // focus se démonte : il tombe sur `body`.
             }}
           >
             close
@@ -403,7 +404,7 @@ describe('ProductsListView', () => {
     await user.click(screen.getByTestId('products-empty-cta'))
     await user.click(screen.getByTestId('product-drawer-create-close'))
     // Invalidation non attendue par la mutation : à la fermeture, le CTA est encore là.
-    expect(drawerClose.lastPrevented).toBe(false)
+    expect(drawerClose.lastPrevented).toBe(true)
     expect(document.activeElement).toBe(screen.getByTestId('products-empty-cta'))
     mockProducts()
     rerender(<ProductsListView />)
@@ -411,24 +412,24 @@ describe('ProductsListView', () => {
     expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
   })
 
-  it('review S90 — ouvert depuis le CTA d’état vide puis annulé : Radix rend le focus au CTA', async () => {
+  it('review S90, #700 — ouvert depuis le CTA d’état vide puis annulé : le composant rend le focus au CTA', async () => {
     const user = userEvent.setup()
     mockProducts({ data: [] })
     render(<ProductsListView />)
     await user.click(screen.getByTestId('products-empty-cta'))
     await user.click(screen.getByTestId('product-drawer-create-close'))
     expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
-    expect(drawerClose.lastPrevented).toBe(false)
+    expect(drawerClose.lastPrevented).toBe(true)
     expect(document.activeElement).toBe(screen.getByTestId('products-empty-cta'))
   })
 
-  it('review S90 — drawer ouvert depuis « Nouveau produit » : focus rendu par Radix, sans interception', async () => {
+  it('review S90, #700 — drawer ouvert depuis « Nouveau produit » : le composant lui rend le focus (Radix ne le fait pas)', async () => {
     const user = userEvent.setup()
     mockProducts({ data: [] })
     render(<ProductsListView />)
     await user.click(screen.getByTestId('products-new-button'))
     await user.click(screen.getByTestId('product-drawer-create-close'))
-    expect(drawerClose.lastPrevented).toBe(false)
+    expect(drawerClose.lastPrevented).toBe(true)
     expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
   })
 
