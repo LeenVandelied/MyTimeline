@@ -25,7 +25,8 @@ import { Button } from './button'
  *    colonne de 48 px utiles de la sidebar repliée (#298).
  *  - `labeled` — tiroir mobile du dashboard : bouton bordé, icône + libellé
  *    VISIBLE nommant le thème de destination (« Sombre » en clair, « Clair » en
- *    sombre). Le libellé est le nom accessible : pas d'`aria-label`.
+ *    sombre). Le libellé est le nom accessible : pas d'`aria-label`. Hauteur
+ *    44 px (`h-11`, #830) : il héritait des 36 px de la cva `Button`.
  *
  * Classes et `data-testid` de chaque gabarit sont repris à l'identique de leur
  * ancien emplacement (`shell-sidebar-theme-toggle`,
@@ -154,8 +155,10 @@ export function ThemeToggle({ testId, variant = 'icon', className }: ThemeToggle
         onClick={toggle}
         aria-pressed={pressed}
         data-testid={testId}
+        // #830 — `h-11` (44 px) remplace le `h-9` (36 px) hérité de la cva `Button` :
+        // cible tactile du tiroir mobile, même hauteur que le gabarit `square`.
         className={cn(
-          'text-ink hover:bg-accent-soft border-rule flex items-center justify-start gap-2 border',
+          'text-ink hover:bg-accent-soft border-rule flex h-11 items-center justify-start gap-2 border',
           className,
         )}
       >
