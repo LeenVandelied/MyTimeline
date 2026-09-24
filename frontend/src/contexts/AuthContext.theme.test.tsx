@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthProvider, useAuth } from './AuthContext'
 import { THEME_STORAGE_KEY, useThemeChoice } from '@/hooks/useThemeChoice'
 import type { User } from '@/types/auth'
+import { HANDLES_SERVER_ERROR_INLINE } from '@/services/inlineErrorHandling'
 
 /**
  * #653 — Préférence de thème du compte (ADR-010, BR-AUT-013), côté front.
@@ -151,7 +152,10 @@ describe('#653 — arbitrage à la connexion', () => {
     await mountAnonymousThenLogin(account(null))
 
     expect(updatePreferencesMock).toHaveBeenCalledTimes(1)
-    expect(updatePreferencesMock).toHaveBeenCalledWith({ themePreference: 'dark' })
+    expect(updatePreferencesMock).toHaveBeenCalledWith(
+      { themePreference: 'dark' },
+      HANDLES_SERVER_ERROR_INLINE,
+    )
     // Le thème local n'est pas réécrit : il est déjà le bon.
     expect(setTheme).not.toHaveBeenCalled()
     // La valeur connue du compte suit la réponse du PUT.
@@ -164,7 +168,10 @@ describe('#653 — arbitrage à la connexion', () => {
 
     await mountAnonymousThenLogin(account(null))
 
-    expect(updatePreferencesMock).toHaveBeenCalledWith({ themePreference: 'system' })
+    expect(updatePreferencesMock).toHaveBeenCalledWith(
+      { themePreference: 'system' },
+      HANDLES_SERVER_ERROR_INLINE,
+    )
   })
 
   it('compte sans préférence + aucun choix local : rien n’est écrit, le compte reste null', async () => {
@@ -225,7 +232,10 @@ describe('#653 — bascules après connexion', () => {
     await user.click(screen.getByRole('button', { name: 'choose-dark' }))
 
     expect(setTheme).toHaveBeenCalledWith('dark')
-    expect(updatePreferencesMock).toHaveBeenCalledWith({ themePreference: 'dark' })
+    expect(updatePreferencesMock).toHaveBeenCalledWith(
+      { themePreference: 'dark' },
+      HANDLES_SERVER_ERROR_INLINE,
+    )
     await waitFor(() => expect(screen.getByTestId('pref')).toHaveTextContent('dark'))
   })
 
@@ -297,8 +307,16 @@ describe('#653 — bascules après connexion', () => {
 
     // Sans le suivi de la valeur « en vol », le retour à `light` (valeur
     // confirmée du compte) serait sauté et le compte finirait sur `dark`.
-    expect(updatePreferencesMock).toHaveBeenNthCalledWith(1, { themePreference: 'dark' })
-    expect(updatePreferencesMock).toHaveBeenNthCalledWith(2, { themePreference: 'light' })
+    expect(updatePreferencesMock).toHaveBeenNthCalledWith(
+      1,
+      { themePreference: 'dark' },
+      HANDLES_SERVER_ERROR_INLINE,
+    )
+    expect(updatePreferencesMock).toHaveBeenNthCalledWith(
+      2,
+      { themePreference: 'light' },
+      HANDLES_SERVER_ERROR_INLINE,
+    )
 
     // La réponse périmée du 1er PUT n'écrase pas la valeur connue.
     await act(async () => releaseFirst(account('dark')))

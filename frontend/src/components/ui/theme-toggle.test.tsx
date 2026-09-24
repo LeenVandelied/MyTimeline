@@ -170,6 +170,17 @@ describe('ThemeToggle — gabarits applicatifs (#655)', () => {
     expect(screen.getByRole('button', { name: 'theme.light' })).toBe(button)
   })
 
+  it('labeled : 44 px de haut (#830), le h-9 de la cva Button est remplacé', () => {
+    resolvedTheme = 'light'
+    render(<ThemeToggle testId="t" variant="labeled" />)
+
+    // Classe DÉCLARÉE seulement (jsdom ne met rien en page) : la hauteur RENDUE est
+    // mesurée par `e2e/sprint-111-theme-toggle-unified.spec.ts` à 375 px.
+    const classes = screen.getByTestId('t').className.split(/\s+/)
+    expect(classes).toContain('h-11')
+    expect(classes).not.toContain('h-9')
+  })
+
   it.each([
     ['square', 'light', 'dark'],
     ['square', 'dark', 'light'],

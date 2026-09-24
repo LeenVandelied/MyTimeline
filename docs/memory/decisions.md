@@ -1199,3 +1199,19 @@ Option (b) de #827, choisie par le dev : brancher `notFound()` sur `/products/[p
 
 ## DEC-S111-005 — Pas de plafond de débit sur `PUT /api/me/preferences` pour l'instant
 security-expert (MINEUR) recommandait 10/min/IP comme `PATCH /api/me`. Non appliqué : le limiteur est armé en E2E (#547) et compte par IP, toutes les specs authentifiées partageraient le seau de 127.0.0.1 avec des 429 silencieux. La bonne forme est un plafond par utilisateur → follow-up. (Sprint 111, lead, ADR-010 § 7)
+> ⚠️ **Amendée Sprint 112 (#831, 2026-09-24) — plafond appliqué, PAR UTILISATEUR** : 30 `PUT`/min par id d'utilisateur, via un filtre dédié `UserRateLimitingFilter` monté après l'authentification (avant `AuthorizationFilter`), puisque `RateLimitingFilter` tourne avant `JwtFilter` et ne voit que l'IP. Même 429 que les autres créneaux. Non réglable par profil : la suite E2E émet au plus un `PUT` réel par compte et le seau par utilisateur ignore l'IP partagée. Détail et alternatives : ADR-010 § 7 (amendement S112).
+
+## DEC-S112-001 — Périmètre S112 recalibré à 7 issues ; #832 par helper `storageState` ; #700 reste ouverte
+Arbitrage dev au `/sprint start` : les 4 suites du S111 gardées (~11 pts) ; #832 → option helper `storageState`, plafond `login-per-minute=30` inchangé (relever le plafond rachète de la marge sans rien protéger) ; #700 → E2E livrés, volet VoiceOver/NVDA manuel au dev, issue laissée ouverte (grille `sprints/sprint-112/issue-700-sr-checklist.md`). (Sprint 112)
+
+## DEC-S112-002 — `e2e/support/touch-targets.ts` : profil complet par défaut, `sprint-99` en `BOX_ONLY`
+La factorisation ne devait rien changer à ce que mesure une spec : les 3 divergences deviennent 3 options, et sprint-99 garde son ancien comportement. L'alignement serait neutre aujourd'hui (mesuré) mais reste une décision à part (suite). (Sprint 112 #768)
+
+## DEC-S112-003 — Plafond de `PUT /api/me/preferences` : 30/min par id de compte, filtre dédié, fail-closed
+`UserRateLimitingFilter` avant `AuthorizationFilter` (seul point où le principal existe sans toucher domaine/application), clé `id:<UUID>` stable au renommage, non réglable (≤ 1 PUT réel par compte en E2E), 429 partagé avec `RateLimitingFilter`. Principal authentifié sans id de compte → 401 identique à l'entry point : un fail-open annulerait le plafond pour tout futur mécanisme d'auth (cohérent avec `CallerResolver`, BR-AUT-005). Remplace DEC-S111-005. (Sprint 112 #831 + revue)
+
+## DEC-S112-004 — Opt-out d'erreur par requête étendu à 500 seulement, pas à 409
+#833 demandait 500 ET 409 ; l'intercepteur n'a aucune branche 409 et le contrat d'`inlineErrorHandling.ts` veut que chaque statut du type soit lu dans sa branche → `InlineHandledStatus = 403 | 500`. Le 409 est tenu par un test de non-régression sur la chaîne réelle (PAT-S112-008). (Sprint 112 #833)
+
+## DEC-S112-005 — Session E2E : `sessionState(X)` pour toute spec qui ne teste pas la connexion ; aucun helper de support ne se connecte par formulaire
+`registerAndLogin` supprimé (0 appelant) ; le Vitest de budget refuse tout helper de `e2e/support/` qui émet `login`. Aucune session ne s'obtient sans `POST /api/auth/login`, la seule économie est de ne pas se reconnecter. Budget inchangé (login 14/26/30) ; le vrai levier (passe 2 CI à un seul compte) touche `ci.yml` → suite soumise au dev. (Sprint 112 #832)

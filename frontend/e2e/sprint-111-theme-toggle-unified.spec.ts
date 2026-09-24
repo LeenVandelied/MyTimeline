@@ -25,7 +25,10 @@ import { keepThemeOffSharedAccount } from './support/theme-preference'
  *    les deux sont dans le DOM, c'est le CSS `dark:` qui tranche — un CSS non
  *    compilé les peindrait toutes les deux, ce que `toBeHidden` attrape ;
  *  - gabarit `labeled` : le libellé visible nomme la DESTINATION (fr : « Sombre »
- *    en clair, « Clair » en sombre — `common.theme.dark/light`).
+ *    en clair, « Clair » en sombre — `common.theme.dark/light`) ;
+ *  - cible tactile (#830, Sprint 112) : boîte >= 44×44 pour les DEUX gabarits, même
+ *    assertion `boundingBox` ; `labeled` mesuré à 375 px en clair ET en sombre
+ *    (36 px de haut avant #830, hérités du `h-9` de la cva `Button`).
  *
  * BARRIÈRE D'HYDRATATION (PIT-S83-001). Un clic sur un bouton rendu mais pas
  * encore hydraté est un NO-OP silencieux. La bascule ne pose `aria-pressed`
@@ -121,6 +124,18 @@ async function clickAndExpectFlip(page: Page, toggle: Locator, testId: string): 
   return !before
 }
 
+/**
+ * #830 — cible tactile du gabarit `labeled` : MÊME assertion `boundingBox` que celle
+ * du gabarit `square` ci-dessous, relevée dans le thème courant (le test l'appelle en
+ * clair ET en sombre : la hauteur ne doit dépendre d'aucune variante `dark:`).
+ */
+async function expectLabeledToggleTouchable(toggle: Locator, theme: string): Promise<void> {
+  const box = await toggle.boundingBox()
+  console.log(`[#830 ${theme}] dashboard-mobile-drawer-theme-toggle=${box?.width}x${box?.height}`)
+  expect(box?.width, `largeur de la bascule du tiroir (${theme})`).toBeGreaterThanOrEqual(44)
+  expect(box?.height, `hauteur de la bascule du tiroir (${theme})`).toBeGreaterThanOrEqual(44)
+}
+
 test.describe('#655 — bascules de thème applicatives unifiées', () => {
   test.describe('shell — pied de sidebar (desktop, gabarit square)', () => {
     test.use({ viewport: { width: 1280, height: 900 } })
@@ -178,10 +193,12 @@ test.describe('#655 — bascules de thème applicatives unifiées', () => {
       expect(await isDark(page), 'état initial semé : clair').toBe(false)
       await expectToggleRendersTheme(toggle, false)
       await expect(toggle).toHaveText('Sombre')
+      await expectLabeledToggleTouchable(toggle, 'clair')
 
       expect(await clickAndExpectFlip(page, toggle, testId)).toBe(true)
       await expectToggleRendersTheme(toggle, true)
       await expect(toggle).toHaveText('Clair')
+      await expectLabeledToggleTouchable(toggle, 'sombre')
       // Le tiroir reste ouvert : la bascule ne ferme pas le dialog.
       await expect(drawer).toBeVisible()
 

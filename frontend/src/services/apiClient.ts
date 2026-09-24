@@ -256,7 +256,13 @@ apiClient.interceptors.response.use(
         toast.error(translateApiError(API_ERROR_KEYS.forbidden))
       }
     } else if (error.response?.status === 500) {
-      toast.error(translateApiError(API_ERROR_KEYS.serverError))
+      // #833 — même opt-out PAR REQUÊTE que le 403 (#761) : `PUT /me/preferences`
+      // (`persistThemeChoice`) déclare traiter le 500 en silence — thème local
+      // conservé, échec journalisé. Tout autre appelant garde le toast. Le bus
+      // réseau ci-dessus (`reportServerError`) reste alimenté dans les deux cas.
+      if (!handlesStatusInline(error.config, 500)) {
+        toast.error(translateApiError(API_ERROR_KEYS.serverError))
+      }
     }
     return Promise.reject(error)
   },

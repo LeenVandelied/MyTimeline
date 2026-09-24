@@ -7,7 +7,7 @@ import { PlusCircle, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
-import { TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
+import { TOUCH_TARGET_BUTTON, TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -62,11 +62,12 @@ export function CategoriesView() {
     (category.productCount ?? 0) + (category.archivedProductCount ?? 0)
 
   const [createOpen, setCreateOpen] = React.useState(false)
-  // Review S90 — focus au retour du drawer de création ouvert depuis le CTA d'état vide
-  // (même logique que `ProductsListView`) : CTA déjà démonté à la fermeture → bouton
-  // permanent ; CTA encore monté → Radix lui rend le focus, et s'il se démonte ensuite
-  // en le détenant (invalidation non attendue par la mutation), l'effet ci-dessous le
-  // rend au bouton permanent.
+  // Review S90, #700 — focus au retour du drawer de création (même logique et même
+  // raison que `ProductsListView`) : sans `Dialog.Trigger`, Radix ne rend le focus à
+  // RIEN (il tombait sur `body`), on le place donc toujours nous-mêmes. Ouvert depuis
+  // le bouton permanent → bouton permanent ; depuis le CTA encore monté → CTA, et s'il
+  // se démonte ensuite en le détenant (invalidation non attendue par la mutation),
+  // l'effet ci-dessous le rend au bouton permanent ; CTA déjà démonté → bouton permanent.
   const newButtonRef = React.useRef<HTMLButtonElement>(null)
   const emptyCtaRef = React.useRef<HTMLButtonElement>(null)
   const createFromEmptyRef = React.useRef(false)
@@ -77,13 +78,16 @@ export function CategoriesView() {
     setCreateOpen(true)
   }
   const handleCreateCloseAutoFocus = (event: Event) => {
-    if (!createFromEmptyRef.current) return
+    // #700 — TOUJOURS intercepté : sans `Dialog.Trigger`, Radix ne rend le focus à rien.
+    event.preventDefault()
+    const fromEmpty = createFromEmptyRef.current
     createFromEmptyRef.current = false
-    if (emptyCtaRef.current?.isConnected) {
+    const emptyCta = emptyCtaRef.current
+    if (fromEmpty && emptyCta?.isConnected) {
       focusBackToEmptyCtaRef.current = true
+      emptyCta.focus()
       return
     }
-    event.preventDefault()
     newButtonRef.current?.focus()
   }
   const hasCategories = categories.length > 0
@@ -147,6 +151,8 @@ export function CategoriesView() {
               type="button"
               ref={emptyCtaRef}
               onClick={() => openCreate(true)}
+              // #767 — mesuré 182×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
+              className={TOUCH_TARGET_BUTTON}
               data-testid="categories-empty-cta"
             >
               {t('emptyCta')}

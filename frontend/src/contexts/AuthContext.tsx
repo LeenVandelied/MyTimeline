@@ -17,6 +17,7 @@ import {
   registerUser,
 } from '@/services/authService'
 import { updatePreferences } from '@/services/userService'
+import { HANDLES_SERVER_ERROR_INLINE } from '@/services/inlineErrorHandling'
 import {
   ThemePersistenceContext,
   readStoredThemeChoice,
@@ -139,6 +140,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * 401, 409 (verrou optimiste) et échec réseau sont traités à l'identique :
    * la redirection vers /login sur 401 reste l'affaire de l'intercepteur de
    * `services/apiClient.ts` — ne pas la dupliquer ici (revue S111).
+   * #833 — l'échec étant absorbé ici, le PUT opte out du toast global « erreur
+   * serveur » (500) ; le 409 n'en a pas (aucune branche 409 dans l'intercepteur).
    */
   const persistThemeChoice = useCallback(
     async (choice: ThemeChoice): Promise<void> => {
@@ -147,7 +150,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       accountThemeRef.current = choice
       const seq = ++persistSeqRef.current
       try {
-        const updated = await updatePreferences({ themePreference: choice })
+        const updated = await updatePreferences(
+          { themePreference: choice },
+          HANDLES_SERVER_ERROR_INLINE,
+        )
         // Réponse périmée (un PUT plus récent est parti) ou session changée
         // entre-temps (logout, autre compte) : on ne la recopie pas.
         if (seq === persistSeqRef.current && userRef.current?.id === updated.id) {
