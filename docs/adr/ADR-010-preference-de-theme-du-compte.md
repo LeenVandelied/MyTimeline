@@ -103,15 +103,27 @@ Markdown (le ZIP réutilise les trois).
 
 ### 6. Règle d'arbitrage (exécutée côté FRONT)
 
-À l'établissement d'une session (connexion, ou montage de l'`AuthContext` sur une session
-existante) :
+> **Précisé au Sprint 111, vague 2 (volet front, décision du lead)** — la première rédaction
+> arbitrait aussi « au montage de l'`AuthContext` sur une session existante » et envoyait
+> `system` à défaut de choix local. Les deux points ont été resserrés ci-dessous ; le
+> pourquoi est dans les Conséquences.
 
-- si `themePreference` du compte est **non nulle** → elle s'applique et **écrase** le choix
-  local ;
-- si elle est **nulle** → le choix local courant est envoyé par `PUT /api/me/preferences` et
-  devient celui du compte (s'il n'y a pas de choix local, `next-themes` vaut `system` : c'est
-  cette valeur qui est envoyée) ;
-- ensuite, toute bascule écrit **localement et** sur le compte.
+À la **connexion explicite** (succès de `login` dans `AuthContext`) — et **pas** à la
+restauration d'une session existante au montage (`GET /api/auth/me` sur cookie) :
+
+- si `themePreference` du compte est **non nulle** → elle s'applique localement et **écrase**
+  le choix local ; elle n'est **pas** réécrite sur le compte ;
+- si elle est **nulle** et qu'un choix local **explicite** existe (clé `theme` présente dans
+  `localStorage` : next-themes ne l'écrit que sur un choix) → ce choix est envoyé par
+  `PUT /api/me/preferences` et devient celui du compte ;
+- si elle est **nulle** et qu'il n'y a **aucun** choix local → rien n'est écrit, le compte
+  reste `null` (le thème affiché, `system` par défaut, n'est pas un choix) ;
+- ensuite, toute bascule écrit **localement et**, si un utilisateur est authentifié, sur le
+  compte (pas d'appel si la valeur est déjà celle du compte). Un `PUT` en échec laisse le
+  thème local appliqué, sans retour arrière visuel ni message bloquant.
+
+`register` n'est pas un point d'arbitrage : l'inscription n'ouvre pas de session (aucun cookie
+posé, l'écran renvoie vers la connexion) — l'arbitrage a lieu au login qui suit.
 
 Le serveur ne tranche pas : il n'a pas connaissance du choix local. Il garantit seulement les
 deux primitives (lecture avec `null` distinguable, écriture stricte).
@@ -134,6 +146,20 @@ deux primitives (lecture avec `null` distinguable, écriture stricte).
 - Le contrat Zod `UserSchema` du front (vague 2) doit accepter `themePreference` nullable ; un
   schéma qui le rendrait obligatoire et non nul casserait la lecture de tout compte existant.
 - La prochaine migration est **V17**.
+- **Arbitrage à la connexion explicite seulement** (S111, vague 2). Raisons : lecture littérale
+  de « à la connexion » (temps 2 de DEC-S82-009) ; et une vingtaine de specs E2E fixent le thème
+  par `localStorage` sous la session partagée (`storageState`) — un arbitrage au montage les
+  rendrait dépendantes de l'ordre d'exécution des specs qui basculent le thème sur ce compte.
+  **Conséquence assumée** : un appareil déjà connecté ne suit une préférence changée ailleurs
+  qu'à sa **reconnexion** (pas au rechargement).
+- **Aucun choix local → aucune écriture** : le compte reste `null` tant qu'aucun choix n'a été
+  fait, ni avant ni après connexion. Envoyer `system` par défaut aurait fabriqué un choix
+  explicite que l'utilisateur n'a jamais exprimé — la distinction `null`/`system` du § 1 le
+  perdrait dès la première connexion.
+- Front : `hooks/useThemeChoice.ts` reste le seul module qui écrit le thème ; la persistance
+  lui est injectée par `ThemePersistenceContext` (fourni par `AuthProvider`), l'application
+  sans réécriture passe par `useApplyAccountTheme` (réservé à `AuthProvider`). La clé
+  `localStorage` est imposée à next-themes (`THEME_STORAGE_KEY`).
 
 ## Risques assumés
 
