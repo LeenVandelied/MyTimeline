@@ -1024,3 +1024,9 @@ Problème : empêcher le retour de `font-mono tracking-widest uppercase` hors `.
 
 ## PAT-S109-002 — Testid d'une branche morte supprimé : ré-armer l'attente E2E, ne pas la vider
 Quand une spec attend `toHaveCount(0)` sur un testid de chargement qu'on supprime, la re-cibler sur le testid de chargement des DONNÉES monté sous le `ready` (`products-loading`, `product-detail-loading`), pas `loading: ''` qui supprime l'attente. (Sprint 109 #697, `sprint-100-fab-clearance`)
+
+## PAT-S110-001 — « Aujourd'hui » dans un écran prérendu : rendu neutre, date en effet, barrière `data-*-ready`
+`/_not-found` est prérendu au build : un `new Date()` pendant le rendu servirait indéfiniment la date du build et provoquerait un mismatch d'hydratation. Premier rendu neutre à dimensions réservées (espaces insécables), date du navigateur posée en `useEffect`, attribut `data-ephemeris-ready` comme barrière E2E nommée. Preuves : `renderToString` et `request.get` sans chiffre dans le TEXTE du composant (PIT-S110-001), jour du feuillet = `page.evaluate(() => new Date().getDate())`. (Sprint 110 #627, `EphemerisLeaf.tsx`)
+
+## PAT-S110-002 — Traitement identique sur deux écrans hors provider : composant pur partagé + test de parité des messages inlinés
+`[locale]/error.tsx` (dans next-intl) et `global-error.tsx` (hors provider, `MESSAGES` inlinés) affichent la même référence d'incident : un composant pur (`IncidentReference`, `StateScreen.tsx`) qui reçoit libellé et valeur déjà résolus garantit l'identité par construction ; un test `it.each` compare les `MESSAGES` inlinés aux 4 `errors.json` et rougit à la moindre dérive (même motif pour `global-not-found-screen.tsx`). (Sprint 110 #627, #628)

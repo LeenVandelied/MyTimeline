@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 import {
+  IncidentReference,
   StateScreen,
   stateActionPrimary,
   stateActionSecondary,
@@ -48,12 +49,18 @@ import type { CSSProperties } from 'react'
  * pages nominales, elles, tiennent leur `lang` des params de route.
  *
  * `"use client"` + `{ error, reset }` obligatoires (crash boundary React).
+ *
+ * #628 — `error.digest` (hash opaque, non réversible : cf. rapport d'issue) est
+ * affiché en fin de rangée d'actions via `IncidentReference`. `incidentRef`
+ * doit rester au mot près identique à `crash.incidentRef` des 4 `errors.json`
+ * (aucun provider next-intl ici, cf. parité déjà exigée pour les 4 autres clés).
  */
 type GlobalErrorMessages = {
   title: string
   description: string
   retry: string
   backHome: string
+  incidentRef: string
 }
 
 const MESSAGES: Record<string, GlobalErrorMessages> = {
@@ -62,18 +69,21 @@ const MESSAGES: Record<string, GlobalErrorMessages> = {
     description: 'Un problème inattendu s’est produit. Réessayez ou revenez à l’accueil.',
     retry: 'Réessayer',
     backHome: 'Retour à l’accueil',
+    incidentRef: 'Référence à communiquer au support :',
   },
   en: {
     title: 'Something went wrong',
     description: 'An unexpected error occurred. Try again or go back home.',
     retry: 'Try again',
     backHome: 'Back to home',
+    incidentRef: 'Reference for support:',
   },
   es: {
     title: 'Se produjo un error',
     description: 'Ocurrió un problema inesperado. Inténtalo de nuevo o vuelve al inicio.',
     retry: 'Reintentar',
     backHome: 'Volver al inicio',
+    incidentRef: 'Referencia para soporte:',
   },
   de: {
     title: 'Ein Fehler ist aufgetreten',
@@ -81,6 +91,7 @@ const MESSAGES: Record<string, GlobalErrorMessages> = {
       'Ein unerwartetes Problem ist aufgetreten. Versuchen Sie es erneut oder kehren Sie zur Startseite zurück.',
     retry: 'Erneut versuchen',
     backHome: 'Zurück zur Startseite',
+    incidentRef: 'Referenz für den Support:',
   },
 }
 
@@ -135,6 +146,11 @@ export default function GlobalError({
               >
                 {m.backHome}
               </a>
+              <IncidentReference
+                digest={error.digest}
+                label={m.incidentRef}
+                testId="global-error-incident-ref"
+              />
             </>
           }
         />

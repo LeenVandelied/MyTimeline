@@ -938,6 +938,9 @@ Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,
 Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)
 
 
+## PIT-S110-003 — `test-quiet.sh frontend-unit` ne conserve pas de log : un rouge isolé devient inidentifiable
+Suite complète : 2216/2217 au 1er run, puis 2217/2217 ×2 — le nom du test rouge était perdu (aucun fichier de log, sortie résumée). Pour tout run complet dont on devra peut-être expliquer un rouge, lancer `rtk proxy npx vitest run --reporter=json --outputFile=<fichier>` et lire `numFailedTests` + `assertionResults` en Python. (Sprint 110, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

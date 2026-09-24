@@ -2060,3 +2060,12 @@ La sortie brute dit « No ESLint warnings or errors ». Lire tout verdict lint/p
 
 ## PIT-S109-004 — ` ` écrit par l'outil Write atterrit comme caractère invisible dans une regex
 La séquence d'échappement devient le caractère U+2009 littéral. Contrôler les octets (`od -c`) après écriture d'une regex d'espaces Unicode. (Sprint 109 #664)
+
+## PIT-S110-001 — Une assertion « aucun chiffre » sur du HTML rougit sur le balisage, pas sur le texte
+Pour prouver qu'un écran prérendu ne fige pas une date, `expect(html).not.toMatch(/\d/)` échoue à tort : les classes Tailwind arbitraires (`w-[150px]`, `px-2.5`, `text-[62px]`) contiennent des chiffres. Retirer les balises (`html.replace(/<[^>]*>/g, '')`) ou isoler le texte du composant avant l'assertion — en unitaire (`renderToString`) comme en E2E (`request.get`). (Sprint 110 #627)
+
+## PIT-S110-002 — Une maquette antérieure à une décision d'accessibilité ou de voix ne se recopie pas dans le briefing
+Le lead a prescrit le vouvoiement partout et les couleurs de la maquette `États système` ; deux prémisses fausses, rattrapées par l'agent : es tutoie déjà dans `errors.json`, et la maquette peint du texte en `ink-faint`, que DEC-S97-001 réserve au non-textuel. Avant de briefer un texte ou une encre repris d'une maquette : lire la voix EXISTANTE de chaque locale dans le namespace concerné et confronter chaque encre de texte aux décisions `DEC-*` d'accessibilité. (Sprint 110, lead)
+
+## PIT-S110-003 — `test-quiet.sh frontend-unit` ne conserve pas de log : un rouge isolé devient inidentifiable
+Suite complète : 2216/2217 au 1er run, puis 2217/2217 ×2 — le nom du test rouge était perdu (aucun fichier de log, sortie résumée). Pour tout run complet dont on devra peut-être expliquer un rouge, lancer `rtk proxy npx vitest run --reporter=json --outputFile=<fichier>` et lire `numFailedTests` + `assertionResults` en Python. (Sprint 110, lead)

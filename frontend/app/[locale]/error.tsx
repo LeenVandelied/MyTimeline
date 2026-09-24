@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { AlertTriangle, ShieldAlert } from 'lucide-react'
 
 import {
+  IncidentReference,
   StateScreen,
   stateActionPrimary,
   stateActionSecondary,
@@ -27,6 +28,10 @@ import { isForbiddenError } from '@/lib/state-errors'
  * Rendu DANS le `NextIntlClientProvider` (le layout persiste, seul le contenu
  * enfant erroné est remplacé) → `useLocale`/`useTranslations` résolvent. Lien de
  * retour préfixé locale. Clair + sombre via tokens Graphite.
+ *
+ * #628 — `error.digest` (hash opaque, non réversible : cf. rapport d'issue) est
+ * affiché en fin de rangée d'actions via `IncidentReference`, sur les DEUX
+ * branches (500 et 403) : rien si absent (dev, ou erreur CLIENT).
  */
 export default function LocaleError({
   error,
@@ -71,6 +76,11 @@ export default function LocaleError({
           >
             {t('backHome')}
           </Link>
+          <IncidentReference
+            digest={error.digest}
+            label={t('incidentRef')}
+            testId="error-incident-ref"
+          />
         </>
       }
     />

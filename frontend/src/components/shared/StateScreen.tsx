@@ -28,6 +28,21 @@ export interface StateScreenProps {
   icon?: React.ReactNode
   /** Actions (liens/bouton). Déjà traduites et préfixées locale par l'appelant. */
   actions?: React.ReactNode
+  /**
+   * #627 — Sur-titre mono au-dessus du titre (`.mt-eyebrow`), déjà traduit
+   * (ex. « Erreur 404 »). Absent par défaut : aucun appelant existant n'en porte.
+   */
+  eyebrow?: string
+  /**
+   * #627 — Élément latéral (feuillet d'éphéméride du 404). Quand il est fourni,
+   * la mise en page passe en « feuillet + texte » : colonne sur mobile, rangée à
+   * partir de `sm`, texte aligné à gauche. L'appelant gère son accessibilité
+   * (le feuillet se déclare lui-même `aria-hidden`). Dans cette variante, `icon`
+   * et `code` ne sont PAS rendus : la maquette ne porte le code que dans le
+   * sur-titre (`eyebrow`). Sans `aside`, le rendu est STRICTEMENT celui d'avant
+   * #627 (écrans 500 / 403 inchangés).
+   */
+  aside?: React.ReactNode
   className?: string
   /** `data-testid` de la racine. Défaut `state-screen`. */
   testId?: string
@@ -49,15 +64,98 @@ export const stateActionSecondary = cn(
   'border border-rule-emphasis text-ink transition-colors hover:bg-surface-2',
 )
 
+/**
+ * #628 — Référence d'incident (`error.digest`) affichée dans la rangée
+ * d'actions des écrans 500 / 403 (`[locale]/error.tsx`, `global-error.tsx`).
+ * `digest` n'existe que pour les erreurs SERVEUR en production (Next masque le
+ * message ailleurs) : `null`/`undefined`/`''` → rien de rendu, pas d'espace
+ * réservé. `label` est déjà traduit par l'appelant et doit expliciter l'usage
+ * (« à communiquer au support ») : le texte visible porte l'explication, pas
+ * un `title` seul. Taille au barème DS : `text-2xs` (13 px, le token le plus
+ * proche des 11 px de la maquette — même convention que `HowItWorksSection`).
+ * Couleur `text-ink-muted` (DEC-S97-001 réserve `ink-faint` au non-textuel).
+ * Valeur en `.mt-num` (mono + tabular-nums, DS `i18n.css` §7) avec `break-all`
+ * pour ne pas déborder à 375 px, et `select-all` pour rester copiable en un
+ * geste vers le support.
+ */
+export interface IncidentReferenceProps {
+  /** `error.digest` — hash opaque non réversible (cf. preuve node_modules/next). */
+  digest?: string
+  /** Libellé déjà traduit expliquant l'usage, terminé par « : ». */
+  label: string
+  /** `data-testid` du conteneur ; la valeur porte `${testId}-value`. */
+  testId?: string
+}
+
+export function IncidentReference({
+  digest,
+  label,
+  testId = 'incident-ref',
+}: IncidentReferenceProps) {
+  if (!digest) return null
+  return (
+    <span className="text-ink-muted text-2xs" data-testid={testId}>
+      {label}{' '}
+      <span className="mt-num break-all select-all" data-testid={`${testId}-value`}>
+        {digest}
+      </span>
+    </span>
+  )
+}
+
 export function StateScreen({
   code,
   title,
   description,
   icon,
   actions,
+  eyebrow,
+  aside,
   className,
   testId = 'state-screen',
 }: StateScreenProps) {
+  const eyebrowNode = eyebrow ? (
+    <p className="mt-eyebrow" data-testid="state-screen-eyebrow">
+      {eyebrow}
+    </p>
+  ) : null
+
+  if (aside) {
+    // #627 — Variante « feuillet + texte » (maquette 404, `gap:28px`). Le titre
+    // reste un `<h1>` : c'est le titre de la PAGE (le `h2` de la maquette est un
+    // artefact de planche). Police display, graisse et `tracking-tight` viennent
+    // déjà de la règle `h1` du DS (`ds/tokens/base.css`). Tailles au barème DS :
+    // titre `text-lg` (27 px, maquette 25 px), paragraphe `text-xs` (15 px,
+    // maquette 14 px) avec `leading-normal` explicite (1.5, maquette) contre le
+    // `line-height` apparié à `text-*` (PIT-S53-001).
+    return (
+      <main
+        data-testid={testId}
+        className={cn(
+          'bg-bg text-ink flex min-h-[100dvh] flex-col items-center justify-center px-6 py-16',
+          className,
+        )}
+      >
+        <div
+          data-testid="state-screen-with-aside"
+          className="flex w-full max-w-xl flex-col items-start gap-7 sm:flex-row sm:items-center"
+        >
+          {aside}
+          <div className="flex min-w-0 flex-1 flex-col items-start text-left">
+            {eyebrowNode ? <div className="mb-2.5">{eyebrowNode}</div> : null}
+            <h1 className="text-ink mb-2.5 text-lg font-semibold text-balance">{title}</h1>
+            {description ? (
+              <p className="text-ink-muted text-xs leading-normal text-pretty">{description}</p>
+            ) : null}
+            {actions ? (
+              <div className="mt-5 flex flex-wrap items-center justify-start gap-3">{actions}</div>
+            ) : null}
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main
       data-testid={testId}
@@ -72,6 +170,7 @@ export function StateScreen({
             {icon}
           </div>
         ) : null}
+        {eyebrowNode}
         {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums (rendu identique)
             + `direction:ltr; unicode-bidi:isolate`, pour qu'un code ne se réordonne
             pas en contexte RTL. PAS d'`Intl.NumberFormat` ici : `code` est un
