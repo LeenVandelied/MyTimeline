@@ -1,6 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { UserSchema, type User } from '@/types/user'
 import type { ThemeOption } from '@/types/settings'
+import type { InlineErrorOptions } from './inlineErrorHandling'
 
 /**
  * #86 — Appels réseau du profil de l'utilisateur COURANT (`/api/me`). L'identité
@@ -48,9 +49,16 @@ export interface PreferencesPayload {
  * (ADR-010). Idempotent ; 400 pour toute valeur hors `light|dark|system` (le
  * type l'interdit) ; on ne peut PAS remettre le compte à `null`. Renvoie le
  * `UserResponse` à jour, dont `AuthProvider` recopie la valeur connue.
+ *
+ * #833 — `options` (opt-out du toast global, cf. `inlineErrorHandling.ts`) est
+ * fourni par l'APPELANT, jamais posé ici : un futur appelant qui n'absorbe pas
+ * l'échec garde le toast par défaut.
  */
-export const updatePreferences = async (payload: PreferencesPayload): Promise<User> => {
-  const response = await apiClient.put('/me/preferences', payload)
+export const updatePreferences = async (
+  payload: PreferencesPayload,
+  options?: InlineErrorOptions,
+): Promise<User> => {
+  const response = await apiClient.put('/me/preferences', payload, options)
   return UserSchema.parse(response.data)
 }
 

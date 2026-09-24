@@ -13,13 +13,20 @@ import type { AxiosRequestConfig } from 'axios'
  * Ici, c'est l'appel lui-même qui déclare « j'affiche ce statut », et seul l'écran
  * qui le fait réellement passe l'option.
  *
- * POURQUOI LE TYPE EST RESTREINT AU 403 : le 401 doit TOUJOURS rediriger vers la
- * page de connexion (session expirée) — un écran ne peut pas le « gérer inline ».
- * Les 400/500 ont leurs propres règles (#713, bus réseau #76). Élargir ce type est
- * une décision, pas un détail : chaque statut ajouté doit être lu dans la branche
- * correspondante de l'intercepteur, et nulle part ailleurs.
+ * POURQUOI LE TYPE EST RESTREINT À 403 ET 500 : le 401 doit TOUJOURS rediriger vers
+ * la page de connexion (session expirée) — un écran ne peut pas le « gérer inline ».
+ * Le 400 a sa propre règle, par URL (#713). Élargir ce type est une décision, pas un
+ * détail : chaque statut ajouté doit être lu dans la branche correspondante de
+ * l'intercepteur, et nulle part ailleurs.
+ *
+ * #833 — 500 ajouté pour `PUT /me/preferences` (cf. `HANDLES_SERVER_ERROR_INLINE`).
+ * Le 409 n'y figure PAS : l'intercepteur n'a aucune branche 409 (aucun toast,
+ * mesuré au S112), un 409 dans ce type ne serait lu nulle part. Ajouter une branche
+ * 409 à l'intercepteur = ajouter 409 ici ET le lire dans cette branche.
+ * ⚠ L'opt-out 500 ne coupe QUE le toast : le bus réseau (#76,
+ * `networkStatusStore.reportServerError`) reste alimenté, la santé serveur est globale.
  */
-export type InlineHandledStatus = 403
+export type InlineHandledStatus = 403 | 500
 
 declare module 'axios' {
   interface AxiosRequestConfig {
@@ -38,6 +45,17 @@ export type InlineErrorOptions = Pick<AxiosRequestConfig, 'inlineHandledStatuses
  */
 export const HANDLES_FORBIDDEN_INLINE: InlineErrorOptions = Object.freeze({
   inlineHandledStatuses: Object.freeze([403] as const),
+})
+
+/**
+ * #833 — À passer UNIQUEMENT par un appelant pour qui l'échec serveur est SANS
+ * conséquence visible et déjà traité : aujourd'hui `persistThemeChoice`
+ * (`AuthContext.tsx`), qui garde le thème choisi localement et journalise l'échec.
+ * Un appelant qui laisse l'utilisateur sans retour (formulaire, suppression…) ne
+ * doit PAS s'en servir : le toast « erreur serveur » serait son seul signalement.
+ */
+export const HANDLES_SERVER_ERROR_INLINE: InlineErrorOptions = Object.freeze({
+  inlineHandledStatuses: Object.freeze([500] as const),
 })
 
 /** Vrai si la requête a déclaré rendre ce statut inline. */
