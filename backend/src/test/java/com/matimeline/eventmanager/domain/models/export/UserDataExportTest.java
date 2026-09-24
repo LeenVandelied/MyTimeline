@@ -18,6 +18,7 @@ import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.models.export.UserDataExport.ExportedEvent;
 import com.matimeline.eventmanager.domain.models.export.UserDataExport.ExportedProduct;
@@ -47,6 +48,16 @@ class UserDataExportTest {
         assertEquals("alice@example.test", profile.email());
         assertEquals("ROLE_USER", profile.role());
         assertFalse(profile.avatarPresent(), "aucun avatar posé -> avatarPresent=false");
+        assertNull(profile.themePreference(), "#653 : aucun choix explicite -> null (pas un défaut inventé)");
+    }
+
+    @Test
+    void assemble_exportsThemePreferenceAsLowercaseValue() {
+        // #653 (BR-AUT-013) : la préférence de thème est une donnée personnelle exportée.
+        User user = new User(UUID.randomUUID(), "Dan", "dan", PASSWORD_HASH, "ROLE_USER", "dan@example.test",
+                null, ThemePreference.DARK);
+        UserDataExport export = UserDataExport.assemble(user, List.of(), List.of(), GENERATED_AT);
+        assertEquals("dark", export.profile().themePreference());
     }
 
     @Test

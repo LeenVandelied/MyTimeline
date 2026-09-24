@@ -24,6 +24,7 @@ import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.models.export.ExportFormat;
 import com.matimeline.eventmanager.domain.models.export.RenderedExport;
@@ -196,5 +197,43 @@ class ExportRenderersTest {
         assertTrue(new CsvExportRenderer().supports(ExportFormat.CSV));
         assertTrue(new ZipExportRenderer(new JsonExportRenderer(), new MarkdownExportRenderer(),
                 new CsvExportRenderer()).supports(ExportFormat.ZIP));
+    }
+
+    // ----- #653 (BR-AUT-013) : préférence de thème dans les 3 formats -----
+
+    private UserDataExport exportWithTheme(ThemePreference preference) {
+        User user = new User(UUID.randomUUID(), "Tia", "tia", PASSWORD_HASH, "ROLE_USER", "tia@example.test",
+                null, preference);
+        return UserDataExport.assemble(user, List.of(), List.of(), LocalDateTime.of(2026, 9, 24, 10, 0));
+    }
+
+    @Test
+    void json_exportsThemePreference_andNullWhenNoChoice() {
+        String withChoice = new String(new JsonExportRenderer().render(exportWithTheme(ThemePreference.SYSTEM))
+                .content(), StandardCharsets.UTF_8);
+        assertTrue(withChoice.matches("(?s).*\"themePreference\"\\s*:\\s*\"system\".*"), withChoice);
+
+        String noChoice = new String(new JsonExportRenderer().render(exportWithTheme(null))
+                .content(), StandardCharsets.UTF_8);
+        assertTrue(noChoice.matches("(?s).*\"themePreference\"\\s*:\\s*null.*"), noChoice);
+    }
+
+    @Test
+    void csv_profileHeaderAndRowCarryThemePreference() {
+        String csv = new String(new CsvExportRenderer().render(exportWithTheme(ThemePreference.LIGHT))
+                .content(), StandardCharsets.UTF_8);
+        assertTrue(csv.contains("id,username,name,email,role,avatarPresent,themePreference\n"), csv);
+        assertTrue(csv.contains(",false,light\n"), csv);
+    }
+
+    @Test
+    void markdown_profileListsThemePreference_orNoneWhenNoChoice() {
+        String md = new String(new MarkdownExportRenderer().render(exportWithTheme(ThemePreference.DARK))
+                .content(), StandardCharsets.UTF_8);
+        assertTrue(md.contains("- **Préférence de thème** : dark"), md);
+
+        String none = new String(new MarkdownExportRenderer().render(exportWithTheme(null))
+                .content(), StandardCharsets.UTF_8);
+        assertTrue(none.contains("- **Préférence de thème** : aucune"), none);
     }
 }

@@ -19,8 +19,9 @@ import com.matimeline.eventmanager.domain.models.User;
  * <p>Domaine PUR (aucun framework). L'assemblage passe par {@link #assemble} qui recopie
  * CHAMP PAR CHAMP les seules données de portabilité :
  * <ul>
- *   <li>profil : id, username, name, email, role — <b>JAMAIS le password hash</b>
- *       (BR-AUT-002) ni les octets d'avatar (seul {@code avatarPresent} est noté) ;</li>
+ *   <li>profil : id, username, name, email, role, préférence de thème (#653, valeur
+ *       minuscule ou {@code null}) — <b>JAMAIS le password hash</b> (BR-AUT-002) ni les
+ *       octets d'avatar (seul {@code avatarPresent} est noté) ;</li>
  *   <li>produits (actifs) + leurs événements imbriqués ;</li>
  *   <li>catégories possédées.</li>
  * </ul>
@@ -40,7 +41,9 @@ public record UserDataExport(
             String name,
             String email,
             String role,
-            boolean avatarPresent) {
+            boolean avatarPresent,
+            // #653 (BR-AUT-013) : "light"/"dark"/"system", ou null = aucun choix explicite.
+            String themePreference) {
     }
 
     /** Catégorie possédée par l'utilisateur. */
@@ -95,7 +98,8 @@ public record UserDataExport(
                 user.getName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getAvatar() != null && !user.getAvatar().isBlank());
+                user.getAvatar() != null && !user.getAvatar().isBlank(),
+                user.getThemePreference() != null ? user.getThemePreference().value() : null);
 
         List<ExportedCategory> exportedCategories = categories.stream()
                 .map(c -> new ExportedCategory(c.getId(), c.getName(), c.getColor(), c.getDescription()))

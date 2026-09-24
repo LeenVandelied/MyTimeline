@@ -14,10 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.matimeline.eventmanager.application.dtos.ChangePasswordRequest;
 import com.matimeline.eventmanager.application.dtos.DeleteAccountRequest;
+import com.matimeline.eventmanager.application.dtos.UpdatePreferencesRequest;
 import com.matimeline.eventmanager.application.dtos.UserResponse;
 import com.matimeline.eventmanager.application.dtos.UserUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.models.AvatarContent;
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.AvatarService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
@@ -138,6 +140,31 @@ public class UserController {
                 caller.getAvatar());
 
         User saved = userService.updateUser(updated);
+        return ResponseEntity.ok(UserResponse.fromDomain(saved));
+    }
+
+    /**
+     * PUT /api/me/preferences — pose la préférence de thème du compte courant (#653,
+     * ADR-010, BR-AUT-013). Route DÉDIÉE : {@code PATCH /api/me} n'est pas assoupli (il
+     * exige name/username/email et porte l'oracle 409 du username, #134).
+     *
+     * <p>Corps {@code {"themePreference":"light"|"dark"|"system"}}, validation stricte
+     * ({@link UpdatePreferencesRequest}) : toute autre valeur, {@code null} ou absente -> 400.
+     * Remplacement idempotent. Identité TOUJOURS dérivée du JWT ({@code CallerResolver}),
+     * jamais du corps (ownership structurel). 401 si non authentifié ; 200 +
+     * {@code UserResponse} à jour (BR-AUT-008 : jamais le hash).
+     *
+     * <p>Hors rate-limit, délibérément (cf. {@code RateLimitingFilter}, ADR-010 § 7).
+     */
+    @PutMapping("/preferences")
+    public ResponseEntity<?> updatePreferences(@Valid @RequestBody UpdatePreferencesRequest request) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        // @Pattern garantit une valeur connue : fromValue ne peut pas lever ici.
+        ThemePreference preference = ThemePreference.fromValue(request.themePreference());
+        User saved = userService.updateThemePreference(callerOpt.get(), preference);
         return ResponseEntity.ok(UserResponse.fromDomain(saved));
     }
 

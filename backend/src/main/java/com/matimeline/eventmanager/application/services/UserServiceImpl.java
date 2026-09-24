@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.matimeline.eventmanager.domain.exceptions.AccountDeletionMismatchException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
+import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -128,6 +130,18 @@ public class UserServiceImpl implements UserService {
         //   - Analytics / métriques agrégées : ne stockent pas d'identifiant nominatif
         //     (ou pseudonymisé), donc non concernées par l'effacement individuel.
         // Aucune copie de sauvegarde n'est restaurée pour re-matérialiser le compte.
+    }
+
+    @Override
+    @Transactional
+    public User updateThemePreference(User caller, ThemePreference preference) {
+        // #653 : chemin d'écriture DÉDIÉ (ADR-010 § 3) — pas de reconstruction du User
+        // complet, donc aucun risque d'écraser un autre champ ni d'être écrasé par save().
+        // Jamais de remise à « aucun choix » (null) : le contrôleur le refuse déjà en 400,
+        // ce garde protège tout autre appelant du port.
+        java.util.Objects.requireNonNull(preference, "themePreference");
+        return userRepository.updateThemePreference(caller.getId(), preference)
+                .orElseThrow(() -> new UserNotFoundException(caller.getId()));
     }
 
     @Override

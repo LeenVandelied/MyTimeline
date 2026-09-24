@@ -49,7 +49,10 @@ public class MarkdownExportRenderer implements ExportRenderer {
         md.append("- **Nom** : ").append(nz(p.name())).append("\n");
         md.append("- **Email** : ").append(nz(p.email())).append("\n");
         md.append("- **Rôle** : ").append(nz(p.role())).append("\n");
-        md.append("- **Avatar** : ").append(p.avatarPresent() ? "présent" : "aucun").append("\n\n");
+        md.append("- **Avatar** : ").append(p.avatarPresent() ? "présent" : "aucun").append("\n");
+        // #653 : null = aucun choix explicite du compte.
+        md.append("- **Préférence de thème** : ")
+                .append(p.themePreference() != null ? p.themePreference() : "aucune").append("\n\n");
     }
 
     private void appendCategories(StringBuilder md, UserDataExport data) {

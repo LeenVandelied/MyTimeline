@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.matimeline.eventmanager.application.mappers.UserMapper;
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.UserRepository;
 import com.matimeline.eventmanager.infrastructure.entities.UserEntity;
@@ -40,7 +41,7 @@ public class UserRepositoryJpaImpl
         if (results.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(userMapper.toDomain(results.get(0)));
+        return Optional.of(toDomain(results.get(0)));
     }
 
     @Override
@@ -58,12 +59,12 @@ public class UserRepositoryJpaImpl
         if (results.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(userMapper.toDomain(results.get(0)));
+        return Optional.of(toDomain(results.get(0)));
     }
 
     @Override
     public Optional<User> findDomainUserById(UUID id) {
-        return super.findById(id).map(userMapper::toDomain);
+        return super.findById(id).map(this::toDomain);
     }
 
     // PIT-S10-003 (aligné sur Product/EventRepositoryJpaImpl.save) : UserEntity porte
@@ -82,7 +83,7 @@ public class UserRepositoryJpaImpl
             UserEntity managed = super.findById(domainUser.getId()).orElse(null);
             if (managed != null) {
                 copyMutableFields(domainUser, managed);
-                return userMapper.toDomain(super.save(managed));
+                return toDomain(super.save(managed));
             }
         }
 
@@ -92,9 +93,26 @@ public class UserRepositoryJpaImpl
         // renvoie un message et relit l'utilisateur par username au login).
         UserEntity entity = userMapper.toEntity(domainUser);
         entity.setId(null);
-        return userMapper.toDomain(super.save(entity));
+        // #653 : posée ici (infrastructure) et non dans UserMapper — cf. toDomain ci-dessous.
+        entity.setThemePreference(domainUser.getThemePreference());
+        return toDomain(super.save(entity));
     }
 
+    /**
+     * #653 : {@code UserMapper} (couche application) + hydratation de {@code themePreference}
+     * ICI, dans l'adaptateur. Étendre {@code UserMapper} aurait ajouté deux dépendances
+     * application -> infrastructure ({@code UserEntity.get/setThemePreference}), refusées par
+     * {@code ArchitectureTest#domainAndApplicationShouldNotDependOnInfrastructure} (dette gelée :
+     * on ne l'aggrave pas). Tout User lu par ce repository porte donc la préférence.
+     */
+    private User toDomain(UserEntity entity) {
+        return userMapper.toDomain(entity).withThemePreference(entity.getThemePreference());
+    }
+
+    // #653 (ADR-010 § 3) : themePreference n'est VOLONTAIREMENT PAS recopiée ici. Cinq
+    // chemins reconstruisent un User pour le sauver (PATCH profil, change/reset-password,
+    // upload/suppression d'avatar) sans la porter : la recopier l'effacerait à chaque
+    // modification de profil. Seul updateThemePreference l'écrit.
     private void copyMutableFields(User source, UserEntity target) {
         target.setName(source.getName());
         target.setUsername(source.getUsername());
@@ -102,6 +120,16 @@ public class UserRepositoryJpaImpl
         target.setRole(source.getRole());
         target.setEmail(source.getEmail());
         target.setAvatar(source.getAvatar());
+    }
+
+    @Override
+    public Optional<User> updateThemePreference(UUID userId, ThemePreference preference) {
+        // Entité GÉRÉE (même motif que la branche mise à jour de save) : @Version et
+        // updated_at restent pilotés par Hibernate.
+        return super.findById(userId).map(managed -> {
+            managed.setThemePreference(preference);
+            return toDomain(super.save(managed));
+        });
     }
 
     // #78 (RGPD) : suppression physique du compte. Natif bindé pour éviter le
