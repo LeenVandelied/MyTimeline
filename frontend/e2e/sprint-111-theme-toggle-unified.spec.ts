@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { SHARED } from './support/accounts'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
+import { keepThemeOffSharedAccount } from './support/theme-preference'
 
 /**
  * #655 (Sprint 111) — LES BASCULES DE THÈME APPLICATIVES, APRÈS UNIFICATION.
@@ -36,11 +37,14 @@ import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
  * préférence OS de l'image CI ni d'un résidu du `storageState`. On ne recharge
  * pas la page après le semis (il serait rejoué et écraserait le choix).
  *
- * ⚠ COMPTE PARTAGÉ. Tant que le thème ne vit que dans `localStorage`, basculer
- * est local au contexte de test et le `storageState` n'est pas réécrit. Quand
- * #653 persistera le choix SUR LE COMPTE, cette spec muterait l'état serveur du
- * compte `SHARED` : il faudra alors soit un compte dédié, soit restaurer le
- * choix en fin de test.
+ * ⚠ COMPTE PARTAGÉ (#653). Depuis que le choix est persisté SUR LE COMPTE,
+ * chaque bascule authentifiée émet `PUT /api/me/preferences`. « Restaurer en fin
+ * de test » est impossible (l'API ne remet jamais une préférence à `null`) : le
+ * `PUT` est donc répondu dans le navigateur par `keepThemeOffSharedAccount`
+ * (`support/theme-preference.ts`) et n'atteint pas le backend — le compte
+ * `SHARED` reste sans préférence. La spec vérifie en revanche que chaque bascule
+ * a bien été CONFIÉE à la persistance de compte (valeurs des `PUT` émis). La
+ * persistance réelle est couverte par `sprint-111-theme-account-preference`.
  *
  * PRÉREQUIS RUNTIME : backend Spring (:8080) + Postgres migré + front Next
  * (:3000) avec le proxy `/api`. Auth par `storageState` (projet `setup`).
@@ -61,11 +65,22 @@ async function seedLightTheme(page: Page): Promise<void> {
   })
 }
 
-async function openDashboard(page: Page): Promise<void> {
+async function openDashboard(page: Page): Promise<string[]> {
   await neutralizeDevToolingPointerEvents(page)
+  const themeWrites = await keepThemeOffSharedAccount(page)
   await seedLightTheme(page)
   await page.goto('/fr/dashboard', { waitUntil: 'domcontentloaded', timeout: FIRST_NAV_BUDGET })
   await expect(page.getByTestId('dashboard')).toBeVisible({ timeout: FIRST_NAV_BUDGET })
+  return themeWrites
+}
+
+/** #653 — chaque bascule authentifiée est confiée à la persistance de compte. */
+async function expectThemeWrites(themeWrites: string[], expected: string[]): Promise<void> {
+  await expect
+    .poll(() => [...themeWrites], {
+      message: 'chaque bascule authentifiée doit émettre PUT /api/me/preferences (#653)',
+    })
+    .toEqual(expected)
 }
 
 async function isDark(page: Page): Promise<boolean> {
@@ -113,7 +128,7 @@ test.describe('#655 — bascules de thème applicatives unifiées', () => {
     test('bascule clair → sombre → clair, rendu et état suivent', async ({ page }) => {
       test.setTimeout(120_000)
       const testId = 'shell-sidebar-theme-toggle'
-      await openDashboard(page)
+      const themeWrites = await openDashboard(page)
 
       const toggle = page.getByTestId(testId)
       await expect(toggle).toBeVisible()
@@ -134,6 +149,7 @@ test.describe('#655 — bascules de thème applicatives unifiées', () => {
 
       expect(await clickAndExpectFlip(page, toggle, testId)).toBe(false)
       await expectToggleRendersTheme(toggle, false)
+      await expectThemeWrites(themeWrites, ['dark', 'light'])
     })
   })
 
@@ -143,7 +159,7 @@ test.describe('#655 — bascules de thème applicatives unifiées', () => {
     test('bascule clair → sombre → clair, libellé et rendu suivent', async ({ page }) => {
       test.setTimeout(120_000)
       const testId = 'dashboard-mobile-drawer-theme-toggle'
-      await openDashboard(page)
+      const themeWrites = await openDashboard(page)
 
       const hamburger = page.getByTestId('dashboard-mobile-menu-button')
       const drawer = page.getByTestId('dashboard-mobile-drawer')
@@ -172,6 +188,7 @@ test.describe('#655 — bascules de thème applicatives unifiées', () => {
       expect(await clickAndExpectFlip(page, toggle, testId)).toBe(false)
       await expectToggleRendersTheme(toggle, false)
       await expect(toggle).toHaveText('Sombre')
+      await expectThemeWrites(themeWrites, ['dark', 'light'])
     })
   })
 })
