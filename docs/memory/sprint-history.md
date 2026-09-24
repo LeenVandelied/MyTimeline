@@ -7204,14 +7204,29 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé — PR #829 mergée dans `dev`, issues #653/#655/#827 et milestone #112 fermés après merge
 
-### Sprint 112 — 2026-09-22 → (En cours depuis 2026-09-24 — cohésion 0.53, Cibles tactiles et focus mesurés)
-**Objectif :** helper de mesure unique, 4 dernières cibles mesurées à 375 px, retour du focus vérifié en E2E
-**Milestone GitHub :** #113
-**Issues :** #768 (P3, XS), #767 (P2, S), #700 (P2, S) — 5 pts ; + 4 follow-ups du S111 rattachés au triage de clôture du S111 (#830 XS, #831 S, #832 S, #833 XS) → 7 issues, ~11 pts : recalibrer le périmètre au `/sprint start 112`
-**Vagues :** V1 = #768 | V2 = #767 | V3 = #700
-**Migrations Flyway :** aucune
-**Dépend de :** Sprints 105, 106, 107
-**À confirmer au démarrage :** volet VoiceOver/NVDA de #700 à faire par le dev
-**Recalibrage au démarrage (dev, 2026-09-24) :** les 7 issues gardées (~11 pts) ; #832 → option helper `storageState` (plafond e2e inchangé) ; #700 → E2E du focus livrés ici, l'issue RESTE OUVERTE jusqu'au rapport VoiceOver/NVDA manuel du dev
-**Vagues retenues :** V1 = #768 (seul détenteur de Playwright) ∥ #833 (Vitest) ∥ #831 (backend) | V2 = #767 + #830 (un agent, Playwright) | V3 = #832 (Playwright) | V4 = #700 (Playwright) | lead : `next build`, E2E complet, review batch
-**Status :** En cours
+### Sprint 112 — 2026-09-24 → 2026-09-25 (Terminé — merge PR #835 dans dev)
+**Objectif :** helper de mesure des cibles tactiles unique, dernières cibles mesurées à 375 px, retour du focus vérifié en E2E ; + les 4 suites du S111 (plafond de débit par utilisateur, toast, budget E2E, bascule du tiroir)
+**Milestone GitHub :** #113 (fermé après merge ; #700 détaché, restée ouverte)
+**Issues livrées (6 + 1 partielle) :** #768 (P3, XS), #767 (P2, S), #830 (P3, XS), #831 (P2, S), #832 (P2, S), #833 (P3, XS) — fermées après merge ; #700 (P2, S) : volet E2E livré + bug de focus corrigé, volet VoiceOver/NVDA manuel au dev → issue RESTÉE OUVERTE (grille `sprints/sprint-112/issue-700-sr-checklist.md`)
+**Décisions de démarrage (dev) :** périmètre gardé à 7 issues (~11 pts) ; #832 → helper `storageState`, plafond e2e inchangé ; #700 → E2E ici, lecteur d'écran manuel (DEC-S112-001)
+**Vagues exécutées :** V1 = #768 (seul détenteur de Playwright) ∥ #833 (Vitest) ∥ #831 (backend) | security-expert #831 | V2 = #767 + #830 (un agent) | V3 = #832 | V4 = #700 | lead : backend e2e reconstruit, `next build`, E2E complet, revue batch ×2 (backend, frontend) | correction de revue (#831)
+**Cohésion score :** 0.53
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 12 — démarrage `1b1558e6` · #768 `00da5ecf` · #833 `1b604fa5` · #831 `fb09570a` + `fb4654b1` (revue) · #767 `2001e03e` · #830 `e916b5ad` · #832 `4be8ce20` · #700 `b5e717c1` · docs `81ccc3d3` · consolidation (ce commit)
+**BR impactées :** BR-AUT-013 (plafond de débit par utilisateur ; pack `br-auth` corrigé), BR-AUT-005 (cohérence du refus fail-closed)
+**Reviews :** security-expert #831 0/0/4 (1 traité par test des variantes de chemin, 3 documentés) · reviewer backend 0/0/2 (1 corrigé : repli `name:` supprimé → 401 fail-closed ; 1 sans action) · reviewer frontend+e2e 0/0/2 (sans action) · cycle 2 : correctif relu par le lead
+**Tests :** Backend 682/682 (`fb4654b1`) | Vitest 2280/2280 | tsc/lint/format verts | E2E complet contre `next build`+`next start`, backend e2e reconstruit depuis HEAD : 619 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, références Linux) / `rate-limit-armed` rejoué seul 1/1 | CI PR 7/7 sur `81ccc3d3`
+**Nouveaux pitfalls / décisions / patterns :** PIT-S112-001..009 · DEC-S112-001..005 (DEC-S112-003 remplace DEC-S111-005) · PAT-S112-001..008 · BUG-S112-001..002
+**Écarts de briefing :** la prémisse du lead pour #832 (« `registerAndLogin` appelé par de nombreuses specs ») était fausse — `grep -c` sous RTK, 0 appelant réel (PIT-S112-006) : critères remplis, budget inchangé ; 3 spawns refusés par le hook pour pack abrégé (récidive PIT-S111-004) ; l'agent #700 a ajusté des tests Vitest qui gravaient le comportement faux (écart assumé au « laisser tel quel »)
+**Absorbé en cours (XS) :** 2 — `expectClickableBox` ajouté au helper (#767, le `⋯` n'a pas de `::before`) ; pack `br-auth` corrigé par le lead à la clôture (#831)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Focus à la fermeture de tous les dialogues Radix sans Trigger + focus-return en mobile [S | frontend/a11y] → issue #836 (backlog)
+  - Déconnexion du tiroir mobile, `⋯` paysage, sprint-99 → profil complet [XS | frontend/e2e] → issue #837 (backlog)
+  - Pas de bandeau `OfflineBanner` sur 500 du PUT de thème [XS | frontend] → issue #838 (backlog)
+  - Passe 2 CI à un seul compte (login 26→23, register 23→20 au pire cas ; touche `ci.yml`) [S | e2e/ci] → issue #839 (backlog, confirmation dev requise avant merge)
+  - 75 specs → `sessionState(X)` [S | e2e] → issue #840 (backlog)
+  - Import du helper par #767/#830 → discard (déjà fait) ; 429 silencieux sur la bascule de thème → discard (voulu)
+  - Pack `br-auth` « hors rate-limit » → absorbé (lead)
+  Ratio discard 2/12.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé — PR #835 mergée dans `dev`, issues #767/#768/#830/#831/#832/#833 et milestone #113 fermés après merge ; #700 ouverte (volet manuel)

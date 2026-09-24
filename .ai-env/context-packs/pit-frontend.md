@@ -1848,6 +1848,38 @@ Suite complète : 2216/2217 au 1er run, puis 2217/2217 ×2 — le nom du test ro
 ## PIT-S111-004 — Abréger le pack d'un briefing fait refuser le spawn par `pre-spawn-fullstack.sh`
 Le hook exige un prompt `fullstack-dev` ≥ 8 000 octets avec un marqueur `<!-- ===== cp-/br-/pit- ===== -->`. Un briefing dont le pack a été résumé à la main (7 792 octets) est bloqué : inliner le pack complet (`cp-frontend.md` fait 8,4 Ko) plutôt que d'en couper des passages. (Sprint 111, lead, #827)
 
+
+## PIT-S112-001 — Un dialogue Radix contrôlé sans `Dialog.Trigger` ne rend le focus à RIEN à la fermeture
+`DialogContent` modal (Radix Dialog 1.1.6, `dist/index.mjs:144-147`) annule toujours `onCloseAutoFocus` et focalise `triggerRef` — nul sans Trigger — donc le focus tombe sur `body`. Les tiroirs de création produits/catégories étaient touchés (4/6 E2E rouges avant correctif) alors qu'un test Vitest les disait conformes. Tout dialogue contrôlé place lui-même le focus dans `onCloseAutoFocus` (`preventDefault` + `ref.focus()`) et le prouve en E2E réel. Aucun dialogue du front n'a de Trigger : les autres sont probablement touchés (suite ouverte). (Sprint 112 #700)
+
+
+## PIT-S112-002 — Un mock de bibliothèque tierce qui recopie l'hypothèse du composant valide l'hypothèse au lieu de la tester
+Le tiroir mocké du S90 refocalisait l'élément actif quand l'événement n'était pas annulé — exactement ce que le composant supposait de Radix, et faux. Test vert pendant 22 sprints sur un focus perdu. Un mock qui simule une bibliothèque cite la ligne source qu'il reproduit ; sinon, E2E réel. Famille PIT-S94-001. (Sprint 112 #700)
+
+
+## PIT-S112-003 — Le hit-testing de Chromium suit `border-radius` : un coin sondé à 1 px de l'arête « rate » une cible pourtant non recouverte
+Sonde `elementFromPoint` aux coins d'un `⋯` de 44×44 à `border-radius: 5px` : les coins désignaient le parent, ce qui ressemblait à un recouvrement par la lane voisine. Une grille de pixels a montré que seuls les pixels de l'arrondi manquaient. Sonder les coins à `1 + ceil(r·(1 − 1/√2))` px (`expectClickableBox`) ; avant de conclure à un recouvrement, cartographier les points manqués et lire `border-radius`. (Sprint 112 #767)
+
+
+## PIT-S112-004 — La liste d'écarts d'une issue de factorisation n'est pas l'inventaire des écarts
+#768 annonçait 2 divergences entre les copies de `measureControls` ; la lecture ligne à ligne en montrait 3 (sprint-101/102 écartent aussi `opacity: 0` / `display: none`). Comparer les copies elles-mêmes avant de factoriser, et prouver l'équivalence par les mesures (PAT-S112-004), pas par « N passed ». (Sprint 112 #768)
+
+
+## PIT-S112-006 — Un plan de migration « de X vers Y » bâti sur un comptage RTK : 0 appelant réel
+Le lead a briefé #832 sur « `registerAndLogin` appelé par de nombreuses specs » d'après un `grep -rlc` passé sous RTK (sortie `fichier:0` pour tous les fichiers, lue comme une liste d'appelants). Grep absolu : 0 appelant, 76 specs déjà en `storageState` ; l'issue a livré ses critères sans aucun gain de budget. Compter les appelants avec `/usr/bin/grep` avant de planifier une migration, et lire le chiffre, pas la présence de lignes. Cousin de « Prérequis d'issue : grepper les appelants ». (Sprint 112, lead, #832)
+
+
+## PIT-S112-007 — Sous le hook RTK, `find -newer`, `cat` et `wc -l` rendent des mesures fausses
+`rtk find` refuse les prédicats composés (`-newer`) → comptage surefire vide ; `wc -l < f` a rendu 0 pour un fichier de 2 lignes ; `cat` est réécrit en `rtk read`. Toute MESURE passe par `/usr/bin/find`, `/bin/cat`, `/usr/bin/wc` ou un script Python. Étend la note S93 sur `grep`. (Sprint 112, #831 + lead)
+
+
+## PIT-S112-008 — `timeout` n'existe pas sur macOS : un `timeout 900 docker compose … --build` ne fait RIEN et le conteneur reste périmé
+Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/auth/me` = 401 répond… depuis l'ANCIEN conteneur. Seul `docker inspect --format '{{.Created}}'` comparé à l'heure du dernier commit backend l'a révélé. Ne pas préfixer `timeout` ; dater le conteneur ET vérifier la classe attendue dans le jar (`docker cp … app.jar` + `unzip -l`, l'image n'a ni `jar` ni `unzip`). (Sprint 112, lead)
+
+
+## PIT-S112-009 — `while pgrep -f "<motif>"` ne se termine jamais quand le motif figure dans la commande qui boucle
+`pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

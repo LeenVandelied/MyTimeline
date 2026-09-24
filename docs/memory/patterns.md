@@ -1045,3 +1045,27 @@ Dédupliquer sur la valeur serveur confirmée saute l'aller-retour rapide (A en 
 
 ## PAT-S111-005 — Avant de croire un `not-found.tsx` de segment atteint, trouver l'appelant de `notFound()`
 Un `notFound()` levé dans un `layout.tsx` remonte au 404 racine (PIT-S62-005) ; seul un `notFound()` de **page** rend le `not-found.tsx` du segment. `/usr/bin/grep -rn "notFound()" frontend/app` et regarder si chaque appel est dans une page ou un layout. (Sprint 111 #827)
+
+## PAT-S112-001 — `onCloseAutoFocus` qui place le focus lui-même : CTA encore affiché, sinon bouton permanent
+`event.preventDefault()` systématique puis `ref.focus()` sur le CTA d'état vide s'il est encore monté, sinon sur le bouton permanent (l'état vide disparaît après création). Couvert en E2E dans les 3 chemins : annulation, création, création avec rechargement lent. (Sprint 112 #700, `ProductsListView`, `CategoriesView`)
+
+## PAT-S112-002 — `page.route` à phases pour tester un état intermédiaire pendant un rechargement lent
+Stub à phases (`empty` → `[]`, `network` → `continue`, `gated` → retenu jusqu'à `release()`), promesse `held` pour savoir que la requête est retenue ; `afterEach` : `release()` PUIS `unrouteAll({ behavior: 'wait' })`. Anti-pattern : `setTimeout` dans le gestionnaire (état non garanti, gestionnaire qui survit au test, cf. PIT-S111-003). Et pour purger des entités créées À LA SOURIS : `page.on('response')` sur les POST 201 → `trackSeed` en `afterEach` inconditionnel. (Sprint 112 #700)
+
+## PAT-S112-003 — `expectClickableBox` : prouver qu'une cible sans pseudo-hitbox n'est ni recouverte ni rognée
+8 points de bord (milieux à 1 px, coins rentrés du rayon, PIT-S112-003) sondés par `elementFromPoint`, contrôle négatif par un voisin injecté qui recouvre 10 px (vu rouge). `expectHitbox` reste réservé aux cibles à `::before`. (Sprint 112 #767, `e2e/support/touch-targets.ts`)
+
+## PAT-S112-004 — Prouver qu'une factorisation E2E ne change pas ce qui est mesuré : logs de mesure normalisés avant/après
+Logs structurés `[tag étape] libellé=LxH | …`, normalisés (UUID, suffixes uniques, arrondi) puis comparés en nombre de lignes et de contrôles (#768 : 40 lignes, 226 contrôles identiques). « Même nombre de tests verts » ne prouve rien : la garde anti-vacuité n'est qu'un minimum. (Sprint 112 #768)
+
+## PAT-S112-005 — Plafond « par utilisateur » dans Spring Security : filtre avant `AuthorizationFilter`, ordre prouvé par mutation
+Filtre ancré `addFilterBefore(…, AuthorizationFilter.class)` (donc après `JwtFilter`), clé = id de compte, anonyme laissé passer (401 en aval), map LRU bornée. Preuve d'ordre : remonter le filtre avant l'auth fait rougir les tests. Anti-pattern : lire le `SecurityContext` dans un filtre monté avant `JwtFilter` (toujours vide, jamais de 429 — vert si l'on n'asserte que « sous le plafond »). (Sprint 112 #831)
+
+## PAT-S112-006 — Tester qu'une variante de chemin ne contourne pas un filtre : vrai serveur + URI brute
+`@SpringBootTest(RANDOM_PORT)` + `HttpClient` + `URI.create` (chemin non ré-encodé), oracle « jetons canoniques restants » (plafond − 1 si la variante est routée ET comptée) + statut seau vide ; armer par mutation `getRequestURI()`. Anti-pattern : MockMvc (saute Tomcat et son pare-feu) ou `put(String)` qui ré-encode `%70` en `%2570`. (Sprint 112, revue #831)
+
+## PAT-S112-007 — `storageState` par fixture-FONCTION contrôlée au démarrage du test
+`test.use({ storageState: async ({}, use) => { check; await use(path) } })` (`e2e/support/session.ts#sessionState`) : échoue avec la cause (fichier absent / sans `jwt` / périmé) au lieu de « dashboard introuvable ». Contrôle au démarrage du test, pas au scope module (le runner charge les specs avant le setup, et `--list` casserait). (Sprint 112 #832)
+
+## PAT-S112-008 — Un test « aucun toast » sur un statut que l'intercepteur ne toaste jamais se libelle en garde-fou, avec témoin
+409 sur `PUT /api/me/preferences` : vacant par construction comme preuve d'opt-out. Le garder comme non-régression (rougira si une branche 409 toastante apparaît) avec un témoin « même statut sans opt-out = 0 toast » qui documente la mesure. (Sprint 112 #833)
