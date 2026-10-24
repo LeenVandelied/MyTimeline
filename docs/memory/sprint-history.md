@@ -7245,7 +7245,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 > Ordre imposé : S113 → S114 (`ProductsListView`, `ProductDetailView`) ; S115 → S117 (#840 migre `sprint-105-fit-shortcut.spec.ts`).
 > Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
 
-### Sprint 113 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Dialogues : focus rendu et 403 expliqués)
+### Sprint 113 — 2026-10-24 (En cours — cohésion 1.00, Dialogues : focus rendu et 403 expliqués)
 **Objectif :** le focus revient au déclencheur à la fermeture de tous les dialogues (édition comprise, mobile compris) ; un 403 sur l'édition d'un événement ou une confirmation de suppression est expliqué dans le dialogue, pas seulement par le toast
 **Milestone GitHub :** #114
 **Issues :** #836 (P2, S — plutôt M : 7 dialogues + viewport mobile), #766 (P2, S — 7 appelants de `DeleteConfirmDialog`) — 4 pts nominaux
@@ -7253,7 +7253,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
 **À confirmer au démarrage :** component-guardian avant tout nouveau hook de retour de focus ; #766 : clés i18n `common.deleteDialog.errors.forbidden` ×4 AVANT l'opt-out `HANDLES_FORBIDDEN_INLINE`
-**Status :** Planifié
+**Status :** En cours
 
 ### Sprint 114 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Liste produits et onglets lisibles au clavier)
 **Objectif :** nom de produit lisible dans « Tes produits » du tableau de bord ; les flèches des onglets du DS déplacent le focus ; plus de débordement de la liste produits au-delà de sm
