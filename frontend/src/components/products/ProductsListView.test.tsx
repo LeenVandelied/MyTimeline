@@ -321,6 +321,17 @@ describe('ProductsListView', () => {
     expect(within(cell).getByText('products.list.noUpcoming')).toHaveClass('sr-only')
   })
 
+  // #816 — garde de STRUCTURE seulement (jsdom ne fait aucun layout) : le défilement
+  // réel est prouvé par `e2e/sprint-114-products-list-overflow.spec.ts`. Les `sr-only`
+  // (absolus) des cellules doivent avoir la boîte de défilement pour bloc conteneur :
+  // il faut donc qu'ELLE soit le premier ancêtre positionné de la table.
+  it('#816 — la boîte de défilement de la table est positionnée (clip des sr-only)', () => {
+    render(<ProductsListView />)
+    const scroller = screen.getByTestId('products-table').parentElement
+    expect(scroller).toHaveClass('overflow-x-auto', 'relative')
+    expect(within(scroller!).getAllByText('products.list.eventsCount')[0]).toHaveClass('sr-only')
+  })
+
   it('#603 — nombre d’événements NON archivés, avec forme plurielle accessible', () => {
     render(<ProductsListView />)
     const beta = screen.getByTestId('products-row-events-count-p-beta')

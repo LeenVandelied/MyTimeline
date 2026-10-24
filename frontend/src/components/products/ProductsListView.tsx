@@ -332,7 +332,10 @@ export function ProductsListView() {
           testId="products-empty-search"
         />
       ) : (
-        <div className="border-rule overflow-x-auto rounded-lg border">
+        // #816 (PIT-S107-002) — `relative` : les `sr-only` des cellules sont absolus ; sans
+        // ancêtre positionné, leur bloc conteneur est la page, ils échappent au clip de
+        // cette boîte et c'est le DOCUMENT qui défilait (1535 px mesurés à 1280).
+        <div className="border-rule relative overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse text-left text-sm" data-testid="products-table">
             <thead>
               <tr>
@@ -386,10 +389,12 @@ export function ProductsListView() {
                     )}
                     data-testid={`products-row-${product.id}`}
                   >
-                    {/* Produit : pastille + nom + catégorie mono (handoff §5). Sous `sm`,
-                        `w-full max-w-0` : la colonne prend la largeur restante sans que le
-                        nom (tronqué) ne l'élargisse — sinon un nom long fait défiler la table. */}
-                    <td className="px-2 py-3 max-sm:w-full max-sm:max-w-0 sm:px-4">
+                    {/* Produit : pastille + nom + catégorie mono (handoff §5). `w-full max-w-0`
+                        à TOUTES les largeurs (#608 sous `sm`, étendu par #816) : la colonne
+                        prend la largeur restante sans que le nom (tronqué) ne l'élargisse.
+                        Plafonné seulement sous `sm`, un nom long portait la colonne à 633 px
+                        et la table débordait de sa boîte dès 640 px. */}
+                    <td className="w-full max-w-0 px-2 py-3 sm:px-4">
                       <div className="flex min-w-0 items-start gap-2">
                         <span
                           className="mt-1.5 size-2.5 shrink-0 rounded-full"
@@ -415,13 +420,17 @@ export function ProductsListView() {
                     </td>
                     {/* Prochain événement : titre + date ISO `YYYY-MM-DD` en `<time datetime>`
                         (#518, `i18n.css` §7 : `.mt-date--long` = mono + tabular-nums, sans
-                        transformation de casse — le texte ISO est rendu tel quel). */}
+                        transformation de casse — le texte ISO est rendu tel quel).
+                        #816 — titre plafonné à la largeur de la date (`max-w-20`) jusqu'à
+                        `xl` : dès `md` la frise fait 220 px, et un titre long à 256 px
+                        (ancien `sm:max-w-64`) faisait déborder la table à 1024 px à lui seul
+                        (751 px de colonnes fixes pour une boîte de 710). */}
                     <td
                       className="px-2 py-3 sm:px-4"
                       data-testid={`products-row-next-${product.id}`}
                     >
                       {next ? (
-                        <div className="flex max-w-20 min-w-0 flex-col sm:max-w-64">
+                        <div className="flex max-w-20 min-w-0 flex-col xl:max-w-64">
                           <span className="text-ink truncate text-xs">{next.title}</span>
                           <time className="mt-date--long text-ink-muted" dateTime={next.start}>
                             {next.start}

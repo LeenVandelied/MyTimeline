@@ -27,8 +27,8 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * AUTO-CONTRÔLE : le 3e test force la frise compacte à 220 px à 390 et exige que
  * l'oracle de défilement rougisse. Sans lui, une sonde aveugle passerait verte.
  *
- * CE QU'ELLE NE PROUVE PAS : le débordement ≥ `sm` avec des noms longs (préexistant,
- * hors #608 — cf. done.md), le thème sombre, Firefox.
+ * CE QU'ELLE NE PROUVE PAS : le débordement ≥ `sm` avec des noms longs (corrigé par
+ * #816, gardé par `sprint-114-products-list-overflow.spec.ts`), le thème sombre, Firefox.
  */
 
 test.use({ storageState: PROD.storageState, colorScheme: 'light' })
@@ -176,8 +176,8 @@ test.describe('#608/#609 — non-régression desktop', () => {
   test.use({ viewport: DESKTOP })
 
   // Le compte PROD est partagé entre workers : les produits aux noms longs des tests
-  // mobiles peuvent être listés ici, et ≥ `sm` un nom long fait déjà déborder la table
-  // (préexistant, hors #608). On amène donc la frise dans le conteneur avant de mesurer.
+  // mobiles peuvent être listés ici. Avant #816, ≥ `sm` un nom long faisait déborder la
+  // table ; le `scroll` reste une ceinture (la frise est amenée dans le conteneur).
   test('dès md : frise pleine 220 px, en-têtes DS', async ({ page }) => {
     const productId = await openListWithProduct(page, 'S107 Robot')
     await expectSparklineInViewport(page, productId, 220, { scroll: true })
