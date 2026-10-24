@@ -73,7 +73,12 @@
 			la version est donc EPINGLEE ici, comme jjwt. 0.8.13 = premiere ligne qui
 			instrumente le bytecode Java 21 sans avertissement de classfile version.
 		-->
-		<jacoco.version>0.8.13</jacoco.version>
+		<jacoco.version>0.8.15</jacoco.version>
+		<!--
+			Lombok : surcharge la propriete du BOM pour que la dependance et le
+			processeur d'annotations (maven-compiler-plugin) aient la MEME version.
+		-->
+		<lombok.version>1.18.48</lombok.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -202,7 +207,7 @@
 		<dependency>
 				<groupId>com.tngtech.archunit</groupId>
 				<artifactId>archunit-junit5</artifactId>
-				<version>1.3.0</version>
+				<version>1.5.1</version>
 				<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -212,7 +217,7 @@
 			<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
+					<version>3.16.0</version>
 					<configuration>
 							<source>21</source>
 							<target>21</target>
@@ -220,7 +225,7 @@
 									<path>
 											<groupId>org.projectlombok</groupId>
 											<artifactId>lombok</artifactId>
-											<version>1.18.30</version>
+											<version>${lombok.version}</version>
 									</path>
 							</annotationProcessorPaths>
 					</configuration>
