@@ -2112,3 +2112,12 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 ## PIT-S112-010 — Un test Vitest qui analyse l'AST de tout le dépôt passe en local et dépasse 5 s en CI sous couverture
 `e2e-rate-limit-budget.test.ts` « les lignes BUDGET… disent vrai » : 870 ms en local, > 5 s (délai par défaut) sur le runner CI avec couverture (~6× plus lent) — rouge sur un commit de docs seules, vert sur le précédent. Tout test qui parcourt le dépôt réel porte un délai explicite (`describe(nom, { timeout }, fn)`) ; un rouge « Test timed out » sur un diff sans code se relit comme une lenteur, pas comme un budget faux. (Sprint 112, lead, clôture)
 
+
+## PIT-S113-001 — Une ligne ou carte cliquable au clavier avale les touches de ses propres boutons
+`role="button"` + `onKeyDown` Entrée/Espace + `preventDefault` sur la ligne produit (`ProductsListView`) et la carte catégorie (`CategoriesView`) : l'Entrée sur « Éditer »/« Archiver » ou la poubelle remontait à la ligne, qui annulait l'action du bouton et exécutait la sienne (détail produit, tiroir d'édition). Invisible aux tests au clic. Garde `if (e.target !== e.currentTarget) return` et toute spec de dialogue l'ouvre AU CLAVIER. (Sprint 113 #836)
+
+## PIT-S113-002 — Rendre le focus à un bouton désactivé pendant l'envoi ne rend rien
+Le `ConflictDialog` s'ouvre sur un 409 alors qu'« Enregistrer » est `disabled` (Chromium a déjà mis le focus sur `body` : rien à capturer), et « garder mes modifications » le referme en passant à `submitting` (`open` dérivé de `'conflict'`) avec le bouton encore désactivé. Un `onCloseAutoFocus` qui vise ce bouton doit avoir un repli focalisable (`<form tabIndex={-1}>`). (Sprint 113 #836, review)
+
+## PIT-S113-003 — Sous le hook RTK, `vitest run` ne donne que `PASS (n) FAIL (n)`, même redirigé vers un fichier
+Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mutation. `rtk proxy npx vitest run --reporter=verbose`. À mettre dans tout briefing qui demande une preuve de non-vacuité. (Sprint 113, review)

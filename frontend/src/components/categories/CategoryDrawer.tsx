@@ -125,7 +125,9 @@ export function CategoryDrawer({
   // ces deux requêtes du toast global « accès refusé » (sinon double signalement).
   const createMutation = useCreateCategory(HANDLES_FORBIDDEN_INLINE)
   const updateMutation = useUpdateCategory(HANDLES_FORBIDDEN_INLINE)
-  const deleteMutation = useDeleteCategory()
+  // #766 — `handleDeleteConfirm` relance l'erreur, `DeleteConfirmDialog` affiche
+  // `errors.forbidden` sur un 403 : même opt-out.
+  const deleteMutation = useDeleteCategory(HANDLES_FORBIDDEN_INLINE)
 
   const [color, setColor] = React.useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = React.useState(false)

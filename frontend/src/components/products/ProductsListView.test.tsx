@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Product } from '@/types/product'
 import { ProductsListView } from './ProductsListView'
 
@@ -454,7 +455,8 @@ describe('ProductsListView', () => {
     render(<ProductsListView />)
     await user.click(screen.getByTestId('products-archive-p-alpha'))
     await user.click(screen.getByTestId('delete-dialog-product'))
-    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1')
+    // #766 — opt-out 403 : `DeleteConfirmDialog` affiche `errors.forbidden`.
+    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1', HANDLES_FORBIDDEN_INLINE)
     expect(archiveMutateAsync).toHaveBeenCalledWith({ productId: 'p-alpha' })
     // #605 — confirmation APRÈS la réponse serveur.
     await waitFor(() =>

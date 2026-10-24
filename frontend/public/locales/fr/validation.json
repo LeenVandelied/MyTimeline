@@ -33,6 +33,7 @@
     "endBeforeStart": "La date de fin doit être postérieure ou égale à la date de début",
     "colorInvalid": "Couleur invalide (format hexadécimal attendu, ex. #3B82F6)",
     "submitError": "Une erreur est survenue lors de l'enregistrement, veuillez réessayer.",
+    "forbidden": "Modification refusée : vous n'avez pas l'autorisation de modifier cet événement.",
     "conflict": "Cet événement a été modifié entre-temps. Rechargez pour voir la dernière version.",
     "reload": "Recharger"
   }

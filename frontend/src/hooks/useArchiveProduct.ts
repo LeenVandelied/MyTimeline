@@ -4,6 +4,7 @@ import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-q
 import { deleteProduct } from '@/services/productService'
 import { queryKeys } from '@/lib/query-keys'
 import type { Product } from '@/types/product'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 
 /**
  * Clé de MUTATION de l'archivage produit (cache des mutations, distinct du cache des
@@ -48,8 +49,11 @@ export interface ArchiveProductVariables {
  * L'erreur axios n'est PAS avalée : `mutateAsync` rejette pour que `DeleteConfirmDialog`
  * (#65) l'affiche inline (404/403/409) — `onConfirm` doit REJETER. Aucune invalidation
  * sur échec.
+ *
+ * #766 — `options` est transmis à la requête (ex. `HANDLES_FORBIDDEN_INLINE`, posé par les
+ * trois surfaces : leur `onConfirm` relance l'erreur et `DeleteConfirmDialog` rend le 403).
  */
-export function useArchiveProduct(userId: string | undefined) {
+export function useArchiveProduct(userId: string | undefined, options?: InlineErrorOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<void, unknown, ArchiveProductVariables>({
@@ -58,7 +62,7 @@ export function useArchiveProduct(userId: string | undefined) {
       if (!userId) {
         return Promise.reject(new Error('userId manquant'))
       }
-      return deleteProduct(userId, productId)
+      return deleteProduct(userId, productId, options)
     },
     onSuccess: (_result, { productId }) => {
       if (userId) {

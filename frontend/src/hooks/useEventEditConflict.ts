@@ -7,6 +7,7 @@ import { updateEvent } from '@/services/eventService'
 import { useAuth } from '@/hooks/useAuth'
 import { queryKeys } from '@/lib/query-keys'
 import { safeErrorMessage } from '@/lib/safe-error'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 import { eventConflictBodySchema, type Event, type EventEditFormValues } from '@/types/event'
 import type { EventSubmitState } from '@/components/EventEditForm'
 
@@ -81,10 +82,14 @@ export interface UseEventEditConflict {
  *                 confirme alors par un toast) ; appelé SANS argument quand l'utilisateur
  *                 abandonne ses modifications (`onReload` / `onTakeServer`) : rien n'a été
  *                 enregistré, rien ne doit être confirmé.
+ * @param options  #766 — transmis au PATCH (ex. `HANDLES_FORBIDDEN_INLINE`). À ne passer
+ *                 que si l'écran rend `submitState === 'forbidden'` (c'est le cas
+ *                 d'`EventEditForm`) : sinon le 403 ne serait signalé nulle part.
  */
 export function useEventEditConflict(
   eventId: string | undefined,
   onDone?: (saved?: EventEditFormValues) => void,
+  options?: InlineErrorOptions,
 ): UseEventEditConflict {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -137,7 +142,7 @@ export function useEventEditConflict(
       }
       setSubmitState('submitting')
       try {
-        await updateEvent(eventId, data)
+        await updateEvent(eventId, data, options)
         invalidateEvents()
         setConflict(null)
         setSubmitState('idle')
@@ -156,14 +161,16 @@ export function useEventEditConflict(
           // utilisateur legitime qui rouvre le formulaire heriterait du plafond).
           setKeepMineAttempts((attempts) => (fromKeepMine ? attempts + 1 : 0))
         } else {
-          setSubmitState('error')
+          // #766 — 403 (ownership refusee) : cause explicite inline (`forbidden`), pas le
+          // message generique. C'est ce rendu qui justifie l'opt-out du toast global.
+          setSubmitState(status === 403 ? 'forbidden' : 'error')
           // Sortie du flux conflit (erreur generique) : le plafond n'a plus d'objet.
           setKeepMineAttempts(0)
         }
         console.error("Erreur lors de la mise à jour de l'événement :", safeErrorMessage(error))
       }
     },
-    [eventId, invalidateEvents, onDone, user?.id],
+    [eventId, invalidateEvents, onDone, options, user?.id],
   )
 
   const onSubmit = useCallback((data: EventEditFormValues) => runSubmit(data, false), [runSubmit])

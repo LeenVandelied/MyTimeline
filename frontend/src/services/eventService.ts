@@ -7,6 +7,7 @@ import {
   recurrencePreviewResponseSchema,
 } from '@/types/event'
 import apiClient from './apiClient'
+import type { InlineErrorOptions } from './inlineErrorHandling'
 import { safeErrorMessage } from '@/lib/safe-error'
 
 /**
@@ -81,9 +82,17 @@ export const updateEventColor = async (eventId: string, color: string): Promise<
   }
 }
 
-export const updateEvent = async (eventId: string, data: EventEditFormValues): Promise<void> => {
+/**
+ * PATCH d'édition. #766 — `options` (ex. `HANDLES_FORBIDDEN_INLINE`) est transmis tel quel
+ * à la config axios : seul un appelant qui AFFICHE le 403 lui-même peut le passer.
+ */
+export const updateEvent = async (
+  eventId: string,
+  data: EventEditFormValues,
+  options?: InlineErrorOptions,
+): Promise<void> => {
   try {
-    const response = await apiClient.patch(`/events/${eventId}`, data)
+    const response = await apiClient.patch(`/events/${eventId}`, data, options)
 
     if (!response.data) {
       throw new Error('Failed to update event')
@@ -124,9 +133,10 @@ export const setEventArchived = async (
 
 // #66 — DELETE /api/events/{id} (suppression physique, ownership 403). L'erreur
 // est propagée pour affichage inline par DeleteConfirmDialog (pitfall #65).
-export const deleteEvent = async (eventId: string): Promise<void> => {
+// #766 — `options` : opt-out par requête du toast global (cf. `inlineErrorHandling.ts`).
+export const deleteEvent = async (eventId: string, options?: InlineErrorOptions): Promise<void> => {
   try {
-    await apiClient.delete(`/events/${eventId}`)
+    await apiClient.delete(`/events/${eventId}`, options)
   } catch (error) {
     console.error('Error deleting event:', safeErrorMessage(error))
     throw error

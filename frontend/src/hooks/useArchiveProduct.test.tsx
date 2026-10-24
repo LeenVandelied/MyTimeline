@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useArchiveProduct, useIsProductArchivedHere } from './useArchiveProduct'
 import { queryKeys } from '@/lib/query-keys'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Product } from '@/types/product'
 
 /**
@@ -66,7 +67,19 @@ describe('useArchiveProduct', () => {
 
     await result.current.mutateAsync({ productId: 'p-1' })
 
-    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-1')
+    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-1', undefined)
+  })
+
+  it('#766 — transmet les options de requête (opt-out 403) au service', async () => {
+    deleteProductMock.mockResolvedValue(undefined)
+    const client = makeClient()
+    const { result } = renderHook(() => useArchiveProduct('user-1', HANDLES_FORBIDDEN_INLINE), {
+      wrapper: makeWrapper(client),
+    })
+
+    await result.current.mutateAsync({ productId: 'p-1' })
+
+    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-1', HANDLES_FORBIDDEN_INLINE)
   })
 
   it('succès : invalide products.all et retire le produit de la liste en cache', async () => {

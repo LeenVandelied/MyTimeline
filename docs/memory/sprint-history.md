@@ -7245,15 +7245,30 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 > Ordre imposé : S113 → S114 (`ProductsListView`, `ProductDetailView`) ; S115 → S117 (#840 migre `sprint-105-fit-shortcut.spec.ts`).
 > Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
 
-### Sprint 113 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Dialogues : focus rendu et 403 expliqués)
-**Objectif :** le focus revient au déclencheur à la fermeture de tous les dialogues (édition comprise, mobile compris) ; un 403 sur l'édition d'un événement ou une confirmation de suppression est expliqué dans le dialogue, pas seulement par le toast
-**Milestone GitHub :** #114
-**Issues :** #836 (P2, S — plutôt M : 7 dialogues + viewport mobile), #766 (P2, S — 7 appelants de `DeleteConfirmDialog`) — 4 pts nominaux
-**Vagues :** V1 = #766 (Vitest) | V2 = #836 (E2E réel, après #766 : `DeleteConfirmDialog.tsx`, `EventEditForm.tsx` et les hôtes communs)
-**Migrations Flyway :** aucune
-**Dépend de :** aucune
-**À confirmer au démarrage :** component-guardian avant tout nouveau hook de retour de focus ; #766 : clés i18n `common.deleteDialog.errors.forbidden` ×4 AVANT l'opt-out `HANDLES_FORBIDDEN_INLINE`
-**Status :** Planifié
+### Sprint 113 — 2026-10-24 → 2026-10-24 (Terminé — merge PR #856 dans dev)
+**Objectif :** le focus revient au déclencheur à la fermeture de tous les dialogues (édition et mobile compris) ; un 403 sur l'édition d'un événement ou une confirmation de suppression est expliqué dans l'écran, pas seulement par le toast
+**Milestone GitHub :** #114 (fermé après merge)
+**Issues livrées (2) :** #766 (P2, S), #836 (P2, S — réel M) — fermées après merge
+**Vagues exécutées :** V1 = #766 (Vitest) | component-guardian (avis retour de focus) | V2 = #836 (E2E réel, pile e2e montée par le lead) | lead : `next build` + `next start`, E2E complet | revue batch ×2 en parallèle (code applicatif, tests/E2E) | corrections de revue | cycle 2 relu par le lead | E2E complet rejoué
+**Cohésion score :** 1.00
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 6 — démarrage `dae66324` · #766 `667f5ad1` · #836 `550b416d` · revue `f558c5c6` · artefacts `b5734ab9` · clôture (ce commit)
+**BR impactées :** aucune règle métier modifiée (affichage d'erreur et accessibilité côté client)
+**Reviews :** reviewer code 0/0/3 (1 corrigé : repli de focus ; 1 corrigé : `data-reason` ; 1 → follow-up #857) · playwright-reviewer 0/2/9 (2 MAJEUR corrigés : course `waitForResponse`, tests 403 de bout en bout pour 3 vues ; 4 MINEUR corrigés/justifiés ; reste accepté) · cycle 2 relu par le lead
+**Tests :** Backend non concerné | Vitest 2301/2301 | tsc/lint/format verts | E2E complet contre `next build`+`next start`, backend e2e dédié depuis HEAD : 638 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, armement darwin) — identique avant et après corrections | CI PR : 4 checks requis verts ; `security` rouge préexistant sur dev (avis zod GHSA-mrhx-c7xc-m3w5, migration zod 4 en session séparée)
+**Mesure avant correctif #836 :** 10 dialogues sur 11 renvoyaient le focus sur `body`
+**Nouveaux pitfalls / décisions / patterns :** PIT-S113-001..003 · PAT-S113-001..003 · packs pit régénérés
+**Écarts de briefing :** `test-quiet`/E2E non délégués au test-runner (règle projet) ; 3 rouges `sprint-106` rendus par l'agent contre `next dev` → verts contre `next start` ; clé du formulaire en `validation.event.forbidden` (namespace du formulaire) au lieu de `errors.forbidden`
+**Absorbé en cours (XS) :** 2 — garde `e.target !== e.currentTarget` sur les lignes/cartes cliquables (#836, bloquait la mesure au clavier) ; tests 403 de bout en bout pour ProductsListView/ProductDetailView/CategoriesView (revue)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Focus après archivage/suppression réussi (déclencheur disparu) [S | frontend/a11y] → issue #857 (backlog)
+  - Piège de focus du BottomSheet rejoué à chaque rendu [S | frontend/a11y] → issue #858 (backlog)
+  - Libellés de dialogue faux (`notFound` « catégorie » pour tout, sr-only « Close » anglais) [XS | frontend/i18n] → issue #859 (backlog)
+  - Focus sur « Enregistrer » après échec du keep-mine [XS | frontend/a11y] → issue #860 (backlog)
+  - Tests 403 de bout en bout pour 3 vues → absorbé (revue, `f558c5c6`)
+  Ratio discard 0/5.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
 
 ### Sprint 114 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Liste produits et onglets lisibles au clavier)
 **Objectif :** nom de produit lisible dans « Tes produits » du tableau de bord ; les flèches des onglets du DS déplacent le focus ; plus de débordement de la liste produits au-delà de sm

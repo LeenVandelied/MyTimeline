@@ -98,10 +98,17 @@ export const updateCategory = async (
  * le backend renvoie 409 si des produits référencent la catégorie
  * (`CategoryInUseException`). On propage l'erreur (`error.response.status`) pour
  * l'affichage inline via `DeleteConfirmDialog` (#65 : `onConfirm` doit REJETER).
+ * #766 — `options` (`HANDLES_FORBIDDEN_INLINE`) coupe le toast 403 : le dialog affiche
+ * `errors.forbidden`.
  */
-export const deleteCategory = async (id: string, reassignToCategoryId?: string): Promise<void> => {
+export const deleteCategory = async (
+  id: string,
+  reassignToCategoryId?: string,
+  options?: InlineErrorOptions,
+): Promise<void> => {
   try {
     await apiClient.delete(`/categories/${id}`, {
+      ...options,
       params: reassignToCategoryId ? { reassignToCategoryId } : undefined,
     })
   } catch (error) {

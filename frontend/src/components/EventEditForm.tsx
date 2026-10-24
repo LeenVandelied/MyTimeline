@@ -19,7 +19,7 @@ import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
 import { PaletteColorPicker } from './ui/palette-color-picker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
-import { ConflictDialog } from './shared/ConflictDialog'
+import { ConflictDialog, type ConflictDialogProps } from './shared/ConflictDialog'
 import { ArchiveConfirmDialog } from './events/ArchiveConfirmDialog'
 import { EventPreviewTimeline } from './events/EventPreviewTimeline'
 import type { PreviewEventType } from './events/previewTimeline'
@@ -49,9 +49,10 @@ export type { EventEditFormValues } from '@/types/event'
  *     (design v3 #44 — plus de border/text). `text-white` hardcodé remplacé par
  *     un ink de contraste calculé (AA sur couleurs claires `--evt-*`).
  *
- * `submitState` (piloté par le parent, ex. mutation TanStack) à 4 états :
+ * `submitState` (piloté par le parent, ex. mutation TanStack) à 5 états :
  *   idle | submitting (spinner + bouton désactivé) | error (message inline) |
- *   conflict (409 optimistic locking). Depuis #77, l'état `conflict` ouvre le
+ *   forbidden (#766 — 403, cause explicite inline) | conflict (409 optimistic
+ *   locking). Depuis #77, l'état `conflict` ouvre le
  *   `ConflictDialog` partagé (Dialog DS Radix : role=dialog, focus-trap, Échap) au
  *   lieu d'un bloc inline. Le conteneur du dialog préserve
  *   `data-testid="event-form-conflict"` (tests existants #66). Le contrat 409 #200
@@ -68,8 +69,12 @@ export type { EventEditFormValues } from '@/types/event'
  * (`NewEventDrawer`/`TimelineEditHost`, pattern `ProductDrawer.tsx:240-244`).
  * Aucun breakpoint custom : `sm:` (640px) unique — bottom-sheet < 640px (portrait
  * ET paysage), drawer >= 640px.
+ *
+ * #766 — `forbidden` : c'est cet état qui permet au PATCH d'édition de passer
+ * `HANDLES_FORBIDDEN_INLINE` ; le supprimer (ou le replier sur `error`) rendrait le
+ * formulaire muet sur un refus d'accès.
  */
-export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
+export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'forbidden' | 'conflict'
 
 /**
  * #300 — Mode du formulaire. Le composant reste mode-agnostique sur la mécanique
@@ -96,7 +101,7 @@ interface EventEditFormProps {
   onCancel: () => void
   /** #300 — `'create'` masque les champs PATCH-only. Défaut `'edit'` (non-cassant). */
   mode?: EventFormMode
-  /** État de soumission (idle/submitting/error/conflict). Défaut `idle`. */
+  /** État de soumission (idle/submitting/error/forbidden/conflict). Défaut `idle`. */
   submitState?: EventSubmitState
   /**
    * Rechargement (état `conflict`) : recharge/invalide l'événement à jour.
@@ -255,6 +260,31 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
   const submitting = submitState === 'submitting'
   const isEdit = Boolean(onDelete)
+
+  /**
+   * #836 — Retour du focus à la fermeture du `ConflictDialog`. Le 409 répond à une
+   * soumission : « Enregistrer » était DÉSACTIVÉ (`submitting`) à l'ouverture du
+   * dialogue, Chromium avait donc rendu le focus à `body` et `DialogContent` n'a rien
+   * capturé (mesuré, `e2e/sprint-113-focus-return.spec.ts`). On le rend au bouton qui a
+   * déclenché la soumission, s'il est de nouveau actionnable.
+   *
+   * REPLI (review S113) : « garder mes modifications » passe `submitState` à `submitting`,
+   * ce qui FERME le dialogue (`open` dérivé de `'conflict'`) alors qu'« Enregistrer » est
+   * encore désactivé. Le défaut Radix viserait un `Dialog.Trigger` absent → `body`, et le
+   * message d'erreur éventuel (403/5xx) arriverait hors de portée du clavier. Le focus va
+   * donc au `<form>` (`tabIndex={-1}`), qui reste dans le panneau hôte.
+   */
+  const submitButtonRef = React.useRef<HTMLButtonElement>(null)
+  const formRef = React.useRef<HTMLFormElement>(null)
+  const handleConflictCloseAutoFocus: NonNullable<ConflictDialogProps['onCloseAutoFocus']> = (
+    event,
+  ) => {
+    const submit = submitButtonRef.current
+    const target = submit?.isConnected && !submit.disabled ? submit : formRef.current
+    if (!target?.isConnected) return
+    event.preventDefault()
+    target.focus({ preventScroll: true })
+  }
   // #300 — champs gouvernés par l'asymétrie du contrat create/update (cf. `EventFormMode`).
   const isCreate = mode === 'create'
 
@@ -469,6 +499,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           {tCommon('buttons.cancel')}
         </Button>
         <Button
+          ref={submitButtonRef}
           type="submit"
           form={formId}
           className={cn('bg-accent hover:bg-accent-hover text-accent-ink', TOUCH_TARGET_BUTTON)}
@@ -493,8 +524,12 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
     <>
       <Form {...form}>
         <form
+          ref={formRef}
           id={formId}
           onSubmit={form.handleSubmit(onSubmit)}
+          // Cible de REPLI du focus à la fermeture du `ConflictDialog` (cf. `formRef`) :
+          // focalisable par script seulement, hors de l'ordre de tabulation.
+          tabIndex={-1}
           className="space-y-4"
           data-testid="event-form"
         >
@@ -935,8 +970,26 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
               {/* Erreur générique 4xx/5xx (le 409 optimistic ouvre le ConflictDialog). */}
               {submitState === 'error' && (
-                <p role="alert" className="text-destructive text-sm" data-testid="event-form-error">
+                <p
+                  role="alert"
+                  className="text-destructive text-sm"
+                  data-testid="event-form-error"
+                  data-reason="error"
+                >
                   {tErr('submitError')}
+                </p>
+              )}
+
+              {/* #766 — 403 : cause explicite inline (le toast global est coupé par
+                  l'opt-out `HANDLES_FORBIDDEN_INLINE` du PATCH, cf. useEventEditConflict). */}
+              {submitState === 'forbidden' && (
+                <p
+                  role="alert"
+                  className="text-destructive text-sm"
+                  data-testid="event-form-error"
+                  data-reason="forbidden"
+                >
+                  {tErr('forbidden')}
                 </p>
               )}
 
@@ -993,6 +1046,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         onTakeServer={() => onTakeServer?.()}
         isSubmitting={submitting}
         keepMineExhausted={keepMineExhausted}
+        onCloseAutoFocus={handleConflictCloseAutoFocus}
         testId="event-form-conflict"
       />
     </>

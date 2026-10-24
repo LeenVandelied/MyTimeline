@@ -49,7 +49,8 @@
     "errors": {
       "notFound": "Esta categoría ya no existe.",
       "conflict": "No se pueden reasignar los productos a esta categoría.",
-      "generic": "Ocurrió un error al eliminar, inténtalo de nuevo."
+      "generic": "Ocurrió un error al eliminar, inténtalo de nuevo.",
+      "forbidden": "Acción denegada: no tienes permiso para eliminar o archivar este elemento."
     }
   },
   "conflictDialog": {

@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteCategory } from '@/services/categoryService'
 import { queryKeys } from '@/lib/query-keys'
+import type { InlineErrorOptions } from '@/services/inlineErrorHandling'
 
 /**
  * #245 — Suppression d'une catégorie via TanStack Query v5 (mutation).
@@ -21,12 +22,15 @@ import { queryKeys } from '@/lib/query-keys'
  *
  * L'erreur axios n'est PAS avalée : `mutateAsync` rejette pour que
  * `DeleteConfirmDialog` (#65) affiche l'erreur inline (`onConfirm` doit REJETER).
+ *
+ * #766 — `options` est transmis à la requête (ex. `HANDLES_FORBIDDEN_INLINE`) : à ne passer
+ * que depuis un appelant dont l'erreur remonte au dialog (qui rend le 403).
  */
-export function useDeleteCategory() {
+export function useDeleteCategory(options?: InlineErrorOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<void, unknown, { id: string; reassignToCategoryId?: string }>({
-    mutationFn: ({ id, reassignToCategoryId }) => deleteCategory(id, reassignToCategoryId),
+    mutationFn: ({ id, reassignToCategoryId }) => deleteCategory(id, reassignToCategoryId, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })

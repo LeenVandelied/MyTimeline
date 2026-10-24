@@ -12,6 +12,7 @@ import { EventCategoryField } from '@/components/events/EventCategoryField'
 import { EventFormDrawer } from '@/components/events/EventFormDrawer'
 import { useEventEditConflict } from '@/hooks/useEventEditConflict'
 import { deleteEvent } from '@/services/eventService'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { categoryColorsOf } from './lib'
 import { TimelineResponsive, type TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
@@ -94,7 +95,10 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   // par userId), qui LÈVE hors provider. OK aujourd'hui (dashboard + ProductDetailView
   // rendent sous AuthProvider) ; verrouillé par TimelineEditHost.test.tsx (montage sous
   // AuthProvider). Toute nouvelle page routant cette frise doit préserver l'ancêtre.
-  const conflict = useEventEditConflict(editing?.id, handleEditDone)
+  //
+  // #766 — `EventEditForm` rend `submitState === 'forbidden'` (cause explicite) : le PATCH
+  // se retire du toast global « accès refusé » (sinon double signalement).
+  const conflict = useEventEditConflict(editing?.id, handleEditDone, HANDLES_FORBIDDEN_INLINE)
 
   const defaultValues = useMemo<EventEditFormValues | null>(() => {
     if (!editing) return null
@@ -169,7 +173,9 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
    */
   const runDelete = useCallback(
     async (id: string) => {
-      await deleteEvent(id)
+      // #766 — les deux chemins (mobile, desktop) passent par `DeleteConfirmDialog`, qui
+      // affiche `errors.forbidden` sur un 403 : opt-out du toast global.
+      await deleteEvent(id, HANDLES_FORBIDDEN_INLINE)
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })
       conflict.reset()
       closeEditor()
