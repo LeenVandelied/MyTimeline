@@ -7270,7 +7270,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 114 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Liste produits et onglets lisibles au clavier)
+### Sprint 114 — 2026-10-24 (EN COURS — cohésion 1.00, Liste produits et onglets lisibles au clavier)
 **Objectif :** nom de produit lisible dans « Tes produits » du tableau de bord ; les flèches des onglets du DS déplacent le focus ; plus de débordement de la liste produits au-delà de sm
 **Milestone GitHub :** #115
 **Issues :** #825 (P2, S), #815 (P2, S), #816 (P3, S) — 6 pts
@@ -7278,7 +7278,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 113 (#836 touche `ProductsListView.tsx` et `ProductDetailView.tsx`)
 **À confirmer au démarrage :** #815 — retirer `SettingsShell` du critère d'acceptation (déjà conforme, `SettingsShell.tsx:74`)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-10-24)
 
 ### Sprint 115 — 2026-10-24 (PLANIFIÉ — cohésion 0.00 ⚠ hors br-packs, Landing honnête et lisible à 200 %, sessions E2E contrôlées)
 **Objectif :** la landing ne promet plus de rappels qui n'existent pas ; header sans débordement à texte ×2 ; specs E2E migrées vers `sessionState(X)`
